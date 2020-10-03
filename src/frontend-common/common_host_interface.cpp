@@ -1509,35 +1509,77 @@ void CommonHostInterface::RegisterSaveStateHotkeys()
 
   for (u32 slot = 1; slot <= PER_GAME_SAVE_STATE_SLOTS; slot++)
   {
-    RegisterHotkey(
-      StaticString(TRANSLATABLE("Hotkeys", "Save States")), TinyString::FromFormat("LoadGameState%u", slot),
-      TinyString::FromFormat(TRANSLATABLE("Hotkeys", "Load Game State %u"), slot), [this, slot](bool pressed) {
-        if (!pressed)
-          LoadState(false, slot);
-      });
-    RegisterHotkey(
-      StaticString(TRANSLATABLE("Hotkeys", "Save States")), TinyString::FromFormat("SaveGameState%u", slot),
-      TinyString::FromFormat(TRANSLATABLE("Hotkeys", "Save Game State %u"), slot), [this, slot](bool pressed) {
-        if (!pressed)
-          SaveState(false, slot);
-      });
+    RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Save States")),
+                   TinyString::FromFormat("LoadGameState%u", slot), TinyString::FromFormat("Load Game State %u", slot),
+                   [this, slot](bool pressed) {
+                     if (!pressed)
+                       LoadState(false, slot);
+                   });
+    RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Save States")),
+                   TinyString::FromFormat("SaveGameState%u", slot), TinyString::FromFormat("Save Game State %u", slot),
+                   [this, slot](bool pressed) {
+                     if (!pressed)
+                       SaveState(false, slot);
+                   });
   }
 
   for (u32 slot = 1; slot <= GLOBAL_SAVE_STATE_SLOTS; slot++)
   {
-    RegisterHotkey(
-      StaticString(TRANSLATABLE("Hotkeys", "Save States")), TinyString::FromFormat("LoadGlobalState%u", slot),
-      TinyString::FromFormat(TRANSLATABLE("Hotkeys", "Load Global State %u"), slot), [this, slot](bool pressed) {
-        if (!pressed)
-          LoadState(true, slot);
-      });
-    RegisterHotkey(
-      StaticString(TRANSLATABLE("Hotkeys", "Save States")), TinyString::FromFormat("SaveGlobalState%u", slot),
-      TinyString::FromFormat(TRANSLATABLE("Hotkeys", "Save Global State %u"), slot), [this, slot](bool pressed) {
-        if (!pressed)
-          SaveState(true, slot);
-      });
+    RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Save States")),
+                   TinyString::FromFormat("LoadGlobalState%u", slot),
+                   TinyString::FromFormat("Load Global State %u", slot), [this, slot](bool pressed) {
+                     if (!pressed)
+                       LoadState(true, slot);
+                   });
+    RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Save States")),
+                   TinyString::FromFormat("SaveGlobalState%u", slot),
+                   TinyString::FromFormat("Save Global State %u", slot), [this, slot](bool pressed) {
+                     if (!pressed)
+                       SaveState(true, slot);
+                   });
   }
+
+  // Dummy strings for translation because we construct them in a loop.
+  TRANSLATABLE_NOOP("Hotkeys", "Load Game State 1");
+  TRANSLATABLE_NOOP("Hotkeys", "Load Game State 2");
+  TRANSLATABLE_NOOP("Hotkeys", "Load Game State 3");
+  TRANSLATABLE_NOOP("Hotkeys", "Load Game State 4");
+  TRANSLATABLE_NOOP("Hotkeys", "Load Game State 5");
+  TRANSLATABLE_NOOP("Hotkeys", "Load Game State 6");
+  TRANSLATABLE_NOOP("Hotkeys", "Load Game State 7");
+  TRANSLATABLE_NOOP("Hotkeys", "Load Game State 8");
+  TRANSLATABLE_NOOP("Hotkeys", "Load Game State 9");
+  TRANSLATABLE_NOOP("Hotkeys", "Load Game State 10");
+  TRANSLATABLE_NOOP("Hotkeys", "Save Game State 1");
+  TRANSLATABLE_NOOP("Hotkeys", "Save Game State 2");
+  TRANSLATABLE_NOOP("Hotkeys", "Save Game State 3");
+  TRANSLATABLE_NOOP("Hotkeys", "Save Game State 4");
+  TRANSLATABLE_NOOP("Hotkeys", "Save Game State 5");
+  TRANSLATABLE_NOOP("Hotkeys", "Save Game State 6");
+  TRANSLATABLE_NOOP("Hotkeys", "Save Game State 7");
+  TRANSLATABLE_NOOP("Hotkeys", "Save Game State 8");
+  TRANSLATABLE_NOOP("Hotkeys", "Save Game State 9");
+  TRANSLATABLE_NOOP("Hotkeys", "Save Game State 10");
+  TRANSLATABLE_NOOP("Hotkeys", "Load Global State 1");
+  TRANSLATABLE_NOOP("Hotkeys", "Load Global State 2");
+  TRANSLATABLE_NOOP("Hotkeys", "Load Global State 3");
+  TRANSLATABLE_NOOP("Hotkeys", "Load Global State 4");
+  TRANSLATABLE_NOOP("Hotkeys", "Load Global State 5");
+  TRANSLATABLE_NOOP("Hotkeys", "Load Global State 6");
+  TRANSLATABLE_NOOP("Hotkeys", "Load Global State 7");
+  TRANSLATABLE_NOOP("Hotkeys", "Load Global State 8");
+  TRANSLATABLE_NOOP("Hotkeys", "Load Global State 9");
+  TRANSLATABLE_NOOP("Hotkeys", "Load Global State 10");
+  TRANSLATABLE_NOOP("Hotkeys", "Save Global State 1");
+  TRANSLATABLE_NOOP("Hotkeys", "Save Global State 2");
+  TRANSLATABLE_NOOP("Hotkeys", "Save Global State 3");
+  TRANSLATABLE_NOOP("Hotkeys", "Save Global State 4");
+  TRANSLATABLE_NOOP("Hotkeys", "Save Global State 5");
+  TRANSLATABLE_NOOP("Hotkeys", "Save Global State 6");
+  TRANSLATABLE_NOOP("Hotkeys", "Save Global State 7");
+  TRANSLATABLE_NOOP("Hotkeys", "Save Global State 8");
+  TRANSLATABLE_NOOP("Hotkeys", "Save Global State 9");
+  TRANSLATABLE_NOOP("Hotkeys", "Save Global State 10");
 }
 
 void CommonHostInterface::RegisterAudioHotkeys()
