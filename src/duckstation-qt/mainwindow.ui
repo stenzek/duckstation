@@ -144,6 +144,7 @@
     <addaction name="separator"/>
     <addaction name="actionCheckForUpdates"/>
     <addaction name="separator"/>
+    <addaction name="actionAboutQt"/>
     <addaction name="actionAbout"/>
    </widget>
    <widget class="QMenu" name="menuDebug">
@@ -428,9 +429,14 @@
     <string>Check for &amp;Updates...</string>
    </property>
   </action>
+  <action name="actionAboutQt">
+   <property name="text">
+    <string>About &amp;Qt...</string>
+   </property>
+  </action>
   <action name="actionAbout">
    <property name="text">
-    <string>&amp;About...</string>
+    <string>&amp;About DuckStation...</string>
    </property>
   </action>
   <action name="actionChangeDisc">
