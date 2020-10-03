@@ -84,7 +84,7 @@
     <message>
         <location filename="../advancedsettingswidget.ui" line="97"/>
         <source>Tweaks/Hacks</source>
-        <translation>Tweaks/Hacks</translation>
+        <translation>修正/调整</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="141"/>
@@ -269,23 +269,23 @@
         <location filename="../../core/analog_controller.cpp" line="483"/>
         <source>Triangle</source>
         <translatorcomment>△</translatorcomment>
-        <translation>△</translation>
+        <translation>三角</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="484"/>
         <source>Cross</source>
         <translatorcomment>╳</translatorcomment>
-        <translation>╳</translation>
+        <translation>叉叉</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="485"/>
         <source>Circle</source>
-        <translation>〇</translation>
+        <translation>圆圈</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="486"/>
         <source>Square</source>
-        <translation>□</translation>
+        <translation>方块</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="487"/>
@@ -1001,25 +1001,25 @@
         <location filename="../../core/digital_controller.cpp" line="165"/>
         <source>Triangle</source>
         <translatorcomment>△</translatorcomment>
-        <translation>△</translation>
+        <translation>三角</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="166"/>
         <source>Cross</source>
         <translatorcomment>╳</translatorcomment>
-        <translation>╳</translation>
+        <translation>叉叉</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="167"/>
         <source>Circle</source>
         <translatorcomment>〇</translatorcomment>
-        <translation>〇</translation>
+        <translation>圆圈</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="168"/>
         <source>Square</source>
         <translatorcomment>□</translatorcomment>
-        <translation>□</translation>
+        <translation>方块</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="169"/>
