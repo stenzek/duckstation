@@ -1408,6 +1408,12 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                    }
                  });
 
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("Reset"),
+                 StaticString(TRANSLATABLE("Hotkeys", "Reset System")), [this](bool pressed) {
+                   if (!pressed && System::IsValid())
+                     ResetSystem();
+                 });
+
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("Screenshot"),
                  StaticString(TRANSLATABLE("Hotkeys", "Save Screenshot")), [this](bool pressed) {
                    if (!pressed && System::IsValid())
