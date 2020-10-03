@@ -49,11 +49,11 @@ Q_SIGNALS:
 private Q_SLOTS:
   void onGameListRefreshed();
   void onSelectionModelCurrentChanged(const QModelIndex& current, const QModelIndex& previous);
-  void onTableViewItemDoubleClicked(const QModelIndex& index);
+  void onTableViewItemActivated(const QModelIndex& index);
   void onTableViewContextMenuRequested(const QPoint& point);
   void onTableViewHeaderContextMenuRequested(const QPoint& point);
   void onTableViewHeaderSortIndicatorChanged(int, Qt::SortOrder);
-  void onListViewItemDoubleClicked(const QModelIndex& index);
+  void onListViewItemActivated(const QModelIndex& index);
   void onListViewContextMenuRequested(const QPoint& point);
 
 public Q_SLOTS:

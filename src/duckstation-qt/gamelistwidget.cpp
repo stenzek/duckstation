@@ -68,7 +68,7 @@ void GameListWidget::initialize(QtHostInterface* host_interface)
 
   connect(m_table_view->selectionModel(), &QItemSelectionModel::currentChanged, this,
           &GameListWidget::onSelectionModelCurrentChanged);
-  connect(m_table_view, &QTableView::doubleClicked, this, &GameListWidget::onTableViewItemDoubleClicked);
+  connect(m_table_view, &QTableView::activated, this, &GameListWidget::onTableViewItemActivated);
   connect(m_table_view, &QTableView::customContextMenuRequested, this,
           &GameListWidget::onTableViewContextMenuRequested);
   connect(m_table_view->horizontalHeader(), &QHeaderView::customContextMenuRequested, this,
@@ -94,7 +94,7 @@ void GameListWidget::initialize(QtHostInterface* host_interface)
           &GameListWidget::onSelectionModelCurrentChanged);
   connect(m_list_view, &GameListGridListView::zoomIn, this, &GameListWidget::gridZoomIn);
   connect(m_list_view, &GameListGridListView::zoomOut, this, &GameListWidget::gridZoomOut);
-  connect(m_list_view, &QListView::doubleClicked, this, &GameListWidget::onListViewItemDoubleClicked);
+  connect(m_list_view, &QListView::activated, this, &GameListWidget::onListViewItemActivated);
   connect(m_list_view, &QListView::customContextMenuRequested, this, &GameListWidget::onListViewContextMenuRequested);
 
   insertWidget(1, m_list_view);
@@ -140,7 +140,7 @@ void GameListWidget::onSelectionModelCurrentChanged(const QModelIndex& current, 
   emit entrySelected(&entry);
 }
 
-void GameListWidget::onTableViewItemDoubleClicked(const QModelIndex& index)
+void GameListWidget::onTableViewItemActivated(const QModelIndex& index)
 {
   const QModelIndex source_index = m_sort_model->mapToSource(index);
   if (!source_index.isValid() || source_index.row() >= static_cast<int>(m_game_list->GetEntryCount()))
@@ -159,7 +159,7 @@ void GameListWidget::onTableViewContextMenuRequested(const QPoint& point)
   emit entryContextMenuRequested(m_table_view->mapToGlobal(point), entry);
 }
 
-void GameListWidget::onListViewItemDoubleClicked(const QModelIndex& index)
+void GameListWidget::onListViewItemActivated(const QModelIndex& index)
 {
   const QModelIndex source_index = m_sort_model->mapToSource(index);
   if (!source_index.isValid() || source_index.row() >= static_cast<int>(m_game_list->GetEntryCount()))
