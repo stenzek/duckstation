@@ -97,6 +97,7 @@ QtDisplayWidget* MainWindow::createDisplay(QThread* worker_thread, const QString
   }
   else if (!render_to_main)
   {
+    restoreDisplayWindowGeometryFromConfig();
     m_display_widget->showNormal();
   }
   else
@@ -149,6 +150,7 @@ QtDisplayWidget* MainWindow::updateDisplay(QThread* worker_thread, bool fullscre
   }
   else if (!render_to_main)
   {
+    restoreDisplayWindowGeometryFromConfig();
     m_display_widget->showNormal();
   }
   else
@@ -194,6 +196,10 @@ void MainWindow::destroyDisplayWidget()
   {
     switchToGameListView();
     m_ui.mainContainer->removeWidget(m_display_widget);
+  }
+  else if (!m_display_widget->isFullScreen())
+  {
+    saveDisplayWindowGeometryToConfig();
   }
 
   delete m_display_widget;
@@ -941,6 +947,23 @@ void MainWindow::restoreStateFromConfig()
       m_ui.actionViewStatusBar->setChecked(!m_ui.statusBar->isHidden());
     }
   }
+}
+
+void MainWindow::saveDisplayWindowGeometryToConfig()
+{
+  const QByteArray geometry = m_display_widget->saveGeometry();
+  const QByteArray geometry_b64 = geometry.toBase64();
+  const std::string old_geometry_b64 = m_host_interface->GetStringSettingValue("UI", "DisplayWindowGeometry");
+  if (old_geometry_b64 != geometry_b64.constData())
+    m_host_interface->SetStringSettingValue("UI", "DisplayWindowGeometry", geometry_b64.constData());
+}
+
+void MainWindow::restoreDisplayWindowGeometryFromConfig()
+{
+  const std::string geometry_b64 = m_host_interface->GetStringSettingValue("UI", "DisplayWindowGeometry");
+  const QByteArray geometry = QByteArray::fromBase64(QByteArray::fromStdString(geometry_b64));
+  if (!geometry.isEmpty())
+    m_display_widget->restoreGeometry(geometry);
 }
 
 SettingsDialog* MainWindow::getSettingsDialog()

@@ -98,6 +98,8 @@ private:
   void switchToEmulationView();
   void saveStateToConfig();
   void restoreStateFromConfig();
+  void saveDisplayWindowGeometryToConfig();
+  void restoreDisplayWindowGeometryFromConfig();
   void destroyDisplayWidget();
   SettingsDialog* getSettingsDialog();
   void doSettings(SettingsDialog::Category category = SettingsDialog::Category::Count);
