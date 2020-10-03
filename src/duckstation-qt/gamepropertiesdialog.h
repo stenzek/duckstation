@@ -36,6 +36,7 @@ private Q_SLOTS:
   void onComputeHashClicked();
   void onVerifyDumpClicked();
   void onExportCompatibilityInfoClicked();
+  void updateCPUClockSpeedLabel();
 
 private:
   void setupAdditionalUi();

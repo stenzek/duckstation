@@ -17,6 +17,7 @@ EnhancementSettingsWidget::EnhancementSettingsWidget(QtHostInterface* host_inter
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.scaledDithering, "GPU", "ScaledDithering");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.disableInterlacing, "GPU", "DisableInterlacing");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.forceNTSCTimings, "GPU", "ForceNTSCTimings");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.force43For24Bit, "Display", "Force4_3For24Bit");
   SettingWidgetBinder::BindWidgetToEnumSetting(
     m_host_interface, m_ui.textureFiltering, "GPU", "TextureFilter", &Settings::ParseTextureFilterName,
     &Settings::GetTextureFilterDisplayName, Settings::DEFAULT_GPU_TEXTURE_FILTER);
@@ -63,6 +64,9 @@ EnhancementSettingsWidget::EnhancementSettingsWidget(QtHostInterface* host_inter
                                 "have a speed tied to the framerate, this will result in the game running "
                                 "approximately 17% faster. <br>For variable "
                                 "frame rate games, it may not affect the speed."));
+  dialog->registerWidgetHelp(
+    m_ui.force43For24Bit, tr("Force 4:3 For 24-bit Display"), tr("Unchecked"),
+    tr("Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs."));
   dialog->registerWidgetHelp(
     m_ui.textureFiltering, tr("Texture Filtering"), tr("Unchecked"),
     tr("Smooths out the blockyness of magnified textures on 3D object by using bilinear filtering. <br>Will have a "

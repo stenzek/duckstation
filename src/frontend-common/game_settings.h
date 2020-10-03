@@ -40,10 +40,14 @@ struct Entry
   std::optional<s16> display_active_end_offset;
 
   // user settings
+  std::optional<u32> cpu_overclock_numerator;
+  std::optional<u32> cpu_overclock_denominator;
+  std::optional<bool> cpu_overclock_enable;
   std::optional<DisplayCropMode> display_crop_mode;
   std::optional<DisplayAspectRatio> display_aspect_ratio;
   std::optional<bool> display_linear_upscaling;
   std::optional<bool> display_integer_upscaling;
+  std::optional<bool> display_force_4_3_for_24bit;
   std::optional<u32> gpu_resolution_scale;
   std::optional<bool> gpu_true_color;
   std::optional<bool> gpu_scaled_dithering;

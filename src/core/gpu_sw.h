@@ -31,17 +31,17 @@ protected:
   struct SWVertex
   {
     s32 x, y;
-    u8 color_r, color_g, color_b;
-    u8 texcoord_x, texcoord_y;
+    u8 r, g, b;
+    u8 u, v;
 
-    ALWAYS_INLINE void SetPosition(VertexPosition p)
+    ALWAYS_INLINE void SetPosition(VertexPosition p, s32 offset_x, s32 offset_y)
     {
-      x = p.x;
-      y = p.y;
+      x = TruncateVertexPosition(offset_x + p.x);
+      y = TruncateVertexPosition(offset_y + p.y);
     }
 
-    ALWAYS_INLINE void SetColorRGB24(u32 color) { std::tie(color_r, color_g, color_b) = UnpackColorRGB24(color); }
-    ALWAYS_INLINE void SetTexcoord(u16 value) { std::tie(texcoord_x, texcoord_y) = UnpackTexcoord(value); }
+    ALWAYS_INLINE void SetColorRGB24(u32 color) { std::tie(r, g, b) = UnpackColorRGB24(color); }
+    ALWAYS_INLINE void SetTexcoord(u16 value) { std::tie(u, v) = UnpackTexcoord(value); }
   };
 
   //////////////////////////////////////////////////////////////////////////
@@ -60,18 +60,8 @@ protected:
 
   void DispatchRenderCommand() override;
 
-  static bool IsClockwiseWinding(const SWVertex* v0, const SWVertex* v1, const SWVertex* v2);
-
   template<bool texture_enable, bool raw_texture_enable, bool transparency_enable, bool dithering_enable>
   void ShadePixel(u32 x, u32 y, u8 color_r, u8 color_g, u8 color_b, u8 texcoord_x, u8 texcoord_y);
-
-  template<bool shading_enable, bool texture_enable, bool raw_texture_enable, bool transparency_enable,
-           bool dithering_enable>
-  void DrawTriangle(const SWVertex* v0, const SWVertex* v1, const SWVertex* v2);
-
-  using DrawTriangleFunction = void (GPU_SW::*)(const SWVertex* v0, const SWVertex* v1, const SWVertex* v2);
-  DrawTriangleFunction GetDrawTriangleFunction(bool shading_enable, bool texture_enable, bool raw_texture_enable,
-                                               bool transparency_enable, bool dithering_enable);
 
   template<bool texture_enable, bool raw_texture_enable, bool transparency_enable>
   void DrawRectangle(s32 origin_x, s32 origin_y, u32 width, u32 height, u8 r, u8 g, u8 b, u8 origin_texcoord_x,
@@ -81,6 +71,45 @@ protected:
                                                  u8 origin_texcoord_x, u8 origin_texcoord_y);
   DrawRectangleFunction GetDrawRectangleFunction(bool texture_enable, bool raw_texture_enable,
                                                  bool transparency_enable);
+
+  //////////////////////////////////////////////////////////////////////////
+  // Polygon and line rasterization ported from Mednafen
+  //////////////////////////////////////////////////////////////////////////
+  struct i_deltas
+  {
+    u32 du_dx, dv_dx;
+    u32 dr_dx, dg_dx, db_dx;
+
+    u32 du_dy, dv_dy;
+    u32 dr_dy, dg_dy, db_dy;
+  };
+
+  struct i_group
+  {
+    u32 u, v;
+    u32 r, g, b;
+  };
+
+  template<bool shading_enable, bool texture_enable>
+  bool CalcIDeltas(i_deltas& idl, const SWVertex* A, const SWVertex* B, const SWVertex* C);
+
+  template<bool shading_enable, bool texture_enable>
+  void AddIDeltas_DX(i_group& ig, const i_deltas& idl, u32 count = 1);
+
+  template<bool shading_enable, bool texture_enable>
+  void AddIDeltas_DY(i_group& ig, const i_deltas& idl, u32 count = 1);
+
+  template<bool shading_enable, bool texture_enable, bool raw_texture_enable, bool transparency_enable,
+           bool dithering_enable>
+  void DrawSpan(s32 y, s32 x_start, s32 x_bound, i_group ig, const i_deltas& idl);
+
+  template<bool shading_enable, bool texture_enable, bool raw_texture_enable, bool transparency_enable,
+           bool dithering_enable>
+  void DrawTriangle(const SWVertex* v0, const SWVertex* v1, const SWVertex* v2);
+
+  using DrawTriangleFunction = void (GPU_SW::*)(const SWVertex* v0, const SWVertex* v1, const SWVertex* v2);
+  DrawTriangleFunction GetDrawTriangleFunction(bool shading_enable, bool texture_enable, bool raw_texture_enable,
+                                               bool transparency_enable, bool dithering_enable);
 
   template<bool shading_enable, bool transparency_enable, bool dithering_enable>
   void DrawLine(const SWVertex* p0, const SWVertex* p1);

@@ -1,6 +1,7 @@
 #pragma once
 #include "common/timer.h"
 #include "host_interface.h"
+#include "settings.h"
 #include "timing_event.h"
 #include "types.h"
 #include <memory>
@@ -40,6 +41,11 @@ enum : u32
   MAX_SAVE_STATE_SIZE = 5 * 1024 * 1024
 };
 
+enum : TickCount
+{
+  MASTER_CLOCK = 44100 * 0x300 // 33868800Hz or 33.8688MHz, also used as CPU clock
+};
+
 enum class State
 {
   Shutdown,
@@ -47,6 +53,8 @@ enum class State
   Running,
   Paused
 };
+
+extern TickCount g_ticks_per_second;
 
 /// Returns true if the filename is a PlayStation executable we can inject.
 bool IsExeFileName(const char* path);
@@ -80,6 +88,36 @@ bool IsValid();
 
 ConsoleRegion GetRegion();
 bool IsPALRegion();
+
+ALWAYS_INLINE TickCount GetTicksPerSecond()
+{
+  return g_ticks_per_second;
+}
+
+ALWAYS_INLINE_RELEASE TickCount ScaleTicksToOverclock(TickCount ticks)
+{
+  if (!g_settings.cpu_overclock_active)
+    return ticks;
+
+  return static_cast<TickCount>((static_cast<u64>(static_cast<u32>(ticks)) * g_settings.cpu_overclock_numerator) /
+                                g_settings.cpu_overclock_denominator);
+}
+
+ALWAYS_INLINE_RELEASE TickCount UnscaleTicksToOverclock(TickCount ticks, TickCount* remainder)
+{
+  if (!g_settings.cpu_overclock_active)
+    return ticks;
+
+  const u64 num =
+    (static_cast<u32>(ticks) * static_cast<u64>(g_settings.cpu_overclock_denominator)) + static_cast<u32>(*remainder);
+  const TickCount t = static_cast<u32>(num / g_settings.cpu_overclock_numerator);
+  *remainder = static_cast<u32>(num % g_settings.cpu_overclock_numerator);
+  return t;
+}
+
+TickCount GetMaxSliceTicks();
+void UpdateOverclock();
+
 u32 GetFrameNumber();
 u32 GetInternalFrameNumber();
 void FrameDone();

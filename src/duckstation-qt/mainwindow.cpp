@@ -30,8 +30,8 @@
 
 static constexpr char DISC_IMAGE_FILTER[] = QT_TRANSLATE_NOOP(
   "MainWindow",
-  "All File Types (*.bin *.img *.cue *.chd *.exe *.psexe *.psf);;Single-Track Raw Images (*.bin *.img);;Cue Sheets "
-  "(*.cue);;MAME CHD Images (*.chd);;PlayStation Executables (*.exe *.psexe);;Portable Sound Format Files "
+  "All File Types (*.bin *.img *.cue *.chd *.exe *.psexe *.psf *.m3u);;Single-Track Raw Images (*.bin *.img);;Cue "
+  "Sheets (*.cue);;MAME CHD Images (*.chd);;PlayStation Executables (*.exe *.psexe);;Portable Sound Format Files "
   "(*.psf);;Playlists (*.m3u)");
 
 ALWAYS_INLINE static QString getWindowTitle()
@@ -97,6 +97,7 @@ QtDisplayWidget* MainWindow::createDisplay(QThread* worker_thread, const QString
   }
   else if (!render_to_main)
   {
+    restoreDisplayWindowGeometryFromConfig();
     m_display_widget->showNormal();
   }
   else
@@ -149,6 +150,7 @@ QtDisplayWidget* MainWindow::updateDisplay(QThread* worker_thread, bool fullscre
   }
   else if (!render_to_main)
   {
+    restoreDisplayWindowGeometryFromConfig();
     m_display_widget->showNormal();
   }
   else
@@ -194,6 +196,10 @@ void MainWindow::destroyDisplayWidget()
   {
     switchToGameListView();
     m_ui.mainContainer->removeWidget(m_display_widget);
+  }
+  else if (!m_display_widget->isFullScreen())
+  {
+    saveDisplayWindowGeometryToConfig();
   }
 
   delete m_display_widget;
@@ -427,6 +433,9 @@ void MainWindow::onGameListContextMenuRequested(const QPoint& point, const GameL
       QtUtils::OpenURL(this, QUrl::fromLocalFile(fi.absolutePath()));
     });
 
+    connect(menu.addAction(tr("Set Cover Image...")), &QAction::triggered,
+            [this, entry]() { onGameListSetCoverImageRequested(entry); });
+
     menu.addSeparator();
 
     if (!m_emulation_running)
@@ -469,6 +478,43 @@ void MainWindow::onGameListContextMenuRequested(const QPoint& point, const GameL
           [this]() { getSettingsDialog()->getGameListSettingsWidget()->addSearchDirectory(this); });
 
   menu.exec(point);
+}
+
+void MainWindow::onGameListSetCoverImageRequested(const GameListEntry* entry)
+{
+  QString filename = QFileDialog::getOpenFileName(this, tr("Select Cover Image"), QString(),
+                                                  tr("All Cover Image Types (*.jpg *.jpeg *.png)"));
+  if (filename.isEmpty())
+    return;
+
+  if (!m_host_interface->getGameList()->GetCoverImagePathForEntry(entry).empty())
+  {
+    if (QMessageBox::question(this, tr("Cover Already Exists"),
+                              tr("A cover image for this game already exists, do you wish to replace it?"),
+                              QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
+    {
+      return;
+    }
+  }
+
+  QString new_filename = QString::fromStdString(
+    m_host_interface->getGameList()->GetNewCoverImagePathForEntry(entry, filename.toStdString().c_str()));
+  if (new_filename.isEmpty())
+    return;
+
+  if (QFile::exists(new_filename) && !QFile::remove(new_filename))
+  {
+    QMessageBox::critical(this, tr("Copy Error"), tr("Failed to remove existing cover '%1'").arg(new_filename));
+    return;
+  }
+
+  if (!QFile::copy(filename, new_filename))
+  {
+    QMessageBox::critical(this, tr("Copy Error"), tr("Failed to copy '%1' to '%2'").arg(filename).arg(new_filename));
+    return;
+  }
+
+  m_game_list_widget->refreshGridCovers();
 }
 
 void MainWindow::setupAdditionalUi()
@@ -692,6 +738,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionGitHubRepository, &QAction::triggered, this, &MainWindow::onGitHubRepositoryActionTriggered);
   connect(m_ui.actionIssueTracker, &QAction::triggered, this, &MainWindow::onIssueTrackerActionTriggered);
   connect(m_ui.actionDiscordServer, &QAction::triggered, this, &MainWindow::onDiscordServerActionTriggered);
+  connect(m_ui.actionAboutQt, &QAction::triggered, qApp, &QApplication::aboutQt);
   connect(m_ui.actionAbout, &QAction::triggered, this, &MainWindow::onAboutActionTriggered);
   connect(m_ui.actionCheckForUpdates, &QAction::triggered, this, &MainWindow::onCheckForUpdatesActionTriggered);
   connect(m_ui.actionMemory_Card_Editor, &QAction::triggered, this, &MainWindow::onToolsMemoryCardEditorTriggered);
@@ -941,6 +988,23 @@ void MainWindow::restoreStateFromConfig()
       m_ui.actionViewStatusBar->setChecked(!m_ui.statusBar->isHidden());
     }
   }
+}
+
+void MainWindow::saveDisplayWindowGeometryToConfig()
+{
+  const QByteArray geometry = m_display_widget->saveGeometry();
+  const QByteArray geometry_b64 = geometry.toBase64();
+  const std::string old_geometry_b64 = m_host_interface->GetStringSettingValue("UI", "DisplayWindowGeometry");
+  if (old_geometry_b64 != geometry_b64.constData())
+    m_host_interface->SetStringSettingValue("UI", "DisplayWindowGeometry", geometry_b64.constData());
+}
+
+void MainWindow::restoreDisplayWindowGeometryFromConfig()
+{
+  const std::string geometry_b64 = m_host_interface->GetStringSettingValue("UI", "DisplayWindowGeometry");
+  const QByteArray geometry = QByteArray::fromBase64(QByteArray::fromStdString(geometry_b64));
+  if (!geometry.isEmpty())
+    m_display_widget->restoreGeometry(geometry);
 }
 
 SettingsDialog* MainWindow::getSettingsDialog()

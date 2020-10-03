@@ -1039,7 +1039,12 @@ bool GameList::SaveCompatibilityDatabaseForEntry(const GameListCompatibilityEntr
     InitElementForCompatibilityEntry(&doc, entry_elem, entry);
   }
 
-  error = doc.SaveFile(m_compatibility_list_filename.c_str());
+  fp.reset();
+  fp = FileSystem::OpenManagedCFile(m_compatibility_list_filename.c_str(), "wb");
+  if (!fp)
+    return SaveCompatibilityDatabase();
+
+  error = doc.SaveFile(fp.get());
   if (error != tinyxml2::XML_SUCCESS)
   {
     Log_ErrorPrintf("Failed to update compatibility list '%s': %s", m_compatibility_list_filename.c_str(),
@@ -1112,22 +1117,28 @@ void GameList::UpdateGameSettings(const std::string& filename, const std::string
 
 std::string GameList::GetCoverImagePathForEntry(const GameListEntry* entry)
 {
-  static constexpr std::array<const char*, 2> extensions = {{"jpg", "png"}};
+  static constexpr std::array<const char*, 3> extensions = {{"jpg", "jpeg", "png"}};
 
   PathString cover_path;
   for (const char* extension : extensions)
   {
     // try the title
-    cover_path.Format("%s" FS_OSPATH_SEPARATOR_STR "covers" FS_OSPATH_SEPARATOR_STR "%s.%s",
-                      g_host_interface->GetUserDirectory().c_str(), entry->title.c_str(), extension);
-    if (FileSystem::FileExists(cover_path))
-      return std::string(cover_path.GetCharArray());
+    if (!entry->title.empty())
+    {
+      cover_path.Format("%s" FS_OSPATH_SEPARATOR_STR "covers" FS_OSPATH_SEPARATOR_STR "%s.%s",
+                        g_host_interface->GetUserDirectory().c_str(), entry->title.c_str(), extension);
+      if (FileSystem::FileExists(cover_path))
+        return std::string(cover_path.GetCharArray());
+    }
 
     // then the code
-    cover_path.Format("%s" FS_OSPATH_SEPARATOR_STR "covers" FS_OSPATH_SEPARATOR_STR "%s.%s",
-                      g_host_interface->GetUserDirectory().c_str(), entry->title.c_str(), extension);
-    if (FileSystem::FileExists(cover_path))
-      return std::string(cover_path.GetCharArray());
+    if (!entry->code.empty())
+    {
+      cover_path.Format("%s" FS_OSPATH_SEPARATOR_STR "covers" FS_OSPATH_SEPARATOR_STR "%s.%s",
+                        g_host_interface->GetUserDirectory().c_str(), entry->code.c_str(), extension);
+      if (FileSystem::FileExists(cover_path))
+        return std::string(cover_path.GetCharArray());
+    }
 
     // and the file title if it differs
     const std::string_view file_title = GetFileNameFromPath(entry->path.c_str());
@@ -1145,4 +1156,22 @@ std::string GameList::GetCoverImagePathForEntry(const GameListEntry* entry)
   }
 
   return std::string();
+}
+
+std::string GameList::GetNewCoverImagePathForEntry(const GameListEntry* entry, const char* new_filename)
+{
+  const char* extension = std::strrchr(new_filename, '.');
+  if (!extension)
+    return {};
+
+  std::string existing_filename = GetCoverImagePathForEntry(entry);
+  if (!existing_filename.empty())
+  {
+    std::string::size_type pos = existing_filename.rfind('.');
+    if (pos != std::string::npos && existing_filename.compare(pos, std::strlen(extension), extension) == 0)
+      return existing_filename;
+  }
+
+  return g_host_interface->GetUserDirectoryRelativePath("covers" FS_OSPATH_SEPARATOR_STR "%s%s", entry->title.c_str(),
+                                                        extension);
 }

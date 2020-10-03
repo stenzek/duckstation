@@ -9,8 +9,10 @@ struct CheatCode
 {
   enum class InstructionCode : u8
   {
+    Nop = 0x00,
     ConstantWrite8 = 0x30,
     ConstantWrite16 = 0x80,
+    ScratchpadWrite16 = 0x1F,
     Increment16 = 0x10,
     Decrement16 = 0x11,
     Increment8 = 0x20,
@@ -23,7 +25,8 @@ struct CheatCode
     CompareNotEqual8 = 0xE1,
     CompareLess8 = 0xE2,
     CompareGreater8 = 0xE3,
-    Slide = 0x50
+    Slide = 0x50,
+    MemoryCopy = 0xC2
   };
 
   union Instruction
@@ -71,6 +74,7 @@ public:
   ALWAYS_INLINE bool IsCodeEnabled(u32 index) const { return m_codes[index].enabled; }
 
   void AddCode(CheatCode cc);
+  void SetCode(u32 index, CheatCode cc);
   void RemoveCode(u32 i);
 
   u32 GetEnabledCodeCount() const;
@@ -79,6 +83,7 @@ public:
   void SetCodeEnabled(u32 index, bool state);
 
   static std::optional<Format> DetectFileFormat(const char* filename);
+  static bool ParseLibretroCheat(CheatCode* cc, const char* line);
 
   bool LoadFromFile(const char* filename, Format format);
   bool LoadFromPCSXRFile(const char* filename);

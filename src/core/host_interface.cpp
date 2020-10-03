@@ -436,10 +436,11 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("GPU", "PGXPCPU", false);
 
   si.SetStringValue("Display", "CropMode", Settings::GetDisplayCropModeName(Settings::DEFAULT_DISPLAY_CROP_MODE));
-  si.SetIntValue("Display", "OverscanActiveStartOffset", 0);
-  si.SetIntValue("Display", "OverscanActiveEndOffset", 0);
+  si.SetIntValue("Display", "ActiveStartOffset", 0);
+  si.SetIntValue("Display", "ActiveEndOffset", 0);
   si.SetStringValue("Display", "AspectRatio",
                     Settings::GetDisplayAspectRatioName(Settings::DEFAULT_DISPLAY_ASPECT_RATIO));
+  si.SetBoolValue("Display", "Force4_3For24Bit", false);
   si.SetBoolValue("Display", "LinearFiltering", true);
   si.SetBoolValue("Display", "IntegerScaling", false);
   si.SetBoolValue("Display", "PostProcessing", false);
@@ -455,6 +456,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("CDROM", "ReadThread", true);
   si.SetBoolValue("CDROM", "RegionCheck", true);
   si.SetBoolValue("CDROM", "LoadImageToRAM", false);
+  si.SetBoolValue("CDROM", "MuteCDAudio", false);
 
   si.SetStringValue("Audio", "Backend", Settings::GetAudioBackendName(Settings::DEFAULT_AUDIO_BACKEND));
   si.SetIntValue("Audio", "OutputVolume", 100);
@@ -542,10 +544,18 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
 {
   if (System::IsValid())
   {
+    if (g_settings.cpu_overclock_active != old_settings.cpu_overclock_active ||
+        (g_settings.cpu_overclock_active &&
+         (g_settings.cpu_overclock_numerator != old_settings.cpu_overclock_numerator ||
+          g_settings.cpu_overclock_denominator != old_settings.cpu_overclock_denominator)))
+    {
+      System::UpdateOverclock();
+    }
+
     if (g_settings.gpu_renderer != old_settings.gpu_renderer ||
         g_settings.gpu_use_debug_device != old_settings.gpu_use_debug_device)
     {
-      AddFormattedOSDMessage(5.0f, "Switching to %s%s GPU renderer.",
+      AddFormattedOSDMessage(5.0f, TranslateString("OSDMessage", "Switching to %s%s GPU renderer."),
                              Settings::GetRendererName(g_settings.gpu_renderer),
                              g_settings.gpu_use_debug_device ? " (debug)" : "");
       RecreateSystem();
@@ -556,7 +566,7 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
     {
       if (g_settings.audio_backend != old_settings.audio_backend)
       {
-        AddFormattedOSDMessage(5.0f, "Switching to %s audio backend.",
+        AddFormattedOSDMessage(5.0f, TranslateString("OSDMessage", "Switching to %s audio backend."),
                                Settings::GetAudioBackendName(g_settings.audio_backend));
       }
       DebugAssert(m_audio_stream);
@@ -570,8 +580,10 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
 
     if (g_settings.cpu_execution_mode != old_settings.cpu_execution_mode)
     {
-      AddFormattedOSDMessage(5.0f, "Switching to %s CPU execution mode.",
-                             Settings::GetCPUExecutionModeName(g_settings.cpu_execution_mode));
+      AddFormattedOSDMessage(
+        5.0f, TranslateString("OSDMessage", "Switching to %s CPU execution mode."),
+        TranslateString("OSDMessage", Settings::GetCPUExecutionModeDisplayName(g_settings.cpu_execution_mode))
+          .GetCharArray());
       CPU::CodeCache::SetUseRecompiler(g_settings.cpu_execution_mode == CPUExecutionMode::Recompiler);
       CPU::CodeCache::Flush();
       CPU::ClearICache();
@@ -580,16 +592,20 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
     if (g_settings.cpu_execution_mode == CPUExecutionMode::Recompiler &&
         g_settings.cpu_recompiler_memory_exceptions != old_settings.cpu_recompiler_memory_exceptions)
     {
-      AddFormattedOSDMessage(5.0f, "CPU memory exceptions %s, flushing all blocks.",
-                             g_settings.cpu_recompiler_memory_exceptions ? "enabled" : "disabled");
+      AddOSDMessage(g_settings.cpu_recompiler_memory_exceptions ?
+                      TranslateStdString("OSDMessage", "CPU memory exceptions enabled, flushing all blocks.") :
+                      TranslateStdString("OSDMessage", "CPU memory exceptions disabled, flushing all blocks."),
+                    5.0f);
       CPU::CodeCache::Flush();
     }
 
     if (g_settings.cpu_execution_mode != CPUExecutionMode::Interpreter &&
         g_settings.cpu_recompiler_icache != old_settings.cpu_recompiler_icache)
     {
-      AddFormattedOSDMessage(5.0f, "CPU ICache %s, flushing all blocks.",
-                             g_settings.cpu_recompiler_icache ? "enabled" : "disabled");
+      AddOSDMessage(g_settings.cpu_recompiler_icache ?
+                      TranslateStdString("OSDMessage", "CPU ICache enabled, flushing all blocks.") :
+                      TranslateStdString("OSDMessage", "CPU ICache disabled, flushing all blocks."),
+                    5.0f);
       CPU::CodeCache::Flush();
       CPU::ClearICache();
     }
@@ -618,8 +634,10 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
     {
       if (g_settings.IsUsingCodeCache())
       {
-        AddFormattedOSDMessage(5.0f, "PGXP %s, recompiling all blocks.",
-                               g_settings.gpu_pgxp_enable ? "enabled" : "disabled");
+        AddOSDMessage(g_settings.gpu_pgxp_enable ?
+                        TranslateStdString("OSDMessage", "PGXP enabled, recompiling all blocks.") :
+                        TranslateStdString("OSDMessage", "PGXP disabled, recompiling all blocks."),
+                      5.0f);
         CPU::CodeCache::Flush();
       }
 

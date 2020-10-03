@@ -12,6 +12,8 @@
 #include <utility>
 #include <vector>
 
+class HostDisplayTexture;
+
 class ControllerInterface;
 
 namespace FrontendCommon {
@@ -296,6 +298,9 @@ protected:
 
   void ApplyGameSettings(bool display_osd_messages);
 
+  bool CreateHostDisplayResources();
+  void ReleaseHostDisplayResources();
+
   virtual void DrawImGuiWindows();
 
   void DrawFPSWindow();
@@ -306,6 +311,8 @@ protected:
   std::unique_ptr<GameList> m_game_list;
 
   std::unique_ptr<ControllerInterface> m_controller_interface;
+
+  std::unique_ptr<HostDisplayTexture> m_logo_texture;
 
   std::deque<OSDMessage> m_osd_messages;
   std::mutex m_osd_messages_lock;

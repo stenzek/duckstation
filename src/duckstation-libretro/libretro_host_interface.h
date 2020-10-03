@@ -40,6 +40,8 @@ public:
   bool retro_unserialize(const void* data, size_t size);
   void* retro_get_memory_data(unsigned id);
   size_t retro_get_memory_size(unsigned id);
+  void retro_cheat_reset();
+  void retro_cheat_set(unsigned index, bool enabled, const char* code);
 
 protected:
   bool AcquireHostDisplay() override;

@@ -29,7 +29,6 @@ bool GPU::Initialize(HostDisplay* host_display)
   m_host_display = host_display;
   m_force_progressive_scan = g_settings.gpu_disable_interlacing;
   m_force_ntsc_timings = g_settings.gpu_force_ntsc_timings;
-  m_crtc_state.display_aspect_ratio = Settings::GetDisplayAspectRatioValue(g_settings.display_aspect_ratio);
   m_crtc_tick_event = TimingEvents::CreateTimingEvent(
     "GPU CRTC Tick", 1, 1, std::bind(&GPU::CRTCTickEvent, this, std::placeholders::_1), true);
   m_command_tick_event = TimingEvents::CreateTimingEvent(
@@ -54,10 +53,13 @@ void GPU::UpdateSettings()
     UpdateCRTCConfig();
   }
 
-  m_crtc_state.display_aspect_ratio = Settings::GetDisplayAspectRatioValue(g_settings.display_aspect_ratio);
-
   // Crop mode calls this, so recalculate the display area
   UpdateCRTCDisplayParameters();
+}
+
+void GPU::CPUClockChanged()
+{
+  UpdateCRTCConfig();
 }
 
 void GPU::UpdateResolutionScale() {}
@@ -98,6 +100,7 @@ void GPU::SoftReset()
   m_fifo.Clear();
   m_blit_buffer.clear();
   m_blit_remaining_words = 0;
+  m_draw_mode.texture_window_value = 0xFFFFFFFFu;
   SetDrawMode(0);
   SetTexturePalette(0);
   SetTextureWindow(0);
@@ -124,10 +127,10 @@ bool GPU::DoState(StateWrapper& sw)
   sw.Do(&m_draw_mode.texture_page_y);
   sw.Do(&m_draw_mode.texture_palette_x);
   sw.Do(&m_draw_mode.texture_palette_y);
-  sw.Do(&m_draw_mode.texture_window_mask_x);
-  sw.Do(&m_draw_mode.texture_window_mask_y);
-  sw.Do(&m_draw_mode.texture_window_offset_x);
-  sw.Do(&m_draw_mode.texture_window_offset_y);
+  sw.Do(&m_draw_mode.texture_window_and_x);
+  sw.Do(&m_draw_mode.texture_window_and_y);
+  sw.Do(&m_draw_mode.texture_window_or_x);
+  sw.Do(&m_draw_mode.texture_window_or_y);
   sw.Do(&m_draw_mode.texture_x_flip);
   sw.Do(&m_draw_mode.texture_y_flip);
 
@@ -289,7 +292,7 @@ void GPU::UpdateGPUIdle()
   switch (m_blitter_state)
   {
     case BlitterState::Idle:
-      m_GPUSTAT.gpu_idle = (m_pending_command_ticks <= 0);
+      m_GPUSTAT.gpu_idle = (m_pending_command_ticks <= 0 && m_fifo.IsEmpty());
       break;
 
     case BlitterState::WritingVRAM:
@@ -429,8 +432,9 @@ float GPU::ComputeHorizontalFrequency() const
 {
   const CRTCState& cs = m_crtc_state;
   TickCount fractional_ticks = 0;
-  return static_cast<float>(static_cast<double>(SystemTicksToCRTCTicks(MASTER_CLOCK, &fractional_ticks)) /
-                            static_cast<double>(cs.horizontal_total));
+  return static_cast<float>(
+    static_cast<double>(SystemTicksToCRTCTicks(System::GetTicksPerSecond(), &fractional_ticks)) /
+    static_cast<double>(cs.horizontal_total));
 }
 
 float GPU::ComputeVerticalFrequency() const
@@ -438,8 +442,17 @@ float GPU::ComputeVerticalFrequency() const
   const CRTCState& cs = m_crtc_state;
   const TickCount ticks_per_frame = cs.horizontal_total * cs.vertical_total;
   TickCount fractional_ticks = 0;
-  return static_cast<float>(static_cast<double>(SystemTicksToCRTCTicks(MASTER_CLOCK, &fractional_ticks)) /
-                            static_cast<double>(ticks_per_frame));
+  return static_cast<float>(
+    static_cast<double>(SystemTicksToCRTCTicks(System::GetTicksPerSecond(), &fractional_ticks)) /
+    static_cast<double>(ticks_per_frame));
+}
+
+float GPU::GetDisplayAspectRatio() const
+{
+  if (g_settings.display_force_4_3_for_24bit && m_GPUSTAT.display_area_color_depth_24)
+    return 4.0f / 3.0f;
+  else
+    return Settings::GetDisplayAspectRatioValue(g_settings.display_aspect_ratio);
 }
 
 void GPU::UpdateCRTCConfig()
@@ -453,7 +466,7 @@ void GPU::UpdateCRTCConfig()
     cs.current_scanline %= PAL_TOTAL_LINES;
     cs.horizontal_total = PAL_TICKS_PER_LINE;
     cs.horizontal_sync_start = PAL_HSYNC_TICKS;
-    cs.current_tick_in_scanline %= PAL_TICKS_PER_LINE;
+    cs.current_tick_in_scanline %= System::ScaleTicksToOverclock(PAL_TICKS_PER_LINE);
   }
   else
   {
@@ -461,7 +474,7 @@ void GPU::UpdateCRTCConfig()
     cs.current_scanline %= NTSC_TOTAL_LINES;
     cs.horizontal_total = NTSC_TICKS_PER_LINE;
     cs.horizontal_sync_start = NTSC_HSYNC_TICKS;
-    cs.current_tick_in_scanline %= NTSC_TICKS_PER_LINE;
+    cs.current_tick_in_scanline %= System::ScaleTicksToOverclock(NTSC_TICKS_PER_LINE);
   }
 
   cs.in_hblank = (cs.current_tick_in_scanline >= cs.horizontal_sync_start);
@@ -491,6 +504,12 @@ void GPU::UpdateCRTCConfig()
     cs.horizontal_total = NTSC_TICKS_PER_LINE;
     cs.current_tick_in_scanline %= NTSC_TICKS_PER_LINE;
   }
+
+  cs.horizontal_display_start =
+    static_cast<u16>(System::ScaleTicksToOverclock(static_cast<TickCount>(cs.horizontal_display_start)));
+  cs.horizontal_display_end =
+    static_cast<u16>(System::ScaleTicksToOverclock(static_cast<TickCount>(cs.horizontal_display_end)));
+  cs.horizontal_total = static_cast<u16>(System::ScaleTicksToOverclock(static_cast<TickCount>(cs.horizontal_total)));
 
   System::SetThrottleFrequency(ComputeVerticalFrequency());
 
@@ -1311,10 +1330,16 @@ void GPU::SetTextureWindow(u32 value)
 
   FlushRender();
 
-  m_draw_mode.texture_window_mask_x = value & UINT32_C(0x1F);
-  m_draw_mode.texture_window_mask_y = (value >> 5) & UINT32_C(0x1F);
-  m_draw_mode.texture_window_offset_x = (value >> 10) & UINT32_C(0x1F);
-  m_draw_mode.texture_window_offset_y = (value >> 15) & UINT32_C(0x1F);
+  const u8 mask_x = Truncate8(value & UINT32_C(0x1F));
+  const u8 mask_y = Truncate8((value >> 5) & UINT32_C(0x1F));
+  const u8 offset_x = Truncate8((value >> 10) & UINT32_C(0x1F));
+  const u8 offset_y = Truncate8((value >> 15) & UINT32_C(0x1F));
+  Log_DebugPrintf("Set texture window %02X %02X %02X %02X", mask_x, mask_y, offset_x, offset_y);
+
+  m_draw_mode.texture_window_and_x = ~(mask_x * 8);
+  m_draw_mode.texture_window_and_y = ~(mask_y * 8);
+  m_draw_mode.texture_window_or_x = (offset_x & mask_x) * 8u;
+  m_draw_mode.texture_window_or_y = (offset_y & mask_y) * 8u;
   m_draw_mode.texture_window_value = value;
   m_draw_mode.texture_window_changed = true;
 }

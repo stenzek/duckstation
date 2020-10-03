@@ -104,11 +104,15 @@ bool Entry::LoadFromStream(ByteStream* stream)
   constexpr u32 num_bytes = (static_cast<u32>(Trait::Count) + 7) / 8;
   std::array<u8, num_bytes> bits;
 
-  if (!stream->Read2(bits.data(), num_bytes) || !ReadOptionalFromStream(stream, &display_active_start_offset) ||
+  if (!stream->Read2(bits.data(), num_bytes) || !ReadOptionalFromStream(stream, &cpu_overclock_numerator) ||
+      !ReadOptionalFromStream(stream, &cpu_overclock_denominator) ||
+      !ReadOptionalFromStream(stream, &cpu_overclock_enable) ||
+      !ReadOptionalFromStream(stream, &display_active_start_offset) ||
       !ReadOptionalFromStream(stream, &display_active_end_offset) ||
       !ReadOptionalFromStream(stream, &display_crop_mode) || !ReadOptionalFromStream(stream, &display_aspect_ratio) ||
       !ReadOptionalFromStream(stream, &display_linear_upscaling) ||
       !ReadOptionalFromStream(stream, &display_integer_upscaling) ||
+      !ReadOptionalFromStream(stream, &display_force_4_3_for_24bit) ||
       !ReadOptionalFromStream(stream, &gpu_resolution_scale) || !ReadOptionalFromStream(stream, &gpu_true_color) ||
       !ReadOptionalFromStream(stream, &gpu_scaled_dithering) ||
       !ReadOptionalFromStream(stream, &gpu_force_ntsc_timings) ||
@@ -143,11 +147,15 @@ bool Entry::SaveToStream(ByteStream* stream) const
       bits[i / 8] |= (1u << (i % 8));
   }
 
-  return stream->Write2(bits.data(), num_bytes) && WriteOptionalToStream(stream, display_active_start_offset) &&
+  return stream->Write2(bits.data(), num_bytes) && WriteOptionalToStream(stream, cpu_overclock_numerator) &&
+         WriteOptionalToStream(stream, cpu_overclock_denominator) &&
+         WriteOptionalToStream(stream, cpu_overclock_enable) &&
+         WriteOptionalToStream(stream, display_active_start_offset) &&
          WriteOptionalToStream(stream, display_active_end_offset) && WriteOptionalToStream(stream, display_crop_mode) &&
          WriteOptionalToStream(stream, display_aspect_ratio) &&
          WriteOptionalToStream(stream, display_linear_upscaling) &&
          WriteOptionalToStream(stream, display_integer_upscaling) &&
+         WriteOptionalToStream(stream, display_force_4_3_for_24bit) &&
          WriteOptionalToStream(stream, gpu_resolution_scale) && WriteOptionalToStream(stream, gpu_true_color) &&
          WriteOptionalToStream(stream, gpu_scaled_dithering) && WriteOptionalToStream(stream, gpu_force_ntsc_timings) &&
          WriteOptionalToStream(stream, gpu_texture_filter) && WriteOptionalToStream(stream, gpu_widescreen_hack) &&
@@ -165,6 +173,16 @@ static void ParseIniSection(Entry* entry, const char* section, const CSimpleIniA
       entry->AddTrait(static_cast<Trait>(trait));
   }
 
+  const char* cvalue = ini.GetValue(section, "CPUOverclockNumerator", nullptr);
+  if (cvalue)
+    entry->cpu_overclock_numerator = StringUtil::FromChars<u32>(cvalue);
+  cvalue = ini.GetValue(section, "CPUOverclockDenominator", nullptr);
+  if (cvalue)
+    entry->cpu_overclock_denominator = StringUtil::FromChars<u32>(cvalue);
+  cvalue = ini.GetValue(section, "CPUOverclockEnable", nullptr);
+  if (cvalue)
+    entry->cpu_overclock_enable = StringUtil::FromChars<bool>(cvalue);
+
   long lvalue = ini.GetLongValue(section, "DisplayActiveStartOffset", 0);
   if (lvalue != 0)
     entry->display_active_start_offset = static_cast<s16>(lvalue);
@@ -172,7 +190,7 @@ static void ParseIniSection(Entry* entry, const char* section, const CSimpleIniA
   if (lvalue != 0)
     entry->display_active_end_offset = static_cast<s16>(lvalue);
 
-  const char* cvalue = ini.GetValue(section, "DisplayCropMode", nullptr);
+  cvalue = ini.GetValue(section, "DisplayCropMode", nullptr);
   if (cvalue)
     entry->display_crop_mode = Settings::ParseDisplayCropMode(cvalue);
   cvalue = ini.GetValue(section, "DisplayAspectRatio", nullptr);
@@ -184,6 +202,9 @@ static void ParseIniSection(Entry* entry, const char* section, const CSimpleIniA
   cvalue = ini.GetValue(section, "DisplayIntegerUpscaling", nullptr);
   if (cvalue)
     entry->display_integer_upscaling = StringUtil::FromChars<bool>(cvalue);
+  cvalue = ini.GetValue(section, "DisplayForce4_3For24Bit", nullptr);
+  if (cvalue)
+    entry->display_force_4_3_for_24bit = StringUtil::FromChars<bool>(cvalue);
 
   cvalue = ini.GetValue(section, "GPUResolutionScale", nullptr);
   if (cvalue)
@@ -236,6 +257,13 @@ static void StoreIniSection(const Entry& entry, const char* section, CSimpleIniA
       ini.SetBoolValue(section, s_trait_names[trait].first, true);
   }
 
+  if (entry.cpu_overclock_numerator.has_value())
+    ini.SetLongValue(section, "CPUOverclockNumerator", static_cast<long>(entry.cpu_overclock_numerator.value()));
+  if (entry.cpu_overclock_denominator.has_value())
+    ini.SetLongValue(section, "CPUOverclockDenominator", static_cast<long>(entry.cpu_overclock_denominator.value()));
+  if (entry.cpu_overclock_enable.has_value())
+    ini.SetBoolValue(section, "CPUOverclockEnable", entry.cpu_overclock_enable.value());
+
   if (entry.display_active_start_offset.has_value())
     ini.SetLongValue(section, "DisplayActiveStartOffset", entry.display_active_start_offset.value());
 
@@ -253,6 +281,8 @@ static void StoreIniSection(const Entry& entry, const char* section, CSimpleIniA
     ini.SetValue(section, "DisplayLinearUpscaling", entry.display_linear_upscaling.value() ? "true" : "false");
   if (entry.display_integer_upscaling.has_value())
     ini.SetValue(section, "DisplayIntegerUpscaling", entry.display_integer_upscaling.value() ? "true" : "false");
+  if (entry.display_force_4_3_for_24bit.has_value())
+    ini.SetValue(section, "DisplayForce4_3For24Bit", entry.display_force_4_3_for_24bit.value() ? "true" : "false");
 
   if (entry.gpu_resolution_scale.has_value())
     ini.SetLongValue(section, "GPUResolutionScale", static_cast<s32>(entry.gpu_resolution_scale.value()));
@@ -387,6 +417,14 @@ void Entry::ApplySettings(bool display_osd_messages) const
 {
   constexpr float osd_duration = 10.0f;
 
+  if (cpu_overclock_numerator.has_value())
+    g_settings.cpu_overclock_numerator = cpu_overclock_numerator.value();
+  if (cpu_overclock_denominator.has_value())
+    g_settings.cpu_overclock_denominator = cpu_overclock_denominator.value();
+  if (cpu_overclock_enable.has_value())
+    g_settings.cpu_overclock_enable = cpu_overclock_enable.value();
+  g_settings.UpdateOverclockActive();
+
   if (display_active_start_offset.has_value())
     g_settings.display_active_start_offset = display_active_start_offset.value();
   if (display_active_end_offset.has_value())
@@ -400,6 +438,8 @@ void Entry::ApplySettings(bool display_osd_messages) const
     g_settings.display_linear_filtering = display_linear_upscaling.value();
   if (display_integer_upscaling.has_value())
     g_settings.display_integer_scaling = display_integer_upscaling.value();
+  if (display_force_4_3_for_24bit.has_value())
+    g_settings.display_force_4_3_for_24bit = display_force_4_3_for_24bit.value();
 
   if (gpu_resolution_scale.has_value())
     g_settings.gpu_resolution_scale = gpu_resolution_scale.value();

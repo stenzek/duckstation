@@ -298,6 +298,13 @@ void CDROM::SetUseReadThread(bool enabled)
     m_reader.StopThread();
 }
 
+void CDROM::CPUClockChanged()
+{
+  // reschedule the disc read event
+  if (IsReadingOrPlaying())
+    m_drive_event->SetInterval(GetTicksForRead());
+}
+
 u8 CDROM::ReadRegister(u32 offset)
 {
   switch (offset)
@@ -612,23 +619,24 @@ TickCount CDROM::GetAckDelayForCommand(Command command)
 
 TickCount CDROM::GetTicksForRead()
 {
-  return m_mode.double_speed ? (MASTER_CLOCK / 150) : (MASTER_CLOCK / 75);
+  const TickCount tps = System::GetTicksPerSecond();
+  return m_mode.double_speed ? (tps / 150) : (tps / 75);
 }
 
 TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba)
 {
+  const TickCount tps = System::GetTicksPerSecond();
   const CDImage::LBA current_lba = m_secondary_status.motor_on ? m_current_lba : 0;
   const u32 lba_diff = static_cast<u32>((new_lba > current_lba) ? (new_lba - current_lba) : (current_lba - new_lba));
 
   // Formula from Mednafen.
   TickCount ticks = std::max<TickCount>(
     20000, static_cast<u32>(
-             ((static_cast<u64>(lba_diff) * static_cast<u64>(MASTER_CLOCK) * static_cast<u64>(1000)) / (72 * 60 * 75)) /
-             1000));
+             ((static_cast<u64>(lba_diff) * static_cast<u64>(tps) * static_cast<u64>(1000)) / (72 * 60 * 75)) / 1000));
   if (!m_secondary_status.motor_on)
-    ticks += MASTER_CLOCK;
+    ticks += tps;
   if (lba_diff >= 2550)
-    ticks += static_cast<TickCount>(u64(MASTER_CLOCK) * 300 / 1000);
+    ticks += static_cast<TickCount>((u64(tps) * 300) / 1000);
   else
   {
     // When paused, the CDC seems to keep reading the disc until it hits the position it's set to, then skip 10-15
@@ -644,7 +652,7 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba)
     m_current_double_speed = m_mode.double_speed;
 
     // Approximate time for the motor to change speed?
-    ticks += static_cast<u32>(static_cast<double>(MASTER_CLOCK) * 0.1);
+    ticks += static_cast<u32>(static_cast<double>(tps) * 0.1);
   }
 
   Log_DevPrintf("Seek time for %u LBAs: %d", lba_diff, ticks);
@@ -788,7 +796,7 @@ void CDROM::ExecuteCommand()
         SendACKAndStat();
 
         m_drive_state = DriveState::ReadingTOC;
-        m_drive_event->Schedule(MASTER_CLOCK / 2); // half a second
+        m_drive_event->Schedule(System::GetTicksPerSecond() / 2); // half a second
       }
 
       EndCommand();
@@ -874,7 +882,7 @@ void CDROM::ExecuteCommand()
 
         m_async_command_parameter = session;
         m_drive_state = DriveState::ChangingSession;
-        m_drive_event->Schedule(MASTER_CLOCK / 2); // half a second
+        m_drive_event->Schedule(System::GetTicksPerSecond() / 2); // half a second
       }
 
       EndCommand();
@@ -1011,7 +1019,7 @@ void CDROM::ExecuteCommand()
         SendACKAndStat();
 
         m_drive_state = DriveState::Resetting;
-        m_drive_event->Schedule(MASTER_CLOCK);
+        m_drive_event->Schedule(System::GetTicksPerSecond());
       }
 
       EndCommand();
@@ -1800,8 +1808,8 @@ void CDROM::ProcessDataSector(const u8* raw_sector, const CDImage::SubChannelQ& 
   }
 
   // TODO: How does XA relate to this buffering?
-  m_current_write_sector_buffer = (m_current_write_sector_buffer + 1) % NUM_SECTOR_BUFFERS;
-  SectorBuffer* sb = &m_sector_buffers[m_current_write_sector_buffer];
+  const u32 sb_num = (m_current_write_sector_buffer + 1) % NUM_SECTOR_BUFFERS;
+  SectorBuffer* sb = &m_sector_buffers[sb_num];
   if (sb->size > 0)
   {
     Log_DevPrintf("Sector buffer %u was not read, previous sector dropped",
@@ -1819,10 +1827,17 @@ void CDROM::ProcessDataSector(const u8* raw_sector, const CDImage::SubChannelQ& 
   else
   {
     // TODO: This should actually depend on the mode...
-    Assert(m_last_sector_header.sector_mode == 2);
+    if (m_last_sector_header.sector_mode != 2)
+    {
+      Log_WarningPrintf("Ignoring non-mode2 sector at %u", m_current_lba);
+      return;
+    }
+
     std::memcpy(sb->data.data(), raw_sector + CDImage::SECTOR_SYNC_SIZE + 12, DATA_SECTOR_OUTPUT_SIZE);
     sb->size = DATA_SECTOR_OUTPUT_SIZE;
   }
+
+  m_current_write_sector_buffer = sb_num;
 
   // Deliver to CPU
   if (HasPendingAsyncInterrupt())
@@ -2003,7 +2018,7 @@ void CDROM::ProcessXAADPCMSector(const u8* raw_sector, const CDImage::SubChannel
   CDXA::DecodeADPCMSector(raw_sector, sample_buffer.data(), m_xa_last_samples.data());
 
   // Only send to SPU if we're not muted.
-  if (m_muted || m_adpcm_muted)
+  if (m_muted || m_adpcm_muted || g_settings.cdrom_mute_cd_audio)
     return;
 
   g_spu.GeneratePendingSamples();
@@ -2067,7 +2082,7 @@ void CDROM::ProcessCDDASector(const u8* raw_sector, const CDImage::SubChannelQ& 
   }
 
   // Apply volume when pushing sectors to SPU.
-  if (m_muted)
+  if (m_muted || g_settings.cdrom_mute_cd_audio)
     return;
 
   g_spu.GeneratePendingSamples();

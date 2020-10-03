@@ -70,6 +70,10 @@ struct Settings
   ConsoleRegion region = ConsoleRegion::Auto;
 
   CPUExecutionMode cpu_execution_mode = CPUExecutionMode::Interpreter;
+  u32 cpu_overclock_numerator = 1;
+  u32 cpu_overclock_denominator = 1;
+  bool cpu_overclock_enable = false;
+  bool cpu_overclock_active = false;
   bool cpu_recompiler_memory_exceptions = false;
   bool cpu_recompiler_icache = false;
 
@@ -104,6 +108,7 @@ struct Settings
   s16 display_active_start_offset = 0;
   s16 display_active_end_offset = 0;
   DisplayAspectRatio display_aspect_ratio = DisplayAspectRatio::R4_3;
+  bool display_force_4_3_for_24bit = false;
   bool display_linear_filtering = true;
   bool display_integer_scaling = false;
   bool display_post_processing = false;
@@ -117,6 +122,7 @@ struct Settings
   bool cdrom_read_thread = true;
   bool cdrom_region_check = true;
   bool cdrom_load_image_to_ram = false;
+  bool cdrom_mute_cd_audio = false;
 
   AudioBackend audio_backend = AudioBackend::Cubeb;
   s32 audio_output_volume = 100;
@@ -172,6 +178,13 @@ struct Settings
   }
 
   bool HasAnyPerGameMemoryCards() const;
+
+  static void CPUOverclockPercentToFraction(u32 percent, u32* numerator, u32* denominator);
+  static u32 CPUOverclockFractionToPercent(u32 numerator, u32 denominator);
+
+  void SetCPUOverclockPercent(u32 percent);
+  u32 GetCPUOverclockPercent() const;
+  void UpdateOverclockActive();
 
   enum : u32
   {

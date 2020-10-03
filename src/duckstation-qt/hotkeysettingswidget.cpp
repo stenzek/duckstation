@@ -38,7 +38,7 @@ void HotkeySettingsWidget::createButtons()
   const auto& hotkeys = m_host_interface->getHotkeyInfoList();
   for (const auto& hi : hotkeys)
   {
-    const auto category = QString::fromUtf8(hi.category);
+    const auto category = qApp->translate("Hotkeys", hi.category);
 
     auto iter = m_categories.find(category);
     if (iter == m_categories.end())

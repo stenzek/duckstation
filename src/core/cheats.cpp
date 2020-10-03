@@ -149,7 +149,7 @@ bool CheatList::LoadFromLibretroFile(const char* filename)
     while (*value_start != '\0' && std::isspace(*value_start))
       value_start++;
 
-    if (value_start == end)
+    if (*value_start == '\0')
       continue;
 
     char* value_end = value_start + std::strlen(value_start) - 1;
@@ -158,9 +158,6 @@ bool CheatList::LoadFromLibretroFile(const char* filename)
       *value_end = '\0';
       value_end--;
     }
-
-    if (value_start == value_end)
-      continue;
 
     if (*value_start == '\"')
     {
@@ -178,7 +175,7 @@ bool CheatList::LoadFromLibretroFile(const char* filename)
     return false;
 
   const std::string* num_cheats_value = FindKey(kvp, "cheats");
-  const u32 num_cheats = StringUtil::FromChars<u32>(*num_cheats_value).value_or(0);
+  const u32 num_cheats = num_cheats_value ? StringUtil::FromChars<u32>(*num_cheats_value).value_or(0) : 0;
   if (num_cheats == 0)
     return false;
 
@@ -196,47 +193,58 @@ bool CheatList::LoadFromLibretroFile(const char* filename)
     CheatCode cc;
     cc.description = *desc;
     cc.enabled = StringUtil::FromChars<bool>(*enable).value_or(false);
-
-    const char* current_ptr = code->c_str();
-    while (current_ptr)
-    {
-      char* end_ptr;
-      CheatCode::Instruction inst;
-      inst.first = static_cast<u32>(std::strtoul(current_ptr, &end_ptr, 16));
-      current_ptr = end_ptr;
-      if (end_ptr)
-      {
-        if (*end_ptr != ' ')
-        {
-          Log_WarningPrintf("Malformed code '%s'", code->c_str());
-          break;
-        }
-
-        end_ptr++;
-        inst.second = static_cast<u32>(std::strtoul(current_ptr, &end_ptr, 16));
-        current_ptr = end_ptr;
-
-        if (end_ptr)
-        {
-          if (*end_ptr != '+')
-          {
-            Log_WarningPrintf("Malformed code '%s'", code->c_str());
-            break;
-          }
-
-          end_ptr++;
-          current_ptr = end_ptr;
-        }
-
-        cc.instructions.push_back(inst);
-      }
-    }
-
-    m_codes.push_back(std::move(cc));
+    if (ParseLibretroCheat(&cc, code->c_str()))
+      m_codes.push_back(std::move(cc));
   }
 
   Log_InfoPrintf("Loaded %zu cheats from '%s' (libretro format)", m_codes.size(), filename);
   return !m_codes.empty();
+}
+
+static bool IsLibretroSeparator(char ch)
+{
+  return (ch == ' ' || ch == '-' || ch == ':' || ch == '+');
+}
+
+bool CheatList::ParseLibretroCheat(CheatCode* cc, const char* line)
+{
+  const char* current_ptr = line;
+  while (current_ptr)
+  {
+    char* end_ptr;
+    CheatCode::Instruction inst;
+    inst.first = static_cast<u32>(std::strtoul(current_ptr, &end_ptr, 16));
+    current_ptr = end_ptr;
+    if (end_ptr)
+    {
+      if (!IsLibretroSeparator(*end_ptr))
+      {
+        Log_WarningPrintf("Malformed code '%s'", line);
+        break;
+      }
+
+      end_ptr++;
+      inst.second = static_cast<u32>(std::strtoul(current_ptr, &end_ptr, 16));
+      if (end_ptr && *end_ptr == '\0')
+        end_ptr = nullptr;
+
+      if (end_ptr && *end_ptr != '\0')
+      {
+        if (!IsLibretroSeparator(*end_ptr))
+        {
+          Log_WarningPrintf("Malformed code '%s'", line);
+          break;
+        }
+
+        end_ptr++;
+      }
+
+      current_ptr = end_ptr;
+      cc->instructions.push_back(inst);
+    }
+  }
+
+  return !cc->instructions.empty();
 }
 
 void CheatList::Apply()
@@ -253,6 +261,20 @@ void CheatList::AddCode(CheatCode cc)
   m_codes.push_back(std::move(cc));
 }
 
+void CheatList::SetCode(u32 index, CheatCode cc)
+{
+  if (index > m_codes.size())
+    return;
+
+  if (index == m_codes.size())
+  {
+    m_codes.push_back(std::move(cc));
+    return;
+  }
+
+  m_codes[index] = std::move(cc);
+}
+
 void CheatList::RemoveCode(u32 i)
 {
   m_codes.erase(m_codes.begin() + i);
@@ -265,7 +287,6 @@ std::optional<CheatList::Format> CheatList::DetectFileFormat(const char* filenam
     return Format::Count;
 
   char line[1024];
-  KeyValuePairVector kvp;
   while (std::fgets(line, sizeof(line), fp.get()))
   {
     char* start = line;
@@ -371,6 +392,12 @@ void CheatCode::Apply() const
     const Instruction& inst = instructions[index];
     switch (inst.code)
     {
+      case InstructionCode::Nop:
+      {
+        index++;
+      }
+      break;
+
       case InstructionCode::ConstantWrite8:
       {
         CPU::SafeWriteMemoryByte(inst.address, inst.value8);
@@ -385,11 +412,18 @@ void CheatCode::Apply() const
       }
       break;
 
+      case InstructionCode::ScratchpadWrite16:
+      {
+        CPU::SafeWriteMemoryHalfWord(CPU::DCACHE_LOCATION | (inst.address & CPU::DCACHE_OFFSET_MASK), inst.value16);
+        index++;
+      }
+      break;
+
       case InstructionCode::Increment16:
       {
         u16 value = 0;
         CPU::SafeReadMemoryHalfWord(inst.address, &value);
-        CPU::SafeWriteMemoryHalfWord(inst.address, value + 1u);
+        CPU::SafeWriteMemoryHalfWord(inst.address, value + inst.value16);
         index++;
       }
       break;
@@ -398,7 +432,7 @@ void CheatCode::Apply() const
       {
         u16 value = 0;
         CPU::SafeReadMemoryHalfWord(inst.address, &value);
-        CPU::SafeWriteMemoryHalfWord(inst.address, value - 1u);
+        CPU::SafeWriteMemoryHalfWord(inst.address, value - inst.value16);
         index++;
       }
       break;
@@ -407,7 +441,7 @@ void CheatCode::Apply() const
       {
         u8 value = 0;
         CPU::SafeReadMemoryByte(inst.address, &value);
-        CPU::SafeWriteMemoryByte(inst.address, value + 1u);
+        CPU::SafeWriteMemoryByte(inst.address, value + inst.value8);
         index++;
       }
       break;
@@ -416,7 +450,7 @@ void CheatCode::Apply() const
       {
         u8 value = 0;
         CPU::SafeReadMemoryByte(inst.address, &value);
-        CPU::SafeWriteMemoryByte(inst.address, value - 1u);
+        CPU::SafeWriteMemoryByte(inst.address, value - inst.value8);
         index++;
       }
       break;
@@ -506,6 +540,75 @@ void CheatCode::Apply() const
           index++;
         else
           index += 2;
+      }
+      break;
+
+      case InstructionCode::Slide:
+      {
+        if ((index + 1) >= instructions.size())
+        {
+          Log_ErrorPrintf("Incomplete slide instruction");
+          return;
+        }
+
+        const u32 slide_count = (inst.first >> 8) & 0xFFu;
+        const u32 address_increment = SignExtendN<8>(inst.first & 0xFFu);
+        const u16 value_increment = SignExtendN<8>(Truncate16(inst.second & 0xFFu));
+        const Instruction& inst2 = instructions[index + 1];
+        const InstructionCode write_type = inst2.code;
+        u32 address = inst2.address;
+        u16 value = inst2.value16;
+
+        if (write_type == InstructionCode::ConstantWrite8)
+        {
+          for (u32 i = 0; i < slide_count; i++)
+          {
+            CPU::SafeWriteMemoryByte(address, Truncate8(value));
+            address += address_increment;
+            value += value_increment;
+          }
+        }
+        else if (write_type == InstructionCode::ConstantWrite16)
+        {
+          for (u32 i = 0; i < slide_count; i++)
+          {
+            CPU::SafeWriteMemoryHalfWord(address, value);
+            address += address_increment;
+            value += value_increment;
+          }
+        }
+        else
+        {
+          Log_ErrorPrintf("Invalid command in second slide parameter 0x%02X", write_type);
+        }
+
+        index += 2;
+      }
+      break;
+
+      case InstructionCode::MemoryCopy:
+      {
+        if ((index + 1) >= instructions.size())
+        {
+          Log_ErrorPrintf("Incomplete memory copy instruction");
+          return;
+        }
+
+        const Instruction& inst2 = instructions[index + 1];
+        const u32 byte_count = inst.value16;
+        u32 src_address = inst.address;
+        u32 dst_address = inst2.address;
+
+        for (u32 i = 0; i < byte_count; i++)
+        {
+          u8 value = 0;
+          CPU::SafeReadMemoryByte(src_address, &value);
+          CPU::SafeWriteMemoryByte(dst_address, value);
+          src_address++;
+          dst_address++;
+        }
+
+        index += 2;
       }
       break;
 

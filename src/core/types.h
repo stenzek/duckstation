@@ -19,9 +19,6 @@ enum class MemoryAccessSize : u32
 
 using TickCount = s32;
 
-static constexpr TickCount MASTER_CLOCK = 44100 * 0x300; // 33868800Hz or 33.8688MHz, also used as CPU clock
-static constexpr TickCount MAX_SLICE_SIZE = MASTER_CLOCK / 10;
-
 enum class ConsoleRegion
 {
   Auto,
@@ -87,6 +84,7 @@ enum class DisplayAspectRatio : u8
 {
   R4_3,
   R16_9,
+  R21_9,
   R8_7,
   R2_1,
   R1_1,

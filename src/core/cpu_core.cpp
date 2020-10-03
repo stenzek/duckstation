@@ -67,7 +67,7 @@ void Shutdown()
 void Reset()
 {
   g_state.pending_ticks = 0;
-  g_state.downcount = MAX_SLICE_SIZE;
+  g_state.downcount = 0;
 
   g_state.regs = {};
 

@@ -18,6 +18,10 @@ public:
   static std::unique_ptr<MemoryCard> Create();
   static std::unique_ptr<MemoryCard> Open(std::string_view filename);
 
+  const MemoryCardImage::DataArray& GetData() const { return m_data; }
+  const std::string& GetFilename() const { return m_filename; }
+  void SetFilename(std::string filename) { m_filename = std::move(filename); }
+
   void Reset();
   bool DoState(StateWrapper& sw);
 
@@ -31,7 +35,6 @@ private:
   {
     // save in three seconds, that should be long enough for everything to finish writing
     SAVE_DELAY_IN_SECONDS = 5,
-    SAVE_DELAY_IN_SYSCLK_TICKS = MASTER_CLOCK * SAVE_DELAY_IN_SECONDS,
   };
 
   union FLAG
@@ -69,6 +72,8 @@ private:
     WriteACK2,
     WriteEnd,
   };
+
+  static TickCount GetSaveDelayInTicks();
 
   bool LoadFromFile();
   bool SaveIfChanged(bool display_osd_message);

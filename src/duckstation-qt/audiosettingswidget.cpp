@@ -22,6 +22,7 @@ AudioSettingsWidget::AudioSettingsWidget(QtHostInterface* host_interface, QWidge
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.syncToOutput, "Audio", "Sync");
   SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.bufferSize, "Audio", "BufferSize");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.startDumpingOnBoot, "Audio", "DumpOnBoot");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.muteCDAudio, "CDROM", "MuteCDAudio");
 
   m_ui.volume->setValue(m_host_interface->GetIntSettingValue("Audio", "OutputVolume"));
   m_ui.muted->setChecked(m_host_interface->GetBoolSettingValue("Audio", "OutputMuted"));
@@ -53,8 +54,11 @@ AudioSettingsWidget::AudioSettingsWidget(QtHostInterface* host_interface, QWidge
     tr("Start dumping audio to file as soon as the emulator is started. Mainly useful as a debug option."));
   dialog->registerWidgetHelp(m_ui.volume, tr("Volume"), "100",
                              tr("Controls the volume of the audio played on the host. Values are in percentage."));
-  dialog->registerWidgetHelp(m_ui.muted, tr("Mute"), tr("Unchecked"),
+  dialog->registerWidgetHelp(m_ui.muted, tr("Mute All Sound"), tr("Unchecked"),
                              tr("Prevents the emulator from producing any audible sound."));
+  dialog->registerWidgetHelp(m_ui.muteCDAudio, tr("Mute CD Audio"), tr("Unchecked"),
+                             tr("Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable "
+                                "background music in some games."));
 }
 
 AudioSettingsWidget::~AudioSettingsWidget() = default;

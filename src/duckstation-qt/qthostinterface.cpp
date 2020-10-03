@@ -370,14 +370,14 @@ void QtHostInterface::resumeSystemFromState(const QString& filename, bool boot_o
 
 void QtHostInterface::resumeSystemFromMostRecentState()
 {
-  if (!isOnWorkerThread())
+  std::string state_filename = GetMostRecentResumeSaveStatePath();
+  if (state_filename.empty())
   {
-    QMetaObject::invokeMethod(this, "resumeSystemFromMostRecentState");
+    emit errorReported(tr("No resume save state found."));
     return;
   }
 
-  emit emulationStarting();
-  ResumeSystemFromMostRecentState();
+  loadState(QString::fromStdString(state_filename));
 }
 
 void QtHostInterface::onDisplayWindowKeyEvent(int key, bool pressed)
@@ -482,7 +482,8 @@ bool QtHostInterface::AcquireHostDisplay()
   createImGuiContext(display_widget->devicePixelRatioFromScreen());
 
   if (!m_display->MakeRenderContextCurrent() ||
-      !m_display->InitializeRenderDevice(GetShaderCacheBasePath(), g_settings.gpu_use_debug_device))
+      !m_display->InitializeRenderDevice(GetShaderCacheBasePath(), g_settings.gpu_use_debug_device) ||
+      !CreateHostDisplayResources())
   {
     destroyImGuiContext();
     m_display->DestroyRenderDevice();
@@ -561,6 +562,7 @@ void QtHostInterface::ReleaseHostDisplay()
 {
   Assert(m_display);
 
+  ReleaseHostDisplayResources();
   m_display->DestroyRenderDevice();
   destroyImGuiContext();
   emit destroyDisplayRequested();
@@ -905,7 +907,7 @@ void QtHostInterface::populateGameListContextMenu(const char* game_code, QWidget
     else
     {
       load_state_menu->setEnabled(true);
-      action = load_state_menu->addAction(tr("%1 Save %2 (%3)").arg(tr("Game")).arg(slot).arg(timestamp_str));
+      action = load_state_menu->addAction(tr("Game Save %1 (%2)").arg(slot).arg(timestamp_str));
     }
 
     connect(action, &QAction::triggered, [this, path]() { loadState(path); });

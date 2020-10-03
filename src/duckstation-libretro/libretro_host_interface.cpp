@@ -6,6 +6,7 @@
 #include "common/string_util.h"
 #include "core/analog_controller.h"
 #include "core/bus.h"
+#include "core/cheats.h"
 #include "core/digital_controller.h"
 #include "core/gpu.h"
 #include "core/system.h"
@@ -158,9 +159,31 @@ std::string LibretroHostInterface::GetGameMemoryCardPath(const char* game_code, 
 
 std::string LibretroHostInterface::GetShaderCacheBasePath() const
 {
-  // TODO: Is there somewhere we can save our shaders?
-  Log_WarningPrint("No shader cache directory available, startup will be slower.");
-  return std::string();
+  // Use the save directory, and failing that, the system directory.
+  const char* save_directory_ptr = nullptr;
+  if (!g_retro_environment_callback(RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY, &save_directory_ptr) || !save_directory_ptr)
+  {
+    save_directory_ptr = nullptr;
+    if (!g_retro_environment_callback(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &save_directory_ptr) ||
+        !save_directory_ptr)
+    {
+      Log_WarningPrint("No shader cache directory available, startup will be slower.");
+      return std::string();
+    }
+  }
+
+  // Use a directory named "duckstation_cache" in the save/system directory.
+  std::string shader_cache_path = StringUtil::StdStringFromFormat(
+    "%s" FS_OSPATH_SEPARATOR_STR "duckstation_cache" FS_OSPATH_SEPARATOR_STR, save_directory_ptr);
+  if (!FileSystem::DirectoryExists(shader_cache_path.c_str()) &&
+      !FileSystem::CreateDirectory(shader_cache_path.c_str(), false))
+  {
+    Log_ErrorPrintf("Failed to create shader cache directory: '%s'", shader_cache_path.c_str());
+    return std::string();
+  }
+
+  Log_InfoPrintf("Shader cache directory: '%s'", shader_cache_path.c_str());
+  return shader_cache_path;
 }
 
 std::string LibretroHostInterface::GetStringSettingValue(const char* section, const char* key,
@@ -369,6 +392,29 @@ size_t LibretroHostInterface::retro_get_memory_size(unsigned id)
   }
 }
 
+void LibretroHostInterface::retro_cheat_reset()
+{
+  System::SetCheatList(nullptr);
+}
+
+void LibretroHostInterface::retro_cheat_set(unsigned index, bool enabled, const char* code)
+{
+  CheatList* cl = System::GetCheatList();
+  if (!cl)
+  {
+    System::SetCheatList(std::make_unique<CheatList>());
+    cl = System::GetCheatList();
+  }
+
+  CheatCode cc;
+  cc.description = StringUtil::StdStringFromFormat("Cheat%u", index);
+  cc.enabled = true;
+  if (!CheatList::ParseLibretroCheat(&cc, code))
+    Log_ErrorPrintf("Failed to parse cheat %u '%s'", index, code);
+
+  cl->SetCode(index, std::move(cc));
+}
+
 bool LibretroHostInterface::AcquireHostDisplay()
 {
   // start in software mode, switch to hardware later
@@ -399,7 +445,7 @@ void LibretroHostInterface::OnSystemDestroyed()
   m_using_hardware_renderer = false;
 }
 
-static std::array<retro_core_option_definition, 32> s_option_definitions = {{
+static std::array<retro_core_option_definition, 35> s_option_definitions = {{
   {"duckstation_Console.Region",
    "Console Region",
    "Determines which region/hardware to emulate. Auto-Detect will use the region of the disc inserted.",
@@ -430,11 +476,25 @@ static std::array<retro_core_option_definition, 32> s_option_definitions = {{
    "lock up while the image is preloaded.",
    {{"true", "Enabled"}, {"false", "Disabled"}},
    "false"},
+  {"duckstation_CDROM.MuteCDAudio",
+   "Mute CD Audio",
+   "Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable background music in some games.",
+   {{"true", "Enabled"}, {"false", "Disabled"}},
+   "false"},
   {"duckstation_CPU.ExecutionMode",
    "CPU Execution Mode",
    "Which mode to use for CPU emulation. Recompiler provides the best performance.",
    {{"Interpreter", "Interpreter"}, {"CachedIntepreter", "Cached Interpreter"}, {"Recompiler", "Recompiler"}},
    "Recompiler"},
+  {"duckstation_CPU.Overclock",
+   "CPU Overclocking",
+   "Runs the emulated CPU faster or slower than native speed, which can improve framerates in some games. Will break "
+   "other games and increase system requirements, use with caution.",
+   {{"25", "25%"},   {"50", "50%"},   {"100", "100% (Default)"}, {"125", "125%"}, {"150", "150%"},
+    {"175", "175%"}, {"200", "200%"}, {"225", "225%"},           {"250", "250%"}, {"275", "275%"},
+    {"300", "300%"}, {"350", "350%"}, {"400", "400%"},           {"450", "450%"}, {"500", "500%"},
+    {"600", "600%"}, {"700", "700%"}, {"800", "800%"},           {"900", "900%"}, {"1000", "1000%"}},
+   "100"},
   {"duckstation_CPU.RecompilerICache",
    "CPU Recompiler ICache",
    "Determines whether the CPU's instruction cache is simulated in the recompiler. Improves accuracy at a small cost "
@@ -499,6 +559,11 @@ static std::array<retro_core_option_definition, 32> s_option_definitions = {{
    "Force NTSC Timings",
    "Forces PAL games to run at NTSC timings, i.e. 60hz. Some PAL games will run at their \"normal\" speeds, while "
    "others will break.",
+   {{"true", "Enabled"}, {"false", "Disabled"}},
+   "false"},
+  {"duckstation_Display.Force4_3For24Bit",
+   "Force 4:3 For 24-Bit Display",
+   "Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs.",
    {{"true", "Enabled"}, {"false", "Disabled"}},
    "false"},
   {"duckstation_GPU.TextureFilter",
@@ -660,6 +725,13 @@ void LibretroHostInterface::LoadSettings()
 {
   LibretroSettingsInterface si;
   HostInterface::LoadSettings(si);
+
+  // turn percentage into fraction for overclock
+  const u32 overclock_percent = static_cast<u32>(std::max(si.GetIntValue("CPU", "Overclock", 100), 1));
+  Settings::CPUOverclockPercentToFraction(overclock_percent, &g_settings.cpu_overclock_numerator,
+                                          &g_settings.cpu_overclock_denominator);
+  g_settings.cpu_overclock_enable = (overclock_percent != 100);
+  g_settings.UpdateOverclockActive();
 
   // Ensure we don't use the standalone memcard directory in shared mode.
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
@@ -1007,7 +1079,7 @@ void LibretroHostInterface::SwitchToHardwareRenderer()
     wi.surface_height = avi.geometry.base_height;
     wi.surface_scale = 1.0f;
     if (!display || !display->CreateRenderDevice(wi, {}, g_settings.gpu_use_debug_device) ||
-        !display->InitializeRenderDevice({}, g_settings.gpu_use_debug_device))
+        !display->InitializeRenderDevice(GetShaderCacheBasePath(), g_settings.gpu_use_debug_device))
     {
       Log_ErrorPrintf("Failed to create hardware host display");
       return;

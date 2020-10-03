@@ -132,6 +132,9 @@ void PostProcessingShaderConfigWidget::createUi()
   QPushButton* reset_button = new QPushButton(tr("Reset to Defaults"), this);
   connect(reset_button, &QPushButton::clicked, this, &PostProcessingShaderConfigWidget::onResetToDefaultsClicked);
   m_layout->addWidget(reset_button, row, 0, 1, 1);
+
+  row++;
+  m_layout->addItem(new QSpacerItem(1, 1, QSizePolicy::Minimum, QSizePolicy::Expanding), row, 0, 1, 3);
 }
 
 void PostProcessingShaderConfigWidget::onResetToDefaultsClicked()

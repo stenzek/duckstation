@@ -36,7 +36,7 @@
     <message>
         <location filename="../aboutdialog.cpp" line="34"/>
         <source>License</source>
-        <translation>License</translation>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -84,7 +84,7 @@
     <message>
         <location filename="../advancedsettingswidget.ui" line="97"/>
         <source>Tweaks/Hacks</source>
-        <translation>Tweaks/Hacks</translation>
+        <translation>修正/调整</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="141"/>
@@ -102,29 +102,29 @@
     </message>
     <message>
         <source>DMA Max Slice Ticks:</source>
-        <translation>DMA 最大 Slice Ticks:</translation>
+        <translation>DMA最大片段计时:</translation>
     </message>
     <message>
         <source>DMA Halt Ticks:</source>
-        <translation>DMA Halt Ticks:</translation>
+        <translation>DMA停顿计时:</translation>
     </message>
     <message>
         <source>GPU FIFO Size:</source>
-        <translation>GPU FIFO 大小:</translation>
+        <translation>GPU的FIFO大小:</translation>
     </message>
     <message>
         <source>GPU Max Run-Ahead:</source>
-        <translation>GPU 最大前进速度:</translation>
+        <translation>GPU最大优先级:</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="84"/>
         <source>PGXP Vertex Cache</source>
-        <translation>PGXP 顶点缓存</translation>
+        <translation>PGXP顶点缓存</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="86"/>
         <source>PGXP CPU Mode</source>
-        <translation>PGXP CPU 模式</translation>
+        <translation>PGXP在CPU模式</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="90"/>
@@ -134,22 +134,22 @@
     <message>
         <location filename="../advancedsettingswidget.cpp" line="93"/>
         <source>DMA Max Slice Ticks</source>
-        <translation>DMA 最大 Slice Ticks</translation>
+        <translation>DMA最大片段计时</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="95"/>
         <source>DMA Halt Ticks</source>
-        <translation>DMA Halt Ticks</translation>
+        <translation>DMA停顿计时</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="97"/>
         <source>GPU FIFO Size</source>
-        <translation>GPU FIFO 大小</translation>
+        <translation>GPU的FIFO大小</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="99"/>
         <source>GPU Max Run-Ahead</source>
-        <translation>GPU 最大前进速度</translation>
+        <translation>GPU最大优先级</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="190"/>
@@ -236,24 +236,22 @@
     <message>
         <location filename="../../core/analog_controller.cpp" line="477"/>
         <source>Up</source>
-        <translation>↑</translation>
+        <translation>上</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="478"/>
         <source>Down</source>
-        <translation>↓</translation>
+        <translation>下</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="479"/>
         <source>Left</source>
-        <translatorcomment>←</translatorcomment>
-        <translation>←</translation>
+        <translation>左</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="480"/>
         <source>Right</source>
-        <translatorcomment>→</translatorcomment>
-        <translation>→</translation>
+        <translation>右</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="481"/>
@@ -268,24 +266,22 @@
     <message>
         <location filename="../../core/analog_controller.cpp" line="483"/>
         <source>Triangle</source>
-        <translatorcomment>△</translatorcomment>
-        <translation>△</translation>
+        <translation>三角</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="484"/>
         <source>Cross</source>
-        <translatorcomment>╳</translatorcomment>
-        <translation>╳</translation>
+        <translation>叉叉</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="485"/>
         <source>Circle</source>
-        <translation>〇</translation>
+        <translation>圆圈</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="486"/>
         <source>Square</source>
-        <translation>□</translation>
+        <translation>方块</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="487"/>
@@ -320,7 +316,7 @@
     <message>
         <location filename="../../core/analog_controller.cpp" line="493"/>
         <source>Analog</source>
-        <translation>Analog</translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="504"/>
@@ -338,14 +334,19 @@
         <translation>摇杆轴灵敏度</translation>
     </message>
     <message>
+        <location filename="../../core/analog_controller.cpp" line="508"/>
+        <source>Sets the analog stick axis scaling factor. A value between 1.30 and 1.40 is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
+        <translation>设置模拟摇杆轴灵敏度。使用最新的控制器 (如DualShock 4、Xbox One控制器) 时，建议使用1.30到1.40之间的值。</translation>
+    </message>
+    <message>
         <location filename="../../core/analog_controller.cpp" line="507"/>
         <source>Vibration Bias</source>
         <translation>震动力</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="508"/>
-        <source>Sets the analog stick axis scaling factor. A value between 1.30 and 1.40 is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
-        <translation>设置模拟摇杆轴灵敏度。使用最新的控制器 (如DualShock 4、Xbox One控制器) 时，建议使用1.30到1.40之间的值。</translation>
+        <location filename="../../core/analog_controller.cpp" line="525"/>
+        <source>Sets the rumble bias value. If rumble in some games is too weak or not functioning, try increasing this value.</source>
+        <translation>设置震动力的值。如果震动在某些游戏是太弱或不起作用, 尝试增大这个值。</translation>
     </message>
 </context>
 <context>
@@ -358,7 +359,7 @@
     <message>
         <location filename="../../core/settings.cpp" line="508"/>
         <source>Cubeb</source>
-        <translation>Cubed</translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="509"/>
@@ -574,6 +575,100 @@
     </message>
 </context>
 <context>
+	<name>BIOSSettingsWidget</name>
+    <message>
+        <location filename="../biossettingswidget.ui" line="14"/>
+        <source>Form</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../biossettingswidget.ui" line="32"/>
+        <source>BIOS Selection</source>
+        <translation>BIOS选择</translation>
+    </message>
+    <message>
+        <location filename="../biossettingswidget.ui" line="48"/>
+        <source>PAL (Europe, Australia):</source>
+        <translation>PAL (欧洲, 澳大利亚):</translation>
+    </message>
+    <message>
+        <location filename="../biossettingswidget.ui" line="55"/>
+        <source>NTSC-J (Japan):</source>
+        <translation>NTSC-J (日本):</translation>
+    </message>
+    <message>
+        <location filename="../biossettingswidget.ui" line="62"/>
+        <source>NTSC-U/C (US/Canada):</source>
+        <translation>NTSC-U/C (美国/加拿大):</translation>
+    </message>
+    <message>
+        <location filename="../biossettingswidget.ui" line="104"/>
+        <source>Open in Explorer...</source>
+        <translation>打开所在目录</translation>
+    </message>
+    <message>
+        <location filename="../biossettingswidget.ui" line="111"/>
+        <source>Refresh List</source>
+        <translation>刷新列表</translation>
+    </message>
+    <message>
+        <location filename="../biossettingswidget.ui" line="123"/>
+        <source>BIOS Directory</source>
+        <translation>BIOS路径</translation>
+    </message>
+    <message>
+        <location filename="../biossettingswidget.ui" line="129"/>
+        <source>DuckStation will search for BIOS images in this directory.</source>
+        <translation>DuckStation将在此目录中搜索BIOS文件。</translation>
+    </message>
+    <message>
+        <location filename="../biossettingswidget.ui" line="144"/>
+        <source>Browse...</source>
+        <translation>浏览...</translation>
+    </message>
+    <message>
+        <location filename="../biossettingswidget.ui" line="156"/>
+        <source>Options and Patches</source>
+        <translation>选项和补丁</translation>
+    </message>
+    <message>
+        <location filename="../biossettingswidget.ui" line="162"/>
+        <location filename="../biossettingswidget.cpp" line="96"/>
+        <source>Fast Boot</source>
+        <translation>快速启动</translation>
+    </message>
+    <message>
+        <location filename="../biossettingswidget.ui" line="169"/>
+        <source>Enable TTY Output</source>
+        <translation>启用TTY输出</translation>
+    </message>
+    <message>
+        <location filename="../biossettingswidget.cpp" line="16"/>
+        <source>Auto-Detect</source>
+        <translation>自动检测</translation>
+    </message>
+    <message>
+        <location filename="../biossettingswidget.cpp" line="58"/>
+        <source>Unknown</source>
+        <translation>未知</translation>
+    </message>
+    <message>
+        <location filename="../biossettingswidget.cpp" line="96"/>
+        <source>Unchecked</source>
+        <translation>不勾选</translation>
+    </message>
+    <message>
+        <location filename="../consolesettingswidget.cpp" line="36"/>
+        <source>Patches the BIOS to skip the console&apos;s boot animation. Does not work with all games, but usually safe to enabled.</source>
+        <translation>对BIOS应用补丁以跳过主机的启动动画, 不适用于所有游戏, 但通常可以安全启用。</translation>
+    </message>
+    <message>
+        <location filename="../biossettingswidget.cpp" line="153"/>
+        <source>Select Directory</source>
+        <translation>选择目录</translation>
+    </message>
+</context>
+<context>
     <name>CPUExecutionMode</name>
     <message>
         <location filename="../../core/settings.cpp" line="384"/>
@@ -645,11 +740,6 @@
         <translation>区域:</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="74"/>
-        <source>...</source>
-        <translation>浏览...</translation>
-    </message>
-    <message>
         <location filename="../consolesettingswidget.ui" line="86"/>
         <source>CPU Emulation</source>
         <translation>CPU模拟</translation>
@@ -658,6 +748,14 @@
         <location filename="../consolesettingswidget.ui" line="92"/>
         <source>Execution Mode:</source>
         <translation>执行方式:</translation>
+    </message>
+    <message>
+        <source>CPU Clock Speed Control</source>
+        <translation>CPU速率控制</translation>
+    </message>
+    <message>
+        <source>Enable Clock Speed Control (Overclocking/Underclocking)</source>
+        <translation>启用速率控制 (超频/降频)</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="105"/>
@@ -680,8 +778,7 @@
         <translation>将镜像预加载到内存</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.cpp" line="35"/>
-        <location filename="../consolesettingswidget.cpp" line="39"/>
+        <location filename="../consolesettingswidget.cpp" line="34"/>
         <source>Unchecked</source>
         <translation>不勾选</translation>
     </message>
@@ -706,12 +803,12 @@
     <message>
         <location filename="../../frontend-common/controller_interface.cpp" line="86"/>
         <source>SDL</source>
-        <translation>SDL</translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../frontend-common/controller_interface.cpp" line="89"/>
         <source>XInput</source>
-        <translation>X-Input</translation>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -847,12 +944,12 @@
     <message>
         <location filename="../../core/settings.cpp" line="539"/>
         <source>Namco GunCon</source>
-        <translation>Namco GunCon</translation>
+        <translation>南梦宫光枪</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="540"/>
         <source>PlayStation Mouse</source>
-        <translation>Playstation Mouse</translation>
+        <translation>Playstation鼠标</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="540"/>
@@ -866,25 +963,25 @@
         <location filename="../../core/digital_controller.cpp" line="159"/>
         <source>Up</source>
         <translatorcomment>↑</translatorcomment>
-        <translation>↑</translation>
+        <translation>上</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="160"/>
         <source>Down</source>
         <translatorcomment>↓</translatorcomment>
-        <translation>↓</translation>
+        <translation>下</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="161"/>
         <source>Left</source>
         <translatorcomment>←</translatorcomment>
-        <translation>←</translation>
+        <translation>左</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="162"/>
         <source>Right</source>
         <translatorcomment>→</translatorcomment>
-        <translation>→</translation>
+        <translation>右</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="163"/>
@@ -900,25 +997,25 @@
         <location filename="../../core/digital_controller.cpp" line="165"/>
         <source>Triangle</source>
         <translatorcomment>△</translatorcomment>
-        <translation>△</translation>
+        <translation>三角</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="166"/>
         <source>Cross</source>
         <translatorcomment>╳</translatorcomment>
-        <translation>╳</translation>
+        <translation>叉叉</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="167"/>
         <source>Circle</source>
         <translatorcomment>〇</translatorcomment>
-        <translation>〇</translation>
+        <translation>圆圈</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="168"/>
         <source>Square</source>
         <translatorcomment>□</translatorcomment>
-        <translation>□</translation>
+        <translation>方块</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="169"/>
@@ -983,57 +1080,6 @@
     </message>
 </context>
 <context>
-    <name>GPURenderer</name>
-    <message>
-        <location filename="../../core/settings.cpp" line="419"/>
-        <source>Hardware (D3D11)</source>
-        <translation>硬件 (D3D11)</translation>
-    </message>
-    <message>
-        <location filename="../../core/settings.cpp" line="421"/>
-        <source>Hardware (Vulkan)</source>
-        <translation>硬件 (Vulkan)</translation>
-    </message>
-    <message>
-        <location filename="../../core/settings.cpp" line="421"/>
-        <source>Hardware (OpenGL)</source>
-        <translation>硬件 (OpenGL)</translation>
-    </message>
-    <message>
-        <location filename="../../core/settings.cpp" line="422"/>
-        <source>Software</source>
-        <translation>软件</translation>
-    </message>
-</context>
-<context>
-    <name>GPUSettingsWidget</name>
-    <message>
-        <location filename="../gpusettingswidget.cpp" line="178"/>
-        <source>3x (for 720p)</source>
-        <translation>3x (适合720p)</translation>
-    </message>
-    <message>
-        <location filename="../gpusettingswidget.cpp" line="180"/>
-        <source>5x (for 1080p)</source>
-        <translation>5x (适合1080p)</translation>
-    </message>
-    <message>
-        <location filename="../gpusettingswidget.cpp" line="181"/>
-        <source>6x (for 1440p)</source>
-        <translation>6x (适合1440p)</translation>
-    </message>
-    <message>
-        <location filename="../gpusettingswidget.cpp" line="184"/>
-        <source>8x (for 4K)</source>
-        <translation>8x (适合4K)</translation>
-    </message>
-    <message>
-        <location filename="../gpusettingswidget.cpp" line="194"/>
-        <source>Automatic based on window size</source>
-        <translation>自动根据窗口大小</translation>
-    </message>
-</context>
-<context>
     <name>DisplaySettingsWidget</name>
     <message>
         <location filename="../gpusettingswidget.ui" line="14"/>
@@ -1063,7 +1109,7 @@
     <message>
         <location filename="../gpusettingswidget.ui" line="82"/>
         <source>Aspect Ratio:</source>
-        <translation>纵横比:</translation>
+        <translation>高宽比:</translation>
     </message>
     <message>
         <location filename="../gpusettingswidget.ui" line="92"/>
@@ -1136,21 +1182,15 @@
         <translation>适配器</translation>
     </message>
     <message>
-        <source>If your system contains multiple GPUs or adapters, you can select which GPU you wish to use for the hardware renderers. &lt;br&gt;This option is only supported in Direct3D and Vulkan. OpenGL will always use the default device.</source>
-        <translation>如果系统包含多个GPU或适配器, 则可以选择要将哪个GPU用于硬件渲染器。&lt;br&gt;此选项仅在Direct3D和Vulkan中受支持, OpenGL将始终使用默认设备。</translation>
+        <location filename="../displaysettingswidget.cpp" line="57"/>
+        <location filename="../displaysettingswidget.cpp" line="146"/>
+        <source>(Default)</source>
+        <translation>(默认)</translation>
     </message>
     <message>
-        <location filename="../gpusettingswidget.cpp" line="84"/>
-        <location filename="../gpusettingswidget.cpp" line="94"/>
-        <location filename="../gpusettingswidget.cpp" line="107"/>
-        <location filename="../gpusettingswidget.cpp" line="118"/>
-        <location filename="../gpusettingswidget.cpp" line="124"/>
-        <location filename="../gpusettingswidget.cpp" line="128"/>
-        <location filename="../gpusettingswidget.cpp" line="133"/>
-        <location filename="../gpusettingswidget.cpp" line="142"/>
-        <location filename="../gpusettingswidget.cpp" line="146"/>
-        <source>Unchecked</source>
-        <translation>不勾选</translation>
+        <location filename="../displaysettingswidget.cpp" line="58"/>
+        <source>If your system contains multiple GPUs or adapters, you can select which GPU you wish to use for the hardware renderers. &lt;br&gt;This option is only supported in Direct3D and Vulkan. OpenGL will always use the default device.</source>
+        <translation>如果系统包含多个GPU或适配器, 则可以选择要将哪个GPU用于硬件渲染器。&lt;br&gt;此选项仅在Direct3D和Vulkan中受支持, OpenGL将始终使用默认设备。</translation>
     </message>
     <message>
         <location filename="../gpusettingswidget.cpp" line="73"/>
@@ -1160,7 +1200,7 @@
     <message>
         <location filename="../gpusettingswidget.cpp" line="74"/>
         <source>Changes the aspect ratio used to display the console&apos;s output to the screen. The default is 4:3 which matches a typical TV of the era.</source>
-        <translation>更改用于在屏幕上显示控制台输出的纵横比。默认值是4:3, 与那个时代的典型电视相匹配。</translation>
+        <translation>更改用于在屏幕上显示控制台输出的高宽比。默认值是4:3, 与那个时代的典型电视相匹配。</translation>
     </message>
     <message>
         <location filename="../gpusettingswidget.cpp" line="77"/>
@@ -1178,9 +1218,24 @@
         <translation>确定用户电视机上通常不可见的区域有多少要裁剪/隐藏。&lt;br&gt;有些游戏在“过扫描”区域显示内容, 或将其用于屏幕效果。&lt;br&gt;在“所有边框”设置下可能无法正确显示。只有过度扫描才能在稳定和隐藏黑边界之间提供一个很好的折衷方案。</translation>
     </message>
     <message>
+        <location filename="../displaysettingswidget.cpp" line="71"/>
+        <location filename="../displaysettingswidget.cpp" line="82"/>
+        <location filename="../displaysettingswidget.cpp" line="85"/>
+        <source>Checked</source>
+        <translation>勾选</translation>
+    </message>
+    <message>
         <location filename="../gpusettingswidget.cpp" line="89"/>
         <source>Uses bilinear texture filtering when displaying the console&apos;s framebuffer to the screen. &lt;br&gt;Disabling filtering will producer a sharper, blockier/pixelated image. Enabling will smooth out the image. &lt;br&gt;The option will be less noticable the higher the resolution scale.</source>
         <translation>在将控制台帧缓冲区显示到屏幕时使用双线性纹理过滤。&lt;br&gt;禁用过滤将生成更清晰、更块状/像素化的图像。启用将使图像平滑。&lt;br&gt;分辨率越高越不明显。</translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.cpp" line="78"/>
+        <location filename="../displaysettingswidget.cpp" line="88"/>
+        <location filename="../displaysettingswidget.cpp" line="90"/>
+        <location filename="../displaysettingswidget.cpp" line="94"/>
+        <source>Unchecked</source>
+        <translation>不勾选</translation>
     </message>
     <message>
         <location filename="../gpusettingswidget.cpp" line="94"/>
@@ -1191,15 +1246,6 @@
         <location filename="../gpusettingswidget.cpp" line="99"/>
         <source>Enable this option to match DuckStation&apos;s refresh rate with your current monitor or screen. VSync is automatically disabled when it is not possible (e.g. running at non-100% speed).</source>
         <translation>启用此选项可使DuckStation的刷新率与当前监视器或屏幕匹配。当不可能时, 垂直同步将自动禁用(例如, 以非100%速度运行)。</translation>
-    </message>
-    <message>
-        <location filename="../gpusettingswidget.cpp" line="88"/>
-        <location filename="../gpusettingswidget.cpp" line="97"/>
-        <location filename="../gpusettingswidget.cpp" line="114"/>
-        <location filename="../gpusettingswidget.cpp" line="136"/>
-        <location filename="../gpusettingswidget.cpp" line="139"/>
-        <source>Checked</source>
-        <translation>勾选</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="71"/>
@@ -1230,12 +1276,6 @@
         <location filename="../generalsettingswidget.cpp" line="81"/>
         <source>Shows the current emulation speed of the system in the top-right corner of the display as a percentage.</source>
         <translation>在显示屏右上角以百分比显示系统的当前模拟速度。</translation>
-    </message>
-    <message>
-        <location filename="../gpusettingswidget.cpp" line="70"/>
-        <location filename="../gpusettingswidget.cpp" line="231"/>
-        <source>(Default)</source>
-        <translation>(默认)</translation>
     </message>
 </context>
 <context>
@@ -1292,6 +1332,14 @@
         <translation>强制NTSC制式 (60hz-PAL)</translation>
     </message>
     <message>
+        <source>Force 4:3 For 24-bit Display</source>
+        <translation>24位色显示中强制4比3</translation>
+    </message>
+    <message>
+        <source>Force 4:3 For 24-Bit Display (disable widescreen for FMVs)</source>
+        <translation>24位色显示中强制4比3 (动画中禁用宽屏)</translation>
+    </message>
+    <message>
         <location filename="../gpusettingswidget.ui" line="170"/>
         <location filename="../gpusettingswidget.cpp" line="124"/>
         <source>Bilinear Texture Filtering</source>
@@ -1301,12 +1349,12 @@
         <location filename="../gpusettingswidget.ui" line="177"/>
         <location filename="../gpusettingswidget.cpp" line="128"/>
         <source>Widescreen Hack (render 3D in 16:9)</source>
-        <translation>宽屏补丁 (在16比9中渲染3D)</translation>
+        <translation>宽屏调整 (在16比9中渲染3D)</translation>
     </message>
     <message>
         <location filename="../gpusettingswidget.ui" line="187"/>
         <source>PGXP (Precision Geometry Transform Pipeline)</source>
-        <translation>PGXP (精确几何转换)</translation>
+        <translation>PGXP (精确几何转换管线)</translation>
     </message>
     <message>
         <location filename="../gpusettingswidget.ui" line="193"/>
@@ -1336,7 +1384,7 @@
         <location filename="../gpusettingswidget.ui" line="221"/>
         <location filename="../gpusettingswidget.cpp" line="146"/>
         <source>CPU Mode</source>
-        <translation>CPU 模式</translation>
+        <translation>CPU模式</translation>
     </message>
     <message>
         <location filename="../gpusettingswidget.cpp" line="103"/>
@@ -1362,6 +1410,10 @@
         <location filename="../gpusettingswidget.cpp" line="119"/>
         <source>Uses NTSC frame timings when the console is in PAL mode, forcing PAL games to run at 60hz. &lt;br&gt;For most games which have a speed tied to the framerate, this will result in the game running approximately 17% faster. &lt;br&gt;For variable frame rate games, it may not affect the speed.</source>
         <translation>当游戏机处于PAL模式时使用NTSC帧计时, 强制PAL游戏以60hz运行。&lt;br&gt;对于大多数速度与帧速率相关的游戏, 这将导致游戏运行速度大约快17%。&lt;br&gt;对于可变帧速率游戏, 它可能不会影响速度。</translation>
+    </message>
+    <message>
+        <source>Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs.</source>
+        <translation>当显示24位色内容(通常为动画)时，纵横比切换回4比3显示。</translation>
     </message>
     <message>
         <location filename="../gpusettingswidget.cpp" line="129"/>
@@ -1425,6 +1477,57 @@
     <message>
         <source>Unchecked</source>
         <translation>不勾选</translation>
+    </message>
+</context>
+<context>
+    <name>GPURenderer</name>
+    <message>
+        <location filename="../../core/settings.cpp" line="419"/>
+        <source>Hardware (D3D11)</source>
+        <translation>硬件 (D3D11)</translation>
+    </message>
+    <message>
+        <location filename="../../core/settings.cpp" line="421"/>
+        <source>Hardware (Vulkan)</source>
+        <translation>硬件 (Vulkan)</translation>
+    </message>
+    <message>
+        <location filename="../../core/settings.cpp" line="421"/>
+        <source>Hardware (OpenGL)</source>
+        <translation>硬件 (OpenGL)</translation>
+    </message>
+    <message>
+        <location filename="../../core/settings.cpp" line="422"/>
+        <source>Software</source>
+        <translation>软件</translation>
+    </message>
+</context>
+<context>
+    <name>GPUSettingsWidget</name>
+    <message>
+        <location filename="../gpusettingswidget.cpp" line="178"/>
+        <source>3x (for 720p)</source>
+        <translation>3x (适合720p)</translation>
+    </message>
+    <message>
+        <location filename="../gpusettingswidget.cpp" line="180"/>
+        <source>5x (for 1080p)</source>
+        <translation>5x (适合1080p)</translation>
+    </message>
+    <message>
+        <location filename="../gpusettingswidget.cpp" line="181"/>
+        <source>6x (for 1440p)</source>
+        <translation>6x (适合1440p)</translation>
+    </message>
+    <message>
+        <location filename="../gpusettingswidget.cpp" line="184"/>
+        <source>8x (for 4K)</source>
+        <translation>8x (适合4K)</translation>
+    </message>
+    <message>
+        <location filename="../gpusettingswidget.cpp" line="194"/>
+        <source>Automatic based on window size</source>
+        <translation>自动根据窗口大小</translation>
     </message>
 </context>
 <context>
@@ -1516,7 +1619,7 @@
     <message>
         <location filename="../gamelistsettingswidget.ui" line="14"/>
         <source>Form</source>
-        <translation>Form</translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../gamelistsettingswidget.ui" line="34"/>
@@ -1569,9 +1672,7 @@
         <source>Would you like to scan the directory &quot;%1&quot; recursively?
 
 Scanning recursively takes more time, but will identify files in subdirectories.</source>
-        <translation>是否要深度扫描 &quot;%1&quot; 目录?
-
-深度扫描需要更多时间, 但会识别子目录中的文件。</translation>
+        <translation>是否要深度扫描 &quot;%1&quot; 目录?深度扫描需要更多时间, 但会识别子目录中的文件。</translation>
     </message>
     <message>
         <location filename="../gamelistsettingswidget.cpp" line="140"/>
@@ -1583,9 +1684,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <source>Do you wish to download the disc database from redump.org?
 
 This will download approximately 4 megabytes over your current internet connection.</source>
-        <translation>您想从redump.org下载光盘数据库吗? 
-
-这将通过您当前的网络连接下载大约4MB。</translation>
+        <translation>您想从redump.org下载光盘数据库吗?这将通过您当前的网络连接下载大约4MB。</translation>
     </message>
     <message>
         <location filename="../gamelistsettingswidget.cpp" line="248"/>
@@ -1623,7 +1722,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../gamepropertiesdialog.ui" line="14"/>
         <source>Dialog</source>
-        <translation>Dialog</translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="28"/>
@@ -1706,9 +1805,20 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>哈希</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="187"/>
-        <source>User Settings</source>
-        <translation>用户设置</translation>
+        <source>User Settings (Console)</source>
+        <translation>用户设置 (主机)</translation>
+    </message>
+    <message>
+        <source>User Settings (Input)</source>
+        <translation>用户设置 (输入)</translation>
+    </message>
+    <message>
+        <source>CPU Clock Speed Control</source>
+        <translation>CPU速率控制</translation>
+    </message>
+    <message>
+        <source>Enable Clock Speed Control (Overclocking/Underclocking)</source>
+        <translation>启用速率控制 (超频/降频)</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="193"/>
@@ -1758,16 +1868,20 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>强制NTSC制式 (60hz-PAL)</translation>
     </message>
     <message>
+        <source>Force 4:3 For 24-Bit Display (disable widescreen for FMVs)</source>
+        <translation>24位色显示中强制4比3 (动画中禁用宽屏)</translation>
+    </message>
+    <message>
         <source>Bilinear Texture Filtering</source>
         <translation>双线性纹理过滤</translation>
     </message>
     <message>
         <source>Widescreen Hack</source>
-        <translation>宽屏补丁</translation>
+        <translation>宽屏调整</translation>
     </message>
     <message>
         <source>PGXP Geometry Correction</source>
-        <translation>PGXP 几何校正</translation>
+        <translation>PGXP几何校正</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="232"/>
@@ -1935,24 +2049,24 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../core/game_settings.cpp" line="29"/>
         <source>Disable PGXP</source>
-        <translation>禁用 PGXP</translation>
+        <translation>禁用PGXP</translation>
     </message>
     <message>
         <location filename="../../core/game_settings.cpp" line="30"/>
         <source>Disable PGXP Culling</source>
-        <translation>禁用 PGXP 剔除</translation>
+        <translation>禁用PGXP剔除</translation>
     </message>
     <message>
         <source>Disable PGXP Texture Correction</source>
-        <translation>禁用 PGXP 纹理校正</translation>
+        <translation>禁用PGXP纹理校正</translation>
     </message>
     <message>
         <source>Force PGXP Vertex Cache</source>
-        <translation>强制 PGXP 顶点缓存</translation>
+        <translation>强制PGXP顶点缓存</translation>
     </message>
     <message>
         <source>Force PGXP CPU Mode</source>
-        <translation>强制 PGXP CPU 模式</translation>
+        <translation>强制PGXP在CPU模式</translation>
     </message>
     <message>
         <source>Force Digital Controller</source>
@@ -2001,7 +2115,7 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../generalsettingswidget.ui" line="59"/>
         <location filename="../generalsettingswidget.cpp" line="55"/>
         <source>Load Devices From Save States</source>
-        <translation>从即时存档读取设备</translation>
+        <translation>设备载入时读取即时存档</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="66"/>
@@ -2139,13 +2253,13 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../generalsettingswidget.cpp" line="103"/>
         <source>Determines the backend which is used for controller input. Windows users may prefer to use XInput over SDL2 for compatibility.</source>
-        <translation>确定用于后端的输入。为了兼容性, Windows用户可能更喜欢使用XInput而不是SDL2。</translation>
+        <translation>确定用于控制器输入的后端。为了兼容性, Windows用户可能更喜欢使用XInput而不是SDL2。</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="87"/>
         <location filename="../generalsettingswidget.cpp" line="91"/>
         <source>Enable Discord Presence</source>
-        <translation>启用Discord Presence</translation>
+        <translation>启用Discord显现</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="92"/>
@@ -2167,6 +2281,19 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../generalsettingswidget.cpp" line="116"/>
         <source>%1%</source>
         <translation>%1%</translation>
+    </message>
+</context>
+<context>
+    <name>HostInterface</name>
+    <message>
+        <location filename="../../core/host_interface.cpp" line="243"/>
+        <source>Failed to load configured BIOS file &apos;%s&apos;</source>
+        <translation>无法加载BIOS文件&apos;%s&apos;</translation>
+    </message>
+    <message>
+        <location filename="../../core/host_interface.cpp" line="299"/>
+        <source>No BIOS image found for %s region</source>
+        <translation>未发现适用%s区域的BIOS文件。</translation>
     </message>
 </context>
 <context>
@@ -2214,7 +2341,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1350"/>
         <source>Toggle PGXP</source>
-        <translation>切换 PGXP</translation>
+        <translation>切换PGXP</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1368"/>
@@ -2406,7 +2533,7 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../mainwindow.cpp" line="71"/>
         <location filename="../mainwindow.cpp" line="482"/>
         <source>DuckStation</source>
-        <translation>DuckStation</translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="38"/>
@@ -2480,17 +2607,22 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>查看(&amp;V)</translation>
     </message>
     <message>
+        <location filename="../mainwindow.ui" line="196"/>
+        <source>&amp;Tools</source>
+        <translation>工具(&amp;T)</translation>
+    </message>
+    <message>
         <location filename="../mainwindow.ui" line="164"/>
         <source>toolBar</source>
         <translation>工具栏</translation>
     </message>
     <message>
-        <source>&amp;Tools</source>
-        <translation>工具(&amp;T)</translation>
-    </message>
-    <message>
         <source>Memory &amp;Card Editor</source>
         <translation>记忆卡管理器(&amp;C)</translation>
+    </message>
+    <message>
+        <source>Open Data Directory...</source>
+        <translation>打开模拟器数据目录...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="203"/>
@@ -2761,8 +2893,28 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <location filename="../mainwindow.ui" line="598"/>
-        <source>&amp;Game List</source>
-        <translation>游戏列表(&amp;G)</translation>
+        <source>Game &amp;List</source>
+        <translation>游戏列表(&amp;L)</translation>
+    </message>
+    <message>
+        <source>Game &amp;Grid</source>
+        <translation>游戏方格(&amp;G)</translation>
+    </message>
+    <message>
+        <source>Show Titles (Grid View)</source>
+        <translation>显示标题 (方格样式)</translation>
+    </message>
+    <message>
+        <source>Zoom &amp;Out (Grid View)</source>
+        <translation>缩小 (方格样式)</translation>
+    </message>
+    <message>
+        <source>Zoom &amp;In (Grid View)</source>
+        <translation>放大 (方格样式)</translation>
+    </message>
+    <message>
+        <source>Refresh &amp;Covers (Grid View)</source>
+        <translation>刷新 (方格样式)</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="606"/>
@@ -2784,7 +2936,7 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="30"/>
-        <source>All File Types (*.bin *.img *.cue *.chd *.exe *.psexe *.psf);;Single-Track Raw Images (*.bin *.img);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;PlayStation Executables (*.exe *.psexe);;Portable Sound Format Files (*.psf);;Playlists (*.m3u)</source>
+        <source>All File Types (*.bin *.img *.cue *.chd *.exe *.psexe *.psf *.m3u);;Single-Track Raw Images (*.bin *.img);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;PlayStation Executables (*.exe *.psexe);;Portable Sound Format Files (*.psf);;Playlists (*.m3u)</source>
         <translation>所有文件类型 (*.bin *.img *.cue *.chd *.exe *.psexe *.psf);;单轨原始镜像 (*.bin *.img);;Cue Sheets (*.cue);;MAME CHD 镜像 (*.chd);;PlayStation 可执行程序 (*.exe *.psexe);;便携音频格式文件 (*.psf);;播放列表 (*.m3u)</translation>
     </message>
     <message>
@@ -2837,6 +2989,18 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../mainwindow.cpp" line="660"/>
         <source>Default</source>
         <translation>默认</translation>
+    </message>
+    <message>
+        <source>Fusion</source>
+        <translation>炼金</translation>
+    </message>
+    <message>
+        <source>Dark Fusion (Gray)</source>
+        <translation>黑炼金 (灰色)</translation>
+    </message>
+    <message>
+        <source>Dark Fusion (Blue)</source>
+        <translation>黑炼金 (蓝色)</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="661"/>
@@ -3004,7 +3168,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../core/host_interface.cpp" line="464"/>
         <source>PGXP CPU mode is incompatible with the recompiler, using Cached Interpreter instead.</source>
-        <translation>PGXP CPU模式与重新编译器不兼容, 改为使用缓存解释器。</translation>
+        <translation>PGXP在CPU模式与重新编译器不兼容, 改为使用缓存解释器。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="698"/>
@@ -3163,7 +3327,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="553"/>
         <source>PGXP texture correction disabled by game settings.</source>
-        <translation>根据游戏设置禁用纹理校正。</translation>
+        <translation>根据游戏设置禁用PGXP纹理校正。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="565"/>
@@ -3173,7 +3337,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="576"/>
         <source>PGXP CPU mode forced by game settings.</source>
-        <translation>根据游戏设置强制PGXP CPU模式。</translation>
+        <translation>根据游戏设置强制PGXP在CPU模式。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="593"/>
@@ -3470,7 +3634,7 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../qtprogresscallback.cpp" line="10"/>
         <source>DuckStation</source>
-        <translation>DuckStation</translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../qtprogresscallback.cpp" line="29"/>
@@ -3758,82 +3922,6 @@ The saves will not be recoverable.</source>
     <message>
         <source>Insufficient blocks, this file needs %1 but only %2 are available.</source>
         <translation>空间不足, 此文件需要%1格, 但只有%2格可用。</translation>
-    </message>
-</context>
-<context>
-	<name>BIOSSettingsWidget</name>
-    <message>
-        <source>BIOS Selection</source>
-        <translation>BIOS选择</translation>
-    </message>
-    <message>
-        <source>Auto-Detect</source>
-        <translation>自动检测</translation>
-    </message>
-    <message>
-        <source>Unknown</source>
-        <translation>未知</translation>
-    </message>
-    <message>
-        <source>NTSC-J (Japan):</source>
-        <translation>NTSC-J (日本):</translation>
-    </message>
-    <message>
-        <source>NTSC-U/C (US/Canada):</source>
-        <translation>NTSC-U/C (美国/加拿大):</translation>
-    </message>
-    <message>
-        <source>PAL (Europe, Australia):</source>
-        <translation>PAL (欧洲, 澳大利亚):</translation>
-    </message>
-    <message>
-        <source>Open in Explorer...</source>
-        <translation>打开所在目录</translation>
-    </message>
-    <message>
-        <source>Refresh List</source>
-        <translation>刷新列表</translation>
-    </message>
-    <message>
-        <source>BIOS Directory</source>
-        <translation>BIOS路径</translation>
-    </message>
-    <message>
-        <source>DuckStation will search for BIOS images in this directory.</source>
-        <translation>DuckStation将在此目录中搜索BIOS文件。</translation>
-    </message>
-    <message>
-        <source>Browse...</source>
-        <translation>浏览...</translation>
-    </message>
-    <message>
-        <source>Options and Patches</source>
-        <translation>选项和补丁</translation>
-    </message>
-    <message>
-        <location filename="../consolesettingswidget.ui" line="55"/>
-        <location filename="../consolesettingswidget.cpp" line="35"/>
-        <source>Fast Boot</source>
-        <translation>快速启动</translation>
-    </message>
-    <message>
-        <location filename="../consolesettingswidget.ui" line="62"/>
-        <source>Enable TTY Output</source>
-        <translation>启用TTY输出</translation>
-    </message>
-    <message>
-        <location filename="../consolesettingswidget.ui" line="74"/>
-        <source>...</source>
-        <translation>浏览...</translation>
-    </message>
-    <message>
-        <location filename="../consolesettingswidget.cpp" line="36"/>
-        <source>Patches the BIOS to skip the console&apos;s boot animation. Does not work with all games, but usually safe to enabled.</source>
-        <translation>对BIOS应用补丁以跳过主机的启动动画, 不适用于所有游戏, 但通常可以安全启用。</translation>
-    </message>
-    <message>
-        <source>Unchecked</source>
-        <translation>不勾选</translation>
     </message>
 </context>
 </TS>

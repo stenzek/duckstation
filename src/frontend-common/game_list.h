@@ -109,12 +109,13 @@ public:
                           const GameSettings::Entry& new_entry, bool save_to_list = true, bool save_to_user = true);
 
   std::string GetCoverImagePathForEntry(const GameListEntry* entry);
+  std::string GetNewCoverImagePathForEntry(const GameListEntry* entry, const char* new_filename);
 
 private:
   enum : u32
   {
     GAME_LIST_CACHE_SIGNATURE = 0x45434C47,
-    GAME_LIST_CACHE_VERSION = 9
+    GAME_LIST_CACHE_VERSION = 11
   };
 
   using DatabaseMap = std::unordered_map<std::string, GameListDatabaseEntry>;

@@ -228,10 +228,6 @@ bool GPU::HandleSetTextureWindowCommand()
 {
   const u32 param = FifoPop() & 0x00FFFFFFu;
   SetTextureWindow(param);
-  Log_DebugPrintf("Set texture window %02X %02X %02X %02X", m_draw_mode.texture_window_mask_x,
-                  m_draw_mode.texture_window_mask_y, m_draw_mode.texture_window_offset_x,
-                  m_draw_mode.texture_window_offset_y);
-
   AddCommandTicks(1);
   EndCommand();
   return true;

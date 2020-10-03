@@ -184,5 +184,6 @@ protected:
 };
 
 #define TRANSLATABLE(context, str) str
+#define TRANSLATABLE_NOOP(context, str)
 
 extern HostInterface* g_host_interface;

@@ -365,7 +365,7 @@ void main()
   if (m_post_process_pipeline_layout == VK_NULL_HANDLE)
     return false;
 
-  dslbuilder.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
+  dslbuilder.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1,
                         VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
   dslbuilder.AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
   m_post_process_ubo_descriptor_set_layout = dslbuilder.Create(device);
@@ -734,6 +734,8 @@ VulkanHostDisplay::PostProcessingStage::~PostProcessingStage()
 
 bool VulkanHostDisplay::SetPostProcessingChain(const std::string_view& config)
 {
+  g_vulkan_context->ExecuteCommandBuffer(true);
+
   if (config.empty())
   {
     m_post_processing_stages.clear();
@@ -951,11 +953,11 @@ void VulkanHostDisplay::ApplyPostProcessingChain(s32 final_left, s32 final_top, 
         texture_view_width, texture_view_height, GetWindowWidth(), GetWindowHeight(), 0.0f);
       m_post_processing_ubo.CommitMemory(pps.uniforms_size);
 
-      dsupdate.AddBufferDescriptorWrite(ds, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, m_post_processing_ubo.GetBuffer(),
-                                        offset, pps.uniforms_size);
+      dsupdate.AddBufferDescriptorWrite(ds, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
+                                        m_post_processing_ubo.GetBuffer(), 0, pps.uniforms_size);
       dsupdate.Update(g_vulkan_context->GetDevice());
       vkCmdBindDescriptorSets(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_post_process_ubo_pipeline_layout, 0, 1, &ds,
-                              0, nullptr);
+                              1, &offset);
     }
 
     vkCmdBindPipeline(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pps.pipeline);

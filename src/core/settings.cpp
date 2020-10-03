@@ -5,6 +5,7 @@
 #include "host_interface.h"
 #include <algorithm>
 #include <array>
+#include <numeric>
 
 Settings g_settings;
 
@@ -75,6 +76,33 @@ bool Settings::HasAnyPerGameMemoryCards() const
   });
 }
 
+void Settings::CPUOverclockPercentToFraction(u32 percent, u32* numerator, u32* denominator)
+{
+  const u32 percent_gcd = std::gcd(percent, 100);
+  *numerator = percent / percent_gcd;
+  *denominator = 100u / percent_gcd;
+}
+
+u32 Settings::CPUOverclockFractionToPercent(u32 numerator, u32 denominator)
+{
+  return (numerator * 100u) / denominator;
+}
+
+void Settings::SetCPUOverclockPercent(u32 percent)
+{
+  CPUOverclockPercentToFraction(percent, &cpu_overclock_numerator, &cpu_overclock_denominator);
+}
+
+u32 Settings::GetCPUOverclockPercent() const
+{
+  return CPUOverclockFractionToPercent(cpu_overclock_numerator, cpu_overclock_denominator);
+}
+
+void Settings::UpdateOverclockActive()
+{
+  cpu_overclock_active = (cpu_overclock_enable && (cpu_overclock_numerator != 1 || cpu_overclock_denominator != 1));
+}
+
 void Settings::Load(SettingsInterface& si)
 {
   region =
@@ -95,6 +123,10 @@ void Settings::Load(SettingsInterface& si)
     ParseCPUExecutionMode(
       si.GetStringValue("CPU", "ExecutionMode", GetCPUExecutionModeName(DEFAULT_CPU_EXECUTION_MODE)).c_str())
       .value_or(DEFAULT_CPU_EXECUTION_MODE);
+  cpu_overclock_numerator = std::max(si.GetIntValue("CPU", "OverclockNumerator", 1), 1);
+  cpu_overclock_denominator = std::max(si.GetIntValue("CPU", "OverclockDenominator", 1), 1);
+  cpu_overclock_enable = si.GetBoolValue("CPU", "OverclockEnable", false);
+  UpdateOverclockActive();
   cpu_recompiler_memory_exceptions = si.GetBoolValue("CPU", "RecompilerMemoryExceptions", false);
   cpu_recompiler_icache = si.GetBoolValue("CPU", "RecompilerICache", false);
 
@@ -126,6 +158,7 @@ void Settings::Load(SettingsInterface& si)
     ParseDisplayAspectRatio(
       si.GetStringValue("Display", "AspectRatio", GetDisplayAspectRatioName(DEFAULT_DISPLAY_ASPECT_RATIO)).c_str())
       .value_or(DEFAULT_DISPLAY_ASPECT_RATIO);
+  display_force_4_3_for_24bit = si.GetBoolValue("Display", "Force4_3For24Bit", false);
   display_active_start_offset = static_cast<s16>(si.GetIntValue("Display", "ActiveStartOffset", 0));
   display_active_end_offset = static_cast<s16>(si.GetIntValue("Display", "ActiveEndOffset", 0));
   display_linear_filtering = si.GetBoolValue("Display", "LinearFiltering", true);
@@ -142,6 +175,7 @@ void Settings::Load(SettingsInterface& si)
   cdrom_read_thread = si.GetBoolValue("CDROM", "ReadThread", true);
   cdrom_region_check = si.GetBoolValue("CDROM", "RegionCheck", true);
   cdrom_load_image_to_ram = si.GetBoolValue("CDROM", "LoadImageToRAM", false);
+  cdrom_mute_cd_audio = si.GetBoolValue("CDROM", "MuteCDAudio", false);
 
   audio_backend =
     ParseAudioBackend(si.GetStringValue("Audio", "Backend", GetAudioBackendName(DEFAULT_AUDIO_BACKEND)).c_str())
@@ -217,6 +251,9 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("Main", "AutoLoadCheats", auto_load_cheats);
 
   si.SetStringValue("CPU", "ExecutionMode", GetCPUExecutionModeName(cpu_execution_mode));
+  si.SetBoolValue("CPU", "OverclockEnable", cpu_overclock_enable);
+  si.SetIntValue("CPU", "OverclockNumerator", cpu_overclock_numerator);
+  si.SetIntValue("CPU", "OverclockDenominator", cpu_overclock_denominator);
   si.SetBoolValue("CPU", "RecompilerMemoryExceptions", cpu_recompiler_memory_exceptions);
   si.SetBoolValue("CPU", "RecompilerICache", cpu_recompiler_icache);
 
@@ -239,6 +276,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetStringValue("Display", "CropMode", GetDisplayCropModeName(display_crop_mode));
   si.SetIntValue("Display", "ActiveStartOffset", display_active_start_offset);
   si.SetIntValue("Display", "ActiveEndOffset", display_active_end_offset);
+  si.SetBoolValue("Display", "Force4_3For24Bit", display_force_4_3_for_24bit);
   si.SetStringValue("Display", "AspectRatio", GetDisplayAspectRatioName(display_aspect_ratio));
   si.SetBoolValue("Display", "LinearFiltering", display_linear_filtering);
   si.SetBoolValue("Display", "IntegerScaling", display_integer_scaling);
@@ -257,6 +295,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("CDROM", "ReadThread", cdrom_read_thread);
   si.SetBoolValue("CDROM", "RegionCheck", cdrom_region_check);
   si.SetBoolValue("CDROM", "LoadImageToRAM", cdrom_load_image_to_ram);
+  si.SetBoolValue("CDROM", "MuteCDAudio", cdrom_mute_cd_audio);
 
   si.SetStringValue("Audio", "Backend", GetAudioBackendName(audio_backend));
   si.SetIntValue("Audio", "OutputVolume", audio_output_volume);
@@ -520,10 +559,10 @@ const char* Settings::GetDisplayCropModeDisplayName(DisplayCropMode crop_mode)
   return s_display_crop_mode_display_names[static_cast<int>(crop_mode)];
 }
 
-static std::array<const char*, 6> s_display_aspect_ratio_names = {
-  {"4:3", "16:9", "8:7", "2:1 (VRAM 1:1)", "1:1", "PAR 1:1"}};
-static constexpr std::array<float, 6> s_display_aspect_ratio_values = {
-  {4.0f / 3.0f, 16.0f / 9.0f, 8.0f / 7.0f, 2.0f / 1.0f, 1.0f, -1.0f}};
+static std::array<const char*, 7> s_display_aspect_ratio_names = {
+  {"4:3", "16:9", "21:9", "8:7", "2:1 (VRAM 1:1)", "1:1", "PAR 1:1"}};
+static constexpr std::array<float, 7> s_display_aspect_ratio_values = {
+  {4.0f / 3.0f, 16.0f / 9.0f, 21.0f / 9.0f, 8.0f / 7.0f, 2.0f / 1.0f, 1.0f, -1.0f}};
 
 std::optional<DisplayAspectRatio> Settings::ParseDisplayAspectRatio(const char* str)
 {

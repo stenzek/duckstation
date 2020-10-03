@@ -68,7 +68,7 @@ float4 RGBA5551ToRGBA8(uint v)
 void GPU_HW_ShaderGen::WriteBatchUniformBuffer(std::stringstream& ss)
 {
   DeclareUniformBuffer(ss,
-                       {"uint2 u_texture_window_mask", "uint2 u_texture_window_offset", "float u_src_alpha_factor",
+                       {"uint2 u_texture_window_and", "uint2 u_texture_window_or", "float u_src_alpha_factor",
                         "float u_dst_alpha_factor", "uint u_interlaced_displayed_field",
                         "bool u_set_mask_while_drawing"},
                        false);
@@ -700,16 +700,16 @@ CONSTANT float4 TRANSPARENT_PIXEL_COLOR = float4(0.0, 0.0, 0.0, 0.0);
 
 uint2 ApplyTextureWindow(uint2 coords)
 {
-  uint x = (uint(coords.x) & ~(u_texture_window_mask.x * 8u)) | ((u_texture_window_offset.x & u_texture_window_mask.x) * 8u);
-  uint y = (uint(coords.y) & ~(u_texture_window_mask.y * 8u)) | ((u_texture_window_offset.y & u_texture_window_mask.y) * 8u);
+  uint x = (uint(coords.x) & u_texture_window_and.x) | u_texture_window_or.x;
+  uint y = (uint(coords.y) & u_texture_window_and.y) | u_texture_window_or.y;
   return uint2(x, y);
 }
 
 uint2 ApplyUpscaledTextureWindow(uint2 coords)
 {
-  uint x = (uint(coords.x) & ~(u_texture_window_mask.x * 8u * RESOLUTION_SCALE)) | ((u_texture_window_offset.x & u_texture_window_mask.x) * 8u * RESOLUTION_SCALE);
-  uint y = (uint(coords.y) & ~(u_texture_window_mask.y * 8u * RESOLUTION_SCALE)) | ((u_texture_window_offset.y & u_texture_window_mask.y) * 8u * RESOLUTION_SCALE);
-  return uint2(x, y);
+  uint2 native_coords = coords / uint2(RESOLUTION_SCALE, RESOLUTION_SCALE);
+  uint2 coords_offset = coords % uint2(RESOLUTION_SCALE, RESOLUTION_SCALE);
+  return (ApplyTextureWindow(native_coords) * uint2(RESOLUTION_SCALE, RESOLUTION_SCALE)) + coords_offset;
 }
 
 uint2 FloatToIntegerCoords(float2 coords)

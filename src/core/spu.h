@@ -2,6 +2,7 @@
 #include "common/bitfield.h"
 #include "common/fifo_queue.h"
 #include "types.h"
+#include "system.h"
 #include <array>
 #include <memory>
 
@@ -20,6 +21,7 @@ public:
   ~SPU();
 
   void Initialize();
+  void CPUClockChanged();
   void Shutdown();
   void Reset();
   bool DoState(StateWrapper& sw);
@@ -54,7 +56,7 @@ private:
   static constexpr u32 VOICE_ADDRESS_SHIFT = 3;
   static constexpr u32 NUM_SAMPLES_PER_ADPCM_BLOCK = 28;
   static constexpr u32 SAMPLE_RATE = 44100;
-  static constexpr u32 SYSCLK_TICKS_PER_SPU_TICK = MASTER_CLOCK / SAMPLE_RATE; // 0x300
+  static constexpr u32 SYSCLK_TICKS_PER_SPU_TICK = System::MASTER_CLOCK / SAMPLE_RATE; // 0x300
   static constexpr s16 ENVELOPE_MIN_VOLUME = 0;
   static constexpr s16 ENVELOPE_MAX_VOLUME = 0x7FFF;
   static constexpr u32 CAPTURE_BUFFER_SIZE_PER_CHANNEL = 0x400;
@@ -370,6 +372,8 @@ private:
   std::unique_ptr<TimingEvent> m_transfer_event;
   std::unique_ptr<Common::WAVWriter> m_dump_writer;
   TickCount m_ticks_carry = 0;
+  TickCount m_cpu_ticks_per_spu_tick = 0;
+  TickCount m_cpu_tick_divider = 0;
 
   SPUCNT m_SPUCNT = {};
   SPUSTAT m_SPUSTAT = {};
