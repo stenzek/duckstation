@@ -36,7 +36,7 @@
     <message>
         <location filename="../aboutdialog.cpp" line="34"/>
         <source>License</source>
-        <translation>License</translation>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -84,7 +84,7 @@
     <message>
         <location filename="../advancedsettingswidget.ui" line="97"/>
         <source>Tweaks/Hacks</source>
-        <translation>Tweaks/Hacks</translation>
+        <translation>修正/调整</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="141"/>
@@ -102,29 +102,29 @@
     </message>
     <message>
         <source>DMA Max Slice Ticks:</source>
-        <translation>DMA 最大 Slice Ticks:</translation>
+        <translation>DMA最大片段计时:</translation>
     </message>
     <message>
         <source>DMA Halt Ticks:</source>
-        <translation>DMA Halt Ticks:</translation>
+        <translation>DMA停顿计时:</translation>
     </message>
     <message>
         <source>GPU FIFO Size:</source>
-        <translation>GPU FIFO 大小:</translation>
+        <translation>GPU的FIFO大小:</translation>
     </message>
     <message>
         <source>GPU Max Run-Ahead:</source>
-        <translation>GPU 最大前进速度:</translation>
+        <translation>GPU最大优先级:</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="84"/>
         <source>PGXP Vertex Cache</source>
-        <translation>PGXP 顶点缓存</translation>
+        <translation>PGXP顶点缓存</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="86"/>
         <source>PGXP CPU Mode</source>
-        <translation>PGXP CPU 模式</translation>
+        <translation>PGXP在CPU模式</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="90"/>
@@ -134,22 +134,22 @@
     <message>
         <location filename="../advancedsettingswidget.cpp" line="93"/>
         <source>DMA Max Slice Ticks</source>
-        <translation>DMA 最大 Slice Ticks</translation>
+        <translation>DMA最大片段计时</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="95"/>
         <source>DMA Halt Ticks</source>
-        <translation>DMA Halt Ticks</translation>
+        <translation>DMA停顿计时</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="97"/>
         <source>GPU FIFO Size</source>
-        <translation>GPU FIFO 大小</translation>
+        <translation>GPU的FIFO大小</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="99"/>
         <source>GPU Max Run-Ahead</source>
-        <translation>GPU 最大前进速度</translation>
+        <translation>GPU最大优先级</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="190"/>
@@ -236,24 +236,22 @@
     <message>
         <location filename="../../core/analog_controller.cpp" line="477"/>
         <source>Up</source>
-        <translation>↑</translation>
+        <translation>上</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="478"/>
         <source>Down</source>
-        <translation>↓</translation>
+        <translation>下</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="479"/>
         <source>Left</source>
-        <translatorcomment>←</translatorcomment>
-        <translation>←</translation>
+        <translation>左</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="480"/>
         <source>Right</source>
-        <translatorcomment>→</translatorcomment>
-        <translation>→</translation>
+        <translation>右</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="481"/>
@@ -268,24 +266,22 @@
     <message>
         <location filename="../../core/analog_controller.cpp" line="483"/>
         <source>Triangle</source>
-        <translatorcomment>△</translatorcomment>
-        <translation>△</translation>
+        <translation>三角</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="484"/>
         <source>Cross</source>
-        <translatorcomment>╳</translatorcomment>
-        <translation>╳</translation>
+        <translation>叉叉</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="485"/>
         <source>Circle</source>
-        <translation>〇</translation>
+        <translation>圆圈</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="486"/>
         <source>Square</source>
-        <translation>□</translation>
+        <translation>方块</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="487"/>
@@ -320,7 +316,7 @@
     <message>
         <location filename="../../core/analog_controller.cpp" line="493"/>
         <source>Analog</source>
-        <translation>Analog</translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="504"/>
@@ -363,7 +359,7 @@
     <message>
         <location filename="../../core/settings.cpp" line="508"/>
         <source>Cubeb</source>
-        <translation>Cubed</translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="509"/>
@@ -583,7 +579,7 @@
     <message>
         <location filename="../biossettingswidget.ui" line="14"/>
         <source>Form</source>
-        <translation>Form</translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../biossettingswidget.ui" line="32"/>
@@ -807,12 +803,12 @@
     <message>
         <location filename="../../frontend-common/controller_interface.cpp" line="86"/>
         <source>SDL</source>
-        <translation>SDL</translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../frontend-common/controller_interface.cpp" line="89"/>
         <source>XInput</source>
-        <translation>X-Input</translation>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -948,12 +944,12 @@
     <message>
         <location filename="../../core/settings.cpp" line="539"/>
         <source>Namco GunCon</source>
-        <translation>Namco GunCon</translation>
+        <translation>南梦宫光枪</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="540"/>
         <source>PlayStation Mouse</source>
-        <translation>Playstation Mouse</translation>
+        <translation>Playstation鼠标</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="540"/>
@@ -967,25 +963,25 @@
         <location filename="../../core/digital_controller.cpp" line="159"/>
         <source>Up</source>
         <translatorcomment>↑</translatorcomment>
-        <translation>↑</translation>
+        <translation>上</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="160"/>
         <source>Down</source>
         <translatorcomment>↓</translatorcomment>
-        <translation>↓</translation>
+        <translation>下</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="161"/>
         <source>Left</source>
         <translatorcomment>←</translatorcomment>
-        <translation>←</translation>
+        <translation>左</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="162"/>
         <source>Right</source>
         <translatorcomment>→</translatorcomment>
-        <translation>→</translation>
+        <translation>右</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="163"/>
@@ -1001,25 +997,25 @@
         <location filename="../../core/digital_controller.cpp" line="165"/>
         <source>Triangle</source>
         <translatorcomment>△</translatorcomment>
-        <translation>△</translation>
+        <translation>三角</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="166"/>
         <source>Cross</source>
         <translatorcomment>╳</translatorcomment>
-        <translation>╳</translation>
+        <translation>叉叉</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="167"/>
         <source>Circle</source>
         <translatorcomment>〇</translatorcomment>
-        <translation>〇</translation>
+        <translation>圆圈</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="168"/>
         <source>Square</source>
         <translatorcomment>□</translatorcomment>
-        <translation>□</translation>
+        <translation>方块</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="169"/>
@@ -1113,7 +1109,7 @@
     <message>
         <location filename="../gpusettingswidget.ui" line="82"/>
         <source>Aspect Ratio:</source>
-        <translation>纵横比:</translation>
+        <translation>高宽比:</translation>
     </message>
     <message>
         <location filename="../gpusettingswidget.ui" line="92"/>
@@ -1204,7 +1200,7 @@
     <message>
         <location filename="../gpusettingswidget.cpp" line="74"/>
         <source>Changes the aspect ratio used to display the console&apos;s output to the screen. The default is 4:3 which matches a typical TV of the era.</source>
-        <translation>更改用于在屏幕上显示控制台输出的纵横比。默认值是4:3, 与那个时代的典型电视相匹配。</translation>
+        <translation>更改用于在屏幕上显示控制台输出的高宽比。默认值是4:3, 与那个时代的典型电视相匹配。</translation>
     </message>
     <message>
         <location filename="../gpusettingswidget.cpp" line="77"/>
@@ -1353,12 +1349,12 @@
         <location filename="../gpusettingswidget.ui" line="177"/>
         <location filename="../gpusettingswidget.cpp" line="128"/>
         <source>Widescreen Hack (render 3D in 16:9)</source>
-        <translation>宽屏补丁 (在16比9中渲染3D)</translation>
+        <translation>宽屏调整 (在16比9中渲染3D)</translation>
     </message>
     <message>
         <location filename="../gpusettingswidget.ui" line="187"/>
         <source>PGXP (Precision Geometry Transform Pipeline)</source>
-        <translation>PGXP (精确几何转换)</translation>
+        <translation>PGXP (精确几何转换管线)</translation>
     </message>
     <message>
         <location filename="../gpusettingswidget.ui" line="193"/>
@@ -1388,7 +1384,7 @@
         <location filename="../gpusettingswidget.ui" line="221"/>
         <location filename="../gpusettingswidget.cpp" line="146"/>
         <source>CPU Mode</source>
-        <translation>CPU 模式</translation>
+        <translation>CPU模式</translation>
     </message>
     <message>
         <location filename="../gpusettingswidget.cpp" line="103"/>
@@ -1623,7 +1619,7 @@
     <message>
         <location filename="../gamelistsettingswidget.ui" line="14"/>
         <source>Form</source>
-        <translation>Form</translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../gamelistsettingswidget.ui" line="34"/>
@@ -1726,7 +1722,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../gamepropertiesdialog.ui" line="14"/>
         <source>Dialog</source>
-        <translation>Dialog</translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="28"/>
@@ -1881,11 +1877,11 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <source>Widescreen Hack</source>
-        <translation>宽屏补丁</translation>
+        <translation>宽屏调整</translation>
     </message>
     <message>
         <source>PGXP Geometry Correction</source>
-        <translation>PGXP 几何校正</translation>
+        <translation>PGXP几何校正</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="232"/>
@@ -2053,24 +2049,24 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../core/game_settings.cpp" line="29"/>
         <source>Disable PGXP</source>
-        <translation>禁用 PGXP</translation>
+        <translation>禁用PGXP</translation>
     </message>
     <message>
         <location filename="../../core/game_settings.cpp" line="30"/>
         <source>Disable PGXP Culling</source>
-        <translation>禁用 PGXP 剔除</translation>
+        <translation>禁用PGXP剔除</translation>
     </message>
     <message>
         <source>Disable PGXP Texture Correction</source>
-        <translation>禁用 PGXP 纹理校正</translation>
+        <translation>禁用PGXP纹理校正</translation>
     </message>
     <message>
         <source>Force PGXP Vertex Cache</source>
-        <translation>强制 PGXP 顶点缓存</translation>
+        <translation>强制PGXP顶点缓存</translation>
     </message>
     <message>
         <source>Force PGXP CPU Mode</source>
-        <translation>强制 PGXP CPU 模式</translation>
+        <translation>强制PGXP在CPU模式</translation>
     </message>
     <message>
         <source>Force Digital Controller</source>
@@ -2119,7 +2115,7 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../generalsettingswidget.ui" line="59"/>
         <location filename="../generalsettingswidget.cpp" line="55"/>
         <source>Load Devices From Save States</source>
-        <translation>从即时存档读取设备</translation>
+        <translation>设备载入时读取即时存档</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="66"/>
@@ -2257,13 +2253,13 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../generalsettingswidget.cpp" line="103"/>
         <source>Determines the backend which is used for controller input. Windows users may prefer to use XInput over SDL2 for compatibility.</source>
-        <translation>确定用于后端的输入。为了兼容性, Windows用户可能更喜欢使用XInput而不是SDL2。</translation>
+        <translation>确定用于控制器输入的后端。为了兼容性, Windows用户可能更喜欢使用XInput而不是SDL2。</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="87"/>
         <location filename="../generalsettingswidget.cpp" line="91"/>
         <source>Enable Discord Presence</source>
-        <translation>启用Discord Presence</translation>
+        <translation>启用Discord显现</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="92"/>
@@ -2345,7 +2341,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1350"/>
         <source>Toggle PGXP</source>
-        <translation>切换 PGXP</translation>
+        <translation>切换PGXP</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1368"/>
@@ -2537,7 +2533,7 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../mainwindow.cpp" line="71"/>
         <location filename="../mainwindow.cpp" line="482"/>
         <source>DuckStation</source>
-        <translation>DuckStation</translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="38"/>
@@ -2996,15 +2992,15 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <source>Fusion</source>
-        <translation>Fusion</translation>
+        <translation>炼金</translation>
     </message>
     <message>
         <source>Dark Fusion (Gray)</source>
-        <translation>Dark Fusion (灰色)</translation>
+        <translation>黑炼金 (灰色)</translation>
     </message>
     <message>
         <source>Dark Fusion (Blue)</source>
-        <translation>Dark Fusion (蓝色)</translation>
+        <translation>黑炼金 (蓝色)</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="661"/>
@@ -3172,7 +3168,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../core/host_interface.cpp" line="464"/>
         <source>PGXP CPU mode is incompatible with the recompiler, using Cached Interpreter instead.</source>
-        <translation>PGXP CPU模式与重新编译器不兼容, 改为使用缓存解释器。</translation>
+        <translation>PGXP在CPU模式与重新编译器不兼容, 改为使用缓存解释器。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="698"/>
@@ -3331,7 +3327,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="553"/>
         <source>PGXP texture correction disabled by game settings.</source>
-        <translation>根据游戏设置禁用纹理校正。</translation>
+        <translation>根据游戏设置禁用PGXP纹理校正。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="565"/>
@@ -3341,7 +3337,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="576"/>
         <source>PGXP CPU mode forced by game settings.</source>
-        <translation>根据游戏设置强制PGXP CPU模式。</translation>
+        <translation>根据游戏设置强制PGXP在CPU模式。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="593"/>
@@ -3638,7 +3634,7 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../qtprogresscallback.cpp" line="10"/>
         <source>DuckStation</source>
-        <translation>DuckStation</translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../qtprogresscallback.cpp" line="29"/>
