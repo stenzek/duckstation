@@ -236,24 +236,24 @@
     <message>
         <location filename="../../core/analog_controller.cpp" line="477"/>
         <source>Up</source>
-        <translation>↑</translation>
+        <translation>上</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="478"/>
         <source>Down</source>
-        <translation>↓</translation>
+        <translation>下</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="479"/>
         <source>Left</source>
         <translatorcomment>←</translatorcomment>
-        <translation>←</translation>
+        <translation>左</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="480"/>
         <source>Right</source>
         <translatorcomment>→</translatorcomment>
-        <translation>→</translation>
+        <translation>右</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="481"/>
@@ -967,25 +967,25 @@
         <location filename="../../core/digital_controller.cpp" line="159"/>
         <source>Up</source>
         <translatorcomment>↑</translatorcomment>
-        <translation>↑</translation>
+        <translation>上</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="160"/>
         <source>Down</source>
         <translatorcomment>↓</translatorcomment>
-        <translation>↓</translation>
+        <translation>下</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="161"/>
         <source>Left</source>
         <translatorcomment>←</translatorcomment>
-        <translation>←</translation>
+        <translation>左</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="162"/>
         <source>Right</source>
         <translatorcomment>→</translatorcomment>
-        <translation>→</translation>
+        <translation>右</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="163"/>
@@ -1353,7 +1353,7 @@
         <location filename="../gpusettingswidget.ui" line="177"/>
         <location filename="../gpusettingswidget.cpp" line="128"/>
         <source>Widescreen Hack (render 3D in 16:9)</source>
-        <translation>宽屏补丁 (在16比9中渲染3D)</translation>
+        <translation>宽屏 (在16比9中渲染3D)</translation>
     </message>
     <message>
         <location filename="../gpusettingswidget.ui" line="187"/>
@@ -2119,7 +2119,7 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../generalsettingswidget.ui" line="59"/>
         <location filename="../generalsettingswidget.cpp" line="55"/>
         <source>Load Devices From Save States</source>
-        <translation>从即时存档读取设备</translation>
+        <translation>设备载入时读取即时存档</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="66"/>
@@ -3331,7 +3331,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="553"/>
         <source>PGXP texture correction disabled by game settings.</source>
-        <translation>根据游戏设置禁用纹理校正。</translation>
+        <translation>根据游戏设置禁用PGXP纹理校正。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="565"/>
