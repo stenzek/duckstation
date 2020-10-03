@@ -1353,7 +1353,7 @@
         <location filename="../gpusettingswidget.ui" line="177"/>
         <location filename="../gpusettingswidget.cpp" line="128"/>
         <source>Widescreen Hack (render 3D in 16:9)</source>
-        <translation>宽屏 (在16比9中渲染3D)</translation>
+        <translation>宽屏调整 (在16比9中渲染3D)</translation>
     </message>
     <message>
         <location filename="../gpusettingswidget.ui" line="187"/>
