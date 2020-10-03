@@ -1549,6 +1549,17 @@ void CommonHostInterface::RegisterAudioHotkeys()
           AddFormattedOSDMessage(2.0f, TranslateString("OSDMessage", "Volume: %d%%"), g_settings.audio_output_volume);
       }
     });
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Audio")), StaticString("AudioCDAudioMute"),
+                 StaticString(TRANSLATABLE("Hotkeys", "Toggle CD Audio Mute")), [this](bool pressed) {
+                   if (System::IsValid() && !pressed)
+                   {
+                     g_settings.cdrom_mute_cd_audio = !g_settings.cdrom_mute_cd_audio;
+                     AddOSDMessage(g_settings.cdrom_mute_cd_audio ?
+                                     TranslateStdString("OSDMessage", "CD Audio Muted.") :
+                                     TranslateStdString("OSDMessage", "CD Audio Unmuted."),
+                                   2.0f);
+                   }
+                 });
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Audio")), StaticString("AudioVolumeUp"),
                  StaticString(TRANSLATABLE("Hotkeys", "Volume Up")), [this](bool pressed) {
                    if (System::IsValid() && pressed)

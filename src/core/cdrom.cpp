@@ -2018,7 +2018,7 @@ void CDROM::ProcessXAADPCMSector(const u8* raw_sector, const CDImage::SubChannel
   CDXA::DecodeADPCMSector(raw_sector, sample_buffer.data(), m_xa_last_samples.data());
 
   // Only send to SPU if we're not muted.
-  if (m_muted || m_adpcm_muted)
+  if (m_muted || m_adpcm_muted || g_settings.cdrom_mute_cd_audio)
     return;
 
   g_spu.GeneratePendingSamples();
@@ -2082,7 +2082,7 @@ void CDROM::ProcessCDDASector(const u8* raw_sector, const CDImage::SubChannelQ& 
   }
 
   // Apply volume when pushing sectors to SPU.
-  if (m_muted)
+  if (m_muted || g_settings.cdrom_mute_cd_audio)
     return;
 
   g_spu.GeneratePendingSamples();

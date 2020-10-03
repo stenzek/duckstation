@@ -456,6 +456,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("CDROM", "ReadThread", true);
   si.SetBoolValue("CDROM", "RegionCheck", true);
   si.SetBoolValue("CDROM", "LoadImageToRAM", false);
+  si.SetBoolValue("CDROM", "MuteCDAudio", false);
 
   si.SetStringValue("Audio", "Backend", Settings::GetAudioBackendName(Settings::DEFAULT_AUDIO_BACKEND));
   si.SetIntValue("Audio", "OutputVolume", 100);

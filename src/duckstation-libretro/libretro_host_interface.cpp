@@ -445,7 +445,7 @@ void LibretroHostInterface::OnSystemDestroyed()
   m_using_hardware_renderer = false;
 }
 
-static std::array<retro_core_option_definition, 34> s_option_definitions = {{
+static std::array<retro_core_option_definition, 35> s_option_definitions = {{
   {"duckstation_Console.Region",
    "Console Region",
    "Determines which region/hardware to emulate. Auto-Detect will use the region of the disc inserted.",
@@ -474,6 +474,11 @@ static std::array<retro_core_option_definition, 34> s_option_definitions = {{
    "Loads the disc image to RAM before starting emulation. May reduce hitching if you are running off a network share, "
    "at a cost of a greater startup time. As libretro provides no way to draw overlays, the emulator will appear to "
    "lock up while the image is preloaded.",
+   {{"true", "Enabled"}, {"false", "Disabled"}},
+   "false"},
+  {"duckstation_CDROM.MuteCDAudio",
+   "Mute CD Audio",
+   "Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable background music in some games.",
    {{"true", "Enabled"}, {"false", "Disabled"}},
    "false"},
   {"duckstation_CPU.ExecutionMode",

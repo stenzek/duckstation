@@ -122,6 +122,7 @@ struct Settings
   bool cdrom_read_thread = true;
   bool cdrom_region_check = true;
   bool cdrom_load_image_to_ram = false;
+  bool cdrom_mute_cd_audio = false;
 
   AudioBackend audio_backend = AudioBackend::Cubeb;
   s32 audio_output_volume = 100;
