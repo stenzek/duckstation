@@ -1117,7 +1117,7 @@ void GameList::UpdateGameSettings(const std::string& filename, const std::string
 
 std::string GameList::GetCoverImagePathForEntry(const GameListEntry* entry)
 {
-  static constexpr std::array<const char*, 2> extensions = {{"jpg", "png"}};
+  static constexpr std::array<const char*, 3> extensions = {{"jpg", "jpeg", "png"}};
 
   PathString cover_path;
   for (const char* extension : extensions)
@@ -1156,4 +1156,22 @@ std::string GameList::GetCoverImagePathForEntry(const GameListEntry* entry)
   }
 
   return std::string();
+}
+
+std::string GameList::GetNewCoverImagePathForEntry(const GameListEntry* entry, const char* new_filename)
+{
+  const char* extension = std::strrchr(new_filename, '.');
+  if (!extension)
+    return {};
+
+  std::string existing_filename = GetCoverImagePathForEntry(entry);
+  if (!existing_filename.empty())
+  {
+    std::string::size_type pos = existing_filename.rfind('.');
+    if (pos != std::string::npos && existing_filename.compare(pos, std::strlen(extension), extension) == 0)
+      return existing_filename;
+  }
+
+  return g_host_interface->GetUserDirectoryRelativePath("covers" FS_OSPATH_SEPARATOR_STR "%s%s", entry->title.c_str(),
+                                                        extension);
 }

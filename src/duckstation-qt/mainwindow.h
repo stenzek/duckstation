@@ -80,6 +80,7 @@ private Q_SLOTS:
   void onGameListEntrySelected(const GameListEntry* entry);
   void onGameListEntryDoubleClicked(const GameListEntry* entry);
   void onGameListContextMenuRequested(const QPoint& point, const GameListEntry* entry);
+  void onGameListSetCoverImageRequested(const GameListEntry* entry);
 
   void checkForUpdates(bool display_message);
   void onUpdateCheckComplete();

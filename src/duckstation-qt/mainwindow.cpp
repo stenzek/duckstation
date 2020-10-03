@@ -433,6 +433,9 @@ void MainWindow::onGameListContextMenuRequested(const QPoint& point, const GameL
       QtUtils::OpenURL(this, QUrl::fromLocalFile(fi.absolutePath()));
     });
 
+    connect(menu.addAction(tr("Set Cover Image...")), &QAction::triggered,
+            [this, entry]() { onGameListSetCoverImageRequested(entry); });
+
     menu.addSeparator();
 
     if (!m_emulation_running)
@@ -475,6 +478,43 @@ void MainWindow::onGameListContextMenuRequested(const QPoint& point, const GameL
           [this]() { getSettingsDialog()->getGameListSettingsWidget()->addSearchDirectory(this); });
 
   menu.exec(point);
+}
+
+void MainWindow::onGameListSetCoverImageRequested(const GameListEntry* entry)
+{
+  QString filename = QFileDialog::getOpenFileName(this, tr("Select Cover Image"), QString(),
+                                                  tr("All Cover Image Types (*.jpg *.jpeg *.png)"));
+  if (filename.isEmpty())
+    return;
+
+  if (!m_host_interface->getGameList()->GetCoverImagePathForEntry(entry).empty())
+  {
+    if (QMessageBox::question(this, tr("Cover Already Exists"),
+                              tr("A cover image for this game already exists, do you wish to replace it?"),
+                              QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
+    {
+      return;
+    }
+  }
+
+  QString new_filename = QString::fromStdString(
+    m_host_interface->getGameList()->GetNewCoverImagePathForEntry(entry, filename.toStdString().c_str()));
+  if (new_filename.isEmpty())
+    return;
+
+  if (QFile::exists(new_filename) && !QFile::remove(new_filename))
+  {
+    QMessageBox::critical(this, tr("Copy Error"), tr("Failed to remove existing cover '%1'").arg(new_filename));
+    return;
+  }
+
+  if (!QFile::copy(filename, new_filename))
+  {
+    QMessageBox::critical(this, tr("Copy Error"), tr("Failed to copy '%1' to '%2'").arg(filename).arg(new_filename));
+    return;
+  }
+
+  m_game_list_widget->refreshGridCovers();
 }
 
 void MainWindow::setupAdditionalUi()

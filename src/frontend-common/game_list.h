@@ -109,6 +109,7 @@ public:
                           const GameSettings::Entry& new_entry, bool save_to_list = true, bool save_to_user = true);
 
   std::string GetCoverImagePathForEntry(const GameListEntry* entry);
+  std::string GetNewCoverImagePathForEntry(const GameListEntry* entry, const char* new_filename);
 
 private:
   enum : u32
