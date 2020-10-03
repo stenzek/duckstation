@@ -102,11 +102,11 @@
     </message>
     <message>
         <source>DMA Max Slice Ticks:</source>
-        <translation>DMA最大切片计时:</translation>
+        <translation>DMA最大片段晹克时:</translation>
     </message>
     <message>
         <source>DMA Halt Ticks:</source>
-        <translation>DMA停顿计时:</translation>
+        <translation>DMA停顿晹克时:</translation>
     </message>
     <message>
         <source>GPU FIFO Size:</source>
@@ -134,12 +134,12 @@
     <message>
         <location filename="../advancedsettingswidget.cpp" line="93"/>
         <source>DMA Max Slice Ticks</source>
-        <translation>DMA最大切片计时</translation>
+        <translation>DMA最大片段晹克时</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="95"/>
         <source>DMA Halt Ticks</source>
-        <translation>DMA停顿计时</translation>
+        <translation>DMA停顿晹克时</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="97"/>
