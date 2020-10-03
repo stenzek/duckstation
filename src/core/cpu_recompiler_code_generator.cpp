@@ -1736,11 +1736,20 @@ bool CodeGenerator::Compile_Branch(const CodeBlockInstruction& cbi)
       // npc = pc + (sext(imm) << 2)
       Value branch_target = CalculatePC(cbi.instruction.i.imm_sext32() << 2);
 
-      // branch <- rs op rt
-      Value lhs = m_register_cache.ReadGuestRegister(cbi.instruction.i.rs, true, true);
-      Value rhs = m_register_cache.ReadGuestRegister(cbi.instruction.i.rt);
-      const Condition condition = (cbi.instruction.op == InstructionOp::beq) ? Condition::Equal : Condition::NotEqual;
-      DoBranch(condition, lhs, rhs, Reg::count, std::move(branch_target));
+      // beq zero, zero, addr -> unconditional branch
+      if (cbi.instruction.op == InstructionOp::beq && cbi.instruction.i.rs == Reg::zero &&
+          cbi.instruction.i.rt == Reg::zero)
+      {
+        DoBranch(Condition::Always, Value(), Value(), Reg::count, std::move(branch_target));
+      }
+      else
+      {
+        // branch <- rs op rt
+        Value lhs = m_register_cache.ReadGuestRegister(cbi.instruction.i.rs, true, true);
+        Value rhs = m_register_cache.ReadGuestRegister(cbi.instruction.i.rt);
+        const Condition condition = (cbi.instruction.op == InstructionOp::beq) ? Condition::Equal : Condition::NotEqual;
+        DoBranch(condition, lhs, rhs, Reg::count, std::move(branch_target));
+      }
     }
     break;
 
