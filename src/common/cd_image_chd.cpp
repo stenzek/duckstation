@@ -2,6 +2,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
+#include "align.h"
 #include "assert.h"
 #include "cd_image.h"
 #include "cd_subchannel_replacement.h"
@@ -10,10 +11,10 @@
 #include "libchdr/chd.h"
 #include "log.h"
 #include <algorithm>
+#include <cerrno>
 #include <cstdio>
 #include <cstring>
 #include <map>
-#include <cerrno>
 #include <optional>
 Log_SetChannel(CDImageCHD);
 
@@ -55,7 +56,8 @@ protected:
 private:
   enum : u32
   {
-    CHD_SECTOR_DATA_SIZE = 2352 + 96,
+    CHD_CD_SECTOR_DATA_SIZE = 2352 + 96,
+    CHD_CD_TRACK_ALIGNMENT = 4
   };
 
   bool ReadHunk(u32 hunk_index);
@@ -100,13 +102,13 @@ bool CDImageCHD::Open(const char* filename)
 
   const chd_header* header = chd_get_header(m_chd);
   m_hunk_size = header->hunkbytes;
-  if ((m_hunk_size % CHD_SECTOR_DATA_SIZE) != 0)
+  if ((m_hunk_size % CHD_CD_SECTOR_DATA_SIZE) != 0)
   {
-    Log_ErrorPrintf("Hunk size (%u) is not a multiple of %u", m_hunk_size, CHD_SECTOR_DATA_SIZE);
+    Log_ErrorPrintf("Hunk size (%u) is not a multiple of %u", m_hunk_size, CHD_CD_SECTOR_DATA_SIZE);
     return false;
   }
 
-  m_sectors_per_hunk = m_hunk_size / CHD_SECTOR_DATA_SIZE;
+  m_sectors_per_hunk = m_hunk_size / CHD_CD_SECTOR_DATA_SIZE;
   m_hunk_buffer.resize(m_hunk_size);
   m_filename = filename;
 
@@ -200,7 +202,7 @@ bool CDImageCHD::Open(const char* filename)
 
         pregap_index.file_index = 0;
         pregap_index.file_offset = file_lba;
-        pregap_index.file_sector_size = CHD_SECTOR_DATA_SIZE;
+        pregap_index.file_sector_size = CHD_CD_SECTOR_DATA_SIZE;
         file_lba += pregap_frames;
         frames -= pregap_frames;
       }
@@ -220,7 +222,7 @@ bool CDImageCHD::Open(const char* filename)
     index.track_number = track_num;
     index.index_number = 1;
     index.file_index = 0;
-    index.file_sector_size = CHD_SECTOR_DATA_SIZE;
+    index.file_sector_size = CHD_CD_SECTOR_DATA_SIZE;
     index.file_offset = file_lba;
     index.mode = mode.value();
     index.control.bits = control.bits;
@@ -231,6 +233,9 @@ bool CDImageCHD::Open(const char* filename)
     disc_lba += index.length;
     file_lba += index.length;
     num_tracks++;
+
+    // each track is padded to a multiple of 4 frames, see chdman source.
+    file_lba = Common::AlignUp(file_lba, CHD_CD_TRACK_ALIGNMENT);
   }
 
   m_lba_count = disc_lba;
@@ -295,8 +300,8 @@ bool CDImageCHD::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_i
 {
   const u32 disc_frame = static_cast<LBA>(index.file_offset) + lba_in_index;
   const u32 hunk_index = static_cast<u32>(disc_frame / m_sectors_per_hunk);
-  const u32 hunk_offset = static_cast<u32>((disc_frame % m_sectors_per_hunk) * CHD_SECTOR_DATA_SIZE);
-  DebugAssert((m_hunk_size - hunk_offset) >= CHD_SECTOR_DATA_SIZE);
+  const u32 hunk_offset = static_cast<u32>((disc_frame % m_sectors_per_hunk) * CHD_CD_SECTOR_DATA_SIZE);
+  DebugAssert((m_hunk_size - hunk_offset) >= CHD_CD_SECTOR_DATA_SIZE);
 
   if (m_current_hunk_index != hunk_index && !ReadHunk(hunk_index))
     return false;
