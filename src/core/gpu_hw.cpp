@@ -440,8 +440,10 @@ void GPU_HW::LoadVertices()
           static_cast<u32>(std::clamp<s32>(max_y, m_drawing_area.top, m_drawing_area.bottom)) + 1u;
 
         m_vram_dirty_rect.Include(clip_left, clip_right, clip_top, clip_bottom);
-        AddDrawTriangleTicks(clip_right - clip_left, clip_bottom - clip_top, rc.shading_enable, rc.texture_enable,
-                             rc.transparency_enable);
+        AddDrawTriangleTicks(native_vertex_positions[0][0], native_vertex_positions[0][1],
+                             native_vertex_positions[1][0], native_vertex_positions[1][1],
+                             native_vertex_positions[2][0], native_vertex_positions[2][1], rc.shading_enable,
+                             rc.texture_enable, rc.transparency_enable);
 
         std::memcpy(m_batch_current_vertex_ptr, vertices.data(), sizeof(BatchVertex) * 3);
         m_batch_current_vertex_ptr += 3;
@@ -472,8 +474,10 @@ void GPU_HW::LoadVertices()
             static_cast<u32>(std::clamp<s32>(max_y_123, m_drawing_area.top, m_drawing_area.bottom)) + 1u;
 
           m_vram_dirty_rect.Include(clip_left, clip_right, clip_top, clip_bottom);
-          AddDrawTriangleTicks(clip_right - clip_left, clip_bottom - clip_top, rc.shading_enable, rc.texture_enable,
-                               rc.transparency_enable);
+          AddDrawTriangleTicks(native_vertex_positions[2][0], native_vertex_positions[2][1],
+                               native_vertex_positions[1][0], native_vertex_positions[1][1],
+                               native_vertex_positions[3][0], native_vertex_positions[3][1], rc.shading_enable,
+                               rc.texture_enable, rc.transparency_enable);
 
           AddVertex(vertices[2]);
           AddVertex(vertices[1]);

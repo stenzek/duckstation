@@ -421,6 +421,22 @@ protected:
   /// Returns true if the drawing area is valid (i.e. left <= right, top <= bottom).
   ALWAYS_INLINE bool IsDrawingAreaIsValid() const { return m_drawing_area.Valid(); }
 
+  /// Clamps the specified coordinates to the drawing area.
+  ALWAYS_INLINE void ClampCoordinatesToDrawingArea(s32* x, s32* y)
+  {
+    const s32 x_value = *x;
+    if (x_value < static_cast<s32>(m_drawing_area.left))
+      *x = m_drawing_area.left;
+    else if (x_value >= static_cast<s32>(m_drawing_area.right))
+      *x = m_drawing_area.right - 1;
+
+    const s32 y_value = *y;
+    if (y_value < static_cast<s32>(m_drawing_area.top))
+      *y = m_drawing_area.top;
+    else if (y_value >= static_cast<s32>(m_drawing_area.bottom))
+      *y = m_drawing_area.bottom - 1;
+  }
+
   void AddCommandTicks(TickCount ticks);
 
   void WriteGP1(u32 value);
@@ -439,19 +455,25 @@ protected:
   virtual void UpdateDisplay();
   virtual void DrawRendererStats(bool is_idle_frame);
 
-  // These are **very** approximate.
-  ALWAYS_INLINE void AddDrawTriangleTicks(u32 width, u32 height, bool shaded, bool textured, bool semitransparent)
+  ALWAYS_INLINE void AddDrawTriangleTicks(s32 x1, s32 y1, s32 x2, s32 y2, s32 x3, s32 y3, bool shaded, bool textured,
+                                          bool semitransparent)
   {
-    const u32 average_width = ((width + 2) / 3);
-    u32 ticks_per_row = average_width;
-    if (textured)
-      ticks_per_row += average_width;
-    if (semitransparent || m_GPUSTAT.check_mask_before_draw)
-      ticks_per_row += (average_width + 1u) / 2u;
-    if (m_GPUSTAT.SkipDrawingToActiveField())
-      height = std::max<u32>(height / 2, 1u);
+    // This will not produce the correct results for triangles which are partially outside the clip area.
+    // However, usually it'll undershoot not overshoot. If we wanted to make this more accurate, we'd need to intersect
+    // the edges with the clip rectangle.
+    ClampCoordinatesToDrawingArea(&x1, &y1);
+    ClampCoordinatesToDrawingArea(&x2, &y2);
+    ClampCoordinatesToDrawingArea(&x3, &y3);
 
-    AddCommandTicks(ticks_per_row * height);
+    TickCount pixels = std::abs((x1 * y2 + x2 * y3 + x3 * y1 - x1 * y3 - x2 * y1 - x3 * y2) / 2);
+    if (textured)
+      pixels += pixels;
+    if (semitransparent || m_GPUSTAT.check_mask_before_draw)
+      pixels += (pixels + 1) / 2;
+    if (m_GPUSTAT.SkipDrawingToActiveField())
+      pixels /= 2;
+
+    AddCommandTicks(pixels);
   }
   ALWAYS_INLINE void AddDrawRectangleTicks(u32 width, u32 height, bool textured, bool semitransparent)
   {

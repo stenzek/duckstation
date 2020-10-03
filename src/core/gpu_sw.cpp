@@ -754,18 +754,7 @@ void GPU_SW::DrawTriangle(const SWVertex* v0, const SWVertex* v1, const SWVertex
     return;
   }
 
-  {
-    const s32 min_x = std::clamp(std::min(v0->x, std::min(v1->x, v2->x)), static_cast<s32>(m_drawing_area.left),
-                                 static_cast<s32>(m_drawing_area.right));
-    const s32 max_x = std::clamp(std::max(v0->x, std::max(v1->x, v2->x)), static_cast<s32>(m_drawing_area.left),
-                                 static_cast<s32>(m_drawing_area.right));
-    const s32 min_y = std::clamp(std::min(v0->y, std::min(v1->y, v2->y)), static_cast<s32>(m_drawing_area.top),
-                                 static_cast<s32>(m_drawing_area.bottom));
-    const s32 max_y = std::clamp(std::max(v0->y, std::max(v1->y, v2->y)), static_cast<s32>(m_drawing_area.top),
-                                 static_cast<s32>(m_drawing_area.bottom));
-    AddDrawTriangleTicks(static_cast<u32>(max_x - min_x + 1), static_cast<u32>(max_y - min_y + 1), shading_enable,
-                         texture_enable, transparency_enable);
-  }
+  AddDrawTriangleTicks(v0->x, v0->y, v1->x, v1->y, v2->x, v2->y, shading_enable, texture_enable, transparency_enable);
 
   s64 base_coord = MakePolyXFP(v0->x);
   s64 base_step = MakePolyXFPStep((v2->x - v0->x), (v2->y - v0->y));
