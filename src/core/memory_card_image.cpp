@@ -421,10 +421,19 @@ static bool ImportCardGME(DataArray* data, const char* filename)
   if (!file_data.has_value())
     return false;
 
-  if (file_data->size() < (sizeof(GMEHeader) + DATA_SIZE))
+  if (file_data->size() < (sizeof(GMEHeader) + BLOCK_SIZE))
   {
     Log_ErrorPrintf("Failed to import GME memory card from '%s': file is incorrect size.", filename);
     return false;
+  }
+
+  // if it's too small, pad it
+  const u32 expected_size = sizeof(GMEHeader) + DATA_SIZE;
+  if (file_data->size() < expected_size)
+  {
+    Log_WarningPrintf("GME memory card '%s' is too small (got %zu expected %u), padding with zeroes", filename,
+                      file_data->size(), expected_size);
+    file_data->resize(expected_size);
   }
 
   // we don't actually care about the header, just skip over it
