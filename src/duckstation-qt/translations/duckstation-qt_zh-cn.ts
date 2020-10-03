@@ -114,7 +114,7 @@
     </message>
     <message>
         <source>GPU Max Run-Ahead:</source>
-        <translation>GPU最大优先级:</translation>
+        <translation>GPU最大先导运行:</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="84"/>
@@ -149,7 +149,7 @@
     <message>
         <location filename="../advancedsettingswidget.cpp" line="99"/>
         <source>GPU Max Run-Ahead</source>
-        <translation>GPU最大优先级</translation>
+        <translation>GPU最大先导运行</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="190"/>
