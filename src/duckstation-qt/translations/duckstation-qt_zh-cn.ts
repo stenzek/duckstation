@@ -363,7 +363,7 @@
     <message>
         <location filename="../../core/settings.cpp" line="508"/>
         <source>Cubeb</source>
-        <translation>立方</translation>
+        <translation>Cubeb</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="509"/>
