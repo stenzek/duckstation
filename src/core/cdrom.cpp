@@ -620,6 +620,10 @@ TickCount CDROM::GetAckDelayForCommand(Command command)
 TickCount CDROM::GetTicksForRead()
 {
   const TickCount tps = System::GetTicksPerSecond();
+
+  if (g_settings.cdrom_read_speedup > 1 && !m_mode.cdda && !m_mode.xa_enable && m_mode.double_speed)
+    return tps / (150 * g_settings.cdrom_read_speedup);
+
   return m_mode.double_speed ? (tps / 150) : (tps / 75);
 }
 

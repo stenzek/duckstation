@@ -445,7 +445,7 @@ void LibretroHostInterface::OnSystemDestroyed()
   m_using_hardware_renderer = false;
 }
 
-static std::array<retro_core_option_definition, 35> s_option_definitions = {{
+static std::array<retro_core_option_definition, 36> s_option_definitions = {{
   {"duckstation_Console.Region",
    "Console Region",
    "Determines which region/hardware to emulate. Auto-Detect will use the region of the disc inserted.",
@@ -481,6 +481,21 @@ static std::array<retro_core_option_definition, 35> s_option_definitions = {{
    "Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable background music in some games.",
    {{"true", "Enabled"}, {"false", "Disabled"}},
    "false"},
+  {"duckstation_CDROM.ReadSpeedup",
+   "Mute CD Audio",
+   "Speeds up CD-ROM reads by the specified factor. Only applies to double-speed reads, and is ignored when audio "
+   "is playing. May improve loading speeds in some games, at the cost of breaking others.",
+   {{"1", "None (Double Speed)"},
+    {"2", "2x (Quad Speed)"},
+    {"3", "3x (6x Speed)"},
+    {"4", "4x (8x Speed)"},
+    {"5", "5x (10x Speed)"},
+    {"6", "6x (12x Speed)"},
+    {"7", "7x (14x Speed)"},
+    {"8", "8x (16x Speed)"},
+    {"9", "9x (18x Speed)"},
+    {"10", "10x (20x Speed)"}},
+   "1"},
   {"duckstation_CPU.ExecutionMode",
    "CPU Execution Mode",
    "Which mode to use for CPU emulation. Recompiler provides the best performance.",

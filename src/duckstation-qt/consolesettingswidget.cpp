@@ -39,11 +39,19 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QW
     m_ui.cdromLoadImageToRAM, tr("Preload Image to RAM"), tr("Unchecked"),
     tr("Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay. In some "
        "cases also eliminates stutter when games initiate audio track playback."));
+  dialog->registerWidgetHelp(
+    m_ui.cdromReadSpeedup, tr("CDROM Read Speedup"), tr("None (Double Speed"),
+    tr("Speeds up CD-ROM reads by the specified factor. Only applies to double-speed reads, and is ignored when audio "
+       "is playing. May improve loading speeds in some games, at the cost of breaking others."));
 
   m_ui.cpuClockSpeed->setEnabled(m_ui.enableCPUClockSpeedControl->checkState() == Qt::Checked);
+  m_ui.cdromReadSpeedup->setCurrentIndex(m_host_interface->GetIntSettingValue("CDROM", "ReadSpeedup", 1) - 1);
+
   connect(m_ui.enableCPUClockSpeedControl, &QCheckBox::stateChanged, this,
           &ConsoleSettingsWidget::onEnableCPUClockSpeedControlChecked);
   connect(m_ui.cpuClockSpeed, &QSlider::valueChanged, this, &ConsoleSettingsWidget::onCPUClockSpeedValueChanged);
+  connect(m_ui.cdromReadSpeedup, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+          &ConsoleSettingsWidget::onCDROMReadSpeedupValueChanged);
 
   calculateCPUClockValue();
 }
@@ -93,6 +101,12 @@ void ConsoleSettingsWidget::updateCPUClockSpeedLabel()
   const int percent = m_ui.enableCPUClockSpeedControl->isChecked() ? m_ui.cpuClockSpeed->value() : 100;
   const double frequency = (static_cast<double>(System::MASTER_CLOCK) * static_cast<double>(percent)) / 100.0;
   m_ui.cpuClockSpeedLabel->setText(tr("%1% (%2MHz)").arg(percent).arg(frequency / 1000000.0, 0, 'f', 2));
+}
+
+void ConsoleSettingsWidget::onCDROMReadSpeedupValueChanged(int value)
+{
+  m_host_interface->SetIntSettingValue("CDROM", "ReadSpeedup", value + 1);
+  m_host_interface->applySettings();
 }
 
 void ConsoleSettingsWidget::calculateCPUClockValue()

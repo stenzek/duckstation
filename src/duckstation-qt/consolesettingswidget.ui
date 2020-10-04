@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>541</width>
-    <height>351</height>
+    <width>648</width>
+    <height>401</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -132,28 +132,89 @@
    <item>
     <widget class="QGroupBox" name="groupBox_4">
      <property name="title">
-      <string>CDROM Emulation</string>
+      <string>CD-ROM Emulation</string>
      </property>
      <layout class="QFormLayout" name="formLayout_4">
-      <item row="0" column="0" colspan="2">
+      <item row="1" column="0" colspan="2">
        <widget class="QCheckBox" name="cdromReadThread">
         <property name="text">
          <string>Use Read Thread (Asynchronous)</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="0" colspan="2">
+      <item row="2" column="0" colspan="2">
        <widget class="QCheckBox" name="cdromRegionCheck">
         <property name="text">
          <string>Enable Region Check</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="0" colspan="2">
+      <item row="3" column="0" colspan="2">
        <widget class="QCheckBox" name="cdromLoadImageToRAM">
         <property name="text">
          <string>Preload Image To RAM</string>
         </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>Read Speedup:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="cdromReadSpeedup">
+        <item>
+         <property name="text">
+          <string>None (Double Speed)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>2x (Quad Speed)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>3x (6x Speed)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>4x (8x Speed)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>5x (10x Speed)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>6x (12x Speed)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>7x (14x Speed)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>8x (16x Speed)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>9x (18x Speed)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>10x (20x Speed)</string>
+         </property>
+        </item>
        </widget>
       </item>
      </layout>

@@ -176,6 +176,7 @@ void Settings::Load(SettingsInterface& si)
   cdrom_region_check = si.GetBoolValue("CDROM", "RegionCheck", true);
   cdrom_load_image_to_ram = si.GetBoolValue("CDROM", "LoadImageToRAM", false);
   cdrom_mute_cd_audio = si.GetBoolValue("CDROM", "MuteCDAudio", false);
+  cdrom_read_speedup = si.GetIntValue("CDROM", "ReadSpeedup", 1);
 
   audio_backend =
     ParseAudioBackend(si.GetStringValue("Audio", "Backend", GetAudioBackendName(DEFAULT_AUDIO_BACKEND)).c_str())
@@ -296,6 +297,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("CDROM", "RegionCheck", cdrom_region_check);
   si.SetBoolValue("CDROM", "LoadImageToRAM", cdrom_load_image_to_ram);
   si.SetBoolValue("CDROM", "MuteCDAudio", cdrom_mute_cd_audio);
+  si.SetIntValue("CDROM", "ReadSpeedup", cdrom_read_speedup);
 
   si.SetStringValue("Audio", "Backend", GetAudioBackendName(audio_backend));
   si.SetIntValue("Audio", "OutputVolume", audio_output_volume);
