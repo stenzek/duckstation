@@ -13,6 +13,7 @@ A "BIOS" ROM image is required to to start the emulator and to play games. You c
 
 ## Latest News
 
+- 2020/10/05: CD-ROM read speedup enhancement added.
 - 2020/09/30: CPU overclocking is now supported. Use with caution as it will break games and increase system requirements. It can be set globally or per-game.
 - 2020/09/25: Cheat support added for libretro core.
 - 2020/09/23: Game covers added to Qt frontend (see [Adding Game Covers](https://github.com/stenzek/duckstation/wiki/Adding-Game-Covers)).
