@@ -129,7 +129,7 @@
     <message>
         <location filename="../advancedsettingswidget.cpp" line="90"/>
         <source>Enable Recompiler ICache</source>
-        <translation>启用重新编译I缓存</translation>
+        <translation>启用重新编译指令缓存</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="93"/>
