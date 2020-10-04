@@ -43,6 +43,7 @@ struct Entry
   std::optional<u32> cpu_overclock_numerator;
   std::optional<u32> cpu_overclock_denominator;
   std::optional<bool> cpu_overclock_enable;
+  std::optional<u32> cdrom_read_speedup;
   std::optional<DisplayCropMode> display_crop_mode;
   std::optional<DisplayAspectRatio> display_aspect_ratio;
   std::optional<bool> display_linear_upscaling;

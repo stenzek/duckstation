@@ -270,6 +270,12 @@ void GamePropertiesDialog::populateGameSettings()
   populateBooleanUserSetting(m_ui.userEnableCPUClockSpeedControl, gs.cpu_overclock_enable);
   updateCPUClockSpeedLabel();
 
+  if (gs.cdrom_read_speedup.has_value())
+  {
+    QSignalBlocker sb(m_ui.userCDROMReadSpeedup);
+    m_ui.userCDROMReadSpeedup->setCurrentIndex(static_cast<int>(gs.cdrom_read_speedup.value()));
+  }
+
   if (gs.display_active_start_offset.has_value())
   {
     QSignalBlocker sb(m_ui.displayActiveStartOffset);
@@ -433,6 +439,14 @@ void GamePropertiesDialog::connectUi()
 
     saveGameSettings();
     updateCPUClockSpeedLabel();
+  });
+
+  connect(m_ui.userCDROMReadSpeedup, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
+    if (index <= 0)
+      m_game_settings.cdrom_read_speedup.reset();
+    else
+      m_game_settings.cdrom_read_speedup = static_cast<u32>(index);
+    saveGameSettings();
   });
 
   connect(m_ui.userAspectRatio, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {

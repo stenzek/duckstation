@@ -402,7 +402,82 @@
         </widget>
        </item>
        <item>
-        <spacer name="verticalSpacer_4">
+        <widget class="QGroupBox" name="groupBox">
+         <property name="title">
+          <string>Other Settings</string>
+         </property>
+         <layout class="QFormLayout" name="formLayout_7">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_13">
+            <property name="text">
+             <string>CD-ROM Read Speedup:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="userCDROMReadSpeedup">
+            <item>
+             <property name="text">
+              <string>(unchanged)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>None (Double Speed)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>2x (Quad Speed)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>3x (6x Speed)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>4x (8x Speed)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>5x (10x Speed)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>6x (12x Speed)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>7x (14x Speed)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>8x (16x Speed)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>9x (18x Speed)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>10x (20x Speed)</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_3">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
          </property>

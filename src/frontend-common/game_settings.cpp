@@ -106,7 +106,7 @@ bool Entry::LoadFromStream(ByteStream* stream)
 
   if (!stream->Read2(bits.data(), num_bytes) || !ReadOptionalFromStream(stream, &cpu_overclock_numerator) ||
       !ReadOptionalFromStream(stream, &cpu_overclock_denominator) ||
-      !ReadOptionalFromStream(stream, &cpu_overclock_enable) ||
+      !ReadOptionalFromStream(stream, &cpu_overclock_enable) || !ReadOptionalFromStream(stream, &cdrom_read_speedup) ||
       !ReadOptionalFromStream(stream, &display_active_start_offset) ||
       !ReadOptionalFromStream(stream, &display_active_end_offset) ||
       !ReadOptionalFromStream(stream, &display_crop_mode) || !ReadOptionalFromStream(stream, &display_aspect_ratio) ||
@@ -149,7 +149,7 @@ bool Entry::SaveToStream(ByteStream* stream) const
 
   return stream->Write2(bits.data(), num_bytes) && WriteOptionalToStream(stream, cpu_overclock_numerator) &&
          WriteOptionalToStream(stream, cpu_overclock_denominator) &&
-         WriteOptionalToStream(stream, cpu_overclock_enable) &&
+         WriteOptionalToStream(stream, cpu_overclock_enable) && WriteOptionalToStream(stream, cdrom_read_speedup) &&
          WriteOptionalToStream(stream, display_active_start_offset) &&
          WriteOptionalToStream(stream, display_active_end_offset) && WriteOptionalToStream(stream, display_crop_mode) &&
          WriteOptionalToStream(stream, display_aspect_ratio) &&
@@ -182,6 +182,10 @@ static void ParseIniSection(Entry* entry, const char* section, const CSimpleIniA
   cvalue = ini.GetValue(section, "CPUOverclockEnable", nullptr);
   if (cvalue)
     entry->cpu_overclock_enable = StringUtil::FromChars<bool>(cvalue);
+
+  cvalue = ini.GetValue(section, "CDROMReadSpeedup", nullptr);
+  if (cvalue)
+    entry->cdrom_read_speedup = StringUtil::FromChars<u32>(cvalue);
 
   long lvalue = ini.GetLongValue(section, "DisplayActiveStartOffset", 0);
   if (lvalue != 0)
@@ -266,6 +270,9 @@ static void StoreIniSection(const Entry& entry, const char* section, CSimpleIniA
     ini.SetLongValue(section, "CPUOverclockDenominator", static_cast<long>(entry.cpu_overclock_denominator.value()));
   if (entry.cpu_overclock_enable.has_value())
     ini.SetBoolValue(section, "CPUOverclockEnable", entry.cpu_overclock_enable.value());
+
+  if (entry.cdrom_read_speedup.has_value())
+    ini.SetBoolValue(section, "CDROMReadSpeedup", entry.cdrom_read_speedup.value());
 
   if (entry.display_active_start_offset.has_value())
     ini.SetLongValue(section, "DisplayActiveStartOffset", entry.display_active_start_offset.value());
@@ -429,6 +436,9 @@ void Entry::ApplySettings(bool display_osd_messages) const
   if (cpu_overclock_enable.has_value())
     g_settings.cpu_overclock_enable = cpu_overclock_enable.value();
   g_settings.UpdateOverclockActive();
+
+  if (cdrom_read_speedup.has_value())
+    g_settings.cdrom_read_speedup = cdrom_read_speedup.value();
 
   if (display_active_start_offset.has_value())
     g_settings.display_active_start_offset = display_active_start_offset.value();
