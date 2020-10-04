@@ -19,23 +19,23 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../aboutdialog.cpp" line="29"/>
+        <location filename="../aboutdialog.cpp" line="30"/>
         <source>DuckStation is a free and open-source simulator/emulator of the Sony PlayStation&lt;span style=&quot;vertical-align:super;&quot;&gt;TM&lt;/span&gt; console, focusing on playability, speed, and long-term maintainability.</source>
         <translatorcomment>playability does not mean anything in italian. I&apos;m going with &quot;compatibility&quot;</translatorcomment>
         <translation>DuckStation è un simulatore/emulatore gratuito ed open-source della console Sony Playstation&lt;span style=&quot;vertical-align:super;&quot;&gt;TM&lt;/span&gt;, che si concentra su compatibilità, velocità e facilità di manutenzione.</translation>
     </message>
     <message>
-        <location filename="../aboutdialog.cpp" line="32"/>
+        <location filename="../aboutdialog.cpp" line="33"/>
         <source>Authors</source>
         <translation>Autori</translation>
     </message>
     <message>
-        <location filename="../aboutdialog.cpp" line="33"/>
+        <location filename="../aboutdialog.cpp" line="34"/>
         <source>Icon by</source>
         <translation>Icona di</translation>
     </message>
     <message>
-        <location filename="../aboutdialog.cpp" line="34"/>
+        <location filename="../aboutdialog.cpp" line="35"/>
         <source>License</source>
         <translation>Licenza</translation>
     </message>
@@ -632,8 +632,67 @@
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="135"/>
+        <source>CD-ROM Emulation</source>
+        <translation>Emulazione CDROM</translation>
+    </message>
+    <message>
+        <location filename="../consolesettingswidget.ui" line="162"/>
+        <source>Read Speedup:</source>
+        <translation>Accelerazione Lettura:</translation>
+    </message>
+    <message>
+        <location filename="../consolesettingswidget.ui" line="170"/>
+        <source>None (Double Speed)</source>
+        <translation>Nessuna (Velocità Doppia)</translation>
+    </message>
+    <message>
+        <location filename="../consolesettingswidget.ui" line="175"/>
+        <source>2x (Quad Speed)</source>
+        <translation>2x (Velocità Quadrupla)</translation>
+    </message>
+    <message>
+        <location filename="../consolesettingswidget.ui" line="180"/>
+        <source>3x (6x Speed)</source>
+        <translation>3x (Velocità 6x)</translation>
+    </message>
+    <message>
+        <location filename="../consolesettingswidget.ui" line="185"/>
+        <source>4x (8x Speed)</source>
+        <translation>4x (Velocità 8x)</translation>
+    </message>
+    <message>
+        <location filename="../consolesettingswidget.ui" line="190"/>
+        <source>5x (10x Speed)</source>
+        <translation>5x (Velocità 10x)</translation>
+    </message>
+    <message>
+        <location filename="../consolesettingswidget.ui" line="195"/>
+        <source>6x (12x Speed)</source>
+        <translation>6x (Velocità 12x)</translation>
+    </message>
+    <message>
+        <location filename="../consolesettingswidget.ui" line="200"/>
+        <source>7x (14x Speed)</source>
+        <translation>7x (Velocità 14x)</translation>
+    </message>
+    <message>
+        <location filename="../consolesettingswidget.ui" line="205"/>
+        <source>8x (16x Speed)</source>
+        <translation>8x (Velocità 16x)</translation>
+    </message>
+    <message>
+        <location filename="../consolesettingswidget.ui" line="210"/>
+        <source>9x (18x Speed)</source>
+        <translation>9x (Velocità 18x)</translation>
+    </message>
+    <message>
+        <location filename="../consolesettingswidget.ui" line="215"/>
+        <source>10x (20x Speed)</source>
+        <translation>10x (Velocità 20x)</translation>
+    </message>
+    <message>
         <source>CDROM Emulation</source>
-        <translation>Emulaione CDROM</translation>
+        <translation type="vanished">Emulaione CDROM</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="141"/>
@@ -671,7 +730,22 @@
         <translation>Carica l&apos;immagine del gioco nella RAM. Utile per percorsi di rete che potrebbero non essere affidabili durante il gameplay. In alcuni casi può anche eliminare degli errori negli audio quando i giochi avviano la riproduzione di tracce audio.</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.cpp" line="58"/>
+        <location filename="../consolesettingswidget.cpp" line="43"/>
+        <source>CDROM Read Speedup</source>
+        <translation>Accelerazione Lettura CDROM</translation>
+    </message>
+    <message>
+        <location filename="../consolesettingswidget.cpp" line="43"/>
+        <source>None (Double Speed</source>
+        <translation>Nessuna (Velocità Doppia)</translation>
+    </message>
+    <message>
+        <location filename="../consolesettingswidget.cpp" line="44"/>
+        <source>Speeds up CD-ROM reads by the specified factor. Only applies to double-speed reads, and is ignored when audio is playing. May improve loading speeds in some games, at the cost of breaking others.</source>
+        <translation>Velocizza la lettura del CD-ROM del fattore specificato. Si applica soltanto alle letture a doppia velocità ed è ignorato quando viene riprodotto audio. Potrebbe migliorare i tempi di caricamento in alcuni giochi ma potrebbe romperne degli altri.</translation>
+    </message>
+    <message>
+        <location filename="../consolesettingswidget.cpp" line="66"/>
         <source>Enabling CPU overclocking will break games, cause bugs, reduce performance and can significantly increase system requirements.
 
 By enabling this option you are agreeing to not create any bug reports unless you have confirmed the bug also occurs with overclocking disabled.
@@ -684,22 +758,22 @@ Attivando questa opzione, accetti di non aprire dei bug report a meno di non ave
 Questo avvertimento verrà mostrato solo una volta.</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.cpp" line="61"/>
+        <location filename="../consolesettingswidget.cpp" line="69"/>
         <source>Yes, I will confirm bugs without overclocking before reporting.</source>
         <translation>Sì, verificherò la presenza di bug senza overclocking prima di riferirli.</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.cpp" line="62"/>
+        <location filename="../consolesettingswidget.cpp" line="70"/>
         <source>No, take me back to safety.</source>
         <translation>No, riportami in sicurezza.</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.cpp" line="64"/>
+        <location filename="../consolesettingswidget.cpp" line="72"/>
         <source>CPU Overclocking Warning</source>
         <translation>Avvertimento CPU Overclocking</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.cpp" line="95"/>
+        <location filename="../consolesettingswidget.cpp" line="103"/>
         <source>%1% (%2MHz)</source>
         <translation></translation>
     </message>
@@ -1970,95 +2044,160 @@ Questo scaricherà circa 4 MB attraverso la tua connessione internet attuale.</t
         <translation>PGXP Correzione Geometria</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="421"/>
+        <location filename="../gamepropertiesdialog.ui" line="407"/>
+        <source>Other Settings</source>
+        <translation>Altre Impostazioni</translation>
+    </message>
+    <message>
+        <location filename="../gamepropertiesdialog.ui" line="413"/>
+        <source>CD-ROM Read Speedup:</source>
+        <translation>Accelerazione Lettura CD-ROM:</translation>
+    </message>
+    <message>
+        <location filename="../gamepropertiesdialog.ui" line="426"/>
+        <source>None (Double Speed)</source>
+        <translation>Nessuna (Velocità Doppia)</translation>
+    </message>
+    <message>
+        <location filename="../gamepropertiesdialog.ui" line="431"/>
+        <source>2x (Quad Speed)</source>
+        <translation>2x (Velocità Quadrupla)</translation>
+    </message>
+    <message>
+        <location filename="../gamepropertiesdialog.ui" line="436"/>
+        <source>3x (6x Speed)</source>
+        <translation>3x (Velocità 6x)</translation>
+    </message>
+    <message>
+        <location filename="../gamepropertiesdialog.ui" line="441"/>
+        <source>4x (8x Speed)</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gamepropertiesdialog.ui" line="446"/>
+        <source>5x (10x Speed)</source>
+        <translation>5x (Velocità 10x)</translation>
+    </message>
+    <message>
+        <location filename="../gamepropertiesdialog.ui" line="451"/>
+        <source>6x (12x Speed)</source>
+        <translation>6x (Velocità 12x)</translation>
+    </message>
+    <message>
+        <location filename="../gamepropertiesdialog.ui" line="456"/>
+        <source>7x (14x Speed)</source>
+        <translation>7x (Velocità 14x)</translation>
+    </message>
+    <message>
+        <location filename="../gamepropertiesdialog.ui" line="461"/>
+        <source>8x (16x Speed)</source>
+        <translation>8x (Velocità 16x)</translation>
+    </message>
+    <message>
+        <location filename="../gamepropertiesdialog.ui" line="466"/>
+        <source>9x (18x Speed)</source>
+        <translation>9x (Velocità 18x)</translation>
+    </message>
+    <message>
+        <location filename="../gamepropertiesdialog.ui" line="471"/>
+        <source>10x (20x Speed)</source>
+        <translation>10x (Velocità 20x)</translation>
+    </message>
+    <message>
+        <location filename="../gamepropertiesdialog.ui" line="496"/>
         <source>User Settings (Input)</source>
         <translation>Impostazioni Utente (Input)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="427"/>
+        <location filename="../gamepropertiesdialog.ui" line="502"/>
         <source>Controller Settings</source>
         <translation>Impostazioni Controller</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="433"/>
+        <location filename="../gamepropertiesdialog.ui" line="508"/>
         <source>Controller 1 Type:</source>
         <translation>Tipo Controller 1:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="443"/>
+        <location filename="../gamepropertiesdialog.ui" line="518"/>
         <source>Controller 2 Type:</source>
         <translation>Tipo Controller 2:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="456"/>
+        <location filename="../gamepropertiesdialog.ui" line="528"/>
+        <source>Input Profile For Bindings:</source>
+        <translation>Profilo di Input per Associazioni:</translation>
+    </message>
+    <message>
+        <location filename="../gamepropertiesdialog.ui" line="541"/>
         <source>Memory Card Settings</source>
         <translation>Impostazioni Memory Card</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="462"/>
+        <location filename="../gamepropertiesdialog.ui" line="547"/>
         <source>Memory Card 1 Type:</source>
         <translation>Memory Card 1 Tipo:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="472"/>
+        <location filename="../gamepropertiesdialog.ui" line="557"/>
         <source>Memory Card 1 Shared Path:</source>
         <translation>Memory Card 1 Percorso condiviso:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="484"/>
-        <location filename="../gamepropertiesdialog.ui" line="515"/>
+        <location filename="../gamepropertiesdialog.ui" line="569"/>
+        <location filename="../gamepropertiesdialog.ui" line="600"/>
         <source>Browse...</source>
         <translation>Sfoglia...</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="493"/>
+        <location filename="../gamepropertiesdialog.ui" line="578"/>
         <source>Memory Card 2 Type:</source>
         <translation>Memory Card 2 Tipo:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="503"/>
+        <location filename="../gamepropertiesdialog.ui" line="588"/>
         <source>Memory Card 2 Shared Path:</source>
         <translation>Memory Card 2 Percorso condiviso:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="541"/>
+        <location filename="../gamepropertiesdialog.ui" line="626"/>
         <source>Compatibility Settings</source>
         <translation>Impostazioni Compatibilità</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="547"/>
+        <location filename="../gamepropertiesdialog.ui" line="632"/>
         <source>Traits</source>
         <translation>Tratti</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="554"/>
+        <location filename="../gamepropertiesdialog.ui" line="639"/>
         <source>Overrides</source>
         <translatorcomment>no corresponding term in italian</translatorcomment>
         <translation>Override</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="560"/>
+        <location filename="../gamepropertiesdialog.ui" line="645"/>
         <source>Display Active Offset:</source>
         <translatorcomment>to be confirmed</translatorcomment>
         <translation>Offset Display Attivo:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="632"/>
+        <location filename="../gamepropertiesdialog.ui" line="717"/>
         <source>Compute Hashes</source>
         <translation>Calcola Hash</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="639"/>
+        <location filename="../gamepropertiesdialog.ui" line="724"/>
         <source>Verify Dump</source>
         <translation>Verifica Dump</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="646"/>
+        <location filename="../gamepropertiesdialog.ui" line="731"/>
         <source>Export Compatibility Info</source>
         <translation>Esporta Info Compatibilità</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="653"/>
+        <location filename="../gamepropertiesdialog.ui" line="738"/>
         <source>Close</source>
         <translation>Chiudi</translation>
     </message>
@@ -2068,45 +2207,47 @@ Questo scaricherà circa 4 MB attraverso la tua connessione internet attuale.</t
         <translation>Proprietà del Gioco - %1</translation>
     </message>
     <message>
+        <location filename="../gamepropertiesdialog.ui" line="421"/>
         <location filename="../gamepropertiesdialog.cpp" line="121"/>
         <location filename="../gamepropertiesdialog.cpp" line="128"/>
         <location filename="../gamepropertiesdialog.cpp" line="135"/>
         <location filename="../gamepropertiesdialog.cpp" line="138"/>
         <location filename="../gamepropertiesdialog.cpp" line="145"/>
         <location filename="../gamepropertiesdialog.cpp" line="151"/>
-        <location filename="../gamepropertiesdialog.cpp" line="158"/>
-        <location filename="../gamepropertiesdialog.cpp" line="164"/>
+        <location filename="../gamepropertiesdialog.cpp" line="157"/>
+        <location filename="../gamepropertiesdialog.cpp" line="161"/>
+        <location filename="../gamepropertiesdialog.cpp" line="167"/>
         <source>(unchanged)</source>
         <translation>(invariato)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.cpp" line="224"/>
+        <location filename="../gamepropertiesdialog.cpp" line="227"/>
         <source>&lt;not computed&gt;</source>
         <translation>&lt;non calcolato&gt;</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.cpp" line="497"/>
-        <location filename="../gamepropertiesdialog.cpp" line="520"/>
+        <location filename="../gamepropertiesdialog.cpp" line="534"/>
+        <location filename="../gamepropertiesdialog.cpp" line="557"/>
         <source>Select path to memory card image</source>
         <translation>Seleziona percorso per immagine memory card</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.cpp" line="556"/>
+        <location filename="../gamepropertiesdialog.cpp" line="593"/>
         <source>%1% (%2MHz)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.cpp" line="612"/>
+        <location filename="../gamepropertiesdialog.cpp" line="649"/>
         <source>Not yet implemented</source>
         <translation>Non ancora implementato</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.cpp" line="626"/>
+        <location filename="../gamepropertiesdialog.cpp" line="663"/>
         <source>Compatibility Info Export</source>
         <translation>Esporta Info Compatibilità</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.cpp" line="626"/>
+        <location filename="../gamepropertiesdialog.cpp" line="663"/>
         <source>Press OK to copy to clipboard.</source>
         <translation>Premi OK per copiare negli appunti.</translation>
     </message>
