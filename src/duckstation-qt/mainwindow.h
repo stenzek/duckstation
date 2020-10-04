@@ -74,6 +74,7 @@ private Q_SLOTS:
   void onDiscordServerActionTriggered();
   void onAboutActionTriggered();
   void onCheckForUpdatesActionTriggered();
+  void onToolsMakePortableTriggered();
   void onToolsMemoryCardEditorTriggered();
   void onToolsOpenDataDirectoryTriggered();
 

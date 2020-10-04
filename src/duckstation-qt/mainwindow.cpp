@@ -741,6 +741,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionAboutQt, &QAction::triggered, qApp, &QApplication::aboutQt);
   connect(m_ui.actionAbout, &QAction::triggered, this, &MainWindow::onAboutActionTriggered);
   connect(m_ui.actionCheckForUpdates, &QAction::triggered, this, &MainWindow::onCheckForUpdatesActionTriggered);
+  connect(m_ui.actionMakePortable, &QAction::triggered, this, &MainWindow::onToolsMakePortableTriggered);
   connect(m_ui.actionMemory_Card_Editor, &QAction::triggered, this, &MainWindow::onToolsMemoryCardEditorTriggered);
   connect(m_ui.actionOpenDataDirectory, &QAction::triggered, this, &MainWindow::onToolsOpenDataDirectoryTriggered);
   connect(m_ui.actionGridViewShowTitles, &QAction::triggered, m_game_list_widget, &GameListWidget::setShowCoverTitles);
@@ -1099,6 +1100,26 @@ void MainWindow::onCheckForUpdatesActionTriggered()
   // Wipe out the last version, that way it displays the update if we've previously skipped it.
   m_host_interface->RemoveSettingValue("AutoUpdater", "LastVersion");
   checkForUpdates(true);
+}
+
+void MainWindow::onToolsMakePortableTriggered()
+{
+  if (m_host_interface->getUserDirectory().compare(m_host_interface->getProgramDirectory()) == 0)
+  {
+    QMessageBox::information(this, tr("Make Portable"),
+                             tr("DuckStation is already running in portable mode. To undo this, delete portable.txt "
+                                "from the program directory and restart the application."));
+    return;
+  }
+
+  if (QMessageBox::question(this, tr("Make Portable"),
+                            tr("Warning: This will make DuckStation load/save user files and settings from the "
+                               "same directory as the executable. Proceed?")) == QMessageBox::Yes)
+  {
+    m_host_interface->makePortable();
+    QMessageBox::information(this, tr("Make Portable"),
+                             tr("Please restart DuckStation to begin running in portable mode."));
+  }
 }
 
 void MainWindow::onToolsMemoryCardEditorTriggered()

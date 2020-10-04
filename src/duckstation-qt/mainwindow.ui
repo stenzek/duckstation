@@ -196,6 +196,8 @@
     <property name="title">
      <string>&amp;Tools</string>
     </property>
+    <addaction name="actionMakePortable"/>
+    <addaction name="separator"/>
     <addaction name="actionMemory_Card_Editor"/>
     <addaction name="separator"/>
     <addaction name="actionOpenDataDirectory"/>
@@ -334,7 +336,7 @@
   </action>
   <action name="actionBIOSSettings">
    <property name="icon">
-    <iconset>
+    <iconset resource="resources/resources.qrc">
      <normaloff>:/icons/media-flash-2.png</normaloff>:/icons/media-flash-2.png</iconset>
    </property>
    <property name="text">
@@ -728,6 +730,11 @@
   <action name="actionOpenDataDirectory">
    <property name="text">
     <string>Open Data Directory...</string>
+   </property>
+  </action>
+  <action name="actionMakePortable">
+   <property name="text">
+    <string>Make Portable</string>
    </property>
   </action>
  </widget>

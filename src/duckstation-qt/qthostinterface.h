@@ -109,8 +109,13 @@ public:
   /// Returns a list of supported languages and codes (suffixes for translation files).
   static std::vector<std::pair<QString, QString>> getAvailableLanguageList();
 
+  /// Returns user directory as a QString.
+  QString getUserDirectory() const;
+
   /// Returns program directory as a QString.
   QString getProgramDirectory() const;
+
+  void makePortable();
 
 Q_SIGNALS:
   void errorReported(const QString& message);

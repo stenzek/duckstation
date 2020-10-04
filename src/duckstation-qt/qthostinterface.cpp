@@ -33,6 +33,7 @@
 #include <QtWidgets/QMessageBox>
 #include <algorithm>
 #include <memory>
+#include <iostream>
 Log_SetChannel(QtHostInterface);
 
 #ifdef WIN32
@@ -744,9 +745,21 @@ QString QtHostInterface::getProgramDirectoryRelativePath(const QString& arg) con
   return result;
 }
 
+QString QtHostInterface::getUserDirectory() const
+{
+  return QString::fromStdString(m_user_directory);
+}
+
 QString QtHostInterface::getProgramDirectory() const
 {
   return QString::fromStdString(m_program_directory);
+}
+
+void QtHostInterface::makePortable()
+{
+  std::string portabletxt_fpath = m_program_directory + FS_OSPATH_SEPARATOR_STR + "portable.txt";
+  FileSystem::OpenFile(portabletxt_fpath.c_str(), BYTESTREAM_OPEN_CREATE | BYTESTREAM_OPEN_WRITE);
+  ReportFormattedMessage("portable.txt created at %s", portabletxt_fpath.c_str());
 }
 
 void QtHostInterface::powerOffSystem()
