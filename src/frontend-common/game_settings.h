@@ -43,6 +43,7 @@ struct Entry
   std::optional<u32> cpu_overclock_numerator;
   std::optional<u32> cpu_overclock_denominator;
   std::optional<bool> cpu_overclock_enable;
+  std::optional<u32> cdrom_read_speedup;
   std::optional<DisplayCropMode> display_crop_mode;
   std::optional<DisplayAspectRatio> display_aspect_ratio;
   std::optional<bool> display_linear_upscaling;
@@ -61,6 +62,7 @@ struct Entry
   std::optional<MemoryCardType> memory_card_2_type;
   std::string memory_card_1_shared_path;
   std::string memory_card_2_shared_path;
+  std::string input_profile_name;
 
   ALWAYS_INLINE bool HasTrait(Trait trait) const { return traits[static_cast<int>(trait)]; }
   ALWAYS_INLINE void AddTrait(Trait trait) { traits[static_cast<int>(trait)] = true; }

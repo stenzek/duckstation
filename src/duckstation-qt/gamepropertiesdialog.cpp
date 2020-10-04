@@ -154,6 +154,9 @@ void GamePropertiesDialog::setupAdditionalUi()
     m_ui.userControllerType2->addItem(
       qApp->translate("ControllerType", Settings::GetControllerTypeDisplayName(static_cast<ControllerType>(i))));
   }
+  m_ui.userInputProfile->addItem(tr("(unchanged)"));
+  for (const auto& it : m_host_interface->getInputProfileList())
+    m_ui.userInputProfile->addItem(QString::fromStdString(it.name));
 
   m_ui.userMemoryCard1Type->addItem(tr("(unchanged)"));
   for (u32 i = 0; i < static_cast<u32>(MemoryCardType::Count); i++)
@@ -267,6 +270,12 @@ void GamePropertiesDialog::populateGameSettings()
   populateBooleanUserSetting(m_ui.userEnableCPUClockSpeedControl, gs.cpu_overclock_enable);
   updateCPUClockSpeedLabel();
 
+  if (gs.cdrom_read_speedup.has_value())
+  {
+    QSignalBlocker sb(m_ui.userCDROMReadSpeedup);
+    m_ui.userCDROMReadSpeedup->setCurrentIndex(static_cast<int>(gs.cdrom_read_speedup.value()));
+  }
+
   if (gs.display_active_start_offset.has_value())
   {
     QSignalBlocker sb(m_ui.displayActiveStartOffset);
@@ -330,6 +339,18 @@ void GamePropertiesDialog::populateGameSettings()
   {
     QSignalBlocker sb(m_ui.userControllerType2);
     m_ui.userControllerType2->setCurrentIndex(static_cast<int>(gs.controller_2_type.value()) + 1);
+  }
+  if (!gs.input_profile_name.empty())
+  {
+    QSignalBlocker sb(m_ui.userInputProfile);
+    int index = m_ui.userInputProfile->findText(QString::fromStdString(gs.input_profile_name));
+    if (index < 0)
+    {
+      index = m_ui.userInputProfile->count();
+      m_ui.userInputProfile->addItem(QString::fromStdString(gs.input_profile_name));
+    }
+
+    m_ui.userInputProfile->setCurrentIndex(index);
   }
 
   if (gs.memory_card_1_type.has_value())
@@ -420,6 +441,14 @@ void GamePropertiesDialog::connectUi()
     updateCPUClockSpeedLabel();
   });
 
+  connect(m_ui.userCDROMReadSpeedup, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
+    if (index <= 0)
+      m_game_settings.cdrom_read_speedup.reset();
+    else
+      m_game_settings.cdrom_read_speedup = static_cast<u32>(index);
+    saveGameSettings();
+  });
+
   connect(m_ui.userAspectRatio, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
     if (index <= 0)
       m_game_settings.display_aspect_ratio.reset();
@@ -475,6 +504,14 @@ void GamePropertiesDialog::connectUi()
       m_game_settings.controller_2_type.reset();
     else
       m_game_settings.controller_2_type = static_cast<ControllerType>(index - 1);
+    saveGameSettings();
+  });
+
+  connect(m_ui.userInputProfile, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
+    if (index <= 0)
+      m_game_settings.input_profile_name = {};
+    else
+      m_game_settings.input_profile_name = m_ui.userInputProfile->itemText(index).toStdString();
     saveGameSettings();
   });
 

@@ -977,7 +977,10 @@ bool CommonHostInterface::HandleHostMouseEvent(HostMouseButton button, bool pres
 void CommonHostInterface::UpdateInputMap(SettingsInterface& si)
 {
   ClearInputMap();
-  UpdateControllerInputMap(si);
+
+  if (!UpdateControllerInputMapFromGameSettings())
+    UpdateControllerInputMap(si);
+
   UpdateHotkeyInputMap(si);
 }
 
@@ -1540,46 +1543,46 @@ void CommonHostInterface::RegisterSaveStateHotkeys()
   }
 
   // Dummy strings for translation because we construct them in a loop.
-  TRANSLATABLE_NOOP("Hotkeys", "Load Game State 1");
-  TRANSLATABLE_NOOP("Hotkeys", "Load Game State 2");
-  TRANSLATABLE_NOOP("Hotkeys", "Load Game State 3");
-  TRANSLATABLE_NOOP("Hotkeys", "Load Game State 4");
-  TRANSLATABLE_NOOP("Hotkeys", "Load Game State 5");
-  TRANSLATABLE_NOOP("Hotkeys", "Load Game State 6");
-  TRANSLATABLE_NOOP("Hotkeys", "Load Game State 7");
-  TRANSLATABLE_NOOP("Hotkeys", "Load Game State 8");
-  TRANSLATABLE_NOOP("Hotkeys", "Load Game State 9");
-  TRANSLATABLE_NOOP("Hotkeys", "Load Game State 10");
-  TRANSLATABLE_NOOP("Hotkeys", "Save Game State 1");
-  TRANSLATABLE_NOOP("Hotkeys", "Save Game State 2");
-  TRANSLATABLE_NOOP("Hotkeys", "Save Game State 3");
-  TRANSLATABLE_NOOP("Hotkeys", "Save Game State 4");
-  TRANSLATABLE_NOOP("Hotkeys", "Save Game State 5");
-  TRANSLATABLE_NOOP("Hotkeys", "Save Game State 6");
-  TRANSLATABLE_NOOP("Hotkeys", "Save Game State 7");
-  TRANSLATABLE_NOOP("Hotkeys", "Save Game State 8");
-  TRANSLATABLE_NOOP("Hotkeys", "Save Game State 9");
-  TRANSLATABLE_NOOP("Hotkeys", "Save Game State 10");
-  TRANSLATABLE_NOOP("Hotkeys", "Load Global State 1");
-  TRANSLATABLE_NOOP("Hotkeys", "Load Global State 2");
-  TRANSLATABLE_NOOP("Hotkeys", "Load Global State 3");
-  TRANSLATABLE_NOOP("Hotkeys", "Load Global State 4");
-  TRANSLATABLE_NOOP("Hotkeys", "Load Global State 5");
-  TRANSLATABLE_NOOP("Hotkeys", "Load Global State 6");
-  TRANSLATABLE_NOOP("Hotkeys", "Load Global State 7");
-  TRANSLATABLE_NOOP("Hotkeys", "Load Global State 8");
-  TRANSLATABLE_NOOP("Hotkeys", "Load Global State 9");
-  TRANSLATABLE_NOOP("Hotkeys", "Load Global State 10");
-  TRANSLATABLE_NOOP("Hotkeys", "Save Global State 1");
-  TRANSLATABLE_NOOP("Hotkeys", "Save Global State 2");
-  TRANSLATABLE_NOOP("Hotkeys", "Save Global State 3");
-  TRANSLATABLE_NOOP("Hotkeys", "Save Global State 4");
-  TRANSLATABLE_NOOP("Hotkeys", "Save Global State 5");
-  TRANSLATABLE_NOOP("Hotkeys", "Save Global State 6");
-  TRANSLATABLE_NOOP("Hotkeys", "Save Global State 7");
-  TRANSLATABLE_NOOP("Hotkeys", "Save Global State 8");
-  TRANSLATABLE_NOOP("Hotkeys", "Save Global State 9");
-  TRANSLATABLE_NOOP("Hotkeys", "Save Global State 10");
+  (void)TRANSLATABLE("Hotkeys", "Load Game State 1");
+  (void)TRANSLATABLE("Hotkeys", "Load Game State 2");
+  (void)TRANSLATABLE("Hotkeys", "Load Game State 3");
+  (void)TRANSLATABLE("Hotkeys", "Load Game State 4");
+  (void)TRANSLATABLE("Hotkeys", "Load Game State 5");
+  (void)TRANSLATABLE("Hotkeys", "Load Game State 6");
+  (void)TRANSLATABLE("Hotkeys", "Load Game State 7");
+  (void)TRANSLATABLE("Hotkeys", "Load Game State 8");
+  (void)TRANSLATABLE("Hotkeys", "Load Game State 9");
+  (void)TRANSLATABLE("Hotkeys", "Load Game State 10");
+  (void)TRANSLATABLE("Hotkeys", "Save Game State 1");
+  (void)TRANSLATABLE("Hotkeys", "Save Game State 2");
+  (void)TRANSLATABLE("Hotkeys", "Save Game State 3");
+  (void)TRANSLATABLE("Hotkeys", "Save Game State 4");
+  (void)TRANSLATABLE("Hotkeys", "Save Game State 5");
+  (void)TRANSLATABLE("Hotkeys", "Save Game State 6");
+  (void)TRANSLATABLE("Hotkeys", "Save Game State 7");
+  (void)TRANSLATABLE("Hotkeys", "Save Game State 8");
+  (void)TRANSLATABLE("Hotkeys", "Save Game State 9");
+  (void)TRANSLATABLE("Hotkeys", "Save Game State 10");
+  (void)TRANSLATABLE("Hotkeys", "Load Global State 1");
+  (void)TRANSLATABLE("Hotkeys", "Load Global State 2");
+  (void)TRANSLATABLE("Hotkeys", "Load Global State 3");
+  (void)TRANSLATABLE("Hotkeys", "Load Global State 4");
+  (void)TRANSLATABLE("Hotkeys", "Load Global State 5");
+  (void)TRANSLATABLE("Hotkeys", "Load Global State 6");
+  (void)TRANSLATABLE("Hotkeys", "Load Global State 7");
+  (void)TRANSLATABLE("Hotkeys", "Load Global State 8");
+  (void)TRANSLATABLE("Hotkeys", "Load Global State 9");
+  (void)TRANSLATABLE("Hotkeys", "Load Global State 10");
+  (void)TRANSLATABLE("Hotkeys", "Save Global State 1");
+  (void)TRANSLATABLE("Hotkeys", "Save Global State 2");
+  (void)TRANSLATABLE("Hotkeys", "Save Global State 3");
+  (void)TRANSLATABLE("Hotkeys", "Save Global State 4");
+  (void)TRANSLATABLE("Hotkeys", "Save Global State 5");
+  (void)TRANSLATABLE("Hotkeys", "Save Global State 6");
+  (void)TRANSLATABLE("Hotkeys", "Save Global State 7");
+  (void)TRANSLATABLE("Hotkeys", "Save Global State 8");
+  (void)TRANSLATABLE("Hotkeys", "Save Global State 9");
+  (void)TRANSLATABLE("Hotkeys", "Save Global State 10");
 }
 
 void CommonHostInterface::RegisterAudioHotkeys()
@@ -1675,6 +1678,19 @@ void CommonHostInterface::FindInputProfiles(const std::string& base_path, InputP
       StringUtil::StdStringFromFormat("%s" FS_OSPATH_SEPARATOR_STR "%s", base_path.c_str(), it.FileName.c_str()));
     out_list->push_back(InputProfileEntry{std::move(name), std::move(filename)});
   }
+}
+
+std::string CommonHostInterface::GetInputProfilePath(const char* name) const
+{
+  std::string path = GetUserDirectoryRelativePath("inputprofiles" FS_OSPATH_SEPARATOR_STR "%s.ini", name);
+  if (FileSystem::FileExists(path.c_str()))
+    return path;
+
+  path = GetProgramDirectoryRelativePath("inputprofiles" FS_OSPATH_SEPARATOR_STR "%s.ini", name);
+  if (FileSystem::FileExists(path.c_str()))
+    return path;
+
+  return {};
 }
 
 void CommonHostInterface::ClearAllControllerBindings(SettingsInterface& si)
@@ -2280,6 +2296,35 @@ void CommonHostInterface::ApplyGameSettings(bool display_osd_messages)
   const GameSettings::Entry* gs = m_game_list->GetGameSettings(System::GetRunningPath(), System::GetRunningCode());
   if (gs)
     gs->ApplySettings(display_osd_messages);
+}
+
+bool CommonHostInterface::UpdateControllerInputMapFromGameSettings()
+{
+  // this gets called while booting, so can't use valid
+  if (System::IsShutdown() || System::GetRunningCode().empty() || !g_settings.apply_game_settings)
+    return false;
+
+  const GameSettings::Entry* gs = m_game_list->GetGameSettings(System::GetRunningPath(), System::GetRunningCode());
+  if (!gs || gs->input_profile_name.empty())
+    return false;
+
+  std::string path = GetInputProfilePath(gs->input_profile_name.c_str());
+  if (path.empty())
+  {
+    AddFormattedOSDMessage(10.0f, TranslateString("OSDMessage", "Input profile '%s' cannot be found."),
+                           gs->input_profile_name.c_str());
+    return false;
+  }
+
+  if (System::GetState() == System::State::Starting)
+  {
+    AddFormattedOSDMessage(5.0f, TranslateString("OSDMessage", "Using input profile '%s'."),
+                           gs->input_profile_name.c_str());
+  }
+
+  INISettingsInterface si(std::move(path));
+  UpdateControllerInputMap(si);
+  return true;
 }
 
 std::string CommonHostInterface::GetCheatFileName() const

@@ -870,6 +870,13 @@ void CPU_SW(u32 instr, u32 rtVal, u32 addr)
   WriteMem(&CPU_reg[rt(instr)], addr);
 }
 
+void CPU_MOVE(u32 rd_and_rs, u32 rsVal)
+{
+  const u32 Rs = (rd_and_rs & 0xFFu);
+  Validate(&CPU_reg[Rs], rsVal);
+  CPU_reg[(rd_and_rs >> 8)] = CPU_reg[Rs];
+}
+
 void CPU_ADDI(u32 instr, u32 rtVal, u32 rsVal)
 {
   // Rt = Rs + Imm (signed)

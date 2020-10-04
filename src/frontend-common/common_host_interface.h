@@ -233,6 +233,9 @@ protected:
   /// Returns a list of all input profiles. first - name, second - path
   InputProfileList GetInputProfileList() const;
 
+  /// Returns the path for an input profile.
+  std::string GetInputProfilePath(const char* name) const;
+
   /// Applies the specified input profile.
   void ApplyInputProfile(const char* profile_path, SettingsInterface& si);
 
@@ -330,6 +333,7 @@ private:
   void RegisterAudioHotkeys();
   void FindInputProfiles(const std::string& base_path, InputProfileList* out_list) const;
   void UpdateControllerInputMap(SettingsInterface& si);
+  bool UpdateControllerInputMapFromGameSettings();
   void UpdateHotkeyInputMap(SettingsInterface& si);
   void ClearAllControllerBindings(SettingsInterface& si);
 

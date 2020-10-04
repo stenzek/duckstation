@@ -19,6 +19,7 @@ private Q_SLOTS:
   void onEnableCPUClockSpeedControlChecked(int state);
   void onCPUClockSpeedValueChanged(int value);
   void updateCPUClockSpeedLabel();
+  void onCDROMReadSpeedupValueChanged(int value);
 
 private:
   void calculateCPUClockValue();
