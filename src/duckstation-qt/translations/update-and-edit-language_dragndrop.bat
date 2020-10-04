@@ -10,7 +10,7 @@ IF %arg1%=="" EXIT
 FOR %%A IN (%arg1%) DO (set filename=%%~nxA)
 
 set "linguist=..\..\..\dep\msvc\qt\5.15.0\msvc2017_64\bin"
-set context=..\
+set "context=./ ../core/ ../frontend-common/ -tr-function-alias translate+=TranslateString -tr-function-alias translate+=TranslateStdString -tr-function-alias QT_TRANSLATE_NOOP+=TRANSLATABLE"
 
 "%linguist%\lupdate.exe" %context% -ts %filename%
 pause
