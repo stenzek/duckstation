@@ -1522,6 +1522,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1391-g5f9481dd</version-tested>
   </entry>
+  <entry code="SCUS-94181" compatibility="5" region="NTSC-U" title="I.Q - Intelligent Qube (USA)">
+    <compatibility>No Issues</compatibility>
+    <comments>Play field occasionally jerks with PGXP switched on</comments>
+  </entry>
   <entry code="SLES-00342" compatibility="5" region="PAL" title="In the Hunt (Europe)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-887-g1eecd50</version-tested>
@@ -1624,6 +1628,10 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLUS-00684" compatibility="5" region="NTSC-U" title="Jackie Chan Stuntmaster (USA)">
     <compatibility>No Issues</compatibility>
     <comments>Must use interpreter to avoid crash</comments>
+  </entry>
+  <entry code="SLUS-01139" compatibility="5" region="NTSC-U" title="Jarrett &amp; Labonte Stock Car Racing (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1915-gf071497b</version-tested>
   </entry>
   <entry code="SCUS-94907" compatibility="5" region="NTSC-U" title="Jersey Devil (USA)">
     <compatibility>No Issues</compatibility>
