@@ -121,7 +121,7 @@ bool Entry::LoadFromStream(ByteStream* stream)
       !ReadOptionalFromStream(stream, &controller_2_type) || !ReadOptionalFromStream(stream, &memory_card_1_type) ||
       !ReadOptionalFromStream(stream, &memory_card_2_type) ||
       !ReadStringFromStream(stream, &memory_card_1_shared_path) ||
-      !ReadStringFromStream(stream, &memory_card_2_shared_path))
+      !ReadStringFromStream(stream, &memory_card_2_shared_path) || !ReadStringFromStream(stream, &input_profile_name))
   {
     return false;
   }
@@ -162,7 +162,7 @@ bool Entry::SaveToStream(ByteStream* stream) const
          WriteOptionalToStream(stream, gpu_pgxp) && WriteOptionalToStream(stream, controller_1_type) &&
          WriteOptionalToStream(stream, controller_2_type) && WriteOptionalToStream(stream, memory_card_1_type) &&
          WriteOptionalToStream(stream, memory_card_2_type) && WriteStringToStream(stream, memory_card_1_shared_path) &&
-         WriteStringToStream(stream, memory_card_2_shared_path);
+         WriteStringToStream(stream, memory_card_2_shared_path) && WriteStringToStream(stream, input_profile_name);
 }
 
 static void ParseIniSection(Entry* entry, const char* section, const CSimpleIniA& ini)
@@ -247,6 +247,9 @@ static void ParseIniSection(Entry* entry, const char* section, const CSimpleIniA
   cvalue = ini.GetValue(section, "MemoryCard2SharedPath");
   if (cvalue)
     entry->memory_card_2_shared_path = cvalue;
+  cvalue = ini.GetValue(section, "InputProfileName");
+  if (cvalue)
+    entry->input_profile_name = cvalue;
 }
 
 static void StoreIniSection(const Entry& entry, const char* section, CSimpleIniA& ini)
@@ -316,6 +319,8 @@ static void StoreIniSection(const Entry& entry, const char* section, CSimpleIniA
     ini.SetValue(section, "MemoryCard1SharedPath", entry.memory_card_1_shared_path.c_str());
   if (!entry.memory_card_2_shared_path.empty())
     ini.SetValue(section, "MemoryCard2SharedPath", entry.memory_card_2_shared_path.c_str());
+  if (!entry.input_profile_name.empty())
+    ini.SetValue(section, "InputProfileName", entry.input_profile_name.c_str());
 }
 
 Database::Database() = default;

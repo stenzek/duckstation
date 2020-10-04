@@ -977,7 +977,10 @@ bool CommonHostInterface::HandleHostMouseEvent(HostMouseButton button, bool pres
 void CommonHostInterface::UpdateInputMap(SettingsInterface& si)
 {
   ClearInputMap();
-  UpdateControllerInputMap(si);
+
+  if (!UpdateControllerInputMapFromGameSettings())
+    UpdateControllerInputMap(si);
+
   UpdateHotkeyInputMap(si);
 }
 
@@ -1677,6 +1680,19 @@ void CommonHostInterface::FindInputProfiles(const std::string& base_path, InputP
   }
 }
 
+std::string CommonHostInterface::GetInputProfilePath(const char* name) const
+{
+  std::string path = GetUserDirectoryRelativePath("inputprofiles" FS_OSPATH_SEPARATOR_STR "%s.ini", name);
+  if (FileSystem::FileExists(path.c_str()))
+    return path;
+
+  path = GetProgramDirectoryRelativePath("inputprofiles" FS_OSPATH_SEPARATOR_STR "%s.ini", name);
+  if (FileSystem::FileExists(path.c_str()))
+    return path;
+
+  return {};
+}
+
 void CommonHostInterface::ClearAllControllerBindings(SettingsInterface& si)
 {
   for (u32 controller_index = 1; controller_index <= NUM_CONTROLLER_AND_CARD_PORTS; controller_index++)
@@ -2280,6 +2296,35 @@ void CommonHostInterface::ApplyGameSettings(bool display_osd_messages)
   const GameSettings::Entry* gs = m_game_list->GetGameSettings(System::GetRunningPath(), System::GetRunningCode());
   if (gs)
     gs->ApplySettings(display_osd_messages);
+}
+
+bool CommonHostInterface::UpdateControllerInputMapFromGameSettings()
+{
+  // this gets called while booting, so can't use valid
+  if (System::IsShutdown() || System::GetRunningCode().empty() || !g_settings.apply_game_settings)
+    return false;
+
+  const GameSettings::Entry* gs = m_game_list->GetGameSettings(System::GetRunningPath(), System::GetRunningCode());
+  if (!gs || gs->input_profile_name.empty())
+    return false;
+
+  std::string path = GetInputProfilePath(gs->input_profile_name.c_str());
+  if (path.empty())
+  {
+    AddFormattedOSDMessage(10.0f, TranslateString("OSDMessage", "Input profile '%s' cannot be found."),
+                           gs->input_profile_name.c_str());
+    return false;
+  }
+
+  if (System::GetState() == System::State::Starting)
+  {
+    AddFormattedOSDMessage(5.0f, TranslateString("OSDMessage", "Using input profile '%s'."),
+                           gs->input_profile_name.c_str());
+  }
+
+  INISettingsInterface si(std::move(path));
+  UpdateControllerInputMap(si);
+  return true;
 }
 
 std::string CommonHostInterface::GetCheatFileName() const
