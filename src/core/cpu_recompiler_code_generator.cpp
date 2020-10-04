@@ -1301,6 +1301,7 @@ bool CodeGenerator::Compile_Add(const CodeBlockInstruction& cbi)
      (cbi.instruction.op == InstructionOp::funct && cbi.instruction.r.funct == InstructionFunct::add));
 
   Value lhs, rhs;
+  Reg lhs_src;
   Reg dest;
   switch (cbi.instruction.op)
   {
@@ -1309,6 +1310,7 @@ bool CodeGenerator::Compile_Add(const CodeBlockInstruction& cbi)
     {
       // rt <- rs + sext(imm)
       dest = cbi.instruction.i.rt;
+      lhs_src = cbi.instruction.i.rs;
       lhs = m_register_cache.ReadGuestRegister(cbi.instruction.i.rs);
       rhs = Value::FromConstantU32(cbi.instruction.i.imm_sext32());
     }
@@ -1318,6 +1320,7 @@ bool CodeGenerator::Compile_Add(const CodeBlockInstruction& cbi)
     {
       Assert(cbi.instruction.r.funct == InstructionFunct::add || cbi.instruction.r.funct == InstructionFunct::addu);
       dest = cbi.instruction.r.rd;
+      lhs_src = cbi.instruction.r.rs;
       lhs = m_register_cache.ReadGuestRegister(cbi.instruction.r.rs);
       rhs = m_register_cache.ReadGuestRegister(cbi.instruction.r.rt);
     }
@@ -1326,6 +1329,13 @@ bool CodeGenerator::Compile_Add(const CodeBlockInstruction& cbi)
     default:
       UnreachableCode();
       return false;
+  }
+
+  // detect register moves and handle them for pgxp
+  if (g_settings.gpu_pgxp_enable && rhs.HasConstantValue(0))
+  {
+    EmitFunctionCall(nullptr, &PGXP::CPU_MOVE,
+                     Value::FromConstantU32((static_cast<u32>(dest) << 8) | (static_cast<u32>(lhs_src))), lhs);
   }
 
   Value result = AddValues(lhs, rhs, check_overflow);

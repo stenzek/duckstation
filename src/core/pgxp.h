@@ -52,6 +52,7 @@ void CPU_LBx(u32 instr, u32 rtVal, u32 addr);
 void CPU_SB(u32 instr, u8 rtVal, u32 addr);
 void CPU_SH(u32 instr, u16 rtVal, u32 addr);
 void CPU_SW(u32 instr, u32 rtVal, u32 addr);
+void CPU_MOVE(u32 rd_and_rs, u32 rsVal);
 
 // Arithmetic with immediate value
 void CPU_ADDI(u32 instr, u32 rtVal, u32 rsVal);
