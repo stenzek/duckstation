@@ -54,7 +54,7 @@
     <message>
         <location filename="../advancedsettingswidget.ui" line="40"/>
         <source>Log Level:</source>
-        <translation>Nivel do Registro:</translation>
+        <translation>Nível do Registro:</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="50"/>
@@ -330,7 +330,7 @@
     <message>
         <location filename="../../core/analog_controller.cpp" line="516"/>
         <source>Automatically enables analog mode when the console is reset/powered on.</source>
-        <translation>Ativa o modo analogico automaticamente quando o console é reiniciado / desligado.</translation>
+        <translation>Ativa o modo analógico automaticamente quando o console é reiniciado / desligado.</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="518"/>
@@ -350,7 +350,7 @@
     <message>
         <location filename="../../core/analog_controller.cpp" line="525"/>
         <source>Sets the rumble bias value. If rumble in some games is too weak or not functioning, try increasing this value.</source>
-        <translation>Definie valores de vibração. Se a vibração em alguns jogos estiver fraca ou não funcionar, tente aumentar os valores.</translation>
+        <translation>Define valores de vibração. Se a vibração em alguns jogos estiver fraca ou não funcionar, tente aumentar os valores.</translation>
     </message>
 </context>
 <context>
@@ -444,12 +444,12 @@
     <message>
         <location filename="../audiosettingswidget.cpp" line="38"/>
         <source>Audio Backend</source>
-        <translation>Opção de Audio</translation>
+        <translation>Opção de Áudio</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="39"/>
         <source>The audio backend determines how frames produced by the emulator are submitted to the host. Cubeb provides the lowest latency, if you encounter issues, try the SDL backend. The null backend disables all host audio output.</source>
-        <translation>As opções disponiveis determinam como o jogo irá reproduzir os sons; Cubed, fornece menor latência (atraso), se tiver problemas tente usar a opção SDL. A opção Nulo desativa o som  do jogo completamente no emulador.</translation>
+        <translation>As opções disponíveis determinam como o jogo irá reproduzir os sons; Cubed, fornece menor latência (atraso), se tiver problemas tente usar a opção SDL. A opção Nulo desativa o som  do jogo completamente no emulador.</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="43"/>
@@ -485,7 +485,7 @@
     <message>
         <location filename="../audiosettingswidget.cpp" line="54"/>
         <source>Start dumping audio to file as soon as the emulator is started. Mainly useful as a debug option.</source>
-        <translation>Inicia o despejo do audio para um arquivo assim que o emulador é iniciado. Útil só em caso de depuração.</translation>
+        <translation>Inicia o despejo do áudio para um arquivo assim que o emulador é iniciado. Útil só em caso de depuração.</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="55"/>
@@ -627,7 +627,7 @@
     <message>
         <location filename="../biossettingswidget.ui" line="48"/>
         <source>PAL (Europe, Australia):</source>
-        <translation>PAL (Europa, Australia):</translation>
+        <translation>PAL (Europa, Austrália):</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.ui" line="55"/>
@@ -761,7 +761,7 @@
     <message>
         <location filename="../../core/settings.cpp" line="385"/>
         <source>PAL (Europe, Australia)</source>
-        <translation>PAL (Europeu, Australia)</translation>
+        <translation>PAL (Europeu, Austrália)</translation>
     </message>
 </context>
 <context>
@@ -942,7 +942,7 @@
 By enabling this option you are agreeing to not create any bug reports unless you have confirmed the bug also occurs with overclocking disabled.
 
 This warning will only be shown once.</source>
-        <translation>Ativar o aumento de velocidade do CPU famoso Overclock, quebra a experiência em alguns jogos, causa bugs, reduz a perfomance e pode aumentar muito o uso do computador. - CPU e GPU como um todo! Habilitando esta opção você concorda em não reportar nenhum bug relacionado sem ANTES confirmar que não foi causado por conta da ativação desta opção.</translation>
+        <translation>Ativar o aumento de velocidade do CPU famoso Overclock, quebra a experiência em alguns jogos, causa bugs, reduz a performance e pode aumentar muito o uso do computador. - CPU e GPU como um todo! Habilitando esta opção você concorda em não reportar nenhum bug relacionado sem ANTES confirmar que não foi causado por conta da ativação desta opção.</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="69"/>
@@ -1021,7 +1021,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllersettingswidget.cpp" line="127"/>
         <source>Are you sure you want to clear all bound controls? This can not be reversed.</source>
-        <translation>Tem certeza que quer limpar todos os vinculos, isto não poderá ser desfeito.</translation>
+        <translation>Tem certeza que quer limpar todos os vínculos, isto não poderá ser desfeito.</translation>
     </message>
     <message>
         <location filename="../controllersettingswidget.cpp" line="141"/>
@@ -1092,12 +1092,12 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllersettingswidget.cpp" line="430"/>
         <source>No name entered, input profile was not saved.</source>
-        <translation>Nome não atribuido, configuração de controle não foi salva.</translation>
+        <translation>Nome não atribuído, configuração de controle não foi salva.</translation>
     </message>
     <message>
         <location filename="../controllersettingswidget.cpp" line="444"/>
         <source>No path selected, input profile was not saved.</source>
-        <translation>Caminho não atribuido, configuração de controle não foi salva.</translation>
+        <translation>Caminho não atribuído, configuração de controle não foi salva.</translation>
     </message>
 </context>
 <context>
@@ -1233,7 +1233,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../../core/settings.cpp" line="414"/>
         <source>PAL (Europe, Australia)</source>
-        <translation>PAL (Europeu, Australia)</translation>
+        <translation>PAL (Europeu, Austrália)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="414"/>
@@ -1328,7 +1328,7 @@ This warning will only be shown once.</source>
         <location filename="../displaysettingswidget.ui" line="128"/>
         <location filename="../displaysettingswidget.cpp" line="88"/>
         <source>Show FPS</source>
-        <translation>Mostar FPS</translation>
+        <translation>Mostrar FPS</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="135"/>
@@ -1349,7 +1349,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../displaysettingswidget.cpp" line="51"/>
         <source>Renderer</source>
-        <translation>Rederizador</translation>
+        <translation>Renderizador</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="52"/>
@@ -1395,7 +1395,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../displaysettingswidget.cpp" line="67"/>
         <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide. &lt;br&gt;Some games display content in the overscan area, or use it for screen effects. &lt;br&gt;May not display correctly with the &quot;All Borders&quot; setting. &quot;Only Overscan&quot; offers a good compromise between stability and hiding black borders.</source>
-        <translation>Determina quanto da area normalmente não visivel em uma TV o usuário pode ver ou não.Alguns jogos mostram conteúdo fora desta area pré-determinada.Somente esta opção &quot;overscan&quot; (fora da área visivel) pode oferecer um boa estabilidade na hora de ocultar as tarjas (bordas)pretas quando ocorrem.</translation>
+        <translation>Determina quanto da área normalmente não visível em uma TV o usuário pode ver ou não.Alguns jogos mostram conteúdo fora desta area pré-determinada.Somente esta opção &quot;overscan&quot; (fora da área visível) pode oferecer um boa estabilidade na hora de ocultar as tarjas (bordas)pretas quando ocorrem.</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="71"/>
@@ -1425,7 +1425,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../displaysettingswidget.cpp" line="83"/>
         <source>Enable this option to match DuckStation&apos;s refresh rate with your current monitor or screen. VSync is automatically disabled when it is not possible (e.g. running at non-100% speed).</source>
-        <translation>Habilite esta opção para combinar a taxa de atualização do emulador com seu monitor. O V-Sync (sincronização vertical) será desativado automaticamente quando não for possivel atingir 100% da velocidade.</translation>
+        <translation>Habilite esta opção para combinar a taxa de atualização do emulador com seu monitor. O V-Sync (sincronização vertical) será desativado automaticamente quando não for possível atingir 100% da velocidade.</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="85"/>
@@ -1515,7 +1515,7 @@ This warning will only be shown once.</source>
         <location filename="../enhancementsettingswidget.ui" line="88"/>
         <location filename="../enhancementsettingswidget.cpp" line="40"/>
         <source>Disable Interlacing (force progressive render/scan)</source>
-        <translation>Desativa o entrelaçamento (Força Rederização Progressiva)</translation>
+        <translation>Desativa o entrelaçamento (Força Renderização Progressiva)</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="95"/>
@@ -1526,12 +1526,12 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="75"/>
         <source>Widescreen Hack</source>
-        <translation>Aprimoramento P/ Telas Panoramicas</translation>
+        <translation>Aprimoramento P/ Telas Panorâmicas</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="112"/>
         <source>PGXP (Precision Geometry Transform Pipeline)</source>
-        <translation>PGXP (Correção Geometrica)</translation>
+        <translation>PGXP (Correção Geométrica)</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="118"/>
@@ -1575,7 +1575,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="47"/>
         <source>Setting this beyond 1x will enhance the resolution of rendered 3D polygons and lines. Only applies to the hardware backends. &lt;br&gt;This option is usually safe, with most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</source>
-        <translation>Aumentar a resolução para mais de 1x aumentará a resolução dos Poligonos e linhas em jogos 3D. Só é utilizável quando usado com placas de video dedicadas. &lt;br&gt; Geralmente é seguro ativar esta opção, deixando assim a maior parte dos jogos com vizual muito melhor em resoluções mais altas; Porém, utiliza mais da sua placa de Vídeo.</translation>
+        <translation>Aumentar a resolução para mais de 1x aumentará a resolução dos Polígonos e linhas em jogos 3D. Só é utilizável quando usado com placas de video dedicadas. &lt;br&gt; Geralmente é seguro ativar esta opção, deixando assim a maior parte dos jogos com visual muito melhor em resoluções mais altas; Porém, utiliza mais da sua placa de Vídeo.</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="52"/>
@@ -1622,22 +1622,22 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="76"/>
         <source>Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to 16:9 in 3D games. &lt;br&gt;For 2D games, or games which use pre-rendered backgrounds, this enhancement will not work as expected. &lt;br&gt;&lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
-        <translation>Escala as posições de vértices para uma proporção de aspecto esticado, aumentando o campo de visão de 4:3 para 16:9 em jogos 3D. &lt;br&gt;Para jogos 2D, ou jogos que usam fundos pré-rederizados, este aprimoramento não funcionará como esperado. &lt;b&gt;&lt;u&gt;Pode não ser compatível com todos os jogos&lt;/u&gt;&lt;/b&gt;</translation>
+        <translation>Escala as posições de vértices para uma proporção de aspecto esticado, aumentando o campo de visão de 4:3 para 16:9 em jogos 3D. &lt;br&gt;Para jogos 2D, ou jogos que usam fundos pré-renderizados, este aprimoramento não funcionará como esperado. &lt;b&gt;&lt;u&gt;Pode não ser compatível com todos os jogos&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="82"/>
         <source>Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. &lt;br&gt;Only works with the hardware renderers. &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
-        <translation>Reduz &quot;tremeliques&quot; nos poligonos tentando preservar os mesmos na hora da transferência para a memória. Funciona apenas se rederizado por hardware e pode não ser compatível com todos os jogos.&lt;/u&gt;&lt;/b&gt;</translation>
+        <translation>Reduz as &quot;oscilações&quot; nos polígonos tentando preservar os mesmos na hora da transferência para a memória. Funciona apenas se rederizado por hardware e pode não ser compatível com todos os jogos.&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="85"/>
         <source>Increases the precision of polygon culling, reducing the number of holes in geometry. Requires geometry correction enabled.</source>
-        <translation>Aumenta a precisão das curvas nos poligonos, reduzindo o número de buracos na geometria do mesmo. Requer a Correção Geometrica ativada.</translation>
+        <translation>Aumenta a precisão das curvas nos polígonos, reduzindo o número de buracos na geometria do mesmo. Requer a Correção Geometrica ativada.</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="88"/>
         <source>Uses perspective-correct interpolation for texture coordinates and colors, straightening out warped textures. Requires geometry correction enabled.</source>
-        <translation>Utiliza interpolação corretiva em perspetiva para cordenadas e das cores na textura, endireitando as que estiverem distorcidas. Requer correção de geometria ativada.</translation>
+        <translation>Utiliza interpolação corretiva em perspetiva para coordenadas e das cores na textura, endireitando as que estiverem distorcidas. Requer correção de geometria ativada.</translation>
     </message>
 </context>
 <context>
@@ -1645,17 +1645,17 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../../core/settings.cpp" line="477"/>
         <source>Hardware (D3D11)</source>
-        <translation>Placa de Video (D3D11)</translation>
+        <translation>Placa de Vídeo (D3D11)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="479"/>
         <source>Hardware (Vulkan)</source>
-        <translation>Placa de Video (Vulkan)</translation>
+        <translation>Placa de Vídeo (Vulkan)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="479"/>
         <source>Hardware (OpenGL)</source>
-        <translation>Placa de Video (OpenGL)</translation>
+        <translation>Placa de Vídeo (OpenGL)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="480"/>
@@ -1727,7 +1727,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Disable Interlacing (force progressive render/scan)</source>
-        <translation type="vanished">Desativa o entrelaçamento (Força Rederização Progressiva)</translation>
+        <translation type="vanished">Desativa o entrelaçamento (Força Renderização Progressiva)</translation>
     </message>
     <message>
         <source>Force NTSC Timings (60hz-on-PAL)</source>
@@ -1759,7 +1759,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Vertex Cache</source>
-        <translation type="vanished">Vertice Armazenado</translation>
+        <translation type="vanished">Vértice Armazenado</translation>
     </message>
     <message>
         <source>CPU Mode</source>
@@ -1767,7 +1767,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Renderer</source>
-        <translation type="vanished">Rederizador</translation>
+        <translation type="vanished">Renderizador</translation>
     </message>
     <message>
         <source>Chooses the backend to use for rendering tasks for the the console GPU. Depending on your system and hardware, Direct3D 11 and OpenGL hardware backends may be available. The software renderer offers the best compatibility, but is the slowest and does not offer any enhancements.</source>
@@ -1807,7 +1807,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide. Some games display content in the overscan area, or use it for screen effects and may not display correctly with the All Borders setting. Only Overscan offers a good compromise between stability and hiding black borders.</source>
-        <translation type="vanished">Determina quanto da area normalmente não visivel em uma TV o usuário pode ver ou não.Alguns jogos mostram conteúdo fora desta area pré-determinada.Somente esta opção &quot;overscan&quot; (fora da área visivel) pode oferecer um boa estabilidade na hora de ocultar as tarjas (bordas)pretas quando ocorrem.</translation>
+        <translation type="vanished">Determina quanto da área normalmente não visível em uma TV o usuário pode ver ou não.Alguns jogos mostram conteúdo fora desta área pré-determinada.Somente esta opção &quot;overscan&quot; (fora da área visível) pode oferecer um boa estabilidade na hora de ocultar as tarjas (bordas)pretas quando ocorrem.</translation>
     </message>
     <message>
         <source>Forces the rendering and display of frames to progressive mode. This removes the &quot;combing&quot; effect seen in 480i games by rendering them in 480p. Not all games are compatible with this option, some require interlaced rendering or render interlaced internally. Usually safe to enable.</source>
@@ -1867,7 +1867,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Reduces &quot;wobbly&quot; polygons by attempting to preserve the fractional component through memory transfers. Only works with the hardware renderers, and may not be compatible with all games.</source>
-        <translation type="vanished">Reduz &apos;tremeliques&apos; nos poligonos tentando preservar os mesmos na hora da transferência para a memória. Funciona apenas se rederizado por hardware e pode não é  compatível com todos os jogos.</translation>
+        <translation type="vanished">Reduz &apos;tremeliques&apos; nos polígonos tentando preservar os mesmos na hora da transferência para a memória. Funciona apenas se rederizado por hardware e pode não é  compatível com todos os jogos.</translation>
     </message>
     <message>
         <source>Smooths out the blockyness of magnified textures on 3D object by using bilinear filtering. Will have a greater effect on higher resolution scales. Only applies to the hardware renderers.</source>
@@ -1903,7 +1903,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Enable this option to match DuckStation&apos;s refresh rate with your current monitor or screen. VSync is automatically disabled when it is not possible (e.g. running at non-100% speed).</source>
-        <translation type="vanished">Habilite esta opção para combinar a taxa de atualização do emulador com seu monitor. O V-Sync (sincronização vertical) será desativado automaticamente quando não for possivel atingir 100% da velocidade.</translation>
+        <translation type="vanished">Habilite esta opção para combinar a taxa de atualização do emulador com seu monitor. O V-Sync (sincronização vertical) será desativado automaticamente quando não for possível atingir 100% da velocidade.</translation>
     </message>
     <message>
         <source>Setting this beyond 1x will enhance the resolution of rendered 3D polygons and lines. Only applies to the hardware backends. &lt;br&gt;This option is usually safe, with most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</source>
@@ -1923,27 +1923,27 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to 16:9 in 3D games. &lt;br&gt;For 2D games, or games which use pre-rendered backgrounds, this enhancement will not work as expected. &lt;br&gt;&lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
-        <translation type="vanished">Escala as posições de vértices para uma proporção de aspecto esticado, aumentando o campo de visão de 4:3 para 16:9 em jogos 3D. &lt;br&gt;Para jogos 2D, ou jogos que usam fundos pré-rederizados, este aprimoramento não funcionará como esperado. &lt;b&gt;&lt;u&gt;Pode não ser compatível com todos os jogos&lt;/u&gt;&lt;/b&gt;</translation>
+        <translation type="vanished">Escala as posições de vértices para uma proporção de aspecto esticado, aumentando o campo de visão de 4:3 para 16:9 em jogos 3D. &lt;br&gt;Para jogos 2D, ou jogos que usam fundos pré-renderizados, este aprimoramento não funcionará como esperado. &lt;b&gt;&lt;u&gt;Pode não ser compatível com todos os jogos&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. &lt;br&gt;Only works with the hardware renderers. &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
-        <translation type="vanished">Reduz &quot;tremeliques&quot; nos poligonos tentando preservar os mesmos na hora da transferência para a memória. Funciona apenas se rederizado por hardware e pode não ser compatível com todos os jogos.&lt;/u&gt;&lt;/b&gt;</translation>
+        <translation type="vanished">Reduz &quot;tremeliques&quot; nos polígonos tentando preservar os mesmos na hora da transferência para a memória. Funciona apenas se rederizado por hardware e pode não ser compatível com todos os jogos.&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Increases the precision of polygon culling, reducing the number of holes in geometry. Requires geometry correction enabled.</source>
-        <translation type="vanished">Aumenta a precisão das curvas nos poligonos, reduzindo o número de buracos na geometria do mesmo. Requer a Correção Geometrica ativada.</translation>
+        <translation type="vanished">Aumenta a precisão das curvas nos polígonos, reduzindo o número de buracos na geometria do mesmo. Requer a Correção Geometrica ativada.</translation>
     </message>
     <message>
         <source>Uses perspective-correct interpolation for texture coordinates and colors, straightening out warped textures. Requires geometry correction enabled.</source>
-        <translation type="vanished">Utiliza interpolação corretiva em perspetiva para cordenadas e das cores na textura, endireitando as que estiverem distorcidas. Requer correção de geometria ativada.</translation>
+        <translation type="vanished">Utiliza interpolação corretiva em perspetiva para coordenadas e das cores na textura, endireitando as que estiverem distorcidas. Requer correção de geometria ativada.</translation>
     </message>
     <message>
         <source>Uses screen coordinates as a fallback when tracking vertices through memory fails. May improve PGXP compatibility.</source>
-        <translation type="vanished">Quando a correção de vertices falha, essa opção se encarrega de usar as coordenadas da tela para o rastreamento. Pode melhorar a compatibilidade com o PGXP.</translation>
+        <translation type="vanished">Quando a correção de vértices falha, essa opção se encarrega de usar as coordenadas da tela para o rastreamento. Pode melhorar a compatibilidade com o PGXP.</translation>
     </message>
     <message>
         <source>Tries to track vertex manipulation through the CPU. Some games require this option for PGXP to be effective. Very slow, and incompatible with the recompiler.</source>
-        <translation type="vanished">Tenta manipular o rastreamento dos vértices (extremidades) direto para o processador. Alguns jogos exigem esta opção para que o aprimoramento - PGXP. tenha o efeito desejado. Atenção, este modo é MUITO LENTO, e imcompativel com o recompilador se ativo.</translation>
+        <translation type="vanished">Tenta manipular o rastreamento dos vértices (extremidades) direto para o processador. Alguns jogos exigem esta opção para que o aprimoramento - PGXP. tenha o efeito desejado. Atenção, este modo é MUITO LENTO, e incompatível com o recompilador se ativo.</translation>
     </message>
     <message>
         <source> (for 720p)</source>
@@ -4089,7 +4089,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../mainwindow.cpp" line="1137"/>
         <source>Automatic updating is not supported on the current platform.</source>
-        <translation>Atualizções automáticas não são suportadas na plataforma atual.</translation>
+        <translation>Atualizações automáticas não são suportadas na plataforma atual.</translation>
     </message>
 </context>
 <context>
@@ -4097,7 +4097,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../memorycardeditordialog.ui" line="14"/>
         <source>Memory Card Editor</source>
-        <translation>Ediitor de Cartão de Memória</translation>
+        <translation>Editor de Cartão de Memória</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.ui" line="44"/>
@@ -4278,7 +4278,7 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../memorycardsettingswidget.cpp" line="40"/>
         <location filename="../memorycardsettingswidget.cpp" line="45"/>
         <source>Use Single Card For Playlist</source>
-        <translation>Usar um único cartão para jogos Multiplos (CD1, CD2)</translation>
+        <translation>Usar um único cartão para jogos múltiplos (CD1, CD2)</translation>
     </message>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="45"/>
@@ -4288,7 +4288,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="46"/>
         <source>When using a playlist (m3u) and per-game (title) memory cards, a single memory card will be used for all discs. If unchecked, a separate card will be used for each disc.</source>
-        <translation>Esta opção é útil quando se tem jogos com mulitplos CDs; Se desmarcado, um cartão separado será usado para cada disco.</translation>
+        <translation>Esta opção é útil quando se tem jogos com múltiplos CDs; Se desmarcado, um cartão separado será usado para cada disco.</translation>
     </message>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="51"/>
@@ -4641,7 +4641,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="620"/>
         <source>PGXP vertex cache forced by game settings.</source>
-        <translation>Vertice Armazenado forçado pelas configurações personalizadas.</translation>
+        <translation>Vértice Armazenado forçado pelas configurações personalizadas.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="631"/>
@@ -4651,7 +4651,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="648"/>
         <source>Controller %u changed to digital by game settings.</source>
-        <translation>Controle %u mudado para modo analogico pela configuração personalizada.</translation>
+        <translation>Controle %u mudado para modo analógico pela configuração personalizada.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="663"/>
@@ -4797,7 +4797,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../postprocessingsettingswidget.cpp" line="27"/>
         <source>The current post-processing chain is invalid, it has been reset. Any changes made will overwrite the existing config.</source>
-        <translation>A configurção de pós-processamento atual é inválida, e será redefinida. Quaisquer alterações feitas irão sobrescrever a configuração existentes.</translation>
+        <translation>A configuração de pós-processamento atual é inválida, e será redefinida. Quaisquer alterações feitas irão sobrescrever a configuração existentes.</translation>
     </message>
 </context>
 <context>
@@ -4856,7 +4856,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../main.cpp" line="38"/>
         <source>Failed to initialize host interface. Cannot continue.</source>
-        <translation>Falha ao Iniciar Interface. Não é possivel Continuar.</translation>
+        <translation>Falha ao Iniciar Interface. Não é possível Continuar.</translation>
     </message>
     <message>
         <location filename="../qtutils.cpp" line="641"/>
@@ -5079,12 +5079,12 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../settingsdialog.cpp" line="64"/>
         <source>&lt;strong&gt;General Settings&lt;/strong&gt;&lt;hr&gt;These options control how the emulator looks and behaves.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
-        <translation>&lt;strong&gt;Configurações Gerais&lt;/strong&gt;&lt;hr&gt;Estas opções controlam a aparencia do emulador e seu comportamento.&lt;br&gt;&lt;br&gt;Repouse o ponteiro do mouse para mais informações.</translation>
+        <translation>&lt;strong&gt;Configurações Gerais&lt;/strong&gt;&lt;hr&gt;Estas opções controlam a aparência do emulador e seu comportamento.&lt;br&gt;&lt;br&gt;Repouse o ponteiro do mouse para mais informações.</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="68"/>
         <source>&lt;strong&gt;Console Settings&lt;/strong&gt;&lt;hr&gt;These options determine the configuration of the simulated console.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
-        <translation>&lt;strong&gt;Configurações do Console&lt;/strong&gt;&lt;hr&gt;Estas opções determinam a config. do console emulado.&lt;br&gt;&lt;br&gt; passe o ponteiro do mouse para mais informações.</translation>
+        <translation>&lt;strong&gt;Configurações do Console&lt;/strong&gt;&lt;hr&gt;Estas opções determinam a configuração do console emulado.&lt;br&gt;&lt;br&gt; passe o ponteiro do mouse para mais informações.</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="71"/>
