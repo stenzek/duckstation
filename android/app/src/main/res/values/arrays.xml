@@ -128,9 +128,14 @@
     <string-array name="emulation_menu">
         <item>Quick Load</item>
         <item>Quick Save</item>
-        <item>Reset</item>
-        <item>Change Disc</item>
         <item>Toggle Speed Limiter</item>
+        <item>More Options</item>
+        <item>Quit</item>
+    </string-array>
+    <string-array name="emulation_more_menu">
+        <item>Reset</item>
+        <item>Cheats</item>
+        <item>Change Disc</item>
         <item>Toggle Touch Controller</item>
         <item>Settings</item>
         <item>Quit</item>

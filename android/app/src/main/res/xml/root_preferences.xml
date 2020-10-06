@@ -31,6 +31,12 @@
             app:summary="Automatically saves the emulator state when powering down or exiting. You can then resume directly from where you left off next time."
             app:iconSpaceReserved="false" />
         <SwitchPreferenceCompat
+            app:key="Main/AutoLoadCheats"
+            app:title="Load Cheats"
+            app:defaultValue="false"
+            app:summary="Loads cheats from cheats/&lt;game name&gt;.cht in PCSXR format. Cheats can be toggled while ingame."
+            app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat
             app:key="Display/VSync"
             app:title="Video Sync"
             app:defaultValue="true"

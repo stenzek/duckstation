@@ -280,18 +280,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
                         return;
                     }
 
-                    case 2:     // Reset
-                    {
-                        AndroidHostInterface.getInstance().resetSystem();
-                        return;
-                    }
-
-                    case 3:     // Change Disc
-                    {
-                        return;
-                    }
-
-                    case 4:     // Toggle Speed Limiter
+                    case 2:     // Toggle Speed Limiter
                     {
                         boolean newSetting = !getBooleanSetting("Main/SpeedLimiterEnabled", true);
                         setBooleanSetting("Main/SpeedLimiterEnabled", newSetting);
@@ -299,13 +288,63 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
                         return;
                     }
 
-                    case 5:     // Toggle Touchscreen Controller
+                    case 3:     // More Options
+                    {
+                        showMoreMenu();
+                        return;
+                    }
+
+                    case 4:     // Quit
+                    {
+                        finish();
+                        return;
+                    }
+                }
+            }
+        });
+        builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialogInterface) {
+                enableFullscreenImmersive();
+            }
+        });
+        builder.create().show();
+    }
+
+    private void showMoreMenu() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        if (mGameTitle != null && !mGameTitle.isEmpty())
+            builder.setTitle(mGameTitle);
+
+        builder.setItems(R.array.emulation_more_menu, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                switch (i)
+                {
+                    case 0:     // Reset
+                    {
+                        AndroidHostInterface.getInstance().resetSystem();
+                        return;
+                    }
+
+                    case 1:     // Cheats
+                    {
+                        showCheatsMenu();
+                        return;
+                    }
+
+                    case 2:     // Change Disc
+                    {
+                        return;
+                    }
+
+                    case 3:     // Toggle Touchscreen Controller
                     {
                         setTouchscreenControllerVisibility(!mTouchscreenControllerVisible);
                         return;
                     }
 
-                    case 6:     // Settings
+                    case 4:     // Settings
                     {
                         Intent intent = new Intent(EmulationActivity.this, SettingsActivity.class);
                         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -313,12 +352,42 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
                         return;
                     }
 
-                    case 7:     // Quit
+                    case 5:     // Quit
                     {
                         finish();
                         return;
                     }
                 }
+            }
+        });
+        builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialogInterface) {
+                enableFullscreenImmersive();
+            }
+        });
+        builder.create().show();
+    }
+
+    private void showCheatsMenu() {
+        final CheatCode[] cheats = AndroidHostInterface.getInstance().getCheatList();
+        if (cheats == null) {
+            Toast.makeText(this, "No cheats are loaded.", Toast.LENGTH_LONG);
+            return;
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        CharSequence[] items = new CharSequence[cheats.length];
+        for (int i = 0; i < cheats.length; i++) {
+            final CheatCode cc = cheats[i];
+            items[i] = String.format("%s %s", cc.isEnabled() ? "(ON)" : "(OFF)", cc.getName());
+        }
+
+        builder.setItems(items, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                AndroidHostInterface.getInstance().setCheatEnabled(i, !cheats[i].isEnabled());
             }
         });
         builder.setOnDismissListener(new DialogInterface.OnDismissListener() {

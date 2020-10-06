@@ -141,7 +141,8 @@ void AndroidSettingsInterface::DeleteValue(const char* section, const char* key)
 std::vector<std::string> AndroidSettingsInterface::GetStringList(const char* section, const char* key)
 {
   JNIEnv* env = AndroidHelpers::GetJNIEnv();
-  jobject values_set = env->CallObjectMethod(m_java_shared_preferences, m_get_string_set, env->NewStringUTF(GetSettingKey(section, key)), nullptr);
+  jobject values_set = env->CallObjectMethod(m_java_shared_preferences, m_get_string_set,
+                                             env->NewStringUTF(GetSettingKey(section, key)), nullptr);
   if (!values_set)
     return {};
 

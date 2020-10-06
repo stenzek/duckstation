@@ -71,6 +71,9 @@ public class AndroidHostInterface {
 
     public native void setDisplayAlignment(int alignment);
 
+    public native CheatCode[] getCheatList();
+    public native void setCheatEnabled(int index, boolean enabled);
+
     static {
         System.loadLibrary("duckstation-native");
     }

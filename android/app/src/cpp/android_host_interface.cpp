@@ -4,6 +4,7 @@
 #include "common/log.h"
 #include "common/string.h"
 #include "common/timestamp.h"
+#include "core/cheats.h"
 #include "core/controller.h"
 #include "core/gpu.h"
 #include "core/host_display.h"
@@ -28,6 +29,8 @@ static jmethodID s_EmulationActivity_method_reportMessage;
 static jmethodID s_EmulationActivity_method_onEmulationStarted;
 static jmethodID s_EmulationActivity_method_onEmulationStopped;
 static jmethodID s_EmulationActivity_method_onGameTitleChanged;
+static jclass s_CheatCode_class;
+static jmethodID s_CheatCode_constructor;
 
 namespace AndroidHelpers {
 // helper for retrieving the current per-thread jni environment
@@ -186,9 +189,7 @@ bool AndroidHostInterface::StartEmulationThread(jobject emulation_activity, ANat
 void AndroidHostInterface::PauseEmulationThread(bool paused)
 {
   Assert(IsEmulationThreadRunning());
-  RunOnEmulationThread([this, paused]() {
-    PauseSystem(paused);
-  });
+  RunOnEmulationThread([this, paused]() { PauseSystem(paused); });
 }
 
 void AndroidHostInterface::StopEmulationThread()
@@ -291,8 +292,10 @@ void AndroidHostInterface::EmulationThreadLoop()
     // run any events
     {
       std::unique_lock<std::mutex> lock(m_mutex);
-      for (;;) {
-        while (!m_callback_queue.empty()) {
+      for (;;)
+      {
+        while (!m_callback_queue.empty())
+        {
           auto callback = std::move(m_callback_queue.front());
           m_callback_queue.pop_front();
           lock.unlock();
@@ -303,10 +306,13 @@ void AndroidHostInterface::EmulationThreadLoop()
         if (m_emulation_thread_stop_request.load())
           return;
 
-        if (System::IsPaused()) {
+        if (System::IsPaused())
+        {
           // paused, wait for us to resume
           m_sleep_cv.wait(lock);
-        } else {
+        }
+        else
+        {
           // done with callbacks, run the frame
           break;
         }
@@ -511,18 +517,16 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
   Log::SetDebugOutputParams(true, nullptr, LOGLEVEL_DEV);
   s_jvm = vm;
 
+  // Create global reference so it doesn't get cleaned up.
   JNIEnv* env = AndroidHelpers::GetJNIEnv();
-  if ((s_AndroidHostInterface_class = env->FindClass("com/github/stenzek/duckstation/AndroidHostInterface")) == nullptr)
+  if ((s_AndroidHostInterface_class = env->FindClass("com/github/stenzek/duckstation/AndroidHostInterface")) ==
+        nullptr ||
+      (s_AndroidHostInterface_class = static_cast<jclass>(env->NewGlobalRef(s_AndroidHostInterface_class))) ==
+        nullptr ||
+      (s_CheatCode_class = env->FindClass("com/github/stenzek/duckstation/CheatCode")) == nullptr ||
+      (s_CheatCode_class = static_cast<jclass>(env->NewGlobalRef(s_CheatCode_class))) == nullptr)
   {
     Log_ErrorPrint("AndroidHostInterface class lookup failed");
-    return -1;
-  }
-
-  // Create global reference so it doesn't get cleaned up.
-  s_AndroidHostInterface_class = static_cast<jclass>(env->NewGlobalRef(s_AndroidHostInterface_class));
-  if (!s_AndroidHostInterface_class)
-  {
-    Log_ErrorPrint("Failed to get reference to AndroidHostInterface");
     return -1;
   }
 
@@ -545,7 +549,8 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
       (s_EmulationActivity_method_onEmulationStopped =
          env->GetMethodID(emulation_activity_class, "onEmulationStopped", "()V")) == nullptr ||
       (s_EmulationActivity_method_onGameTitleChanged =
-         env->GetMethodID(emulation_activity_class, "onGameTitleChanged", "(Ljava/lang/String;)V")) == nullptr)
+         env->GetMethodID(emulation_activity_class, "onGameTitleChanged", "(Ljava/lang/String;)V")) == nullptr ||
+      (s_CheatCode_constructor = env->GetMethodID(s_CheatCode_class, "<init>", "(ILjava/lang/String;Z)V")) == nullptr)
   {
     Log_ErrorPrint("AndroidHostInterface lookups failed");
     return -1;
@@ -770,7 +775,8 @@ DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_saveResumeState, jobject obj, 
 DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_setDisplayAlignment, jobject obj, jint alignment)
 {
   AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
-  hi->RunOnEmulationThread([hi, alignment]() { hi->GetDisplay()->SetDisplayAlignment(static_cast<HostDisplay::Alignment>(alignment)); });
+  hi->RunOnEmulationThread(
+    [hi, alignment]() { hi->GetDisplay()->SetDisplayAlignment(static_cast<HostDisplay::Alignment>(alignment)); });
 }
 
 DEFINE_JNI_ARGS_METHOD(bool, AndroidHostInterface_hasSurface, jobject obj)
@@ -795,5 +801,32 @@ DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_pauseEmulationThread, jobject 
   hi->PauseEmulationThread(paused);
 }
 
+DEFINE_JNI_ARGS_METHOD(jobject, AndroidHostInterface_getCheatList, jobject obj)
+{
+  if (!System::IsValid() || !System::HasCheatList())
+    return nullptr;
 
+  CheatList* cl = System::GetCheatList();
+  const u32 count = cl->GetCodeCount();
 
+  jobjectArray arr = env->NewObjectArray(count, s_CheatCode_class, nullptr);
+  for (u32 i = 0; i < count; i++)
+  {
+    const CheatCode& cc = cl->GetCode(i);
+
+    jobject java_cc = env->NewObject(s_CheatCode_class, s_CheatCode_constructor, static_cast<jint>(i),
+                                     env->NewStringUTF(cc.description.c_str()), cc.enabled);
+    env->SetObjectArrayElement(arr, i, java_cc);
+  }
+
+  return arr;
+}
+
+DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_setCheatEnabled, jobject obj, jint index, jboolean enabled)
+{
+  if (!System::IsValid() || !System::HasCheatList())
+    return;
+
+  AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
+  hi->RunOnEmulationThread([index, enabled, hi]() { hi->SetCheatCodeState(static_cast<u32>(index), enabled, true); });
+}
