@@ -1,18 +1,25 @@
 package com.github.stenzek.duckstation;
 
 import android.content.Context;
+import android.graphics.Rect;
+import android.text.method.Touch;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * TODO: document your custom view class.
  */
-public class TouchscreenControllerView extends FrameLayout implements TouchscreenControllerButtonView.ButtonStateChangedListener {
+public class TouchscreenControllerView extends FrameLayout {
     private int mControllerIndex;
     private String mControllerType;
+    private ArrayList<TouchscreenControllerButtonView> mButtonViews = new ArrayList<>();
 
     public TouchscreenControllerView(Context context) {
         super(context);
@@ -32,8 +39,12 @@ public class TouchscreenControllerView extends FrameLayout implements Touchscree
 
         LayoutInflater inflater = LayoutInflater.from(getContext());
         View view = inflater.inflate(R.layout.layout_touchscreen_controller, this, true);
+        view.setOnTouchListener((view1, event) -> {
+            return handleTouchEvent(event);
+        });
 
         // TODO: Make dynamic, editable.
+        mButtonViews.clear();
         linkButton(view, R.id.controller_button_up, "Up");
         linkButton(view, R.id.controller_button_right, "Right");
         linkButton(view, R.id.controller_button_down, "Down");
@@ -53,24 +64,61 @@ public class TouchscreenControllerView extends FrameLayout implements Touchscree
     private void linkButton(View view, int id, String buttonName) {
         TouchscreenControllerButtonView buttonView = (TouchscreenControllerButtonView) view.findViewById(id);
         buttonView.setButtonName(buttonName);
-        buttonView.setButtonStateChangedListener(this);
 
         int code = AndroidHostInterface.getInstance().getControllerButtonCode(mControllerType, buttonName);
         buttonView.setButtonCode(code);
         Log.i("TouchscreenController", String.format("%s -> %d", buttonName, code));
 
-        if (code < 0) {
+        if (code >= 0) {
+            mButtonViews.add(buttonView);
+        } else {
             Log.e("TouchscreenController", String.format("Unknown button name '%s' " +
                     "for '%s'", buttonName, mControllerType));
         }
     }
 
+    private boolean handleTouchEvent(MotionEvent event) {
+        switch (event.getActionMasked())
+        {
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_POINTER_UP:
+            {
+                clearAllButtonPressedStates();
+                return true;
+            }
 
-    @Override
-    public void onButtonStateChanged(TouchscreenControllerButtonView view, boolean pressed) {
-        if (view.getButtonCode() < 0)
-            return;
+            case MotionEvent.ACTION_DOWN:
+            case MotionEvent.ACTION_POINTER_DOWN:
+            case MotionEvent.ACTION_MOVE:
+            {
+                final int x = (int)event.getX();
+                final int y = (int)event.getY();
+                Rect rect = new Rect();
+                for (TouchscreenControllerButtonView buttonView : mButtonViews)
+                {
+                    buttonView.getHitRect(rect);
+                    final boolean pressed = rect.contains(x, y);
+                    if (buttonView.isPressed() == pressed)
+                        continue;
 
-        AndroidHostInterface.getInstance().setControllerButtonState(mControllerIndex, view.getButtonCode(), pressed);
+                    buttonView.setPressed(pressed);
+                    AndroidHostInterface.getInstance().setControllerButtonState(mControllerIndex, buttonView.getButtonCode(), pressed);
+                }
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void clearAllButtonPressedStates() {
+        for (TouchscreenControllerButtonView buttonView : mButtonViews) {
+            if (!buttonView.isPressed())
+                continue;
+
+            AndroidHostInterface.getInstance().setControllerButtonState(mControllerIndex, buttonView.getButtonCode(), false);
+            buttonView.setPressed(false);
+        }
     }
 }

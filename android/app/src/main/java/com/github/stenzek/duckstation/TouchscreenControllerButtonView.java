@@ -5,6 +5,7 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -17,12 +18,6 @@ public class TouchscreenControllerButtonView extends View {
     private boolean mPressed = false;
     private int mButtonCode = -1;
     private String mButtonName = "";
-    private ButtonStateChangedListener mListener;
-
-    public interface ButtonStateChangedListener {
-        void onButtonStateChanged(TouchscreenControllerButtonView view, boolean pressed);
-    }
-
 
     public TouchscreenControllerButtonView(Context context) {
         super(context);
@@ -78,40 +73,11 @@ public class TouchscreenControllerButtonView extends View {
         }
     }
 
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        final boolean oldState = mPressed;
-
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-            case MotionEvent.ACTION_POINTER_DOWN: {
-                mPressed = true;
-                invalidate();
-
-                if (mListener != null && !oldState)
-                    mListener.onButtonStateChanged(this, true);
-
-                return true;
-            }
-
-            case MotionEvent.ACTION_UP:
-            case MotionEvent.ACTION_POINTER_UP: {
-                mPressed = false;
-                invalidate();
-
-                if (mListener != null && oldState)
-                    mListener.onButtonStateChanged(this, false);
-
-                return true;
-            }
-        }
-
-        return super.onTouchEvent(event);
-    }
-
     public boolean isPressed() {
         return mPressed;
     }
+
+    public void setPressed(boolean pressed) { mPressed = pressed; invalidate(); }
 
     public String getButtonName() {
         return mButtonName;
@@ -143,9 +109,5 @@ public class TouchscreenControllerButtonView extends View {
 
     public void setUnpressedDrawable(Drawable unpressedDrawable) {
         mUnpressedDrawable = unpressedDrawable;
-    }
-
-    public void setButtonStateChangedListener(ButtonStateChangedListener listener) {
-        mListener = listener;
     }
 }
