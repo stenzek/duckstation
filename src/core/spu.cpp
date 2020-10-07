@@ -1088,6 +1088,7 @@ bool SPU::StopDumpingAudio()
 void SPU::Voice::KeyOn()
 {
   current_address = regs.adpcm_start_address & ~u16(1);
+  counter.bits = 0;
   regs.adsr_volume = 0;
   adpcm_last_samples.fill(0);
   has_samples = false;
