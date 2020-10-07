@@ -7,9 +7,8 @@ android {
         applicationId "com.github.stenzek.duckstation"
         minSdkVersion 21
         targetSdkVersion 29
-        versionCode 1
-        versionName "1.0"
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        versionCode(getBuildVersionCode())
+        versionName "${getVersion()}"
     }
     buildTypes {
         release {
@@ -48,4 +47,33 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
+}
+
+// Adapted from Dolphin.
+
+def getVersion() {
+    def versionNumber = '0.0-unknown'
+
+    try {
+        versionNumber = 'git describe --tags --exclude latest'.execute([], project.rootDir).text
+                .trim()
+                .replaceAll(/(-0)?-[^-]+$/, "")
+    } catch (Exception e) {
+        logger.error('Cannot find git, defaulting to dummy version number')
+    }
+
+    return versionNumber
+}
+
+
+def getBuildVersionCode() {
+    try {
+        def versionNumber = 'git rev-list --first-parent --count HEAD'.execute([], project.rootDir).text
+                .trim()
+        return Integer.valueOf(versionNumber);
+    } catch (Exception e) {
+        logger.error('Cannot find git, defaulting to dummy version number')
+    }
+
+    return 1;
 }
