@@ -9,6 +9,7 @@ import android.os.Bundle;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
@@ -20,6 +21,8 @@ import android.content.Intent;
 
 import androidx.collection.ArraySet;
 
+import android.provider.DocumentsContract;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -30,6 +33,7 @@ import android.widget.ListView;
 import android.widget.PopupMenu;
 import android.widget.Toast;
 
+import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.prefs.Preferences;
@@ -174,7 +178,14 @@ public class MainActivity extends AppCompatActivity {
                 Uri treeUri = data.getData();
                 String path = FileUtil.getFullPathFromTreeUri(treeUri, this);
                 if (path.length() < 5) {
-                    // sanity check for non-external paths.. do we need permissions or something?
+                    new AlertDialog.Builder(this)
+                            .setTitle("Error")
+                            .setMessage("Failed to get path for the selected directory. Please make sure the directory is in external storage.\n" +
+                                        "Tap the overflow button in the directory selector.\nSelect \"Show Internal Storage\".\n" +
+                                        "Tap the menu button and select your device name.")
+                            .setPositiveButton("OK", (dialog, button) -> {})
+                            .create()
+                            .show();
                     return;
                 }
 
