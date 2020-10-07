@@ -74,6 +74,8 @@ public class AndroidHostInterface {
     public native CheatCode[] getCheatList();
     public native void setCheatEnabled(int index, boolean enabled);
 
+    public native void addOSDMessage(String message, float duration);
+
     static {
         System.loadLibrary("duckstation-native");
     }

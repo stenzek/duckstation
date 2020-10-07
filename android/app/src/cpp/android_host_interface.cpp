@@ -366,16 +366,26 @@ bool AndroidHostInterface::AcquireHostDisplay()
       !display->InitializeRenderDevice(GetShaderCacheBasePath(), g_settings.gpu_use_debug_device))
   {
     ReportError("Failed to acquire host display.");
+    display->DestroyRenderDevice();
     return false;
   }
 
   m_display = std::move(display);
+
+  if (!CreateHostDisplayResources())
+  {
+    ReportError("Failed to create host display resources");
+    ReleaseHostDisplay();
+    return false;
+  }
+
   ImGui::NewFrame();
   return true;
 }
 
 void AndroidHostInterface::ReleaseHostDisplay()
 {
+  ReleaseHostDisplayResources();
   m_display->DestroyRenderDevice();
   m_display.reset();
 }
@@ -829,4 +839,10 @@ DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_setCheatEnabled, jobject obj, 
 
   AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
   hi->RunOnEmulationThread([index, enabled, hi]() { hi->SetCheatCodeState(static_cast<u32>(index), enabled, true); });
+}
+
+DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_addOSDMessage, jobject obj, jstring message, jfloat duration)
+{
+  AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
+  hi->AddOSDMessage(AndroidHelpers::JStringToString(env, message), duration);
 }

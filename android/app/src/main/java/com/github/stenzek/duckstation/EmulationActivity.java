@@ -372,7 +372,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     private void showCheatsMenu() {
         final CheatCode[] cheats = AndroidHostInterface.getInstance().getCheatList();
         if (cheats == null) {
-            Toast.makeText(this, "No cheats are loaded.", Toast.LENGTH_LONG);
+            AndroidHostInterface.getInstance().addOSDMessage("No cheats are loaded.", 5.0f);
             return;
         }
 
