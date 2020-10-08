@@ -15,6 +15,7 @@ The following people have contributed to the project in some way, and are credit
 - Hipnosis183 - Spanish
 - @RaydenX93 - Italian
 - @r57zone - Russian
+- @DenSinH - Dutch
 
 ## Game Compatibility Database
  - @Zet-sensei

@@ -159,6 +159,9 @@
     <None Include="translations\duckstation-qt_ru.ts">
       <Filter>translations</Filter>
     </None>
+    <None Include="translations\duckstation-qt_nl.ts">
+      <Filter>translations</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <QtResource Include="resources\resources.qrc">
