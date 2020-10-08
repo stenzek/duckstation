@@ -30,6 +30,10 @@ public:
   /// Performs update check if enabled in settings.
   void startupUpdateCheck();
 
+  /// Reports m_host_interface's settings version mismatch string. Does nothing if string is empty (no settings version
+  /// mismatch detected).
+  void reportSettingsVersionMismatchString();
+
 public Q_SLOTS:
   /// Updates debug menu visibility (hides if disabled).
   void updateDebugMenuVisibility();
