@@ -180,9 +180,9 @@ public class MainActivity extends AppCompatActivity {
                 if (path.length() < 5) {
                     new AlertDialog.Builder(this)
                             .setTitle("Error")
-                            .setMessage("Failed to get path for the selected directory. Please make sure the directory is in external storage.\n" +
+                            .setMessage("Failed to get path for the selected directory. Please make sure the directory is in internal/external storage.\n\n" +
                                         "Tap the overflow button in the directory selector.\nSelect \"Show Internal Storage\".\n" +
-                                        "Tap the menu button and select your device name.")
+                                        "Tap the menu button and select your device name or SD card.")
                             .setPositiveButton("OK", (dialog, button) -> {})
                             .create()
                             .show();
