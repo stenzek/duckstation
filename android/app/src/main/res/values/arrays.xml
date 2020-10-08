@@ -140,4 +140,28 @@
         <item>Settings</item>
         <item>Quit</item>
     </string-array>
+    <string-array name="settings_cdrom_read_speedup_entries">
+        <item>None (Double Speed)</item>
+        <item>2x (Quad Speed)</item>
+        <item>3x (6x Speed)</item>
+        <item>4x (8x Speed)</item>
+        <item>5x (10x Speed)</item>
+        <item>6x (12x Speed)</item>
+        <item>7x (14x Speed)</item>
+        <item>8x (16x Speed)</item>
+        <item>9x (18x Speed)</item>
+        <item>10x (20x Speed)</item>
+    </string-array>
+    <string-array name="settings_cdrom_read_speedup_values">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
+        <item>10</item>
+    </string-array>
 </resources>
