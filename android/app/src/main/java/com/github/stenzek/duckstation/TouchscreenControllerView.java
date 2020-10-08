@@ -81,7 +81,6 @@ public class TouchscreenControllerView extends FrameLayout {
         switch (event.getActionMasked())
         {
             case MotionEvent.ACTION_UP:
-            case MotionEvent.ACTION_POINTER_UP:
             {
                 clearAllButtonPressedStates();
                 return true;
@@ -89,15 +88,19 @@ public class TouchscreenControllerView extends FrameLayout {
 
             case MotionEvent.ACTION_DOWN:
             case MotionEvent.ACTION_POINTER_DOWN:
+            case MotionEvent.ACTION_POINTER_UP:
             case MotionEvent.ACTION_MOVE:
             {
-                final int x = (int)event.getX();
-                final int y = (int)event.getY();
                 Rect rect = new Rect();
-                for (TouchscreenControllerButtonView buttonView : mButtonViews)
-                {
+                final int pointerCount = event.getPointerCount();
+                for (TouchscreenControllerButtonView buttonView : mButtonViews) {
                     buttonView.getHitRect(rect);
-                    final boolean pressed = rect.contains(x, y);
+                    boolean pressed = false;
+                    for (int i = 0; i < pointerCount; i++) {
+                        final int x = (int) event.getX(i);
+                        final int y = (int) event.getY(i);
+                        pressed |= rect.contains(x, y);
+                    }
                     if (buttonView.isPressed() == pressed)
                         continue;
 
