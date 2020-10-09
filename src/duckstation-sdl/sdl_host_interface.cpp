@@ -3,6 +3,7 @@
 #include "common/byte_stream.h"
 #include "common/file_system.h"
 #include "common/log.h"
+#include "common/make_array.h"
 #include "common/string_util.h"
 #include "core/cheats.h"
 #include "core/controller.h"
@@ -880,6 +881,29 @@ void SDLHostInterface::DrawQuickSettingsMenu()
     ImGui::EndMenu();
   }
 
+  settings_changed |= ImGui::MenuItem("CPU Clock Control", nullptr, &m_settings_copy.cpu_overclock_enable);
+
+  if (ImGui::BeginMenu("CPU Clock Speed"))
+  {
+    static constexpr auto values = make_array(10u, 25u, 50u, 75u, 100u, 125u, 150u, 175u, 200u, 225u, 250u, 275u, 300u,
+                                              350u, 400u, 450u, 500u, 600u, 700u, 800u);
+    const u32 percent = m_settings_copy.GetCPUOverclockPercent();
+    for (u32 value : values)
+    {
+      if (ImGui::MenuItem(TinyString::FromFormat("%u%%", value), nullptr, percent == value))
+      {
+        m_settings_copy.SetCPUOverclockPercent(percent);
+        settings_changed = true;
+      }
+    }
+
+    ImGui::EndMenu();
+  }
+
+  settings_changed |=
+    ImGui::MenuItem("Recompiler Memory Exceptions", nullptr, &m_settings_copy.cpu_recompiler_memory_exceptions);
+  settings_changed |= ImGui::MenuItem("Recompiler ICache", nullptr, &m_settings_copy.cpu_recompiler_icache);
+
   ImGui::Separator();
 
   if (ImGui::BeginMenu("Renderer"))
@@ -957,10 +981,48 @@ void SDLHostInterface::DrawQuickSettingsMenu()
     ImGui::EndMenu();
   }
 
+  ImGui::Separator();
+
   settings_changed |= ImGui::MenuItem("Disable Interlacing", nullptr, &m_settings_copy.gpu_disable_interlacing);
   settings_changed |= ImGui::MenuItem("Widescreen Hack", nullptr, &m_settings_copy.gpu_widescreen_hack);
+  settings_changed |= ImGui::MenuItem("Force NTSC Timings", nullptr, &m_settings_copy.gpu_force_ntsc_timings);
+
+  ImGui::Separator();
+
   settings_changed |= ImGui::MenuItem("Display Linear Filtering", nullptr, &m_settings_copy.display_linear_filtering);
   settings_changed |= ImGui::MenuItem("Display Integer Scaling", nullptr, &m_settings_copy.display_integer_scaling);
+
+  if (ImGui::BeginMenu("Crop Mode"))
+  {
+    for (u32 i = 0; i < static_cast<u32>(DisplayCropMode::Count); i++)
+    {
+      if (ImGui::MenuItem(Settings::GetDisplayCropModeDisplayName(static_cast<DisplayCropMode>(i)), nullptr,
+                          m_settings_copy.display_crop_mode == static_cast<DisplayCropMode>(i)))
+      {
+        m_settings_copy.display_crop_mode = static_cast<DisplayCropMode>(i);
+        settings_changed = true;
+      }
+    }
+
+    ImGui::EndMenu();
+  }
+
+  if (ImGui::BeginMenu("Aspect Ratio"))
+  {
+    for (u32 i = 0; i < static_cast<u32>(DisplayAspectRatio::Count); i++)
+    {
+      if (ImGui::MenuItem(Settings::GetDisplayAspectRatioName(static_cast<DisplayAspectRatio>(i)), nullptr,
+                          m_settings_copy.display_aspect_ratio == static_cast<DisplayAspectRatio>(i)))
+      {
+        m_settings_copy.display_aspect_ratio = static_cast<DisplayAspectRatio>(i);
+        settings_changed = true;
+      }
+    }
+
+    ImGui::EndMenu();
+  }
+
+  settings_changed |= ImGui::MenuItem("Force 4:3 For 24-bit", nullptr, &m_settings_copy.display_force_4_3_for_24bit);
 
   ImGui::Separator();
 
@@ -1022,10 +1084,6 @@ void SDLHostInterface::DrawDebugMenu()
   settings_changed |= ImGui::MenuItem("Show MDEC State", nullptr, &debug_settings.show_mdec_state);
 
   ImGui::Separator();
-
-  settings_changed |=
-    ImGui::MenuItem("Recompiler Memory Exceptions", nullptr, &m_settings_copy.cpu_recompiler_memory_exceptions);
-  settings_changed |= ImGui::MenuItem("Recompiler ICache", nullptr, &m_settings_copy.cpu_recompiler_icache);
 
   if (settings_changed)
   {
