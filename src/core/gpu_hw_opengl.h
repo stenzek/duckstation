@@ -62,8 +62,6 @@ private:
 
   bool CompilePrograms();
 
-  GL::ShaderCache m_shader_cache;
-
   // downsample texture - used for readbacks at >1xIR.
   GL::Texture m_vram_texture;
   GL::Texture m_vram_depth_texture;
