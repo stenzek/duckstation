@@ -93,10 +93,14 @@ public class TouchscreenControllerView extends FrameLayout {
             {
                 Rect rect = new Rect();
                 final int pointerCount = event.getPointerCount();
+                final int liftedPointerIndex = (event.getActionMasked() == MotionEvent.ACTION_POINTER_UP) ? event.getActionIndex() : -1;
                 for (TouchscreenControllerButtonView buttonView : mButtonViews) {
                     buttonView.getHitRect(rect);
                     boolean pressed = false;
                     for (int i = 0; i < pointerCount; i++) {
+                        if (i == liftedPointerIndex)
+                            continue;
+
                         final int x = (int) event.getX(i);
                         final int y = (int) event.getY(i);
                         pressed |= rect.contains(x, y);
