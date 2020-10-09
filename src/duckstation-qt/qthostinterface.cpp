@@ -680,8 +680,14 @@ void QtHostInterface::OnSystemStateSaved(bool global, s32 slot)
 void QtHostInterface::LoadSettings()
 {
   m_settings_interface = std::make_unique<INISettingsInterface>(CommonHostInterface::GetSettingsFileName());
+  Log::SetConsoleOutputParams(true);
 
-  CommonHostInterface::CheckSettings(*m_settings_interface.get());
+  if (!CommonHostInterface::CheckSettings(*m_settings_interface.get()))
+  {
+    QTimer::singleShot(1000,
+                       [this]() { ReportError("Settings version mismatch, settings have been reset to defaults."); });
+  }
+
   CommonHostInterface::LoadSettings(*m_settings_interface.get());
   CommonHostInterface::FixIncompatibleSettings(false);
 }

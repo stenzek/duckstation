@@ -1989,19 +1989,19 @@ std::string CommonHostInterface::GetMostRecentResumeSaveStatePath() const
   return std::move(most_recent->FileName);
 }
 
-void CommonHostInterface::CheckSettings(SettingsInterface& si)
+bool CommonHostInterface::CheckSettings(SettingsInterface& si)
 {
   const int settings_version = si.GetIntValue("Main", "SettingsVersion", -1);
   if (settings_version == SETTINGS_VERSION)
-    return;
+    return true;
 
-  m_settings_version_mismatch_str = StringUtil::StdStringFromFormat(
-    "Settings version %d does not match expected version %d, resetting", settings_version, SETTINGS_VERSION);
-  ReportError(m_settings_version_mismatch_str.c_str());
+  Log_ErrorPrintf("Settings version %d does not match expected version %d, resetting", settings_version,
+                  SETTINGS_VERSION);
 
   si.Clear();
   si.SetIntValue("Main", "SettingsVersion", SETTINGS_VERSION);
   SetDefaultSettings(si);
+  return false;
 }
 
 void CommonHostInterface::SetDefaultSettings(SettingsInterface& si)
@@ -2101,11 +2101,6 @@ void CommonHostInterface::CheckForSettingsChanges(const Settings& old_settings)
   }
 
   UpdateInputMap();
-}
-
-const std::string& CommonHostInterface::GetSettingsVersionMismatchString() const
-{
-  return m_settings_version_mismatch_str;
 }
 
 void CommonHostInterface::SetTimerResolutionIncreased(bool enabled)

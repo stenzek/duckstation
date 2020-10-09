@@ -1121,13 +1121,6 @@ void MainWindow::startupUpdateCheck()
   checkForUpdates(false);
 }
 
-void MainWindow::reportSettingsVersionMismatchString()
-{
-  const QString mismatch_str = QString::fromStdString(m_host_interface->GetSettingsVersionMismatchString());
-  if (!mismatch_str.isEmpty())
-    reportError(mismatch_str);
-}
-
 void MainWindow::updateDebugMenuVisibility()
 {
   const bool visible = m_host_interface->GetBoolSettingValue("Main", "ShowDebugMenu", false);

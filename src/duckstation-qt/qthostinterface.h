@@ -47,10 +47,12 @@ public:
   bool Initialize() override;
   void Shutdown() override;
 
+public Q_SLOTS:
   void ReportError(const char* message) override;
   void ReportMessage(const char* message) override;
   bool ConfirmMessage(const char* message) override;
 
+public:
   /// Thread-safe settings access.
   std::string GetStringSettingValue(const char* section, const char* key, const char* default_value = "") override;
   bool GetBoolSettingValue(const char* section, const char* key, bool default_value = false) override;
