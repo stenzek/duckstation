@@ -10,7 +10,7 @@ The following people have contributed to the project in some way, and are credit
 - Anderson Cardoso - Portuguese (Br)
 - @bajolzas - Portuguese (Pt)
 - posix - @Richard-L - German
-- @phoe-nix - Chinese (Simplified)
+- @phoe-nix, @zkdpower - Chinese (Simplified)
 - Sorer - @MojoJojoDojo - Hebrew
 - Hipnosis183 - Spanish
 - @RaydenX93 - Italian
