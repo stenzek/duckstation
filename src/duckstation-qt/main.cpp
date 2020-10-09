@@ -55,6 +55,8 @@ int main(int argc, char* argv[])
     window->startupUpdateCheck();
   }
 
+  window->reportSettingsVersionMismatchString();
+
   int result = app.exec();
 
   window.reset();

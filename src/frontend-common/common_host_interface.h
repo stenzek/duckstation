@@ -174,6 +174,10 @@ public:
   /// Reloads post processing shaders with the current configuration.
   void ReloadPostProcessingShaders();
 
+  /// Returns an empty string if no settings version mismatch was detected, non-empty otherwise. Should not be called
+  /// before CheckSettings(SettingsInterface& si).
+  const std::string& GetSettingsVersionMismatchString() const;
+
 protected:
   enum : u32
   {
@@ -370,6 +374,8 @@ private:
 
   // running in batch mode? i.e. exit after stopping emulation
   bool m_batch_mode = false;
+
+  std::string m_settings_version_mismatch_str;
 
 #ifdef WITH_DISCORD_PRESENCE
   // discord rich presence

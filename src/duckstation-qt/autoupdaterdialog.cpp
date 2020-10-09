@@ -256,6 +256,7 @@ void AutoUpdaterDialog::getChangesComplete(QNetworkReply* reply)
 
       const QJsonArray commits(doc_object["commits"].toArray());
       bool update_will_break_save_states = false;
+      bool update_increases_settings_version = false;
 
       for (const QJsonValue& commit : commits)
       {
@@ -274,6 +275,9 @@ void AutoUpdaterDialog::getChangesComplete(QNetworkReply* reply)
 
         if (message.contains(QStringLiteral("[SAVEVERSION+]")))
           update_will_break_save_states = true;
+        
+        if (message.contains(QStringLiteral("[SETTINGSVERSION+]")))
+          update_increases_settings_version = true;
       }
 
       changes_html += "</ul>";
@@ -283,6 +287,13 @@ void AutoUpdaterDialog::getChangesComplete(QNetworkReply* reply)
         changes_html.prepend(tr("<h2>Save State Warning</h2><p>Installing this update will make your save states "
                                 "<b>incompatible</b>. Please ensure you have saved your games to memory card "
                                 "before installing this update or you will lose progress.</p>"));
+      }
+
+      if (update_increases_settings_version)
+      {
+        changes_html.prepend(
+          tr("<h2>Settings Warning</h2><p>Installing this update will reset your program configuration. Please note "
+             "that you will have to reconfigure your settings after this update.</p>"));
       }
 
       changes_html += tr("<h4>Installing this update will download %1 MB through your internet connection.</h4>")

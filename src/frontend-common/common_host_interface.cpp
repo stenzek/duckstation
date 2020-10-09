@@ -1995,8 +1995,10 @@ void CommonHostInterface::CheckSettings(SettingsInterface& si)
   if (settings_version == SETTINGS_VERSION)
     return;
 
-  ReportFormattedError("Settings version %d does not match expected version %d, resetting", settings_version,
-                       SETTINGS_VERSION);
+  m_settings_version_mismatch_str = StringUtil::StdStringFromFormat(
+    "Settings version %d does not match expected version %d, resetting", settings_version, SETTINGS_VERSION);
+  ReportError(m_settings_version_mismatch_str.c_str());
+
   si.Clear();
   si.SetIntValue("Main", "SettingsVersion", SETTINGS_VERSION);
   SetDefaultSettings(si);
@@ -2099,6 +2101,11 @@ void CommonHostInterface::CheckForSettingsChanges(const Settings& old_settings)
   }
 
   UpdateInputMap();
+}
+
+const std::string& CommonHostInterface::GetSettingsVersionMismatchString() const
+{
+  return m_settings_version_mismatch_str;
 }
 
 void CommonHostInterface::SetTimerResolutionIncreased(bool enabled)
