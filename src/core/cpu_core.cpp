@@ -884,7 +884,7 @@ restart_instruction:
       }
 
       if constexpr (pgxp_mode >= PGXPMode::CPU)
-        PGXP::CPU_ANDI(inst.bits, new_value, ReadReg(inst.i.rs));
+        PGXP::CPU_ADDI(inst.bits, new_value, ReadReg(inst.i.rs));
 
       WriteReg(inst.i.rt, new_value);
     }
