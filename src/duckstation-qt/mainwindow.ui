@@ -161,8 +161,15 @@
       <string>Switch CPU Emulation Mode</string>
      </property>
     </widget>
-    <addaction name="menuCPUExecutionMode"/>
+    <widget class="QMenu" name="menuCropMode">
+     <property name="title">
+      <string>Switch Crop Mode</string>
+     </property>
+    </widget>    <addaction name="menuCPUExecutionMode"/>
     <addaction name="menuRenderer"/>
+    <addaction name="menuCropMode"/>
+    <addaction name="actionDisableInterlacing"/>
+    <addaction name="actionForceNTSCTimings"/>
     <addaction name="separator"/>
     <addaction name="actionDebugDumpCPUtoVRAMCopies"/>
     <addaction name="actionDebugDumpVRAMtoCPUCopies"/>
@@ -558,6 +565,22 @@
    </property>
    <property name="text">
     <string>Dump VRAM to CPU Copies</string>
+   </property>
+  </action>
+  <action name="actionDisableInterlacing">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Disable Interlacing</string>
+   </property>
+  </action>
+  <action name="actionForceNTSCTimings">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Force NTSC Timings</string>
    </property>
   </action>
   <action name="actionDumpAudio">

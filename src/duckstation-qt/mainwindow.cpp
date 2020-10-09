@@ -575,6 +575,19 @@ void MainWindow::setupAdditionalUi()
   }
   updateDebugMenuGPURenderer();
 
+  for (u32 i = 0; i < static_cast<u32>(DisplayCropMode::Count); i++)
+  {
+    const DisplayCropMode crop_mode = static_cast<DisplayCropMode>(i);
+    QAction* action = m_ui.menuCropMode->addAction(tr(Settings::GetDisplayCropModeDisplayName(crop_mode)));
+    action->setCheckable(true);
+    connect(action, &QAction::triggered, [this, crop_mode]() {
+      m_host_interface->SetStringSettingValue("Display", "CropMode", Settings::GetDisplayCropModeName(crop_mode));
+      m_host_interface->applySettings();
+      updateDebugMenuCropMode();
+    });
+  }
+  updateDebugMenuCropMode();
+
   const QString current_language(
     QString::fromStdString(m_host_interface->GetStringSettingValue("Main", "Language", "")));
   QActionGroup* language_group = new QActionGroup(m_ui.menuSettingsLanguage);
@@ -786,6 +799,10 @@ void MainWindow::connectSignals()
 
   m_host_interface->populateSaveStateMenus(nullptr, m_ui.menuLoadState, m_ui.menuSaveState);
 
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDisableInterlacing, "GPU",
+                                               "DisableInterlacing");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionForceNTSCTimings, "GPU",
+                                               "ForceNTSCTimings");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugDumpCPUtoVRAMCopies, "Debug",
                                                "DumpCPUToVRAMCopies");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugDumpVRAMtoCPUCopies, "Debug",
@@ -1058,6 +1075,22 @@ void MainWindow::updateDebugMenuGPURenderer()
     QAction* action = qobject_cast<QAction*>(obj);
     if (action)
       action->setChecked(action->text() == current_renderer_display_name);
+  }
+}
+
+void MainWindow::updateDebugMenuCropMode()
+{
+  std::optional<DisplayCropMode> current_crop_mode =
+    Settings::ParseDisplayCropMode(m_host_interface->GetStringSettingValue("Display", "CropMode").c_str());
+  if (!current_crop_mode.has_value())
+    return;
+
+  const QString current_crop_mode_display_name(tr(Settings::GetDisplayCropModeDisplayName(current_crop_mode.value())));
+  for (QObject* obj : m_ui.menuCropMode->children())
+  {
+    QAction* action = qobject_cast<QAction*>(obj);
+    if (action)
+      action->setChecked(action->text() == current_crop_mode_display_name);
   }
 }
 
