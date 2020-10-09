@@ -104,6 +104,7 @@ struct Settings
   bool gpu_pgxp_texture_correction = true;
   bool gpu_pgxp_vertex_cache = false;
   bool gpu_pgxp_cpu = false;
+  bool gpu_pgxp_preserve_proj_fp = false;
   DisplayCropMode display_crop_mode = DisplayCropMode::None;
   s16 display_active_start_offset = 0;
   s16 display_active_end_offset = 0;

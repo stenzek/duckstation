@@ -85,6 +85,8 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(QtHostInterface* host_interface, 
   addBooleanTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("PGXP Vertex Cache"), "GPU", "PGXPVertexCache",
                         false);
   addBooleanTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("PGXP CPU Mode"), "GPU", "PGXPCPU", false);
+  addBooleanTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("PGXP Preserve Projection Precision"), "GPU",
+                        "PGXPPreserveProjFP", false);
 
   addBooleanTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Enable Recompiler Memory Exceptions"), "CPU",
                         "RecompilerMemoryExceptions", false);

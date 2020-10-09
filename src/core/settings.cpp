@@ -149,6 +149,7 @@ void Settings::Load(SettingsInterface& si)
   gpu_pgxp_texture_correction = si.GetBoolValue("GPU", "PGXPTextureCorrection", true);
   gpu_pgxp_vertex_cache = si.GetBoolValue("GPU", "PGXPVertexCache", false);
   gpu_pgxp_cpu = si.GetBoolValue("GPU", "PGXPCPU", false);
+  gpu_pgxp_preserve_proj_fp = si.GetBoolValue("GPU", "PGXPPreserveProjFP", false);
 
   display_crop_mode =
     ParseDisplayCropMode(
@@ -273,6 +274,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("GPU", "PGXPTextureCorrection", gpu_pgxp_texture_correction);
   si.SetBoolValue("GPU", "PGXPVertexCache", gpu_pgxp_vertex_cache);
   si.SetBoolValue("GPU", "PGXPCPU", gpu_pgxp_cpu);
+  si.SetBoolValue("GPU", "PGXPPreserveProjFP", gpu_pgxp_preserve_proj_fp);
 
   si.SetStringValue("Display", "CropMode", GetDisplayCropModeName(display_crop_mode));
   si.SetIntValue("Display", "ActiveStartOffset", display_active_start_offset);
