@@ -341,7 +341,10 @@ bool GPU_HW_OpenGL::CreateUniformBuffer()
 bool GPU_HW_OpenGL::CreateTextureBuffer()
 {
   // We use the pixel unpack buffer here because we share it with CPU-decoded VRAM writes.
-  m_texture_stream_buffer = GL::StreamBuffer::Create(GL_PIXEL_UNPACK_BUFFER, VRAM_UPDATE_TEXTURE_BUFFER_SIZE);
+  const GLenum target =
+    (m_use_ssbo_for_vram_writes ? GL_SHADER_STORAGE_BUFFER :
+                                  (m_supports_texture_buffer ? GL_TEXTURE_BUFFER : GL_PIXEL_UNPACK_BUFFER));
+  m_texture_stream_buffer = GL::StreamBuffer::Create(target, VRAM_UPDATE_TEXTURE_BUFFER_SIZE);
   if (!m_texture_stream_buffer)
     return false;
 
