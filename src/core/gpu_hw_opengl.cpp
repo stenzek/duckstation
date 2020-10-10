@@ -196,7 +196,10 @@ void GPU_HW_OpenGL::SetCapabilities(HostDisplay* host_display)
     glGetIntegerv(GL_MAX_TEXTURE_BUFFER_SIZE, reinterpret_cast<GLint*>(&m_max_texture_buffer_size));
     Log_InfoPrintf("Max texel buffer size: %u", m_max_texture_buffer_size);
     if (m_max_texture_buffer_size < VRAM_WIDTH * VRAM_HEIGHT)
-      Log_WarningPrintf("Maximum texture buffer size is less than VRAM size, VRAM writes may be slower.");
+    {
+      Log_WarningPrintf("Maximum texture buffer size is less than VRAM size, not using texel buffers.");
+      m_supports_texture_buffer = false;
+    }
   }
 
   if (!m_supports_texture_buffer || m_max_texture_buffer_size < VRAM_WIDTH * VRAM_HEIGHT)
