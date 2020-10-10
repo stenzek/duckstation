@@ -2,7 +2,6 @@ package com.github.stenzek.duckstation;
 
 import android.content.Context;
 import android.graphics.Rect;
-import android.text.method.Touch;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -11,7 +10,6 @@ import android.view.View;
 import android.widget.FrameLayout;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * TODO: document your custom view class.
@@ -19,7 +17,9 @@ import java.util.HashMap;
 public class TouchscreenControllerView extends FrameLayout {
     private int mControllerIndex;
     private String mControllerType;
+    private View mMainView;
     private ArrayList<TouchscreenControllerButtonView> mButtonViews = new ArrayList<>();
+    private ArrayList<TouchscreenControllerAxisView> mAxisViews = new ArrayList<>();
 
     public TouchscreenControllerView(Context context) {
         super(context);
@@ -33,43 +33,72 @@ public class TouchscreenControllerView extends FrameLayout {
         super(context, attrs, defStyle);
     }
 
-    public void init(int controllerIndex, String controllerType) {
+    public void init(int controllerIndex, String controllerType, String viewType) {
         mControllerIndex = controllerIndex;
         mControllerType = controllerType;
 
+        mButtonViews.clear();
+        mAxisViews.clear();
+        removeAllViews();
+
         LayoutInflater inflater = LayoutInflater.from(getContext());
-        View view = inflater.inflate(R.layout.layout_touchscreen_controller, this, true);
-        view.setOnTouchListener((view1, event) -> {
+        switch (viewType)
+        {
+            case "none":
+                break;
+
+            case "digital":
+                mMainView = inflater.inflate(R.layout.layout_touchscreen_controller_digital, this, true);
+                break;
+
+            case "analog_stick":
+                mMainView = inflater.inflate(R.layout.layout_touchscreen_controller_analog_stick, this, true);
+                break;
+
+            case "analog_sticks":
+                mMainView = inflater.inflate(R.layout.layout_touchscreen_controller_analog_sticks, this, true);
+                break;
+
+            default:
+                mMainView = null;
+                break;
+        }
+
+        mMainView.setOnTouchListener((view1, event) -> {
             return handleTouchEvent(event);
         });
 
-        // TODO: Make dynamic, editable.
-        mButtonViews.clear();
-        linkButton(view, R.id.controller_button_up, "Up");
-        linkButton(view, R.id.controller_button_right, "Right");
-        linkButton(view, R.id.controller_button_down, "Down");
-        linkButton(view, R.id.controller_button_left, "Left");
-        linkButton(view, R.id.controller_button_l1, "L1");
-        linkButton(view, R.id.controller_button_l2, "L2");
-        linkButton(view, R.id.controller_button_select, "Select");
-        linkButton(view, R.id.controller_button_start, "Start");
-        linkButton(view, R.id.controller_button_triangle, "Triangle");
-        linkButton(view, R.id.controller_button_circle, "Circle");
-        linkButton(view, R.id.controller_button_cross, "Cross");
-        linkButton(view, R.id.controller_button_square, "Square");
-        linkButton(view, R.id.controller_button_r1, "R1");
-        linkButton(view, R.id.controller_button_r2, "R2");
+        linkButton(mMainView, R.id.controller_button_up, "Up");
+        linkButton(mMainView, R.id.controller_button_right, "Right");
+        linkButton(mMainView, R.id.controller_button_down, "Down");
+        linkButton(mMainView, R.id.controller_button_left, "Left");
+        linkButton(mMainView, R.id.controller_button_l1, "L1");
+        linkButton(mMainView, R.id.controller_button_l2, "L2");
+        linkButton(mMainView, R.id.controller_button_select, "Select");
+        linkButton(mMainView, R.id.controller_button_start, "Start");
+        linkButton(mMainView, R.id.controller_button_triangle, "Triangle");
+        linkButton(mMainView, R.id.controller_button_circle, "Circle");
+        linkButton(mMainView, R.id.controller_button_cross, "Cross");
+        linkButton(mMainView, R.id.controller_button_square, "Square");
+        linkButton(mMainView, R.id.controller_button_r1, "R1");
+        linkButton(mMainView, R.id.controller_button_r2, "R2");
+
+        if (!linkAxis(mMainView, R.id.controller_axis_left, "Left"))
+            linkAxisToButtons(mMainView, R.id.controller_axis_left, "");
+
+        linkAxis(mMainView, R.id.controller_axis_right, "Right");
     }
 
     private void linkButton(View view, int id, String buttonName) {
         TouchscreenControllerButtonView buttonView = (TouchscreenControllerButtonView) view.findViewById(id);
-        buttonView.setButtonName(buttonName);
+        if (buttonView == null)
+            return;
 
         int code = AndroidHostInterface.getInstance().getControllerButtonCode(mControllerType, buttonName);
-        buttonView.setButtonCode(code);
         Log.i("TouchscreenController", String.format("%s -> %d", buttonName, code));
 
         if (code >= 0) {
+            buttonView.setButtonCode(mControllerIndex, code);
             mButtonViews.add(buttonView);
         } else {
             Log.e("TouchscreenController", String.format("Unknown button name '%s' " +
@@ -77,12 +106,53 @@ public class TouchscreenControllerView extends FrameLayout {
         }
     }
 
+    private boolean linkAxis(View view, int id, String axisName) {
+        TouchscreenControllerAxisView axisView = (TouchscreenControllerAxisView) view.findViewById(id);
+        if (axisView == null)
+            return false;
+
+        int xCode = AndroidHostInterface.getInstance().getControllerAxisCode(mControllerType, axisName + "X");
+        int yCode = AndroidHostInterface.getInstance().getControllerAxisCode(mControllerType, axisName + "Y");
+        Log.i("TouchscreenController", String.format("%s -> %d/%d", axisName, xCode, yCode));
+        if (xCode < 0 && yCode < 0)
+            return false;
+
+        axisView.setControllerAxis(mControllerIndex, xCode, yCode);
+        mAxisViews.add(axisView);
+        return true;
+    }
+
+    private boolean linkAxisToButtons(View view, int id, String buttonPrefix) {
+        TouchscreenControllerAxisView axisView = (TouchscreenControllerAxisView) view.findViewById(id);
+        if (axisView == null)
+            return false;
+
+        int leftCode = AndroidHostInterface.getInstance().getControllerButtonCode(mControllerType, buttonPrefix + "Left");
+        int rightCode = AndroidHostInterface.getInstance().getControllerButtonCode(mControllerType, buttonPrefix + "Right");
+        int upCode = AndroidHostInterface.getInstance().getControllerButtonCode(mControllerType, buttonPrefix + "Up");
+        int downCode = AndroidHostInterface.getInstance().getControllerButtonCode(mControllerType, buttonPrefix + "Down");
+        Log.i("TouchscreenController", String.format("%s(ButtonAxis) -> %d,%d,%d,%d", buttonPrefix, leftCode, rightCode, upCode, downCode));
+        if (leftCode < 0 && rightCode < 0 && upCode < 0 && downCode < 0)
+            return false;
+
+        axisView.setControllerButtons(mControllerIndex, leftCode, rightCode, upCode, downCode);
+        mAxisViews.add(axisView);
+        return true;
+    }
+
     private boolean handleTouchEvent(MotionEvent event) {
         switch (event.getActionMasked())
         {
             case MotionEvent.ACTION_UP:
             {
-                clearAllButtonPressedStates();
+                for (TouchscreenControllerButtonView buttonView : mButtonViews) {
+                    buttonView.setPressed(false);
+                }
+
+                for (TouchscreenControllerAxisView axisView : mAxisViews) {
+                    axisView.setUnpressed();
+                }
+
                 return true;
             }
 
@@ -103,13 +173,37 @@ public class TouchscreenControllerView extends FrameLayout {
 
                         final int x = (int) event.getX(i);
                         final int y = (int) event.getY(i);
-                        pressed |= rect.contains(x, y);
+                        if (rect.contains(x, y)) {
+                            buttonView.setPressed(true);
+                            pressed = true;
+                            break;
+                        }
                     }
-                    if (buttonView.isPressed() == pressed)
-                        continue;
 
-                    buttonView.setPressed(pressed);
-                    AndroidHostInterface.getInstance().setControllerButtonState(mControllerIndex, buttonView.getButtonCode(), pressed);
+                    if (!pressed)
+                        buttonView.setPressed(pressed);
+                }
+
+                for (TouchscreenControllerAxisView axisView : mAxisViews) {
+                    axisView.getHitRect(rect);
+                    boolean pressed = false;
+                    for (int i = 0; i < pointerCount; i++) {
+                        if (i == liftedPointerIndex)
+                            continue;
+
+                        final int pointerId = event.getPointerId(i);
+                        final int x = (int) event.getX(i);
+                        final int y = (int) event.getY(i);
+
+                        if ((rect.contains(x, y) && !axisView.isPressed()) ||
+                                (axisView.isPressed() && axisView.getPointerId() == pointerId)) {
+                            axisView.setPressed(pointerId, x, y);
+                            pressed = true;
+                            break;
+                        }
+                    }
+                    if (!pressed)
+                        axisView.setUnpressed();
                 }
 
                 return true;
@@ -117,15 +211,5 @@ public class TouchscreenControllerView extends FrameLayout {
         }
 
         return false;
-    }
-
-    private void clearAllButtonPressedStates() {
-        for (TouchscreenControllerButtonView buttonView : mButtonViews) {
-            if (!buttonView.isPressed())
-                continue;
-
-            AndroidHostInterface.getInstance().setControllerButtonState(mControllerIndex, buttonView.getButtonCode(), false);
-            buttonView.setPressed(false);
-        }
     }
 }

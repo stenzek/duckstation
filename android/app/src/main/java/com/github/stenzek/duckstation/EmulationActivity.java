@@ -55,6 +55,12 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         return mPreferences.getString(key, defaultValue);
     }
 
+    private void setStringSetting(String key, String value) {
+        SharedPreferences.Editor editor = mPreferences.edit();
+        editor.putString(key, value);
+        editor.apply();
+    }
+
     public void reportError(String message) {
         Log.e("EmulationActivity", message);
 
@@ -175,16 +181,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         mContentView.getHolder().addCallback(this);
 
         // Hook up controller input.
-        final String controllerType = getStringSetting("Controller1/Type", "DigitalController");
-        Log.i("EmulationActivity", "Controller type: " + controllerType);
-        mContentView.initControllerKeyMapping(controllerType);
-
-        // Create touchscreen controller.
-        FrameLayout activityLayout = findViewById(R.id.frameLayout);
-        mTouchscreenController = new TouchscreenControllerView(this);
-        activityLayout.addView(mTouchscreenController);
-        mTouchscreenController.init(0, controllerType);
-        setTouchscreenControllerVisibility(getBooleanSetting("Controller1/EnableTouchscreenController", true));
+        updateControllers();
     }
 
     @Override
@@ -263,51 +260,43 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         if (mGameTitle != null && !mGameTitle.isEmpty())
             builder.setTitle(mGameTitle);
 
-        builder.setItems(R.array.emulation_menu, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                switch (i)
+        builder.setItems(R.array.emulation_menu, (dialogInterface, i) -> {
+            switch (i)
+            {
+                case 0:     // Quick Load
                 {
-                    case 0:     // Quick Load
-                    {
-                        AndroidHostInterface.getInstance().loadState(false, 0);
-                        return;
-                    }
+                    AndroidHostInterface.getInstance().loadState(false, 0);
+                    return;
+                }
 
-                    case 1:     // Quick Save
-                    {
-                        AndroidHostInterface.getInstance().saveState(false, 0);
-                        return;
-                    }
+                case 1:     // Quick Save
+                {
+                    AndroidHostInterface.getInstance().saveState(false, 0);
+                    return;
+                }
 
-                    case 2:     // Toggle Speed Limiter
-                    {
-                        boolean newSetting = !getBooleanSetting("Main/SpeedLimiterEnabled", true);
-                        setBooleanSetting("Main/SpeedLimiterEnabled", newSetting);
-                        applySettings();
-                        return;
-                    }
+                case 2:     // Toggle Speed Limiter
+                {
+                    boolean newSetting = !getBooleanSetting("Main/SpeedLimiterEnabled", true);
+                    setBooleanSetting("Main/SpeedLimiterEnabled", newSetting);
+                    applySettings();
+                    return;
+                }
 
-                    case 3:     // More Options
-                    {
-                        showMoreMenu();
-                        return;
-                    }
+                case 3:     // More Options
+                {
+                    showMoreMenu();
+                    return;
+                }
 
-                    case 4:     // Quit
-                    {
-                        finish();
-                        return;
-                    }
+                case 4:     // Quit
+                {
+                    finish();
+                    return;
                 }
             }
         });
-        builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialogInterface) {
-                enableFullscreenImmersive();
-            }
-        });
+        builder.setOnDismissListener(dialogInterface -> enableFullscreenImmersive());
         builder.create().show();
     }
 
@@ -316,56 +305,59 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         if (mGameTitle != null && !mGameTitle.isEmpty())
             builder.setTitle(mGameTitle);
 
-        builder.setItems(R.array.emulation_more_menu, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                switch (i)
+        builder.setItems(R.array.emulation_more_menu, (dialogInterface, i) -> {
+            switch (i)
+            {
+                case 0:     // Reset
                 {
-                    case 0:     // Reset
-                    {
-                        AndroidHostInterface.getInstance().resetSystem();
-                        return;
-                    }
+                    AndroidHostInterface.getInstance().resetSystem();
+                    return;
+                }
 
-                    case 1:     // Cheats
-                    {
-                        showCheatsMenu();
-                        return;
-                    }
+                case 1:     // Cheats
+                {
+                    showCheatsMenu();
+                    return;
+                }
 
-                    case 2:     // Change Disc
-                    {
-                        return;
-                    }
+                case 2:     // Change Disc
+                {
+                    return;
+                }
 
-                    case 3:     // Toggle Touchscreen Controller
-                    {
-                        setTouchscreenControllerVisibility(!mTouchscreenControllerVisible);
-                        return;
-                    }
+                case 3:     // Change Touchscreen Controller
+                {
+                    showTouchscreenControllerMenu();
+                    return;
+                }
 
-                    case 4:     // Settings
-                    {
-                        Intent intent = new Intent(EmulationActivity.this, SettingsActivity.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        startActivityForResult(intent, REQUEST_CODE_SETTINGS);
-                        return;
-                    }
+                case 4:     // Settings
+                {
+                    Intent intent = new Intent(EmulationActivity.this, SettingsActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivityForResult(intent, REQUEST_CODE_SETTINGS);
+                    return;
+                }
 
-                    case 5:     // Quit
-                    {
-                        finish();
-                        return;
-                    }
+                case 5:     // Quit
+                {
+                    finish();
+                    return;
                 }
             }
         });
-        builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialogInterface) {
-                enableFullscreenImmersive();
-            }
+        builder.setOnDismissListener(dialogInterface -> enableFullscreenImmersive());
+        builder.create().show();
+    }
+
+    private void showTouchscreenControllerMenu() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setItems(R.array.settings_touchscreen_controller_view_entries, (dialogInterface, i) -> {
+            String[] values = getResources().getStringArray(R.array.settings_touchscreen_controller_view_values);
+            setStringSetting("Controller1/TouchscreenControllerView", values[i]);
+            updateControllers();
         });
+        builder.setOnDismissListener(dialogInterface -> enableFullscreenImmersive());
         builder.create().show();
     }
 
@@ -384,18 +376,8 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
             items[i] = String.format("%s %s", cc.isEnabled() ? "(ON)" : "(OFF)", cc.getName());
         }
 
-        builder.setItems(items, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                AndroidHostInterface.getInstance().setCheatEnabled(i, !cheats[i].isEnabled());
-            }
-        });
-        builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialogInterface) {
-                enableFullscreenImmersive();
-            }
-        });
+        builder.setItems(items, (dialogInterface, i) -> AndroidHostInterface.getInstance().setCheatEnabled(i, !cheats[i].isEnabled()));
+        builder.setOnDismissListener(dialogInterface -> enableFullscreenImmersive());
         builder.create().show();
     }
 
@@ -403,10 +385,29 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
      * Touchscreen controller overlay
      */
     TouchscreenControllerView mTouchscreenController;
-    private boolean mTouchscreenControllerVisible = true;
 
-    private void setTouchscreenControllerVisibility(boolean visible) {
-        mTouchscreenControllerVisible = visible;
-        mTouchscreenController.setVisibility(visible ? View.VISIBLE : View.INVISIBLE);
+    public void updateControllers() {
+        final String controllerType = getStringSetting("Controller1/Type", "DigitalController");
+        final String viewType = getStringSetting("Controller1/TouchscreenControllerView", "digital");
+        final FrameLayout activityLayout = findViewById(R.id.frameLayout);
+
+        Log.i("EmulationActivity", "Controller type: " + controllerType);
+        Log.i("EmulationActivity", "View type: " + viewType);
+
+        mContentView.initControllerKeyMapping(controllerType);
+
+        if (controllerType == "none" || viewType == "none") {
+            if (mTouchscreenController != null) {
+                activityLayout.removeView(mTouchscreenController);
+                mTouchscreenController = null;
+            }
+        } else {
+            if (mTouchscreenController == null) {
+                mTouchscreenController = new TouchscreenControllerView(this);
+                activityLayout.addView(mTouchscreenController);
+            }
+
+            mTouchscreenController.init(0, controllerType, viewType);
+        }
     }
 }

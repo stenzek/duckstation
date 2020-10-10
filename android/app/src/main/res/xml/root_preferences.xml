@@ -271,10 +271,13 @@
             app:title="Enable Analog Mode On Reset"
             app:defaultValue="false"
             app:iconSpaceReserved="false" />
-        <SwitchPreferenceCompat
-            app:key="Controller1/EnableTouchscreenController"
-            app:title="Display Touchscreen Controller"
-            app:defaultValue="true"
+        <ListPreference
+            app:key="Controller1/TouchscreenControllerView"
+            app:title="Touchscreen Controller View"
+            app:entries="@array/settings_touchscreen_controller_view_entries"
+            app:entryValues="@array/settings_touchscreen_controller_view_values"
+            app:defaultValue="digital"
+            app:useSimpleSummaryProvider="true"
             app:iconSpaceReserved="false" />
     </PreferenceCategory>
 

@@ -136,7 +136,7 @@
         <item>Reset</item>
         <item>Cheats</item>
         <item>Change Disc</item>
-        <item>Toggle Touch Controller</item>
+        <item>Change Touchscreen Controller</item>
         <item>Settings</item>
         <item>Quit</item>
     </string-array>
@@ -163,5 +163,17 @@
         <item>8</item>
         <item>9</item>
         <item>10</item>
+    </string-array>
+    <string-array name="settings_touchscreen_controller_view_entries">
+        <item>None</item>
+        <item>Digital Pad</item>
+        <item>Single Analog Pad</item>
+        <item>Dual Analog Pad</item>
+    </string-array>
+    <string-array name="settings_touchscreen_controller_view_values">
+        <item>none</item>
+        <item>digital</item>
+        <item>analog_stick</item>
+        <item>analog_sticks</item>
     </string-array>
 </resources>
