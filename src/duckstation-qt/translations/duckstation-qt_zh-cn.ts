@@ -97,26 +97,6 @@
         <translation>数值</translation>
     </message>
     <message>
-        <source>These options are tweakable to improve performance/game compatibility. Use at your own risk, modified values will not be supported.</source>
-        <translation type="vanished">这些选项可以调整以提高性能/游戏兼容性。使用风险自负, 将不支持修改后的值。</translation>
-    </message>
-    <message>
-        <source>DMA Max Slice Ticks:</source>
-        <translation type="vanished">DMA最大片段计时:</translation>
-    </message>
-    <message>
-        <source>DMA Halt Ticks:</source>
-        <translation type="vanished">DMA停顿计时:</translation>
-    </message>
-    <message>
-        <source>GPU FIFO Size:</source>
-        <translation type="vanished">GPU的FIFO大小:</translation>
-    </message>
-    <message>
-        <source>GPU Max Run-Ahead:</source>
-        <translation type="vanished">GPU最大优先级:</translation>
-    </message>
-    <message>
         <location filename="../advancedsettingswidget.cpp" line="85"/>
         <source>PGXP Vertex Cache</source>
         <translation>PGXP顶点缓存</translation>
@@ -180,18 +160,6 @@
         <location filename="../advancedsettingswidget.cpp" line="104"/>
         <source>Use Debug Host GPU Device</source>
         <translation>使用调试主机GPU设备</translation>
-    </message>
-    <message>
-        <source>Unchecked</source>
-        <translation type="vanished">不勾选</translation>
-    </message>
-    <message>
-        <source>Enables the usage of debug devices and shaders for rendering APIs which support them. Should only be used when debugging the emulator.</source>
-        <translation type="vanished">允许使用调试设备和着色器渲染支持它们的API。只应在调试模拟器时使用。</translation>
-    </message>
-    <message>
-        <source>Determines whether the CPU&apos;s instruction cache is simulated in the recompiler. Improves accuracy at a small cost to performance. If games are running too fast, try enabling this option.</source>
-        <translation type="vanished">确定是否在重新编译程序中模拟CPU的指令缓存。以较小的性能代价提高准确性。如果游戏运行太快, 请尝试启用此选项。</translation>
     </message>
 </context>
 <context>
@@ -434,10 +402,6 @@
         <translation>关闭CD音轨</translation>
     </message>
     <message>
-        <source>Mute</source>
-        <translation type="vanished">静音</translation>
-    </message>
-    <message>
         <location filename="../audiosettingswidget.ui" line="166"/>
         <source>100%</source>
         <translation>100%</translation>
@@ -538,10 +502,6 @@
         <location filename="../autoupdaterdialog.ui" line="67"/>
         <source>New Version: </source>
         <translation>新版本: </translation>
-    </message>
-    <message>
-        <source>Update Notes:</source>
-        <translation type="vanished">更新内容:</translation>
     </message>
     <message>
         <location filename="../autoupdaterdialog.ui" line="95"/>
@@ -865,10 +825,6 @@
         <translation>10x (20x 倍速)</translation>
     </message>
     <message>
-        <source>CDROM Emulation</source>
-        <translation type="vanished">光盘模拟</translation>
-    </message>
-    <message>
         <location filename="../consolesettingswidget.ui" line="141"/>
         <source>Use Read Thread (Asynchronous)</source>
         <translation>使用读取线程 (异步)</translation>
@@ -1071,10 +1027,6 @@ This warning will only be shown once.</source>
         <source>No path selected, input profile was not saved.</source>
         <translation>未选择路径，未保存输入配置文件。</translation>
     </message>
-    <message>
-        <source>Input Profiles (*.ini)</source>
-        <translation type="vanished">输入配置文件 (*.ini)</translation>
-    </message>
 </context>
 <context>
     <name>ControllerType</name>
@@ -1188,10 +1140,6 @@ This warning will only be shown once.</source>
         <location filename="../../core/settings.cpp" line="415"/>
         <source>NTSC-J (Japan)</source>
         <translation>NTSC-J (日本)</translation>
-    </message>
-    <message>
-        <source>NTSC-U (US)</source>
-        <translation type="vanished">NTSC-U (美国)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="415"/>
@@ -1498,10 +1446,6 @@ This warning will only be shown once.</source>
         <translation>24位色显示中强制4比3 (动画中禁用宽屏)</translation>
     </message>
     <message>
-        <source>Bilinear Texture Filtering</source>
-        <translation type="vanished">双线性纹理过滤</translation>
-    </message>
-    <message>
         <location filename="../enhancementsettingswidget.ui" line="72"/>
         <source>Widescreen Hack (render 3D in 16:9)</source>
         <translation>宽屏调整 (在16比9中渲染3D)</translation>
@@ -1528,14 +1472,6 @@ This warning will only be shown once.</source>
         <location filename="../enhancementsettingswidget.cpp" line="87"/>
         <source>Texture Correction</source>
         <translation>纹理校正</translation>
-    </message>
-    <message>
-        <source>Vertex Cache</source>
-        <translation type="vanished">顶点缓存</translation>
-    </message>
-    <message>
-        <source>CPU Mode</source>
-        <translation type="vanished">CPU模式</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="47"/>
@@ -1578,10 +1514,6 @@ This warning will only be shown once.</source>
         <translation>将屏幕空间中的顶点位置缩放到宽屏幕的纵横比，基本上将3D游戏中的视野从4:3增加到16:9。&lt;br&gt;对于2D游戏，或使用预渲染背景的游戏, 此增强将无法按预期工作。&lt;br&gt;&lt;b&gt;&lt;u&gt;可能不兼容所有游戏。&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>Enables the upscaling of 3D objects rendered to the console&apos;s framebuffer. Only applies to the hardware backends. This option is usually safe, with most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</source>
-        <translation type="vanished">允许放大渲染到控制台帧缓冲区的三维对象。仅适用于硬件后端。这个选项通常是安全的, 大多数游戏在更高的分辨率下看起来很好。更高的分辨率需要更强大的GPU。</translation>
-    </message>
-    <message>
         <location filename="../enhancementsettingswidget.cpp" line="52"/>
         <source>Forces the precision of colours output to the console&apos;s framebuffer to use the full 8 bits of precision per channel. This produces nicer looking gradients at the cost of making some colours look slightly different. Disabling the option also enables dithering, which makes the transition between colours less sharp by applying a pattern around those pixels. Most games are compatible with this option, but there is a number which aren&apos;t and will have broken effects with it enabled. Only applies to the hardware renderers.</source>
         <translation>强制输出到主机的帧缓冲区的颜色精度使用每个通道的全部8位精度。这会产生更好看的渐变，但代价是使某些颜色看起来稍有不同。禁用该选项也会启用色彩抖动，这会通过在这些像素周围应用图案来减少颜色之间的过渡。大多数游戏都与此选项兼容，但也有一部分游戏不支持此选项，并且在启用该选项后会产生中断效果。仅适用于硬件渲染器。</translation>
@@ -1600,26 +1532,6 @@ This warning will only be shown once.</source>
         <location filename="../enhancementsettingswidget.cpp" line="88"/>
         <source>Uses perspective-correct interpolation for texture coordinates and colors, straightening out warped textures. Requires geometry correction enabled.</source>
         <translation>使用透视校正插值纹理坐标和颜色，矫直扭曲的纹理。需要启用几何校正。</translation>
-    </message>
-    <message>
-        <source>Uses screen coordinates as a fallback when tracking vertices through memory fails. May improve PGXP compatibility.</source>
-        <translation type="vanished">当通过内存跟踪顶点失败时, 使用屏幕坐标作为备用。可提高PGXP兼容性。</translation>
-    </message>
-    <message>
-        <source>Tries to track vertex manipulation through the CPU. Some games require this option for PGXP to be effective. Very slow, and incompatible with the recompiler.</source>
-        <translation type="vanished">尝试通过CPU跟踪顶点操作。有些游戏需要此选项才能使PGXP生效。非常慢, 与重新编译程序不兼容。</translation>
-    </message>
-    <message>
-        <source>%1x%2</source>
-        <translation type="vanished">%1x%2</translation>
-    </message>
-    <message>
-        <source>%1x (%2x%3 VRAM)</source>
-        <translation type="vanished">%1x (%2x%3 VRAM)</translation>
-    </message>
-    <message>
-        <source>(Default)</source>
-        <translation type="vanished">(默认)</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="58"/>
@@ -1744,10 +1656,6 @@ This warning will only be shown once.</source>
         <location filename="../qtutils.cpp" line="669"/>
         <source>16x</source>
         <translation>16x</translation>
-    </message>
-    <message>
-        <source>8x (for 4K)</source>
-        <translation type="vanished">8x (适合4K)</translation>
     </message>
     <message>
         <location filename="../qtutils.cpp" line="653"/>
@@ -2198,10 +2106,6 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>24位色显示中强制4比3 (动画中禁用宽屏)</translation>
     </message>
     <message>
-        <source>Bilinear Texture Filtering</source>
-        <translation type="vanished">双线性纹理过滤</translation>
-    </message>
-    <message>
         <location filename="../gamepropertiesdialog.ui" line="362"/>
         <source>Widescreen Hack</source>
         <translation>宽屏调整</translation>
@@ -2308,10 +2212,6 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>游戏属性 - %1</translation>
     </message>
     <message>
-        <source>%1</source>
-        <translation type="vanished">%1</translation>
-    </message>
-    <message>
         <location filename="../gamepropertiesdialog.ui" line="421"/>
         <location filename="../gamepropertiesdialog.cpp" line="121"/>
         <location filename="../gamepropertiesdialog.cpp" line="128"/>
@@ -2373,10 +2273,6 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../../frontend-common/game_settings.cpp" line="24"/>
         <source>Force Interlacing</source>
         <translation>强制交错</translation>
-    </message>
-    <message>
-        <source>Enable Interlacing</source>
-        <translation type="vanished">启用交错</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="25"/>
@@ -2991,22 +2887,6 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>声音</translation>
     </message>
     <message>
-        <source>Load Game State %u</source>
-        <translation type="vanished">读取游戏状态 %u</translation>
-    </message>
-    <message>
-        <source>Save Game State %u</source>
-        <translation type="vanished">保存游戏状态 %u</translation>
-    </message>
-    <message>
-        <source>Load Global State %u</source>
-        <translation type="vanished">读取全局状态 %u</translation>
-    </message>
-    <message>
-        <source>Save Global State %u</source>
-        <translation type="vanished">保存全局状态 %u</translation>
-    </message>
-    <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1592"/>
         <source>Toggle Mute</source>
         <translation>声音开关</translation>
@@ -3142,10 +3022,6 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../mainwindow.cpp" line="604"/>
         <source>DuckStation</source>
         <translation>DuckStation</translation>
-    </message>
-    <message>
-        <source>System</source>
-        <translation type="vanished">系统</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="42"/>
@@ -3309,10 +3185,6 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>快捷键设置(&amp;H)...</translation>
     </message>
     <message>
-        <source>&amp;GPU Settings...</source>
-        <translation type="vanished">GPU设置</translation>
-    </message>
-    <message>
         <location filename="../mainwindow.ui" line="384"/>
         <source>&amp;Display Settings...</source>
         <translation>显示设置(&amp;D)...</translation>
@@ -3356,10 +3228,6 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../mainwindow.ui" line="436"/>
         <source>Check for &amp;Updates...</source>
         <translation>检查更新(&amp;U)...</translation>
-    </message>
-    <message>
-        <source>&amp;About...</source>
-        <translation type="vanished">关于(&amp;A)...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="455"/>
@@ -3582,17 +3450,9 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>系统显示(&amp;D)</translation>
     </message>
     <message>
-        <source>Failed to get window info from widget</source>
-        <translation type="vanished">从小部件获取窗口信息失败</translation>
-    </message>
-    <message>
         <location filename="../mainwindow.cpp" line="123"/>
         <source>Failed to create host display device context.</source>
         <translation>创建主机显示设备上下文失败。</translation>
-    </message>
-    <message>
-        <source>Failed to get new window info from widget</source>
-        <translation type="vanished">从小部件获取新窗口信息失败</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="31"/>
@@ -3705,10 +3565,6 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../mainwindow.cpp" line="836"/>
         <source>Dark Fusion (Blue)</source>
         <translation>黑炼金 (蓝色)</translation>
-    </message>
-    <message>
-        <source>DarkFusion</source>
-        <translation type="vanished">黑色</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="837"/>
@@ -4549,14 +4405,6 @@ The URL was: %1</source>
         <translation>恢复(%1)</translation>
     </message>
     <message>
-        <source>%1 Save %2 (%3)</source>
-        <translation type="vanished">%1保存%2 (%3)</translation>
-    </message>
-    <message>
-        <source>Game</source>
-        <translation type="vanished">游戏</translation>
-    </message>
-    <message>
         <location filename="../qthostinterface.cpp" line="377"/>
         <source>No resume save state found.</source>
         <translation>没有发现可恢复的即时存档。</translation>
@@ -4702,10 +4550,6 @@ The saves will not be recoverable.</source>
         <translation>关闭</translation>
     </message>
     <message>
-        <source>GPU Settings</source>
-        <translation type="vanished">GPU设置</translation>
-    </message>
-    <message>
         <location filename="../settingsdialog.ui" line="148"/>
         <source>Audio Settings</source>
         <translation>音频设置</translation>
@@ -4759,10 +4603,6 @@ The saves will not be recoverable.</source>
         <location filename="../settingsdialog.cpp" line="99"/>
         <source>&lt;strong&gt;Post-Processing Settings&lt;/strong&gt;&lt;hr&gt;Post processing allows you to alter the appearance of the image displayed on the screen with various filters. Shaders will be executed in sequence.</source>
         <translation>&lt;strong&gt;后处理设置&lt;/strong&gt;&lt;hr&gt;后处理允许您使用各种过滤器改变屏幕上显示图像的外观。着色器将按顺序执行。</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;GPU Settings&lt;/strong&gt;&lt;hr&gt;These options control the simulation of the GPU in the console. Various enhancements are available, mouse over each for additional information.</source>
-        <translation type="vanished">&lt;strong&gt;GPU设置&lt;/strong&gt;&lt;hr&gt;这些选项控制控制台中GPU的模拟。提供了各种增强功能, 将鼠标悬停在每个功能上可获得更多信息。</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="102"/>
