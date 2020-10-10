@@ -139,7 +139,7 @@
         <SwitchPreferenceCompat
             app:key="GPU/TrueColor"
             app:title="True Color Rendering (24-bit, disables dithering)"
-            app:summary="Forces the precision of colours output to the console's framebuffer to use the full 8 bits of precision per channel. This produces nicer looking gradients at the cost of making some colours look slightly different. Disabling the option also enables dithering, which makes the transition between colours less sharp by applying a pattern around those pixels. Most games are compatible with this option, but there is a number which aren't and will have broken effects with it enabled. Only applies to the hardware renderers."
+            app:summary="This produces nicer looking gradients at the cost of making some colours look slightly different. Disabling the option also enables dithering. Most games are compatible with this option."
             app:iconSpaceReserved="false" />
 
         <SwitchPreferenceCompat
@@ -169,14 +169,14 @@
             app:key="GPU/ForceNTSCTimings"
             app:title="Force NTSC Timings (60hz-on-PAL)"
             app:defaultValue="false"
-            app:summary="Uses NTSC frame timings when the console is in PAL mode, forcing PAL games to run at 60hz. For most games which have a speed tied to the framerate, this will result in the game running approximately 17% faster. For variable frame rate games, it may not affect the speed."
+            app:summary="Uses NTSC frame timings when the console is in PAL mode, forcing PAL games to run at 60hz."
             app:iconSpaceReserved="false" />
 
         <SwitchPreferenceCompat
             app:key="GPU/WidescreenHack"
             app:title="Widescreen Hack"
             app:defaultValue="false"
-            app:summary="Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to 16:9 in 3D games. For 2D games, or games which use pre-rendered backgrounds, this enhancement will not work as expected. May not be compatible with all games."
+            app:summary="Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to 16:9 in 3D games. Not be compatible with all games."
             app:iconSpaceReserved="false" />
 
         <SwitchPreferenceCompat
@@ -203,6 +203,7 @@
         <SwitchPreferenceCompat
             app:key="GPU/PGXPTextureCorrection"
             app:title="PGXP Texture Correction"
+            app:defaultValue="true"
             app:summary="Uses perspective-correct interpolation for texture coordinates and colors, straightening out warped textures. Requires geometry correction enabled."
             app:iconSpaceReserved="false" />
 
@@ -231,7 +232,7 @@
             app:key="Display/LinearFiltering"
             app:title="Linear Upscaling"
             app:defaultValue="true"
-            app:summary="Uses bilinear texture filtering when displaying the console's framebuffer to the screen. Disabling filtering will producer a sharper, blockier/pixelated image. Enabling will smooth out the image. The option will be less noticable the higher the resolution scale."
+            app:summary="Smooths out the image when upscaling the console to the screen."
             app:iconSpaceReserved="false" />
 
         <SwitchPreferenceCompat
@@ -255,7 +256,7 @@
         <SwitchPreferenceCompat
             app:key="Controller1/AutoEnableAnalog"
             app:title="Enable Analog Mode On Reset"
-            app:defaultValue="false"
+            app:defaultValue="true"
             app:iconSpaceReserved="false" />
         <ListPreference
             app:key="Controller1/TouchscreenControllerView"
@@ -328,6 +329,12 @@
             app:title="PGXP CPU Mode"
             app:defaultValue="false"
             app:summary="Tries to track vertex manipulation through the CPU. Some games require this option for PGXP to be effective. Very slow, and incompatible with the recompiler."
+            app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat
+            app:key="GPU/PGXPPreserveProjFP"
+            app:title="PGXP Preserve Projection Precision"
+            app:defaultValue="false"
+            app:summary="Enables additional precision for PGXP. May improve visuals in some games but break others."
             app:iconSpaceReserved="false" />
         <SwitchPreferenceCompat
             app:key="CPU/RecompilerICache"
