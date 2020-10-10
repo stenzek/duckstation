@@ -218,6 +218,9 @@ bool InstructionHasLoadDelay(const Instruction& instruction);
 bool IsExitBlockInstruction(const Instruction& instruction);
 bool CanInstructionTrap(const Instruction& instruction, bool in_user_mode);
 bool IsInvalidInstruction(const Instruction& instruction);
+bool IsFollowableBranchInstruction(const Instruction& instruction, u32 instruction_pc, u32 block_pc,
+                                   u32 threshold_in_instructions);
+u32 GetBranchInstructionTarget(const Instruction& instruction, u32 instruction_pc);
 
 struct Registers
 {

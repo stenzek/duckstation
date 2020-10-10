@@ -168,6 +168,8 @@ static void ExecuteImpl()
         CheckAndUpdateICacheTags(block->icache_line_count, block->uncached_fetch_ticks);
 
       InterpretCachedBlock<pgxp_mode>(*block);
+      if (block->is_idle_loop)
+        IdleSkip();
 
       if (g_state.pending_ticks >= g_state.downcount)
         break;
@@ -387,6 +389,68 @@ recompile:
   return true;
 }
 
+static bool IsIdleLoop(u32 pc)
+{
+  enum InstructionType
+  {
+    Match,
+    FollowBranch,
+    BranchThreshold
+  };
+  struct InstructionAndMask
+  {
+    InstructionType type;
+    u32 instruction;
+    u32 mask;
+  };
+
+  static constexpr InstructionAndMask idle_1[] = {
+    {InstructionType::Match, 0x8fa20000, 0xFFFF0000},           // lw v0, 16(sp)
+    {InstructionType::Match, 0x00000000, 0xFFFFFFFF},           // sll $zero, $zero, 0
+    {InstructionType::Match, 0x2442ffff, 0xFFFFFFFF},           // addiu v0, v0, ffff
+    {InstructionType::Match, 0xafa20000, 0xFFFF0000},           // sw v0, 16(sp)
+    {InstructionType::Match, 0x8fa20000, 0xFFFF0000},           // lw v0, 16(sp)
+    {InstructionType::Match, 0x00000000, 0xFFFFFFFF},           // sll $zero, $zero, 0
+    {InstructionType::FollowBranch, 0x14430000, 0xFFFF0000},    // bne v0, v1, 8003228c
+    {InstructionType::Match, 0x3c020000, 0xFFFF0000},           // lui v0, 8007
+    {InstructionType::Match, 0x8c420000, 0xFFFF0000},           // lw v0, -23808(v0)
+    {InstructionType::Match, 0x00000000, 0xFFFFFFFF},           // sll $zero, $zero, 0
+    {InstructionType::Match, 0x0044102a, 0xFFFFFFFF},           // slt v0, v0, a0
+    {InstructionType::BranchThreshold, 0x14400000, 0xFFFF0000}, // bne v0, $zero, 80032244
+  };
+
+  u32 current_pc = pc;
+  bool match = true;
+  for (const InstructionAndMask& im : idle_1)
+  {
+    Instruction instruction;
+    if (!SafeReadInstruction(current_pc, &instruction.bits) || (instruction.bits & im.mask) != im.instruction)
+    {
+      match = false;
+      break;
+    }
+
+    if (im.type == FollowBranch)
+    {
+      if (!CPU::IsFollowableBranchInstruction(instruction, current_pc, pc, 128))
+        break;
+
+      current_pc = CPU::GetBranchInstructionTarget(instruction, current_pc);
+      continue;
+    }
+
+    if (im.type == BranchThreshold)
+    {
+      if (!CPU::IsFollowableBranchInstruction(instruction, current_pc, pc, 128))
+        break;
+    }
+
+    current_pc += sizeof(u32);
+  }
+
+  return match;
+}
+
 bool CompileBlock(CodeBlock* block)
 {
   u32 pc = block->GetPC();
@@ -397,6 +461,10 @@ bool CompileBlock(CodeBlock* block)
   if (pc == 0x0005aa90)
     __debugbreak();
 #endif
+
+  block->is_idle_loop = IsIdleLoop(pc);
+  if (block->is_idle_loop)
+    Log_InfoPrintf("Idle loop found at 0x%08X", pc);
 
   u32 last_cache_line = ICACHE_LINES;
 

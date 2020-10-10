@@ -64,6 +64,7 @@ struct CodeBlock
   TickCount uncached_fetch_ticks = 0;
   u32 icache_line_count = 0;
   bool invalidated = false;
+  bool is_idle_loop = false;
 
   const u32 GetPC() const { return key.GetPC(); }
   const u32 GetSizeInBytes() const { return static_cast<u32>(instructions.size()) * sizeof(Instruction); }

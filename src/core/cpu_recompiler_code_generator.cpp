@@ -866,6 +866,9 @@ void CodeGenerator::BlockEpilogue()
     m_register_cache.WriteLoadDelayToCPU(true);
 
   AddPendingCycles(true);
+
+  if (m_block->is_idle_loop)
+    EmitFunctionCall(nullptr, &CPU::IdleSkip);
 }
 
 void CodeGenerator::InstructionPrologue(const CodeBlockInstruction& cbi, TickCount cycles,

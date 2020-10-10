@@ -44,6 +44,64 @@ bool IsBranchInstruction(const Instruction& instruction)
   }
 }
 
+bool IsFollowableBranchInstruction(const Instruction& instruction, u32 instruction_pc, u32 block_pc,
+                                   u32 threshold_in_instructions)
+{
+  switch (instruction.op)
+  {
+    case InstructionOp::b:
+    {
+      // skip when linking
+      if ((static_cast<u8>(instruction.i.rt.GetValue()) & u8(0x1E)) == u8(0x10))
+        return false;
+
+      if (static_cast<u32>(std::abs(static_cast<s32>(instruction.i.imm_sext32()))) > threshold_in_instructions)
+        return false;
+    }
+    break;
+
+    case InstructionOp::beq:
+    case InstructionOp::bgtz:
+    case InstructionOp::blez:
+    case InstructionOp::bne:
+    {
+      if (static_cast<u32>(std::abs(static_cast<s32>(instruction.i.imm_sext32()))) > threshold_in_instructions)
+        return false;
+    }
+    break;
+
+    default:
+      return false;
+  }
+
+  // we can't branch before the start of the block...
+  const u32 branch_target = GetBranchInstructionTarget(instruction, instruction_pc);
+  if (branch_target < block_pc)
+    return false;
+
+  return true;
+}
+
+u32 GetBranchInstructionTarget(const Instruction& instruction, u32 instruction_pc)
+{
+  switch (instruction.op)
+  {
+    case InstructionOp::j:
+    case InstructionOp::jal:
+      return ((instruction_pc + 4) & UINT32_C(0xF0000000)) | (instruction.j.target << 2);
+
+    case InstructionOp::b:
+    case InstructionOp::beq:
+    case InstructionOp::bgtz:
+    case InstructionOp::blez:
+    case InstructionOp::bne:
+      return instruction_pc + 4 + (instruction.i.imm_sext32() << 2);
+
+    default:
+      return instruction_pc;
+  }
+}
+
 bool IsMemoryLoadInstruction(const Instruction& instruction)
 {
   switch (instruction.op)

@@ -237,6 +237,16 @@ void ClearExternalInterrupt(u8 bit)
   g_state.cop0_regs.cause.Ip &= static_cast<u8>(~(1u << bit));
 }
 
+void IdleSkip()
+{
+  const TickCount ticks_to_skip = g_state.downcount - g_state.pending_ticks;
+  if (ticks_to_skip <= 0)
+    return;
+
+  Log_DebugPrintf("Skipping %d ticks", ticks_to_skip);
+  g_state.pending_ticks += ticks_to_skip;
+}
+
 ALWAYS_INLINE_RELEASE static void UpdateLoadDelay()
 {
   // the old value is needed in case the delay slot instruction overwrites the same register
