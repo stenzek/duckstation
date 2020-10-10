@@ -4014,77 +4014,77 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>系统重启。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="343"/>
+        <location filename="../../core/host_interface.cpp" line="349"/>
         <source>Loading state from &apos;%s&apos;...</source>
         <translation>从&apos;%s&apos;读取即时存档...</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="349"/>
+        <location filename="../../core/host_interface.cpp" line="355"/>
         <source>Loading state from &apos;%s&apos; failed. Resetting.</source>
         <translation>从&apos;%s&apos;读取即时存档失败，重启中。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="377"/>
+        <location filename="../../core/host_interface.cpp" line="383"/>
         <source>Saving state to &apos;%s&apos; failed.</source>
         <translation>保存即时存档到&apos;%s&apos;失败。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="382"/>
+        <location filename="../../core/host_interface.cpp" line="388"/>
         <source>State saved to &apos;%s&apos;.</source>
         <translation>保存即时存档到&apos;%s&apos;。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="522"/>
+        <location filename="../../core/host_interface.cpp" line="528"/>
         <source>PGXP is incompatible with the software renderer, disabling PGXP.</source>
         <translation>PGXP与软件呈现程序不兼容，禁用PGXP。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="531"/>
+        <location filename="../../core/host_interface.cpp" line="537"/>
         <source>PGXP CPU mode is incompatible with the recompiler, using Cached Interpreter instead.</source>
         <translation>PGXP在CPU模式与重新编译器不兼容，改为使用缓存解释器。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="560"/>
+        <location filename="../../core/host_interface.cpp" line="566"/>
         <source>Switching to %s%s GPU renderer.</source>
         <translation>切换到 %s%s GPU渲染器。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="571"/>
+        <location filename="../../core/host_interface.cpp" line="577"/>
         <source>Switching to %s audio backend.</source>
         <translation>切换到 %s 音频后端。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="586"/>
+        <location filename="../../core/host_interface.cpp" line="592"/>
         <source>Switching to %s CPU execution mode.</source>
         <translation>切换到 %s CPU执行模式。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="598"/>
+        <location filename="../../core/host_interface.cpp" line="604"/>
         <source>CPU memory exceptions enabled, flushing all blocks.</source>
         <translation>启用CPU内存异常，刷新所有区块。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="599"/>
+        <location filename="../../core/host_interface.cpp" line="605"/>
         <source>CPU memory exceptions disabled, flushing all blocks.</source>
         <translation>禁用CPU内存异常，刷新所有区块。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="608"/>
+        <location filename="../../core/host_interface.cpp" line="614"/>
         <source>CPU ICache enabled, flushing all blocks.</source>
         <translation>启用CPU的ICache，刷新所有区块。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="609"/>
+        <location filename="../../core/host_interface.cpp" line="615"/>
         <source>CPU ICache disabled, flushing all blocks.</source>
         <translation>禁用CPU的ICache，刷新所有区块。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="640"/>
+        <location filename="../../core/host_interface.cpp" line="646"/>
         <source>PGXP enabled, recompiling all blocks.</source>
         <translation>启用PGXP，重编译所有区块。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="641"/>
+        <location filename="../../core/host_interface.cpp" line="647"/>
         <source>PGXP disabled, recompiling all blocks.</source>
         <translation>禁用PGXP，重编译所有区块。</translation>
     </message>
