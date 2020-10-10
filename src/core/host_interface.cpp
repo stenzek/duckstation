@@ -334,6 +334,12 @@ HostInterface::FindBIOSImagesInDirectory(const char* directory)
   return results;
 }
 
+bool HostInterface::HasAnyBIOSImages()
+{
+  const std::string dir = GetBIOSDirectory();
+  return (FindBIOSImageInDirectory(ConsoleRegion::NTSC_U, dir.c_str()).has_value());
+}
+
 bool HostInterface::LoadState(const char* filename)
 {
   std::unique_ptr<ByteStream> stream = FileSystem::OpenFile(filename, BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);

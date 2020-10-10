@@ -22,8 +22,7 @@ class GameList;
 
 struct SystemBootParameters;
 
-namespace BIOS
-{
+namespace BIOS {
 struct ImageInfo;
 }
 
@@ -130,6 +129,9 @@ public:
 
   /// Returns a list of filenames and descriptions for BIOS images in a directory.
   std::vector<std::pair<std::string, const BIOS::ImageInfo*>> FindBIOSImagesInDirectory(const char* directory);
+
+  /// Returns true if any BIOS images are found in the configured BIOS directory.
+  bool HasAnyBIOSImages();
 
   virtual void OnRunningGameChanged();
   virtual void OnSystemPerformanceCountersUpdated();

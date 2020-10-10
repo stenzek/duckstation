@@ -1,6 +1,7 @@
 package com.github.stenzek.duckstation;
 
 import android.Manifest;
+import android.content.ContentResolver;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -33,7 +34,11 @@ import android.widget.ListView;
 import android.widget.PopupMenu;
 import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.prefs.Preferences;
@@ -43,6 +48,7 @@ import static com.google.android.material.snackbar.Snackbar.make;
 public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_EXTERNAL_STORAGE_PERMISSIONS = 1;
     private static final int REQUEST_ADD_DIRECTORY_TO_GAME_LIST = 2;
+    private static final int REQUEST_IMPORT_BIOS_IMAGE = 3;
 
     private GameList mGameList;
     private ListView mGameListView;
@@ -153,11 +159,11 @@ public class MainActivity extends AppCompatActivity {
             startAddGameDirectory();
         } else if (id == R.id.action_scan_for_new_games) {
             mGameList.refresh(false, false);
-        }
-        if (id == R.id.action_rescan_all_games) {
+        } else if (id == R.id.action_rescan_all_games) {
             mGameList.refresh(true, true);
-        }
-        if (id == R.id.action_settings) {
+        } else if (id == R.id.action_import_bios) {
+            importBIOSImage();
+        } else if (id == R.id.action_settings) {
             Intent intent = new Intent(this, SettingsActivity.class);
             startActivity(intent);
             return true;
@@ -202,6 +208,14 @@ public class MainActivity extends AppCompatActivity {
                 mGameList.refresh(false, false);
             }
             break;
+
+            case REQUEST_IMPORT_BIOS_IMAGE: {
+                if (resultCode != RESULT_OK)
+                    return;
+
+                onImportBIOSImageResult(data.getData());
+            }
+            break;
         }
     }
 
@@ -240,10 +254,65 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean startEmulation(String bootPath, boolean resumeState) {
+        if (!doBIOSCheck())
+            return false;
+
         Intent intent = new Intent(this, EmulationActivity.class);
         intent.putExtra("bootPath", bootPath);
         intent.putExtra("resumeState", resumeState);
         startActivity(intent);
         return true;
+    }
+
+    private boolean doBIOSCheck() {
+        if (AndroidHostInterface.getInstance().hasAnyBIOSImages())
+            return true;
+
+        new AlertDialog.Builder(this)
+                .setTitle("Missing BIOS Image")
+                .setMessage("No BIOS image was found in DuckStation's bios directory. Do you with to locate and import a BIOS image now?")
+                .setPositiveButton("Yes", (dialog, button) -> importBIOSImage())
+                .setNegativeButton("No", (dialog, button) -> {})
+                .create()
+                .show();
+
+        return false;
+    }
+
+    private void importBIOSImage() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("*/*");
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        startActivityForResult(Intent.createChooser(intent, "Choose BIOS Image"), REQUEST_IMPORT_BIOS_IMAGE);
+    }
+
+    private void onImportBIOSImageResult(Uri uri) {
+        InputStream stream = null;
+        try {
+            stream = getContentResolver().openInputStream(uri);
+        } catch (FileNotFoundException e) {
+            Toast.makeText(this, "Failed to open BIOS image.", Toast.LENGTH_LONG);
+            return;
+        }
+
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        try {
+            byte[] buffer = new byte[512 * 1024];
+            int len;
+            while ((len = stream.read(buffer)) > 0)
+                os.write(buffer, 0, len);
+        } catch (IOException e) {
+            Toast.makeText(this, "Failed to read BIOS image.", Toast.LENGTH_LONG);
+            return;
+        }
+
+        String importResult = AndroidHostInterface.getInstance().importBIOSImage(os.toByteArray());
+        String message = (importResult == null) ? "This BIOS image is invalid, or has already been imported." : ("BIOS '" + importResult + "' imported.");
+
+        new AlertDialog.Builder(this)
+            .setMessage(message)
+            .setPositiveButton("OK", (dialog, button) -> {})
+            .create()
+            .show();
     }
 }

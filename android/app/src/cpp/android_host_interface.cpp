@@ -1,9 +1,11 @@
 #include "android_host_interface.h"
 #include "common/assert.h"
 #include "common/audio_stream.h"
+#include "common/file_system.h"
 #include "common/log.h"
 #include "common/string.h"
 #include "common/timestamp.h"
+#include "core/bios.h"
 #include "core/cheats.h"
 #include "core/controller.h"
 #include "core/gpu.h"
@@ -195,7 +197,7 @@ void AndroidHostInterface::PauseEmulationThread(bool paused)
 void AndroidHostInterface::StopEmulationThread()
 {
   if (!IsEmulationThreadRunning())
-      return;
+    return;
 
   Log_InfoPrint("Stopping emulation thread...");
   {
@@ -847,4 +849,38 @@ DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_addOSDMessage, jobject obj, js
 {
   AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
   hi->AddOSDMessage(AndroidHelpers::JStringToString(env, message), duration);
+}
+
+DEFINE_JNI_ARGS_METHOD(jboolean, AndroidHostInterface_hasAnyBIOSImages, jobject obj)
+{
+  AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
+  return hi->HasAnyBIOSImages();
+}
+
+DEFINE_JNI_ARGS_METHOD(jstring, AndroidHostInterface_importBIOSImage, jobject obj, jbyteArray data)
+{
+  AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
+
+  const jsize len = env->GetArrayLength(data);
+  if (len != BIOS::BIOS_SIZE)
+    return nullptr;
+
+  BIOS::Image image;
+  image.resize(static_cast<size_t>(len));
+  env->GetByteArrayRegion(data, 0, len, reinterpret_cast<jbyte*>(image.data()));
+
+  const BIOS::Hash hash = BIOS::GetHash(image);
+  const BIOS::ImageInfo* ii = BIOS::GetImageInfoForHash(hash);
+
+  const std::string dest_path(hi->GetUserDirectoryRelativePath("bios/%s.bin", hash.ToString().c_str()));
+  if (FileSystem::FileExists(dest_path.c_str()) ||
+      !FileSystem::WriteBinaryFile(dest_path.c_str(), image.data(), image.size()))
+  {
+    return nullptr;
+  }
+
+  if (ii)
+    return env->NewStringUTF(ii->description);
+  else
+    return env->NewStringUTF(hash.ToString().c_str());
 }
