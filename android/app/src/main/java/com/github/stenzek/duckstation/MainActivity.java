@@ -54,6 +54,11 @@ public class MainActivity extends AppCompatActivity {
     private ListView mGameListView;
     private boolean mHasExternalStoragePermissions = false;
 
+    private boolean shouldResumeStateByDefault() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        return prefs.getBoolean("Main/SaveStateOnExit", true);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.fab_resume).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startEmulation(null, true);
+                startEmulation(null, shouldResumeStateByDefault());
             }
         });
 
@@ -82,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
         mGameListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                startEmulation(mGameList.getEntry(position).getPath(), true);
+                startEmulation(mGameList.getEntry(position).getPath(), shouldResumeStateByDefault());
             }
         });
         mGameListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
