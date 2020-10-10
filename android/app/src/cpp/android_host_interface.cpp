@@ -194,7 +194,9 @@ void AndroidHostInterface::PauseEmulationThread(bool paused)
 
 void AndroidHostInterface::StopEmulationThread()
 {
-  Assert(IsEmulationThreadRunning());
+  if (!IsEmulationThreadRunning())
+      return;
+
   Log_InfoPrint("Stopping emulation thread...");
   {
     std::unique_lock<std::mutex> lock(m_mutex);

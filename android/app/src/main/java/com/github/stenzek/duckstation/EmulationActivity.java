@@ -100,6 +100,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
 
     public void onEmulationStopped() {
         runOnUiThread(() -> {
+            AndroidHostInterface.getInstance().stopEmulationThread();
             if (!mWasDestroyed)
                 finish();
         });
