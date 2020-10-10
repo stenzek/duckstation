@@ -190,12 +190,8 @@ Controller::AxisList PlayStationMouse::StaticGetAxisNames()
 
 Controller::ButtonList PlayStationMouse::StaticGetButtonNames()
 {
-#define B(n)                                                                                                           \
-  {                                                                                                                    \
-#n, static_cast < s32>(Button::n)                                                                                  \
-  }
-  return {B(Left), B(Right)};
-#undef B
+  return {{TRANSLATABLE("PlayStationMouse", "Left"), static_cast<s32>(Button::Left)},
+          {TRANSLATABLE("PlayStationMouse", "Right"), static_cast<s32>(Button::Right)}};
 }
 
 u32 PlayStationMouse::StaticGetVibrationMotorCount()
