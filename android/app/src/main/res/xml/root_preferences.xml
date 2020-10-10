@@ -43,13 +43,6 @@
             app:summary="Enable this option to match DuckStation's refresh rate with your current monitor or screen. VSync is automatically disabled when it is not possible (e.g. running at non-100% speed)."
             app:iconSpaceReserved="false" />
 
-        <SwitchPreferenceCompat
-            app:key="Audio/Sync"
-            app:title="Audio Sync"
-            app:defaultValue="true"
-            app:summary="Throttles the emulation speed based on the audio backend pulling audio frames. This helps to remove noises or crackling if emulation is too fast. Sync will automatically be disabled if not running at 100% speed."
-            app:iconSpaceReserved="false" />
-
         <ListPreference
             app:key="CPU/ExecutionMode"
             app:title="@string/settings_cpu_execution_mode"
@@ -122,13 +115,6 @@
             app:defaultValue="1"
             app:summary="Speeds up CD-ROM reads by the specified factor. Only applies to double-speed reads, and is ignored when audio is playing. May improve loading speeds in some games, at the cost of breaking others."
             app:useSimpleSummaryProvider="true"
-            app:iconSpaceReserved="false" />
-
-        <SwitchPreferenceCompat
-            app:key="CDROM/MuteCDAudio"
-            app:title="Mute CD Audio"
-            app:defaultValue="false"
-            app:summary="Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable background music in some games."
             app:iconSpaceReserved="false" />
 
         <SwitchPreferenceCompat
@@ -297,6 +283,36 @@
             app:entryValues="@array/settings_memory_card_mode_values"
             app:defaultValue="None"
             app:useSimpleSummaryProvider="true"
+            app:iconSpaceReserved="false" />
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="Audio Settings" app:iconSpaceReserved="false">
+        <SwitchPreferenceCompat
+            app:key="Audio/OutputMuted"
+            app:title="Mute All Sound"
+            app:defaultValue="false"
+            app:summary="Prevents the emulator from emitting any sound."
+            app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat
+            app:key="CDROM/MuteCDAudio"
+            app:title="Mute CD Audio"
+            app:defaultValue="false"
+            app:summary="Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable background music in some games."
+            app:iconSpaceReserved="false" />
+        <ListPreference
+            app:key="Audio/BufferSize"
+            app:title="Audio Buffer Size"
+            app:entries="@array/settings_audio_buffer_size_entries"
+            app:entryValues="@array/settings_audio_buffer_size_values"
+            app:defaultValue="3072"
+            app:summary="Determines the latency between audio being generated and output to speakers. Smaller values reduce latency, but variations in emulation speed will cause hitches."
+            app:useSimpleSummaryProvider="true"
+            app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat
+            app:key="Audio/Sync"
+            app:title="Audio Sync"
+            app:defaultValue="true"
+            app:summary="Throttles the emulation speed based on the audio backend pulling audio frames. This helps to remove noises or crackling if emulation is too fast. Sync will automatically be disabled if not running at 100% speed."
             app:iconSpaceReserved="false" />
     </PreferenceCategory>
 

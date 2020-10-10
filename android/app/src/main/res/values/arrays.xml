@@ -176,4 +176,16 @@
         <item>analog_stick</item>
         <item>analog_sticks</item>
     </string-array>
+    <string-array name="settings_audio_buffer_size_entries">
+        <item>1024 Frames (23.22ms)</item>
+        <item>2048 Frames (46.44ms)</item>
+        <item>3072 Frames (69.66ms, Recommended)</item>
+        <item>4096 Frames (92.88ms)</item>
+    </string-array>
+    <string-array name="settings_audio_buffer_size_values">
+        <item>1024</item>
+        <item>2048</item>
+        <item>3072</item>
+        <item>4096</item>
+    </string-array>
 </resources>
