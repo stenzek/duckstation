@@ -638,8 +638,7 @@ void Entry::ApplySettings(bool display_osd_messages) const
   {
     for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
     {
-      if (g_settings.controller_types[i] != ControllerType::None &&
-          g_settings.controller_types[i] == ControllerType::AnalogController)
+      if (g_settings.controller_types[i] == ControllerType::AnalogController)
       {
         if (display_osd_messages)
         {
