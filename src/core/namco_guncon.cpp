@@ -222,10 +222,10 @@ u32 NamcoGunCon::StaticGetVibrationMotorCount()
 Controller::SettingList NamcoGunCon::StaticGetSettings()
 {
   static constexpr std::array<SettingInfo, 2> settings = {
-    {{SettingInfo::Type::Path, "CrosshairImagePath", "Crosshair Image Path",
-      "Path to an image to use as a crosshair/cursor."},
-     {SettingInfo::Type::Float, "CrosshairScale", "Crosshair Image Scale", "Scale of crosshair image on screen.", "1.0",
-      "0.0001", "100.0"}}};
+    {{SettingInfo::Type::Path, "CrosshairImagePath", TRANSLATABLE("NamcoGunCon", "Crosshair Image Path"),
+      TRANSLATABLE("NamcoGunCon", "Path to an image to use as a crosshair/cursor.")},
+     {SettingInfo::Type::Float, "CrosshairScale", TRANSLATABLE("NamcoGunCon", "Crosshair Image Scale"),
+      TRANSLATABLE("NamcoGunCon", "Scale of crosshair image on screen."), "1.0", "0.0001", "100.0"}}};
 
   return SettingList(settings.begin(), settings.end());
 }
