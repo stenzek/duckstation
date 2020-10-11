@@ -44,9 +44,6 @@ public class TouchscreenControllerView extends FrameLayout {
         LayoutInflater inflater = LayoutInflater.from(getContext());
         switch (viewType)
         {
-            case "none":
-                break;
-
             case "digital":
                 mMainView = inflater.inflate(R.layout.layout_touchscreen_controller_digital, this, true);
                 break;
@@ -59,10 +56,14 @@ public class TouchscreenControllerView extends FrameLayout {
                 mMainView = inflater.inflate(R.layout.layout_touchscreen_controller_analog_sticks, this, true);
                 break;
 
+            case "none":
             default:
                 mMainView = null;
                 break;
         }
+
+        if (mMainView == null)
+            return;
 
         mMainView.setOnTouchListener((view1, event) -> {
             return handleTouchEvent(event);
