@@ -236,8 +236,8 @@ void GPU_SW::DispatchRenderCommand()
         vert.b = Truncate8(color_rgb >> 16);
 
         const VertexPosition vp{FifoPop()};
-        vert.x = TruncateVertexPosition(m_drawing_offset.x + vp.x);
-        vert.y = TruncateVertexPosition(m_drawing_offset.y + vp.y);
+        vert.x = m_drawing_offset.x + vp.x;
+        vert.y = m_drawing_offset.y + vp.y;
 
         if (textured)
         {

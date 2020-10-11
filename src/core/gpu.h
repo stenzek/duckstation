@@ -303,12 +303,12 @@ protected:
   {
     u32 bits;
 
-    BitField<u32, s32, 0, 12> x;
-    BitField<u32, s32, 16, 12> y;
+    BitField<u32, s32, 0, 11> x;
+    BitField<u32, s32, 16, 11> y;
   };
 
   // Sprites/rectangles should be clipped to 12 bits before drawing.
-  static constexpr s32 TruncateVertexPosition(s32 x) { return SignExtendN<12, s32>(x); }
+  static constexpr s32 TruncateVertexPosition(s32 x) { return SignExtendN<11, s32>(x); }
 
   struct NativeVertex
   {
