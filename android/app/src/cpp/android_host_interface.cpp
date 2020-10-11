@@ -470,7 +470,7 @@ void AndroidHostInterface::SetControllerType(u32 index, std::string_view type_na
   }
 
   RunOnEmulationThread(
-    [this, index, type]() {
+    [index, type]() {
       Log_InfoPrintf("Changing controller slot %d to %s", index, Settings::GetControllerTypeName(type));
       g_settings.controller_types[index] = type;
       System::UpdateControllers();
@@ -484,7 +484,7 @@ void AndroidHostInterface::SetControllerButtonState(u32 index, s32 button_code, 
     return;
 
   RunOnEmulationThread(
-    [this, index, button_code, pressed]() {
+    [index, button_code, pressed]() {
       Controller* controller = System::GetController(index);
       if (!controller)
         return;
@@ -500,7 +500,7 @@ void AndroidHostInterface::SetControllerAxisState(u32 index, s32 button_code, fl
     return;
 
   RunOnEmulationThread(
-    [this, index, button_code, value]() {
+    [index, button_code, value]() {
       Controller* controller = System::GetController(index);
       if (!controller)
         return;

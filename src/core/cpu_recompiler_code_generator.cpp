@@ -1429,8 +1429,6 @@ bool CodeGenerator::Compile_Divide(const CodeBlockInstruction& cbi)
 {
   InstructionPrologue(cbi, 1);
 
-  const bool signed_divide = (cbi.instruction.r.funct == InstructionFunct::div);
-
   Value num = m_register_cache.ReadGuestRegister(cbi.instruction.r.rs);
   Value denom = m_register_cache.ReadGuestRegister(cbi.instruction.r.rt);
   if (num.IsConstant() && denom.IsConstant())

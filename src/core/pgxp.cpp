@@ -104,7 +104,6 @@ static void MaskValidate(PGXP_value* pV, u32 psxV, u32 mask, u32 validMask);
 
 static double f16Sign(double in);
 static double f16Unsign(double in);
-static double fu16Trunc(double in);
 static double f16Overflow(double in);
 
 typedef union

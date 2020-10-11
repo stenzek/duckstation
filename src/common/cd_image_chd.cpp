@@ -126,7 +126,7 @@ bool CDImageCHD::Open(const char* filename)
     char pgsub_str[256];
     u32 metadata_length;
 
-    int track_num = 0, frames = 0, pad = 0, pregap_frames = 0, postgap_frames = 0;
+    int track_num = 0, frames = 0, pregap_frames = 0, postgap_frames = 0;
     err = chd_get_metadata(m_chd, CDROM_TRACK_METADATA2_TAG, num_tracks, metadata_str, sizeof(metadata_str),
                            &metadata_length, nullptr, nullptr);
     if (err == CHDERR_NONE)

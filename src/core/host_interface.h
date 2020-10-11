@@ -149,6 +149,9 @@ protected:
   /// Restores all settings to defaults.
   virtual void SetDefaultSettings(SettingsInterface& si);
 
+  /// Performs the initial load of settings. Should call CheckSettings() and LoadSettings(SettingsInterface&).
+  virtual void LoadSettings() = 0;
+
   /// Loads settings to m_settings and any frontend-specific parameters.
   virtual void LoadSettings(SettingsInterface& si);
 

@@ -261,9 +261,6 @@ protected:
   /// Sets the base path for the user directory. Can be overridden by platform/frontend/command line.
   virtual void SetUserDirectory();
 
-  /// Performs the initial load of settings. Should call CheckSettings() and LoadSettings(SettingsInterface&).
-  virtual void LoadSettings() = 0;
-
   /// Updates logging settings.
   virtual void UpdateLogSettings(LOGLEVEL level, const char* filter, bool log_to_console, bool log_to_debug,
                                  bool log_to_window, bool log_to_file);
@@ -284,6 +281,7 @@ protected:
   virtual void SetDefaultSettings(SettingsInterface& si) override;
 
   /// Loads settings to m_settings and any frontend-specific parameters.
+  using HostInterface::LoadSettings;
   virtual void LoadSettings(SettingsInterface& si) override;
 
   /// Saves current settings variables to ini.

@@ -576,7 +576,7 @@ bool VulkanHostDisplay::Render()
 
 void VulkanHostDisplay::BeginSwapChainRenderPass(VkFramebuffer framebuffer)
 {
-  const VkClearValue clear_value = {};
+  const VkClearValue clear_value = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
   const VkRenderPassBeginInfo rp = {VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
                                     nullptr,
                                     m_swap_chain->GetClearRenderPass(),
@@ -714,8 +714,8 @@ std::vector<std::string> VulkanHostDisplay::EnumerateAdapterNames()
 #ifndef LIBRETRO
 
 VulkanHostDisplay::PostProcessingStage::PostProcessingStage(PostProcessingStage&& move)
-  : output_texture(std::move(move.output_texture)), output_framebuffer(move.output_framebuffer),
-    pipeline(move.pipeline), uniforms_size(move.uniforms_size)
+  : pipeline(move.pipeline), output_framebuffer(move.output_framebuffer),
+    output_texture(std::move(move.output_texture)), uniforms_size(move.uniforms_size)
 {
   move.output_framebuffer = VK_NULL_HANDLE;
   move.pipeline = VK_NULL_HANDLE;
@@ -870,8 +870,6 @@ void VulkanHostDisplay::ApplyPostProcessingChain(s32 final_left, s32 final_top, 
                                                  s32 texture_view_x, s32 texture_view_y, s32 texture_view_width,
                                                  s32 texture_view_height)
 {
-  static constexpr std::array<float, 4> clear_color = {0.0f, 0.0f, 0.0f, 1.0f};
-
   if (!CheckPostProcessingRenderTargets(m_swap_chain->GetWidth(), m_swap_chain->GetHeight()))
   {
     BeginSwapChainRenderPass(m_swap_chain->GetCurrentFramebuffer());
