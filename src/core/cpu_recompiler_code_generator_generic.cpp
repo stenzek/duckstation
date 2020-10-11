@@ -35,8 +35,9 @@ void CodeGenerator::EmitICacheCheckAndUpdate()
   LabelType is_cached;
   LabelType ready_to_execute;
   EmitConditionalBranch(Condition::LessEqual, false, temp.GetHostRegister(), Value::FromConstantU32(4), &is_cached);
-  EmitAddCPUStructField(offsetof(State, pending_ticks),
-                        Value::FromConstantU32(static_cast<u32>(m_block->uncached_fetch_ticks)));
+  EmitLoadCPUStructField(temp.host_reg, RegSize_32, offsetof(State, pending_ticks));
+  EmitAdd(temp.host_reg, temp.host_reg, Value::FromConstantU32(static_cast<u32>(m_block->uncached_fetch_ticks)), false);
+  EmitStoreCPUStructField(offsetof(State, pending_ticks), temp);
   EmitBranch(&ready_to_execute);
   EmitBindLabel(&is_cached);
 
@@ -55,8 +56,10 @@ void CodeGenerator::EmitICacheCheckAndUpdate()
 
     EmitLoadCPUStructField(temp.GetHostRegister(), RegSize_32, offset);
     EmitConditionalBranch(Condition::Equal, false, temp.GetHostRegister(), pc, &cache_hit);
-    EmitAddCPUStructField(offsetof(State, pending_ticks), Value::FromConstantU32(static_cast<u32>(fill_ticks)));
+    EmitLoadCPUStructField(temp.host_reg, RegSize_32, offsetof(State, pending_ticks));
     EmitStoreCPUStructField(offset, pc);
+    EmitAdd(temp.host_reg, temp.host_reg, Value::FromConstantU32(static_cast<u32>(fill_ticks)), false);
+    EmitStoreCPUStructField(offsetof(State, pending_ticks), temp);
     EmitBindLabel(&cache_hit);
     EmitAdd(pc.GetHostRegister(), pc.GetHostRegister(), Value::FromConstantU32(ICACHE_LINE_SIZE), false);
   }
