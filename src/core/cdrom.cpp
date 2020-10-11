@@ -1,5 +1,7 @@
 #include "cdrom.h"
+#include "common/align.h"
 #include "common/cd_image.h"
+#include "common/cpu_detect.h"
 #include "common/log.h"
 #include "common/state_wrapper.h"
 #include "dma.h"
@@ -11,6 +13,10 @@
 #include "imgui.h"
 #endif
 Log_SetChannel(CDROM);
+
+#if defined(CPU_X64)
+#include <emmintrin.h>
+#endif
 
 struct CommandInfo
 {
@@ -2045,6 +2051,42 @@ void CDROM::ProcessXAADPCMSector(const u8* raw_sector, const CDImage::SubChannel
   }
 }
 
+static s16 GetPeakVolume(const u8* raw_sector, u8 channel)
+{
+  static constexpr u32 NUM_SAMPLES = CDImage::RAW_SECTOR_SIZE / sizeof(s16);
+
+#if defined(CPU_X64)
+  static_assert(Common::IsAlignedPow2(NUM_SAMPLES, 8));
+  const u8* current_ptr = raw_sector;
+  __m128i v_peak = _mm_set1_epi16(0);
+  for (u32 i = 0; i < NUM_SAMPLES; i += 8)
+  {
+    __m128i val = _mm_loadu_si128(reinterpret_cast<const __m128i*>(current_ptr));
+    v_peak = _mm_max_epi16(val, v_peak);
+    current_ptr += 16;
+  }
+  s16 v_peaks[8];
+  _mm_store_si128(reinterpret_cast<__m128i*>(v_peaks), v_peak);
+  if (channel == 0)
+    return std::max(v_peaks[0], std::max(v_peaks[2], std::max(v_peaks[4], v_peaks[6])));
+  else
+    return std::max(v_peaks[1], std::max(v_peaks[3], std::max(v_peaks[5], v_peaks[7])));
+#else
+  const u8* current_ptr = raw_sector + (channel * sizeof(s16));
+  s16 peak = 0;
+
+  for (u32 i = 0; i < NUM_SAMPLES; i += 2)
+  {
+    s16 sample;
+    std::memcpy(&sample, current_ptr, sizeof(sample));
+    peak = std::max(peak, sample);
+    current_ptr += sizeof(s16) * 2;
+  }
+
+  return peak;
+#endif
+}
+
 void CDROM::ProcessCDDASector(const u8* raw_sector, const CDImage::SubChannelQ& subq)
 {
   // For CDDA sectors, the whole sector contains the audio data.
@@ -2054,6 +2096,7 @@ void CDROM::ProcessCDDASector(const u8* raw_sector, const CDImage::SubChannelQ& 
   if (m_drive_state == DriveState::Playing && m_mode.report_audio)
   {
     const u8 frame_nibble = subq.absolute_frame_bcd >> 4;
+
     if (m_last_cdda_report_frame_nibble != frame_nibble)
     {
       m_last_cdda_report_frame_nibble = frame_nibble;
@@ -2079,8 +2122,12 @@ void CDROM::ProcessCDDASector(const u8* raw_sector, const CDImage::SubChannelQ& 
         m_async_response_fifo.Push(subq.absolute_frame_bcd);
       }
 
-      m_async_response_fifo.Push(0); // peak low
-      m_async_response_fifo.Push(0); // peak high
+      const u8 channel = subq.absolute_second_bcd & 1u;
+      const s16 peak_volume = std::min<s16>(GetPeakVolume(raw_sector, channel), 32767);
+      const u16 peak_value = (ZeroExtend16(channel) << 15) | peak_volume;
+
+      m_async_response_fifo.Push(Truncate8(peak_value));      // peak low
+      m_async_response_fifo.Push(Truncate8(peak_value >> 8)); // peak high
       SetAsyncInterrupt(Interrupt::DataReady);
     }
   }
