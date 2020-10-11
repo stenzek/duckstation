@@ -434,6 +434,8 @@ void GameList::RewriteCacheFile()
         break;
       }
     }
+
+    CloseCacheFileStream();
   }
 }
 
