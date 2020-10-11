@@ -80,6 +80,7 @@
     <string-array name="settings_display_aspect_ratio_names">
         <item>4:3</item>
         <item>16:9</item>
+        <item>16:10</item>
         <item>8:7</item>
         <item>2:1 (VRAM 1:1)</item>
         <item>1:1</item>
@@ -88,6 +89,7 @@
     <string-array name="settings_display_aspect_ratio_values">
         <item>4:3</item>
         <item>16:9</item>
+        <item>16:10</item>
         <item>8:7</item>
         <item>2:1 (VRAM 1:1)</item>
         <item>1:1</item>
