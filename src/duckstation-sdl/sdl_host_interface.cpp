@@ -266,24 +266,6 @@ void SDLHostInterface::ReleaseHostDisplay()
   m_display->SetVSync(true);
 }
 
-std::unique_ptr<AudioStream> SDLHostInterface::CreateAudioStream(AudioBackend backend)
-{
-  switch (backend)
-  {
-    case AudioBackend::Null:
-      return AudioStream::CreateNullAudioStream();
-
-    case AudioBackend::Cubeb:
-      return AudioStream::CreateCubebAudioStream();
-
-    case AudioBackend::SDL:
-      return SDLAudioStream::Create();
-
-    default:
-      return nullptr;
-  }
-}
-
 std::optional<CommonHostInterface::HostKeyCode> SDLHostInterface::GetHostKeyCode(const std::string_view key_code) const
 {
   const std::optional<u32> code = SDLKeyNames::ParseKeyString(key_code);

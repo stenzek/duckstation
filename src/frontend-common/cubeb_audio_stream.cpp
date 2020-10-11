@@ -150,7 +150,7 @@ void CubebAudioStream::DestroyContext()
 #endif
 }
 
-std::unique_ptr<AudioStream> AudioStream::CreateCubebAudioStream()
+std::unique_ptr<AudioStream> CubebAudioStream::Create()
 {
   return std::make_unique<CubebAudioStream>();
 }

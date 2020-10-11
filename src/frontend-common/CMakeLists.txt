@@ -38,6 +38,8 @@ if(NOT BUILD_LIBRETRO_CORE)
     common_host_interface.h
     controller_interface.cpp
     controller_interface.h
+    cubeb_audio_stream.cpp
+    cubeb_audio_stream.h
     game_list.cpp
     game_list.h
     game_settings.cpp
@@ -66,7 +68,7 @@ if(NOT BUILD_LIBRETRO_CORE)
   endif()
 
   target_compile_definitions(frontend-common PRIVATE "WITH_IMGUI=1")
-  target_link_libraries(frontend-common PUBLIC imgui simpleini tinyxml2 scmversion)
+  target_link_libraries(frontend-common PUBLIC cubeb imgui simpleini tinyxml2 scmversion)
 
   if(SDL2_FOUND)
     target_sources(frontend-common PRIVATE 

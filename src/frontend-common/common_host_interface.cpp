@@ -18,6 +18,7 @@
 #include "core/spu.h"
 #include "core/system.h"
 #include "core/timers.h"
+#include "cubeb_audio_stream.h"
 #include "game_list.h"
 #include "icon.h"
 #include "imgui.h"
@@ -456,7 +457,7 @@ std::unique_ptr<AudioStream> CommonHostInterface::CreateAudioStream(AudioBackend
       return AudioStream::CreateNullAudioStream();
 
     case AudioBackend::Cubeb:
-      return AudioStream::CreateCubebAudioStream();
+      return CubebAudioStream::Create();
 
 #ifdef WITH_SDL2
     case AudioBackend::SDL:
