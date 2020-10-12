@@ -5,7 +5,10 @@
 #include <cstring>
 Log_SetChannel(StateWrapper);
 
-StateWrapper::StateWrapper(ByteStream* stream, Mode mode) : m_stream(stream), m_mode(mode) {}
+StateWrapper::StateWrapper(ByteStream* stream, Mode mode, u32 version)
+  : m_stream(stream), m_mode(mode), m_version(version)
+{
+}
 
 StateWrapper::~StateWrapper() = default;
 

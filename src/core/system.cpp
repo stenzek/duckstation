@@ -491,7 +491,7 @@ bool RecreateGPU(GPURenderer renderer)
 
   // save current state
   std::unique_ptr<ByteStream> state_stream = ByteStream_CreateGrowableMemoryStream();
-  StateWrapper sw(state_stream.get(), StateWrapper::Mode::Write);
+  StateWrapper sw(state_stream.get(), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
   const bool state_valid = g_gpu->DoState(sw) && TimingEvents::DoState(sw);
   if (!state_valid)
     Log_ErrorPrintf("Failed to save old GPU state when switching renderers");
@@ -946,12 +946,12 @@ bool DoLoadState(ByteStream* state, bool force_software_renderer)
   if (header.magic != SAVE_STATE_MAGIC)
     return false;
 
-  if (header.version != SAVE_STATE_VERSION)
+  if (header.version < SAVE_STATE_MINIMUM_VERSION)
   {
     g_host_interface->ReportFormattedError(
       g_host_interface->TranslateString("System",
-                                        "Save state is incompatible: expecting version %u but state is version %u."),
-      SAVE_STATE_VERSION, header.version);
+                                        "Save state is incompatible: minimum version is %u but state is version %u."),
+      SAVE_STATE_MINIMUM_VERSION, header.version);
     return false;
   }
 
@@ -1041,7 +1041,7 @@ bool DoLoadState(ByteStream* state, bool force_software_renderer)
   if (!state->SeekAbsolute(header.offset_to_data))
     return false;
 
-  StateWrapper sw(state, StateWrapper::Mode::Read);
+  StateWrapper sw(state, StateWrapper::Mode::Read, header.version);
   if (!DoState(sw))
     return false;
 
@@ -1108,7 +1108,7 @@ bool SaveState(ByteStream* state, u32 screenshot_size /* = 128 */)
 
     g_gpu->RestoreGraphicsAPIState();
 
-    StateWrapper sw(state, StateWrapper::Mode::Write);
+    StateWrapper sw(state, StateWrapper::Mode::Write, SAVE_STATE_VERSION);
     const bool result = DoState(sw);
 
     g_gpu->ResetGraphicsAPIState();
