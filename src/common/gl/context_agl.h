@@ -8,6 +8,7 @@
 struct NSOpenGLContext;
 struct NSOpenGLPixelFormat;
 struct NSView;
+#define __bridge
 #endif
 
 namespace GL {
@@ -31,7 +32,7 @@ public:
   std::unique_ptr<Context> CreateSharedContext(const WindowInfo& wi) override;
 
 private:
-  ALWAYS_INLINE NSView* GetView() const { return static_cast<NSView*>(m_wi.window_handle); }
+  ALWAYS_INLINE NSView* GetView() const { return static_cast<NSView*>((__bridge NSView*)m_wi.window_handle); }
 
   bool Initialize(const Version* versions_to_try, size_t num_versions_to_try);
   bool CreateContext(NSOpenGLContext* share_context, int profile, bool make_current);
