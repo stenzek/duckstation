@@ -635,7 +635,7 @@
         <location filename="biossettingswidget.ui" line="162"/>
         <location filename="biossettingswidget.cpp" line="96"/>
         <source>Fast Boot</source>
-        <translation>Déamrrage Rapide</translation>
+        <translation>Démarrage Rapide</translation>
     </message>
     <message>
         <location filename="biossettingswidget.ui" line="169"/>
@@ -2651,7 +2651,7 @@ Vous pourrez ainsi télécharger environ 4 mégaoctets via votre connexion Inter
     <message>
         <location filename="../frontend-common/common_host_interface.cpp" line="1485"/>
         <source>Reload Post Processing Shaders</source>
-        <translation>Recharder les Sahders du Post Traitement</translation>
+        <translation>Recharder les Shaders du Post Traitement</translation>
     </message>
     <message>
         <location filename="../frontend-common/common_host_interface.cpp" line="1493"/>
@@ -3064,7 +3064,7 @@ Vous pourrez ainsi télécharger environ 4 mégaoctets via votre connexion Inter
     <message>
         <location filename="mainwindow.ui" line="103"/>
         <source>S&amp;ettings</source>
-        <translation>ParamètrS&amp;es</translation>
+        <translation>Paramètr&amp;es</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="107"/>
@@ -3418,13 +3418,13 @@ Vous pourrez ainsi télécharger environ 4 mégaoctets via votre connexion Inter
     </message>
     <message>
         <location filename="mainwindow.ui" line="722"/>
-        <source>Afficher les Titres (Voir la Grille)</source>
-        <translation></translation>
+        <source>Show Titles (Grid View)</source>
+        <translation>Afficher les Titres (Voir la Grille)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="727"/>
-        <source>&amp;Zoomer (Voir la Grille)</source>
-        <translation>Zoom &amp;In (Grid View)</translation>
+        <source>Zoom &amp;In (Grid View)</source>
+        <translation>&amp;Zoomer (Voir la Grille)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="730"/>
@@ -4624,7 +4624,7 @@ Les sauvegardes ne seront pas récupérables.</translation>
     <message>
         <location filename="settingsdialog.ui" line="94"/>
         <source>Hotkey Settings</source>
-        <translation>PAramètres des Raccourcis</translation>
+        <translation>Paramètres des Raccourcis</translation>
     </message>
     <message>
         <location filename="settingsdialog.ui" line="103"/>
