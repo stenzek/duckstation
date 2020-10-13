@@ -4766,7 +4766,7 @@ void Disassembler::AppendPCRelativeOffsetToOutput(const Instruction *instr,
   USE(instr);
   if (offset < 0) {
     // Cast to uint64_t so that INT64_MIN is handled in a well-defined way.
-    uint64_t abs_offset = -static_cast<uint64_t>(offset);
+    uint64_t abs_offset = static_cast<uint64_t>(-offset);
     AppendToOutput("#-0x%" PRIx64, abs_offset);
   } else {
     AppendToOutput("#+0x%" PRIx64, offset);
