@@ -261,6 +261,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="translations\duckstation-qt_es.ts" />
+    <None Include="translations\duckstation-qt_fr.ts" />
     <None Include="translations\duckstation-qt_it.ts" />
     <None Include="translations\duckstation-qt_nl.ts" />
     <None Include="translations\duckstation-qt_ru.ts" />

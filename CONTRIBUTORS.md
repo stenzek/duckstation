@@ -16,6 +16,7 @@ The following people have contributed to the project in some way, and are credit
 - @RaydenX93 - Italian
 - @r57zone - Russian
 - @DenSinH - Dutch
+- @BenjaminSiskoo - French
 
 ## Game Compatibility Database
  - @Zet-sensei
