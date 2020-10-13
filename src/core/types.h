@@ -97,7 +97,11 @@ enum class AudioBackend : u8
 {
   Null,
   Cubeb,
+#ifndef ANDROID
   SDL,
+#else
+  OpenSLES,
+#endif
   Count
 };
 

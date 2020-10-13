@@ -178,10 +178,20 @@
         <item>analog_stick</item>
         <item>analog_sticks</item>
     </string-array>
+    <string-array name="settings_audio_backend_entries">
+        <item>Null (No Output)</item>
+        <item>Cubeb</item>
+        <item>OpenSL ES (Recommended)</item>
+    </string-array>
+    <string-array name="settings_audio_backend_values">
+        <item>Null</item>
+        <item>Cubeb</item>
+        <item>OpenSLES</item>
+    </string-array>
     <string-array name="settings_audio_buffer_size_entries">
         <item>1024 Frames (23.22ms)</item>
-        <item>2048 Frames (46.44ms)</item>
-        <item>3072 Frames (69.66ms, Recommended)</item>
+        <item>2048 Frames (46.44ms, Recommended)</item>
+        <item>3072 Frames (69.66ms)</item>
         <item>4096 Frames (92.88ms)</item>
     </string-array>
     <string-array name="settings_audio_buffer_size_values">

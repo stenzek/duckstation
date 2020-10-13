@@ -301,11 +301,19 @@
             app:summary="Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable background music in some games."
             app:iconSpaceReserved="false" />
         <ListPreference
+            app:key="Audio/Backend"
+            app:title="Audio Backend"
+            app:entries="@array/settings_audio_backend_entries"
+            app:entryValues="@array/settings_audio_backend_values"
+            app:defaultValue="OpenSLES"
+            app:useSimpleSummaryProvider="true"
+            app:iconSpaceReserved="false"/>
+        <ListPreference
             app:key="Audio/BufferSize"
             app:title="Audio Buffer Size"
             app:entries="@array/settings_audio_buffer_size_entries"
             app:entryValues="@array/settings_audio_buffer_size_values"
-            app:defaultValue="3072"
+            app:defaultValue="2048"
             app:summary="Determines the latency between audio being generated and output to speakers. Smaller values reduce latency, but variations in emulation speed will cause hitches."
             app:useSimpleSummaryProvider="true"
             app:iconSpaceReserved="false" />

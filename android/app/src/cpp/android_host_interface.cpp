@@ -20,6 +20,10 @@
 #include <imgui.h>
 Log_SetChannel(AndroidHostInterface);
 
+#ifdef USE_OPENSLES
+#include "opensles_audio_stream.h"
+#endif
+
 static JavaVM* s_jvm;
 static jclass s_AndroidHostInterface_class;
 static jmethodID s_AndroidHostInterface_constructor;
@@ -392,6 +396,16 @@ void AndroidHostInterface::ReleaseHostDisplay()
   ReleaseHostDisplayResources();
   m_display->DestroyRenderDevice();
   m_display.reset();
+}
+
+std::unique_ptr<AudioStream> AndroidHostInterface::CreateAudioStream(AudioBackend backend)
+{
+#ifdef USE_OPENSLES
+  if (backend == AudioBackend::OpenSLES)
+    return OpenSLESAudioStream::Create();
+#endif
+
+  return CommonHostInterface::CreateAudioStream(backend);
 }
 
 void AndroidHostInterface::OnSystemDestroyed()

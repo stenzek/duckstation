@@ -592,10 +592,24 @@ float Settings::GetDisplayAspectRatioValue(DisplayAspectRatio ar)
   return s_display_aspect_ratio_values[static_cast<int>(ar)];
 }
 
-static std::array<const char*, 3> s_audio_backend_names = {{"Null", "Cubeb", "SDL"}};
-static std::array<const char*, 3> s_audio_backend_display_names = {{TRANSLATABLE("AudioBackend", "Null (No Output)"),
-                                                                    TRANSLATABLE("AudioBackend", "Cubeb"),
-                                                                    TRANSLATABLE("AudioBackend", "SDL")}};
+static std::array<const char*, 3> s_audio_backend_names = {{
+  "Null",
+  "Cubeb",
+#ifndef ANDROID
+  "SDL",
+#else
+  "OpenSLES",
+#endif
+}};
+static std::array<const char*, 3> s_audio_backend_display_names = {{
+  TRANSLATABLE("AudioBackend", "Null (No Output)"),
+  TRANSLATABLE("AudioBackend", "Cubeb"),
+#ifndef ANDROID
+  TRANSLATABLE("AudioBackend", "SDL"),
+#else
+  TRANSLATABLE("AudioBackend", "OpenSL ES"),
+#endif
+}};
 
 std::optional<AudioBackend> Settings::ParseAudioBackend(const char* str)
 {
