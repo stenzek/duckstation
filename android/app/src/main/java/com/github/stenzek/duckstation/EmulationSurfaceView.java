@@ -90,8 +90,8 @@ public class EmulationSurfaceView extends SurfaceView {
     private ArrayMap<Integer, Integer> mControllerKeyMapping;
     private ArrayMap<Integer, Integer> mControllerAxisMapping;
     private ArrayMap<Integer, Pair<Integer, Integer>> mControllerAxisButtonMapping;
-    static final int[] AXISES = new int[]{MotionEvent.AXIS_X, MotionEvent.AXIS_Y, MotionEvent.AXIS_RX,
-            MotionEvent.AXIS_RY, MotionEvent.AXIS_Z, MotionEvent.AXIS_RZ,
+    static final int[] AXISES = new int[]{MotionEvent.AXIS_X, MotionEvent.AXIS_Y, MotionEvent.AXIS_Z,
+            MotionEvent.AXIS_RZ, MotionEvent.AXIS_LTRIGGER, MotionEvent.AXIS_RTRIGGER,
             MotionEvent.AXIS_HAT_X, MotionEvent.AXIS_HAT_Y};
 
     private void addControllerKeyMapping(int keyCode, String controllerType, String buttonName) {
@@ -145,10 +145,10 @@ public class EmulationSurfaceView extends SurfaceView {
         addControllerKeyMapping(KeyEvent.KEYCODE_BUTTON_R2, controllerType, "R2");
         addControllerAxisMapping(MotionEvent.AXIS_X, controllerType, "LeftX", null, null);
         addControllerAxisMapping(MotionEvent.AXIS_Y, controllerType, "LeftY", null, null);
-        addControllerAxisMapping(MotionEvent.AXIS_RX, controllerType, "RightX", null, null);
-        addControllerAxisMapping(MotionEvent.AXIS_RY, controllerType, "RightY", null, null);
-        addControllerAxisMapping(MotionEvent.AXIS_Z, controllerType, "L2", "L2", "L2");
-        addControllerAxisMapping(MotionEvent.AXIS_RZ, controllerType, "R2", "R2", "R2");
+        addControllerAxisMapping(MotionEvent.AXIS_Z, controllerType, "RightX", null, null);
+        addControllerAxisMapping(MotionEvent.AXIS_RZ, controllerType, "RightY", null, null);
+        addControllerAxisMapping(MotionEvent.AXIS_LTRIGGER, controllerType, "L2", "L2", "L2");
+        addControllerAxisMapping(MotionEvent.AXIS_RTRIGGER, controllerType, "R2", "R2", "R2");
         addControllerAxisMapping(MotionEvent.AXIS_HAT_X, controllerType, null, "Left", "Right");
         addControllerAxisMapping(MotionEvent.AXIS_HAT_Y, controllerType, null, "Up", "Down");
     }
