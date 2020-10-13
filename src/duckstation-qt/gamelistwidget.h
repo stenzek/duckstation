@@ -41,6 +41,8 @@ public:
 
   bool getShowGridCoverTitles() const;
 
+  const GameListEntry* getSelectedEntry() const;
+
 Q_SIGNALS:
   void entrySelected(const GameListEntry* entry);
   void entryDoubleClicked(const GameListEntry* entry);
@@ -68,7 +70,6 @@ protected:
   void resizeEvent(QResizeEvent* event);
 
 private:
-  const GameListEntry* getSelectedEntry() const;
   void resizeTableViewColumnsToFit();
   void loadTableViewColumnVisibilitySettings();
   void saveTableViewColumnVisibilitySettings();

@@ -361,6 +361,29 @@ void MainWindow::onViewSystemDisplayTriggered()
   }
 }
 
+void MainWindow::onViewGamePropertiesActionTriggered()
+{
+  const GameListEntry* entry;
+
+  if (m_emulation_running)
+  {
+    const std::string& path = System::GetRunningPath();
+    if (path.empty())
+      return;
+
+    entry = m_host_interface->getGameList()->GetEntryForPath(path.c_str());
+  }
+  else
+  {
+    entry = m_game_list_widget->getSelectedEntry();
+  }
+
+  if (!entry)
+    return;
+
+  GamePropertiesDialog::showForEntry(m_host_interface, entry, this);
+}
+
 void MainWindow::onGitHubRepositoryActionTriggered()
 {
   QtUtils::OpenURL(this, "https://github.com/stenzek/duckstation/");
@@ -748,6 +771,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionViewGameList, &QAction::triggered, this, &MainWindow::onViewGameListActionTriggered);
   connect(m_ui.actionViewGameGrid, &QAction::triggered, this, &MainWindow::onViewGameGridActionTriggered);
   connect(m_ui.actionViewSystemDisplay, &QAction::triggered, this, &MainWindow::onViewSystemDisplayTriggered);
+  connect(m_ui.actionViewGameProperties, &QAction::triggered, this, &MainWindow::onViewGamePropertiesActionTriggered);
   connect(m_ui.actionGitHubRepository, &QAction::triggered, this, &MainWindow::onGitHubRepositoryActionTriggered);
   connect(m_ui.actionIssueTracker, &QAction::triggered, this, &MainWindow::onIssueTrackerActionTriggered);
   connect(m_ui.actionDiscordServer, &QAction::triggered, this, &MainWindow::onDiscordServerActionTriggered);
