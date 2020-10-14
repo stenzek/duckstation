@@ -8,10 +8,12 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.hardware.input.InputManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.AndroidException;
@@ -187,6 +189,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
 
         // Hook up controller input.
         updateControllers();
+        registerInputDeviceListener();
     }
 
     @Override
@@ -209,6 +212,8 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
             mWasDestroyed = true;
             AndroidHostInterface.getInstance().stopEmulationThread();
         }
+
+        unregisterInputDeviceListener();
     }
 
     @Override
@@ -397,14 +402,15 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     public void updateControllers() {
         final String controllerType = getStringSetting("Controller1/Type", "DigitalController");
         final String viewType = getStringSetting("Controller1/TouchscreenControllerView", "digital");
+        final boolean autoHideTouchscreenController = getBooleanSetting("Controller1/AutoHideTouchscreenController", false);
         final FrameLayout activityLayout = findViewById(R.id.frameLayout);
 
         Log.i("EmulationActivity", "Controller type: " + controllerType);
         Log.i("EmulationActivity", "View type: " + viewType);
 
-        mContentView.initControllerKeyMapping(controllerType);
+        final boolean hasAnyControllers = mContentView.initControllerMapping(controllerType);
 
-        if (controllerType == "none" || viewType == "none") {
+        if (controllerType == "none" || viewType == "none" || (hasAnyControllers && autoHideTouchscreenController)) {
             if (mTouchscreenController != null) {
                 activityLayout.removeView(mTouchscreenController);
                 mTouchscreenController = null;
@@ -417,5 +423,45 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
 
             mTouchscreenController.init(0, controllerType, viewType);
         }
+    }
+
+    private InputManager.InputDeviceListener mInputDeviceListener;
+    private void registerInputDeviceListener() {
+        if (mInputDeviceListener != null)
+            return;
+
+        mInputDeviceListener = new InputManager.InputDeviceListener() {
+            @Override
+            public void onInputDeviceAdded(int i) {
+                Log.i("EmulationActivity", String.format("InputDeviceAdded %d", i));
+                updateControllers();
+            }
+
+            @Override
+            public void onInputDeviceRemoved(int i) {
+                Log.i("EmulationActivity", String.format("InputDeviceRemoved %d", i));
+                updateControllers();
+            }
+
+            @Override
+            public void onInputDeviceChanged(int i) {
+                Log.i("EmulationActivity", String.format("InputDeviceChanged %d", i));
+                updateControllers();
+            }
+        };
+
+        InputManager inputManager = ((InputManager)getSystemService(Context.INPUT_SERVICE));
+        if (inputManager != null)
+            inputManager.registerInputDeviceListener(mInputDeviceListener, null);
+    }
+    private void unregisterInputDeviceListener() {
+        if (mInputDeviceListener == null)
+            return;
+
+        InputManager inputManager = ((InputManager)getSystemService(Context.INPUT_SERVICE));
+        if (inputManager != null)
+            inputManager.unregisterInputDeviceListener(mInputDeviceListener);
+        
+        mInputDeviceListener = null;
     }
 }

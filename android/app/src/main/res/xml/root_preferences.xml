@@ -266,6 +266,12 @@
             app:defaultValue="digital"
             app:useSimpleSummaryProvider="true"
             app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat
+            app:key="Controller1/AutoHideTouchscreenController"
+            app:title="Auto-Hide Touchscreen Controller"
+            app:defaultValue="false"
+            app:summary="Hides the touchscreen controller when an external controller is detected."
+            app:iconSpaceReserved="false"/>
     </PreferenceCategory>
 
     <PreferenceCategory app:title="Memory Cards" app:iconSpaceReserved="false">
