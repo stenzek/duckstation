@@ -292,6 +292,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void onImportBIOSImageResult(Uri uri) {
+        // This should really be 512K but just in case we wanted to support the other BIOSes in the future...
+        final int MAX_BIOS_SIZE = 2 * 1024 * 1024;
+
         InputStream stream = null;
         try {
             stream = getContentResolver().openInputStream(uri);
@@ -304,10 +307,14 @@ public class MainActivity extends AppCompatActivity {
         try {
             byte[] buffer = new byte[512 * 1024];
             int len;
-            while ((len = stream.read(buffer)) > 0)
+            while ((len = stream.read(buffer)) > 0) {
                 os.write(buffer, 0, len);
+                if (os.size() > MAX_BIOS_SIZE) {
+                    throw new IOException("BIOS image is too large.");
+                }
+            }
         } catch (IOException e) {
-            Toast.makeText(this, "Failed to read BIOS image.", Toast.LENGTH_LONG);
+            Toast.makeText(this, "Failed to read BIOS image: " + e.getMessage(), Toast.LENGTH_LONG);
             return;
         }
 
