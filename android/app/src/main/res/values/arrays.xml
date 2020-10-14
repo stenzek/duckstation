@@ -200,4 +200,28 @@
         <item>3072</item>
         <item>4096</item>
     </string-array>
+    <string-array name="settings_log_level_entries">
+        <item>None</item>
+        <item>Error</item>
+        <item>Warning</item>
+        <item>Performance Warnings</item>
+        <item>Success</item>
+        <item>Information</item>
+        <item>Developer</item>
+        <item>Profile</item>
+        <item>Debug</item>
+        <item>Trace</item>
+    </string-array>
+    <string-array name="settings_log_level_values">
+        <item>None</item>
+        <item>Error</item>
+        <item>Warning</item>
+        <item>Perf</item>
+        <item>Success</item>
+        <item>Info</item>
+        <item>Dev</item>
+        <item>Profile</item>
+        <item>Debug</item>
+        <item>Trace</item>
+    </string-array>
 </resources>

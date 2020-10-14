@@ -164,8 +164,6 @@ void AndroidHostInterface::LoadSettings()
   CommonHostInterface::LoadSettings(m_settings_interface);
   CommonHostInterface::FixIncompatibleSettings(false);
   CommonHostInterface::UpdateInputMap(m_settings_interface);
-  g_settings.log_level = LOGLEVEL_INFO;
-  g_settings.log_to_debug = true;
 }
 
 void AndroidHostInterface::UpdateInputMap()
@@ -535,8 +533,6 @@ void AndroidHostInterface::ApplySettings(bool display_osd_messages)
   Settings old_settings = std::move(g_settings);
   CommonHostInterface::LoadSettings(m_settings_interface);
   CommonHostInterface::FixIncompatibleSettings(display_osd_messages);
-  g_settings.log_level = LOGLEVEL_INFO;
-  g_settings.log_to_debug = true;
   CheckForSettingsChanges(old_settings);
 }
 

@@ -355,6 +355,26 @@
             app:title="@string/settings_console_tty_output"
             app:defaultValue="false"
             app:iconSpaceReserved="false" />
+        <ListPreference
+            app:key="Logging/LogLevel"
+            app:title="Logging Level"
+            app:defaultValue="Warning"
+            app:entries="@array/settings_log_level_entries"
+            app:entryValues="@array/settings_log_level_values"
+            app:useSimpleSummaryProvider="true"
+            app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat
+            app:key="Logging/LogToFile"
+            app:title="Log To File"
+            app:defaultValue="false"
+            app:summary="Writes log messages to duckstation.log in your user directory. Only use for debugging as it slows down emulation."
+            app:iconSpaceReserved="false"/>
+        <SwitchPreferenceCompat
+            app:key="Logging/LogToDebug"
+            app:title="Log To Logcat"
+            app:defaultValue="false"
+            app:summary="Writes log messages to the Android message logger. Only useful when attached to a computer with adb."
+            app:iconSpaceReserved="false" />
     </PreferenceCategory>
 
 </PreferenceScreen>
