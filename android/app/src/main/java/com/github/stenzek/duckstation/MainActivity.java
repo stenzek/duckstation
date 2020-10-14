@@ -314,7 +314,11 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         } catch (IOException e) {
-            Toast.makeText(this, "Failed to read BIOS image: " + e.getMessage(), Toast.LENGTH_LONG);
+            new AlertDialog.Builder(this)
+                    .setMessage("Failed to read BIOS image: " + e.getMessage())
+                    .setPositiveButton("OK", (dialog, button) -> {})
+                    .create()
+                    .show();
             return;
         }
 
