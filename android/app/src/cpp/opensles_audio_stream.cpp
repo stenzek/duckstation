@@ -31,15 +31,33 @@ bool OpenSLESAudioStream::OpenDevice()
   }
 
   res = (*m_engine)->Realize(m_engine, SL_BOOLEAN_FALSE);
-  if (res == SL_RESULT_SUCCESS)
-    res = (*m_engine)->GetInterface(m_engine, SL_IID_ENGINE, &m_engine_engine);
-  if (res == SL_RESULT_SUCCESS)
-    res = (*m_engine_engine)->CreateOutputMix(m_engine_engine, &m_output_mix, 0, 0, 0);
-  if (res == SL_RESULT_SUCCESS)
-    res = (*m_output_mix)->Realize(m_output_mix, SL_BOOLEAN_FALSE);
   if (res != SL_RESULT_SUCCESS)
   {
-    Log_ErrorPrintf("Failed to create engine/output mix");
+    Log_ErrorPrintf("Realize(Engine) failed: %d", res);
+    CloseDevice();
+    return false;
+  }
+
+  res = (*m_engine)->GetInterface(m_engine, SL_IID_ENGINE, &m_engine_engine);
+  if (res != SL_RESULT_SUCCESS)
+  {
+    Log_ErrorPrintf("GetInterface(SL_IID_ENGINE) failed: %d", res);
+    CloseDevice();
+    return false;
+  }
+
+  res = (*m_engine_engine)->CreateOutputMix(m_engine_engine, &m_output_mix, 0, 0, 0);
+  if (res != SL_RESULT_SUCCESS)
+  {
+    Log_ErrorPrintf("CreateOutputMix failed: %d", res);
+    CloseDevice();
+    return false;
+  }
+
+  res = (*m_output_mix)->Realize(m_output_mix, SL_BOOLEAN_FALSE);
+  if (res != SL_RESULT_SUCCESS)
+  {
+    Log_ErrorPrintf("Realize(OutputMix) mix failed: %d", res);
     CloseDevice();
     return false;
   }
@@ -63,21 +81,39 @@ bool OpenSLESAudioStream::OpenDevice()
                               ap_interfaces.data(), ap_interfaces_req.data());
   if (res != SL_RESULT_SUCCESS)
   {
-    Log_ErrorPrintf("Failed to create audio player: %d", res);
+    Log_ErrorPrintf("CreateAudioPlayer failed: %d", res);
     CloseDevice();
     return false;
   }
 
   res = (*m_player)->Realize(m_player, SL_BOOLEAN_FALSE);
-  if (res == SL_RESULT_SUCCESS)
-    res = (*m_player)->GetInterface(m_player, SL_IID_PLAY, &m_play_interface);
-  if (res == SL_RESULT_SUCCESS)
-    res = (*m_player)->GetInterface(m_player, SL_IID_BUFFERQUEUE, &m_buffer_queue_interface);
-  if (res == SL_RESULT_SUCCESS)
-    res = (*m_player)->GetInterface(m_player, SL_IID_VOLUME, &m_volume_interface);
   if (res != SL_RESULT_SUCCESS)
   {
-    Log_ErrorPrintf("Failed to get player interfaces: %d", res);
+    Log_ErrorPrintf("Realize(AudioPlayer) failed: %d", res);
+    CloseDevice();
+    return false;
+  }
+
+  res = (*m_player)->GetInterface(m_player, SL_IID_PLAY, &m_play_interface);
+  if (res != SL_RESULT_SUCCESS)
+  {
+    Log_ErrorPrintf("GetInterface(SL_IID_PLAY) failed: %d", res);
+    CloseDevice();
+    return false;
+  }
+
+  res = (*m_player)->GetInterface(m_player, SL_IID_BUFFERQUEUE, &m_buffer_queue_interface);
+  if (res != SL_RESULT_SUCCESS)
+  {
+    Log_ErrorPrintf("GetInterface(SL_IID_BUFFERQUEUE) failed: %d", res);
+    CloseDevice();
+    return false;
+  }
+
+  res = (*m_player)->GetInterface(m_player, SL_IID_VOLUME, &m_volume_interface);
+  if (res != SL_RESULT_SUCCESS)
+  {
+    Log_ErrorPrintf("GetInterface(SL_IID_VOLUME) failed: %d", res);
     CloseDevice();
     return false;
   }
@@ -93,6 +129,8 @@ bool OpenSLESAudioStream::OpenDevice()
   for (u32 i = 0; i < NUM_BUFFERS; i++)
     m_buffers[i] = std::make_unique<SampleType[]>(m_buffer_size * m_channels);
 
+  Log_InfoPrintf("OpenSL ES device opened: %uhz, %u channels, %u buffer size, %u buffers",
+      m_output_sample_rate, m_channels, m_buffer_size, NUM_BUFFERS);
   return true;
 }
 
@@ -101,7 +139,9 @@ void OpenSLESAudioStream::PauseDevice(bool paused)
   if (m_paused == paused)
     return;
 
-  (*m_play_interface)->SetPlayState(m_play_interface, paused ? SL_PLAYSTATE_PAUSED : SL_PLAYSTATE_PLAYING);
+  SLresult res = (*m_play_interface)->SetPlayState(m_play_interface, paused ? SL_PLAYSTATE_PAUSED : SL_PLAYSTATE_PLAYING);
+  if (res != SL_RESULT_SUCCESS)
+    Log_ErrorPrintf("SetPlayState failed: %d", res);
 
   if (!paused && !m_buffer_enqueued)
   {
@@ -142,7 +182,9 @@ void OpenSLESAudioStream::SetOutputVolume(u32 volume)
   const SLmillibel attenuation = (volume == 0) ?
                                    SL_MILLIBEL_MIN :
                                    static_cast<SLmillibel>(2000.0f * std::log10(static_cast<float>(volume) / 100.0f));
-  (*m_volume_interface)->SetVolumeLevel(m_volume_interface, attenuation);
+  SLresult res = (*m_volume_interface)->SetVolumeLevel(m_volume_interface, attenuation);
+  if (res != SL_RESULT_SUCCESS)
+    Log_ErrorPrintf("SetVolumeLevel failed: %d", res);
 }
 
 void OpenSLESAudioStream::EnqueueBuffer()
