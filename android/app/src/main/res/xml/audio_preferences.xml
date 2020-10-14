@@ -17,6 +17,15 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+        <SeekBarPreference
+            app:key="Audio/OutputVolume"
+            app:title="Volume"
+            app:summary="Controls the volume of the emulator's sound output."
+            app:defaultValue="100"
+            android:max="100"
+            app:min="0"
+            app:iconSpaceReserved="false"
+            app:showSeekBarValue="true" />
         <SwitchPreferenceCompat
             app:key="Audio/OutputMuted"
             app:title="Mute All Sound"
