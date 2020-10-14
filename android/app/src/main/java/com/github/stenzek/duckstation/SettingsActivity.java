@@ -91,16 +91,19 @@ public class SettingsActivity extends AppCompatActivity {
                 case 0:     // General
                     return new SettingsFragment(R.xml.general_preferences);
 
-                case 1:     // Console
+                case 1:     // Display
                     return new SettingsFragment(R.xml.display_preferences);
 
-                case 2:     // Enhancements
+                case 2:     // Audio
+                    return new SettingsFragment(R.xml.audio_preferences);
+
+                case 3:     // Enhancements
                     return new SettingsFragment(R.xml.enhancements_preferences);
 
-                case 3:     // Controllers
+                case 4:     // Controllers
                     return new SettingsFragment(R.xml.controllers_preferences);
 
-                case 4:     // Advanced
+                case 5:     // Advanced
                     return new SettingsFragment(R.xml.advanced_preferences);
 
                 default:

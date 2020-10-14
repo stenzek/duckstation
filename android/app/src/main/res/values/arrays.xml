@@ -227,6 +227,7 @@
     <string-array name="settings_tabs">
         <item>General</item>
         <item>Display</item>
+        <item>Audio</item>
         <item>Enhancements</item>
         <item>Controllers</item>
         <item>Advanced</item>

@@ -38,7 +38,7 @@
         <SwitchPreferenceCompat
             app:key="Display/VSync"
             app:title="Video Sync"
-            app:defaultValue="true"
+            app:defaultValue="false"
             app:summary="Enable this option to match DuckStation's refresh rate with your current monitor or screen. VSync is automatically disabled when it is not possible (e.g. running at non-100% speed)."
             app:iconSpaceReserved="false" />
         <ListPreference
