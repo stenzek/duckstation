@@ -224,4 +224,11 @@
         <item>Debug</item>
         <item>Trace</item>
     </string-array>
+    <string-array name="settings_tabs">
+        <item>General</item>
+        <item>Display</item>
+        <item>Enhancements</item>
+        <item>Controllers</item>
+        <item>Advanced</item>
+    </string-array>
 </resources>
