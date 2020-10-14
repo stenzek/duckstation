@@ -219,7 +219,8 @@ void GPU_HW_OpenGL::SetCapabilities(HostDisplay* host_display)
 
   int max_dual_source_draw_buffers = 0;
   glGetIntegerv(GL_MAX_DUAL_SOURCE_DRAW_BUFFERS, &max_dual_source_draw_buffers);
-  m_supports_dual_source_blend = (max_dual_source_draw_buffers > 0);
+  m_supports_dual_source_blend =
+    (max_dual_source_draw_buffers > 0) && (GLAD_GL_VERSION_3_3 || GLAD_GL_ARB_blend_func_extended);
   if (!m_supports_dual_source_blend)
     Log_WarningPrintf("Dual-source blending is not supported, this may break some mask effects.");
 
