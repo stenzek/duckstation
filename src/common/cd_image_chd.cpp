@@ -238,6 +238,12 @@ bool CDImageCHD::Open(const char* filename)
     file_lba = Common::AlignUp(file_lba, CHD_CD_TRACK_ALIGNMENT);
   }
 
+  if (m_tracks.empty())
+  {
+    Log_ErrorPrintf("File '%s' contains no tracks", filename);
+    return false;
+  }
+
   m_lba_count = disc_lba;
   AddLeadOutIndex();
 

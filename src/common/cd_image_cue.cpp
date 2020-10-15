@@ -217,6 +217,12 @@ bool CDImageCueSheet::OpenAndParse(const char* filename)
     }
   }
 
+  if (m_tracks.empty())
+  {
+    Log_ErrorPrintf("File '%s' contains no tracks", filename);
+    return false;
+  }
+
   m_lba_count = disc_lba;
   AddLeadOutIndex();
 
