@@ -1930,21 +1930,8 @@ bool CodeGenerator::Compile_cop0(const CodeBlockInstruction& cbi)
           EmitBranchIfBitClear(sr_value.host_reg, sr_value.size, 0, &no_interrupt);
           EmitAnd(sr_value.host_reg, sr_value.host_reg, cause_value);
           EmitTest(sr_value.host_reg, Value::FromConstantU32(0xFF00));
-          sr_value.ReleaseAndClear();
-          cause_value.ReleaseAndClear();
           EmitConditionalBranch(Condition::Zero, false, &no_interrupt);
-
-          EmitBranch(GetCurrentFarCodePointer());
-          SwitchToFarCode();
-
-          // we want to flush pc here
-          m_register_cache.PushState();
-          m_register_cache.FlushAllGuestRegisters(false, true);
-          WriteNewPC(CalculatePC(), false);
-          EmitExceptionExit();
-          m_register_cache.PopState();
-
-          SwitchToNearCode();
+          EmitStoreCPUStructField(offsetof(State, downcount), Value::FromConstantU32(0));
           EmitBindLabel(&no_interrupt);
         }
 
@@ -1978,6 +1965,16 @@ bool CodeGenerator::Compile_cop0(const CodeBlockInstruction& cbi)
         }
 
         EmitStoreCPUStructField(offsetof(State, cop0_regs.sr.bits), sr);
+
+        Value cause_value = m_register_cache.AllocateScratch(RegSize_32);
+        EmitLoadCPUStructField(cause_value.host_reg, cause_value.size, offsetof(State, cop0_regs.cause.bits));
+
+        LabelType no_interrupt;
+        EmitAnd(sr.host_reg, sr.host_reg, cause_value);
+        EmitTest(sr.host_reg, Value::FromConstantU32(0xFF00));
+        EmitConditionalBranch(Condition::Zero, false, &no_interrupt);
+        EmitStoreCPUStructField(offsetof(State, downcount), Value::FromConstantU32(0));
+        EmitBindLabel(&no_interrupt);
 
         InstructionEpilogue(cbi);
         return true;

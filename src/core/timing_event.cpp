@@ -3,6 +3,7 @@
 #include "common/log.h"
 #include "common/state_wrapper.h"
 #include "cpu_core.h"
+#include "cpu_core_private.h"
 #include "system.h"
 Log_SetChannel(TimingEvents);
 
@@ -49,8 +50,11 @@ std::unique_ptr<TimingEvent> CreateTimingEvent(std::string name, TickCount perio
 
 void UpdateCPUDowncount()
 {
-  if (!CPU::g_state.frame_done)
+  if (!CPU::g_state.frame_done &&
+      (!CPU::HasPendingInterrupt() || g_settings.cpu_execution_mode == CPUExecutionMode::Interpreter))
+  {
     CPU::g_state.downcount = s_active_events_head->GetDowncount();
+  }
 }
 
 static void SortEvent(TimingEvent* event)

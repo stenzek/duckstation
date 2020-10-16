@@ -132,18 +132,17 @@ static void ExecuteImpl()
   g_state.frame_done = false;
   while (!g_state.frame_done)
   {
+    if (HasPendingInterrupt())
+    {
+      SafeReadInstruction(g_state.regs.pc, &g_state.next_instruction.bits);
+      DispatchInterrupt();
+    }
+
     TimingEvents::UpdateCPUDowncount();
 
     next_block_key = GetNextBlockKey();
     while (g_state.pending_ticks < g_state.downcount)
     {
-      if (HasPendingInterrupt())
-      {
-        SafeReadInstruction(g_state.regs.pc, &g_state.next_instruction.bits);
-        DispatchInterrupt();
-        next_block_key = GetNextBlockKey();
-      }
-
       CodeBlock* block = LookupBlock(next_block_key);
       if (!block)
       {
@@ -153,6 +152,7 @@ static void ExecuteImpl()
       }
 
     reexecute_block:
+      Assert(!(HasPendingInterrupt()));
 
 #if 0
       const u32 tick = TimingEvents::GetGlobalTickCounter() + CPU::GetPendingTicks();
@@ -171,7 +171,7 @@ static void ExecuteImpl()
 
       if (g_state.pending_ticks >= g_state.downcount)
         break;
-      else if (HasPendingInterrupt() || !USE_BLOCK_LINKING)
+      else if (!USE_BLOCK_LINKING)
         continue;
 
       next_block_key = GetNextBlockKey();
@@ -243,16 +243,16 @@ void ExecuteRecompiler()
   g_state.frame_done = false;
   while (!g_state.frame_done)
   {
+    if (HasPendingInterrupt())
+    {
+      SafeReadInstruction(g_state.regs.pc, &g_state.next_instruction.bits);
+      DispatchInterrupt();
+    }
+
     TimingEvents::UpdateCPUDowncount();
 
     while (g_state.pending_ticks < g_state.downcount)
     {
-      if (HasPendingInterrupt())
-      {
-        SafeReadInstruction(g_state.regs.pc, &g_state.next_instruction.bits);
-        DispatchInterrupt();
-      }
-
       const u32 pc = g_state.regs.pc;
       g_state.current_instruction_pc = pc;
       const u32 fast_map_index = GetFastMapIndex(pc);
