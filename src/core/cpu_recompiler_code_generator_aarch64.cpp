@@ -1283,6 +1283,23 @@ void CodeGenerator::EmitAddCPUStructField(u32 offset, const Value& value)
 
 Value CodeGenerator::EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const Value& address, RegSize size)
 {
+  if (address.IsConstant())
+  {
+    TickCount read_ticks;
+    void* ptr = GetDirectReadMemoryPointer(
+      static_cast<u32>(address.constant_value),
+      (size == RegSize_8) ? MemoryAccessSize::Byte :
+                            ((size == RegSize_16) ? MemoryAccessSize::HalfWord : MemoryAccessSize::Word),
+      &read_ticks);
+    if (ptr)
+    {
+      Value result = m_register_cache.AllocateScratch(size);
+      EmitLoadGlobal(result.GetHostRegister(), size, ptr);
+      m_delayed_cycles_add += read_ticks;
+      return result;
+    }
+  }
+
   AddPendingCycles(true);
 
   if (g_settings.cpu_recompiler_memory_exceptions)
@@ -1405,6 +1422,19 @@ Value CodeGenerator::EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const 
 
 void CodeGenerator::EmitStoreGuestMemory(const CodeBlockInstruction& cbi, const Value& address, const Value& value)
 {
+  if (address.IsConstant())
+  {
+    void* ptr = GetDirectWriteMemoryPointer(
+      static_cast<u32>(address.constant_value),
+      (value.size == RegSize_8) ? MemoryAccessSize::Byte :
+                                  ((value.size == RegSize_16) ? MemoryAccessSize::HalfWord : MemoryAccessSize::Word));
+    if (ptr)
+    {
+      EmitStoreGlobal(ptr, value);
+      return;
+    }
+  }
+
   AddPendingCycles(true);
 
   if (g_settings.cpu_recompiler_memory_exceptions)
@@ -1480,12 +1510,50 @@ void CodeGenerator::EmitStoreGuestMemory(const CodeBlockInstruction& cbi, const 
 
 void CodeGenerator::EmitLoadGlobal(HostReg host_reg, RegSize size, const void* ptr)
 {
-  Panic("Not implemented");
+  m_emit->Mov(GetHostReg64(RSCRATCH), reinterpret_cast<uintptr_t>(ptr));
+  switch (size)
+  {
+    case RegSize_8:
+      m_emit->Ldrb(GetHostReg8(host_reg), a64::MemOperand(GetHostReg64(RSCRATCH)));
+      break;
+
+    case RegSize_16:
+      m_emit->Ldrh(GetHostReg16(host_reg), a64::MemOperand(GetHostReg64(RSCRATCH)));
+      break;
+
+    case RegSize_32:
+      m_emit->Ldr(GetHostReg32(host_reg), a64::MemOperand(GetHostReg64(RSCRATCH)));
+      break;
+
+    default:
+      UnreachableCode();
+      break;
+  }
 }
 
 void CodeGenerator::EmitStoreGlobal(void* ptr, const Value& value)
 {
-  Panic("Not implemented");
+  Value value_in_hr = GetValueInHostRegister(value);
+
+  m_emit->Mov(GetHostReg64(RSCRATCH), reinterpret_cast<uintptr_t>(ptr));
+  switch (value.size)
+  {
+    case RegSize_8:
+      m_emit->Strb(GetHostReg8(value_in_hr), a64::MemOperand(GetHostReg64(RSCRATCH)));
+      break;
+
+    case RegSize_16:
+      m_emit->Strh(GetHostReg16(value_in_hr), a64::MemOperand(GetHostReg64(RSCRATCH)));
+      break;
+
+    case RegSize_32:
+      m_emit->Str(GetHostReg32(value_in_hr), a64::MemOperand(GetHostReg64(RSCRATCH)));
+      break;
+
+    default:
+      UnreachableCode();
+      break;
+  }
 }
 
 void CodeGenerator::EmitFlushInterpreterLoadDelay()

@@ -1738,6 +1738,23 @@ void CodeGenerator::EmitAddCPUStructField(u32 offset, const Value& value)
 
 Value CodeGenerator::EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const Value& address, RegSize size)
 {
+  if (address.IsConstant())
+  {
+    TickCount read_ticks;
+    void* ptr = GetDirectReadMemoryPointer(
+      static_cast<u32>(address.constant_value),
+      (size == RegSize_8) ? MemoryAccessSize::Byte :
+                            ((size == RegSize_16) ? MemoryAccessSize::HalfWord : MemoryAccessSize::Word),
+      &read_ticks);
+    if (ptr)
+    {
+      Value result = m_register_cache.AllocateScratch(size);
+      EmitLoadGlobal(result.GetHostRegister(), size, ptr);
+      m_delayed_cycles_add += read_ticks;
+      return result;
+    }
+  }
+
   AddPendingCycles(true);
 
   if (g_settings.cpu_recompiler_memory_exceptions)
@@ -1858,6 +1875,19 @@ Value CodeGenerator::EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const 
 
 void CodeGenerator::EmitStoreGuestMemory(const CodeBlockInstruction& cbi, const Value& address, const Value& value)
 {
+  if (address.IsConstant())
+  {
+    void* ptr = GetDirectWriteMemoryPointer(
+      static_cast<u32>(address.constant_value),
+      (value.size == RegSize_8) ? MemoryAccessSize::Byte :
+                                  ((value.size == RegSize_16) ? MemoryAccessSize::HalfWord : MemoryAccessSize::Word));
+    if (ptr)
+    {
+      EmitStoreGlobal(ptr, value);
+      return;
+    }
+  }
+
   AddPendingCycles(true);
 
   if (g_settings.cpu_recompiler_memory_exceptions)

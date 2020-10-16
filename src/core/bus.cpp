@@ -22,6 +22,11 @@ Log_SetChannel(Bus);
 
 namespace Bus {
 
+enum : TickCount
+{
+  RAM_READ_TICKS = 4
+};
+
 union MEMDELAY
 {
   u32 bits;
@@ -288,7 +293,7 @@ ALWAYS_INLINE static TickCount DoRAMAccess(u32 offset, u32& value)
     }
   }
 
-  return (type == MemoryAccessType::Read) ? 4 : 0;
+  return (type == MemoryAccessType::Read) ? RAM_READ_TICKS : 0;
 }
 
 template<MemoryAccessType type, MemoryAccessSize size>
@@ -753,7 +758,7 @@ ALWAYS_INLINE_RELEASE void DoInstructionRead(PhysicalMemoryAddress address, void
   {
     std::memcpy(data, &g_ram[address & RAM_MASK], sizeof(u32) * word_count);
     if constexpr (add_ticks)
-      g_state.pending_ticks += (icache_read ? 1 : 4) * word_count;
+      g_state.pending_ticks += (icache_read ? 1 : RAM_READ_TICKS) * word_count;
   }
   else if (address >= BIOS_BASE && address < (BIOS_BASE + BIOS_SIZE))
   {
@@ -776,7 +781,7 @@ TickCount GetInstructionReadTicks(VirtualMemoryAddress address)
 
   if (address < RAM_MIRROR_END)
   {
-    return 4;
+    return RAM_READ_TICKS;
   }
   else if (address >= BIOS_BASE && address < (BIOS_BASE + BIOS_SIZE))
   {
@@ -1305,6 +1310,64 @@ bool SafeWriteMemoryHalfWord(VirtualMemoryAddress addr, u16 value)
 bool SafeWriteMemoryWord(VirtualMemoryAddress addr, u32 value)
 {
   return DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Word>(addr, value) >= 0;
+}
+
+void* GetDirectReadMemoryPointer(VirtualMemoryAddress address, MemoryAccessSize size, TickCount* read_ticks)
+{
+  using namespace Bus;
+
+  const u32 seg = (address >> 29);
+  if (seg != 0 && seg != 4 && seg != 5)
+    return nullptr;
+
+  const PhysicalMemoryAddress paddr = address & PHYSICAL_MEMORY_ADDRESS_MASK;
+  if (paddr < RAM_MIRROR_END)
+  {
+    if (read_ticks)
+      *read_ticks = RAM_READ_TICKS;
+
+    return &g_ram[paddr & RAM_MASK];
+  }
+
+  if ((paddr & DCACHE_LOCATION_MASK) == DCACHE_LOCATION)
+  {
+    if (read_ticks)
+      *read_ticks = 0;
+
+    return &g_state.dcache[paddr & DCACHE_OFFSET_MASK];
+  }
+
+  if (paddr >= BIOS_BASE && paddr < (BIOS_BASE + BIOS_SIZE))
+  {
+    if (read_ticks)
+      *read_ticks = m_bios_access_time[static_cast<u32>(size)];
+
+    return &g_bios[paddr & BIOS_MASK];
+  }
+
+  return nullptr;
+}
+
+void* GetDirectWriteMemoryPointer(VirtualMemoryAddress address, MemoryAccessSize size)
+{
+  using namespace Bus;
+
+  const u32 seg = (address >> 29);
+  if (seg != 0 && seg != 4 && seg != 5)
+    return nullptr;
+
+  const PhysicalMemoryAddress paddr = address & PHYSICAL_MEMORY_ADDRESS_MASK;
+
+#if 0
+  // Not enabled until we can protect code regions.
+  if (paddr < RAM_MIRROR_END)
+    return &g_ram[paddr & RAM_MASK];
+#endif
+
+  if ((paddr & DCACHE_LOCATION_MASK) == DCACHE_LOCATION)
+    return &g_state.dcache[paddr & DCACHE_OFFSET_MASK];
+
+  return nullptr;
 }
 
 namespace Recompiler::Thunks {

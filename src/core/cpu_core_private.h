@@ -1,5 +1,6 @@
 #pragma once
 #include "cpu_core.h"
+#include "bus.h"
 
 namespace CPU {
 
@@ -72,5 +73,7 @@ bool ReadMemoryWord(VirtualMemoryAddress addr, u32* value);
 bool WriteMemoryByte(VirtualMemoryAddress addr, u8 value);
 bool WriteMemoryHalfWord(VirtualMemoryAddress addr, u16 value);
 bool WriteMemoryWord(VirtualMemoryAddress addr, u32 value);
+void* GetDirectReadMemoryPointer(VirtualMemoryAddress address, MemoryAccessSize size, TickCount* read_ticks);
+void* GetDirectWriteMemoryPointer(VirtualMemoryAddress address, MemoryAccessSize size);
 
 } // namespace CPU
