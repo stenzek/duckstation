@@ -689,150 +689,6 @@ void SPU::IncrementCaptureBufferPosition()
   m_SPUSTAT.second_half_capture_buffer = m_capture_buffer_position >= (CAPTURE_BUFFER_SIZE_PER_CHANNEL / 2);
 }
 
-void SPU::Execute(TickCount ticks)
-{
-  u32 remaining_frames;
-  if (g_settings.cpu_overclock_active)
-  {
-    // (X * D) / N / 768 -> (X * D) / (N * 768)
-    const u64 num = (static_cast<u64>(ticks) * g_settings.cpu_overclock_denominator) + static_cast<u32>(m_ticks_carry);
-    remaining_frames = static_cast<u32>(num / m_cpu_tick_divider);
-    m_ticks_carry = static_cast<TickCount>(num % m_cpu_tick_divider);
-  }
-  else
-  {
-    remaining_frames = static_cast<u32>((ticks + m_ticks_carry) / SYSCLK_TICKS_PER_SPU_TICK);
-    m_ticks_carry = (ticks + m_ticks_carry) % SYSCLK_TICKS_PER_SPU_TICK;
-  }
-
-  while (remaining_frames > 0)
-  {
-    AudioStream* const output_stream = g_host_interface->GetAudioStream();
-    s16* output_frame_start;
-    u32 output_frame_space = remaining_frames;
-    output_stream->BeginWrite(&output_frame_start, &output_frame_space);
-
-    s16* output_frame = output_frame_start;
-    const u32 frames_in_this_batch = std::min(remaining_frames, output_frame_space);
-    for (u32 i = 0; i < frames_in_this_batch; i++)
-    {
-      s32 left_sum = 0;
-      s32 right_sum = 0;
-      s32 reverb_in_left = 0;
-      s32 reverb_in_right = 0;
-
-      u32 key_on_register = m_key_on_register;
-      m_key_on_register = 0;
-      u32 key_off_register = m_key_off_register;
-      m_key_off_register = 0;
-      u32 reverb_on_register = m_reverb_on_register;
-
-      for (u32 voice = 0; voice < NUM_VOICES; voice++)
-      {
-        const auto [left, right] = SampleVoice(voice);
-        left_sum += left;
-        right_sum += right;
-
-        if (reverb_on_register & 1u)
-        {
-          reverb_in_left += left;
-          reverb_in_right += right;
-        }
-        reverb_on_register >>= 1;
-
-        if (key_off_register & 1u)
-          m_voices[voice].KeyOff();
-        key_off_register >>= 1;
-
-        if (key_on_register & 1u)
-        {
-          m_endx_register &= ~(1u << voice);
-          m_voices[voice].KeyOn();
-        }
-        key_on_register >>= 1;
-      }
-
-      if (!m_SPUCNT.mute_n)
-      {
-        left_sum = 0;
-        right_sum = 0;
-      }
-
-      // Update noise once per frame.
-      UpdateNoise();
-
-      // Mix in CD audio.
-      const auto [cd_audio_left, cd_audio_right] = g_cdrom.GetAudioFrame();
-      if (m_SPUCNT.cd_audio_enable)
-      {
-        const s32 cd_audio_volume_left = ApplyVolume(s32(cd_audio_left), m_cd_audio_volume_left);
-        const s32 cd_audio_volume_right = ApplyVolume(s32(cd_audio_right), m_cd_audio_volume_right);
-
-        left_sum += cd_audio_volume_left;
-        right_sum += cd_audio_volume_right;
-
-        if (m_SPUCNT.cd_audio_reverb)
-        {
-          reverb_in_left += cd_audio_volume_left;
-          reverb_in_right += cd_audio_volume_right;
-        }
-      }
-
-      // Compute reverb.
-      s32 reverb_out_left, reverb_out_right;
-      ProcessReverb(static_cast<s16>(Clamp16(reverb_in_left)), static_cast<s16>(Clamp16(reverb_in_right)),
-                    &reverb_out_left, &reverb_out_right);
-
-      // Mix in reverb.
-      left_sum += reverb_out_left;
-      right_sum += reverb_out_right;
-
-      // Apply main volume after clamping. A maximum volume should not overflow here because both are 16-bit values.
-      *(output_frame++) = static_cast<s16>(ApplyVolume(Clamp16(left_sum), m_main_volume_left.current_level));
-      *(output_frame++) = static_cast<s16>(ApplyVolume(Clamp16(right_sum), m_main_volume_right.current_level));
-      m_main_volume_left.Tick();
-      m_main_volume_right.Tick();
-
-      // Write to capture buffers.
-      WriteToCaptureBuffer(0, cd_audio_left);
-      WriteToCaptureBuffer(1, cd_audio_right);
-      WriteToCaptureBuffer(2, static_cast<s16>(Clamp16(m_voices[1].last_volume)));
-      WriteToCaptureBuffer(3, static_cast<s16>(Clamp16(m_voices[3].last_volume)));
-      IncrementCaptureBufferPosition();
-    }
-
-    if (m_dump_writer)
-      m_dump_writer->WriteFrames(output_frame_start, frames_in_this_batch);
-
-    output_stream->EndWrite(frames_in_this_batch);
-    remaining_frames -= frames_in_this_batch;
-  }
-}
-
-void SPU::UpdateEventInterval()
-{
-  // Don't generate more than the audio buffer since in a single slice, otherwise we'll both overflow the buffers when
-  // we do write it, and the audio thread will underflow since it won't have enough data it the game isn't messing with
-  // the SPU state.
-  const u32 max_slice_frames = g_host_interface->GetAudioStream()->GetBufferSize();
-
-  // TODO: Make this predict how long until the interrupt will be hit instead...
-  const u32 interval = (m_SPUCNT.enable && m_SPUCNT.irq9_enable) ? 1 : max_slice_frames;
-  const TickCount interval_ticks = static_cast<TickCount>(interval) * m_cpu_ticks_per_spu_tick;
-  if (m_tick_event->IsActive() && m_tick_event->GetInterval() == interval_ticks)
-    return;
-
-  // Ensure all pending ticks have been executed, since we won't get them back after rescheduling.
-  m_tick_event->InvokeEarly(true);
-  m_tick_event->SetInterval(interval_ticks);
-
-  TickCount downcount = interval_ticks;
-  if (!g_settings.cpu_overclock_active)
-    downcount -= m_ticks_carry;
-
-  m_tick_event->Schedule(downcount);
-}
-
 void SPU::ExecuteTransfer(TickCount ticks)
 {
   const RAMTransferMode mode = m_SPUCNT.ram_transfer_mode;
@@ -1442,7 +1298,7 @@ void SPU::ReadADPCMBlock(u16 address, ADPCMBlock* block)
   }
 }
 
-std::tuple<s32, s32> SPU::SampleVoice(u32 voice_index)
+ALWAYS_INLINE_RELEASE std::tuple<s32, s32> SPU::SampleVoice(u32 voice_index)
 {
   Voice& voice = m_voices[voice_index];
   if (!voice.IsOn() && !m_SPUCNT.irq9_enable)
@@ -1762,6 +1618,150 @@ void SPU::ProcessReverb(s16 left_in, s16 right_in, s32* left_out, s32* right_out
 
   s_last_reverb_output[0] = *left_out = ApplyVolume(out[0], m_reverb_registers.vLOUT);
   s_last_reverb_output[1] = *right_out = ApplyVolume(out[1], m_reverb_registers.vROUT);
+}
+
+void SPU::Execute(TickCount ticks)
+{
+  u32 remaining_frames;
+  if (g_settings.cpu_overclock_active)
+  {
+    // (X * D) / N / 768 -> (X * D) / (N * 768)
+    const u64 num = (static_cast<u64>(ticks) * g_settings.cpu_overclock_denominator) + static_cast<u32>(m_ticks_carry);
+    remaining_frames = static_cast<u32>(num / m_cpu_tick_divider);
+    m_ticks_carry = static_cast<TickCount>(num % m_cpu_tick_divider);
+  }
+  else
+  {
+    remaining_frames = static_cast<u32>((ticks + m_ticks_carry) / SYSCLK_TICKS_PER_SPU_TICK);
+    m_ticks_carry = (ticks + m_ticks_carry) % SYSCLK_TICKS_PER_SPU_TICK;
+  }
+
+  while (remaining_frames > 0)
+  {
+    AudioStream* const output_stream = g_host_interface->GetAudioStream();
+    s16* output_frame_start;
+    u32 output_frame_space = remaining_frames;
+    output_stream->BeginWrite(&output_frame_start, &output_frame_space);
+
+    s16* output_frame = output_frame_start;
+    const u32 frames_in_this_batch = std::min(remaining_frames, output_frame_space);
+    for (u32 i = 0; i < frames_in_this_batch; i++)
+    {
+      s32 left_sum = 0;
+      s32 right_sum = 0;
+      s32 reverb_in_left = 0;
+      s32 reverb_in_right = 0;
+
+      u32 key_on_register = m_key_on_register;
+      m_key_on_register = 0;
+      u32 key_off_register = m_key_off_register;
+      m_key_off_register = 0;
+      u32 reverb_on_register = m_reverb_on_register;
+
+      for (u32 voice = 0; voice < NUM_VOICES; voice++)
+      {
+        const auto [left, right] = SampleVoice(voice);
+        left_sum += left;
+        right_sum += right;
+
+        if (reverb_on_register & 1u)
+        {
+          reverb_in_left += left;
+          reverb_in_right += right;
+        }
+        reverb_on_register >>= 1;
+
+        if (key_off_register & 1u)
+          m_voices[voice].KeyOff();
+        key_off_register >>= 1;
+
+        if (key_on_register & 1u)
+        {
+          m_endx_register &= ~(1u << voice);
+          m_voices[voice].KeyOn();
+        }
+        key_on_register >>= 1;
+      }
+
+      if (!m_SPUCNT.mute_n)
+      {
+        left_sum = 0;
+        right_sum = 0;
+      }
+
+      // Update noise once per frame.
+      UpdateNoise();
+
+      // Mix in CD audio.
+      const auto [cd_audio_left, cd_audio_right] = g_cdrom.GetAudioFrame();
+      if (m_SPUCNT.cd_audio_enable)
+      {
+        const s32 cd_audio_volume_left = ApplyVolume(s32(cd_audio_left), m_cd_audio_volume_left);
+        const s32 cd_audio_volume_right = ApplyVolume(s32(cd_audio_right), m_cd_audio_volume_right);
+
+        left_sum += cd_audio_volume_left;
+        right_sum += cd_audio_volume_right;
+
+        if (m_SPUCNT.cd_audio_reverb)
+        {
+          reverb_in_left += cd_audio_volume_left;
+          reverb_in_right += cd_audio_volume_right;
+        }
+      }
+
+      // Compute reverb.
+      s32 reverb_out_left, reverb_out_right;
+      ProcessReverb(static_cast<s16>(Clamp16(reverb_in_left)), static_cast<s16>(Clamp16(reverb_in_right)),
+                    &reverb_out_left, &reverb_out_right);
+
+      // Mix in reverb.
+      left_sum += reverb_out_left;
+      right_sum += reverb_out_right;
+
+      // Apply main volume after clamping. A maximum volume should not overflow here because both are 16-bit values.
+      *(output_frame++) = static_cast<s16>(ApplyVolume(Clamp16(left_sum), m_main_volume_left.current_level));
+      *(output_frame++) = static_cast<s16>(ApplyVolume(Clamp16(right_sum), m_main_volume_right.current_level));
+      m_main_volume_left.Tick();
+      m_main_volume_right.Tick();
+
+      // Write to capture buffers.
+      WriteToCaptureBuffer(0, cd_audio_left);
+      WriteToCaptureBuffer(1, cd_audio_right);
+      WriteToCaptureBuffer(2, static_cast<s16>(Clamp16(m_voices[1].last_volume)));
+      WriteToCaptureBuffer(3, static_cast<s16>(Clamp16(m_voices[3].last_volume)));
+      IncrementCaptureBufferPosition();
+    }
+
+    if (m_dump_writer)
+      m_dump_writer->WriteFrames(output_frame_start, frames_in_this_batch);
+
+    output_stream->EndWrite(frames_in_this_batch);
+    remaining_frames -= frames_in_this_batch;
+  }
+}
+
+void SPU::UpdateEventInterval()
+{
+  // Don't generate more than the audio buffer since in a single slice, otherwise we'll both overflow the buffers when
+  // we do write it, and the audio thread will underflow since it won't have enough data it the game isn't messing with
+  // the SPU state.
+  const u32 max_slice_frames = g_host_interface->GetAudioStream()->GetBufferSize();
+
+  // TODO: Make this predict how long until the interrupt will be hit instead...
+  const u32 interval = (m_SPUCNT.enable && m_SPUCNT.irq9_enable) ? 1 : max_slice_frames;
+  const TickCount interval_ticks = static_cast<TickCount>(interval) * m_cpu_ticks_per_spu_tick;
+  if (m_tick_event->IsActive() && m_tick_event->GetInterval() == interval_ticks)
+    return;
+
+  // Ensure all pending ticks have been executed, since we won't get them back after rescheduling.
+  m_tick_event->InvokeEarly(true);
+  m_tick_event->SetInterval(interval_ticks);
+
+  TickCount downcount = interval_ticks;
+  if (!g_settings.cpu_overclock_active)
+    downcount -= m_ticks_carry;
+
+  m_tick_event->Schedule(downcount);
 }
 
 void SPU::DrawDebugStateWindow()
