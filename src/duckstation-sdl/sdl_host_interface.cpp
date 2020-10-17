@@ -863,7 +863,11 @@ void SDLHostInterface::DrawQuickSettingsMenu()
     ImGui::EndMenu();
   }
 
-  settings_changed |= ImGui::MenuItem("CPU Clock Control", nullptr, &m_settings_copy.cpu_overclock_enable);
+  if (ImGui::MenuItem("CPU Clock Control", nullptr, &m_settings_copy.cpu_overclock_enable))
+  {
+    settings_changed = true;
+    m_settings_copy.UpdateOverclockActive();
+  }
 
   if (ImGui::BeginMenu("CPU Clock Speed"))
   {
@@ -874,7 +878,8 @@ void SDLHostInterface::DrawQuickSettingsMenu()
     {
       if (ImGui::MenuItem(TinyString::FromFormat("%u%%", value), nullptr, percent == value))
       {
-        m_settings_copy.SetCPUOverclockPercent(percent);
+        m_settings_copy.SetCPUOverclockPercent(value);
+        m_settings_copy.UpdateOverclockActive();
         settings_changed = true;
       }
     }
