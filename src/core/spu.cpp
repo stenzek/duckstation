@@ -92,7 +92,6 @@ void SPU::Reset()
     v.counter.bits = 0;
     v.current_block_flags.bits = 0;
     v.current_block_samples.fill(s16(0));
-    v.previous_block_last_samples.fill(s16(0));
     v.adpcm_last_samples.fill(s32(0));
     v.adsr_envelope.Reset(0, false, false);
     v.adsr_phase = ADSRPhase::Off;
@@ -151,8 +150,8 @@ bool SPU::DoState(StateWrapper& sw)
     sw.DoArray(v.regs.index, NUM_VOICE_REGISTERS);
     sw.Do(&v.counter.bits);
     sw.Do(&v.current_block_flags.bits);
-    sw.Do(&v.current_block_samples);
-    sw.Do(&v.previous_block_last_samples);
+    sw.DoArray(&v.current_block_samples[NUM_SAMPLES_FROM_LAST_ADPCM_BLOCK], NUM_SAMPLES_PER_ADPCM_BLOCK);
+    sw.DoArray(&v.current_block_samples[0], NUM_SAMPLES_FROM_LAST_ADPCM_BLOCK);
     sw.Do(&v.adpcm_last_samples);
     sw.Do(&v.last_volume);
     sw.DoPOD(&v.left_volume);
@@ -1313,9 +1312,9 @@ void SPU::Voice::DecodeBlock(const ADPCMBlock& block)
   static constexpr std::array<s32, 5> filter_table_neg = {{0, 0, -52, -55, -60}};
 
   // store samples needed for interpolation
-  previous_block_last_samples[2] = current_block_samples[NUM_SAMPLES_PER_ADPCM_BLOCK - 1];
-  previous_block_last_samples[1] = current_block_samples[NUM_SAMPLES_PER_ADPCM_BLOCK - 2];
-  previous_block_last_samples[0] = current_block_samples[NUM_SAMPLES_PER_ADPCM_BLOCK - 3];
+  current_block_samples[2] = current_block_samples[NUM_SAMPLES_FROM_LAST_ADPCM_BLOCK + NUM_SAMPLES_PER_ADPCM_BLOCK - 1];
+  current_block_samples[1] = current_block_samples[NUM_SAMPLES_FROM_LAST_ADPCM_BLOCK + NUM_SAMPLES_PER_ADPCM_BLOCK - 2];
+  current_block_samples[0] = current_block_samples[NUM_SAMPLES_FROM_LAST_ADPCM_BLOCK + NUM_SAMPLES_PER_ADPCM_BLOCK - 3];
 
   // pre-lookup
   const u8 shift = block.GetShift();
@@ -1333,22 +1332,11 @@ void SPU::Voice::DecodeBlock(const ADPCMBlock& block)
     sample += (last_samples[1] * filter_neg) >> 6;
 
     last_samples[1] = last_samples[0];
-    current_block_samples[i] = last_samples[0] = static_cast<s16>(Clamp16(sample));
+    current_block_samples[NUM_SAMPLES_FROM_LAST_ADPCM_BLOCK + i] = last_samples[0] = static_cast<s16>(Clamp16(sample));
   }
 
   std::copy(last_samples, last_samples + countof(last_samples), adpcm_last_samples.begin());
   current_block_flags.bits = block.flags.bits;
-}
-
-s16 SPU::Voice::SampleBlock(s32 index) const
-{
-  if (index < 0)
-  {
-    DebugAssert(index >= -3);
-    return previous_block_last_samples[index + 3];
-  }
-
-  return current_block_samples[index];
 }
 
 s32 SPU::Voice::Interpolate() const
@@ -1421,12 +1409,12 @@ s32 SPU::Voice::Interpolate() const
   }};
 
   const u8 i = counter.interpolation_index;
-  const s32 s = static_cast<s32>(ZeroExtend32(counter.sample_index.GetValue()));
+  const u32 s = NUM_SAMPLES_FROM_LAST_ADPCM_BLOCK + ZeroExtend32(counter.sample_index.GetValue());
 
-  s32 out = s32(gauss[0x0FF - i]) * s32(SampleBlock(s - 3));
-  out += s32(gauss[0x1FF - i]) * s32(SampleBlock(s - 2));
-  out += s32(gauss[0x100 + i]) * s32(SampleBlock(s - 1));
-  out += s32(gauss[0x000 + i]) * s32(SampleBlock(s - 0));
+  s32 out = s32(gauss[0x0FF - i]) * s32(current_block_samples[s - 3]);
+  out += s32(gauss[0x1FF - i]) * s32(current_block_samples[s - 2]);
+  out += s32(gauss[0x100 + i]) * s32(current_block_samples[s - 1]);
+  out += s32(gauss[0x000 + i]) * s32(current_block_samples[s - 0]);
   return out >> 15;
 }
 
