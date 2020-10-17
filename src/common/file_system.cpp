@@ -1306,7 +1306,7 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
     // TODO string formatter, clean this mess..
     if (!(Flags & FILESYSTEM_FIND_RELATIVE_PATHS))
     {
-      outData.FileName = std::string(full_path);
+      outData.FileName = std::string(full_path.GetCharArray());
     }
     else
     {
