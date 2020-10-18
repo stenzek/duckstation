@@ -102,6 +102,8 @@
     <ClInclude Include="win32_progress_callback.h" />
     <ClInclude Include="make_array.h" />
     <ClInclude Include="shiftjis.h" />
+    <ClInclude Include="memory_arena.h" />
+    <ClInclude Include="page_fault_handler.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="jit_code_buffer.cpp" />
@@ -196,6 +198,8 @@
     <ClCompile Include="minizip_helpers.cpp" />
     <ClCompile Include="win32_progress_callback.cpp" />
     <ClCompile Include="shiftjis.cpp" />
+    <ClCompile Include="memory_arena.cpp" />
+    <ClCompile Include="page_fault_handler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />

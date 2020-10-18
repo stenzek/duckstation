@@ -54,6 +54,10 @@ add_library(common
   minizip_helpers.h
   null_audio_stream.cpp
   null_audio_stream.h
+  memory_arena.cpp
+  memory_arena.h
+  page_fault_handler.cpp
+  page_fault_handler.h
   rectangle.h
   progress_callback.cpp
   progress_callback.h
@@ -182,4 +186,9 @@ if(APPLE AND NOT BUILD_LIBRETRO_CORE)
     gl/context_agl.mm
     gl/context_agl.h
   )
+endif()
+
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+  # We need -lrt for shm_unlink
+  target_link_libraries(common PRIVATE rt)
 endif()

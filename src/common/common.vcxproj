@@ -90,6 +90,8 @@
     <ClInclude Include="md5_digest.h" />
     <ClInclude Include="null_audio_stream.h" />
     <ClInclude Include="progress_callback.h" />
+    <ClInclude Include="memory_arena.h" />
+    <ClInclude Include="page_fault_handler.h" />
     <ClInclude Include="rectangle.h" />
     <ClInclude Include="cd_subchannel_replacement.h" />
     <ClInclude Include="scope_guard.h" />
@@ -154,6 +156,8 @@
     <ClCompile Include="null_audio_stream.cpp" />
     <ClCompile Include="progress_callback.cpp" />
     <ClCompile Include="shiftjis.cpp" />
+    <ClCompile Include="memory_arena.cpp" />
+    <ClCompile Include="page_fault_handler.cpp" />
     <ClCompile Include="state_wrapper.cpp" />
     <ClCompile Include="cd_xa.cpp" />
     <ClCompile Include="string.cpp" />
