@@ -379,7 +379,7 @@ void RegisterCache::ReserveCalleeSavedRegisters()
 
       // can we find a paired register? (mainly for ARM)
       u32 reg_pair;
-      for (reg_pair = reg + 1; reg < HostReg_Count; reg_pair++)
+      for (reg_pair = reg + 1; reg_pair < HostReg_Count; reg_pair++)
       {
         if ((m_state.host_reg_state[reg_pair] & (HostRegState::CalleeSaved | HostRegState::CalleeSavedAllocated)) ==
             HostRegState::CalleeSaved)
