@@ -1745,6 +1745,66 @@ void CodeGenerator::EmitAddCPUStructField(u32 offset, const Value& value)
   }
 }
 
+void CodeGenerator::EmitLoadGuestRAMFastmem(const Value& address, RegSize size, Value& result)
+{
+  // can't store displacements > 0x80000000 in-line
+  const Value* actual_address = &address;
+  if (address.IsConstant() && address.constant_value >= 0x80000000)
+  {
+    actual_address = &result;
+    m_emit->mov(GetHostReg32(result.host_reg), address.constant_value);
+  }
+
+  // TODO: movsx/zx inline here
+  switch (size)
+  {
+    case RegSize_8:
+    {
+      if (actual_address->IsConstant())
+      {
+        m_emit->mov(GetHostReg8(result.host_reg),
+                    m_emit->byte[GetFastmemBasePtrReg() + actual_address->constant_value]);
+      }
+      else
+      {
+        m_emit->mov(GetHostReg8(result.host_reg),
+                    m_emit->byte[GetFastmemBasePtrReg() + GetHostReg64(actual_address->host_reg)]);
+      }
+    }
+    break;
+
+    case RegSize_16:
+    {
+      if (actual_address->IsConstant())
+      {
+        m_emit->mov(GetHostReg16(result.host_reg),
+                    m_emit->word[GetFastmemBasePtrReg() + actual_address->constant_value]);
+      }
+      else
+      {
+        m_emit->mov(GetHostReg16(result.host_reg),
+                    m_emit->word[GetFastmemBasePtrReg() + GetHostReg64(actual_address->host_reg)]);
+      }
+    }
+    break;
+
+    case RegSize_32:
+    {
+      if (actual_address->IsConstant())
+      {
+        m_emit->mov(GetHostReg32(result.host_reg),
+                    m_emit->dword[GetFastmemBasePtrReg() + actual_address->constant_value]);
+      }
+      else
+      {
+        m_emit->mov(GetHostReg32(result.host_reg),
+                    m_emit->dword[GetFastmemBasePtrReg() + GetHostReg64(actual_address->host_reg)]);
+      }
+    }
+    break;
+  }
+}
+
 void CodeGenerator::EmitLoadGuestMemoryFastmem(const CodeBlockInstruction& cbi, const Value& address, RegSize size,
                                                Value& result)
 {

@@ -284,9 +284,9 @@ void UpdateFastmemViews(bool enabled, bool isolate_cache)
     CPU::g_state.fastmem_base = m_fastmem_base;
   }
 
-  auto MapRAM = [](u32 base_address) {
+  auto MapRAM = [](u32 base_address, bool writable) {
     u8* map_address = m_fastmem_base + base_address;
-    auto view = m_memory_arena.CreateView(MEMORY_ARENA_RAM_OFFSET, RAM_SIZE, true, false, map_address);
+    auto view = m_memory_arena.CreateView(MEMORY_ARENA_RAM_OFFSET, RAM_SIZE, writable, false, map_address);
     if (!view)
     {
       Log_ErrorPrintf("Failed to map RAM at fastmem area %p (offset 0x%08X)", map_address, RAM_SIZE);
@@ -313,23 +313,23 @@ void UpdateFastmemViews(bool enabled, bool isolate_cache)
   if (!isolate_cache)
   {
     // KUSEG - cached
-    MapRAM(0x00000000);
-    //MapRAM(0x00200000);
-    //MapRAM(0x00400000);
-    //MapRAM(0x00600000);
+    MapRAM(0x00000000, !isolate_cache);
+    //MapRAM(0x00200000, !isolate_cache);
+    //MapRAM(0x00400000, !isolate_cache);
+    //MapRAM(0x00600000, !isolate_cache);
 
     // KSEG0 - cached
-    MapRAM(0x80000000);
-    //MapRAM(0x80200000);
-    //MapRAM(0x80400000);
-    //MapRAM(0x80600000);
+    MapRAM(0x80000000, !isolate_cache);
+    //MapRAM(0x80200000, !isolate_cache);
+    //MapRAM(0x80400000, !isolate_cache);
+    //MapRAM(0x80600000, !isolate_cache);
   }
 
   // KSEG1 - uncached
-  MapRAM(0xA0000000);
-  //MapRAM(0xA0200000);
-  //MapRAM(0xA0400000);
-  //MapRAM(0xA0600000);
+  MapRAM(0xA0000000, true);
+  //MapRAM(0xA0200000, true);
+  //MapRAM(0xA0400000, true);
+  //MapRAM(0xA0600000, true);
 }
 
 bool CanUseFastmemForAddress(VirtualMemoryAddress address)

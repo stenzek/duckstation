@@ -1,8 +1,8 @@
+#include "common/log.h"
 #include "cpu_core.h"
 #include "cpu_core_private.h"
 #include "cpu_recompiler_code_generator.h"
 #include "settings.h"
-#include "common/log.h"
 Log_SetChannel(Recompiler::CodeGenerator);
 
 namespace CPU::Recompiler {
@@ -40,7 +40,12 @@ Value CodeGenerator::EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const 
     if (ptr)
     {
       Value result = m_register_cache.AllocateScratch(size);
-      EmitLoadGlobal(result.GetHostRegister(), size, ptr);
+
+      if (g_settings.IsUsingFastmem() && Bus::IsRAMAddress(static_cast<u32>(address.constant_value)))
+        EmitLoadGuestRAMFastmem(address, size, result);
+      else
+        EmitLoadGlobal(result.GetHostRegister(), size, ptr);
+
       m_delayed_cycles_add += read_ticks;
       return result;
     }

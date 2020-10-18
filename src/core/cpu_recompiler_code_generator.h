@@ -79,6 +79,7 @@ public:
   // Automatically generates an exception handler.
   Value EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const Value& address, const SpeculativeValue& address_spec,
                             RegSize size);
+  void EmitLoadGuestRAMFastmem(const Value& address, RegSize size, Value& result);
   void EmitLoadGuestMemoryFastmem(const CodeBlockInstruction& cbi, const Value& address, RegSize size, Value& result);
   void EmitLoadGuestMemorySlowmem(const CodeBlockInstruction& cbi, const Value& address, RegSize size, Value& result,
                                   bool in_far_code);

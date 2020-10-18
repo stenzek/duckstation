@@ -1281,6 +1281,39 @@ void CodeGenerator::EmitAddCPUStructField(u32 offset, const Value& value)
   }
 }
 
+void CodeGenerator::EmitLoadGuestRAMFastmem(const Value& address, RegSize size, Value& result)
+{
+  a64::MemOperand actual_address;
+  if (address.IsConstant())
+  {
+    m_emit->Mov(GetHostReg32(result.host_reg), address.constant_value);
+    actual_address = a64::MemOperand(GetFastmemBasePtrReg(), GetHostReg32(result.host_reg));
+  }
+  else
+  {
+    actual_address = a64::MemOperand(GetFastmemBasePtrReg(), GetHostReg32(address));
+  }
+
+  switch (size)
+  {
+  case RegSize_8:
+    m_emit->Ldrb(GetHostReg32(result.host_reg), actual_address);
+    break;
+
+  case RegSize_16:
+    m_emit->Ldrh(GetHostReg32(result.host_reg), actual_address);
+    break;
+
+  case RegSize_32:
+    m_emit->Ldr(GetHostReg32(result.host_reg), actual_address);
+    break;
+
+  default:
+    UnreachableCode();
+    break;
+  }
+}
+
 void CodeGenerator::EmitLoadGuestMemoryFastmem(const CodeBlockInstruction& cbi, const Value& address, RegSize size,
                                                Value& result)
 {
