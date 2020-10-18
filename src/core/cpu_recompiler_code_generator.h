@@ -23,7 +23,9 @@ public:
   static const char* GetHostRegName(HostReg reg, RegSize size = HostPointerSize);
   static void AlignCodeBuffer(JitCodeBuffer* code_buffer);
 
-  bool CompileBlock(const CodeBlock* block, CodeBlock::HostCodePointer* out_host_code, u32* out_host_code_size);
+  static bool BackpatchLoadStore(const LoadStoreBackpatchInfo& lbi);
+
+  bool CompileBlock(CodeBlock* block, CodeBlock::HostCodePointer* out_host_code, u32* out_host_code_size);
 
   CodeCache::DispatcherFunction CompileDispatcher();
   CodeCache::SingleBlockDispatcherFunction CompileSingleBlockDispatcher();
@@ -74,7 +76,11 @@ public:
 
   // Automatically generates an exception handler.
   Value EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const Value& address, RegSize size);
+  void EmitLoadGuestMemoryFastmem(const CodeBlockInstruction& cbi, const Value& address, RegSize size, Value& result);
+  void EmitLoadGuestMemorySlowmem(const CodeBlockInstruction& cbi, const Value& address, RegSize size, Value& result, bool in_far_code);
   void EmitStoreGuestMemory(const CodeBlockInstruction& cbi, const Value& address, const Value& value);
+  void EmitStoreGuestMemoryFastmem(const CodeBlockInstruction& cbi, const Value& address, const Value& value);
+  void EmitStoreGuestMemorySlowmem(const CodeBlockInstruction& cbi, const Value& address, const Value& value, bool in_far_code);
 
   // Unconditional branch to pointer. May allocate a scratch register.
   void EmitBranch(const void* address, bool allow_scratch = true);
@@ -208,9 +214,10 @@ private:
   bool Compile_cop2(const CodeBlockInstruction& cbi);
 
   JitCodeBuffer* m_code_buffer;
-  const CodeBlock* m_block = nullptr;
+  CodeBlock* m_block = nullptr;
   const CodeBlockInstruction* m_block_start = nullptr;
   const CodeBlockInstruction* m_block_end = nullptr;
+  const CodeBlockInstruction* m_current_instruction = nullptr;
   RegisterCache m_register_cache;
   CodeEmitter m_near_emitter;
   CodeEmitter m_far_emitter;

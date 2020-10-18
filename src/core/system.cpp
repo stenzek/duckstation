@@ -506,6 +506,9 @@ bool RecreateGPU(GPURenderer renderer)
     return false;
   }
 
+  // reinitialize the code cache because the address space could change
+  CPU::CodeCache::Reinitialize();
+
   if (state_valid)
   {
     state_stream->SeekAbsolute(0);
@@ -728,14 +731,17 @@ bool Initialize(bool force_software_renderer)
   TimingEvents::Initialize();
 
   CPU::Initialize();
-  CPU::CodeCache::Initialize(g_settings.cpu_execution_mode == CPUExecutionMode::Recompiler);
-  Bus::Initialize();
+
+  if (!Bus::Initialize())
+    return false;
 
   if (!CreateGPU(force_software_renderer ? GPURenderer::Software : g_settings.gpu_renderer))
     return false;
 
-  g_dma.Initialize();
+  // CPU code cache must happen after GPU, because it might steal our address space.
+  CPU::CodeCache::Initialize();
 
+  g_dma.Initialize();
   g_interrupt_controller.Initialize();
 
   g_cdrom.Initialize();

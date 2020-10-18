@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cstring>
 #include <mutex>
+#include <vector>
 Log_SetChannel(Common::PageFaultHandler);
 
 #if defined(WIN32)

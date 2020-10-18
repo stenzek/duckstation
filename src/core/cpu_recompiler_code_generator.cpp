@@ -19,8 +19,7 @@ u32 CodeGenerator::CalculateRegisterOffset(Reg reg)
   return u32(offsetof(State, regs.r[0]) + (static_cast<u32>(reg) * sizeof(u32)));
 }
 
-bool CodeGenerator::CompileBlock(const CodeBlock* block, CodeBlock::HostCodePointer* out_host_code,
-                                 u32* out_host_code_size)
+bool CodeGenerator::CompileBlock(CodeBlock* block, CodeBlock::HostCodePointer* out_host_code, u32* out_host_code_size)
 {
   // TODO: Align code buffer.
 
@@ -40,8 +39,10 @@ bool CodeGenerator::CompileBlock(const CodeBlock* block, CodeBlock::HostCodePoin
     Log_DebugPrintf("Compiling instruction '%s'", disasm.GetCharArray());
 #endif
 
+    m_current_instruction = cbi;
     if (!CompileInstruction(*cbi))
     {
+      m_current_instruction = nullptr;
       m_block_end = nullptr;
       m_block_start = nullptr;
       m_block = nullptr;
@@ -60,6 +61,7 @@ bool CodeGenerator::CompileBlock(const CodeBlock* block, CodeBlock::HostCodePoin
 
   DebugAssert(m_register_cache.GetUsedHostRegisters() == 0);
 
+  m_current_instruction = nullptr;
   m_block_end = nullptr;
   m_block_start = nullptr;
   m_block = nullptr;
@@ -1912,7 +1914,22 @@ bool CodeGenerator::Compile_cop0(const CodeBlockInstruction& cbi)
               value = AndValues(value, Value::FromConstantU32(write_mask));
             }
 
-            EmitStoreCPUStructField(offset, value);
+            // changing SR[Isc] needs to update fastmem views
+            if (reg == Cop0Reg::SR && g_settings.cpu_fastmem)
+            {
+              LabelType skip_fastmem_update;
+              Value old_value = m_register_cache.AllocateScratch(RegSize_32);
+              EmitLoadCPUStructField(old_value.host_reg, RegSize_32, offset);
+              EmitStoreCPUStructField(offset, value);
+              EmitXor(old_value.host_reg, old_value.host_reg, value);
+              EmitBranchIfBitClear(old_value.host_reg, RegSize_32, 16, &skip_fastmem_update);
+              EmitFunctionCall(nullptr, &Thunks::UpdateFastmemMapping, m_register_cache.GetCPUPtr());
+              EmitBindLabel(&skip_fastmem_update);
+            }
+            else
+            {
+              EmitStoreCPUStructField(offset, value);
+            }
           }
         }
 

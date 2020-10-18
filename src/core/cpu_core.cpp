@@ -1,4 +1,5 @@
 #include "cpu_core.h"
+#include "bus.h"
 #include "common/align.h"
 #include "common/file_system.h"
 #include "common/log.h"
@@ -1561,6 +1562,11 @@ bool InterpretInstructionPGXP()
 {
   ExecuteInstruction<PGXPMode::Memory>();
   return g_state.exception_raised;
+}
+
+void UpdateFastmemMapping()
+{
+  Bus::UpdateFastmemViews(true, g_state.cop0_regs.sr.Isc);
 }
 
 } // namespace Recompiler::Thunks

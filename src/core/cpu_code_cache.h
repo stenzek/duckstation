@@ -2,11 +2,17 @@
 #include "bus.h"
 #include "common/bitfield.h"
 #include "common/jit_code_buffer.h"
+#include "common/page_fault_handler.h"
 #include "cpu_types.h"
 #include <array>
+#include <map>
 #include <memory>
 #include <unordered_map>
 #include <vector>
+
+#ifdef WITH_RECOMPILER
+#include "cpu_recompiler_types.h"
+#endif
 
 namespace CPU {
 
@@ -71,6 +77,12 @@ struct CodeBlock
 
   TickCount uncached_fetch_ticks = 0;
   u32 icache_line_count = 0;
+
+#ifdef WITH_RECOMPILER
+  std::vector<Recompiler::LoadStoreBackpatchInfo> loadstore_backpatch_info;
+#endif
+
+  bool contains_loadstore_instructions = false;
   bool invalidated = false;
 
   const u32 GetPC() const { return key.GetPC(); }
@@ -89,7 +101,7 @@ struct CodeBlock
 
 namespace CodeCache {
 
-void Initialize(bool use_recompiler);
+void Initialize();
 void Shutdown();
 void Execute();
 
@@ -105,7 +117,7 @@ void ExecuteRecompiler();
 void Flush();
 
 /// Changes whether the recompiler is enabled.
-void SetUseRecompiler(bool enable);
+void Reinitialize();
 
 /// Invalidates all blocks which are in the range of the specified code page.
 void InvalidateBlocksWithPageIndex(u32 page_index);

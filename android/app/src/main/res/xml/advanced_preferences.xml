@@ -41,6 +41,12 @@
             app:summary="Determines whether the CPU's instruction cache is simulated in the recompiler. Improves accuracy at a small cost to performance. If games are running too fast, try enabling this option."
             app:iconSpaceReserved="false" />
         <SwitchPreferenceCompat
+            app:key="CPU/Fastmem"
+            app:title="CPU Recompiler Fast Memory Access"
+            app:defaultValue="true"
+            app:summary="Makes guest memory access more efficient by using page faults and backpatching. Disable if it is unstable on your device."
+            app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat
             app:key="BIOS/PatchTTYEnable"
             app:title="@string/settings_console_tty_output"
             app:defaultValue="false"

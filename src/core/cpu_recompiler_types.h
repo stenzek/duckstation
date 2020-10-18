@@ -127,6 +127,16 @@ constexpr bool SHIFTS_ARE_IMPLICITLY_MASKED = false;
 
 #endif
 
+struct LoadStoreBackpatchInfo
+{
+  void* host_pc;            // pointer to instruction which will fault
+  void* host_slowmem_pc;    // pointer to slowmem callback code
+  u32 host_code_size;       // size of the fastmem load as well as the add for cycles
+  HostReg address_host_reg; // register containing the guest address to load/store
+  HostReg value_host_reg;   // register containing the source/destination
+  PhysicalMemoryAddress guest_pc;
+};
+
 } // namespace Recompiler
 
 } // namespace CPU

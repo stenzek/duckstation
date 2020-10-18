@@ -884,6 +884,7 @@ void SDLHostInterface::DrawQuickSettingsMenu()
 
   settings_changed |=
     ImGui::MenuItem("Recompiler Memory Exceptions", nullptr, &m_settings_copy.cpu_recompiler_memory_exceptions);
+  settings_changed |= ImGui::MenuItem("Recompiler Fastmem", nullptr, &m_settings_copy.cpu_fastmem);
   settings_changed |= ImGui::MenuItem("Recompiler ICache", nullptr, &m_settings_copy.cpu_recompiler_icache);
 
   ImGui::Separator();

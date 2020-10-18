@@ -129,6 +129,7 @@ void Settings::Load(SettingsInterface& si)
   UpdateOverclockActive();
   cpu_recompiler_memory_exceptions = si.GetBoolValue("CPU", "RecompilerMemoryExceptions", false);
   cpu_recompiler_icache = si.GetBoolValue("CPU", "RecompilerICache", false);
+  cpu_fastmem = si.GetBoolValue("CPU", "Fastmem", true);
 
   gpu_renderer = ParseRendererName(si.GetStringValue("GPU", "Renderer", GetRendererName(DEFAULT_GPU_RENDERER)).c_str())
                    .value_or(DEFAULT_GPU_RENDERER);
@@ -258,6 +259,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetIntValue("CPU", "OverclockDenominator", cpu_overclock_denominator);
   si.SetBoolValue("CPU", "RecompilerMemoryExceptions", cpu_recompiler_memory_exceptions);
   si.SetBoolValue("CPU", "RecompilerICache", cpu_recompiler_icache);
+  si.SetBoolValue("CPU", "Fastmem", cpu_fastmem);
 
   si.SetStringValue("GPU", "Renderer", GetRendererName(gpu_renderer));
   si.SetStringValue("GPU", "Adapter", gpu_adapter.c_str());
