@@ -113,7 +113,7 @@ public class SettingsActivity extends AppCompatActivity {
 
         @Override
         public int getItemCount() {
-            return 5;
+            return 6;
         }
     }
 }
