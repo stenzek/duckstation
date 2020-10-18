@@ -201,6 +201,8 @@ private:
   bool Compile_Shift(const CodeBlockInstruction& cbi);
   bool Compile_Load(const CodeBlockInstruction& cbi);
   bool Compile_Store(const CodeBlockInstruction& cbi);
+  bool Compile_LoadLeftRight(const CodeBlockInstruction& cbi);
+  bool Compile_StoreLeftRight(const CodeBlockInstruction& cbi);
   bool Compile_MoveHiLo(const CodeBlockInstruction& cbi);
   bool Compile_Add(const CodeBlockInstruction& cbi);
   bool Compile_Subtract(const CodeBlockInstruction& cbi);

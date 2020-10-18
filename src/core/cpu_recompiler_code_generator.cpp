@@ -88,6 +88,16 @@ bool CodeGenerator::CompileInstruction(const CodeBlockInstruction& cbi)
       result = Compile_Load(cbi);
       break;
 
+    case InstructionOp::lwl:
+    case InstructionOp::lwr:
+      result = Compile_LoadLeftRight(cbi);
+      break;
+
+    case InstructionOp::swl:
+    case InstructionOp::swr:
+      result = Compile_StoreLeftRight(cbi);
+      break;
+
     case InstructionOp::sb:
     case InstructionOp::sh:
     case InstructionOp::sw:
@@ -1258,6 +1268,100 @@ bool CodeGenerator::Compile_Store(const CodeBlockInstruction& cbi)
       UnreachableCode();
       break;
   }
+
+  InstructionEpilogue(cbi);
+  return true;
+}
+
+bool CodeGenerator::Compile_LoadLeftRight(const CodeBlockInstruction& cbi)
+{
+  InstructionPrologue(cbi, 1);
+
+  Value base = m_register_cache.ReadGuestRegister(cbi.instruction.i.rs);
+  Value offset = Value::FromConstantU32(cbi.instruction.i.imm_sext32());
+  Value address = AddValues(base, offset, false);
+  base.ReleaseAndClear();
+
+  Value shift = ShlValues(AndValues(address, Value::FromConstantU32(3)), Value::FromConstantU32(3)); // * 8
+  address = AndValues(address, Value::FromConstantU32(~u32(3)));
+
+  Value mem = EmitLoadGuestMemory(cbi, address, RegSize_32);
+
+  // hack to bypass load delays
+  Value value;
+  if (cbi.instruction.i.rt == m_register_cache.GetLoadDelayRegister())
+  {
+    const Value& ld_value = m_register_cache.GetLoadDelayValue();
+    if (ld_value.IsInHostRegister())
+      value.SetHostReg(&m_register_cache, ld_value.GetHostRegister(), ld_value.size);
+    else
+      value = ld_value;
+  }
+  else
+  {
+    value = m_register_cache.ReadGuestRegister(cbi.instruction.i.rt, true, true);
+  }
+
+  if (cbi.instruction.op == InstructionOp::lwl)
+  {
+    Value lhs = AndValues(value, ShrValues(Value::FromConstantU32(0x00FFFFFF), shift));
+    mem = ShlValues(mem, SubValues(Value::FromConstantU32(24), shift, false));
+    EmitOr(mem.GetHostRegister(), mem.GetHostRegister(), lhs);
+  }
+  else
+  {
+    Value lhs = AndValues(
+      value, ShlValues(Value::FromConstantU32(0xFFFFFF00), SubValues(Value::FromConstantU32(24), shift, false)));
+    EmitShr(mem.GetHostRegister(), mem.GetHostRegister(), RegSize_32, shift);
+    EmitOr(mem.GetHostRegister(), mem.GetHostRegister(), lhs);
+  }
+
+  shift.ReleaseAndClear();
+
+  if (g_settings.gpu_pgxp_enable)
+    EmitFunctionCall(nullptr, PGXP::CPU_LW, Value::FromConstantU32(cbi.instruction.bits), mem, address);
+
+  m_register_cache.WriteGuestRegisterDelayed(cbi.instruction.i.rt, std::move(mem));
+
+  InstructionEpilogue(cbi);
+  return true;
+}
+
+bool CodeGenerator::Compile_StoreLeftRight(const CodeBlockInstruction& cbi)
+{
+  InstructionPrologue(cbi, 1);
+
+  Value base = m_register_cache.ReadGuestRegister(cbi.instruction.i.rs);
+  Value offset = Value::FromConstantU32(cbi.instruction.i.imm_sext32());
+  Value address = AddValues(base, offset, false);
+  base.ReleaseAndClear();
+
+  Value shift = ShlValues(AndValues(address, Value::FromConstantU32(3)), Value::FromConstantU32(3)); // * 8
+  address = AndValues(address, Value::FromConstantU32(~u32(3)));
+
+  Value mem = EmitLoadGuestMemory(cbi, address, RegSize_32);
+
+  Value reg = m_register_cache.ReadGuestRegister(cbi.instruction.r.rt);
+
+  if (cbi.instruction.op == InstructionOp::swl)
+  {
+    Value lhs = ShrValues(reg, SubValues(Value::FromConstantU32(24), shift, false));
+    EmitAnd(mem.GetHostRegister(), mem.GetHostRegister(), ShlValues(Value::FromConstantU32(0xFFFFFF00), shift));
+    EmitOr(mem.GetHostRegister(), mem.GetHostRegister(), lhs);
+  }
+  else
+  {
+    Value lhs = ShlValues(reg, shift);
+    mem = AndValues(mem,
+                    ShrValues(Value::FromConstantU32(0x00FFFFFF), SubValues(Value::FromConstantU32(24), shift, false)));
+    EmitOr(mem.GetHostRegister(), mem.GetHostRegister(), lhs);
+  }
+
+  shift.ReleaseAndClear();
+
+  EmitStoreGuestMemory(cbi, address, mem);
+  if (g_settings.gpu_pgxp_enable)
+    EmitFunctionCall(nullptr, PGXP::CPU_SW, Value::FromConstantU32(cbi.instruction.bits), mem, address);
 
   InstructionEpilogue(cbi);
   return true;
