@@ -2606,6 +2606,11 @@ CodeCache::DispatcherFunction CodeGenerator::CompileDispatcher()
   m_emit->L(downcount_hit);
 
   // check events then for frame done
+  EmitLoadGlobalAddress(Xbyak::Operand::RAX, TimingEvents::GetHeadEventPtr());
+  m_emit->mov(m_emit->rax, m_emit->qword[m_emit->rax]);
+  m_emit->mov(m_emit->eax, m_emit->dword[m_emit->rax + offsetof(TimingEvent, m_downcount)]);
+  m_emit->cmp(m_emit->eax, m_emit->dword[m_emit->rbp + offsetof(State, pending_ticks)]);
+  m_emit->jg(frame_done_loop);
   EmitCall(reinterpret_cast<const void*>(&TimingEvents::RunEvents));
   m_emit->jmp(frame_done_loop);
 

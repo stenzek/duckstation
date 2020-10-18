@@ -1976,6 +1976,12 @@ CodeCache::DispatcherFunction CodeGenerator::CompileDispatcher()
   m_emit->Bind(&downcount_hit);
 
   // check events then for frame done
+  m_emit->ldr(a64::w8, a64::MemOperand(GetHostReg64(RCPUPTR), offsetof(State, pending_ticks)));
+  EmitLoadGlobalAddress(9, TimingEvents::GetHeadEventPtr());
+  m_emit->ldr(a64::x9, a64::MemOperand(a64::x9));
+  m_emit->ldr(a64::w9, a64::MemOperand(a64::x9, offsetof(TimingEvent, m_downcount)));
+  m_emit->cmp(a64::w8, a64::w9);
+  m_emit->b(&frame_done_loop, a64::lt);
   EmitCall(reinterpret_cast<const void*>(&TimingEvents::RunEvents));
   m_emit->b(&frame_done_loop);
 
