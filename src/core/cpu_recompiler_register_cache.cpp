@@ -356,11 +356,30 @@ u32 RegisterCache::PopCalleeSavedRegisters(bool commit)
     DebugAssert((m_state.host_reg_state[reg] & (HostRegState::CalleeSaved | HostRegState::CalleeSavedAllocated)) ==
                 (HostRegState::CalleeSaved | HostRegState::CalleeSavedAllocated));
 
-    m_code_generator.EmitPopHostReg(reg, i - 1);
-    if (commit)
-      m_state.host_reg_state[reg] &= ~HostRegState::CalleeSavedAllocated;
-    count++;
-    i--;
+    if (i > 1)
+    {
+      const HostReg reg2 = m_state.callee_saved_order[i - 2];
+      DebugAssert((m_state.host_reg_state[reg2] & (HostRegState::CalleeSaved | HostRegState::CalleeSavedAllocated)) ==
+                  (HostRegState::CalleeSaved | HostRegState::CalleeSavedAllocated));
+
+      m_code_generator.EmitPopHostRegPair(reg2, reg, i - 1);
+      i -= 2;
+      count += 2;
+
+      if (commit)
+      {
+        m_state.host_reg_state[reg] &= ~HostRegState::CalleeSavedAllocated;
+        m_state.host_reg_state[reg2] &= ~HostRegState::CalleeSavedAllocated;
+      }
+    }
+    else
+    {
+      m_code_generator.EmitPopHostReg(reg, i - 1);
+      if (commit)
+        m_state.host_reg_state[reg] &= ~HostRegState::CalleeSavedAllocated;
+      count++;
+      i--;
+    }
   } while (i > 0);
   if (commit)
     m_state.callee_saved_order_count = 0;
