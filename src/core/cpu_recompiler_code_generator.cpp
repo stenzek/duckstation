@@ -845,8 +845,8 @@ void CodeGenerator::BlockPrologue()
 
   // we don't know the state of the last block, so assume load delays might be in progress
   // TODO: Pull load delay into register cache
-  m_current_instruction_in_branch_delay_slot_dirty = true;
-  m_branch_was_taken_dirty = true;
+  m_current_instruction_in_branch_delay_slot_dirty = g_settings.cpu_recompiler_memory_exceptions;
+  m_branch_was_taken_dirty = g_settings.cpu_recompiler_memory_exceptions;
   m_current_instruction_was_branch_taken_dirty = false;
   m_load_delay_dirty = true;
 
@@ -909,7 +909,7 @@ void CodeGenerator::InstructionPrologue(const CodeBlockInstruction& cbi, TickCou
     return;
   }
 
-  if (cbi.is_branch_delay_slot)
+  if (cbi.is_branch_delay_slot && g_settings.cpu_recompiler_memory_exceptions)
   {
     // m_current_instruction_in_branch_delay_slot = true
     EmitStoreCPUStructField(offsetof(State, current_instruction_in_branch_delay_slot), Value::FromConstantU8(1));
