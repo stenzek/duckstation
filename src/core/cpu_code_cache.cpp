@@ -35,14 +35,9 @@ alignas(Recompiler::CODE_STORAGE_ALIGNMENT) static u8
 
 static JitCodeBuffer s_code_buffer;
 
-enum : u32
-{
-  FAST_MAP_RAM_SLOT_COUNT = Bus::RAM_SIZE / 4,
-  FAST_MAP_BIOS_SLOT_COUNT = Bus::BIOS_SIZE / 4,
-  FAST_MAP_TOTAL_SLOT_COUNT = FAST_MAP_RAM_SLOT_COUNT + FAST_MAP_BIOS_SLOT_COUNT,
-};
-
 std::array<CodeBlock::HostCodePointer, FAST_MAP_TOTAL_SLOT_COUNT> s_fast_map;
+DispatcherFunction s_asm_dispatcher;
+SingleBlockDispatcherFunction s_single_block_asm_dispatcher;
 
 ALWAYS_INLINE static u32 GetFastMapIndex(u32 pc)
 {
@@ -51,6 +46,7 @@ ALWAYS_INLINE static u32 GetFastMapIndex(u32 pc)
            ((pc & Bus::RAM_MASK) >> 2);
 }
 
+static void CompileDispatcher();
 static void FastCompileBlockFunction();
 
 static void ResetFastMap()
@@ -111,6 +107,7 @@ void Initialize(bool use_recompiler)
   }
 
   ResetFastMap();
+  CompileDispatcher();
 #else
   s_use_recompiler = false;
 #endif
@@ -238,9 +235,27 @@ void Execute()
 
 #ifdef WITH_RECOMPILER
 
+void CompileDispatcher()
+{
+  {
+    Recompiler::CodeGenerator cg(&s_code_buffer);
+    s_asm_dispatcher = cg.CompileDispatcher();
+  }
+  {
+    Recompiler::CodeGenerator cg(&s_code_buffer);
+    s_single_block_asm_dispatcher = cg.CompileSingleBlockDispatcher();
+  }
+}
+
+CodeBlock::HostCodePointer* GetFastMapPointer()
+{
+  return s_fast_map.data();
+}
+
 void ExecuteRecompiler()
 {
   g_state.frame_done = false;
+#if 0
   while (!g_state.frame_done)
   {
     if (HasPendingInterrupt())
@@ -261,6 +276,9 @@ void ExecuteRecompiler()
 
     TimingEvents::RunEvents();
   }
+#else
+  s_asm_dispatcher();
+#endif
 
   // in case we switch to interpreter...
   g_state.regs.npc = g_state.regs.pc;
@@ -291,6 +309,7 @@ void Flush()
 #ifdef WITH_RECOMPILER
   s_code_buffer.Reset();
   ResetFastMap();
+  CompileDispatcher();
 #endif
 }
 
@@ -499,7 +518,7 @@ void FastCompileBlockFunction()
 {
   CodeBlock* block = LookupBlock(GetNextBlockKey());
   if (block)
-    block->host_code();
+    s_single_block_asm_dispatcher(block->host_code);
   else
     InterpretUncachedBlock();
 }

@@ -1,9 +1,12 @@
 #include "common/align.h"
+#include "common/log.h"
 #include "cpu_core.h"
 #include "cpu_core_private.h"
 #include "cpu_recompiler_code_generator.h"
 #include "cpu_recompiler_thunks.h"
 #include "settings.h"
+#include "timing_event.h"
+Log_SetChannel(Recompiler::CodeGenerator);
 
 namespace CPU::Recompiler {
 
@@ -187,10 +190,12 @@ Value CodeGenerator::GetValueInHostRegister(const Value& value, bool allow_zero_
 
 void CodeGenerator::EmitBeginBlock()
 {
+  m_register_cache.AssumeCalleeSavedRegistersAreSaved();
+
   // Store the CPU struct pointer.
   const bool cpu_reg_allocated = m_register_cache.AllocateHostReg(RCPUPTR);
   DebugAssert(cpu_reg_allocated);
-  m_emit->mov(GetCPUPtrReg(), reinterpret_cast<size_t>(&g_state));
+  // m_emit->mov(GetCPUPtrReg(), reinterpret_cast<size_t>(&g_state));
 }
 
 void CodeGenerator::EmitEndBlock()
@@ -1392,15 +1397,8 @@ void CodeGenerator::RestoreStackAfterCall(u32 adjust_size)
   m_register_cache.PopCallerSavedRegisters();
 }
 
-void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr)
+void CodeGenerator::EmitCall(const void* ptr)
 {
-  if (return_value)
-    return_value->Discard();
-
-  // shadow space allocate
-  const u32 adjust_size = PrepareStackForCall();
-
-  // actually call the function
   if (Xbyak::inner::IsInInt32(reinterpret_cast<size_t>(ptr) - reinterpret_cast<size_t>(m_emit->getCurr())))
   {
     m_emit->call(ptr);
@@ -1410,6 +1408,18 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr)
     m_emit->mov(GetHostReg64(RRETURN), reinterpret_cast<size_t>(ptr));
     m_emit->call(GetHostReg64(RRETURN));
   }
+}
+
+void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr)
+{
+  if (return_value)
+    return_value->Discard();
+
+  // shadow space allocate
+  const u32 adjust_size = PrepareStackForCall();
+
+  // actually call the function
+  EmitCall(ptr);
 
   // shadow space release
   RestoreStackAfterCall(adjust_size);
@@ -1434,15 +1444,7 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, co
   EmitCopyValue(RARG1, arg1);
 
   // actually call the function
-  if (Xbyak::inner::IsInInt32(reinterpret_cast<size_t>(ptr) - reinterpret_cast<size_t>(m_emit->getCurr())))
-  {
-    m_emit->call(ptr);
-  }
-  else
-  {
-    m_emit->mov(GetHostReg64(RRETURN), reinterpret_cast<size_t>(ptr));
-    m_emit->call(GetHostReg64(RRETURN));
-  }
+  EmitCall(ptr);
 
   // shadow space release
   RestoreStackAfterCall(adjust_size);
@@ -1468,15 +1470,7 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, co
   EmitCopyValue(RARG2, arg2);
 
   // actually call the function
-  if (Xbyak::inner::IsInInt32(reinterpret_cast<size_t>(ptr) - reinterpret_cast<size_t>(m_emit->getCurr())))
-  {
-    m_emit->call(ptr);
-  }
-  else
-  {
-    m_emit->mov(GetHostReg64(RRETURN), reinterpret_cast<size_t>(ptr));
-    m_emit->call(GetHostReg64(RRETURN));
-  }
+  EmitCall(ptr);
 
   // shadow space release
   RestoreStackAfterCall(adjust_size);
@@ -1504,15 +1498,7 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, co
   EmitCopyValue(RARG3, arg3);
 
   // actually call the function
-  if (Xbyak::inner::IsInInt32(reinterpret_cast<size_t>(ptr) - reinterpret_cast<size_t>(m_emit->getCurr())))
-  {
-    m_emit->call(ptr);
-  }
-  else
-  {
-    m_emit->mov(GetHostReg64(RRETURN), reinterpret_cast<size_t>(ptr));
-    m_emit->call(GetHostReg64(RRETURN));
-  }
+  EmitCall(ptr);
 
   // shadow space release
   RestoreStackAfterCall(adjust_size);
@@ -1541,15 +1527,7 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, co
   EmitCopyValue(RARG4, arg4);
 
   // actually call the function
-  if (Xbyak::inner::IsInInt32(reinterpret_cast<size_t>(ptr) - reinterpret_cast<size_t>(m_emit->getCurr())))
-  {
-    m_emit->call(ptr);
-  }
-  else
-  {
-    m_emit->mov(GetHostReg64(RRETURN), reinterpret_cast<size_t>(ptr));
-    m_emit->call(GetHostReg64(RRETURN));
-  }
+  EmitCall(ptr);
 
   // shadow space release
   RestoreStackAfterCall(adjust_size);
@@ -1567,8 +1545,20 @@ void CodeGenerator::EmitPushHostReg(HostReg reg, u32 position)
   m_emit->push(GetHostReg64(reg));
 }
 
+void CodeGenerator::EmitPushHostRegPair(HostReg reg, HostReg reg2, u32 position)
+{
+  m_emit->push(GetHostReg64(reg));
+  m_emit->push(GetHostReg64(reg2));
+}
+
 void CodeGenerator::EmitPopHostReg(HostReg reg, u32 position)
 {
+  m_emit->pop(GetHostReg64(reg));
+}
+
+void CodeGenerator::EmitPopHostRegPair(HostReg reg, HostReg reg2, u32 position)
+{
+  m_emit->pop(GetHostReg64(reg2));
   m_emit->pop(GetHostReg64(reg));
 }
 
@@ -2514,6 +2504,142 @@ void CodeGenerator::EmitBranchIfBitClear(HostReg reg, RegSize size, u8 bit, Labe
 void CodeGenerator::EmitBindLabel(LabelType* label)
 {
   m_emit->L(*label);
+}
+
+void CodeGenerator::EmitLoadGlobalAddress(HostReg host_reg, const void* ptr)
+{
+  const s64 displacement =
+    static_cast<s64>(reinterpret_cast<size_t>(ptr) - reinterpret_cast<size_t>(m_emit->getCurr())) + 2;
+  if (Xbyak::inner::IsInInt32(static_cast<u64>(displacement)))
+    m_emit->lea(GetHostReg64(host_reg), m_emit->dword[m_emit->rip + ptr]);
+  else
+    m_emit->mov(GetHostReg64(host_reg), reinterpret_cast<size_t>(ptr));
+}
+
+CodeCache::DispatcherFunction CodeGenerator::CompileDispatcher()
+{
+  m_register_cache.ReserveCalleeSavedRegisters();
+  const u32 stack_adjust = PrepareStackForCall();
+
+  EmitLoadGlobalAddress(Xbyak::Operand::RBP, &g_state);
+
+  Xbyak::Label frame_done_loop;
+  Xbyak::Label exit_dispatcher;
+  m_emit->L(frame_done_loop);
+
+  // if frame_done goto exit_dispatcher
+  m_emit->test(m_emit->byte[m_emit->rbp + offsetof(State, frame_done)], 1);
+  m_emit->jnz(exit_dispatcher, Xbyak::CodeGenerator::T_NEAR);
+
+  // eax <- sr
+  Xbyak::Label no_interrupt;
+  m_emit->mov(m_emit->eax, m_emit->dword[m_emit->rbp + offsetof(State, cop0_regs.sr.bits)]);
+
+  // if Iec == 0 then goto no_interrupt
+  m_emit->test(m_emit->eax, 1);
+  m_emit->jz(no_interrupt);
+
+  // sr & cause
+  m_emit->and_(m_emit->eax, m_emit->dword[m_emit->rbp + offsetof(State, cop0_regs.cause.bits)]);
+
+  // ((sr & cause) & 0xff00) == 0 goto no_interrupt
+  m_emit->test(m_emit->eax, 0xFF00);
+  m_emit->jz(no_interrupt);
+
+  // we have an interrupt
+  EmitCall(reinterpret_cast<const void*>(&DispatchInterrupt));
+
+  // no interrupt or we just serviced it
+  m_emit->L(no_interrupt);
+
+  // TimingEvents::UpdateCPUDowncount:
+  // eax <- head event->downcount
+  // downcount <- eax
+  EmitLoadGlobalAddress(Xbyak::Operand::RAX, TimingEvents::GetHeadEventPtr());
+  m_emit->mov(m_emit->rax, m_emit->qword[m_emit->rax]);
+  m_emit->mov(m_emit->eax, m_emit->dword[m_emit->rax + offsetof(TimingEvent, m_downcount)]);
+  m_emit->mov(m_emit->dword[m_emit->rbp + offsetof(State, downcount)], m_emit->eax);
+
+  // main dispatch loop
+  Xbyak::Label main_loop;
+  m_emit->align(16);
+  m_emit->L(main_loop);
+
+  // eax <- pending_ticks
+  m_emit->mov(m_emit->eax, m_emit->dword[m_emit->rbp + offsetof(State, pending_ticks)]);
+
+  // while eax < downcount
+  Xbyak::Label downcount_hit;
+  m_emit->cmp(m_emit->eax, m_emit->dword[m_emit->rbp + offsetof(State, downcount)]);
+  m_emit->jge(downcount_hit);
+
+  // time to lookup the block
+  // eax <- pc
+  m_emit->mov(m_emit->eax, m_emit->dword[m_emit->rbp + offsetof(State, regs.pc)]);
+
+  // ebx <- (pc & RAM_MASK) >> 2
+  m_emit->mov(m_emit->ebx, m_emit->eax);
+  m_emit->and_(m_emit->ebx, Bus::RAM_MASK);
+  m_emit->shr(m_emit->ebx, 2);
+
+  // ecx <- ((pc & BIOS_MASK) >> 2) + FAST_MAP_RAM_SLOT_COUNT
+  m_emit->mov(m_emit->ecx, m_emit->eax);
+  m_emit->and_(m_emit->ecx, Bus::BIOS_MASK);
+  m_emit->shr(m_emit->ecx, 2);
+  m_emit->add(m_emit->ecx, FAST_MAP_RAM_SLOT_COUNT);
+
+  // current_instruction_pc <- pc (eax)
+  m_emit->mov(m_emit->dword[m_emit->rbp + offsetof(State, current_instruction_pc)], m_emit->eax);
+
+  // if ((eax (pc) & PHYSICAL_MEMORY_ADDRESS_MASK) >= BIOS_BASE) { use ecx as index }
+  m_emit->and_(m_emit->eax, PHYSICAL_MEMORY_ADDRESS_MASK);
+  m_emit->cmp(m_emit->eax, Bus::BIOS_BASE);
+  m_emit->cmovge(m_emit->ebx, m_emit->ecx);
+
+  // ebx contains our index, rax <- fast_map[ebx * 8], rax(), continue
+  EmitLoadGlobalAddress(Xbyak::Operand::RAX, CodeCache::GetFastMapPointer());
+  m_emit->mov(m_emit->rax, m_emit->qword[m_emit->rax + m_emit->rbx * 8]);
+  m_emit->call(m_emit->rax);
+  m_emit->jmp(main_loop);
+
+  // end while
+  m_emit->L(downcount_hit);
+
+  // check events then for frame done
+  EmitCall(reinterpret_cast<const void*>(&TimingEvents::RunEvents));
+  m_emit->jmp(frame_done_loop);
+
+  // all done
+  m_emit->L(exit_dispatcher);
+  RestoreStackAfterCall(stack_adjust);
+  m_register_cache.PopCalleeSavedRegisters(true);
+  m_emit->ret();
+
+  CodeBlock::HostCodePointer ptr;
+  u32 code_size;
+  FinalizeBlock(&ptr, &code_size);
+  Log_DevPrintf("Dispatcher is %u bytes at %p", code_size, ptr);
+  return ptr;
+}
+
+CodeCache::SingleBlockDispatcherFunction CodeGenerator::CompileSingleBlockDispatcher()
+{
+  m_register_cache.ReserveCalleeSavedRegisters();
+  const u32 stack_adjust = PrepareStackForCall();
+
+  EmitLoadGlobalAddress(Xbyak::Operand::RBP, &g_state);
+
+  m_emit->call(GetHostReg64(RARG1));
+
+  RestoreStackAfterCall(stack_adjust);
+  m_register_cache.PopCalleeSavedRegisters(true);
+  m_emit->ret();
+
+  CodeBlock::HostCodePointer ptr;
+  u32 code_size;
+  FinalizeBlock(&ptr, &code_size);
+  Log_DevPrintf("Single block dispatcher is %u bytes at %p", code_size, ptr);
+  return reinterpret_cast<CodeCache::SingleBlockDispatcherFunction>(ptr);
 }
 
 } // namespace CPU::Recompiler

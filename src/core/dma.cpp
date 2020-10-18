@@ -4,6 +4,7 @@
 #include "common/log.h"
 #include "common/state_wrapper.h"
 #include "common/string_util.h"
+#include "cpu_code_cache.h"
 #include "cpu_core.h"
 #include "gpu.h"
 #include "interrupt_controller.h"
@@ -499,7 +500,7 @@ TickCount DMA::TransferDeviceToMemory(Channel channel, u32 address, u32 incremen
 
     const u32 terminator = UINT32_C(0xFFFFFF);
     std::memcpy(&ram_pointer[address], &terminator, sizeof(terminator));
-    Bus::InvalidateCodePages(address, word_count);
+    CPU::CodeCache::InvalidateCodePages(address, word_count);
     return Bus::GetDMARAMTickCount(word_count);
   }
 
@@ -547,6 +548,6 @@ TickCount DMA::TransferDeviceToMemory(Channel channel, u32 address, u32 incremen
     }
   }
 
-  Bus::InvalidateCodePages(address, word_count);
+  CPU::CodeCache::InvalidateCodePages(address, word_count);
   return Bus::GetDMARAMTickCount(word_count);
 }

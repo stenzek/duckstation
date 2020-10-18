@@ -248,6 +248,12 @@ public:
   /// Restore callee-saved registers. Call at the end of the function.
   u32 PopCalleeSavedRegisters(bool commit);
 
+  /// Preallocates caller saved registers, enabling later use without stack pushes.
+  void ReserveCalleeSavedRegisters();
+
+  /// Removes the callee-saved register flag from all registers. Call when compiling code blocks.
+  void AssumeCalleeSavedRegistersAreSaved();
+
   /// Pushes the register allocator state, use when entering branched code.
   void PushState();
 

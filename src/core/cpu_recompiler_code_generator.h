@@ -25,6 +25,9 @@ public:
 
   bool CompileBlock(const CodeBlock* block, CodeBlock::HostCodePointer* out_host_code, u32* out_host_code_size);
 
+  CodeCache::DispatcherFunction CompileDispatcher();
+  CodeCache::SingleBlockDispatcherFunction CompileSingleBlockDispatcher();
+
   //////////////////////////////////////////////////////////////////////////
   // Code Generation
   //////////////////////////////////////////////////////////////////////////
@@ -67,6 +70,7 @@ public:
   void EmitAddCPUStructField(u32 offset, const Value& value);
   void EmitLoadGlobal(HostReg host_reg, RegSize size, const void* ptr);
   void EmitStoreGlobal(void* ptr, const Value& value);
+  void EmitLoadGlobalAddress(HostReg host_reg, const void* ptr);
 
   // Automatically generates an exception handler.
   Value EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const Value& address, RegSize size);
@@ -86,6 +90,7 @@ public:
   u32 PrepareStackForCall();
   void RestoreStackAfterCall(u32 adjust_size);
 
+  void EmitCall(const void* ptr);
   void EmitFunctionCallPtr(Value* return_value, const void* ptr);
   void EmitFunctionCallPtr(Value* return_value, const void* ptr, const Value& arg1);
   void EmitFunctionCallPtr(Value* return_value, const void* ptr, const Value& arg1, const Value& arg2);
@@ -128,7 +133,9 @@ public:
 
   // Host register saving.
   void EmitPushHostReg(HostReg reg, u32 position);
+  void EmitPushHostRegPair(HostReg reg, HostReg reg2, u32 position);
   void EmitPopHostReg(HostReg reg, u32 position);
+  void EmitPopHostRegPair(HostReg reg, HostReg reg2, u32 position);
 
   // Value ops
   Value AddValues(const Value& lhs, const Value& rhs, bool set_flags);

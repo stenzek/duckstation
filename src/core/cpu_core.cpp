@@ -1381,6 +1381,7 @@ void DispatchInterrupt()
 {
   // If the instruction we're about to execute is a GTE instruction, delay dispatching the interrupt until the next
   // instruction. For some reason, if we don't do this, we end up with incorrectly sorted polygons and flickering..
+  SafeReadInstruction(g_state.regs.pc, &g_state.next_instruction.bits);
   if (g_state.next_instruction.op == InstructionOp::cop2 && !g_state.next_instruction.cop.IsCommonInstruction())
     GTE::ExecuteInstruction(g_state.next_instruction.bits);
 
