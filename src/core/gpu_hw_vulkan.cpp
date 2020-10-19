@@ -796,8 +796,7 @@ bool GPU_HW_Vulkan::CompilePipelines()
     gpbuilder.SetFragmentShader(fs);
     for (u8 depth_test = 0; depth_test < 2; depth_test++)
     {
-      gpbuilder.SetDepthState((depth_test != 0), true,
-                              (depth_test != 0) ? VK_COMPARE_OP_GREATER_OR_EQUAL : VK_COMPARE_OP_ALWAYS);
+      gpbuilder.SetDepthState(true, true, (depth_test != 0) ? VK_COMPARE_OP_GREATER_OR_EQUAL : VK_COMPARE_OP_ALWAYS);
       m_vram_write_pipelines[depth_test] = gpbuilder.Create(device, pipeline_cache, false);
       if (m_vram_write_pipelines[depth_test] == VK_NULL_HANDLE)
       {
