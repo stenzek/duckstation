@@ -971,7 +971,7 @@ void QtHostInterface::populateCheatsMenu(QMenu* menu)
   QAction* action = menu->addAction(tr("&Load Cheats..."));
   connect(action, &QAction::triggered, [this]() {
     QString filename = QFileDialog::getOpenFileName(m_main_window, tr("Select Cheat File"), QString(),
-                                                    tr("PCSXR/Libretro Cheat Files (*.cht);;All Files (*.*)"));
+                                                    tr("PCSXR/Libretro Cheat Files (*.cht *.txt);;All Files (*.*)"));
     if (!filename.isEmpty())
       loadCheatList(filename);
   });
@@ -980,7 +980,7 @@ void QtHostInterface::populateCheatsMenu(QMenu* menu)
   action->setEnabled(has_cheat_list);
   connect(action, &QAction::triggered, [this]() {
     QString filename = QFileDialog::getSaveFileName(m_main_window, tr("Select Cheat File"), QString(),
-                                                    tr("PCSXR/Libretro Cheat Files (*.cht);;All Files (*.*)"));
+                                                    tr("PCSXR Cheat Files (*.cht);;All Files (*.*)"));
     if (!filename.isEmpty())
       SaveCheatList(filename.toUtf8().constData());
   });
@@ -1050,6 +1050,28 @@ void QtHostInterface::reloadPostProcessingShaders()
   }
 
   ReloadPostProcessingShaders();
+}
+
+void QtHostInterface::executeOnEmulationThread(std::function<void()> callback, bool wait)
+{
+  if (isOnWorkerThread())
+  {
+    callback();
+    if (wait)
+      m_worker_thread_sync_execute_done.Signal();
+
+    return;
+  }
+
+  QMetaObject::invokeMethod(this, "executeOnEmulationThread", Qt::QueuedConnection,
+                            Q_ARG(std::function<void()>, callback), Q_ARG(bool, wait));
+  if (wait)
+  {
+    // don't deadlock
+    while (!m_worker_thread_sync_execute_done.TryWait(10))
+      qApp->processEvents(QEventLoop::ExcludeSocketNotifiers);
+    m_worker_thread_sync_execute_done.Reset();
+  }
 }
 
 void QtHostInterface::loadState(const QString& filename)

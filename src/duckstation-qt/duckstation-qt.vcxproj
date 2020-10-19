@@ -56,6 +56,8 @@
     <ClCompile Include="audiosettingswidget.cpp" />
     <ClCompile Include="autoupdaterdialog.cpp" />
     <ClCompile Include="biossettingswidget.cpp" />
+    <ClCompile Include="cheatmanagerdialog.cpp" />
+    <ClCompile Include="cheatcodeeditordialog.cpp" />
     <ClCompile Include="consolesettingswidget.cpp" />
     <ClCompile Include="enhancementsettingswidget.cpp" />
     <ClCompile Include="gamelistmodel.cpp" />
@@ -86,6 +88,8 @@
     <QtMoc Include="aboutdialog.h" />
     <QtMoc Include="audiosettingswidget.h" />
     <QtMoc Include="biossettingswidget.h" />
+    <QtMoc Include="cheatmanagerdialog.h" />
+    <QtMoc Include="cheatcodeeditordialog.h" />
     <QtMoc Include="controllersettingswidget.h" />
     <QtMoc Include="enhancementsettingswidget.h" />
     <QtMoc Include="memorycardsettingswidget.h" />
@@ -181,6 +185,12 @@
     <QtUi Include="memorycardeditordialog.ui">
       <FileType>Document</FileType>
     </QtUi>
+    <QtUi Include="cheatmanagerdialog.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="cheatcodeeditordialog.ui">
+      <FileType>Document</FileType>
+    </QtUi>
   </ItemGroup>
   <ItemGroup>
     <QtResource Include="resources\resources.qrc">
@@ -193,6 +203,8 @@
     <ClCompile Include="$(IntDir)moc_autoupdaterdialog.cpp" />
     <ClCompile Include="$(IntDir)moc_advancedsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_biossettingswidget.cpp" />
+    <ClCompile Include="$(IntDir)moc_cheatmanagerdialog.cpp" />
+    <ClCompile Include="$(IntDir)moc_cheatcodeeditordialog.cpp" />
     <ClCompile Include="$(IntDir)moc_consolesettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_controllersettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_enhancementsettingswidget.cpp" />

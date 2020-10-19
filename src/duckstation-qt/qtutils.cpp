@@ -12,6 +12,7 @@
 #include <QtWidgets/QScrollBar>
 #include <QtWidgets/QStyle>
 #include <QtWidgets/QTableView>
+#include <QtWidgets/QTreeView>
 #include <algorithm>
 #include <array>
 #include <map>
@@ -44,10 +45,17 @@ QWidget* GetRootWidget(QWidget* widget, bool stop_at_window_or_dialog)
   return widget;
 }
 
-void ResizeColumnsForTableView(QTableView* view, const std::initializer_list<int>& widths)
+template<typename T>
+ALWAYS_INLINE_RELEASE static void ResizeColumnsForView(T* view, const std::initializer_list<int>& widths)
 {
-  const int min_column_width = view->horizontalHeader()->minimumSectionSize();
-  const int max_column_width = view->horizontalHeader()->maximumSectionSize();
+  QHeaderView* header;
+  if constexpr (std::is_same_v<T, QTableView>)
+    header = view->horizontalHeader();
+  else
+    header = view->header();
+
+  const int min_column_width = header->minimumSectionSize();
+  const int max_column_width = header->maximumSectionSize();
   const int total_width =
     std::accumulate(widths.begin(), widths.end(), 0, [&min_column_width, &max_column_width](int a, int b) {
       return a + ((b < 0) ? 0 : std::clamp(b, min_column_width, max_column_width));
@@ -72,6 +80,16 @@ void ResizeColumnsForTableView(QTableView* view, const std::initializer_list<int
     view->setColumnWidth(column_index, width);
     column_index++;
   }
+}
+
+void ResizeColumnsForTableView(QTableView* view, const std::initializer_list<int>& widths)
+{
+  ResizeColumnsForView(view, widths);
+}
+
+void ResizeColumnsForTreeView(QTreeView* view, const std::initializer_list<int>& widths)
+{
+  ResizeColumnsForView(view, widths);
 }
 
 static const std::map<int, QString> s_qt_key_names = {

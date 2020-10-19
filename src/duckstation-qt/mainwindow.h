@@ -15,6 +15,7 @@ class QtHostInterface;
 class QtDisplayWidget;
 class AutoUpdaterDialog;
 class MemoryCardEditorDialog;
+class CheatManagerDialog;
 
 class HostDisplay;
 struct GameListEntry;
@@ -76,6 +77,7 @@ private Q_SLOTS:
   void onAboutActionTriggered();
   void onCheckForUpdatesActionTriggered();
   void onToolsMemoryCardEditorTriggered();
+  void onToolsCheatManagerTriggered();
   void onToolsOpenDataDirectoryTriggered();
 
   void onGameListEntrySelected(const GameListEntry* entry);
@@ -127,6 +129,7 @@ private:
   SettingsDialog* m_settings_dialog = nullptr;
   AutoUpdaterDialog* m_auto_updater_dialog = nullptr;
   MemoryCardEditorDialog* m_memory_card_editor_dialog = nullptr;
+  CheatManagerDialog* m_cheat_manager_dialog = nullptr;
 
   bool m_emulation_running = false;
 };

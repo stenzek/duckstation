@@ -2366,6 +2366,23 @@ bool CommonHostInterface::LoadCheatListFromGameTitle()
   return LoadCheatList(filename.c_str());
 }
 
+bool CommonHostInterface::SaveCheatList()
+{
+  if (!System::IsValid() || !System::HasCheatList())
+    return false;
+
+  const std::string filename(GetCheatFileName());
+  if (filename.empty())
+    return false;
+
+  if (!System::GetCheatList()->SaveToPCSXRFile(filename.c_str()))
+  {
+    AddFormattedOSDMessage(15.0f, TranslateString("OSDMessage", "Failed to save cheat list to '%s'"), filename.c_str());
+  }
+
+  return true;
+}
+
 bool CommonHostInterface::SaveCheatList(const char* filename)
 {
   if (!System::IsValid() || !System::HasCheatList())
@@ -2404,17 +2421,7 @@ void CommonHostInterface::SetCheatCodeState(u32 index, bool enabled, bool save_t
   }
 
   if (save_to_file)
-  {
-    const std::string filename(GetCheatFileName());
-    if (!filename.empty())
-    {
-      if (!cl->SaveToPCSXRFile(filename.c_str()))
-      {
-        AddFormattedOSDMessage(15.0f, TranslateString("OSDMessage", "Failed to save cheat list to '%s'"),
-                               filename.c_str());
-      }
-    }
-  }
+    SaveCheatList();
 }
 
 void CommonHostInterface::ApplyCheatCode(u32 index)

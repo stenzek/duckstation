@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "aboutdialog.h"
 #include "autoupdaterdialog.h"
+#include "cheatmanagerdialog.h"
 #include "common/assert.h"
 #include "core/host_display.h"
 #include "core/settings.h"
@@ -233,6 +234,12 @@ void MainWindow::onEmulationStopped()
   m_emulation_running = false;
   updateEmulationActions(false, false);
   switchToGameListView();
+
+  if (m_cheat_manager_dialog)
+  {
+    delete m_cheat_manager_dialog;
+    m_cheat_manager_dialog = nullptr;
+  }
 }
 
 void MainWindow::onEmulationPaused(bool paused)
@@ -316,6 +323,8 @@ void MainWindow::onChangeDiscFromPlaylistMenuAboutToHide()
 void MainWindow::onCheatsMenuAboutToShow()
 {
   m_ui.menuCheats->clear();
+  connect(m_ui.menuCheats->addAction(tr("Cheat Manager")), &QAction::triggered, this, &MainWindow::onToolsCheatManagerTriggered);
+  m_ui.menuCheats->addSeparator();
   m_host_interface->populateCheatsMenu(m_ui.menuCheats);
 }
 
@@ -645,6 +654,7 @@ void MainWindow::updateEmulationActions(bool starting, bool running)
   m_ui.actionViewSystemDisplay->setEnabled(starting || running);
   m_ui.menuChangeDisc->setDisabled(starting || !running);
   m_ui.menuCheats->setDisabled(starting || !running);
+  m_ui.actionCheatManager->setDisabled(starting || !running);
 
   m_ui.actionSaveState->setDisabled(starting || !running);
   m_ui.menuSaveState->setDisabled(starting || !running);
@@ -779,6 +789,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionAbout, &QAction::triggered, this, &MainWindow::onAboutActionTriggered);
   connect(m_ui.actionCheckForUpdates, &QAction::triggered, this, &MainWindow::onCheckForUpdatesActionTriggered);
   connect(m_ui.actionMemory_Card_Editor, &QAction::triggered, this, &MainWindow::onToolsMemoryCardEditorTriggered);
+  connect(m_ui.actionCheatManager, &QAction::triggered, this, &MainWindow::onToolsCheatManagerTriggered);
   connect(m_ui.actionOpenDataDirectory, &QAction::triggered, this, &MainWindow::onToolsOpenDataDirectoryTriggered);
   connect(m_ui.actionGridViewShowTitles, &QAction::triggered, m_game_list_widget, &GameListWidget::setShowCoverTitles);
   connect(m_ui.actionGridViewZoomIn, &QAction::triggered, m_game_list_widget, [this]() {
@@ -1165,6 +1176,15 @@ void MainWindow::onToolsMemoryCardEditorTriggered()
 
   m_memory_card_editor_dialog->setModal(false);
   m_memory_card_editor_dialog->show();
+}
+
+void MainWindow::onToolsCheatManagerTriggered()
+{
+  if (!m_cheat_manager_dialog)
+    m_cheat_manager_dialog = new CheatManagerDialog(this);
+
+  m_cheat_manager_dialog->setModal(false);
+  m_cheat_manager_dialog->show();
 }
 
 void MainWindow::onToolsOpenDataDirectoryTriggered()

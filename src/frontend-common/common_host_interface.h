@@ -159,6 +159,9 @@ public:
   /// Loads the cheat list for the current game title from the user directory.
   bool LoadCheatListFromGameTitle();
 
+  /// Saves the current cheat list to the game title's file.
+  bool SaveCheatList();
+
   /// Saves the current cheat list to the specified file.
   bool SaveCheatList(const char* filename);
 
