@@ -670,6 +670,15 @@ void CheatManagerDialog::updateResults()
     int row = 0;
     for (const MemoryScan::Result& res : m_scanner.GetResults())
     {
+      if (row == MAX_DISPLAYED_SCAN_RESULTS)
+      {
+        QMessageBox::information(this, tr("Memory Scan"),
+                                 tr("Memory scan found %1 addresses, but only the first %2 are displayed.")
+                                   .arg(m_scanner.GetResultCount())
+                                   .arg(MAX_DISPLAYED_SCAN_RESULTS));
+        break;
+      }
+
       m_ui.scanTable->insertRow(row);
 
       QTableWidgetItem* address_item = new QTableWidgetItem(formatHexValue(res.address));
@@ -706,6 +715,8 @@ void CheatManagerDialog::updateResultsValues()
     }
 
     row++;
+    if (row == MAX_DISPLAYED_SCAN_RESULTS)
+      break;
   }
 }
 

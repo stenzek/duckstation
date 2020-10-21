@@ -49,6 +49,11 @@ private Q_SLOTS:
   void updateScanUi();
 
 private:
+  enum : int
+  {
+    MAX_DISPLAYED_SCAN_RESULTS = 5000
+  };
+
   void setupAdditionalUi();
   void connectUi();
   void setUpdateTimerEnabled(bool enabled);
