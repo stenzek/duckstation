@@ -237,7 +237,7 @@ void LibretroHostInterface::GetSystemAVInfo(struct retro_system_av_info* info, b
   info->timing.sample_rate = static_cast<double>(AUDIO_SAMPLE_RATE);
 }
 
-void LibretroHostInterface::UpdateSystemAVInfo(bool use_resolution_scale)
+bool LibretroHostInterface::UpdateSystemAVInfo(bool use_resolution_scale)
 {
   struct retro_system_av_info avi;
   GetSystemAVInfo(&avi, use_resolution_scale);
@@ -247,7 +247,12 @@ void LibretroHostInterface::UpdateSystemAVInfo(bool use_resolution_scale)
                  avi.timing.fps);
 
   if (!g_retro_environment_callback(RETRO_ENVIRONMENT_SET_SYSTEM_AV_INFO, &avi))
+  {
     Log_ErrorPrintf("Failed to update system AV info on resolution change");
+    return false;
+  }
+
+  return true;
 }
 
 void LibretroHostInterface::UpdateGeometry()

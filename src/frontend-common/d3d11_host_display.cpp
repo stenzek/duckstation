@@ -171,6 +171,58 @@ bool D3D11HostDisplay::DownloadTexture(const void* texture_handle, u32 x, u32 y,
                                                     static_cast<u32*>(out_data));
 }
 
+static constexpr std::array<DXGI_FORMAT, static_cast<u32>(HostDisplayPixelFormat::Count)>
+  s_display_pixel_format_mapping = {{DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_FORMAT_B8G8R8A8_UNORM,
+                                     DXGI_FORMAT_B5G6R5_UNORM, DXGI_FORMAT_B5G5R5A1_UNORM}};
+
+bool D3D11HostDisplay::SupportsDisplayPixelFormat(HostDisplayPixelFormat format) const
+{
+  const DXGI_FORMAT dfmt = s_display_pixel_format_mapping[static_cast<u32>(format)];
+  if (dfmt == DXGI_FORMAT_UNKNOWN)
+    return false;
+
+  UINT support = 0;
+  const UINT required = D3D11_FORMAT_SUPPORT_TEXTURE2D | D3D11_FORMAT_SUPPORT_SHADER_SAMPLE;
+  return (SUCCEEDED(m_device->CheckFormatSupport(dfmt, &support) && ((support & required) == required)));
+}
+
+bool D3D11HostDisplay::BeginSetDisplayPixels(HostDisplayPixelFormat format, u32 width, u32 height, void** out_buffer,
+                                             u32* out_pitch)
+{
+  ClearDisplayTexture();
+
+  const DXGI_FORMAT dxgi_format = s_display_pixel_format_mapping[static_cast<u32>(format)];
+  if (m_display_pixels_texture.GetWidth() < width || m_display_pixels_texture.GetHeight() < height ||
+      m_display_pixels_texture.GetFormat() != dxgi_format)
+  {
+    if (!m_display_pixels_texture.Create(m_device.Get(), width, height, 1, dxgi_format, D3D11_BIND_SHADER_RESOURCE,
+                                         nullptr, 0, true))
+    {
+      return false;
+    }
+  }
+
+  D3D11_MAPPED_SUBRESOURCE sr;
+  HRESULT hr = m_context->Map(m_display_pixels_texture.GetD3DTexture(), 0, D3D11_MAP_WRITE_DISCARD, 0, &sr);
+  if (FAILED(hr))
+  {
+    Log_ErrorPrintf("Map pixels texture failed: %08X", hr);
+    return false;
+  }
+
+  *out_buffer = sr.pData;
+  *out_pitch = sr.RowPitch;
+
+  SetDisplayTexture(m_display_pixels_texture.GetD3DSRV(), format, m_display_pixels_texture.GetWidth(),
+                    m_display_pixels_texture.GetHeight(), 0, 0, static_cast<u32>(width), static_cast<u32>(height));
+  return true;
+}
+
+void D3D11HostDisplay::EndSetDisplayPixels()
+{
+  m_context->Unmap(m_display_pixels_texture.GetD3DTexture(), 0);
+}
+
 void D3D11HostDisplay::SetVSync(bool enabled)
 {
 #ifndef LIBRETRO

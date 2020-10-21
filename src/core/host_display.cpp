@@ -1,4 +1,5 @@
 #include "host_display.h"
+#include "common/assert.h"
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/string_util.h"
@@ -33,6 +34,53 @@ bool HostDisplay::ShouldSkipDisplayingFrame()
 
   m_last_frame_displayed_time = now;
   return false;
+}
+
+u32 HostDisplay::GetDisplayPixelFormatSize(HostDisplayPixelFormat format)
+{
+  switch (format)
+  {
+    case HostDisplayPixelFormat::RGBA8:
+    case HostDisplayPixelFormat::BGRA8:
+      return 4;
+
+    case HostDisplayPixelFormat::RGBA5551:
+    case HostDisplayPixelFormat::RGB565:
+      return 2;
+
+    default:
+      return 0;
+  }
+}
+
+bool HostDisplay::SetDisplayPixels(HostDisplayPixelFormat format, u32 width, u32 height, const void* buffer, u32 pitch)
+{
+  void* map_ptr;
+  u32 map_pitch;
+  if (!BeginSetDisplayPixels(format, width, height, &map_ptr, &map_pitch))
+    return false;
+
+  if (pitch == map_pitch)
+  {
+    std::memcpy(map_ptr, buffer, height * map_pitch);
+  }
+  else
+  {
+    const u32 copy_size = width * GetDisplayPixelFormatSize(format);
+    DebugAssert(pitch >= copy_size && map_pitch >= copy_size);
+
+    const u8* src_ptr = static_cast<const u8*>(buffer);
+    u8* dst_ptr = static_cast<u8*>(map_ptr);
+    for (u32 i = 0; i < height; i++)
+    {
+      std::memcpy(dst_ptr, src_ptr, copy_size);
+      src_ptr += pitch;
+      dst_ptr += map_pitch;
+    }
+  }
+
+  EndSetDisplayPixels();
+  return true;
 }
 
 void HostDisplay::SetSoftwareCursor(std::unique_ptr<HostDisplayTexture> texture, float scale /*= 1.0f*/)
@@ -327,7 +375,7 @@ bool HostDisplay::WriteTextureToFile(const void* texture_handle, u32 x, u32 y, u
 bool HostDisplay::WriteDisplayTextureToFile(const char* filename, bool full_resolution /* = true */,
                                             bool apply_aspect_ratio /* = true */)
 {
-  if (!m_display_texture_handle)
+  if (!m_display_texture_handle || m_display_texture_format != HostDisplayPixelFormat::RGBA8)
     return false;
 
   apply_aspect_ratio = (m_display_aspect_ratio > 0) ? apply_aspect_ratio : false;
@@ -394,7 +442,7 @@ bool HostDisplay::WriteDisplayTextureToFile(const char* filename, bool full_reso
 bool HostDisplay::WriteDisplayTextureToBuffer(std::vector<u32>* buffer, u32 resize_width /* = 0 */,
                                               u32 resize_height /* = 0 */, bool clear_alpha /* = true */)
 {
-  if (!m_display_texture_handle)
+  if (!m_display_texture_handle || m_display_texture_format != HostDisplayPixelFormat::RGBA8)
     return false;
 
   const bool flip_y = (m_display_texture_view_height < 0);

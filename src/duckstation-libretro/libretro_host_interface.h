@@ -28,6 +28,8 @@ public:
   std::string GetStringSettingValue(const char* section, const char* key, const char* default_value = "") override;
   std::string GetBIOSDirectory() override;
 
+  bool UpdateSystemAVInfo(bool use_resolution_scale);
+
   // Called by frontend
   void retro_set_environment();
   void retro_get_system_av_info(struct retro_system_av_info* info);
@@ -63,7 +65,6 @@ private:
   void UpdateControllersDigitalController(u32 index);
   void UpdateControllersAnalogController(u32 index);
   void GetSystemAVInfo(struct retro_system_av_info* info, bool use_resolution_scale);
-  void UpdateSystemAVInfo(bool use_resolution_scale);
   void UpdateGeometry();
   void UpdateLogging();
 

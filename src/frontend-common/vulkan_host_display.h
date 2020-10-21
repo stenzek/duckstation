@@ -55,6 +55,11 @@ public:
   bool DownloadTexture(const void* texture_handle, u32 x, u32 y, u32 width, u32 height, void* out_data,
                        u32 out_data_stride) override;
 
+  bool SupportsDisplayPixelFormat(HostDisplayPixelFormat format) const override;
+  bool BeginSetDisplayPixels(HostDisplayPixelFormat format, u32 width, u32 height, void** out_buffer,
+                             u32* out_pitch) override;
+  void EndSetDisplayPixels() override;
+
   virtual void SetVSync(bool enabled) override;
 
   virtual bool Render() override;
@@ -117,6 +122,7 @@ protected:
   VkSampler m_point_sampler = VK_NULL_HANDLE;
   VkSampler m_linear_sampler = VK_NULL_HANDLE;
 
+  Vulkan::Texture m_display_pixels_texture;
   Vulkan::StagingTexture m_upload_staging_texture;
   Vulkan::StagingTexture m_readback_staging_texture;
 

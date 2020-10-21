@@ -34,7 +34,7 @@ public:
   ALWAYS_INLINE operator bool() const { return static_cast<bool>(m_texture); }
 
   bool Create(ID3D11Device* device, u32 width, u32 height, u32 samples, DXGI_FORMAT format, u32 bind_flags,
-              const void* initial_data = nullptr, u32 initial_data_stride = 0);
+              const void* initial_data = nullptr, u32 initial_data_stride = 0, bool dynamic = false);
   bool Adopt(ID3D11Device* device, ComPtr<ID3D11Texture2D> texture);
 
   void Destroy();

@@ -654,15 +654,15 @@ void GPU_HW_D3D11::UpdateDisplay()
     if (IsUsingMultisampling())
     {
       UpdateVRAMReadTexture();
-      m_host_display->SetDisplayTexture(m_vram_read_texture.GetD3DSRV(), m_vram_read_texture.GetWidth(),
-                                        m_vram_read_texture.GetHeight(), 0, 0, m_vram_read_texture.GetWidth(),
-                                        m_vram_read_texture.GetHeight());
+      m_host_display->SetDisplayTexture(m_vram_read_texture.GetD3DSRV(), HostDisplayPixelFormat::RGBA8,
+                                        m_vram_read_texture.GetWidth(), m_vram_read_texture.GetHeight(), 0, 0,
+                                        m_vram_read_texture.GetWidth(), m_vram_read_texture.GetHeight());
     }
     else
     {
-      m_host_display->SetDisplayTexture(m_vram_texture.GetD3DSRV(), m_vram_texture.GetWidth(),
-                                        m_vram_texture.GetHeight(), 0, 0, m_vram_texture.GetWidth(),
-                                        m_vram_texture.GetHeight());
+      m_host_display->SetDisplayTexture(m_vram_texture.GetD3DSRV(), HostDisplayPixelFormat::RGBA8,
+                                        m_vram_texture.GetWidth(), m_vram_texture.GetHeight(), 0, 0,
+                                        m_vram_texture.GetWidth(), m_vram_texture.GetHeight());
     }
 
     m_host_display->SetDisplayParameters(VRAM_WIDTH, VRAM_HEIGHT, 0, 0, VRAM_WIDTH, VRAM_HEIGHT,
@@ -689,9 +689,9 @@ void GPU_HW_D3D11::UpdateDisplay()
              !IsUsingMultisampling() && (scaled_vram_offset_x + scaled_display_width) <= m_vram_texture.GetWidth() &&
              (scaled_vram_offset_y + scaled_display_height) <= m_vram_texture.GetHeight())
     {
-      m_host_display->SetDisplayTexture(m_vram_texture.GetD3DSRV(), m_vram_texture.GetWidth(),
-                                        m_vram_texture.GetHeight(), scaled_vram_offset_x, scaled_vram_offset_y,
-                                        scaled_display_width, scaled_display_height);
+      m_host_display->SetDisplayTexture(m_vram_texture.GetD3DSRV(), HostDisplayPixelFormat::RGBA8,
+                                        m_vram_texture.GetWidth(), m_vram_texture.GetHeight(), scaled_vram_offset_x,
+                                        scaled_vram_offset_y, scaled_display_width, scaled_display_height);
     }
     else
     {
@@ -711,9 +711,9 @@ void GPU_HW_D3D11::UpdateDisplay()
       SetViewportAndScissor(0, 0, scaled_display_width, scaled_display_height);
       DrawUtilityShader(display_pixel_shader, uniforms, sizeof(uniforms));
 
-      m_host_display->SetDisplayTexture(m_display_texture.GetD3DSRV(), m_display_texture.GetWidth(),
-                                        m_display_texture.GetHeight(), 0, 0, scaled_display_width,
-                                        scaled_display_height);
+      m_host_display->SetDisplayTexture(m_display_texture.GetD3DSRV(), HostDisplayPixelFormat::RGBA8,
+                                        m_display_texture.GetWidth(), m_display_texture.GetHeight(), 0, 0,
+                                        scaled_display_width, scaled_display_height);
 
       RestoreGraphicsAPIState();
     }

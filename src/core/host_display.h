@@ -7,6 +7,16 @@
 #include <tuple>
 #include <vector>
 
+enum class HostDisplayPixelFormat : u32
+{
+  Unknown,
+  RGBA8,
+  BGRA8,
+  RGB565,
+  RGBA5551,
+  Count
+};
+
 // An abstracted RGBA8 texture.
 class HostDisplayTexture
 {
@@ -16,6 +26,8 @@ public:
   virtual void* GetHandle() const = 0;
   virtual u32 GetWidth() const = 0;
   virtual u32 GetHeight() const = 0;
+
+  ALWAYS_INLINE HostDisplayPixelFormat GetFormat() const { return HostDisplayPixelFormat::RGBA8; }
 };
 
 // Interface to the frontend's renderer.
@@ -111,12 +123,22 @@ public:
     m_display_changed = true;
   }
 
-  void SetDisplayTexture(void* texture_handle, s32 texture_width, s32 texture_height, s32 view_x, s32 view_y,
-                         s32 view_width, s32 view_height)
+  void SetDisplayTexture(void* texture_handle, HostDisplayPixelFormat texture_format, s32 texture_width,
+                         s32 texture_height, s32 view_x, s32 view_y, s32 view_width, s32 view_height)
   {
     m_display_texture_handle = texture_handle;
+    m_display_texture_format = texture_format;
     m_display_texture_width = texture_width;
     m_display_texture_height = texture_height;
+    m_display_texture_view_x = view_x;
+    m_display_texture_view_y = view_y;
+    m_display_texture_view_width = view_width;
+    m_display_texture_view_height = view_height;
+    m_display_changed = true;
+  }
+
+  void SetDisplayTextureRect(s32 view_x, s32 view_y, s32 view_width, s32 view_height)
+  {
     m_display_texture_view_x = view_x;
     m_display_texture_view_y = view_y;
     m_display_texture_view_width = view_width;
@@ -136,6 +158,15 @@ public:
     m_display_aspect_ratio = display_aspect_ratio;
     m_display_changed = true;
   }
+
+  static u32 GetDisplayPixelFormatSize(HostDisplayPixelFormat format);
+
+  virtual bool SupportsDisplayPixelFormat(HostDisplayPixelFormat format) const = 0;
+
+  virtual bool BeginSetDisplayPixels(HostDisplayPixelFormat format, u32 width, u32 height, void** out_buffer,
+                                     u32* out_pitch) = 0;
+  virtual void EndSetDisplayPixels() = 0;
+  virtual bool SetDisplayPixels(HostDisplayPixelFormat format, u32 width, u32 height, const void* buffer, u32 pitch);
 
   void SetDisplayLinearFiltering(bool enabled) { m_display_linear_filtering = enabled; }
   void SetDisplayTopMargin(s32 height) { m_display_top_margin = height; }
@@ -201,6 +232,7 @@ protected:
   float m_display_frame_interval = 0.0f;
 
   void* m_display_texture_handle = nullptr;
+  HostDisplayPixelFormat m_display_texture_format = HostDisplayPixelFormat::Count;
   s32 m_display_texture_width = 0;
   s32 m_display_texture_height = 0;
   s32 m_display_texture_view_x = 0;

@@ -1,5 +1,7 @@
 #pragma once
+#include "common/heap_array.h"
 #include "gpu.h"
+#include "host_display.h"
 #include <array>
 #include <memory>
 #include <vector>
@@ -47,10 +49,17 @@ protected:
   //////////////////////////////////////////////////////////////////////////
   // Scanout
   //////////////////////////////////////////////////////////////////////////
-  void CopyOut15Bit(u32 src_x, u32 src_y, u32* dst_ptr, u32 dst_stride, u32 width, u32 height, bool interlaced,
+  template<HostDisplayPixelFormat display_format>
+  void CopyOut15Bit(u32 src_x, u32 src_y, u32 width, u32 height, u32 field, bool interlaced, bool interleaved);
+  void CopyOut15Bit(HostDisplayPixelFormat display_format, u32 src_x, u32 src_y, u32 width, u32 height, u32 field,
+                    bool interlaced, bool interleaved);
+
+  template<HostDisplayPixelFormat display_format>
+  void CopyOut24Bit(u32 src_x, u32 src_y, u32 skip_x, u32 width, u32 height, u32 field, bool interlaced,
                     bool interleaved);
-  void CopyOut24Bit(u32 src_x, u32 src_y, u32* dst_ptr, u32 dst_stride, u32 width, u32 height, bool interlaced,
-                    bool interleaved);
+  void CopyOut24Bit(HostDisplayPixelFormat display_format, u32 src_x, u32 src_y, u32 skip_x, u32 width, u32 height,
+                    u32 field, bool interlaced, bool interleaved);
+
   void ClearDisplay() override;
   void UpdateDisplay() override;
 
@@ -117,8 +126,8 @@ protected:
   using DrawLineFunction = void (GPU_SW::*)(const SWVertex* p0, const SWVertex* p1);
   DrawLineFunction GetDrawLineFunction(bool shading_enable, bool transparency_enable, bool dithering_enable);
 
-  std::vector<u32> m_display_texture_buffer;
-  std::unique_ptr<HostDisplayTexture> m_display_texture;
-
   std::array<u16, VRAM_WIDTH * VRAM_HEIGHT> m_vram;
+  HeapArray<u8, VRAM_WIDTH * VRAM_HEIGHT * sizeof(u32)> m_display_texture_buffer;
+  HostDisplayPixelFormat m_16bit_display_format = HostDisplayPixelFormat::RGB565;
+  HostDisplayPixelFormat m_24bit_display_format = HostDisplayPixelFormat::RGBA8;
 };
