@@ -45,16 +45,6 @@ public:
   void CopyToTexture(u32 src_x, u32 src_y, Texture& dst_texture, u32 dst_x, u32 dst_y, u32 dst_layer, u32 dst_level,
                      u32 width, u32 height);
 
-  // Maps the texture into the CPU address space, enabling it to read the contents.
-  // The Map call may not perform synchronization. If the contents of the staging texture
-  // has been updated by a CopyFromTexture call, you must call Flush() first.
-  // If persistent mapping is supported in the backend, this may be a no-op.
-  bool Map();
-
-  // Unmaps the CPU-readable copy of the texture. May be a no-op on backends which
-  // support persistent-mapped buffers.
-  void Unmap();
-
   // Flushes pending writes from the CPU to the GPU, and reads from the GPU to the CPU.
   // This may cause a command buffer flush depending on if one has occurred between the last
   // call to CopyFromTexture()/CopyToTexture() and the Flush() call.

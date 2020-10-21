@@ -169,16 +169,6 @@ void StagingTexture::CopyToTexture(u32 src_x, u32 src_y, Texture& dst_texture, u
   m_flush_fence_counter = g_vulkan_context->GetCurrentFenceCounter();
 }
 
-bool StagingTexture::Map()
-{
-  return m_staging_buffer.Map();
-}
-
-void StagingTexture::Unmap()
-{
-  return m_staging_buffer.Unmap();
-}
-
 void StagingTexture::Flush()
 {
   if (!m_needs_flush)

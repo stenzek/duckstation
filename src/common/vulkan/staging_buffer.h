@@ -37,6 +37,7 @@ public:
   ALWAYS_INLINE VkDeviceSize GetMapOffset() const { return m_map_offset; }
   ALWAYS_INLINE VkDeviceSize GetMapSize() const { return m_map_size; }
   ALWAYS_INLINE bool IsValid() const { return (m_buffer != VK_NULL_HANDLE); }
+  ALWAYS_INLINE bool IsCoherent() const { return m_coherent; }
 
   bool Map(VkDeviceSize offset = 0, VkDeviceSize size = VK_WHOLE_SIZE);
   void Unmap();
