@@ -2,6 +2,8 @@
 #include "cheatcodeeditordialog.h"
 #include "common/assert.h"
 #include "common/string_util.h"
+#include "core/bus.h"
+#include "core/cpu_core.h"
 #include "core/system.h"
 #include "qthostinterface.h"
 #include "qtutils.h"
@@ -12,6 +14,7 @@
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QTreeWidgetItemIterator>
 #include <array>
+#include <utility>
 
 static QString formatHexValue(u32 value)
 {
@@ -91,6 +94,23 @@ void CheatManagerDialog::connectUi()
     else
       address = value.toUInt(nullptr, 16);
     m_scanner.SetEndAddress(static_cast<PhysicalMemoryAddress>(address));
+  });
+  connect(m_ui.scanPresetRange, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
+    if (index == 0)
+    {
+      m_ui.scanStartAddress->setText(formatHexValue(0));
+      m_ui.scanEndAddress->setText(formatHexValue(Bus::RAM_SIZE));
+    }
+    else if (index == 1)
+    {
+      m_ui.scanStartAddress->setText(formatHexValue(CPU::DCACHE_LOCATION));
+      m_ui.scanEndAddress->setText(formatHexValue(CPU::DCACHE_LOCATION + CPU::DCACHE_SIZE));
+    }
+    else
+    {
+      m_ui.scanStartAddress->setText(formatHexValue(Bus::BIOS_BASE));
+      m_ui.scanEndAddress->setText(formatHexValue(Bus::BIOS_BASE + Bus::BIOS_SIZE));
+    }
   });
   connect(m_ui.scanNewSearch, &QPushButton::clicked, [this]() {
     m_scanner.Search();
