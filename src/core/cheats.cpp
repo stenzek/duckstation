@@ -14,6 +14,74 @@ Log_SetChannel(Cheats);
 
 using KeyValuePairVector = std::vector<std::pair<std::string, std::string>>;
 
+static bool IsValidScanAddress(PhysicalMemoryAddress address)
+{
+  if ((address & CPU::DCACHE_LOCATION_MASK) == CPU::DCACHE_LOCATION &&
+      (address & CPU::DCACHE_OFFSET_MASK) < CPU::DCACHE_SIZE)
+  {
+    return true;
+  }
+
+  address &= CPU::PHYSICAL_MEMORY_ADDRESS_MASK;
+
+  if (address < Bus::RAM_MIRROR_END)
+    return true;
+
+  if (address >= Bus::BIOS_BASE && address < (Bus::BIOS_BASE + Bus::BIOS_SIZE))
+    return true;
+
+  return false;
+}
+
+template<typename T>
+static T DoMemoryRead(PhysicalMemoryAddress address)
+{
+  T result;
+
+  if ((address & CPU::DCACHE_LOCATION_MASK) == CPU::DCACHE_LOCATION &&
+      (address & CPU::DCACHE_OFFSET_MASK) < CPU::DCACHE_SIZE)
+  {
+    std::memcpy(&result, &CPU::g_state.dcache[address & CPU::DCACHE_OFFSET_MASK], sizeof(result));
+    return result;
+  }
+
+  address &= CPU::PHYSICAL_MEMORY_ADDRESS_MASK;
+
+  if (address < Bus::RAM_MIRROR_END)
+  {
+    std::memcpy(&result, &Bus::g_ram[address & Bus::RAM_MASK], sizeof(result));
+    return result;
+  }
+
+  if (address >= Bus::BIOS_BASE && address < (Bus::BIOS_BASE + Bus::BIOS_SIZE))
+  {
+    std::memcpy(&result, &Bus::g_bios[address & Bus::BIOS_MASK], sizeof(result));
+    return result;
+  }
+
+  result = static_cast<T>(0);
+  return result;
+}
+
+template<typename T>
+static void DoMemoryWrite(PhysicalMemoryAddress address, T value)
+{
+  if ((address & CPU::DCACHE_LOCATION_MASK) == CPU::DCACHE_LOCATION &&
+      (address & CPU::DCACHE_OFFSET_MASK) < CPU::DCACHE_SIZE)
+  {
+    std::memcpy(&CPU::g_state.dcache[address & CPU::DCACHE_OFFSET_MASK], &value, sizeof(value));
+    return;
+  }
+
+  address &= CPU::PHYSICAL_MEMORY_ADDRESS_MASK;
+
+  if (address < Bus::RAM_MIRROR_END)
+  {
+    std::memcpy(&Bus::g_ram[address & Bus::RAM_MASK], &value, sizeof(value));
+    return;
+  }
+}
+
 CheatList::CheatList() = default;
 
 CheatList::~CheatList() = default;
@@ -533,65 +601,60 @@ void CheatCode::Apply() const
 
       case InstructionCode::ConstantWrite8:
       {
-        CPU::SafeWriteMemoryByte(inst.address, inst.value8);
+        DoMemoryWrite<u8>(inst.address, inst.value8);
         index++;
       }
       break;
 
       case InstructionCode::ConstantWrite16:
       {
-        CPU::SafeWriteMemoryHalfWord(inst.address, inst.value16);
+        DoMemoryWrite<u16>(inst.address, inst.value16);
         index++;
       }
       break;
 
       case InstructionCode::ScratchpadWrite16:
       {
-        CPU::SafeWriteMemoryHalfWord(CPU::DCACHE_LOCATION | (inst.address & CPU::DCACHE_OFFSET_MASK), inst.value16);
+        DoMemoryWrite<u16>(CPU::DCACHE_LOCATION | (inst.address & CPU::DCACHE_OFFSET_MASK), inst.value16);
         index++;
       }
       break;
 
       case InstructionCode::Increment16:
       {
-        u16 value = 0;
-        CPU::SafeReadMemoryHalfWord(inst.address, &value);
-        CPU::SafeWriteMemoryHalfWord(inst.address, value + inst.value16);
+        u16 value = DoMemoryRead<u16>(inst.address);
+        DoMemoryWrite<u16>(inst.address, value + inst.value16);
         index++;
       }
       break;
 
       case InstructionCode::Decrement16:
       {
-        u16 value = 0;
-        CPU::SafeReadMemoryHalfWord(inst.address, &value);
-        CPU::SafeWriteMemoryHalfWord(inst.address, value - inst.value16);
+        u16 value = DoMemoryRead<u16>(inst.address);
+        DoMemoryWrite<u16>(inst.address, value - inst.value16);
         index++;
       }
       break;
 
       case InstructionCode::Increment8:
       {
-        u8 value = 0;
-        CPU::SafeReadMemoryByte(inst.address, &value);
-        CPU::SafeWriteMemoryByte(inst.address, value + inst.value8);
+        u8 value = DoMemoryRead<u8>(inst.address);
+        DoMemoryWrite<u8>(inst.address, value + inst.value8);
         index++;
       }
       break;
 
       case InstructionCode::Decrement8:
       {
-        u8 value = 0;
-        CPU::SafeReadMemoryByte(inst.address, &value);
-        CPU::SafeWriteMemoryByte(inst.address, value - inst.value8);
+        u8 value = DoMemoryRead<u8>(inst.address);
+        DoMemoryWrite<u8>(inst.address, value - inst.value8);
         index++;
       }
       break;
 
       case InstructionCode::CompareEqual16:
       {
-        u16 value = 0;
-        CPU::SafeReadMemoryHalfWord(inst.address, &value);
+        u16 value = DoMemoryRead<u16>(inst.address);
         if (value == inst.value16)
           index++;
         else
@@ -601,8 +664,7 @@ void CheatCode::Apply() const
 
       case InstructionCode::CompareNotEqual16:
       {
-        u16 value = 0;
-        CPU::SafeReadMemoryHalfWord(inst.address, &value);
+        u16 value = DoMemoryRead<u16>(inst.address);
         if (value != inst.value16)
           index++;
         else
@@ -612,8 +674,7 @@ void CheatCode::Apply() const
 
       case InstructionCode::CompareLess16:
       {
-        u16 value = 0;
-        CPU::SafeReadMemoryHalfWord(inst.address, &value);
+        u16 value = DoMemoryRead<u16>(inst.address);
         if (value < inst.value16)
           index++;
         else
@@ -623,8 +684,7 @@ void CheatCode::Apply() const
 
       case InstructionCode::CompareGreater16:
       {
-        u16 value = 0;
-        CPU::SafeReadMemoryHalfWord(inst.address, &value);
+        u16 value = DoMemoryRead<u16>(inst.address);
         if (value > inst.value16)
           index++;
         else
@@ -634,8 +694,7 @@ void CheatCode::Apply() const
 
       case InstructionCode::CompareEqual8:
       {
-        u8 value = 0;
-        CPU::SafeReadMemoryByte(inst.address, &value);
+        u8 value = DoMemoryRead<u8>(inst.address);
         if (value == inst.value8)
           index++;
         else
@@ -645,8 +704,7 @@ void CheatCode::Apply() const
 
       case InstructionCode::CompareNotEqual8:
       {
-        u8 value = 0;
-        CPU::SafeReadMemoryByte(inst.address, &value);
+        u8 value = DoMemoryRead<u8>(inst.address);
         if (value != inst.value8)
           index++;
         else
@@ -656,8 +714,7 @@ void CheatCode::Apply() const
 
       case InstructionCode::CompareLess8:
       {
-        u8 value = 0;
-        CPU::SafeReadMemoryByte(inst.address, &value);
+        u8 value = DoMemoryRead<u8>(inst.address);
         if (value < inst.value8)
           index++;
         else
@@ -667,8 +724,7 @@ void CheatCode::Apply() const
 
       case InstructionCode::CompareGreater8:
       {
-        u8 value = 0;
-        CPU::SafeReadMemoryByte(inst.address, &value);
+        u8 value = DoMemoryRead<u8>(inst.address);
         if (value > inst.value8)
           index++;
         else
@@ -696,7 +752,7 @@ void CheatCode::Apply() const
         {
           for (u32 i = 0; i < slide_count; i++)
           {
-            CPU::SafeWriteMemoryByte(address, Truncate8(value));
+            DoMemoryWrite<u8>(address, Truncate8(value));
             address += address_increment;
             value += value_increment;
           }
@@ -705,7 +761,7 @@ void CheatCode::Apply() const
         {
           for (u32 i = 0; i < slide_count; i++)
           {
-            CPU::SafeWriteMemoryHalfWord(address, value);
+            DoMemoryWrite<u16>(address, value);
             address += address_increment;
             value += value_increment;
           }
@@ -734,9 +790,8 @@ void CheatCode::Apply() const
 
         for (u32 i = 0; i < byte_count; i++)
         {
-          u8 value = 0;
-          CPU::SafeReadMemoryByte(src_address, &value);
-          CPU::SafeWriteMemoryByte(dst_address, value);
+          u8 value = DoMemoryRead<u8>(src_address);
+          DoMemoryWrite<u8>(dst_address, value);
           src_address++;
           dst_address++;
         }
@@ -837,21 +892,6 @@ void MemoryScan::Search()
   }
 }
 
-static bool IsValidScanAddress(PhysicalMemoryAddress address)
-{
-  address &= CPU::PHYSICAL_MEMORY_ADDRESS_MASK;
-  if (address < Bus::RAM_MIRROR_END)
-    return true;
-
-  if (address >= CPU::DCACHE_LOCATION && address < (CPU::DCACHE_LOCATION + CPU::DCACHE_SIZE))
-    return true;
-
-  if (address >= Bus::BIOS_BASE && address < (Bus::BIOS_BASE + Bus::BIOS_SIZE))
-    return true;
-
-  return false;
-}
-
 void MemoryScan::SearchBytes()
 {
   for (PhysicalMemoryAddress address = m_start_address; address < m_end_address; address++)
@@ -859,8 +899,7 @@ void MemoryScan::SearchBytes()
     if (!IsValidScanAddress(address))
       continue;
 
-    u8 bvalue = 0;
-    CPU::SafeReadMemoryByte(address, &bvalue);
+    const u8 bvalue = DoMemoryRead<u8>(address);
 
     Result res;
     res.address = address;
@@ -880,8 +919,7 @@ void MemoryScan::SearchHalfwords()
     if (!IsValidScanAddress(address))
       continue;
 
-    u16 bvalue = 0;
-    CPU::SafeReadMemoryHalfWord(address, &bvalue);
+    const u16 bvalue = DoMemoryRead<u16>(address);
 
     Result res;
     res.address = address;
@@ -903,7 +941,7 @@ void MemoryScan::SearchWords()
 
     Result res;
     res.address = address;
-    CPU::SafeReadMemoryWord(address, &res.value);
+    res.value = DoMemoryRead<u32>(address);
     res.last_value = res.value;
     res.value_changed = false;
 
@@ -948,11 +986,11 @@ void MemoryScan::SetResultValue(u32 index, u32 value)
   switch (m_size)
   {
     case MemoryAccessSize::Byte:
-      CPU::SafeWriteMemoryByte(res.address, Truncate8(value));
+      DoMemoryWrite<u8>(res.address, Truncate8(value));
       break;
 
     case MemoryAccessSize::HalfWord:
-      CPU::SafeWriteMemoryHalfWord(res.address, Truncate16(value));
+      DoMemoryWrite<u16>(res.address, Truncate16(value));
       break;
 
     case MemoryAccessSize::Word:
@@ -1064,16 +1102,14 @@ void MemoryScan::Result::UpdateValue(MemoryAccessSize size, bool is_signed)
   {
     case MemoryAccessSize::Byte:
     {
-      u8 bvalue = 0;
-      CPU::SafeReadMemoryByte(address, &bvalue);
+      u8 bvalue = DoMemoryRead<u8>(address);
       value = is_signed ? SignExtend32(bvalue) : ZeroExtend32(bvalue);
     }
     break;
 
     case MemoryAccessSize::HalfWord:
     {
-      u16 bvalue = 0;
-      CPU::SafeReadMemoryHalfWord(address, &bvalue);
+      u16 bvalue = DoMemoryRead<u16>(address);
       value = is_signed ? SignExtend32(bvalue) : ZeroExtend32(bvalue);
     }
     break;
@@ -1205,15 +1241,15 @@ void MemoryWatchList::SetEntryValue(Entry* entry, u32 value)
   switch (entry->size)
   {
     case MemoryAccessSize::Byte:
-      CPU::SafeWriteMemoryByte(entry->address, Truncate8(value));
+      DoMemoryWrite<u8>(entry->address, Truncate8(value));
       break;
 
     case MemoryAccessSize::HalfWord:
-      CPU::SafeWriteMemoryHalfWord(entry->address, Truncate16(value));
+      DoMemoryWrite<u16>(entry->address, Truncate16(value));
       break;
 
     case MemoryAccessSize::Word:
-      CPU::SafeWriteMemoryWord(entry->address, value);
+      DoMemoryWrite<u32>(entry->address, value);
       break;
   }
 
@@ -1229,23 +1265,21 @@ void MemoryWatchList::UpdateEntryValue(Entry* entry)
   {
     case MemoryAccessSize::Byte:
     {
-      u8 bvalue = 0;
-      CPU::SafeReadMemoryByte(entry->address, &bvalue);
+      u8 bvalue = DoMemoryRead<u8>(entry->address);
       entry->value = entry->is_signed ? SignExtend32(bvalue) : ZeroExtend32(bvalue);
     }
     break;
 
     case MemoryAccessSize::HalfWord:
     {
-      u16 bvalue = 0;
-      CPU::SafeReadMemoryHalfWord(entry->address, &bvalue);
+      u16 bvalue = DoMemoryRead<u16>(entry->address);
       entry->value = entry->is_signed ? SignExtend32(bvalue) : ZeroExtend32(bvalue);
     }
     break;
 
     case MemoryAccessSize::Word:
     {
-      CPU::SafeReadMemoryWord(entry->address, &entry->value);
+      entry->value = DoMemoryRead<u32>(entry->address);
     }
     break;
   }
