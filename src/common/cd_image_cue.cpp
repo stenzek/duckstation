@@ -125,7 +125,13 @@ bool CDImageCueSheet::OpenAndParse(const char* filename)
       std::fseek(m_files[track_file_index].file, 0, SEEK_SET);
 
       file_size /= track_sector_size;
-      Assert(track_start < file_size);
+      if (track_start >= file_size)
+      {
+        Log_ErrorPrintf("Failed to open track %u in '%s': track start is out of range (%u vs %u)", track_num, filename,
+                        track_start, file_size);
+        return false;
+      }
+
       track_length = file_size - track_start;
     }
 
