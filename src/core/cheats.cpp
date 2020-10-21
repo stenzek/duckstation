@@ -41,8 +41,10 @@ bool CheatList::LoadFromPCSXRFile(const char* filename)
 
   char line[1024];
   std::string comments;
+  std::string group;
+  CheatCode::Type type = CheatCode::Type::Gameshark;
+  CheatCode::Activation activation = CheatCode::Activation::EndFrame;
   CheatCode current_code;
-  current_code.group = "Ungrouped";
   while (std::fgets(line, sizeof(line), fp.get()))
   {
     char* start = line;
@@ -58,6 +60,23 @@ bool CheatList::LoadFromPCSXRFile(const char* filename)
     {
       *end = '\0';
       end--;
+    }
+
+    // DuckStation metadata
+    if (StringUtil::Strncasecmp(start, "#group=", 7) == 0)
+    {
+      group = start + 7;
+      continue;
+    }
+    if (StringUtil::Strncasecmp(start, "#type=", 6) == 0)
+    {
+      type = CheatCode::ParseTypeName(start + 6).value_or(CheatCode::Type::Gameshark);
+      continue;
+    }
+    if (StringUtil::Strncasecmp(start, "#activation=", 12) == 0)
+    {
+      activation = CheatCode::ParseActivationName(start + 12).value_or(CheatCode::Activation::EndFrame);
+      continue;
     }
 
     // skip comments and empty line
@@ -78,9 +97,17 @@ bool CheatList::LoadFromPCSXRFile(const char* filename)
         m_codes.push_back(std::move(current_code));
 
       current_code = CheatCode();
-      current_code.group = "Ungrouped";
+      if (group.empty())
+        group = "Ungrouped";
+
+      current_code.group = std::move(group);
+      group = std::string();
       current_code.comments = std::move(comments);
       comments = std::string();
+      current_code.type = type;
+      type = CheatCode::Type::Gameshark;
+      current_code.activation = activation;
+      activation = CheatCode::Activation::EndFrame;
 
       if (*start == '*')
       {
@@ -113,7 +140,7 @@ bool CheatList::LoadFromPCSXRFile(const char* filename)
 
   if (current_code.Valid())
   {
-    // technically this isn't the place for end of file 
+    // technically this isn't the place for end of file
     if (!comments.empty())
       current_code.comments += comments;
     m_codes.push_back(std::move(current_code));
@@ -356,6 +383,9 @@ bool CheatList::SaveToPCSXRFile(const char* filename)
   {
     if (!cc.comments.empty())
       std::fputs(cc.comments.c_str(), fp.get());
+    std::fprintf(fp.get(), "#group=%s\n", cc.group.c_str());
+    std::fprintf(fp.get(), "#type=%s\n", CheatCode::GetTypeName(cc.type));
+    std::fprintf(fp.get(), "#activation=%s\n", CheatCode::GetActivationName(cc.activation));
     std::fprintf(fp.get(), "[%s%s]\n", cc.enabled ? "*" : "", cc.description.c_str());
     for (const CheatCode::Instruction& i : cc.instructions)
       std::fprintf(fp.get(), "%08X %04X\n", i.first, i.second);
