@@ -1023,6 +1023,9 @@ bool MemoryScan::Result::Filter(Operator op, u32 comp_value, bool is_signed) con
       return is_signed ? (static_cast<s32>(value) <= static_cast<s32>(last_value)) : (value <= last_value);
     }
 
+    case Operator::Any:
+      return true;
+
     default:
       return false;
   }

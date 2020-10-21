@@ -148,7 +148,8 @@ public:
     GreaterThanLast,
     GreaterEqualLast,
     LessThanLast,
-    LessEqualLast
+    LessEqualLast,
+    Any
   };
 
   struct Result

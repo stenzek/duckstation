@@ -315,12 +315,12 @@
                   </item>
                   <item>
                    <property name="text">
-                    <string>Equal to Previous</string>
+                    <string>Equal to Previous (Unchanged Value)</string>
                    </property>
                   </item>
                   <item>
                    <property name="text">
-                    <string>Not Equal to Previous</string>
+                    <string>Not Equal to Previous (Changed Value)</string>
                    </property>
                   </item>
                   <item>
@@ -341,6 +341,11 @@
                   <item>
                    <property name="text">
                     <string>Less or Equal to Previous</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Any Value</string>
                    </property>
                   </item>
                  </widget>
