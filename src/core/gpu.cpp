@@ -985,7 +985,7 @@ void GPU::WriteGP1(u32 value)
     }
     break;
 
-    case 0x07: // Set display start address
+    case 0x07: // Set vertical display range
     {
       const u32 new_value = param & CRTCState::Regs::VERTICAL_DISPLAY_RANGE_MASK;
       Log_DebugPrintf("Vertical display range <- 0x%08X", new_value);
@@ -1479,21 +1479,28 @@ void GPU::DrawDebugStateWindow()
     ImGui::Text("Vertical Frequency: %.3f Hz", ComputeVerticalFrequency());
     ImGui::Text("Dot Clock Divider: %u", cs.dot_clock_divider);
     ImGui::Text("Vertical Interlace: %s (%s field)", m_GPUSTAT.vertical_interlace ? "Yes" : "No",
-                m_crtc_state.interlaced_field ? "odd" : "even");
+                cs.interlaced_field ? "odd" : "even");
+    ImGui::Text("Current Scanline: %u (tick %u)", cs.current_scanline, cs.current_tick_in_scanline);
     ImGui::Text("Display Disable: %s", m_GPUSTAT.display_disable ? "Yes" : "No");
-    ImGui::Text("Displaying Odd Lines: %s", m_crtc_state.active_line_lsb ? "Yes" : "No");
+    ImGui::Text("Displaying Odd Lines: %s", cs.active_line_lsb ? "Yes" : "No");
     ImGui::Text("Color Depth: %u-bit", m_GPUSTAT.display_area_color_depth_24 ? 24 : 15);
-    ImGui::Text("Start Offset: (%u, %u)", cs.regs.X.GetValue(), cs.regs.Y.GetValue());
+    ImGui::Text("Start Offset in VRAM: (%u, %u)", cs.regs.X.GetValue(), cs.regs.Y.GetValue());
     ImGui::Text("Display Total: %u (%u) horizontal, %u vertical", cs.horizontal_total,
                 cs.horizontal_total / cs.dot_clock_divider, cs.vertical_total);
-    ImGui::Text("Display Range: %u-%u (%u-%u), %u-%u", cs.regs.X1.GetValue(), cs.regs.X2.GetValue(),
+    ImGui::Text("Configured Display Range: %u-%u (%u-%u), %u-%u", cs.regs.X1.GetValue(), cs.regs.X2.GetValue(),
                 cs.regs.X1.GetValue() / cs.dot_clock_divider, cs.regs.X2.GetValue() / cs.dot_clock_divider,
                 cs.regs.Y1.GetValue(), cs.regs.Y2.GetValue());
-    ImGui::Text("Current Scanline: %u (tick %u)", cs.current_scanline, cs.current_tick_in_scanline);
-    ImGui::Text("Display resolution: %ux%u", cs.display_width, cs.display_height);
-    ImGui::Text("Display origin: %u, %u", cs.display_origin_left, cs.display_origin_top);
-    ImGui::Text("Active display: %ux%u @ (%u, %u)", cs.display_vram_width, cs.display_vram_height, cs.display_vram_left,
-                cs.display_vram_top);
+    ImGui::Text("Output Display Range: %u-%u (%u-%u), %u-%u", cs.horizontal_display_start, cs.horizontal_display_end,
+                cs.horizontal_display_start / cs.dot_clock_divider, cs.horizontal_display_end / cs.dot_clock_divider,
+                cs.vertical_display_start, cs.vertical_display_end);
+    ImGui::Text("Cropping: %s", Settings::GetDisplayCropModeName(g_settings.display_crop_mode));
+    ImGui::Text("Visible Display Range: %u-%u (%u-%u), %u-%u", cs.horizontal_active_start, cs.horizontal_active_end,
+                cs.horizontal_active_start / cs.dot_clock_divider, cs.horizontal_active_end / cs.dot_clock_divider,
+                cs.vertical_active_start, cs.vertical_active_end);
+    ImGui::Text("Display Resolution: %ux%u", cs.display_width, cs.display_height);
+    ImGui::Text("Display Origin: %u, %u", cs.display_origin_left, cs.display_origin_top);
+    ImGui::Text("Displayed/Visible VRAM Portion: %ux%u @ (%u, %u)", cs.display_vram_width, cs.display_vram_height,
+                cs.display_vram_left, cs.display_vram_top);
     ImGui::Text("Padding: Left=%d, Top=%d, Right=%d, Bottom=%d", cs.display_origin_left, cs.display_origin_top,
                 cs.display_width - cs.display_vram_width - cs.display_origin_left,
                 cs.display_height - cs.display_vram_height - cs.display_origin_top);
