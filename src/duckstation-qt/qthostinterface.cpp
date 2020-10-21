@@ -968,23 +968,6 @@ void QtHostInterface::populateCheatsMenu(QMenu* menu)
 
   const bool has_cheat_list = System::HasCheatList();
 
-  QAction* action = menu->addAction(tr("&Load Cheats..."));
-  connect(action, &QAction::triggered, [this]() {
-    QString filename = QFileDialog::getOpenFileName(m_main_window, tr("Select Cheat File"), QString(),
-                                                    tr("PCSXR/Libretro Cheat Files (*.cht *.txt);;All Files (*.*)"));
-    if (!filename.isEmpty())
-      loadCheatList(filename);
-  });
-
-  action = menu->addAction(tr("&Save Cheats..."));
-  action->setEnabled(has_cheat_list);
-  connect(action, &QAction::triggered, [this]() {
-    QString filename = QFileDialog::getSaveFileName(m_main_window, tr("Select Cheat File"), QString(),
-                                                    tr("PCSXR Cheat Files (*.cht);;All Files (*.*)"));
-    if (!filename.isEmpty())
-      SaveCheatList(filename.toUtf8().constData());
-  });
-
   QMenu* enabled_menu = menu->addMenu(tr("&Enabled Cheats"));
   enabled_menu->setEnabled(has_cheat_list);
   QMenu* apply_menu = menu->addMenu(tr("&Apply Cheats"));
@@ -996,13 +979,18 @@ void QtHostInterface::populateCheatsMenu(QMenu* menu)
     {
       CheatCode& cc = cl->GetCode(i);
       QString desc(QString::fromStdString(cc.description));
-      action = enabled_menu->addAction(desc);
-      action->setCheckable(true);
-      action->setChecked(cc.enabled);
-      connect(action, &QAction::toggled, [this, i](bool enabled) { setCheatEnabled(i, enabled); });
-
-      action = apply_menu->addAction(desc);
-      connect(action, &QAction::triggered, [this, i]() { applyCheat(i); });
+      if (cc.IsManuallyActivated())
+      {
+        QAction* action = apply_menu->addAction(desc);
+        connect(action, &QAction::triggered, [this, i]() { applyCheat(i); });
+      }
+      else
+      {
+        QAction* action = enabled_menu->addAction(desc);
+        action->setCheckable(true);
+        action->setChecked(cc.enabled);
+        connect(action, &QAction::toggled, [this, i](bool enabled) { setCheatEnabled(i, enabled); });
+      }
     }
   }
 }
