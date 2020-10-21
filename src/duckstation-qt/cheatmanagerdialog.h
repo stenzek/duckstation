@@ -56,8 +56,10 @@ private:
   void updateResultsValues();
   void updateWatch();
   void updateWatchValues();
+  void fillItemForCheatCode(QTreeWidgetItem* item, u32 index, const CheatCode& code);
 
   QTreeWidgetItem* getItemForCheatIndex(u32 index) const;
+  QTreeWidgetItem* getItemForCheatGroup(const std::string& group) const;
   int getSelectedCheatIndex() const;
   int getSelectedResultIndex() const;
   int getSelectedWatchIndex() const;

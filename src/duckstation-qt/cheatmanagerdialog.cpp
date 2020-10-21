@@ -165,9 +165,27 @@ QTreeWidgetItem* CheatManagerDialog::getItemForCheatIndex(u32 index) const
   return nullptr;
 }
 
-static u32 getCheatIndexFromItem(QTreeWidgetItem* item)
+QTreeWidgetItem* CheatManagerDialog::getItemForCheatGroup(const std::string& group) const
 {
-  return item->data(0, Qt::UserRole).toUInt();
+  const QString group_qstr(QString::fromStdString(group));
+  const int count = m_ui.cheatList->topLevelItemCount();
+  for (int i = 0; i < count; i++)
+  {
+    QTreeWidgetItem* item = m_ui.cheatList->topLevelItem(i);
+    if (item->text(0) == group_qstr)
+      return item;
+  }
+
+  return nullptr;
+}
+
+static int getCheatIndexFromItem(QTreeWidgetItem* item)
+{
+  QVariant item_data(item->data(0, Qt::UserRole));
+  if (!item_data.isValid())
+    return -1;
+
+  return static_cast<int>(item_data.toUInt());
 }
 
 int CheatManagerDialog::getSelectedCheatIndex() const
@@ -221,20 +239,7 @@ void CheatManagerDialog::updateCheatList()
         continue;
 
       QTreeWidgetItem* item = new QTreeWidgetItem(group);
-      item->setData(0, Qt::UserRole, QVariant(static_cast<uint>(i)));
-      if (code.IsManuallyActivated())
-      {
-        item->setFlags(item->flags() & ~(Qt::ItemIsUserCheckable));
-      }
-      else
-      {
-        item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
-        item->setCheckState(0, code.enabled ? Qt::Checked : Qt::Unchecked);
-      }
-      item->setText(0, QString::fromStdString(code.description));
-      item->setText(1, qApp->translate("Cheats", CheatCode::GetTypeDisplayName(code.type)));
-      item->setText(2, qApp->translate("Cheats", CheatCode::GetActivationDisplayName(code.activation)));
-      item->setText(3, QString::number(static_cast<uint>(code.instructions.size())));
+      fillItemForCheatCode(item, i, code);
 
       all_enabled &= code.enabled;
     }
@@ -250,6 +255,24 @@ void CheatManagerDialog::updateCheatList()
   m_ui.cheatListExport->setEnabled(list->GetCodeCount() > 0);
 }
 
+void CheatManagerDialog::fillItemForCheatCode(QTreeWidgetItem* item, u32 index, const CheatCode& code)
+{
+  item->setData(0, Qt::UserRole, QVariant(static_cast<uint>(index)));
+  if (code.IsManuallyActivated())
+  {
+    item->setFlags(item->flags() & ~(Qt::ItemIsUserCheckable));
+  }
+  else
+  {
+    item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+    item->setCheckState(0, code.enabled ? Qt::Checked : Qt::Unchecked);
+  }
+  item->setText(0, QString::fromStdString(code.description));
+  item->setText(1, qApp->translate("Cheats", CheatCode::GetTypeDisplayName(code.type)));
+  item->setText(2, qApp->translate("Cheats", CheatCode::GetActivationDisplayName(code.activation)));
+  item->setText(3, QString::number(static_cast<uint>(code.instructions.size())));
+}
+
 void CheatManagerDialog::saveCheatList()
 {
   QtHostInterface::GetInstance()->executeOnEmulationThread([]() { QtHostInterface::GetInstance()->SaveCheatList(); });
@@ -257,18 +280,19 @@ void CheatManagerDialog::saveCheatList()
 
 void CheatManagerDialog::cheatListCurrentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* previous)
 {
-  const bool has_current = (current != nullptr);
+  const int cheat_index = current ? getCheatIndexFromItem(current) : -1;
+  const bool has_current = (cheat_index >= 0);
   m_ui.cheatListEdit->setEnabled(has_current);
   m_ui.cheatListRemove->setEnabled(has_current);
   m_ui.cheatListActivate->setEnabled(has_current);
 
-  if (!current)
+  if (!has_current)
   {
     m_ui.cheatListActivate->setText(tr("Activate"));
   }
   else
   {
-    const bool manual_activation = getCheatList()->GetCode(getCheatIndexFromItem(current)).IsManuallyActivated();
+    const bool manual_activation = getCheatList()->GetCode(static_cast<u32>(cheat_index)).IsManuallyActivated();
     m_ui.cheatListActivate->setText(manual_activation ? tr("Activate") : tr("Toggle"));
   }
 }
@@ -278,8 +302,9 @@ void CheatManagerDialog::cheatListItemActivated(QTreeWidgetItem* item)
   if (!item)
     return;
 
-  const u32 index = getCheatIndexFromItem(item);
-  activateCheat(index);
+  const int index = getCheatIndexFromItem(item);
+  if (index >= 0)
+    activateCheat(static_cast<u32>(index));
 }
 
 void CheatManagerDialog::cheatListItemChanged(QTreeWidgetItem* item, int column)
@@ -287,12 +312,15 @@ void CheatManagerDialog::cheatListItemChanged(QTreeWidgetItem* item, int column)
   if (!item || column != 0)
     return;
 
-  const u32 index = getCheatIndexFromItem(item);
-  CheatList* list = getCheatList();
-  if (index >= list->GetCodeCount())
+  const int index = getCheatIndexFromItem(item);
+  if (index < 0)
     return;
 
-  CheatCode& cc = list->GetCode(index);
+  CheatList* list = getCheatList();
+  if (static_cast<u32>(index) >= list->GetCodeCount())
+    return;
+
+  CheatCode& cc = list->GetCode(static_cast<u32>(index));
   if (cc.IsManuallyActivated())
     return;
 
@@ -301,7 +329,7 @@ void CheatManagerDialog::cheatListItemChanged(QTreeWidgetItem* item, int column)
     return;
 
   QtHostInterface::GetInstance()->executeOnEmulationThread([index, new_enabled]() {
-    System::GetCheatList()->SetCodeEnabled(index, new_enabled);
+    System::GetCheatList()->SetCodeEnabled(static_cast<u32>(index), new_enabled);
     QtHostInterface::GetInstance()->SaveCheatList();
   });
 }
@@ -346,13 +374,19 @@ void CheatManagerDialog::addCodeClicked()
   CheatCodeEditorDialog editor(list, &new_code, this);
   if (editor.exec() > 0)
   {
+    QTreeWidgetItem* group_item = getItemForCheatGroup(new_code.group);
+    if (!group_item)
+      group_item = m_ui.cheatList->topLevelItem(0);
+
+    QTreeWidgetItem* item = new QTreeWidgetItem(group_item);
+    fillItemForCheatCode(item, list->GetCodeCount(), new_code);
+
     QtHostInterface::GetInstance()->executeOnEmulationThread(
       [this, &new_code]() {
         System::GetCheatList()->AddCode(std::move(new_code));
         QtHostInterface::GetInstance()->SaveCheatList();
       },
       true);
-    updateCheatList();
   }
 }
 
@@ -370,13 +404,32 @@ void CheatManagerDialog::editCodeClicked()
   CheatCodeEditorDialog editor(list, &new_code, this);
   if (editor.exec() > 0)
   {
+    QTreeWidgetItem* item = getItemForCheatIndex(static_cast<u32>(index));
+    if (item)
+    {
+      if (new_code.group != list->GetCode(static_cast<u32>(index)).group)
+      {
+        item = item->parent()->takeChild(item->parent()->indexOfChild(item));
+        QTreeWidgetItem* group_item = getItemForCheatGroup(new_code.group);
+        if (!group_item)
+          group_item = m_ui.cheatList->topLevelItem(0);
+        group_item->addChild(item);
+      }
+
+      fillItemForCheatCode(item, static_cast<u32>(index), new_code);
+    }
+    else
+    {
+      // shouldn't happen...
+      updateCheatList();
+    }
+
     QtHostInterface::GetInstance()->executeOnEmulationThread(
       [index, &new_code]() {
         System::GetCheatList()->SetCode(static_cast<u32>(index), std::move(new_code));
         QtHostInterface::GetInstance()->SaveCheatList();
       },
       true);
-    updateCheatList();
   }
 }
 
