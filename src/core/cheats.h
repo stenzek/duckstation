@@ -61,6 +61,7 @@ struct CheatCode
   std::string group;
   std::string description;
   std::vector<Instruction> instructions;
+  std::string comments;
   Type type = Type::Gameshark;
   Activation activation = Activation::EndFrame;
   bool enabled = false;

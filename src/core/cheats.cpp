@@ -40,6 +40,7 @@ bool CheatList::LoadFromPCSXRFile(const char* filename)
     return false;
 
   char line[1024];
+  std::string comments;
   CheatCode current_code;
   current_code.group = "Ungrouped";
   while (std::fgets(line, sizeof(line), fp.get()))
@@ -61,7 +62,11 @@ bool CheatList::LoadFromPCSXRFile(const char* filename)
 
     // skip comments and empty line
     if (*start == '#' || *start == ';' || *start == '/' || *start == '\"')
+    {
+      comments.append(start);
+      comments += '\n';
       continue;
+    }
 
     if (*start == '[' && *end == ']')
     {
@@ -74,6 +79,8 @@ bool CheatList::LoadFromPCSXRFile(const char* filename)
 
       current_code = CheatCode();
       current_code.group = "Ungrouped";
+      current_code.comments = std::move(comments);
+      comments = std::string();
 
       if (*start == '*')
       {
@@ -105,7 +112,12 @@ bool CheatList::LoadFromPCSXRFile(const char* filename)
   }
 
   if (current_code.Valid())
+  {
+    // technically this isn't the place for end of file 
+    if (!comments.empty())
+      current_code.comments += comments;
     m_codes.push_back(std::move(current_code));
+  }
 
   Log_InfoPrintf("Loaded %zu cheats from '%s' (PCSXR format)", m_codes.size(), filename);
   return !m_codes.empty();
@@ -342,6 +354,8 @@ bool CheatList::SaveToPCSXRFile(const char* filename)
 
   for (const CheatCode& cc : m_codes)
   {
+    if (!cc.comments.empty())
+      std::fputs(cc.comments.c_str(), fp.get());
     std::fprintf(fp.get(), "[%s%s]\n", cc.enabled ? "*" : "", cc.description.c_str());
     for (const CheatCode::Instruction& i : cc.instructions)
       std::fprintf(fp.get(), "%08X %04X\n", i.first, i.second);
