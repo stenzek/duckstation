@@ -1,4 +1,5 @@
 #include "cheats.h"
+#include "bus.h"
 #include "common/assert.h"
 #include "common/file_system.h"
 #include "common/log.h"
@@ -836,10 +837,28 @@ void MemoryScan::Search()
   }
 }
 
+static bool IsValidScanAddress(PhysicalMemoryAddress address)
+{
+  address &= CPU::PHYSICAL_MEMORY_ADDRESS_MASK;
+  if (address < Bus::RAM_MIRROR_END)
+    return true;
+
+  if (address >= CPU::DCACHE_LOCATION && address < (CPU::DCACHE_LOCATION + CPU::DCACHE_SIZE))
+    return true;
+
+  if (address >= Bus::BIOS_BASE && address < (Bus::BIOS_BASE + Bus::BIOS_SIZE))
+    return true;
+
+  return false;
+}
+
 void MemoryScan::SearchBytes()
 {
   for (PhysicalMemoryAddress address = m_start_address; address < m_end_address; address++)
   {
+    if (!IsValidScanAddress(address))
+      continue;
+
     u8 bvalue = 0;
     CPU::SafeReadMemoryByte(address, &bvalue);
 
@@ -858,6 +877,9 @@ void MemoryScan::SearchHalfwords()
 {
   for (PhysicalMemoryAddress address = m_start_address; address < m_end_address; address += 2)
   {
+    if (!IsValidScanAddress(address))
+      continue;
+
     u16 bvalue = 0;
     CPU::SafeReadMemoryHalfWord(address, &bvalue);
 
@@ -876,6 +898,9 @@ void MemoryScan::SearchWords()
 {
   for (PhysicalMemoryAddress address = m_start_address; address < m_end_address; address += 4)
   {
+    if (!IsValidScanAddress(address))
+      continue;
+
     Result res;
     res.address = address;
     CPU::SafeReadMemoryWord(address, &res.value);
