@@ -76,6 +76,22 @@ void CheatManagerDialog::connectUi()
   });
   connect(m_ui.scanOperator, QOverload<int>::of(&QComboBox::currentIndexChanged),
           [this](int index) { m_scanner.SetOperator(static_cast<MemoryScan::Operator>(index)); });
+  connect(m_ui.scanStartAddress, &QLineEdit::textChanged, [this](const QString& value) {
+    uint address;
+    if (value.startsWith(QStringLiteral("0x")) && value.length() > 2)
+      address = value.mid(2).toUInt(nullptr, 16);
+    else
+      address = value.toUInt(nullptr, 16);
+    m_scanner.SetStartAddress(static_cast<PhysicalMemoryAddress>(address));
+  });
+  connect(m_ui.scanEndAddress, &QLineEdit::textChanged, [this](const QString& value) {
+    uint address;
+    if (value.startsWith(QStringLiteral("0x")) && value.length() > 2)
+      address = value.mid(2).toUInt(nullptr, 16);
+    else
+      address = value.toUInt(nullptr, 16);
+    m_scanner.SetEndAddress(static_cast<PhysicalMemoryAddress>(address));
+  });
   connect(m_ui.scanNewSearch, &QPushButton::clicked, [this]() {
     m_scanner.Search();
     updateResults();
