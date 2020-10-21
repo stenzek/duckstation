@@ -8,6 +8,7 @@
 #include <QtCore/QFileInfo>
 #include <QtGui/QColor>
 #include <QtWidgets/QFileDialog>
+#include <QtWidgets/QInputDialog>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QTreeWidgetItemIterator>
 #include <array>
@@ -165,18 +166,40 @@ QTreeWidgetItem* CheatManagerDialog::getItemForCheatIndex(u32 index) const
   return nullptr;
 }
 
-QTreeWidgetItem* CheatManagerDialog::getItemForCheatGroup(const std::string& group) const
+QTreeWidgetItem* CheatManagerDialog::getItemForCheatGroup(const QString& group_name) const
 {
-  const QString group_qstr(QString::fromStdString(group));
   const int count = m_ui.cheatList->topLevelItemCount();
   for (int i = 0; i < count; i++)
   {
     QTreeWidgetItem* item = m_ui.cheatList->topLevelItem(i);
-    if (item->text(0) == group_qstr)
+    if (item->text(0) == group_name)
       return item;
   }
 
   return nullptr;
+}
+
+QTreeWidgetItem* CheatManagerDialog::createItemForCheatGroup(const QString& group_name) const
+{
+  QTreeWidgetItem* group = new QTreeWidgetItem();
+  group->setFlags(group->flags() | Qt::ItemIsUserCheckable);
+  group->setText(0, group_name);
+  m_ui.cheatList->addTopLevelItem(group);
+  return group;
+}
+
+QStringList CheatManagerDialog::getCheatGroupNames() const
+{
+  QStringList group_names;
+
+  const int count = m_ui.cheatList->topLevelItemCount();
+  for (int i = 0; i < count; i++)
+  {
+    QTreeWidgetItem* item = m_ui.cheatList->topLevelItem(i);
+    group_names.push_back(item->text(0));
+  }
+
+  return group_names;
 }
 
 static int getCheatIndexFromItem(QTreeWidgetItem* item)
@@ -225,10 +248,7 @@ void CheatManagerDialog::updateCheatList()
   const std::vector<std::string> groups = list->GetCodeGroups();
   for (const std::string& group_name : groups)
   {
-    QTreeWidgetItem* group = new QTreeWidgetItem();
-    group->setFlags(group->flags() | Qt::ItemIsUserCheckable);
-    group->setText(0, QString::fromStdString(group_name));
-    m_ui.cheatList->addTopLevelItem(group);
+    QTreeWidgetItem* group = createItemForCheatGroup(QString::fromStdString(group_name));
 
     const u32 count = list->GetCodeCount();
     bool all_enabled = true;
@@ -363,7 +383,17 @@ void CheatManagerDialog::activateCheat(u32 index)
 
 void CheatManagerDialog::newCategoryClicked()
 {
-  //
+  QString group_name = QInputDialog::getText(this, tr("Add Group"), tr("Group Name:"));
+  if (group_name.isEmpty())
+    return;
+
+  if (getItemForCheatGroup(group_name) != nullptr)
+  {
+    QMessageBox::critical(this, tr("Error"), tr("This group name already exists."));
+    return;
+  }
+
+  createItemForCheatGroup(group_name);
 }
 
 void CheatManagerDialog::addCodeClicked()
@@ -371,15 +401,19 @@ void CheatManagerDialog::addCodeClicked()
   CheatList* list = getCheatList();
 
   CheatCode new_code;
-  CheatCodeEditorDialog editor(list, &new_code, this);
+  new_code.group = "Ungrouped";
+
+  CheatCodeEditorDialog editor(getCheatGroupNames(), &new_code, this);
   if (editor.exec() > 0)
   {
-    QTreeWidgetItem* group_item = getItemForCheatGroup(new_code.group);
+    const QString group_name_qstr(QString::fromStdString(new_code.group));
+    QTreeWidgetItem* group_item = getItemForCheatGroup(group_name_qstr);
     if (!group_item)
-      group_item = m_ui.cheatList->topLevelItem(0);
+      group_item = createItemForCheatGroup(group_name_qstr);
 
     QTreeWidgetItem* item = new QTreeWidgetItem(group_item);
     fillItemForCheatCode(item, list->GetCodeCount(), new_code);
+    group_item->setExpanded(true);
 
     QtHostInterface::GetInstance()->executeOnEmulationThread(
       [this, &new_code]() {
@@ -401,7 +435,7 @@ void CheatManagerDialog::editCodeClicked()
     return;
 
   CheatCode new_code = list->GetCode(static_cast<u32>(index));
-  CheatCodeEditorDialog editor(list, &new_code, this);
+  CheatCodeEditorDialog editor(getCheatGroupNames(), &new_code, this);
   if (editor.exec() > 0)
   {
     QTreeWidgetItem* item = getItemForCheatIndex(static_cast<u32>(index));
@@ -410,10 +444,13 @@ void CheatManagerDialog::editCodeClicked()
       if (new_code.group != list->GetCode(static_cast<u32>(index)).group)
       {
         item = item->parent()->takeChild(item->parent()->indexOfChild(item));
-        QTreeWidgetItem* group_item = getItemForCheatGroup(new_code.group);
+
+        const QString group_name_qstr(QString::fromStdString(new_code.group));
+        QTreeWidgetItem* group_item = getItemForCheatGroup(group_name_qstr);
         if (!group_item)
-          group_item = m_ui.cheatList->topLevelItem(0);
+          group_item = createItemForCheatGroup(group_name_qstr);
         group_item->addChild(item);
+        group_item->setExpanded(true);
       }
 
       fillItemForCheatCode(item, static_cast<u32>(index), new_code);

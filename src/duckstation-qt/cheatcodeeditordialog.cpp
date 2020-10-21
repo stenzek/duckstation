@@ -1,11 +1,11 @@
 #include "cheatcodeeditordialog.h"
 #include <QtWidgets/QMessageBox>
 
-CheatCodeEditorDialog::CheatCodeEditorDialog(CheatList* list, CheatCode* code, QWidget* parent)
+CheatCodeEditorDialog::CheatCodeEditorDialog(const QStringList& group_names, CheatCode* code, QWidget* parent)
   : m_code(code), QDialog(parent)
 {
   m_ui.setupUi(this);
-  setupAdditionalUi(list);
+  setupAdditionalUi(group_names);
   fillUi();
   connectUi();
 }
@@ -40,7 +40,7 @@ void CheatCodeEditorDialog::cancelClicked()
   done(0);
 }
 
-void CheatCodeEditorDialog::setupAdditionalUi(CheatList* list)
+void CheatCodeEditorDialog::setupAdditionalUi(const QStringList& group_names)
 {
   for (u32 i = 0; i < static_cast<u32>(CheatCode::Type::Count); i++)
   {
@@ -53,27 +53,28 @@ void CheatCodeEditorDialog::setupAdditionalUi(CheatList* list)
       qApp->translate("Cheats", CheatCode::GetActivationDisplayName(static_cast<CheatCode::Activation>(i))));
   }
 
-  const auto groups = list->GetCodeGroups();
-  if (!groups.empty())
-  {
-    for (const std::string& group_name : groups)
-      m_ui.group->addItem(QString::fromStdString(group_name));
-  }
+  if (!group_names.isEmpty())
+    m_ui.group->addItems(group_names);
   else
-  {
     m_ui.group->addItem(QStringLiteral("Ungrouped"));
-  }
 }
 
 void CheatCodeEditorDialog::fillUi()
 {
   m_ui.description->setText(QString::fromStdString(m_code->description));
 
-  int index = m_ui.group->findText(QString::fromStdString(m_code->group));
+  const QString group_qstr(QString::fromStdString(m_code->group));
+  int index = m_ui.group->findText(group_qstr);
   if (index >= 0)
+  {
     m_ui.group->setCurrentIndex(index);
+  }
   else
-    m_ui.group->setCurrentIndex(0);
+  {
+    index = m_ui.group->count();
+    m_ui.group->addItem(group_qstr);
+    m_ui.group->setCurrentIndex(index);
+  }
 
   m_ui.type->setCurrentIndex(static_cast<int>(m_code->type));
   m_ui.activation->setCurrentIndex(static_cast<int>(m_code->activation));

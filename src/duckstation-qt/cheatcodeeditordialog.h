@@ -7,7 +7,7 @@ class CheatCodeEditorDialog : public QDialog
   Q_OBJECT
 
 public:
-  CheatCodeEditorDialog(CheatList* list, CheatCode* code, QWidget* parent);
+  CheatCodeEditorDialog(const QStringList& group_names, CheatCode* code, QWidget* parent);
   ~CheatCodeEditorDialog();
 
 private Q_SLOTS:
@@ -15,7 +15,7 @@ private Q_SLOTS:
   void cancelClicked();
 
 private:
-  void setupAdditionalUi(CheatList* list);
+  void setupAdditionalUi(const QStringList& group_names);
   void fillUi();
   void connectUi();
 
