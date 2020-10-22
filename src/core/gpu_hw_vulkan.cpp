@@ -642,7 +642,7 @@ bool GPU_HW_Vulkan::CompilePipelines()
         for (u8 interlacing = 0; interlacing < 2; interlacing++)
         {
           const std::string fs = shadergen.GenerateBatchFragmentShader(
-            static_cast<BatchRenderMode>(render_mode), static_cast<TextureMode>(texture_mode),
+            static_cast<BatchRenderMode>(render_mode), static_cast<GPUTextureMode>(texture_mode),
             ConvertToBoolUnchecked(dithering), ConvertToBoolUnchecked(interlacing));
 
           VkShaderModule shader = g_vulkan_shader_cache->GetFragmentShader(fs);
@@ -671,7 +671,7 @@ bool GPU_HW_Vulkan::CompilePipelines()
           {
             for (u8 interlacing = 0; interlacing < 2; interlacing++)
             {
-              const bool textured = (static_cast<TextureMode>(texture_mode) != TextureMode::Disabled);
+              const bool textured = (static_cast<GPUTextureMode>(texture_mode) != GPUTextureMode::Disabled);
 
               gpbuilder.SetPipelineLayout(m_batch_pipeline_layout);
               gpbuilder.SetRenderPass(m_vram_render_pass, 0);
@@ -697,7 +697,7 @@ bool GPU_HW_Vulkan::CompilePipelines()
               gpbuilder.SetNoBlendingState();
               gpbuilder.SetMultisamples(m_multisamples, m_per_sample_shading);
 
-              if ((static_cast<TransparencyMode>(transparency_mode) != TransparencyMode::Disabled &&
+              if ((static_cast<GPUTransparencyMode>(transparency_mode) != GPUTransparencyMode::Disabled &&
                    (static_cast<BatchRenderMode>(render_mode) != BatchRenderMode::TransparencyDisabled &&
                     static_cast<BatchRenderMode>(render_mode) != BatchRenderMode::OnlyOpaque)) ||
                   m_texture_filtering != GPUTextureFilter::Nearest)
@@ -705,7 +705,7 @@ bool GPU_HW_Vulkan::CompilePipelines()
                 gpbuilder.SetBlendAttachment(
                   0, true, VK_BLEND_FACTOR_ONE,
                   m_supports_dual_source_blend ? VK_BLEND_FACTOR_SRC1_ALPHA : VK_BLEND_FACTOR_SRC_ALPHA,
-                  (static_cast<TransparencyMode>(transparency_mode) == TransparencyMode::BackgroundMinusForeground &&
+                  (static_cast<GPUTransparencyMode>(transparency_mode) == GPUTransparencyMode::BackgroundMinusForeground &&
                    static_cast<BatchRenderMode>(render_mode) != BatchRenderMode::TransparencyDisabled &&
                    static_cast<BatchRenderMode>(render_mode) != BatchRenderMode::OnlyOpaque) ?
                     VK_BLEND_OP_REVERSE_SUBTRACT :

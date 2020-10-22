@@ -230,8 +230,8 @@ void LibretroHostInterface::GetSystemAVInfo(struct retro_system_av_info* info, b
   info->geometry.aspect_ratio = m_last_aspect_ratio;
   info->geometry.base_width = 320;
   info->geometry.base_height = 240;
-  info->geometry.max_width = GPU::VRAM_WIDTH * resolution_scale;
-  info->geometry.max_height = GPU::VRAM_HEIGHT * resolution_scale;
+  info->geometry.max_width = VRAM_WIDTH * resolution_scale;
+  info->geometry.max_height = VRAM_HEIGHT * resolution_scale;
 
   info->timing.fps = System::GetThrottleFrequency();
   info->timing.sample_rate = static_cast<double>(AUDIO_SAMPLE_RATE);

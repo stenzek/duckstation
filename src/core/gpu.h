@@ -2,6 +2,7 @@
 #include "common/bitfield.h"
 #include "common/fifo_queue.h"
 #include "common/rectangle.h"
+#include "gpu_types.h"
 #include "timers.h"
 #include "types.h"
 #include <algorithm>
@@ -37,66 +38,12 @@ public:
     GPUREADtoCPU = 3
   };
 
-  enum class Primitive : u8
-  {
-    Reserved = 0,
-    Polygon = 1,
-    Line = 2,
-    Rectangle = 3
-  };
-
-  enum class DrawRectangleSize : u8
-  {
-    Variable = 0,
-    R1x1 = 1,
-    R8x8 = 2,
-    R16x16 = 3
-  };
-
-  enum class TextureMode : u8
-  {
-    Palette4Bit = 0,
-    Palette8Bit = 1,
-    Direct16Bit = 2,
-    Reserved_Direct16Bit = 3,
-
-    // Not register values.
-    RawTextureBit = 4,
-    RawPalette4Bit = RawTextureBit | Palette4Bit,
-    RawPalette8Bit = RawTextureBit | Palette8Bit,
-    RawDirect16Bit = RawTextureBit | Direct16Bit,
-    Reserved_RawDirect16Bit = RawTextureBit | Reserved_Direct16Bit,
-
-    Disabled = 8 // Not a register value
-  };
-
-  enum class TransparencyMode : u8
-  {
-    HalfBackgroundPlusHalfForeground = 0,
-    BackgroundPlusForeground = 1,
-    BackgroundMinusForeground = 2,
-    BackgroundPlusQuarterForeground = 3,
-
-    Disabled = 4 // Not a register value
-  };
-
   enum : u32
   {
-    VRAM_WIDTH = 1024,
-    VRAM_HEIGHT = 512,
-    VRAM_SIZE = VRAM_WIDTH * VRAM_HEIGHT * sizeof(u16),
-    VRAM_WIDTH_MASK = VRAM_WIDTH - 1,
-    VRAM_HEIGHT_MASK = VRAM_HEIGHT - 1,
-    VRAM_COORD_MASK = 0x3FF,
     MAX_FIFO_SIZE = 4096,
-    TEXTURE_PAGE_WIDTH = 256,
-    TEXTURE_PAGE_HEIGHT = 256,
-    MAX_PRIMITIVE_WIDTH = 1024,
-    MAX_PRIMITIVE_HEIGHT = 512,
     DOT_TIMER_INDEX = 0,
     HBLANK_TIMER_INDEX = 1,
     MAX_RESOLUTION_SCALE = 16,
-    DITHER_MATRIX_SIZE = 4
   };
 
   enum : u16
@@ -108,12 +55,6 @@ public:
     PAL_HSYNC_TICKS = 200, // actually one more on odd lines
     PAL_TOTAL_LINES = 314,
   };
-
-  // 4x4 dither matrix.
-  static constexpr s32 DITHER_MATRIX[DITHER_MATRIX_SIZE][DITHER_MATRIX_SIZE] = {{-4, +0, -3, +1},  // row 0
-                                                                                {+2, -2, +3, -1},  // row 1
-                                                                                {-3, +1, -4, +0},  // row 2
-                                                                                {+4, -1, +2, -2}}; // row 3
 
   // Base class constructor.
   GPU();
@@ -263,60 +204,6 @@ protected:
 
   static bool DumpVRAMToFile(const char* filename, u32 width, u32 height, u32 stride, const void* buffer,
                              bool remove_alpha);
-
-  union RenderCommand
-  {
-    u32 bits;
-
-    BitField<u32, u32, 0, 24> color_for_first_vertex;
-    BitField<u32, bool, 24, 1> raw_texture_enable; // not valid for lines
-    BitField<u32, bool, 25, 1> transparency_enable;
-    BitField<u32, bool, 26, 1> texture_enable;
-    BitField<u32, DrawRectangleSize, 27, 2> rectangle_size; // only for rectangles
-    BitField<u32, bool, 27, 1> quad_polygon;                // only for polygons
-    BitField<u32, bool, 27, 1> polyline;                    // only for lines
-    BitField<u32, bool, 28, 1> shading_enable;              // 0 - flat, 1 = gouroud
-    BitField<u32, Primitive, 29, 21> primitive;
-
-    /// Returns true if texturing should be enabled. Depends on the primitive type.
-    bool IsTexturingEnabled() const { return (primitive != Primitive::Line) ? texture_enable : false; }
-
-    /// Returns true if dithering should be enabled. Depends on the primitive type.
-    bool IsDitheringEnabled() const
-    {
-      switch (primitive)
-      {
-        case Primitive::Polygon:
-          return shading_enable || (texture_enable && !raw_texture_enable);
-
-        case Primitive::Line:
-          return true;
-
-        case Primitive::Rectangle:
-        default:
-          return false;
-      }
-    }
-  };
-
-  union VertexPosition
-  {
-    u32 bits;
-
-    BitField<u32, s32, 0, 11> x;
-    BitField<u32, s32, 16, 11> y;
-  };
-
-  // Sprites/rectangles should be clipped to 12 bits before drawing.
-  static constexpr s32 TruncateVertexPosition(s32 x) { return SignExtendN<11, s32>(x); }
-
-  struct NativeVertex
-  {
-    s16 x;
-    s16 y;
-    u32 color;
-    u16 texcoord;
-  };
 
   union VRAMPixel
   {
@@ -508,8 +395,8 @@ protected:
     u32 bits;
     BitField<u32, u8, 0, 4> texture_page_x_base;
     BitField<u32, u8, 4, 1> texture_page_y_base;
-    BitField<u32, TransparencyMode, 5, 2> semi_transparency_mode;
-    BitField<u32, TextureMode, 7, 2> texture_color_mode;
+    BitField<u32, GPUTransparencyMode, 5, 2> semi_transparency_mode;
+    BitField<u32, GPUTextureMode, 7, 2> texture_color_mode;
     BitField<u32, bool, 9, 1> dither_enable;
     BitField<u32, bool, 10, 1> draw_to_displayed_field;
     BitField<u32, bool, 11, 1> set_mask_while_drawing;
@@ -567,36 +454,8 @@ protected:
     static constexpr u16 PALETTE_MASK = UINT16_C(0b0111111111111111);
     static constexpr u32 TEXTURE_WINDOW_MASK = UINT32_C(0b11111111111111111111);
 
-    // bits in GP0(E1h) or texpage part of polygon
-    union Reg
-    {
-      static constexpr u16 MASK = 0b1111111111111;
-      static constexpr u16 TEXTURE_PAGE_MASK = UINT16_C(0b0000000000011111);
-
-      // Polygon texpage commands only affect bits 0-8, 11
-      static constexpr u16 POLYGON_TEXPAGE_MASK = 0b0000100111111111;
-
-      // Bits 0..5 are returned in the GPU status register, latched at E1h/polygon draw time.
-      static constexpr u32 GPUSTAT_MASK = 0b11111111111;
-
-      u16 bits;
-
-      BitField<u16, u8, 0, 4> texture_page_x_base;
-      BitField<u16, u8, 4, 1> texture_page_y_base;
-      BitField<u16, TransparencyMode, 5, 2> transparency_mode;
-      BitField<u16, TextureMode, 7, 2> texture_mode;
-      BitField<u16, bool, 9, 1> dither_enable;
-      BitField<u16, bool, 10, 1> draw_to_displayed_field;
-      BitField<u16, bool, 11, 1> texture_disable;
-      BitField<u16, bool, 12, 1> texture_x_flip;
-      BitField<u16, bool, 13, 1> texture_y_flip;
-
-      u32 GetTexturePageXBase() const { return ZeroExtend32(texture_page_x_base.GetValue()) * 64; }
-      u32 GetTexturePageYBase() const { return ZeroExtend32(texture_page_y_base.GetValue()) * 256; }
-    };
-
     // original values
-    Reg mode_reg;
+    GPUDrawModeReg mode_reg;
     u16 palette_reg; // from vertex
     u32 texture_window_value;
 
@@ -613,33 +472,6 @@ protected:
     bool texture_y_flip;
     bool texture_page_changed;
     bool texture_window_changed;
-
-    /// Returns the texture/palette rendering mode.
-    TextureMode GetTextureMode() const { return mode_reg.texture_mode; }
-
-    /// Returns the semi-transparency mode when enabled.
-    TransparencyMode GetTransparencyMode() const { return mode_reg.transparency_mode; }
-
-    /// Returns true if the texture mode requires a palette.
-    bool IsUsingPalette() const { return (mode_reg.bits & (2 << 7)) == 0; }
-
-    /// Returns a rectangle comprising the texture page area.
-    Common::Rectangle<u32> GetTexturePageRectangle() const
-    {
-      static constexpr std::array<u32, 4> texture_page_widths = {
-        {TEXTURE_PAGE_WIDTH / 4, TEXTURE_PAGE_WIDTH / 2, TEXTURE_PAGE_WIDTH, TEXTURE_PAGE_WIDTH}};
-      return Common::Rectangle<u32>::FromExtents(texture_page_x, texture_page_y,
-                                                 texture_page_widths[static_cast<u8>(mode_reg.texture_mode.GetValue())],
-                                                 TEXTURE_PAGE_HEIGHT);
-    }
-
-    /// Returns a rectangle comprising the texture palette area.
-    Common::Rectangle<u32> GetTexturePaletteRectangle() const
-    {
-      static constexpr std::array<u32, 4> palette_widths = {{16, 256, 0, 0}};
-      return Common::Rectangle<u32>::FromExtents(texture_palette_x, texture_palette_y,
-                                                 palette_widths[static_cast<u8>(mode_reg.texture_mode.GetValue())], 1);
-    }
 
     bool IsTexturePageChanged() const { return texture_page_changed; }
     void SetTexturePageChanged() { texture_page_changed = true; }
@@ -757,7 +589,7 @@ protected:
   HeapFIFOQueue<u64, MAX_FIFO_SIZE> m_fifo;
   std::vector<u32> m_blit_buffer;
   u32 m_blit_remaining_words;
-  RenderCommand m_render_command{};
+  GPURenderCommand m_render_command{};
 
   ALWAYS_INLINE u32 FifoPop() { return Truncate32(m_fifo.Pop()); }
   ALWAYS_INLINE u32 FifoPeek() { return Truncate32(m_fifo.Peek()); }
@@ -805,7 +637,5 @@ private:
 
   static const GP0CommandHandlerTable s_GP0_command_handler_table;
 };
-
-IMPLEMENT_ENUM_CLASS_BITWISE_OPERATORS(GPU::TextureMode);
 
 extern std::unique_ptr<GPU> g_gpu;

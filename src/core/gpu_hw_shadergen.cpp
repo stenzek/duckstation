@@ -19,7 +19,7 @@ void GPU_HW_ShaderGen::WriteCommonFunctions(std::stringstream& ss)
   DefineMacro(ss, "MULTISAMPLING", UsingMSAA());
 
   ss << "CONSTANT uint RESOLUTION_SCALE = " << m_resolution_scale << "u;\n";
-  ss << "CONSTANT uint2 VRAM_SIZE = uint2(" << GPU::VRAM_WIDTH << ", " << GPU::VRAM_HEIGHT << ") * RESOLUTION_SCALE;\n";
+  ss << "CONSTANT uint2 VRAM_SIZE = uint2(" << VRAM_WIDTH << ", " << VRAM_HEIGHT << ") * RESOLUTION_SCALE;\n";
   ss << "CONSTANT float2 RCP_VRAM_SIZE = float2(1.0, 1.0) / float2(VRAM_SIZE);\n";
   ss << "CONSTANT uint MULTISAMPLES = " << m_multisamples << "u;\n";
   ss << "CONSTANT bool PER_SAMPLE_SHADING = " << (m_per_sample_shading ? "true" : "false") << ";\n";
@@ -650,12 +650,11 @@ void FilteredSampleFromVRAM(uint4 texpage, float2 coords, float4 uv_limits,
 }
 
 std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(GPU_HW::BatchRenderMode transparency,
-                                                          GPU::TextureMode texture_mode, bool dithering,
-                                                          bool interlacing)
+                                                          GPUTextureMode texture_mode, bool dithering, bool interlacing)
 {
-  const GPU::TextureMode actual_texture_mode = texture_mode & ~GPU::TextureMode::RawTextureBit;
-  const bool raw_texture = (texture_mode & GPU::TextureMode::RawTextureBit) == GPU::TextureMode::RawTextureBit;
-  const bool textured = (texture_mode != GPU::TextureMode::Disabled);
+  const GPUTextureMode actual_texture_mode = texture_mode & ~GPUTextureMode::RawTextureBit;
+  const bool raw_texture = (texture_mode & GPUTextureMode::RawTextureBit) == GPUTextureMode::RawTextureBit;
+  const bool textured = (texture_mode != GPUTextureMode::Disabled);
   const bool use_dual_source =
     m_supports_dual_source_blend && ((transparency != GPU_HW::BatchRenderMode::TransparencyDisabled &&
                                       transparency != GPU_HW::BatchRenderMode::OnlyOpaque) ||
@@ -668,10 +667,9 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(GPU_HW::BatchRenderMod
   DefineMacro(ss, "TRANSPARENCY_ONLY_TRANSPARENT", transparency == GPU_HW::BatchRenderMode::OnlyTransparent);
   DefineMacro(ss, "TEXTURED", textured);
   DefineMacro(ss, "PALETTE",
-              actual_texture_mode == GPU::TextureMode::Palette4Bit ||
-                actual_texture_mode == GPU::TextureMode::Palette8Bit);
-  DefineMacro(ss, "PALETTE_4_BIT", actual_texture_mode == GPU::TextureMode::Palette4Bit);
-  DefineMacro(ss, "PALETTE_8_BIT", actual_texture_mode == GPU::TextureMode::Palette8Bit);
+              actual_texture_mode == GPUTextureMode::Palette4Bit || actual_texture_mode == GPUTextureMode::Palette8Bit);
+  DefineMacro(ss, "PALETTE_4_BIT", actual_texture_mode == GPUTextureMode::Palette4Bit);
+  DefineMacro(ss, "PALETTE_8_BIT", actual_texture_mode == GPUTextureMode::Palette8Bit);
   DefineMacro(ss, "RAW_TEXTURE", raw_texture);
   DefineMacro(ss, "DITHERING", dithering);
   DefineMacro(ss, "DITHERING_SCALED", m_scaled_dithering);
@@ -693,7 +691,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(GPU_HW::BatchRenderMod
   {
     if (i > 0)
       ss << ", ";
-    ss << GPU::DITHER_MATRIX[i / 4][i % 4];
+    ss << DITHER_MATRIX[i / 4][i % 4];
   }
   if (m_glsl)
     ss << " );\n";

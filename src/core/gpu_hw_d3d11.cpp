@@ -347,7 +347,7 @@ bool GPU_HW_D3D11::CreateStateObjects()
   for (u8 transparency_mode = 0; transparency_mode < 5; transparency_mode++)
   {
     bl_desc = CD3D11_BLEND_DESC(CD3D11_DEFAULT());
-    if (transparency_mode != static_cast<u8>(TransparencyMode::Disabled) ||
+    if (transparency_mode != static_cast<u8>(GPUTransparencyMode::Disabled) ||
         m_texture_filtering != GPUTextureFilter::Nearest)
     {
       bl_desc.RenderTarget[0].BlendEnable = TRUE;
@@ -356,7 +356,7 @@ bool GPU_HW_D3D11::CreateStateObjects()
       bl_desc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
       bl_desc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
       bl_desc.RenderTarget[0].BlendOp =
-        (transparency_mode == static_cast<u8>(TransparencyMode::BackgroundMinusForeground)) ?
+        (transparency_mode == static_cast<u8>(GPUTransparencyMode::BackgroundMinusForeground)) ?
           D3D11_BLEND_OP_REV_SUBTRACT :
           D3D11_BLEND_OP_ADD;
       bl_desc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
@@ -462,7 +462,7 @@ bool GPU_HW_D3D11::CompileShaders()
         for (u8 interlacing = 0; interlacing < 2; interlacing++)
         {
           const std::string ps = shadergen.GenerateBatchFragmentShader(
-            static_cast<BatchRenderMode>(render_mode), static_cast<TextureMode>(texture_mode),
+            static_cast<BatchRenderMode>(render_mode), static_cast<GPUTextureMode>(texture_mode),
             ConvertToBoolUnchecked(dithering), ConvertToBoolUnchecked(interlacing));
 
           m_batch_pixel_shaders[render_mode][texture_mode][dithering][interlacing] =
@@ -610,7 +610,7 @@ void GPU_HW_D3D11::DrawUtilityShader(ID3D11PixelShader* shader, const void* unif
 
 void GPU_HW_D3D11::DrawBatchVertices(BatchRenderMode render_mode, u32 base_vertex, u32 num_vertices)
 {
-  const bool textured = (m_batch.texture_mode != TextureMode::Disabled);
+  const bool textured = (m_batch.texture_mode != GPUTextureMode::Disabled);
 
   m_context->VSSetShader(m_batch_vertex_shaders[BoolToUInt8(textured)].Get(), nullptr, 0);
 
@@ -619,8 +619,8 @@ void GPU_HW_D3D11::DrawBatchVertices(BatchRenderMode render_mode, u32 base_verte
                                                 .Get(),
                          nullptr, 0);
 
-  const TransparencyMode transparency_mode =
-    (render_mode == BatchRenderMode::OnlyOpaque) ? TransparencyMode::Disabled : m_batch.transparency_mode;
+  const GPUTransparencyMode transparency_mode =
+    (render_mode == BatchRenderMode::OnlyOpaque) ? GPUTransparencyMode::Disabled : m_batch.transparency_mode;
   m_context->OMSetBlendState(m_batch_blend_states[static_cast<u8>(transparency_mode)].Get(), nullptr, 0xFFFFFFFFu);
   m_context->OMSetDepthStencilState(
     m_batch.check_mask_before_draw ? m_depth_test_less_state.Get() : m_depth_test_always_state.Get(), 0);

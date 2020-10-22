@@ -960,7 +960,7 @@ void SDLHostInterface::DrawQuickSettingsMenu()
     for (u32 scale = 1; scale <= GPU::MAX_RESOLUTION_SCALE; scale++)
     {
       char buf[32];
-      std::snprintf(buf, sizeof(buf), "%ux (%ux%u)", scale, scale * GPU::VRAM_WIDTH, scale * GPU::VRAM_HEIGHT);
+      std::snprintf(buf, sizeof(buf), "%ux (%ux%u)", scale, scale * VRAM_WIDTH, scale * VRAM_HEIGHT);
 
       if (ImGui::MenuItem(buf, nullptr, current_internal_resolution == scale))
       {

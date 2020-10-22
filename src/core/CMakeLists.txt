@@ -41,6 +41,7 @@ add_library(core
     gpu_hw_vulkan.h
     gpu_sw.cpp
     gpu_sw.h
+    gpu_types.h
     gte.cpp
     gte.h
     gte_types.h

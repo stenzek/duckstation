@@ -99,6 +99,6 @@ private:
   bool m_use_ssbo_for_vram_writes = false;
 
   bool m_current_check_mask_before_draw = false;
-  TransparencyMode m_current_transparency_mode = TransparencyMode::Disabled;
+  GPUTransparencyMode m_current_transparency_mode = GPUTransparencyMode::Disabled;
   BatchRenderMode m_current_render_mode = BatchRenderMode::TransparencyDisabled;
 };

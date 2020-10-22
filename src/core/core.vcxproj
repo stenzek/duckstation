@@ -189,6 +189,7 @@
     <ClInclude Include="gpu_hw_shadergen.h" />
     <ClInclude Include="gpu_hw_vulkan.h" />
     <ClInclude Include="gpu_sw.h" />
+    <ClInclude Include="gpu_types.h" />
     <ClInclude Include="gte.h" />
     <ClInclude Include="cpu_types.h" />
     <ClInclude Include="dma.h" />

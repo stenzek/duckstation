@@ -414,13 +414,13 @@ void GPU_HW::LoadVertices()
   if (m_GPUSTAT.check_mask_before_draw)
     m_current_depth++;
 
-  const RenderCommand rc{m_render_command.bits};
+  const GPURenderCommand rc{m_render_command.bits};
   const u32 texpage = ZeroExtend32(m_draw_mode.mode_reg.bits) | (ZeroExtend32(m_draw_mode.palette_reg) << 16);
   const float depth = GetCurrentNormalizedVertexDepth();
 
   switch (rc.primitive)
   {
-    case Primitive::Polygon:
+    case GPUPrimitive::Polygon:
     {
       DebugAssert(GetBatchVertexSpace() >= (rc.quad_polygon ? 6u : 3u));
 
@@ -437,7 +437,7 @@ void GPU_HW::LoadVertices()
       {
         const u32 color = (shaded && i > 0) ? (FifoPop() & UINT32_C(0x00FFFFFF)) : first_color;
         const u64 maddr_and_pos = m_fifo.Pop();
-        const VertexPosition vp{Truncate32(maddr_and_pos)};
+        const GPUVertexPosition vp{Truncate32(maddr_and_pos)};
         const u16 texcoord = textured ? Truncate16(FifoPop()) : 0;
         const s32 native_x = m_drawing_offset.x + vp.x;
         const s32 native_y = m_drawing_offset.y + vp.y;
@@ -538,12 +538,12 @@ void GPU_HW::LoadVertices()
     }
     break;
 
-    case Primitive::Rectangle:
+    case GPUPrimitive::Rectangle:
     {
       const u32 color = rc.color_for_first_vertex;
-      const VertexPosition vp{FifoPop()};
-      const s32 pos_x = TruncateVertexPosition(m_drawing_offset.x + vp.x);
-      const s32 pos_y = TruncateVertexPosition(m_drawing_offset.y + vp.y);
+      const GPUVertexPosition vp{FifoPop()};
+      const s32 pos_x = TruncateGPUVertexPosition(m_drawing_offset.x + vp.x);
+      const s32 pos_y = TruncateGPUVertexPosition(m_drawing_offset.y + vp.y);
 
       const auto [texcoord_x, texcoord_y] = UnpackTexcoord(rc.texture_enable ? Truncate16(FifoPop()) : 0);
       u16 orig_tex_left = ZeroExtend16(texcoord_x);
@@ -552,15 +552,15 @@ void GPU_HW::LoadVertices()
       s32 rectangle_height;
       switch (rc.rectangle_size)
       {
-        case DrawRectangleSize::R1x1:
+        case GPUDrawRectangleSize::R1x1:
           rectangle_width = 1;
           rectangle_height = 1;
           break;
-        case DrawRectangleSize::R8x8:
+        case GPUDrawRectangleSize::R8x8:
           rectangle_width = 8;
           rectangle_height = 8;
           break;
-        case DrawRectangleSize::R16x16:
+        case GPUDrawRectangleSize::R16x16:
           rectangle_width = 16;
           rectangle_height = 16;
           break;
@@ -632,14 +632,14 @@ void GPU_HW::LoadVertices()
     }
     break;
 
-    case Primitive::Line:
+    case GPUPrimitive::Line:
     {
       if (!rc.polyline)
       {
         DebugAssert(GetBatchVertexSpace() >= 2);
 
         u32 start_color, end_color;
-        VertexPosition start_pos, end_pos;
+        GPUVertexPosition start_pos, end_pos;
         if (rc.shading_enable)
         {
           start_color = rc.color_for_first_vertex;
@@ -694,7 +694,7 @@ void GPU_HW::LoadVertices()
         const bool shaded = rc.shading_enable;
 
         u32 buffer_pos = 0;
-        const VertexPosition start_vp{m_blit_buffer[buffer_pos++]};
+        const GPUVertexPosition start_vp{m_blit_buffer[buffer_pos++]};
         s32 start_x = start_vp.x + m_drawing_offset.x;
         s32 start_y = start_vp.y + m_drawing_offset.y;
         u32 start_color = rc.color_for_first_vertex;
@@ -702,7 +702,7 @@ void GPU_HW::LoadVertices()
         for (u32 i = 1; i < num_vertices; i++)
         {
           const u32 end_color = shaded ? (m_blit_buffer[buffer_pos++] & UINT32_C(0x00FFFFFF)) : start_color;
-          const VertexPosition vp{m_blit_buffer[buffer_pos++]};
+          const GPUVertexPosition vp{m_blit_buffer[buffer_pos++]};
           const s32 end_x = m_drawing_offset.x + vp.x;
           const s32 end_y = m_drawing_offset.y + vp.y;
 
@@ -828,8 +828,8 @@ void GPU_HW::IncludeVRAMDityRectangle(const Common::Rectangle<u32>& rect)
   // the vram area can include the texture page, but the game can leave it as-is. in this case, set it as dirty so the
   // shadow texture is updated
   if (!m_draw_mode.IsTexturePageChanged() &&
-      (m_draw_mode.GetTexturePageRectangle().Intersects(rect) ||
-       (m_draw_mode.IsUsingPalette() && m_draw_mode.GetTexturePaletteRectangle().Intersects(rect))))
+      (m_draw_mode.mode_reg.GetTexturePageRectangle().Intersects(rect) ||
+       (m_draw_mode.mode_reg.IsUsingPalette() && m_draw_mode.mode_reg.GetTexturePaletteRectangle().Intersects(rect))))
   {
     m_draw_mode.SetTexturePageChanged();
   }
@@ -853,13 +853,13 @@ void GPU_HW::EnsureVertexBufferSpaceForCurrentCommand()
   u32 required_vertices;
   switch (m_render_command.primitive)
   {
-    case Primitive::Polygon:
+    case GPUPrimitive::Polygon:
       required_vertices = m_render_command.quad_polygon ? 6 : 3;
       break;
-    case Primitive::Rectangle:
+    case GPUPrimitive::Rectangle:
       required_vertices = MAX_VERTICES_FOR_RECTANGLE;
       break;
-    case Primitive::Line:
+    case GPUPrimitive::Line:
     default:
       required_vertices = m_render_command.polyline ? (GetPolyLineVertexCount() * 6u) : 6u;
       break;
@@ -923,9 +923,9 @@ void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
 
 void GPU_HW::DispatchRenderCommand()
 {
-  const RenderCommand rc{m_render_command.bits};
+  const GPURenderCommand rc{m_render_command.bits};
 
-  TextureMode texture_mode;
+  GPUTextureMode texture_mode;
   if (rc.IsTexturingEnabled())
   {
     // texture page changed - check that the new page doesn't intersect the drawing area
@@ -933,8 +933,9 @@ void GPU_HW::DispatchRenderCommand()
     {
       m_draw_mode.ClearTexturePageChangedFlag();
       if (m_vram_dirty_rect.Valid() &&
-          (m_draw_mode.GetTexturePageRectangle().Intersects(m_vram_dirty_rect) ||
-           (m_draw_mode.IsUsingPalette() && m_draw_mode.GetTexturePaletteRectangle().Intersects(m_vram_dirty_rect))))
+          (m_draw_mode.mode_reg.GetTexturePageRectangle().Intersects(m_vram_dirty_rect) ||
+           (m_draw_mode.mode_reg.IsUsingPalette() &&
+            m_draw_mode.mode_reg.GetTexturePaletteRectangle().Intersects(m_vram_dirty_rect))))
       {
         // Log_DevPrintf("Invalidating VRAM read cache due to drawing area overlap");
         if (!IsFlushed())
@@ -944,21 +945,21 @@ void GPU_HW::DispatchRenderCommand()
       }
     }
 
-    texture_mode = m_draw_mode.GetTextureMode();
+    texture_mode = m_draw_mode.mode_reg.texture_mode;
     if (rc.raw_texture_enable)
     {
       texture_mode =
-        static_cast<TextureMode>(static_cast<u8>(texture_mode) | static_cast<u8>(TextureMode::RawTextureBit));
+        static_cast<GPUTextureMode>(static_cast<u8>(texture_mode) | static_cast<u8>(GPUTextureMode::RawTextureBit));
     }
   }
   else
   {
-    texture_mode = TextureMode::Disabled;
+    texture_mode = GPUTextureMode::Disabled;
   }
 
   // has any state changed which requires a new batch?
-  const TransparencyMode transparency_mode =
-    rc.transparency_enable ? m_draw_mode.GetTransparencyMode() : TransparencyMode::Disabled;
+  const GPUTransparencyMode transparency_mode =
+    rc.transparency_enable ? m_draw_mode.mode_reg.transparency_mode : GPUTransparencyMode::Disabled;
   const bool dithering_enable = (!m_true_color && rc.IsDitheringEnabled()) ? m_GPUSTAT.dither_enable : false;
   if (m_batch.texture_mode != texture_mode || m_batch.transparency_mode != transparency_mode ||
       dithering_enable != m_batch.dithering)
@@ -969,7 +970,7 @@ void GPU_HW::DispatchRenderCommand()
   EnsureVertexBufferSpaceForCurrentCommand();
 
   // transparency mode change
-  if (m_batch.transparency_mode != transparency_mode && transparency_mode != TransparencyMode::Disabled)
+  if (m_batch.transparency_mode != transparency_mode && transparency_mode != GPUTransparencyMode::Disabled)
   {
     static constexpr float transparent_alpha[4][2] = {{0.5f, 0.5f}, {1.0f, 1.0f}, {1.0f, 1.0f}, {0.25f, 1.0f}};
     m_batch_ubo_data.u_src_alpha_factor = transparent_alpha[static_cast<u32>(transparency_mode)][0];

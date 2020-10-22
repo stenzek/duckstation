@@ -1306,18 +1306,18 @@ void GPU::FlushRender() {}
 
 void GPU::SetDrawMode(u16 value)
 {
-  DrawMode::Reg new_mode_reg{static_cast<u16>(value & DrawMode::Reg::MASK)};
+  GPUDrawModeReg new_mode_reg{static_cast<u16>(value & GPUDrawModeReg::MASK)};
   if (!m_set_texture_disable_mask)
     new_mode_reg.texture_disable = false;
 
   if (new_mode_reg.bits == m_draw_mode.mode_reg.bits)
     return;
 
-  if ((new_mode_reg.bits & DrawMode::Reg::TEXTURE_PAGE_MASK) !=
-      (m_draw_mode.mode_reg.bits & DrawMode::Reg::TEXTURE_PAGE_MASK))
+  if ((new_mode_reg.bits & GPUDrawModeReg::TEXTURE_PAGE_MASK) !=
+      (m_draw_mode.mode_reg.bits & GPUDrawModeReg::TEXTURE_PAGE_MASK))
   {
-    m_draw_mode.texture_page_x = new_mode_reg.GetTexturePageXBase();
-    m_draw_mode.texture_page_y = new_mode_reg.GetTexturePageYBase();
+    m_draw_mode.texture_page_x = new_mode_reg.GetTexturePageBaseX();
+    m_draw_mode.texture_page_y = new_mode_reg.GetTexturePageBaseY();
     m_draw_mode.texture_page_changed = true;
   }
 
@@ -1328,7 +1328,7 @@ void GPU::SetDrawMode(u16 value)
 
   // Bits 0..10 are returned in the GPU status register.
   m_GPUSTAT.bits =
-    (m_GPUSTAT.bits & ~(DrawMode::Reg::GPUSTAT_MASK)) | (ZeroExtend32(new_mode_reg.bits) & DrawMode::Reg::GPUSTAT_MASK);
+    (m_GPUSTAT.bits & ~(GPUDrawModeReg::GPUSTAT_MASK)) | (ZeroExtend32(new_mode_reg.bits) & GPUDrawModeReg::GPUSTAT_MASK);
   m_GPUSTAT.texture_disable = m_draw_mode.mode_reg.texture_disable;
 }
 

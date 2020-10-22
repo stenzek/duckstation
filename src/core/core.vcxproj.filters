@@ -104,5 +104,6 @@
     <ClInclude Include="shadergen.h" />
     <ClInclude Include="memory_card_image.h" />
     <ClInclude Include="analog_joystick.h" />
+    <ClInclude Include="gpu_types.h" />
   </ItemGroup>
 </Project>

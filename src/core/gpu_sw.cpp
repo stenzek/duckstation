@@ -532,12 +532,12 @@ void GPU_SW::UpdateDisplay()
 
 void GPU_SW::DispatchRenderCommand()
 {
-  const RenderCommand rc{m_render_command.bits};
+  const GPURenderCommand rc{m_render_command.bits};
   const bool dithering_enable = rc.IsDitheringEnabled() && m_GPUSTAT.dither_enable;
 
   switch (rc.primitive)
   {
-    case Primitive::Polygon:
+    case GPUPrimitive::Polygon:
     {
       const u32 first_color = rc.color_for_first_vertex;
       const bool shaded = rc.shading_enable;
@@ -553,7 +553,7 @@ void GPU_SW::DispatchRenderCommand()
         vert.g = Truncate8(color_rgb >> 8);
         vert.b = Truncate8(color_rgb >> 16);
 
-        const VertexPosition vp{FifoPop()};
+        const GPUVertexPosition vp{FifoPop()};
         vert.x = m_drawing_offset.x + vp.x;
         vert.y = m_drawing_offset.y + vp.y;
 
@@ -580,10 +580,10 @@ void GPU_SW::DispatchRenderCommand()
     }
     break;
 
-    case Primitive::Rectangle:
+    case GPUPrimitive::Rectangle:
     {
       const auto [r, g, b] = UnpackColorRGB24(rc.color_for_first_vertex);
-      const VertexPosition vp{FifoPop()};
+      const GPUVertexPosition vp{FifoPop()};
       const u32 texcoord_and_palette = rc.texture_enable ? FifoPop() : 0;
       const auto [texcoord_x, texcoord_y] = UnpackTexcoord(Truncate16(texcoord_and_palette));
 
@@ -591,15 +591,15 @@ void GPU_SW::DispatchRenderCommand()
       u32 height;
       switch (rc.rectangle_size)
       {
-        case DrawRectangleSize::R1x1:
+        case GPUDrawRectangleSize::R1x1:
           width = 1;
           height = 1;
           break;
-        case DrawRectangleSize::R8x8:
+        case GPUDrawRectangleSize::R8x8:
           width = 8;
           height = 8;
           break;
-        case DrawRectangleSize::R16x16:
+        case GPUDrawRectangleSize::R16x16:
           width = 16;
           height = 16;
           break;
@@ -629,7 +629,7 @@ void GPU_SW::DispatchRenderCommand()
     }
     break;
 
-    case Primitive::Line:
+    case GPUPrimitive::Line:
     {
       const u32 first_color = rc.color_for_first_vertex;
       const bool shaded = rc.shading_enable;
@@ -642,7 +642,7 @@ void GPU_SW::DispatchRenderCommand()
       // first vertex
       SWVertex* p0 = &vertices[0];
       SWVertex* p1 = &vertices[1];
-      p0->SetPosition(VertexPosition{rc.polyline ? m_blit_buffer[buffer_pos++] : Truncate32(FifoPop())},
+      p0->SetPosition(GPUVertexPosition{rc.polyline ? m_blit_buffer[buffer_pos++] : Truncate32(FifoPop())},
                       m_drawing_offset.x, m_drawing_offset.y);
       p0->SetColorRGB24(first_color);
 
@@ -653,12 +653,12 @@ void GPU_SW::DispatchRenderCommand()
         if (rc.polyline)
         {
           p1->SetColorRGB24(shaded ? (m_blit_buffer[buffer_pos++] & UINT32_C(0x00FFFFFF)) : first_color);
-          p1->SetPosition(VertexPosition{m_blit_buffer[buffer_pos++]}, m_drawing_offset.x, m_drawing_offset.y);
+          p1->SetPosition(GPUVertexPosition{m_blit_buffer[buffer_pos++]}, m_drawing_offset.x, m_drawing_offset.y);
         }
         else
         {
           p1->SetColorRGB24(shaded ? (FifoPop() & UINT32_C(0x00FFFFFF)) : first_color);
-          p1->SetPosition(VertexPosition{Truncate32(FifoPop())}, m_drawing_offset.x, m_drawing_offset.y);
+          p1->SetPosition(GPUVertexPosition{Truncate32(FifoPop())}, m_drawing_offset.x, m_drawing_offset.y);
         }
 
         // down here because of the FIFO pops
@@ -710,9 +710,9 @@ void ALWAYS_INLINE_RELEASE GPU_SW::ShadePixel(u32 x, u32 y, u8 color_r, u8 color
     texcoord_y = (texcoord_y & m_draw_mode.texture_window_and_y) | m_draw_mode.texture_window_or_y;
 
     VRAMPixel texture_color;
-    switch (m_draw_mode.GetTextureMode())
+    switch (m_draw_mode.mode_reg.texture_mode)
     {
-      case GPU::TextureMode::Palette4Bit:
+      case GPUTextureMode::Palette4Bit:
       {
         const u16 palette_value = GetPixel((m_draw_mode.texture_page_x + ZeroExtend32(texcoord_x / 4)) % VRAM_WIDTH,
                                            (m_draw_mode.texture_page_y + ZeroExtend32(texcoord_y)) % VRAM_HEIGHT);
@@ -722,7 +722,7 @@ void ALWAYS_INLINE_RELEASE GPU_SW::ShadePixel(u32 x, u32 y, u8 color_r, u8 color
       }
       break;
 
-      case GPU::TextureMode::Palette8Bit:
+      case GPUTextureMode::Palette8Bit:
       {
         const u16 palette_value = GetPixel((m_draw_mode.texture_page_x + ZeroExtend32(texcoord_x / 2)) % VRAM_WIDTH,
                                            (m_draw_mode.texture_page_y + ZeroExtend32(texcoord_y)) % VRAM_HEIGHT);
@@ -786,18 +786,18 @@ void ALWAYS_INLINE_RELEASE GPU_SW::ShadePixel(u32 x, u32 y, u8 color_r, u8 color
   color.Set(func(bg_color.r.GetValue(), color.r.GetValue()), func(bg_color.g.GetValue(), color.g.GetValue()),          \
             func(bg_color.b.GetValue(), color.b.GetValue()), color.c.GetValue())
 
-      switch (m_draw_mode.GetTransparencyMode())
+      switch (m_draw_mode.mode_reg.transparency_mode)
       {
-        case GPU::TransparencyMode::HalfBackgroundPlusHalfForeground:
+        case GPUTransparencyMode::HalfBackgroundPlusHalfForeground:
           BLEND_RGB(BLEND_AVERAGE);
           break;
-        case GPU::TransparencyMode::BackgroundPlusForeground:
+        case GPUTransparencyMode::BackgroundPlusForeground:
           BLEND_RGB(BLEND_ADD);
           break;
-        case GPU::TransparencyMode::BackgroundMinusForeground:
+        case GPUTransparencyMode::BackgroundMinusForeground:
           BLEND_RGB(BLEND_SUBTRACT);
           break;
-        case GPU::TransparencyMode::BackgroundPlusQuarterForeground:
+        case GPUTransparencyMode::BackgroundPlusQuarterForeground:
           BLEND_RGB(BLEND_QUARTER);
           break;
         default:
@@ -828,8 +828,8 @@ template<bool texture_enable, bool raw_texture_enable, bool transparency_enable>
 void GPU_SW::DrawRectangle(s32 origin_x, s32 origin_y, u32 width, u32 height, u8 r, u8 g, u8 b, u8 origin_texcoord_x,
                            u8 origin_texcoord_y)
 {
-  const s32 start_x = TruncateVertexPosition(m_drawing_offset.x + origin_x);
-  const s32 start_y = TruncateVertexPosition(m_drawing_offset.y + origin_y);
+  const s32 start_x = TruncateGPUVertexPosition(m_drawing_offset.x + origin_x);
+  const s32 start_y = TruncateGPUVertexPosition(m_drawing_offset.y + origin_y);
 
   {
     const u32 clip_left = static_cast<u32>(std::clamp<s32>(start_x, m_drawing_area.left, m_drawing_area.right));
@@ -986,7 +986,7 @@ void GPU_SW::DrawSpan(s32 y, s32 x_start, s32 x_bound, i_group ig, const i_delta
 
   s32 x_ig_adjust = x_start;
   s32 w = x_bound - x_start;
-  s32 x = TruncateVertexPosition(x_start);
+  s32 x = TruncateGPUVertexPosition(x_start);
 
   if (x < static_cast<s32>(m_drawing_area.left))
   {
@@ -1178,7 +1178,7 @@ void GPU_SW::DrawTriangle(const SWVertex* v0, const SWVertex* v1, const SWVertex
         lc -= ls;
         rc -= rs;
 
-        s32 y = TruncateVertexPosition(yi);
+        s32 y = TruncateGPUVertexPosition(yi);
 
         if (y < static_cast<s32>(m_drawing_area.top))
           break;
@@ -1194,7 +1194,7 @@ void GPU_SW::DrawTriangle(const SWVertex* v0, const SWVertex* v1, const SWVertex
     {
       while (yi < yb)
       {
-        s32 y = TruncateVertexPosition(yi);
+        s32 y = TruncateGPUVertexPosition(yi);
 
         if (y > static_cast<s32>(m_drawing_area.bottom))
           break;

@@ -132,16 +132,16 @@ GPU::GP0CommandHandlerTable GPU::GenerateGP0CommandHandlerTable()
   table[0x1F] = &GPU::HandleInterruptRequestCommand;
   for (u32 i = 0x20; i <= 0x7F; i++)
   {
-    const RenderCommand rc{i << 24};
+    const GPURenderCommand rc{i << 24};
     switch (rc.primitive)
     {
-      case Primitive::Polygon:
+      case GPUPrimitive::Polygon:
         table[i] = &GPU::HandleRenderPolygonCommand;
         break;
-      case Primitive::Line:
+      case GPUPrimitive::Line:
         table[i] = rc.polyline ? &GPU::HandleRenderPolyLineCommand : &GPU::HandleRenderLineCommand;
         break;
-      case Primitive::Rectangle:
+      case GPUPrimitive::Rectangle:
         table[i] = &GPU::HandleRenderRectangleCommand;
         break;
       default:
@@ -314,7 +314,7 @@ bool GPU::HandleSetMaskBitCommand()
 
 bool GPU::HandleRenderPolygonCommand()
 {
-  const RenderCommand rc{FifoPeek(0)};
+  const GPURenderCommand rc{FifoPeek(0)};
 
   // shaded vertices use the colour from the first word for the first vertex
   const u32 words_per_vertex = 1 + BoolToUInt32(rc.texture_enable) + BoolToUInt32(rc.shading_enable);
@@ -341,8 +341,8 @@ bool GPU::HandleRenderPolygonCommand()
   if (rc.texture_enable)
   {
     const u16 texpage_attribute = Truncate16((rc.shading_enable ? FifoPeek(5) : FifoPeek(4)) >> 16);
-    SetDrawMode((texpage_attribute & DrawMode::Reg::POLYGON_TEXPAGE_MASK) |
-                (m_draw_mode.mode_reg.bits & ~DrawMode::Reg::POLYGON_TEXPAGE_MASK));
+    SetDrawMode((texpage_attribute & GPUDrawModeReg::POLYGON_TEXPAGE_MASK) |
+                (m_draw_mode.mode_reg.bits & ~GPUDrawModeReg::POLYGON_TEXPAGE_MASK));
     SetTexturePalette(Truncate16(FifoPeek(2) >> 16));
   }
 
@@ -358,9 +358,9 @@ bool GPU::HandleRenderPolygonCommand()
 
 bool GPU::HandleRenderRectangleCommand()
 {
-  const RenderCommand rc{FifoPeek(0)};
+  const GPURenderCommand rc{FifoPeek(0)};
   const u32 total_words =
-    2 + BoolToUInt32(rc.texture_enable) + BoolToUInt32(rc.rectangle_size == DrawRectangleSize::Variable);
+    2 + BoolToUInt32(rc.texture_enable) + BoolToUInt32(rc.rectangle_size == GPUDrawRectangleSize::Variable);
 
   CHECK_COMMAND_SIZE(total_words);
 
@@ -390,7 +390,7 @@ bool GPU::HandleRenderRectangleCommand()
 
 bool GPU::HandleRenderLineCommand()
 {
-  const RenderCommand rc{FifoPeek(0)};
+  const GPURenderCommand rc{FifoPeek(0)};
   const u32 total_words = rc.shading_enable ? 4 : 3;
   CHECK_COMMAND_SIZE(total_words);
 
@@ -413,7 +413,7 @@ bool GPU::HandleRenderLineCommand()
 bool GPU::HandleRenderPolyLineCommand()
 {
   // always read the first two vertices, we test for the terminator after that
-  const RenderCommand rc{FifoPeek(0)};
+  const GPURenderCommand rc{FifoPeek(0)};
   const u32 min_words = rc.shading_enable ? 3 : 4;
   CHECK_COMMAND_SIZE(min_words);
 

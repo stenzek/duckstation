@@ -36,10 +36,10 @@ protected:
     u8 r, g, b;
     u8 u, v;
 
-    ALWAYS_INLINE void SetPosition(VertexPosition p, s32 offset_x, s32 offset_y)
+    ALWAYS_INLINE void SetPosition(GPUVertexPosition p, s32 offset_x, s32 offset_y)
     {
-      x = TruncateVertexPosition(offset_x + p.x);
-      y = TruncateVertexPosition(offset_y + p.y);
+      x = TruncateGPUVertexPosition(offset_x + p.x);
+      y = TruncateGPUVertexPosition(offset_y + p.y);
     }
 
     ALWAYS_INLINE void SetColorRGB24(u32 color) { std::tie(r, g, b) = UnpackColorRGB24(color); }
