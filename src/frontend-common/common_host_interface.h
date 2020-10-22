@@ -159,6 +159,9 @@ public:
   /// Loads the cheat list for the current game title from the user directory.
   bool LoadCheatListFromGameTitle();
 
+  /// Saves the current cheat list to the game title's file.
+  bool SaveCheatList();
+
   /// Saves the current cheat list to the specified file.
   bool SaveCheatList(const char* filename);
 
@@ -261,9 +264,6 @@ protected:
   /// Sets the base path for the user directory. Can be overridden by platform/frontend/command line.
   virtual void SetUserDirectory();
 
-  /// Performs the initial load of settings. Should call CheckSettings() and LoadSettings(SettingsInterface&).
-  virtual void LoadSettings() = 0;
-
   /// Updates logging settings.
   virtual void UpdateLogSettings(LOGLEVEL level, const char* filter, bool log_to_console, bool log_to_debug,
                                  bool log_to_window, bool log_to_file);
@@ -278,12 +278,13 @@ protected:
   std::string GetCheatFileName() const;
 
   /// Ensures the settings is valid and the correct version. If not, resets to defaults.
-  void CheckSettings(SettingsInterface& si);
+  bool CheckSettings(SettingsInterface& si);
 
   /// Restores all settings to defaults.
   virtual void SetDefaultSettings(SettingsInterface& si) override;
 
   /// Loads settings to m_settings and any frontend-specific parameters.
+  using HostInterface::LoadSettings;
   virtual void LoadSettings(SettingsInterface& si) override;
 
   /// Saves current settings variables to ini.

@@ -3,6 +3,7 @@
 #include "common/log.h"
 #include "common/state_wrapper.h"
 #include "cpu_core.h"
+#include "cpu_core_private.h"
 #include "system.h"
 Log_SetChannel(TimingEvents);
 
@@ -13,7 +14,6 @@ static TimingEvent* s_active_events_tail;
 static TimingEvent* s_current_event = nullptr;
 static u32 s_active_event_count = 0;
 static u32 s_global_tick_counter = 0;
-static u32 s_last_event_run_time = 0;
 
 u32 GetGlobalTickCounter()
 {
@@ -28,7 +28,6 @@ void Initialize()
 void Reset()
 {
   s_global_tick_counter = 0;
-  s_last_event_run_time = 0;
 }
 
 void Shutdown()
@@ -49,8 +48,16 @@ std::unique_ptr<TimingEvent> CreateTimingEvent(std::string name, TickCount perio
 
 void UpdateCPUDowncount()
 {
-  if (!CPU::g_state.frame_done)
+  if (!CPU::g_state.frame_done &&
+      (!CPU::HasPendingInterrupt() || g_settings.cpu_execution_mode == CPUExecutionMode::Interpreter))
+  {
     CPU::g_state.downcount = s_active_events_head->GetDowncount();
+  }
+}
+
+TimingEvent** GetHeadEventPtr()
+{
+  return &s_active_events_head;
 }
 
 static void SortEvent(TimingEvent* event)
@@ -255,7 +262,7 @@ void RunEvents()
 {
   DebugAssert(!s_current_event);
 
-  TickCount pending_ticks = (s_global_tick_counter + CPU::GetPendingTicks()) - s_last_event_run_time;
+  TickCount pending_ticks = CPU::GetPendingTicks();
   CPU::ResetPendingTicks();
   while (pending_ticks > 0)
   {
@@ -291,7 +298,6 @@ void RunEvents()
     }
   }
 
-  s_last_event_run_time = s_global_tick_counter;
   s_current_event = nullptr;
   UpdateCPUDowncount();
 }
@@ -333,7 +339,11 @@ bool DoState(StateWrapper& sw)
       event->m_interval = interval;
     }
 
-    sw.Do(&s_last_event_run_time);
+    if (sw.GetVersion() < 43)
+    {
+      u32 last_event_run_time = 0;
+      sw.Do(&last_event_run_time);
+    }
 
     Log_DevPrintf("Loaded %u events from save state.", event_count);
     SortEvents();
@@ -351,8 +361,6 @@ bool DoState(StateWrapper& sw)
       sw.Do(&event->m_period);
       sw.Do(&event->m_interval);
     }
-
-    sw.Do(&s_last_event_run_time);
 
     Log_DevPrintf("Wrote %u events to save state.", s_active_event_count);
   }

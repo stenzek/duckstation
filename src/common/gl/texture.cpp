@@ -158,7 +158,6 @@ void Texture::GetTextureSubImage(GLuint texture, GLint level, GLint xoffset, GLi
   else
     glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, level);
 
-  GLuint status = glCheckFramebufferStatus(GL_READ_FRAMEBUFFER);
   DebugAssert(glCheckFramebufferStatus(GL_READ_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
   glReadPixels(xoffset, yoffset, width, height, format, type, pixels);
 

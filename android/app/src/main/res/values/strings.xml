@@ -11,7 +11,7 @@
     <string name="settings_gpu_header">GPU</string>
 
     <!-- Console Preferences -->
-    <string name="settings_console_region">Region</string>
+    <string name="settings_console_region">Console Region</string>
     <string name="settings_console_region_default">Auto</string>
     <string name="settings_console_bios_path">BIOS Path</string>
     <string name="settings_console_tty_output">Enable TTY Output</string>

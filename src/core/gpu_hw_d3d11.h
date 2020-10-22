@@ -75,8 +75,6 @@ private:
   ComPtr<ID3D11Device> m_device;
   ComPtr<ID3D11DeviceContext> m_context;
 
-  D3D11::ShaderCache m_shader_cache;
-
   // downsample texture - used for readbacks at >1xIR.
   D3D11::Texture m_vram_texture;
   D3D11::Texture m_vram_depth_texture;

@@ -482,7 +482,7 @@ static std::array<retro_core_option_definition, 36> s_option_definitions = {{
    {{"true", "Enabled"}, {"false", "Disabled"}},
    "false"},
   {"duckstation_CDROM.ReadSpeedup",
-   "Mute CD Audio",
+   "CD-ROM Read Speedup",
    "Speeds up CD-ROM reads by the specified factor. Only applies to double-speed reads, and is ignored when audio "
    "is playing. May improve loading speeds in some games, at the cost of breaking others.",
    {{"1", "None (Double Speed)"},

@@ -1,6 +1,6 @@
 #pragma once
 #include "common/bitfield.h"
-#include "cpu_code_cache.h"
+#include "common/memory_arena.h"
 #include "types.h"
 #include <array>
 #include <bitset>
@@ -66,26 +66,68 @@ enum : u32
   MEMCTRL_REG_COUNT = 9
 };
 
-void Initialize();
+enum : TickCount
+{
+  RAM_READ_TICKS = 4
+};
+
+enum : size_t
+{
+  // Our memory arena contains storage for RAM.
+  MEMORY_ARENA_SIZE = RAM_SIZE,
+
+  // Offsets within the memory arena.
+  MEMORY_ARENA_RAM_OFFSET = 0,
+
+  // Fastmem region size is 4GB to cover the entire 32-bit address space.
+  FASTMEM_REGION_SIZE = UINT64_C(0x100000000)
+};
+
+bool Initialize();
 void Shutdown();
 void Reset();
 bool DoState(StateWrapper& sw);
+
+u8* GetFastmemBase();
+void UpdateFastmemViews(bool enabled, bool isolate_cache);
+bool CanUseFastmemForAddress(VirtualMemoryAddress address);
 
 void SetExpansionROM(std::vector<u8> data);
 void SetBIOS(const std::vector<u8>& image);
 
 extern std::bitset<CPU_CODE_CACHE_PAGE_COUNT> m_ram_code_bits;
-extern u8 g_ram[RAM_SIZE];   // 2MB RAM
+extern u8* g_ram;            // 2MB RAM
 extern u8 g_bios[BIOS_SIZE]; // 512K BIOS ROM
 
+/// Returns true if the address specified is writable (RAM).
+ALWAYS_INLINE static bool IsRAMAddress(PhysicalMemoryAddress address)
+{
+  return address < RAM_MIRROR_END;
+}
+
+/// Returns the code page index for a RAM address.
+ALWAYS_INLINE static u32 GetRAMCodePageIndex(PhysicalMemoryAddress address)
+{
+  return (address & RAM_MASK) / CPU_CODE_CACHE_PAGE_SIZE;
+}
+
+/// Returns true if the specified page contains code.
+bool IsRAMCodePage(u32 index);
+
 /// Flags a RAM region as code, so we know when to invalidate blocks.
-ALWAYS_INLINE void SetRAMCodePage(u32 index) { m_ram_code_bits[index] = true; }
+void SetRAMCodePage(u32 index);
 
 /// Unflags a RAM region as code, the code cache will no longer be notified when writes occur.
-ALWAYS_INLINE void ClearRAMCodePage(u32 index) { m_ram_code_bits[index] = false; }
+void ClearRAMCodePage(u32 index);
 
 /// Clears all code bits for RAM regions.
-ALWAYS_INLINE void ClearRAMCodePageFlags() { m_ram_code_bits.reset(); }
+void ClearRAMCodePageFlags();
+
+/// Returns true if the specified address is in a code page.
+bool IsCodePageAddress(PhysicalMemoryAddress address);
+
+/// Returns true if the range specified overlaps with a code page.
+bool HasCodePagesInRange(PhysicalMemoryAddress start_address, u32 size);
 
 /// Returns the number of cycles stolen by DMA RAM access.
 ALWAYS_INLINE TickCount GetDMARAMTickCount(u32 word_count)
@@ -95,18 +137,6 @@ ALWAYS_INLINE TickCount GetDMARAMTickCount(u32 word_count)
   // refresh cycles). This is making DMA much faster than CPU memory accesses (CPU DRAM access takes 1 opcode cycle
   // plus 6 waitstates, ie. 7 cycles in total).
   return static_cast<TickCount>(word_count + ((word_count + 15) / 16));
-}
-
-/// Invalidates any code pages which overlap the specified range.
-ALWAYS_INLINE void InvalidateCodePages(PhysicalMemoryAddress address, u32 word_count)
-{
-  const u32 start_page = address / CPU_CODE_CACHE_PAGE_SIZE;
-  const u32 end_page = (address + word_count * sizeof(u32)) / CPU_CODE_CACHE_PAGE_SIZE;
-  for (u32 page = start_page; page <= end_page; page++)
-  {
-    if (m_ram_code_bits[page])
-      CPU::CodeCache::InvalidateBlocksWithPageIndex(page);
-  }
 }
 
 } // namespace Bus

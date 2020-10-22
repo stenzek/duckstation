@@ -16,8 +16,8 @@ public class TouchscreenControllerButtonView extends View {
     private Drawable mUnpressedDrawable;
     private Drawable mPressedDrawable;
     private boolean mPressed = false;
+    private int mControllerIndex = -1;
     private int mButtonCode = -1;
-    private String mButtonName = "";
 
     public TouchscreenControllerButtonView(Context context) {
         super(context);
@@ -56,13 +56,12 @@ public class TouchscreenControllerButtonView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        int paddingLeft = getPaddingLeft();
-        int paddingTop = getPaddingTop();
-        int paddingRight = getPaddingRight();
-        int paddingBottom = getPaddingBottom();
-
-        int contentWidth = getWidth() - paddingLeft - paddingRight;
-        int contentHeight = getHeight() - paddingTop - paddingBottom;
+        final int paddingLeft = getPaddingLeft();
+        final int paddingTop = getPaddingTop();
+        final int paddingRight = getPaddingRight();
+        final int paddingBottom = getPaddingBottom();
+        final int contentWidth = getWidth() - paddingLeft - paddingRight;
+        final int contentHeight = getHeight() - paddingTop - paddingBottom;
 
         // Draw the example drawable on top of the text.
         Drawable drawable = mPressed ? mPressedDrawable : mUnpressedDrawable;
@@ -77,22 +76,23 @@ public class TouchscreenControllerButtonView extends View {
         return mPressed;
     }
 
-    public void setPressed(boolean pressed) { mPressed = pressed; invalidate(); }
+    public void setPressed(boolean pressed) {
+        if (pressed == mPressed)
+            return;
 
-    public String getButtonName() {
-        return mButtonName;
+        mPressed = pressed;
+        invalidate();
+        updateControllerState();
     }
 
-    public void setButtonName(String buttonName) {
-        mButtonName = buttonName;
-    }
-
-    public int getButtonCode() {
-        return mButtonCode;
-    }
-
-    public void setButtonCode(int code) {
+    public void setButtonCode(int controllerIndex, int code) {
+        mControllerIndex = controllerIndex;
         mButtonCode = code;
+    }
+
+    private void updateControllerState() {
+        if (mButtonCode >= 0)
+            AndroidHostInterface.getInstance().setControllerButtonState(mControllerIndex, mButtonCode, mPressed);
     }
 
     public Drawable getPressedDrawable() {

@@ -1,4 +1,5 @@
 #include "cpu_core.h"
+#include "bus.h"
 #include "common/align.h"
 #include "common/file_system.h"
 #include "common/log.h"
@@ -229,7 +230,16 @@ void RaiseException(u32 CAUSE_bits, u32 EPC)
 void SetExternalInterrupt(u8 bit)
 {
   g_state.cop0_regs.cause.Ip |= static_cast<u8>(1u << bit);
-  g_state.interrupt_delay = 1;
+
+  if (g_settings.cpu_execution_mode == CPUExecutionMode::Interpreter)
+  {
+    g_state.interrupt_delay = 1;
+  }
+  else
+  {
+    g_state.interrupt_delay = 0;
+    CheckForPendingInterrupt();
+  }
 }
 
 void ClearExternalInterrupt(u8 bit)
@@ -395,6 +405,7 @@ ALWAYS_INLINE_RELEASE static void WriteCop0Reg(Cop0Reg reg, u32 value)
       g_state.cop0_regs.sr.bits =
         (g_state.cop0_regs.sr.bits & ~Cop0Registers::SR::WRITE_MASK) | (value & Cop0Registers::SR::WRITE_MASK);
       Log_DebugPrintf("COP0 SR <- %08X (now %08X)", value, g_state.cop0_regs.sr.bits);
+      CheckForPendingInterrupt();
     }
     break;
 
@@ -403,6 +414,7 @@ ALWAYS_INLINE_RELEASE static void WriteCop0Reg(Cop0Reg reg, u32 value)
       g_state.cop0_regs.cause.bits =
         (g_state.cop0_regs.cause.bits & ~Cop0Registers::CAUSE::WRITE_MASK) | (value & Cop0Registers::CAUSE::WRITE_MASK);
       Log_DebugPrintf("COP0 CAUSE <- %08X (now %08X)", value, g_state.cop0_regs.cause.bits);
+      CheckForPendingInterrupt();
     }
     break;
 
@@ -884,7 +896,7 @@ restart_instruction:
       }
 
       if constexpr (pgxp_mode >= PGXPMode::CPU)
-        PGXP::CPU_ANDI(inst.bits, new_value, ReadReg(inst.i.rs));
+        PGXP::CPU_ADDI(inst.bits, new_value, ReadReg(inst.i.rs));
 
       WriteReg(inst.i.rt, new_value);
     }
@@ -1216,6 +1228,7 @@ restart_instruction:
             // restore mode
             g_state.cop0_regs.sr.mode_bits =
               (g_state.cop0_regs.sr.mode_bits & UINT32_C(0b110000)) | (g_state.cop0_regs.sr.mode_bits >> 2);
+            CheckForPendingInterrupt();
           }
           break;
 
@@ -1365,6 +1378,21 @@ restart_instruction:
   }
 }
 
+void DispatchInterrupt()
+{
+  // If the instruction we're about to execute is a GTE instruction, delay dispatching the interrupt until the next
+  // instruction. For some reason, if we don't do this, we end up with incorrectly sorted polygons and flickering..
+  SafeReadInstruction(g_state.regs.pc, &g_state.next_instruction.bits);
+  if (g_state.next_instruction.op == InstructionOp::cop2 && !g_state.next_instruction.cop.IsCommonInstruction())
+    GTE::ExecuteInstruction(g_state.next_instruction.bits);
+
+  // Interrupt raising occurs before the start of the instruction.
+  RaiseException(
+    Cop0Registers::CAUSE::MakeValueForException(Exception::INT, g_state.next_instruction_is_branch_delay_slot,
+                                                g_state.branch_was_taken, g_state.next_instruction.cop.cop_n),
+    g_state.regs.pc);
+}
+
 template<PGXPMode pgxp_mode>
 static void ExecuteImpl()
 {
@@ -1375,9 +1403,10 @@ static void ExecuteImpl()
 
     while (g_state.pending_ticks < g_state.downcount)
     {
-      if (HasPendingInterrupt())
+      if (HasPendingInterrupt() && !g_state.interrupt_delay)
         DispatchInterrupt();
 
+      g_state.interrupt_delay = false;
       g_state.pending_ticks++;
 
       // now executing the instruction we previously fetched
@@ -1533,6 +1562,11 @@ bool InterpretInstructionPGXP()
 {
   ExecuteInstruction<PGXPMode::Memory>();
   return g_state.exception_raised;
+}
+
+void UpdateFastmemMapping()
+{
+  Bus::UpdateFastmemViews(true, g_state.cop0_regs.sr.Isc);
 }
 
 } // namespace Recompiler::Thunks

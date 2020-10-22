@@ -1,6 +1,9 @@
+#include "common/log.h"
 #include "cpu_core.h"
 #include "cpu_core_private.h"
 #include "cpu_recompiler_code_generator.h"
+#include "settings.h"
+Log_SetChannel(Recompiler::CodeGenerator);
 
 namespace CPU::Recompiler {
 
@@ -23,6 +26,122 @@ void CodeGenerator::EmitStoreInterpreterLoadDelay(Reg reg, const Value& value)
   m_load_delay_dirty = true;
 }
 
+Value CodeGenerator::EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const Value& address,
+                                         const SpeculativeValue& address_spec, RegSize size)
+{
+  if (address.IsConstant())
+  {
+    TickCount read_ticks;
+    void* ptr = GetDirectReadMemoryPointer(
+      static_cast<u32>(address.constant_value),
+      (size == RegSize_8) ? MemoryAccessSize::Byte :
+                            ((size == RegSize_16) ? MemoryAccessSize::HalfWord : MemoryAccessSize::Word),
+      &read_ticks);
+    if (ptr)
+    {
+      Value result = m_register_cache.AllocateScratch(size);
+
+      if (g_settings.IsUsingFastmem() && Bus::IsRAMAddress(static_cast<u32>(address.constant_value)))
+        EmitLoadGuestRAMFastmem(address, size, result);
+      else
+        EmitLoadGlobal(result.GetHostRegister(), size, ptr);
+
+      m_delayed_cycles_add += read_ticks;
+      return result;
+    }
+  }
+
+  AddPendingCycles(true);
+
+  const bool use_fastmem = address_spec ? Bus::CanUseFastmemForAddress(*address_spec) : true;
+  if (address_spec)
+  {
+    if (!use_fastmem)
+      Log_DevPrintf("Non-constant load at 0x%08X, speculative address 0x%08X, using fastmem = %s", cbi.pc,
+                    *address_spec, use_fastmem ? "yes" : "no");
+  }
+  else
+  {
+    Log_DevPrintf("Non-constant load at 0x%08X, speculative address UNKNOWN, using fastmem = %s", cbi.pc,
+                  use_fastmem ? "yes" : "no");
+  }
+
+  Value result = m_register_cache.AllocateScratch(RegSize_64);
+  if (g_settings.IsUsingFastmem() && use_fastmem)
+  {
+    EmitLoadGuestMemoryFastmem(cbi, address, size, result);
+  }
+  else
+  {
+    m_register_cache.FlushCallerSavedGuestRegisters(true, true);
+    EmitLoadGuestMemorySlowmem(cbi, address, size, result, false);
+  }
+
+  // Downcast to ignore upper 56/48/32 bits. This should be a noop.
+  switch (size)
+  {
+    case RegSize_8:
+      ConvertValueSizeInPlace(&result, RegSize_8, false);
+      break;
+
+    case RegSize_16:
+      ConvertValueSizeInPlace(&result, RegSize_16, false);
+      break;
+
+    case RegSize_32:
+      ConvertValueSizeInPlace(&result, RegSize_32, false);
+      break;
+
+    default:
+      UnreachableCode();
+      break;
+  }
+
+  return result;
+}
+
+void CodeGenerator::EmitStoreGuestMemory(const CodeBlockInstruction& cbi, const Value& address,
+                                         const SpeculativeValue& address_spec, const Value& value)
+{
+  if (address.IsConstant())
+  {
+    void* ptr = GetDirectWriteMemoryPointer(
+      static_cast<u32>(address.constant_value),
+      (value.size == RegSize_8) ? MemoryAccessSize::Byte :
+                                  ((value.size == RegSize_16) ? MemoryAccessSize::HalfWord : MemoryAccessSize::Word));
+    if (ptr)
+    {
+      EmitStoreGlobal(ptr, value);
+      return;
+    }
+  }
+
+  AddPendingCycles(true);
+
+  const bool use_fastmem = address_spec ? Bus::CanUseFastmemForAddress(*address_spec) : true;
+  if (address_spec)
+  {
+    if (!use_fastmem)
+      Log_DevPrintf("Non-constant store at 0x%08X, speculative address 0x%08X, using fastmem = %s", cbi.pc,
+                    *address_spec, use_fastmem ? "yes" : "no");
+  }
+  else
+  {
+    Log_DevPrintf("Non-constant store at 0x%08X, speculative address UNKNOWN, using fastmem = %s", cbi.pc,
+                  use_fastmem ? "yes" : "no");
+  }
+
+  if (g_settings.IsUsingFastmem() && use_fastmem)
+  {
+    EmitStoreGuestMemoryFastmem(cbi, address, value);
+  }
+  else
+  {
+    m_register_cache.FlushCallerSavedGuestRegisters(true, true);
+    EmitStoreGuestMemorySlowmem(cbi, address, value, false);
+  }
+}
+
 #ifndef CPU_X64
 
 void CodeGenerator::EmitICacheCheckAndUpdate()
@@ -35,8 +154,9 @@ void CodeGenerator::EmitICacheCheckAndUpdate()
   LabelType is_cached;
   LabelType ready_to_execute;
   EmitConditionalBranch(Condition::LessEqual, false, temp.GetHostRegister(), Value::FromConstantU32(4), &is_cached);
-  EmitAddCPUStructField(offsetof(State, pending_ticks),
-                        Value::FromConstantU32(static_cast<u32>(m_block->uncached_fetch_ticks)));
+  EmitLoadCPUStructField(temp.host_reg, RegSize_32, offsetof(State, pending_ticks));
+  EmitAdd(temp.host_reg, temp.host_reg, Value::FromConstantU32(static_cast<u32>(m_block->uncached_fetch_ticks)), false);
+  EmitStoreCPUStructField(offsetof(State, pending_ticks), temp);
   EmitBranch(&ready_to_execute);
   EmitBindLabel(&is_cached);
 
@@ -55,8 +175,10 @@ void CodeGenerator::EmitICacheCheckAndUpdate()
 
     EmitLoadCPUStructField(temp.GetHostRegister(), RegSize_32, offset);
     EmitConditionalBranch(Condition::Equal, false, temp.GetHostRegister(), pc, &cache_hit);
-    EmitAddCPUStructField(offsetof(State, pending_ticks), Value::FromConstantU32(static_cast<u32>(fill_ticks)));
+    EmitLoadCPUStructField(temp.host_reg, RegSize_32, offsetof(State, pending_ticks));
     EmitStoreCPUStructField(offset, pc);
+    EmitAdd(temp.host_reg, temp.host_reg, Value::FromConstantU32(static_cast<u32>(fill_ticks)), false);
+    EmitStoreCPUStructField(offsetof(State, pending_ticks), temp);
     EmitBindLabel(&cache_hit);
     EmitAdd(pc.GetHostRegister(), pc.GetHostRegister(), Value::FromConstantU32(ICACHE_LINE_SIZE), false);
   }

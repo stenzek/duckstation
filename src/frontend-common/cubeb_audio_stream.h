@@ -9,6 +9,8 @@ public:
   CubebAudioStream();
   ~CubebAudioStream();
 
+  static std::unique_ptr<AudioStream> Create();
+
 protected:
   bool IsOpen() const { return m_cubeb_stream != nullptr; }
 

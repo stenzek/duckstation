@@ -1332,9 +1332,18 @@ Tetris with Card Captor Sakura (Japan)
     <version-tested>0.1-1835-ge2fab72b</version-tested>
     <comments>Control in race are so crazy! No drivible!</comments>
   </entry>
+  <entry code="SCES-03424" compatibility="4" region="PAL" title="Formula One 2001 (Europe) (Es,It)">
+    <compatibility>Graphical/Audio Issues</compatibility>
+    <version-tested>0.1-1959-g4f0007dd</version-tested>
+    <comments>Only works in Interpreter mode. Without Interpreter, the AI breaks and won't move at all, while your car will be uncontrollable in Grand Prix mode and will not move in Arcade mode. Heat effect from engines doesn't display correctly.</comments>
+  </entry>
   <entry code="SLUS-00870" compatibility="5" region="NTSC-U" title="Formula One 99 (USA) (En,Fr,Es)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1638-g0af22825</version-tested>
+  </entry>
+  <entry code="SLUS-00458" compatibility="5" region="NTSC-U" title="Forsaken (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1969-g671033fd</version-tested>
   </entry>
   <entry code="SLUS-01129" compatibility="5" region="NTSC-U" title="FoxKids.com - Micro Maniacs Racing (USA)">
     <compatibility>No Issues</compatibility>
@@ -3160,6 +3169,11 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-774-g5a1b008</version-tested>
   </entry>
+  <entry code="SLUS-00283" compatibility="5" region="NTSC-U" title="Tempest X3 (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1969-g671033fd</version-tested>
+    <comments>Surprisingly, even the Melt-O-Vision effect depicted on the Interplay logo in the Credits screen works! (tested in PGXP mode)</comments>
+  </entry>
   <entry code="SLUS-00706" compatibility="5" region="NTSC-U" title="Tenchu - Stealth Assassins (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1400-gb527118c</version-tested>
@@ -3293,6 +3307,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-986-gfc911de1</version-tested>
   </entry>
+  <entry code="SLPS-00887" compatibility="5" region="NTSC-J" title="Triple Play 98 (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1998-g43bafe1a</version-tested>
+  </entry>
   <entry code="SLP-02108-9" compatibility="5" region="NTSC-J" title="Tron ni Kobun">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-826-g712168c</version-tested>
@@ -3321,6 +3339,10 @@ Tetris with Card Captor Sakura (Japan)
   </entry>
   <entry code="SLPS-00131" compatibility="5" region="NTSC-J" title="Two-Ten Kaku (Japan)">
     <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLES-02577" compatibility="5" region="PAL" title="UEFA Champions League - Season 1999-2000 (Europe)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-1998-g43bafe1a</version-tested>
   </entry>
   <entry code="SLPS-01248" compatibility="5" region="NTSC-J" title="Ultraman - Fighting Evolution (Japan)">
     <compatibility>No Issues</compatibility>

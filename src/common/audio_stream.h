@@ -47,8 +47,6 @@ public:
 
   static std::unique_ptr<AudioStream> CreateNullAudioStream();
 
-  static std::unique_ptr<AudioStream> CreateCubebAudioStream();
-
   // Latency computation - returns values in seconds
   static float GetMaxLatency(u32 sample_rate, u32 buffer_size);
 

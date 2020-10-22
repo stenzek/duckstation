@@ -434,6 +434,8 @@ void GameList::RewriteCacheFile()
         break;
       }
     }
+
+    CloseCacheFileStream();
   }
 }
 
@@ -694,10 +696,11 @@ void GameList::Refresh(bool invalidate_cache, bool invalidate_database, Progress
     progress->SetProgressRange(static_cast<u32>(m_search_directories.size()));
     progress->SetProgressValue(0);
 
-    for (DirectoryEntry& de : m_search_directories)
+    for (u32 i = 0; i < static_cast<u32>(m_search_directories.size()); i++)
     {
+      const DirectoryEntry& de = m_search_directories[i];
       ScanDirectory(de.path.c_str(), de.recursive, progress);
-      progress->IncrementProgressValue();
+      progress->SetProgressValue(i + 1);
     }
   }
 

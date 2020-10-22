@@ -10,6 +10,7 @@
 #include "cpu_disasm.h"
 #include "dma.h"
 #include "gpu.h"
+#include "host_interface.h"
 #include "interrupt_controller.h"
 #include "mdec.h"
 #include "pad.h"
@@ -69,7 +70,7 @@ union MEMCTRL
 };
 
 std::bitset<CPU_CODE_CACHE_PAGE_COUNT> m_ram_code_bits{};
-u8 g_ram[RAM_SIZE]{};   // 2MB RAM
+u8* g_ram = nullptr;    // 2MB RAM
 u8 g_bios[BIOS_SIZE]{}; // 512K BIOS ROM
 
 static std::array<TickCount, 3> m_exp1_access_time = {};
@@ -85,8 +86,16 @@ static u32 m_ram_size_reg = 0;
 
 static std::string m_tty_line_buffer;
 
+static Common::MemoryArena m_memory_arena;
+static u8* m_fastmem_base = nullptr;
+static std::vector<Common::MemoryArena::View> m_fastmem_ram_views;
+
 static std::tuple<TickCount, TickCount, TickCount> CalculateMemoryTiming(MEMDELAY mem_delay, COMDELAY common_delay);
 static void RecalculateMemoryTimings();
+
+static void SetCodePageFastmemProtection(u32 page_index, bool writable);
+static bool AllocateMemory();
+static void UnmapFastmemViews();
 
 #define FIXUP_WORD_READ_OFFSET(offset) ((offset) & ~u32(3))
 #define FIXUP_WORD_READ_VALUE(offset, value) ((value) >> (((offset)&u32(3)) * 8u))
@@ -103,19 +112,30 @@ ALWAYS_INLINE static void FixupUnalignedWordAccessW32(u32& offset, u32& value)
   value <<= byte_offset * 8;
 }
 
-void Initialize()
+bool Initialize()
 {
+  if (!AllocateMemory())
+  {
+    g_host_interface->ReportError("Failed to allocate memory");
+    return false;
+  }
+
   Reset();
+  return true;
 }
 
 void Shutdown()
 {
-  //
+  UnmapFastmemViews();
+  if (g_ram)
+    m_memory_arena.ReleaseViewPtr(g_ram, RAM_SIZE);
+
+  CPU::g_state.fastmem_base = nullptr;
 }
 
 void Reset()
 {
-  std::memset(g_ram, 0, sizeof(g_ram));
+  std::memset(g_ram, 0, RAM_SIZE);
   m_MEMCTRL.exp1_base = 0x1F000000;
   m_MEMCTRL.exp2_base = 0x1F802000;
   m_MEMCTRL.exp1_delay_size.bits = 0x0013243F;
@@ -137,8 +157,8 @@ bool DoState(StateWrapper& sw)
   sw.Do(&m_bios_access_time);
   sw.Do(&m_cdrom_access_time);
   sw.Do(&m_spu_access_time);
-  sw.DoBytes(g_ram, sizeof(g_ram));
-  sw.DoBytes(g_bios, sizeof(g_bios));
+  sw.DoBytes(g_ram, RAM_SIZE);
+  sw.DoBytes(g_bios, BIOS_SIZE);
   sw.DoArray(m_MEMCTRL.regs, countof(m_MEMCTRL.regs));
   sw.Do(&m_ram_size_reg);
   sw.Do(&m_tty_line_buffer);
@@ -217,6 +237,185 @@ void RecalculateMemoryTimings()
                   m_spu_access_time[2] + 1);
 }
 
+bool AllocateMemory()
+{
+  if (!m_memory_arena.Create(MEMORY_ARENA_SIZE, true, false))
+  {
+    Log_ErrorPrint("Failed to create memory arena");
+    return false;
+  }
+
+  // Create the base views.
+  g_ram = static_cast<u8*>(m_memory_arena.CreateViewPtr(MEMORY_ARENA_RAM_OFFSET, RAM_SIZE, true, false));
+  if (!g_ram)
+  {
+    Log_ErrorPrint("Failed to create base views of memory");
+    return false;
+  }
+
+  return true;
+}
+
+void UnmapFastmemViews()
+{
+  m_fastmem_ram_views.clear();
+}
+
+void UpdateFastmemViews(bool enabled, bool isolate_cache)
+{
+  UnmapFastmemViews();
+  if (!enabled)
+  {
+    m_fastmem_base = nullptr;
+    return;
+  }
+
+  Log_DevPrintf("Remapping fastmem area, isolate cache = %s", isolate_cache ? "true " : "false");
+  if (!m_fastmem_base)
+  {
+    m_fastmem_base = static_cast<u8*>(m_memory_arena.FindBaseAddressForMapping(FASTMEM_REGION_SIZE));
+    if (!m_fastmem_base)
+    {
+      Log_ErrorPrint("Failed to find base address for fastmem");
+      return;
+    }
+
+    Log_InfoPrintf("Fastmem base: %p", m_fastmem_base);
+    CPU::g_state.fastmem_base = m_fastmem_base;
+  }
+
+  auto MapRAM = [](u32 base_address, bool writable) {
+    u8* map_address = m_fastmem_base + base_address;
+    auto view = m_memory_arena.CreateView(MEMORY_ARENA_RAM_OFFSET, RAM_SIZE, writable, false, map_address);
+    if (!view)
+    {
+      Log_ErrorPrintf("Failed to map RAM at fastmem area %p (offset 0x%08X)", map_address, RAM_SIZE);
+      return;
+    }
+
+    // mark all pages with code as non-writable
+    for (u32 i = 0; i < CPU_CODE_CACHE_PAGE_COUNT; i++)
+    {
+      if (m_ram_code_bits[i])
+      {
+        u8* page_address = map_address + (i * CPU_CODE_CACHE_PAGE_SIZE);
+        if (!m_memory_arena.SetPageProtection(page_address, CPU_CODE_CACHE_PAGE_SIZE, true, false, false))
+        {
+          Log_ErrorPrintf("Failed to write-protect code page at %p");
+          return;
+        }
+      }
+    }
+
+    m_fastmem_ram_views.push_back(std::move(view.value()));
+  };
+
+  if (!isolate_cache)
+  {
+    // KUSEG - cached
+    MapRAM(0x00000000, !isolate_cache);
+    //MapRAM(0x00200000, !isolate_cache);
+    //MapRAM(0x00400000, !isolate_cache);
+    //MapRAM(0x00600000, !isolate_cache);
+
+    // KSEG0 - cached
+    MapRAM(0x80000000, !isolate_cache);
+    //MapRAM(0x80200000, !isolate_cache);
+    //MapRAM(0x80400000, !isolate_cache);
+    //MapRAM(0x80600000, !isolate_cache);
+  }
+
+  // KSEG1 - uncached
+  MapRAM(0xA0000000, true);
+  //MapRAM(0xA0200000, true);
+  //MapRAM(0xA0400000, true);
+  //MapRAM(0xA0600000, true);
+}
+
+bool CanUseFastmemForAddress(VirtualMemoryAddress address)
+{
+  const PhysicalMemoryAddress paddr = address & CPU::PHYSICAL_MEMORY_ADDRESS_MASK;
+  return IsRAMAddress(paddr);
+}
+
+bool IsRAMCodePage(u32 index)
+{
+  return m_ram_code_bits[index];
+}
+
+void SetRAMCodePage(u32 index)
+{
+  if (m_ram_code_bits[index])
+    return;
+
+  // protect fastmem pages
+  m_ram_code_bits[index] = true;
+  SetCodePageFastmemProtection(index, false);
+}
+
+void ClearRAMCodePage(u32 index)
+{
+  if (!m_ram_code_bits[index])
+    return;
+
+  // unprotect fastmem pages
+  m_ram_code_bits[index] = false;
+  SetCodePageFastmemProtection(index, true);
+}
+
+void SetCodePageFastmemProtection(u32 page_index, bool writable)
+{
+  // unprotect fastmem pages
+  for (const auto& view : m_fastmem_ram_views)
+  {
+    u8* page_address = static_cast<u8*>(view.GetBasePointer()) + (page_index * CPU_CODE_CACHE_PAGE_SIZE);
+    if (!m_memory_arena.SetPageProtection(page_address, CPU_CODE_CACHE_PAGE_SIZE, true, writable, false))
+    {
+      Log_ErrorPrintf("Failed to %s code page %u (0x%08X) @ %p", writable ? "unprotect" : "protect", page_index,
+                      page_index * CPU_CODE_CACHE_PAGE_SIZE, page_address);
+    }
+  }
+}
+
+void ClearRAMCodePageFlags()
+{
+  m_ram_code_bits.reset();
+
+  // unprotect fastmem pages
+  for (const auto& view : m_fastmem_ram_views)
+  {
+    if (!m_memory_arena.SetPageProtection(view.GetBasePointer(), view.GetMappingSize(), true, true, false))
+    {
+      Log_ErrorPrintf("Failed to unprotect code pages for fastmem view @ %p", view.GetBasePointer());
+    }
+  }
+}
+
+bool IsCodePageAddress(PhysicalMemoryAddress address)
+{
+  return IsRAMAddress(address) ? m_ram_code_bits[(address & RAM_MASK) / CPU_CODE_CACHE_PAGE_SIZE] : false;
+}
+
+bool HasCodePagesInRange(PhysicalMemoryAddress start_address, u32 size)
+{
+  if (!IsRAMAddress(start_address))
+    return false;
+
+  start_address = (start_address & RAM_MASK);
+
+  const u32 end_address = start_address + size;
+  while (start_address < end_address)
+  {
+    const u32 code_page_index = start_address / CPU_CODE_CACHE_PAGE_SIZE;
+    if (m_ram_code_bits[code_page_index])
+      return true;
+
+    start_address += CPU_CODE_CACHE_PAGE_SIZE;
+  }
+
+  return false;
+}
+
 static TickCount DoInvalidAccess(MemoryAccessType type, MemoryAccessSize size, PhysicalMemoryAddress address,
                                  u32& value)
 {
@@ -288,7 +487,7 @@ ALWAYS_INLINE static TickCount DoRAMAccess(u32 offset, u32& value)
     }
   }
 
-  return (type == MemoryAccessType::Read) ? 4 : 0;
+  return (type == MemoryAccessType::Read) ? RAM_READ_TICKS : 0;
 }
 
 template<MemoryAccessType type, MemoryAccessSize size>
@@ -753,7 +952,7 @@ ALWAYS_INLINE_RELEASE void DoInstructionRead(PhysicalMemoryAddress address, void
   {
     std::memcpy(data, &g_ram[address & RAM_MASK], sizeof(u32) * word_count);
     if constexpr (add_ticks)
-      g_state.pending_ticks += (icache_read ? 1 : 4) * word_count;
+      g_state.pending_ticks += (icache_read ? 1 : RAM_READ_TICKS) * word_count;
   }
   else if (address >= BIOS_BASE && address < (BIOS_BASE + BIOS_SIZE))
   {
@@ -776,7 +975,7 @@ TickCount GetInstructionReadTicks(VirtualMemoryAddress address)
 
   if (address < RAM_MIRROR_END)
   {
-    return 4;
+    return RAM_READ_TICKS;
   }
   else if (address >= BIOS_BASE && address < (BIOS_BASE + BIOS_SIZE))
   {
@@ -1305,6 +1504,64 @@ bool SafeWriteMemoryHalfWord(VirtualMemoryAddress addr, u16 value)
 bool SafeWriteMemoryWord(VirtualMemoryAddress addr, u32 value)
 {
   return DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Word>(addr, value) >= 0;
+}
+
+void* GetDirectReadMemoryPointer(VirtualMemoryAddress address, MemoryAccessSize size, TickCount* read_ticks)
+{
+  using namespace Bus;
+
+  const u32 seg = (address >> 29);
+  if (seg != 0 && seg != 4 && seg != 5)
+    return nullptr;
+
+  const PhysicalMemoryAddress paddr = address & PHYSICAL_MEMORY_ADDRESS_MASK;
+  if (paddr < RAM_MIRROR_END)
+  {
+    if (read_ticks)
+      *read_ticks = RAM_READ_TICKS;
+
+    return &g_ram[paddr & RAM_MASK];
+  }
+
+  if ((paddr & DCACHE_LOCATION_MASK) == DCACHE_LOCATION)
+  {
+    if (read_ticks)
+      *read_ticks = 0;
+
+    return &g_state.dcache[paddr & DCACHE_OFFSET_MASK];
+  }
+
+  if (paddr >= BIOS_BASE && paddr < (BIOS_BASE + BIOS_SIZE))
+  {
+    if (read_ticks)
+      *read_ticks = m_bios_access_time[static_cast<u32>(size)];
+
+    return &g_bios[paddr & BIOS_MASK];
+  }
+
+  return nullptr;
+}
+
+void* GetDirectWriteMemoryPointer(VirtualMemoryAddress address, MemoryAccessSize size)
+{
+  using namespace Bus;
+
+  const u32 seg = (address >> 29);
+  if (seg != 0 && seg != 4 && seg != 5)
+    return nullptr;
+
+  const PhysicalMemoryAddress paddr = address & PHYSICAL_MEMORY_ADDRESS_MASK;
+
+#if 0
+  // Not enabled until we can protect code regions.
+  if (paddr < RAM_MIRROR_END)
+    return &g_ram[paddr & RAM_MASK];
+#endif
+
+  if ((paddr & DCACHE_LOCATION_MASK) == DCACHE_LOCATION)
+    return &g_state.dcache[paddr & DCACHE_OFFSET_MASK];
+
+  return nullptr;
 }
 
 namespace Recompiler::Thunks {

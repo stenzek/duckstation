@@ -47,10 +47,12 @@ public:
   bool Initialize() override;
   void Shutdown() override;
 
+public Q_SLOTS:
   void ReportError(const char* message) override;
   void ReportMessage(const char* message) override;
   bool ConfirmMessage(const char* message) override;
 
+public:
   /// Thread-safe settings access.
   std::string GetStringSettingValue(const char* section, const char* key, const char* default_value = "") override;
   bool GetBoolSettingValue(const char* section, const char* key, bool default_value = false) override;
@@ -165,6 +167,7 @@ public Q_SLOTS:
   void setCheatEnabled(quint32 index, bool enabled);
   void applyCheat(quint32 index);
   void reloadPostProcessingShaders();
+  void executeOnEmulationThread(std::function<void()> callback, bool wait = false);
 
 private Q_SLOTS:
   void doStopThread();
@@ -252,6 +255,7 @@ private:
   QThread* m_original_thread = nullptr;
   Thread* m_worker_thread = nullptr;
   QEventLoop* m_worker_thread_event_loop = nullptr;
+  Common::Event m_worker_thread_sync_execute_done;
 
   std::atomic_bool m_shutdown_flag{false};
 

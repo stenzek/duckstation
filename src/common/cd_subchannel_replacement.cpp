@@ -62,7 +62,7 @@ bool CDSubChannelReplacement::LoadSBI(const char* path)
 
     if (entry.type != 1)
     {
-      Log_ErrorPrintf("Invalid type 0x%02X in '%s'", path);
+      Log_ErrorPrintf("Invalid type 0x%02X in '%s'", entry.type, path);
       return false;
     }
 

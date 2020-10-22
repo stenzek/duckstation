@@ -18,6 +18,12 @@ set(SRCS
   biossettingswidget.cpp
   biossettingswidget.h
   biossettingswidget.ui
+  cheatmanagerdialog.cpp
+  cheatmanagerdialog.h
+  cheatmanagerdialog.ui
+  cheatcodeeditordialog.cpp
+  cheatcodeeditordialog.h
+  cheatcodeeditordialog.ui
   consolesettingswidget.cpp
   consolesettingswidget.h
   consolesettingswidget.ui
@@ -165,7 +171,7 @@ if(APPLE)
   # Copy translations into the bundle
   add_custom_command(TARGET duckstation-qt
                      POST_BUILD
-                     COMMAND mkdir $<TARGET_FILE_DIR:duckstation-qt>/translations
+                     COMMAND mkdir -p $<TARGET_FILE_DIR:duckstation-qt>/translations
                      COMMAND cp ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/translations/*.qm $<TARGET_FILE_DIR:duckstation-qt>/translations)
 
   # Copy MoltenVK into the bundle

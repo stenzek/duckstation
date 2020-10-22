@@ -1,9 +1,7 @@
 #include "gpu_hw_shadergen.h"
 #include "common/assert.h"
-#include "common/log.h"
 #include <cstdio>
 #include <glad.h>
-Log_SetChannel(GPU_HW_ShaderGen);
 
 GPU_HW_ShaderGen::GPU_HW_ShaderGen(HostDisplay::RenderAPI render_api, u32 resolution_scale, bool true_color, bool scaled_dithering, GPUTextureFilter texture_filtering, bool uv_limits, bool supports_dual_source_blend) : 
   ShaderGen(render_api, supports_dual_source_blend),

@@ -76,6 +76,7 @@ struct Settings
   bool cpu_overclock_active = false;
   bool cpu_recompiler_memory_exceptions = false;
   bool cpu_recompiler_icache = false;
+  bool cpu_fastmem = true;
 
   float emulation_speed = 1.0f;
   bool speed_limiter_enabled = true;
@@ -104,6 +105,7 @@ struct Settings
   bool gpu_pgxp_texture_correction = true;
   bool gpu_pgxp_vertex_cache = false;
   bool gpu_pgxp_cpu = false;
+  bool gpu_pgxp_preserve_proj_fp = false;
   DisplayCropMode display_crop_mode = DisplayCropMode::None;
   s16 display_active_start_offset = 0;
   s16 display_active_end_offset = 0;
@@ -178,6 +180,11 @@ struct Settings
     return gpu_pgxp_enable ? (gpu_pgxp_cpu ? PGXPMode::CPU : PGXPMode::Memory) : PGXPMode::Disabled;
   }
 
+  ALWAYS_INLINE bool IsUsingFastmem() const
+  {
+    return (cpu_fastmem && cpu_execution_mode == CPUExecutionMode::Recompiler && !cpu_recompiler_memory_exceptions);
+  }
+
   bool HasAnyPerGameMemoryCards() const;
 
   static void CPUOverclockPercentToFraction(u32 percent, u32* numerator, u32* denominator);
@@ -250,8 +257,15 @@ struct Settings
 #endif
   static constexpr GPUTextureFilter DEFAULT_GPU_TEXTURE_FILTER = GPUTextureFilter::Nearest;
   static constexpr ConsoleRegion DEFAULT_CONSOLE_REGION = ConsoleRegion::Auto;
+
   static constexpr CPUExecutionMode DEFAULT_CPU_EXECUTION_MODE = CPUExecutionMode::Recompiler;
+
+#ifndef ANDROID
   static constexpr AudioBackend DEFAULT_AUDIO_BACKEND = AudioBackend::Cubeb;
+#else
+  static constexpr AudioBackend DEFAULT_AUDIO_BACKEND = AudioBackend::OpenSLES;
+#endif
+
   static constexpr DisplayCropMode DEFAULT_DISPLAY_CROP_MODE = DisplayCropMode::Overscan;
   static constexpr DisplayAspectRatio DEFAULT_DISPLAY_ASPECT_RATIO = DisplayAspectRatio::R4_3;
   static constexpr ControllerType DEFAULT_CONTROLLER_1_TYPE = ControllerType::DigitalController;

@@ -88,6 +88,8 @@ void RunEvents();
 
 void UpdateCPUDowncount();
 
+TimingEvent** GetHeadEventPtr();
+
 
 
 } // namespace TimingEventManager

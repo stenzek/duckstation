@@ -161,8 +161,15 @@
       <string>Switch CPU Emulation Mode</string>
      </property>
     </widget>
-    <addaction name="menuCPUExecutionMode"/>
+    <widget class="QMenu" name="menuCropMode">
+     <property name="title">
+      <string>Switch Crop Mode</string>
+     </property>
+    </widget>    <addaction name="menuCPUExecutionMode"/>
     <addaction name="menuRenderer"/>
+    <addaction name="menuCropMode"/>
+    <addaction name="actionDisableInterlacing"/>
+    <addaction name="actionForceNTSCTimings"/>
     <addaction name="separator"/>
     <addaction name="actionDebugDumpCPUtoVRAMCopies"/>
     <addaction name="actionDebugDumpVRAMtoCPUCopies"/>
@@ -186,6 +193,7 @@
     <addaction name="actionViewGameList"/>
     <addaction name="actionViewGameGrid"/>
     <addaction name="actionViewSystemDisplay"/>
+    <addaction name="actionViewGameProperties"/>
     <addaction name="separator"/>
     <addaction name="actionGridViewShowTitles"/>
     <addaction name="actionGridViewZoomIn"/>
@@ -197,6 +205,7 @@
      <string>&amp;Tools</string>
     </property>
     <addaction name="actionMemory_Card_Editor"/>
+    <addaction name="actionCheatManager"/>
     <addaction name="separator"/>
     <addaction name="actionOpenDataDirectory"/>
    </widget>
@@ -560,6 +569,22 @@
     <string>Dump VRAM to CPU Copies</string>
    </property>
   </action>
+  <action name="actionDisableInterlacing">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Disable Interlacing</string>
+   </property>
+  </action>
+  <action name="actionForceNTSCTimings">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Force NTSC Timings</string>
+   </property>
+  </action>
   <action name="actionDumpAudio">
    <property name="checkable">
     <bool>true</bool>
@@ -678,9 +703,19 @@
     <string>System &amp;Display</string>
    </property>
   </action>
+  <action name="actionViewGameProperties">
+   <property name="text">
+    <string>Game &amp;Properties</string>
+   </property>
+  </action>
   <action name="actionMemory_Card_Editor">
    <property name="text">
     <string>Memory &amp;Card Editor</string>
+   </property>
+  </action>
+  <action name="actionCheatManager">
+   <property name="text">
+    <string>C&amp;heat Manager</string>
    </property>
   </action>
   <action name="actionViewGameGrid">

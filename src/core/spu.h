@@ -55,6 +55,7 @@ private:
   static constexpr u32 NUM_VOICE_REGISTERS = 8;
   static constexpr u32 VOICE_ADDRESS_SHIFT = 3;
   static constexpr u32 NUM_SAMPLES_PER_ADPCM_BLOCK = 28;
+  static constexpr u32 NUM_SAMPLES_FROM_LAST_ADPCM_BLOCK = 3;
   static constexpr u32 SAMPLE_RATE = 44100;
   static constexpr u32 SYSCLK_TICKS_PER_SPU_TICK = System::MASTER_CLOCK / SAMPLE_RATE; // 0x300
   static constexpr s16 ENVELOPE_MIN_VOLUME = 0;
@@ -243,8 +244,7 @@ private:
     VoiceRegisters regs;
     VoiceCounter counter;
     ADPCMFlags current_block_flags;
-    std::array<s16, NUM_SAMPLES_PER_ADPCM_BLOCK> current_block_samples;
-    std::array<s16, 3> previous_block_last_samples;
+    std::array<s16, NUM_SAMPLES_FROM_LAST_ADPCM_BLOCK + NUM_SAMPLES_PER_ADPCM_BLOCK> current_block_samples;
     std::array<s16, 2> adpcm_last_samples;
     s32 last_volume;
 
@@ -264,7 +264,6 @@ private:
     void ForceOff();
 
     void DecodeBlock(const ADPCMBlock& block);
-    s16 SampleBlock(s32 index) const;
     s32 Interpolate() const;
 
     // Switches to the specified phase, filling in target.

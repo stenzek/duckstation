@@ -369,7 +369,7 @@ bool DeleteFile(DataArray* data, const FileInfo& fi)
   for (u32 i = 0; i < fi.num_blocks && (block_number > 0 && block_number < NUM_BLOCKS); i++)
   {
     DirectoryFrame* df = GetFramePtr<DirectoryFrame>(data, 0, block_number);
-    const u32 next_block_number = ZeroExtend32(df->next_block_number) + 1;
+    block_number = ZeroExtend32(df->next_block_number) + 1;
     std::memset(df, 0, sizeof(DirectoryFrame));
     if (i == 0)
       df->block_allocation_state = 0xA1;

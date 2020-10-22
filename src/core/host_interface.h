@@ -22,8 +22,7 @@ class GameList;
 
 struct SystemBootParameters;
 
-namespace BIOS
-{
+namespace BIOS {
 struct ImageInfo;
 }
 
@@ -131,6 +130,9 @@ public:
   /// Returns a list of filenames and descriptions for BIOS images in a directory.
   std::vector<std::pair<std::string, const BIOS::ImageInfo*>> FindBIOSImagesInDirectory(const char* directory);
 
+  /// Returns true if any BIOS images are found in the configured BIOS directory.
+  bool HasAnyBIOSImages();
+
   virtual void OnRunningGameChanged();
   virtual void OnSystemPerformanceCountersUpdated();
 
@@ -146,6 +148,9 @@ protected:
 
   /// Restores all settings to defaults.
   virtual void SetDefaultSettings(SettingsInterface& si);
+
+  /// Performs the initial load of settings. Should call CheckSettings() and LoadSettings(SettingsInterface&).
+  virtual void LoadSettings() = 0;
 
   /// Loads settings to m_settings and any frontend-specific parameters.
   virtual void LoadSettings(SettingsInterface& si);

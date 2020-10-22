@@ -129,6 +129,7 @@ void Settings::Load(SettingsInterface& si)
   UpdateOverclockActive();
   cpu_recompiler_memory_exceptions = si.GetBoolValue("CPU", "RecompilerMemoryExceptions", false);
   cpu_recompiler_icache = si.GetBoolValue("CPU", "RecompilerICache", false);
+  cpu_fastmem = si.GetBoolValue("CPU", "Fastmem", true);
 
   gpu_renderer = ParseRendererName(si.GetStringValue("GPU", "Renderer", GetRendererName(DEFAULT_GPU_RENDERER)).c_str())
                    .value_or(DEFAULT_GPU_RENDERER);
@@ -149,6 +150,7 @@ void Settings::Load(SettingsInterface& si)
   gpu_pgxp_texture_correction = si.GetBoolValue("GPU", "PGXPTextureCorrection", true);
   gpu_pgxp_vertex_cache = si.GetBoolValue("GPU", "PGXPVertexCache", false);
   gpu_pgxp_cpu = si.GetBoolValue("GPU", "PGXPCPU", false);
+  gpu_pgxp_preserve_proj_fp = si.GetBoolValue("GPU", "PGXPPreserveProjFP", false);
 
   display_crop_mode =
     ParseDisplayCropMode(
@@ -257,6 +259,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetIntValue("CPU", "OverclockDenominator", cpu_overclock_denominator);
   si.SetBoolValue("CPU", "RecompilerMemoryExceptions", cpu_recompiler_memory_exceptions);
   si.SetBoolValue("CPU", "RecompilerICache", cpu_recompiler_icache);
+  si.SetBoolValue("CPU", "Fastmem", cpu_fastmem);
 
   si.SetStringValue("GPU", "Renderer", GetRendererName(gpu_renderer));
   si.SetStringValue("GPU", "Adapter", gpu_adapter.c_str());
@@ -273,6 +276,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("GPU", "PGXPTextureCorrection", gpu_pgxp_texture_correction);
   si.SetBoolValue("GPU", "PGXPVertexCache", gpu_pgxp_vertex_cache);
   si.SetBoolValue("GPU", "PGXPCPU", gpu_pgxp_cpu);
+  si.SetBoolValue("GPU", "PGXPPreserveProjFP", gpu_pgxp_preserve_proj_fp);
 
   si.SetStringValue("Display", "CropMode", GetDisplayCropModeName(display_crop_mode));
   si.SetIntValue("Display", "ActiveStartOffset", display_active_start_offset);
@@ -590,10 +594,24 @@ float Settings::GetDisplayAspectRatioValue(DisplayAspectRatio ar)
   return s_display_aspect_ratio_values[static_cast<int>(ar)];
 }
 
-static std::array<const char*, 3> s_audio_backend_names = {{"Null", "Cubeb", "SDL"}};
-static std::array<const char*, 3> s_audio_backend_display_names = {{TRANSLATABLE("AudioBackend", "Null (No Output)"),
-                                                                    TRANSLATABLE("AudioBackend", "Cubeb"),
-                                                                    TRANSLATABLE("AudioBackend", "SDL")}};
+static std::array<const char*, 3> s_audio_backend_names = {{
+  "Null",
+  "Cubeb",
+#ifndef ANDROID
+  "SDL",
+#else
+  "OpenSLES",
+#endif
+}};
+static std::array<const char*, 3> s_audio_backend_display_names = {{
+  TRANSLATABLE("AudioBackend", "Null (No Output)"),
+  TRANSLATABLE("AudioBackend", "Cubeb"),
+#ifndef ANDROID
+  TRANSLATABLE("AudioBackend", "SDL"),
+#else
+  TRANSLATABLE("AudioBackend", "OpenSL ES"),
+#endif
+}};
 
 std::optional<AudioBackend> Settings::ParseAudioBackend(const char* str)
 {

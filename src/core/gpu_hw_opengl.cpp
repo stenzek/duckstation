@@ -43,8 +43,6 @@ bool GPU_HW_OpenGL::Initialize(HostDisplay* host_display)
 
   SetCapabilities(host_display);
 
-  m_shader_cache.Open(IsGLES(), g_host_interface->GetShaderCacheBasePath());
-
   if (!GPU_HW::Initialize(host_display))
     return false;
 
@@ -198,7 +196,10 @@ void GPU_HW_OpenGL::SetCapabilities(HostDisplay* host_display)
     glGetIntegerv(GL_MAX_TEXTURE_BUFFER_SIZE, reinterpret_cast<GLint*>(&m_max_texture_buffer_size));
     Log_InfoPrintf("Max texel buffer size: %u", m_max_texture_buffer_size);
     if (m_max_texture_buffer_size < VRAM_WIDTH * VRAM_HEIGHT)
-      Log_WarningPrintf("Maximum texture buffer size is less than VRAM size, VRAM writes may be slower.");
+    {
+      Log_WarningPrintf("Maximum texture buffer size is less than VRAM size, not using texel buffers.");
+      m_supports_texture_buffer = false;
+    }
   }
 
   if (!m_supports_texture_buffer || m_max_texture_buffer_size < VRAM_WIDTH * VRAM_HEIGHT)
@@ -218,7 +219,8 @@ void GPU_HW_OpenGL::SetCapabilities(HostDisplay* host_display)
 
   int max_dual_source_draw_buffers = 0;
   glGetIntegerv(GL_MAX_DUAL_SOURCE_DRAW_BUFFERS, &max_dual_source_draw_buffers);
-  m_supports_dual_source_blend = (max_dual_source_draw_buffers > 0);
+  m_supports_dual_source_blend =
+    (max_dual_source_draw_buffers > 0) && (GLAD_GL_VERSION_3_3 || GLAD_GL_ARB_blend_func_extended);
   if (!m_supports_dual_source_blend)
     Log_WarningPrintf("Dual-source blending is not supported, this may break some mask effects.");
 
@@ -340,7 +342,10 @@ bool GPU_HW_OpenGL::CreateUniformBuffer()
 bool GPU_HW_OpenGL::CreateTextureBuffer()
 {
   // We use the pixel unpack buffer here because we share it with CPU-decoded VRAM writes.
-  m_texture_stream_buffer = GL::StreamBuffer::Create(GL_PIXEL_UNPACK_BUFFER, VRAM_UPDATE_TEXTURE_BUFFER_SIZE);
+  const GLenum target =
+    (m_use_ssbo_for_vram_writes ? GL_SHADER_STORAGE_BUFFER :
+                                  (m_supports_texture_buffer ? GL_TEXTURE_BUFFER : GL_PIXEL_UNPACK_BUFFER));
+  m_texture_stream_buffer = GL::StreamBuffer::Create(target, VRAM_UPDATE_TEXTURE_BUFFER_SIZE);
   if (!m_texture_stream_buffer)
     return false;
 
@@ -357,6 +362,9 @@ bool GPU_HW_OpenGL::CreateTextureBuffer()
 
 bool GPU_HW_OpenGL::CompilePrograms()
 {
+  GL::ShaderCache shader_cache;
+  shader_cache.Open(IsGLES(), g_host_interface->GetShaderCacheBasePath());
+
   const bool use_binding_layout = GPU_HW_ShaderGen::UseGLSLBindingLayout();
   GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_true_color, m_scaled_dithering,
                              m_texture_filtering, m_using_uv_limits, m_supports_dual_source_blend);
@@ -416,7 +424,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
             }
           };
 
-          std::optional<GL::Program> prog = m_shader_cache.GetProgram(batch_vs, {}, fs, link_callback);
+          std::optional<GL::Program> prog = shader_cache.GetProgram(batch_vs, {}, fs, link_callback);
           if (!prog)
             return false;
 
@@ -447,7 +455,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
                                                                      static_cast<InterlacedRenderMode>(interlaced));
 
       std::optional<GL::Program> prog =
-        m_shader_cache.GetProgram(vs, {}, fs, [this, use_binding_layout](GL::Program& prog) {
+        shader_cache.GetProgram(vs, {}, fs, [this, use_binding_layout](GL::Program& prog) {
           if (!IsGLES() && !use_binding_layout)
             prog.BindFragData(0, "o_col0");
         });
@@ -465,12 +473,12 @@ bool GPU_HW_OpenGL::CompilePrograms()
     }
   }
 
-  std::optional<GL::Program> prog = m_shader_cache.GetProgram(shadergen.GenerateScreenQuadVertexShader(), {},
-                                                              shadergen.GenerateInterlacedFillFragmentShader(),
-                                                              [this, use_binding_layout](GL::Program& prog) {
-                                                                if (!IsGLES() && !use_binding_layout)
-                                                                  prog.BindFragData(0, "o_col0");
-                                                              });
+  std::optional<GL::Program> prog = shader_cache.GetProgram(shadergen.GenerateScreenQuadVertexShader(), {},
+                                                            shadergen.GenerateInterlacedFillFragmentShader(),
+                                                            [this, use_binding_layout](GL::Program& prog) {
+                                                              if (!IsGLES() && !use_binding_layout)
+                                                                prog.BindFragData(0, "o_col0");
+                                                            });
   if (!prog)
     return false;
 
@@ -480,12 +488,12 @@ bool GPU_HW_OpenGL::CompilePrograms()
   m_vram_interlaced_fill_program = std::move(*prog);
   UPDATE_PROGRESS();
 
-  prog = m_shader_cache.GetProgram(shadergen.GenerateScreenQuadVertexShader(), {},
-                                   shadergen.GenerateVRAMReadFragmentShader(),
-                                   [this, use_binding_layout](GL::Program& prog) {
-                                     if (!IsGLES() && !use_binding_layout)
-                                       prog.BindFragData(0, "o_col0");
-                                   });
+  prog =
+    shader_cache.GetProgram(shadergen.GenerateScreenQuadVertexShader(), {}, shadergen.GenerateVRAMReadFragmentShader(),
+                            [this, use_binding_layout](GL::Program& prog) {
+                              if (!IsGLES() && !use_binding_layout)
+                                prog.BindFragData(0, "o_col0");
+                            });
   if (!prog)
     return false;
 
@@ -498,12 +506,12 @@ bool GPU_HW_OpenGL::CompilePrograms()
   m_vram_read_program = std::move(*prog);
   UPDATE_PROGRESS();
 
-  prog = m_shader_cache.GetProgram(shadergen.GenerateScreenQuadVertexShader(), {},
-                                   shadergen.GenerateVRAMCopyFragmentShader(),
-                                   [this, use_binding_layout](GL::Program& prog) {
-                                     if (!IsGLES() && !use_binding_layout)
-                                       prog.BindFragData(0, "o_col0");
-                                   });
+  prog =
+    shader_cache.GetProgram(shadergen.GenerateScreenQuadVertexShader(), {}, shadergen.GenerateVRAMCopyFragmentShader(),
+                            [this, use_binding_layout](GL::Program& prog) {
+                              if (!IsGLES() && !use_binding_layout)
+                                prog.BindFragData(0, "o_col0");
+                            });
   if (!prog)
     return false;
 
@@ -516,8 +524,8 @@ bool GPU_HW_OpenGL::CompilePrograms()
   m_vram_copy_program = std::move(*prog);
   UPDATE_PROGRESS();
 
-  prog = m_shader_cache.GetProgram(shadergen.GenerateScreenQuadVertexShader(), {},
-                                   shadergen.GenerateVRAMUpdateDepthFragmentShader());
+  prog = shader_cache.GetProgram(shadergen.GenerateScreenQuadVertexShader(), {},
+                                 shadergen.GenerateVRAMUpdateDepthFragmentShader());
   if (!prog)
     return false;
 
@@ -528,12 +536,12 @@ bool GPU_HW_OpenGL::CompilePrograms()
 
   if (m_supports_texture_buffer || m_use_ssbo_for_vram_writes)
   {
-    prog = m_shader_cache.GetProgram(shadergen.GenerateScreenQuadVertexShader(), {},
-                                     shadergen.GenerateVRAMWriteFragmentShader(m_use_ssbo_for_vram_writes),
-                                     [this, use_binding_layout](GL::Program& prog) {
-                                       if (!IsGLES() && !use_binding_layout)
-                                         prog.BindFragData(0, "o_col0");
-                                     });
+    prog = shader_cache.GetProgram(shadergen.GenerateScreenQuadVertexShader(), {},
+                                   shadergen.GenerateVRAMWriteFragmentShader(m_use_ssbo_for_vram_writes),
+                                   [this, use_binding_layout](GL::Program& prog) {
+                                     if (!IsGLES() && !use_binding_layout)
+                                       prog.BindFragData(0, "o_col0");
+                                   });
     if (!prog)
       return false;
 

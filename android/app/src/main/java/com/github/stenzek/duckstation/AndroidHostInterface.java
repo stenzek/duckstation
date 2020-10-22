@@ -76,6 +76,9 @@ public class AndroidHostInterface {
 
     public native void addOSDMessage(String message, float duration);
 
+    public native boolean hasAnyBIOSImages();
+    public native String importBIOSImage(byte[] data);
+
     static {
         System.loadLibrary("duckstation-native");
     }

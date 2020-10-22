@@ -80,6 +80,7 @@
     <string-array name="settings_display_aspect_ratio_names">
         <item>4:3</item>
         <item>16:9</item>
+        <item>16:10</item>
         <item>8:7</item>
         <item>2:1 (VRAM 1:1)</item>
         <item>1:1</item>
@@ -88,6 +89,7 @@
     <string-array name="settings_display_aspect_ratio_values">
         <item>4:3</item>
         <item>16:9</item>
+        <item>16:10</item>
         <item>8:7</item>
         <item>2:1 (VRAM 1:1)</item>
         <item>1:1</item>
@@ -136,7 +138,7 @@
         <item>Reset</item>
         <item>Cheats</item>
         <item>Change Disc</item>
-        <item>Toggle Touch Controller</item>
+        <item>Change Touchscreen Controller</item>
         <item>Settings</item>
         <item>Quit</item>
     </string-array>
@@ -163,5 +165,71 @@
         <item>8</item>
         <item>9</item>
         <item>10</item>
+    </string-array>
+    <string-array name="settings_touchscreen_controller_view_entries">
+        <item>None</item>
+        <item>Digital Pad</item>
+        <item>Single Analog Pad</item>
+        <item>Dual Analog Pad</item>
+    </string-array>
+    <string-array name="settings_touchscreen_controller_view_values">
+        <item>none</item>
+        <item>digital</item>
+        <item>analog_stick</item>
+        <item>analog_sticks</item>
+    </string-array>
+    <string-array name="settings_audio_backend_entries">
+        <item>Null (No Output)</item>
+        <item>Cubeb</item>
+        <item>OpenSL ES (Recommended)</item>
+    </string-array>
+    <string-array name="settings_audio_backend_values">
+        <item>Null</item>
+        <item>Cubeb</item>
+        <item>OpenSLES</item>
+    </string-array>
+    <string-array name="settings_audio_buffer_size_entries">
+        <item>1024 Frames (23.22ms)</item>
+        <item>2048 Frames (46.44ms, Recommended)</item>
+        <item>3072 Frames (69.66ms)</item>
+        <item>4096 Frames (92.88ms)</item>
+    </string-array>
+    <string-array name="settings_audio_buffer_size_values">
+        <item>1024</item>
+        <item>2048</item>
+        <item>3072</item>
+        <item>4096</item>
+    </string-array>
+    <string-array name="settings_log_level_entries">
+        <item>None</item>
+        <item>Error</item>
+        <item>Warning</item>
+        <item>Performance Warnings</item>
+        <item>Success</item>
+        <item>Information</item>
+        <item>Developer</item>
+        <item>Profile</item>
+        <item>Debug</item>
+        <item>Trace</item>
+    </string-array>
+    <string-array name="settings_log_level_values">
+        <item>None</item>
+        <item>Error</item>
+        <item>Warning</item>
+        <item>Perf</item>
+        <item>Success</item>
+        <item>Info</item>
+        <item>Dev</item>
+        <item>Profile</item>
+        <item>Debug</item>
+        <item>Trace</item>
+    </string-array>
+    <string-array name="settings_tabs">
+        <item>General</item>
+        <item>Display</item>
+        <item>Audio</item>
+        <item>Enhancements</item>
+        <item>Controllers</item>
+        <item>Advanced</item>
     </string-array>
 </resources>

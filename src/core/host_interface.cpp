@@ -334,6 +334,12 @@ HostInterface::FindBIOSImagesInDirectory(const char* directory)
   return results;
 }
 
+bool HostInterface::HasAnyBIOSImages()
+{
+  const std::string dir = GetBIOSDirectory();
+  return (FindBIOSImageInDirectory(ConsoleRegion::NTSC_U, dir.c_str()).has_value());
+}
+
 bool HostInterface::LoadState(const char* filename)
 {
   std::unique_ptr<ByteStream> stream = FileSystem::OpenFile(filename, BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
@@ -419,6 +425,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetStringValue("CPU", "ExecutionMode", Settings::GetCPUExecutionModeName(Settings::DEFAULT_CPU_EXECUTION_MODE));
   si.SetBoolValue("CPU", "RecompilerMemoryExceptions", false);
   si.SetBoolValue("CPU", "ICache", false);
+  si.SetBoolValue("CPU", "Fastmem", true);
 
   si.SetStringValue("GPU", "Renderer", Settings::GetRendererName(Settings::DEFAULT_GPU_RENDERER));
   si.SetIntValue("GPU", "ResolutionScale", 1);
@@ -434,6 +441,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("GPU", "PGXPTextureCorrection", true);
   si.SetBoolValue("GPU", "PGXPVertexCache", false);
   si.SetBoolValue("GPU", "PGXPCPU", false);
+  si.SetBoolValue("GPU", "PGXPPreserveProjFP", false);
 
   si.SetStringValue("Display", "CropMode", Settings::GetDisplayCropModeName(Settings::DEFAULT_DISPLAY_CROP_MODE));
   si.SetIntValue("Display", "ActiveStartOffset", 0);
@@ -579,14 +587,14 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
     if (g_settings.emulation_speed != old_settings.emulation_speed)
       System::UpdateThrottlePeriod();
 
-    if (g_settings.cpu_execution_mode != old_settings.cpu_execution_mode)
+    if (g_settings.cpu_execution_mode != old_settings.cpu_execution_mode ||
+        g_settings.cpu_fastmem != old_settings.cpu_fastmem)
     {
       AddFormattedOSDMessage(
         5.0f, TranslateString("OSDMessage", "Switching to %s CPU execution mode."),
         TranslateString("OSDMessage", Settings::GetCPUExecutionModeDisplayName(g_settings.cpu_execution_mode))
           .GetCharArray());
-      CPU::CodeCache::SetUseRecompiler(g_settings.cpu_execution_mode == CPUExecutionMode::Recompiler);
-      CPU::CodeCache::Flush();
+      CPU::CodeCache::Reinitialize();
       CPU::ClearICache();
     }
 

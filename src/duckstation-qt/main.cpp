@@ -11,6 +11,7 @@ int main(int argc, char* argv[])
 {
   // Register any standard types we need elsewhere
   qRegisterMetaType<std::optional<bool>>();
+  qRegisterMetaType<std::function<void()>>();
 
   QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
   QGuiApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);

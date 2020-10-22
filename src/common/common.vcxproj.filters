@@ -46,7 +46,6 @@
     <ClInclude Include="string_util.h" />
     <ClInclude Include="md5_digest.h" />
     <ClInclude Include="cpu_detect.h" />
-    <ClInclude Include="cubeb_audio_stream.h" />
     <ClInclude Include="d3d11\shader_cache.h">
       <Filter>d3d11</Filter>
     </ClInclude>
@@ -103,6 +102,8 @@
     <ClInclude Include="win32_progress_callback.h" />
     <ClInclude Include="make_array.h" />
     <ClInclude Include="shiftjis.h" />
+    <ClInclude Include="memory_arena.h" />
+    <ClInclude Include="page_fault_handler.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="jit_code_buffer.cpp" />
@@ -145,7 +146,6 @@
     <ClCompile Include="file_system.cpp" />
     <ClCompile Include="string_util.cpp" />
     <ClCompile Include="md5_digest.cpp" />
-    <ClCompile Include="cubeb_audio_stream.cpp" />
     <ClCompile Include="d3d11\shader_cache.cpp">
       <Filter>d3d11</Filter>
     </ClCompile>
@@ -198,6 +198,8 @@
     <ClCompile Include="minizip_helpers.cpp" />
     <ClCompile Include="win32_progress_callback.cpp" />
     <ClCompile Include="shiftjis.cpp" />
+    <ClCompile Include="memory_arena.cpp" />
+    <ClCompile Include="page_fault_handler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />

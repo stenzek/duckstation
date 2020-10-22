@@ -236,8 +236,8 @@ void GPU_SW::DispatchRenderCommand()
         vert.b = Truncate8(color_rgb >> 16);
 
         const VertexPosition vp{FifoPop()};
-        vert.x = TruncateVertexPosition(m_drawing_offset.x + vp.x);
-        vert.y = TruncateVertexPosition(m_drawing_offset.y + vp.y);
+        vert.x = m_drawing_offset.x + vp.x;
+        vert.y = m_drawing_offset.y + vp.y;
 
         if (textured)
         {
@@ -269,8 +269,8 @@ void GPU_SW::DispatchRenderCommand()
       const u32 texcoord_and_palette = rc.texture_enable ? FifoPop() : 0;
       const auto [texcoord_x, texcoord_y] = UnpackTexcoord(Truncate16(texcoord_and_palette));
 
-      s32 width;
-      s32 height;
+      u32 width;
+      u32 height;
       switch (rc.rectangle_size)
       {
         case DrawRectangleSize::R1x1:
@@ -288,8 +288,8 @@ void GPU_SW::DispatchRenderCommand()
         default:
         {
           const u32 width_and_height = FifoPop();
-          width = static_cast<s32>(width_and_height & VRAM_WIDTH_MASK);
-          height = static_cast<s32>((width_and_height >> 16) & VRAM_HEIGHT_MASK);
+          width = static_cast<u32>(width_and_height & VRAM_WIDTH_MASK);
+          height = static_cast<u32>((width_and_height >> 16) & VRAM_HEIGHT_MASK);
 
           if (width >= MAX_PRIMITIVE_WIDTH || height >= MAX_PRIMITIVE_HEIGHT)
           {

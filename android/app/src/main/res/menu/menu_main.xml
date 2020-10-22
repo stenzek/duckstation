@@ -20,6 +20,9 @@
         <item
             android:id="@+id/action_rescan_all_games"
             android:title="Rescan All Games" />
+        <item
+            android:id="@+id/action_import_bios"
+            android:title="Import BIOS" />
     </group>
     <item
         android:id="@+id/action_settings"

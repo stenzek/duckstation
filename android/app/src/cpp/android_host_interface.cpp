@@ -1,9 +1,11 @@
 #include "android_host_interface.h"
 #include "common/assert.h"
 #include "common/audio_stream.h"
+#include "common/file_system.h"
 #include "common/log.h"
 #include "common/string.h"
 #include "common/timestamp.h"
+#include "core/bios.h"
 #include "core/cheats.h"
 #include "core/controller.h"
 #include "core/gpu.h"
@@ -17,6 +19,10 @@
 #include <cmath>
 #include <imgui.h>
 Log_SetChannel(AndroidHostInterface);
+
+#ifdef USE_OPENSLES
+#include "opensles_audio_stream.h"
+#endif
 
 static JavaVM* s_jvm;
 static jclass s_AndroidHostInterface_class;
@@ -158,8 +164,6 @@ void AndroidHostInterface::LoadSettings()
   CommonHostInterface::LoadSettings(m_settings_interface);
   CommonHostInterface::FixIncompatibleSettings(false);
   CommonHostInterface::UpdateInputMap(m_settings_interface);
-  g_settings.log_level = LOGLEVEL_INFO;
-  g_settings.log_to_debug = true;
 }
 
 void AndroidHostInterface::UpdateInputMap()
@@ -194,7 +198,9 @@ void AndroidHostInterface::PauseEmulationThread(bool paused)
 
 void AndroidHostInterface::StopEmulationThread()
 {
-  Assert(IsEmulationThreadRunning());
+  if (!IsEmulationThreadRunning())
+    return;
+
   Log_InfoPrint("Stopping emulation thread...");
   {
     std::unique_lock<std::mutex> lock(m_mutex);
@@ -390,6 +396,16 @@ void AndroidHostInterface::ReleaseHostDisplay()
   m_display.reset();
 }
 
+std::unique_ptr<AudioStream> AndroidHostInterface::CreateAudioStream(AudioBackend backend)
+{
+#ifdef USE_OPENSLES
+  if (backend == AudioBackend::OpenSLES)
+    return OpenSLESAudioStream::Create();
+#endif
+
+  return CommonHostInterface::CreateAudioStream(backend);
+}
+
 void AndroidHostInterface::OnSystemDestroyed()
 {
   CommonHostInterface::OnSystemDestroyed();
@@ -466,7 +482,7 @@ void AndroidHostInterface::SetControllerType(u32 index, std::string_view type_na
   }
 
   RunOnEmulationThread(
-    [this, index, type]() {
+    [index, type]() {
       Log_InfoPrintf("Changing controller slot %d to %s", index, Settings::GetControllerTypeName(type));
       g_settings.controller_types[index] = type;
       System::UpdateControllers();
@@ -480,7 +496,7 @@ void AndroidHostInterface::SetControllerButtonState(u32 index, s32 button_code, 
     return;
 
   RunOnEmulationThread(
-    [this, index, button_code, pressed]() {
+    [index, button_code, pressed]() {
       Controller* controller = System::GetController(index);
       if (!controller)
         return;
@@ -496,7 +512,7 @@ void AndroidHostInterface::SetControllerAxisState(u32 index, s32 button_code, fl
     return;
 
   RunOnEmulationThread(
-    [this, index, button_code, value]() {
+    [index, button_code, value]() {
       Controller* controller = System::GetController(index);
       if (!controller)
         return;
@@ -517,8 +533,6 @@ void AndroidHostInterface::ApplySettings(bool display_osd_messages)
   Settings old_settings = std::move(g_settings);
   CommonHostInterface::LoadSettings(m_settings_interface);
   CommonHostInterface::FixIncompatibleSettings(display_osd_messages);
-  g_settings.log_level = LOGLEVEL_INFO;
-  g_settings.log_to_debug = true;
   CheckForSettingsChanges(old_settings);
 }
 
@@ -845,4 +859,38 @@ DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_addOSDMessage, jobject obj, js
 {
   AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
   hi->AddOSDMessage(AndroidHelpers::JStringToString(env, message), duration);
+}
+
+DEFINE_JNI_ARGS_METHOD(jboolean, AndroidHostInterface_hasAnyBIOSImages, jobject obj)
+{
+  AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
+  return hi->HasAnyBIOSImages();
+}
+
+DEFINE_JNI_ARGS_METHOD(jstring, AndroidHostInterface_importBIOSImage, jobject obj, jbyteArray data)
+{
+  AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
+
+  const jsize len = env->GetArrayLength(data);
+  if (len != BIOS::BIOS_SIZE)
+    return nullptr;
+
+  BIOS::Image image;
+  image.resize(static_cast<size_t>(len));
+  env->GetByteArrayRegion(data, 0, len, reinterpret_cast<jbyte*>(image.data()));
+
+  const BIOS::Hash hash = BIOS::GetHash(image);
+  const BIOS::ImageInfo* ii = BIOS::GetImageInfoForHash(hash);
+
+  const std::string dest_path(hi->GetUserDirectoryRelativePath("bios/%s.bin", hash.ToString().c_str()));
+  if (FileSystem::FileExists(dest_path.c_str()) ||
+      !FileSystem::WriteBinaryFile(dest_path.c_str(), image.data(), image.size()))
+  {
+    return nullptr;
+  }
+
+  if (ii)
+    return env->NewStringUTF(ii->description);
+  else
+    return env->NewStringUTF(hash.ToString().c_str());
 }

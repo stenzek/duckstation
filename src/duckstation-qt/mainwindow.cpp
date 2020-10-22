@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "aboutdialog.h"
 #include "autoupdaterdialog.h"
+#include "cheatmanagerdialog.h"
 #include "common/assert.h"
 #include "core/host_display.h"
 #include "core/settings.h"
@@ -233,6 +234,12 @@ void MainWindow::onEmulationStopped()
   m_emulation_running = false;
   updateEmulationActions(false, false);
   switchToGameListView();
+
+  if (m_cheat_manager_dialog)
+  {
+    delete m_cheat_manager_dialog;
+    m_cheat_manager_dialog = nullptr;
+  }
 }
 
 void MainWindow::onEmulationPaused(bool paused)
@@ -316,6 +323,8 @@ void MainWindow::onChangeDiscFromPlaylistMenuAboutToHide()
 void MainWindow::onCheatsMenuAboutToShow()
 {
   m_ui.menuCheats->clear();
+  connect(m_ui.menuCheats->addAction(tr("Cheat Manager")), &QAction::triggered, this, &MainWindow::onToolsCheatManagerTriggered);
+  m_ui.menuCheats->addSeparator();
   m_host_interface->populateCheatsMenu(m_ui.menuCheats);
 }
 
@@ -359,6 +368,29 @@ void MainWindow::onViewSystemDisplayTriggered()
     switchToEmulationView();
     m_host_interface->pauseSystem(false);
   }
+}
+
+void MainWindow::onViewGamePropertiesActionTriggered()
+{
+  const GameListEntry* entry;
+
+  if (m_emulation_running)
+  {
+    const std::string& path = System::GetRunningPath();
+    if (path.empty())
+      return;
+
+    entry = m_host_interface->getGameList()->GetEntryForPath(path.c_str());
+  }
+  else
+  {
+    entry = m_game_list_widget->getSelectedEntry();
+  }
+
+  if (!entry)
+    return;
+
+  GamePropertiesDialog::showForEntry(m_host_interface, entry, this);
 }
 
 void MainWindow::onGitHubRepositoryActionTriggered()
@@ -575,6 +607,19 @@ void MainWindow::setupAdditionalUi()
   }
   updateDebugMenuGPURenderer();
 
+  for (u32 i = 0; i < static_cast<u32>(DisplayCropMode::Count); i++)
+  {
+    const DisplayCropMode crop_mode = static_cast<DisplayCropMode>(i);
+    QAction* action = m_ui.menuCropMode->addAction(tr(Settings::GetDisplayCropModeDisplayName(crop_mode)));
+    action->setCheckable(true);
+    connect(action, &QAction::triggered, [this, crop_mode]() {
+      m_host_interface->SetStringSettingValue("Display", "CropMode", Settings::GetDisplayCropModeName(crop_mode));
+      m_host_interface->applySettings();
+      updateDebugMenuCropMode();
+    });
+  }
+  updateDebugMenuCropMode();
+
   const QString current_language(
     QString::fromStdString(m_host_interface->GetStringSettingValue("Main", "Language", "")));
   QActionGroup* language_group = new QActionGroup(m_ui.menuSettingsLanguage);
@@ -609,6 +654,7 @@ void MainWindow::updateEmulationActions(bool starting, bool running)
   m_ui.actionViewSystemDisplay->setEnabled(starting || running);
   m_ui.menuChangeDisc->setDisabled(starting || !running);
   m_ui.menuCheats->setDisabled(starting || !running);
+  m_ui.actionCheatManager->setDisabled(starting || !running);
 
   m_ui.actionSaveState->setDisabled(starting || !running);
   m_ui.menuSaveState->setDisabled(starting || !running);
@@ -735,6 +781,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionViewGameList, &QAction::triggered, this, &MainWindow::onViewGameListActionTriggered);
   connect(m_ui.actionViewGameGrid, &QAction::triggered, this, &MainWindow::onViewGameGridActionTriggered);
   connect(m_ui.actionViewSystemDisplay, &QAction::triggered, this, &MainWindow::onViewSystemDisplayTriggered);
+  connect(m_ui.actionViewGameProperties, &QAction::triggered, this, &MainWindow::onViewGamePropertiesActionTriggered);
   connect(m_ui.actionGitHubRepository, &QAction::triggered, this, &MainWindow::onGitHubRepositoryActionTriggered);
   connect(m_ui.actionIssueTracker, &QAction::triggered, this, &MainWindow::onIssueTrackerActionTriggered);
   connect(m_ui.actionDiscordServer, &QAction::triggered, this, &MainWindow::onDiscordServerActionTriggered);
@@ -742,6 +789,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionAbout, &QAction::triggered, this, &MainWindow::onAboutActionTriggered);
   connect(m_ui.actionCheckForUpdates, &QAction::triggered, this, &MainWindow::onCheckForUpdatesActionTriggered);
   connect(m_ui.actionMemory_Card_Editor, &QAction::triggered, this, &MainWindow::onToolsMemoryCardEditorTriggered);
+  connect(m_ui.actionCheatManager, &QAction::triggered, this, &MainWindow::onToolsCheatManagerTriggered);
   connect(m_ui.actionOpenDataDirectory, &QAction::triggered, this, &MainWindow::onToolsOpenDataDirectoryTriggered);
   connect(m_ui.actionGridViewShowTitles, &QAction::triggered, m_game_list_widget, &GameListWidget::setShowCoverTitles);
   connect(m_ui.actionGridViewZoomIn, &QAction::triggered, m_game_list_widget, [this]() {
@@ -786,6 +834,10 @@ void MainWindow::connectSignals()
 
   m_host_interface->populateSaveStateMenus(nullptr, m_ui.menuLoadState, m_ui.menuSaveState);
 
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDisableInterlacing, "GPU",
+                                               "DisableInterlacing");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionForceNTSCTimings, "GPU",
+                                               "ForceNTSCTimings");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugDumpCPUtoVRAMCopies, "Debug",
                                                "DumpCPUToVRAMCopies");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugDumpVRAMtoCPUCopies, "Debug",
@@ -1061,6 +1113,22 @@ void MainWindow::updateDebugMenuGPURenderer()
   }
 }
 
+void MainWindow::updateDebugMenuCropMode()
+{
+  std::optional<DisplayCropMode> current_crop_mode =
+    Settings::ParseDisplayCropMode(m_host_interface->GetStringSettingValue("Display", "CropMode").c_str());
+  if (!current_crop_mode.has_value())
+    return;
+
+  const QString current_crop_mode_display_name(tr(Settings::GetDisplayCropModeDisplayName(current_crop_mode.value())));
+  for (QObject* obj : m_ui.menuCropMode->children())
+  {
+    QAction* action = qobject_cast<QAction*>(obj);
+    if (action)
+      action->setChecked(action->text() == current_crop_mode_display_name);
+  }
+}
+
 void MainWindow::closeEvent(QCloseEvent* event)
 {
   m_host_interface->synchronousPowerOffSystem();
@@ -1108,6 +1176,15 @@ void MainWindow::onToolsMemoryCardEditorTriggered()
 
   m_memory_card_editor_dialog->setModal(false);
   m_memory_card_editor_dialog->show();
+}
+
+void MainWindow::onToolsCheatManagerTriggered()
+{
+  if (!m_cheat_manager_dialog)
+    m_cheat_manager_dialog = new CheatManagerDialog(this);
+
+  m_cheat_manager_dialog->setModal(false);
+  m_cheat_manager_dialog->show();
 }
 
 void MainWindow::onToolsOpenDataDirectoryTriggered()
