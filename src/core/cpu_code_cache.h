@@ -131,7 +131,7 @@ ALWAYS_INLINE void InvalidateCodePages(PhysicalMemoryAddress address, u32 word_c
 {
   const u32 start_page = address / CPU_CODE_CACHE_PAGE_SIZE;
   const u32 end_page = (address + word_count * sizeof(u32)) / CPU_CODE_CACHE_PAGE_SIZE;
-  for (u32 page = start_page; page <= end_page; page++)
+  for (u32 page = start_page; page < end_page; page++)
   {
     if (Bus::m_ram_code_bits[page])
       CPU::CodeCache::InvalidateBlocksWithPageIndex(page);
