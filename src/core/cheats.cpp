@@ -5,6 +5,7 @@
 #include "common/log.h"
 #include "common/string.h"
 #include "common/string_util.h"
+#include "cpu_code_cache.h"
 #include "cpu_core.h"
 #include "host_interface.h"
 #include <cctype>
@@ -77,7 +78,18 @@ static void DoMemoryWrite(PhysicalMemoryAddress address, T value)
 
   if (address < Bus::RAM_MIRROR_END)
   {
-    std::memcpy(&Bus::g_ram[address & Bus::RAM_MASK], &value, sizeof(value));
+    // Only invalidate code when it changes.
+    T old_value;
+    std::memcpy(&old_value, &Bus::g_ram[address & Bus::RAM_MASK], sizeof(old_value));
+    if (old_value != value)
+    {
+      std::memcpy(&Bus::g_ram[address & Bus::RAM_MASK], &value, sizeof(value));
+
+      const u32 code_page_index = Bus::GetRAMCodePageIndex(address & Bus::RAM_MASK);
+      if (Bus::IsRAMCodePage(code_page_index))
+        CPU::CodeCache::InvalidateBlocksWithPageIndex(code_page_index);
+    }
+
     return;
   }
 }
