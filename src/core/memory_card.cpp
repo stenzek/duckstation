@@ -295,15 +295,17 @@ bool MemoryCard::SaveIfChanged(bool display_osd_message)
   {
     if (display_osd_message)
     {
-      g_host_interface->AddOSDMessage(
-        StringUtil::StdStringFromFormat("Failed to save memory card to '%s'", m_filename.c_str()), 20.0f);
+      g_host_interface->AddFormattedOSDMessage(
+        20.0f, g_host_interface->TranslateString("OSDMessage", "Failed to save memory card to '%s'"),
+        m_filename.c_str());
     }
 
     return false;
   }
 
   if (display_osd_message)
-    g_host_interface->AddOSDMessage(StringUtil::StdStringFromFormat("Saved memory card to '%s'", m_filename.c_str()));
+    g_host_interface->AddFormattedOSDMessage(
+      2.0f, g_host_interface->TranslateString("OSDMessage", "Saved memory card to '%s'"), m_filename.c_str());
 
   return true;
 }

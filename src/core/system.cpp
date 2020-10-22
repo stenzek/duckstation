@@ -1663,8 +1663,9 @@ bool RemoveMediaPathFromPlaylist(u32 index)
 
   if (GetMediaPlaylistIndex() == index)
   {
-    g_host_interface->AddFormattedOSDMessage(10.0f,
-                                             "Removing current media from playlist, removing media from CD-ROM.");
+    g_host_interface->AddFormattedOSDMessage(
+      10.0f,
+      g_host_interface->TranslateString("System", "Removing current media from playlist, removing media from CD-ROM."));
     g_cdrom.RemoveMedia();
   }
 
@@ -1679,7 +1680,9 @@ bool ReplaceMediaPathFromPlaylist(u32 index, const std::string_view& path)
 
   if (GetMediaPlaylistIndex() == index)
   {
-    g_host_interface->AddFormattedOSDMessage(10.0f, "Changing current media from playlist, replacing current media.");
+    g_host_interface->AddFormattedOSDMessage(
+      10.0f,
+      g_host_interface->TranslateString("System", "Changing current media from playlist, replacing current media."));
     g_cdrom.RemoveMedia();
 
     s_media_playlist[index] = path;

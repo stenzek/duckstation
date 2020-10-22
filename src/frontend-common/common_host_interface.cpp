@@ -2236,12 +2236,12 @@ bool CommonHostInterface::StartDumpingAudio(const char* filename)
 
   if (g_spu.StartDumpingAudio(filename))
   {
-    AddFormattedOSDMessage(5.0f, "Started dumping audio to '%s'.", filename);
+    AddFormattedOSDMessage(5.0f, TranslateString("OSDMessage", "Started dumping audio to '%s'."), filename);
     return true;
   }
   else
   {
-    AddFormattedOSDMessage(10.0f, "Failed to start dumping audio to '%s'.", filename);
+    AddFormattedOSDMessage(10.0f, TranslateString("OSDMessage", "Failed to start dumping audio to '%s'."), filename);
     return false;
   }
 }
@@ -2251,7 +2251,7 @@ void CommonHostInterface::StopDumpingAudio()
   if (System::IsShutdown() || !g_spu.StopDumpingAudio())
     return;
 
-  AddOSDMessage("Stopped dumping audio.", 5.0f);
+  AddOSDMessage(TranslateStdString("OSDMessage", "Stopped dumping audio."), 5.0f);
 }
 
 bool CommonHostInterface::SaveScreenshot(const char* filename /* = nullptr */, bool full_resolution /* = true */,
