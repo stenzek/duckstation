@@ -323,7 +323,8 @@ void MainWindow::onChangeDiscFromPlaylistMenuAboutToHide()
 void MainWindow::onCheatsMenuAboutToShow()
 {
   m_ui.menuCheats->clear();
-  connect(m_ui.menuCheats->addAction(tr("Cheat Manager")), &QAction::triggered, this, &MainWindow::onToolsCheatManagerTriggered);
+  connect(m_ui.menuCheats->addAction(tr("Cheat Manager")), &QAction::triggered, this,
+          &MainWindow::onToolsCheatManagerTriggered);
   m_ui.menuCheats->addSeparator();
   m_host_interface->populateCheatsMenu(m_ui.menuCheats);
 }
@@ -584,7 +585,8 @@ void MainWindow::setupAdditionalUi()
   for (u32 i = 0; i < static_cast<u32>(CPUExecutionMode::Count); i++)
   {
     const CPUExecutionMode mode = static_cast<CPUExecutionMode>(i);
-    QAction* action = m_ui.menuCPUExecutionMode->addAction(tr(Settings::GetCPUExecutionModeDisplayName(mode)));
+    QAction* action = m_ui.menuCPUExecutionMode->addAction(
+      qApp->translate("CPUExecutionMode", Settings::GetCPUExecutionModeDisplayName(mode)));
     action->setCheckable(true);
     connect(action, &QAction::triggered, [this, mode]() {
       m_host_interface->SetStringSettingValue("CPU", "ExecutionMode", Settings::GetCPUExecutionModeName(mode));
@@ -597,7 +599,8 @@ void MainWindow::setupAdditionalUi()
   for (u32 i = 0; i < static_cast<u32>(GPURenderer::Count); i++)
   {
     const GPURenderer renderer = static_cast<GPURenderer>(i);
-    QAction* action = m_ui.menuRenderer->addAction(tr(Settings::GetRendererDisplayName(renderer)));
+    QAction* action =
+      m_ui.menuRenderer->addAction(qApp->translate("GPURenderer", Settings::GetRendererDisplayName(renderer)));
     action->setCheckable(true);
     connect(action, &QAction::triggered, [this, renderer]() {
       m_host_interface->SetStringSettingValue("GPU", "Renderer", Settings::GetRendererName(renderer));
@@ -610,7 +613,8 @@ void MainWindow::setupAdditionalUi()
   for (u32 i = 0; i < static_cast<u32>(DisplayCropMode::Count); i++)
   {
     const DisplayCropMode crop_mode = static_cast<DisplayCropMode>(i);
-    QAction* action = m_ui.menuCropMode->addAction(tr(Settings::GetDisplayCropModeDisplayName(crop_mode)));
+    QAction* action = m_ui.menuCropMode->addAction(
+      qApp->translate("DisplayCropMode", Settings::GetDisplayCropModeDisplayName(crop_mode)));
     action->setCheckable(true);
     connect(action, &QAction::triggered, [this, crop_mode]() {
       m_host_interface->SetStringSettingValue("Display", "CropMode", Settings::GetDisplayCropModeName(crop_mode));
@@ -1087,7 +1091,8 @@ void MainWindow::updateDebugMenuCPUExecutionMode()
   if (!current_mode.has_value())
     return;
 
-  const QString current_mode_display_name(tr(Settings::GetCPUExecutionModeDisplayName(current_mode.value())));
+  const QString current_mode_display_name(
+    qApp->translate("CPUExecutionMode", Settings::GetCPUExecutionModeDisplayName(current_mode.value())));
   for (QObject* obj : m_ui.menuCPUExecutionMode->children())
   {
     QAction* action = qobject_cast<QAction*>(obj);
@@ -1104,7 +1109,8 @@ void MainWindow::updateDebugMenuGPURenderer()
   if (!current_renderer.has_value())
     return;
 
-  const QString current_renderer_display_name(tr(Settings::GetRendererDisplayName(current_renderer.value())));
+  const QString current_renderer_display_name(
+    qApp->translate("GPURenderer", Settings::GetRendererDisplayName(current_renderer.value())));
   for (QObject* obj : m_ui.menuRenderer->children())
   {
     QAction* action = qobject_cast<QAction*>(obj);
@@ -1120,7 +1126,8 @@ void MainWindow::updateDebugMenuCropMode()
   if (!current_crop_mode.has_value())
     return;
 
-  const QString current_crop_mode_display_name(tr(Settings::GetDisplayCropModeDisplayName(current_crop_mode.value())));
+  const QString current_crop_mode_display_name(
+    qApp->translate("DisplayCropMode", Settings::GetDisplayCropModeDisplayName(current_crop_mode.value())));
   for (QObject* obj : m_ui.menuCropMode->children())
   {
     QAction* action = qobject_cast<QAction*>(obj);
