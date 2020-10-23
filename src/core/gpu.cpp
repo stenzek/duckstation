@@ -972,7 +972,7 @@ void GPU::WriteGP1(u32 value)
       {
         SynchronizeCRTC();
         m_crtc_state.regs.display_address_start = new_value;
-        UpdateCRTCConfig();
+        UpdateCRTCDisplayParameters();
       }
     }
     break;
