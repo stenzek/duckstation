@@ -1074,8 +1074,6 @@ void SDLHostInterface::DrawDebugMenu()
   settings_changed |= ImGui::MenuItem("Show Timers State", nullptr, &debug_settings.show_timers_state);
   settings_changed |= ImGui::MenuItem("Show MDEC State", nullptr, &debug_settings.show_mdec_state);
 
-  ImGui::Separator();
-
   if (settings_changed)
   {
     // have to apply it to the copy too, otherwise it won't save

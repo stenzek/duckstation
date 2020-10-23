@@ -100,10 +100,11 @@ void GPU_HW::UpdateHWSettings(bool* framebuffer_changed, bool* shaders_changed)
 
   if (m_resolution_scale != resolution_scale)
   {
-    g_host_interface->AddFormattedOSDMessage(10.0f, "Resolution scale set to %ux (display %ux%u, VRAM %ux%u)",
-                                             resolution_scale, m_crtc_state.display_vram_width * resolution_scale,
-                                             resolution_scale * m_crtc_state.display_vram_height,
-                                             VRAM_WIDTH * resolution_scale, VRAM_HEIGHT * resolution_scale);
+    g_host_interface->AddFormattedOSDMessage(
+      10.0f, g_host_interface->TranslateString("OSDMessage", "Resolution scale set to %ux (display %ux%u, VRAM %ux%u)"),
+      resolution_scale, m_crtc_state.display_vram_width * resolution_scale,
+      resolution_scale * m_crtc_state.display_vram_height, VRAM_WIDTH * resolution_scale,
+      VRAM_HEIGHT * resolution_scale);
   }
 
   m_resolution_scale = resolution_scale;
