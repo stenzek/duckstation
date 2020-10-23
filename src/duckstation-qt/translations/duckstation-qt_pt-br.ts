@@ -812,354 +812,417 @@
         <translation>Lista de Trapaças</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="35"/>
         <source>&amp;New Category...</source>
-        <translation>&amp;Nova Categoria...</translation>
+        <translation type="vanished">&amp;Nova Categoria...</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="42"/>
+        <location filename="../cheatmanagerdialog.ui" line="32"/>
+        <source>&amp;Add Group...</source>
+        <translation>&amp;Adicionar Grupo...</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="39"/>
         <source>&amp;Add Code...</source>
         <translation>&amp;Adicionar Código...</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="49"/>
+        <location filename="../cheatmanagerdialog.ui" line="46"/>
         <source>&amp;Edit Code...</source>
         <translation>&amp;Editar Código...</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="59"/>
+        <location filename="../cheatmanagerdialog.ui" line="56"/>
         <source>&amp;Delete Code</source>
         <translation>&amp;Deletar Código...</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="69"/>
-        <location filename="../cheatmanagerdialog.cpp" line="248"/>
-        <location filename="../cheatmanagerdialog.cpp" line="267"/>
-        <location filename="../cheatmanagerdialog.cpp" line="272"/>
+        <location filename="../cheatmanagerdialog.ui" line="66"/>
+        <location filename="../cheatmanagerdialog.cpp" line="309"/>
+        <location filename="../cheatmanagerdialog.cpp" line="347"/>
+        <location filename="../cheatmanagerdialog.cpp" line="352"/>
         <source>Activate</source>
         <translation>Ativar</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="76"/>
+        <location filename="../cheatmanagerdialog.ui" line="73"/>
         <source>Import...</source>
         <translation>Importar...</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="86"/>
+        <location filename="../cheatmanagerdialog.ui" line="83"/>
         <source>Export...</source>
         <translation>Exportar...</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="115"/>
+        <location filename="../cheatmanagerdialog.ui" line="112"/>
         <source>Name</source>
         <translation>Nome</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="120"/>
-        <location filename="../cheatmanagerdialog.ui" line="461"/>
+        <location filename="../cheatmanagerdialog.ui" line="117"/>
+        <location filename="../cheatmanagerdialog.ui" line="489"/>
         <source>Type</source>
         <translation>Tipo</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="125"/>
+        <location filename="../cheatmanagerdialog.ui" line="122"/>
         <source>Activation</source>
         <translation>Ativação</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="130"/>
+        <location filename="../cheatmanagerdialog.ui" line="127"/>
         <source>Instructions</source>
         <translation>Instruções</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="139"/>
+        <location filename="../cheatmanagerdialog.ui" line="136"/>
         <source>Memory Scanner</source>
         <translation>Leitor de Memória</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="171"/>
-        <location filename="../cheatmanagerdialog.ui" line="456"/>
+        <location filename="../cheatmanagerdialog.ui" line="168"/>
+        <location filename="../cheatmanagerdialog.ui" line="484"/>
         <source>Address</source>
         <translation>Endereço</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="176"/>
-        <location filename="../cheatmanagerdialog.ui" line="466"/>
+        <location filename="../cheatmanagerdialog.ui" line="173"/>
+        <location filename="../cheatmanagerdialog.ui" line="494"/>
         <source>Value</source>
         <translation>Valor</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="181"/>
+        <location filename="../cheatmanagerdialog.ui" line="178"/>
         <source>Previous Value</source>
         <translation>Valor Anterior</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="191"/>
+        <location filename="../cheatmanagerdialog.ui" line="188"/>
         <source>Search Parameters</source>
         <translation>Parâmetros de Busca</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="197"/>
+        <location filename="../cheatmanagerdialog.ui" line="194"/>
         <source>Value:</source>
         <translation>Valor:</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="210"/>
+        <location filename="../cheatmanagerdialog.ui" line="207"/>
         <source>Signed</source>
         <translation>Atríbuido</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="215"/>
+        <location filename="../cheatmanagerdialog.ui" line="212"/>
         <source>Unsigned</source>
         <translation>Não Atríbuido</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="224"/>
+        <location filename="../cheatmanagerdialog.ui" line="221"/>
         <source>Decimal</source>
         <translation>Decimal</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="229"/>
+        <location filename="../cheatmanagerdialog.ui" line="226"/>
         <source>Hex</source>
         <translation>Hexa</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="239"/>
+        <location filename="../cheatmanagerdialog.ui" line="236"/>
         <source>Data Size:</source>
         <translation>Tamanho:</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="250"/>
+        <location filename="../cheatmanagerdialog.ui" line="247"/>
         <source>Byte (1 byte)</source>
         <translation>Byte (1 Byte)</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="255"/>
+        <location filename="../cheatmanagerdialog.ui" line="252"/>
         <source>Halfword (2 bytes)</source>
         <translation>Halfword (2 bytes)</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="260"/>
+        <location filename="../cheatmanagerdialog.ui" line="257"/>
         <source>Word (4 bytes)</source>
         <translation>Word (4 bytes)</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="268"/>
+        <location filename="../cheatmanagerdialog.ui" line="265"/>
         <source>Operator:</source>
         <translation>Operador:</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="276"/>
+        <location filename="../cheatmanagerdialog.ui" line="273"/>
         <source>Equal to...</source>
         <translation>Equivale a...</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="281"/>
+        <location filename="../cheatmanagerdialog.ui" line="278"/>
         <source>Not Equal to...</source>
         <translation>Não Equivalente a...</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="286"/>
+        <location filename="../cheatmanagerdialog.ui" line="283"/>
         <source>Greater Than...</source>
         <translation>Maior Que...</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="291"/>
+        <location filename="../cheatmanagerdialog.ui" line="288"/>
         <source>Greater or Equal...</source>
         <translation>Maior ou Igual...</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="296"/>
+        <location filename="../cheatmanagerdialog.ui" line="293"/>
         <source>Less Than...</source>
         <translation>Menor Que...</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="301"/>
+        <location filename="../cheatmanagerdialog.ui" line="298"/>
         <source>Less or Equal...</source>
         <translation>Menor ou Igual...</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="306"/>
+        <location filename="../cheatmanagerdialog.ui" line="303"/>
         <source>Increased By...</source>
         <translation>Aumentar Por...</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="311"/>
+        <location filename="../cheatmanagerdialog.ui" line="308"/>
         <source>Decreased By...</source>
         <translation>Diminuir Por...</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="316"/>
+        <location filename="../cheatmanagerdialog.ui" line="313"/>
         <source>Changed By...</source>
         <translation>Mudado Por...</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="321"/>
+        <location filename="../cheatmanagerdialog.ui" line="318"/>
+        <source>Equal to Previous (Unchanged Value)</source>
+        <translation>Igual aos Anteriror (Valor Inalterado)</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="323"/>
+        <source>Not Equal to Previous (Changed Value)</source>
+        <translation>Não igual ao Anterior (Valor Alterado)</translation>
+    </message>
+    <message>
         <source>Equal to Previous</source>
-        <translation>Igual ao Anterior</translation>
+        <translation type="vanished">Igual ao Anterior</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="326"/>
         <source>Not Equal to Previous</source>
-        <translation>Não Igual ao Anterior</translation>
+        <translation type="vanished">Não Igual ao Anterior</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="331"/>
+        <location filename="../cheatmanagerdialog.ui" line="328"/>
         <source>Greater Than Previous</source>
         <translation>Maior Que o Anterior</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="336"/>
+        <location filename="../cheatmanagerdialog.ui" line="333"/>
         <source>Greater or Equal to Previous</source>
         <translation>Maior ou Igual ao Anterior</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="341"/>
+        <location filename="../cheatmanagerdialog.ui" line="338"/>
         <source>Less Than Previous</source>
         <translation>Menor que o Anterior</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="346"/>
+        <location filename="../cheatmanagerdialog.ui" line="343"/>
         <source>Less or Equal to Previous</source>
         <translation>Menor ou Igual ao Anterior</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="354"/>
+        <location filename="../cheatmanagerdialog.ui" line="348"/>
+        <source>Any Value</source>
+        <translation>Qualquer Valor</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="356"/>
         <source>Start Address:</source>
         <translation>Ínicio:</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="364"/>
+        <location filename="../cheatmanagerdialog.ui" line="366"/>
         <source>End Address:</source>
         <translation>Fim:</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="379"/>
+        <location filename="../cheatmanagerdialog.ui" line="376"/>
+        <source>Preset Range:</source>
+        <translation>Alcance Pré-definido:</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="384"/>
+        <source>RAM</source>
+        <translation>RAM</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="389"/>
+        <source>Scratchpad</source>
+        <translation>Rascunho</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="394"/>
+        <source>BIOS</source>
+        <translation>BIOS</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="407"/>
         <source>New Search</source>
         <translation>Nova Busca</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="389"/>
+        <location filename="../cheatmanagerdialog.ui" line="417"/>
         <source>Search Again</source>
         <translation>Procurar Novamente</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="399"/>
+        <location filename="../cheatmanagerdialog.ui" line="427"/>
         <source>Clear Results</source>
         <translation>Limpar Resultados</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="446"/>
+        <location filename="../cheatmanagerdialog.ui" line="474"/>
         <source>Freeze</source>
         <translation>Congelar</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="451"/>
+        <location filename="../cheatmanagerdialog.ui" line="479"/>
         <source>Description</source>
         <translation>Descrição</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="479"/>
+        <location filename="../cheatmanagerdialog.ui" line="507"/>
         <source>Add To Watch</source>
         <translation>Adicionar ao Temporizador</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="489"/>
+        <location filename="../cheatmanagerdialog.ui" line="517"/>
         <source>Add Manual Address</source>
         <translation>Adicionar Manualmente</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="499"/>
+        <location filename="../cheatmanagerdialog.ui" line="527"/>
         <source>Remove Watch</source>
         <translation>Remover Temporizador</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="509"/>
+        <location filename="../cheatmanagerdialog.ui" line="537"/>
         <source>Load Watch</source>
         <translation>Carregar Temporizador</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="519"/>
+        <location filename="../cheatmanagerdialog.ui" line="547"/>
         <source>Save Watch</source>
         <translation>Salvar Temporizador</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="272"/>
+        <location filename="../cheatmanagerdialog.cpp" line="352"/>
         <source>Toggle</source>
         <translation>Alternar</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="393"/>
+        <location filename="../cheatmanagerdialog.cpp" line="519"/>
         <source>Delete Code</source>
         <translation>Deletar Código</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="394"/>
+        <location filename="../cheatmanagerdialog.cpp" line="520"/>
         <source>Are you sure you wish to delete the selected code? This action is not reversible.</source>
         <translation>Apagar o Código. selecionado? Esta ação não poderá ser desfeita.</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="420"/>
+        <location filename="../cheatmanagerdialog.cpp" line="546"/>
         <source>PCSXR/Libretro Cheat Files (*.cht *.txt);;All Files (*.*)</source>
         <translation>PCSXR/Libretro Arquivos de Trapaça (*.cht);;Todos os Arquivos (*.*)</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="421"/>
+        <location filename="../cheatmanagerdialog.cpp" line="547"/>
         <source>Import Cheats</source>
         <translation>Importar trapaças</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.cpp" line="428"/>
-        <location filename="../cheatmanagerdialog.cpp" line="453"/>
+        <location filename="../cheatmanagerdialog.cpp" line="554"/>
+        <location filename="../cheatmanagerdialog.cpp" line="579"/>
         <source>Error</source>
         <translation>Erro</translation>
     </message>
     <message>
+        <location filename="../cheatmanagerdialog.cpp" line="422"/>
+        <source>Add Group</source>
+        <translation>Adicionar Grupo</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.cpp" line="422"/>
+        <source>Group Name:</source>
+        <translation>Nome do Grupo:</translation>
+    </message>
+    <message>
         <location filename="../cheatmanagerdialog.cpp" line="428"/>
+        <source>This group name already exists.</source>
+        <translation>Nome do Grupo já Existe.</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.cpp" line="554"/>
         <source>Failed to parse cheat file. The log may contain more information.</source>
         <translation>Falha ao analisar arquivo de trapaça. O log pode conter mais informações.</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="447"/>
+        <location filename="../cheatmanagerdialog.cpp" line="573"/>
         <source>PCSXR Cheat Files (*.cht);;All Files (*.*)</source>
         <translation>Arquivos Suportados (*.cht *.txt);;Todos (*.*)</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="448"/>
+        <location filename="../cheatmanagerdialog.cpp" line="574"/>
         <source>Export Cheats</source>
         <translation>Exportar Trapaças</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="453"/>
+        <location filename="../cheatmanagerdialog.cpp" line="579"/>
         <source>Failed to save cheat file. The log may contain more information.</source>
         <translation>Falha ao salvar arquivo de trapaça. O log pode conter mais informações.</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="625"/>
+        <location filename="../cheatmanagerdialog.cpp" line="711"/>
+        <source>Memory Scan</source>
+        <translation>Leitura de RAM</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.cpp" line="712"/>
+        <source>Memory scan found %1 addresses, but only the first %2 are displayed.</source>
+        <translation>Leitura de RAM encontrada %1 , mas só o primeiro %2 serão mostrados.</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.cpp" line="762"/>
         <source>Byte</source>
         <translation>Byte</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="625"/>
+        <location filename="../cheatmanagerdialog.cpp" line="762"/>
         <source>Halfword</source>
         <translation>Halfword</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="625"/>
+        <location filename="../cheatmanagerdialog.cpp" line="762"/>
         <source>Word</source>
         <translation>Palavra</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="625"/>
+        <location filename="../cheatmanagerdialog.cpp" line="762"/>
         <source>Signed Byte</source>
         <translation>Byte Atríbuido</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="626"/>
+        <location filename="../cheatmanagerdialog.cpp" line="763"/>
         <source>Signed Halfword</source>
         <translation>Signed Halfword</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="626"/>
+        <location filename="../cheatmanagerdialog.cpp" line="763"/>
         <source>Signed Word</source>
         <translation>Palavra Atríbuida</translation>
     </message>
@@ -1167,17 +1230,17 @@
 <context>
     <name>Cheats</name>
     <message>
-        <location filename="../../core/cheats.cpp" line="715"/>
+        <location filename="../../core/cheats.cpp" line="827"/>
         <source>Gameshark</source>
         <translation>Gameshark</translation>
     </message>
     <message>
-        <location filename="../../core/cheats.cpp" line="740"/>
+        <location filename="../../core/cheats.cpp" line="852"/>
         <source>Manual</source>
         <translation>Manual</translation>
     </message>
     <message>
-        <location filename="../../core/cheats.cpp" line="740"/>
+        <location filename="../../core/cheats.cpp" line="852"/>
         <source>Automatic (Frame End)</source>
         <translation>Automático (Último Quadro)</translation>
     </message>
@@ -5494,9 +5557,8 @@ The URL was: %1</source>
         <translation>Resumir (%1)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="974"/>
         <source>PCSXR/Libretro Cheat Files (*.cht *.txt);;All Files (*.*)</source>
-        <translation>Arquivos Suportados PCSXR/Libretro (*.cht *.txt);;Todos (*.*)</translation>
+        <translation type="vanished">Arquivos Suportados PCSXR/Libretro (*.cht *.txt);;Todos (*.*)</translation>
     </message>
     <message>
         <source>%1 Save %2 (%3)</source>
@@ -5529,37 +5591,32 @@ The saves will not be recoverable.</source>
         <translation>Tem certeza que quer apagar os estados salvos %1? Não será possivel reverter esta ação.</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="971"/>
         <source>&amp;Load Cheats...</source>
-        <translation>&amp;Carregar Trapaças...</translation>
+        <translation type="vanished">&amp;Carregar Trapaças...</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="973"/>
-        <location filename="../qthostinterface.cpp" line="982"/>
         <source>Select Cheat File</source>
-        <translation>Escolha um Arquivo de Trapaça</translation>
+        <translation type="vanished">Escolha um Arquivo de Trapaça</translation>
     </message>
     <message>
         <source>PCSXR/Libretro Cheat Files (*.cht);;All Files (*.*)</source>
         <translation type="vanished">PCSXR/Libretro Arquivos de Trapaça (*.cht);;Todos os Arquivos (*.*)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="979"/>
         <source>&amp;Save Cheats...</source>
-        <translation>&amp;Salvar Trapaças...</translation>
+        <translation type="vanished">&amp;Salvar Trapaças...</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="983"/>
         <source>PCSXR Cheat Files (*.cht);;All Files (*.*)</source>
-        <translation>Arquivos Suportados PCSXR/Libretro (*.cht *.txt);;Todos (*.*)</translation>
+        <translation type="vanished">Arquivos Suportados PCSXR/Libretro (*.cht *.txt);;Todos (*.*)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="988"/>
+        <location filename="../qthostinterface.cpp" line="971"/>
         <source>&amp;Enabled Cheats</source>
         <translation>&amp;Habilitar Trapaças</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="990"/>
+        <location filename="../qthostinterface.cpp" line="973"/>
         <source>&amp;Apply Cheats</source>
         <translation>&amp;Aplicar Trapaças</translation>
     </message>
