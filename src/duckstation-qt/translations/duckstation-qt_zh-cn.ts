@@ -133,26 +133,31 @@
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="93"/>
-        <source>Enable Recompiler ICache</source>
-        <translation>启用重新编译ICache</translation>
+        <source>Enable Recompiler Fast Memory Access</source>
+        <translation>启用快速内存访问重编译器</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="96"/>
+        <location filename="../advancedsettingswidget.cpp" line="95"/>
+        <source>Enable Recompiler ICache</source>
+        <translation>启用ICache重编译器</translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="98"/>
         <source>DMA Max Slice Ticks</source>
         <translation>DMA最大片段时数</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="98"/>
+        <location filename="../advancedsettingswidget.cpp" line="100"/>
         <source>DMA Halt Ticks</source>
         <translation>DMA停顿时数</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="100"/>
+        <location filename="../advancedsettingswidget.cpp" line="102"/>
         <source>GPU FIFO Size</source>
         <translation>GPU的FIFO大小</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="102"/>
+        <location filename="../advancedsettingswidget.cpp" line="104"/>
         <source>GPU Max Run-Ahead</source>
         <translation>GPU最大Run-Ahead</translation>
     </message>
@@ -164,7 +169,7 @@
     <message>
         <location filename="../advancedsettingswidget.cpp" line="91"/>
         <source>Enable Recompiler Memory Exceptions</source>
-        <translation>启用重新编译内存异常</translation>
+        <translation>启用内存异常重编译器</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="97"/>
@@ -177,7 +182,7 @@
         <translation>显示调试菜单</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="104"/>
+        <location filename="../advancedsettingswidget.cpp" line="106"/>
         <source>Use Debug Host GPU Device</source>
         <translation>使用调试主机GPU设备</translation>
     </message>
@@ -357,22 +362,22 @@
 <context>
     <name>AudioBackend</name>
     <message>
-        <location filename="../../core/settings.cpp" line="605"/>
+        <location filename="../../core/settings.cpp" line="607"/>
         <source>Null (No Output)</source>
         <translation>无 (无输出)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="606"/>
+        <location filename="../../core/settings.cpp" line="608"/>
         <source>Cubeb</source>
         <translation>Cubeb</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="608"/>
+        <location filename="../../core/settings.cpp" line="610"/>
         <source>SDL</source>
         <translation>SDL</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="610"/>
+        <location filename="../../core/settings.cpp" line="612"/>
         <source>OpenSL ES</source>
         <translation>OpenSL ES</translation>
     </message>
@@ -475,7 +480,7 @@
     <message>
         <location filename="../audiosettingswidget.cpp" line="49"/>
         <source>Throttles the emulation speed based on the audio backend pulling audio frames. This helps to remove noises or crackling if emulation is too fast. Sync will automatically be disabled if not running at 100% speed.</source>
-        <translation>模拟速度的限制是为了同步音频后端拉取音频帧的输出。高速模拟运行将有助于消除噪音或爆音。如果没有以100%的速度运行，同步将自动禁用。</translation>
+        <translation>限制模拟的速度是为了同步音频后端拉取的音频帧。这将有助于在运行高速模拟时消除噪音或爆音。如果没有以100%的速度运行，同步将自动禁用。</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="53"/>
@@ -596,7 +601,7 @@
     <message>
         <location filename="../autoupdaterdialog.cpp" line="287"/>
         <source>&lt;h2&gt;Save State Warning&lt;/h2&gt;&lt;p&gt;Installing this update will make your save states &lt;b&gt;incompatible&lt;/b&gt;. Please ensure you have saved your games to memory card before installing this update or you will lose progress.&lt;/p&gt;</source>
-        <translation>&lt;h2&gt;即时存档警告&lt;/h2&gt;&lt;p&gt;安装此更新将使您的即时存档 &lt;b&gt;不兼容&lt;/b&gt;。在安装此更新之前，请务必确认您已经保存游戏进度到记忆卡中，否则将丢失进度。&lt;/p&gt;</translation>
+        <translation>&lt;h2&gt;即时存档警告&lt;/h2&gt;&lt;p&gt;安装此更新将会使您的即时存档因版本前后差异导致 &lt;b&gt;不兼容&lt;/b&gt;。请务必在安装此更新之前确认您已经保存游戏进度到记忆卡中，否则将丢失进度。&lt;/p&gt;</translation>
     </message>
     <message>
         <location filename="../autoupdaterdialog.cpp" line="295"/>
@@ -716,19 +721,519 @@
 <context>
     <name>CPUExecutionMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="444"/>
+        <location filename="../../core/settings.cpp" line="446"/>
         <source>Intepreter (Slowest)</source>
         <translation>解释器 (最慢)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="445"/>
+        <location filename="../../core/settings.cpp" line="447"/>
         <source>Cached Interpreter (Faster)</source>
         <translation>缓存解释器 (较快)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="446"/>
+        <location filename="../../core/settings.cpp" line="448"/>
         <source>Recompiler (Fastest)</source>
         <translation>重编译器 (最快)</translation>
+    </message>
+</context>
+<context>
+    <name>CheatCodeEditorDialog</name>
+    <message>
+        <location filename="../cheatcodeeditordialog.ui" line="14"/>
+        <source>Cheat Code Editor</source>
+        <translation>金手指代码编辑器</translation>
+    </message>
+    <message>
+        <location filename="../cheatcodeeditordialog.ui" line="23"/>
+        <source>Description:</source>
+        <translation>描述</translation>
+    </message>
+    <message>
+        <location filename="../cheatcodeeditordialog.ui" line="33"/>
+        <source>Group:</source>
+        <translation>分组</translation>
+    </message>
+    <message>
+        <location filename="../cheatcodeeditordialog.ui" line="43"/>
+        <source>Type:</source>
+        <translation>类型</translation>
+    </message>
+    <message>
+        <location filename="../cheatcodeeditordialog.ui" line="53"/>
+        <source>Activation:</source>
+        <translation>激活</translation>
+    </message>
+    <message>
+        <location filename="../cheatcodeeditordialog.ui" line="81"/>
+        <source>Save</source>
+        <translation>保存</translation>
+    </message>
+    <message>
+        <location filename="../cheatcodeeditordialog.ui" line="91"/>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <location filename="../cheatcodeeditordialog.cpp" line="20"/>
+        <location filename="../cheatcodeeditordialog.cpp" line="26"/>
+        <source>Error</source>
+        <translation>错误</translation>
+    </message>
+    <message>
+        <location filename="../cheatcodeeditordialog.cpp" line="20"/>
+        <source>Description cannot be empty.</source>
+        <translation>描述不能为空。</translation>
+    </message>
+    <message>
+        <location filename="../cheatcodeeditordialog.cpp" line="26"/>
+        <source>Instructions are invalid.</source>
+        <translation>指令无效。</translation>
+    </message>
+</context>
+<context>
+    <name>CheatManagerDialog</name>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="14"/>
+        <source>Cheat Manager</source>
+        <translation>金手指管理器</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="24"/>
+        <source>Cheat List</source>
+        <translation>金手指列表</translation>
+    </message>
+    <message>
+        <source>&amp;New Category...</source>
+        <translation type="vanished">新建分类(N)...</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="32"/>
+        <source>&amp;Add Group...</source>
+        <translation>新建分组(A)...</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="39"/>
+        <source>&amp;Add Code...</source>
+        <translation>新建代码(A)...</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="46"/>
+        <source>&amp;Edit Code...</source>
+        <translation>编辑代码(E)...</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="56"/>
+        <source>&amp;Delete Code</source>
+        <translation>删除代码(D)</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="66"/>
+        <location filename="../cheatmanagerdialog.cpp" line="309"/>
+        <location filename="../cheatmanagerdialog.cpp" line="347"/>
+        <location filename="../cheatmanagerdialog.cpp" line="352"/>
+        <source>Activate</source>
+        <translation>激活</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="73"/>
+        <source>Import...</source>
+        <translation>导入金手指...</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="83"/>
+        <source>Export...</source>
+        <translation>导出金手指...</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="112"/>
+        <source>Name</source>
+        <translation>名称</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="117"/>
+        <location filename="../cheatmanagerdialog.ui" line="489"/>
+        <source>Type</source>
+        <translation>类型</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="122"/>
+        <source>Activation</source>
+        <translation>激活</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="127"/>
+        <source>Instructions</source>
+        <translation>指令</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="136"/>
+        <source>Memory Scanner</source>
+        <translation>内存扫描器</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="168"/>
+        <location filename="../cheatmanagerdialog.ui" line="484"/>
+        <source>Address</source>
+        <translation>地址</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="173"/>
+        <location filename="../cheatmanagerdialog.ui" line="494"/>
+        <source>Value</source>
+        <translation>数值</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="178"/>
+        <source>Previous Value</source>
+        <translation>前一个数值</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="188"/>
+        <source>Search Parameters</source>
+        <translation>参数搜索</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="194"/>
+        <source>Value:</source>
+        <translation>数值:</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="207"/>
+        <source>Signed</source>
+        <translation>有正负之分的</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="212"/>
+        <source>Unsigned</source>
+        <translation>无正负之分的</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="221"/>
+        <source>Decimal</source>
+        <translation>十进制</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="226"/>
+        <source>Hex</source>
+        <translation>十六进制</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="236"/>
+        <source>Data Size:</source>
+        <translation>数据大小:</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="247"/>
+        <source>Byte (1 byte)</source>
+        <translation>字节 (1字节)</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="252"/>
+        <source>Halfword (2 bytes)</source>
+        <translation>半字 (2字节)</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="257"/>
+        <source>Word (4 bytes)</source>
+        <translation>单字 (4字节)</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="265"/>
+        <source>Operator:</source>
+        <translation>操作变量:</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="273"/>
+        <source>Equal to...</source>
+        <translation>等于...</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="278"/>
+        <source>Not Equal to...</source>
+        <translation>不等于...</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="283"/>
+        <source>Greater Than...</source>
+        <translation>大于...</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="288"/>
+        <source>Greater or Equal...</source>
+        <translation>大于或等于...</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="293"/>
+        <source>Less Than...</source>
+        <translation>小于...</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="298"/>
+        <source>Less or Equal...</source>
+        <translation>小于或等于...</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="303"/>
+        <source>Increased By...</source>
+        <translation>增加了...</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="308"/>
+        <source>Decreased By...</source>
+        <translation>减少了...</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="313"/>
+        <source>Changed By...</source>
+        <translation>变更了...</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="318"/>
+        <source>Equal to Previous (Unchanged Value)</source>
+        <translation>等于前一个 (数值未变化)</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="323"/>
+        <source>Not Equal to Previous (Changed Value)</source>
+        <translation>不等于前一个 (数值有变化)</translation>
+    </message>
+    <message>
+        <source>Equal to Previous</source>
+        <translation type="vanished">等于前一个</translation>
+    </message>
+    <message>
+        <source>Not Equal to Previous</source>
+        <translation type="vanished">不等于前一个</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="328"/>
+        <source>Greater Than Previous</source>
+        <translation>大于前一个</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="333"/>
+        <source>Greater or Equal to Previous</source>
+        <translation>大于或等于前一个</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="338"/>
+        <source>Less Than Previous</source>
+        <translation>小于前一个</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="343"/>
+        <source>Less or Equal to Previous</source>
+        <translation>小于或等于前一个</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="348"/>
+        <source>Any Value</source>
+        <translation>任何数值</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="356"/>
+        <source>Start Address:</source>
+        <translation>开始地址:</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="366"/>
+        <source>End Address:</source>
+        <translation>结束地址:</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="376"/>
+        <source>Preset Range:</source>
+        <translation>预设范围:</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="384"/>
+        <source>RAM</source>
+        <translation>内存</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="389"/>
+        <source>Scratchpad</source>
+        <translation>暂存器</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="394"/>
+        <source>BIOS</source>
+        <translation>BIOS</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="407"/>
+        <source>New Search</source>
+        <translation>新建搜索</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="417"/>
+        <source>Search Again</source>
+        <translation>再次搜索</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="427"/>
+        <source>Clear Results</source>
+        <translation>清空结果</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="474"/>
+        <source>Freeze</source>
+        <translation>冻结</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="479"/>
+        <source>Description</source>
+        <translation>描述</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="507"/>
+        <source>Add To Watch</source>
+        <translation>增加到监视</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="517"/>
+        <source>Add Manual Address</source>
+        <translation>增加手动地址</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="527"/>
+        <source>Remove Watch</source>
+        <translation>移除监视</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="537"/>
+        <source>Load Watch</source>
+        <translation>载入监视</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.ui" line="547"/>
+        <source>Save Watch</source>
+        <translation>保存监视</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.cpp" line="352"/>
+        <source>Toggle</source>
+        <translation>开/关</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.cpp" line="519"/>
+        <source>Delete Code</source>
+        <translation>删除代码</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.cpp" line="520"/>
+        <source>Are you sure you wish to delete the selected code? This action is not reversible.</source>
+        <translation>您确定要删除选中的代码吗? 这个动作是不可逆的。</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.cpp" line="546"/>
+        <source>PCSXR/Libretro Cheat Files (*.cht *.txt);;All Files (*.*)</source>
+        <translation>PCSXR/Libretro金手指文件 (*.cht *.txt);;所有文件 (*.*)</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.cpp" line="547"/>
+        <source>Import Cheats</source>
+        <translation>导入金手指</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.cpp" line="428"/>
+        <location filename="../cheatmanagerdialog.cpp" line="554"/>
+        <location filename="../cheatmanagerdialog.cpp" line="579"/>
+        <source>Error</source>
+        <translation>错误</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.cpp" line="422"/>
+        <source>Add Group</source>
+        <translation>新建分组</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.cpp" line="422"/>
+        <source>Group Name:</source>
+        <translation>分组名称:</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.cpp" line="428"/>
+        <source>This group name already exists.</source>
+        <translation>此分组名称已经存在。</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.cpp" line="554"/>
+        <source>Failed to parse cheat file. The log may contain more information.</source>
+        <translation>解析金手指文件失败。日志可能包含更多信息。</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.cpp" line="573"/>
+        <source>PCSXR Cheat Files (*.cht);;All Files (*.*)</source>
+        <translation>PCSXR金手指文件 (*.cht);;所有文件 (*.*)</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.cpp" line="574"/>
+        <source>Export Cheats</source>
+        <translation>导出金手指</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.cpp" line="579"/>
+        <source>Failed to save cheat file. The log may contain more information.</source>
+        <translation>保存金手指文件失败。日志可能包含更多信息。</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.cpp" line="711"/>
+        <source>Memory Scan</source>
+        <translation>内存扫描</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.cpp" line="712"/>
+        <source>Memory scan found %1 addresses, but only the first %2 are displayed.</source>
+        <translation>内存扫描找到%1地址，但只显示第一个%2。</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.cpp" line="762"/>
+        <source>Byte</source>
+        <translation>字节</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.cpp" line="762"/>
+        <source>Halfword</source>
+        <translation>半字</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.cpp" line="762"/>
+        <source>Word</source>
+        <translation>单字</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.cpp" line="762"/>
+        <source>Signed Byte</source>
+        <translation>有正负之分的字节</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.cpp" line="763"/>
+        <source>Signed Halfword</source>
+        <translation>有正负之分的半字</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerdialog.cpp" line="763"/>
+        <source>Signed Word</source>
+        <translation>有正负之分的单字</translation>
+    </message>
+</context>
+<context>
+    <name>Cheats</name>
+    <message>
+        <location filename="../../core/cheats.cpp" line="827"/>
+        <source>Gameshark</source>
+        <translation>金手指</translation>
+    </message>
+    <message>
+        <location filename="../../core/cheats.cpp" line="852"/>
+        <source>Manual</source>
+        <translation>手动操作</translation>
+    </message>
+    <message>
+        <location filename="../../core/cheats.cpp" line="852"/>
+        <source>Automatic (Frame End)</source>
+        <translation>自动操作 (帧尾)</translation>
     </message>
 </context>
 <context>
@@ -747,22 +1252,22 @@
 <context>
     <name>ConsoleRegion</name>
     <message>
-        <location filename="../../core/settings.cpp" line="386"/>
+        <location filename="../../core/settings.cpp" line="388"/>
         <source>Auto-Detect</source>
         <translation>自动检测</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="386"/>
+        <location filename="../../core/settings.cpp" line="388"/>
         <source>NTSC-J (Japan)</source>
         <translation>NTSC-J (日本)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="387"/>
+        <location filename="../../core/settings.cpp" line="389"/>
         <source>NTSC-U/C (US, Canada)</source>
         <translation>NTSC-U/C (美国/加拿大)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="387"/>
+        <location filename="../../core/settings.cpp" line="389"/>
         <source>PAL (Europe, Australia)</source>
         <translation>PAL (欧洲，澳大利亚)</translation>
     </message>
@@ -1084,32 +1589,32 @@ This warning will only be shown once.</source>
 <context>
     <name>ControllerType</name>
     <message>
-        <location filename="../../core/settings.cpp" line="641"/>
+        <location filename="../../core/settings.cpp" line="643"/>
         <source>None</source>
         <translation>无</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="641"/>
+        <location filename="../../core/settings.cpp" line="643"/>
         <source>Digital Controller</source>
         <translation>数字控制器</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="642"/>
+        <location filename="../../core/settings.cpp" line="644"/>
         <source>Analog Controller (DualShock)</source>
         <translation>模拟控制器 (DualShock)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="642"/>
+        <location filename="../../core/settings.cpp" line="644"/>
         <source>Namco GunCon</source>
         <translation>南梦宫光枪</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="643"/>
+        <location filename="../../core/settings.cpp" line="645"/>
         <source>PlayStation Mouse</source>
         <translation>Playstation鼠标</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="643"/>
+        <location filename="../../core/settings.cpp" line="645"/>
         <source>NeGcon</source>
         <translation>NeGcon</translation>
     </message>
@@ -1190,7 +1695,7 @@ This warning will only be shown once.</source>
 <context>
     <name>DiscRegion</name>
     <message>
-        <location filename="../../core/settings.cpp" line="415"/>
+        <location filename="../../core/settings.cpp" line="417"/>
         <source>NTSC-J (Japan)</source>
         <translation>NTSC-J (日本)</translation>
     </message>
@@ -1199,17 +1704,17 @@ This warning will only be shown once.</source>
         <translation type="vanished">NTSC-U (美国)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="415"/>
+        <location filename="../../core/settings.cpp" line="417"/>
         <source>NTSC-U/C (US, Canada)</source>
         <translation>NTSC-U/C (美国，加拿大)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="416"/>
+        <location filename="../../core/settings.cpp" line="418"/>
         <source>PAL (Europe, Australia)</source>
         <translation>PAL (欧洲，澳大利亚)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="416"/>
+        <location filename="../../core/settings.cpp" line="418"/>
         <source>Other</source>
         <translation>其他</translation>
     </message>
@@ -1217,17 +1722,17 @@ This warning will only be shown once.</source>
 <context>
     <name>DisplayCropMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="539"/>
+        <location filename="../../core/settings.cpp" line="541"/>
         <source>None</source>
         <translation>无</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="539"/>
+        <location filename="../../core/settings.cpp" line="541"/>
         <source>Only Overscan Area</source>
         <translation>仅限过扫描区域</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="540"/>
+        <location filename="../../core/settings.cpp" line="542"/>
         <source>All Borders</source>
         <translation>所有边界</translation>
     </message>
@@ -1327,7 +1832,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../displaysettingswidget.cpp" line="52"/>
         <source>Chooses the backend to use for rendering the console/game visuals. &lt;br&gt;Depending on your system and hardware, Direct3D 11 and OpenGL hardware backends may be available. &lt;br&gt;The software renderer offers the best compatibility, but is the slowest and does not offer any enhancements.</source>
-        <translation>选择用于呈现主机/游戏视觉效果的后端。&lt;br&gt;根据您的系统和硬件，Direct3D 11和OpenGL硬件后端可能可用。&lt;br&gt;软件渲染器提供了最好的兼容性，但速度最慢，并且不提供任何增强功能。</translation>
+        <translation>选择用来渲染主机/游戏画面的后端。&lt;br&gt;Direct3D 11和OpenGL硬件后端是否可用将取决于您的系统和硬件。&lt;br&gt;软件渲染器提供了最好的兼容性，但速度最慢，并且不提供任何增强功能。</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="57"/>
@@ -1580,7 +2085,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="76"/>
         <source>Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to 16:9 in 3D games. &lt;br&gt;For 2D games, or games which use pre-rendered backgrounds, this enhancement will not work as expected. &lt;br&gt;&lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
-        <translation>将屏幕空间中的顶点位置缩放到宽屏幕的纵横比，基本上将3D游戏中的视野从4:3增加到16:9。&lt;br&gt;对于2D游戏，或使用预渲染背景的游戏, 此增强将无法按预期工作。&lt;br&gt;&lt;b&gt;&lt;u&gt;可能不兼容所有游戏。&lt;/u&gt;&lt;/b&gt;</translation>
+        <translation>将屏幕空间中的顶点位置缩放到适应宽屏显示的纵横比，根本上将3D游戏中的视野从4:3增加到16:9。&lt;br&gt;对于2D游戏，或使用预渲染背景的游戏，此增强将无法按预期工作。&lt;br&gt;&lt;b&gt;&lt;u&gt;可能不兼容所有游戏。&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Enables the upscaling of 3D objects rendered to the console&apos;s framebuffer. Only applies to the hardware backends. This option is usually safe, with most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</source>
@@ -1648,22 +2153,22 @@ This warning will only be shown once.</source>
 <context>
     <name>GPURenderer</name>
     <message>
-        <location filename="../../core/settings.cpp" line="479"/>
+        <location filename="../../core/settings.cpp" line="481"/>
         <source>Hardware (D3D11)</source>
         <translation>硬件 (D3D11)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="481"/>
+        <location filename="../../core/settings.cpp" line="483"/>
         <source>Hardware (Vulkan)</source>
         <translation>硬件 (Vulkan)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="481"/>
+        <location filename="../../core/settings.cpp" line="483"/>
         <source>Hardware (OpenGL)</source>
         <translation>硬件 (OpenGL)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="482"/>
+        <location filename="../../core/settings.cpp" line="484"/>
         <source>Software</source>
         <translation>软件</translation>
     </message>
@@ -1671,82 +2176,82 @@ This warning will only be shown once.</source>
 <context>
     <name>GPUSettingsWidget</name>
     <message>
-        <location filename="../qtutils.cpp" line="654"/>
+        <location filename="../qtutils.cpp" line="672"/>
         <source>1x</source>
         <translation>1x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="655"/>
+        <location filename="../qtutils.cpp" line="673"/>
         <source>2x</source>
         <translation>2x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="656"/>
+        <location filename="../qtutils.cpp" line="674"/>
         <source>3x (for 720p)</source>
         <translation>3x (适合 720p)</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="657"/>
+        <location filename="../qtutils.cpp" line="675"/>
         <source>4x</source>
         <translation>4x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="658"/>
+        <location filename="../qtutils.cpp" line="676"/>
         <source>5x (for 1080p)</source>
         <translation>5x (适合 1080p)</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="659"/>
+        <location filename="../qtutils.cpp" line="677"/>
         <source>6x (for 1440p)</source>
         <translation>6x (适合 1440p)</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="660"/>
+        <location filename="../qtutils.cpp" line="678"/>
         <source>7x</source>
         <translation>7x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="661"/>
+        <location filename="../qtutils.cpp" line="679"/>
         <source>8x</source>
         <translation>8x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="662"/>
+        <location filename="../qtutils.cpp" line="680"/>
         <source>9x</source>
         <translation>9x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="663"/>
+        <location filename="../qtutils.cpp" line="681"/>
         <source>10x</source>
         <translation>10x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="664"/>
+        <location filename="../qtutils.cpp" line="682"/>
         <source>11x</source>
         <translation>11x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="665"/>
+        <location filename="../qtutils.cpp" line="683"/>
         <source>12x</source>
         <translation>12x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="666"/>
+        <location filename="../qtutils.cpp" line="684"/>
         <source>13x</source>
         <translation>13x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="667"/>
+        <location filename="../qtutils.cpp" line="685"/>
         <source>14x</source>
         <translation>14x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="668"/>
+        <location filename="../qtutils.cpp" line="686"/>
         <source>15x</source>
         <translation>15x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="669"/>
+        <location filename="../qtutils.cpp" line="687"/>
         <source>16x</source>
         <translation>16x</translation>
     </message>
@@ -1755,7 +2260,7 @@ This warning will only be shown once.</source>
         <translation type="vanished">8x (适合4K)</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="653"/>
+        <location filename="../qtutils.cpp" line="671"/>
         <source>Automatic based on window size</source>
         <translation>自动根据窗口大小</translation>
     </message>
@@ -1763,22 +2268,22 @@ This warning will only be shown once.</source>
 <context>
     <name>GPUTextureFilter</name>
     <message>
-        <location filename="../../core/settings.cpp" line="510"/>
+        <location filename="../../core/settings.cpp" line="512"/>
         <source>Nearest-Neighbor</source>
         <translation>Nearest-Neighbor</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="510"/>
+        <location filename="../../core/settings.cpp" line="512"/>
         <source>Bilinear</source>
         <translation>Bilinear</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="511"/>
+        <location filename="../../core/settings.cpp" line="513"/>
         <source>JINC2</source>
         <translation>JINC2</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="511"/>
+        <location filename="../../core/settings.cpp" line="513"/>
         <source>xBR</source>
         <translation>xBR</translation>
     </message>
@@ -2443,12 +2948,12 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="36"/>
         <source>Force Recompiler Memory Exceptions</source>
-        <translation>强制重新编译内存异常</translation>
+        <translation>强制内存异常重编译器</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="37"/>
         <source>Force Recompiler ICache</source>
-        <translation>强制重新编译ICache</translation>
+        <translation>强制ICache重编译器</translation>
     </message>
 </context>
 <context>
@@ -3090,52 +3595,52 @@ This will download approximately 4 megabytes over your current internet connecti
 <context>
     <name>LogLevel</name>
     <message>
-        <location filename="../../core/settings.cpp" line="355"/>
+        <location filename="../../core/settings.cpp" line="357"/>
         <source>None</source>
         <translation>无</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="355"/>
+        <location filename="../../core/settings.cpp" line="357"/>
         <source>Error</source>
         <translation>错误</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="355"/>
+        <location filename="../../core/settings.cpp" line="357"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="356"/>
+        <location filename="../../core/settings.cpp" line="358"/>
         <source>Performance</source>
         <translation>性能</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="356"/>
+        <location filename="../../core/settings.cpp" line="358"/>
         <source>Success</source>
         <translation>成功</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="357"/>
+        <location filename="../../core/settings.cpp" line="359"/>
         <source>Information</source>
         <translation>信息</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="357"/>
+        <location filename="../../core/settings.cpp" line="359"/>
         <source>Developer</source>
         <translation>开发者</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="357"/>
+        <location filename="../../core/settings.cpp" line="359"/>
         <source>Profile</source>
         <translation>简介</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="358"/>
+        <location filename="../../core/settings.cpp" line="360"/>
         <source>Debug</source>
         <translation>调试</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="358"/>
+        <location filename="../../core/settings.cpp" line="360"/>
         <source>Trace</source>
         <translation>跟踪</translation>
     </message>
@@ -3144,9 +3649,9 @@ This will download approximately 4 megabytes over your current internet connecti
     <name>MainWindow</name>
     <message>
         <location filename="../mainwindow.ui" line="14"/>
-        <location filename="../mainwindow.cpp" line="66"/>
-        <location filename="../mainwindow.cpp" line="77"/>
-        <location filename="../mainwindow.cpp" line="627"/>
+        <location filename="../mainwindow.cpp" line="67"/>
+        <location filename="../mainwindow.cpp" line="78"/>
+        <location filename="../mainwindow.cpp" line="636"/>
         <source>DuckStation</source>
         <translation>DuckStation</translation>
     </message>
@@ -3156,7 +3661,7 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <location filename="../mainwindow.ui" line="42"/>
-        <location filename="../mainwindow.cpp" line="490"/>
+        <location filename="../mainwindow.cpp" line="499"/>
         <source>Change Disc</source>
         <translation>换碟</translation>
     </message>
@@ -3226,92 +3731,92 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>工具(&amp;T)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="220"/>
+        <location filename="../mainwindow.ui" line="221"/>
         <source>toolBar</source>
         <translation>工具栏</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="712"/>
+        <location filename="../mainwindow.ui" line="713"/>
         <source>Memory &amp;Card Editor</source>
         <translation>记忆卡管理器(&amp;C)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="744"/>
+        <location filename="../mainwindow.ui" line="750"/>
         <source>Ctrl+-</source>
         <translation>Ctrl+-</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="754"/>
+        <location filename="../mainwindow.ui" line="760"/>
         <source>Open Memory Card Directory...</source>
         <translation>打开记忆卡目录…</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="759"/>
+        <location filename="../mainwindow.ui" line="765"/>
         <source>Open Data Directory...</source>
         <translation>打开模拟器数据目录...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="260"/>
+        <location filename="../mainwindow.ui" line="261"/>
         <source>Start &amp;Disc...</source>
         <translation>启动光盘(&amp;D)...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="269"/>
+        <location filename="../mainwindow.ui" line="270"/>
         <source>Start &amp;BIOS</source>
         <translation>启动BIOS(&amp;B)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="278"/>
+        <location filename="../mainwindow.ui" line="279"/>
         <source>&amp;Scan For New Games</source>
         <translation>扫描新游戏(&amp;S)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="287"/>
+        <location filename="../mainwindow.ui" line="288"/>
         <source>&amp;Rescan All Games</source>
         <translation>重新扫描所有游戏(&amp;R)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="296"/>
+        <location filename="../mainwindow.ui" line="297"/>
         <source>Power &amp;Off</source>
         <translation>关机(&amp;O)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="305"/>
+        <location filename="../mainwindow.ui" line="306"/>
         <source>&amp;Reset</source>
         <translation>重启(&amp;R)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="317"/>
+        <location filename="../mainwindow.ui" line="318"/>
         <source>&amp;Pause</source>
         <translation>暂停(&amp;P)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="326"/>
+        <location filename="../mainwindow.ui" line="327"/>
         <source>&amp;Load State</source>
         <translation>即时读档(&amp;L)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="335"/>
+        <location filename="../mainwindow.ui" line="336"/>
         <source>&amp;Save State</source>
         <translation>即时存档(&amp;S)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="340"/>
+        <location filename="../mainwindow.ui" line="341"/>
         <source>E&amp;xit</source>
         <translation>退出(&amp;X)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="358"/>
+        <location filename="../mainwindow.ui" line="359"/>
         <source>C&amp;onsole Settings...</source>
         <translation>主机设置(&amp;O)...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="367"/>
+        <location filename="../mainwindow.ui" line="368"/>
         <source>&amp;Controller Settings...</source>
         <translation>控制器设置(&amp;C)...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="376"/>
+        <location filename="../mainwindow.ui" line="377"/>
         <source>&amp;Hotkey Settings...</source>
         <translation>快捷键设置(&amp;H)...</translation>
     </message>
@@ -3320,47 +3825,47 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation type="vanished">GPU设置</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="385"/>
+        <location filename="../mainwindow.ui" line="386"/>
         <source>&amp;Display Settings...</source>
         <translation>显示设置(&amp;D)...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="394"/>
+        <location filename="../mainwindow.ui" line="395"/>
         <source>&amp;Enhancement Settings...</source>
         <translation>增强设置(&amp;E)…</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="403"/>
+        <location filename="../mainwindow.ui" line="404"/>
         <source>&amp;Post-Processing Settings...</source>
         <translation>后处理设置(&amp;P)…</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="412"/>
+        <location filename="../mainwindow.ui" line="413"/>
         <source>Fullscreen</source>
         <translation>全屏</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="417"/>
+        <location filename="../mainwindow.ui" line="418"/>
         <source>Resolution Scale</source>
         <translation>分辨率缩放</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="422"/>
+        <location filename="../mainwindow.ui" line="423"/>
         <source>&amp;GitHub Repository...</source>
         <translation>GitHub库(&amp;G)...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="427"/>
+        <location filename="../mainwindow.ui" line="428"/>
         <source>&amp;Issue Tracker...</source>
         <translation>问题反馈(&amp;I)...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="432"/>
+        <location filename="../mainwindow.ui" line="433"/>
         <source>&amp;Discord Server...</source>
         <translation>Discord服务器(&amp;D)...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="437"/>
+        <location filename="../mainwindow.ui" line="438"/>
         <source>Check for &amp;Updates...</source>
         <translation>检查更新(&amp;U)...</translation>
     </message>
@@ -3369,32 +3874,32 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation type="vanished">关于(&amp;A)...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="456"/>
+        <location filename="../mainwindow.ui" line="457"/>
         <source>Change Disc...</source>
         <translation>换碟...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="465"/>
+        <location filename="../mainwindow.ui" line="466"/>
         <source>Cheats...</source>
         <translation>金手指...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="474"/>
+        <location filename="../mainwindow.ui" line="475"/>
         <source>Audio Settings...</source>
         <translation>音频设置...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="483"/>
+        <location filename="../mainwindow.ui" line="484"/>
         <source>Game List Settings...</source>
         <translation>游戏列表设置...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="492"/>
+        <location filename="../mainwindow.ui" line="493"/>
         <source>General Settings...</source>
         <translation>常规设置...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="349"/>
+        <location filename="../mainwindow.ui" line="350"/>
         <source>B&amp;IOS Settings...</source>
         <translation>BIOS设置(&amp;I)...</translation>
     </message>
@@ -3409,187 +3914,192 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>切换裁剪模式</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="442"/>
+        <location filename="../mainwindow.ui" line="443"/>
         <source>About &amp;Qt...</source>
         <translation>关于Qt(&amp;Q)...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="447"/>
+        <location filename="../mainwindow.ui" line="448"/>
         <source>&amp;About DuckStation...</source>
         <translation>关于DuckStation(&amp;A)...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="501"/>
+        <location filename="../mainwindow.ui" line="502"/>
         <source>Advanced Settings...</source>
         <translation>高级设置...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="510"/>
+        <location filename="../mainwindow.ui" line="511"/>
         <source>Add Game Directory...</source>
         <translation>添加游戏路径...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="519"/>
+        <location filename="../mainwindow.ui" line="520"/>
         <source>&amp;Settings...</source>
         <translation>设置(&amp;S)...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="524"/>
+        <location filename="../mainwindow.ui" line="525"/>
         <source>From File...</source>
         <translation>从文件...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="529"/>
+        <location filename="../mainwindow.ui" line="530"/>
         <source>From Game List...</source>
         <translation>从列表...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="534"/>
+        <location filename="../mainwindow.ui" line="535"/>
         <source>Remove Disc</source>
         <translation>移除光盘</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="539"/>
+        <location filename="../mainwindow.ui" line="540"/>
         <source>Resume State</source>
         <translation>恢复状态</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="544"/>
+        <location filename="../mainwindow.ui" line="545"/>
         <source>Global State</source>
         <translation>全局状态</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="552"/>
+        <location filename="../mainwindow.ui" line="553"/>
         <source>Show VRAM</source>
         <translation>显示显存</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="560"/>
+        <location filename="../mainwindow.ui" line="561"/>
         <source>Dump CPU to VRAM Copies</source>
         <translation>将CPU转储到显存拷贝</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="568"/>
+        <location filename="../mainwindow.ui" line="569"/>
         <source>Dump VRAM to CPU Copies</source>
         <translation>将显存转储到CPU拷贝</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="576"/>
+        <location filename="../mainwindow.ui" line="577"/>
         <source>Disable Interlacing</source>
         <translation>禁用隔行扫描</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="584"/>
+        <location filename="../mainwindow.ui" line="585"/>
         <source>Force NTSC Timings</source>
         <translation>强制NTSC计时</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="592"/>
+        <location filename="../mainwindow.ui" line="593"/>
         <source>Dump Audio</source>
         <translation>转储音频</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="597"/>
+        <location filename="../mainwindow.ui" line="598"/>
         <source>Dump RAM...</source>
         <translation>转储内存...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="605"/>
+        <location filename="../mainwindow.ui" line="606"/>
         <source>Show GPU State</source>
         <translation>显示GPU状态</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="613"/>
+        <location filename="../mainwindow.ui" line="614"/>
         <source>Show CDROM State</source>
         <translation>显示光盘状态</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="621"/>
+        <location filename="../mainwindow.ui" line="622"/>
         <source>Show SPU State</source>
         <translation>显示SPU状态</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="629"/>
+        <location filename="../mainwindow.ui" line="630"/>
         <source>Show Timers State</source>
         <translation>显示计时器状态</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="637"/>
+        <location filename="../mainwindow.ui" line="638"/>
         <source>Show MDEC State</source>
         <translation>显示MDEC状态</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="646"/>
+        <location filename="../mainwindow.ui" line="647"/>
         <source>&amp;Screenshot</source>
         <translation>截图(&amp;S)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="655"/>
+        <location filename="../mainwindow.ui" line="656"/>
         <source>&amp;Memory Card Settings...</source>
         <translation>记忆卡设置(&amp;M)...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="664"/>
+        <location filename="../mainwindow.ui" line="665"/>
         <source>Resume</source>
         <translation>恢复</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="667"/>
+        <location filename="../mainwindow.ui" line="668"/>
         <source>Resumes the last save state created.</source>
-        <translation>恢复上次创建的保存状态。</translation>
+        <translation>恢复上次创建的即时存档。</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="678"/>
+        <location filename="../mainwindow.ui" line="679"/>
         <source>&amp;Toolbar</source>
         <translation>工具栏(&amp;T)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="689"/>
+        <location filename="../mainwindow.ui" line="690"/>
         <source>&amp;Status Bar</source>
         <translation>状态栏(&amp;S)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="694"/>
+        <location filename="../mainwindow.ui" line="695"/>
         <source>Game &amp;List</source>
         <translation>游戏列表样式(&amp;L)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="707"/>
+        <location filename="../mainwindow.ui" line="708"/>
         <source>Game &amp;Properties</source>
         <translation>游戏属性(&amp;P)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="717"/>
+        <location filename="../mainwindow.ui" line="718"/>
+        <source>C&amp;heat Manager</source>
+        <translation>金手指管理器(&amp;H)</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="723"/>
         <source>Game &amp;Grid</source>
         <translation>游戏方格样式(&amp;G)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="728"/>
+        <location filename="../mainwindow.ui" line="734"/>
         <source>Show Titles (Grid View)</source>
         <translation>显示标题 (方格样式)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="736"/>
+        <location filename="../mainwindow.ui" line="742"/>
         <source>Ctrl++</source>
         <translation>Ctrl++</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="741"/>
+        <location filename="../mainwindow.ui" line="747"/>
         <source>Zoom &amp;Out (Grid View)</source>
         <translation>缩小 (方格样式)(&amp;O)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="733"/>
+        <location filename="../mainwindow.ui" line="739"/>
         <source>Zoom &amp;In (Grid View)</source>
         <translation>放大 (方格样式)(&amp;I)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="749"/>
+        <location filename="../mainwindow.ui" line="755"/>
         <source>Refresh &amp;Covers (Grid View)</source>
         <translation>刷新封面 (方格样式)(&amp;C)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="702"/>
+        <location filename="../mainwindow.ui" line="703"/>
         <source>System &amp;Display</source>
         <translation>系统显示(&amp;D)</translation>
     </message>
@@ -3598,7 +4108,7 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation type="vanished">从小部件获取窗口信息失败</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="123"/>
+        <location filename="../mainwindow.cpp" line="124"/>
         <source>Failed to create host display device context.</source>
         <translation>创建主机显示设备上下文失败。</translation>
     </message>
@@ -3607,114 +4117,119 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation type="vanished">从小部件获取新窗口信息失败</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="31"/>
+        <location filename="../mainwindow.cpp" line="32"/>
         <source>All File Types (*.bin *.img *.cue *.chd *.exe *.psexe *.psf *.m3u);;Single-Track Raw Images (*.bin *.img);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;PlayStation Executables (*.exe *.psexe);;Portable Sound Format Files (*.psf);;Playlists (*.m3u)</source>
         <translation>所有文件类型 (*.bin *.img *.cue *.chd *.exe *.psexe *.psf);;单轨原始镜像 (*.bin *.img);;Cue Sheets (*.cue);;MAME CHD镜像 (*.chd);;PlayStation可执行程序 (*.exe *.psexe);;便携音频格式文件 (*.psf);;播放列表 (*.m3u)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="278"/>
-        <location filename="../mainwindow.cpp" line="293"/>
+        <location filename="../mainwindow.cpp" line="285"/>
+        <location filename="../mainwindow.cpp" line="300"/>
         <source>Select Disc Image</source>
         <translation>选择光盘镜像</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="451"/>
+        <location filename="../mainwindow.cpp" line="326"/>
+        <source>Cheat Manager</source>
+        <translation>金手指管理器</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="460"/>
         <source>Properties...</source>
         <translation>属性...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="454"/>
+        <location filename="../mainwindow.cpp" line="463"/>
         <source>Open Containing Directory...</source>
         <translation>打开所在目录...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="459"/>
+        <location filename="../mainwindow.cpp" line="468"/>
         <source>Set Cover Image...</source>
         <translation>设置封面图片…</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="472"/>
+        <location filename="../mainwindow.cpp" line="481"/>
         <source>Default Boot</source>
         <translation>默认启动</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="476"/>
+        <location filename="../mainwindow.cpp" line="485"/>
         <source>Fast Boot</source>
         <translation>快速启动</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="482"/>
+        <location filename="../mainwindow.cpp" line="491"/>
         <source>Full Boot</source>
         <translation>完全启动</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="500"/>
+        <location filename="../mainwindow.cpp" line="509"/>
         <source>Add Search Directory...</source>
         <translation>添加搜索目录...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="508"/>
+        <location filename="../mainwindow.cpp" line="517"/>
         <source>Select Cover Image</source>
         <translation>选择封面图片</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="509"/>
+        <location filename="../mainwindow.cpp" line="518"/>
         <source>All Cover Image Types (*.jpg *.jpeg *.png)</source>
         <translation>所有封面图片类型 (*.jpg *.jpeg *.png)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="515"/>
+        <location filename="../mainwindow.cpp" line="524"/>
         <source>Cover Already Exists</source>
         <translation>封面已存在</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="516"/>
+        <location filename="../mainwindow.cpp" line="525"/>
         <source>A cover image for this game already exists, do you wish to replace it?</source>
         <translation>该游戏的封面图片已经存在，您要替换它吗？</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="530"/>
-        <location filename="../mainwindow.cpp" line="536"/>
+        <location filename="../mainwindow.cpp" line="539"/>
+        <location filename="../mainwindow.cpp" line="545"/>
         <source>Copy Error</source>
         <translation>复制错误</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="530"/>
+        <location filename="../mainwindow.cpp" line="539"/>
         <source>Failed to remove existing cover &apos;%1&apos;</source>
         <translation>无法移除现有封面&apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="536"/>
+        <location filename="../mainwindow.cpp" line="545"/>
         <source>Failed to copy &apos;%1&apos; to &apos;%2&apos;</source>
         <translation>复制&apos;%1&apos;到&apos;%2&apos;失败</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="628"/>
+        <location filename="../mainwindow.cpp" line="637"/>
         <source>Language changed. Please restart the application to apply.</source>
         <translation>语言已更改，请重新启动应用程序以应用。</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="841"/>
+        <location filename="../mainwindow.cpp" line="852"/>
         <source>Destination File</source>
         <translation>目标文件</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="857"/>
+        <location filename="../mainwindow.cpp" line="868"/>
         <source>Default</source>
         <translation>默认</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="858"/>
+        <location filename="../mainwindow.cpp" line="869"/>
         <source>Fusion</source>
         <translation>炼金</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="859"/>
+        <location filename="../mainwindow.cpp" line="870"/>
         <source>Dark Fusion (Gray)</source>
         <translation>黑炼金 (灰色)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="860"/>
+        <location filename="../mainwindow.cpp" line="871"/>
         <source>Dark Fusion (Blue)</source>
         <translation>黑炼金 (蓝色)</translation>
     </message>
@@ -3723,22 +4238,22 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation type="vanished">黑色</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="861"/>
+        <location filename="../mainwindow.cpp" line="872"/>
         <source>QDarkStyle</source>
         <translation>暗夜</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1182"/>
+        <location filename="../mainwindow.cpp" line="1202"/>
         <source>Updater Error</source>
         <translation>更新程序错误</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1188"/>
+        <location filename="../mainwindow.cpp" line="1208"/>
         <source>&lt;p&gt;Sorry, you are trying to update a DuckStation version which is not an official GitHub release. To prevent incompatibilities, the auto-updater is only enabled on official builds.&lt;/p&gt;&lt;p&gt;To obtain an official build, please follow the instructions under &quot;Downloading and Running&quot; at the link below:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt;https://github.com/stenzek/duckstation/&lt;/a&gt;&lt;/p&gt;</source>
         <translation>&lt;p&gt;抱歉，您正在尝试更新非GitHub官方版本的DuckStation版本。为防止不兼容，自动更新程序仅在正式版本上启用。&lt;/p&gt;&lt;p&gt;要获取正式版本，请按照下面链接中的&quot;下载并运行&quot;下的说明进行操作：&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt;https://github.com/stenzek/duckstation/&lt;/a&gt;lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1194"/>
+        <location filename="../mainwindow.cpp" line="1214"/>
         <source>Automatic updating is not supported on the current platform.</source>
         <translation>当前平台不支持自动更新。</translation>
     </message>
@@ -3980,22 +4495,22 @@ This will download approximately 4 megabytes over your current internet connecti
 <context>
     <name>MemoryCardType</name>
     <message>
-        <location filename="../../core/settings.cpp" line="671"/>
+        <location filename="../../core/settings.cpp" line="673"/>
         <source>No Memory Card</source>
         <translation>无记忆卡</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="671"/>
+        <location filename="../../core/settings.cpp" line="673"/>
         <source>Shared Between All Games</source>
         <translation>所有游戏共用记忆卡</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="672"/>
+        <location filename="../../core/settings.cpp" line="674"/>
         <source>Separate Card Per Game (Game Code)</source>
         <translation>每个游戏独立记忆卡 (游戏编码)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="673"/>
+        <location filename="../../core/settings.cpp" line="675"/>
         <source>Separate Card Per Game (Game Title)</source>
         <translation>每个游戏独立记忆卡 (游戏标题)</translation>
     </message>
@@ -4129,64 +4644,64 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>保存即时存档到&apos;%s&apos;。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="528"/>
+        <location filename="../../core/host_interface.cpp" line="529"/>
         <source>PGXP is incompatible with the software renderer, disabling PGXP.</source>
         <translation>PGXP与软件呈现程序不兼容，禁用PGXP。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="537"/>
+        <location filename="../../core/host_interface.cpp" line="538"/>
         <source>PGXP CPU mode is incompatible with the recompiler, using Cached Interpreter instead.</source>
-        <translation>PGXP在CPU模式与重新编译器不兼容，改为使用缓存解释器。</translation>
+        <translation>PGXP在CPU模式与重编译器不兼容，改为使用缓存解释器。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="566"/>
+        <location filename="../../core/host_interface.cpp" line="567"/>
         <source>Switching to %s%s GPU renderer.</source>
         <translation>切换到%s%sGPU渲染器。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="577"/>
+        <location filename="../../core/host_interface.cpp" line="578"/>
         <source>Switching to %s audio backend.</source>
         <translation>切换到%s音频后端。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="592"/>
+        <location filename="../../core/host_interface.cpp" line="594"/>
         <source>Switching to %s CPU execution mode.</source>
         <translation>切换到%sCPU执行模式。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="604"/>
+        <location filename="../../core/host_interface.cpp" line="605"/>
         <source>CPU memory exceptions enabled, flushing all blocks.</source>
         <translation>启用CPU内存异常，刷新所有区块。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="605"/>
+        <location filename="../../core/host_interface.cpp" line="606"/>
         <source>CPU memory exceptions disabled, flushing all blocks.</source>
         <translation>禁用CPU内存异常，刷新所有区块。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="614"/>
+        <location filename="../../core/host_interface.cpp" line="615"/>
         <source>CPU ICache enabled, flushing all blocks.</source>
         <translation>启用CPU的ICache，刷新所有区块。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="615"/>
+        <location filename="../../core/host_interface.cpp" line="616"/>
         <source>CPU ICache disabled, flushing all blocks.</source>
         <translation>禁用CPU的ICache，刷新所有区块。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="646"/>
+        <location filename="../../core/host_interface.cpp" line="647"/>
         <source>PGXP enabled, recompiling all blocks.</source>
         <translation>启用PGXP，重编译所有区块。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="647"/>
+        <location filename="../../core/host_interface.cpp" line="648"/>
         <source>PGXP disabled, recompiling all blocks.</source>
         <translation>禁用PGXP，重编译所有区块。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="716"/>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2086"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2449"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2456"/>
         <source>Failed to load post processing shader chain.</source>
         <translation>加载后处理着色器链失败。</translation>
     </message>
@@ -4268,52 +4783,52 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>从列表加载%u金手指，金手指%u已启用。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2377"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2394"/>
         <source>Saved %u cheats to &apos;%s&apos;.</source>
         <translation>保存%u金手指到&apos;%s&apos;。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2399"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2416"/>
         <source>Cheat &apos;%s&apos; enabled.</source>
         <translation>金手指&apos;%s&apos;已启用。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2403"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2420"/>
         <source>Cheat &apos;%s&apos; disabled.</source>
         <translation>金手指&apos;%s&apos;已禁用。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2413"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2380"/>
         <source>Failed to save cheat list to &apos;%s&apos;</source>
         <translation>无法保存金手指列表到&apos;%s&apos;</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2429"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2436"/>
         <source>Applied cheat &apos;%s&apos;.</source>
         <translation>应用金手指&apos;%s&apos;。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2433"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2440"/>
         <source>Cheat &apos;%s&apos; is already enabled.</source>
         <translation>金手指&apos;%s&apos;已启用。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2446"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2453"/>
         <source>Post-processing is now enabled.</source>
         <translation>后处理现在已启用。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2453"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2460"/>
         <source>Post-processing is now disabled.</source>
         <translation>后处理现在已禁用。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2464"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2471"/>
         <source>Failed to load post-processing shader chain.</source>
         <translation>无法加载后处理着色器链。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2466"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2473"/>
         <source>Post-processing shaders reloaded.</source>
         <translation>重新加载后处理着色器。</translation>
     </message>
@@ -4390,12 +4905,12 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="662"/>
         <source>Recompiler memory exceptions forced by game settings.</source>
-        <translation>根据游戏设置强制重编译内存异常。</translation>
+        <translation>根据游戏设置强制内存异常重编译器。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="675"/>
         <source>Recompiler ICache forced by game settings.</source>
-        <translation>根据游戏设置强制重编译ICache。</translation>
+        <translation>根据游戏设置强制ICache重编译器。</translation>
     </message>
     <message>
         <location filename="../../core/pad.cpp" line="120"/>
@@ -4418,12 +4933,12 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>记忆卡%u当前接入系统中，没有以即时存档形式存在。移除记忆卡。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="752"/>
+        <location filename="../../core/system.cpp" line="758"/>
         <source>CPU clock speed is set to %u%% (%u / %u). This may result in instability.</source>
         <translation>CPU频率设置为%u%% (%u / %u)。这可能导致不稳定。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="893"/>
+        <location filename="../../core/system.cpp" line="899"/>
         <source>WARNING: CPU overclock (%u%%) was different in save state (%u%%).</source>
         <translation>警告: CPU速率 (%u%%) 不同于存档 (%u%%).</translation>
     </message>
@@ -4596,22 +5111,22 @@ This will download approximately 4 megabytes over your current internet connecti
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../main.cpp" line="37"/>
+        <location filename="../main.cpp" line="38"/>
         <source>DuckStation Error</source>
         <translation>DuckStation错误</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="38"/>
+        <location filename="../main.cpp" line="39"/>
         <source>Failed to initialize host interface. Cannot continue.</source>
         <translation>初始化主机接口失败，无法继续。</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="641"/>
+        <location filename="../qtutils.cpp" line="659"/>
         <source>Failed to open URL</source>
         <translation>无法打开URL</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="642"/>
+        <location filename="../qtutils.cpp" line="660"/>
         <source>Failed to open URL.
 
 The URL was: %1</source>
@@ -4659,6 +5174,10 @@ URL: %1</translation>
         <translation>恢复(%1)</translation>
     </message>
     <message>
+        <source>PCSXR/Libretro Cheat Files (*.cht *.txt);;All Files (*.*)</source>
+        <translation type="vanished">PCSXR/Libretro金手指文件 (*.cht *.txt);;所有文件 (*.*)</translation>
+    </message>
+    <message>
         <source>%1 Save %2 (%3)</source>
         <translation type="vanished">%1保存%2 (%3)</translation>
     </message>
@@ -4689,34 +5208,32 @@ The saves will not be recoverable.</source>
         <translation>确定要删除%1的所有即时存档吗？即时存档将无法恢复。</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="971"/>
         <source>&amp;Load Cheats...</source>
-        <translation>载入金手指(&amp;C)...</translation>
+        <translation type="vanished">载入金手指(&amp;C)...</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="973"/>
-        <location filename="../qthostinterface.cpp" line="982"/>
         <source>Select Cheat File</source>
-        <translation>选择金手指文件</translation>
+        <translation type="vanished">选择金手指文件</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="974"/>
-        <location filename="../qthostinterface.cpp" line="983"/>
         <source>PCSXR/Libretro Cheat Files (*.cht);;All Files (*.*)</source>
-        <translation>PCSXR/Libretro金手指文件 (*.cht);;所有文件 (*.*)</translation>
+        <translation type="vanished">PCSXR/Libretro金手指文件 (*.cht);;所有文件 (*.*)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="979"/>
         <source>&amp;Save Cheats...</source>
-        <translation>保存金手指(&amp;S)...</translation>
+        <translation type="vanished">保存金手指(&amp;S)...</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="988"/>
+        <source>PCSXR Cheat Files (*.cht);;All Files (*.*)</source>
+        <translation type="vanished">PCSXR金手指文件 (*.cht);;所有文件 (*.*)</translation>
+    </message>
+    <message>
+        <location filename="../qthostinterface.cpp" line="971"/>
         <source>&amp;Enabled Cheats</source>
         <translation>启用金手指(&amp;H)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="990"/>
+        <location filename="../qthostinterface.cpp" line="973"/>
         <source>&amp;Apply Cheats</source>
         <translation>应用金手指(&amp;A)</translation>
     </message>
@@ -4893,32 +5410,36 @@ The saves will not be recoverable.</source>
 <context>
     <name>System</name>
     <message>
-        <location filename="../../core/system.cpp" line="952"/>
         <source>Save state is incompatible: expecting version %u but state is version %u.</source>
-        <translation>保存状态不兼容: 要求版本%u，但状态为版本%u。</translation>
+        <translation type="vanished">保存状态不兼容: 要求版本%u，但状态为版本%u。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="976"/>
+        <location filename="../../core/system.cpp" line="958"/>
+        <source>Save state is incompatible: minimum version is %u but state is version %u.</source>
+        <translation>即时存档不兼容: 最低可兼容版本为%u，但当前版本为%u。</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="982"/>
         <source>Failed to open CD image from save state: &apos;%s&apos;.</source>
-        <translation>无法从保存状态打开CD镜像: &apos;%s&apos;.</translation>
+        <translation>无法从即时存档打开CD镜像: &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1482"/>
+        <location filename="../../core/system.cpp" line="1488"/>
         <source>Per-game memory card cannot be used for slot %u as the running game has no code. Using shared card instead.</source>
         <translation>游戏没有编码，插槽%u无法使用独立记忆卡的，改用共用记忆卡。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1506"/>
+        <location filename="../../core/system.cpp" line="1512"/>
         <source>Per-game memory card cannot be used for slot %u as the running game has no title. Using shared card instead.</source>
         <translation>游戏没有标题，插槽%u无法使用独立记忆卡的，改用共用记忆卡。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1525"/>
+        <location filename="../../core/system.cpp" line="1531"/>
         <source>Memory card path for slot %u is missing, using default.</source>
         <translation>插槽%u的记忆卡路径丢失，使用默认值。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1570"/>
+        <location filename="../../core/system.cpp" line="1576"/>
         <source>Game changed, reloading memory cards.</source>
         <translation>游戏已改变，重新加载记忆卡。</translation>
     </message>
