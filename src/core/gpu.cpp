@@ -964,10 +964,16 @@ void GPU::WriteGP1(u32 value)
 
     case 0x05: // Set display start address
     {
-      m_crtc_state.regs.display_address_start = param & CRTCState::Regs::DISPLAY_ADDRESS_START_MASK;
-      Log_DebugPrintf("Display address start <- 0x%08X", m_crtc_state.regs.display_address_start);
+      const u32 new_value = param & CRTCState::Regs::DISPLAY_ADDRESS_START_MASK;
+      Log_DebugPrintf("Display address start <- 0x%08X", new_value);
+
       System::IncrementInternalFrameNumber();
-      UpdateCRTCDisplayParameters();
+      if (m_crtc_state.regs.display_address_start != new_value)
+      {
+        SynchronizeCRTC();
+        m_crtc_state.regs.display_address_start = new_value;
+        UpdateCRTCConfig();
+      }
     }
     break;
 
