@@ -127,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
             throw new RuntimeException("Failed to create host interface");
         }
 
-        mGameList.refresh(false, false);
+        mGameList.refresh(false, false, this);
     }
 
     private void startAddGameDirectory() {
@@ -163,9 +163,9 @@ public class MainActivity extends AppCompatActivity {
         } else if (id == R.id.action_add_game_directory) {
             startAddGameDirectory();
         } else if (id == R.id.action_scan_for_new_games) {
-            mGameList.refresh(false, false);
+            mGameList.refresh(false, false, this);
         } else if (id == R.id.action_rescan_all_games) {
-            mGameList.refresh(true, true);
+            mGameList.refresh(true, true, this);
         } else if (id == R.id.action_import_bios) {
             importBIOSImage();
         } else if (id == R.id.action_settings) {
@@ -210,7 +210,7 @@ public class MainActivity extends AppCompatActivity {
                 editor.putStringSet("GameList/RecursivePaths", currentValues);
                 editor.apply();
                 Log.i("MainActivity", "Added path '" + path + "' to game list search directories");
-                mGameList.refresh(false, false);
+                mGameList.refresh(false, false, this);
             }
             break;
 

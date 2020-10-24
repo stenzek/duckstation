@@ -1,6 +1,7 @@
 #pragma once
 #include "android_settings_interface.h"
 #include "common/event.h"
+#include "common/progress_callback.h"
 #include "frontend-common/common_host_interface.h"
 #include <array>
 #include <atomic>
@@ -49,7 +50,7 @@ public:
   void SetControllerButtonState(u32 index, s32 button_code, bool pressed);
   void SetControllerAxisState(u32 index, s32 button_code, float value);
 
-  void RefreshGameList(bool invalidate_cache, bool invalidate_database);
+  void RefreshGameList(bool invalidate_cache, bool invalidate_database, ProgressCallback* progress_callback);
   void ApplySettings(bool display_osd_messages);
 
 protected:

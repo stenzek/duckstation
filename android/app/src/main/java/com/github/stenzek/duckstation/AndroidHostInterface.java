@@ -55,7 +55,7 @@ public class AndroidHostInterface {
 
     public static native int getControllerAxisCode(String controllerType, String axisName);
 
-    public native void refreshGameList(boolean invalidateCache, boolean invalidateDatabase);
+    public native void refreshGameList(boolean invalidateCache, boolean invalidateDatabase, AndroidProgressCallback progressCallback);
 
     public native GameListEntry[] getGameListEntries();
 
