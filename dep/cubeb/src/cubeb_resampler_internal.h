@@ -35,6 +35,7 @@ MOZ_END_STD_NAMESPACE
 #include "cubeb_utils.h"
 #include "cubeb-speex-resampler.h"
 #include "cubeb_resampler.h"
+#include "cubeb_log.h"
 #include <stdio.h>
 
 /* This header file contains the internal C++ API of the resamplers, for testing. */
@@ -191,23 +192,25 @@ public:
     speex_resampler = speex_resampler_init(channels, source_rate,
                                            target_rate, quality, &r);
     assert(r == RESAMPLER_ERR_SUCCESS && "resampler allocation failure");
+
+    uint32_t input_latency = speex_resampler_get_input_latency(speex_resampler);
+    const size_t LATENCY_SAMPLES = 8192;
+    T input_buffer[LATENCY_SAMPLES] = {};
+    T output_buffer[LATENCY_SAMPLES] = {};
+    uint32_t input_frame_count = input_latency;
+    uint32_t output_frame_count = LATENCY_SAMPLES;
+    assert(input_latency * channels <= LATENCY_SAMPLES);
+    speex_resample(
+      input_buffer,
+      &input_frame_count,
+      output_buffer,
+      &output_frame_count);
   }
 
   /** Destructor, deallocate the resampler */
   virtual ~cubeb_resampler_speex_one_way()
   {
     speex_resampler_destroy(speex_resampler);
-  }
-
-  /** Sometimes, it is necessary to add latency on one way of a two-way
-   * resampler so that the stream are synchronized. This must be called only on
-   * a fresh resampler, otherwise, silent samples will be inserted in the
-   * stream.
-   * @param frames the number of frames of latency to add. */
-  void add_latency(size_t frames)
-  {
-    additional_latency += frames;
-    resampling_in_buffer.push_silence(frames_to_samples(frames));
   }
 
   /* Fill the resampler with `input_frame_count` frames. */
@@ -254,7 +257,14 @@ public:
     speex_resample(resampling_in_buffer.data(), &in_len,
                    resampling_out_buffer.data(), &out_len);
 
-    assert(out_len == output_frame_count);
+    if (out_len < output_frame_count) {
+      LOGV("underrun during resampling: got %u frames, expected %zu", (unsigned)out_len, output_frame_count);
+      // silence the rightmost part
+      T* data = resampling_out_buffer.data();
+      for (uint32_t i = frames_to_samples(out_len); i < frames_to_samples(output_frame_count); i++) {
+        data[i] = 0;
+      }
+    }
 
     /* This shifts back any unresampled samples to the beginning of the input
        buffer. */
@@ -283,8 +293,9 @@ public:
    * exactly `output_frame_count` resampled frames. This can return a number
    * slightly bigger than what is strictly necessary, but it guaranteed that the
    * number of output frames will be exactly equal. */
-  uint32_t input_needed_for_output(uint32_t output_frame_count) const
+  uint32_t input_needed_for_output(int32_t output_frame_count) const
   {
+    assert(output_frame_count >= 0); // Check overflow
     int32_t unresampled_frames_left = samples_to_frames(resampling_in_buffer.length());
     int32_t resampled_frames_left = samples_to_frames(resampling_out_buffer.length());
     float input_frames_needed =
@@ -392,13 +403,6 @@ public:
     /* Fill the delay line with some silent frames to add latency. */
     delay_input_buffer.push_silence(frames * channels);
   }
-  /* Add some latency to the delay line.
-   * @param frames the number of frames of latency to add. */
-  void add_latency(size_t frames)
-  {
-    length += frames;
-    delay_input_buffer.push_silence(frames_to_samples(frames));
-  }
   /** Push some frames into the delay line.
    * @parameter buffer the frames to push.
    * @parameter frame_count the number of frames in #buffer. */
@@ -462,8 +466,9 @@ public:
    * @parameter frames_needed the number of frames one want to write into the
    * delay_line
    * @returns the number of frames one will get. */
-  size_t input_needed_for_output(uint32_t frames_needed) const
+  uint32_t input_needed_for_output(int32_t frames_needed) const
   {
+    assert(frames_needed >= 0); // Check overflow
     return frames_needed;
   }
   /** Returns the number of frames produces for `input_frames` frames in input */
@@ -526,6 +531,7 @@ cubeb_resampler_create_internal(cubeb_stream * stream,
       (output_params && output_params->rate == target_rate)) ||
       (input_params && !output_params && (input_params->rate == target_rate)) ||
       (output_params && !input_params && (output_params->rate == target_rate))) {
+    LOG("Input and output sample-rate match, target rate of %dHz", target_rate);
     return new passthrough_resampler<T>(stream, callback,
                                         user_ptr,
                                         input_params ? input_params->channels : 0,
@@ -576,6 +582,7 @@ cubeb_resampler_create_internal(cubeb_stream * stream,
   }
 
   if (input_resampler && output_resampler) {
+    LOG("Resampling input (%d) and output (%d) to target rate of %dHz", input_params->rate, output_params->rate, target_rate);
     return new cubeb_resampler_speex<T,
                                      cubeb_resampler_speex_one_way<T>,
                                      cubeb_resampler_speex_one_way<T>>
@@ -583,6 +590,7 @@ cubeb_resampler_create_internal(cubeb_stream * stream,
                                         output_resampler.release(),
                                         stream, callback, user_ptr);
   } else if (input_resampler) {
+    LOG("Resampling input (%d) to target and output rate of %dHz", input_params->rate, target_rate);
     return new cubeb_resampler_speex<T,
                                      cubeb_resampler_speex_one_way<T>,
                                      delay_line<T>>
@@ -590,6 +598,7 @@ cubeb_resampler_create_internal(cubeb_stream * stream,
                                        output_delay.release(),
                                        stream, callback, user_ptr);
   } else {
+    LOG("Resampling output (%dHz) to target and input rate of %dHz", output_params->rate, target_rate);
     return new cubeb_resampler_speex<T,
                                      delay_line<T>,
                                      cubeb_resampler_speex_one_way<T>>

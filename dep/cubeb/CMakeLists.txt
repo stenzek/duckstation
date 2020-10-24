@@ -110,6 +110,18 @@ if(USE_OPENSL)
   target_link_libraries(cubeb PRIVATE OpenSLES)
 endif()
 
+check_include_files(sys/soundcard.h HAVE_SYS_SOUNDCARD_H)
+if(HAVE_SYS_SOUNDCARD_H)
+  try_compile(USE_OSS "${PROJECT_BINARY_DIR}/compile_tests"
+    ${PROJECT_SOURCE_DIR}/cmake/compile_tests/oss_is_v4.c)
+  if(USE_OSS)
+    target_sources(cubeb PRIVATE
+      src/cubeb_oss.c)
+    target_compile_definitions(cubeb PRIVATE USE_OSS)
+    target_link_libraries(cubeb PRIVATE pthread)
+  endif()
+endif()
+
 check_include_files(android/log.h USE_AUDIOTRACK)
 if(USE_AUDIOTRACK)
   target_sources(cubeb PRIVATE
