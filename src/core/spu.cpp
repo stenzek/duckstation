@@ -1370,6 +1370,8 @@ ALWAYS_INLINE_RELEASE std::tuple<s32, s32> SPU::SampleVoice(u32 voice_index)
     if (voice.current_block_flags.loop_end)
     {
       m_endx_register |= (u32(1) << voice_index);
+      voice.current_address = voice.regs.adpcm_repeat_address & ~u16(1);
+
       if (!voice.current_block_flags.loop_repeat)
       {
         Log_TracePrintf("Voice %u loop end+mute @ 0x%08X", voice_index, ZeroExtend32(voice.current_address));
@@ -1378,7 +1380,6 @@ ALWAYS_INLINE_RELEASE std::tuple<s32, s32> SPU::SampleVoice(u32 voice_index)
       else
       {
         Log_TracePrintf("Voice %u loop end+repeat @ 0x%08X", voice_index, ZeroExtend32(voice.current_address));
-        voice.current_address = voice.regs.adpcm_repeat_address & ~u16(1);
       }
     }
   }
