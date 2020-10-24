@@ -2166,7 +2166,7 @@ int setup_wasapi_stream_one_side(cubeb_stream * stm,
 
 void wasapi_find_matching_output_device(cubeb_stream * stm) {
   HRESULT hr;
-  cubeb_device_info * input_device;
+  cubeb_device_info * input_device = nullptr;
   cubeb_device_collection collection;
 
   // Only try to match to an output device if the input device is a bluetooth
@@ -2202,7 +2202,7 @@ void wasapi_find_matching_output_device(cubeb_stream * stm) {
   for (uint32_t i = 0; i < collection.count; i++) {
     cubeb_device_info dev = collection.device[i];
     if (dev.type == CUBEB_DEVICE_TYPE_OUTPUT &&
-        dev.group_id && !strcmp(dev.group_id, input_device->group_id) &&
+        dev.group_id && input_device && !strcmp(dev.group_id, input_device->group_id) &&
         dev.default_rate == input_device->default_rate) {
       LOG("Found matching device for %s: %s", input_device->friendly_name, dev.friendly_name);
       stm->output_device_id = utf8_to_wstr(reinterpret_cast<char const *>(dev.devid));
