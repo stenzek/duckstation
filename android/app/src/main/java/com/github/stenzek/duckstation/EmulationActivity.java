@@ -341,9 +341,9 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
                     return;
                 }
 
-                case 1:     // Cheats
+                case 1:     // Patches
                 {
-                    showCheatsMenu();
+                    showPatchesMenu();
                     return;
                 }
 
@@ -382,10 +382,10 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         builder.create().show();
     }
 
-    private void showCheatsMenu() {
+    private void showPatchesMenu() {
         final CheatCode[] cheats = AndroidHostInterface.getInstance().getCheatList();
         if (cheats == null) {
-            AndroidHostInterface.getInstance().addOSDMessage("No cheats are loaded.", 5.0f);
+            AndroidHostInterface.getInstance().addOSDMessage("No patches are loaded.", 5.0f);
             return;
         }
 

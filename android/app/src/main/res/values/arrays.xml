@@ -137,7 +137,7 @@
     </string-array>
     <string-array name="emulation_more_menu">
         <item>Reset</item>
-        <item>Cheats</item>
+        <item>Patches</item>
         <item>Change Disc</item>
         <item>Change Touchscreen Controller</item>
         <item>Settings</item>
