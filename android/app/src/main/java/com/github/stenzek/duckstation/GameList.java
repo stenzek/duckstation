@@ -1,21 +1,14 @@
 package com.github.stenzek.duckstation;
 
 import android.app.Activity;
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
-import android.util.ArraySet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.TextView;
-
-import androidx.preference.PreferenceManager;
 
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Set;
 
 public class GameList {
     private Activity mContext;

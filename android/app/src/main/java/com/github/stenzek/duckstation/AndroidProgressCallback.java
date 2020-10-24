@@ -2,8 +2,6 @@ package com.github.stenzek.duckstation;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.Context;
-import android.util.Log;
 
 import androidx.appcompat.app.AlertDialog;
 
@@ -31,6 +29,7 @@ public class AndroidProgressCallback {
             mDialog.setTitle(text);
         });
     }
+
     public void setStatusText(String text) {
         mContext.runOnUiThread(() -> {
             mDialog.setMessage(text);

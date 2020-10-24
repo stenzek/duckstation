@@ -42,8 +42,7 @@ public class TouchscreenControllerView extends FrameLayout {
         removeAllViews();
 
         LayoutInflater inflater = LayoutInflater.from(getContext());
-        switch (viewType)
-        {
+        switch (viewType) {
             case "digital":
                 mMainView = inflater.inflate(R.layout.layout_touchscreen_controller_digital, this, true);
                 break;
@@ -95,7 +94,7 @@ public class TouchscreenControllerView extends FrameLayout {
         if (buttonView == null)
             return;
 
-        int code = AndroidHostInterface.getInstance().getControllerButtonCode(mControllerType, buttonName);
+        int code = AndroidHostInterface.getControllerButtonCode(mControllerType, buttonName);
         Log.i("TouchscreenController", String.format("%s -> %d", buttonName, code));
 
         if (code >= 0) {
@@ -112,8 +111,8 @@ public class TouchscreenControllerView extends FrameLayout {
         if (axisView == null)
             return false;
 
-        int xCode = AndroidHostInterface.getInstance().getControllerAxisCode(mControllerType, axisName + "X");
-        int yCode = AndroidHostInterface.getInstance().getControllerAxisCode(mControllerType, axisName + "Y");
+        int xCode = AndroidHostInterface.getControllerAxisCode(mControllerType, axisName + "X");
+        int yCode = AndroidHostInterface.getControllerAxisCode(mControllerType, axisName + "Y");
         Log.i("TouchscreenController", String.format("%s -> %d/%d", axisName, xCode, yCode));
         if (xCode < 0 && yCode < 0)
             return false;
@@ -128,10 +127,10 @@ public class TouchscreenControllerView extends FrameLayout {
         if (axisView == null)
             return false;
 
-        int leftCode = AndroidHostInterface.getInstance().getControllerButtonCode(mControllerType, buttonPrefix + "Left");
-        int rightCode = AndroidHostInterface.getInstance().getControllerButtonCode(mControllerType, buttonPrefix + "Right");
-        int upCode = AndroidHostInterface.getInstance().getControllerButtonCode(mControllerType, buttonPrefix + "Up");
-        int downCode = AndroidHostInterface.getInstance().getControllerButtonCode(mControllerType, buttonPrefix + "Down");
+        int leftCode = AndroidHostInterface.getControllerButtonCode(mControllerType, buttonPrefix + "Left");
+        int rightCode = AndroidHostInterface.getControllerButtonCode(mControllerType, buttonPrefix + "Right");
+        int upCode = AndroidHostInterface.getControllerButtonCode(mControllerType, buttonPrefix + "Up");
+        int downCode = AndroidHostInterface.getControllerButtonCode(mControllerType, buttonPrefix + "Down");
         Log.i("TouchscreenController", String.format("%s(ButtonAxis) -> %d,%d,%d,%d", buttonPrefix, leftCode, rightCode, upCode, downCode));
         if (leftCode < 0 && rightCode < 0 && upCode < 0 && downCode < 0)
             return false;
@@ -142,10 +141,8 @@ public class TouchscreenControllerView extends FrameLayout {
     }
 
     private boolean handleTouchEvent(MotionEvent event) {
-        switch (event.getActionMasked())
-        {
-            case MotionEvent.ACTION_UP:
-            {
+        switch (event.getActionMasked()) {
+            case MotionEvent.ACTION_UP: {
                 for (TouchscreenControllerButtonView buttonView : mButtonViews) {
                     buttonView.setPressed(false);
                 }
@@ -160,8 +157,7 @@ public class TouchscreenControllerView extends FrameLayout {
             case MotionEvent.ACTION_DOWN:
             case MotionEvent.ACTION_POINTER_DOWN:
             case MotionEvent.ACTION_POINTER_UP:
-            case MotionEvent.ACTION_MOVE:
-            {
+            case MotionEvent.ACTION_MOVE: {
                 Rect rect = new Rect();
                 final int pointerCount = event.getPointerCount();
                 final int liftedPointerIndex = (event.getActionMasked() == MotionEvent.ACTION_POINTER_UP) ? event.getActionIndex() : -1;

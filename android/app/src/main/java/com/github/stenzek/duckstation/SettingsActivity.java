@@ -46,6 +46,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     public static class SettingsFragment extends PreferenceFragmentCompat {
         private int resourceId;
+
         public SettingsFragment(int resourceId) {
             this.resourceId = resourceId;
         }

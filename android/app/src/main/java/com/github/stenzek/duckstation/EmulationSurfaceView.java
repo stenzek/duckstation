@@ -1,11 +1,8 @@
 package com.github.stenzek.duckstation;
 
 import android.content.Context;
-import android.hardware.input.InputManager;
-import android.util.ArrayMap;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.util.Pair;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -194,10 +191,7 @@ public class EmulationSurfaceView extends SurfaceView {
         if ((sources & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD)
             return true;
 
-        if ((sources & InputDevice.SOURCE_DPAD) == InputDevice.SOURCE_DPAD)
-            return true;
-
-        return false;
+        return (sources & InputDevice.SOURCE_DPAD) == InputDevice.SOURCE_DPAD;
     }
 
     public boolean initControllerMapping(String controllerType) {

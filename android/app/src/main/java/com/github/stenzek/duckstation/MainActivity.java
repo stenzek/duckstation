@@ -1,49 +1,34 @@
 package com.github.stenzek.duckstation;
 
 import android.Manifest;
-import android.content.ContentResolver;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
-
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
+import android.util.Log;
+import android.view.Gravity;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ListView;
+import android.widget.PopupMenu;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.documentfile.provider.DocumentFile;
 import androidx.preference.PreferenceManager;
 
-import android.content.Intent;
-
-import androidx.collection.ArraySet;
-
-import android.provider.DocumentsContract;
-import android.provider.MediaStore;
-import android.util.Log;
-import android.view.Gravity;
-import android.view.View;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.widget.AdapterView;
-import android.widget.ListView;
-import android.widget.PopupMenu;
-import android.widget.Toast;
-
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.prefs.Preferences;
-
-import static com.google.android.material.snackbar.Snackbar.make;
 
 public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_EXTERNAL_STORAGE_PERMISSIONS = 1;
@@ -188,7 +173,8 @@ public class MainActivity extends AppCompatActivity {
                     .setMessage("Failed to get path for the selected file. Please make sure the file is in internal/external storage.\n\n" +
                             "Tap the overflow button in the directory selector.\nSelect \"Show Internal Storage\".\n" +
                             "Tap the menu button and select your device name or SD card.")
-                    .setPositiveButton("OK", (dialog, button) -> {})
+                    .setPositiveButton("OK", (dialog, button) -> {
+                    })
                     .create()
                     .show();
             return null;
@@ -205,7 +191,8 @@ public class MainActivity extends AppCompatActivity {
                     .setMessage("Failed to get path for the selected directory. Please make sure the directory is in internal/external storage.\n\n" +
                             "Tap the overflow button in the directory selector.\nSelect \"Show Internal Storage\".\n" +
                             "Tap the menu button and select your device name or SD card.")
-                    .setPositiveButton("OK", (dialog, button) -> {})
+                    .setPositiveButton("OK", (dialog, button) -> {
+                    })
                     .create()
                     .show();
             return null;
@@ -323,7 +310,8 @@ public class MainActivity extends AppCompatActivity {
                 .setTitle("Missing BIOS Image")
                 .setMessage("No BIOS image was found in DuckStation's bios directory. Do you with to locate and import a BIOS image now?")
                 .setPositiveButton("Yes", (dialog, button) -> importBIOSImage())
-                .setNegativeButton("No", (dialog, button) -> {})
+                .setNegativeButton("No", (dialog, button) -> {
+                })
                 .create()
                 .show();
 
@@ -362,7 +350,8 @@ public class MainActivity extends AppCompatActivity {
         } catch (IOException e) {
             new AlertDialog.Builder(this)
                     .setMessage("Failed to read BIOS image: " + e.getMessage())
-                    .setPositiveButton("OK", (dialog, button) -> {})
+                    .setPositiveButton("OK", (dialog, button) -> {
+                    })
                     .create()
                     .show();
             return;
@@ -372,9 +361,10 @@ public class MainActivity extends AppCompatActivity {
         String message = (importResult == null) ? "This BIOS image is invalid, or has already been imported." : ("BIOS '" + importResult + "' imported.");
 
         new AlertDialog.Builder(this)
-            .setMessage(message)
-            .setPositiveButton("OK", (dialog, button) -> {})
-            .create()
-            .show();
+                .setMessage(message)
+                .setPositiveButton("OK", (dialog, button) -> {
+                })
+                .create()
+                .show();
     }
 }

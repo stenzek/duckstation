@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 
 public class TouchscreenControllerAxisView extends View {
@@ -84,21 +83,21 @@ public class TouchscreenControllerAxisView extends View {
     }
 
     public void setPressed(int pointerId, float pointerX, float pointerY) {
-        final float dx = pointerX - (float)(getX() + (float)(getWidth() / 2));
-        final float dy = pointerY - (float)(getY() + (float)(getHeight() / 2));
+        final float dx = pointerX - (float) (getX() + (float) (getWidth() / 2));
+        final float dy = pointerY - (float) (getY() + (float) (getHeight() / 2));
         // Log.i("SetPressed", String.format("px=%f,py=%f dx=%f,dy=%f", pointerX, pointerY, dx, dy));
 
         final float pointerDistance = Math.max(Math.abs(dx), Math.abs(dy));
-        final float angle = (float)Math.atan2((double)dy, (double)dx);
+        final float angle = (float) Math.atan2((double) dy, (double) dx);
 
-        final float maxDistance = (float)Math.min((getWidth() - getPaddingLeft() - getPaddingRight()) / 2, (getHeight() - getPaddingTop() - getPaddingBottom()) / 2);
+        final float maxDistance = (float) Math.min((getWidth() - getPaddingLeft() - getPaddingRight()) / 2, (getHeight() - getPaddingTop() - getPaddingBottom()) / 2);
         final float length = Math.min(pointerDistance / maxDistance, 1.0f);
         // Log.i("SetPressed", String.format("pointerDist=%f,angle=%f,w=%d,h=%d,maxDist=%f,length=%f", pointerDistance, angle, getWidth(), getHeight(), maxDistance, length));
 
-        final float xValue = (float)Math.cos((double)angle) * length;
-        final float yValue = (float)Math.sin((double)angle) * length;
-        mDrawXPos = (int)(xValue * maxDistance);
-        mDrawYPos = (int)(yValue * maxDistance);
+        final float xValue = (float) Math.cos((double) angle) * length;
+        final float yValue = (float) Math.sin((double) angle) * length;
+        mDrawXPos = (int) (xValue * maxDistance);
+        mDrawYPos = (int) (yValue * maxDistance);
 
         boolean doUpdate = (pointerId != mPointerId || !mPressed || (xValue != mXValue || yValue != mYValue));
         mPointerId = pointerId;
@@ -128,7 +127,7 @@ public class TouchscreenControllerAxisView extends View {
             hostInterface.setControllerButtonState(mControllerIndex, mRightButtonCode, (mXValue >= BUTTON_THRESHOLD));
         if (mUpButtonCode >= 0)
             hostInterface.setControllerButtonState(mControllerIndex, mUpButtonCode, (mYValue <= -BUTTON_THRESHOLD));
-        if (mDownButtonCode  >= 0)
+        if (mDownButtonCode >= 0)
             hostInterface.setControllerButtonState(mControllerIndex, mDownButtonCode, (mYValue >= BUTTON_THRESHOLD));
     }
 
