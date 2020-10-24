@@ -43,6 +43,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     private boolean mApplySettingsOnSurfaceRestored = false;
     private String mGameTitle = null;
     private EmulationSurfaceView mContentView;
+    private int mSaveStateSlot = 0;
 
     private boolean getBooleanSetting(String key, boolean defaultValue) {
         return mPreferences.getBoolean(key, defaultValue);
@@ -269,25 +270,28 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
 
     private void showMenu() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        if (mGameTitle != null && !mGameTitle.isEmpty())
-            builder.setTitle(mGameTitle);
-
         builder.setItems(R.array.emulation_menu, (dialogInterface, i) -> {
             switch (i)
             {
                 case 0:     // Quick Load
                 {
-                    AndroidHostInterface.getInstance().loadState(false, 0);
+                    AndroidHostInterface.getInstance().loadState(false, mSaveStateSlot);
                     return;
                 }
 
                 case 1:     // Quick Save
                 {
-                    AndroidHostInterface.getInstance().saveState(false, 0);
+                    AndroidHostInterface.getInstance().saveState(false, mSaveStateSlot);
                     return;
                 }
 
-                case 2:     // Toggle Speed Limiter
+                case 2:     // Save State Slot
+                {
+                    showSaveStateSlotMenu();
+                    return;
+                }
+
+                case 3:     // Toggle Speed Limiter
                 {
                     boolean newSetting = !getBooleanSetting("Main/SpeedLimiterEnabled", true);
                     setBooleanSetting("Main/SpeedLimiterEnabled", newSetting);
@@ -295,19 +299,29 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
                     return;
                 }
 
-                case 3:     // More Options
+                case 4:     // More Options
                 {
                     showMoreMenu();
                     return;
                 }
 
-                case 4:     // Quit
+                case 5:     // Quit
                 {
                     mStopRequested = true;
                     finish();
                     return;
                 }
             }
+        });
+        builder.setOnDismissListener(dialogInterface -> enableFullscreenImmersive());
+        builder.create().show();
+    }
+
+    private void showSaveStateSlotMenu() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setSingleChoiceItems(R.array.emulation_save_state_slot_menu, mSaveStateSlot, (dialogInterface, i) -> {
+            mSaveStateSlot = i;
+            dialogInterface.dismiss();
         });
         builder.setOnDismissListener(dialogInterface -> enableFullscreenImmersive());
         builder.create().show();
@@ -349,12 +363,6 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
                     Intent intent = new Intent(EmulationActivity.this, SettingsActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivityForResult(intent, REQUEST_CODE_SETTINGS);
-                    return;
-                }
-
-                case 5:     // Quit
-                {
-                    finish();
                     return;
                 }
             }
