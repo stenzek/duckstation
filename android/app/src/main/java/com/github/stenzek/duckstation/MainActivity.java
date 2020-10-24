@@ -49,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_EXTERNAL_STORAGE_PERMISSIONS = 1;
     private static final int REQUEST_ADD_DIRECTORY_TO_GAME_LIST = 2;
     private static final int REQUEST_IMPORT_BIOS_IMAGE = 3;
+    private static final int REQUEST_START_FILE = 4;
 
     private GameList mGameList;
     private ListView mGameListView;
@@ -160,6 +161,8 @@ public class MainActivity extends AppCompatActivity {
             startEmulation(null, true);
         } else if (id == R.id.action_start_bios) {
             startEmulation(null, false);
+        } else if (id == R.id.action_start_file) {
+            startStartFile();
         } else if (id == R.id.action_add_game_directory) {
             startAddGameDirectory();
         } else if (id == R.id.action_scan_for_new_games) {
@@ -177,6 +180,40 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    private String getPathFromUri(Uri uri) {
+        String path = FileUtil.getFullPathFromUri(uri, this);
+        if (path.length() < 5) {
+            new AlertDialog.Builder(this)
+                    .setTitle("Error")
+                    .setMessage("Failed to get path for the selected file. Please make sure the file is in internal/external storage.\n\n" +
+                            "Tap the overflow button in the directory selector.\nSelect \"Show Internal Storage\".\n" +
+                            "Tap the menu button and select your device name or SD card.")
+                    .setPositiveButton("OK", (dialog, button) -> {})
+                    .create()
+                    .show();
+            return null;
+        }
+
+        return path;
+    }
+
+    private String getPathFromTreeUri(Uri treeUri) {
+        String path = FileUtil.getFullPathFromTreeUri(treeUri, this);
+        if (path.length() < 5) {
+            new AlertDialog.Builder(this)
+                    .setTitle("Error")
+                    .setMessage("Failed to get path for the selected directory. Please make sure the directory is in internal/external storage.\n\n" +
+                            "Tap the overflow button in the directory selector.\nSelect \"Show Internal Storage\".\n" +
+                            "Tap the menu button and select your device name or SD card.")
+                    .setPositiveButton("OK", (dialog, button) -> {})
+                    .create()
+                    .show();
+            return null;
+        }
+
+        return path;
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -186,19 +223,9 @@ public class MainActivity extends AppCompatActivity {
                 if (resultCode != RESULT_OK)
                     return;
 
-                Uri treeUri = data.getData();
-                String path = FileUtil.getFullPathFromTreeUri(treeUri, this);
-                if (path.length() < 5) {
-                    new AlertDialog.Builder(this)
-                            .setTitle("Error")
-                            .setMessage("Failed to get path for the selected directory. Please make sure the directory is in internal/external storage.\n\n" +
-                                        "Tap the overflow button in the directory selector.\nSelect \"Show Internal Storage\".\n" +
-                                        "Tap the menu button and select your device name or SD card.")
-                            .setPositiveButton("OK", (dialog, button) -> {})
-                            .create()
-                            .show();
+                String path = getPathFromTreeUri(data.getData());
+                if (path == null)
                     return;
-                }
 
                 SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
                 Set<String> currentValues = prefs.getStringSet("GameList/RecursivePaths", null);
@@ -219,6 +246,18 @@ public class MainActivity extends AppCompatActivity {
                     return;
 
                 onImportBIOSImageResult(data.getData());
+            }
+            break;
+
+            case REQUEST_START_FILE: {
+                if (resultCode != RESULT_OK)
+                    return;
+
+                String path = getPathFromUri(data.getData());
+                if (path == null)
+                    return;
+
+                startEmulation(path, shouldResumeStateByDefault());
             }
             break;
         }
@@ -267,6 +306,13 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra("resumeState", resumeState);
         startActivity(intent);
         return true;
+    }
+
+    private void startStartFile() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("*/*");
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        startActivityForResult(Intent.createChooser(intent, "Choose Disc Image"), REQUEST_START_FILE);
     }
 
     private boolean doBIOSCheck() {
