@@ -1088,12 +1088,12 @@
     <message>
         <location filename="../cheatmanagerdialog.ui" line="507"/>
         <source>Add To Watch</source>
-        <translation>增加到监视</translation>
+        <translation>添加到监视</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="517"/>
         <source>Add Manual Address</source>
-        <translation>增加手动地址</translation>
+        <translation>添加手动地址</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="527"/>
@@ -3062,7 +3062,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../generalsettingswidget.cpp" line="49"/>
         <source>Determines whether a prompt will be displayed to confirm shutting down the emulator/game when the hotkey is pressed.</source>
-        <translation>当按下热键来关闭模拟器/游戏时，是否要给予提示进行确认。</translation>
+        <translation>当按下热键来关闭模拟器/游戏时，将弹出提示给予确认。</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="52"/>
@@ -3651,7 +3651,7 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../mainwindow.ui" line="14"/>
         <location filename="../mainwindow.cpp" line="67"/>
         <location filename="../mainwindow.cpp" line="78"/>
-        <location filename="../mainwindow.cpp" line="636"/>
+        <location filename="../mainwindow.cpp" line="640"/>
         <source>DuckStation</source>
         <translation>DuckStation</translation>
     </message>
@@ -3661,7 +3661,7 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <location filename="../mainwindow.ui" line="42"/>
-        <location filename="../mainwindow.cpp" line="499"/>
+        <location filename="../mainwindow.cpp" line="500"/>
         <source>Change Disc</source>
         <translation>换碟</translation>
     </message>
@@ -4133,103 +4133,103 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>金手指管理器</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="460"/>
+        <location filename="../mainwindow.cpp" line="461"/>
         <source>Properties...</source>
         <translation>属性...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="463"/>
+        <location filename="../mainwindow.cpp" line="464"/>
         <source>Open Containing Directory...</source>
         <translation>打开所在目录...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="468"/>
+        <location filename="../mainwindow.cpp" line="469"/>
         <source>Set Cover Image...</source>
         <translation>设置封面图片…</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="481"/>
+        <location filename="../mainwindow.cpp" line="482"/>
         <source>Default Boot</source>
         <translation>默认启动</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="485"/>
+        <location filename="../mainwindow.cpp" line="486"/>
         <source>Fast Boot</source>
         <translation>快速启动</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="491"/>
+        <location filename="../mainwindow.cpp" line="492"/>
         <source>Full Boot</source>
         <translation>完全启动</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="509"/>
+        <location filename="../mainwindow.cpp" line="510"/>
         <source>Add Search Directory...</source>
         <translation>添加搜索目录...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="517"/>
+        <location filename="../mainwindow.cpp" line="518"/>
         <source>Select Cover Image</source>
         <translation>选择封面图片</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="518"/>
+        <location filename="../mainwindow.cpp" line="519"/>
         <source>All Cover Image Types (*.jpg *.jpeg *.png)</source>
         <translation>所有封面图片类型 (*.jpg *.jpeg *.png)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="524"/>
+        <location filename="../mainwindow.cpp" line="525"/>
         <source>Cover Already Exists</source>
         <translation>封面已存在</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="525"/>
+        <location filename="../mainwindow.cpp" line="526"/>
         <source>A cover image for this game already exists, do you wish to replace it?</source>
         <translation>该游戏的封面图片已经存在，您要替换它吗？</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="539"/>
-        <location filename="../mainwindow.cpp" line="545"/>
+        <location filename="../mainwindow.cpp" line="540"/>
+        <location filename="../mainwindow.cpp" line="546"/>
         <source>Copy Error</source>
         <translation>复制错误</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="539"/>
+        <location filename="../mainwindow.cpp" line="540"/>
         <source>Failed to remove existing cover &apos;%1&apos;</source>
         <translation>无法移除现有封面&apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="545"/>
+        <location filename="../mainwindow.cpp" line="546"/>
         <source>Failed to copy &apos;%1&apos; to &apos;%2&apos;</source>
         <translation>复制&apos;%1&apos;到&apos;%2&apos;失败</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="637"/>
+        <location filename="../mainwindow.cpp" line="641"/>
         <source>Language changed. Please restart the application to apply.</source>
         <translation>语言已更改，请重新启动应用程序以应用。</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="852"/>
+        <location filename="../mainwindow.cpp" line="856"/>
         <source>Destination File</source>
         <translation>目标文件</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="868"/>
+        <location filename="../mainwindow.cpp" line="872"/>
         <source>Default</source>
         <translation>默认</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="869"/>
+        <location filename="../mainwindow.cpp" line="873"/>
         <source>Fusion</source>
         <translation>炼金</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="870"/>
+        <location filename="../mainwindow.cpp" line="874"/>
         <source>Dark Fusion (Gray)</source>
         <translation>黑炼金 (灰色)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="871"/>
+        <location filename="../mainwindow.cpp" line="875"/>
         <source>Dark Fusion (Blue)</source>
         <translation>黑炼金 (蓝色)</translation>
     </message>
@@ -4238,22 +4238,22 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation type="vanished">黑色</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="872"/>
+        <location filename="../mainwindow.cpp" line="876"/>
         <source>QDarkStyle</source>
         <translation>暗夜</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1202"/>
+        <location filename="../mainwindow.cpp" line="1209"/>
         <source>Updater Error</source>
         <translation>更新程序错误</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1208"/>
+        <location filename="../mainwindow.cpp" line="1215"/>
         <source>&lt;p&gt;Sorry, you are trying to update a DuckStation version which is not an official GitHub release. To prevent incompatibilities, the auto-updater is only enabled on official builds.&lt;/p&gt;&lt;p&gt;To obtain an official build, please follow the instructions under &quot;Downloading and Running&quot; at the link below:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt;https://github.com/stenzek/duckstation/&lt;/a&gt;&lt;/p&gt;</source>
         <translation>&lt;p&gt;抱歉，您正在尝试更新非GitHub官方版本的DuckStation版本。为防止不兼容，自动更新程序仅在正式版本上启用。&lt;/p&gt;&lt;p&gt;要获取正式版本，请按照下面链接中的&quot;下载并运行&quot;下的说明进行操作：&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt;https://github.com/stenzek/duckstation/&lt;/a&gt;lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1214"/>
+        <location filename="../mainwindow.cpp" line="1221"/>
         <source>Automatic updating is not supported on the current platform.</source>
         <translation>当前平台不支持自动更新。</translation>
     </message>
@@ -4699,6 +4699,11 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>禁用PGXP，重编译所有区块。</translation>
     </message>
     <message>
+        <location filename="../../core/host_interface.cpp" line="814"/>
+        <source>Switching to %s renderer...</source>
+        <translation>切换到%s渲染器...</translation>
+    </message>
+    <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="716"/>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2086"/>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2456"/>
@@ -4751,6 +4756,21 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../../frontend-common/common_host_interface.cpp" line="1783"/>
         <source>Loaded input profile from &apos;%s&apos;</source>
         <translation>从&apos;%s&apos;读取输入配置</translation>
+    </message>
+    <message>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2239"/>
+        <source>Started dumping audio to &apos;%s&apos;.</source>
+        <translation>开始转储音频到&apos;%s&apos;。</translation>
+    </message>
+    <message>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2244"/>
+        <source>Failed to start dumping audio to &apos;%s&apos;.</source>
+        <translation>开始转储音频到&apos;%s&apos;失败。</translation>
+    </message>
+    <message>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2254"/>
+        <source>Stopped dumping audio.</source>
+        <translation>停止转储音频。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2285"/>
@@ -4913,22 +4933,32 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>根据游戏设置强制ICache重编译器。</translation>
     </message>
     <message>
-        <location filename="../../core/pad.cpp" line="120"/>
+        <location filename="../../core/pad.cpp" line="63"/>
+        <source>Save state contains controller type %s in port %u, but %s is used. Switching.</source>
+        <translation>即时存档中包括控制器类型%s接入端口%u，但%s被占用。切换中。</translation>
+    </message>
+    <message>
+        <location filename="../../core/pad.cpp" line="75"/>
+        <source>Ignoring mismatched controller type %s in port %u.</source>
+        <translation>忽略端口%u中不匹配的控制器类型%s。</translation>
+    </message>
+    <message>
+        <location filename="../../core/pad.cpp" line="123"/>
         <source>Memory card %u from save state does match current card data. Simulating replugging.</source>
         <translation>记忆卡%u从即时存档匹配了当前卡数据。模拟重新插入记忆卡。</translation>
     </message>
     <message>
-        <location filename="../../core/pad.cpp" line="131"/>
+        <location filename="../../core/pad.cpp" line="134"/>
         <source>Memory card %u present in save state but not in system. Ignoring card.</source>
         <translation>记忆卡%u当前以即时存档形式存在，没有接入系统中。忽略记忆卡。</translation>
     </message>
     <message>
-        <location filename="../../core/pad.cpp" line="143"/>
+        <location filename="../../core/pad.cpp" line="146"/>
         <source>Memory card %u present in save state but not in system. Creating temporary card.</source>
         <translation>记忆卡%u当前以即时存档形式存在，没有接入系统中。创建临时记忆卡。</translation>
     </message>
     <message>
-        <location filename="../../core/pad.cpp" line="152"/>
+        <location filename="../../core/pad.cpp" line="155"/>
         <source>Memory card %u present in system but not in save state. Removing card.</source>
         <translation>记忆卡%u当前接入系统中，没有以即时存档形式存在。移除记忆卡。</translation>
     </message>
@@ -4941,6 +4971,21 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../../core/system.cpp" line="899"/>
         <source>WARNING: CPU overclock (%u%%) was different in save state (%u%%).</source>
         <translation>警告: CPU速率 (%u%%) 不同于存档 (%u%%).</translation>
+    </message>
+    <message>
+        <location filename="../../core/gpu_hw.cpp" line="104"/>
+        <source>Resolution scale set to %ux (display %ux%u, VRAM %ux%u)</source>
+        <translation>分辨率设置为%ux (显示%ux%u，显存%ux%u)</translation>
+    </message>
+    <message>
+        <location filename="../../core/memory_card.cpp" line="299"/>
+        <source>Failed to save memory card to &apos;%s&apos;</source>
+        <translation>无法保存记忆卡到&apos;%s&apos;</translation>
+    </message>
+    <message>
+        <location filename="../../core/memory_card.cpp" line="308"/>
+        <source>Saved memory card to &apos;%s&apos;</source>
+        <translation>保存记忆卡到&apos;%s&apos;</translation>
     </message>
 </context>
 <context>
@@ -5442,6 +5487,16 @@ The saves will not be recoverable.</source>
         <location filename="../../core/system.cpp" line="1576"/>
         <source>Game changed, reloading memory cards.</source>
         <translation>游戏已改变，重新加载记忆卡。</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="1668"/>
+        <source>Removing current media from playlist, removing media from CD-ROM.</source>
+        <translation>在播放列表中删除当前媒体，并从CD-ROM中卸载媒体。</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="1685"/>
+        <source>Changing current media from playlist, replacing current media.</source>
+        <translation>变更原播放列表中的“当前媒体”，替换为当前新的指定媒体。</translation>
     </message>
 </context>
 </TS>
