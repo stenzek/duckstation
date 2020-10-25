@@ -1178,6 +1178,11 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-896-gc8a00c5</version-tested>
   </entry>
+  <entry code="SLPM-86494" compatibility="4" region="NTSC-J" title="Elder Gate (Japan)">
+    <compatibility>Graphical/Audio Issues</compatibility>
+    <comments>Garbage on the screen (Issue #256).</comments>
+    <version-tested>0.1-2108-ga036ae92</version-tested>
+  </entry>
   <entry code="SLUS-00654" compatibility="5" region="NTSC-U" title="Elemental Gearbolt (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1425-g05f0ce6d</version-tested>
@@ -1816,6 +1821,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>Graphical/Audio Issues</compatibility>
     <comments>Audio stutters on the intro FMV.</comments>
     <version-tested>0.1-1641-gb2057ac6</version-tested>
+  </entry>
+  <entry code="SLPS-03013" compatibility="5" region="NTSC-J" title="Little Princess - Marl Oukoku no Ningyou-hime 2 (Japan) (Disc 2) (+1 Tasu Ichi)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2108-ga036ae92</version-tested>
   </entry>
   <entry code="SLUS-00557" compatibility="5" region="NTSC-U" title="Lode Runner (USA)">
     <compatibility>No Issues</compatibility>
@@ -2591,18 +2600,17 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1641-gb2057ac6</version-tested>
   </entry>
-  <entry code="SLPS-00026" compatibility="4" region="NTSC-J" title="Rayman (Japan)">
-    <compatibility>Graphical/Audio Issues</compatibility>
-    <version-tested>0.1-1337-gcaf9943</version-tested>
-    <comments>Music plays out of order (Issue #579).</comments>
+  <entry code="SLPS-00026" compatibility="5" region="NTSC-J" title="Rayman (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2108-ga036ae92</version-tested>
   </entry>
   <entry code="SLUS-00005" compatibility="5" region="NTSC-U" title="Rayman (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1419-g34a515cd</version-tested>
   </entry>
-  <entry code="SLUS-90001" compatibility="4" region="NTSC-U" title="Rayman (USA) (Playable Game Preview)">
-    <compatibility>Graphical/Audio Issues</compatibility>
-    <comments>Text flickering in this screen (end of the demo) (Issue #715).</comments>
+  <entry code="SLUS-90001" compatibility="5" region="NTSC-U" title="Rayman (USA) (Playable Game Preview)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2108-ga036ae92</version-tested>
   </entry>
   <entry code="SLES-02906" compatibility="5" region="PAL" title="Rayman 2 - The Great Escape (Europe) (En,Es,It)">
     <compatibility>No Issues</compatibility>
@@ -3495,6 +3503,10 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SCUS-94351" compatibility="5" region="NTSC-U" title="Wipeout XL (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-887-g1eecd50</version-tested>
+  </entry>
+  <entry code="SLPM-87056" compatibility="3" region="NTSC-J" title="World Soccer Winning Eleven 2002 (Japan)">
+    <compatibility>Crashes In-Game</compatibility>
+    <comments>Trying to play any other mode (League, Cup, Master League) than Exhibition results to get stuck in black screen after loading. (Issue #1004)</comments>
   </entry>
   <entry code="SLUS-01165" compatibility="5" region="NTSC-U" title="World's Scariest Police Chases (USA)">
     <compatibility>No Issues</compatibility>
