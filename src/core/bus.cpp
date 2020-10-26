@@ -314,28 +314,31 @@ void UpdateFastmemViews(bool enabled, bool isolate_cache)
   {
     // KUSEG - cached
     MapRAM(0x00000000, !isolate_cache);
-    //MapRAM(0x00200000, !isolate_cache);
-    //MapRAM(0x00400000, !isolate_cache);
-    //MapRAM(0x00600000, !isolate_cache);
+    // MapRAM(0x00200000, !isolate_cache);
+    // MapRAM(0x00400000, !isolate_cache);
+    // MapRAM(0x00600000, !isolate_cache);
 
     // KSEG0 - cached
     MapRAM(0x80000000, !isolate_cache);
-    //MapRAM(0x80200000, !isolate_cache);
-    //MapRAM(0x80400000, !isolate_cache);
-    //MapRAM(0x80600000, !isolate_cache);
+    // MapRAM(0x80200000, !isolate_cache);
+    // MapRAM(0x80400000, !isolate_cache);
+    // MapRAM(0x80600000, !isolate_cache);
   }
 
   // KSEG1 - uncached
   MapRAM(0xA0000000, true);
-  //MapRAM(0xA0200000, true);
-  //MapRAM(0xA0400000, true);
-  //MapRAM(0xA0600000, true);
+  // MapRAM(0xA0200000, true);
+  // MapRAM(0xA0400000, true);
+  // MapRAM(0xA0600000, true);
 }
 
 bool CanUseFastmemForAddress(VirtualMemoryAddress address)
 {
   const PhysicalMemoryAddress paddr = address & CPU::PHYSICAL_MEMORY_ADDRESS_MASK;
-  return IsRAMAddress(paddr);
+
+  // Currently since we don't map the mirrors, don't use fastmem for them.
+  // This is because the swapping of page code bits for SMC is too expensive.
+  return (paddr < RAM_SIZE);
 }
 
 bool IsRAMCodePage(u32 index)
