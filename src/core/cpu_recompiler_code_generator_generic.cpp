@@ -184,7 +184,7 @@ void CodeGenerator::EmitICacheCheckAndUpdate()
   }
 
   EmitBindLabel(&ready_to_execute);
-  m_register_cache.UnunhibitAllocation();
+  m_register_cache.UninhibitAllocation();
 }
 
 #endif

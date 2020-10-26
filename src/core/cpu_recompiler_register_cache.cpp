@@ -907,7 +907,7 @@ void RegisterCache::InhibitAllocation()
   m_state.allocator_inhibit_count++;
 }
 
-void RegisterCache::UnunhibitAllocation()
+void RegisterCache::UninhibitAllocation()
 {
   Assert(m_state.allocator_inhibit_count > 0);
   m_state.allocator_inhibit_count--;

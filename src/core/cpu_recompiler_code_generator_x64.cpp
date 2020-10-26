@@ -1897,7 +1897,7 @@ void CodeGenerator::EmitLoadGuestMemoryFastmem(const CodeBlockInstruction& cbi, 
   m_emit->jmp(GetCurrentNearCodePointer());
 
   SwitchToNearCode();
-  m_register_cache.UnunhibitAllocation();
+  m_register_cache.UninhibitAllocation();
 
   m_block->loadstore_backpatch_info.push_back(bpi);
 }
@@ -2111,7 +2111,7 @@ void CodeGenerator::EmitStoreGuestMemoryFastmem(const CodeBlockInstruction& cbi,
   m_emit->jmp(GetCurrentNearCodePointer());
 
   SwitchToNearCode();
-  m_register_cache.UnunhibitAllocation();
+  m_register_cache.UninhibitAllocation();
 
   m_block->loadstore_backpatch_info.push_back(bpi);
 }
@@ -2507,7 +2507,7 @@ void CodeGenerator::EmitICacheCheckAndUpdate()
   }
 
   m_emit->L(done);
-  m_register_cache.UnunhibitAllocation();
+  m_register_cache.UninhibitAllocation();
 }
 
 void CodeGenerator::EmitBranch(const void* address, bool allow_scratch)

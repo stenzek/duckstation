@@ -1745,7 +1745,7 @@ bool CodeGenerator::Compile_Divide(const CodeBlockInstruction& cbi)
 
     EmitBindLabel(&done);
 
-    m_register_cache.UnunhibitAllocation();
+    m_register_cache.UninhibitAllocation();
     m_register_cache.WriteGuestRegister(Reg::lo, std::move(lo));
     m_register_cache.WriteGuestRegister(Reg::hi, std::move(hi));
   }
@@ -1827,7 +1827,7 @@ bool CodeGenerator::Compile_SignedDivide(const CodeBlockInstruction& cbi)
 
     EmitBindLabel(&done);
 
-    m_register_cache.UnunhibitAllocation();
+    m_register_cache.UninhibitAllocation();
     m_register_cache.WriteGuestRegister(Reg::lo, std::move(lo));
     m_register_cache.WriteGuestRegister(Reg::hi, std::move(hi));
   }
