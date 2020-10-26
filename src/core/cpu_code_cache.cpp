@@ -305,7 +305,7 @@ void ExecuteRecompiler()
       const u32 pc = g_state.regs.pc;
       g_state.current_instruction_pc = pc;
       const u32 fast_map_index = GetFastMapIndex(pc);
-      s_fast_map[fast_map_index]();
+      s_single_block_asm_dispatcher[fast_map_index]();
     }
 
     TimingEvents::RunEvents();

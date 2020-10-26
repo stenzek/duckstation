@@ -1336,7 +1336,8 @@ void CodeGenerator::EmitLoadGuestMemoryFastmem(const CodeBlockInstruction& cbi, 
     actual_address = a64::MemOperand(GetFastmemBasePtrReg(), GetHostReg32(address));
   }
 
-  // TODO: movsx/zx inline here
+  m_register_cache.InhibitAllocation();
+
   switch (size)
   {
     case RegSize_8:
@@ -1370,6 +1371,7 @@ void CodeGenerator::EmitLoadGuestMemoryFastmem(const CodeBlockInstruction& cbi, 
   EmitBranch(GetCurrentNearCodePointer(), false);
 
   SwitchToNearCode();
+  m_register_cache.UnunhibitAllocation();
 
   m_block->loadstore_backpatch_info.push_back(bpi);
 }
@@ -1472,6 +1474,8 @@ void CodeGenerator::EmitStoreGuestMemoryFastmem(const CodeBlockInstruction& cbi,
     actual_address = a64::MemOperand(GetFastmemBasePtrReg(), GetHostReg32(address));
   }
 
+  m_register_cache.InhibitAllocation();
+
   switch (value.size)
   {
     case RegSize_8:
@@ -1504,6 +1508,7 @@ void CodeGenerator::EmitStoreGuestMemoryFastmem(const CodeBlockInstruction& cbi,
   EmitBranch(GetCurrentNearCodePointer(), false);
 
   SwitchToNearCode();
+  m_register_cache.UnunhibitAllocation();
 
   m_block->loadstore_backpatch_info.push_back(bpi);
 }
@@ -2123,6 +2128,8 @@ CodeCache::SingleBlockDispatcherFunction CodeGenerator::CompileSingleBlockDispat
   m_emit->sub(a64::sp, a64::sp, FUNCTION_STACK_SIZE);
   m_register_cache.ReserveCalleeSavedRegisters();
   const u32 stack_adjust = PrepareStackForCall();
+
+  EmitLoadGlobalAddress(RCPUPTR, &g_state);
 
   m_emit->blr(GetHostReg64(RARG1));
 

@@ -1824,7 +1824,8 @@ void CodeGenerator::EmitLoadGuestMemoryFastmem(const CodeBlockInstruction& cbi, 
     bpi.host_pc = GetCurrentNearCodePointer();
   }
 
-  // TODO: movsx/zx inline here
+  m_register_cache.InhibitAllocation();
+
   switch (size)
   {
     case RegSize_8:
@@ -1896,6 +1897,7 @@ void CodeGenerator::EmitLoadGuestMemoryFastmem(const CodeBlockInstruction& cbi, 
   m_emit->jmp(GetCurrentNearCodePointer());
 
   SwitchToNearCode();
+  m_register_cache.UnunhibitAllocation();
 
   m_block->loadstore_backpatch_info.push_back(bpi);
 }
@@ -1992,6 +1994,8 @@ void CodeGenerator::EmitStoreGuestMemoryFastmem(const CodeBlockInstruction& cbi,
     m_emit->mov(GetHostReg32(temp_address), address.constant_value);
     bpi.host_pc = GetCurrentNearCodePointer();
   }
+
+  m_register_cache.InhibitAllocation();
 
   switch (value.size)
   {
@@ -2107,6 +2111,7 @@ void CodeGenerator::EmitStoreGuestMemoryFastmem(const CodeBlockInstruction& cbi,
   m_emit->jmp(GetCurrentNearCodePointer());
 
   SwitchToNearCode();
+  m_register_cache.UnunhibitAllocation();
 
   m_block->loadstore_backpatch_info.push_back(bpi);
 }
