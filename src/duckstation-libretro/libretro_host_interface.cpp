@@ -448,7 +448,7 @@ void LibretroHostInterface::OnSystemDestroyed()
   m_using_hardware_renderer = false;
 }
 
-static std::array<retro_core_option_definition, 37> s_option_definitions = {{
+static std::array<retro_core_option_definition, 38> s_option_definitions = {{
   {"duckstation_Console.Region",
    "Console Region",
    "Determines which region/hardware to emulate. Auto-Detect will use the region of the disc inserted.",
@@ -513,12 +513,6 @@ static std::array<retro_core_option_definition, 37> s_option_definitions = {{
     {"300", "300%"}, {"350", "350%"}, {"400", "400%"},           {"450", "450%"}, {"500", "500%"},
     {"600", "600%"}, {"700", "700%"}, {"800", "800%"},           {"900", "900%"}, {"1000", "1000%"}},
    "100"},
-  {"duckstation_CPU.RecompilerICache",
-   "CPU Recompiler ICache",
-   "Determines whether the CPU's instruction cache is simulated in the recompiler. Improves accuracy at a small cost "
-   "to performance. If games are running too fast, try enabling this option.",
-   {{"true", "Enabled"}, {"false", "Disabled"}},
-   "false"},
   {"duckstation_GPU.Renderer",
    "GPU Renderer",
    "Which renderer to use to emulate the GPU",
@@ -712,6 +706,18 @@ static std::array<retro_core_option_definition, 37> s_option_definitions = {{
     {"Debug", "Debug"},
     {"Trace", "Trace"}},
    "Info"},
+  {"duckstation_CPU.RecompilerICache",
+   "CPU Recompiler ICache",
+   "Determines whether the CPU's instruction cache is simulated in the recompiler. Improves accuracy at a small cost "
+   "to performance. If games are running too fast, try enabling this option.",
+   {{"true", "Enabled"}, {"false", "Disabled"}},
+   "false"},
+  {"duckstation_CPU.Fastmem",
+   "CPU Recompiler Fast Memory Access",
+   "Uses page faults to determine hardware memory accesses at runtime. Can provide a significant performance "
+   "improvement in some games, but make the core more difficult to debug.",
+   {{"true", "Enabled"}, {"false", "Disabled"}},
+   "true"},
   {},
 }};
 
