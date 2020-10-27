@@ -29,7 +29,6 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     private SharedPreferences mPreferences;
     private boolean mWasDestroyed = false;
     private boolean mStopRequested = false;
-    private boolean mWasPausedOnSurfaceLoss = false;
     private boolean mApplySettingsOnSurfaceRestored = false;
     private String mGameTitle = null;
     private EmulationSurfaceView mContentView;
@@ -128,10 +127,6 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
             AndroidHostInterface.getInstance().surfaceChanged(holder.getSurface(), format, width, height);
             updateOrientation();
 
-            if (holder.getSurface() != null && !hadSurface && AndroidHostInterface.getInstance().isEmulationThreadPaused() && !mWasPausedOnSurfaceLoss) {
-                AndroidHostInterface.getInstance().pauseEmulationThread(false);
-            }
-
             if (mApplySettingsOnSurfaceRestored) {
                 AndroidHostInterface.getInstance().applySettings();
                 mApplySettingsOnSurfaceRestored = false;
@@ -159,8 +154,6 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         if (!mStopRequested)
             AndroidHostInterface.getInstance().saveResumeState(true);
 
-        mWasPausedOnSurfaceLoss = AndroidHostInterface.getInstance().isEmulationThreadPaused();
-        AndroidHostInterface.getInstance().pauseEmulationThread(true);
         AndroidHostInterface.getInstance().surfaceChanged(null, 0, 0, 0);
     }
 

@@ -447,6 +447,11 @@ void AndroidHostInterface::SurfaceChanged(ANativeWindow* surface, int format, in
     wi.surface_height = height;
 
     m_display->ChangeRenderWindow(wi);
+
+    if (surface && System::GetState() == System::State::Paused)
+      System::SetState(System::State::Running);
+    else if (!surface && System::IsRunning())
+      System::SetState(System::State::Paused);
   }
 }
 
@@ -523,7 +528,8 @@ void AndroidHostInterface::SetControllerAxisState(u32 index, s32 button_code, fl
     false);
 }
 
-void AndroidHostInterface::RefreshGameList(bool invalidate_cache, bool invalidate_database, ProgressCallback* progress_callback)
+void AndroidHostInterface::RefreshGameList(bool invalidate_cache, bool invalidate_database,
+                                           ProgressCallback* progress_callback)
 {
   m_game_list->SetSearchDirectoriesFromSettings(m_settings_interface);
   m_game_list->Refresh(invalidate_cache, invalidate_database, progress_callback);

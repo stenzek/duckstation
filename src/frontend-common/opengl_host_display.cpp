@@ -124,6 +124,9 @@ bool OpenGLHostDisplay::DownloadTexture(const void* texture_handle, u32 x, u32 y
 
 void OpenGLHostDisplay::SetVSync(bool enabled)
 {
+  if (m_gl_context->GetWindowInfo().type == WindowInfo::Type::Surfaceless)
+    return;
+
   // Window framebuffer has to be bound to call SetSwapInterval.
   GLint current_fbo = 0;
   glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo);
