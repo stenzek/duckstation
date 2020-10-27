@@ -534,6 +534,16 @@ void AndroidHostInterface::ApplySettings(bool display_osd_messages)
   Settings old_settings = std::move(g_settings);
   CommonHostInterface::LoadSettings(m_settings_interface);
   CommonHostInterface::FixIncompatibleSettings(display_osd_messages);
+
+  // Defer renderer changes, the app really doesn't like it.
+  if (System::IsValid() && g_settings.gpu_renderer != old_settings.gpu_renderer)
+  {
+    AddFormattedOSDMessage(5.0f,
+                           TranslateString("OSDMessage", "Change to %s GPU renderer will take effect on restart."),
+                           Settings::GetRendererName(g_settings.gpu_renderer));
+    g_settings.gpu_renderer = old_settings.gpu_renderer;
+  }
+
   CheckForSettingsChanges(old_settings);
 }
 
