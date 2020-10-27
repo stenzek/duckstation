@@ -551,6 +551,15 @@ void HostInterface::SaveSettings(SettingsInterface& si)
 
 void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
 {
+  if (System::IsValid() && (g_settings.gpu_renderer != old_settings.gpu_renderer ||
+                            g_settings.gpu_use_debug_device != old_settings.gpu_use_debug_device))
+  {
+    AddFormattedOSDMessage(5.0f, TranslateString("OSDMessage", "Switching to %s%s GPU renderer."),
+                           Settings::GetRendererName(g_settings.gpu_renderer),
+                           g_settings.gpu_use_debug_device ? " (debug)" : "");
+    RecreateSystem();
+  }
+
   if (System::IsValid())
   {
     if (g_settings.cpu_overclock_active != old_settings.cpu_overclock_active ||
@@ -559,15 +568,6 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
           g_settings.cpu_overclock_denominator != old_settings.cpu_overclock_denominator)))
     {
       System::UpdateOverclock();
-    }
-
-    if (g_settings.gpu_renderer != old_settings.gpu_renderer ||
-        g_settings.gpu_use_debug_device != old_settings.gpu_use_debug_device)
-    {
-      AddFormattedOSDMessage(5.0f, TranslateString("OSDMessage", "Switching to %s%s GPU renderer."),
-                             Settings::GetRendererName(g_settings.gpu_renderer),
-                             g_settings.gpu_use_debug_device ? " (debug)" : "");
-      RecreateSystem();
     }
 
     if (g_settings.audio_backend != old_settings.audio_backend ||
