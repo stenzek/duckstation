@@ -1186,6 +1186,18 @@ void CDROM::ExecuteCommand()
     }
     break;
 
+    case Command::VideoCD:
+    {
+      Log_DebugPrintf("CDROM VideoCD command");
+      SendErrorResponse(STAT_ERROR, ERROR_REASON_INVALID_COMMAND);
+
+      // According to nocash this doesn't clear the parameter FIFO.
+      m_command = Command::None;
+      m_command_event->Deactivate();
+      UpdateStatusRegister();
+    }
+    break;
+
     default:
     {
       Log_ErrorPrintf("Unknown CDROM command 0x%04X with %u parameters, please report", static_cast<u16>(m_command),
