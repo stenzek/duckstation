@@ -3,6 +3,7 @@
 #include "common/log.h"
 #include "settingsdialog.h"
 #include "settingwidgetbinder.h"
+#include <cmath>
 Log_SetChannel(AudioSettingsWidget);
 
 AudioSettingsWidget::AudioSettingsWidget(QtHostInterface* host_interface, QWidget* parent, SettingsDialog* dialog)
@@ -66,7 +67,8 @@ AudioSettingsWidget::~AudioSettingsWidget() = default;
 void AudioSettingsWidget::updateBufferingLabel()
 {
   constexpr float step = 128;
-  const u32 actual_buffer_size = static_cast<u32>(std::round(static_cast<float>(m_ui.bufferSize->value()) / step) * step);
+  const u32 actual_buffer_size =
+    static_cast<u32>(std::round(static_cast<float>(m_ui.bufferSize->value()) / step) * step);
   if (static_cast<u32>(m_ui.bufferSize->value()) != actual_buffer_size)
   {
     m_ui.bufferSize->setValue(static_cast<int>(actual_buffer_size));
