@@ -105,7 +105,7 @@ static LONG ExceptionHandler(PEXCEPTION_POINTERS exi)
 #elif defined(USE_SIGSEGV)
 
 static struct sigaction s_old_sigsegv_action;
-#ifdef __APPLE__
+#if defined(__APPLE__) || defined(__aarch64__)
 static struct sigaction s_old_sigbus_action;
 #endif
 
@@ -155,7 +155,7 @@ static void SIGSEGVHandler(int sig, siginfo_t* info, void* ctx)
   }
 
   // call old signal handler
-#ifndef __APPLE__
+#if !defined(__APPLE__) && !defined(__aarch64__)
   const struct sigaction& sa = s_old_sigsegv_action;
 #else
   const struct sigaction& sa = (sig == SIGBUS) ? s_old_sigbus_action : s_old_sigsegv_action;
@@ -218,7 +218,7 @@ bool InstallHandler(void* owner, Callback callback)
       Log_ErrorPrintf("sigaction(SIGSEGV) failed: %d", errno);
       return false;
     }
-#ifdef __APPLE__
+#if defined(__APPLE__) || defined(__aarch64__)
     if (sigaction(SIGBUS, &sa, &s_old_sigbus_action) < 0)
     {
       Log_ErrorPrintf("sigaction(SIGBUS) failed: %d", errno);
@@ -251,7 +251,7 @@ bool RemoveHandler(void* owner)
     s_veh_handle = nullptr;
 #else
     // restore old signal handler
-#ifdef __APPLE__
+#if defined(__APPLE__) || defined(__aarch64__)
     if (sigaction(SIGBUS, &s_old_sigbus_action, nullptr) < 0)
     {
       Log_ErrorPrintf("sigaction(SIGBUS) failed: %d", errno);
