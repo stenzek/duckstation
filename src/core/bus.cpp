@@ -128,7 +128,10 @@ void Shutdown()
 {
   UnmapFastmemViews();
   if (g_ram)
+  {
     m_memory_arena.ReleaseViewPtr(g_ram, RAM_SIZE);
+    g_ram = nullptr;
+  }
 
   CPU::g_state.fastmem_base = nullptr;
 }
