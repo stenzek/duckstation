@@ -68,8 +68,9 @@ EnhancementSettingsWidget::EnhancementSettingsWidget(QtHostInterface* host_inter
     m_ui.force43For24Bit, tr("Force 4:3 For 24-bit Display"), tr("Unchecked"),
     tr("Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs."));
   dialog->registerWidgetHelp(
-    m_ui.textureFiltering, tr("Texture Filtering"), tr("Unchecked"),
-    tr("Smooths out the blockyness of magnified textures on 3D object by using bilinear filtering. <br>Will have a "
+    m_ui.textureFiltering, tr("Texture Filtering"),
+    qApp->translate("GPUTextureFilter", Settings::GetTextureFilterDisplayName(GPUTextureFilter::Nearest)),
+    tr("Smooths out the blockyness of magnified textures on 3D object by using filtering. <br>Will have a "
        "greater effect on higher resolution scales. Only applies to the hardware renderers."));
   dialog->registerWidgetHelp(
     m_ui.widescreenHack, tr("Widescreen Hack"), tr("Unchecked"),
