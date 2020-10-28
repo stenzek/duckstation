@@ -947,6 +947,11 @@ void SPU::Voice::KeyOn()
   counter.bits = 0;
   regs.adsr_volume = 0;
   adpcm_last_samples.fill(0);
+
+  // Samples from the previous block for interpolation should be zero. Fixes clicks in audio in Breath of Fire III.
+  std::fill_n(&current_block_samples[NUM_SAMPLES_PER_ADPCM_BLOCK], NUM_SAMPLES_FROM_LAST_ADPCM_BLOCK,
+              static_cast<s16>(0));
+
   has_samples = false;
   ignore_loop_address = false;
   adsr_phase = ADSRPhase::Attack;
