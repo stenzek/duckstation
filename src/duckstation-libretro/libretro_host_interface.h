@@ -97,6 +97,8 @@ private:
   bool m_rumble_interface_valid = false;
   bool m_supports_input_bitmasks = false;
   bool m_interfaces_initialized = false;
+
+  float m_last_aspect_ratio = 4.0f / 3.0f;
 };
 
 extern LibretroHostInterface g_libretro_host_interface;

@@ -103,6 +103,8 @@ bool LibretroHostInterface::Initialize()
   LoadSettings();
   FixIncompatibleSettings(true);
   UpdateLogging();
+
+  m_last_aspect_ratio = Settings::GetDisplayAspectRatioValue(g_settings.display_aspect_ratio);
   return true;
 }
 
@@ -226,7 +228,7 @@ void LibretroHostInterface::GetSystemAVInfo(struct retro_system_av_info* info, b
 
   std::memset(info, 0, sizeof(*info));
 
-  info->geometry.aspect_ratio = Settings::GetDisplayAspectRatioValue(g_settings.display_aspect_ratio);
+  info->geometry.aspect_ratio = m_last_aspect_ratio;
   info->geometry.base_width = 320;
   info->geometry.base_height = 240;
   info->geometry.max_width = GPU::VRAM_WIDTH * resolution_scale;
@@ -333,6 +335,13 @@ void LibretroHostInterface::retro_run_frame()
   UpdateControllers();
 
   System::RunFrame();
+
+  const float aspect_ratio = m_display->GetDisplayAspectRatio();
+  if (aspect_ratio != m_last_aspect_ratio)
+  {
+    m_last_aspect_ratio = aspect_ratio;
+    UpdateGeometry();
+  }
 
   m_display->Render();
 }

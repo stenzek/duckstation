@@ -89,6 +89,7 @@ public:
   virtual void SetVSync(bool enabled) = 0;
 
   const s32 GetDisplayTopMargin() const { return m_display_top_margin; }
+  const float GetDisplayAspectRatio() const { return m_display_aspect_ratio; }
 
   void ClearDisplayTexture()
   {
