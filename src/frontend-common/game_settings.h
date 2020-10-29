@@ -38,6 +38,10 @@ struct Entry
   std::bitset<static_cast<int>(Trait::Count)> traits{};
   std::optional<s16> display_active_start_offset;
   std::optional<s16> display_active_end_offset;
+  std::optional<u32> dma_max_slice_ticks;
+  std::optional<u32> dma_halt_ticks;
+  std::optional<u32> gpu_fifo_size;
+  std::optional<u32> gpu_max_run_ahead;
 
   // user settings
   std::optional<u32> cpu_overclock_numerator;
