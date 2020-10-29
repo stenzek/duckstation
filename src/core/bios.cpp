@@ -143,16 +143,16 @@ bool IsValidHashForRegion(ConsoleRegion region, const Hash& hash)
   return (ii->region == ConsoleRegion::Auto || ii->region == region);
 }
 
-void PatchBIOS(Image& bios, u32 address, u32 value, u32 mask /*= UINT32_C(0xFFFFFFFF)*/)
+void PatchBIOS(u8* image, u32 image_size, u32 address, u32 value, u32 mask /*= UINT32_C(0xFFFFFFFF)*/)
 {
   const u32 phys_address = address & UINT32_C(0x1FFFFFFF);
   const u32 offset = phys_address - BIOS_BASE;
-  Assert(phys_address >= BIOS_BASE && offset < BIOS_SIZE);
+  Assert(phys_address >= BIOS_BASE && (offset + sizeof(u32)) <= image_size);
 
   u32 existing_value;
-  std::memcpy(&existing_value, &bios[offset], sizeof(existing_value));
+  std::memcpy(&existing_value, &image[offset], sizeof(existing_value));
   u32 new_value = (existing_value & ~mask) | value;
-  std::memcpy(&bios[offset], &new_value, sizeof(new_value));
+  std::memcpy(&image[offset], &new_value, sizeof(new_value));
 
   SmallString old_disasm, new_disasm;
   CPU::DisassembleInstruction(&old_disasm, address, existing_value);
@@ -161,7 +161,7 @@ void PatchBIOS(Image& bios, u32 address, u32 value, u32 mask /*= UINT32_C(0xFFFF
                 old_disasm.GetCharArray(), new_value, new_disasm.GetCharArray());
 }
 
-bool PatchBIOSEnableTTY(Image& image, const Hash& hash)
+bool PatchBIOSEnableTTY(u8* image, u32 image_size, const Hash& hash)
 {
   const ImageInfo* ii = GetImageInfoForHash(hash);
   if (!ii)
@@ -171,12 +171,12 @@ bool PatchBIOSEnableTTY(Image& image, const Hash& hash)
   }
 
   Log_InfoPrintf("Patching BIOS to enable TTY/printf");
-  PatchBIOS(image, 0x1FC06F0C, 0x24010001);
-  PatchBIOS(image, 0x1FC06F14, 0xAF81A9C0);
+  PatchBIOS(image, image_size, 0x1FC06F0C, 0x24010001);
+  PatchBIOS(image, image_size, 0x1FC06F14, 0xAF81A9C0);
   return true;
 }
 
-bool PatchBIOSFastBoot(Image& image, const Hash& hash)
+bool PatchBIOSFastBoot(u8* image, u32 image_size, const Hash& hash)
 {
   const ImageInfo* ii = GetImageInfoForHash(hash);
   if (!ii)
@@ -187,41 +187,45 @@ bool PatchBIOSFastBoot(Image& image, const Hash& hash)
 
   // Replace the shell entry point with a return back to the bootstrap.
   Log_InfoPrintf("Patching BIOS to skip intro");
-  PatchBIOS(image, 0x1FC18000, 0x03E00008);
-  PatchBIOS(image, 0x1FC18004, 0x00000000);
+  PatchBIOS(image, image_size, 0x1FC18000, 0x03E00008);
+  PatchBIOS(image, image_size, 0x1FC18004, 0x00000000);
   return true;
 }
 
-bool PatchBIOSForEXE(Image& image, u32 r_pc, u32 r_gp, u32 r_sp, u32 r_fp)
+bool PatchBIOSForEXE(u8* image, u32 image_size, u32 r_pc, u32 r_gp, u32 r_sp, u32 r_fp)
 {
+#define PATCH(offset, value) PatchBIOS(image, image_size, (offset), (value))
+
   // pc has to be done first because we can't load it in the delay slot
-  PatchBIOS(image, 0xBFC06FF0, UINT32_C(0x3C080000) | r_pc >> 16);                // lui $t0, (r_pc >> 16)
-  PatchBIOS(image, 0xBFC06FF4, UINT32_C(0x35080000) | (r_pc & UINT32_C(0xFFFF))); // ori $t0, $t0, (r_pc & 0xFFFF)
-  PatchBIOS(image, 0xBFC06FF8, UINT32_C(0x3C1C0000) | r_gp >> 16);                // lui $gp, (r_gp >> 16)
-  PatchBIOS(image, 0xBFC06FFC, UINT32_C(0x379C0000) | (r_gp & UINT32_C(0xFFFF))); // ori $gp, $gp, (r_gp & 0xFFFF)
+  PATCH(0xBFC06FF0, UINT32_C(0x3C080000) | r_pc >> 16);                // lui $t0, (r_pc >> 16)
+  PATCH(0xBFC06FF4, UINT32_C(0x35080000) | (r_pc & UINT32_C(0xFFFF))); // ori $t0, $t0, (r_pc & 0xFFFF)
+  PATCH(0xBFC06FF8, UINT32_C(0x3C1C0000) | r_gp >> 16);                // lui $gp, (r_gp >> 16)
+  PATCH(0xBFC06FFC, UINT32_C(0x379C0000) | (r_gp & UINT32_C(0xFFFF))); // ori $gp, $gp, (r_gp & 0xFFFF)
 
   if (r_sp != 0)
   {
-    PatchBIOS(image, 0xBFC07000, UINT32_C(0x3C1D0000) | r_sp >> 16);                // lui $sp, (r_sp >> 16)
-    PatchBIOS(image, 0xBFC07004, UINT32_C(0x37BD0000) | (r_sp & UINT32_C(0xFFFF))); // ori $sp, $sp, (r_sp & 0xFFFF)
+    PATCH(0xBFC07000, UINT32_C(0x3C1D0000) | r_sp >> 16);                // lui $sp, (r_sp >> 16)
+    PATCH(0xBFC07004, UINT32_C(0x37BD0000) | (r_sp & UINT32_C(0xFFFF))); // ori $sp, $sp, (r_sp & 0xFFFF)
   }
   else
   {
-    PatchBIOS(image, 0xBFC07000, UINT32_C(0x00000000)); // nop
-    PatchBIOS(image, 0xBFC07004, UINT32_C(0x00000000)); // nop
+    PATCH(0xBFC07000, UINT32_C(0x00000000)); // nop
+    PATCH(0xBFC07004, UINT32_C(0x00000000)); // nop
   }
   if (r_fp != 0)
   {
-    PatchBIOS(image, 0xBFC07008, UINT32_C(0x3C1E0000) | r_fp >> 16);                // lui $fp, (r_fp >> 16)
-    PatchBIOS(image, 0xBFC0700C, UINT32_C(0x01000008));                             // jr $t0
-    PatchBIOS(image, 0xBFC07010, UINT32_C(0x37DE0000) | (r_fp & UINT32_C(0xFFFF))); // ori $fp, $fp, (r_fp & 0xFFFF)
+    PATCH(0xBFC07008, UINT32_C(0x3C1E0000) | r_fp >> 16);                // lui $fp, (r_fp >> 16)
+    PATCH(0xBFC0700C, UINT32_C(0x01000008));                             // jr $t0
+    PATCH(0xBFC07010, UINT32_C(0x37DE0000) | (r_fp & UINT32_C(0xFFFF))); // ori $fp, $fp, (r_fp & 0xFFFF)
   }
   else
   {
-    PatchBIOS(image, 0xBFC07008, UINT32_C(0x00000000)); // nop
-    PatchBIOS(image, 0xBFC0700C, UINT32_C(0x01000008)); // jr $t0
-    PatchBIOS(image, 0xBFC07010, UINT32_C(0x00000000)); // nop
+    PATCH(0xBFC07008, UINT32_C(0x00000000)); // nop
+    PATCH(0xBFC0700C, UINT32_C(0x01000008)); // jr $t0
+    PATCH(0xBFC07010, UINT32_C(0x00000000)); // nop
   }
+
+#undef PATCH
 
   return true;
 }
