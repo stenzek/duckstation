@@ -490,7 +490,6 @@ bool CompileBlock(CodeBlock* block)
       if (icache_line != last_cache_line)
       {
         block->icache_line_count++;
-        block->icache_line_count = GetICacheFillTicks(pc);
         last_cache_line = icache_line;
       }
       block->uncached_fetch_ticks += GetInstructionReadTicks(pc);

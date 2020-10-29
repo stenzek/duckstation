@@ -1006,11 +1006,12 @@ TickCount GetICacheFillTicks(VirtualMemoryAddress address)
 
   if (address < RAM_MIRROR_END)
   {
-    return 1 * (ICACHE_LINE_SIZE / sizeof(u32));
+    return 1 * ((ICACHE_LINE_SIZE - (address & (ICACHE_LINE_SIZE - 1))) / sizeof(u32));
   }
   else if (address >= BIOS_BASE && address < (BIOS_BASE + BIOS_SIZE))
   {
-    return m_bios_access_time[static_cast<u32>(MemoryAccessSize::Word)] * (ICACHE_LINE_SIZE / sizeof(u32));
+    return m_bios_access_time[static_cast<u32>(MemoryAccessSize::Word)] *
+           ((ICACHE_LINE_SIZE - (address & (ICACHE_LINE_SIZE - 1))) / sizeof(u32));
   }
   else
   {
@@ -1046,9 +1047,29 @@ void CheckAndUpdateICacheTags(u32 line_count, TickCount uncached_ticks)
 u32 FillICache(VirtualMemoryAddress address)
 {
   const u32 line = GetICacheLine(address);
-  g_state.icache_tags[line] = GetICacheTagForAddress(address);
   u8* line_data = &g_state.icache_data[line * ICACHE_LINE_SIZE];
-  DoInstructionRead<true, true, 4>(address & ~(ICACHE_LINE_SIZE - 1u), line_data);
+  u32 line_tag;
+  switch ((address >> 2) & 0x03u)
+  {
+    case 0:
+      DoInstructionRead<true, true, 4>(address & ~(ICACHE_LINE_SIZE - 1u), line_data);
+      line_tag = GetICacheTagForAddress(address);
+      break;
+    case 1:
+      DoInstructionRead<true, true, 3>(address & (~(ICACHE_LINE_SIZE - 1u) | 0x4), line_data + 0x4);
+      line_tag = GetICacheTagForAddress(address) | 0x1;
+      break;
+    case 2:
+      DoInstructionRead<true, true, 2>(address & (~(ICACHE_LINE_SIZE - 1u) | 0x8), line_data + 0x8);
+      line_tag = GetICacheTagForAddress(address) | 0x3;
+      break;
+    case 3:
+    default:
+      DoInstructionRead<true, true, 1>(address & (~(ICACHE_LINE_SIZE - 1u) | 0xC), line_data + 0xC);
+      line_tag = GetICacheTagForAddress(address) | 0x7;
+      break;
+  }
+  g_state.icache_tags[line] = line_tag;
 
   const u32 offset = GetICacheLineOffset(address);
   u32 result;
@@ -1059,7 +1080,7 @@ u32 FillICache(VirtualMemoryAddress address)
 void ClearICache()
 {
   std::memset(g_state.icache_data.data(), 0, ICACHE_SIZE);
-  g_state.icache_tags.fill(ICACHE_INVALD_BIT | ICACHE_DISABLED_BIT);
+  g_state.icache_tags.fill(ICACHE_INVALID_BITS);
 }
 
 ALWAYS_INLINE_RELEASE static u32 ReadICache(VirtualMemoryAddress address)
@@ -1076,7 +1097,7 @@ ALWAYS_INLINE_RELEASE static void WriteICache(VirtualMemoryAddress address, u32 
 {
   const u32 line = GetICacheLine(address);
   const u32 offset = GetICacheLineOffset(address);
-  g_state.icache_tags[line] = GetICacheTagForAddress(address) | ICACHE_INVALD_BIT;
+  g_state.icache_tags[line] = GetICacheTagForAddress(address) | ICACHE_INVALID_BITS;
   std::memcpy(&g_state.icache_data[line * ICACHE_LINE_SIZE + offset], &value, sizeof(value));
 }
 
@@ -1086,19 +1107,6 @@ static void WriteCacheControl(u32 value)
 
   CacheControl changed_bits{g_state.cache_control.bits ^ value};
   g_state.cache_control.bits = value;
-  if (changed_bits.icache_enable)
-  {
-    if (g_state.cache_control.icache_enable)
-    {
-      for (u32 i = 0; i < ICACHE_LINES; i++)
-        g_state.icache_tags[i] &= ~ICACHE_DISABLED_BIT;
-    }
-    else
-    {
-      for (u32 i = 0; i < ICACHE_LINES; i++)
-        g_state.icache_tags[i] |= ICACHE_DISABLED_BIT;
-    }
-  }
 }
 
 template<MemoryAccessType type, MemoryAccessSize size>
@@ -1323,15 +1331,12 @@ bool FetchInstruction()
     case 0x04: // KSEG0 - physical memory cached
     {
 #if 0
-      // TODO: icache
-      TickCount cycles;
-      DoInstructionRead(address, cycles, g_state.next_instruction.bits);
+      DoInstructionRead<true, false, 1>(address, &g_state.next_instruction.bits);
 #else
       if (CompareICacheTag(address))
         g_state.next_instruction.bits = ReadICache(address);
       else
         g_state.next_instruction.bits = FillICache(address);
-
 #endif
     }
     break;
