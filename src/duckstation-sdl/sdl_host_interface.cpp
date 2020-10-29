@@ -1285,6 +1285,7 @@ void SDLHostInterface::DrawSettingsWindow()
 
         settings_changed |= ImGui::Checkbox("Output Sync", &m_settings_copy.audio_sync_enabled);
         settings_changed |= ImGui::Checkbox("Start Dumping On Boot", &m_settings_copy.audio_dump_on_boot);
+        settings_changed |= ImGui::Checkbox("Mute CD Audio", &m_settings_copy.cdrom_mute_cd_audio);
       }
 
       ImGui::EndTabItem();
