@@ -588,6 +588,11 @@ ALWAYS_INLINE static TickCount DoEXP2Access(u32 offset, u32& value)
     {
       value = 0x04 | 0x08;
     }
+    else if (offset >= 0x60 && offset <= 0x67)
+    {
+      // nocash expansion area
+      value = UINT32_C(0xFFFFFFFF);
+    }
     else
     {
       Log_WarningPrintf("EXP2 read: 0x%08X", EXP2_BASE | offset);
