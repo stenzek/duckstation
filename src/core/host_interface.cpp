@@ -219,7 +219,7 @@ std::optional<std::vector<u8>> HostInterface::GetBIOSImage(ConsoleRegion region)
       break;
 
     case ConsoleRegion::PAL:
-      bios_name = GetStringSettingValue("BIOS", "PAL", "");
+      bios_name = GetStringSettingValue("BIOS", "PathPAL", "");
       break;
 
     case ConsoleRegion::NTSC_U:
