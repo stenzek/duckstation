@@ -1250,7 +1250,8 @@ void CDROM::ExecuteCommand()
     {
       Log_ErrorPrintf("Unknown CDROM command 0x%04X with %u parameters, please report", static_cast<u16>(m_command),
                       m_param_fifo.GetSize());
-      Panic("Unknown CDROM command");
+      SendErrorResponse(STAT_ERROR, ERROR_REASON_INVALID_COMMAND);
+      EndCommand();
     }
     break;
   }
@@ -1329,7 +1330,8 @@ void CDROM::ExecuteTestCommand(u8 subcommand)
     default:
     {
       Log_ErrorPrintf("Unknown test command 0x%02X, %u parameters", subcommand, m_param_fifo.GetSize());
-      Panic("Unknown test command");
+      SendErrorResponse(STAT_ERROR, ERROR_REASON_INVALID_COMMAND);
+      EndCommand();
       return;
     }
   }
