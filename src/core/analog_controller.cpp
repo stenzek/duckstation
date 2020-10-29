@@ -191,7 +191,7 @@ void AnalogController::SetMotorState(u8 motor, u8 value)
 
 u8 AnalogController::GetExtraButtonMaskLSB() const
 {
-  if (!m_analog_dpad_in_digital_mode)
+  if (!m_analog_dpad_in_digital_mode || m_analog_mode)
     return 0xFF;
 
   static constexpr u8 NEG_THRESHOLD = static_cast<u8>(128.0f - (127.0 * 0.5f));
