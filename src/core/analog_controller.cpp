@@ -189,6 +189,25 @@ void AnalogController::SetMotorState(u8 motor, u8 value)
   m_motor_state[motor] = value;
 }
 
+u8 AnalogController::GetExtraButtonMaskLSB() const
+{
+  if (!m_analog_dpad_in_digital_mode)
+    return 0xFF;
+
+  static constexpr u8 NEG_THRESHOLD = static_cast<u8>(128.0f - (127.0 * 0.5f));
+  static constexpr u8 POS_THRESHOLD = static_cast<u8>(128.0f + (127.0 * 0.5f));
+
+  const bool left = (m_axis_state[static_cast<u8>(Axis::LeftX)] <= NEG_THRESHOLD);
+  const bool right = (m_axis_state[static_cast<u8>(Axis::LeftX)] >= POS_THRESHOLD);
+  const bool up = (m_axis_state[static_cast<u8>(Axis::LeftY)] <= NEG_THRESHOLD);
+  const bool down = (m_axis_state[static_cast<u8>(Axis::LeftY)] >= POS_THRESHOLD);
+
+  return ~((static_cast<u8>(left) << static_cast<u8>(Button::Left)) |
+           (static_cast<u8>(right) << static_cast<u8>(Button::Right)) |
+           (static_cast<u8>(up) << static_cast<u8>(Button::Up)) |
+           (static_cast<u8>(down) << static_cast<u8>(Button::Down)));
+}
+
 bool AnalogController::Transfer(const u8 data_in, u8* data_out)
 {
   bool ack;
@@ -284,7 +303,7 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
       if (m_rumble_unlocked)
         SetMotorState(1, ((data_in & 0x01) != 0) ? 255 : 0);
 
-      *data_out = Truncate8(m_button_state);
+      *data_out = Truncate8(m_button_state) & GetExtraButtonMaskLSB();
       m_state = State::GetStateButtonsMSB;
       ack = true;
     }
@@ -511,9 +530,14 @@ u32 AnalogController::StaticGetVibrationMotorCount()
 
 Controller::SettingList AnalogController::StaticGetSettings()
 {
-  static constexpr std::array<SettingInfo, 3> settings = {
+  static constexpr std::array<SettingInfo, 4> settings = {
     {{SettingInfo::Type::Boolean, "AutoEnableAnalog", TRANSLATABLE("AnalogController", "Enable Analog Mode on Reset"),
       TRANSLATABLE("AnalogController", "Automatically enables analog mode when the console is reset/powered on."),
+      "false"},
+     {SettingInfo::Type::Boolean, "AnalogDPadInDigitalMode",
+      TRANSLATABLE("AnalogController", "Use Analog Sticks for D-Pad in Digital Mode"),
+      TRANSLATABLE("AnalogController",
+                   "Allows you to use the analog sticks to control the d-pad in digital mode, as well as the buttons."),
       "false"},
      {SettingInfo::Type::Float, "AxisScale", TRANSLATABLE("AnalogController", "Analog Axis Scale"),
       TRANSLATABLE(
@@ -533,6 +557,7 @@ void AnalogController::LoadSettings(const char* section)
 {
   Controller::LoadSettings(section);
   m_auto_enable_analog = g_host_interface->GetBoolSettingValue(section, "AutoEnableAnalog", false);
+  m_analog_dpad_in_digital_mode = g_host_interface->GetBoolSettingValue(section, "AnalogDPadInDigitalMode", false);
   m_rumble_bias =
     static_cast<u8>(std::min<u32>(g_host_interface->GetIntSettingValue(section, "VibrationBias", 8), 255));
 }

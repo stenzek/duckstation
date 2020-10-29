@@ -13,6 +13,7 @@ A "BIOS" ROM image is required to to start the emulator and to play games. You c
 
 ## Latest News
 
+- 2020/10/30: Option to use analog stick as d-pad for analog controller added.
 - 2020/10/20: New cheat manager with memory scanning added. More features will be added over time.
 - 2020/10/05: CD-ROM read speedup enhancement added.
 - 2020/09/30: CPU overclocking is now supported. Use with caution as it will break games and increase system requirements. It can be set globally or per-game.

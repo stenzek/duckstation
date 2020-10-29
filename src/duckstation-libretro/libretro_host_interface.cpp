@@ -457,7 +457,7 @@ void LibretroHostInterface::OnSystemDestroyed()
   m_using_hardware_renderer = false;
 }
 
-static std::array<retro_core_option_definition, 38> s_option_definitions = {{
+static std::array<retro_core_option_definition, 40> s_option_definitions = {{
   {"duckstation_Console.Region",
    "Console Region",
    "Determines which region/hardware to emulate. Auto-Detect will use the region of the disc inserted.",
@@ -681,6 +681,11 @@ static std::array<retro_core_option_definition, 38> s_option_definitions = {{
    "Automatically enables analog mode in supported controllers at start/reset.",
    {{"true", "Enabled"}, {"false", "Disabled"}},
    "false"},
+  {"duckstation_Controller1.AutoEnableAnalog",
+   "Controller 1 Use Analog Sticks for D-Pad in Digital Mode",
+   "Allows you to use the analog sticks to control the d-pad in digital mode, as well as the buttons.",
+   {{"true", "Enabled"}, {"false", "Disabled"}},
+   "false"},
   {"duckstation_Controller2.Type",
    "Controller 2 Type",
    "Sets the type of controller for Slot 2.",
@@ -694,6 +699,11 @@ static std::array<retro_core_option_definition, 38> s_option_definitions = {{
   {"duckstation_Controller2.AutoEnableAnalog",
    "Controller 2 Auto Analog Mode",
    "Automatically enables analog mode in supported controllers at start/reset.",
+   {{"true", "Enabled"}, {"false", "Disabled"}},
+   "false"},
+  {"duckstation_Controller2.AutoEnableAnalog",
+   "Controller 2 Use Analog Sticks for D-Pad in Digital Mode",
+   "Allows you to use the analog sticks to control the d-pad in digital mode, as well as the buttons.",
    {{"true", "Enabled"}, {"false", "Disabled"}},
    "false"},
   {"duckstation_Display.ShowOSDMessages",
