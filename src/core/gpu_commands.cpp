@@ -459,7 +459,9 @@ bool GPU::HandleFillRectangleCommand()
 
   Log_DebugPrintf("Fill VRAM rectangle offset=(%u,%u), size=(%u,%u)", dst_x, dst_y, width, height);
 
-  FillVRAM(dst_x, dst_y, width, height, color);
+  if (width > 0 && height > 0)
+    FillVRAM(dst_x, dst_y, width, height, color);
+
   m_stats.num_vram_fills++;
   AddCommandTicks(46 + ((width / 8) + 9) * height);
   EndCommand();
