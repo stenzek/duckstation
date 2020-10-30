@@ -131,10 +131,12 @@ private:
   u16 GetID() const;
   void SetAnalogMode(bool enabled);
   void SetMotorState(u8 motor, u8 value);
+  u8 GetExtraButtonMaskLSB() const;
 
   u32 m_index;
 
   bool m_auto_enable_analog = false;
+  bool m_analog_dpad_in_digital_mode = false;
   u8 m_rumble_bias = 8;
 
   bool m_analog_mode = false;

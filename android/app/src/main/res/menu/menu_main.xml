@@ -7,6 +7,9 @@
             android:id="@+id/action_resume"
             android:title="Resume Last Session" />
         <item
+            android:id="@+id/action_start_file"
+            android:title="Start File" />
+        <item
             android:id="@+id/action_start_bios"
             android:title="Start BIOS" />
     </group>

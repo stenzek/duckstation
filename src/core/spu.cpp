@@ -581,10 +581,11 @@ void SPU::WriteVoiceRegister(u32 offset, u16 value)
   // per-voice registers
   const u32 reg_index = (offset % 0x10);
   const u32 voice_index = (offset / 0x10);
-  Assert(voice_index < 24);
+  DebugAssert(voice_index < 24);
 
   Voice& voice = m_voices[voice_index];
-  if (voice.IsOn() || m_key_on_register & (1u << voice_index))
+  const bool voice_was_on = voice.IsOn();
+  if (voice_was_on || m_key_on_register & (1u << voice_index))
     m_tick_event->InvokeEarly();
 
   switch (reg_index)
@@ -648,7 +649,7 @@ void SPU::WriteVoiceRegister(u32 offset, u16 value)
     {
       Log_DebugPrintf("SPU voice %u ADPCM repeat address <- 0x%04X", voice_index, value);
       voice.regs.adpcm_repeat_address = value;
-      voice.ignore_loop_address = true;
+      voice.ignore_loop_address = voice_was_on;
     }
     break;
 
@@ -946,6 +947,11 @@ void SPU::Voice::KeyOn()
   counter.bits = 0;
   regs.adsr_volume = 0;
   adpcm_last_samples.fill(0);
+
+  // Samples from the previous block for interpolation should be zero. Fixes clicks in audio in Breath of Fire III.
+  std::fill_n(&current_block_samples[NUM_SAMPLES_PER_ADPCM_BLOCK], NUM_SAMPLES_FROM_LAST_ADPCM_BLOCK,
+              static_cast<s16>(0));
+
   has_samples = false;
   ignore_loop_address = false;
   adsr_phase = ADSRPhase::Attack;
@@ -1370,6 +1376,8 @@ ALWAYS_INLINE_RELEASE std::tuple<s32, s32> SPU::SampleVoice(u32 voice_index)
     if (voice.current_block_flags.loop_end)
     {
       m_endx_register |= (u32(1) << voice_index);
+      voice.current_address = voice.regs.adpcm_repeat_address & ~u16(1);
+
       if (!voice.current_block_flags.loop_repeat)
       {
         Log_TracePrintf("Voice %u loop end+mute @ 0x%08X", voice_index, ZeroExtend32(voice.current_address));
@@ -1378,7 +1386,6 @@ ALWAYS_INLINE_RELEASE std::tuple<s32, s32> SPU::SampleVoice(u32 voice_index)
       else
       {
         Log_TracePrintf("Voice %u loop end+repeat @ 0x%08X", voice_index, ZeroExtend32(voice.current_address));
-        voice.current_address = voice.regs.adpcm_repeat_address & ~u16(1);
       }
     }
   }

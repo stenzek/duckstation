@@ -45,6 +45,8 @@ public:
   void SetMaxSliceTicks(TickCount ticks) { m_max_slice_ticks = ticks; }
   void SetHaltTicks(TickCount ticks) { m_halt_ticks = ticks; }
 
+  void DrawDebugStateWindow();
+
 private:
   static constexpr PhysicalMemoryAddress BASE_ADDRESS_MASK = UINT32_C(0x00FFFFFF);
   static constexpr PhysicalMemoryAddress ADDRESS_MASK = UINT32_C(0x001FFFFC);

@@ -49,9 +49,9 @@ SystemBootParameters::~SystemBootParameters() = default;
 
 namespace System {
 
-static bool LoadEXE(const char* filename, std::vector<u8>& bios_image);
-static bool LoadEXEFromBuffer(const void* buffer, u32 buffer_size, std::vector<u8>& bios_image);
-static bool LoadPSF(const char* filename, std::vector<u8>& bios_image);
+static bool LoadEXE(const char* filename);
+static bool LoadEXEFromBuffer(const void* buffer, u32 buffer_size);
+static bool LoadPSF(const char* filename);
 static bool SetExpansionROM(const char* filename);
 
 /// Opens CD image, preloading if needed.
@@ -661,6 +661,7 @@ bool Boot(const SystemBootParameters& params)
     return false;
   }
 
+  Bus::SetBIOS(*bios_image);
   UpdateControllers();
   UpdateMemoryCards();
   Reset();
@@ -668,16 +669,16 @@ bool Boot(const SystemBootParameters& params)
   // Enable tty by patching bios.
   const BIOS::Hash bios_hash = BIOS::GetHash(*bios_image);
   if (g_settings.bios_patch_tty_enable)
-    BIOS::PatchBIOSEnableTTY(*bios_image, bios_hash);
+    BIOS::PatchBIOSEnableTTY(Bus::g_bios, Bus::BIOS_SIZE, bios_hash);
 
   // Load EXE late after BIOS.
-  if (exe_boot && !LoadEXE(params.filename.c_str(), *bios_image))
+  if (exe_boot && !LoadEXE(params.filename.c_str()))
   {
     g_host_interface->ReportFormattedError("Failed to load EXE file '%s'", params.filename.c_str());
     Shutdown();
     return false;
   }
-  else if (psf_boot && !LoadPSF(params.filename.c_str(), *bios_image))
+  else if (psf_boot && !LoadPSF(params.filename.c_str()))
   {
     g_host_interface->ReportFormattedError("Failed to load PSF file '%s'", params.filename.c_str());
     Shutdown();
@@ -690,11 +691,8 @@ bool Boot(const SystemBootParameters& params)
   if (g_cdrom.HasMedia() &&
       (params.override_fast_boot.has_value() ? params.override_fast_boot.value() : g_settings.bios_patch_fast_boot))
   {
-    BIOS::PatchBIOSFastBoot(*bios_image, bios_hash);
+    BIOS::PatchBIOSFastBoot(Bus::g_bios, Bus::BIOS_SIZE, bios_hash);
   }
-
-  // Load the patched BIOS up.
-  Bus::SetBIOS(*bios_image);
 
   // Good to go.
   s_state = State::Running;
@@ -1266,7 +1264,7 @@ void ResetPerformanceCounters()
   s_last_throttle_time = 0;
 }
 
-bool LoadEXE(const char* filename, std::vector<u8>& bios_image)
+bool LoadEXE(const char* filename)
 {
   std::FILE* fp = FileSystem::OpenCFile(filename, "rb");
   if (!fp)
@@ -1319,10 +1317,10 @@ bool LoadEXE(const char* filename, std::vector<u8>& bios_image)
   const u32 r_gp = header.initial_gp;
   const u32 r_sp = header.initial_sp_base + header.initial_sp_offset;
   const u32 r_fp = header.initial_sp_base + header.initial_sp_offset;
-  return BIOS::PatchBIOSForEXE(bios_image, r_pc, r_gp, r_sp, r_fp);
+  return BIOS::PatchBIOSForEXE(Bus::g_bios, Bus::BIOS_SIZE, r_pc, r_gp, r_sp, r_fp);
 }
 
-bool LoadEXEFromBuffer(const void* buffer, u32 buffer_size, std::vector<u8>& bios_image)
+bool LoadEXEFromBuffer(const void* buffer, u32 buffer_size)
 {
   const u8* buffer_ptr = static_cast<const u8*>(buffer);
   const u8* buffer_end = static_cast<const u8*>(buffer) + buffer_size;
@@ -1370,10 +1368,10 @@ bool LoadEXEFromBuffer(const void* buffer, u32 buffer_size, std::vector<u8>& bio
   const u32 r_gp = header.initial_gp;
   const u32 r_sp = header.initial_sp_base + header.initial_sp_offset;
   const u32 r_fp = header.initial_sp_base + header.initial_sp_offset;
-  return BIOS::PatchBIOSForEXE(bios_image, r_pc, r_gp, r_sp, r_fp);
+  return BIOS::PatchBIOSForEXE(Bus::g_bios, Bus::BIOS_SIZE, r_pc, r_gp, r_sp, r_fp);
 }
 
-bool LoadPSF(const char* filename, std::vector<u8>& bios_image)
+bool LoadPSF(const char* filename)
 {
   Log_InfoPrintf("Loading PSF file from '%s'", filename);
 
@@ -1382,7 +1380,7 @@ bool LoadPSF(const char* filename, std::vector<u8>& bios_image)
     return false;
 
   const std::vector<u8>& exe_data = psf.GetProgramData();
-  return LoadEXEFromBuffer(exe_data.data(), static_cast<u32>(exe_data.size()), bios_image);
+  return LoadEXEFromBuffer(exe_data.data(), static_cast<u32>(exe_data.size()));
 }
 
 bool SetExpansionROM(const char* filename)

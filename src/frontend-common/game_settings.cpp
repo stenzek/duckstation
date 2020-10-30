@@ -109,6 +109,8 @@ bool Entry::LoadFromStream(ByteStream* stream)
       !ReadOptionalFromStream(stream, &cpu_overclock_enable) || !ReadOptionalFromStream(stream, &cdrom_read_speedup) ||
       !ReadOptionalFromStream(stream, &display_active_start_offset) ||
       !ReadOptionalFromStream(stream, &display_active_end_offset) ||
+      !ReadOptionalFromStream(stream, &dma_max_slice_ticks) || !ReadOptionalFromStream(stream, &dma_halt_ticks) ||
+      !ReadOptionalFromStream(stream, &gpu_fifo_size) || !ReadOptionalFromStream(stream, &gpu_max_run_ahead) ||
       !ReadOptionalFromStream(stream, &display_crop_mode) || !ReadOptionalFromStream(stream, &display_aspect_ratio) ||
       !ReadOptionalFromStream(stream, &display_linear_upscaling) ||
       !ReadOptionalFromStream(stream, &display_integer_upscaling) ||
@@ -151,8 +153,10 @@ bool Entry::SaveToStream(ByteStream* stream) const
          WriteOptionalToStream(stream, cpu_overclock_denominator) &&
          WriteOptionalToStream(stream, cpu_overclock_enable) && WriteOptionalToStream(stream, cdrom_read_speedup) &&
          WriteOptionalToStream(stream, display_active_start_offset) &&
-         WriteOptionalToStream(stream, display_active_end_offset) && WriteOptionalToStream(stream, display_crop_mode) &&
-         WriteOptionalToStream(stream, display_aspect_ratio) &&
+         WriteOptionalToStream(stream, display_active_end_offset) &&
+         WriteOptionalToStream(stream, dma_max_slice_ticks) && WriteOptionalToStream(stream, dma_halt_ticks) &&
+         WriteOptionalToStream(stream, gpu_fifo_size) && WriteOptionalToStream(stream, gpu_max_run_ahead) &&
+         WriteOptionalToStream(stream, display_crop_mode) && WriteOptionalToStream(stream, display_aspect_ratio) &&
          WriteOptionalToStream(stream, display_linear_upscaling) &&
          WriteOptionalToStream(stream, display_integer_upscaling) &&
          WriteOptionalToStream(stream, display_force_4_3_for_24bit) &&
@@ -193,6 +197,18 @@ static void ParseIniSection(Entry* entry, const char* section, const CSimpleIniA
   lvalue = ini.GetLongValue(section, "DisplayActiveEndOffset", 0);
   if (lvalue != 0)
     entry->display_active_end_offset = static_cast<s16>(lvalue);
+  lvalue = ini.GetLongValue(section, "DMAMaxSliceTicks", 0);
+  if (lvalue > 0)
+    entry->dma_max_slice_ticks = static_cast<u32>(lvalue);
+  lvalue = ini.GetLongValue(section, "DMAHaltTicks", 0);
+  if (lvalue > 0)
+    entry->dma_halt_ticks = static_cast<u32>(lvalue);
+  lvalue = ini.GetLongValue(section, "GPUFIFOSize", 0);
+  if (lvalue > 0)
+    entry->gpu_fifo_size = static_cast<u32>(lvalue);
+  lvalue = ini.GetLongValue(section, "GPUMaxRunAhead", 0);
+  if (lvalue > 0)
+    entry->gpu_max_run_ahead = static_cast<u32>(lvalue);
 
   cvalue = ini.GetValue(section, "DisplayCropMode", nullptr);
   if (cvalue)
@@ -276,9 +292,16 @@ static void StoreIniSection(const Entry& entry, const char* section, CSimpleIniA
 
   if (entry.display_active_start_offset.has_value())
     ini.SetLongValue(section, "DisplayActiveStartOffset", entry.display_active_start_offset.value());
-
   if (entry.display_active_end_offset.has_value())
     ini.SetLongValue(section, "DisplayActiveEndOffset", entry.display_active_end_offset.value());
+  if (entry.dma_max_slice_ticks.has_value())
+    ini.SetLongValue(section, "DMAMaxSliceTicks", static_cast<long>(entry.dma_max_slice_ticks.value()));
+  if (entry.dma_halt_ticks.has_value())
+    ini.SetLongValue(section, "DMAHaltTicks", static_cast<long>(entry.dma_halt_ticks.value()));
+  if (entry.gpu_fifo_size.has_value())
+    ini.SetLongValue(section, "GPUFIFOSize", static_cast<long>(entry.gpu_fifo_size.value()));
+  if (entry.gpu_max_run_ahead.has_value())
+    ini.SetLongValue(section, "GPUMaxRunAhead", static_cast<long>(entry.gpu_max_run_ahead.value()));
 
   if (entry.display_crop_mode.has_value())
     ini.SetValue(section, "DisplayCropMode", Settings::GetDisplayCropModeName(entry.display_crop_mode.value()));
@@ -444,6 +467,14 @@ void Entry::ApplySettings(bool display_osd_messages) const
     g_settings.display_active_start_offset = display_active_start_offset.value();
   if (display_active_end_offset.has_value())
     g_settings.display_active_end_offset = display_active_end_offset.value();
+  if (dma_max_slice_ticks.has_value())
+    g_settings.dma_max_slice_ticks = dma_max_slice_ticks.value();
+  if (dma_halt_ticks.has_value())
+    g_settings.dma_halt_ticks = dma_halt_ticks.value();
+  if (gpu_fifo_size.has_value())
+    g_settings.gpu_fifo_size = gpu_fifo_size.value();
+  if (gpu_max_run_ahead.has_value())
+    g_settings.gpu_max_run_ahead = gpu_max_run_ahead.value();
 
   if (display_crop_mode.has_value())
     g_settings.display_crop_mode = display_crop_mode.value();

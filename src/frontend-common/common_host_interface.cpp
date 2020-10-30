@@ -183,6 +183,9 @@ void CommonHostInterface::DestroySystem()
 
 void CommonHostInterface::PowerOffSystem()
 {
+  if (System::IsShutdown())
+    return;
+
   if (g_settings.save_state_on_exit)
     SaveResumeSaveState();
 
@@ -933,6 +936,8 @@ void CommonHostInterface::DrawDebugWindows()
     g_spu.DrawDebugStateWindow();
   if (g_settings.debugging.show_mdec_state)
     g_mdec.DrawDebugStateWindow();
+  if (g_settings.debugging.show_dma_state)
+    g_dma.DrawDebugStateWindow();
 }
 
 void CommonHostInterface::DoFrameStep()

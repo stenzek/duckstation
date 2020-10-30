@@ -5,7 +5,11 @@ Log_SetChannel(GL::ContextEGLWayland);
 
 namespace GL {
 ContextEGLWayland::ContextEGLWayland(const WindowInfo& wi) : ContextEGL(wi) {}
-ContextEGLWayland::~ContextEGLWayland() = default;
+ContextEGLWayland::~ContextEGLWayland()
+{
+  if (m_wl_window)
+    wl_egl_window_destroy(m_wl_window);
+}
 
 std::unique_ptr<Context> ContextEGLWayland::Create(const WindowInfo& wi, const Version* versions_to_try,
                                                    size_t num_versions_to_try)
@@ -28,13 +32,27 @@ std::unique_ptr<Context> ContextEGLWayland::CreateSharedContext(const WindowInfo
   return context;
 }
 
+void ContextEGLWayland::ResizeSurface(u32 new_surface_width, u32 new_surface_height)
+{
+  if (m_wl_window)
+    wl_egl_window_resize(m_wl_window, new_surface_width, new_surface_height, 0, 0);
+
+  ContextEGL::ResizeSurface(new_surface_width, new_surface_height);
+}
+
 EGLNativeWindowType ContextEGLWayland::GetNativeWindow(EGLConfig config)
 {
-  wl_egl_window* window =
+  if (m_wl_window)
+  {
+    wl_egl_window_destroy(m_wl_window);
+    m_wl_window = nullptr;
+  }
+
+  m_wl_window =
     wl_egl_window_create(static_cast<wl_surface*>(m_wi.window_handle), m_wi.surface_width, m_wi.surface_height);
-  if (!window)
+  if (!m_wl_window)
     return {};
 
-  return reinterpret_cast<EGLNativeWindowType>(window);
+  return reinterpret_cast<EGLNativeWindowType>(m_wl_window);
 }
 } // namespace GL

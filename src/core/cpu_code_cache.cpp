@@ -305,7 +305,7 @@ void ExecuteRecompiler()
       const u32 pc = g_state.regs.pc;
       g_state.current_instruction_pc = pc;
       const u32 fast_map_index = GetFastMapIndex(pc);
-      s_fast_map[fast_map_index]();
+      s_single_block_asm_dispatcher[fast_map_index]();
     }
 
     TimingEvents::RunEvents();
@@ -490,7 +490,6 @@ bool CompileBlock(CodeBlock* block)
       if (icache_line != last_cache_line)
       {
         block->icache_line_count++;
-        block->icache_line_count = GetICacheFillTicks(pc);
         last_cache_line = icache_line;
       }
       block->uncached_fetch_ticks += GetInstructionReadTicks(pc);

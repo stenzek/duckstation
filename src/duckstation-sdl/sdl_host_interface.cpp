@@ -1073,6 +1073,7 @@ void SDLHostInterface::DrawDebugMenu()
   settings_changed |= ImGui::MenuItem("Show SPU State", nullptr, &debug_settings.show_spu_state);
   settings_changed |= ImGui::MenuItem("Show Timers State", nullptr, &debug_settings.show_timers_state);
   settings_changed |= ImGui::MenuItem("Show MDEC State", nullptr, &debug_settings.show_mdec_state);
+  settings_changed |= ImGui::MenuItem("Show DMA State", nullptr, &debug_settings.show_dma_state);
 
   if (settings_changed)
   {
@@ -1086,6 +1087,7 @@ void SDLHostInterface::DrawDebugMenu()
     debug_settings_copy.show_spu_state = debug_settings.show_spu_state;
     debug_settings_copy.show_timers_state = debug_settings.show_timers_state;
     debug_settings_copy.show_mdec_state = debug_settings.show_mdec_state;
+    debug_settings_copy.show_dma_state = debug_settings.show_dma_state;
     RunLater([this]() { SaveAndUpdateSettings(); });
   }
 }
@@ -1285,6 +1287,7 @@ void SDLHostInterface::DrawSettingsWindow()
 
         settings_changed |= ImGui::Checkbox("Output Sync", &m_settings_copy.audio_sync_enabled);
         settings_changed |= ImGui::Checkbox("Start Dumping On Boot", &m_settings_copy.audio_dump_on_boot);
+        settings_changed |= ImGui::Checkbox("Mute CD Audio", &m_settings_copy.cdrom_mute_cd_audio);
       }
 
       ImGui::EndTabItem();

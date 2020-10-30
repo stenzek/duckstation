@@ -3,6 +3,7 @@
 #include "common/log.h"
 #include "settingsdialog.h"
 #include "settingwidgetbinder.h"
+#include <cmath>
 Log_SetChannel(AudioSettingsWidget);
 
 AudioSettingsWidget::AudioSettingsWidget(QtHostInterface* host_interface, QWidget* parent, SettingsDialog* dialog)
@@ -65,10 +66,18 @@ AudioSettingsWidget::~AudioSettingsWidget() = default;
 
 void AudioSettingsWidget::updateBufferingLabel()
 {
-  const u32 buffer_size = static_cast<u32>(m_ui.bufferSize->value());
-  const float max_latency = AudioStream::GetMaxLatency(HostInterface::AUDIO_SAMPLE_RATE, buffer_size);
+  constexpr float step = 128;
+  const u32 actual_buffer_size =
+    static_cast<u32>(std::round(static_cast<float>(m_ui.bufferSize->value()) / step) * step);
+  if (static_cast<u32>(m_ui.bufferSize->value()) != actual_buffer_size)
+  {
+    m_ui.bufferSize->setValue(static_cast<int>(actual_buffer_size));
+    return;
+  }
+
+  const float max_latency = AudioStream::GetMaxLatency(HostInterface::AUDIO_SAMPLE_RATE, actual_buffer_size);
   m_ui.bufferingLabel->setText(
-    tr("Maximum latency: %1 frames (%2ms)").arg(buffer_size).arg(max_latency * 1000.0f, 0, 'f', 2));
+    tr("Maximum latency: %1 frames (%2ms)").arg(actual_buffer_size).arg(max_latency * 1000.0f, 0, 'f', 2));
 }
 
 void AudioSettingsWidget::updateVolumeLabel()

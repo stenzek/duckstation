@@ -40,7 +40,6 @@ public final class FileUtil {
         } else return volumePath;
     }
 
-
     @SuppressLint("ObsoleteSdkInt")
     private static String getVolumePath(final String volumeId, Context context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return null;
@@ -87,6 +86,43 @@ public final class FileUtil {
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private static String getDocumentPathFromTreeUri(final Uri treeUri) {
         final String docId = DocumentsContract.getTreeDocumentId(treeUri);
+        final String[] split = docId.split(":");
+        if ((split.length >= 2) && (split[1] != null)) return split[1];
+        else return File.separator;
+    }
+
+    @Nullable
+    public static String getFullPathFromUri(@Nullable final Uri treeUri, Context con) {
+        if (treeUri == null) return null;
+        String volumePath = getVolumePath(getVolumeIdFromUri(treeUri), con);
+        if (volumePath == null) return File.separator;
+        if (volumePath.endsWith(File.separator))
+            volumePath = volumePath.substring(0, volumePath.length() - 1);
+
+        String documentPath = getDocumentPathFromUri(treeUri);
+        if (documentPath.endsWith(File.separator))
+            documentPath = documentPath.substring(0, documentPath.length() - 1);
+
+        if (documentPath.length() > 0) {
+            if (documentPath.startsWith(File.separator))
+                return volumePath + documentPath;
+            else
+                return volumePath + File.separator + documentPath;
+        } else return volumePath;
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    private static String getVolumeIdFromUri(final Uri treeUri) {
+        final String docId = DocumentsContract.getDocumentId(treeUri);
+        final String[] split = docId.split(":");
+        if (split.length > 0) return split[0];
+        else return null;
+    }
+
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    private static String getDocumentPathFromUri(final Uri treeUri) {
+        final String docId = DocumentsContract.getDocumentId(treeUri);
         final String[] split = docId.split(":");
         if ((split.length >= 2) && (split[1] != null)) return split[1];
         else return File.separator;

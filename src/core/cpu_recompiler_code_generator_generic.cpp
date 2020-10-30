@@ -42,9 +42,15 @@ Value CodeGenerator::EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const 
       Value result = m_register_cache.AllocateScratch(size);
 
       if (g_settings.IsUsingFastmem() && Bus::IsRAMAddress(static_cast<u32>(address.constant_value)))
-        EmitLoadGuestRAMFastmem(address, size, result);
+      {
+        // have to mask away the high bits for mirrors, since we don't map them in fastmem
+        EmitLoadGuestRAMFastmem(Value::FromConstantU32(static_cast<u32>(address.constant_value) & Bus::RAM_MASK), size,
+                                result);
+      }
       else
+      {
         EmitLoadGlobal(result.GetHostRegister(), size, ptr);
+      }
 
       m_delayed_cycles_add += read_ticks;
       return result;
@@ -184,7 +190,7 @@ void CodeGenerator::EmitICacheCheckAndUpdate()
   }
 
   EmitBindLabel(&ready_to_execute);
-  m_register_cache.UnunhibitAllocation();
+  m_register_cache.UninhibitAllocation();
 }
 
 #endif

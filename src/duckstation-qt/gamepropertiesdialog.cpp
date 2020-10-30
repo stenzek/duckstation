@@ -287,6 +287,27 @@ void GamePropertiesDialog::populateGameSettings()
     m_ui.displayActiveEndOffset->setValue(static_cast<int>(gs.display_active_end_offset.value()));
   }
 
+  if (gs.dma_max_slice_ticks.has_value())
+  {
+    QSignalBlocker sb(m_ui.dmaMaxSliceTicks);
+    m_ui.dmaMaxSliceTicks->setValue(static_cast<int>(gs.dma_max_slice_ticks.value()));
+  }
+  if (gs.dma_halt_ticks.has_value())
+  {
+    QSignalBlocker sb(m_ui.dmaHaltTicks);
+    m_ui.dmaHaltTicks->setValue(static_cast<int>(gs.dma_halt_ticks.value()));
+  }
+  if (gs.gpu_fifo_size.has_value())
+  {
+    QSignalBlocker sb(m_ui.gpuFIFOSize);
+    m_ui.gpuFIFOSize->setValue(static_cast<int>(gs.gpu_fifo_size.value()));
+  }
+  if (gs.gpu_max_run_ahead.has_value())
+  {
+    QSignalBlocker sb(m_ui.gpuMaxRunAhead);
+    m_ui.gpuMaxRunAhead->setValue(static_cast<int>(gs.gpu_max_run_ahead.value()));
+  }
+
   if (gs.display_crop_mode.has_value())
   {
     QSignalBlocker sb(m_ui.userCropMode);
@@ -582,6 +603,34 @@ void GamePropertiesDialog::connectUi()
       m_game_settings.display_active_end_offset.reset();
     else
       m_game_settings.display_active_end_offset = static_cast<s16>(value);
+    saveGameSettings();
+  });
+  connect(m_ui.dmaMaxSliceTicks, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
+    if (value == 0)
+      m_game_settings.dma_max_slice_ticks.reset();
+    else
+      m_game_settings.dma_max_slice_ticks = static_cast<u32>(value);
+    saveGameSettings();
+  });
+  connect(m_ui.dmaHaltTicks, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
+    if (value == 0)
+      m_game_settings.dma_halt_ticks.reset();
+    else
+      m_game_settings.dma_halt_ticks = static_cast<u32>(value);
+    saveGameSettings();
+  });
+  connect(m_ui.gpuFIFOSize, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
+    if (value == 0)
+      m_game_settings.gpu_fifo_size.reset();
+    else
+      m_game_settings.gpu_fifo_size = static_cast<u32>(value);
+    saveGameSettings();
+  });
+  connect(m_ui.gpuMaxRunAhead, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
+    if (value == 0)
+      m_game_settings.gpu_max_run_ahead.reset();
+    else
+      m_game_settings.gpu_max_run_ahead = static_cast<u32>(value);
     saveGameSettings();
   });
 }

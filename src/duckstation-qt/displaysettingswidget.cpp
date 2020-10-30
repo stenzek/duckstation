@@ -48,11 +48,11 @@ DisplaySettingsWidget::DisplaySettingsWidget(QtHostInterface* host_interface, QW
   populateGPUAdapters();
 
   dialog->registerWidgetHelp(
-    m_ui.renderer, tr("Renderer"), Settings::GetRendererDisplayName(Settings::DEFAULT_GPU_RENDERER),
+    m_ui.renderer, tr("Renderer"),
+    qApp->translate("GPURenderer", Settings::GetRendererDisplayName(Settings::DEFAULT_GPU_RENDERER)),
     tr("Chooses the backend to use for rendering the console/game visuals. <br>Depending on your system and hardware, "
        "Direct3D 11 and OpenGL hardware backends may be available. <br>The software renderer offers the best "
-       "compatibility, "
-       "but is the slowest and does not offer any enhancements."));
+       "compatibility, but is the slowest and does not offer any enhancements."));
   dialog->registerWidgetHelp(
     m_ui.adapter, tr("Adapter"), tr("(Default)"),
     tr("If your system contains multiple GPUs or adapters, you can select which GPU you wish to use for the hardware "

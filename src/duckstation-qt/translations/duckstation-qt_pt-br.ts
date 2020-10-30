@@ -4032,7 +4032,7 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../mainwindow.ui" line="14"/>
         <location filename="../mainwindow.cpp" line="67"/>
         <location filename="../mainwindow.cpp" line="78"/>
-        <location filename="../mainwindow.cpp" line="636"/>
+        <location filename="../mainwindow.cpp" line="640"/>
         <source>DuckStation</source>
         <translation>DuckStation</translation>
     </message>
@@ -4042,7 +4042,7 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <location filename="../mainwindow.ui" line="42"/>
-        <location filename="../mainwindow.cpp" line="499"/>
+        <location filename="../mainwindow.cpp" line="500"/>
         <source>Change Disc</source>
         <translation>Mudar Disco</translation>
     </message>
@@ -4518,103 +4518,103 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>Gerenciador de Trapaças</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="460"/>
+        <location filename="../mainwindow.cpp" line="461"/>
         <source>Properties...</source>
         <translation>Propriedades...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="463"/>
+        <location filename="../mainwindow.cpp" line="464"/>
         <source>Open Containing Directory...</source>
         <translation>Abrir diretório...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="468"/>
+        <location filename="../mainwindow.cpp" line="469"/>
         <source>Set Cover Image...</source>
         <translation>Escolher Imagem de capa...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="481"/>
+        <location filename="../mainwindow.cpp" line="482"/>
         <source>Default Boot</source>
         <translation>Inicio Padrão</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="485"/>
+        <location filename="../mainwindow.cpp" line="486"/>
         <source>Fast Boot</source>
         <translation>Inicio Rápido</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="491"/>
+        <location filename="../mainwindow.cpp" line="492"/>
         <source>Full Boot</source>
         <translation>Inicio Completo</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="509"/>
+        <location filename="../mainwindow.cpp" line="510"/>
         <source>Add Search Directory...</source>
         <translation>Adiciona um novo diretório...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="517"/>
+        <location filename="../mainwindow.cpp" line="518"/>
         <source>Select Cover Image</source>
         <translation>Escolher Imagem de capa...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="518"/>
+        <location filename="../mainwindow.cpp" line="519"/>
         <source>All Cover Image Types (*.jpg *.jpeg *.png)</source>
         <translation>Tipos de Imagem suportada (*.jpg *.jpeg *.png)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="524"/>
+        <location filename="../mainwindow.cpp" line="525"/>
         <source>Cover Already Exists</source>
         <translation>Capa já existe</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="525"/>
+        <location filename="../mainwindow.cpp" line="526"/>
         <source>A cover image for this game already exists, do you wish to replace it?</source>
         <translation>Capa para este jogo já existe, quer substitui-lá?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="539"/>
-        <location filename="../mainwindow.cpp" line="545"/>
+        <location filename="../mainwindow.cpp" line="540"/>
+        <location filename="../mainwindow.cpp" line="546"/>
         <source>Copy Error</source>
         <translation>Erro na Cópia</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="539"/>
+        <location filename="../mainwindow.cpp" line="540"/>
         <source>Failed to remove existing cover &apos;%1&apos;</source>
         <translation>Falha ao remover capa existente &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="545"/>
+        <location filename="../mainwindow.cpp" line="546"/>
         <source>Failed to copy &apos;%1&apos; to &apos;%2&apos;</source>
         <translation>Falha ao copiar &apos;%1&apos; para &apos;%2&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="637"/>
+        <location filename="../mainwindow.cpp" line="641"/>
         <source>Language changed. Please restart the application to apply.</source>
         <translation>Lingua Alterada. Reinicie para Aplicar!.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="852"/>
+        <location filename="../mainwindow.cpp" line="856"/>
         <source>Destination File</source>
         <translation>Destino do Arquivo</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="868"/>
+        <location filename="../mainwindow.cpp" line="872"/>
         <source>Default</source>
         <translation>Padrão</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="869"/>
+        <location filename="../mainwindow.cpp" line="873"/>
         <source>Fusion</source>
         <translation>Fusion</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="870"/>
+        <location filename="../mainwindow.cpp" line="874"/>
         <source>Dark Fusion (Gray)</source>
         <translation>Dark Fusion (Cinza)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="871"/>
+        <location filename="../mainwindow.cpp" line="875"/>
         <source>Dark Fusion (Blue)</source>
         <translation>DarkFusion (Azul)</translation>
     </message>
@@ -4623,22 +4623,22 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation type="vanished">DarkFusion</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="872"/>
+        <location filename="../mainwindow.cpp" line="876"/>
         <source>QDarkStyle</source>
         <translation>Escuro</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1202"/>
+        <location filename="../mainwindow.cpp" line="1209"/>
         <source>Updater Error</source>
         <translation>Erro na Atualização</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1208"/>
+        <location filename="../mainwindow.cpp" line="1215"/>
         <source>&lt;p&gt;Sorry, you are trying to update a DuckStation version which is not an official GitHub release. To prevent incompatibilities, the auto-updater is only enabled on official builds.&lt;/p&gt;&lt;p&gt;To obtain an official build, please follow the instructions under &quot;Downloading and Running&quot; at the link below:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt;https://github.com/stenzek/duckstation/&lt;/a&gt;&lt;/p&gt;</source>
         <translation>&lt;p&gt;Desculpe mas, Você está tentando atualizar uma versão não oficial do Duckstation Para evitarmos imcompatibilidade, o atualizador automático só poderá ser usado nas versões oficiais! &lt;/p&gt;&lt;p&gt;Para obtê-las, Siga as instruções de como e onde no link &quot;Baixando e Rodando&quot; conforme abaixo:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt;https://github.com/stenzek/duckstation/&lt;/a&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1214"/>
+        <location filename="../mainwindow.cpp" line="1221"/>
         <source>Automatic updating is not supported on the current platform.</source>
         <translation>Atualizações automáticas não são suportadas na plataforma atual.</translation>
     </message>
@@ -5084,6 +5084,11 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>PGXP desativado, reconstruindo blocos.</translation>
     </message>
     <message>
+        <location filename="../../core/host_interface.cpp" line="814"/>
+        <source>Switching to %s renderer...</source>
+        <translation>Mudando para %s...</translation>
+    </message>
+    <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="716"/>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2086"/>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2456"/>
@@ -5136,6 +5141,21 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../../frontend-common/common_host_interface.cpp" line="1783"/>
         <source>Loaded input profile from &apos;%s&apos;</source>
         <translation>Perfil de controle carregado de &apos;%s&apos;</translation>
+    </message>
+    <message>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2239"/>
+        <source>Started dumping audio to &apos;%s&apos;.</source>
+        <translation>Iniciado despejo de Áudio para &apos;%s&apos;.</translation>
+    </message>
+    <message>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2244"/>
+        <source>Failed to start dumping audio to &apos;%s&apos;.</source>
+        <translation>Falha ao iniciar despejo de Áudio para &apos;%s&apos;.</translation>
+    </message>
+    <message>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2254"/>
+        <source>Stopped dumping audio.</source>
+        <translation>Despejo de Áudio parado.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2285"/>
@@ -5298,22 +5318,32 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>Recompilador ICache forçado pelas configurações.</translation>
     </message>
     <message>
-        <location filename="../../core/pad.cpp" line="120"/>
+        <location filename="../../core/pad.cpp" line="63"/>
+        <source>Save state contains controller type %s in port %u, but %s is used. Switching.</source>
+        <translation>Estado Rápido contém controle %s na porta %u, mas %s está em uso. Mudando.</translation>
+    </message>
+    <message>
+        <location filename="../../core/pad.cpp" line="75"/>
+        <source>Ignoring mismatched controller type %s in port %u.</source>
+        <translation>Tipo de Controle incompatível ignorado %s na porta %u.</translation>
+    </message>
+    <message>
+        <location filename="../../core/pad.cpp" line="123"/>
         <source>Memory card %u from save state does match current card data. Simulating replugging.</source>
         <translation>O estado salvo do cartão %u corresponde ao estado no Cartão de Memória.</translation>
     </message>
     <message>
-        <location filename="../../core/pad.cpp" line="131"/>
+        <location filename="../../core/pad.cpp" line="134"/>
         <source>Memory card %u present in save state but not in system. Ignoring card.</source>
         <translation>Cartão de Memória %u presente em um &apos;save state&apos; mas não no sistema. Ignorando Cartão.</translation>
     </message>
     <message>
-        <location filename="../../core/pad.cpp" line="143"/>
+        <location filename="../../core/pad.cpp" line="146"/>
         <source>Memory card %u present in save state but not in system. Creating temporary card.</source>
         <translation>Cartão de Memória %u presente no estado salvo mas não no sistema. Criando Cartão Temporário.</translation>
     </message>
     <message>
-        <location filename="../../core/pad.cpp" line="152"/>
+        <location filename="../../core/pad.cpp" line="155"/>
         <source>Memory card %u present in system but not in save state. Removing card.</source>
         <translation>Cartão de Memória %u presente no sistema mas não ao estado salvo, removendo cartão.</translation>
     </message>
@@ -5326,6 +5356,21 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../../core/system.cpp" line="899"/>
         <source>WARNING: CPU overclock (%u%%) was different in save state (%u%%).</source>
         <translation>ATENÇÃO: Aumento da velocidade (%u%%) era diferente do que no seu save anterior (%u%%).</translation>
+    </message>
+    <message>
+        <location filename="../../core/gpu_hw.cpp" line="104"/>
+        <source>Resolution scale set to %ux (display %ux%u, VRAM %ux%u)</source>
+        <translation>Escala de Resolução Confiugrada para %ux (vídeo %ux%u, VRAM %ux%u)</translation>
+    </message>
+    <message>
+        <location filename="../../core/memory_card.cpp" line="299"/>
+        <source>Failed to save memory card to &apos;%s&apos;</source>
+        <translation>Falha ao salvar para o Cartão de Memória &apos;%s&apos;</translation>
+    </message>
+    <message>
+        <location filename="../../core/memory_card.cpp" line="308"/>
+        <source>Saved memory card to &apos;%s&apos;</source>
+        <translation>Salvo para o Cartão de Memória &apos;%s&apos;</translation>
     </message>
 </context>
 <context>
@@ -5825,6 +5870,16 @@ The saves will not be recoverable.</source>
         <location filename="../../core/system.cpp" line="1576"/>
         <source>Game changed, reloading memory cards.</source>
         <translation>Jogo trocado, recarregando Cartões de Memória.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="1668"/>
+        <source>Removing current media from playlist, removing media from CD-ROM.</source>
+        <translation>Mudando media atual da lista, removendo media do leitor de CD.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="1685"/>
+        <source>Changing current media from playlist, replacing current media.</source>
+        <translation>Mudando media atual da lista, recalculando media atual.</translation>
     </message>
 </context>
 </TS>

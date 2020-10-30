@@ -19,5 +19,6 @@ size_t cubeb_sample_size(cubeb_sample_format format)
     default:
       // should never happen as all cases are handled above.
       assert(false);
+      return 0;
   }
 }

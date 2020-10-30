@@ -1,54 +1,40 @@
 package com.github.stenzek.duckstation;
 
 import android.Manifest;
-import android.content.ContentResolver;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
-
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
+import android.util.Log;
+import android.view.Gravity;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ListView;
+import android.widget.PopupMenu;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.documentfile.provider.DocumentFile;
 import androidx.preference.PreferenceManager;
 
-import android.content.Intent;
-
-import androidx.collection.ArraySet;
-
-import android.provider.DocumentsContract;
-import android.provider.MediaStore;
-import android.util.Log;
-import android.view.Gravity;
-import android.view.View;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.widget.AdapterView;
-import android.widget.ListView;
-import android.widget.PopupMenu;
-import android.widget.Toast;
-
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.prefs.Preferences;
-
-import static com.google.android.material.snackbar.Snackbar.make;
 
 public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_EXTERNAL_STORAGE_PERMISSIONS = 1;
     private static final int REQUEST_ADD_DIRECTORY_TO_GAME_LIST = 2;
     private static final int REQUEST_IMPORT_BIOS_IMAGE = 3;
+    private static final int REQUEST_START_FILE = 4;
 
     private GameList mGameList;
     private ListView mGameListView;
@@ -127,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
             throw new RuntimeException("Failed to create host interface");
         }
 
-        mGameList.refresh(false, false);
+        mGameList.refresh(false, false, this);
     }
 
     private void startAddGameDirectory() {
@@ -160,12 +146,14 @@ public class MainActivity extends AppCompatActivity {
             startEmulation(null, true);
         } else if (id == R.id.action_start_bios) {
             startEmulation(null, false);
+        } else if (id == R.id.action_start_file) {
+            startStartFile();
         } else if (id == R.id.action_add_game_directory) {
             startAddGameDirectory();
         } else if (id == R.id.action_scan_for_new_games) {
-            mGameList.refresh(false, false);
+            mGameList.refresh(false, false, this);
         } else if (id == R.id.action_rescan_all_games) {
-            mGameList.refresh(true, true);
+            mGameList.refresh(true, true, this);
         } else if (id == R.id.action_import_bios) {
             importBIOSImage();
         } else if (id == R.id.action_settings) {
@@ -177,6 +165,42 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    private String getPathFromUri(Uri uri) {
+        String path = FileUtil.getFullPathFromUri(uri, this);
+        if (path.length() < 5) {
+            new AlertDialog.Builder(this)
+                    .setTitle("Error")
+                    .setMessage("Failed to get path for the selected file. Please make sure the file is in internal/external storage.\n\n" +
+                            "Tap the overflow button in the directory selector.\nSelect \"Show Internal Storage\".\n" +
+                            "Tap the menu button and select your device name or SD card.")
+                    .setPositiveButton("OK", (dialog, button) -> {
+                    })
+                    .create()
+                    .show();
+            return null;
+        }
+
+        return path;
+    }
+
+    private String getPathFromTreeUri(Uri treeUri) {
+        String path = FileUtil.getFullPathFromTreeUri(treeUri, this);
+        if (path.length() < 5) {
+            new AlertDialog.Builder(this)
+                    .setTitle("Error")
+                    .setMessage("Failed to get path for the selected directory. Please make sure the directory is in internal/external storage.\n\n" +
+                            "Tap the overflow button in the directory selector.\nSelect \"Show Internal Storage\".\n" +
+                            "Tap the menu button and select your device name or SD card.")
+                    .setPositiveButton("OK", (dialog, button) -> {
+                    })
+                    .create()
+                    .show();
+            return null;
+        }
+
+        return path;
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -186,19 +210,9 @@ public class MainActivity extends AppCompatActivity {
                 if (resultCode != RESULT_OK)
                     return;
 
-                Uri treeUri = data.getData();
-                String path = FileUtil.getFullPathFromTreeUri(treeUri, this);
-                if (path.length() < 5) {
-                    new AlertDialog.Builder(this)
-                            .setTitle("Error")
-                            .setMessage("Failed to get path for the selected directory. Please make sure the directory is in internal/external storage.\n\n" +
-                                        "Tap the overflow button in the directory selector.\nSelect \"Show Internal Storage\".\n" +
-                                        "Tap the menu button and select your device name or SD card.")
-                            .setPositiveButton("OK", (dialog, button) -> {})
-                            .create()
-                            .show();
+                String path = getPathFromTreeUri(data.getData());
+                if (path == null)
                     return;
-                }
 
                 SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
                 Set<String> currentValues = prefs.getStringSet("GameList/RecursivePaths", null);
@@ -210,7 +224,7 @@ public class MainActivity extends AppCompatActivity {
                 editor.putStringSet("GameList/RecursivePaths", currentValues);
                 editor.apply();
                 Log.i("MainActivity", "Added path '" + path + "' to game list search directories");
-                mGameList.refresh(false, false);
+                mGameList.refresh(false, false, this);
             }
             break;
 
@@ -219,6 +233,18 @@ public class MainActivity extends AppCompatActivity {
                     return;
 
                 onImportBIOSImageResult(data.getData());
+            }
+            break;
+
+            case REQUEST_START_FILE: {
+                if (resultCode != RESULT_OK)
+                    return;
+
+                String path = getPathFromUri(data.getData());
+                if (path == null)
+                    return;
+
+                startEmulation(path, shouldResumeStateByDefault());
             }
             break;
         }
@@ -269,6 +295,13 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    private void startStartFile() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("*/*");
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        startActivityForResult(Intent.createChooser(intent, "Choose Disc Image"), REQUEST_START_FILE);
+    }
+
     private boolean doBIOSCheck() {
         if (AndroidHostInterface.getInstance().hasAnyBIOSImages())
             return true;
@@ -277,7 +310,8 @@ public class MainActivity extends AppCompatActivity {
                 .setTitle("Missing BIOS Image")
                 .setMessage("No BIOS image was found in DuckStation's bios directory. Do you with to locate and import a BIOS image now?")
                 .setPositiveButton("Yes", (dialog, button) -> importBIOSImage())
-                .setNegativeButton("No", (dialog, button) -> {})
+                .setNegativeButton("No", (dialog, button) -> {
+                })
                 .create()
                 .show();
 
@@ -316,7 +350,8 @@ public class MainActivity extends AppCompatActivity {
         } catch (IOException e) {
             new AlertDialog.Builder(this)
                     .setMessage("Failed to read BIOS image: " + e.getMessage())
-                    .setPositiveButton("OK", (dialog, button) -> {})
+                    .setPositiveButton("OK", (dialog, button) -> {
+                    })
                     .create()
                     .show();
             return;
@@ -326,9 +361,10 @@ public class MainActivity extends AppCompatActivity {
         String message = (importResult == null) ? "This BIOS image is invalid, or has already been imported." : ("BIOS '" + importResult + "' imported.");
 
         new AlertDialog.Builder(this)
-            .setMessage(message)
-            .setPositiveButton("OK", (dialog, button) -> {})
-            .create()
-            .show();
+                .setMessage(message)
+                .setPositiveButton("OK", (dialog, button) -> {
+                })
+                .create()
+                .show();
     }
 }

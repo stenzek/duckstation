@@ -6,8 +6,6 @@ import android.util.Log;
 import android.view.Surface;
 import android.widget.Toast;
 
-import com.google.android.material.snackbar.Snackbar;
-
 public class AndroidHostInterface {
     public final static int DISPLAY_ALIGNMENT_TOP_OR_LEFT = 0;
     public final static int DISPLAY_ALIGNMENT_CENTER = 1;
@@ -55,7 +53,7 @@ public class AndroidHostInterface {
 
     public static native int getControllerAxisCode(String controllerType, String axisName);
 
-    public native void refreshGameList(boolean invalidateCache, boolean invalidateDatabase);
+    public native void refreshGameList(boolean invalidateCache, boolean invalidateDatabase, AndroidProgressCallback progressCallback);
 
     public native GameListEntry[] getGameListEntries();
 
@@ -72,11 +70,13 @@ public class AndroidHostInterface {
     public native void setDisplayAlignment(int alignment);
 
     public native CheatCode[] getCheatList();
+
     public native void setCheatEnabled(int index, boolean enabled);
 
     public native void addOSDMessage(String message, float duration);
 
     public native boolean hasAnyBIOSImages();
+
     public native String importBIOSImage(byte[] data);
 
     static {

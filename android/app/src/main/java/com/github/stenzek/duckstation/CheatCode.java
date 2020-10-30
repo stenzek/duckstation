@@ -11,7 +11,15 @@ public class CheatCode {
         mEnabled = enabled;
     }
 
-    public int getIndex() { return mIndex; }
-    public String getName() { return mName; }
-    public boolean isEnabled() { return mEnabled; }
+    public int getIndex() {
+        return mIndex;
+    }
+
+    public String getName() {
+        return mName;
+    }
+
+    public boolean isEnabled() {
+        return mEnabled;
+    }
 }

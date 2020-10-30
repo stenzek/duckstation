@@ -234,6 +234,9 @@ bool VulkanHostDisplay::DownloadTexture(const void* texture_handle, u32 x, u32 y
 
 void VulkanHostDisplay::SetVSync(bool enabled)
 {
+  if (!m_swap_chain)
+    return;
+
   // This swap chain should not be used by the current buffer, thus safe to destroy.
   g_vulkan_context->WaitForGPUIdle();
   m_swap_chain->SetVSync(enabled);

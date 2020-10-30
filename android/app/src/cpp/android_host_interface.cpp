@@ -1,4 +1,5 @@
 #include "android_host_interface.h"
+#include "android_progress_callback.h"
 #include "common/assert.h"
 #include "common/audio_stream.h"
 #include "common/file_system.h"
@@ -446,6 +447,11 @@ void AndroidHostInterface::SurfaceChanged(ANativeWindow* surface, int format, in
     wi.surface_height = height;
 
     m_display->ChangeRenderWindow(wi);
+
+    if (surface && System::GetState() == System::State::Paused)
+      System::SetState(System::State::Running);
+    else if (!surface && System::IsRunning())
+      System::SetState(System::State::Paused);
   }
 }
 
@@ -522,10 +528,11 @@ void AndroidHostInterface::SetControllerAxisState(u32 index, s32 button_code, fl
     false);
 }
 
-void AndroidHostInterface::RefreshGameList(bool invalidate_cache, bool invalidate_database)
+void AndroidHostInterface::RefreshGameList(bool invalidate_cache, bool invalidate_database,
+                                           ProgressCallback* progress_callback)
 {
   m_game_list->SetSearchDirectoriesFromSettings(m_settings_interface);
-  m_game_list->Refresh(invalidate_cache, invalidate_database);
+  m_game_list->Refresh(invalidate_cache, invalidate_database, progress_callback);
 }
 
 void AndroidHostInterface::ApplySettings(bool display_osd_messages)
@@ -533,6 +540,16 @@ void AndroidHostInterface::ApplySettings(bool display_osd_messages)
   Settings old_settings = std::move(g_settings);
   CommonHostInterface::LoadSettings(m_settings_interface);
   CommonHostInterface::FixIncompatibleSettings(display_osd_messages);
+
+  // Defer renderer changes, the app really doesn't like it.
+  if (System::IsValid() && g_settings.gpu_renderer != old_settings.gpu_renderer)
+  {
+    AddFormattedOSDMessage(5.0f,
+                           TranslateString("OSDMessage", "Change to %s GPU renderer will take effect on restart."),
+                           Settings::GetRendererName(g_settings.gpu_renderer));
+    g_settings.gpu_renderer = old_settings.gpu_renderer;
+  }
+
   CheckForSettingsChanges(old_settings);
 }
 
@@ -709,9 +726,10 @@ DEFINE_JNI_ARGS_METHOD(jint, AndroidHostInterface_getControllerAxisCode, jobject
 }
 
 DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_refreshGameList, jobject obj, jboolean invalidate_cache,
-                       jboolean invalidate_database)
+                       jboolean invalidate_database, jobject progress_callback)
 {
-  AndroidHelpers::GetNativeClass(env, obj)->RefreshGameList(invalidate_cache, invalidate_database);
+  AndroidProgressCallback cb(env, progress_callback);
+  AndroidHelpers::GetNativeClass(env, obj)->RefreshGameList(invalidate_cache, invalidate_database, &cb);
 }
 
 static const char* DiscRegionToString(DiscRegion region)

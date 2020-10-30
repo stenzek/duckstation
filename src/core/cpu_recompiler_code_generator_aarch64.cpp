@@ -1226,50 +1226,49 @@ void CodeGenerator::EmitAddCPUStructField(u32 offset, const Value& value)
   const a64::MemOperand o_offset(GetCPUPtrReg(), s_offset);
 
   // Don't need to mask here because we're storing back to memory.
-  Value temp = m_register_cache.AllocateScratch(value.size);
   switch (value.size)
   {
     case RegSize_8:
     {
-      m_emit->Ldrb(GetHostReg8(temp), o_offset);
+      m_emit->Ldrb(GetHostReg8(RSCRATCH), o_offset);
       if (value.IsConstant())
-        m_emit->Add(GetHostReg8(temp), GetHostReg8(temp), value.GetS64ConstantValue());
+        m_emit->Add(GetHostReg8(RSCRATCH), GetHostReg8(RSCRATCH), value.GetS64ConstantValue());
       else
-        m_emit->Add(GetHostReg8(temp), GetHostReg8(temp), GetHostReg8(value));
-      m_emit->Strb(GetHostReg8(temp), o_offset);
+        m_emit->Add(GetHostReg8(RSCRATCH), GetHostReg8(RSCRATCH), GetHostReg8(value));
+      m_emit->Strb(GetHostReg8(RSCRATCH), o_offset);
     }
     break;
 
     case RegSize_16:
     {
-      m_emit->Ldrh(GetHostReg16(temp), o_offset);
+      m_emit->Ldrh(GetHostReg16(RSCRATCH), o_offset);
       if (value.IsConstant())
-        m_emit->Add(GetHostReg16(temp), GetHostReg16(temp), value.GetS64ConstantValue());
+        m_emit->Add(GetHostReg16(RSCRATCH), GetHostReg16(RSCRATCH), value.GetS64ConstantValue());
       else
-        m_emit->Add(GetHostReg16(temp), GetHostReg16(temp), GetHostReg16(value));
-      m_emit->Strh(GetHostReg16(temp), o_offset);
+        m_emit->Add(GetHostReg16(RSCRATCH), GetHostReg16(RSCRATCH), GetHostReg16(value));
+      m_emit->Strh(GetHostReg16(RSCRATCH), o_offset);
     }
     break;
 
     case RegSize_32:
     {
-      m_emit->Ldr(GetHostReg32(temp), o_offset);
+      m_emit->Ldr(GetHostReg32(RSCRATCH), o_offset);
       if (value.IsConstant())
-        m_emit->Add(GetHostReg32(temp), GetHostReg32(temp), value.GetS64ConstantValue());
+        m_emit->Add(GetHostReg32(RSCRATCH), GetHostReg32(RSCRATCH), value.GetS64ConstantValue());
       else
-        m_emit->Add(GetHostReg32(temp), GetHostReg32(temp), GetHostReg32(value));
-      m_emit->Str(GetHostReg32(temp), o_offset);
+        m_emit->Add(GetHostReg32(RSCRATCH), GetHostReg32(RSCRATCH), GetHostReg32(value));
+      m_emit->Str(GetHostReg32(RSCRATCH), o_offset);
     }
     break;
 
     case RegSize_64:
     {
-      m_emit->Ldr(GetHostReg64(temp), o_offset);
+      m_emit->Ldr(GetHostReg64(RSCRATCH), o_offset);
       if (value.IsConstant())
-        m_emit->Add(GetHostReg64(temp), GetHostReg64(temp), s64(value.constant_value));
+        m_emit->Add(GetHostReg64(RSCRATCH), GetHostReg64(RSCRATCH), s64(value.constant_value));
       else
-        m_emit->Add(GetHostReg64(temp), GetHostReg64(temp), GetHostReg64(value));
-      m_emit->Str(GetHostReg64(temp), o_offset);
+        m_emit->Add(GetHostReg64(RSCRATCH), GetHostReg64(RSCRATCH), GetHostReg64(value));
+      m_emit->Str(GetHostReg64(RSCRATCH), o_offset);
     }
     break;
 
@@ -1336,7 +1335,8 @@ void CodeGenerator::EmitLoadGuestMemoryFastmem(const CodeBlockInstruction& cbi, 
     actual_address = a64::MemOperand(GetFastmemBasePtrReg(), GetHostReg32(address));
   }
 
-  // TODO: movsx/zx inline here
+  m_register_cache.InhibitAllocation();
+
   switch (size)
   {
     case RegSize_8:
@@ -1370,6 +1370,7 @@ void CodeGenerator::EmitLoadGuestMemoryFastmem(const CodeBlockInstruction& cbi, 
   EmitBranch(GetCurrentNearCodePointer(), false);
 
   SwitchToNearCode();
+  m_register_cache.UninhibitAllocation();
 
   m_block->loadstore_backpatch_info.push_back(bpi);
 }
@@ -1472,6 +1473,8 @@ void CodeGenerator::EmitStoreGuestMemoryFastmem(const CodeBlockInstruction& cbi,
     actual_address = a64::MemOperand(GetFastmemBasePtrReg(), GetHostReg32(address));
   }
 
+  m_register_cache.InhibitAllocation();
+
   switch (value.size)
   {
     case RegSize_8:
@@ -1504,6 +1507,7 @@ void CodeGenerator::EmitStoreGuestMemoryFastmem(const CodeBlockInstruction& cbi,
   EmitBranch(GetCurrentNearCodePointer(), false);
 
   SwitchToNearCode();
+  m_register_cache.UninhibitAllocation();
 
   m_block->loadstore_backpatch_info.push_back(bpi);
 }
@@ -2123,6 +2127,8 @@ CodeCache::SingleBlockDispatcherFunction CodeGenerator::CompileSingleBlockDispat
   m_emit->sub(a64::sp, a64::sp, FUNCTION_STACK_SIZE);
   m_register_cache.ReserveCalleeSavedRegisters();
   const u32 stack_adjust = PrepareStackForCall();
+
+  EmitLoadGlobalAddress(RCPUPTR, &g_state);
 
   m_emit->blr(GetHostReg64(RARG1));
 

@@ -331,7 +331,7 @@ public:
 
   /// Temporarily prevents register allocation.
   void InhibitAllocation();
-  void UnunhibitAllocation();
+  void UninhibitAllocation();
 
 private:
   void ClearRegisterFromOrder(Reg reg);

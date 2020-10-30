@@ -765,13 +765,7 @@ void QtHostInterface::powerOffSystem()
     return;
   }
 
-  if (System::IsShutdown())
-    return;
-
-  if (g_settings.save_state_on_exit)
-    SaveResumeSaveState();
-
-  DestroySystem();
+  PowerOffSystem();
 }
 
 void QtHostInterface::synchronousPowerOffSystem()
