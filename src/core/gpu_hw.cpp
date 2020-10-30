@@ -47,12 +47,27 @@ bool GPU_HW::Initialize(HostDisplay* host_display)
     return false;
 
   m_resolution_scale = CalculateResolutionScale();
+  m_multisamples = std::min(g_settings.gpu_multisamples, m_max_multisamples);
   m_render_api = host_display->GetRenderAPI();
+  m_per_sample_shading = g_settings.gpu_per_sample_shading && m_supports_per_sample_shading;
   m_true_color = g_settings.gpu_true_color;
   m_scaled_dithering = g_settings.gpu_scaled_dithering;
   m_texture_filtering = g_settings.gpu_texture_filter;
   m_using_uv_limits = ShouldUseUVLimits();
   PrintSettingsToLog();
+
+  if (m_multisamples != g_settings.gpu_multisamples)
+  {
+    g_host_interface->AddFormattedOSDMessage(
+      20.0f, g_host_interface->TranslateString("OSDMessage", "%ux MSAA is not supported, using %ux instead."),
+      g_settings.gpu_multisamples, m_multisamples);
+  }
+  if (!m_per_sample_shading && g_settings.gpu_per_sample_shading)
+  {
+    g_host_interface->AddOSDMessage(
+      g_host_interface->TranslateStdString("OSDMessage", "SSAA is not supported, using MSAA instead."), 20.0f);
+  }
+
   return true;
 }
 
@@ -91,12 +106,15 @@ bool GPU_HW::DoState(StateWrapper& sw)
 void GPU_HW::UpdateHWSettings(bool* framebuffer_changed, bool* shaders_changed)
 {
   const u32 resolution_scale = CalculateResolutionScale();
+  const u32 multisamples = std::min(m_max_multisamples, g_settings.gpu_multisamples);
   const bool use_uv_limits = ShouldUseUVLimits();
 
-  *framebuffer_changed = (m_resolution_scale != resolution_scale);
-  *shaders_changed = (m_resolution_scale != resolution_scale || m_true_color != g_settings.gpu_true_color ||
-                      m_scaled_dithering != g_settings.gpu_scaled_dithering ||
-                      m_texture_filtering != g_settings.gpu_texture_filter || m_using_uv_limits != use_uv_limits);
+  *framebuffer_changed = (m_resolution_scale != resolution_scale || m_multisamples != multisamples);
+  *shaders_changed =
+    (m_resolution_scale != resolution_scale || m_multisamples != multisamples ||
+     m_true_color != g_settings.gpu_true_color || m_per_sample_shading != g_settings.gpu_per_sample_shading ||
+     m_scaled_dithering != g_settings.gpu_scaled_dithering || m_texture_filtering != g_settings.gpu_texture_filter ||
+     m_using_uv_limits != use_uv_limits);
 
   if (m_resolution_scale != resolution_scale)
   {
@@ -107,7 +125,24 @@ void GPU_HW::UpdateHWSettings(bool* framebuffer_changed, bool* shaders_changed)
       VRAM_HEIGHT * resolution_scale);
   }
 
+  if (m_multisamples != multisamples || m_per_sample_shading != g_settings.gpu_per_sample_shading)
+  {
+    if (g_settings.gpu_per_sample_shading)
+    {
+      g_host_interface->AddFormattedOSDMessage(
+        10.0f, g_host_interface->TranslateString("OSDMessage", "Multisample anti-aliasing set to %ux (SSAA)."),
+        multisamples);
+    }
+    else
+    {
+      g_host_interface->AddFormattedOSDMessage(
+        10.0f, g_host_interface->TranslateString("OSDMessage", "Multisample anti-aliasing set to %ux."), multisamples);
+    }
+  }
+
   m_resolution_scale = resolution_scale;
+  m_multisamples = multisamples;
+  m_per_sample_shading = g_settings.gpu_per_sample_shading;
   m_true_color = g_settings.gpu_true_color;
   m_scaled_dithering = g_settings.gpu_scaled_dithering;
   m_texture_filtering = g_settings.gpu_texture_filter;
@@ -147,6 +182,7 @@ void GPU_HW::PrintSettingsToLog()
 {
   Log_InfoPrintf("Resolution Scale: %u (%ux%u), maximum %u", m_resolution_scale, VRAM_WIDTH * m_resolution_scale,
                  VRAM_HEIGHT * m_resolution_scale, m_max_resolution_scale);
+  Log_InfoPrintf("Multisampling: %ux%s", m_multisamples, m_per_sample_shading ? " (per sample shading)" : "");
   Log_InfoPrintf("Dithering: %s%s", m_true_color ? "Disabled" : "Enabled",
                  (!m_true_color && m_scaled_dithering) ? " (Scaled)" : "");
   Log_InfoPrintf("Texture Filtering: %s", Settings::GetTextureFilterDisplayName(m_texture_filtering));

@@ -496,9 +496,9 @@ void OpenGLHostDisplay::RenderDisplay()
   }
 #endif
 
-  RenderDisplay(left, GetWindowHeight() - top - height, width, height, m_display_texture_handle, m_display_texture_width, m_display_texture_height,
-                m_display_texture_view_x, m_display_texture_view_y, m_display_texture_view_width,
-                m_display_texture_view_height, m_display_linear_filtering);
+  RenderDisplay(left, GetWindowHeight() - top - height, width, height, m_display_texture_handle,
+                m_display_texture_width, m_display_texture_height, m_display_texture_view_x, m_display_texture_view_y,
+                m_display_texture_view_width, m_display_texture_view_height, m_display_linear_filtering);
 }
 
 void OpenGLHostDisplay::RenderDisplay(s32 left, s32 bottom, s32 width, s32 height, void* texture_handle,
@@ -629,7 +629,7 @@ bool OpenGLHostDisplay::CheckPostProcessingRenderTargets(u32 target_width, u32 t
   if (m_post_processing_input_texture.GetWidth() != target_width ||
       m_post_processing_input_texture.GetHeight() != target_height)
   {
-    if (!m_post_processing_input_texture.Create(target_width, target_height, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE) ||
+    if (!m_post_processing_input_texture.Create(target_width, target_height, 1, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE) ||
         !m_post_processing_input_texture.CreateFramebuffer())
     {
       return false;
@@ -642,7 +642,7 @@ bool OpenGLHostDisplay::CheckPostProcessingRenderTargets(u32 target_width, u32 t
     PostProcessingStage& pps = m_post_processing_stages[i];
     if (pps.output_texture.GetWidth() != target_width || pps.output_texture.GetHeight() != target_height)
     {
-      if (!pps.output_texture.Create(target_width, target_height, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE) ||
+      if (!pps.output_texture.Create(target_width, target_height, 1, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE) ||
           !pps.output_texture.CreateFramebuffer())
       {
         return false;

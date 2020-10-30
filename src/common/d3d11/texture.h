@@ -23,6 +23,8 @@ public:
 
   ALWAYS_INLINE u32 GetWidth() const { return m_width; }
   ALWAYS_INLINE u32 GetHeight() const { return m_height; }
+  ALWAYS_INLINE u32 GetSamples() const { return m_samples; }
+  ALWAYS_INLINE bool IsMultisampled() const { return m_samples > 1; }
   ALWAYS_INLINE DXGI_FORMAT GetFormat() const { return GetDesc().Format; }
   D3D11_TEXTURE2D_DESC GetDesc() const;
 
@@ -31,7 +33,7 @@ public:
   ALWAYS_INLINE operator ID3D11RenderTargetView*() const { return m_rtv.Get(); }
   ALWAYS_INLINE operator bool() const { return static_cast<bool>(m_texture); }
 
-  bool Create(ID3D11Device* device, u32 width, u32 height, DXGI_FORMAT format, u32 bind_flags,
+  bool Create(ID3D11Device* device, u32 width, u32 height, u32 samples, DXGI_FORMAT format, u32 bind_flags,
               const void* initial_data = nullptr, u32 initial_data_stride = 0);
   bool Adopt(ID3D11Device* device, ComPtr<ID3D11Texture2D> texture);
 
@@ -43,5 +45,6 @@ private:
   ComPtr<ID3D11RenderTargetView> m_rtv;
   u32 m_width;
   u32 m_height;
+  u32 m_samples;
 };
 } // namespace D3D11

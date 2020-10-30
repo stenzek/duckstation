@@ -153,6 +153,7 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
     ss << "#define VECTOR_COMP_NEQ(a, b) notEqual((a), (b))\n";
     ss << "#define SAMPLE_TEXTURE(name, coords) texture(name, coords)\n";
     ss << "#define LOAD_TEXTURE(name, coords, mip) texelFetch(name, coords, mip)\n";
+    ss << "#define LOAD_TEXTURE_MS(name, coords, sample) texelFetch(name, coords, int(sample))\n";
     ss << "#define LOAD_TEXTURE_OFFSET(name, coords, mip, offset) texelFetchOffset(name, coords, mip, offset)\n";
     ss << "#define LOAD_TEXTURE_BUFFER(name, index) texelFetch(name, index)\n";
     ss << "#define BEGIN_ARRAY(type, size) type[size](\n";
@@ -161,7 +162,8 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
     ss << "float saturate(float value) { return clamp(value, 0.0, 1.0); }\n";
     ss << "float2 saturate(float2 value) { return clamp(value, float2(0.0, 0.0), float2(1.0, 1.0)); }\n";
     ss << "float3 saturate(float3 value) { return clamp(value, float3(0.0, 0.0, 0.0), float3(1.0, 1.0, 1.0)); }\n";
-    ss << "float4 saturate(float4 value) { return clamp(value, float4(0.0, 0.0, 0.0, 0.0), float4(1.0, 1.0, 1.0, 1.0)); }\n";
+    ss << "float4 saturate(float4 value) { return clamp(value, float4(0.0, 0.0, 0.0, 0.0), float4(1.0, 1.0, 1.0, "
+          "1.0)); }\n";
   }
   else
   {
@@ -189,6 +191,7 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
     ss << "#define VECTOR_COMP_NEQ(a, b) ((a) != (b))\n";
     ss << "#define SAMPLE_TEXTURE(name, coords) name.Sample(name##_ss, coords)\n";
     ss << "#define LOAD_TEXTURE(name, coords, mip) name.Load(int3(coords, mip))\n";
+    ss << "#define LOAD_TEXTURE_MS(name, coords, sample) name.Load(coords, sample)\n";
     ss << "#define LOAD_TEXTURE_OFFSET(name, coords, mip, offset) name.Load(int3(coords, mip), offset)\n";
     ss << "#define LOAD_TEXTURE_BUFFER(name, index) name.Load(index)\n";
     ss << "#define BEGIN_ARRAY(type, size) {\n";
@@ -231,7 +234,7 @@ void ShaderGen::DeclareUniformBuffer(std::stringstream& ss, const std::initializ
   ss << "};\n\n";
 }
 
-void ShaderGen::DeclareTexture(std::stringstream& ss, const char* name, u32 index)
+void ShaderGen::DeclareTexture(std::stringstream& ss, const char* name, u32 index, bool multisampled /* = false */)
 {
   if (m_glsl)
   {
@@ -240,11 +243,11 @@ void ShaderGen::DeclareTexture(std::stringstream& ss, const char* name, u32 inde
     else if (m_use_glsl_binding_layout)
       ss << "layout(binding = " << index << ") ";
 
-    ss << "uniform sampler2D " << name << ";\n";
+    ss << "uniform " << (multisampled ? "sampler2DMS " : "sampler2D ") << name << ";\n";
   }
   else
   {
-    ss << "Texture2D " << name << " : register(t" << index << ");\n";
+    ss << (multisampled ? "Texture2DMS<float4> " : "Texture2D ") << name << " : register(t" << index << ");\n";
     ss << "SamplerState " << name << "_ss : register(s" << index << ");\n";
   }
 }
@@ -267,10 +270,20 @@ void ShaderGen::DeclareTextureBuffer(std::stringstream& ss, const char* name, u3
   }
 }
 
+static const char* GetInterpolationQualifier(bool glsl, bool vulkan, bool interface_block, bool centroid_interpolation,
+                                             bool sample_interpolation)
+{
+  if (glsl && interface_block && (!vulkan && !GLAD_GL_ARB_shading_language_420pack))
+    return (sample_interpolation ? "sample out " : (centroid_interpolation ? "centroid out " : ""));
+  else
+    return (sample_interpolation ? "sample " : (centroid_interpolation ? "centroid " : ""));
+}
+
 void ShaderGen::DeclareVertexEntryPoint(
   std::stringstream& ss, const std::initializer_list<const char*>& attributes, u32 num_color_outputs,
   u32 num_texcoord_outputs, const std::initializer_list<std::pair<const char*, const char*>>& additional_outputs,
-  bool declare_vertex_id, const char* output_block_suffix)
+  bool declare_vertex_id /* = false */, const char* output_block_suffix /* = "" */,
+  bool centroid_interpolation /* = false */, bool sample_interpolation /* = false */)
 {
   if (m_glsl)
   {
@@ -291,30 +304,42 @@ void ShaderGen::DeclareVertexEntryPoint(
 
     if (m_use_glsl_interface_blocks)
     {
+      const char* qualifier =
+        GetInterpolationQualifier(m_glsl, IsVulkan(), true, centroid_interpolation, sample_interpolation);
+
       if (IsVulkan())
         ss << "layout(location = 0) ";
 
       ss << "out VertexData" << output_block_suffix << " {\n";
       for (u32 i = 0; i < num_color_outputs; i++)
-        ss << "  float4 v_col" << i << ";\n";
+        ss << "  " << qualifier << "float4 v_col" << i << ";\n";
 
       for (u32 i = 0; i < num_texcoord_outputs; i++)
-        ss << "  float2 v_tex" << i << ";\n";
+        ss << "  " << qualifier << "float2 v_tex" << i << ";\n";
 
       for (const auto [qualifiers, name] : additional_outputs)
-        ss << "  " << qualifiers << " " << name << ";\n";
+      {
+        const char* qualifier_to_use = (std::strlen(qualifiers) > 0) ? qualifiers : qualifier;
+        ss << "  " << qualifier_to_use << " " << name << ";\n";
+      }
       ss << "};\n";
     }
     else
     {
+      const char* qualifier =
+        GetInterpolationQualifier(m_glsl, IsVulkan(), false, centroid_interpolation, sample_interpolation);
+
       for (u32 i = 0; i < num_color_outputs; i++)
-        ss << "out float4 v_col" << i << ";\n";
+        ss << qualifier << "out float4 v_col" << i << ";\n";
 
       for (u32 i = 0; i < num_texcoord_outputs; i++)
-        ss << "out float2 v_tex" << i << ";\n";
+        ss << qualifier << "out float2 v_tex" << i << ";\n";
 
       for (const auto [qualifiers, name] : additional_outputs)
-        ss << qualifiers << " out " << name << ";\n";
+      {
+        const char* qualifier_to_use = (std::strlen(qualifiers) > 0) ? qualifiers : qualifier;
+        ss << qualifier_to_use << " out " << name << ";\n";
+      }
     }
 
     ss << "#define v_pos gl_Position\n\n";
@@ -331,6 +356,9 @@ void ShaderGen::DeclareVertexEntryPoint(
   }
   else
   {
+    const char* qualifier =
+      GetInterpolationQualifier(false, false, false, centroid_interpolation, sample_interpolation);
+
     ss << "void main(\n";
 
     if (declare_vertex_id)
@@ -344,15 +372,16 @@ void ShaderGen::DeclareVertexEntryPoint(
     }
 
     for (u32 i = 0; i < num_color_outputs; i++)
-      ss << "  out float4 v_col" << i << " : COLOR" << i << ",\n";
+      ss << "  " << qualifier << "out float4 v_col" << i << " : COLOR" << i << ",\n";
 
     for (u32 i = 0; i < num_texcoord_outputs; i++)
-      ss << "  out float2 v_tex" << i << " : TEXCOORD" << i << ",\n";
+      ss << "  " << qualifier << "out float2 v_tex" << i << " : TEXCOORD" << i << ",\n";
 
     u32 additional_counter = num_texcoord_outputs;
     for (const auto [qualifiers, name] : additional_outputs)
     {
-      ss << "  " << qualifiers << " out " << name << " : TEXCOORD" << additional_counter << ",\n";
+      const char* qualifier_to_use = (std::strlen(qualifiers) > 0) ? qualifiers : qualifier;
+      ss << "  " << qualifier_to_use << " out " << name << " : TEXCOORD" << additional_counter << ",\n";
       additional_counter++;
     }
 
@@ -363,40 +392,57 @@ void ShaderGen::DeclareVertexEntryPoint(
 void ShaderGen::DeclareFragmentEntryPoint(
   std::stringstream& ss, u32 num_color_inputs, u32 num_texcoord_inputs,
   const std::initializer_list<std::pair<const char*, const char*>>& additional_inputs,
-  bool declare_fragcoord /* = false */, u32 num_color_outputs /* = 1 */, bool depth_output /* = false */)
+  bool declare_fragcoord /* = false */, u32 num_color_outputs /* = 1 */, bool depth_output /* = false */,
+  bool centroid_interpolation /* = false */, bool sample_interpolation /* = false */,
+  bool declare_sample_id /* = false */)
 {
   if (m_glsl)
   {
     if (m_use_glsl_interface_blocks)
     {
+      const char* qualifier =
+        GetInterpolationQualifier(m_glsl, IsVulkan(), true, centroid_interpolation, sample_interpolation);
+
       if (IsVulkan())
         ss << "layout(location = 0) ";
 
       ss << "in VertexData {\n";
       for (u32 i = 0; i < num_color_inputs; i++)
-        ss << "  float4 v_col" << i << ";\n";
+        ss << "  " << qualifier << "float4 v_col" << i << ";\n";
 
       for (u32 i = 0; i < num_texcoord_inputs; i++)
-        ss << "  float2 v_tex" << i << ";\n";
+        ss << "  " << qualifier << "float2 v_tex" << i << ";\n";
 
       for (const auto [qualifiers, name] : additional_inputs)
-        ss << "  " << qualifiers << " " << name << ";\n";
+      {
+        const char* qualifier_to_use = (std::strlen(qualifiers) > 0) ? qualifiers : qualifier;
+        ss << "  " << qualifier_to_use << " " << name << ";\n";
+      }
       ss << "};\n";
     }
     else
     {
+      const char* qualifier =
+        GetInterpolationQualifier(m_glsl, IsVulkan(), false, centroid_interpolation, sample_interpolation);
+
       for (u32 i = 0; i < num_color_inputs; i++)
-        ss << "in float4 v_col" << i << ";\n";
+        ss << qualifier << "in float4 v_col" << i << ";\n";
 
       for (u32 i = 0; i < num_texcoord_inputs; i++)
-        ss << "in float2 v_tex" << i << ";\n";
+        ss << qualifier << "in float2 v_tex" << i << ";\n";
 
       for (const auto [qualifiers, name] : additional_inputs)
-        ss << qualifiers << " in " << name << ";\n";
+      {
+        const char* qualifier_to_use = (std::strlen(qualifiers) > 0) ? qualifiers : qualifier;
+        ss << qualifier_to_use << " in " << name << ";\n";
+      }
     }
 
     if (declare_fragcoord)
       ss << "#define v_pos gl_FragCoord\n";
+
+    if (declare_sample_id)
+      ss << "#define f_sample_index uint(gl_SampleID)\n";
 
     if (depth_output)
       ss << "#define o_depth gl_FragDepth\n";
@@ -427,43 +473,47 @@ void ShaderGen::DeclareFragmentEntryPoint(
   }
   else
   {
+    const char* qualifier =
+      GetInterpolationQualifier(false, false, false, centroid_interpolation, sample_interpolation);
+
+    ss << "void main(\n";
+
+    for (u32 i = 0; i < num_color_inputs; i++)
+      ss << "  " << qualifier << "in float4 v_col" << i << " : COLOR" << i << ",\n";
+
+    for (u32 i = 0; i < num_texcoord_inputs; i++)
+      ss << "  " << qualifier << "in float2 v_tex" << i << " : TEXCOORD" << i << ",\n";
+
+    u32 additional_counter = num_texcoord_inputs;
+    for (const auto [qualifiers, name] : additional_inputs)
     {
-      ss << "void main(\n";
+      const char* qualifier_to_use = (std::strlen(qualifiers) > 0) ? qualifiers : qualifier;
+      ss << "  " << qualifier_to_use << " in " << name << " : TEXCOORD" << additional_counter << ",\n";
+      additional_counter++;
+    }
 
-      for (u32 i = 0; i < num_color_inputs; i++)
-        ss << "  in float4 v_col" << i << " : COLOR" << i << ",\n";
+    if (declare_fragcoord)
+      ss << "  in float4 v_pos : SV_Position,\n";
+    if (declare_sample_id)
+      ss << "  in uint f_sample_index : SV_SampleIndex,\n";
 
-      for (u32 i = 0; i < num_texcoord_inputs; i++)
-        ss << "  in float2 v_tex" << i << " : TEXCOORD" << i << ",\n";
+    if (depth_output)
+    {
+      ss << "  out float o_depth : SV_Depth";
+      if (num_color_outputs > 0)
+        ss << ",\n";
+      else
+        ss << ")\n";
+    }
 
-      u32 additional_counter = num_texcoord_inputs;
-      for (const auto [qualifiers, name] : additional_inputs)
-      {
-        ss << "  " << qualifiers << " in " << name << " : TEXCOORD" << additional_counter << ",\n";
-        additional_counter++;
-      }
+    for (u32 i = 0; i < num_color_outputs; i++)
+    {
+      ss << "  out float4 o_col" << i << " : SV_Target" << i;
 
-      if (declare_fragcoord)
-        ss << "  in float4 v_pos : SV_Position,\n";
-
-      if (depth_output)
-      {
-        ss << "  out float o_depth : SV_Depth";
-        if (num_color_outputs > 0)
-          ss << ",\n";
-        else
-          ss << ")\n";
-      }
-
-      for (u32 i = 0; i < num_color_outputs; i++)
-      {
-        ss << "  out float4 o_col" << i << " : SV_Target" << i;
-
-        if (i == (num_color_outputs - 1))
-          ss << ")\n";
-        else
-          ss << ",\n";
-      }
+      if (i == (num_color_outputs - 1))
+        ss << ")\n";
+      else
+        ss << ",\n";
     }
   }
 }

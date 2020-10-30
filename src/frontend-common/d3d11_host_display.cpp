@@ -809,7 +809,7 @@ bool D3D11HostDisplay::CheckPostProcessingRenderTargets(u32 target_width, u32 ta
   if (m_post_processing_input_texture.GetWidth() != target_width ||
       m_post_processing_input_texture.GetHeight() != target_height)
   {
-    if (!m_post_processing_input_texture.Create(m_device.Get(), target_width, target_height, format, bind_flags))
+    if (!m_post_processing_input_texture.Create(m_device.Get(), target_width, target_height, 1, format, bind_flags))
       return false;
   }
 
@@ -819,7 +819,7 @@ bool D3D11HostDisplay::CheckPostProcessingRenderTargets(u32 target_width, u32 ta
     PostProcessingStage& pps = m_post_processing_stages[i];
     if (pps.output_texture.GetWidth() != target_width || pps.output_texture.GetHeight() != target_height)
     {
-      if (!pps.output_texture.Create(m_device.Get(), target_width, target_height, format, bind_flags))
+      if (!pps.output_texture.Create(m_device.Get(), target_width, target_height, 1, format, bind_flags))
         return false;
     }
   }

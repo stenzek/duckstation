@@ -4,7 +4,7 @@ Log_SetChannel(D3D11);
 
 namespace D3D11 {
 
-Texture::Texture() : m_width(0), m_height(0) {}
+Texture::Texture() : m_width(0), m_height(0), m_samples(0) {}
 
 Texture::Texture(ComPtr<ID3D11Texture2D> texture, ComPtr<ID3D11ShaderResourceView> srv,
                  ComPtr<ID3D11RenderTargetView> rtv)
@@ -13,6 +13,7 @@ Texture::Texture(ComPtr<ID3D11Texture2D> texture, ComPtr<ID3D11ShaderResourceVie
   const D3D11_TEXTURE2D_DESC desc = GetDesc();
   m_width = desc.Width;
   m_height = desc.Height;
+  m_samples = desc.SampleDesc.Count;
 }
 
 Texture::~Texture()
@@ -27,10 +28,10 @@ D3D11_TEXTURE2D_DESC Texture::GetDesc() const
   return desc;
 }
 
-bool Texture::Create(ID3D11Device* device, u32 width, u32 height, DXGI_FORMAT format, u32 bind_flags,
-                     const void* initial_data, u32 initial_data_stride)
+bool Texture::Create(ID3D11Device* device, u32 width, u32 height, u32 samples, DXGI_FORMAT format, u32 bind_flags,
+                     const void* initial_data /* = nullptr */, u32 initial_data_stride /* = 0 */)
 {
-  CD3D11_TEXTURE2D_DESC desc(format, width, height, 1, 1, bind_flags, D3D11_USAGE_DEFAULT, 0, 1, 0, 0);
+  CD3D11_TEXTURE2D_DESC desc(format, width, height, 1, 1, bind_flags, D3D11_USAGE_DEFAULT, 0, samples, 0, 0);
 
   D3D11_SUBRESOURCE_DATA srd;
   srd.pSysMem = initial_data;
@@ -48,8 +49,9 @@ bool Texture::Create(ID3D11Device* device, u32 width, u32 height, DXGI_FORMAT fo
   ComPtr<ID3D11ShaderResourceView> srv;
   if (bind_flags & D3D11_BIND_SHADER_RESOURCE)
   {
-    const CD3D11_SHADER_RESOURCE_VIEW_DESC srv_desc(D3D11_SRV_DIMENSION_TEXTURE2D, desc.Format, 0, desc.MipLevels, 0,
-                                                    desc.ArraySize);
+    const D3D11_SRV_DIMENSION srv_dimension =
+      (desc.SampleDesc.Count > 1) ? D3D11_SRV_DIMENSION_TEXTURE2DMS : D3D11_SRV_DIMENSION_TEXTURE2D;
+    const CD3D11_SHADER_RESOURCE_VIEW_DESC srv_desc(srv_dimension, desc.Format, 0, desc.MipLevels, 0, desc.ArraySize);
     const HRESULT hr = device->CreateShaderResourceView(texture.Get(), &srv_desc, srv.GetAddressOf());
     if (FAILED(hr))
     {
@@ -61,7 +63,9 @@ bool Texture::Create(ID3D11Device* device, u32 width, u32 height, DXGI_FORMAT fo
   ComPtr<ID3D11RenderTargetView> rtv;
   if (bind_flags & D3D11_BIND_RENDER_TARGET)
   {
-    const CD3D11_RENDER_TARGET_VIEW_DESC rtv_desc(D3D11_RTV_DIMENSION_TEXTURE2D, desc.Format, 0, 0, desc.ArraySize);
+    const D3D11_RTV_DIMENSION rtv_dimension =
+      (desc.SampleDesc.Count > 1) ? D3D11_RTV_DIMENSION_TEXTURE2DMS : D3D11_RTV_DIMENSION_TEXTURE2D;
+    const CD3D11_RENDER_TARGET_VIEW_DESC rtv_desc(rtv_dimension, desc.Format, 0, 0, desc.ArraySize);
     const HRESULT hr = device->CreateRenderTargetView(texture.Get(), &rtv_desc, rtv.GetAddressOf());
     if (FAILED(hr))
     {
@@ -75,6 +79,7 @@ bool Texture::Create(ID3D11Device* device, u32 width, u32 height, DXGI_FORMAT fo
   m_rtv = std::move(rtv);
   m_width = desc.Width;
   m_height = desc.Height;
+  m_samples = desc.SampleDesc.Count;
   return true;
 }
 
@@ -86,8 +91,9 @@ bool Texture::Adopt(ID3D11Device* device, ComPtr<ID3D11Texture2D> texture)
   ComPtr<ID3D11ShaderResourceView> srv;
   if (desc.BindFlags & D3D11_BIND_SHADER_RESOURCE)
   {
-    const CD3D11_SHADER_RESOURCE_VIEW_DESC srv_desc(D3D11_SRV_DIMENSION_TEXTURE2D, desc.Format, 0, desc.MipLevels, 0,
-                                                    desc.ArraySize);
+    const D3D11_SRV_DIMENSION srv_dimension =
+      (desc.SampleDesc.Count > 1) ? D3D11_SRV_DIMENSION_TEXTURE2DMS : D3D11_SRV_DIMENSION_TEXTURE2D;
+    const CD3D11_SHADER_RESOURCE_VIEW_DESC srv_desc(srv_dimension, desc.Format, 0, desc.MipLevels, 0, desc.ArraySize);
     const HRESULT hr = device->CreateShaderResourceView(texture.Get(), &srv_desc, srv.ReleaseAndGetAddressOf());
     if (FAILED(hr))
     {
@@ -99,7 +105,9 @@ bool Texture::Adopt(ID3D11Device* device, ComPtr<ID3D11Texture2D> texture)
   ComPtr<ID3D11RenderTargetView> rtv;
   if (desc.BindFlags & D3D11_BIND_RENDER_TARGET)
   {
-    const CD3D11_RENDER_TARGET_VIEW_DESC rtv_desc(D3D11_RTV_DIMENSION_TEXTURE2D, desc.Format, 0, 0, desc.ArraySize);
+    const D3D11_RTV_DIMENSION rtv_dimension =
+      (desc.SampleDesc.Count > 1) ? D3D11_RTV_DIMENSION_TEXTURE2DMS : D3D11_RTV_DIMENSION_TEXTURE2D;
+    const CD3D11_RENDER_TARGET_VIEW_DESC rtv_desc(rtv_dimension, desc.Format, 0, 0, desc.ArraySize);
     const HRESULT hr = device->CreateRenderTargetView(texture.Get(), &rtv_desc, rtv.ReleaseAndGetAddressOf());
     if (FAILED(hr))
     {
@@ -113,6 +121,7 @@ bool Texture::Adopt(ID3D11Device* device, ComPtr<ID3D11Texture2D> texture)
   m_rtv = std::move(rtv);
   m_width = desc.Width;
   m_height = desc.Height;
+  m_samples = desc.SampleDesc.Count;
   return true;
 }
 
@@ -123,6 +132,7 @@ void Texture::Destroy()
   m_texture.Reset();
   m_width = 0;
   m_height = 0;
+  m_samples = 0;
 }
 
 } // namespace D3D11

@@ -8,11 +8,13 @@ namespace GL {
 Texture::Texture() = default;
 
 Texture::Texture(Texture&& moved)
-  : m_id(moved.m_id), m_width(moved.m_width), m_height(moved.m_height), m_fbo_id(moved.m_fbo_id)
+  : m_id(moved.m_id), m_width(moved.m_width), m_height(moved.m_height), m_samples(moved.m_samples),
+    m_fbo_id(moved.m_fbo_id)
 {
   moved.m_id = 0;
   moved.m_width = 0;
   moved.m_height = 0;
+  moved.m_samples = 0;
   moved.m_fbo_id = 0;
 }
 
@@ -21,20 +23,32 @@ Texture::~Texture()
   Destroy();
 }
 
-bool Texture::Create(u32 width, u32 height, GLenum internal_format, GLenum format, GLenum type, const void* data,
-                     bool linear_filter, bool wrap)
+bool Texture::Create(u32 width, u32 height, u32 samples, GLenum internal_format, GLenum format, GLenum type,
+                     const void* data, bool linear_filter, bool wrap)
 {
   glGetError();
 
+  const GLenum target = (samples > 1) ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
+
   GLuint id;
   glGenTextures(1, &id);
-  glBindTexture(GL_TEXTURE_2D, id);
-  glTexImage2D(GL_TEXTURE_2D, 0, internal_format, width, height, 0, format, type, data);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, linear_filter ? GL_LINEAR : GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, linear_filter ? GL_LINEAR : GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap ? GL_REPEAT : GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap ? GL_REPEAT : GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 1);
+  glBindTexture(target, id);
+
+  if (samples > 1)
+  {
+    glTexImage2DMultisample(target, samples, internal_format, width, height, GL_FALSE);
+  }
+  else
+  {
+    glTexImage2D(target, 0, internal_format, width, height, 0, format, type, data);
+
+    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, linear_filter ? GL_LINEAR : GL_NEAREST);
+    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, linear_filter ? GL_LINEAR : GL_NEAREST);
+    glTexParameteri(target, GL_TEXTURE_WRAP_S, wrap ? GL_REPEAT : GL_CLAMP_TO_EDGE);
+    glTexParameteri(target, GL_TEXTURE_WRAP_T, wrap ? GL_REPEAT : GL_CLAMP_TO_EDGE);
+  }
+
+  glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, 1);
 
   GLenum error = glGetError();
   if (error != GL_NO_ERROR)
@@ -50,15 +64,19 @@ bool Texture::Create(u32 width, u32 height, GLenum internal_format, GLenum forma
   m_id = id;
   m_width = width;
   m_height = height;
+  m_samples = samples;
   return true;
 }
 
 void Texture::SetLinearFilter(bool enabled)
 {
+  Assert(!IsMultisampled());
+
   Bind();
 
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, enabled ? GL_LINEAR : GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, enabled ? GL_LINEAR : GL_NEAREST);
+  const GLenum target = GetGLTarget();
+  glTexParameteri(target, GL_TEXTURE_MIN_FILTER, enabled ? GL_LINEAR : GL_NEAREST);
+  glTexParameteri(target, GL_TEXTURE_MAG_FILTER, enabled ? GL_LINEAR : GL_NEAREST);
 }
 
 bool Texture::CreateFramebuffer()
@@ -100,11 +118,12 @@ void Texture::Destroy()
 
   m_width = 0;
   m_height = 0;
+  m_samples = 0;
 }
 
 void Texture::Bind()
 {
-  glBindTexture(GL_TEXTURE_2D, m_id);
+  glBindTexture(GetGLTarget(), m_id);
 }
 
 void Texture::BindFramebuffer(GLenum target /*= GL_DRAW_FRAMEBUFFER*/)
@@ -125,11 +144,13 @@ Texture& Texture::operator=(Texture&& moved)
   m_id = moved.m_id;
   m_width = moved.m_width;
   m_height = moved.m_height;
+  m_samples = moved.m_samples;
   m_fbo_id = moved.m_fbo_id;
 
   moved.m_id = 0;
   moved.m_width = 0;
   moved.m_height = 0;
+  moved.m_samples = 0;
   moved.m_fbo_id = 0;
   return *this;
 }

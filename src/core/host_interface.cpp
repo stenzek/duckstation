@@ -429,7 +429,9 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
 
   si.SetStringValue("GPU", "Renderer", Settings::GetRendererName(Settings::DEFAULT_GPU_RENDERER));
   si.SetIntValue("GPU", "ResolutionScale", 1);
+  si.SetIntValue("GPU", "Multisamples", 1);
   si.SetBoolValue("GPU", "UseDebugDevice", false);
+  si.SetBoolValue("GPU", "PerSampleShading", false);
   si.SetBoolValue("GPU", "TrueColor", false);
   si.SetBoolValue("GPU", "ScaledDithering", true);
   si.SetStringValue("GPU", "TextureFilter", Settings::GetTextureFilterName(Settings::DEFAULT_GPU_TEXTURE_FILTER));
@@ -623,6 +625,8 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
     m_audio_stream->SetOutputVolume(g_settings.audio_output_muted ? 0 : g_settings.audio_output_volume);
 
     if (g_settings.gpu_resolution_scale != old_settings.gpu_resolution_scale ||
+        g_settings.gpu_multisamples != old_settings.gpu_multisamples ||
+        g_settings.gpu_per_sample_shading != old_settings.gpu_per_sample_shading ||
         g_settings.gpu_fifo_size != old_settings.gpu_fifo_size ||
         g_settings.gpu_max_run_ahead != old_settings.gpu_max_run_ahead ||
         g_settings.gpu_true_color != old_settings.gpu_true_color ||
