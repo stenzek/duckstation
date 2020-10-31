@@ -94,8 +94,6 @@ void GPU_HW_OpenGL::ResetGraphicsAPIState()
   glEnable(GL_CULL_FACE);
   glDisable(GL_SCISSOR_TEST);
   glDisable(GL_BLEND);
-  if (m_resolution_scale > 1 && !m_supports_geometry_shaders)
-    glLineWidth(1.0f);
   glBindVertexArray(0);
   m_uniform_stream_buffer->Unbind();
 }
@@ -109,12 +107,11 @@ void GPU_HW_OpenGL::RestoreGraphicsAPIState()
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_SCISSOR_TEST);
   glDepthMask(GL_TRUE);
-  glDepthFunc(GL_ALWAYS);
-  if (m_resolution_scale > 1 && !m_supports_geometry_shaders)
-    glLineWidth(static_cast<float>(m_resolution_scale));
   glBindVertexArray(m_vao_id);
   m_uniform_stream_buffer->Bind();
-
+  m_vram_read_texture.Bind();
+  SetBlendMode();
+  SetDepthFunc();
   SetScissorFromDrawingArea();
   m_batch_ubo_dirty = true;
 }
@@ -570,25 +567,42 @@ void GPU_HW_OpenGL::DrawBatchVertices(BatchRenderMode render_mode, u32 base_vert
                                              [BoolToUInt8(m_batch.dithering)][BoolToUInt8(m_batch.interlacing)];
   prog.Bind();
 
-  if (m_batch.texture_mode != TextureMode::Disabled)
-    m_vram_read_texture.Bind();
+  if (m_current_transparency_mode != m_batch.transparency_mode || m_current_render_mode != render_mode)
+  {
+    m_current_transparency_mode = m_batch.transparency_mode;
+    m_current_render_mode = render_mode;
+    SetBlendMode();
+  }
 
-  if (m_batch.transparency_mode == TransparencyMode::Disabled || render_mode == BatchRenderMode::OnlyOpaque)
+  if (m_current_check_mask_before_draw != m_batch.check_mask_before_draw)
+  {
+    m_current_check_mask_before_draw = m_batch.check_mask_before_draw;
+    SetDepthFunc();
+  }
+
+  glDrawArrays(GL_TRIANGLES, m_batch_base_vertex, num_vertices);
+}
+
+void GPU_HW_OpenGL::SetBlendMode()
+{
+  if (m_current_transparency_mode == TransparencyMode::Disabled || m_current_render_mode == BatchRenderMode::OnlyOpaque)
   {
     glDisable(GL_BLEND);
   }
   else
   {
     glEnable(GL_BLEND);
-    glBlendEquationSeparate(
-      m_batch.transparency_mode == TransparencyMode::BackgroundMinusForeground ? GL_FUNC_REVERSE_SUBTRACT : GL_FUNC_ADD,
-      GL_FUNC_ADD);
+    glBlendEquationSeparate(m_current_transparency_mode == TransparencyMode::BackgroundMinusForeground ?
+                              GL_FUNC_REVERSE_SUBTRACT :
+                              GL_FUNC_ADD,
+                            GL_FUNC_ADD);
     glBlendFuncSeparate(GL_ONE, m_supports_dual_source_blend ? GL_SRC1_ALPHA : GL_SRC_ALPHA, GL_ONE, GL_ZERO);
   }
+}
 
-  glDepthFunc(m_GPUSTAT.check_mask_before_draw ? GL_GEQUAL : GL_ALWAYS);
-
-  glDrawArrays(GL_TRIANGLES, m_batch_base_vertex, num_vertices);
+void GPU_HW_OpenGL::SetDepthFunc()
+{
+  glDepthFunc(m_current_check_mask_before_draw ? GL_GEQUAL : GL_ALWAYS);
 }
 
 void GPU_HW_OpenGL::SetScissorFromDrawingArea()
@@ -714,6 +728,9 @@ void GPU_HW_OpenGL::UpdateDisplay()
       glViewport(0, 0, m_vram_texture.GetWidth(), m_vram_texture.GetHeight());
       glEnable(GL_DEPTH_TEST);
       glEnable(GL_SCISSOR_TEST);
+      m_vram_read_texture.Bind();
+      SetBlendMode();
+      SetDepthFunc();
     }
 
     m_host_display->SetDisplayParameters(m_crtc_state.display_width, m_crtc_state.display_height,
@@ -1020,6 +1037,8 @@ void GPU_HW_OpenGL::UpdateDepthBufferFromMaskBit()
   glBindVertexArray(m_vao_id);
   glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
   glEnable(GL_SCISSOR_TEST);
+
+  m_vram_read_texture.Bind();
 }
 
 std::unique_ptr<GPU> GPU::CreateHardwareOpenGLRenderer()

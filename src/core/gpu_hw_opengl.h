@@ -62,6 +62,9 @@ private:
 
   bool CompilePrograms();
 
+  void SetDepthFunc();
+  void SetBlendMode();
+
   // downsample texture - used for readbacks at >1xIR.
   GL::Texture m_vram_texture;
   GL::Texture m_vram_depth_texture;
@@ -94,4 +97,8 @@ private:
   bool m_supports_texture_buffer = false;
   bool m_supports_geometry_shaders = false;
   bool m_use_ssbo_for_vram_writes = false;
+
+  bool m_current_check_mask_before_draw = false;
+  TransparencyMode m_current_transparency_mode = TransparencyMode::Disabled;
+  BatchRenderMode m_current_render_mode = BatchRenderMode::TransparencyDisabled;
 };
