@@ -234,6 +234,9 @@ bool OpenGLHostDisplay::InitializeRenderDevice(std::string_view shader_cache_dir
     return false;
 #endif
 
+  // Start with vsync on.
+  SetVSync(true);
+
   return true;
 }
 
