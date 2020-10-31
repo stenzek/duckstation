@@ -107,14 +107,14 @@ void GPU_HW::UpdateHWSettings(bool* framebuffer_changed, bool* shaders_changed)
 {
   const u32 resolution_scale = CalculateResolutionScale();
   const u32 multisamples = std::min(m_max_multisamples, g_settings.gpu_multisamples);
+  const bool per_sample_shading = g_settings.gpu_per_sample_shading && m_supports_per_sample_shading;
   const bool use_uv_limits = ShouldUseUVLimits();
 
   *framebuffer_changed = (m_resolution_scale != resolution_scale || m_multisamples != multisamples);
-  *shaders_changed =
-    (m_resolution_scale != resolution_scale || m_multisamples != multisamples ||
-     m_true_color != g_settings.gpu_true_color || m_per_sample_shading != g_settings.gpu_per_sample_shading ||
-     m_scaled_dithering != g_settings.gpu_scaled_dithering || m_texture_filtering != g_settings.gpu_texture_filter ||
-     m_using_uv_limits != use_uv_limits);
+  *shaders_changed = (m_resolution_scale != resolution_scale || m_multisamples != multisamples ||
+                      m_true_color != g_settings.gpu_true_color || m_per_sample_shading != per_sample_shading ||
+                      m_scaled_dithering != g_settings.gpu_scaled_dithering ||
+                      m_texture_filtering != g_settings.gpu_texture_filter || m_using_uv_limits != use_uv_limits);
 
   if (m_resolution_scale != resolution_scale)
   {
@@ -125,9 +125,9 @@ void GPU_HW::UpdateHWSettings(bool* framebuffer_changed, bool* shaders_changed)
       VRAM_HEIGHT * resolution_scale);
   }
 
-  if (m_multisamples != multisamples || m_per_sample_shading != g_settings.gpu_per_sample_shading)
+  if (m_multisamples != multisamples || m_per_sample_shading != per_sample_shading)
   {
-    if (g_settings.gpu_per_sample_shading)
+    if (per_sample_shading)
     {
       g_host_interface->AddFormattedOSDMessage(
         10.0f, g_host_interface->TranslateString("OSDMessage", "Multisample anti-aliasing set to %ux (SSAA)."),
@@ -142,7 +142,7 @@ void GPU_HW::UpdateHWSettings(bool* framebuffer_changed, bool* shaders_changed)
 
   m_resolution_scale = resolution_scale;
   m_multisamples = multisamples;
-  m_per_sample_shading = g_settings.gpu_per_sample_shading;
+  m_per_sample_shading = per_sample_shading;
   m_true_color = g_settings.gpu_true_color;
   m_scaled_dithering = g_settings.gpu_scaled_dithering;
   m_texture_filtering = g_settings.gpu_texture_filter;
