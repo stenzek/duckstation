@@ -36,11 +36,17 @@ bool Texture::Create(u32 width, u32 height, u32 samples, GLenum internal_format,
 
   if (samples > 1)
   {
-    glTexImage2DMultisample(target, samples, internal_format, width, height, GL_FALSE);
+    if (GLAD_GL_ARB_texture_storage || GLAD_GL_ES_VERSION_3_1)
+      glTexStorage2DMultisample(target, samples, internal_format, width, height, GL_FALSE);
+    else
+      glTexImage2DMultisample(target, samples, internal_format, width, height, GL_FALSE);
   }
   else
   {
-    glTexImage2D(target, 0, internal_format, width, height, 0, format, type, data);
+    if (GLAD_GL_ARB_texture_storage || GLAD_GL_ES_VERSION_3_0)
+      glTexStorage2D(target, 1, internal_format, width, height);
+    else
+      glTexImage2D(target, 0, internal_format, width, height, 0, format, type, data);
 
     glTexParameteri(target, GL_TEXTURE_MIN_FILTER, linear_filter ? GL_LINEAR : GL_NEAREST);
     glTexParameteri(target, GL_TEXTURE_MAG_FILTER, linear_filter ? GL_LINEAR : GL_NEAREST);
