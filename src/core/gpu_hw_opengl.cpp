@@ -181,9 +181,12 @@ void GPU_HW_OpenGL::SetCapabilities(HostDisplay* host_display)
   m_max_resolution_scale = static_cast<u32>(max_texture_size / VRAM_WIDTH);
 
   m_max_multisamples = 1;
-  glGetIntegerv(GL_MAX_SAMPLES, reinterpret_cast<GLint*>(&m_max_multisamples));
-  if (m_max_multisamples == 0)
-    m_max_multisamples = 1;
+  if (GLAD_GL_ARB_texture_storage || GLAD_GL_ES_VERSION_3_1)
+  {
+    glGetIntegerv(GL_MAX_SAMPLES, reinterpret_cast<GLint*>(&m_max_multisamples));
+    if (m_max_multisamples == 0)
+      m_max_multisamples = 1;
+  }
 
   m_supports_per_sample_shading = GLAD_GL_ARB_sample_shading;
   Log_InfoPrintf("Per-sample shading: %s", m_supports_per_sample_shading ? "supported" : "not supported");

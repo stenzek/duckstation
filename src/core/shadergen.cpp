@@ -119,6 +119,9 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
     ss << "precision highp int;\n";
     ss << "precision highp sampler2D;\n";
 
+    if (GLAD_GL_ES_VERSION_3_1)
+      ss << "precision highp sampler2DMS;\n";
+
     if (GLAD_GL_ES_VERSION_3_2)
       ss << "precision highp usamplerBuffer;\n";
 
@@ -270,13 +273,18 @@ void ShaderGen::DeclareTextureBuffer(std::stringstream& ss, const char* name, u3
   }
 }
 
-static const char* GetInterpolationQualifier(bool glsl, bool vulkan, bool interface_block, bool centroid_interpolation,
-                                             bool sample_interpolation)
+const char* ShaderGen::GetInterpolationQualifier(bool interface_block, bool centroid_interpolation,
+                                                 bool sample_interpolation, bool is_out) const
 {
-  if (glsl && interface_block && (!vulkan && !GLAD_GL_ARB_shading_language_420pack))
-    return (sample_interpolation ? "sample out " : (centroid_interpolation ? "centroid out " : ""));
+  if (m_glsl && interface_block && (!IsVulkan() && !GLAD_GL_ARB_shading_language_420pack))
+  {
+    return (sample_interpolation ? (is_out ? "sample out " : "sample in ") :
+                                   (centroid_interpolation ? (is_out ? "centroid out " : "centroid in ") : ""));
+  }
   else
+  {
     return (sample_interpolation ? "sample " : (centroid_interpolation ? "centroid " : ""));
+  }
 }
 
 void ShaderGen::DeclareVertexEntryPoint(
@@ -304,8 +312,7 @@ void ShaderGen::DeclareVertexEntryPoint(
 
     if (m_use_glsl_interface_blocks)
     {
-      const char* qualifier =
-        GetInterpolationQualifier(m_glsl, IsVulkan(), true, centroid_interpolation, sample_interpolation);
+      const char* qualifier = GetInterpolationQualifier(true, centroid_interpolation, sample_interpolation, true);
 
       if (IsVulkan())
         ss << "layout(location = 0) ";
@@ -326,8 +333,7 @@ void ShaderGen::DeclareVertexEntryPoint(
     }
     else
     {
-      const char* qualifier =
-        GetInterpolationQualifier(m_glsl, IsVulkan(), false, centroid_interpolation, sample_interpolation);
+      const char* qualifier = GetInterpolationQualifier(false, centroid_interpolation, sample_interpolation, true);
 
       for (u32 i = 0; i < num_color_outputs; i++)
         ss << qualifier << "out float4 v_col" << i << ";\n";
@@ -356,8 +362,7 @@ void ShaderGen::DeclareVertexEntryPoint(
   }
   else
   {
-    const char* qualifier =
-      GetInterpolationQualifier(false, false, false, centroid_interpolation, sample_interpolation);
+    const char* qualifier = GetInterpolationQualifier(false, centroid_interpolation, sample_interpolation, true);
 
     ss << "void main(\n";
 
@@ -400,8 +405,7 @@ void ShaderGen::DeclareFragmentEntryPoint(
   {
     if (m_use_glsl_interface_blocks)
     {
-      const char* qualifier =
-        GetInterpolationQualifier(m_glsl, IsVulkan(), true, centroid_interpolation, sample_interpolation);
+      const char* qualifier = GetInterpolationQualifier(true, centroid_interpolation, sample_interpolation, false);
 
       if (IsVulkan())
         ss << "layout(location = 0) ";
@@ -422,8 +426,7 @@ void ShaderGen::DeclareFragmentEntryPoint(
     }
     else
     {
-      const char* qualifier =
-        GetInterpolationQualifier(m_glsl, IsVulkan(), false, centroid_interpolation, sample_interpolation);
+      const char* qualifier = GetInterpolationQualifier(false, centroid_interpolation, sample_interpolation, false);
 
       for (u32 i = 0; i < num_color_inputs; i++)
         ss << qualifier << "in float4 v_col" << i << ";\n";
@@ -473,8 +476,7 @@ void ShaderGen::DeclareFragmentEntryPoint(
   }
   else
   {
-    const char* qualifier =
-      GetInterpolationQualifier(false, false, false, centroid_interpolation, sample_interpolation);
+    const char* qualifier = GetInterpolationQualifier(false, centroid_interpolation, sample_interpolation, false);
 
     ss << "void main(\n";
 

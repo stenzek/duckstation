@@ -19,6 +19,9 @@ public:
 protected:
   ALWAYS_INLINE bool IsVulkan() const { return (m_render_api == HostDisplay::RenderAPI::Vulkan); }
 
+  const char* GetInterpolationQualifier(bool interface_block, bool centroid_interpolation, bool sample_interpolation,
+                                        bool is_out) const;
+
   void SetGLSLVersionString();
   void DefineMacro(std::stringstream& ss, const char* name, bool enabled);
   void WriteHeader(std::stringstream& ss);
