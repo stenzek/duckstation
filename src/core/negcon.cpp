@@ -52,7 +52,11 @@ void NeGcon::SetAxisState(s32 axis_code, float value)
   // Steering Axis: -1..1 -> 0..255
   if (axis_code == static_cast<s32>(Axis::Steering))
   {
-    const u8 u8_value = static_cast<u8>(std::clamp(((value + 1.0f) / 2.0f) * 255.0f, 0.0f, 255.0f));
+    const float float_value =
+      (std::abs(value) < m_steering_deadzone) ?
+        0.0f :
+        std::copysign((std::abs(value) - m_steering_deadzone) / (1.0f - m_steering_deadzone), value);
+    const u8 u8_value = static_cast<u8>(std::clamp(((float_value + 1.0f) / 2.0f) * 255.0f, 0.0f, 255.0f));
 
     SetAxisState(static_cast<Axis>(axis_code), u8_value);
 
@@ -241,4 +245,19 @@ Controller::ButtonList NeGcon::StaticGetButtonNames()
 u32 NeGcon::StaticGetVibrationMotorCount()
 {
   return 0;
+}
+
+Controller::SettingList NeGcon::StaticGetSettings()
+{
+  static constexpr std::array<SettingInfo, 1> settings = {
+    {SettingInfo::Type::Float, "SteeringDeadzone", TRANSLATABLE("NeGcon", "Steering Axis Deadzone"),
+     TRANSLATABLE("NeGcon", "Sets deadzone size for steering axis."), "0.00f", "0.00f", "0.99f", "0.01f"}};
+
+  return SettingList(settings.begin(), settings.end());
+}
+
+void NeGcon::LoadSettings(const char* section)
+{
+  Controller::LoadSettings(section);
+  m_steering_deadzone = g_host_interface->GetFloatSettingValue(section, "SteeringDeadzone", 0.10f);
 }
