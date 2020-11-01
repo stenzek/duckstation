@@ -216,6 +216,9 @@ Controller::SettingList Controller::GetSettings(ControllerType type)
     case ControllerType::NamcoGunCon:
       return NamcoGunCon::StaticGetSettings();
 
+    case ControllerType::NeGcon:
+      return NeGcon::StaticGetSettings();
+
     default:
       return {};
   }
