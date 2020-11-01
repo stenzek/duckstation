@@ -588,7 +588,8 @@ void GPU_HW_OpenGL::DrawBatchVertices(BatchRenderMode render_mode, u32 base_vert
 
 void GPU_HW_OpenGL::SetBlendMode()
 {
-  if (m_current_transparency_mode == TransparencyMode::Disabled || m_current_render_mode == BatchRenderMode::OnlyOpaque)
+  if (m_texture_filtering == GPUTextureFilter::Nearest && (m_current_transparency_mode == TransparencyMode::Disabled ||
+                                                           m_current_render_mode == BatchRenderMode::OnlyOpaque))
   {
     glDisable(GL_BLEND);
   }
