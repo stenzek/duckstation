@@ -135,7 +135,9 @@ void Settings::Load(SettingsInterface& si)
                    .value_or(DEFAULT_GPU_RENDERER);
   gpu_adapter = si.GetStringValue("GPU", "Adapter", "");
   gpu_resolution_scale = static_cast<u32>(si.GetIntValue("GPU", "ResolutionScale", 1));
+  gpu_multisamples = static_cast<u32>(si.GetIntValue("GPU", "Multisamples", 1));
   gpu_use_debug_device = si.GetBoolValue("GPU", "UseDebugDevice", false);
+  gpu_per_sample_shading = si.GetBoolValue("GPU", "PerSampleShading", false);
   gpu_true_color = si.GetBoolValue("GPU", "TrueColor", true);
   gpu_scaled_dithering = si.GetBoolValue("GPU", "ScaledDithering", false);
   gpu_texture_filter =
@@ -265,7 +267,9 @@ void Settings::Save(SettingsInterface& si) const
   si.SetStringValue("GPU", "Renderer", GetRendererName(gpu_renderer));
   si.SetStringValue("GPU", "Adapter", gpu_adapter.c_str());
   si.SetIntValue("GPU", "ResolutionScale", static_cast<long>(gpu_resolution_scale));
+  si.SetIntValue("GPU", "Multisamples", static_cast<long>(gpu_multisamples));
   si.SetBoolValue("GPU", "UseDebugDevice", gpu_use_debug_device);
+  si.SetBoolValue("GPU", "PerSampleShading", gpu_per_sample_shading);
   si.SetBoolValue("GPU", "TrueColor", gpu_true_color);
   si.SetBoolValue("GPU", "ScaledDithering", gpu_scaled_dithering);
   si.SetStringValue("GPU", "TextureFilter", GetTextureFilterName(gpu_texture_filter));

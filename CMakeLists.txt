@@ -13,6 +13,8 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
   set(SUPPORTS_WAYLAND TRUE)
 endif()
 
+# Set minimum OS version for macOS. 10.14 should work.
+set(CMAKE_OSX_DEPLOYMENT_TARGET "10.14.0" CACHE STRING "")
 
 # Global options.
 if(NOT ANDROID)

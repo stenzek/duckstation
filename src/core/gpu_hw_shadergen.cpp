@@ -3,9 +3,11 @@
 #include <cstdio>
 #include <glad.h>
 
-GPU_HW_ShaderGen::GPU_HW_ShaderGen(HostDisplay::RenderAPI render_api, u32 resolution_scale, bool true_color, bool scaled_dithering, GPUTextureFilter texture_filtering, bool uv_limits, bool supports_dual_source_blend) : 
-  ShaderGen(render_api, supports_dual_source_blend),
-  m_resolution_scale(resolution_scale), m_true_color(true_color),
+GPU_HW_ShaderGen::GPU_HW_ShaderGen(HostDisplay::RenderAPI render_api, u32 resolution_scale, u32 multisamples,
+                                   bool per_sample_shading, bool true_color, bool scaled_dithering,
+                                   GPUTextureFilter texture_filtering, bool uv_limits, bool supports_dual_source_blend)
+  : ShaderGen(render_api, supports_dual_source_blend), m_resolution_scale(resolution_scale),
+    m_multisamples(multisamples), m_true_color(true_color), m_per_sample_shading(per_sample_shading),
     m_scaled_dithering(scaled_dithering), m_texture_filter(texture_filtering), m_uv_limits(uv_limits)
 {
 }
@@ -14,9 +16,13 @@ GPU_HW_ShaderGen::~GPU_HW_ShaderGen() = default;
 
 void GPU_HW_ShaderGen::WriteCommonFunctions(std::stringstream& ss)
 {
+  DefineMacro(ss, "MULTISAMPLING", UsingMSAA());
+
   ss << "CONSTANT uint RESOLUTION_SCALE = " << m_resolution_scale << "u;\n";
   ss << "CONSTANT uint2 VRAM_SIZE = uint2(" << GPU::VRAM_WIDTH << ", " << GPU::VRAM_HEIGHT << ") * RESOLUTION_SCALE;\n";
   ss << "CONSTANT float2 RCP_VRAM_SIZE = float2(1.0, 1.0) / float2(VRAM_SIZE);\n";
+  ss << "CONSTANT uint MULTISAMPLES = " << m_multisamples << "u;\n";
+  ss << "CONSTANT bool PER_SAMPLE_SHADING = " << (m_per_sample_shading ? "true" : "false") << ";\n";
   ss << R"(
 
 float fixYCoord(float y)
@@ -90,17 +96,20 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured)
     {
       DeclareVertexEntryPoint(
         ss, {"float4 a_pos", "float4 a_col0", "uint a_texcoord", "uint a_texpage", "float4 a_uv_limits"}, 1, 1,
-        {{"nointerpolation", "uint4 v_texpage"}, {"nointerpolation", "float4 v_uv_limits"}}, false);
+        {{"nointerpolation", "uint4 v_texpage"}, {"nointerpolation", "float4 v_uv_limits"}}, false, "", UsingMSAA(),
+        UsingPerSampleShading());
     }
     else
     {
       DeclareVertexEntryPoint(ss, {"float4 a_pos", "float4 a_col0", "uint a_texcoord", "uint a_texpage"}, 1, 1,
-                              {{"nointerpolation", "uint4 v_texpage"}}, false);
+                              {{"nointerpolation", "uint4 v_texpage"}}, false, "", UsingMSAA(),
+                              UsingPerSampleShading());
     }
   }
   else
   {
-    DeclareVertexEntryPoint(ss, {"float4 a_pos", "float4 a_col0"}, 1, 0, {}, false);
+    DeclareVertexEntryPoint(ss, {"float4 a_pos", "float4 a_col0"}, 1, 0, {}, false, "", UsingMSAA(),
+                            UsingPerSampleShading());
   }
 
   ss << R"(
@@ -767,17 +776,17 @@ float4 SampleFromVRAM(uint4 texpage, float2 coords)
     {
       DeclareFragmentEntryPoint(ss, 1, 1,
                                 {{"nointerpolation", "uint4 v_texpage"}, {"nointerpolation", "float4 v_uv_limits"}},
-                                true, use_dual_source ? 2 : 1, true);
+                                true, use_dual_source ? 2 : 1, true, UsingMSAA(), UsingPerSampleShading());
     }
     else
     {
-      DeclareFragmentEntryPoint(ss, 1, 1, {{"nointerpolation", "uint4 v_texpage"}}, true, use_dual_source ? 2 : 1,
-                                true);
+      DeclareFragmentEntryPoint(ss, 1, 1, {{"nointerpolation", "uint4 v_texpage"}}, true, use_dual_source ? 2 : 1, true,
+                                UsingMSAA(), UsingPerSampleShading());
     }
   }
   else
   {
-    DeclareFragmentEntryPoint(ss, 1, 0, {}, true, use_dual_source ? 2 : 1, true);
+    DeclareFragmentEntryPoint(ss, 1, 0, {}, true, use_dual_source ? 2 : 1, true, UsingMSAA(), UsingPerSampleShading());
   }
 
   ss << R"(
@@ -976,7 +985,22 @@ std::string GPU_HW_ShaderGen::GenerateDisplayFragmentShader(bool depth_24bit,
 
   WriteCommonFunctions(ss);
   DeclareUniformBuffer(ss, {"uint2 u_vram_offset", "uint u_crop_left", "uint u_field_offset"}, true);
-  DeclareTexture(ss, "samp0", 0);
+  DeclareTexture(ss, "samp0", 0, UsingMSAA());
+
+  ss << R"(
+float4 LoadVRAM(int2 coords)
+{
+#if MULTISAMPLING
+  float4 value = LOAD_TEXTURE_MS(samp0, coords, 0u);
+  for (uint sample_index = 1u; sample_index < MULTISAMPLES; sample_index++)
+    value += LOAD_TEXTURE_MS(samp0, coords, sample_index);
+  value /= float(MULTISAMPLES);
+  return value;
+#else
+  return LOAD_TEXTURE(samp0, coords, 0);
+#endif
+}
+)";
 
   DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1);
   ss << R"(
@@ -1000,8 +1024,8 @@ std::string GPU_HW_ShaderGen::GenerateDisplayFragmentShader(bool depth_24bit,
     uint2 vram_coords = u_vram_offset + uint2(((relative_x * 3u) / 2u) * RESOLUTION_SCALE, icoords.y);
 
     // load adjacent 16-bit texels
-    uint s0 = RGBA8ToRGBA5551(LOAD_TEXTURE(samp0, int2(vram_coords % VRAM_SIZE), 0));
-    uint s1 = RGBA8ToRGBA5551(LOAD_TEXTURE(samp0, int2((vram_coords + uint2(RESOLUTION_SCALE, 0)) % VRAM_SIZE), 0));
+    uint s0 = RGBA8ToRGBA5551(LoadVRAM(int2(vram_coords % VRAM_SIZE)));
+    uint s1 = RGBA8ToRGBA5551(LoadVRAM(int2((vram_coords + uint2(RESOLUTION_SCALE, 0)) % VRAM_SIZE)));
     
     // select which part of the combined 16-bit texels we are currently shading
     uint s1s0 = ((s1 << 16) | s0) >> ((relative_x & 1u) * 8u);
@@ -1012,7 +1036,7 @@ std::string GPU_HW_ShaderGen::GenerateDisplayFragmentShader(bool depth_24bit,
   #else
     // load and return
     uint2 vram_coords = u_vram_offset + uint2(icoords.x + u_crop_left, icoords.y);
-    o_col0 = LOAD_TEXTURE(samp0, int2(vram_coords % VRAM_SIZE), 0);
+    o_col0 = LoadVRAM(int2(vram_coords % VRAM_SIZE));
   #endif
 }
 )";
@@ -1027,13 +1051,26 @@ std::string GPU_HW_ShaderGen::GenerateVRAMReadFragmentShader()
   WriteCommonFunctions(ss);
   DeclareUniformBuffer(ss, {"uint2 u_base_coords", "uint2 u_size"}, true);
 
-  DeclareTexture(ss, "samp0", 0);
+  DeclareTexture(ss, "samp0", 0, UsingMSAA());
 
   ss << R"(
+float4 LoadVRAM(int2 coords)
+{
+#if MULTISAMPLING
+  float4 value = LOAD_TEXTURE_MS(samp0, coords, 0u);
+  for (uint sample_index = 1u; sample_index < MULTISAMPLES; sample_index++)
+    value += LOAD_TEXTURE_MS(samp0, coords, sample_index);
+  value /= float(MULTISAMPLES);
+  return value;
+#else
+  return LOAD_TEXTURE(samp0, coords, 0);
+#endif
+}
+
 uint SampleVRAM(uint2 coords)
 {
   if (RESOLUTION_SCALE == 1u)
-    return RGBA8ToRGBA5551(LOAD_TEXTURE(samp0, int2(coords), 0));
+    return RGBA8ToRGBA5551(LoadVRAM(int2(coords)));
 
   // Box filter for downsampling.
   float4 value = float4(0.0, 0.0, 0.0, 0.0);
@@ -1041,7 +1078,7 @@ uint SampleVRAM(uint2 coords)
   for (uint offset_x = 0u; offset_x < RESOLUTION_SCALE; offset_x++)
   {
     for (uint offset_y = 0u; offset_y < RESOLUTION_SCALE; offset_y++)
-      value += LOAD_TEXTURE(samp0, int2(base_coords + uint2(offset_x, offset_y)), 0);
+      value += LoadVRAM(int2(base_coords + uint2(offset_x, offset_y)));
   }
   value /= float(RESOLUTION_SCALE * RESOLUTION_SCALE);
   return RGBA8ToRGBA5551(value);
@@ -1133,6 +1170,9 @@ std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader(bool use_ssbo)
 
 std::string GPU_HW_ShaderGen::GenerateVRAMCopyFragmentShader()
 {
+  // TODO: This won't currently work because we can't bind the texture to both the shader and framebuffer.
+  const bool msaa = false;
+  
   std::stringstream ss;
   WriteHeader(ss);
   WriteCommonFunctions(ss);
@@ -1141,8 +1181,9 @@ std::string GPU_HW_ShaderGen::GenerateVRAMCopyFragmentShader()
                         "bool u_set_mask_bit", "float u_depth_value"},
                        true);
 
-  DeclareTexture(ss, "samp0", 0);
-  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1, true);
+  DeclareTexture(ss, "samp0", 0, msaa);
+  DefineMacro(ss, "MSAA_COPY", msaa);
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1, true, false, false, msaa);
   ss << R"(
 {
   uint2 dst_coords = uint2(v_pos.xy);
@@ -1163,7 +1204,11 @@ std::string GPU_HW_ShaderGen::GenerateVRAMCopyFragmentShader()
   uint2 src_coords = (u_src_coords + offset) % VRAM_SIZE;
 
   // sample and apply mask bit
+#if MSAA_COPY
+  float4 color = LOAD_TEXTURE_MS(samp0, int2(src_coords), f_sample_index);
+#else
   float4 color = LOAD_TEXTURE(samp0, int2(src_coords), 0);
+#endif
   o_col0 = float4(color.xyz, u_set_mask_bit ? 1.0 : color.a);
   o_depth = (u_set_mask_bit ? 1.0f : ((o_col0.a == 1.0) ? u_depth_value : 0.0));
 })";
@@ -1175,12 +1220,17 @@ std::string GPU_HW_ShaderGen::GenerateVRAMUpdateDepthFragmentShader()
 {
   std::stringstream ss;
   WriteHeader(ss);
-  DeclareTexture(ss, "samp0", 0);
-  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 0, true);
+  WriteCommonFunctions(ss);
+  DeclareTexture(ss, "samp0", 0, UsingMSAA());
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 0, true, false, false, UsingMSAA());
 
   ss << R"(
 {
+#if MULTISAMPLING
+  o_depth = LOAD_TEXTURE_MS(samp0, int2(v_pos.xy), f_sample_index).a;
+#else
   o_depth = LOAD_TEXTURE(samp0, int2(v_pos.xy), 0).a;
+#endif
 }
 )";
 

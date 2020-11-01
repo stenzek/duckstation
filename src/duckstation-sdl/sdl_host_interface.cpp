@@ -936,6 +936,47 @@ void SDLHostInterface::DrawQuickSettingsMenu()
     ImGui::EndMenu();
   }
 
+  if (ImGui::BeginMenu("Multisampling"))
+  {
+    const u32 current_multisamples = m_settings_copy.gpu_multisamples;
+    const bool current_ssaa = m_settings_copy.gpu_per_sample_shading;
+
+    if (ImGui::MenuItem("None", nullptr, (current_multisamples == 1)))
+    {
+      m_settings_copy.gpu_multisamples = 1;
+      m_settings_copy.gpu_per_sample_shading = false;
+      settings_changed = true;
+    }
+
+    for (u32 i = 2; i <= 32; i *= 2)
+    {
+      char buf[32];
+      std::snprintf(buf, sizeof(buf), "%ux MSAA", i);
+
+      if (ImGui::MenuItem(buf, nullptr, (current_multisamples == i && !current_ssaa)))
+      {
+        m_settings_copy.gpu_multisamples = i;
+        m_settings_copy.gpu_per_sample_shading = false;
+        settings_changed = true;
+      }
+    }
+
+    for (u32 i = 2; i <= 32; i *= 2)
+    {
+      char buf[32];
+      std::snprintf(buf, sizeof(buf), "%ux SSAA", i);
+
+      if (ImGui::MenuItem(buf, nullptr, (current_multisamples == i && current_ssaa)))
+      {
+        m_settings_copy.gpu_multisamples = i;
+        m_settings_copy.gpu_per_sample_shading = true;
+        settings_changed = true;
+      }
+    }
+
+    ImGui::EndMenu();
+  }
+
   if (ImGui::BeginMenu("PGXP"))
   {
     settings_changed |= ImGui::MenuItem("PGXP Enabled", nullptr, &m_settings_copy.gpu_pgxp_enable);
@@ -947,9 +988,8 @@ void SDLHostInterface::DrawQuickSettingsMenu()
                                         m_settings_copy.gpu_pgxp_enable);
     settings_changed |=
       ImGui::MenuItem("PGXP CPU Instructions", nullptr, &m_settings_copy.gpu_pgxp_cpu, m_settings_copy.gpu_pgxp_enable);
-    settings_changed |=
-      ImGui::MenuItem("PGXP Preserve Projection Precision", nullptr, &m_settings_copy.gpu_pgxp_preserve_proj_fp,
-                      m_settings_copy.gpu_pgxp_enable);
+    settings_changed |= ImGui::MenuItem("PGXP Preserve Projection Precision", nullptr,
+                                        &m_settings_copy.gpu_pgxp_preserve_proj_fp, m_settings_copy.gpu_pgxp_enable);
     ImGui::EndMenu();
   }
 

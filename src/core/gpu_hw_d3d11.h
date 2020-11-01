@@ -65,11 +65,6 @@ private:
   void SetScissor(u32 x, u32 y, u32 width, u32 height);
   void SetViewportAndScissor(u32 x, u32 y, u32 width, u32 height);
 
-  /// Blits from src to dst, downscaling or upscaling in the process.
-  void BlitTexture(ID3D11RenderTargetView* dst, u32 dst_x, u32 dst_y, u32 dst_width, u32 dst_height,
-                   ID3D11ShaderResourceView* src, u32 src_x, u32 src_y, u32 src_width, u32 src_height,
-                   u32 src_texture_width, u32 src_texture_height, bool linear_filter);
-
   void DrawUtilityShader(ID3D11PixelShader* shader, const void* uniforms, u32 uniforms_size);
 
   ComPtr<ID3D11Device> m_device;
@@ -94,6 +89,7 @@ private:
   ComPtr<ID3D11ShaderResourceView> m_texture_stream_buffer_srv_r16ui;
 
   ComPtr<ID3D11RasterizerState> m_cull_none_rasterizer_state;
+  ComPtr<ID3D11RasterizerState> m_cull_none_rasterizer_state_no_msaa;
 
   ComPtr<ID3D11DepthStencilState> m_depth_disabled_state;
   ComPtr<ID3D11DepthStencilState> m_depth_test_always_state;

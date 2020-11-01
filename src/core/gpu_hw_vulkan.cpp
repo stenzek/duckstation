@@ -119,19 +119,26 @@ void GPU_HW_Vulkan::UpdateSettings()
 {
   GPU_HW::UpdateSettings();
 
-  // Everything should be finished executing before recreating resources.
-  g_vulkan_context->ExecuteCommandBuffer(true);
-
   bool framebuffer_changed, shaders_changed;
   UpdateHWSettings(&framebuffer_changed, &shaders_changed);
 
   if (framebuffer_changed)
+  {
+    RestoreGraphicsAPIState();
+    ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
+    ResetGraphicsAPIState();
+  }
+
+  if (framebuffer_changed)
     CreateFramebuffer();
+
+  // Everything should be finished executing before recreating resources.
+  m_host_display->ClearDisplayTexture();
+  g_vulkan_context->ExecuteCommandBuffer(true);
 
   if (shaders_changed)
   {
     // clear it since we draw a loading screen and it's not in the correct state
-    m_host_display->ClearDisplayTexture();
     DestroyPipelines();
     CompilePipelines();
   }
@@ -140,6 +147,7 @@ void GPU_HW_Vulkan::UpdateSettings()
   if (framebuffer_changed)
   {
     RestoreGraphicsAPIState();
+    UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, m_vram_ptr);
     UpdateDepthBufferFromMaskBit();
     UpdateDisplay();
     ResetGraphicsAPIState();
@@ -203,11 +211,41 @@ void GPU_HW_Vulkan::SetCapabilities()
 {
   const u32 max_texture_size = g_vulkan_context->GetDeviceLimits().maxImageDimension2D;
   const u32 max_texture_scale = max_texture_size / VRAM_WIDTH;
-
   Log_InfoPrintf("Max texture size: %ux%u", max_texture_size, max_texture_size);
-
   m_max_resolution_scale = max_texture_scale;
+
+  VkImageFormatProperties color_properties = {};
+  vkGetPhysicalDeviceImageFormatProperties(g_vulkan_context->GetPhysicalDevice(), VK_FORMAT_R8G8B8A8_UNORM,
+                                           VK_IMAGE_TYPE_2D, VK_IMAGE_TILING_OPTIMAL,
+                                           VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, 0, &color_properties);
+  VkImageFormatProperties depth_properties = {};
+  vkGetPhysicalDeviceImageFormatProperties(g_vulkan_context->GetPhysicalDevice(), VK_FORMAT_D32_SFLOAT,
+                                           VK_IMAGE_TYPE_2D, VK_IMAGE_TILING_OPTIMAL,
+                                           VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, 0, &depth_properties);
+  const VkSampleCountFlags combined_properties =
+    g_vulkan_context->GetDeviceProperties().limits.framebufferColorSampleCounts &
+    g_vulkan_context->GetDeviceProperties().limits.framebufferDepthSampleCounts & color_properties.sampleCounts &
+    depth_properties.sampleCounts;
+  if (combined_properties & VK_SAMPLE_COUNT_64_BIT)
+    m_max_multisamples = 64;
+  else if (combined_properties & VK_SAMPLE_COUNT_32_BIT)
+    m_max_multisamples = 32;
+  else if (combined_properties & VK_SAMPLE_COUNT_16_BIT)
+    m_max_multisamples = 16;
+  else if (combined_properties & VK_SAMPLE_COUNT_8_BIT)
+    m_max_multisamples = 8;
+  else if (combined_properties & VK_SAMPLE_COUNT_4_BIT)
+    m_max_multisamples = 4;
+  else if (combined_properties & VK_SAMPLE_COUNT_2_BIT)
+    m_max_multisamples = 2;
+  else
+    m_max_multisamples = 1;
+
   m_supports_dual_source_blend = g_vulkan_context->GetDeviceFeatures().dualSrcBlend;
+  m_supports_per_sample_shading = g_vulkan_context->GetDeviceFeatures().sampleRateShading;
+  Log_InfoPrintf("Dual-source blend: %s", m_supports_dual_source_blend ? "supported" : "not supported");
+  Log_InfoPrintf("Per-sample shading: %s", m_supports_per_sample_shading ? "supported" : "not supported");
+  Log_InfoPrintf("Max multisamples: %u", m_max_multisamples);
 
 #ifdef __APPLE__
   // Partial texture buffer uploads appear to be broken in macOS/MoltenVK.
@@ -360,8 +398,6 @@ bool GPU_HW_Vulkan::CreateSamplers()
 
 bool GPU_HW_Vulkan::CreateFramebuffer()
 {
-  // save old vram texture/fbo, in case we're changing scale
-  auto old_vram_texture = std::move(m_vram_texture);
   DestroyFramebuffer();
 
   // scale vram size to internal resolution
@@ -369,7 +405,7 @@ bool GPU_HW_Vulkan::CreateFramebuffer()
   const u32 texture_height = VRAM_HEIGHT * m_resolution_scale;
   const VkFormat texture_format = VK_FORMAT_R8G8B8A8_UNORM;
   const VkFormat depth_format = VK_FORMAT_D16_UNORM;
-  const VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT;
+  const VkSampleCountFlagBits samples = static_cast<VkSampleCountFlagBits>(m_multisamples);
 
   if (!m_vram_texture.Create(texture_width, texture_height, 1, 1, texture_format, samples, VK_IMAGE_VIEW_TYPE_2D,
                              VK_IMAGE_TILING_OPTIMAL,
@@ -378,15 +414,15 @@ bool GPU_HW_Vulkan::CreateFramebuffer()
       !m_vram_depth_texture.Create(texture_width, texture_height, 1, 1, depth_format, samples, VK_IMAGE_VIEW_TYPE_2D,
                                    VK_IMAGE_TILING_OPTIMAL,
                                    VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT) ||
-      !m_vram_read_texture.Create(texture_width, texture_height, 1, 1, texture_format, samples, VK_IMAGE_VIEW_TYPE_2D,
-                                  VK_IMAGE_TILING_OPTIMAL,
+      !m_vram_read_texture.Create(texture_width, texture_height, 1, 1, texture_format, VK_SAMPLE_COUNT_1_BIT,
+                                  VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_TILING_OPTIMAL,
                                   VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT) ||
-      !m_display_texture.Create(texture_width, texture_height, 1, 1, texture_format, samples, VK_IMAGE_VIEW_TYPE_2D,
-                                VK_IMAGE_TILING_OPTIMAL,
+      !m_display_texture.Create(texture_width, texture_height, 1, 1, texture_format, VK_SAMPLE_COUNT_1_BIT,
+                                VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_TILING_OPTIMAL,
                                 VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT |
                                   VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT) ||
-      !m_vram_readback_texture.Create(VRAM_WIDTH, VRAM_HEIGHT, 1, 1, texture_format, samples, VK_IMAGE_VIEW_TYPE_2D,
-                                      VK_IMAGE_TILING_OPTIMAL,
+      !m_vram_readback_texture.Create(VRAM_WIDTH, VRAM_HEIGHT, 1, 1, texture_format, VK_SAMPLE_COUNT_1_BIT,
+                                      VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_TILING_OPTIMAL,
                                       VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT) ||
       !m_vram_readback_staging_texture.Create(Vulkan::StagingBuffer::Type::Readback, texture_format, VRAM_WIDTH / 2,
                                               VRAM_HEIGHT))
@@ -456,30 +492,6 @@ bool GPU_HW_Vulkan::CreateFramebuffer()
   dsubuilder.AddCombinedImageSamplerDescriptorWrite(m_vram_read_descriptor_set, 1, m_vram_texture.GetView(),
                                                     m_point_sampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
   dsubuilder.Update(g_vulkan_context->GetDevice());
-
-  if (old_vram_texture.IsValid())
-  {
-    const bool linear_filter = old_vram_texture.GetWidth() > m_vram_texture.GetWidth();
-    Log_DevPrintf("Scaling %ux%u VRAM texture to %ux%u using %s filter", old_vram_texture.GetWidth(),
-                  old_vram_texture.GetHeight(), m_vram_texture.GetWidth(), m_vram_texture.GetHeight(),
-                  linear_filter ? "linear" : "nearest");
-
-    m_vram_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-    old_vram_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-
-    const VkImageBlit blit{
-      {VK_IMAGE_ASPECT_COLOR_BIT, 0u, 0u, 1u},
-      {{0, 0, 0}, {static_cast<s32>(old_vram_texture.GetWidth()), static_cast<s32>(old_vram_texture.GetHeight()), 1}},
-      {VK_IMAGE_ASPECT_COLOR_BIT, 0u, 0u, 1u},
-      {{0, 0, 0}, {static_cast<s32>(m_vram_texture.GetWidth()), static_cast<s32>(m_vram_texture.GetHeight()), 1}}};
-    vkCmdBlitImage(cmdbuf, old_vram_texture.GetImage(), old_vram_texture.GetLayout(), m_vram_texture.GetImage(),
-                   m_vram_texture.GetLayout(), 1, &blit, linear_filter ? VK_FILTER_LINEAR : VK_FILTER_NEAREST);
-
-    m_vram_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-
-    // Can't immediately destroy because we're blitting in the current command buffer.
-    old_vram_texture.Destroy(true);
-  }
 
   ClearDisplay();
   SetFullVRAMDirtyRectangle();
@@ -583,8 +595,9 @@ bool GPU_HW_Vulkan::CompilePipelines()
   VkDevice device = g_vulkan_context->GetDevice();
   VkPipelineCache pipeline_cache = g_vulkan_shader_cache->GetPipelineCache();
 
-  GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_true_color, m_scaled_dithering,
-                             m_texture_filtering, m_using_uv_limits, m_supports_dual_source_blend);
+  GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_multisamples, m_per_sample_shading,
+                             m_true_color, m_scaled_dithering, m_texture_filtering, m_using_uv_limits,
+                             m_supports_dual_source_blend);
 
   Common::Timer compile_time;
   const int progress_total = 2 + (4 * 9 * 2 * 2) + (2 * 4 * 5 * 9 * 2 * 2) + 1 + 2 + 2 + 2 + 2 + (2 * 3);
@@ -682,6 +695,7 @@ bool GPU_HW_Vulkan::CompilePipelines()
               gpbuilder.SetDepthState(true, true,
                                       (depth_test != 0) ? VK_COMPARE_OP_GREATER_OR_EQUAL : VK_COMPARE_OP_ALWAYS);
               gpbuilder.SetNoBlendingState();
+              gpbuilder.SetMultisamples(m_multisamples, m_per_sample_shading);
 
               if ((static_cast<TransparencyMode>(transparency_mode) != TransparencyMode::Disabled &&
                    (static_cast<BatchRenderMode>(render_mode) != BatchRenderMode::TransparencyDisabled &&
@@ -736,6 +750,7 @@ bool GPU_HW_Vulkan::CompilePipelines()
   gpbuilder.SetNoBlendingState();
   gpbuilder.SetDynamicViewportAndScissorState();
   gpbuilder.SetVertexShader(fullscreen_quad_vertex_shader);
+  gpbuilder.SetMultisamples(m_multisamples, false);
 
   // VRAM fill
   {
@@ -957,10 +972,20 @@ void GPU_HW_Vulkan::UpdateDisplay()
 
   if (g_settings.debugging.show_vram)
   {
-    m_vram_texture.TransitionToLayout(g_vulkan_context->GetCurrentCommandBuffer(),
-                                      VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-    m_host_display->SetDisplayTexture(&m_vram_texture, m_vram_texture.GetWidth(), m_vram_texture.GetHeight(), 0, 0,
-                                      m_vram_texture.GetWidth(), m_vram_texture.GetHeight());
+    if (IsUsingMultisampling())
+    {
+      UpdateVRAMReadTexture();
+      m_host_display->SetDisplayTexture(&m_vram_read_texture, m_vram_read_texture.GetWidth(),
+                                        m_vram_read_texture.GetHeight(), 0, 0, m_vram_read_texture.GetWidth(),
+                                        m_vram_read_texture.GetHeight());
+    }
+    else
+    {
+      m_vram_texture.TransitionToLayout(g_vulkan_context->GetCurrentCommandBuffer(),
+                                        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+      m_host_display->SetDisplayTexture(&m_vram_texture, m_vram_texture.GetWidth(), m_vram_texture.GetHeight(), 0, 0,
+                                        m_vram_texture.GetWidth(), m_vram_texture.GetHeight());
+    }
     m_host_display->SetDisplayParameters(VRAM_WIDTH, VRAM_HEIGHT, 0, 0, VRAM_WIDTH, VRAM_HEIGHT,
                                          static_cast<float>(VRAM_WIDTH) / static_cast<float>(VRAM_HEIGHT));
   }
@@ -981,7 +1006,7 @@ void GPU_HW_Vulkan::UpdateDisplay()
       m_host_display->ClearDisplayTexture();
     }
     else if (!m_GPUSTAT.display_area_color_depth_24 && interlaced == InterlacedRenderMode::None &&
-             (scaled_vram_offset_x + scaled_display_width) <= m_vram_texture.GetWidth() &&
+             !IsUsingMultisampling() && (scaled_vram_offset_x + scaled_display_width) <= m_vram_texture.GetWidth() &&
              (scaled_vram_offset_y + scaled_display_height) <= m_vram_texture.GetHeight())
     {
       m_vram_texture.TransitionToLayout(g_vulkan_context->GetCurrentCommandBuffer(),
@@ -1158,7 +1183,7 @@ void GPU_HW_Vulkan::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
 
 void GPU_HW_Vulkan::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height)
 {
-  if (UseVRAMCopyShader(src_x, src_y, dst_x, dst_y, width, height))
+  if (UseVRAMCopyShader(src_x, src_y, dst_x, dst_y, width, height) || IsUsingMultisampling())
   {
     const Common::Rectangle<u32> src_bounds = GetVRAMTransferBounds(src_x, src_y, width, height);
     const Common::Rectangle<u32> dst_bounds = GetVRAMTransferBounds(dst_x, dst_y, width, height);
@@ -1224,14 +1249,28 @@ void GPU_HW_Vulkan::UpdateVRAMReadTexture()
   m_vram_read_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
   const auto scaled_rect = m_vram_dirty_rect * m_resolution_scale;
-  const VkImageCopy copy{{VK_IMAGE_ASPECT_COLOR_BIT, 0u, 0u, 1u},
-                         {static_cast<s32>(scaled_rect.left), static_cast<s32>(scaled_rect.top), 0},
-                         {VK_IMAGE_ASPECT_COLOR_BIT, 0u, 0u, 1u},
-                         {static_cast<s32>(scaled_rect.left), static_cast<s32>(scaled_rect.top), 0},
-                         {scaled_rect.GetWidth(), scaled_rect.GetHeight(), 1u}};
 
-  vkCmdCopyImage(cmdbuf, m_vram_texture.GetImage(), m_vram_texture.GetLayout(), m_vram_read_texture.GetImage(),
-                 m_vram_read_texture.GetLayout(), 1u, &copy);
+  if (m_vram_texture.GetSamples() > VK_SAMPLE_COUNT_1_BIT)
+  {
+    const VkImageResolve resolve{{VK_IMAGE_ASPECT_COLOR_BIT, 0u, 0u, 1u},
+                                 {static_cast<s32>(scaled_rect.left), static_cast<s32>(scaled_rect.top), 0},
+                                 {VK_IMAGE_ASPECT_COLOR_BIT, 0u, 0u, 1u},
+                                 {static_cast<s32>(scaled_rect.left), static_cast<s32>(scaled_rect.top), 0},
+                                 {scaled_rect.GetWidth(), scaled_rect.GetHeight(), 1u}};
+    vkCmdResolveImage(cmdbuf, m_vram_texture.GetImage(), m_vram_texture.GetLayout(), m_vram_read_texture.GetImage(),
+                      m_vram_read_texture.GetLayout(), 1, &resolve);
+  }
+  else
+  {
+    const VkImageCopy copy{{VK_IMAGE_ASPECT_COLOR_BIT, 0u, 0u, 1u},
+                           {static_cast<s32>(scaled_rect.left), static_cast<s32>(scaled_rect.top), 0},
+                           {VK_IMAGE_ASPECT_COLOR_BIT, 0u, 0u, 1u},
+                           {static_cast<s32>(scaled_rect.left), static_cast<s32>(scaled_rect.top), 0},
+                           {scaled_rect.GetWidth(), scaled_rect.GetHeight(), 1u}};
+
+    vkCmdCopyImage(cmdbuf, m_vram_texture.GetImage(), m_vram_texture.GetLayout(), m_vram_read_texture.GetImage(),
+                   m_vram_read_texture.GetLayout(), 1u, &copy);
+  }
 
   m_vram_read_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
   m_vram_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);

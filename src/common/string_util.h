@@ -112,6 +112,11 @@ ALWAYS_INLINE static bool StartsWith(const std::string_view& str, const char* pr
 {
   return (str.compare(0, std::strlen(prefix), prefix) == 0);
 }
+ALWAYS_INLINE static bool EndsWith(const std::string_view& str, const char* suffix)
+{
+  const std::size_t suffix_length = std::strlen(suffix);
+  return (str.length() >= suffix_length && str.compare(str.length() - suffix_length, suffix_length, suffix) == 0);
+}
 
 #ifdef WIN32
 

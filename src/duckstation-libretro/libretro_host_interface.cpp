@@ -457,7 +457,7 @@ void LibretroHostInterface::OnSystemDestroyed()
   m_using_hardware_renderer = false;
 }
 
-static std::array<retro_core_option_definition, 40> s_option_definitions = {{
+static std::array<retro_core_option_definition, 41> s_option_definitions = {{
   {"duckstation_Console.Region",
    "Console Region",
    "Determines which region/hardware to emulate. Auto-Detect will use the region of the disc inserted.",
@@ -558,6 +558,23 @@ static std::array<retro_core_option_definition, 40> s_option_definitions = {{
     {"14", "14x"},
     {"15", "15x"},
     {"16", "16x"}},
+   "1"},
+  {"duckstation_GPU.MSAA",
+   "Multisample Antialiasing",
+   "Uses multisample antialiasing for rendering 3D objects. Can smooth out jagged edges on polygons at a lower "
+   "cost to performance compared to increasing the resolution scale, but may be more likely to cause rendering "
+   "errors in some games.",
+   {{"1", "Disabled"},
+    {"2", "2x MSAA"},
+    {"4", "4x MSAA"},
+    {"8", "8x MSAA"},
+    {"16", "16x MSAA"},
+    {"32", "32x MSAA"},
+    {"2-ssaa", "2x SSAA"},
+    {"4-ssaa", "4x SSAA"},
+    {"8-ssaa", "8x SSAA"},
+    {"16-ssaa", "16x SSAA"},
+    {"32-ssaa", "32x SSAA"}},
    "1"},
   {"duckstation_GPU.TrueColor",
    "True Color Rendering",
@@ -681,7 +698,7 @@ static std::array<retro_core_option_definition, 40> s_option_definitions = {{
    "Automatically enables analog mode in supported controllers at start/reset.",
    {{"true", "Enabled"}, {"false", "Disabled"}},
    "false"},
-  {"duckstation_Controller1.AutoEnableAnalog",
+  {"duckstation_Controller1.AnalogDPadInDigitalMode",
    "Controller 1 Use Analog Sticks for D-Pad in Digital Mode",
    "Allows you to use the analog sticks to control the d-pad in digital mode, as well as the buttons.",
    {{"true", "Enabled"}, {"false", "Disabled"}},
@@ -701,7 +718,7 @@ static std::array<retro_core_option_definition, 40> s_option_definitions = {{
    "Automatically enables analog mode in supported controllers at start/reset.",
    {{"true", "Enabled"}, {"false", "Disabled"}},
    "false"},
-  {"duckstation_Controller2.AutoEnableAnalog",
+  {"duckstation_Controller2.AnalogDPadInDigitalMode",
    "Controller 2 Use Analog Sticks for D-Pad in Digital Mode",
    "Allows you to use the analog sticks to control the d-pad in digital mode, as well as the buttons.",
    {{"true", "Enabled"}, {"false", "Disabled"}},
@@ -780,6 +797,11 @@ void LibretroHostInterface::LoadSettings()
                                           &g_settings.cpu_overclock_denominator);
   g_settings.cpu_overclock_enable = (overclock_percent != 100);
   g_settings.UpdateOverclockActive();
+
+  // convert msaa settings
+  const std::string msaa = si.GetStringValue("GPU", "MSAA", "1");
+  g_settings.gpu_multisamples = StringUtil::FromChars<u32>(msaa).value_or(1);
+  g_settings.gpu_per_sample_shading = StringUtil::EndsWith(msaa, "-ssaa");
 
   // Ensure we don't use the standalone memcard directory in shared mode.
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)

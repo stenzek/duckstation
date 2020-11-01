@@ -677,7 +677,7 @@ void FillComboBoxWithResolutionScales(QComboBox* cb)
   cb->addItem(qApp->translate("GPUSettingsWidget", "6x (for 1440p)"));
   cb->addItem(qApp->translate("GPUSettingsWidget", "7x"));
   cb->addItem(qApp->translate("GPUSettingsWidget", "8x"));
-  cb->addItem(qApp->translate("GPUSettingsWidget", "9x"));
+  cb->addItem(qApp->translate("GPUSettingsWidget", "9x (for 4K)"));
   cb->addItem(qApp->translate("GPUSettingsWidget", "10x"));
   cb->addItem(qApp->translate("GPUSettingsWidget", "11x"));
   cb->addItem(qApp->translate("GPUSettingsWidget", "12x"));
@@ -685,6 +685,38 @@ void FillComboBoxWithResolutionScales(QComboBox* cb)
   cb->addItem(qApp->translate("GPUSettingsWidget", "14x"));
   cb->addItem(qApp->translate("GPUSettingsWidget", "15x"));
   cb->addItem(qApp->translate("GPUSettingsWidget", "16x"));
+}
+
+QVariant GetMSAAModeValue(uint multisamples, bool ssaa)
+{
+  const uint userdata = (multisamples & 0x7FFFFFFFu) | (static_cast<uint>(ssaa) << 31);
+  return QVariant(userdata);
+}
+
+void DecodeMSAAModeValue(const QVariant& userdata, uint* multisamples, bool* ssaa)
+{
+  bool ok;
+  const uint value = userdata.toUInt(&ok);
+  if (!ok || value == 0)
+  {
+    *multisamples = 1;
+    *ssaa = false;
+    return;
+  }
+
+  *multisamples = value & 0x7FFFFFFFu;
+  *ssaa = (value & (1u << 31)) != 0u;
+}
+
+void FillComboBoxWithMSAAModes(QComboBox* cb)
+{
+  cb->addItem(qApp->translate("GPUSettingsWidget", "Disabled"), GetMSAAModeValue(1, false));
+
+  for (uint i = 2; i <= 32; i *= 2)
+    cb->addItem(qApp->translate("GPUSettingsWidget", "%1x MSAA").arg(i), GetMSAAModeValue(i, false));
+
+  for (uint i = 2; i <= 32; i *= 2)
+    cb->addItem(qApp->translate("GPUSettingsWidget", "%1x SSAA").arg(i), GetMSAAModeValue(i, true));
 }
 
 } // namespace QtUtils

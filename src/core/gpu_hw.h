@@ -34,7 +34,7 @@ public:
   virtual bool Initialize(HostDisplay* host_display) override;
   virtual void Reset() override;
   virtual bool DoState(StateWrapper& sw) override;
-  
+
   void UpdateResolutionScale() override final;
   std::tuple<u32, u32> GetEffectiveDisplayResolution() override final;
 
@@ -187,6 +187,8 @@ protected:
 
   u32 CalculateResolutionScale() const;
 
+  ALWAYS_INLINE bool IsUsingMultisampling() const { return m_multisamples > 1; }
+
   void SetFullVRAMDirtyRectangle()
   {
     m_vram_dirty_rect.Set(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
@@ -266,11 +268,15 @@ protected:
   s32 m_current_depth = 0;
 
   u32 m_resolution_scale = 1;
+  u32 m_multisamples = 1;
   u32 m_max_resolution_scale = 1;
+  u32 m_max_multisamples = 1;
   HostDisplay::RenderAPI m_render_api = HostDisplay::RenderAPI::None;
+  bool m_per_sample_shading = false;
   bool m_true_color = true;
   bool m_scaled_dithering = false;
   GPUTextureFilter m_texture_filtering = GPUTextureFilter::Nearest;
+  bool m_supports_per_sample_shading = false;
   bool m_supports_dual_source_blend = false;
   bool m_using_uv_limits = false;
 

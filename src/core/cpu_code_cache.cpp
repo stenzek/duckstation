@@ -400,6 +400,7 @@ CodeBlock* LookupBlock(CodeBlockKey key)
 
 #ifdef WITH_RECOMPILER
     SetFastMap(block->GetPC(), block->host_code);
+    AddBlockToHostCodeMap(block);
 #endif
   }
   else
@@ -409,9 +410,7 @@ CodeBlock* LookupBlock(CodeBlockKey key)
     block = nullptr;
   }
 
-  iter = s_blocks.emplace(key.bits, block).first;
-  AddBlockToHostCodeMap(block);
-
+  s_blocks.emplace(key.bits, block);
   return block;
 }
 

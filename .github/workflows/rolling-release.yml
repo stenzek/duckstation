@@ -255,6 +255,7 @@ jobs:
       run: |
         mkdir build
         cd build
+        export MACOSX_DEPLOYMENT_TARGET=10.14
         cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SDL_FRONTEND=OFF -DBUILD_QT_FRONTEND=ON -DUSE_SDL2=ON -DQt5_DIR=/usr/local/opt/qt/lib/cmake/Qt5 ..
         cmake --build . --parallel 2
         cd bin
@@ -271,6 +272,7 @@ jobs:
       run: |
         mkdir build-libretro
         cd build-libretro
+        export MACOSX_DEPLOYMENT_TARGET=10.14
         cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_BUILD_TYPE=Release -DBUILD_LIBRETRO_CORE=ON  ..
         cmake --build . --parallel 2
         zip -j duckstation_libretro_mac.dylib.zip duckstation_libretro.dylib

@@ -16,6 +16,7 @@ class QFrame;
 class QKeyEvent;
 class QTableView;
 class QTreeView;
+class QVariant;
 class QWidget;
 class QUrl;
 
@@ -61,5 +62,10 @@ void OpenURL(QWidget* parent, const char* url);
 
 /// Fills a combo box with resolution scale options.
 void FillComboBoxWithResolutionScales(QComboBox* cb);
+
+/// Fills a combo box with multisampling options.
+QVariant GetMSAAModeValue(uint multisamples, bool ssaa);
+void DecodeMSAAModeValue(const QVariant& userdata, uint* multisamples, bool* ssaa);
+void FillComboBoxWithMSAAModes(QComboBox* cb);
 
 } // namespace QtUtils

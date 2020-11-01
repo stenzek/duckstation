@@ -111,6 +111,6 @@ bool LibretroD3D11HostDisplay::CheckFramebufferSize(u32 width, u32 height)
   if (m_framebuffer.GetWidth() == width && m_framebuffer.GetHeight() == height)
     return true;
 
-  return m_framebuffer.Create(m_device.Get(), width, height, DXGI_FORMAT_R8G8B8A8_UNORM,
+  return m_framebuffer.Create(m_device.Get(), width, height, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
                               D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET);
 }
