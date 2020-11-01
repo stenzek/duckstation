@@ -174,6 +174,16 @@ void VulkanHostDisplay::ResizeRenderWindow(s32 new_window_width, s32 new_window_
 #endif
 }
 
+bool VulkanHostDisplay::IsFullscreen()
+{
+  return false;
+}
+
+bool VulkanHostDisplay::SetFullscreen(bool fullscreen, u32 width, u32 height, float refresh_rate)
+{
+  return false;
+}
+
 void VulkanHostDisplay::DestroyRenderSurface()
 {
   m_window_info = {};

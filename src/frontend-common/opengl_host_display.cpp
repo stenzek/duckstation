@@ -315,6 +315,16 @@ void OpenGLHostDisplay::ResizeRenderWindow(s32 new_window_width, s32 new_window_
 #endif
 }
 
+bool OpenGLHostDisplay::IsFullscreen()
+{
+  return false;
+}
+
+bool OpenGLHostDisplay::SetFullscreen(bool fullscreen, u32 width, u32 height, float refresh_rate)
+{
+  return false;
+}
+
 void OpenGLHostDisplay::DestroyRenderSurface()
 {
   if (!m_gl_context)

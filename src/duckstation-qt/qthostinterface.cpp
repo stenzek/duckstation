@@ -435,6 +435,15 @@ void QtHostInterface::onHostDisplayWindowResized(int width, int height)
   // re-render the display, since otherwise it will be out of date and stretched if paused
   if (!System::IsShutdown())
   {
+    if (m_is_exclusive_fullscreen && !m_display->IsFullscreen())
+    {
+      // we lost exclusive fullscreen
+      AddOSDMessage(TranslateStdString("OSDMessage", "Lost exclusive fullscreen."), 20.0f);
+      m_is_exclusive_fullscreen = false;
+      m_is_fullscreen = false;
+      updateDisplayState();
+    }
+
     g_gpu->UpdateResolutionScale();
     renderDisplay();
   }
@@ -495,6 +504,7 @@ bool QtHostInterface::AcquireHostDisplay()
   }
 
   connectDisplaySignals(display_widget);
+  m_is_exclusive_fullscreen = m_display->IsFullscreen();
   ImGui::NewFrame();
   return true;
 }
@@ -551,6 +561,7 @@ void QtHostInterface::updateDisplayState()
     Panic("Failed to make device context current after updating");
 
   connectDisplaySignals(display_widget);
+  m_is_exclusive_fullscreen = m_display->IsFullscreen();
 
   if (!System::IsShutdown())
   {

@@ -23,6 +23,8 @@ public:
 
   bool ChangeRenderWindow(const WindowInfo& wi) override;
   void ResizeRenderWindow(s32 new_window_width, s32 new_window_height) override;
+  bool IsFullscreen() override;
+  bool SetFullscreen(bool fullscreen, u32 width, u32 height, float refresh_rate) override;
   void DestroyRenderSurface() override;
 
   bool SetPostProcessingChain(const std::string_view& config) override;

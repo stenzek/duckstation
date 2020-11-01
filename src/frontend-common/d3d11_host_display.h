@@ -44,6 +44,8 @@ public:
 
   virtual bool ChangeRenderWindow(const WindowInfo& new_wi) override;
   virtual void ResizeRenderWindow(s32 new_window_width, s32 new_window_height) override;
+  virtual bool IsFullscreen() override;
+  virtual bool SetFullscreen(bool fullscreen, u32 width, u32 height, float refresh_rate) override;
   virtual void DestroyRenderSurface() override;
 
   virtual bool SetPostProcessingChain(const std::string_view& config) override;
@@ -60,13 +62,20 @@ public:
   virtual bool Render() override;
 
 #ifndef LIBRETRO
-  static std::vector<std::string> EnumerateAdapterNames();
+  struct AdapterInfo
+  {
+    std::vector<std::string> adapter_names;
+    std::vector<std::string> fullscreen_modes;
+  };
+  static AdapterInfo GetAdapterInfo();
 #endif
 
 protected:
   static constexpr u32 DISPLAY_UNIFORM_BUFFER_SIZE = 16;
 
-  static std::vector<std::string> EnumerateAdapterNames(IDXGIFactory* dxgi_factory);
+#ifndef LIBRETRO
+  static AdapterInfo GetAdapterInfo(IDXGIFactory* dxgi_factory);
+#endif
 
   virtual bool CreateResources() override;
   virtual void DestroyResources() override;
@@ -75,7 +84,7 @@ protected:
   virtual void DestroyImGuiContext();
 
 #ifndef LIBRETRO
-  bool CreateSwapChain();
+  bool CreateSwapChain(const DXGI_MODE_DESC* fullscreen_mode);
   bool CreateSwapChainRTV();
 #endif
 

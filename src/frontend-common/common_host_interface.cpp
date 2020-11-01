@@ -2478,6 +2478,53 @@ void CommonHostInterface::ReloadPostProcessingShaders()
     AddOSDMessage(TranslateStdString("OSDMessage", "Post-processing shaders reloaded."), 10.0f);
 }
 
+bool CommonHostInterface::ParseFullscreenMode(const std::string_view& mode, u32* width, u32* height,
+                                              float* refresh_rate)
+{
+  if (!mode.empty())
+  {
+    std::string_view::size_type sep1 = mode.find('x');
+    if (sep1 != std::string_view::npos)
+    {
+      std::optional<u32> owidth = StringUtil::FromChars<u32>(mode.substr(0, sep1));
+      sep1++;
+
+      while (sep1 < mode.length() && std::isspace(mode[sep1]))
+        sep1++;
+
+      if (owidth.has_value() && sep1 < mode.length())
+      {
+        std::string_view::size_type sep2 = mode.find('@', sep1);
+        if (sep2 != std::string_view::npos)
+        {
+          std::optional<u32> oheight = StringUtil::FromChars<u32>(mode.substr(sep1, sep2 - sep1));
+          sep2++;
+
+          while (sep2 < mode.length() && std::isspace(mode[sep2]))
+            sep2++;
+
+          if (oheight.has_value() && sep2 < mode.length())
+          {
+            std::optional<float> orefresh_rate = StringUtil::FromChars<float>(mode.substr(sep2));
+            if (orefresh_rate.has_value())
+            {
+              *width = owidth.value();
+              *height = oheight.value();
+              *refresh_rate = orefresh_rate.value();
+              return true;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  *width = 0;
+  *height = 0;
+  *refresh_rate = 0;
+  return false;
+}
+
 #ifdef WITH_DISCORD_PRESENCE
 
 void CommonHostInterface::SetDiscordPresenceEnabled(bool enabled)

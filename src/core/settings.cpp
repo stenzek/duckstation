@@ -5,6 +5,7 @@
 #include "host_interface.h"
 #include <algorithm>
 #include <array>
+#include <cctype>
 #include <numeric>
 
 Settings g_settings;
