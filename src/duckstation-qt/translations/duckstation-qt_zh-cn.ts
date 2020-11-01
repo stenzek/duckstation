@@ -372,22 +372,22 @@
 <context>
     <name>AudioBackend</name>
     <message>
-        <location filename="../../core/settings.cpp" line="609"/>
+        <location filename="../../core/settings.cpp" line="613"/>
         <source>Null (No Output)</source>
         <translation>无 (无输出)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="610"/>
+        <location filename="../../core/settings.cpp" line="614"/>
         <source>Cubeb</source>
         <translation>Cubeb</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="612"/>
+        <location filename="../../core/settings.cpp" line="616"/>
         <source>SDL</source>
         <translation>SDL</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="614"/>
+        <location filename="../../core/settings.cpp" line="618"/>
         <source>OpenSL ES</source>
         <translation>OpenSL ES</translation>
     </message>
@@ -731,17 +731,17 @@
 <context>
     <name>CPUExecutionMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="448"/>
+        <location filename="../../core/settings.cpp" line="452"/>
         <source>Intepreter (Slowest)</source>
         <translation>解释器 (最慢)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="449"/>
+        <location filename="../../core/settings.cpp" line="453"/>
         <source>Cached Interpreter (Faster)</source>
         <translation>缓存解释器 (较快)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="450"/>
+        <location filename="../../core/settings.cpp" line="454"/>
         <source>Recompiler (Fastest)</source>
         <translation>重编译器 (最快)</translation>
     </message>
@@ -1262,22 +1262,22 @@
 <context>
     <name>ConsoleRegion</name>
     <message>
-        <location filename="../../core/settings.cpp" line="390"/>
+        <location filename="../../core/settings.cpp" line="394"/>
         <source>Auto-Detect</source>
         <translation>自动检测</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="390"/>
+        <location filename="../../core/settings.cpp" line="394"/>
         <source>NTSC-J (Japan)</source>
         <translation>NTSC-J (日本)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="391"/>
+        <location filename="../../core/settings.cpp" line="395"/>
         <source>NTSC-U/C (US, Canada)</source>
         <translation>NTSC-U/C (美国/加拿大)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="391"/>
+        <location filename="../../core/settings.cpp" line="395"/>
         <source>PAL (Europe, Australia)</source>
         <translation>PAL (欧洲，澳大利亚)</translation>
     </message>
@@ -1347,42 +1347,42 @@
     <message>
         <location filename="../consolesettingswidget.ui" line="180"/>
         <source>3x (6x Speed)</source>
-        <translation>3x (6x 倍速)</translation>
+        <translation>3x (6x倍速)</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="185"/>
         <source>4x (8x Speed)</source>
-        <translation>4x (8x 倍速)</translation>
+        <translation>4x (8x倍速)</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="190"/>
         <source>5x (10x Speed)</source>
-        <translation>5x (10x 倍速)</translation>
+        <translation>5x (10x倍速)</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="195"/>
         <source>6x (12x Speed)</source>
-        <translation>6x (12x 倍速)</translation>
+        <translation>6x (12x倍速)</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="200"/>
         <source>7x (14x Speed)</source>
-        <translation>7x (14x 倍速)</translation>
+        <translation>7x (14x倍速)</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="205"/>
         <source>8x (16x Speed)</source>
-        <translation>8x (16x 倍速)</translation>
+        <translation>8x (16x倍速)</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="210"/>
         <source>9x (18x Speed)</source>
-        <translation>9x (18x 倍速)</translation>
+        <translation>9x (18x倍速)</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="215"/>
         <source>10x (20x Speed)</source>
-        <translation>10x (20x 倍速)</translation>
+        <translation>10x (20x倍速)</translation>
     </message>
     <message>
         <source>CDROM Emulation</source>
@@ -1599,32 +1599,32 @@ This warning will only be shown once.</source>
 <context>
     <name>ControllerType</name>
     <message>
-        <location filename="../../core/settings.cpp" line="645"/>
+        <location filename="../../core/settings.cpp" line="649"/>
         <source>None</source>
         <translation>无</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="645"/>
+        <location filename="../../core/settings.cpp" line="649"/>
         <source>Digital Controller</source>
         <translation>数字控制器</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="646"/>
+        <location filename="../../core/settings.cpp" line="650"/>
         <source>Analog Controller (DualShock)</source>
         <translation>模拟控制器 (DualShock)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="646"/>
+        <location filename="../../core/settings.cpp" line="650"/>
         <source>Namco GunCon</source>
         <translation>南梦宫光枪</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="647"/>
+        <location filename="../../core/settings.cpp" line="651"/>
         <source>PlayStation Mouse</source>
-        <translation>Playstation鼠标</translation>
+        <translation>PlayStation鼠标</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="647"/>
+        <location filename="../../core/settings.cpp" line="651"/>
         <source>NeGcon</source>
         <translation>NeGcon</translation>
     </message>
@@ -1705,7 +1705,7 @@ This warning will only be shown once.</source>
 <context>
     <name>DiscRegion</name>
     <message>
-        <location filename="../../core/settings.cpp" line="419"/>
+        <location filename="../../core/settings.cpp" line="423"/>
         <source>NTSC-J (Japan)</source>
         <translation>NTSC-J (日本)</translation>
     </message>
@@ -1714,17 +1714,17 @@ This warning will only be shown once.</source>
         <translation type="vanished">NTSC-U (美国)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="419"/>
+        <location filename="../../core/settings.cpp" line="423"/>
         <source>NTSC-U/C (US, Canada)</source>
         <translation>NTSC-U/C (美国，加拿大)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="420"/>
+        <location filename="../../core/settings.cpp" line="424"/>
         <source>PAL (Europe, Australia)</source>
         <translation>PAL (欧洲，澳大利亚)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="420"/>
+        <location filename="../../core/settings.cpp" line="424"/>
         <source>Other</source>
         <translation>其他</translation>
     </message>
@@ -1732,17 +1732,17 @@ This warning will only be shown once.</source>
 <context>
     <name>DisplayCropMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="543"/>
+        <location filename="../../core/settings.cpp" line="547"/>
         <source>None</source>
         <translation>无</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="543"/>
+        <location filename="../../core/settings.cpp" line="547"/>
         <source>Only Overscan Area</source>
         <translation>仅限过扫描区域</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="544"/>
+        <location filename="../../core/settings.cpp" line="548"/>
         <source>All Borders</source>
         <translation>所有边界</translation>
     </message>
@@ -1959,7 +1959,7 @@ This warning will only be shown once.</source>
         <translation>内部分辨率缩放:</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="46"/>
+        <location filename="../enhancementsettingswidget.cpp" line="49"/>
         <source>Resolution Scale</source>
         <translation>分辨率缩放</translation>
     </message>
@@ -1969,7 +1969,7 @@ This warning will only be shown once.</source>
         <translation>纹理过滤器:</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="71"/>
+        <location filename="../enhancementsettingswidget.cpp" line="79"/>
         <source>Texture Filtering</source>
         <translation>纹理过滤器</translation>
     </message>
@@ -1980,40 +1980,45 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="58"/>
-        <location filename="../enhancementsettingswidget.cpp" line="51"/>
+        <location filename="../enhancementsettingswidget.cpp" line="59"/>
         <source>True Color Rendering (24-bit, disables dithering)</source>
         <translation>真彩色渲染 (24位，禁用色彩抖动)</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="65"/>
-        <location filename="../enhancementsettingswidget.cpp" line="58"/>
+        <location filename="../enhancementsettingswidget.cpp" line="66"/>
         <source>Scaled Dithering (scale dither pattern to resolution)</source>
         <translation>缩放色彩抖动 (按分辨率缩放模式)</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="82"/>
+        <location filename="../enhancementsettingswidget.ui" line="79"/>
+        <source>Multisample Antialiasing:</source>
+        <translation>多重采样反锯齿:</translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.ui" line="92"/>
         <source>Display Enhancements</source>
         <translation>显示增强</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="88"/>
-        <location filename="../enhancementsettingswidget.cpp" line="40"/>
+        <location filename="../enhancementsettingswidget.ui" line="98"/>
+        <location filename="../enhancementsettingswidget.cpp" line="43"/>
         <source>Disable Interlacing (force progressive render/scan)</source>
         <translation>禁用隔行扫描 (强制渐进式渲染/扫描)</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="95"/>
-        <location filename="../enhancementsettingswidget.cpp" line="61"/>
+        <location filename="../enhancementsettingswidget.ui" line="105"/>
+        <location filename="../enhancementsettingswidget.cpp" line="69"/>
         <source>Force NTSC Timings (60hz-on-PAL)</source>
         <translation>强制NTSC制式 (60hz-PAL)</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="68"/>
+        <location filename="../enhancementsettingswidget.cpp" line="76"/>
         <source>Force 4:3 For 24-bit Display</source>
         <translation>24位色显示中强制4比3</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="102"/>
+        <location filename="../enhancementsettingswidget.ui" line="112"/>
         <source>Force 4:3 For 24-Bit Display (disable widescreen for FMVs)</source>
         <translation>24位色显示中强制4比3 (动画中禁用宽屏)</translation>
     </message>
@@ -2027,25 +2032,25 @@ This warning will only be shown once.</source>
         <translation>宽屏调整 (在16比9中渲染3D)</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="112"/>
+        <location filename="../enhancementsettingswidget.ui" line="122"/>
         <source>PGXP (Precision Geometry Transform Pipeline)</source>
         <translation>PGXP (精确几何转换管线)</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="118"/>
-        <location filename="../enhancementsettingswidget.cpp" line="82"/>
+        <location filename="../enhancementsettingswidget.ui" line="128"/>
+        <location filename="../enhancementsettingswidget.cpp" line="90"/>
         <source>Geometry Correction</source>
         <translation>几何校正</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="125"/>
-        <location filename="../enhancementsettingswidget.cpp" line="85"/>
+        <location filename="../enhancementsettingswidget.ui" line="135"/>
+        <location filename="../enhancementsettingswidget.cpp" line="93"/>
         <source>Culling Correction</source>
         <translation>剔除校正</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="132"/>
-        <location filename="../enhancementsettingswidget.cpp" line="88"/>
+        <location filename="../enhancementsettingswidget.ui" line="142"/>
+        <location filename="../enhancementsettingswidget.cpp" line="96"/>
         <source>Texture Correction</source>
         <translation>纹理校正</translation>
     </message>
@@ -2058,12 +2063,12 @@ This warning will only be shown once.</source>
         <translation type="vanished">CPU模式</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="47"/>
+        <location filename="../enhancementsettingswidget.cpp" line="50"/>
         <source>Setting this beyond 1x will enhance the resolution of rendered 3D polygons and lines. Only applies to the hardware backends. &lt;br&gt;This option is usually safe, with most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</source>
         <translation>将此值设置为超过1x将增强渲染的3D多边形和线条的分辨率。仅适用于硬件后端。&lt;br&gt;这个选项通常是安全的，大多数游戏在更高的分辨率下看起来很好。更高的分辨率需要更强大的GPU。</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="59"/>
+        <location filename="../enhancementsettingswidget.cpp" line="67"/>
         <source>Scales the dither pattern to the resolution scale of the emulated GPU. This makes the dither pattern much less obvious at higher resolutions. &lt;br&gt;Usually safe to enable, and only supported by the hardware renderers.</source>
         <translation>将抖动模式缩放到模拟GPU的分辨率级别。这使得抖动模式在更高分辨率下变得不那么明显。&lt;br&gt;通常可以安全启用，并且仅由硬件渲染器支持。</translation>
     </message>
@@ -2072,32 +2077,47 @@ This warning will only be shown once.</source>
         <translation type="vanished">利用双线性过滤器消除三维物体上放大纹理的块状。&lt;br&gt;会对更高分辨率的尺度产生更大的影响。目前，在许多游戏中，这个选项会在对象周围产生瑕疵，需要进一步的工作。仅适用于硬件渲染器。</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="41"/>
+        <location filename="../enhancementsettingswidget.cpp" line="44"/>
         <source>Forces the rendering and display of frames to progressive mode. &lt;br&gt;This removes the &quot;combing&quot; effect seen in 480i games by rendering them in 480p. Usually safe to enable.&lt;br&gt; &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
         <translation>强制以渐进模式渲染和显示帧。&lt;br&gt;这将通过在480p中渲染480i游戏中的效果来移除它们。并非所有的游戏都与此选项兼容，有些游戏需要隔行渲染或内部渲染。通常可以安全启用。&lt;br&gt;&lt;b&gt;&lt;u&gt;可能不兼容所有游戏。&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="62"/>
+        <location filename="../enhancementsettingswidget.cpp" line="54"/>
+        <source>Multisample Antialiasing</source>
+        <translation>多重采样反锯齿</translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.cpp" line="54"/>
+        <source>Disabled</source>
+        <translation>禁用</translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.cpp" line="55"/>
+        <source>Uses multisample antialiasing for rendering 3D objects. Can smooth out jagged edges on polygons at a lower cost to performance compared to increasing the resolution scale, but may be more likely to cause rendering errors in some games. Only applies to the hardware backends.</source>
+        <translation>与增加分辨率相比，渲染3D对象使用多重采样反锯齿，能够以更低的性能代价来平滑多边形上的锯齿状边缘。但在一些游戏中可能更容易导致渲染错误。只适用于硬件后端。</translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.cpp" line="70"/>
         <source>Uses NTSC frame timings when the console is in PAL mode, forcing PAL games to run at 60hz. &lt;br&gt;For most games which have a speed tied to the framerate, this will result in the game running approximately 17% faster. &lt;br&gt;For variable frame rate games, it may not affect the speed.</source>
         <translation>当游戏机处于PAL模式时使用NTSC帧计时，强制PAL游戏以60hz运行。&lt;br&gt;对于大多数速度与帧速率相关的游戏，这将导致游戏运行速度大约快17%。&lt;br&gt;对于可变帧速率游戏，它可能不会影响速度。</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="69"/>
+        <location filename="../enhancementsettingswidget.cpp" line="77"/>
         <source>Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs.</source>
         <translation>当显示24位色内容 (通常为动画) 时，纵横比切换回4比3显示。</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="73"/>
+        <location filename="../enhancementsettingswidget.cpp" line="81"/>
         <source>Smooths out the blockyness of magnified textures on 3D object by using filtering. &lt;br&gt;Will have a greater effect on higher resolution scales. Only applies to the hardware renderers.</source>
         <translation>使用滤镜来平滑3D对象因放大纹理所导致的块状。&lt;br&gt;在较高的分辨率下将有更好的效果。只适用于硬件渲染器。</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="76"/>
+        <location filename="../enhancementsettingswidget.cpp" line="84"/>
         <source>Widescreen Hack</source>
         <translation>宽屏调整</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="77"/>
+        <location filename="../enhancementsettingswidget.cpp" line="85"/>
         <source>Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to 16:9 in 3D games. &lt;br&gt;For 2D games, or games which use pre-rendered backgrounds, this enhancement will not work as expected. &lt;br&gt;&lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
         <translation>将屏幕空间中的顶点位置缩放到适应宽屏显示的纵横比，根本上将3D游戏中的视野从4:3增加到16:9。&lt;br&gt;对于2D游戏，或使用预渲染背景的游戏，此增强将无法按预期工作。&lt;br&gt;&lt;b&gt;&lt;u&gt;可能不兼容所有游戏。&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
@@ -2106,22 +2126,22 @@ This warning will only be shown once.</source>
         <translation type="vanished">允许放大渲染到控制台帧缓冲区的三维对象。仅适用于硬件后端。这个选项通常是安全的, 大多数游戏在更高的分辨率下看起来很好。更高的分辨率需要更强大的GPU。</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="52"/>
+        <location filename="../enhancementsettingswidget.cpp" line="60"/>
         <source>Forces the precision of colours output to the console&apos;s framebuffer to use the full 8 bits of precision per channel. This produces nicer looking gradients at the cost of making some colours look slightly different. Disabling the option also enables dithering, which makes the transition between colours less sharp by applying a pattern around those pixels. Most games are compatible with this option, but there is a number which aren&apos;t and will have broken effects with it enabled. Only applies to the hardware renderers.</source>
         <translation>强制输出到主机的帧缓冲区的颜色精度使用每个通道的全部8位精度。这会产生更好看的渐变，但代价是使某些颜色看起来稍有不同。禁用该选项也会启用色彩抖动，这会通过在这些像素周围应用图案来减少颜色之间的过渡。大多数游戏都与此选项兼容，但也有一部分游戏不支持此选项，并且在启用该选项后会产生中断效果。仅适用于硬件渲染器。</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="83"/>
+        <location filename="../enhancementsettingswidget.cpp" line="91"/>
         <source>Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. &lt;br&gt;Only works with the hardware renderers. &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
         <translation>减少在PS1游戏中常见的&quot;抖动&quot;多边形和扭曲纹理。&lt;br&gt;仅适用于硬件渲染器。&lt;b&gt;&lt;u&gt;可能不兼容所有游戏。&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="86"/>
+        <location filename="../enhancementsettingswidget.cpp" line="94"/>
         <source>Increases the precision of polygon culling, reducing the number of holes in geometry. Requires geometry correction enabled.</source>
         <translation>提高多边形剔除的精度，减少几何体中的孔数。需要启用几何校正。</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="89"/>
+        <location filename="../enhancementsettingswidget.cpp" line="97"/>
         <source>Uses perspective-correct interpolation for texture coordinates and colors, straightening out warped textures. Requires geometry correction enabled.</source>
         <translation>使用透视校正插值纹理坐标和颜色，矫直扭曲的纹理。需要启用几何校正。</translation>
     </message>
@@ -2146,19 +2166,19 @@ This warning will only be shown once.</source>
         <translation type="vanished">(默认)</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="58"/>
-        <location filename="../enhancementsettingswidget.cpp" line="85"/>
-        <location filename="../enhancementsettingswidget.cpp" line="88"/>
+        <location filename="../enhancementsettingswidget.cpp" line="66"/>
+        <location filename="../enhancementsettingswidget.cpp" line="93"/>
+        <location filename="../enhancementsettingswidget.cpp" line="96"/>
         <source>Checked</source>
         <translation>勾选</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="40"/>
-        <location filename="../enhancementsettingswidget.cpp" line="51"/>
-        <location filename="../enhancementsettingswidget.cpp" line="61"/>
-        <location filename="../enhancementsettingswidget.cpp" line="68"/>
+        <location filename="../enhancementsettingswidget.cpp" line="43"/>
+        <location filename="../enhancementsettingswidget.cpp" line="59"/>
+        <location filename="../enhancementsettingswidget.cpp" line="69"/>
         <location filename="../enhancementsettingswidget.cpp" line="76"/>
-        <location filename="../enhancementsettingswidget.cpp" line="82"/>
+        <location filename="../enhancementsettingswidget.cpp" line="84"/>
+        <location filename="../enhancementsettingswidget.cpp" line="90"/>
         <source>Unchecked</source>
         <translation>不勾选</translation>
     </message>
@@ -2166,22 +2186,22 @@ This warning will only be shown once.</source>
 <context>
     <name>GPURenderer</name>
     <message>
-        <location filename="../../core/settings.cpp" line="483"/>
+        <location filename="../../core/settings.cpp" line="487"/>
         <source>Hardware (D3D11)</source>
         <translation>硬件 (D3D11)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="485"/>
+        <location filename="../../core/settings.cpp" line="489"/>
         <source>Hardware (Vulkan)</source>
         <translation>硬件 (Vulkan)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="485"/>
+        <location filename="../../core/settings.cpp" line="489"/>
         <source>Hardware (OpenGL)</source>
         <translation>硬件 (OpenGL)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="486"/>
+        <location filename="../../core/settings.cpp" line="490"/>
         <source>Software</source>
         <translation>软件</translation>
     </message>
@@ -2201,7 +2221,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../qtutils.cpp" line="674"/>
         <source>3x (for 720p)</source>
-        <translation>3x (适合 720p)</translation>
+        <translation>3x (适合720p)</translation>
     </message>
     <message>
         <location filename="../qtutils.cpp" line="675"/>
@@ -2211,12 +2231,12 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../qtutils.cpp" line="676"/>
         <source>5x (for 1080p)</source>
-        <translation>5x (适合 1080p)</translation>
+        <translation>5x (适合1080p)</translation>
     </message>
     <message>
         <location filename="../qtutils.cpp" line="677"/>
         <source>6x (for 1440p)</source>
-        <translation>6x (适合 1440p)</translation>
+        <translation>6x (适合1440p)</translation>
     </message>
     <message>
         <location filename="../qtutils.cpp" line="678"/>
@@ -2230,8 +2250,27 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <location filename="../qtutils.cpp" line="680"/>
+        <source>9x (for 4K)</source>
+        <translation>9x (适合4K)</translation>
+    </message>
+    <message>
+        <location filename="../qtutils.cpp" line="713"/>
+        <source>Disabled</source>
+        <translation>禁用</translation>
+    </message>
+    <message>
+        <location filename="../qtutils.cpp" line="716"/>
+        <source>%1x MSAA</source>
+        <translation>%1x MSAA</translation>
+    </message>
+    <message>
+        <location filename="../qtutils.cpp" line="719"/>
+        <source>%1x SSAA</source>
+        <translation>%1x SSAA</translation>
+    </message>
+    <message>
         <source>9x</source>
-        <translation>9x</translation>
+        <translation type="vanished">9x</translation>
     </message>
     <message>
         <location filename="../qtutils.cpp" line="681"/>
@@ -2281,22 +2320,22 @@ This warning will only be shown once.</source>
 <context>
     <name>GPUTextureFilter</name>
     <message>
-        <location filename="../../core/settings.cpp" line="514"/>
+        <location filename="../../core/settings.cpp" line="518"/>
         <source>Nearest-Neighbor</source>
         <translation>Nearest-Neighbor</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="514"/>
+        <location filename="../../core/settings.cpp" line="518"/>
         <source>Bilinear</source>
         <translation>Bilinear</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="515"/>
+        <location filename="../../core/settings.cpp" line="519"/>
         <source>JINC2</source>
         <translation>JINC2</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="515"/>
+        <location filename="../../core/settings.cpp" line="519"/>
         <source>xBR</source>
         <translation>xBR</translation>
     </message>
@@ -2610,42 +2649,42 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../gamepropertiesdialog.ui" line="436"/>
         <source>3x (6x Speed)</source>
-        <translation>3x (6x 倍速)</translation>
+        <translation>3x (6x倍速)</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="441"/>
         <source>4x (8x Speed)</source>
-        <translation>4x (8x 倍速)</translation>
+        <translation>4x (8x倍速)</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="446"/>
         <source>5x (10x Speed)</source>
-        <translation>5x (10x 倍速)</translation>
+        <translation>5x (10x倍速)</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="451"/>
         <source>6x (12x Speed)</source>
-        <translation>6x (12x 倍速)</translation>
+        <translation>6x (12x倍速)</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="456"/>
         <source>7x (14x Speed)</source>
-        <translation>7x (14x 倍速)</translation>
+        <translation>7x (14x倍速)</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="461"/>
         <source>8x (16x Speed)</source>
-        <translation>8x (16x 倍速)</translation>
+        <translation>8x (16x倍速)</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="466"/>
         <source>9x (18x Speed)</source>
-        <translation>9x (18x 倍速)</translation>
+        <translation>9x (18x倍速)</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="471"/>
         <source>10x (20x Speed)</source>
-        <translation>10x (20x 倍速)</translation>
+        <translation>10x (20x倍速)</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="496"/>
@@ -3628,52 +3667,52 @@ This will download approximately 4 megabytes over your current internet connecti
 <context>
     <name>LogLevel</name>
     <message>
-        <location filename="../../core/settings.cpp" line="359"/>
+        <location filename="../../core/settings.cpp" line="363"/>
         <source>None</source>
         <translation>无</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="359"/>
+        <location filename="../../core/settings.cpp" line="363"/>
         <source>Error</source>
         <translation>错误</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="359"/>
+        <location filename="../../core/settings.cpp" line="363"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="360"/>
+        <location filename="../../core/settings.cpp" line="364"/>
         <source>Performance</source>
         <translation>性能</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="360"/>
+        <location filename="../../core/settings.cpp" line="364"/>
         <source>Success</source>
         <translation>成功</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="361"/>
+        <location filename="../../core/settings.cpp" line="365"/>
         <source>Information</source>
         <translation>信息</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="361"/>
+        <location filename="../../core/settings.cpp" line="365"/>
         <source>Developer</source>
         <translation>开发者</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="361"/>
+        <location filename="../../core/settings.cpp" line="365"/>
         <source>Profile</source>
         <translation>简介</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="362"/>
+        <location filename="../../core/settings.cpp" line="366"/>
         <source>Debug</source>
         <translation>调试</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="362"/>
+        <location filename="../../core/settings.cpp" line="366"/>
         <source>Trace</source>
         <translation>跟踪</translation>
     </message>
@@ -4528,22 +4567,22 @@ This will download approximately 4 megabytes over your current internet connecti
 <context>
     <name>MemoryCardType</name>
     <message>
-        <location filename="../../core/settings.cpp" line="675"/>
+        <location filename="../../core/settings.cpp" line="679"/>
         <source>No Memory Card</source>
         <translation>无记忆卡</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="675"/>
+        <location filename="../../core/settings.cpp" line="679"/>
         <source>Shared Between All Games</source>
         <translation>所有游戏共用记忆卡</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="676"/>
+        <location filename="../../core/settings.cpp" line="680"/>
         <source>Separate Card Per Game (Game Code)</source>
         <translation>每个游戏独立记忆卡 (游戏编码)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="677"/>
+        <location filename="../../core/settings.cpp" line="681"/>
         <source>Separate Card Per Game (Game Title)</source>
         <translation>每个游戏独立记忆卡 (游戏标题)</translation>
     </message>
@@ -4677,62 +4716,62 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>保存即时存档到&apos;%s&apos;。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="530"/>
+        <location filename="../../core/host_interface.cpp" line="532"/>
         <source>PGXP is incompatible with the software renderer, disabling PGXP.</source>
         <translation>PGXP与软件呈现程序不兼容，禁用PGXP。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="539"/>
+        <location filename="../../core/host_interface.cpp" line="541"/>
         <source>PGXP CPU mode is incompatible with the recompiler, using Cached Interpreter instead.</source>
         <translation>PGXP在CPU模式与重编译器不兼容，改为使用缓存解释器。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="558"/>
+        <location filename="../../core/host_interface.cpp" line="560"/>
         <source>Switching to %s%s GPU renderer.</source>
         <translation>切换到%s%sGPU渲染器。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="579"/>
+        <location filename="../../core/host_interface.cpp" line="581"/>
         <source>Switching to %s audio backend.</source>
         <translation>切换到%s音频后端。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="595"/>
+        <location filename="../../core/host_interface.cpp" line="597"/>
         <source>Switching to %s CPU execution mode.</source>
         <translation>切换到%sCPU执行模式。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="606"/>
+        <location filename="../../core/host_interface.cpp" line="608"/>
         <source>CPU memory exceptions enabled, flushing all blocks.</source>
         <translation>启用CPU内存异常，刷新所有区块。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="607"/>
+        <location filename="../../core/host_interface.cpp" line="609"/>
         <source>CPU memory exceptions disabled, flushing all blocks.</source>
         <translation>禁用CPU内存异常，刷新所有区块。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="616"/>
+        <location filename="../../core/host_interface.cpp" line="618"/>
         <source>CPU ICache enabled, flushing all blocks.</source>
         <translation>启用CPU的ICache，刷新所有区块。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="617"/>
+        <location filename="../../core/host_interface.cpp" line="619"/>
         <source>CPU ICache disabled, flushing all blocks.</source>
         <translation>禁用CPU的ICache，刷新所有区块。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="648"/>
+        <location filename="../../core/host_interface.cpp" line="652"/>
         <source>PGXP enabled, recompiling all blocks.</source>
         <translation>启用PGXP，重编译所有区块。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="649"/>
+        <location filename="../../core/host_interface.cpp" line="653"/>
         <source>PGXP disabled, recompiling all blocks.</source>
         <translation>禁用PGXP，重编译所有区块。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="815"/>
+        <location filename="../../core/host_interface.cpp" line="819"/>
         <source>Switching to %s renderer...</source>
         <translation>切换到%s渲染器...</translation>
     </message>
@@ -5006,9 +5045,29 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>警告: CPU速率 (%u%%) 不同于存档 (%u%%).</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="104"/>
+        <location filename="../../core/gpu_hw.cpp" line="62"/>
+        <source>%ux MSAA is not supported, using %ux instead.</source>
+        <translation>不支持%ux MSAA，使用%ux代替。</translation>
+    </message>
+    <message>
+        <location filename="../../core/gpu_hw.cpp" line="68"/>
+        <source>SSAA is not supported, using MSAA instead.</source>
+        <translation>不支持SSAA，使用MSAA代替。</translation>
+    </message>
+    <message>
+        <location filename="../../core/gpu_hw.cpp" line="122"/>
         <source>Resolution scale set to %ux (display %ux%u, VRAM %ux%u)</source>
         <translation>分辨率设置为%ux (显示%ux%u，显存%ux%u)</translation>
+    </message>
+    <message>
+        <location filename="../../core/gpu_hw.cpp" line="133"/>
+        <source>Multisample anti-aliasing set to %ux (SSAA).</source>
+        <translation>多重采样反锯齿设置为%ux (SSAA)。</translation>
+    </message>
+    <message>
+        <location filename="../../core/gpu_hw.cpp" line="139"/>
+        <source>Multisample anti-aliasing set to %ux.</source>
+        <translation>多重采样反锯齿设置为%ux。</translation>
     </message>
     <message>
         <location filename="../../core/memory_card.cpp" line="299"/>
