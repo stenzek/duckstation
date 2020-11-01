@@ -196,16 +196,16 @@ bool D3D11HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view
   u32 adapter_index;
   if (!adapter_name.empty())
   {
-    std::vector<std::string> adapter_names = EnumerateAdapterNames(temp_dxgi_factory.Get());
-    for (adapter_index = 0; adapter_index < static_cast<u32>(adapter_names.size()); adapter_index++)
+    AdapterInfo adapter_info = GetAdapterInfo(temp_dxgi_factory.Get());
+    for (adapter_index = 0; adapter_index < static_cast<u32>(adapter_info.adapter_names.size()); adapter_index++)
     {
-      if (adapter_name == adapter_names[adapter_index])
+      if (adapter_name == adapter_info.adapter_names[adapter_index])
         break;
     }
-    if (adapter_index == static_cast<u32>(adapter_names.size()))
+    if (adapter_index == static_cast<u32>(adapter_info.adapter_names.size()))
     {
       Log_WarningPrintf("Could not find adapter '%s', using first (%s)", std::string(adapter_name).c_str(),
-                        adapter_names[0].c_str());
+                        adapter_info.adapter_names[0].c_str());
       adapter_index = 0;
     }
   }
@@ -293,7 +293,7 @@ bool D3D11HostDisplay::InitializeRenderDevice(std::string_view shader_cache_dire
 {
 #ifndef LIBRETRO
   if (m_window_info.type != WindowInfo::Type::Surfaceless && m_window_info.type != WindowInfo::Type::Libretro &&
-      !CreateSwapChain())
+      !CreateSwapChain(nullptr))
   {
     return false;
   }
@@ -335,7 +335,7 @@ bool D3D11HostDisplay::DoneRenderContextCurrent()
 
 #ifndef LIBRETRO
 
-bool D3D11HostDisplay::CreateSwapChain()
+bool D3D11HostDisplay::CreateSwapChain(const DXGI_MODE_DESC* fullscreen_mode)
 {
   if (m_window_info.type != WindowInfo::Type::Win32)
     return false;
@@ -359,12 +359,19 @@ bool D3D11HostDisplay::CreateSwapChain()
   swap_chain_desc.Windowed = TRUE;
   swap_chain_desc.SwapEffect = m_using_flip_model_swap_chain ? DXGI_SWAP_EFFECT_FLIP_DISCARD : DXGI_SWAP_EFFECT_DISCARD;
 
-  m_using_allow_tearing = (m_allow_tearing_supported && m_using_flip_model_swap_chain);
+  m_using_allow_tearing = (m_allow_tearing_supported && m_using_flip_model_swap_chain && !fullscreen_mode);
   if (m_using_allow_tearing)
-    swap_chain_desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+    swap_chain_desc.Flags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
 
-  Log_InfoPrintf("Creating a %dx%d %s %s swap chain", width, height,
-                 m_using_flip_model_swap_chain ? "flip-discard" : "discard",
+  if (fullscreen_mode)
+  {
+    swap_chain_desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+    swap_chain_desc.Windowed = FALSE;
+    swap_chain_desc.BufferDesc = *fullscreen_mode;
+  }
+
+  Log_InfoPrintf("Creating a %dx%d %s %s swap chain", swap_chain_desc.BufferDesc.Width,
+                 swap_chain_desc.BufferDesc.Height, m_using_flip_model_swap_chain ? "flip-discard" : "discard",
                  swap_chain_desc.Windowed ? "windowed" : "full-screen");
 
   HRESULT hr = m_dxgi_factory->CreateSwapChain(m_device.Get(), &swap_chain_desc, m_swap_chain.GetAddressOf());
@@ -433,7 +440,7 @@ bool D3D11HostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
   DestroyRenderSurface();
 
   m_window_info = new_wi;
-  return CreateSwapChain();
+  return CreateSwapChain(nullptr);
 #else
   m_window_info = new_wi;
   return true;
@@ -443,6 +450,9 @@ bool D3D11HostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
 void D3D11HostDisplay::DestroyRenderSurface()
 {
 #ifndef LIBRETRO
+  if (IsFullscreen())
+    SetFullscreen(false, 0, 0, 0.0f);
+
   m_swap_chain_rtv.Reset();
   m_swap_chain.Reset();
 #endif
@@ -463,6 +473,82 @@ void D3D11HostDisplay::ResizeRenderWindow(s32 new_window_width, s32 new_window_h
 
   if (!CreateSwapChainRTV())
     Panic("Failed to recreate swap chain RTV after resize");
+#endif
+}
+
+bool D3D11HostDisplay::IsFullscreen()
+{
+#ifndef LIBRETRO
+  BOOL is_fullscreen = FALSE;
+  return (m_swap_chain && SUCCEEDED(m_swap_chain->GetFullscreenState(&is_fullscreen, nullptr)) && is_fullscreen);
+#else
+  return false;
+#endif
+}
+
+bool D3D11HostDisplay::SetFullscreen(bool fullscreen, u32 width, u32 height, float refresh_rate)
+{
+#ifndef LIBRETRO
+  if (!m_swap_chain)
+    return false;
+
+  BOOL is_fullscreen = FALSE;
+  HRESULT hr = m_swap_chain->GetFullscreenState(&is_fullscreen, nullptr);
+  if (!fullscreen)
+  {
+    // leaving fullscreen
+    if (is_fullscreen)
+      return SUCCEEDED(m_swap_chain->SetFullscreenState(FALSE, nullptr));
+    else
+      return true;
+  }
+
+  IDXGIOutput* output;
+  if (FAILED(hr = m_swap_chain->GetContainingOutput(&output)))
+    return false;
+
+  DXGI_SWAP_CHAIN_DESC current_desc;
+  hr = m_swap_chain->GetDesc(&current_desc);
+  if (FAILED(hr))
+    return false;
+
+  DXGI_MODE_DESC new_mode = current_desc.BufferDesc;
+  new_mode.Width = width;
+  new_mode.Height = height;
+  new_mode.RefreshRate.Numerator = static_cast<UINT>(std::floor(refresh_rate * 1000.0f));
+  new_mode.RefreshRate.Denominator = 1000u;
+
+  DXGI_MODE_DESC closest_mode;
+  if (FAILED(hr = output->FindClosestMatchingMode(&new_mode, &closest_mode, nullptr)) ||
+      new_mode.Format != current_desc.BufferDesc.Format)
+  {
+    Log_ErrorPrintf("Failed to find closest matching mode, hr=%08X", hr);
+    return false;
+  }
+
+  if (new_mode.Width == current_desc.BufferDesc.Width && new_mode.Height == current_desc.BufferDesc.Width &&
+      new_mode.RefreshRate.Numerator == current_desc.BufferDesc.RefreshRate.Numerator &&
+      new_mode.RefreshRate.Denominator == current_desc.BufferDesc.RefreshRate.Denominator)
+  {
+    Log_InfoPrintf("Fullscreen mode already set");
+    return true;
+  }
+
+  m_swap_chain_rtv.Reset();
+  m_swap_chain.Reset();
+
+  if (!CreateSwapChain(&closest_mode))
+  {
+    Log_ErrorPrintf("Failed to create a fullscreen swap chain");
+    if (!CreateSwapChain(nullptr))
+      Panic("Failed to recreate windowed swap chain");
+
+    return false;
+  }
+
+  return true;
+#else
+  return false;
 #endif
 }
 
@@ -689,22 +775,22 @@ void D3D11HostDisplay::RenderSoftwareCursor(s32 left, s32 top, s32 width, s32 he
 
 #ifndef LIBRETRO
 
-std::vector<std::string> D3D11HostDisplay::EnumerateAdapterNames()
+D3D11HostDisplay::AdapterInfo D3D11HostDisplay::GetAdapterInfo()
 {
   ComPtr<IDXGIFactory> dxgi_factory;
   HRESULT hr = CreateDXGIFactory(IID_PPV_ARGS(dxgi_factory.GetAddressOf()));
   if (FAILED(hr))
     return {};
 
-  return EnumerateAdapterNames(dxgi_factory.Get());
+  return GetAdapterInfo(dxgi_factory.Get());
 }
 
-std::vector<std::string> D3D11HostDisplay::EnumerateAdapterNames(IDXGIFactory* dxgi_factory)
+D3D11HostDisplay::AdapterInfo D3D11HostDisplay::GetAdapterInfo(IDXGIFactory* dxgi_factory)
 {
-  std::vector<std::string> adapter_names;
+  AdapterInfo adapter_info;
   ComPtr<IDXGIAdapter> current_adapter;
-  while (SUCCEEDED(
-    dxgi_factory->EnumAdapters(static_cast<UINT>(adapter_names.size()), current_adapter.ReleaseAndGetAddressOf())))
+  while (SUCCEEDED(dxgi_factory->EnumAdapters(static_cast<UINT>(adapter_info.adapter_names.size()),
+                                              current_adapter.ReleaseAndGetAddressOf())))
   {
     DXGI_ADAPTER_DESC adapter_desc;
     std::string adapter_name;
@@ -724,8 +810,30 @@ std::vector<std::string> D3D11HostDisplay::EnumerateAdapterNames(IDXGIFactory* d
       adapter_name.assign("(Unknown)");
     }
 
+    if (adapter_info.fullscreen_modes.empty())
+    {
+      ComPtr<IDXGIOutput> output;
+      if (SUCCEEDED(current_adapter->EnumOutputs(0, &output)))
+      {
+        UINT num_modes = 0;
+        if (SUCCEEDED(output->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, 0, &num_modes, nullptr)))
+        {
+          std::vector<DXGI_MODE_DESC> modes(num_modes);
+          if (SUCCEEDED(output->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, 0, &num_modes, modes.data())))
+          {
+            for (const DXGI_MODE_DESC& mode : modes)
+            {
+              adapter_info.fullscreen_modes.push_back(StringUtil::StdStringFromFormat(
+                "%u x %u @ %f hz", mode.Width, mode.Height,
+                static_cast<float>(mode.RefreshRate.Numerator) / static_cast<float>(mode.RefreshRate.Denominator)));
+            }
+          }
+        }
+      }
+    }
+
     // handle duplicate adapter names
-    if (std::any_of(adapter_names.begin(), adapter_names.end(),
+    if (std::any_of(adapter_info.adapter_names.begin(), adapter_info.adapter_names.end(),
                     [&adapter_name](const std::string& other) { return (adapter_name == other); }))
     {
       std::string original_adapter_name = std::move(adapter_name);
@@ -735,14 +843,14 @@ std::vector<std::string> D3D11HostDisplay::EnumerateAdapterNames(IDXGIFactory* d
       {
         adapter_name = StringUtil::StdStringFromFormat("%s (%u)", original_adapter_name.c_str(), current_extra);
         current_extra++;
-      } while (std::any_of(adapter_names.begin(), adapter_names.end(),
+      } while (std::any_of(adapter_info.adapter_names.begin(), adapter_info.adapter_names.end(),
                            [&adapter_name](const std::string& other) { return (adapter_name == other); }));
     }
 
-    adapter_names.push_back(std::move(adapter_name));
+    adapter_info.adapter_names.push_back(std::move(adapter_name));
   }
 
-  return adapter_names;
+  return adapter_info;
 }
 
 bool D3D11HostDisplay::SetPostProcessingChain(const std::string_view& config)

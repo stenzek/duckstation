@@ -37,7 +37,7 @@ std::string Hash::ToString() const
   return str;
 }
 
-static constexpr std::array<ImageInfo, 24> s_image_infos = {{
+static constexpr std::array<ImageInfo, 25> s_image_infos = {{
   {"SCPH-1000, DTL-H1000 (v1.0)", ConsoleRegion::NTSC_J, MakeHashFromString("239665b1a3dade1b5a52c06338011044")},
   {"SCPH-1001, 5003, DTL-H1201, H3001 (v2.2 12-04-95 A)", ConsoleRegion::NTSC_U,
    MakeHashFromString("924e392ed05558ffdb115408c263dccf")},
@@ -73,7 +73,8 @@ static constexpr std::array<ImageInfo, 24> s_image_infos = {{
   {"SCPH-101 (v4.5 05-25-00 A)", ConsoleRegion::NTSC_U, MakeHashFromString("6e3735ff4c7dc899ee98981385f6f3d0")},
   {"SCPH-102 (v4.4 03-24-00 E)", ConsoleRegion::PAL, MakeHashFromString("b10f5e0e3d9eb60e5159690680b1e774")},
   {"SCPH-102 (v4.5 05-25-00 E)", ConsoleRegion::PAL, MakeHashFromString("de93caec13d1a141a40a79f5c86168d6")},
-  {"POPS-660 (PSP)", ConsoleRegion::Auto, MakeHashFromString("c53ca5908936d412331790f4426c6c33")},
+  {"PSP, SCPH-1000R (v4.5 05-25-00 J)", ConsoleRegion::Auto, MakeHashFromString("c53ca5908936d412331790f4426c6c33")},
+  {"SCPH-1000R (v4.5 05-25-00 J)", ConsoleRegion::NTSC_J, MakeHashFromString("476d68a94ccec3b9c8303bbd1daf2810")}
 }};
 
 Hash GetHash(const Image& image)

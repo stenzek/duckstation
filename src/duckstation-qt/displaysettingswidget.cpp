@@ -42,10 +42,12 @@ DisplaySettingsWidget::DisplaySettingsWidget(QtHostInterface* host_interface, QW
                                                false);
 
   connect(m_ui.renderer, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
-          &DisplaySettingsWidget::populateGPUAdapters);
+          &DisplaySettingsWidget::populateGPUAdaptersAndResolutions);
   connect(m_ui.adapter, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
           &DisplaySettingsWidget::onGPUAdapterIndexChanged);
-  populateGPUAdapters();
+  connect(m_ui.fullscreenMode, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+          &DisplaySettingsWidget::onGPUFullscreenModeIndexChanged);
+  populateGPUAdaptersAndResolutions();
 
   dialog->registerWidgetHelp(
     m_ui.renderer, tr("Renderer"),
@@ -118,15 +120,20 @@ void DisplaySettingsWidget::setupAdditionalUi()
   }
 }
 
-void DisplaySettingsWidget::populateGPUAdapters()
+void DisplaySettingsWidget::populateGPUAdaptersAndResolutions()
 {
   std::vector<std::string> adapter_names;
+  std::vector<std::string> fullscreen_modes;
   switch (static_cast<GPURenderer>(m_ui.renderer->currentIndex()))
   {
 #ifdef WIN32
     case GPURenderer::HardwareD3D11:
-      adapter_names = FrontendCommon::D3D11HostDisplay::EnumerateAdapterNames();
-      break;
+    {
+      FrontendCommon::D3D11HostDisplay::AdapterInfo adapter_info = FrontendCommon::D3D11HostDisplay::GetAdapterInfo();
+      adapter_names = std::move(adapter_info.adapter_names);
+      fullscreen_modes = std::move(adapter_info.fullscreen_modes);
+    }
+    break;
 #endif
 
     case GPURenderer::HardwareVulkan:
@@ -137,26 +144,46 @@ void DisplaySettingsWidget::populateGPUAdapters()
       break;
   }
 
-  QString current_value = QString::fromStdString(m_host_interface->GetStringSettingValue("GPU", "Adapter"));
-
-  QSignalBlocker blocker(m_ui.adapter);
-
-  // add the default entry - we'll fall back to this if the GPU no longer exists, or there's no options
-  m_ui.adapter->clear();
-  m_ui.adapter->addItem(tr("(Default)"));
-
-  // add the other adapters
-  for (const std::string& adapter_name : adapter_names)
   {
-    QString qadapter_name(QString::fromStdString(adapter_name));
-    m_ui.adapter->addItem(qadapter_name);
+    const std::string current_adapter(m_host_interface->GetStringSettingValue("GPU", "Adapter"));
+    QSignalBlocker blocker(m_ui.adapter);
 
-    if (qadapter_name == current_value)
-      m_ui.adapter->setCurrentIndex(m_ui.adapter->count() - 1);
+    // add the default entry - we'll fall back to this if the GPU no longer exists, or there's no options
+    m_ui.adapter->clear();
+    m_ui.adapter->addItem(tr("(Default)"));
+
+    // add the other adapters
+    for (const std::string& adapter_name : adapter_names)
+    {
+      m_ui.adapter->addItem(QString::fromStdString(adapter_name));
+
+      if (adapter_name == current_adapter)
+        m_ui.adapter->setCurrentIndex(m_ui.adapter->count() - 1);
+    }
+
+    // disable it if we don't have a choice
+    m_ui.adapter->setEnabled(!adapter_names.empty());
   }
 
-  // disable it if we don't have a choice
-  m_ui.adapter->setEnabled(!adapter_names.empty());
+  {
+    const std::string current_mode(m_host_interface->GetStringSettingValue("GPU", "FullscreenMode", ""));
+    QSignalBlocker blocker(m_ui.fullscreenMode);
+
+    m_ui.fullscreenMode->clear();
+    m_ui.fullscreenMode->addItem(tr("Borderless Fullscreen"));
+    m_ui.fullscreenMode->setCurrentIndex(0);
+
+    for (const std::string& mode_name : fullscreen_modes)
+    {
+      m_ui.fullscreenMode->addItem(QString::fromStdString(mode_name));
+
+      if (mode_name == current_mode)
+        m_ui.fullscreenMode->setCurrentIndex(m_ui.fullscreenMode->count() - 1);
+    }
+
+    // disable it if we don't have a choice
+    m_ui.fullscreenMode->setEnabled(!fullscreen_modes.empty());
+  }
 }
 
 void DisplaySettingsWidget::onGPUAdapterIndexChanged()
@@ -169,4 +196,17 @@ void DisplaySettingsWidget::onGPUAdapterIndexChanged()
   }
 
   m_host_interface->SetStringSettingValue("GPU", "Adapter", m_ui.adapter->currentText().toUtf8().constData());
+}
+
+void DisplaySettingsWidget::onGPUFullscreenModeIndexChanged()
+{
+  if (m_ui.fullscreenMode->currentIndex() == 0)
+  {
+    // default
+    m_host_interface->RemoveSettingValue("GPU", "FullscreenMode");
+    return;
+  }
+
+  m_host_interface->SetStringSettingValue("GPU", "FullscreenMode",
+                                          m_ui.fullscreenMode->currentText().toUtf8().constData());
 }

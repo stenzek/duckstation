@@ -595,7 +595,7 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
     {
       AddFormattedOSDMessage(
         5.0f, TranslateString("OSDMessage", "Switching to %s CPU execution mode."),
-        TranslateString("OSDMessage", Settings::GetCPUExecutionModeDisplayName(g_settings.cpu_execution_mode))
+        TranslateString("CPUExecutionMode", Settings::GetCPUExecutionModeDisplayName(g_settings.cpu_execution_mode))
           .GetCharArray());
       CPU::CodeCache::Reinitialize();
       CPU::ClearICache();

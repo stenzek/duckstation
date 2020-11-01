@@ -264,4 +264,5 @@ private:
 
   bool m_is_rendering_to_main = false;
   bool m_is_fullscreen = false;
+  bool m_is_exclusive_fullscreen = false;
 };

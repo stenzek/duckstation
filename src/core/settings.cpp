@@ -5,6 +5,7 @@
 #include "host_interface.h"
 #include <algorithm>
 #include <array>
+#include <cctype>
 #include <numeric>
 
 Settings g_settings;
@@ -513,10 +514,13 @@ const char* Settings::GetRendererDisplayName(GPURenderer renderer)
   return s_gpu_renderer_display_names[static_cast<int>(renderer)];
 }
 
-static constexpr auto s_texture_filter_names = make_array("Nearest", "Bilinear", "JINC2", "xBR");
+static constexpr auto s_texture_filter_names =
+  make_array("Nearest", "Bilinear", "BilinearBinAlpha", "JINC2", "JINC2BinAlpha", "xBR", "xBRBinAlpha");
 static constexpr auto s_texture_filter_display_names =
   make_array(TRANSLATABLE("GPUTextureFilter", "Nearest-Neighbor"), TRANSLATABLE("GPUTextureFilter", "Bilinear"),
-             TRANSLATABLE("GPUTextureFilter", "JINC2"), TRANSLATABLE("GPUTextureFilter", "xBR"));
+             TRANSLATABLE("GPUTextureFilter", "Bilinear (No Edge Blending)"), TRANSLATABLE("GPUTextureFilter", "JINC2"),
+             TRANSLATABLE("GPUTextureFilter", "JINC2 (No Edge Blending)"), TRANSLATABLE("GPUTextureFilter", "xBR"),
+             TRANSLATABLE("GPUTextureFilter", "xBR (No Edge Blending)"));
 
 std::optional<GPUTextureFilter> Settings::ParseTextureFilterName(const char* str)
 {

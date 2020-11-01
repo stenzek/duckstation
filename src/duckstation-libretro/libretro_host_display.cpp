@@ -156,6 +156,16 @@ void LibretroHostDisplay::ResizeRenderWindow(s32 new_window_width, s32 new_windo
   m_window_info.surface_height = new_window_height;
 }
 
+bool LibretroHostDisplay::IsFullscreen()
+{
+  return false;
+}
+
+bool LibretroHostDisplay::SetFullscreen(bool fullscreen, u32 width, u32 height, float refresh_rate)
+{
+  return false;
+}
+
 bool LibretroHostDisplay::SetPostProcessingChain(const std::string_view& config)
 {
   return false;

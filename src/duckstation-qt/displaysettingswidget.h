@@ -17,8 +17,9 @@ public:
   ~DisplaySettingsWidget();
 
 private Q_SLOTS:
-  void populateGPUAdapters();
+  void populateGPUAdaptersAndResolutions();
   void onGPUAdapterIndexChanged();
+  void onGPUFullscreenModeIndexChanged();
 
 private:
   void setupAdditionalUi();

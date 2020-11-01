@@ -87,13 +87,20 @@ QtDisplayWidget* MainWindow::createDisplay(QThread* worker_thread, const QString
   Assert(!m_host_display && !m_display_widget);
   Assert(!fullscreen || !render_to_main);
 
+  const std::string fullscreen_mode = m_host_interface->GetStringSettingValue("GPU", "FullscreenMode", "");
+  const bool is_exclusive_fullscreen = (fullscreen && !fullscreen_mode.empty());
+
   m_display_widget = new QtDisplayWidget((!fullscreen && render_to_main) ? m_ui.mainContainer : nullptr);
   m_display_widget->setWindowTitle(windowTitle());
   m_display_widget->setWindowIcon(windowIcon());
 
   if (fullscreen)
   {
-    m_display_widget->showFullScreen();
+    if (!is_exclusive_fullscreen)
+      m_display_widget->showFullScreen();
+    else
+      m_display_widget->showNormal();
+
     m_display_widget->setCursor(Qt::BlankCursor);
   }
   else if (!render_to_main)
@@ -126,6 +133,9 @@ QtDisplayWidget* MainWindow::createDisplay(QThread* worker_thread, const QString
     return nullptr;
   }
 
+  if (is_exclusive_fullscreen)
+    setDisplayFullscreen(fullscreen_mode);
+
   m_host_display->DoneRenderContextCurrent();
   return m_display_widget;
 }
@@ -134,6 +144,8 @@ QtDisplayWidget* MainWindow::updateDisplay(QThread* worker_thread, bool fullscre
 {
   const bool is_fullscreen = m_display_widget->isFullScreen();
   const bool is_rendering_to_main = (!is_fullscreen && m_display_widget->parent());
+  const std::string fullscreen_mode = m_host_interface->GetStringSettingValue("GPU", "FullscreenMode", "");
+  const bool is_exclusive_fullscreen = (fullscreen && !fullscreen_mode.empty());
   if (fullscreen == is_fullscreen && is_rendering_to_main == render_to_main)
     return m_display_widget;
 
@@ -146,7 +158,10 @@ QtDisplayWidget* MainWindow::updateDisplay(QThread* worker_thread, bool fullscre
 
   if (fullscreen)
   {
-    m_display_widget->showFullScreen();
+    if (!is_exclusive_fullscreen)
+      m_display_widget->showFullScreen();
+    else
+      m_display_widget->showNormal();
     m_display_widget->setCursor(Qt::BlankCursor);
   }
   else if (!render_to_main)
@@ -174,11 +189,31 @@ QtDisplayWidget* MainWindow::updateDisplay(QThread* worker_thread, bool fullscre
   if (!m_host_display->ChangeRenderWindow(wi.value()))
     Panic("Failed to recreate surface on new widget.");
 
+  if (is_exclusive_fullscreen)
+    setDisplayFullscreen(fullscreen_mode);
+
   m_display_widget->setFocus();
 
   QSignalBlocker blocker(m_ui.actionFullscreen);
   m_ui.actionFullscreen->setChecked(fullscreen);
   return m_display_widget;
+}
+
+void MainWindow::setDisplayFullscreen(const std::string& fullscreen_mode)
+{
+  u32 width, height;
+  float refresh_rate;
+  bool result = false;
+
+  if (CommonHostInterface::ParseFullscreenMode(fullscreen_mode, &width, &height, &refresh_rate))
+  {
+    result = m_host_display->SetFullscreen(true, width, height, refresh_rate);
+    if (!result)
+    {
+      m_host_interface->AddOSDMessage(
+        m_host_interface->TranslateStdString("OSDMessage", "Failed to acquire exclusive fullscreen."), 20.0f);
+    }
+  }
 }
 
 void MainWindow::destroyDisplay()

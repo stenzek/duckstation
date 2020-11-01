@@ -20,7 +20,7 @@ static void populateDropDownForRegion(ConsoleRegion region, QComboBox* cb,
     const bool right_region_match = (right.second && right.second->region == region);
     if (left_region_match && !right_region_match)
       return true;
-    else if (right_region_match && left_region_match)
+    else if (right_region_match && !left_region_match)
       return false;
 
     return left.first < right.first;
