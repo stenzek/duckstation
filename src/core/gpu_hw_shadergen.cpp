@@ -167,8 +167,9 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured)
 void GPU_HW_ShaderGen::WriteBatchTextureFilter(std::stringstream& ss, GPUTextureFilter texture_filter)
 {
   // JINC2 and xBRZ shaders originally from beetle-psx, modified to support filtering mask channel.
-  if (texture_filter == GPUTextureFilter::Bilinear)
+  if (texture_filter == GPUTextureFilter::Bilinear || texture_filter == GPUTextureFilter::BilinearBinAlpha)
   {
+    DefineMacro(ss, "BINALPHA", texture_filter == GPUTextureFilter::BilinearBinAlpha);
     ss << R"(
 void FilteredSampleFromVRAM(uint4 texpage, float2 coords, float4 uv_limits,
                             out float4 texcol, out float ialpha)
@@ -200,11 +201,16 @@ void FilteredSampleFromVRAM(uint4 texpage, float2 coords, float4 uv_limits,
   // Compensate for partially transparent sampling.
   if (ialpha > 0.0)
     texcol.rgb /= float3(ialpha, ialpha, ialpha);
+
+#if BINALPHA
+  ialpha = (ialpha >= 0.5) ? 1.0 : 0.0;
+#endif
 }
 )";
   }
-  else if (texture_filter == GPUTextureFilter::JINC2)
+  else if (texture_filter == GPUTextureFilter::JINC2 || texture_filter == GPUTextureFilter::JINC2BinAlpha)
   {
+    DefineMacro(ss, "BINALPHA", texture_filter == GPUTextureFilter::JINC2BinAlpha);
     ss << R"(
 CONSTANT float JINC2_WINDOW_SINC = 0.44;
 CONSTANT float JINC2_SINC = 0.82;
@@ -347,11 +353,16 @@ void FilteredSampleFromVRAM(uint4 texpage, float2 coords, float4 uv_limits,
     // Compensate for partially transparent sampling.
     if (ialpha > 0.0)
       texcol.rgb /= float3(ialpha, ialpha, ialpha);
+
+#if BINALPHA
+  ialpha = (ialpha >= 0.5) ? 1.0 : 0.0;
+#endif
 }
 )";
   }
-  else if (texture_filter == GPUTextureFilter::xBR)
+  else if (texture_filter == GPUTextureFilter::xBR || texture_filter == GPUTextureFilter::xBRBinAlpha)
   {
+    DefineMacro(ss, "BINALPHA", texture_filter == GPUTextureFilter::xBRBinAlpha);
     ss << R"(
 CONSTANT int BLEND_NONE = 0;
 CONSTANT int BLEND_NORMAL = 1;
@@ -626,6 +637,10 @@ void FilteredSampleFromVRAM(uint4 texpage, float2 coords, float4 uv_limits,
   // Compensate for partially transparent sampling.
   if (ialpha > 0.0)
     texcol.rgb /= float3(ialpha, ialpha, ialpha);
+
+#if BINALPHA
+  ialpha = (ialpha >= 0.5) ? 1.0 : 0.0;
+#endif
 }
 
 #undef P
@@ -1172,7 +1187,7 @@ std::string GPU_HW_ShaderGen::GenerateVRAMCopyFragmentShader()
 {
   // TODO: This won't currently work because we can't bind the texture to both the shader and framebuffer.
   const bool msaa = false;
-  
+
   std::stringstream ss;
   WriteHeader(ss);
   WriteCommonFunctions(ss);

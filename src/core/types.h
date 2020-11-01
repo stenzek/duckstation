@@ -67,8 +67,11 @@ enum class GPUTextureFilter : u8
 {
   Nearest,
   Bilinear,
+  BilinearBinAlpha,
   JINC2,
+  JINC2BinAlpha,
   xBR,
+  xBRBinAlpha,
   Count
 };
 
