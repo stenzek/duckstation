@@ -1208,7 +1208,7 @@ void Throttle()
     s_last_throttle_time = 0;
     s_throttle_timer.Reset();
   }
-  else if (sleep_time >= MINIMUM_SLEEP_TIME && sleep_time <= s_throttle_period)
+  else if (sleep_time >= MINIMUM_SLEEP_TIME)
   {
 #ifdef WIN32
     Sleep(static_cast<u32>(sleep_time / 1000000));
