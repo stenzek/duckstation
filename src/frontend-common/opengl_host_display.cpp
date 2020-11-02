@@ -315,6 +315,11 @@ void OpenGLHostDisplay::ResizeRenderWindow(s32 new_window_width, s32 new_window_
 #endif
 }
 
+bool OpenGLHostDisplay::SupportsFullscreen() const
+{
+  return false;
+}
+
 bool OpenGLHostDisplay::IsFullscreen()
 {
   return false;

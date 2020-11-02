@@ -476,6 +476,15 @@ void D3D11HostDisplay::ResizeRenderWindow(s32 new_window_width, s32 new_window_h
 #endif
 }
 
+bool D3D11HostDisplay::SupportsFullscreen() const
+{
+#ifndef LIBRETRO
+  return true;
+#else
+  return false;
+#endif
+}
+
 bool D3D11HostDisplay::IsFullscreen()
 {
 #ifndef LIBRETRO

@@ -174,6 +174,11 @@ void VulkanHostDisplay::ResizeRenderWindow(s32 new_window_width, s32 new_window_
 #endif
 }
 
+bool VulkanHostDisplay::SupportsFullscreen() const
+{
+  return false;
+}
+
 bool VulkanHostDisplay::IsFullscreen()
 {
   return false;

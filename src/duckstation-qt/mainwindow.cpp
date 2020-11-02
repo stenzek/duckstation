@@ -87,8 +87,15 @@ QtDisplayWidget* MainWindow::createDisplay(QThread* worker_thread, const QString
   Assert(!m_host_display && !m_display_widget);
   Assert(!fullscreen || !render_to_main);
 
+  m_host_display = m_host_interface->createHostDisplay();
+  if (!m_host_display)
+  {
+    reportError(tr("Failed to create host display."));
+    return nullptr;
+  }
+
   const std::string fullscreen_mode = m_host_interface->GetStringSettingValue("GPU", "FullscreenMode", "");
-  const bool is_exclusive_fullscreen = (fullscreen && !fullscreen_mode.empty());
+  const bool is_exclusive_fullscreen = (fullscreen && !fullscreen_mode.empty() && m_host_display->SupportsFullscreen());
 
   m_display_widget = new QtDisplayWidget((!fullscreen && render_to_main) ? m_ui.mainContainer : nullptr);
   m_display_widget->setWindowTitle(windowTitle());
@@ -122,14 +129,17 @@ QtDisplayWidget* MainWindow::createDisplay(QThread* worker_thread, const QString
   {
     reportError(QStringLiteral("Failed to get window info from widget"));
     destroyDisplayWidget();
+    delete m_host_display;
+    m_host_display = nullptr;
     return nullptr;
   }
 
-  m_host_display = m_host_interface->createHostDisplay();
-  if (!m_host_display || !m_host_display->CreateRenderDevice(wi.value(), adapter_name.toStdString(), use_debug_device))
+  if (!m_host_display->CreateRenderDevice(wi.value(), adapter_name.toStdString(), use_debug_device))
   {
     reportError(tr("Failed to create host display device context."));
     destroyDisplayWidget();
+    delete m_host_display;
+    m_host_display = nullptr;
     return nullptr;
   }
 
@@ -145,7 +155,7 @@ QtDisplayWidget* MainWindow::updateDisplay(QThread* worker_thread, bool fullscre
   const bool is_fullscreen = m_display_widget->isFullScreen();
   const bool is_rendering_to_main = (!is_fullscreen && m_display_widget->parent());
   const std::string fullscreen_mode = m_host_interface->GetStringSettingValue("GPU", "FullscreenMode", "");
-  const bool is_exclusive_fullscreen = (fullscreen && !fullscreen_mode.empty());
+  const bool is_exclusive_fullscreen = (fullscreen && !fullscreen_mode.empty() && m_host_display->SupportsFullscreen());
   if (fullscreen == is_fullscreen && is_rendering_to_main == render_to_main)
     return m_display_widget;
 
