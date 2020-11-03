@@ -339,4 +339,52 @@
       <item>9.0</item>
       <item>10.0</item>
   </string-array>
+  <string-array name="settings_advanced_cpu_overclock_entries">
+      <item>25% (8MHz)</item>
+      <item>50% (16MHz)</item>
+      <item>75% (24MHz)</item>
+      <item>100% (33MHz, Default)</item>
+      <item>125% (41MHz)</item>
+      <item>150% (49MHz)</item>
+      <item>175% (57MHz)</item>
+      <item>200% (66MHz)</item>
+      <item>225% (74MHz)</item>
+      <item>250% (82MHz)</item>
+      <item>275% (90MHz)</item>
+      <item>300% (99MHz)</item>
+      <item>350% (115MHz)</item>
+      <item>400% (132MHz)</item>
+      <item>450% (148MHz)</item>
+      <item>500% (165MHz)</item>
+      <item>500% (165MHz)</item>
+      <item>600% (198MHz)</item>
+      <item>700% (231MHz)</item>
+      <item>800% (264MHz)</item>
+      <item>900% (297MHz)</item>
+      <item>1000% (330MHz)</item>
+  </string-array>
+  <string-array name="settings_advanced_cpu_overclock_values">
+      <item>25</item>
+      <item>50</item>
+      <item>75</item>
+      <item>100</item>
+      <item>125</item>
+      <item>150</item>
+      <item>175</item>
+      <item>200</item>
+      <item>225</item>
+      <item>250</item>
+      <item>275</item>
+      <item>300</item>
+      <item>350</item>
+      <item>400</item>
+      <item>450</item>
+      <item>500</item>
+      <item>500</item>
+      <item>600</item>
+      <item>700</item>
+      <item>800</item>
+      <item>900</item>
+      <item>1000</item>
+  </string-array>
 </resources>

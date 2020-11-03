@@ -175,6 +175,13 @@ void AndroidHostInterface::LoadAndConvertSettings()
   const std::string msaa_str = m_settings_interface.GetStringValue("GPU", "MSAA", "1");
   g_settings.gpu_multisamples = std::max<u32>(StringUtil::FromChars<u32>(msaa_str).value_or(1), 1);
   g_settings.gpu_per_sample_shading = StringUtil::EndsWith(msaa_str, "-ssaa");
+
+  // turn percentage into fraction for overclock
+  const u32 overclock_percent = static_cast<u32>(std::max(m_settings_interface.GetIntValue("CPU", "Overclock", 100), 1));
+  Settings::CPUOverclockPercentToFraction(overclock_percent, &g_settings.cpu_overclock_numerator,
+                                          &g_settings.cpu_overclock_denominator);
+  g_settings.cpu_overclock_enable = (overclock_percent != 100);
+  g_settings.UpdateOverclockActive();
 }
 
 void AndroidHostInterface::UpdateInputMap()
