@@ -263,4 +263,24 @@
         <item>4-ssaa</item>
         <item>8-ssaa</item>
     </string-array>
+    <string-array name="settings_advanced_display_fps_limit_entries">
+        <item>Unlimited (Display All Frames)</item>
+        <item>10 FPS</item>
+        <item>15 FPS</item>
+        <item>30 FPS</item>
+        <item>45 FPS</item>
+        <item>60 FPS</item>
+        <item>75 FPS</item>
+        <item>90 FPS</item>
+    </string-array>
+    <string-array name="settings_advanced_display_fps_limit_values">
+        <item>0</item>
+        <item>10</item>
+        <item>15</item>
+        <item>30</item>
+        <item>45</item>
+        <item>60</item>
+        <item>75</item>
+        <item>90</item>
+    </string-array>
 </resources>

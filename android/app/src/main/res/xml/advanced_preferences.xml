@@ -46,6 +46,14 @@
             app:defaultValue="true"
             app:summary="Makes guest memory access more efficient by using page faults and backpatching. Disable if it is unstable on your device."
             app:iconSpaceReserved="false" />
+        <ListPreference
+            app:key="Display/MaxFPS"
+            app:title="Presented Frame Limit"
+            app:defaultValue="60"
+            app:entries="@array/settings_advanced_display_fps_limit_entries"
+            app:entryValues="@array/settings_advanced_display_fps_limit_values"
+            app:useSimpleSummaryProvider="true"
+            app:iconSpaceReserved="false" />
         <SwitchPreferenceCompat
             app:key="BIOS/PatchTTYEnable"
             app:title="@string/settings_console_tty_output"
