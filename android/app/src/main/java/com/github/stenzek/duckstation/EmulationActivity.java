@@ -116,6 +116,16 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
             mApplySettingsOnSurfaceRestored = true;
     }
 
+    /// Ends the activity if it was restored without properly being created.
+    private boolean checkActivityIsValid() {
+        if (!AndroidHostInterface.hasInstance() || !AndroidHostInterface.getInstance().isEmulationThreadRunning()) {
+            finish();
+            return false;
+        }
+
+        return true;
+    }
+
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
     }
@@ -227,7 +237,9 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     @Override
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        updateOrientation(newConfig.orientation);
+
+        if (checkActivityIsValid())
+            updateOrientation(newConfig.orientation);
     }
 
     private void updateOrientation() {

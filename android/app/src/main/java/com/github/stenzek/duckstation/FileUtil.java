@@ -42,6 +42,9 @@ public final class FileUtil {
 
     @SuppressLint("ObsoleteSdkInt")
     private static String getVolumePath(final String volumeId, Context context) {
+        if (volumeId == null)
+            return null;
+
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return null;
         try {
             StorageManager mStorageManager =
@@ -113,18 +116,26 @@ public final class FileUtil {
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private static String getVolumeIdFromUri(final Uri treeUri) {
-        final String docId = DocumentsContract.getDocumentId(treeUri);
-        final String[] split = docId.split(":");
-        if (split.length > 0) return split[0];
-        else return null;
+        try {
+            final String docId = DocumentsContract.getDocumentId(treeUri);
+            final String[] split = docId.split(":");
+            if (split.length > 0) return split[0];
+            else return null;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private static String getDocumentPathFromUri(final Uri treeUri) {
-        final String docId = DocumentsContract.getDocumentId(treeUri);
-        final String[] split = docId.split(":");
-        if ((split.length >= 2) && (split[1] != null)) return split[1];
-        else return File.separator;
+        try {
+            final String docId = DocumentsContract.getDocumentId(treeUri);
+            final String[] split = docId.split(":");
+            if ((split.length >= 2) && (split[1] != null)) return split[1];
+            else return File.separator;
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

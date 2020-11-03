@@ -35,6 +35,7 @@ void AndroidProgressCallback::SetCancellable(bool cancellable)
 
 void AndroidProgressCallback::SetTitle(const char* title)
 {
+  Assert(title);
   JNIEnv* env = AndroidHelpers::GetJNIEnv();
   jstring text_jstr = env->NewStringUTF(title);
   env->CallVoidMethod(m_java_object, m_set_title_method, text_jstr);
@@ -42,6 +43,7 @@ void AndroidProgressCallback::SetTitle(const char* title)
 
 void AndroidProgressCallback::SetStatusText(const char* text)
 {
+  Assert(text);
   JNIEnv* env = AndroidHelpers::GetJNIEnv();
   jstring text_jstr = env->NewStringUTF(text);
   env->CallVoidMethod(m_java_object, m_set_status_text_method, text_jstr);
@@ -85,6 +87,7 @@ void AndroidProgressCallback::DisplayDebugMessage(const char* message)
 
 void AndroidProgressCallback::ModalError(const char* message)
 {
+  Assert(message);
   JNIEnv* env = AndroidHelpers::GetJNIEnv();
   jstring message_jstr = env->NewStringUTF(message);
   env->CallVoidMethod(m_java_object, m_modal_error_method, message_jstr);
@@ -92,6 +95,7 @@ void AndroidProgressCallback::ModalError(const char* message)
 
 bool AndroidProgressCallback::ModalConfirmation(const char* message)
 {
+  Assert(message);
   JNIEnv* env = AndroidHelpers::GetJNIEnv();
   jstring message_jstr = env->NewStringUTF(message);
   return env->CallBooleanMethod(m_java_object, m_modal_confirmation_method, message_jstr);
@@ -99,6 +103,7 @@ bool AndroidProgressCallback::ModalConfirmation(const char* message)
 
 void AndroidProgressCallback::ModalInformation(const char* message)
 {
+  Assert(message);
   JNIEnv* env = AndroidHelpers::GetJNIEnv();
   jstring message_jstr = env->NewStringUTF(message);
   env->CallVoidMethod(m_java_object, m_modal_information_method, message_jstr);

@@ -104,4 +104,8 @@ public class AndroidHostInterface {
     static public AndroidHostInterface getInstance() {
         return mInstance;
     }
+
+    static public boolean hasInstanceAndEmulationThreadIsRunning() {
+        return hasInstance() && getInstance().isEmulationThreadRunning();
+    }
 }

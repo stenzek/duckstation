@@ -143,6 +143,9 @@ public class TouchscreenControllerView extends FrameLayout {
     private boolean handleTouchEvent(MotionEvent event) {
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_UP: {
+                if (!AndroidHostInterface.hasInstanceAndEmulationThreadIsRunning())
+                    return false;
+
                 for (TouchscreenControllerButtonView buttonView : mButtonViews) {
                     buttonView.setPressed(false);
                 }
@@ -158,6 +161,9 @@ public class TouchscreenControllerView extends FrameLayout {
             case MotionEvent.ACTION_POINTER_DOWN:
             case MotionEvent.ACTION_POINTER_UP:
             case MotionEvent.ACTION_MOVE: {
+                if (!AndroidHostInterface.hasInstanceAndEmulationThreadIsRunning())
+                    return false;
+
                 Rect rect = new Rect();
                 final int pointerCount = event.getPointerCount();
                 final int liftedPointerIndex = (event.getActionMasked() == MotionEvent.ACTION_POINTER_UP) ? event.getActionIndex() : -1;
