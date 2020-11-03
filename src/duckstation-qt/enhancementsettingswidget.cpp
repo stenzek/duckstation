@@ -22,7 +22,7 @@ EnhancementSettingsWidget::EnhancementSettingsWidget(QtHostInterface* host_inter
                                                "ChromaSmoothing24Bit");
   SettingWidgetBinder::BindWidgetToEnumSetting(
     m_host_interface, m_ui.textureFiltering, "GPU", "TextureFilter", &Settings::ParseTextureFilterName,
-    &Settings::GetTextureFilterDisplayName, Settings::DEFAULT_GPU_TEXTURE_FILTER);
+    &Settings::GetTextureFilterName, Settings::DEFAULT_GPU_TEXTURE_FILTER);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.widescreenHack, "GPU", "WidescreenHack");
 
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.pgxpEnable, "GPU", "PGXPEnable", false);
