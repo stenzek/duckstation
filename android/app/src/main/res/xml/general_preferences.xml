@@ -34,12 +34,6 @@
             app:useSimpleSummaryProvider="true"
             app:iconSpaceReserved="false" />
         <SwitchPreferenceCompat
-            app:key="Main/SpeedLimiterEnabled"
-            app:title="@string/settings_behavior_enable_speed_limiter"
-            app:defaultValue="true"
-            app:summary="Throttles the emulation speed to the chosen speed above. If unchecked, the emulator will run as fast as possible, which may not be playable."
-            app:iconSpaceReserved="false" />
-        <SwitchPreferenceCompat
             app:key="Main/SaveStateOnExit"
             app:title="Save State On Exit"
             app:defaultValue="true"
