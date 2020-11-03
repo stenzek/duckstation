@@ -5,6 +5,7 @@
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/string.h"
+#include "common/string_util.h"
 #include "common/timestamp.h"
 #include "core/bios.h"
 #include "core/cheats.h"
@@ -162,9 +163,18 @@ void AndroidHostInterface::SetUserDirectory()
 
 void AndroidHostInterface::LoadSettings()
 {
-  CommonHostInterface::LoadSettings(m_settings_interface);
+  LoadAndConvertSettings();
   CommonHostInterface::FixIncompatibleSettings(false);
   CommonHostInterface::UpdateInputMap(m_settings_interface);
+}
+
+void AndroidHostInterface::LoadAndConvertSettings()
+{
+  CommonHostInterface::LoadSettings(m_settings_interface);
+
+  const std::string msaa_str = m_settings_interface.GetStringValue("GPU", "MSAA", "1");
+  g_settings.gpu_multisamples = std::max<u32>(StringUtil::FromChars<u32>(msaa_str).value_or(1), 1);
+  g_settings.gpu_per_sample_shading = StringUtil::EndsWith(msaa_str, "-ssaa");
 }
 
 void AndroidHostInterface::UpdateInputMap()
@@ -538,7 +548,7 @@ void AndroidHostInterface::RefreshGameList(bool invalidate_cache, bool invalidat
 void AndroidHostInterface::ApplySettings(bool display_osd_messages)
 {
   Settings old_settings = std::move(g_settings);
-  CommonHostInterface::LoadSettings(m_settings_interface);
+  LoadAndConvertSettings();
   CommonHostInterface::FixIncompatibleSettings(display_osd_messages);
 
   // Defer renderer changes, the app really doesn't like it.

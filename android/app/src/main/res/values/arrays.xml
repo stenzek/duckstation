@@ -245,4 +245,22 @@
         <item>Controllers</item>
         <item>Advanced</item>
     </string-array>
+    <string-array name="settings_gpu_msaa_entries">
+        <item>Disabled</item>
+        <item>2x MSAA</item>
+        <item>4x MSAA</item>
+        <item>8x MSAA</item>
+        <item>2x SSAA</item>
+        <item>4x SSAA</item>
+        <item>8x SSAA</item>
+    </string-array>
+    <string-array name="settings_gpu_msaa_values">
+        <item>1</item>
+        <item>2</item>
+        <item>4</item>
+        <item>8</item>
+        <item>2-ssaa</item>
+        <item>4-ssaa</item>
+        <item>8-ssaa</item>
+    </string-array>
 </resources>
