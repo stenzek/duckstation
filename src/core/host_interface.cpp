@@ -414,7 +414,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetStringValue("Console", "Region", Settings::GetConsoleRegionName(Settings::DEFAULT_CONSOLE_REGION));
 
   si.SetFloatValue("Main", "EmulationSpeed", 1.0f);
-  si.SetBoolValue("Main", "SpeedLimiterEnabled", true);
+  si.SetFloatValue("Main", "FastForwardSpeed", 0.0f);
   si.SetBoolValue("Main", "IncreaseTimerResolution", true);
   si.SetBoolValue("Main", "StartPaused", false);
   si.SetBoolValue("Main", "SaveStateOnExit", true);

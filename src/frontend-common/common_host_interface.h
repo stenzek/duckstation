@@ -180,6 +180,9 @@ public:
   /// Parses a fullscreen mode into its components (width * height @ refresh hz)
   static bool ParseFullscreenMode(const std::string_view& mode, u32* width, u32* height, float* refresh_rate);
 
+  /// Returns true if fast forwarding is currently active.
+  bool IsFastForwardEnabled() const { return m_fast_forward_enabled; }
+
 protected:
   enum : u32
   {
@@ -325,9 +328,9 @@ protected:
   std::mutex m_osd_messages_lock;
 
   bool m_frame_step_request = false;
-  bool m_speed_limiter_temp_disabled = false;
-  bool m_speed_limiter_enabled = false;
+  bool m_fast_forward_enabled = false;
   bool m_timer_resolution_increased = false;
+  bool m_speed_limiter_enabled = true;
 
 private:
   void InitializeUserDirectory();

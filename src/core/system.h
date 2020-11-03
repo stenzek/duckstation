@@ -146,6 +146,9 @@ bool RecreateGPU(GPURenderer renderer);
 
 void RunFrame();
 
+/// Sets target emulation speed.
+void SetTargetSpeed(float speed);
+
 /// Adjusts the throttle frequency, i.e. how many times we should sleep per second.
 void SetThrottleFrequency(float frequency);
 

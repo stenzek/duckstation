@@ -538,6 +538,12 @@ void AndroidHostInterface::SetControllerAxisState(u32 index, s32 button_code, fl
     false);
 }
 
+void AndroidHostInterface::SetFastForwardEnabled(bool enabled)
+{
+  m_fast_forward_enabled = enabled;
+  UpdateSpeedLimiterState();
+}
+
 void AndroidHostInterface::RefreshGameList(bool invalidate_cache, bool invalidate_database,
                                            ProgressCallback* progress_callback)
 {
@@ -893,6 +899,20 @@ DEFINE_JNI_ARGS_METHOD(jboolean, AndroidHostInterface_hasAnyBIOSImages, jobject 
 {
   AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
   return hi->HasAnyBIOSImages();
+}
+
+DEFINE_JNI_ARGS_METHOD(jboolean, AndroidHostInterface_isFastForwardEnabled, jobject obj)
+{
+  return AndroidHelpers::GetNativeClass(env, obj)->IsFastForwardEnabled();
+}
+
+DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_setFastForwardEnabled, jobject obj, jboolean enabled)
+{
+  if (!System::IsValid())
+    return;
+
+  AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
+  hi->RunOnEmulationThread([enabled, hi]() { hi->SetFastForwardEnabled(enabled); });
 }
 
 DEFINE_JNI_ARGS_METHOD(jstring, AndroidHostInterface_importBIOSImage, jobject obj, jbyteArray data)

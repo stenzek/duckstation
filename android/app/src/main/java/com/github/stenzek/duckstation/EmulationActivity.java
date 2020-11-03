@@ -284,11 +284,9 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
                     return;
                 }
 
-                case 3:     // Toggle Speed Limiter
+                case 3:     // Toggle Fast Forward
                 {
-                    boolean newSetting = !getBooleanSetting("Main/SpeedLimiterEnabled", true);
-                    setBooleanSetting("Main/SpeedLimiterEnabled", newSetting);
-                    applySettings();
+                    AndroidHostInterface.getInstance().setFastForwardEnabled(!AndroidHostInterface.getInstance().isFastForwardEnabled());
                     return;
                 }
 

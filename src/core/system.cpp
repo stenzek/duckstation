@@ -78,6 +78,7 @@ static std::string s_running_game_code;
 static std::string s_running_game_title;
 
 static float s_throttle_frequency = 60.0f;
+static float s_target_speed = 1.0f;
 static s32 s_throttle_period = 0;
 static u64 s_last_throttle_time = 0;
 static Common::Timer s_throttle_timer;
@@ -1170,6 +1171,12 @@ void RunFrame()
   g_gpu->ResetGraphicsAPIState();
 }
 
+void SetTargetSpeed(float speed)
+{
+  s_target_speed = speed;
+  UpdateThrottlePeriod();
+}
+
 void SetThrottleFrequency(float frequency)
 {
   s_throttle_frequency = frequency;
@@ -1178,8 +1185,8 @@ void SetThrottleFrequency(float frequency)
 
 void UpdateThrottlePeriod()
 {
-  s_throttle_period = static_cast<s32>(1000000000.0 / static_cast<double>(s_throttle_frequency) /
-                                       static_cast<double>(g_settings.emulation_speed));
+  s_throttle_period =
+    static_cast<s32>(1000000000.0 / static_cast<double>(s_throttle_frequency) / static_cast<double>(s_target_speed));
 }
 
 void Throttle()

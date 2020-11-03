@@ -79,7 +79,7 @@ struct Settings
   bool cpu_fastmem = true;
 
   float emulation_speed = 1.0f;
-  bool speed_limiter_enabled = true;
+  float fast_forward_speed = 0.0f;
   bool increase_timer_resolution = true;
   bool start_paused = false;
   bool start_fullscreen = false;

@@ -598,9 +598,10 @@ bool CommonHostInterface::ResumeSystemFromMostRecentState()
 
 void CommonHostInterface::UpdateSpeedLimiterState()
 {
-  m_speed_limiter_enabled = g_settings.speed_limiter_enabled && !m_speed_limiter_temp_disabled;
+  const float target_speed = m_fast_forward_enabled ? g_settings.fast_forward_speed : g_settings.emulation_speed;
+  m_speed_limiter_enabled = (target_speed != 0.0f);
 
-  const bool is_non_standard_speed = (std::abs(g_settings.emulation_speed - 1.0f) > 0.05f);
+  const bool is_non_standard_speed = (std::abs(target_speed - 1.0f) > 0.05f);
   const bool audio_sync_enabled =
     !System::IsRunning() || (m_speed_limiter_enabled && g_settings.audio_sync_enabled && !is_non_standard_speed);
   const bool video_sync_enabled =
@@ -627,7 +628,10 @@ void CommonHostInterface::UpdateSpeedLimiterState()
     SetTimerResolutionIncreased(m_speed_limiter_enabled);
 
   if (System::IsValid())
+  {
+    System::SetTargetSpeed(m_speed_limiter_enabled ? target_speed : 1.0f);
     System::ResetPerformanceCounters();
+  }
 }
 
 void CommonHostInterface::RecreateSystem()
@@ -1367,7 +1371,7 @@ void CommonHostInterface::RegisterGeneralHotkeys()
 {
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("FastForward"),
                  TRANSLATABLE("Hotkeys", "Fast Forward"), [this](bool pressed) {
-                   m_speed_limiter_temp_disabled = pressed;
+                   m_fast_forward_enabled = pressed;
                    UpdateSpeedLimiterState();
                  });
 
@@ -1375,11 +1379,11 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                  StaticString(TRANSLATABLE("Hotkeys", "Toggle Fast Forward")), [this](bool pressed) {
                    if (pressed)
                    {
-                     m_speed_limiter_temp_disabled = !m_speed_limiter_temp_disabled;
+                     m_fast_forward_enabled = !m_fast_forward_enabled;
                      UpdateSpeedLimiterState();
-                     AddOSDMessage(m_speed_limiter_enabled ?
-                                     TranslateStdString("OSDMessage", "Speed limiter enabled.") :
-                                     TranslateStdString("OSDMessage", "Speed limiter disabled."),
+                     AddOSDMessage(m_fast_forward_enabled ?
+                                     TranslateStdString("OSDMessage", "Fast forwarding...") :
+                                     TranslateStdString("OSDMessage", "Stopped fast forwarding."),
                                    2.0f);
                    }
                  });
@@ -2080,9 +2084,9 @@ void CommonHostInterface::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.audio_buffer_size != old_settings.audio_buffer_size ||
         g_settings.video_sync_enabled != old_settings.video_sync_enabled ||
         g_settings.audio_sync_enabled != old_settings.audio_sync_enabled ||
-        g_settings.speed_limiter_enabled != old_settings.speed_limiter_enabled ||
         g_settings.increase_timer_resolution != old_settings.increase_timer_resolution ||
         g_settings.emulation_speed != old_settings.emulation_speed ||
+        g_settings.fast_forward_speed != old_settings.fast_forward_speed ||
         g_settings.display_max_fps != old_settings.display_max_fps)
     {
       UpdateSpeedLimiterState();

@@ -79,6 +79,9 @@ public class AndroidHostInterface {
 
     public native String importBIOSImage(byte[] data);
 
+    public native boolean isFastForwardEnabled();
+    public native void setFastForwardEnabled(boolean enabled);
+
     static {
         System.loadLibrary("duckstation-native");
     }

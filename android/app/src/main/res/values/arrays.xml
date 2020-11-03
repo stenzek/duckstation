@@ -131,7 +131,7 @@
         <item>Load State</item>
         <item>Save State</item>
         <item>Save State Slot</item>
-        <item>Toggle Speed Limiter</item>
+        <item>Toggle Fast Forward</item>
         <item>More Options</item>
         <item>Quit</item>
     </string-array>
@@ -283,4 +283,60 @@
         <item>75</item>
         <item>90</item>
     </string-array>
+    <string-array name="settings_emulation_speed_entries">
+        <item>Unlimited</item>
+        <item>10% [6 FPS (NTSC) / 5 FPS (PAL)]</item>
+        <item>20% [12 FPS (NTSC) / 10 FPS (PAL)]</item>
+        <item>30% [18 FPS (NTSC) / 15 FPS (PAL)]</item>
+        <item>40% [24 FPS (NTSC) / 20 FPS (PAL)]</item>
+        <item>50% [30 FPS (NTSC) / 25 FPS (PAL)]</item>
+        <item>60% [36 FPS (NTSC) / 30 FPS (PAL)]</item>
+        <item>70% [42 FPS (NTSC) / 35 FPS (PAL)]</item>
+        <item>80% [48 FPS (NTSC) / 40 FPS (PAL)]</item>
+        <item>90% [54 FPS (NTSC) / 45 FPS (PAL)]</item>
+        <item>100% [60 FPS (NTSC) / 50 FPS (PAL), Default]</item>
+        <item>125% [75 FPS (NTSC) / 62 FPS (PAL)]</item>
+        <item>150% [90 FPS (NTSC) / 75 FPS (PAL)]</item>
+        <item>175% [105 FPS (NTSC) / 87 FPS (PAL)]</item>
+        <item>200% [120 FPS (NTSC) / 100 FPS (PAL)]</item>
+        <item>250% [150 FPS (NTSC) / 125 FPS (PAL)]</item>
+        <item>300% [180 FPS (NTSC) / 150 FPS (PAL)]</item>
+        <item>350% [210 FPS (NTSC) / 175 FPS (PAL)]</item>
+        <item>400% [240 FPS (NTSC) / 200 FPS (PAL)]</item>
+        <item>450% [270 FPS (NTSC) / 225 FPS (PAL)]</item>
+        <item>500% [300 FPS (NTSC) / 250 FPS (PAL)]</item>
+        <item>600% [360 FPS (NTSC) / 300 FPS (PAL)]</item>
+        <item>700% [420 FPS (NTSC) / 350 FPS (PAL)]</item>
+        <item>800% [480 FPS (NTSC) / 400 FPS (PAL)]</item>
+        <item>900% [540 FPS (NTSC) / 450 FPS (PAL)]</item>
+        <item>1000% [600 FPS (NTSC) / 500 FPS (PAL)]</item>
+    </string-array>
+    <string-array name="settings_emulation_speed_values">
+      <item>0.0</item>
+      <item>0.1</item>
+      <item>0.2</item>
+      <item>0.3</item>
+      <item>0.4</item>
+      <item>0.5</item>
+      <item>0.6</item>
+      <item>0.7</item>
+      <item>0.8</item>
+      <item>0.9</item>
+      <item>1.0</item>
+      <item>1.25</item>
+      <item>1.5</item>
+      <item>1.75</item>
+      <item>2.0</item>
+      <item>2.5</item>
+      <item>3.0</item>
+      <item>3.5</item>
+      <item>4.0</item>
+      <item>4.5</item>
+      <item>5.0</item>
+      <item>6.0</item>
+      <item>7.0</item>
+      <item>8.0</item>
+      <item>9.0</item>
+      <item>10.0</item>
+  </string-array>
 </resources>

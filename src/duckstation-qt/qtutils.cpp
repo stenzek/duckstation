@@ -1,5 +1,6 @@
 #include "qtutils.h"
 #include "common/byte_stream.h"
+#include "common/make_array.h"
 #include <QtCore/QCoreApplication>
 #include <QtCore/QMetaObject>
 #include <QtGui/QDesktopServices>
@@ -717,6 +718,22 @@ void FillComboBoxWithMSAAModes(QComboBox* cb)
 
   for (uint i = 2; i <= 32; i *= 2)
     cb->addItem(qApp->translate("GPUSettingsWidget", "%1x SSAA").arg(i), GetMSAAModeValue(i, true));
+}
+
+void FillComboBoxWithEmulationSpeeds(QComboBox* cb)
+{
+  cb->addItem(qApp->translate("GeneralSettingsWidget", "Unlimited"), QVariant(0.0f));
+
+  static constexpr auto speeds = make_array(10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 125, 150, 175, 200, 250, 300, 350,
+                                            400, 450, 500, 600, 700, 800, 900, 1000);
+  for (const int speed : speeds)
+  {
+    cb->addItem(qApp->translate("GeneralSettingsWidget", "%1% [%2 FPS (NTSC) / %3 FPS (PAL)]")
+                  .arg(speed)
+                  .arg((60 * speed) / 100)
+                  .arg((50 * speed) / 100),
+                QVariant(static_cast<float>(speed) / 100.0f));
+  }
 }
 
 } // namespace QtUtils
