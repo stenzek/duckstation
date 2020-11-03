@@ -162,6 +162,16 @@
         <translation>GPU最大预运行</translation>
     </message>
     <message>
+        <location filename="../advancedsettingswidget.cpp" line="108"/>
+        <source>Display FPS Limit</source>
+        <translation>显示FPS限制</translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="110"/>
+        <source>Increase Timer Resolution</source>
+        <translation>提高计时器分辨率</translation>
+    </message>
+    <message>
         <location filename="../advancedsettingswidget.ui" line="154"/>
         <source>Reset To Default</source>
         <translation>重置为默认值</translation>
@@ -372,22 +382,22 @@
 <context>
     <name>AudioBackend</name>
     <message>
-        <location filename="../../core/settings.cpp" line="617"/>
+        <location filename="../../core/settings.cpp" line="621"/>
         <source>Null (No Output)</source>
         <translation>无 (无输出)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="618"/>
+        <location filename="../../core/settings.cpp" line="622"/>
         <source>Cubeb</source>
         <translation>Cubeb</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="620"/>
+        <location filename="../../core/settings.cpp" line="624"/>
         <source>SDL</source>
         <translation>SDL</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="622"/>
+        <location filename="../../core/settings.cpp" line="626"/>
         <source>OpenSL ES</source>
         <translation>OpenSL ES</translation>
     </message>
@@ -731,17 +741,17 @@
 <context>
     <name>CPUExecutionMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="453"/>
+        <location filename="../../core/settings.cpp" line="457"/>
         <source>Intepreter (Slowest)</source>
         <translation>解释器 (最慢)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="454"/>
+        <location filename="../../core/settings.cpp" line="458"/>
         <source>Cached Interpreter (Faster)</source>
         <translation>缓存解释器 (较快)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="455"/>
+        <location filename="../../core/settings.cpp" line="459"/>
         <source>Recompiler (Fastest)</source>
         <translation>重编译器 (最快)</translation>
     </message>
@@ -1249,12 +1259,12 @@
 <context>
     <name>CommonHostInterface</name>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1401"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1410"/>
         <source>Are you sure you want to stop emulation?</source>
         <translation>确定要停止模拟吗?</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1406"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1415"/>
         <source>The current state will be saved.</source>
         <translation>当前状态将会保存。</translation>
     </message>
@@ -1262,22 +1272,22 @@
 <context>
     <name>ConsoleRegion</name>
     <message>
-        <location filename="../../core/settings.cpp" line="395"/>
+        <location filename="../../core/settings.cpp" line="399"/>
         <source>Auto-Detect</source>
         <translation>自动检测</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="395"/>
+        <location filename="../../core/settings.cpp" line="399"/>
         <source>NTSC-J (Japan)</source>
         <translation>NTSC-J (日本)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="396"/>
+        <location filename="../../core/settings.cpp" line="400"/>
         <source>NTSC-U/C (US, Canada)</source>
         <translation>NTSC-U/C (美国/加拿大)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="396"/>
+        <location filename="../../core/settings.cpp" line="400"/>
         <source>PAL (Europe, Australia)</source>
         <translation>PAL (欧洲，澳大利亚)</translation>
     </message>
@@ -1599,32 +1609,32 @@ This warning will only be shown once.</source>
 <context>
     <name>ControllerType</name>
     <message>
-        <location filename="../../core/settings.cpp" line="653"/>
+        <location filename="../../core/settings.cpp" line="657"/>
         <source>None</source>
         <translation>无</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="653"/>
+        <location filename="../../core/settings.cpp" line="657"/>
         <source>Digital Controller</source>
         <translation>数字控制器</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="654"/>
+        <location filename="../../core/settings.cpp" line="658"/>
         <source>Analog Controller (DualShock)</source>
         <translation>模拟控制器 (DualShock)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="654"/>
+        <location filename="../../core/settings.cpp" line="658"/>
         <source>Namco GunCon</source>
         <translation>南梦宫光枪</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="655"/>
+        <location filename="../../core/settings.cpp" line="659"/>
         <source>PlayStation Mouse</source>
         <translation>PlayStation鼠标</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="655"/>
+        <location filename="../../core/settings.cpp" line="659"/>
         <source>NeGcon</source>
         <translation>NeGcon</translation>
     </message>
@@ -1705,7 +1715,7 @@ This warning will only be shown once.</source>
 <context>
     <name>DiscRegion</name>
     <message>
-        <location filename="../../core/settings.cpp" line="424"/>
+        <location filename="../../core/settings.cpp" line="428"/>
         <source>NTSC-J (Japan)</source>
         <translation>NTSC-J (日本)</translation>
     </message>
@@ -1714,17 +1724,17 @@ This warning will only be shown once.</source>
         <translation type="vanished">NTSC-U (美国)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="424"/>
+        <location filename="../../core/settings.cpp" line="428"/>
         <source>NTSC-U/C (US, Canada)</source>
         <translation>NTSC-U/C (美国，加拿大)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="425"/>
+        <location filename="../../core/settings.cpp" line="429"/>
         <source>PAL (Europe, Australia)</source>
         <translation>PAL (欧洲，澳大利亚)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="425"/>
+        <location filename="../../core/settings.cpp" line="429"/>
         <source>Other</source>
         <translation>其他</translation>
     </message>
@@ -1732,17 +1742,17 @@ This warning will only be shown once.</source>
 <context>
     <name>DisplayCropMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="551"/>
+        <location filename="../../core/settings.cpp" line="555"/>
         <source>None</source>
         <translation>无</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="551"/>
+        <location filename="../../core/settings.cpp" line="555"/>
         <source>Only Overscan Area</source>
         <translation>仅限过扫描区域</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="552"/>
+        <location filename="../../core/settings.cpp" line="556"/>
         <source>All Borders</source>
         <translation>所有边界</translation>
     </message>
@@ -1969,7 +1979,7 @@ This warning will only be shown once.</source>
         <translation>内部分辨率缩放:</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="49"/>
+        <location filename="../enhancementsettingswidget.cpp" line="51"/>
         <source>Resolution Scale</source>
         <translation>分辨率缩放</translation>
     </message>
@@ -1979,7 +1989,7 @@ This warning will only be shown once.</source>
         <translation>纹理过滤器:</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="79"/>
+        <location filename="../enhancementsettingswidget.cpp" line="84"/>
         <source>Texture Filtering</source>
         <translation>纹理过滤器</translation>
     </message>
@@ -1990,13 +2000,13 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="58"/>
-        <location filename="../enhancementsettingswidget.cpp" line="59"/>
+        <location filename="../enhancementsettingswidget.cpp" line="61"/>
         <source>True Color Rendering (24-bit, disables dithering)</source>
-        <translation>真彩色渲染 (24位，禁用色彩抖动)</translation>
+        <translation>真彩色渲染 (24位色，禁用色彩抖动)</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="65"/>
-        <location filename="../enhancementsettingswidget.cpp" line="66"/>
+        <location filename="../enhancementsettingswidget.cpp" line="68"/>
         <source>Scaled Dithering (scale dither pattern to resolution)</source>
         <translation>缩放色彩抖动 (按分辨率缩放模式)</translation>
     </message>
@@ -2012,25 +2022,25 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="98"/>
-        <location filename="../enhancementsettingswidget.cpp" line="43"/>
+        <location filename="../enhancementsettingswidget.cpp" line="45"/>
         <source>Disable Interlacing (force progressive render/scan)</source>
         <translation>禁用隔行扫描 (强制渐进式渲染/扫描)</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="105"/>
-        <location filename="../enhancementsettingswidget.cpp" line="69"/>
+        <location filename="../enhancementsettingswidget.cpp" line="71"/>
         <source>Force NTSC Timings (60hz-on-PAL)</source>
         <translation>强制NTSC制式 (60hz-PAL)</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="76"/>
+        <location filename="../enhancementsettingswidget.cpp" line="78"/>
         <source>Force 4:3 For 24-bit Display</source>
-        <translation>24位色显示中强制4比3</translation>
+        <translation>强制24位色显示4比3</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="112"/>
         <source>Force 4:3 For 24-Bit Display (disable widescreen for FMVs)</source>
-        <translation>24位色显示中强制4比3 (动画中禁用宽屏)</translation>
+        <translation>强制24位色显示4比3 (动画播放禁用宽屏)</translation>
     </message>
     <message>
         <source>Bilinear Texture Filtering</source>
@@ -2042,25 +2052,30 @@ This warning will only be shown once.</source>
         <translation>宽屏调整 (在16比9中渲染3D)</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="122"/>
+        <location filename="../enhancementsettingswidget.ui" line="119"/>
+        <source>Chroma Smoothing For 24-Bit Display (reduce FMV color blockyness)</source>
+        <translation>平滑24位色显示色度 (降低动画播放色块)</translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.ui" line="129"/>
         <source>PGXP (Precision Geometry Transform Pipeline)</source>
         <translation>PGXP (精确几何转换管线)</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="128"/>
-        <location filename="../enhancementsettingswidget.cpp" line="90"/>
+        <location filename="../enhancementsettingswidget.ui" line="135"/>
+        <location filename="../enhancementsettingswidget.cpp" line="95"/>
         <source>Geometry Correction</source>
         <translation>几何校正</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="135"/>
-        <location filename="../enhancementsettingswidget.cpp" line="93"/>
+        <location filename="../enhancementsettingswidget.ui" line="142"/>
+        <location filename="../enhancementsettingswidget.cpp" line="98"/>
         <source>Culling Correction</source>
         <translation>剔除校正</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="142"/>
-        <location filename="../enhancementsettingswidget.cpp" line="96"/>
+        <location filename="../enhancementsettingswidget.ui" line="149"/>
+        <location filename="../enhancementsettingswidget.cpp" line="101"/>
         <source>Texture Correction</source>
         <translation>纹理校正</translation>
     </message>
@@ -2073,12 +2088,12 @@ This warning will only be shown once.</source>
         <translation type="vanished">CPU模式</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="50"/>
+        <location filename="../enhancementsettingswidget.cpp" line="52"/>
         <source>Setting this beyond 1x will enhance the resolution of rendered 3D polygons and lines. Only applies to the hardware backends. &lt;br&gt;This option is usually safe, with most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</source>
         <translation>将此值设置为超过1x将增强渲染的3D多边形和线条的分辨率。仅适用于硬件后端。&lt;br&gt;这个选项通常是安全的，大多数游戏在更高的分辨率下看起来很好。更高的分辨率需要更强大的GPU。</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="67"/>
+        <location filename="../enhancementsettingswidget.cpp" line="69"/>
         <source>Scales the dither pattern to the resolution scale of the emulated GPU. This makes the dither pattern much less obvious at higher resolutions. &lt;br&gt;Usually safe to enable, and only supported by the hardware renderers.</source>
         <translation>将抖动模式缩放到模拟GPU的分辨率级别。这使得抖动模式在更高分辨率下变得不那么明显。&lt;br&gt;通常可以安全启用，并且仅由硬件渲染器支持。</translation>
     </message>
@@ -2087,71 +2102,81 @@ This warning will only be shown once.</source>
         <translation type="vanished">利用双线性过滤器消除三维物体上放大纹理的块状。&lt;br&gt;会对更高分辨率的尺度产生更大的影响。目前，在许多游戏中，这个选项会在对象周围产生瑕疵，需要进一步的工作。仅适用于硬件渲染器。</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="44"/>
+        <location filename="../enhancementsettingswidget.cpp" line="46"/>
         <source>Forces the rendering and display of frames to progressive mode. &lt;br&gt;This removes the &quot;combing&quot; effect seen in 480i games by rendering them in 480p. Usually safe to enable.&lt;br&gt; &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
         <translation>强制以渐进模式渲染和显示帧。&lt;br&gt;这将通过在480p中渲染480i游戏中的效果来移除它们。并非所有的游戏都与此选项兼容，有些游戏需要隔行渲染或内部渲染。通常可以安全启用。&lt;br&gt;&lt;b&gt;&lt;u&gt;可能不兼容所有游戏。&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="54"/>
+        <location filename="../enhancementsettingswidget.cpp" line="56"/>
         <source>Multisample Antialiasing</source>
         <translation>多重采样反锯齿</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="54"/>
+        <location filename="../enhancementsettingswidget.cpp" line="56"/>
         <source>Disabled</source>
         <translation>禁用</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="55"/>
+        <location filename="../enhancementsettingswidget.cpp" line="57"/>
         <source>Uses multisample antialiasing for rendering 3D objects. Can smooth out jagged edges on polygons at a lower cost to performance compared to increasing the resolution scale, but may be more likely to cause rendering errors in some games. Only applies to the hardware backends.</source>
         <translation>与增加分辨率相比，渲染3D对象使用多重采样反锯齿，能够以更低的性能代价来平滑多边形上的锯齿状边缘。但在一些游戏中可能更容易导致渲染错误。只适用于硬件后端。</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="70"/>
+        <location filename="../enhancementsettingswidget.cpp" line="72"/>
         <source>Uses NTSC frame timings when the console is in PAL mode, forcing PAL games to run at 60hz. &lt;br&gt;For most games which have a speed tied to the framerate, this will result in the game running approximately 17% faster. &lt;br&gt;For variable frame rate games, it may not affect the speed.</source>
         <translation>当游戏机处于PAL模式时使用NTSC帧计时，强制PAL游戏以60hz运行。&lt;br&gt;对于大多数速度与帧速率相关的游戏，这将导致游戏运行速度大约快17%。&lt;br&gt;对于可变帧速率游戏，它可能不会影响速度。</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="77"/>
+        <location filename="../enhancementsettingswidget.cpp" line="79"/>
         <source>Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs.</source>
-        <translation>当显示24位色内容 (通常为动画) 时，纵横比切换回4比3显示。</translation>
+        <translation>当显示24位色内容时纵横比切换回4比3显示，通常用于动画播放。</translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.cpp" line="80"/>
+        <source>Chroma Smoothing For 24-Bit Display</source>
+        <translation>平滑24位色显示色度</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="81"/>
-        <source>Smooths out the blockyness of magnified textures on 3D object by using filtering. &lt;br&gt;Will have a greater effect on higher resolution scales. Only applies to the hardware renderers.</source>
-        <translation>使用滤镜来平滑3D对象因放大纹理所导致的块状。&lt;br&gt;在较高的分辨率下将有更好的效果。只适用于硬件渲染器。</translation>
+        <source>Smooths out blockyness between colour transitions in 24-bit content, usually FMVs. Only applies to the hardware renderers.</source>
+        <translation>24位色内容下，平滑颜色转变过渡中的块状，通常用于动画播放。只适用于硬件渲染器。</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="84"/>
+        <location filename="../enhancementsettingswidget.cpp" line="86"/>
+        <source>Smooths out the blockyness of magnified textures on 3D object by using filtering. &lt;br&gt;Will have a greater effect on higher resolution scales. Only applies to the hardware renderers.</source>
+        <translation>使用滤镜来平滑因放大3D对象的纹理所导致的块状。&lt;br&gt;在较高的分辨率下将有更好的效果。只适用于硬件渲染器。</translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.cpp" line="89"/>
         <source>Widescreen Hack</source>
         <translation>宽屏调整</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="85"/>
+        <location filename="../enhancementsettingswidget.cpp" line="90"/>
         <source>Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to 16:9 in 3D games. &lt;br&gt;For 2D games, or games which use pre-rendered backgrounds, this enhancement will not work as expected. &lt;br&gt;&lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
-        <translation>将屏幕空间中的顶点位置缩放到适应宽屏显示的纵横比，根本上将3D游戏中的视野从4:3增加到16:9。&lt;br&gt;对于2D游戏，或使用预渲染背景的游戏，此增强将无法按预期工作。&lt;br&gt;&lt;b&gt;&lt;u&gt;可能不兼容所有游戏。&lt;/u&gt;&lt;/b&gt;</translation>
+        <translation>将屏幕空间中的顶点位置缩放到适应宽屏显示的纵横比，将3D游戏中的视野从4:3彻底增加到16:9。&lt;br&gt;对于2D游戏，或者那些使用预渲染背景的游戏，此增强将无法按预期般工作。&lt;br&gt;&lt;b&gt;&lt;u&gt;可能不兼容所有游戏。&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Enables the upscaling of 3D objects rendered to the console&apos;s framebuffer. Only applies to the hardware backends. This option is usually safe, with most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</source>
         <translation type="vanished">允许放大渲染到控制台帧缓冲区的三维对象。仅适用于硬件后端。这个选项通常是安全的, 大多数游戏在更高的分辨率下看起来很好。更高的分辨率需要更强大的GPU。</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="60"/>
+        <location filename="../enhancementsettingswidget.cpp" line="62"/>
         <source>Forces the precision of colours output to the console&apos;s framebuffer to use the full 8 bits of precision per channel. This produces nicer looking gradients at the cost of making some colours look slightly different. Disabling the option also enables dithering, which makes the transition between colours less sharp by applying a pattern around those pixels. Most games are compatible with this option, but there is a number which aren&apos;t and will have broken effects with it enabled. Only applies to the hardware renderers.</source>
-        <translation>强制输出到主机的帧缓冲区的颜色精度使用每个通道的全部8位精度。这会产生更好看的渐变，但代价是使某些颜色看起来稍有不同。禁用该选项也会启用色彩抖动，这会通过在这些像素周围应用图案来减少颜色之间的过渡。大多数游戏都与此选项兼容，但也有一部分游戏不支持此选项，并且在启用该选项后会产生中断效果。仅适用于硬件渲染器。</translation>
+        <translation>强制输出到主机帧缓存的颜色精度使用每个通道的全部8位精度。这会产生更好看的渐变，但代价是使某些颜色看起来稍有不同。禁用该选项也会启用色彩抖动，这会通过在这些像素周围应用图案来减少颜色之间的过渡。大多数游戏都与此选项兼容，但也有一部分游戏不支持此选项，并且在启用该选项后会产生中断效果。仅适用于硬件渲染器。</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="91"/>
+        <location filename="../enhancementsettingswidget.cpp" line="96"/>
         <source>Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. &lt;br&gt;Only works with the hardware renderers. &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
         <translation>减少在PS1游戏中常见的&quot;抖动&quot;多边形和扭曲纹理。&lt;br&gt;仅适用于硬件渲染器。&lt;b&gt;&lt;u&gt;可能不兼容所有游戏。&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="94"/>
+        <location filename="../enhancementsettingswidget.cpp" line="99"/>
         <source>Increases the precision of polygon culling, reducing the number of holes in geometry. Requires geometry correction enabled.</source>
         <translation>提高多边形剔除的精度，减少几何体中的孔数。需要启用几何校正。</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="97"/>
+        <location filename="../enhancementsettingswidget.cpp" line="102"/>
         <source>Uses perspective-correct interpolation for texture coordinates and colors, straightening out warped textures. Requires geometry correction enabled.</source>
         <translation>使用透视校正插值纹理坐标和颜色，矫直扭曲的纹理。需要启用几何校正。</translation>
     </message>
@@ -2176,19 +2201,20 @@ This warning will only be shown once.</source>
         <translation type="vanished">(默认)</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="66"/>
-        <location filename="../enhancementsettingswidget.cpp" line="93"/>
-        <location filename="../enhancementsettingswidget.cpp" line="96"/>
+        <location filename="../enhancementsettingswidget.cpp" line="68"/>
+        <location filename="../enhancementsettingswidget.cpp" line="98"/>
+        <location filename="../enhancementsettingswidget.cpp" line="101"/>
         <source>Checked</source>
         <translation>勾选</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="43"/>
-        <location filename="../enhancementsettingswidget.cpp" line="59"/>
-        <location filename="../enhancementsettingswidget.cpp" line="69"/>
-        <location filename="../enhancementsettingswidget.cpp" line="76"/>
-        <location filename="../enhancementsettingswidget.cpp" line="84"/>
-        <location filename="../enhancementsettingswidget.cpp" line="90"/>
+        <location filename="../enhancementsettingswidget.cpp" line="45"/>
+        <location filename="../enhancementsettingswidget.cpp" line="61"/>
+        <location filename="../enhancementsettingswidget.cpp" line="71"/>
+        <location filename="../enhancementsettingswidget.cpp" line="78"/>
+        <location filename="../enhancementsettingswidget.cpp" line="80"/>
+        <location filename="../enhancementsettingswidget.cpp" line="89"/>
+        <location filename="../enhancementsettingswidget.cpp" line="95"/>
         <source>Unchecked</source>
         <translation>不勾选</translation>
     </message>
@@ -2196,22 +2222,22 @@ This warning will only be shown once.</source>
 <context>
     <name>GPURenderer</name>
     <message>
-        <location filename="../../core/settings.cpp" line="488"/>
+        <location filename="../../core/settings.cpp" line="492"/>
         <source>Hardware (D3D11)</source>
         <translation>硬件 (D3D11)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="490"/>
+        <location filename="../../core/settings.cpp" line="494"/>
         <source>Hardware (Vulkan)</source>
         <translation>硬件 (Vulkan)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="490"/>
+        <location filename="../../core/settings.cpp" line="494"/>
         <source>Hardware (OpenGL)</source>
         <translation>硬件 (OpenGL)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="491"/>
+        <location filename="../../core/settings.cpp" line="495"/>
         <source>Software</source>
         <translation>软件</translation>
     </message>
@@ -2219,62 +2245,62 @@ This warning will only be shown once.</source>
 <context>
     <name>GPUSettingsWidget</name>
     <message>
-        <location filename="../qtutils.cpp" line="672"/>
+        <location filename="../qtutils.cpp" line="673"/>
         <source>1x</source>
         <translation>1x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="673"/>
+        <location filename="../qtutils.cpp" line="674"/>
         <source>2x</source>
         <translation>2x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="674"/>
+        <location filename="../qtutils.cpp" line="675"/>
         <source>3x (for 720p)</source>
         <translation>3x (适合720p)</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="675"/>
+        <location filename="../qtutils.cpp" line="676"/>
         <source>4x</source>
         <translation>4x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="676"/>
+        <location filename="../qtutils.cpp" line="677"/>
         <source>5x (for 1080p)</source>
         <translation>5x (适合1080p)</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="677"/>
+        <location filename="../qtutils.cpp" line="678"/>
         <source>6x (for 1440p)</source>
         <translation>6x (适合1440p)</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="678"/>
+        <location filename="../qtutils.cpp" line="679"/>
         <source>7x</source>
         <translation>7x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="679"/>
+        <location filename="../qtutils.cpp" line="680"/>
         <source>8x</source>
         <translation>8x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="680"/>
+        <location filename="../qtutils.cpp" line="681"/>
         <source>9x (for 4K)</source>
         <translation>9x (适合4K)</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="713"/>
+        <location filename="../qtutils.cpp" line="714"/>
         <source>Disabled</source>
         <translation>禁用</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="716"/>
+        <location filename="../qtutils.cpp" line="717"/>
         <source>%1x MSAA</source>
         <translation>%1x MSAA</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="719"/>
+        <location filename="../qtutils.cpp" line="720"/>
         <source>%1x SSAA</source>
         <translation>%1x SSAA</translation>
     </message>
@@ -2283,37 +2309,37 @@ This warning will only be shown once.</source>
         <translation type="vanished">9x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="681"/>
+        <location filename="../qtutils.cpp" line="682"/>
         <source>10x</source>
         <translation>10x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="682"/>
+        <location filename="../qtutils.cpp" line="683"/>
         <source>11x</source>
         <translation>11x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="683"/>
+        <location filename="../qtutils.cpp" line="684"/>
         <source>12x</source>
         <translation>12x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="684"/>
+        <location filename="../qtutils.cpp" line="685"/>
         <source>13x</source>
         <translation>13x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="685"/>
+        <location filename="../qtutils.cpp" line="686"/>
         <source>14x</source>
         <translation>14x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="686"/>
+        <location filename="../qtutils.cpp" line="687"/>
         <source>15x</source>
         <translation>15x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="687"/>
+        <location filename="../qtutils.cpp" line="688"/>
         <source>16x</source>
         <translation>16x</translation>
     </message>
@@ -2322,7 +2348,7 @@ This warning will only be shown once.</source>
         <translation type="vanished">8x (适合4K)</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="671"/>
+        <location filename="../qtutils.cpp" line="672"/>
         <source>Automatic based on window size</source>
         <translation>自动根据窗口大小</translation>
     </message>
@@ -2330,37 +2356,37 @@ This warning will only be shown once.</source>
 <context>
     <name>GPUTextureFilter</name>
     <message>
-        <location filename="../../core/settings.cpp" line="520"/>
+        <location filename="../../core/settings.cpp" line="524"/>
         <source>Nearest-Neighbor</source>
         <translation>最近邻</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="520"/>
+        <location filename="../../core/settings.cpp" line="524"/>
         <source>Bilinear</source>
         <translation>双线性</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="521"/>
+        <location filename="../../core/settings.cpp" line="525"/>
         <source>JINC2</source>
         <translation>JINC2</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="521"/>
+        <location filename="../../core/settings.cpp" line="525"/>
         <source>Bilinear (No Edge Blending)</source>
         <translation>双线性 (无边缘混合)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="522"/>
+        <location filename="../../core/settings.cpp" line="526"/>
         <source>xBR</source>
         <translation>xBR</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="522"/>
+        <location filename="../../core/settings.cpp" line="526"/>
         <source>JINC2 (No Edge Blending)</source>
         <translation>JINC2 (无边缘混合)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="523"/>
+        <location filename="../../core/settings.cpp" line="527"/>
         <source>xBR (No Edge Blending)</source>
         <translation>xBR (无边缘混合)</translation>
     </message>
@@ -2769,7 +2795,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../gamepropertiesdialog.ui" line="342"/>
         <source>True Color Rendering (24-bit, disables dithering)</source>
-        <translation>真彩色渲染 (24位，禁用色彩抖动)</translation>
+        <translation>真彩色渲染 (24位色，禁用色彩抖动)</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="352"/>
@@ -2784,7 +2810,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../gamepropertiesdialog.ui" line="382"/>
         <source>Force 4:3 For 24-Bit Display (disable widescreen for FMVs)</source>
-        <translation>24位色显示中强制4比3 (动画中禁用宽屏)</translation>
+        <translation>强制24位色显示4比3 (动画播放禁用宽屏)</translation>
     </message>
     <message>
         <source>Bilinear Texture Filtering</source>
@@ -3067,43 +3093,43 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="52"/>
-        <location filename="../generalsettingswidget.cpp" line="60"/>
+        <location filename="../generalsettingswidget.cpp" line="64"/>
         <source>Pause On Start</source>
         <translation>开始时暂停</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="38"/>
-        <location filename="../generalsettingswidget.cpp" line="48"/>
+        <location filename="../generalsettingswidget.cpp" line="52"/>
         <source>Confirm Power Off</source>
         <translation>确认关机</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="66"/>
-        <location filename="../generalsettingswidget.cpp" line="51"/>
+        <location filename="../generalsettingswidget.cpp" line="55"/>
         <source>Save State On Exit</source>
         <translation>退出时保存即时存档</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="73"/>
-        <location filename="../generalsettingswidget.cpp" line="63"/>
+        <location filename="../generalsettingswidget.cpp" line="67"/>
         <source>Load Devices From Save States</source>
         <translation>设备载入时读取即时存档</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="59"/>
-        <location filename="../generalsettingswidget.cpp" line="54"/>
+        <location filename="../generalsettingswidget.cpp" line="58"/>
         <source>Start Fullscreen</source>
         <translation>全屏启动</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="45"/>
-        <location filename="../generalsettingswidget.cpp" line="57"/>
+        <location filename="../generalsettingswidget.cpp" line="61"/>
         <source>Render To Main Window</source>
         <translation>渲染到主窗口</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="80"/>
-        <location filename="../generalsettingswidget.cpp" line="68"/>
+        <location filename="../generalsettingswidget.cpp" line="72"/>
         <source>Apply Per-Game Settings</source>
         <translation>每个游戏采用独立式配置</translation>
     </message>
@@ -3114,105 +3140,120 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="97"/>
-        <location filename="../generalsettingswidget.cpp" line="80"/>
+        <source>Speed Control</source>
+        <translation>速度控制</translation>
+    </message>
+    <message>
+        <location filename="../generalsettingswidget.ui" line="103"/>
+        <source>Emulation Speed:</source>
+        <translation>模拟速度:</translation>
+    </message>
+    <message>
+        <location filename="../generalsettingswidget.ui" line="113"/>
+        <source>Fast Forward Speed:</source>
+        <translation>快进速度:</translation>
+    </message>
+    <message>
+        <location filename="../generalsettingswidget.cpp" line="76"/>
         <source>Emulation Speed</source>
         <translation>模拟速度</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.ui" line="133"/>
         <source>100%</source>
-        <translation>100%</translation>
+        <translation type="vanished">100%</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.ui" line="142"/>
-        <location filename="../generalsettingswidget.cpp" line="72"/>
         <source>Enable Speed Limiter</source>
-        <translation>启用限速</translation>
+        <translation type="vanished">启用限速</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.ui" line="149"/>
-        <location filename="../generalsettingswidget.cpp" line="76"/>
         <source>Increase Timer Resolution</source>
-        <translation>提高计时器分辨率</translation>
+        <translation type="vanished">提高计时器分辨率</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.ui" line="159"/>
+        <location filename="../generalsettingswidget.ui" line="126"/>
         <source>Miscellaneous</source>
         <translation>其他</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.ui" line="167"/>
+        <location filename="../generalsettingswidget.ui" line="134"/>
         <source>Controller Backend:</source>
         <translation>控制器后端:</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="48"/>
-        <location filename="../generalsettingswidget.cpp" line="51"/>
-        <location filename="../generalsettingswidget.cpp" line="57"/>
-        <location filename="../generalsettingswidget.cpp" line="68"/>
+        <location filename="../generalsettingswidget.cpp" line="52"/>
+        <location filename="../generalsettingswidget.cpp" line="55"/>
+        <location filename="../generalsettingswidget.cpp" line="61"/>
         <location filename="../generalsettingswidget.cpp" line="72"/>
-        <location filename="../generalsettingswidget.cpp" line="76"/>
         <location filename="../generalsettingswidget.cpp" line="111"/>
         <source>Checked</source>
         <translation>勾选</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="49"/>
+        <location filename="../generalsettingswidget.cpp" line="53"/>
         <source>Determines whether a prompt will be displayed to confirm shutting down the emulator/game when the hotkey is pressed.</source>
         <translation>当按下热键来关闭模拟器/游戏时，将弹出提示给予确认。</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="52"/>
+        <location filename="../generalsettingswidget.cpp" line="56"/>
         <source>Automatically saves the emulator state when powering down or exiting. You can then resume directly from where you left off next time.</source>
         <translation>关闭或退出时自动保存模拟器状态。然后下次您可以直接从离开的地方继续。</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="54"/>
-        <location filename="../generalsettingswidget.cpp" line="60"/>
-        <location filename="../generalsettingswidget.cpp" line="63"/>
+        <location filename="../generalsettingswidget.cpp" line="58"/>
+        <location filename="../generalsettingswidget.cpp" line="64"/>
+        <location filename="../generalsettingswidget.cpp" line="67"/>
         <location filename="../generalsettingswidget.cpp" line="98"/>
         <source>Unchecked</source>
         <translation>不勾选</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="55"/>
+        <location filename="../generalsettingswidget.cpp" line="59"/>
         <source>Automatically switches to fullscreen mode when a game is started.</source>
         <translation>游戏开始时自动切换到全屏模式。</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="58"/>
+        <location filename="../generalsettingswidget.cpp" line="62"/>
         <source>Renders the display of the simulated console to the main window of the application, over the game list. If unchecked, the display will render in a separate window.</source>
         <translation>渲染模拟控制台的画面到应用程序的主窗口，显示于游戏列表上。如果未选中，则在单独的窗口中显示渲染画面。</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="61"/>
+        <location filename="../generalsettingswidget.cpp" line="65"/>
         <source>Pauses the emulator when a game is started.</source>
         <translation>游戏开始时暂停模拟器。</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="64"/>
+        <location filename="../generalsettingswidget.cpp" line="68"/>
         <source>When enabled, memory cards and controllers will be overwritten when save states are loaded. This can result in lost saves, and controller type mismatches. For deterministic save states, enable this option, otherwise leave disabled.</source>
         <translation>启用后，记忆卡和控制器将在加载即时存档时被覆盖。这可能导致保存丢失，以及控制器类型不匹配。如果您对要加载的即时存档很有把握，可以启用此选项，否则请保持禁用状态。</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="69"/>
+        <location filename="../generalsettingswidget.cpp" line="73"/>
         <source>When enabled, per-game settings will be applied, and incompatible enhancements will be disabled. You should leave this option enabled except when testing enhancements with incompatible games.</source>
         <translation>启用后，每个游戏将会使用各自独立的设置，旨在应对那些不兼容游戏的增强功能将会被禁用。您应该保持此选项处于启用状态，除非要用那些不兼容游戏开始测试增强功能。</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="73"/>
         <source>Throttles the emulation speed to the chosen speed above. If unchecked, the emulator will run as fast as possible, which may not be playable.</source>
-        <translation>将模拟速度调节到上述选定速度。如果未选中，模拟器将以最快的速度运行，这可能导致无法游戏。</translation>
+        <translation type="vanished">将模拟速度调节到上述选定速度。如果未选中，模拟器将以最快的速度运行，这可能导致无法游戏。</translation>
+    </message>
+    <message>
+        <source>Increases the system timer resolution when emulation is started to provide more accurate frame pacing. May increase battery usage on laptops.</source>
+        <translation type="vanished">在开始模拟时增加系统计时器分辨率，以提供更精确的帧间距。可能会增加笔记本电脑的电池使用量。</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="77"/>
-        <source>Increases the system timer resolution when emulation is started to provide more accurate frame pacing. May increase battery usage on laptops.</source>
-        <translation>在开始模拟时增加系统计时器分辨率，以提供更精确的帧间距。可能会增加笔记本电脑的电池使用量。</translation>
+        <source>Sets the target emulation speed. It is not guaranteed that this speed will be reached, and if not, the emulator will run as fast as it can manage.</source>
+        <translation>设置目标模拟速度。不能保证达到这个速度，如果不能，模拟器将以它能管理的速度运行。</translation>
+    </message>
+    <message>
+        <location filename="../generalsettingswidget.cpp" line="80"/>
+        <source>Fast Forward Speed</source>
+        <translation>快进速度</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="81"/>
-        <source>Sets the target emulation speed. It is not guaranteed that this speed will be reached, and if not, the emulator will run as fast as it can manage.</source>
-        <translation>设置目标模拟速度。不能保证达到这个速度，如果不能，模拟器将以它能管理的速度运行。</translation>
+        <source>Sets the fast forward (turbo) speed. This speed will be used when the fast forward hotkey is pressed/toggled.</source>
+        <translation>设置快进(涡轮增压)速度。这个速度将用于在快进热键被按下/切换时。</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="83"/>
@@ -3247,9 +3288,18 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>启动时自动检查程序的更新，可以选择稍后更新或完全跳过。</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="129"/>
         <source>%1%</source>
-        <translation>%1%</translation>
+        <translation type="vanished">%1%</translation>
+    </message>
+    <message>
+        <location filename="../qtutils.cpp" line="725"/>
+        <source>Unlimited</source>
+        <translation>无限制</translation>
+    </message>
+    <message>
+        <location filename="../qtutils.cpp" line="731"/>
+        <source>%1% [%2 FPS (NTSC) / %3 FPS (PAL)]</source>
+        <translation>%1% [%2 FPS (NTSC) / %3 FPS (PAL)]</translation>
     </message>
 </context>
 <context>
@@ -3268,334 +3318,334 @@ This will download approximately 4 megabytes over your current internet connecti
 <context>
     <name>Hotkeys</name>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1363"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1369"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1382"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1388"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1394"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1420"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1426"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1432"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1372"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1378"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1391"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1397"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1403"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1429"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1435"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1441"/>
         <source>General</source>
         <translation>常规</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1364"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1373"/>
         <source>Fast Forward</source>
         <translation>加速</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1370"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1379"/>
         <source>Toggle Fast Forward</source>
         <translation>切换加速</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1383"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1392"/>
         <source>Toggle Fullscreen</source>
         <translation>切换全屏</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1389"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1398"/>
         <source>Toggle Pause</source>
         <translation>切换暂停</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1395"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1404"/>
         <source>Power Off System</source>
         <translation>关机</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1421"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1430"/>
         <source>Reset System</source>
         <translation>重置系统</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1427"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1436"/>
         <source>Save Screenshot</source>
         <translation>保存截图</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1433"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1442"/>
         <source>Frame Step</source>
         <translation>帧步进</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1443"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1449"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1471"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1477"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1483"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1489"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1452"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1458"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1480"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1486"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1492"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1498"/>
         <source>Graphics</source>
         <translation>图像</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1444"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1453"/>
         <source>Toggle Software Rendering</source>
         <translation>切换软件渲染</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1450"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1459"/>
         <source>Toggle PGXP</source>
         <translation>切换PGXP</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1472"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1481"/>
         <source>Increase Resolution Scale</source>
         <translation>提高分辨率比例</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1478"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1487"/>
         <source>Decrease Resolution Scale</source>
         <translation>降低分辨率比例</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1484"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1493"/>
         <source>Toggle Post-Processing</source>
         <translation>切换后处理</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1490"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1499"/>
         <source>Reload Post Processing Shaders</source>
         <translation>重新加载后处理着色器</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1498"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1503"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1508"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1513"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1521"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1527"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1537"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1543"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1507"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1512"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1517"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1522"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1530"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1536"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1546"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1552"/>
         <source>Save States</source>
         <translation>即时存档</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1499"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1508"/>
         <source>Load From Selected Slot</source>
         <translation>从所选插槽读取</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1504"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1513"/>
         <source>Save To Selected Slot</source>
         <translation>保存到所选插槽</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1509"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1518"/>
         <source>Select Previous Save Slot</source>
         <translation>选择上一个保存槽</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1514"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1523"/>
         <source>Select Next Save Slot</source>
         <translation>选择下一个保存槽</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1552"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1561"/>
         <source>Load Game State 1</source>
         <translation>读取游戏状态1</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1553"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1562"/>
         <source>Load Game State 2</source>
         <translation>读取游戏状态2</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1554"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1563"/>
         <source>Load Game State 3</source>
         <translation>读取游戏状态3</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1555"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1564"/>
         <source>Load Game State 4</source>
         <translation>读取游戏状态4</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1556"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1565"/>
         <source>Load Game State 5</source>
         <translation>读取游戏状态5</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1557"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1566"/>
         <source>Load Game State 6</source>
         <translation>读取游戏状态6</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1558"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1567"/>
         <source>Load Game State 7</source>
         <translation>读取游戏状态7</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1559"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1568"/>
         <source>Load Game State 8</source>
         <translation>读取游戏状态8</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1560"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1569"/>
         <source>Load Game State 9</source>
         <translation>读取游戏状态9</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1561"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1570"/>
         <source>Load Game State 10</source>
         <translation>读取游戏状态10</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1562"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1571"/>
         <source>Save Game State 1</source>
         <translation>保存游戏状态1</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1563"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1572"/>
         <source>Save Game State 2</source>
         <translation>保存游戏状态2</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1564"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1573"/>
         <source>Save Game State 3</source>
         <translation>保存游戏状态3</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1565"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1574"/>
         <source>Save Game State 4</source>
         <translation>保存游戏状态4</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1566"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1575"/>
         <source>Save Game State 5</source>
         <translation>保存游戏状态5</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1567"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1576"/>
         <source>Save Game State 6</source>
         <translation>保存游戏状态6</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1568"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1577"/>
         <source>Save Game State 7</source>
         <translation>保存游戏状态7</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1569"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1578"/>
         <source>Save Game State 8</source>
         <translation>保存游戏状态8</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1570"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1579"/>
         <source>Save Game State 9</source>
         <translation>保存游戏状态9</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1571"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1580"/>
         <source>Save Game State 10</source>
         <translation>保存游戏状态10</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1572"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1581"/>
         <source>Load Global State 1</source>
         <translation>读取全局状态1</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1573"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1582"/>
         <source>Load Global State 2</source>
         <translation>读取全局状态2</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1574"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1583"/>
         <source>Load Global State 3</source>
         <translation>读取全局状态3</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1575"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1584"/>
         <source>Load Global State 4</source>
         <translation>读取全局状态4</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1576"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1585"/>
         <source>Load Global State 5</source>
         <translation>读取全局状态5</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1577"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1586"/>
         <source>Load Global State 6</source>
         <translation>读取全局状态6</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1578"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1587"/>
         <source>Load Global State 7</source>
         <translation>读取全局状态7</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1579"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1588"/>
         <source>Load Global State 8</source>
         <translation>读取全局状态8</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1580"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1589"/>
         <source>Load Global State 9</source>
         <translation>读取全局状态9</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1581"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1590"/>
         <source>Load Global State 10</source>
         <translation>读取全局状态10</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1582"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1591"/>
         <source>Save Global State 1</source>
         <translation>保存全局状态1</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1583"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1592"/>
         <source>Save Global State 2</source>
         <translation>保存全局状态2</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1584"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1593"/>
         <source>Save Global State 3</source>
         <translation>保存全局状态3</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1585"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1594"/>
         <source>Save Global State 4</source>
         <translation>保存全局状态4</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1586"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1595"/>
         <source>Save Global State 5</source>
         <translation>保存全局状态5</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1587"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1596"/>
         <source>Save Global State 6</source>
         <translation>保存全局状态6</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1588"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1597"/>
         <source>Save Global State 7</source>
         <translation>保存全局状态7</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1589"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1598"/>
         <source>Save Global State 8</source>
         <translation>保存全局状态8</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1590"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1599"/>
         <source>Save Global State 9</source>
         <translation>保存全局状态9</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1591"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1600"/>
         <source>Save Global State 10</source>
         <translation>保存全局状态10</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1597"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1609"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1620"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1631"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1606"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1618"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1629"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1640"/>
         <source>Audio</source>
         <translation>声音</translation>
     </message>
@@ -3616,22 +3666,22 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation type="vanished">保存全局状态 %u</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1598"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1607"/>
         <source>Toggle Mute</source>
         <translation>声音开关</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1610"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1619"/>
         <source>Toggle CD Audio Mute</source>
         <translation>CD音轨开关</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1621"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1630"/>
         <source>Volume Up</source>
         <translation>音量增大</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1632"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1641"/>
         <source>Volume Down</source>
         <translation>音量减小</translation>
     </message>
@@ -3692,52 +3742,52 @@ This will download approximately 4 megabytes over your current internet connecti
 <context>
     <name>LogLevel</name>
     <message>
-        <location filename="../../core/settings.cpp" line="364"/>
+        <location filename="../../core/settings.cpp" line="368"/>
         <source>None</source>
         <translation>无</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="364"/>
+        <location filename="../../core/settings.cpp" line="368"/>
         <source>Error</source>
         <translation>错误</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="364"/>
+        <location filename="../../core/settings.cpp" line="368"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="365"/>
+        <location filename="../../core/settings.cpp" line="369"/>
         <source>Performance</source>
         <translation>性能</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="365"/>
+        <location filename="../../core/settings.cpp" line="369"/>
         <source>Success</source>
         <translation>成功</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="366"/>
+        <location filename="../../core/settings.cpp" line="370"/>
         <source>Information</source>
         <translation>信息</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="366"/>
+        <location filename="../../core/settings.cpp" line="370"/>
         <source>Developer</source>
         <translation>开发者</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="366"/>
+        <location filename="../../core/settings.cpp" line="370"/>
         <source>Profile</source>
         <translation>简介</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="367"/>
+        <location filename="../../core/settings.cpp" line="371"/>
         <source>Debug</source>
         <translation>调试</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="367"/>
+        <location filename="../../core/settings.cpp" line="371"/>
         <source>Trace</source>
         <translation>跟踪</translation>
     </message>
@@ -3748,7 +3798,7 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../mainwindow.ui" line="14"/>
         <location filename="../mainwindow.cpp" line="67"/>
         <location filename="../mainwindow.cpp" line="78"/>
-        <location filename="../mainwindow.cpp" line="675"/>
+        <location filename="../mainwindow.cpp" line="685"/>
         <source>DuckStation</source>
         <translation>DuckStation</translation>
     </message>
@@ -3758,7 +3808,7 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <location filename="../mainwindow.ui" line="42"/>
-        <location filename="../mainwindow.cpp" line="535"/>
+        <location filename="../mainwindow.cpp" line="545"/>
         <source>Change Disc</source>
         <translation>换碟</translation>
     </message>
@@ -4205,7 +4255,7 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation type="vanished">从小部件获取窗口信息失败</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="131"/>
+        <location filename="../mainwindow.cpp" line="139"/>
         <source>Failed to create host display device context.</source>
         <translation>无法创建主机显示设备环境。</translation>
     </message>
@@ -4219,114 +4269,119 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>所有文件类型 (*.bin *.img *.cue *.chd *.exe *.psexe *.psf);;单轨原始镜像 (*.bin *.img);;Cue Sheets (*.cue);;MAME CHD镜像 (*.chd);;PlayStation可执行程序 (*.exe *.psexe);;便携音频格式文件 (*.psf);;播放列表 (*.m3u)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="320"/>
-        <location filename="../mainwindow.cpp" line="335"/>
+        <location filename="../mainwindow.cpp" line="93"/>
+        <source>Failed to create host display.</source>
+        <translation>无法创建主机显示。</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="330"/>
+        <location filename="../mainwindow.cpp" line="345"/>
         <source>Select Disc Image</source>
         <translation>选择光盘镜像</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="361"/>
+        <location filename="../mainwindow.cpp" line="371"/>
         <source>Cheat Manager</source>
         <translation>金手指管理器</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="496"/>
+        <location filename="../mainwindow.cpp" line="506"/>
         <source>Properties...</source>
         <translation>属性...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="499"/>
+        <location filename="../mainwindow.cpp" line="509"/>
         <source>Open Containing Directory...</source>
         <translation>打开所在目录...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="504"/>
+        <location filename="../mainwindow.cpp" line="514"/>
         <source>Set Cover Image...</source>
         <translation>设置封面图片…</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="517"/>
+        <location filename="../mainwindow.cpp" line="527"/>
         <source>Default Boot</source>
         <translation>默认启动</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="521"/>
+        <location filename="../mainwindow.cpp" line="531"/>
         <source>Fast Boot</source>
         <translation>快速启动</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="527"/>
+        <location filename="../mainwindow.cpp" line="537"/>
         <source>Full Boot</source>
         <translation>完全启动</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="545"/>
+        <location filename="../mainwindow.cpp" line="555"/>
         <source>Add Search Directory...</source>
         <translation>添加搜索目录...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="553"/>
+        <location filename="../mainwindow.cpp" line="563"/>
         <source>Select Cover Image</source>
         <translation>选择封面图片</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="554"/>
+        <location filename="../mainwindow.cpp" line="564"/>
         <source>All Cover Image Types (*.jpg *.jpeg *.png)</source>
         <translation>所有封面图片类型 (*.jpg *.jpeg *.png)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="560"/>
+        <location filename="../mainwindow.cpp" line="570"/>
         <source>Cover Already Exists</source>
         <translation>封面已存在</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="561"/>
+        <location filename="../mainwindow.cpp" line="571"/>
         <source>A cover image for this game already exists, do you wish to replace it?</source>
         <translation>该游戏的封面图片已经存在，您要替换它吗？</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="575"/>
-        <location filename="../mainwindow.cpp" line="581"/>
+        <location filename="../mainwindow.cpp" line="585"/>
+        <location filename="../mainwindow.cpp" line="591"/>
         <source>Copy Error</source>
         <translation>复制错误</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="575"/>
+        <location filename="../mainwindow.cpp" line="585"/>
         <source>Failed to remove existing cover &apos;%1&apos;</source>
         <translation>无法移除现有封面&apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="581"/>
+        <location filename="../mainwindow.cpp" line="591"/>
         <source>Failed to copy &apos;%1&apos; to &apos;%2&apos;</source>
         <translation>复制&apos;%1&apos;到&apos;%2&apos;失败</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="676"/>
+        <location filename="../mainwindow.cpp" line="686"/>
         <source>Language changed. Please restart the application to apply.</source>
         <translation>语言已更改，请重新启动应用程序以应用。</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="891"/>
+        <location filename="../mainwindow.cpp" line="901"/>
         <source>Destination File</source>
         <translation>目标文件</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="907"/>
+        <location filename="../mainwindow.cpp" line="917"/>
         <source>Default</source>
         <translation>默认</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="908"/>
+        <location filename="../mainwindow.cpp" line="918"/>
         <source>Fusion</source>
         <translation>炼金</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="909"/>
+        <location filename="../mainwindow.cpp" line="919"/>
         <source>Dark Fusion (Gray)</source>
         <translation>黑炼金 (灰色)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="910"/>
+        <location filename="../mainwindow.cpp" line="920"/>
         <source>Dark Fusion (Blue)</source>
         <translation>黑炼金 (蓝色)</translation>
     </message>
@@ -4335,22 +4390,22 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation type="vanished">黑色</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="911"/>
+        <location filename="../mainwindow.cpp" line="921"/>
         <source>QDarkStyle</source>
         <translation>暗夜</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1244"/>
+        <location filename="../mainwindow.cpp" line="1254"/>
         <source>Updater Error</source>
         <translation>更新程序错误</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1250"/>
+        <location filename="../mainwindow.cpp" line="1260"/>
         <source>&lt;p&gt;Sorry, you are trying to update a DuckStation version which is not an official GitHub release. To prevent incompatibilities, the auto-updater is only enabled on official builds.&lt;/p&gt;&lt;p&gt;To obtain an official build, please follow the instructions under &quot;Downloading and Running&quot; at the link below:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt;https://github.com/stenzek/duckstation/&lt;/a&gt;&lt;/p&gt;</source>
         <translation>&lt;p&gt;抱歉，您正在尝试更新非GitHub官方版本的DuckStation版本。为防止不兼容，自动更新程序仅在正式版本上启用。&lt;/p&gt;&lt;p&gt;要获取正式版本，请按照下面链接中的&quot;下载并运行&quot;下的说明进行操作：&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt;https://github.com/stenzek/duckstation/&lt;/a&gt;lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1256"/>
+        <location filename="../mainwindow.cpp" line="1266"/>
         <source>Automatic updating is not supported on the current platform.</source>
         <translation>当前平台不支持自动更新。</translation>
     </message>
@@ -4592,22 +4647,22 @@ This will download approximately 4 megabytes over your current internet connecti
 <context>
     <name>MemoryCardType</name>
     <message>
-        <location filename="../../core/settings.cpp" line="683"/>
+        <location filename="../../core/settings.cpp" line="687"/>
         <source>No Memory Card</source>
         <translation>无记忆卡</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="683"/>
+        <location filename="../../core/settings.cpp" line="687"/>
         <source>Shared Between All Games</source>
         <translation>所有游戏共用记忆卡</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="684"/>
+        <location filename="../../core/settings.cpp" line="688"/>
         <source>Separate Card Per Game (Game Code)</source>
         <translation>每个游戏独立记忆卡 (游戏编码)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="685"/>
+        <location filename="../../core/settings.cpp" line="689"/>
         <source>Separate Card Per Game (Game Title)</source>
         <translation>每个游戏独立记忆卡 (游戏标题)</translation>
     </message>
@@ -4751,211 +4806,219 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>保存即时存档到&apos;%s&apos;。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="532"/>
+        <location filename="../../core/host_interface.cpp" line="534"/>
         <source>PGXP is incompatible with the software renderer, disabling PGXP.</source>
         <translation>PGXP与软件呈现程序不兼容，禁用PGXP。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="541"/>
+        <location filename="../../core/host_interface.cpp" line="543"/>
         <source>PGXP CPU mode is incompatible with the recompiler, using Cached Interpreter instead.</source>
         <translation>PGXP在CPU模式与重编译器不兼容，改为使用缓存解释器。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="560"/>
+        <location filename="../../core/host_interface.cpp" line="562"/>
         <source>Switching to %s%s GPU renderer.</source>
         <translation>切换到%s%sGPU渲染器。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="581"/>
+        <location filename="../../core/host_interface.cpp" line="583"/>
         <source>Switching to %s audio backend.</source>
         <translation>切换到%s音频后端。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="597"/>
+        <location filename="../../core/host_interface.cpp" line="599"/>
         <source>Switching to %s CPU execution mode.</source>
         <translation>切换到%sCPU执行模式。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="608"/>
+        <location filename="../../core/host_interface.cpp" line="610"/>
         <source>CPU memory exceptions enabled, flushing all blocks.</source>
         <translation>启用CPU内存异常，刷新所有区块。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="609"/>
+        <location filename="../../core/host_interface.cpp" line="611"/>
         <source>CPU memory exceptions disabled, flushing all blocks.</source>
         <translation>禁用CPU内存异常，刷新所有区块。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="618"/>
+        <location filename="../../core/host_interface.cpp" line="620"/>
         <source>CPU ICache enabled, flushing all blocks.</source>
         <translation>启用CPU的ICache，刷新所有区块。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="619"/>
+        <location filename="../../core/host_interface.cpp" line="621"/>
         <source>CPU ICache disabled, flushing all blocks.</source>
         <translation>禁用CPU的ICache，刷新所有区块。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="652"/>
+        <location filename="../../core/host_interface.cpp" line="655"/>
         <source>PGXP enabled, recompiling all blocks.</source>
         <translation>启用PGXP，重编译所有区块。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="653"/>
+        <location filename="../../core/host_interface.cpp" line="656"/>
         <source>PGXP disabled, recompiling all blocks.</source>
         <translation>禁用PGXP，重编译所有区块。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="819"/>
+        <location filename="../../core/host_interface.cpp" line="822"/>
         <source>Switching to %s renderer...</source>
         <translation>切换到%s渲染器...</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="719"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2091"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2461"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="728"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2101"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2471"/>
         <source>Failed to load post processing shader chain.</source>
         <translation>加载后处理着色器链失败。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1376"/>
         <source>Speed limiter enabled.</source>
-        <translation>限速器启用。</translation>
+        <translation type="vanished">限速器启用。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1377"/>
         <source>Speed limiter disabled.</source>
-        <translation>限速器禁用。</translation>
+        <translation type="vanished">限速器禁用。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1456"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1465"/>
         <source>PGXP is now enabled.</source>
         <translation>现在启用PGXP。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1457"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1466"/>
         <source>PGXP is now disabled</source>
         <translation>现在禁用PGXP。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1604"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1613"/>
         <source>Volume: Muted</source>
         <translation>音量: 静音</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1606"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1627"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1638"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1615"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1636"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1647"/>
         <source>Volume: %d%%</source>
         <translation>音量: %d%%</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1615"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1624"/>
         <source>CD Audio Muted.</source>
         <translation>CD音频已静音。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1616"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1625"/>
         <source>CD Audio Unmuted.</source>
         <translation>CD音频已解除静音。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1788"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1797"/>
         <source>Loaded input profile from &apos;%s&apos;</source>
         <translation>从&apos;%s&apos;读取输入配置</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2244"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2254"/>
         <source>Started dumping audio to &apos;%s&apos;.</source>
         <translation>开始转储音频到&apos;%s&apos;。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2249"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2259"/>
         <source>Failed to start dumping audio to &apos;%s&apos;.</source>
         <translation>开始转储音频到&apos;%s&apos;失败。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2259"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2269"/>
         <source>Stopped dumping audio.</source>
         <translation>停止转储音频。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2290"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2300"/>
         <source>Failed to save screenshot to &apos;%s&apos;</source>
         <translation>保存截图到&apos;%s&apos;失败</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2294"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2304"/>
         <source>Screenshot saved to &apos;%s&apos;.</source>
         <translation>截图已保存到&apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2322"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2332"/>
         <source>Input profile &apos;%s&apos; cannot be found.</source>
         <translation>无法找到输入配置文件&apos;%s&apos;。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2329"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2339"/>
         <source>Using input profile &apos;%s&apos;.</source>
         <translation>使用输入配置&apos;%s&apos;。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2355"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2365"/>
         <source>Failed to load cheats from &apos;%s&apos;.</source>
         <translation>从&apos;%s&apos;加载金手指失败。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2359"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2369"/>
         <source>Loaded %u cheats from list. %u cheats are enabled.</source>
         <translation>从列表加载%u金手指，金手指%u已启用。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2399"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2409"/>
         <source>Saved %u cheats to &apos;%s&apos;.</source>
         <translation>保存%u金手指到&apos;%s&apos;。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2421"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2431"/>
         <source>Cheat &apos;%s&apos; enabled.</source>
         <translation>金手指&apos;%s&apos;已启用。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2425"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2435"/>
         <source>Cheat &apos;%s&apos; disabled.</source>
         <translation>金手指&apos;%s&apos;已禁用。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2385"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2395"/>
         <source>Failed to save cheat list to &apos;%s&apos;</source>
         <translation>无法保存金手指列表到&apos;%s&apos;</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2441"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1385"/>
+        <source>Fast forwarding...</source>
+        <translation>快进...</translation>
+    </message>
+    <message>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1386"/>
+        <source>Stopped fast forwarding.</source>
+        <translation>停止快进。</translation>
+    </message>
+    <message>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2451"/>
         <source>Applied cheat &apos;%s&apos;.</source>
         <translation>应用金手指&apos;%s&apos;。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2445"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2455"/>
         <source>Cheat &apos;%s&apos; is already enabled.</source>
         <translation>金手指&apos;%s&apos;已启用。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2458"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2468"/>
         <source>Post-processing is now enabled.</source>
         <translation>后处理现在已启用。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2465"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2475"/>
         <source>Post-processing is now disabled.</source>
         <translation>后处理现在已禁用。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2476"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2486"/>
         <source>Failed to load post-processing shader chain.</source>
         <translation>无法加载后处理着色器链。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2478"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2488"/>
         <source>Post-processing shaders reloaded.</source>
         <translation>重新加载后处理着色器。</translation>
     </message>
@@ -5070,37 +5133,37 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>记忆卡%u当前接入系统中，没有以即时存档形式存在。移除记忆卡。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="756"/>
+        <location filename="../../core/system.cpp" line="757"/>
         <source>CPU clock speed is set to %u%% (%u / %u). This may result in instability.</source>
         <translation>CPU频率设置为%u%% (%u / %u)。这可能导致不稳定。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="897"/>
+        <location filename="../../core/system.cpp" line="898"/>
         <source>WARNING: CPU overclock (%u%%) was different in save state (%u%%).</source>
         <translation>警告: CPU速率 (%u%%) 不同于存档 (%u%%).</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="62"/>
+        <location filename="../../core/gpu_hw.cpp" line="63"/>
         <source>%ux MSAA is not supported, using %ux instead.</source>
         <translation>不支持%ux MSAA，使用%ux代替。</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="68"/>
+        <location filename="../../core/gpu_hw.cpp" line="69"/>
         <source>SSAA is not supported, using MSAA instead.</source>
         <translation>不支持SSAA，使用MSAA代替。</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="122"/>
+        <location filename="../../core/gpu_hw.cpp" line="124"/>
         <source>Resolution scale set to %ux (display %ux%u, VRAM %ux%u)</source>
         <translation>分辨率设置为%ux (显示%ux%u，显存%ux%u)</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="133"/>
+        <location filename="../../core/gpu_hw.cpp" line="135"/>
         <source>Multisample anti-aliasing set to %ux (SSAA).</source>
         <translation>多重采样反锯齿设置为%ux (SSAA)。</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="139"/>
+        <location filename="../../core/gpu_hw.cpp" line="141"/>
         <source>Multisample anti-aliasing set to %ux.</source>
         <translation>多重采样反锯齿设置为%ux。</translation>
     </message>
@@ -5115,7 +5178,7 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>保存记忆卡到&apos;%s&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="214"/>
+        <location filename="../mainwindow.cpp" line="224"/>
         <source>Failed to acquire exclusive fullscreen.</source>
         <translation>无法获取独占式全屏。</translation>
     </message>
@@ -5303,12 +5366,12 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>初始化主机接口失败，无法继续。</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="659"/>
+        <location filename="../qtutils.cpp" line="660"/>
         <source>Failed to open URL</source>
         <translation>无法打开URL</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="660"/>
+        <location filename="../qtutils.cpp" line="661"/>
         <source>Failed to open URL.
 
 The URL was: %1</source>
@@ -5596,42 +5659,42 @@ The saves will not be recoverable.</source>
         <translation type="vanished">保存状态不兼容: 要求版本%u，但状态为版本%u。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="956"/>
+        <location filename="../../core/system.cpp" line="957"/>
         <source>Save state is incompatible: minimum version is %u but state is version %u.</source>
         <translation>即时存档不兼容: 最低可兼容版本为%u，但当前版本为%u。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="980"/>
+        <location filename="../../core/system.cpp" line="981"/>
         <source>Failed to open CD image from save state: &apos;%s&apos;.</source>
         <translation>无法从即时存档打开CD镜像: &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1486"/>
+        <location filename="../../core/system.cpp" line="1493"/>
         <source>Per-game memory card cannot be used for slot %u as the running game has no code. Using shared card instead.</source>
         <translation>游戏没有编码，插槽%u无法使用独立记忆卡的，改用共用记忆卡。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1510"/>
+        <location filename="../../core/system.cpp" line="1517"/>
         <source>Per-game memory card cannot be used for slot %u as the running game has no title. Using shared card instead.</source>
         <translation>游戏没有标题，插槽%u无法使用独立记忆卡的，改用共用记忆卡。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1529"/>
+        <location filename="../../core/system.cpp" line="1536"/>
         <source>Memory card path for slot %u is missing, using default.</source>
         <translation>插槽%u的记忆卡路径丢失，使用默认值。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1574"/>
+        <location filename="../../core/system.cpp" line="1581"/>
         <source>Game changed, reloading memory cards.</source>
         <translation>游戏已改变，重新加载记忆卡。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1666"/>
+        <location filename="../../core/system.cpp" line="1673"/>
         <source>Removing current media from playlist, removing media from CD-ROM.</source>
         <translation>在播放列表中删除当前媒体，并从CD-ROM中卸载媒体。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1683"/>
+        <location filename="../../core/system.cpp" line="1690"/>
         <source>Changing current media from playlist, replacing current media.</source>
         <translation>变更原播放列表中的“当前媒体”，替换为当前新的指定媒体。</translation>
     </message>
