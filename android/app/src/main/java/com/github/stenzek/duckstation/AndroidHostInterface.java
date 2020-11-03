@@ -14,6 +14,7 @@ public class AndroidHostInterface {
     private long mNativePointer;
     private Context mContext;
 
+    static public native String getScmVersion();
     static public native AndroidHostInterface create(Context context, String userDirectory);
 
     public AndroidHostInterface(Context context) {

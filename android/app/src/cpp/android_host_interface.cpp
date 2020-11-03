@@ -17,6 +17,7 @@
 #include "frontend-common/imgui_styles.h"
 #include "frontend-common/opengl_host_display.h"
 #include "frontend-common/vulkan_host_display.h"
+#include "scmversion/scmversion.h"
 #include <android/native_window_jni.h>
 #include <cmath>
 #include <imgui.h>
@@ -628,6 +629,11 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
 
 #define DEFINE_JNI_ARGS_METHOD(return_type, name, ...)                                                                 \
   extern "C" JNIEXPORT return_type JNICALL Java_com_github_stenzek_duckstation_##name(JNIEnv* env, __VA_ARGS__)
+
+DEFINE_JNI_ARGS_METHOD(jstring, AndroidHostInterface_getScmVersion, jobject unused)
+{
+  return env->NewStringUTF(g_scm_tag_str);
+}
 
 DEFINE_JNI_ARGS_METHOD(jobject, AndroidHostInterface_create, jobject unused, jobject context_object,
                        jstring user_directory)
