@@ -525,8 +525,9 @@ bool GPU_HW_D3D11::CompileShaders()
   {
     for (u8 interlacing = 0; interlacing < 3; interlacing++)
     {
-      const std::string ps = shadergen.GenerateDisplayFragmentShader(ConvertToBoolUnchecked(depth_24bit),
-                                                                     static_cast<InterlacedRenderMode>(interlacing));
+      const std::string ps = shadergen.GenerateDisplayFragmentShader(
+        ConvertToBoolUnchecked(depth_24bit), static_cast<InterlacedRenderMode>(interlacing),
+        ConvertToBoolUnchecked(depth_24bit) && m_chroma_smoothing);
       m_display_pixel_shaders[depth_24bit][interlacing] = shader_cache.GetPixelShader(m_device.Get(), ps);
       if (!m_display_pixel_shaders[depth_24bit][interlacing])
         return false;
@@ -669,14 +670,15 @@ void GPU_HW_D3D11::UpdateDisplay()
   }
   else
   {
+    const u32 resolution_scale = m_GPUSTAT.display_area_color_depth_24 ? 1 : m_resolution_scale;
     const u32 vram_offset_x = m_crtc_state.display_vram_left;
     const u32 vram_offset_y = m_crtc_state.display_vram_top;
-    const u32 scaled_vram_offset_x = vram_offset_x * m_resolution_scale;
-    const u32 scaled_vram_offset_y = vram_offset_y * m_resolution_scale;
+    const u32 scaled_vram_offset_x = vram_offset_x * resolution_scale;
+    const u32 scaled_vram_offset_y = vram_offset_y * resolution_scale;
     const u32 display_width = m_crtc_state.display_vram_width;
     const u32 display_height = m_crtc_state.display_vram_height;
-    const u32 scaled_display_width = display_width * m_resolution_scale;
-    const u32 scaled_display_height = display_height * m_resolution_scale;
+    const u32 scaled_display_width = display_width * resolution_scale;
+    const u32 scaled_display_height = display_height * resolution_scale;
     const InterlacedRenderMode interlaced = GetInterlacedRenderMode();
 
     if (IsDisplayDisabled())
@@ -699,8 +701,8 @@ void GPU_HW_D3D11::UpdateDisplay()
       m_context->PSSetShaderResources(0, 1, m_vram_texture.GetD3DSRVArray());
 
       const u32 reinterpret_field_offset = (interlaced != InterlacedRenderMode::None) ? GetInterlacedDisplayField() : 0;
-      const u32 reinterpret_start_x = m_crtc_state.regs.X * m_resolution_scale;
-      const u32 reinterpret_crop_left = (m_crtc_state.display_vram_left - m_crtc_state.regs.X) * m_resolution_scale;
+      const u32 reinterpret_start_x = m_crtc_state.regs.X * resolution_scale;
+      const u32 reinterpret_crop_left = (m_crtc_state.display_vram_left - m_crtc_state.regs.X) * resolution_scale;
       const u32 uniforms[4] = {reinterpret_start_x, scaled_vram_offset_y + reinterpret_field_offset,
                                reinterpret_crop_left, reinterpret_field_offset};
       ID3D11PixelShader* display_pixel_shader =

@@ -1017,6 +1017,7 @@ void SDLHostInterface::DrawQuickSettingsMenu()
   settings_changed |= ImGui::MenuItem("Disable Interlacing", nullptr, &m_settings_copy.gpu_disable_interlacing);
   settings_changed |= ImGui::MenuItem("Widescreen Hack", nullptr, &m_settings_copy.gpu_widescreen_hack);
   settings_changed |= ImGui::MenuItem("Force NTSC Timings", nullptr, &m_settings_copy.gpu_force_ntsc_timings);
+  settings_changed |= ImGui::MenuItem("24-Bit Chroma Smoothing", nullptr, &m_settings_copy.gpu_24bit_chroma_smoothing);
 
   ImGui::Separator();
 
@@ -1545,6 +1546,7 @@ void SDLHostInterface::DrawSettingsWindow()
         settings_changed |= ImGui::Checkbox("Widescreen Hack", &m_settings_copy.gpu_widescreen_hack);
         settings_changed |=
           ImGui::Checkbox("Force 4:3 For 24-Bit Display", &m_settings_copy.display_force_4_3_for_24bit);
+        settings_changed |= ImGui::Checkbox("24-Bit Chroma Smoothing", &m_settings_copy.gpu_24bit_chroma_smoothing);
 
         settings_changed |= ImGui::Checkbox("PGXP Enabled", &m_settings_copy.gpu_pgxp_enable);
         settings_changed |= ImGui::Checkbox("PGXP Culling", &m_settings_copy.gpu_pgxp_culling);

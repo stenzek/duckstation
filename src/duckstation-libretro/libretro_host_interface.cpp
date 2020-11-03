@@ -457,7 +457,7 @@ void LibretroHostInterface::OnSystemDestroyed()
   m_using_hardware_renderer = false;
 }
 
-static std::array<retro_core_option_definition, 41> s_option_definitions = {{
+static std::array<retro_core_option_definition, 42> s_option_definitions = {{
   {"duckstation_Console.Region",
    "Console Region",
    "Determines which region/hardware to emulate. Auto-Detect will use the region of the disc inserted.",
@@ -602,6 +602,12 @@ static std::array<retro_core_option_definition, 41> s_option_definitions = {{
   {"duckstation_Display.Force4_3For24Bit",
    "Force 4:3 For 24-Bit Display",
    "Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs.",
+   {{"true", "Enabled"}, {"false", "Disabled"}},
+   "false"},
+  {"duckstation_GPU.ChromaSmoothing24Bit",
+   "Chroma Smoothing For 24-Bit Display",
+   "Smooths out blockyness between colour transitions in 24-bit content, usually FMVs. Only applies to the hardware "
+   "renderers.",
    {{"true", "Enabled"}, {"false", "Disabled"}},
    "false"},
   {"duckstation_GPU.TextureFilter",

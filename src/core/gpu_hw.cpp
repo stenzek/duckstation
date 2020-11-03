@@ -54,6 +54,7 @@ bool GPU_HW::Initialize(HostDisplay* host_display)
   m_scaled_dithering = g_settings.gpu_scaled_dithering;
   m_texture_filtering = g_settings.gpu_texture_filter;
   m_using_uv_limits = ShouldUseUVLimits();
+  m_chroma_smoothing = g_settings.gpu_24bit_chroma_smoothing;
   PrintSettingsToLog();
 
   if (m_multisamples != g_settings.gpu_multisamples)
@@ -111,10 +112,11 @@ void GPU_HW::UpdateHWSettings(bool* framebuffer_changed, bool* shaders_changed)
   const bool use_uv_limits = ShouldUseUVLimits();
 
   *framebuffer_changed = (m_resolution_scale != resolution_scale || m_multisamples != multisamples);
-  *shaders_changed = (m_resolution_scale != resolution_scale || m_multisamples != multisamples ||
-                      m_true_color != g_settings.gpu_true_color || m_per_sample_shading != per_sample_shading ||
-                      m_scaled_dithering != g_settings.gpu_scaled_dithering ||
-                      m_texture_filtering != g_settings.gpu_texture_filter || m_using_uv_limits != use_uv_limits);
+  *shaders_changed =
+    (m_resolution_scale != resolution_scale || m_multisamples != multisamples ||
+     m_true_color != g_settings.gpu_true_color || m_per_sample_shading != per_sample_shading ||
+     m_scaled_dithering != g_settings.gpu_scaled_dithering || m_texture_filtering != g_settings.gpu_texture_filter ||
+     m_using_uv_limits != use_uv_limits || m_chroma_smoothing != g_settings.gpu_24bit_chroma_smoothing);
 
   if (m_resolution_scale != resolution_scale)
   {
@@ -147,6 +149,7 @@ void GPU_HW::UpdateHWSettings(bool* framebuffer_changed, bool* shaders_changed)
   m_scaled_dithering = g_settings.gpu_scaled_dithering;
   m_texture_filtering = g_settings.gpu_texture_filter;
   m_using_uv_limits = use_uv_limits;
+  m_chroma_smoothing = g_settings.gpu_24bit_chroma_smoothing;
   PrintSettingsToLog();
 }
 
