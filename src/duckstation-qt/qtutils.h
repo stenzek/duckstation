@@ -68,4 +68,7 @@ QVariant GetMSAAModeValue(uint multisamples, bool ssaa);
 void DecodeMSAAModeValue(const QVariant& userdata, uint* multisamples, bool* ssaa);
 void FillComboBoxWithMSAAModes(QComboBox* cb);
 
+/// Fills a combo box with emulation speed options.
+void FillComboBoxWithEmulationSpeeds(QComboBox* cb);
+
 } // namespace QtUtils

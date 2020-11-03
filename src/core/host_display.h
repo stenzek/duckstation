@@ -66,6 +66,7 @@ public:
   virtual void DestroyRenderDevice() = 0;
   virtual void DestroyRenderSurface() = 0;
   virtual bool ChangeRenderWindow(const WindowInfo& wi) = 0;
+  virtual bool SupportsFullscreen() const = 0;
   virtual bool IsFullscreen() = 0;
   virtual bool SetFullscreen(bool fullscreen, u32 width, u32 height, float refresh_rate) = 0;
   virtual bool CreateResources() = 0;
@@ -92,6 +93,9 @@ public:
 
   const s32 GetDisplayTopMargin() const { return m_display_top_margin; }
   const float GetDisplayAspectRatio() const { return m_display_aspect_ratio; }
+
+  void SetDisplayMaxFPS(float max_fps);
+  bool ShouldSkipDisplayingFrame();
 
   void ClearDisplayTexture()
   {
@@ -180,6 +184,8 @@ protected:
 
   WindowInfo m_window_info;
 
+  u64 m_last_frame_displayed_time = 0;
+
   s32 m_mouse_position_x = 0;
   s32 m_mouse_position_y = 0;
 
@@ -190,6 +196,7 @@ protected:
   s32 m_display_active_width = 0;
   s32 m_display_active_height = 0;
   float m_display_aspect_ratio = 1.0f;
+  float m_display_frame_interval = 0.0f;
 
   void* m_display_texture_handle = nullptr;
   s32 m_display_texture_width = 0;

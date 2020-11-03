@@ -79,7 +79,7 @@ struct Settings
   bool cpu_fastmem = true;
 
   float emulation_speed = 1.0f;
-  bool speed_limiter_enabled = true;
+  float fast_forward_speed = 0.0f;
   bool increase_timer_resolution = true;
   bool start_paused = false;
   bool start_fullscreen = false;
@@ -113,6 +113,7 @@ struct Settings
   s16 display_active_end_offset = 0;
   DisplayAspectRatio display_aspect_ratio = DisplayAspectRatio::R4_3;
   bool display_force_4_3_for_24bit = false;
+  bool gpu_24bit_chroma_smoothing = false;
   bool display_linear_filtering = true;
   bool display_integer_scaling = false;
   bool display_post_processing = false;
@@ -122,6 +123,7 @@ struct Settings
   bool display_show_speed = false;
   bool display_show_resolution = false;
   bool video_sync_enabled = true;
+  float display_max_fps = 0.0f;
 
   bool cdrom_read_thread = true;
   bool cdrom_region_check = true;

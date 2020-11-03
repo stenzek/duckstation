@@ -990,19 +990,35 @@ std::string GPU_HW_ShaderGen::GenerateInterlacedFillFragmentShader()
 }
 
 std::string GPU_HW_ShaderGen::GenerateDisplayFragmentShader(bool depth_24bit,
-                                                            GPU_HW::InterlacedRenderMode interlace_mode)
+                                                            GPU_HW::InterlacedRenderMode interlace_mode,
+                                                            bool smooth_chroma)
 {
   std::stringstream ss;
   WriteHeader(ss);
   DefineMacro(ss, "DEPTH_24BIT", depth_24bit);
   DefineMacro(ss, "INTERLACED", interlace_mode != GPU_HW::InterlacedRenderMode::None);
   DefineMacro(ss, "INTERLEAVED", interlace_mode == GPU_HW::InterlacedRenderMode::InterleavedFields);
+  DefineMacro(ss, "SMOOTH_CHROMA", smooth_chroma);
 
   WriteCommonFunctions(ss);
   DeclareUniformBuffer(ss, {"uint2 u_vram_offset", "uint u_crop_left", "uint u_field_offset"}, true);
   DeclareTexture(ss, "samp0", 0, UsingMSAA());
 
   ss << R"(
+float3 RGBToYUV(float3 rgb)
+{
+  return float3(dot(rgb.rgb, float3(0.299f, 0.587f, 0.114f)),
+                dot(rgb.rgb, float3(-0.14713f, -0.28886f, 0.436f)),
+                dot(rgb.rgb, float3(0.615f, -0.51499f, -0.10001f)));
+}
+
+float3 YUVToRGB(float3 yuv)
+{
+  return float3(dot(yuv, float3(1.0f, 0.0f, 1.13983f)),
+                dot(yuv, float3(1.0f, -0.39465f, -0.58060f)),
+                dot(yuv, float3(1.0f, 2.03211f, 0.0f)));
+}
+
 float4 LoadVRAM(int2 coords)
 {
 #if MULTISAMPLING
@@ -1015,12 +1031,61 @@ float4 LoadVRAM(int2 coords)
   return LOAD_TEXTURE(samp0, coords, 0);
 #endif
 }
+
+float3 SampleVRAM24(uint2 icoords)
+{
+  // load adjacent 16-bit texels
+  uint2 clamp_size = uint2(1024, 512);
+
+  // relative to start of scanout
+  uint2 vram_coords = u_vram_offset + uint2((icoords.x * 3u) / 2u, icoords.y);
+  uint s0 = RGBA8ToRGBA5551(LoadVRAM(int2((vram_coords % clamp_size) * RESOLUTION_SCALE)));
+  uint s1 = RGBA8ToRGBA5551(LoadVRAM(int2(((vram_coords + uint2(1, 0)) % clamp_size) * RESOLUTION_SCALE)));
+    
+  // select which part of the combined 16-bit texels we are currently shading
+  uint s1s0 = ((s1 << 16) | s0) >> ((icoords.x & 1u) * 8u);
+    
+  // extract components and normalize
+  return float3(float(s1s0 & 0xFFu) / 255.0, float((s1s0 >> 8u) & 0xFFu) / 255.0,
+                float((s1s0 >> 16u) & 0xFFu) / 255.0);
+}
+
+float3 SampleVRAMAverage2x2(uint2 icoords)
+{
+  float3 value = SampleVRAM24(icoords);
+  value += SampleVRAM24(icoords + uint2(0, 1));
+  value += SampleVRAM24(icoords + uint2(1, 0));
+  value += SampleVRAM24(icoords + uint2(1, 1));
+  return value * 0.25;
+}
+
+float3 SampleVRAM24Smoothed(uint2 icoords)
+{
+  int2 base = int2(icoords) - 1;
+  uint2 low = uint2(max(base & ~1, int2(0, 0)));
+  uint2 high = low + 2u;
+  float2 coeff = vec2(base & 1) * 0.5 + 0.25;
+
+  float3 p = SampleVRAM24(icoords);
+  float3 p00 = SampleVRAMAverage2x2(low);
+  float3 p01 = SampleVRAMAverage2x2(uint2(low.x, high.y));
+  float3 p10 = SampleVRAMAverage2x2(uint2(high.x, low.y));
+  float3 p11 = SampleVRAMAverage2x2(high);
+
+  float3 s = lerp(lerp(p00, p10, coeff.x),
+                  lerp(p01, p11, coeff.x),
+                  coeff.y);
+
+  float y = RGBToYUV(p).x;
+  float2 uv = RGBToYUV(s).yz;
+  return YUVToRGB(float3(y, uv));
+}
 )";
 
   DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1);
   ss << R"(
 {
-  uint2 icoords = uint2(v_pos.xy);
+  uint2 icoords = uint2(v_pos.xy) + uint2(u_crop_left, 0u);
 
   #if INTERLACED
     if ((fixYCoord(icoords.y) & 1u) != u_field_offset)
@@ -1034,24 +1099,13 @@ float4 LoadVRAM(int2 coords)
   #endif
 
   #if DEPTH_24BIT
-    // relative to start of scanout
-    uint relative_x = (icoords.x + u_crop_left) / RESOLUTION_SCALE;
-    uint2 vram_coords = u_vram_offset + uint2(((relative_x * 3u) / 2u) * RESOLUTION_SCALE, icoords.y);
-
-    // load adjacent 16-bit texels
-    uint s0 = RGBA8ToRGBA5551(LoadVRAM(int2(vram_coords % VRAM_SIZE)));
-    uint s1 = RGBA8ToRGBA5551(LoadVRAM(int2((vram_coords + uint2(RESOLUTION_SCALE, 0)) % VRAM_SIZE)));
-    
-    // select which part of the combined 16-bit texels we are currently shading
-    uint s1s0 = ((s1 << 16) | s0) >> ((relative_x & 1u) * 8u);
-    
-    // extract components and normalize
-    o_col0 = float4(float(s1s0 & 0xFFu) / 255.0, float((s1s0 >> 8u) & 0xFFu) / 255.0,
-                    float((s1s0 >> 16u) & 0xFFu) / 255.0, 1.0);
+    #if SMOOTH_CHROMA
+      o_col0 = float4(SampleVRAM24Smoothed(icoords), 1.0);
+    #else
+      o_col0 = float4(SampleVRAM24(icoords), 1.0);
+    #endif    
   #else
-    // load and return
-    uint2 vram_coords = u_vram_offset + uint2(icoords.x + u_crop_left, icoords.y);
-    o_col0 = LoadVRAM(int2(vram_coords % VRAM_SIZE));
+    o_col0 = float4(LoadVRAM(int2((icoords + u_vram_offset) % VRAM_SIZE)).rgb, 1.0);
   #endif
 }
 )";

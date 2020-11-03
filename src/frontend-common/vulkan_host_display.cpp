@@ -174,6 +174,11 @@ void VulkanHostDisplay::ResizeRenderWindow(s32 new_window_width, s32 new_window_
 #endif
 }
 
+bool VulkanHostDisplay::SupportsFullscreen() const
+{
+  return false;
+}
+
 bool VulkanHostDisplay::IsFullscreen()
 {
   return false;
@@ -534,6 +539,19 @@ bool VulkanHostDisplay::CreateImGuiContext()
 
 bool VulkanHostDisplay::Render()
 {
+  if (ShouldSkipDisplayingFrame())
+  {
+#ifdef WITH_IMGUI
+    if (ImGui::GetCurrentContext())
+    {
+      ImGui::Render();
+      ImGui_ImplVulkan_NewFrame();
+    }
+#endif
+
+    return false;
+  }
+
   VkResult res = m_swap_chain->AcquireNextImage();
   if (res != VK_SUCCESS)
   {

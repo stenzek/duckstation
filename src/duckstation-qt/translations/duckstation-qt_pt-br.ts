@@ -376,22 +376,22 @@
 <context>
     <name>AudioBackend</name>
     <message>
-        <location filename="../../core/settings.cpp" line="613"/>
+        <location filename="../../core/settings.cpp" line="617"/>
         <source>Null (No Output)</source>
         <translation>Mudo</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="614"/>
+        <location filename="../../core/settings.cpp" line="618"/>
         <source>Cubeb</source>
         <translation>Cubed</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="616"/>
+        <location filename="../../core/settings.cpp" line="620"/>
         <source>SDL</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="618"/>
+        <location filename="../../core/settings.cpp" line="622"/>
         <source>OpenSL ES</source>
         <translation>OpenSL ES</translation>
     </message>
@@ -740,17 +740,17 @@
 <context>
     <name>CPUExecutionMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="452"/>
+        <location filename="../../core/settings.cpp" line="453"/>
         <source>Intepreter (Slowest)</source>
         <translation>Interpretador (Mais Lento)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="453"/>
+        <location filename="../../core/settings.cpp" line="454"/>
         <source>Cached Interpreter (Faster)</source>
         <translation>Int. Armazenado (Rápido)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="454"/>
+        <location filename="../../core/settings.cpp" line="455"/>
         <source>Recompiler (Fastest)</source>
         <translation>Recompilador (Mais Rápido)</translation>
     </message>
@@ -1271,17 +1271,17 @@
 <context>
     <name>ConsoleRegion</name>
     <message>
-        <location filename="../../core/settings.cpp" line="394"/>
+        <location filename="../../core/settings.cpp" line="395"/>
         <source>Auto-Detect</source>
         <translation>Auto Detectar</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="394"/>
+        <location filename="../../core/settings.cpp" line="395"/>
         <source>NTSC-J (Japan)</source>
         <translation>NTSC-J (Japão)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="395"/>
+        <location filename="../../core/settings.cpp" line="396"/>
         <source>NTSC-U/C (US, Canada)</source>
         <translation>NTSC-U/C (US, Canadá)</translation>
     </message>
@@ -1290,7 +1290,7 @@
         <translation type="vanished">NTSC-U (US)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="395"/>
+        <location filename="../../core/settings.cpp" line="396"/>
         <source>PAL (Europe, Australia)</source>
         <translation>PAL (Europeu, Austrália)</translation>
     </message>
@@ -1634,32 +1634,32 @@ This warning will only be shown once.</source>
 <context>
     <name>ControllerType</name>
     <message>
-        <location filename="../../core/settings.cpp" line="649"/>
+        <location filename="../../core/settings.cpp" line="653"/>
         <source>None</source>
         <translation>Nenhum</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="649"/>
+        <location filename="../../core/settings.cpp" line="653"/>
         <source>Digital Controller</source>
         <translation>Controle Digital</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="650"/>
+        <location filename="../../core/settings.cpp" line="654"/>
         <source>Analog Controller (DualShock)</source>
         <translation>Controle Analógico (Dualshock)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="650"/>
+        <location filename="../../core/settings.cpp" line="654"/>
         <source>Namco GunCon</source>
         <translation>Namco GunCon</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="651"/>
+        <location filename="../../core/settings.cpp" line="655"/>
         <source>PlayStation Mouse</source>
         <translation>Playstation Mouse</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="651"/>
+        <location filename="../../core/settings.cpp" line="655"/>
         <source>NeGcon</source>
         <translation>NeGcon</translation>
     </message>
@@ -1748,7 +1748,7 @@ This warning will only be shown once.</source>
 <context>
     <name>DiscRegion</name>
     <message>
-        <location filename="../../core/settings.cpp" line="423"/>
+        <location filename="../../core/settings.cpp" line="424"/>
         <source>NTSC-J (Japan)</source>
         <translation>NTSC-J (Japão)</translation>
     </message>
@@ -1757,17 +1757,17 @@ This warning will only be shown once.</source>
         <translation type="vanished">NTSC-U (US)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="423"/>
+        <location filename="../../core/settings.cpp" line="424"/>
         <source>NTSC-U/C (US, Canada)</source>
         <translation>NTSC-U/C (US, Canadá)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="424"/>
+        <location filename="../../core/settings.cpp" line="425"/>
         <source>PAL (Europe, Australia)</source>
         <translation>PAL (Europeu, Austrália)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="424"/>
+        <location filename="../../core/settings.cpp" line="425"/>
         <source>Other</source>
         <translation>Outros</translation>
     </message>
@@ -1775,17 +1775,17 @@ This warning will only be shown once.</source>
 <context>
     <name>DisplayCropMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="547"/>
+        <location filename="../../core/settings.cpp" line="551"/>
         <source>None</source>
         <translation>Nenhum</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="547"/>
+        <location filename="../../core/settings.cpp" line="551"/>
         <source>Only Overscan Area</source>
         <translation>Somente Área Renderizada</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="548"/>
+        <location filename="../../core/settings.cpp" line="552"/>
         <source>All Borders</source>
         <translation>Todas as Bordas</translation>
     </message>
@@ -1813,180 +1813,190 @@ This warning will only be shown once.</source>
         <translation>Adaptador:</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="68"/>
+        <location filename="../displaysettingswidget.ui" line="58"/>
+        <source>Fullscreen Mode:</source>
+        <translation>Modo Tela Cheia:</translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.ui" line="78"/>
         <source>Screen Display</source>
         <translation>Exibição</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="74"/>
+        <location filename="../displaysettingswidget.ui" line="84"/>
         <source>Aspect Ratio:</source>
         <translation>Proporção e Aspecto:</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="84"/>
+        <location filename="../displaysettingswidget.ui" line="94"/>
         <source>Crop:</source>
         <translation>Tipo de Corte:</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="96"/>
-        <location filename="../displaysettingswidget.cpp" line="71"/>
+        <location filename="../displaysettingswidget.ui" line="106"/>
+        <location filename="../displaysettingswidget.cpp" line="73"/>
         <source>Linear Upscaling</source>
         <translation>Escalonamento Linear</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="103"/>
-        <location filename="../displaysettingswidget.cpp" line="78"/>
+        <location filename="../displaysettingswidget.ui" line="113"/>
+        <location filename="../displaysettingswidget.cpp" line="80"/>
         <source>Integer Upscaling</source>
         <translation>Escalonamento Integro</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="58"/>
-        <location filename="../displaysettingswidget.cpp" line="82"/>
+        <location filename="../displaysettingswidget.ui" line="68"/>
+        <location filename="../displaysettingswidget.cpp" line="84"/>
         <source>VSync</source>
         <translation>Sincronização Vertical (V-Sync)</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="115"/>
+        <location filename="../displaysettingswidget.ui" line="125"/>
         <source>On-Screen Display</source>
         <translation>Mensagens em Tela (OSD)</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="121"/>
+        <location filename="../displaysettingswidget.ui" line="131"/>
         <source>Show Messages</source>
         <translation>Mostrar Mensagens</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="128"/>
-        <location filename="../displaysettingswidget.cpp" line="88"/>
+        <location filename="../displaysettingswidget.ui" line="138"/>
+        <location filename="../displaysettingswidget.cpp" line="90"/>
         <source>Show FPS</source>
         <translation>Mostrar FPS</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="135"/>
+        <location filename="../displaysettingswidget.ui" line="145"/>
         <source>Show Emulation Speed</source>
         <translation>Mostrar velocidade de Emulação</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="142"/>
-        <location filename="../displaysettingswidget.cpp" line="90"/>
+        <location filename="../displaysettingswidget.ui" line="152"/>
+        <location filename="../displaysettingswidget.cpp" line="92"/>
         <source>Show VPS</source>
         <translation>Mostrar VPS</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="149"/>
+        <location filename="../displaysettingswidget.ui" line="159"/>
         <source>Show Resolution</source>
         <translation>Mostrar Resolução</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="51"/>
+        <location filename="../displaysettingswidget.cpp" line="53"/>
         <source>Renderer</source>
         <translation>Renderizador</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="53"/>
+        <location filename="../displaysettingswidget.cpp" line="55"/>
         <source>Chooses the backend to use for rendering the console/game visuals. &lt;br&gt;Depending on your system and hardware, Direct3D 11 and OpenGL hardware backends may be available. &lt;br&gt;The software renderer offers the best compatibility, but is the slowest and does not offer any enhancements.</source>
         <translation>Escolhe a opção a ser usada para emular a GPU. Dependendo do seu sistema e hardware, As opções DX11 e OpenGL podem aparecer.O renderizador de software oferece a melhor compatibilidade, mas é o mais lento e não oferece nenhum aprimoramento.</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="57"/>
+        <location filename="../displaysettingswidget.cpp" line="59"/>
         <source>Adapter</source>
         <translation>Adaptador</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="57"/>
-        <location filename="../displaysettingswidget.cpp" line="146"/>
+        <location filename="../displaysettingswidget.cpp" line="59"/>
+        <location filename="../displaysettingswidget.cpp" line="153"/>
         <source>(Default)</source>
         <translation>Padrão</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="58"/>
+        <location filename="../displaysettingswidget.cpp" line="60"/>
         <source>If your system contains multiple GPUs or adapters, you can select which GPU you wish to use for the hardware renderers. &lt;br&gt;This option is only supported in Direct3D and Vulkan. OpenGL will always use the default device.</source>
         <translation>Se você tem várias GPUs ,você poderá selecionar qual delas deseja usar para os renderizadores de hardware. Esta opção é suportada apenas no Direct3D e no Vulkan, OpenGL sempre usará o dispositivo padrão.</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="62"/>
+        <location filename="../displaysettingswidget.cpp" line="64"/>
         <source>Aspect Ratio</source>
         <translation>Razão de Aspecto</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="63"/>
+        <location filename="../displaysettingswidget.cpp" line="65"/>
         <source>Changes the aspect ratio used to display the console&apos;s output to the screen. The default is 4:3 which matches a typical TV of the era.</source>
         <translation>Altera a proporção usada para exibir o jogo na tela. O padrão é 4:3, que corresponde a uma TV típica da época.CRT mais conhecida como Tubão.</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="66"/>
+        <location filename="../displaysettingswidget.cpp" line="68"/>
         <source>Crop Mode</source>
         <translation>Modo de Corte</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="66"/>
+        <location filename="../displaysettingswidget.cpp" line="68"/>
         <source>Only Overscan Area</source>
         <translation>Somente Área Renderizada</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="67"/>
+        <location filename="../displaysettingswidget.cpp" line="69"/>
         <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide. &lt;br&gt;Some games display content in the overscan area, or use it for screen effects. &lt;br&gt;May not display correctly with the &quot;All Borders&quot; setting. &quot;Only Overscan&quot; offers a good compromise between stability and hiding black borders.</source>
         <translation>Determina quanto da área normalmente não visível em uma TV o usuário pode ver ou não.Alguns jogos mostram conteúdo fora desta area pré-determinada.Somente esta opção &quot;overscan&quot; (fora da área visível) pode oferecer um boa estabilidade na hora de ocultar as tarjas (bordas)pretas quando ocorrem.</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="71"/>
-        <location filename="../displaysettingswidget.cpp" line="82"/>
-        <location filename="../displaysettingswidget.cpp" line="85"/>
+        <location filename="../displaysettingswidget.cpp" line="73"/>
+        <location filename="../displaysettingswidget.cpp" line="84"/>
+        <location filename="../displaysettingswidget.cpp" line="87"/>
         <source>Checked</source>
         <translation>Marcado</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="72"/>
+        <location filename="../displaysettingswidget.cpp" line="74"/>
         <source>Uses bilinear texture filtering when displaying the console&apos;s framebuffer to the screen. &lt;br&gt;Disabling filtering will producer a sharper, blockier/pixelated image. Enabling will smooth out the image. &lt;br&gt;The option will be less noticable the higher the resolution scale.</source>
         <translation>Usa textura bilinear filtrando todo buffer para a tela principal.Desabilitar esta filtragem produzirá uma imagem mais nítida porém pixelada. Ativar irá deixar a imagem mais suave. Esta opção fica menos notável em resoluções mais altas.</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="78"/>
-        <location filename="../displaysettingswidget.cpp" line="88"/>
+        <location filename="../displaysettingswidget.cpp" line="80"/>
         <location filename="../displaysettingswidget.cpp" line="90"/>
-        <location filename="../displaysettingswidget.cpp" line="94"/>
+        <location filename="../displaysettingswidget.cpp" line="92"/>
+        <location filename="../displaysettingswidget.cpp" line="96"/>
         <source>Unchecked</source>
         <translation>Desmarcado</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="79"/>
+        <location filename="../displaysettingswidget.cpp" line="81"/>
         <source>Adds padding to the display area to ensure that the ratio between pixels on the host to pixels in the console is an integer number. &lt;br&gt;May result in a sharper image in some 2D games.</source>
         <translation>Adiciona preenchimento na tela para garantir que a proporção entre pixels seja um número inteiro. Pode resultar em uma imagem mais nítida em alguns jogos 2D.</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="83"/>
+        <location filename="../displaysettingswidget.cpp" line="85"/>
         <source>Enable this option to match DuckStation&apos;s refresh rate with your current monitor or screen. VSync is automatically disabled when it is not possible (e.g. running at non-100% speed).</source>
         <translation>Habilite esta opção para combinar a taxa de atualização do emulador com seu monitor. O V-Sync (sincronização vertical) será desativado automaticamente quando não for possível atingir 100% da velocidade.</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="85"/>
+        <location filename="../displaysettingswidget.cpp" line="87"/>
         <source>Show OSD Messages</source>
         <translation>Mostar mensagens em Tela</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="86"/>
+        <location filename="../displaysettingswidget.cpp" line="88"/>
         <source>Shows on-screen-display messages when events occur such as save states being created/loaded, screenshots being taken, etc.</source>
         <translation>Mostrar as mensagens na tela (canto superior esquerdo) quando eventos ocorrerem; Quando um SaveState é criado ou carregado, capturas de tela forem feitas etc.</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="89"/>
+        <location filename="../displaysettingswidget.cpp" line="91"/>
         <source>Shows the internal frame rate of the game in the top-right corner of the display.</source>
         <translation>Mostra o FPS atual do jogo no topo superior direito da tela.</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="91"/>
+        <location filename="../displaysettingswidget.cpp" line="93"/>
         <source>Shows the number of frames (or v-syncs) displayed per second by the system in the top-right corner of the display.</source>
         <translation>Mostra o FPS no canto superior direito da tela.</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="94"/>
+        <location filename="../displaysettingswidget.cpp" line="96"/>
         <source>Show Speed</source>
         <translation>Mostrar Velocidade</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="95"/>
+        <location filename="../displaysettingswidget.cpp" line="97"/>
         <source>Shows the current emulation speed of the system in the top-right corner of the display as a percentage.</source>
         <translation>Mostra a velocidade de emulação atual do sistema no canto superior direito da tela registrado em porcentagem.</translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.cpp" line="173"/>
+        <source>Borderless Fullscreen</source>
+        <translation>Tela cheia sem bordas.</translation>
     </message>
 </context>
 <context>
@@ -2197,22 +2207,22 @@ This warning will only be shown once.</source>
 <context>
     <name>GPURenderer</name>
     <message>
-        <location filename="../../core/settings.cpp" line="487"/>
+        <location filename="../../core/settings.cpp" line="488"/>
         <source>Hardware (D3D11)</source>
         <translation>Placa de Vídeo (D3D11)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="489"/>
+        <location filename="../../core/settings.cpp" line="490"/>
         <source>Hardware (Vulkan)</source>
         <translation>Placa de Vídeo (Vulkan)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="489"/>
+        <location filename="../../core/settings.cpp" line="490"/>
         <source>Hardware (OpenGL)</source>
         <translation>Placa de Vídeo (OpenGL)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="490"/>
+        <location filename="../../core/settings.cpp" line="491"/>
         <source>Software</source>
         <translation>Software</translation>
     </message>
@@ -2563,7 +2573,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../qtutils.cpp" line="680"/>
         <source>9x (for 4K)</source>
-        <translation>6x &gt; (6144x3072) {9x?} {4K?}</translation>
+        <translation>9x &gt; (9216x4608) 4K</translation>
     </message>
     <message>
         <location filename="../qtutils.cpp" line="713"/>
@@ -2635,24 +2645,39 @@ This warning will only be shown once.</source>
 <context>
     <name>GPUTextureFilter</name>
     <message>
-        <location filename="../../core/settings.cpp" line="518"/>
+        <location filename="../../core/settings.cpp" line="520"/>
         <source>Nearest-Neighbor</source>
         <translation>Nearest-Neighbor</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="518"/>
+        <location filename="../../core/settings.cpp" line="520"/>
         <source>Bilinear</source>
         <translation>Bilinear</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="519"/>
+        <location filename="../../core/settings.cpp" line="521"/>
         <source>JINC2</source>
         <translation>JINC2</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="519"/>
+        <location filename="../../core/settings.cpp" line="521"/>
+        <source>Bilinear (No Edge Blending)</source>
+        <translation>Bilinear (Sem ajuste nas Bordas)</translation>
+    </message>
+    <message>
+        <location filename="../../core/settings.cpp" line="522"/>
         <source>xBR</source>
         <translation>xBR</translation>
+    </message>
+    <message>
+        <location filename="../../core/settings.cpp" line="522"/>
+        <source>JINC2 (No Edge Blending)</source>
+        <translation>JINC2 (Sem ajuste nas Bordas)</translation>
+    </message>
+    <message>
+        <location filename="../../core/settings.cpp" line="523"/>
+        <source>xBR (No Edge Blending)</source>
+        <translation>xBR (Sem ajuste nas Bordas)</translation>
     </message>
 </context>
 <context>
@@ -4048,52 +4073,52 @@ This will download approximately 4 megabytes over your current internet connecti
 <context>
     <name>LogLevel</name>
     <message>
-        <location filename="../../core/settings.cpp" line="363"/>
+        <location filename="../../core/settings.cpp" line="364"/>
         <source>None</source>
         <translation>Nenhum</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="363"/>
+        <location filename="../../core/settings.cpp" line="364"/>
         <source>Error</source>
         <translation>Erro</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="363"/>
+        <location filename="../../core/settings.cpp" line="364"/>
         <source>Warning</source>
         <translation>Atenção</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="364"/>
+        <location filename="../../core/settings.cpp" line="365"/>
         <source>Performance</source>
         <translation>Performance</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="364"/>
+        <location filename="../../core/settings.cpp" line="365"/>
         <source>Success</source>
         <translation>Sucesso</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="365"/>
+        <location filename="../../core/settings.cpp" line="366"/>
         <source>Information</source>
         <translation>Informação</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="365"/>
+        <location filename="../../core/settings.cpp" line="366"/>
         <source>Developer</source>
         <translation>Desenvolvedor</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="365"/>
+        <location filename="../../core/settings.cpp" line="366"/>
         <source>Profile</source>
         <translation>Perfil</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="366"/>
+        <location filename="../../core/settings.cpp" line="367"/>
         <source>Debug</source>
         <translation>Depurar</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="366"/>
+        <location filename="../../core/settings.cpp" line="367"/>
         <source>Trace</source>
         <translation>Rastreio</translation>
     </message>
@@ -4104,7 +4129,7 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../mainwindow.ui" line="14"/>
         <location filename="../mainwindow.cpp" line="67"/>
         <location filename="../mainwindow.cpp" line="78"/>
-        <location filename="../mainwindow.cpp" line="640"/>
+        <location filename="../mainwindow.cpp" line="675"/>
         <source>DuckStation</source>
         <translation>DuckStation</translation>
     </message>
@@ -4114,7 +4139,7 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <location filename="../mainwindow.ui" line="42"/>
-        <location filename="../mainwindow.cpp" line="500"/>
+        <location filename="../mainwindow.cpp" line="535"/>
         <source>Change Disc</source>
         <translation>Mudar Disco</translation>
     </message>
@@ -4565,7 +4590,7 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation type="vanished">Falha ao tentar obter informação da janela</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="124"/>
+        <location filename="../mainwindow.cpp" line="131"/>
         <source>Failed to create host display device context.</source>
         <translation>Falha ao criar uma amostra de contexto da tela.</translation>
     </message>
@@ -4579,114 +4604,114 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>Tipos de Arquivos (*.bin *.img *.cue *.chd *.exe *.psexe *.psf *.m3u);;Trilha Única (*.bin *.img);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;Executáveis PlayStation (*.exe *.psexe);;Portable Sound Format Files (*.psf);;Playlists (*.m3u)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="285"/>
-        <location filename="../mainwindow.cpp" line="300"/>
+        <location filename="../mainwindow.cpp" line="320"/>
+        <location filename="../mainwindow.cpp" line="335"/>
         <source>Select Disc Image</source>
         <translation>Escolha uma imagem de Disco</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="326"/>
+        <location filename="../mainwindow.cpp" line="361"/>
         <source>Cheat Manager</source>
         <translation>Gerenciador de Trapaças</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="461"/>
+        <location filename="../mainwindow.cpp" line="496"/>
         <source>Properties...</source>
         <translation>Propriedades...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="464"/>
+        <location filename="../mainwindow.cpp" line="499"/>
         <source>Open Containing Directory...</source>
         <translation>Abrir diretório...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="469"/>
+        <location filename="../mainwindow.cpp" line="504"/>
         <source>Set Cover Image...</source>
         <translation>Escolher Imagem de capa...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="482"/>
+        <location filename="../mainwindow.cpp" line="517"/>
         <source>Default Boot</source>
         <translation>Inicio Padrão</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="486"/>
+        <location filename="../mainwindow.cpp" line="521"/>
         <source>Fast Boot</source>
         <translation>Inicio Rápido</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="492"/>
+        <location filename="../mainwindow.cpp" line="527"/>
         <source>Full Boot</source>
         <translation>Inicio Completo</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="510"/>
+        <location filename="../mainwindow.cpp" line="545"/>
         <source>Add Search Directory...</source>
         <translation>Adiciona um novo diretório...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="518"/>
+        <location filename="../mainwindow.cpp" line="553"/>
         <source>Select Cover Image</source>
         <translation>Escolher Imagem de capa...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="519"/>
+        <location filename="../mainwindow.cpp" line="554"/>
         <source>All Cover Image Types (*.jpg *.jpeg *.png)</source>
         <translation>Tipos de Imagem suportada (*.jpg *.jpeg *.png)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="525"/>
+        <location filename="../mainwindow.cpp" line="560"/>
         <source>Cover Already Exists</source>
         <translation>Capa já existe</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="526"/>
+        <location filename="../mainwindow.cpp" line="561"/>
         <source>A cover image for this game already exists, do you wish to replace it?</source>
         <translation>Capa para este jogo já existe, quer substitui-lá?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="540"/>
-        <location filename="../mainwindow.cpp" line="546"/>
+        <location filename="../mainwindow.cpp" line="575"/>
+        <location filename="../mainwindow.cpp" line="581"/>
         <source>Copy Error</source>
         <translation>Erro na Cópia</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="540"/>
+        <location filename="../mainwindow.cpp" line="575"/>
         <source>Failed to remove existing cover &apos;%1&apos;</source>
         <translation>Falha ao remover capa existente &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="546"/>
+        <location filename="../mainwindow.cpp" line="581"/>
         <source>Failed to copy &apos;%1&apos; to &apos;%2&apos;</source>
         <translation>Falha ao copiar &apos;%1&apos; para &apos;%2&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="641"/>
+        <location filename="../mainwindow.cpp" line="676"/>
         <source>Language changed. Please restart the application to apply.</source>
         <translation>Lingua Alterada. Reinicie para Aplicar!.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="856"/>
+        <location filename="../mainwindow.cpp" line="891"/>
         <source>Destination File</source>
         <translation>Destino do Arquivo</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="872"/>
+        <location filename="../mainwindow.cpp" line="907"/>
         <source>Default</source>
         <translation>Padrão</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="873"/>
+        <location filename="../mainwindow.cpp" line="908"/>
         <source>Fusion</source>
         <translation>Fusion</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="874"/>
+        <location filename="../mainwindow.cpp" line="909"/>
         <source>Dark Fusion (Gray)</source>
         <translation>Dark Fusion (Cinza)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="875"/>
+        <location filename="../mainwindow.cpp" line="910"/>
         <source>Dark Fusion (Blue)</source>
         <translation>DarkFusion (Azul)</translation>
     </message>
@@ -4695,22 +4720,22 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation type="vanished">DarkFusion</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="876"/>
+        <location filename="../mainwindow.cpp" line="911"/>
         <source>QDarkStyle</source>
         <translation>Escuro</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1209"/>
+        <location filename="../mainwindow.cpp" line="1244"/>
         <source>Updater Error</source>
         <translation>Erro na Atualização</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1215"/>
+        <location filename="../mainwindow.cpp" line="1250"/>
         <source>&lt;p&gt;Sorry, you are trying to update a DuckStation version which is not an official GitHub release. To prevent incompatibilities, the auto-updater is only enabled on official builds.&lt;/p&gt;&lt;p&gt;To obtain an official build, please follow the instructions under &quot;Downloading and Running&quot; at the link below:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt;https://github.com/stenzek/duckstation/&lt;/a&gt;&lt;/p&gt;</source>
         <translation>&lt;p&gt;Desculpe mas, Você está tentando atualizar uma versão não oficial do Duckstation Para evitarmos imcompatibilidade, o atualizador automático só poderá ser usado nas versões oficiais! &lt;/p&gt;&lt;p&gt;Para obtê-las, Siga as instruções de como e onde no link &quot;Baixando e Rodando&quot; conforme abaixo:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt;https://github.com/stenzek/duckstation/&lt;/a&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1221"/>
+        <location filename="../mainwindow.cpp" line="1256"/>
         <source>Automatic updating is not supported on the current platform.</source>
         <translation>Atualizações automáticas não são suportadas na plataforma atual.</translation>
     </message>
@@ -4952,22 +4977,22 @@ This will download approximately 4 megabytes over your current internet connecti
 <context>
     <name>MemoryCardType</name>
     <message>
-        <location filename="../../core/settings.cpp" line="679"/>
+        <location filename="../../core/settings.cpp" line="683"/>
         <source>No Memory Card</source>
         <translation>Sem Cartão de Memória</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="679"/>
+        <location filename="../../core/settings.cpp" line="683"/>
         <source>Shared Between All Games</source>
         <translation>Compartrilhada Entre Jogos</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="680"/>
+        <location filename="../../core/settings.cpp" line="684"/>
         <source>Separate Card Per Game (Game Code)</source>
         <translation>Separar Cartão Por Jogo (Cód. Jogo)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="681"/>
+        <location filename="../../core/settings.cpp" line="685"/>
         <source>Separate Card Per Game (Game Title)</source>
         <translation>Separar Cartão Por Jogo (Título. Jogo)</translation>
     </message>
@@ -5013,64 +5038,74 @@ This will download approximately 4 megabytes over your current internet connecti
 <context>
     <name>NeGcon</name>
     <message>
-        <location filename="../../core/negcon.cpp" line="223"/>
+        <location filename="../../core/negcon.cpp" line="227"/>
         <source>Steering</source>
         <translation>Direção (Volante)</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="224"/>
+        <location filename="../../core/negcon.cpp" line="228"/>
         <source>I</source>
         <translation>Botão I</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="225"/>
+        <location filename="../../core/negcon.cpp" line="229"/>
         <source>II</source>
         <translation>       Botão II</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="226"/>
+        <location filename="../../core/negcon.cpp" line="230"/>
         <source>L</source>
         <translation>        L</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="231"/>
+        <location filename="../../core/negcon.cpp" line="235"/>
         <source>Up</source>
         <translation>          🠉</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="232"/>
+        <location filename="../../core/negcon.cpp" line="236"/>
         <source>Down</source>
         <translation>          🠋</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="233"/>
+        <location filename="../../core/negcon.cpp" line="237"/>
         <source>Left</source>
         <translation>          🠈</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="234"/>
+        <location filename="../../core/negcon.cpp" line="238"/>
         <source>Right</source>
         <translation>          ➜</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="235"/>
+        <location filename="../../core/negcon.cpp" line="239"/>
         <source>A</source>
         <translation>          A</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="236"/>
+        <location filename="../../core/negcon.cpp" line="240"/>
         <source>B</source>
         <translation>          B</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="237"/>
+        <location filename="../../core/negcon.cpp" line="241"/>
         <source>R</source>
         <translation>          R</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="238"/>
+        <location filename="../../core/negcon.cpp" line="242"/>
         <source>Start</source>
         <translation>  Start (Inicio)</translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="253"/>
+        <source>Steering Axis Deadzone</source>
+        <translation>Zona morta do Volante</translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="254"/>
+        <source>Sets deadzone size for steering axis.</source>
+        <translation>Configurar tamanho da zona morta do volante.</translation>
     </message>
 </context>
 <context>
@@ -5464,6 +5499,16 @@ This will download approximately 4 megabytes over your current internet connecti
         <source>Saved memory card to &apos;%s&apos;</source>
         <translation>Salvo para o Cartão de Memória &apos;%s&apos;</translation>
     </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="214"/>
+        <source>Failed to acquire exclusive fullscreen.</source>
+        <translation>Falha ao acionar Função Tela cheia exclusiva.</translation>
+    </message>
+    <message>
+        <location filename="../qthostinterface.cpp" line="441"/>
+        <source>Lost exclusive fullscreen.</source>
+        <translation>Função Tela-cheia perdida.</translation>
+    </message>
 </context>
 <context>
     <name>PlayStationMouse</name>
@@ -5658,38 +5703,38 @@ The URL was: %1</source>
 <context>
     <name>QtHostInterface</name>
     <message>
-        <location filename="../qthostinterface.cpp" line="872"/>
-        <location filename="../qthostinterface.cpp" line="912"/>
+        <location filename="../qthostinterface.cpp" line="883"/>
+        <location filename="../qthostinterface.cpp" line="923"/>
         <source>Game Save %1 (%2)</source>
         <translation>Jogo Salvo %1 (%2)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="872"/>
+        <location filename="../qthostinterface.cpp" line="883"/>
         <source>Game Save %1 (Empty)</source>
         <translation>Jogo Salvo %1 (Vazio)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="879"/>
+        <location filename="../qthostinterface.cpp" line="890"/>
         <source>Global Save %1 (%2)</source>
         <translation>Compartimento Global %1 (%2)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="879"/>
+        <location filename="../qthostinterface.cpp" line="890"/>
         <source>Global Save %1 (Empty)</source>
         <translation>Compartimento Global %1 (Vazio)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="884"/>
+        <location filename="../qthostinterface.cpp" line="895"/>
         <source>Resume</source>
         <translation>Resumir</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="887"/>
+        <location filename="../qthostinterface.cpp" line="898"/>
         <source>Load State</source>
         <translation>Carregar Estado</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="905"/>
+        <location filename="../qthostinterface.cpp" line="916"/>
         <source>Resume (%1)</source>
         <translation>Resumir (%1)</translation>
     </message>
@@ -5711,17 +5756,17 @@ The URL was: %1</source>
         <translation>Salvamento rápido não encontrado.</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="919"/>
+        <location filename="../qthostinterface.cpp" line="930"/>
         <source>Delete Save States...</source>
         <translation>Apagar Jogos Salvos...</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="926"/>
+        <location filename="../qthostinterface.cpp" line="937"/>
         <source>Confirm Save State Deletion</source>
         <translation>Confirma deleção de Estado Salvo</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="927"/>
+        <location filename="../qthostinterface.cpp" line="938"/>
         <source>Are you sure you want to delete all save states for %1?
 
 The saves will not be recoverable.</source>
@@ -5748,12 +5793,12 @@ The saves will not be recoverable.</source>
         <translation type="vanished">Arquivos Suportados PCSXR/Libretro (*.cht *.txt);;Todos (*.*)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="965"/>
+        <location filename="../qthostinterface.cpp" line="976"/>
         <source>&amp;Enabled Cheats</source>
         <translation>&amp;Habilitar Trapaças</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="967"/>
+        <location filename="../qthostinterface.cpp" line="978"/>
         <source>&amp;Apply Cheats</source>
         <translation>&amp;Aplicar Trapaças</translation>
     </message>

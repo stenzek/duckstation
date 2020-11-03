@@ -96,6 +96,13 @@ float AndroidSettingsInterface::GetFloatValue(const char* section, const char* k
   jstring string_object = reinterpret_cast<jstring>(
     env->CallObjectMethod(m_java_shared_preferences, m_get_string, env->NewStringUTF(GetSettingKey(section, key)),
                           env->NewStringUTF(TinyString::FromFormat("%f", default_value))));
+
+  if (env->ExceptionCheck())
+  {
+    env->ExceptionClear();
+    return default_value;
+  }
+
   if (!string_object)
     return default_value;
 
@@ -111,8 +118,15 @@ float AndroidSettingsInterface::GetFloatValue(const char* section, const char* k
 bool AndroidSettingsInterface::GetBoolValue(const char* section, const char* key, bool default_value /*= false*/)
 {
   JNIEnv* env = AndroidHelpers::GetJNIEnv();
-  return static_cast<bool>(env->CallBooleanMethod(m_java_shared_preferences, m_get_boolean,
+  jboolean bool_value = static_cast<bool>(env->CallBooleanMethod(m_java_shared_preferences, m_get_boolean,
                                                   env->NewStringUTF(GetSettingKey(section, key)), default_value));
+  if (env->ExceptionCheck())
+  {
+    env->ExceptionClear();
+    return default_value;
+  }
+
+  return bool_value;
 }
 
 std::string AndroidSettingsInterface::GetStringValue(const char* section, const char* key,
@@ -122,6 +136,16 @@ std::string AndroidSettingsInterface::GetStringValue(const char* section, const 
   jobject string_object =
     env->CallObjectMethod(m_java_shared_preferences, m_get_string, env->NewStringUTF(GetSettingKey(section, key)),
                           env->NewStringUTF(default_value));
+
+  if (env->ExceptionCheck())
+  {
+    env->ExceptionClear();
+    return default_value;
+  }
+
+  if (!string_object)
+    return default_value;
+
   return AndroidHelpers::JStringToString(env, reinterpret_cast<jstring>(string_object));
 }
 
@@ -155,10 +179,22 @@ std::vector<std::string> AndroidSettingsInterface::GetStringList(const char* sec
   JNIEnv* env = AndroidHelpers::GetJNIEnv();
   jobject values_set = env->CallObjectMethod(m_java_shared_preferences, m_get_string_set,
                                              env->NewStringUTF(GetSettingKey(section, key)), nullptr);
+  if (env->ExceptionCheck())
+  {
+    env->ExceptionClear();
+    return {};
+  }
+
   if (!values_set)
     return {};
 
   jobjectArray values_array = reinterpret_cast<jobjectArray>(env->CallObjectMethod(values_set, m_set_to_array));
+  if (env->ExceptionCheck())
+  {
+    env->ExceptionClear();
+    return {};
+  }
+  
   if (!values_array)
     return {};
 

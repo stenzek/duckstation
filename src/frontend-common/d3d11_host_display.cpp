@@ -476,6 +476,15 @@ void D3D11HostDisplay::ResizeRenderWindow(s32 new_window_width, s32 new_window_h
 #endif
 }
 
+bool D3D11HostDisplay::SupportsFullscreen() const
+{
+#ifndef LIBRETRO
+  return true;
+#else
+  return false;
+#endif
+}
+
 bool D3D11HostDisplay::IsFullscreen()
 {
 #ifndef LIBRETRO
@@ -652,6 +661,19 @@ void D3D11HostDisplay::DestroyImGuiContext()
 bool D3D11HostDisplay::Render()
 {
 #ifndef LIBRETRO
+  if (ShouldSkipDisplayingFrame())
+  {
+#ifdef WITH_IMGUI
+    if (ImGui::GetCurrentContext())
+    {
+      ImGui::Render();
+      ImGui_ImplDX11_NewFrame();
+    }
+#endif
+
+    return false;
+  }
+
   static constexpr std::array<float, 4> clear_color = {};
   m_context->ClearRenderTargetView(m_swap_chain_rtv.Get(), clear_color.data());
   m_context->OMSetRenderTargets(1, m_swap_chain_rtv.GetAddressOf(), nullptr);

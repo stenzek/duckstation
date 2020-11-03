@@ -14,6 +14,7 @@ public class AndroidHostInterface {
     private long mNativePointer;
     private Context mContext;
 
+    static public native String getScmVersion();
     static public native AndroidHostInterface create(Context context, String userDirectory);
 
     public AndroidHostInterface(Context context) {
@@ -79,6 +80,9 @@ public class AndroidHostInterface {
 
     public native String importBIOSImage(byte[] data);
 
+    public native boolean isFastForwardEnabled();
+    public native void setFastForwardEnabled(boolean enabled);
+
     static {
         System.loadLibrary("duckstation-native");
     }
@@ -103,5 +107,9 @@ public class AndroidHostInterface {
 
     static public AndroidHostInterface getInstance() {
         return mInstance;
+    }
+
+    static public boolean hasInstanceAndEmulationThreadIsRunning() {
+        return hasInstance() && getInstance().isEmulationThreadRunning();
     }
 }

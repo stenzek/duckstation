@@ -276,6 +276,7 @@ protected:
   bool m_true_color = true;
   bool m_scaled_dithering = false;
   GPUTextureFilter m_texture_filtering = GPUTextureFilter::Nearest;
+  bool m_chroma_smoothing = false;
   bool m_supports_per_sample_shading = false;
   bool m_supports_dual_source_blend = false;
   bool m_using_uv_limits = false;

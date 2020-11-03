@@ -29,7 +29,8 @@
     </group>
     <item
         android:id="@+id/action_settings"
-        android:title="@string/action_settings"
+        android:icon="@drawable/ic_baseline_settings_24"
         android:orderInCategory="100"
-        app:showAsAction="never" />
+        android:title="@string/action_settings"
+        app:showAsAction="ifRoom" />
 </menu>

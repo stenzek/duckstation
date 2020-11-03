@@ -49,6 +49,7 @@ public:
   void SetControllerType(u32 index, std::string_view type_name);
   void SetControllerButtonState(u32 index, s32 button_code, bool pressed);
   void SetControllerAxisState(u32 index, s32 button_code, float value);
+  void SetFastForwardEnabled(bool enabled);
 
   void RefreshGameList(bool invalidate_cache, bool invalidate_database, ProgressCallback* progress_callback);
   void ApplySettings(bool display_osd_messages);
@@ -72,6 +73,8 @@ private:
 
   void CreateImGuiContext();
   void DestroyImGuiContext();
+
+  void LoadAndConvertSettings();
 
   jobject m_java_object = {};
   jobject m_emulation_activity_object = {};

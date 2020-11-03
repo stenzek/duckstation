@@ -414,7 +414,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetStringValue("Console", "Region", Settings::GetConsoleRegionName(Settings::DEFAULT_CONSOLE_REGION));
 
   si.SetFloatValue("Main", "EmulationSpeed", 1.0f);
-  si.SetBoolValue("Main", "SpeedLimiterEnabled", true);
+  si.SetFloatValue("Main", "FastForwardSpeed", 0.0f);
   si.SetBoolValue("Main", "IncreaseTimerResolution", true);
   si.SetBoolValue("Main", "StartPaused", false);
   si.SetBoolValue("Main", "SaveStateOnExit", true);
@@ -438,6 +438,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("GPU", "DisableInterlacing", false);
   si.SetBoolValue("GPU", "ForceNTSCTimings", false);
   si.SetBoolValue("GPU", "WidescreenHack", false);
+  si.SetBoolValue("GPU", "ChromaSmoothing24Bit", false);
   si.SetBoolValue("GPU", "PGXPEnable", false);
   si.SetBoolValue("GPU", "PGXPCulling", true);
   si.SetBoolValue("GPU", "PGXPTextureCorrection", true);
@@ -462,6 +463,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("Display", "Fullscreen", false);
   si.SetBoolValue("Display", "VSync", true);
   si.SetStringValue("Display", "PostProcessChain", "");
+  si.SetFloatValue("Display", "MaxFPS", 0.0f);
 
   si.SetBoolValue("CDROM", "ReadThread", true);
   si.SetBoolValue("CDROM", "RegionCheck", true);
@@ -634,6 +636,7 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.gpu_texture_filter != old_settings.gpu_texture_filter ||
         g_settings.gpu_disable_interlacing != old_settings.gpu_disable_interlacing ||
         g_settings.gpu_force_ntsc_timings != old_settings.gpu_force_ntsc_timings ||
+        g_settings.gpu_24bit_chroma_smoothing != old_settings.gpu_24bit_chroma_smoothing ||
         g_settings.display_crop_mode != old_settings.display_crop_mode ||
         g_settings.display_aspect_ratio != old_settings.display_aspect_ratio ||
         g_settings.gpu_pgxp_enable != old_settings.gpu_pgxp_enable ||

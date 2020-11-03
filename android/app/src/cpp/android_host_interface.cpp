@@ -5,6 +5,7 @@
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/string.h"
+#include "common/string_util.h"
 #include "common/timestamp.h"
 #include "core/bios.h"
 #include "core/cheats.h"
@@ -16,6 +17,7 @@
 #include "frontend-common/imgui_styles.h"
 #include "frontend-common/opengl_host_display.h"
 #include "frontend-common/vulkan_host_display.h"
+#include "scmversion/scmversion.h"
 #include <android/native_window_jni.h>
 #include <cmath>
 #include <imgui.h>
@@ -162,9 +164,25 @@ void AndroidHostInterface::SetUserDirectory()
 
 void AndroidHostInterface::LoadSettings()
 {
-  CommonHostInterface::LoadSettings(m_settings_interface);
+  LoadAndConvertSettings();
   CommonHostInterface::FixIncompatibleSettings(false);
   CommonHostInterface::UpdateInputMap(m_settings_interface);
+}
+
+void AndroidHostInterface::LoadAndConvertSettings()
+{
+  CommonHostInterface::LoadSettings(m_settings_interface);
+
+  const std::string msaa_str = m_settings_interface.GetStringValue("GPU", "MSAA", "1");
+  g_settings.gpu_multisamples = std::max<u32>(StringUtil::FromChars<u32>(msaa_str).value_or(1), 1);
+  g_settings.gpu_per_sample_shading = StringUtil::EndsWith(msaa_str, "-ssaa");
+
+  // turn percentage into fraction for overclock
+  const u32 overclock_percent = static_cast<u32>(std::max(m_settings_interface.GetIntValue("CPU", "Overclock", 100), 1));
+  Settings::CPUOverclockPercentToFraction(overclock_percent, &g_settings.cpu_overclock_numerator,
+                                          &g_settings.cpu_overclock_denominator);
+  g_settings.cpu_overclock_enable = (overclock_percent != 100);
+  g_settings.UpdateOverclockActive();
 }
 
 void AndroidHostInterface::UpdateInputMap()
@@ -528,6 +546,12 @@ void AndroidHostInterface::SetControllerAxisState(u32 index, s32 button_code, fl
     false);
 }
 
+void AndroidHostInterface::SetFastForwardEnabled(bool enabled)
+{
+  m_fast_forward_enabled = enabled;
+  UpdateSpeedLimiterState();
+}
+
 void AndroidHostInterface::RefreshGameList(bool invalidate_cache, bool invalidate_database,
                                            ProgressCallback* progress_callback)
 {
@@ -538,7 +562,7 @@ void AndroidHostInterface::RefreshGameList(bool invalidate_cache, bool invalidat
 void AndroidHostInterface::ApplySettings(bool display_osd_messages)
 {
   Settings old_settings = std::move(g_settings);
-  CommonHostInterface::LoadSettings(m_settings_interface);
+  LoadAndConvertSettings();
   CommonHostInterface::FixIncompatibleSettings(display_osd_messages);
 
   // Defer renderer changes, the app really doesn't like it.
@@ -605,6 +629,11 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
 
 #define DEFINE_JNI_ARGS_METHOD(return_type, name, ...)                                                                 \
   extern "C" JNIEXPORT return_type JNICALL Java_com_github_stenzek_duckstation_##name(JNIEnv* env, __VA_ARGS__)
+
+DEFINE_JNI_ARGS_METHOD(jstring, AndroidHostInterface_getScmVersion, jobject unused)
+{
+  return env->NewStringUTF(g_scm_tag_str);
+}
 
 DEFINE_JNI_ARGS_METHOD(jobject, AndroidHostInterface_create, jobject unused, jobject context_object,
                        jstring user_directory)
@@ -883,6 +912,20 @@ DEFINE_JNI_ARGS_METHOD(jboolean, AndroidHostInterface_hasAnyBIOSImages, jobject 
 {
   AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
   return hi->HasAnyBIOSImages();
+}
+
+DEFINE_JNI_ARGS_METHOD(jboolean, AndroidHostInterface_isFastForwardEnabled, jobject obj)
+{
+  return AndroidHelpers::GetNativeClass(env, obj)->IsFastForwardEnabled();
+}
+
+DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_setFastForwardEnabled, jobject obj, jboolean enabled)
+{
+  if (!System::IsValid())
+    return;
+
+  AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
+  hi->RunOnEmulationThread([enabled, hi]() { hi->SetFastForwardEnabled(enabled); });
 }
 
 DEFINE_JNI_ARGS_METHOD(jstring, AndroidHostInterface_importBIOSImage, jobject obj, jbyteArray data)

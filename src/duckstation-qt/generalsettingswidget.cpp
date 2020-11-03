@@ -1,6 +1,7 @@
 #include "generalsettingswidget.h"
 #include "autoupdaterdialog.h"
 #include "frontend-common/controller_interface.h"
+#include "qtutils.h"
 #include "settingsdialog.h"
 #include "settingwidgetbinder.h"
 
@@ -27,22 +28,25 @@ GeneralSettingsWidget::GeneralSettingsWidget(QtHostInterface* host_interface, QW
                                                true);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.autoLoadCheats, "Main", "AutoLoadCheats", false);
 
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.enableSpeedLimiter, "Main", "SpeedLimiterEnabled",
-                                               true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.increaseTimerResolution, "Main",
-                                               "IncreaseTimerResolution", true);
-  SettingWidgetBinder::BindWidgetToNormalizedSetting(m_host_interface, m_ui.emulationSpeed, "Main", "EmulationSpeed",
-                                                     100.0f, 1.0f);
   SettingWidgetBinder::BindWidgetToEnumSetting(
     m_host_interface, m_ui.controllerBackend, "Main", "ControllerBackend", &ControllerInterface::ParseBackendName,
     &ControllerInterface::GetBackendName, ControllerInterface::GetDefaultBackend());
 
-  connect(m_ui.enableSpeedLimiter, &QCheckBox::stateChanged, this,
-          &GeneralSettingsWidget::onEnableSpeedLimiterStateChanged);
-  connect(m_ui.emulationSpeed, &QSlider::valueChanged, this, &GeneralSettingsWidget::onEmulationSpeedValueChanged);
+  QtUtils::FillComboBoxWithEmulationSpeeds(m_ui.emulationSpeed);
+  const int emulation_speed_index =
+    m_ui.emulationSpeed->findData(QVariant(m_host_interface->GetFloatSettingValue("Main", "EmulationSpeed")));
+  if (emulation_speed_index >= 0)
+    m_ui.emulationSpeed->setCurrentIndex(emulation_speed_index);
+  connect(m_ui.emulationSpeed, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+          &GeneralSettingsWidget::onEmulationSpeedIndexChanged);
 
-  onEnableSpeedLimiterStateChanged();
-  onEmulationSpeedValueChanged(m_ui.emulationSpeed->value());
+  QtUtils::FillComboBoxWithEmulationSpeeds(m_ui.fastForwardSpeed);
+  const int fast_forward_speed_index =
+    m_ui.emulationSpeed->findData(QVariant(m_host_interface->GetFloatSettingValue("Main", "FastForwardSpeed")));
+  if (fast_forward_speed_index >= 0)
+    m_ui.fastForwardSpeed->setCurrentIndex(fast_forward_speed_index);
+  connect(m_ui.fastForwardSpeed, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+          &GeneralSettingsWidget::onFastForwardSpeedIndexChanged);
 
   dialog->registerWidgetHelp(
     m_ui.confirmPowerOff, tr("Confirm Power Off"), tr("Checked"),
@@ -69,17 +73,13 @@ GeneralSettingsWidget::GeneralSettingsWidget(QtHostInterface* host_interface, QW
     tr("When enabled, per-game settings will be applied, and incompatible enhancements will be disabled. You should "
        "leave this option enabled except when testing enhancements with incompatible games."));
   dialog->registerWidgetHelp(
-    m_ui.enableSpeedLimiter, tr("Enable Speed Limiter"), tr("Checked"),
-    tr("Throttles the emulation speed to the chosen speed above. If unchecked, the emulator will "
-       "run as fast as possible, which may not be playable."));
-  dialog->registerWidgetHelp(
-    m_ui.increaseTimerResolution, tr("Increase Timer Resolution"), tr("Checked"),
-    tr("Increases the system timer resolution when emulation is started to provide more accurate "
-       "frame pacing. May increase battery usage on laptops."));
-  dialog->registerWidgetHelp(
     m_ui.emulationSpeed, tr("Emulation Speed"), "100%",
     tr("Sets the target emulation speed. It is not guaranteed that this speed will be reached, "
        "and if not, the emulator will run as fast as it can manage."));
+  dialog->registerWidgetHelp(
+    m_ui.fastForwardSpeed, tr("Fast Forward Speed"), "100%",
+    tr(
+      "Sets the fast forward (turbo) speed. This speed will be used when the fast forward hotkey is pressed/toggled."));
   dialog->registerWidgetHelp(m_ui.controllerBackend, tr("Controller Backend"),
                              qApp->translate("ControllerInterface", ControllerInterface::GetBackendName(
                                                                       ControllerInterface::GetDefaultBackend())),
@@ -119,12 +119,18 @@ GeneralSettingsWidget::GeneralSettingsWidget(QtHostInterface* host_interface, QW
 
 GeneralSettingsWidget::~GeneralSettingsWidget() = default;
 
-void GeneralSettingsWidget::onEnableSpeedLimiterStateChanged()
+void GeneralSettingsWidget::onEmulationSpeedIndexChanged(int index)
 {
-  m_ui.emulationSpeed->setDisabled(!m_ui.enableSpeedLimiter->isChecked());
+  bool okay;
+  const float value = m_ui.emulationSpeed->currentData().toFloat(&okay);
+  m_host_interface->SetFloatSettingValue("Main", "EmulationSpeed", okay ? value : 1.0f);
+  m_host_interface->applySettings();
 }
 
-void GeneralSettingsWidget::onEmulationSpeedValueChanged(int value)
+void GeneralSettingsWidget::onFastForwardSpeedIndexChanged(int index)
 {
-  m_ui.emulationSpeedLabel->setText(tr("%1%").arg(value));
+  bool okay;
+  const float value = m_ui.fastForwardSpeed->currentData().toFloat(&okay);
+  m_host_interface->SetFloatSettingValue("Main", "FastForwardSpeed", okay ? value : 0.0f);
+  m_host_interface->applySettings();
 }

@@ -17,11 +17,21 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-        <SwitchPreferenceCompat
-            app:key="Main/SpeedLimiterEnabled"
-            app:title="@string/settings_behavior_enable_speed_limiter"
-            app:defaultValue="true"
-            app:summary="Throttles the emulation speed to the chosen speed above. If unchecked, the emulator will run as fast as possible, which may not be playable."
+        <ListPreference
+            app:key="Main/EmulationSpeed"
+            app:title="Emulation Speed"
+            app:entries="@array/settings_emulation_speed_entries"
+            app:entryValues="@array/settings_emulation_speed_values"
+            app:defaultValue="1.0"
+            app:useSimpleSummaryProvider="true"
+            app:iconSpaceReserved="false" />
+        <ListPreference
+            app:key="Main/FastForwardSpeed"
+            app:title="Fast Forward Speed"
+            app:entries="@array/settings_emulation_speed_entries"
+            app:entryValues="@array/settings_emulation_speed_values"
+            app:defaultValue="0.0"
+            app:useSimpleSummaryProvider="true"
             app:iconSpaceReserved="false" />
         <SwitchPreferenceCompat
             app:key="Main/SaveStateOnExit"

@@ -94,61 +94,28 @@
    <item>
     <widget class="QGroupBox" name="groupBox_3">
      <property name="title">
-      <string>Emulation Speed</string>
+      <string>Speed Control</string>
      </property>
-     <layout class="QGridLayout" name="formLayout_3">
-      <item row="0" column="0" colspan="2">
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
-        <item>
-         <widget class="QSlider" name="emulationSpeed">
-          <property name="minimum">
-           <number>25</number>
-          </property>
-          <property name="maximum">
-           <number>500</number>
-          </property>
-          <property name="singleStep">
-           <number>25</number>
-          </property>
-          <property name="pageStep">
-           <number>25</number>
-          </property>
-          <property name="value">
-           <number>100</number>
-          </property>
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="tickPosition">
-           <enum>QSlider::TicksBelow</enum>
-          </property>
-          <property name="tickInterval">
-           <number>25</number>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="emulationSpeedLabel">
-          <property name="text">
-           <string>100%</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
+     <layout class="QGridLayout" name="formLayout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>Emulation Speed:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="emulationSpeed"/>
       </item>
       <item row="1" column="0">
-       <widget class="QCheckBox" name="enableSpeedLimiter">
+       <widget class="QLabel" name="label_3">
         <property name="text">
-         <string>Enable Speed Limiter</string>
+         <string>Fast Forward Speed:</string>
         </property>
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QCheckBox" name="increaseTimerResolution">
-        <property name="text">
-         <string>Increase Timer Resolution</string>
-        </property>
-       </widget>
+       <widget class="QComboBox" name="fastForwardSpeed"/>
       </item>
      </layout>
     </widget>
@@ -192,7 +159,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="resources/icons.qrc"/>
+  <include location="resources/resources.qrc"/>
  </resources>
  <connections/>
 </ui>

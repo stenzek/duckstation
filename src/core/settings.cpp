@@ -110,7 +110,7 @@ void Settings::Load(SettingsInterface& si)
     ParseConsoleRegionName(si.GetStringValue("Console", "Region", "NTSC-U").c_str()).value_or(DEFAULT_CONSOLE_REGION);
 
   emulation_speed = si.GetFloatValue("Main", "EmulationSpeed", 1.0f);
-  speed_limiter_enabled = si.GetBoolValue("Main", "SpeedLimiterEnabled", true);
+  fast_forward_speed = si.GetFloatValue("Main", "FastForwardSpeed", 0.0f);
   increase_timer_resolution = si.GetBoolValue("Main", "IncreaseTimerResolution", true);
   start_paused = si.GetBoolValue("Main", "StartPaused", false);
   start_fullscreen = si.GetBoolValue("Main", "StartFullscreen", false);
@@ -148,6 +148,7 @@ void Settings::Load(SettingsInterface& si)
   gpu_disable_interlacing = si.GetBoolValue("GPU", "DisableInterlacing", false);
   gpu_force_ntsc_timings = si.GetBoolValue("GPU", "ForceNTSCTimings", false);
   gpu_widescreen_hack = si.GetBoolValue("GPU", "WidescreenHack", false);
+  gpu_24bit_chroma_smoothing = si.GetBoolValue("GPU", "ChromaSmoothing24Bit", false);
   gpu_pgxp_enable = si.GetBoolValue("GPU", "PGXPEnable", false);
   gpu_pgxp_culling = si.GetBoolValue("GPU", "PGXPCulling", true);
   gpu_pgxp_texture_correction = si.GetBoolValue("GPU", "PGXPTextureCorrection", true);
@@ -176,6 +177,7 @@ void Settings::Load(SettingsInterface& si)
   display_show_resolution = si.GetBoolValue("Display", "ShowResolution", false);
   video_sync_enabled = si.GetBoolValue("Display", "VSync", true);
   display_post_process_chain = si.GetStringValue("Display", "PostProcessChain", "");
+  display_max_fps = si.GetFloatValue("Display", "MaxFPS", 0.0f);
 
   cdrom_read_thread = si.GetBoolValue("CDROM", "ReadThread", true);
   cdrom_region_check = si.GetBoolValue("CDROM", "RegionCheck", true);
@@ -247,7 +249,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetStringValue("Console", "Region", GetConsoleRegionName(region));
 
   si.SetFloatValue("Main", "EmulationSpeed", emulation_speed);
-  si.SetBoolValue("Main", "SpeedLimiterEnabled", speed_limiter_enabled);
+  si.SetFloatValue("Main", "FastForwardSpeed", fast_forward_speed);
   si.SetBoolValue("Main", "IncreaseTimerResolution", increase_timer_resolution);
   si.SetBoolValue("Main", "StartPaused", start_paused);
   si.SetBoolValue("Main", "StartFullscreen", start_fullscreen);
@@ -277,6 +279,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("GPU", "DisableInterlacing", gpu_disable_interlacing);
   si.SetBoolValue("GPU", "ForceNTSCTimings", gpu_force_ntsc_timings);
   si.SetBoolValue("GPU", "WidescreenHack", gpu_widescreen_hack);
+  si.SetBoolValue("GPU", "ChromaSmoothing24Bit", gpu_24bit_chroma_smoothing);
   si.SetBoolValue("GPU", "PGXPEnable", gpu_pgxp_enable);
   si.SetBoolValue("GPU", "PGXPCulling", gpu_pgxp_culling);
   si.SetBoolValue("GPU", "PGXPTextureCorrection", gpu_pgxp_texture_correction);
@@ -302,6 +305,7 @@ void Settings::Save(SettingsInterface& si) const
     si.DeleteValue("Display", "PostProcessChain");
   else
     si.SetStringValue("Display", "PostProcessChain", display_post_process_chain.c_str());
+  si.SetFloatValue("Display", "MaxFPS", display_max_fps);
 
   si.SetBoolValue("CDROM", "ReadThread", cdrom_read_thread);
   si.SetBoolValue("CDROM", "RegionCheck", cdrom_region_check);

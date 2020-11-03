@@ -18,9 +18,11 @@ EnhancementSettingsWidget::EnhancementSettingsWidget(QtHostInterface* host_inter
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.disableInterlacing, "GPU", "DisableInterlacing");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.forceNTSCTimings, "GPU", "ForceNTSCTimings");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.force43For24Bit, "Display", "Force4_3For24Bit");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.chromaSmoothingFor24Bit, "GPU",
+                                               "ChromaSmoothing24Bit");
   SettingWidgetBinder::BindWidgetToEnumSetting(
     m_host_interface, m_ui.textureFiltering, "GPU", "TextureFilter", &Settings::ParseTextureFilterName,
-    &Settings::GetTextureFilterDisplayName, Settings::DEFAULT_GPU_TEXTURE_FILTER);
+    &Settings::GetTextureFilterName, Settings::DEFAULT_GPU_TEXTURE_FILTER);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.widescreenHack, "GPU", "WidescreenHack");
 
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.pgxpEnable, "GPU", "PGXPEnable", false);
@@ -75,6 +77,9 @@ EnhancementSettingsWidget::EnhancementSettingsWidget(QtHostInterface* host_inter
   dialog->registerWidgetHelp(
     m_ui.force43For24Bit, tr("Force 4:3 For 24-bit Display"), tr("Unchecked"),
     tr("Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs."));
+  dialog->registerWidgetHelp(m_ui.chromaSmoothingFor24Bit, tr("Chroma Smoothing For 24-Bit Display"), tr("Unchecked"),
+                             tr("Smooths out blockyness between colour transitions in 24-bit content, usually FMVs. "
+                                "Only applies to the hardware renderers."));
   dialog->registerWidgetHelp(
     m_ui.textureFiltering, tr("Texture Filtering"),
     qApp->translate("GPUTextureFilter", Settings::GetTextureFilterDisplayName(GPUTextureFilter::Nearest)),

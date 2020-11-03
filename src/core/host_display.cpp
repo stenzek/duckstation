@@ -2,6 +2,7 @@
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/string_util.h"
+#include "common/timer.h"
 #include "stb_image.h"
 #include "stb_image_resize.h"
 #include "stb_image_write.h"
@@ -13,6 +14,25 @@ Log_SetChannel(HostDisplay);
 HostDisplayTexture::~HostDisplayTexture() = default;
 
 HostDisplay::~HostDisplay() = default;
+
+void HostDisplay::SetDisplayMaxFPS(float max_fps)
+{
+  m_display_frame_interval = (max_fps > 0.0f) ? (1.0f / max_fps) : 0.0f;
+}
+
+bool HostDisplay::ShouldSkipDisplayingFrame()
+{
+  if (m_display_frame_interval == 0.0f)
+    return false;
+
+  const u64 now = Common::Timer::GetValue();
+  const double diff = Common::Timer::ConvertValueToSeconds(now - m_last_frame_displayed_time);
+  if (diff < m_display_frame_interval)
+    return true;
+
+  m_last_frame_displayed_time = now;
+  return false;
+}
 
 void HostDisplay::SetSoftwareCursor(std::unique_ptr<HostDisplayTexture> texture, float scale /*= 1.0f*/)
 {

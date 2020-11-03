@@ -455,8 +455,8 @@ bool GPU_HW_OpenGL::CompilePrograms()
     for (u8 interlaced = 0; interlaced < 3; interlaced++)
     {
       const std::string vs = shadergen.GenerateScreenQuadVertexShader();
-      const std::string fs = shadergen.GenerateDisplayFragmentShader(ConvertToBoolUnchecked(depth_24bit),
-                                                                     static_cast<InterlacedRenderMode>(interlaced));
+      const std::string fs = shadergen.GenerateDisplayFragmentShader(
+        ConvertToBoolUnchecked(depth_24bit), static_cast<InterlacedRenderMode>(interlaced), m_chroma_smoothing);
 
       std::optional<GL::Program> prog =
         shader_cache.GetProgram(vs, {}, fs, [this, use_binding_layout](GL::Program& prog) {
@@ -673,14 +673,15 @@ void GPU_HW_OpenGL::UpdateDisplay()
   }
   else
   {
+    const u32 resolution_scale = m_GPUSTAT.display_area_color_depth_24 ? 1 : m_resolution_scale;
     const u32 vram_offset_x = m_crtc_state.display_vram_left;
     const u32 vram_offset_y = m_crtc_state.display_vram_top;
-    const u32 scaled_vram_offset_x = vram_offset_x * m_resolution_scale;
-    const u32 scaled_vram_offset_y = vram_offset_y * m_resolution_scale;
+    const u32 scaled_vram_offset_x = vram_offset_x * resolution_scale;
+    const u32 scaled_vram_offset_y = vram_offset_y * resolution_scale;
     const u32 display_width = m_crtc_state.display_vram_width;
     const u32 display_height = m_crtc_state.display_vram_height;
-    const u32 scaled_display_width = display_width * m_resolution_scale;
-    const u32 scaled_display_height = display_height * m_resolution_scale;
+    const u32 scaled_display_width = display_width * resolution_scale;
+    const u32 scaled_display_height = display_height * resolution_scale;
     const InterlacedRenderMode interlaced = GetInterlacedRenderMode();
 
     if (IsDisplayDisabled())
@@ -710,8 +711,8 @@ void GPU_HW_OpenGL::UpdateDisplay()
       const u32 reinterpret_field_offset = (interlaced != InterlacedRenderMode::None) ? GetInterlacedDisplayField() : 0;
       const u32 scaled_flipped_vram_offset_y = m_vram_texture.GetHeight() - scaled_vram_offset_y -
                                                reinterpret_field_offset - (scaled_display_height >> height_div2);
-      const u32 reinterpret_start_x = m_crtc_state.regs.X * m_resolution_scale;
-      const u32 reinterpret_crop_left = (m_crtc_state.display_vram_left - m_crtc_state.regs.X) * m_resolution_scale;
+      const u32 reinterpret_start_x = m_crtc_state.regs.X * resolution_scale;
+      const u32 reinterpret_crop_left = (m_crtc_state.display_vram_left - m_crtc_state.regs.X) * resolution_scale;
       const u32 uniforms[4] = {reinterpret_start_x, scaled_flipped_vram_offset_y, reinterpret_crop_left,
                                reinterpret_field_offset};
       UploadUniformBuffer(uniforms, sizeof(uniforms));

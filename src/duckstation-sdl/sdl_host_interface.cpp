@@ -843,9 +843,6 @@ void SDLHostInterface::DrawMainMenuBar()
 void SDLHostInterface::DrawQuickSettingsMenu()
 {
   bool settings_changed = false;
-  settings_changed |= ImGui::MenuItem("Enable Speed Limiter", nullptr, &m_settings_copy.speed_limiter_enabled);
-
-  ImGui::Separator();
 
   if (ImGui::BeginMenu("CPU Execution Mode"))
   {
@@ -1017,6 +1014,7 @@ void SDLHostInterface::DrawQuickSettingsMenu()
   settings_changed |= ImGui::MenuItem("Disable Interlacing", nullptr, &m_settings_copy.gpu_disable_interlacing);
   settings_changed |= ImGui::MenuItem("Widescreen Hack", nullptr, &m_settings_copy.gpu_widescreen_hack);
   settings_changed |= ImGui::MenuItem("Force NTSC Timings", nullptr, &m_settings_copy.gpu_force_ntsc_timings);
+  settings_changed |= ImGui::MenuItem("24-Bit Chroma Smoothing", nullptr, &m_settings_copy.gpu_24bit_chroma_smoothing);
 
   ImGui::Separator();
 
@@ -1287,7 +1285,6 @@ void SDLHostInterface::DrawSettingsWindow()
         ImGui::SameLine(indent);
 
         settings_changed |= ImGui::SliderFloat("##speed", &m_settings_copy.emulation_speed, 0.25f, 5.0f);
-        settings_changed |= ImGui::Checkbox("Enable Speed Limiter", &m_settings_copy.speed_limiter_enabled);
         settings_changed |= ImGui::Checkbox("Increase Timer Resolution", &m_settings_copy.increase_timer_resolution);
         settings_changed |= ImGui::Checkbox("Pause On Start", &m_settings_copy.start_paused);
         settings_changed |= ImGui::Checkbox("Start Fullscreen", &m_settings_copy.start_fullscreen);
@@ -1545,6 +1542,7 @@ void SDLHostInterface::DrawSettingsWindow()
         settings_changed |= ImGui::Checkbox("Widescreen Hack", &m_settings_copy.gpu_widescreen_hack);
         settings_changed |=
           ImGui::Checkbox("Force 4:3 For 24-Bit Display", &m_settings_copy.display_force_4_3_for_24bit);
+        settings_changed |= ImGui::Checkbox("24-Bit Chroma Smoothing", &m_settings_copy.gpu_24bit_chroma_smoothing);
 
         settings_changed |= ImGui::Checkbox("PGXP Enabled", &m_settings_copy.gpu_pgxp_enable);
         settings_changed |= ImGui::Checkbox("PGXP Culling", &m_settings_copy.gpu_pgxp_culling);
