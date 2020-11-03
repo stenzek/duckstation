@@ -177,6 +177,7 @@ void Settings::Load(SettingsInterface& si)
   display_show_resolution = si.GetBoolValue("Display", "ShowResolution", false);
   video_sync_enabled = si.GetBoolValue("Display", "VSync", true);
   display_post_process_chain = si.GetStringValue("Display", "PostProcessChain", "");
+  display_max_fps = si.GetFloatValue("Display", "MaxFPS", 0.0f);
 
   cdrom_read_thread = si.GetBoolValue("CDROM", "ReadThread", true);
   cdrom_region_check = si.GetBoolValue("CDROM", "RegionCheck", true);
@@ -304,6 +305,7 @@ void Settings::Save(SettingsInterface& si) const
     si.DeleteValue("Display", "PostProcessChain");
   else
     si.SetStringValue("Display", "PostProcessChain", display_post_process_chain.c_str());
+  si.SetFloatValue("Display", "MaxFPS", display_max_fps);
 
   si.SetBoolValue("CDROM", "ReadThread", cdrom_read_thread);
   si.SetBoolValue("CDROM", "RegionCheck", cdrom_region_check);

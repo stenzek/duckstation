@@ -464,6 +464,19 @@ void OpenGLHostDisplay::DestroyResources()
 
 bool OpenGLHostDisplay::Render()
 {
+  if (ShouldSkipDisplayingFrame())
+  {
+#ifdef WITH_IMGUI
+    if (ImGui::GetCurrentContext())
+    {
+      ImGui::Render();
+      ImGui_ImplOpenGL3_NewFrame();
+    }
+#endif
+
+    return false;
+  }
+
   glDisable(GL_SCISSOR_TEST);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);

@@ -105,6 +105,8 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(QtHostInterface* host_interface, 
                          1000, Settings::DEFAULT_GPU_MAX_RUN_AHEAD);
   addBooleanTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Use Debug Host GPU Device"), "GPU",
                         "UseDebugDevice", false);
+  addIntRangeTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Display FPS Limit"), "Display", "MaxFPS", 0, 1000,
+                         0);
 }
 
 AdvancedSettingsWidget::~AdvancedSettingsWidget() = default;
@@ -122,4 +124,5 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
   setIntRangeTweakOption(m_ui.tweakOptionTable, 8, static_cast<int>(Settings::DEFAULT_GPU_FIFO_SIZE));
   setIntRangeTweakOption(m_ui.tweakOptionTable, 9, static_cast<int>(Settings::DEFAULT_GPU_MAX_RUN_AHEAD));
   setBooleanTweakOption(m_ui.tweakOptionTable, 10, false);
+  setIntRangeTweakOption(m_ui.tweakOptionTable, 11, 0);
 }

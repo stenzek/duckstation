@@ -539,6 +539,19 @@ bool VulkanHostDisplay::CreateImGuiContext()
 
 bool VulkanHostDisplay::Render()
 {
+  if (ShouldSkipDisplayingFrame())
+  {
+#ifdef WITH_IMGUI
+    if (ImGui::GetCurrentContext())
+    {
+      ImGui::Render();
+      ImGui_ImplVulkan_NewFrame();
+    }
+#endif
+
+    return false;
+  }
+
   VkResult res = m_swap_chain->AcquireNextImage();
   if (res != VK_SUCCESS)
   {

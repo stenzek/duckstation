@@ -123,6 +123,7 @@ struct Settings
   bool display_show_speed = false;
   bool display_show_resolution = false;
   bool video_sync_enabled = true;
+  float display_max_fps = 0.0f;
 
   bool cdrom_read_thread = true;
   bool cdrom_region_check = true;

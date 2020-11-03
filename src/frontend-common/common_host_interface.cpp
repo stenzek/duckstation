@@ -605,8 +605,10 @@ void CommonHostInterface::UpdateSpeedLimiterState()
     !System::IsRunning() || (m_speed_limiter_enabled && g_settings.audio_sync_enabled && !is_non_standard_speed);
   const bool video_sync_enabled =
     !System::IsRunning() || (m_speed_limiter_enabled && g_settings.video_sync_enabled && !is_non_standard_speed);
+  const float max_display_fps = m_speed_limiter_enabled ? 0.0f : g_settings.display_max_fps;
   Log_InfoPrintf("Syncing to %s%s", audio_sync_enabled ? "audio" : "",
                  (audio_sync_enabled && video_sync_enabled) ? " and video" : (video_sync_enabled ? "video" : ""));
+  Log_InfoPrintf("Max display fps: %f", max_display_fps);
 
   if (m_audio_stream)
   {
@@ -616,7 +618,10 @@ void CommonHostInterface::UpdateSpeedLimiterState()
   }
 
   if (m_display)
+  {
+    m_display->SetDisplayMaxFPS(max_display_fps);
     m_display->SetVSync(video_sync_enabled);
+  }
 
   if (g_settings.increase_timer_resolution)
     SetTimerResolutionIncreased(m_speed_limiter_enabled);
@@ -2077,7 +2082,8 @@ void CommonHostInterface::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.audio_sync_enabled != old_settings.audio_sync_enabled ||
         g_settings.speed_limiter_enabled != old_settings.speed_limiter_enabled ||
         g_settings.increase_timer_resolution != old_settings.increase_timer_resolution ||
-        g_settings.emulation_speed != old_settings.emulation_speed)
+        g_settings.emulation_speed != old_settings.emulation_speed ||
+        g_settings.display_max_fps != old_settings.display_max_fps)
     {
       UpdateSpeedLimiterState();
     }
