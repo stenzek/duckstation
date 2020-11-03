@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.hardware.input.InputManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -174,6 +175,10 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         // Hook up controller input.
         updateControllers();
         registerInputDeviceListener();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            getWindow().setSustainedPerformanceMode(true);
+        }
     }
 
     @Override
@@ -195,6 +200,10 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         if (AndroidHostInterface.getInstance().isEmulationThreadRunning()) {
             mWasDestroyed = true;
             AndroidHostInterface.getInstance().stopEmulationThread();
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            getWindow().setSustainedPerformanceMode(false);
         }
 
         unregisterInputDeviceListener();
