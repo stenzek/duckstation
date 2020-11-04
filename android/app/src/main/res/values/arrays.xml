@@ -98,14 +98,20 @@
     <string-array name="settings_gpu_texture_filter_names">
         <item>Nearest-Neighbor</item>
         <item>Bilinear</item>
+        <item>Bilinear (No Edge Blending)</item>
         <item>JINC2</item>
+        <item>JINC2 (No Edge Blending)</item>
         <item>xBR</item>
+        <item>xBR (No Edge Blending)</item>
     </string-array>
     <string-array name="settings_gpu_texture_filter_values">
         <item>Nearest</item>
         <item>Bilinear</item>
+        <item>BilinearBinAlpha</item>
         <item>JINC2</item>
+        <item>JINC2BinAlpha</item>
         <item>xBR</item>
+        <item>xBRBinAlpha</item>
     </string-array>
     <string-array name="settings_controller_type_entries">
         <item>Digital Controller (Gamepad)</item>
