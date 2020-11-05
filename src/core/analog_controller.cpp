@@ -302,6 +302,10 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
     {
       if (m_rumble_unlocked)
         SetMotorState(1, ((data_in & 0x01) != 0) ? 255 : 0);
+      else if (data_in >= 0x40 && data_in <= 0x7F)
+        m_legacy_rumble_unlocked = true;
+      else
+        SetMotorState(1, 0);
 
       *data_out = Truncate8(m_button_state) & GetExtraButtonMaskLSB();
       m_state = State::GetStateButtonsMSB;
@@ -313,6 +317,11 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
     {
       if (m_rumble_unlocked)
         SetMotorState(0, data_in);
+      else if (m_legacy_rumble_unlocked)
+      {
+        SetMotorState(1, ((data_in & 0x01) != 0) ? 255 : 0);
+        m_legacy_rumble_unlocked = false;
+      }
 
       *data_out = Truncate8(m_button_state >> 8);
       m_state = m_analog_mode ? State::GetStateRightAxisX : State::Idle;

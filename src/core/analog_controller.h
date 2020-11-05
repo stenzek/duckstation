@@ -142,6 +142,7 @@ private:
   bool m_analog_mode = false;
   bool m_analog_locked = false;
   bool m_rumble_unlocked = false;
+  bool m_legacy_rumble_unlocked = false;
   bool m_configuration_mode = false;
   u8 m_command_param = 0;
 
