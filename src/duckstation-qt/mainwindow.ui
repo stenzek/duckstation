@@ -182,6 +182,7 @@
     <addaction name="actionDebugShowSPUState"/>
     <addaction name="actionDebugShowTimersState"/>
     <addaction name="actionDebugShowMDECState"/>
+    <addaction name="actionDebugShowDMAState"/>
    </widget>
    <widget class="QMenu" name="menu_View">
     <property name="title">
@@ -636,6 +637,14 @@
    </property>
    <property name="text">
     <string>Show MDEC State</string>
+   </property>
+  </action>
+  <action name="actionDebugShowDMAState">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show DMA State</string>
    </property>
   </action>
   <action name="actionScreenshot">

@@ -913,6 +913,8 @@ void MainWindow::connectSignals()
                                                "ShowTimersState");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugShowMDECState, "Debug",
                                                "ShowMDECState");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugShowDMAState, "Debug",
+                                               "ShowDMAState");
 
   addThemeToMenu(tr("Default"), QStringLiteral("default"));
   addThemeToMenu(tr("Fusion"), QStringLiteral("fusion"));
