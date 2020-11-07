@@ -11,6 +11,7 @@
 #include <QtGui/QColor>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QInputDialog>
+#include <QtWidgets/QMenu>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QTreeWidgetItemIterator>
 #include <array>
@@ -543,6 +544,14 @@ void CheatManagerDialog::activateCodeClicked()
 
 void CheatManagerDialog::importClicked()
 {
+  QMenu menu(this);
+  connect(menu.addAction(tr("From File...")), &QAction::triggered, this, &CheatManagerDialog::importFromFileTriggered);
+  connect(menu.addAction(tr("From Text...")), &QAction::triggered, this, &CheatManagerDialog::importFromTextTriggered);
+  menu.exec(QCursor::pos());
+}
+
+void CheatManagerDialog::importFromFileTriggered()
+{
   const QString filter(tr("PCSXR/Libretro Cheat Files (*.cht *.txt);;All Files (*.*)"));
   const QString filename(QFileDialog::getOpenFileName(this, tr("Import Cheats"), QString(), filter));
   if (filename.isEmpty())
@@ -550,6 +559,29 @@ void CheatManagerDialog::importClicked()
 
   CheatList new_cheats;
   if (!new_cheats.LoadFromFile(filename.toUtf8().constData(), CheatList::Format::Autodetect))
+  {
+    QMessageBox::critical(this, tr("Error"), tr("Failed to parse cheat file. The log may contain more information."));
+    return;
+  }
+
+  QtHostInterface::GetInstance()->executeOnEmulationThread(
+    [&new_cheats]() {
+      DebugAssert(System::HasCheatList());
+      System::GetCheatList()->MergeList(new_cheats);
+      QtHostInterface::GetInstance()->SaveCheatList();
+    },
+    true);
+  updateCheatList();
+}
+
+void CheatManagerDialog::importFromTextTriggered()
+{
+  const QString text = QInputDialog::getMultiLineText(this, tr("Import Cheats"), tr("Cheat File Text:"));
+  if (text.isEmpty())
+    return;
+
+  CheatList new_cheats;
+  if (!new_cheats.LoadFromString(text.toStdString(), CheatList::Format::Autodetect))
   {
     QMessageBox::critical(this, tr("Error"), tr("Failed to parse cheat file. The log may contain more information."));
     return;

@@ -37,6 +37,8 @@ private Q_SLOTS:
   void deleteCodeClicked();
   void activateCodeClicked();
   void importClicked();
+  void importFromFileTriggered();
+  void importFromTextTriggered();
   void exportClicked();
 
   void addToWatchClicked();
