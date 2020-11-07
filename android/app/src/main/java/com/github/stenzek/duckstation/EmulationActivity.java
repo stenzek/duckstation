@@ -184,8 +184,15 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         mPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         Log.i("EmulationActivity", "OnCreate");
+
+        // we might be coming from a third-party launcher if the host interface isn't setup
+        if (!AndroidHostInterface.hasInstance() && !AndroidHostInterface.createInstance(this)) {
+            finish();
+            return;
+        }
 
         enableFullscreenImmersive();
         setContentView(R.layout.activity_emulation);
