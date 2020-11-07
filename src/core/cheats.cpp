@@ -116,19 +116,26 @@ static const std::string* FindKey(const KeyValuePairVector& kvp, const char* sea
 
 bool CheatList::LoadFromPCSXRFile(const char* filename)
 {
-  auto fp = FileSystem::OpenManagedCFile(filename, "rb");
-  if (!fp)
+  std::optional<std::string> str = FileSystem::ReadFileToString(filename);
+  if (!str.has_value() || str->empty())
     return false;
 
-  char line[1024];
+  return LoadFromPCSXRString(str.value());
+}
+
+bool CheatList::LoadFromPCSXRString(const std::string& str)
+{
+  std::istringstream iss(str);
+
+  std::string line;
   std::string comments;
   std::string group;
   CheatCode::Type type = CheatCode::Type::Gameshark;
   CheatCode::Activation activation = CheatCode::Activation::EndFrame;
   CheatCode current_code;
-  while (std::fgets(line, sizeof(line), fp.get()))
+  while (std::getline(iss, line))
   {
-    char* start = line;
+    char* start = line.data();
     while (*start != '\0' && std::isspace(*start))
       start++;
 
@@ -227,21 +234,27 @@ bool CheatList::LoadFromPCSXRFile(const char* filename)
     m_codes.push_back(std::move(current_code));
   }
 
-  Log_InfoPrintf("Loaded %zu cheats from '%s' (PCSXR format)", m_codes.size(), filename);
+  Log_InfoPrintf("Loaded %zu cheats (PCSXR format)", m_codes.size());
   return !m_codes.empty();
 }
 
 bool CheatList::LoadFromLibretroFile(const char* filename)
 {
-  auto fp = FileSystem::OpenManagedCFile(filename, "rb");
-  if (!fp)
+  std::optional<std::string> str = FileSystem::ReadFileToString(filename);
+  if (!str.has_value() || str->empty())
     return false;
 
-  char line[1024];
+  return LoadFromLibretroString(str.value());
+}
+
+bool CheatList::LoadFromLibretroString(const std::string& str)
+{
+  std::istringstream iss(str);
+  std::string line;
   KeyValuePairVector kvp;
-  while (std::fgets(line, sizeof(line), fp.get()))
+  while (std::getline(iss, line))
   {
-    char* start = line;
+    char* start = line.data();
     while (*start != '\0' && std::isspace(*start))
       start++;
 
@@ -312,7 +325,7 @@ bool CheatList::LoadFromLibretroFile(const char* filename)
     const std::string* enable = FindKey(kvp, TinyString::FromFormat("cheat%u_enable", i));
     if (!desc || !code || !enable)
     {
-      Log_WarningPrintf("Missing desc/code/enable for cheat %u in '%s'", i, filename);
+      Log_WarningPrintf("Missing desc/code/enable for cheat %u", i);
       continue;
     }
 
@@ -324,7 +337,7 @@ bool CheatList::LoadFromLibretroFile(const char* filename)
       m_codes.push_back(std::move(cc));
   }
 
-  Log_InfoPrintf("Loaded %zu cheats from '%s' (libretro format)", m_codes.size(), filename);
+  Log_InfoPrintf("Loaded %zu cheats (libretro format)", m_codes.size());
   return !m_codes.empty();
 }
 
@@ -409,14 +422,20 @@ void CheatList::RemoveCode(u32 i)
 
 std::optional<CheatList::Format> CheatList::DetectFileFormat(const char* filename)
 {
-  auto fp = FileSystem::OpenManagedCFile(filename, "rb");
-  if (!fp)
-    return Format::Count;
+  std::optional<std::string> str = FileSystem::ReadFileToString(filename);
+  if (!str.has_value() || str->empty())
+    return std::nullopt;
 
-  char line[1024];
-  while (std::fgets(line, sizeof(line), fp.get()))
+  return DetectFileFormat(str.value());
+}
+
+CheatList::Format CheatList::DetectFileFormat(const std::string& str)
+{
+  std::istringstream iss(str);
+  std::string line;
+  while (std::getline(iss, line))
   {
-    char* start = line;
+    char* start = line.data();
     while (*start != '\0' && std::isspace(*start))
       start++;
 
@@ -431,7 +450,7 @@ std::optional<CheatList::Format> CheatList::DetectFileFormat(const char* filenam
       end--;
     }
 
-    if (std::strncmp(line, "cheats", 6) == 0)
+    if (std::strncmp(line.data(), "cheats", 6) == 0)
       return Format::Libretro;
     else
       return Format::PCSXR;
@@ -442,15 +461,24 @@ std::optional<CheatList::Format> CheatList::DetectFileFormat(const char* filenam
 
 bool CheatList::LoadFromFile(const char* filename, Format format)
 {
+  std::optional<std::string> str = FileSystem::ReadFileToString(filename);
+  if (!str.has_value() || str->empty())
+    return false;
+
+  return LoadFromString(str.value(), format);
+}
+
+bool CheatList::LoadFromString(const std::string& str, Format format)
+{
   if (format == Format::Autodetect)
-    format = DetectFileFormat(filename).value_or(Format::Count);
+    format = DetectFileFormat(str);
 
   if (format == Format::PCSXR)
-    return LoadFromPCSXRFile(filename);
+    return LoadFromPCSXRString(str);
   else if (format == Format::Libretro)
-    return LoadFromLibretroFile(filename);
+    return LoadFromLibretroString(str);
 
-  Log_ErrorPrintf("Invalid or unknown format for '%s'", filename);
+  Log_ErrorPrintf("Invalid or unknown cheat format");
   return false;
 }
 
