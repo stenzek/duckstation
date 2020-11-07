@@ -38,8 +38,8 @@ static jmethodID s_EmulationActivity_method_reportMessage;
 static jmethodID s_EmulationActivity_method_onEmulationStarted;
 static jmethodID s_EmulationActivity_method_onEmulationStopped;
 static jmethodID s_EmulationActivity_method_onGameTitleChanged;
-static jclass s_CheatCode_class;
-static jmethodID s_CheatCode_constructor;
+static jclass s_PatchCode_class;
+static jmethodID s_PatchCode_constructor;
 
 namespace AndroidHelpers {
 // helper for retrieving the current per-thread jni environment
@@ -178,7 +178,8 @@ void AndroidHostInterface::LoadAndConvertSettings()
   g_settings.gpu_per_sample_shading = StringUtil::EndsWith(msaa_str, "-ssaa");
 
   // turn percentage into fraction for overclock
-  const u32 overclock_percent = static_cast<u32>(std::max(m_settings_interface.GetIntValue("CPU", "Overclock", 100), 1));
+  const u32 overclock_percent =
+    static_cast<u32>(std::max(m_settings_interface.GetIntValue("CPU", "Overclock", 100), 1));
   Settings::CPUOverclockPercentToFraction(overclock_percent, &g_settings.cpu_overclock_numerator,
                                           &g_settings.cpu_overclock_denominator);
   g_settings.cpu_overclock_enable = (overclock_percent != 100);
@@ -329,8 +330,7 @@ void AndroidHostInterface::EmulationThreadLoop()
             lock.unlock();
             callback();
             lock.lock();
-          }
-          while (!m_callback_queue.empty());
+          } while (!m_callback_queue.empty());
           m_callbacks_outstanding.store(false);
         }
 
@@ -583,6 +583,34 @@ void AndroidHostInterface::ApplySettings(bool display_osd_messages)
   CheckForSettingsChanges(old_settings);
 }
 
+bool AndroidHostInterface::ImportPatchCodesFromString(const std::string& str)
+{
+  CheatList* cl = new CheatList();
+  if (!cl->LoadFromString(str, CheatList::Format::Autodetect) || cl->GetCodeCount() == 0)
+    return false;
+
+  RunOnEmulationThread([this, cl]() {
+    u32 imported_count;
+    if (!System::HasCheatList())
+    {
+      imported_count = cl->GetCodeCount();
+      System::SetCheatList(std::unique_ptr<CheatList>(cl));
+    }
+    else
+    {
+      const u32 old_count = System::GetCheatList()->GetCodeCount();
+      System::GetCheatList()->MergeList(*cl);
+      imported_count = System::GetCheatList()->GetCodeCount() - old_count;
+      delete cl;
+    }
+
+    AddFormattedOSDMessage(20.0f, "Imported %u patch codes.", imported_count);
+    CommonHostInterface::SaveCheatList();
+  });
+
+  return true;
+}
+
 extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
 {
   Log::SetDebugOutputParams(true, nullptr, LOGLEVEL_DEV);
@@ -594,8 +622,8 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
         nullptr ||
       (s_AndroidHostInterface_class = static_cast<jclass>(env->NewGlobalRef(s_AndroidHostInterface_class))) ==
         nullptr ||
-      (s_CheatCode_class = env->FindClass("com/github/stenzek/duckstation/CheatCode")) == nullptr ||
-      (s_CheatCode_class = static_cast<jclass>(env->NewGlobalRef(s_CheatCode_class))) == nullptr)
+      (s_PatchCode_class = env->FindClass("com/github/stenzek/duckstation/PatchCode")) == nullptr ||
+      (s_PatchCode_class = static_cast<jclass>(env->NewGlobalRef(s_PatchCode_class))) == nullptr)
   {
     Log_ErrorPrint("AndroidHostInterface class lookup failed");
     return -1;
@@ -621,7 +649,7 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
          env->GetMethodID(emulation_activity_class, "onEmulationStopped", "()V")) == nullptr ||
       (s_EmulationActivity_method_onGameTitleChanged =
          env->GetMethodID(emulation_activity_class, "onGameTitleChanged", "(Ljava/lang/String;)V")) == nullptr ||
-      (s_CheatCode_constructor = env->GetMethodID(s_CheatCode_class, "<init>", "(ILjava/lang/String;Z)V")) == nullptr)
+      (s_PatchCode_constructor = env->GetMethodID(s_PatchCode_class, "<init>", "(ILjava/lang/String;Z)V")) == nullptr)
   {
     Log_ErrorPrint("AndroidHostInterface lookups failed");
     return -1;
@@ -878,20 +906,30 @@ DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_pauseEmulationThread, jobject 
   hi->PauseEmulationThread(paused);
 }
 
-DEFINE_JNI_ARGS_METHOD(jobject, AndroidHostInterface_getCheatList, jobject obj)
+DEFINE_JNI_ARGS_METHOD(jobject, AndroidHostInterface_getPatchCodeList, jobject obj)
 {
-  if (!System::IsValid() || !System::HasCheatList())
+  if (!System::IsValid())
+    return nullptr;
+
+  AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
+  if (!System::HasCheatList() && !g_settings.auto_load_cheats)
+  {
+    // Hopefully this won't deadlock...
+    hi->RunOnEmulationThread([hi]() { hi->LoadCheatListFromGameTitle(); }, true);
+  }
+
+  if (!System::HasCheatList())
     return nullptr;
 
   CheatList* cl = System::GetCheatList();
   const u32 count = cl->GetCodeCount();
 
-  jobjectArray arr = env->NewObjectArray(count, s_CheatCode_class, nullptr);
+  jobjectArray arr = env->NewObjectArray(count, s_PatchCode_class, nullptr);
   for (u32 i = 0; i < count; i++)
   {
     const CheatCode& cc = cl->GetCode(i);
 
-    jobject java_cc = env->NewObject(s_CheatCode_class, s_CheatCode_constructor, static_cast<jint>(i),
+    jobject java_cc = env->NewObject(s_PatchCode_class, s_PatchCode_constructor, static_cast<jint>(i),
                                      env->NewStringUTF(cc.description.c_str()), cc.enabled);
     env->SetObjectArrayElement(arr, i, java_cc);
   }
@@ -899,7 +937,16 @@ DEFINE_JNI_ARGS_METHOD(jobject, AndroidHostInterface_getCheatList, jobject obj)
   return arr;
 }
 
-DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_setCheatEnabled, jobject obj, jint index, jboolean enabled)
+DEFINE_JNI_ARGS_METHOD(jboolean, AndroidHostInterface_importPatchCodesFromString, jobject obj, jstring str)
+{
+  if (!System::IsValid())
+    return false;
+
+  AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
+  return hi->ImportPatchCodesFromString(AndroidHelpers::JStringToString(env, str));
+}
+
+DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_setPatchCodeEnabled, jobject obj, jint index, jboolean enabled)
 {
   if (!System::IsValid() || !System::HasCheatList())
     return;

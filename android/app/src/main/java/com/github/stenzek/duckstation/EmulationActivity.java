@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.hardware.input.InputManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -54,6 +55,19 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         editor.apply();
     }
 
+    private void reportErrorOnUIThread(String message) {
+        // Toast.makeText(this, message, Toast.LENGTH_LONG);
+        new AlertDialog.Builder(this)
+                .setTitle("Error")
+                .setMessage(message)
+                .setPositiveButton("OK", (dialog, button) -> {
+                    dialog.dismiss();
+                    enableFullscreenImmersive();
+                })
+                .create()
+                .show();
+    }
+
     public void reportError(String message) {
         Log.e("EmulationActivity", message);
 
@@ -65,6 +79,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
                     .setMessage(message)
                     .setPositiveButton("OK", (dialog, button) -> {
                         dialog.dismiss();
+                        enableFullscreenImmersive();
                         synchronized (lock) {
                             lock.notify();
                         }
@@ -133,7 +148,6 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
         // Once we get a surface, we can boot.
         if (AndroidHostInterface.getInstance().isEmulationThreadRunning()) {
-            final boolean hadSurface = AndroidHostInterface.getInstance().hasSurface();
             AndroidHostInterface.getInstance().surfaceChanged(holder.getSurface(), format, width, height);
             updateOrientation();
 
@@ -217,6 +231,9 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         if (requestCode == REQUEST_CODE_SETTINGS) {
             if (AndroidHostInterface.getInstance().isEmulationThreadRunning())
                 applySettings();
+        } else if (requestCode == REQUEST_IMPORT_PATCH_CODES) {
+            if (data != null)
+                importPatchesFromFile(data.getData());
         }
     }
 
@@ -261,6 +278,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     }
 
     private static final int REQUEST_CODE_SETTINGS = 0;
+    private static final int REQUEST_IMPORT_PATCH_CODES = 1;
 
     private void showMenu() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -331,7 +349,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
                     return;
                 }
 
-                case 1:     // Patches
+                case 1:     // Patch Codes
                 {
                     showPatchesMenu();
                     return;
@@ -373,23 +391,40 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     }
 
     private void showPatchesMenu() {
-        final CheatCode[] cheats = AndroidHostInterface.getInstance().getCheatList();
-        if (cheats == null) {
-            AndroidHostInterface.getInstance().addOSDMessage("No patches are loaded.", 5.0f);
-            return;
-        }
+        final PatchCode[] codes = AndroidHostInterface.getInstance().getPatchCodeList();
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
-        CharSequence[] items = new CharSequence[cheats.length];
-        for (int i = 0; i < cheats.length; i++) {
-            final CheatCode cc = cheats[i];
-            items[i] = String.format("%s %s", cc.isEnabled() ? "(ON)" : "(OFF)", cc.getName());
+        CharSequence[] items = new CharSequence[(codes != null) ? (codes.length + 1) : 1];
+        items[0] = "Import Patch Codes...";
+        if (codes != null) {
+            for (int i = 0; i < codes.length; i++) {
+                final PatchCode cc = codes[i];
+                items[i + 1] = String.format("%s %s", cc.isEnabled() ? "(ON)" : "(OFF)", cc.getDescription());
+            }
         }
 
-        builder.setItems(items, (dialogInterface, i) -> AndroidHostInterface.getInstance().setCheatEnabled(i, !cheats[i].isEnabled()));
-        builder.setOnDismissListener(dialogInterface -> enableFullscreenImmersive());
+        builder.setItems(items, (dialogInterface, i) -> {
+            if (i > 0) {
+                AndroidHostInterface.getInstance().setPatchCodeEnabled(i - 1, !codes[i - 1].isEnabled());
+                enableFullscreenImmersive();
+            } else {
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                intent.setType("*/*");
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                startActivityForResult(Intent.createChooser(intent, "Choose Patch Code File"), REQUEST_IMPORT_PATCH_CODES);
+            }
+        });
+        builder.setOnCancelListener(dialogInterface -> enableFullscreenImmersive());
         builder.create().show();
+    }
+
+    private void importPatchesFromFile(Uri uri) {
+        String str = FileUtil.readFileFromUri(this, uri, 512 * 1024);
+        if (str == null || !AndroidHostInterface.getInstance().importPatchCodesFromString(str)) {
+            reportErrorOnUIThread("Failed to import patch codes. Make sure you selected a PCSXR or Libretro format file.");
+        }
     }
 
     /**

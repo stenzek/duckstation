@@ -1,13 +1,13 @@
 package com.github.stenzek.duckstation;
 
-public class CheatCode {
+public class PatchCode {
     private int mIndex;
-    private String mName;
+    private String mDescription;
     private boolean mEnabled;
 
-    public CheatCode(int index, String name, boolean enabled) {
+    public PatchCode(int index, String description, boolean enabled) {
         mIndex = index;
-        mName = name;
+        mDescription = description;
         mEnabled = enabled;
     }
 
@@ -15,8 +15,8 @@ public class CheatCode {
         return mIndex;
     }
 
-    public String getName() {
-        return mName;
+    public String getDescription() {
+        return mDescription;
     }
 
     public boolean isEnabled() {

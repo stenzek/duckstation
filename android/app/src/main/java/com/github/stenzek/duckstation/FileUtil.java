@@ -9,12 +9,23 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.storage.StorageManager;
 import android.provider.DocumentsContract;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 public final class FileUtil {
     static String TAG = "TAG";
@@ -137,5 +148,33 @@ public final class FileUtil {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    public static String readFileFromUri(final Context context, final Uri uri, int maxSize) {
+        InputStream stream = null;
+        try {
+            stream = context.getContentResolver().openInputStream(uri);
+        } catch (FileNotFoundException e) {
+            return null;
+        }
+
+        StringBuilder os = new StringBuilder();
+        try {
+            char[] buffer = new char[1024];
+            InputStreamReader reader = new InputStreamReader(stream, Charset.forName(StandardCharsets.UTF_8.name()));
+            int len;
+            while ((len = reader.read(buffer)) > 0) {
+                os.append(buffer, 0, len);
+                if (os.length() > maxSize)
+                    return null;
+            }
+        } catch (IOException e) {
+            return null;
+        }
+
+        if (os.length() == 0)
+            return null;
+
+        return os.toString();
     }
 }

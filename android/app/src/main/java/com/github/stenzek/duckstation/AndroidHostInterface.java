@@ -70,9 +70,9 @@ public class AndroidHostInterface {
 
     public native void setDisplayAlignment(int alignment);
 
-    public native CheatCode[] getCheatList();
-
-    public native void setCheatEnabled(int index, boolean enabled);
+    public native PatchCode[] getPatchCodeList();
+    public native void setPatchCodeEnabled(int index, boolean enabled);
+    public native boolean importPatchCodesFromString(String str);
 
     public native void addOSDMessage(String message, float duration);
 

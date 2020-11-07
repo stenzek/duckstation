@@ -41,9 +41,9 @@
             app:iconSpaceReserved="false" />
         <SwitchPreferenceCompat
             app:key="Main/AutoLoadCheats"
-            app:title="Load Cheats"
+            app:title="Load Patch Codes"
             app:defaultValue="false"
-            app:summary="Loads cheats from cheats/&lt;game name&gt;.cht in PCSXR format. Cheats can be toggled while ingame."
+            app:summary="Loads patch codes from cheats/&lt;game name&gt;.cht in PCSXR format. Codes can be toggled while ingame."
             app:iconSpaceReserved="false" />
         <SwitchPreferenceCompat
             app:key="Display/VSync"
