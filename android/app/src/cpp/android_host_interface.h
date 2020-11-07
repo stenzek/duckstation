@@ -86,6 +86,7 @@ private:
   std::mutex m_mutex;
   std::condition_variable m_sleep_cv;
   std::deque<std::function<void()>> m_callback_queue;
+  std::atomic_bool m_callbacks_outstanding{false};
 
   std::thread m_emulation_thread;
   std::atomic_bool m_emulation_thread_stop_request{false};

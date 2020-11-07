@@ -240,6 +240,7 @@ void AndroidHostInterface::RunOnEmulationThread(std::function<void()> function, 
 
   m_mutex.lock();
   m_callback_queue.push_back(std::move(function));
+  m_callbacks_outstanding.store(true);
   m_sleep_cv.notify_one();
 
   if (blocking)
@@ -247,7 +248,7 @@ void AndroidHostInterface::RunOnEmulationThread(std::function<void()> function, 
     // TODO: Don't spin
     for (;;)
     {
-      if (m_callback_queue.empty())
+      if (!m_callbacks_outstanding.load())
         break;
 
       m_mutex.unlock();
@@ -319,13 +320,18 @@ void AndroidHostInterface::EmulationThreadLoop()
       std::unique_lock<std::mutex> lock(m_mutex);
       for (;;)
       {
-        while (!m_callback_queue.empty())
+        if (!m_callback_queue.empty())
         {
-          auto callback = std::move(m_callback_queue.front());
-          m_callback_queue.pop_front();
-          lock.unlock();
-          callback();
-          lock.lock();
+          do
+          {
+            auto callback = std::move(m_callback_queue.front());
+            m_callback_queue.pop_front();
+            lock.unlock();
+            callback();
+            lock.lock();
+          }
+          while (!m_callback_queue.empty());
+          m_callbacks_outstanding.store(false);
         }
 
         if (m_emulation_thread_stop_request.load())
