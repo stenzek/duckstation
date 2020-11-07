@@ -45,6 +45,14 @@
             app:defaultValue="false"
             app:summary="Pauses emulation when ingame and the menu is opened."
             app:iconSpaceReserved="false" />
+        <ListPreference
+            app:key="Main/EmulationScreenOrientation"
+            app:title="Emulation Screen Orientation"
+            app:entries="@array/settings_emulation_screen_orientation_entries"
+            app:entryValues="@array/settings_emulation_screen_orientation_values"
+            app:defaultValue="unspecified"
+            app:useSimpleSummaryProvider="true"
+            app:iconSpaceReserved="false" />
         <SwitchPreferenceCompat
             app:key="Main/AutoLoadCheats"
             app:title="Load Patch Codes"

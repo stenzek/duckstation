@@ -3,6 +3,7 @@ package com.github.stenzek.duckstation;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.hardware.input.InputManager;
 import android.net.Uri;
@@ -120,14 +121,20 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         });
     }
 
+    private void doApplySettings() {
+        AndroidHostInterface.getInstance().applySettings();
+        updateRequestedOrientation();
+    }
+
     private void applySettings() {
         if (!AndroidHostInterface.getInstance().isEmulationThreadRunning())
             return;
 
-        if (AndroidHostInterface.getInstance().hasSurface())
-            AndroidHostInterface.getInstance().applySettings();
-        else
+        if (AndroidHostInterface.getInstance().hasSurface()) {
+            doApplySettings();
+        } else {
             mApplySettingsOnSurfaceRestored = true;
+        }
     }
 
     /// Ends the activity if it was restored without properly being created.
@@ -152,8 +159,8 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
             updateOrientation();
 
             if (mApplySettingsOnSurfaceRestored) {
-                AndroidHostInterface.getInstance().applySettings();
                 mApplySettingsOnSurfaceRestored = false;
+                doApplySettings();
             }
 
             if (AndroidHostInterface.getInstance().isEmulationThreadPaused())
@@ -167,6 +174,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         final String bootSaveStatePath = getIntent().getStringExtra("saveStatePath");
 
         AndroidHostInterface.getInstance().startEmulationThread(this, holder.getSurface(), bootPath, resumeState, bootSaveStatePath);
+        updateRequestedOrientation();
         updateOrientation();
     }
 
@@ -244,8 +252,9 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         }
 
         if (requestCode == REQUEST_CODE_SETTINGS) {
-            if (AndroidHostInterface.getInstance().isEmulationThreadRunning())
+            if (AndroidHostInterface.getInstance().isEmulationThreadRunning()) {
                 applySettings();
+            }
         } else if (requestCode == REQUEST_IMPORT_PATCH_CODES) {
             if (data != null)
                 importPatchesFromFile(data.getData());
@@ -263,6 +272,16 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
 
         if (checkActivityIsValid())
             updateOrientation(newConfig.orientation);
+    }
+
+    private void updateRequestedOrientation() {
+        final String orientation = getStringSetting("Main/EmulationScreenOrientation", "unspecified");
+        if (orientation.equals("portrait"))
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER_PORTRAIT);
+        else if (orientation.equals("landscape"))
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE);
+        else
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
     }
 
     private void updateOrientation() {

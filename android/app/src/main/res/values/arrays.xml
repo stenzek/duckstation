@@ -393,4 +393,14 @@
       <item>900</item>
       <item>1000</item>
   </string-array>
+  <string-array name="settings_emulation_screen_orientation_entries">
+    <item>Use Device Setting</item>
+    <item>Portrait</item>
+    <item>Landscape</item>
+  </string-array>
+  <string-array name="settings_emulation_screen_orientation_values">
+    <item>unspecified</item>
+    <item>portrait</item>
+    <item>landscape</item>
+  </string-array>
 </resources>
