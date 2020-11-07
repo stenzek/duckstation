@@ -409,7 +409,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
 
                 case 2:     // Change Disc
                 {
-                    onMenuClosed();
+                    showDiscChangeMenu();
                     return;
                 }
 
@@ -480,6 +480,30 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         if (str == null || !AndroidHostInterface.getInstance().importPatchCodesFromString(str)) {
             reportErrorOnUIThread("Failed to import patch codes. Make sure you selected a PCSXR or Libretro format file.");
         }
+    }
+
+    private void showDiscChangeMenu() {
+        final String[] paths = AndroidHostInterface.getInstance().getMediaPlaylistPaths();
+        final int currentPath = AndroidHostInterface.getInstance().getMediaPlaylistIndex();
+        if (paths == null)
+        {
+            onMenuClosed();
+            return;
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        CharSequence[] items = new CharSequence[paths.length];
+        for (int i = 0; i < paths.length; i++)
+            items[i] = GameListEntry.getFileNameForPath(paths[i]);
+
+        builder.setSingleChoiceItems(items, currentPath, (dialogInterface, i) -> {
+            AndroidHostInterface.getInstance().setMediaPlaylistIndex(i);
+            dialogInterface.dismiss();
+            onMenuClosed();
+        });
+        builder.setOnCancelListener(dialogInterface -> onMenuClosed());
+        builder.create().show();
     }
 
     /**

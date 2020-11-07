@@ -9,7 +9,8 @@ import androidx.core.content.ContextCompat;
 public class GameListEntry {
     public enum EntryType {
         Disc,
-        PSExe
+        PSExe,
+        Playlist
     }
 
     public enum CompatibilityRating {
@@ -90,15 +91,17 @@ public class GameListEntry {
         return mCompatibilityRating;
     }
 
-    private String getSubTitle() {
-        String sizeString = String.format("%.2f MB", (double) mSize / 1048576.0);
-        String fileName;
-        int lastSlash = mPath.lastIndexOf('/');
-        if (lastSlash > 0 && lastSlash < mPath.length() - 1)
-            fileName = mPath.substring(lastSlash + 1);
+    public static String getFileNameForPath(String path) {
+        int lastSlash = path.lastIndexOf('/');
+        if (lastSlash > 0 && lastSlash < path.length() - 1)
+            return path.substring(lastSlash + 1);
         else
-            fileName = mPath;
+            return path;
+    }
 
+    private String getSubTitle() {
+        String fileName = getFileNameForPath(mPath);
+        String sizeString = String.format("%.2f MB", (double) mSize / 1048576.0);
         return String.format("%s (%s)", fileName, sizeString);
     }
 
@@ -133,6 +136,10 @@ public class GameListEntry {
 
             case PSExe:
                 typeDrawableId = R.drawable.ic_emblem_system;
+                break;
+
+            case Playlist:
+                typeDrawableId = R.drawable.ic_baseline_playlist_play_24;
                 break;
         }
 

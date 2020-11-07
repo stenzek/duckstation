@@ -25,7 +25,7 @@ GameList::~GameList() = default;
 
 const char* GameList::EntryTypeToString(GameListEntryType type)
 {
-  static std::array<const char*, 2> names = {{"Disc", "PSExe"}};
+  static std::array<const char*, 3> names = {{"Disc", "PSExe", "Playlist"}};
   return names[static_cast<int>(type)];
 }
 

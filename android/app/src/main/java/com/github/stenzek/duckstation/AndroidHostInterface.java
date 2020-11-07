@@ -83,6 +83,10 @@ public class AndroidHostInterface {
     public native boolean isFastForwardEnabled();
     public native void setFastForwardEnabled(boolean enabled);
 
+    public native String[] getMediaPlaylistPaths();
+    public native int getMediaPlaylistIndex();
+    public native boolean setMediaPlaylistIndex(int index);
+
     static {
         System.loadLibrary("duckstation-native");
     }

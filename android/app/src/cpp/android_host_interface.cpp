@@ -28,6 +28,7 @@ Log_SetChannel(AndroidHostInterface);
 #endif
 
 static JavaVM* s_jvm;
+static jclass s_String_class;
 static jclass s_AndroidHostInterface_class;
 static jmethodID s_AndroidHostInterface_constructor;
 static jfieldID s_AndroidHostInterface_field_mNativePointer;
@@ -618,7 +619,10 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
 
   // Create global reference so it doesn't get cleaned up.
   JNIEnv* env = AndroidHelpers::GetJNIEnv();
-  if ((s_AndroidHostInterface_class = env->FindClass("com/github/stenzek/duckstation/AndroidHostInterface")) ==
+  if ((s_String_class = env->FindClass("java/lang/String")) == nullptr ||
+      (s_String_class = static_cast<jclass>(env->NewGlobalRef(s_String_class))) ==
+      nullptr ||
+      (s_AndroidHostInterface_class = env->FindClass("com/github/stenzek/duckstation/AndroidHostInterface")) ==
         nullptr ||
       (s_AndroidHostInterface_class = static_cast<jclass>(env->NewGlobalRef(s_AndroidHostInterface_class))) ==
         nullptr ||
@@ -1010,4 +1014,47 @@ DEFINE_JNI_ARGS_METHOD(jstring, AndroidHostInterface_importBIOSImage, jobject ob
     return env->NewStringUTF(ii->description);
   else
     return env->NewStringUTF(hash.ToString().c_str());
+}
+
+DEFINE_JNI_ARGS_METHOD(jobjectArray, AndroidHostInterface_getMediaPlaylistPaths, jobject obj)
+{
+  if (!System::IsValid())
+    return nullptr;
+
+  const u32 count = System::GetMediaPlaylistCount();
+  if (count == 0)
+    return nullptr;
+
+  jobjectArray arr = env->NewObjectArray(static_cast<jsize>(count), s_String_class, nullptr);
+  for (u32 i = 0; i < count; i++)
+  {
+    jstring str = env->NewStringUTF(System::GetMediaPlaylistPath(i).c_str());
+    env->SetObjectArrayElement(arr, static_cast<jsize>(i), str);
+  }
+
+  return arr;
+}
+
+DEFINE_JNI_ARGS_METHOD(jint, AndroidHostInterface_getMediaPlaylistIndex, jobject obj)
+{
+  if (!System::IsValid())
+    return -1;
+
+  return System::GetMediaPlaylistIndex();
+}
+
+DEFINE_JNI_ARGS_METHOD(jboolean, AndroidHostInterface_setMediaPlaylistIndex, jobject obj, jint index)
+{
+  if (!System::IsValid() || index < 0 || static_cast<u32>(index) >= System::GetMediaPlaylistCount())
+    return false;
+
+  AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
+  hi->RunOnEmulationThread([index, hi]() {
+    if (System::IsValid()) {
+      if (!System::SwitchMediaFromPlaylist(index))
+        hi->AddOSDMessage("Disc switch failed. Please make sure the file exists.");
+    }
+  });
+
+  return true;
 }
