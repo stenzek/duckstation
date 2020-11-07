@@ -164,7 +164,10 @@ void CommonHostInterface::PauseSystem(bool paused)
     return;
 
   System::SetState(paused ? System::State::Paused : System::State::Running);
+  if (!paused)
+    m_audio_stream->EmptyBuffers();
   m_audio_stream->PauseOutput(paused);
+
   OnSystemPaused(paused);
   UpdateSpeedLimiterState();
 

@@ -473,9 +473,9 @@ void AndroidHostInterface::SurfaceChanged(ANativeWindow* surface, int format, in
     m_display->ChangeRenderWindow(wi);
 
     if (surface && System::GetState() == System::State::Paused)
-      System::SetState(System::State::Running);
+      PauseSystem(false);
     else if (!surface && System::IsRunning())
-      System::SetState(System::State::Paused);
+      PauseSystem(true);
   }
 }
 
