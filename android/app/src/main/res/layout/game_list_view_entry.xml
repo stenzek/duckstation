@@ -32,7 +32,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/game_list_view_entry_path"
+        android:id="@+id/game_list_view_entry_subtitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginLeft="10dp"
@@ -47,7 +47,7 @@
         app:layout_constraintTop_toBottomOf="@+id/game_list_view_entry_title" />
 
     <TextView
-        android:id="@+id/game_list_view_entry_size"
+        android:id="@+id/game_list_view_entry_code"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
@@ -70,7 +70,7 @@
         android:focusableInTouchMode="false"
         android:paddingBottom="8px"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/game_list_view_entry_size"
+        app:layout_constraintTop_toBottomOf="@+id/game_list_view_entry_code"
         app:srcCompat="@drawable/flag_jp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

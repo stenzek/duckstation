@@ -90,12 +90,22 @@ public class GameListEntry {
         return mCompatibilityRating;
     }
 
+    private String getSubTitle() {
+        String sizeString = String.format("%.2f MB", (double) mSize / 1048576.0);
+        String fileName;
+        int lastSlash = mPath.lastIndexOf('/');
+        if (lastSlash > 0 && lastSlash < mPath.length() - 1)
+            fileName = mPath.substring(lastSlash + 1);
+        else
+            fileName = mPath;
+
+        return String.format("%s (%s)", fileName, sizeString);
+    }
+
     public void fillView(View view) {
         ((TextView) view.findViewById(R.id.game_list_view_entry_title)).setText(mTitle);
-        ((TextView) view.findViewById(R.id.game_list_view_entry_path)).setText(mPath);
-
-        String sizeString = String.format("%.2f MB", (double) mSize / 1048576.0);
-        ((TextView) view.findViewById(R.id.game_list_view_entry_size)).setText(sizeString);
+        ((TextView) view.findViewById(R.id.game_list_view_entry_subtitle)).setText(getSubTitle());
+        ((TextView) view.findViewById(R.id.game_list_view_entry_code)).setText(mCode);
 
         int regionDrawableId;
         switch (mRegion) {
