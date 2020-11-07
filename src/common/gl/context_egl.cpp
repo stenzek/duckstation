@@ -48,6 +48,15 @@ bool ContextEGL::Initialize(const Version* versions_to_try, size_t num_versions_
   }
   Log_InfoPrintf("EGL Version: %d.%d", egl_major, egl_minor);
 
+  const char* extensions = eglQueryString(m_display, EGL_EXTENSIONS);
+  if (extensions)
+  {
+    Log_InfoPrintf("EGL Extensions: %s", extensions);
+    m_supports_surfaceless = std::strstr(extensions, "EGL_KHR_surfaceless_context") != nullptr;
+  }
+  if (!m_supports_surfaceless)
+    Log_WarningPrint("EGL implementation does not support surfaceless contexts, emulating with pbuffers");
+
   for (size_t i = 0; i < num_versions_to_try; i++)
   {
     if (CreateContextAndSurface(versions_to_try[i], nullptr, true))
@@ -75,7 +84,7 @@ bool ContextEGL::ChangeSurface(const WindowInfo& new_wi)
   }
 
   m_wi = new_wi;
-  if (m_wi.type != WindowInfo::Type::Surfaceless && !CreateSurface())
+  if (!CreateSurface())
     return false;
 
   if (was_current && !eglMakeCurrent(m_display, m_surface, m_surface, m_context))
@@ -139,6 +148,7 @@ std::unique_ptr<Context> ContextEGL::CreateSharedContext(const WindowInfo& wi)
 {
   std::unique_ptr<ContextEGL> context = std::make_unique<ContextEGL>(wi);
   context->m_display = m_display;
+  context->m_supports_surfaceless = m_supports_surfaceless;
 
   if (!context->CreateContextAndSurface(m_version, m_context, false))
     return nullptr;
@@ -153,6 +163,14 @@ EGLNativeWindowType ContextEGL::GetNativeWindow(EGLConfig config)
 
 bool ContextEGL::CreateSurface()
 {
+  if (m_wi.type == WindowInfo::Type::Surfaceless)
+  {
+    if (m_supports_surfaceless)
+      return true;
+    else
+      return CreatePBufferSurface();
+  }
+
   EGLNativeWindowType native_window = GetNativeWindow(m_config);
   m_surface = eglCreateWindowSurface(m_display, m_config, native_window, nullptr);
   if (!m_surface)
@@ -174,6 +192,27 @@ bool ContextEGL::CreateSurface()
     Log_ErrorPrintf("eglQuerySurface() failed: %d", eglGetError());
   }
 
+  return true;
+}
+
+bool ContextEGL::CreatePBufferSurface()
+{
+  const u32 width = std::max<u32>(m_wi.surface_width, 1);
+  const u32 height = std::max<u32>(m_wi.surface_height, 1);
+
+  // TODO: Format
+  EGLint attrib_list[] = {
+    EGL_WIDTH, static_cast<EGLint>(width), EGL_HEIGHT, static_cast<EGLint>(height), EGL_NONE,
+  };
+
+  m_surface = eglCreatePbufferSurface(m_display, m_config, attrib_list);
+  if (!m_surface)
+  {
+    Log_ErrorPrintf("eglCreatePbufferSurface() failed: %d", eglGetError());
+    return false;
+  }
+
+  Log_DevPrintf("Created %ux%u pbuffer surface", width, height);
   return true;
 }
 
@@ -264,7 +303,7 @@ bool ContextEGL::CreateContextAndSurface(const Version& version, EGLContext shar
   if (!CreateContext(version, share_context))
     return false;
 
-  if (m_wi.type != WindowInfo::Type::Surfaceless && !CreateSurface())
+  if (!CreateSurface())
   {
     Log_ErrorPrintf("Failed to create surface for context");
     eglDestroyContext(m_display, m_context);
