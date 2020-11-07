@@ -288,7 +288,7 @@ static void StoreIniSection(const Entry& entry, const char* section, CSimpleIniA
     ini.SetBoolValue(section, "CPUOverclockEnable", entry.cpu_overclock_enable.value());
 
   if (entry.cdrom_read_speedup.has_value())
-    ini.SetBoolValue(section, "CDROMReadSpeedup", entry.cdrom_read_speedup.value());
+    ini.SetLongValue(section, "CDROMReadSpeedup", static_cast<long>(entry.cdrom_read_speedup.value()));
 
   if (entry.display_active_start_offset.has_value())
     ini.SetLongValue(section, "DisplayActiveStartOffset", entry.display_active_start_offset.value());
