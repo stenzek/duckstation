@@ -558,10 +558,7 @@ void CheatManagerDialog::importClicked()
   QtHostInterface::GetInstance()->executeOnEmulationThread(
     [&new_cheats]() {
       DebugAssert(System::HasCheatList());
-      CheatList* list = System::GetCheatList();
-      for (u32 i = 0; i < new_cheats.GetCodeCount(); i++)
-        list->AddCode(new_cheats.GetCode(i));
-
+      System::GetCheatList()->MergeList(new_cheats);
       QtHostInterface::GetInstance()->SaveCheatList();
     },
     true);

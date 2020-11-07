@@ -102,6 +102,9 @@ public:
   ALWAYS_INLINE u32 GetCodeCount() const { return static_cast<u32>(m_codes.size()); }
   ALWAYS_INLINE bool IsCodeEnabled(u32 index) const { return m_codes[index].enabled; }
 
+  const CheatCode* FindCode(const char* name) const;
+  const CheatCode* FindCode(const char* group, const char* name) const;
+
   void AddCode(CheatCode cc);
   void SetCode(u32 index, CheatCode cc);
   void RemoveCode(u32 i);
@@ -124,6 +127,8 @@ public:
   void Apply();
 
   void ApplyCode(u32 index);
+
+  void MergeList(const CheatList& cl);
 
 private:
   std::vector<CheatCode> m_codes;

@@ -529,6 +529,37 @@ void CheatList::ApplyCode(u32 index)
   m_codes[index].Apply();
 }
 
+const CheatCode* CheatList::FindCode(const char* name) const
+{
+  for (const CheatCode& cc : m_codes)
+  {
+    if (cc.description == name)
+      return &cc;
+  }
+
+  return nullptr;
+}
+
+const CheatCode* CheatList::FindCode(const char* group, const char* name) const
+{
+  for (const CheatCode& cc : m_codes)
+  {
+    if (cc.group == group && cc.description == name)
+      return &cc;
+  }
+
+  return nullptr;
+}
+
+void CheatList::MergeList(const CheatList& cl)
+{
+  for (const CheatCode& cc : cl.m_codes)
+  {
+    if (!FindCode(cc.group.c_str(), cc.description.c_str()))
+      AddCode(cc);
+  }
+}
+
 std::string CheatCode::GetInstructionsAsString() const
 {
   std::stringstream ss;
