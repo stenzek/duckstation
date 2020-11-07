@@ -24,6 +24,7 @@ public class GameListEntry {
     private String mPath;
     private String mCode;
     private String mTitle;
+    private String mFileTitle;
     private long mSize;
     private String mModifiedTime;
     private DiscRegion mRegion;
@@ -31,11 +32,12 @@ public class GameListEntry {
     private CompatibilityRating mCompatibilityRating;
 
 
-    public GameListEntry(String path, String code, String title, long size, String modifiedTime, String region,
+    public GameListEntry(String path, String code, String title, String fileTitle, long size, String modifiedTime, String region,
                          String type, String compatibilityRating) {
         mPath = path;
         mCode = code;
         mTitle = title;
+        mFileTitle = fileTitle;
         mSize = size;
         mModifiedTime = modifiedTime;
 
@@ -69,6 +71,8 @@ public class GameListEntry {
     public String getTitle() {
         return mTitle;
     }
+
+    public String getFileTitle() { return mFileTitle; }
 
     public String getModifiedTime() {
         return mModifiedTime;

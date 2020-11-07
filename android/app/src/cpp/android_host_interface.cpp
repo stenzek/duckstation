@@ -806,9 +806,10 @@ DEFINE_JNI_ARGS_METHOD(jarray, AndroidHostInterface_getGameListEntries, jobject 
   jclass entry_class = env->FindClass("com/github/stenzek/duckstation/GameListEntry");
   Assert(entry_class != nullptr);
 
-  jmethodID entry_constructor = env->GetMethodID(entry_class, "<init>",
-                                                 "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JLjava/lang/"
-                                                 "String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
+  jmethodID entry_constructor =
+    env->GetMethodID(entry_class, "<init>",
+                     "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JLjava/lang/"
+                     "String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
   Assert(entry_constructor != nullptr);
 
   AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
@@ -820,10 +821,12 @@ DEFINE_JNI_ARGS_METHOD(jarray, AndroidHostInterface_getGameListEntries, jobject 
   {
     const Timestamp modified_ts(
       Timestamp::FromUnixTimestamp(static_cast<Timestamp::UnixTimestampValue>(entry.last_modified_time)));
+    const std::string file_title_str(System::GetTitleForPath(entry.path.c_str()));
 
     jstring path = env->NewStringUTF(entry.path.c_str());
     jstring code = env->NewStringUTF(entry.code.c_str());
     jstring title = env->NewStringUTF(entry.title.c_str());
+    jstring file_title = env->NewStringUTF(file_title_str.c_str());
     jstring region = env->NewStringUTF(DiscRegionToString(entry.region));
     jstring type = env->NewStringUTF(GameList::EntryTypeToString(entry.type));
     jstring compatibility_rating =
@@ -831,8 +834,8 @@ DEFINE_JNI_ARGS_METHOD(jarray, AndroidHostInterface_getGameListEntries, jobject 
     jstring modified_time = env->NewStringUTF(modified_ts.ToString("%Y/%m/%d, %H:%M:%S"));
     jlong size = entry.total_size;
 
-    jobject entry_jobject = env->NewObject(entry_class, entry_constructor, path, code, title, size, modified_time,
-                                           region, type, compatibility_rating);
+    jobject entry_jobject = env->NewObject(entry_class, entry_constructor, path, code, title, file_title, size,
+                                           modified_time, region, type, compatibility_rating);
 
     env->SetObjectArrayElement(entry_array, counter++, entry_jobject);
   }
