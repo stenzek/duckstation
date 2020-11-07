@@ -135,6 +135,7 @@ struct LoadStoreBackpatchInfo
   HostReg address_host_reg; // register containing the guest address to load/store
   HostReg value_host_reg;   // register containing the source/destination
   PhysicalMemoryAddress guest_pc;
+  u32 fault_count;
 };
 
 } // namespace Recompiler

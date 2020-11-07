@@ -27,6 +27,7 @@ constexpr bool USE_BLOCK_LINKING = true;
 
 static constexpr u32 RECOMPILER_CODE_CACHE_SIZE = 32 * 1024 * 1024;
 static constexpr u32 RECOMPILER_FAR_CODE_CACHE_SIZE = 32 * 1024 * 1024;
+static constexpr u32 CODE_WRITE_FAULT_THRESHOLD_FOR_SLOWMEM = 10;
 
 #ifdef USE_STATIC_CODE_BUFFER
 static constexpr u32 RECOMPILER_GUARD_SIZE = 4096;
@@ -727,17 +728,6 @@ Common::PageFaultHandler::HandlerResult PageFaultHandler(void* exception_pc, voi
   Log_DevPrintf("Page fault handler invoked at PC=%p Address=%p %s, fastmem offset 0x%08X", exception_pc, fault_address,
                 is_write ? "(write)" : "(read)", fastmem_address);
 
-  if (is_write && !g_state.cop0_regs.sr.Isc && Bus::IsRAMAddress(fastmem_address))
-  {
-    // this is probably a code page, since we aren't going to fault due to requiring fastmem on RAM.
-    const u32 code_page_index = Bus::GetRAMCodePageIndex(fastmem_address);
-    if (Bus::IsRAMCodePage(code_page_index))
-    {
-      InvalidateBlocksWithPageIndex(code_page_index);
-      return Common::PageFaultHandler::HandlerResult::ContinueExecution;
-    }
-  }
-
   // use upper_bound to find the next block after the pc
   HostCodeMap::iterator upper_iter =
     s_host_code_map.upper_bound(reinterpret_cast<CodeBlock::HostCodePointer>(exception_pc));
@@ -752,9 +742,28 @@ Common::PageFaultHandler::HandlerResult PageFaultHandler(void* exception_pc, voi
   for (auto bpi_iter = block->loadstore_backpatch_info.begin(); bpi_iter != block->loadstore_backpatch_info.end();
        ++bpi_iter)
   {
-    const Recompiler::LoadStoreBackpatchInfo& lbi = *bpi_iter;
+    Recompiler::LoadStoreBackpatchInfo& lbi = *bpi_iter;
     if (lbi.host_pc == exception_pc)
     {
+      if (is_write && !g_state.cop0_regs.sr.Isc && Bus::IsRAMAddress(fastmem_address))
+      {
+        // this is probably a code page, since we aren't going to fault due to requiring fastmem on RAM.
+        const u32 code_page_index = Bus::GetRAMCodePageIndex(fastmem_address);
+        if (Bus::IsRAMCodePage(code_page_index))
+        {
+          if (++lbi.fault_count < CODE_WRITE_FAULT_THRESHOLD_FOR_SLOWMEM)
+          {
+            InvalidateBlocksWithPageIndex(code_page_index);
+            return Common::PageFaultHandler::HandlerResult::ContinueExecution;
+          }
+          else
+          {
+            Log_DevPrintf("Backpatching code write at %p (%08X) address %p (%08X) to slowmem after threshold",
+                          exception_pc, lbi.guest_pc, fault_address, fastmem_address);
+          }
+        }
+      }
+
       // found it, do fixup
       if (Recompiler::CodeGenerator::BackpatchLoadStore(lbi))
       {
