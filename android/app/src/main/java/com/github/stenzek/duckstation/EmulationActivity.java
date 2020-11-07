@@ -156,6 +156,9 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
                 mApplySettingsOnSurfaceRestored = false;
             }
 
+            if (AndroidHostInterface.getInstance().isEmulationThreadPaused())
+                AndroidHostInterface.getInstance().pauseEmulationThread(false);
+
             return;
         }
 
@@ -292,19 +295,34 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     private static final int REQUEST_CODE_SETTINGS = 0;
     private static final int REQUEST_IMPORT_PATCH_CODES = 1;
 
+    private void onMenuClosed() {
+        enableFullscreenImmersive();
+
+        if (AndroidHostInterface.getInstance().isEmulationThreadPaused())
+            AndroidHostInterface.getInstance().pauseEmulationThread(false);
+    }
+
     private void showMenu() {
+        if (getBooleanSetting("Main/PauseOnMenu", false) &&
+                !AndroidHostInterface.getInstance().isEmulationThreadPaused())
+        {
+            AndroidHostInterface.getInstance().pauseEmulationThread(true);
+        }
+
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setItems(R.array.emulation_menu, (dialogInterface, i) -> {
             switch (i) {
                 case 0:     // Quick Load
                 {
                     AndroidHostInterface.getInstance().loadState(false, mSaveStateSlot);
+                    onMenuClosed();
                     return;
                 }
 
                 case 1:     // Quick Save
                 {
                     AndroidHostInterface.getInstance().saveState(false, mSaveStateSlot);
+                    onMenuClosed();
                     return;
                 }
 
@@ -317,6 +335,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
                 case 3:     // Toggle Fast Forward
                 {
                     AndroidHostInterface.getInstance().setFastForwardEnabled(!AndroidHostInterface.getInstance().isFastForwardEnabled());
+                    onMenuClosed();
                     return;
                 }
 
@@ -334,7 +353,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
                 }
             }
         });
-        builder.setOnDismissListener(dialogInterface -> enableFullscreenImmersive());
+        builder.setOnCancelListener(dialogInterface -> onMenuClosed());
         builder.create().show();
     }
 
@@ -343,8 +362,9 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         builder.setSingleChoiceItems(R.array.emulation_save_state_slot_menu, mSaveStateSlot, (dialogInterface, i) -> {
             mSaveStateSlot = i;
             dialogInterface.dismiss();
+            onMenuClosed();
         });
-        builder.setOnDismissListener(dialogInterface -> enableFullscreenImmersive());
+        builder.setOnCancelListener(dialogInterface -> onMenuClosed());
         builder.create().show();
     }
 
@@ -358,6 +378,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
                 case 0:     // Reset
                 {
                     AndroidHostInterface.getInstance().resetSystem();
+                    onMenuClosed();
                     return;
                 }
 
@@ -369,12 +390,14 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
 
                 case 2:     // Change Disc
                 {
+                    onMenuClosed();
                     return;
                 }
 
                 case 3:     // Change Touchscreen Controller
                 {
                     showTouchscreenControllerMenu();
+                    onMenuClosed();
                     return;
                 }
 
@@ -387,7 +410,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
                 }
             }
         });
-        builder.setOnDismissListener(dialogInterface -> enableFullscreenImmersive());
+        builder.setOnCancelListener(dialogInterface -> onMenuClosed());
         builder.create().show();
     }
 
@@ -397,8 +420,9 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
             String[] values = getResources().getStringArray(R.array.settings_touchscreen_controller_view_values);
             setStringSetting("Controller1/TouchscreenControllerView", values[i]);
             updateControllers();
+            onMenuClosed();
         });
-        builder.setOnDismissListener(dialogInterface -> enableFullscreenImmersive());
+        builder.setOnCancelListener(dialogInterface -> onMenuClosed());
         builder.create().show();
     }
 
@@ -419,7 +443,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         builder.setItems(items, (dialogInterface, i) -> {
             if (i > 0) {
                 AndroidHostInterface.getInstance().setPatchCodeEnabled(i - 1, !codes[i - 1].isEnabled());
-                enableFullscreenImmersive();
+                onMenuClosed();
             } else {
                 Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -428,7 +452,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
                 startActivityForResult(Intent.createChooser(intent, "Choose Patch Code File"), REQUEST_IMPORT_PATCH_CODES);
             }
         });
-        builder.setOnCancelListener(dialogInterface -> enableFullscreenImmersive());
+        builder.setOnCancelListener(dialogInterface -> onMenuClosed());
         builder.create().show();
     }
 

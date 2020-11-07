@@ -40,6 +40,12 @@
             app:summary="Automatically saves the emulator state when powering down or exiting. You can then resume directly from where you left off next time."
             app:iconSpaceReserved="false" />
         <SwitchPreferenceCompat
+            app:key="Main/PauseOnMenu"
+            app:title="Pause When Menu Opened"
+            app:defaultValue="false"
+            app:summary="Pauses emulation when ingame and the menu is opened."
+            app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat
             app:key="Main/AutoLoadCheats"
             app:title="Load Patch Codes"
             app:defaultValue="false"
