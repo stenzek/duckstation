@@ -235,9 +235,8 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (!AndroidHostInterface.hasInstanceAndEmulationThreadIsRunning()) {
+        if (!checkActivityIsValid()) {
             // we must've got killed off in the background :(
-            finish();
             return;
         }
 
