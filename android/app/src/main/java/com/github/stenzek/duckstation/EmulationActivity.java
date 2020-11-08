@@ -414,7 +414,6 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
                 case 3:     // Change Touchscreen Controller
                 {
                     showTouchscreenControllerMenu();
-                    onMenuClosed();
                     return;
                 }
 
