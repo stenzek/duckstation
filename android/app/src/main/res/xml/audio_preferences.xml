@@ -17,49 +17,49 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-        <SeekBarPreference
-            app:key="Audio/OutputVolume"
-            app:title="Volume"
-            app:summary="Controls the volume of the emulator's sound output."
-            app:defaultValue="100"
-            android:max="100"
-            app:min="0"
-            app:iconSpaceReserved="false"
-            app:showSeekBarValue="true" />
-        <SwitchPreferenceCompat
-            app:key="Audio/OutputMuted"
-            app:title="Mute All Sound"
-            app:defaultValue="false"
-            app:summary="Prevents the emulator from emitting any sound."
-            app:iconSpaceReserved="false" />
-        <SwitchPreferenceCompat
-            app:key="CDROM/MuteCDAudio"
-            app:title="Mute CD Audio"
-            app:defaultValue="false"
-            app:summary="Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable background music in some games."
-            app:iconSpaceReserved="false" />
-        <ListPreference
-            app:key="Audio/Backend"
-            app:title="Audio Backend"
-            app:entries="@array/settings_audio_backend_entries"
-            app:entryValues="@array/settings_audio_backend_values"
-            app:defaultValue="OpenSLES"
-            app:useSimpleSummaryProvider="true"
-            app:iconSpaceReserved="false"/>
-        <ListPreference
-            app:key="Audio/BufferSize"
-            app:title="Audio Buffer Size"
-            app:entries="@array/settings_audio_buffer_size_entries"
-            app:entryValues="@array/settings_audio_buffer_size_values"
-            app:defaultValue="2048"
-            app:summary="Determines the latency between audio being generated and output to speakers. Smaller values reduce latency, but variations in emulation speed will cause hitches."
-            app:useSimpleSummaryProvider="true"
-            app:iconSpaceReserved="false" />
-        <SwitchPreferenceCompat
-            app:key="Audio/Sync"
-            app:title="Audio Sync"
-            app:defaultValue="true"
-            app:summary="Throttles the emulation speed based on the audio backend pulling audio frames. This helps to remove noises or crackling if emulation is too fast. Sync will automatically be disabled if not running at 100% speed."
-            app:iconSpaceReserved="false" />
+    <SeekBarPreference
+        app:key="Audio/OutputVolume"
+        app:title="Volume"
+        app:summary="Controls the volume of the emulator's sound output."
+        app:defaultValue="100"
+        android:max="100"
+        app:min="0"
+        app:iconSpaceReserved="false"
+        app:showSeekBarValue="true" />
+    <SwitchPreferenceCompat
+        app:key="Audio/OutputMuted"
+        app:title="Mute All Sound"
+        app:defaultValue="false"
+        app:summary="Prevents the emulator from emitting any sound."
+        app:iconSpaceReserved="false" />
+    <SwitchPreferenceCompat
+        app:key="CDROM/MuteCDAudio"
+        app:title="Mute CD Audio"
+        app:defaultValue="false"
+        app:summary="Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable background music in some games."
+        app:iconSpaceReserved="false" />
+    <ListPreference
+        app:key="Audio/Backend"
+        app:title="Audio Backend"
+        app:entries="@array/settings_audio_backend_entries"
+        app:entryValues="@array/settings_audio_backend_values"
+        app:defaultValue="OpenSLES"
+        app:useSimpleSummaryProvider="true"
+        app:iconSpaceReserved="false" />
+    <ListPreference
+        app:key="Audio/BufferSize"
+        app:title="Audio Buffer Size"
+        app:entries="@array/settings_audio_buffer_size_entries"
+        app:entryValues="@array/settings_audio_buffer_size_values"
+        app:defaultValue="2048"
+        app:summary="Determines the latency between audio being generated and output to speakers. Smaller values reduce latency, but variations in emulation speed will cause hitches."
+        app:useSimpleSummaryProvider="true"
+        app:iconSpaceReserved="false" />
+    <SwitchPreferenceCompat
+        app:key="Audio/Sync"
+        app:title="Audio Sync"
+        app:defaultValue="true"
+        app:summary="Throttles the emulation speed based on the audio backend pulling audio frames. This helps to remove noises or crackling if emulation is too fast. Sync will automatically be disabled if not running at 100% speed."
+        app:iconSpaceReserved="false" />
 
 </PreferenceScreen>

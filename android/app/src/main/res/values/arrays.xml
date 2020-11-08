@@ -318,89 +318,89 @@
         <item>1000% [600 FPS (NTSC) / 500 FPS (PAL)]</item>
     </string-array>
     <string-array name="settings_emulation_speed_values">
-      <item>0.0</item>
-      <item>0.1</item>
-      <item>0.2</item>
-      <item>0.3</item>
-      <item>0.4</item>
-      <item>0.5</item>
-      <item>0.6</item>
-      <item>0.7</item>
-      <item>0.8</item>
-      <item>0.9</item>
-      <item>1.0</item>
-      <item>1.25</item>
-      <item>1.5</item>
-      <item>1.75</item>
-      <item>2.0</item>
-      <item>2.5</item>
-      <item>3.0</item>
-      <item>3.5</item>
-      <item>4.0</item>
-      <item>4.5</item>
-      <item>5.0</item>
-      <item>6.0</item>
-      <item>7.0</item>
-      <item>8.0</item>
-      <item>9.0</item>
-      <item>10.0</item>
-  </string-array>
-  <string-array name="settings_advanced_cpu_overclock_entries">
-      <item>25% (8MHz)</item>
-      <item>50% (16MHz)</item>
-      <item>75% (24MHz)</item>
-      <item>100% (33MHz, Default)</item>
-      <item>125% (41MHz)</item>
-      <item>150% (49MHz)</item>
-      <item>175% (57MHz)</item>
-      <item>200% (66MHz)</item>
-      <item>225% (74MHz)</item>
-      <item>250% (82MHz)</item>
-      <item>275% (90MHz)</item>
-      <item>300% (99MHz)</item>
-      <item>350% (115MHz)</item>
-      <item>400% (132MHz)</item>
-      <item>450% (148MHz)</item>
-      <item>500% (165MHz)</item>
-      <item>500% (165MHz)</item>
-      <item>600% (198MHz)</item>
-      <item>700% (231MHz)</item>
-      <item>800% (264MHz)</item>
-      <item>900% (297MHz)</item>
-      <item>1000% (330MHz)</item>
-  </string-array>
-  <string-array name="settings_advanced_cpu_overclock_values">
-      <item>25</item>
-      <item>50</item>
-      <item>75</item>
-      <item>100</item>
-      <item>125</item>
-      <item>150</item>
-      <item>175</item>
-      <item>200</item>
-      <item>225</item>
-      <item>250</item>
-      <item>275</item>
-      <item>300</item>
-      <item>350</item>
-      <item>400</item>
-      <item>450</item>
-      <item>500</item>
-      <item>500</item>
-      <item>600</item>
-      <item>700</item>
-      <item>800</item>
-      <item>900</item>
-      <item>1000</item>
-  </string-array>
-  <string-array name="settings_emulation_screen_orientation_entries">
-    <item>Use Device Setting</item>
-    <item>Portrait</item>
-    <item>Landscape</item>
-  </string-array>
-  <string-array name="settings_emulation_screen_orientation_values">
-    <item>unspecified</item>
-    <item>portrait</item>
-    <item>landscape</item>
-  </string-array>
+        <item>0.0</item>
+        <item>0.1</item>
+        <item>0.2</item>
+        <item>0.3</item>
+        <item>0.4</item>
+        <item>0.5</item>
+        <item>0.6</item>
+        <item>0.7</item>
+        <item>0.8</item>
+        <item>0.9</item>
+        <item>1.0</item>
+        <item>1.25</item>
+        <item>1.5</item>
+        <item>1.75</item>
+        <item>2.0</item>
+        <item>2.5</item>
+        <item>3.0</item>
+        <item>3.5</item>
+        <item>4.0</item>
+        <item>4.5</item>
+        <item>5.0</item>
+        <item>6.0</item>
+        <item>7.0</item>
+        <item>8.0</item>
+        <item>9.0</item>
+        <item>10.0</item>
+    </string-array>
+    <string-array name="settings_advanced_cpu_overclock_entries">
+        <item>25% (8MHz)</item>
+        <item>50% (16MHz)</item>
+        <item>75% (24MHz)</item>
+        <item>100% (33MHz, Default)</item>
+        <item>125% (41MHz)</item>
+        <item>150% (49MHz)</item>
+        <item>175% (57MHz)</item>
+        <item>200% (66MHz)</item>
+        <item>225% (74MHz)</item>
+        <item>250% (82MHz)</item>
+        <item>275% (90MHz)</item>
+        <item>300% (99MHz)</item>
+        <item>350% (115MHz)</item>
+        <item>400% (132MHz)</item>
+        <item>450% (148MHz)</item>
+        <item>500% (165MHz)</item>
+        <item>500% (165MHz)</item>
+        <item>600% (198MHz)</item>
+        <item>700% (231MHz)</item>
+        <item>800% (264MHz)</item>
+        <item>900% (297MHz)</item>
+        <item>1000% (330MHz)</item>
+    </string-array>
+    <string-array name="settings_advanced_cpu_overclock_values">
+        <item>25</item>
+        <item>50</item>
+        <item>75</item>
+        <item>100</item>
+        <item>125</item>
+        <item>150</item>
+        <item>175</item>
+        <item>200</item>
+        <item>225</item>
+        <item>250</item>
+        <item>275</item>
+        <item>300</item>
+        <item>350</item>
+        <item>400</item>
+        <item>450</item>
+        <item>500</item>
+        <item>500</item>
+        <item>600</item>
+        <item>700</item>
+        <item>800</item>
+        <item>900</item>
+        <item>1000</item>
+    </string-array>
+    <string-array name="settings_emulation_screen_orientation_entries">
+        <item>Use Device Setting</item>
+        <item>Portrait</item>
+        <item>Landscape</item>
+    </string-array>
+    <string-array name="settings_emulation_screen_orientation_values">
+        <item>unspecified</item>
+        <item>portrait</item>
+        <item>landscape</item>
+    </string-array>
 </resources>

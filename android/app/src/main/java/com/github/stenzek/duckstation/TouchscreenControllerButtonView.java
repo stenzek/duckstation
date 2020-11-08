@@ -5,6 +5,7 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.view.HapticFeedbackConstants;
 import android.view.View;
 
 /**
@@ -14,6 +15,7 @@ public class TouchscreenControllerButtonView extends View {
     private Drawable mUnpressedDrawable;
     private Drawable mPressedDrawable;
     private boolean mPressed = false;
+    private boolean mHapticFeedback = false;
     private int mControllerIndex = -1;
     private int mButtonCode = -1;
 
@@ -81,11 +83,19 @@ public class TouchscreenControllerButtonView extends View {
         mPressed = pressed;
         invalidate();
         updateControllerState();
+
+        if (mHapticFeedback) {
+            performHapticFeedback(pressed ? HapticFeedbackConstants.VIRTUAL_KEY : HapticFeedbackConstants.VIRTUAL_KEY_RELEASE);
+        }
     }
 
     public void setButtonCode(int controllerIndex, int code) {
         mControllerIndex = controllerIndex;
         mButtonCode = code;
+    }
+
+    public void setHapticFeedback(boolean enabled) {
+        mHapticFeedback = enabled;
     }
 
     private void updateControllerState() {

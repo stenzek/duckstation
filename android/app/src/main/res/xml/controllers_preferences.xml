@@ -14,52 +14,64 @@
   ~ limitations under the License.
   -->
 
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
-
-        <ListPreference
-            app:key="Controller1/Type"
-            app:title="Controller Type"
-            app:entries="@array/settings_controller_type_entries"
-            app:entryValues="@array/settings_controller_type_values"
-            app:defaultValue="DigitalController"
-            app:useSimpleSummaryProvider="true"
-            app:iconSpaceReserved="false" />
-        <SwitchPreferenceCompat
-            app:key="Controller1/AutoEnableAnalog"
-            app:title="Enable Analog Mode On Reset"
-            app:defaultValue="true"
-            app:iconSpaceReserved="false" />
-        <ListPreference
-            app:key="Controller1/TouchscreenControllerView"
-            app:title="Touchscreen Controller View"
-            app:entries="@array/settings_touchscreen_controller_view_entries"
-            app:entryValues="@array/settings_touchscreen_controller_view_values"
-            app:defaultValue="digital"
-            app:useSimpleSummaryProvider="true"
-            app:iconSpaceReserved="false" />
-        <SwitchPreferenceCompat
-            app:key="Controller1/AutoHideTouchscreenController"
-            app:title="Auto-Hide Touchscreen Controller"
-            app:defaultValue="false"
-            app:summary="Hides the touchscreen controller when an external controller is detected."
-            app:iconSpaceReserved="false"/>
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <ListPreference
-            app:key="MemoryCards/Card1Type"
-            app:title="Memory Card 1 Type"
-            app:entries="@array/settings_memory_card_mode_entries"
-            app:entryValues="@array/settings_memory_card_mode_values"
-            app:defaultValue="PerGameTitle"
-            app:useSimpleSummaryProvider="true"
-            app:iconSpaceReserved="false" />
-        <ListPreference
-            app:key="MemoryCards/Card2Type"
-            app:title="Memory Card 2 Type"
-            app:entries="@array/settings_memory_card_mode_entries"
-            app:entryValues="@array/settings_memory_card_mode_values"
-            app:defaultValue="None"
-            app:useSimpleSummaryProvider="true"
-            app:iconSpaceReserved="false" />
+        app:key="Controller1/Type"
+        app:title="Controller Type"
+        app:entries="@array/settings_controller_type_entries"
+        app:entryValues="@array/settings_controller_type_values"
+        app:defaultValue="DigitalController"
+        app:useSimpleSummaryProvider="true"
+        app:iconSpaceReserved="false" />
+    <SwitchPreferenceCompat
+        app:key="Controller1/AutoEnableAnalog"
+        app:title="Enable Analog Mode On Reset"
+        app:defaultValue="true"
+        app:iconSpaceReserved="false" />
+    <ListPreference
+        app:key="Controller1/TouchscreenControllerView"
+        app:title="Touchscreen Controller View"
+        app:entries="@array/settings_touchscreen_controller_view_entries"
+        app:entryValues="@array/settings_touchscreen_controller_view_values"
+        app:defaultValue="digital"
+        app:useSimpleSummaryProvider="true"
+        app:iconSpaceReserved="false" />
+    <SwitchPreferenceCompat
+        app:key="Controller1/AutoHideTouchscreenController"
+        app:title="Auto-Hide Touchscreen Controller"
+        app:defaultValue="false"
+        app:summary="Hides the touchscreen controller when an external controller is detected."
+        app:iconSpaceReserved="false" />
+    <SwitchPreferenceCompat
+        app:key="Controller1/HapticFeedback"
+        app:title="Vibrate On Press"
+        app:defaultValue="false"
+        app:summary="Enables a short vibration when a touchscreen button is pressed. Requires &quot;Vibrate on Touch&quot; to be enabled on your device."
+        app:iconSpaceReserved="false" />
+
+    <SwitchPreferenceCompat
+        app:key="Controller1/Vibration"
+        app:title="Enable Vibration"
+        app:defaultValue="false"
+        app:summary="Forwards rumble from the game to the phone's vibration motor."
+        app:iconSpaceReserved="false" />
+
+    <ListPreference
+        app:key="MemoryCards/Card1Type"
+        app:title="Memory Card 1 Type"
+        app:entries="@array/settings_memory_card_mode_entries"
+        app:entryValues="@array/settings_memory_card_mode_values"
+        app:defaultValue="PerGameTitle"
+        app:useSimpleSummaryProvider="true"
+        app:iconSpaceReserved="false" />
+    <ListPreference
+        app:key="MemoryCards/Card2Type"
+        app:title="Memory Card 2 Type"
+        app:entries="@array/settings_memory_card_mode_entries"
+        app:entryValues="@array/settings_memory_card_mode_values"
+        app:defaultValue="None"
+        app:useSimpleSummaryProvider="true"
+        app:iconSpaceReserved="false" />
 
 </PreferenceScreen>

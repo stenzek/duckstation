@@ -73,7 +73,9 @@ public class GameListEntry {
         return mTitle;
     }
 
-    public String getFileTitle() { return mFileTitle; }
+    public String getFileTitle() {
+        return mFileTitle;
+    }
 
     public String getModifiedTime() {
         return mModifiedTime;

@@ -6,6 +6,7 @@
 #include "common/log.h"
 #include "common/string.h"
 #include "common/string_util.h"
+#include "common/timer.h"
 #include "common/timestamp.h"
 #include "core/bios.h"
 #include "core/cheats.h"
@@ -39,6 +40,7 @@ static jmethodID s_EmulationActivity_method_reportMessage;
 static jmethodID s_EmulationActivity_method_onEmulationStarted;
 static jmethodID s_EmulationActivity_method_onEmulationStopped;
 static jmethodID s_EmulationActivity_method_onGameTitleChanged;
+static jmethodID s_EmulationActivity_method_setVibration;
 static jclass s_PatchCode_class;
 static jmethodID s_PatchCode_constructor;
 
@@ -185,6 +187,8 @@ void AndroidHostInterface::LoadAndConvertSettings()
                                           &g_settings.cpu_overclock_denominator);
   g_settings.cpu_overclock_enable = (overclock_percent != 100);
   g_settings.UpdateOverclockActive();
+
+  m_vibration_enabled = m_settings_interface.GetBoolValue("Controller1", "Vibration", false);
 }
 
 void AndroidHostInterface::UpdateInputMap()
@@ -353,7 +357,12 @@ void AndroidHostInterface::EmulationThreadLoop()
 
     // simulate the system if not paused
     if (System::IsRunning())
+    {
       System::RunFrame();
+
+      if (m_vibration_enabled)
+        UpdateVibration();
+    }
 
     // rendering
     {
@@ -432,10 +441,21 @@ std::unique_ptr<AudioStream> AndroidHostInterface::CreateAudioStream(AudioBacken
   return CommonHostInterface::CreateAudioStream(backend);
 }
 
+void AndroidHostInterface::OnSystemPaused(bool paused)
+{
+  CommonHostInterface::OnSystemPaused(paused);
+
+  if (m_vibration_enabled)
+    SetVibration(false);
+}
+
 void AndroidHostInterface::OnSystemDestroyed()
 {
   CommonHostInterface::OnSystemDestroyed();
   ClearOSDMessages();
+
+  if (m_vibration_enabled)
+    SetVibration(false);
 }
 
 void AndroidHostInterface::OnRunningGameChanged()
@@ -612,6 +632,51 @@ bool AndroidHostInterface::ImportPatchCodesFromString(const std::string& str)
   return true;
 }
 
+void AndroidHostInterface::SetVibration(bool enabled)
+{
+  const u64 current_time = Common::Timer::GetValue();
+  if (Common::Timer::ConvertValueToSeconds(current_time - m_last_vibration_update_time) < 0.1f &&
+      m_last_vibration_state == enabled)
+  {
+    return;
+  }
+
+  m_last_vibration_state = enabled;
+  m_last_vibration_update_time = current_time;
+
+  JNIEnv* env = AndroidHelpers::GetJNIEnv();
+  if (m_emulation_activity_object) {
+    env->CallVoidMethod(m_emulation_activity_object, s_EmulationActivity_method_setVibration,
+                        static_cast<jboolean>(enabled));
+  }
+}
+
+void AndroidHostInterface::UpdateVibration()
+{
+  static constexpr float THRESHOLD = 0.5f;
+
+  bool vibration_state = false;
+
+  for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
+  {
+    Controller* controller = System::GetController(i);
+    if (!controller)
+      continue;
+
+    const u32 motors = controller->GetVibrationMotorCount();
+    for (u32 j = 0; j < motors; j++)
+    {
+      if (controller->GetVibrationMotorStrength(j) >= THRESHOLD)
+      {
+        vibration_state = true;
+        break;
+      }
+    }
+  }
+
+  SetVibration(vibration_state);
+}
+
 extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
 {
   Log::SetDebugOutputParams(true, nullptr, LOGLEVEL_DEV);
@@ -653,6 +718,8 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
          env->GetMethodID(emulation_activity_class, "onEmulationStopped", "()V")) == nullptr ||
       (s_EmulationActivity_method_onGameTitleChanged =
          env->GetMethodID(emulation_activity_class, "onGameTitleChanged", "(Ljava/lang/String;)V")) == nullptr ||
+      (s_EmulationActivity_method_setVibration =
+           env->GetMethodID(emulation_activity_class, "setVibration", "(Z)V")) == nullptr ||
       (s_PatchCode_constructor = env->GetMethodID(s_PatchCode_class, "<init>", "(ILjava/lang/String;Z)V")) == nullptr)
   {
     Log_ErrorPrint("AndroidHostInterface lookups failed");

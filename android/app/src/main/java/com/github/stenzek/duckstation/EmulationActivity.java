@@ -8,6 +8,7 @@ import android.content.res.Configuration;
 import android.hardware.input.InputManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.View;
@@ -124,6 +125,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     private void doApplySettings() {
         AndroidHostInterface.getInstance().applySettings();
         updateRequestedOrientation();
+        updateControllers();
     }
 
     private void applySettings() {
@@ -162,9 +164,6 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
                 mApplySettingsOnSurfaceRestored = false;
                 doApplySettings();
             }
-
-            if (AndroidHostInterface.getInstance().isEmulationThreadPaused())
-                AndroidHostInterface.getInstance().pauseEmulationThread(false);
 
             return;
         }
@@ -323,8 +322,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
 
     private void showMenu() {
         if (getBooleanSetting("Main/PauseOnMenu", false) &&
-                !AndroidHostInterface.getInstance().isEmulationThreadPaused())
-        {
+                !AndroidHostInterface.getInstance().isEmulationThreadPaused()) {
             AndroidHostInterface.getInstance().pauseEmulationThread(true);
         }
 
@@ -485,8 +483,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     private void showDiscChangeMenu() {
         final String[] paths = AndroidHostInterface.getInstance().getMediaPlaylistPaths();
         final int currentPath = AndroidHostInterface.getInstance().getMediaPlaylistIndex();
-        if (paths == null)
-        {
+        if (paths == null) {
             onMenuClosed();
             return;
         }
@@ -515,6 +512,8 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         final String controllerType = getStringSetting("Controller1/Type", "DigitalController");
         final String viewType = getStringSetting("Controller1/TouchscreenControllerView", "digital");
         final boolean autoHideTouchscreenController = getBooleanSetting("Controller1/AutoHideTouchscreenController", false);
+        final boolean hapticFeedback = getBooleanSetting("Controller1/HapticFeedback", false);
+        final boolean vibration = getBooleanSetting("Controller1/Vibration", false);
         final FrameLayout activityLayout = findViewById(R.id.frameLayout);
 
         Log.i("EmulationActivity", "Controller type: " + controllerType);
@@ -526,14 +525,18 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
             if (mTouchscreenController != null) {
                 activityLayout.removeView(mTouchscreenController);
                 mTouchscreenController = null;
+                mVibratorService = null;
             }
         } else {
             if (mTouchscreenController == null) {
                 mTouchscreenController = new TouchscreenControllerView(this);
+                if (vibration)
+                    mVibratorService = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+
                 activityLayout.addView(mTouchscreenController);
             }
 
-            mTouchscreenController.init(0, controllerType, viewType);
+            mTouchscreenController.init(0, controllerType, viewType, hapticFeedback);
         }
     }
 
@@ -577,5 +580,22 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
             inputManager.unregisterInputDeviceListener(mInputDeviceListener);
 
         mInputDeviceListener = null;
+    }
+
+    private Vibrator mVibratorService;
+
+    public void setVibration(boolean enabled) {
+        if (mVibratorService == null)
+            return;
+
+        runOnUiThread(() -> {
+            if (mVibratorService == null)
+                return;
+
+            if (enabled)
+                mVibratorService.vibrate(1000);
+            else
+                mVibratorService.cancel();
+        });
     }
 }

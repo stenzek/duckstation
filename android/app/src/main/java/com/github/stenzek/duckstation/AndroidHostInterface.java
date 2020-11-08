@@ -15,6 +15,7 @@ public class AndroidHostInterface {
     private Context mContext;
 
     static public native String getScmVersion();
+
     static public native AndroidHostInterface create(Context context, String userDirectory);
 
     public AndroidHostInterface(Context context) {
@@ -71,7 +72,9 @@ public class AndroidHostInterface {
     public native void setDisplayAlignment(int alignment);
 
     public native PatchCode[] getPatchCodeList();
+
     public native void setPatchCodeEnabled(int index, boolean enabled);
+
     public native boolean importPatchCodesFromString(String str);
 
     public native void addOSDMessage(String message, float duration);
@@ -81,10 +84,13 @@ public class AndroidHostInterface {
     public native String importBIOSImage(byte[] data);
 
     public native boolean isFastForwardEnabled();
+
     public native void setFastForwardEnabled(boolean enabled);
 
     public native String[] getMediaPlaylistPaths();
+
     public native int getMediaPlaylistIndex();
+
     public native boolean setMediaPlaylistIndex(int index);
 
     static {

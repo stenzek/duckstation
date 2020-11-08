@@ -14,78 +14,77 @@
   ~ limitations under the License.
   -->
 
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
-        <ListPreference
-            app:key="CPU/Overclock"
-            app:title="CPU Overclocking"
-            app:defaultValue="100"
-            app:entries="@array/settings_advanced_cpu_overclock_entries"
-            app:entryValues="@array/settings_advanced_cpu_overclock_values"
-            app:useSimpleSummaryProvider="true"
-            app:iconSpaceReserved="false" />
-        <SwitchPreferenceCompat
-            app:key="CDROM/RegionCheck"
-            app:title="CD-ROM Region Check"
-            app:defaultValue="false"
-            app:summary="Prevents discs from incorrect regions being read by the emulator. Usually safe to disable."
-            app:iconSpaceReserved="false" />
-        <SwitchPreferenceCompat
-            app:key="GPU/PGXPVertexCache"
-            app:title="PGXP Vertex Cache"
-            app:defaultValue="false"
-            app:summary="Uses screen coordinates as a fallback when tracking vertices through memory fails. May improve PGXP compatibility."
-            app:iconSpaceReserved="false" />
-        <SwitchPreferenceCompat
-            app:key="GPU/PGXPCPU"
-            app:title="PGXP CPU Mode"
-            app:defaultValue="false"
-            app:summary="Tries to track vertex manipulation through the CPU. Some games require this option for PGXP to be effective. Very slow, and incompatible with the recompiler."
-            app:iconSpaceReserved="false" />
-        <SwitchPreferenceCompat
-            app:key="CPU/RecompilerICache"
-            app:title="CPU Recompiler ICache"
-            app:defaultValue="false"
-            app:summary="Determines whether the CPU's instruction cache is simulated in the recompiler. Improves accuracy at a small cost to performance. If games are running too fast, try enabling this option."
-            app:iconSpaceReserved="false" />
-        <SwitchPreferenceCompat
-            app:key="CPU/Fastmem"
-            app:title="CPU Recompiler Fast Memory Access"
-            app:defaultValue="true"
-            app:summary="Makes guest memory access more efficient by using page faults and backpatching. Disable if it is unstable on your device."
-            app:iconSpaceReserved="false" />
-        <ListPreference
-            app:key="Display/MaxFPS"
-            app:title="Presented Frame Limit"
-            app:defaultValue="60"
-            app:entries="@array/settings_advanced_display_fps_limit_entries"
-            app:entryValues="@array/settings_advanced_display_fps_limit_values"
-            app:useSimpleSummaryProvider="true"
-            app:iconSpaceReserved="false" />
-        <SwitchPreferenceCompat
-            app:key="BIOS/PatchTTYEnable"
-            app:title="@string/settings_console_tty_output"
-            app:defaultValue="false"
-            app:iconSpaceReserved="false" />
-        <ListPreference
-            app:key="Logging/LogLevel"
-            app:title="Logging Level"
-            app:defaultValue="Warning"
-            app:entries="@array/settings_log_level_entries"
-            app:entryValues="@array/settings_log_level_values"
-            app:useSimpleSummaryProvider="true"
-            app:iconSpaceReserved="false" />
-        <SwitchPreferenceCompat
-            app:key="Logging/LogToFile"
-            app:title="Log To File"
-            app:defaultValue="false"
-            app:summary="Writes log messages to duckstation.log in your user directory. Only use for debugging as it slows down emulation."
-            app:iconSpaceReserved="false"/>
-        <SwitchPreferenceCompat
-            app:key="Logging/LogToDebug"
-            app:title="Log To Logcat"
-            app:defaultValue="false"
-            app:summary="Writes log messages to the Android message logger. Only useful when attached to a computer with adb."
-            app:iconSpaceReserved="false" />
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+    <ListPreference
+        app:key="CPU/Overclock"
+        app:title="CPU Overclocking"
+        app:defaultValue="100"
+        app:entries="@array/settings_advanced_cpu_overclock_entries"
+        app:entryValues="@array/settings_advanced_cpu_overclock_values"
+        app:useSimpleSummaryProvider="true"
+        app:iconSpaceReserved="false" />
+    <SwitchPreferenceCompat
+        app:key="CDROM/RegionCheck"
+        app:title="CD-ROM Region Check"
+        app:defaultValue="false"
+        app:summary="Prevents discs from incorrect regions being read by the emulator. Usually safe to disable."
+        app:iconSpaceReserved="false" />
+    <SwitchPreferenceCompat
+        app:key="GPU/PGXPVertexCache"
+        app:title="PGXP Vertex Cache"
+        app:defaultValue="false"
+        app:summary="Uses screen coordinates as a fallback when tracking vertices through memory fails. May improve PGXP compatibility."
+        app:iconSpaceReserved="false" />
+    <SwitchPreferenceCompat
+        app:key="GPU/PGXPCPU"
+        app:title="PGXP CPU Mode"
+        app:defaultValue="false"
+        app:summary="Tries to track vertex manipulation through the CPU. Some games require this option for PGXP to be effective. Very slow, and incompatible with the recompiler."
+        app:iconSpaceReserved="false" />
+    <SwitchPreferenceCompat
+        app:key="CPU/RecompilerICache"
+        app:title="CPU Recompiler ICache"
+        app:defaultValue="false"
+        app:summary="Determines whether the CPU's instruction cache is simulated in the recompiler. Improves accuracy at a small cost to performance. If games are running too fast, try enabling this option."
+        app:iconSpaceReserved="false" />
+    <SwitchPreferenceCompat
+        app:key="CPU/Fastmem"
+        app:title="CPU Recompiler Fast Memory Access"
+        app:defaultValue="true"
+        app:summary="Makes guest memory access more efficient by using page faults and backpatching. Disable if it is unstable on your device."
+        app:iconSpaceReserved="false" />
+    <ListPreference
+        app:key="Display/MaxFPS"
+        app:title="Presented Frame Limit"
+        app:defaultValue="60"
+        app:entries="@array/settings_advanced_display_fps_limit_entries"
+        app:entryValues="@array/settings_advanced_display_fps_limit_values"
+        app:useSimpleSummaryProvider="true"
+        app:iconSpaceReserved="false" />
+    <SwitchPreferenceCompat
+        app:key="BIOS/PatchTTYEnable"
+        app:title="@string/settings_console_tty_output"
+        app:defaultValue="false"
+        app:iconSpaceReserved="false" />
+    <ListPreference
+        app:key="Logging/LogLevel"
+        app:title="Logging Level"
+        app:defaultValue="Warning"
+        app:entries="@array/settings_log_level_entries"
+        app:entryValues="@array/settings_log_level_values"
+        app:useSimpleSummaryProvider="true"
+        app:iconSpaceReserved="false" />
+    <SwitchPreferenceCompat
+        app:key="Logging/LogToFile"
+        app:title="Log To File"
+        app:defaultValue="false"
+        app:summary="Writes log messages to duckstation.log in your user directory. Only use for debugging as it slows down emulation."
+        app:iconSpaceReserved="false" />
+    <SwitchPreferenceCompat
+        app:key="Logging/LogToDebug"
+        app:title="Log To Logcat"
+        app:defaultValue="false"
+        app:summary="Writes log messages to the Android message logger. Only useful when attached to a computer with adb."
+        app:iconSpaceReserved="false" />
 
 </PreferenceScreen>

@@ -14,122 +14,121 @@
   ~ limitations under the License.
   -->
 
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
-        <ListPreference
-            app:key="CDROM/ReadSpeedup"
-            app:title="CD-ROM Read Speedup"
-            app:entries="@array/settings_cdrom_read_speedup_entries"
-            app:entryValues="@array/settings_cdrom_read_speedup_values"
-            app:defaultValue="1"
-            app:summary="Speeds up CD-ROM reads by the specified factor. Only applies to double-speed reads, and is ignored when audio is playing. May improve loading speeds in some games, at the cost of breaking others."
-            app:useSimpleSummaryProvider="true"
-            app:iconSpaceReserved="false" />
-        <SwitchPreferenceCompat
-            app:key="BIOS/PatchFastBoot"
-            app:title="@string/settings_console_fast_boot"
-            app:defaultValue="false"
-            app:summary="Skips the BIOS shell/intro, booting directly into the game. Usually safe to enable, but some games break."
-            app:iconSpaceReserved="false" />
-        <ListPreference
-            app:key="GPU/ResolutionScale"
-            app:title="@string/settings_gpu_resolution_scale"
-            app:entries="@array/settings_gpu_resolution_scale_entries"
-            app:entryValues="@array/settings_gpu_resolution_scale_values"
-            app:defaultValue="1"
-            app:useSimpleSummaryProvider="true"
-            app:iconSpaceReserved="false" />
-        <ListPreference
-            app:key="GPU/MSAA"
-            app:title="Multisample Antialiasing"
-            app:entries="@array/settings_gpu_msaa_entries"
-            app:entryValues="@array/settings_gpu_msaa_values"
-            app:defaultValue="1"
-            app:useSimpleSummaryProvider="true"
-            app:iconSpaceReserved="false" />
-        <SwitchPreferenceCompat
-            app:key="GPU/TrueColor"
-            app:title="True Color Rendering (24-bit, disables dithering)"
-            app:summary="This produces nicer looking gradients at the cost of making some colours look slightly different. Disabling the option also enables dithering. Most games are compatible with this option."
-            app:iconSpaceReserved="false" />
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+    <ListPreference
+        app:key="CDROM/ReadSpeedup"
+        app:title="CD-ROM Read Speedup"
+        app:entries="@array/settings_cdrom_read_speedup_entries"
+        app:entryValues="@array/settings_cdrom_read_speedup_values"
+        app:defaultValue="1"
+        app:summary="Speeds up CD-ROM reads by the specified factor. Only applies to double-speed reads, and is ignored when audio is playing. May improve loading speeds in some games, at the cost of breaking others."
+        app:useSimpleSummaryProvider="true"
+        app:iconSpaceReserved="false" />
+    <SwitchPreferenceCompat
+        app:key="BIOS/PatchFastBoot"
+        app:title="@string/settings_console_fast_boot"
+        app:defaultValue="false"
+        app:summary="Skips the BIOS shell/intro, booting directly into the game. Usually safe to enable, but some games break."
+        app:iconSpaceReserved="false" />
+    <ListPreference
+        app:key="GPU/ResolutionScale"
+        app:title="@string/settings_gpu_resolution_scale"
+        app:entries="@array/settings_gpu_resolution_scale_entries"
+        app:entryValues="@array/settings_gpu_resolution_scale_values"
+        app:defaultValue="1"
+        app:useSimpleSummaryProvider="true"
+        app:iconSpaceReserved="false" />
+    <ListPreference
+        app:key="GPU/MSAA"
+        app:title="Multisample Antialiasing"
+        app:entries="@array/settings_gpu_msaa_entries"
+        app:entryValues="@array/settings_gpu_msaa_values"
+        app:defaultValue="1"
+        app:useSimpleSummaryProvider="true"
+        app:iconSpaceReserved="false" />
+    <SwitchPreferenceCompat
+        app:key="GPU/TrueColor"
+        app:title="True Color Rendering (24-bit, disables dithering)"
+        app:summary="This produces nicer looking gradients at the cost of making some colours look slightly different. Disabling the option also enables dithering. Most games are compatible with this option."
+        app:iconSpaceReserved="false" />
 
-        <SwitchPreferenceCompat
-            app:key="GPU/ScaledDithering"
-            app:title="Scaled Dithering (scale dither pattern to resolution)"
-            app:defaultValue="true"
-            app:summary="Scales the dither pattern to the resolution scale of the emulated GPU. This makes the dither pattern much less obvious at higher resolutions. Usually safe to enable, and only supported by the hardware renderers."
-            app:iconSpaceReserved="false" />
+    <SwitchPreferenceCompat
+        app:key="GPU/ScaledDithering"
+        app:title="Scaled Dithering (scale dither pattern to resolution)"
+        app:defaultValue="true"
+        app:summary="Scales the dither pattern to the resolution scale of the emulated GPU. This makes the dither pattern much less obvious at higher resolutions. Usually safe to enable, and only supported by the hardware renderers."
+        app:iconSpaceReserved="false" />
 
-        <SwitchPreferenceCompat
-            app:key="GPU/DisableInterlacing"
-            app:title="Disable Interlacing (force progressive render/scan)"
-            app:defaultValue="true"
-            app:summary="Forces the rendering and display of frames to progressive mode. This removes the &quot;combing&quot; effect seen in 480i games by rendering them in 480p. Usually safe to enable."
-            app:iconSpaceReserved="false" />
+    <SwitchPreferenceCompat
+        app:key="GPU/DisableInterlacing"
+        app:title="Disable Interlacing (force progressive render/scan)"
+        app:defaultValue="true"
+        app:summary="Forces the rendering and display of frames to progressive mode. This removes the &quot;combing&quot; effect seen in 480i games by rendering them in 480p. Usually safe to enable."
+        app:iconSpaceReserved="false" />
 
-        <ListPreference
-            app:key="GPU/TextureFilter"
-            app:title="Texture Filtering"
-            app:entries="@array/settings_gpu_texture_filter_names"
-            app:entryValues="@array/settings_gpu_texture_filter_values"
-            app:defaultValue="Nearest"
-            app:useSimpleSummaryProvider="true"
-            app:iconSpaceReserved="false" />
+    <ListPreference
+        app:key="GPU/TextureFilter"
+        app:title="Texture Filtering"
+        app:entries="@array/settings_gpu_texture_filter_names"
+        app:entryValues="@array/settings_gpu_texture_filter_values"
+        app:defaultValue="Nearest"
+        app:useSimpleSummaryProvider="true"
+        app:iconSpaceReserved="false" />
 
-        <SwitchPreferenceCompat
-            app:key="GPU/ForceNTSCTimings"
-            app:title="Force NTSC Timings (60hz-on-PAL)"
-            app:defaultValue="false"
-            app:summary="Uses NTSC frame timings when the console is in PAL mode, forcing PAL games to run at 60hz."
-            app:iconSpaceReserved="false" />
+    <SwitchPreferenceCompat
+        app:key="GPU/ForceNTSCTimings"
+        app:title="Force NTSC Timings (60hz-on-PAL)"
+        app:defaultValue="false"
+        app:summary="Uses NTSC frame timings when the console is in PAL mode, forcing PAL games to run at 60hz."
+        app:iconSpaceReserved="false" />
 
-        <SwitchPreferenceCompat
-            app:key="GPU/WidescreenHack"
-            app:title="Widescreen Hack"
-            app:defaultValue="false"
-            app:summary="Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to 16:9 in 3D games. Not be compatible with all games."
-            app:iconSpaceReserved="false" />
+    <SwitchPreferenceCompat
+        app:key="GPU/WidescreenHack"
+        app:title="Widescreen Hack"
+        app:defaultValue="false"
+        app:summary="Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to 16:9 in 3D games. Not be compatible with all games."
+        app:iconSpaceReserved="false" />
 
-        <SwitchPreferenceCompat
-            app:key="Display/Force4_3For24Bit"
-            app:title="Force 4:3 For 24-Bit Display"
-            app:defaultValue="false"
-            app:summary="Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs."
-            app:iconSpaceReserved="false" />
+    <SwitchPreferenceCompat
+        app:key="Display/Force4_3For24Bit"
+        app:title="Force 4:3 For 24-Bit Display"
+        app:defaultValue="false"
+        app:summary="Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs."
+        app:iconSpaceReserved="false" />
 
-        <SwitchPreferenceCompat
-            app:key="GPU/ChromaSmoothing24Bit"
-            app:title="Chroma Smoothing For 24-Bit Display"
-            app:defaultValue="false"
-            app:summary="Smooths out blockyness between colour transitions in 24-bit content, usually FMVs. Only applies to the hardware renderers."
-            app:iconSpaceReserved="false" />
+    <SwitchPreferenceCompat
+        app:key="GPU/ChromaSmoothing24Bit"
+        app:title="Chroma Smoothing For 24-Bit Display"
+        app:defaultValue="false"
+        app:summary="Smooths out blockyness between colour transitions in 24-bit content, usually FMVs. Only applies to the hardware renderers."
+        app:iconSpaceReserved="false" />
 
-        <SwitchPreferenceCompat
-            app:key="GPU/PGXPEnable"
-            app:title="PGXP Geometry Correction"
-            app:defaultValue="false"
-            app:summary="Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. >Only works with the hardware renderers. May not be compatible with all games."
-            app:iconSpaceReserved="false" />
+    <SwitchPreferenceCompat
+        app:key="GPU/PGXPEnable"
+        app:title="PGXP Geometry Correction"
+        app:defaultValue="false"
+        app:summary="Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. >Only works with the hardware renderers. May not be compatible with all games."
+        app:iconSpaceReserved="false" />
 
-        <SwitchPreferenceCompat
-            app:key="GPU/PGXPCulling"
-            app:title="PGXP Culling Correction"
-            app:defaultValue="true"
-            app:summary="Increases the precision of polygon culling, reducing the number of holes in geometry. Requires geometry correction enabled."
-            app:iconSpaceReserved="false" />
+    <SwitchPreferenceCompat
+        app:key="GPU/PGXPCulling"
+        app:title="PGXP Culling Correction"
+        app:defaultValue="true"
+        app:summary="Increases the precision of polygon culling, reducing the number of holes in geometry. Requires geometry correction enabled."
+        app:iconSpaceReserved="false" />
 
-        <SwitchPreferenceCompat
-            app:key="GPU/PGXPTextureCorrection"
-            app:title="PGXP Texture Correction"
-            app:defaultValue="true"
-            app:summary="Uses perspective-correct interpolation for texture coordinates and colors, straightening out warped textures. Requires geometry correction enabled."
-            app:iconSpaceReserved="false" />
+    <SwitchPreferenceCompat
+        app:key="GPU/PGXPTextureCorrection"
+        app:title="PGXP Texture Correction"
+        app:defaultValue="true"
+        app:summary="Uses perspective-correct interpolation for texture coordinates and colors, straightening out warped textures. Requires geometry correction enabled."
+        app:iconSpaceReserved="false" />
 
-        <SwitchPreferenceCompat
-            app:key="GPU/PGXPPreserveProjFP"
-            app:title="PGXP Preserve Projection Precision"
-            app:defaultValue="false"
-            app:summary="Enables additional precision for PGXP. May improve visuals in some games but break others."
-            app:iconSpaceReserved="false" />
+    <SwitchPreferenceCompat
+        app:key="GPU/PGXPPreserveProjFP"
+        app:title="PGXP Preserve Projection Precision"
+        app:defaultValue="false"
+        app:summary="Enables additional precision for PGXP. May improve visuals in some games but break others."
+        app:iconSpaceReserved="false" />
 
 </PreferenceScreen>

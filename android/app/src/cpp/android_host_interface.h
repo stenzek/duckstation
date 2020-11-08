@@ -65,6 +65,7 @@ protected:
   void ReleaseHostDisplay() override;
   std::unique_ptr<AudioStream> CreateAudioStream(AudioBackend backend) override;
 
+  void OnSystemPaused(bool paused) override;
   void OnSystemDestroyed() override;
   void OnRunningGameChanged() override;
 
@@ -77,6 +78,8 @@ private:
   void DestroyImGuiContext();
 
   void LoadAndConvertSettings();
+  void SetVibration(bool enabled);
+  void UpdateVibration();
 
   jobject m_java_object = {};
   jobject m_emulation_activity_object = {};
@@ -92,6 +95,10 @@ private:
 
   std::thread m_emulation_thread;
   std::atomic_bool m_emulation_thread_stop_request{false};
+
+  u64 m_last_vibration_update_time = 0;
+  bool m_last_vibration_state = false;
+  bool m_vibration_enabled = false;
 };
 
 namespace AndroidHelpers {

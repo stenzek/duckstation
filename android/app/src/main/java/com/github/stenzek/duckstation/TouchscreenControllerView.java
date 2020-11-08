@@ -20,6 +20,7 @@ public class TouchscreenControllerView extends FrameLayout {
     private View mMainView;
     private ArrayList<TouchscreenControllerButtonView> mButtonViews = new ArrayList<>();
     private ArrayList<TouchscreenControllerAxisView> mAxisViews = new ArrayList<>();
+    private boolean mHapticFeedback;
 
     public TouchscreenControllerView(Context context) {
         super(context);
@@ -33,9 +34,10 @@ public class TouchscreenControllerView extends FrameLayout {
         super(context, attrs, defStyle);
     }
 
-    public void init(int controllerIndex, String controllerType, String viewType) {
+    public void init(int controllerIndex, String controllerType, String viewType, boolean hapticFeedback) {
         mControllerIndex = controllerIndex;
         mControllerType = controllerType;
+        mHapticFeedback = hapticFeedback;
 
         mButtonViews.clear();
         mAxisViews.clear();
@@ -99,6 +101,7 @@ public class TouchscreenControllerView extends FrameLayout {
 
         if (code >= 0) {
             buttonView.setButtonCode(mControllerIndex, code);
+            buttonView.setHapticFeedback(mHapticFeedback);
             mButtonViews.add(buttonView);
         } else {
             Log.e("TouchscreenController", String.format("Unknown button name '%s' " +

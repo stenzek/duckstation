@@ -14,64 +14,63 @@
   ~ limitations under the License.
   -->
 
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
 
-        <ListPreference
-            app:key="Display/CropMode"
-            app:title="Crop Mode"
-            app:entries="@array/settings_display_crop_mode_entries"
-            app:entryValues="@array/settings_display_crop_mode_values"
-            app:defaultValue="Overscan"
-            app:useSimpleSummaryProvider="true"
-            app:iconSpaceReserved="false" />
+    <ListPreference
+        app:key="Display/CropMode"
+        app:title="Crop Mode"
+        app:entries="@array/settings_display_crop_mode_entries"
+        app:entryValues="@array/settings_display_crop_mode_values"
+        app:defaultValue="Overscan"
+        app:useSimpleSummaryProvider="true"
+        app:iconSpaceReserved="false" />
 
-        <ListPreference
-            app:key="Display/AspectRatio"
-            app:title="Aspect Ratio"
-            app:entries="@array/settings_display_aspect_ratio_names"
-            app:entryValues="@array/settings_display_aspect_ratio_values"
-            app:defaultValue="4:3"
-            app:useSimpleSummaryProvider="true"
-            app:iconSpaceReserved="false" />
+    <ListPreference
+        app:key="Display/AspectRatio"
+        app:title="Aspect Ratio"
+        app:entries="@array/settings_display_aspect_ratio_names"
+        app:entryValues="@array/settings_display_aspect_ratio_values"
+        app:defaultValue="4:3"
+        app:useSimpleSummaryProvider="true"
+        app:iconSpaceReserved="false" />
 
-        <SwitchPreferenceCompat
-            app:key="Display/LinearFiltering"
-            app:title="Linear Upscaling"
-            app:defaultValue="true"
-            app:summary="Smooths out the image when upscaling the console to the screen."
-            app:iconSpaceReserved="false" />
+    <SwitchPreferenceCompat
+        app:key="Display/LinearFiltering"
+        app:title="Linear Upscaling"
+        app:defaultValue="true"
+        app:summary="Smooths out the image when upscaling the console to the screen."
+        app:iconSpaceReserved="false" />
 
-        <SwitchPreferenceCompat
-            app:key="Display/IntegerScaling"
-            app:title="Integer Upscaling"
-            app:defaultValue="false"
-            app:summary="Adds padding to the display area to ensure that the ratio between pixels on the host to pixels in the console is an integer number. May result in a sharper image in some 2D games."
-            app:iconSpaceReserved="false" />
-  
-        <SwitchPreferenceCompat
-            app:key="Display/ShowOSDMessages"
-            app:title="@string/settings_osd_show_messages"
-            app:defaultValue="true"
-            app:summary="Shows on-screen-display messages when events occur such as save states being created/loaded, screenshots being taken, etc."
-            app:iconSpaceReserved="false" />
-        <SwitchPreferenceCompat
-            app:key="Display/ShowSpeed"
-            app:title="@string/settings_osd_show_speed"
-            app:defaultValue="false"
-            app:summary="Sets the target emulation speed. It is not guaranteed that this speed will be reached, and if not, the emulator will run as fast as it can manage."
-            app:iconSpaceReserved="false" />
-        <SwitchPreferenceCompat
-            app:key="Display/ShowFPS"
-            app:title="@string/settings_osd_show_show_fps"
-            app:defaultValue="false"
-            app:summary="Shows the internal frame rate of the game in the top-right corner of the display."
-            app:iconSpaceReserved="false" />
-        <SwitchPreferenceCompat
-            app:key="Display/ShowVPS"
-            app:title="@string/settings_osd_show_show_vps"
-            app:defaultValue="false"
-            app:summary="Shows the number of frames (or v-syncs) displayed per second by the system in the top-right corner of the display."
-            app:iconSpaceReserved="false" />
+    <SwitchPreferenceCompat
+        app:key="Display/IntegerScaling"
+        app:title="Integer Upscaling"
+        app:defaultValue="false"
+        app:summary="Adds padding to the display area to ensure that the ratio between pixels on the host to pixels in the console is an integer number. May result in a sharper image in some 2D games."
+        app:iconSpaceReserved="false" />
+
+    <SwitchPreferenceCompat
+        app:key="Display/ShowOSDMessages"
+        app:title="@string/settings_osd_show_messages"
+        app:defaultValue="true"
+        app:summary="Shows on-screen-display messages when events occur such as save states being created/loaded, screenshots being taken, etc."
+        app:iconSpaceReserved="false" />
+    <SwitchPreferenceCompat
+        app:key="Display/ShowSpeed"
+        app:title="@string/settings_osd_show_speed"
+        app:defaultValue="false"
+        app:summary="Sets the target emulation speed. It is not guaranteed that this speed will be reached, and if not, the emulator will run as fast as it can manage."
+        app:iconSpaceReserved="false" />
+    <SwitchPreferenceCompat
+        app:key="Display/ShowFPS"
+        app:title="@string/settings_osd_show_show_fps"
+        app:defaultValue="false"
+        app:summary="Shows the internal frame rate of the game in the top-right corner of the display."
+        app:iconSpaceReserved="false" />
+    <SwitchPreferenceCompat
+        app:key="Display/ShowVPS"
+        app:title="@string/settings_osd_show_show_vps"
+        app:defaultValue="false"
+        app:summary="Shows the number of frames (or v-syncs) displayed per second by the system in the top-right corner of the display."
+        app:iconSpaceReserved="false" />
 
 </PreferenceScreen>
