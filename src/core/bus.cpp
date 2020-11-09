@@ -638,6 +638,40 @@ ALWAYS_INLINE static TickCount DoEXP2Access(u32 offset, u32& value)
   }
 }
 
+template<MemoryAccessType type>
+ALWAYS_INLINE static TickCount DoEXP3Access(u32 offset, u32& value)
+{
+  if constexpr (type == MemoryAccessType::Read)
+  {
+    Log_WarningPrintf("EXP3 read: 0x%08X -> 0x%08X", EXP3_BASE | offset);
+    value = UINT32_C(0xFFFFFFFF);
+
+    return 0;
+  }
+  else
+  {
+    if (offset == 0)
+      Log_WarningPrintf("BIOS POST3 status: %02X", value & UINT32_C(0x0F));
+
+    return 0;
+  }
+}
+
+template<MemoryAccessType type>
+ALWAYS_INLINE static TickCount DoUnknownEXPAccess(u32 address, u32& value)
+{
+  if constexpr (type == MemoryAccessType::Read)
+  {
+    Log_ErrorPrintf("Unknown EXP read: 0x%08X", address);
+    return -1;
+  }
+  else
+  {
+    Log_WarningPrintf("Unknown EXP write: 0x%08X <- 0x%08X", address, value);
+    return 0;
+  }
+}
+
 template<MemoryAccessType type, MemoryAccessSize size>
 ALWAYS_INLINE static TickCount DoMemoryControlAccess(u32 offset, u32& value)
 {
@@ -1288,6 +1322,14 @@ static ALWAYS_INLINE TickCount DoMemoryAccess(VirtualMemoryAddress address, u32&
   else if (address < (EXP2_BASE + EXP2_SIZE))
   {
     return DoEXP2Access<type, size>(address & EXP2_MASK, value);
+  }
+  else if (address < EXP3_BASE)
+  {
+    return DoUnknownEXPAccess<type>(address, value);
+  }
+  else if (address < (EXP3_BASE + EXP3_SIZE))
+  {
+    return DoEXP3Access<type>(address & EXP3_MASK, value);
   }
   else
   {
