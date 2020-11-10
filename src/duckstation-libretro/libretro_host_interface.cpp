@@ -624,8 +624,8 @@ static std::array<retro_core_option_definition, 42> s_option_definitions = {{
    "Nearest"},
   {"duckstation_GPU.WidescreenHack",
    "Widescreen Hack",
-   "Increases the field of view from 4:3 to 16:9 in 3D games. For 2D games, or games which use pre-rendered "
-   "backgrounds, this enhancement will not work as expected.",
+   "Increases the field of view from 4:3 to the chosen display aspect ratio in 3D games. For 2D games, or games which "
+   "use pre-rendered backgrounds, this enhancement will not work as expected.",
    {{"true", "Enabled"}, {"false", "Disabled"}},
    "false"},
   {"duckstation_GPU.PGXPEnable",

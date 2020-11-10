@@ -613,10 +613,52 @@ static void RTPS(const s16 V[3], u8 shift, bool lm, bool last)
   // MAC0=(((H*20000h/SZ3)+1)/2)*IR2+OFY, SY2=MAC0/10000h ;ScrY FIFO -400h..+3FFh
   const s64 result = static_cast<s64>(ZeroExtend64(UNRDivide(REGS.H, REGS.SZ3)));
 
-  // (4 / 3) / (16 / 9) -> 0.75 -> (3 / 4)
-  const s64 Sx = g_settings.gpu_widescreen_hack ?
-                   ((((s64(result) * s64(REGS.IR1)) * s64(3)) / s64(4)) + s64(REGS.OFX)) :
-                   (s64(result) * s64(REGS.IR1) + s64(REGS.OFX));
+  s64 Sx;
+  if (g_settings.gpu_widescreen_hack)
+  {
+    const DisplayAspectRatio ar = g_settings.display_aspect_ratio;
+    switch (ar)
+    {
+      case DisplayAspectRatio::R16_9:
+        Sx = ((((s64(result) * s64(REGS.IR1)) * s64(3)) / s64(4)) + s64(REGS.OFX));
+        break;
+
+      case DisplayAspectRatio::R16_10:
+        Sx = ((((s64(result) * s64(REGS.IR1)) * s64(5)) / s64(6)) + s64(REGS.OFX));
+        break;
+
+      case DisplayAspectRatio::R19_9:
+        Sx = ((((s64(result) * s64(REGS.IR1)) * s64(12)) / s64(19)) + s64(REGS.OFX));
+        break;
+
+      case DisplayAspectRatio::R21_9:
+        Sx = ((((s64(result) * s64(REGS.IR1)) * s64(4)) / s64(7)) + s64(REGS.OFX));
+        break;
+
+      case DisplayAspectRatio::R8_7:
+        Sx = ((((s64(result) * s64(REGS.IR1)) * s64(7)) / s64(6)) + s64(REGS.OFX));
+        break;
+
+      case DisplayAspectRatio::R2_1:
+        Sx = ((((s64(result) * s64(REGS.IR1)) * s64(2)) / s64(3)) + s64(REGS.OFX));
+        break;
+
+      case DisplayAspectRatio::R1_1:
+        Sx = ((((s64(result) * s64(REGS.IR1)) * s64(7)) / s64(6)) + s64(REGS.OFX));
+        break;
+
+      case DisplayAspectRatio::R4_3:
+      case DisplayAspectRatio::PAR1_1:
+      default:
+        Sx = (s64(result) * s64(REGS.IR1) + s64(REGS.OFX));
+        break;
+    }
+  }
+  else
+  {
+    Sx = (s64(result) * s64(REGS.IR1) + s64(REGS.OFX));
+  }
+
   const s64 Sy = s64(result) * s64(REGS.IR2) + s64(REGS.OFY);
   CheckMACOverflow<0>(Sx);
   CheckMACOverflow<0>(Sy);
@@ -654,7 +696,53 @@ static void RTPS(const s16 V[3], u8 shift, bool lm, bool last)
     const float precise_h_div_sz = float(REGS.H) / precise_z;
     const float fofx = float(REGS.OFX) / float(1 << 16);
     const float fofy = float(REGS.OFY) / float(1 << 16);
-    float precise_x = fofx + (precise_ir1 * precise_h_div_sz) * ((g_settings.gpu_widescreen_hack) ? 0.75f : 1.00f);
+    float precise_x;
+    if (g_settings.gpu_widescreen_hack)
+    {
+      precise_x = precise_ir1 * precise_h_div_sz;
+      const DisplayAspectRatio ar = g_settings.display_aspect_ratio;
+      switch (ar)
+      {
+        case DisplayAspectRatio::R16_9:
+          precise_x = (precise_x * 3.0f) / 4.0f;
+          break;
+
+        case DisplayAspectRatio::R16_10:
+          precise_x = (precise_x * 5.0f) / 6.0f;
+          break;
+
+        case DisplayAspectRatio::R19_9:
+          precise_x = (precise_x * 12.0f) / 19.0f;
+          break;
+
+        case DisplayAspectRatio::R21_9:
+          precise_x = (precise_x * 4.0f) / 7.0f;
+          break;
+
+        case DisplayAspectRatio::R8_7:
+          precise_x = (precise_x * 7.0f) / 6.0f;
+          break;
+
+        case DisplayAspectRatio::R2_1:
+          precise_x = (precise_x * 2.0f) / 3.0f;
+          break;
+
+        case DisplayAspectRatio::R1_1:
+          precise_x = (precise_x * 7.0f) / 6.0f;
+          break;
+
+        case DisplayAspectRatio::R4_3:
+        case DisplayAspectRatio::PAR1_1:
+        default:
+          break;
+      }
+      precise_x += fofx;
+    }
+    else
+    {
+      precise_x = fofx + (precise_ir1 * precise_h_div_sz);
+    }
+
     float precise_y = fofy + (precise_ir2 * precise_h_div_sz);
 
     precise_x = std::clamp<float>(precise_x, -1024.0f, 1023.0f);

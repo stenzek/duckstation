@@ -13,6 +13,7 @@ A "BIOS" ROM image is required to to start the emulator and to play games. You c
 
 ## Latest News
 
+- 2020/11/10: Widescreen hack now renders in the display aspect ratio instead of always 16:9.
 - 2020/11/01: Exclusive fullscreen option added for Windows D3D11 users. Enjoy buttery smooth PAL games.
 - 2020/10/31: Multisample antialiasing added as an enhancement.
 - 2020/10/30: Option to use analog stick as d-pad for analog controller added.

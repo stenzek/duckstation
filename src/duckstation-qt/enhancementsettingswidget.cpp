@@ -20,9 +20,9 @@ EnhancementSettingsWidget::EnhancementSettingsWidget(QtHostInterface* host_inter
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.force43For24Bit, "Display", "Force4_3For24Bit");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.chromaSmoothingFor24Bit, "GPU",
                                                "ChromaSmoothing24Bit");
-  SettingWidgetBinder::BindWidgetToEnumSetting(
-    m_host_interface, m_ui.textureFiltering, "GPU", "TextureFilter", &Settings::ParseTextureFilterName,
-    &Settings::GetTextureFilterName, Settings::DEFAULT_GPU_TEXTURE_FILTER);
+  SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.textureFiltering, "GPU", "TextureFilter",
+                                               &Settings::ParseTextureFilterName, &Settings::GetTextureFilterName,
+                                               Settings::DEFAULT_GPU_TEXTURE_FILTER);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.widescreenHack, "GPU", "WidescreenHack");
 
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.pgxpEnable, "GPU", "PGXPEnable", false);
@@ -88,9 +88,9 @@ EnhancementSettingsWidget::EnhancementSettingsWidget(QtHostInterface* host_inter
   dialog->registerWidgetHelp(
     m_ui.widescreenHack, tr("Widescreen Hack"), tr("Unchecked"),
     tr("Scales vertex positions in screen-space to a widescreen aspect ratio, essentially "
-       "increasing the field of view from 4:3 to 16:9 in 3D games. <br>For 2D games, or games which "
-       "use pre-rendered backgrounds, this enhancement will not work as expected. <br><b><u>May not be compatible with "
-       "all games.</u></b>"));
+       "increasing the field of view from 4:3 to the chosen display aspect ratio in 3D games. <br>For 2D games, or "
+       "games which use pre-rendered backgrounds, this enhancement will not work as expected. <br><b><u>May not be "
+       "compatible with all games.</u></b>"));
   dialog->registerWidgetHelp(
     m_ui.pgxpEnable, tr("Geometry Correction"), tr("Unchecked"),
     tr("Reduces \"wobbly\" polygons and \"warping\" textures that are common in PS1 games. <br>Only "
