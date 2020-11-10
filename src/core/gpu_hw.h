@@ -225,6 +225,13 @@ protected:
     }
   }
 
+  /// Returns true if the specified texture filtering mode requires dual-source blending.
+  ALWAYS_INLINE bool TextureFilterRequiresDualSourceBlend(GPUTextureFilter filter)
+  {
+    return (filter == GPUTextureFilter::Bilinear || filter == GPUTextureFilter::JINC2 ||
+            filter == GPUTextureFilter::xBR);
+  }
+
   /// Returns true if alpha blending should be enabled for drawing the current batch.
   ALWAYS_INLINE bool UseAlphaBlending(TransparencyMode transparency_mode, BatchRenderMode render_mode) const
   {

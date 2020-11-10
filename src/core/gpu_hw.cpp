@@ -55,7 +55,6 @@ bool GPU_HW::Initialize(HostDisplay* host_display)
   m_texture_filtering = g_settings.gpu_texture_filter;
   m_using_uv_limits = ShouldUseUVLimits();
   m_chroma_smoothing = g_settings.gpu_24bit_chroma_smoothing;
-  PrintSettingsToLog();
 
   if (m_multisamples != g_settings.gpu_multisamples)
   {
@@ -68,7 +67,15 @@ bool GPU_HW::Initialize(HostDisplay* host_display)
     g_host_interface->AddOSDMessage(
       g_host_interface->TranslateStdString("OSDMessage", "SSAA is not supported, using MSAA instead."), 20.0f);
   }
+  if (!m_supports_dual_source_blend && TextureFilterRequiresDualSourceBlend(m_texture_filtering))
+  {
+    g_host_interface->AddFormattedOSDMessage(
+      20.0f, g_host_interface->TranslateString("OSDMessage", "Texture filter '%s' is not supported on your device."),
+      Settings::GetTextureFilterDisplayName(m_texture_filtering));
+    m_texture_filtering = GPUTextureFilter::Nearest;
+  }
 
+  PrintSettingsToLog();
   return true;
 }
 
@@ -150,6 +157,10 @@ void GPU_HW::UpdateHWSettings(bool* framebuffer_changed, bool* shaders_changed)
   m_texture_filtering = g_settings.gpu_texture_filter;
   m_using_uv_limits = use_uv_limits;
   m_chroma_smoothing = g_settings.gpu_24bit_chroma_smoothing;
+
+  if (!m_supports_dual_source_blend && TextureFilterRequiresDualSourceBlend(m_texture_filtering))
+    m_texture_filtering = GPUTextureFilter::Nearest;
+
   PrintSettingsToLog();
 }
 
