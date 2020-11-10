@@ -81,6 +81,8 @@
         <item>4:3</item>
         <item>16:9</item>
         <item>16:10</item>
+        <item>19:9</item>
+        <item>21:9</item>
         <item>8:7</item>
         <item>2:1 (VRAM 1:1)</item>
         <item>1:1</item>
@@ -90,6 +92,8 @@
         <item>4:3</item>
         <item>16:9</item>
         <item>16:10</item>
+        <item>19:9</item>
+        <item>21:9</item>
         <item>8:7</item>
         <item>2:1 (VRAM 1:1)</item>
         <item>1:1</item>
