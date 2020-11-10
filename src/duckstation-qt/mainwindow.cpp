@@ -520,7 +520,7 @@ void MainWindow::onGameListContextMenuRequested(const QPoint& point, const GameL
     {
       if (!entry->code.empty())
       {
-        m_host_interface->populateGameListContextMenu(entry->code.c_str(), this, &menu);
+        m_host_interface->populateGameListContextMenu(entry, this, &menu);
         menu.addSeparator();
       }
 
@@ -913,8 +913,7 @@ void MainWindow::connectSignals()
                                                "ShowTimersState");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugShowMDECState, "Debug",
                                                "ShowMDECState");
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugShowDMAState, "Debug",
-                                               "ShowDMAState");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugShowDMAState, "Debug", "ShowDMAState");
 
   addThemeToMenu(tr("Default"), QStringLiteral("default"));
   addThemeToMenu(tr("Fusion"), QStringLiteral("fusion"));
@@ -1223,13 +1222,37 @@ void MainWindow::onCheckForUpdatesActionTriggered()
   checkForUpdates(true);
 }
 
-void MainWindow::onToolsMemoryCardEditorTriggered()
+void MainWindow::openMemoryCardEditor(const QString& card_a_path, const QString& card_b_path)
 {
   if (!m_memory_card_editor_dialog)
     m_memory_card_editor_dialog = new MemoryCardEditorDialog(this);
 
   m_memory_card_editor_dialog->setModal(false);
   m_memory_card_editor_dialog->show();
+
+  if (!card_a_path.isEmpty())
+  {
+    if (!m_memory_card_editor_dialog->setCardA(card_a_path))
+    {
+      QMessageBox::critical(
+        this, tr("Memory Card Not Found"),
+        tr("Memory card '%1' could not be found. Try starting the game and saving to create it.").arg(card_a_path));
+    }
+  }
+  if (!card_b_path.isEmpty())
+  {
+    if (!m_memory_card_editor_dialog->setCardB(card_b_path))
+    {
+      QMessageBox::critical(
+        this, tr("Memory Card Not Found"),
+        tr("Memory card '%1' could not be found. Try starting the game and saving to create it.").arg(card_b_path));
+    }
+  }
+}
+
+void MainWindow::onToolsMemoryCardEditorTriggered()
+{
+  openMemoryCardEditor(QString(), QString());
 }
 
 void MainWindow::onToolsCheatManagerTriggered()

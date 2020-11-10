@@ -31,6 +31,9 @@ public:
   /// Performs update check if enabled in settings.
   void startupUpdateCheck();
 
+  /// Opens memory card editor with the specified paths.
+  void openMemoryCardEditor(const QString& card_a_path, const QString& card_b_path);
+
 public Q_SLOTS:
   /// Updates debug menu visibility (hides if disabled).
   void updateDebugMenuVisibility();

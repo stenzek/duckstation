@@ -31,6 +31,26 @@ MemoryCardEditorDialog::MemoryCardEditorDialog(QWidget* parent) : QDialog(parent
 
 MemoryCardEditorDialog::~MemoryCardEditorDialog() = default;
 
+bool MemoryCardEditorDialog::setCardA(const QString& path)
+{
+  const int index = m_ui.cardAPath->findData(QVariant(path));
+  if (index < 0)
+    return false;
+
+  m_ui.cardAPath->setCurrentIndex(index);
+  return true;
+}
+
+bool MemoryCardEditorDialog::setCardB(const QString& path)
+{
+  const int index = m_ui.cardBPath->findData(QVariant(path));
+  if (index < 0)
+    return false;
+
+  m_ui.cardBPath->setCurrentIndex(index);
+  return true;
+}
+
 void MemoryCardEditorDialog::resizeEvent(QResizeEvent* ev)
 {
   QtUtils::ResizeColumnsForTableView(m_card_a.table, {32, -1, 100, 45});

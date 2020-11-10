@@ -25,6 +25,7 @@ class QTimer;
 class QTranslator;
 
 class GameList;
+struct GameListEntry;
 class INISettingsInterface;
 
 class MainWindow;
@@ -87,7 +88,7 @@ public:
   void populateSaveStateMenus(const char* game_code, QMenu* load_menu, QMenu* save_menu);
 
   /// Fills menu with save state info and handlers.
-  void populateGameListContextMenu(const char* game_code, QWidget* parent_window, QMenu* menu);
+  void populateGameListContextMenu(const GameListEntry* entry, QWidget* parent_window, QMenu* menu);
 
   /// Fills menu with the current playlist entries. The disc index is marked as checked.
   void populatePlaylistEntryMenu(QMenu* menu);

@@ -15,6 +15,9 @@ public:
   MemoryCardEditorDialog(QWidget* parent);
   ~MemoryCardEditorDialog();
 
+  bool setCardA(const QString& path);
+  bool setCardB(const QString& path);
+
 protected:
   void resizeEvent(QResizeEvent* ev);
   void closeEvent(QCloseEvent* ev);

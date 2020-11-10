@@ -890,7 +890,7 @@ void QtHostInterface::populateSaveStateMenus(const char* game_code, QMenu* load_
     add_slot(tr("Global Save %1 (%2)"), tr("Global Save %1 (Empty)"), true, static_cast<s32>(slot));
 }
 
-void QtHostInterface::populateGameListContextMenu(const char* game_code, QWidget* parent_window, QMenu* menu)
+void QtHostInterface::populateGameListContextMenu(const GameListEntry* entry, QWidget* parent_window, QMenu* menu)
 {
   QAction* resume_action = menu->addAction(tr("Resume"));
   resume_action->setEnabled(false);
@@ -898,7 +898,7 @@ void QtHostInterface::populateGameListContextMenu(const char* game_code, QWidget
   QMenu* load_state_menu = menu->addMenu(tr("Load State"));
   load_state_menu->setEnabled(false);
 
-  const std::vector<SaveStateInfo> available_states(GetAvailableSaveStates(game_code));
+  const std::vector<SaveStateInfo> available_states(GetAvailableSaveStates(entry->code.c_str()));
   const QString timestamp_format = QLocale::system().dateTimeFormat(QLocale::ShortFormat);
   for (const SaveStateInfo& ssi : available_states)
   {
@@ -926,23 +926,53 @@ void QtHostInterface::populateGameListContextMenu(const char* game_code, QWidget
     connect(action, &QAction::triggered, [this, path]() { loadState(path); });
   }
 
+  QAction* open_memory_cards_action = menu->addAction(tr("Edit Memory Cards..."));
+  connect(open_memory_cards_action, &QAction::triggered, [this, entry]() {
+    std::string paths[2];
+    for (u32 i = 0; i < 2; i++)
+    {
+      MemoryCardType type = g_settings.memory_card_types[i];
+      if (entry->code.empty() && type == MemoryCardType::PerGame)
+        type = MemoryCardType::Shared;
+
+      switch (type)
+      {
+        case MemoryCardType::None:
+          continue;
+        case MemoryCardType::Shared:
+          paths[i] =
+            g_settings.memory_card_paths[i].empty() ? GetSharedMemoryCardPath(i) : g_settings.memory_card_paths[i];
+          break;
+        case MemoryCardType::PerGame:
+          paths[i] = GetGameMemoryCardPath(entry->code.c_str(), i);
+          break;
+        case MemoryCardType::PerGameTitle:
+          paths[i] = GetGameMemoryCardPath(entry->title.c_str(), i);
+          break;
+        default:
+          break;
+      }
+    }
+
+    m_main_window->openMemoryCardEditor(QString::fromStdString(paths[0]), QString::fromStdString(paths[1]));
+  });
+
   const bool has_any_states = resume_action->isEnabled() || load_state_menu->isEnabled();
   QAction* delete_save_states_action = menu->addAction(tr("Delete Save States..."));
   delete_save_states_action->setEnabled(has_any_states);
   if (has_any_states)
   {
-    const std::string game_code_copy(game_code);
-    connect(delete_save_states_action, &QAction::triggered, [this, parent_window, game_code_copy] {
+    connect(delete_save_states_action, &QAction::triggered, [this, parent_window, entry] {
       if (QMessageBox::warning(
             parent_window, tr("Confirm Save State Deletion"),
             tr("Are you sure you want to delete all save states for %1?\n\nThe saves will not be recoverable.")
-              .arg(game_code_copy.c_str()),
+              .arg(QString::fromStdString(entry->code)),
             QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
       {
         return;
       }
 
-      DeleteSaveStates(game_code_copy.c_str(), true);
+      DeleteSaveStates(entry->code.c_str(), true);
     });
   }
 }
