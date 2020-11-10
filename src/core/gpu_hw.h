@@ -225,6 +225,21 @@ protected:
     }
   }
 
+  /// Returns true if alpha blending should be enabled for drawing the current batch.
+  ALWAYS_INLINE bool UseAlphaBlending(TransparencyMode transparency_mode, BatchRenderMode render_mode) const
+  {
+    if (m_texture_filtering == GPUTextureFilter::Bilinear || m_texture_filtering == GPUTextureFilter::JINC2 ||
+        m_texture_filtering == GPUTextureFilter::xBR)
+    {
+      return true;
+    }
+
+    if (transparency_mode == TransparencyMode::Disabled || render_mode == BatchRenderMode::OnlyOpaque)
+      return false;
+
+    return true;
+  }
+
   void FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color) override;
   void UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data) override;
   void CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height) override;

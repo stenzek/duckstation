@@ -240,7 +240,8 @@ void GPU_HW_OpenGL::SetCapabilities(HostDisplay* host_display)
   int max_dual_source_draw_buffers = 0;
   glGetIntegerv(GL_MAX_DUAL_SOURCE_DRAW_BUFFERS, &max_dual_source_draw_buffers);
   m_supports_dual_source_blend =
-    (max_dual_source_draw_buffers > 0) && (GLAD_GL_VERSION_3_3 || GLAD_GL_ARB_blend_func_extended);
+    (max_dual_source_draw_buffers > 0) &&
+    (GLAD_GL_VERSION_3_3 || GLAD_GL_ARB_blend_func_extended || GLAD_GL_EXT_blend_func_extended);
   if (!m_supports_dual_source_blend)
     Log_WarningPrintf("Dual-source blending is not supported, this may break some mask effects.");
 
@@ -588,12 +589,7 @@ void GPU_HW_OpenGL::DrawBatchVertices(BatchRenderMode render_mode, u32 base_vert
 
 void GPU_HW_OpenGL::SetBlendMode()
 {
-  if (m_texture_filtering == GPUTextureFilter::Nearest && (m_current_transparency_mode == TransparencyMode::Disabled ||
-                                                           m_current_render_mode == BatchRenderMode::OnlyOpaque))
-  {
-    glDisable(GL_BLEND);
-  }
-  else
+  if (UseAlphaBlending(m_current_transparency_mode, m_current_render_mode))
   {
     glEnable(GL_BLEND);
     glBlendEquationSeparate(m_current_transparency_mode == TransparencyMode::BackgroundMinusForeground ?
@@ -601,6 +597,10 @@ void GPU_HW_OpenGL::SetBlendMode()
                               GL_FUNC_ADD,
                             GL_FUNC_ADD);
     glBlendFuncSeparate(GL_ONE, m_supports_dual_source_blend ? GL_SRC1_ALPHA : GL_SRC_ALPHA, GL_ONE, GL_ZERO);
+  }
+  else
+  {
+    glDisable(GL_BLEND);
   }
 }
 

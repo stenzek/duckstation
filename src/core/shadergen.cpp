@@ -89,6 +89,8 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
     // Enable EXT_blend_func_extended for dual-source blend on OpenGL ES.
     if (GLAD_GL_EXT_blend_func_extended)
       ss << "#extension GL_EXT_blend_func_extended : require\n";
+    if (GLAD_GL_ARB_blend_func_extended)
+      ss << "#extension GL_ARB_blend_func_extended : require\n";
   }
   else if (m_render_api == HostDisplay::RenderAPI::OpenGL)
   {
