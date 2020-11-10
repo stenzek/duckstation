@@ -483,9 +483,9 @@ restart_instruction:
   const Instruction inst = g_state.current_instruction;
 
 #if 0
-  if (g_state.m_current_instruction_pc == 0x80010000)
+  if (g_state.current_instruction_pc == 0x80030000)
   {
-    LOG_EXECUTION = true;
+    TRACE_EXECUTION = true;
     __debugbreak();
   }
 #endif

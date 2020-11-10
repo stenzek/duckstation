@@ -189,8 +189,11 @@ bool PatchBIOSFastBoot(u8* image, u32 image_size, const Hash& hash)
 
   // Replace the shell entry point with a return back to the bootstrap.
   Log_InfoPrintf("Patching BIOS to skip intro");
-  PatchBIOS(image, image_size, 0x1FC18000, 0x03E00008);
-  PatchBIOS(image, image_size, 0x1FC18004, 0x00000000);
+  PatchBIOS(image, image_size, 0x1FC18000, 0x3C011F80); // lui at, 1f80
+  PatchBIOS(image, image_size, 0x1FC18004, 0x3C0A0300); // lui t2, 0300h
+  PatchBIOS(image, image_size, 0x1FC18008, 0xAC2A1814); // sw zero, 1814h(at)        ; turn the display on
+  PatchBIOS(image, image_size, 0x1FC1800C, 0x03E00008); // jr ra
+  PatchBIOS(image, image_size, 0x1FC18010, 0x00000000); // nop
   return true;
 }
 
