@@ -1501,6 +1501,14 @@ ALWAYS_INLINE static s16 ReverbSat(s32 val)
   return static_cast<s16>(std::clamp<s32>(val, -0x8000, 0x7FFF));
 }
 
+ALWAYS_INLINE static s16 ReverbNeg(s16 samp)
+{
+  if (samp == -32768)
+    return 0x7FFF;
+
+  return -samp;
+}
+
 ALWAYS_INLINE static s32 IIASM(const s16 IIR_ALPHA, const s16 insamp)
 {
   if (IIR_ALPHA == -32768)
@@ -1512,91 +1520,6 @@ ALWAYS_INLINE static s32 IIASM(const s16 IIR_ALPHA, const s16 insamp)
   }
   else
     return insamp * (32768 - IIR_ALPHA);
-}
-
-void SPU::ComputeReverb()
-{
-  std::array<s32, 2> downsampled;
-  for (unsigned lr = 0; lr < 2; lr++)
-    downsampled[lr] = Reverb4422(&m_reverb_downsample_buffer[lr][(m_reverb_resample_buffer_position - 39) & 0x3F]);
-
-  if (m_SPUCNT.reverb_master_enable)
-  {
-    const s16 IIR_INPUT_A0 =
-      ReverbSat(((ReverbRead(m_reverb_registers.IIR_SRC_A0) * m_reverb_registers.IIR_COEF) >> 15) +
-                ((downsampled[0] * m_reverb_registers.IN_COEF_L) >> 15));
-    const s16 IIR_INPUT_A1 =
-      ReverbSat(((ReverbRead(m_reverb_registers.IIR_SRC_A1) * m_reverb_registers.IIR_COEF) >> 15) +
-                ((downsampled[1] * m_reverb_registers.IN_COEF_R) >> 15));
-    const s16 IIR_INPUT_B0 =
-      ReverbSat(((ReverbRead(m_reverb_registers.IIR_SRC_B0) * m_reverb_registers.IIR_COEF) >> 15) +
-                ((downsampled[0] * m_reverb_registers.IN_COEF_L) >> 15));
-    const s16 IIR_INPUT_B1 =
-      ReverbSat(((ReverbRead(m_reverb_registers.IIR_SRC_B1) * m_reverb_registers.IIR_COEF) >> 15) +
-                ((downsampled[1] * m_reverb_registers.IN_COEF_R) >> 15));
-
-    const s16 IIR_A0 =
-      ReverbSat((((IIR_INPUT_A0 * m_reverb_registers.IIR_ALPHA) >> 14) +
-                 (IIASM(m_reverb_registers.IIR_ALPHA, ReverbRead(m_reverb_registers.IIR_DEST_A0, -1)) >> 14)) >>
-                1);
-    const s16 IIR_A1 =
-      ReverbSat((((IIR_INPUT_A1 * m_reverb_registers.IIR_ALPHA) >> 14) +
-                 (IIASM(m_reverb_registers.IIR_ALPHA, ReverbRead(m_reverb_registers.IIR_DEST_A1, -1)) >> 14)) >>
-                1);
-    const s16 IIR_B0 =
-      ReverbSat((((IIR_INPUT_B0 * m_reverb_registers.IIR_ALPHA) >> 14) +
-                 (IIASM(m_reverb_registers.IIR_ALPHA, ReverbRead(m_reverb_registers.IIR_DEST_B0, -1)) >> 14)) >>
-                1);
-    const s16 IIR_B1 =
-      ReverbSat((((IIR_INPUT_B1 * m_reverb_registers.IIR_ALPHA) >> 14) +
-                 (IIASM(m_reverb_registers.IIR_ALPHA, ReverbRead(m_reverb_registers.IIR_DEST_B1, -1)) >> 14)) >>
-                1);
-
-    ReverbWrite(m_reverb_registers.IIR_DEST_A0, IIR_A0);
-    ReverbWrite(m_reverb_registers.IIR_DEST_A1, IIR_A1);
-    ReverbWrite(m_reverb_registers.IIR_DEST_B0, IIR_B0);
-    ReverbWrite(m_reverb_registers.IIR_DEST_B1, IIR_B1);
-
-    const s16 ACC0 = ReverbSat((((ReverbRead(m_reverb_registers.ACC_SRC_A0) * m_reverb_registers.ACC_COEF_A) >> 14) +
-                                ((ReverbRead(m_reverb_registers.ACC_SRC_B0) * m_reverb_registers.ACC_COEF_B) >> 14) +
-                                ((ReverbRead(m_reverb_registers.ACC_SRC_C0) * m_reverb_registers.ACC_COEF_C) >> 14) +
-                                ((ReverbRead(m_reverb_registers.ACC_SRC_D0) * m_reverb_registers.ACC_COEF_D) >> 14)) >>
-                               1);
-
-    const s16 ACC1 = ReverbSat((((ReverbRead(m_reverb_registers.ACC_SRC_A1) * m_reverb_registers.ACC_COEF_A) >> 14) +
-                                ((ReverbRead(m_reverb_registers.ACC_SRC_B1) * m_reverb_registers.ACC_COEF_B) >> 14) +
-                                ((ReverbRead(m_reverb_registers.ACC_SRC_C1) * m_reverb_registers.ACC_COEF_C) >> 14) +
-                                ((ReverbRead(m_reverb_registers.ACC_SRC_D1) * m_reverb_registers.ACC_COEF_D) >> 14)) >>
-                               1);
-
-    const s16 FB_A0 = ReverbRead(m_reverb_registers.MIX_DEST_A0 - m_reverb_registers.FB_SRC_A);
-    const s16 FB_A1 = ReverbRead(m_reverb_registers.MIX_DEST_A1 - m_reverb_registers.FB_SRC_A);
-    const s16 FB_B0 = ReverbRead(m_reverb_registers.MIX_DEST_B0 - m_reverb_registers.FB_SRC_B);
-    const s16 FB_B1 = ReverbRead(m_reverb_registers.MIX_DEST_B1 - m_reverb_registers.FB_SRC_B);
-
-    ReverbWrite(m_reverb_registers.MIX_DEST_A0, ReverbSat(ACC0 - ((FB_A0 * m_reverb_registers.FB_ALPHA) >> 15)));
-    ReverbWrite(m_reverb_registers.MIX_DEST_A1, ReverbSat(ACC1 - ((FB_A1 * m_reverb_registers.FB_ALPHA) >> 15)));
-
-    ReverbWrite(m_reverb_registers.MIX_DEST_B0,
-                ReverbSat(((m_reverb_registers.FB_ALPHA * ACC0) >> 15) -
-                          ((FB_A0 * (s16)(0x8000 ^ m_reverb_registers.FB_ALPHA)) >> 15) -
-                          ((FB_B0 * m_reverb_registers.FB_X) >> 15)));
-    ReverbWrite(m_reverb_registers.MIX_DEST_B1,
-                ReverbSat(((m_reverb_registers.FB_ALPHA * ACC1) >> 15) -
-                          ((FB_A1 * (s16)(0x8000 ^ m_reverb_registers.FB_ALPHA)) >> 15) -
-                          ((FB_B1 * m_reverb_registers.FB_X) >> 15)));
-  }
-
-  m_reverb_upsample_buffer[0][(m_reverb_resample_buffer_position >> 1) | 0x20] =
-    m_reverb_upsample_buffer[0][m_reverb_resample_buffer_position >> 1] =
-      (ReverbRead(m_reverb_registers.MIX_DEST_A0) + ReverbRead(m_reverb_registers.MIX_DEST_B0)) >> 1;
-  m_reverb_upsample_buffer[1][(m_reverb_resample_buffer_position >> 1) | 0x20] =
-    m_reverb_upsample_buffer[1][m_reverb_resample_buffer_position >> 1] =
-      (ReverbRead(m_reverb_registers.MIX_DEST_A1) + ReverbRead(m_reverb_registers.MIX_DEST_B1)) >> 1;
-
-  m_reverb_current_address = (m_reverb_current_address + 1) & 0x3FFFFu;
-  if (m_reverb_current_address == 0)
-    m_reverb_current_address = m_reverb_base_address;
 }
 
 void SPU::ProcessReverb(s16 left_in, s16 right_in, s32* left_out, s32* right_out)
@@ -1611,14 +1534,70 @@ void SPU::ProcessReverb(s16 left_in, s16 right_in, s32* left_out, s32* right_out
   s32 out[2];
   if (m_reverb_resample_buffer_position & 1u)
   {
-    ComputeReverb();
-    for (u32 i = 0; i < 2; i++)
-      out[i] = Reverb2244<true>(&m_reverb_upsample_buffer[i][((m_reverb_resample_buffer_position - 39) & 0x3F) >> 1]);
+    std::array<s32, 2> downsampled;
+    for (unsigned lr = 0; lr < 2; lr++)
+      downsampled[lr] = Reverb4422(&m_reverb_downsample_buffer[lr][(m_reverb_resample_buffer_position - 38) & 0x3F]);
+
+    for (unsigned lr = 0; lr < 2; lr++)
+    {
+      if (m_SPUCNT.reverb_master_enable)
+      {
+        const s16 IIR_INPUT_A =
+          ReverbSat((((ReverbRead(m_reverb_registers.IIR_SRC_A[lr ^ 0]) * m_reverb_registers.IIR_COEF) >> 14) +
+                     ((downsampled[lr] * m_reverb_registers.IN_COEF[lr]) >> 14)) >>
+                    1);
+        const s16 IIR_INPUT_B =
+          ReverbSat((((ReverbRead(m_reverb_registers.IIR_SRC_B[lr ^ 1]) * m_reverb_registers.IIR_COEF) >> 14) +
+                     ((downsampled[lr] * m_reverb_registers.IN_COEF[lr]) >> 14)) >>
+                    1);
+        const s16 IIR_A =
+          ReverbSat((((IIR_INPUT_A * m_reverb_registers.IIR_ALPHA) >> 14) +
+                     (IIASM(m_reverb_registers.IIR_ALPHA, ReverbRead(m_reverb_registers.IIR_DEST_A[lr], -1)) >> 14)) >>
+                    1);
+        const s16 IIR_B =
+          ReverbSat((((IIR_INPUT_B * m_reverb_registers.IIR_ALPHA) >> 14) +
+                     (IIASM(m_reverb_registers.IIR_ALPHA, ReverbRead(m_reverb_registers.IIR_DEST_B[lr], -1)) >> 14)) >>
+                    1);
+
+        ReverbWrite(m_reverb_registers.IIR_DEST_A[lr], IIR_A);
+        ReverbWrite(m_reverb_registers.IIR_DEST_B[lr], IIR_B);
+      }
+
+      const s32 ACC = ((ReverbRead(m_reverb_registers.ACC_SRC_A[lr]) * m_reverb_registers.ACC_COEF_A) >> 14) +
+                      ((ReverbRead(m_reverb_registers.ACC_SRC_B[lr]) * m_reverb_registers.ACC_COEF_B) >> 14) +
+                      ((ReverbRead(m_reverb_registers.ACC_SRC_C[lr]) * m_reverb_registers.ACC_COEF_C) >> 14) +
+                      ((ReverbRead(m_reverb_registers.ACC_SRC_D[lr]) * m_reverb_registers.ACC_COEF_D) >> 14);
+
+      const s16 FB_A = ReverbRead(m_reverb_registers.MIX_DEST_A[lr] - m_reverb_registers.FB_SRC_A);
+      const s16 FB_B = ReverbRead(m_reverb_registers.MIX_DEST_B[lr] - m_reverb_registers.FB_SRC_B);
+      const s16 MDA = ReverbSat((ACC + ((FB_A * ReverbNeg(m_reverb_registers.FB_ALPHA)) >> 14)) >> 1);
+      const s16 MDB = ReverbSat(
+        FB_A +
+        ((((MDA * m_reverb_registers.FB_ALPHA) >> 14) + ((FB_B * ReverbNeg(m_reverb_registers.FB_X)) >> 14)) >> 1));
+      const s16 IVB = ReverbSat(FB_B + ((MDB * m_reverb_registers.FB_X) >> 15));
+
+      if (m_SPUCNT.reverb_master_enable)
+      {
+        ReverbWrite(m_reverb_registers.MIX_DEST_A[lr], MDA);
+        ReverbWrite(m_reverb_registers.MIX_DEST_B[lr], MDB);
+      }
+
+      m_reverb_upsample_buffer[lr][(m_reverb_resample_buffer_position >> 1) | 0x20] =
+        m_reverb_upsample_buffer[lr][m_reverb_resample_buffer_position >> 1] = IVB;
+    }
+
+    m_reverb_current_address = (m_reverb_current_address + 1) & 0x3FFFFu;
+    if (m_reverb_current_address == 0)
+      m_reverb_current_address = m_reverb_base_address;
+
+    for (unsigned lr = 0; lr < 2; lr++)
+      out[lr] =
+        Reverb2244<false>(&m_reverb_upsample_buffer[lr][((m_reverb_resample_buffer_position >> 1) - 19) & 0x1F]);
   }
   else
   {
-    for (u32 i = 0; i < 2; i++)
-      out[i] = Reverb2244<false>(&m_reverb_upsample_buffer[i][((m_reverb_resample_buffer_position - 39) & 0x3F) >> 1]);
+    for (unsigned lr = 0; lr < 2; lr++)
+      out[lr] = Reverb2244<true>(&m_reverb_upsample_buffer[lr][((m_reverb_resample_buffer_position >> 1) - 19) & 0x1F]);
   }
 
   m_reverb_resample_buffer_position = (m_reverb_resample_buffer_position + 1) & 0x3F;

@@ -1,8 +1,8 @@
 #pragma once
 #include "common/bitfield.h"
 #include "common/fifo_queue.h"
-#include "types.h"
 #include "system.h"
+#include "types.h"
 #include <array>
 #include <memory>
 
@@ -293,28 +293,17 @@ private:
         s16 IIR_COEF;
         s16 FB_ALPHA;
         s16 FB_X;
-        u16 IIR_DEST_A0;
-        u16 IIR_DEST_A1;
-        u16 ACC_SRC_A0;
-        u16 ACC_SRC_A1;
-        u16 ACC_SRC_B0;
-        u16 ACC_SRC_B1;
-        u16 IIR_SRC_A0;
-        u16 IIR_SRC_A1;
-        u16 IIR_DEST_B0;
-        u16 IIR_DEST_B1;
-        u16 ACC_SRC_C0;
-        u16 ACC_SRC_C1;
-        u16 ACC_SRC_D0;
-        u16 ACC_SRC_D1;
-        u16 IIR_SRC_B1;
-        u16 IIR_SRC_B0;
-        u16 MIX_DEST_A0;
-        u16 MIX_DEST_A1;
-        u16 MIX_DEST_B0;
-        u16 MIX_DEST_B1;
-        s16 IN_COEF_L;
-        s16 IN_COEF_R;
+        u16 IIR_DEST_A[2];
+        u16 ACC_SRC_A[2];
+        u16 ACC_SRC_B[2];
+        u16 IIR_SRC_A[2];
+        u16 IIR_DEST_B[2];
+        u16 ACC_SRC_C[2];
+        u16 ACC_SRC_D[2];
+        u16 IIR_SRC_B[2];
+        u16 MIX_DEST_A[2];
+        u16 MIX_DEST_B[2];
+        s16 IN_COEF[2];
       };
 
       u16 rev[NUM_REVERB_REGS];
@@ -356,7 +345,6 @@ private:
   u32 ReverbMemoryAddress(u32 address) const;
   s16 ReverbRead(u32 address, s32 offset = 0);
   void ReverbWrite(u32 address, s16 data);
-  void ComputeReverb();
   void ProcessReverb(s16 left_in, s16 right_in, s32* left_out, s32* right_out);
 
   void Execute(TickCount ticks);
