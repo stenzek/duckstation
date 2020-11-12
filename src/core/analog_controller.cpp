@@ -82,7 +82,8 @@ void AnalogController::SetAxisState(s32 axis_code, float value)
     return;
 
   // -1..1 -> 0..255
-  const u8 u8_value = static_cast<u8>(std::clamp(((value + 1.0f) / 2.0f) * 255.0f, 0.0f, 255.0f));
+  const float scaled_value = std::clamp(value * m_axis_scale, -1.0f, 1.0f);
+  const u8 u8_value = static_cast<u8>(std::clamp(((scaled_value + 1.0f) / 2.0f) * 255.0f, 0.0f, 255.0f));
 
   SetAxisState(static_cast<Axis>(axis_code), u8_value);
 }
@@ -567,6 +568,8 @@ void AnalogController::LoadSettings(const char* section)
   Controller::LoadSettings(section);
   m_auto_enable_analog = g_host_interface->GetBoolSettingValue(section, "AutoEnableAnalog", false);
   m_analog_dpad_in_digital_mode = g_host_interface->GetBoolSettingValue(section, "AnalogDPadInDigitalMode", false);
+  m_axis_scale =
+    std::clamp(std::abs(g_host_interface->GetFloatSettingValue(section, "AxisScale", 1.00f)), 0.01f, 1.50f);
   m_rumble_bias =
     static_cast<u8>(std::min<u32>(g_host_interface->GetIntSettingValue(section, "VibrationBias", 8), 255));
 }

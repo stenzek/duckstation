@@ -229,8 +229,7 @@ bool XInputControllerInterface::HandleAxisEvent(u32 index, Axis axis, s32 value)
   const AxisCallback& cb = m_controllers[index].axis_mapping[static_cast<u32>(axis)];
   if (cb)
   {
-    // Apply axis scaling only when controller axis is mapped to an axis
-    cb(std::clamp(m_controllers[index].axis_scale * f_value, -1.0f, 1.0f));
+    cb(f_value);
     return true;
   }
 
@@ -300,17 +299,6 @@ void XInputControllerInterface::SetControllerRumbleStrength(int controller_index
   vib.wLeftMotorSpeed = static_cast<u16>(strengths[0] * 65535.0f);
   vib.wRightMotorSpeed = static_cast<u16>(strengths[1] * 65535.0f);
   m_xinput_set_state(static_cast<u32>(controller_index), &vib);
-}
-
-bool XInputControllerInterface::SetControllerAxisScale(int controller_index, float scale /* = 1.00f */)
-{
-  if (static_cast<u32>(controller_index) >= XUSER_MAX_COUNT || !m_controllers[controller_index].connected)
-    return false;
-
-  m_controllers[static_cast<u32>(controller_index)].axis_scale = std::clamp(std::abs(scale), 0.01f, 1.50f);
-  Log_InfoPrintf("Controller %d axis scale set to %f", controller_index,
-                 m_controllers[static_cast<u32>(controller_index)].axis_scale);
-  return true;
 }
 
 bool XInputControllerInterface::SetControllerDeadzone(int controller_index, float size /* = 0.25f */)
