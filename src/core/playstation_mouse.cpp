@@ -19,7 +19,7 @@ PlayStationMouse::~PlayStationMouse() = default;
 
 ControllerType PlayStationMouse::GetType() const
 {
-  return ControllerType::NamcoGunCon;
+  return ControllerType::PlayStationMouse;
 }
 
 std::optional<s32> PlayStationMouse::GetAxisCodeByName(std::string_view axis_name) const
