@@ -467,7 +467,9 @@ void SPU::WriteRegister(u32 offset, u16 value)
         // clear the fifo here?
         if (!m_transfer_fifo.IsEmpty())
         {
-          Log_WarningPrintf("Clearing SPU transfer FIFO with %u bytes left", m_transfer_fifo.GetSize());
+          if (m_SPUCNT.ram_transfer_mode == RAMTransferMode::DMAWrite)
+            Log_WarningPrintf("Clearing SPU transfer FIFO with %u bytes left", m_transfer_fifo.GetSize());
+
           m_transfer_fifo.Clear();
         }
       }
