@@ -67,7 +67,11 @@ bool Pad::DoState(StateWrapper& sw)
 
         m_controllers[i].reset();
         if (state_controller_type != ControllerType::None)
+        {
           m_controllers[i] = Controller::Create(state_controller_type, i);
+          if (!sw.DoMarker("Controller") || !m_controllers[i]->DoState(sw))
+            return false;
+        }
       }
       else
       {
