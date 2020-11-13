@@ -1,6 +1,8 @@
 add_library(core
     analog_controller.cpp
     analog_controller.h
+    analog_joystick.cpp
+    analog_joystick.h
     bios.cpp
     bios.h
     bus.cpp

@@ -52,6 +52,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="analog_controller.cpp" />
+    <ClCompile Include="analog_joystick.cpp" />
     <ClCompile Include="bios.cpp" />
     <ClCompile Include="bus.cpp" />
     <ClCompile Include="cdrom.cpp" />
@@ -116,6 +117,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="analog_controller.h" />
+    <ClInclude Include="analog_joystick.h" />
     <ClInclude Include="bios.h" />
     <ClInclude Include="bus.h" />
     <ClInclude Include="cdrom.h" />
