@@ -623,6 +623,14 @@ restart_instruction:
 
           if constexpr (pgxp_mode == PGXPMode::CPU)
             PGXP::CPU_ADD(inst.bits, new_value, ReadReg(inst.r.rs), ReadReg(inst.r.rt));
+          else if constexpr (pgxp_mode >= PGXPMode::Memory)
+          {
+            if (add_value == 0)
+            {
+              PGXP::CPU_MOVE((static_cast<u32>(inst.r.rd.GetValue()) << 8) | static_cast<u32>(inst.r.rs.GetValue()),
+                             old_value);
+            }
+          }
 
           WriteReg(inst.r.rd, new_value);
         }
@@ -630,9 +638,19 @@ restart_instruction:
 
         case InstructionFunct::addu:
         {
-          const u32 new_value = ReadReg(inst.r.rs) + ReadReg(inst.r.rt);
+          const u32 old_value = ReadReg(inst.r.rs);
+          const u32 add_value = ReadReg(inst.r.rt);
+          const u32 new_value = old_value + add_value;
           if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_ADDU(inst.bits, new_value, ReadReg(inst.r.rs), ReadReg(inst.r.rt));
+            PGXP::CPU_ADDU(inst.bits, new_value, old_value, add_value);
+          else if constexpr (pgxp_mode >= PGXPMode::Memory)
+          {
+            if (add_value == 0)
+            {
+              PGXP::CPU_MOVE((static_cast<u32>(inst.r.rd.GetValue()) << 8) | static_cast<u32>(inst.r.rs.GetValue()),
+                             old_value);
+            }
+          }
 
           WriteReg(inst.r.rd, new_value);
         }
@@ -897,6 +915,14 @@ restart_instruction:
 
       if constexpr (pgxp_mode >= PGXPMode::CPU)
         PGXP::CPU_ADDI(inst.bits, new_value, ReadReg(inst.i.rs));
+      else if constexpr (pgxp_mode >= PGXPMode::Memory)
+      {
+        if (add_value == 0)
+        {
+          PGXP::CPU_MOVE((static_cast<u32>(inst.i.rt.GetValue()) << 8) | static_cast<u32>(inst.i.rs.GetValue()),
+                         old_value);
+        }
+      }
 
       WriteReg(inst.i.rt, new_value);
     }
@@ -904,10 +930,20 @@ restart_instruction:
 
     case InstructionOp::addiu:
     {
-      const u32 new_value = ReadReg(inst.i.rs) + inst.i.imm_sext32();
+      const u32 old_value = ReadReg(inst.i.rs);
+      const u32 add_value = inst.i.imm_sext32();
+      const u32 new_value = old_value + add_value;
 
       if constexpr (pgxp_mode >= PGXPMode::CPU)
         PGXP::CPU_ADDIU(inst.bits, new_value, ReadReg(inst.i.rs));
+      else if constexpr (pgxp_mode >= PGXPMode::Memory)
+      {
+        if (add_value == 0)
+        {
+          PGXP::CPU_MOVE((static_cast<u32>(inst.i.rt.GetValue()) << 8) | static_cast<u32>(inst.i.rs.GetValue()),
+                         old_value);
+        }
+      }
 
       WriteReg(inst.i.rt, new_value);
     }
