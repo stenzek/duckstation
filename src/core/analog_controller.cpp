@@ -24,6 +24,7 @@ void AnalogController::Reset()
 {
   m_analog_mode = false;
   m_rumble_unlocked = false;
+  m_legacy_rumble_unlocked = false;
   m_configuration_mode = false;
   m_command_param = 0;
   m_motor_state.fill(0);
@@ -41,8 +42,10 @@ bool AnalogController::DoState(StateWrapper& sw)
 
   sw.Do(&m_analog_mode);
   sw.Do(&m_rumble_unlocked);
+  sw.DoEx(&m_legacy_rumble_unlocked, 44, false);
   sw.Do(&m_configuration_mode);
   sw.Do(&m_command_param);
+  sw.DoEx(&m_button_state, 44, static_cast<u16>(0xFFFF));
   sw.Do(&m_state);
 
   MotorState motor_state = m_motor_state;
