@@ -60,11 +60,13 @@
     <ClCompile Include="$(IntDir)moc_postprocessingchainconfigwidget.cpp" />
     <ClCompile Include="$(IntDir)moc_postprocessingshaderconfigwidget.cpp" />
     <ClCompile Include="$(IntDir)moc_postprocessingsettingswidget.cpp" />
+    <ClCompile Include="inputbindingmonitor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtutils.h" />
     <ClInclude Include="settingwidgetbinder.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="inputbindingmonitor.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="resources">

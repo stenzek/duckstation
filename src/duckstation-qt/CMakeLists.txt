@@ -55,6 +55,8 @@ set(SRCS
   inputbindingdialog.cpp
   inputbindingdialog.h
   inputbindingdialog.ui
+  inputbindingmonitor.cpp
+  inputbindingmonitor.h
   inputbindingwidgets.cpp
   inputbindingwidgets.h
   main.cpp
