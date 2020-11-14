@@ -35,9 +35,6 @@ public:
   u32 GetControllerRumbleMotorCount(int controller_index) override;
   void SetControllerRumbleStrength(int controller_index, const float* strengths, u32 num_motors) override;
 
-  // Set scaling that will be applied on axis-to-axis mappings
-  bool SetControllerAxisScale(int controller_index, float scale = 1.00f) override;
-
   // Set deadzone that will be applied on axis-to-button mappings
   bool SetControllerDeadzone(int controller_index, float size = 0.25f) override;
 
@@ -54,8 +51,6 @@ private:
     int joystick_id;
     int player_id;
 
-    // Scaling value of 1.30f to 1.40f recommended when using recent controllers
-    float axis_scale = 1.00f;
     float deadzone = 0.25f;
 
     std::array<AxisCallback, MAX_NUM_AXISES> axis_mapping;

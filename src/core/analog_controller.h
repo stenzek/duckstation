@@ -137,6 +137,7 @@ private:
 
   bool m_auto_enable_analog = false;
   bool m_analog_dpad_in_digital_mode = false;
+  float m_axis_scale = 1.00f;
   u8 m_rumble_bias = 8;
 
   bool m_analog_mode = false;

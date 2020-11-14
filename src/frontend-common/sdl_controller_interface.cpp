@@ -320,8 +320,7 @@ bool SDLControllerInterface::HandleControllerAxisEvent(const SDL_Event* ev)
   const AxisCallback& cb = it->axis_mapping[ev->caxis.axis];
   if (cb)
   {
-    // Apply axis scaling only when controller axis is mapped to an axis
-    cb(std::clamp(it->axis_scale * value, -1.0f, 1.0f));
+    cb(value);
     return true;
   }
 
@@ -425,17 +424,6 @@ void SDLControllerInterface::SetControllerRumbleStrength(int controller_index, c
     else
       SDL_HapticRumbleStop(haptic);
   }
-}
-
-bool SDLControllerInterface::SetControllerAxisScale(int controller_index, float scale /* = 1.00f */)
-{
-  auto it = GetControllerDataForPlayerId(controller_index);
-  if (it == m_controllers.end())
-    return false;
-
-  it->axis_scale = std::clamp(std::abs(scale), 0.01f, 1.50f);
-  Log_InfoPrintf("Controller %d axis scale set to %f", controller_index, it->axis_scale);
-  return true;
 }
 
 bool SDLControllerInterface::SetControllerDeadzone(int controller_index, float size /* = 0.25f */)
