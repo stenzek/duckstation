@@ -211,7 +211,7 @@ jobs:
 
     - name: Sign APK
       if: github.ref == 'refs/heads/master'
-      uses: r0adkll/sign-android-release@v1
+      uses: r0adkll/sign-android-release@5aa7898f16bf66a673e990b8146e96ac1532b6eb
       with:
         releaseDirectory: android/app/build/outputs/apk/release
         signingKeyBase64: ${{ secrets.APK_SIGNING_KEY }}
