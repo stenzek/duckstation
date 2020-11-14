@@ -3,7 +3,7 @@
 
 **Discord Server:** https://discord.gg/Buktv3t
 
-**Latest Windows, Linux (AppImage), and Libretro Builds:** https://github.com/stenzek/duckstation/releases/tag/latest
+**Latest Windows, Linux (AppImage), Mac, Android, and Libretro Builds:** https://github.com/stenzek/duckstation/releases/tag/latest
 
 **Game Compatibility List:** https://docs.google.com/spreadsheets/d/1H66MxViRjjE5f8hOl5RQmF5woS1murio2dsLn14kEqo/edit?usp=sharing
 
