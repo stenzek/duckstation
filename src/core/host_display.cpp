@@ -6,6 +6,7 @@
 #include "stb_image.h"
 #include "stb_image_resize.h"
 #include "stb_image_write.h"
+#include <cerrno>
 #include <cmath>
 #include <cstring>
 #include <vector>
@@ -287,7 +288,7 @@ bool HostDisplay::WriteTextureToFile(const void* texture_handle, u32 x, u32 y, u
   auto fp = FileSystem::OpenManagedCFile(filename, "wb");
   if (!fp)
   {
-    Log_ErrorPrintf("Can't open file '%s'", filename);
+    Log_ErrorPrintf("Can't open file '%s': errno %d", filename, errno);
     return false;
   }
 
