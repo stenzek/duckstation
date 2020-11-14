@@ -63,21 +63,19 @@ LibretroHostInterface::~LibretroHostInterface()
   }
 }
 
-void LibretroHostInterface::InitInterfaces()
+void LibretroHostInterface::retro_set_environment()
 {
   SetCoreOptions();
   InitDiskControlInterface();
+  InitLogging();
+}
 
-  if (!m_interfaces_initialized)
-  {
-    InitLogging();
-    InitRumbleInterface();
+void LibretroHostInterface::InitInterfaces()
+{
+  InitRumbleInterface();
 
-    unsigned dummy = 0;
-    m_supports_input_bitmasks = g_retro_environment_callback(RETRO_ENVIRONMENT_GET_INPUT_BITMASKS, &dummy);
-
-    m_interfaces_initialized = true;
-  }
+  unsigned dummy = 0;
+  m_supports_input_bitmasks = g_retro_environment_callback(RETRO_ENVIRONMENT_GET_INPUT_BITMASKS, &dummy);
 }
 
 void LibretroHostInterface::InitLogging()
@@ -100,6 +98,7 @@ bool LibretroHostInterface::Initialize()
   if (!HostInterface::Initialize())
     return false;
 
+  InitInterfaces();
   LoadSettings();
   FixIncompatibleSettings(true);
   UpdateLogging();

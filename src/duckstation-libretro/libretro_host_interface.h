@@ -11,8 +11,6 @@ public:
   LibretroHostInterface();
   ~LibretroHostInterface() override;
 
-  void InitInterfaces();
-
   ALWAYS_INLINE u32 GetResolutionScale() const { return g_settings.gpu_resolution_scale; }
 
   bool Initialize() override;
@@ -31,6 +29,7 @@ public:
   std::string GetBIOSDirectory() override;
 
   // Called by frontend
+  void retro_set_environment();
   void retro_get_system_av_info(struct retro_system_av_info* info);
   bool retro_load_game(const struct retro_game_info* game);
   void retro_run_frame();
@@ -53,6 +52,7 @@ protected:
 private:
   bool SetCoreOptions();
   bool HasCoreVariablesChanged();
+  void InitInterfaces();
   void InitLogging();
   void InitDiskControlInterface();
   void InitRumbleInterface();
@@ -96,7 +96,6 @@ private:
   retro_rumble_interface m_rumble_interface = {};
   bool m_rumble_interface_valid = false;
   bool m_supports_input_bitmasks = false;
-  bool m_interfaces_initialized = false;
 
   float m_last_aspect_ratio = 4.0f / 3.0f;
 };
