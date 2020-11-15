@@ -294,7 +294,7 @@ bool DMA::TransferChannel(Channel channel)
       {
         u32 header;
         std::memcpy(&header, &ram_pointer[current_address & ADDRESS_MASK], sizeof(header));
-        used_ticks++;
+        used_ticks += 10;
 
         const u32 word_count = header >> 24;
         const u32 next_address = header & UINT32_C(0x00FFFFFF);
@@ -302,6 +302,7 @@ bool DMA::TransferChannel(Channel channel)
                         word_count * UINT32_C(4), word_count, next_address);
         if (word_count > 0)
         {
+          used_ticks += 5;
           used_ticks +=
             TransferMemoryToDevice(channel, (current_address + sizeof(header)) & ADDRESS_MASK, 4, word_count);
         }
