@@ -20,8 +20,10 @@ public:
   ALWAYS_INLINE void setNextWidget(InputBindingWidget* widget) { m_next_widget = widget; }
 
 public Q_SLOTS:
-  void bindToControllerAxis(int controller_index, int axis_index, std::optional<bool> positive);
+  void bindToControllerAxis(int controller_index, int axis_index, bool inverted,
+                            std::optional<bool> half_axis_positive);
   void bindToControllerButton(int controller_index, int button_index);
+  void bindToControllerHat(int controller_index, int hat_index, const QString& hat_direction);
   void beginRebindAll();
   void clearBinding();
   void reloadBinding();

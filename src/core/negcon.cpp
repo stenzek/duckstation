@@ -63,9 +63,8 @@ void NeGcon::SetAxisState(s32 axis_code, float value)
     return;
   }
 
-  // I, II, L: 0..1 -> 0..255 or -1..0 -> 0..255 to support negative axis ranges,
-  // e.g. if bound to analog stick instead of trigger
-  const u8 u8_value = static_cast<u8>(std::clamp(std::abs(value) * 255.0f, 0.0f, 255.0f));
+  // I, II, L: -1..1 -> 0..255
+  const u8 u8_value = static_cast<u8>(std::clamp(((value + 1.0f) / 2.0f) * 255.0f, 0.0f, 255.0f));
 
   SetAxisState(static_cast<Axis>(axis_code), u8_value);
 }

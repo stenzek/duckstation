@@ -22,10 +22,12 @@ public:
   void ClearBindings() override;
 
   // Binding to events. If a binding for this axis/button already exists, returns false.
-  bool BindControllerAxis(int controller_index, int axis_number, AxisCallback callback) override;
+  bool BindControllerAxis(int controller_index, int axis_number, AxisSide axis_side, AxisCallback callback) override;
   bool BindControllerButton(int controller_index, int button_number, ButtonCallback callback) override;
   bool BindControllerAxisToButton(int controller_index, int axis_number, bool direction,
                                   ButtonCallback callback) override;
+  bool BindControllerHatToButton(int controller_index, int hat_number, std::string_view hat_position,
+                                 ButtonCallback callback) override;
   bool BindControllerButtonToAxis(int controller_index, int button_number, AxisCallback callback) override;
 
   // Changing rumble strength.
@@ -61,7 +63,7 @@ private:
 
     float deadzone = 0.25f;
 
-    std::array<AxisCallback, MAX_NUM_AXISES> axis_mapping;
+    std::array<std::array<AxisCallback, 3>, MAX_NUM_AXISES> axis_mapping;
     std::array<ButtonCallback, MAX_NUM_BUTTONS> button_mapping;
     std::array<std::array<ButtonCallback, 2>, MAX_NUM_AXISES> axis_button_mapping;
     std::array<AxisCallback, MAX_NUM_BUTTONS> button_axis_mapping;

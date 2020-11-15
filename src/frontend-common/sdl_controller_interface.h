@@ -25,10 +25,12 @@ public:
   void ClearBindings() override;
 
   // Binding to events. If a binding for this axis/button already exists, returns false.
-  bool BindControllerAxis(int controller_index, int axis_number, AxisCallback callback) override;
+  bool BindControllerAxis(int controller_index, int axis_number, AxisSide axis_side, AxisCallback callback) override;
   bool BindControllerButton(int controller_index, int button_number, ButtonCallback callback) override;
   bool BindControllerAxisToButton(int controller_index, int axis_number, bool direction,
                                   ButtonCallback callback) override;
+  bool BindControllerHatToButton(int controller_index, int hat_number, std::string_view hat_position,
+                                 ButtonCallback callback) override;
   bool BindControllerButtonToAxis(int controller_index, int button_number, AxisCallback callback) override;
 
   // Changing rumble strength.
@@ -45,23 +47,25 @@ public:
 private:
   struct ControllerData
   {
-    void* controller;
     void* haptic;
     int haptic_left_right_effect;
     int joystick_id;
     int player_id;
+    bool is_game_controller;
 
     float deadzone = 0.25f;
 
-    std::array<AxisCallback, MAX_NUM_AXISES> axis_mapping;
+    // TODO: Turn to vectors to support arbitrary amounts of buttons and axes (for Joysticks)
+    // Preferably implement a simple "flat map", an ordered view over a vector
+    std::array<std::array<AxisCallback, 3>, MAX_NUM_AXISES> axis_mapping;
     std::array<ButtonCallback, MAX_NUM_BUTTONS> button_mapping;
     std::array<std::array<ButtonCallback, 2>, MAX_NUM_AXISES> axis_button_mapping;
     std::array<AxisCallback, MAX_NUM_BUTTONS> button_axis_mapping;
+    std::vector<std::array<ButtonCallback, 4>> hat_button_mapping;
   };
 
   using ControllerDataVector = std::vector<ControllerData>;
 
-  ControllerDataVector::iterator GetControllerDataForController(void* controller);
   ControllerDataVector::iterator GetControllerDataForJoystickId(int id);
   ControllerDataVector::iterator GetControllerDataForPlayerId(int id);
   int GetFreePlayerId() const;
@@ -70,6 +74,11 @@ private:
   bool CloseGameController(int joystick_index, bool notify);
   bool HandleControllerAxisEvent(const SDL_Event* event);
   bool HandleControllerButtonEvent(const SDL_Event* event);
+
+  bool OpenJoystick(int index);
+  bool HandleJoystickAxisEvent(const struct SDL_JoyAxisEvent* event);
+  bool HandleJoystickButtonEvent(const struct SDL_JoyButtonEvent* event);
+  bool HandleJoystickHatEvent(const struct SDL_JoyHatEvent* event);
 
   ControllerDataVector m_controllers;
 

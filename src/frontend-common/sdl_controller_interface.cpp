@@ -106,16 +106,27 @@ bool SDLControllerInterface::ProcessSDLEvent(const SDL_Event* event)
     case SDL_CONTROLLERBUTTONUP:
       return HandleControllerButtonEvent(event);
 
+    case SDL_JOYDEVICEADDED:
+      if (SDL_IsGameController(event->jdevice.which))
+        return true;
+
+      Log_InfoPrintf("Joystick %d inserted", event->jdevice.which);
+      OpenJoystick(event->jdevice.which);
+      return true;
+
+    case SDL_JOYAXISMOTION:
+      return HandleJoystickAxisEvent(&event->jaxis);
+
+    case SDL_JOYHATMOTION:
+      return HandleJoystickHatEvent(&event->jhat);
+
+    case SDL_JOYBUTTONDOWN:
+    case SDL_JOYBUTTONUP:
+      return HandleJoystickButtonEvent(&event->jbutton);
+
     default:
       return false;
   }
-}
-
-SDLControllerInterface::ControllerDataVector::iterator
-SDLControllerInterface::GetControllerDataForController(void* controller)
-{
-  return std::find_if(m_controllers.begin(), m_controllers.end(),
-                      [controller](const ControllerData& cd) { return cd.controller == controller; });
 }
 
 SDLControllerInterface::ControllerDataVector::iterator SDLControllerInterface::GetControllerDataForJoystickId(int id)
@@ -179,10 +190,10 @@ bool SDLControllerInterface::OpenGameController(int index)
                  SDL_GameControllerName(gcontroller));
 
   ControllerData cd = {};
-  cd.controller = gcontroller;
   cd.player_id = player_id;
   cd.joystick_id = joystick_id;
   cd.haptic_left_right_effect = -1;
+  cd.is_game_controller = true;
 
   SDL_Haptic* haptic = SDL_HapticOpenFromJoystick(joystick);
   if (haptic)
@@ -233,7 +244,7 @@ bool SDLControllerInterface::CloseGameController(int joystick_index, bool notify
   if (it->haptic)
     SDL_HapticClose(static_cast<SDL_Haptic*>(it->haptic));
 
-  SDL_GameControllerClose(static_cast<SDL_GameController*>(it->controller));
+  SDL_GameControllerClose(SDL_GameControllerFromInstanceID(joystick_index));
   m_controllers.erase(it);
 
   if (notify)
@@ -241,18 +252,264 @@ bool SDLControllerInterface::CloseGameController(int joystick_index, bool notify
   return true;
 }
 
+bool SDLControllerInterface::OpenJoystick(int index)
+{
+  SDL_Joystick* joystick = SDL_JoystickOpen(index);
+  if (!joystick)
+  {
+    Log_WarningPrintf("Failed to open joystick %d", index);
+
+    return false;
+  }
+
+  int joystick_id = SDL_JoystickInstanceID(joystick);
+#if SDL_VERSION_ATLEAST(2, 0, 9)
+  int player_id = SDL_JoystickGetDevicePlayerIndex(index);
+#else
+  int player_id = -1;
+#endif
+  if (player_id < 0 || GetControllerDataForPlayerId(player_id) != m_controllers.end())
+  {
+    const int free_player_id = GetFreePlayerId();
+    Log_WarningPrintf(
+      "Controller %d (joystick %d) returned player ID %d, which is invalid or in use. Using ID %d instead.", index,
+      joystick_id, player_id, free_player_id);
+    player_id = free_player_id;
+  }
+
+  const char* name = SDL_JoystickName(joystick);
+
+  Log_InfoPrintf("Opened controller %d (instance id %d, player id %d): %s", index, joystick_id, player_id, name);
+
+  ControllerData cd = {};
+  cd.player_id = player_id;
+  cd.joystick_id = joystick_id;
+  cd.haptic_left_right_effect = -1;
+  cd.is_game_controller = false;
+
+  SDL_Haptic* haptic = SDL_HapticOpenFromJoystick(joystick);
+  if (haptic)
+  {
+    SDL_HapticEffect ef = {};
+    ef.leftright.type = SDL_HAPTIC_LEFTRIGHT;
+    ef.leftright.length = 1000;
+
+    int ef_id = SDL_HapticNewEffect(haptic, &ef);
+    if (ef_id >= 0)
+    {
+      cd.haptic = haptic;
+      cd.haptic_left_right_effect = ef_id;
+    }
+    else
+    {
+      Log_ErrorPrintf("Failed to create haptic left/right effect: %s", SDL_GetError());
+      if (SDL_HapticRumbleSupported(haptic) && SDL_HapticRumbleInit(haptic) != 0)
+      {
+        cd.haptic = haptic;
+      }
+      else
+      {
+        Log_ErrorPrintf("No haptic rumble supported: %s", SDL_GetError());
+        SDL_HapticClose(haptic);
+      }
+    }
+  }
+
+  if (cd.haptic)
+    Log_InfoPrintf("Rumble is supported on '%s'", name);
+  else
+    Log_WarningPrintf("Rumble is not supported on '%s'", name);
+
+  m_controllers.push_back(std::move(cd));
+  OnControllerConnected(player_id);
+  return true;
+}
+
+bool SDLControllerInterface::HandleJoystickAxisEvent(const SDL_JoyAxisEvent* event)
+{
+  const float value = static_cast<float>(event->value) / (event->value < 0 ? 32768.0f : 32767.0f);
+  Log_DebugPrintf("controller %d axis %d %d %f", event->which, event->axis, event->value, value);
+
+  auto it = GetControllerDataForJoystickId(event->which);
+  if (it == m_controllers.end() || it->is_game_controller)
+    return false;
+
+  if (DoEventHook(Hook::Type::Axis, it->player_id, event->axis, value, true))
+    return true;
+
+  bool processed = false;
+
+  const AxisCallback& cb = it->axis_mapping[event->axis][AxisSide::Full];
+  if (cb)
+  {
+    cb(value);
+    processed = true;
+  }
+
+  if (value > 0.0f)
+  {
+    const AxisCallback& cb = it->axis_mapping[event->axis][AxisSide::Positive];
+    if (cb)
+    {
+      // Expand 0..1 - -1..1
+      cb(value * 2.0f - 1.0f);
+      processed = true;
+    }
+  }
+  else if (value < 0.0f)
+  {
+    const AxisCallback& cb = it->axis_mapping[event->axis][AxisSide::Negative];
+    if (cb)
+    {
+      // Expand 0..-1 - -1..1
+      cb(value * -2.0f - 1.0f);
+      processed = true;
+    }
+  }
+
+  if (processed)
+    return true;
+
+  // set the other direction to false so large movements don't leave the opposite on
+  const bool outside_deadzone = (std::abs(value) >= it->deadzone);
+  const bool positive = (value >= 0.0f);
+  const ButtonCallback& other_button_cb = it->axis_button_mapping[event->axis][BoolToUInt8(!positive)];
+  const ButtonCallback& button_cb = it->axis_button_mapping[event->axis][BoolToUInt8(positive)];
+  if (button_cb)
+  {
+    button_cb(outside_deadzone);
+    if (other_button_cb)
+      other_button_cb(false);
+    return true;
+  }
+  else if (other_button_cb)
+  {
+    other_button_cb(false);
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+bool SDLControllerInterface::HandleJoystickButtonEvent(const SDL_JoyButtonEvent* event)
+{
+  Log_DebugPrintf("controller %d button %d %s", event->which, event->button,
+                  event->state == SDL_PRESSED ? "pressed" : "released");
+
+  auto it = GetControllerDataForJoystickId(event->which);
+  if (it == m_controllers.end() || it->is_game_controller)
+    return false;
+
+  const bool pressed = (event->state == SDL_PRESSED);
+  if (DoEventHook(Hook::Type::Button, it->player_id, event->button, pressed ? 1.0f : 0.0f))
+    return true;
+
+  const ButtonCallback& cb = it->button_mapping[event->button];
+  if (cb)
+  {
+    cb(pressed);
+    return true;
+  }
+
+  const AxisCallback& axis_cb = it->button_axis_mapping[event->button];
+  if (axis_cb)
+  {
+    axis_cb(pressed ? 1.0f : -1.0f);
+    return true;
+  }
+
+  return false;
+}
+
+bool SDLControllerInterface::HandleJoystickHatEvent(const SDL_JoyHatEvent* event)
+{
+  Log_DebugPrintf("controller %d hat %d %d", event->which, event->hat, event->value);
+
+  auto it = GetControllerDataForJoystickId(event->which);
+  if (it == m_controllers.end() || it->is_game_controller)
+    return false;
+
+  auto HatEventHook = [hat = event->hat, value = event->value, player_id = it->player_id, this](int hat_position) {
+    if ((value & hat_position) == 0)
+      return false;
+
+    std::string_view position_str;
+    switch (value)
+    {
+      case SDL_HAT_UP:
+        position_str = "Up";
+        break;
+      case SDL_HAT_RIGHT:
+        position_str = "Right";
+        break;
+      case SDL_HAT_DOWN:
+        position_str = "Down";
+        break;
+      case SDL_HAT_LEFT:
+        position_str = "Left";
+        break;
+      default:
+        return false;
+    }
+
+    return DoEventHook(Hook::Type::Hat, player_id, hat, position_str);
+  };
+
+  if (event->value == SDL_HAT_CENTERED)
+  {
+    if (HatEventHook(SDL_HAT_CENTERED))
+      return true;
+  }
+  else
+  {
+    // event->value can be a bitmask of multiple direction, so probe them all
+    if (HatEventHook(SDL_HAT_UP) || HatEventHook(SDL_HAT_RIGHT) || HatEventHook(SDL_HAT_DOWN) ||
+        HatEventHook(SDL_HAT_LEFT))
+      return true;
+  }
+
+  bool processed = false;
+
+  if (const ButtonCallback& cb = it->hat_button_mapping[event->hat][0]; cb)
+  {
+    cb(event->value & SDL_HAT_UP);
+    processed = true;
+  }
+  if (const ButtonCallback& cb = it->hat_button_mapping[event->hat][1]; cb)
+  {
+    cb(event->value & SDL_HAT_RIGHT);
+    processed = true;
+  }
+  if (const ButtonCallback& cb = it->hat_button_mapping[event->hat][2]; cb)
+  {
+    cb(event->value & SDL_HAT_DOWN);
+    processed = true;
+  }
+  if (const ButtonCallback& cb = it->hat_button_mapping[event->hat][3]; cb)
+  {
+    cb(event->value & SDL_HAT_LEFT);
+    processed = true;
+  }
+
+  return processed;
+}
+
 void SDLControllerInterface::ClearBindings()
 {
   for (auto& it : m_controllers)
   {
-    for (AxisCallback& ac : it.axis_mapping)
-      ac = {};
-    for (ButtonCallback& bc : it.button_mapping)
-      bc = {};
+    it.axis_mapping.fill({});
+    it.button_mapping.fill({});
+    it.axis_button_mapping.fill({});
+    it.button_axis_mapping.fill({});
+    it.hat_button_mapping.clear();
   }
 }
 
-bool SDLControllerInterface::BindControllerAxis(int controller_index, int axis_number, AxisCallback callback)
+bool SDLControllerInterface::BindControllerAxis(int controller_index, int axis_number, AxisSide axis_side,
+                                                AxisCallback callback)
 {
   auto it = GetControllerDataForPlayerId(controller_index);
   if (it == m_controllers.end())
@@ -261,7 +518,7 @@ bool SDLControllerInterface::BindControllerAxis(int controller_index, int axis_n
   if (axis_number < 0 || axis_number >= MAX_NUM_AXISES)
     return false;
 
-  it->axis_mapping[axis_number] = std::move(callback);
+  it->axis_mapping[axis_number][axis_side] = std::move(callback);
   return true;
 }
 
@@ -292,6 +549,33 @@ bool SDLControllerInterface::BindControllerAxisToButton(int controller_index, in
   return true;
 }
 
+bool SDLControllerInterface::BindControllerHatToButton(int controller_index, int hat_number,
+                                                       std::string_view hat_position, ButtonCallback callback)
+{
+  auto it = GetControllerDataForPlayerId(controller_index);
+  if (it == m_controllers.end())
+    return false;
+
+  size_t index;
+  if (hat_position == "Up")
+    index = 0;
+  else if (hat_position == "Right")
+    index = 1;
+  else if (hat_position == "Down")
+    index = 2;
+  else if (hat_position == "Left")
+    index = 3;
+  else
+    return false;
+
+  // We need 4 entries per hat_number
+  if (it->hat_button_mapping.size() < hat_number + 1)
+    it->hat_button_mapping.resize(hat_number + 1);
+
+  it->hat_button_mapping[hat_number][index] = std::move(callback);
+  return true;
+}
+
 bool SDLControllerInterface::BindControllerButtonToAxis(int controller_index, int button_number, AxisCallback callback)
 {
   auto it = GetControllerDataForPlayerId(controller_index);
@@ -317,10 +601,18 @@ bool SDLControllerInterface::HandleControllerAxisEvent(const SDL_Event* ev)
   if (DoEventHook(Hook::Type::Axis, it->player_id, ev->caxis.axis, value))
     return true;
 
-  const AxisCallback& cb = it->axis_mapping[ev->caxis.axis];
+  const AxisCallback& cb = it->axis_mapping[ev->caxis.axis][AxisSide::Full];
   if (cb)
   {
-    cb(value);
+    // Extend triggers from a 0 - 1 range to a -1 - 1 range for consistency with other inputs
+    if (ev->caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERLEFT || ev->caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT)
+    {
+      cb((value * 2.0f) - 1.0f);
+    }
+    else
+    {
+      cb(value);
+    }
     return true;
   }
 
@@ -367,11 +659,11 @@ bool SDLControllerInterface::HandleControllerButtonEvent(const SDL_Event* ev)
     return true;
   }
 
-  // Assume a half-axis, i.e. in 0..1 range
   const AxisCallback& axis_cb = it->button_axis_mapping[ev->cbutton.button];
   if (axis_cb)
   {
-    axis_cb(pressed ? 1.0f : 0.0f);
+    axis_cb(pressed ? 1.0f : -1.0f);
+    return true;
   }
 
   return false;

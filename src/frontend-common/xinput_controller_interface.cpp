@@ -158,16 +158,11 @@ void XInputControllerInterface::CheckForStateChanges(u32 index, const XINPUT_STA
 
 void XInputControllerInterface::ClearBindings()
 {
-  for (auto& it : m_controllers)
-  {
-    for (AxisCallback& ac : it.axis_mapping)
-      ac = {};
-    for (ButtonCallback& bc : it.button_mapping)
-      bc = {};
-  }
+  m_controllers.fill({});
 }
 
-bool XInputControllerInterface::BindControllerAxis(int controller_index, int axis_number, AxisCallback callback)
+bool XInputControllerInterface::BindControllerAxis(int controller_index, int axis_number, AxisSide axis_side,
+                                                   AxisCallback callback)
 {
   if (static_cast<u32>(controller_index) >= m_controllers.size() || !m_controllers[controller_index].connected)
     return false;
@@ -175,7 +170,7 @@ bool XInputControllerInterface::BindControllerAxis(int controller_index, int axi
   if (axis_number < 0 || axis_number >= NUM_AXISES)
     return false;
 
-  m_controllers[controller_index].axis_mapping[axis_number] = std::move(callback);
+  m_controllers[controller_index].axis_mapping[axis_number][axis_side] = std::move(callback);
   return true;
 }
 
@@ -204,6 +199,13 @@ bool XInputControllerInterface::BindControllerAxisToButton(int controller_index,
   return true;
 }
 
+bool XInputControllerInterface::BindControllerHatToButton(int controller_index, int hat_number,
+                                                          std::string_view hat_position, ButtonCallback callback)
+{
+  // Hats don't exist in XInput
+  return false;
+}
+
 bool XInputControllerInterface::BindControllerButtonToAxis(int controller_index, int button_number,
                                                            AxisCallback callback)
 {
@@ -226,7 +228,7 @@ bool XInputControllerInterface::HandleAxisEvent(u32 index, Axis axis, s32 value)
   if (DoEventHook(Hook::Type::Axis, index, static_cast<u32>(axis), f_value))
     return true;
 
-  const AxisCallback& cb = m_controllers[index].axis_mapping[static_cast<u32>(axis)];
+  const AxisCallback& cb = m_controllers[index].axis_mapping[static_cast<u32>(axis)][AxisSide::Full];
   if (cb)
   {
     cb(f_value);

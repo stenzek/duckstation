@@ -41,16 +41,18 @@ void InputBindingWidget::updateText()
     setText(QString::fromStdString(m_bindings[0]));
 }
 
-void InputBindingWidget::bindToControllerAxis(int controller_index, int axis_index, std::optional<bool> positive)
+void InputBindingWidget::bindToControllerAxis(int controller_index, int axis_index, bool inverted,
+                                              std::optional<bool> half_axis_positive)
 {
+  const char* invert_char = inverted ? "-" : "";
   const char* sign_char = "";
-  if (positive)
+  if (half_axis_positive)
   {
-    sign_char = *positive ? "+" : "-";
+    sign_char = *half_axis_positive ? "+" : "-";
   }
 
   m_new_binding_value =
-    StringUtil::StdStringFromFormat("Controller%d/%sAxis%d", controller_index, sign_char, axis_index);
+    StringUtil::StdStringFromFormat("Controller%d/%sAxis%d%s", controller_index, sign_char, axis_index, invert_char);
   setNewBinding();
   stopListeningForInput();
 }
@@ -58,6 +60,14 @@ void InputBindingWidget::bindToControllerAxis(int controller_index, int axis_ind
 void InputBindingWidget::bindToControllerButton(int controller_index, int button_index)
 {
   m_new_binding_value = StringUtil::StdStringFromFormat("Controller%d/Button%d", controller_index, button_index);
+  setNewBinding();
+  stopListeningForInput();
+}
+
+void InputBindingWidget::bindToControllerHat(int controller_index, int hat_index, const QString& hat_direction)
+{
+  m_new_binding_value = StringUtil::StdStringFromFormat("Controller%d/Hat%d %s", controller_index, hat_index,
+                                                        hat_direction.toLatin1().constData());
   setNewBinding();
   stopListeningForInput();
 }
