@@ -212,175 +212,305 @@
 <context>
     <name>AnalogController</name>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="61"/>
-        <location filename="../../core/analog_controller.cpp" line="181"/>
+        <location filename="../../core/analog_controller.cpp" line="64"/>
+        <location filename="../../core/analog_controller.cpp" line="184"/>
         <source>Controller %u switched to analog mode.</source>
         <translation>Controle %u mudado para modo analógico.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="62"/>
-        <location filename="../../core/analog_controller.cpp" line="182"/>
+        <location filename="../../core/analog_controller.cpp" line="65"/>
+        <location filename="../../core/analog_controller.cpp" line="185"/>
         <source>Controller %u switched to digital mode.</source>
         <translation>Controle %u mudado para modo digital.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="107"/>
+        <location filename="../../core/analog_controller.cpp" line="110"/>
         <source>Controller %u is locked to analog mode by the game.</source>
         <translation>Controle %u está travado em modo analógico pelo jogo.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="109"/>
+        <location filename="../../core/analog_controller.cpp" line="112"/>
         <source>Controller %u is locked to digital mode by the game.</source>
         <translation>Controle %u está travado no modo digital pelo jogo.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="509"/>
+        <location filename="../../core/analog_controller.cpp" line="512"/>
         <source>LeftX</source>
         <translation>Esquerda Eixo X</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="510"/>
+        <location filename="../../core/analog_controller.cpp" line="513"/>
         <source>LeftY</source>
         <translation>Esquerda Eixo Y</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="511"/>
+        <location filename="../../core/analog_controller.cpp" line="514"/>
         <source>RightX</source>
         <translation>Direita Eixo X</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="512"/>
+        <location filename="../../core/analog_controller.cpp" line="515"/>
         <source>RightY</source>
         <translation>Direita Eixo Y</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="517"/>
+        <location filename="../../core/analog_controller.cpp" line="520"/>
         <source>Up</source>
         <translation>          🠉</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="518"/>
+        <location filename="../../core/analog_controller.cpp" line="521"/>
         <source>Down</source>
         <translation>          🠋</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="519"/>
+        <location filename="../../core/analog_controller.cpp" line="522"/>
         <source>Left</source>
         <translatorcomment>🠰</translatorcomment>
         <translation>          🠈</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="520"/>
+        <location filename="../../core/analog_controller.cpp" line="523"/>
         <source>Right</source>
         <translatorcomment>          ➡️</translatorcomment>
         <translation>          ➜</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="521"/>
+        <location filename="../../core/analog_controller.cpp" line="524"/>
         <source>Select</source>
         <translation>      Select</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="522"/>
+        <location filename="../../core/analog_controller.cpp" line="525"/>
         <source>Start</source>
         <translation>       Start</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="523"/>
+        <location filename="../../core/analog_controller.cpp" line="526"/>
         <source>Triangle</source>
         <translatorcomment>⃤       🛆⟁</translatorcomment>
         <translation>           ⃤</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="524"/>
+        <location filename="../../core/analog_controller.cpp" line="527"/>
         <source>Cross</source>
         <translatorcomment>❌</translatorcomment>
         <translation>          ╳</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="525"/>
+        <location filename="../../core/analog_controller.cpp" line="528"/>
         <source>Circle</source>
         <translation>         ⭕</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="526"/>
+        <location filename="../../core/analog_controller.cpp" line="529"/>
         <source>Square</source>
         <translation>         ⬜</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="527"/>
+        <location filename="../../core/analog_controller.cpp" line="530"/>
         <source>L1</source>
         <translation>          L1</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="528"/>
+        <location filename="../../core/analog_controller.cpp" line="531"/>
         <source>L2</source>
         <translation>          L2</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="529"/>
+        <location filename="../../core/analog_controller.cpp" line="532"/>
         <source>R1</source>
         <translation>          R1</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="530"/>
+        <location filename="../../core/analog_controller.cpp" line="533"/>
         <source>R2</source>
         <translation>          R2</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="531"/>
+        <location filename="../../core/analog_controller.cpp" line="534"/>
         <source>L3</source>
         <translation>          L3</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="532"/>
+        <location filename="../../core/analog_controller.cpp" line="535"/>
         <source>R3</source>
         <translation>          R3</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="533"/>
+        <location filename="../../core/analog_controller.cpp" line="536"/>
         <source>Analog</source>
         <translation>    Analógico</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="544"/>
+        <location filename="../../core/analog_controller.cpp" line="547"/>
         <source>Enable Analog Mode on Reset</source>
         <translation>Ativar modo Analógico ao Reiniciar</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="545"/>
+        <location filename="../../core/analog_controller.cpp" line="548"/>
         <source>Automatically enables analog mode when the console is reset/powered on.</source>
         <translation>Ativa o modo analógico automaticamente quando o console é reiniciado / desligado.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="548"/>
+        <location filename="../../core/analog_controller.cpp" line="551"/>
         <source>Use Analog Sticks for D-Pad in Digital Mode</source>
         <translation>Usar Analógicos como D-Pad no Modo Digital</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="549"/>
+        <location filename="../../core/analog_controller.cpp" line="552"/>
         <source>Allows you to use the analog sticks to control the d-pad in digital mode, as well as the buttons.</source>
         <translation>Te permite usar os analógicos como um direcional (D-Pad) no modo digital, assim como os botões.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="552"/>
+        <location filename="../../core/analog_controller.cpp" line="555"/>
         <source>Analog Axis Scale</source>
         <translation>Escala de Eixo do Analógico</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="553"/>
+        <location filename="../../core/analog_controller.cpp" line="556"/>
         <source>Sets the analog stick axis scaling factor. A value between 1.30 and 1.40 is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
         <translation>Seta a escala do eixo dos controles. Um valor entre 1.30 e 1.40 é recomendável quando estiver usando controles mais recentes, ex: Dualshock 4 e Controles de X-Box One.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="558"/>
+        <location filename="../../core/analog_controller.cpp" line="561"/>
         <source>Vibration Bias</source>
         <translation>Vibração</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="559"/>
+        <location filename="../../core/analog_controller.cpp" line="562"/>
         <source>Sets the rumble bias value. If rumble in some games is too weak or not functioning, try increasing this value.</source>
         <translation>Define valores de vibração. Se a vibração em alguns jogos estiver fraca ou não funcionar, tente aumentar os valores.</translation>
+    </message>
+</context>
+<context>
+    <name>AnalogJoystick</name>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="45"/>
+        <location filename="../../core/analog_joystick.cpp" line="123"/>
+        <source>Controller %u switched to analog mode.</source>
+        <translation>Controle %u mudado para modo analógico.</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="46"/>
+        <location filename="../../core/analog_joystick.cpp" line="124"/>
+        <source>Controller %u switched to digital mode.</source>
+        <translation>Controle %u mudado para modo digital.</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="262"/>
+        <source>LeftX</source>
+        <translation>Esquerda Eixo X</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="263"/>
+        <source>LeftY</source>
+        <translation>Esquerda Eixo Y</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="264"/>
+        <source>RightX</source>
+        <translation>Direita Eixo X</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="265"/>
+        <source>RightY</source>
+        <translation>Direita Eixo Y</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="270"/>
+        <source>Up</source>
+        <translation>          🠉</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="271"/>
+        <source>Down</source>
+        <translation>          🠋</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="272"/>
+        <source>Left</source>
+        <translation>          🠈</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="273"/>
+        <source>Right</source>
+        <translation>          ➜</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="274"/>
+        <source>Select</source>
+        <translation>      Select</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="275"/>
+        <source>Start</source>
+        <translation>       Start</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="276"/>
+        <source>Triangle</source>
+        <translation>         🛆</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="277"/>
+        <source>Cross</source>
+        <translation>          ╳</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="278"/>
+        <source>Circle</source>
+        <translation>         ⭕</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="279"/>
+        <source>Square</source>
+        <translation>         ⬜</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="280"/>
+        <source>L1</source>
+        <translation>          L1</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="281"/>
+        <source>L2</source>
+        <translation>          L2</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="282"/>
+        <source>R1</source>
+        <translation>          R1</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="283"/>
+        <source>R2</source>
+        <translation>          R2</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="284"/>
+        <source>L3</source>
+        <translation>          L3</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="285"/>
+        <source>R3</source>
+        <translation>          R3</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="286"/>
+        <source>Analog</source>
+        <translation>    Analógico</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="297"/>
+        <source>Analog Axis Scale</source>
+        <translation>Escala de Eixo do Analógico</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="298"/>
+        <source>Sets the analog stick axis scaling factor. A value between 1.30 and 1.40 is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
+        <translation>Seta a escala do eixo dos controles. Um valor entre 1.30 e 1.40 é recomendável quando estiver usando controles mais recentes, ex: Dualshock 4 e Controles de X-Box One.</translation>
     </message>
 </context>
 <context>
@@ -1678,6 +1808,11 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="658"/>
+        <source>Analog Joystick</source>
+        <translation>Controle Analógico</translation>
+    </message>
+    <message>
+        <location filename="../../core/settings.cpp" line="659"/>
         <source>Namco GunCon</source>
         <translation>Namco GunCon</translation>
     </message>
@@ -1687,7 +1822,7 @@ This warning will only be shown once.</source>
         <translation>Playstation Mouse</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="659"/>
+        <location filename="../../core/settings.cpp" line="660"/>
         <source>NeGcon</source>
         <translation>NeGcon</translation>
     </message>
@@ -5075,22 +5210,22 @@ This will download approximately 4 megabytes over your current internet connecti
 <context>
     <name>MemoryCardType</name>
     <message>
-        <location filename="../../core/settings.cpp" line="687"/>
+        <location filename="../../core/settings.cpp" line="688"/>
         <source>No Memory Card</source>
         <translation>Sem Cartão de Memória</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="687"/>
+        <location filename="../../core/settings.cpp" line="688"/>
         <source>Shared Between All Games</source>
         <translation>Compartrilhada Entre Jogos</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="688"/>
+        <location filename="../../core/settings.cpp" line="689"/>
         <source>Separate Card Per Game (Game Code)</source>
         <translation>Separar Cartão Por Jogo (Cód. Jogo)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="689"/>
+        <location filename="../../core/settings.cpp" line="690"/>
         <source>Separate Card Per Game (Game Title)</source>
         <translation>Separar Cartão Por Jogo (Título. Jogo)</translation>
     </message>
@@ -5536,27 +5671,27 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>Estado Rápido contém controle %s na porta %u, mas %s está em uso. Mudando.</translation>
     </message>
     <message>
-        <location filename="../../core/pad.cpp" line="75"/>
+        <location filename="../../core/pad.cpp" line="79"/>
         <source>Ignoring mismatched controller type %s in port %u.</source>
         <translation>Tipo de Controle incompatível ignorado %s na porta %u.</translation>
     </message>
     <message>
-        <location filename="../../core/pad.cpp" line="123"/>
+        <location filename="../../core/pad.cpp" line="127"/>
         <source>Memory card %u from save state does match current card data. Simulating replugging.</source>
         <translation>O estado salvo do cartão %u corresponde ao estado no Cartão de Memória.</translation>
     </message>
     <message>
-        <location filename="../../core/pad.cpp" line="134"/>
+        <location filename="../../core/pad.cpp" line="138"/>
         <source>Memory card %u present in save state but not in system. Ignoring card.</source>
         <translation>Cartão de Memória %u presente em um &apos;save state&apos; mas não no sistema. Ignorando Cartão.</translation>
     </message>
     <message>
-        <location filename="../../core/pad.cpp" line="146"/>
+        <location filename="../../core/pad.cpp" line="150"/>
         <source>Memory card %u present in save state but not in system. Creating temporary card.</source>
         <translation>Cartão de Memória %u presente no estado salvo mas não no sistema. Criando Cartão Temporário.</translation>
     </message>
     <message>
-        <location filename="../../core/pad.cpp" line="155"/>
+        <location filename="../../core/pad.cpp" line="159"/>
         <source>Memory card %u present in system but not in save state. Removing card.</source>
         <translation>Cartão de Memória %u presente no sistema mas não ao estado salvo, removendo cartão.</translation>
     </message>
