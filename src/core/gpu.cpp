@@ -246,7 +246,7 @@ void GPU::UpdateDMARequest()
   {
     case BlitterState::Idle:
       m_GPUSTAT.ready_to_send_vram = false;
-      m_GPUSTAT.ready_to_recieve_dma = (m_fifo.GetSize() < m_fifo_size);
+      m_GPUSTAT.ready_to_recieve_dma = (m_fifo.IsEmpty() || m_fifo.GetSize() < m_command_total_words);
       break;
 
     case BlitterState::WritingVRAM:
