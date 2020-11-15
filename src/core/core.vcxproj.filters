@@ -49,6 +49,7 @@
     <ClCompile Include="cheats.cpp" />
     <ClCompile Include="shadergen.cpp" />
     <ClCompile Include="memory_card_image.cpp" />
+    <ClCompile Include="analog_joystick.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -101,5 +102,6 @@
     <ClInclude Include="cheats.h" />
     <ClInclude Include="shadergen.h" />
     <ClInclude Include="memory_card_image.h" />
+    <ClInclude Include="analog_joystick.h" />
   </ItemGroup>
 </Project>
