@@ -135,9 +135,10 @@ void HostDisplay::ClearSoftwareCursor()
   m_cursor_texture_scale = 1.0f;
 }
 
-void HostDisplay::CalculateDrawRect(s32 window_width, s32 window_height, s32* out_left, s32* out_top, s32* out_width,
-                                    s32* out_height, s32* out_left_padding, s32* out_top_padding, float* out_scale,
-                                    float* out_x_scale, bool apply_aspect_ratio /* = true */) const
+void HostDisplay::CalculateDrawRect(s32 window_width, s32 window_height, float* out_left, float* out_top,
+                                    float* out_width, float* out_height, float* out_left_padding,
+                                    float* out_top_padding, float* out_scale, float* out_x_scale,
+                                    bool apply_aspect_ratio /* = true */) const
 {
   const float x_scale =
     apply_aspect_ratio ?
@@ -166,24 +167,25 @@ void HostDisplay::CalculateDrawRect(s32 window_width, s32 window_height, s32* ou
     if (out_left_padding)
     {
       if (m_display_integer_scaling)
-        *out_left_padding = std::max<s32>((window_width - static_cast<s32>(display_width * scale)) / 2, 0);
+        *out_left_padding = std::max<float>((static_cast<float>(window_width) - display_width * scale) / 2.0f, 0.0f);
       else
-        *out_left_padding = 0;
+        *out_left_padding = 0.0f;
     }
     if (out_top_padding)
     {
       switch (m_display_alignment)
       {
         case Alignment::LeftOrTop:
-          *out_top_padding = 0;
+          *out_top_padding = 0.0f;
           break;
 
         case Alignment::Center:
-          *out_top_padding = std::max<s32>((window_height - static_cast<s32>(display_height * scale)) / 2, 0);
+          *out_top_padding =
+            std::max<float>((static_cast<float>(window_height) - (display_height * scale)) / 2.0f, 0.0f);
           break;
 
         case Alignment::RightOrBottom:
-          *out_top_padding = std::max<s32>(window_height - static_cast<s32>(display_height * scale), 0);
+          *out_top_padding = std::max<float>(static_cast<float>(window_height) - (display_height * scale), 0.0f);
           break;
       }
     }
@@ -200,15 +202,16 @@ void HostDisplay::CalculateDrawRect(s32 window_width, s32 window_height, s32* ou
       switch (m_display_alignment)
       {
         case Alignment::LeftOrTop:
-          *out_left_padding = 0;
+          *out_left_padding = 0.0f;
           break;
 
         case Alignment::Center:
-          *out_left_padding = std::max<s32>((window_width - static_cast<s32>(display_width * scale)) / 2, 0);
+          *out_left_padding =
+            std::max<float>((static_cast<float>(window_width) - (display_width * scale)) / 2.0f, 0.0f);
           break;
 
         case Alignment::RightOrBottom:
-          *out_left_padding = std::max<s32>(window_width - static_cast<s32>(display_width * scale), 0);
+          *out_left_padding = std::max<float>(static_cast<float>(window_width) - (display_width * scale), 0.0f);
           break;
       }
     }
@@ -216,16 +219,16 @@ void HostDisplay::CalculateDrawRect(s32 window_width, s32 window_height, s32* ou
     if (out_top_padding)
     {
       if (m_display_integer_scaling)
-        *out_top_padding = std::max<s32>((window_height - static_cast<s32>(display_height * scale)) / 2, 0);
+        *out_top_padding = std::max<float>((static_cast<float>(window_height) - (display_height * scale)) / 2.0f, 0.0f);
       else
-        *out_top_padding = 0;
+        *out_top_padding = 0.0f;
     }
   }
 
-  *out_width = static_cast<s32>(active_width * scale);
-  *out_height = static_cast<s32>(active_height * scale);
-  *out_left = static_cast<s32>(active_left * scale);
-  *out_top = static_cast<s32>(active_top * scale);
+  *out_width = active_width * scale;
+  *out_height = active_height * scale;
+  *out_left = active_left * scale;
+  *out_top = active_top * scale;
   if (out_scale)
     *out_scale = scale;
 }
@@ -233,10 +236,12 @@ void HostDisplay::CalculateDrawRect(s32 window_width, s32 window_height, s32* ou
 std::tuple<s32, s32, s32, s32> HostDisplay::CalculateDrawRect(s32 window_width, s32 window_height, s32 top_margin,
                                                               bool apply_aspect_ratio /* = true */) const
 {
-  s32 left, top, width, height, left_padding, top_padding;
+  float left, top, width, height, left_padding, top_padding;
   CalculateDrawRect(window_width, window_height - top_margin, &left, &top, &width, &height, &left_padding, &top_padding,
                     nullptr, nullptr, apply_aspect_ratio);
-  return std::make_tuple(left + left_padding, top + top_padding + top_margin, width, height);
+
+  return std::make_tuple(static_cast<s32>(left + left_padding), static_cast<s32>(top + top_padding) + top_margin,
+                         static_cast<s32>(width), static_cast<s32>(height));
 }
 
 std::tuple<s32, s32, s32, s32> HostDisplay::CalculateSoftwareCursorDrawRect() const
@@ -262,14 +267,14 @@ std::tuple<float, float> HostDisplay::ConvertWindowCoordinatesToDisplayCoordinat
                                                                                    s32 window_width, s32 window_height,
                                                                                    s32 top_margin) const
 {
-  s32 left, top, width, height, left_padding, top_padding;
+  float left, top, width, height, left_padding, top_padding;
   float scale, x_scale;
   CalculateDrawRect(window_width, window_height - top_margin, &left, &top, &width, &height, &left_padding, &top_padding,
                     &scale, &x_scale);
 
   // convert coordinates to active display region, then to full display region
-  const float scaled_display_x = static_cast<float>(window_x - (left_padding));
-  const float scaled_display_y = static_cast<float>(window_y - (top_padding + top_margin));
+  const float scaled_display_x = static_cast<float>(window_x) - left_padding;
+  const float scaled_display_y = static_cast<float>(window_y) - top_padding + static_cast<float>(top_margin);
 
   // scale back to internal resolution
   const float display_x = scaled_display_x / scale / x_scale;
