@@ -100,11 +100,11 @@ bool SDLControllerInterface::ProcessSDLEvent(const SDL_Event* event)
     }
 
     case SDL_CONTROLLERAXISMOTION:
-      return HandleControllerAxisEvent(event);
+      return HandleControllerAxisEvent(&event->caxis);
 
     case SDL_CONTROLLERBUTTONDOWN:
     case SDL_CONTROLLERBUTTONUP:
-      return HandleControllerButtonEvent(event);
+      return HandleControllerButtonEvent(&event->cbutton);
 
     case SDL_JOYDEVICEADDED:
       if (SDL_IsGameController(event->jdevice.which))
@@ -589,23 +589,23 @@ bool SDLControllerInterface::BindControllerButtonToAxis(int controller_index, in
   return true;
 }
 
-bool SDLControllerInterface::HandleControllerAxisEvent(const SDL_Event* ev)
+bool SDLControllerInterface::HandleControllerAxisEvent(const SDL_ControllerAxisEvent* ev)
 {
-  const float value = static_cast<float>(ev->caxis.value) / (ev->caxis.value < 0 ? 32768.0f : 32767.0f);
-  Log_DebugPrintf("controller %d axis %d %d %f", ev->caxis.which, ev->caxis.axis, ev->caxis.value, value);
+  const float value = static_cast<float>(ev->value) / (ev->value < 0 ? 32768.0f : 32767.0f);
+  Log_DebugPrintf("controller %d axis %d %d %f", ev->which, ev->axis, ev->value, value);
 
-  auto it = GetControllerDataForJoystickId(ev->caxis.which);
+  auto it = GetControllerDataForJoystickId(ev->which);
   if (it == m_controllers.end())
     return false;
 
-  if (DoEventHook(Hook::Type::Axis, it->player_id, ev->caxis.axis, value))
+  if (DoEventHook(Hook::Type::Axis, it->player_id, ev->axis, value))
     return true;
 
-  const AxisCallback& cb = it->axis_mapping[ev->caxis.axis][AxisSide::Full];
+  const AxisCallback& cb = it->axis_mapping[ev->axis][AxisSide::Full];
   if (cb)
   {
     // Extend triggers from a 0 - 1 range to a -1 - 1 range for consistency with other inputs
-    if (ev->caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERLEFT || ev->caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT)
+    if (ev->axis == SDL_CONTROLLER_AXIS_TRIGGERLEFT || ev->axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT)
     {
       cb((value * 2.0f) - 1.0f);
     }
@@ -619,8 +619,8 @@ bool SDLControllerInterface::HandleControllerAxisEvent(const SDL_Event* ev)
   // set the other direction to false so large movements don't leave the opposite on
   const bool outside_deadzone = (std::abs(value) >= it->deadzone);
   const bool positive = (value >= 0.0f);
-  const ButtonCallback& other_button_cb = it->axis_button_mapping[ev->caxis.axis][BoolToUInt8(!positive)];
-  const ButtonCallback& button_cb = it->axis_button_mapping[ev->caxis.axis][BoolToUInt8(positive)];
+  const ButtonCallback& other_button_cb = it->axis_button_mapping[ev->axis][BoolToUInt8(!positive)];
+  const ButtonCallback& button_cb = it->axis_button_mapping[ev->axis][BoolToUInt8(positive)];
   if (button_cb)
   {
     button_cb(outside_deadzone);
@@ -639,27 +639,27 @@ bool SDLControllerInterface::HandleControllerAxisEvent(const SDL_Event* ev)
   }
 }
 
-bool SDLControllerInterface::HandleControllerButtonEvent(const SDL_Event* ev)
+bool SDLControllerInterface::HandleControllerButtonEvent(const SDL_ControllerButtonEvent* ev)
 {
-  Log_DebugPrintf("controller %d button %d %s", ev->cbutton.which, ev->cbutton.button,
-                  ev->cbutton.state == SDL_PRESSED ? "pressed" : "released");
+  Log_DebugPrintf("controller %d button %d %s", ev->which, ev->button,
+                  ev->state == SDL_PRESSED ? "pressed" : "released");
 
-  auto it = GetControllerDataForJoystickId(ev->cbutton.which);
+  auto it = GetControllerDataForJoystickId(ev->which);
   if (it == m_controllers.end())
     return false;
 
-  const bool pressed = (ev->cbutton.state == SDL_PRESSED);
-  if (DoEventHook(Hook::Type::Button, it->player_id, ev->cbutton.button, pressed ? 1.0f : 0.0f))
+  const bool pressed = (ev->state == SDL_PRESSED);
+  if (DoEventHook(Hook::Type::Button, it->player_id, ev->button, pressed ? 1.0f : 0.0f))
     return true;
 
-  const ButtonCallback& cb = it->button_mapping[ev->cbutton.button];
+  const ButtonCallback& cb = it->button_mapping[ev->button];
   if (cb)
   {
     cb(pressed);
     return true;
   }
 
-  const AxisCallback& axis_cb = it->button_axis_mapping[ev->cbutton.button];
+  const AxisCallback& axis_cb = it->button_axis_mapping[ev->button];
   if (axis_cb)
   {
     axis_cb(pressed ? 1.0f : -1.0f);

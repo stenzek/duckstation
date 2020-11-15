@@ -6,8 +6,6 @@
 #include <mutex>
 #include <vector>
 
-union SDL_Event;
-
 class SDLControllerInterface final : public ControllerInterface
 {
 public:
@@ -42,7 +40,7 @@ public:
 
   void PollEvents() override;
 
-  bool ProcessSDLEvent(const SDL_Event* event);
+  bool ProcessSDLEvent(const union SDL_Event* event);
 
 private:
   struct ControllerData
@@ -72,8 +70,8 @@ private:
 
   bool OpenGameController(int index);
   bool CloseGameController(int joystick_index, bool notify);
-  bool HandleControllerAxisEvent(const SDL_Event* event);
-  bool HandleControllerButtonEvent(const SDL_Event* event);
+  bool HandleControllerAxisEvent(const struct SDL_ControllerAxisEvent* event);
+  bool HandleControllerButtonEvent(const struct SDL_ControllerButtonEvent* event);
 
   bool OpenJoystick(int index);
   bool HandleJoystickAxisEvent(const struct SDL_JoyAxisEvent* event);
