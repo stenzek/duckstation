@@ -1569,6 +1569,7 @@ void CDROM::DoResetComplete(TickCount ticks_late)
   m_secondary_status.motor_on = CanReadMedia();
   m_mode.bits = 0;
   m_mode.read_raw_sector = true;
+  m_data_fifo.Clear();
 
   if (!CanReadMedia())
   {
