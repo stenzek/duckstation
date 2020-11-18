@@ -497,7 +497,7 @@ bool GPU::HandleCopyRectangleCPUToVRAMCommand()
 
 void GPU::FinishVRAMWrite()
 {
-  if (g_settings.debugging.dump_cpu_to_vram_copies)
+  if (g_settings.debugging.dump_cpu_to_vram_copies && m_blit_remaining_words == 0)
   {
     DumpVRAMToFile(StringUtil::StdStringFromFormat("cpu_to_vram_copy_%u.png", s_cpu_to_vram_dump_id++).c_str(),
                    m_vram_transfer.width, m_vram_transfer.height, sizeof(u16) * m_vram_transfer.width,
@@ -509,7 +509,36 @@ void GPU::FinishVRAMWrite()
 
   FlushRender();
 
-  UpdateVRAM(m_vram_transfer.x, m_vram_transfer.y, m_vram_transfer.width, m_vram_transfer.height, m_blit_buffer.data());
+  if (m_blit_remaining_words == 0)
+  {
+    UpdateVRAM(m_vram_transfer.x, m_vram_transfer.y, m_vram_transfer.width, m_vram_transfer.height,
+               m_blit_buffer.data());
+  }
+  else
+  {
+    const u32 num_pixels = ZeroExtend32(m_vram_transfer.width) * ZeroExtend32(m_vram_transfer.height);
+    const u32 num_words = (num_pixels + 1) / 2;
+    const u32 transferred_words = num_words - m_blit_remaining_words;
+    const u32 transferred_pixels = transferred_words * 2;
+    const u32 transferred_full_rows = transferred_pixels / m_vram_transfer.width;
+    const u32 transferred_width_last_row = transferred_pixels % m_vram_transfer.width;
+
+    Log_WarningPrintf(
+      "Partial VRAM write - transfer finished with %u of %u words remaining (%u full rows, %u last row)",
+      m_blit_remaining_words, num_words, transferred_full_rows, transferred_width_last_row);
+
+    const u8* blit_ptr = reinterpret_cast<const u8*>(m_blit_buffer.data());
+    if (transferred_full_rows > 0)
+    {
+      UpdateVRAM(m_vram_transfer.x, m_vram_transfer.y, m_vram_transfer.width, transferred_full_rows, blit_ptr);
+      blit_ptr += (ZeroExtend32(m_vram_transfer.width) * transferred_full_rows) * sizeof(u16);
+    }
+    if (transferred_width_last_row > 0)
+    {
+      UpdateVRAM(m_vram_transfer.x, m_vram_transfer.y + transferred_full_rows, transferred_width_last_row, 1, blit_ptr);
+    }
+  }
+
   m_blit_buffer.clear();
   m_vram_transfer = {};
   m_blitter_state = BlitterState::Idle;

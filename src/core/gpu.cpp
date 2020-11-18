@@ -79,6 +79,8 @@ void GPU::Reset()
 void GPU::SoftReset()
 {
   FlushRender();
+  if (m_blitter_state == BlitterState::WritingVRAM)
+    FinishVRAMWrite();
 
   m_GPUSTAT.bits = 0x14802000;
   m_GPUSTAT.pal_mode = System::IsPALRegion();
@@ -922,6 +924,11 @@ void GPU::WriteGP1(u32 value)
       Log_DebugPrintf("GP1 clear FIFO");
       m_command_tick_event->InvokeEarly();
       SynchronizeCRTC();
+
+      // flush partial writes
+      if (m_blitter_state == BlitterState::WritingVRAM)
+        FinishVRAMWrite();
+
       m_blitter_state = BlitterState::Idle;
       m_command_total_words = 0;
       m_vram_transfer = {};
