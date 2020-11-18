@@ -70,6 +70,8 @@ public:
   TinyString TranslateString(const char* context, const char* str) const override;
   std::string TranslateStdString(const char* context, const char* str) const override;
 
+  bool RequestRenderWindowSize(s32 new_window_width, s32 new_window_height) override;
+
   ALWAYS_INLINE const GameList* getGameList() const { return m_game_list.get(); }
   ALWAYS_INLINE GameList* getGameList() { return m_game_list.get(); }
   void refreshGameList(bool invalidate_cache = false, bool invalidate_database = false);
@@ -128,6 +130,7 @@ Q_SIGNALS:
   QtDisplayWidget* createDisplayRequested(QThread* worker_thread, const QString& adapter_name, bool use_debug_device,
                                           bool fullscreen, bool render_to_main);
   QtDisplayWidget* updateDisplayRequested(QThread* worker_thread, bool fullscreen, bool render_to_main);
+  void displaySizeRequested(qint32 width, qint32 height);
   void focusDisplayWidgetRequested();
   void destroyDisplayRequested();
   void systemPerformanceCountersUpdated(float speed, float fps, float vps, float avg_frame_time,
@@ -168,6 +171,7 @@ public Q_SLOTS:
   void setCheatEnabled(quint32 index, bool enabled);
   void applyCheat(quint32 index);
   void reloadPostProcessingShaders();
+  void requestRenderWindowScale(qreal scale);
   void executeOnEmulationThread(std::function<void()> callback, bool wait = false);
 
 private Q_SLOTS:

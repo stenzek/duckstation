@@ -45,6 +45,7 @@ private Q_SLOTS:
   QtDisplayWidget* createDisplay(QThread* worker_thread, const QString& adapter_name, bool use_debug_device,
                                  bool fullscreen, bool render_to_main);
   QtDisplayWidget* updateDisplay(QThread* worker_thread, bool fullscreen, bool render_to_main);
+  void displaySizeRequested(qint32 width, qint32 height);
   void destroyDisplay();
   void focusDisplayWidget();
 

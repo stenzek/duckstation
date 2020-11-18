@@ -165,7 +165,8 @@
      <property name="title">
       <string>Switch Crop Mode</string>
      </property>
-    </widget>    <addaction name="menuCPUExecutionMode"/>
+    </widget>
+    <addaction name="menuCPUExecutionMode"/>
     <addaction name="menuRenderer"/>
     <addaction name="menuCropMode"/>
     <addaction name="actionDisableInterlacing"/>
@@ -188,6 +189,11 @@
     <property name="title">
      <string>&amp;View</string>
     </property>
+    <widget class="QMenu" name="menuWindowSize">
+     <property name="title">
+      <string>&amp;Window Size</string>
+     </property>
+    </widget>
     <addaction name="actionViewToolbar"/>
     <addaction name="actionViewStatusBar"/>
     <addaction name="separator"/>
@@ -195,6 +201,8 @@
     <addaction name="actionViewGameGrid"/>
     <addaction name="actionViewSystemDisplay"/>
     <addaction name="actionViewGameProperties"/>
+    <addaction name="separator"/>
+    <addaction name="menuWindowSize"/>
     <addaction name="separator"/>
     <addaction name="actionGridViewShowTitles"/>
     <addaction name="actionGridViewZoomIn"/>
@@ -344,7 +352,7 @@
   </action>
   <action name="actionBIOSSettings">
    <property name="icon">
-    <iconset>
+    <iconset resource="resources/resources.qrc">
      <normaloff>:/icons/media-flash-2.png</normaloff>:/icons/media-flash-2.png</iconset>
    </property>
    <property name="text">

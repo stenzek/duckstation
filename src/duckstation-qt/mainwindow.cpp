@@ -226,6 +226,23 @@ void MainWindow::setDisplayFullscreen(const std::string& fullscreen_mode)
   }
 }
 
+void MainWindow::displaySizeRequested(qint32 width, qint32 height)
+{
+  if (!m_display_widget)
+    return;
+
+  if (!m_display_widget->parent())
+  {
+    // no parent - rendering to separate window. easy.
+    m_display_widget->resize(QSize(std::max<qint32>(width, 1), std::max<qint32>(height, 1)));
+    return;
+  }
+
+  // we are rendering to the main window. we have to add in the extra height from the toolbar/status bar.
+  const s32 extra_height = this->height() - m_display_widget->height();
+  resize(QSize(std::max<qint32>(width, 1), std::max<qint32>(height + extra_height, 1)));
+}
+
 void MainWindow::destroyDisplay()
 {
   DebugAssert(m_host_display && m_display_widget);
@@ -686,6 +703,13 @@ void MainWindow::setupAdditionalUi()
                                tr("Language changed. Please restart the application to apply."));
     });
   }
+
+  for (u32 scale = 1; scale <= 10; scale++)
+  {
+    QAction* action = m_ui.menuWindowSize->addAction(tr("%1x Scale").arg(scale));
+    connect(action, &QAction::triggered,
+            [scale]() { QtHostInterface::GetInstance()->requestRenderWindowScale(scale); });
+  }
 }
 
 void MainWindow::updateEmulationActions(bool starting, bool running)
@@ -707,6 +731,7 @@ void MainWindow::updateEmulationActions(bool starting, bool running)
 
   m_ui.actionSaveState->setDisabled(starting || !running);
   m_ui.menuSaveState->setDisabled(starting || !running);
+  m_ui.menuWindowSize->setDisabled(starting || !running);
 
   m_ui.actionFullscreen->setDisabled(starting || !running);
 
@@ -862,6 +887,7 @@ void MainWindow::connectSignals()
   connect(m_host_interface, &QtHostInterface::destroyDisplayRequested, this, &MainWindow::destroyDisplay);
   connect(m_host_interface, &QtHostInterface::updateDisplayRequested, this, &MainWindow::updateDisplay,
           Qt::BlockingQueuedConnection);
+  connect(m_host_interface, &QtHostInterface::displaySizeRequested, this, &MainWindow::displaySizeRequested);
   connect(m_host_interface, &QtHostInterface::focusDisplayWidgetRequested, this, &MainWindow::focusDisplayWidget);
   connect(m_host_interface, &QtHostInterface::emulationStarting, this, &MainWindow::onEmulationStarting);
   connect(m_host_interface, &QtHostInterface::emulationStarted, this, &MainWindow::onEmulationStarted);

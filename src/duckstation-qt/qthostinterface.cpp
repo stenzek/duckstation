@@ -598,6 +598,15 @@ bool QtHostInterface::SetFullscreen(bool enabled)
   return true;
 }
 
+bool QtHostInterface::RequestRenderWindowSize(s32 new_window_width, s32 new_window_height)
+{
+  if (new_window_width <= 0 || new_window_height <= 0 || m_is_fullscreen || m_is_exclusive_fullscreen)
+    return false;
+
+  emit displaySizeRequested(new_window_width, new_window_height);
+  return true;
+}
+
 void QtHostInterface::PollAndUpdate()
 {
   CommonHostInterface::PollAndUpdate();
@@ -1073,6 +1082,17 @@ void QtHostInterface::reloadPostProcessingShaders()
   }
 
   ReloadPostProcessingShaders();
+}
+
+void QtHostInterface::requestRenderWindowScale(qreal scale)
+{
+  if (!isOnWorkerThread())
+  {
+    QMetaObject::invokeMethod(this, "requestRenderWindowScale", Qt::QueuedConnection, Q_ARG(qreal, scale));
+    return;
+  }
+
+  RequestRenderWindowScale(scale);
 }
 
 void QtHostInterface::executeOnEmulationThread(std::function<void()> callback, bool wait)
