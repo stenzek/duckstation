@@ -442,6 +442,33 @@ float SDLHostInterface::GetFloatSettingValue(const char* section, const char* ke
   return m_settings_interface->GetFloatValue(section, key, default_value);
 }
 
+bool SDLHostInterface::RequestRenderWindowSize(s32 new_window_width, s32 new_window_height)
+{
+  if (new_window_width <= 0 || new_window_height <= 0 || m_fullscreen)
+    return false;
+
+  // use imgui scale as the dpr
+  const float dpi_scale = ImGui::GetIO().DisplayFramebufferScale.x;
+  const s32 scaled_width =
+    std::max<s32>(static_cast<s32>(std::ceil(static_cast<float>(new_window_width) * dpi_scale)), 1);
+  const s32 scaled_height = std::max<s32>(
+    static_cast<s32>(std::ceil(static_cast<float>(new_window_height) * dpi_scale)) + m_display->GetDisplayTopMargin(),
+    1);
+
+  SDL_SetWindowSize(m_window, scaled_width, scaled_height);
+
+  s32 window_width, window_height;
+  SDL_GetWindowSize(m_window, &window_width, &window_height);
+  m_display->ResizeRenderWindow(window_width, window_height);
+
+  UpdateFramebufferScale();
+
+  if (!System::IsShutdown())
+    g_gpu->UpdateResolutionScale();
+
+  return true;
+}
+
 void SDLHostInterface::LoadSettings()
 {
   // Settings need to be loaded prior to creating the window for OpenGL bits.
@@ -910,6 +937,18 @@ void SDLHostInterface::DrawQuickSettingsMenu()
   bool fullscreen = m_fullscreen;
   if (ImGui::MenuItem("Fullscreen", nullptr, &fullscreen))
     RunLater([this, fullscreen] { SetFullscreen(fullscreen); });
+
+  if (ImGui::BeginMenu("Resize to Game", System::IsValid()))
+  {
+    static constexpr auto scales = make_array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+    for (const u32 scale : scales)
+    {
+      if (ImGui::MenuItem(TinyString::FromFormat("%ux Scale", scale)))
+        RunLater([this, scale]() { RequestRenderWindowScale(static_cast<float>(scale)); });
+    }
+
+    ImGui::EndMenu();
+  }
 
   settings_changed |= ImGui::MenuItem("VSync", nullptr, &m_settings_copy.video_sync_enabled);
 

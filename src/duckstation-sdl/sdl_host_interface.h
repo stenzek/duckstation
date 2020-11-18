@@ -38,6 +38,8 @@ public:
   int GetIntSettingValue(const char* section, const char* key, int default_value = 0) override;
   float GetFloatSettingValue(const char* section, const char* key, float default_value = 0.0f) override;
 
+  bool RequestRenderWindowSize(s32 new_window_width, s32 new_window_height) override;
+
   void Run();
 
 protected:

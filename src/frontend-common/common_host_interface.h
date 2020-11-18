@@ -183,6 +183,12 @@ public:
   /// Returns true if fast forwarding is currently active.
   bool IsFastForwardEnabled() const { return m_fast_forward_enabled; }
 
+  /// Requests the specified size for the render window. Not guaranteed to succeed (e.g. if in fullscreen).
+  virtual bool RequestRenderWindowSize(s32 new_window_width, s32 new_window_height);
+
+  /// Requests a resize to a multiple of the render window size.
+  bool RequestRenderWindowScale(float scale);
+
 protected:
   enum : u32
   {

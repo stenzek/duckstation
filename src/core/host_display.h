@@ -92,6 +92,8 @@ public:
   virtual void SetVSync(bool enabled) = 0;
 
   const s32 GetDisplayTopMargin() const { return m_display_top_margin; }
+  const s32 GetDisplayWidth() const { return m_display_width; }
+  const s32 GetDisplayHeight() const { return m_display_height; }
   const float GetDisplayAspectRatio() const { return m_display_aspect_ratio; }
 
   void SetDisplayMaxFPS(float max_fps);

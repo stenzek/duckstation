@@ -2534,6 +2534,28 @@ bool CommonHostInterface::ParseFullscreenMode(const std::string_view& mode, u32*
   return false;
 }
 
+bool CommonHostInterface::RequestRenderWindowSize(s32 new_window_width, s32 new_window_height)
+{
+  return false;
+}
+
+bool CommonHostInterface::RequestRenderWindowScale(float scale)
+{
+  if (!System::IsValid() || scale == 0)
+    return false;
+
+  const float y_scale =
+    (static_cast<float>(m_display->GetDisplayWidth()) / static_cast<float>(m_display->GetDisplayHeight())) /
+    m_display->GetDisplayAspectRatio();
+
+  const u32 requested_width =
+    std::max<u32>(static_cast<u32>(std::ceil(static_cast<float>(m_display->GetDisplayWidth()) * scale)), 1);
+  const u32 requested_height =
+    std::max<u32>(static_cast<u32>(std::ceil(static_cast<float>(m_display->GetDisplayHeight()) * y_scale * scale)), 1);
+
+  return RequestRenderWindowSize(static_cast<s32>(requested_width), static_cast<s32>(requested_height));
+}
+
 #ifdef WITH_DISCORD_PRESENCE
 
 void CommonHostInterface::SetDiscordPresenceEnabled(bool enabled)
