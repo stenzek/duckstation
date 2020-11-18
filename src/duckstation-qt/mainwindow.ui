@@ -92,6 +92,7 @@
     <addaction name="menuChangeDisc"/>
     <addaction name="separator"/>
     <addaction name="menuCheats"/>
+    <addaction name="actionScreenshot"/>
     <addaction name="separator"/>
     <addaction name="menuLoadState"/>
     <addaction name="menuSaveState"/>
