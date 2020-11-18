@@ -212,6 +212,8 @@ union Instruction
 
 // Instruction helpers.
 bool IsBranchInstruction(const Instruction& instruction);
+bool IsUnconditionalBranchInstruction(const Instruction& instruction);
+u32 GetBranchInstructionTarget(const Instruction& instruction, u32 instruction_pc);
 bool IsMemoryLoadInstruction(const Instruction& instruction);
 bool IsMemoryStoreInstruction(const Instruction& instruction);
 bool InstructionHasLoadDelay(const Instruction& instruction);

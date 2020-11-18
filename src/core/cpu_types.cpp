@@ -44,6 +44,62 @@ bool IsBranchInstruction(const Instruction& instruction)
   }
 }
 
+bool IsUnconditionalBranchInstruction(const Instruction& instruction)
+{
+  switch (instruction.op)
+  {
+    case InstructionOp::j:
+    case InstructionOp::jal:
+    case InstructionOp::b:
+      return true;
+
+    case InstructionOp::beq:
+    {
+      if (instruction.i.rs == Reg::zero && instruction.i.rt == Reg::zero)
+        return true;
+      else
+        return false;
+    }
+    break;
+
+    case InstructionOp::funct:
+    {
+      switch (instruction.r.funct)
+      {
+        case InstructionFunct::jr:
+        case InstructionFunct::jalr:
+          return true;
+
+        default:
+          return false;
+      }
+    }
+
+    default:
+      return false;
+  }
+}
+
+u32 GetBranchInstructionTarget(const Instruction& instruction, u32 instruction_pc)
+{
+  switch (instruction.op)
+  {
+    case InstructionOp::j:
+    case InstructionOp::jal:
+      return ((instruction_pc + 4) & UINT32_C(0xF0000000)) | (instruction.j.target << 2);
+
+    case InstructionOp::b:
+    case InstructionOp::beq:
+    case InstructionOp::bgtz:
+    case InstructionOp::blez:
+    case InstructionOp::bne:
+      return instruction_pc + 4 + (instruction.i.imm_sext32() << 2);
+
+    default:
+      return instruction_pc;
+  }
+}
+
 bool IsMemoryLoadInstruction(const Instruction& instruction)
 {
   switch (instruction.op)

@@ -52,6 +52,7 @@ struct CodeBlockInstruction
   u32 pc;
 
   bool is_branch_instruction : 1;
+  bool is_unconditional_branch_instruction : 1;
   bool is_branch_delay_slot : 1;
   bool is_load_instruction : 1;
   bool is_store_instruction : 1;
@@ -83,6 +84,7 @@ struct CodeBlock
 #endif
 
   bool contains_loadstore_instructions = false;
+  bool contains_double_branches = false;
   bool invalidated = false;
 
   const u32 GetPC() const { return key.GetPC(); }

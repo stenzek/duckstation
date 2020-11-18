@@ -1557,7 +1557,8 @@ void InterpretUncachedBlock()
     g_state.exception_raised = false;
 
     // Fetch the next instruction, except if we're in a branch delay slot. The "fetch" is done in the next block.
-    if (!g_state.current_instruction_in_branch_delay_slot)
+    const bool branch = IsBranchInstruction(g_state.current_instruction);
+    if (!g_state.current_instruction_in_branch_delay_slot || branch)
     {
       if (!FetchInstruction())
         break;
@@ -1573,7 +1574,6 @@ void InterpretUncachedBlock()
     // next load delay
     UpdateLoadDelay();
 
-    const bool branch = IsBranchInstruction(g_state.current_instruction);
     if (g_state.exception_raised || (!branch && in_branch_delay_slot) ||
         IsExitBlockInstruction(g_state.current_instruction))
     {

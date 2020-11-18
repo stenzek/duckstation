@@ -460,6 +460,7 @@ bool CompileBlock(CodeBlock* block)
 {
   u32 pc = block->GetPC();
   bool is_branch_delay_slot = false;
+  bool is_unconditional_branch_delay_slot = false;
   bool is_load_delay_slot = false;
 
 #if 0
@@ -479,6 +480,7 @@ bool CompileBlock(CodeBlock* block)
     cbi.is_branch_delay_slot = is_branch_delay_slot;
     cbi.is_load_delay_slot = is_load_delay_slot;
     cbi.is_branch_instruction = IsBranchInstruction(cbi.instruction);
+    cbi.is_unconditional_branch_instruction = IsUnconditionalBranchInstruction(cbi.instruction);
     cbi.is_load_instruction = IsMemoryLoadInstruction(cbi.instruction);
     cbi.is_store_instruction = IsMemoryStoreInstruction(cbi.instruction);
     cbi.has_load_delay = InstructionHasLoadDelay(cbi.instruction);
@@ -498,9 +500,24 @@ bool CompileBlock(CodeBlock* block)
     block->contains_loadstore_instructions |= cbi.is_load_instruction;
     block->contains_loadstore_instructions |= cbi.is_store_instruction;
 
+    pc += sizeof(cbi.instruction.bits);
+
+    if (is_branch_delay_slot && cbi.is_branch_instruction)
+    {
+      if (!is_unconditional_branch_delay_slot)
+      {
+        Log_WarningPrintf("Conditional branch delay slot at %08X, skipping block", cbi.pc);
+        return false;
+      }
+
+      // change the pc for the second branch's delay slot, it comes from the first branch
+      const CodeBlockInstruction& prev_cbi = block->instructions.back();
+      pc = GetBranchInstructionTarget(prev_cbi.instruction, prev_cbi.pc);
+      Log_DevPrintf("Double branch at %08X, using delay slot from %08X -> %08X", cbi.pc, prev_cbi.pc, pc);
+    }
+
     // instruction is decoded now
     block->instructions.push_back(cbi);
-    pc += sizeof(cbi.instruction.bits);
 
     // if we're in a branch delay slot, the block is now done
     // except if this is a branch in a branch delay slot, then we grab the one after that, and so on...
@@ -509,6 +526,7 @@ bool CompileBlock(CodeBlock* block)
 
     // if this is a branch, we grab the next instruction (delay slot), and then exit
     is_branch_delay_slot = cbi.is_branch_instruction;
+    is_unconditional_branch_delay_slot = cbi.is_unconditional_branch_instruction;
 
     // same for load delay
     is_load_delay_slot = cbi.has_load_delay;
