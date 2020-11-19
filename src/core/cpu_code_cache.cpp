@@ -178,7 +178,6 @@ static void ExecuteImpl()
       CodeBlock* block = LookupBlock(next_block_key);
       if (!block)
       {
-        Log_WarningPrintf("Falling back to uncached interpreter at 0x%08X", g_state.regs.pc);
         InterpretUncachedBlock();
         continue;
       }
