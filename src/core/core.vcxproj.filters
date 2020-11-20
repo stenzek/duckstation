@@ -50,6 +50,7 @@
     <ClCompile Include="shadergen.cpp" />
     <ClCompile Include="memory_card_image.cpp" />
     <ClCompile Include="analog_joystick.cpp" />
+    <ClCompile Include="cpu_recompiler_code_generator_aarch32.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />

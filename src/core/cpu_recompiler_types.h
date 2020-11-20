@@ -12,10 +12,16 @@
 #define XBYAK_NO_OP_NAMES 1
 #include "xbyak.h"
 
+#elif defined(CPU_AARCH32)
+
+#include "vixl/aarch32/constants-aarch32.h"
+#include "vixl/aarch32/instructions-aarch32.h"
+#include "vixl/aarch32/macro-assembler-aarch32.h"
+
 #elif defined(CPU_AARCH64)
 
-#include <vixl/aarch64/constants-aarch64.h>
-#include <vixl/aarch64/macro-assembler-aarch64.h>
+#include "vixl/aarch64/constants-aarch64.h"
+#include "vixl/aarch64/macro-assembler-aarch64.h"
 
 #endif
 
@@ -82,6 +88,25 @@ constexpr u32 CODE_STORAGE_ALIGNMENT = 4096;
 #else
 #error Unknown ABI.
 #endif
+
+#elif defined(CPU_AARCH32)
+
+using HostReg = unsigned;
+using CodeEmitter = vixl::aarch32::MacroAssembler;
+using LabelType = vixl::aarch32::Label;
+enum : u32
+{
+  HostReg_Count = vixl::aarch32::kNumberOfRegisters
+};
+constexpr HostReg HostReg_Invalid = static_cast<HostReg>(HostReg_Count);
+constexpr RegSize HostPointerSize = RegSize_32;
+
+// A reasonable "maximum" number of bytes per instruction.
+constexpr u32 MAX_NEAR_HOST_BYTES_PER_INSTRUCTION = 64;
+constexpr u32 MAX_FAR_HOST_BYTES_PER_INSTRUCTION = 128;
+
+// Alignment of code stoarge.
+constexpr u32 CODE_STORAGE_ALIGNMENT = 4096;
 
 #elif defined(CPU_AARCH64)
 
