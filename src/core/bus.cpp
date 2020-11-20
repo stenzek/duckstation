@@ -1015,8 +1015,8 @@ ALWAYS_INLINE static TickCount DoDMAAccess(u32 offset, u32& value)
 
 namespace CPU {
 
-template<bool add_ticks, bool icache_read = false, u32 word_count = 1>
-ALWAYS_INLINE_RELEASE void DoInstructionRead(PhysicalMemoryAddress address, void* data)
+template<bool add_ticks, bool icache_read = false, u32 word_count = 1, bool raise_exceptions>
+ALWAYS_INLINE_RELEASE bool DoInstructionRead(PhysicalMemoryAddress address, void* data)
 {
   using namespace Bus;
 
@@ -1027,17 +1027,24 @@ ALWAYS_INLINE_RELEASE void DoInstructionRead(PhysicalMemoryAddress address, void
     std::memcpy(data, &g_ram[address & RAM_MASK], sizeof(u32) * word_count);
     if constexpr (add_ticks)
       g_state.pending_ticks += (icache_read ? 1 : RAM_READ_TICKS) * word_count;
+
+    return true;
   }
   else if (address >= BIOS_BASE && address < (BIOS_BASE + BIOS_SIZE))
   {
     std::memcpy(data, &g_bios[(address - BIOS_BASE) & BIOS_MASK], sizeof(u32) * word_count);
     if constexpr (add_ticks)
       g_state.pending_ticks += m_bios_access_time[static_cast<u32>(MemoryAccessSize::Word)] * word_count;
+
+    return true;
   }
   else
   {
-    CPU::RaiseException(address, Cop0Registers::CAUSE::MakeValueForException(Exception::IBE, false, false, 0));
+    if (raise_exceptions)
+      CPU::RaiseException(address, Cop0Registers::CAUSE::MakeValueForException(Exception::IBE, false, false, 0));
+
     std::memset(data, 0, sizeof(u32) * word_count);
+    return false;
   }
 }
 
@@ -1115,20 +1122,20 @@ u32 FillICache(VirtualMemoryAddress address)
   switch ((address >> 2) & 0x03u)
   {
     case 0:
-      DoInstructionRead<true, true, 4>(address & ~(ICACHE_LINE_SIZE - 1u), line_data);
+      DoInstructionRead<true, true, 4, false>(address & ~(ICACHE_LINE_SIZE - 1u), line_data);
       line_tag = GetICacheTagForAddress(address);
       break;
     case 1:
-      DoInstructionRead<true, true, 3>(address & (~(ICACHE_LINE_SIZE - 1u) | 0x4), line_data + 0x4);
+      DoInstructionRead<true, true, 3, false>(address & (~(ICACHE_LINE_SIZE - 1u) | 0x4), line_data + 0x4);
       line_tag = GetICacheTagForAddress(address) | 0x1;
       break;
     case 2:
-      DoInstructionRead<true, true, 2>(address & (~(ICACHE_LINE_SIZE - 1u) | 0x8), line_data + 0x8);
+      DoInstructionRead<true, true, 2, false>(address & (~(ICACHE_LINE_SIZE - 1u) | 0x8), line_data + 0x8);
       line_tag = GetICacheTagForAddress(address) | 0x3;
       break;
     case 3:
     default:
-      DoInstructionRead<true, true, 1>(address & (~(ICACHE_LINE_SIZE - 1u) | 0xC), line_data + 0xC);
+      DoInstructionRead<true, true, 1, false>(address & (~(ICACHE_LINE_SIZE - 1u) | 0xC), line_data + 0xC);
       line_tag = GetICacheTagForAddress(address) | 0x7;
       break;
   }
@@ -1402,7 +1409,7 @@ bool FetchInstruction()
     case 0x04: // KSEG0 - physical memory cached
     {
 #if 0
-      DoInstructionRead<true, false, 1>(address, &g_state.next_instruction.bits);
+      DoInstructionRead<true, false, 1, false>(address, &g_state.next_instruction.bits);
 #else
       if (CompareICacheTag(address))
         g_state.next_instruction.bits = ReadICache(address);
@@ -1414,7 +1421,8 @@ bool FetchInstruction()
 
     case 0x05: // KSEG1 - physical memory uncached
     {
-      DoInstructionRead<true, false, 1>(address, &g_state.next_instruction.bits);
+      if (!DoInstructionRead<true, false, 1, true>(address, &g_state.next_instruction.bits))
+        return false;
     }
     break;
 
@@ -1443,8 +1451,7 @@ bool SafeReadInstruction(VirtualMemoryAddress addr, u32* value)
     case 0x04: // KSEG0 - physical memory cached
     case 0x05: // KSEG1 - physical memory uncached
     {
-      DoInstructionRead<false, false, 1>(addr, value);
-      return true;
+      return DoInstructionRead<false, false, 1, false>(addr, value);
     }
 
     case 0x01: // KUSEG 512M-1024M
