@@ -27,7 +27,7 @@ target_compile_definitions(vixl PUBLIC
   VIXL_CODE_BUFFER_MALLOC
 )
 
-if(${CPU_ARCH} STREQUAL "arm")
+if(${CPU_ARCH} STREQUAL "aarch32")
   target_sources(vixl PRIVATE
     include/vixl/aarch32/assembler-aarch32.h
     include/vixl/aarch32/constants-aarch32.h
@@ -48,7 +48,7 @@ if(${CPU_ARCH} STREQUAL "arm")
     ${CMAKE_CURRENT_SOURCE_DIR}/include/vixl/aarch32
   )
   target_compile_definitions(vixl PUBLIC
-    VIXL_INCLUDE_TARGET_AARCH32
+    VIXL_INCLUDE_TARGET_A32
   )
 endif()
 
@@ -84,7 +84,7 @@ if(${CPU_ARCH} STREQUAL "aarch64")
     ${CMAKE_CURRENT_SOURCE_DIR}/include/vixl/aarch64
   )
   target_compile_definitions(vixl PUBLIC
-    VIXL_INCLUDE_TARGET_AARCH64
+    VIXL_INCLUDE_TARGET_A64
   )
 endif()
 

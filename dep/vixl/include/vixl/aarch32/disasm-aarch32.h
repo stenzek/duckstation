@@ -33,8 +33,8 @@ extern "C" {
 
 #include <iomanip>
 
-#include "aarch32/constants-aarch32.h"
-#include "aarch32/operands-aarch32.h"
+#include "constants-aarch32.h"
+#include "operands-aarch32.h"
 
 namespace vixl {
 namespace aarch32 {

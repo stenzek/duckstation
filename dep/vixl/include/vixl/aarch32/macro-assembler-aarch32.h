@@ -28,15 +28,15 @@
 #ifndef VIXL_AARCH32_MACRO_ASSEMBLER_AARCH32_H_
 #define VIXL_AARCH32_MACRO_ASSEMBLER_AARCH32_H_
 
-#include "code-generation-scopes-vixl.h"
-#include "macro-assembler-interface.h"
-#include "pool-manager-impl.h"
-#include "pool-manager.h"
-#include "utils-vixl.h"
+#include "../code-generation-scopes-vixl.h"
+#include "../macro-assembler-interface.h"
+#include "../pool-manager-impl.h"
+#include "../pool-manager.h"
+#include "../utils-vixl.h"
 
-#include "aarch32/assembler-aarch32.h"
-#include "aarch32/instructions-aarch32.h"
-#include "aarch32/operands-aarch32.h"
+#include "assembler-aarch32.h"
+#include "instructions-aarch32.h"
+#include "operands-aarch32.h"
 
 namespace vixl {
 

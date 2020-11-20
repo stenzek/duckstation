@@ -36,9 +36,9 @@ extern "C" {
 #include <iomanip>
 #include <list>
 
-#include "invalset-vixl.h"
-#include "pool-manager.h"
-#include "utils-vixl.h"
+#include "../invalset-vixl.h"
+#include "../pool-manager.h"
+#include "../utils-vixl.h"
 
 #include "constants-aarch32.h"
 #include "instructions-aarch32.h"
