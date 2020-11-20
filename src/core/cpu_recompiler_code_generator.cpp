@@ -2239,11 +2239,13 @@ bool CodeGenerator::Compile_cop0(const CodeBlockInstruction& cbi)
           EmitLoadCPUStructField(sr_value.host_reg, sr_value.size, offsetof(State, cop0_regs.sr.bits));
           EmitLoadCPUStructField(cause_value.host_reg, cause_value.size, offsetof(State, cop0_regs.cause.bits));
           EmitBranchIfBitClear(sr_value.host_reg, sr_value.size, 0, &no_interrupt);
+          m_register_cache.InhibitAllocation();
           EmitAnd(sr_value.host_reg, sr_value.host_reg, cause_value);
           EmitTest(sr_value.host_reg, Value::FromConstantU32(0xFF00));
           EmitConditionalBranch(Condition::Zero, false, &no_interrupt);
           EmitStoreCPUStructField(offsetof(State, downcount), Value::FromConstantU32(0));
           EmitBindLabel(&no_interrupt);
+          m_register_cache.UninhibitAllocation();
         }
 
         InstructionEpilogue(cbi);
@@ -2284,8 +2286,10 @@ bool CodeGenerator::Compile_cop0(const CodeBlockInstruction& cbi)
         EmitAnd(sr.host_reg, sr.host_reg, cause_value);
         EmitTest(sr.host_reg, Value::FromConstantU32(0xFF00));
         EmitConditionalBranch(Condition::Zero, false, &no_interrupt);
+        m_register_cache.InhibitAllocation();
         EmitStoreCPUStructField(offsetof(State, downcount), Value::FromConstantU32(0));
         EmitBindLabel(&no_interrupt);
+        m_register_cache.UninhibitAllocation();
 
         InstructionEpilogue(cbi);
         return true;
