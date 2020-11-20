@@ -730,6 +730,57 @@ Value CodeGenerator::AndValues(const Value& lhs, const Value& rhs)
   return res;
 }
 
+void CodeGenerator::AndValueInPlace(Value& lhs, const Value& rhs)
+{
+  DebugAssert(lhs.size == rhs.size);
+  if (lhs.IsConstant() && rhs.IsConstant())
+  {
+    // compile-time
+    u64 new_cv = lhs.constant_value & rhs.constant_value;
+    switch (lhs.size)
+    {
+      case RegSize_8:
+        lhs = Value::FromConstantU8(Truncate8(new_cv));
+        break;
+
+      case RegSize_16:
+        lhs = Value::FromConstantU16(Truncate16(new_cv));
+        break;
+
+      case RegSize_32:
+        lhs = Value::FromConstantU32(Truncate32(new_cv));
+        break;
+
+      case RegSize_64:
+        lhs = Value::FromConstantU64(new_cv);
+        break;
+
+      default:
+        lhs = Value();
+        break;
+    }
+  }
+
+  // TODO: and with -1 -> noop
+  if (lhs.HasConstantValue(0) || rhs.HasConstantValue(0))
+  {
+    EmitXor(lhs.host_reg, lhs.host_reg, lhs);
+    return;
+  }
+
+  if (lhs.IsInHostRegister())
+  {
+    EmitAnd(lhs.host_reg, lhs.host_reg, rhs);
+  }
+  else
+  {
+    Value new_lhs = m_register_cache.AllocateScratch(lhs.size);
+    EmitCopyValue(new_lhs.host_reg, lhs);
+    EmitAnd(new_lhs.host_reg, new_lhs.host_reg, rhs);
+    lhs = std::move(new_lhs);
+  }
+}
+
 Value CodeGenerator::XorValues(const Value& lhs, const Value& rhs)
 {
   DebugAssert(lhs.size == rhs.size);
@@ -1438,14 +1489,19 @@ bool CodeGenerator::Compile_LoadLeftRight(const CodeBlockInstruction& cbi)
 
   if (cbi.instruction.op == InstructionOp::lwl)
   {
-    Value lhs = AndValues(value, ShrValues(Value::FromConstantU32(0x00FFFFFF), shift));
+    Value lhs = ShrValues(Value::FromConstantU32(0x00FFFFFF), shift);
+    AndValueInPlace(lhs, value);
+    value.ReleaseAndClear();
+
     mem = ShlValues(mem, SubValues(Value::FromConstantU32(24), shift, false));
     EmitOr(mem.GetHostRegister(), mem.GetHostRegister(), lhs);
   }
   else
   {
-    Value lhs = AndValues(
-      value, ShlValues(Value::FromConstantU32(0xFFFFFF00), SubValues(Value::FromConstantU32(24), shift, false)));
+    Value lhs = ShlValues(Value::FromConstantU32(0xFFFFFF00), SubValues(Value::FromConstantU32(24), shift, false));
+    AndValueInPlace(lhs, value);
+    value.ReleaseAndClear();
+
     EmitShr(mem.GetHostRegister(), mem.GetHostRegister(), RegSize_32, shift);
     EmitOr(mem.GetHostRegister(), mem.GetHostRegister(), lhs);
   }
@@ -1491,13 +1547,17 @@ bool CodeGenerator::Compile_StoreLeftRight(const CodeBlockInstruction& cbi)
   if (cbi.instruction.op == InstructionOp::swl)
   {
     Value lhs = ShrValues(reg, SubValues(Value::FromConstantU32(24), shift, false));
+    reg.ReleaseAndClear();
+
     EmitAnd(mem.GetHostRegister(), mem.GetHostRegister(), ShlValues(Value::FromConstantU32(0xFFFFFF00), shift));
     EmitOr(mem.GetHostRegister(), mem.GetHostRegister(), lhs);
   }
   else
   {
     Value lhs = ShlValues(reg, shift);
-    mem = AndValues(mem,
+    reg.ReleaseAndClear();
+
+    AndValueInPlace(mem,
                     ShrValues(Value::FromConstantU32(0x00FFFFFF), SubValues(Value::FromConstantU32(24), shift, false)));
     EmitOr(mem.GetHostRegister(), mem.GetHostRegister(), lhs);
   }
