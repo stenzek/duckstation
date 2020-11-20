@@ -1,4 +1,5 @@
 #include "page_fault_handler.h"
+#include "common/cpu_detect.h"
 #include "common/log.h"
 #include <algorithm>
 #include <cstring>
@@ -67,7 +68,7 @@ static bool IsStoreInstruction(const void* ptr)
 }
 #endif
 
-#if defined(WIN32)
+#if defined(WIN32) && defined(CPU_X64)
 static PVOID s_veh_handle;
 
 static LONG ExceptionHandler(PEXCEPTION_POINTERS exi)
@@ -189,7 +190,7 @@ bool InstallHandler(void* owner, Callback callback)
 
   if (was_empty)
   {
-#if defined(WIN32)
+#if defined(WIN32) && defined(CPU_X64)
     s_veh_handle = AddVectoredExceptionHandler(1, ExceptionHandler);
     if (!s_veh_handle)
     {
@@ -246,10 +247,10 @@ bool RemoveHandler(void* owner)
 
   if (m_handlers.empty())
   {
-#if defined(WIN32)
+#if defined(WIN32) && defined(CPU_X64)
     RemoveVectoredExceptionHandler(s_veh_handle);
     s_veh_handle = nullptr;
-#else
+#elif defined(USE_SIGSEGV)
     // restore old signal handler
 #if defined(__APPLE__) || defined(__aarch64__)
     if (sigaction(SIGBUS, &s_old_sigbus_action, nullptr) < 0)
@@ -267,6 +268,8 @@ bool RemoveHandler(void* owner)
     }
 
     s_old_sigsegv_action = {};
+#else
+    return false;
 #endif
   }
 
