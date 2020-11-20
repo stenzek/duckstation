@@ -196,6 +196,16 @@ Value CodeGenerator::GetValueInHostRegister(const Value& value, bool allow_zero_
   return new_value;
 }
 
+Value CodeGenerator::GetValueInHostOrScratchRegister(const Value& value, bool allow_zero_register /* = true */)
+{
+  if (value.IsInHostRegister())
+    return Value(value.regcache, value.host_reg, value.size, ValueFlags::Valid | ValueFlags::InHostRegister);
+
+  Value new_value = m_register_cache.AllocateScratch(value.size);
+  EmitCopyValue(new_value.host_reg, value);
+  return new_value;
+}
+
 void CodeGenerator::EmitBeginBlock()
 {
   m_register_cache.AssumeCalleeSavedRegistersAreSaved();

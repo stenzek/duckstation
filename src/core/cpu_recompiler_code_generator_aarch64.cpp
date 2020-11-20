@@ -182,6 +182,19 @@ Value CodeGenerator::GetValueInHostRegister(const Value& value, bool allow_zero_
   return new_value;
 }
 
+Value CodeGenerator::GetValueInHostOrScratchRegister(const Value& value, bool allow_zero_register /* = true */)
+{
+  if (value.IsInHostRegister())
+    return Value::FromHostReg(&m_register_cache, value.host_reg, value.size);
+
+  if (value.HasConstantValue(0) && allow_zero_register)
+    return Value::FromHostReg(&m_register_cache, static_cast<HostReg>(31), value.size);
+
+  Value new_value = Value::FromHostReg(&m_register_cache, RSCRATCH, value.size);
+  EmitCopyValue(new_value.host_reg, value);
+  return new_value;
+}
+
 void CodeGenerator::EmitBeginBlock()
 {
   m_emit->Sub(a64::sp, a64::sp, FUNCTION_STACK_SIZE);

@@ -179,6 +179,7 @@ private:
   void ConvertValueSizeInPlace(Value* value, RegSize size, bool sign_extend);
 
   Value GetValueInHostRegister(const Value& value, bool allow_zero_register = true);
+  Value GetValueInHostOrScratchRegister(const Value& value, bool allow_zero_register = true);
 
   void SwitchToFarCode();
   void SwitchToNearCode();
