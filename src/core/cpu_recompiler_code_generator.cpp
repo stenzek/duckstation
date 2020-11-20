@@ -2202,6 +2202,7 @@ bool CodeGenerator::Compile_cop0(const CodeBlockInstruction& cbi)
               value = AndValues(value, Value::FromConstantU32(write_mask));
             }
 
+#ifdef WITH_FASTMEM
             // changing SR[Isc] needs to update fastmem views
             if (reg == Cop0Reg::SR && g_settings.cpu_fastmem)
             {
@@ -2211,13 +2212,18 @@ bool CodeGenerator::Compile_cop0(const CodeBlockInstruction& cbi)
               EmitStoreCPUStructField(offset, value);
               EmitXor(old_value.host_reg, old_value.host_reg, value);
               EmitBranchIfBitClear(old_value.host_reg, RegSize_32, 16, &skip_fastmem_update);
+              m_register_cache.InhibitAllocation();
               EmitFunctionCall(nullptr, &Thunks::UpdateFastmemMapping, m_register_cache.GetCPUPtr());
               EmitBindLabel(&skip_fastmem_update);
+              m_register_cache.UninhibitAllocation();
             }
             else
             {
               EmitStoreCPUStructField(offset, value);
             }
+#else
+            EmitStoreCPUStructField(offset, value);
+#endif
           }
         }
 

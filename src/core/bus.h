@@ -82,8 +82,10 @@ enum : size_t
   // Offsets within the memory arena.
   MEMORY_ARENA_RAM_OFFSET = 0,
 
+#ifdef WITH_FASTMEM
   // Fastmem region size is 4GB to cover the entire 32-bit address space.
   FASTMEM_REGION_SIZE = UINT64_C(0x100000000)
+#endif
 };
 
 bool Initialize();
@@ -91,9 +93,10 @@ void Shutdown();
 void Reset();
 bool DoState(StateWrapper& sw);
 
-u8* GetFastmemBase();
+#ifdef WITH_FASTMEM
 void UpdateFastmemViews(bool enabled, bool isolate_cache);
 bool CanUseFastmemForAddress(VirtualMemoryAddress address);
+#endif
 
 void SetExpansionROM(std::vector<u8> data);
 void SetBIOS(const std::vector<u8>& image);

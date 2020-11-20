@@ -99,10 +99,13 @@ static HostCodeMap s_host_code_map;
 
 static void AddBlockToHostCodeMap(CodeBlock* block);
 static void RemoveBlockFromHostCodeMap(CodeBlock* block);
+
+#ifdef WITH_FASTMEM
 static bool InitializeFastmem();
 static void ShutdownFastmem();
 static Common::PageFaultHandler::HandlerResult PageFaultHandler(void* exception_pc, void* fault_address, bool is_write);
-#endif
+#endif // WITH_FASTMEM
+#endif // WITH_RECOMPILER
 
 void Initialize()
 {
@@ -121,8 +124,10 @@ void Initialize()
       Panic("Failed to initialize code space");
     }
 
+#ifdef WITH_FASTMEM
     if (g_settings.IsUsingFastmem() && !InitializeFastmem())
       Panic("Failed to initialize fastmem");
+#endif
 
     ResetFastMap();
     CompileDispatcher();
@@ -150,7 +155,9 @@ void ClearState()
 void Shutdown()
 {
   ClearState();
+#ifdef WITH_FASTMEM
   ShutdownFastmem();
+#endif
 #ifdef WITH_RECOMPILER
   s_code_buffer.Destroy();
 #endif
@@ -326,7 +333,10 @@ void Reinitialize()
 
 #ifdef WITH_RECOMPILER
 
+#ifdef WITH_FASTMEM
   ShutdownFastmem();
+#endif
+
   s_code_buffer.Destroy();
 
   if (g_settings.IsUsingRecompiler())
@@ -342,8 +352,10 @@ void Reinitialize()
       Panic("Failed to initialize code space");
     }
 
+#ifdef WITH_FASTMEM
     if (g_settings.IsUsingFastmem() && !InitializeFastmem())
       Panic("Failed to initialize fastmem");
+#endif
 
     ResetFastMap();
     CompileDispatcher();
@@ -354,8 +366,10 @@ void Reinitialize()
 void Flush()
 {
   ClearState();
+#ifdef WITH_RECOMPILER
   if (g_settings.IsUsingRecompiler())
     CompileDispatcher();
+#endif
 }
 
 void LogCurrentState()
@@ -437,7 +451,9 @@ bool RevalidateBlock(CodeBlock* block)
   return true;
 
 recompile:
+#ifdef WITH_RECOMPILER
   RemoveBlockFromHostCodeMap(block);
+#endif
 
   block->instructions.clear();
   if (!CompileBlock(block))
@@ -447,8 +463,10 @@ recompile:
     return false;
   }
 
+#ifdef WITH_RECOMPILER
   // re-add to page map again
   AddBlockToHostCodeMap(block);
+#endif
   if (block->IsInRAM())
     AddBlockToPageMap(block);
 
@@ -713,6 +731,8 @@ void RemoveBlockFromHostCodeMap(CodeBlock* block)
   s_host_code_map.erase(hc_iter);
 }
 
+#ifdef WITH_FASTMEM
+
 bool InitializeFastmem()
 {
   if (!Common::PageFaultHandler::InstallHandler(&s_host_code_map, PageFaultHandler))
@@ -801,6 +821,8 @@ Common::PageFaultHandler::HandlerResult PageFaultHandler(void* exception_pc, voi
   return Common::PageFaultHandler::HandlerResult::ExecuteNextHandler;
 }
 
-#endif
+#endif // WITH_FASTMEM
+
+#endif // WITH_RECOMPILER
 
 } // namespace CPU::CodeCache

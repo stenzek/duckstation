@@ -41,6 +41,8 @@ Value CodeGenerator::EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const 
     {
       Value result = m_register_cache.AllocateScratch(size);
 
+#ifdef WITH_FASTMEM
+
       if (g_settings.IsUsingFastmem() && Bus::IsRAMAddress(static_cast<u32>(address.constant_value)))
       {
         // have to mask away the high bits for mirrors, since we don't map them in fastmem
@@ -52,12 +54,20 @@ Value CodeGenerator::EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const 
         EmitLoadGlobal(result.GetHostRegister(), size, ptr);
       }
 
+#else
+
+      EmitLoadGlobal(result.GetHostRegister(), size, ptr);
+
+#endif
+
       m_delayed_cycles_add += read_ticks;
       return result;
     }
   }
 
   AddPendingCycles(true);
+
+#ifdef WITH_FASTMEM
 
   const bool use_fastmem = address_spec ? Bus::CanUseFastmemForAddress(*address_spec) : true;
   if (address_spec)
@@ -83,24 +93,35 @@ Value CodeGenerator::EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const 
     EmitLoadGuestMemorySlowmem(cbi, address, size, result, false);
   }
 
+#else
+
+  Value result = m_register_cache.AllocateScratch(HostPointerSize);
+  m_register_cache.FlushCallerSavedGuestRegisters(true, true);
+  EmitLoadGuestMemorySlowmem(cbi, address, size, result, false);
+
+#endif
+
   // Downcast to ignore upper 56/48/32 bits. This should be a noop.
-  switch (size)
+  if (result.size != size)
   {
-    case RegSize_8:
-      ConvertValueSizeInPlace(&result, RegSize_8, false);
-      break;
+    switch (size)
+    {
+      case RegSize_8:
+        ConvertValueSizeInPlace(&result, RegSize_8, false);
+        break;
 
-    case RegSize_16:
-      ConvertValueSizeInPlace(&result, RegSize_16, false);
-      break;
+      case RegSize_16:
+        ConvertValueSizeInPlace(&result, RegSize_16, false);
+        break;
 
-    case RegSize_32:
-      ConvertValueSizeInPlace(&result, RegSize_32, false);
-      break;
+      case RegSize_32:
+        ConvertValueSizeInPlace(&result, RegSize_32, false);
+        break;
 
-    default:
-      UnreachableCode();
-      break;
+      default:
+        UnreachableCode();
+        break;
+    }
   }
 
   return result;
@@ -124,6 +145,8 @@ void CodeGenerator::EmitStoreGuestMemory(const CodeBlockInstruction& cbi, const 
 
   AddPendingCycles(true);
 
+#ifdef WITH_FASTMEM
+
   const bool use_fastmem = address_spec ? Bus::CanUseFastmemForAddress(*address_spec) : true;
   if (address_spec)
   {
@@ -146,6 +169,13 @@ void CodeGenerator::EmitStoreGuestMemory(const CodeBlockInstruction& cbi, const 
     m_register_cache.FlushCallerSavedGuestRegisters(true, true);
     EmitStoreGuestMemorySlowmem(cbi, address, value, false);
   }
+
+#else
+
+  m_register_cache.FlushCallerSavedGuestRegisters(true, true);
+  EmitStoreGuestMemorySlowmem(cbi, address, value, false);
+
+#endif
 }
 
 #ifndef CPU_X64

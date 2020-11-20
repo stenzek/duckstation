@@ -115,13 +115,13 @@ endif()
 
 if(${CPU_ARCH} STREQUAL "x64")
   target_include_directories(core PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../../dep/xbyak/xbyak")
-  target_compile_definitions(core PRIVATE "WITH_RECOMPILER=1")
+  target_compile_definitions(core PRIVATE "WITH_RECOMPILER=1 WITH_FASTMEM=1")
   target_sources(core PRIVATE ${RECOMPILER_SRCS}
     cpu_recompiler_code_generator_x64.cpp
   )
   message("Building x64 recompiler")
 elseif(${CPU_ARCH} STREQUAL "aarch64")
-  target_compile_definitions(core PRIVATE "WITH_RECOMPILER=1")
+  target_compile_definitions(core PRIVATE "WITH_RECOMPILER=1 WITH_FASTMEM=1")
   target_sources(core PRIVATE ${RECOMPILER_SRCS}
     cpu_recompiler_code_generator_aarch64.cpp
   )

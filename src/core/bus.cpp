@@ -87,15 +87,21 @@ static u32 m_ram_size_reg = 0;
 static std::string m_tty_line_buffer;
 
 static Common::MemoryArena m_memory_arena;
+
+#ifdef WITH_FASTMEM
 static u8* m_fastmem_base = nullptr;
 static std::vector<Common::MemoryArena::View> m_fastmem_ram_views;
+#endif
 
 static std::tuple<TickCount, TickCount, TickCount> CalculateMemoryTiming(MEMDELAY mem_delay, COMDELAY common_delay);
 static void RecalculateMemoryTimings();
 
-static void SetCodePageFastmemProtection(u32 page_index, bool writable);
 static bool AllocateMemory();
+
+#ifdef WITH_FASTMEM
+static void SetCodePageFastmemProtection(u32 page_index, bool writable);
 static void UnmapFastmemViews();
+#endif
 
 #define FIXUP_WORD_READ_OFFSET(offset) ((offset) & ~u32(3))
 #define FIXUP_WORD_READ_VALUE(offset, value) ((value) >> (((offset)&u32(3)) * 8u))
@@ -126,7 +132,10 @@ bool Initialize()
 
 void Shutdown()
 {
+#ifdef WITH_FASTMEM
   UnmapFastmemViews();
+#endif
+
   if (g_ram)
   {
     m_memory_arena.ReleaseViewPtr(g_ram, RAM_SIZE);
@@ -259,6 +268,8 @@ bool AllocateMemory()
   return true;
 }
 
+#ifdef WITH_FASTMEM
+
 void UnmapFastmemViews()
 {
   m_fastmem_ram_views.clear();
@@ -344,6 +355,8 @@ bool CanUseFastmemForAddress(VirtualMemoryAddress address)
   return (paddr < RAM_SIZE);
 }
 
+#endif
+
 bool IsRAMCodePage(u32 index)
 {
   return m_ram_code_bits[index];
@@ -356,7 +369,10 @@ void SetRAMCodePage(u32 index)
 
   // protect fastmem pages
   m_ram_code_bits[index] = true;
+
+#ifdef WITH_FASTMEM
   SetCodePageFastmemProtection(index, false);
+#endif
 }
 
 void ClearRAMCodePage(u32 index)
@@ -366,8 +382,13 @@ void ClearRAMCodePage(u32 index)
 
   // unprotect fastmem pages
   m_ram_code_bits[index] = false;
+
+#ifdef WITH_FASTMEM
   SetCodePageFastmemProtection(index, true);
+#endif
 }
+
+#ifdef WITH_FASTMEM
 
 void SetCodePageFastmemProtection(u32 page_index, bool writable)
 {
@@ -383,10 +404,13 @@ void SetCodePageFastmemProtection(u32 page_index, bool writable)
   }
 }
 
+#endif
+
 void ClearRAMCodePageFlags()
 {
   m_ram_code_bits.reset();
 
+#ifdef WITH_FASTMEM
   // unprotect fastmem pages
   for (const auto& view : m_fastmem_ram_views)
   {
@@ -395,6 +419,7 @@ void ClearRAMCodePageFlags()
       Log_ErrorPrintf("Failed to unprotect code pages for fastmem view @ %p", view.GetBasePointer());
     }
   }
+#endif
 }
 
 bool IsCodePageAddress(PhysicalMemoryAddress address)

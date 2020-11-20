@@ -79,13 +79,17 @@ public:
   // Automatically generates an exception handler.
   Value EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const Value& address, const SpeculativeValue& address_spec,
                             RegSize size);
+#ifdef WITH_FASTMEM
   void EmitLoadGuestRAMFastmem(const Value& address, RegSize size, Value& result);
   void EmitLoadGuestMemoryFastmem(const CodeBlockInstruction& cbi, const Value& address, RegSize size, Value& result);
+#endif
   void EmitLoadGuestMemorySlowmem(const CodeBlockInstruction& cbi, const Value& address, RegSize size, Value& result,
                                   bool in_far_code);
   void EmitStoreGuestMemory(const CodeBlockInstruction& cbi, const Value& address, const SpeculativeValue& address_spec,
                             const Value& value);
+#ifdef WITH_FASTMEM
   void EmitStoreGuestMemoryFastmem(const CodeBlockInstruction& cbi, const Value& address, const Value& value);
+#endif
   void EmitStoreGuestMemorySlowmem(const CodeBlockInstruction& cbi, const Value& address, const Value& value,
                                    bool in_far_code);
 
