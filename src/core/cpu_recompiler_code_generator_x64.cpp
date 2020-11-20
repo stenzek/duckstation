@@ -836,7 +836,8 @@ void CodeGenerator::EmitDec(HostReg to_reg, RegSize size)
   }
 }
 
-void CodeGenerator::EmitShl(HostReg to_reg, HostReg from_reg, RegSize size, const Value& amount_value)
+void CodeGenerator::EmitShl(HostReg to_reg, HostReg from_reg, RegSize size, const Value& amount_value,
+                            bool assume_amount_masked /* = true */)
 {
   DebugAssert(amount_value.IsConstant() || amount_value.IsInHostRegister());
 
@@ -904,7 +905,8 @@ void CodeGenerator::EmitShl(HostReg to_reg, HostReg from_reg, RegSize size, cons
     m_emit->pop(m_emit->rcx);
 }
 
-void CodeGenerator::EmitShr(HostReg to_reg, HostReg from_reg, RegSize size, const Value& amount_value)
+void CodeGenerator::EmitShr(HostReg to_reg, HostReg from_reg, RegSize size, const Value& amount_value,
+                            bool assume_amount_masked /* = true */)
 {
   DebugAssert(amount_value.IsConstant() || amount_value.IsInHostRegister());
 
@@ -972,7 +974,8 @@ void CodeGenerator::EmitShr(HostReg to_reg, HostReg from_reg, RegSize size, cons
     m_emit->pop(m_emit->rcx);
 }
 
-void CodeGenerator::EmitSar(HostReg to_reg, HostReg from_reg, RegSize size, const Value& amount_value)
+void CodeGenerator::EmitSar(HostReg to_reg, HostReg from_reg, RegSize size, const Value& amount_value,
+                            bool assume_amount_masked /* = true */)
 {
   DebugAssert(amount_value.IsConstant() || amount_value.IsInHostRegister());
 

@@ -71,9 +71,6 @@ constexpr RegSize HostPointerSize = RegSize_64;
 constexpr u32 MAX_NEAR_HOST_BYTES_PER_INSTRUCTION = 64;
 constexpr u32 MAX_FAR_HOST_BYTES_PER_INSTRUCTION = 128;
 
-// Are shifts implicitly masked to 0..31?
-constexpr bool SHIFTS_ARE_IMPLICITLY_MASKED = true;
-
 // Alignment of code stoarge.
 constexpr u32 CODE_STORAGE_ALIGNMENT = 4096;
 
@@ -101,9 +98,6 @@ constexpr RegSize HostPointerSize = RegSize_64;
 // A reasonable "maximum" number of bytes per instruction.
 constexpr u32 MAX_NEAR_HOST_BYTES_PER_INSTRUCTION = 64;
 constexpr u32 MAX_FAR_HOST_BYTES_PER_INSTRUCTION = 128;
-
-// Are shifts implicitly masked to 0..31?
-constexpr bool SHIFTS_ARE_IMPLICITLY_MASKED = true;
 
 // Alignment of code stoarge.
 constexpr u32 CODE_STORAGE_ALIGNMENT = 4096;

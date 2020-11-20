@@ -52,9 +52,9 @@ public:
                bool signed_divide);
   void EmitInc(HostReg to_reg, RegSize size);
   void EmitDec(HostReg to_reg, RegSize size);
-  void EmitShl(HostReg to_reg, HostReg from_reg, RegSize size, const Value& amount_value);
-  void EmitShr(HostReg to_reg, HostReg from_reg, RegSize size, const Value& amount_value);
-  void EmitSar(HostReg to_reg, HostReg from_reg, RegSize size, const Value& amount_value);
+  void EmitShl(HostReg to_reg, HostReg from_reg, RegSize size, const Value& amount_value, bool assume_amount_masked = true);
+  void EmitShr(HostReg to_reg, HostReg from_reg, RegSize size, const Value& amount_value, bool assume_amount_masked = true);
+  void EmitSar(HostReg to_reg, HostReg from_reg, RegSize size, const Value& amount_value, bool assume_amount_masked = true);
   void EmitAnd(HostReg to_reg, HostReg from_reg, const Value& value);
   void EmitOr(HostReg to_reg, HostReg from_reg, const Value& value);
   void EmitXor(HostReg to_reg, HostReg from_reg, const Value& value);
@@ -158,9 +158,9 @@ public:
   Value AddValues(const Value& lhs, const Value& rhs, bool set_flags);
   Value SubValues(const Value& lhs, const Value& rhs, bool set_flags);
   std::pair<Value, Value> MulValues(const Value& lhs, const Value& rhs, bool signed_multiply);
-  Value ShlValues(const Value& lhs, const Value& rhs);
-  Value ShrValues(const Value& lhs, const Value& rhs);
-  Value SarValues(const Value& lhs, const Value& rhs);
+  Value ShlValues(const Value& lhs, const Value& rhs, bool assume_amount_masked = true);
+  Value ShrValues(const Value& lhs, const Value& rhs, bool assume_amount_masked = true);
+  Value SarValues(const Value& lhs, const Value& rhs, bool assume_amount_masked = true);
   Value OrValues(const Value& lhs, const Value& rhs);
   Value AndValues(const Value& lhs, const Value& rhs);
   Value XorValues(const Value& lhs, const Value& rhs);

@@ -632,7 +632,8 @@ void CodeGenerator::EmitDec(HostReg to_reg, RegSize size)
 #endif
 }
 
-void CodeGenerator::EmitShl(HostReg to_reg, HostReg from_reg, RegSize size, const Value& amount_value)
+void CodeGenerator::EmitShl(HostReg to_reg, HostReg from_reg, RegSize size, const Value& amount_value,
+                            bool assume_amount_masked /* = true */)
 {
   switch (size)
   {
@@ -663,7 +664,8 @@ void CodeGenerator::EmitShl(HostReg to_reg, HostReg from_reg, RegSize size, cons
   }
 }
 
-void CodeGenerator::EmitShr(HostReg to_reg, HostReg from_reg, RegSize size, const Value& amount_value)
+void CodeGenerator::EmitShr(HostReg to_reg, HostReg from_reg, RegSize size, const Value& amount_value,
+                            bool assume_amount_masked /* = true */)
 {
   switch (size)
   {
@@ -694,7 +696,8 @@ void CodeGenerator::EmitShr(HostReg to_reg, HostReg from_reg, RegSize size, cons
   }
 }
 
-void CodeGenerator::EmitSar(HostReg to_reg, HostReg from_reg, RegSize size, const Value& amount_value)
+void CodeGenerator::EmitSar(HostReg to_reg, HostReg from_reg, RegSize size, const Value& amount_value,
+                            bool assume_amount_masked /* = true */)
 {
   switch (size)
   {
@@ -1295,21 +1298,21 @@ void CodeGenerator::EmitLoadGuestRAMFastmem(const Value& address, RegSize size, 
 
   switch (size)
   {
-  case RegSize_8:
-    m_emit->Ldrb(GetHostReg32(result.host_reg), actual_address);
-    break;
+    case RegSize_8:
+      m_emit->Ldrb(GetHostReg32(result.host_reg), actual_address);
+      break;
 
-  case RegSize_16:
-    m_emit->Ldrh(GetHostReg32(result.host_reg), actual_address);
-    break;
+    case RegSize_16:
+      m_emit->Ldrh(GetHostReg32(result.host_reg), actual_address);
+      break;
 
-  case RegSize_32:
-    m_emit->Ldr(GetHostReg32(result.host_reg), actual_address);
-    break;
+    case RegSize_32:
+      m_emit->Ldr(GetHostReg32(result.host_reg), actual_address);
+      break;
 
-  default:
-    UnreachableCode();
-    break;
+    default:
+      UnreachableCode();
+      break;
   }
 }
 

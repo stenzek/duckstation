@@ -493,7 +493,7 @@ std::pair<Value, Value> CodeGenerator::MulValues(const Value& lhs, const Value& 
   return std::make_pair(std::move(hi), std::move(lo));
 }
 
-Value CodeGenerator::ShlValues(const Value& lhs, const Value& rhs)
+Value CodeGenerator::ShlValues(const Value& lhs, const Value& rhs, bool assume_amount_masked /* = true */)
 {
   DebugAssert(lhs.size == rhs.size);
   if (lhs.IsConstant() && rhs.IsConstant())
@@ -528,18 +528,18 @@ Value CodeGenerator::ShlValues(const Value& lhs, const Value& rhs)
   {
     if (lhs.IsInHostRegister())
     {
-      EmitShl(res.host_reg, lhs.host_reg, res.size, rhs);
+      EmitShl(res.host_reg, lhs.host_reg, res.size, rhs, assume_amount_masked);
     }
     else
     {
       EmitCopyValue(res.host_reg, lhs);
-      EmitShl(res.host_reg, res.host_reg, res.size, rhs);
+      EmitShl(res.host_reg, res.host_reg, res.size, rhs, assume_amount_masked);
     }
   }
   return res;
 }
 
-Value CodeGenerator::ShrValues(const Value& lhs, const Value& rhs)
+Value CodeGenerator::ShrValues(const Value& lhs, const Value& rhs, bool assume_amount_masked /* = true */)
 {
   DebugAssert(lhs.size == rhs.size);
   if (lhs.IsConstant() && rhs.IsConstant())
@@ -574,18 +574,18 @@ Value CodeGenerator::ShrValues(const Value& lhs, const Value& rhs)
   {
     if (lhs.IsInHostRegister())
     {
-      EmitShr(res.host_reg, lhs.host_reg, res.size, rhs);
+      EmitShr(res.host_reg, lhs.host_reg, res.size, rhs, assume_amount_masked);
     }
     else
     {
       EmitCopyValue(res.host_reg, lhs);
-      EmitShr(res.host_reg, res.host_reg, res.size, rhs);
+      EmitShr(res.host_reg, res.host_reg, res.size, rhs, assume_amount_masked);
     }
   }
   return res;
 }
 
-Value CodeGenerator::SarValues(const Value& lhs, const Value& rhs)
+Value CodeGenerator::SarValues(const Value& lhs, const Value& rhs, bool assume_amount_masked /* = true */)
 {
   DebugAssert(lhs.size == rhs.size);
   if (lhs.IsConstant() && rhs.IsConstant())
@@ -623,12 +623,12 @@ Value CodeGenerator::SarValues(const Value& lhs, const Value& rhs)
   {
     if (lhs.IsInHostRegister())
     {
-      EmitSar(res.host_reg, lhs.host_reg, res.size, rhs);
+      EmitSar(res.host_reg, lhs.host_reg, res.size, rhs, assume_amount_masked);
     }
     else
     {
       EmitCopyValue(res.host_reg, lhs);
-      EmitSar(res.host_reg, res.host_reg, res.size, rhs);
+      EmitSar(res.host_reg, res.host_reg, res.size, rhs, assume_amount_masked);
     }
   }
   return res;
@@ -1183,8 +1183,6 @@ bool CodeGenerator::Compile_Shift(const CodeBlockInstruction& cbi)
     // rd <- rt op (rs & 0x1F)
     shamt = m_register_cache.ReadGuestRegister(cbi.instruction.r.rs);
     shamt_spec = SpeculativeReadReg(cbi.instruction.r.rs);
-    if constexpr (!SHIFTS_ARE_IMPLICITLY_MASKED)
-      EmitAnd(shamt.host_reg, shamt.host_reg, Value::FromConstantU32(0x1F));
   }
 
   Value result;
@@ -1194,7 +1192,7 @@ bool CodeGenerator::Compile_Shift(const CodeBlockInstruction& cbi)
     case InstructionFunct::sll:
     case InstructionFunct::sllv:
     {
-      result = ShlValues(rt, shamt);
+      result = ShlValues(rt, shamt, false);
       if (rt_spec && shamt_spec)
         result_spec = *rt_spec << *shamt_spec;
     }
@@ -1203,7 +1201,7 @@ bool CodeGenerator::Compile_Shift(const CodeBlockInstruction& cbi)
     case InstructionFunct::srl:
     case InstructionFunct::srlv:
     {
-      result = ShrValues(rt, shamt);
+      result = ShrValues(rt, shamt, false);
       if (rt_spec && shamt_spec)
         result_spec = *rt_spec >> *shamt_spec;
     }
@@ -1212,7 +1210,7 @@ bool CodeGenerator::Compile_Shift(const CodeBlockInstruction& cbi)
     case InstructionFunct::sra:
     case InstructionFunct::srav:
     {
-      result = SarValues(rt, shamt);
+      result = SarValues(rt, shamt, false);
       if (rt_spec && shamt_spec)
         result_spec = static_cast<u32>(static_cast<s32>(*rt_spec) << *shamt_spec);
     }
