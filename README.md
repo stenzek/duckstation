@@ -13,6 +13,9 @@ A "BIOS" ROM image is required to to start the emulator and to play games. You c
 
 ## Latest News
 
+- 2020/11/21: OpenGL ES 2.0 host display support added. You cannot use the hardware renderer with GLES2, it still requires GLES3, but GLES2 GPUs can now use the software renderer.
+- 2020/11/21: Threaded renderer for software renderer added. Can result in a significant speed boost depending on the game.
+- 2020/11/21: AArch32/armv7 recompiler added. Android and Linux builds will follow after further testing, but for now you can build it yourself.
 - 2020/11/18: Window size (resize window to Nx content resolution) added to Qt and SDL frontends.
 - 2020/11/10: Widescreen hack now renders in the display aspect ratio instead of always 16:9.
 - 2020/11/01: Exclusive fullscreen option added for Windows D3D11 users. Enjoy buttery smooth PAL games.
