@@ -18,7 +18,7 @@
         <source>%1 (%2)</source>
         <translation></translation>
     </message>
-    <message>
+    <message>https://github.com/RaydenX93/duckstation/tree/update_it_20201121
         <location filename="../aboutdialog.cpp" line="30"/>
         <source>DuckStation is a free and open-source simulator/emulator of the Sony PlayStation&lt;span style=&quot;vertical-align:super;&quot;&gt;TM&lt;/span&gt; console, focusing on playability, speed, and long-term maintainability.</source>
         <translatorcomment>playability does not mean anything in italian. I&apos;m going with &quot;compatibility&quot;</translatorcomment>
@@ -1557,7 +1557,7 @@
     <message>
         <location filename="../consolesettingswidget.ui" line="155"/>
         <source>Preload Image To RAM</source>
-        <translation>Precarica Imagine nella RAM</translation>
+        <translation>Precarica Immagine nella RAM</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="39"/>
@@ -3700,7 +3700,7 @@ Questo scaricherà circa 4 MB attraverso la tua connessione internet attuale.</t
     </message>
     <message>
         <source>Shows on-screen-display messages when events occur such as save states being created/loaded, screenshots being taken, etc.</source>
-        <translation type="vanished">Mostra mesaggi sull&apos;on-screen display (OSD) quando accadono eventi come creazione/caricamento di salvataggi di stato, di screenshot, ecc.</translation>
+        <translation type="vanished">Mostra messaggi sull&apos;on-screen display (OSD) quando accadono eventi come creazione/caricamento di salvataggi di stato, di screenshot, ecc.</translation>
     </message>
     <message>
         <source>Shows the internal frame rate of the game in the top-right corner of the display.</source>
@@ -3726,7 +3726,7 @@ Questo scaricherà circa 4 MB attraverso la tua connessione internet attuale.</t
     <message>
         <location filename="../generalsettingswidget.cpp" line="86"/>
         <source>Determines the backend which is used for controller input. Windows users may prefer to use XInput over SDL2 for compatibility.</source>
-        <translation>Determina il backend usato per l&apos;input dei controller. Utenti Windows potrebbero preferire usare XInput invece di SDL2 per migliore compatibilità.</translation>
+        <translation>Determina il backend usato per l&apos;input dei controller. Gli utenti Windows potrebbero preferire usare XInput invece di SDL2 per migliore compatibilità.</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="94"/>
@@ -6090,7 +6090,7 @@ I salvataggi non sono recuperabili.</translation>
     <message>
         <location filename="../settingsdialog.cpp" line="64"/>
         <source>&lt;strong&gt;General Settings&lt;/strong&gt;&lt;hr&gt;These options control how the emulator looks and behaves.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
-        <translation>&lt;strong&gt;Impostazioni Generali&lt;/strong&gt;&lt;hr&gt;Queste opzioni controllano l&apos;apparenza e il comportamento dell&apos;emulatore.&lt;br&gt;&lt;br&gt;Passa il mouse sopra un&apos;opzione per informazioni aggiuntive.</translation>
+        <translation>&lt;strong&gt;Impostazioni Generali&lt;/strong&gt;&lt;hr&gt;Queste opzioni controllano l&apos;aspetto e il comportamento dell&apos;emulatore.&lt;br&gt;&lt;br&gt;Passa il mouse sopra un&apos;opzione per informazioni aggiuntive.</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="68"/>
