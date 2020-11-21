@@ -54,49 +54,66 @@ bool Pad::DoState(StateWrapper& sw)
     ControllerType state_controller_type = controller_type;
     sw.Do(&state_controller_type);
 
-    if (controller_type != state_controller_type)
+    if (g_settings.load_devices_from_save_states)
     {
-      if (g_settings.load_devices_from_save_states)
+      if (controller_type != state_controller_type)
       {
-        g_host_interface->AddFormattedOSDMessage(
-          10.0f,
-          g_host_interface->TranslateString(
-            "OSDMessage", "Save state contains controller type %s in port %u, but %s is used. Switching."),
-          Settings::GetControllerTypeName(state_controller_type), i + 1u,
-          Settings::GetControllerTypeName(controller_type));
-
-        m_controllers[i].reset();
-        if (state_controller_type != ControllerType::None)
+        if (g_settings.load_devices_from_save_states)
         {
-          m_controllers[i] = Controller::Create(state_controller_type, i);
-          if (!sw.DoMarker("Controller") || !m_controllers[i]->DoState(sw))
-            return false;
+          g_host_interface->AddFormattedOSDMessage(
+            10.0f,
+            g_host_interface->TranslateString(
+              "OSDMessage", "Save state contains controller type %s in port %u, but %s is used. Switching."),
+            Settings::GetControllerTypeName(state_controller_type), i + 1u,
+            Settings::GetControllerTypeName(controller_type));
+
+          m_controllers[i].reset();
+          if (state_controller_type != ControllerType::None)
+          {
+            m_controllers[i] = Controller::Create(state_controller_type, i);
+            if (!sw.DoMarker("Controller") || !m_controllers[i]->DoState(sw))
+              return false;
+          }
+        }
+        else
+        {
+          g_host_interface->AddFormattedOSDMessage(
+            10.0f,
+            g_host_interface->TranslateString("OSDMessage", "Ignoring mismatched controller type %s in port %u."),
+            Settings::GetControllerTypeName(state_controller_type), i + 1u);
+
+          // we still need to read the save state controller state
+          if (state_controller_type != ControllerType::None)
+          {
+            std::unique_ptr<Controller> dummy_controller = Controller::Create(state_controller_type, i);
+            if (dummy_controller)
+            {
+              if (!sw.DoMarker("Controller") || !dummy_controller->DoState(sw))
+                return false;
+            }
+          }
         }
       }
       else
       {
-        g_host_interface->AddFormattedOSDMessage(
-          10.0f, g_host_interface->TranslateString("OSDMessage", "Ignoring mismatched controller type %s in port %u."),
-          Settings::GetControllerTypeName(state_controller_type), i + 1u);
-
-        // we still need to read the save state controller state
-        if (state_controller_type != ControllerType::None)
+        if (m_controllers[i])
         {
-          std::unique_ptr<Controller> dummy_controller = Controller::Create(state_controller_type, i);
-          if (dummy_controller)
-          {
-            if (!sw.DoMarker("Controller") || !dummy_controller->DoState(sw))
-              return false;
-          }
+          if (!sw.DoMarker("Controller") || !m_controllers[i]->DoState(sw))
+            return false;
         }
       }
     }
     else
     {
-      if (m_controllers[i])
+      // we still need to read the save state controller state
+      if (state_controller_type != ControllerType::None)
       {
-        if (!sw.DoMarker("Controller") || !m_controllers[i]->DoState(sw))
-          return false;
+        std::unique_ptr<Controller> dummy_controller = Controller::Create(state_controller_type, i);
+        if (dummy_controller)
+        {
+          if (!sw.DoMarker("Controller") || !dummy_controller->DoState(sw))
+            return false;
+        }
       }
     }
 
