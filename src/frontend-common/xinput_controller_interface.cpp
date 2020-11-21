@@ -158,7 +158,13 @@ void XInputControllerInterface::CheckForStateChanges(u32 index, const XINPUT_STA
 
 void XInputControllerInterface::ClearBindings()
 {
-  m_controllers.fill({});
+  for (ControllerData& cd : m_controllers)
+  {
+    cd.axis_mapping.fill({});
+    cd.button_mapping.fill({});
+    cd.axis_button_mapping.fill({});
+    cd.button_axis_mapping.fill({});
+  }
 }
 
 bool XInputControllerInterface::BindControllerAxis(int controller_index, int axis_number, AxisSide axis_side,
