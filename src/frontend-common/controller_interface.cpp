@@ -36,13 +36,14 @@ void ControllerInterface::ClearHook()
     m_event_intercept_callback = {};
 }
 
-bool ControllerInterface::DoEventHook(Hook::Type type, int controller_index, int button_or_axis_number, float value)
+bool ControllerInterface::DoEventHook(Hook::Type type, int controller_index, int button_or_axis_number,
+                                      std::variant<float, std::string_view> value, bool track_history)
 {
   std::unique_lock<std::mutex> lock(m_event_intercept_mutex);
   if (!m_event_intercept_callback)
     return false;
 
-  const Hook ei{type, controller_index, button_or_axis_number, value};
+  const Hook ei{type, controller_index, button_or_axis_number, std::move(value), track_history};
   const Hook::CallbackResult action = m_event_intercept_callback(ei);
   if (action == Hook::CallbackResult::StopMonitoring)
     m_event_intercept_callback = {};
@@ -64,7 +65,8 @@ void ControllerInterface::OnControllerDisconnected(int host_id)
 
 void ControllerInterface::ClearBindings() {}
 
-bool ControllerInterface::BindControllerAxis(int controller_index, int axis_number, AxisCallback callback)
+bool ControllerInterface::BindControllerAxis(int controller_index, int axis_number, AxisSide axis_side,
+                                             AxisCallback callback)
 {
   return false;
 }

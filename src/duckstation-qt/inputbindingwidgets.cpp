@@ -4,6 +4,7 @@
 #include "core/settings.h"
 #include "frontend-common/controller_interface.h"
 #include "inputbindingdialog.h"
+#include "inputbindingmonitor.h"
 #include "qthostinterface.h"
 #include "qtutils.h"
 #include <QtCore/QTimer>
@@ -40,16 +41,18 @@ void InputBindingWidget::updateText()
     setText(QString::fromStdString(m_bindings[0]));
 }
 
-void InputBindingWidget::bindToControllerAxis(int controller_index, int axis_index, std::optional<bool> positive)
+void InputBindingWidget::bindToControllerAxis(int controller_index, int axis_index, bool inverted,
+                                              std::optional<bool> half_axis_positive)
 {
+  const char* invert_char = inverted ? "-" : "";
   const char* sign_char = "";
-  if (positive)
+  if (half_axis_positive)
   {
-    sign_char = *positive ? "+" : "-";
+    sign_char = *half_axis_positive ? "+" : "-";
   }
 
   m_new_binding_value =
-    StringUtil::StdStringFromFormat("Controller%d/%sAxis%d", controller_index, sign_char, axis_index);
+    StringUtil::StdStringFromFormat("Controller%d/%sAxis%d%s", controller_index, sign_char, axis_index, invert_char);
   setNewBinding();
   stopListeningForInput();
 }
@@ -57,6 +60,14 @@ void InputBindingWidget::bindToControllerAxis(int controller_index, int axis_ind
 void InputBindingWidget::bindToControllerButton(int controller_index, int button_index)
 {
   m_new_binding_value = StringUtil::StdStringFromFormat("Controller%d/Button%d", controller_index, button_index);
+  setNewBinding();
+  stopListeningForInput();
+}
+
+void InputBindingWidget::bindToControllerHat(int controller_index, int hat_index, const QString& hat_direction)
+{
+  m_new_binding_value = StringUtil::StdStringFromFormat("Controller%d/Hat%d %s", controller_index, hat_index,
+                                                        hat_direction.toLatin1().constData());
   setNewBinding();
   stopListeningForInput();
 }
@@ -236,27 +247,7 @@ void InputButtonBindingWidget::hookControllerInput()
   if (!controller_interface)
     return;
 
-  controller_interface->SetHook([this](const ControllerInterface::Hook& ei) {
-    if (ei.type == ControllerInterface::Hook::Type::Axis)
-    {
-      // wait until it's at least half pushed so we don't get confused between axises with small movement
-      if (std::abs(ei.value) < 0.5f)
-        return ControllerInterface::Hook::CallbackResult::ContinueMonitoring;
-
-      // TODO: this probably should consider the "last value"
-      QMetaObject::invokeMethod(this, "bindToControllerAxis", Q_ARG(int, ei.controller_index),
-                                Q_ARG(int, ei.button_or_axis_number), Q_ARG(std::optional<bool>, ei.value > 0));
-      return ControllerInterface::Hook::CallbackResult::StopMonitoring;
-    }
-    else if (ei.type == ControllerInterface::Hook::Type::Button && ei.value > 0.0f)
-    {
-      QMetaObject::invokeMethod(this, "bindToControllerButton", Q_ARG(int, ei.controller_index),
-                                Q_ARG(int, ei.button_or_axis_number));
-      return ControllerInterface::Hook::CallbackResult::StopMonitoring;
-    }
-
-    return ControllerInterface::Hook::CallbackResult::ContinueMonitoring;
-  });
+  controller_interface->SetHook(InputButtonBindingMonitor(this));
 }
 
 void InputButtonBindingWidget::unhookControllerInput()
@@ -306,27 +297,7 @@ void InputAxisBindingWidget::hookControllerInput()
   if (!controller_interface)
     return;
 
-  controller_interface->SetHook([this](const ControllerInterface::Hook& ei) {
-    if (ei.type == ControllerInterface::Hook::Type::Axis)
-    {
-      // wait until it's at least half pushed so we don't get confused between axises with small movement
-      if (std::abs(ei.value) < 0.5f)
-        return ControllerInterface::Hook::CallbackResult::ContinueMonitoring;
-
-      QMetaObject::invokeMethod(this, "bindToControllerAxis", Q_ARG(int, ei.controller_index),
-                                Q_ARG(int, ei.button_or_axis_number), Q_ARG(std::optional<bool>, std::nullopt));
-      return ControllerInterface::Hook::CallbackResult::StopMonitoring;
-    }
-    else if (ei.type == ControllerInterface::Hook::Type::Button && m_axis_type == Controller::AxisType::Half &&
-             ei.value > 0.0f)
-    {
-      QMetaObject::invokeMethod(this, "bindToControllerButton", Q_ARG(int, ei.controller_index),
-                                Q_ARG(int, ei.button_or_axis_number));
-      return ControllerInterface::Hook::CallbackResult::StopMonitoring;
-    }
-
-    return ControllerInterface::Hook::CallbackResult::ContinueMonitoring;
-  });
+  controller_interface->SetHook(InputAxisBindingMonitor(this, m_axis_type));
 }
 
 void InputAxisBindingWidget::unhookControllerInput()
@@ -391,15 +362,7 @@ void InputRumbleBindingWidget::hookControllerInput()
   if (!controller_interface)
     return;
 
-  controller_interface->SetHook([this](const ControllerInterface::Hook& ei) {
-    if (ei.type == ControllerInterface::Hook::Type::Button && ei.value > 0.0f)
-    {
-      QMetaObject::invokeMethod(this, "bindToControllerRumble", Q_ARG(int, ei.controller_index));
-      return ControllerInterface::Hook::CallbackResult::StopMonitoring;
-    }
-
-    return ControllerInterface::Hook::CallbackResult::ContinueMonitoring;
-  });
+  controller_interface->SetHook(InputRumbleBindingMonitor(this));
 }
 
 void InputRumbleBindingWidget::unhookControllerInput()

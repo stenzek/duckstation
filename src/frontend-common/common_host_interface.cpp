@@ -1242,6 +1242,30 @@ bool CommonHostInterface::AddButtonToInputMap(const std::string& binding, const 
 
       return true;
     }
+    else if (StringUtil::StartsWith(button, "Hat"))
+    {
+      const std::optional<int> hat_index = StringUtil::FromChars<int>(button.substr(3));
+      const std::optional<std::string_view> hat_direction = [](const auto& button) {
+        std::optional<std::string_view> result;
+
+        const size_t pos = button.find(' ');
+        if (pos != button.npos)
+        {
+          result = button.substr(pos + 1);
+        }
+        return result;
+      }(button);
+
+      if (!hat_index || !hat_direction ||
+          !m_controller_interface->BindControllerHatToButton(*controller_index, *hat_index, *hat_direction,
+                                                             std::move(handler)))
+      {
+        Log_WarningPrintf("Failed to bind controller hat '%s' to button", binding.c_str());
+        return false;
+      }
+
+      return true;
+    }
 
     Log_WarningPrintf("Malformed controller binding '%s' in button", binding.c_str());
     return false;
@@ -1266,7 +1290,8 @@ bool CommonHostInterface::AddAxisToInputMap(const std::string& binding, const st
         return false;
       }
 
-      m_keyboard_input_handlers.emplace(key_id.value(), std::move(handler));
+      m_keyboard_input_handlers.emplace(key_id.value(),
+                                        [cb = std::move(handler)](bool pressed) { cb(pressed ? 1.0f : -1.0f); });
       return true;
     }
 
@@ -1281,7 +1306,8 @@ bool CommonHostInterface::AddAxisToInputMap(const std::string& binding, const st
           return false;
         }
 
-        m_mouse_input_handlers.emplace(static_cast<HostMouseButton>(button_index.value()), std::move(handler));
+        m_mouse_input_handlers.emplace(static_cast<HostMouseButton>(button_index.value()),
+                                       [cb = std::move(handler)](bool pressed) { cb(pressed ? 1.0f : -1.0f); });
         return true;
       }
 
@@ -1305,17 +1331,38 @@ bool CommonHostInterface::AddAxisToInputMap(const std::string& binding, const st
       return false;
     }
 
-    if (StringUtil::StartsWith(axis, "Axis"))
+    if (StringUtil::StartsWith(axis, "Axis") || StringUtil::StartsWith(axis, "+Axis") ||
+        StringUtil::StartsWith(axis, "-Axis"))
     {
-      const std::optional<int> axis_index = StringUtil::FromChars<int>(axis.substr(4));
-      if (!axis_index ||
-          !m_controller_interface->BindControllerAxis(*controller_index, *axis_index, std::move(handler)))
+      const std::optional<int> axis_index =
+        StringUtil::FromChars<int>(axis.substr(axis[0] == '+' || axis[0] == '-' ? 5 : 4));
+      if (axis_index)
       {
-        Log_WarningPrintf("Failed to bind controller axis '%s' to axis", binding.c_str());
-        return false;
-      }
+        ControllerInterface::AxisSide axis_side = ControllerInterface::AxisSide::Full;
+        if (axis[0] == '+')
+          axis_side = ControllerInterface::AxisSide::Positive;
+        else if (axis[0] == '-')
+          axis_side = ControllerInterface::AxisSide::Negative;
 
-      return true;
+        const bool inverted = StringUtil::EndsWith(axis, "-");
+        if (!inverted)
+        {
+          if (m_controller_interface->BindControllerAxis(*controller_index, *axis_index, axis_side, std::move(handler)))
+          {
+            return true;
+          }
+        }
+        else
+        {
+          if (m_controller_interface->BindControllerAxis(*controller_index, *axis_index, axis_side,
+                                                         [cb = std::move(handler)](float value) { cb(-value); }))
+          {
+            return true;
+          }
+        }
+      }
+      Log_WarningPrintf("Failed to bind controller axis '%s' to axis", binding.c_str());
+      return false;
     }
     else if (StringUtil::StartsWith(axis, "Button") && axis_type == Controller::AxisType::Half)
     {

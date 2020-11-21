@@ -6,6 +6,7 @@
 #include <map>
 #include <mutex>
 #include <optional>
+#include <variant>
 
 class HostInterface;
 class Controller;
@@ -31,6 +32,13 @@ public:
     MAX_NUM_BUTTONS = 15
   };
 
+  enum AxisSide
+  {
+    Full,
+    Positive,
+    Negative
+  };
+
   using AxisCallback = CommonHostInterface::InputAxisHandler;
   using ButtonCallback = CommonHostInterface::InputButtonHandler;
 
@@ -50,10 +58,12 @@ public:
   virtual void ClearBindings() = 0;
 
   // Binding to events. If a binding for this axis/button already exists, returns false.
-  virtual bool BindControllerAxis(int controller_index, int axis_number, AxisCallback callback) = 0;
+  virtual bool BindControllerAxis(int controller_index, int axis_number, AxisSide axis_side, AxisCallback callback) = 0;
   virtual bool BindControllerButton(int controller_index, int button_number, ButtonCallback callback) = 0;
   virtual bool BindControllerAxisToButton(int controller_index, int axis_number, bool direction,
                                           ButtonCallback callback) = 0;
+  virtual bool BindControllerHatToButton(int controller_index, int hat_number, std::string_view hat_position,
+                                         ButtonCallback callback) = 0;
   virtual bool BindControllerButtonToAxis(int controller_index, int button_number, AxisCallback callback) = 0;
 
   virtual void PollEvents() = 0;
@@ -71,7 +81,8 @@ public:
     enum class Type
     {
       Axis,
-      Button
+      Button,
+      Hat // Only for joysticks
     };
 
     enum class CallbackResult
@@ -85,13 +96,15 @@ public:
     Type type;
     int controller_index;
     int button_or_axis_number;
-    float value; // 0/1 for buttons, -1..1 for axises
+    std::variant<float, std::string_view> value; // 0/1 for buttons, -1..1 for axes, hat direction name for hats
+    bool track_history;                          // Track axis movement to spot inversion/half axes
   };
   void SetHook(Hook::Callback callback);
   void ClearHook();
 
 protected:
-  bool DoEventHook(Hook::Type type, int controller_index, int button_or_axis_number, float value);
+  bool DoEventHook(Hook::Type type, int controller_index, int button_or_axis_number,
+                   std::variant<float, std::string_view> value, bool track_history = false);
 
   void OnControllerConnected(int host_id);
   void OnControllerDisconnected(int host_id);
