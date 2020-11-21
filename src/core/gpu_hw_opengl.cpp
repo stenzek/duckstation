@@ -41,6 +41,19 @@ bool GPU_HW_OpenGL::Initialize(HostDisplay* host_display)
     return false;
   }
 
+  const bool opengl_is_available =
+    ((host_display->GetRenderAPI() == HostDisplay::RenderAPI::OpenGL &&
+      (GLAD_GL_VERSION_3_0 || GLAD_GL_ARB_uniform_buffer_object)) ||
+     (host_display->GetRenderAPI() == HostDisplay::RenderAPI::OpenGLES && GLAD_GL_ES_VERSION_3_0));
+  if (!opengl_is_available)
+  {
+    g_host_interface->AddOSDMessage(
+      g_host_interface->TranslateStdString("OSDMessage", "OpenGL renderer unavailable, your driver or hardware is not "
+                                                         "recent enough. OpenGL 3.1 or OpenGL ES 3.0 is required."),
+      20.0f);
+    return false;
+  }
+
   SetCapabilities(host_display);
 
   if (!GPU_HW::Initialize(host_display))
