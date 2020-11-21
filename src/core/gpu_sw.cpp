@@ -11,8 +11,6 @@ Log_SetChannel(GPU_SW);
 
 #if defined(CPU_X64)
 #include <emmintrin.h>
-#elif defined(CPU_AARCH32)
-#include <arm_neon.h>
 #elif defined(CPU_AARCH64)
 #ifdef _MSC_VER
 #include <arm64_neon.h>
@@ -157,7 +155,7 @@ ALWAYS_INLINE void CopyOutRow16<HostDisplayPixelFormat::RGBA5551, u16>(const u16
     _mm_storeu_si128(reinterpret_cast<__m128i*>(dst_ptr), value);
     dst_ptr += 8;
   }
-#elif defined(CPU_AARCH32) || defined(CPU_AARCH64)
+#elif defined(CPU_AARCH64)
   const u32 aligned_width = Common::AlignDownPow2(width, 8);
   for (; col < aligned_width; col += 8)
   {
@@ -197,7 +195,7 @@ ALWAYS_INLINE void CopyOutRow16<HostDisplayPixelFormat::RGB565, u16>(const u16* 
     _mm_storeu_si128(reinterpret_cast<__m128i*>(dst_ptr), value);
     dst_ptr += 8;
   }
-#elif defined(CPU_AARCH32) || defined(CPU_AARCH64)
+#elif defined(CPU_AARCH64)
   const u32 aligned_width = Common::AlignDownPow2(width, 8);
   const uint16x8_t single_mask = vdupq_n_u16(0x1F);
   for (; col < aligned_width; col += 8)
