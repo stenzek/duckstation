@@ -224,14 +224,14 @@ jobs:
       shell: bash
       run: |
         cd android
-        mv app/build/outputs/apk/release/app-release-unsigned-signed.apk ../duckstation-android-aarch64.apk
+        mv app/build/outputs/apk/release/app-release-unsigned-signed.apk ../duckstation-android.apk
          
     - name: Upload APK
       if: github.ref == 'refs/heads/master'
       uses: actions/upload-artifact@v1
       with:
         name: "android"
-        path: "duckstation-android-aarch64.apk"
+        path: "duckstation-android.apk"
 
   macos-build:
     runs-on: macos-10.15
@@ -350,7 +350,7 @@ jobs:
             linux-libretro/duckstation_libretro_x64.so.zip
             linux-libretro/duckstation_libretro_linux_aarch64.so.zip
             linux-libretro/duckstation_libretro_android_aarch64.so.zip
-            android/duckstation-android-aarch64.apk
+            android/duckstation-android.apk
             macos-x64/duckstation-mac-release.zip
             macos-x64/duckstation_libretro_mac.dylib.zip
 
