@@ -120,6 +120,8 @@ protected:
   std::unique_ptr<GL::StreamBuffer> m_post_processing_ubo;
   std::vector<PostProcessingStage> m_post_processing_stages;
 #endif
+
+  bool m_use_gles2_draw_path = false;
 };
 
 } // namespace FrontendCommon

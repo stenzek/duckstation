@@ -90,6 +90,7 @@ static int          g_AttribLocationTex = 0, g_AttribLocationProjMtx = 0;       
 static int          g_AttribLocationVtxPos = 0, g_AttribLocationVtxUV = 0, g_AttribLocationVtxColor = 0; // Vertex attributes location
 static unsigned int g_VboHandle = 0, g_VaoHandle = 0, g_ElementsHandle = 0;
 static bool         g_IsGLES = false;
+static bool         g_IsGLES2 = false;
 
 // Forward Declarations
 static void ImGui_ImplOpenGL3_InitPlatformInterface();
@@ -104,23 +105,26 @@ bool    ImGui_ImplOpenGL3_Init(const char* glsl_version)
     io.BackendFlags |= ImGuiBackendFlags_RendererHasViewports;  // We can create multi-viewports on the Renderer side (optional)
 
     // Store GLSL version string so we can refer to it later in case we recreate shaders. Note: GLSL version is NOT the same as GL version. Leave this to NULL if unsure.
-    if (GLAD_GL_ES_VERSION_2_0)
-    {
-      if (glsl_version == NULL)
-        glsl_version = "#version 100";
-      g_IsGLES = true;
-    }
-    else if (GLAD_GL_ES_VERSION_3_0)
+    if (GLAD_GL_ES_VERSION_3_0)
     {
       if (glsl_version == NULL)
         glsl_version = "#version 300 es";
       g_IsGLES = true;
+      g_IsGLES2 = false;
+    }
+    else if (GLAD_GL_ES_VERSION_2_0)
+    {
+      if (glsl_version == NULL)
+        glsl_version = "#version 100";
+      g_IsGLES = true;
+      g_IsGLES2 = true;
     }
     else
     {
       if (glsl_version == NULL)
         glsl_version = "#version 130";
       g_IsGLES = false;
+      g_IsGLES2 = false;
     }
 
     if (!g_IsGLES)
@@ -179,11 +183,24 @@ static void ImGui_ImplOpenGL3_SetupRenderState(ImDrawData* draw_data, int fb_wid
     glUseProgram(g_ShaderHandle);
     glUniform1i(g_AttribLocationTex, 0);
     glUniformMatrix4fv(g_AttribLocationProjMtx, 1, GL_FALSE, &ortho_projection[0][0]);
-#ifndef IMGUI_IMPL_OPENGL_ES2
-    glBindSampler(0, 0); // We use combined texture/sampler state. Applications using GL 3.3 may set that otherwise.
-#endif
 
-    glBindVertexArray(g_VaoHandle);
+    if (!g_IsGLES2)
+    {
+        glBindVertexArray(g_VaoHandle);
+    }
+    else
+    {
+        glEnableVertexAttribArray(g_AttribLocationVtxPos);
+        glEnableVertexAttribArray(g_AttribLocationVtxUV);
+        glEnableVertexAttribArray(g_AttribLocationVtxColor);
+        glVertexAttribPointer(g_AttribLocationVtxPos, 2, GL_FLOAT, GL_FALSE, sizeof(ImDrawVert),
+            (GLvoid*)IM_OFFSETOF(ImDrawVert, pos));
+        glVertexAttribPointer(g_AttribLocationVtxUV, 2, GL_FLOAT, GL_FALSE, sizeof(ImDrawVert),
+            (GLvoid*)IM_OFFSETOF(ImDrawVert, uv));
+        glVertexAttribPointer(g_AttribLocationVtxColor, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(ImDrawVert),
+            (GLvoid*)IM_OFFSETOF(ImDrawVert, col));
+    }
+
     glBindBuffer(GL_ARRAY_BUFFER, g_VboHandle);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_ElementsHandle);
 }
@@ -249,6 +266,19 @@ void    ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data)
                 }
             }
         }
+    }
+
+    if (!g_IsGLES2)
+    {
+        glBindVertexArray(0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    }
+    else
+    {
+        glDisableVertexAttribArray(g_AttribLocationVtxPos);
+        glDisableVertexAttribArray(g_AttribLocationVtxUV);
+        glDisableVertexAttribArray(g_AttribLocationVtxColor);
     }
 }
 
@@ -499,27 +529,30 @@ bool    ImGui_ImplOpenGL3_CreateDeviceObjects()
     glBindBuffer(GL_ARRAY_BUFFER, g_VboHandle);
     glBufferData(GL_ARRAY_BUFFER, sizeof(ImDrawVert), nullptr, GL_STREAM_DRAW);
 
-    glGenVertexArrays(1, &g_VaoHandle);
-    glBindVertexArray(g_VaoHandle);
 
-    glEnableVertexAttribArray(g_AttribLocationVtxPos);
-    glEnableVertexAttribArray(g_AttribLocationVtxUV);
-    glEnableVertexAttribArray(g_AttribLocationVtxColor);
-    glVertexAttribPointer(g_AttribLocationVtxPos, 2, GL_FLOAT, GL_FALSE, sizeof(ImDrawVert),
-                          (GLvoid*)IM_OFFSETOF(ImDrawVert, pos));
-    glVertexAttribPointer(g_AttribLocationVtxUV, 2, GL_FLOAT, GL_FALSE, sizeof(ImDrawVert),
-                          (GLvoid*)IM_OFFSETOF(ImDrawVert, uv));
-    glVertexAttribPointer(g_AttribLocationVtxColor, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(ImDrawVert),
-                          (GLvoid*)IM_OFFSETOF(ImDrawVert, col));
+    if (!g_IsGLES2)
+    {
+        glGenVertexArrays(1, &g_VaoHandle);
+        glBindVertexArray(g_VaoHandle);
+
+        glEnableVertexAttribArray(g_AttribLocationVtxPos);
+        glEnableVertexAttribArray(g_AttribLocationVtxUV);
+        glEnableVertexAttribArray(g_AttribLocationVtxColor);
+        glVertexAttribPointer(g_AttribLocationVtxPos, 2, GL_FLOAT, GL_FALSE, sizeof(ImDrawVert),
+                              (GLvoid*)IM_OFFSETOF(ImDrawVert, pos));
+        glVertexAttribPointer(g_AttribLocationVtxUV, 2, GL_FLOAT, GL_FALSE, sizeof(ImDrawVert),
+                              (GLvoid*)IM_OFFSETOF(ImDrawVert, uv));
+        glVertexAttribPointer(g_AttribLocationVtxColor, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(ImDrawVert),
+                              (GLvoid*)IM_OFFSETOF(ImDrawVert, col));
+    }
 
     ImGui_ImplOpenGL3_CreateFontsTexture();
 
     // Restore modified GL state
     glBindTexture(GL_TEXTURE_2D, last_texture);
     glBindBuffer(GL_ARRAY_BUFFER, last_array_buffer);
-#ifndef IMGUI_IMPL_OPENGL_ES2
-    glBindVertexArray(last_vertex_array);
-#endif
+    if (!g_IsGLES2)
+        glBindVertexArray(last_vertex_array);
 
     return true;
 }

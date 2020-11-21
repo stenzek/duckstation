@@ -466,7 +466,10 @@ void OpenGLHostDisplay::DestroyImGuiContext()
 
 bool OpenGLHostDisplay::CreateResources()
 {
-  static constexpr char fullscreen_quad_vertex_shader[] = R"(
+  m_use_gles2_draw_path = m_gl_context->IsGLES() && !GLAD_GL_ES_VERSION_3_0;
+  if (!m_use_gles2_draw_path)
+  {
+    static constexpr char fullscreen_quad_vertex_shader[] = R"(
 uniform vec4 u_src_rect;
 out vec2 v_tex0;
 
@@ -478,7 +481,7 @@ void main()
 }
 )";
 
-  static constexpr char display_fragment_shader[] = R"(
+    static constexpr char display_fragment_shader[] = R"(
 uniform sampler2D samp0;
 
 in vec2 v_tex0;
@@ -490,7 +493,7 @@ void main()
 }
 )";
 
-  static constexpr char cursor_fragment_shader[] = R"(
+    static constexpr char cursor_fragment_shader[] = R"(
 uniform sampler2D samp0;
 
 in vec2 v_tex0;
@@ -502,45 +505,113 @@ void main()
 }
 )";
 
-  if (!m_display_program.Compile(GetGLSLVersionHeader() + fullscreen_quad_vertex_shader, {},
-                                 GetGLSLVersionHeader() + display_fragment_shader) ||
-      !m_cursor_program.Compile(GetGLSLVersionHeader() + fullscreen_quad_vertex_shader, {},
-                                GetGLSLVersionHeader() + cursor_fragment_shader))
-  {
-    Log_ErrorPrintf("Failed to compile display shaders");
-    return false;
+    if (!m_display_program.Compile(GetGLSLVersionHeader() + fullscreen_quad_vertex_shader, {},
+                                   GetGLSLVersionHeader() + display_fragment_shader) ||
+        !m_cursor_program.Compile(GetGLSLVersionHeader() + fullscreen_quad_vertex_shader, {},
+                                  GetGLSLVersionHeader() + cursor_fragment_shader))
+    {
+      Log_ErrorPrintf("Failed to compile display shaders");
+      return false;
+    }
+
+    if (GetRenderAPI() != RenderAPI::OpenGLES)
+    {
+      m_display_program.BindFragData(0, "o_col0");
+      m_cursor_program.BindFragData(0, "o_col0");
+    }
+
+    if (!m_display_program.Link() || !m_cursor_program.Link())
+    {
+      Log_ErrorPrintf("Failed to link display programs");
+      return false;
+    }
+
+    m_display_program.Bind();
+    m_display_program.RegisterUniform("u_src_rect");
+    m_display_program.RegisterUniform("samp0");
+    m_display_program.Uniform1i(1, 0);
+    m_cursor_program.Bind();
+    m_cursor_program.RegisterUniform("u_src_rect");
+    m_cursor_program.RegisterUniform("samp0");
+    m_cursor_program.Uniform1i(1, 0);
+
+    glGenVertexArrays(1, &m_display_vao);
+
+    // samplers
+    glGenSamplers(1, &m_display_nearest_sampler);
+    glSamplerParameteri(m_display_nearest_sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glSamplerParameteri(m_display_nearest_sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glGenSamplers(1, &m_display_linear_sampler);
+    glSamplerParameteri(m_display_linear_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glSamplerParameteri(m_display_linear_sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   }
-
-  if (GetRenderAPI() != RenderAPI::OpenGLES)
+  else
   {
-    m_display_program.BindFragData(0, "o_col0");
-    m_cursor_program.BindFragData(0, "o_col0");
+    static constexpr char fullscreen_quad_vertex_shader[] = R"(
+#version 100
+
+attribute highp vec2 a_pos;
+attribute highp vec2 a_tex0;
+varying highp vec2 v_tex0;
+
+void main()
+{
+  gl_Position = vec4(a_pos, 0.0, 1.0);
+  v_tex0 = a_tex0;
+}
+)";
+
+    static constexpr char display_fragment_shader[] = R"(
+#version 100
+
+uniform highp sampler2D samp0;
+
+varying highp vec2 v_tex0;
+
+void main()
+{
+  gl_FragColor = vec4(texture2D(samp0, v_tex0).rgb, 1.0);
+}
+)";
+
+    static constexpr char cursor_fragment_shader[] = R"(
+#version 100
+
+uniform highp sampler2D samp0;
+
+varying highp vec2 v_tex0;
+
+void main()
+{
+  gl_FragColor = texture2D(samp0, v_tex0);
+}
+)";
+
+    if (!m_display_program.Compile(fullscreen_quad_vertex_shader, {}, display_fragment_shader) ||
+        !m_cursor_program.Compile(fullscreen_quad_vertex_shader, {}, cursor_fragment_shader))
+    {
+      Log_ErrorPrintf("Failed to compile display shaders");
+      return false;
+    }
+
+    m_display_program.BindAttribute(0, "a_pos");
+    m_display_program.BindAttribute(1, "a_tex0");
+    m_cursor_program.BindAttribute(0, "a_pos");
+    m_cursor_program.BindAttribute(1, "a_tex0");
+
+    if (!m_display_program.Link() || !m_cursor_program.Link())
+    {
+      Log_ErrorPrintf("Failed to link display programs");
+      return false;
+    }
+
+    m_display_program.Bind();
+    m_display_program.RegisterUniform("samp0");
+    m_display_program.Uniform1i(0, 0);
+    m_cursor_program.Bind();
+    m_cursor_program.RegisterUniform("samp0");
+    m_cursor_program.Uniform1i(0, 0);
   }
-
-  if (!m_display_program.Link() || !m_cursor_program.Link())
-  {
-    Log_ErrorPrintf("Failed to link display programs");
-    return false;
-  }
-
-  m_display_program.Bind();
-  m_display_program.RegisterUniform("u_src_rect");
-  m_display_program.RegisterUniform("samp0");
-  m_display_program.Uniform1i(1, 0);
-  m_cursor_program.Bind();
-  m_cursor_program.RegisterUniform("u_src_rect");
-  m_cursor_program.RegisterUniform("samp0");
-  m_cursor_program.Uniform1i(1, 0);
-
-  glGenVertexArrays(1, &m_display_vao);
-
-  // samplers
-  glGenSamplers(1, &m_display_nearest_sampler);
-  glSamplerParameteri(m_display_nearest_sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glSamplerParameteri(m_display_nearest_sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glGenSamplers(1, &m_display_linear_sampler);
-  glSamplerParameteri(m_display_linear_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glSamplerParameteri(m_display_linear_sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
   return true;
 }
@@ -561,11 +632,20 @@ void OpenGLHostDisplay::DestroyResources()
   }
 
   if (m_display_vao != 0)
+  {
     glDeleteVertexArrays(1, &m_display_vao);
+    m_display_vao = 0;
+  }
   if (m_display_linear_sampler != 0)
+  {
     glDeleteSamplers(1, &m_display_linear_sampler);
+    m_display_linear_sampler = 0;
+  }
   if (m_display_nearest_sampler != 0)
+  {
     glDeleteSamplers(1, &m_display_nearest_sampler);
+    m_display_nearest_sampler = 0;
+  }
 
   m_cursor_program.Destroy();
   m_display_program.Destroy();
@@ -641,6 +721,30 @@ void OpenGLHostDisplay::RenderDisplay()
                 m_display_texture_view_width, m_display_texture_view_height, m_display_linear_filtering);
 }
 
+static void DrawFullscreenQuadES2(s32 tex_view_x, s32 tex_view_y, s32 tex_view_width, s32 tex_view_height,
+                                  s32 tex_width, s32 tex_height)
+{
+  const float tex_left = static_cast<float>(tex_view_x) / static_cast<float>(tex_width);
+  const float tex_right = tex_left + static_cast<float>(tex_view_width) / static_cast<float>(tex_width);
+  const float tex_top = static_cast<float>(tex_view_y) / static_cast<float>(tex_height);
+  const float tex_bottom = tex_top + static_cast<float>(tex_view_height) / static_cast<float>(tex_height);
+  const std::array<std::array<float, 4>, 4> vertices = {{
+    {{-1.0f, -1.0f, tex_left, tex_bottom}}, // bottom-left
+    {{1.0f, -1.0f, tex_right, tex_bottom}}, // bottom-right
+    {{-1.0f, 1.0f, tex_left, tex_top}},     // top-left
+    {{1.0f, 1.0f, tex_right, tex_top}},     // top-right
+  }};
+
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(vertices[0]), &vertices[0][0]);
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(vertices[0]), &vertices[0][2]);
+  glEnableVertexAttribArray(1);
+  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+  glDisableVertexAttribArray(1);
+  glDisableVertexAttribArray(0);
+}
+
 void OpenGLHostDisplay::RenderDisplay(s32 left, s32 bottom, s32 width, s32 height, void* texture_handle,
                                       u32 texture_width, s32 texture_height, s32 texture_view_x, s32 texture_view_y,
                                       s32 texture_view_width, s32 texture_view_height, bool linear_filter)
@@ -651,16 +755,25 @@ void OpenGLHostDisplay::RenderDisplay(s32 left, s32 bottom, s32 width, s32 heigh
   glDisable(GL_DEPTH_TEST);
   glDisable(GL_SCISSOR_TEST);
   glDepthMask(GL_FALSE);
-  m_display_program.Bind();
-  m_display_program.Uniform4f(0, static_cast<float>(texture_view_x) / static_cast<float>(texture_width),
-                              static_cast<float>(texture_view_y) / static_cast<float>(texture_height),
-                              (static_cast<float>(texture_view_width) - 0.5f) / static_cast<float>(texture_width),
-                              (static_cast<float>(texture_view_height) + 0.5f) / static_cast<float>(texture_height));
   glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(reinterpret_cast<uintptr_t>(texture_handle)));
-  glBindSampler(0, linear_filter ? m_display_linear_sampler : m_display_nearest_sampler);
-  glBindVertexArray(m_display_vao);
-  glDrawArrays(GL_TRIANGLES, 0, 3);
-  glBindSampler(0, 0);
+  m_display_program.Bind();
+
+  if (!m_use_gles2_draw_path)
+  {
+    m_display_program.Uniform4f(0, static_cast<float>(texture_view_x) / static_cast<float>(texture_width),
+                                static_cast<float>(texture_view_y) / static_cast<float>(texture_height),
+                                (static_cast<float>(texture_view_width) - 0.5f) / static_cast<float>(texture_width),
+                                (static_cast<float>(texture_view_height) + 0.5f) / static_cast<float>(texture_height));
+    glBindSampler(0, linear_filter ? m_display_linear_sampler : m_display_nearest_sampler);
+    glBindVertexArray(m_display_vao);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glBindSampler(0, 0);
+  }
+  else
+  {
+    DrawFullscreenQuadES2(m_display_texture_view_x, m_display_texture_view_y, m_display_texture_view_width,
+                          m_display_texture_view_height, m_display_texture_width, m_display_texture_height);
+  }
 }
 
 void OpenGLHostDisplay::RenderSoftwareCursor()
@@ -684,12 +797,22 @@ void OpenGLHostDisplay::RenderSoftwareCursor(s32 left, s32 bottom, s32 width, s3
   glDisable(GL_SCISSOR_TEST);
   glDepthMask(GL_FALSE);
   m_cursor_program.Bind();
-  m_cursor_program.Uniform4f(0, 0.0f, 0.0f, 1.0f, 1.0f);
   glBindTexture(GL_TEXTURE_2D, static_cast<OpenGLHostDisplayTexture*>(texture_handle)->GetGLID());
-  glBindSampler(0, m_display_linear_sampler);
-  glBindVertexArray(m_display_vao);
-  glDrawArrays(GL_TRIANGLES, 0, 3);
-  glBindSampler(0, 0);
+
+  if (!m_use_gles2_draw_path)
+  {
+    m_cursor_program.Uniform4f(0, 0.0f, 0.0f, 1.0f, 1.0f);
+    glBindSampler(0, m_display_linear_sampler);
+    glBindVertexArray(m_display_vao);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glBindSampler(0, 0);
+  }
+  else
+  {
+    const s32 tex_width = static_cast<s32>(static_cast<OpenGLHostDisplayTexture*>(texture_handle)->GetWidth());
+    const s32 tex_height = static_cast<s32>(static_cast<OpenGLHostDisplayTexture*>(texture_handle)->GetHeight());
+    DrawFullscreenQuadES2(0, 0, tex_width, tex_height, tex_width, tex_height);
+  }
 }
 
 #ifndef LIBRETRO
