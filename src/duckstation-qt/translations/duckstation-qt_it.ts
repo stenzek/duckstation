@@ -3312,7 +3312,7 @@ Questo scaricherà circa 4 MB attraverso la tua connessione internet attuale.</t
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="33"/>
         <source>Force PGXP Vertex Cache</source>
-        <translation>Foraz PGXC Vertex Cache</translation>
+        <translation>Forza PGXC Vertex Cache</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="34"/>
