@@ -148,7 +148,7 @@ jobs:
       shell: bash
       run: |
         sudo apt-get update
-        sudo apt-get -y install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+        sudo apt-get -y install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
 
     - name: Compile and zip Linux x64 libretro core
       shell: bash
@@ -165,6 +165,21 @@ jobs:
         name: "linux-libretro"
         path: "build-libretro-linux-x64/duckstation_libretro_x64.so.zip"
 
+    - name: Compile and zip Linux armv7 libretro core
+      shell: bash
+      run: |
+        mkdir build-libretro-linux-armv7
+        cd build-libretro-linux-armv7
+        cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_LIBRETRO_CORE=ON -DCMAKE_TOOLCHAIN_FILE=../CMakeModules/armv7-cross-toolchain.cmake ..
+        cmake --build . --parallel 2
+        zip -j duckstation_libretro_linux_armv7.so.zip duckstation_libretro.so
+
+    - name: Upload Linux AArch64 libretro core
+      uses: actions/upload-artifact@v1
+      with:
+        name: "linux-libretro"
+        path: "build-libretro-linux-armv7/duckstation_libretro_linux_armv7.so.zip"
+      
     - name: Compile and zip Linux AArch64 libretro core
       shell: bash
       run: |
@@ -173,12 +188,27 @@ jobs:
         cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_LIBRETRO_CORE=ON -DCMAKE_TOOLCHAIN_FILE=../CMakeModules/aarch64-cross-toolchain.cmake ..
         cmake --build . --parallel 2
         zip -j duckstation_libretro_linux_aarch64.so.zip duckstation_libretro.so
-      
+
     - name: Upload Linux AArch64 libretro core
       uses: actions/upload-artifact@v1
       with:
         name: "linux-libretro"
         path: "build-libretro-linux-aarch64/duckstation_libretro_linux_aarch64.so.zip"
+
+    - name: Compile and zip Android armv7 libretro core
+      shell: bash
+      run: |
+        mkdir build-libretro-android-armv7
+        cd build-libretro-android-armv7
+        cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_LIBRETRO_CORE=ON -DANDROID_ABI=armeabi-v7a -DANDROID_ARM_NEON=ON -DCMAKE_TOOLCHAIN_FILE=${ANDROID_SDK_ROOT}/ndk-bundle/build/cmake/android.toolchain.cmake ..
+        cmake --build . --parallel 2
+        zip -j duckstation_libretro_android_armv7.so.zip duckstation_libretro_android.so
+      
+    - name: Upload Android armv7 libretro core
+      uses: actions/upload-artifact@v1
+      with:
+        name: "linux-libretro"
+        path: "build-libretro-android-armv7/duckstation_libretro_android_armv7.so.zip"
 
     - name: Compile and zip Android AArch64 libretro core
       shell: bash
@@ -348,7 +378,9 @@ jobs:
             linux-x64-appimage-qt/duckstation-qt-x64.AppImage
             linux-x64-appimage-qt-zsync/duckstation-qt-x64.AppImage.zsync
             linux-libretro/duckstation_libretro_x64.so.zip
+            linux-libretro/duckstation_libretro_linux_armv7.so.zip
             linux-libretro/duckstation_libretro_linux_aarch64.so.zip
+            linux-libretro/duckstation_libretro_android_armv7.so.zip
             linux-libretro/duckstation_libretro_android_aarch64.so.zip
             android/duckstation-android.apk
             macos-x64/duckstation-mac-release.zip
