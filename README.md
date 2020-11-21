@@ -57,7 +57,7 @@ DuckStation features a fully-featured frontend built using Qt (pictured), as wel
 
 Other features include:
 
- - CPU Recompiler/JIT (x86-64 and AArch64)
+ - CPU Recompiler/JIT (x86-64, armv7/AArch32 and AArch64)
  - Hardware (D3D11, OpenGL, Vulkan) and software rendering
  - Upscaling, texture filtering, and true colour (24-bit) in hardware renderers
  - PGXP for geometry precision and texture correction
@@ -81,8 +81,8 @@ Other features include:
  - Emulated CPU overclocking
 
 ## System Requirements
- - A CPU faster than a potato. But it needs to be 64-bit (either x86_64 or AArch64/ARMv8) otherwise you won't get a recompiler and it'll be slow. There are no plans to add any 32-bit recompilers.
- - For the hardware renderers, a GPU capable of OpenGL 3.0/OpenGL ES 3.0/Direct3D 11 Feature Level 10.0 (or Vulkan 1.0) and above. So, basically anything made in the last 10 years or so.
+ - A CPU faster than a potato. But it needs to be x86_64, AArch32/armv7, or AArch64/ARMv8, otherwise you won't get a recompiler and it'll be slow.
+ - For the hardware renderers, a GPU capable of OpenGL 3.1/OpenGL ES 3.0/Direct3D 11 Feature Level 10.0 (or Vulkan 1.0) and above. So, basically anything made in the last 10 years or so.
  - SDL or XInput compatible game controller (e.g. XB360/XBOne). DualShock 3 users on Windows will need to install the official DualShock 3 drivers included as part of PlayStation Now.
    - Optional [SDL game contoller database files](#sdl-game-controller-database) are also supported.
 
@@ -135,9 +135,9 @@ they are investigated.
 
 ### Android
 
-A prebuilt APK is now available for Android. However, please keep in mind that the Android version is not yet feature complete, it is more of a preview of things to come. You will need a device running a 64-bit AArch64 userland (anything made in the last few years).
+A prebuilt APK is now available for Android. However, please keep in mind that the Android version does not contain all features present in the desktop version yet. You will need a device with armv7 (32-bit ARM) or AArch64 (64-bit ARM). 64-bit is preferred, the requirements are higher for 32-bit, you'll probably want at least a 1.5GHz CPU.
 
-Download link: https://github.com/stenzek/duckstation/releases/download/latest/duckstation-android-aarch64.apk
+Download link: https://github.com/stenzek/duckstation/releases/download/latest/duckstation-android.apk
 
 The main limitations are:
  - User directory is currently hardcoded to `<external storage path>/duckstation`. This is usually `/storage/emulated/0` or `/sdcard`'. So BIOS files go in `/sdcard/duckstation/bios`.
@@ -214,8 +214,6 @@ Requirements:
 5. Run the binary, located in the build directory under `bin/duckstation-sdl`, or `bin/DuckStation.app` for Qt.
 
 ### Android
-**NOTE:** The Android frontend is still incomplete, not all functionality is available yet. User directory is hardcoded to `/sdcard/duckstation` for now.
-
 Requirements:
  - Android Studio with the NDK and CMake installed
 
@@ -285,6 +283,8 @@ DuckStation is available as a libretro core, which can be loaded into a frontend
 Prebuilt binaries for 64-bit Windows, Linux and Android can be found on the releases page. Direct links:
 - 64-bit Windows: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro.dll.zip
 - 64-bit Linux: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro_x64.so.zip
+- armv7 Linux: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro_linux_armv7.so.zip
+- armv7 Android: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro_android_armv7.so.zip
 - AArch64 Linux: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro_linux_aarch64.so.zip
 - AArch64 Android: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro_android_aarch64.so.zip
 
