@@ -30,6 +30,8 @@ add_library(core
     dma.h
     gpu.cpp
     gpu.h
+    gpu_backend.cpp
+    gpu_backend.h
     gpu_commands.cpp
     gpu_hw.cpp
     gpu_hw.h
@@ -41,6 +43,8 @@ add_library(core
     gpu_hw_vulkan.h
     gpu_sw.cpp
     gpu_sw.h
+    gpu_sw_backend.cpp
+    gpu_sw_backend.h
     gpu_types.h
     gte.cpp
     gte.h

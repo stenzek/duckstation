@@ -222,3 +222,177 @@ static constexpr s32 DITHER_MATRIX[DITHER_MATRIX_SIZE][DITHER_MATRIX_SIZE] = { {
                                                                               {+2, -2, +3, -1},  // row 1
                                                                               {-3, +1, -4, +0},  // row 2
                                                                               {+4, -1, +2, -2} }; // row 3
+
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable:4200) // warning C4200: nonstandard extension used: zero-sized array in struct/union
+#endif
+
+enum class GPUBackendCommandType : u8
+{
+  Wraparound,
+  Sync,
+  FillVRAM,
+  UpdateVRAM,
+  CopyVRAM,
+  SetDrawingArea,
+  DrawPolygon,
+  DrawRectangle,
+  DrawLine
+};
+
+union GPUBackendCommandParameters
+{
+  u8 bits;
+
+  BitField<u8, bool, 0, 1> interlaced_rendering;
+
+  /// Returns 0 if the currently-displayed field is on an even line in VRAM, otherwise 1.
+  BitField<u8, u8, 1, 1> active_line_lsb;
+
+  BitField<u8, bool, 2, 1> set_mask_while_drawing;
+  BitField<u8, bool, 3, 1> check_mask_before_draw;
+
+  ALWAYS_INLINE bool IsMaskingEnabled() const { return (bits & 12u) != 0u; }
+
+  // During transfer/render operations, if ((dst_pixel & mask_and) == 0) { pixel = src_pixel | mask_or }
+  u16 GetMaskAND() const
+  {
+    // return check_mask_before_draw ? 0x8000 : 0x0000;
+    return Truncate16((bits << 12) & 0x8000);
+  }
+  u16 GetMaskOR() const
+  {
+    // return set_mask_while_drawing ? 0x8000 : 0x0000;
+    return Truncate16((bits << 13) & 0x8000);
+  }
+};
+
+struct GPUBackendCommand
+{
+  GPUBackendCommandType type;
+  GPUBackendCommandParameters params;
+  u32 size;
+};
+
+struct GPUBackendSyncCommand : public GPUBackendCommand
+{
+  ALWAYS_INLINE u32 Size() const { return sizeof(GPUBackendSyncCommand); }
+};
+
+struct GPUBackendFillVRAMCommand : public GPUBackendCommand
+{
+  u16 x;
+  u16 y;
+  u16 width;
+  u16 height;
+  u32 color;
+
+  ALWAYS_INLINE u32 Size() const { return sizeof(GPUBackendFillVRAMCommand); }
+};
+
+struct GPUBackendUpdateVRAMCommand : public GPUBackendCommand
+{
+  u16 x;
+  u16 y;
+  u16 width;
+  u16 height;
+  u16 data[0];
+
+  ALWAYS_INLINE u32 Size() const { return sizeof(GPUBackendUpdateVRAMCommand) + (sizeof(u16) * width * height); }
+};
+
+struct GPUBackendCopyVRAMCommand : public GPUBackendCommand
+{
+  u16 src_x;
+  u16 src_y;
+  u16 dst_x;
+  u16 dst_y;
+  u16 width;
+  u16 height;
+
+  ALWAYS_INLINE u32 Size() const { return sizeof(GPUBackendCopyVRAMCommand); }
+};
+
+struct GPUBackendSetDrawingAreaCommand : public GPUBackendCommand
+{
+  Common::Rectangle<u32> new_area;
+
+  ALWAYS_INLINE u32 Size() const { return sizeof(GPUBackendSetDrawingAreaCommand); }
+};
+
+struct GPUBackendDrawCommand : public GPUBackendCommand
+{
+  GPURenderCommand rc;
+  GPUDrawModeReg draw_mode;
+  GPUTexturePaletteReg palette;
+  GPUTextureWindow window;
+
+  ALWAYS_INLINE bool IsDitheringEnabled() const { return rc.IsDitheringEnabled() && draw_mode.dither_enable; }
+};
+
+struct GPUBackendDrawPolygonCommand : public GPUBackendDrawCommand
+{
+  u16 num_vertices;
+
+  struct Vertex
+  {
+    s32 x, y;
+    union
+    {
+      struct
+      {
+        u8 r, g, b, a;
+      };
+      u32 color;
+    };
+    union
+    {
+      struct
+      {
+        u8 u, v;
+      };
+      u16 texcoord;
+    };
+  };
+
+  Vertex vertices[0];
+
+  ALWAYS_INLINE u32 Size() const { return sizeof(GPUBackendDrawPolygonCommand) + sizeof(Vertex) * num_vertices; }
+};
+
+struct GPUBackendDrawRectangleCommand : public GPUBackendDrawCommand
+{
+  s32 x, y;
+  u16 width, height;
+  u16 texcoord;
+  u32 color;
+
+  ALWAYS_INLINE u32 Size() const { return sizeof(GPUBackendDrawRectangleCommand); }
+};
+
+struct GPUBackendDrawLineCommand : public GPUBackendDrawCommand
+{
+  u16 num_vertices;
+
+  struct Vertex
+  {
+    s32 x, y;
+    union
+    {
+      struct
+      {
+        u8 r, g, b, a;
+      };
+      u32 color;
+    };
+  };
+
+  Vertex vertices[0];
+
+  ALWAYS_INLINE u32 Size() const { return sizeof(GPUBackendDrawLineCommand) + sizeof(Vertex) * num_vertices; }
+};
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif

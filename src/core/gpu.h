@@ -159,9 +159,6 @@ protected:
   ALWAYS_INLINE static constexpr TickCount SystemTicksToGPUTicks(TickCount sysclk_ticks) { return sysclk_ticks << 1; }
 
   // Helper/format conversion functions.
-  static constexpr u8 Convert5To8(u8 x5) { return (x5 << 3) | (x5 & 7); }
-  static constexpr u8 Convert8To5(u8 x8) { return (x8 >> 3); }
-
   static constexpr u32 RGBA5551ToRGBA8888(u16 color)
   {
     u8 r = Truncate8(color & 31);
@@ -197,67 +194,9 @@ protected:
   {
     return std::make_tuple(static_cast<u8>(rgb24), static_cast<u8>(rgb24 >> 8), static_cast<u8>(rgb24 >> 16));
   }
-  static constexpr u32 PackColorRGB24(u8 r, u8 g, u8 b)
-  {
-    return ZeroExtend32(r) | (ZeroExtend32(g) << 8) | (ZeroExtend32(b) << 16);
-  }
 
   static bool DumpVRAMToFile(const char* filename, u32 width, u32 height, u32 stride, const void* buffer,
                              bool remove_alpha);
-
-  union VRAMPixel
-  {
-    u16 bits;
-
-    BitField<u16, u8, 0, 5> r;
-    BitField<u16, u8, 5, 5> g;
-    BitField<u16, u8, 10, 5> b;
-    BitField<u16, bool, 15, 1> c;
-
-    u8 GetR8() const { return Convert5To8(r); }
-    u8 GetG8() const { return Convert5To8(g); }
-    u8 GetB8() const { return Convert5To8(b); }
-
-    void Set(u8 r_, u8 g_, u8 b_, bool c_ = false)
-    {
-      bits = (ZeroExtend16(r_)) | (ZeroExtend16(g_) << 5) | (ZeroExtend16(b_) << 10) | (static_cast<u16>(c_) << 15);
-    }
-
-    void ClampAndSet(u8 r_, u8 g_, u8 b_, bool c_ = false)
-    {
-      Set(std::min<u8>(r_, 0x1F), std::min<u8>(g_, 0x1F), std::min<u8>(b_, 0x1F), c_);
-    }
-
-    void SetRGB24(u32 rgb24, bool c_ = false)
-    {
-      bits = Truncate16(((rgb24 >> 3) & 0x1F) | (((rgb24 >> 11) & 0x1F) << 5) | (((rgb24 >> 19) & 0x1F) << 10)) |
-             (static_cast<u16>(c_) << 15);
-    }
-
-    void SetRGB24(u8 r8, u8 g8, u8 b8, bool c_ = false)
-    {
-      bits = (ZeroExtend16(r8 >> 3)) | (ZeroExtend16(g8 >> 3) << 5) | (ZeroExtend16(b8 >> 3) << 10) |
-             (static_cast<u16>(c_) << 15);
-    }
-
-    void SetRGB24Dithered(u32 x, u32 y, u8 r8, u8 g8, u8 b8, bool c_ = false)
-    {
-      const s32 offset = DITHER_MATRIX[y & 3][x & 3];
-      r8 = static_cast<u8>(std::clamp<s32>(static_cast<s32>(ZeroExtend32(r8)) + offset, 0, 255));
-      g8 = static_cast<u8>(std::clamp<s32>(static_cast<s32>(ZeroExtend32(g8)) + offset, 0, 255));
-      b8 = static_cast<u8>(std::clamp<s32>(static_cast<s32>(ZeroExtend32(b8)) + offset, 0, 255));
-      SetRGB24(r8, g8, b8, c_);
-    }
-
-    u32 ToRGB24() const
-    {
-      const u32 r_ = ZeroExtend32(r.GetValue());
-      const u32 g_ = ZeroExtend32(g.GetValue());
-      const u32 b_ = ZeroExtend32(b.GetValue());
-
-      return ((r_ << 3) | (r_ & 7)) | (((g_ << 3) | (g_ & 7)) << 8) | (((b_ << 3) | (b_ & 7)) << 16);
-    }
-  };
 
   void SoftReset();
 
@@ -464,10 +403,7 @@ protected:
     u32 texture_page_y;
     u32 texture_palette_x;
     u32 texture_palette_y;
-    u8 texture_window_and_x;
-    u8 texture_window_and_y;
-    u8 texture_window_or_x;
-    u8 texture_window_or_y;
+    GPUTextureWindow texture_window;
     bool texture_x_flip;
     bool texture_y_flip;
     bool texture_page_changed;

@@ -931,6 +931,8 @@ void SDLHostInterface::DrawQuickSettingsMenu()
       }
     }
 
+    settings_changed |= ImGui::MenuItem("GPU on Thread", nullptr, &m_settings_copy.gpu_use_thread);
+
     ImGui::EndMenu();
   }
 

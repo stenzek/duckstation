@@ -432,6 +432,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetIntValue("GPU", "Multisamples", 1);
   si.SetBoolValue("GPU", "UseDebugDevice", false);
   si.SetBoolValue("GPU", "PerSampleShading", false);
+  si.SetBoolValue("GPU", "UseThread", true);
   si.SetBoolValue("GPU", "TrueColor", false);
   si.SetBoolValue("GPU", "ScaledDithering", true);
   si.SetStringValue("GPU", "TextureFilter", Settings::GetTextureFilterName(Settings::DEFAULT_GPU_TEXTURE_FILTER));
@@ -629,6 +630,7 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
     if (g_settings.gpu_resolution_scale != old_settings.gpu_resolution_scale ||
         g_settings.gpu_multisamples != old_settings.gpu_multisamples ||
         g_settings.gpu_per_sample_shading != old_settings.gpu_per_sample_shading ||
+        g_settings.gpu_use_thread != old_settings.gpu_use_thread ||
         g_settings.gpu_fifo_size != old_settings.gpu_fifo_size ||
         g_settings.gpu_max_run_ahead != old_settings.gpu_max_run_ahead ||
         g_settings.gpu_true_color != old_settings.gpu_true_color ||

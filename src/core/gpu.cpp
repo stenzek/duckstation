@@ -129,10 +129,10 @@ bool GPU::DoState(StateWrapper& sw)
   sw.Do(&m_draw_mode.texture_page_y);
   sw.Do(&m_draw_mode.texture_palette_x);
   sw.Do(&m_draw_mode.texture_palette_y);
-  sw.Do(&m_draw_mode.texture_window_and_x);
-  sw.Do(&m_draw_mode.texture_window_and_y);
-  sw.Do(&m_draw_mode.texture_window_or_x);
-  sw.Do(&m_draw_mode.texture_window_or_y);
+  sw.Do(&m_draw_mode.texture_window.and_x);
+  sw.Do(&m_draw_mode.texture_window.and_y);
+  sw.Do(&m_draw_mode.texture_window.or_x);
+  sw.Do(&m_draw_mode.texture_window.or_y);
   sw.Do(&m_draw_mode.texture_x_flip);
   sw.Do(&m_draw_mode.texture_y_flip);
 
@@ -1358,10 +1358,10 @@ void GPU::SetTextureWindow(u32 value)
   const u8 offset_y = Truncate8((value >> 15) & UINT32_C(0x1F));
   Log_DebugPrintf("Set texture window %02X %02X %02X %02X", mask_x, mask_y, offset_x, offset_y);
 
-  m_draw_mode.texture_window_and_x = ~(mask_x * 8);
-  m_draw_mode.texture_window_and_y = ~(mask_y * 8);
-  m_draw_mode.texture_window_or_x = (offset_x & mask_x) * 8u;
-  m_draw_mode.texture_window_or_y = (offset_y & mask_y) * 8u;
+  m_draw_mode.texture_window.and_x = ~(mask_x * 8);
+  m_draw_mode.texture_window.and_y = ~(mask_y * 8);
+  m_draw_mode.texture_window.or_x = (offset_x & mask_x) * 8u;
+  m_draw_mode.texture_window.or_y = (offset_y & mask_y) * 8u;
   m_draw_mode.texture_window_value = value;
   m_draw_mode.texture_window_changed = true;
 }

@@ -62,7 +62,14 @@
       <item row="2" column="1">
        <widget class="QComboBox" name="fullscreenMode"/>
       </item>
-      <item row="3" column="0">
+      <item row="3" column="0" colspan="2">
+       <widget class="QCheckBox" name="gpuThread">
+        <property name="text">
+         <string>Threaded Rendering</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0" colspan="2">
        <widget class="QCheckBox" name="vsync">
         <property name="text">
          <string>VSync</string>

@@ -51,6 +51,8 @@
     <ClCompile Include="memory_card_image.cpp" />
     <ClCompile Include="analog_joystick.cpp" />
     <ClCompile Include="cpu_recompiler_code_generator_aarch32.cpp" />
+    <ClCompile Include="gpu_backend.cpp" />
+    <ClCompile Include="gpu_sw_backend.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -105,5 +107,7 @@
     <ClInclude Include="memory_card_image.h" />
     <ClInclude Include="analog_joystick.h" />
     <ClInclude Include="gpu_types.h" />
+    <ClInclude Include="gpu_backend.h" />
+    <ClInclude Include="gpu_sw_backend.h" />
   </ItemGroup>
 </Project>

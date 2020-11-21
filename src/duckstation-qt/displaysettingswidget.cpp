@@ -33,6 +33,7 @@ DisplaySettingsWidget::DisplaySettingsWidget(QtHostInterface* host_interface, QW
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.displayIntegerScaling, "Display",
                                                "IntegerScaling");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.vsync, "Display", "VSync");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.gpuThread, "GPU", "UseThread");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showOSDMessages, "Display", "ShowOSDMessages",
                                                true);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showFPS, "Display", "ShowFPS", false);
@@ -84,6 +85,9 @@ DisplaySettingsWidget::DisplaySettingsWidget(QtHostInterface* host_interface, QW
     m_ui.vsync, tr("VSync"), tr("Checked"),
     tr("Enable this option to match DuckStation's refresh rate with your current monitor or screen. "
        "VSync is automatically disabled when it is not possible (e.g. running at non-100% speed)."));
+  dialog->registerWidgetHelp(m_ui.gpuThread, tr("Threaded Rendering"), tr("Checked"),
+                             tr("Uses a second thread for drawing graphics. Currently only available for the software "
+                                "renderer, but can provide a significant speed improvement, and is safe to use."));
   dialog->registerWidgetHelp(m_ui.showOSDMessages, tr("Show OSD Messages"), tr("Checked"),
                              tr("Shows on-screen-display messages when events occur such as save states being "
                                 "created/loaded, screenshots being taken, etc."));
@@ -124,6 +128,7 @@ void DisplaySettingsWidget::populateGPUAdaptersAndResolutions()
 {
   std::vector<std::string> adapter_names;
   std::vector<std::string> fullscreen_modes;
+  bool thread_supported = false;
   switch (static_cast<GPURenderer>(m_ui.renderer->currentIndex()))
   {
 #ifdef WIN32
@@ -138,6 +143,10 @@ void DisplaySettingsWidget::populateGPUAdaptersAndResolutions()
 
     case GPURenderer::HardwareVulkan:
       adapter_names = FrontendCommon::VulkanHostDisplay::EnumerateAdapterNames();
+      break;
+
+    case GPURenderer::Software:
+      thread_supported = true;
       break;
 
     default:
@@ -184,6 +193,8 @@ void DisplaySettingsWidget::populateGPUAdaptersAndResolutions()
     // disable it if we don't have a choice
     m_ui.fullscreenMode->setEnabled(!fullscreen_modes.empty());
   }
+
+  m_ui.gpuThread->setEnabled(thread_supported);
 }
 
 void DisplaySettingsWidget::onGPUAdapterIndexChanged()

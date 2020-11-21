@@ -94,6 +94,7 @@ struct Settings
   std::string display_post_process_chain;
   u32 gpu_resolution_scale = 1;
   u32 gpu_multisamples = 1;
+  bool gpu_use_thread = true;
   bool gpu_use_debug_device = false;
   bool gpu_per_sample_shading = false;
   bool gpu_true_color = true;

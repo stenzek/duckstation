@@ -115,11 +115,13 @@
     </ClCompile>
     <ClCompile Include="cpu_types.cpp" />
     <ClCompile Include="digital_controller.cpp" />
+    <ClCompile Include="gpu_backend.cpp" />
     <ClCompile Include="gpu_commands.cpp" />
     <ClCompile Include="gpu_hw_d3d11.cpp" />
     <ClCompile Include="gpu_hw_shadergen.cpp" />
     <ClCompile Include="gpu_hw_vulkan.cpp" />
     <ClCompile Include="gpu_sw.cpp" />
+    <ClCompile Include="gpu_sw_backend.cpp" />
     <ClCompile Include="gte.cpp" />
     <ClCompile Include="dma.cpp" />
     <ClCompile Include="gpu.cpp" />
@@ -185,10 +187,12 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="digital_controller.h" />
+    <ClInclude Include="gpu_backend.h" />
     <ClInclude Include="gpu_hw_d3d11.h" />
     <ClInclude Include="gpu_hw_shadergen.h" />
     <ClInclude Include="gpu_hw_vulkan.h" />
     <ClInclude Include="gpu_sw.h" />
+    <ClInclude Include="gpu_sw_backend.h" />
     <ClInclude Include="gpu_types.h" />
     <ClInclude Include="gte.h" />
     <ClInclude Include="cpu_types.h" />
