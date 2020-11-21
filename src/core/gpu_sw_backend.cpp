@@ -102,8 +102,6 @@ void ALWAYS_INLINE_RELEASE GPU_SW_Backend::ShadePixel(const GPUBackendDrawComman
                    (cmd->draw_mode.GetTexturePageBaseY() + ZeroExtend32(texcoord_y)) % VRAM_HEIGHT);
         const u16 palette_index = (palette_value >> ((texcoord_x % 4) * 4)) & 0x0Fu;
 
-        const u32 px = (cmd->palette.GetXBase() + ZeroExtend32(palette_index)) % VRAM_WIDTH;
-        const u32 py = cmd->palette.GetYBase();
         texture_color.bits =
           GetPixel((cmd->palette.GetXBase() + ZeroExtend32(palette_index)) % VRAM_WIDTH, cmd->palette.GetYBase());
       }
