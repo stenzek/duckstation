@@ -2260,9 +2260,8 @@ bool CodeGenerator::Compile_cop0(const CodeBlockInstruction& cbi)
               value = AndValues(value, Value::FromConstantU32(write_mask));
             }
 
-#ifdef WITH_FASTMEM
             // changing SR[Isc] needs to update fastmem views
-            if (reg == Cop0Reg::SR && g_settings.cpu_fastmem)
+            if (reg == Cop0Reg::SR && g_settings.IsUsingFastmem())
             {
               LabelType skip_fastmem_update;
               Value old_value = m_register_cache.AllocateScratch(RegSize_32);
@@ -2279,9 +2278,6 @@ bool CodeGenerator::Compile_cop0(const CodeBlockInstruction& cbi)
             {
               EmitStoreCPUStructField(offset, value);
             }
-#else
-            EmitStoreCPUStructField(offset, value);
-#endif
           }
         }
 

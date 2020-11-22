@@ -130,7 +130,9 @@ void Settings::Load(SettingsInterface& si)
   UpdateOverclockActive();
   cpu_recompiler_memory_exceptions = si.GetBoolValue("CPU", "RecompilerMemoryExceptions", false);
   cpu_recompiler_icache = si.GetBoolValue("CPU", "RecompilerICache", false);
-  cpu_fastmem = si.GetBoolValue("CPU", "Fastmem", true);
+  cpu_fastmem_mode = ParseCPUFastmemMode(
+                       si.GetStringValue("CPU", "FastmemMode", GetCPUFastmemModeName(DEFAULT_CPU_FASTMEM_MODE)).c_str())
+                       .value_or(DEFAULT_CPU_FASTMEM_MODE);
 
   gpu_renderer = ParseRendererName(si.GetStringValue("GPU", "Renderer", GetRendererName(DEFAULT_GPU_RENDERER)).c_str())
                    .value_or(DEFAULT_GPU_RENDERER);
@@ -266,7 +268,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetIntValue("CPU", "OverclockDenominator", cpu_overclock_denominator);
   si.SetBoolValue("CPU", "RecompilerMemoryExceptions", cpu_recompiler_memory_exceptions);
   si.SetBoolValue("CPU", "RecompilerICache", cpu_recompiler_icache);
-  si.SetBoolValue("CPU", "Fastmem", cpu_fastmem);
+  si.SetStringValue("CPU", "FastmemMode", GetCPUFastmemModeName(cpu_fastmem_mode));
 
   si.SetStringValue("GPU", "Renderer", GetRendererName(gpu_renderer));
   si.SetStringValue("GPU", "Adapter", gpu_adapter.c_str());
@@ -482,6 +484,37 @@ const char* Settings::GetCPUExecutionModeName(CPUExecutionMode mode)
 const char* Settings::GetCPUExecutionModeDisplayName(CPUExecutionMode mode)
 {
   return s_cpu_execution_mode_display_names[static_cast<u8>(mode)];
+}
+
+static std::array<const char*, static_cast<u32>(CPUFastmemMode::Count)> s_cpu_fastmem_mode_names = {
+  {"Disabled", "MMap", "LUT"}};
+static std::array<const char*, static_cast<u32>(CPUFastmemMode::Count)> s_cpu_fastmem_mode_display_names = {
+  {TRANSLATABLE("CPUFastmemMode", "Disabled (Slowest)"),
+   TRANSLATABLE("CPUFastmemMode", "MMap (Hardware, Fastest, 64-Bit Only)"),
+   TRANSLATABLE("CPUFastmemMode", "LUT (Faster)")}};
+
+std::optional<CPUFastmemMode> Settings::ParseCPUFastmemMode(const char* str)
+{
+  u8 index = 0;
+  for (const char* name : s_cpu_fastmem_mode_names)
+  {
+    if (StringUtil::Strcasecmp(name, str) == 0)
+      return static_cast<CPUFastmemMode>(index);
+
+    index++;
+  }
+
+  return std::nullopt;
+}
+
+const char* Settings::GetCPUFastmemModeName(CPUFastmemMode mode)
+{
+  return s_cpu_fastmem_mode_names[static_cast<u8>(mode)];
+}
+
+const char* Settings::GetCPUFastmemModeDisplayName(CPUFastmemMode mode)
+{
+  return s_cpu_fastmem_mode_display_names[static_cast<u8>(mode)];
 }
 
 static constexpr auto s_gpu_renderer_names = make_array(

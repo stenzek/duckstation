@@ -135,8 +135,16 @@ enum : u32
   NUM_CONTROLLER_AND_CARD_PORTS = 2
 };
 
-enum : u32
+enum class CPUFastmemMode
 {
-  CPU_CODE_CACHE_PAGE_SIZE = 4096,
-  CPU_CODE_CACHE_PAGE_COUNT = 0x200000 / CPU_CODE_CACHE_PAGE_SIZE
+  Disabled,
+  MMap,
+  LUT,
+  Count
+};
+
+enum : size_t
+{
+  HOST_PAGE_SIZE = 4096,
+  HOST_PAGE_OFFSET_MASK = HOST_PAGE_SIZE - 1,
 };

@@ -31,7 +31,17 @@ static std::vector<RegisteredHandler> m_handlers;
 static std::mutex m_handler_lock;
 static thread_local bool s_in_handler;
 
-#ifdef __aarch64__
+#if defined(CPU_AARCH32)
+static bool IsStoreInstruction(const void* ptr)
+{
+  u32 bits;
+  std::memcpy(&bits, ptr, sizeof(bits));
+  
+  // TODO
+  return false;
+}
+
+#elif defined(CPU_AARCH64)
 static bool IsStoreInstruction(const void* ptr)
 {
   u32 bits;
@@ -118,10 +128,13 @@ static void SIGSEGVHandler(int sig, siginfo_t* info, void* ctx)
 #ifndef __APPLE__
   void* const exception_address = reinterpret_cast<void*>(info->si_addr);
 
-#if defined(__x86_64__)
+#if defined(CPU_X64)
   void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.gregs[REG_RIP]);
   const bool is_write = (static_cast<ucontext_t*>(ctx)->uc_mcontext.gregs[REG_ERR] & 2) != 0;
-#elif defined(__aarch64__)
+#elif defined(CPU_AARCH32)
+  void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.arm_pc);
+  const bool is_write = IsStoreInstruction(exception_pc);
+#elif defined(CPU_AARCH64)
   void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.pc);
   const bool is_write = IsStoreInstruction(exception_pc);
 #else
@@ -129,12 +142,12 @@ static void SIGSEGVHandler(int sig, siginfo_t* info, void* ctx)
   const bool is_write = false;
 #endif
 #else // __APPLE__
-#if defined(__x86_64__)
+#if defined(CPU_X64)
   void* const exception_address =
     reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__es.__faultvaddr);
   void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__ss.__rip);
   const bool is_write = (static_cast<ucontext_t*>(ctx)->uc_mcontext->__es.__err & 2) != 0;
-#elif defined(__aarch64__)
+#elif defined(CPU_AARCH64)
   void* const exception_address = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__es.__far);
   void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__ss.__pc);
   const bool is_write = IsStoreInstruction(exception_pc);

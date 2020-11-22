@@ -41,8 +41,6 @@ Value CodeGenerator::EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const 
     {
       Value result = m_register_cache.AllocateScratch(size);
 
-#ifdef WITH_FASTMEM
-
       if (g_settings.IsUsingFastmem() && Bus::IsRAMAddress(static_cast<u32>(address.constant_value)))
       {
         // have to mask away the high bits for mirrors, since we don't map them in fastmem
@@ -54,12 +52,6 @@ Value CodeGenerator::EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const 
         EmitLoadGlobal(result.GetHostRegister(), size, ptr);
       }
 
-#else
-
-      EmitLoadGlobal(result.GetHostRegister(), size, ptr);
-
-#endif
-
       m_delayed_cycles_add += read_ticks;
       return result;
     }
@@ -67,7 +59,7 @@ Value CodeGenerator::EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const 
 
   AddPendingCycles(true);
 
-#ifdef WITH_FASTMEM
+  Value result = m_register_cache.AllocateScratch(HostPointerSize);
 
   const bool use_fastmem = address_spec ? Bus::CanUseFastmemForAddress(*address_spec) : true;
   if (address_spec)
@@ -82,7 +74,6 @@ Value CodeGenerator::EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const 
                   use_fastmem ? "yes" : "no");
   }
 
-  Value result = m_register_cache.AllocateScratch(RegSize_64);
   if (g_settings.IsUsingFastmem() && use_fastmem)
   {
     EmitLoadGuestMemoryFastmem(cbi, address, size, result);
@@ -92,14 +83,6 @@ Value CodeGenerator::EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const 
     m_register_cache.FlushCallerSavedGuestRegisters(true, true);
     EmitLoadGuestMemorySlowmem(cbi, address, size, result, false);
   }
-
-#else
-
-  Value result = m_register_cache.AllocateScratch(HostPointerSize);
-  m_register_cache.FlushCallerSavedGuestRegisters(true, true);
-  EmitLoadGuestMemorySlowmem(cbi, address, size, result, false);
-
-#endif
 
   // Downcast to ignore upper 56/48/32 bits. This should be a noop.
   if (result.size != size)
@@ -145,8 +128,6 @@ void CodeGenerator::EmitStoreGuestMemory(const CodeBlockInstruction& cbi, const 
 
   AddPendingCycles(true);
 
-#ifdef WITH_FASTMEM
-
   const bool use_fastmem = address_spec ? Bus::CanUseFastmemForAddress(*address_spec) : true;
   if (address_spec)
   {
@@ -169,13 +150,6 @@ void CodeGenerator::EmitStoreGuestMemory(const CodeBlockInstruction& cbi, const 
     m_register_cache.FlushCallerSavedGuestRegisters(true, true);
     EmitStoreGuestMemorySlowmem(cbi, address, value, false);
   }
-
-#else
-
-  m_register_cache.FlushCallerSavedGuestRegisters(true, true);
-  EmitStoreGuestMemorySlowmem(cbi, address, value, false);
-
-#endif
 }
 
 #ifndef CPU_X64

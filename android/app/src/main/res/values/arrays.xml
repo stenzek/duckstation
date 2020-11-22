@@ -21,6 +21,16 @@
         <item>CachedInterpreter</item>
         <item>Recompiler</item>
     </string-array>
+    <string-array name="settings_cpu_fastmem_mode_entries">
+        <item>Disabled (Slowest)</item>
+        <item>MMap (Hardware, Fastest, 64-Bit Only)</item>
+        <item>LUT (Faster)</item>
+    </string-array>
+    <string-array name="settings_cpu_fastmem_mode_values">
+        <item>Disabled</item>
+        <item>MMap</item>
+        <item>LUT</item>
+    </string-array>
     <string-array name="gpu_renderer_entries">
         <item>Hardware (OpenGL)</item>
         <item>Hardware (Vulkan)</item>

@@ -913,7 +913,21 @@ void SDLHostInterface::DrawQuickSettingsMenu()
 
   settings_changed |=
     ImGui::MenuItem("Recompiler Memory Exceptions", nullptr, &m_settings_copy.cpu_recompiler_memory_exceptions);
-  settings_changed |= ImGui::MenuItem("Recompiler Fastmem", nullptr, &m_settings_copy.cpu_fastmem);
+  if (ImGui::BeginMenu("Recompiler Fastmem"))
+  {
+    for (u32 i = 0; i < static_cast<u32>(CPUFastmemMode::Count); i++)
+    {
+      if (ImGui::MenuItem(Settings::GetCPUFastmemModeDisplayName(static_cast<CPUFastmemMode>(i)), nullptr,
+                          m_settings_copy.cpu_fastmem_mode == static_cast<CPUFastmemMode>(i)))
+      {
+        m_settings_copy.cpu_fastmem_mode = static_cast<CPUFastmemMode>(i);
+        settings_changed = true;
+      }
+    }
+
+    ImGui::EndMenu();
+  }
+
   settings_changed |= ImGui::MenuItem("Recompiler ICache", nullptr, &m_settings_copy.cpu_recompiler_icache);
 
   ImGui::Separator();

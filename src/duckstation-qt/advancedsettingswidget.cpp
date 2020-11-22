@@ -57,6 +57,40 @@ static void setIntRangeTweakOption(QTableWidget* table, int row, int value)
   cb->setValue(value);
 }
 
+template<typename T>
+static void addChoiceTweakOption(QtHostInterface* host_interface, QTableWidget* table, QString name,
+                                 std::string section, std::string key, std::optional<T> (*parse_callback)(const char*),
+                                 const char* (*get_value_callback)(T), const char* (*get_display_callback)(T),
+                                 const char* tr_context, u32 num_values, T default_value)
+{
+  const int row = table->rowCount();
+  const std::string current_value =
+    host_interface->GetStringSettingValue(section.c_str(), key.c_str(), get_value_callback(default_value));
+
+  table->insertRow(row);
+
+  QTableWidgetItem* name_item = new QTableWidgetItem(name);
+  name_item->setFlags(name_item->flags() & ~(Qt::ItemIsEditable | Qt::ItemIsSelectable));
+  table->setItem(row, 0, name_item);
+
+  QComboBox* cb = new QComboBox(table);
+  for (u32 i = 0; i < num_values; i++)
+    cb->addItem(qApp->translate(tr_context, get_display_callback(static_cast<T>(i))));
+
+  SettingWidgetBinder::BindWidgetToEnumSetting(host_interface, cb, std::move(section), std::move(key), parse_callback,
+                                               get_value_callback, default_value);
+  table->setCellWidget(row, 1, cb);
+}
+
+template<typename T>
+static void setChoiceTweakOption(QTableWidget* table, int row, T value)
+{
+  QWidget* widget = table->cellWidget(row, 1);
+  QComboBox* cb = qobject_cast<QComboBox*>(widget);
+  Assert(cb);
+  cb->setCurrentIndex(static_cast<int>(value));
+}
+
 AdvancedSettingsWidget::AdvancedSettingsWidget(QtHostInterface* host_interface, QWidget* parent, SettingsDialog* dialog)
   : QWidget(parent), m_host_interface(host_interface)
 {
@@ -90,8 +124,10 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(QtHostInterface* host_interface, 
 
   addBooleanTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Enable Recompiler Memory Exceptions"), "CPU",
                         "RecompilerMemoryExceptions", false);
-  addBooleanTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Enable Recompiler Fast Memory Access"), "CPU",
-                        "Fastmem", true);
+  addChoiceTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Enable Recompiler Fast Memory Access"), "CPU",
+                       "FastmemMode", Settings::ParseCPUFastmemMode, Settings::GetCPUFastmemModeName,
+                       Settings::GetCPUFastmemModeDisplayName, "CPUFastmemMode",
+                       static_cast<u32>(CPUFastmemMode::Count), Settings::DEFAULT_CPU_FASTMEM_MODE);
   addBooleanTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Enable Recompiler ICache"), "CPU",
                         "RecompilerICache", false);
 
@@ -119,7 +155,7 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
   setBooleanTweakOption(m_ui.tweakOptionTable, 1, false);
   setBooleanTweakOption(m_ui.tweakOptionTable, 2, false);
   setBooleanTweakOption(m_ui.tweakOptionTable, 3, false);
-  setBooleanTweakOption(m_ui.tweakOptionTable, 4, true);
+  setChoiceTweakOption(m_ui.tweakOptionTable, 4, Settings::DEFAULT_CPU_FASTMEM_MODE);
   setBooleanTweakOption(m_ui.tweakOptionTable, 5, false);
   setIntRangeTweakOption(m_ui.tweakOptionTable, 6, static_cast<int>(Settings::DEFAULT_DMA_MAX_SLICE_TICKS));
   setIntRangeTweakOption(m_ui.tweakOptionTable, 7, static_cast<int>(Settings::DEFAULT_DMA_HALT_TICKS));

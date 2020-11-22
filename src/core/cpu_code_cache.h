@@ -89,10 +89,10 @@ struct CodeBlock
 
   const u32 GetPC() const { return key.GetPC(); }
   const u32 GetSizeInBytes() const { return static_cast<u32>(instructions.size()) * sizeof(Instruction); }
-  const u32 GetStartPageIndex() const { return (key.GetPCPhysicalAddress() / CPU_CODE_CACHE_PAGE_SIZE); }
+  const u32 GetStartPageIndex() const { return (key.GetPCPhysicalAddress() / HOST_PAGE_SIZE); }
   const u32 GetEndPageIndex() const
   {
-    return ((key.GetPCPhysicalAddress() + GetSizeInBytes()) / CPU_CODE_CACHE_PAGE_SIZE);
+    return ((key.GetPCPhysicalAddress() + GetSizeInBytes()) / HOST_PAGE_SIZE);
   }
   bool IsInRAM() const
   {
@@ -131,8 +131,8 @@ void InterpretUncachedBlock();
 /// Invalidates any code pages which overlap the specified range.
 ALWAYS_INLINE void InvalidateCodePages(PhysicalMemoryAddress address, u32 word_count)
 {
-  const u32 start_page = address / CPU_CODE_CACHE_PAGE_SIZE;
-  const u32 end_page = (address + word_count * sizeof(u32) - sizeof(u32)) / CPU_CODE_CACHE_PAGE_SIZE;
+  const u32 start_page = address / HOST_PAGE_SIZE;
+  const u32 end_page = (address + word_count * sizeof(u32) - sizeof(u32)) / HOST_PAGE_SIZE;
   for (u32 page = start_page; page <= end_page; page++)
   {
     if (Bus::m_ram_code_bits[page])
