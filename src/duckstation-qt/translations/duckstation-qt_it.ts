@@ -18,7 +18,7 @@
         <source>%1 (%2)</source>
         <translation></translation>
     </message>
-    <message>https://github.com/RaydenX93/duckstation/tree/update_it_20201121
+    <message>
         <location filename="../aboutdialog.cpp" line="30"/>
         <source>DuckStation is a free and open-source simulator/emulator of the Sony PlayStation&lt;span style=&quot;vertical-align:super;&quot;&gt;TM&lt;/span&gt; console, focusing on playability, speed, and long-term maintainability.</source>
         <translatorcomment>playability does not mean anything in italian. I&apos;m going with &quot;compatibility&quot;</translatorcomment>
