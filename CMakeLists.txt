@@ -202,8 +202,8 @@ elseif(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "arm" OR ${CMAKE_SYSTEM_PROCESSOR} STR
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -marm")
   else()
     # Enable NEON.
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -marm -march=armv7-a+simd -mfpu=neon-vfpv3")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -marm -march=armv7-a+simd -mfpu=neon-vfpv3")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -marm -march=armv7-a")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -marm -march=armv7-a")
   endif()
 else()
   message(FATAL_ERROR "Unknown system processor: " ${CMAKE_SYSTEM_PROCESSOR})
