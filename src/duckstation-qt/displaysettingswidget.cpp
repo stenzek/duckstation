@@ -33,7 +33,7 @@ DisplaySettingsWidget::DisplaySettingsWidget(QtHostInterface* host_interface, QW
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.displayIntegerScaling, "Display",
                                                "IntegerScaling");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.vsync, "Display", "VSync");
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.gpuThread, "GPU", "UseThread");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.gpuThread, "GPU", "UseThread", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showOSDMessages, "Display", "ShowOSDMessages",
                                                true);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showFPS, "Display", "ShowFPS", false);
