@@ -31,7 +31,7 @@ jobs:
         echo #define SCM_RELEASE_TAG "latest" >> src/scmversion/tag.h
         echo #define SCM_RELEASE_ASSET "duckstation-windows-x64-release.zip" >> src/scmversion/tag.h
 
-    - name: Compile release build
+    - name: Compile x64 release build
       shell: cmd
       run: |
         call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
@@ -48,17 +48,53 @@ jobs:
         del /Q bin\x64\common-tests*
         del /Q bin\x64\duckstation-libretro-*
         rename bin\x64\updater-x64-ReleaseLTCG.exe updater.exe
-                
-    - name: Create release archive
+
+    - name: Create x64 release archive
       shell: cmd
       run: |
         "C:\Program Files\7-Zip\7z.exe" a -r duckstation-windows-x64-release.zip ./bin/x64/*
 
-    - name: Upload release artifact
+    - name: Upload x64 release artifact
       uses: actions/upload-artifact@v1
       with:
-        name: "windows-x64"
+        name: "windows"
         path: "duckstation-windows-x64-release.zip"
+
+    - name: Tag as release build
+      shell: cmd
+      run: |
+        echo #pragma once > src/scmversion/tag.h
+        echo #define SCM_RELEASE_TAG "latest" >> src/scmversion/tag.h
+        echo #define SCM_RELEASE_ASSET "duckstation-windows-arm64-release.zip" >> src/scmversion/tag.h
+
+    - name: Compile arm64 release build
+      shell: cmd
+      run: |
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ARM64
+        msbuild duckstation.sln -t:Build -p:Platform=ARM64;Configuration=ReleaseLTCG
+
+    - name: Remove extra bloat before archiving
+      shell: cmd
+      run: |
+        del /Q bin\ARM64\*.pdb
+        del /Q bin\ARM64\*.exp
+        del /Q bin\ARM64\*.lib
+        del /Q bin\ARM64\*.iobj
+        del /Q bin\ARM64\*.ipdb
+        del /Q bin\ARM64\common-tests*
+        del /Q bin\ARM64\duckstation-libretro-*
+        rename bin\ARM64\updater-ARM64-ReleaseLTCG.exe updater.exe
+                
+    - name: Create arm64 release archive
+      shell: cmd
+      run: |
+        "C:\Program Files\7-Zip\7z.exe" a -r duckstation-windows-arm64-release.zip ./bin/ARM64/*
+
+    - name: Upload arm64 release artifact
+      uses: actions/upload-artifact@v1
+      with:
+        name: "windows"
+        path: "duckstation-windows-arm64-release.zip"
 
 
   windows-libretro-build:
@@ -319,10 +355,10 @@ jobs:
     runs-on: "ubuntu-latest"
     if: github.ref == 'refs/heads/master'
     steps:
-      - name: Download Windows x64 Artifact
+      - name: Download Windows Artifacts
         uses: actions/download-artifact@v1
         with:
-          name: "windows-x64"
+          name: "windows"
 
       - name: Download Windows libretro x64 Artifact
         uses: actions/download-artifact@v1
@@ -371,7 +407,8 @@ jobs:
           automatic_release_tag: "latest"
           title: "Latest Development Build"
           files: |
-            windows-x64/duckstation-windows-x64-release.zip
+            windows/duckstation-windows-x64-release.zip
+            windows/duckstation-windows-arm64-release.zip
             windows-libretro-x64/duckstation_libretro.dll.zip
             linux-x64-appimage-sdl/duckstation-sdl-x64.AppImage
             linux-x64-appimage-sdl-zsync/duckstation-sdl-x64.AppImage.zsync
