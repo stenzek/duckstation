@@ -70,7 +70,7 @@ jobs:
     - name: Compile arm64 release build
       shell: cmd
       run: |
-        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ARM64
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" amd64_arm64
         msbuild duckstation.sln -t:Build -p:Platform=ARM64;Configuration=ReleaseLTCG
 
     - name: Remove extra bloat before archiving
