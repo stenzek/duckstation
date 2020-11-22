@@ -25,8 +25,14 @@ constexpr bool USE_BLOCK_LINKING = true;
 #define USE_STATIC_CODE_BUFFER 1
 #endif
 
+#if defined(AARCH32)
+// Use a smaller code buffer size on AArch32 to have a better chance of being in range.
+static constexpr u32 RECOMPILER_CODE_CACHE_SIZE = 16 * 1024 * 1024;
+static constexpr u32 RECOMPILER_FAR_CODE_CACHE_SIZE = 8 * 1024 * 1024;
+#else
 static constexpr u32 RECOMPILER_CODE_CACHE_SIZE = 32 * 1024 * 1024;
-static constexpr u32 RECOMPILER_FAR_CODE_CACHE_SIZE = 32 * 1024 * 1024;
+static constexpr u32 RECOMPILER_FAR_CODE_CACHE_SIZE = 16 * 1024 * 1024;
+#endif
 static constexpr u32 CODE_WRITE_FAULT_THRESHOLD_FOR_SLOWMEM = 10;
 
 #ifdef USE_STATIC_CODE_BUFFER
