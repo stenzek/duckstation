@@ -93,15 +93,15 @@ union GPURenderCommand
   {
     switch (primitive)
     {
-    case GPUPrimitive::Polygon:
-      return shading_enable || (texture_enable && !raw_texture_enable);
+      case GPUPrimitive::Polygon:
+        return shading_enable || (texture_enable && !raw_texture_enable);
 
-    case GPUPrimitive::Line:
-      return true;
+      case GPUPrimitive::Line:
+        return true;
 
-    case GPUPrimitive::Rectangle:
-    default:
-      return false;
+      case GPUPrimitive::Rectangle:
+      default:
+        return false;
     }
   }
 };
@@ -175,24 +175,16 @@ union GPUDrawModeReg
   ALWAYS_INLINE u16 GetTexturePageBaseY() const { return ZeroExtend16(texture_page_y_base.GetValue()) * 256; }
 
   /// Returns true if the texture mode requires a palette.
-  bool IsUsingPalette() const { return (bits & (2 << 7)) == 0; }
+  ALWAYS_INLINE bool IsUsingPalette() const { return (bits & (2 << 7)) == 0; }
 
   /// Returns a rectangle comprising the texture page area.
-  Common::Rectangle<u32> GetTexturePageRectangle() const
+  ALWAYS_INLINE_RELEASE Common::Rectangle<u32> GetTexturePageRectangle() const
   {
     static constexpr std::array<u32, 4> texture_page_widths = {
-      {TEXTURE_PAGE_WIDTH / 4, TEXTURE_PAGE_WIDTH / 2, TEXTURE_PAGE_WIDTH, TEXTURE_PAGE_WIDTH} };
+      {TEXTURE_PAGE_WIDTH / 4, TEXTURE_PAGE_WIDTH / 2, TEXTURE_PAGE_WIDTH, TEXTURE_PAGE_WIDTH}};
     return Common::Rectangle<u32>::FromExtents(GetTexturePageBaseX(), GetTexturePageBaseY(),
-      texture_page_widths[static_cast<u8>(texture_mode.GetValue())],
-      TEXTURE_PAGE_HEIGHT);
-  }
-
-  /// Returns a rectangle comprising the texture palette area.
-  Common::Rectangle<u32> GetTexturePaletteRectangle() const
-  {
-    static constexpr std::array<u32, 4> palette_widths = { {16, 256, 0, 0} };
-    return Common::Rectangle<u32>::FromExtents(GetTexturePageBaseX(), GetTexturePageBaseY(),
-      palette_widths[static_cast<u8>(texture_mode.GetValue())], 1);
+                                               texture_page_widths[static_cast<u8>(texture_mode.GetValue())],
+                                               TEXTURE_PAGE_HEIGHT);
   }
 };
 
@@ -218,14 +210,14 @@ struct GPUTextureWindow
 };
 
 // 4x4 dither matrix.
-static constexpr s32 DITHER_MATRIX[DITHER_MATRIX_SIZE][DITHER_MATRIX_SIZE] = { {-4, +0, -3, +1},  // row 0
+static constexpr s32 DITHER_MATRIX[DITHER_MATRIX_SIZE][DITHER_MATRIX_SIZE] = {{-4, +0, -3, +1},  // row 0
                                                                               {+2, -2, +3, -1},  // row 1
                                                                               {-3, +1, -4, +0},  // row 2
-                                                                              {+4, -1, +2, -2} }; // row 3
+                                                                              {+4, -1, +2, -2}}; // row 3
 
 #ifdef _MSC_VER
 #pragma warning(push)
-#pragma warning(disable:4200) // warning C4200: nonstandard extension used: zero-sized array in struct/union
+#pragma warning(disable : 4200) // warning C4200: nonstandard extension used: zero-sized array in struct/union
 #endif
 
 enum class GPUBackendCommandType : u8

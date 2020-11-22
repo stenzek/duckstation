@@ -358,30 +358,30 @@ protected:
     BitField<u32, DMADirection, 29, 2> dma_direction;
     BitField<u32, bool, 31, 1> display_line_lsb;
 
-    bool IsMaskingEnabled() const
+    ALWAYS_INLINE bool IsMaskingEnabled() const
     {
       static constexpr u32 MASK = ((1 << 11) | (1 << 12));
       return ((bits & MASK) != 0);
     }
-    bool SkipDrawingToActiveField() const
+    ALWAYS_INLINE bool SkipDrawingToActiveField() const
     {
       static constexpr u32 MASK = (1 << 19) | (1 << 22) | (1 << 10);
       static constexpr u32 ACTIVE = (1 << 19) | (1 << 22);
       return ((bits & MASK) == ACTIVE);
     }
-    bool InInterleaved480iMode() const
+    ALWAYS_INLINE bool InInterleaved480iMode() const
     {
       static constexpr u32 ACTIVE = (1 << 19) | (1 << 22);
       return ((bits & ACTIVE) == ACTIVE);
     }
 
     // During transfer/render operations, if ((dst_pixel & mask_and) == 0) { pixel = src_pixel | mask_or }
-    u16 GetMaskAND() const
+    ALWAYS_INLINE u16 GetMaskAND() const
     {
       // return check_mask_before_draw ? 0x8000 : 0x0000;
       return Truncate16((bits << 3) & 0x8000);
     }
-    u16 GetMaskOR() const
+    ALWAYS_INLINE u16 GetMaskOR() const
     {
       // return set_mask_while_drawing ? 0x8000 : 0x0000;
       return Truncate16((bits << 4) & 0x8000);
@@ -409,13 +409,21 @@ protected:
     bool texture_page_changed;
     bool texture_window_changed;
 
-    bool IsTexturePageChanged() const { return texture_page_changed; }
-    void SetTexturePageChanged() { texture_page_changed = true; }
-    void ClearTexturePageChangedFlag() { texture_page_changed = false; }
+    /// Returns a rectangle comprising the texture palette area.
+    ALWAYS_INLINE_RELEASE Common::Rectangle<u32> GetTexturePaletteRectangle() const
+    {
+      static constexpr std::array<u32, 4> palette_widths = {{16, 256, 0, 0}};
+      return Common::Rectangle<u32>::FromExtents(texture_palette_x, texture_palette_y,
+                                                 palette_widths[static_cast<u8>(mode_reg.texture_mode.GetValue())], 1);
+    }
 
-    bool IsTextureWindowChanged() const { return texture_window_changed; }
-    void SetTextureWindowChanged() { texture_window_changed = true; }
-    void ClearTextureWindowChangedFlag() { texture_window_changed = false; }
+    ALWAYS_INLINE bool IsTexturePageChanged() const { return texture_page_changed; }
+    ALWAYS_INLINE void SetTexturePageChanged() { texture_page_changed = true; }
+    ALWAYS_INLINE void ClearTexturePageChangedFlag() { texture_page_changed = false; }
+
+    ALWAYS_INLINE bool IsTextureWindowChanged() const { return texture_window_changed; }
+    ALWAYS_INLINE void SetTextureWindowChanged() { texture_window_changed = true; }
+    ALWAYS_INLINE void ClearTextureWindowChangedFlag() { texture_window_changed = false; }
   } m_draw_mode = {};
 
   Common::Rectangle<u32> m_drawing_area{0, 0, VRAM_WIDTH, VRAM_HEIGHT};
