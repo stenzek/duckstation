@@ -466,7 +466,7 @@ void OpenGLHostDisplay::DestroyImGuiContext()
 
 bool OpenGLHostDisplay::CreateResources()
 {
-  m_use_gles2_draw_path = m_gl_context->IsGLES() && !GLAD_GL_ES_VERSION_3_0;
+  m_use_gles2_draw_path = (GetRenderAPI() == HostDisplay::RenderAPI::OpenGLES && !GLAD_GL_ES_VERSION_3_0);
   if (!m_use_gles2_draw_path)
   {
     static constexpr char fullscreen_quad_vertex_shader[] = R"(
