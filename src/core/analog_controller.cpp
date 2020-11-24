@@ -102,22 +102,7 @@ void AnalogController::SetButtonState(Button button, bool pressed)
   {
     // analog toggle
     if (pressed)
-    {
-      if (m_analog_locked)
-      {
-        g_host_interface->AddFormattedOSDMessage(
-          5.0f,
-          m_analog_mode ? g_host_interface->TranslateString("AnalogController",
-                                                            "Controller %u is locked to analog mode by the game.") :
-                          g_host_interface->TranslateString("AnalogController",
-                                                            "Controller %u is locked to digital mode by the game."),
-          m_index + 1u);
-      }
-      else
-      {
-        SetAnalogMode(!m_analog_mode);
-      }
-    }
+      m_analog_toggle_queued = true;
 
     return;
   }
@@ -158,6 +143,25 @@ float AnalogController::GetVibrationMotorStrength(u32 motor)
 
 void AnalogController::ResetTransferState()
 {
+  if (m_analog_toggle_queued)
+  {
+    if (m_analog_locked)
+    {
+      g_host_interface->AddFormattedOSDMessage(
+        5.0f,
+        m_analog_mode ?
+          g_host_interface->TranslateString("AnalogController", "Controller %u is locked to analog mode by the game.") :
+          g_host_interface->TranslateString("AnalogController", "Controller %u is locked to digital mode by the game."),
+        m_index + 1u);
+    }
+    else
+    {
+      SetAnalogMode(!m_analog_mode);
+    }
+
+    m_analog_toggle_queued = false;
+  }
+
   m_state = State::Idle;
 }
 

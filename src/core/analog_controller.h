@@ -149,6 +149,8 @@ private:
 
   std::array<u8, static_cast<u8>(Axis::Count)> m_axis_state{};
 
+  bool m_analog_toggle_queued = false;
+
   // buttons are active low
   u16 m_button_state = UINT16_C(0xFFFF);
 
