@@ -61,6 +61,10 @@
     <ClCompile Include="$(IntDir)moc_postprocessingshaderconfigwidget.cpp" />
     <ClCompile Include="$(IntDir)moc_postprocessingsettingswidget.cpp" />
     <ClCompile Include="inputbindingmonitor.cpp" />
+    <ClCompile Include="cheatmanagerdialog.cpp" />
+    <ClCompile Include="cheatcodeeditordialog.cpp" />
+    <ClCompile Include="$(IntDir)moc_cheatmanagerdialog.cpp" />
+    <ClCompile Include="$(IntDir)moc_cheatcodeeditordialog.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtutils.h" />
@@ -105,6 +109,8 @@
     <QtMoc Include="postprocessingchainconfigwidget.h" />
     <QtMoc Include="postprocessingshaderconfigwidget.h" />
     <QtMoc Include="postprocessingsettingswidget.h" />
+    <QtMoc Include="cheatmanagerdialog.h" />
+    <QtMoc Include="cheatcodeeditordialog.h" />
   </ItemGroup>
   <ItemGroup>
     <QtUi Include="consolesettingswidget.ui" />
@@ -124,6 +130,8 @@
     <QtUi Include="postprocessingchainconfigwidget.ui" />
     <QtUi Include="postprocessingsettingswidget.ui" />
     <QtUi Include="memorycardeditordialog.ui" />
+    <QtUi Include="cheatmanagerdialog.ui" />
+    <QtUi Include="cheatcodeeditordialog.ui" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="qt5.natvis" />

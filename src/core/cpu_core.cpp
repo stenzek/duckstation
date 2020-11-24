@@ -1600,14 +1600,10 @@ bool InterpretInstructionPGXP()
   return g_state.exception_raised;
 }
 
-#ifdef WITH_FASTMEM
-
 void UpdateFastmemMapping()
 {
-  Bus::UpdateFastmemViews(true, g_state.cop0_regs.sr.Isc);
+  Bus::UpdateFastmemViews(Bus::GetFastmemMode(), g_state.cop0_regs.sr.Isc);
 }
-
-#endif
 
 } // namespace Recompiler::Thunks
 

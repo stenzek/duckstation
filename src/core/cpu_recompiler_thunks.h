@@ -32,11 +32,7 @@ void UncheckedWriteMemoryByte(u32 address, u8 value);
 void UncheckedWriteMemoryHalfWord(u32 address, u16 value);
 void UncheckedWriteMemoryWord(u32 address, u32 value);
 
-#ifdef WITH_FASTMEM
-
 void UpdateFastmemMapping();
-
-#endif
 
 } // namespace Recompiler::Thunks
 

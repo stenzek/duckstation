@@ -788,12 +788,17 @@ static std::array<retro_core_option_definition, 45> s_option_definitions = {{
    "to performance. If games are running too fast, try enabling this option.",
    {{"true", "Enabled"}, {"false", "Disabled"}},
    "false"},
-  {"duckstation_CPU.Fastmem",
+  {"duckstation_CPU.FastmemMode",
    "CPU Recompiler Fast Memory Access",
    "Uses page faults to determine hardware memory accesses at runtime. Can provide a significant performance "
    "improvement in some games, but make the core more difficult to debug.",
-   {{"true", "Enabled"}, {"false", "Disabled"}},
-   "true"},
+   {{"Disabled", "Disabled (Slowest)"}, {"MMap", "MMap (Hardware, Fastest, 64-Bit Only)"}, {"LUT", "LUT (Faster)"}},
+#if defined(CPU_X64) || defined(CPU_AARCH64)
+   "MMap"
+#else
+   "LUT"
+#endif
+  },
   {},
 }};
 

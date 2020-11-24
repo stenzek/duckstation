@@ -425,7 +425,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetStringValue("CPU", "ExecutionMode", Settings::GetCPUExecutionModeName(Settings::DEFAULT_CPU_EXECUTION_MODE));
   si.SetBoolValue("CPU", "RecompilerMemoryExceptions", false);
   si.SetBoolValue("CPU", "ICache", false);
-  si.SetBoolValue("CPU", "Fastmem", true);
+  si.SetBoolValue("CPU", "FastmemMode", Settings::GetCPUFastmemModeName(Settings::DEFAULT_CPU_FASTMEM_MODE));
 
   si.SetStringValue("GPU", "Renderer", Settings::GetRendererName(Settings::DEFAULT_GPU_RENDERER));
   si.SetIntValue("GPU", "ResolutionScale", 1);
@@ -548,6 +548,15 @@ void HostInterface::FixIncompatibleSettings(bool display_osd_messages)
       g_settings.cpu_execution_mode = CPUExecutionMode::CachedInterpreter;
     }
   }
+
+#ifndef WITH_MMAP_FASTMEM
+  if (g_settings.cpu_fastmem_mode == CPUFastmemMode::MMap)
+  {
+    AddOSDMessage(
+      TranslateStdString("OSDMessage", "mmap fastmem is not available on this platform, using LUT instead."), 20.0f);
+    g_settings.cpu_fastmem_mode = CPUFastmemMode::LUT;
+  }
+#endif
 }
 
 void HostInterface::SaveSettings(SettingsInterface& si)
@@ -594,7 +603,7 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
       System::UpdateThrottlePeriod();
 
     if (g_settings.cpu_execution_mode != old_settings.cpu_execution_mode ||
-        g_settings.cpu_fastmem != old_settings.cpu_fastmem)
+        g_settings.cpu_fastmem_mode != old_settings.cpu_fastmem_mode)
     {
       AddFormattedOSDMessage(
         5.0f, TranslateString("OSDMessage", "Switching to %s CPU execution mode."),

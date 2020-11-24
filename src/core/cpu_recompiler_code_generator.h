@@ -52,9 +52,12 @@ public:
                bool signed_divide);
   void EmitInc(HostReg to_reg, RegSize size);
   void EmitDec(HostReg to_reg, RegSize size);
-  void EmitShl(HostReg to_reg, HostReg from_reg, RegSize size, const Value& amount_value, bool assume_amount_masked = true);
-  void EmitShr(HostReg to_reg, HostReg from_reg, RegSize size, const Value& amount_value, bool assume_amount_masked = true);
-  void EmitSar(HostReg to_reg, HostReg from_reg, RegSize size, const Value& amount_value, bool assume_amount_masked = true);
+  void EmitShl(HostReg to_reg, HostReg from_reg, RegSize size, const Value& amount_value,
+               bool assume_amount_masked = true);
+  void EmitShr(HostReg to_reg, HostReg from_reg, RegSize size, const Value& amount_value,
+               bool assume_amount_masked = true);
+  void EmitSar(HostReg to_reg, HostReg from_reg, RegSize size, const Value& amount_value,
+               bool assume_amount_masked = true);
   void EmitAnd(HostReg to_reg, HostReg from_reg, const Value& value);
   void EmitOr(HostReg to_reg, HostReg from_reg, const Value& value);
   void EmitXor(HostReg to_reg, HostReg from_reg, const Value& value);
@@ -77,19 +80,17 @@ public:
   void EmitLoadGlobalAddress(HostReg host_reg, const void* ptr);
 
   // Automatically generates an exception handler.
+  Value GetFastmemLoadBase();
+  Value GetFastmemStoreBase();
   Value EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const Value& address, const SpeculativeValue& address_spec,
                             RegSize size);
-#ifdef WITH_FASTMEM
   void EmitLoadGuestRAMFastmem(const Value& address, RegSize size, Value& result);
   void EmitLoadGuestMemoryFastmem(const CodeBlockInstruction& cbi, const Value& address, RegSize size, Value& result);
-#endif
   void EmitLoadGuestMemorySlowmem(const CodeBlockInstruction& cbi, const Value& address, RegSize size, Value& result,
                                   bool in_far_code);
   void EmitStoreGuestMemory(const CodeBlockInstruction& cbi, const Value& address, const SpeculativeValue& address_spec,
                             const Value& value);
-#ifdef WITH_FASTMEM
   void EmitStoreGuestMemoryFastmem(const CodeBlockInstruction& cbi, const Value& address, const Value& value);
-#endif
   void EmitStoreGuestMemorySlowmem(const CodeBlockInstruction& cbi, const Value& address, const Value& value,
                                    bool in_far_code);
 
@@ -249,6 +250,9 @@ private:
   bool m_current_instruction_was_branch_taken_dirty = false;
   bool m_load_delay_dirty = false;
   bool m_next_load_delay_dirty = false;
+
+  bool m_fastmem_load_base_in_register = false;
+  bool m_fastmem_store_base_in_register = false;
 
   //////////////////////////////////////////////////////////////////////////
   // Speculative Constants

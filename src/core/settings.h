@@ -76,7 +76,7 @@ struct Settings
   bool cpu_overclock_active = false;
   bool cpu_recompiler_memory_exceptions = false;
   bool cpu_recompiler_icache = false;
-  bool cpu_fastmem = true;
+  CPUFastmemMode cpu_fastmem_mode = CPUFastmemMode::Disabled;
 
   float emulation_speed = 1.0f;
   float fast_forward_speed = 0.0f;
@@ -188,7 +188,8 @@ struct Settings
 
   ALWAYS_INLINE bool IsUsingFastmem() const
   {
-    return (cpu_fastmem && cpu_execution_mode == CPUExecutionMode::Recompiler && !cpu_recompiler_memory_exceptions);
+    return (cpu_fastmem_mode != CPUFastmemMode::Disabled && cpu_execution_mode == CPUExecutionMode::Recompiler &&
+            !cpu_recompiler_memory_exceptions);
   }
 
   bool HasAnyPerGameMemoryCards() const;
@@ -227,6 +228,10 @@ struct Settings
   static const char* GetCPUExecutionModeName(CPUExecutionMode mode);
   static const char* GetCPUExecutionModeDisplayName(CPUExecutionMode mode);
 
+  static std::optional<CPUFastmemMode> ParseCPUFastmemMode(const char* str);
+  static const char* GetCPUFastmemModeName(CPUFastmemMode mode);
+  static const char* GetCPUFastmemModeDisplayName(CPUFastmemMode mode);
+
   static std::optional<GPURenderer> ParseRendererName(const char* str);
   static const char* GetRendererName(GPURenderer renderer);
   static const char* GetRendererDisplayName(GPURenderer renderer);
@@ -264,7 +269,17 @@ struct Settings
   static constexpr GPUTextureFilter DEFAULT_GPU_TEXTURE_FILTER = GPUTextureFilter::Nearest;
   static constexpr ConsoleRegion DEFAULT_CONSOLE_REGION = ConsoleRegion::Auto;
 
+#ifdef WITH_RECOMPILER
   static constexpr CPUExecutionMode DEFAULT_CPU_EXECUTION_MODE = CPUExecutionMode::Recompiler;
+#ifdef WITH_MMAP_FASTMEM
+  static constexpr CPUFastmemMode DEFAULT_CPU_FASTMEM_MODE = CPUFastmemMode::MMap;
+#else
+  static constexpr CPUFastmemMode DEFAULT_CPU_FASTMEM_MODE = CPUFastmemMode::LUT;
+#endif
+#else
+  static constexpr CPUExecutionMode DEFAULT_CPU_EXECUTION_MODE = CPUExecutionMode::CachedInterpreter;
+  static constexpr CPUFastmemMode DEFAULT_CPU_FASTMEM_MODE = CPUFastmemMode::Disabled;
+#endif
 
 #ifndef ANDROID
   static constexpr AudioBackend DEFAULT_AUDIO_BACKEND = AudioBackend::Cubeb;

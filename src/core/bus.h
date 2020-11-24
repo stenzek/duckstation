@@ -82,10 +82,15 @@ enum : size_t
   // Offsets within the memory arena.
   MEMORY_ARENA_RAM_OFFSET = 0,
 
-#ifdef WITH_FASTMEM
+#ifdef WITH_MMAP_FASTMEM
   // Fastmem region size is 4GB to cover the entire 32-bit address space.
-  FASTMEM_REGION_SIZE = UINT64_C(0x100000000)
+  FASTMEM_REGION_SIZE = UINT64_C(0x100000000),
 #endif
+
+  RAM_CODE_PAGE_COUNT = (RAM_SIZE + (HOST_PAGE_SIZE + 1)) / HOST_PAGE_SIZE,
+
+  FASTMEM_LUT_NUM_PAGES = 0x100000, // 0x100000000 >> 12
+  FASTMEM_LUT_NUM_SLOTS = FASTMEM_LUT_NUM_PAGES * 2,
 };
 
 bool Initialize();
@@ -93,15 +98,14 @@ void Shutdown();
 void Reset();
 bool DoState(StateWrapper& sw);
 
-#ifdef WITH_FASTMEM
-void UpdateFastmemViews(bool enabled, bool isolate_cache);
+CPUFastmemMode GetFastmemMode();
+void UpdateFastmemViews(CPUFastmemMode mode, bool isolate_cache);
 bool CanUseFastmemForAddress(VirtualMemoryAddress address);
-#endif
 
 void SetExpansionROM(std::vector<u8> data);
 void SetBIOS(const std::vector<u8>& image);
 
-extern std::bitset<CPU_CODE_CACHE_PAGE_COUNT> m_ram_code_bits;
+extern std::bitset<RAM_CODE_PAGE_COUNT> m_ram_code_bits;
 extern u8* g_ram;            // 2MB RAM
 extern u8 g_bios[BIOS_SIZE]; // 512K BIOS ROM
 
@@ -114,7 +118,7 @@ ALWAYS_INLINE static bool IsRAMAddress(PhysicalMemoryAddress address)
 /// Returns the code page index for a RAM address.
 ALWAYS_INLINE static u32 GetRAMCodePageIndex(PhysicalMemoryAddress address)
 {
-  return (address & RAM_MASK) / CPU_CODE_CACHE_PAGE_SIZE;
+  return (address & RAM_MASK) / HOST_PAGE_SIZE;
 }
 
 /// Returns true if the specified page contains code.
