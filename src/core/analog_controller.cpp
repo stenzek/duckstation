@@ -350,10 +350,12 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
 
     case State::ConfigModeSetMode:
     {
+      // If 0x43 "enter/leave config mode" is called from within config mode, return all zeros
       Log_DebugPrintf("0x%02x(%s) config mode", data_in, data_in == 1 ? "enter" : "leave");
+      bool prev_configuration_mode = m_configuration_mode;
       m_configuration_mode = (data_in == 1);
-      *data_out = Truncate8(m_button_state);
-      m_state = State::GetStateButtonsMSB;
+      *data_out = prev_configuration_mode ? 0x00 : Truncate8(m_button_state);
+      m_state = prev_configuration_mode ? State::Pad5Bytes : State::GetStateButtonsMSB;
       ack = true;
     }
     break;
