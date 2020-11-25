@@ -332,8 +332,8 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
       }
 
       *data_out = Truncate8(m_button_state >> 8);
-      m_state = m_analog_mode ? State::GetStateRightAxisX : State::Idle;
-      ack = m_analog_mode;
+      m_state = (m_analog_mode || m_configuration_mode) ? State::GetStateRightAxisX : State::Idle;
+      ack = m_analog_mode || m_configuration_mode;
     }
     break;
 
