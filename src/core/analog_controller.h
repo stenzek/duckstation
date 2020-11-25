@@ -99,6 +99,12 @@ private:
     GetAnalogMode5,
     GetAnalogMode6,
     UnlockRumbleIDMSB,
+    GetSetRumble1,
+    GetSetRumble2,
+    GetSetRumble3,
+    GetSetRumble4,
+    GetSetRumble5,
+    GetSetRumble6,
     Command46IDMSB,
     Command461,
     Command462,
@@ -132,6 +138,8 @@ private:
   void SetAnalogMode(bool enabled);
   void SetMotorState(u8 motor, u8 value);
   u8 GetExtraButtonMaskLSB() const;
+  void ResetRumbleConfig();
+  void SetMotorStateForConfigIndex(int index, u8 value);
 
   u32 m_index;
 
@@ -148,6 +156,21 @@ private:
   u8 m_command_param = 0;
 
   std::array<u8, static_cast<u8>(Axis::Count)> m_axis_state{};
+
+  enum : u8
+  {
+    LargeMotor = 0,
+    SmallMotor = 1
+  };
+
+  std::array<u8, 6> m_rumble_config{};
+  int m_rumble_config_large_motor_index = -1;
+  int m_rumble_config_small_motor_index = -1;
+
+  bool m_analog_toggle_queued = false;
+
+  // TODO: Set this with command 0x4D and increase response length in digital mode accordingly
+  u8 m_digital_mode_additional_bytes = 0;
 
   // buttons are active low
   u16 m_button_state = UINT16_C(0xFFFF);
