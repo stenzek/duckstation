@@ -64,7 +64,7 @@ public:
 
   virtual bool Initialize(HostDisplay* host_display);
   virtual void Reset();
-  virtual bool DoState(StateWrapper& sw);
+  virtual bool DoState(StateWrapper& sw, bool update_display);
 
   // Graphics API state reset/restore - call when drawing the UI etc.
   virtual void ResetGraphicsAPIState();

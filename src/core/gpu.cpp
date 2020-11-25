@@ -112,7 +112,7 @@ void GPU::SoftReset()
   UpdateCommandTickEvent();
 }
 
-bool GPU::DoState(StateWrapper& sw)
+bool GPU::DoState(StateWrapper& sw, bool update_display)
 {
   if (sw.IsReading())
   {
@@ -225,7 +225,9 @@ bool GPU::DoState(StateWrapper& sw)
     m_GPUSTAT.bits = old_GPUSTAT;
 
     UpdateCRTCConfig();
-    UpdateDisplay();
+    if (update_display)
+      UpdateDisplay();
+
     UpdateCRTCTickEvent();
     UpdateCommandTickEvent();
   }

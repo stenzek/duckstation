@@ -376,7 +376,7 @@ bool LibretroHostInterface::retro_serialize(void* data, size_t size)
 bool LibretroHostInterface::retro_unserialize(const void* data, size_t size)
 {
   std::unique_ptr<ByteStream> stream = ByteStream_CreateReadOnlyMemoryStream(data, static_cast<u32>(size));
-  if (!System::LoadState(stream.get()))
+  if (!System::LoadState(stream.get(), false))
   {
     Log_ErrorPrintf("Failed to load save state from memory stream");
     return false;
@@ -1229,15 +1229,22 @@ void LibretroHostInterface::HardwareRendererContextDestroy()
 void LibretroHostInterface::SwitchToSoftwareRenderer()
 {
   // keep the hw renderer around in case we need it later
+  // but keep it active until we've recreated the GPU so we can save the state
+  std::unique_ptr<HostDisplay> save_display;
   if (m_using_hardware_renderer)
   {
-    m_hw_render_display = std::move(m_display);
-    m_hw_render_display->DestroyResources();
+    save_display = std::move(m_display);
     m_using_hardware_renderer = false;
   }
 
   m_display = std::make_unique<LibretroHostDisplay>();
-  System::RecreateGPU(GPURenderer::Software);
+  System::RecreateGPU(GPURenderer::Software, false);
+
+  if (save_display)
+  {
+    save_display->DestroyResources();
+    m_hw_render_display = std::move(save_display);
+  }
 }
 
 bool LibretroHostInterface::DiskControlSetEjectState(bool ejected)

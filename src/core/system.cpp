@@ -57,8 +57,8 @@ static bool SetExpansionROM(const char* filename);
 /// Opens CD image, preloading if needed.
 static std::unique_ptr<CDImage> OpenCDImage(const char* path, bool force_preload);
 
-static bool DoLoadState(ByteStream* stream, bool force_software_renderer);
-static bool DoState(StateWrapper& sw);
+static bool DoLoadState(ByteStream* stream, bool force_software_renderer, bool update_display);
+static bool DoState(StateWrapper& sw, bool update_display);
 static bool CreateGPU(GPURenderer renderer);
 
 static bool Initialize(bool force_software_renderer);
@@ -486,14 +486,14 @@ std::optional<DiscRegion> GetRegionForPath(const char* image_path)
   return GetRegionForImage(cdi.get());
 }
 
-bool RecreateGPU(GPURenderer renderer)
+bool RecreateGPU(GPURenderer renderer, bool update_display /* = true*/)
 {
   g_gpu->RestoreGraphicsAPIState();
 
   // save current state
   std::unique_ptr<ByteStream> state_stream = ByteStream_CreateGrowableMemoryStream();
   StateWrapper sw(state_stream.get(), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
-  const bool state_valid = g_gpu->DoState(sw) && TimingEvents::DoState(sw);
+  const bool state_valid = g_gpu->DoState(sw, false) && TimingEvents::DoState(sw);
   if (!state_valid)
     Log_ErrorPrintf("Failed to save old GPU state when switching renderers");
 
@@ -515,7 +515,7 @@ bool RecreateGPU(GPURenderer renderer)
     state_stream->SeekAbsolute(0);
     sw.SetMode(StateWrapper::Mode::Read);
     g_gpu->RestoreGraphicsAPIState();
-    g_gpu->DoState(sw);
+    g_gpu->DoState(sw, update_display);
     TimingEvents::DoState(sw);
     g_gpu->ResetGraphicsAPIState();
   }
@@ -551,7 +551,7 @@ bool Boot(const SystemBootParameters& params)
 
   if (params.state_stream)
   {
-    if (!DoLoadState(params.state_stream.get(), params.force_software_renderer))
+    if (!DoLoadState(params.state_stream.get(), params.force_software_renderer, true))
     {
       Shutdown();
       return false;
@@ -828,7 +828,7 @@ bool CreateGPU(GPURenderer renderer)
   return true;
 }
 
-bool DoState(StateWrapper& sw)
+bool DoState(StateWrapper& sw, bool update_display)
 {
   if (!sw.DoMarker("System"))
     return false;
@@ -853,7 +853,7 @@ bool DoState(StateWrapper& sw)
     return false;
 
   g_gpu->RestoreGraphicsAPIState();
-  const bool gpu_result = sw.DoMarker("GPU") && g_gpu->DoState(sw);
+  const bool gpu_result = sw.DoMarker("GPU") && g_gpu->DoState(sw, update_display);
   g_gpu->ResetGraphicsAPIState();
   if (!gpu_result)
     return false;
@@ -934,15 +934,15 @@ void Reset()
   g_gpu->ResetGraphicsAPIState();
 }
 
-bool LoadState(ByteStream* state)
+bool LoadState(ByteStream* state, bool update_display)
 {
   if (IsShutdown())
     return false;
 
-  return DoLoadState(state, false);
+  return DoLoadState(state, false, update_display);
 }
 
-bool DoLoadState(ByteStream* state, bool force_software_renderer)
+bool DoLoadState(ByteStream* state, bool force_software_renderer, bool update_display)
 {
   SAVE_STATE_HEADER header;
   if (!state->Read2(&header, sizeof(header)))
@@ -1047,7 +1047,7 @@ bool DoLoadState(ByteStream* state, bool force_software_renderer)
     return false;
 
   StateWrapper sw(state, StateWrapper::Mode::Read, header.version);
-  if (!DoState(sw))
+  if (!DoState(sw, update_display))
     return false;
 
   if (s_state == State::Starting)
@@ -1114,7 +1114,7 @@ bool SaveState(ByteStream* state, u32 screenshot_size /* = 128 */)
     g_gpu->RestoreGraphicsAPIState();
 
     StateWrapper sw(state, StateWrapper::Mode::Write, SAVE_STATE_VERSION);
-    const bool result = DoState(sw);
+    const bool result = DoState(sw, false);
 
     g_gpu->ResetGraphicsAPIState();
 

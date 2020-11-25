@@ -95,9 +95,9 @@ void GPU_HW::Reset()
   SetFullVRAMDirtyRectangle();
 }
 
-bool GPU_HW::DoState(StateWrapper& sw)
+bool GPU_HW::DoState(StateWrapper& sw, bool update_display)
 {
-  if (!GPU::DoState(sw))
+  if (!GPU::DoState(sw, update_display))
     return false;
 
   // invalidate the whole VRAM read texture when loading state

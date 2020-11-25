@@ -33,7 +33,7 @@ public:
 
   virtual bool Initialize(HostDisplay* host_display) override;
   virtual void Reset() override;
-  virtual bool DoState(StateWrapper& sw) override;
+  virtual bool DoState(StateWrapper& sw, bool update_display) override;
 
   void UpdateResolutionScale() override final;
   std::tuple<u32, u32> GetEffectiveDisplayResolution() override final;
