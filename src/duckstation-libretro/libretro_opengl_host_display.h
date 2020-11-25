@@ -21,6 +21,7 @@ public:
   void DestroyRenderDevice() override;
 
   void ResizeRenderWindow(s32 new_window_width, s32 new_window_height) override;
+  bool ChangeRenderWindow(const WindowInfo& new_wi) override;
 
   void SetVSync(bool enabled) override;
 

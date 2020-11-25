@@ -1145,6 +1145,16 @@ void LibretroHostInterface::HardwareRendererContextReset()
 
 void LibretroHostInterface::SwitchToHardwareRenderer()
 {
+  struct retro_system_av_info avi;
+  g_libretro_host_interface.GetSystemAVInfo(&avi, true);
+
+  WindowInfo wi;
+  wi.type = WindowInfo::Type::Libretro;
+  wi.display_connection = &g_libretro_host_interface.m_hw_render_callback;
+  wi.surface_width = avi.geometry.base_width;
+  wi.surface_height = avi.geometry.base_height;
+  wi.surface_scale = 1.0f;
+
   // use the existing device if we just resized the window
   std::optional<GPURenderer> renderer;
   std::unique_ptr<HostDisplay> display = std::move(m_hw_render_display);
@@ -1152,10 +1162,15 @@ void LibretroHostInterface::SwitchToHardwareRenderer()
   {
     Log_InfoPrintf("Using existing hardware display");
     renderer = RenderAPIToRenderer(display->GetRenderAPI());
-    if (!display->CreateResources())
-      Panic("Failed to recreate resources after reinit");
+    if (!display->ChangeRenderWindow(wi) || !display->CreateResources())
+    {
+      Log_ErrorPrintf("Failed to recreate resources after reinit");
+      display->DestroyRenderDevice();
+      display.reset();
+    }
   }
-  else
+
+  if (!display)
   {
     renderer = RetroHwContextToRenderer(m_hw_render_callback.context_type);
     if (!renderer.has_value())
@@ -1184,16 +1199,6 @@ void LibretroHostInterface::SwitchToHardwareRenderer()
         Log_ErrorPrintf("Unhandled renderer '%s'", Settings::GetRendererName(renderer.value()));
         return;
     }
-
-    struct retro_system_av_info avi;
-    g_libretro_host_interface.GetSystemAVInfo(&avi, true);
-
-    WindowInfo wi;
-    wi.type = WindowInfo::Type::Libretro;
-    wi.display_connection = &g_libretro_host_interface.m_hw_render_callback;
-    wi.surface_width = avi.geometry.base_width;
-    wi.surface_height = avi.geometry.base_height;
-    wi.surface_scale = 1.0f;
     if (!display || !display->CreateRenderDevice(wi, {}, g_settings.gpu_use_debug_device) ||
         !display->InitializeRenderDevice(GetShaderCacheBasePath(), g_settings.gpu_use_debug_device))
     {

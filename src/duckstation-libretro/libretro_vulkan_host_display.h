@@ -18,6 +18,7 @@ public:
   void DestroyRenderDevice() override;
 
   void ResizeRenderWindow(s32 new_window_width, s32 new_window_height) override;
+  bool ChangeRenderWindow(const WindowInfo& new_wi) override;
 
   void SetVSync(bool enabled) override;
 
@@ -33,7 +34,7 @@ private:
 
   bool CheckFramebufferSize(u32 width, u32 height);
 
-  retro_hw_render_interface_vulkan m_ri;
+  retro_hw_render_interface_vulkan* m_ri = nullptr;
 
   Vulkan::Texture m_frame_texture;
   retro_vulkan_image m_frame_view = {};

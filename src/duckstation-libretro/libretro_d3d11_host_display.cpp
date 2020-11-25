@@ -71,6 +71,34 @@ void LibretroD3D11HostDisplay::ResizeRenderWindow(s32 new_window_width, s32 new_
   m_window_info.surface_height = static_cast<u32>(new_window_height);
 }
 
+bool LibretroD3D11HostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
+{
+  // Check that the device hasn't changed.
+  retro_hw_render_interface* ri = nullptr;
+  if (!g_retro_environment_callback(RETRO_ENVIRONMENT_GET_HW_RENDER_INTERFACE, &ri))
+  {
+    Log_ErrorPrint("Failed to get HW render interface");
+    return false;
+  }
+  else if (ri->interface_type != RETRO_HW_RENDER_INTERFACE_D3D11 ||
+           ri->interface_version != RETRO_HW_RENDER_INTERFACE_D3D11_VERSION)
+  {
+    Log_ErrorPrintf("Unexpected HW interface - type %u version %u", static_cast<unsigned>(ri->interface_type),
+                    static_cast<unsigned>(ri->interface_version));
+    return false;
+  }
+
+  const retro_hw_render_interface_d3d11* d3d11_ri = reinterpret_cast<const retro_hw_render_interface_d3d11*>(ri);
+  if (d3d11_ri->device != m_device.Get() || d3d11_ri->context != m_context.Get())
+  {
+    Log_ErrorPrintf("D3D device/context changed outside our control");
+    return false;
+  }
+
+  m_window_info = new_wi;
+  return true;
+}
+
 bool LibretroD3D11HostDisplay::Render()
 {
   const u32 resolution_scale = g_libretro_host_interface.GetResolutionScale();

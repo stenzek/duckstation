@@ -135,6 +135,12 @@ void LibretroOpenGLHostDisplay::ResizeRenderWindow(s32 new_window_width, s32 new
   m_window_info.surface_height = static_cast<u32>(new_window_height);
 }
 
+bool LibretroOpenGLHostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
+{
+  m_window_info = new_wi;
+  return true;
+}
+
 bool LibretroOpenGLHostDisplay::Render()
 {
   const GLuint fbo = static_cast<GLuint>(
