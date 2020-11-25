@@ -586,8 +586,8 @@ void SPU::WriteVoiceRegister(u32 offset, u16 value)
   DebugAssert(voice_index < 24);
 
   Voice& voice = m_voices[voice_index];
-  const bool voice_was_on = voice.IsOn();
-  if (voice_was_on || m_key_on_register & (1u << voice_index))
+  const u32 pending_key_on = m_key_on_register;
+  if (voice.IsOn() || pending_key_on & (1u << voice_index))
     m_tick_event->InvokeEarly();
 
   switch (reg_index)
@@ -649,9 +649,11 @@ void SPU::WriteVoiceRegister(u32 offset, u16 value)
 
     case 0x0E: // repeat address
     {
-      Log_DebugPrintf("SPU voice %u ADPCM repeat address <- 0x%04X", voice_index, value);
+      const bool ignore_loop_address = (pending_key_on & (1u << voice_index)) == 0 && !voice.IsOn();
+      Log_DebugPrintf("SPU voice %u ADPCM repeat address <- 0x%04X, ignoring block address = %s", voice_index, value,
+                      ignore_loop_address ? "yes" : "no");
       voice.regs.adpcm_repeat_address = value;
-      voice.ignore_loop_address = voice_was_on;
+      voice.ignore_loop_address |= ignore_loop_address;
     }
     break;
 
