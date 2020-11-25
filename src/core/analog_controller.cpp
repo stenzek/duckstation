@@ -22,6 +22,7 @@ ControllerType AnalogController::GetType() const
 
 void AnalogController::Reset()
 {
+  m_state = State::Idle;
   m_analog_mode = false;
   m_configuration_mode = false;
   m_command_param = 0;
