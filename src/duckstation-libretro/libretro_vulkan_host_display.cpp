@@ -76,7 +76,7 @@ static retro_hw_render_context_negotiation_interface_vulkan s_vulkan_context_neg
 
 bool LibretroVulkanHostDisplay::RequestHardwareRendererContext(retro_hw_render_callback* cb)
 {
-  cb->cache_context = true;
+  cb->cache_context = false;
   cb->bottom_left_origin = false;
   cb->context_type = RETRO_HW_CONTEXT_VULKAN;
   return g_retro_environment_callback(RETRO_ENVIRONMENT_SET_HW_RENDER, cb) &&

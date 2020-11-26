@@ -865,16 +865,15 @@ void LibretroHostInterface::UpdateSettings()
   {
     ReportMessage("Resolution changed, updating system AV info...");
 
-    // this will probably recreate the device... so save the state first by switching to software
-    if (m_using_hardware_renderer)
-      SwitchToSoftwareRenderer();
-
     UpdateSystemAVInfo(true);
 
-    if (!m_hw_render_callback_valid)
-      RequestHardwareRendererContext();
-    else if (!m_using_hardware_renderer)
-      SwitchToHardwareRenderer();
+    if (!g_settings.IsUsingSoftwareRenderer())
+    {
+      if (!m_hw_render_callback_valid)
+        RequestHardwareRendererContext();
+      else if (!m_using_hardware_renderer)
+        SwitchToHardwareRenderer();
+    }
 
     // Don't let the base class mess with the GPU.
     old_settings.gpu_resolution_scale = g_settings.gpu_resolution_scale;
@@ -1215,12 +1214,11 @@ void LibretroHostInterface::SwitchToHardwareRenderer()
 
 void LibretroHostInterface::HardwareRendererContextDestroy()
 {
+  Log_InfoPrintf("Hardware context destroyed");
+
   // switch back to software
   if (g_libretro_host_interface.m_using_hardware_renderer)
-  {
-    Log_InfoPrintf("Lost hardware renderer context, switching to software renderer");
     g_libretro_host_interface.SwitchToSoftwareRenderer();
-  }
 
   if (g_libretro_host_interface.m_hw_render_display)
   {
@@ -1233,6 +1231,8 @@ void LibretroHostInterface::HardwareRendererContextDestroy()
 
 void LibretroHostInterface::SwitchToSoftwareRenderer()
 {
+  Log_InfoPrintf("Switching to software renderer");
+
   // keep the hw renderer around in case we need it later
   // but keep it active until we've recreated the GPU so we can save the state
   std::unique_ptr<HostDisplay> save_display;

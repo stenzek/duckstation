@@ -21,7 +21,7 @@ void LibretroD3D11HostDisplay::SetVSync(bool enabled)
 
 bool LibretroD3D11HostDisplay::RequestHardwareRendererContext(retro_hw_render_callback* cb)
 {
-  cb->cache_context = true;
+  cb->cache_context = false;
   cb->bottom_left_origin = false;
   cb->context_type = RETRO_HW_CONTEXT_DIRECT3D;
   cb->version_major = 11;
