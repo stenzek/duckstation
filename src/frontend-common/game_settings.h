@@ -42,6 +42,7 @@ struct Entry
   std::optional<u32> dma_halt_ticks;
   std::optional<u32> gpu_fifo_size;
   std::optional<u32> gpu_max_run_ahead;
+  std::optional<float> gpu_pgxp_tolerance;
 
   // user settings
   std::optional<u32> cpu_overclock_numerator;
@@ -54,6 +55,8 @@ struct Entry
   std::optional<bool> display_integer_upscaling;
   std::optional<bool> display_force_4_3_for_24bit;
   std::optional<u32> gpu_resolution_scale;
+  std::optional<u32> gpu_multisamples;
+  std::optional<bool> gpu_per_sample_shading;
   std::optional<bool> gpu_true_color;
   std::optional<bool> gpu_scaled_dithering;
   std::optional<bool> gpu_force_ntsc_timings;

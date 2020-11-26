@@ -135,6 +135,9 @@ void GamePropertiesDialog::setupAdditionalUi()
   m_ui.userResolutionScale->addItem(tr("(unchanged)"));
   QtUtils::FillComboBoxWithResolutionScales(m_ui.userResolutionScale);
 
+  m_ui.userMSAAMode->addItem(tr("(unchanged)"));
+  QtUtils::FillComboBoxWithMSAAModes(m_ui.userMSAAMode);
+
   m_ui.userTextureFiltering->addItem(tr("(unchanged)"));
   for (u32 i = 0; i < static_cast<u32>(GPUTextureFilter::Count); i++)
   {
@@ -307,6 +310,11 @@ void GamePropertiesDialog::populateGameSettings()
     QSignalBlocker sb(m_ui.gpuMaxRunAhead);
     m_ui.gpuMaxRunAhead->setValue(static_cast<int>(gs.gpu_max_run_ahead.value()));
   }
+  if (gs.gpu_pgxp_tolerance.has_value())
+  {
+    QSignalBlocker sb(m_ui.gpuPGXPTolerance);
+    m_ui.gpuPGXPTolerance->setValue(static_cast<double>(gs.gpu_pgxp_tolerance.value()));
+  }
 
   if (gs.display_crop_mode.has_value())
   {
@@ -331,6 +339,21 @@ void GamePropertiesDialog::populateGameSettings()
   {
     QSignalBlocker sb(m_ui.userResolutionScale);
     m_ui.userResolutionScale->setCurrentIndex(0);
+  }
+
+  if (gs.gpu_multisamples.has_value() && gs.gpu_per_sample_shading.has_value())
+  {
+    QSignalBlocker sb(m_ui.userMSAAMode);
+    const QVariant current_msaa_mode(
+      QtUtils::GetMSAAModeValue(static_cast<uint>(gs.gpu_multisamples.value()), gs.gpu_per_sample_shading.has_value()));
+    const int current_msaa_index = m_ui.userMSAAMode->findData(current_msaa_mode);
+    if (current_msaa_index >= 0)
+      m_ui.userMSAAMode->setCurrentIndex((current_msaa_index >= 0) ? current_msaa_index : 0);
+  }
+  else
+  {
+    QSignalBlocker sb(m_ui.userMSAAMode);
+    m_ui.userMSAAMode->setCurrentIndex(0);
   }
 
   if (gs.gpu_texture_filter.has_value())
@@ -497,6 +520,23 @@ void GamePropertiesDialog::connectUi()
     saveGameSettings();
   });
 
+  connect(m_ui.userMSAAMode, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
+    if (index == 0)
+    {
+      m_game_settings.gpu_multisamples.reset();
+      m_game_settings.gpu_per_sample_shading.reset();
+    }
+    else
+    {
+      uint multisamples;
+      bool ssaa;
+      QtUtils::DecodeMSAAModeValue(m_ui.userMSAAMode->itemData(index), &multisamples, &ssaa);
+      m_game_settings.gpu_multisamples = static_cast<u32>(multisamples);
+      m_game_settings.gpu_per_sample_shading = ssaa;
+    }
+    saveGameSettings();
+  });
+
   connect(m_ui.userTextureFiltering, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
     if (index <= 0)
       m_game_settings.gpu_texture_filter.reset();
@@ -631,6 +671,13 @@ void GamePropertiesDialog::connectUi()
       m_game_settings.gpu_max_run_ahead.reset();
     else
       m_game_settings.gpu_max_run_ahead = static_cast<u32>(value);
+    saveGameSettings();
+  });
+  connect(m_ui.gpuPGXPTolerance, QOverload<double>::of(&QDoubleSpinBox::valueChanged), [this](double value) {
+    if (value < 0.0)
+      m_game_settings.gpu_pgxp_tolerance.reset();
+    else
+      m_game_settings.gpu_pgxp_tolerance = static_cast<float>(value);
     saveGameSettings();
   });
 }

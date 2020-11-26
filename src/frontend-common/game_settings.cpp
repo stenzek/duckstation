@@ -111,11 +111,13 @@ bool Entry::LoadFromStream(ByteStream* stream)
       !ReadOptionalFromStream(stream, &display_active_end_offset) ||
       !ReadOptionalFromStream(stream, &dma_max_slice_ticks) || !ReadOptionalFromStream(stream, &dma_halt_ticks) ||
       !ReadOptionalFromStream(stream, &gpu_fifo_size) || !ReadOptionalFromStream(stream, &gpu_max_run_ahead) ||
-      !ReadOptionalFromStream(stream, &display_crop_mode) || !ReadOptionalFromStream(stream, &display_aspect_ratio) ||
+      !ReadOptionalFromStream(stream, &gpu_pgxp_tolerance) || !ReadOptionalFromStream(stream, &display_crop_mode) ||
+      !ReadOptionalFromStream(stream, &display_aspect_ratio) ||
       !ReadOptionalFromStream(stream, &display_linear_upscaling) ||
       !ReadOptionalFromStream(stream, &display_integer_upscaling) ||
       !ReadOptionalFromStream(stream, &display_force_4_3_for_24bit) ||
-      !ReadOptionalFromStream(stream, &gpu_resolution_scale) || !ReadOptionalFromStream(stream, &gpu_true_color) ||
+      !ReadOptionalFromStream(stream, &gpu_resolution_scale) || !ReadOptionalFromStream(stream, &gpu_multisamples) ||
+      !ReadOptionalFromStream(stream, &gpu_per_sample_shading) || !ReadOptionalFromStream(stream, &gpu_true_color) ||
       !ReadOptionalFromStream(stream, &gpu_scaled_dithering) ||
       !ReadOptionalFromStream(stream, &gpu_force_ntsc_timings) ||
       !ReadOptionalFromStream(stream, &gpu_texture_filter) || !ReadOptionalFromStream(stream, &gpu_widescreen_hack) ||
@@ -156,11 +158,13 @@ bool Entry::SaveToStream(ByteStream* stream) const
          WriteOptionalToStream(stream, display_active_end_offset) &&
          WriteOptionalToStream(stream, dma_max_slice_ticks) && WriteOptionalToStream(stream, dma_halt_ticks) &&
          WriteOptionalToStream(stream, gpu_fifo_size) && WriteOptionalToStream(stream, gpu_max_run_ahead) &&
-         WriteOptionalToStream(stream, display_crop_mode) && WriteOptionalToStream(stream, display_aspect_ratio) &&
+         WriteOptionalToStream(stream, gpu_pgxp_tolerance) && WriteOptionalToStream(stream, display_crop_mode) &&
+         WriteOptionalToStream(stream, display_aspect_ratio) &&
          WriteOptionalToStream(stream, display_linear_upscaling) &&
          WriteOptionalToStream(stream, display_integer_upscaling) &&
          WriteOptionalToStream(stream, display_force_4_3_for_24bit) &&
-         WriteOptionalToStream(stream, gpu_resolution_scale) && WriteOptionalToStream(stream, gpu_true_color) &&
+         WriteOptionalToStream(stream, gpu_resolution_scale) && WriteOptionalToStream(stream, gpu_multisamples) &&
+         WriteOptionalToStream(stream, gpu_per_sample_shading) && WriteOptionalToStream(stream, gpu_true_color) &&
          WriteOptionalToStream(stream, gpu_scaled_dithering) && WriteOptionalToStream(stream, gpu_force_ntsc_timings) &&
          WriteOptionalToStream(stream, gpu_texture_filter) && WriteOptionalToStream(stream, gpu_widescreen_hack) &&
          WriteOptionalToStream(stream, gpu_pgxp) && WriteOptionalToStream(stream, controller_1_type) &&
@@ -209,6 +213,9 @@ static void ParseIniSection(Entry* entry, const char* section, const CSimpleIniA
   lvalue = ini.GetLongValue(section, "GPUMaxRunAhead", 0);
   if (lvalue > 0)
     entry->gpu_max_run_ahead = static_cast<u32>(lvalue);
+  float fvalue = static_cast<float>(ini.GetDoubleValue(section, "GPUPGXPTolerance", -1.0f));
+  if (fvalue >= 0.0f)
+    entry->gpu_pgxp_tolerance = fvalue;
 
   cvalue = ini.GetValue(section, "DisplayCropMode", nullptr);
   if (cvalue)
@@ -229,6 +236,12 @@ static void ParseIniSection(Entry* entry, const char* section, const CSimpleIniA
   cvalue = ini.GetValue(section, "GPUResolutionScale", nullptr);
   if (cvalue)
     entry->gpu_resolution_scale = StringUtil::FromChars<u32>(cvalue);
+  cvalue = ini.GetValue(section, "GPUMultisamples", nullptr);
+  if (cvalue)
+    entry->gpu_multisamples = StringUtil::FromChars<u32>(cvalue);
+  cvalue = ini.GetValue(section, "GPUPerSampleShading", nullptr);
+  if (cvalue)
+    entry->gpu_per_sample_shading = StringUtil::FromChars<bool>(cvalue);
   cvalue = ini.GetValue(section, "GPUTrueColor", nullptr);
   if (cvalue)
     entry->gpu_true_color = StringUtil::FromChars<bool>(cvalue);
@@ -302,6 +315,8 @@ static void StoreIniSection(const Entry& entry, const char* section, CSimpleIniA
     ini.SetLongValue(section, "GPUFIFOSize", static_cast<long>(entry.gpu_fifo_size.value()));
   if (entry.gpu_max_run_ahead.has_value())
     ini.SetLongValue(section, "GPUMaxRunAhead", static_cast<long>(entry.gpu_max_run_ahead.value()));
+  if (entry.gpu_pgxp_tolerance.has_value())
+    ini.SetDoubleValue(section, "GPUPGXPTolerance", static_cast<double>(entry.gpu_pgxp_tolerance.value()));
 
   if (entry.display_crop_mode.has_value())
     ini.SetValue(section, "DisplayCropMode", Settings::GetDisplayCropModeName(entry.display_crop_mode.value()));
@@ -319,6 +334,10 @@ static void StoreIniSection(const Entry& entry, const char* section, CSimpleIniA
 
   if (entry.gpu_resolution_scale.has_value())
     ini.SetLongValue(section, "GPUResolutionScale", static_cast<s32>(entry.gpu_resolution_scale.value()));
+  if (entry.gpu_multisamples.has_value())
+    ini.SetLongValue(section, "GPUMultisamples", static_cast<s32>(entry.gpu_multisamples.value()));
+  if (entry.gpu_per_sample_shading.has_value())
+    ini.SetValue(section, "GPUPerSampleShading", entry.gpu_per_sample_shading.value() ? "true" : "false");
   if (entry.gpu_true_color.has_value())
     ini.SetValue(section, "GPUTrueColor", entry.gpu_true_color.value() ? "true" : "false");
   if (entry.gpu_scaled_dithering.has_value())
@@ -475,6 +494,8 @@ void Entry::ApplySettings(bool display_osd_messages) const
     g_settings.gpu_fifo_size = gpu_fifo_size.value();
   if (gpu_max_run_ahead.has_value())
     g_settings.gpu_max_run_ahead = gpu_max_run_ahead.value();
+  if (gpu_pgxp_tolerance.has_value())
+    g_settings.gpu_pgxp_tolerance = gpu_pgxp_tolerance.value();
 
   if (display_crop_mode.has_value())
     g_settings.display_crop_mode = display_crop_mode.value();
@@ -489,6 +510,10 @@ void Entry::ApplySettings(bool display_osd_messages) const
 
   if (gpu_resolution_scale.has_value())
     g_settings.gpu_resolution_scale = gpu_resolution_scale.value();
+  if (gpu_multisamples.has_value())
+    g_settings.gpu_multisamples = gpu_multisamples.value();
+  if (gpu_per_sample_shading.has_value())
+    g_settings.gpu_per_sample_shading = gpu_per_sample_shading.value();
   if (gpu_true_color.has_value())
     g_settings.gpu_true_color = gpu_true_color.value();
   if (gpu_scaled_dithering.has_value())
