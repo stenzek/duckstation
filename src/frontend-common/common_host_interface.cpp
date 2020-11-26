@@ -2318,7 +2318,7 @@ void CommonHostInterface::StopDumpingAudio()
 }
 
 bool CommonHostInterface::SaveScreenshot(const char* filename /* = nullptr */, bool full_resolution /* = true */,
-                                         bool apply_aspect_ratio /* = true */)
+                                         bool apply_aspect_ratio /* = true */, bool compress_on_thread /* = true */)
 {
   if (System::IsShutdown())
     return false;
@@ -2342,7 +2342,14 @@ bool CommonHostInterface::SaveScreenshot(const char* filename /* = nullptr */, b
     filename = auto_filename.c_str();
   }
 
-  const bool screenshot_saved = m_display->WriteDisplayTextureToFile(filename, full_resolution, apply_aspect_ratio);
+  if (FileSystem::FileExists(filename))
+  {
+    AddFormattedOSDMessage(10.0f, TranslateString("OSDMessage", "Screenshot file '%s' already exists."), filename);
+    return false;
+  }
+
+  const bool screenshot_saved =
+    m_display->WriteDisplayTextureToFile(filename, full_resolution, apply_aspect_ratio, compress_on_thread);
   if (!screenshot_saved)
   {
     AddFormattedOSDMessage(10.0f, TranslateString("OSDMessage", "Failed to save screenshot to '%s'"), filename);
