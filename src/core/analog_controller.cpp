@@ -22,6 +22,7 @@ ControllerType AnalogController::GetType() const
 
 void AnalogController::Reset()
 {
+  m_state = State::Idle;
   m_analog_mode = false;
   m_configuration_mode = false;
   m_command_param = 0;
@@ -340,10 +341,10 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
       else if (m_configuration_mode && data_in == 0x4D)
       {
         m_rumble_unlocked = true;
-        SetMotorState(LargeMotor, 0);
-        SetMotorState(SmallMotor, 0);
         *data_out = Truncate8(GetID());
         m_state = State::UnlockRumbleIDMSB;
+        m_rumble_config_large_motor_index = -1;
+        m_rumble_config_small_motor_index = -1;
         ack = true;
       }
       else
@@ -532,7 +533,35 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
       REPLY_RUMBLE_CONFIG(State::GetSetRumble3, 2, true, State::GetSetRumble4);
       REPLY_RUMBLE_CONFIG(State::GetSetRumble4, 3, true, State::GetSetRumble5);
       REPLY_RUMBLE_CONFIG(State::GetSetRumble5, 4, true, State::GetSetRumble6);
-      REPLY_RUMBLE_CONFIG(State::GetSetRumble6, 5, false, State::Idle);
+
+    case State::GetSetRumble6:
+    {
+      DebugAssert(5 < m_rumble_config.size());
+      *data_out = m_rumble_config[5];
+      m_rumble_config[5] = data_in;
+
+      if (data_in == 0x00)
+        m_rumble_config_small_motor_index = 5;
+      else if (data_in == 0x01)
+        m_rumble_config_large_motor_index = 5;
+
+      if (m_rumble_config_large_motor_index == -1)
+        SetMotorState(LargeMotor, 0);
+
+      if (m_rumble_config_small_motor_index == -1)
+        SetMotorState(SmallMotor, 0);
+
+      if (m_rumble_config_large_motor_index == -1 && m_rumble_config_small_motor_index == -1)
+        m_rumble_unlocked = false;
+
+      // Unknown if motor config array forces 0xFF values if configured byte is not 0x00 or 0x01
+      // Unknown under what circumstances rumble is locked and legacy rumble is re-enabled, if even possible
+      // e.g. need all 0xFFs?
+
+      m_state = State::Idle;
+      ack = false;
+    }
+    break;
 
       FIXED_REPLY_STATE(State::Pad6Bytes, 0x00, true, State::Pad5Bytes);
       FIXED_REPLY_STATE(State::Pad5Bytes, 0x00, true, State::Pad4Bytes);
