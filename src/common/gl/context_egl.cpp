@@ -218,6 +218,9 @@ bool ContextEGL::CreatePBufferSurface()
 
 bool ContextEGL::CreateContext(const Version& version, EGLContext share_context)
 {
+  Log_DevPrintf(
+    "Trying version %u.%u (%s)", version.major_version, version.minor_version,
+    version.profile == Context::Profile::ES ? "ES" : (version.profile == Context::Profile::Core ? "Core" : "None"));
   int surface_attribs[16] = {
     EGL_RENDERABLE_TYPE,
     (version.profile == Profile::ES) ?
@@ -288,10 +291,22 @@ bool ContextEGL::CreateContext(const Version& version, EGLContext share_context)
   attribs[nattribs++] = EGL_NONE;
   attribs[nattribs++] = 0;
 
-  eglBindAPI((version.profile == Profile::ES) ? EGL_OPENGL_ES_API : EGL_OPENGL_API);
+  if (!eglBindAPI((version.profile == Profile::ES) ? EGL_OPENGL_ES_API : EGL_OPENGL_API))
+  {
+    Log_ErrorPrintf("eglBindAPI(%s) failed", (version.profile == Profile::ES) ? "EGL_OPENGL_ES_API" : "EGL_OPENGL_API");
+    return false;
+  }
+
   m_context = eglCreateContext(m_display, config, share_context, attribs);
   if (!m_context)
+  {
+    Log_ErrorPrintf("eglCreateContext() failed: %d", eglGetError());
     return false;
+  }
+
+  Log_InfoPrintf(
+    "Got version %u.%u (%s)", version.major_version, version.minor_version,
+    version.profile == Context::Profile::ES ? "ES" : (version.profile == Context::Profile::Core ? "Core" : "None"));
 
   m_config = config;
   m_version = version;
