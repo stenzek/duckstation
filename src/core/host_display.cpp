@@ -10,6 +10,7 @@
 #include <cerrno>
 #include <cmath>
 #include <cstring>
+#include <thread>
 #include <vector>
 Log_SetChannel(HostDisplay);
 
@@ -277,22 +278,15 @@ std::tuple<s32, s32> HostDisplay::ConvertWindowCoordinatesToDisplayCoordinates(s
   return std::make_tuple(static_cast<s32>(display_x), static_cast<s32>(display_y));
 }
 
-bool HostDisplay::WriteTextureToFile(const void* texture_handle, u32 x, u32 y, u32 width, u32 height,
-                                     const char* filename, bool clear_alpha /* = true */, bool flip_y /* = false */,
-                                     u32 resize_width /* = 0 */, u32 resize_height /* = 0 */)
+static bool CompressAndWriteTextureToFile(u32 width, u32 height, std::string filename, FileSystem::ManagedCFilePtr fp,
+                                          bool clear_alpha, bool flip_y, u32 resize_width, u32 resize_height,
+                                          std::vector<u32> texture_data, u32 texture_data_stride)
 {
-  std::vector<u32> texture_data(width * height);
-  u32 texture_data_stride = sizeof(u32) * width;
-  if (!DownloadTexture(texture_handle, x, y, width, height, texture_data.data(), texture_data_stride))
-  {
-    Log_ErrorPrintf("Texture download failed");
-    return false;
-  }
 
-  const char* extension = std::strrchr(filename, '.');
+  const char* extension = std::strrchr(filename.c_str(), '.');
   if (!extension)
   {
-    Log_ErrorPrintf("Unable to determine file extension for '%s'", filename);
+    Log_ErrorPrintf("Unable to determine file extension for '%s'", filename.c_str());
     return false;
   }
 
@@ -333,13 +327,6 @@ bool HostDisplay::WriteTextureToFile(const void* texture_handle, u32 x, u32 y, u
     texture_data_stride = resized_texture_stride;
   }
 
-  auto fp = FileSystem::OpenManagedCFile(filename, "wb");
-  if (!fp)
-  {
-    Log_ErrorPrintf("Can't open file '%s': errno %d", filename, errno);
-    return false;
-  }
-
   const auto write_func = [](void* context, void* data, int size) {
     std::fwrite(data, 1, size, static_cast<std::FILE*>(context));
   };
@@ -350,30 +337,62 @@ bool HostDisplay::WriteTextureToFile(const void* texture_handle, u32 x, u32 y, u
     result =
       (stbi_write_png_to_func(write_func, fp.get(), width, height, 4, texture_data.data(), texture_data_stride) != 0);
   }
-  else if (StringUtil::Strcasecmp(filename, ".jpg") == 0)
+  else if (StringUtil::Strcasecmp(filename.c_str(), ".jpg") == 0)
   {
     result = (stbi_write_jpg_to_func(write_func, fp.get(), width, height, 4, texture_data.data(), 95) != 0);
   }
-  else if (StringUtil::Strcasecmp(filename, ".tga") == 0)
+  else if (StringUtil::Strcasecmp(filename.c_str(), ".tga") == 0)
   {
     result = (stbi_write_tga_to_func(write_func, fp.get(), width, height, 4, texture_data.data()) != 0);
   }
-  else if (StringUtil::Strcasecmp(filename, ".bmp") == 0)
+  else if (StringUtil::Strcasecmp(filename.c_str(), ".bmp") == 0)
   {
     result = (stbi_write_bmp_to_func(write_func, fp.get(), width, height, 4, texture_data.data()) != 0);
   }
 
   if (!result)
   {
-    Log_ErrorPrintf("Unknown extension in filename '%s' or save error: '%s'", filename, extension);
+    Log_ErrorPrintf("Unknown extension in filename '%s' or save error: '%s'", filename.c_str(), extension);
     return false;
   }
 
   return true;
 }
 
+bool HostDisplay::WriteTextureToFile(const void* texture_handle, u32 x, u32 y, u32 width, u32 height,
+                                     const char* filename, bool clear_alpha /* = true */, bool flip_y /* = false */,
+                                     u32 resize_width /* = 0 */, u32 resize_height /* = 0 */,
+                                     bool compress_on_thread /* = false */)
+{
+  std::vector<u32> texture_data(width * height);
+  u32 texture_data_stride = sizeof(u32) * width;
+  if (!DownloadTexture(texture_handle, x, y, width, height, texture_data.data(), texture_data_stride))
+  {
+    Log_ErrorPrintf("Texture download failed");
+    return false;
+  }
+
+  auto fp = FileSystem::OpenManagedCFile(filename, "wb");
+  if (!fp)
+  {
+    Log_ErrorPrintf("Can't open file '%s': errno %d", filename, errno);
+    return false;
+  }
+
+  if (!compress_on_thread)
+  {
+    return CompressAndWriteTextureToFile(width, height, filename, std::move(fp), clear_alpha, flip_y, resize_width,
+                                         resize_height, std::move(texture_data), texture_data_stride);
+  }
+
+  std::thread compress_thread(CompressAndWriteTextureToFile, width, height, filename, std::move(fp), clear_alpha,
+                              flip_y, resize_width, resize_height, std::move(texture_data), texture_data_stride);
+  compress_thread.detach();
+  return true;
+}
+
 bool HostDisplay::WriteDisplayTextureToFile(const char* filename, bool full_resolution /* = true */,
-                                            bool apply_aspect_ratio /* = true */)
+                                            bool apply_aspect_ratio /* = true */, bool compress_on_thread /* = false */)
 {
   if (!m_display_texture_handle || m_display_texture_format != HostDisplayPixelFormat::RGBA8)
     return false;
@@ -436,7 +455,7 @@ bool HostDisplay::WriteDisplayTextureToFile(const char* filename, bool full_reso
 
   return WriteTextureToFile(m_display_texture_handle, m_display_texture_view_x, read_y, m_display_texture_view_width,
                             read_height, filename, true, flip_y, static_cast<u32>(resize_width),
-                            static_cast<u32>(resize_height));
+                            static_cast<u32>(resize_height), compress_on_thread);
 }
 
 bool HostDisplay::WriteDisplayTextureToBuffer(std::vector<u32>* buffer, u32 resize_width /* = 0 */,
