@@ -718,11 +718,21 @@ PGXP_value* PGXP_GetCachedVertex(short sx, short sy)
   return NULL;
 }
 
-static float TruncateVertexPosition(float p)
+static ALWAYS_INLINE_RELEASE float TruncateVertexPosition(float p)
 {
   const s32 int_part = static_cast<s32>(p);
   const float int_part_f = static_cast<float>(int_part);
   return static_cast<float>(static_cast<s16>(int_part << 5) >> 5) + (p - int_part_f);
+}
+
+static ALWAYS_INLINE_RELEASE bool IsWithinTolerance(float precise_x, float precise_y, int int_x, int int_y)
+{
+  const float tolerance = g_settings.gpu_pgxp_tolerance;
+  if (tolerance < 0.0f)
+    return true;
+
+  return (std::abs(precise_x - static_cast<float>(int_x)) <= tolerance &&
+          std::abs(precise_y - static_cast<float>(int_y)) <= tolerance);
 }
 
 bool GetPreciseVertex(u32 addr, u32 value, int x, int y, int xOffs, int yOffs, float* out_x, float* out_y, float* out_w)
@@ -734,9 +744,11 @@ bool GetPreciseVertex(u32 addr, u32 value, int x, int y, int xOffs, int yOffs, f
     *out_x = TruncateVertexPosition(vert->x) + static_cast<float>(xOffs);
     *out_y = TruncateVertexPosition(vert->y) + static_cast<float>(yOffs);
     *out_w = vert->z / 32768.0f;
-
-    // This value does not have a valid W coordinate
-    return ((vert->flags & VALID_2) == VALID_2);
+    if (IsWithinTolerance(*out_x, *out_y, x, y))
+    {
+      // check validity of z component
+      return ((vert->flags & VALID_2) == VALID_2);
+    }
   }
   else
   {
@@ -752,18 +764,20 @@ bool GetPreciseVertex(u32 addr, u32 value, int x, int y, int xOffs, int yOffs, f
       *out_x = TruncateVertexPosition(vert->x) + static_cast<float>(xOffs);
       *out_y = TruncateVertexPosition(vert->y) + static_cast<float>(yOffs);
       *out_w = vert->z / 32768.0f;
-      return false; // iCB: Getting the wrong w component causes too great an error when using perspective correction
-                    // so disable it
-    }
-    else
-    {
-      // no valid value can be found anywhere, use the native PSX data
-      *out_x = static_cast<float>(x);
-      *out_y = static_cast<float>(y);
-      *out_w = 1.0f;
-      return false;
+
+      if (IsWithinTolerance(*out_x, *out_y, x, y))
+      {
+        return false; // iCB: Getting the wrong w component causes too great an error when using perspective correction
+                      // so disable it
+      }
     }
   }
+
+  // no valid value can be found anywhere, use the native PSX data
+  *out_x = static_cast<float>(x);
+  *out_y = static_cast<float>(y);
+  *out_w = 1.0f;
+  return false;
 }
 
 // pgxp_cpu.c

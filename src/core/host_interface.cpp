@@ -446,6 +446,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("GPU", "PGXPVertexCache", false);
   si.SetBoolValue("GPU", "PGXPCPU", false);
   si.SetBoolValue("GPU", "PGXPPreserveProjFP", false);
+  si.SetFloatValue("GPU", "PGXPTolerance", -1.0f);
 
   si.SetStringValue("Display", "CropMode", Settings::GetDisplayCropModeName(Settings::DEFAULT_DISPLAY_CROP_MODE));
   si.SetIntValue("Display", "ActiveStartOffset", 0);

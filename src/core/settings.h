@@ -110,9 +110,9 @@ struct Settings
   bool gpu_pgxp_cpu = false;
   bool gpu_pgxp_preserve_proj_fp = false;
   DisplayCropMode display_crop_mode = DisplayCropMode::None;
+  DisplayAspectRatio display_aspect_ratio = DisplayAspectRatio::R4_3;
   s16 display_active_start_offset = 0;
   s16 display_active_end_offset = 0;
-  DisplayAspectRatio display_aspect_ratio = DisplayAspectRatio::R4_3;
   bool display_force_4_3_for_24bit = false;
   bool gpu_24bit_chroma_smoothing = false;
   bool display_linear_filtering = true;
@@ -125,6 +125,7 @@ struct Settings
   bool display_show_resolution = false;
   bool video_sync_enabled = true;
   float display_max_fps = 0.0f;
+  float gpu_pgxp_tolerance = -1.0f;
 
   bool cdrom_read_thread = true;
   bool cdrom_region_check = true;
