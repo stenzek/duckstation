@@ -82,6 +82,8 @@ struct Entry
   void ApplySettings(bool display_osd_messages) const;
 };
 
+#ifndef LIBRETRO
+
 class Database
 {
 public:
@@ -96,5 +98,7 @@ public:
 private:
   std::unordered_map<std::string, Entry> m_entries;
 };
+
+#endif
 
 }; // namespace GameSettings

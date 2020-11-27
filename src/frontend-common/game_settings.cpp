@@ -11,10 +11,12 @@
 #include <utility>
 Log_SetChannel(GameSettings);
 
+#ifndef LIBRETRO
 #ifdef WIN32
 #include "common/windows_headers.h"
 #endif
 #include "SimpleIni.h"
+#endif
 
 namespace GameSettings {
 
@@ -172,6 +174,8 @@ bool Entry::SaveToStream(ByteStream* stream) const
          WriteOptionalToStream(stream, memory_card_2_type) && WriteStringToStream(stream, memory_card_1_shared_path) &&
          WriteStringToStream(stream, memory_card_2_shared_path) && WriteStringToStream(stream, input_profile_name);
 }
+
+#ifndef LIBRETRO
 
 static void ParseIniSection(Entry* entry, const char* section, const CSimpleIniA& ini)
 {
@@ -466,6 +470,8 @@ void Database::SetEntry(const std::string& code, const std::string& name, const 
   else
     m_entries.emplace(code, entry);
 }
+
+#endif
 
 void Entry::ApplySettings(bool display_osd_messages) const
 {

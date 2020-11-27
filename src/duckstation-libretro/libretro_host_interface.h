@@ -4,6 +4,12 @@
 #include "libretro.h"
 #include <limits>
 #include <optional>
+#include <memory>
+
+namespace GameSettings
+{
+struct Entry;
+}
 
 class LibretroHostInterface : public HostInterface
 {
@@ -50,6 +56,7 @@ protected:
   std::unique_ptr<AudioStream> CreateAudioStream(AudioBackend backend) override;
   void OnSystemDestroyed() override;
   void CheckForSettingsChanges(const Settings& old_settings) override;
+  void OnRunningGameChanged() override;
 
 private:
   bool SetCoreOptions();
@@ -67,6 +74,9 @@ private:
   void GetSystemAVInfo(struct retro_system_av_info* info, bool use_resolution_scale);
   void UpdateGeometry();
   void UpdateLogging();
+
+  bool UpdateGameSettings();
+  void ApplyGameSettings();
 
   // Hardware renderer setup.
   bool RequestHardwareRendererContext();
@@ -88,6 +98,9 @@ private:
   static bool RETRO_CALLCONV DiskControlGetImagePath(unsigned index, char* path, size_t len);
   static bool RETRO_CALLCONV DiskControlGetImageLabel(unsigned index, char* label, size_t len);
 
+  std::unique_ptr<GameSettings::Entry> m_game_settings;
+  float m_last_aspect_ratio = 4.0f / 3.0f;
+
   retro_hw_render_callback m_hw_render_callback = {};
   std::unique_ptr<HostDisplay> m_hw_render_display;
   bool m_hw_render_callback_valid = false;
@@ -97,8 +110,6 @@ private:
   retro_rumble_interface m_rumble_interface = {};
   bool m_rumble_interface_valid = false;
   bool m_supports_input_bitmasks = false;
-
-  float m_last_aspect_ratio = 4.0f / 3.0f;
 };
 
 extern LibretroHostInterface g_libretro_host_interface;

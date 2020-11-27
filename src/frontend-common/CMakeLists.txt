@@ -1,4 +1,6 @@
 add_library(frontend-common
+  game_settings.cpp
+  game_settings.h
   opengl_host_display.cpp
   opengl_host_display.h
   vulkan_host_display.cpp
@@ -42,8 +44,6 @@ if(NOT BUILD_LIBRETRO_CORE)
     cubeb_audio_stream.h
     game_list.cpp
     game_list.h
-    game_settings.cpp
-    game_settings.h
     icon.cpp
     icon.h
     imgui_styles.cpp
