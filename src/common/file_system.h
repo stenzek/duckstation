@@ -175,6 +175,9 @@ std::optional<std::string> ReadFileToString(const char* filename);
 bool WriteBinaryFile(const char* filename, const void* data, size_t data_length);
 bool WriteFileToString(const char* filename, const std::string_view& sv);
 
+std::string ReadStreamToString(ByteStream* stream, bool seek_to_start = true);
+bool WriteStreamToString(const std::string_view& sv, ByteStream* stream);
+
 // creates a directory in the local filesystem
 // if the directory already exists, the return value will be true.
 // if Recursive is specified, all parent directories will be created

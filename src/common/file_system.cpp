@@ -496,6 +496,39 @@ bool WriteFileToString(const char* filename, const std::string_view& sv)
   return true;
 }
 
+std::string ReadStreamToString(ByteStream* stream, bool seek_to_start /* = true */)
+{
+  u64 pos = stream->GetPosition();
+  u64 size = stream->GetSize();
+  if (pos > 0 && seek_to_start)
+  {
+    if (!stream->SeekAbsolute(0))
+      return {};
+
+    pos = 0;
+  }
+
+  Assert(size >= pos);
+  size -= pos;
+  if (size == 0 || size > std::numeric_limits<u32>::max())
+    return {};
+
+  std::string ret;
+  ret.resize(static_cast<size_t>(size));
+  if (!stream->Read2(ret.data(), static_cast<u32>(size)))
+    return {};
+
+  return ret;
+}
+
+bool WriteStreamToString(const std::string_view& sv, ByteStream* stream)
+{
+  if (sv.size() > std::numeric_limits<u32>::max())
+    return false;
+
+  return stream->Write2(sv.data(), static_cast<u32>(sv.size()));
+}
+
 void BuildOSPath(char* Destination, u32 cbDestination, const char* Path)
 {
   u32 i;
@@ -1250,7 +1283,7 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
     FILESYSTEM_FIND_DATA outData;
     outData.Attributes = 0;
 
-#if defined (__HAIKU__) || defined (__APPLE__)
+#if defined(__HAIKU__) || defined(__APPLE__)
     struct stat sDir;
     if (stat(full_path, &sDir) < 0)
       continue;
@@ -1347,7 +1380,7 @@ bool StatFile(const char* Path, FILESYSTEM_STAT_DATA* pStatData)
     return false;
 
     // stat file
-#if defined (__HAIKU__) || defined (__APPLE__)
+#if defined(__HAIKU__) || defined(__APPLE__)
   struct stat sysStatData;
   if (stat(Path, &sysStatData) < 0)
 #else
@@ -1381,7 +1414,7 @@ bool FileExists(const char* Path)
     return false;
 
     // stat file
-#if defined (__HAIKU__) || defined (__APPLE__)
+#if defined(__HAIKU__) || defined(__APPLE__)
   struct stat sysStatData;
   if (stat(Path, &sysStatData) < 0)
 #else
@@ -1403,7 +1436,7 @@ bool DirectoryExists(const char* Path)
     return false;
 
     // stat file
-#if defined (__HAIKU__) || defined (__APPLE__)
+#if defined(__HAIKU__) || defined(__APPLE__)
   struct stat sysStatData;
   if (stat(Path, &sysStatData) < 0)
 #else
