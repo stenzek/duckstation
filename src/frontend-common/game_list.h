@@ -100,8 +100,8 @@ public:
   void UpdateGameSettings(const std::string& filename, const std::string& game_code, const std::string& game_title,
                           const GameSettings::Entry& new_entry, bool save_to_list = true);
 
-  std::string GetCoverImagePathForEntry(const GameListEntry* entry);
-  std::string GetNewCoverImagePathForEntry(const GameListEntry* entry, const char* new_filename);
+  std::string GetCoverImagePathForEntry(const GameListEntry* entry) const;
+  std::string GetNewCoverImagePathForEntry(const GameListEntry* entry, const char* new_filename) const;
 
 private:
   enum : u32

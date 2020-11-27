@@ -1128,7 +1128,7 @@ void GameList::UpdateGameSettings(const std::string& filename, const std::string
     m_game_settings.SetEntry(game_code, game_title, new_entry, m_user_game_settings_filename.c_str());
 }
 
-std::string GameList::GetCoverImagePathForEntry(const GameListEntry* entry)
+std::string GameList::GetCoverImagePathForEntry(const GameListEntry* entry) const
 {
   static constexpr std::array<const char*, 3> extensions = {{"jpg", "jpeg", "png"}};
 
@@ -1171,7 +1171,7 @@ std::string GameList::GetCoverImagePathForEntry(const GameListEntry* entry)
   return std::string();
 }
 
-std::string GameList::GetNewCoverImagePathForEntry(const GameListEntry* entry, const char* new_filename)
+std::string GameList::GetNewCoverImagePathForEntry(const GameListEntry* entry, const char* new_filename) const
 {
   const char* extension = std::strrchr(new_filename, '.');
   if (!extension)
