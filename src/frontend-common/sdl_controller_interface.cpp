@@ -30,7 +30,7 @@ bool SDLControllerInterface::Initialize(CommonHostInterface* host_interface)
   FrontendCommon::EnsureSDLInitialized();
 
   const std::string gcdb_file_name = GetGameControllerDBFileName();
-  if (FileSystem::FileExists(gcdb_file_name.c_str()))
+  if (!gcdb_file_name.empty())
   {
     Log_InfoPrintf("Loading game controller mappings from '%s'", gcdb_file_name.c_str());
     if (SDL_GameControllerAddMappingsFromFile(gcdb_file_name.c_str()) < 0)
@@ -66,7 +66,17 @@ void SDLControllerInterface::Shutdown()
 
 std::string SDLControllerInterface::GetGameControllerDBFileName() const
 {
-  return m_host_interface->GetUserDirectoryRelativePath("gamecontrollerdb.txt");
+  // prefer the userdir copy
+  std::string filename(m_host_interface->GetUserDirectoryRelativePath("gamecontrollerdb.txt"));
+  if (FileSystem::FileExists(filename.c_str()))
+    return filename;
+
+  filename =
+    m_host_interface->GetProgramDirectoryRelativePath("database" FS_OSPATH_SEPARATOR_STR "gamecontrollerdb.txt");
+  if (FileSystem::FileExists(filename.c_str()))
+    return filename;
+
+  return {};
 }
 
 void SDLControllerInterface::PollEvents()
