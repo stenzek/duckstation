@@ -282,12 +282,12 @@ void GPU_SW::CopyOut15Bit(u32 src_x, u32 src_y, u32 width, u32 height, u32 field
     {
       const u16* src_row_ptr = &m_vram_ptr[(src_y % VRAM_HEIGHT) * VRAM_WIDTH];
       OutputPixelType* dst_row_ptr = reinterpret_cast<OutputPixelType*>(dst_ptr);
+
       for (u32 col = src_x; col < end_x; col++)
-      {
         *(dst_row_ptr++) = VRAM16ToOutput<display_format, OutputPixelType>(src_row_ptr[col % VRAM_WIDTH]);
-        src_y += (1 << interleaved_shift);
-        dst_ptr += dst_stride;
-      }
+
+      src_y += (1 << interleaved_shift);
+      dst_ptr += dst_stride;
     }
   }
 
