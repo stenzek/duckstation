@@ -85,6 +85,7 @@ public:
   const GameListCompatibilityEntry* GetCompatibilityEntryForCode(const std::string& code) const;
 
   void SetCacheFilename(std::string filename) { m_cache_filename = std::move(filename); }
+  void SetUserDatabaseFilename(std::string filename) { m_user_database_filename = std::move(filename); }
   void SetUserCompatibilityListFilename(std::string filename) { m_user_compatibility_list_filename = std::move(filename); }
   void SetUserGameSettingsFilename(std::string filename) { m_user_game_settings_filename = std::move(filename); }
   void SetSearchDirectoriesFromSettings(SettingsInterface& si);
@@ -159,6 +160,7 @@ private:
 
   std::vector<DirectoryEntry> m_search_directories;
   std::string m_cache_filename;
+  std::string m_user_database_filename;
   std::string m_user_compatibility_list_filename;
   std::string m_user_game_settings_filename;
   bool m_database_load_tried = false;

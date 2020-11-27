@@ -737,6 +737,22 @@ void GameList::LoadDatabase()
   m_database_load_tried = true;
 
   tinyxml2::XMLDocument doc;
+  if (FileSystem::FileExists(m_user_database_filename.c_str()))
+  {
+    std::unique_ptr<ByteStream> stream =
+      FileSystem::OpenFile(m_user_database_filename.c_str(), BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
+    if (stream)
+    {
+      const std::string xml(FileSystem::ReadStreamToString(stream.get()));
+      tinyxml2::XMLError error = doc.Parse(xml.data(), xml.size());
+      if (error != tinyxml2::XML_SUCCESS)
+      {
+        Log_ErrorPrintf("Failed to parse redump dat: %s", tinyxml2::XMLDocument::ErrorIDToName(error));
+        doc.Clear();
+      }
+    }
+  }
+  if (!doc.RootElement())
   {
     std::unique_ptr<ByteStream> stream = g_host_interface->OpenPackageFile(
       "database" FS_OSPATH_SEPARATOR_STR "redump.dat", BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);

@@ -145,11 +145,8 @@ void GameListSettingsWidget::onUpdateRedumpDatabaseButtonClicked()
     return;
   }
 
-  if (downloadRedumpDatabase(
-        m_host_interface->getUserDirectoryRelativePath("database" FS_OSPATH_SEPARATOR_STR "redump.dat")))
-  {
+  if (downloadRedumpDatabase(m_host_interface->getUserDirectoryRelativePath("redump.dat")))
     m_host_interface->refreshGameList(true, true);
-  }
 }
 
 static bool ExtractRedumpDatabase(const QByteArray& data, const QString& destination_path)

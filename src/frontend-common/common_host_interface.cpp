@@ -70,7 +70,8 @@ bool CommonHostInterface::Initialize()
 
   m_game_list = std::make_unique<GameList>();
   m_game_list->SetCacheFilename(GetUserDirectoryRelativePath("cache/gamelist.cache"));
-  m_game_list->SetUserCompatibilityListFilename(GetProgramDirectoryRelativePath("compatibility.xml"));
+  m_game_list->SetUserDatabaseFilename(GetUserDirectoryRelativePath("redump.dat"));
+  m_game_list->SetUserCompatibilityListFilename(GetUserDirectoryRelativePath("compatibility.xml"));
   m_game_list->SetUserGameSettingsFilename(GetUserDirectoryRelativePath("gamesettings.ini"));
 
   m_save_state_selector_ui = std::make_unique<FrontendCommon::SaveStateSelectorUI>(this);
