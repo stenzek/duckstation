@@ -864,6 +864,12 @@ std::string LibretroHostInterface::GetBIOSDirectory()
     return system_directory;
 }
 
+std::unique_ptr<ByteStream> LibretroHostInterface::OpenPackageFile(const char* path, u32 flags)
+{
+  Log_ErrorPrintf("Ignoring request for package file '%s'", path);
+  return {};
+}
+
 void LibretroHostInterface::LoadSettings()
 {
   LibretroSettingsInterface si;

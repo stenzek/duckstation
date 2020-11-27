@@ -190,6 +190,10 @@ public:
   /// Requests a resize to a multiple of the render window size.
   bool RequestRenderWindowScale(float scale);
 
+  /// Opens a file in the DuckStation "package".
+  /// This is the APK for Android builds, or the program directory for standalone builds.
+  virtual std::unique_ptr<ByteStream> OpenPackageFile(const char* path, u32 flags) override;
+
 protected:
   enum : u32
   {

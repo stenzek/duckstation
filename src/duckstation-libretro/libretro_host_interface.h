@@ -33,6 +33,7 @@ public:
   std::string GetShaderCacheBasePath() const override;
   std::string GetStringSettingValue(const char* section, const char* key, const char* default_value = "") override;
   std::string GetBIOSDirectory() override;
+  std::unique_ptr<ByteStream> OpenPackageFile(const char* path, u32 flags) override;
 
   bool UpdateSystemAVInfo(bool use_resolution_scale);
 

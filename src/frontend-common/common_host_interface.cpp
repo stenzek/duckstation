@@ -70,9 +70,7 @@ bool CommonHostInterface::Initialize()
 
   m_game_list = std::make_unique<GameList>();
   m_game_list->SetCacheFilename(GetUserDirectoryRelativePath("cache/gamelist.cache"));
-  m_game_list->SetDatabaseFilename(GetUserDirectoryRelativePath("cache/redump.dat"));
-  m_game_list->SetCompatibilityFilename(GetProgramDirectoryRelativePath("database/compatibility.xml"));
-  m_game_list->SetGameSettingsFilename(GetProgramDirectoryRelativePath("database/gamesettings.ini"));
+  m_game_list->SetUserCompatibilityListFilename(GetProgramDirectoryRelativePath("compatibility.xml"));
   m_game_list->SetUserGameSettingsFilename(GetUserDirectoryRelativePath("gamesettings.ini"));
 
   m_save_state_selector_ui = std::make_unique<FrontendCommon::SaveStateSelectorUI>(this);
@@ -2611,6 +2609,16 @@ bool CommonHostInterface::RequestRenderWindowScale(float scale)
     std::max<u32>(static_cast<u32>(std::ceil(static_cast<float>(m_display->GetDisplayHeight()) * y_scale * scale)), 1);
 
   return RequestRenderWindowSize(static_cast<s32>(requested_width), static_cast<s32>(requested_height));
+}
+
+std::unique_ptr<ByteStream> CommonHostInterface::OpenPackageFile(const char* path, u32 flags)
+{
+  const u32 allowed_flags = (BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_SEEKABLE | BYTESTREAM_OPEN_STREAMED);
+  const std::string full_path(
+    StringUtil::StdStringFromFormat("%s" FS_OSPATH_SEPARATOR_STR "%s", m_program_directory.c_str(), path));
+  const u32 real_flags = (flags & allowed_flags) | BYTESTREAM_OPEN_READ;
+  Log_DevPrintf("Requesting package file '%s'", path);
+  return FileSystem::OpenFile(full_path.c_str(), real_flags);
 }
 
 #ifdef WITH_DISCORD_PRESENCE
