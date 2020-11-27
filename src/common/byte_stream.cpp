@@ -700,6 +700,54 @@ GrowableMemoryByteStream::~GrowableMemoryByteStream()
     std::free(m_pPrivateMemory);
 }
 
+void GrowableMemoryByteStream::Resize(u32 new_size)
+{
+  if (new_size > m_iMemorySize)
+    ResizeMemory(new_size);
+
+  m_iSize = new_size;
+}
+
+void GrowableMemoryByteStream::ResizeMemory(u32 new_size)
+{
+  if (new_size == m_iMemorySize)
+    return;
+
+  if (m_pPrivateMemory == nullptr)
+  {
+    m_pPrivateMemory = (u8*)std::malloc(new_size);
+    std::memcpy(m_pPrivateMemory, m_pMemory, m_iSize);
+    m_pMemory = m_pPrivateMemory;
+    m_iMemorySize = new_size;
+  }
+  else
+  {
+    m_pPrivateMemory = m_pMemory = (u8*)std::realloc(m_pPrivateMemory, new_size);
+    m_iMemorySize = new_size;
+  }
+}
+
+void GrowableMemoryByteStream::EnsureSpace(u32 space)
+{
+  if ((m_iSize + space) >= m_iMemorySize)
+    return;
+
+  Grow((m_iSize + space) - m_iMemorySize);
+}
+
+void GrowableMemoryByteStream::ShrinkToFit()
+{
+  if (!m_pPrivateMemory || m_iSize == m_iMemorySize)
+    return;
+
+  u8* new_ptr = static_cast<u8*>(std::realloc(m_pPrivateMemory, m_iSize));
+  if (new_ptr)
+  {
+    m_pPrivateMemory = new_ptr;
+    m_iMemorySize = m_iSize;
+  }
+}
+
 bool GrowableMemoryByteStream::ReadByte(u8* pDestByte)
 {
   if (m_iPosition < m_iSize)
@@ -819,18 +867,7 @@ bool GrowableMemoryByteStream::Discard()
 void GrowableMemoryByteStream::Grow(u32 MinimumGrowth)
 {
   u32 NewSize = std::max(m_iMemorySize + MinimumGrowth, m_iMemorySize * 2);
-  if (m_pPrivateMemory == nullptr)
-  {
-    m_pPrivateMemory = (u8*)std::malloc(NewSize);
-    std::memcpy(m_pPrivateMemory, m_pMemory, m_iSize);
-    m_pMemory = m_pPrivateMemory;
-    m_iMemorySize = NewSize;
-  }
-  else
-  {
-    m_pPrivateMemory = m_pMemory = (u8*)std::realloc(m_pPrivateMemory, NewSize);
-    m_iMemorySize = NewSize;
-  }
+  ResizeMemory(NewSize);
 }
 
 #if defined(_MSC_VER)
