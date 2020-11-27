@@ -1,10 +1,14 @@
 package com.github.stenzek.duckstation;
 
 import android.content.Context;
+import android.content.res.AssetManager;
 import android.os.Environment;
 import android.util.Log;
 import android.view.Surface;
 import android.widget.Toast;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 public class AndroidHostInterface {
     public final static int DISPLAY_ALIGNMENT_TOP_OR_LEFT = 0;
@@ -28,6 +32,14 @@ public class AndroidHostInterface {
 
     public void reportMessage(String message) {
         Toast.makeText(mContext, message, Toast.LENGTH_SHORT).show();
+    }
+
+    public InputStream openAssetStream(String path) {
+        try {
+            return mContext.getAssets().open(path, AssetManager.ACCESS_STREAMING);
+        } catch (IOException e) {
+            return null;
+        }
     }
 
     public native boolean isEmulationThreadRunning();

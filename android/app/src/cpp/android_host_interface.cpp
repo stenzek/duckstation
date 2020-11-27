@@ -35,6 +35,7 @@ static jmethodID s_AndroidHostInterface_constructor;
 static jfieldID s_AndroidHostInterface_field_mNativePointer;
 static jmethodID s_AndroidHostInterface_method_reportError;
 static jmethodID s_AndroidHostInterface_method_reportMessage;
+static jmethodID s_AndroidHostInterface_method_openAssetStream;
 static jmethodID s_EmulationActivity_method_reportError;
 static jmethodID s_EmulationActivity_method_reportMessage;
 static jmethodID s_EmulationActivity_method_onEmulationStarted;
@@ -77,6 +78,36 @@ std::string JStringToString(JNIEnv* env, jstring str)
   env->ReleaseStringUTFChars(str, data);
 
   return ret;
+}
+
+std::unique_ptr<GrowableMemoryByteStream> ReadInputStreamToMemory(JNIEnv* env, jobject obj, u32 chunk_size/* = 65536*/)
+{
+  std::unique_ptr<GrowableMemoryByteStream> bs = std::make_unique<GrowableMemoryByteStream>(nullptr, 0);
+  u32 position = 0;
+
+  jclass cls = env->GetObjectClass(obj);
+  jmethodID read_method = env->GetMethodID(cls, "read", "([B)I");
+  Assert(read_method);
+
+  jbyteArray temp = env->NewByteArray(chunk_size);
+  for (;;)
+  {
+    int bytes_read = env->CallIntMethod(obj, read_method, temp);
+    if (bytes_read <= 0)
+      break;
+
+    if ((position + static_cast<u32>(bytes_read)) > bs->GetMemorySize())
+    {
+      const u32 new_size = std::max<u32>(bs->GetMemorySize() * 2, position + static_cast<u32>(bytes_read));
+      bs->ResizeMemory(new_size);
+    }
+
+    env->GetByteArrayRegion(temp, 0, bytes_read, reinterpret_cast<jbyte*>(bs->GetMemoryPointer() + position));
+    position += static_cast<u32>(bytes_read);
+  }
+
+  bs->Resize(position);
+  return bs;
 }
 } // namespace AndroidHelpers
 
@@ -157,6 +188,23 @@ int AndroidHostInterface::GetIntSettingValue(const char* section, const char* ke
 float AndroidHostInterface::GetFloatSettingValue(const char* section, const char* key, float default_value /* = 0.0f */)
 {
   return m_settings_interface.GetFloatValue(section, key, default_value);
+}
+
+std::unique_ptr<ByteStream> AndroidHostInterface::OpenPackageFile(const char *path, u32 flags)
+{
+  Log_DevPrintf("OpenPackageFile(%s, %x)", path, flags);
+  if (flags & (BYTESTREAM_OPEN_CREATE | BYTESTREAM_OPEN_WRITE))
+    return {};
+
+  JNIEnv* env = AndroidHelpers::GetJNIEnv();
+  jobject stream = env->CallObjectMethod(m_java_object, s_AndroidHostInterface_method_openAssetStream, env->NewStringUTF(path));
+  if (!stream)
+  {
+    Log_ErrorPrintf("Package file '%s' not found", path);
+    return {};
+  }
+
+  return AndroidHelpers::ReadInputStreamToMemory(env, stream, 65536);
 }
 
 void AndroidHostInterface::SetUserDirectory()
@@ -707,6 +755,8 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
          env->GetMethodID(s_AndroidHostInterface_class, "reportError", "(Ljava/lang/String;)V")) == nullptr ||
       (s_AndroidHostInterface_method_reportMessage =
          env->GetMethodID(s_AndroidHostInterface_class, "reportMessage", "(Ljava/lang/String;)V")) == nullptr ||
+      (s_AndroidHostInterface_method_openAssetStream =
+         env->GetMethodID(s_AndroidHostInterface_class, "openAssetStream", "(Ljava/lang/String;)Ljava/io/InputStream;")) == nullptr ||
       (emulation_activity_class = env->FindClass("com/github/stenzek/duckstation/EmulationActivity")) == nullptr ||
       (s_EmulationActivity_method_reportError =
          env->GetMethodID(emulation_activity_class, "reportError", "(Ljava/lang/String;)V")) == nullptr ||

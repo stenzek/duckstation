@@ -2,6 +2,7 @@
 #include "android_settings_interface.h"
 #include "common/event.h"
 #include "common/progress_callback.h"
+#include "common/byte_stream.h"
 #include "frontend-common/common_host_interface.h"
 #include <array>
 #include <atomic>
@@ -35,6 +36,7 @@ public:
   bool GetBoolSettingValue(const char* section, const char* key, bool default_value = false) override;
   int GetIntSettingValue(const char* section, const char* key, int default_value = 0) override;
   float GetFloatSettingValue(const char* section, const char* key, float default_value = 0.0f) override;
+  std::unique_ptr<ByteStream> OpenPackageFile(const char* path, u32 flags) override;
 
   bool IsEmulationThreadRunning() const { return m_emulation_thread.joinable(); }
   bool IsEmulationThreadPaused() const;
@@ -105,4 +107,5 @@ namespace AndroidHelpers {
 JNIEnv* GetJNIEnv();
 AndroidHostInterface* GetNativeClass(JNIEnv* env, jobject obj);
 std::string JStringToString(JNIEnv* env, jstring str);
+std::unique_ptr<GrowableMemoryByteStream> ReadInputStreamToMemory(JNIEnv* env, jobject obj, u32 chunk_size = 65536);
 } // namespace AndroidHelpers
