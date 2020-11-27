@@ -110,19 +110,18 @@ public class GameListEntry {
     public void fillView(View view) {
         ((TextView) view.findViewById(R.id.game_list_view_entry_title)).setText(mTitle);
         ((TextView) view.findViewById(R.id.game_list_view_entry_subtitle)).setText(getSubTitle());
-        ((TextView) view.findViewById(R.id.game_list_view_entry_code)).setText(mCode);
 
         int regionDrawableId;
         switch (mRegion) {
             case NTSC_J:
                 regionDrawableId = R.drawable.flag_jp;
                 break;
+            case PAL:
+                regionDrawableId = R.drawable.flag_eu;
+                break;
             case NTSC_U:
             default:
                 regionDrawableId = R.drawable.flag_us;
-                break;
-            case PAL:
-                regionDrawableId = R.drawable.flag_eu;
                 break;
         }
 
@@ -131,11 +130,6 @@ public class GameListEntry {
 
         int typeDrawableId;
         switch (mType) {
-            case Disc:
-            default:
-                typeDrawableId = R.drawable.ic_media_cdrom;
-                break;
-
             case PSExe:
                 typeDrawableId = R.drawable.ic_emblem_system;
                 break;
@@ -143,9 +137,41 @@ public class GameListEntry {
             case Playlist:
                 typeDrawableId = R.drawable.ic_baseline_playlist_play_24;
                 break;
+
+            case Disc:
+            default:
+                typeDrawableId = R.drawable.ic_media_cdrom;
+                break;
         }
 
         ((ImageView) view.findViewById(R.id.game_list_view_entry_type_icon))
                 .setImageDrawable(ContextCompat.getDrawable(view.getContext(), typeDrawableId));
+
+        int compatibilityDrawableId;
+        switch (mCompatibilityRating)
+        {
+            case DoesntBoot:
+                compatibilityDrawableId = R.drawable.ic_star_1;
+                break;
+            case CrashesInIntro:
+                compatibilityDrawableId = R.drawable.ic_star_2;
+                break;
+            case CrashesInGame:
+                compatibilityDrawableId = R.drawable.ic_star_3;
+                break;
+            case GraphicalAudioIssues:
+                compatibilityDrawableId = R.drawable.ic_star_4;
+                break;
+            case NoIssues:
+                compatibilityDrawableId = R.drawable.ic_star_5;
+                break;
+            case Unknown:
+            default:
+                compatibilityDrawableId = R.drawable.ic_star_0;
+                break;
+        }
+
+        ((ImageView) view.findViewById(R.id.game_list_view_compatibility_icon))
+                .setImageDrawable(ContextCompat.getDrawable(view.getContext(), compatibilityDrawableId));
     }
 }
