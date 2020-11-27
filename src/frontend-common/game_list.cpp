@@ -671,11 +671,6 @@ void GameList::SetSearchDirectoriesFromSettings(SettingsInterface& si)
     m_search_directories.push_back({std::move(dir), true});
 }
 
-bool GameList::IsDatabasePresent() const
-{
-  return FileSystem::FileExists(m_database_filename.c_str());
-}
-
 void GameList::Refresh(bool invalidate_cache, bool invalidate_database, ProgressCallback* progress /* = nullptr */)
 {
   if (!progress)
@@ -740,32 +735,33 @@ void GameList::LoadDatabase()
     return;
 
   m_database_load_tried = true;
-  if (m_database_filename.empty())
-    return;
-
-  auto fp = FileSystem::OpenManagedCFile(m_database_filename.c_str(), "rb");
-  if (!fp)
-    return;
 
   tinyxml2::XMLDocument doc;
-  tinyxml2::XMLError error = doc.LoadFile(fp.get());
-  if (error != tinyxml2::XML_SUCCESS)
   {
-    Log_ErrorPrintf("Failed to parse redump dat '%s': %s", m_database_filename.c_str(),
-                    tinyxml2::XMLDocument::ErrorIDToName(error));
-    return;
+    std::unique_ptr<ByteStream> stream = g_host_interface->OpenPackageFile(
+      "database" FS_OSPATH_SEPARATOR_STR "redump.dat", BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
+    if (stream)
+    {
+      const std::string xml(FileSystem::ReadStreamToString(stream.get()));
+      tinyxml2::XMLError error = doc.Parse(xml.data(), xml.size());
+      if (error != tinyxml2::XML_SUCCESS)
+      {
+        Log_ErrorPrintf("Failed to parse redump dat: %s", tinyxml2::XMLDocument::ErrorIDToName(error));
+        return;
+      }
+    }
   }
 
   const tinyxml2::XMLElement* datafile_elem = doc.FirstChildElement("datafile");
   if (!datafile_elem)
   {
-    Log_ErrorPrintf("Failed to get datafile element in '%s'", m_database_filename.c_str());
+    Log_ErrorPrintf("Failed to get datafile element in redump dat");
     return;
   }
 
   RedumpDatVisitor visitor(m_database);
   datafile_elem->Accept(&visitor);
-  Log_InfoPrintf("Loaded %zu entries from Redump.org database '%s'", m_database.size(), m_database_filename.c_str());
+  Log_InfoPrintf("Loaded %zu entries from Redump.org database", m_database.size());
 }
 
 void GameList::ClearDatabase()
@@ -831,8 +827,8 @@ public:
     auto iter = m_database.find(code);
     if (iter != m_database.end())
     {
-      Log_ErrorPrintf("Duplicate game code in compatibility list: '%s'", code.c_str());
-      return false;
+      Log_WarningPrintf("Duplicate game code in compatibility list: '%s'", code.c_str());
+      m_database.erase(iter);
     }
 
     GameListCompatibilityEntry entry;
@@ -862,33 +858,52 @@ void GameList::LoadCompatibilityList()
     return;
 
   m_compatibility_list_load_tried = true;
-  if (m_compatibility_list_filename.empty())
-    return;
 
-  auto fp = FileSystem::OpenManagedCFile(m_compatibility_list_filename.c_str(), "rb");
-  if (!fp)
-    return;
+  // list we ship with
+  {
+    std::unique_ptr<ByteStream> file =
+      g_host_interface->OpenPackageFile("database/compatibility.xml", BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
+    if (file)
+    {
+      LoadCompatibilityListFromXML(FileSystem::ReadStreamToString(file.get()));
+    }
+    else
+    {
+      Log_ErrorPrintf("Failed to load compatibility.xml from package");
+    }
+  }
 
+  // user's list
+  if (!m_user_compatibility_list_filename.empty() && FileSystem::FileExists(m_user_compatibility_list_filename.c_str()))
+  {
+    std::unique_ptr<ByteStream> file =
+      FileSystem::OpenFile(m_user_compatibility_list_filename.c_str(), BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
+    if (file)
+      LoadCompatibilityListFromXML(FileSystem::ReadStreamToString(file.get()));
+  }
+}
+
+bool GameList::LoadCompatibilityListFromXML(const std::string& xml)
+{
   tinyxml2::XMLDocument doc;
-  tinyxml2::XMLError error = doc.LoadFile(fp.get());
+  tinyxml2::XMLError error = doc.Parse(xml.c_str(), xml.size());
   if (error != tinyxml2::XML_SUCCESS)
   {
-    Log_ErrorPrintf("Failed to parse compatibility list '%s': %s", m_compatibility_list_filename.c_str(),
-                    tinyxml2::XMLDocument::ErrorIDToName(error));
-    return;
+    Log_ErrorPrintf("Failed to parse compatibility list: %s", tinyxml2::XMLDocument::ErrorIDToName(error));
+    return false;
   }
 
   const tinyxml2::XMLElement* datafile_elem = doc.FirstChildElement("compatibility-list");
   if (!datafile_elem)
   {
-    Log_ErrorPrintf("Failed to get compatibility-list element in '%s'", m_compatibility_list_filename.c_str());
-    return;
+    Log_ErrorPrintf("Failed to get compatibility-list element");
+    return false;
   }
 
   CompatibilityListVisitor visitor(m_compatibility_list);
   datafile_elem->Accept(&visitor);
-  Log_InfoPrintf("Loaded %zu entries from compatibility list '%s'", m_compatibility_list.size(),
-                 m_compatibility_list_filename.c_str());
+  Log_InfoPrintf("Loaded %zu entries from compatibility list", m_compatibility_list.size());
+  return true;
 }
 
 static void InitElementForCompatibilityEntry(tinyxml2::XMLDocument* doc, tinyxml2::XMLElement* entry_elem,
@@ -965,59 +980,36 @@ static void InitElementForCompatibilityEntry(tinyxml2::XMLDocument* doc, tinyxml
   }
 }
 
-bool GameList::SaveCompatibilityDatabase()
-{
-  if (m_compatibility_list_filename.empty())
-    return false;
-
-  tinyxml2::XMLDocument doc;
-  tinyxml2::XMLElement* root_elem = doc.NewElement("compatibility-list");
-  doc.InsertEndChild(root_elem);
-
-  for (const auto& it : m_compatibility_list)
-  {
-    const GameListCompatibilityEntry* entry = &it.second;
-    tinyxml2::XMLElement* entry_elem = doc.NewElement("entry");
-    root_elem->InsertEndChild(entry_elem);
-    InitElementForCompatibilityEntry(&doc, entry_elem, entry);
-  }
-
-  tinyxml2::XMLError error = doc.SaveFile(m_compatibility_list_filename.c_str());
-  if (error != tinyxml2::XML_SUCCESS)
-  {
-    Log_ErrorPrintf("Failed to save compatibility list '%s': %s", m_compatibility_list_filename.c_str(),
-                    tinyxml2::XMLDocument::ErrorIDToName(error));
-    return false;
-  }
-
-  Log_InfoPrintf("Saved %zu entries to compatibility list '%s'", m_compatibility_list.size(),
-                 m_compatibility_list_filename.c_str());
-  return true;
-}
-
 bool GameList::SaveCompatibilityDatabaseForEntry(const GameListCompatibilityEntry* entry)
 {
-  if (m_compatibility_list_filename.empty())
+  if (m_user_compatibility_list_filename.empty())
     return false;
-
-  auto fp = FileSystem::OpenManagedCFile(m_compatibility_list_filename.c_str(), "rb");
-  if (!fp)
-    return SaveCompatibilityDatabase();
 
   tinyxml2::XMLDocument doc;
-  tinyxml2::XMLError error = doc.LoadFile(fp.get());
-  if (error != tinyxml2::XML_SUCCESS)
+  tinyxml2::XMLError error;
+  tinyxml2::XMLElement* root_elem;
+  auto fp = FileSystem::OpenManagedCFile(m_user_compatibility_list_filename.c_str(), "rb");
+  if (fp)
   {
-    Log_ErrorPrintf("Failed to parse compatibility list '%s': %s", m_compatibility_list_filename.c_str(),
-                    tinyxml2::XMLDocument::ErrorIDToName(error));
-    return false;
-  }
+    error = doc.LoadFile(fp.get());
+    if (error != tinyxml2::XML_SUCCESS)
+    {
+      Log_ErrorPrintf("Failed to parse compatibility list '%s': %s", m_user_compatibility_list_filename.c_str(),
+                      tinyxml2::XMLDocument::ErrorIDToName(error));
+      return false;
+    }
 
-  tinyxml2::XMLElement* root_elem = doc.FirstChildElement("compatibility-list");
-  if (!root_elem)
+    root_elem = doc.FirstChildElement("compatibility-list");
+    if (!root_elem)
+    {
+      Log_ErrorPrintf("Failed to get compatibility-list element in '%s'", m_user_compatibility_list_filename.c_str());
+      return false;
+    }
+  }
+  else
   {
-    Log_ErrorPrintf("Failed to get compatibility-list element in '%s'", m_compatibility_list_filename.c_str());
-    return false;
+    root_elem = doc.NewElement("compatibility-list");
+    doc.InsertEndChild(root_elem);
   }
 
   tinyxml2::XMLElement* current_entry_elem = root_elem->FirstChildElement();
@@ -1043,19 +1035,22 @@ bool GameList::SaveCompatibilityDatabaseForEntry(const GameListCompatibilityEntr
   }
 
   fp.reset();
-  fp = FileSystem::OpenManagedCFile(m_compatibility_list_filename.c_str(), "wb");
+  fp = FileSystem::OpenManagedCFile(m_user_compatibility_list_filename.c_str(), "wb");
   if (!fp)
-    return SaveCompatibilityDatabase();
+  {
+    Log_ErrorPrintf("Failed to open file '%s'", m_user_compatibility_list_filename.c_str());
+    return false;
+  }
 
   error = doc.SaveFile(fp.get());
   if (error != tinyxml2::XML_SUCCESS)
   {
-    Log_ErrorPrintf("Failed to update compatibility list '%s': %s", m_compatibility_list_filename.c_str(),
+    Log_ErrorPrintf("Failed to update compatibility list '%s': %s", m_user_compatibility_list_filename.c_str(),
                     tinyxml2::XMLDocument::ErrorIDToName(error));
     return false;
   }
 
-  Log_InfoPrintf("Updated compatibility list '%s'", m_compatibility_list_filename.c_str());
+  Log_InfoPrintf("Updated compatibility list '%s'", m_user_compatibility_list_filename.c_str());
   return true;
 }
 
@@ -1082,10 +1077,28 @@ void GameList::LoadGameSettings()
 
   m_game_settings_load_tried = true;
 
-  if (!m_game_settings_filename.empty() && FileSystem::FileExists(m_user_game_settings_filename.c_str()))
-    m_game_settings.Load(m_game_settings_filename.c_str());
+  // list we ship with
+  {
+    std::unique_ptr<ByteStream> file =
+      g_host_interface->OpenPackageFile("database/gamesettings.ini", BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
+    if (file)
+    {
+      m_game_settings.Load(FileSystem::ReadStreamToString(file.get()));
+    }
+    else
+    {
+      Log_ErrorPrintf("Failed to load compatibility.xml from package");
+    }
+  }
+
+  // user's list
   if (!m_user_game_settings_filename.empty() && FileSystem::FileExists(m_user_game_settings_filename.c_str()))
-    m_game_settings.Load(m_user_game_settings_filename.c_str());
+  {
+    std::unique_ptr<ByteStream> file =
+      FileSystem::OpenFile(m_user_game_settings_filename.c_str(), BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
+    if (file)
+      m_game_settings.Load(FileSystem::ReadStreamToString(file.get()));
+  }
 }
 
 const GameSettings::Entry* GameList::GetGameSettings(const std::string& filename, const std::string& game_code)
@@ -1102,7 +1115,7 @@ const GameSettings::Entry* GameList::GetGameSettings(const std::string& filename
 
 void GameList::UpdateGameSettings(const std::string& filename, const std::string& game_code,
                                   const std::string& game_title, const GameSettings::Entry& new_entry,
-                                  bool save_to_list /* = true */, bool save_to_user /* = true */)
+                                  bool save_to_list /* = true */)
 {
   GameListEntry* entry = GetMutableEntryForPath(filename.c_str());
   if (entry)
@@ -1112,10 +1125,7 @@ void GameList::UpdateGameSettings(const std::string& filename, const std::string
   }
 
   if (save_to_list)
-  {
-    m_game_settings.SetEntry(game_code, game_title, new_entry,
-                             save_to_user ? m_user_game_settings_filename.c_str() : m_game_settings_filename.c_str());
-  }
+    m_game_settings.SetEntry(game_code, game_title, new_entry, m_user_game_settings_filename.c_str());
 }
 
 std::string GameList::GetCoverImagePathForEntry(const GameListEntry* entry)

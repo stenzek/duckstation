@@ -386,14 +386,10 @@ const GameSettings::Entry* Database::GetEntry(const std::string& code) const
   return (it != m_entries.end()) ? &it->second : nullptr;
 }
 
-bool Database::Load(const char* path)
+bool Database::Load(const std::string_view& ini_data)
 {
-  auto fp = FileSystem::OpenManagedCFile(path, "rb");
-  if (!fp)
-    return false;
-
   CSimpleIniA ini;
-  SI_Error err = ini.LoadFile(fp.get());
+  SI_Error err = ini.LoadData(ini_data.data(), ini_data.size());
   if (err != SI_OK)
   {
     Log_ErrorPrintf("Failed to parse game settings ini: %d", static_cast<int>(err));
@@ -417,7 +413,7 @@ bool Database::Load(const char* path)
     m_entries.emplace(std::move(code), std::move(entry));
   }
 
-  Log_InfoPrintf("Loaded settings for %zu games from '%s'", sections.size(), path);
+  Log_InfoPrintf("Loaded settings for %zu games", sections.size());
   return true;
 }
 

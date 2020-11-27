@@ -421,7 +421,7 @@ void GamePropertiesDialog::populateGameSettings()
 
 void GamePropertiesDialog::saveGameSettings()
 {
-  m_host_interface->getGameList()->UpdateGameSettings(m_path, m_game_code, m_game_title, m_game_settings, true, true);
+  m_host_interface->getGameList()->UpdateGameSettings(m_path, m_game_code, m_game_title, m_game_settings, true);
   m_host_interface->applySettings(true);
 }
 

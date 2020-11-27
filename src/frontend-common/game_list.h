@@ -84,18 +84,10 @@ public:
   const GameListDatabaseEntry* GetDatabaseEntryForCode(const std::string& code) const;
   const GameListCompatibilityEntry* GetCompatibilityEntryForCode(const std::string& code) const;
 
-  const std::string& GetCacheFilename() const { return m_cache_filename; }
-  const std::string& GetDatabaseFilename() const { return m_database_filename; }
-  const std::string& GetCompatibilityFilename() const { return m_database_filename; }
-
   void SetCacheFilename(std::string filename) { m_cache_filename = std::move(filename); }
-  void SetDatabaseFilename(std::string filename) { m_database_filename = std::move(filename); }
-  void SetCompatibilityFilename(std::string filename) { m_compatibility_list_filename = std::move(filename); }
-  void SetGameSettingsFilename(std::string filename) { m_game_settings_filename = std::move(filename); }
+  void SetUserCompatibilityListFilename(std::string filename) { m_user_compatibility_list_filename = std::move(filename); }
   void SetUserGameSettingsFilename(std::string filename) { m_user_game_settings_filename = std::move(filename); }
   void SetSearchDirectoriesFromSettings(SettingsInterface& si);
-
-  bool IsDatabasePresent() const;
 
   void AddDirectory(std::string path, bool recursive);
   void Refresh(bool invalidate_cache, bool invalidate_database, ProgressCallback* progress = nullptr);
@@ -106,7 +98,7 @@ public:
 
   const GameSettings::Entry* GetGameSettings(const std::string& filename, const std::string& game_code);
   void UpdateGameSettings(const std::string& filename, const std::string& game_code, const std::string& game_title,
-                          const GameSettings::Entry& new_entry, bool save_to_list = true, bool save_to_user = true);
+                          const GameSettings::Entry& new_entry, bool save_to_list = true);
 
   std::string GetCoverImagePathForEntry(const GameListEntry* entry);
   std::string GetNewCoverImagePathForEntry(const GameListEntry* entry, const char* new_filename);
@@ -153,7 +145,7 @@ private:
   void ClearDatabase();
 
   void LoadCompatibilityList();
-  bool SaveCompatibilityDatabase();
+  bool LoadCompatibilityListFromXML(const std::string& xml);
   bool SaveCompatibilityDatabaseForEntry(const GameListCompatibilityEntry* entry);
 
   void LoadGameSettings();
@@ -167,9 +159,7 @@ private:
 
   std::vector<DirectoryEntry> m_search_directories;
   std::string m_cache_filename;
-  std::string m_database_filename;
-  std::string m_compatibility_list_filename;
-  std::string m_game_settings_filename;
+  std::string m_user_compatibility_list_filename;
   std::string m_user_game_settings_filename;
   bool m_database_load_tried = false;
   bool m_compatibility_list_load_tried = false;

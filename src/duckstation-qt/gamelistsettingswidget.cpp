@@ -1,5 +1,6 @@
 #include "gamelistsettingswidget.h"
 #include "common/assert.h"
+#include "common/file_system.h"
 #include "common/minizip_helpers.h"
 #include "common/string_util.h"
 #include "frontend-common/game_list.h"
@@ -144,8 +145,11 @@ void GameListSettingsWidget::onUpdateRedumpDatabaseButtonClicked()
     return;
   }
 
-  if (downloadRedumpDatabase(QString::fromStdString(m_host_interface->getGameList()->GetDatabaseFilename())))
+  if (downloadRedumpDatabase(
+        m_host_interface->getUserDirectoryRelativePath("database" FS_OSPATH_SEPARATOR_STR "redump.dat")))
+  {
     m_host_interface->refreshGameList(true, true);
+  }
 }
 
 static bool ExtractRedumpDatabase(const QByteArray& data, const QString& destination_path)
