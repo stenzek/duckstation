@@ -13,6 +13,10 @@ A "BIOS" ROM image is required to to start the emulator and to play games. You c
 
 ## Latest News
 
+- 2020/11/27: Cover support added for game list in Android version. Procedure is the same as the desktop version, except you should place cover images in `<storage>/duckstation/covers` (see [Adding Game Covers](https://github.com/stenzek/duckstation/wiki/Adding-Game-Covers)).
+- 2020/11/27: Disc database is shipped with desktop and Android versions courtesy of redump.org. This will provide titles for games on Android, where it was not possible previously.
+- 2020/11/27: Compatibility databases added to libretro core - broken enhancements will be automatically disabled. You can turn this off by disabling "Apply Compatibility Settings" in the core options.
+- 2020/11/27: SDL game controller database is included with desktop versions courtesy of https://github.com/gabomdq/SDL_GameControllerDB.
 - 2020/11/21: OpenGL ES 2.0 host display support added. You cannot use the hardware renderer with GLES2, it still requires GLES3, but GLES2 GPUs can now use the software renderer.
 - 2020/11/21: Threaded renderer for software renderer added. Can result in a significant speed boost depending on the game.
 - 2020/11/21: AArch32/armv7 recompiler added. Android and Linux builds will follow after further testing, but for now you can build it yourself.
@@ -84,7 +88,6 @@ Other features include:
  - A CPU faster than a potato. But it needs to be x86_64, AArch32/armv7, or AArch64/ARMv8, otherwise you won't get a recompiler and it'll be slow.
  - For the hardware renderers, a GPU capable of OpenGL 3.1/OpenGL ES 3.0/Direct3D 11 Feature Level 10.0 (or Vulkan 1.0) and above. So, basically anything made in the last 10 years or so.
  - SDL or XInput compatible game controller (e.g. XB360/XBOne). DualShock 3 users on Windows will need to install the official DualShock 3 drivers included as part of PlayStation Now.
-   - Optional [SDL game contoller database files](#sdl-game-controller-database) are also supported.
 
 ## Downloading and running
 Binaries of DuckStation for Windows x64/ARM64, x86_64 Linux x86_64 (in AppImage format), and Android ARMv8/AArch64 are available via GitHub Releases and are automatically built with every commit/push. Binaries or packages distributed through other sources may be out of date and are not supported by the developer.
@@ -139,11 +142,6 @@ A prebuilt APK is now available for Android. However, please keep in mind that t
 
 Download link: https://github.com/stenzek/duckstation/releases/download/latest/duckstation-android.apk
 
-The main limitations are:
- - User directory is currently hardcoded to `<external storage path>/duckstation`. This is usually `/storage/emulated/0` or `/sdcard`'. So BIOS files go in `/sdcard/duckstation/bios`.
- - Lack of options in menu when emulator is running.
- - Performance is currently lower than the desktop x86_64 counterpart.
-
 To use:
  - Install and run the app for the first time.
  - This will create `/sdcard/duckstation`. Drop your BIOS files in `/sdcard/duckstation/bios`.
@@ -153,9 +151,7 @@ To use:
 
 ### Title Information
 
-PlayStation game discs do not contain title information. For game titles, we use the redump.org database cross-referenced with the game's executable code.
-This database can be manually downloaded and added as `cache/redump.dat`, or automatically downloaded by going into the `Game List Settings` in the Qt Frontend,
-and clicking `Update Redump Database`.
+PlayStation game discs do not contain title information. For game titles, we use the redump.org database cross-referenced with the game's executable code. A version of the database is included with the DuckStation download, but you can replace this with a different database by saving it as `cache/redump.dat` in your user directory, or updated by going into the `Game List Settings` in the Qt Frontend, and clicking `Update Redump Database`.
 
 ### Region detection and BIOS images
 By default, DuckStation will emulate the region check present in the CD-ROM controller of the console. This means that when the region of the console does not match the disc, it will refuse to boot, giving a "Please insert PlayStation CD-ROM" message. DuckStation supports automatic detection disc regions, and if you set the console region to auto-detect as well, this should never be a problem.
