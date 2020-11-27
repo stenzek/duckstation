@@ -1986,11 +1986,12 @@ CommonHostInterface::GetExtendedSaveStateInfo(const char* game_code, s32 slot)
   ssi.slot = slot;
   ssi.global = global;
 
-  if (header.version < SAVE_STATE_MINIMUM_VERSION)
+  if (header.version < SAVE_STATE_MINIMUM_VERSION || header.version > SAVE_STATE_VERSION)
   {
-    ssi.title =
-      StringUtil::StdStringFromFormat(TranslateString("CommonHostInterface", "Invalid version %u (minimum version %u)"),
-                                      header.version, SAVE_STATE_MINIMUM_VERSION);
+    ssi.title = StringUtil::StdStringFromFormat(
+      TranslateString("CommonHostInterface", "Invalid version %u (%s version %u)"), header.version,
+      header.version > SAVE_STATE_VERSION ? "maximum" : "minimum",
+      header.version > SAVE_STATE_VERSION ? SAVE_STATE_VERSION : SAVE_STATE_MINIMUM_VERSION);
     return ssi;
   }
 
