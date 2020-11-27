@@ -59,6 +59,12 @@
         app:summary="Loads patch codes from cheats/&lt;game name&gt;.cht in PCSXR format. Codes can be toggled while ingame."
         app:iconSpaceReserved="false" />
     <SwitchPreferenceCompat
+        app:key="Main/ApplyGameSettings"
+        app:title="Apply Compatibility Settings"
+        app:defaultValue="true"
+        app:summary="Automatically disable enhancements when they are not supported by games."
+        app:iconSpaceReserved="false" />
+    <SwitchPreferenceCompat
         app:key="Display/VSync"
         app:title="Video Sync"
         app:defaultValue="false"

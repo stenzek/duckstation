@@ -509,6 +509,7 @@ void AndroidHostInterface::OnSystemDestroyed()
 void AndroidHostInterface::OnRunningGameChanged()
 {
   CommonHostInterface::OnRunningGameChanged();
+  ApplySettings(true);
 
   if (m_emulation_activity_object)
   {
@@ -638,6 +639,7 @@ void AndroidHostInterface::ApplySettings(bool display_osd_messages)
 {
   Settings old_settings = std::move(g_settings);
   LoadAndConvertSettings();
+  CommonHostInterface::ApplyGameSettings(display_osd_messages);
   CommonHostInterface::FixIncompatibleSettings(display_osd_messages);
 
   // Defer renderer changes, the app really doesn't like it.
