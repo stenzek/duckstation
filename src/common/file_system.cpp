@@ -1322,6 +1322,7 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
     }
 
     outData.Size = static_cast<u64>(sDir.st_size);
+    outData.ModificationTime.SetUnixTimestamp(static_cast<Timestamp::UnixTimestampValue>(sDir.st_mtim.tv_sec));
 
     // match the filename
     if (hasWildCards)
