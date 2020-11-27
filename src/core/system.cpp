@@ -951,12 +951,13 @@ bool DoLoadState(ByteStream* state, bool force_software_renderer, bool update_di
   if (header.magic != SAVE_STATE_MAGIC)
     return false;
 
-  if (header.version < SAVE_STATE_MINIMUM_VERSION)
+  if (header.version < SAVE_STATE_MINIMUM_VERSION || header.version > SAVE_STATE_VERSION)
   {
     g_host_interface->ReportFormattedError(
       g_host_interface->TranslateString("System",
-                                        "Save state is incompatible: minimum version is %u but state is version %u."),
-      SAVE_STATE_MINIMUM_VERSION, header.version);
+                                        "Save state is incompatible: %s version is %u but state is version %u."),
+      header.version > SAVE_STATE_VERSION ? "maximum" : "minimum",
+      header.version > SAVE_STATE_VERSION ? SAVE_STATE_VERSION : SAVE_STATE_MINIMUM_VERSION, header.version);
     return false;
   }
 

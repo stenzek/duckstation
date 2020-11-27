@@ -5,6 +5,8 @@ static constexpr u32 SAVE_STATE_MAGIC = 0x43435544;
 static constexpr u32 SAVE_STATE_VERSION = 45;
 static constexpr u32 SAVE_STATE_MINIMUM_VERSION = 42;
 
+static_assert(SAVE_STATE_VERSION >= SAVE_STATE_MINIMUM_VERSION);
+
 #pragma pack(push, 4)
 struct SAVE_STATE_HEADER
 {
