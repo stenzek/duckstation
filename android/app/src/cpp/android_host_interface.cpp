@@ -930,7 +930,7 @@ DEFINE_JNI_ARGS_METHOD(jarray, AndroidHostInterface_getGameListEntries, jobject 
   jmethodID entry_constructor =
     env->GetMethodID(entry_class, "<init>",
                      "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JLjava/lang/"
-                     "String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
+                     "String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
   Assert(entry_constructor != nullptr);
 
   AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
@@ -943,6 +943,7 @@ DEFINE_JNI_ARGS_METHOD(jarray, AndroidHostInterface_getGameListEntries, jobject 
     const Timestamp modified_ts(
       Timestamp::FromUnixTimestamp(static_cast<Timestamp::UnixTimestampValue>(entry.last_modified_time)));
     const std::string file_title_str(System::GetTitleForPath(entry.path.c_str()));
+    const std::string cover_path_str(hi->GetGameList()->GetCoverImagePathForEntry(&entry));
 
     jstring path = env->NewStringUTF(entry.path.c_str());
     jstring code = env->NewStringUTF(entry.code.c_str());
@@ -952,11 +953,12 @@ DEFINE_JNI_ARGS_METHOD(jarray, AndroidHostInterface_getGameListEntries, jobject 
     jstring type = env->NewStringUTF(GameList::EntryTypeToString(entry.type));
     jstring compatibility_rating =
       env->NewStringUTF(GameList::EntryCompatibilityRatingToString(entry.compatibility_rating));
+    jstring cover_path = (cover_path_str.empty()) ? nullptr : env->NewStringUTF(cover_path_str.c_str());
     jstring modified_time = env->NewStringUTF(modified_ts.ToString("%Y/%m/%d, %H:%M:%S"));
     jlong size = entry.total_size;
 
     jobject entry_jobject = env->NewObject(entry_class, entry_constructor, path, code, title, file_title, size,
-                                           modified_time, region, type, compatibility_rating);
+                                           modified_time, region, type, compatibility_rating, cover_path);
 
     env->SetObjectArrayElement(entry_array, counter++, entry_jobject);
   }

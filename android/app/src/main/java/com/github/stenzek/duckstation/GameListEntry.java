@@ -1,5 +1,7 @@
 package com.github.stenzek.duckstation;
 
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -31,16 +33,17 @@ public class GameListEntry {
     private DiscRegion mRegion;
     private EntryType mType;
     private CompatibilityRating mCompatibilityRating;
-
+    private String mCoverPath;
 
     public GameListEntry(String path, String code, String title, String fileTitle, long size, String modifiedTime, String region,
-                         String type, String compatibilityRating) {
+                         String type, String compatibilityRating, String coverPath) {
         mPath = path;
         mCode = code;
         mTitle = title;
         mFileTitle = fileTitle;
         mSize = size;
         mModifiedTime = modifiedTime;
+        mCoverPath = coverPath;
 
         try {
             mRegion = DiscRegion.valueOf(region);
@@ -144,8 +147,12 @@ public class GameListEntry {
                 break;
         }
 
-        ((ImageView) view.findViewById(R.id.game_list_view_entry_type_icon))
-                .setImageDrawable(ContextCompat.getDrawable(view.getContext(), typeDrawableId));
+        ImageView icon = ((ImageView) view.findViewById(R.id.game_list_view_entry_type_icon));
+        icon.setImageDrawable(ContextCompat.getDrawable(view.getContext(), typeDrawableId));
+
+        if (mCoverPath != null) {
+            new ImageLoadTask(icon).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, mCoverPath);
+        }
 
         int compatibilityDrawableId;
         switch (mCompatibilityRating)
