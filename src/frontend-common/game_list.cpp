@@ -1170,11 +1170,13 @@ std::string GameList::GetCoverImagePathForEntry(const GameListEntry* entry) cons
     }
 
     // and the file title if it differs
-    const std::string_view file_title = GetFileNameFromPath(entry->path.c_str());
+    const std::string_view file_title = System::GetTitleForPath(entry->path.c_str());
     if (!file_title.empty() && entry->title != file_title)
     {
       cover_path.Clear();
       cover_path.AppendString(g_host_interface->GetUserDirectory().c_str());
+      cover_path.AppendCharacter(FS_OSPATH_SEPERATOR_CHARACTER);
+      cover_path.AppendString("covers");
       cover_path.AppendCharacter(FS_OSPATH_SEPERATOR_CHARACTER);
       cover_path.AppendString(file_title.data(), static_cast<u32>(file_title.size()));
       cover_path.AppendCharacter('.');
