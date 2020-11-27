@@ -345,7 +345,7 @@ void GamePropertiesDialog::populateGameSettings()
   {
     QSignalBlocker sb(m_ui.userMSAAMode);
     const QVariant current_msaa_mode(
-      QtUtils::GetMSAAModeValue(static_cast<uint>(gs.gpu_multisamples.value()), gs.gpu_per_sample_shading.has_value()));
+      QtUtils::GetMSAAModeValue(static_cast<uint>(gs.gpu_multisamples.value()), gs.gpu_per_sample_shading.value()));
     const int current_msaa_index = m_ui.userMSAAMode->findData(current_msaa_mode);
     if (current_msaa_index >= 0)
       m_ui.userMSAAMode->setCurrentIndex((current_msaa_index >= 0) ? current_msaa_index : 0);
