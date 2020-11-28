@@ -258,7 +258,7 @@ void GPU_HW_OpenGL::SetCapabilities(HostDisplay* host_display)
   if (!m_supports_dual_source_blend)
     Log_WarningPrintf("Dual-source blending is not supported, this may break some mask effects.");
 
-  m_supports_geometry_shaders = GLAD_GL_VERSION_3_2 || GLAD_GL_ARB_geometry_shader4 || GLAD_GL_ES_VERSION_3_2;
+  m_supports_geometry_shaders = GLAD_GL_VERSION_3_2 || GLAD_GL_ARB_geometry_shader4 || GLAD_GL_OES_geometry_shader || GLAD_GL_ES_VERSION_3_2;
   if (!m_supports_geometry_shaders)
   {
     Log_WarningPrintf("Geometry shaders are not supported, line rendering at higher resolutions may be incorrect. We "
