@@ -649,7 +649,7 @@ void Entry::ApplySettings(bool display_osd_messages) const
 
   if (HasTrait(Trait::DisablePGXPCulling))
   {
-    if (display_osd_messages && g_settings.gpu_pgxp_culling)
+    if (display_osd_messages && g_settings.gpu_pgxp_enable && g_settings.gpu_pgxp_culling)
     {
       g_host_interface->AddOSDMessage(
         g_host_interface->TranslateStdString("OSDMessage", "PGXP culling disabled by game settings."), osd_duration);
@@ -660,7 +660,7 @@ void Entry::ApplySettings(bool display_osd_messages) const
 
   if (HasTrait(Trait::DisablePGXPTextureCorrection))
   {
-    if (display_osd_messages && g_settings.gpu_pgxp_culling && g_settings.gpu_pgxp_texture_correction)
+    if (display_osd_messages && g_settings.gpu_pgxp_enable && g_settings.gpu_pgxp_texture_correction)
     {
       g_host_interface->AddOSDMessage(
         g_host_interface->TranslateStdString("OSDMessage", "PGXP texture correction disabled by game settings."),
