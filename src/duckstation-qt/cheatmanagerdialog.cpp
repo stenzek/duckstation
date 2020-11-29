@@ -263,7 +263,15 @@ CheatList* CheatManagerDialog::getCheatList() const
 
   CheatList* list = System::GetCheatList();
   if (!list)
+  {
     QtHostInterface::GetInstance()->LoadCheatListFromGameTitle();
+    list = System::GetCheatList();
+  }
+  if (!list)
+  {
+    QtHostInterface::GetInstance()->LoadCheatListFromDatabase();
+    list = System::GetCheatList();
+  }
   if (!list)
   {
     QtHostInterface::GetInstance()->executeOnEmulationThread(

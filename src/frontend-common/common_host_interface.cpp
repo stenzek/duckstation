@@ -2436,6 +2436,20 @@ bool CommonHostInterface::LoadCheatListFromGameTitle()
   return LoadCheatList(filename.c_str());
 }
 
+bool CommonHostInterface::LoadCheatListFromDatabase()
+{
+  if (System::GetRunningCode().empty())
+    return false;
+
+  std::unique_ptr<CheatList> cl = std::make_unique<CheatList>();
+  if (!cl->LoadFromPackage(System::GetRunningCode()))
+    return false;
+
+  AddFormattedOSDMessage(10.0f, TranslateString("OSDMessage", "Loaded %u cheats from database."), cl->GetCodeCount());
+  System::SetCheatList(std::move(cl));
+  return true;
+}
+
 bool CommonHostInterface::SaveCheatList()
 {
   if (!System::IsValid() || !System::HasCheatList())

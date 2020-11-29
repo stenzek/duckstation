@@ -80,7 +80,7 @@ std::string JStringToString(JNIEnv* env, jstring str)
   return ret;
 }
 
-std::unique_ptr<GrowableMemoryByteStream> ReadInputStreamToMemory(JNIEnv* env, jobject obj, u32 chunk_size/* = 65536*/)
+std::unique_ptr<GrowableMemoryByteStream> ReadInputStreamToMemory(JNIEnv* env, jobject obj, u32 chunk_size /* = 65536*/)
 {
   std::unique_ptr<GrowableMemoryByteStream> bs = std::make_unique<GrowableMemoryByteStream>(nullptr, 0);
   u32 position = 0;
@@ -190,14 +190,15 @@ float AndroidHostInterface::GetFloatSettingValue(const char* section, const char
   return m_settings_interface.GetFloatValue(section, key, default_value);
 }
 
-std::unique_ptr<ByteStream> AndroidHostInterface::OpenPackageFile(const char *path, u32 flags)
+std::unique_ptr<ByteStream> AndroidHostInterface::OpenPackageFile(const char* path, u32 flags)
 {
   Log_DevPrintf("OpenPackageFile(%s, %x)", path, flags);
   if (flags & (BYTESTREAM_OPEN_CREATE | BYTESTREAM_OPEN_WRITE))
     return {};
 
   JNIEnv* env = AndroidHelpers::GetJNIEnv();
-  jobject stream = env->CallObjectMethod(m_java_object, s_AndroidHostInterface_method_openAssetStream, env->NewStringUTF(path));
+  jobject stream =
+    env->CallObjectMethod(m_java_object, s_AndroidHostInterface_method_openAssetStream, env->NewStringUTF(path));
   if (!stream)
   {
     Log_ErrorPrintf("Package file '%s' not found", path);
@@ -695,7 +696,8 @@ void AndroidHostInterface::SetVibration(bool enabled)
   m_last_vibration_update_time = current_time;
 
   JNIEnv* env = AndroidHelpers::GetJNIEnv();
-  if (m_emulation_activity_object) {
+  if (m_emulation_activity_object)
+  {
     env->CallVoidMethod(m_emulation_activity_object, s_EmulationActivity_method_setVibration,
                         static_cast<jboolean>(enabled));
   }
@@ -735,8 +737,7 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
   // Create global reference so it doesn't get cleaned up.
   JNIEnv* env = AndroidHelpers::GetJNIEnv();
   if ((s_String_class = env->FindClass("java/lang/String")) == nullptr ||
-      (s_String_class = static_cast<jclass>(env->NewGlobalRef(s_String_class))) ==
-      nullptr ||
+      (s_String_class = static_cast<jclass>(env->NewGlobalRef(s_String_class))) == nullptr ||
       (s_AndroidHostInterface_class = env->FindClass("com/github/stenzek/duckstation/AndroidHostInterface")) ==
         nullptr ||
       (s_AndroidHostInterface_class = static_cast<jclass>(env->NewGlobalRef(s_AndroidHostInterface_class))) ==
@@ -757,8 +758,8 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
          env->GetMethodID(s_AndroidHostInterface_class, "reportError", "(Ljava/lang/String;)V")) == nullptr ||
       (s_AndroidHostInterface_method_reportMessage =
          env->GetMethodID(s_AndroidHostInterface_class, "reportMessage", "(Ljava/lang/String;)V")) == nullptr ||
-      (s_AndroidHostInterface_method_openAssetStream =
-         env->GetMethodID(s_AndroidHostInterface_class, "openAssetStream", "(Ljava/lang/String;)Ljava/io/InputStream;")) == nullptr ||
+      (s_AndroidHostInterface_method_openAssetStream = env->GetMethodID(
+         s_AndroidHostInterface_class, "openAssetStream", "(Ljava/lang/String;)Ljava/io/InputStream;")) == nullptr ||
       (emulation_activity_class = env->FindClass("com/github/stenzek/duckstation/EmulationActivity")) == nullptr ||
       (s_EmulationActivity_method_reportError =
          env->GetMethodID(emulation_activity_class, "reportError", "(Ljava/lang/String;)V")) == nullptr ||
@@ -770,8 +771,8 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
          env->GetMethodID(emulation_activity_class, "onEmulationStopped", "()V")) == nullptr ||
       (s_EmulationActivity_method_onGameTitleChanged =
          env->GetMethodID(emulation_activity_class, "onGameTitleChanged", "(Ljava/lang/String;)V")) == nullptr ||
-      (s_EmulationActivity_method_setVibration =
-           env->GetMethodID(emulation_activity_class, "setVibration", "(Z)V")) == nullptr ||
+      (s_EmulationActivity_method_setVibration = env->GetMethodID(emulation_activity_class, "setVibration", "(Z)V")) ==
+        nullptr ||
       (s_PatchCode_constructor = env->GetMethodID(s_PatchCode_class, "<init>", "(ILjava/lang/String;Z)V")) == nullptr)
   {
     Log_ErrorPrint("AndroidHostInterface lookups failed");
@@ -1040,10 +1041,15 @@ DEFINE_JNI_ARGS_METHOD(jobject, AndroidHostInterface_getPatchCodeList, jobject o
     return nullptr;
 
   AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
-  if (!System::HasCheatList() && !g_settings.auto_load_cheats)
+  if (!System::HasCheatList())
   {
     // Hopefully this won't deadlock...
-    hi->RunOnEmulationThread([hi]() { hi->LoadCheatListFromGameTitle(); }, true);
+    hi->RunOnEmulationThread(
+      [hi]() {
+        if (!hi->LoadCheatListFromGameTitle())
+          hi->LoadCheatListFromDatabase();
+      },
+      true);
   }
 
   if (!System::HasCheatList())
@@ -1171,7 +1177,8 @@ DEFINE_JNI_ARGS_METHOD(jboolean, AndroidHostInterface_setMediaPlaylistIndex, job
 
   AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
   hi->RunOnEmulationThread([index, hi]() {
-    if (System::IsValid()) {
+    if (System::IsValid())
+    {
       if (!System::SwitchMediaFromPlaylist(index))
         hi->AddOSDMessage("Disc switch failed. Please make sure the file exists.");
     }

@@ -129,6 +129,8 @@ public:
 
   bool SaveToPCSXRFile(const char* filename);
 
+  bool LoadFromPackage(const std::string& game_code);
+
   void Apply();
 
   void ApplyCode(u32 index);
