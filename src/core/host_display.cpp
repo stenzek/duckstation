@@ -360,7 +360,7 @@ static bool CompressAndWriteTextureToFile(u32 width, u32 height, std::string fil
 }
 
 bool HostDisplay::WriteTextureToFile(const void* texture_handle, u32 x, u32 y, u32 width, u32 height,
-                                     const char* filename, bool clear_alpha /* = true */, bool flip_y /* = false */,
+                                     std::string filename, bool clear_alpha /* = true */, bool flip_y /* = false */,
                                      u32 resize_width /* = 0 */, u32 resize_height /* = 0 */,
                                      bool compress_on_thread /* = false */)
 {
@@ -372,26 +372,27 @@ bool HostDisplay::WriteTextureToFile(const void* texture_handle, u32 x, u32 y, u
     return false;
   }
 
-  auto fp = FileSystem::OpenManagedCFile(filename, "wb");
+  auto fp = FileSystem::OpenManagedCFile(filename.c_str(), "wb");
   if (!fp)
   {
-    Log_ErrorPrintf("Can't open file '%s': errno %d", filename, errno);
+    Log_ErrorPrintf("Can't open file '%s': errno %d", filename.c_str(), errno);
     return false;
   }
 
   if (!compress_on_thread)
   {
-    return CompressAndWriteTextureToFile(width, height, filename, std::move(fp), clear_alpha, flip_y, resize_width,
-                                         resize_height, std::move(texture_data), texture_data_stride);
+    return CompressAndWriteTextureToFile(width, height, std::move(filename), std::move(fp), clear_alpha, flip_y,
+                                         resize_width, resize_height, std::move(texture_data), texture_data_stride);
   }
 
-  std::thread compress_thread(CompressAndWriteTextureToFile, width, height, filename, std::move(fp), clear_alpha,
-                              flip_y, resize_width, resize_height, std::move(texture_data), texture_data_stride);
+  std::thread compress_thread(CompressAndWriteTextureToFile, width, height, std::move(filename), std::move(fp),
+                              clear_alpha, flip_y, resize_width, resize_height, std::move(texture_data),
+                              texture_data_stride);
   compress_thread.detach();
   return true;
 }
 
-bool HostDisplay::WriteDisplayTextureToFile(const char* filename, bool full_resolution /* = true */,
+bool HostDisplay::WriteDisplayTextureToFile(std::string filename, bool full_resolution /* = true */,
                                             bool apply_aspect_ratio /* = true */, bool compress_on_thread /* = false */)
 {
   if (!m_display_texture_handle || m_display_texture_format != HostDisplayPixelFormat::RGBA8)
@@ -454,7 +455,7 @@ bool HostDisplay::WriteDisplayTextureToFile(const char* filename, bool full_reso
   }
 
   return WriteTextureToFile(m_display_texture_handle, m_display_texture_view_x, read_y, m_display_texture_view_width,
-                            read_height, filename, true, flip_y, static_cast<u32>(resize_width),
+                            read_height, std::move(filename), true, flip_y, static_cast<u32>(resize_width),
                             static_cast<u32>(resize_height), compress_on_thread);
 }
 
