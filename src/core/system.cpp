@@ -980,16 +980,33 @@ bool DoLoadState(ByteStream* state, bool force_software_renderer, bool update_di
       return false;
     }
 
-    media = g_cdrom.RemoveMedia();
-    if (!media || media->GetFileName() != media_filename)
+    std::unique_ptr<CDImage> old_media = g_cdrom.RemoveMedia();
+    if (old_media && old_media->GetFileName() == media_filename)
+    {
+      Log_InfoPrintf("Re-using same media '%s'", media_filename.c_str());
+      media = std::move(old_media);
+    }
+    else
     {
       media = OpenCDImage(media_filename.c_str(), false);
       if (!media)
       {
-        g_host_interface->ReportFormattedError(
-          g_host_interface->TranslateString("System", "Failed to open CD image from save state: '%s'."),
-          media_filename.c_str());
-        return false;
+        if (old_media)
+        {
+          g_host_interface->AddFormattedOSDMessage(
+            30.0f,
+            g_host_interface->TranslateString("OSDMessage", "Failed to open CD image from save state: '%s'. Using "
+                                                            "existing image '%s', this may result in instability."),
+            media_filename.c_str(), old_media->GetFileName().c_str());
+          media = std::move(old_media);
+        }
+        else
+        {
+          g_host_interface->ReportFormattedError(
+            g_host_interface->TranslateString("System", "Failed to open CD image from save state: '%s'."),
+            media_filename.c_str());
+          return false;
+        }
       }
     }
   }
