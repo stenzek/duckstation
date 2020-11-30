@@ -176,6 +176,7 @@ void FrameDone()
 {
   s_frame_number++;
   CPU::g_state.frame_done = true;
+  CPU::g_state.downcount = 0;
 }
 
 void IncrementInternalFrameNumber()
