@@ -486,7 +486,7 @@ bool QtHostInterface::AcquireHostDisplay()
   if (!display_widget || !m_display->HasRenderDevice())
   {
     emit destroyDisplayRequested();
-    m_display = nullptr;
+    m_display.reset();
     return false;
   }
 

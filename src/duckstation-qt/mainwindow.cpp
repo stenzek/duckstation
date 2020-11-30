@@ -129,7 +129,6 @@ QtDisplayWidget* MainWindow::createDisplay(QThread* worker_thread, const QString
   {
     reportError(QStringLiteral("Failed to get window info from widget"));
     destroyDisplayWidget();
-    delete m_host_display;
     m_host_display = nullptr;
     return nullptr;
   }
@@ -138,7 +137,6 @@ QtDisplayWidget* MainWindow::createDisplay(QThread* worker_thread, const QString
   {
     reportError(tr("Failed to create host display device context."));
     destroyDisplayWidget();
-    delete m_host_display;
     m_host_display = nullptr;
     return nullptr;
   }
@@ -245,6 +243,9 @@ void MainWindow::displaySizeRequested(qint32 width, qint32 height)
 
 void MainWindow::destroyDisplay()
 {
+  if (!m_host_display)
+    return;
+
   DebugAssert(m_host_display && m_display_widget);
   m_host_display = nullptr;
   destroyDisplayWidget();
