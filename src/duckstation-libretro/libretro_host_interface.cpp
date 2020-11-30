@@ -710,6 +710,8 @@ static std::array<retro_core_option_definition, 46> s_option_definitions = {{
     {"19:9", "19:9"},
     {"21:9", "21:9"},
     {"8:7", "8:7"},
+    {"5:4", "5:4"},
+    {"3:2", "3:2"},
     {"2:1 (VRAM 1:1)", "2:1 (VRAM 1:1)"},
     {"1:1", "1:1"},
     {"PAR 1:1", "PAR 1:1"}},
