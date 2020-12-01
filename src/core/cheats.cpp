@@ -565,7 +565,7 @@ bool CheatList::LoadFromPackage(const std::string& game_code)
       if (start == end)
         continue;
 
-      if (start[0] == ':')
+      if (start[0] == ':' && !m_codes.empty())
         break;
 
       if (start[0] == '#')
