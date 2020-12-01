@@ -1,22 +1,19 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <ClCompile Include="src\libchdr_huffman.c" />
+    <ClCompile Include="src\libchdr_bitstream.c" />
+    <ClCompile Include="src\libchdr_cdrom.c" />
+    <ClCompile Include="src\libchdr_chd.c" />
+    <ClCompile Include="src\libchdr_flac.c" />
+  </ItemGroup>
+  <ItemGroup>
     <ClInclude Include="include\libchdr\chd.h" />
+    <ClInclude Include="include\libchdr\chdconfig.h" />
     <ClInclude Include="include\libchdr\coretypes.h" />
+    <ClInclude Include="include\libchdr\flac.h" />
     <ClInclude Include="include\libchdr\huffman.h" />
     <ClInclude Include="include\libchdr\bitstream.h" />
     <ClInclude Include="include\libchdr\cdrom.h" />
-    <ClInclude Include="src\md5.h" />
-    <ClInclude Include="src\sha1.h" />
-    <ClInclude Include="include\libchdr\flac.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="src\cdrom.c" />
-    <ClCompile Include="src\chd.c" />
-    <ClCompile Include="src\huffman.c" />
-    <ClCompile Include="src\bitstream.c" />
-    <ClCompile Include="src\md5.c" />
-    <ClCompile Include="src\sha1.c" />
-    <ClCompile Include="src\flac.c" />
   </ItemGroup>
 </Project>

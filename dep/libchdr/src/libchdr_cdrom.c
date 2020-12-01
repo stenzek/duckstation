@@ -15,11 +15,12 @@
     schemes will differ after track 1!
 
 ***************************************************************************/
-
 #include <assert.h>
 #include <string.h>
 
-#include "cdrom.h"
+#include <libchdr/cdrom.h>
+
+#ifdef WANT_RAW_DATA_SECTOR
 
 /***************************************************************************
     DEBUGGING
@@ -410,3 +411,5 @@ void ecc_clear(uint8_t *sector)
 	memset(&sector[ECC_P_OFFSET], 0, 2 * ECC_P_NUM_BYTES);
 	memset(&sector[ECC_Q_OFFSET], 0, 2 * ECC_Q_NUM_BYTES);
 }
+
+#endif /* WANT_RAW_DATA_SECTOR */

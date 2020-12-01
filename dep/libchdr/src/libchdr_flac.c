@@ -10,7 +10,8 @@
 
 #include <assert.h>
 #include <string.h>
-#include "flac.h"
+
+#include <libchdr/flac.h>
 
 /***************************************************************************
  *  FLAC DECODER
