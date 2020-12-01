@@ -521,7 +521,9 @@ void MainWindow::onGameListContextMenuRequested(const QPoint& point, const GameL
   // Hopefully this pointer doesn't disappear... it shouldn't.
   if (entry)
   {
-    connect(menu.addAction(tr("Properties...")), &QAction::triggered,
+    QAction* action = menu.addAction(tr("Properties..."));
+    action->setEnabled(entry->type == GameListEntryType::Disc);
+    connect(action, &QAction::triggered,
             [this, entry]() { GamePropertiesDialog::showForEntry(m_host_interface, entry, this); });
 
     connect(menu.addAction(tr("Open Containing Directory...")), &QAction::triggered, [this, entry]() {
