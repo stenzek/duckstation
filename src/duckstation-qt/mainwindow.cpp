@@ -538,11 +538,8 @@ void MainWindow::onGameListContextMenuRequested(const QPoint& point, const GameL
 
     if (!m_emulation_running)
     {
-      if (!entry->code.empty())
-      {
-        m_host_interface->populateGameListContextMenu(entry, this, &menu);
-        menu.addSeparator();
-      }
+      m_host_interface->populateGameListContextMenu(entry, this, &menu);
+      menu.addSeparator();
 
       connect(menu.addAction(tr("Default Boot")), &QAction::triggered, [this, entry]() {
         m_host_interface->bootSystem(std::make_shared<const SystemBootParameters>(entry->path));
