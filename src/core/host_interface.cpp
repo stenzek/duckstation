@@ -553,8 +553,7 @@ void HostInterface::FixIncompatibleSettings(bool display_osd_messages)
 #ifndef WITH_MMAP_FASTMEM
   if (g_settings.cpu_fastmem_mode == CPUFastmemMode::MMap)
   {
-    AddOSDMessage(
-      TranslateStdString("OSDMessage", "mmap fastmem is not available on this platform, using LUT instead."), 20.0f);
+    Log_WarningPrintf("mmap fastmem is not available on this platform, using LUT instead.");
     g_settings.cpu_fastmem_mode = CPUFastmemMode::LUT;
   }
 #endif
