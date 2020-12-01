@@ -88,7 +88,20 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured)
   WriteCommonFunctions(ss);
   WriteBatchUniformBuffer(ss);
 
-  ss << "CONSTANT float EPSILON = 0.00001;\n";
+  ss << R"(
+
+// OpenGL seems to be off by one pixel in the Y direction due to lower-left origin, but only on
+// Intel and NVIDIA drivers. AMD is fine. V3D requires coordinates to be slightly offset even further.
+#if API_OPENGL || API_OPENGL_ES
+  #ifdef DRIVER_V3D
+    CONSTANT float POS_EPSILON = 0.0001;
+  #else
+    CONSTANT float POS_EPSILON = 0.00001;
+  #endif
+#endif
+
+CONSTANT float TEX_EPSILON = 0.00001;
+)";
 
   if (textured)
   {
@@ -126,9 +139,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured)
   float pos_w = a_pos.w;
 
 #if API_OPENGL || API_OPENGL_ES
-  // OpenGL seems to be off by one pixel in the Y direction due to lower-left origin, but only on
-  // Intel and NVIDIA drivers. AMD is fine...
-  pos_y += EPSILON;
+  pos_y += POS_EPSILON;
 
   // 0..1 to -1..1 depth range.
   pos_z = (pos_z * 2.0) - 1.0;
@@ -145,8 +156,8 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured)
   #if TEXTURED
     // Fudge the texture coordinates by half a pixel in screen-space.
     // This fixes the rounding/interpolation error on NVIDIA GPUs with shared edges between triangles.
-    v_tex0 = float2(float((a_texcoord & 0xFFFFu) * RESOLUTION_SCALE) + EPSILON,
-                    float((a_texcoord >> 16) * RESOLUTION_SCALE) + EPSILON);
+    v_tex0 = float2(float((a_texcoord & 0xFFFFu) * RESOLUTION_SCALE) + TEX_EPSILON,
+                    float((a_texcoord >> 16) * RESOLUTION_SCALE) + TEX_EPSILON);
 
     // base_x,base_y,palette_x,palette_y
     v_texpage.x = (a_texpage & 15u) * 64u * RESOLUTION_SCALE;
