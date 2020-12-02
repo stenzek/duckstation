@@ -921,6 +921,16 @@ void CheatCode::Apply() const
       }
       break;
 
+      case InstructionCode::ExitIfNotEqual16:
+      {
+        u16 value = DoMemoryRead<u16>(inst.address);
+        if (value == inst.value16)
+          index++;
+        else
+          index = count;
+      }
+      break;
+
       case InstructionCode::Slide:
       {
         if ((index + 1) >= instructions.size())

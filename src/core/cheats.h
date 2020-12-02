@@ -30,6 +30,7 @@ struct CheatCode
     Decrement16 = 0x11,
     Increment8 = 0x20,
     Decrement8 = 0x21,
+    ExitIfNotEqual16 = 0xC0,
     CompareEqual16 = 0xD0,
     CompareNotEqual16 = 0xD1,
     CompareLess16 = 0xD2,
