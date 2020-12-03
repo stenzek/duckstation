@@ -901,17 +901,20 @@ void CPU_ADDI(u32 instr, u32 rtVal, u32 rsVal)
   tempImm.d = imm(instr);
   tempImm.sd = (tempImm.sd << 16) >> 16; // sign extend
 
-  ret.x = (float)f16Unsign(ret.x);
-  ret.x += (float)tempImm.w.l;
+  if (tempImm.d != 0)
+  {
+    ret.x = (float)f16Unsign(ret.x);
+    ret.x += (float)tempImm.w.l;
 
-  // carry on over/underflow
-  float of = (ret.x > USHRT_MAX) ? 1.f : (ret.x < 0) ? -1.f : 0.f;
-  ret.x = (float)f16Sign(ret.x);
-  // ret.x -= of * (USHRT_MAX + 1);
-  ret.y += tempImm.sw.h + of;
+    // carry on over/underflow
+    float of = (ret.x > USHRT_MAX) ? 1.f : (ret.x < 0) ? -1.f : 0.f;
+    ret.x = (float)f16Sign(ret.x);
+    // ret.x -= of * (USHRT_MAX + 1);
+    ret.y += tempImm.sw.h + of;
 
-  // truncate on overflow/underflow
-  ret.y += (ret.y > SHRT_MAX) ? -(USHRT_MAX + 1) : (ret.y < SHRT_MIN) ? USHRT_MAX + 1 : 0.f;
+    // truncate on overflow/underflow
+    ret.y += (ret.y > SHRT_MAX) ? -(USHRT_MAX + 1) : (ret.y < SHRT_MIN) ? USHRT_MAX + 1 : 0.f;
+  }
 
   CPU_reg[rt(instr)] = ret;
   CPU_reg[rt(instr)].value = rtVal;
@@ -1069,33 +1072,40 @@ void CPU_ADD(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal)
   Validate(&CPU_reg[rs(instr)], rsVal);
   Validate(&CPU_reg[rt(instr)], rtVal);
 
-  // iCB: Only require one valid input
-  if (((CPU_reg[rt(instr)].flags & VALID_01) != VALID_01) != ((CPU_reg[rs(instr)].flags & VALID_01) != VALID_01))
+  if (rtVal != 0)
   {
-    MakeValid(&CPU_reg[rs(instr)], rsVal);
-    MakeValid(&CPU_reg[rt(instr)], rtVal);
+    // iCB: Only require one valid input
+    if (((CPU_reg[rt(instr)].flags & VALID_01) != VALID_01) != ((CPU_reg[rs(instr)].flags & VALID_01) != VALID_01))
+    {
+      MakeValid(&CPU_reg[rs(instr)], rsVal);
+      MakeValid(&CPU_reg[rt(instr)], rtVal);
+    }
+
+    ret = CPU_reg[rs(instr)];
+
+    ret.x = (float)f16Unsign(ret.x);
+    ret.x += (float)f16Unsign(CPU_reg[rt(instr)].x);
+
+    // carry on over/underflow
+    float of = (ret.x > USHRT_MAX) ? 1.f : (ret.x < 0) ? -1.f : 0.f;
+    ret.x = (float)f16Sign(ret.x);
+    // ret.x -= of * (USHRT_MAX + 1);
+    ret.y += CPU_reg[rt(instr)].y + of;
+
+    // truncate on overflow/underflow
+    ret.y += (ret.y > SHRT_MAX) ? -(USHRT_MAX + 1) : (ret.y < SHRT_MIN) ? USHRT_MAX + 1 : 0.f;
+
+    // TODO: decide which "z/w" component to use
+
+    ret.halfFlags[0] &= CPU_reg[rt(instr)].halfFlags[0];
+    ret.gFlags |= CPU_reg[rt(instr)].gFlags;
+    ret.lFlags |= CPU_reg[rt(instr)].lFlags;
+    ret.hFlags |= CPU_reg[rt(instr)].hFlags;
   }
-
-  ret = CPU_reg[rs(instr)];
-
-  ret.x = (float)f16Unsign(ret.x);
-  ret.x += (float)f16Unsign(CPU_reg[rt(instr)].x);
-
-  // carry on over/underflow
-  float of = (ret.x > USHRT_MAX) ? 1.f : (ret.x < 0) ? -1.f : 0.f;
-  ret.x = (float)f16Sign(ret.x);
-  // ret.x -= of * (USHRT_MAX + 1);
-  ret.y += CPU_reg[rt(instr)].y + of;
-
-  // truncate on overflow/underflow
-  ret.y += (ret.y > SHRT_MAX) ? -(USHRT_MAX + 1) : (ret.y < SHRT_MIN) ? USHRT_MAX + 1 : 0.f;
-
-  // TODO: decide which "z/w" component to use
-
-  ret.halfFlags[0] &= CPU_reg[rt(instr)].halfFlags[0];
-  ret.gFlags |= CPU_reg[rt(instr)].gFlags;
-  ret.lFlags |= CPU_reg[rt(instr)].lFlags;
-  ret.hFlags |= CPU_reg[rt(instr)].hFlags;
+  else
+  {
+    ret = CPU_reg[rs(instr)];
+  }
 
   ret.value = rdVal;
 
