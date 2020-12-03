@@ -839,7 +839,10 @@ float4 SampleFromVRAM(uint4 texpage, float2 coords)
     #if UV_LIMITS
       float4 uv_limits = v_uv_limits;
       #if !PALETTE
-        uv_limits *= float4(RESOLUTION_SCALE, RESOLUTION_SCALE, RESOLUTION_SCALE, RESOLUTION_SCALE);
+        // Extend the UV range to all "upscaled" pixels. This means 1-pixel-high polygon-based 
+        // framebuffer effects won't be downsampled. (e.g. Mega Man Legends 2 haze effect)
+        uv_limits.xy *= float(RESOLUTION_SCALE);
+        uv_limits.zw = (uv_limits.zw * float(RESOLUTION_SCALE + 1)) - float(RESOLUTION_SCALE - 1);
       #endif
     #endif
 
