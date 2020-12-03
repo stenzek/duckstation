@@ -451,6 +451,8 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetStringValue("Display", "CropMode", Settings::GetDisplayCropModeName(Settings::DEFAULT_DISPLAY_CROP_MODE));
   si.SetIntValue("Display", "ActiveStartOffset", 0);
   si.SetIntValue("Display", "ActiveEndOffset", 0);
+  si.SetIntValue("Display", "LineStartOffset", 0);
+  si.SetIntValue("Display", "LineEndOffset", 0);
   si.SetStringValue("Display", "AspectRatio",
                     Settings::GetDisplayAspectRatioName(Settings::DEFAULT_DISPLAY_ASPECT_RATIO));
   si.SetBoolValue("Display", "Force4_3For24Bit", false);
@@ -652,7 +654,9 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.display_aspect_ratio != old_settings.display_aspect_ratio ||
         g_settings.gpu_pgxp_enable != old_settings.gpu_pgxp_enable ||
         g_settings.display_active_start_offset != old_settings.display_active_start_offset ||
-        g_settings.display_active_end_offset != old_settings.display_active_end_offset)
+        g_settings.display_active_end_offset != old_settings.display_active_end_offset ||
+        g_settings.display_line_start_offset != old_settings.display_line_start_offset ||
+        g_settings.display_line_end_offset != old_settings.display_line_end_offset)
     {
       g_gpu->UpdateSettings();
     }

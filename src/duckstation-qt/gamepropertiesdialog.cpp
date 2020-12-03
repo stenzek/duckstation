@@ -289,6 +289,16 @@ void GamePropertiesDialog::populateGameSettings()
     QSignalBlocker sb(m_ui.displayActiveEndOffset);
     m_ui.displayActiveEndOffset->setValue(static_cast<int>(gs.display_active_end_offset.value()));
   }
+  if (gs.display_line_start_offset.has_value())
+  {
+    QSignalBlocker sb(m_ui.displayLineStartOffset);
+    m_ui.displayLineStartOffset->setValue(static_cast<int>(gs.display_line_start_offset.value()));
+  }
+  if (gs.display_line_end_offset.has_value())
+  {
+    QSignalBlocker sb(m_ui.displayLineEndOffset);
+    m_ui.displayLineEndOffset->setValue(static_cast<int>(gs.display_line_end_offset.value()));
+  }
 
   if (gs.dma_max_slice_ticks.has_value())
   {
@@ -643,6 +653,20 @@ void GamePropertiesDialog::connectUi()
       m_game_settings.display_active_end_offset.reset();
     else
       m_game_settings.display_active_end_offset = static_cast<s16>(value);
+    saveGameSettings();
+  });
+  connect(m_ui.displayLineStartOffset, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
+    if (value == 0)
+      m_game_settings.display_line_start_offset.reset();
+    else
+      m_game_settings.display_line_start_offset = static_cast<s16>(value);
+    saveGameSettings();
+  });
+  connect(m_ui.displayLineEndOffset, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
+    if (value == 0)
+      m_game_settings.display_line_end_offset.reset();
+    else
+      m_game_settings.display_line_end_offset = static_cast<s16>(value);
     saveGameSettings();
   });
   connect(m_ui.dmaMaxSliceTicks, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
