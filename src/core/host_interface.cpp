@@ -417,6 +417,8 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetFloatValue("Main", "FastForwardSpeed", 0.0f);
   si.SetBoolValue("Main", "IncreaseTimerResolution", true);
   si.SetBoolValue("Main", "StartPaused", false);
+  si.SetBoolValue("Main", "StartFullscreen", false);
+  si.SetBoolValue("Main", "PauseOnFocusLoss", false);
   si.SetBoolValue("Main", "SaveStateOnExit", true);
   si.SetBoolValue("Main", "ConfirmPowerOff", true);
   si.SetBoolValue("Main", "LoadDevicesFromSaveStates", false);

@@ -17,6 +17,8 @@ GeneralSettingsWidget::GeneralSettingsWidget(QtHostInterface* host_interface, QW
   }
 
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.pauseOnStart, "Main", "StartPaused", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.pauseOnFocusLoss, "Main", "PauseOnFocusLoss",
+                                               false);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.startFullscreen, "Main", "StartFullscreen",
                                                false);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.renderToMain, "Main", "RenderToMainWindow", true);
@@ -87,7 +89,7 @@ GeneralSettingsWidget::GeneralSettingsWidget(QtHostInterface* host_interface, QW
                                 "to use XInput over SDL2 for compatibility."));
 
   // Since this one is compile-time selected, we don't put it in the .ui file.
-  int current_col = 0;
+  int current_col = 1;
   int current_row = m_ui.formLayout_4->rowCount() - current_col;
 #ifdef WITH_DISCORD_PRESENCE
   {

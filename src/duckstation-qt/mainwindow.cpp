@@ -342,6 +342,31 @@ void MainWindow::onRunningGameChanged(const QString& filename, const QString& ga
     m_display_widget->setWindowTitle(windowTitle());
 }
 
+void MainWindow::onApplicationStateChanged(Qt::ApplicationState state)
+{
+  if (!m_emulation_running || !g_settings.pause_on_focus_loss)
+    return;
+
+  const bool focus_loss = (state != Qt::ApplicationActive);
+  if (focus_loss)
+  {
+    if (!m_was_paused_by_focus_loss && !System::IsPaused())
+    {
+      m_host_interface->pauseSystem(true);
+      m_was_paused_by_focus_loss = true;
+    }
+  }
+  else
+  {
+    if (m_was_paused_by_focus_loss)
+    {
+      if (System::IsPaused())
+        m_host_interface->pauseSystem(false);
+      m_was_paused_by_focus_loss = false;
+    }
+  }
+}
+
 void MainWindow::onStartDiscActionTriggered()
 {
   QString filename =
@@ -795,6 +820,8 @@ void MainWindow::connectSignals()
 {
   updateEmulationActions(false, false);
   onEmulationPaused(false);
+
+  connect(qApp, &QGuiApplication::applicationStateChanged, this, &MainWindow::onApplicationStateChanged);
 
   connect(m_ui.actionStartDisc, &QAction::triggered, this, &MainWindow::onStartDiscActionTriggered);
   connect(m_ui.actionStartBios, &QAction::triggered, this, &MainWindow::onStartBIOSActionTriggered);

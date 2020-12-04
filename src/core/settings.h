@@ -83,6 +83,7 @@ struct Settings
   bool increase_timer_resolution = true;
   bool start_paused = false;
   bool start_fullscreen = false;
+  bool pause_on_focus_loss = false;
   bool save_state_on_exit = true;
   bool confim_power_off = true;
   bool load_devices_from_save_states = false;
