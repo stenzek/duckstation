@@ -811,7 +811,7 @@ void CheatCode::Apply() const
 
       case InstructionCode::Increment16:
       {
-        u16 value = DoMemoryRead<u16>(inst.address);
+        const u16 value = DoMemoryRead<u16>(inst.address);
         DoMemoryWrite<u16>(inst.address, value + inst.value16);
         index++;
       }
@@ -819,7 +819,7 @@ void CheatCode::Apply() const
 
       case InstructionCode::Decrement16:
       {
-        u16 value = DoMemoryRead<u16>(inst.address);
+        const u16 value = DoMemoryRead<u16>(inst.address);
         DoMemoryWrite<u16>(inst.address, value - inst.value16);
         index++;
       }
@@ -827,7 +827,7 @@ void CheatCode::Apply() const
 
       case InstructionCode::Increment8:
       {
-        u8 value = DoMemoryRead<u8>(inst.address);
+        const u8 value = DoMemoryRead<u8>(inst.address);
         DoMemoryWrite<u8>(inst.address, value + inst.value8);
         index++;
       }
@@ -835,7 +835,7 @@ void CheatCode::Apply() const
 
       case InstructionCode::Decrement8:
       {
-        u8 value = DoMemoryRead<u8>(inst.address);
+        const u8 value = DoMemoryRead<u8>(inst.address);
         DoMemoryWrite<u8>(inst.address, value - inst.value8);
         index++;
       }
@@ -843,7 +843,7 @@ void CheatCode::Apply() const
 
       case InstructionCode::CompareEqual16:
       {
-        u16 value = DoMemoryRead<u16>(inst.address);
+        const u16 value = DoMemoryRead<u16>(inst.address);
         if (value == inst.value16)
           index++;
         else
@@ -853,7 +853,7 @@ void CheatCode::Apply() const
 
       case InstructionCode::CompareNotEqual16:
       {
-        u16 value = DoMemoryRead<u16>(inst.address);
+        const u16 value = DoMemoryRead<u16>(inst.address);
         if (value != inst.value16)
           index++;
         else
@@ -863,7 +863,7 @@ void CheatCode::Apply() const
 
       case InstructionCode::CompareLess16:
       {
-        u16 value = DoMemoryRead<u16>(inst.address);
+        const u16 value = DoMemoryRead<u16>(inst.address);
         if (value < inst.value16)
           index++;
         else
@@ -873,7 +873,7 @@ void CheatCode::Apply() const
 
       case InstructionCode::CompareGreater16:
       {
-        u16 value = DoMemoryRead<u16>(inst.address);
+        const u16 value = DoMemoryRead<u16>(inst.address);
         if (value > inst.value16)
           index++;
         else
@@ -883,7 +883,7 @@ void CheatCode::Apply() const
 
       case InstructionCode::CompareEqual8:
       {
-        u8 value = DoMemoryRead<u8>(inst.address);
+        const u8 value = DoMemoryRead<u8>(inst.address);
         if (value == inst.value8)
           index++;
         else
@@ -893,7 +893,7 @@ void CheatCode::Apply() const
 
       case InstructionCode::CompareNotEqual8:
       {
-        u8 value = DoMemoryRead<u8>(inst.address);
+        const u8 value = DoMemoryRead<u8>(inst.address);
         if (value != inst.value8)
           index++;
         else
@@ -903,7 +903,7 @@ void CheatCode::Apply() const
 
       case InstructionCode::CompareLess8:
       {
-        u8 value = DoMemoryRead<u8>(inst.address);
+        const u8 value = DoMemoryRead<u8>(inst.address);
         if (value < inst.value8)
           index++;
         else
@@ -913,7 +913,7 @@ void CheatCode::Apply() const
 
       case InstructionCode::CompareGreater8:
       {
-        u8 value = DoMemoryRead<u8>(inst.address);
+        const u8 value = DoMemoryRead<u8>(inst.address);
         if (value > inst.value8)
           index++;
         else
@@ -921,13 +921,26 @@ void CheatCode::Apply() const
       }
       break;
 
-      case InstructionCode::ExitIfNotEqual16:
+      case InstructionCode::SkipIfNotEqual16: // C0
       {
-        u16 value = DoMemoryRead<u16>(inst.address);
+        const u16 value = DoMemoryRead<u16>(inst.address);
+        index++;
+
         if (value == inst.value16)
-          index++;
-        else
-          index = count;
+        {
+          // execute following instructions
+          continue;
+        }
+
+        // skip to the next separator (00000000 FFFF), or end
+        constexpr u64 separator_value = UINT64_C(0x000000000000FFFF);
+        while (index < count)
+        {
+          // we don't want to execute the separator instruction
+          const u64 bits = instructions[index++].bits;
+          if (bits == separator_value)
+            break;
+        }
       }
       break;
 
