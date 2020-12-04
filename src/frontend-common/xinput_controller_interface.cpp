@@ -237,7 +237,15 @@ bool XInputControllerInterface::HandleAxisEvent(u32 index, Axis axis, s32 value)
   const AxisCallback& cb = m_controllers[index].axis_mapping[static_cast<u32>(axis)][AxisSide::Full];
   if (cb)
   {
-    cb(f_value);
+    // Extend triggers from a 0 - 1 range to a -1 - 1 range for consistency with other inputs
+    if (axis == Axis::LeftTrigger || axis == Axis::RightTrigger)
+    {
+      cb((f_value * 2.0f) - 1.0f);
+    }
+    else
+    {
+      cb(f_value);
+    }
     return true;
   }
 
