@@ -65,6 +65,9 @@ GeneralSettingsWidget::GeneralSettingsWidget(QtHostInterface* host_interface, QW
        "the game list. If unchecked, the display will render in a separate window."));
   dialog->registerWidgetHelp(m_ui.pauseOnStart, tr("Pause On Start"), tr("Unchecked"),
                              tr("Pauses the emulator when a game is started."));
+  dialog->registerWidgetHelp(m_ui.pauseOnFocusLoss, tr("Pause On Focus Loss"), tr("Unchecked"),
+                             tr("Pauses the emulator when you minimize the window or switch to another application, "
+                                "and unpauses when you switch back."));
   dialog->registerWidgetHelp(
     m_ui.loadDevicesFromSaveStates, tr("Load Devices From Save States"), tr("Unchecked"),
     tr("When enabled, memory cards and controllers will be overwritten when save states are loaded. This can "
