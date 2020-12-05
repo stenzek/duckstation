@@ -501,6 +501,8 @@ protected:
     TickCount current_tick_in_scanline;
     u32 current_scanline;
 
+    TickCount fractional_dot_ticks; // only used when timer0 is enabled
+
     bool in_hblank;
     bool in_vblank;
 
