@@ -660,6 +660,9 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.display_line_start_offset != old_settings.display_line_start_offset ||
         g_settings.display_line_end_offset != old_settings.display_line_end_offset)
     {
+      if (g_settings.IsUsingCodeCache())
+        CPU::CodeCache::Reinitialize();
+
       g_gpu->UpdateSettings();
     }
 

@@ -1609,6 +1609,10 @@ bool InsertMedia(const char* path)
     UpdateMemoryCards();
   }
 
+  // reinitialize recompiler, because especially with preloading this might overlap the fastmem area
+  if (g_settings.IsUsingCodeCache())
+    CPU::CodeCache::Reinitialize();
+
   return true;
 }
 
