@@ -91,6 +91,7 @@ void SPU::Reset()
     std::fill_n(v.regs.index, NUM_VOICE_REGISTERS, u16(0));
     v.counter.bits = 0;
     v.current_block_flags.bits = 0;
+    v.is_first_block = 0;
     v.current_block_samples.fill(s16(0));
     v.adpcm_last_samples.fill(s32(0));
     v.adsr_envelope.Reset(0, false, false);
@@ -150,6 +151,7 @@ bool SPU::DoState(StateWrapper& sw)
     sw.DoArray(v.regs.index, NUM_VOICE_REGISTERS);
     sw.Do(&v.counter.bits);
     sw.Do(&v.current_block_flags.bits);
+    sw.DoEx(&v.is_first_block, 47, false);
     sw.DoArray(&v.current_block_samples[NUM_SAMPLES_FROM_LAST_ADPCM_BLOCK], NUM_SAMPLES_PER_ADPCM_BLOCK);
     sw.DoArray(&v.current_block_samples[0], NUM_SAMPLES_FROM_LAST_ADPCM_BLOCK);
     sw.Do(&v.adpcm_last_samples);
@@ -586,8 +588,7 @@ void SPU::WriteVoiceRegister(u32 offset, u16 value)
   DebugAssert(voice_index < 24);
 
   Voice& voice = m_voices[voice_index];
-  const u32 pending_key_on = m_key_on_register;
-  if (voice.IsOn() || pending_key_on & (1u << voice_index))
+  if (voice.IsOn() || m_key_on_register & (1u << voice_index))
     m_tick_event->InvokeEarly();
 
   switch (reg_index)
@@ -649,11 +650,22 @@ void SPU::WriteVoiceRegister(u32 offset, u16 value)
 
     case 0x0E: // repeat address
     {
-      const bool ignore_loop_address = (pending_key_on & (1u << voice_index)) == 0 && !voice.IsOn();
-      Log_DebugPrintf("SPU voice %u ADPCM repeat address <- 0x%04X, ignoring block address = %s", voice_index, value,
-                      ignore_loop_address ? "yes" : "no");
+      // There is a short window of time here between the voice being keyed on and the first block finishing decoding
+      // where setting the repeat address will *NOT* ignore the block/loop start flag. Games sensitive to this are:
+      //  - The Misadventures of Tron Bonne
+      //  - Re-Loaded - The Hardcore Sequel
+      //  - Valkyrie Profile
+
+      const bool ignore_loop_address = voice.IsOn() && !voice.is_first_block;
+      Log_DebugPrintf("SPU voice %u ADPCM repeat address <- 0x%04X", voice_index, value);
       voice.regs.adpcm_repeat_address = value;
       voice.ignore_loop_address |= ignore_loop_address;
+
+      if (!ignore_loop_address)
+      {
+        Log_DevPrintf("Not ignoring loop address, the ADPCM repeat address of 0x%04X for voice %u will be overwritten",
+                      value, voice_index);
+      }
     }
     break;
 
@@ -957,6 +969,7 @@ void SPU::Voice::KeyOn()
               static_cast<s16>(0));
 
   has_samples = false;
+  is_first_block = true;
   ignore_loop_address = false;
   adsr_phase = ADSRPhase::Attack;
   UpdateADSREnvelope();
@@ -1374,6 +1387,7 @@ ALWAYS_INLINE_RELEASE std::tuple<s32, s32> SPU::SampleVoice(u32 voice_index)
     // next block
     voice.counter.sample_index -= NUM_SAMPLES_PER_ADPCM_BLOCK;
     voice.has_samples = false;
+    voice.is_first_block = false;
     voice.current_address += 2;
 
     // handle flags

@@ -244,6 +244,7 @@ private:
     VoiceRegisters regs;
     VoiceCounter counter;
     ADPCMFlags current_block_flags;
+    bool is_first_block;
     std::array<s16, NUM_SAMPLES_FROM_LAST_ADPCM_BLOCK + NUM_SAMPLES_PER_ADPCM_BLOCK> current_block_samples;
     std::array<s16, 2> adpcm_last_samples;
     s32 last_volume;
