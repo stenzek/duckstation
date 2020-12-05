@@ -28,6 +28,7 @@ public:
 
   // dot clock/hblank/sysclk div 8
   ALWAYS_INLINE bool IsUsingExternalClock(u32 timer) const { return m_states[timer].external_counting_enabled; }
+  ALWAYS_INLINE bool IsSyncEnabled(u32 timer) const { return m_states[timer].mode.sync_enable; }
 
   // queries for GPU
   ALWAYS_INLINE bool IsExternalIRQEnabled(u32 timer) const

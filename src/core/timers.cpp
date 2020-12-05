@@ -82,25 +82,29 @@ void Timers::SetGate(u32 timer, bool state)
 
   cs.gate = state;
 
-  if (cs.mode.sync_enable)
+  if (!cs.mode.sync_enable)
+    return;
+
+  if (cs.counting_enabled && !cs.use_external_clock)
+    m_sysclk_event->InvokeEarly();
+
+  if (state)
   {
-    if (state)
+    switch (cs.mode.sync_mode)
     {
-      switch (cs.mode.sync_mode)
-      {
-        case SyncMode::ResetOnGate:
-        case SyncMode::ResetAndRunOnGate:
-          cs.counter = 0;
-          break;
+      case SyncMode::ResetOnGate:
+      case SyncMode::ResetAndRunOnGate:
+        cs.counter = 0;
+        break;
 
-        case SyncMode::FreeRunOnGate:
-          cs.mode.sync_enable = false;
-          break;
-      }
+      case SyncMode::FreeRunOnGate:
+        cs.mode.sync_enable = false;
+        break;
     }
-
-    UpdateCountingEnabled(cs);
   }
+
+  UpdateCountingEnabled(cs);
+  UpdateSysClkEvent();
 }
 
 TickCount Timers::GetTicksUntilIRQ(u32 timer) const

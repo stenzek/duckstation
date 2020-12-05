@@ -681,10 +681,22 @@ TickCount GPU::GetPendingCommandTicks() const
 void GPU::UpdateCRTCTickEvent()
 {
   // figure out how many GPU ticks until the next vblank or event
-  TickCount lines_until_event =
-    (m_crtc_state.current_scanline >= m_crtc_state.vertical_display_end ?
-       (m_crtc_state.vertical_total - m_crtc_state.current_scanline + m_crtc_state.vertical_display_end) :
-       (m_crtc_state.vertical_display_end - m_crtc_state.current_scanline));
+  TickCount lines_until_event;
+  if (g_timers.IsSyncEnabled(HBLANK_TIMER_INDEX))
+  {
+    // when the timer sync is enabled we need to sync at vblank start and end
+    lines_until_event =
+      (m_crtc_state.current_scanline >= m_crtc_state.vertical_display_end) ?
+        (m_crtc_state.vertical_total - m_crtc_state.current_scanline + m_crtc_state.vertical_display_start) :
+        (m_crtc_state.vertical_display_end - m_crtc_state.current_scanline);
+  }
+  else
+  {
+    lines_until_event =
+      (m_crtc_state.current_scanline >= m_crtc_state.vertical_display_end ?
+         (m_crtc_state.vertical_total - m_crtc_state.current_scanline + m_crtc_state.vertical_display_end) :
+         (m_crtc_state.vertical_display_end - m_crtc_state.current_scanline));
+  }
   if (g_timers.IsExternalIRQEnabled(HBLANK_TIMER_INDEX))
     lines_until_event = std::min(lines_until_event, g_timers.GetTicksUntilIRQ(HBLANK_TIMER_INDEX));
 
@@ -693,7 +705,8 @@ void GPU::UpdateCRTCTickEvent()
   if (g_timers.IsExternalIRQEnabled(DOT_TIMER_INDEX))
   {
     const TickCount dots_until_irq = g_timers.GetTicksUntilIRQ(DOT_TIMER_INDEX);
-    const TickCount ticks_until_irq = (dots_until_irq * m_crtc_state.dot_clock_divider) - m_crtc_state.fractional_dot_ticks;
+    const TickCount ticks_until_irq =
+      (dots_until_irq * m_crtc_state.dot_clock_divider) - m_crtc_state.fractional_dot_ticks;
     ticks_until_event = std::min(ticks_until_event, std::max<TickCount>(ticks_until_irq, 0));
   }
 
@@ -1346,8 +1359,8 @@ void GPU::SetDrawMode(u16 value)
     FlushRender();
 
   // Bits 0..10 are returned in the GPU status register.
-  m_GPUSTAT.bits =
-    (m_GPUSTAT.bits & ~(GPUDrawModeReg::GPUSTAT_MASK)) | (ZeroExtend32(new_mode_reg.bits) & GPUDrawModeReg::GPUSTAT_MASK);
+  m_GPUSTAT.bits = (m_GPUSTAT.bits & ~(GPUDrawModeReg::GPUSTAT_MASK)) |
+                   (ZeroExtend32(new_mode_reg.bits) & GPUDrawModeReg::GPUSTAT_MASK);
   m_GPUSTAT.texture_disable = m_draw_mode.mode_reg.texture_disable;
 }
 
