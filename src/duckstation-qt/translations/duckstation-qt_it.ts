@@ -1980,7 +1980,7 @@ Questo avvertimento verrà mostrato solo una volta.</translation>
         <location filename="../displaysettingswidget.ui" line="75"/>
         <location filename="../displaysettingswidget.cpp" line="85"/>
         <source>VSync</source>
-        <translation>VSync</translation>
+        <translation>Sincronia Verticale</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="85"/>
@@ -2121,7 +2121,7 @@ Questo avvertimento verrà mostrato solo una volta.</translation>
     <message>
         <location filename="../displaysettingswidget.cpp" line="86"/>
         <source>Enable this option to match DuckStation&apos;s refresh rate with your current monitor or screen. VSync is automatically disabled when it is not possible (e.g. running at non-100% speed).</source>
-        <translation>Abilita questa opzione per far corrispondere la velocità di aggiornamento di DuckStaton a quella del monitor o schermo corrente. L&apos;opzione VSync è automaticamente disabilitata quando non possibile (es. l&apos;emulatore non va al 100% della velocità).</translation>
+        <translation>Abilita questa opzione per far corrispondere la velocità di aggiornamento di DuckStaton a quella del monitor o schermo corrente. L&apos;opzione Sincronia Verticale è automaticamente disabilitata quando non possibile (es. l&apos;emulatore non va al 100% della velocità).</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="89"/>
@@ -2161,7 +2161,7 @@ Questo avvertimento verrà mostrato solo una volta.</translation>
     <message>
         <location filename="../displaysettingswidget.cpp" line="182"/>
         <source>Borderless Fullscreen</source>
-        <translation></translation>
+        <translation>Schermo Intero Senza Bordi</translation>
     </message>
 </context>
 <context>
@@ -6195,7 +6195,7 @@ I salvataggi non sono recuperabili.</translation>
     <message>
         <location filename="../settingsdialog.cpp" line="99"/>
         <source>&lt;strong&gt;Post-Processing Settings&lt;/strong&gt;&lt;hr&gt;Post processing allows you to alter the appearance of the image displayed on the screen with various filters. Shaders will be executed in sequence.</source>
-        <translation>&lt;strong&gt;Impostazioni Post-Processing&lt;/strong&gt;&lt;hr&gt;Il Post processing permette di modificare l&apos;apparenza dell&apos;immagine mostrata attraverso vari filtri. Gli Shader saranno applicati in sequenza.</translation>
+        <translation>&lt;strong&gt;Impostazioni Post-Processing&lt;/strong&gt;&lt;hr&gt;Il Post processing permette di modificare l&apos;aspetto dell&apos;immagine mostrata attraverso vari filtri. Gli Shader saranno applicati in sequenza.</translation>
     </message>
     <message>
         <source>&lt;strong&gt;GPU Settings&lt;/strong&gt;&lt;hr&gt;These options control the simulation of the GPU in the console. Various enhancements are available, mouse over each for additional information.</source>
