@@ -5,6 +5,7 @@
 #include "windows_headers.h"
 #include <malloc.h>
 #elif defined(__linux__) || defined(__APPLE__) || defined(__HAIKU__)
+#include <errno.h>
 #include <time.h>
 #endif
 
@@ -169,7 +170,10 @@ bool Event::TryWait(u32 timeout_in_ms)
 
   pthread_mutex_lock(&m_mutex);
   while (!m_signaled.load())
-    pthread_cond_timedwait(&m_cv, &m_mutex, &ts);
+  {
+    if (pthread_cond_timedwait(&m_cv, &m_mutex, &ts) != 0)
+      break;
+  }
 
   const bool result = m_signaled.load();
 
