@@ -4,11 +4,23 @@ The following people have contributed to the project in some way, and are credit
 ## Code Contributions
 - Connor McLaughlin - @stenzek
 - @ggrtk
+- @CookiePLMonster
 
 ## Translators
 - Anderson Cardoso - Portuguese (Br)
 - @bajolzas - Portuguese (Pt)
 - posix - @Richard-L - German
+- @phoe-nix, @zkdpower - Chinese (Simplified)
+- Sorer - @MojoJojoDojo - Hebrew
+- Hipnosis183 - Spanish
+- @RaydenX93 - Italian
+- @r57zone - Russian
+- @DenSinH - Dutch
+- @BenjaminSiskoo - French
+
+## Cheat Database
+- Pugsy
+- Unicorngoulash
 
 ## Game Compatibility Database
  - @Zet-sensei
@@ -25,6 +37,12 @@ The following people have contributed to the project in some way, and are credit
  - @heckez-sys
  - @Damaniel
  - @RaydenX93
+ - @gp2man
+ - @Richard-L
+ - @pan2marumie3
+ - @CookiePLMonster
+ - @LoStraniero91
+ - @JFD62780
 
 ## Special Thanks
 The following people did not directly contribute to the emulator, but it would not be in the state if not for them.

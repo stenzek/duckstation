@@ -53,14 +53,27 @@ void AndroidSettingsInterface::Clear()
 int AndroidSettingsInterface::GetIntValue(const char* section, const char* key, int default_value /*= 0*/)
 {
   JNIEnv* env = AndroidHelpers::GetJNIEnv();
-#if 0
-  return static_cast<int>(env->CallIntMethod(m_java_shared_preferences, m_get_int,
-                                             env->NewStringUTF(GetSettingKey(section, key)), default_value));
-#else
+
   // Some of these settings are string lists...
   jstring string_object = reinterpret_cast<jstring>(
     env->CallObjectMethod(m_java_shared_preferences, m_get_string, env->NewStringUTF(GetSettingKey(section, key)),
                           env->NewStringUTF(TinyString::FromFormat("%d", default_value))));
+  if (env->ExceptionCheck())
+  {
+    env->ExceptionClear();
+
+    // it might actually be an int (e.g. seek bar preference)
+    const int int_value = static_cast<int>(env->CallIntMethod(m_java_shared_preferences, m_get_int,
+                                                              env->NewStringUTF(GetSettingKey(section, key)), default_value));
+    if (env->ExceptionCheck())
+    {
+      env->ExceptionClear();
+      return default_value;
+    }
+
+    return int_value;
+  }
+
   if (!string_object)
     return default_value;
 
@@ -70,7 +83,6 @@ int AndroidSettingsInterface::GetIntValue(const char* section, const char* key, 
   std::optional<int> value = StringUtil::FromChars<int>(data);
   env->ReleaseStringUTFChars(string_object, data);
   return value.value_or(default_value);
-#endif
 }
 
 float AndroidSettingsInterface::GetFloatValue(const char* section, const char* key, float default_value /*= 0.0f*/)
@@ -84,6 +96,13 @@ float AndroidSettingsInterface::GetFloatValue(const char* section, const char* k
   jstring string_object = reinterpret_cast<jstring>(
     env->CallObjectMethod(m_java_shared_preferences, m_get_string, env->NewStringUTF(GetSettingKey(section, key)),
                           env->NewStringUTF(TinyString::FromFormat("%f", default_value))));
+
+  if (env->ExceptionCheck())
+  {
+    env->ExceptionClear();
+    return default_value;
+  }
+
   if (!string_object)
     return default_value;
 
@@ -99,8 +118,15 @@ float AndroidSettingsInterface::GetFloatValue(const char* section, const char* k
 bool AndroidSettingsInterface::GetBoolValue(const char* section, const char* key, bool default_value /*= false*/)
 {
   JNIEnv* env = AndroidHelpers::GetJNIEnv();
-  return static_cast<bool>(env->CallBooleanMethod(m_java_shared_preferences, m_get_boolean,
+  jboolean bool_value = static_cast<bool>(env->CallBooleanMethod(m_java_shared_preferences, m_get_boolean,
                                                   env->NewStringUTF(GetSettingKey(section, key)), default_value));
+  if (env->ExceptionCheck())
+  {
+    env->ExceptionClear();
+    return default_value;
+  }
+
+  return bool_value;
 }
 
 std::string AndroidSettingsInterface::GetStringValue(const char* section, const char* key,
@@ -110,6 +136,16 @@ std::string AndroidSettingsInterface::GetStringValue(const char* section, const 
   jobject string_object =
     env->CallObjectMethod(m_java_shared_preferences, m_get_string, env->NewStringUTF(GetSettingKey(section, key)),
                           env->NewStringUTF(default_value));
+
+  if (env->ExceptionCheck())
+  {
+    env->ExceptionClear();
+    return default_value;
+  }
+
+  if (!string_object)
+    return default_value;
+
   return AndroidHelpers::JStringToString(env, reinterpret_cast<jstring>(string_object));
 }
 
@@ -141,11 +177,24 @@ void AndroidSettingsInterface::DeleteValue(const char* section, const char* key)
 std::vector<std::string> AndroidSettingsInterface::GetStringList(const char* section, const char* key)
 {
   JNIEnv* env = AndroidHelpers::GetJNIEnv();
-  jobject values_set = env->CallObjectMethod(m_java_shared_preferences, m_get_string_set, env->NewStringUTF(GetSettingKey(section, key)), nullptr);
+  jobject values_set = env->CallObjectMethod(m_java_shared_preferences, m_get_string_set,
+                                             env->NewStringUTF(GetSettingKey(section, key)), nullptr);
+  if (env->ExceptionCheck())
+  {
+    env->ExceptionClear();
+    return {};
+  }
+
   if (!values_set)
     return {};
 
   jobjectArray values_array = reinterpret_cast<jobjectArray>(env->CallObjectMethod(values_set, m_set_to_array));
+  if (env->ExceptionCheck())
+  {
+    env->ExceptionClear();
+    return {};
+  }
+  
   if (!values_array)
     return {};
 

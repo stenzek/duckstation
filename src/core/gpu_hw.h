@@ -33,8 +33,10 @@ public:
 
   virtual bool Initialize(HostDisplay* host_display) override;
   virtual void Reset() override;
-  virtual bool DoState(StateWrapper& sw) override;
-  virtual void UpdateResolutionScale() override;
+  virtual bool DoState(StateWrapper& sw, bool update_display) override;
+
+  void UpdateResolutionScale() override final;
+  std::tuple<u32, u32> GetEffectiveDisplayResolution() override final;
 
 protected:
   enum : u32
@@ -92,8 +94,8 @@ protected:
 
   struct BatchConfig
   {
-    TextureMode texture_mode;
-    TransparencyMode transparency_mode;
+    GPUTextureMode texture_mode;
+    GPUTransparencyMode transparency_mode;
     bool dithering;
     bool interlacing;
     bool set_mask_while_drawing;
@@ -103,22 +105,22 @@ protected:
     // on a per-pixel basis, and the opaque pixels shouldn't be blended at all.
     bool NeedsTwoPassRendering() const
     {
-      return transparency_mode == GPU::TransparencyMode::BackgroundMinusForeground &&
-             texture_mode != TextureMode::Disabled;
+      return transparency_mode == GPUTransparencyMode::BackgroundMinusForeground &&
+             texture_mode != GPUTextureMode::Disabled;
     }
 
     // Returns the render mode for this batch.
     BatchRenderMode GetRenderMode() const
     {
-      return transparency_mode == TransparencyMode::Disabled ? BatchRenderMode::TransparencyDisabled :
-                                                               BatchRenderMode::TransparentAndOpaque;
+      return transparency_mode == GPUTransparencyMode::Disabled ? BatchRenderMode::TransparencyDisabled :
+                                                                  BatchRenderMode::TransparentAndOpaque;
     }
   };
 
   struct BatchUBOData
   {
-    u32 u_texture_window_mask[2];
-    u32 u_texture_window_offset[2];
+    u32 u_texture_window_and[2];
+    u32 u_texture_window_or[2];
     float u_src_alpha_factor;
     float u_dst_alpha_factor;
     u32 u_interlaced_displayed_field;
@@ -185,6 +187,8 @@ protected:
 
   u32 CalculateResolutionScale() const;
 
+  ALWAYS_INLINE bool IsUsingMultisampling() const { return m_multisamples > 1; }
+
   void SetFullVRAMDirtyRectangle()
   {
     m_vram_dirty_rect.Set(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
@@ -219,6 +223,28 @@ protected:
     {
       return InterlacedRenderMode::None;
     }
+  }
+
+  /// Returns true if the specified texture filtering mode requires dual-source blending.
+  ALWAYS_INLINE bool TextureFilterRequiresDualSourceBlend(GPUTextureFilter filter)
+  {
+    return (filter == GPUTextureFilter::Bilinear || filter == GPUTextureFilter::JINC2 ||
+            filter == GPUTextureFilter::xBR);
+  }
+
+  /// Returns true if alpha blending should be enabled for drawing the current batch.
+  ALWAYS_INLINE bool UseAlphaBlending(GPUTransparencyMode transparency_mode, BatchRenderMode render_mode) const
+  {
+    if (m_texture_filtering == GPUTextureFilter::Bilinear || m_texture_filtering == GPUTextureFilter::JINC2 ||
+        m_texture_filtering == GPUTextureFilter::xBR)
+    {
+      return true;
+    }
+
+    if (transparency_mode == GPUTransparencyMode::Disabled || render_mode == BatchRenderMode::OnlyOpaque)
+      return false;
+
+    return true;
   }
 
   void FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color) override;
@@ -264,11 +290,16 @@ protected:
   s32 m_current_depth = 0;
 
   u32 m_resolution_scale = 1;
+  u32 m_multisamples = 1;
   u32 m_max_resolution_scale = 1;
+  u32 m_max_multisamples = 1;
   HostDisplay::RenderAPI m_render_api = HostDisplay::RenderAPI::None;
+  bool m_per_sample_shading = false;
   bool m_true_color = true;
   bool m_scaled_dithering = false;
-  bool m_texture_filtering = false;
+  GPUTextureFilter m_texture_filtering = GPUTextureFilter::Nearest;
+  bool m_chroma_smoothing = false;
+  bool m_supports_per_sample_shading = false;
   bool m_supports_dual_source_blend = false;
   bool m_using_uv_limits = false;
 

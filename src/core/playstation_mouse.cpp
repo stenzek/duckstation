@@ -19,7 +19,7 @@ PlayStationMouse::~PlayStationMouse() = default;
 
 ControllerType PlayStationMouse::GetType() const
 {
-  return ControllerType::NamcoGunCon;
+  return ControllerType::PlayStationMouse;
 }
 
 std::optional<s32> PlayStationMouse::GetAxisCodeByName(std::string_view axis_name) const
@@ -190,12 +190,8 @@ Controller::AxisList PlayStationMouse::StaticGetAxisNames()
 
 Controller::ButtonList PlayStationMouse::StaticGetButtonNames()
 {
-#define B(n)                                                                                                           \
-  {                                                                                                                    \
-#n, static_cast < s32>(Button::n)                                                                                  \
-  }
-  return {B(Left), B(Right)};
-#undef B
+  return {{TRANSLATABLE("PlayStationMouse", "Left"), static_cast<s32>(Button::Left)},
+          {TRANSLATABLE("PlayStationMouse", "Right"), static_cast<s32>(Button::Right)}};
 }
 
 u32 PlayStationMouse::StaticGetVibrationMotorCount()

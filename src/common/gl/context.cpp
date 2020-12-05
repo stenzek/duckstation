@@ -9,17 +9,20 @@
 #endif
 Log_SetChannel(GL::Context);
 
-#if defined(WIN32)
+#if defined(WIN32) && !defined(_M_ARM64)
 #include "context_wgl.h"
-#elif defined(__APPLE__)
+#elif defined(__APPLE__) && !defined(LIBERTRO)
 #include "context_agl.h"
 #endif
 
 #ifdef USE_EGL
+#if defined(USE_X11) || defined(USE_WAYLAND)
 #if defined(USE_X11)
 #include "context_egl_x11.h"
-#elif defined(USE_WAYLAND)
+#endif
+#if defined(USE_WAYLAND)
 #include "context_egl_wayland.h"
+#endif
 #elif defined(ANDROID)
 #include "context_egl_android.h"
 #else
@@ -72,9 +75,9 @@ std::unique_ptr<GL::Context> Context::Create(const WindowInfo& wi, const Version
   }
 
   std::unique_ptr<Context> context;
-#if defined(WIN32)
+#if defined(WIN32) && !defined(_M_ARM64)
   context = ContextWGL::Create(wi, versions_to_try, num_versions_to_try);
-#elif defined(__APPLE__)
+#elif defined(__APPLE__) && !defined(LIBRETRO)
   context = ContextAGL::Create(wi, versions_to_try, num_versions_to_try);
 #elif defined(ANDROID)
 #ifdef USE_EGL

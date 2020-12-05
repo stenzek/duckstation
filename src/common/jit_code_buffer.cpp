@@ -37,7 +37,7 @@ bool JitCodeBuffer::Allocate(u32 size /* = 64 * 1024 * 1024 */, u32 far_code_siz
 
 #if defined(WIN32)
   m_code_ptr = static_cast<u8*>(VirtualAlloc(nullptr, m_total_size, MEM_COMMIT, PAGE_EXECUTE_READWRITE));
-#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
+#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__) || defined(__HAIKU__)
   m_code_ptr = static_cast<u8*>(
     mmap(nullptr, m_total_size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0));
 #else
@@ -86,7 +86,7 @@ bool JitCodeBuffer::Initialize(void* buffer, u32 size, u32 far_code_size /* = 0 
 
   m_code_ptr = static_cast<u8*>(buffer);
   m_old_protection = static_cast<u32>(old_protect);
-#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
+#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__) || defined(__HAIKU__)
   if (mprotect(buffer, size, PROT_READ | PROT_WRITE | PROT_EXEC) != 0)
     return false;
 
@@ -128,7 +128,7 @@ void JitCodeBuffer::Destroy()
   {
 #if defined(WIN32)
     VirtualFree(m_code_ptr, 0, MEM_RELEASE);
-#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
+#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__) || defined(__HAIKU__)
     munmap(m_code_ptr, m_total_size);
 #endif
   }
@@ -148,7 +148,7 @@ void JitCodeBuffer::CommitCode(u32 length)
   if (length == 0)
     return;
 
-#if defined(CPU_ARM) || defined(CPU_AARCH64)
+#if defined(CPU_AARCH32) || defined(CPU_AARCH64)
   // ARM instruction and data caches are not coherent, we need to flush after every block.
   FlushInstructionCache(m_free_code_ptr, length);
 #endif
@@ -163,7 +163,7 @@ void JitCodeBuffer::CommitFarCode(u32 length)
   if (length == 0)
     return;
 
-#if defined(CPU_ARM) || defined(CPU_AARCH64)
+#if defined(CPU_AARCH32) || defined(CPU_AARCH64)
   // ARM instruction and data caches are not coherent, we need to flush after every block.
   FlushInstructionCache(m_free_far_code_ptr, length);
 #endif

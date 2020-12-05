@@ -30,11 +30,18 @@ std::unique_ptr<CDImage> CDImage::Open(const char* filename)
 #endif
 
   if (CASE_COMPARE(extension, ".cue") == 0)
+  {
     return OpenCueSheetImage(filename);
-  else if (CASE_COMPARE(extension, ".bin") == 0 || CASE_COMPARE(extension, ".img") == 0)
+  }
+  else if (CASE_COMPARE(extension, ".bin") == 0 || CASE_COMPARE(extension, ".img") == 0 ||
+           CASE_COMPARE(extension, ".iso") == 0)
+  {
     return OpenBinImage(filename);
+  }
   else if (CASE_COMPARE(extension, ".chd") == 0)
+  {
     return OpenCHDImage(filename);
+  }
 
 #undef CASE_COMPARE
 

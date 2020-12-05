@@ -44,9 +44,6 @@ void GPU::ExecuteCommands()
         {
           DebugAssert(m_blit_remaining_words > 0);
           const u32 words_to_copy = std::min(m_blit_remaining_words, m_fifo.GetSize());
-          const size_t old_size = m_blit_buffer.size();
-          // m_blit_buffer.resize(m_blit_buffer.size() + words_to_copy);
-          // FifoPopRange(&m_blit_buffer[old_size], words_to_copy);
           m_blit_buffer.reserve(m_blit_buffer.size() + words_to_copy);
           for (u32 i = 0; i < words_to_copy; i++)
             m_blit_buffer.push_back(FifoPop());
@@ -83,9 +80,6 @@ void GPU::ExecuteCommands()
           const u32 words_to_copy = std::min(terminator_index, m_fifo.GetSize());
           if (words_to_copy > 0)
           {
-            const size_t old_size = m_blit_buffer.size();
-            // m_blit_buffer.resize(m_blit_buffer.size() + words_to_copy);
-            // FifoPopRange(&m_blit_buffer[old_size], words_to_copy);
             m_blit_buffer.reserve(m_blit_buffer.size() + words_to_copy);
             for (u32 i = 0; i < words_to_copy; i++)
               m_blit_buffer.push_back(FifoPop());
@@ -138,16 +132,16 @@ GPU::GP0CommandHandlerTable GPU::GenerateGP0CommandHandlerTable()
   table[0x1F] = &GPU::HandleInterruptRequestCommand;
   for (u32 i = 0x20; i <= 0x7F; i++)
   {
-    const RenderCommand rc{i << 24};
+    const GPURenderCommand rc{i << 24};
     switch (rc.primitive)
     {
-      case Primitive::Polygon:
+      case GPUPrimitive::Polygon:
         table[i] = &GPU::HandleRenderPolygonCommand;
         break;
-      case Primitive::Line:
+      case GPUPrimitive::Line:
         table[i] = rc.polyline ? &GPU::HandleRenderPolyLineCommand : &GPU::HandleRenderLineCommand;
         break;
-      case Primitive::Rectangle:
+      case GPUPrimitive::Rectangle:
         table[i] = &GPU::HandleRenderRectangleCommand;
         break;
       default:
@@ -234,10 +228,6 @@ bool GPU::HandleSetTextureWindowCommand()
 {
   const u32 param = FifoPop() & 0x00FFFFFFu;
   SetTextureWindow(param);
-  Log_DebugPrintf("Set texture window %02X %02X %02X %02X", m_draw_mode.texture_window_mask_x,
-                  m_draw_mode.texture_window_mask_y, m_draw_mode.texture_window_offset_x,
-                  m_draw_mode.texture_window_offset_y);
-
   AddCommandTicks(1);
   EndCommand();
   return true;
@@ -324,7 +314,7 @@ bool GPU::HandleSetMaskBitCommand()
 
 bool GPU::HandleRenderPolygonCommand()
 {
-  const RenderCommand rc{FifoPeek(0)};
+  const GPURenderCommand rc{FifoPeek(0)};
 
   // shaded vertices use the colour from the first word for the first vertex
   const u32 words_per_vertex = 1 + BoolToUInt32(rc.texture_enable) + BoolToUInt32(rc.shading_enable);
@@ -351,8 +341,8 @@ bool GPU::HandleRenderPolygonCommand()
   if (rc.texture_enable)
   {
     const u16 texpage_attribute = Truncate16((rc.shading_enable ? FifoPeek(5) : FifoPeek(4)) >> 16);
-    SetDrawMode((texpage_attribute & DrawMode::Reg::POLYGON_TEXPAGE_MASK) |
-                (m_draw_mode.mode_reg.bits & ~DrawMode::Reg::POLYGON_TEXPAGE_MASK));
+    SetDrawMode((texpage_attribute & GPUDrawModeReg::POLYGON_TEXPAGE_MASK) |
+                (m_draw_mode.mode_reg.bits & ~GPUDrawModeReg::POLYGON_TEXPAGE_MASK));
     SetTexturePalette(Truncate16(FifoPeek(2) >> 16));
   }
 
@@ -368,9 +358,9 @@ bool GPU::HandleRenderPolygonCommand()
 
 bool GPU::HandleRenderRectangleCommand()
 {
-  const RenderCommand rc{FifoPeek(0)};
+  const GPURenderCommand rc{FifoPeek(0)};
   const u32 total_words =
-    2 + BoolToUInt32(rc.texture_enable) + BoolToUInt32(rc.rectangle_size == DrawRectangleSize::Variable);
+    2 + BoolToUInt32(rc.texture_enable) + BoolToUInt32(rc.rectangle_size == GPUDrawRectangleSize::Variable);
 
   CHECK_COMMAND_SIZE(total_words);
 
@@ -400,7 +390,7 @@ bool GPU::HandleRenderRectangleCommand()
 
 bool GPU::HandleRenderLineCommand()
 {
-  const RenderCommand rc{FifoPeek(0)};
+  const GPURenderCommand rc{FifoPeek(0)};
   const u32 total_words = rc.shading_enable ? 4 : 3;
   CHECK_COMMAND_SIZE(total_words);
 
@@ -423,7 +413,7 @@ bool GPU::HandleRenderLineCommand()
 bool GPU::HandleRenderPolyLineCommand()
 {
   // always read the first two vertices, we test for the terminator after that
-  const RenderCommand rc{FifoPeek(0)};
+  const GPURenderCommand rc{FifoPeek(0)};
   const u32 min_words = rc.shading_enable ? 3 : 4;
   CHECK_COMMAND_SIZE(min_words);
 
@@ -469,7 +459,9 @@ bool GPU::HandleFillRectangleCommand()
 
   Log_DebugPrintf("Fill VRAM rectangle offset=(%u,%u), size=(%u,%u)", dst_x, dst_y, width, height);
 
-  FillVRAM(dst_x, dst_y, width, height, color);
+  if (width > 0 && height > 0)
+    FillVRAM(dst_x, dst_y, width, height, color);
+
   m_stats.num_vram_fills++;
   AddCommandTicks(46 + ((width / 8) + 9) * height);
   EndCommand();
@@ -505,7 +497,7 @@ bool GPU::HandleCopyRectangleCPUToVRAMCommand()
 
 void GPU::FinishVRAMWrite()
 {
-  if (g_settings.debugging.dump_cpu_to_vram_copies)
+  if (g_settings.debugging.dump_cpu_to_vram_copies && m_blit_remaining_words == 0)
   {
     DumpVRAMToFile(StringUtil::StdStringFromFormat("cpu_to_vram_copy_%u.png", s_cpu_to_vram_dump_id++).c_str(),
                    m_vram_transfer.width, m_vram_transfer.height, sizeof(u16) * m_vram_transfer.width,
@@ -517,7 +509,36 @@ void GPU::FinishVRAMWrite()
 
   FlushRender();
 
-  UpdateVRAM(m_vram_transfer.x, m_vram_transfer.y, m_vram_transfer.width, m_vram_transfer.height, m_blit_buffer.data());
+  if (m_blit_remaining_words == 0)
+  {
+    UpdateVRAM(m_vram_transfer.x, m_vram_transfer.y, m_vram_transfer.width, m_vram_transfer.height,
+               m_blit_buffer.data());
+  }
+  else
+  {
+    const u32 num_pixels = ZeroExtend32(m_vram_transfer.width) * ZeroExtend32(m_vram_transfer.height);
+    const u32 num_words = (num_pixels + 1) / 2;
+    const u32 transferred_words = num_words - m_blit_remaining_words;
+    const u32 transferred_pixels = transferred_words * 2;
+    const u32 transferred_full_rows = transferred_pixels / m_vram_transfer.width;
+    const u32 transferred_width_last_row = transferred_pixels % m_vram_transfer.width;
+
+    Log_WarningPrintf(
+      "Partial VRAM write - transfer finished with %u of %u words remaining (%u full rows, %u last row)",
+      m_blit_remaining_words, num_words, transferred_full_rows, transferred_width_last_row);
+
+    const u8* blit_ptr = reinterpret_cast<const u8*>(m_blit_buffer.data());
+    if (transferred_full_rows > 0)
+    {
+      UpdateVRAM(m_vram_transfer.x, m_vram_transfer.y, m_vram_transfer.width, transferred_full_rows, blit_ptr);
+      blit_ptr += (ZeroExtend32(m_vram_transfer.width) * transferred_full_rows) * sizeof(u16);
+    }
+    if (transferred_width_last_row > 0)
+    {
+      UpdateVRAM(m_vram_transfer.x, m_vram_transfer.y + transferred_full_rows, transferred_width_last_row, 1, blit_ptr);
+    }
+  }
+
   m_blit_buffer.clear();
   m_vram_transfer = {};
   m_blitter_state = BlitterState::Idle;

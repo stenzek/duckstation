@@ -13,6 +13,8 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
   set(SUPPORTS_WAYLAND TRUE)
 endif()
 
+# Set minimum OS version for macOS. 10.14 should work.
+set(CMAKE_OSX_DEPLOYMENT_TARGET "10.14.0" CACHE STRING "")
 
 # Global options.
 if(NOT ANDROID)
@@ -35,6 +37,11 @@ if(LINUX OR ANDROID)
   option(USE_EGL "Support EGL OpenGL context creation" ON)
 endif()
 
+# Force EGL when using Wayland
+if(USE_WAYLAND)
+  set(USE_EGL ON)
+endif()
+
 # When we're building for libretro, everything else is invalid because of PIC.
 if(ANDROID OR BUILD_LIBRETRO_CORE)
   if(BUILD_SDL_FRONTEND)
@@ -55,6 +62,9 @@ if(ANDROID OR BUILD_LIBRETRO_CORE)
   endif()
   if(USE_X11)
     set(USE_X11 OFF)
+  endif()
+  if(USE_WAYLAND)
+    set(USE_WAYLAND OFF)
   endif()
   if(BUILD_LIBRETRO_CORE AND USE_EGL)
     set(USE_EGL OFF)
@@ -137,7 +147,19 @@ if(MSVC)
 
   # Enable LTO/LTCG on Release builds.
   if(${CMAKE_BUILD_TYPE} STREQUAL "Release")
-    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
+    if (${CMAKE_VERSION} VERSION_LESS "3.9.0")
+      message(WARNING "CMake version is less than 3.9.0, we can't enable LTCG/IPO. This will make the build slightly slower, consider updating your CMake version.")
+    else()
+      cmake_policy(SET CMP0069 NEW)
+      include(CheckIPOSupported)
+      check_ipo_supported(RESULT IPO_IS_SUPPORTED)
+      if(IPO_IS_SUPPORTED)
+        message(STATUS "Enabling LTCG/IPO.")
+        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
+      else()
+        message(WARNING "LTCG/IPO is not supported, this will make the build slightly slower.")
+      endif()
+    endif()
   endif()
 endif()
 
@@ -172,8 +194,17 @@ elseif(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86" OR ${CMAKE_SYSTEM_PROCESSOR} STR
   set(CPU_ARCH "x86")
 elseif(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
   set(CPU_ARCH "aarch64")
-elseif(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "arm" OR ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "armv7-a")
-  set(CPU_ARCH "arm")
+elseif(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "arm" OR ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "armv7-a" OR ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "armv7l")
+  set(CPU_ARCH "aarch32")
+  if(ANDROID)
+    # Force ARM mode, since apparently ANDROID_ARM_MODE isn't working..
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -marm")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -marm")
+  else()
+    # Enable NEON.
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -marm -march=armv7-a")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -marm -march=armv7-a")
+  endif()
 else()
   message(FATAL_ERROR "Unknown system processor: " ${CMAKE_SYSTEM_PROCESSOR})
 endif()

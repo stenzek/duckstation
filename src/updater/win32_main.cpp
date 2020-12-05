@@ -16,7 +16,7 @@ static void WaitForProcessToExit(int process_id)
   CloseHandle(hProcess);
 }
 
-int wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nShowCmd)
+int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nShowCmd)
 {
   Win32ProgressCallback progress;
 

@@ -1,5 +1,6 @@
 #pragma once
 #include "common/string.h"
+#include "core/controller.h"
 #include "core/host_interface.h"
 #include <atomic>
 #include <functional>
@@ -10,6 +11,8 @@
 #include <string_view>
 #include <utility>
 #include <vector>
+
+class HostDisplayTexture;
 
 class ControllerInterface;
 
@@ -128,6 +131,7 @@ public:
 
   /// Adds OSD messages, duration is in seconds.
   void AddOSDMessage(std::string message, float duration = 2.0f) override;
+  void ClearOSDMessages();
 
   /// Displays a loading screen with the logo, rendered with ImGui. Use when executing possibly-time-consuming tasks
   /// such as compiling shaders when starting up.
@@ -147,7 +151,51 @@ public:
   void StopDumpingAudio();
 
   /// Saves a screenshot to the specified file. IF no file name is provided, one will be generated automatically.
-  bool SaveScreenshot(const char* filename = nullptr, bool full_resolution = true, bool apply_aspect_ratio = true);
+  bool SaveScreenshot(const char* filename = nullptr, bool full_resolution = true, bool apply_aspect_ratio = true,
+                      bool compress_on_thread = true);
+
+  /// Loads the cheat list from the specified file.
+  bool LoadCheatList(const char* filename);
+
+  /// Loads the cheat list for the current game title from the user directory.
+  bool LoadCheatListFromGameTitle();
+
+  /// Loads the cheat list for the current game code from the built-in code database.
+  bool LoadCheatListFromDatabase();
+
+  /// Saves the current cheat list to the game title's file.
+  bool SaveCheatList();
+
+  /// Saves the current cheat list to the specified file.
+  bool SaveCheatList(const char* filename);
+
+  /// Enables/disabled the specified cheat code.
+  void SetCheatCodeState(u32 index, bool enabled, bool save_to_file);
+
+  /// Immediately applies the specified cheat code.
+  void ApplyCheatCode(u32 index);
+
+  /// Temporarily toggles post-processing on/off.
+  void TogglePostProcessing();
+
+  /// Reloads post processing shaders with the current configuration.
+  void ReloadPostProcessingShaders();
+
+  /// Parses a fullscreen mode into its components (width * height @ refresh hz)
+  static bool ParseFullscreenMode(const std::string_view& mode, u32* width, u32* height, float* refresh_rate);
+
+  /// Returns true if fast forwarding is currently active.
+  bool IsFastForwardEnabled() const { return m_fast_forward_enabled; }
+
+  /// Requests the specified size for the render window. Not guaranteed to succeed (e.g. if in fullscreen).
+  virtual bool RequestRenderWindowSize(s32 new_window_width, s32 new_window_height);
+
+  /// Requests a resize to a multiple of the render window size.
+  bool RequestRenderWindowScale(float scale);
+
+  /// Opens a file in the DuckStation "package".
+  /// This is the APK for Android builds, or the program directory for standalone builds.
+  virtual std::unique_ptr<ByteStream> OpenPackageFile(const char* path, u32 flags) override;
 
 protected:
   enum : u32
@@ -182,7 +230,7 @@ protected:
   virtual bool SetFullscreen(bool enabled);
 
   virtual std::unique_ptr<AudioStream> CreateAudioStream(AudioBackend backend) override;
-  virtual std::unique_ptr<ControllerInterface> CreateControllerInterface();
+  virtual void UpdateControllerInterface();
 
   virtual void OnSystemCreated() override;
   virtual void OnSystemPaused(bool paused);
@@ -195,7 +243,8 @@ protected:
   virtual bool AddButtonToInputMap(const std::string& binding, const std::string_view& device,
                                    const std::string_view& button, InputButtonHandler handler);
   virtual bool AddAxisToInputMap(const std::string& binding, const std::string_view& device,
-                                 const std::string_view& axis, InputAxisHandler handler);
+                                 const std::string_view& axis, Controller::AxisType axis_type,
+                                 InputAxisHandler handler);
   virtual bool AddRumbleToInputMap(const std::string& binding, u32 controller_index, u32 num_motors);
 
   /// Reloads the input map from config. Callable from controller interface.
@@ -207,6 +256,9 @@ protected:
   /// Returns a list of all input profiles. first - name, second - path
   InputProfileList GetInputProfileList() const;
 
+  /// Returns the path for an input profile.
+  std::string GetInputProfilePath(const char* name) const;
+
   /// Applies the specified input profile.
   void ApplyInputProfile(const char* profile_path, SettingsInterface& si);
 
@@ -217,6 +269,7 @@ protected:
   bool HandleHostKeyEvent(HostKeyCode code, bool pressed);
   bool HandleHostMouseEvent(HostMouseButton button, bool pressed);
   void UpdateInputMap(SettingsInterface& si);
+  void ClearInputMap();
 
   void AddControllerRumble(u32 controller_index, u32 num_motors, ControllerRumbleCallback callback);
   void UpdateControllerRumble();
@@ -231,9 +284,6 @@ protected:
   /// Sets the base path for the user directory. Can be overridden by platform/frontend/command line.
   virtual void SetUserDirectory();
 
-  /// Performs the initial load of settings. Should call CheckSettings() and LoadSettings(SettingsInterface&).
-  virtual void LoadSettings() = 0;
-
   /// Updates logging settings.
   virtual void UpdateLogSettings(LOGLEVEL level, const char* filter, bool log_to_console, bool log_to_debug,
                                  bool log_to_window, bool log_to_file);
@@ -244,13 +294,17 @@ protected:
   /// Returns the most recent resume save state.
   std::string GetMostRecentResumeSaveStatePath() const;
 
+  /// Returns the path to the cheat file for the specified game title.
+  std::string GetCheatFileName() const;
+
   /// Ensures the settings is valid and the correct version. If not, resets to defaults.
-  void CheckSettings(SettingsInterface& si);
+  bool CheckSettings(SettingsInterface& si);
 
   /// Restores all settings to defaults.
   virtual void SetDefaultSettings(SettingsInterface& si) override;
 
   /// Loads settings to m_settings and any frontend-specific parameters.
+  using HostInterface::LoadSettings;
   virtual void LoadSettings(SettingsInterface& si) override;
 
   /// Saves current settings variables to ini.
@@ -266,6 +320,11 @@ protected:
 
   void RecreateSystem() override;
 
+  void ApplyGameSettings(bool display_osd_messages);
+
+  bool CreateHostDisplayResources();
+  void ReleaseHostDisplayResources();
+
   virtual void DrawImGuiWindows();
 
   void DrawFPSWindow();
@@ -277,13 +336,15 @@ protected:
 
   std::unique_ptr<ControllerInterface> m_controller_interface;
 
+  std::unique_ptr<HostDisplayTexture> m_logo_texture;
+
   std::deque<OSDMessage> m_osd_messages;
   std::mutex m_osd_messages_lock;
 
   bool m_frame_step_request = false;
-  bool m_speed_limiter_temp_disabled = false;
-  bool m_speed_limiter_enabled = false;
+  bool m_fast_forward_enabled = false;
   bool m_timer_resolution_increased = false;
+  bool m_speed_limiter_enabled = true;
 
 private:
   void InitializeUserDirectory();
@@ -293,6 +354,7 @@ private:
   void RegisterAudioHotkeys();
   void FindInputProfiles(const std::string& base_path, InputProfileList* out_list) const;
   void UpdateControllerInputMap(SettingsInterface& si);
+  bool UpdateControllerInputMapFromGameSettings();
   void UpdateHotkeyInputMap(SettingsInterface& si);
   void ClearAllControllerBindings(SettingsInterface& si);
 

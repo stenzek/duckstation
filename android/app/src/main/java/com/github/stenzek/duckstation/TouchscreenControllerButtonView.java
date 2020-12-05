@@ -5,7 +5,7 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.view.MotionEvent;
+import android.view.HapticFeedbackConstants;
 import android.view.View;
 
 /**
@@ -15,29 +15,23 @@ public class TouchscreenControllerButtonView extends View {
     private Drawable mUnpressedDrawable;
     private Drawable mPressedDrawable;
     private boolean mPressed = false;
+    private boolean mHapticFeedback = false;
+    private int mControllerIndex = -1;
     private int mButtonCode = -1;
-    private String mButtonName = "";
-    private ButtonStateChangedListener mListener;
-
-    public interface ButtonStateChangedListener
-    {
-        void onButtonStateChanged(TouchscreenControllerButtonView view, boolean pressed);
-    }
-
 
     public TouchscreenControllerButtonView(Context context) {
         super(context);
-        init(context,null, 0);
+        init(context, null, 0);
     }
 
     public TouchscreenControllerButtonView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        init(context,attrs, 0);
+        init(context, attrs, 0);
     }
 
     public TouchscreenControllerButtonView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        init(context,attrs, defStyle);
+        init(context, attrs, defStyle);
     }
 
     private void init(Context context, AttributeSet attrs, int defStyle) {
@@ -62,13 +56,12 @@ public class TouchscreenControllerButtonView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        int paddingLeft = getPaddingLeft();
-        int paddingTop = getPaddingTop();
-        int paddingRight = getPaddingRight();
-        int paddingBottom = getPaddingBottom();
-
-        int contentWidth = getWidth() - paddingLeft - paddingRight;
-        int contentHeight = getHeight() - paddingTop - paddingBottom;
+        final int paddingLeft = getPaddingLeft();
+        final int paddingTop = getPaddingTop();
+        final int paddingRight = getPaddingRight();
+        final int paddingBottom = getPaddingBottom();
+        final int contentWidth = getWidth() - paddingLeft - paddingRight;
+        final int contentHeight = getHeight() - paddingTop - paddingBottom;
 
         // Draw the example drawable on top of the text.
         Drawable drawable = mPressed ? mPressedDrawable : mUnpressedDrawable;
@@ -79,62 +72,35 @@ public class TouchscreenControllerButtonView extends View {
         }
     }
 
-    @Override
-    public boolean onTouchEvent(MotionEvent event)
-    {
-        final boolean oldState = mPressed;
-
-        switch (event.getAction())
-        {
-            case MotionEvent.ACTION_DOWN:
-            case MotionEvent.ACTION_POINTER_DOWN:
-            {
-                mPressed = true;
-                invalidate();
-
-                if (mListener != null && !oldState)
-                    mListener.onButtonStateChanged(this, true);
-
-                return true;
-            }
-
-            case MotionEvent.ACTION_UP:
-            case MotionEvent.ACTION_POINTER_UP:
-            {
-                mPressed = false;
-                invalidate();
-
-                if (mListener != null && oldState)
-                    mListener.onButtonStateChanged(this, false);
-
-                return true;
-            }
-        }
-
-        return super.onTouchEvent(event);
-    }
-
-    public boolean isPressed()
-    {
+    public boolean isPressed() {
         return mPressed;
     }
 
-    public String getButtonName() {
-        return mButtonName;
+    public void setPressed(boolean pressed) {
+        if (pressed == mPressed)
+            return;
+
+        mPressed = pressed;
+        invalidate();
+        updateControllerState();
+
+        if (mHapticFeedback) {
+            performHapticFeedback(pressed ? HapticFeedbackConstants.VIRTUAL_KEY : HapticFeedbackConstants.VIRTUAL_KEY_RELEASE);
+        }
     }
 
-    public void setButtonName(String buttonName) {
-        mButtonName = buttonName;
-    }
-
-    public int getButtonCode()
-    {
-        return mButtonCode;
-    }
-
-    public void setButtonCode(int code)
-    {
+    public void setButtonCode(int controllerIndex, int code) {
+        mControllerIndex = controllerIndex;
         mButtonCode = code;
+    }
+
+    public void setHapticFeedback(boolean enabled) {
+        mHapticFeedback = enabled;
+    }
+
+    private void updateControllerState() {
+        if (mButtonCode >= 0)
+            AndroidHostInterface.getInstance().setControllerButtonState(mControllerIndex, mButtonCode, mPressed);
     }
 
     public Drawable getPressedDrawable() {
@@ -151,10 +117,5 @@ public class TouchscreenControllerButtonView extends View {
 
     public void setUnpressedDrawable(Drawable unpressedDrawable) {
         mUnpressedDrawable = unpressedDrawable;
-    }
-
-    public void setButtonStateChangedListener(ButtonStateChangedListener listener)
-    {
-        mListener = listener;
     }
 }

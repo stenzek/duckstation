@@ -21,8 +21,6 @@ add_library(common
   cd_xa.cpp
   cd_xa.h
   cpu_detect.h
-  cubeb_audio_stream.cpp
-  cubeb_audio_stream.h
   dimensional_array.h
   event.cpp
   event.h
@@ -49,16 +47,23 @@ add_library(common
   jit_code_buffer.h
   log.cpp
   log.h
+  make_array.h
   md5_digest.cpp
   md5_digest.h
   minizip_helpers.cpp
   minizip_helpers.h
   null_audio_stream.cpp
   null_audio_stream.h
+  memory_arena.cpp
+  memory_arena.h
+  page_fault_handler.cpp
+  page_fault_handler.h
   rectangle.h
   progress_callback.cpp
   progress_callback.h
   scope_guard.h
+  shiftjis.cpp
+  shiftjis.h
   state_wrapper.cpp
   state_wrapper.h
   string.cpp
@@ -96,7 +101,7 @@ add_library(common
 
 target_include_directories(common PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_include_directories(common PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
-target_link_libraries(common PRIVATE glad libcue stb Threads::Threads cubeb libchdr glslang vulkan-loader zlib minizip)
+target_link_libraries(common PRIVATE glad libcue stb Threads::Threads libchdr glslang vulkan-loader zlib minizip)
 
 if(WIN32)
   target_sources(common PRIVATE
@@ -172,8 +177,18 @@ if(USE_WAYLAND)
 endif()
 
 if(APPLE)
+  # Needed for Vulkan Swap Chain.
+  target_link_libraries(common PRIVATE "objc")
+endif()
+
+if(APPLE AND NOT BUILD_LIBRETRO_CORE)
   target_sources(common PRIVATE
     gl/context_agl.mm
     gl/context_agl.h
   )
+endif()
+
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+  # We need -lrt for shm_unlink
+  target_link_libraries(common PRIVATE rt)
 endif()

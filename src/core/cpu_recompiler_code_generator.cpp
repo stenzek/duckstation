@@ -19,8 +19,7 @@ u32 CodeGenerator::CalculateRegisterOffset(Reg reg)
   return u32(offsetof(State, regs.r[0]) + (static_cast<u32>(reg) * sizeof(u32)));
 }
 
-bool CodeGenerator::CompileBlock(const CodeBlock* block, CodeBlock::HostCodePointer* out_host_code,
-                                 u32* out_host_code_size)
+bool CodeGenerator::CompileBlock(CodeBlock* block, CodeBlock::HostCodePointer* out_host_code, u32* out_host_code_size)
 {
   // TODO: Align code buffer.
 
@@ -34,14 +33,16 @@ bool CodeGenerator::CompileBlock(const CodeBlock* block, CodeBlock::HostCodePoin
   const CodeBlockInstruction* cbi = m_block_start;
   while (cbi != m_block_end)
   {
-#ifndef Y_BUILD_CONFIG_RELEASE
+#ifdef _DEBUG
     SmallString disasm;
     DisassembleInstruction(&disasm, cbi->pc, cbi->instruction.bits, nullptr);
     Log_DebugPrintf("Compiling instruction '%s'", disasm.GetCharArray());
 #endif
 
+    m_current_instruction = cbi;
     if (!CompileInstruction(*cbi))
     {
+      m_current_instruction = nullptr;
       m_block_end = nullptr;
       m_block_start = nullptr;
       m_block = nullptr;
@@ -60,6 +61,7 @@ bool CodeGenerator::CompileBlock(const CodeBlock* block, CodeBlock::HostCodePoin
 
   DebugAssert(m_register_cache.GetUsedHostRegisters() == 0);
 
+  m_current_instruction = nullptr;
   m_block_end = nullptr;
   m_block_start = nullptr;
   m_block = nullptr;
@@ -84,6 +86,16 @@ bool CodeGenerator::CompileInstruction(const CodeBlockInstruction& cbi)
     case InstructionOp::lhu:
     case InstructionOp::lw:
       result = Compile_Load(cbi);
+      break;
+
+    case InstructionOp::lwl:
+    case InstructionOp::lwr:
+      result = Compile_LoadLeftRight(cbi);
+      break;
+
+    case InstructionOp::swl:
+    case InstructionOp::swr:
+      result = Compile_StoreLeftRight(cbi);
       break;
 
     case InstructionOp::sb:
@@ -481,7 +493,7 @@ std::pair<Value, Value> CodeGenerator::MulValues(const Value& lhs, const Value& 
   return std::make_pair(std::move(hi), std::move(lo));
 }
 
-Value CodeGenerator::ShlValues(const Value& lhs, const Value& rhs)
+Value CodeGenerator::ShlValues(const Value& lhs, const Value& rhs, bool assume_amount_masked /* = true */)
 {
   DebugAssert(lhs.size == rhs.size);
   if (lhs.IsConstant() && rhs.IsConstant())
@@ -516,18 +528,18 @@ Value CodeGenerator::ShlValues(const Value& lhs, const Value& rhs)
   {
     if (lhs.IsInHostRegister())
     {
-      EmitShl(res.host_reg, lhs.host_reg, res.size, rhs);
+      EmitShl(res.host_reg, lhs.host_reg, res.size, rhs, assume_amount_masked);
     }
     else
     {
       EmitCopyValue(res.host_reg, lhs);
-      EmitShl(res.host_reg, res.host_reg, res.size, rhs);
+      EmitShl(res.host_reg, res.host_reg, res.size, rhs, assume_amount_masked);
     }
   }
   return res;
 }
 
-Value CodeGenerator::ShrValues(const Value& lhs, const Value& rhs)
+Value CodeGenerator::ShrValues(const Value& lhs, const Value& rhs, bool assume_amount_masked /* = true */)
 {
   DebugAssert(lhs.size == rhs.size);
   if (lhs.IsConstant() && rhs.IsConstant())
@@ -562,18 +574,18 @@ Value CodeGenerator::ShrValues(const Value& lhs, const Value& rhs)
   {
     if (lhs.IsInHostRegister())
     {
-      EmitShr(res.host_reg, lhs.host_reg, res.size, rhs);
+      EmitShr(res.host_reg, lhs.host_reg, res.size, rhs, assume_amount_masked);
     }
     else
     {
       EmitCopyValue(res.host_reg, lhs);
-      EmitShr(res.host_reg, res.host_reg, res.size, rhs);
+      EmitShr(res.host_reg, res.host_reg, res.size, rhs, assume_amount_masked);
     }
   }
   return res;
 }
 
-Value CodeGenerator::SarValues(const Value& lhs, const Value& rhs)
+Value CodeGenerator::SarValues(const Value& lhs, const Value& rhs, bool assume_amount_masked /* = true */)
 {
   DebugAssert(lhs.size == rhs.size);
   if (lhs.IsConstant() && rhs.IsConstant())
@@ -611,12 +623,12 @@ Value CodeGenerator::SarValues(const Value& lhs, const Value& rhs)
   {
     if (lhs.IsInHostRegister())
     {
-      EmitSar(res.host_reg, lhs.host_reg, res.size, rhs);
+      EmitSar(res.host_reg, lhs.host_reg, res.size, rhs, assume_amount_masked);
     }
     else
     {
       EmitCopyValue(res.host_reg, lhs);
-      EmitSar(res.host_reg, res.host_reg, res.size, rhs);
+      EmitSar(res.host_reg, res.host_reg, res.size, rhs, assume_amount_masked);
     }
   }
   return res;
@@ -716,6 +728,57 @@ Value CodeGenerator::AndValues(const Value& lhs, const Value& rhs)
     EmitAnd(res.host_reg, res.host_reg, rhs);
   }
   return res;
+}
+
+void CodeGenerator::AndValueInPlace(Value& lhs, const Value& rhs)
+{
+  DebugAssert(lhs.size == rhs.size);
+  if (lhs.IsConstant() && rhs.IsConstant())
+  {
+    // compile-time
+    u64 new_cv = lhs.constant_value & rhs.constant_value;
+    switch (lhs.size)
+    {
+      case RegSize_8:
+        lhs = Value::FromConstantU8(Truncate8(new_cv));
+        break;
+
+      case RegSize_16:
+        lhs = Value::FromConstantU16(Truncate16(new_cv));
+        break;
+
+      case RegSize_32:
+        lhs = Value::FromConstantU32(Truncate32(new_cv));
+        break;
+
+      case RegSize_64:
+        lhs = Value::FromConstantU64(new_cv);
+        break;
+
+      default:
+        lhs = Value();
+        break;
+    }
+  }
+
+  // TODO: and with -1 -> noop
+  if (lhs.HasConstantValue(0) || rhs.HasConstantValue(0))
+  {
+    EmitXor(lhs.host_reg, lhs.host_reg, lhs);
+    return;
+  }
+
+  if (lhs.IsInHostRegister())
+  {
+    EmitAnd(lhs.host_reg, lhs.host_reg, rhs);
+  }
+  else
+  {
+    Value new_lhs = m_register_cache.AllocateScratch(lhs.size);
+    EmitCopyValue(new_lhs.host_reg, lhs);
+    EmitAnd(new_lhs.host_reg, new_lhs.host_reg, rhs);
+    lhs = std::move(new_lhs);
+  }
 }
 
 Value CodeGenerator::XorValues(const Value& lhs, const Value& rhs)
@@ -838,12 +901,17 @@ void CodeGenerator::GenerateExceptionExit(const CodeBlockInstruction& cbi, Excep
 
 void CodeGenerator::BlockPrologue()
 {
+  InitSpeculativeRegs();
+
   EmitStoreCPUStructField(offsetof(State, exception_raised), Value::FromConstantU8(0));
+
+  if (m_block->uncached_fetch_ticks > 0)
+    EmitICacheCheckAndUpdate();
 
   // we don't know the state of the last block, so assume load delays might be in progress
   // TODO: Pull load delay into register cache
-  m_current_instruction_in_branch_delay_slot_dirty = true;
-  m_branch_was_taken_dirty = true;
+  m_current_instruction_in_branch_delay_slot_dirty = g_settings.cpu_recompiler_memory_exceptions;
+  m_branch_was_taken_dirty = g_settings.cpu_recompiler_memory_exceptions;
   m_current_instruction_was_branch_taken_dirty = false;
   m_load_delay_dirty = true;
 
@@ -906,7 +974,7 @@ void CodeGenerator::InstructionPrologue(const CodeBlockInstruction& cbi, TickCou
     return;
   }
 
-  if (cbi.is_branch_delay_slot)
+  if (cbi.is_branch_delay_slot && g_settings.cpu_recompiler_memory_exceptions)
   {
     // m_current_instruction_in_branch_delay_slot = true
     EmitStoreCPUStructField(offsetof(State, current_instruction_in_branch_delay_slot), Value::FromConstantU8(1));
@@ -1014,17 +1082,20 @@ bool CodeGenerator::Compile_Fallback(const CodeBlockInstruction& cbi)
   {
     // TODO: Use carry flag or something here too
     Value return_value = m_register_cache.AllocateScratch(RegSize_8);
-    EmitFunctionCall(&return_value, &Thunks::InterpretInstruction);
+    EmitFunctionCall(&return_value,
+                     g_settings.gpu_pgxp_enable ? &Thunks::InterpretInstructionPGXP : &Thunks::InterpretInstruction);
     EmitExceptionExitOnBool(return_value);
   }
   else
   {
-    EmitFunctionCall(nullptr, &Thunks::InterpretInstruction);
+    EmitFunctionCall(nullptr,
+                     g_settings.gpu_pgxp_enable ? &Thunks::InterpretInstructionPGXP : &Thunks::InterpretInstruction);
   }
 
   m_current_instruction_in_branch_delay_slot_dirty = cbi.is_branch_instruction;
   m_branch_was_taken_dirty = cbi.is_branch_instruction;
   m_next_load_delay_dirty = cbi.has_load_delay;
+  InvalidateSpeculativeValues();
   InstructionEpilogue(cbi);
   return true;
 }
@@ -1037,54 +1108,92 @@ bool CodeGenerator::Compile_Bitwise(const CodeBlockInstruction& cbi)
   Value lhs;
   Value rhs;
   Reg dest;
+
+  SpeculativeValue spec_lhs, spec_rhs;
+  SpeculativeValue spec_value;
+
   if (op != InstructionOp::funct)
   {
     // rt <- rs op zext(imm)
     lhs = m_register_cache.ReadGuestRegister(cbi.instruction.i.rs);
     rhs = Value::FromConstantU32(cbi.instruction.i.imm_zext32());
     dest = cbi.instruction.i.rt;
+
+    spec_lhs = SpeculativeReadReg(cbi.instruction.i.rs);
+    spec_rhs = cbi.instruction.i.imm_zext32();
   }
   else
   {
     lhs = m_register_cache.ReadGuestRegister(cbi.instruction.r.rs);
     rhs = m_register_cache.ReadGuestRegister(cbi.instruction.r.rt);
     dest = cbi.instruction.r.rd;
+
+    spec_lhs = SpeculativeReadReg(cbi.instruction.r.rs);
+    spec_rhs = SpeculativeReadReg(cbi.instruction.r.rt);
   }
 
   Value result;
   switch (cbi.instruction.op)
   {
     case InstructionOp::ori:
+    {
       result = OrValues(lhs, rhs);
-      break;
+      if (spec_lhs && spec_rhs)
+        spec_value = *spec_lhs | *spec_rhs;
+    }
+    break;
 
     case InstructionOp::andi:
+    {
       result = AndValues(lhs, rhs);
-      break;
+      if (spec_lhs && spec_rhs)
+        spec_value = *spec_lhs & *spec_rhs;
+    }
+    break;
 
     case InstructionOp::xori:
+    {
       result = XorValues(lhs, rhs);
-      break;
+      if (spec_lhs && spec_rhs)
+        spec_value = *spec_lhs ^ *spec_rhs;
+    }
+    break;
 
     case InstructionOp::funct:
     {
       switch (cbi.instruction.r.funct)
       {
         case InstructionFunct::or_:
+        {
           result = OrValues(lhs, rhs);
-          break;
+          if (spec_lhs && spec_rhs)
+            spec_value = *spec_lhs | *spec_rhs;
+        }
+        break;
 
         case InstructionFunct::and_:
+        {
           result = AndValues(lhs, rhs);
-          break;
+          if (spec_lhs && spec_rhs)
+            spec_value = *spec_lhs & *spec_rhs;
+        }
+        break;
 
         case InstructionFunct::xor_:
+        {
           result = XorValues(lhs, rhs);
-          break;
+          if (spec_lhs && spec_rhs)
+            spec_value = *spec_lhs ^ *spec_rhs;
+        }
+        break;
 
         case InstructionFunct::nor:
+        {
           result = NotValue(OrValues(lhs, rhs));
-          break;
+          if (spec_lhs && spec_rhs)
+            spec_value = ~(*spec_lhs | *spec_rhs);
+        }
+        break;
 
         default:
           UnreachableCode();
@@ -1099,6 +1208,7 @@ bool CodeGenerator::Compile_Bitwise(const CodeBlockInstruction& cbi)
   }
 
   m_register_cache.WriteGuestRegister(dest, std::move(result));
+  SpeculativeWriteReg(dest, spec_value);
 
   InstructionEpilogue(cbi);
   return true;
@@ -1110,37 +1220,52 @@ bool CodeGenerator::Compile_Shift(const CodeBlockInstruction& cbi)
 
   const InstructionFunct funct = cbi.instruction.r.funct;
   Value rt = m_register_cache.ReadGuestRegister(cbi.instruction.r.rt);
+  SpeculativeValue rt_spec = SpeculativeReadReg(cbi.instruction.r.rt);
   Value shamt;
+  SpeculativeValue shamt_spec;
   if (funct == InstructionFunct::sll || funct == InstructionFunct::srl || funct == InstructionFunct::sra)
   {
     // rd <- rt op shamt
     shamt = Value::FromConstantU32(cbi.instruction.r.shamt);
+    shamt_spec = cbi.instruction.r.shamt;
   }
   else
   {
     // rd <- rt op (rs & 0x1F)
     shamt = m_register_cache.ReadGuestRegister(cbi.instruction.r.rs);
-    if constexpr (!SHIFTS_ARE_IMPLICITLY_MASKED)
-      EmitAnd(shamt.host_reg, shamt.host_reg, Value::FromConstantU32(0x1F));
+    shamt_spec = SpeculativeReadReg(cbi.instruction.r.rs);
   }
 
   Value result;
+  SpeculativeValue result_spec;
   switch (cbi.instruction.r.funct)
   {
     case InstructionFunct::sll:
     case InstructionFunct::sllv:
-      result = ShlValues(rt, shamt);
-      break;
+    {
+      result = ShlValues(rt, shamt, false);
+      if (rt_spec && shamt_spec)
+        result_spec = *rt_spec << *shamt_spec;
+    }
+    break;
 
     case InstructionFunct::srl:
     case InstructionFunct::srlv:
-      result = ShrValues(rt, shamt);
-      break;
+    {
+      result = ShrValues(rt, shamt, false);
+      if (rt_spec && shamt_spec)
+        result_spec = *rt_spec >> *shamt_spec;
+    }
+    break;
 
     case InstructionFunct::sra:
     case InstructionFunct::srav:
-      result = SarValues(rt, shamt);
-      break;
+    {
+      result = SarValues(rt, shamt, false);
+      if (rt_spec && shamt_spec)
+        result_spec = static_cast<u32>(static_cast<s32>(*rt_spec) << *shamt_spec);
+    }
+    break;
 
     default:
       UnreachableCode();
@@ -1148,6 +1273,7 @@ bool CodeGenerator::Compile_Shift(const CodeBlockInstruction& cbi)
   }
 
   m_register_cache.WriteGuestRegister(cbi.instruction.r.rd, std::move(result));
+  SpeculativeWriteReg(cbi.instruction.r.rd, result_spec);
 
   InstructionEpilogue(cbi);
   return true;
@@ -1162,35 +1288,57 @@ bool CodeGenerator::Compile_Load(const CodeBlockInstruction& cbi)
   Value offset = Value::FromConstantU32(cbi.instruction.i.imm_sext32());
   Value address = AddValues(base, offset, false);
 
+  SpeculativeValue address_spec = SpeculativeReadReg(cbi.instruction.i.rs);
+  SpeculativeValue value_spec;
+  if (address_spec)
+    address_spec = *address_spec + cbi.instruction.i.imm_sext32();
+
   Value result;
   switch (cbi.instruction.op)
   {
     case InstructionOp::lb:
     case InstructionOp::lbu:
     {
-      result = EmitLoadGuestMemory(cbi, address, RegSize_8);
+      result = EmitLoadGuestMemory(cbi, address, address_spec, RegSize_8);
       ConvertValueSizeInPlace(&result, RegSize_32, (cbi.instruction.op == InstructionOp::lb));
       if (g_settings.gpu_pgxp_enable)
         EmitFunctionCall(nullptr, PGXP::CPU_LBx, Value::FromConstantU32(cbi.instruction.bits), result, address);
+
+      if (address_spec)
+      {
+        value_spec = SpeculativeReadMemory(*address_spec & ~3u);
+        if (value_spec)
+          value_spec = (*value_spec >> ((*address_spec & 3u) * 8u)) & 0xFFu;
+      }
     }
     break;
 
     case InstructionOp::lh:
     case InstructionOp::lhu:
     {
-      result = EmitLoadGuestMemory(cbi, address, RegSize_16);
+      result = EmitLoadGuestMemory(cbi, address, address_spec, RegSize_16);
       ConvertValueSizeInPlace(&result, RegSize_32, (cbi.instruction.op == InstructionOp::lh));
 
       if (g_settings.gpu_pgxp_enable)
         EmitFunctionCall(nullptr, PGXP::CPU_LHx, Value::FromConstantU32(cbi.instruction.bits), result, address);
+
+      if (address_spec)
+      {
+        value_spec = SpeculativeReadMemory(*address_spec & ~1u);
+        if (value_spec)
+          value_spec = (*value_spec >> ((*address_spec & 1u) * 16u)) & 0xFFFFu;
+      }
     }
     break;
 
     case InstructionOp::lw:
     {
-      result = EmitLoadGuestMemory(cbi, address, RegSize_32);
+      result = EmitLoadGuestMemory(cbi, address, address_spec, RegSize_32);
       if (g_settings.gpu_pgxp_enable)
         EmitFunctionCall(nullptr, PGXP::CPU_LW, Value::FromConstantU32(cbi.instruction.bits), result, address);
+
+      if (address_spec)
+        value_spec = SpeculativeReadMemory(*address_spec);
     }
     break;
 
@@ -1200,6 +1348,7 @@ bool CodeGenerator::Compile_Load(const CodeBlockInstruction& cbi)
   }
 
   m_register_cache.WriteGuestRegisterDelayed(cbi.instruction.i.rt, std::move(result));
+  SpeculativeWriteReg(cbi.instruction.i.rt, value_spec);
 
   InstructionEpilogue(cbi);
   return true;
@@ -1215,35 +1364,84 @@ bool CodeGenerator::Compile_Store(const CodeBlockInstruction& cbi)
   Value address = AddValues(base, offset, false);
   Value value = m_register_cache.ReadGuestRegister(cbi.instruction.i.rt);
 
+  SpeculativeValue address_spec = SpeculativeReadReg(cbi.instruction.i.rs);
+  SpeculativeValue value_spec = SpeculativeReadReg(cbi.instruction.i.rt);
+  if (address_spec)
+    address_spec = *address_spec + cbi.instruction.i.imm_sext32();
+
   switch (cbi.instruction.op)
   {
     case InstructionOp::sb:
     {
-      EmitStoreGuestMemory(cbi, address, value.ViewAsSize(RegSize_8));
       if (g_settings.gpu_pgxp_enable)
       {
         EmitFunctionCall(nullptr, PGXP::CPU_SB, Value::FromConstantU32(cbi.instruction.bits),
                          value.ViewAsSize(RegSize_8), address);
+      }
+
+      EmitStoreGuestMemory(cbi, address, address_spec, value.ViewAsSize(RegSize_8));
+
+      if (address_spec)
+      {
+        const VirtualMemoryAddress aligned_addr = (*address_spec & ~3u);
+        const SpeculativeValue aligned_existing_value = SpeculativeReadMemory(aligned_addr);
+        if (aligned_existing_value)
+        {
+          if (value_spec)
+          {
+            const u32 shift = (aligned_addr & 3u) * 8u;
+            SpeculativeWriteMemory(aligned_addr,
+                                   (*aligned_existing_value & ~(0xFFu << shift)) | ((*value_spec & 0xFFu) << shift));
+          }
+          else
+          {
+            SpeculativeWriteMemory(aligned_addr, std::nullopt);
+          }
+        }
       }
     }
     break;
 
     case InstructionOp::sh:
     {
-      EmitStoreGuestMemory(cbi, address, value.ViewAsSize(RegSize_16));
       if (g_settings.gpu_pgxp_enable)
       {
         EmitFunctionCall(nullptr, PGXP::CPU_SH, Value::FromConstantU32(cbi.instruction.bits),
                          value.ViewAsSize(RegSize_16), address);
+      }
+
+      EmitStoreGuestMemory(cbi, address, address_spec, value.ViewAsSize(RegSize_16));
+
+      if (address_spec)
+      {
+        const VirtualMemoryAddress aligned_addr = (*address_spec & ~3u);
+        const SpeculativeValue aligned_existing_value = SpeculativeReadMemory(aligned_addr);
+        if (aligned_existing_value)
+        {
+          if (value_spec)
+          {
+            const u32 shift = (aligned_addr & 1u) * 16u;
+            SpeculativeWriteMemory(aligned_addr, (*aligned_existing_value & ~(0xFFFFu << shift)) |
+                                                   ((*value_spec & 0xFFFFu) << shift));
+          }
+          else
+          {
+            SpeculativeWriteMemory(aligned_addr, std::nullopt);
+          }
+        }
       }
     }
     break;
 
     case InstructionOp::sw:
     {
-      EmitStoreGuestMemory(cbi, address, value);
       if (g_settings.gpu_pgxp_enable)
         EmitFunctionCall(nullptr, PGXP::CPU_SW, Value::FromConstantU32(cbi.instruction.bits), value, address);
+
+      EmitStoreGuestMemory(cbi, address, address_spec, value);
+
+      if (address_spec)
+        SpeculativeWriteMemory(*address_spec, value_spec);
     }
     break;
 
@@ -1251,6 +1449,124 @@ bool CodeGenerator::Compile_Store(const CodeBlockInstruction& cbi)
       UnreachableCode();
       break;
   }
+
+  InstructionEpilogue(cbi);
+  return true;
+}
+
+bool CodeGenerator::Compile_LoadLeftRight(const CodeBlockInstruction& cbi)
+{
+  InstructionPrologue(cbi, 1);
+
+  Value base = m_register_cache.ReadGuestRegister(cbi.instruction.i.rs);
+  Value offset = Value::FromConstantU32(cbi.instruction.i.imm_sext32());
+  Value address = AddValues(base, offset, false);
+  base.ReleaseAndClear();
+
+  SpeculativeValue address_spec = SpeculativeReadReg(cbi.instruction.i.rs);
+  if (address_spec)
+    address_spec = *address_spec + cbi.instruction.i.imm_sext32();
+
+  Value shift = ShlValues(AndValues(address, Value::FromConstantU32(3)), Value::FromConstantU32(3)); // * 8
+  address = AndValues(address, Value::FromConstantU32(~u32(3)));
+
+  Value mem = EmitLoadGuestMemory(cbi, address, address_spec, RegSize_32);
+
+  // hack to bypass load delays
+  Value value;
+  if (cbi.instruction.i.rt == m_register_cache.GetLoadDelayRegister())
+  {
+    const Value& ld_value = m_register_cache.GetLoadDelayValue();
+    if (ld_value.IsInHostRegister())
+      value.SetHostReg(&m_register_cache, ld_value.GetHostRegister(), ld_value.size);
+    else
+      value = ld_value;
+  }
+  else
+  {
+    value = m_register_cache.ReadGuestRegister(cbi.instruction.i.rt, true, true);
+  }
+
+  if (cbi.instruction.op == InstructionOp::lwl)
+  {
+    Value lhs = ShrValues(Value::FromConstantU32(0x00FFFFFF), shift);
+    AndValueInPlace(lhs, value);
+    value.ReleaseAndClear();
+
+    mem = ShlValues(mem, SubValues(Value::FromConstantU32(24), shift, false));
+    EmitOr(mem.GetHostRegister(), mem.GetHostRegister(), lhs);
+  }
+  else
+  {
+    Value lhs = ShlValues(Value::FromConstantU32(0xFFFFFF00), SubValues(Value::FromConstantU32(24), shift, false));
+    AndValueInPlace(lhs, value);
+    value.ReleaseAndClear();
+
+    EmitShr(mem.GetHostRegister(), mem.GetHostRegister(), RegSize_32, shift);
+    EmitOr(mem.GetHostRegister(), mem.GetHostRegister(), lhs);
+  }
+
+  shift.ReleaseAndClear();
+
+  if (g_settings.gpu_pgxp_enable)
+    EmitFunctionCall(nullptr, PGXP::CPU_LW, Value::FromConstantU32(cbi.instruction.bits), mem, address);
+
+  m_register_cache.WriteGuestRegisterDelayed(cbi.instruction.i.rt, std::move(mem));
+
+  // TODO: Speculative values
+  SpeculativeWriteReg(cbi.instruction.r.rt, std::nullopt);
+
+  InstructionEpilogue(cbi);
+  return true;
+}
+
+bool CodeGenerator::Compile_StoreLeftRight(const CodeBlockInstruction& cbi)
+{
+  InstructionPrologue(cbi, 1);
+
+  Value base = m_register_cache.ReadGuestRegister(cbi.instruction.i.rs);
+  Value offset = Value::FromConstantU32(cbi.instruction.i.imm_sext32());
+  Value address = AddValues(base, offset, false);
+  base.ReleaseAndClear();
+
+  // TODO: Speculative values
+  SpeculativeValue address_spec = SpeculativeReadReg(cbi.instruction.i.rs);
+  if (address_spec)
+  {
+    address_spec = *address_spec + cbi.instruction.i.imm_sext32();
+    SpeculativeWriteMemory(*address_spec & ~3u, std::nullopt);
+  }
+
+  Value shift = ShlValues(AndValues(address, Value::FromConstantU32(3)), Value::FromConstantU32(3)); // * 8
+  address = AndValues(address, Value::FromConstantU32(~u32(3)));
+
+  Value mem = EmitLoadGuestMemory(cbi, address, address_spec, RegSize_32);
+
+  Value reg = m_register_cache.ReadGuestRegister(cbi.instruction.r.rt);
+
+  if (cbi.instruction.op == InstructionOp::swl)
+  {
+    Value lhs = ShrValues(reg, SubValues(Value::FromConstantU32(24), shift, false));
+    reg.ReleaseAndClear();
+
+    EmitAnd(mem.GetHostRegister(), mem.GetHostRegister(), ShlValues(Value::FromConstantU32(0xFFFFFF00), shift));
+    EmitOr(mem.GetHostRegister(), mem.GetHostRegister(), lhs);
+  }
+  else
+  {
+    Value lhs = ShlValues(reg, shift);
+    reg.ReleaseAndClear();
+
+    AndValueInPlace(mem,
+                    ShrValues(Value::FromConstantU32(0x00FFFFFF), SubValues(Value::FromConstantU32(24), shift, false)));
+    EmitOr(mem.GetHostRegister(), mem.GetHostRegister(), lhs);
+  }
+
+  shift.ReleaseAndClear();
+
+  EmitStoreGuestMemory(cbi, address, address_spec, mem);
+  if (g_settings.gpu_pgxp_enable)
+    EmitFunctionCall(nullptr, PGXP::CPU_SW, Value::FromConstantU32(cbi.instruction.bits), mem, address);
 
   InstructionEpilogue(cbi);
   return true;
@@ -1264,6 +1580,7 @@ bool CodeGenerator::Compile_MoveHiLo(const CodeBlockInstruction& cbi)
   {
     case InstructionFunct::mfhi:
       m_register_cache.WriteGuestRegister(cbi.instruction.r.rd, m_register_cache.ReadGuestRegister(Reg::hi));
+      SpeculativeWriteReg(cbi.instruction.r.rd, std::nullopt);
       break;
 
     case InstructionFunct::mthi:
@@ -1272,6 +1589,7 @@ bool CodeGenerator::Compile_MoveHiLo(const CodeBlockInstruction& cbi)
 
     case InstructionFunct::mflo:
       m_register_cache.WriteGuestRegister(cbi.instruction.r.rd, m_register_cache.ReadGuestRegister(Reg::lo));
+      SpeculativeWriteReg(cbi.instruction.r.rd, std::nullopt);
       break;
 
     case InstructionFunct::mtlo:
@@ -1296,7 +1614,10 @@ bool CodeGenerator::Compile_Add(const CodeBlockInstruction& cbi)
      (cbi.instruction.op == InstructionOp::funct && cbi.instruction.r.funct == InstructionFunct::add));
 
   Value lhs, rhs;
+  Reg lhs_src;
+  SpeculativeValue lhs_spec, rhs_spec;
   Reg dest;
+
   switch (cbi.instruction.op)
   {
     case InstructionOp::addi:
@@ -1304,8 +1625,12 @@ bool CodeGenerator::Compile_Add(const CodeBlockInstruction& cbi)
     {
       // rt <- rs + sext(imm)
       dest = cbi.instruction.i.rt;
+      lhs_src = cbi.instruction.i.rs;
       lhs = m_register_cache.ReadGuestRegister(cbi.instruction.i.rs);
       rhs = Value::FromConstantU32(cbi.instruction.i.imm_sext32());
+
+      lhs_spec = SpeculativeReadReg(cbi.instruction.i.rs);
+      rhs_spec = cbi.instruction.i.imm_sext32();
     }
     break;
 
@@ -1313,8 +1638,11 @@ bool CodeGenerator::Compile_Add(const CodeBlockInstruction& cbi)
     {
       Assert(cbi.instruction.r.funct == InstructionFunct::add || cbi.instruction.r.funct == InstructionFunct::addu);
       dest = cbi.instruction.r.rd;
+      lhs_src = cbi.instruction.r.rs;
       lhs = m_register_cache.ReadGuestRegister(cbi.instruction.r.rs);
       rhs = m_register_cache.ReadGuestRegister(cbi.instruction.r.rt);
+      lhs_spec = SpeculativeReadReg(cbi.instruction.r.rs);
+      rhs_spec = SpeculativeReadReg(cbi.instruction.r.rt);
     }
     break;
 
@@ -1323,11 +1651,23 @@ bool CodeGenerator::Compile_Add(const CodeBlockInstruction& cbi)
       return false;
   }
 
+  // detect register moves and handle them for pgxp
+  if (g_settings.gpu_pgxp_enable && rhs.HasConstantValue(0))
+  {
+    EmitFunctionCall(nullptr, &PGXP::CPU_MOVE,
+                     Value::FromConstantU32((static_cast<u32>(dest) << 8) | (static_cast<u32>(lhs_src))), lhs);
+  }
+
   Value result = AddValues(lhs, rhs, check_overflow);
   if (check_overflow)
     GenerateExceptionExit(cbi, Exception::Ov, Condition::Overflow);
 
   m_register_cache.WriteGuestRegister(dest, std::move(result));
+
+  SpeculativeValue value_spec;
+  if (lhs_spec && rhs_spec)
+    value_spec = *lhs_spec + *rhs_spec;
+  SpeculativeWriteReg(dest, value_spec);
 
   InstructionEpilogue(cbi);
   return true;
@@ -1343,11 +1683,19 @@ bool CodeGenerator::Compile_Subtract(const CodeBlockInstruction& cbi)
   Value lhs = m_register_cache.ReadGuestRegister(cbi.instruction.r.rs);
   Value rhs = m_register_cache.ReadGuestRegister(cbi.instruction.r.rt);
 
+  SpeculativeValue lhs_spec = SpeculativeReadReg(cbi.instruction.r.rs);
+  SpeculativeValue rhs_spec = SpeculativeReadReg(cbi.instruction.r.rt);
+
   Value result = SubValues(lhs, rhs, check_overflow);
   if (check_overflow)
     GenerateExceptionExit(cbi, Exception::Ov, Condition::Overflow);
 
   m_register_cache.WriteGuestRegister(cbi.instruction.r.rd, std::move(result));
+
+  SpeculativeValue value_spec;
+  if (lhs_spec && rhs_spec)
+    value_spec = *lhs_spec - *rhs_spec;
+  SpeculativeWriteReg(cbi.instruction.r.rd, value_spec);
 
   InstructionEpilogue(cbi);
   return true;
@@ -1414,8 +1762,6 @@ bool CodeGenerator::Compile_Divide(const CodeBlockInstruction& cbi)
 {
   InstructionPrologue(cbi, 1);
 
-  const bool signed_divide = (cbi.instruction.r.funct == InstructionFunct::div);
-
   Value num = m_register_cache.ReadGuestRegister(cbi.instruction.r.rs);
   Value denom = m_register_cache.ReadGuestRegister(cbi.instruction.r.rt);
   if (num.IsConstant() && denom.IsConstant())
@@ -1460,7 +1806,7 @@ bool CodeGenerator::Compile_Divide(const CodeBlockInstruction& cbi)
 
     EmitBindLabel(&done);
 
-    m_register_cache.UnunhibitAllocation();
+    m_register_cache.UninhibitAllocation();
     m_register_cache.WriteGuestRegister(Reg::lo, std::move(lo));
     m_register_cache.WriteGuestRegister(Reg::hi, std::move(hi));
   }
@@ -1542,7 +1888,7 @@ bool CodeGenerator::Compile_SignedDivide(const CodeBlockInstruction& cbi)
 
     EmitBindLabel(&done);
 
-    m_register_cache.UnunhibitAllocation();
+    m_register_cache.UninhibitAllocation();
     m_register_cache.WriteGuestRegister(Reg::lo, std::move(lo));
     m_register_cache.WriteGuestRegister(Reg::hi, std::move(hi));
   }
@@ -1561,12 +1907,15 @@ bool CodeGenerator::Compile_SetLess(const CodeBlockInstruction& cbi)
 
   Reg dest;
   Value lhs, rhs;
+  SpeculativeValue lhs_spec, rhs_spec;
   if (cbi.instruction.op == InstructionOp::slti || cbi.instruction.op == InstructionOp::sltiu)
   {
     // rt <- rs < {z,s}ext(imm)
     dest = cbi.instruction.i.rt;
     lhs = m_register_cache.ReadGuestRegister(cbi.instruction.i.rs, true, true);
     rhs = Value::FromConstantU32(cbi.instruction.i.imm_sext32());
+    lhs_spec = SpeculativeReadReg(cbi.instruction.i.rs);
+    rhs_spec = cbi.instruction.i.imm_sext32();
 
     // flush the old value which might free up a register
     if (dest != cbi.instruction.r.rs)
@@ -1578,6 +1927,8 @@ bool CodeGenerator::Compile_SetLess(const CodeBlockInstruction& cbi)
     dest = cbi.instruction.r.rd;
     lhs = m_register_cache.ReadGuestRegister(cbi.instruction.r.rs, true, true);
     rhs = m_register_cache.ReadGuestRegister(cbi.instruction.r.rt);
+    lhs_spec = SpeculativeReadReg(cbi.instruction.r.rs);
+    rhs_spec = SpeculativeReadReg(cbi.instruction.r.rt);
 
     // flush the old value which might free up a register
     if (dest != cbi.instruction.i.rs && dest != cbi.instruction.r.rt)
@@ -1588,6 +1939,14 @@ bool CodeGenerator::Compile_SetLess(const CodeBlockInstruction& cbi)
   EmitCmp(lhs.host_reg, rhs);
   EmitSetConditionResult(result.host_reg, result.size, signed_comparison ? Condition::Less : Condition::Below);
   m_register_cache.WriteGuestRegister(dest, std::move(result));
+
+  SpeculativeValue value_spec;
+  if (lhs_spec && rhs_spec)
+  {
+    value_spec = BoolToUInt32(signed_comparison ? (static_cast<s32>(*lhs_spec) < static_cast<s32>(*rhs_spec)) :
+                                                  (*lhs_spec < *rhs_spec));
+  }
+  SpeculativeWriteReg(cbi.instruction.r.rd, value_spec);
 
   InstructionEpilogue(cbi);
   return true;
@@ -1731,11 +2090,20 @@ bool CodeGenerator::Compile_Branch(const CodeBlockInstruction& cbi)
       // npc = pc + (sext(imm) << 2)
       Value branch_target = CalculatePC(cbi.instruction.i.imm_sext32() << 2);
 
-      // branch <- rs op rt
-      Value lhs = m_register_cache.ReadGuestRegister(cbi.instruction.i.rs, true, true);
-      Value rhs = m_register_cache.ReadGuestRegister(cbi.instruction.i.rt);
-      const Condition condition = (cbi.instruction.op == InstructionOp::beq) ? Condition::Equal : Condition::NotEqual;
-      DoBranch(condition, lhs, rhs, Reg::count, std::move(branch_target));
+      // beq zero, zero, addr -> unconditional branch
+      if (cbi.instruction.op == InstructionOp::beq && cbi.instruction.i.rs == Reg::zero &&
+          cbi.instruction.i.rt == Reg::zero)
+      {
+        DoBranch(Condition::Always, Value(), Value(), Reg::count, std::move(branch_target));
+      }
+      else
+      {
+        // branch <- rs op rt
+        Value lhs = m_register_cache.ReadGuestRegister(cbi.instruction.i.rs, true, true);
+        Value rhs = m_register_cache.ReadGuestRegister(cbi.instruction.i.rt);
+        const Condition condition = (cbi.instruction.op == InstructionOp::beq) ? Condition::Equal : Condition::NotEqual;
+        DoBranch(condition, lhs, rhs, Reg::count, std::move(branch_target));
+      }
     }
     break;
 
@@ -1792,8 +2160,9 @@ bool CodeGenerator::Compile_lui(const CodeBlockInstruction& cbi)
   InstructionPrologue(cbi, 1);
 
   // rt <- (imm << 16)
-  m_register_cache.WriteGuestRegister(cbi.instruction.i.rt,
-                                      Value::FromConstantU32(cbi.instruction.i.imm_zext32() << 16));
+  const u32 value = cbi.instruction.i.imm_zext32() << 16;
+  m_register_cache.WriteGuestRegister(cbi.instruction.i.rt, Value::FromConstantU32(value));
+  SpeculativeWriteReg(cbi.instruction.i.rt, value);
 
   InstructionEpilogue(cbi);
   return true;
@@ -1877,6 +2246,7 @@ bool CodeGenerator::Compile_cop0(const CodeBlockInstruction& cbi)
           Value value = m_register_cache.AllocateScratch(RegSize_32);
           EmitLoadCPUStructField(value.host_reg, value.size, offset);
           m_register_cache.WriteGuestRegisterDelayed(cbi.instruction.r.rt, std::move(value));
+          SpeculativeWriteReg(cbi.instruction.r.rt, std::nullopt);
         }
         else
         {
@@ -1890,7 +2260,24 @@ bool CodeGenerator::Compile_cop0(const CodeBlockInstruction& cbi)
               value = AndValues(value, Value::FromConstantU32(write_mask));
             }
 
-            EmitStoreCPUStructField(offset, value);
+            // changing SR[Isc] needs to update fastmem views
+            if (reg == Cop0Reg::SR && g_settings.IsUsingFastmem())
+            {
+              LabelType skip_fastmem_update;
+              Value old_value = m_register_cache.AllocateScratch(RegSize_32);
+              EmitLoadCPUStructField(old_value.host_reg, RegSize_32, offset);
+              EmitStoreCPUStructField(offset, value);
+              EmitXor(old_value.host_reg, old_value.host_reg, value);
+              EmitBranchIfBitClear(old_value.host_reg, RegSize_32, 16, &skip_fastmem_update);
+              m_register_cache.InhibitAllocation();
+              EmitFunctionCall(nullptr, &Thunks::UpdateFastmemMapping, m_register_cache.GetCPUPtr());
+              EmitBindLabel(&skip_fastmem_update);
+              m_register_cache.UninhibitAllocation();
+            }
+            else
+            {
+              EmitStoreCPUStructField(offset, value);
+            }
           }
         }
 
@@ -1906,24 +2293,13 @@ bool CodeGenerator::Compile_cop0(const CodeBlockInstruction& cbi)
           EmitLoadCPUStructField(sr_value.host_reg, sr_value.size, offsetof(State, cop0_regs.sr.bits));
           EmitLoadCPUStructField(cause_value.host_reg, cause_value.size, offsetof(State, cop0_regs.cause.bits));
           EmitBranchIfBitClear(sr_value.host_reg, sr_value.size, 0, &no_interrupt);
+          m_register_cache.InhibitAllocation();
           EmitAnd(sr_value.host_reg, sr_value.host_reg, cause_value);
           EmitTest(sr_value.host_reg, Value::FromConstantU32(0xFF00));
-          sr_value.ReleaseAndClear();
-          cause_value.ReleaseAndClear();
           EmitConditionalBranch(Condition::Zero, false, &no_interrupt);
-
-          EmitBranch(GetCurrentFarCodePointer());
-          SwitchToFarCode();
-
-          // we want to flush pc here
-          m_register_cache.PushState();
-          m_register_cache.FlushAllGuestRegisters(false, true);
-          WriteNewPC(CalculatePC(), false);
-          EmitExceptionExit();
-          m_register_cache.PopState();
-
-          SwitchToNearCode();
+          EmitStoreCPUStructField(offsetof(State, downcount), Value::FromConstantU32(0));
           EmitBindLabel(&no_interrupt);
+          m_register_cache.UninhibitAllocation();
         }
 
         InstructionEpilogue(cbi);
@@ -1956,6 +2332,18 @@ bool CodeGenerator::Compile_cop0(const CodeBlockInstruction& cbi)
         }
 
         EmitStoreCPUStructField(offsetof(State, cop0_regs.sr.bits), sr);
+
+        Value cause_value = m_register_cache.AllocateScratch(RegSize_32);
+        EmitLoadCPUStructField(cause_value.host_reg, cause_value.size, offsetof(State, cop0_regs.cause.bits));
+
+        LabelType no_interrupt;
+        EmitAnd(sr.host_reg, sr.host_reg, cause_value);
+        EmitTest(sr.host_reg, Value::FromConstantU32(0xFF00));
+        EmitConditionalBranch(Condition::Zero, false, &no_interrupt);
+        m_register_cache.InhibitAllocation();
+        EmitStoreCPUStructField(offsetof(State, downcount), Value::FromConstantU32(0));
+        EmitBindLabel(&no_interrupt);
+        m_register_cache.UninhibitAllocation();
 
         InstructionEpilogue(cbi);
         return true;
@@ -2088,9 +2476,13 @@ bool CodeGenerator::Compile_cop2(const CodeBlockInstruction& cbi)
     const u32 reg = static_cast<u32>(cbi.instruction.i.rt.GetValue());
     Value address = AddValues(m_register_cache.ReadGuestRegister(cbi.instruction.i.rs),
                               Value::FromConstantU32(cbi.instruction.i.imm_sext32()), false);
+    SpeculativeValue spec_address = SpeculativeReadReg(cbi.instruction.i.rs);
+    if (spec_address)
+      spec_address = *spec_address + cbi.instruction.i.imm_sext32();
+
     if (cbi.instruction.op == InstructionOp::lwc2)
     {
-      Value value = EmitLoadGuestMemory(cbi, address, RegSize_32);
+      Value value = EmitLoadGuestMemory(cbi, address, spec_address, RegSize_32);
       DoGTERegisterWrite(reg, value);
 
       if (g_settings.gpu_pgxp_enable)
@@ -2099,10 +2491,14 @@ bool CodeGenerator::Compile_cop2(const CodeBlockInstruction& cbi)
     else
     {
       Value value = DoGTERegisterRead(reg);
-      EmitStoreGuestMemory(cbi, address, value);
+      EmitStoreGuestMemory(cbi, address, spec_address, value);
 
       if (g_settings.gpu_pgxp_enable)
         EmitFunctionCall(nullptr, PGXP::CPU_SWC2, Value::FromConstantU32(cbi.instruction.bits), value, address);
+
+      SpeculativeValue spec_base = SpeculativeReadReg(cbi.instruction.i.rs);
+      if (spec_base)
+        SpeculativeWriteMemory(*spec_address, std::nullopt);
     }
 
     InstructionEpilogue(cbi);
@@ -2134,6 +2530,7 @@ bool CodeGenerator::Compile_cop2(const CodeBlockInstruction& cbi)
         }
 
         m_register_cache.WriteGuestRegisterDelayed(cbi.instruction.r.rt, std::move(value));
+        SpeculativeWriteReg(cbi.instruction.r.rt, std::nullopt);
 
         InstructionEpilogue(cbi);
         return true;
@@ -2177,4 +2574,68 @@ bool CodeGenerator::Compile_cop2(const CodeBlockInstruction& cbi)
     return true;
   }
 }
+
+void CodeGenerator::InitSpeculativeRegs()
+{
+  for (u8 i = 0; i < static_cast<u8>(Reg::count); i++)
+    m_speculative_constants.regs[i] = g_state.regs.r[i];
+}
+
+void CodeGenerator::InvalidateSpeculativeValues()
+{
+  m_speculative_constants.regs.fill(std::nullopt);
+  m_speculative_constants.memory.clear();
+}
+
+CodeGenerator::SpeculativeValue CodeGenerator::SpeculativeReadReg(Reg reg)
+{
+  return m_speculative_constants.regs[static_cast<u8>(reg)];
+}
+
+void CodeGenerator::SpeculativeWriteReg(Reg reg, SpeculativeValue value)
+{
+  m_speculative_constants.regs[static_cast<u8>(reg)] = value;
+}
+
+CodeGenerator::SpeculativeValue CodeGenerator::SpeculativeReadMemory(VirtualMemoryAddress address)
+{
+  PhysicalMemoryAddress phys_addr = address & PHYSICAL_MEMORY_ADDRESS_MASK;
+
+  auto it = m_speculative_constants.memory.find(address);
+  if (it != m_speculative_constants.memory.end())
+    return it->second;
+
+  u32 value;
+  if ((phys_addr & DCACHE_LOCATION_MASK) == DCACHE_LOCATION)
+  {
+    u32 scratchpad_offset = phys_addr & DCACHE_OFFSET_MASK;
+    std::memcpy(&value, &CPU::g_state.dcache[scratchpad_offset], sizeof(value));
+    return value;
+  }
+
+  if (Bus::IsRAMAddress(phys_addr))
+  {
+    u32 ram_offset = phys_addr & Bus::RAM_MASK;
+    std::memcpy(&value, &Bus::g_ram[ram_offset], sizeof(value));
+    return value;
+  }
+
+  return std::nullopt;
+}
+
+void CodeGenerator::SpeculativeWriteMemory(u32 address, SpeculativeValue value)
+{
+  PhysicalMemoryAddress phys_addr = address & PHYSICAL_MEMORY_ADDRESS_MASK;
+
+  auto it = m_speculative_constants.memory.find(address);
+  if (it != m_speculative_constants.memory.end())
+  {
+    it->second = value;
+    return;
+  }
+
+  if ((phys_addr & DCACHE_LOCATION_MASK) == DCACHE_LOCATION || Bus::IsRAMAddress(phys_addr))
+    m_speculative_constants.memory.emplace(address, value);
+}
+
 } // namespace CPU::Recompiler

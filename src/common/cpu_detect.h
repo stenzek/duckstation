@@ -6,6 +6,10 @@
 #define CPU_X64 1
 #elif defined(_M_IX86)
 #define CPU_X86 1
+#elif defined(_M_ARM64)
+#define CPU_AARCH64 1
+#elif defined(_M_ARM)
+#define CPU_AARCH32 1
 #else
 #error Unknown architecture.
 #endif
@@ -19,7 +23,7 @@
 #elif defined(__aarch64__)
 #define CPU_AARCH64 1
 #elif defined(__arm__)
-#define CPU_ARM 1
+#define CPU_AARCH32 1
 #else
 #error Unknown architecture.
 #endif

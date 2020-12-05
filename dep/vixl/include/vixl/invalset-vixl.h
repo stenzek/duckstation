@@ -244,8 +244,8 @@ class InvalSet {
 
 
 template <class S>
-class InvalSetIterator : public std::iterator<std::forward_iterator_tag,
-                                              typename S::_ElementType> {
+class InvalSetIterator/* : public std::iterator<std::forward_iterator_tag,
+                                              typename S::_ElementType> */{
  private:
   // Redefine types to mirror the associated set types.
   typedef typename S::_ElementType ElementType;

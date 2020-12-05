@@ -20,7 +20,7 @@ public:
     Write
   };
 
-  StateWrapper(ByteStream* stream, Mode mode);
+  StateWrapper(ByteStream* stream, Mode mode, u32 version);
   StateWrapper(const StateWrapper&) = delete;
   ~StateWrapper();
 
@@ -30,6 +30,7 @@ public:
   bool IsWriting() const { return (m_mode == Mode::Write); }
   Mode GetMode() const { return m_mode; }
   void SetMode(Mode mode) { m_mode = mode; }
+  u32 GetVersion() const { return m_version; }
 
   /// Overload for integral or floating-point types. Writes bytes as-is.
   template<typename T, std::enable_if_t<std::is_integral_v<T> || std::is_floating_point_v<T>, int> = 0>
@@ -175,8 +176,21 @@ public:
 
   bool DoMarker(const char* marker);
 
+  template<typename T>
+  void DoEx(T* data, u32 version_introduced, T default_value)
+  {
+    if (m_version < version_introduced)
+    {
+      *data = std::move(default_value);
+      return;
+    }
+
+    Do(data);
+  }
+
 private:
   ByteStream* m_stream;
   Mode m_mode;
+  u32 m_version;
   bool m_error = false;
 };

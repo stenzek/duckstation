@@ -54,42 +54,66 @@ bool Pad::DoState(StateWrapper& sw)
     ControllerType state_controller_type = controller_type;
     sw.Do(&state_controller_type);
 
-    if (controller_type != state_controller_type)
+    if (g_settings.load_devices_from_save_states)
     {
-      if (g_settings.load_devices_from_save_states)
+      if (controller_type != state_controller_type)
       {
-        g_host_interface->AddFormattedOSDMessage(
-          2.0f, "Save state contains controller type %s in port %u, but %s is used. Switching.",
-          Settings::GetControllerTypeName(state_controller_type), i + 1u,
-          Settings::GetControllerTypeName(controller_type));
+        if (g_settings.load_devices_from_save_states)
+        {
+          g_host_interface->AddFormattedOSDMessage(
+            10.0f,
+            g_host_interface->TranslateString(
+              "OSDMessage", "Save state contains controller type %s in port %u, but %s is used. Switching."),
+            Settings::GetControllerTypeName(state_controller_type), i + 1u,
+            Settings::GetControllerTypeName(controller_type));
 
-        m_controllers[i].reset();
-        if (state_controller_type != ControllerType::None)
-          m_controllers[i] = Controller::Create(state_controller_type, i);
+          m_controllers[i].reset();
+          if (state_controller_type != ControllerType::None)
+          {
+            m_controllers[i] = Controller::Create(state_controller_type, i);
+            if (!sw.DoMarker("Controller") || !m_controllers[i]->DoState(sw))
+              return false;
+          }
+        }
+        else
+        {
+          g_host_interface->AddFormattedOSDMessage(
+            10.0f,
+            g_host_interface->TranslateString("OSDMessage", "Ignoring mismatched controller type %s in port %u."),
+            Settings::GetControllerTypeName(state_controller_type), i + 1u);
+
+          // we still need to read the save state controller state
+          if (state_controller_type != ControllerType::None)
+          {
+            std::unique_ptr<Controller> dummy_controller = Controller::Create(state_controller_type, i);
+            if (dummy_controller)
+            {
+              if (!sw.DoMarker("Controller") || !dummy_controller->DoState(sw))
+                return false;
+            }
+          }
+        }
       }
       else
       {
-        g_host_interface->AddFormattedOSDMessage(2.0f, "Ignoring mismatched controller type %s in port %u.",
-                                                 Settings::GetControllerTypeName(state_controller_type), i + 1u);
-
-        // we still need to read the save state controller state
-        if (state_controller_type != ControllerType::None)
+        if (m_controllers[i])
         {
-          std::unique_ptr<Controller> dummy_controller = Controller::Create(state_controller_type, i);
-          if (dummy_controller)
-          {
-            if (!sw.DoMarker("Controller") || !dummy_controller->DoState(sw))
-              return false;
-          }
+          if (!sw.DoMarker("Controller") || !m_controllers[i]->DoState(sw))
+            return false;
         }
       }
     }
     else
     {
-      if (m_controllers[i])
+      // we still need to read the save state controller state
+      if (state_controller_type != ControllerType::None)
       {
-        if (!sw.DoMarker("Controller") || !m_controllers[i]->DoState(sw))
-          return false;
+        std::unique_ptr<Controller> dummy_controller = Controller::Create(state_controller_type, i);
+        if (dummy_controller)
+        {
+          if (!sw.DoMarker("Controller") || !dummy_controller->DoState(sw))
+            return false;
+        }
       }
     }
 
@@ -100,13 +124,38 @@ bool Pad::DoState(StateWrapper& sw)
     {
       Log_WarningPrintf("Skipping loading memory card %u from save state.", i + 1u);
 
-      MemoryCard dummy_card;
-      if (!sw.DoMarker("MemoryCard") || !dummy_card.DoState(sw))
+      std::unique_ptr<MemoryCard> card_from_state = std::make_unique<MemoryCard>();
+      if (!sw.DoMarker("MemoryCard") || !card_from_state->DoState(sw))
         return false;
 
-      // we do need to reset the existing card though, in case it was in the middle of a write
+      // does the content of the memory card match?
       if (m_memory_cards[i])
-        m_memory_cards[i]->Reset();
+      {
+        if (m_memory_cards[i]->GetData() == card_from_state->GetData())
+        {
+          Log_DevPrintf("Using memory card %u state from save state", i);
+          card_from_state->SetFilename(m_memory_cards[i]->GetFilename());
+          m_memory_cards[i] = std::move(card_from_state);
+        }
+        else
+        {
+          g_host_interface->AddFormattedOSDMessage(
+            20.0f,
+            g_host_interface->TranslateString(
+              "OSDMessage", "Memory card %u from save state does match current card data. Simulating replugging."),
+            i + 1u);
+
+          m_memory_cards[i]->Reset();
+        }
+      }
+      else
+      {
+        g_host_interface->AddFormattedOSDMessage(
+          20.0f,
+          g_host_interface->TranslateString("OSDMessage",
+                                            "Memory card %u present in save state but not in system. Ignoring card."),
+          i + 1u);
+      }
 
       continue;
     }
@@ -114,13 +163,19 @@ bool Pad::DoState(StateWrapper& sw)
     if (card_present && !m_memory_cards[i])
     {
       g_host_interface->AddFormattedOSDMessage(
-        2.0f, "Memory card %u present in save state but not in system. Creating temporary card.", i + 1u);
+        20.0f,
+        g_host_interface->TranslateString(
+          "OSDMessage", "Memory card %u present in save state but not in system. Creating temporary card."),
+        i + 1u);
       m_memory_cards[i] = MemoryCard::Create();
     }
     else if (!card_present && m_memory_cards[i])
     {
       g_host_interface->AddFormattedOSDMessage(
-        2.0f, "Memory card %u present in system but not in save state. Removing card.", i + 1u);
+        20.0f,
+        g_host_interface->TranslateString("OSDMessage",
+                                          "Memory card %u present in system but not in save state. Removing card."),
+        i + 1u);
       m_memory_cards[i].reset();
     }
 

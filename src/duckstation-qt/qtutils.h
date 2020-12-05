@@ -1,14 +1,22 @@
 #pragma once
 #include <QtCore/QByteArray>
+#include <QtCore/QMetaType>
 #include <QtCore/QString>
+#include <functional>
 #include <initializer_list>
 #include <optional>
 
+Q_DECLARE_METATYPE(std::optional<bool>);
+Q_DECLARE_METATYPE(std::function<void()>);
+
 class ByteStream;
 
+class QComboBox;
 class QFrame;
 class QKeyEvent;
 class QTableView;
+class QTreeView;
+class QVariant;
 class QWidget;
 class QUrl;
 
@@ -23,6 +31,7 @@ QWidget* GetRootWidget(QWidget* widget, bool stop_at_window_or_dialog = true);
 /// Resizes columns of the table view to at the specified widths. A negative width will stretch the column to use the
 /// remaining space.
 void ResizeColumnsForTableView(QTableView* view, const std::initializer_list<int>& widths);
+void ResizeColumnsForTreeView(QTreeView* view, const std::initializer_list<int>& widths);
 
 /// Returns a string identifier for a Qt key ID.
 QString GetKeyIdentifier(int key);
@@ -50,5 +59,16 @@ void OpenURL(QWidget* parent, const QUrl& qurl);
 
 /// Opens a URL string with the default handler.
 void OpenURL(QWidget* parent, const char* url);
+
+/// Fills a combo box with resolution scale options.
+void FillComboBoxWithResolutionScales(QComboBox* cb);
+
+/// Fills a combo box with multisampling options.
+QVariant GetMSAAModeValue(uint multisamples, bool ssaa);
+void DecodeMSAAModeValue(const QVariant& userdata, uint* multisamples, bool* ssaa);
+void FillComboBoxWithMSAAModes(QComboBox* cb);
+
+/// Fills a combo box with emulation speed options.
+void FillComboBoxWithEmulationSpeeds(QComboBox* cb);
 
 } // namespace QtUtils

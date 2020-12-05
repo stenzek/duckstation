@@ -3,6 +3,7 @@
 #include "common/string_util.h"
 #include "core/settings.h"
 #include "frontend-common/controller_interface.h"
+#include "inputbindingmonitor.h"
 #include "qthostinterface.h"
 #include "qtutils.h"
 #include <QtCore/QTimer>
@@ -36,8 +37,32 @@ bool InputBindingDialog::eventFilter(QObject* watched, QEvent* event)
 {
   const QEvent::Type event_type = event->type();
 
-  if (event_type == QEvent::MouseButtonPress || event_type == QEvent::MouseButtonRelease ||
-      event_type == QEvent::MouseButtonDblClick)
+  // if the key is being released, set the input
+  if (event_type == QEvent::KeyRelease)
+  {
+    addNewBinding(std::move(m_new_binding_value));
+    stopListeningForInput();
+    return true;
+  }
+  else if (event_type == QEvent::KeyPress)
+  {
+    QString binding = QtUtils::KeyEventToString(static_cast<QKeyEvent*>(event));
+    if (!binding.isEmpty())
+      m_new_binding_value = QStringLiteral("Keyboard/%1").arg(binding).toStdString();
+
+    return true;
+  }
+  else if (event_type == QEvent::MouseButtonRelease)
+  {
+    const u32 button_mask = static_cast<u32>(static_cast<const QMouseEvent*>(event)->button());
+    const u32 button_index = (button_mask == 0u) ? 0 : CountTrailingZeros(button_mask);
+    m_new_binding_value = StringUtil::StdStringFromFormat("Mouse/Button%d", button_index + 1);
+    addNewBinding(std::move(m_new_binding_value));
+    stopListeningForInput();
+    return true;
+  }
+
+  if (event_type == QEvent::MouseButtonPress || event_type == QEvent::MouseButtonDblClick)
   {
     return true;
   }
@@ -103,6 +128,37 @@ void InputBindingDialog::addNewBinding(std::string new_binding)
   saveListToSettings();
 }
 
+void InputBindingDialog::bindToControllerAxis(int controller_index, int axis_index, bool inverted,
+                                              std::optional<bool> half_axis_positive)
+{
+  const char* invert_char = inverted ? "-" : "";
+  const char* sign_char = "";
+  if (half_axis_positive)
+  {
+    sign_char = *half_axis_positive ? "+" : "-";
+  }
+
+  std::string binding =
+    StringUtil::StdStringFromFormat("Controller%d/%sAxis%d%s", controller_index, sign_char, axis_index, invert_char);
+  addNewBinding(std::move(binding));
+  stopListeningForInput();
+}
+
+void InputBindingDialog::bindToControllerButton(int controller_index, int button_index)
+{
+  std::string binding = StringUtil::StdStringFromFormat("Controller%d/Button%d", controller_index, button_index);
+  addNewBinding(std::move(binding));
+  stopListeningForInput();
+}
+
+void InputBindingDialog::bindToControllerHat(int controller_index, int hat_index, const QString& hat_direction)
+{
+  std::string binding = StringUtil::StdStringFromFormat("Controller%d/Hat%d %s", controller_index, hat_index,
+                                                        hat_direction.toLatin1().constData());
+  addNewBinding(std::move(binding));
+  stopListeningForInput();
+}
+
 void InputBindingDialog::onAddBindingButtonClicked()
 {
   if (isListeningForInput())
@@ -159,65 +215,13 @@ InputButtonBindingDialog::~InputButtonBindingDialog()
     InputButtonBindingDialog::stopListeningForInput();
 }
 
-bool InputButtonBindingDialog::eventFilter(QObject* watched, QEvent* event)
-{
-  const QEvent::Type event_type = event->type();
-
-  // if the key is being released, set the input
-  if (event_type == QEvent::KeyRelease)
-  {
-    addNewBinding(std::move(m_new_binding_value));
-    stopListeningForInput();
-    return true;
-  }
-  else if (event_type == QEvent::KeyPress)
-  {
-    QString binding = QtUtils::KeyEventToString(static_cast<QKeyEvent*>(event));
-    if (!binding.isEmpty())
-      m_new_binding_value = QStringLiteral("Keyboard/%1").arg(binding).toStdString();
-
-    return true;
-  }
-  else if (event_type == QEvent::MouseButtonRelease)
-  {
-    const u32 button_mask = static_cast<u32>(static_cast<const QMouseEvent*>(event)->button());
-    const u32 button_index = (button_mask == 0u) ? 0 : CountTrailingZeros(button_mask);
-    m_new_binding_value = StringUtil::StdStringFromFormat("Mouse/Button%d", button_index + 1);
-    addNewBinding(std::move(m_new_binding_value));
-    stopListeningForInput();
-    return true;
-  }
-
-  return InputBindingDialog::eventFilter(watched, event);
-}
-
 void InputButtonBindingDialog::hookControllerInput()
 {
   ControllerInterface* controller_interface = m_host_interface->getControllerInterface();
   if (!controller_interface)
     return;
 
-  controller_interface->SetHook([this](const ControllerInterface::Hook& ei) {
-    if (ei.type == ControllerInterface::Hook::Type::Axis)
-    {
-      // wait until it's at least half pushed so we don't get confused between axises with small movement
-      if (std::abs(ei.value) < 0.5f)
-        return ControllerInterface::Hook::CallbackResult::ContinueMonitoring;
-
-      // TODO: this probably should consider the "last value"
-      QMetaObject::invokeMethod(this, "bindToControllerAxis", Q_ARG(int, ei.controller_index),
-                                Q_ARG(int, ei.button_or_axis_number), Q_ARG(bool, ei.value > 0));
-      return ControllerInterface::Hook::CallbackResult::StopMonitoring;
-    }
-    else if (ei.type == ControllerInterface::Hook::Type::Button && ei.value > 0.0f)
-    {
-      QMetaObject::invokeMethod(this, "bindToControllerButton", Q_ARG(int, ei.controller_index),
-                                Q_ARG(int, ei.button_or_axis_number));
-      return ControllerInterface::Hook::CallbackResult::StopMonitoring;
-    }
-
-    return ControllerInterface::Hook::CallbackResult::ContinueMonitoring;
-  });
+  controller_interface->SetHook(InputButtonBindingMonitor(this));
 }
 
 void InputButtonBindingDialog::unhookControllerInput()
@@ -227,21 +231,6 @@ void InputButtonBindingDialog::unhookControllerInput()
     return;
 
   controller_interface->ClearHook();
-}
-
-void InputButtonBindingDialog::bindToControllerAxis(int controller_index, int axis_index, bool positive)
-{
-  std::string binding =
-    StringUtil::StdStringFromFormat("Controller%d/%cAxis%d", controller_index, positive ? '+' : '-', axis_index);
-  addNewBinding(std::move(binding));
-  stopListeningForInput();
-}
-
-void InputButtonBindingDialog::bindToControllerButton(int controller_index, int button_index)
-{
-  std::string binding = StringUtil::StdStringFromFormat("Controller%d/Button%d", controller_index, button_index);
-  addNewBinding(std::move(binding));
-  stopListeningForInput();
 }
 
 void InputButtonBindingDialog::startListeningForInput(u32 timeout_in_seconds)
@@ -257,8 +246,10 @@ void InputButtonBindingDialog::stopListeningForInput()
 }
 
 InputAxisBindingDialog::InputAxisBindingDialog(QtHostInterface* host_interface, std::string section_name,
-                                               std::string key_name, std::vector<std::string> bindings, QWidget* parent)
-  : InputBindingDialog(host_interface, std::move(section_name), std::move(key_name), std::move(bindings), parent)
+                                               std::string key_name, std::vector<std::string> bindings,
+                                               Controller::AxisType axis_type, QWidget* parent)
+  : InputBindingDialog(host_interface, std::move(section_name), std::move(key_name), std::move(bindings), parent),
+    m_axis_type(axis_type)
 {
 }
 
@@ -274,20 +265,7 @@ void InputAxisBindingDialog::hookControllerInput()
   if (!controller_interface)
     return;
 
-  controller_interface->SetHook([this](const ControllerInterface::Hook& ei) {
-    if (ei.type == ControllerInterface::Hook::Type::Axis)
-    {
-      // wait until it's at least half pushed so we don't get confused between axises with small movement
-      if (std::abs(ei.value) < 0.5f)
-        return ControllerInterface::Hook::CallbackResult::ContinueMonitoring;
-
-      QMetaObject::invokeMethod(this, "bindToControllerAxis", Q_ARG(int, ei.controller_index),
-                                Q_ARG(int, ei.button_or_axis_number));
-      return ControllerInterface::Hook::CallbackResult::StopMonitoring;
-    }
-
-    return ControllerInterface::Hook::CallbackResult::ContinueMonitoring;
-  });
+  controller_interface->SetHook(InputAxisBindingMonitor(this, m_axis_type));
 }
 
 void InputAxisBindingDialog::unhookControllerInput()
@@ -299,11 +277,19 @@ void InputAxisBindingDialog::unhookControllerInput()
   controller_interface->ClearHook();
 }
 
-void InputAxisBindingDialog::bindToControllerAxis(int controller_index, int axis_index)
+bool InputAxisBindingDialog::eventFilter(QObject* watched, QEvent* event)
 {
-  std::string binding = StringUtil::StdStringFromFormat("Controller%d/Axis%d", controller_index, axis_index);
-  addNewBinding(std::move(binding));
-  stopListeningForInput();
+  if (m_axis_type != Controller::AxisType::Half)
+  {
+    const QEvent::Type event_type = event->type();
+
+    if (event_type == QEvent::KeyRelease || event_type == QEvent::KeyPress || event_type == QEvent::MouseButtonRelease)
+    {
+      return true;
+    }
+  }
+
+  return InputBindingDialog::eventFilter(watched, event);
 }
 
 void InputAxisBindingDialog::startListeningForInput(u32 timeout_in_seconds)

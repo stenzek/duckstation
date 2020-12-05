@@ -2,6 +2,7 @@
 #include "common/assert.h"
 #include "common/log.h"
 #include "common/state_wrapper.h"
+#include "host_interface.h"
 #include <array>
 #include <cmath>
 
@@ -51,16 +52,19 @@ void NeGcon::SetAxisState(s32 axis_code, float value)
   // Steering Axis: -1..1 -> 0..255
   if (axis_code == static_cast<s32>(Axis::Steering))
   {
-    const u8 u8_value = static_cast<u8>(std::clamp(((value + 1.0f) / 2.0f) * 255.0f, 0.0f, 255.0f));
+    const float float_value =
+      (std::abs(value) < m_steering_deadzone) ?
+        0.0f :
+        std::copysign((std::abs(value) - m_steering_deadzone) / (1.0f - m_steering_deadzone), value);
+    const u8 u8_value = static_cast<u8>(std::clamp(((float_value + 1.0f) / 2.0f) * 255.0f, 0.0f, 255.0f));
 
     SetAxisState(static_cast<Axis>(axis_code), u8_value);
 
     return;
   }
 
-  // I, II, L: 0..1 -> 0..255 or -1..0 -> 0..255 to support negative axis ranges,
-  // e.g. if bound to analog stick instead of trigger
-  const u8 u8_value = static_cast<u8>(std::clamp(std::abs(value) * 255.0f, 0.0f, 255.0f));
+  // I, II, L: -1..1 -> 0..255
+  const u8 u8_value = static_cast<u8>(std::clamp(((value + 1.0f) / 2.0f) * 255.0f, 0.0f, 255.0f));
 
   SetAxisState(static_cast<Axis>(axis_code), u8_value);
 }
@@ -219,28 +223,40 @@ std::optional<s32> NeGcon::StaticGetButtonCodeByName(std::string_view button_nam
 
 Controller::AxisList NeGcon::StaticGetAxisNames()
 {
-#define A(n)                                                                                                           \
-  {                                                                                                                    \
-    #n, static_cast <s32>(Axis::n)                                                                                     \
-  }
-
-  return {A(Steering), A(I), A(II), A(L)};
-
-#undef A
+  return {{TRANSLATABLE("NeGcon", "Steering"), static_cast<s32>(Axis::Steering), AxisType::Full},
+          {TRANSLATABLE("NeGcon", "I"), static_cast<s32>(Axis::I), AxisType::Half},
+          {TRANSLATABLE("NeGcon", "II"), static_cast<s32>(Axis::II), AxisType::Half},
+          {TRANSLATABLE("NeGcon", "L"), static_cast<s32>(Axis::L), AxisType::Half}};
 }
 
 Controller::ButtonList NeGcon::StaticGetButtonNames()
 {
-#define B(n)                                                                                                           \
-  {                                                                                                                    \
-    #n, static_cast <s32>(Button::n)                                                                                   \
-  }
-
-  return {B(Up), B(Down), B(Left), B(Right), B(A), B(B), B(R), B(Start)};
-#undef B
+  return {{TRANSLATABLE("NeGcon", "Up"), static_cast<s32>(Button::Up)},
+          {TRANSLATABLE("NeGcon", "Down"), static_cast<s32>(Button::Down)},
+          {TRANSLATABLE("NeGcon", "Left"), static_cast<s32>(Button::Left)},
+          {TRANSLATABLE("NeGcon", "Right"), static_cast<s32>(Button::Right)},
+          {TRANSLATABLE("NeGcon", "A"), static_cast<s32>(Button::A)},
+          {TRANSLATABLE("NeGcon", "B"), static_cast<s32>(Button::B)},
+          {TRANSLATABLE("NeGcon", "R"), static_cast<s32>(Button::R)},
+          {TRANSLATABLE("NeGcon", "Start"), static_cast<s32>(Button::Start)}};
 }
 
 u32 NeGcon::StaticGetVibrationMotorCount()
 {
   return 0;
+}
+
+Controller::SettingList NeGcon::StaticGetSettings()
+{
+  static constexpr std::array<SettingInfo, 1> settings = {
+    {SettingInfo::Type::Float, "SteeringDeadzone", TRANSLATABLE("NeGcon", "Steering Axis Deadzone"),
+     TRANSLATABLE("NeGcon", "Sets deadzone size for steering axis."), "0.00f", "0.00f", "0.99f", "0.01f"}};
+
+  return SettingList(settings.begin(), settings.end());
+}
+
+void NeGcon::LoadSettings(const char* section)
+{
+  Controller::LoadSettings(section);
+  m_steering_deadzone = g_host_interface->GetFloatSettingValue(section, "SteeringDeadzone", 0.10f);
 }

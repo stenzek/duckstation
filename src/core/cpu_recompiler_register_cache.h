@@ -248,6 +248,12 @@ public:
   /// Restore callee-saved registers. Call at the end of the function.
   u32 PopCalleeSavedRegisters(bool commit);
 
+  /// Preallocates caller saved registers, enabling later use without stack pushes.
+  void ReserveCalleeSavedRegisters();
+
+  /// Removes the callee-saved register flag from all registers. Call when compiling code blocks.
+  void AssumeCalleeSavedRegistersAreSaved();
+
   /// Pushes the register allocator state, use when entering branched code.
   void PushState();
 
@@ -302,6 +308,10 @@ public:
   /// Stores the specified value to the guest register after the next instruction (load delay).
   void WriteGuestRegisterDelayed(Reg guest_reg, Value&& value);
 
+  /// Returns the current target for a load delay, or Reg::count.
+  Reg GetLoadDelayRegister() const { return m_state.load_delay_register; }
+  const Value& GetLoadDelayValue() const { return m_state.load_delay_value; }
+
   /// Moves load delay to the next load delay, and writes any previous load delay to the destination register.
   void UpdateLoadDelay();
 
@@ -316,11 +326,12 @@ public:
 
   void InvalidateAllNonDirtyGuestRegisters();
   void FlushAllGuestRegisters(bool invalidate, bool clear_dirty);
+  void FlushCallerSavedGuestRegisters(bool invalidate, bool clear_dirty);
   bool EvictOneGuestRegister();
 
   /// Temporarily prevents register allocation.
   void InhibitAllocation();
-  void UnunhibitAllocation();
+  void UninhibitAllocation();
 
 private:
   void ClearRegisterFromOrder(Reg reg);

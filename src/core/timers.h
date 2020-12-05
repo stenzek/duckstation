@@ -24,8 +24,11 @@ public:
 
   void DrawDebugStateWindow();
 
+  void CPUClocksChanged();
+
   // dot clock/hblank/sysclk div 8
   ALWAYS_INLINE bool IsUsingExternalClock(u32 timer) const { return m_states[timer].external_counting_enabled; }
+  ALWAYS_INLINE bool IsSyncEnabled(u32 timer) const { return m_states[timer].mode.sync_enable; }
 
   // queries for GPU
   ALWAYS_INLINE bool IsExternalIRQEnabled(u32 timer) const
@@ -92,7 +95,8 @@ private:
   std::unique_ptr<TimingEvent> m_sysclk_event;
 
   std::array<CounterState, NUM_TIMERS> m_states{};
-  u32 m_sysclk_div_8_carry = 0; // partial ticks for timer 3 with sysclk/8
+  TickCount m_syclk_ticks_carry = 0; // 0 unless overclocking is enabled
+  u32 m_sysclk_div_8_carry = 0;      // partial ticks for timer 3 with sysclk/8
 };
 
 extern Timers g_timers;

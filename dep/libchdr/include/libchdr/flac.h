@@ -14,7 +14,7 @@
 #define __FLAC_H__
 
 #include <stdint.h>
-#include "FLAC/all.h"
+#include <FLAC/all.h>
 
 /***************************************************************************
  *  TYPE DEFINITIONS

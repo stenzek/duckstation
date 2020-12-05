@@ -10,10 +10,15 @@
 
 #include "common/gl/context.h"
 #include "common/gl/program.h"
+#include "common/gl/stream_buffer.h"
 #include "common/gl/texture.h"
 #include "common/window_info.h"
 #include "core/host_display.h"
 #include <memory>
+
+#ifndef LIBRETRO
+#include "postprocessing_chain.h"
+#endif
 
 namespace FrontendCommon {
 
@@ -39,7 +44,12 @@ public:
 
   virtual bool ChangeRenderWindow(const WindowInfo& new_wi) override;
   virtual void ResizeRenderWindow(s32 new_window_width, s32 new_window_height) override;
+  virtual bool SupportsFullscreen() const override;
+  virtual bool IsFullscreen() override;
+  virtual bool SetFullscreen(bool fullscreen, u32 width, u32 height, float refresh_rate) override;
   virtual void DestroyRenderSurface() override;
+
+  virtual bool SetPostProcessingChain(const std::string_view& config) override;
 
   std::unique_ptr<HostDisplayTexture> CreateTexture(u32 width, u32 height, const void* initial_data,
                                                     u32 initial_data_stride, bool dynamic) override;
@@ -47,6 +57,11 @@ public:
                      u32 texture_data_stride) override;
   bool DownloadTexture(const void* texture_handle, u32 x, u32 y, u32 width, u32 height, void* out_data,
                        u32 out_data_stride) override;
+  bool SupportsDisplayPixelFormat(HostDisplayPixelFormat format) const override;
+  bool BeginSetDisplayPixels(HostDisplayPixelFormat format, u32 width, u32 height, void** out_buffer,
+                             u32* out_pitch) override;
+  void EndSetDisplayPixels() override;
+  bool SetDisplayPixels(HostDisplayPixelFormat format, u32 width, u32 height, const void* buffer, u32 pitch) override;
 
   virtual void SetVSync(bool enabled) override;
 
@@ -56,8 +71,8 @@ protected:
   const char* GetGLSLVersionString() const;
   std::string GetGLSLVersionHeader() const;
 
-  virtual bool CreateResources();
-  virtual void DestroyResources();
+  virtual bool CreateResources() override;
+  virtual void DestroyResources() override;
 
   virtual bool CreateImGuiContext();
   virtual void DestroyImGuiContext();
@@ -71,6 +86,20 @@ protected:
                      s32 texture_view_height, bool linear_filter);
   void RenderSoftwareCursor(s32 left, s32 bottom, s32 width, s32 height, HostDisplayTexture* texture_handle);
 
+#ifndef LIBRETRO
+  struct PostProcessingStage
+  {
+    GL::Program program;
+    GL::Texture output_texture;
+    u32 uniforms_size;
+  };
+
+  bool CheckPostProcessingRenderTargets(u32 target_width, u32 target_height);
+  void ApplyPostProcessingChain(GLuint final_target, s32 final_left, s32 final_top, s32 final_width, s32 final_height,
+                                void* texture_handle, u32 texture_width, s32 texture_height, s32 texture_view_x,
+                                s32 texture_view_y, s32 texture_view_width, s32 texture_view_height);
+#endif
+
   std::unique_ptr<GL::Context> m_gl_context;
 
   GL::Program m_display_program;
@@ -78,6 +107,21 @@ protected:
   GLuint m_display_vao = 0;
   GLuint m_display_nearest_sampler = 0;
   GLuint m_display_linear_sampler = 0;
+  GLuint m_uniform_buffer_alignment = 1;
+
+  GLuint m_display_pixels_texture_id = 0;
+  std::unique_ptr<GL::StreamBuffer> m_display_pixels_texture_pbo;
+  u32 m_display_pixels_texture_pbo_map_offset = 0;
+  u32 m_display_pixels_texture_pbo_map_size = 0;
+
+#ifndef LIBRETRO
+  PostProcessingChain m_post_processing_chain;
+  GL::Texture m_post_processing_input_texture;
+  std::unique_ptr<GL::StreamBuffer> m_post_processing_ubo;
+  std::vector<PostProcessingStage> m_post_processing_stages;
+#endif
+
+  bool m_use_gles2_draw_path = false;
 };
 
 } // namespace FrontendCommon

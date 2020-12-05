@@ -496,6 +496,39 @@ bool WriteFileToString(const char* filename, const std::string_view& sv)
   return true;
 }
 
+std::string ReadStreamToString(ByteStream* stream, bool seek_to_start /* = true */)
+{
+  u64 pos = stream->GetPosition();
+  u64 size = stream->GetSize();
+  if (pos > 0 && seek_to_start)
+  {
+    if (!stream->SeekAbsolute(0))
+      return {};
+
+    pos = 0;
+  }
+
+  Assert(size >= pos);
+  size -= pos;
+  if (size == 0 || size > std::numeric_limits<u32>::max())
+    return {};
+
+  std::string ret;
+  ret.resize(static_cast<size_t>(size));
+  if (!stream->Read2(ret.data(), static_cast<u32>(size)))
+    return {};
+
+  return ret;
+}
+
+bool WriteStreamToString(const std::string_view& sv, ByteStream* stream)
+{
+  if (sv.size() > std::numeric_limits<u32>::max())
+    return false;
+
+  return stream->Write2(sv.data(), static_cast<u32>(sv.size()));
+}
+
 void BuildOSPath(char* Destination, u32 cbDestination, const char* Path)
 {
   u32 i;
@@ -920,15 +953,27 @@ bool FileSystem::StatFile(const char* path, FILESYSTEM_STAT_DATA* pStatData)
   return true;
 }
 
-bool FileSystem::FileExists(const char* Path)
+bool FileSystem::FileExists(const char* path)
 {
   // has a path
-  if (Path[0] == '\0')
+  if (path[0] == '\0')
     return false;
 
+  // convert to wide string
+  int len = static_cast<int>(std::strlen(path));
+  int wlen = MultiByteToWideChar(CP_UTF8, 0, path, len, nullptr, 0);
+  if (wlen <= 0)
+    return false;
+
+  wchar_t* wpath = static_cast<wchar_t*>(alloca(sizeof(wchar_t) * (wlen + 1)));
+  wlen = MultiByteToWideChar(CP_UTF8, 0, path, len, wpath, wlen);
+  if (wlen <= 0)
+    return false;
+
+  wpath[wlen] = 0;
+
   // determine attributes for the path. if it's a directory, things have to be handled differently..
-  std::wstring wpath(StringUtil::UTF8StringToWideString(Path));
-  DWORD fileAttributes = GetFileAttributesW(wpath.c_str());
+  DWORD fileAttributes = GetFileAttributesW(wpath);
   if (fileAttributes == INVALID_FILE_ATTRIBUTES)
     return false;
 
@@ -938,15 +983,27 @@ bool FileSystem::FileExists(const char* Path)
     return true;
 }
 
-bool FileSystem::DirectoryExists(const char* Path)
+bool FileSystem::DirectoryExists(const char* path)
 {
   // has a path
-  if (Path[0] == '\0')
+  if (path[0] == '\0')
     return false;
 
+  // convert to wide string
+  int len = static_cast<int>(std::strlen(path));
+  int wlen = MultiByteToWideChar(CP_UTF8, 0, path, len, nullptr, 0);
+  if (wlen <= 0)
+    return false;
+
+  wchar_t* wpath = static_cast<wchar_t*>(alloca(sizeof(wchar_t) * (wlen + 1)));
+  wlen = MultiByteToWideChar(CP_UTF8, 0, path, len, wpath, wlen);
+  if (wlen <= 0)
+    return false;
+
+  wpath[wlen] = 0;
+
   // determine attributes for the path. if it's a directory, things have to be handled differently..
-  std::wstring wpath(StringUtil::UTF8StringToWideString(Path));
-  DWORD fileAttributes = GetFileAttributesW(wpath.c_str());
+  DWORD fileAttributes = GetFileAttributesW(wpath);
   if (fileAttributes == INVALID_FILE_ATTRIBUTES)
     return false;
 
@@ -1114,16 +1171,18 @@ bool FileSystem::DeleteDirectory(const char* Path, bool Recursive)
 
 std::string GetProgramPath()
 {
-  const HANDLE hProcess = GetCurrentProcess();
-
   std::wstring buffer;
   buffer.resize(MAX_PATH);
 
+  // Fall back to the main module if this fails.
+  HMODULE module = nullptr;
+  GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                     reinterpret_cast<LPCWSTR>(&GetProgramPath), &module);
+
   for (;;)
   {
-    DWORD nChars = static_cast<DWORD>(buffer.size());
-    if (!QueryFullProcessImageNameW(GetCurrentProcess(), 0, buffer.data(), &nChars) &&
-        GetLastError() == ERROR_INSUFFICIENT_BUFFER)
+    DWORD nChars = GetModuleFileNameW(module, buffer.data(), static_cast<DWORD>(buffer.size()));
+    if (nChars == static_cast<DWORD>(buffer.size()) && GetLastError() == ERROR_INSUFFICIENT_BUFFER)
     {
       buffer.resize(buffer.size() * 2);
       continue;
@@ -1198,6 +1257,7 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
   }
 
   // iterate results
+  PathString full_path;
   struct dirent* pDirEnt;
   while ((pDirEnt = readdir(pDir)) != nullptr)
   {
@@ -1213,10 +1273,28 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
         continue;
     }
 
+    if (ParentPath != nullptr)
+      full_path.Format("%s/%s/%s/%s", OriginPath, ParentPath, Path, pDirEnt->d_name);
+    else if (Path != nullptr)
+      full_path.Format("%s/%s/%s", OriginPath, Path, pDirEnt->d_name);
+    else
+      full_path.Format("%s/%s", OriginPath, pDirEnt->d_name);
+
     FILESYSTEM_FIND_DATA outData;
     outData.Attributes = 0;
 
-    if (pDirEnt->d_type == DT_DIR)
+#if defined(__HAIKU__) || defined(__APPLE__)
+    struct stat sDir;
+    if (stat(full_path, &sDir) < 0)
+      continue;
+
+#else
+    struct stat64 sDir;
+    if (stat64(full_path, &sDir) < 0)
+      continue;
+#endif
+
+    if (S_ISDIR(sDir.st_mode))
     {
       if (Flags & FILESYSTEM_FIND_RECURSIVE)
       {
@@ -1243,8 +1321,8 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
         continue;
     }
 
-    //        if (wfd.dwFileAttributes & FILE_ATTRIBUTE_READONLY)
-    //            outData.Attributes |= FILESYSTEM_FILE_ATTRIBUTE_READ_ONLY;
+    outData.Size = static_cast<u64>(sDir.st_size);
+    outData.ModificationTime.SetUnixTimestamp(static_cast<Timestamp::UnixTimestampValue>(sDir.st_mtime));
 
     // match the filename
     if (hasWildCards)
@@ -1262,13 +1340,7 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
     // TODO string formatter, clean this mess..
     if (!(Flags & FILESYSTEM_FIND_RELATIVE_PATHS))
     {
-      if (ParentPath != nullptr)
-        outData.FileName =
-          StringUtil::StdStringFromFormat("%s/%s/%s/%s", OriginPath, ParentPath, Path, pDirEnt->d_name);
-      else if (Path != nullptr)
-        outData.FileName = StringUtil::StdStringFromFormat("%s/%s/%s", OriginPath, Path, pDirEnt->d_name);
-      else
-        outData.FileName = StringUtil::StdStringFromFormat("%s/%s", OriginPath, pDirEnt->d_name);
+      outData.FileName = std::string(full_path.GetCharArray());
     }
     else
     {
@@ -1308,9 +1380,14 @@ bool StatFile(const char* Path, FILESYSTEM_STAT_DATA* pStatData)
   if (Path[0] == '\0')
     return false;
 
-  // stat file
+    // stat file
+#if defined(__HAIKU__) || defined(__APPLE__)
+  struct stat sysStatData;
+  if (stat(Path, &sysStatData) < 0)
+#else
   struct stat64 sysStatData;
   if (stat64(Path, &sysStatData) < 0)
+#endif
     return false;
 
   // parse attributes
@@ -1337,9 +1414,14 @@ bool FileExists(const char* Path)
   if (Path[0] == '\0')
     return false;
 
-  // stat file
+    // stat file
+#if defined(__HAIKU__) || defined(__APPLE__)
+  struct stat sysStatData;
+  if (stat(Path, &sysStatData) < 0)
+#else
   struct stat64 sysStatData;
   if (stat64(Path, &sysStatData) < 0)
+#endif
     return false;
 
   if (S_ISDIR(sysStatData.st_mode))
@@ -1354,9 +1436,14 @@ bool DirectoryExists(const char* Path)
   if (Path[0] == '\0')
     return false;
 
-  // stat file
+    // stat file
+#if defined(__HAIKU__) || defined(__APPLE__)
+  struct stat sysStatData;
+  if (stat(Path, &sysStatData) < 0)
+#else
   struct stat64 sysStatData;
   if (stat64(Path, &sysStatData) < 0)
+#endif
     return false;
 
   if (S_ISDIR(sysStatData.st_mode))

@@ -1,8 +1,68 @@
 #include "gamelistmodel.h"
 #include "common/string_util.h"
+#include "core/system.h"
+#include <QtGui/QIcon>
+#include <QtGui/QPainter>
 
 static constexpr std::array<const char*, GameListModel::Column_Count> s_column_names = {
-  {"Type", "Code", "Title", "File Title", "Size", "Region", "Compatibility"}};
+  {"Type", "Code", "Title", "File Title", "Size", "Region", "Compatibility", "Cover"}};
+
+static constexpr int COVER_ART_WIDTH = 512;
+static constexpr int COVER_ART_HEIGHT = 512;
+static constexpr int COVER_ART_SPACING = 32;
+
+static void resizeAndPadPixmap(QPixmap* pm, int expected_width, int expected_height)
+{
+  if (pm->width() == expected_width && pm->height() == expected_height)
+    return;
+
+  *pm = pm->scaled(expected_width, expected_height, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+  if (pm->width() == expected_width && pm->height() == expected_height)
+    return;
+
+  int xoffs = 0;
+  int yoffs = 0;
+  if (pm->width() < expected_width)
+    xoffs = (expected_width - pm->width()) / 2;
+  if (pm->height() < expected_height)
+    yoffs = (expected_height - pm->height()) / 2;
+
+  QPixmap padded_image(expected_width, expected_height);
+  padded_image.fill(Qt::transparent);
+  QPainter painter;
+  if (painter.begin(&padded_image))
+  {
+    painter.setCompositionMode(QPainter::CompositionMode_Source);
+    painter.drawPixmap(xoffs, yoffs, *pm);
+    painter.setCompositionMode(QPainter::CompositionMode_Destination);
+    painter.fillRect(padded_image.rect(), QColor(0, 0, 0, 0));
+    painter.end();
+  }
+
+  *pm = padded_image;
+}
+
+static QPixmap createPlaceholderImage(int width, int height, float scale, const std::string& title)
+{
+  QPixmap pm(QStringLiteral(":/icons/cover-placeholder.png"));
+  if (pm.isNull())
+    return QPixmap(width, height);
+
+  resizeAndPadPixmap(&pm, width, height);
+  QPainter painter;
+  if (painter.begin(&pm))
+  {
+    QFont font;
+    font.setPointSize(std::max(static_cast<int>(32.0f * scale), 1));
+    painter.setFont(font);
+    painter.setPen(Qt::white);
+
+    painter.drawText(QRect(0, 0, width, height), Qt::AlignCenter | Qt::TextWordWrap, QString::fromStdString(title));
+    painter.end();
+  }
+
+  return pm;
+}
 
 std::optional<GameListModel::Column> GameListModel::getColumnIdForName(std::string_view name)
 {
@@ -27,6 +87,36 @@ GameListModel::GameListModel(GameList* game_list, QObject* parent /* = nullptr *
   setColumnDisplayNames();
 }
 GameListModel::~GameListModel() = default;
+
+void GameListModel::setCoverScale(float scale)
+{
+  if (m_cover_scale == scale)
+    return;
+
+  m_cover_pixmap_cache.clear();
+  m_cover_scale = scale;
+}
+
+void GameListModel::refreshCovers()
+{
+  m_cover_pixmap_cache.clear();
+  refresh();
+}
+
+int GameListModel::getCoverArtWidth() const
+{
+  return std::max(static_cast<int>(static_cast<float>(COVER_ART_WIDTH) * m_cover_scale), 1);
+}
+
+int GameListModel::getCoverArtHeight() const
+{
+  return std::max(static_cast<int>(static_cast<float>(COVER_ART_HEIGHT) * m_cover_scale), 1);
+}
+
+int GameListModel::getCoverArtSpacing() const
+{
+  return std::max(static_cast<int>(static_cast<float>(COVER_ART_SPACING) * m_cover_scale), 1);
+}
 
 int GameListModel::rowCount(const QModelIndex& parent) const
 {
@@ -69,12 +159,20 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
 
         case Column_FileTitle:
         {
-          const std::string_view file_title(GameList::GetTitleForPath(ge.path.c_str()));
+          const std::string_view file_title(System::GetTitleForPath(ge.path.c_str()));
           return QString::fromUtf8(file_title.data(), static_cast<int>(file_title.length()));
         }
 
         case Column_Size:
           return QString("%1 MB").arg(static_cast<double>(ge.total_size) / 1048576.0, 0, 'f', 2);
+
+        case Column_Cover:
+        {
+          if (m_show_titles_for_covers)
+            return QString::fromStdString(ge.title);
+          else
+            return {};
+        }
 
         default:
           return {};
@@ -92,11 +190,12 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
           return QString::fromStdString(ge.code);
 
         case Column_Title:
+        case Column_Cover:
           return QString::fromStdString(ge.title);
 
         case Column_FileTitle:
         {
-          const std::string_view file_title(GameList::GetTitleForPath(ge.path.c_str()));
+          const std::string_view file_title(System::GetTitleForPath(ge.path.c_str()));
           return QString::fromUtf8(file_title.data(), static_cast<int>(file_title.length()));
         }
 
@@ -124,6 +223,8 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
           {
             case GameListEntryType::Disc:
               return m_type_disc_pixmap;
+            case GameListEntryType::Playlist:
+              return m_type_playlist_pixmap;
             case GameListEntryType::PSExe:
             default:
               return m_type_exe_pixmap;
@@ -150,6 +251,29 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
             (ge.compatibility_rating >= GameListCompatibilityRating::Count) ? GameListCompatibilityRating::Unknown :
                                                                               ge.compatibility_rating)];
         }
+
+        case Column_Cover:
+        {
+          auto it = m_cover_pixmap_cache.find(ge.path);
+          if (it != m_cover_pixmap_cache.end())
+            return it->second;
+
+          QPixmap image;
+          std::string path = m_game_list->GetCoverImagePathForEntry(&ge);
+          if (!path.empty())
+          {
+            image = QPixmap(QString::fromStdString(path));
+            if (!image.isNull())
+              resizeAndPadPixmap(&image, getCoverArtWidth(), getCoverArtHeight());
+          }
+
+          if (image.isNull())
+            image = createPlaceholderImage(getCoverArtWidth(), getCoverArtHeight(), m_cover_scale, ge.title);
+
+          m_cover_pixmap_cache.emplace(ge.path, image);
+          return image;
+        }
+        break;
 
         default:
           return {};
@@ -185,7 +309,8 @@ bool GameListModel::titlesLessThan(int left_row, int right_row, bool ascending) 
 
   const GameListEntry& left = m_game_list->GetEntries().at(left_row);
   const GameListEntry& right = m_game_list->GetEntries().at(right_row);
-  return ascending ? (left.title < right.title) : (right.title < left.title);
+  return ascending ? (StringUtil::Strcasecmp(left.title.c_str(), right.title.c_str()) < 0) :
+                     (StringUtil::Strcasecmp(right.title.c_str(), left.title.c_str()) > 0);
 }
 
 bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& right_index, int column,
@@ -219,25 +344,25 @@ bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& r
     {
       if (left.code == right.code)
         return titlesLessThan(left_row, right_row, ascending);
-      return ascending ? (left.code < right.code) : (right.code > left.code);
+      return ascending ? (StringUtil::Strcasecmp(left.code.c_str(), right.code.c_str()) < 0) :
+                         (StringUtil::Strcasecmp(right.code.c_str(), left.code.c_str()) > 0);
     }
 
     case Column_Title:
     {
-      if (left.title == right.title)
-        return titlesLessThan(left_row, right_row, ascending);
-
-      return ascending ? (left.title < right.title) : (right.title > left.title);
+      return titlesLessThan(left_row, right_row, ascending);
     }
 
     case Column_FileTitle:
     {
-      const std::string_view file_title_left(GameList::GetTitleForPath(left.path.c_str()));
-      const std::string_view file_title_right(GameList::GetTitleForPath(right.path.c_str()));
+      const std::string_view file_title_left(System::GetTitleForPath(left.path.c_str()));
+      const std::string_view file_title_right(System::GetTitleForPath(right.path.c_str()));
       if (file_title_left == file_title_right)
         return titlesLessThan(left_row, right_row, ascending);
 
-      return ascending ? (file_title_left < file_title_right) : (file_title_right > file_title_left);
+      const std::size_t smallest = std::min(file_title_left.size(), file_title_right.size());
+      return ascending ? (StringUtil::Strncasecmp(file_title_left.data(), file_title_right.data(), smallest) < 0) :
+                         (StringUtil::Strncasecmp(file_title_right.data(), file_title_left.data(), smallest) > 0);
     }
 
     case Column_Region:
@@ -273,12 +398,12 @@ bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& r
 void GameListModel::loadCommonImages()
 {
   // TODO: Use svg instead of png
-  m_type_disc_pixmap.load(QStringLiteral(":/icons/media-optical-24.png"));
-  m_type_exe_pixmap.load(QStringLiteral(":/icons/applications-system-24.png"));
-  m_region_eu_pixmap.load(QStringLiteral(":/icons/flag-eu.png"));
-  m_region_jp_pixmap.load(QStringLiteral(":/icons/flag-jp.png"));
-  m_region_us_pixmap.load(QStringLiteral(":/icons/flag-us.png"));
-  m_region_eu_pixmap.load(QStringLiteral(":/icons/flag-eu.png"));
+  m_type_disc_pixmap = QIcon(QStringLiteral(":/icons/media-optical-24.png")).pixmap(QSize(24, 24));
+  m_type_exe_pixmap = QIcon(QStringLiteral(":/icons/applications-system-24.png")).pixmap(QSize(24, 24));
+  m_type_playlist_pixmap = QIcon(QStringLiteral(":/icons/address-book-new-22.png")).pixmap(QSize(22, 22));
+  m_region_eu_pixmap = QIcon(QStringLiteral(":/icons/flag-eu.png")).pixmap(QSize(42, 30));
+  m_region_jp_pixmap = QIcon(QStringLiteral(":/icons/flag-jp.png")).pixmap(QSize(42, 30));
+  m_region_us_pixmap = QIcon(QStringLiteral(":/icons/flag-uc.png")).pixmap(QSize(42, 30));
 
   for (int i = 0; i < static_cast<int>(GameListCompatibilityRating::Count); i++)
     m_compatibiliy_pixmaps[i].load(QStringLiteral(":/icons/star-%1.png").arg(i));

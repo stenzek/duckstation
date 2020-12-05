@@ -1,35 +1,48 @@
 package com.github.stenzek.duckstation;
 
 import android.app.Activity;
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.util.ArraySet;
+import android.os.AsyncTask;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.TextView;
 
-import androidx.preference.PreferenceManager;
-
-import java.util.Set;
+import java.util.Arrays;
+import java.util.Comparator;
 
 public class GameList {
-    private Context mContext;
+    private Activity mContext;
     private GameListEntry[] mEntries;
     private ListViewAdapter mAdapter;
 
-    public GameList(Context context) {
+    public GameList(Activity context) {
         mContext = context;
         mAdapter = new ListViewAdapter();
         mEntries = new GameListEntry[0];
     }
 
-    public void refresh(boolean invalidateCache, boolean invalidateDatabase) {
+    private class GameListEntryComparator implements Comparator<GameListEntry> {
+        @Override
+        public int compare(GameListEntry left, GameListEntry right) {
+            return left.getTitle().compareTo(right.getTitle());
+        }
+    }
+
+
+    public void refresh(boolean invalidateCache, boolean invalidateDatabase, Activity parentActivity) {
         // Search and get entries from native code
-        AndroidHostInterface.getInstance().refreshGameList(invalidateCache, invalidateDatabase);
-        mEntries = AndroidHostInterface.getInstance().getGameListEntries();
-        mAdapter.notifyDataSetChanged();
+        AndroidProgressCallback progressCallback = new AndroidProgressCallback(mContext);
+        AsyncTask.execute(() -> {
+            AndroidHostInterface.getInstance().refreshGameList(invalidateCache, invalidateDatabase, progressCallback);
+            GameListEntry[] newEntries = AndroidHostInterface.getInstance().getGameListEntries();
+            Arrays.sort(newEntries, new GameListEntryComparator());
+
+            mContext.runOnUiThread(() -> {
+                progressCallback.dismiss();
+                mEntries = newEntries;
+                mAdapter.notifyDataSetChanged();
+            });
+        });
     }
 
     public int getEntryCount() {

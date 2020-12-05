@@ -248,6 +248,13 @@ void GraphicsPipelineBuilder::SetLineWidth(float width)
   m_rasterization_state.lineWidth = width;
 }
 
+void GraphicsPipelineBuilder::SetMultisamples(u32 multisamples, bool per_sample_shading)
+{
+  m_multisample_state.rasterizationSamples = static_cast<VkSampleCountFlagBits>(multisamples);
+  m_multisample_state.sampleShadingEnable = per_sample_shading;
+  m_multisample_state.minSampleShading = (multisamples > 1) ? 0.0f : 1.0f;
+}
+
 void GraphicsPipelineBuilder::SetNoCullRasterizationState()
 {
   SetRasterizationState(VK_POLYGON_MODE_FILL, VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE);

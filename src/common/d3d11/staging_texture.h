@@ -21,6 +21,7 @@ public:
   ALWAYS_INLINE u32 GetHeight() const { return m_height; }
   ALWAYS_INLINE DXGI_FORMAT GetFormat() const { return m_format; }
   ALWAYS_INLINE bool IsMapped() const { return m_map.pData != nullptr; }
+  ALWAYS_INLINE const D3D11_MAPPED_SUBRESOURCE& GetMappedSubresource() const { return m_map; }
 
   ALWAYS_INLINE operator bool() const { return static_cast<bool>(m_texture); }
 

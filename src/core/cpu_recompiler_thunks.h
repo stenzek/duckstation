@@ -13,6 +13,8 @@ namespace Recompiler::Thunks {
 // TODO: Abuse carry flag or something else for exception
 //////////////////////////////////////////////////////////////////////////
 bool InterpretInstruction();
+bool InterpretInstructionPGXP();
+void CheckAndUpdateICache(u32 pc, u32 line_count);
 
 // Memory access functions for the JIT - MSB is set on exception.
 u64 ReadMemoryByte(u32 address);
@@ -30,6 +32,7 @@ void UncheckedWriteMemoryByte(u32 address, u8 value);
 void UncheckedWriteMemoryHalfWord(u32 address, u16 value);
 void UncheckedWriteMemoryWord(u32 address, u32 value);
 
+void UpdateFastmemMapping();
 
 } // namespace Recompiler::Thunks
 

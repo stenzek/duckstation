@@ -79,7 +79,7 @@ static bool TryESVersions(retro_hw_render_callback* cb)
 bool LibretroOpenGLHostDisplay::RequestHardwareRendererContext(retro_hw_render_callback* cb, bool prefer_gles)
 {
   // Prefer a desktop OpenGL context where possible. If we can't get this, try OpenGL ES.
-  cb->cache_context = true;
+  cb->cache_context = false;
   cb->bottom_left_origin = true;
 
   if (!prefer_gles)
@@ -133,6 +133,12 @@ void LibretroOpenGLHostDisplay::ResizeRenderWindow(s32 new_window_width, s32 new
 {
   m_window_info.surface_width = static_cast<u32>(new_window_width);
   m_window_info.surface_height = static_cast<u32>(new_window_height);
+}
+
+bool LibretroOpenGLHostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
+{
+  m_window_info = new_wi;
+  return true;
 }
 
 bool LibretroOpenGLHostDisplay::Render()

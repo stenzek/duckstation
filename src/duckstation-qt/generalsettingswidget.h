@@ -16,8 +16,8 @@ public:
   ~GeneralSettingsWidget();
 
 private Q_SLOTS:
-  void onEnableSpeedLimiterStateChanged();
-  void onEmulationSpeedValueChanged(int value);
+  void onEmulationSpeedIndexChanged(int index);
+  void onFastForwardSpeedIndexChanged(int index);
 
 private:
   Ui::GeneralSettingsWidget m_ui;

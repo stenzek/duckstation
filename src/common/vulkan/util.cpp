@@ -81,6 +81,12 @@ u32 GetTexelSize(VkFormat format)
     case VK_FORMAT_B8G8R8A8_UNORM:
       return 4;
 
+    case VK_FORMAT_R5G5B5A1_UNORM_PACK16:
+    case VK_FORMAT_A1R5G5B5_UNORM_PACK16:
+    case VK_FORMAT_R5G6B5_UNORM_PACK16:
+    case VK_FORMAT_B5G6R5_UNORM_PACK16:
+      return 2;
+
     case VK_FORMAT_BC1_RGBA_UNORM_BLOCK:
       return 8;
 

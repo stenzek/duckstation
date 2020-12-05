@@ -1,6 +1,7 @@
 #pragma once
 #include "common/bitfield.h"
 #include "controller.h"
+#include "memory_card_image.h"
 #include <array>
 #include <memory>
 #include <string>
@@ -11,18 +12,15 @@ class TimingEvent;
 class MemoryCard final
 {
 public:
-  enum : u32
-  {
-    DATA_SIZE = 128 * 1024, // 1mbit
-    SECTOR_SIZE = 128,
-    NUM_SECTORS = DATA_SIZE / SECTOR_SIZE
-  };
-
   MemoryCard();
   ~MemoryCard();
 
   static std::unique_ptr<MemoryCard> Create();
   static std::unique_ptr<MemoryCard> Open(std::string_view filename);
+
+  const MemoryCardImage::DataArray& GetData() const { return m_data; }
+  const std::string& GetFilename() const { return m_filename; }
+  void SetFilename(std::string filename) { m_filename = std::move(filename); }
 
   void Reset();
   bool DoState(StateWrapper& sw);
@@ -37,7 +35,6 @@ private:
   {
     // save in three seconds, that should be long enough for everything to finish writing
     SAVE_DELAY_IN_SECONDS = 5,
-    SAVE_DELAY_IN_SYSCLK_TICKS = MASTER_CLOCK * SAVE_DELAY_IN_SECONDS,
   };
 
   union FLAG
@@ -76,9 +73,7 @@ private:
     WriteEnd,
   };
 
-  static u8 ChecksumFrame(const u8* fptr);
-
-  u8* GetSectorPtr(u32 sector);
+  static TickCount GetSaveDelayInTicks();
 
   bool LoadFromFile();
   bool SaveIfChanged(bool display_osd_message);
@@ -94,7 +89,7 @@ private:
   u8 m_last_byte = 0;
   bool m_changed = false;
 
-  std::array<u8, DATA_SIZE> m_data{};
+  MemoryCardImage::DataArray m_data{};
 
   std::string m_filename;
 };

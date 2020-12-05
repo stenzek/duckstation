@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>502</width>
-    <height>358</height>
+    <width>648</width>
+    <height>401</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -42,41 +42,6 @@
       <item row="0" column="1">
        <widget class="QComboBox" name="region"/>
       </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_2">
-        <property name="text">
-         <string>BIOS Image Path:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0" colspan="2">
-       <widget class="QCheckBox" name="fastBoot">
-        <property name="text">
-         <string>Fast Boot</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0" colspan="2">
-       <widget class="QCheckBox" name="enableTTYOutput">
-        <property name="text">
-         <string>Enable TTY Output</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <layout class="QHBoxLayout" name="horizontalLayout">
-        <item>
-         <widget class="QLineEdit" name="biosPath"/>
-        </item>
-        <item>
-         <widget class="QPushButton" name="biosPathBrowse">
-          <property name="text">
-           <string>...</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
      </layout>
     </widget>
    </item>
@@ -100,30 +65,156 @@
     </widget>
    </item>
    <item>
+    <widget class="QGroupBox" name="groupBox_3">
+     <property name="title">
+      <string>CPU Clock Speed Control</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="0" column="0">
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QCheckBox" name="enableCPUClockSpeedControl">
+          <property name="text">
+           <string>Enable Clock Speed Control (Overclocking/Underclocking)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLabel" name="cpuClockSpeedLabel">
+          <property name="text">
+           <string>100% (effective 33.3mhz)</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="1" column="0">
+       <widget class="QSlider" name="cpuClockSpeed">
+        <property name="minimum">
+         <number>10</number>
+        </property>
+        <property name="maximum">
+         <number>1000</number>
+        </property>
+        <property name="value">
+         <number>100</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="tickPosition">
+         <enum>QSlider::TicksBothSides</enum>
+        </property>
+        <property name="tickInterval">
+         <number>50</number>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
     <widget class="QGroupBox" name="groupBox_4">
      <property name="title">
-      <string>CDROM Emulation</string>
+      <string>CD-ROM Emulation</string>
      </property>
      <layout class="QFormLayout" name="formLayout_4">
-      <item row="0" column="0" colspan="2">
+      <item row="1" column="0" colspan="2">
        <widget class="QCheckBox" name="cdromReadThread">
         <property name="text">
          <string>Use Read Thread (Asynchronous)</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="0" colspan="2">
+      <item row="2" column="0" colspan="2">
        <widget class="QCheckBox" name="cdromRegionCheck">
         <property name="text">
          <string>Enable Region Check</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="0" colspan="2">
+      <item row="3" column="0" colspan="2">
        <widget class="QCheckBox" name="cdromLoadImageToRAM">
         <property name="text">
          <string>Preload Image To RAM</string>
         </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>Read Speedup:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="cdromReadSpeedup">
+        <item>
+         <property name="text">
+          <string>None (Double Speed)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>2x (Quad Speed)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>3x (6x Speed)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>4x (8x Speed)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>5x (10x Speed)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>6x (12x Speed)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>7x (14x Speed)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>8x (16x Speed)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>9x (18x Speed)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>10x (20x Speed)</string>
+         </property>
+        </item>
        </widget>
       </item>
      </layout>
@@ -145,7 +236,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="resources/icons.qrc"/>
+  <include location="resources/resources.qrc"/>
  </resources>
  <connections/>
 </ui>

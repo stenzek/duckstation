@@ -4,6 +4,7 @@
 #include "common/log.h"
 #include "common/md5_digest.h"
 #include "cpu_disasm.h"
+#include <array>
 #include <cerrno>
 Log_SetChannel(BIOS);
 
@@ -36,16 +37,46 @@ std::string Hash::ToString() const
   return str;
 }
 
-static constexpr Hash SCPH_1000_HASH = MakeHashFromString("239665b1a3dade1b5a52c06338011044");
-static constexpr Hash SCPH_1001_HASH = MakeHashFromString("924e392ed05558ffdb115408c263dccf");
-static constexpr Hash SCPH_1002_HASH = MakeHashFromString("54847e693405ffeb0359c6287434cbef");
-static constexpr Hash SCPH_3000_HASH = MakeHashFromString("849515939161e62f6b866f6853006780");
-static constexpr Hash SCPH_5500_HASH = MakeHashFromString("8dd7d5296a650fac7319bce665a6a53c");
-static constexpr Hash SCPH_5501_HASH = MakeHashFromString("490f666e1afb15b7362b406ed1cea246");
-static constexpr Hash SCPH_5502_HASH = MakeHashFromString("32736f17079d0b2b7024407c39bd3050");
-static constexpr Hash SCPH_7001_HASH = MakeHashFromString("1e68c231d0896b7eadcad1d7d8e76129");
-static constexpr Hash SCPH_7002_HASH = MakeHashFromString("b9d9a0286c33dc6b7237bb13cd46fdee");
-static constexpr Hash SCPH_POPS660_HASH = MakeHashFromString("c53ca5908936d412331790f4426c6c33");
+static constexpr std::array<ImageInfo, 26> s_image_infos = {{
+  {"SCPH-1000, DTL-H1000 (v1.0)", ConsoleRegion::NTSC_J, MakeHashFromString("239665b1a3dade1b5a52c06338011044")},
+  {"SCPH-1001, 5003, DTL-H1201, H3001 (v2.2 12-04-95 A)", ConsoleRegion::NTSC_U,
+   MakeHashFromString("924e392ed05558ffdb115408c263dccf")},
+  {"SCPH-1002, DTL-H1002 (v2.0 05-10-95 E)", ConsoleRegion::PAL,
+   MakeHashFromString("54847e693405ffeb0359c6287434cbef")},
+  {"SCPH-1002, DTL-H1102 (v2.1 07-17-95 E)", ConsoleRegion::PAL,
+   MakeHashFromString("417b34706319da7cf001e76e40136c23")},
+  {"SCPH-1002, DTL-H1202, H3002 (v2.2 12-04-95 E)", ConsoleRegion::PAL,
+   MakeHashFromString("e2110b8a2b97a8e0b857a45d32f7e187")},
+  {"DTL-H1100 (v2.2 03-06-96 D)", ConsoleRegion::NTSC_J, MakeHashFromString("ca5cfc321f916756e3f0effbfaeba13b")},
+  {"SCPH-3000, DTL-H1000H (v1.1 01-22-95)", ConsoleRegion::NTSC_J,
+   MakeHashFromString("849515939161e62f6b866f6853006780")},
+  {"SCPH-1001, DTL-H1001 (v2.0 05-07-95 A)", ConsoleRegion::NTSC_U,
+   MakeHashFromString("dc2b9bf8da62ec93e868cfd29f0d067d")},
+  {"SCPH-3500 (v2.1 07-17-95 J)", ConsoleRegion::NTSC_J, MakeHashFromString("cba733ceeff5aef5c32254f1d617fa62")},
+  {"SCPH-1001, DTL-H1101 (v2.1 07-17-95 A)", ConsoleRegion::NTSC_U,
+   MakeHashFromString("da27e8b6dab242d8f91a9b25d80c63b8")},
+  {"SCPH-5000, DTL-H1200, H3000 (v2.2 12-04-95 J)", ConsoleRegion::NTSC_J,
+   MakeHashFromString("57a06303dfa9cf9351222dfcbb4a29d9")},
+  {"SCPH-5500 (v3.0 09-09-96 J)", ConsoleRegion::NTSC_J, MakeHashFromString("8dd7d5296a650fac7319bce665a6a53c")},
+  {"SCPH-5501, 5503, 7003 (v3.0 11-18-96 A)", ConsoleRegion::NTSC_U,
+   MakeHashFromString("490f666e1afb15b7362b406ed1cea246")},
+  {"SCPH-5502, 5552 (v3.0 01-06-97 E)", ConsoleRegion::PAL, MakeHashFromString("32736f17079d0b2b7024407c39bd3050")},
+  {"SCPH-7000, 7500, 9000 (v4.0 08-18-97 J)", ConsoleRegion::NTSC_J,
+   MakeHashFromString("8e4c14f567745eff2f0408c8129f72a6")},
+  {"SCPH-7000W (v4.1 11-14-97 A)", ConsoleRegion::NTSC_J, MakeHashFromString("b84be139db3ee6cbd075630aa20a6553")},
+  {"SCPH-7001, 7501, 7503, 9001, 9003, 9903 (v4.1 12-16-97 A)", ConsoleRegion::NTSC_U,
+   MakeHashFromString("1e68c231d0896b7eadcad1d7d8e76129")},
+  {"SCPH-7002, 7502, 9002 (v4.1 12-16-97 E)", ConsoleRegion::PAL,
+   MakeHashFromString("b9d9a0286c33dc6b7237bb13cd46fdee")},
+  {"SCPH-100 (v4.3 03-11-00 J)", ConsoleRegion::NTSC_J, MakeHashFromString("8abc1b549a4a80954addc48ef02c4521")},
+  {"SCPH-101 (v4.4 03-24-00 A)", ConsoleRegion::NTSC_U, MakeHashFromString("9a09ab7e49b422c007e6d54d7c49b965")},
+  {"SCPH-101 (v4.5 05-25-00 A)", ConsoleRegion::NTSC_U, MakeHashFromString("6e3735ff4c7dc899ee98981385f6f3d0")},
+  {"SCPH-102 (v4.4 03-24-00 E)", ConsoleRegion::PAL, MakeHashFromString("b10f5e0e3d9eb60e5159690680b1e774")},
+  {"SCPH-102 (v4.5 05-25-00 E)", ConsoleRegion::PAL, MakeHashFromString("de93caec13d1a141a40a79f5c86168d6")},
+  {"PSP, SCPH-1000R (v4.5 05-25-00 J)", ConsoleRegion::Auto, MakeHashFromString("c53ca5908936d412331790f4426c6c33")},
+  {"SCPH-1000R (v4.5 05-25-00 J)", ConsoleRegion::NTSC_J, MakeHashFromString("476d68a94ccec3b9c8303bbd1daf2810")},
+  {"PS3 (v5.0 06-23-03 A)", ConsoleRegion::Auto, MakeHashFromString("81bbe60ba7a3d1cea1d48c14cbcc647b")}
+}};
 
 Hash GetHash(const Image& image)
 {
@@ -56,14 +87,13 @@ Hash GetHash(const Image& image)
   return hash;
 }
 
-std::optional<Image> LoadImageFromFile(std::string_view filename)
+std::optional<Image> LoadImageFromFile(const char* filename)
 {
   Image ret(BIOS_SIZE);
-  std::string filename_str(filename);
-  auto fp = FileSystem::OpenManagedCFile(filename_str.c_str(), "rb");
+  auto fp = FileSystem::OpenManagedCFile(filename, "rb");
   if (!fp)
   {
-    Log_ErrorPrintf("Failed to open BIOS image '%s', errno=%d", filename_str.c_str(), errno);
+    Log_ErrorPrintf("Failed to open BIOS image '%s', errno=%d", filename, errno);
     return std::nullopt;
   }
 
@@ -73,21 +103,20 @@ std::optional<Image> LoadImageFromFile(std::string_view filename)
 
   if (size != BIOS_SIZE)
   {
-    Log_ErrorPrintf("BIOS image '%s' mismatch, expecting %u bytes, got %u bytes", filename_str.c_str(), BIOS_SIZE,
-                    size);
+    Log_ErrorPrintf("BIOS image '%s' mismatch, expecting %u bytes, got %u bytes", filename, BIOS_SIZE, size);
     return std::nullopt;
   }
 
   if (std::fread(ret.data(), 1, ret.size(), fp.get()) != ret.size())
   {
-    Log_ErrorPrintf("Failed to read BIOS image '%s'", filename_str.c_str());
+    Log_ErrorPrintf("Failed to read BIOS image '%s'", filename);
     return std::nullopt;
   }
 
   return ret;
 }
 
-std::optional<Hash> GetHashForFile(const std::string_view filename)
+std::optional<Hash> GetHashForFile(const char* filename)
 {
   auto image = LoadImageFromFile(filename);
   if (!image)
@@ -96,35 +125,36 @@ std::optional<Hash> GetHashForFile(const std::string_view filename)
   return GetHash(*image);
 }
 
-bool IsValidHashForRegion(ConsoleRegion region, const Hash& hash)
+const ImageInfo* GetImageInfoForHash(const Hash& hash)
 {
-  switch (region)
+  for (const ImageInfo& ii : s_image_infos)
   {
-    case ConsoleRegion::NTSC_J:
-      return (hash == SCPH_1000_HASH || hash == SCPH_3000_HASH || hash == SCPH_5500_HASH || hash == SCPH_POPS660_HASH);
-
-    case ConsoleRegion::NTSC_U:
-      return (hash == SCPH_1001_HASH || hash == SCPH_5501_HASH || hash == SCPH_7001_HASH || hash == SCPH_POPS660_HASH);
-
-    case ConsoleRegion::PAL:
-      return (hash == SCPH_1002_HASH || hash == SCPH_5502_HASH || hash == SCPH_7002_HASH || hash == SCPH_POPS660_HASH);
-
-    case ConsoleRegion::Auto:
-    default:
-      return false;
+    if (ii.hash == hash)
+      return &ii;
   }
+
+  return nullptr;
 }
 
-void PatchBIOS(Image& bios, u32 address, u32 value, u32 mask /*= UINT32_C(0xFFFFFFFF)*/)
+bool IsValidHashForRegion(ConsoleRegion region, const Hash& hash)
+{
+  const ImageInfo* ii = GetImageInfoForHash(hash);
+  if (!ii)
+    return false;
+
+  return (ii->region == ConsoleRegion::Auto || ii->region == region);
+}
+
+void PatchBIOS(u8* image, u32 image_size, u32 address, u32 value, u32 mask /*= UINT32_C(0xFFFFFFFF)*/)
 {
   const u32 phys_address = address & UINT32_C(0x1FFFFFFF);
   const u32 offset = phys_address - BIOS_BASE;
-  Assert(phys_address >= BIOS_BASE && offset < BIOS_SIZE);
+  Assert(phys_address >= BIOS_BASE && (offset + sizeof(u32)) <= image_size);
 
   u32 existing_value;
-  std::memcpy(&existing_value, &bios[offset], sizeof(existing_value));
+  std::memcpy(&existing_value, &image[offset], sizeof(existing_value));
   u32 new_value = (existing_value & ~mask) | value;
-  std::memcpy(&bios[offset], &new_value, sizeof(new_value));
+  std::memcpy(&image[offset], &new_value, sizeof(new_value));
 
   SmallString old_disasm, new_disasm;
   CPU::DisassembleInstruction(&old_disasm, address, existing_value);
@@ -133,27 +163,25 @@ void PatchBIOS(Image& bios, u32 address, u32 value, u32 mask /*= UINT32_C(0xFFFF
                 old_disasm.GetCharArray(), new_value, new_disasm.GetCharArray());
 }
 
-bool PatchBIOSEnableTTY(Image& image, const Hash& hash)
+bool PatchBIOSEnableTTY(u8* image, u32 image_size, const Hash& hash)
 {
-  if (hash != SCPH_1000_HASH && hash != SCPH_1001_HASH && hash != SCPH_1002_HASH && hash != SCPH_3000_HASH &&
-      hash != SCPH_5500_HASH && hash != SCPH_5501_HASH && hash != SCPH_5502_HASH && hash != SCPH_7001_HASH &&
-      hash != SCPH_7002_HASH && hash != SCPH_POPS660_HASH)
+  const ImageInfo* ii = GetImageInfoForHash(hash);
+  if (!ii)
   {
     Log_WarningPrintf("Incompatible version for TTY patch: %s", hash.ToString().c_str());
     return false;
   }
 
   Log_InfoPrintf("Patching BIOS to enable TTY/printf");
-  PatchBIOS(image, 0x1FC06F0C, 0x24010001);
-  PatchBIOS(image, 0x1FC06F14, 0xAF81A9C0);
+  PatchBIOS(image, image_size, 0x1FC06F0C, 0x24010001);
+  PatchBIOS(image, image_size, 0x1FC06F14, 0xAF81A9C0);
   return true;
 }
 
-bool PatchBIOSFastBoot(Image& image, const Hash& hash)
+bool PatchBIOSFastBoot(u8* image, u32 image_size, const Hash& hash)
 {
-  if (hash != SCPH_1000_HASH && hash != SCPH_1001_HASH && hash != SCPH_1002_HASH && hash != SCPH_3000_HASH &&
-      hash != SCPH_5500_HASH && hash != SCPH_5501_HASH && hash != SCPH_5502_HASH && hash != SCPH_7001_HASH &&
-      hash != SCPH_7002_HASH && hash != SCPH_POPS660_HASH)
+  const ImageInfo* ii = GetImageInfoForHash(hash);
+  if (!ii)
   {
     Log_WarningPrintf("Incompatible version for fast-boot patch: %s", hash.ToString().c_str());
     return false;
@@ -161,41 +189,48 @@ bool PatchBIOSFastBoot(Image& image, const Hash& hash)
 
   // Replace the shell entry point with a return back to the bootstrap.
   Log_InfoPrintf("Patching BIOS to skip intro");
-  PatchBIOS(image, 0x1FC18000, 0x03E00008);
-  PatchBIOS(image, 0x1FC18004, 0x00000000);
+  PatchBIOS(image, image_size, 0x1FC18000, 0x3C011F80); // lui at, 1f80
+  PatchBIOS(image, image_size, 0x1FC18004, 0x3C0A0300); // lui t2, 0300h
+  PatchBIOS(image, image_size, 0x1FC18008, 0xAC2A1814); // sw zero, 1814h(at)        ; turn the display on
+  PatchBIOS(image, image_size, 0x1FC1800C, 0x03E00008); // jr ra
+  PatchBIOS(image, image_size, 0x1FC18010, 0x00000000); // nop
   return true;
 }
 
-bool PatchBIOSForEXE(Image& image, u32 r_pc, u32 r_gp, u32 r_sp, u32 r_fp)
+bool PatchBIOSForEXE(u8* image, u32 image_size, u32 r_pc, u32 r_gp, u32 r_sp, u32 r_fp)
 {
+#define PATCH(offset, value) PatchBIOS(image, image_size, (offset), (value))
+
   // pc has to be done first because we can't load it in the delay slot
-  PatchBIOS(image, 0xBFC06FF0, UINT32_C(0x3C080000) | r_pc >> 16);                // lui $t0, (r_pc >> 16)
-  PatchBIOS(image, 0xBFC06FF4, UINT32_C(0x35080000) | (r_pc & UINT32_C(0xFFFF))); // ori $t0, $t0, (r_pc & 0xFFFF)
-  PatchBIOS(image, 0xBFC06FF8, UINT32_C(0x3C1C0000) | r_gp >> 16);                // lui $gp, (r_gp >> 16)
-  PatchBIOS(image, 0xBFC06FFC, UINT32_C(0x379C0000) | (r_gp & UINT32_C(0xFFFF))); // ori $gp, $gp, (r_gp & 0xFFFF)
+  PATCH(0xBFC06FF0, UINT32_C(0x3C080000) | r_pc >> 16);                // lui $t0, (r_pc >> 16)
+  PATCH(0xBFC06FF4, UINT32_C(0x35080000) | (r_pc & UINT32_C(0xFFFF))); // ori $t0, $t0, (r_pc & 0xFFFF)
+  PATCH(0xBFC06FF8, UINT32_C(0x3C1C0000) | r_gp >> 16);                // lui $gp, (r_gp >> 16)
+  PATCH(0xBFC06FFC, UINT32_C(0x379C0000) | (r_gp & UINT32_C(0xFFFF))); // ori $gp, $gp, (r_gp & 0xFFFF)
 
   if (r_sp != 0)
   {
-    PatchBIOS(image, 0xBFC07000, UINT32_C(0x3C1D0000) | r_sp >> 16);                // lui $sp, (r_sp >> 16)
-    PatchBIOS(image, 0xBFC07004, UINT32_C(0x37BD0000) | (r_sp & UINT32_C(0xFFFF))); // ori $sp, $sp, (r_sp & 0xFFFF)
+    PATCH(0xBFC07000, UINT32_C(0x3C1D0000) | r_sp >> 16);                // lui $sp, (r_sp >> 16)
+    PATCH(0xBFC07004, UINT32_C(0x37BD0000) | (r_sp & UINT32_C(0xFFFF))); // ori $sp, $sp, (r_sp & 0xFFFF)
   }
   else
   {
-    PatchBIOS(image, 0xBFC07000, UINT32_C(0x00000000)); // nop
-    PatchBIOS(image, 0xBFC07004, UINT32_C(0x00000000)); // nop
+    PATCH(0xBFC07000, UINT32_C(0x00000000)); // nop
+    PATCH(0xBFC07004, UINT32_C(0x00000000)); // nop
   }
   if (r_fp != 0)
   {
-    PatchBIOS(image, 0xBFC07008, UINT32_C(0x3C1E0000) | r_fp >> 16);                // lui $fp, (r_fp >> 16)
-    PatchBIOS(image, 0xBFC0700C, UINT32_C(0x01000008));                             // jr $t0
-    PatchBIOS(image, 0xBFC07010, UINT32_C(0x37DE0000) | (r_fp & UINT32_C(0xFFFF))); // ori $fp, $fp, (r_fp & 0xFFFF)
+    PATCH(0xBFC07008, UINT32_C(0x3C1E0000) | r_fp >> 16);                // lui $fp, (r_fp >> 16)
+    PATCH(0xBFC0700C, UINT32_C(0x01000008));                             // jr $t0
+    PATCH(0xBFC07010, UINT32_C(0x37DE0000) | (r_fp & UINT32_C(0xFFFF))); // ori $fp, $fp, (r_fp & 0xFFFF)
   }
   else
   {
-    PatchBIOS(image, 0xBFC07008, UINT32_C(0x00000000)); // nop
-    PatchBIOS(image, 0xBFC0700C, UINT32_C(0x01000008)); // jr $t0
-    PatchBIOS(image, 0xBFC07010, UINT32_C(0x00000000)); // nop
+    PATCH(0xBFC07008, UINT32_C(0x00000000)); // nop
+    PATCH(0xBFC0700C, UINT32_C(0x01000008)); // jr $t0
+    PATCH(0xBFC07010, UINT32_C(0x00000000)); // nop
   }
+
+#undef PATCH
 
   return true;
 }

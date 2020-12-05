@@ -4,8 +4,8 @@
 
 namespace CPU {
 static const std::array<const char*, 36> s_reg_names = {
-  {"$zero", "at", "v0", "v1", "a0", "a1", "a2", "a3", "t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "s0", "s1",
-   "s2",    "s3", "s4", "s5", "s6", "s7", "t8", "t9", "k0", "k1", "gp", "sp", "fp", "ra", "hi", "lo", "pc", "npc"}};
+  {"zero", "at", "v0", "v1", "a0", "a1", "a2", "a3", "t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "s0", "s1",
+   "s2",   "s3", "s4", "s5", "s6", "s7", "t8", "t9", "k0", "k1", "gp", "sp", "fp", "ra", "hi", "lo", "pc", "npc"}};
 
 const char* GetRegName(Reg reg)
 {
@@ -41,6 +41,62 @@ bool IsBranchInstruction(const Instruction& instruction)
 
     default:
       return false;
+  }
+}
+
+bool IsUnconditionalBranchInstruction(const Instruction& instruction)
+{
+  switch (instruction.op)
+  {
+    case InstructionOp::j:
+    case InstructionOp::jal:
+    case InstructionOp::b:
+      return true;
+
+    case InstructionOp::beq:
+    {
+      if (instruction.i.rs == Reg::zero && instruction.i.rt == Reg::zero)
+        return true;
+      else
+        return false;
+    }
+    break;
+
+    case InstructionOp::funct:
+    {
+      switch (instruction.r.funct)
+      {
+        case InstructionFunct::jr:
+        case InstructionFunct::jalr:
+          return true;
+
+        default:
+          return false;
+      }
+    }
+
+    default:
+      return false;
+  }
+}
+
+u32 GetBranchInstructionTarget(const Instruction& instruction, u32 instruction_pc)
+{
+  switch (instruction.op)
+  {
+    case InstructionOp::j:
+    case InstructionOp::jal:
+      return ((instruction_pc + 4) & UINT32_C(0xF0000000)) | (instruction.j.target << 2);
+
+    case InstructionOp::b:
+    case InstructionOp::beq:
+    case InstructionOp::bgtz:
+    case InstructionOp::blez:
+    case InstructionOp::bne:
+      return instruction_pc + 4 + (instruction.i.imm_sext32() << 2);
+
+    default:
+      return instruction_pc;
   }
 }
 

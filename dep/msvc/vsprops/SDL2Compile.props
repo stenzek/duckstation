@@ -11,11 +11,13 @@
     <Link>
       <AdditionalLibraryDirectories Condition="'$(Platform)'=='x86'">$(SDL2Dir)lib32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalLibraryDirectories Condition="'$(Platform)'=='x64'">$(SDL2Dir)lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="'$(Platform)'=='ARM64'">$(SDL2Dir)libarm64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Lib>
       <AdditionalLibraryDirectories Condition="'$(Platform)'=='x86'">$(SDL2Dir)lib32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalLibraryDirectories Condition="'$(Platform)'=='x64'">$(SDL2Dir)lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="'$(Platform)'=='ARM64'">$(SDL2Dir)libarm64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
@@ -24,10 +26,8 @@
   <ItemGroup>
     <SDL2Dlls Condition="'$(Platform)'=='x86'" Include="$(SDL2Dir)bin32\SDL2.dll" />
     <SDL2Dlls Condition="'$(Platform)'=='x64'" Include="$(SDL2Dir)bin64\SDL2.dll" />
+    <SDL2Dlls Condition="'$(Platform)'=='ARM64'" Include="$(SDL2Dir)binarm64\SDL2.dll" />
   </ItemGroup>
-  <PropertyGroup>
-    <QtConfFile>$(BinaryOutputDir)qt.conf</QtConfFile>
-  </PropertyGroup>
   <Target Name="SDL2CopyBinaries"
     AfterTargets="Build"
     Inputs="@(SDL2Dlls)"

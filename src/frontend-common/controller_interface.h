@@ -5,6 +5,8 @@
 #include <functional>
 #include <map>
 #include <mutex>
+#include <optional>
+#include <variant>
 
 class HostInterface;
 class Controller;
@@ -12,10 +14,29 @@ class Controller;
 class ControllerInterface
 {
 public:
+  enum class Backend
+  {
+    None,
+#ifdef WITH_SDL2
+    SDL,
+#endif
+#ifdef WIN32
+    XInput,
+#endif
+    Count
+  };
+
   enum : int
   {
     MAX_NUM_AXISES = 7,
     MAX_NUM_BUTTONS = 15
+  };
+
+  enum AxisSide
+  {
+    Full,
+    Positive,
+    Negative
   };
 
   using AxisCallback = CommonHostInterface::InputAxisHandler;
@@ -24,6 +45,12 @@ public:
   ControllerInterface();
   virtual ~ControllerInterface();
 
+  static std::optional<Backend> ParseBackendName(const char* name);
+  static const char* GetBackendName(Backend type);
+  static Backend GetDefaultBackend();
+  static std::unique_ptr<ControllerInterface> Create(Backend type);
+
+  virtual Backend GetBackend() const = 0;
   virtual bool Initialize(CommonHostInterface* host_interface);
   virtual void Shutdown();
 
@@ -31,19 +58,19 @@ public:
   virtual void ClearBindings() = 0;
 
   // Binding to events. If a binding for this axis/button already exists, returns false.
-  virtual bool BindControllerAxis(int controller_index, int axis_number, AxisCallback callback) = 0;
+  virtual bool BindControllerAxis(int controller_index, int axis_number, AxisSide axis_side, AxisCallback callback) = 0;
   virtual bool BindControllerButton(int controller_index, int button_number, ButtonCallback callback) = 0;
   virtual bool BindControllerAxisToButton(int controller_index, int axis_number, bool direction,
                                           ButtonCallback callback) = 0;
+  virtual bool BindControllerHatToButton(int controller_index, int hat_number, std::string_view hat_position,
+                                         ButtonCallback callback) = 0;
+  virtual bool BindControllerButtonToAxis(int controller_index, int button_number, AxisCallback callback) = 0;
 
   virtual void PollEvents() = 0;
 
   // Changing rumble strength.
   virtual u32 GetControllerRumbleMotorCount(int controller_index) = 0;
   virtual void SetControllerRumbleStrength(int controller_index, const float* strengths, u32 num_motors) = 0;
-
-  // Set scaling that will be applied on axis-to-axis mappings
-  virtual bool SetControllerAxisScale(int controller_index, float scale) = 0;
 
   // Set deadzone that will be applied on axis-to-button mappings
   virtual bool SetControllerDeadzone(int controller_index, float size) = 0;
@@ -54,7 +81,8 @@ public:
     enum class Type
     {
       Axis,
-      Button
+      Button,
+      Hat // Only for joysticks
     };
 
     enum class CallbackResult
@@ -68,13 +96,15 @@ public:
     Type type;
     int controller_index;
     int button_or_axis_number;
-    float value; // 0/1 for buttons, -1..1 for axises
+    std::variant<float, std::string_view> value; // 0/1 for buttons, -1..1 for axes, hat direction name for hats
+    bool track_history;                          // Track axis movement to spot inversion/half axes
   };
   void SetHook(Hook::Callback callback);
   void ClearHook();
 
 protected:
-  bool DoEventHook(Hook::Type type, int controller_index, int button_or_axis_number, float value);
+  bool DoEventHook(Hook::Type type, int controller_index, int button_or_axis_number,
+                   std::variant<float, std::string_view> value, bool track_history = false);
 
   void OnControllerConnected(int host_id);
   void OnControllerDisconnected(int host_id);

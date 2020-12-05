@@ -1,18 +1,45 @@
 # DuckStation - PlayStation 1, aka. PSX Emulator
+[Latest News](#latest-news) | [Features](#features) | [Screenshots](#screenshots) | [Downloading and Running](#downloading-and-running) | [Libretro Core](#libretro-core) | [Building](#building) | [Disclaimers](#disclaimers)
+
 **Discord Server:** https://discord.gg/Buktv3t
 
-**Latest Windows, Linux (AppImage), and Libretro Builds:** https://github.com/stenzek/duckstation/releases/tag/latest
-
-**NOTE:** Linux builds are temporarily disabled due to an issue with AppImage creation. Once this is sorted out they will be re-enabled again. You can still build from source in the meantime.
+**Latest Windows, Linux (AppImage), Mac, Android, and Libretro Builds:** https://github.com/stenzek/duckstation/releases/tag/latest
 
 **Game Compatibility List:** https://docs.google.com/spreadsheets/d/1H66MxViRjjE5f8hOl5RQmF5woS1murio2dsLn14kEqo/edit?usp=sharing
 
-DuckStation is an simulator/emulator of the Sony PlayStation(TM) console, focusing on playability, speed, and long-term maintainability. Accuracy is not the main focus of the emulator, but the goal is to be as accurate as possible while maintaining performance suitable for low-end devices. "Hack" options are discouraged, the default configuration should support all playable games with only some of the enhancements having compatibility issues.
+DuckStation is an simulator/emulator of the Sony PlayStation(TM) console, focusing on playability, speed, and long-term maintainability. The goal is to be as accurate as possible while maintaining performance suitable for low-end devices. "Hack" options are discouraged, the default configuration should support all playable games with only some of the enhancements having compatibility issues.
 
 A "BIOS" ROM image is required to to start the emulator and to play games. You can use an image from any hardware version or region, although mismatching game regions and BIOS regions may have compatibility issues. A ROM image is not provided with the emulator for legal reasons, you should dump this from your own console using Caetla or other means.
 
 ## Latest News
 
+- 2020/11/27: Cover support added for game list in Android version. Procedure is the same as the desktop version, except you should place cover images in `<storage>/duckstation/covers` (see [Adding Game Covers](https://github.com/stenzek/duckstation/wiki/Adding-Game-Covers)).
+- 2020/11/27: Disc database is shipped with desktop and Android versions courtesy of redump.org. This will provide titles for games on Android, where it was not possible previously.
+- 2020/11/27: Compatibility databases added to libretro core - broken enhancements will be automatically disabled. You can turn this off by disabling "Apply Compatibility Settings" in the core options.
+- 2020/11/27: SDL game controller database is included with desktop versions courtesy of https://github.com/gabomdq/SDL_GameControllerDB.
+- 2020/11/21: OpenGL ES 2.0 host display support added. You cannot use the hardware renderer with GLES2, it still requires GLES3, but GLES2 GPUs can now use the software renderer.
+- 2020/11/21: Threaded renderer for software renderer added. Can result in a significant speed boost depending on the game.
+- 2020/11/21: AArch32/armv7 recompiler added. Android and Linux builds will follow after further testing, but for now you can build it yourself.
+- 2020/11/18: Window size (resize window to Nx content resolution) added to Qt and SDL frontends.
+- 2020/11/10: Widescreen hack now renders in the display aspect ratio instead of always 16:9.
+- 2020/11/01: Exclusive fullscreen option added for Windows D3D11 users. Enjoy buttery smooth PAL games.
+- 2020/10/31: Multisample antialiasing added as an enhancement.
+- 2020/10/30: Option to use analog stick as d-pad for analog controller added.
+- 2020/10/20: New cheat manager with memory scanning added. More features will be added over time.
+- 2020/10/05: CD-ROM read speedup enhancement added.
+- 2020/09/30: CPU overclocking is now supported. Use with caution as it will break games and increase system requirements. It can be set globally or per-game.
+- 2020/09/25: Cheat support added for libretro core.
+- 2020/09/23: Game covers added to Qt frontend (see [Adding Game Covers](https://github.com/stenzek/duckstation/wiki/Adding-Game-Covers)).
+- 2020/09/19: Memory card importer/editor added to Qt frontend.
+- 2020/09/13: Support for chaining post processing shaders added.
+- 2020/09/12: Additional texture filtering options added.
+- 2020/09/09: Basic cheat support added. Not all instructions/commands are supported yet.
+- 2020/09/01: Many additional user settings available, including memory cards and enhancements. Now you can set these per-game.
+- 2020/08/25: Automated builds for macOS now available.
+- 2020/08/22: XInput controller backend added.
+- 2020/08/20: Per-game setting overrides added. Mostly for compatibility, but some options are customizable.
+- 2020/08/19: CPU PGXP mode added. It is very slow and incompatible with the recompiler, only use for games which need it.
+- 2020/08/15: Playlist support/single memcard for multi-disc games in Qt frontend added.
 - 2020/08/07: Automatic updater for standalone Windows builds.
 - 2020/08/01: Initial PGXP (geometry/perspective correction) support.
 - 2020/07/28: Qt frontend supports displaying interface in multiple languages.
@@ -34,9 +61,11 @@ DuckStation features a fully-featured frontend built using Qt (pictured), as wel
 
 Other features include:
 
- - CPU Recompiler/JIT (x86-64 and AArch64)
+ - CPU Recompiler/JIT (x86-64, armv7/AArch32 and AArch64)
  - Hardware (D3D11, OpenGL, Vulkan) and software rendering
- - Upscaling and true colour (24-bit) in hardware renderers
+ - Upscaling, texture filtering, and true colour (24-bit) in hardware renderers
+ - PGXP for geometry precision and texture correction
+ - Post processing shader chains
  - "Fast boot" for skipping BIOS splash/intro
  - Save state support
  - Windows, Linux, **highly experimental** macOS support
@@ -48,16 +77,20 @@ Other features include:
  - NeGcon support
  - Qt and SDL frontends for desktop
  - libretro core for Windows and Linux
+ - Automatic updates for Windows builds
  - Automatic content scanning - game titles/regions are provided by redump.org
  - Optional automatic switching of memory cards for each game
+ - Supports loading cheats from libretro or PCSXR format lists
+ - Memory card editor and save importer
+ - Emulated CPU overclocking
 
 ## System Requirements
- - A CPU faster than a potato. But it needs to be 64-bit (either x86_64 or AArch64/ARMv8) otherwise you won't get a recompiler and it'll be slow. There are no plans to add any 32-bit recompilers.
- - For the hardware renderers, a GPU capable of OpenGL 3.0/OpenGL ES 3.0/Direct3D 11 Feature Level 10.0 (or Vulkan 1.0) and above. So, basically anything made in the last 10 years or so.
- - SDL-compatible game controller (e.g. XB360/XBOne). DualShock 3 users on Windows will need to install the official DualShock 3 drivers included as part of PlayStation Now.
+ - A CPU faster than a potato. But it needs to be x86_64, AArch32/armv7, or AArch64/ARMv8, otherwise you won't get a recompiler and it'll be slow.
+ - For the hardware renderers, a GPU capable of OpenGL 3.1/OpenGL ES 3.0/Direct3D 11 Feature Level 10.0 (or Vulkan 1.0) and above. So, basically anything made in the last 10 years or so.
+ - SDL or XInput compatible game controller (e.g. XB360/XBOne). DualShock 3 users on Windows will need to install the official DualShock 3 drivers included as part of PlayStation Now.
 
 ## Downloading and running
-Binaries of DuckStation for Windows 64-bit, x86_64 Linux x86_64 (in AppImage format), and Android ARMv8/AArch64 are available via GitHub Releases and are automatically built with every commit/push. Binaries or packages distributed through other sources may be out of date and are not supported by the developer.
+Binaries of DuckStation for Windows x64/ARM64, x86_64 Linux x86_64 (in AppImage format), and Android ARMv8/AArch64 are available via GitHub Releases and are automatically built with every commit/push. Binaries or packages distributed through other sources may be out of date and are not supported by the developer.
 
 ### Windows
 
@@ -70,8 +103,8 @@ To download:
 
 Once downloaded and extracted, you can launch the Qt frontend from `duckstation-qt-x64-ReleaseLTCG.exe`, or the SDL frontend from `duckstation-sdl-x64-ReleaseLTCG.exe`.
 To set up:
-1. Either configure the path to a BIOS image in the settings, or copy one or more PlayStation BIOS images to the bios/ subdirectory. On Windows, by default this will be located in `C:\Users\YOUR_USERNAME\Documents\DuckStation\bios`.
-2. If using the SDL frontend, add the directories containing your disc images by clicking `Settings->Add Game Directory`.
+1. Either configure the path to a BIOS image in the settings, or copy one or more PlayStation BIOS images to the bios/ subdirectory. On Windows, by default this will be located in `C:\Users\YOUR_USERNAME\Documents\DuckStation\bios`. If you don't want to use the Documents directory to save the BIOS/memory cards/etc, you can use portable mode. See [User directory](#user-directories).
+2. If using the Qt frontend, add the directories containing your disc images by clicking `Settings->Add Game Directory`.
 2. Select a game from the list, or open a disc image file and enjoy.
 
 **If you get an error about `vcruntime140_1.dll` being missing, you will need to update your Visual C++ runtime.** You can do that from this page: https://support.microsoft.com/en-au/help/2977003/the-latest-supported-visual-c-downloads. Specifically, you want the x64 runtime, which can be downloaded from https://aka.ms/vs/16/release/vc_redist.x64.exe.
@@ -89,16 +122,25 @@ To download:
  - Run `chmod a+x` on the downloaded AppImage -- following this step, the AppImage can be run like a typical executable.
  - Optionally use a program such as [appimaged](https://github.com/AppImage/appimaged) or [AppImageLauncher](https://github.com/TheAssassin/AppImageLauncher) for desktop integration. [AppImageUpdate](https://github.com/AppImage/AppImageUpdate) can be used alongside appimaged to easily update your DuckStation AppImage.
 
+### macOS
+
+To download:
+ - Go to https://github.com/stenzek/duckstation/releases/tag/latest, and download the Mac build. This is a zip archive containing the prebuilt binary.
+ - Alternatively, direct download link: https://github.com/stenzek/duckstation/releases/download/latest/duckstation-mac-release.zip
+ - Extract the zip archive. If you're using Safari, apparently this happens automatically. This will give you DuckStation.app.
+ - Right click DuckStation.app, and click Open. As the package is not signed (Mac certificates are expensive), you must do this the first time you open it. Subsequent runs can be done by double-clicking.
+
+macOS support is considered experimental and not actively supported by the developer; the builds are provided here as a courtesy. Please feel free to submit issues, but it may be some time before
+they are investigated.
+
+**macOS builds do not support automatic updates yet.** If there is sufficient demand, this may be something I will consider.
+
+
 ### Android
 
-A prebuilt APK is now available for Android. However, please keep in mind that the Android version is not yet feature complete, it is more of a preview of things to come. You will need a device running a 64-bit AArch64 userland (anything made in the last few years).
+A prebuilt APK is now available for Android. However, please keep in mind that the Android version does not contain all features present in the desktop version yet. You will need a device with armv7 (32-bit ARM) or AArch64 (64-bit ARM). 64-bit is preferred, the requirements are higher for 32-bit, you'll probably want at least a 1.5GHz CPU.
 
-Download link: https://github.com/stenzek/duckstation/releases/download/latest/duckstation-android-aarch64.apk
-
-The main limitations are:
- - User directory is currently hardcoded to `<external storage path>/duckstation`. This is usually `/storage/emulated/0` or `/sdcard`'. So BIOS files go in `/sdcard/duckstation/bios`.
- - Lack of options in menu when emulator is running.
- - Performance is currently lower than the desktop x86_64 counterpart.
+Download link: https://github.com/stenzek/duckstation/releases/download/latest/duckstation-android.apk
 
 To use:
  - Install and run the app for the first time.
@@ -109,9 +151,7 @@ To use:
 
 ### Title Information
 
-PlayStation game discs do not contain title information. For game titles, we use the redump.org database cross-referenced with the game's executable code.
-This database can be manually downloaded and added as `cache/redump.dat`, or automatically downloaded by going into the `Game List Settings` in the Qt Frontend,
-and clicking `Update Redump Database`.
+PlayStation game discs do not contain title information. For game titles, we use the redump.org database cross-referenced with the game's executable code. A version of the database is included with the DuckStation download, but you can replace this with a different database by saving it as `cache/redump.dat` in your user directory, or updated by going into the `Game List Settings` in the Qt Frontend, and clicking `Update Redump Database`.
 
 ### Region detection and BIOS images
 By default, DuckStation will emulate the region check present in the CD-ROM controller of the console. This means that when the region of the console does not match the disc, it will refuse to boot, giving a "Please insert PlayStation CD-ROM" message. DuckStation supports automatic detection disc regions, and if you set the console region to auto-detect as well, this should never be a problem.
@@ -163,16 +203,13 @@ Requirements:
  - Qt 5 (`brew install qt5`)
 
 1. Clone the repository. Submodules aren't necessary, there is only one and it is only used for Windows.
+2. Clone the mac externals repository (for MoltenVK): `git clone https://github.com/stenzek/duckstation-ext-mac.git dep/mac`.
 2. Create a build directory, either in-tree or elsewhere, e.g. `mkdir build-release`, `cd build-release`.
 3. Run cmake to configure the build system: `cmake -DCMAKE_BUILD_TYPE=Release -DQt5_DIR=/usr/local/opt/qt/lib/cmake/Qt5 ..`. You may need to tweak `Qt5_DIR` depending on your system.
 4. Compile the source code: `make`. Use `make -jN` where `N` is the number of CPU cores in your system for a faster build.
-5. Run the binary, located in the build directory under `bin/duckstation-sdl`, or `bin/duckstation-qt`.
-
-Application bundles/.apps are currently not created, so you can't launch it via Finder yet. This is planned for the future.
+5. Run the binary, located in the build directory under `bin/duckstation-sdl`, or `bin/DuckStation.app` for Qt.
 
 ### Android
-**NOTE:** The Android frontend is still incomplete, not all functionality is available yet. User directory is hardcoded to `/sdcard/duckstation` for now.
-
 Requirements:
  - Android Studio with the NDK and CMake installed
 
@@ -183,6 +220,7 @@ Requirements:
 
 ## User Directories
 The "User Directory" is where you should place your BIOS images, where settings are saved to, and memory cards/save states are saved by default.
+An optional [SDL game controller database file](#sdl-game-controller-database) can be also placed here.
 
 This is located in the following places depending on the platform you're using:
 
@@ -205,6 +243,17 @@ click the button next to button name, and press the key/button you want to use w
 
 ## Bindings for SDL frontend
 Keyboard bindings in the SDL frontend are currently not customizable in the frontend itself. You should use the Qt frontend to set up your key/controller bindings first.
+
+## SDL Game Controller Database
+DuckStation uses the SDL2 GameController API for input handling which requires controller devices to have known input mappings.
+SDL2 provides an embedded database of recognised controllers in its own source code, however it is rather small and thus limited in practice.
+
+There is an officially endorsed [community sourced database](https://github.com/gabomdq/SDL_GameControllerDB) that can be used to support a much broader range of game controllers in DuckStation.
+If your controller is not recognized by DuckStation but can be found in the community database above, just download a recent copy of the `gamecontrollerdb.txt` database file and place it in your [User directory](#user-directories). Your controller should now be recognized by DuckStation.
+
+Alternatively, you can also create your own custom controller mappings from scratch easily using readily available tools. See the referenced community database repository for more information.
+
+Using a mappings database is specially useful when using non-XInput game controllers with DuckStation.
 
 ## Default bindings
 Controller 1:
@@ -229,7 +278,10 @@ DuckStation is available as a libretro core, which can be loaded into a frontend
 
 Prebuilt binaries for 64-bit Windows, Linux and Android can be found on the releases page. Direct links:
 - 64-bit Windows: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro.dll.zip
-- 64-bit Linux: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro.so.zip
+- 64-bit Linux: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro_x64.so.zip
+- armv7 Linux: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro_linux_armv7.so.zip
+- armv7 Android: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro_android_armv7.so.zip
+- AArch64 Linux: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro_linux_aarch64.so.zip
 - AArch64 Android: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro_android_aarch64.so.zip
 
 To use, download and extract, and install the core file in RetroArch or your preferred frontend.
@@ -248,10 +300,17 @@ To build on Linux, follow the same instructions as for a normal build, but for c
 
 ## Screenshots
 <p align="center">
-  <img src="https://raw.githubusercontent.com/stenzek/duckstation/md-images/ff7.jpg" alt="Final Fantasy 7" width="400" />
-  <img src="https://raw.githubusercontent.com/stenzek/duckstation/md-images/ff8.jpg" alt="Final Fantasy 8" width="400" />
-  <img src="https://raw.githubusercontent.com/stenzek/duckstation/md-images/main.png" alt="SDL Frontend" width="400" />
-  <img src="https://raw.githubusercontent.com/stenzek/duckstation/md-images/spyro.jpg" alt="Spyro 2" width="400" />
+  <a href="https://raw.githubusercontent.com/stenzek/duckstation/md-images/monkey.jpg"><img src="https://raw.githubusercontent.com/stenzek/duckstation/md-images/monkey.jpg" alt="Monkey Hero" width="400" /></a>
+  <a href="https://raw.githubusercontent.com/stenzek/duckstation/md-images/rrt4.jpg"><img src="https://raw.githubusercontent.com/stenzek/duckstation/md-images/rrt4.jpg" alt="Ridge Racer Type 4" width="400" /></a>
+  <a href="https://raw.githubusercontent.com/stenzek/duckstation/md-images/tr2.jpg"><img src="https://raw.githubusercontent.com/stenzek/duckstation/md-images/tr2.jpg" alt="Tomb Raider 2" width="400" /></a>
+  <a href="https://raw.githubusercontent.com/stenzek/duckstation/md-images/quake2.jpg"><img src="https://raw.githubusercontent.com/stenzek/duckstation/md-images/quake2.jpg" alt="Quake 2" width="400" /></a>
+  <a href="https://raw.githubusercontent.com/stenzek/duckstation/md-images/croc.jpg"><img src="https://raw.githubusercontent.com/stenzek/duckstation/md-images/croc.jpg" alt="Croc" width="400" /></a>
+  <a href="https://raw.githubusercontent.com/stenzek/duckstation/md-images/croc2.jpg"><img src="https://raw.githubusercontent.com/stenzek/duckstation/md-images/croc2.jpg" alt="Croc 2" width="400" /></a>
+  <a href="https://raw.githubusercontent.com/stenzek/duckstation/md-images/ff7.jpg"><img src="https://raw.githubusercontent.com/stenzek/duckstation/md-images/ff7.jpg" alt="Final Fantasy 7" width="400" /></a>
+  <a href="https://raw.githubusercontent.com/stenzek/duckstation/md-images/ff8.jpg"><img src="https://raw.githubusercontent.com/stenzek/duckstation/md-images/ff8.jpg" alt="Final Fantasy 8" width="400" /></a>
+  <a href="https://raw.githubusercontent.com/stenzek/duckstation/md-images/main.png"><img src="https://raw.githubusercontent.com/stenzek/duckstation/md-images/main.png" alt="SDL Frontend" width="400" /></a>
+  <a href="https://raw.githubusercontent.com/stenzek/duckstation/md-images/spyro.jpg"><img src="https://raw.githubusercontent.com/stenzek/duckstation/md-images/spyro.jpg" alt="Spyro 2" width="400" /></a>
+  <a href="https://raw.githubusercontent.com/stenzek/duckstation/md-images/gamegrid.png"><img src="https://raw.githubusercontent.com/stenzek/duckstation/md-images/gamegrid.png" alt="Game Grid" width="400" /></a>
 </p>
 
 ## Disclaimers

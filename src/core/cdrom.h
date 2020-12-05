@@ -31,6 +31,8 @@ public:
   void InsertMedia(std::unique_ptr<CDImage> media);
   std::unique_ptr<CDImage> RemoveMedia(bool force = false);
 
+  void CPUClockChanged();
+
   // I/O
   u8 ReadRegister(u32 offset);
   void WriteRegister(u32 offset, u8 value);
@@ -67,6 +69,9 @@ private:
     AUDIO_FIFO_LOW_WATERMARK = 5,
 
     BASE_RESET_TICKS = 400000,
+
+    MAX_FAST_FORWARD_RATE = 12,
+    FAST_FORWARD_RATE_STEP = 4
   };
 
   static constexpr u8 INTERRUPT_REGISTER_MASK = 0x1F;
@@ -312,6 +317,7 @@ private:
   u8 m_last_cdda_report_frame_nibble = 0xFF;
   u8 m_play_track_number_bcd = 0xFF;
   u8 m_async_command_parameter = 0x00;
+  s8 m_fast_forward_rate = 0;
 
   std::array<std::array<u8, 2>, 2> m_cd_audio_volume_matrix{};
   std::array<std::array<u8, 2>, 2> m_next_cd_audio_volume_matrix{};

@@ -49,6 +49,7 @@ private:
 
   void InitializePlaceholderListEntry(ListEntry* li, s32 slot, bool global);
   void InitializeListEntry(ListEntry* li, CommonHostInterface::ExtendedSaveStateInfo* ssi);
+  std::pair<s32, bool> GetSlotTypeFromSelection(u32 selection) const;
 
   CommonHostInterface* m_host_interface;
   std::vector<ListEntry> m_slots;

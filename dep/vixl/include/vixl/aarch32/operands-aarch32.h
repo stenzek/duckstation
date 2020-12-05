@@ -28,7 +28,7 @@
 #ifndef VIXL_AARCH32_OPERANDS_AARCH32_H_
 #define VIXL_AARCH32_OPERANDS_AARCH32_H_
 
-#include "aarch32/instructions-aarch32.h"
+#include "instructions-aarch32.h"
 
 namespace vixl {
 namespace aarch32 {

@@ -1,4 +1,5 @@
 #include "cpu_core.h"
+#include "bus.h"
 #include "common/align.h"
 #include "common/file_system.h"
 #include "common/log.h"
@@ -15,19 +16,9 @@ Log_SetChannel(CPU::Core);
 
 namespace CPU {
 
-/// Sets the PC and flushes the pipeline.
 static void SetPC(u32 new_pc);
-
-// Updates load delays - call after each instruction
 static void UpdateLoadDelay();
-
-// Fetches the instruction at m_regs.npc
-static void ExecuteInstruction();
-static void ExecuteCop0Instruction();
-static void ExecuteCop2Instruction();
 static void Branch(u32 target);
-
-// clears pipeline of load/branch delays
 static void FlushPipeline();
 
 State g_state;
@@ -71,12 +62,13 @@ void Initialize()
 void Shutdown()
 {
   // GTE::Shutdown();
+  PGXP::Shutdown();
 }
 
 void Reset()
 {
   g_state.pending_ticks = 0;
-  g_state.downcount = MAX_SLICE_SIZE;
+  g_state.downcount = 0;
 
   g_state.regs = {};
 
@@ -89,6 +81,8 @@ void Reset()
   g_state.cop0_regs.EPC = 0;
   g_state.cop0_regs.sr.bits = 0;
   g_state.cop0_regs.cause.bits = 0;
+
+  ClearICache();
 
   GTE::Reset();
 
@@ -127,26 +121,30 @@ bool DoState(StateWrapper& sw)
   sw.Do(&g_state.load_delay_value);
   sw.Do(&g_state.next_load_delay_reg);
   sw.Do(&g_state.next_load_delay_value);
-  sw.Do(&g_state.cache_control);
+  sw.Do(&g_state.cache_control.bits);
   sw.DoBytes(g_state.dcache.data(), g_state.dcache.size());
 
   if (!GTE::DoState(sw))
     return false;
 
   if (sw.IsReading())
-    PGXP::Initialize();
+  {
+    ClearICache();
+    if (g_settings.gpu_pgxp_enable)
+      PGXP::Initialize();
+  }
 
   return !sw.HasError();
 }
 
-void SetPC(u32 new_pc)
+ALWAYS_INLINE_RELEASE void SetPC(u32 new_pc)
 {
   DebugAssert(Common::IsAlignedPow2(new_pc, 4));
   g_state.regs.npc = new_pc;
   FlushPipeline();
 }
 
-void Branch(u32 target)
+ALWAYS_INLINE_RELEASE void Branch(u32 target)
 {
   if (!Common::IsAlignedPow2(target, 4))
   {
@@ -232,7 +230,16 @@ void RaiseException(u32 CAUSE_bits, u32 EPC)
 void SetExternalInterrupt(u8 bit)
 {
   g_state.cop0_regs.cause.Ip |= static_cast<u8>(1u << bit);
-  g_state.interrupt_delay = 1;
+
+  if (g_settings.cpu_execution_mode == CPUExecutionMode::Interpreter)
+  {
+    g_state.interrupt_delay = 1;
+  }
+  else
+  {
+    g_state.interrupt_delay = 0;
+    CheckForPendingInterrupt();
+  }
 }
 
 void ClearExternalInterrupt(u8 bit)
@@ -240,7 +247,7 @@ void ClearExternalInterrupt(u8 bit)
   g_state.cop0_regs.cause.Ip &= static_cast<u8>(~(1u << bit));
 }
 
-void UpdateLoadDelay()
+ALWAYS_INLINE_RELEASE static void UpdateLoadDelay()
 {
   // the old value is needed in case the delay slot instruction overwrites the same register
   if (g_state.load_delay_reg != Reg::count)
@@ -251,7 +258,7 @@ void UpdateLoadDelay()
   g_state.next_load_delay_reg = Reg::count;
 }
 
-void FlushPipeline()
+ALWAYS_INLINE_RELEASE static void FlushPipeline()
 {
   // loads are flushed
   g_state.next_load_delay_reg = Reg::count;
@@ -275,12 +282,12 @@ void FlushPipeline()
   g_state.current_instruction_was_branch_taken = false;
 }
 
-ALWAYS_INLINE u32 ReadReg(Reg rs)
+ALWAYS_INLINE static u32 ReadReg(Reg rs)
 {
   return g_state.regs.r[static_cast<u8>(rs)];
 }
 
-ALWAYS_INLINE void WriteReg(Reg rd, u32 value)
+ALWAYS_INLINE static void WriteReg(Reg rd, u32 value)
 {
   g_state.regs.r[static_cast<u8>(rd)] = value;
   g_state.load_delay_reg = (rd == g_state.load_delay_reg) ? Reg::count : g_state.load_delay_reg;
@@ -289,7 +296,7 @@ ALWAYS_INLINE void WriteReg(Reg rd, u32 value)
   g_state.regs.zero = 0;
 }
 
-static void WriteRegDelayed(Reg rd, u32 value)
+ALWAYS_INLINE_RELEASE static void WriteRegDelayed(Reg rd, u32 value)
 {
   Assert(g_state.next_load_delay_reg == Reg::count);
   if (rd == Reg::zero)
@@ -304,7 +311,7 @@ static void WriteRegDelayed(Reg rd, u32 value)
   g_state.next_load_delay_value = value;
 }
 
-static std::optional<u32> ReadCop0Reg(Cop0Reg reg)
+ALWAYS_INLINE_RELEASE static std::optional<u32> ReadCop0Reg(Cop0Reg reg)
 {
   switch (reg)
   {
@@ -347,7 +354,7 @@ static std::optional<u32> ReadCop0Reg(Cop0Reg reg)
   }
 }
 
-static void WriteCop0Reg(Cop0Reg reg, u32 value)
+ALWAYS_INLINE_RELEASE static void WriteCop0Reg(Cop0Reg reg, u32 value)
 {
   switch (reg)
   {
@@ -398,6 +405,7 @@ static void WriteCop0Reg(Cop0Reg reg, u32 value)
       g_state.cop0_regs.sr.bits =
         (g_state.cop0_regs.sr.bits & ~Cop0Registers::SR::WRITE_MASK) | (value & Cop0Registers::SR::WRITE_MASK);
       Log_DebugPrintf("COP0 SR <- %08X (now %08X)", value, g_state.cop0_regs.sr.bits);
+      CheckForPendingInterrupt();
     }
     break;
 
@@ -406,6 +414,7 @@ static void WriteCop0Reg(Cop0Reg reg, u32 value)
       g_state.cop0_regs.cause.bits =
         (g_state.cop0_regs.cause.bits & ~Cop0Registers::CAUSE::WRITE_MASK) | (value & Cop0Registers::CAUSE::WRITE_MASK);
       Log_DebugPrintf("COP0 CAUSE <- %08X (now %08X)", value, g_state.cop0_regs.cause.bits);
+      CheckForPendingInterrupt();
     }
     break;
 
@@ -431,12 +440,12 @@ static void LogInstruction(u32 bits, u32 pc, Registers* regs)
   WriteToExecutionLog("%08x: %08x %s\n", pc, bits, instr.GetCharArray());
 }
 
-static constexpr bool AddOverflow(u32 old_value, u32 add_value, u32 new_value)
+ALWAYS_INLINE static constexpr bool AddOverflow(u32 old_value, u32 add_value, u32 new_value)
 {
   return (((new_value ^ old_value) & (new_value ^ add_value)) & UINT32_C(0x80000000)) != 0;
 }
 
-static constexpr bool SubOverflow(u32 old_value, u32 sub_value, u32 new_value)
+ALWAYS_INLINE static constexpr bool SubOverflow(u32 old_value, u32 sub_value, u32 new_value)
 {
   return (((new_value ^ old_value) & (old_value ^ sub_value)) & UINT32_C(0x80000000)) != 0;
 }
@@ -467,66 +476,14 @@ void DisassembleAndPrint(u32 addr, u32 instructions_before /* = 0 */, u32 instru
   }
 }
 
-void Execute()
+template<PGXPMode pgxp_mode>
+ALWAYS_INLINE_RELEASE static void ExecuteInstruction()
 {
-  g_state.frame_done = false;
-  while (!g_state.frame_done)
-  {
-    TimingEvents::UpdateCPUDowncount();
-
-    while (g_state.pending_ticks <= g_state.downcount)
-    {
-      if (HasPendingInterrupt())
-        DispatchInterrupt();
-
-      g_state.pending_ticks++;
-
-      // now executing the instruction we previously fetched
-      g_state.current_instruction.bits = g_state.next_instruction.bits;
-      g_state.current_instruction_pc = g_state.regs.pc;
-      g_state.current_instruction_in_branch_delay_slot = g_state.next_instruction_is_branch_delay_slot;
-      g_state.current_instruction_was_branch_taken = g_state.branch_was_taken;
-      g_state.next_instruction_is_branch_delay_slot = false;
-      g_state.branch_was_taken = false;
-      g_state.exception_raised = false;
-
-      // fetch the next instruction
-      if (!FetchInstruction())
-        continue;
-
-#if 0 // GTE flag test debugging
-      if (g_state.m_current_instruction_pc == 0x8002cdf4)
-      {
-        if (g_state.m_regs.v1 != g_state.m_regs.v0)
-          printf("Got %08X Expected? %08X\n", g_state.m_regs.v1, g_state.m_regs.v0);
-      }
-#endif
-
-      // execute the instruction we previously fetched
-      ExecuteInstruction();
-
-      // next load delay
-      UpdateLoadDelay();
-    }
-
-    TimingEvents::RunEvents();
-  }
-}
-
-void ExecuteInstruction()
-{
+restart_instruction:
   const Instruction inst = g_state.current_instruction;
 
 #if 0
-  if (g_state.m_current_instruction_pc == 0x80010000)
-  {
-    LOG_EXECUTION = true;
-    __debugbreak();
-  }
-#endif
-
-#if 0
-  if (g_state.m_current_instruction_pc == 0x8002bf50)
+  if (g_state.current_instruction_pc == 0x80030000)
   {
     TRACE_EXECUTION = true;
     __debugbreak();
@@ -540,6 +497,10 @@ void ExecuteInstruction()
     LogInstruction(inst.bits, g_state.current_instruction_pc, &g_state.regs);
 #endif
 
+  // Skip nops. Makes PGXP-CPU quicker, but also the regular interpreter.
+  if (inst.bits == 0)
+    return;
+
   switch (inst.op)
   {
     case InstructionOp::funct:
@@ -549,6 +510,9 @@ void ExecuteInstruction()
         case InstructionFunct::sll:
         {
           const u32 new_value = ReadReg(inst.r.rt) << inst.r.shamt;
+          if constexpr (pgxp_mode >= PGXPMode::CPU)
+            PGXP::CPU_SLL(inst.bits, new_value, ReadReg(inst.r.rt));
+
           WriteReg(inst.r.rd, new_value);
         }
         break;
@@ -556,6 +520,9 @@ void ExecuteInstruction()
         case InstructionFunct::srl:
         {
           const u32 new_value = ReadReg(inst.r.rt) >> inst.r.shamt;
+          if constexpr (pgxp_mode >= PGXPMode::CPU)
+            PGXP::CPU_SRL(inst.bits, new_value, ReadReg(inst.r.rt));
+
           WriteReg(inst.r.rd, new_value);
         }
         break;
@@ -563,6 +530,9 @@ void ExecuteInstruction()
         case InstructionFunct::sra:
         {
           const u32 new_value = static_cast<u32>(static_cast<s32>(ReadReg(inst.r.rt)) >> inst.r.shamt);
+          if constexpr (pgxp_mode >= PGXPMode::CPU)
+            PGXP::CPU_SRA(inst.bits, new_value, ReadReg(inst.r.rt));
+
           WriteReg(inst.r.rd, new_value);
         }
         break;
@@ -571,6 +541,9 @@ void ExecuteInstruction()
         {
           const u32 shift_amount = ReadReg(inst.r.rs) & UINT32_C(0x1F);
           const u32 new_value = ReadReg(inst.r.rt) << shift_amount;
+          if constexpr (pgxp_mode >= PGXPMode::CPU)
+            PGXP::CPU_SLLV(inst.bits, new_value, ReadReg(inst.r.rt), shift_amount);
+
           WriteReg(inst.r.rd, new_value);
         }
         break;
@@ -579,6 +552,9 @@ void ExecuteInstruction()
         {
           const u32 shift_amount = ReadReg(inst.r.rs) & UINT32_C(0x1F);
           const u32 new_value = ReadReg(inst.r.rt) >> shift_amount;
+          if constexpr (pgxp_mode >= PGXPMode::CPU)
+            PGXP::CPU_SRLV(inst.bits, new_value, ReadReg(inst.r.rt), shift_amount);
+
           WriteReg(inst.r.rd, new_value);
         }
         break;
@@ -587,6 +563,9 @@ void ExecuteInstruction()
         {
           const u32 shift_amount = ReadReg(inst.r.rs) & UINT32_C(0x1F);
           const u32 new_value = static_cast<u32>(static_cast<s32>(ReadReg(inst.r.rt)) >> shift_amount);
+          if constexpr (pgxp_mode >= PGXPMode::CPU)
+            PGXP::CPU_SRAV(inst.bits, new_value, ReadReg(inst.r.rt), shift_amount);
+
           WriteReg(inst.r.rd, new_value);
         }
         break;
@@ -594,6 +573,9 @@ void ExecuteInstruction()
         case InstructionFunct::and_:
         {
           const u32 new_value = ReadReg(inst.r.rs) & ReadReg(inst.r.rt);
+          if constexpr (pgxp_mode >= PGXPMode::CPU)
+            PGXP::CPU_AND_(inst.bits, new_value, ReadReg(inst.r.rs), ReadReg(inst.r.rt));
+
           WriteReg(inst.r.rd, new_value);
         }
         break;
@@ -601,6 +583,9 @@ void ExecuteInstruction()
         case InstructionFunct::or_:
         {
           const u32 new_value = ReadReg(inst.r.rs) | ReadReg(inst.r.rt);
+          if constexpr (pgxp_mode >= PGXPMode::CPU)
+            PGXP::CPU_OR_(inst.bits, new_value, ReadReg(inst.r.rs), ReadReg(inst.r.rt));
+
           WriteReg(inst.r.rd, new_value);
         }
         break;
@@ -608,6 +593,9 @@ void ExecuteInstruction()
         case InstructionFunct::xor_:
         {
           const u32 new_value = ReadReg(inst.r.rs) ^ ReadReg(inst.r.rt);
+          if constexpr (pgxp_mode >= PGXPMode::CPU)
+            PGXP::CPU_XOR_(inst.bits, new_value, ReadReg(inst.r.rs), ReadReg(inst.r.rt));
+
           WriteReg(inst.r.rd, new_value);
         }
         break;
@@ -615,6 +603,9 @@ void ExecuteInstruction()
         case InstructionFunct::nor:
         {
           const u32 new_value = ~(ReadReg(inst.r.rs) | ReadReg(inst.r.rt));
+          if constexpr (pgxp_mode >= PGXPMode::CPU)
+            PGXP::CPU_NOR(inst.bits, new_value, ReadReg(inst.r.rs), ReadReg(inst.r.rt));
+
           WriteReg(inst.r.rd, new_value);
         }
         break;
@@ -630,13 +621,37 @@ void ExecuteInstruction()
             return;
           }
 
+          if constexpr (pgxp_mode == PGXPMode::CPU)
+            PGXP::CPU_ADD(inst.bits, new_value, ReadReg(inst.r.rs), ReadReg(inst.r.rt));
+          else if constexpr (pgxp_mode >= PGXPMode::Memory)
+          {
+            if (add_value == 0)
+            {
+              PGXP::CPU_MOVE((static_cast<u32>(inst.r.rd.GetValue()) << 8) | static_cast<u32>(inst.r.rs.GetValue()),
+                             old_value);
+            }
+          }
+
           WriteReg(inst.r.rd, new_value);
         }
         break;
 
         case InstructionFunct::addu:
         {
-          const u32 new_value = ReadReg(inst.r.rs) + ReadReg(inst.r.rt);
+          const u32 old_value = ReadReg(inst.r.rs);
+          const u32 add_value = ReadReg(inst.r.rt);
+          const u32 new_value = old_value + add_value;
+          if constexpr (pgxp_mode >= PGXPMode::CPU)
+            PGXP::CPU_ADDU(inst.bits, new_value, old_value, add_value);
+          else if constexpr (pgxp_mode >= PGXPMode::Memory)
+          {
+            if (add_value == 0)
+            {
+              PGXP::CPU_MOVE((static_cast<u32>(inst.r.rd.GetValue()) << 8) | static_cast<u32>(inst.r.rs.GetValue()),
+                             old_value);
+            }
+          }
+
           WriteReg(inst.r.rd, new_value);
         }
         break;
@@ -652,6 +667,9 @@ void ExecuteInstruction()
             return;
           }
 
+          if constexpr (pgxp_mode >= PGXPMode::CPU)
+            PGXP::CPU_SUB(inst.bits, new_value, ReadReg(inst.r.rs), ReadReg(inst.r.rt));
+
           WriteReg(inst.r.rd, new_value);
         }
         break;
@@ -659,6 +677,9 @@ void ExecuteInstruction()
         case InstructionFunct::subu:
         {
           const u32 new_value = ReadReg(inst.r.rs) - ReadReg(inst.r.rt);
+          if constexpr (pgxp_mode >= PGXPMode::CPU)
+            PGXP::CPU_SUBU(inst.bits, new_value, ReadReg(inst.r.rs), ReadReg(inst.r.rt));
+
           WriteReg(inst.r.rd, new_value);
         }
         break;
@@ -666,6 +687,9 @@ void ExecuteInstruction()
         case InstructionFunct::slt:
         {
           const u32 result = BoolToUInt32(static_cast<s32>(ReadReg(inst.r.rs)) < static_cast<s32>(ReadReg(inst.r.rt)));
+          if constexpr (pgxp_mode >= PGXPMode::CPU)
+            PGXP::CPU_SLT(inst.bits, result, ReadReg(inst.r.rs), ReadReg(inst.r.rt));
+
           WriteReg(inst.r.rd, result);
         }
         break;
@@ -673,12 +697,18 @@ void ExecuteInstruction()
         case InstructionFunct::sltu:
         {
           const u32 result = BoolToUInt32(ReadReg(inst.r.rs) < ReadReg(inst.r.rt));
+          if constexpr (pgxp_mode >= PGXPMode::CPU)
+            PGXP::CPU_SLTU(inst.bits, result, ReadReg(inst.r.rs), ReadReg(inst.r.rt));
+
           WriteReg(inst.r.rd, result);
         }
         break;
 
         case InstructionFunct::mfhi:
         {
+          if constexpr (pgxp_mode >= PGXPMode::CPU)
+            PGXP::CPU_MFHI(inst.bits, ReadReg(inst.r.rd), g_state.regs.hi);
+
           WriteReg(inst.r.rd, g_state.regs.hi);
         }
         break;
@@ -686,12 +716,18 @@ void ExecuteInstruction()
         case InstructionFunct::mthi:
         {
           const u32 value = ReadReg(inst.r.rs);
+          if constexpr (pgxp_mode >= PGXPMode::CPU)
+            PGXP::CPU_MTHI(inst.bits, g_state.regs.hi, value);
+
           g_state.regs.hi = value;
         }
         break;
 
         case InstructionFunct::mflo:
         {
+          if constexpr (pgxp_mode >= PGXPMode::CPU)
+            PGXP::CPU_MFLO(inst.bits, ReadReg(inst.r.rd), g_state.regs.lo);
+
           WriteReg(inst.r.rd, g_state.regs.lo);
         }
         break;
@@ -699,6 +735,9 @@ void ExecuteInstruction()
         case InstructionFunct::mtlo:
         {
           const u32 value = ReadReg(inst.r.rs);
+          if constexpr (pgxp_mode == PGXPMode::CPU)
+            PGXP::CPU_MTLO(inst.bits, g_state.regs.lo, value);
+
           g_state.regs.lo = value;
         }
         break;
@@ -709,8 +748,12 @@ void ExecuteInstruction()
           const u32 rhs = ReadReg(inst.r.rt);
           const u64 result =
             static_cast<u64>(static_cast<s64>(SignExtend64(lhs)) * static_cast<s64>(SignExtend64(rhs)));
+
           g_state.regs.hi = Truncate32(result >> 32);
           g_state.regs.lo = Truncate32(result);
+
+          if constexpr (pgxp_mode >= PGXPMode::CPU)
+            PGXP::CPU_MULT(inst.bits, g_state.regs.hi, g_state.regs.lo, lhs, rhs);
         }
         break;
 
@@ -719,6 +762,10 @@ void ExecuteInstruction()
           const u32 lhs = ReadReg(inst.r.rs);
           const u32 rhs = ReadReg(inst.r.rt);
           const u64 result = ZeroExtend64(lhs) * ZeroExtend64(rhs);
+
+          if constexpr (pgxp_mode >= PGXPMode::CPU)
+            PGXP::CPU_MULTU(inst.bits, g_state.regs.hi, g_state.regs.lo, lhs, rhs);
+
           g_state.regs.hi = Truncate32(result >> 32);
           g_state.regs.lo = Truncate32(result);
         }
@@ -746,6 +793,9 @@ void ExecuteInstruction()
             g_state.regs.lo = static_cast<u32>(num / denom);
             g_state.regs.hi = static_cast<u32>(num % denom);
           }
+
+          if constexpr (pgxp_mode >= PGXPMode::CPU)
+            PGXP::CPU_DIV(inst.bits, g_state.regs.hi, g_state.regs.lo, num, denom);
         }
         break;
 
@@ -765,6 +815,9 @@ void ExecuteInstruction()
             g_state.regs.lo = num / denom;
             g_state.regs.hi = num % denom;
           }
+
+          if constexpr (pgxp_mode >= PGXPMode::CPU)
+            PGXP::CPU_DIVU(inst.bits, g_state.regs.hi, g_state.regs.lo, num, denom);
         }
         break;
 
@@ -808,25 +861,44 @@ void ExecuteInstruction()
 
     case InstructionOp::lui:
     {
-      WriteReg(inst.i.rt, inst.i.imm_zext32() << 16);
+      const u32 value = inst.i.imm_zext32() << 16;
+      WriteReg(inst.i.rt, value);
+
+      if constexpr (pgxp_mode >= PGXPMode::CPU)
+        PGXP::CPU_LUI(inst.bits, value);
     }
     break;
 
     case InstructionOp::andi:
     {
-      WriteReg(inst.i.rt, ReadReg(inst.i.rs) & inst.i.imm_zext32());
+      const u32 new_value = ReadReg(inst.i.rs) & inst.i.imm_zext32();
+
+      if constexpr (pgxp_mode >= PGXPMode::CPU)
+        PGXP::CPU_ANDI(inst.bits, new_value, ReadReg(inst.i.rs));
+
+      WriteReg(inst.i.rt, new_value);
     }
     break;
 
     case InstructionOp::ori:
     {
-      WriteReg(inst.i.rt, ReadReg(inst.i.rs) | inst.i.imm_zext32());
+      const u32 new_value = ReadReg(inst.i.rs) | inst.i.imm_zext32();
+
+      if constexpr (pgxp_mode >= PGXPMode::CPU)
+        PGXP::CPU_ORI(inst.bits, new_value, ReadReg(inst.i.rs));
+
+      WriteReg(inst.i.rt, new_value);
     }
     break;
 
     case InstructionOp::xori:
     {
-      WriteReg(inst.i.rt, ReadReg(inst.i.rs) ^ inst.i.imm_zext32());
+      const u32 new_value = ReadReg(inst.i.rs) ^ inst.i.imm_zext32();
+
+      if constexpr (pgxp_mode >= PGXPMode::CPU)
+        PGXP::CPU_XORI(inst.bits, new_value, ReadReg(inst.i.rs));
+
+      WriteReg(inst.i.rt, new_value);
     }
     break;
 
@@ -841,19 +913,49 @@ void ExecuteInstruction()
         return;
       }
 
+      if constexpr (pgxp_mode >= PGXPMode::CPU)
+        PGXP::CPU_ADDI(inst.bits, new_value, ReadReg(inst.i.rs));
+      else if constexpr (pgxp_mode >= PGXPMode::Memory)
+      {
+        if (add_value == 0)
+        {
+          PGXP::CPU_MOVE((static_cast<u32>(inst.i.rt.GetValue()) << 8) | static_cast<u32>(inst.i.rs.GetValue()),
+                         old_value);
+        }
+      }
+
       WriteReg(inst.i.rt, new_value);
     }
     break;
 
     case InstructionOp::addiu:
     {
-      WriteReg(inst.i.rt, ReadReg(inst.i.rs) + inst.i.imm_sext32());
+      const u32 old_value = ReadReg(inst.i.rs);
+      const u32 add_value = inst.i.imm_sext32();
+      const u32 new_value = old_value + add_value;
+
+      if constexpr (pgxp_mode >= PGXPMode::CPU)
+        PGXP::CPU_ADDIU(inst.bits, new_value, ReadReg(inst.i.rs));
+      else if constexpr (pgxp_mode >= PGXPMode::Memory)
+      {
+        if (add_value == 0)
+        {
+          PGXP::CPU_MOVE((static_cast<u32>(inst.i.rt.GetValue()) << 8) | static_cast<u32>(inst.i.rs.GetValue()),
+                         old_value);
+        }
+      }
+
+      WriteReg(inst.i.rt, new_value);
     }
     break;
 
     case InstructionOp::slti:
     {
       const u32 result = BoolToUInt32(static_cast<s32>(ReadReg(inst.i.rs)) < static_cast<s32>(inst.i.imm_sext32()));
+
+      if constexpr (pgxp_mode >= PGXPMode::CPU)
+        PGXP::CPU_SLTI(inst.bits, result, ReadReg(inst.i.rs));
+
       WriteReg(inst.i.rt, result);
     }
     break;
@@ -861,6 +963,10 @@ void ExecuteInstruction()
     case InstructionOp::sltiu:
     {
       const u32 result = BoolToUInt32(ReadReg(inst.i.rs) < inst.i.imm_sext32());
+
+      if constexpr (pgxp_mode >= PGXPMode::CPU)
+        PGXP::CPU_SLTIU(inst.bits, result, ReadReg(inst.i.rs));
+
       WriteReg(inst.i.rt, result);
     }
     break;
@@ -876,7 +982,7 @@ void ExecuteInstruction()
 
       WriteRegDelayed(inst.i.rt, sxvalue);
 
-      if (g_settings.gpu_pgxp_enable)
+      if constexpr (pgxp_mode >= PGXPMode::Memory)
         PGXP::CPU_LBx(inst.bits, sxvalue, addr);
     }
     break;
@@ -891,7 +997,7 @@ void ExecuteInstruction()
       const u32 sxvalue = SignExtend32(value);
       WriteRegDelayed(inst.i.rt, sxvalue);
 
-      if (g_settings.gpu_pgxp_enable)
+      if constexpr (pgxp_mode >= PGXPMode::Memory)
         PGXP::CPU_LHx(inst.bits, sxvalue, addr);
     }
     break;
@@ -905,7 +1011,7 @@ void ExecuteInstruction()
 
       WriteRegDelayed(inst.i.rt, value);
 
-      if (g_settings.gpu_pgxp_enable)
+      if constexpr (pgxp_mode >= PGXPMode::Memory)
         PGXP::CPU_LW(inst.bits, value, addr);
     }
     break;
@@ -920,7 +1026,7 @@ void ExecuteInstruction()
       const u32 zxvalue = ZeroExtend32(value);
       WriteRegDelayed(inst.i.rt, zxvalue);
 
-      if (g_settings.gpu_pgxp_enable)
+      if constexpr (pgxp_mode >= PGXPMode::Memory)
         PGXP::CPU_LBx(inst.bits, zxvalue, addr);
     }
     break;
@@ -935,7 +1041,7 @@ void ExecuteInstruction()
       const u32 zxvalue = ZeroExtend32(value);
       WriteRegDelayed(inst.i.rt, zxvalue);
 
-      if (g_settings.gpu_pgxp_enable)
+      if constexpr (pgxp_mode >= PGXPMode::Memory)
         PGXP::CPU_LHx(inst.bits, zxvalue, addr);
     }
     break;
@@ -966,7 +1072,7 @@ void ExecuteInstruction()
 
       WriteRegDelayed(inst.i.rt, new_value);
 
-      if (g_settings.gpu_pgxp_enable)
+      if constexpr (pgxp_mode >= PGXPMode::Memory)
         PGXP::CPU_LW(inst.bits, new_value, addr);
     }
     break;
@@ -977,7 +1083,7 @@ void ExecuteInstruction()
       const u8 value = Truncate8(ReadReg(inst.i.rt));
       WriteMemoryByte(addr, value);
 
-      if (g_settings.gpu_pgxp_enable)
+      if constexpr (pgxp_mode >= PGXPMode::Memory)
         PGXP::CPU_SB(inst.bits, value, addr);
     }
     break;
@@ -988,7 +1094,7 @@ void ExecuteInstruction()
       const u16 value = Truncate16(ReadReg(inst.i.rt));
       WriteMemoryHalfWord(addr, value);
 
-      if (g_settings.gpu_pgxp_enable)
+      if constexpr (pgxp_mode >= PGXPMode::Memory)
         PGXP::CPU_SH(inst.bits, value, addr);
     }
     break;
@@ -999,7 +1105,7 @@ void ExecuteInstruction()
       const u32 value = ReadReg(inst.i.rt);
       WriteMemoryWord(addr, value);
 
-      if (g_settings.gpu_pgxp_enable)
+      if constexpr (pgxp_mode >= PGXPMode::Memory)
         PGXP::CPU_SW(inst.bits, value, addr);
     }
     break;
@@ -1029,7 +1135,7 @@ void ExecuteInstruction()
 
       WriteMemoryWord(aligned_addr, new_value);
 
-      if (g_settings.gpu_pgxp_enable)
+      if constexpr (pgxp_mode >= PGXPMode::Memory)
         PGXP::CPU_SW(inst.bits, new_value, addr);
     }
     break;
@@ -1114,7 +1220,59 @@ void ExecuteInstruction()
         return;
       }
 
-      ExecuteCop0Instruction();
+      if (inst.cop.IsCommonInstruction())
+      {
+        switch (inst.cop.CommonOp())
+        {
+          case CopCommonInstruction::mfcn:
+          {
+            const std::optional<u32> value = ReadCop0Reg(static_cast<Cop0Reg>(inst.r.rd.GetValue()));
+
+            if constexpr (pgxp_mode == PGXPMode::CPU)
+              PGXP::CPU_MFC0(inst.bits, value.value_or(0), ReadReg(inst.i.rs));
+
+            if (value)
+              WriteRegDelayed(inst.r.rt, value.value());
+            else
+              RaiseException(Exception::RI);
+          }
+          break;
+
+          case CopCommonInstruction::mtcn:
+          {
+            WriteCop0Reg(static_cast<Cop0Reg>(inst.r.rd.GetValue()), ReadReg(inst.r.rt));
+
+            if constexpr (pgxp_mode == PGXPMode::CPU)
+            {
+              PGXP::CPU_MTC0(inst.bits, ReadCop0Reg(static_cast<Cop0Reg>(inst.r.rd.GetValue())).value_or(0),
+                             ReadReg(inst.i.rs));
+            }
+          }
+          break;
+
+          default:
+            Panic("Missing implementation");
+            break;
+        }
+      }
+      else
+      {
+        switch (inst.cop.Cop0Op())
+        {
+          case Cop0Instruction::rfe:
+          {
+            // restore mode
+            g_state.cop0_regs.sr.mode_bits =
+              (g_state.cop0_regs.sr.mode_bits & UINT32_C(0b110000)) | (g_state.cop0_regs.sr.mode_bits >> 2);
+            CheckForPendingInterrupt();
+          }
+          break;
+
+          default:
+            Panic("Missing implementation");
+            break;
+        }
+      }
     }
     break;
 
@@ -1127,7 +1285,61 @@ void ExecuteInstruction()
         return;
       }
 
-      ExecuteCop2Instruction();
+      if (inst.cop.IsCommonInstruction())
+      {
+        // TODO: Combine with cop0.
+        switch (inst.cop.CommonOp())
+        {
+          case CopCommonInstruction::cfcn:
+          {
+            const u32 value = GTE::ReadRegister(static_cast<u32>(inst.r.rd.GetValue()) + 32);
+            WriteRegDelayed(inst.r.rt, value);
+
+            if constexpr (pgxp_mode >= PGXPMode::Memory)
+              PGXP::CPU_CFC2(inst.bits, value, value);
+          }
+          break;
+
+          case CopCommonInstruction::ctcn:
+          {
+            const u32 value = ReadReg(inst.r.rt);
+            GTE::WriteRegister(static_cast<u32>(inst.r.rd.GetValue()) + 32, value);
+
+            if constexpr (pgxp_mode >= PGXPMode::Memory)
+              PGXP::CPU_CTC2(inst.bits, value, value);
+          }
+          break;
+
+          case CopCommonInstruction::mfcn:
+          {
+            const u32 value = GTE::ReadRegister(static_cast<u32>(inst.r.rd.GetValue()));
+            WriteRegDelayed(inst.r.rt, value);
+
+            if constexpr (pgxp_mode >= PGXPMode::Memory)
+              PGXP::CPU_MFC2(inst.bits, value, value);
+          }
+          break;
+
+          case CopCommonInstruction::mtcn:
+          {
+            const u32 value = ReadReg(inst.r.rt);
+            GTE::WriteRegister(static_cast<u32>(inst.r.rd.GetValue()), value);
+
+            if constexpr (pgxp_mode >= PGXPMode::Memory)
+              PGXP::CPU_MTC2(inst.bits, value, value);
+          }
+          break;
+
+          case CopCommonInstruction::bcnc:
+          default:
+            Panic("Missing implementation");
+            break;
+        }
+      }
+      else
+      {
+        GTE::ExecuteInstruction(inst.bits);
+      }
     }
     break;
 
@@ -1147,7 +1359,7 @@ void ExecuteInstruction()
 
       GTE::WriteRegister(ZeroExtend32(static_cast<u8>(inst.i.rt.GetValue())), value);
 
-      if (g_settings.gpu_pgxp_enable)
+      if constexpr (pgxp_mode >= PGXPMode::Memory)
         PGXP::CPU_LWC2(inst.bits, value, addr);
     }
     break;
@@ -1165,12 +1377,12 @@ void ExecuteInstruction()
       const u32 value = GTE::ReadRegister(ZeroExtend32(static_cast<u8>(inst.i.rt.GetValue())));
       WriteMemoryWord(addr, value);
 
-      if (g_settings.gpu_pgxp_enable)
+      if constexpr (pgxp_mode >= PGXPMode::Memory)
         PGXP::CPU_SWC2(inst.bits, value, addr);
     }
     break;
 
-    // swc0/lwc0/cop1/cop3 are essentially no-ops
+      // swc0/lwc0/cop1/cop3 are essentially no-ops
     case InstructionOp::cop1:
     case InstructionOp::cop3:
     case InstructionOp::lwc0:
@@ -1183,131 +1395,110 @@ void ExecuteInstruction()
     }
     break;
 
-    // everything else is reserved/invalid
+      // everything else is reserved/invalid
     default:
     {
+      u32 ram_value;
+      if (SafeReadInstruction(g_state.current_instruction_pc, &ram_value) &&
+          ram_value != g_state.current_instruction.bits)
+      {
+        Log_ErrorPrintf("Stale icache at 0x%08X - ICache: %08X RAM: %08X", g_state.current_instruction_pc,
+                        g_state.current_instruction.bits, ram_value);
+        g_state.current_instruction.bits = ram_value;
+        goto restart_instruction;
+      }
+
       RaiseException(Exception::RI);
     }
     break;
   }
 }
 
-void ExecuteCop0Instruction()
+void DispatchInterrupt()
 {
-  const Instruction inst = g_state.current_instruction;
+  // If the instruction we're about to execute is a GTE instruction, delay dispatching the interrupt until the next
+  // instruction. For some reason, if we don't do this, we end up with incorrectly sorted polygons and flickering..
+  SafeReadInstruction(g_state.regs.pc, &g_state.next_instruction.bits);
+  if (g_state.next_instruction.op == InstructionOp::cop2 && !g_state.next_instruction.cop.IsCommonInstruction())
+    GTE::ExecuteInstruction(g_state.next_instruction.bits);
 
-  if (inst.cop.IsCommonInstruction())
+  // Interrupt raising occurs before the start of the instruction.
+  RaiseException(
+    Cop0Registers::CAUSE::MakeValueForException(Exception::INT, g_state.next_instruction_is_branch_delay_slot,
+                                                g_state.branch_was_taken, g_state.next_instruction.cop.cop_n),
+    g_state.regs.pc);
+}
+
+template<PGXPMode pgxp_mode>
+static void ExecuteImpl()
+{
+  g_state.frame_done = false;
+  while (!g_state.frame_done)
   {
-    switch (inst.cop.CommonOp())
+    TimingEvents::UpdateCPUDowncount();
+
+    while (g_state.pending_ticks < g_state.downcount)
     {
-      case CopCommonInstruction::mfcn:
-      {
-        const std::optional<u32> value = ReadCop0Reg(static_cast<Cop0Reg>(inst.r.rd.GetValue()));
-        if (value)
-          WriteRegDelayed(inst.r.rt, value.value());
-        else
-          RaiseException(Exception::RI);
-      }
-      break;
+      if (HasPendingInterrupt() && !g_state.interrupt_delay)
+        DispatchInterrupt();
 
-      case CopCommonInstruction::mtcn:
-      {
-        WriteCop0Reg(static_cast<Cop0Reg>(inst.r.rd.GetValue()), ReadReg(inst.r.rt));
-      }
-      break;
+      g_state.interrupt_delay = false;
+      g_state.pending_ticks++;
 
-      default:
-        Panic("Missing implementation");
-        break;
+      // now executing the instruction we previously fetched
+      g_state.current_instruction.bits = g_state.next_instruction.bits;
+      g_state.current_instruction_pc = g_state.regs.pc;
+      g_state.current_instruction_in_branch_delay_slot = g_state.next_instruction_is_branch_delay_slot;
+      g_state.current_instruction_was_branch_taken = g_state.branch_was_taken;
+      g_state.next_instruction_is_branch_delay_slot = false;
+      g_state.branch_was_taken = false;
+      g_state.exception_raised = false;
+
+      // fetch the next instruction
+      if (!FetchInstruction())
+        continue;
+
+#if 0 // GTE flag test debugging
+      if (g_state.m_current_instruction_pc == 0x8002cdf4)
+      {
+        if (g_state.m_regs.v1 != g_state.m_regs.v0)
+          printf("Got %08X Expected? %08X\n", g_state.m_regs.v1, g_state.m_regs.v0);
+      }
+#endif
+
+      // execute the instruction we previously fetched
+      ExecuteInstruction<pgxp_mode>();
+
+      // next load delay
+      UpdateLoadDelay();
     }
-  }
-  else
-  {
-    switch (inst.cop.Cop0Op())
-    {
-      case Cop0Instruction::rfe:
-      {
-        // restore mode
-        g_state.cop0_regs.sr.mode_bits =
-          (g_state.cop0_regs.sr.mode_bits & UINT32_C(0b110000)) | (g_state.cop0_regs.sr.mode_bits >> 2);
-      }
-      break;
 
-      default:
-        Panic("Missing implementation");
-        break;
-    }
+    TimingEvents::RunEvents();
   }
 }
 
-void ExecuteCop2Instruction()
+void Execute()
 {
-  const Instruction inst = g_state.current_instruction;
-
-  if (inst.cop.IsCommonInstruction())
+  if (g_settings.gpu_pgxp_enable)
   {
-    // TODO: Combine with cop0.
-    switch (inst.cop.CommonOp())
-    {
-      case CopCommonInstruction::cfcn:
-      {
-        const u32 value = GTE::ReadRegister(static_cast<u32>(inst.r.rd.GetValue()) + 32);
-        WriteRegDelayed(inst.r.rt, value);
-
-        if (g_settings.gpu_pgxp_enable)
-          PGXP::CPU_CFC2(inst.bits, value, value);
-      }
-      break;
-
-      case CopCommonInstruction::ctcn:
-      {
-        const u32 value = ReadReg(inst.r.rt);
-        GTE::WriteRegister(static_cast<u32>(inst.r.rd.GetValue()) + 32, value);
-
-        if (g_settings.gpu_pgxp_enable)
-          PGXP::CPU_CTC2(inst.bits, value, value);
-      }
-      break;
-
-      case CopCommonInstruction::mfcn:
-      {
-        const u32 value = GTE::ReadRegister(static_cast<u32>(inst.r.rd.GetValue()));
-        WriteRegDelayed(inst.r.rt, value);
-
-        if (g_settings.gpu_pgxp_enable)
-          PGXP::CPU_MFC2(inst.bits, value, value);
-      }
-      break;
-
-      case CopCommonInstruction::mtcn:
-      {
-        const u32 value = ReadReg(inst.r.rt);
-        GTE::WriteRegister(static_cast<u32>(inst.r.rd.GetValue()), value);
-
-        if (g_settings.gpu_pgxp_enable)
-          PGXP::CPU_MTC2(inst.bits, value, value);
-      }
-      break;
-
-      case CopCommonInstruction::bcnc:
-      default:
-        Panic("Missing implementation");
-        break;
-    }
+    if (g_settings.gpu_pgxp_cpu)
+      ExecuteImpl<PGXPMode::CPU>();
+    else
+      ExecuteImpl<PGXPMode::Memory>();
   }
   else
   {
-    GTE::ExecuteInstruction(inst.bits);
+    ExecuteImpl<PGXPMode::Disabled>();
   }
 }
 
 namespace CodeCache {
 
+template<PGXPMode pgxp_mode>
 void InterpretCachedBlock(const CodeBlock& block)
 {
   // set up the state so we've already fetched the instruction
   DebugAssert(g_state.regs.pc == block.GetPC());
-
   g_state.regs.npc = block.GetPC() + 4;
 
   for (const CodeBlockInstruction& cbi : block.instructions)
@@ -1327,7 +1518,7 @@ void InterpretCachedBlock(const CodeBlock& block)
     g_state.regs.npc += 4;
 
     // execute the instruction we previously fetched
-    ExecuteInstruction();
+    ExecuteInstruction<pgxp_mode>();
 
     // next load delay
     UpdateLoadDelay();
@@ -1340,9 +1531,14 @@ void InterpretCachedBlock(const CodeBlock& block)
   g_state.next_instruction_is_branch_delay_slot = false;
 }
 
+template void InterpretCachedBlock<PGXPMode::Disabled>(const CodeBlock& block);
+template void InterpretCachedBlock<PGXPMode::Memory>(const CodeBlock& block);
+template void InterpretCachedBlock<PGXPMode::CPU>(const CodeBlock& block);
+
 void InterpretUncachedBlock()
 {
-  Panic("Fixme with regards to re-fetching PC");
+  g_state.regs.npc = g_state.regs.pc;
+  FetchInstruction();
 
   // At this point, pc contains the last address executed (in the previous block). The instruction has not been fetched
   // yet. pc shouldn't be updated until the fetch occurs, that way the exception occurs in the delay slot.
@@ -1361,16 +1557,23 @@ void InterpretUncachedBlock()
     g_state.exception_raised = false;
 
     // Fetch the next instruction, except if we're in a branch delay slot. The "fetch" is done in the next block.
-    if (!FetchInstruction())
-      break;
+    const bool branch = IsBranchInstruction(g_state.current_instruction);
+    if (!g_state.current_instruction_in_branch_delay_slot || branch)
+    {
+      if (!FetchInstruction())
+        break;
+    }
+    else
+    {
+      g_state.regs.pc = g_state.regs.npc;
+    }
 
     // execute the instruction we previously fetched
-    ExecuteInstruction();
+    ExecuteInstruction<PGXPMode::Disabled>();
 
     // next load delay
     UpdateLoadDelay();
 
-    const bool branch = IsBranchInstruction(g_state.current_instruction);
     if (g_state.exception_raised || (!branch && in_branch_delay_slot) ||
         IsExitBlockInstruction(g_state.current_instruction))
     {
@@ -1387,8 +1590,19 @@ namespace Recompiler::Thunks {
 
 bool InterpretInstruction()
 {
-  ExecuteInstruction();
+  ExecuteInstruction<PGXPMode::Disabled>();
   return g_state.exception_raised;
+}
+
+bool InterpretInstructionPGXP()
+{
+  ExecuteInstruction<PGXPMode::Memory>();
+  return g_state.exception_raised;
+}
+
+void UpdateFastmemMapping()
+{
+  Bus::UpdateFastmemViews(Bus::GetFastmemMode(), g_state.cop0_regs.sr.Isc);
 }
 
 } // namespace Recompiler::Thunks

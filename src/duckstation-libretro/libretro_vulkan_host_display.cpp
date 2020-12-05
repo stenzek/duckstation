@@ -76,7 +76,7 @@ static retro_hw_render_context_negotiation_interface_vulkan s_vulkan_context_neg
 
 bool LibretroVulkanHostDisplay::RequestHardwareRendererContext(retro_hw_render_callback* cb)
 {
-  cb->cache_context = true;
+  cb->cache_context = false;
   cb->bottom_left_origin = false;
   cb->context_type = RETRO_HW_CONTEXT_VULKAN;
   return g_retro_environment_callback(RETRO_ENVIRONMENT_SET_HW_RENDER, cb) &&
@@ -107,11 +107,8 @@ bool LibretroVulkanHostDisplay::CreateRenderDevice(const WindowInfo& wi, std::st
     return false;
   }
 
-  // Keeping the pointer instead of memcpying can cause crashes, e.g. fullscreen switches.
-  std::memcpy(&m_ri, reinterpret_cast<const retro_hw_render_interface_vulkan*>(ri),
-              sizeof(retro_hw_render_interface_vulkan));
-
   // TODO: Grab queue? it should be the same
+  m_ri = reinterpret_cast<retro_hw_render_interface_vulkan*>(ri);
   return true;
 }
 
@@ -150,6 +147,33 @@ void LibretroVulkanHostDisplay::ResizeRenderWindow(s32 new_window_width, s32 new
   m_window_info.surface_height = static_cast<u32>(new_window_height);
 }
 
+bool LibretroVulkanHostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
+{
+  // re-query hardware render interface - in vulkan, things get recreated without us being notified
+  retro_hw_render_interface* ri = nullptr;
+  if (!g_retro_environment_callback(RETRO_ENVIRONMENT_GET_HW_RENDER_INTERFACE, &ri))
+  {
+    Log_ErrorPrint("Failed to get HW render interface");
+    return false;
+  }
+  else if (ri->interface_type != RETRO_HW_RENDER_INTERFACE_VULKAN ||
+           ri->interface_version != RETRO_HW_RENDER_INTERFACE_VULKAN_VERSION)
+  {
+    Log_ErrorPrintf("Unexpected HW interface - type %u version %u", static_cast<unsigned>(ri->interface_type),
+                    static_cast<unsigned>(ri->interface_version));
+    return false;
+  }
+
+  retro_hw_render_interface_vulkan* vri = reinterpret_cast<retro_hw_render_interface_vulkan*>(ri);
+  if (vri != m_ri)
+  {
+    Log_WarningPrintf("HW render interface pointer changed without us being notified, this might cause issues?");
+    m_ri = vri;
+  }
+
+  return true;
+}
+
 bool LibretroVulkanHostDisplay::Render()
 {
   const u32 resolution_scale = g_libretro_host_interface.GetResolutionScale();
@@ -186,13 +210,13 @@ bool LibretroVulkanHostDisplay::Render()
   vkCmdEndRenderPass(cmdbuffer);
   m_frame_texture.TransitionToLayout(cmdbuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
   m_frame_view.image_layout = m_frame_texture.GetLayout();
-  m_ri.set_image(m_ri.handle, &m_frame_view, 0, nullptr, VK_QUEUE_FAMILY_IGNORED);
+  m_ri->set_image(m_ri->handle, &m_frame_view, 0, nullptr, VK_QUEUE_FAMILY_IGNORED);
 
   // TODO: We can't use this because it doesn't support passing fences...
   // m_ri.set_command_buffers(m_ri.handle, 1, &cmdbuffer);
-  m_ri.lock_queue(m_ri.handle);
+  m_ri->lock_queue(m_ri->handle);
   g_vulkan_context->SubmitCommandBuffer();
-  m_ri.unlock_queue(m_ri.handle);
+  m_ri->unlock_queue(m_ri->handle);
   g_vulkan_context->MoveToNextCommandBuffer();
 
   g_retro_video_refresh_callback(RETRO_HW_FRAME_BUFFER_VALID, display_width, display_height, 0);

@@ -22,6 +22,7 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="10dp"
         android:layout_marginTop="8dp"
+        android:layout_marginRight="80dp"
         android:focusable="false"
         android:focusableInTouchMode="false"
         android:text="Game Title"
@@ -31,10 +32,11 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/game_list_view_entry_path"
+        android:id="@+id/game_list_view_entry_subtitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginLeft="10dp"
+        android:layout_marginRight="80dp"
         android:focusable="false"
         android:focusableInTouchMode="false"
         android:paddingBottom="8px"
@@ -44,17 +46,16 @@
         app:layout_constraintStart_toEndOf="@+id/game_list_view_entry_type_icon"
         app:layout_constraintTop_toBottomOf="@+id/game_list_view_entry_title" />
 
-    <TextView
-        android:id="@+id/game_list_view_entry_size"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <ImageView
+        android:id="@+id/game_list_view_compatibility_icon"
+        android:layout_width="64dp"
+        android:layout_height="16dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:focusable="false"
         android:focusableInTouchMode="false"
-        android:text="123.4 MB"
         android:textAppearance="@style/TextAppearance.AppCompat.Small"
-        android:textSize="12sp"
+        app:srcCompat="@drawable/ic_star_5"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -62,13 +63,13 @@
         android:id="@+id/game_list_view_entry_region_icon"
         android:layout_width="32dp"
         android:layout_height="28dp"
-        android:layout_marginTop="8px"
-        android:layout_marginEnd="8dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="24dp"
         android:focusable="false"
         android:focusableInTouchMode="false"
         android:paddingBottom="8px"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/game_list_view_entry_size"
+        app:layout_constraintTop_toBottomOf="@+id/game_list_view_compatibility_icon"
         app:srcCompat="@drawable/flag_jp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

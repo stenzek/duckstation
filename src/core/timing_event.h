@@ -56,6 +56,9 @@ public:
   void SetInterval(TickCount interval) { m_interval = interval; }
   void SetPeriod(TickCount period) { m_period = period; }
 
+  TimingEvent* prev = nullptr;
+  TimingEvent* next = nullptr;
+
   TickCount m_downcount;
   TickCount m_time_since_last_run;
   TickCount m_period;
@@ -79,11 +82,13 @@ std::unique_ptr<TimingEvent> CreateTimingEvent(std::string name, TickCount perio
                                                TimingEventCallback callback, bool activate);
 
 /// Serialization.
-bool DoState(StateWrapper& sw, u32 global_tick_counter);
+bool DoState(StateWrapper& sw);
 
 void RunEvents();
 
 void UpdateCPUDowncount();
+
+TimingEvent** GetHeadEventPtr();
 
 
 

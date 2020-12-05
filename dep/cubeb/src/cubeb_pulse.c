@@ -86,6 +86,7 @@
   X(pa_mainloop_api_once)                       \
   X(pa_get_library_version)                     \
   X(pa_channel_map_init_auto)                   \
+  X(pa_stream_set_name)                         \
 
 #define MAKE_TYPEDEF(x) static typeof(x) * cubeb_##x;
 LIBPULSE_API_VISIT(MAKE_TYPEDEF);
@@ -1139,6 +1140,14 @@ volume_success(pa_context *c, int success, void *userdata)
   WRAP(pa_threaded_mainloop_signal)(stream->context->mainloop, 0);
 }
 
+static void
+rename_success(pa_stream *s, int success, void *userdata)
+{
+  cubeb_stream * stream = userdata;
+  assert(success);
+  WRAP(pa_threaded_mainloop_signal)(stream->context->mainloop, 0);
+}
+
 static int
 pulse_stream_set_volume(cubeb_stream * stm, float volume)
 {
@@ -1179,6 +1188,28 @@ pulse_stream_set_volume(cubeb_stream * stm, float volume)
   }
 
   WRAP(pa_threaded_mainloop_unlock)(ctx->mainloop);
+
+  return CUBEB_OK;
+}
+
+static int
+pulse_stream_set_name(cubeb_stream * stm, char const * stream_name)
+{
+  if (!stm || !stm->output_stream) {
+    return CUBEB_ERROR;
+  }
+
+  WRAP(pa_threaded_mainloop_lock)(stm->context->mainloop);
+
+  pa_operation * op =
+    WRAP(pa_stream_set_name)(stm->output_stream, stream_name, rename_success, stm);
+
+  if (op) {
+    operation_wait(stm->context, stm->output_stream, op);
+    WRAP(pa_operation_unref)(op);
+  }
+
+  WRAP(pa_threaded_mainloop_unlock)(stm->context->mainloop);
 
   return CUBEB_OK;
 }
@@ -1597,7 +1628,9 @@ static struct cubeb_ops const pulse_ops = {
   .stream_reset_default_device = NULL,
   .stream_get_position = pulse_stream_get_position,
   .stream_get_latency = pulse_stream_get_latency,
+  .stream_get_input_latency = NULL,
   .stream_set_volume = pulse_stream_set_volume,
+  .stream_set_name = pulse_stream_set_name,
   .stream_get_current_device = pulse_stream_get_current_device,
   .stream_device_destroy = pulse_stream_device_destroy,
   .stream_register_device_changed_callback = NULL,

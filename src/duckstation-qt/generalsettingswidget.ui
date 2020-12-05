@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>502</width>
-    <height>358</height>
+    <width>652</width>
+    <height>483</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -32,38 +32,10 @@
       <string>Behaviour</string>
      </property>
      <layout class="QGridLayout" name="formLayout_4">
-      <item row="0" column="0">
-       <widget class="QCheckBox" name="pauseOnStart">
-        <property name="text">
-         <string>Pause On Start</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
+      <item row="1" column="0">
        <widget class="QCheckBox" name="confirmPowerOff">
         <property name="text">
          <string>Confirm Power Off</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QCheckBox" name="saveStateOnExit">
-        <property name="text">
-         <string>Save State On Exit</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QCheckBox" name="loadDevicesFromSaveStates">
-        <property name="text">
-         <string>Load Devices From Save States</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QCheckBox" name="startFullscreen">
-        <property name="text">
-         <string>Start Fullscreen</string>
         </property>
        </widget>
       </item>
@@ -74,104 +46,106 @@
         </property>
        </widget>
       </item>
+      <item row="0" column="0">
+       <widget class="QCheckBox" name="pauseOnStart">
+        <property name="text">
+         <string>Pause On Start</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QCheckBox" name="pauseOnFocusLoss">
+        <property name="text">
+         <string>Pause On Focus Loss</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QCheckBox" name="startFullscreen">
+        <property name="text">
+         <string>Start Fullscreen</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QCheckBox" name="saveStateOnExit">
+        <property name="text">
+         <string>Save State On Exit</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QCheckBox" name="applyGameSettings">
+        <property name="text">
+         <string>Apply Per-Game Settings</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QCheckBox" name="autoLoadCheats">
+        <property name="text">
+         <string>Automatically Load Cheats</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QCheckBox" name="loadDevicesFromSaveStates">
+        <property name="text">
+         <string>Load Devices From Save States</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>
    <item>
     <widget class="QGroupBox" name="groupBox_3">
      <property name="title">
-      <string>Emulation Speed</string>
+      <string>Speed Control</string>
      </property>
-     <layout class="QGridLayout" name="formLayout_3">
-      <item row="0" column="0" colspan="2">
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
-        <item>
-         <widget class="QSlider" name="emulationSpeed">
-          <property name="minimum">
-           <number>25</number>
-          </property>
-          <property name="maximum">
-           <number>500</number>
-          </property>
-          <property name="singleStep">
-           <number>25</number>
-          </property>
-          <property name="pageStep">
-           <number>25</number>
-          </property>
-          <property name="value">
-           <number>100</number>
-          </property>
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="tickPosition">
-           <enum>QSlider::TicksBelow</enum>
-          </property>
-          <property name="tickInterval">
-           <number>25</number>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="emulationSpeedLabel">
-          <property name="text">
-           <string>100%</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
+     <layout class="QGridLayout" name="formLayout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>Emulation Speed:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="emulationSpeed"/>
       </item>
       <item row="1" column="0">
-       <widget class="QCheckBox" name="enableSpeedLimiter">
+       <widget class="QLabel" name="label_3">
         <property name="text">
-         <string>Enable Speed Limiter</string>
+         <string>Fast Forward Speed:</string>
         </property>
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QCheckBox" name="increaseTimerResolution">
-        <property name="text">
-         <string>Increase Timer Resolution</string>
-        </property>
-       </widget>
+       <widget class="QComboBox" name="fastForwardSpeed"/>
       </item>
      </layout>
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="groupBox_5">
+    <widget class="QGroupBox" name="groupBox">
      <property name="title">
-      <string>On-Screen Display</string>
+      <string>Miscellaneous</string>
      </property>
-     <layout class="QGridLayout" name="formLayout_5">
-      <item row="2" column="0">
-       <widget class="QCheckBox" name="showOSDMessages">
-        <property name="text">
-         <string>Show Messages</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QCheckBox" name="showFPS">
-        <property name="text">
-         <string>Show FPS</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QCheckBox" name="showSpeed">
-        <property name="text">
-         <string>Show Emulation Speed</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QCheckBox" name="showVPS">
-        <property name="text">
-         <string>Show VPS</string>
-        </property>
-       </widget>
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="0" column="0">
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QLabel" name="label">
+          <property name="text">
+           <string>Controller Backend:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="controllerBackend"/>
+        </item>
+       </layout>
       </item>
      </layout>
     </widget>
@@ -192,7 +166,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="resources/icons.qrc"/>
+  <include location="resources/resources.qrc"/>
  </resources>
  <connections/>
 </ui>

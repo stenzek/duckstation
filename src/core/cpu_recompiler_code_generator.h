@@ -16,6 +16,8 @@ namespace CPU::Recompiler {
 class CodeGenerator
 {
 public:
+  using SpeculativeValue = std::optional<u32>;
+
   CodeGenerator(JitCodeBuffer* code_buffer);
   ~CodeGenerator();
 
@@ -23,7 +25,12 @@ public:
   static const char* GetHostRegName(HostReg reg, RegSize size = HostPointerSize);
   static void AlignCodeBuffer(JitCodeBuffer* code_buffer);
 
-  bool CompileBlock(const CodeBlock* block, CodeBlock::HostCodePointer* out_host_code, u32* out_host_code_size);
+  static bool BackpatchLoadStore(const LoadStoreBackpatchInfo& lbi);
+
+  bool CompileBlock(CodeBlock* block, CodeBlock::HostCodePointer* out_host_code, u32* out_host_code_size);
+
+  CodeCache::DispatcherFunction CompileDispatcher();
+  CodeCache::SingleBlockDispatcherFunction CompileSingleBlockDispatcher();
 
   //////////////////////////////////////////////////////////////////////////
   // Code Generation
@@ -45,9 +52,12 @@ public:
                bool signed_divide);
   void EmitInc(HostReg to_reg, RegSize size);
   void EmitDec(HostReg to_reg, RegSize size);
-  void EmitShl(HostReg to_reg, HostReg from_reg, RegSize size, const Value& amount_value);
-  void EmitShr(HostReg to_reg, HostReg from_reg, RegSize size, const Value& amount_value);
-  void EmitSar(HostReg to_reg, HostReg from_reg, RegSize size, const Value& amount_value);
+  void EmitShl(HostReg to_reg, HostReg from_reg, RegSize size, const Value& amount_value,
+               bool assume_amount_masked = true);
+  void EmitShr(HostReg to_reg, HostReg from_reg, RegSize size, const Value& amount_value,
+               bool assume_amount_masked = true);
+  void EmitSar(HostReg to_reg, HostReg from_reg, RegSize size, const Value& amount_value,
+               bool assume_amount_masked = true);
   void EmitAnd(HostReg to_reg, HostReg from_reg, const Value& value);
   void EmitOr(HostReg to_reg, HostReg from_reg, const Value& value);
   void EmitXor(HostReg to_reg, HostReg from_reg, const Value& value);
@@ -61,15 +71,28 @@ public:
   void EmitFlushInterpreterLoadDelay();
   void EmitMoveNextInterpreterLoadDelay();
   void EmitCancelInterpreterLoadDelayForReg(Reg reg);
+  void EmitICacheCheckAndUpdate();
   void EmitLoadCPUStructField(HostReg host_reg, RegSize size, u32 offset);
   void EmitStoreCPUStructField(u32 offset, const Value& value);
   void EmitAddCPUStructField(u32 offset, const Value& value);
   void EmitLoadGlobal(HostReg host_reg, RegSize size, const void* ptr);
   void EmitStoreGlobal(void* ptr, const Value& value);
+  void EmitLoadGlobalAddress(HostReg host_reg, const void* ptr);
 
   // Automatically generates an exception handler.
-  Value EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const Value& address, RegSize size);
-  void EmitStoreGuestMemory(const CodeBlockInstruction& cbi, const Value& address, const Value& value);
+  Value GetFastmemLoadBase();
+  Value GetFastmemStoreBase();
+  Value EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const Value& address, const SpeculativeValue& address_spec,
+                            RegSize size);
+  void EmitLoadGuestRAMFastmem(const Value& address, RegSize size, Value& result);
+  void EmitLoadGuestMemoryFastmem(const CodeBlockInstruction& cbi, const Value& address, RegSize size, Value& result);
+  void EmitLoadGuestMemorySlowmem(const CodeBlockInstruction& cbi, const Value& address, RegSize size, Value& result,
+                                  bool in_far_code);
+  void EmitStoreGuestMemory(const CodeBlockInstruction& cbi, const Value& address, const SpeculativeValue& address_spec,
+                            const Value& value);
+  void EmitStoreGuestMemoryFastmem(const CodeBlockInstruction& cbi, const Value& address, const Value& value);
+  void EmitStoreGuestMemorySlowmem(const CodeBlockInstruction& cbi, const Value& address, const Value& value,
+                                   bool in_far_code);
 
   // Unconditional branch to pointer. May allocate a scratch register.
   void EmitBranch(const void* address, bool allow_scratch = true);
@@ -85,6 +108,7 @@ public:
   u32 PrepareStackForCall();
   void RestoreStackAfterCall(u32 adjust_size);
 
+  void EmitCall(const void* ptr);
   void EmitFunctionCallPtr(Value* return_value, const void* ptr);
   void EmitFunctionCallPtr(Value* return_value, const void* ptr, const Value& arg1);
   void EmitFunctionCallPtr(Value* return_value, const void* ptr, const Value& arg1, const Value& arg2);
@@ -127,17 +151,20 @@ public:
 
   // Host register saving.
   void EmitPushHostReg(HostReg reg, u32 position);
+  void EmitPushHostRegPair(HostReg reg, HostReg reg2, u32 position);
   void EmitPopHostReg(HostReg reg, u32 position);
+  void EmitPopHostRegPair(HostReg reg, HostReg reg2, u32 position);
 
   // Value ops
   Value AddValues(const Value& lhs, const Value& rhs, bool set_flags);
   Value SubValues(const Value& lhs, const Value& rhs, bool set_flags);
   std::pair<Value, Value> MulValues(const Value& lhs, const Value& rhs, bool signed_multiply);
-  Value ShlValues(const Value& lhs, const Value& rhs);
-  Value ShrValues(const Value& lhs, const Value& rhs);
-  Value SarValues(const Value& lhs, const Value& rhs);
+  Value ShlValues(const Value& lhs, const Value& rhs, bool assume_amount_masked = true);
+  Value ShrValues(const Value& lhs, const Value& rhs, bool assume_amount_masked = true);
+  Value SarValues(const Value& lhs, const Value& rhs, bool assume_amount_masked = true);
   Value OrValues(const Value& lhs, const Value& rhs);
   Value AndValues(const Value& lhs, const Value& rhs);
+  void AndValueInPlace(Value& lhs, const Value& rhs);
   Value XorValues(const Value& lhs, const Value& rhs);
   Value NotValue(const Value& val);
 
@@ -153,6 +180,7 @@ private:
   void ConvertValueSizeInPlace(Value* value, RegSize size, bool sign_extend);
 
   Value GetValueInHostRegister(const Value& value, bool allow_zero_register = true);
+  Value GetValueInHostOrScratchRegister(const Value& value, bool allow_zero_register = true);
 
   void SwitchToFarCode();
   void SwitchToNearCode();
@@ -187,6 +215,8 @@ private:
   bool Compile_Shift(const CodeBlockInstruction& cbi);
   bool Compile_Load(const CodeBlockInstruction& cbi);
   bool Compile_Store(const CodeBlockInstruction& cbi);
+  bool Compile_LoadLeftRight(const CodeBlockInstruction& cbi);
+  bool Compile_StoreLeftRight(const CodeBlockInstruction& cbi);
   bool Compile_MoveHiLo(const CodeBlockInstruction& cbi);
   bool Compile_Add(const CodeBlockInstruction& cbi);
   bool Compile_Subtract(const CodeBlockInstruction& cbi);
@@ -200,9 +230,10 @@ private:
   bool Compile_cop2(const CodeBlockInstruction& cbi);
 
   JitCodeBuffer* m_code_buffer;
-  const CodeBlock* m_block = nullptr;
+  CodeBlock* m_block = nullptr;
   const CodeBlockInstruction* m_block_start = nullptr;
   const CodeBlockInstruction* m_block_end = nullptr;
+  const CodeBlockInstruction* m_current_instruction = nullptr;
   RegisterCache m_register_cache;
   CodeEmitter m_near_emitter;
   CodeEmitter m_far_emitter;
@@ -219,6 +250,27 @@ private:
   bool m_current_instruction_was_branch_taken_dirty = false;
   bool m_load_delay_dirty = false;
   bool m_next_load_delay_dirty = false;
+
+  bool m_fastmem_load_base_in_register = false;
+  bool m_fastmem_store_base_in_register = false;
+
+  //////////////////////////////////////////////////////////////////////////
+  // Speculative Constants
+  //////////////////////////////////////////////////////////////////////////
+  struct SpeculativeConstants
+  {
+    std::array<SpeculativeValue, static_cast<u8>(Reg::count)> regs;
+    std::unordered_map<PhysicalMemoryAddress, SpeculativeValue> memory;
+  };
+
+  void InitSpeculativeRegs();
+  void InvalidateSpeculativeValues();
+  SpeculativeValue SpeculativeReadReg(Reg reg);
+  void SpeculativeWriteReg(Reg reg, SpeculativeValue value);
+  SpeculativeValue SpeculativeReadMemory(u32 address);
+  void SpeculativeWriteMemory(VirtualMemoryAddress address, SpeculativeValue value);
+
+  SpeculativeConstants m_speculative_constants;
 };
 
 } // namespace CPU::Recompiler

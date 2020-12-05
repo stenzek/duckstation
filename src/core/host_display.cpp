@@ -1,17 +1,88 @@
 #include "host_display.h"
+#include "common/assert.h"
+#include "common/file_system.h"
 #include "common/log.h"
 #include "common/string_util.h"
+#include "common/timer.h"
 #include "stb_image.h"
 #include "stb_image_resize.h"
 #include "stb_image_write.h"
+#include <cerrno>
 #include <cmath>
 #include <cstring>
+#include <thread>
 #include <vector>
 Log_SetChannel(HostDisplay);
 
 HostDisplayTexture::~HostDisplayTexture() = default;
 
 HostDisplay::~HostDisplay() = default;
+
+void HostDisplay::SetDisplayMaxFPS(float max_fps)
+{
+  m_display_frame_interval = (max_fps > 0.0f) ? (1.0f / max_fps) : 0.0f;
+}
+
+bool HostDisplay::ShouldSkipDisplayingFrame()
+{
+  if (m_display_frame_interval == 0.0f)
+    return false;
+
+  const u64 now = Common::Timer::GetValue();
+  const double diff = Common::Timer::ConvertValueToSeconds(now - m_last_frame_displayed_time);
+  if (diff < m_display_frame_interval)
+    return true;
+
+  m_last_frame_displayed_time = now;
+  return false;
+}
+
+u32 HostDisplay::GetDisplayPixelFormatSize(HostDisplayPixelFormat format)
+{
+  switch (format)
+  {
+    case HostDisplayPixelFormat::RGBA8:
+    case HostDisplayPixelFormat::BGRA8:
+      return 4;
+
+    case HostDisplayPixelFormat::RGBA5551:
+    case HostDisplayPixelFormat::RGB565:
+      return 2;
+
+    default:
+      return 0;
+  }
+}
+
+bool HostDisplay::SetDisplayPixels(HostDisplayPixelFormat format, u32 width, u32 height, const void* buffer, u32 pitch)
+{
+  void* map_ptr;
+  u32 map_pitch;
+  if (!BeginSetDisplayPixels(format, width, height, &map_ptr, &map_pitch))
+    return false;
+
+  if (pitch == map_pitch)
+  {
+    std::memcpy(map_ptr, buffer, height * map_pitch);
+  }
+  else
+  {
+    const u32 copy_size = width * GetDisplayPixelFormatSize(format);
+    DebugAssert(pitch >= copy_size && map_pitch >= copy_size);
+
+    const u8* src_ptr = static_cast<const u8*>(buffer);
+    u8* dst_ptr = static_cast<u8*>(map_ptr);
+    for (u32 i = 0; i < height; i++)
+    {
+      std::memcpy(dst_ptr, src_ptr, copy_size);
+      src_ptr += pitch;
+      dst_ptr += map_pitch;
+    }
+  }
+
+  EndSetDisplayPixels();
+  return true;
+}
 
 void HostDisplay::SetSoftwareCursor(std::unique_ptr<HostDisplayTexture> texture, float scale /*= 1.0f*/)
 {
@@ -31,8 +102,14 @@ bool HostDisplay::SetSoftwareCursor(const void* pixels, u32 width, u32 height, u
 
 bool HostDisplay::SetSoftwareCursor(const char* path, float scale /*= 1.0f*/)
 {
+  auto fp = FileSystem::OpenManagedCFile(path, "rb");
+  if (!fp)
+  {
+    return false;
+  }
+
   int width, height, file_channels;
-  u8* pixel_data = stbi_load(path, &width, &height, &file_channels, 4);
+  u8* pixel_data = stbi_load_from_file(fp.get(), &width, &height, &file_channels, 4);
   if (!pixel_data)
   {
     const char* error_reason = stbi_failure_reason();
@@ -94,7 +171,22 @@ void HostDisplay::CalculateDrawRect(s32 window_width, s32 window_height, s32* ou
         *out_left_padding = 0;
     }
     if (out_top_padding)
-      *out_top_padding = std::max<s32>((window_height - static_cast<s32>(display_height * scale)) / 2, 0);
+    {
+      switch (m_display_alignment)
+      {
+        case Alignment::LeftOrTop:
+          *out_top_padding = 0;
+          break;
+
+        case Alignment::Center:
+          *out_top_padding = std::max<s32>((window_height - static_cast<s32>(display_height * scale)) / 2, 0);
+          break;
+
+        case Alignment::RightOrBottom:
+          *out_top_padding = std::max<s32>(window_height - static_cast<s32>(display_height * scale), 0);
+          break;
+      }
+    }
   }
   else
   {
@@ -104,7 +196,23 @@ void HostDisplay::CalculateDrawRect(s32 window_width, s32 window_height, s32* ou
       scale = std::max(std::floor(scale), 1.0f);
 
     if (out_left_padding)
-      *out_left_padding = std::max<s32>((window_width - static_cast<s32>(display_width * scale)) / 2, 0);
+    {
+      switch (m_display_alignment)
+      {
+        case Alignment::LeftOrTop:
+          *out_left_padding = 0;
+          break;
+
+        case Alignment::Center:
+          *out_left_padding = std::max<s32>((window_width - static_cast<s32>(display_width * scale)) / 2, 0);
+          break;
+
+        case Alignment::RightOrBottom:
+          *out_left_padding = std::max<s32>(window_width - static_cast<s32>(display_width * scale), 0);
+          break;
+      }
+    }
+
     if (out_top_padding)
     {
       if (m_display_integer_scaling)
@@ -170,22 +278,15 @@ std::tuple<s32, s32> HostDisplay::ConvertWindowCoordinatesToDisplayCoordinates(s
   return std::make_tuple(static_cast<s32>(display_x), static_cast<s32>(display_y));
 }
 
-bool HostDisplay::WriteTextureToFile(const void* texture_handle, u32 x, u32 y, u32 width, u32 height,
-                                     const char* filename, bool clear_alpha /* = true */, bool flip_y /* = false */,
-                                     u32 resize_width /* = 0 */, u32 resize_height /* = 0 */)
+static bool CompressAndWriteTextureToFile(u32 width, u32 height, std::string filename, FileSystem::ManagedCFilePtr fp,
+                                          bool clear_alpha, bool flip_y, u32 resize_width, u32 resize_height,
+                                          std::vector<u32> texture_data, u32 texture_data_stride)
 {
-  std::vector<u32> texture_data(width * height);
-  u32 texture_data_stride = sizeof(u32) * width;
-  if (!DownloadTexture(texture_handle, x, y, width, height, texture_data.data(), texture_data_stride))
-  {
-    Log_ErrorPrintf("Texture download failed");
-    return false;
-  }
 
-  const char* extension = std::strrchr(filename, '.');
+  const char* extension = std::strrchr(filename.c_str(), '.');
   if (!extension)
   {
-    Log_ErrorPrintf("Unable to determine file extension for '%s'", filename);
+    Log_ErrorPrintf("Unable to determine file extension for '%s'", filename.c_str());
     return false;
   }
 
@@ -226,42 +327,75 @@ bool HostDisplay::WriteTextureToFile(const void* texture_handle, u32 x, u32 y, u
     texture_data_stride = resized_texture_stride;
   }
 
-  bool result;
+  const auto write_func = [](void* context, void* data, int size) {
+    std::fwrite(data, 1, size, static_cast<std::FILE*>(context));
+  };
+
+  bool result = false;
   if (StringUtil::Strcasecmp(extension, ".png") == 0)
   {
-    result = (stbi_write_png(filename, width, height, 4, texture_data.data(), texture_data_stride) != 0);
+    result =
+      (stbi_write_png_to_func(write_func, fp.get(), width, height, 4, texture_data.data(), texture_data_stride) != 0);
   }
-  else if (StringUtil::Strcasecmp(filename, ".jpg") == 0)
+  else if (StringUtil::Strcasecmp(filename.c_str(), ".jpg") == 0)
   {
-    result = (stbi_write_jpg(filename, width, height, 4, texture_data.data(), 95) != 0);
+    result = (stbi_write_jpg_to_func(write_func, fp.get(), width, height, 4, texture_data.data(), 95) != 0);
   }
-  else if (StringUtil::Strcasecmp(filename, ".tga") == 0)
+  else if (StringUtil::Strcasecmp(filename.c_str(), ".tga") == 0)
   {
-    result = (stbi_write_tga(filename, width, height, 4, texture_data.data()) != 0);
+    result = (stbi_write_tga_to_func(write_func, fp.get(), width, height, 4, texture_data.data()) != 0);
   }
-  else if (StringUtil::Strcasecmp(filename, ".bmp") == 0)
+  else if (StringUtil::Strcasecmp(filename.c_str(), ".bmp") == 0)
   {
-    result = (stbi_write_bmp(filename, width, height, 4, texture_data.data()) != 0);
-  }
-  else
-  {
-    Log_ErrorPrintf("Unknown extension in filename '%s': '%s'", filename, extension);
-    return false;
+    result = (stbi_write_bmp_to_func(write_func, fp.get(), width, height, 4, texture_data.data()) != 0);
   }
 
   if (!result)
   {
-    Log_ErrorPrintf("Failed to save texture to '%s'", filename);
+    Log_ErrorPrintf("Unknown extension in filename '%s' or save error: '%s'", filename.c_str(), extension);
     return false;
   }
 
   return true;
 }
 
-bool HostDisplay::WriteDisplayTextureToFile(const char* filename, bool full_resolution /* = true */,
-                                            bool apply_aspect_ratio /* = true */)
+bool HostDisplay::WriteTextureToFile(const void* texture_handle, u32 x, u32 y, u32 width, u32 height,
+                                     std::string filename, bool clear_alpha /* = true */, bool flip_y /* = false */,
+                                     u32 resize_width /* = 0 */, u32 resize_height /* = 0 */,
+                                     bool compress_on_thread /* = false */)
 {
-  if (!m_display_texture_handle)
+  std::vector<u32> texture_data(width * height);
+  u32 texture_data_stride = sizeof(u32) * width;
+  if (!DownloadTexture(texture_handle, x, y, width, height, texture_data.data(), texture_data_stride))
+  {
+    Log_ErrorPrintf("Texture download failed");
+    return false;
+  }
+
+  auto fp = FileSystem::OpenManagedCFile(filename.c_str(), "wb");
+  if (!fp)
+  {
+    Log_ErrorPrintf("Can't open file '%s': errno %d", filename.c_str(), errno);
+    return false;
+  }
+
+  if (!compress_on_thread)
+  {
+    return CompressAndWriteTextureToFile(width, height, std::move(filename), std::move(fp), clear_alpha, flip_y,
+                                         resize_width, resize_height, std::move(texture_data), texture_data_stride);
+  }
+
+  std::thread compress_thread(CompressAndWriteTextureToFile, width, height, std::move(filename), std::move(fp),
+                              clear_alpha, flip_y, resize_width, resize_height, std::move(texture_data),
+                              texture_data_stride);
+  compress_thread.detach();
+  return true;
+}
+
+bool HostDisplay::WriteDisplayTextureToFile(std::string filename, bool full_resolution /* = true */,
+                                            bool apply_aspect_ratio /* = true */, bool compress_on_thread /* = false */)
+{
+  if (!m_display_texture_handle || m_display_texture_format != HostDisplayPixelFormat::RGBA8)
     return false;
 
   apply_aspect_ratio = (m_display_aspect_ratio > 0) ? apply_aspect_ratio : false;
@@ -321,14 +455,14 @@ bool HostDisplay::WriteDisplayTextureToFile(const char* filename, bool full_reso
   }
 
   return WriteTextureToFile(m_display_texture_handle, m_display_texture_view_x, read_y, m_display_texture_view_width,
-                            read_height, filename, true, flip_y, static_cast<u32>(resize_width),
-                            static_cast<u32>(resize_height));
+                            read_height, std::move(filename), true, flip_y, static_cast<u32>(resize_width),
+                            static_cast<u32>(resize_height), compress_on_thread);
 }
 
 bool HostDisplay::WriteDisplayTextureToBuffer(std::vector<u32>* buffer, u32 resize_width /* = 0 */,
                                               u32 resize_height /* = 0 */, bool clear_alpha /* = true */)
 {
-  if (!m_display_texture_handle)
+  if (!m_display_texture_handle || m_display_texture_format != HostDisplayPixelFormat::RGBA8)
     return false;
 
   const bool flip_y = (m_display_texture_view_height < 0);

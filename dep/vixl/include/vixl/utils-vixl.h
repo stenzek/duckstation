@@ -447,7 +447,7 @@ inline float FusedMultiplyAdd(float op1, float op2, float a) {
 }
 
 
-inline uint64_t LowestSetBit(uint64_t value) { return value & -value; }
+inline uint64_t LowestSetBit(uint64_t value) { return value & static_cast<uint64_t>(-static_cast<int64_t>(value)); }
 
 
 template <typename T>
@@ -801,7 +801,7 @@ class Uint32 {
   }
   int32_t GetSigned() const { return data_; }
   Uint32 operator~() const { return Uint32(~data_); }
-  Uint32 operator-() const { return Uint32(-data_); }
+  Uint32 operator-() const { return Uint32(static_cast<uint32_t>(-static_cast<int32_t>(data_))); }
   bool operator==(Uint32 value) const { return data_ == value.data_; }
   bool operator!=(Uint32 value) const { return data_ != value.data_; }
   bool operator>(Uint32 value) const { return data_ > value.data_; }
@@ -869,7 +869,7 @@ class Uint64 {
   Uint32 GetHigh32() const { return Uint32(data_ >> 32); }
   Uint32 GetLow32() const { return Uint32(data_ & 0xffffffff); }
   Uint64 operator~() const { return Uint64(~data_); }
-  Uint64 operator-() const { return Uint64(-data_); }
+  Uint64 operator-() const { return Uint64(static_cast<uint64_t>(-static_cast<int64_t>(data_))); }
   bool operator==(Uint64 value) const { return data_ == value.data_; }
   bool operator!=(Uint64 value) const { return data_ != value.data_; }
   Uint64 operator+(Uint64 value) const { return Uint64(data_ + value.data_); }

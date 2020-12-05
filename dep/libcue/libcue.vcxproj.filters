@@ -17,7 +17,7 @@
     <ClInclude Include="include\libcue\cdtext.h" />
     <ClInclude Include="include\libcue\libcue.h" />
     <ClInclude Include="include\libcue\rem.h" />
-    <ClInclude Include="include\libcue\time.h" />
+    <ClInclude Include="include\libcue\cuetime.h" />
     <ClInclude Include="include\libcue\cd.h" />
   </ItemGroup>
 </Project>

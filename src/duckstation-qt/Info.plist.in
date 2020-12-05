@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleDocumentTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleTypeExtensions</key>
+            <array>
+                <string>bin</string>
+                <string>cue</string>
+                <string>img</string>
+                <string>chd</string>
+                <string>m3u</string>
+                <string>psexe</string>
+                <string>psf</string>
+            </array>
+            <key>CFBundleTypeIconFile</key>
+            <string>DuckStation.icns</string>
+            <key>CFBundleTypeName</key>
+            <string>PlayStation File</string>
+            <key>CFBundleTypeRole</key>
+            <string>Viewer</string>
+        </dict>
+    </array>
+    <key>CFBundleExecutable</key>
+    <string>DuckStation</string>
+    <key>CFBundleIconFile</key>
+    <string>DuckStation.icns</string>
+    <key>CFBundleIdentifier</key>
+    <string>com.github.stenzek.duckstation</string>
+    <key>CFBundleDevelopmentRegion</key>
+    <string>English</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>NSHumanReadableCopyright</key>
+    <string>Licensed under GPL version 3</string>
+    <key>LSMinimumSystemVersion</key>
+    <string>${CMAKE_OSX_DEPLOYMENT_TARGET}</string>
+    <key>NSHighResolutionCapable</key>
+    <true/>
+    <key>CSResourcesFileMapped</key>
+    <true/>
+</dict>
+</plist>

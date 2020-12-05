@@ -4,7 +4,9 @@
 #include "gpu.h"
 #include "interrupt_controller.h"
 #include "system.h"
-#include <imgui.h>
+#ifdef WITH_IMGUI
+#include "imgui.h"
+#endif
 Log_SetChannel(Timers);
 
 Timers g_timers;
@@ -39,6 +41,7 @@ void Timers::Reset()
     cs.irq_done = false;
   }
 
+  m_syclk_ticks_carry = 0;
   m_sysclk_div_8_carry = 0;
   UpdateSysClkEvent();
 }
@@ -57,12 +60,18 @@ bool Timers::DoState(StateWrapper& sw)
     sw.Do(&cs.irq_done);
   }
 
+  sw.Do(&m_syclk_ticks_carry);
   sw.Do(&m_sysclk_div_8_carry);
 
   if (sw.IsReading())
     UpdateSysClkEvent();
 
   return !sw.HasError();
+}
+
+void Timers::CPUClocksChanged()
+{
+  m_syclk_ticks_carry = 0;
 }
 
 void Timers::SetGate(u32 timer, bool state)
@@ -73,25 +82,29 @@ void Timers::SetGate(u32 timer, bool state)
 
   cs.gate = state;
 
-  if (cs.mode.sync_enable)
+  if (!cs.mode.sync_enable)
+    return;
+
+  if (cs.counting_enabled && !cs.use_external_clock)
+    m_sysclk_event->InvokeEarly();
+
+  if (state)
   {
-    if (state)
+    switch (cs.mode.sync_mode)
     {
-      switch (cs.mode.sync_mode)
-      {
-        case SyncMode::ResetOnGate:
-        case SyncMode::ResetAndRunOnGate:
-          cs.counter = 0;
-          break;
+      case SyncMode::ResetOnGate:
+      case SyncMode::ResetAndRunOnGate:
+        cs.counter = 0;
+        break;
 
-        case SyncMode::FreeRunOnGate:
-          cs.mode.sync_enable = false;
-          break;
-      }
+      case SyncMode::FreeRunOnGate:
+        cs.mode.sync_enable = false;
+        break;
     }
-
-    UpdateCountingEnabled(cs);
   }
+
+  UpdateCountingEnabled(cs);
+  UpdateSysClkEvent();
 }
 
 TickCount Timers::GetTicksUntilIRQ(u32 timer) const
@@ -155,6 +168,8 @@ void Timers::AddTicks(u32 timer, TickCount count)
 
 void Timers::AddSysClkTicks(TickCount sysclk_ticks)
 {
+  sysclk_ticks = System::UnscaleTicksToOverclock(sysclk_ticks, &m_syclk_ticks_carry);
+
   if (!m_states[0].external_counting_enabled && m_states[0].counting_enabled)
     AddTicks(0, sysclk_ticks);
   if (!m_states[1].external_counting_enabled && m_states[1].counting_enabled)
@@ -177,6 +192,11 @@ u32 Timers::ReadRegister(u32 offset)
 {
   const u32 timer_index = (offset >> 4) & u32(0x03);
   const u32 port_offset = offset & u32(0x0F);
+  if (timer_index >= 3)
+  {
+    Log_ErrorPrintf("Timer read out of range: offset 0x%02X", offset);
+    return UINT32_C(0xFFFFFFFF);
+  }
 
   CounterState& cs = m_states[timer_index];
 
@@ -226,6 +246,11 @@ void Timers::WriteRegister(u32 offset, u32 value)
 {
   const u32 timer_index = (offset >> 4) & u32(0x03);
   const u32 port_offset = offset & u32(0x0F);
+  if (timer_index >= 3)
+  {
+    Log_ErrorPrintf("Timer write out of range: offset 0x%02X value 0x%08X", offset, value);
+    return;
+  }
 
   CounterState& cs = m_states[timer_index];
 
@@ -339,7 +364,9 @@ TickCount Timers::GetTicksUntilNextInterrupt() const
       min_ticks_for_this_timer = std::min(min_ticks_for_this_timer, static_cast<TickCount>(0xFFFF - cs.counter));
 
     if (cs.external_counting_enabled) // sysclk/8 for timer 2
-      min_ticks_for_this_timer = std::max<TickCount>(1, min_ticks_for_this_timer / 8);
+      min_ticks_for_this_timer = std::max<TickCount>(1, System::ScaleTicksToOverclock(min_ticks_for_this_timer * 8));
+    else
+      min_ticks_for_this_timer = std::max<TickCount>(1, System::ScaleTicksToOverclock(min_ticks_for_this_timer));
 
     min_ticks = std::min(min_ticks, min_ticks_for_this_timer);
   }
@@ -352,13 +379,14 @@ void Timers::UpdateSysClkEvent()
   // Still update once every 100ms. If we get polled we'll execute sooner.
   const TickCount ticks = GetTicksUntilNextInterrupt();
   if (ticks == std::numeric_limits<TickCount>::max())
-    m_sysclk_event->Schedule(MAX_SLICE_SIZE);
+    m_sysclk_event->Schedule(System::GetMaxSliceTicks());
   else
     m_sysclk_event->Schedule(ticks);
 }
 
 void Timers::DrawDebugStateWindow()
 {
+#ifdef WITH_IMGUI
   static constexpr u32 NUM_COLUMNS = 10;
   static constexpr std::array<const char*, NUM_COLUMNS> column_names = {
     {"#", "Value", "Target", "Sync", "Reset", "IRQ", "IRQRepeat", "IRQToggle", "Clock Source", "Reached"}};
@@ -427,4 +455,5 @@ void Timers::DrawDebugStateWindow()
 
   ImGui::Columns(1);
   ImGui::End();
+#endif
 }

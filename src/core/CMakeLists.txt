@@ -1,6 +1,8 @@
 add_library(core
     analog_controller.cpp
     analog_controller.h
+    analog_joystick.cpp
+    analog_joystick.h
     bios.cpp
     bios.h
     bus.cpp
@@ -9,6 +11,8 @@ add_library(core
     cdrom.h
     cdrom_async_reader.cpp
     cdrom_async_reader.h
+    cheats.cpp
+    cheats.h
     controller.cpp
     controller.h
     cpu_code_cache.cpp
@@ -24,10 +28,10 @@ add_library(core
     digital_controller.h
     dma.cpp
     dma.h
-    game_list.cpp
-    game_list.h
     gpu.cpp
     gpu.h
+    gpu_backend.cpp
+    gpu_backend.h
     gpu_commands.cpp
     gpu_hw.cpp
     gpu_hw.h
@@ -39,6 +43,9 @@ add_library(core
     gpu_hw_vulkan.h
     gpu_sw.cpp
     gpu_sw.h
+    gpu_sw_backend.cpp
+    gpu_sw_backend.h
+    gpu_types.h
     gte.cpp
     gte.h
     gte_types.h
@@ -54,6 +61,8 @@ add_library(core
     mdec.h
     memory_card.cpp
     memory_card.h
+    memory_card_image.cpp
+    memory_card_image.h
     namco_guncon.cpp
     namco_guncon.h
     negcon.cpp
@@ -71,6 +80,8 @@ add_library(core
     save_state_version.h
     settings.cpp
     settings.h
+    shadergen.cpp
+    shadergen.h
     sio.cpp
     sio.h
     spu.cpp
@@ -96,7 +107,7 @@ set(RECOMPILER_SRCS
 
 target_include_directories(core PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_include_directories(core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
-target_link_libraries(core PUBLIC Threads::Threads common imgui tinyxml2 zlib vulkan-loader)
+target_link_libraries(core PUBLIC Threads::Threads common zlib vulkan-loader)
 target_link_libraries(core PRIVATE glad stb)
 
 if(WIN32)
@@ -108,19 +119,31 @@ if(WIN32)
 endif()
 
 if(${CPU_ARCH} STREQUAL "x64")
-  target_include_directories(core PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../../dep/xbyak/xbyak")
-  target_compile_definitions(core PRIVATE "WITH_RECOMPILER=1")
+  target_include_directories(core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../../dep/xbyak/xbyak")
+  target_compile_definitions(core PUBLIC "WITH_RECOMPILER=1" "WITH_MMAP_FASTMEM=1")
   target_sources(core PRIVATE ${RECOMPILER_SRCS}
     cpu_recompiler_code_generator_x64.cpp
   )
   message("Building x64 recompiler")
+elseif(${CPU_ARCH} STREQUAL "aarch32")
+  target_compile_definitions(core PUBLIC "WITH_RECOMPILER=1")
+  target_sources(core PRIVATE ${RECOMPILER_SRCS}
+    cpu_recompiler_code_generator_aarch32.cpp
+  )
+  target_link_libraries(core PUBLIC vixl)
+  message("Building AArch32 recompiler")
 elseif(${CPU_ARCH} STREQUAL "aarch64")
-  target_compile_definitions(core PRIVATE "WITH_RECOMPILER=1")
+  target_compile_definitions(core PUBLIC "WITH_RECOMPILER=1" "WITH_MMAP_FASTMEM=1")
   target_sources(core PRIVATE ${RECOMPILER_SRCS}
     cpu_recompiler_code_generator_aarch64.cpp
   )
-  target_link_libraries(core PRIVATE vixl)
+  target_link_libraries(core PUBLIC vixl)
   message("Building AArch64 recompiler")
 else()
   message("Not building recompiler")
+endif()
+
+if(NOT BUILD_LIBRETRO_CORE)
+  target_link_libraries(core PRIVATE imgui)
+  target_compile_definitions(core PRIVATE "WITH_IMGUI=1")
 endif()

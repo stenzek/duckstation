@@ -27,10 +27,10 @@
 #ifndef VIXL_AARCH32_ASSEMBLER_AARCH32_H_
 #define VIXL_AARCH32_ASSEMBLER_AARCH32_H_
 
-#include "assembler-base-vixl.h"
+#include "../assembler-base-vixl.h"
 
-#include "aarch32/instructions-aarch32.h"
-#include "aarch32/location-aarch32.h"
+#include "instructions-aarch32.h"
+#include "location-aarch32.h"
 
 namespace vixl {
 namespace aarch32 {

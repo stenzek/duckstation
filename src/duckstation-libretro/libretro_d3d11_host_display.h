@@ -14,6 +14,7 @@ public:
   bool CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, bool debug_device) override;
 
   void ResizeRenderWindow(s32 new_window_width, s32 new_window_height) override;
+  bool ChangeRenderWindow(const WindowInfo& new_wi) override;
 
   void SetVSync(bool enabled) override;
 

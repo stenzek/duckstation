@@ -81,6 +81,7 @@ public:
 
   void SetRasterizationState(VkPolygonMode polygon_mode, VkCullModeFlags cull_mode, VkFrontFace front_face);
   void SetLineWidth(float width);
+  void SetMultisamples(u32 multisamples, bool per_sample_shading);
   void SetNoCullRasterizationState();
 
   void SetDepthState(bool depth_test, bool depth_write, VkCompareOp compare_op);

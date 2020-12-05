@@ -4,17 +4,18 @@
 #include "libretro.h"
 #include <limits>
 #include <optional>
+#include <memory>
+
+namespace GameSettings
+{
+struct Entry;
+}
 
 class LibretroHostInterface : public HostInterface
 {
 public:
   LibretroHostInterface();
   ~LibretroHostInterface() override;
-
-  static void InitLogging();
-  static bool SetCoreOptions();
-  static bool HasCoreVariablesChanged();
-  static void InitDiskControlInterface();
 
   ALWAYS_INLINE u32 GetResolutionScale() const { return g_settings.gpu_resolution_scale; }
 
@@ -31,8 +32,13 @@ public:
   std::string GetGameMemoryCardPath(const char* game_code, u32 slot) const override;
   std::string GetShaderCacheBasePath() const override;
   std::string GetStringSettingValue(const char* section, const char* key, const char* default_value = "") override;
+  std::string GetBIOSDirectory() override;
+  std::unique_ptr<ByteStream> OpenPackageFile(const char* path, u32 flags) override;
+
+  bool UpdateSystemAVInfo(bool use_resolution_scale);
 
   // Called by frontend
+  void retro_set_environment();
   void retro_get_system_av_info(struct retro_system_av_info* info);
   bool retro_load_game(const struct retro_game_info* game);
   void retro_run_frame();
@@ -42,6 +48,8 @@ public:
   bool retro_unserialize(const void* data, size_t size);
   void* retro_get_memory_data(unsigned id);
   size_t retro_get_memory_size(unsigned id);
+  void retro_cheat_reset();
+  void retro_cheat_set(unsigned index, bool enabled, const char* code);
 
 protected:
   bool AcquireHostDisplay() override;
@@ -49,17 +57,27 @@ protected:
   std::unique_ptr<AudioStream> CreateAudioStream(AudioBackend backend) override;
   void OnSystemDestroyed() override;
   void CheckForSettingsChanges(const Settings& old_settings) override;
+  void OnRunningGameChanged() override;
 
 private:
-  void LoadSettings();
+  bool SetCoreOptions();
+  bool HasCoreVariablesChanged();
+  void InitInterfaces();
+  void InitLogging();
+  void InitDiskControlInterface();
+  void InitRumbleInterface();
+
+  void LoadSettings() override;
   void UpdateSettings();
   void UpdateControllers();
   void UpdateControllersDigitalController(u32 index);
   void UpdateControllersAnalogController(u32 index);
   void GetSystemAVInfo(struct retro_system_av_info* info, bool use_resolution_scale);
-  void UpdateSystemAVInfo(bool use_resolution_scale);
   void UpdateGeometry();
   void UpdateLogging();
+
+  bool UpdateGameSettings();
+  void ApplyGameSettings();
 
   // Hardware renderer setup.
   bool RequestHardwareRendererContext();
@@ -81,11 +99,18 @@ private:
   static bool RETRO_CALLCONV DiskControlGetImagePath(unsigned index, char* path, size_t len);
   static bool RETRO_CALLCONV DiskControlGetImageLabel(unsigned index, char* label, size_t len);
 
+  std::unique_ptr<GameSettings::Entry> m_game_settings;
+  float m_last_aspect_ratio = 4.0f / 3.0f;
+
   retro_hw_render_callback m_hw_render_callback = {};
   std::unique_ptr<HostDisplay> m_hw_render_display;
   bool m_hw_render_callback_valid = false;
   bool m_using_hardware_renderer = false;
   std::optional<u32> m_next_disc_index;
+
+  retro_rumble_interface m_rumble_interface = {};
+  bool m_rumble_interface_valid = false;
+  bool m_supports_input_bitmasks = false;
 };
 
 extern LibretroHostInterface g_libretro_host_interface;

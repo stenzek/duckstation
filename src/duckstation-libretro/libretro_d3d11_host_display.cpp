@@ -21,7 +21,7 @@ void LibretroD3D11HostDisplay::SetVSync(bool enabled)
 
 bool LibretroD3D11HostDisplay::RequestHardwareRendererContext(retro_hw_render_callback* cb)
 {
-  cb->cache_context = true;
+  cb->cache_context = false;
   cb->bottom_left_origin = false;
   cb->context_type = RETRO_HW_CONTEXT_DIRECT3D;
   cb->version_major = 11;
@@ -71,6 +71,34 @@ void LibretroD3D11HostDisplay::ResizeRenderWindow(s32 new_window_width, s32 new_
   m_window_info.surface_height = static_cast<u32>(new_window_height);
 }
 
+bool LibretroD3D11HostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
+{
+  // Check that the device hasn't changed.
+  retro_hw_render_interface* ri = nullptr;
+  if (!g_retro_environment_callback(RETRO_ENVIRONMENT_GET_HW_RENDER_INTERFACE, &ri))
+  {
+    Log_ErrorPrint("Failed to get HW render interface");
+    return false;
+  }
+  else if (ri->interface_type != RETRO_HW_RENDER_INTERFACE_D3D11 ||
+           ri->interface_version != RETRO_HW_RENDER_INTERFACE_D3D11_VERSION)
+  {
+    Log_ErrorPrintf("Unexpected HW interface - type %u version %u", static_cast<unsigned>(ri->interface_type),
+                    static_cast<unsigned>(ri->interface_version));
+    return false;
+  }
+
+  const retro_hw_render_interface_d3d11* d3d11_ri = reinterpret_cast<const retro_hw_render_interface_d3d11*>(ri);
+  if (d3d11_ri->device != m_device.Get() || d3d11_ri->context != m_context.Get())
+  {
+    Log_ErrorPrintf("D3D device/context changed outside our control");
+    return false;
+  }
+
+  m_window_info = new_wi;
+  return true;
+}
+
 bool LibretroD3D11HostDisplay::Render()
 {
   const u32 resolution_scale = g_libretro_host_interface.GetResolutionScale();
@@ -111,6 +139,6 @@ bool LibretroD3D11HostDisplay::CheckFramebufferSize(u32 width, u32 height)
   if (m_framebuffer.GetWidth() == width && m_framebuffer.GetHeight() == height)
     return true;
 
-  return m_framebuffer.Create(m_device.Get(), width, height, DXGI_FORMAT_R8G8B8A8_UNORM,
+  return m_framebuffer.Create(m_device.Get(), width, height, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
                               D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET);
 }

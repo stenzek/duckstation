@@ -1,6 +1,123 @@
 #include "advancedsettingswidget.h"
+#include "mainwindow.h"
+#include "qtutils.h"
 #include "settingsdialog.h"
 #include "settingwidgetbinder.h"
+
+static void addBooleanTweakOption(QtHostInterface* host_interface, QTableWidget* table, QString name,
+                                  std::string section, std::string key, bool default_value)
+{
+  const int row = table->rowCount();
+  const bool current_value = host_interface->GetBoolSettingValue(section.c_str(), key.c_str(), default_value);
+
+  table->insertRow(row);
+
+  QTableWidgetItem* name_item = new QTableWidgetItem(name);
+  name_item->setFlags(name_item->flags() & ~(Qt::ItemIsEditable | Qt::ItemIsSelectable));
+  table->setItem(row, 0, name_item);
+
+  QCheckBox* cb = new QCheckBox(table);
+  SettingWidgetBinder::BindWidgetToBoolSetting(host_interface, cb, std::move(section), std::move(key), default_value);
+  table->setCellWidget(row, 1, cb);
+}
+
+static void setBooleanTweakOption(QTableWidget* table, int row, bool value)
+{
+  QWidget* widget = table->cellWidget(row, 1);
+  QCheckBox* cb = qobject_cast<QCheckBox*>(widget);
+  Assert(cb);
+  cb->setChecked(value);
+}
+
+static void addIntRangeTweakOption(QtHostInterface* host_interface, QTableWidget* table, QString name,
+                                   std::string section, std::string key, int min_value, int max_value,
+                                   int default_value)
+{
+  const int row = table->rowCount();
+  const bool current_value = host_interface->GetBoolSettingValue(section.c_str(), key.c_str(), default_value);
+
+  table->insertRow(row);
+
+  QTableWidgetItem* name_item = new QTableWidgetItem(name);
+  name_item->setFlags(name_item->flags() & ~(Qt::ItemIsEditable | Qt::ItemIsSelectable));
+  table->setItem(row, 0, name_item);
+
+  QSpinBox* cb = new QSpinBox(table);
+  cb->setMinimum(min_value);
+  cb->setMaximum(max_value);
+  SettingWidgetBinder::BindWidgetToIntSetting(host_interface, cb, std::move(section), std::move(key), default_value);
+  table->setCellWidget(row, 1, cb);
+}
+
+static void setIntRangeTweakOption(QTableWidget* table, int row, int value)
+{
+  QWidget* widget = table->cellWidget(row, 1);
+  QSpinBox* cb = qobject_cast<QSpinBox*>(widget);
+  Assert(cb);
+  cb->setValue(value);
+}
+
+static void addFloatRangeTweakOption(QtHostInterface* host_interface, QTableWidget* table, QString name,
+                                     std::string section, std::string key, float min_value, float max_value,
+                                     float step_value, float default_value)
+{
+  const int row = table->rowCount();
+
+  table->insertRow(row);
+
+  QTableWidgetItem* name_item = new QTableWidgetItem(name);
+  name_item->setFlags(name_item->flags() & ~(Qt::ItemIsEditable | Qt::ItemIsSelectable));
+  table->setItem(row, 0, name_item);
+
+  QDoubleSpinBox* cb = new QDoubleSpinBox(table);
+  cb->setMinimum(min_value);
+  cb->setMaximum(max_value);
+  cb->setSingleStep(step_value);
+  SettingWidgetBinder::BindWidgetToFloatSetting(host_interface, cb, std::move(section), std::move(key), default_value);
+  table->setCellWidget(row, 1, cb);
+}
+
+static void setFloatRangeTweakOption(QTableWidget* table, int row, float value)
+{
+  QWidget* widget = table->cellWidget(row, 1);
+  QDoubleSpinBox* cb = qobject_cast<QDoubleSpinBox*>(widget);
+  Assert(cb);
+  cb->setValue(value);
+}
+
+template<typename T>
+static void addChoiceTweakOption(QtHostInterface* host_interface, QTableWidget* table, QString name,
+                                 std::string section, std::string key, std::optional<T> (*parse_callback)(const char*),
+                                 const char* (*get_value_callback)(T), const char* (*get_display_callback)(T),
+                                 const char* tr_context, u32 num_values, T default_value)
+{
+  const int row = table->rowCount();
+  const std::string current_value =
+    host_interface->GetStringSettingValue(section.c_str(), key.c_str(), get_value_callback(default_value));
+
+  table->insertRow(row);
+
+  QTableWidgetItem* name_item = new QTableWidgetItem(name);
+  name_item->setFlags(name_item->flags() & ~(Qt::ItemIsEditable | Qt::ItemIsSelectable));
+  table->setItem(row, 0, name_item);
+
+  QComboBox* cb = new QComboBox(table);
+  for (u32 i = 0; i < num_values; i++)
+    cb->addItem(qApp->translate(tr_context, get_display_callback(static_cast<T>(i))));
+
+  SettingWidgetBinder::BindWidgetToEnumSetting(host_interface, cb, std::move(section), std::move(key), parse_callback,
+                                               get_value_callback, default_value);
+  table->setCellWidget(row, 1, cb);
+}
+
+template<typename T>
+static void setChoiceTweakOption(QTableWidget* table, int row, T value)
+{
+  QWidget* widget = table->cellWidget(row, 1);
+  QComboBox* cb = qobject_cast<QComboBox*>(widget);
+  Assert(cb);
+  cb->setCurrentIndex(static_cast<int>(value));
+}
 
 AdvancedSettingsWidget::AdvancedSettingsWidget(QtHostInterface* host_interface, QWidget* parent, SettingsDialog* dialog)
   : QWidget(parent), m_host_interface(host_interface)
@@ -8,7 +125,7 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(QtHostInterface* host_interface, 
   m_ui.setupUi(this);
 
   for (u32 i = 0; i < static_cast<u32>(LOGLEVEL_COUNT); i++)
-    m_ui.logLevel->addItem(tr(Settings::GetLogLevelDisplayName(static_cast<LOGLEVEL>(i))));
+    m_ui.logLevel->addItem(qApp->translate("LogLevel", Settings::GetLogLevelDisplayName(static_cast<LOGLEVEL>(i))));
 
   SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.logLevel, "Logging", "LogLevel",
                                                &Settings::ParseLogLevelName, &Settings::GetLogLevelName,
@@ -19,30 +136,63 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(QtHostInterface* host_interface, 
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.logToWindow, "Logging", "LogToWindow");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.logToFile, "Logging", "LogToFile");
 
-  // Tweaks/Hacks section
-  SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.dmaMaxSliceTicks, "Hacks", "DMAMaxSliceTicks");
-  SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.dmaHaltTicks, "Hacks", "DMAHaltTicks");
-  SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.gpuFIFOSize, "Hacks", "GPUFIFOSize");
-  SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.gpuMaxRunAhead, "Hacks", "GPUMaxRunAhead");
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.cpuRecompilerMemoryExceptions, "CPU",
-                                               "RecompilerMemoryExceptions", false);
-
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.gpuUseDebugDevice, "GPU", "UseDebugDevice");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showDebugMenu, "Main", "ShowDebugMenu");
 
   connect(m_ui.resetToDefaultButton, &QPushButton::clicked, this, &AdvancedSettingsWidget::onResetToDefaultClicked);
+  connect(m_ui.showDebugMenu, &QCheckBox::toggled, m_host_interface->getMainWindow(),
+          &MainWindow::updateDebugMenuVisibility, Qt::QueuedConnection);
 
-  dialog->registerWidgetHelp(m_ui.gpuUseDebugDevice, tr("Use Debug Host GPU Device"), tr("Unchecked"),
-                             tr("Enables the usage of debug devices and shaders for rendering APIs which support them. "
-                                "Should only be used when debugging the emulator."));
+  m_ui.tweakOptionTable->setColumnWidth(0, 380);
+
+  addBooleanTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("PGXP Vertex Cache"), "GPU", "PGXPVertexCache",
+                        false);
+  addBooleanTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("PGXP CPU Mode"), "GPU", "PGXPCPU", false);
+  addBooleanTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("PGXP Preserve Projection Precision"), "GPU",
+                        "PGXPPreserveProjFP", false);
+  addFloatRangeTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("PGXP Geometry Tolerance"), "GPU",
+                           "PGXPTolerance", -1.0f, 10.0f, 0.5f, -1.0f);
+
+  addBooleanTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Enable Recompiler Memory Exceptions"), "CPU",
+                        "RecompilerMemoryExceptions", false);
+  addChoiceTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Enable Recompiler Fast Memory Access"), "CPU",
+                       "FastmemMode", Settings::ParseCPUFastmemMode, Settings::GetCPUFastmemModeName,
+                       Settings::GetCPUFastmemModeDisplayName, "CPUFastmemMode",
+                       static_cast<u32>(CPUFastmemMode::Count), Settings::DEFAULT_CPU_FASTMEM_MODE);
+  addBooleanTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Enable Recompiler ICache"), "CPU",
+                        "RecompilerICache", false);
+
+  addIntRangeTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("DMA Max Slice Ticks"), "Hacks",
+                         "DMAMaxSliceTicks", 100, 10000, Settings::DEFAULT_DMA_MAX_SLICE_TICKS);
+  addIntRangeTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("DMA Halt Ticks"), "Hacks", "DMAHaltTicks", 100,
+                         10000, Settings::DEFAULT_DMA_HALT_TICKS);
+  addIntRangeTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("GPU FIFO Size"), "Hacks", "GPUFIFOSize", 16, 4096,
+                         Settings::DEFAULT_GPU_FIFO_SIZE);
+  addIntRangeTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("GPU Max Run-Ahead"), "Hacks", "GPUMaxRunAhead", 0,
+                         1000, Settings::DEFAULT_GPU_MAX_RUN_AHEAD);
+  addBooleanTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Use Debug Host GPU Device"), "GPU",
+                        "UseDebugDevice", false);
+  addIntRangeTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Display FPS Limit"), "Display", "MaxFPS", 0, 1000,
+                         0);
+  addBooleanTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Increase Timer Resolution"), "Main",
+                        "IncreaseTimerResolution", true);
 }
 
 AdvancedSettingsWidget::~AdvancedSettingsWidget() = default;
 
 void AdvancedSettingsWidget::onResetToDefaultClicked()
 {
-  m_ui.dmaMaxSliceTicks->setValue(static_cast<int>(Settings::DEFAULT_DMA_MAX_SLICE_TICKS));
-  m_ui.dmaHaltTicks->setValue(static_cast<int>(Settings::DEFAULT_DMA_HALT_TICKS));
-  m_ui.gpuFIFOSize->setValue(static_cast<int>(Settings::DEFAULT_GPU_FIFO_SIZE));
-  m_ui.gpuMaxRunAhead->setValue(static_cast<int>(Settings::DEFAULT_GPU_MAX_RUN_AHEAD));
-  m_ui.cpuRecompilerMemoryExceptions->setChecked(false);
+  setBooleanTweakOption(m_ui.tweakOptionTable, 0, false);
+  setBooleanTweakOption(m_ui.tweakOptionTable, 1, false);
+  setBooleanTweakOption(m_ui.tweakOptionTable, 2, false);
+  setFloatRangeTweakOption(m_ui.tweakOptionTable, 3, -1.0f);
+  setBooleanTweakOption(m_ui.tweakOptionTable, 4, false);
+  setChoiceTweakOption(m_ui.tweakOptionTable, 5, Settings::DEFAULT_CPU_FASTMEM_MODE);
+  setBooleanTweakOption(m_ui.tweakOptionTable, 6, false);
+  setIntRangeTweakOption(m_ui.tweakOptionTable, 7, static_cast<int>(Settings::DEFAULT_DMA_MAX_SLICE_TICKS));
+  setIntRangeTweakOption(m_ui.tweakOptionTable, 8, static_cast<int>(Settings::DEFAULT_DMA_HALT_TICKS));
+  setIntRangeTweakOption(m_ui.tweakOptionTable, 9, static_cast<int>(Settings::DEFAULT_GPU_FIFO_SIZE));
+  setIntRangeTweakOption(m_ui.tweakOptionTable, 10, static_cast<int>(Settings::DEFAULT_GPU_MAX_RUN_AHEAD));
+  setBooleanTweakOption(m_ui.tweakOptionTable, 11, false);
+  setIntRangeTweakOption(m_ui.tweakOptionTable, 12, 0);
+  setBooleanTweakOption(m_ui.tweakOptionTable, 13, true);
 }

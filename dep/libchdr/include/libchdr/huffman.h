@@ -13,7 +13,7 @@
 #ifndef __HUFFMAN_H__
 #define __HUFFMAN_H__
 
-#include "bitstream.h"
+#include <libchdr/bitstream.h>
 
 
 /***************************************************************************
@@ -73,6 +73,7 @@ struct huffman_decoder
 /* ======================> huffman_decoder */
 
 struct huffman_decoder* create_huffman_decoder(int numcodes, int maxbits);
+void delete_huffman_decoder(struct huffman_decoder* decoder);
 
 /* single item operations */
 uint32_t huffman_decode_one(struct huffman_decoder* decoder, struct bitstream* bitbuf);

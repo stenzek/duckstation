@@ -1,8 +1,9 @@
 #include "gamelistsettingswidget.h"
 #include "common/assert.h"
+#include "common/file_system.h"
 #include "common/minizip_helpers.h"
 #include "common/string_util.h"
-#include "core/game_list.h"
+#include "frontend-common/game_list.h"
 #include "gamelistsearchdirectoriesmodel.h"
 #include "qthostinterface.h"
 #include "qtutils.h"
@@ -144,7 +145,7 @@ void GameListSettingsWidget::onUpdateRedumpDatabaseButtonClicked()
     return;
   }
 
-  if (downloadRedumpDatabase(QString::fromStdString(m_host_interface->getGameList()->GetDatabaseFilename())))
+  if (downloadRedumpDatabase(m_host_interface->getUserDirectoryRelativePath("redump.dat")))
     m_host_interface->refreshGameList(true, true);
 }
 

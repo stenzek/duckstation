@@ -199,9 +199,11 @@ bool Program::Link()
 {
   glLinkProgram(m_program_id);
 
-  glDeleteShader(m_vertex_shader_id);
+  if (m_vertex_shader_id != 0)
+    glDeleteShader(m_vertex_shader_id);
   m_vertex_shader_id = 0;
-  glDeleteShader(m_fragment_shader_id);
+  if (m_fragment_shader_id != 0)
+    glDeleteShader(m_fragment_shader_id);
   m_fragment_shader_id = 0;
 
   GLint status = GL_FALSE;

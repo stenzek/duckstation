@@ -3,7 +3,9 @@
 #include "common/byte_stream.h"
 #include "common/file_system.h"
 #include "common/log.h"
+#include "common/make_array.h"
 #include "common/string_util.h"
+#include "core/cheats.h"
 #include "core/controller.h"
 #include "core/gpu.h"
 #include "core/host_display.h"
@@ -247,39 +249,21 @@ bool SDLHostInterface::AcquireHostDisplay()
     ImGui::NewFrame();
   }
 
+  if (!CreateHostDisplayResources())
+    return false;
+
   return true;
 }
 
 void SDLHostInterface::ReleaseHostDisplay()
 {
+  ReleaseHostDisplayResources();
+
   if (m_fullscreen)
     SetFullscreen(false);
 
   // restore vsync, since we don't want to burn cycles at the menu
   m_display->SetVSync(true);
-}
-
-std::unique_ptr<AudioStream> SDLHostInterface::CreateAudioStream(AudioBackend backend)
-{
-  switch (backend)
-  {
-    case AudioBackend::Null:
-      return AudioStream::CreateNullAudioStream();
-
-    case AudioBackend::Cubeb:
-      return AudioStream::CreateCubebAudioStream();
-
-    case AudioBackend::SDL:
-      return SDLAudioStream::Create();
-
-    default:
-      return nullptr;
-  }
-}
-
-std::unique_ptr<ControllerInterface> SDLHostInterface::CreateControllerInterface()
-{
-  return std::make_unique<SDLControllerInterface>();
 }
 
 std::optional<CommonHostInterface::HostKeyCode> SDLHostInterface::GetHostKeyCode(const std::string_view key_code) const
@@ -321,6 +305,12 @@ void SDLHostInterface::OnRunningGameChanged()
 {
   CommonHostInterface::OnRunningGameChanged();
 
+  Settings old_settings(std::move(g_settings));
+  CommonHostInterface::LoadSettings(*m_settings_interface.get());
+  CommonHostInterface::ApplyGameSettings(true);
+  CommonHostInterface::FixIncompatibleSettings(true);
+  CheckForSettingsChanges(old_settings);
+
   if (!System::GetRunningTitle().empty())
     SDL_SetWindowTitle(m_window, System::GetRunningTitle().c_str());
   else
@@ -347,6 +337,8 @@ void SDLHostInterface::SaveAndUpdateSettings()
 
   Settings old_settings(std::move(g_settings));
   CommonHostInterface::LoadSettings(*m_settings_interface.get());
+  CommonHostInterface::ApplyGameSettings(false);
+  CommonHostInterface::FixIncompatibleSettings(false);
   CheckForSettingsChanges(old_settings);
 
   m_settings_interface->Save();
@@ -417,6 +409,8 @@ void SDLHostInterface::Shutdown()
 {
   DestroySystem();
 
+  CommonHostInterface::Shutdown();
+
   if (m_display)
   {
     DestroyDisplay();
@@ -425,8 +419,6 @@ void SDLHostInterface::Shutdown()
 
   if (m_window)
     DestroySDLWindow();
-
-  CommonHostInterface::Shutdown();
 }
 
 std::string SDLHostInterface::GetStringSettingValue(const char* section, const char* key,
@@ -450,12 +442,40 @@ float SDLHostInterface::GetFloatSettingValue(const char* section, const char* ke
   return m_settings_interface->GetFloatValue(section, key, default_value);
 }
 
+bool SDLHostInterface::RequestRenderWindowSize(s32 new_window_width, s32 new_window_height)
+{
+  if (new_window_width <= 0 || new_window_height <= 0 || m_fullscreen)
+    return false;
+
+  // use imgui scale as the dpr
+  const float dpi_scale = ImGui::GetIO().DisplayFramebufferScale.x;
+  const s32 scaled_width =
+    std::max<s32>(static_cast<s32>(std::ceil(static_cast<float>(new_window_width) * dpi_scale)), 1);
+  const s32 scaled_height = std::max<s32>(
+    static_cast<s32>(std::ceil(static_cast<float>(new_window_height) * dpi_scale)) + m_display->GetDisplayTopMargin(),
+    1);
+
+  SDL_SetWindowSize(m_window, scaled_width, scaled_height);
+
+  s32 window_width, window_height;
+  SDL_GetWindowSize(m_window, &window_width, &window_height);
+  m_display->ResizeRenderWindow(window_width, window_height);
+
+  UpdateFramebufferScale();
+
+  if (!System::IsShutdown())
+    g_gpu->UpdateResolutionScale();
+
+  return true;
+}
+
 void SDLHostInterface::LoadSettings()
 {
   // Settings need to be loaded prior to creating the window for OpenGL bits.
   m_settings_interface = std::make_unique<INISettingsInterface>(GetSettingsFileName());
+  m_settings_copy.Load(*m_settings_interface);
   CommonHostInterface::LoadSettings(*m_settings_interface.get());
-  m_settings_copy = g_settings;
+  CommonHostInterface::FixIncompatibleSettings(false);
 }
 
 void SDLHostInterface::ReportError(const char* message)
@@ -720,6 +740,55 @@ void SDLHostInterface::DrawMainMenuBar()
 
     ImGui::Separator();
 
+    if (ImGui::BeginMenu("Cheats", system_enabled))
+    {
+      const bool has_cheat_file = System::HasCheatList();
+
+      if (ImGui::MenuItem("Load Cheats..."))
+      {
+        nfdchar_t* path = nullptr;
+        if (NFD_OpenDialog("cht", nullptr, &path) && path && std::strlen(path) > 0)
+          LoadCheatList(path);
+      }
+
+      if (ImGui::MenuItem("Save Cheats...", nullptr, false, has_cheat_file))
+      {
+        nfdchar_t* path = nullptr;
+        if (NFD_SaveDialog("cht", nullptr, &path) && path && std::strlen(path) > 0)
+          SaveCheatList(path);
+      }
+
+      if (ImGui::BeginMenu("Enabled Cheats", has_cheat_file))
+      {
+        CheatList* cl = System::GetCheatList();
+        for (u32 i = 0; i < cl->GetCodeCount(); i++)
+        {
+          const CheatCode& cc = cl->GetCode(i);
+          if (ImGui::MenuItem(cc.description.c_str(), nullptr, cc.enabled, true))
+            SetCheatCodeState(i, !cc.enabled, g_settings.auto_load_cheats);
+        }
+
+        ImGui::EndMenu();
+      }
+
+      if (ImGui::BeginMenu("Apply Cheat", has_cheat_file))
+      {
+        CheatList* cl = System::GetCheatList();
+        for (u32 i = 0; i < cl->GetCodeCount(); i++)
+        {
+          const CheatCode& cc = cl->GetCode(i);
+          if (ImGui::MenuItem(cc.description.c_str()))
+            ApplyCheatCode(i);
+        }
+
+        ImGui::EndMenu();
+      }
+
+      ImGui::EndMenu();
+    }
+
+    ImGui::Separator();
+
     if (ImGui::MenuItem("Exit"))
       m_quit_request = true;
 
@@ -801,13 +870,10 @@ void SDLHostInterface::DrawMainMenuBar()
 void SDLHostInterface::DrawQuickSettingsMenu()
 {
   bool settings_changed = false;
-  settings_changed |= ImGui::MenuItem("Enable Speed Limiter", nullptr, &m_settings_copy.speed_limiter_enabled);
-
-  ImGui::Separator();
 
   if (ImGui::BeginMenu("CPU Execution Mode"))
   {
-    const CPUExecutionMode current = g_settings.cpu_execution_mode;
+    const CPUExecutionMode current = m_settings_copy.cpu_execution_mode;
     for (u32 i = 0; i < static_cast<u32>(CPUExecutionMode::Count); i++)
     {
       if (ImGui::MenuItem(Settings::GetCPUExecutionModeDisplayName(static_cast<CPUExecutionMode>(i)), nullptr,
@@ -820,6 +886,49 @@ void SDLHostInterface::DrawQuickSettingsMenu()
 
     ImGui::EndMenu();
   }
+
+  if (ImGui::MenuItem("CPU Clock Control", nullptr, &m_settings_copy.cpu_overclock_enable))
+  {
+    settings_changed = true;
+    m_settings_copy.UpdateOverclockActive();
+  }
+
+  if (ImGui::BeginMenu("CPU Clock Speed"))
+  {
+    static constexpr auto values = make_array(10u, 25u, 50u, 75u, 100u, 125u, 150u, 175u, 200u, 225u, 250u, 275u, 300u,
+                                              350u, 400u, 450u, 500u, 600u, 700u, 800u);
+    const u32 percent = m_settings_copy.GetCPUOverclockPercent();
+    for (u32 value : values)
+    {
+      if (ImGui::MenuItem(TinyString::FromFormat("%u%%", value), nullptr, percent == value))
+      {
+        m_settings_copy.SetCPUOverclockPercent(value);
+        m_settings_copy.UpdateOverclockActive();
+        settings_changed = true;
+      }
+    }
+
+    ImGui::EndMenu();
+  }
+
+  settings_changed |=
+    ImGui::MenuItem("Recompiler Memory Exceptions", nullptr, &m_settings_copy.cpu_recompiler_memory_exceptions);
+  if (ImGui::BeginMenu("Recompiler Fastmem"))
+  {
+    for (u32 i = 0; i < static_cast<u32>(CPUFastmemMode::Count); i++)
+    {
+      if (ImGui::MenuItem(Settings::GetCPUFastmemModeDisplayName(static_cast<CPUFastmemMode>(i)), nullptr,
+                          m_settings_copy.cpu_fastmem_mode == static_cast<CPUFastmemMode>(i)))
+      {
+        m_settings_copy.cpu_fastmem_mode = static_cast<CPUFastmemMode>(i);
+        settings_changed = true;
+      }
+    }
+
+    ImGui::EndMenu();
+  }
+
+  settings_changed |= ImGui::MenuItem("Recompiler ICache", nullptr, &m_settings_copy.cpu_recompiler_icache);
 
   ImGui::Separator();
 
@@ -836,12 +945,26 @@ void SDLHostInterface::DrawQuickSettingsMenu()
       }
     }
 
+    settings_changed |= ImGui::MenuItem("GPU on Thread", nullptr, &m_settings_copy.gpu_use_thread);
+
     ImGui::EndMenu();
   }
 
   bool fullscreen = m_fullscreen;
   if (ImGui::MenuItem("Fullscreen", nullptr, &fullscreen))
     RunLater([this, fullscreen] { SetFullscreen(fullscreen); });
+
+  if (ImGui::BeginMenu("Resize to Game", System::IsValid()))
+  {
+    static constexpr auto scales = make_array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+    for (const u32 scale : scales)
+    {
+      if (ImGui::MenuItem(TinyString::FromFormat("%ux Scale", scale)))
+        RunLater([this, scale]() { RequestRenderWindowScale(static_cast<float>(scale)); });
+    }
+
+    ImGui::EndMenu();
+  }
 
   settings_changed |= ImGui::MenuItem("VSync", nullptr, &m_settings_copy.video_sync_enabled);
 
@@ -853,11 +976,52 @@ void SDLHostInterface::DrawQuickSettingsMenu()
     for (u32 scale = 1; scale <= GPU::MAX_RESOLUTION_SCALE; scale++)
     {
       char buf[32];
-      std::snprintf(buf, sizeof(buf), "%ux (%ux%u)", scale, scale * GPU::VRAM_WIDTH, scale * GPU::VRAM_HEIGHT);
+      std::snprintf(buf, sizeof(buf), "%ux (%ux%u)", scale, scale * VRAM_WIDTH, scale * VRAM_HEIGHT);
 
       if (ImGui::MenuItem(buf, nullptr, current_internal_resolution == scale))
       {
         m_settings_copy.gpu_resolution_scale = scale;
+        settings_changed = true;
+      }
+    }
+
+    ImGui::EndMenu();
+  }
+
+  if (ImGui::BeginMenu("Multisampling"))
+  {
+    const u32 current_multisamples = m_settings_copy.gpu_multisamples;
+    const bool current_ssaa = m_settings_copy.gpu_per_sample_shading;
+
+    if (ImGui::MenuItem("None", nullptr, (current_multisamples == 1)))
+    {
+      m_settings_copy.gpu_multisamples = 1;
+      m_settings_copy.gpu_per_sample_shading = false;
+      settings_changed = true;
+    }
+
+    for (u32 i = 2; i <= 32; i *= 2)
+    {
+      char buf[32];
+      std::snprintf(buf, sizeof(buf), "%ux MSAA", i);
+
+      if (ImGui::MenuItem(buf, nullptr, (current_multisamples == i && !current_ssaa)))
+      {
+        m_settings_copy.gpu_multisamples = i;
+        m_settings_copy.gpu_per_sample_shading = false;
+        settings_changed = true;
+      }
+    }
+
+    for (u32 i = 2; i <= 32; i *= 2)
+    {
+      char buf[32];
+      std::snprintf(buf, sizeof(buf), "%ux SSAA", i);
+
+      if (ImGui::MenuItem(buf, nullptr, (current_multisamples == i && current_ssaa)))
+      {
+        m_settings_copy.gpu_multisamples = i;
+        m_settings_copy.gpu_per_sample_shading = true;
         settings_changed = true;
       }
     }
@@ -874,16 +1038,75 @@ void SDLHostInterface::DrawQuickSettingsMenu()
                                         &m_settings_copy.gpu_pgxp_texture_correction, m_settings_copy.gpu_pgxp_enable);
     settings_changed |= ImGui::MenuItem("PGXP Vertex Cache", nullptr, &m_settings_copy.gpu_pgxp_vertex_cache,
                                         m_settings_copy.gpu_pgxp_enable);
+    settings_changed |=
+      ImGui::MenuItem("PGXP CPU Instructions", nullptr, &m_settings_copy.gpu_pgxp_cpu, m_settings_copy.gpu_pgxp_enable);
+    settings_changed |= ImGui::MenuItem("PGXP Preserve Projection Precision", nullptr,
+                                        &m_settings_copy.gpu_pgxp_preserve_proj_fp, m_settings_copy.gpu_pgxp_enable);
     ImGui::EndMenu();
   }
 
   settings_changed |= ImGui::MenuItem("True (24-Bit) Color", nullptr, &m_settings_copy.gpu_true_color);
   settings_changed |= ImGui::MenuItem("Scaled Dithering", nullptr, &m_settings_copy.gpu_scaled_dithering);
-  settings_changed |= ImGui::MenuItem("Texture Filtering", nullptr, &m_settings_copy.gpu_texture_filtering);
+
+  if (ImGui::BeginMenu("Texture Filtering"))
+  {
+    const GPUTextureFilter current = m_settings_copy.gpu_texture_filter;
+    for (u32 i = 0; i < static_cast<u32>(GPUTextureFilter::Count); i++)
+    {
+      if (ImGui::MenuItem(Settings::GetTextureFilterDisplayName(static_cast<GPUTextureFilter>(i)), nullptr,
+                          i == static_cast<u32>(current)))
+      {
+        m_settings_copy.gpu_texture_filter = static_cast<GPUTextureFilter>(i);
+        settings_changed = true;
+      }
+    }
+
+    ImGui::EndMenu();
+  }
+
+  ImGui::Separator();
+
   settings_changed |= ImGui::MenuItem("Disable Interlacing", nullptr, &m_settings_copy.gpu_disable_interlacing);
   settings_changed |= ImGui::MenuItem("Widescreen Hack", nullptr, &m_settings_copy.gpu_widescreen_hack);
+  settings_changed |= ImGui::MenuItem("Force NTSC Timings", nullptr, &m_settings_copy.gpu_force_ntsc_timings);
+  settings_changed |= ImGui::MenuItem("24-Bit Chroma Smoothing", nullptr, &m_settings_copy.gpu_24bit_chroma_smoothing);
+
+  ImGui::Separator();
+
   settings_changed |= ImGui::MenuItem("Display Linear Filtering", nullptr, &m_settings_copy.display_linear_filtering);
   settings_changed |= ImGui::MenuItem("Display Integer Scaling", nullptr, &m_settings_copy.display_integer_scaling);
+
+  if (ImGui::BeginMenu("Crop Mode"))
+  {
+    for (u32 i = 0; i < static_cast<u32>(DisplayCropMode::Count); i++)
+    {
+      if (ImGui::MenuItem(Settings::GetDisplayCropModeDisplayName(static_cast<DisplayCropMode>(i)), nullptr,
+                          m_settings_copy.display_crop_mode == static_cast<DisplayCropMode>(i)))
+      {
+        m_settings_copy.display_crop_mode = static_cast<DisplayCropMode>(i);
+        settings_changed = true;
+      }
+    }
+
+    ImGui::EndMenu();
+  }
+
+  if (ImGui::BeginMenu("Aspect Ratio"))
+  {
+    for (u32 i = 0; i < static_cast<u32>(DisplayAspectRatio::Count); i++)
+    {
+      if (ImGui::MenuItem(Settings::GetDisplayAspectRatioName(static_cast<DisplayAspectRatio>(i)), nullptr,
+                          m_settings_copy.display_aspect_ratio == static_cast<DisplayAspectRatio>(i)))
+      {
+        m_settings_copy.display_aspect_ratio = static_cast<DisplayAspectRatio>(i);
+        settings_changed = true;
+      }
+    }
+
+    ImGui::EndMenu();
+  }
+
+  settings_changed |= ImGui::MenuItem("Force 4:3 For 24-bit", nullptr, &m_settings_copy.display_force_4_3_for_24bit);
 
   ImGui::Separator();
 
@@ -904,6 +1127,7 @@ void SDLHostInterface::DrawQuickSettingsMenu()
 
 void SDLHostInterface::DrawDebugMenu()
 {
+  const bool system_valid = System::IsValid();
   Settings::DebugSettings& debug_settings = g_settings.debugging;
   bool settings_changed = false;
 
@@ -931,6 +1155,9 @@ void SDLHostInterface::DrawDebugMenu()
   settings_changed |= ImGui::MenuItem("Dump CPU to VRAM Copies", nullptr, &debug_settings.dump_cpu_to_vram_copies);
   settings_changed |= ImGui::MenuItem("Dump VRAM to CPU Copies", nullptr, &debug_settings.dump_vram_to_cpu_copies);
 
+  if (ImGui::MenuItem("Dump RAM...", nullptr, nullptr, system_valid))
+    DoDumpRAM();
+
   ImGui::Separator();
 
   settings_changed |= ImGui::MenuItem("Show VRAM", nullptr, &debug_settings.show_vram);
@@ -939,6 +1166,7 @@ void SDLHostInterface::DrawDebugMenu()
   settings_changed |= ImGui::MenuItem("Show SPU State", nullptr, &debug_settings.show_spu_state);
   settings_changed |= ImGui::MenuItem("Show Timers State", nullptr, &debug_settings.show_timers_state);
   settings_changed |= ImGui::MenuItem("Show MDEC State", nullptr, &debug_settings.show_mdec_state);
+  settings_changed |= ImGui::MenuItem("Show DMA State", nullptr, &debug_settings.show_dma_state);
 
   if (settings_changed)
   {
@@ -952,6 +1180,7 @@ void SDLHostInterface::DrawDebugMenu()
     debug_settings_copy.show_spu_state = debug_settings.show_spu_state;
     debug_settings_copy.show_timers_state = debug_settings.show_timers_state;
     debug_settings_copy.show_mdec_state = debug_settings.show_mdec_state;
+    debug_settings_copy.show_dma_state = debug_settings.show_dma_state;
     RunLater([this]() { SaveAndUpdateSettings(); });
   }
 }
@@ -1100,10 +1329,6 @@ void SDLHostInterface::DrawSettingsWindow()
           settings_changed = true;
         }
 
-        ImGui::Text("BIOS Path:");
-        ImGui::SameLine(indent);
-        settings_changed |= DrawFileChooser("##bios_path", &m_settings_copy.bios_path);
-
         settings_changed |= ImGui::Checkbox("Enable TTY Output", &m_settings_copy.bios_patch_tty_enable);
         settings_changed |= ImGui::Checkbox("Fast Boot", &m_settings_copy.bios_patch_fast_boot);
       }
@@ -1115,11 +1340,12 @@ void SDLHostInterface::DrawSettingsWindow()
         ImGui::SameLine(indent);
 
         settings_changed |= ImGui::SliderFloat("##speed", &m_settings_copy.emulation_speed, 0.25f, 5.0f);
-        settings_changed |= ImGui::Checkbox("Enable Speed Limiter", &m_settings_copy.speed_limiter_enabled);
         settings_changed |= ImGui::Checkbox("Increase Timer Resolution", &m_settings_copy.increase_timer_resolution);
         settings_changed |= ImGui::Checkbox("Pause On Start", &m_settings_copy.start_paused);
         settings_changed |= ImGui::Checkbox("Start Fullscreen", &m_settings_copy.start_fullscreen);
         settings_changed |= ImGui::Checkbox("Save State On Exit", &m_settings_copy.save_state_on_exit);
+        settings_changed |= ImGui::Checkbox("Apply Game Settings", &m_settings_copy.apply_game_settings);
+        settings_changed |= ImGui::Checkbox("Automatically Load Cheats", &m_settings_copy.auto_load_cheats);
         settings_changed |=
           ImGui::Checkbox("Load Devices From Save States", &m_settings_copy.load_devices_from_save_states);
       }
@@ -1153,6 +1379,7 @@ void SDLHostInterface::DrawSettingsWindow()
 
         settings_changed |= ImGui::Checkbox("Output Sync", &m_settings_copy.audio_sync_enabled);
         settings_changed |= ImGui::Checkbox("Start Dumping On Boot", &m_settings_copy.audio_dump_on_boot);
+        settings_changed |= ImGui::Checkbox("Mute CD Audio", &m_settings_copy.cdrom_mute_cd_audio);
       }
 
       ImGui::EndTabItem();
@@ -1231,8 +1458,24 @@ void SDLHostInterface::DrawSettingsWindow()
         settings_changed = true;
       }
 
+      settings_changed |= ImGui::Checkbox("Enable CPU Clock Control", &m_settings_copy.cpu_overclock_enable);
+      if (m_settings_copy.cpu_overclock_enable)
+      {
+        ImGui::Text("Overclock:");
+        ImGui::SameLine(indent);
+
+        int overclock_percent = static_cast<int>(m_settings_copy.GetCPUOverclockPercent());
+        if (ImGui::SliderInt("##overclock_percent", &overclock_percent, 1, 1000, "%d%%"))
+        {
+          m_settings_copy.SetCPUOverclockPercent(static_cast<u32>(overclock_percent));
+          settings_changed = true;
+        }
+      }
+
       settings_changed |=
         ImGui::Checkbox("Enable Recompiler Memory Exceptions", &m_settings_copy.cpu_recompiler_memory_exceptions);
+
+      settings_changed |= ImGui::Checkbox("Enable Recompiler ICache", &m_settings_copy.cpu_recompiler_icache);
 
       ImGui::EndTabItem();
     }
@@ -1333,16 +1576,34 @@ void SDLHostInterface::DrawSettingsWindow()
           settings_changed = true;
         }
 
+        ImGui::Text("Texture Filtering:");
+        ImGui::SameLine(indent);
+        int gpu_texture_filter = static_cast<int>(m_settings_copy.gpu_texture_filter);
+        if (ImGui::Combo(
+              "##gpu_texture_filter", &gpu_texture_filter,
+              [](void*, int index, const char** out_text) {
+                *out_text = Settings::GetTextureFilterDisplayName(static_cast<GPUTextureFilter>(index));
+                return true;
+              },
+              nullptr, static_cast<int>(GPUTextureFilter::Count)))
+        {
+          m_settings_copy.gpu_texture_filter = static_cast<GPUTextureFilter>(gpu_texture_filter);
+          settings_changed = true;
+        }
+
         settings_changed |= ImGui::Checkbox("True 24-bit Color (disables dithering)", &m_settings_copy.gpu_true_color);
-        settings_changed |= ImGui::Checkbox("Texture Filtering", &m_settings_copy.gpu_texture_filtering);
         settings_changed |= ImGui::Checkbox("Disable Interlacing", &m_settings_copy.gpu_disable_interlacing);
         settings_changed |= ImGui::Checkbox("Force NTSC Timings", &m_settings_copy.gpu_force_ntsc_timings);
         settings_changed |= ImGui::Checkbox("Widescreen Hack", &m_settings_copy.gpu_widescreen_hack);
+        settings_changed |=
+          ImGui::Checkbox("Force 4:3 For 24-Bit Display", &m_settings_copy.display_force_4_3_for_24bit);
+        settings_changed |= ImGui::Checkbox("24-Bit Chroma Smoothing", &m_settings_copy.gpu_24bit_chroma_smoothing);
 
         settings_changed |= ImGui::Checkbox("PGXP Enabled", &m_settings_copy.gpu_pgxp_enable);
         settings_changed |= ImGui::Checkbox("PGXP Culling", &m_settings_copy.gpu_pgxp_culling);
         settings_changed |= ImGui::Checkbox("PGXP Texture Correction", &m_settings_copy.gpu_pgxp_texture_correction);
         settings_changed |= ImGui::Checkbox("PGXP Vertex Cache", &m_settings_copy.gpu_pgxp_vertex_cache);
+        settings_changed |= ImGui::Checkbox("PGXP CPU", &m_settings_copy.gpu_pgxp_cpu);
       }
 
       ImGui::EndTabItem();
@@ -1485,7 +1746,7 @@ void SDLHostInterface::DoStartDisc()
   Assert(System::IsShutdown());
 
   nfdchar_t* path = nullptr;
-  if (!NFD_OpenDialog("bin,img,cue,chd,exe,psexe,psf", nullptr, &path) || !path || std::strlen(path) == 0)
+  if (!NFD_OpenDialog("bin,img,iso,cue,chd,exe,psexe,psf", nullptr, &path) || !path || std::strlen(path) == 0)
     return;
 
   AddFormattedOSDMessage(2.0f, "Starting disc from '%s'...", path);
@@ -1500,13 +1761,29 @@ void SDLHostInterface::DoChangeDisc()
   Assert(!System::IsShutdown());
 
   nfdchar_t* path = nullptr;
-  if (!NFD_OpenDialog("bin,img,cue,chd", nullptr, &path) || !path || std::strlen(path) == 0)
+  if (!NFD_OpenDialog("bin,img,iso,cue,chd", nullptr, &path) || !path || std::strlen(path) == 0)
     return;
 
   if (System::InsertMedia(path))
     AddFormattedOSDMessage(2.0f, "Switched CD to '%s'", path);
   else
     AddOSDMessage("Failed to switch CD. The log may contain further information.");
+
+  System::ResetPerformanceCounters();
+}
+
+void SDLHostInterface::DoDumpRAM()
+{
+  Assert(!System::IsShutdown());
+
+  nfdchar_t* path = nullptr;
+  if (!NFD_SaveDialog("bin", nullptr, &path) || !path || std::strlen(path) == 0)
+    return;
+
+  if (System::DumpRAM(path))
+    AddFormattedOSDMessage(5.0f, "Dumped RAM to '%s'", path);
+  else
+    AddFormattedOSDMessage(10.0f, "Failed to dump RAM to '%s'", path);
 
   System::ResetPerformanceCounters();
 }

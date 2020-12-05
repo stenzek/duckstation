@@ -169,16 +169,6 @@ void StagingTexture::CopyToTexture(u32 src_x, u32 src_y, Texture& dst_texture, u
   m_flush_fence_counter = g_vulkan_context->GetCurrentFenceCounter();
 }
 
-bool StagingTexture::Map()
-{
-  return m_staging_buffer.Map();
-}
-
-void StagingTexture::Unmap()
-{
-  return m_staging_buffer.Unmap();
-}
-
 void StagingTexture::Flush()
 {
   if (!m_needs_flush)
@@ -209,10 +199,8 @@ void StagingTexture::Flush()
 void StagingTexture::ReadTexels(u32 src_x, u32 src_y, u32 width, u32 height, void* out_ptr, u32 out_stride)
 {
   Assert(m_staging_buffer.GetType() != StagingBuffer::Type::Upload);
-  if (!PrepareForAccess())
-    return;
-
   Assert((src_x + width) <= m_width && (src_y + height) <= m_height);
+  PrepareForAccess();
 
   // Offset pointer to point to start of region being copied out.
   const char* current_ptr = m_staging_buffer.GetMapPointer();
@@ -239,10 +227,9 @@ void StagingTexture::ReadTexels(u32 src_x, u32 src_y, u32 width, u32 height, voi
 void StagingTexture::ReadTexel(u32 x, u32 y, void* out_ptr)
 {
   Assert(m_staging_buffer.GetType() != StagingBuffer::Type::Upload);
-  if (!PrepareForAccess())
-    return;
-
   Assert(x < m_width && y < m_height);
+  PrepareForAccess();
+
   const char* src_ptr = GetMappedPointer() + y * GetMappedStride() + x * m_texel_size;
   std::memcpy(out_ptr, src_ptr, m_texel_size);
 }
@@ -250,10 +237,8 @@ void StagingTexture::ReadTexel(u32 x, u32 y, void* out_ptr)
 void StagingTexture::WriteTexels(u32 dst_x, u32 dst_y, u32 width, u32 height, const void* in_ptr, u32 in_stride)
 {
   Assert(m_staging_buffer.GetType() != StagingBuffer::Type::Readback);
-  if (!PrepareForAccess())
-    return;
-
   Assert((dst_x + width) <= m_width && (dst_y + height) <= m_height);
+  PrepareForAccess();
 
   // Offset pointer to point to start of region being copied to.
   char* current_ptr = GetMappedPointer();
@@ -279,23 +264,18 @@ void StagingTexture::WriteTexels(u32 dst_x, u32 dst_y, u32 width, u32 height, co
 
 void StagingTexture::WriteTexel(u32 x, u32 y, const void* in_ptr)
 {
-  if (!PrepareForAccess())
-    return;
-
   Assert(x < m_width && y < m_height);
+  PrepareForAccess();
+
   char* dest_ptr = GetMappedPointer() + y * m_map_stride + x * m_texel_size;
   std::memcpy(dest_ptr, in_ptr, m_texel_size);
 }
 
-bool StagingTexture::PrepareForAccess()
+void StagingTexture::PrepareForAccess()
 {
+  Assert(IsMapped());
   if (m_needs_flush)
-  {
-    if (IsMapped())
-      Unmap();
     Flush();
-  }
-  return IsMapped() || Map();
 }
 
 } // namespace Vulkan

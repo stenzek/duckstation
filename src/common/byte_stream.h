@@ -168,7 +168,12 @@ public:
   virtual ~GrowableMemoryByteStream();
 
   u8* GetMemoryPointer() const { return m_pMemory; }
-  u32 GetMemorySize() const { return m_iSize; }
+  u32 GetMemorySize() const { return m_iMemorySize; }
+
+  void Resize(u32 new_size);
+  void ResizeMemory(u32 new_size);
+  void EnsureSpace(u32 space);
+  void ShrinkToFit();
 
   virtual bool ReadByte(u8* pDestByte) override;
   virtual u32 Read(void* pDestination, u32 ByteCount) override;

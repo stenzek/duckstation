@@ -30,12 +30,15 @@ protected:
   bool CreateContext(const Version& version, EGLContext share_context);
   bool CreateContextAndSurface(const Version& version, EGLContext share_context, bool make_current);
   bool CreateSurface();
+  bool CreatePBufferSurface();
 
   EGLDisplay m_display = EGL_NO_DISPLAY;
   EGLSurface m_surface = EGL_NO_SURFACE;
   EGLContext m_context = EGL_NO_CONTEXT;
 
   EGLConfig m_config = {};
+
+  bool m_supports_surfaceless = false;
 };
 
 } // namespace GL

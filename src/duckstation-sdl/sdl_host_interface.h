@@ -38,6 +38,8 @@ public:
   int GetIntSettingValue(const char* section, const char* key, int default_value = 0) override;
   float GetFloatSettingValue(const char* section, const char* key, float default_value = 0.0f) override;
 
+  bool RequestRenderWindowSize(s32 new_window_width, s32 new_window_height) override;
+
   void Run();
 
 protected:
@@ -45,8 +47,6 @@ protected:
 
   bool AcquireHostDisplay() override;
   void ReleaseHostDisplay() override;
-  std::unique_ptr<AudioStream> CreateAudioStream(AudioBackend backend) override;
-  std::unique_ptr<ControllerInterface> CreateControllerInterface() override;
 
   void OnSystemCreated() override;
   void OnSystemPaused(bool paused) override;
@@ -79,6 +79,7 @@ private:
   void DrawImGuiWindows() override;
   void DoStartDisc();
   void DoChangeDisc();
+  void DoDumpRAM();
 
   void HandleSDLEvent(const SDL_Event* event);
   void ProcessEvents();

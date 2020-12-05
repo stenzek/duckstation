@@ -14,6 +14,8 @@ class GameListWidget;
 class QtHostInterface;
 class QtDisplayWidget;
 class AutoUpdaterDialog;
+class MemoryCardEditorDialog;
+class CheatManagerDialog;
 
 class HostDisplay;
 struct GameListEntry;
@@ -29,6 +31,13 @@ public:
   /// Performs update check if enabled in settings.
   void startupUpdateCheck();
 
+  /// Opens memory card editor with the specified paths.
+  void openMemoryCardEditor(const QString& card_a_path, const QString& card_b_path);
+
+public Q_SLOTS:
+  /// Updates debug menu visibility (hides if disabled).
+  void updateDebugMenuVisibility();
+
 private Q_SLOTS:
   void reportError(const QString& message);
   void reportMessage(const QString& message);
@@ -36,6 +45,7 @@ private Q_SLOTS:
   QtDisplayWidget* createDisplay(QThread* worker_thread, const QString& adapter_name, bool use_debug_device,
                                  bool fullscreen, bool render_to_main);
   QtDisplayWidget* updateDisplay(QThread* worker_thread, bool fullscreen, bool render_to_main);
+  void displaySizeRequested(qint32 width, qint32 height);
   void destroyDisplay();
   void focusDisplayWidget();
 
@@ -50,20 +60,35 @@ private Q_SLOTS:
   void onSystemPerformanceCountersUpdated(float speed, float fps, float vps, float average_frame_time,
                                           float worst_frame_time);
   void onRunningGameChanged(const QString& filename, const QString& game_code, const QString& game_title);
+  void onApplicationStateChanged(Qt::ApplicationState state);
 
   void onStartDiscActionTriggered();
   void onStartBIOSActionTriggered();
   void onChangeDiscFromFileActionTriggered();
   void onChangeDiscFromGameListActionTriggered();
+  void onChangeDiscFromPlaylistMenuAboutToShow();
+  void onChangeDiscFromPlaylistMenuAboutToHide();
+  void onCheatsMenuAboutToShow();
   void onRemoveDiscActionTriggered();
+  void onViewToolbarActionToggled(bool checked);
+  void onViewStatusBarActionToggled(bool checked);
+  void onViewGameListActionTriggered();
+  void onViewGameGridActionTriggered();
+  void onViewSystemDisplayTriggered();
+  void onViewGamePropertiesActionTriggered();
   void onGitHubRepositoryActionTriggered();
   void onIssueTrackerActionTriggered();
   void onDiscordServerActionTriggered();
   void onAboutActionTriggered();
+  void onCheckForUpdatesActionTriggered();
+  void onToolsMemoryCardEditorTriggered();
+  void onToolsCheatManagerTriggered();
+  void onToolsOpenDataDirectoryTriggered();
 
   void onGameListEntrySelected(const GameListEntry* entry);
   void onGameListEntryDoubleClicked(const GameListEntry* entry);
   void onGameListContextMenuRequested(const QPoint& point, const GameListEntry* entry);
+  void onGameListSetCoverImageRequested(const GameListEntry* entry);
 
   void checkForUpdates(bool display_message);
   void onUpdateCheckComplete();
@@ -77,13 +102,20 @@ private:
   void connectSignals();
   void addThemeToMenu(const QString& name, const QString& key);
   void updateEmulationActions(bool starting, bool running);
+  bool isShowingGameList() const;
   void switchToGameListView();
   void switchToEmulationView();
+  void saveStateToConfig();
+  void restoreStateFromConfig();
+  void saveDisplayWindowGeometryToConfig();
+  void restoreDisplayWindowGeometryFromConfig();
   void destroyDisplayWidget();
+  void setDisplayFullscreen(const std::string& fullscreen_mode);
   SettingsDialog* getSettingsDialog();
   void doSettings(SettingsDialog::Category category = SettingsDialog::Category::Count);
   void updateDebugMenuCPUExecutionMode();
   void updateDebugMenuGPURenderer();
+  void updateDebugMenuCropMode();
 
   Ui::MainWindow m_ui;
 
@@ -102,6 +134,9 @@ private:
 
   SettingsDialog* m_settings_dialog = nullptr;
   AutoUpdaterDialog* m_auto_updater_dialog = nullptr;
+  MemoryCardEditorDialog* m_memory_card_editor_dialog = nullptr;
+  CheatManagerDialog* m_cheat_manager_dialog = nullptr;
 
   bool m_emulation_running = false;
+  bool m_was_paused_by_focus_loss = false;
 };

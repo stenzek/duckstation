@@ -1,8 +1,11 @@
 #include "qtutils.h"
 #include "common/byte_stream.h"
+#include "common/make_array.h"
+#include <QtCore/QCoreApplication>
 #include <QtCore/QMetaObject>
 #include <QtGui/QDesktopServices>
 #include <QtGui/QKeyEvent>
+#include <QtWidgets/QComboBox>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QMainWindow>
@@ -10,6 +13,7 @@
 #include <QtWidgets/QScrollBar>
 #include <QtWidgets/QStyle>
 #include <QtWidgets/QTableView>
+#include <QtWidgets/QTreeView>
 #include <algorithm>
 #include <array>
 #include <map>
@@ -42,10 +46,17 @@ QWidget* GetRootWidget(QWidget* widget, bool stop_at_window_or_dialog)
   return widget;
 }
 
-void ResizeColumnsForTableView(QTableView* view, const std::initializer_list<int>& widths)
+template<typename T>
+ALWAYS_INLINE_RELEASE static void ResizeColumnsForView(T* view, const std::initializer_list<int>& widths)
 {
-  const int min_column_width = view->horizontalHeader()->minimumSectionSize();
-  const int max_column_width = view->horizontalHeader()->maximumSectionSize();
+  QHeaderView* header;
+  if constexpr (std::is_same_v<T, QTableView>)
+    header = view->horizontalHeader();
+  else
+    header = view->header();
+
+  const int min_column_width = header->minimumSectionSize();
+  const int max_column_width = header->maximumSectionSize();
   const int total_width =
     std::accumulate(widths.begin(), widths.end(), 0, [&min_column_width, &max_column_width](int a, int b) {
       return a + ((b < 0) ? 0 : std::clamp(b, min_column_width, max_column_width));
@@ -70,6 +81,16 @@ void ResizeColumnsForTableView(QTableView* view, const std::initializer_list<int
     view->setColumnWidth(column_index, width);
     column_index++;
   }
+}
+
+void ResizeColumnsForTableView(QTableView* view, const std::initializer_list<int>& widths)
+{
+  ResizeColumnsForView(view, widths);
+}
+
+void ResizeColumnsForTreeView(QTreeView* view, const std::initializer_list<int>& widths)
+{
+  ResizeColumnsForView(view, widths);
 }
 
 static const std::map<int, QString> s_qt_key_names = {
@@ -525,8 +546,6 @@ static const std::array<QtKeyModifierEntry, 5> s_qt_key_modifiers = {
    {Qt::AltModifier, Qt::Key_Alt, QStringLiteral("Alt")},
    {Qt::MetaModifier, Qt::Key_Meta, QStringLiteral("Meta")},
    {Qt::KeypadModifier, static_cast<Qt::Key>(0), QStringLiteral("Keypad")}}};
-static const Qt::KeyboardModifiers s_qt_modifier_mask =
-  Qt::ShiftModifier | Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier | Qt::KeypadModifier;
 
 QString GetKeyIdentifier(int key)
 {
@@ -597,7 +616,20 @@ std::optional<int> ParseKeyString(const QString& key_str)
 
 int KeyEventToInt(const QKeyEvent* ke)
 {
-  return static_cast<int>(ke->modifiers() & s_qt_modifier_mask) | ke->key();
+  const Qt::KeyboardModifiers mods = ke->modifiers();
+  const int key = ke->key();
+
+  int val = key;
+  if (mods != 0)
+  {
+    for (const QtKeyModifierEntry& mod : s_qt_key_modifiers)
+    {
+      if (mods & mod.mod && key != mod.key)
+        val |= static_cast<int>(mod.mod);
+    }
+  }
+
+  return val;
 }
 
 QByteArray ReadStreamToQByteArray(ByteStream* stream, bool rewind /*= false*/)
@@ -633,6 +665,75 @@ void OpenURL(QWidget* parent, const QUrl& qurl)
 void OpenURL(QWidget* parent, const char* url)
 {
   return OpenURL(parent, QUrl::fromEncoded(QByteArray(url, static_cast<int>(std::strlen(url)))));
+}
+
+void FillComboBoxWithResolutionScales(QComboBox* cb)
+{
+  cb->addItem(qApp->translate("GPUSettingsWidget", "Automatic based on window size"));
+  cb->addItem(qApp->translate("GPUSettingsWidget", "1x"));
+  cb->addItem(qApp->translate("GPUSettingsWidget", "2x"));
+  cb->addItem(qApp->translate("GPUSettingsWidget", "3x (for 720p)"));
+  cb->addItem(qApp->translate("GPUSettingsWidget", "4x"));
+  cb->addItem(qApp->translate("GPUSettingsWidget", "5x (for 1080p)"));
+  cb->addItem(qApp->translate("GPUSettingsWidget", "6x (for 1440p)"));
+  cb->addItem(qApp->translate("GPUSettingsWidget", "7x"));
+  cb->addItem(qApp->translate("GPUSettingsWidget", "8x"));
+  cb->addItem(qApp->translate("GPUSettingsWidget", "9x (for 4K)"));
+  cb->addItem(qApp->translate("GPUSettingsWidget", "10x"));
+  cb->addItem(qApp->translate("GPUSettingsWidget", "11x"));
+  cb->addItem(qApp->translate("GPUSettingsWidget", "12x"));
+  cb->addItem(qApp->translate("GPUSettingsWidget", "13x"));
+  cb->addItem(qApp->translate("GPUSettingsWidget", "14x"));
+  cb->addItem(qApp->translate("GPUSettingsWidget", "15x"));
+  cb->addItem(qApp->translate("GPUSettingsWidget", "16x"));
+}
+
+QVariant GetMSAAModeValue(uint multisamples, bool ssaa)
+{
+  const uint userdata = (multisamples & 0x7FFFFFFFu) | (static_cast<uint>(ssaa) << 31);
+  return QVariant(userdata);
+}
+
+void DecodeMSAAModeValue(const QVariant& userdata, uint* multisamples, bool* ssaa)
+{
+  bool ok;
+  const uint value = userdata.toUInt(&ok);
+  if (!ok || value == 0)
+  {
+    *multisamples = 1;
+    *ssaa = false;
+    return;
+  }
+
+  *multisamples = value & 0x7FFFFFFFu;
+  *ssaa = (value & (1u << 31)) != 0u;
+}
+
+void FillComboBoxWithMSAAModes(QComboBox* cb)
+{
+  cb->addItem(qApp->translate("GPUSettingsWidget", "Disabled"), GetMSAAModeValue(1, false));
+
+  for (uint i = 2; i <= 32; i *= 2)
+    cb->addItem(qApp->translate("GPUSettingsWidget", "%1x MSAA").arg(i), GetMSAAModeValue(i, false));
+
+  for (uint i = 2; i <= 32; i *= 2)
+    cb->addItem(qApp->translate("GPUSettingsWidget", "%1x SSAA").arg(i), GetMSAAModeValue(i, true));
+}
+
+void FillComboBoxWithEmulationSpeeds(QComboBox* cb)
+{
+  cb->addItem(qApp->translate("GeneralSettingsWidget", "Unlimited"), QVariant(0.0f));
+
+  static constexpr auto speeds = make_array(10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 125, 150, 175, 200, 250, 300, 350,
+                                            400, 450, 500, 600, 700, 800, 900, 1000);
+  for (const int speed : speeds)
+  {
+    cb->addItem(qApp->translate("GeneralSettingsWidget", "%1% [%2 FPS (NTSC) / %3 FPS (PAL)]")
+                  .arg(speed)
+                  .arg((60 * speed) / 100)
+                  .arg((50 * speed) / 100),
+                QVariant(static_cast<float>(speed) / 100.0f));
+  }
 }
 
 } // namespace QtUtils

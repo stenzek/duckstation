@@ -318,8 +318,25 @@ u32 RegisterCache::PopCallerSavedRegisters() const
     if ((m_state.host_reg_state[i] & (HostRegState::CallerSaved | HostRegState::InUse | HostRegState::Discarded)) ==
         (HostRegState::CallerSaved | HostRegState::InUse))
     {
-      m_code_generator.EmitPopHostReg(static_cast<HostReg>(i), position);
-      position--;
+      u32 reg_pair;
+      for (reg_pair = (i - 1); reg_pair > 0 && reg_pair < HostReg_Count; reg_pair--)
+      {
+        if ((m_state.host_reg_state[reg_pair] &
+             (HostRegState::CallerSaved | HostRegState::InUse | HostRegState::Discarded)) ==
+            (HostRegState::CallerSaved | HostRegState::InUse))
+        {
+          m_code_generator.EmitPopHostRegPair(static_cast<HostReg>(reg_pair), static_cast<HostReg>(i), position);
+          position -= 2;
+          i = reg_pair;
+          break;
+        }
+      }
+
+      if (reg_pair == 0)
+      {
+        m_code_generator.EmitPopHostReg(static_cast<HostReg>(i), position);
+        position--;
+      }
     }
     i--;
   } while (i > 0);
@@ -339,16 +356,85 @@ u32 RegisterCache::PopCalleeSavedRegisters(bool commit)
     DebugAssert((m_state.host_reg_state[reg] & (HostRegState::CalleeSaved | HostRegState::CalleeSavedAllocated)) ==
                 (HostRegState::CalleeSaved | HostRegState::CalleeSavedAllocated));
 
-    m_code_generator.EmitPopHostReg(reg, i - 1);
-    if (commit)
-      m_state.host_reg_state[reg] &= ~HostRegState::CalleeSavedAllocated;
-    count++;
-    i--;
+    if (i > 1)
+    {
+      const HostReg reg2 = m_state.callee_saved_order[i - 2];
+      DebugAssert((m_state.host_reg_state[reg2] & (HostRegState::CalleeSaved | HostRegState::CalleeSavedAllocated)) ==
+                  (HostRegState::CalleeSaved | HostRegState::CalleeSavedAllocated));
+
+      m_code_generator.EmitPopHostRegPair(reg2, reg, i - 1);
+      i -= 2;
+      count += 2;
+
+      if (commit)
+      {
+        m_state.host_reg_state[reg] &= ~HostRegState::CalleeSavedAllocated;
+        m_state.host_reg_state[reg2] &= ~HostRegState::CalleeSavedAllocated;
+      }
+    }
+    else
+    {
+      m_code_generator.EmitPopHostReg(reg, i - 1);
+      if (commit)
+        m_state.host_reg_state[reg] &= ~HostRegState::CalleeSavedAllocated;
+      count++;
+      i--;
+    }
   } while (i > 0);
   if (commit)
     m_state.callee_saved_order_count = 0;
 
   return count;
+}
+
+void RegisterCache::ReserveCalleeSavedRegisters()
+{
+  for (u32 reg = 0; reg < HostReg_Count; reg++)
+  {
+    if ((m_state.host_reg_state[reg] & (HostRegState::CalleeSaved | HostRegState::CalleeSavedAllocated)) ==
+        HostRegState::CalleeSaved)
+    {
+      DebugAssert(m_state.callee_saved_order_count < HostReg_Count);
+
+      // can we find a paired register? (mainly for ARM)
+      u32 reg_pair;
+      for (reg_pair = reg + 1; reg_pair < HostReg_Count; reg_pair++)
+      {
+        if ((m_state.host_reg_state[reg_pair] & (HostRegState::CalleeSaved | HostRegState::CalleeSavedAllocated)) ==
+            HostRegState::CalleeSaved)
+        {
+          m_code_generator.EmitPushHostRegPair(static_cast<HostReg>(reg), static_cast<HostReg>(reg_pair),
+                                               GetActiveCalleeSavedRegisterCount());
+
+          m_state.callee_saved_order[m_state.callee_saved_order_count++] = static_cast<HostReg>(reg);
+          m_state.host_reg_state[reg] |= HostRegState::CalleeSavedAllocated;
+          m_state.callee_saved_order[m_state.callee_saved_order_count++] = static_cast<HostReg>(reg_pair);
+          m_state.host_reg_state[reg_pair] |= HostRegState::CalleeSavedAllocated;
+          reg = reg_pair;
+          break;
+        }
+      }
+
+      if (reg_pair == HostReg_Count)
+      {
+        m_code_generator.EmitPushHostReg(static_cast<HostReg>(reg), GetActiveCalleeSavedRegisterCount());
+        m_state.callee_saved_order[m_state.callee_saved_order_count++] = static_cast<HostReg>(reg);
+        m_state.host_reg_state[reg] |= HostRegState::CalleeSavedAllocated;
+      }
+    }
+  }
+}
+
+void RegisterCache::AssumeCalleeSavedRegistersAreSaved()
+{
+  for (u32 i = 0; i < HostReg_Count; i++)
+  {
+    if ((m_state.host_reg_state[i] & (HostRegState::CalleeSaved | HostRegState::CalleeSavedAllocated)) ==
+        HostRegState::CalleeSaved)
+    {
+      m_state.host_reg_state[i] &= ~HostRegState::CalleeSaved;
+    }
+  }
 }
 
 void RegisterCache::PushState()
@@ -739,6 +825,21 @@ void RegisterCache::FlushAllGuestRegisters(bool invalidate, bool clear_dirty)
     FlushGuestRegister(static_cast<Reg>(reg), invalidate, clear_dirty);
 }
 
+void RegisterCache::FlushCallerSavedGuestRegisters(bool invalidate, bool clear_dirty)
+{
+  for (u8 reg = 0; reg < static_cast<u8>(Reg::count); reg++)
+  {
+    const Value& gr = m_state.guest_reg_state[reg];
+    if (!gr.IsInHostRegister() ||
+        (m_state.host_reg_state[gr.GetHostRegister()] & HostRegState::CallerSaved) != HostRegState::CallerSaved)
+    {
+      continue;
+    }
+
+    FlushGuestRegister(static_cast<Reg>(reg), invalidate, clear_dirty);
+  }
+}
+
 bool RegisterCache::EvictOneGuestRegister()
 {
   if (m_state.guest_reg_order_count == 0)
@@ -806,7 +907,7 @@ void RegisterCache::InhibitAllocation()
   m_state.allocator_inhibit_count++;
 }
 
-void RegisterCache::UnunhibitAllocation()
+void RegisterCache::UninhibitAllocation()
 {
   Assert(m_state.allocator_inhibit_count > 0);
   m_state.allocator_inhibit_count--;

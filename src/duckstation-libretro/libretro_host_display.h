@@ -1,6 +1,6 @@
 #pragma once
 #include "core/host_display.h"
-#include <memory>
+#include "libretro.h"
 
 class LibretroHostDisplay final : public HostDisplay
 {
@@ -24,7 +24,15 @@ public:
 
   bool ChangeRenderWindow(const WindowInfo& wi) override;
   void ResizeRenderWindow(s32 new_window_width, s32 new_window_height) override;
+  bool SupportsFullscreen() const override;
+  bool IsFullscreen() override;
+  bool SetFullscreen(bool fullscreen, u32 width, u32 height, float refresh_rate) override;
   void DestroyRenderSurface() override;
+
+  bool SetPostProcessingChain(const std::string_view& config) override;
+
+  bool CreateResources() override;
+  void DestroyResources() override;
 
   std::unique_ptr<HostDisplayTexture> CreateTexture(u32 width, u32 height, const void* data, u32 data_stride,
                                                     bool dynamic) override;
@@ -36,4 +44,18 @@ public:
   void SetVSync(bool enabled) override;
 
   bool Render() override;
+
+  bool SupportsDisplayPixelFormat(HostDisplayPixelFormat format) const override;
+
+  bool BeginSetDisplayPixels(HostDisplayPixelFormat format, u32 width, u32 height, void** out_buffer,
+                             u32* out_pitch) override;
+  void EndSetDisplayPixels() override;
+
+private:
+  bool CheckPixelFormat(retro_pixel_format new_format);
+
+  std::vector<u32> m_frame_buffer;
+  u32 m_frame_buffer_pitch = 0;
+  retro_framebuffer m_software_fb = {};
+  retro_pixel_format m_current_pixel_format = RETRO_PIXEL_FORMAT_UNKNOWN;
 };

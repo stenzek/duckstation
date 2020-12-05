@@ -1,24 +1,24 @@
 package com.github.stenzek.duckstation;
 
-import android.annotation.SuppressLint;
-
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
+import android.hardware.input.InputManager;
+import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
+import android.os.Vibrator;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MotionEvent;
 import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.View;
-import android.view.MenuItem;
 import android.widget.FrameLayout;
+import android.widget.Toast;
 
-import androidx.core.app.NavUtils;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.PreferenceManager;
 
 /**
@@ -29,78 +29,125 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     /**
      * Settings interfaces.
      */
-    SharedPreferences mPreferences;
+    private SharedPreferences mPreferences;
+    private boolean mWasDestroyed = false;
+    private boolean mStopRequested = false;
+    private boolean mApplySettingsOnSurfaceRestored = false;
+    private String mGameTitle = null;
+    private EmulationSurfaceView mContentView;
+    private int mSaveStateSlot = 0;
+
     private boolean getBooleanSetting(String key, boolean defaultValue) {
         return mPreferences.getBoolean(key, defaultValue);
     }
+
     private void setBooleanSetting(String key, boolean value) {
         SharedPreferences.Editor editor = mPreferences.edit();
         editor.putBoolean(key, value);
         editor.apply();
     }
+
     private String getStringSetting(String key, String defaultValue) {
         return mPreferences.getString(key, defaultValue);
     }
 
-    /**
-     * Touchscreen controller overlay
-     */
-    TouchscreenControllerView mTouchscreenController;
-    private boolean mTouchscreenControllerVisible = true;
+    private void setStringSetting(String key, String value) {
+        SharedPreferences.Editor editor = mPreferences.edit();
+        editor.putString(key, value);
+        editor.apply();
+    }
 
-    /**
-     * Whether or not the system UI should be auto-hidden after
-     * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
-     */
-    private static final boolean AUTO_HIDE = true;
+    private void reportErrorOnUIThread(String message) {
+        // Toast.makeText(this, message, Toast.LENGTH_LONG);
+        new AlertDialog.Builder(this)
+                .setTitle("Error")
+                .setMessage(message)
+                .setPositiveButton("OK", (dialog, button) -> {
+                    dialog.dismiss();
+                    enableFullscreenImmersive();
+                })
+                .create()
+                .show();
+    }
 
-    /**
-     * If {@link #AUTO_HIDE} is set, the number of milliseconds to wait after
-     * user interaction before hiding the system UI.
-     */
-    private static final int AUTO_HIDE_DELAY_MILLIS = 3000;
+    public void reportError(String message) {
+        Log.e("EmulationActivity", message);
 
-    /**
-     * Some older devices needs a small delay between UI widget updates
-     * and a change of the status and navigation bar.
-     */
-    private static final int UI_ANIMATION_DELAY = 300;
-    private final Handler mHideHandler = new Handler();
-    private EmulationSurfaceView mContentView;
-    private final Runnable mHidePart2Runnable = new Runnable() {
-        @SuppressLint("InlinedApi")
-        @Override
-        public void run() {
-            // Delayed removal of status and navigation bar
+        Object lock = new Object();
+        runOnUiThread(() -> {
+            // Toast.makeText(this, message, Toast.LENGTH_LONG);
+            new AlertDialog.Builder(this)
+                    .setTitle("Error")
+                    .setMessage(message)
+                    .setPositiveButton("OK", (dialog, button) -> {
+                        dialog.dismiss();
+                        enableFullscreenImmersive();
+                        synchronized (lock) {
+                            lock.notify();
+                        }
+                    })
+                    .create()
+                    .show();
+        });
 
-            // Note that some of these constants are new as of API 16 (Jelly Bean)
-            // and API 19 (KitKat). It is safe to use them, as they are inlined
-            // at compile-time and do nothing on earlier devices.
-            mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE
-                    | View.SYSTEM_UI_FLAG_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
-        }
-    };
-    private final Runnable mShowPart2Runnable = new Runnable() {
-        @Override
-        public void run() {
-            // Delayed display of UI elements
-            ActionBar actionBar = getSupportActionBar();
-            if (actionBar != null) {
-                actionBar.show();
+        synchronized (lock) {
+            try {
+                lock.wait();
+            } catch (InterruptedException e) {
             }
         }
-    };
-    private boolean mVisible;
-    private final Runnable mHideRunnable = new Runnable() {
-        @Override
-        public void run() {
-            hide();
+    }
+
+    public void reportMessage(String message) {
+        Log.i("EmulationActivity", message);
+        runOnUiThread(() -> {
+            Toast.makeText(this, message, Toast.LENGTH_SHORT);
+        });
+    }
+
+    public void onEmulationStarted() {
+    }
+
+    public void onEmulationStopped() {
+        runOnUiThread(() -> {
+            AndroidHostInterface.getInstance().stopEmulationThread();
+            if (!mWasDestroyed && !mStopRequested)
+                finish();
+        });
+    }
+
+    public void onGameTitleChanged(String title) {
+        runOnUiThread(() -> {
+            mGameTitle = title;
+        });
+    }
+
+    private void doApplySettings() {
+        AndroidHostInterface.getInstance().applySettings();
+        updateRequestedOrientation();
+        updateControllers();
+    }
+
+    private void applySettings() {
+        if (!AndroidHostInterface.getInstance().isEmulationThreadRunning())
+            return;
+
+        if (AndroidHostInterface.getInstance().hasSurface()) {
+            doApplySettings();
+        } else {
+            mApplySettingsOnSurfaceRestored = true;
         }
-    };
+    }
+
+    /// Ends the activity if it was restored without properly being created.
+    private boolean checkActivityIsValid() {
+        if (!AndroidHostInterface.hasInstance() || !AndroidHostInterface.getInstance().isEmulationThreadRunning()) {
+            finish();
+            return false;
+        }
+
+        return true;
+    }
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
@@ -111,19 +158,23 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         // Once we get a surface, we can boot.
         if (AndroidHostInterface.getInstance().isEmulationThreadRunning()) {
             AndroidHostInterface.getInstance().surfaceChanged(holder.getSurface(), format, width, height);
+            updateOrientation();
+
+            if (mApplySettingsOnSurfaceRestored) {
+                mApplySettingsOnSurfaceRestored = false;
+                doApplySettings();
+            }
+
             return;
         }
 
-        String bootPath = getIntent().getStringExtra("bootPath");
-        String bootSaveStatePath = getIntent().getStringExtra("bootSaveStatePath");
-        boolean resumeState = getIntent().getBooleanExtra("resumeState", false);
+        final String bootPath = getIntent().getStringExtra("bootPath");
+        final boolean resumeState = getIntent().getBooleanExtra("resumeState", false);
+        final String bootSaveStatePath = getIntent().getStringExtra("saveStatePath");
 
-        if (!AndroidHostInterface.getInstance()
-                .startEmulationThread(holder.getSurface(), bootPath, bootSaveStatePath)) {
-            Log.e("EmulationActivity", "Failed to start emulation thread");
-            finishActivity(0);
-            return;
-        }
+        AndroidHostInterface.getInstance().startEmulationThread(this, holder.getSurface(), bootPath, resumeState, bootSaveStatePath);
+        updateRequestedOrientation();
+        updateOrientation();
     }
 
     @Override
@@ -131,147 +182,419 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         if (!AndroidHostInterface.getInstance().isEmulationThreadRunning())
             return;
 
-        Log.i("EmulationActivity", "Stopping emulation thread");
-        AndroidHostInterface.getInstance().stopEmulationThread();
+        Log.i("EmulationActivity", "Surface destroyed");
+
+        // Save the resume state in case we never get back again...
+        if (!mStopRequested)
+            AndroidHostInterface.getInstance().saveResumeState(true);
+
+        AndroidHostInterface.getInstance().surfaceChanged(null, 0, 0, 0);
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-        setContentView(R.layout.activity_emulation);
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
+        mPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        Log.i("EmulationActivity", "OnCreate");
+
+        // we might be coming from a third-party launcher if the host interface isn't setup
+        if (!AndroidHostInterface.hasInstance() && !AndroidHostInterface.createInstance(this)) {
+            finish();
+            return;
         }
 
-        mVisible = true;
+        enableFullscreenImmersive();
+        setContentView(R.layout.activity_emulation);
+
         mContentView = findViewById(R.id.fullscreen_content);
         mContentView.getHolder().addCallback(this);
-        mContentView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (mVisible)
-                    hide();
-            }
-        });
+        mContentView.setFocusable(true);
+        mContentView.requestFocus();
 
         // Hook up controller input.
-        final String controllerType = getStringSetting("Controller1/Type", "DigitalController");
-        Log.i("EmulationActivity", "Controller type: " + controllerType);
-        mContentView.initControllerKeyMapping(controllerType);
-
-        // Create touchscreen controller.
-        FrameLayout activityLayout = findViewById(R.id.frameLayout);
-        mTouchscreenController = new TouchscreenControllerView(this);
-        activityLayout.addView(mTouchscreenController);
-        mTouchscreenController.init(0, controllerType);
-        setTouchscreenControllerVisibility(getBooleanSetting("Controller1/EnableTouchscreenController", true));
+        updateControllers();
+        registerInputDeviceListener();
     }
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-
-        // Trigger the initial hide() shortly after the activity has been
-        // created, to briefly hint to the user that UI controls
-        // are available.
-        delayedHide(100);
+        enableFullscreenImmersive();
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_emulation, menu);
-        menu.findItem(R.id.show_controller).setChecked(mTouchscreenControllerVisible);
-        menu.findItem(R.id.enable_speed_limiter).setChecked(getBooleanSetting("Main/SpeedLimiterEnabled", true));
-        menu.findItem(R.id.show_controller).setChecked(getBooleanSetting("Controller1/EnableTouchscreenController", true));
-        return true;
+    protected void onPostResume() {
+        super.onPostResume();
+        enableFullscreenImmersive();
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            Intent intent = new Intent(this, SettingsActivity.class);
-            startActivity(intent);
-            return true;
-        } else if (id == R.id.show_controller) {
-            setTouchscreenControllerVisibility(!mTouchscreenControllerVisible);
-            item.setChecked(mTouchscreenControllerVisible);
-            return true;
-        } else if (id == R.id.enable_speed_limiter) {
-            boolean newSetting = !getBooleanSetting("Main/SpeedLimiterEnabled", true);
-            setBooleanSetting("Main/SpeedLimiterEnabled", newSetting);
-            item.setChecked(newSetting);
-            AndroidHostInterface.getInstance().applySettings();
-            return true;
-        } else if (id == R.id.reset) {
-            AndroidHostInterface.getInstance().resetSystem();
-        } else if (id == R.id.quick_load) {
-            AndroidHostInterface.getInstance().loadState(false, 0);
-        } else if (id == R.id.quick_save) {
-            AndroidHostInterface.getInstance().saveState(false, 0);
-        } else if (id == R.id.quit) {
-            finish();
-            return true;
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.i("EmulationActivity", "OnStop");
+        if (AndroidHostInterface.getInstance().isEmulationThreadRunning()) {
+            mWasDestroyed = true;
+            AndroidHostInterface.getInstance().stopEmulationThread();
         }
 
-        return super.onOptionsItemSelected(item);
+        unregisterInputDeviceListener();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (!checkActivityIsValid()) {
+            // we must've got killed off in the background :(
+            return;
+        }
+
+        if (requestCode == REQUEST_CODE_SETTINGS) {
+            if (AndroidHostInterface.getInstance().isEmulationThreadRunning()) {
+                applySettings();
+            }
+        } else if (requestCode == REQUEST_IMPORT_PATCH_CODES) {
+            if (data != null)
+                importPatchesFromFile(data.getData());
+        }
     }
 
     @Override
     public void onBackPressed() {
-        if (mVisible) {
-            finish();
+        showMenu();
+    }
+
+    @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        if (checkActivityIsValid())
+            updateOrientation(newConfig.orientation);
+    }
+
+    private void updateRequestedOrientation() {
+        final String orientation = getStringSetting("Main/EmulationScreenOrientation", "unspecified");
+        if (orientation.equals("portrait"))
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER_PORTRAIT);
+        else if (orientation.equals("landscape"))
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE);
+        else
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+    }
+
+    private void updateOrientation() {
+        final int orientation = getResources().getConfiguration().orientation;
+        updateOrientation(orientation);
+    }
+
+    private void updateOrientation(int newOrientation) {
+        if (!AndroidHostInterface.getInstance().isEmulationThreadRunning())
+            return;
+
+        if (newOrientation == Configuration.ORIENTATION_PORTRAIT)
+            AndroidHostInterface.getInstance().setDisplayAlignment(AndroidHostInterface.DISPLAY_ALIGNMENT_TOP_OR_LEFT);
+        else
+            AndroidHostInterface.getInstance().setDisplayAlignment(AndroidHostInterface.DISPLAY_ALIGNMENT_CENTER);
+    }
+
+    private void enableFullscreenImmersive() {
+        getWindow().getDecorView().setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+                        View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
+                        View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
+                        View.SYSTEM_UI_FLAG_FULLSCREEN |
+                        View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+        if (mContentView != null)
+            mContentView.requestFocus();
+    }
+
+    private static final int REQUEST_CODE_SETTINGS = 0;
+    private static final int REQUEST_IMPORT_PATCH_CODES = 1;
+
+    private void onMenuClosed() {
+        enableFullscreenImmersive();
+
+        if (AndroidHostInterface.getInstance().isEmulationThreadPaused())
+            AndroidHostInterface.getInstance().pauseEmulationThread(false);
+    }
+
+    private void showMenu() {
+        if (getBooleanSetting("Main/PauseOnMenu", false) &&
+                !AndroidHostInterface.getInstance().isEmulationThreadPaused()) {
+            AndroidHostInterface.getInstance().pauseEmulationThread(true);
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setItems(R.array.emulation_menu, (dialogInterface, i) -> {
+            switch (i) {
+                case 0:     // Quick Load
+                {
+                    AndroidHostInterface.getInstance().loadState(false, mSaveStateSlot);
+                    onMenuClosed();
+                    return;
+                }
+
+                case 1:     // Quick Save
+                {
+                    AndroidHostInterface.getInstance().saveState(false, mSaveStateSlot);
+                    onMenuClosed();
+                    return;
+                }
+
+                case 2:     // Save State Slot
+                {
+                    showSaveStateSlotMenu();
+                    return;
+                }
+
+                case 3:     // Toggle Fast Forward
+                {
+                    AndroidHostInterface.getInstance().setFastForwardEnabled(!AndroidHostInterface.getInstance().isFastForwardEnabled());
+                    onMenuClosed();
+                    return;
+                }
+
+                case 4:     // More Options
+                {
+                    showMoreMenu();
+                    return;
+                }
+
+                case 5:     // Quit
+                {
+                    mStopRequested = true;
+                    finish();
+                    return;
+                }
+            }
+        });
+        builder.setOnCancelListener(dialogInterface -> onMenuClosed());
+        builder.create().show();
+    }
+
+    private void showSaveStateSlotMenu() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setSingleChoiceItems(R.array.emulation_save_state_slot_menu, mSaveStateSlot, (dialogInterface, i) -> {
+            mSaveStateSlot = i;
+            dialogInterface.dismiss();
+            onMenuClosed();
+        });
+        builder.setOnCancelListener(dialogInterface -> onMenuClosed());
+        builder.create().show();
+    }
+
+    private void showMoreMenu() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        if (mGameTitle != null && !mGameTitle.isEmpty())
+            builder.setTitle(mGameTitle);
+
+        builder.setItems(R.array.emulation_more_menu, (dialogInterface, i) -> {
+            switch (i) {
+                case 0:     // Reset
+                {
+                    AndroidHostInterface.getInstance().resetSystem();
+                    onMenuClosed();
+                    return;
+                }
+
+                case 1:     // Patch Codes
+                {
+                    showPatchesMenu();
+                    return;
+                }
+
+                case 2:     // Change Disc
+                {
+                    showDiscChangeMenu();
+                    return;
+                }
+
+                case 3:     // Change Touchscreen Controller
+                {
+                    showTouchscreenControllerMenu();
+                    return;
+                }
+
+                case 4:     // Settings
+                {
+                    Intent intent = new Intent(EmulationActivity.this, SettingsActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivityForResult(intent, REQUEST_CODE_SETTINGS);
+                    return;
+                }
+            }
+        });
+        builder.setOnCancelListener(dialogInterface -> onMenuClosed());
+        builder.create().show();
+    }
+
+    private void showTouchscreenControllerMenu() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setItems(R.array.settings_touchscreen_controller_view_entries, (dialogInterface, i) -> {
+            String[] values = getResources().getStringArray(R.array.settings_touchscreen_controller_view_values);
+            setStringSetting("Controller1/TouchscreenControllerView", values[i]);
+            updateControllers();
+            onMenuClosed();
+        });
+        builder.setOnCancelListener(dialogInterface -> onMenuClosed());
+        builder.create().show();
+    }
+
+    private void showPatchesMenu() {
+        final PatchCode[] codes = AndroidHostInterface.getInstance().getPatchCodeList();
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        CharSequence[] items = new CharSequence[(codes != null) ? (codes.length + 1) : 1];
+        items[0] = "Import Patch Codes...";
+        if (codes != null) {
+            for (int i = 0; i < codes.length; i++) {
+                final PatchCode cc = codes[i];
+                items[i + 1] = String.format("%s %s", cc.isEnabled() ? "(ON)" : "(OFF)", cc.getDescription());
+            }
+        }
+
+        builder.setItems(items, (dialogInterface, i) -> {
+            if (i > 0) {
+                AndroidHostInterface.getInstance().setPatchCodeEnabled(i - 1, !codes[i - 1].isEnabled());
+                onMenuClosed();
+            } else {
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                intent.setType("*/*");
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                startActivityForResult(Intent.createChooser(intent, "Choose Patch Code File"), REQUEST_IMPORT_PATCH_CODES);
+            }
+        });
+        builder.setOnCancelListener(dialogInterface -> onMenuClosed());
+        builder.create().show();
+    }
+
+    private void importPatchesFromFile(Uri uri) {
+        String str = FileUtil.readFileFromUri(this, uri, 512 * 1024);
+        if (str == null || !AndroidHostInterface.getInstance().importPatchCodesFromString(str)) {
+            reportErrorOnUIThread("Failed to import patch codes. Make sure you selected a PCSXR or Libretro format file.");
+        }
+    }
+
+    private void showDiscChangeMenu() {
+        final String[] paths = AndroidHostInterface.getInstance().getMediaPlaylistPaths();
+        final int currentPath = AndroidHostInterface.getInstance().getMediaPlaylistIndex();
+        if (paths == null) {
+            onMenuClosed();
             return;
         }
 
-        show();
-    }
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
-    private void hide() {
-        // Hide UI first
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.hide();
-        }
-        mVisible = false;
+        CharSequence[] items = new CharSequence[paths.length];
+        for (int i = 0; i < paths.length; i++)
+            items[i] = GameListEntry.getFileNameForPath(paths[i]);
 
-        // Schedule a runnable to remove the status and navigation bar after a delay
-        mHideHandler.removeCallbacks(mShowPart2Runnable);
-        mHideHandler.postDelayed(mHidePart2Runnable, UI_ANIMATION_DELAY);
-    }
-
-    @SuppressLint("InlinedApi")
-    private void show() {
-        // Show the system bar
-        mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
-        mVisible = true;
-
-        // Schedule a runnable to display UI elements after a delay
-        mHideHandler.removeCallbacks(mHidePart2Runnable);
-        mHideHandler.postDelayed(mShowPart2Runnable, UI_ANIMATION_DELAY);
+        builder.setSingleChoiceItems(items, currentPath, (dialogInterface, i) -> {
+            AndroidHostInterface.getInstance().setMediaPlaylistIndex(i);
+            dialogInterface.dismiss();
+            onMenuClosed();
+        });
+        builder.setOnCancelListener(dialogInterface -> onMenuClosed());
+        builder.create().show();
     }
 
     /**
-     * Schedules a call to hide() in delay milliseconds, canceling any
-     * previously scheduled calls.
+     * Touchscreen controller overlay
      */
-    private void delayedHide(int delayMillis) {
-        mHideHandler.removeCallbacks(mHideRunnable);
-        mHideHandler.postDelayed(mHideRunnable, delayMillis);
+    TouchscreenControllerView mTouchscreenController;
+
+    public void updateControllers() {
+        final String controllerType = getStringSetting("Controller1/Type", "DigitalController");
+        final String viewType = getStringSetting("Controller1/TouchscreenControllerView", "digital");
+        final boolean autoHideTouchscreenController = getBooleanSetting("Controller1/AutoHideTouchscreenController", false);
+        final boolean hapticFeedback = getBooleanSetting("Controller1/HapticFeedback", false);
+        final boolean vibration = getBooleanSetting("Controller1/Vibration", false);
+        final FrameLayout activityLayout = findViewById(R.id.frameLayout);
+
+        Log.i("EmulationActivity", "Controller type: " + controllerType);
+        Log.i("EmulationActivity", "View type: " + viewType);
+
+        final boolean hasAnyControllers = mContentView.initControllerMapping(controllerType);
+
+        if (controllerType == "none" || viewType == "none" || (hasAnyControllers && autoHideTouchscreenController)) {
+            if (mTouchscreenController != null) {
+                activityLayout.removeView(mTouchscreenController);
+                mTouchscreenController = null;
+                mVibratorService = null;
+            }
+        } else {
+            if (mTouchscreenController == null) {
+                mTouchscreenController = new TouchscreenControllerView(this);
+                if (vibration)
+                    mVibratorService = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+
+                activityLayout.addView(mTouchscreenController);
+            }
+
+            mTouchscreenController.init(0, controllerType, viewType, hapticFeedback);
+        }
     }
 
-    private void setTouchscreenControllerVisibility(boolean visible) {
-        mTouchscreenControllerVisible = visible;
-        mTouchscreenController.setVisibility(visible ? View.VISIBLE : View.INVISIBLE);
+    private InputManager.InputDeviceListener mInputDeviceListener;
+
+    private void registerInputDeviceListener() {
+        if (mInputDeviceListener != null)
+            return;
+
+        mInputDeviceListener = new InputManager.InputDeviceListener() {
+            @Override
+            public void onInputDeviceAdded(int i) {
+                Log.i("EmulationActivity", String.format("InputDeviceAdded %d", i));
+                updateControllers();
+            }
+
+            @Override
+            public void onInputDeviceRemoved(int i) {
+                Log.i("EmulationActivity", String.format("InputDeviceRemoved %d", i));
+                updateControllers();
+            }
+
+            @Override
+            public void onInputDeviceChanged(int i) {
+                Log.i("EmulationActivity", String.format("InputDeviceChanged %d", i));
+                updateControllers();
+            }
+        };
+
+        InputManager inputManager = ((InputManager) getSystemService(Context.INPUT_SERVICE));
+        if (inputManager != null)
+            inputManager.registerInputDeviceListener(mInputDeviceListener, null);
+    }
+
+    private void unregisterInputDeviceListener() {
+        if (mInputDeviceListener == null)
+            return;
+
+        InputManager inputManager = ((InputManager) getSystemService(Context.INPUT_SERVICE));
+        if (inputManager != null)
+            inputManager.unregisterInputDeviceListener(mInputDeviceListener);
+
+        mInputDeviceListener = null;
+    }
+
+    private Vibrator mVibratorService;
+
+    public void setVibration(boolean enabled) {
+        if (mVibratorService == null)
+            return;
+
+        runOnUiThread(() -> {
+            if (mVibratorService == null)
+                return;
+
+            if (enabled)
+                mVibratorService.vibrate(1000);
+            else
+                mVibratorService.cancel();
+        });
     }
 }

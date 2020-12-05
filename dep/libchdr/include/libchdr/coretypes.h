@@ -4,6 +4,10 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#ifdef __LIBRETRO__
+#include <streams/file_stream_transforms.h>
+#endif
+
 #define ARRAY_LENGTH(x) (sizeof(x)/sizeof(x[0]))
 
 typedef uint64_t UINT64;
@@ -24,9 +28,10 @@ typedef int8_t INT8;
 #define core_ftell ftell
 static size_t core_fsize(core_file *f)
 {
+    long rv;
     long p = ftell(f);
     fseek(f, 0, SEEK_END);
-    long rv = ftell(f);
+    rv = ftell(f);
     fseek(f, p, SEEK_SET);
     return rv;
 }

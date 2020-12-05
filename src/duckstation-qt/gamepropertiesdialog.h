@@ -1,6 +1,8 @@
 #pragma once
+#include "frontend-common/game_settings.h"
 #include "ui_gamepropertiesdialog.h"
 #include <QtWidgets/QDialog>
+#include <array>
 
 struct GameListEntry;
 struct GameListCompatibilityEntry;
@@ -15,7 +17,7 @@ public:
   GamePropertiesDialog(QtHostInterface* host_interface, QWidget* parent = nullptr);
   ~GamePropertiesDialog();
 
-  static void showForEntry(QtHostInterface* host_interface, const GameListEntry* ge);
+  static void showForEntry(QtHostInterface* host_interface, const GameListEntry* ge, QWidget* parent);
 
 public Q_SLOTS:
   void clear();
@@ -34,21 +36,31 @@ private Q_SLOTS:
   void onComputeHashClicked();
   void onVerifyDumpClicked();
   void onExportCompatibilityInfoClicked();
+  void updateCPUClockSpeedLabel();
 
 private:
   void setupAdditionalUi();
   void connectUi();
   void populateCompatibilityInfo(const std::string& game_code);
   void populateTracksInfo(const std::string& image_path);
+  void populateGameSettings();
+  void populateBooleanUserSetting(QCheckBox* cb, const std::optional<bool>& value);
+  void connectBooleanUserSetting(QCheckBox* cb, std::optional<bool>* value);
+  void saveGameSettings();
   void fillEntryFromUi(GameListCompatibilityEntry* entry);
   void computeTrackHashes();
   void onResize();
 
   Ui::GamePropertiesDialog m_ui;
+  std::array<QCheckBox*, static_cast<u32>(GameSettings::Trait::Count)> m_trait_checkboxes{};
 
   QtHostInterface* m_host_interface;
 
-  std::string m_image_path;
+  std::string m_path;
+  std::string m_game_code;
+  std::string m_game_title;
+
+  GameSettings::Entry m_game_settings;
 
   bool m_compatibility_info_changed = false;
   bool m_tracks_hashed = false;

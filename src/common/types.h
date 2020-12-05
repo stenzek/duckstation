@@ -15,6 +15,13 @@
 #endif
 #endif
 
+// Force inline in non-debug helper
+#ifdef _DEBUG
+#define ALWAYS_INLINE_RELEASE inline
+#else
+#define ALWAYS_INLINE_RELEASE ALWAYS_INLINE
+#endif
+
 // unreferenced parameter macro
 #ifndef UNREFERENCED_VARIABLE
 #if defined(_MSC_VER)

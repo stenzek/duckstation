@@ -55,7 +55,7 @@
          <number>1024</number>
         </property>
         <property name="maximum">
-         <number>16384</number>
+         <number>8192</number>
         </property>
         <property name="singleStep">
          <number>128</number>
@@ -149,7 +149,14 @@
       <item row="2" column="0" colspan="2">
        <widget class="QCheckBox" name="muted">
         <property name="text">
-         <string>Mute</string>
+         <string>Mute All Sound</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0" colspan="2">
+       <widget class="QCheckBox" name="muteCDAudio">
+        <property name="text">
+         <string>Mute CD Audio</string>
         </property>
        </widget>
       </item>

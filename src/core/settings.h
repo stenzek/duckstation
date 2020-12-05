@@ -9,6 +9,8 @@
 class SettingsInterface
 {
 public:
+  virtual ~SettingsInterface();
+
   virtual void Clear() = 0;
 
   virtual int GetIntValue(const char* section, const char* key, int default_value = 0) = 0;
@@ -68,24 +70,37 @@ struct Settings
   ConsoleRegion region = ConsoleRegion::Auto;
 
   CPUExecutionMode cpu_execution_mode = CPUExecutionMode::Interpreter;
+  u32 cpu_overclock_numerator = 1;
+  u32 cpu_overclock_denominator = 1;
+  bool cpu_overclock_enable = false;
+  bool cpu_overclock_active = false;
   bool cpu_recompiler_memory_exceptions = false;
+  bool cpu_recompiler_icache = false;
+  CPUFastmemMode cpu_fastmem_mode = CPUFastmemMode::Disabled;
 
   float emulation_speed = 1.0f;
-  bool speed_limiter_enabled = true;
+  float fast_forward_speed = 0.0f;
   bool increase_timer_resolution = true;
   bool start_paused = false;
   bool start_fullscreen = false;
+  bool pause_on_focus_loss = false;
   bool save_state_on_exit = true;
   bool confim_power_off = true;
   bool load_devices_from_save_states = false;
+  bool apply_game_settings = true;
+  bool auto_load_cheats = false;
 
   GPURenderer gpu_renderer = GPURenderer::Software;
   std::string gpu_adapter;
+  std::string display_post_process_chain;
   u32 gpu_resolution_scale = 1;
+  u32 gpu_multisamples = 1;
+  bool gpu_use_thread = true;
   bool gpu_use_debug_device = false;
+  bool gpu_per_sample_shading = false;
   bool gpu_true_color = true;
   bool gpu_scaled_dithering = false;
-  bool gpu_texture_filtering = false;
+  GPUTextureFilter gpu_texture_filter = GPUTextureFilter::Nearest;
   bool gpu_disable_interlacing = false;
   bool gpu_force_ntsc_timings = false;
   bool gpu_widescreen_hack = false;
@@ -93,19 +108,37 @@ struct Settings
   bool gpu_pgxp_culling = true;
   bool gpu_pgxp_texture_correction = true;
   bool gpu_pgxp_vertex_cache = false;
+  bool gpu_pgxp_cpu = false;
+  bool gpu_pgxp_preserve_proj_fp = false;
   DisplayCropMode display_crop_mode = DisplayCropMode::None;
   DisplayAspectRatio display_aspect_ratio = DisplayAspectRatio::R4_3;
+  s16 display_active_start_offset = 0;
+  s16 display_active_end_offset = 0;
+  s8 display_line_start_offset = 0;
+  s8 display_line_end_offset = 0;
+  s8 display_crop_left = 0;
+  s8 display_crop_right = 0;
+  s8 display_crop_top = 0;
+  s8 display_crop_bottom = 0;
+  bool display_force_4_3_for_24bit = false;
+  bool gpu_24bit_chroma_smoothing = false;
   bool display_linear_filtering = true;
   bool display_integer_scaling = false;
+  bool display_post_processing = false;
   bool display_show_osd_messages = false;
   bool display_show_fps = false;
   bool display_show_vps = false;
   bool display_show_speed = false;
+  bool display_show_resolution = false;
   bool video_sync_enabled = true;
+  float display_max_fps = 0.0f;
+  float gpu_pgxp_tolerance = -1.0f;
 
   bool cdrom_read_thread = true;
   bool cdrom_region_check = true;
   bool cdrom_load_image_to_ram = false;
+  bool cdrom_mute_cd_audio = false;
+  u32 cdrom_read_speedup = 1;
 
   AudioBackend audio_backend = AudioBackend::Cubeb;
   s32 audio_output_volume = 100;
@@ -132,17 +165,18 @@ struct Settings
     mutable bool show_spu_state = false;
     mutable bool show_timers_state = false;
     mutable bool show_mdec_state = false;
+    mutable bool show_dma_state = false;
   } debugging;
 
   // TODO: Controllers, memory cards, etc.
 
-  std::string bios_path;
   bool bios_patch_tty_enable = false;
   bool bios_patch_fast_boot = false;
 
   std::array<ControllerType, NUM_CONTROLLER_AND_CARD_PORTS> controller_types{};
   std::array<MemoryCardType, NUM_CONTROLLER_AND_CARD_PORTS> memory_card_types{};
   std::array<std::string, NUM_CONTROLLER_AND_CARD_PORTS> memory_card_paths{};
+  bool memory_card_use_playlist_title = true;
 
   LOGLEVEL log_level = LOGLEVEL_INFO;
   std::string log_filter;
@@ -155,7 +189,25 @@ struct Settings
   ALWAYS_INLINE bool IsUsingRecompiler() const { return (cpu_execution_mode == CPUExecutionMode::Recompiler); }
   ALWAYS_INLINE bool IsUsingSoftwareRenderer() const { return (gpu_renderer == GPURenderer::Software); }
 
+  ALWAYS_INLINE PGXPMode GetPGXPMode()
+  {
+    return gpu_pgxp_enable ? (gpu_pgxp_cpu ? PGXPMode::CPU : PGXPMode::Memory) : PGXPMode::Disabled;
+  }
+
+  ALWAYS_INLINE bool IsUsingFastmem() const
+  {
+    return (cpu_fastmem_mode != CPUFastmemMode::Disabled && cpu_execution_mode == CPUExecutionMode::Recompiler &&
+            !cpu_recompiler_memory_exceptions);
+  }
+
   bool HasAnyPerGameMemoryCards() const;
+
+  static void CPUOverclockPercentToFraction(u32 percent, u32* numerator, u32* denominator);
+  static u32 CPUOverclockFractionToPercent(u32 numerator, u32 denominator);
+
+  void SetCPUOverclockPercent(u32 percent);
+  u32 GetCPUOverclockPercent() const;
+  void UpdateOverclockActive();
 
   enum : u32
   {
@@ -184,9 +236,17 @@ struct Settings
   static const char* GetCPUExecutionModeName(CPUExecutionMode mode);
   static const char* GetCPUExecutionModeDisplayName(CPUExecutionMode mode);
 
+  static std::optional<CPUFastmemMode> ParseCPUFastmemMode(const char* str);
+  static const char* GetCPUFastmemModeName(CPUFastmemMode mode);
+  static const char* GetCPUFastmemModeDisplayName(CPUFastmemMode mode);
+
   static std::optional<GPURenderer> ParseRendererName(const char* str);
   static const char* GetRendererName(GPURenderer renderer);
   static const char* GetRendererDisplayName(GPURenderer renderer);
+
+  static std::optional<GPUTextureFilter> ParseTextureFilterName(const char* str);
+  static const char* GetTextureFilterName(GPUTextureFilter filter);
+  static const char* GetTextureFilterDisplayName(GPUTextureFilter filter);
 
   static std::optional<DisplayCropMode> ParseDisplayCropMode(const char* str);
   static const char* GetDisplayCropModeName(DisplayCropMode crop_mode);
@@ -214,9 +274,27 @@ struct Settings
 #else
   static constexpr GPURenderer DEFAULT_GPU_RENDERER = GPURenderer::HardwareOpenGL;
 #endif
+  static constexpr GPUTextureFilter DEFAULT_GPU_TEXTURE_FILTER = GPUTextureFilter::Nearest;
   static constexpr ConsoleRegion DEFAULT_CONSOLE_REGION = ConsoleRegion::Auto;
+
+#ifdef WITH_RECOMPILER
   static constexpr CPUExecutionMode DEFAULT_CPU_EXECUTION_MODE = CPUExecutionMode::Recompiler;
+#ifdef WITH_MMAP_FASTMEM
+  static constexpr CPUFastmemMode DEFAULT_CPU_FASTMEM_MODE = CPUFastmemMode::MMap;
+#else
+  static constexpr CPUFastmemMode DEFAULT_CPU_FASTMEM_MODE = CPUFastmemMode::LUT;
+#endif
+#else
+  static constexpr CPUExecutionMode DEFAULT_CPU_EXECUTION_MODE = CPUExecutionMode::CachedInterpreter;
+  static constexpr CPUFastmemMode DEFAULT_CPU_FASTMEM_MODE = CPUFastmemMode::Disabled;
+#endif
+
+#ifndef ANDROID
   static constexpr AudioBackend DEFAULT_AUDIO_BACKEND = AudioBackend::Cubeb;
+#else
+  static constexpr AudioBackend DEFAULT_AUDIO_BACKEND = AudioBackend::OpenSLES;
+#endif
+
   static constexpr DisplayCropMode DEFAULT_DISPLAY_CROP_MODE = DisplayCropMode::Overscan;
   static constexpr DisplayAspectRatio DEFAULT_DISPLAY_ASPECT_RATIO = DisplayAspectRatio::R4_3;
   static constexpr ControllerType DEFAULT_CONTROLLER_1_TYPE = ControllerType::DigitalController;

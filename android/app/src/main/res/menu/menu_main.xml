@@ -1,17 +1,36 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="com.github.stenzek.duckstation.MainActivity" >
-    <group android:id="@+id/game_list">
-        <item android:id="@+id/action_add_game_directory"
-            android:title="Add Game Directory" />
-        <item android:id="@+id/action_scan_for_new_games"
-            android:title="Scan For New Games" />
-        <item android:id="@+id/action_rescan_all_games"
-            android:title="Rescan All Games" />
+    tools:context="com.github.stenzek.duckstation.MainActivity">
+    <group android:id="@+id/start_menu">
+        <item
+            android:id="@+id/action_resume"
+            android:title="Resume Last Session" />
+        <item
+            android:id="@+id/action_start_file"
+            android:title="Start File" />
+        <item
+            android:id="@+id/action_start_bios"
+            android:title="Start BIOS" />
     </group>
-    <item android:id="@+id/action_settings"
-        android:title="@string/action_settings"
+    <group android:id="@+id/game_list">
+        <item
+            android:id="@+id/action_add_game_directory"
+            android:title="Add Game Directory" />
+        <item
+            android:id="@+id/action_scan_for_new_games"
+            android:title="Scan For New Games" />
+        <item
+            android:id="@+id/action_rescan_all_games"
+            android:title="Rescan All Games" />
+        <item
+            android:id="@+id/action_import_bios"
+            android:title="Import BIOS" />
+    </group>
+    <item
+        android:id="@+id/action_settings"
+        android:icon="@drawable/ic_baseline_settings_24"
         android:orderInCategory="100"
-        app:showAsAction="never" />
+        android:title="@string/action_settings"
+        app:showAsAction="ifRoom" />
 </menu>

@@ -19,9 +19,6 @@ enum class MemoryAccessSize : u32
 
 using TickCount = s32;
 
-static constexpr TickCount MASTER_CLOCK = 44100 * 0x300; // 33868800Hz or 33.8688MHz, also used as CPU clock
-static constexpr TickCount MAX_SLICE_SIZE = MASTER_CLOCK / 10;
-
 enum class ConsoleRegion
 {
   Auto,
@@ -48,6 +45,13 @@ enum class CPUExecutionMode : u8
   Count
 };
 
+enum class PGXPMode : u8
+{
+  Disabled,
+  Memory,
+  CPU
+};
+
 enum class GPURenderer : u8
 {
 #ifdef WIN32
@@ -56,6 +60,18 @@ enum class GPURenderer : u8
   HardwareVulkan,
   HardwareOpenGL,
   Software,
+  Count
+};
+
+enum class GPUTextureFilter : u8
+{
+  Nearest,
+  Bilinear,
+  BilinearBinAlpha,
+  JINC2,
+  JINC2BinAlpha,
+  xBR,
+  xBRBinAlpha,
   Count
 };
 
@@ -71,7 +87,12 @@ enum class DisplayAspectRatio : u8
 {
   R4_3,
   R16_9,
+  R16_10,
+  R19_9,
+  R21_9,
   R8_7,
+  R5_4,
+  R3_2,
   R2_1,
   R1_1,
   PAR1_1,
@@ -82,7 +103,11 @@ enum class AudioBackend : u8
 {
   Null,
   Cubeb,
+#ifndef ANDROID
   SDL,
+#else
+  OpenSLES,
+#endif
   Count
 };
 
@@ -91,6 +116,7 @@ enum class ControllerType
   None,
   DigitalController,
   AnalogController,
+  AnalogJoystick,
   NamcoGunCon,
   PlayStationMouse,
   NeGcon,
@@ -111,8 +137,16 @@ enum : u32
   NUM_CONTROLLER_AND_CARD_PORTS = 2
 };
 
-enum : u32
+enum class CPUFastmemMode
 {
-  CPU_CODE_CACHE_PAGE_SIZE = 1024,
-  CPU_CODE_CACHE_PAGE_COUNT = 0x200000 / CPU_CODE_CACHE_PAGE_SIZE
+  Disabled,
+  MMap,
+  LUT,
+  Count
+};
+
+enum : size_t
+{
+  HOST_PAGE_SIZE = 4096,
+  HOST_PAGE_OFFSET_MASK = HOST_PAGE_SIZE - 1,
 };

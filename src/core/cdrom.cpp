@@ -1,15 +1,22 @@
 #include "cdrom.h"
+#include "common/align.h"
 #include "common/cd_image.h"
+#include "common/cpu_detect.h"
 #include "common/log.h"
 #include "common/state_wrapper.h"
 #include "dma.h"
-#include "game_list.h"
-#include "imgui.h"
 #include "interrupt_controller.h"
 #include "settings.h"
 #include "spu.h"
 #include "system.h"
+#ifdef WITH_IMGUI
+#include "imgui.h"
+#endif
 Log_SetChannel(CDROM);
+
+#if defined(CPU_X64)
+#include <emmintrin.h>
+#endif
 
 struct CommandInfo
 {
@@ -18,261 +25,49 @@ struct CommandInfo
 };
 
 static std::array<CommandInfo, 255> s_command_info = {{
-  {"Sync", 0},
-  {"Getstat", 0},
-  {"Setloc", 3},
-  {"Play", 0},
-  {"Forward", 0},
-  {"Backward", 0},
-  {"ReadN", 0},
-  {"MotorOn", 0},
-  {"Stop", 0},
-  {"Pause", 0},
-  {"Reset", 0},
-  {"Mute", 0},
-  {"Demute", 0},
-  {"Setfilter", 2},
-  {"Setmode", 1},
-  {"Getparam", 0},
-  {"GetlocL", 0},
-  {"GetlocP", 0},
-  {"SetSession", 1},
-  {"GetTN", 0},
-  {"GetTD", 1},
-  {"SeekL", 0},
-  {"SeekP", 0},
-  {"SetClock", 0},
-  {"GetClock", 0},
-  {"Test", 1},
-  {"GetID", 0},
-  {"ReadS", 0},
-  {"Init", 0},
-  {"GetQ", 2},
-  {"ReadTOC", 0},
-  {"VideoCD", 6},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  {"Unknown", 0},
-  0 // Unknown
+  {"Sync", 0},       {"Getstat", 0},   {"Setloc", 3},  {"Play", 0},     {"Forward", 0}, {"Backward", 0},
+  {"ReadN", 0},      {"MotorOn", 0},   {"Stop", 0},    {"Pause", 0},    {"Reset", 0},   {"Mute", 0},
+  {"Demute", 0},     {"Setfilter", 2}, {"Setmode", 1}, {"Getparam", 0}, {"GetlocL", 0}, {"GetlocP", 0},
+  {"SetSession", 1}, {"GetTN", 0},     {"GetTD", 1},   {"SeekL", 0},    {"SeekP", 0},   {"SetClock", 0},
+  {"GetClock", 0},   {"Test", 1},      {"GetID", 0},   {"ReadS", 0},    {"Init", 0},    {"GetQ", 2},
+  {"ReadTOC", 0},    {"VideoCD", 6},   {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},
+  {"Unknown", 0},    {"Unknown", 0},   {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},
+  {"Unknown", 0},    {"Unknown", 0},   {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},
+  {"Unknown", 0},    {"Unknown", 0},   {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},
+  {"Unknown", 0},    {"Unknown", 0},   {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},
+  {"Unknown", 0},    {"Unknown", 0},   {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},
+  {"Unknown", 0},    {"Unknown", 0},   {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},
+  {"Unknown", 0},    {"Unknown", 0},   {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},
+  {"Unknown", 0},    {"Unknown", 0},   {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},
+  {"Unknown", 0},    {"Unknown", 0},   {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},
+  {"Unknown", 0},    {"Unknown", 0},   {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},
+  {"Unknown", 0},    {"Unknown", 0},   {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},
+  {"Unknown", 0},    {"Unknown", 0},   {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},
+  {"Unknown", 0},    {"Unknown", 0},   {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},
+  {"Unknown", 0},    {"Unknown", 0},   {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},
+  {"Unknown", 0},    {"Unknown", 0},   {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},
+  {"Unknown", 0},    {"Unknown", 0},   {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},
+  {"Unknown", 0},    {"Unknown", 0},   {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},
+  {"Unknown", 0},    {"Unknown", 0},   {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},
+  {"Unknown", 0},    {"Unknown", 0},   {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},
+  {"Unknown", 0},    {"Unknown", 0},   {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},
+  {"Unknown", 0},    {"Unknown", 0},   {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},
+  {"Unknown", 0},    {"Unknown", 0},   {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},
+  {"Unknown", 0},    {"Unknown", 0},   {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},
+  {"Unknown", 0},    {"Unknown", 0},   {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},
+  {"Unknown", 0},    {"Unknown", 0},   {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},
+  {"Unknown", 0},    {"Unknown", 0},   {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},
+  {"Unknown", 0},    {"Unknown", 0},   {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},
+  {"Unknown", 0},    {"Unknown", 0},   {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},
+  {"Unknown", 0},    {"Unknown", 0},   {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},
+  {"Unknown", 0},    {"Unknown", 0},   {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},
+  {"Unknown", 0},    {"Unknown", 0},   {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},
+  {"Unknown", 0},    {"Unknown", 0},   {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},
+  {"Unknown", 0},    {"Unknown", 0},   {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},
+  {"Unknown", 0},    {"Unknown", 0},   {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},
+  {"Unknown", 0},    {"Unknown", 0},   {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},
+  {"Unknown", 0},    {"Unknown", 0},   {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},
+  {"Unknown", 0},    {"Unknown", 0},   {nullptr, 0} // Unknown
 }};
 
 CDROM g_cdrom;
@@ -403,6 +198,10 @@ bool CDROM::DoState(StateWrapper& sw)
   sw.Do(&m_last_cdda_report_frame_nibble);
   sw.Do(&m_play_track_number_bcd);
   sw.Do(&m_async_command_parameter);
+
+  // TODO: Uncomment on the next save state version bump.
+  //sw.Do(&m_fast_forward_rate);
+
   sw.Do(&m_cd_audio_volume_matrix);
   sw.Do(&m_next_cd_audio_volume_matrix);
   sw.Do(&m_xa_last_samples);
@@ -433,6 +232,7 @@ bool CDROM::DoState(StateWrapper& sw)
       m_reader.QueueReadSector(requested_sector);
     UpdateCommandEvent();
     m_drive_event->SetState(!IsDriveIdle());
+    m_fast_forward_rate = 0;
   }
 
   return !sw.HasError();
@@ -444,7 +244,7 @@ void CDROM::InsertMedia(std::unique_ptr<CDImage> media)
     RemoveMedia();
 
   // set the region from the system area of the disc
-  m_disc_region = GameList::GetRegionForImage(media.get());
+  m_disc_region = System::GetRegionForImage(media.get());
   Log_InfoPrintf("Inserting new media, disc region: %s, console region: %s", Settings::GetDiscRegionName(m_disc_region),
                  Settings::GetConsoleRegionName(System::GetRegion()));
 
@@ -507,6 +307,13 @@ void CDROM::SetUseReadThread(bool enabled)
     m_reader.StartThread();
   else
     m_reader.StopThread();
+}
+
+void CDROM::CPUClockChanged()
+{
+  // reschedule the disc read event
+  if (IsReadingOrPlaying())
+    m_drive_event->SetInterval(GetTicksForRead());
 }
 
 u8 CDROM::ReadRegister(u32 offset)
@@ -823,24 +630,29 @@ TickCount CDROM::GetAckDelayForCommand(Command command)
 
 TickCount CDROM::GetTicksForRead()
 {
-  return m_mode.double_speed ? (MASTER_CLOCK / 150) : (MASTER_CLOCK / 75);
+  const TickCount tps = System::GetTicksPerSecond();
+
+  if (g_settings.cdrom_read_speedup > 1 && !m_mode.cdda && !m_mode.xa_enable && m_mode.double_speed)
+    return tps / (150 * g_settings.cdrom_read_speedup);
+
+  return m_mode.double_speed ? (tps / 150) : (tps / 75);
 }
 
 TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba)
 {
+  const TickCount tps = System::GetTicksPerSecond();
   const CDImage::LBA current_lba = m_secondary_status.motor_on ? m_current_lba : 0;
   const u32 lba_diff = static_cast<u32>((new_lba > current_lba) ? (new_lba - current_lba) : (current_lba - new_lba));
 
   // Formula from Mednafen.
   TickCount ticks = std::max<TickCount>(
     20000, static_cast<u32>(
-             ((static_cast<u64>(lba_diff) * static_cast<u64>(MASTER_CLOCK) * static_cast<u64>(1000)) / (72 * 60 * 75)) /
-             1000));
+             ((static_cast<u64>(lba_diff) * static_cast<u64>(tps) * static_cast<u64>(1000)) / (72 * 60 * 75)) / 1000));
   if (!m_secondary_status.motor_on)
-    ticks += MASTER_CLOCK;
+    ticks += tps;
   if (lba_diff >= 2550)
-    ticks += static_cast<TickCount>(u64(MASTER_CLOCK) * 300 / 1000);
-  else if (m_drive_state == DriveState::Idle) // paused
+    ticks += static_cast<TickCount>((u64(tps) * 300) / 1000);
+  else
   {
     // When paused, the CDC seems to keep reading the disc until it hits the position it's set to, then skip 10-15
     // sectors back (depending on how far into the disc it is). We'll be generous and use 4 sectors, since on average
@@ -855,7 +667,7 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba)
     m_current_double_speed = m_mode.double_speed;
 
     // Approximate time for the motor to change speed?
-    ticks += static_cast<u32>(static_cast<double>(MASTER_CLOCK) * 0.1);
+    ticks += static_cast<u32>(static_cast<double>(tps) * 0.1);
   }
 
   Log_DevPrintf("Seek time for %u LBAs: %d", lba_diff, ticks);
@@ -999,7 +811,7 @@ void CDROM::ExecuteCommand()
         SendACKAndStat();
 
         m_drive_state = DriveState::ReadingTOC;
-        m_drive_event->Schedule(MASTER_CLOCK / 2); // half a second
+        m_drive_event->Schedule(System::GetTicksPerSecond() / 2); // half a second
       }
 
       EndCommand();
@@ -1085,7 +897,7 @@ void CDROM::ExecuteCommand()
 
         m_async_command_parameter = session;
         m_drive_state = DriveState::ChangingSession;
-        m_drive_event->Schedule(MASTER_CLOCK / 2); // half a second
+        m_drive_event->Schedule(System::GetTicksPerSecond() / 2); // half a second
       }
 
       EndCommand();
@@ -1139,6 +951,7 @@ void CDROM::ExecuteCommand()
             (m_drive_state == DriveState::Playing || (IsSeeking() && m_play_after_seek)))
         {
           Log_DevPrintf("Ignoring play command with no/same setloc, already playing/playing after seek");
+          m_fast_forward_rate = 0;
         }
         else
         {
@@ -1147,6 +960,48 @@ void CDROM::ExecuteCommand()
 
           BeginPlaying(track);
         }
+      }
+
+      EndCommand();
+      return;
+    }
+
+    case Command::Forward:
+    {
+      if (m_drive_state != DriveState::Playing || !CanReadMedia())
+      {
+        SendErrorResponse(STAT_ERROR, ERROR_REASON_NOT_READY);
+      }
+      else
+      {
+        SendACKAndStat();
+
+        if (m_fast_forward_rate < 0)
+          m_fast_forward_rate = 0;
+
+        m_fast_forward_rate += static_cast<s8>(FAST_FORWARD_RATE_STEP);
+        m_fast_forward_rate = std::min<s8>(m_fast_forward_rate, static_cast<s8>(MAX_FAST_FORWARD_RATE));
+      }
+
+      EndCommand();
+      return;
+    }
+
+    case Command::Backward:
+    {
+      if (m_drive_state != DriveState::Playing || !CanReadMedia())
+      {
+        SendErrorResponse(STAT_ERROR, ERROR_REASON_NOT_READY);
+      }
+      else
+      {
+        SendACKAndStat();
+
+        if (m_fast_forward_rate > 0)
+          m_fast_forward_rate = 0;
+
+        m_fast_forward_rate -= static_cast<s8>(FAST_FORWARD_RATE_STEP);
+        m_fast_forward_rate = std::max<s8>(m_fast_forward_rate, -static_cast<s8>(MAX_FAST_FORWARD_RATE));
       }
 
       EndCommand();
@@ -1222,7 +1077,7 @@ void CDROM::ExecuteCommand()
         SendACKAndStat();
 
         m_drive_state = DriveState::Resetting;
-        m_drive_event->Schedule(MASTER_CLOCK);
+        m_drive_event->Schedule(System::GetTicksPerSecond());
       }
 
       EndCommand();
@@ -1379,11 +1234,24 @@ void CDROM::ExecuteCommand()
     }
     break;
 
+    case Command::VideoCD:
+    {
+      Log_DebugPrintf("CDROM VideoCD command");
+      SendErrorResponse(STAT_ERROR, ERROR_REASON_INVALID_COMMAND);
+
+      // According to nocash this doesn't clear the parameter FIFO.
+      m_command = Command::None;
+      m_command_event->Deactivate();
+      UpdateStatusRegister();
+    }
+    break;
+
     default:
     {
       Log_ErrorPrintf("Unknown CDROM command 0x%04X with %u parameters, please report", static_cast<u16>(m_command),
                       m_param_fifo.GetSize());
-      Panic("Unknown CDROM command");
+      SendErrorResponse(STAT_ERROR, ERROR_REASON_INVALID_COMMAND);
+      EndCommand();
     }
     break;
   }
@@ -1462,7 +1330,8 @@ void CDROM::ExecuteTestCommand(u8 subcommand)
     default:
     {
       Log_ErrorPrintf("Unknown test command 0x%02X, %u parameters", subcommand, m_param_fifo.GetSize());
-      Panic("Unknown test command");
+      SendErrorResponse(STAT_ERROR, ERROR_REASON_INVALID_COMMAND);
+      EndCommand();
       return;
     }
   }
@@ -1573,6 +1442,7 @@ void CDROM::BeginPlaying(u8 track_bcd, TickCount ticks_late /* = 0 */, bool afte
   Log_DebugPrintf("Starting playing CDDA track %x", track_bcd);
   m_last_cdda_report_frame_nibble = 0xFF;
   m_play_track_number_bcd = track_bcd;
+  m_fast_forward_rate = 0;
 
   // if track zero, start from current position
   if (track_bcd != 0)
@@ -1596,6 +1466,7 @@ void CDROM::BeginPlaying(u8 track_bcd, TickCount ticks_late /* = 0 */, bool afte
 
   m_secondary_status.ClearActiveBits();
   m_secondary_status.motor_on = true;
+  m_secondary_status.playing_cdda = true;
   ClearSectorBuffers();
   ResetAudioDecoder();
 
@@ -1698,6 +1569,7 @@ void CDROM::DoResetComplete(TickCount ticks_late)
   m_secondary_status.motor_on = CanReadMedia();
   m_mode.bits = 0;
   m_mode.read_raw_sector = true;
+  m_data_fifo.Clear();
 
   if (!CanReadMedia())
   {
@@ -1917,6 +1789,17 @@ void CDROM::DoSectorRead()
 
   // TODO: Error handling
   const CDImage::SubChannelQ& subq = m_reader.GetSectorSubQ();
+  if (subq.IsCRCValid())
+  {
+    m_last_subq = subq;
+  }
+  else
+  {
+    const CDImage::Position pos(CDImage::Position::FromLBA(m_current_lba));
+    Log_DevPrintf("Sector %u [%02u:%02u:%02u] has invalid subchannel Q", m_current_lba, pos.minute, pos.second,
+                  pos.frame);
+  }
+
   if (subq.track_number_bcd == CDImage::LEAD_OUT_TRACK_NUMBER)
   {
     Log_DevPrintf("Read reached lead-out area of disc at LBA %u, pausing", m_reader.GetLastReadSector());
@@ -1948,17 +1831,7 @@ void CDROM::DoSectorRead()
     ProcessDataSectorHeader(m_reader.GetSectorBuffer().data());
   }
 
-  if (subq.IsCRCValid())
-  {
-    m_last_subq = subq;
-  }
-  else
-  {
-    const CDImage::Position pos(CDImage::Position::FromLBA(m_current_lba));
-    Log_DevPrintf("Sector %u [%02u:%02u:%02u] has invalid subchannel Q", m_current_lba, pos.minute, pos.second,
-                  pos.frame);
-  }
-
+  u32 next_sector = m_current_lba + 1u;
   if (is_data_sector && m_drive_state == DriveState::Reading)
   {
     ProcessDataSector(m_reader.GetSectorBuffer().data(), subq);
@@ -1967,6 +1840,9 @@ void CDROM::DoSectorRead()
            (m_drive_state == DriveState::Playing || (m_drive_state == DriveState::Reading && m_mode.cdda)))
   {
     ProcessCDDASector(m_reader.GetSectorBuffer().data(), subq);
+
+    if (m_fast_forward_rate != 0)
+      next_sector = m_current_lba + SignExtend32(m_fast_forward_rate);
   }
   else if (m_drive_state != DriveState::Reading && m_drive_state != DriveState::Playing)
   {
@@ -1978,7 +1854,7 @@ void CDROM::DoSectorRead()
                       is_data_sector ? "data" : "audio", is_data_sector ? "reading" : "playing");
   }
 
-  m_reader.QueueReadSector(m_current_lba + 1u);
+  m_reader.QueueReadSector(next_sector);
 }
 
 void CDROM::ProcessDataSectorHeader(const u8* raw_sector)
@@ -2010,8 +1886,8 @@ void CDROM::ProcessDataSector(const u8* raw_sector, const CDImage::SubChannelQ& 
   }
 
   // TODO: How does XA relate to this buffering?
-  m_current_write_sector_buffer = (m_current_write_sector_buffer + 1) % NUM_SECTOR_BUFFERS;
-  SectorBuffer* sb = &m_sector_buffers[m_current_write_sector_buffer];
+  const u32 sb_num = (m_current_write_sector_buffer + 1) % NUM_SECTOR_BUFFERS;
+  SectorBuffer* sb = &m_sector_buffers[sb_num];
   if (sb->size > 0)
   {
     Log_DevPrintf("Sector buffer %u was not read, previous sector dropped",
@@ -2029,10 +1905,17 @@ void CDROM::ProcessDataSector(const u8* raw_sector, const CDImage::SubChannelQ& 
   else
   {
     // TODO: This should actually depend on the mode...
-    Assert(m_last_sector_header.sector_mode == 2);
+    if (m_last_sector_header.sector_mode != 2)
+    {
+      Log_WarningPrintf("Ignoring non-mode2 sector at %u", m_current_lba);
+      return;
+    }
+
     std::memcpy(sb->data.data(), raw_sector + CDImage::SECTOR_SYNC_SIZE + 12, DATA_SECTOR_OUTPUT_SIZE);
     sb->size = DATA_SECTOR_OUTPUT_SIZE;
   }
+
+  m_current_write_sector_buffer = sb_num;
 
   // Deliver to CPU
   if (HasPendingAsyncInterrupt())
@@ -2213,7 +2096,7 @@ void CDROM::ProcessXAADPCMSector(const u8* raw_sector, const CDImage::SubChannel
   CDXA::DecodeADPCMSector(raw_sector, sample_buffer.data(), m_xa_last_samples.data());
 
   // Only send to SPU if we're not muted.
-  if (m_muted || m_adpcm_muted)
+  if (m_muted || m_adpcm_muted || g_settings.cdrom_mute_cd_audio)
     return;
 
   g_spu.GeneratePendingSamples();
@@ -2236,52 +2119,89 @@ void CDROM::ProcessXAADPCMSector(const u8* raw_sector, const CDImage::SubChannel
   }
 }
 
+static s16 GetPeakVolume(const u8* raw_sector, u8 channel)
+{
+  static constexpr u32 NUM_SAMPLES = CDImage::RAW_SECTOR_SIZE / sizeof(s16);
+
+#if defined(CPU_X64)
+  static_assert(Common::IsAlignedPow2(NUM_SAMPLES, 8));
+  const u8* current_ptr = raw_sector;
+  __m128i v_peak = _mm_set1_epi16(0);
+  for (u32 i = 0; i < NUM_SAMPLES; i += 8)
+  {
+    __m128i val = _mm_loadu_si128(reinterpret_cast<const __m128i*>(current_ptr));
+    v_peak = _mm_max_epi16(val, v_peak);
+    current_ptr += 16;
+  }
+  s16 v_peaks[8];
+  _mm_store_si128(reinterpret_cast<__m128i*>(v_peaks), v_peak);
+  if (channel == 0)
+    return std::max(v_peaks[0], std::max(v_peaks[2], std::max(v_peaks[4], v_peaks[6])));
+  else
+    return std::max(v_peaks[1], std::max(v_peaks[3], std::max(v_peaks[5], v_peaks[7])));
+#else
+  const u8* current_ptr = raw_sector + (channel * sizeof(s16));
+  s16 peak = 0;
+
+  for (u32 i = 0; i < NUM_SAMPLES; i += 2)
+  {
+    s16 sample;
+    std::memcpy(&sample, current_ptr, sizeof(sample));
+    peak = std::max(peak, sample);
+    current_ptr += sizeof(s16) * 2;
+  }
+
+  return peak;
+#endif
+}
+
 void CDROM::ProcessCDDASector(const u8* raw_sector, const CDImage::SubChannelQ& subq)
 {
   // For CDDA sectors, the whole sector contains the audio data.
   Log_DevPrintf("Read sector %u as CDDA", m_current_lba);
 
-  // These bits/reporting doesn't happen if we're reading with the CDDA mode bit set.
-  if (m_drive_state == DriveState::Playing)
+  // The reporting doesn't happen if we're reading with the CDDA mode bit set.
+  if (m_drive_state == DriveState::Playing && m_mode.report_audio)
   {
-    m_secondary_status.playing_cdda = true;
-    if (m_mode.report_audio)
+    const u8 frame_nibble = subq.absolute_frame_bcd >> 4;
+
+    if (m_last_cdda_report_frame_nibble != frame_nibble)
     {
-      const u8 frame_nibble = subq.absolute_frame_bcd >> 4;
-      if (m_last_cdda_report_frame_nibble != frame_nibble)
+      m_last_cdda_report_frame_nibble = frame_nibble;
+
+      Log_DebugPrintf("CDDA report at track[%02x] index[%02x] rel[%02x:%02x:%02x]", subq.track_number_bcd,
+                      subq.index_number_bcd, subq.relative_minute_bcd, subq.relative_second_bcd,
+                      subq.relative_frame_bcd);
+
+      ClearAsyncInterrupt();
+      m_async_response_fifo.Push(m_secondary_status.bits);
+      m_async_response_fifo.Push(subq.track_number_bcd);
+      m_async_response_fifo.Push(subq.index_number_bcd);
+      if (subq.absolute_frame_bcd & 0x10)
       {
-        m_last_cdda_report_frame_nibble = frame_nibble;
-
-        Log_DebugPrintf("CDDA report at track[%02x] index[%02x] rel[%02x:%02x:%02x]", subq.track_number_bcd,
-                        subq.index_number_bcd, subq.relative_minute_bcd, subq.relative_second_bcd,
-                        subq.relative_frame_bcd);
-
-        ClearAsyncInterrupt();
-        m_async_response_fifo.Push(m_secondary_status.bits);
-        m_async_response_fifo.Push(subq.track_number_bcd);
-        m_async_response_fifo.Push(subq.index_number_bcd);
-        if (subq.absolute_frame_bcd & 0x10)
-        {
-          m_async_response_fifo.Push(subq.relative_minute_bcd);
-          m_async_response_fifo.Push(0x80 | subq.relative_second_bcd);
-          m_async_response_fifo.Push(subq.relative_frame_bcd);
-        }
-        else
-        {
-          m_async_response_fifo.Push(subq.absolute_minute_bcd);
-          m_async_response_fifo.Push(subq.absolute_second_bcd);
-          m_async_response_fifo.Push(subq.absolute_frame_bcd);
-        }
-
-        m_async_response_fifo.Push(0); // peak low
-        m_async_response_fifo.Push(0); // peak high
-        SetAsyncInterrupt(Interrupt::DataReady);
+        m_async_response_fifo.Push(subq.relative_minute_bcd);
+        m_async_response_fifo.Push(0x80 | subq.relative_second_bcd);
+        m_async_response_fifo.Push(subq.relative_frame_bcd);
       }
+      else
+      {
+        m_async_response_fifo.Push(subq.absolute_minute_bcd);
+        m_async_response_fifo.Push(subq.absolute_second_bcd);
+        m_async_response_fifo.Push(subq.absolute_frame_bcd);
+      }
+
+      const u8 channel = subq.absolute_second_bcd & 1u;
+      const s16 peak_volume = std::min<s16>(GetPeakVolume(raw_sector, channel), 32767);
+      const u16 peak_value = (ZeroExtend16(channel) << 15) | peak_volume;
+
+      m_async_response_fifo.Push(Truncate8(peak_value));      // peak low
+      m_async_response_fifo.Push(Truncate8(peak_value >> 8)); // peak high
+      SetAsyncInterrupt(Interrupt::DataReady);
     }
   }
 
   // Apply volume when pushing sectors to SPU.
-  if (m_muted)
+  if (m_muted || g_settings.cdrom_mute_cd_audio)
     return;
 
   g_spu.GeneratePendingSamples();
@@ -2344,6 +2264,7 @@ void CDROM::ClearSectorBuffers()
 
 void CDROM::DrawDebugWindow()
 {
+#ifdef WITH_IMGUI
   static const ImVec4 active_color{1.0f, 1.0f, 1.0f, 1.0f};
   static const ImVec4 inactive_color{0.4f, 0.4f, 0.4f, 1.0f};
   const float framebuffer_scale = ImGui::GetIO().DisplayFramebufferScale.x;
@@ -2524,4 +2445,5 @@ void CDROM::DrawDebugWindow()
   }
 
   ImGui::End();
+#endif
 }

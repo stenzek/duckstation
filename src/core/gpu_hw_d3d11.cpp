@@ -2,6 +2,7 @@
 #include "common/assert.h"
 #include "common/d3d11/shader_compiler.h"
 #include "common/log.h"
+#include "common/timer.h"
 #include "gpu_hw_shadergen.h"
 #include "host_display.h"
 #include "host_interface.h"
@@ -15,7 +16,8 @@ GPU_HW_D3D11::~GPU_HW_D3D11()
   if (m_host_display)
     m_host_display->ClearDisplayTexture();
 
-  m_context->ClearState();
+  if (m_context)
+    m_context->ClearState();
 
   DestroyShaders();
   DestroyStateObjects();
@@ -29,18 +31,15 @@ bool GPU_HW_D3D11::Initialize(HostDisplay* host_display)
     return false;
   }
 
-  SetCapabilities();
-
-  if (!GPU_HW::Initialize(host_display))
-    return false;
-
   m_device = static_cast<ID3D11Device*>(host_display->GetRenderDevice());
   m_context = static_cast<ID3D11DeviceContext*>(host_display->GetRenderContext());
   if (!m_device || !m_context)
     return false;
 
-  m_shader_cache.Open(g_host_interface->GetShaderCacheBasePath(), m_device->GetFeatureLevel(),
-                      g_settings.gpu_use_debug_device);
+  SetCapabilities();
+
+  if (!GPU_HW::Initialize(host_display))
+    return false;
 
   if (!CreateFramebuffer())
   {
@@ -125,6 +124,9 @@ void GPU_HW_D3D11::UpdateSettings()
 
   if (framebuffer_changed)
   {
+    RestoreGraphicsAPIState();
+    ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
+    ResetGraphicsAPIState();
     m_host_display->ClearDisplayTexture();
     CreateFramebuffer();
   }
@@ -140,6 +142,7 @@ void GPU_HW_D3D11::UpdateSettings()
   if (framebuffer_changed)
   {
     RestoreGraphicsAPIState();
+    UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, m_vram_ptr);
     UpdateDepthBufferFromMaskBit();
     UpdateDisplay();
     ResetGraphicsAPIState();
@@ -175,53 +178,53 @@ void GPU_HW_D3D11::SetCapabilities()
 
   m_max_resolution_scale = max_texture_scale;
   m_supports_dual_source_blend = true;
+  m_supports_per_sample_shading = (m_device->GetFeatureLevel() >= D3D_FEATURE_LEVEL_10_1);
+
+  m_max_multisamples = 1;
+  for (u32 multisamples = 2; multisamples < D3D11_MAX_MULTISAMPLE_SAMPLE_COUNT; multisamples++)
+  {
+    UINT num_quality_levels;
+    if (SUCCEEDED(
+          m_device->CheckMultisampleQualityLevels(DXGI_FORMAT_R8G8B8A8_UNORM, multisamples, &num_quality_levels)) &&
+        num_quality_levels > 0)
+    {
+      m_max_multisamples = multisamples;
+    }
+  }
 }
 
 bool GPU_HW_D3D11::CreateFramebuffer()
 {
-  // save old vram texture/fbo, in case we're changing scale
-  auto old_vram_texture = std::move(m_vram_texture);
   DestroyFramebuffer();
 
   // scale vram size to internal resolution
   const u32 texture_width = VRAM_WIDTH * m_resolution_scale;
   const u32 texture_height = VRAM_HEIGHT * m_resolution_scale;
+  const u32 multisamples = m_multisamples;
   const DXGI_FORMAT texture_format = DXGI_FORMAT_R8G8B8A8_UNORM;
   const DXGI_FORMAT depth_format = DXGI_FORMAT_D16_UNORM;
 
-  if (!m_vram_texture.Create(m_device.Get(), texture_width, texture_height, texture_format,
+  if (!m_vram_texture.Create(m_device.Get(), texture_width, texture_height, multisamples, texture_format,
                              D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET) ||
-      !m_vram_depth_texture.Create(m_device.Get(), texture_width, texture_height, depth_format,
+      !m_vram_depth_texture.Create(m_device.Get(), texture_width, texture_height, multisamples, depth_format,
                                    D3D11_BIND_DEPTH_STENCIL) ||
-      !m_vram_read_texture.Create(m_device.Get(), texture_width, texture_height, texture_format,
+      !m_vram_read_texture.Create(m_device.Get(), texture_width, texture_height, 1, texture_format,
                                   D3D11_BIND_SHADER_RESOURCE) ||
-      !m_display_texture.Create(m_device.Get(), texture_width, texture_height, texture_format,
+      !m_display_texture.Create(m_device.Get(), texture_width, texture_height, 1, texture_format,
                                 D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET) ||
-      !m_vram_encoding_texture.Create(m_device.Get(), VRAM_WIDTH, VRAM_HEIGHT, texture_format,
+      !m_vram_encoding_texture.Create(m_device.Get(), VRAM_WIDTH, VRAM_HEIGHT, 1, texture_format,
                                       D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET) ||
       !m_vram_readback_texture.Create(m_device.Get(), VRAM_WIDTH, VRAM_HEIGHT, texture_format, false))
   {
     return false;
   }
 
-  const CD3D11_DEPTH_STENCIL_VIEW_DESC depth_view_desc(D3D11_DSV_DIMENSION_TEXTURE2D, depth_format);
+  const CD3D11_DEPTH_STENCIL_VIEW_DESC depth_view_desc(
+    multisamples > 1 ? D3D11_DSV_DIMENSION_TEXTURE2DMS : D3D11_DSV_DIMENSION_TEXTURE2D, depth_format);
   HRESULT hr =
     m_device->CreateDepthStencilView(m_vram_depth_texture, &depth_view_desc, m_vram_depth_view.GetAddressOf());
   if (FAILED(hr))
     return false;
-
-  // do we need to restore the framebuffer after a size change?
-  if (old_vram_texture)
-  {
-    const bool linear_filter = old_vram_texture.GetWidth() > m_vram_texture.GetWidth();
-    Log_DevPrintf("Scaling %ux%u VRAM texture to %ux%u using %s filter", old_vram_texture.GetWidth(),
-                  old_vram_texture.GetHeight(), m_vram_texture.GetWidth(), m_vram_texture.GetHeight(),
-                  linear_filter ? "linear" : "nearest");
-
-    BlitTexture(m_vram_texture.GetD3DRTV(), 0, 0, m_vram_texture.GetWidth(), m_vram_texture.GetHeight(),
-                old_vram_texture.GetD3DSRV(), 0, 0, old_vram_texture.GetWidth(), old_vram_texture.GetHeight(),
-                old_vram_texture.GetWidth(), old_vram_texture.GetHeight(), linear_filter);
-  }
 
   m_context->OMSetRenderTargets(1, m_vram_texture.GetD3DRTVArray(), nullptr);
   SetFullVRAMDirtyRectangle();
@@ -283,9 +286,21 @@ bool GPU_HW_D3D11::CreateStateObjects()
   CD3D11_RASTERIZER_DESC rs_desc = CD3D11_RASTERIZER_DESC(CD3D11_DEFAULT());
   rs_desc.CullMode = D3D11_CULL_NONE;
   rs_desc.ScissorEnable = TRUE;
+  rs_desc.MultisampleEnable = IsUsingMultisampling();
   hr = m_device->CreateRasterizerState(&rs_desc, m_cull_none_rasterizer_state.ReleaseAndGetAddressOf());
   if (FAILED(hr))
     return false;
+  if (IsUsingMultisampling())
+  {
+    rs_desc.MultisampleEnable = FALSE;
+    hr = m_device->CreateRasterizerState(&rs_desc, m_cull_none_rasterizer_state_no_msaa.ReleaseAndGetAddressOf());
+    if (FAILED(hr))
+      return false;
+  }
+  else
+  {
+    m_cull_none_rasterizer_state_no_msaa = m_cull_none_rasterizer_state;
+  }
 
   CD3D11_DEPTH_STENCIL_DESC ds_desc = CD3D11_DEPTH_STENCIL_DESC(CD3D11_DEFAULT());
   ds_desc.DepthEnable = FALSE;
@@ -332,7 +347,8 @@ bool GPU_HW_D3D11::CreateStateObjects()
   for (u8 transparency_mode = 0; transparency_mode < 5; transparency_mode++)
   {
     bl_desc = CD3D11_BLEND_DESC(CD3D11_DEFAULT());
-    if (transparency_mode != static_cast<u8>(TransparencyMode::Disabled) || m_texture_filtering)
+    if (transparency_mode != static_cast<u8>(GPUTransparencyMode::Disabled) ||
+        m_texture_filtering != GPUTextureFilter::Nearest)
     {
       bl_desc.RenderTarget[0].BlendEnable = TRUE;
       bl_desc.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
@@ -340,7 +356,7 @@ bool GPU_HW_D3D11::CreateStateObjects()
       bl_desc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
       bl_desc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
       bl_desc.RenderTarget[0].BlendOp =
-        (transparency_mode == static_cast<u8>(TransparencyMode::BackgroundMinusForeground)) ?
+        (transparency_mode == static_cast<u8>(GPUTransparencyMode::BackgroundMinusForeground)) ?
           D3D11_BLEND_OP_REV_SUBTRACT :
           D3D11_BLEND_OP_ADD;
       bl_desc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
@@ -365,14 +381,32 @@ void GPU_HW_D3D11::DestroyStateObjects()
   m_depth_test_always_state.Reset();
   m_depth_disabled_state.Reset();
   m_cull_none_rasterizer_state.Reset();
+  m_cull_none_rasterizer_state_no_msaa.Reset();
 }
 
 bool GPU_HW_D3D11::CompileShaders()
 {
-  GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_true_color, m_scaled_dithering,
-                             m_texture_filtering, m_using_uv_limits, m_supports_dual_source_blend);
+  D3D11::ShaderCache shader_cache;
+  shader_cache.Open(g_host_interface->GetShaderCacheBasePath(), m_device->GetFeatureLevel(),
+                    g_settings.gpu_use_debug_device);
 
-  g_host_interface->DisplayLoadingScreen("Compiling shaders...");
+  GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_multisamples, m_per_sample_shading,
+                             m_true_color, m_scaled_dithering, m_texture_filtering, m_using_uv_limits,
+                             m_supports_dual_source_blend);
+
+  Common::Timer compile_time;
+  const int progress_total = 1 + 1 + 2 + (4 * 9 * 2 * 2) + 7 + (2 * 3);
+  int progress_value = 0;
+#define UPDATE_PROGRESS()                                                                                              \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    progress_value++;                                                                                                  \
+    if (compile_time.GetTimeSeconds() >= 1.0f)                                                                         \
+    {                                                                                                                  \
+      compile_time.Reset();                                                                                            \
+      g_host_interface->DisplayLoadingScreen("Compiling Shaders", 0, progress_total, progress_value);                  \
+    }                                                                                                                  \
+  } while (0)
 
   // input layout
   {
@@ -385,7 +419,7 @@ bool GPU_HW_D3D11::CompileShaders()
 
     // we need a vertex shader...
     ComPtr<ID3DBlob> vs_bytecode =
-      m_shader_cache.GetShaderBlob(D3D11::ShaderCompiler::Type::Vertex, shadergen.GenerateBatchVertexShader(true));
+      shader_cache.GetShaderBlob(D3D11::ShaderCompiler::Type::Vertex, shadergen.GenerateBatchVertexShader(true));
     if (!vs_bytecode)
       return false;
 
@@ -400,17 +434,23 @@ bool GPU_HW_D3D11::CompileShaders()
     }
   }
 
+  UPDATE_PROGRESS();
+
   m_screen_quad_vertex_shader =
-    m_shader_cache.GetVertexShader(m_device.Get(), shadergen.GenerateScreenQuadVertexShader());
+    shader_cache.GetVertexShader(m_device.Get(), shadergen.GenerateScreenQuadVertexShader());
   if (!m_screen_quad_vertex_shader)
     return false;
+
+  UPDATE_PROGRESS();
 
   for (u8 textured = 0; textured < 2; textured++)
   {
     const std::string vs = shadergen.GenerateBatchVertexShader(ConvertToBoolUnchecked(textured));
-    m_batch_vertex_shaders[textured] = m_shader_cache.GetVertexShader(m_device.Get(), vs);
+    m_batch_vertex_shaders[textured] = shader_cache.GetVertexShader(m_device.Get(), vs);
     if (!m_batch_vertex_shaders[textured])
       return false;
+
+    UPDATE_PROGRESS();
   }
 
   for (u8 render_mode = 0; render_mode < 4; render_mode++)
@@ -422,60 +462,83 @@ bool GPU_HW_D3D11::CompileShaders()
         for (u8 interlacing = 0; interlacing < 2; interlacing++)
         {
           const std::string ps = shadergen.GenerateBatchFragmentShader(
-            static_cast<BatchRenderMode>(render_mode), static_cast<TextureMode>(texture_mode),
+            static_cast<BatchRenderMode>(render_mode), static_cast<GPUTextureMode>(texture_mode),
             ConvertToBoolUnchecked(dithering), ConvertToBoolUnchecked(interlacing));
 
           m_batch_pixel_shaders[render_mode][texture_mode][dithering][interlacing] =
-            m_shader_cache.GetPixelShader(m_device.Get(), ps);
+            shader_cache.GetPixelShader(m_device.Get(), ps);
           if (!m_batch_pixel_shaders[render_mode][texture_mode][dithering][interlacing])
             return false;
+
+          UPDATE_PROGRESS();
         }
       }
     }
   }
 
-  m_copy_pixel_shader = m_shader_cache.GetPixelShader(m_device.Get(), shadergen.GenerateCopyFragmentShader());
+  m_copy_pixel_shader = shader_cache.GetPixelShader(m_device.Get(), shadergen.GenerateCopyFragmentShader());
   if (!m_copy_pixel_shader)
     return false;
 
-  m_vram_fill_pixel_shader = m_shader_cache.GetPixelShader(m_device.Get(), shadergen.GenerateFillFragmentShader());
+  UPDATE_PROGRESS();
+
+  m_vram_fill_pixel_shader = shader_cache.GetPixelShader(m_device.Get(), shadergen.GenerateFillFragmentShader());
   if (!m_vram_fill_pixel_shader)
     return false;
 
+  UPDATE_PROGRESS();
+
   m_vram_interlaced_fill_pixel_shader =
-    m_shader_cache.GetPixelShader(m_device.Get(), shadergen.GenerateInterlacedFillFragmentShader());
+    shader_cache.GetPixelShader(m_device.Get(), shadergen.GenerateInterlacedFillFragmentShader());
   if (!m_vram_interlaced_fill_pixel_shader)
     return false;
 
-  m_vram_read_pixel_shader = m_shader_cache.GetPixelShader(m_device.Get(), shadergen.GenerateVRAMReadFragmentShader());
+  UPDATE_PROGRESS();
+
+  m_vram_read_pixel_shader = shader_cache.GetPixelShader(m_device.Get(), shadergen.GenerateVRAMReadFragmentShader());
   if (!m_vram_read_pixel_shader)
     return false;
 
+  UPDATE_PROGRESS();
+
   m_vram_write_pixel_shader =
-    m_shader_cache.GetPixelShader(m_device.Get(), shadergen.GenerateVRAMWriteFragmentShader(false));
+    shader_cache.GetPixelShader(m_device.Get(), shadergen.GenerateVRAMWriteFragmentShader(false));
   if (!m_vram_write_pixel_shader)
     return false;
 
-  m_vram_copy_pixel_shader = m_shader_cache.GetPixelShader(m_device.Get(), shadergen.GenerateVRAMCopyFragmentShader());
+  UPDATE_PROGRESS();
+
+  m_vram_copy_pixel_shader = shader_cache.GetPixelShader(m_device.Get(), shadergen.GenerateVRAMCopyFragmentShader());
   if (!m_vram_copy_pixel_shader)
     return false;
 
+  UPDATE_PROGRESS();
+
   m_vram_update_depth_pixel_shader =
-    m_shader_cache.GetPixelShader(m_device.Get(), shadergen.GenerateVRAMUpdateDepthFragmentShader());
+    shader_cache.GetPixelShader(m_device.Get(), shadergen.GenerateVRAMUpdateDepthFragmentShader());
   if (!m_vram_update_depth_pixel_shader)
     return false;
+
+  UPDATE_PROGRESS();
 
   for (u8 depth_24bit = 0; depth_24bit < 2; depth_24bit++)
   {
     for (u8 interlacing = 0; interlacing < 3; interlacing++)
     {
-      const std::string ps = shadergen.GenerateDisplayFragmentShader(ConvertToBoolUnchecked(depth_24bit),
-                                                                     static_cast<InterlacedRenderMode>(interlacing));
-      m_display_pixel_shaders[depth_24bit][interlacing] = m_shader_cache.GetPixelShader(m_device.Get(), ps);
+      const std::string ps = shadergen.GenerateDisplayFragmentShader(
+        ConvertToBoolUnchecked(depth_24bit), static_cast<InterlacedRenderMode>(interlacing),
+        ConvertToBoolUnchecked(depth_24bit) && m_chroma_smoothing);
+      m_display_pixel_shaders[depth_24bit][interlacing] = shader_cache.GetPixelShader(m_device.Get(), ps);
       if (!m_display_pixel_shaders[depth_24bit][interlacing])
         return false;
+
+      UPDATE_PROGRESS();
     }
   }
+
+  UPDATE_PROGRESS();
+
+#undef UPDATE_PROGRESS
 
   return true;
 }
@@ -529,25 +592,6 @@ void GPU_HW_D3D11::SetViewportAndScissor(u32 x, u32 y, u32 width, u32 height)
   SetScissor(x, y, width, height);
 }
 
-void GPU_HW_D3D11::BlitTexture(ID3D11RenderTargetView* dst, u32 dst_x, u32 dst_y, u32 dst_width, u32 dst_height,
-                               ID3D11ShaderResourceView* src, u32 src_x, u32 src_y, u32 src_width, u32 src_height,
-                               u32 src_texture_width, u32 src_texture_height, bool linear_filter)
-{
-  const float uniforms[4] = {static_cast<float>(src_x) / static_cast<float>(src_texture_width),
-                             static_cast<float>(src_y) / static_cast<float>(src_texture_height),
-                             static_cast<float>(src_width) / static_cast<float>(src_texture_width),
-                             static_cast<float>(src_height) / static_cast<float>(src_texture_height)};
-
-  m_context->OMSetRenderTargets(1, &dst, nullptr);
-  m_context->OMSetDepthStencilState(m_depth_disabled_state.Get(), 0);
-  m_context->PSSetShaderResources(0, 1, &src);
-  m_context->PSSetSamplers(
-    0, 1, linear_filter ? m_linear_sampler_state.GetAddressOf() : m_point_sampler_state.GetAddressOf());
-  SetViewport(dst_x, dst_y, dst_width, dst_height);
-  SetScissor(dst_x, dst_y, dst_width, dst_height);
-  DrawUtilityShader(m_copy_pixel_shader.Get(), uniforms, sizeof(uniforms));
-}
-
 void GPU_HW_D3D11::DrawUtilityShader(ID3D11PixelShader* shader, const void* uniforms, u32 uniforms_size)
 {
   if (uniforms)
@@ -566,7 +610,7 @@ void GPU_HW_D3D11::DrawUtilityShader(ID3D11PixelShader* shader, const void* unif
 
 void GPU_HW_D3D11::DrawBatchVertices(BatchRenderMode render_mode, u32 base_vertex, u32 num_vertices)
 {
-  const bool textured = (m_batch.texture_mode != TextureMode::Disabled);
+  const bool textured = (m_batch.texture_mode != GPUTextureMode::Disabled);
 
   m_context->VSSetShader(m_batch_vertex_shaders[BoolToUInt8(textured)].Get(), nullptr, 0);
 
@@ -575,8 +619,8 @@ void GPU_HW_D3D11::DrawBatchVertices(BatchRenderMode render_mode, u32 base_verte
                                                 .Get(),
                          nullptr, 0);
 
-  const TransparencyMode transparency_mode =
-    (render_mode == BatchRenderMode::OnlyOpaque) ? TransparencyMode::Disabled : m_batch.transparency_mode;
+  const GPUTransparencyMode transparency_mode =
+    (render_mode == BatchRenderMode::OnlyOpaque) ? GPUTransparencyMode::Disabled : m_batch.transparency_mode;
   m_context->OMSetBlendState(m_batch_blend_states[static_cast<u8>(transparency_mode)].Get(), nullptr, 0xFFFFFFFFu);
   m_context->OMSetDepthStencilState(
     m_batch.check_mask_before_draw ? m_depth_test_less_state.Get() : m_depth_test_always_state.Get(), 0);
@@ -607,21 +651,34 @@ void GPU_HW_D3D11::UpdateDisplay()
 
   if (g_settings.debugging.show_vram)
   {
-    m_host_display->SetDisplayTexture(m_vram_texture.GetD3DSRV(), m_vram_texture.GetWidth(), m_vram_texture.GetHeight(),
-                                      0, 0, m_vram_texture.GetWidth(), m_vram_texture.GetHeight());
+    if (IsUsingMultisampling())
+    {
+      UpdateVRAMReadTexture();
+      m_host_display->SetDisplayTexture(m_vram_read_texture.GetD3DSRV(), HostDisplayPixelFormat::RGBA8,
+                                        m_vram_read_texture.GetWidth(), m_vram_read_texture.GetHeight(), 0, 0,
+                                        m_vram_read_texture.GetWidth(), m_vram_read_texture.GetHeight());
+    }
+    else
+    {
+      m_host_display->SetDisplayTexture(m_vram_texture.GetD3DSRV(), HostDisplayPixelFormat::RGBA8,
+                                        m_vram_texture.GetWidth(), m_vram_texture.GetHeight(), 0, 0,
+                                        m_vram_texture.GetWidth(), m_vram_texture.GetHeight());
+    }
+
     m_host_display->SetDisplayParameters(VRAM_WIDTH, VRAM_HEIGHT, 0, 0, VRAM_WIDTH, VRAM_HEIGHT,
                                          static_cast<float>(VRAM_WIDTH) / static_cast<float>(VRAM_HEIGHT));
   }
   else
   {
+    const u32 resolution_scale = m_GPUSTAT.display_area_color_depth_24 ? 1 : m_resolution_scale;
     const u32 vram_offset_x = m_crtc_state.display_vram_left;
     const u32 vram_offset_y = m_crtc_state.display_vram_top;
-    const u32 scaled_vram_offset_x = vram_offset_x * m_resolution_scale;
-    const u32 scaled_vram_offset_y = vram_offset_y * m_resolution_scale;
+    const u32 scaled_vram_offset_x = vram_offset_x * resolution_scale;
+    const u32 scaled_vram_offset_y = vram_offset_y * resolution_scale;
     const u32 display_width = m_crtc_state.display_vram_width;
     const u32 display_height = m_crtc_state.display_vram_height;
-    const u32 scaled_display_width = display_width * m_resolution_scale;
-    const u32 scaled_display_height = display_height * m_resolution_scale;
+    const u32 scaled_display_width = display_width * resolution_scale;
+    const u32 scaled_display_height = display_height * resolution_scale;
     const InterlacedRenderMode interlaced = GetInterlacedRenderMode();
 
     if (IsDisplayDisabled())
@@ -629,22 +686,23 @@ void GPU_HW_D3D11::UpdateDisplay()
       m_host_display->ClearDisplayTexture();
     }
     else if (!m_GPUSTAT.display_area_color_depth_24 && interlaced == InterlacedRenderMode::None &&
-             (scaled_vram_offset_x + scaled_display_width) <= m_vram_texture.GetWidth() &&
+             !IsUsingMultisampling() && (scaled_vram_offset_x + scaled_display_width) <= m_vram_texture.GetWidth() &&
              (scaled_vram_offset_y + scaled_display_height) <= m_vram_texture.GetHeight())
     {
-      m_host_display->SetDisplayTexture(m_vram_texture.GetD3DSRV(), m_vram_texture.GetWidth(),
-                                        m_vram_texture.GetHeight(), scaled_vram_offset_x, scaled_vram_offset_y,
-                                        scaled_display_width, scaled_display_height);
+      m_host_display->SetDisplayTexture(m_vram_texture.GetD3DSRV(), HostDisplayPixelFormat::RGBA8,
+                                        m_vram_texture.GetWidth(), m_vram_texture.GetHeight(), scaled_vram_offset_x,
+                                        scaled_vram_offset_y, scaled_display_width, scaled_display_height);
     }
     else
     {
+      m_context->RSSetState(m_cull_none_rasterizer_state_no_msaa.Get());
       m_context->OMSetRenderTargets(1, m_display_texture.GetD3DRTVArray(), nullptr);
       m_context->OMSetDepthStencilState(m_depth_disabled_state.Get(), 0);
       m_context->PSSetShaderResources(0, 1, m_vram_texture.GetD3DSRVArray());
 
       const u32 reinterpret_field_offset = (interlaced != InterlacedRenderMode::None) ? GetInterlacedDisplayField() : 0;
-      const u32 reinterpret_start_x = m_crtc_state.regs.X * m_resolution_scale;
-      const u32 reinterpret_crop_left = (m_crtc_state.display_vram_left - m_crtc_state.regs.X) * m_resolution_scale;
+      const u32 reinterpret_start_x = m_crtc_state.regs.X * resolution_scale;
+      const u32 reinterpret_crop_left = (m_crtc_state.display_vram_left - m_crtc_state.regs.X) * resolution_scale;
       const u32 uniforms[4] = {reinterpret_start_x, scaled_vram_offset_y + reinterpret_field_offset,
                                reinterpret_crop_left, reinterpret_field_offset};
       ID3D11PixelShader* display_pixel_shader =
@@ -653,9 +711,9 @@ void GPU_HW_D3D11::UpdateDisplay()
       SetViewportAndScissor(0, 0, scaled_display_width, scaled_display_height);
       DrawUtilityShader(display_pixel_shader, uniforms, sizeof(uniforms));
 
-      m_host_display->SetDisplayTexture(m_display_texture.GetD3DSRV(), m_display_texture.GetWidth(),
-                                        m_display_texture.GetHeight(), 0, 0, scaled_display_width,
-                                        scaled_display_height);
+      m_host_display->SetDisplayTexture(m_display_texture.GetD3DSRV(), HostDisplayPixelFormat::RGBA8,
+                                        m_display_texture.GetWidth(), m_display_texture.GetHeight(), 0, 0,
+                                        scaled_display_width, scaled_display_height);
 
       RestoreGraphicsAPIState();
     }
@@ -663,7 +721,7 @@ void GPU_HW_D3D11::UpdateDisplay()
     m_host_display->SetDisplayParameters(m_crtc_state.display_width, m_crtc_state.display_height,
                                          m_crtc_state.display_origin_left, m_crtc_state.display_origin_top,
                                          m_crtc_state.display_vram_width, m_crtc_state.display_vram_height,
-                                         m_crtc_state.display_aspect_ratio);
+                                         GetDisplayAspectRatio());
   }
 }
 
@@ -676,6 +734,7 @@ void GPU_HW_D3D11::ReadVRAM(u32 x, u32 y, u32 width, u32 height)
 
   // Encode the 24-bit texture as 16-bit.
   const u32 uniforms[4] = {copy_rect.left, copy_rect.top, copy_rect.GetWidth(), copy_rect.GetHeight()};
+  m_context->RSSetState(m_cull_none_rasterizer_state_no_msaa.Get());
   m_context->OMSetRenderTargets(1, m_vram_encoding_texture.GetD3DRTVArray(), nullptr);
   m_context->OMSetDepthStencilState(m_depth_disabled_state.Get(), 0);
   m_context->PSSetShaderResources(0, 1, m_vram_texture.GetD3DSRVArray());
@@ -753,7 +812,7 @@ void GPU_HW_D3D11::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* d
 
 void GPU_HW_D3D11::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height)
 {
-  if (UseVRAMCopyShader(src_x, src_y, dst_x, dst_y, width, height))
+  if (UseVRAMCopyShader(src_x, src_y, dst_x, dst_y, width, height) || IsUsingMultisampling())
   {
     const Common::Rectangle<u32> src_bounds = GetVRAMTransferBounds(src_x, src_y, width, height);
     const Common::Rectangle<u32> dst_bounds = GetVRAMTransferBounds(dst_x, dst_y, width, height);
@@ -801,8 +860,17 @@ void GPU_HW_D3D11::UpdateVRAMReadTexture()
 {
   const auto scaled_rect = m_vram_dirty_rect * m_resolution_scale;
   const CD3D11_BOX src_box(scaled_rect.left, scaled_rect.top, 0, scaled_rect.right, scaled_rect.bottom, 1);
-  m_context->CopySubresourceRegion(m_vram_read_texture, 0, scaled_rect.left, scaled_rect.top, 0, m_vram_texture, 0,
-                                   &src_box);
+
+  if (m_vram_texture.IsMultisampled())
+  {
+    m_context->ResolveSubresource(m_vram_read_texture.GetD3DTexture(), 0, m_vram_texture.GetD3DTexture(), 0,
+                                  m_vram_texture.GetFormat());
+  }
+  else
+  {
+    m_context->CopySubresourceRegion(m_vram_read_texture, 0, scaled_rect.left, scaled_rect.top, 0, m_vram_texture, 0,
+                                     &src_box);
+  }
 
   GPU_HW::UpdateVRAMReadTexture();
 }

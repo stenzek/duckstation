@@ -22,6 +22,10 @@ class GameList;
 
 struct SystemBootParameters;
 
+namespace BIOS {
+struct ImageInfo;
+}
+
 class HostInterface
 {
 public:
@@ -109,8 +113,29 @@ public:
   /// Returns a float setting from the configuration.
   virtual float GetFloatSettingValue(const char* section, const char* key, float default_value = 0.0f);
 
+  /// Translates a string to the current language.
+  virtual TinyString TranslateString(const char* context, const char* str) const;
+  virtual std::string TranslateStdString(const char* context, const char* str) const;
+
+  /// Returns the path to the directory to search for BIOS images.
+  virtual std::string GetBIOSDirectory();
+
   /// Loads the BIOS image for the specified region.
   std::optional<std::vector<u8>> GetBIOSImage(ConsoleRegion region);
+
+  /// Searches for a BIOS image for the specified region in the specified directory. If no match is found, the first
+  /// 512KB BIOS image will be used.
+  std::optional<std::vector<u8>> FindBIOSImageInDirectory(ConsoleRegion region, const char* directory);
+
+  /// Returns a list of filenames and descriptions for BIOS images in a directory.
+  std::vector<std::pair<std::string, const BIOS::ImageInfo*>> FindBIOSImagesInDirectory(const char* directory);
+
+  /// Returns true if any BIOS images are found in the configured BIOS directory.
+  bool HasAnyBIOSImages();
+
+  /// Opens a file in the DuckStation "package".
+  /// This is the APK for Android builds, or the program directory for standalone builds.
+  virtual std::unique_ptr<ByteStream> OpenPackageFile(const char* path, u32 flags) = 0;
 
   virtual void OnRunningGameChanged();
   virtual void OnSystemPerformanceCountersUpdated();
@@ -128,11 +153,17 @@ protected:
   /// Restores all settings to defaults.
   virtual void SetDefaultSettings(SettingsInterface& si);
 
+  /// Performs the initial load of settings. Should call CheckSettings() and LoadSettings(SettingsInterface&).
+  virtual void LoadSettings() = 0;
+
   /// Loads settings to m_settings and any frontend-specific parameters.
   virtual void LoadSettings(SettingsInterface& si);
 
   /// Saves current settings variables to ini.
   virtual void SaveSettings(SettingsInterface& si);
+
+  /// Checks and fixes up any incompatible settings.
+  virtual void FixIncompatibleSettings(bool display_osd_messages);
 
   /// Checks for settings changes, std::move() the old settings away for comparing beforehand.
   virtual void CheckForSettingsChanges(const Settings& old_settings);
@@ -160,5 +191,7 @@ protected:
   std::string m_program_directory;
   std::string m_user_directory;
 };
+
+#define TRANSLATABLE(context, str) str
 
 extern HostInterface* g_host_interface;
