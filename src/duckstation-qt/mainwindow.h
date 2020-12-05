@@ -60,6 +60,7 @@ private Q_SLOTS:
   void onSystemPerformanceCountersUpdated(float speed, float fps, float vps, float average_frame_time,
                                           float worst_frame_time);
   void onRunningGameChanged(const QString& filename, const QString& game_code, const QString& game_title);
+  void onApplicationStateChanged(Qt::ApplicationState state);
 
   void onStartDiscActionTriggered();
   void onStartBIOSActionTriggered();
@@ -137,4 +138,5 @@ private:
   CheatManagerDialog* m_cheat_manager_dialog = nullptr;
 
   bool m_emulation_running = false;
+  bool m_was_paused_by_focus_loss = false;
 };

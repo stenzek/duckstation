@@ -30,6 +30,7 @@ struct CheatCode
     Decrement16 = 0x11,
     Increment8 = 0x20,
     Decrement8 = 0x21,
+    SkipIfNotEqual16 = 0xC0,
     CompareEqual16 = 0xD0,
     CompareNotEqual16 = 0xD1,
     CompareLess16 = 0xD2,
@@ -128,6 +129,8 @@ public:
   bool LoadFromLibretroString(const std::string& str);
 
   bool SaveToPCSXRFile(const char* filename);
+
+  bool LoadFromPackage(const std::string& game_code);
 
   void Apply();
 

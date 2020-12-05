@@ -111,6 +111,8 @@ bool Entry::LoadFromStream(ByteStream* stream)
       !ReadOptionalFromStream(stream, &cpu_overclock_enable) || !ReadOptionalFromStream(stream, &cdrom_read_speedup) ||
       !ReadOptionalFromStream(stream, &display_active_start_offset) ||
       !ReadOptionalFromStream(stream, &display_active_end_offset) ||
+      !ReadOptionalFromStream(stream, &display_line_start_offset) ||
+      !ReadOptionalFromStream(stream, &display_line_end_offset) ||
       !ReadOptionalFromStream(stream, &dma_max_slice_ticks) || !ReadOptionalFromStream(stream, &dma_halt_ticks) ||
       !ReadOptionalFromStream(stream, &gpu_fifo_size) || !ReadOptionalFromStream(stream, &gpu_max_run_ahead) ||
       !ReadOptionalFromStream(stream, &gpu_pgxp_tolerance) || !ReadOptionalFromStream(stream, &display_crop_mode) ||
@@ -158,10 +160,11 @@ bool Entry::SaveToStream(ByteStream* stream) const
          WriteOptionalToStream(stream, cpu_overclock_enable) && WriteOptionalToStream(stream, cdrom_read_speedup) &&
          WriteOptionalToStream(stream, display_active_start_offset) &&
          WriteOptionalToStream(stream, display_active_end_offset) &&
-         WriteOptionalToStream(stream, dma_max_slice_ticks) && WriteOptionalToStream(stream, dma_halt_ticks) &&
-         WriteOptionalToStream(stream, gpu_fifo_size) && WriteOptionalToStream(stream, gpu_max_run_ahead) &&
-         WriteOptionalToStream(stream, gpu_pgxp_tolerance) && WriteOptionalToStream(stream, display_crop_mode) &&
-         WriteOptionalToStream(stream, display_aspect_ratio) &&
+         WriteOptionalToStream(stream, display_line_start_offset) &&
+         WriteOptionalToStream(stream, display_line_end_offset) && WriteOptionalToStream(stream, dma_max_slice_ticks) &&
+         WriteOptionalToStream(stream, dma_halt_ticks) && WriteOptionalToStream(stream, gpu_fifo_size) &&
+         WriteOptionalToStream(stream, gpu_max_run_ahead) && WriteOptionalToStream(stream, gpu_pgxp_tolerance) &&
+         WriteOptionalToStream(stream, display_crop_mode) && WriteOptionalToStream(stream, display_aspect_ratio) &&
          WriteOptionalToStream(stream, display_linear_upscaling) &&
          WriteOptionalToStream(stream, display_integer_upscaling) &&
          WriteOptionalToStream(stream, display_force_4_3_for_24bit) &&
@@ -204,7 +207,13 @@ static void ParseIniSection(Entry* entry, const char* section, const CSimpleIniA
     entry->display_active_start_offset = static_cast<s16>(lvalue);
   lvalue = ini.GetLongValue(section, "DisplayActiveEndOffset", 0);
   if (lvalue != 0)
-    entry->display_active_end_offset = static_cast<s16>(lvalue);
+    entry->display_active_end_offset = static_cast<s8>(lvalue);
+  lvalue = ini.GetLongValue(section, "DisplayLineStartOffset", 0);
+  if (lvalue != 0)
+    entry->display_line_start_offset = static_cast<s8>(lvalue);
+  lvalue = ini.GetLongValue(section, "DisplayLineEndOffset", 0);
+  if (lvalue != 0)
+    entry->display_line_end_offset = static_cast<s16>(lvalue);
   lvalue = ini.GetLongValue(section, "DMAMaxSliceTicks", 0);
   if (lvalue > 0)
     entry->dma_max_slice_ticks = static_cast<u32>(lvalue);
@@ -311,6 +320,10 @@ static void StoreIniSection(const Entry& entry, const char* section, CSimpleIniA
     ini.SetLongValue(section, "DisplayActiveStartOffset", entry.display_active_start_offset.value());
   if (entry.display_active_end_offset.has_value())
     ini.SetLongValue(section, "DisplayActiveEndOffset", entry.display_active_end_offset.value());
+  if (entry.display_line_start_offset.has_value())
+    ini.SetLongValue(section, "DisplayLineStartOffset", entry.display_line_start_offset.value());
+  if (entry.display_line_end_offset.has_value())
+    ini.SetLongValue(section, "DisplayLineEndOffset", entry.display_line_end_offset.value());
   if (entry.dma_max_slice_ticks.has_value())
     ini.SetLongValue(section, "DMAMaxSliceTicks", static_cast<long>(entry.dma_max_slice_ticks.value()));
   if (entry.dma_halt_ticks.has_value())
@@ -488,6 +501,10 @@ void Entry::ApplySettings(bool display_osd_messages) const
     g_settings.display_active_start_offset = display_active_start_offset.value();
   if (display_active_end_offset.has_value())
     g_settings.display_active_end_offset = display_active_end_offset.value();
+  if (display_line_start_offset.has_value())
+    g_settings.display_line_start_offset = display_line_start_offset.value();
+  if (display_line_end_offset.has_value())
+    g_settings.display_line_end_offset = display_line_end_offset.value();
   if (dma_max_slice_ticks.has_value())
     g_settings.dma_max_slice_ticks = dma_max_slice_ticks.value();
   if (dma_halt_ticks.has_value())
@@ -649,7 +666,7 @@ void Entry::ApplySettings(bool display_osd_messages) const
 
   if (HasTrait(Trait::DisablePGXPCulling))
   {
-    if (display_osd_messages && g_settings.gpu_pgxp_culling)
+    if (display_osd_messages && g_settings.gpu_pgxp_enable && g_settings.gpu_pgxp_culling)
     {
       g_host_interface->AddOSDMessage(
         g_host_interface->TranslateStdString("OSDMessage", "PGXP culling disabled by game settings."), osd_duration);
@@ -660,7 +677,7 @@ void Entry::ApplySettings(bool display_osd_messages) const
 
   if (HasTrait(Trait::DisablePGXPTextureCorrection))
   {
-    if (display_osd_messages && g_settings.gpu_pgxp_culling && g_settings.gpu_pgxp_texture_correction)
+    if (display_osd_messages && g_settings.gpu_pgxp_enable && g_settings.gpu_pgxp_texture_correction)
     {
       g_host_interface->AddOSDMessage(
         g_host_interface->TranslateStdString("OSDMessage", "PGXP texture correction disabled by game settings."),

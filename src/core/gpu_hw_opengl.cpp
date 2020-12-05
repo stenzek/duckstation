@@ -208,8 +208,8 @@ void GPU_HW_OpenGL::SetCapabilities(HostDisplay* host_display)
   glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, reinterpret_cast<GLint*>(&m_uniform_buffer_alignment));
   Log_InfoPrintf("Uniform buffer offset alignment: %u", m_uniform_buffer_alignment);
 
-  if (!GLAD_GL_VERSION_4_3 && !GLAD_GL_EXT_copy_image)
-    Log_WarningPrintf("GL_EXT_copy_image missing, this may affect performance.");
+  if (!GLAD_GL_VERSION_4_3 && !GLAD_GL_EXT_copy_image && !GLAD_GL_ES_VERSION_3_2 && !GLAD_GL_OES_copy_image)
+    Log_WarningPrintf("GL_EXT/OES_copy_image missing, this may affect performance.");
 
 #ifdef __APPLE__
   // Partial texture buffer uploads appear to be broken in macOS's OpenGL driver.
@@ -258,7 +258,7 @@ void GPU_HW_OpenGL::SetCapabilities(HostDisplay* host_display)
   if (!m_supports_dual_source_blend)
     Log_WarningPrintf("Dual-source blending is not supported, this may break some mask effects.");
 
-  m_supports_geometry_shaders = GLAD_GL_VERSION_3_2 || GLAD_GL_ARB_geometry_shader4 || GLAD_GL_ES_VERSION_3_2;
+  m_supports_geometry_shaders = GLAD_GL_VERSION_3_2 || GLAD_GL_ARB_geometry_shader4 || GLAD_GL_OES_geometry_shader || GLAD_GL_ES_VERSION_3_2;
   if (!m_supports_geometry_shaders)
   {
     Log_WarningPrintf("Geometry shaders are not supported, line rendering at higher resolutions may be incorrect. We "
@@ -1000,6 +1000,11 @@ void GPU_HW_OpenGL::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 wid
     glCopyImageSubDataEXT(m_vram_texture.GetGLId(), m_vram_texture.GetGLTarget(), 0, src_x, src_y, 0,
                           m_vram_texture.GetGLId(), m_vram_texture.GetGLTarget(), 0, dst_x, dst_y, 0, width, height, 1);
   }
+  else if (GLAD_GL_OES_copy_image)
+  {
+    glCopyImageSubDataOES(m_vram_texture.GetGLId(), m_vram_texture.GetGLTarget(), 0, src_x, src_y, 0,
+                          m_vram_texture.GetGLId(), m_vram_texture.GetGLTarget(), 0, dst_x, dst_y, 0, width, height, 1);
+  }
   else
   {
     glDisable(GL_SCISSOR_TEST);
@@ -1027,6 +1032,11 @@ void GPU_HW_OpenGL::UpdateVRAMReadTexture()
   else if (!multisampled && GLAD_GL_EXT_copy_image)
   {
     glCopyImageSubDataEXT(m_vram_texture.GetGLId(), m_vram_texture.GetGLTarget(), 0, x, y, 0,
+                          m_vram_read_texture.GetGLId(), m_vram_texture.GetGLTarget(), 0, x, y, 0, width, height, 1);
+  }
+  else if (!multisampled && GLAD_GL_OES_copy_image)
+  {
+    glCopyImageSubDataOES(m_vram_texture.GetGLId(), m_vram_texture.GetGLTarget(), 0, x, y, 0,
                           m_vram_read_texture.GetGLId(), m_vram_texture.GetGLTarget(), 0, x, y, 0, width, height, 1);
   }
   else

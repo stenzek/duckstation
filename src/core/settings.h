@@ -83,6 +83,7 @@ struct Settings
   bool increase_timer_resolution = true;
   bool start_paused = false;
   bool start_fullscreen = false;
+  bool pause_on_focus_loss = false;
   bool save_state_on_exit = true;
   bool confim_power_off = true;
   bool load_devices_from_save_states = false;
@@ -113,6 +114,12 @@ struct Settings
   DisplayAspectRatio display_aspect_ratio = DisplayAspectRatio::R4_3;
   s16 display_active_start_offset = 0;
   s16 display_active_end_offset = 0;
+  s8 display_line_start_offset = 0;
+  s8 display_line_end_offset = 0;
+  s8 display_crop_left = 0;
+  s8 display_crop_right = 0;
+  s8 display_crop_top = 0;
+  s8 display_crop_bottom = 0;
   bool display_force_4_3_for_24bit = false;
   bool gpu_24bit_chroma_smoothing = false;
   bool display_linear_filtering = true;

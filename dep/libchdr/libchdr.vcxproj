@@ -51,25 +51,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\libchdr\bitstream.h" />
-    <ClInclude Include="include\libchdr\cdrom.h" />
-    <ClInclude Include="include\libchdr\chd.h" />
-    <ClInclude Include="include\libchdr\coretypes.h" />
-    <ClInclude Include="include\libchdr\flac.h" />
-    <ClInclude Include="include\libchdr\huffman.h" />
-    <ClInclude Include="src\md5.h" />
-    <ClInclude Include="src\sha1.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="src\bitstream.c" />
-    <ClCompile Include="src\cdrom.c" />
-    <ClCompile Include="src\chd.c" />
-    <ClCompile Include="src\flac.c" />
-    <ClCompile Include="src\huffman.c" />
-    <ClCompile Include="src\md5.c" />
-    <ClCompile Include="src\sha1.c" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\libFLAC\libFLAC.vcxproj">
       <Project>{97cbd3cb-cbc7-4d52-abde-f0ae7b794a5d}</Project>
     </ProjectReference>
@@ -79,6 +60,22 @@
     <ProjectReference Include="..\zlib\zlib.vcxproj">
       <Project>{7ff9fdb9-d504-47db-a16a-b08071999620}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\libchdr_bitstream.c" />
+    <ClCompile Include="src\libchdr_cdrom.c" />
+    <ClCompile Include="src\libchdr_chd.c" />
+    <ClCompile Include="src\libchdr_flac.c" />
+    <ClCompile Include="src\libchdr_huffman.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\libchdr\bitstream.h" />
+    <ClInclude Include="include\libchdr\cdrom.h" />
+    <ClInclude Include="include\libchdr\chd.h" />
+    <ClInclude Include="include\libchdr\chdconfig.h" />
+    <ClInclude Include="include\libchdr\coretypes.h" />
+    <ClInclude Include="include\libchdr\flac.h" />
+    <ClInclude Include="include\libchdr\huffman.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{425D6C99-D1C8-43C2-B8AC-4D7B1D941017}</ProjectGuid>
@@ -292,7 +289,7 @@
       <PreprocessorDefinitions>FLAC__NO_DLL;_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\lzma\include;$(SolutionDir)dep\libFLAC\include;$(ProjectDir)include\libchdr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\lzma\include;$(SolutionDir)dep\libFLAC\include;$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MinimalRebuild>false</MinimalRebuild>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ConformanceMode>true</ConformanceMode>
@@ -312,7 +309,7 @@
       <PreprocessorDefinitions>FLAC__NO_DLL;_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\lzma\include;$(SolutionDir)dep\libFLAC\include;$(ProjectDir)include\libchdr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\lzma\include;$(SolutionDir)dep\libFLAC\include;$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MinimalRebuild>false</MinimalRebuild>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ConformanceMode>true</ConformanceMode>
@@ -332,7 +329,7 @@
       <PreprocessorDefinitions>FLAC__NO_DLL;_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\lzma\include;$(SolutionDir)dep\libFLAC\include;$(ProjectDir)include\libchdr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\lzma\include;$(SolutionDir)dep\libFLAC\include;$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MinimalRebuild>false</MinimalRebuild>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ConformanceMode>true</ConformanceMode>
@@ -352,7 +349,7 @@
       <PreprocessorDefinitions>FLAC__NO_DLL;_ITERATOR_DEBUG_LEVEL=1;_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUGFAST;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\lzma\include;$(SolutionDir)dep\libFLAC\include;$(ProjectDir)include\libchdr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\lzma\include;$(SolutionDir)dep\libFLAC\include;$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <MinimalRebuild>false</MinimalRebuild>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -375,7 +372,7 @@
       <PreprocessorDefinitions>FLAC__NO_DLL;_ITERATOR_DEBUG_LEVEL=1;_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUGFAST;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\lzma\include;$(SolutionDir)dep\libFLAC\include;$(ProjectDir)include\libchdr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\lzma\include;$(SolutionDir)dep\libFLAC\include;$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <MinimalRebuild>false</MinimalRebuild>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -398,7 +395,7 @@
       <PreprocessorDefinitions>FLAC__NO_DLL;_ITERATOR_DEBUG_LEVEL=1;_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUGFAST;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\lzma\include;$(SolutionDir)dep\libFLAC\include;$(ProjectDir)include\libchdr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\lzma\include;$(SolutionDir)dep\libFLAC\include;$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <MinimalRebuild>false</MinimalRebuild>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -420,7 +417,7 @@
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>FLAC__NO_DLL;_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\lzma\include;$(SolutionDir)dep\libFLAC\include;$(ProjectDir)include\libchdr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\lzma\include;$(SolutionDir)dep\libFLAC\include;$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ConformanceMode>true</ConformanceMode>
@@ -441,7 +438,7 @@
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>FLAC__NO_DLL;_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\lzma\include;$(SolutionDir)dep\libFLAC\include;$(ProjectDir)include\libchdr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\lzma\include;$(SolutionDir)dep\libFLAC\include;$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <OmitFramePointers>true</OmitFramePointers>
@@ -463,7 +460,7 @@
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>FLAC__NO_DLL;_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\lzma\include;$(SolutionDir)dep\libFLAC\include;$(ProjectDir)include\libchdr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\lzma\include;$(SolutionDir)dep\libFLAC\include;$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ConformanceMode>true</ConformanceMode>
@@ -484,7 +481,7 @@
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>FLAC__NO_DLL;_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\lzma\include;$(SolutionDir)dep\libFLAC\include;$(ProjectDir)include\libchdr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\lzma\include;$(SolutionDir)dep\libFLAC\include;$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ConformanceMode>true</ConformanceMode>
@@ -505,7 +502,7 @@
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>FLAC__NO_DLL;_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\lzma\include;$(SolutionDir)dep\libFLAC\include;$(ProjectDir)include\libchdr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\lzma\include;$(SolutionDir)dep\libFLAC\include;$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <OmitFramePointers>true</OmitFramePointers>
@@ -527,7 +524,7 @@
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>FLAC__NO_DLL;_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\lzma\include;$(SolutionDir)dep\libFLAC\include;$(ProjectDir)include\libchdr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\lzma\include;$(SolutionDir)dep\libFLAC\include;$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <OmitFramePointers>true</OmitFramePointers>

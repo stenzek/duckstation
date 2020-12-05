@@ -639,6 +639,14 @@ static void RTPS(const s16 V[3], u8 shift, bool lm, bool last)
         Sx = ((((s64(result) * s64(REGS.IR1)) * s64(7)) / s64(6)) + s64(REGS.OFX));
         break;
 
+      case DisplayAspectRatio::R5_4:
+        Sx = ((((s64(result) * s64(REGS.IR1)) * s64(16)) / s64(15)) + s64(REGS.OFX));
+        break;
+
+      case DisplayAspectRatio::R3_2:
+        Sx = ((((s64(result) * s64(REGS.IR1)) * s64(8)) / s64(9)) + s64(REGS.OFX));
+        break;
+
       case DisplayAspectRatio::R2_1:
         Sx = ((((s64(result) * s64(REGS.IR1)) * s64(2)) / s64(3)) + s64(REGS.OFX));
         break;
@@ -721,6 +729,14 @@ static void RTPS(const s16 V[3], u8 shift, bool lm, bool last)
 
         case DisplayAspectRatio::R8_7:
           precise_x = (precise_x * 7.0f) / 6.0f;
+          break;
+
+        case DisplayAspectRatio::R5_4:
+          precise_x = (precise_x * 16.0f) / 15.0f;
+          break;
+
+        case DisplayAspectRatio::R3_2:
+          precise_x = (precise_x * 8.0f) / 9.0f;
           break;
 
         case DisplayAspectRatio::R2_1:

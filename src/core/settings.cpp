@@ -114,6 +114,7 @@ void Settings::Load(SettingsInterface& si)
   increase_timer_resolution = si.GetBoolValue("Main", "IncreaseTimerResolution", true);
   start_paused = si.GetBoolValue("Main", "StartPaused", false);
   start_fullscreen = si.GetBoolValue("Main", "StartFullscreen", false);
+  pause_on_focus_loss = si.GetBoolValue("Main", "PauseOnFocusLoss", false);
   save_state_on_exit = si.GetBoolValue("Main", "SaveStateOnExit", true);
   confim_power_off = si.GetBoolValue("Main", "ConfirmPowerOff", true);
   load_devices_from_save_states = si.GetBoolValue("Main", "LoadDevicesFromSaveStates", false);
@@ -171,6 +172,8 @@ void Settings::Load(SettingsInterface& si)
   display_force_4_3_for_24bit = si.GetBoolValue("Display", "Force4_3For24Bit", false);
   display_active_start_offset = static_cast<s16>(si.GetIntValue("Display", "ActiveStartOffset", 0));
   display_active_end_offset = static_cast<s16>(si.GetIntValue("Display", "ActiveEndOffset", 0));
+  display_line_start_offset = static_cast<s8>(si.GetIntValue("Display", "LineStartOffset", 0));
+  display_line_end_offset = static_cast<s8>(si.GetIntValue("Display", "LineEndOffset", 0));
   display_linear_filtering = si.GetBoolValue("Display", "LinearFiltering", true);
   display_integer_scaling = si.GetBoolValue("Display", "IntegerScaling", false);
   display_post_processing = si.GetBoolValue("Display", "PostProcessing", false);
@@ -257,6 +260,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("Main", "IncreaseTimerResolution", increase_timer_resolution);
   si.SetBoolValue("Main", "StartPaused", start_paused);
   si.SetBoolValue("Main", "StartFullscreen", start_fullscreen);
+  si.SetBoolValue("Main", "PauseOnFocusLoss", pause_on_focus_loss);
   si.SetBoolValue("Main", "SaveStateOnExit", save_state_on_exit);
   si.SetBoolValue("Main", "ConfirmPowerOff", confim_power_off);
   si.SetBoolValue("Main", "LoadDevicesFromSaveStates", load_devices_from_save_states);
@@ -296,6 +300,8 @@ void Settings::Save(SettingsInterface& si) const
   si.SetStringValue("Display", "CropMode", GetDisplayCropModeName(display_crop_mode));
   si.SetIntValue("Display", "ActiveStartOffset", display_active_start_offset);
   si.SetIntValue("Display", "ActiveEndOffset", display_active_end_offset);
+  si.SetIntValue("Display", "LineStartOffset", display_line_start_offset);
+  si.SetIntValue("Display", "LineEndOffset", display_line_end_offset);
   si.SetBoolValue("Display", "Force4_3For24Bit", display_force_4_3_for_24bit);
   si.SetStringValue("Display", "AspectRatio", GetDisplayAspectRatioName(display_aspect_ratio));
   si.SetBoolValue("Display", "LinearFiltering", display_linear_filtering);
@@ -616,10 +622,11 @@ const char* Settings::GetDisplayCropModeDisplayName(DisplayCropMode crop_mode)
   return s_display_crop_mode_display_names[static_cast<int>(crop_mode)];
 }
 
-static std::array<const char*, 9> s_display_aspect_ratio_names = {
-  {"4:3", "16:9", "16:10", "19:9", "21:9", "8:7", "2:1 (VRAM 1:1)", "1:1", "PAR 1:1"}};
-static constexpr std::array<float, 9> s_display_aspect_ratio_values = {
-  {4.0f / 3.0f, 16.0f / 9.0f, 16.0f / 10.0f, 19.0f / 9.0f, 21.0f / 9.0f, 8.0f / 7.0f, 2.0f / 1.0f, 1.0f, -1.0f}};
+static std::array<const char*, 11> s_display_aspect_ratio_names = {
+  {"4:3", "16:9", "16:10", "19:9", "21:9", "8:7", "5:4", "3:2", "2:1 (VRAM 1:1)", "1:1", "PAR 1:1"}};
+static constexpr std::array<float, 11> s_display_aspect_ratio_values = {
+  {4.0f / 3.0f, 16.0f / 9.0f, 16.0f / 10.0f, 19.0f / 9.0f, 21.0f / 9.0f, 8.0f / 7.0f, 5.0f / 4.0f, 3.0f / 2.0f,
+   2.0f / 1.0f, 1.0f, -1.0f}};
 
 std::optional<DisplayAspectRatio> Settings::ParseDisplayAspectRatio(const char* str)
 {

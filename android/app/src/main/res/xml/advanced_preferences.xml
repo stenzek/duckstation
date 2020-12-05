@@ -30,6 +30,12 @@
         app:summary="Prevents discs from incorrect regions being read by the emulator. Usually safe to disable."
         app:iconSpaceReserved="false" />
     <SwitchPreferenceCompat
+        app:key="CDROM/LoadImageToRAM"
+        app:title="CD-ROM Preload Image to RAM"
+        app:defaultValue="false"
+        app:summary="Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay. In some cases also eliminates stutter when games initiate audio track playback."
+        app:iconSpaceReserved="false" />
+    <SwitchPreferenceCompat
         app:key="GPU/PGXPVertexCache"
         app:title="PGXP Vertex Cache"
         app:defaultValue="false"

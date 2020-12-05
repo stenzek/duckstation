@@ -129,7 +129,6 @@ QtDisplayWidget* MainWindow::createDisplay(QThread* worker_thread, const QString
   {
     reportError(QStringLiteral("Failed to get window info from widget"));
     destroyDisplayWidget();
-    delete m_host_display;
     m_host_display = nullptr;
     return nullptr;
   }
@@ -138,7 +137,6 @@ QtDisplayWidget* MainWindow::createDisplay(QThread* worker_thread, const QString
   {
     reportError(tr("Failed to create host display device context."));
     destroyDisplayWidget();
-    delete m_host_display;
     m_host_display = nullptr;
     return nullptr;
   }
@@ -245,6 +243,9 @@ void MainWindow::displaySizeRequested(qint32 width, qint32 height)
 
 void MainWindow::destroyDisplay()
 {
+  if (!m_host_display)
+    return;
+
   DebugAssert(m_host_display && m_display_widget);
   m_host_display = nullptr;
   destroyDisplayWidget();
@@ -339,6 +340,31 @@ void MainWindow::onRunningGameChanged(const QString& filename, const QString& ga
 
   if (m_display_widget)
     m_display_widget->setWindowTitle(windowTitle());
+}
+
+void MainWindow::onApplicationStateChanged(Qt::ApplicationState state)
+{
+  if (!m_emulation_running || !g_settings.pause_on_focus_loss)
+    return;
+
+  const bool focus_loss = (state != Qt::ApplicationActive);
+  if (focus_loss)
+  {
+    if (!m_was_paused_by_focus_loss && !System::IsPaused())
+    {
+      m_host_interface->pauseSystem(true);
+      m_was_paused_by_focus_loss = true;
+    }
+  }
+  else
+  {
+    if (m_was_paused_by_focus_loss)
+    {
+      if (System::IsPaused())
+        m_host_interface->pauseSystem(false);
+      m_was_paused_by_focus_loss = false;
+    }
+  }
 }
 
 void MainWindow::onStartDiscActionTriggered()
@@ -520,7 +546,9 @@ void MainWindow::onGameListContextMenuRequested(const QPoint& point, const GameL
   // Hopefully this pointer doesn't disappear... it shouldn't.
   if (entry)
   {
-    connect(menu.addAction(tr("Properties...")), &QAction::triggered,
+    QAction* action = menu.addAction(tr("Properties..."));
+    action->setEnabled(entry->type == GameListEntryType::Disc);
+    connect(action, &QAction::triggered,
             [this, entry]() { GamePropertiesDialog::showForEntry(m_host_interface, entry, this); });
 
     connect(menu.addAction(tr("Open Containing Directory...")), &QAction::triggered, [this, entry]() {
@@ -535,11 +563,8 @@ void MainWindow::onGameListContextMenuRequested(const QPoint& point, const GameL
 
     if (!m_emulation_running)
     {
-      if (!entry->code.empty())
-      {
-        m_host_interface->populateGameListContextMenu(entry, this, &menu);
-        menu.addSeparator();
-      }
+      m_host_interface->populateGameListContextMenu(entry, this, &menu);
+      menu.addSeparator();
 
       connect(menu.addAction(tr("Default Boot")), &QAction::triggered, [this, entry]() {
         m_host_interface->bootSystem(std::make_shared<const SystemBootParameters>(entry->path));
@@ -795,6 +820,8 @@ void MainWindow::connectSignals()
 {
   updateEmulationActions(false, false);
   onEmulationPaused(false);
+
+  connect(qApp, &QGuiApplication::applicationStateChanged, this, &MainWindow::onApplicationStateChanged);
 
   connect(m_ui.actionStartDisc, &QAction::triggered, this, &MainWindow::onStartDiscActionTriggered);
   connect(m_ui.actionStartBios, &QAction::triggered, this, &MainWindow::onStartBIOSActionTriggered);

@@ -486,7 +486,7 @@ bool QtHostInterface::AcquireHostDisplay()
   if (!display_widget || !m_display->HasRenderDevice())
   {
     emit destroyDisplayRequested();
-    m_display = nullptr;
+    m_display.reset();
     return false;
   }
 
@@ -907,32 +907,35 @@ void QtHostInterface::populateGameListContextMenu(const GameListEntry* entry, QW
   QMenu* load_state_menu = menu->addMenu(tr("Load State"));
   load_state_menu->setEnabled(false);
 
-  const std::vector<SaveStateInfo> available_states(GetAvailableSaveStates(entry->code.c_str()));
-  const QString timestamp_format = QLocale::system().dateTimeFormat(QLocale::ShortFormat);
-  for (const SaveStateInfo& ssi : available_states)
+  if (!entry->code.empty())
   {
-    if (ssi.global)
-      continue;
-
-    const s32 slot = ssi.slot;
-    const QDateTime timestamp(QDateTime::fromSecsSinceEpoch(static_cast<qint64>(ssi.timestamp)));
-    const QString timestamp_str(timestamp.toString(timestamp_format));
-    const QString path(QString::fromStdString(ssi.path));
-
-    QAction* action;
-    if (slot < 0)
+    const std::vector<SaveStateInfo> available_states(GetAvailableSaveStates(entry->code.c_str()));
+    const QString timestamp_format = QLocale::system().dateTimeFormat(QLocale::ShortFormat);
+    for (const SaveStateInfo& ssi : available_states)
     {
-      resume_action->setText(tr("Resume (%1)").arg(timestamp_str));
-      resume_action->setEnabled(true);
-      action = resume_action;
-    }
-    else
-    {
-      load_state_menu->setEnabled(true);
-      action = load_state_menu->addAction(tr("Game Save %1 (%2)").arg(slot).arg(timestamp_str));
-    }
+      if (ssi.global)
+        continue;
 
-    connect(action, &QAction::triggered, [this, path]() { loadState(path); });
+      const s32 slot = ssi.slot;
+      const QDateTime timestamp(QDateTime::fromSecsSinceEpoch(static_cast<qint64>(ssi.timestamp)));
+      const QString timestamp_str(timestamp.toString(timestamp_format));
+      const QString path(QString::fromStdString(ssi.path));
+
+      QAction* action;
+      if (slot < 0)
+      {
+        resume_action->setText(tr("Resume (%1)").arg(timestamp_str));
+        resume_action->setEnabled(true);
+        action = resume_action;
+      }
+      else
+      {
+        load_state_menu->setEnabled(true);
+        action = load_state_menu->addAction(tr("Game Save %1 (%2)").arg(slot).arg(timestamp_str));
+      }
+
+      connect(action, &QAction::triggered, [this, path]() { loadState(path); });
+    }
   }
 
   QAction* open_memory_cards_action = menu->addAction(tr("Edit Memory Cards..."));

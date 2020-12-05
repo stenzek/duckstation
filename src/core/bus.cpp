@@ -1291,7 +1291,7 @@ ALWAYS_INLINE_RELEASE static void WriteICache(VirtualMemoryAddress address, u32 
 
 static void WriteCacheControl(u32 value)
 {
-  Log_WarningPrintf("Cache control <- 0x%08X", value);
+  Log_DevPrintf("Cache control <- 0x%08X", value);
 
   CacheControl changed_bits{g_state.cache_control.bits ^ value};
   g_state.cache_control.bits = value;

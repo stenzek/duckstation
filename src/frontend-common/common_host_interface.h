@@ -160,6 +160,9 @@ public:
   /// Loads the cheat list for the current game title from the user directory.
   bool LoadCheatListFromGameTitle();
 
+  /// Loads the cheat list for the current game code from the built-in code database.
+  bool LoadCheatListFromDatabase();
+
   /// Saves the current cheat list to the game title's file.
   bool SaveCheatList();
 

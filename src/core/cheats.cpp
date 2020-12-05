@@ -1,6 +1,7 @@
 #include "cheats.h"
 #include "bus.h"
 #include "common/assert.h"
+#include "common/byte_stream.h"
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/string.h"
@@ -505,6 +506,123 @@ bool CheatList::SaveToPCSXRFile(const char* filename)
   return (std::ferror(fp.get()) == 0);
 }
 
+bool CheatList::LoadFromPackage(const std::string& game_code)
+{
+  std::unique_ptr<ByteStream> stream =
+    g_host_interface->OpenPackageFile("database/chtdb.txt", BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
+  if (!stream)
+    return false;
+
+  std::string db_string = FileSystem::ReadStreamToString(stream.get());
+  stream.reset();
+  if (db_string.empty())
+    return false;
+
+  std::istringstream iss(db_string);
+  std::string line;
+  while (std::getline(iss, line))
+  {
+    char* start = line.data();
+    while (*start != '\0' && std::isspace(*start))
+      start++;
+
+    // skip empty lines
+    if (*start == '\0' || *start == ';')
+      continue;
+
+    char* end = start + std::strlen(start) - 1;
+    while (end > start && std::isspace(*end))
+    {
+      *end = '\0';
+      end--;
+    }
+
+    if (start == end)
+      continue;
+
+    if (start[0] != ':' || std::strcmp(&start[1], game_code.c_str()) != 0)
+      continue;
+
+    // game code match
+    CheatCode current_code;
+    while (std::getline(iss, line))
+    {
+      start = line.data();
+      while (*start != '\0' && std::isspace(*start))
+        start++;
+
+      // skip empty lines
+      if (*start == '\0' || *start == ';')
+        continue;
+
+      end = start + std::strlen(start) - 1;
+      while (end > start && std::isspace(*end))
+      {
+        *end = '\0';
+        end--;
+      }
+
+      if (start == end)
+        continue;
+
+      if (start[0] == ':' && !m_codes.empty())
+        break;
+
+      if (start[0] == '#')
+      {
+        start++;
+
+        if (current_code.Valid())
+        {
+          m_codes.push_back(std::move(current_code));
+          current_code = CheatCode();
+        }
+
+        // new code
+        char* slash = std::strrchr(start, '\\');
+        if (slash)
+        {
+          *slash = '\0';
+          current_code.group = start;
+          start = slash + 1;
+        }
+        if (current_code.group.empty())
+          current_code.group = "Ungrouped";
+
+        current_code.description = start;
+        continue;
+      }
+
+      while (!IsHexCharacter(*start) && start != end)
+        start++;
+      if (start == end)
+        continue;
+
+      char* end_ptr;
+      CheatCode::Instruction inst;
+      inst.first = static_cast<u32>(std::strtoul(start, &end_ptr, 16));
+      inst.second = 0;
+      if (end_ptr)
+      {
+        while (!IsHexCharacter(*end_ptr) && end_ptr != end)
+          end_ptr++;
+        if (end_ptr != end)
+          inst.second = static_cast<u32>(std::strtoul(end_ptr, nullptr, 16));
+      }
+      current_code.instructions.push_back(inst);
+    }
+
+    if (current_code.Valid())
+      m_codes.push_back(std::move(current_code));
+
+    Log_InfoPrintf("Loaded %zu codes from package for %s", m_codes.size(), game_code.c_str());
+    return !m_codes.empty();
+  }
+
+  Log_WarningPrintf("No codes found in package for %s", game_code.c_str());
+  return false;
+}
+
 u32 CheatList::GetEnabledCodeCount() const
 {
   u32 count = 0;
@@ -693,7 +811,7 @@ void CheatCode::Apply() const
 
       case InstructionCode::Increment16:
       {
-        u16 value = DoMemoryRead<u16>(inst.address);
+        const u16 value = DoMemoryRead<u16>(inst.address);
         DoMemoryWrite<u16>(inst.address, value + inst.value16);
         index++;
       }
@@ -701,7 +819,7 @@ void CheatCode::Apply() const
 
       case InstructionCode::Decrement16:
       {
-        u16 value = DoMemoryRead<u16>(inst.address);
+        const u16 value = DoMemoryRead<u16>(inst.address);
         DoMemoryWrite<u16>(inst.address, value - inst.value16);
         index++;
       }
@@ -709,7 +827,7 @@ void CheatCode::Apply() const
 
       case InstructionCode::Increment8:
       {
-        u8 value = DoMemoryRead<u8>(inst.address);
+        const u8 value = DoMemoryRead<u8>(inst.address);
         DoMemoryWrite<u8>(inst.address, value + inst.value8);
         index++;
       }
@@ -717,7 +835,7 @@ void CheatCode::Apply() const
 
       case InstructionCode::Decrement8:
       {
-        u8 value = DoMemoryRead<u8>(inst.address);
+        const u8 value = DoMemoryRead<u8>(inst.address);
         DoMemoryWrite<u8>(inst.address, value - inst.value8);
         index++;
       }
@@ -725,7 +843,7 @@ void CheatCode::Apply() const
 
       case InstructionCode::CompareEqual16:
       {
-        u16 value = DoMemoryRead<u16>(inst.address);
+        const u16 value = DoMemoryRead<u16>(inst.address);
         if (value == inst.value16)
           index++;
         else
@@ -735,7 +853,7 @@ void CheatCode::Apply() const
 
       case InstructionCode::CompareNotEqual16:
       {
-        u16 value = DoMemoryRead<u16>(inst.address);
+        const u16 value = DoMemoryRead<u16>(inst.address);
         if (value != inst.value16)
           index++;
         else
@@ -745,7 +863,7 @@ void CheatCode::Apply() const
 
       case InstructionCode::CompareLess16:
       {
-        u16 value = DoMemoryRead<u16>(inst.address);
+        const u16 value = DoMemoryRead<u16>(inst.address);
         if (value < inst.value16)
           index++;
         else
@@ -755,7 +873,7 @@ void CheatCode::Apply() const
 
       case InstructionCode::CompareGreater16:
       {
-        u16 value = DoMemoryRead<u16>(inst.address);
+        const u16 value = DoMemoryRead<u16>(inst.address);
         if (value > inst.value16)
           index++;
         else
@@ -765,7 +883,7 @@ void CheatCode::Apply() const
 
       case InstructionCode::CompareEqual8:
       {
-        u8 value = DoMemoryRead<u8>(inst.address);
+        const u8 value = DoMemoryRead<u8>(inst.address);
         if (value == inst.value8)
           index++;
         else
@@ -775,7 +893,7 @@ void CheatCode::Apply() const
 
       case InstructionCode::CompareNotEqual8:
       {
-        u8 value = DoMemoryRead<u8>(inst.address);
+        const u8 value = DoMemoryRead<u8>(inst.address);
         if (value != inst.value8)
           index++;
         else
@@ -785,7 +903,7 @@ void CheatCode::Apply() const
 
       case InstructionCode::CompareLess8:
       {
-        u8 value = DoMemoryRead<u8>(inst.address);
+        const u8 value = DoMemoryRead<u8>(inst.address);
         if (value < inst.value8)
           index++;
         else
@@ -795,11 +913,34 @@ void CheatCode::Apply() const
 
       case InstructionCode::CompareGreater8:
       {
-        u8 value = DoMemoryRead<u8>(inst.address);
+        const u8 value = DoMemoryRead<u8>(inst.address);
         if (value > inst.value8)
           index++;
         else
           index += 2;
+      }
+      break;
+
+      case InstructionCode::SkipIfNotEqual16: // C0
+      {
+        const u16 value = DoMemoryRead<u16>(inst.address);
+        index++;
+
+        if (value == inst.value16)
+        {
+          // execute following instructions
+          continue;
+        }
+
+        // skip to the next separator (00000000 FFFF), or end
+        constexpr u64 separator_value = UINT64_C(0x000000000000FFFF);
+        while (index < count)
+        {
+          // we don't want to execute the separator instruction
+          const u64 bits = instructions[index++].bits;
+          if (bits == separator_value)
+            break;
+        }
       }
       break;
 
