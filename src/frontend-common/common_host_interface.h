@@ -344,7 +344,7 @@ protected:
   bool m_frame_step_request = false;
   bool m_fast_forward_enabled = false;
   bool m_timer_resolution_increased = false;
-  bool m_speed_limiter_enabled = true;
+  bool m_use_sleep_throttler = true;
 
 private:
   void InitializeUserDirectory();
