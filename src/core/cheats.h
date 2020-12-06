@@ -107,6 +107,9 @@ public:
   ALWAYS_INLINE u32 GetCodeCount() const { return static_cast<u32>(m_codes.size()); }
   ALWAYS_INLINE bool IsCodeEnabled(u32 index) const { return m_codes[index].enabled; }
 
+  ALWAYS_INLINE bool GetMasterEnable() const { return m_master_enable; }
+  ALWAYS_INLINE void SetMasterEnable(bool enable) { m_master_enable = enable; }
+
   const CheatCode* FindCode(const char* name) const;
   const CheatCode* FindCode(const char* group, const char* name) const;
 
@@ -144,6 +147,7 @@ public:
 
 private:
   std::vector<CheatCode> m_codes;
+  bool m_master_enable = true;
 };
 
 class MemoryScan

@@ -331,6 +331,7 @@ protected:
   void DrawOSDMessages();
   void DrawDebugWindows();
   void DoFrameStep();
+  void DoToggleCheats();
 
   std::unique_ptr<GameList> m_game_list;
 

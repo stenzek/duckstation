@@ -964,6 +964,25 @@ void CommonHostInterface::DoFrameStep()
   PauseSystem(false);
 }
 
+void CommonHostInterface::DoToggleCheats()
+{
+  if (System::IsShutdown())
+    return;
+
+  CheatList* cl = System::GetCheatList();
+  if (!cl)
+  {
+    AddOSDMessage(TranslateStdString("OSDMessage", "No cheats are loaded."), 10.0f);
+    return;
+  }
+
+  cl->SetMasterEnable(!cl->GetMasterEnable());
+  AddFormattedOSDMessage(10.0f,
+                         cl->GetMasterEnable() ? TranslateString("OSDMessage", "%u cheats are now active.") :
+                                                 TranslateString("OSDMessage", "%u cheats are now inactive."),
+                         cl->GetEnabledCodeCount());
+}
+
 std::optional<CommonHostInterface::HostKeyCode>
 CommonHostInterface::GetHostKeyCode(const std::string_view key_code) const
 {
@@ -1449,6 +1468,12 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                      PauseSystem(!System::IsPaused());
                  });
 
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("ToggleCheats"),
+                 StaticString(TRANSLATABLE("Hotkeys", "Toggle Cheats")), [this](bool pressed) {
+                   if (pressed)
+                     DoToggleCheats();
+                 });
+
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("PowerOff"),
                  StaticString(TRANSLATABLE("Hotkeys", "Power Off System")), [this](bool pressed) {
                    if (pressed && System::IsValid())
@@ -1490,9 +1515,7 @@ void CommonHostInterface::RegisterGeneralHotkeys()
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("FrameStep"),
                  StaticString(TRANSLATABLE("Hotkeys", "Frame Step")), [this](bool pressed) {
                    if (pressed)
-                   {
                      DoFrameStep();
-                   }
                  });
 }
 
