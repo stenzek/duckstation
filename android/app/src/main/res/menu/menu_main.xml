@@ -26,6 +26,15 @@
         <item
             android:id="@+id/action_import_bios"
             android:title="Import BIOS" />
+        <item
+            android:id="@+id/action_show_version"
+            android:title="Show Version" />
+        <item
+            android:id="@+id/action_github_respository"
+            android:title="GitHub Repository" />
+        <item
+            android:id="@+id/action_discord_server"
+            android:title="Discord Server" />
     </group>
     <item
         android:id="@+id/action_settings"

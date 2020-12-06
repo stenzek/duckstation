@@ -1,6 +1,8 @@
 package com.github.stenzek.duckstation;
 
 import android.Manifest;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -169,6 +171,15 @@ public class MainActivity extends AppCompatActivity {
         } else if (id == R.id.action_settings) {
             Intent intent = new Intent(this, SettingsActivity.class);
             startActivity(intent);
+            return true;
+        } else if (id == R.id.action_show_version) {
+            showVersion();
+            return true;
+        } else if (id == R.id.action_github_respository) {
+            openGithubRepository();
+            return true;
+        } else if (id == R.id.action_discord_server) {
+            openDiscordServer();
             return true;
         }
 
@@ -376,5 +387,33 @@ public class MainActivity extends AppCompatActivity {
                 })
                 .create()
                 .show();
+    }
+
+    private void showVersion() {
+        final String message = AndroidHostInterface.getFullScmVersion();
+        new AlertDialog.Builder(this)
+                .setTitle("Version")
+                .setMessage(message)
+                .setPositiveButton("OK", (dialog, button) -> {
+                })
+                .setNeutralButton("Copy", (dialog, button) -> {
+                    ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                    if (clipboard != null)
+                        clipboard.setPrimaryClip(ClipData.newPlainText("Version", message));
+                })
+                .create()
+                .show();
+    }
+
+    private void openGithubRepository() {
+        final String url = "https://github.com/stenzek/duckstation";
+        final Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        startActivity(browserIntent);
+    }
+
+    private void openDiscordServer() {
+        final String url = "https://discord.gg/Buktv3t";
+        final Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        startActivity(browserIntent);
     }
 }
