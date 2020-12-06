@@ -1,8 +1,10 @@
 #include "d3d11_host_display.h"
 #include "common/assert.h"
+#include "common/d3d11/shader_cache.h"
 #include "common/d3d11/shader_compiler.h"
 #include "common/log.h"
 #include "common/string_util.h"
+#include "core/host_interface.h"
 #include "core/settings.h"
 #include "display_ps.hlsl.h"
 #include "display_vs.hlsl.h"
@@ -942,6 +944,10 @@ bool D3D11HostDisplay::SetPostProcessingChain(const std::string_view& config)
 
   m_post_processing_stages.clear();
 
+  D3D11::ShaderCache shader_cache;
+  shader_cache.Open(g_host_interface->GetShaderCacheBasePath(), m_device->GetFeatureLevel(),
+                    g_settings.gpu_use_debug_device);
+
   FrontendCommon::PostProcessingShaderGen shadergen(HostDisplay::RenderAPI::D3D11, true);
   u32 max_ubo_size = 0;
 
@@ -953,10 +959,8 @@ bool D3D11HostDisplay::SetPostProcessingChain(const std::string_view& config)
 
     PostProcessingStage stage;
     stage.uniforms_size = shader.GetUniformsSize();
-    stage.vertex_shader =
-      D3D11::ShaderCompiler::CompileAndCreateVertexShader(m_device.Get(), vs, g_settings.gpu_use_debug_device);
-    stage.pixel_shader =
-      D3D11::ShaderCompiler::CompileAndCreatePixelShader(m_device.Get(), ps, g_settings.gpu_use_debug_device);
+    stage.vertex_shader = shader_cache.GetVertexShader(m_device.Get(), vs);
+    stage.pixel_shader = shader_cache.GetPixelShader(m_device.Get(), ps);
     if (!stage.vertex_shader || !stage.pixel_shader)
     {
       Log_ErrorPrintf("Failed to compile one or more post-processing shaders, disabling.");
