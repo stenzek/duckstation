@@ -1,12 +1,15 @@
 #include "jit_code_buffer.h"
 #include "align.h"
 #include "assert.h"
+#include "common/log.h"
 #include "cpu_detect.h"
 #include <algorithm>
+Log_SetChannel(JitCodeBuffer);
 
 #if defined(WIN32)
 #include "windows_headers.h"
 #else
+#include <errno.h>
 #include <sys/mman.h>
 #endif
 
@@ -37,15 +40,22 @@ bool JitCodeBuffer::Allocate(u32 size /* = 64 * 1024 * 1024 */, u32 far_code_siz
 
 #if defined(WIN32)
   m_code_ptr = static_cast<u8*>(VirtualAlloc(nullptr, m_total_size, MEM_COMMIT, PAGE_EXECUTE_READWRITE));
+  if (!m_code_ptr)
+  {
+    Log_ErrorPrintf("VirtualAlloc(RWX, %u) for internal buffer failed: %u", m_total_size, GetLastError());
+    return false;
+  }
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__) || defined(__HAIKU__)
   m_code_ptr = static_cast<u8*>(
     mmap(nullptr, m_total_size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0));
-#else
-  m_code_ptr = nullptr;
-#endif
-
   if (!m_code_ptr)
+  {
+    Log_ErrorPrintf("mmap(RWX, %u) for internal buffer failed: %d", m_total_size, errno);
     return false;
+  }
+#else
+  return false;
+#endif
 
   m_free_code_ptr = m_code_ptr;
   m_code_size = size;
@@ -71,7 +81,10 @@ bool JitCodeBuffer::Initialize(void* buffer, u32 size, u32 far_code_size /* = 0 
 #if defined(WIN32)
   DWORD old_protect = 0;
   if (!VirtualProtect(buffer, size, PAGE_EXECUTE_READWRITE, &old_protect))
+  {
+    Log_ErrorPrintf("VirtualProtect(RWX) for external buffer failed: %u", GetLastError());
     return false;
+  }
 
   if (guard_size > 0)
   {
@@ -80,6 +93,7 @@ bool JitCodeBuffer::Initialize(void* buffer, u32 size, u32 far_code_size /* = 0 
     if (!VirtualProtect(buffer, guard_size, PAGE_NOACCESS, &old_guard_protect) ||
         !VirtualProtect(guard_at_end, guard_size, PAGE_NOACCESS, &old_guard_protect))
     {
+      Log_ErrorPrintf("VirtualProtect(NOACCESS) for guard page failed: %u", GetLastError());
       return false;
     }
   }
@@ -88,13 +102,19 @@ bool JitCodeBuffer::Initialize(void* buffer, u32 size, u32 far_code_size /* = 0 
   m_old_protection = static_cast<u32>(old_protect);
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__) || defined(__HAIKU__)
   if (mprotect(buffer, size, PROT_READ | PROT_WRITE | PROT_EXEC) != 0)
+  {
+    Log_ErrorPrintf("mprotect(RWX) for external buffer failed: %d", errno);
     return false;
+  }
 
   if (guard_size > 0)
   {
     u8* guard_at_end = (static_cast<u8*>(buffer) + size) - guard_size;
     if (mprotect(buffer, guard_size, PROT_NONE) != 0 || mprotect(guard_at_end, guard_size, PROT_NONE) != 0)
+    {
+      Log_ErrorPrintf("mprotect(NONE) for guard page failed: %d", errno);
       return false;
+    }
   }
 
   // reasonable default?
