@@ -1817,7 +1817,7 @@ void SDLHostInterface::Run()
       {
         System::UpdatePerformanceCounters();
 
-        if (m_use_sleep_throttler)
+        if (m_speed_limiter_enabled)
           System::Throttle();
       }
     }

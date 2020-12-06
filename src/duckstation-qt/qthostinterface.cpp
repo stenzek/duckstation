@@ -1328,7 +1328,7 @@ void QtHostInterface::threadEntryPoint()
 
     System::UpdatePerformanceCounters();
 
-    if (m_use_sleep_throttler)
+    if (m_speed_limiter_enabled)
       System::Throttle();
 
     m_worker_thread_event_loop->processEvents(QEventLoop::AllEvents);

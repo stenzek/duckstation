@@ -601,20 +601,16 @@ bool CommonHostInterface::ResumeSystemFromMostRecentState()
 void CommonHostInterface::UpdateSpeedLimiterState()
 {
   const float target_speed = m_fast_forward_enabled ? g_settings.fast_forward_speed : g_settings.emulation_speed;
-  const bool speed_limiter_enabled = (target_speed != 0.0f);
+  m_speed_limiter_enabled = (target_speed != 0.0f);
 
   const bool is_non_standard_speed = (std::abs(target_speed - 1.0f) > 0.05f);
   const bool audio_sync_enabled =
-    !System::IsRunning() || (speed_limiter_enabled && g_settings.audio_sync_enabled && !is_non_standard_speed);
+    !System::IsRunning() || (m_speed_limiter_enabled && g_settings.audio_sync_enabled && !is_non_standard_speed);
   const bool video_sync_enabled =
-    !System::IsRunning() || (speed_limiter_enabled && g_settings.video_sync_enabled && !is_non_standard_speed);
-  const float max_display_fps = speed_limiter_enabled ? 0.0f : g_settings.display_max_fps;
-  m_use_sleep_throttler =
-    speed_limiter_enabled &&
-    (!audio_sync_enabled || g_settings.audio_backend == AudioBackend::Null || target_speed != 1.0f);
-  Log_InfoPrintf("Syncing to %s%s (%s)", audio_sync_enabled ? "audio" : "",
-                 (audio_sync_enabled && video_sync_enabled) ? " and video" : (video_sync_enabled ? "video" : ""),
-                 m_use_sleep_throttler ? "sleep throttler" : "no sleep throttler");
+    !System::IsRunning() || (m_speed_limiter_enabled && g_settings.video_sync_enabled && !is_non_standard_speed);
+  const float max_display_fps = m_speed_limiter_enabled ? 0.0f : g_settings.display_max_fps;
+  Log_InfoPrintf("Syncing to %s%s", audio_sync_enabled ? "audio" : "",
+                 (audio_sync_enabled && video_sync_enabled) ? " and video" : (video_sync_enabled ? "video" : ""));
   Log_InfoPrintf("Max display fps: %f", max_display_fps);
 
   if (m_audio_stream)
@@ -631,11 +627,11 @@ void CommonHostInterface::UpdateSpeedLimiterState()
   }
 
   if (g_settings.increase_timer_resolution)
-    SetTimerResolutionIncreased(speed_limiter_enabled);
+    SetTimerResolutionIncreased(m_speed_limiter_enabled);
 
   if (System::IsValid())
   {
-    System::SetTargetSpeed(speed_limiter_enabled ? target_speed : 1.0f);
+    System::SetTargetSpeed(m_speed_limiter_enabled ? target_speed : 1.0f);
     System::ResetPerformanceCounters();
   }
 }
