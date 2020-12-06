@@ -175,6 +175,10 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(QtHostInterface* host_interface, 
                          0);
   addBooleanTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Increase Timer Resolution"), "Main",
                         "IncreaseTimerResolution", true);
+#ifdef WIN32
+  addBooleanTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Use Blit Swap Chain"), "Display",
+                        "UseBlitSwapChain", false);
+#endif
 }
 
 AdvancedSettingsWidget::~AdvancedSettingsWidget() = default;
@@ -195,4 +199,7 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
   setBooleanTweakOption(m_ui.tweakOptionTable, 11, false);
   setIntRangeTweakOption(m_ui.tweakOptionTable, 12, 0);
   setBooleanTweakOption(m_ui.tweakOptionTable, 13, true);
+#ifdef WIN32
+  setBooleanTweakOption(m_ui.tweakOptionTable, 14, false);
+#endif
 }
