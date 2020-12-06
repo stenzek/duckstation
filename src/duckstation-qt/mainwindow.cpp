@@ -81,6 +81,11 @@ bool MainWindow::confirmMessage(const QString& message)
   return (result == QMessageBox::Yes);
 }
 
+bool MainWindow::shouldHideCursorInFullscreen() const
+{
+  return g_host_interface->GetBoolSettingValue("Main", "HideCursorInFullscreen", true);
+}
+
 QtDisplayWidget* MainWindow::createDisplay(QThread* worker_thread, const QString& adapter_name, bool use_debug_device,
                                            bool fullscreen, bool render_to_main)
 {
@@ -108,7 +113,8 @@ QtDisplayWidget* MainWindow::createDisplay(QThread* worker_thread, const QString
     else
       m_display_widget->showNormal();
 
-    m_display_widget->setCursor(Qt::BlankCursor);
+    if (shouldHideCursorInFullscreen())
+      m_display_widget->setCursor(Qt::BlankCursor);
   }
   else if (!render_to_main)
   {
@@ -170,7 +176,9 @@ QtDisplayWidget* MainWindow::updateDisplay(QThread* worker_thread, bool fullscre
       m_display_widget->showFullScreen();
     else
       m_display_widget->showNormal();
-    m_display_widget->setCursor(Qt::BlankCursor);
+
+    if (shouldHideCursorInFullscreen())
+      m_display_widget->setCursor(Qt::BlankCursor);
   }
   else if (!render_to_main)
   {
