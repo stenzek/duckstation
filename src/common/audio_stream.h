@@ -1,6 +1,7 @@
 #pragma once
 #include "fifo_queue.h"
 #include "types.h"
+#include <atomic>
 #include <condition_variable>
 #include <memory>
 #include <mutex>
@@ -45,6 +46,12 @@ public:
   void WriteFrames(const SampleType* frames, u32 num_frames);
   void EndWrite(u32 num_frames);
 
+  bool DidUnderflow()
+  {
+    bool expected = true;
+    return m_underflow_flag.compare_exchange_strong(expected, false);
+  }
+
   static std::unique_ptr<AudioStream> CreateNullAudioStream();
 
   // Latency computation - returns values in seconds
@@ -84,6 +91,7 @@ private:
   mutable std::mutex m_buffer_mutex;
   std::condition_variable m_buffer_draining_cv;
   std::vector<SampleType> m_resample_buffer;
+  std::atomic_bool m_underflow_flag{false};
   u32 m_max_samples = 0;
 
   bool m_output_paused = true;

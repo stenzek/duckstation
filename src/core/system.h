@@ -154,6 +154,7 @@ void SetThrottleFrequency(float frequency);
 
 /// Updates the throttle period, call when target emulation speed changes.
 void UpdateThrottlePeriod();
+void ResetThrottler();
 
 /// Throttles the system, i.e. sleeps until it's time to execute the next frame.
 void Throttle();

@@ -170,12 +170,14 @@ void AudioStream::ReadFrames(SampleType* samples, u32 num_frames, bool apply_vol
       }
 
       Log_DevPrintf("Audio buffer underflow, resampled %u frames to %u", samples_copied / m_channels, num_frames);
+      m_underflow_flag.store(true);
     }
     else
     {
       // read nothing, so zero-fill
       std::memset(samples, 0, sizeof(SampleType) * total_samples);
       Log_DevPrintf("Audio buffer underflow with no samples, added %u frames silence", num_frames);
+      m_underflow_flag.store(true);
     }
   }
 
@@ -218,4 +220,5 @@ void AudioStream::EmptyBuffers()
 {
   std::unique_lock<std::mutex> lock(m_buffer_mutex);
   m_buffer.Clear();
+  m_underflow_flag.store(false);
 }
