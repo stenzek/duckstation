@@ -3665,7 +3665,7 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="94"/>
-        <location filename="../generalsettingswidget.cpp" line="69"/>
+        <location filename="../generalsettingswidget.cpp" line="72"/>
         <source>Load Devices From Save States</source>
         <translation>Carregar a partir do estado salvo</translation>
     </message>
@@ -3683,12 +3683,13 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="59"/>
+        <location filename="../generalsettingswidget.cpp" line="68"/>
         <source>Pause On Focus Loss</source>
         <translation>Pausar Quando Inativo</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="80"/>
-        <location filename="../generalsettingswidget.cpp" line="74"/>
+        <location filename="../generalsettingswidget.cpp" line="77"/>
         <source>Apply Per-Game Settings</source>
         <translation>Configurações Individuais</translation>
     </message>
@@ -3713,7 +3714,7 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>Velocidade do Avanço Rápido:</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="78"/>
+        <location filename="../generalsettingswidget.cpp" line="81"/>
         <source>Emulation Speed</source>
         <translation>Velocidade da emulação</translation>
     </message>
@@ -3767,8 +3768,8 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../generalsettingswidget.cpp" line="54"/>
         <location filename="../generalsettingswidget.cpp" line="57"/>
         <location filename="../generalsettingswidget.cpp" line="63"/>
-        <location filename="../generalsettingswidget.cpp" line="74"/>
-        <location filename="../generalsettingswidget.cpp" line="113"/>
+        <location filename="../generalsettingswidget.cpp" line="77"/>
+        <location filename="../generalsettingswidget.cpp" line="116"/>
         <source>Checked</source>
         <translation>Marcado</translation>
     </message>
@@ -3785,8 +3786,9 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../generalsettingswidget.cpp" line="60"/>
         <location filename="../generalsettingswidget.cpp" line="66"/>
-        <location filename="../generalsettingswidget.cpp" line="69"/>
-        <location filename="../generalsettingswidget.cpp" line="100"/>
+        <location filename="../generalsettingswidget.cpp" line="68"/>
+        <location filename="../generalsettingswidget.cpp" line="72"/>
+        <location filename="../generalsettingswidget.cpp" line="103"/>
         <source>Unchecked</source>
         <translation>Desmarcado</translation>
     </message>
@@ -3806,22 +3808,27 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>Pausa a emulação quando um jogo é iniciado.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="70"/>
+        <location filename="../generalsettingswidget.cpp" line="69"/>
+        <source>Pauses the emulator when you minimize the window or switch to another application, and unpauses when you switch back.</source>
+        <translation>Pausa o emulador quando a janela é minimizada ou na mudança de foco para outro aplicativo aberto, e despausa quando volta ao foco.</translation>
+    </message>
+    <message>
+        <location filename="../generalsettingswidget.cpp" line="73"/>
         <source>When enabled, memory cards and controllers will be overwritten when save states are loaded. This can result in lost saves, and controller type mismatches. For deterministic save states, enable this option, otherwise leave disabled.</source>
         <translation>Quando ativado, os cartões de memória e os controles serão substituídos assim que os saves states forem carregados. Isso pode resultar em perda de Saves e incompatibilidade nos  controles. Sendo assim, deixe isto desativado.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="75"/>
+        <location filename="../generalsettingswidget.cpp" line="78"/>
         <source>When enabled, per-game settings will be applied, and incompatible enhancements will be disabled. You should leave this option enabled except when testing enhancements with incompatible games.</source>
         <translation>Quando ativada as configurações individuais por jogo serão aplicadas e os aprimoramentos incompatíveis serão desligados. Você pode deixar esta opção ativa exceto ao usar melhorias com jogos não compatíveis.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="82"/>
+        <location filename="../generalsettingswidget.cpp" line="85"/>
         <source>Fast Forward Speed</source>
         <translation>Velocidade do Avanço Rápido</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="83"/>
+        <location filename="../generalsettingswidget.cpp" line="86"/>
         <source>Sets the fast forward (turbo) speed. This speed will be used when the fast forward hotkey is pressed/toggled.</source>
         <translation>Define a velocidade do avanço rápido. Será usada quando o atalho de avanço rápido for pressionado ou alternado.</translation>
     </message>
@@ -3834,7 +3841,7 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation type="vanished">Aumenta a resolução em tempo real quando emulador é iniciado dando maior precisão nos quadros emulados. Pode aumentar o consumo de bateria em Laptops.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="79"/>
+        <location filename="../generalsettingswidget.cpp" line="82"/>
         <source>Sets the target emulation speed. It is not guaranteed that this speed will be reached, and if not, the emulator will run as fast as it can manage.</source>
         <translation>Ajusta a velocidade da emulação. Não é garantido que a velocidade será alcançada sendo assim o emulador irá tentar rodar o mais rápido que puder.</translation>
     </message>
@@ -3863,34 +3870,34 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation type="vanished">Mostra a velocidade de emulação atual do sistema no canto superior direito da tela registrado em porcentagem.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="85"/>
+        <location filename="../generalsettingswidget.cpp" line="88"/>
         <source>Controller Backend</source>
         <translation>Tipo de Controle</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="88"/>
+        <location filename="../generalsettingswidget.cpp" line="91"/>
         <source>Determines the backend which is used for controller input. Windows users may prefer to use XInput over SDL2 for compatibility.</source>
         <translation>Determina qual opção de controle será usada para o controle em uso. Para quem usa Windows dê preferência ao X-Input ao invés do SDL2 para melhor compatibilidade.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="96"/>
-        <location filename="../generalsettingswidget.cpp" line="100"/>
+        <location filename="../generalsettingswidget.cpp" line="99"/>
+        <location filename="../generalsettingswidget.cpp" line="103"/>
         <source>Enable Discord Presence</source>
         <translation>Ativar Presença Rica do Discord</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="101"/>
+        <location filename="../generalsettingswidget.cpp" line="104"/>
         <source>Shows the game you are currently playing as part of your profile in Discord.</source>
         <translation>Mostra o jogo que estiver jogando em seu perfil no Discord quando logado.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="109"/>
-        <location filename="../generalsettingswidget.cpp" line="113"/>
+        <location filename="../generalsettingswidget.cpp" line="112"/>
+        <location filename="../generalsettingswidget.cpp" line="116"/>
         <source>Enable Automatic Update Check</source>
         <translation>Verificar Por Atualizações</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="114"/>
+        <location filename="../generalsettingswidget.cpp" line="117"/>
         <source>Automatically checks for updates to the program on startup. Updates can be deferred until later or skipped entirely.</source>
         <translation>Procura automaticamente por atualizações assim que o emulador for iniciado. Você será alertado prontamente e poderá decidir se posterga ou pula a atualização atual.</translation>
     </message>
@@ -5497,17 +5504,17 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>Icache desativado, limpando blocos.</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="672"/>
+        <location filename="../../core/host_interface.cpp" line="675"/>
         <source>PGXP enabled, recompiling all blocks.</source>
         <translation>PGXP ativado, reconstruindo blocos.</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="673"/>
+        <location filename="../../core/host_interface.cpp" line="676"/>
         <source>PGXP disabled, recompiling all blocks.</source>
         <translation>PGXP desativado, reconstruindo blocos.</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="839"/>
+        <location filename="../../core/host_interface.cpp" line="842"/>
         <source>Switching to %s renderer...</source>
         <translation>Mudando para %s...</translation>
     </message>
@@ -6368,12 +6375,12 @@ The saves will not be recoverable.</source>
         <translation>Jogo trocado, recarregando Cartões de Memória.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1700"/>
+        <location filename="../../core/system.cpp" line="1704"/>
         <source>Removing current media from playlist, removing media from CD-ROM.</source>
         <translation>Mudando media atual da lista, removendo media do leitor de CD.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1717"/>
+        <location filename="../../core/system.cpp" line="1721"/>
         <source>Changing current media from playlist, replacing current media.</source>
         <translation>Mudando media atual da lista, recalculando media atual.</translation>
     </message>
