@@ -1014,6 +1014,18 @@ void CheatCode::Apply() const
       }
       break;
 
+      case InstructionCode::DelayActivation: // C1
+      {
+        // A value of around 4000 or 5000 will usually give you a good 20-30 second delay before codes are activated.
+        // Frame number * 0.3 -> (20 * 60) * 10 / 3 => 4000
+        const u32 comp_value = (System::GetFrameNumber() * 10) / 3;
+        if (comp_value < inst.value16)
+          index = count;
+        else
+          index++;
+      }
+      break;
+
       case InstructionCode::Slide:
       {
         if ((index + 1) >= instructions.size())

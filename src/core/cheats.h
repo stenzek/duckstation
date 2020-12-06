@@ -30,6 +30,7 @@ struct CheatCode
     Decrement16 = 0x11,
     Increment8 = 0x20,
     Decrement8 = 0x21,
+    DelayActivation = 0xC1,
     SkipIfNotEqual16 = 0xC0,
     SkipIfButtonsNotEqual = 0xD5,
     SkipIfButtonsEqual = 0xD6,
