@@ -51,6 +51,9 @@ public:
   /// Changes the specified button state.
   virtual void SetButtonState(s32 button_code, bool pressed);
 
+  /// Returns a bitmask of the current button states, 1 = on.
+  virtual u32 GetButtonStateBits() const;
+
   /// Returns the number of vibration motors.
   virtual u32 GetVibrationMotorCount() const;
 

@@ -6,9 +6,11 @@
 #include "common/log.h"
 #include "common/string.h"
 #include "common/string_util.h"
+#include "controller.h"
 #include "cpu_code_cache.h"
 #include "cpu_core.h"
 #include "host_interface.h"
+#include "system.h"
 #include <cctype>
 #include <iomanip>
 #include <sstream>
@@ -93,6 +95,47 @@ static void DoMemoryWrite(PhysicalMemoryAddress address, T value)
 
     return;
   }
+}
+
+static u32 GetControllerButtonBits()
+{
+  static constexpr std::array<u16, 16> button_mapping = {{
+    0x0100, // Select
+    0x0200, // L3
+    0x0400, // R3
+    0x0800, // Start
+    0x1000, // Up
+    0x2000, // Right
+    0x4000, // Down
+    0x8000, // Left
+    0x0001, // L2
+    0x0002, // R2
+    0x0004, // L1
+    0x0008, // R1
+    0x0010, // Triangle
+    0x0020, // Circle
+    0x0040, // Cross
+    0x0080, // Square
+  }};
+
+  u32 bits = 0;
+  for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
+  {
+    Controller* controller = System::GetController(i);
+    if (!controller)
+      continue;
+
+    bits |= controller->GetButtonStateBits();
+  }
+
+  u32 translated_bits = 0;
+  for (u32 i = 0, bit = 1; i < static_cast<u32>(button_mapping.size()); i++, bit <<= 1)
+  {
+    if (bits & bit)
+      translated_bits |= button_mapping[i];
+  }
+
+  return translated_bits;
 }
 
 CheatList::CheatList() = default;
@@ -921,12 +964,39 @@ void CheatCode::Apply() const
       }
       break;
 
-      case InstructionCode::SkipIfNotEqual16: // C0
+      case InstructionCode::CompareButtons: // D4
       {
-        const u16 value = DoMemoryRead<u16>(inst.address);
+        if (inst.value16 == GetControllerButtonBits())
+          index++;
+        else
+          index += 2;
+      }
+      break;
+
+      case InstructionCode::SkipIfNotEqual16:      // C0
+      case InstructionCode::SkipIfButtonsNotEqual: // D5
+      case InstructionCode::SkipIfButtonsEqual:    // D6
+      {
         index++;
 
-        if (value == inst.value16)
+        bool activate_codes;
+        switch (inst.code)
+        {
+          case InstructionCode::SkipIfNotEqual16: // C0
+            activate_codes = (DoMemoryRead<u16>(inst.address) == inst.value16);
+            break;
+          case InstructionCode::SkipIfButtonsNotEqual: // D5
+            activate_codes = (GetControllerButtonBits() == inst.value16);
+            break;
+          case InstructionCode::SkipIfButtonsEqual: // D6
+            activate_codes = (GetControllerButtonBits() != inst.value16);
+            break;
+          default:
+            activate_codes = false;
+            break;
+        }
+
+        if (activate_codes)
         {
           // execute following instructions
           continue;

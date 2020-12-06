@@ -127,6 +127,12 @@ void AnalogController::SetButtonState(s32 button_code, bool pressed)
   SetButtonState(static_cast<Button>(button_code), pressed);
 }
 
+u32 AnalogController::GetButtonStateBits() const
+{
+  // flip bits, native data is active low
+  return m_button_state ^ 0xFFFF;
+}
+
 u32 AnalogController::GetVibrationMotorCount() const
 {
   return NUM_MOTORS;
