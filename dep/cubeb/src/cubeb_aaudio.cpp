@@ -130,6 +130,7 @@ struct cubeb_stream {
   int64_t latest_input_latency = 0;
   bool voice_input;
   bool voice_output;
+  uint64_t previous_clock;
 };
 
 struct cubeb {
@@ -998,6 +999,7 @@ aaudio_stream_init(cubeb * ctx, cubeb_stream ** stream,
   stm->state_callback = state_callback;
   stm->voice_input = input_stream_params && !!(input_stream_params->prefs & CUBEB_STREAM_PREF_VOICE);
   stm->voice_output = output_stream_params && !!(output_stream_params->prefs & CUBEB_STREAM_PREF_VOICE);
+  stm->previous_clock = 0;
 
   LOG("cubeb stream prefs: voice_input: %s voice_output: %s",
       stm->voice_input ? "true" : "false",
@@ -1238,6 +1240,11 @@ aaudio_stream_get_position(cubeb_stream * stm, uint64_t * position)
     // getTimestamp is only valid when the stream is playing.
     // Simply return the number of frames passed to aaudio
     *position = WRAP(AAudioStream_getFramesRead)(stream);
+    if (*position < stm->previous_clock) {
+      *position = stm->previous_clock;
+    } else {
+      stm->previous_clock = *position;
+    }
     return CUBEB_OK;
   case stream_state::INIT:
     assert(false && "Invalid stream");
@@ -1252,12 +1259,15 @@ aaudio_stream_get_position(cubeb_stream * stm, uint64_t * position)
   aaudio_result_t res;
   res = WRAP(AAudioStream_getTimestamp)(stream, CLOCK_MONOTONIC, &pos, &ns);
   if (res != AAUDIO_OK) {
-    // when we are in 'STARTING' state we try it and hope that the stream
-    // has internally started and gives us a valid timestamp.
-    // If that is not the case (invalid_state is returned) we simply
-    // fall back to the method we use for non-playing streams.
-    if (res == AAUDIO_ERROR_INVALID_STATE && state == stream_state::STARTING) {
+    // When the audio stream is not running, invalid_state is returned and we
+    // simply fall back to the method we use for non-playing streams.
+    if (res == AAUDIO_ERROR_INVALID_STATE) {
       *position = WRAP(AAudioStream_getFramesRead)(stream);
+      if (*position < stm->previous_clock) {
+        *position = stm->previous_clock;
+      } else {
+        stm->previous_clock = *position;
+      }
       return CUBEB_OK;
     }
 
@@ -1266,6 +1276,11 @@ aaudio_stream_get_position(cubeb_stream * stm, uint64_t * position)
   }
 
   *position = pos;
+  if (*position < stm->previous_clock) {
+    *position = stm->previous_clock;
+  } else {
+    stm->previous_clock = *position;
+  }
   return CUBEB_OK;
 }
 

@@ -2185,7 +2185,7 @@ int setup_wasapi_stream_one_side(cubeb_stream * stm,
 
 void wasapi_find_matching_output_device(cubeb_stream * stm) {
   HRESULT hr;
-  cubeb_device_info * input_device = nullptr;
+  cubeb_device_info * input_device;
   cubeb_device_collection collection;
 
   // Only try to match to an output device if the input device is a bluetooth
