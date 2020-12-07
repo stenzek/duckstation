@@ -3,8 +3,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/game_list_entry_menu_start_game"
-        android:title="Start Game" />
+        android:title="@string/menu_game_list_entry_start_game" />
     <item
         android:id="@+id/game_list_entry_menu_resume_game"
-        android:title="Resume Game" />
+        android:title="@string/menu_game_list_entry_resume_game" />
 </menu>

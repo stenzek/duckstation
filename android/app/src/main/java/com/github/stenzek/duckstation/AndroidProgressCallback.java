@@ -12,7 +12,7 @@ public class AndroidProgressCallback {
     public AndroidProgressCallback(Activity context) {
         mContext = context;
         mDialog = new ProgressDialog(context);
-        mDialog.setMessage("Please wait...");
+        mDialog.setMessage(context.getString(R.string.android_progress_callback_please_wait));
         mDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         mDialog.setIndeterminate(false);
         mDialog.setMax(100);
@@ -54,7 +54,7 @@ public class AndroidProgressCallback {
             new AlertDialog.Builder(mContext)
                     .setTitle("Error")
                     .setMessage(message)
-                    .setPositiveButton("OK", (dialog, button) -> {
+                    .setPositiveButton(mContext.getString(R.string.android_progress_callback_ok), (dialog, button) -> {
                         dialog.dismiss();
                     })
                     .setOnDismissListener((dialogInterface) -> {
@@ -78,9 +78,9 @@ public class AndroidProgressCallback {
         Object lock = new Object();
         mContext.runOnUiThread(() -> {
             new AlertDialog.Builder(mContext)
-                    .setTitle("Information")
+                    .setTitle(mContext.getString(R.string.android_progress_callback_information))
                     .setMessage(message)
-                    .setPositiveButton("OK", (dialog, button) -> {
+                    .setPositiveButton(mContext.getString(R.string.android_progress_callback_ok), (dialog, button) -> {
                         dialog.dismiss();
                     })
                     .setOnDismissListener((dialogInterface) -> {
@@ -108,13 +108,13 @@ public class AndroidProgressCallback {
         ConfirmationResult result = new ConfirmationResult();
         mContext.runOnUiThread(() -> {
             new AlertDialog.Builder(mContext)
-                    .setTitle("Confirmation")
+                    .setTitle(mContext.getString(R.string.android_progress_callback_confirmation))
                     .setMessage(message)
-                    .setPositiveButton("Yes", (dialog, button) -> {
+                    .setPositiveButton(mContext.getString(R.string.android_progress_callback_yes), (dialog, button) -> {
                         result.result = true;
                         dialog.dismiss();
                     })
-                    .setNegativeButton("No", (dialog, button) -> {
+                    .setNegativeButton(mContext.getString(R.string.android_progress_callback_no), (dialog, button) -> {
                         result.result = false;
                         dialog.dismiss();
                     })

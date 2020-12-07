@@ -18,7 +18,7 @@
 
     <ListPreference
         app:key="Main/EmulationSpeed"
-        app:title="Emulation Speed"
+        app:title="@string/settings_emulation_speed"
         app:entries="@array/settings_emulation_speed_entries"
         app:entryValues="@array/settings_emulation_speed_values"
         app:defaultValue="1.0"
@@ -26,7 +26,7 @@
         app:iconSpaceReserved="false" />
     <ListPreference
         app:key="Main/FastForwardSpeed"
-        app:title="Fast Forward Speed"
+        app:title="@string/settings_fast_forward_speed"
         app:entries="@array/settings_emulation_speed_entries"
         app:entryValues="@array/settings_emulation_speed_values"
         app:defaultValue="0.0"
@@ -34,19 +34,19 @@
         app:iconSpaceReserved="false" />
     <SwitchPreferenceCompat
         app:key="Main/SaveStateOnExit"
-        app:title="Save State On Exit"
+        app:title="@string/settings_save_state_on_exit"
         app:defaultValue="true"
-        app:summary="Automatically saves the emulator state when powering down or exiting. You can then resume directly from where you left off next time."
+        app:summary="@string/settings_summary_save_state_on_exit"
         app:iconSpaceReserved="false" />
     <SwitchPreferenceCompat
         app:key="Main/PauseOnMenu"
-        app:title="Pause When Menu Opened"
+        app:title="@string/settings_pause_when_menu_opened"
         app:defaultValue="false"
-        app:summary="Pauses emulation when ingame and the menu is opened."
+        app:summary="@string/settings_summary_pause_when_menu_opened"
         app:iconSpaceReserved="false" />
     <ListPreference
         app:key="Main/EmulationScreenOrientation"
-        app:title="Emulation Screen Orientation"
+        app:title="@string/settings_emulation_screen_orientation"
         app:entries="@array/settings_emulation_screen_orientation_entries"
         app:entryValues="@array/settings_emulation_screen_orientation_values"
         app:defaultValue="unspecified"
@@ -54,28 +54,28 @@
         app:iconSpaceReserved="false" />
     <SwitchPreferenceCompat
         app:key="Main/AutoLoadCheats"
-        app:title="Load Patch Codes"
+        app:title="@string/settings_load_patch_codes"
         app:defaultValue="false"
-        app:summary="Loads patch codes from cheats/&lt;game name&gt;.cht in PCSXR format. Codes can be toggled while ingame."
+        app:summary="@string/settings_summary_load_patch_codes"
         app:iconSpaceReserved="false" />
     <SwitchPreferenceCompat
         app:key="Main/ApplyGameSettings"
-        app:title="Apply Compatibility Settings"
+        app:title="@string/settings_apply_compatibility_settings"
         app:defaultValue="true"
-        app:summary="Automatically disable enhancements when they are not supported by games."
+        app:summary="@string/settings_summary_apply_compatibility_settings"
         app:iconSpaceReserved="false" />
     <SwitchPreferenceCompat
         app:key="Display/VSync"
-        app:title="Video Sync"
+        app:title="@string/settings_video_sync"
         app:defaultValue="false"
-        app:summary="Enable this option to match DuckStation's refresh rate with your current monitor or screen. VSync is automatically disabled when it is not possible (e.g. running at non-100% speed)."
+        app:summary="@string/settings_summary_video_sync"
         app:iconSpaceReserved="false" />
     <ListPreference
         app:key="Console/Region"
         app:title="@string/settings_console_region"
         app:entries="@array/settings_console_region_entries"
         app:entryValues="@array/settings_console_region_values"
-        app:defaultValue="@string/settings_console_region_default"
+        app:defaultValue="Auto"
         app:useSimpleSummaryProvider="true"
         app:iconSpaceReserved="false" />
 
