@@ -46,6 +46,7 @@ void cubeb_async_log_reset_threads();
   } while(0)
 
 /* Asynchronous verbose logging, to log in real-time callbacks. */
+/* Should not be used on android due to the use of global/static variables. */
 #define ALOGV(fmt, ...)                   \
 do {                                      \
   cubeb_async_log(fmt, ##__VA_ARGS__);    \
