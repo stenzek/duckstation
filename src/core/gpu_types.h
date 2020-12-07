@@ -195,7 +195,7 @@ union GPUTexturePaletteReg
   u16 bits;
 
   BitField<u16, u16, 0, 6> x;
-  BitField<u16, u16, 6, 10> y;
+  BitField<u16, u16, 6, 9> y;
 
   ALWAYS_INLINE u32 GetXBase() const { return static_cast<u32>(x) * 16u; }
   ALWAYS_INLINE u32 GetYBase() const { return static_cast<u32>(y); }
