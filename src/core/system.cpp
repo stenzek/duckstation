@@ -1214,6 +1214,7 @@ void UpdateThrottlePeriod()
 {
   s_throttle_period =
     static_cast<s32>(1000000000.0 / static_cast<double>(s_throttle_frequency) / static_cast<double>(s_target_speed));
+  ResetThrottler();
 }
 
 void ResetThrottler()
@@ -1295,6 +1296,9 @@ void UpdatePerformanceCounters()
             100.0f;
   s_last_global_tick_counter = global_tick_counter;
   s_fps_timer.Reset();
+
+  Log_PerfPrintf("FPS: %.2f VPS: %.2f Average: %.2fms Worst: %.2fms", s_fps, s_vps, s_average_frame_time,
+                 s_worst_frame_time);
 
   g_host_interface->OnSystemPerformanceCountersUpdated();
 }
