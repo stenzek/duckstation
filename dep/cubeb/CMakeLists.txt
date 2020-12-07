@@ -22,7 +22,10 @@ endif()
 set(CMAKE_CXX_WARNING_LEVEL 4)
 if(NOT MSVC)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wno-unused-parameter")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-parameter")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-parameter -fno-exceptions -fno-rtti")
+else()
+  string(REPLACE "/GR" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS}) # Disable RTTI
+  string(REPLACE "/EHsc" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS}) # Disable Exceptions
 endif()
 
 add_library(cubeb
@@ -120,6 +123,26 @@ if(HAVE_SYS_SOUNDCARD_H)
     target_compile_definitions(cubeb PRIVATE USE_OSS)
     target_link_libraries(cubeb PRIVATE pthread)
   endif()
+endif()
+
+check_include_files(aaudio/AAudio.h USE_AAUDIO)
+if(USE_AAUDIO)
+  target_sources(cubeb PRIVATE
+    src/cubeb_aaudio.cpp)
+  target_compile_definitions(cubeb PRIVATE USE_AAUDIO)
+
+  # set this definition to enable low latency mode. Possibly bad for battery
+  target_compile_definitions(cubeb PRIVATE CUBEB_AAUDIO_LOW_LATENCY)
+
+  # set this definition to enable power saving mode. Possibly resulting
+  # in high latency
+  # target_compile_definitions(cubeb PRIVATE CUBEB_AAUDIO_LOW_POWER_SAVING)
+
+  # set this mode to make the backend use an exclusive stream.
+  # will decrease latency.
+  # target_compile_definitions(cubeb PRIVATE CUBEB_AAUDIO_EXCLUSIVE_STREAM)
+
+  target_link_libraries(cubeb PRIVATE ${CMAKE_DL_LIBS})
 endif()
 
 check_include_files(android/log.h USE_AUDIOTRACK)
