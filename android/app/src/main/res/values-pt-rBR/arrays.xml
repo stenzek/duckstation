@@ -3,7 +3,7 @@
         <item>Auto-Detectar</item>
         <item>NTSC-J (Japão)</item>
         <item>NTSC-U (US)</item>
-        <item>PAL (Europa, Australia)</item>
+        <item>PAL (Europa, Austrália)</item>
     </string-array>
     <string-array name="settings_cpu_execution_mode_entries">
         <item>Interpretador (Mais Lento)</item>
@@ -39,8 +39,8 @@
         <item>16x > (16384x8192)</item>
     </string-array>
     <string-array name="settings_display_crop_mode_entries">
-        <item>None</item>
-        <item>Só Área Renderizada</item>
+        <item>Nenhum</item>
+        <item>Área Renderizada</item>
         <item>Todas as Bordas</item>
     </string-array>
     <string-array name="settings_display_aspect_ratio_names">
@@ -71,15 +71,15 @@
     </string-array>
     <string-array name="settings_memory_card_mode_entries">
         <item>Sem Cartão de Memória</item>
-        <item>Compoartilhada entre jogos</item>
+        <item>Comparrtilhada entre Jogos</item>
         <item>Separado Por Jogo (Cód. Jogo)</item>
         <item>Separado Por Jogo (Título Jogo)</item>
     </string-array>
     <string-array name="emulation_menu">
         <item>Carregar Estado</item>
         <item>Salvar Estado</item>
-        <item>Salvar P/ Compartimento</item>
-        <item>Avanço (Alternado)</item>
+        <item>Salvar Para Compartimento</item>
+        <item>Avanço (Fixo)</item>
         <item>Mais Opções</item>
         <item>Sair</item>
     </string-array>
@@ -87,8 +87,8 @@
         <item>Reiniciar</item>
         <item>Trapaças</item>
         <item>Mudar Disco</item>
-        <item>Mudar Controle em Tela</item>
-        <item>Settings</item>
+        <item>Mudar controle em Tela</item>
+        <item>Configurações</item>
     </string-array>
     <string-array name="emulation_save_state_slot_menu">
         <item>Armazenamento Rápido</item>
@@ -128,7 +128,7 @@
     </string-array>
     <string-array name="settings_audio_buffer_size_entries">
         <item>1024 Quadros (23.22ms)</item>
-        <item>2048 Quadros (46.44ms, Recommended)</item>
+        <item>2048 Quadros (46.44ms, Recomendado)</item>
         <item>3072 Quadros (69.66ms)</item>
         <item>4096 Quadros (92.88ms)</item>
     </string-array>
@@ -162,7 +162,7 @@
         <item>8x SSAA</item>
     </string-array>
     <string-array name="settings_advanced_display_fps_limit_entries">
-        <item>Ilimitado (Mostrar Quadros)</item>
+        <item>ilimitado (Mostrar Quadros)</item>
         <item>10 FPS</item>
         <item>15 FPS</item>
         <item>30 FPS</item>
@@ -172,7 +172,7 @@
         <item>90 FPS</item>
     </string-array>
     <string-array name="settings_emulation_speed_entries">
-        <item>Ilimitado</item>
+        <item>ilimitado</item>
         <item>10% [6 FPS (NTSC) / 5 FPS (PAL)]</item>
         <item>20% [12 FPS (NTSC) / 10 FPS (PAL)]</item>
         <item>30% [18 FPS (NTSC) / 15 FPS (PAL)]</item>
