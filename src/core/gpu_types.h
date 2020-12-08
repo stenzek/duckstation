@@ -262,14 +262,13 @@ union GPUBackendCommandParameters
 
 struct GPUBackendCommand
 {
+  u32 size;
   GPUBackendCommandType type;
   GPUBackendCommandParameters params;
-  u32 size;
 };
 
 struct GPUBackendSyncCommand : public GPUBackendCommand
 {
-  ALWAYS_INLINE u32 Size() const { return sizeof(GPUBackendSyncCommand); }
 };
 
 struct GPUBackendFillVRAMCommand : public GPUBackendCommand
@@ -279,8 +278,6 @@ struct GPUBackendFillVRAMCommand : public GPUBackendCommand
   u16 width;
   u16 height;
   u32 color;
-
-  ALWAYS_INLINE u32 Size() const { return sizeof(GPUBackendFillVRAMCommand); }
 };
 
 struct GPUBackendUpdateVRAMCommand : public GPUBackendCommand
@@ -290,8 +287,6 @@ struct GPUBackendUpdateVRAMCommand : public GPUBackendCommand
   u16 width;
   u16 height;
   u16 data[0];
-
-  ALWAYS_INLINE u32 Size() const { return sizeof(GPUBackendUpdateVRAMCommand) + (sizeof(u16) * width * height); }
 };
 
 struct GPUBackendCopyVRAMCommand : public GPUBackendCommand
@@ -302,21 +297,17 @@ struct GPUBackendCopyVRAMCommand : public GPUBackendCommand
   u16 dst_y;
   u16 width;
   u16 height;
-
-  ALWAYS_INLINE u32 Size() const { return sizeof(GPUBackendCopyVRAMCommand); }
 };
 
 struct GPUBackendSetDrawingAreaCommand : public GPUBackendCommand
 {
   Common::Rectangle<u32> new_area;
-
-  ALWAYS_INLINE u32 Size() const { return sizeof(GPUBackendSetDrawingAreaCommand); }
 };
 
 struct GPUBackendDrawCommand : public GPUBackendCommand
 {
-  GPURenderCommand rc;
   GPUDrawModeReg draw_mode;
+  GPURenderCommand rc;
   GPUTexturePaletteReg palette;
   GPUTextureWindow window;
 
@@ -349,8 +340,6 @@ struct GPUBackendDrawPolygonCommand : public GPUBackendDrawCommand
   };
 
   Vertex vertices[0];
-
-  ALWAYS_INLINE u32 Size() const { return sizeof(GPUBackendDrawPolygonCommand) + sizeof(Vertex) * num_vertices; }
 };
 
 struct GPUBackendDrawRectangleCommand : public GPUBackendDrawCommand
@@ -359,8 +348,6 @@ struct GPUBackendDrawRectangleCommand : public GPUBackendDrawCommand
   u16 width, height;
   u16 texcoord;
   u32 color;
-
-  ALWAYS_INLINE u32 Size() const { return sizeof(GPUBackendDrawRectangleCommand); }
 };
 
 struct GPUBackendDrawLineCommand : public GPUBackendDrawCommand
@@ -381,8 +368,6 @@ struct GPUBackendDrawLineCommand : public GPUBackendDrawCommand
   };
 
   Vertex vertices[0];
-
-  ALWAYS_INLINE u32 Size() const { return sizeof(GPUBackendDrawLineCommand) + sizeof(Vertex) * num_vertices; }
 };
 
 #ifdef _MSC_VER
