@@ -225,10 +225,10 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-884-g096ed21</version-tested>
   </entry>
-  <entry code="SLUS-00715" compatibility="4" region="NTSC-U" title="Akuji the Heartless (USA)">
-    <compatibility>Graphical/Audio Issues</compatibility>
-    <version-tested>0.1-1409-ge198e315</version-tested>
-    <comments>Framerate drops to 20 FPS after cutscene (issue #521). Is this issue from the game itself?</comments>
+  <entry code="SLUS-00715" compatibility="5" region="NTSC-U" title="Akuji the Heartless (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2433-g9089c973</version-tested>
+    <comments>Framerate drops to 20 FPS after cutscene (issue #521). But it's unknown if this happen in the game itself too (but if you have a confirmation that it doesn't happen in actual console, please report to us)</comments>
   </entry>
   <entry code="SLPM-86023" compatibility="5" region="NTSC-J" title="Akumajou Dracula X - Gekka no Yasoukyoku (Japan) (Rev 1)">
     <compatibility>No Issues</compatibility>
@@ -389,19 +389,18 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-884-g096ed21</version-tested>
   </entry>
-  <entry code="SLUS-00952" compatibility="3" region="NTSC-U" title="Arcade Party Pak (USA)">
-    <compatibility>Crashes In-Game</compatibility>
-    <version-tested>0.1-1409-ge198e315</version-tested>
-    <comments>Graphical errors in &quot;720&quot;. &quot;Purple screen of death&quot; in &quot;Super Sprint&quot; (Issues #699 and #700).</comments>
+  <entry code="SLUS-00952" compatibility="5" region="NTSC-U" title="Arcade Party Pak (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2433-g9089c973</version-tested>
+    <comments>Not sure if the graphical errors in &quot;720&quot; aren't present in real hardware. If isn't, please report then we can reopen the (Issues #700).</comments>
   </entry>
   <entry code="SLUS-00399" compatibility="5" region="NTSC-U" title="Arcade's Greatest Hits - The Atari Collection 1 (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1313-g10cd00c</version-tested>
   </entry>
-  <entry code="SLUS-00449" compatibility="4" region="NTSC-U" title="Arcade's Greatest Hits - The Atari Collection 2 (USA)">
-    <compatibility>Graphical/Audio Issues</compatibility>
-    <version-tested>0.1-1409-ge198e315</version-tested>
-    <comments>Graphical issues in Paperboy (Issue #693).</comments>
+  <entry code="SLUS-00449" compatibility="5" region="NTSC-U" title="Arcade's Greatest Hits - The Atari Collection 2 (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2433-g9089c973</version-tested>
   </entry>
   <entry code="SLUS-00450" compatibility="5" region="NTSC-U" title="Arcade's Greatest Hits - The Midway Collection 2 (USA)">
     <compatibility>No Issues</compatibility>
@@ -414,6 +413,10 @@
   <entry code="SCUS-94182" compatibility="5" region="NTSC-U" title="Armored Core (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1490-g76978986</version-tested>
+  </entry>
+  <entry code="SLUS-01030" compatibility="5" region="NTSC-U" title="Armored Core - Master of Arena (USA) (Disc 1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2483-g98d6b499</version-tested>
   </entry>
   <entry code="SLUS-01022" compatibility="5" region="NTSC-U" title="Armorines - Project S.W.A.R.M. (USA)">
     <compatibility>No Issues</compatibility>
@@ -492,6 +495,11 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1333-g5a955a4</version-tested>
   </entry>
+  <entry code="SLUS-00522" compatibility="4" region="NTSC-U" title="Auto Destruct (USA)">
+    <compatibility>Graphical/Audio Issues</compatibility>
+    <version-tested>0.1-2483-g98d6b499</version-tested>
+    <comments>Controller issues (Issue #1167).</comments>
+  </entry>
   <entry code="SLUS-00659" compatibility="5" region="NTSC-U" title="Backstreet Billiards (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1425-g05f0ce6d</version-tested>
@@ -544,10 +552,9 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1333-g5a955a4</version-tested>
   </entry>
-  <entry code="SCUS-94200" compatibility="4" region="NTSC-U" title="Battle Arena Toshinden (USA)">
-    <compatibility>Graphical/Audio Issues</compatibility>
-    <version-tested>0.1-1409-ge198e315</version-tested>
-    <comments>In the fight itself, the game runs at a strange fast speed than it should be (Issue #695).</comments>
+  <entry code="SCUS-94200" compatibility="5" region="NTSC-U" title="Battle Arena Toshinden (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2433-g9089c973</version-tested>
   </entry>
   <entry code="SLUS-00220" compatibility="5" region="NTSC-U" title="Battle Arena Toshinden 2 (USA)">
     <compatibility>No Issues</compatibility>
@@ -564,6 +571,14 @@
   <entry code="SCUS-94286" compatibility="5" region="NTSC-U" title="Best Buy Demo CD (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1336-gd711baa</version-tested>
+  </entry>
+  <entry code="SLUS-01489" compatibility="5" region="NTSC-U" title="Beyblade (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2433-g9089c973</version-tested>
+  </entry>
+  <entry code="SLUS-00645" compatibility="5" region="NTSC-U" title="Big Air (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2483-g98d6b499</version-tested>
   </entry>
   <entry code="SLUS-01259" compatibility="5" region="NTSC-U" title="Big Ol' Bass 2 (USA)">
     <compatibility>No Issues</compatibility>
@@ -738,8 +753,8 @@
   </entry>
   <entry code="SLPS-01567" compatibility="4" region="NTSC-J" title="Captain Commando (Japan)">
     <compatibility>Graphical/Audio Issues</compatibility>
-    <upscaling-issues>First boss sprite is corrupted.</upscaling-issues>
-    <version-tested>0.1-884-g096ed21</version-tested>
+    <upscaling-issues>There's garbage in right of the screen and the first boss sprite is corrupted.</upscaling-issues>
+    <version-tested>0.1-2433-g9089c973</version-tested>
   </entry>
   <entry code="SLUS-00494" compatibility="5" region="NTSC-U" title="Car and Driver Presents - Grand Tour Racing '98 (USA)">
     <compatibility>No Issues</compatibility>
@@ -754,6 +769,10 @@
     <version-tested>0.1-908-g9f22684</version-tested>
     <comments>Works Good, But Sometime FPS Limiter Wont Work</comments>
   </entry>
+  <entry code="SCUS-94604" compatibility="5" region="NTSC-U" title="Carnage Heart (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2483-g98d6b499</version-tested>
+  </entry>
   <entry code="SLUS-00162" compatibility="5" region="NTSC-U" title="Casper (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1304-gc8b6712</version-tested>
@@ -766,6 +785,15 @@
   <entry code="SLUS-00067" compatibility="5" region="NTSC-U" title="Castlevania - Symphony of the Night (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1323-ga6acd33</version-tested>
+  </entry>
+  <entry code="SLUS-01384" compatibility="5" region="NTSC-U" title="Castlevania Chronicles (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2433-g9089c973</version-tested>
+  </entry>
+  <entry code="SLUS-00807" compatibility="5" region="NTSC-U" title="Centipede (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2483-g98d6b499</version-tested>
+    <comments>The framerate in this game is a very low. I don't remember if in original hardware are so low. Maybe is worth to check.</comments>
   </entry>
   <entry code="SLUS-01230" compatibility="5" region="NTSC-U" title="Championship Motocross 2001 featuring Ricky Carmichael (USA)">
     <compatibility>No Issues</compatibility>
@@ -991,10 +1019,9 @@ Tetris with Card Captor Sakura (Japan)
     <version-tested>0.1-1835-ge2fab72b</version-tested>
     <comments>Pause menu is not displayed. </comments>
   </entry>
-  <entry code="SIPS-60012" compatibility="4" region="NTSC-J" title="Destruction Derby 2 (Japan)">
-    <compatibility>Graphical/Audio Issues</compatibility>
-    <version-tested>0.1-1835-ge2fab72b</version-tested>
-    <comments>Pause menu is not displayed.</comments>
+  <entry code="SIPS-60012" compatibility="5" region="NTSC-J" title="Destruction Derby 2 (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2433-g9089c973</version-tested>
   </entry>
   <entry code="SCUS-94350" compatibility="5" region="NTSC-U" title="Destruction Derby 2 (USA)">
     <compatibility>No Issues</compatibility>
@@ -1011,6 +1038,10 @@ Tetris with Card Captor Sakura (Japan)
   </entry>
   <entry code="SLPS-00335" compatibility="5" region="NTSC-J" title="Dezaemon Plus">
     <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLUS-00619" compatibility="5" region="NTSC-U" title="Diablo (USA) (En,Fr,De,Sv)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2433-g9089c973</version-tested>
   </entry>
   <entry code="SLUS-00119" compatibility="5" region="NTSC-U" title="Die Hard Trilogy (USA) (Rev 1)">
     <compatibility>No Issues</compatibility>
@@ -1212,8 +1243,8 @@ Tetris with Card Captor Sakura (Japan)
   </entry>
   <entry code="SLPM-86494" compatibility="4" region="NTSC-J" title="Elder Gate (Japan)">
     <compatibility>Graphical/Audio Issues</compatibility>
-    <comments>Garbage on the screen (Issue #256).</comments>
-    <version-tested>0.1-2108-ga036ae92</version-tested>
+    <version-tested>0.1-2433-g9089c973</version-tested>
+    <comments>Artifacts in map screen (Issue #256 ).</comments>
   </entry>
   <entry code="SLUS-00654" compatibility="5" region="NTSC-U" title="Elemental Gearbolt (USA)">
     <compatibility>No Issues</compatibility>
@@ -1262,9 +1293,9 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1608-g79aaf908</version-tested>
   </entry>
-  <entry code="SLUS-00641" compatibility="4" region="NTSC-U" title="Fighter Maker (USA)">
-    <compatibility>Graphical/Audio Issues</compatibility>
-    <comments>high pitched sound for no reason,could be the music acting odd</comments>
+  <entry code="SLUS-00641" compatibility="5" region="NTSC-U" title="Fighter Maker (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2433-g9089c973</version-tested>
   </entry>
   <entry code="SLUS-00433" compatibility="5" region="NTSC-U" title="Fighting Force (USA)">
     <compatibility>No Issues</compatibility>
@@ -1375,10 +1406,9 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1608-g79aaf908</version-tested>
   </entry>
-  <entry code="SLUS-00546" compatibility="4" region="NTSC-U" title="Formula 1 Championship Edition (USA) (En,Fr,De,Es,It)">
-    <compatibility>Graphical/Audio Issues</compatibility>
-    <version-tested>0.1-1580-g136a9d60</version-tested>
-    <comments>Some graphics issues in random races</comments>
+  <entry code="SLUS-00546" compatibility="5" region="NTSC-U" title="Formula 1 Championship Edition (USA) (En,Fr,De,Es,It)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2433-g9089c973</version-tested>
   </entry>
   <entry code="SCES-03404" compatibility="3" region="PAL" title="Formula One 2001 (Europe) (En,Fi)">
     <compatibility>Crashes In-Game</compatibility>
@@ -1528,6 +1558,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1308-g622e50fa</version-tested>
   </entry>
+  <entry code="SLUS-01197" compatibility="5" region="NTSC-U" title="Grinch, The (USA) (En,Fr,Es)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2433-g9089c973</version-tested>
+  </entry>
   <entry code="SCUS-94568" compatibility="5" region="NTSC-U" title="Grind Session (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1425-g05f0ce6d</version-tested>
@@ -1616,10 +1650,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1645-g42d49426</version-tested>
   </entry>
-  <entry code="SCUS-94242" compatibility="4" region="NTSC-U" title="Interactive CD Sampler Disc 6 (USA)">
-    <compatibility>Graphical/Audio Issues</compatibility>
-    <version-tested>0.1-1530-g6d75f42e</version-tested>
-    <comments>Various graphical errors in menu (Issue #772).</comments>
+  <entry code="SCUS-94242" compatibility="5" region="NTSC-U" title="Interactive CD Sampler Disc 6 (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2433-g9089c973</version-tested>
+    <comments>There's a bug in the menu which happens if you use R1/L1 while is choosing different blocks in the menu. Sometimes the back of the tiles appear bugged. Happens in other emulators too and needs a console verification, but probably is a bug with the game itself, not with the emulator.</comments>
   </entry>
   <entry code="PBPX-95011" compatibility="5" region="NTSC-U" title="Interactive CD Sampler Disc Vol. 10 (USA)">
     <compatibility>No Issues</compatibility>
@@ -1633,10 +1667,9 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1530-g6d75f42e</version-tested>
   </entry>
-  <entry code="PBPX-95002" compatibility="3" region="NTSC-U" title="Interactive CD Sampler Disc Volume 4 (USA)">
-    <compatibility>Crashes In-Game</compatibility>
-    <version-tested>0.1-1490-g76978986</version-tested>
-    <comments>Hangs when choosing Armored core (Issue #751).</comments>
+  <entry code="PBPX-95002" compatibility="5" region="NTSC-U" title="Interactive CD Sampler Disc Volume 4 (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2433-g9089c973</version-tested>
   </entry>
   <entry code="PBPX-95006" compatibility="5" region="NTSC-U" title="Interactive CD Sampler Disc Volume 7 (USA)">
     <compatibility>No Issues</compatibility>
@@ -1666,9 +1699,9 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1490-g76978986</version-tested>
   </entry>
-  <entry code="SCUS-94955" compatibility="3" region="NTSC-U" title="Interactive CD Sampler Volume 1 (USA)">
-    <compatibility>Crashes In-Game</compatibility>
-    <comments>Crashes with NFL GameDay demo (Issue #729).</comments>
+  <entry code="SCUS-94955" compatibility="5" region="NTSC-U" title="Interactive CD Sampler Volume 1 (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2433-g9089c973</version-tested>
   </entry>
   <entry code="SLUS-00709" compatibility="5" region="NTSC-U" title="Invasion from Beyond (USA)">
     <compatibility>No Issues</compatibility>
@@ -1681,11 +1714,6 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLUS-00775" compatibility="5" region="NTSC-U" title="Irritating Stick (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1409-ge198e315</version-tested>
-  </entry>
-  <entry code="SLPS-02120" compatibility="4" region="NTSC-J" title="JUSTICE GAKUEN2">
-    <compatibility>Graphical/Audio Issues</compatibility>
-    <version-tested>0.1-1755-gd2ad1143</version-tested>
-    <comments>Interlace must only be enabled on the name entry screen. Otherwise, you can disable it.</comments>
   </entry>
   <entry code="SLUS-00684" compatibility="5" region="NTSC-U" title="Jackie Chan Stuntmaster (USA)">
     <compatibility>No Issues</compatibility>
@@ -2145,9 +2173,9 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLUS-80765" compatibility="5" region="NTSC-U" title="Monkey Hero">
     <compatibility>No Issues</compatibility>
   </entry>
-  <entry code="SLUS-00765" compatibility="4" region="NTSC-U" title="Monkey Hero (USA)">
+  <entry code="SLUS-00765" compatibility="5" region="NTSC-U" title="Monkey Hero (USA)">
     <compatibility>No Issues</compatibility>
-    <version-tested>0.1-1522-gf6565182</version-tested>
+    <version-tested>0.1-2433-g9089c973</version-tested>
   </entry>
   <entry code="SLUS-00930" compatibility="5" region="NTSC-U" title="Monkey Magic (USA)">
     <compatibility>No Issues</compatibility>
@@ -2185,9 +2213,17 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1308-g622e50fa</version-tested>
   </entry>
+  <entry code="SCUS-94355" compatibility="5" region="NTSC-U" title="Motor Toon Grand Prix (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2483-g98d6b499</version-tested>
+  </entry>
   <entry code="SLPS-02600" compatibility="5" region="NTSC-J" title="Mr. Driller (Japan)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-884-g096ed21</version-tested>
+  </entry>
+  <entry code="SLUS-01111" compatibility="5" region="NTSC-U" title="Mr. Driller (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2433-g9089c973</version-tested>
   </entry>
   <entry code="SLPS-03336" compatibility="5" region="NTSC-J" title="Mr. Driller G (Japan)">
     <compatibility>No Issues</compatibility>
@@ -2237,10 +2273,9 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1761-g3096f095</version-tested>
   </entry>
-  <entry code="SCUS-94505" compatibility="3" region="NTSC-U" title="NFL GameDay (USA)">
-    <compatibility>Crashes In-Game</compatibility>
-    <version-tested>0.1-1461-gac425107</version-tested>
-    <comments>Crashes in-game (Issue #729).</comments>
+  <entry code="SCUS-94505" compatibility="5" region="NTSC-U" title="NFL GameDay (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2433-g9089c973</version-tested>
   </entry>
   <entry code="SLUS-00215" compatibility="5" region="NTSC-U" title="Namco Museum Vol. 1 (USA) (Rev. 1)">
     <compatibility>No Issues</compatibility>
@@ -2306,9 +2341,9 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-986-gfc911de1</version-tested>
   </entry>
-  <entry code="SLUS-01112" compatibility="4" region="NTSC-U" title="Nightmare Creatures II (USA)">
-    <compatibility>Graphical/Audio Issues</compatibility>
-    <version-tested>0.1-908-g9f22684</version-tested>
+  <entry code="SLUS-01112" compatibility="5" region="NTSC-U" title="Nightmare Creatures II (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2433-g9089c973</version-tested>
   </entry>
   <entry code="SLUS-00710" compatibility="5" region="NTSC-U" title="Oddworld - Abe's Exoddus (USA) (Disc 1)">
     <compatibility>No Issues</compatibility>
@@ -2322,8 +2357,8 @@ Tetris with Card Captor Sakura (Japan)
   </entry>
   <entry code="SCUS-94449" compatibility="4" region="NTSC-U" title="Omega Boost (USA)">
     <compatibility>Graphical/Audio Issues</compatibility>
-    <version-tested>0.1-1047-g8ae04f6</version-tested>
-    <comments>Plays perfectly but has some issues with pre mission menu's</comments>
+    <version-tested>0.1-2433-g9089c973</version-tested>
+    <comments>Some graphical issues with pre mission menu's (Issue #1137)</comments>
   </entry>
   <entry code="SLUS-00469" compatibility="5" region="NTSC-U" title="One (USA)">
     <compatibility>No Issues</compatibility>
@@ -2463,10 +2498,9 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1530-g6d75f42e</version-tested>
   </entry>
-  <entry code="SCUS-94952" compatibility="4" region="NTSC-U" title="PlayStation Picks (USA) (SCUS-94952)">
-    <compatibility>Graphical/Audio Issues</compatibility>
-    <version-tested>0.1-1539-gf704cc64</version-tested>
-    <comments>In Battle Arena Toshinden demo, game runs at a strange fast speed than it should be (Issue #695).</comments>
+  <entry code="SCUS-94952" compatibility="5" region="NTSC-U" title="PlayStation Picks (USA) (SCUS-94952)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2433-g9089c973</version-tested>
   </entry>
   <entry code="SCUS-94960" compatibility="5" region="NTSC-U" title="PlayStation Picks (USA) (SCUS-94960)">
     <compatibility>No Issues</compatibility>
@@ -2759,10 +2793,9 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1115-g0b261e8</version-tested>
   </entry>
-  <entry code="SLUS-00035" compatibility="4" region="NTSC-U" title="Road Rash (USA)">
-    <compatibility>Graphical/Audio Issues</compatibility>
-    <version-tested>0.1-1334-g10f2366</version-tested>
-    <comments>The menu music is messing completely (Issue #662). </comments>
+  <entry code="SLUS-00035" compatibility="5" region="NTSC-U" title="Road Rash (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2433-g9089c973</version-tested>
   </entry>
   <entry code="SLUS-01053" compatibility="5" region="NTSC-U" title="Road Rash - Jailbreak (USA)">
     <compatibility>No Issues</compatibility>
@@ -2772,6 +2805,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1333-g5a955a4</version-tested>
   </entry>
+  <entry code="SLUS-01024" compatibility="5" region="NTSC-U" title="Roadsters (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2433-g9089c973</version-tested>
+  </entry>
   <entry code="SCPS-10103" compatibility="5" region="NTSC-J" title="Robbit mon Dieu (Japan)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-986-gfc911de1</version-tested>
@@ -2779,6 +2816,10 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLPS-00790" compatibility="5" region="NTSC-J" title="Robotron X (Japan)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1645-g42d49426</version-tested>
+  </entry>
+  <entry code="SLUS-01124" compatibility="5" region="NTSC-U" title="Rock 'Em Sock 'Em Robots Arena (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2433-g9089c973</version-tested>
   </entry>
   <entry code="SLPS-00764" compatibility="5" region="NTSC-J" title="Rockman - Battle &amp; Chase">
     <compatibility>No Issues</compatibility>
@@ -2855,9 +2896,17 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1445-ge5c46a54</version-tested>
   </entry>
+  <entry code="SLPS-01171" compatibility="5" region="NTSC-J" title="Samurai Spirits - Amakusa Kourin Special (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2373-gb2de5945</version-tested>
+  </entry>
   <entry code="SLUS-01396" compatibility="5" region="NTSC-U" title="Scooby-Doo and the Cyber Chase (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1520-g0aefdf47</version-tested>
+  </entry>
+  <entry code="SCUS-94110" compatibility="5" region="NTSC-U" title="Sentient (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2433-g9089c973</version-tested>
   </entry>
   <entry code="SLPM-86009" compatibility="5" region="NTSC-J" title="Sexy Parodius (Japan)">
     <compatibility>No Issues</compatibility>
@@ -2883,13 +2932,17 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1031-g47138aa</version-tested>
   </entry>
+  <entry code="SLPS-02120" compatibility="5" region="NTSC-J" title="Shiritsu Justice Gakuen - Nekketsu Seishun Nikki 2 (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2433-g9089c973</version-tested>
+  </entry>
   <entry code="SLUS-01463" compatibility="5" region="NTSC-U" title="Shrek Treasure Hunt (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-986-gfc911de1</version-tested>
   </entry>
   <entry code="SLPS-01079" compatibility="4" region="NTSC-J" title="Side Pocket 3 (Japan)">
     <compatibility>Graphical/Audio Issues</compatibility>
-    <version-tested>0.1-1448-g472f1c1c</version-tested>
+    <version-tested>0.1-2433-g9089c973</version-tested>
     <comments>Text messages of &quot;foul&quot; in-game is messy (Issue #720)</comments>
   </entry>
   <entry code="SLPM-86344" compatibility="5" region="NTSC-J" title="Side by Side Special 2000 (Japan)">
@@ -2971,6 +3024,14 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1153-g06b329b</version-tested>
   </entry>
+  <entry code="SLUS-00936" compatibility="5" region="NTSC-U" title="South Park (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2433-g9089c973</version-tested>
+  </entry>
+  <entry code="SLUS-00984" compatibility="5" region="NTSC-U" title="South Park Rally (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2433-g9089c973</version-tested>
+  </entry>
   <entry code="SLUS-00928" compatibility="5" region="NTSC-U" title="Space Invaders (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1448-g472f1c1c</version-tested>
@@ -2999,6 +3060,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1520-g0aefdf47</version-tested>
   </entry>
+  <entry code="SLUS-00014" compatibility="5" region="NTSC-U" title="Spot Goes to Hollywood (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2433-g9089c973</version-tested>
+  </entry>
   <entry code="SCUS-94467" compatibility="5" region="NTSC-U" title="Spyro - Year of the Dragon (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-986-gfc911de1</version-tested>
@@ -3023,10 +3088,9 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1323-ga6acd33</version-tested>
   </entry>
-  <entry code="SLUS-90075" compatibility="4" region="NTSC-U" title="Squaresoft on PlayStation 2000 Collector's CD Vol. 3 (USA)">
-    <compatibility>Graphical/Audio Issues</compatibility>
-    <version-tested>0.1-1419-g34a515cd</version-tested>
-    <comments>Messy graphics in &quot;Recompiler mode&quot; in Threads of Fate demo. Use &quot;Interpreter mode&quot; to fix for now (Issue #710).</comments>
+  <entry code="SLUS-90075" compatibility="5" region="NTSC-U" title="Squaresoft on PlayStation 2000 Collector's CD Vol. 3 (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2433-g9089c973</version-tested>
   </entry>
   <entry code="SLPS-00162" compatibility="5" region="NTSC-J" title="Stahlfeder - Tekkou Hikuudan (Japan)">
     <compatibility>No Issues</compatibility>
@@ -3172,6 +3236,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-826-g712168c</version-tested>
   </entry>
+  <entry code="SLUS-01528" compatibility="5" region="NTSC-U" title="Super Bubble Pop (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2483-g98d6b499</version-tested>
+  </entry>
   <entry code="SLPM-87135" compatibility="1" region="NTSC-J" title="Super Gals! Kotobuki Ran Special - Ikemen Get You Gals Party (Japan)">
     <compatibility>Doesn't Boot</compatibility>
   </entry>
@@ -3223,6 +3291,10 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLUS-00889" compatibility="5" region="NTSC-U" title="Team Buddies">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-841-g777809b</version-tested>
+  </entry>
+  <entry code="SLUS-00869" compatibility="5" region="NTSC-U" title="Team Buddies (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2483-g98d6b499</version-tested>
   </entry>
   <entry code="SCES-00005" compatibility="5" region="PAL" title="Tekken (Europe)">
     <compatibility>No Issues</compatibility>
@@ -3346,12 +3418,52 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1448-g472f1c1c</version-tested>
   </entry>
+  <entry code="SCES-01997" compatibility="5" region="PAL" title="Tiny Toon Adventures - Buster and the Beanstalk (Europe) (En,Es,Pt)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2373-gb2de5945</version-tested>
+  </entry>
+  <entry code="SCES-01996" compatibility="5" region="PAL" title="Tiny Toon Adventures - Buster and the Beanstalk (Europe) (Fr,De,It)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2373-gb2de5945</version-tested>
+  </entry>
+  <entry code="SCES-01998" compatibility="5" region="PAL" title="Tiny Toon Adventures - Buster and the Beanstalk (Scandinavia) (No,Da)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2373-gb2de5945</version-tested>
+  </entry>
   <entry code="SLUS-01393" compatibility="5" region="NTSC-U" title="Tiny Toon Adventures - Plucky's Big Adventure (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1337-gcaf9943</version-tested>
   </entry>
+  <entry code="SLUS-00638" compatibility="5" region="NTSC-U" title="Tiny Toon Adventures - The Great Beanstalk (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2373-gb2de5945</version-tested>
+  </entry>
+  <entry code="SLES-02923" compatibility="5" region="PAL" title="Tiny Toon Adventures - Toonenstein - Dare to Scare! (Europe)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2373-gb2de5945</version-tested>
+  </entry>
+  <entry code="SLUS-00967" compatibility="5" region="NTSC-U" title="Tiny Toon Adventures - Toonenstein - Dare to Scare! (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2373-gb2de5945</version-tested>
+  </entry>
+  <entry code="SLES-02927" compatibility="5" region="PAL" title="Tiny Toon Adventures - Toonenstein - Geisterstunde! (Germany)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2373-gb2de5945</version-tested>
+  </entry>
+  <entry code="SLES-02926" compatibility="5" region="PAL" title="Tiny Toon Adventures - Toonenstein - Le Chateau hante (France)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2373-gb2de5945</version-tested>
+  </entry>
+  <entry code="SLPS-00436" compatibility="5" region="NTSC-J" title="Toaplan Shooting Battle 1 (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2373-gb2de5945</version-tested>
+  </entry>
   <entry code="SLPM-86033" compatibility="5" region="NTSC-J" title="Tobal 2">
     <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLPS-00400" compatibility="5" region="NTSC-J" title="Tobal No. 1 (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2373-gb2de5945</version-tested>
   </entry>
   <entry code="SCUS-94208" compatibility="5" region="NTSC-U" title="Tobal No. 1 (USA)">
     <compatibility>No Issues</compatibility>
@@ -3442,6 +3554,10 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLES-02577" compatibility="5" region="PAL" title="UEFA Champions League - Season 1999-2000 (Europe)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1998-g43bafe1a</version-tested>
+  </entry>
+  <entry code="SLUS-01143" compatibility="5" region="NTSC-U" title="Ultimate Fighting Championship (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2483-g98d6b499</version-tested>
   </entry>
   <entry code="SLPS-01248" compatibility="5" region="NTSC-J" title="Ultraman - Fighting Evolution (Japan)">
     <compatibility>No Issues</compatibility>
@@ -3695,6 +3811,11 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLPS-00271" compatibility="5" region="NTSC-J" title="Zork I - The Great Underground Empire (Japan)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1323-ga6acd33</version-tested>
+  </entry>
+  <entry code="SLUSP01206" compatibility="4" region="NTSC-U" title="dragon warrior vii (usa) (disc 1)">
+    <compatibility>Graphical/Audio Issues</compatibility>
+    <upscaling-issues>[Hardware Renderer (Vulkan) only with PGXP]: Everytime that a message box appears, the aspect in backgound (3D sections) changes. If the PGXP are active, the characters sprite will be messy.</upscaling-issues>
+    <version-tested>0.1-2475-g50273899</version-tested>
   </entry>
   <entry code="SLUS-00728" compatibility="5" region="NTSC-U" title="silhouette mirage (usa)">
     <compatibility>No Issues</compatibility>
