@@ -1,0 +1,49 @@
+<resources>
+    <string name="app_name">DuckStation</string>
+    <string name="action_settings">Impostazioni</string>
+    <string name="title_activity_settings">Impostazioni</string>
+
+    <!-- Preference Titles -->
+    <string name="settings_console_header">Console</string>
+    <string name="settings_behavior_header">Preferenze</string>
+    <string name="settings_osd_header">On-Screen Display</string>
+    <string name="settings_cpu_header">CPU</string>
+    <string name="settings_gpu_header">GPU</string>
+
+    <!-- Console Preferences -->
+    <string name="settings_console_region">Regione Console</string>
+    <string name="settings_console_region_default">Auto</string>
+    <string name="settings_console_bios_path">Perorso BIOS</string>
+    <string name="settings_console_tty_output">Abilita TTY Output</string>
+    <string name="settings_console_fast_boot">Avvio Rapido</string>
+
+    <!-- Behavior Preferences -->
+    <string name="settings_behavior_enable_speed_limiter">Abilita Limitatore Velocità</string>
+    <string name="settings_behavior_pause_on_start">Pausa all'Avvio</string>
+    <string name="settings_host_synchronization_sync_to_audio">Sincronizza con Audio</string>
+    <string name="settings_host_synchronization_sync_to_video">Sincronizza con Video</string>
+
+    <!-- OSD Preferences -->
+    <string name="settings_osd_show_messages">Mostra Messaggi</string>
+    <string name="settings_osd_show_speed">Mostra Velocità Emulazione</string>
+    <string name="settings_osd_show_show_fps">Mostra FPS</string>
+    <string name="settings_osd_show_show_vps">Mostra VPS</string>
+
+    <!-- CPU Preferences -->
+    <string name="settings_cpu_execution_mode">Modalità di Esecuzione CPU</string>
+    <string name="settings_cpu_execution_mode_default">Interprete</string>
+
+    <!-- GPU Preferences -->
+    <string name="settings_gpu_renderer">GPU Renderer</string>
+    <string name="settings_gpu_display_linear_filtering">Mostra Filtraggio Lineare</string>
+    <string name="settings_gpu_resolution_scale">Scala di Risoluzione</string>
+    <string name="settings_gpu_true_color">Colori Veri 24-Bit (Disabilita Retinatura)</string>
+
+    <string name="title_activity_emulation">EmulationActivity</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_test_controller">TestControllerActivity</string>
+</resources>
