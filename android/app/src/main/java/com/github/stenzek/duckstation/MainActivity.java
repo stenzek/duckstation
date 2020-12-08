@@ -6,6 +6,8 @@ import android.content.ClipboardManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -30,6 +32,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
@@ -41,6 +44,25 @@ public class MainActivity extends AppCompatActivity {
     private GameList mGameList;
     private ListView mGameListView;
     private boolean mHasExternalStoragePermissions = false;
+
+    private void setLanguage() {
+        String language = PreferenceManager.getDefaultSharedPreferences(this).getString("Main/Language", "none");
+        if (language == null || language.equals("none")) {
+            return;
+        }
+
+        String[] parts = language.split("-");
+        if (parts.length < 2)
+            return;
+
+        Locale locale = new Locale(parts[0], parts[1]);
+        Locale.setDefault(locale);
+
+        Resources res = getResources();
+        Configuration config = res.getConfiguration();
+        config.setLocale(locale);
+        res.updateConfiguration(config, res.getDisplayMetrics());
+    }
 
     private boolean shouldResumeStateByDefault() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -59,6 +81,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setLanguage();
 
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);

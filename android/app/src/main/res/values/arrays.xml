@@ -421,4 +421,16 @@
         <item>portrait</item>
         <item>landscape</item>
     </string-array>
+    <string-array name="settings_language_entries">
+        <item>Use Device Setting</item>
+        <item>English</item>
+        <item>Portuguese (pt) in Brazil (BR)</item>
+        <item>Italian (it)</item>
+    </string-array>
+    <string-array name="settings_language_values">
+        <item>none</item>
+        <item>en-EN</item>
+        <item>pt-rBR</item>
+        <item>it-IT</item>
+    </string-array>
 </resources>

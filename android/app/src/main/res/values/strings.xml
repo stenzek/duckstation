@@ -151,4 +151,5 @@
     <string name="main_activity_copy">Copy</string>
     <string name="settings_gpu_thread">Threaded GPU Rendering</string>
     <string name="settings_summary_gpu_thread">Uses a second thread for drawing graphics. Currently only available for the software renderer, but can provide a significant speed improvement, and is safe to use.</string>
+    <string name="settings_language">Language (restart to apply)</string>
 </resources>

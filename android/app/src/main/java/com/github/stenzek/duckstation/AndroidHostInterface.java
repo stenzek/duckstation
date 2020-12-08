@@ -9,6 +9,7 @@ import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Locale;
 
 public class AndroidHostInterface {
     public final static int DISPLAY_ALIGNMENT_TOP_OR_LEFT = 0;

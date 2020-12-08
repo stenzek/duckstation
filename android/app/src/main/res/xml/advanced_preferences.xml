@@ -16,6 +16,14 @@
 
 <PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
     <ListPreference
+        app:key="Main/Language"
+        app:title="@string/settings_language"
+        app:defaultValue="none"
+        app:entries="@array/settings_language_entries"
+        app:entryValues="@array/settings_language_values"
+        app:useSimpleSummaryProvider="true"
+        app:iconSpaceReserved="false" />
+    <ListPreference
         app:key="CPU/Overclock"
         app:title="@string/settings_cpu_overclocking"
         app:defaultValue="100"
