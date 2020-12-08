@@ -70,7 +70,12 @@ void HostInterface::CreateAudioStream()
     m_audio_stream->Reconfigure(AUDIO_SAMPLE_RATE, AUDIO_CHANNELS, g_settings.audio_buffer_size);
   }
 
-  m_audio_stream->SetOutputVolume(g_settings.audio_output_muted ? 0 : g_settings.audio_output_volume);
+  m_audio_stream->SetOutputVolume(GetAudioOutputVolume());
+}
+
+s32 HostInterface::GetAudioOutputVolume() const
+{
+  return g_settings.audio_output_muted ? 0 : g_settings.audio_output_volume;
 }
 
 bool HostInterface::BootSystem(const SystemBootParameters& parameters)
@@ -479,6 +484,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
 
   si.SetStringValue("Audio", "Backend", Settings::GetAudioBackendName(Settings::DEFAULT_AUDIO_BACKEND));
   si.SetIntValue("Audio", "OutputVolume", 100);
+  si.SetIntValue("Audio", "FastForwardVolume", 100);
   si.SetIntValue("Audio", "BufferSize", DEFAULT_AUDIO_BUFFER_SIZE);
   si.SetIntValue("Audio", "OutputMuted", false);
   si.SetBoolValue("Audio", "Sync", true);
@@ -638,7 +644,7 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
       CPU::ClearICache();
     }
 
-    m_audio_stream->SetOutputVolume(g_settings.audio_output_muted ? 0 : g_settings.audio_output_volume);
+    m_audio_stream->SetOutputVolume(GetAudioOutputVolume());
 
     if (g_settings.gpu_resolution_scale != old_settings.gpu_resolution_scale ||
         g_settings.gpu_multisamples != old_settings.gpu_multisamples ||

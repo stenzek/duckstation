@@ -26,6 +26,15 @@
         app:min="0"
         app:iconSpaceReserved="false"
         app:showSeekBarValue="true" />
+    <SeekBarPreference
+        app:key="Audio/OutputVolume"
+        app:title="@string/settings_fast_forward_volume"
+        app:summary="@string/settings_summary_fast_forward_volume"
+        app:defaultValue="100"
+        android:max="100"
+        app:min="0"
+        app:iconSpaceReserved="false"
+        app:showSeekBarValue="true" />
     <SwitchPreferenceCompat
         app:key="Audio/OutputMuted"
         app:title="@string/settings_mute_all_sound"

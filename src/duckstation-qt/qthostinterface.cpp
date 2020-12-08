@@ -1162,18 +1162,19 @@ void QtHostInterface::saveState(bool global, qint32 slot, bool block_until_done 
     SaveState(global, slot);
 }
 
-void QtHostInterface::setAudioOutputVolume(int value)
+void QtHostInterface::setAudioOutputVolume(int volume, int fast_forward_volume)
 {
   if (!isOnWorkerThread())
   {
-    QMetaObject::invokeMethod(this, "setAudioOutputVolume", Q_ARG(int, value));
+    QMetaObject::invokeMethod(this, "setAudioOutputVolume", Q_ARG(int, volume), Q_ARG(int, fast_forward_volume));
     return;
   }
 
   if (m_audio_stream)
-    m_audio_stream->SetOutputVolume(value);
+    m_audio_stream->SetOutputVolume(m_speed_limiter_enabled ? volume : fast_forward_volume);
 
-  g_settings.audio_output_volume = value;
+  g_settings.audio_output_volume = volume;
+  g_settings.audio_fast_forward_volume = fast_forward_volume;
 }
 
 void QtHostInterface::setAudioOutputMuted(bool muted)
@@ -1185,7 +1186,7 @@ void QtHostInterface::setAudioOutputMuted(bool muted)
   }
 
   if (m_audio_stream)
-    m_audio_stream->SetOutputVolume(muted ? 0 : g_settings.audio_output_volume);
+    m_audio_stream->SetOutputVolume(GetAudioOutputVolume());
 
   g_settings.audio_output_muted = muted;
 }

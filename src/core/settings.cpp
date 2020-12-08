@@ -196,6 +196,7 @@ void Settings::Load(SettingsInterface& si)
     ParseAudioBackend(si.GetStringValue("Audio", "Backend", GetAudioBackendName(DEFAULT_AUDIO_BACKEND)).c_str())
       .value_or(DEFAULT_AUDIO_BACKEND);
   audio_output_volume = si.GetIntValue("Audio", "OutputVolume", 100);
+  audio_fast_forward_volume = si.GetIntValue("Audio", "FastForwardVolume", 100);
   audio_buffer_size = si.GetIntValue("Audio", "BufferSize", HostInterface::DEFAULT_AUDIO_BUFFER_SIZE);
   audio_output_muted = si.GetBoolValue("Audio", "OutputMuted", false);
   audio_sync_enabled = si.GetBoolValue("Audio", "Sync", true);
@@ -327,6 +328,7 @@ void Settings::Save(SettingsInterface& si) const
 
   si.SetStringValue("Audio", "Backend", GetAudioBackendName(audio_backend));
   si.SetIntValue("Audio", "OutputVolume", audio_output_volume);
+  si.SetIntValue("Audio", "FastForwardVolume", audio_fast_forward_volume);
   si.SetIntValue("Audio", "BufferSize", audio_buffer_size);
   si.SetBoolValue("Audio", "OutputMuted", audio_output_muted);
   si.SetBoolValue("Audio", "Sync", audio_sync_enabled);

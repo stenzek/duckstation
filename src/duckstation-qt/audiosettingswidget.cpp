@@ -25,11 +25,13 @@ AudioSettingsWidget::AudioSettingsWidget(QtHostInterface* host_interface, QWidge
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.startDumpingOnBoot, "Audio", "DumpOnBoot");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.muteCDAudio, "CDROM", "MuteCDAudio");
 
-  m_ui.volume->setValue(m_host_interface->GetIntSettingValue("Audio", "OutputVolume"));
-  m_ui.muted->setChecked(m_host_interface->GetBoolSettingValue("Audio", "OutputMuted"));
+  m_ui.volume->setValue(m_host_interface->GetIntSettingValue("Audio", "OutputVolume", 100));
+  m_ui.fastForwardVolume->setValue(m_host_interface->GetIntSettingValue("Audio", "FastForwardVolume", 100));
+  m_ui.muted->setChecked(m_host_interface->GetBoolSettingValue("Audio", "OutputMuted", false));
 
   connect(m_ui.bufferSize, &QSlider::valueChanged, this, &AudioSettingsWidget::updateBufferingLabel);
   connect(m_ui.volume, &QSlider::valueChanged, this, &AudioSettingsWidget::onOutputVolumeChanged);
+  connect(m_ui.fastForwardVolume, &QSlider::valueChanged, this, &AudioSettingsWidget::onFastForwardVolumeChanged);
   connect(m_ui.muted, &QCheckBox::stateChanged, this, &AudioSettingsWidget::onOutputMutedChanged);
 
   updateBufferingLabel();
@@ -53,8 +55,11 @@ AudioSettingsWidget::AudioSettingsWidget(QtHostInterface* host_interface, QWidge
   dialog->registerWidgetHelp(
     m_ui.startDumpingOnBoot, tr("Start Dumping On Boot"), tr("Unchecked"),
     tr("Start dumping audio to file as soon as the emulator is started. Mainly useful as a debug option."));
-  dialog->registerWidgetHelp(m_ui.volume, tr("Volume"), "100",
+  dialog->registerWidgetHelp(m_ui.volume, tr("Output Volume"), "100",
                              tr("Controls the volume of the audio played on the host. Values are in percentage."));
+  dialog->registerWidgetHelp(
+    m_ui.fastForwardVolume, tr("Fast Forward Volume"), "100",
+    tr("Controls the volume of the audio played on the host when fast forwarding. Values are in percentage."));
   dialog->registerWidgetHelp(m_ui.muted, tr("Mute All Sound"), tr("Unchecked"),
                              tr("Prevents the emulator from producing any audible sound."));
   dialog->registerWidgetHelp(m_ui.muteCDAudio, tr("Mute CD Audio"), tr("Unchecked"),
@@ -83,13 +88,23 @@ void AudioSettingsWidget::updateBufferingLabel()
 void AudioSettingsWidget::updateVolumeLabel()
 {
   m_ui.volumeLabel->setText(tr("%1%").arg(m_ui.volume->value()));
+  m_ui.fastForwardVolumeLabel->setText(tr("%1%").arg(m_ui.fastForwardVolume->value()));
 }
 
 void AudioSettingsWidget::onOutputVolumeChanged(int new_value)
 {
   m_host_interface->SetIntSettingValue("Audio", "OutputVolume", new_value);
   if (!m_ui.muted->isChecked())
-    m_host_interface->setAudioOutputVolume(new_value);
+    m_host_interface->setAudioOutputVolume(new_value, m_ui.fastForwardVolume->value());
+
+  updateVolumeLabel();
+}
+
+void AudioSettingsWidget::onFastForwardVolumeChanged(int new_value)
+{
+  m_host_interface->SetIntSettingValue("Audio", "FastForwardVolume", new_value);
+  if (!m_ui.muted->isChecked())
+    m_host_interface->setAudioOutputVolume(m_ui.volume->value(), new_value);
 
   updateVolumeLabel();
 }
