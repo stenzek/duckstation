@@ -1297,8 +1297,8 @@ void UpdatePerformanceCounters()
   s_last_global_tick_counter = global_tick_counter;
   s_fps_timer.Reset();
 
-  Log_PerfPrintf("FPS: %.2f VPS: %.2f Average: %.2fms Worst: %.2fms", s_fps, s_vps, s_average_frame_time,
-                 s_worst_frame_time);
+  Log_VerbosePrintf("FPS: %.2f VPS: %.2f Average: %.2fms Worst: %.2fms", s_fps, s_vps, s_average_frame_time,
+                    s_worst_frame_time);
 
   g_host_interface->OnSystemPerformanceCountersUpdated();
 }

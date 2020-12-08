@@ -9,8 +9,8 @@ enum LOGLEVEL
   LOGLEVEL_ERROR = 1,   // "ErrorPrint"
   LOGLEVEL_WARNING = 2, // "WarningPrint"
   LOGLEVEL_PERF = 3,    // "PerfPrint"
-  LOGLEVEL_SUCCESS = 4, // "SuccessPrint"
-  LOGLEVEL_INFO = 5,    // "InfoPrint"
+  LOGLEVEL_INFO = 4,    // "InfoPrint"
+  LOGLEVEL_VERBOSE = 5, // "VerbosePrint"
   LOGLEVEL_DEV = 6,     // "DevPrint"
   LOGLEVEL_PROFILE = 7, // "ProfilePrint"
   LOGLEVEL_DEBUG = 8,   // "DebugPrint"
@@ -56,12 +56,12 @@ void Writev(const char* channelName, const char* functionName, LOGLEVEL level, c
 #define Log_ErrorPrintf(...) Log::Writef(___LogChannel___, __func__, LOGLEVEL_ERROR, __VA_ARGS__)
 #define Log_WarningPrint(msg) Log::Write(___LogChannel___, __func__, LOGLEVEL_WARNING, msg)
 #define Log_WarningPrintf(...) Log::Writef(___LogChannel___, __func__, LOGLEVEL_WARNING, __VA_ARGS__)
-#define Log_SuccessPrint(msg) Log::Write(___LogChannel___, __func__, LOGLEVEL_SUCCESS, msg)
-#define Log_SuccessPrintf(...) Log::Writef(___LogChannel___, __func__, LOGLEVEL_SUCCESS, __VA_ARGS__)
-#define Log_InfoPrint(msg) Log::Write(___LogChannel___, __func__, LOGLEVEL_INFO, msg)
-#define Log_InfoPrintf(...) Log::Writef(___LogChannel___, __func__, LOGLEVEL_INFO, __VA_ARGS__)
 #define Log_PerfPrint(msg) Log::Write(___LogChannel___, __func__, LOGLEVEL_PERF, msg)
 #define Log_PerfPrintf(...) Log::Writef(___LogChannel___, __func__, LOGLEVEL_PERF, __VA_ARGS__)
+#define Log_InfoPrint(msg) Log::Write(___LogChannel___, __func__, LOGLEVEL_INFO, msg)
+#define Log_InfoPrintf(...) Log::Writef(___LogChannel___, __func__, LOGLEVEL_INFO, __VA_ARGS__)
+#define Log_VerbosePrint(msg) Log::Write(___LogChannel___, __func__, LOGLEVEL_VERBOSE, msg)
+#define Log_VerbosePrintf(...) Log::Writef(___LogChannel___, __func__, LOGLEVEL_VERBOSE, __VA_ARGS__)
 #define Log_DevPrint(msg) Log::Write(___LogChannel___, __func__, LOGLEVEL_DEV, msg)
 #define Log_DevPrintf(...) Log::Writef(___LogChannel___, __func__, LOGLEVEL_DEV, __VA_ARGS__)
 #define Log_ProfilePrint(msg) Log::Write(___LogChannel___, __func__, LOGLEVEL_PROFILE, msg)

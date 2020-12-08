@@ -17,7 +17,7 @@
 
 namespace Log {
 
-static const char s_log_level_characters[LOGLEVEL_COUNT] = {'X', 'E', 'W', 'P', 'S', 'I', 'D', 'R', 'B', 'T'};
+static const char s_log_level_characters[LOGLEVEL_COUNT] = {'X', 'E', 'W', 'P', 'I', 'V', 'D', 'R', 'B', 'T'};
 
 struct RegisteredCallback
 {
@@ -149,8 +149,8 @@ static void ConsoleOutputLogCallback(void* pUserParam, const char* channelName, 
       FOREGROUND_RED | FOREGROUND_INTENSITY,                                      // ERROR
       FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY,                   // WARNING
       FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_INTENSITY,                    // PERF
-      FOREGROUND_GREEN | FOREGROUND_INTENSITY,                                    // SUCCESS
       FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY, // INFO
+      FOREGROUND_GREEN | FOREGROUND_INTENSITY,                                    // VERBOSE
       FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_GREEN,                        // DEV
       FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY,                  // PROFILE
       FOREGROUND_GREEN,                                                           // DEBUG
@@ -209,8 +209,8 @@ static void DebugOutputLogCallback(void* pUserParam, const char* channelName, co
     ANDROID_LOG_ERROR, // ERROR
     ANDROID_LOG_WARN,  // WARNING
     ANDROID_LOG_INFO,  // PERF
-    ANDROID_LOG_INFO,  // SUCCESS
     ANDROID_LOG_INFO,  // INFO
+    ANDROID_LOG_INFO,  // VERBOSE
     ANDROID_LOG_DEBUG, // DEV
     ANDROID_LOG_DEBUG, // PROFILE
     ANDROID_LOG_DEBUG, // DEBUG
@@ -234,8 +234,8 @@ static void ConsoleOutputLogCallback(void* pUserParam, const char* channelName, 
     "\033[1;31m", // ERROR
     "\033[1;33m", // WARNING
     "\033[1;35m", // PERF
-    "\033[1;32m", // SUCCESS
     "\033[1;37m", // INFO
+    "\033[1;32m", // VERBOSE
     "\033[0;37m", // DEV
     "\033[1;36m", // PROFILE
     "\033[0;32m", // DEBUG

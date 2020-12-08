@@ -242,8 +242,8 @@
         <item>Error</item>
         <item>Warning</item>
         <item>Performance Warnings</item>
-        <item>Success</item>
         <item>Information</item>
+        <item>Verbose</item>
         <item>Developer</item>
         <item>Profile</item>
         <item>Debug</item>
@@ -254,8 +254,8 @@
         <item>Error</item>
         <item>Warning</item>
         <item>Perf</item>
-        <item>Success</item>
         <item>Info</item>
+        <item>Verbose</item>
         <item>Dev</item>
         <item>Profile</item>
         <item>Debug</item>

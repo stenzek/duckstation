@@ -377,11 +377,11 @@ void Settings::Save(SettingsInterface& si) const
 }
 
 static std::array<const char*, LOGLEVEL_COUNT> s_log_level_names = {
-  {"None", "Error", "Warning", "Perf", "Success", "Info", "Dev", "Profile", "Debug", "Trace"}};
+  {"None", "Error", "Warning", "Perf", "Info", "Verbose", "Dev", "Profile", "Debug", "Trace"}};
 static std::array<const char*, LOGLEVEL_COUNT> s_log_level_display_names = {
   {TRANSLATABLE("LogLevel", "None"), TRANSLATABLE("LogLevel", "Error"), TRANSLATABLE("LogLevel", "Warning"),
-   TRANSLATABLE("LogLevel", "Performance"), TRANSLATABLE("LogLevel", "Success"),
-   TRANSLATABLE("LogLevel", "Information"), TRANSLATABLE("LogLevel", "Developer"), TRANSLATABLE("LogLevel", "Profile"),
+   TRANSLATABLE("LogLevel", "Performance"), TRANSLATABLE("LogLevel", "Information"),
+   TRANSLATABLE("LogLevel", "Verbose"), TRANSLATABLE("LogLevel", "Developer"), TRANSLATABLE("LogLevel", "Profile"),
    TRANSLATABLE("LogLevel", "Debug"), TRANSLATABLE("LogLevel", "Trace")}};
 
 std::optional<LOGLEVEL> Settings::ParseLogLevelName(const char* str)

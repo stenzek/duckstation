@@ -1928,7 +1928,7 @@ bool CommonHostInterface::SaveInputProfile(const char* profile_path, SettingsInt
     return false;
   }
 
-  Log_SuccessPrintf("Input profile saved to '%s'", profile_path);
+  Log_InfoPrintf("Input profile saved to '%s'", profile_path);
   return true;
 }
 
