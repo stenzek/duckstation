@@ -426,11 +426,13 @@
         <item>English</item>
         <item>Portuguese (pt) in Brazil (BR)</item>
         <item>Italian (it)</item>
+        <item>Dutch (nl)</item>
     </string-array>
     <string-array name="settings_language_values">
         <item>none</item>
         <item>en-EN</item>
         <item>pt-rBR</item>
         <item>it-IT</item>
+        <item>nl-NL</item>
     </string-array>
 </resources>
