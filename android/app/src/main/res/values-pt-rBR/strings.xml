@@ -19,9 +19,9 @@
     <string name="settings_pause_when_menu_opened">Pausar ao abrir Menu</string>
     <string name="settings_emulation_screen_orientation">Orientação de Tela</string>
     <string name="settings_load_patch_codes">Carregar Trapaças</string>
-    <string name="settings_summary_save_state_on_exit">Salvar automaticamente o estado do emulador ao sair do mesmo. Será possível voltar de onde parou na próxima vez que iniciar o jogo de novo.</string>
-    <string name="settings_summary_pause_when_menu_opened">Pausa a emulação assim que aberto o menu.</string>
-    <string name="settings_summary_load_patch_codes"><![CDATA[Carregar códigos de trapaça/nome do jogo>.cht ou formato PCSXR. Códigos podem ser alternados durante o jogo.]]></string>
+    <string name="settings_summary_save_state_on_exit">Salvar automaticamente o estado do emulador ao sair do mesmo. Será possível voltar de onde parou na próxima vez que reiniciar o jogo.</string>
+    <string name="settings_summary_pause_when_menu_opened">Pausa a emulação assim que o menu é aberto.</string>
+    <string name="settings_summary_load_patch_codes"><![CDATA[Carregar códigos de trapaça formato .cht e ou PCSXR. Códigos podem ser alternados durante o jogo.]]></string>
     <string name="settings_apply_compatibility_settings">Aplicar Configurações de Compatibilidade</string>
     <string name="settings_summary_apply_compatibility_settings">Desativar automaticamente melhorias quando não são suportadas.</string>
     <string name="settings_summary_video_sync">Ative essa opção para que o emulador sincronize a taxa de FPS de acordo com a taxa do seu aparelho. V-Sync será desativado se não for possível utilizar no seu aparelho.</string>
@@ -55,7 +55,7 @@
     <string name="settings_audio_buffer_size">Latência do Volume:</string>
     <string name="settings_summary_audio_buffer_size">Determina a latência entre o áudio. Valores menores reduzem a latência (atraso), pode causar engasgos quando jogos são acelerados.</string>
     <string name="settings_audio_sync">Sincronia de Áudio</string>
-    <string name="settings_summary_audio_sync">Limita a velocidade de emulação com base na opção escolhida. Isso ajuda a remover ruídos ou estalos se a emulação for muito rápida. A sincronização será automaticamente desativada se não funcionar a 100% da velocidade.</string>
+    <string name="settings_summary_audio_sync">Limita a velocidade de emulação com base na opção escolhida. Isso ajuda a remover ruídos ou estalos se a emulação for muito rápida. A sincronização será automaticamente desativada se não funcionar a 100%.</string>
     <string name="settings_controller_type">Tipo de Controle</string>
     <string name="settings_enable_analog_mode_on_reset">Ativa modo analógico ao reiniciar.</string>
     <string name="settings_touchscreen_controller_view">Visualização do controle em tela</string>
@@ -73,7 +73,7 @@
     <string name="settings_integer_upscaling">Escalonamento Integro</string>
     <string name="settings_summary_linear_upscaling">Suaviza a imagem ao aumentar a resolução da emulação.</string>
     <string name="settings_summary_integer_upscaling">Adiciona preenchimento a área exibida para garantir a proporção entre os pixels. Pode resultar em uma imagem mais nítida em jogos 2D.</string>
-    <string name="settings_summary_osd_show_messages">Mostra mensagens em tela ao salvar, carregar, ou demais eventos ocorrerem.</string>
+    <string name="settings_summary_osd_show_messages">Mostra mensagens em tela ao salvar, carregar, carregar trapaças quando eventos ou alertas ocorrerem.</string>
     <string name="settings_summary_osd_show_speed">Define a velocidade de emulação. Não é garantido que essa velocidade será atingida.</string>
     <string name="settings_summary_osd_show_fps">Mostra a taxa de quadros (FPS) interna do jogo no canto superior direito da tela.</string>
     <string name="settings_summary_osd_show_vps">Mostra o número de quadros (VPS) exibidos por segundo pelo sistema no canto superior direito da tela.</string>
@@ -104,7 +104,7 @@
     <string name="settings_summary_pgxp_texture_correction">Utiliza interpolação corretiva em perspetiva para coordenadas e das cores na textura, endireitando as que estiverem distorcidas. Requer que a correção geométrica esteja ativada.</string>
     <string name="settings_pgxp_preserve_projection_precision">Preserva Precisão de Projeção PGXP</string>
     <string name="settings_summary_pgxp_preserve_projection_precision">Permite precisão adicional para PGXP. Pode melhorar o visual em alguns jogos, e prejudicar outros.</string>
-    <string name="menu_main_resume_last_session">Resumir Seção Anterior</string>
+    <string name="menu_main_resume_last_session">Resumir Jogo</string>
     <string name="menu_main_start_file">Iniciar Arquivo</string>
     <string name="menu_main_start_bios">Iniciar BIOS</string>
     <string name="menu_main_add_game_directory">Adicionar Diretório de Jogo</string>
