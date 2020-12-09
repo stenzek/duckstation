@@ -160,6 +160,9 @@ struct Settings
     bool dump_cpu_to_vram_copies = false;
     bool dump_vram_to_cpu_copies = false;
 
+    bool enable_gdb_server = false;
+    u16 gdb_server_port = 1234;
+
     // Mutable because the imgui window can close itself.
     mutable bool show_gpu_state = false;
     mutable bool show_cdrom_state = false;
