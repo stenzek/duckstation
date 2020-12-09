@@ -18,8 +18,8 @@ MDEC::~MDEC() = default;
 
 void MDEC::Initialize()
 {
-  m_block_copy_out_event = TimingEvents::CreateTimingEvent("MDEC Block Copy Out", TICKS_PER_BLOCK, TICKS_PER_BLOCK,
-                                                           std::bind(&MDEC::CopyOutBlock, this), false);
+  m_block_copy_out_event =
+    TimingEvents::CreateTimingEvent("MDEC Block Copy Out", 1, 1, std::bind(&MDEC::CopyOutBlock, this), false);
   m_total_blocks_decoded = 0;
   Reset();
 }
@@ -353,6 +353,14 @@ bool MDEC::HandleDecodeMacroblockCommand()
     return DecodeColoredMacroblock();
 }
 
+// Parasite Eve needs slightly higher timing in 16bpp mode, Disney's Treasure Planet needs lower timing in 24bpp mode.
+static constexpr std::array<TickCount, 4> s_ticks_per_block = {{
+  448, // 4bpp
+  448, // 8bpp
+  448, // 24bpp
+  550, // 16bpp
+}};
+
 bool MDEC::DecodeMonoMacroblock()
 {
   // TODO: This should guard the output not the input
@@ -370,7 +378,7 @@ bool MDEC::DecodeMonoMacroblock()
 
   y_to_mono(m_blocks[0]);
 
-  ScheduleBlockCopyOut(TICKS_PER_BLOCK);
+  ScheduleBlockCopyOut(s_ticks_per_block[static_cast<u8>(m_status.data_output_depth)] * 6);
 
   m_total_blocks_decoded++;
   return true;
@@ -400,7 +408,7 @@ bool MDEC::DecodeColoredMacroblock()
   yuv_to_rgb(8, 8, m_blocks[0], m_blocks[1], m_blocks[5]);
   m_total_blocks_decoded += 4;
 
-  ScheduleBlockCopyOut(TICKS_PER_BLOCK * 6);
+  ScheduleBlockCopyOut(s_ticks_per_block[static_cast<u8>(m_status.data_output_depth)] * 6);
   return true;
 }
 
@@ -409,7 +417,7 @@ void MDEC::ScheduleBlockCopyOut(TickCount ticks)
   DebugAssert(!HasPendingBlockCopyOut());
   Log_DebugPrintf("Scheduling block copy out in %d ticks", ticks);
 
-  m_block_copy_out_event->Schedule(ticks);
+  m_block_copy_out_event->SetIntervalAndSchedule(ticks);
 }
 
 void MDEC::CopyOutBlock()
