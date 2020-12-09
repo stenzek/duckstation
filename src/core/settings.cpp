@@ -245,6 +245,8 @@ void Settings::Load(SettingsInterface& si)
   debugging.show_vram = si.GetBoolValue("Debug", "ShowVRAM");
   debugging.dump_cpu_to_vram_copies = si.GetBoolValue("Debug", "DumpCPUToVRAMCopies");
   debugging.dump_vram_to_cpu_copies = si.GetBoolValue("Debug", "DumpVRAMToCPUCopies");
+  debugging.enable_gdb_server = si.GetBoolValue("Debug", "EnableGDBServer");
+  debugging.gdb_server_port = si.GetIntValue("Debug", "GDBServerPort");
   debugging.show_gpu_state = si.GetBoolValue("Debug", "ShowGPUState");
   debugging.show_cdrom_state = si.GetBoolValue("Debug", "ShowCDROMState");
   debugging.show_spu_state = si.GetBoolValue("Debug", "ShowSPUState");
