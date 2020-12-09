@@ -816,6 +816,41 @@ bool CheatCode::SetInstructionsFromString(const std::string& str)
   return true;
 }
 
+static bool IsConditionalInstruction(CheatCode::InstructionCode code)
+{
+  switch (code)
+  {
+    case CheatCode::InstructionCode::CompareEqual16:    // D0
+    case CheatCode::InstructionCode::CompareNotEqual16: // D1
+    case CheatCode::InstructionCode::CompareLess16:     // D2
+    case CheatCode::InstructionCode::CompareGreater16:  // D3
+    case CheatCode::InstructionCode::CompareEqual8:     // E0
+    case CheatCode::InstructionCode::CompareNotEqual8:  // E1
+    case CheatCode::InstructionCode::CompareLess8:      // E2
+    case CheatCode::InstructionCode::CompareGreater8:   // E3
+    case CheatCode::InstructionCode::CompareButtons:    // D4
+      return true;
+
+    default:
+      return false;
+  }
+}
+
+u32 CheatCode::GetNextNonConditionalInstruction(u32 index) const
+{
+  const u32 count = static_cast<u32>(instructions.size());
+  for (; index < count; index++)
+  {
+    if (!IsConditionalInstruction(instructions[index].code))
+    {
+      // we've found the first non conditional instruction in the chain, so skip over the instruction following it
+      return index + 1;
+    }
+  }
+
+  return index;
+}
+
 void CheatCode::Apply() const
 {
   const u32 count = static_cast<u32>(instructions.size());
@@ -890,7 +925,7 @@ void CheatCode::Apply() const
         if (value == inst.value16)
           index++;
         else
-          index += 2;
+          index = GetNextNonConditionalInstruction(index);
       }
       break;
 
@@ -900,7 +935,7 @@ void CheatCode::Apply() const
         if (value != inst.value16)
           index++;
         else
-          index += 2;
+          index = GetNextNonConditionalInstruction(index);
       }
       break;
 
@@ -910,7 +945,7 @@ void CheatCode::Apply() const
         if (value < inst.value16)
           index++;
         else
-          index += 2;
+          index = GetNextNonConditionalInstruction(index);
       }
       break;
 
@@ -920,7 +955,7 @@ void CheatCode::Apply() const
         if (value > inst.value16)
           index++;
         else
-          index += 2;
+          index = GetNextNonConditionalInstruction(index);
       }
       break;
 
@@ -930,7 +965,7 @@ void CheatCode::Apply() const
         if (value == inst.value8)
           index++;
         else
-          index += 2;
+          index = GetNextNonConditionalInstruction(index);
       }
       break;
 
@@ -940,7 +975,7 @@ void CheatCode::Apply() const
         if (value != inst.value8)
           index++;
         else
-          index += 2;
+          index = GetNextNonConditionalInstruction(index);
       }
       break;
 
@@ -950,7 +985,7 @@ void CheatCode::Apply() const
         if (value < inst.value8)
           index++;
         else
-          index += 2;
+          index = GetNextNonConditionalInstruction(index);
       }
       break;
 
@@ -960,7 +995,7 @@ void CheatCode::Apply() const
         if (value > inst.value8)
           index++;
         else
-          index += 2;
+          index = GetNextNonConditionalInstruction(index);
       }
       break;
 
@@ -969,7 +1004,7 @@ void CheatCode::Apply() const
         if (inst.value16 == GetControllerButtonBits())
           index++;
         else
-          index += 2;
+          index = GetNextNonConditionalInstruction(index);
       }
       break;
 

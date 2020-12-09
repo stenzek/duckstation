@@ -77,6 +77,8 @@ struct CheatCode
   std::string GetInstructionsAsString() const;
   bool SetInstructionsFromString(const std::string& str);
 
+  u32 GetNextNonConditionalInstruction(u32 index) const;
+
   void Apply() const;
 
   static const char* GetTypeName(Type type);
