@@ -147,4 +147,8 @@
     <string name="main_activity_invalid_error">Deze BIOS image is ongeldig, of is al geimporteerd.</string>
     <string name="main_activity_show_version_title">Versie</string>
     <string name="main_activity_copy">Kopieer</string>
+    <string name="settings_fast_forward_volume">Doorspoel Volume</string>
+    <string name="settings_summary_fast_forward_volume">Bedient het volume van de emulator wanneer het spel sneller afgespeeld wordt.</string>
+    <string name="settings_gpu_thread">Threaded GPU Rendering</string>
+    <string name="settings_summary_gpu_thread">Gebruikt een tweede thread voor het renderen van graphics. Op het moment alleen beschikbaar voor software renderers, maar kan een significante snelheidsverbetering opleveren, en is veilig te gebruiken.</string>
 </resources>
