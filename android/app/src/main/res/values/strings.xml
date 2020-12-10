@@ -47,7 +47,7 @@
     <string name="settings_summary_log_to_logcat">Writes log messages to the Android message logger. Only useful when attached to a computer with adb.</string>
     <string name="settings_volume">Volume</string>
     <string name="settings_summary_volume">Controls the volume of the emulator\'s sound output.</string>
-    <string name="settings_fast_forward_volume">Volume</string>
+    <string name="settings_fast_forward_volume">Fast Forward Volume</string>
     <string name="settings_summary_fast_forward_volume">Controls the volume of the emulator\'s sound output when fast forwarding.</string>
     <string name="settings_mute_all_sound">Mute All Sound</string>
     <string name="settings_summary_mute_all_sound">Prevents the emulator from emitting any sound.</string>
