@@ -3,9 +3,11 @@
 #include <cstdarg>
 #include <cstddef>
 #include <cstring>
+#include <iomanip>
 #include <optional>
 #include <string>
 #include <string_view>
+#include <vector>
 
 #if defined(__has_include) && __has_include(<charconv>)
 #include <charconv>
@@ -52,16 +54,37 @@ static inline int Strncasecmp(const char* s1, const char* s2, std::size_t n)
 }
 
 /// Wrapper arond std::from_chars
-template<typename T>
-inline std::optional<T> FromChars(const std::string_view& str)
+template<typename T, std::enable_if_t<std::is_integral<T>::value, bool> = true>
+inline std::optional<T> FromChars(const std::string_view& str, int base = 10)
 {
   T value;
 
 #if defined(__has_include) && __has_include(<charconv>)
+  const std::from_chars_result result = std::from_chars(str.data(), str.data() + str.length(), value, base);
+  if (result.ec != std::errc())
+    return std::nullopt;
+#else
+  std::string temp(str);
+  std::istringstream ss(temp);
+  ss >> std::setbase(base) >> value;
+  if (ss.fail())
+    return std::nullopt;
+#endif
+
+  return value;
+}
+
+template<typename T, std::enable_if_t<std::is_floating_point<T>::value, bool> = true>
+inline std::optional<T> FromChars(const std::string_view& str)
+{
+  T value;
+
+#if defined(__has_include) && __has_include(<charconv>) && defined(_MSC_VER)
   const std::from_chars_result result = std::from_chars(str.data(), str.data() + str.length(), value);
   if (result.ec != std::errc())
     return std::nullopt;
 #else
+  /// libstdc++ does not support from_chars with floats yet
   std::string temp(str);
   std::istringstream ss(temp);
   ss >> value;
@@ -74,7 +97,7 @@ inline std::optional<T> FromChars(const std::string_view& str)
 
 /// Explicit override for booleans
 template<>
-inline std::optional<bool> FromChars(const std::string_view& str)
+inline std::optional<bool> FromChars(const std::string_view& str, int base)
 {
   if (Strncasecmp("true", str.data(), str.length()) == 0 || Strncasecmp("yes", str.data(), str.length()) == 0 ||
       Strncasecmp("on", str.data(), str.length()) == 0 || Strncasecmp("1", str.data(), str.length()) == 0)
@@ -91,21 +114,9 @@ inline std::optional<bool> FromChars(const std::string_view& str)
   return std::nullopt;
 }
 
-#ifndef _MSC_VER
-/// from_chars doesn't seem to work with floats on gcc
-template<>
-inline std::optional<float> FromChars(const std::string_view& str)
-{
-  float value;
-  std::string temp(str);
-  std::istringstream ss(temp);
-  ss >> value;
-  if (ss.fail())
-    return std::nullopt;
-  else
-    return value;
-}
-#endif
+/// Encode/decode hexadecimal byte buffers
+std::optional<std::vector<u8>> DecodeHex(const std::string_view& str);
+std::string EncodeHex(const u8* data, int length);
 
 /// starts_with from C++20
 ALWAYS_INLINE static bool StartsWith(const std::string_view& str, const char* prefix)
