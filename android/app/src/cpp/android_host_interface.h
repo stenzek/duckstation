@@ -1,8 +1,8 @@
 #pragma once
 #include "android_settings_interface.h"
+#include "common/byte_stream.h"
 #include "common/event.h"
 #include "common/progress_callback.h"
-#include "common/byte_stream.h"
 #include "frontend-common/common_host_interface.h"
 #include <array>
 #include <atomic>
@@ -109,3 +109,46 @@ AndroidHostInterface* GetNativeClass(JNIEnv* env, jobject obj);
 std::string JStringToString(JNIEnv* env, jstring str);
 std::unique_ptr<GrowableMemoryByteStream> ReadInputStreamToMemory(JNIEnv* env, jobject obj, u32 chunk_size = 65536);
 } // namespace AndroidHelpers
+
+template<typename T>
+class LocalRefHolder
+{
+public:
+  LocalRefHolder() : m_env(nullptr), m_object(nullptr) {}
+
+  LocalRefHolder(JNIEnv* env, T object) : m_env(env), m_object(object) {}
+
+  LocalRefHolder(const LocalRefHolder<T>&) = delete;
+  LocalRefHolder(LocalRefHolder&& move) : m_env(move.m_env), m_object(move.m_object)
+  {
+    move.m_env = nullptr;
+    move.m_object = {};
+  }
+
+  ~LocalRefHolder()
+  {
+    if (m_object)
+      m_env->DeleteLocalRef(m_object);
+  }
+
+  operator T() const { return m_object; }
+  T operator*() const { return m_object; }
+
+  LocalRefHolder& operator=(const LocalRefHolder&) = delete;
+  LocalRefHolder& operator=(LocalRefHolder&& move)
+  {
+    if (m_object)
+      m_env->DeleteLocalRef(m_object);
+    m_env = move.m_env;
+    m_object = move.m_object;
+    move.m_env = nullptr;
+    move.m_object = {};
+    return *this;
+  }
+
+  T Get() const { return m_object; }
+
+private:
+  JNIEnv* m_env;
+  T m_object;
+};

@@ -21,28 +21,43 @@ AndroidSettingsInterface::AndroidSettingsInterface(jobject java_context)
     env->GetStaticMethodID(c_preference_manager, "getDefaultSharedPreferences",
                            "(Landroid/content/Context;)Landroid/content/SharedPreferences;");
   Assert(c_preference_manager && c_set && m_get_default_shared_preferences);
+  m_set_class = reinterpret_cast<jclass>(env->NewGlobalRef(c_set));
+  Assert(m_set_class);
+  env->DeleteLocalRef(c_set);
 
-  m_java_shared_preferences =
+  jobject shared_preferences =
     env->CallStaticObjectMethod(c_preference_manager, m_get_default_shared_preferences, java_context);
+  Assert(shared_preferences);
+  m_java_shared_preferences = env->NewGlobalRef(shared_preferences);
   Assert(m_java_shared_preferences);
-  m_java_shared_preferences = env->NewGlobalRef(m_java_shared_preferences);
-  jclass c_shared_preferences = env->GetObjectClass(m_java_shared_preferences);
+  env->DeleteLocalRef(c_preference_manager);
+  env->DeleteLocalRef(shared_preferences);
 
-  m_get_boolean = env->GetMethodID(c_shared_preferences, "getBoolean", "(Ljava/lang/String;Z)Z");
-  m_get_int = env->GetMethodID(c_shared_preferences, "getInt", "(Ljava/lang/String;I)I");
-  m_get_float = env->GetMethodID(c_shared_preferences, "getFloat", "(Ljava/lang/String;F)F");
-  m_get_string =
-    env->GetMethodID(c_shared_preferences, "getString", "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;");
+  jclass c_shared_preferences = env->GetObjectClass(m_java_shared_preferences);
+  m_shared_preferences_class = reinterpret_cast<jclass>(env->NewGlobalRef(c_shared_preferences));
+  Assert(m_shared_preferences_class);
+  env->DeleteLocalRef(c_shared_preferences);
+
+  m_get_boolean = env->GetMethodID(m_shared_preferences_class, "getBoolean", "(Ljava/lang/String;Z)Z");
+  m_get_int = env->GetMethodID(m_shared_preferences_class, "getInt", "(Ljava/lang/String;I)I");
+  m_get_float = env->GetMethodID(m_shared_preferences_class, "getFloat", "(Ljava/lang/String;F)F");
+  m_get_string = env->GetMethodID(m_shared_preferences_class, "getString",
+                                  "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;");
   m_get_string_set =
-    env->GetMethodID(c_shared_preferences, "getStringSet", "(Ljava/lang/String;Ljava/util/Set;)Ljava/util/Set;");
-  m_set_to_array = env->GetMethodID(c_set, "toArray", "()[Ljava/lang/Object;");
+    env->GetMethodID(m_shared_preferences_class, "getStringSet", "(Ljava/lang/String;Ljava/util/Set;)Ljava/util/Set;");
+  m_set_to_array = env->GetMethodID(m_set_class, "toArray", "()[Ljava/lang/Object;");
   Assert(m_get_boolean && m_get_int && m_get_float && m_get_string && m_get_string_set && m_set_to_array);
 }
 
 AndroidSettingsInterface::~AndroidSettingsInterface()
 {
+  JNIEnv* env = AndroidHelpers::GetJNIEnv();
   if (m_java_shared_preferences)
-    AndroidHelpers::GetJNIEnv()->DeleteGlobalRef(m_java_shared_preferences);
+    env->DeleteGlobalRef(m_java_shared_preferences);
+  if (m_shared_preferences_class)
+    env->DeleteGlobalRef(m_shared_preferences_class);
+  if (m_set_class)
+    env->DeleteGlobalRef(m_set_class);
 }
 
 void AndroidSettingsInterface::Clear()
@@ -52,25 +67,28 @@ void AndroidSettingsInterface::Clear()
 
 int AndroidSettingsInterface::GetIntValue(const char* section, const char* key, int default_value /*= 0*/)
 {
-  JNIEnv* env = AndroidHelpers::GetJNIEnv();
-
   // Some of these settings are string lists...
-  jstring string_object = reinterpret_cast<jstring>(
-    env->CallObjectMethod(m_java_shared_preferences, m_get_string, env->NewStringUTF(GetSettingKey(section, key)),
-                          env->NewStringUTF(TinyString::FromFormat("%d", default_value))));
+  JNIEnv* env = AndroidHelpers::GetJNIEnv();
+  LocalRefHolder<jstring> key_string(env, env->NewStringUTF(GetSettingKey(section, key)));
+  LocalRefHolder<jstring> default_value_string(env, env->NewStringUTF(TinyString::FromFormat("%d", default_value)));
+  LocalRefHolder<jstring> string_object(
+    env, reinterpret_cast<jstring>(env->CallObjectMethod(m_java_shared_preferences, m_get_string, key_string.Get(),
+                                                         default_value_string.Get())));
   if (env->ExceptionCheck())
   {
     env->ExceptionClear();
 
     // it might actually be an int (e.g. seek bar preference)
-    const int int_value = static_cast<int>(env->CallIntMethod(m_java_shared_preferences, m_get_int,
-                                                              env->NewStringUTF(GetSettingKey(section, key)), default_value));
+    const int int_value =
+      static_cast<int>(env->CallIntMethod(m_java_shared_preferences, m_get_int, key_string.Get(), default_value));
     if (env->ExceptionCheck())
     {
       env->ExceptionClear();
+      Log_DevPrintf("GetIntValue(%s, %s) -> %d (exception)", section, key, default_value);
       return default_value;
     }
 
+    Log_DevPrintf("GetIntValue(%s, %s) -> %d (int)", section, key, int_value);
     return int_value;
   }
 
@@ -79,6 +97,7 @@ int AndroidSettingsInterface::GetIntValue(const char* section, const char* key, 
 
   const char* data = env->GetStringUTFChars(string_object, nullptr);
   Assert(data != nullptr);
+  Log_DevPrintf("GetIntValue(%s, %s) -> %s", section, key, data);
 
   std::optional<int> value = StringUtil::FromChars<int>(data);
   env->ReleaseStringUTFChars(string_object, data);
@@ -88,44 +107,47 @@ int AndroidSettingsInterface::GetIntValue(const char* section, const char* key, 
 float AndroidSettingsInterface::GetFloatValue(const char* section, const char* key, float default_value /*= 0.0f*/)
 {
   JNIEnv* env = AndroidHelpers::GetJNIEnv();
-#if 0
-  return static_cast<float>(env->CallFloatMethod(m_java_shared_preferences, m_get_float,
-                                                 env->NewStringUTF(GetSettingKey(section, key)), default_value));
-#else
-  // Some of these settings are string lists...
-  jstring string_object = reinterpret_cast<jstring>(
-    env->CallObjectMethod(m_java_shared_preferences, m_get_string, env->NewStringUTF(GetSettingKey(section, key)),
-                          env->NewStringUTF(TinyString::FromFormat("%f", default_value))));
-
+  LocalRefHolder<jstring> key_string(env, env->NewStringUTF(GetSettingKey(section, key)));
+  LocalRefHolder<jstring> default_value_string(env, env->NewStringUTF(TinyString::FromFormat("%f", default_value)));
+  LocalRefHolder<jstring> string_object(
+    env, reinterpret_cast<jstring>(env->CallObjectMethod(m_java_shared_preferences, m_get_string, key_string.Get(),
+                                                         default_value_string.Get())));
   if (env->ExceptionCheck())
   {
     env->ExceptionClear();
+    Log_DevPrintf("GetFloatValue(%s, %s) -> %f (exception)", section, key, default_value);
     return default_value;
   }
 
   if (!string_object)
+  {
+    Log_DevPrintf("GetFloatValue(%s, %s) -> %f (null)", section, key, default_value);
     return default_value;
+  }
 
   const char* data = env->GetStringUTFChars(string_object, nullptr);
   Assert(data != nullptr);
+  Log_DevPrintf("GetFloatValue(%s, %s) -> %s", section, key, data);
 
   std::optional<float> value = StringUtil::FromChars<float>(data);
   env->ReleaseStringUTFChars(string_object, data);
   return value.value_or(default_value);
-#endif
 }
 
 bool AndroidSettingsInterface::GetBoolValue(const char* section, const char* key, bool default_value /*= false*/)
 {
   JNIEnv* env = AndroidHelpers::GetJNIEnv();
-  jboolean bool_value = static_cast<bool>(env->CallBooleanMethod(m_java_shared_preferences, m_get_boolean,
-                                                  env->NewStringUTF(GetSettingKey(section, key)), default_value));
+  LocalRefHolder<jstring> key_string(env, env->NewStringUTF(GetSettingKey(section, key)));
+  jboolean bool_value = static_cast<bool>(
+    env->CallBooleanMethod(m_java_shared_preferences, m_get_boolean, key_string.Get(), default_value));
   if (env->ExceptionCheck())
   {
+    Log_DevPrintf("GetBoolValue(%s, %s) -> %u (exception)", section, key, static_cast<unsigned>(default_value));
     env->ExceptionClear();
     return default_value;
   }
 
+  Log_DevPrintf("GetBoolValue(%s, %s) -> %u", section, key, static_cast<unsigned>(bool_value));
   return bool_value;
 }
 
@@ -133,20 +155,28 @@ std::string AndroidSettingsInterface::GetStringValue(const char* section, const 
                                                      const char* default_value /*= ""*/)
 {
   JNIEnv* env = AndroidHelpers::GetJNIEnv();
-  jobject string_object =
-    env->CallObjectMethod(m_java_shared_preferences, m_get_string, env->NewStringUTF(GetSettingKey(section, key)),
-                          env->NewStringUTF(default_value));
+  LocalRefHolder<jstring> key_string(env, env->NewStringUTF(GetSettingKey(section, key)));
+  LocalRefHolder<jstring> default_value_string(env, env->NewStringUTF(default_value));
+  LocalRefHolder<jstring> string_object(
+    env, reinterpret_cast<jstring>(env->CallObjectMethod(m_java_shared_preferences, m_get_string, key_string.Get(),
+                                                         default_value_string.Get())));
 
   if (env->ExceptionCheck())
   {
     env->ExceptionClear();
+    Log_DevPrintf("GetStringValue(%s, %s) -> %s (exception)", section, key, default_value);
     return default_value;
   }
 
   if (!string_object)
+  {
+    Log_DevPrintf("GetStringValue(%s, %s) -> %s (null)", section, key, default_value);
     return default_value;
+  }
 
-  return AndroidHelpers::JStringToString(env, reinterpret_cast<jstring>(string_object));
+  const std::string ret(AndroidHelpers::JStringToString(env, string_object));
+  Log_DevPrintf("GetStringValue(%s, %s) -> %s", section, key, ret.c_str());
+  return ret;
 }
 
 void AndroidSettingsInterface::SetIntValue(const char* section, const char* key, int value)
@@ -177,8 +207,9 @@ void AndroidSettingsInterface::DeleteValue(const char* section, const char* key)
 std::vector<std::string> AndroidSettingsInterface::GetStringList(const char* section, const char* key)
 {
   JNIEnv* env = AndroidHelpers::GetJNIEnv();
-  jobject values_set = env->CallObjectMethod(m_java_shared_preferences, m_get_string_set,
-                                             env->NewStringUTF(GetSettingKey(section, key)), nullptr);
+  LocalRefHolder<jstring> key_string(env, env->NewStringUTF(GetSettingKey(section, key)));
+  LocalRefHolder<jobject> values_set(
+    env, env->CallObjectMethod(m_java_shared_preferences, m_get_string_set, key_string.Get(), nullptr));
   if (env->ExceptionCheck())
   {
     env->ExceptionClear();
@@ -188,13 +219,14 @@ std::vector<std::string> AndroidSettingsInterface::GetStringList(const char* sec
   if (!values_set)
     return {};
 
-  jobjectArray values_array = reinterpret_cast<jobjectArray>(env->CallObjectMethod(values_set, m_set_to_array));
+  LocalRefHolder<jobjectArray> values_array(
+    env, reinterpret_cast<jobjectArray>(env->CallObjectMethod(values_set, m_set_to_array)));
   if (env->ExceptionCheck())
   {
     env->ExceptionClear();
     return {};
   }
-  
+
   if (!values_array)
     return {};
 
@@ -202,8 +234,11 @@ std::vector<std::string> AndroidSettingsInterface::GetStringList(const char* sec
   std::vector<std::string> values;
   values.reserve(size);
   for (jsize i = 0; i < size; i++)
-    values.push_back(
-      AndroidHelpers::JStringToString(env, reinterpret_cast<jstring>(env->GetObjectArrayElement(values_array, i))));
+  {
+    jstring str = reinterpret_cast<jstring>(env->GetObjectArrayElement(values_array, i));
+    values.push_back(AndroidHelpers::JStringToString(env, str));
+    env->DeleteLocalRef(str);
+  }
 
   return values;
 }

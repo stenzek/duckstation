@@ -36,6 +36,7 @@ static jfieldID s_AndroidHostInterface_field_mNativePointer;
 static jmethodID s_AndroidHostInterface_method_reportError;
 static jmethodID s_AndroidHostInterface_method_reportMessage;
 static jmethodID s_AndroidHostInterface_method_openAssetStream;
+static jclass s_EmulationActivity_class;
 static jmethodID s_EmulationActivity_method_reportError;
 static jmethodID s_EmulationActivity_method_reportMessage;
 static jmethodID s_EmulationActivity_method_onEmulationStarted;
@@ -107,6 +108,8 @@ std::unique_ptr<GrowableMemoryByteStream> ReadInputStreamToMemory(JNIEnv* env, j
   }
 
   bs->Resize(position);
+  env->DeleteLocalRef(temp);
+  env->DeleteLocalRef(cls);
   return bs;
 }
 } // namespace AndroidHelpers
@@ -156,6 +159,7 @@ void AndroidHostInterface::ReportError(const char* message)
     env->CallVoidMethod(m_emulation_activity_object, s_EmulationActivity_method_reportError, message_jstr);
   else
     env->CallVoidMethod(m_java_object, s_AndroidHostInterface_method_reportError, message_jstr);
+  env->DeleteLocalRef(message_jstr);
 }
 
 void AndroidHostInterface::ReportMessage(const char* message)
@@ -168,6 +172,7 @@ void AndroidHostInterface::ReportMessage(const char* message)
     env->CallVoidMethod(m_emulation_activity_object, s_EmulationActivity_method_reportMessage, message_jstr);
   else
     env->CallVoidMethod(m_java_object, s_AndroidHostInterface_method_reportMessage, message_jstr);
+  env->DeleteLocalRef(message_jstr);
 }
 
 std::string AndroidHostInterface::GetStringSettingValue(const char* section, const char* key, const char* default_value)
@@ -205,7 +210,9 @@ std::unique_ptr<ByteStream> AndroidHostInterface::OpenPackageFile(const char* pa
     return {};
   }
 
-  return AndroidHelpers::ReadInputStreamToMemory(env, stream, 65536);
+  std::unique_ptr<ByteStream> ret(AndroidHelpers::ReadInputStreamToMemory(env, stream, 65536));
+  env->DeleteLocalRef(stream);
+  return ret;
 }
 
 void AndroidHostInterface::SetUserDirectory()
@@ -517,6 +524,7 @@ void AndroidHostInterface::OnRunningGameChanged()
     JNIEnv* env = AndroidHelpers::GetJNIEnv();
     jstring title_string = env->NewStringUTF(System::GetRunningTitle().c_str());
     env->CallVoidMethod(m_emulation_activity_object, s_EmulationActivity_method_onGameTitleChanged, title_string);
+    env->DeleteLocalRef(title_string);
   }
 }
 
@@ -736,18 +744,21 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
 
   // Create global reference so it doesn't get cleaned up.
   JNIEnv* env = AndroidHelpers::GetJNIEnv();
-  if ((s_String_class = env->FindClass("java/lang/String")) == nullptr ||
-      (s_String_class = static_cast<jclass>(env->NewGlobalRef(s_String_class))) == nullptr ||
-      (s_AndroidHostInterface_class = env->FindClass("com/github/stenzek/duckstation/AndroidHostInterface")) ==
-        nullptr ||
-      (s_AndroidHostInterface_class = static_cast<jclass>(env->NewGlobalRef(s_AndroidHostInterface_class))) ==
-        nullptr ||
-      (s_PatchCode_class = env->FindClass("com/github/stenzek/duckstation/PatchCode")) == nullptr ||
-      (s_PatchCode_class = static_cast<jclass>(env->NewGlobalRef(s_PatchCode_class))) == nullptr)
+  jclass string_class, host_interface_class, patch_code_class;
+  if ((string_class = env->FindClass("java/lang/String")) == nullptr ||
+      (s_String_class = static_cast<jclass>(env->NewGlobalRef(string_class))) == nullptr ||
+      (host_interface_class = env->FindClass("com/github/stenzek/duckstation/AndroidHostInterface")) == nullptr ||
+      (s_AndroidHostInterface_class = static_cast<jclass>(env->NewGlobalRef(host_interface_class))) == nullptr ||
+      (patch_code_class = env->FindClass("com/github/stenzek/duckstation/PatchCode")) == nullptr ||
+      (s_PatchCode_class = static_cast<jclass>(env->NewGlobalRef(patch_code_class))) == nullptr)
   {
     Log_ErrorPrint("AndroidHostInterface class lookup failed");
     return -1;
   }
+
+  env->DeleteLocalRef(string_class);
+  env->DeleteLocalRef(host_interface_class);
+  env->DeleteLocalRef(patch_code_class);
 
   jclass emulation_activity_class;
   if ((s_AndroidHostInterface_constructor =
@@ -761,16 +772,17 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
       (s_AndroidHostInterface_method_openAssetStream = env->GetMethodID(
          s_AndroidHostInterface_class, "openAssetStream", "(Ljava/lang/String;)Ljava/io/InputStream;")) == nullptr ||
       (emulation_activity_class = env->FindClass("com/github/stenzek/duckstation/EmulationActivity")) == nullptr ||
+      (s_EmulationActivity_class = static_cast<jclass>(env->NewGlobalRef(emulation_activity_class))) == nullptr ||
       (s_EmulationActivity_method_reportError =
-         env->GetMethodID(emulation_activity_class, "reportError", "(Ljava/lang/String;)V")) == nullptr ||
+         env->GetMethodID(s_EmulationActivity_class, "reportError", "(Ljava/lang/String;)V")) == nullptr ||
       (s_EmulationActivity_method_reportMessage =
-         env->GetMethodID(emulation_activity_class, "reportMessage", "(Ljava/lang/String;)V")) == nullptr ||
+         env->GetMethodID(s_EmulationActivity_class, "reportMessage", "(Ljava/lang/String;)V")) == nullptr ||
       (s_EmulationActivity_method_onEmulationStarted =
-         env->GetMethodID(emulation_activity_class, "onEmulationStarted", "()V")) == nullptr ||
+         env->GetMethodID(s_EmulationActivity_class, "onEmulationStarted", "()V")) == nullptr ||
       (s_EmulationActivity_method_onEmulationStopped =
-         env->GetMethodID(emulation_activity_class, "onEmulationStopped", "()V")) == nullptr ||
+         env->GetMethodID(s_EmulationActivity_class, "onEmulationStopped", "()V")) == nullptr ||
       (s_EmulationActivity_method_onGameTitleChanged =
-         env->GetMethodID(emulation_activity_class, "onGameTitleChanged", "(Ljava/lang/String;)V")) == nullptr ||
+         env->GetMethodID(s_EmulationActivity_class, "onGameTitleChanged", "(Ljava/lang/String;)V")) == nullptr ||
       (s_EmulationActivity_method_setVibration = env->GetMethodID(emulation_activity_class, "setVibration", "(Z)V")) ==
         nullptr ||
       (s_PatchCode_constructor = env->GetMethodID(s_PatchCode_class, "<init>", "(ILjava/lang/String;Z)V")) == nullptr)
@@ -778,6 +790,8 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
     Log_ErrorPrint("AndroidHostInterface lookups failed");
     return -1;
   }
+
+  env->DeleteLocalRef(emulation_activity_class);
 
   return JNI_VERSION_1_6;
 }
@@ -795,7 +809,8 @@ DEFINE_JNI_ARGS_METHOD(jstring, AndroidHostInterface_getScmVersion, jobject unus
 
 DEFINE_JNI_ARGS_METHOD(jstring, AndroidHostInterface_getFullScmVersion, jobject unused)
 {
-  return env->NewStringUTF(SmallString::FromFormat("DuckStation for Android %s (%s)\nBuilt %s %s", g_scm_tag_str, g_scm_branch_str, __DATE__, __TIME__));
+  return env->NewStringUTF(SmallString::FromFormat("DuckStation for Android %s (%s)\nBuilt %s %s", g_scm_tag_str,
+                                                   g_scm_branch_str, __DATE__, __TIME__));
 }
 
 DEFINE_JNI_ARGS_METHOD(jobject, AndroidHostInterface_create, jobject unused, jobject context_object,
@@ -969,6 +984,17 @@ DEFINE_JNI_ARGS_METHOD(jarray, AndroidHostInterface_getGameListEntries, jobject 
                                            modified_time, region, type, compatibility_rating, cover_path);
 
     env->SetObjectArrayElement(entry_array, counter++, entry_jobject);
+    env->DeleteLocalRef(entry_jobject);
+    env->DeleteLocalRef(modified_time);
+    if (cover_path)
+      env->DeleteLocalRef(cover_path);
+    env->DeleteLocalRef(compatibility_rating);
+    env->DeleteLocalRef(type);
+    env->DeleteLocalRef(region);
+    env->DeleteLocalRef(file_title);
+    env->DeleteLocalRef(title);
+    env->DeleteLocalRef(code);
+    env->DeleteLocalRef(path);
   }
 
   return entry_array;
@@ -1068,9 +1094,12 @@ DEFINE_JNI_ARGS_METHOD(jobject, AndroidHostInterface_getPatchCodeList, jobject o
   {
     const CheatCode& cc = cl->GetCode(i);
 
-    jobject java_cc = env->NewObject(s_PatchCode_class, s_PatchCode_constructor, static_cast<jint>(i),
-                                     env->NewStringUTF(cc.description.c_str()), cc.enabled);
+    jstring desc_str = env->NewStringUTF(cc.description.c_str());
+    jobject java_cc =
+      env->NewObject(s_PatchCode_class, s_PatchCode_constructor, static_cast<jint>(i), desc_str, cc.enabled);
     env->SetObjectArrayElement(arr, i, java_cc);
+    env->DeleteLocalRef(java_cc);
+    env->DeleteLocalRef(desc_str);
   }
 
   return arr;
@@ -1162,6 +1191,7 @@ DEFINE_JNI_ARGS_METHOD(jobjectArray, AndroidHostInterface_getMediaPlaylistPaths,
   {
     jstring str = env->NewStringUTF(System::GetMediaPlaylistPath(i).c_str());
     env->SetObjectArrayElement(arr, static_cast<jsize>(i), str);
+    env->DeleteLocalRef(str);
   }
 
   return arr;

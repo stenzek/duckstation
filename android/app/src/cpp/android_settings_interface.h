@@ -27,6 +27,8 @@ public:
   bool AddToStringList(const char* section, const char* key, const char* item) override;
 
 private:
+  jclass m_set_class{};
+  jclass m_shared_preferences_class{};
   jobject m_java_shared_preferences{};
   jmethodID m_get_boolean{};
   jmethodID m_get_int{};
