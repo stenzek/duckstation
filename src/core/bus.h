@@ -149,4 +149,8 @@ ALWAYS_INLINE TickCount GetDMARAMTickCount(u32 word_count)
   return static_cast<TickCount>(word_count + ((word_count + 15) / 16));
 }
 
+/// Bus access for debugging.
+void Peek(VirtualMemoryAddress address, u32 size, u8* values);
+void Poke(VirtualMemoryAddress address, u32 size, u8* values);
+
 } // namespace Bus

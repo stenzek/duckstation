@@ -1908,3 +1908,66 @@ void UncheckedWriteMemoryWord(u32 address, u32 value)
 } // namespace Recompiler::Thunks
 
 } // namespace CPU
+
+namespace Bus {
+
+using namespace CPU;
+static constexpr int NEXT_ACCESS_SIZE[4] = { 4, 1, 2, 1 };
+
+void Peek(VirtualMemoryAddress address, u32 size, u8* data)
+{
+  u32 value;
+
+  while (size > 0) {
+    int access_size = NEXT_ACCESS_SIZE[size%4];
+
+    switch (access_size) {
+      case 4:
+        DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(address, value);
+        *reinterpret_cast<u32*>(data) = value;
+        break;
+      case 2:
+        DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::HalfWord>(address, value);
+        *reinterpret_cast<u16*>(data) = value;
+        break;
+      default:
+        DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Byte>(address, value);
+        *data = value;
+        break;
+    }
+
+    address += access_size;
+    size -= access_size;
+    data += access_size;
+  }
+}
+
+void Poke(VirtualMemoryAddress address, u32 size, u8* data)
+{
+  u32 value;
+
+  while (size > 0) {
+    int access_size = NEXT_ACCESS_SIZE[size%4];
+
+    switch (access_size) {
+      case 4:
+        value = *reinterpret_cast<u32*>(data);
+        DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Word>(address, value);
+        break;
+      case 2:
+        value = *reinterpret_cast<u16*>(data);
+        DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::HalfWord>(address, value);
+        break;
+      default:
+        value = *data;
+        DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Byte>(address, value);
+        break;
+    }
+
+    address += access_size;
+    size -= access_size;
+    data += access_size;
+  }
+}
+
+} // namespace Bus
