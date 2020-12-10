@@ -96,7 +96,7 @@ bool DigitalController::Transfer(const u8 data_in, u8* data_out)
 
     case TransferState::ButtonsLSB:
     {
-      *data_out = Truncate8(m_button_state);
+      *data_out = Truncate8(m_button_state) & GetButtonsLSBMask();
       m_transfer_state = TransferState::ButtonsMSB;
       return true;
     }
@@ -180,4 +180,27 @@ Controller::ButtonList DigitalController::StaticGetButtonNames()
 u32 DigitalController::StaticGetVibrationMotorCount()
 {
   return 0;
+}
+
+Controller::SettingList DigitalController::StaticGetSettings()
+{
+  static constexpr std::array<SettingInfo, 1> settings = {
+    {{SettingInfo::Type::Boolean, "ForcePopnControllerMode",
+      TRANSLATABLE("DigitalController", "Force Pop'n Controller Mode"),
+      TRANSLATABLE("DigitalController", "Forces the Digital Controller to act as a Pop'n Controller."), "false"}}};
+  return SettingList(settings.begin(), settings.end());
+}
+
+void DigitalController::LoadSettings(const char* section)
+{
+  Controller::LoadSettings(section);
+  m_popn_controller_mode = g_host_interface->GetBoolSettingValue(section, "ForcePopnControllerMode", false);
+}
+
+u8 DigitalController::GetButtonsLSBMask() const
+{
+  constexpr u8 popn_controller_mask =
+    ~(u8(1) << static_cast<u8>(Button::Right) | u8(1) << static_cast<u8>(Button::Down) |
+      u8(1) << static_cast<u8>(Button::Left));
+  return m_popn_controller_mode ? popn_controller_mask : 0xFF;
 }
