@@ -163,6 +163,33 @@ std::size_t Strlcpy(char* dst, const std::string_view& src, std::size_t size)
   return len;
 }
 
+std::optional<std::vector<u8>> DecodeHex(const std::string_view& in)
+{
+  std::vector<u8> data;
+  data.reserve(in.size()/2);
+
+  for (int i = 0; i < in.size()-1; i+=2) {
+    auto byte = StringUtil::FromChars<u8>(in.substr(i*2, 2));
+    if (byte) {
+      data.push_back(*byte);
+    }
+    else {
+      return { };
+    }
+  }
+
+  return { data };
+}
+
+std::string EncodeHex(const u8* data, int length)
+{
+  std::stringstream ss;
+  for (int i = 0; i < length; i++) {
+    ss << std::hex << std::setfill('0') << std::setw(2) << static_cast<int>(data[i]);
+  }
+  return ss.str();
+}
+
 #ifdef WIN32
 
 std::wstring UTF8StringToWideString(const std::string_view& str)
