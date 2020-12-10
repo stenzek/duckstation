@@ -21,6 +21,8 @@ GeneralSettingsWidget::GeneralSettingsWidget(QtHostInterface* host_interface, QW
                                                false);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.startFullscreen, "Main", "StartFullscreen",
                                                false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.hideCursorInFullscreen, "Main",
+                                               "HideCursorInFullscreen", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.renderToMain, "Main", "RenderToMainWindow", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.saveStateOnExit, "Main", "SaveStateOnExit", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.confirmPowerOff, "Main", "ConfirmPowerOff", true);
@@ -59,6 +61,8 @@ GeneralSettingsWidget::GeneralSettingsWidget(QtHostInterface* host_interface, QW
                                 "resume directly from where you left off next time."));
   dialog->registerWidgetHelp(m_ui.startFullscreen, tr("Start Fullscreen"), tr("Unchecked"),
                              tr("Automatically switches to fullscreen mode when a game is started."));
+  dialog->registerWidgetHelp(m_ui.hideCursorInFullscreen, tr("Hide Cursor In Fullscreen"), tr("Checked"),
+                             tr("Hides the mouse pointer/cursor when the emulator is in fullscreen mode."));
   dialog->registerWidgetHelp(
     m_ui.renderToMain, tr("Render To Main Window"), tr("Checked"),
     tr("Renders the display of the simulated console to the main window of the application, over "
@@ -92,7 +96,7 @@ GeneralSettingsWidget::GeneralSettingsWidget(QtHostInterface* host_interface, QW
                                 "to use XInput over SDL2 for compatibility."));
 
   // Since this one is compile-time selected, we don't put it in the .ui file.
-  int current_col = 1;
+  int current_col = 0;
   int current_row = m_ui.formLayout_4->rowCount() - current_col;
 #ifdef WITH_DISCORD_PRESENCE
   {

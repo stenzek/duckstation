@@ -41,7 +41,7 @@ public:
   void RunGPULoop();
 
 protected:
-  void* AllocateCommand(u32 size);
+  void* AllocateCommand(GPUBackendCommandType command, u32 size);
   u32 GetPendingCommandSize() const;
   void WakeGPUThread();
   void StartGPUThread();

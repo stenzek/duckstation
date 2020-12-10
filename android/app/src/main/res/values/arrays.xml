@@ -242,8 +242,8 @@
         <item>Error</item>
         <item>Warning</item>
         <item>Performance Warnings</item>
-        <item>Success</item>
         <item>Information</item>
+        <item>Verbose</item>
         <item>Developer</item>
         <item>Profile</item>
         <item>Debug</item>
@@ -254,8 +254,8 @@
         <item>Error</item>
         <item>Warning</item>
         <item>Perf</item>
-        <item>Success</item>
         <item>Info</item>
+        <item>Verbose</item>
         <item>Dev</item>
         <item>Profile</item>
         <item>Debug</item>
@@ -420,5 +420,19 @@
         <item>unspecified</item>
         <item>portrait</item>
         <item>landscape</item>
+    </string-array>
+    <string-array name="settings_language_entries">
+        <item>Use Device Setting</item>
+        <item>English</item>
+        <item>Portuguese (pt) in Brazil (BR)</item>
+        <item>Italian (it)</item>
+        <item>Dutch (nl)</item>
+    </string-array>
+    <string-array name="settings_language_values">
+        <item>none</item>
+        <item>en-EN</item>
+        <item>pt-rBR</item>
+        <item>it-IT</item>
+        <item>nl-NL</item>
     </string-array>
 </resources>

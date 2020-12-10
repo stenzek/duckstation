@@ -230,6 +230,7 @@ protected:
   virtual bool SetFullscreen(bool enabled);
 
   virtual std::unique_ptr<AudioStream> CreateAudioStream(AudioBackend backend) override;
+  virtual s32 GetAudioOutputVolume() const override;
   virtual void UpdateControllerInterface();
 
   virtual void OnSystemCreated() override;
@@ -331,6 +332,7 @@ protected:
   void DrawOSDMessages();
   void DrawDebugWindows();
   void DoFrameStep();
+  void DoToggleCheats();
 
   std::unique_ptr<GameList> m_game_list;
 

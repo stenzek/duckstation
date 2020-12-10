@@ -2030,6 +2030,23 @@ int setup_wasapi_stream_one_side(cubeb_stream * stm,
   com_heap_ptr<WAVEFORMATEX> mix_format(tmp);
 
   mix_format->wBitsPerSample = stm->bytes_per_sample * 8;
+  if (mix_format->wFormatTag == WAVE_FORMAT_PCM ||
+      mix_format->wFormatTag == WAVE_FORMAT_IEEE_FLOAT) {
+    switch (mix_format->wBitsPerSample) {
+    case 8:
+    case 16:
+      mix_format->wFormatTag = WAVE_FORMAT_PCM;
+      break;
+    case 32:
+      mix_format->wFormatTag = WAVE_FORMAT_IEEE_FLOAT;
+      break;
+    default:
+      LOG("%u bits per sample is incompatible with PCM wave formats",
+          mix_format->wBitsPerSample);
+      return CUBEB_ERROR;
+    }
+  }
+
   if (mix_format->wFormatTag == WAVE_FORMAT_EXTENSIBLE) {
     WAVEFORMATEXTENSIBLE * format_pcm = reinterpret_cast<WAVEFORMATEXTENSIBLE *>(mix_format.get());
     format_pcm->SubFormat = stm->waveformatextensible_sub_format;
@@ -2085,9 +2102,11 @@ int setup_wasapi_stream_one_side(cubeb_stream * stm,
   cubeb_device_info device_info;
   int rv = wasapi_create_device(stm->context, device_info, stm->device_enumerator.get(), device.get());
   if (rv == CUBEB_OK) {
-    const char* HANDSFREE_TAG = "BTHHFEENUM";
+    const char* HANDSFREE_TAG = "BTHHFENUM";
     size_t len = sizeof(HANDSFREE_TAG);
-    if (direction == eCapture && strncmp(device_info.group_id, HANDSFREE_TAG, len) == 0) {
+    if (direction == eCapture &&
+        strlen(device_info.group_id) >= len &&
+        strncmp(device_info.group_id, HANDSFREE_TAG, len) == 0) {
       // Rather high-latency to prevent constant under-runs in this particular
       // case of an input device using bluetooth handsfree.
       uint32_t default_period_frames = hns_to_frames(device_info.default_rate, default_period);
@@ -2166,7 +2185,7 @@ int setup_wasapi_stream_one_side(cubeb_stream * stm,
 
 void wasapi_find_matching_output_device(cubeb_stream * stm) {
   HRESULT hr;
-  cubeb_device_info * input_device = nullptr;
+  cubeb_device_info * input_device;
   cubeb_device_collection collection;
 
   // Only try to match to an output device if the input device is a bluetooth
@@ -2202,7 +2221,7 @@ void wasapi_find_matching_output_device(cubeb_stream * stm) {
   for (uint32_t i = 0; i < collection.count; i++) {
     cubeb_device_info dev = collection.device[i];
     if (dev.type == CUBEB_DEVICE_TYPE_OUTPUT &&
-        dev.group_id && input_device && !strcmp(dev.group_id, input_device->group_id) &&
+        dev.group_id && !strcmp(dev.group_id, input_device->group_id) &&
         dev.default_rate == input_device->default_rate) {
       LOG("Found matching device for %s: %s", input_device->friendly_name, dev.friendly_name);
       stm->output_device_id = utf8_to_wstr(reinterpret_cast<char const *>(dev.devid));

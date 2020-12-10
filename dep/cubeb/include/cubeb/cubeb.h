@@ -509,7 +509,9 @@ CUBEB_EXPORT void cubeb_destroy(cubeb * context);
                          cubeb_devid allows the stream to follow that device type's
                          OS default.
     @param output_stream_params Parameters for the output side of the stream, or
-                                NULL if this stream is input only.
+                                NULL if this stream is input only. When input
+                                and output stream parameters are supplied, their
+                                rate has to be the same.
     @param latency_frames Stream latency in frames.  Valid range
                           is [1, 96000].
     @param data_callback Will be called to preroll data before playback is

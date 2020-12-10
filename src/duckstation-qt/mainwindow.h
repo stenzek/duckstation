@@ -111,6 +111,7 @@ private:
   void restoreDisplayWindowGeometryFromConfig();
   void destroyDisplayWidget();
   void setDisplayFullscreen(const std::string& fullscreen_mode);
+  bool shouldHideCursorInFullscreen() const;
   SettingsDialog* getSettingsDialog();
   void doSettings(SettingsDialog::Category category = SettingsDialog::Category::Count);
   void updateDebugMenuCPUExecutionMode();

@@ -793,6 +793,11 @@ DEFINE_JNI_ARGS_METHOD(jstring, AndroidHostInterface_getScmVersion, jobject unus
   return env->NewStringUTF(g_scm_tag_str);
 }
 
+DEFINE_JNI_ARGS_METHOD(jstring, AndroidHostInterface_getFullScmVersion, jobject unused)
+{
+  return env->NewStringUTF(SmallString::FromFormat("DuckStation for Android %s (%s)\nBuilt %s %s", g_scm_tag_str, g_scm_branch_str, __DATE__, __TIME__));
+}
+
 DEFINE_JNI_ARGS_METHOD(jobject, AndroidHostInterface_create, jobject unused, jobject context_object,
                        jstring user_directory)
 {

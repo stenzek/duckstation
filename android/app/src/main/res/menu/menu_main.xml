@@ -5,27 +5,36 @@
     <group android:id="@+id/start_menu">
         <item
             android:id="@+id/action_resume"
-            android:title="Resume Last Session" />
+            android:title="@string/menu_main_resume_last_session" />
         <item
             android:id="@+id/action_start_file"
-            android:title="Start File" />
+            android:title="@string/menu_main_start_file" />
         <item
             android:id="@+id/action_start_bios"
-            android:title="Start BIOS" />
+            android:title="@string/menu_main_start_bios" />
     </group>
     <group android:id="@+id/game_list">
         <item
             android:id="@+id/action_add_game_directory"
-            android:title="Add Game Directory" />
+            android:title="@string/menu_main_add_game_directory" />
         <item
             android:id="@+id/action_scan_for_new_games"
-            android:title="Scan For New Games" />
+            android:title="@string/menu_main_scan_for_new_games" />
         <item
             android:id="@+id/action_rescan_all_games"
-            android:title="Rescan All Games" />
+            android:title="@string/menu_main_rescan_all_games" />
         <item
             android:id="@+id/action_import_bios"
-            android:title="Import BIOS" />
+            android:title="@string/menu_main_import_bios" />
+        <item
+            android:id="@+id/action_show_version"
+            android:title="@string/menu_main_show_version" />
+        <item
+            android:id="@+id/action_github_respository"
+            android:title="@string/menu_main_github_repository" />
+        <item
+            android:id="@+id/action_discord_server"
+            android:title="@string/menu_main_discord_server" />
     </group>
     <item
         android:id="@+id/action_settings"

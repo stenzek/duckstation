@@ -474,6 +474,11 @@ std::unique_ptr<AudioStream> CommonHostInterface::CreateAudioStream(AudioBackend
   }
 }
 
+s32 CommonHostInterface::GetAudioOutputVolume() const
+{
+  return g_settings.GetAudioOutputVolume(!m_speed_limiter_enabled);
+}
+
 void CommonHostInterface::UpdateControllerInterface()
 {
   const std::string backend_str = GetStringSettingValue(
@@ -615,6 +620,7 @@ void CommonHostInterface::UpdateSpeedLimiterState()
 
   if (m_audio_stream)
   {
+    m_audio_stream->SetOutputVolume(GetAudioOutputVolume());
     m_audio_stream->SetSync(audio_sync_enabled);
     if (audio_sync_enabled)
       m_audio_stream->EmptyBuffers();
@@ -958,6 +964,25 @@ void CommonHostInterface::DoFrameStep()
 
   m_frame_step_request = true;
   PauseSystem(false);
+}
+
+void CommonHostInterface::DoToggleCheats()
+{
+  if (System::IsShutdown())
+    return;
+
+  CheatList* cl = System::GetCheatList();
+  if (!cl)
+  {
+    AddOSDMessage(TranslateStdString("OSDMessage", "No cheats are loaded."), 10.0f);
+    return;
+  }
+
+  cl->SetMasterEnable(!cl->GetMasterEnable());
+  AddFormattedOSDMessage(10.0f,
+                         cl->GetMasterEnable() ? TranslateString("OSDMessage", "%u cheats are now active.") :
+                                                 TranslateString("OSDMessage", "%u cheats are now inactive."),
+                         cl->GetEnabledCodeCount());
 }
 
 std::optional<CommonHostInterface::HostKeyCode>
@@ -1445,6 +1470,12 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                      PauseSystem(!System::IsPaused());
                  });
 
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("ToggleCheats"),
+                 StaticString(TRANSLATABLE("Hotkeys", "Toggle Cheats")), [this](bool pressed) {
+                   if (pressed)
+                     DoToggleCheats();
+                 });
+
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("PowerOff"),
                  StaticString(TRANSLATABLE("Hotkeys", "Power Off System")), [this](bool pressed) {
                    if (pressed && System::IsValid())
@@ -1486,9 +1517,7 @@ void CommonHostInterface::RegisterGeneralHotkeys()
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("FrameStep"),
                  StaticString(TRANSLATABLE("Hotkeys", "Frame Step")), [this](bool pressed) {
                    if (pressed)
-                   {
                      DoFrameStep();
-                   }
                  });
 }
 
@@ -1647,19 +1676,19 @@ void CommonHostInterface::RegisterSaveStateHotkeys()
 
 void CommonHostInterface::RegisterAudioHotkeys()
 {
-  RegisterHotkey(
-    StaticString(TRANSLATABLE("Hotkeys", "Audio")), StaticString("AudioMute"),
-    StaticString(TRANSLATABLE("Hotkeys", "Toggle Mute")), [this](bool pressed) {
-      if (pressed && System::IsValid())
-      {
-        g_settings.audio_output_muted = !g_settings.audio_output_muted;
-        m_audio_stream->SetOutputVolume(g_settings.audio_output_muted ? 0 : g_settings.audio_output_volume);
-        if (g_settings.audio_output_muted)
-          AddOSDMessage(TranslateStdString("OSDMessage", "Volume: Muted"), 2.0f);
-        else
-          AddFormattedOSDMessage(2.0f, TranslateString("OSDMessage", "Volume: %d%%"), g_settings.audio_output_volume);
-      }
-    });
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Audio")), StaticString("AudioMute"),
+                 StaticString(TRANSLATABLE("Hotkeys", "Toggle Mute")), [this](bool pressed) {
+                   if (pressed && System::IsValid())
+                   {
+                     g_settings.audio_output_muted = !g_settings.audio_output_muted;
+                     const s32 volume = GetAudioOutputVolume();
+                     m_audio_stream->SetOutputVolume(volume);
+                     if (g_settings.audio_output_muted)
+                       AddOSDMessage(TranslateStdString("OSDMessage", "Volume: Muted"), 2.0f);
+                     else
+                       AddFormattedOSDMessage(2.0f, TranslateString("OSDMessage", "Volume: %d%%"), volume);
+                   }
+                 });
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Audio")), StaticString("AudioCDAudioMute"),
                  StaticString(TRANSLATABLE("Hotkeys", "Toggle CD Audio Mute")), [this](bool pressed) {
                    if (pressed && System::IsValid())
@@ -1675,22 +1704,24 @@ void CommonHostInterface::RegisterAudioHotkeys()
                  StaticString(TRANSLATABLE("Hotkeys", "Volume Up")), [this](bool pressed) {
                    if (pressed && System::IsValid())
                    {
-                     g_settings.audio_output_volume = std::min<s32>(g_settings.audio_output_volume + 10, 100);
+                     const s32 volume = std::min<s32>(GetAudioOutputVolume() + 10, 100);
+                     g_settings.audio_output_volume = volume;
+                     g_settings.audio_fast_forward_volume = volume;
                      g_settings.audio_output_muted = false;
-                     m_audio_stream->SetOutputVolume(g_settings.audio_output_volume);
-                     AddFormattedOSDMessage(2.0f, TranslateString("OSDMessage", "Volume: %d%%"),
-                                            g_settings.audio_output_volume);
+                     m_audio_stream->SetOutputVolume(volume);
+                     AddFormattedOSDMessage(2.0f, TranslateString("OSDMessage", "Volume: %d%%"), volume);
                    }
                  });
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Audio")), StaticString("AudioVolumeDown"),
                  StaticString(TRANSLATABLE("Hotkeys", "Volume Down")), [this](bool pressed) {
                    if (pressed && System::IsValid())
                    {
-                     g_settings.audio_output_volume = std::max<s32>(g_settings.audio_output_volume - 10, 0);
+                     const s32 volume = std::max<s32>(GetAudioOutputVolume() - 10, 0);
+                     g_settings.audio_output_volume = volume;
+                     g_settings.audio_fast_forward_volume = volume;
                      g_settings.audio_output_muted = false;
-                     m_audio_stream->SetOutputVolume(g_settings.audio_output_volume);
-                     AddFormattedOSDMessage(2.0f, TranslateString("OSDMessage", "Volume: %d%%"),
-                                            g_settings.audio_output_volume);
+                     m_audio_stream->SetOutputVolume(volume);
+                     AddFormattedOSDMessage(2.0f, TranslateString("OSDMessage", "Volume: %d%%"), volume);
                    }
                  });
 }
@@ -1897,7 +1928,7 @@ bool CommonHostInterface::SaveInputProfile(const char* profile_path, SettingsInt
     return false;
   }
 
-  Log_SuccessPrintf("Input profile saved to '%s'", profile_path);
+  Log_InfoPrintf("Input profile saved to '%s'", profile_path);
   return true;
 }
 

@@ -30,7 +30,11 @@ struct CheatCode
     Decrement16 = 0x11,
     Increment8 = 0x20,
     Decrement8 = 0x21,
+    DelayActivation = 0xC1,
     SkipIfNotEqual16 = 0xC0,
+    SkipIfButtonsNotEqual = 0xD5,
+    SkipIfButtonsEqual = 0xD6,
+    CompareButtons = 0xD4,
     CompareEqual16 = 0xD0,
     CompareNotEqual16 = 0xD1,
     CompareLess16 = 0xD2,
@@ -73,6 +77,8 @@ struct CheatCode
   std::string GetInstructionsAsString() const;
   bool SetInstructionsFromString(const std::string& str);
 
+  u32 GetNextNonConditionalInstruction(u32 index) const;
+
   void Apply() const;
 
   static const char* GetTypeName(Type type);
@@ -102,6 +108,9 @@ public:
   ALWAYS_INLINE CheatCode& GetCode(u32 i) { return m_codes[i]; }
   ALWAYS_INLINE u32 GetCodeCount() const { return static_cast<u32>(m_codes.size()); }
   ALWAYS_INLINE bool IsCodeEnabled(u32 index) const { return m_codes[index].enabled; }
+
+  ALWAYS_INLINE bool GetMasterEnable() const { return m_master_enable; }
+  ALWAYS_INLINE void SetMasterEnable(bool enable) { m_master_enable = enable; }
 
   const CheatCode* FindCode(const char* name) const;
   const CheatCode* FindCode(const char* group, const char* name) const;
@@ -140,6 +149,7 @@ public:
 
 private:
   std::vector<CheatCode> m_codes;
+  bool m_master_enable = true;
 };
 
 class MemoryScan

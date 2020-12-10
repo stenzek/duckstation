@@ -144,6 +144,7 @@ protected:
   virtual bool AcquireHostDisplay() = 0;
   virtual void ReleaseHostDisplay() = 0;
   virtual std::unique_ptr<AudioStream> CreateAudioStream(AudioBackend backend) = 0;
+  virtual s32 GetAudioOutputVolume() const;
 
   virtual void OnSystemCreated();
   virtual void OnSystemDestroyed();

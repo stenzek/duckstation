@@ -127,6 +127,12 @@ void AnalogController::SetButtonState(s32 button_code, bool pressed)
   SetButtonState(static_cast<Button>(button_code), pressed);
 }
 
+u32 AnalogController::GetButtonStateBits() const
+{
+  // flip bits, native data is active low
+  return m_button_state ^ 0xFFFF;
+}
+
 u32 AnalogController::GetVibrationMotorCount() const
 {
   return NUM_MOTORS;
@@ -210,7 +216,7 @@ void AnalogController::SetMotorState(u8 motor, u8 value)
 
 u8 AnalogController::GetExtraButtonMaskLSB() const
 {
-  if (!m_analog_dpad_in_digital_mode || m_analog_mode)
+  if (!m_analog_dpad_in_digital_mode || m_analog_mode || m_configuration_mode)
     return 0xFF;
 
   static constexpr u8 NEG_THRESHOLD = static_cast<u8>(128.0f - (127.0 * 0.5f));

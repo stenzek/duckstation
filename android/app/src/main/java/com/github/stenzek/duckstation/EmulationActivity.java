@@ -60,9 +60,9 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     private void reportErrorOnUIThread(String message) {
         // Toast.makeText(this, message, Toast.LENGTH_LONG);
         new AlertDialog.Builder(this)
-                .setTitle("Error")
+                .setTitle(R.string.emulation_activity_error)
                 .setMessage(message)
-                .setPositiveButton("OK", (dialog, button) -> {
+                .setPositiveButton(R.string.emulation_activity_ok, (dialog, button) -> {
                     dialog.dismiss();
                     enableFullscreenImmersive();
                 })
@@ -77,9 +77,9 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         runOnUiThread(() -> {
             // Toast.makeText(this, message, Toast.LENGTH_LONG);
             new AlertDialog.Builder(this)
-                    .setTitle("Error")
+                    .setTitle(R.string.emulation_activity_error)
                     .setMessage(message)
-                    .setPositiveButton("OK", (dialog, button) -> {
+                    .setPositiveButton(R.string.emulation_activity_ok, (dialog, button) -> {
                         dialog.dismiss();
                         enableFullscreenImmersive();
                         synchronized (lock) {
@@ -448,11 +448,11 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
         CharSequence[] items = new CharSequence[(codes != null) ? (codes.length + 1) : 1];
-        items[0] = "Import Patch Codes...";
+        items[0] = getString(R.string.emulation_activity_import_patch_codes);
         if (codes != null) {
             for (int i = 0; i < codes.length; i++) {
                 final PatchCode cc = codes[i];
-                items[i + 1] = String.format("%s %s", cc.isEnabled() ? "(ON)" : "(OFF)", cc.getDescription());
+                items[i + 1] = String.format("%s %s", cc.isEnabled() ? getString(R.string.emulation_activity_patch_on) : getString(R.string.emulation_activity_patch_off), cc.getDescription());
             }
         }
 
@@ -465,7 +465,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 intent.setType("*/*");
                 intent.addCategory(Intent.CATEGORY_OPENABLE);
-                startActivityForResult(Intent.createChooser(intent, "Choose Patch Code File"), REQUEST_IMPORT_PATCH_CODES);
+                startActivityForResult(Intent.createChooser(intent, getString(R.string.emulation_activity_choose_patch_code_file)), REQUEST_IMPORT_PATCH_CODES);
             }
         });
         builder.setOnCancelListener(dialogInterface -> onMenuClosed());
@@ -475,7 +475,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     private void importPatchesFromFile(Uri uri) {
         String str = FileUtil.readFileFromUri(this, uri, 512 * 1024);
         if (str == null || !AndroidHostInterface.getInstance().importPatchCodesFromString(str)) {
-            reportErrorOnUIThread("Failed to import patch codes. Make sure you selected a PCSXR or Libretro format file.");
+            reportErrorOnUIThread(getString(R.string.emulation_activity_failed_to_import_patch_codes));
         }
     }
 

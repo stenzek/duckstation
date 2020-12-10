@@ -142,6 +142,7 @@ struct Settings
 
   AudioBackend audio_backend = AudioBackend::Cubeb;
   s32 audio_output_volume = 100;
+  s32 audio_fast_forward_volume = 100;
   u32 audio_buffer_size = 2048;
   bool audio_output_muted = false;
   bool audio_sync_enabled = true;
@@ -198,6 +199,11 @@ struct Settings
   {
     return (cpu_fastmem_mode != CPUFastmemMode::Disabled && cpu_execution_mode == CPUExecutionMode::Recompiler &&
             !cpu_recompiler_memory_exceptions);
+  }
+
+  ALWAYS_INLINE s32 GetAudioOutputVolume(bool fast_forwarding) const
+  {
+    return audio_output_muted ? 0 : (fast_forwarding ? audio_fast_forward_volume : audio_output_volume);
   }
 
   bool HasAnyPerGameMemoryCards() const;

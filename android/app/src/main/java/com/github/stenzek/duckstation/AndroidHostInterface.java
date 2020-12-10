@@ -9,6 +9,7 @@ import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Locale;
 
 public class AndroidHostInterface {
     public final static int DISPLAY_ALIGNMENT_TOP_OR_LEFT = 0;
@@ -19,6 +20,7 @@ public class AndroidHostInterface {
     private Context mContext;
 
     static public native String getScmVersion();
+    static public native String getFullScmVersion();
 
     static public native AndroidHostInterface create(Context context, String userDirectory);
 

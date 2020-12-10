@@ -6,9 +6,11 @@
 #include "common/log.h"
 #include "common/string.h"
 #include "common/string_util.h"
+#include "controller.h"
 #include "cpu_code_cache.h"
 #include "cpu_core.h"
 #include "host_interface.h"
+#include "system.h"
 #include <cctype>
 #include <iomanip>
 #include <sstream>
@@ -93,6 +95,47 @@ static void DoMemoryWrite(PhysicalMemoryAddress address, T value)
 
     return;
   }
+}
+
+static u32 GetControllerButtonBits()
+{
+  static constexpr std::array<u16, 16> button_mapping = {{
+    0x0100, // Select
+    0x0200, // L3
+    0x0400, // R3
+    0x0800, // Start
+    0x1000, // Up
+    0x2000, // Right
+    0x4000, // Down
+    0x8000, // Left
+    0x0001, // L2
+    0x0002, // R2
+    0x0004, // L1
+    0x0008, // R1
+    0x0010, // Triangle
+    0x0020, // Circle
+    0x0040, // Cross
+    0x0080, // Square
+  }};
+
+  u32 bits = 0;
+  for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
+  {
+    Controller* controller = System::GetController(i);
+    if (!controller)
+      continue;
+
+    bits |= controller->GetButtonStateBits();
+  }
+
+  u32 translated_bits = 0;
+  for (u32 i = 0, bit = 1; i < static_cast<u32>(button_mapping.size()); i++, bit <<= 1)
+  {
+    if (bits & bit)
+      translated_bits |= button_mapping[i];
+  }
+
+  return translated_bits;
 }
 
 CheatList::CheatList() = default;
@@ -773,6 +816,41 @@ bool CheatCode::SetInstructionsFromString(const std::string& str)
   return true;
 }
 
+static bool IsConditionalInstruction(CheatCode::InstructionCode code)
+{
+  switch (code)
+  {
+    case CheatCode::InstructionCode::CompareEqual16:    // D0
+    case CheatCode::InstructionCode::CompareNotEqual16: // D1
+    case CheatCode::InstructionCode::CompareLess16:     // D2
+    case CheatCode::InstructionCode::CompareGreater16:  // D3
+    case CheatCode::InstructionCode::CompareEqual8:     // E0
+    case CheatCode::InstructionCode::CompareNotEqual8:  // E1
+    case CheatCode::InstructionCode::CompareLess8:      // E2
+    case CheatCode::InstructionCode::CompareGreater8:   // E3
+    case CheatCode::InstructionCode::CompareButtons:    // D4
+      return true;
+
+    default:
+      return false;
+  }
+}
+
+u32 CheatCode::GetNextNonConditionalInstruction(u32 index) const
+{
+  const u32 count = static_cast<u32>(instructions.size());
+  for (; index < count; index++)
+  {
+    if (!IsConditionalInstruction(instructions[index].code))
+    {
+      // we've found the first non conditional instruction in the chain, so skip over the instruction following it
+      return index + 1;
+    }
+  }
+
+  return index;
+}
+
 void CheatCode::Apply() const
 {
   const u32 count = static_cast<u32>(instructions.size());
@@ -847,7 +925,7 @@ void CheatCode::Apply() const
         if (value == inst.value16)
           index++;
         else
-          index += 2;
+          index = GetNextNonConditionalInstruction(index);
       }
       break;
 
@@ -857,7 +935,7 @@ void CheatCode::Apply() const
         if (value != inst.value16)
           index++;
         else
-          index += 2;
+          index = GetNextNonConditionalInstruction(index);
       }
       break;
 
@@ -867,7 +945,7 @@ void CheatCode::Apply() const
         if (value < inst.value16)
           index++;
         else
-          index += 2;
+          index = GetNextNonConditionalInstruction(index);
       }
       break;
 
@@ -877,7 +955,7 @@ void CheatCode::Apply() const
         if (value > inst.value16)
           index++;
         else
-          index += 2;
+          index = GetNextNonConditionalInstruction(index);
       }
       break;
 
@@ -887,7 +965,7 @@ void CheatCode::Apply() const
         if (value == inst.value8)
           index++;
         else
-          index += 2;
+          index = GetNextNonConditionalInstruction(index);
       }
       break;
 
@@ -897,7 +975,7 @@ void CheatCode::Apply() const
         if (value != inst.value8)
           index++;
         else
-          index += 2;
+          index = GetNextNonConditionalInstruction(index);
       }
       break;
 
@@ -907,7 +985,7 @@ void CheatCode::Apply() const
         if (value < inst.value8)
           index++;
         else
-          index += 2;
+          index = GetNextNonConditionalInstruction(index);
       }
       break;
 
@@ -917,16 +995,43 @@ void CheatCode::Apply() const
         if (value > inst.value8)
           index++;
         else
-          index += 2;
+          index = GetNextNonConditionalInstruction(index);
       }
       break;
 
-      case InstructionCode::SkipIfNotEqual16: // C0
+      case InstructionCode::CompareButtons: // D4
       {
-        const u16 value = DoMemoryRead<u16>(inst.address);
+        if (inst.value16 == GetControllerButtonBits())
+          index++;
+        else
+          index = GetNextNonConditionalInstruction(index);
+      }
+      break;
+
+      case InstructionCode::SkipIfNotEqual16:      // C0
+      case InstructionCode::SkipIfButtonsNotEqual: // D5
+      case InstructionCode::SkipIfButtonsEqual:    // D6
+      {
         index++;
 
-        if (value == inst.value16)
+        bool activate_codes;
+        switch (inst.code)
+        {
+          case InstructionCode::SkipIfNotEqual16: // C0
+            activate_codes = (DoMemoryRead<u16>(inst.address) == inst.value16);
+            break;
+          case InstructionCode::SkipIfButtonsNotEqual: // D5
+            activate_codes = (GetControllerButtonBits() == inst.value16);
+            break;
+          case InstructionCode::SkipIfButtonsEqual: // D6
+            activate_codes = (GetControllerButtonBits() != inst.value16);
+            break;
+          default:
+            activate_codes = false;
+            break;
+        }
+
+        if (activate_codes)
         {
           // execute following instructions
           continue;
@@ -941,6 +1046,18 @@ void CheatCode::Apply() const
           if (bits == separator_value)
             break;
         }
+      }
+      break;
+
+      case InstructionCode::DelayActivation: // C1
+      {
+        // A value of around 4000 or 5000 will usually give you a good 20-30 second delay before codes are activated.
+        // Frame number * 0.3 -> (20 * 60) * 10 / 3 => 4000
+        const u32 comp_value = (System::GetFrameNumber() * 10) / 3;
+        if (comp_value < inst.value16)
+          index = count;
+        else
+          index++;
       }
       break;
 

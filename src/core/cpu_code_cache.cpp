@@ -124,11 +124,12 @@ void Initialize()
   if (g_settings.IsUsingRecompiler())
   {
 #ifdef USE_STATIC_CODE_BUFFER
-    if (!s_code_buffer.Initialize(s_code_storage, sizeof(s_code_storage), RECOMPILER_FAR_CODE_CACHE_SIZE,
-                                  RECOMPILER_GUARD_SIZE))
+    const bool has_buffer = s_code_buffer.Initialize(s_code_storage, sizeof(s_code_storage),
+                                                     RECOMPILER_FAR_CODE_CACHE_SIZE, RECOMPILER_GUARD_SIZE);
 #else
-    if (!s_code_buffer.Allocate(RECOMPILER_CODE_CACHE_SIZE, RECOMPILER_FAR_CODE_CACHE_SIZE))
+    const bool has_buffer = false;
 #endif
+    if (!has_buffer && !s_code_buffer.Allocate(RECOMPILER_CODE_CACHE_SIZE, RECOMPILER_FAR_CODE_CACHE_SIZE))
     {
       Panic("Failed to initialize code space");
     }

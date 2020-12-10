@@ -289,11 +289,10 @@ bool XInputControllerInterface::HandleButtonEvent(u32 index, u32 button, bool pr
     return true;
   }
 
-  // Assume a half-axis, i.e. in 0..1 range
   const AxisCallback& axis_cb = m_controllers[index].button_axis_mapping[button];
   if (axis_cb)
   {
-    axis_cb(pressed ? 1.0f : 0.0f);
+    axis_cb(pressed ? 1.0f : -1.0f);
   }
   return true;
 }

@@ -1,9 +1,13 @@
 package com.github.stenzek.duckstation;
 
 import android.Manifest;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -28,6 +32,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
@@ -39,6 +44,25 @@ public class MainActivity extends AppCompatActivity {
     private GameList mGameList;
     private ListView mGameListView;
     private boolean mHasExternalStoragePermissions = false;
+
+    private void setLanguage() {
+        String language = PreferenceManager.getDefaultSharedPreferences(this).getString("Main/Language", "none");
+        if (language == null || language.equals("none")) {
+            return;
+        }
+
+        String[] parts = language.split("-");
+        if (parts.length < 2)
+            return;
+
+        Locale locale = new Locale(parts[0], parts[1]);
+        Locale.setDefault(locale);
+
+        Resources res = getResources();
+        Configuration config = res.getConfiguration();
+        config.setLocale(locale);
+        res.updateConfiguration(config, res.getDisplayMetrics());
+    }
 
     private boolean shouldResumeStateByDefault() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -57,6 +81,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setLanguage();
 
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -133,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
         Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
         i.addCategory(Intent.CATEGORY_DEFAULT);
         i.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
-        startActivityForResult(Intent.createChooser(i, "Choose directory"),
+        startActivityForResult(Intent.createChooser(i, getString(R.string.main_activity_choose_directory)),
                 REQUEST_ADD_DIRECTORY_TO_GAME_LIST);
     }
 
@@ -170,6 +195,15 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(this, SettingsActivity.class);
             startActivity(intent);
             return true;
+        } else if (id == R.id.action_show_version) {
+            showVersion();
+            return true;
+        } else if (id == R.id.action_github_respository) {
+            openGithubRepository();
+            return true;
+        } else if (id == R.id.action_discord_server) {
+            openDiscordServer();
+            return true;
         }
 
         return super.onOptionsItemSelected(item);
@@ -179,11 +213,9 @@ public class MainActivity extends AppCompatActivity {
         String path = FileUtil.getFullPathFromUri(uri, this);
         if (path.length() < 5) {
             new AlertDialog.Builder(this)
-                    .setTitle("Error")
-                    .setMessage("Failed to get path for the selected file. Please make sure the file is in internal/external storage.\n\n" +
-                            "Tap the overflow button in the directory selector.\nSelect \"Show Internal Storage\".\n" +
-                            "Tap the menu button and select your device name or SD card.")
-                    .setPositiveButton("OK", (dialog, button) -> {
+                    .setTitle(R.string.main_activity_error)
+                    .setMessage(R.string.main_activity_get_path_from_file_error)
+                    .setPositiveButton(R.string.main_activity_ok, (dialog, button) -> {
                     })
                     .create()
                     .show();
@@ -197,11 +229,9 @@ public class MainActivity extends AppCompatActivity {
         String path = FileUtil.getFullPathFromTreeUri(treeUri, this);
         if (path.length() < 5) {
             new AlertDialog.Builder(this)
-                    .setTitle("Error")
-                    .setMessage("Failed to get path for the selected directory. Please make sure the directory is in internal/external storage.\n\n" +
-                            "Tap the overflow button in the directory selector.\nSelect \"Show Internal Storage\".\n" +
-                            "Tap the menu button and select your device name or SD card.")
-                    .setPositiveButton("OK", (dialog, button) -> {
+                    .setTitle(R.string.main_activity_error)
+                    .setMessage(R.string.main_activity_get_path_from_directory_error)
+                    .setPositiveButton(R.string.main_activity_ok, (dialog, button) -> {
                     })
                     .create()
                     .show();
@@ -287,7 +317,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             } else {
                 Toast.makeText(this,
-                        "External storage permissions are required to use DuckStation.",
+                        R.string.main_activity_external_storage_permissions_error,
                         Toast.LENGTH_LONG);
                 finish();
             }
@@ -309,7 +339,7 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("*/*");
         intent.addCategory(Intent.CATEGORY_OPENABLE);
-        startActivityForResult(Intent.createChooser(intent, "Choose Disc Image"), REQUEST_START_FILE);
+        startActivityForResult(Intent.createChooser(intent, getString(R.string.main_activity_choose_disc_image)), REQUEST_START_FILE);
     }
 
     private boolean doBIOSCheck() {
@@ -317,10 +347,10 @@ public class MainActivity extends AppCompatActivity {
             return true;
 
         new AlertDialog.Builder(this)
-                .setTitle("Missing BIOS Image")
-                .setMessage("No BIOS image was found in DuckStation's bios directory. Do you with to locate and import a BIOS image now?")
-                .setPositiveButton("Yes", (dialog, button) -> importBIOSImage())
-                .setNegativeButton("No", (dialog, button) -> {
+                .setTitle(R.string.main_activity_missing_bios_image)
+                .setMessage(R.string.main_activity_missing_bios_image_prompt)
+                .setPositiveButton(R.string.main_activity_yes, (dialog, button) -> importBIOSImage())
+                .setNegativeButton(R.string.main_activity_no, (dialog, button) -> {
                 })
                 .create()
                 .show();
@@ -332,7 +362,7 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("*/*");
         intent.addCategory(Intent.CATEGORY_OPENABLE);
-        startActivityForResult(Intent.createChooser(intent, "Choose BIOS Image"), REQUEST_IMPORT_BIOS_IMAGE);
+        startActivityForResult(Intent.createChooser(intent, getString(R.string.main_activity_choose_bios_image)), REQUEST_IMPORT_BIOS_IMAGE);
     }
 
     private void onImportBIOSImageResult(Uri uri) {
@@ -343,7 +373,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             stream = getContentResolver().openInputStream(uri);
         } catch (FileNotFoundException e) {
-            Toast.makeText(this, "Failed to open BIOS image.", Toast.LENGTH_LONG);
+            Toast.makeText(this, R.string.main_activity_failed_to_open_bios_image, Toast.LENGTH_LONG);
             return;
         }
 
@@ -354,13 +384,13 @@ public class MainActivity extends AppCompatActivity {
             while ((len = stream.read(buffer)) > 0) {
                 os.write(buffer, 0, len);
                 if (os.size() > MAX_BIOS_SIZE) {
-                    throw new IOException("BIOS image is too large.");
+                    throw new IOException(getString(R.string.main_activity_bios_image_too_large));
                 }
             }
         } catch (IOException e) {
             new AlertDialog.Builder(this)
-                    .setMessage("Failed to read BIOS image: " + e.getMessage())
-                    .setPositiveButton("OK", (dialog, button) -> {
+                    .setMessage(getString(R.string.main_activity_failed_to_read_bios_image_prefix) + e.getMessage())
+                    .setPositiveButton(R.string.main_activity_ok, (dialog, button) -> {
                     })
                     .create()
                     .show();
@@ -368,13 +398,41 @@ public class MainActivity extends AppCompatActivity {
         }
 
         String importResult = AndroidHostInterface.getInstance().importBIOSImage(os.toByteArray());
-        String message = (importResult == null) ? "This BIOS image is invalid, or has already been imported." : ("BIOS '" + importResult + "' imported.");
+        String message = (importResult == null) ? getString(R.string.main_activity_invalid_error) : ("BIOS '" + importResult + "' imported.");
 
         new AlertDialog.Builder(this)
                 .setMessage(message)
-                .setPositiveButton("OK", (dialog, button) -> {
+                .setPositiveButton(R.string.main_activity_ok, (dialog, button) -> {
                 })
                 .create()
                 .show();
+    }
+
+    private void showVersion() {
+        final String message = AndroidHostInterface.getFullScmVersion();
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.main_activity_show_version_title)
+                .setMessage(message)
+                .setPositiveButton(R.string.main_activity_ok, (dialog, button) -> {
+                })
+                .setNeutralButton(R.string.main_activity_copy, (dialog, button) -> {
+                    ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                    if (clipboard != null)
+                        clipboard.setPrimaryClip(ClipData.newPlainText(getString(R.string.main_activity_show_version_title), message));
+                })
+                .create()
+                .show();
+    }
+
+    private void openGithubRepository() {
+        final String url = "https://github.com/stenzek/duckstation";
+        final Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        startActivity(browserIntent);
+    }
+
+    private void openDiscordServer() {
+        final String url = "https://discord.gg/Buktv3t";
+        final Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        startActivity(browserIntent);
     }
 }

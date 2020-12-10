@@ -1,4 +1,5 @@
 #include "gpu_backend.h"
+#include "common/align.h"
 #include "common/log.h"
 #include "common/state_wrapper.h"
 #include "settings.h"
@@ -44,71 +45,59 @@ void GPUBackend::Shutdown()
 
 GPUBackendFillVRAMCommand* GPUBackend::NewFillVRAMCommand()
 {
-  GPUBackendFillVRAMCommand* cmd =
-    static_cast<GPUBackendFillVRAMCommand*>(AllocateCommand(sizeof(GPUBackendFillVRAMCommand)));
-  cmd->type = GPUBackendCommandType::FillVRAM;
-  cmd->size = cmd->Size();
-  return cmd;
+  return static_cast<GPUBackendFillVRAMCommand*>(
+    AllocateCommand(GPUBackendCommandType::FillVRAM, sizeof(GPUBackendFillVRAMCommand)));
 }
 
 GPUBackendUpdateVRAMCommand* GPUBackend::NewUpdateVRAMCommand(u32 num_words)
 {
   const u32 size = sizeof(GPUBackendUpdateVRAMCommand) + (num_words * sizeof(u16));
-  GPUBackendUpdateVRAMCommand* cmd = static_cast<GPUBackendUpdateVRAMCommand*>(AllocateCommand(size));
-  cmd->type = GPUBackendCommandType::UpdateVRAM;
-  cmd->size = size;
+  GPUBackendUpdateVRAMCommand* cmd =
+    static_cast<GPUBackendUpdateVRAMCommand*>(AllocateCommand(GPUBackendCommandType::UpdateVRAM, size));
   return cmd;
 }
 
 GPUBackendCopyVRAMCommand* GPUBackend::NewCopyVRAMCommand()
 {
-  GPUBackendCopyVRAMCommand* cmd =
-    static_cast<GPUBackendCopyVRAMCommand*>(AllocateCommand(sizeof(GPUBackendCopyVRAMCommand)));
-  cmd->type = GPUBackendCommandType::CopyVRAM;
-  cmd->size = cmd->Size();
-  return cmd;
+  return static_cast<GPUBackendCopyVRAMCommand*>(
+    AllocateCommand(GPUBackendCommandType::CopyVRAM, sizeof(GPUBackendCopyVRAMCommand)));
 }
 
 GPUBackendSetDrawingAreaCommand* GPUBackend::NewSetDrawingAreaCommand()
 {
-  GPUBackendSetDrawingAreaCommand* cmd =
-    static_cast<GPUBackendSetDrawingAreaCommand*>(AllocateCommand(sizeof(GPUBackendSetDrawingAreaCommand)));
-  cmd->type = GPUBackendCommandType::SetDrawingArea;
-  cmd->size = cmd->Size();
-  return cmd;
+  return static_cast<GPUBackendSetDrawingAreaCommand*>(
+    AllocateCommand(GPUBackendCommandType::SetDrawingArea, sizeof(GPUBackendSetDrawingAreaCommand)));
 }
 
 GPUBackendDrawPolygonCommand* GPUBackend::NewDrawPolygonCommand(u32 num_vertices)
 {
   const u32 size = sizeof(GPUBackendDrawPolygonCommand) + (num_vertices * sizeof(GPUBackendDrawPolygonCommand::Vertex));
-  GPUBackendDrawPolygonCommand* cmd = static_cast<GPUBackendDrawPolygonCommand*>(AllocateCommand(size));
-  cmd->type = GPUBackendCommandType::DrawPolygon;
-  cmd->size = size;
+  GPUBackendDrawPolygonCommand* cmd =
+    static_cast<GPUBackendDrawPolygonCommand*>(AllocateCommand(GPUBackendCommandType::DrawPolygon, size));
   cmd->num_vertices = Truncate16(num_vertices);
   return cmd;
 }
 
 GPUBackendDrawRectangleCommand* GPUBackend::NewDrawRectangleCommand()
 {
-  GPUBackendDrawRectangleCommand* cmd =
-    static_cast<GPUBackendDrawRectangleCommand*>(AllocateCommand(sizeof(GPUBackendDrawRectangleCommand)));
-  cmd->type = GPUBackendCommandType::DrawRectangle;
-  cmd->size = cmd->Size();
-  return cmd;
+  return static_cast<GPUBackendDrawRectangleCommand*>(
+    AllocateCommand(GPUBackendCommandType::DrawRectangle, sizeof(GPUBackendDrawRectangleCommand)));
 }
 
 GPUBackendDrawLineCommand* GPUBackend::NewDrawLineCommand(u32 num_vertices)
 {
   const u32 size = sizeof(GPUBackendDrawLineCommand) + (num_vertices * sizeof(GPUBackendDrawLineCommand::Vertex));
-  GPUBackendDrawLineCommand* cmd = static_cast<GPUBackendDrawLineCommand*>(AllocateCommand(size));
-  cmd->type = GPUBackendCommandType::DrawLine;
-  cmd->size = size;
+  GPUBackendDrawLineCommand* cmd =
+    static_cast<GPUBackendDrawLineCommand*>(AllocateCommand(GPUBackendCommandType::DrawLine, size));
   cmd->num_vertices = Truncate16(num_vertices);
   return cmd;
 }
 
-void* GPUBackend::AllocateCommand(u32 size)
+void* GPUBackend::AllocateCommand(GPUBackendCommandType command, u32 size)
 {
+  // Ensure size is a multiple of 4 so we don't end up with an unaligned command.
+  size = Common::AlignUpPow2(size, 4);
+
   for (;;)
   {
     u32 read_ptr = m_command_fifo_read_ptr.load();
@@ -138,7 +127,10 @@ void* GPUBackend::AllocateCommand(u32 size)
       }
     }
 
-    return &m_command_fifo_data[write_ptr];
+    GPUBackendCommand* cmd = reinterpret_cast<GPUBackendCommand*>(&m_command_fifo_data[write_ptr]);
+    cmd->type = command;
+    cmd->size = size;
+    return cmd;
   }
 }
 
@@ -200,9 +192,8 @@ void GPUBackend::Sync()
   if (!m_use_gpu_thread)
     return;
 
-  GPUBackendSyncCommand* cmd = static_cast<GPUBackendSyncCommand*>(AllocateCommand(sizeof(GPUBackendSyncCommand)));
-  cmd->type = GPUBackendCommandType::Sync;
-  cmd->size = sizeof(GPUBackendSyncCommand);
+  GPUBackendSyncCommand* cmd =
+    static_cast<GPUBackendSyncCommand*>(AllocateCommand(GPUBackendCommandType::Sync, sizeof(GPUBackendSyncCommand)));
   PushCommand(cmd);
   WakeGPUThread();
 

@@ -52,7 +52,7 @@ static bool ReadTrack(CDImage* image, u8 track, MD5Digest* digest, ProgressCallb
     progress_callback->SetProgressValue(index);
 
     // skip index 0 if data track
-    if (index == 0 && image->GetTrackMode(track) != CDImage::TrackMode::Audio)
+    if (track == 1 && index == 0)
       continue;
 
     progress_callback->PushState();

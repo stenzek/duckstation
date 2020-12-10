@@ -55,6 +55,11 @@ void DigitalController::SetButtonState(s32 button_code, bool pressed)
   SetButtonState(static_cast<Button>(button_code), pressed);
 }
 
+u32 DigitalController::GetButtonStateBits() const
+{
+  return m_button_state ^ 0xFFFF;
+}
+
 void DigitalController::ResetTransferState()
 {
   m_transfer_state = TransferState::Idle;

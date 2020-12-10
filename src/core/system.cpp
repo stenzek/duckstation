@@ -1214,10 +1214,25 @@ void UpdateThrottlePeriod()
 {
   s_throttle_period =
     static_cast<s32>(1000000000.0 / static_cast<double>(s_throttle_frequency) / static_cast<double>(s_target_speed));
+  ResetThrottler();
+}
+
+void ResetThrottler()
+{
+  s_last_throttle_time = 0;
+  s_throttle_timer.Reset();
 }
 
 void Throttle()
 {
+  // Reset the throttler on audio buffer overflow, so we don't end up out of phase.
+  if (g_host_interface->GetAudioStream()->DidUnderflow())
+  {
+    Log_DevPrintf("Audio buffer underflowed, resetting throttler");
+    ResetThrottler();
+    return;
+  }
+
   // Allow variance of up to 40ms either way.
   constexpr s64 MAX_VARIANCE_TIME = INT64_C(40000000);
 
@@ -1239,8 +1254,7 @@ void Throttle()
       s_speed_lost_time_timestamp.Reset();
     }
 #endif
-    s_last_throttle_time = 0;
-    s_throttle_timer.Reset();
+    ResetThrottler();
   }
   else if (sleep_time >= MINIMUM_SLEEP_TIME)
   {
@@ -1283,6 +1297,9 @@ void UpdatePerformanceCounters()
   s_last_global_tick_counter = global_tick_counter;
   s_fps_timer.Reset();
 
+  Log_VerbosePrintf("FPS: %.2f VPS: %.2f Average: %.2fms Worst: %.2fms", s_fps, s_vps, s_average_frame_time,
+                    s_worst_frame_time);
+
   g_host_interface->OnSystemPerformanceCountersUpdated();
 }
 
@@ -1294,8 +1311,7 @@ void ResetPerformanceCounters()
   s_average_frame_time_accumulator = 0.0f;
   s_worst_frame_time_accumulator = 0.0f;
   s_fps_timer.Reset();
-  s_throttle_timer.Reset();
-  s_last_throttle_time = 0;
+  ResetThrottler();
 }
 
 bool LoadEXE(const char* filename)

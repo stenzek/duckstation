@@ -30,6 +30,11 @@ void Controller::SetAxisState(s32 axis_code, float value) {}
 
 void Controller::SetButtonState(s32 button_code, bool pressed) {}
 
+u32 Controller::GetButtonStateBits() const
+{
+  return 0;
+}
+
 u32 Controller::GetVibrationMotorCount() const
 {
   return 0;
