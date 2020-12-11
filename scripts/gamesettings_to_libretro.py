@@ -31,7 +31,7 @@ def parse_ini(path):
         "DisablePGXPTextureCorrection",
         "ForcePGXPVertexCache",
         "ForcePGXPCPUMode",
-        "ForceDigitalController",
+        "DisableAnalogModeForcing",
         "ForceRecompilerMemoryExceptions",
         "ForceRecompilerICache"
     ]

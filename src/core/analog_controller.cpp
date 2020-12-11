@@ -3,6 +3,7 @@
 #include "common/state_wrapper.h"
 #include "common/string_util.h"
 #include "host_interface.h"
+#include "settings.h"
 #include "system.h"
 #include <cmath>
 Log_SetChannel(AnalogController);
@@ -31,7 +32,17 @@ void AnalogController::Reset()
   ResetRumbleConfig();
 
   if (m_force_analog_on_reset)
-    SetAnalogMode(true);
+  {
+    if (g_settings.controller_disable_analog_mode_forcing)
+    {
+      g_host_interface->AddOSDMessage(
+        g_host_interface->TranslateStdString(
+          "OSDMessage", "Analog mode forcing is disabled by game settings. Controller will start in digital mode."),
+        10.0f);
+    }
+    else
+      SetAnalogMode(true);
+  }
 }
 
 bool AnalogController::DoState(StateWrapper& sw)

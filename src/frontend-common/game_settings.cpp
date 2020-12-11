@@ -34,7 +34,7 @@ std::array<std::pair<const char*, const char*>, static_cast<u32>(Trait::Count)> 
   {"DisablePGXPTextureCorrection", TRANSLATABLE("GameSettingsTrait", "Disable PGXP Texture Correction")},
   {"ForcePGXPVertexCache", TRANSLATABLE("GameSettingsTrait", "Force PGXP Vertex Cache")},
   {"ForcePGXPCPUMode", TRANSLATABLE("GameSettingsTrait", "Force PGXP CPU Mode")},
-  {"ForceDigitalController", TRANSLATABLE("GameSettingsTrait", "Force Digital Controller")},
+  {"DisableAnalogModeForcing", TRANSLATABLE("GameSettingsTrait", "Disable Forcing Controller Analog Mode on Reset")},
   {"ForceRecompilerMemoryExceptions", TRANSLATABLE("GameSettingsTrait", "Force Recompiler Memory Exceptions")},
   {"ForceRecompilerICache", TRANSLATABLE("GameSettingsTrait", "Force Recompiler ICache")},
 }};
@@ -709,23 +709,9 @@ void Entry::ApplySettings(bool display_osd_messages) const
     g_settings.gpu_pgxp_cpu = true;
   }
 
-  if (HasTrait(Trait::ForceDigitalController))
+  if (HasTrait(Trait::DisableAnalogModeForcing))
   {
-    for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
-    {
-      if (g_settings.controller_types[i] == ControllerType::AnalogController)
-      {
-        if (display_osd_messages)
-        {
-          g_host_interface->AddFormattedOSDMessage(
-            osd_duration,
-            g_host_interface->TranslateString("OSDMessage", "Controller %u changed to digital by game settings."),
-            i + 1u);
-        }
-
-        g_settings.controller_types[i] = ControllerType::DigitalController;
-      }
-    }
+    g_settings.controller_disable_analog_mode_forcing = true;
   }
 
   if (HasTrait(Trait::ForceRecompilerMemoryExceptions))

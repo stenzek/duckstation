@@ -24,7 +24,7 @@ enum class Trait : u32
   DisablePGXPTextureCorrection,
   ForcePGXPVertexCache,
   ForcePGXPCPUMode,
-  ForceDigitalController,
+  DisableAnalogModeForcing,
   ForceRecompilerMemoryExceptions,
   ForceRecompilerICache,
 
