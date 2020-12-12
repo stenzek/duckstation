@@ -25,7 +25,7 @@
         app:useSimpleSummaryProvider="true"
         app:iconSpaceReserved="false" />
     <SwitchPreferenceCompat
-        app:key="Controller1/AutoEnableAnalog"
+        app:key="Controller1/ForceAnalogOnReset"
         app:title="@string/settings_enable_analog_mode_on_reset"
         app:defaultValue="true"
         app:iconSpaceReserved="false" />
