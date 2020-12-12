@@ -200,7 +200,7 @@ void DigitalController::LoadSettings(const char* section)
 u8 DigitalController::GetButtonsLSBMask() const
 {
   constexpr u8 popn_controller_mask =
-    ~(u8(1) << static_cast<u8>(Button::Right) | u8(1) << static_cast<u8>(Button::Down) |
-      u8(1) << static_cast<u8>(Button::Left));
+    static_cast<u8>(~(u8(1) << static_cast<u8>(Button::Right) | u8(1) << static_cast<u8>(Button::Down) |
+                      u8(1) << static_cast<u8>(Button::Left)));
   return m_popn_controller_mode ? popn_controller_mask : 0xFF;
 }
