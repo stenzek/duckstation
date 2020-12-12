@@ -1151,6 +1151,22 @@ std::string GameList::GetCoverImagePathForEntry(const GameListEntry* entry) cons
   PathString cover_path;
   for (const char* extension : extensions)
   {
+    // use the file title if it differs (e.g. modded games)
+    const std::string_view file_title = System::GetTitleForPath(entry->path.c_str());
+    if (!file_title.empty() && entry->title != file_title)
+    {
+      cover_path.Clear();
+      cover_path.AppendString(g_host_interface->GetUserDirectory().c_str());
+      cover_path.AppendCharacter(FS_OSPATH_SEPERATOR_CHARACTER);
+      cover_path.AppendString("covers");
+      cover_path.AppendCharacter(FS_OSPATH_SEPERATOR_CHARACTER);
+      cover_path.AppendString(file_title.data(), static_cast<u32>(file_title.size()));
+      cover_path.AppendCharacter('.');
+      cover_path.AppendString(extension);
+      if (FileSystem::FileExists(cover_path))
+        return std::string(cover_path.GetCharArray());
+    }
+
     // try the title
     if (!entry->title.empty())
     {
@@ -1165,22 +1181,6 @@ std::string GameList::GetCoverImagePathForEntry(const GameListEntry* entry) cons
     {
       cover_path.Format("%s" FS_OSPATH_SEPARATOR_STR "covers" FS_OSPATH_SEPARATOR_STR "%s.%s",
                         g_host_interface->GetUserDirectory().c_str(), entry->code.c_str(), extension);
-      if (FileSystem::FileExists(cover_path))
-        return std::string(cover_path.GetCharArray());
-    }
-
-    // and the file title if it differs
-    const std::string_view file_title = System::GetTitleForPath(entry->path.c_str());
-    if (!file_title.empty() && entry->title != file_title)
-    {
-      cover_path.Clear();
-      cover_path.AppendString(g_host_interface->GetUserDirectory().c_str());
-      cover_path.AppendCharacter(FS_OSPATH_SEPERATOR_CHARACTER);
-      cover_path.AppendString("covers");
-      cover_path.AppendCharacter(FS_OSPATH_SEPERATOR_CHARACTER);
-      cover_path.AppendString(file_title.data(), static_cast<u32>(file_title.size()));
-      cover_path.AppendCharacter('.');
-      cover_path.AppendString(extension);
       if (FileSystem::FileExists(cover_path))
         return std::string(cover_path.GetCharArray());
     }
