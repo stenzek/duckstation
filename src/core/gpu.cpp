@@ -568,6 +568,14 @@ void GPU::UpdateCRTCDisplayParameters()
         cs.vertical_visible_end = vertical_display_end;
         break;
     }
+    cs.horizontal_visible_start =
+      std::clamp<u16>(cs.horizontal_visible_start, PAL_HORIZONTAL_ACTIVE_START, PAL_HORIZONTAL_ACTIVE_END);
+    cs.horizontal_visible_end =
+      std::clamp<u16>(cs.horizontal_visible_end, cs.horizontal_visible_start, PAL_HORIZONTAL_ACTIVE_END);
+    cs.vertical_visible_start =
+      std::clamp<u16>(cs.vertical_visible_start, PAL_VERTICAL_ACTIVE_START, PAL_VERTICAL_ACTIVE_END);
+    cs.vertical_visible_end =
+      std::clamp<u16>(cs.vertical_visible_end, cs.vertical_visible_start, PAL_VERTICAL_ACTIVE_END);
   }
   else
   {
@@ -597,6 +605,14 @@ void GPU::UpdateCRTCDisplayParameters()
         cs.vertical_visible_end = vertical_display_end;
         break;
     }
+    cs.horizontal_visible_start =
+      std::clamp<u16>(cs.horizontal_visible_start, NTSC_HORIZONTAL_ACTIVE_START, NTSC_HORIZONTAL_ACTIVE_END);
+    cs.horizontal_visible_end =
+      std::clamp<u16>(cs.horizontal_visible_end, cs.horizontal_visible_start, NTSC_HORIZONTAL_ACTIVE_END);
+    cs.vertical_visible_start =
+      std::clamp<u16>(cs.vertical_visible_start, NTSC_VERTICAL_ACTIVE_START, NTSC_VERTICAL_ACTIVE_END);
+    cs.vertical_visible_end =
+      std::clamp<u16>(cs.vertical_visible_end, cs.vertical_visible_start, NTSC_VERTICAL_ACTIVE_END);
   }
 
   // If force-progressive is enabled, we only double the height in 480i mode. This way non-interleaved 480i framebuffers

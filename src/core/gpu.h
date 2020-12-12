@@ -497,6 +497,7 @@ protected:
     u16 display_vram_width;
     u16 display_vram_height;
 
+    // Visible range of the screen, in GPU ticks/lines. Clamped to lie within the active video region.
     u16 horizontal_visible_start;
     u16 horizontal_visible_end;
     u16 vertical_visible_start;
