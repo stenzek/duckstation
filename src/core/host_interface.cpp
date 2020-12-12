@@ -403,6 +403,10 @@ void HostInterface::OnSystemDestroyed() {}
 
 void HostInterface::OnSystemPerformanceCountersUpdated() {}
 
+void HostInterface::OnDebugPaused() {}
+
+void HostInterface::OnDebugResumed() {}
+
 void HostInterface::OnSystemStateSaved(bool global, s32 slot) {}
 
 void HostInterface::OnRunningGameChanged() {}

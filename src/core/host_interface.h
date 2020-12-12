@@ -140,6 +140,10 @@ public:
   virtual void OnRunningGameChanged();
   virtual void OnSystemPerformanceCountersUpdated();
 
+  /// Notifications when core wants to pause/resume for debugging reasons.
+  virtual void OnDebugPaused();
+  virtual void OnDebugResumed();
+
 protected:
   virtual bool AcquireHostDisplay() = 0;
   virtual void ReleaseHostDisplay() = 0;
