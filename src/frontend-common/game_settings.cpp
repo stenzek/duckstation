@@ -207,13 +207,13 @@ static void ParseIniSection(Entry* entry, const char* section, const CSimpleIniA
     entry->display_active_start_offset = static_cast<s16>(lvalue);
   lvalue = ini.GetLongValue(section, "DisplayActiveEndOffset", 0);
   if (lvalue != 0)
-    entry->display_active_end_offset = static_cast<s8>(lvalue);
+    entry->display_active_end_offset = static_cast<s16>(lvalue);
   lvalue = ini.GetLongValue(section, "DisplayLineStartOffset", 0);
   if (lvalue != 0)
     entry->display_line_start_offset = static_cast<s8>(lvalue);
   lvalue = ini.GetLongValue(section, "DisplayLineEndOffset", 0);
   if (lvalue != 0)
-    entry->display_line_end_offset = static_cast<s16>(lvalue);
+    entry->display_line_end_offset = static_cast<s8>(lvalue);
   lvalue = ini.GetLongValue(section, "DMAMaxSliceTicks", 0);
   if (lvalue > 0)
     entry->dma_max_slice_ticks = static_cast<u32>(lvalue);
