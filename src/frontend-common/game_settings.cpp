@@ -34,7 +34,7 @@ std::array<std::pair<const char*, const char*>, static_cast<u32>(Trait::Count)> 
   {"DisablePGXPTextureCorrection", TRANSLATABLE("GameSettingsTrait", "Disable PGXP Texture Correction")},
   {"ForcePGXPVertexCache", TRANSLATABLE("GameSettingsTrait", "Force PGXP Vertex Cache")},
   {"ForcePGXPCPUMode", TRANSLATABLE("GameSettingsTrait", "Force PGXP CPU Mode")},
-  {"ForceDigitalController", TRANSLATABLE("GameSettingsTrait", "Force Digital Controller")},
+  {"DisableAnalogModeForcing", TRANSLATABLE("GameSettingsTrait", "Disable Forcing Controller Analog Mode on Reset")},
   {"ForceRecompilerMemoryExceptions", TRANSLATABLE("GameSettingsTrait", "Force Recompiler Memory Exceptions")},
   {"ForceRecompilerICache", TRANSLATABLE("GameSettingsTrait", "Force Recompiler ICache")},
 }};
@@ -207,13 +207,13 @@ static void ParseIniSection(Entry* entry, const char* section, const CSimpleIniA
     entry->display_active_start_offset = static_cast<s16>(lvalue);
   lvalue = ini.GetLongValue(section, "DisplayActiveEndOffset", 0);
   if (lvalue != 0)
-    entry->display_active_end_offset = static_cast<s8>(lvalue);
+    entry->display_active_end_offset = static_cast<s16>(lvalue);
   lvalue = ini.GetLongValue(section, "DisplayLineStartOffset", 0);
   if (lvalue != 0)
     entry->display_line_start_offset = static_cast<s8>(lvalue);
   lvalue = ini.GetLongValue(section, "DisplayLineEndOffset", 0);
   if (lvalue != 0)
-    entry->display_line_end_offset = static_cast<s16>(lvalue);
+    entry->display_line_end_offset = static_cast<s8>(lvalue);
   lvalue = ini.GetLongValue(section, "DMAMaxSliceTicks", 0);
   if (lvalue > 0)
     entry->dma_max_slice_ticks = static_cast<u32>(lvalue);
@@ -709,23 +709,9 @@ void Entry::ApplySettings(bool display_osd_messages) const
     g_settings.gpu_pgxp_cpu = true;
   }
 
-  if (HasTrait(Trait::ForceDigitalController))
+  if (HasTrait(Trait::DisableAnalogModeForcing))
   {
-    for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
-    {
-      if (g_settings.controller_types[i] == ControllerType::AnalogController)
-      {
-        if (display_osd_messages)
-        {
-          g_host_interface->AddFormattedOSDMessage(
-            osd_duration,
-            g_host_interface->TranslateString("OSDMessage", "Controller %u changed to digital by game settings."),
-            i + 1u);
-        }
-
-        g_settings.controller_types[i] = ControllerType::DigitalController;
-      }
-    }
+    g_settings.controller_disable_analog_mode_forcing = true;
   }
 
   if (HasTrait(Trait::ForceRecompilerMemoryExceptions))

@@ -218,6 +218,7 @@ void Settings::Load(SettingsInterface& si)
     ParseControllerTypeName(
       si.GetStringValue("Controller2", "Type", GetControllerTypeName(DEFAULT_CONTROLLER_2_TYPE)).c_str())
       .value_or(DEFAULT_CONTROLLER_2_TYPE);
+  controller_disable_analog_mode_forcing = false;
 
   memory_card_types[0] =
     ParseMemoryCardTypeName(

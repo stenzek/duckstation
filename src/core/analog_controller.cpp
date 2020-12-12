@@ -3,6 +3,7 @@
 #include "common/state_wrapper.h"
 #include "common/string_util.h"
 #include "host_interface.h"
+#include "settings.h"
 #include "system.h"
 #include <cmath>
 Log_SetChannel(AnalogController);
@@ -30,8 +31,18 @@ void AnalogController::Reset()
 
   ResetRumbleConfig();
 
-  if (m_auto_enable_analog)
-    SetAnalogMode(true);
+  if (m_force_analog_on_reset)
+  {
+    if (g_settings.controller_disable_analog_mode_forcing)
+    {
+      g_host_interface->AddOSDMessage(
+        g_host_interface->TranslateStdString(
+          "OSDMessage", "Analog mode forcing is disabled by game settings. Controller will start in digital mode."),
+        10.0f);
+    }
+    else
+      SetAnalogMode(true);
+  }
 }
 
 bool AnalogController::DoState(StateWrapper& sw)
@@ -679,8 +690,9 @@ u32 AnalogController::StaticGetVibrationMotorCount()
 Controller::SettingList AnalogController::StaticGetSettings()
 {
   static constexpr std::array<SettingInfo, 4> settings = {
-    {{SettingInfo::Type::Boolean, "AutoEnableAnalog", TRANSLATABLE("AnalogController", "Enable Analog Mode on Reset"),
-      TRANSLATABLE("AnalogController", "Automatically enables analog mode when the console is reset/powered on."),
+    {{SettingInfo::Type::Boolean, "ForceAnalogOnReset", TRANSLATABLE("AnalogController", "Force Analog Mode on Reset"),
+      TRANSLATABLE("AnalogController", "Forces the controller to analog mode when the console is reset/powered on. May "
+                                       "cause issues with games, so it is recommended to leave this option off."),
       "false"},
      {SettingInfo::Type::Boolean, "AnalogDPadInDigitalMode",
       TRANSLATABLE("AnalogController", "Use Analog Sticks for D-Pad in Digital Mode"),
@@ -704,7 +716,7 @@ Controller::SettingList AnalogController::StaticGetSettings()
 void AnalogController::LoadSettings(const char* section)
 {
   Controller::LoadSettings(section);
-  m_auto_enable_analog = g_host_interface->GetBoolSettingValue(section, "AutoEnableAnalog", false);
+  m_force_analog_on_reset = g_host_interface->GetBoolSettingValue(section, "ForceAnalogOnReset", false);
   m_analog_dpad_in_digital_mode = g_host_interface->GetBoolSettingValue(section, "AnalogDPadInDigitalMode", false);
   m_axis_scale =
     std::clamp(std::abs(g_host_interface->GetFloatSettingValue(section, "AxisScale", 1.00f)), 0.01f, 1.50f);

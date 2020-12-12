@@ -19,7 +19,7 @@ std::unique_ptr<GameSettings::Entry> GetSettingsForGame(const std::string& game_
   if (game_code == "SLUS-00077")
   {
     gs->AddTrait(GameSettings::Trait::DisableUpscaling);
-    gs->AddTrait(GameSettings::Trait::ForceDigitalController);
+    gs->AddTrait(GameSettings::Trait::DisableAnalogModeForcing);
     return gs;
   }
 
@@ -138,111 +138,111 @@ std::unique_ptr<GameSettings::Entry> GetSettingsForGame(const std::string& game_
   {
     gs->AddTrait(GameSettings::Trait::DisableUpscaling);
     gs->AddTrait(GameSettings::Trait::DisablePGXP);
-    gs->AddTrait(GameSettings::Trait::ForceDigitalController);
+    gs->AddTrait(GameSettings::Trait::DisableAnalogModeForcing);
     return gs;
   }
 
   if (game_code == "SCUS-94350")
   {
-    gs->AddTrait(GameSettings::Trait::ForceDigitalController);
+    gs->AddTrait(GameSettings::Trait::DisableAnalogModeForcing);
     return gs;
   }
 
   if (game_code == "SCUS-94900")
   {
-    gs->AddTrait(GameSettings::Trait::ForceDigitalController);
+    gs->AddTrait(GameSettings::Trait::DisableAnalogModeForcing);
     return gs;
   }
 
   if (game_code == "PCPX-96085")
   {
-    gs->AddTrait(GameSettings::Trait::ForceDigitalController);
+    gs->AddTrait(GameSettings::Trait::DisableAnalogModeForcing);
     return gs;
   }
 
   if (game_code == "SLUS-00590")
   {
-    gs->AddTrait(GameSettings::Trait::ForceDigitalController);
+    gs->AddTrait(GameSettings::Trait::DisableAnalogModeForcing);
     return gs;
   }
 
   if (game_code == "SLUS-00403")
   {
-    gs->AddTrait(GameSettings::Trait::ForceDigitalController);
+    gs->AddTrait(GameSettings::Trait::DisableAnalogModeForcing);
     return gs;
   }
 
   if (game_code == "SCUS-94300")
   {
-    gs->AddTrait(GameSettings::Trait::ForceDigitalController);
+    gs->AddTrait(GameSettings::Trait::DisableAnalogModeForcing);
     return gs;
   }
 
   if (game_code == "SLUS-00214")
   {
-    gs->AddTrait(GameSettings::Trait::ForceDigitalController);
+    gs->AddTrait(GameSettings::Trait::DisableAnalogModeForcing);
     return gs;
   }
 
   if (game_code == "SLUS-00204")
   {
-    gs->AddTrait(GameSettings::Trait::ForceDigitalController);
+    gs->AddTrait(GameSettings::Trait::DisableAnalogModeForcing);
     return gs;
   }
 
   if (game_code == "SLUS-00006")
   {
-    gs->AddTrait(GameSettings::Trait::ForceDigitalController);
+    gs->AddTrait(GameSettings::Trait::DisableAnalogModeForcing);
     return gs;
   }
 
   if (game_code == "SLUS-00213")
   {
-    gs->AddTrait(GameSettings::Trait::ForceDigitalController);
+    gs->AddTrait(GameSettings::Trait::DisableAnalogModeForcing);
     return gs;
   }
 
   if (game_code == "SCES-00344")
   {
-    gs->AddTrait(GameSettings::Trait::ForceDigitalController);
+    gs->AddTrait(GameSettings::Trait::DisableAnalogModeForcing);
     return gs;
   }
 
   if (game_code == "SLUS-00355")
   {
     gs->AddTrait(GameSettings::Trait::DisableUpscaling);
-    gs->AddTrait(GameSettings::Trait::ForceDigitalController);
+    gs->AddTrait(GameSettings::Trait::DisableAnalogModeForcing);
     return gs;
   }
 
   if (game_code == "SLUS-00331")
   {
     gs->AddTrait(GameSettings::Trait::DisableUpscaling);
-    gs->AddTrait(GameSettings::Trait::ForceDigitalController);
+    gs->AddTrait(GameSettings::Trait::DisableAnalogModeForcing);
     return gs;
   }
 
   if (game_code == "SLUS-00106")
   {
-    gs->AddTrait(GameSettings::Trait::ForceDigitalController);
+    gs->AddTrait(GameSettings::Trait::DisableAnalogModeForcing);
     return gs;
   }
 
   if (game_code == "SLUS-00005")
   {
-    gs->AddTrait(GameSettings::Trait::ForceDigitalController);
+    gs->AddTrait(GameSettings::Trait::DisableAnalogModeForcing);
     return gs;
   }
 
   if (game_code == "SLUS-01265")
   {
-    gs->AddTrait(GameSettings::Trait::ForceDigitalController);
+    gs->AddTrait(GameSettings::Trait::DisableAnalogModeForcing);
     return gs;
   }
 
   if (game_code == "SLUS-00601")
   {
-    gs->AddTrait(GameSettings::Trait::ForceDigitalController);
+    gs->AddTrait(GameSettings::Trait::DisableAnalogModeForcing);
     return gs;
   }
 
@@ -290,19 +290,19 @@ std::unique_ptr<GameSettings::Entry> GetSettingsForGame(const std::string& game_
 
   if (game_code == "SLPM-86023")
   {
-    gs->AddTrait(GameSettings::Trait::ForceDigitalController);
+    gs->AddTrait(GameSettings::Trait::DisableAnalogModeForcing);
     return gs;
   }
 
   if (game_code == "SLUS-00067")
   {
-    gs->AddTrait(GameSettings::Trait::ForceDigitalController);
+    gs->AddTrait(GameSettings::Trait::DisableAnalogModeForcing);
     return gs;
   }
 
   if (game_code == "SLES-00524")
   {
-    gs->AddTrait(GameSettings::Trait::ForceDigitalController);
+    gs->AddTrait(GameSettings::Trait::DisableAnalogModeForcing);
     return gs;
   }
 
@@ -326,7 +326,7 @@ std::unique_ptr<GameSettings::Entry> GetSettingsForGame(const std::string& game_
 
   if (game_code == "SLPS-02459")
   {
-    gs->AddTrait(GameSettings::Trait::ForceDigitalController);
+    gs->AddTrait(GameSettings::Trait::DisableAnalogModeForcing);
     return gs;
   }
 
@@ -344,110 +344,110 @@ std::unique_ptr<GameSettings::Entry> GetSettingsForGame(const std::string& game_
 
   if (game_code == "SLUS-00102")
   {
-    gs->AddTrait(GameSettings::Trait::ForceDigitalController);
+    gs->AddTrait(GameSettings::Trait::DisableAnalogModeForcing);
     return gs;
   }
 
   if (game_code == "SLUS-00152")
   {
-    gs->AddTrait(GameSettings::Trait::ForceDigitalController);
+    gs->AddTrait(GameSettings::Trait::DisableAnalogModeForcing);
     return gs;
   }
 
   if (game_code == "SLUS-00603")
   {
-    gs->AddTrait(GameSettings::Trait::ForceDigitalController);
+    gs->AddTrait(GameSettings::Trait::DisableAnalogModeForcing);
     return gs;
   }
 
   if (game_code == "SLUS-00348")
   {
     gs->AddTrait(GameSettings::Trait::DisableUpscaling);
-    gs->AddTrait(GameSettings::Trait::ForceDigitalController);
+    gs->AddTrait(GameSettings::Trait::DisableAnalogModeForcing);
     return gs;
   }
 
   if (game_code == "SLUS-00042")
   {
-    gs->AddTrait(GameSettings::Trait::ForceDigitalController);
+    gs->AddTrait(GameSettings::Trait::DisableAnalogModeForcing);
     return gs;
   }
 
   if (game_code == "SLUS-00561")
   {
-    gs->AddTrait(GameSettings::Trait::ForceDigitalController);
+    gs->AddTrait(GameSettings::Trait::DisableAnalogModeForcing);
     return gs;
   }
 
   if (game_code == "SLUS-00035")
   {
-    gs->AddTrait(GameSettings::Trait::ForceDigitalController);
+    gs->AddTrait(GameSettings::Trait::DisableAnalogModeForcing);
     return gs;
   }
 
   if (game_code == "SLUS-00057")
   {
-    gs->AddTrait(GameSettings::Trait::ForceDigitalController);
+    gs->AddTrait(GameSettings::Trait::DisableAnalogModeForcing);
     return gs;
   }
 
   if (game_code == "SLUS-00014")
   {
-    gs->AddTrait(GameSettings::Trait::ForceDigitalController);
+    gs->AddTrait(GameSettings::Trait::DisableAnalogModeForcing);
     return gs;
   }
 
   if (game_code == "SCUS-94403")
   {
-    gs->AddTrait(GameSettings::Trait::ForceDigitalController);
+    gs->AddTrait(GameSettings::Trait::DisableAnalogModeForcing);
     return gs;
   }
 
   if (game_code == "SLUS-00549")
   {
-    gs->AddTrait(GameSettings::Trait::ForceDigitalController);
+    gs->AddTrait(GameSettings::Trait::DisableAnalogModeForcing);
     return gs;
   }
 
   if (game_code == "SLUS-00240")
   {
-    gs->AddTrait(GameSettings::Trait::ForceDigitalController);
+    gs->AddTrait(GameSettings::Trait::DisableAnalogModeForcing);
     return gs;
   }
 
   if (game_code == "SLUS-00027")
   {
-    gs->AddTrait(GameSettings::Trait::ForceDigitalController);
+    gs->AddTrait(GameSettings::Trait::DisableAnalogModeForcing);
     return gs;
   }
 
   if (game_code == "SLUS-00119")
   {
-    gs->AddTrait(GameSettings::Trait::ForceDigitalController);
+    gs->AddTrait(GameSettings::Trait::DisableAnalogModeForcing);
     return gs;
   }
 
   if (game_code == "SLUS-00224")
   {
-    gs->AddTrait(GameSettings::Trait::ForceDigitalController);
+    gs->AddTrait(GameSettings::Trait::DisableAnalogModeForcing);
     return gs;
   }
 
   if (game_code == "SLUS-00453")
   {
-    gs->AddTrait(GameSettings::Trait::ForceDigitalController);
+    gs->AddTrait(GameSettings::Trait::DisableAnalogModeForcing);
     return gs;
   }
 
   if (game_code == "SLUS-00753")
   {
-    gs->AddTrait(GameSettings::Trait::ForceDigitalController);
+    gs->AddTrait(GameSettings::Trait::DisableAnalogModeForcing);
     return gs;
   }
 
   if (game_code == "SLUS-00811")
   {
-    gs->AddTrait(GameSettings::Trait::ForceDigitalController);
+    gs->AddTrait(GameSettings::Trait::DisableAnalogModeForcing);
     return gs;
   }
 
