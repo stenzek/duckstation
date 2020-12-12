@@ -1704,10 +1704,11 @@ void CommonHostInterface::RegisterAudioHotkeys()
                  StaticString(TRANSLATABLE("Hotkeys", "Volume Up")), [this](bool pressed) {
                    if (pressed && System::IsValid())
                    {
+                     g_settings.audio_output_muted = false;
+
                      const s32 volume = std::min<s32>(GetAudioOutputVolume() + 10, 100);
                      g_settings.audio_output_volume = volume;
                      g_settings.audio_fast_forward_volume = volume;
-                     g_settings.audio_output_muted = false;
                      m_audio_stream->SetOutputVolume(volume);
                      AddFormattedOSDMessage(2.0f, TranslateString("OSDMessage", "Volume: %d%%"), volume);
                    }
@@ -1716,10 +1717,11 @@ void CommonHostInterface::RegisterAudioHotkeys()
                  StaticString(TRANSLATABLE("Hotkeys", "Volume Down")), [this](bool pressed) {
                    if (pressed && System::IsValid())
                    {
+                     g_settings.audio_output_muted = false;
+
                      const s32 volume = std::max<s32>(GetAudioOutputVolume() - 10, 0);
                      g_settings.audio_output_volume = volume;
                      g_settings.audio_fast_forward_volume = volume;
-                     g_settings.audio_output_muted = false;
                      m_audio_stream->SetOutputVolume(volume);
                      AddFormattedOSDMessage(2.0f, TranslateString("OSDMessage", "Volume: %d%%"), volume);
                    }
