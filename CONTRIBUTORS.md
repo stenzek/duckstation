@@ -12,7 +12,7 @@ The following people have contributed to the project in some way, and are credit
 - posix - @Richard-L - German
 - @phoe-nix, @zkdpower - Chinese (Simplified)
 - Sorer - @MojoJojoDojo - Hebrew
-- Hipnosis183 - Spanish
+- Hipnosis - @Hipnosis183, MrHomunculus - Spanish
 - @RaydenX93 - Italian
 - @r57zone - Russian
 - @DenSinH - Dutch
