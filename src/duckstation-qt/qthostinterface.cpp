@@ -1185,10 +1185,10 @@ void QtHostInterface::setAudioOutputMuted(bool muted)
     return;
   }
 
+  g_settings.audio_output_muted = muted;
+
   if (m_audio_stream)
     m_audio_stream->SetOutputVolume(GetAudioOutputVolume());
-
-  g_settings.audio_output_muted = muted;
 }
 
 void QtHostInterface::startDumpingAudio()
