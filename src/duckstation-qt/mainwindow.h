@@ -1,5 +1,6 @@
 #pragma once
 #include <QtCore/QThread>
+#include <QtNetwork/QtNetwork>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QMainWindow>
 #include <memory>
@@ -19,6 +20,8 @@ class CheatManagerDialog;
 
 class HostDisplay;
 struct GameListEntry;
+
+class GDBServer;
 
 class MainWindow final : public QMainWindow
 {
@@ -93,6 +96,9 @@ private Q_SLOTS:
   void checkForUpdates(bool display_message);
   void onUpdateCheckComplete();
 
+  void onDebugPaused();
+  void onDebugResumed();
+
 protected:
   void closeEvent(QCloseEvent* event) override;
   void changeEvent(QEvent* event) override;
@@ -140,4 +146,6 @@ private:
 
   bool m_emulation_running = false;
   bool m_was_paused_by_focus_loss = false;
+
+  GDBServer* m_gdb_server = nullptr;
 };

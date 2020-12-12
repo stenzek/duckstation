@@ -138,6 +138,8 @@ Q_SIGNALS:
   void runningGameChanged(const QString& filename, const QString& game_code, const QString& game_title);
   void exitRequested();
   void inputProfileLoaded();
+  void debugPaused();
+  void debugResumed();
 
 public Q_SLOTS:
   void setDefaultSettings();
@@ -196,6 +198,9 @@ protected:
   void OnSystemPerformanceCountersUpdated() override;
   void OnRunningGameChanged() override;
   void OnSystemStateSaved(bool global, s32 slot) override;
+
+  void OnDebugPaused() override;
+  void OnDebugResumed() override;
 
   void LoadSettings() override;
   void SetDefaultSettings(SettingsInterface& si) override;

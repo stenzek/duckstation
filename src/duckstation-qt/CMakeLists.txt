@@ -47,6 +47,10 @@ set(SRCS
   gamepropertiesdialog.cpp
   gamepropertiesdialog.h
   gamepropertiesdialog.ui
+  gdbconnection.cpp
+  gdbconnection.h
+  gdbserver.cpp
+  gdbserver.h
   generalsettingswidget.cpp
   generalsettingswidget.h
   generalsettingswidget.ui

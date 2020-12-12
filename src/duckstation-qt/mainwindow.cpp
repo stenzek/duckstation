@@ -10,6 +10,7 @@
 #include "gamelistsettingswidget.h"
 #include "gamelistwidget.h"
 #include "gamepropertiesdialog.h"
+#include "gdbserver.h"
 #include "memorycardeditordialog.h"
 #include "qtdisplaywidget.h"
 #include "qthostinterface.h"
@@ -804,6 +805,16 @@ void MainWindow::updateEmulationActions(bool starting, bool running)
     }
   }
 
+  if (g_settings.debugging.enable_gdb_server) {
+    if (starting && !m_gdb_server) {
+      m_gdb_server = new GDBServer(this, g_settings.debugging.gdb_server_port);
+    }
+    else if (!running && m_gdb_server) {
+      delete m_gdb_server;
+      m_gdb_server = nullptr;
+    }
+  }
+
   m_ui.statusBar->clearMessage();
 }
 
@@ -933,6 +944,9 @@ void MainWindow::connectSignals()
           &MainWindow::onSystemPerformanceCountersUpdated);
   connect(m_host_interface, &QtHostInterface::runningGameChanged, this, &MainWindow::onRunningGameChanged);
   connect(m_host_interface, &QtHostInterface::exitRequested, this, &MainWindow::close);
+
+  connect(m_host_interface, &QtHostInterface::debugPaused, this, &MainWindow::onDebugPaused);
+  connect(m_host_interface, &QtHostInterface::debugResumed, this, &MainWindow::onDebugResumed);
 
   // These need to be queued connections to stop crashing due to menus opening/closing and switching focus.
   connect(m_game_list_widget, &GameListWidget::entrySelected, this, &MainWindow::onGameListEntrySelected,
@@ -1375,4 +1389,18 @@ void MainWindow::onUpdateCheckComplete()
 
   m_auto_updater_dialog->deleteLater();
   m_auto_updater_dialog = nullptr;
+}
+
+void MainWindow::onDebugPaused()
+{
+  if (m_gdb_server) {
+    m_gdb_server->onDebugPaused();
+  }
+}
+
+void MainWindow::onDebugResumed()
+{
+  if (m_gdb_server) {
+    m_gdb_server->onDebugResumed();
+  }
 }

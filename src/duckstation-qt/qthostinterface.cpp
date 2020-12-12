@@ -16,6 +16,7 @@
 #include "frontend-common/sdl_audio_stream.h"
 #include "frontend-common/sdl_controller_interface.h"
 #include "frontend-common/vulkan_host_display.h"
+#include "gdbserver.h"
 #include "imgui.h"
 #include "mainwindow.h"
 #include "qtdisplaywidget.h"
@@ -696,6 +697,16 @@ void QtHostInterface::OnRunningGameChanged()
 void QtHostInterface::OnSystemStateSaved(bool global, s32 slot)
 {
   emit stateSaved(QString::fromStdString(System::GetRunningCode()), global, slot);
+}
+
+void QtHostInterface::OnDebugPaused()
+{
+  emit debugPaused();
+}
+
+void QtHostInterface::OnDebugResumed()
+{
+  emit debugResumed();
 }
 
 void QtHostInterface::LoadSettings()
