@@ -557,5 +557,47 @@ std::unique_ptr<GameSettings::Entry> GetSettingsForGame(const std::string& game_
     return gs;
   }
 
+  if (game_code == "SLUS-00292")
+  {
+    gs->AddTrait(GameSettings::Trait::ForceRecompilerICache);
+    return gs;
+  }
+
+  if (game_code == "SLUS-00522")
+  {
+    gs->dma_max_slice_ticks = 200;
+    return gs;
+  }
+
+  if (game_code == "SLES-00469")
+  {
+    gs->dma_max_slice_ticks = 100;
+    return gs;
+  }
+
+  if (game_code == "SLPS-01163")
+  {
+    gs->dma_max_slice_ticks = 100;
+    return gs;
+  }
+
+  if (game_code == "SLUS-00498")
+  {
+    gs->dma_max_slice_ticks = 100;
+    return gs;
+  }
+
+  if (game_code == "SLPS-00433")
+  {
+    gs->dma_max_slice_ticks = 100;
+    return gs;
+  }
+
+  if (game_code == "SLUS-01029")
+  {
+    gs->AddTrait(GameSettings::Trait::DisableAnalogModeForcing);
+    return gs;
+  }
+
   return {};
 }
