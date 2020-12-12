@@ -545,10 +545,10 @@ void GPU::UpdateCRTCDisplayParameters()
     switch (crop_mode)
     {
       case DisplayCropMode::None:
-        cs.horizontal_active_start = static_cast<u16>(std::max<int>(0, 487 + g_settings.display_active_start_offset));
-        cs.horizontal_active_end = static_cast<u16>(std::max<int>(0, 3282 + g_settings.display_active_end_offset));
-        cs.vertical_active_start = static_cast<u16>(std::max<int>(0, 20 + g_settings.display_line_start_offset));
-        cs.vertical_active_end = static_cast<u16>(std::max<int>(0, 308 + g_settings.display_line_end_offset));
+        cs.horizontal_active_start = 487;
+        cs.horizontal_active_end = 3282;
+        cs.vertical_active_start = 20;
+        cs.vertical_active_end = 308;
         break;
 
       case DisplayCropMode::Overscan:
@@ -572,10 +572,10 @@ void GPU::UpdateCRTCDisplayParameters()
     switch (crop_mode)
     {
       case DisplayCropMode::None:
-        cs.horizontal_active_start = static_cast<u16>(std::max<int>(0, 488 + g_settings.display_active_start_offset));
-        cs.horizontal_active_end = static_cast<u16>(std::max<int>(0, 3288 + g_settings.display_active_end_offset));
-        cs.vertical_active_start = static_cast<u16>(std::max<int>(0, 16 + g_settings.display_line_start_offset));
-        cs.vertical_active_end = static_cast<u16>(std::max<int>(0, 256 + g_settings.display_line_end_offset));
+        cs.horizontal_active_start = 488;
+        cs.horizontal_active_end = 3288;
+        cs.vertical_active_start = 16;
+        cs.vertical_active_end = 256;
         break;
 
       case DisplayCropMode::Overscan:
