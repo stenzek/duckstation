@@ -87,7 +87,7 @@ void SDLAudioStream::AudioCallback(void* userdata, uint8_t* stream, int len)
   SDLAudioStream* const this_ptr = static_cast<SDLAudioStream*>(userdata);
   const u32 num_frames = len / sizeof(SampleType) / this_ptr->m_channels;
 
-  this_ptr->ReadFrames(reinterpret_cast<SampleType*>(stream), num_frames, false);
+  this_ptr->ReadFrames(reinterpret_cast<SampleType*>(stream), num_frames, true);
 }
 
 void SDLAudioStream::FramesAvailable() {}
