@@ -428,7 +428,8 @@ void CodeGenerator::EmitAdd(HostReg to_reg, HostReg from_reg, const Value& value
   }
 
   // need a temporary
-  Value temp_value = m_register_cache.AllocateScratch(value.size);
+  Assert(from_reg != RSCRATCH);
+  Value temp_value(Value::FromHostReg(&m_register_cache, RSCRATCH, value.size));
   if (value.size < RegSize_64)
     m_emit->Mov(GetHostReg32(temp_value.host_reg), constant_value);
   else
@@ -484,7 +485,8 @@ void CodeGenerator::EmitSub(HostReg to_reg, HostReg from_reg, const Value& value
   }
 
   // need a temporary
-  Value temp_value = m_register_cache.AllocateScratch(value.size);
+  Assert(from_reg != RSCRATCH);
+  Value temp_value(Value::FromHostReg(&m_register_cache, RSCRATCH, value.size));
   if (value.size < RegSize_64)
     m_emit->Mov(GetHostReg32(temp_value.host_reg), constant_value);
   else
@@ -535,7 +537,8 @@ void CodeGenerator::EmitCmp(HostReg to_reg, const Value& value)
   }
 
   // need a temporary
-  Value temp_value = m_register_cache.AllocateScratch(value.size);
+  Assert(to_reg != RSCRATCH);
+  Value temp_value(Value::FromHostReg(&m_register_cache, RSCRATCH, value.size));
   if (value.size < RegSize_64)
     m_emit->Mov(GetHostReg32(temp_value.host_reg), constant_value);
   else
@@ -577,9 +580,14 @@ void CodeGenerator::EmitDiv(HostReg to_reg_quotient, HostReg to_reg_remainder, H
 
   Value quotient_value;
   if (to_reg_quotient == HostReg_Count)
-    quotient_value = m_register_cache.AllocateScratch(size);
+  {
+    Assert(to_reg_quotient != RSCRATCH);
+    quotient_value = Value::FromHostReg(&m_register_cache, RSCRATCH, size);
+  }
   else
+  {
     quotient_value.SetHostReg(&m_register_cache, to_reg_quotient, size);
+  }
 
   if (signed_divide)
   {
@@ -775,7 +783,8 @@ void CodeGenerator::EmitAnd(HostReg to_reg, HostReg from_reg, const Value& value
   }
 
   // need a temporary
-  Value temp_value = m_register_cache.AllocateScratch(value.size);
+  Assert(from_reg != RSCRATCH);
+  Value temp_value(Value::FromHostReg(&m_register_cache, RSCRATCH, value.size));
   if (value.size < RegSize_64)
     m_emit->Mov(GetHostReg32(temp_value.host_reg), s64(value.constant_value));
   else
@@ -810,7 +819,8 @@ void CodeGenerator::EmitOr(HostReg to_reg, HostReg from_reg, const Value& value)
   }
 
   // need a temporary
-  Value temp_value = m_register_cache.AllocateScratch(value.size);
+  Assert(from_reg != RSCRATCH);
+  Value temp_value(Value::FromHostReg(&m_register_cache, RSCRATCH, value.size));
   if (value.size < RegSize_64)
     m_emit->Mov(GetHostReg32(temp_value.host_reg), s64(value.constant_value));
   else
@@ -845,7 +855,8 @@ void CodeGenerator::EmitXor(HostReg to_reg, HostReg from_reg, const Value& value
   }
 
   // need a temporary
-  Value temp_value = m_register_cache.AllocateScratch(value.size);
+  Assert(from_reg != RSCRATCH);
+  Value temp_value(Value::FromHostReg(&m_register_cache, RSCRATCH, value.size));
   if (value.size < RegSize_64)
     m_emit->Mov(GetHostReg32(temp_value.host_reg), s64(value.constant_value));
   else
@@ -880,7 +891,8 @@ void CodeGenerator::EmitTest(HostReg to_reg, const Value& value)
   }
 
   // need a temporary
-  Value temp_value = m_register_cache.AllocateScratch(value.size);
+  Assert(to_reg != RSCRATCH);
+  Value temp_value(Value::FromHostReg(&m_register_cache, RSCRATCH, value.size));
   if (value.size < RegSize_64)
     m_emit->Mov(GetHostReg32(temp_value.host_reg), s64(value.constant_value));
   else
@@ -1855,9 +1867,8 @@ void CodeGenerator::EmitBranch(const void* address, bool allow_scratch)
 
   Assert(allow_scratch);
 
-  Value temp = m_register_cache.AllocateScratch(RegSize_64);
-  m_emit->Mov(GetHostReg64(temp), reinterpret_cast<uintptr_t>(address));
-  m_emit->br(GetHostReg64(temp));
+  m_emit->Mov(GetHostReg64(RSCRATCH), reinterpret_cast<uintptr_t>(address));
+  m_emit->br(GetHostReg64(RSCRATCH));
 }
 
 void CodeGenerator::EmitBranch(LabelType* label)
