@@ -7,6 +7,7 @@
 #include "host_display.h"
 #include "host_interface.h"
 #include "interrupt_controller.h"
+#include "settings.h"
 #include "stb_image_write.h"
 #include "system.h"
 #include "timers.h"
@@ -456,9 +457,41 @@ float GPU::ComputeVerticalFrequency() const
 float GPU::GetDisplayAspectRatio() const
 {
   if (g_settings.display_force_4_3_for_24bit && m_GPUSTAT.display_area_color_depth_24)
+  {
     return 4.0f / 3.0f;
+  }
+  else if (g_settings.display_aspect_ratio == DisplayAspectRatio::Auto)
+  {
+    const CRTCState& cs = m_crtc_state;
+    float relative_width = static_cast<float>(cs.horizontal_visible_end - cs.horizontal_visible_start);
+    float relative_height = static_cast<float>(cs.vertical_visible_end - cs.vertical_visible_start);
+
+    if (relative_width <= 0 || relative_height <= 0)
+      return 4.0f / 3.0f;
+
+    if (m_GPUSTAT.pal_mode)
+    {
+      relative_width /= static_cast<float>(PAL_HORIZONTAL_ACTIVE_END - PAL_HORIZONTAL_ACTIVE_START);
+      relative_height /= static_cast<float>(PAL_VERTICAL_ACTIVE_END - PAL_VERTICAL_ACTIVE_START);
+    }
+    else
+    {
+      relative_width /= static_cast<float>(NTSC_HORIZONTAL_ACTIVE_END - NTSC_HORIZONTAL_ACTIVE_START);
+      relative_height /= static_cast<float>(NTSC_VERTICAL_ACTIVE_END - NTSC_VERTICAL_ACTIVE_START);
+    }
+    return (relative_width / relative_height) * (4.0f / 3.0f);
+  }
+  else if (g_settings.display_aspect_ratio == DisplayAspectRatio::PAR1_1)
+  {
+    if (m_crtc_state.display_width == 0 || m_crtc_state.display_height == 0)
+      return 4.0f / 3.0f;
+
+    return static_cast<float>(m_crtc_state.display_width) / static_cast<float>(m_crtc_state.display_height);
+  }
   else
+  {
     return Settings::GetDisplayAspectRatioValue(g_settings.display_aspect_ratio);
+  }
 }
 
 void GPU::UpdateCRTCConfig()

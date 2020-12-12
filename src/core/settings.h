@@ -111,7 +111,7 @@ struct Settings
   bool gpu_pgxp_cpu = false;
   bool gpu_pgxp_preserve_proj_fp = false;
   DisplayCropMode display_crop_mode = DisplayCropMode::None;
-  DisplayAspectRatio display_aspect_ratio = DisplayAspectRatio::R4_3;
+  DisplayAspectRatio display_aspect_ratio = DisplayAspectRatio::Auto;
   s16 display_active_start_offset = 0;
   s16 display_active_end_offset = 0;
   s8 display_line_start_offset = 0;
@@ -300,7 +300,7 @@ struct Settings
 #endif
 
   static constexpr DisplayCropMode DEFAULT_DISPLAY_CROP_MODE = DisplayCropMode::Overscan;
-  static constexpr DisplayAspectRatio DEFAULT_DISPLAY_ASPECT_RATIO = DisplayAspectRatio::R4_3;
+  static constexpr DisplayAspectRatio DEFAULT_DISPLAY_ASPECT_RATIO = DisplayAspectRatio::Auto;
   static constexpr ControllerType DEFAULT_CONTROLLER_1_TYPE = ControllerType::DigitalController;
   static constexpr ControllerType DEFAULT_CONTROLLER_2_TYPE = ControllerType::None;
   static constexpr MemoryCardType DEFAULT_MEMORY_CARD_1_TYPE = MemoryCardType::PerGameTitle;

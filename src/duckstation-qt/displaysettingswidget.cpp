@@ -62,9 +62,9 @@ DisplaySettingsWidget::DisplaySettingsWidget(QtHostInterface* host_interface, QW
        "renderers. <br>This option is only supported in Direct3D and Vulkan. OpenGL will always use the default "
        "device."));
   dialog->registerWidgetHelp(
-    m_ui.displayAspectRatio, tr("Aspect Ratio"), QStringLiteral("4:3"),
-    tr("Changes the aspect ratio used to display the console's output to the screen. The default "
-       "is 4:3 which matches a typical TV of the era."));
+    m_ui.displayAspectRatio, tr("Aspect Ratio"), QStringLiteral("Auto (Game Native)"),
+    tr("Changes the aspect ratio used to display the console's output to the screen. The default is Auto (Game Native) "
+       "which automatically adjusts the aspect ratio to match how a game would be shown on a typical TV of the era."));
   dialog->registerWidgetHelp(
     m_ui.displayCropMode, tr("Crop Mode"), tr("Only Overscan Area"),
     tr("Determines how much of the area typically not visible on a consumer TV set to crop/hide. <br>"

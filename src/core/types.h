@@ -85,6 +85,7 @@ enum class DisplayCropMode : u8
 
 enum class DisplayAspectRatio : u8
 {
+  Auto,
   R4_3,
   R16_9,
   R16_10,
