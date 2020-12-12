@@ -126,7 +126,7 @@ long CubebAudioStream::DataCallback(cubeb_stream* stm, void* user_ptr, const voi
                                     long nframes)
 {
   CubebAudioStream* const this_ptr = static_cast<CubebAudioStream*>(user_ptr);
-  this_ptr->ReadFrames(reinterpret_cast<SampleType*>(output_buffer), static_cast<u32>(nframes), true);
+  this_ptr->ReadFrames(reinterpret_cast<SampleType*>(output_buffer), static_cast<u32>(nframes), false);
   return nframes;
 }
 
@@ -138,6 +138,12 @@ void CubebAudioStream::StateCallback(cubeb_stream* stream, void* user_ptr, cubeb
 }
 
 void CubebAudioStream::FramesAvailable() {}
+
+void CubebAudioStream::SetOutputVolume(u32 volume)
+{
+  AudioStream::SetOutputVolume(volume);
+  cubeb_stream_set_volume(m_cubeb_stream, static_cast<float>(m_output_volume) / 100.0f);
+}
 
 void CubebAudioStream::DestroyContext()
 {

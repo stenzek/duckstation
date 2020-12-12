@@ -18,6 +18,7 @@ protected:
   void PauseDevice(bool paused) override;
   void CloseDevice() override;
   void FramesAvailable() override;
+  void SetOutputVolume(u32 volume) override;
 
   void DestroyContext();
 
