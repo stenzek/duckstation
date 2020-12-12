@@ -4,7 +4,10 @@
 #include "gte_types.h"
 #include "types.h"
 #include <array>
+#include <condition_variable>
+#include <mutex>
 #include <optional>
+#include <set>
 
 class StateWrapper;
 
@@ -28,6 +31,8 @@ enum : PhysicalMemoryAddress
   ICACHE_TAG_ADDRESS_MASK = 0xFFFFFFF0u,
   ICACHE_INVALID_BITS = 0x0Fu,
 };
+
+using InstrumentedAddresses = std::set<VirtualMemoryAddress>;
 
 union CacheControl
 {
@@ -80,9 +85,28 @@ struct State
   std::array<u8, DCACHE_SIZE> dcache = {};
   std::array<u32, ICACHE_LINES> icache_tags = {};
   std::array<u8, ICACHE_SIZE> icache_data = {};
+
+  bool debug_pause = false;
+  std::mutex debug_mutex;
+  std::condition_variable debug_cv;
+  InstrumentedAddresses debug_breakpoints;
+  InstrumentedAddresses debug_watchpoints_read_word;
+  InstrumentedAddresses debug_watchpoints_read_halfword;
+  InstrumentedAddresses debug_watchpoints_read_byte;
+  InstrumentedAddresses debug_watchpoints_write_word;
+  InstrumentedAddresses debug_watchpoints_write_halfword;
+  InstrumentedAddresses debug_watchpoints_write_byte;
+  InstrumentedAddresses debug_watchpoints_access_word;
+  InstrumentedAddresses debug_watchpoints_access_halfword;
+  InstrumentedAddresses debug_watchpoints_access_byte;
 };
 
 extern State g_state;
+
+bool IsDebugInstrumented();
+void DebugUpdatedInstrumentation();
+void DebugHoldCPU();
+void DebugReleaseCPU();
 
 void Initialize();
 void Shutdown();

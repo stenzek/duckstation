@@ -7,6 +7,7 @@
 #include "cpu_core_private.h"
 #include "cpu_disasm.h"
 #include "cpu_recompiler_thunks.h"
+#include "host_interface.h"
 #include "gte.h"
 #include "pgxp.h"
 #include "settings.h"
@@ -24,6 +25,78 @@ static void FlushPipeline();
 State g_state;
 bool TRACE_EXECUTION = false;
 bool LOG_EXECUTION = false;
+
+static void DebugReset()
+{
+  g_state.debug_pause = false;
+  g_state.debug_breakpoints.clear();
+  g_state.debug_watchpoints_read_word.clear();
+  g_state.debug_watchpoints_read_halfword.clear();
+  g_state.debug_watchpoints_read_byte.clear();
+  g_state.debug_watchpoints_write_word.clear();
+  g_state.debug_watchpoints_write_halfword.clear();
+  g_state.debug_watchpoints_write_byte.clear();
+  g_state.debug_watchpoints_access_word.clear();
+  g_state.debug_watchpoints_access_halfword.clear();
+  g_state.debug_watchpoints_access_byte.clear();
+
+  g_state.debug_cv.notify_one();
+}
+
+bool IsDebugInstrumented()
+{
+  return g_state.debug_pause ||
+    !g_state.debug_breakpoints.empty() ||
+    !g_state.debug_watchpoints_read_word.empty() ||
+    !g_state.debug_watchpoints_read_halfword.empty() ||
+    !g_state.debug_watchpoints_read_byte.empty() ||
+    !g_state.debug_watchpoints_write_word.empty() ||
+    !g_state.debug_watchpoints_write_halfword.empty() ||
+    !g_state.debug_watchpoints_write_byte.empty() ||
+    !g_state.debug_watchpoints_access_word.empty() ||
+    !g_state.debug_watchpoints_access_halfword.empty() ||
+    !g_state.debug_watchpoints_access_byte.empty();
+}
+
+void DebugUpdatedInstrumentation()
+{
+  static bool s_previous_state_instrumentation;
+  bool current_state_instrumentation = IsDebugInstrumented();
+
+  if (s_previous_state_instrumentation != current_state_instrumentation) {
+    if (current_state_instrumentation) {
+      Log_InfoPrint("Debug instrumentation is activated");
+    }
+    if (current_state_instrumentation) {
+      Log_InfoPrint("Debug instrumentation is desactivated");
+    }
+  }
+
+  s_previous_state_instrumentation = current_state_instrumentation;
+}
+
+void DebugHoldCPU()
+{
+  Log_InfoPrintf("CPU stopped at 0x%08x", g_state.regs.pc);
+  g_state.debug_pause = true;
+
+  g_host_interface->OnDebugPaused();
+
+  std::unique_lock<std::mutex> lk(g_state.debug_mutex);
+  g_state.debug_cv.wait(lk, []{ return !g_state.debug_pause; });
+
+  FlushPipeline();
+}
+
+void DebugReleaseCPU()
+{
+  Log_InfoPrintf("CPU resuming from 0x%08x", g_state.regs.pc);
+
+  g_state.debug_pause = false;
+  g_state.debug_cv.notify_one();
+
+  g_host_interface->OnDebugResumed();
+}
 
 void WriteToExecutionLog(const char* format, ...)
 {
@@ -61,12 +134,15 @@ void Initialize()
 
 void Shutdown()
 {
+  DebugReset();
   // GTE::Shutdown();
   PGXP::Shutdown();
 }
 
 void Reset()
 {
+  DebugReset();
+
   g_state.pending_ticks = 0;
   g_state.downcount = 0;
 
@@ -476,7 +552,7 @@ void DisassembleAndPrint(u32 addr, u32 instructions_before /* = 0 */, u32 instru
   }
 }
 
-template<PGXPMode pgxp_mode>
+template<PGXPMode pgxp_mode, bool instrumented = false>
 ALWAYS_INLINE_RELEASE static void ExecuteInstruction()
 {
 restart_instruction:
@@ -975,7 +1051,7 @@ restart_instruction:
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       u8 value;
-      if (!ReadMemoryByte(addr, &value))
+      if (!ReadMemoryByteDispatch<instrumented>(addr, &value))
         return;
 
       const u32 sxvalue = SignExtend32(value);
@@ -991,7 +1067,7 @@ restart_instruction:
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       u16 value;
-      if (!ReadMemoryHalfWord(addr, &value))
+      if (!ReadMemoryHalfWordDispatch<instrumented>(addr, &value))
         return;
 
       const u32 sxvalue = SignExtend32(value);
@@ -1006,7 +1082,7 @@ restart_instruction:
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       u32 value;
-      if (!ReadMemoryWord(addr, &value))
+      if (!ReadMemoryWordDispatch<instrumented>(addr, &value))
         return;
 
       WriteRegDelayed(inst.i.rt, value);
@@ -1020,7 +1096,7 @@ restart_instruction:
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       u8 value;
-      if (!ReadMemoryByte(addr, &value))
+      if (!ReadMemoryByteDispatch<instrumented>(addr, &value))
         return;
 
       const u32 zxvalue = ZeroExtend32(value);
@@ -1035,7 +1111,7 @@ restart_instruction:
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       u16 value;
-      if (!ReadMemoryHalfWord(addr, &value))
+      if (!ReadMemoryHalfWordDispatch<instrumented>(addr, &value))
         return;
 
       const u32 zxvalue = ZeroExtend32(value);
@@ -1052,7 +1128,7 @@ restart_instruction:
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       const VirtualMemoryAddress aligned_addr = addr & ~UINT32_C(3);
       u32 aligned_value;
-      if (!ReadMemoryWord(aligned_addr, &aligned_value))
+      if (!ReadMemoryWordDispatch<instrumented>(aligned_addr, &aligned_value))
         return;
 
       // Bypasses load delay. No need to check the old value since this is the delay slot or it's not relevant.
@@ -1081,7 +1157,7 @@ restart_instruction:
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       const u8 value = Truncate8(ReadReg(inst.i.rt));
-      WriteMemoryByte(addr, value);
+      WriteMemoryByteDispatch<instrumented>(addr, value);
 
       if constexpr (pgxp_mode >= PGXPMode::Memory)
         PGXP::CPU_SB(inst.bits, value, addr);
@@ -1092,7 +1168,7 @@ restart_instruction:
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       const u16 value = Truncate16(ReadReg(inst.i.rt));
-      WriteMemoryHalfWord(addr, value);
+      WriteMemoryHalfWordDispatch<instrumented>(addr, value);
 
       if constexpr (pgxp_mode >= PGXPMode::Memory)
         PGXP::CPU_SH(inst.bits, value, addr);
@@ -1103,7 +1179,7 @@ restart_instruction:
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       const u32 value = ReadReg(inst.i.rt);
-      WriteMemoryWord(addr, value);
+      WriteMemoryWordDispatch<instrumented>(addr, value);
 
       if constexpr (pgxp_mode >= PGXPMode::Memory)
         PGXP::CPU_SW(inst.bits, value, addr);
@@ -1118,7 +1194,7 @@ restart_instruction:
       const u32 reg_value = ReadReg(inst.i.rt);
       const u8 shift = (Truncate8(addr) & u8(3)) * u8(8);
       u32 mem_value;
-      if (!ReadMemoryWord(aligned_addr, &mem_value))
+      if (!ReadMemoryWordDispatch<instrumented>(aligned_addr, &mem_value))
         return;
 
       u32 new_value;
@@ -1133,7 +1209,7 @@ restart_instruction:
         new_value = (mem_value & mem_mask) | (reg_value << shift);
       }
 
-      WriteMemoryWord(aligned_addr, new_value);
+      WriteMemoryWordDispatch<instrumented>(aligned_addr, new_value);
 
       if constexpr (pgxp_mode >= PGXPMode::Memory)
         PGXP::CPU_SW(inst.bits, new_value, addr);
@@ -1354,7 +1430,7 @@ restart_instruction:
 
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       u32 value;
-      if (!ReadMemoryWord(addr, &value))
+      if (!ReadMemoryWordDispatch<instrumented>(addr, &value))
         return;
 
       GTE::WriteRegister(ZeroExtend32(static_cast<u8>(inst.i.rt.GetValue())), value);
@@ -1375,7 +1451,7 @@ restart_instruction:
 
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       const u32 value = GTE::ReadRegister(ZeroExtend32(static_cast<u8>(inst.i.rt.GetValue())));
-      WriteMemoryWord(addr, value);
+      WriteMemoryWordDispatch<instrumented>(addr, value);
 
       if constexpr (pgxp_mode >= PGXPMode::Memory)
         PGXP::CPU_SWC2(inst.bits, value, addr);
@@ -1429,7 +1505,7 @@ void DispatchInterrupt()
     g_state.regs.pc);
 }
 
-template<PGXPMode pgxp_mode>
+template<PGXPMode pgxp_mode, bool instrumented = false>
 static void ExecuteImpl()
 {
   g_state.frame_done = false;
@@ -1439,6 +1515,12 @@ static void ExecuteImpl()
 
     while (g_state.pending_ticks < g_state.downcount)
     {
+      if constexpr (instrumented) {
+        if (g_state.debug_breakpoints.count(g_state.regs.pc) || g_state.debug_pause) {
+          DebugHoldCPU();
+        }
+      }
+
       if (HasPendingInterrupt() && !g_state.interrupt_delay)
         DispatchInterrupt();
 
@@ -1467,7 +1549,7 @@ static void ExecuteImpl()
 #endif
 
       // execute the instruction we previously fetched
-      ExecuteInstruction<pgxp_mode>();
+      ExecuteInstruction<pgxp_mode, instrumented>();
 
       // next load delay
       UpdateLoadDelay();
@@ -1481,14 +1563,25 @@ void Execute()
 {
   if (g_settings.gpu_pgxp_enable)
   {
-    if (g_settings.gpu_pgxp_cpu)
-      ExecuteImpl<PGXPMode::CPU>();
-    else
-      ExecuteImpl<PGXPMode::Memory>();
+    if (g_settings.gpu_pgxp_cpu) {
+      if (IsDebugInstrumented())
+        ExecuteImpl<PGXPMode::CPU, true>();
+      else
+        ExecuteImpl<PGXPMode::CPU>();
+    }
+    else {
+      if (IsDebugInstrumented())
+        ExecuteImpl<PGXPMode::Memory, true>();
+      else
+        ExecuteImpl<PGXPMode::Memory>();
+    }
   }
   else
   {
-    ExecuteImpl<PGXPMode::Disabled>();
+    if (IsDebugInstrumented())
+      ExecuteImpl<PGXPMode::Disabled, true>();
+    else
+      ExecuteImpl<PGXPMode::Disabled>();
   }
 }
 

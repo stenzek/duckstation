@@ -1,6 +1,7 @@
 #pragma once
 #include "bus.h"
 #include "cpu_core.h"
+#include <algorithm>
 
 namespace CPU {
 
@@ -75,5 +76,60 @@ bool WriteMemoryHalfWord(VirtualMemoryAddress addr, u16 value);
 bool WriteMemoryWord(VirtualMemoryAddress addr, u32 value);
 void* GetDirectReadMemoryPointer(VirtualMemoryAddress address, MemoryAccessSize size, TickCount* read_ticks);
 void* GetDirectWriteMemoryPointer(VirtualMemoryAddress address, MemoryAccessSize size);
+
+void ALWAYS_INLINE InstrumentMemoryAccess(VirtualMemoryAddress addr, const CPU::InstrumentedAddresses& access_list, const CPU::InstrumentedAddresses& watch_list)
+{
+  if (access_list.count(addr) || watch_list.count(addr)) {
+    DebugHoldCPU();
+  }
+}
+
+template <bool instrumented> bool ALWAYS_INLINE ReadMemoryByteDispatch(VirtualMemoryAddress addr, u8* value)
+{
+  if constexpr(instrumented) {
+    InstrumentMemoryAccess(addr, g_state.debug_watchpoints_access_byte, g_state.debug_watchpoints_read_byte);
+  }
+  return ReadMemoryByte(addr, value);
+}
+
+template <bool instrumented> bool ALWAYS_INLINE ReadMemoryHalfWordDispatch(VirtualMemoryAddress addr, u16* value)
+{
+  if constexpr(instrumented) {
+    InstrumentMemoryAccess(addr, g_state.debug_watchpoints_access_halfword, g_state.debug_watchpoints_read_halfword);
+  }
+  return ReadMemoryHalfWord(addr, value);
+}
+
+template <bool instrumented> bool ALWAYS_INLINE ReadMemoryWordDispatch(VirtualMemoryAddress addr, u32* value)
+{
+  if constexpr(instrumented) {
+    InstrumentMemoryAccess(addr, g_state.debug_watchpoints_access_word, g_state.debug_watchpoints_read_word);
+  }
+  return ReadMemoryWord(addr, value);
+}
+
+template <bool instrumented> bool ALWAYS_INLINE WriteMemoryByteDispatch(VirtualMemoryAddress addr, u8 value)
+{
+  if constexpr(instrumented) {
+    InstrumentMemoryAccess(addr, g_state.debug_watchpoints_access_byte, g_state.debug_watchpoints_write_byte);
+  }
+  return WriteMemoryByte(addr, value);
+}
+
+template <bool instrumented> bool ALWAYS_INLINE WriteMemoryHalfWordDispatch(VirtualMemoryAddress addr, u16 value)
+{
+  if constexpr(instrumented) {
+    InstrumentMemoryAccess(addr, g_state.debug_watchpoints_access_halfword, g_state.debug_watchpoints_write_halfword);
+  }
+  return WriteMemoryHalfWord(addr, value);
+}
+
+template <bool instrumented> bool ALWAYS_INLINE WriteMemoryWordDispatch(VirtualMemoryAddress addr, u32 value)
+{
+  if constexpr(instrumented) {
+    InstrumentMemoryAccess(addr, g_state.debug_watchpoints_access_word, g_state.debug_watchpoints_write_word);
+  }
+  return WriteMemoryWord(addr, value);
+}
 
 } // namespace CPU
