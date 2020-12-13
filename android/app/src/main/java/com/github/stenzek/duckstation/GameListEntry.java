@@ -155,8 +155,7 @@ public class GameListEntry {
         }
 
         int compatibilityDrawableId;
-        switch (mCompatibilityRating)
-        {
+        switch (mCompatibilityRating) {
             case DoesntBoot:
                 compatibilityDrawableId = R.drawable.ic_star_1;
                 break;

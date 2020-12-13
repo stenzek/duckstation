@@ -20,6 +20,7 @@ public class AndroidHostInterface {
     private Context mContext;
 
     static public native String getScmVersion();
+
     static public native String getFullScmVersion();
 
     static public native AndroidHostInterface create(Context context, String userDirectory);
