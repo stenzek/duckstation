@@ -64,7 +64,7 @@
     <message>
         <location filename="../advancedsettingswidget.ui" line="64"/>
         <source>Log To System Console</source>
-        <translation>记录系统控制台</translation>
+        <translation>记录主机系统</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="71"/>
@@ -74,7 +74,7 @@
     <message>
         <location filename="../advancedsettingswidget.ui" line="78"/>
         <source>Log To Debug Console</source>
-        <translation>记录调试控制台</translation>
+        <translation>记录主机调试</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="85"/>
@@ -222,169 +222,177 @@
 <context>
     <name>AnalogController</name>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="70"/>
-        <location filename="../../core/analog_controller.cpp" line="205"/>
+        <location filename="../../core/analog_controller.cpp" line="81"/>
+        <location filename="../../core/analog_controller.cpp" line="216"/>
         <source>Controller %u switched to analog mode.</source>
         <translation>控制器%u切换为模拟模式。</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="71"/>
-        <location filename="../../core/analog_controller.cpp" line="206"/>
+        <location filename="../../core/analog_controller.cpp" line="82"/>
+        <location filename="../../core/analog_controller.cpp" line="217"/>
         <source>Controller %u switched to digital mode.</source>
         <translation>控制器%u切换为数字模式。</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="165"/>
+        <location filename="../../core/analog_controller.cpp" line="176"/>
         <source>Controller %u is locked to analog mode by the game.</source>
         <translation>控制器%u被游戏锁定为模拟模式。</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="166"/>
+        <location filename="../../core/analog_controller.cpp" line="177"/>
         <source>Controller %u is locked to digital mode by the game.</source>
         <translation>控制器%u被游戏锁定为数字模式。</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="647"/>
+        <location filename="../../core/analog_controller.cpp" line="658"/>
         <source>LeftX</source>
         <translation>左摇杆X轴</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="648"/>
+        <location filename="../../core/analog_controller.cpp" line="659"/>
         <source>LeftY</source>
         <translation>左摇杆Y轴</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="649"/>
+        <location filename="../../core/analog_controller.cpp" line="660"/>
         <source>RightX</source>
         <translation>右摇杆X轴</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="650"/>
+        <location filename="../../core/analog_controller.cpp" line="661"/>
         <source>RightY</source>
         <translation>右摇杆Y轴</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="655"/>
+        <location filename="../../core/analog_controller.cpp" line="666"/>
         <source>Up</source>
         <translation>上</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="656"/>
+        <location filename="../../core/analog_controller.cpp" line="667"/>
         <source>Down</source>
         <translation>下</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="657"/>
+        <location filename="../../core/analog_controller.cpp" line="668"/>
         <source>Left</source>
         <translation>左</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="658"/>
+        <location filename="../../core/analog_controller.cpp" line="669"/>
         <source>Right</source>
         <translation>右</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="659"/>
+        <location filename="../../core/analog_controller.cpp" line="670"/>
         <source>Select</source>
         <translation>选择</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="660"/>
+        <location filename="../../core/analog_controller.cpp" line="671"/>
         <source>Start</source>
         <translation>开始</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="661"/>
+        <location filename="../../core/analog_controller.cpp" line="672"/>
         <source>Triangle</source>
         <translation>三角</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="662"/>
+        <location filename="../../core/analog_controller.cpp" line="673"/>
         <source>Cross</source>
         <translation>叉叉</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="663"/>
+        <location filename="../../core/analog_controller.cpp" line="674"/>
         <source>Circle</source>
         <translation>圆圈</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="664"/>
+        <location filename="../../core/analog_controller.cpp" line="675"/>
         <source>Square</source>
         <translation>方块</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="665"/>
+        <location filename="../../core/analog_controller.cpp" line="676"/>
         <source>L1</source>
         <translation>L1</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="666"/>
+        <location filename="../../core/analog_controller.cpp" line="677"/>
         <source>L2</source>
         <translation>L2</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="667"/>
+        <location filename="../../core/analog_controller.cpp" line="678"/>
         <source>R1</source>
         <translation>R1</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="668"/>
+        <location filename="../../core/analog_controller.cpp" line="679"/>
         <source>R2</source>
         <translation>R2</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="669"/>
+        <location filename="../../core/analog_controller.cpp" line="680"/>
         <source>L3</source>
         <translation>L3</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="670"/>
+        <location filename="../../core/analog_controller.cpp" line="681"/>
         <source>R3</source>
         <translation>R3</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="671"/>
+        <location filename="../../core/analog_controller.cpp" line="682"/>
         <source>Analog</source>
         <translation>模拟量</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="682"/>
+        <location filename="../../core/analog_controller.cpp" line="693"/>
+        <source>Force Analog Mode on Reset</source>
+        <translation>强制模拟模式复位</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="694"/>
+        <source>Forces the controller to analog mode when the console is reset/powered on. May cause issues with games, so it is recommended to leave this option off.</source>
+        <translation>当主机复位/通电时，强制控制器进入模拟模式。可能会导致游戏问题，所以建议关闭此选项。</translation>
+    </message>
+    <message>
         <source>Enable Analog Mode on Reset</source>
-        <translation>重启时启用模拟模式</translation>
+        <translation type="vanished">重启时启用模拟模式</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="683"/>
         <source>Automatically enables analog mode when the console is reset/powered on.</source>
-        <translation>当主机复位/开机时，自动启用模拟模式。</translation>
+        <translation type="vanished">当主机复位/开机时，自动启用模拟模式。</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="686"/>
+        <location filename="../../core/analog_controller.cpp" line="698"/>
         <source>Use Analog Sticks for D-Pad in Digital Mode</source>
         <translation>D-Pad在数字模式下使用模拟摇杆</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="687"/>
+        <location filename="../../core/analog_controller.cpp" line="699"/>
         <source>Allows you to use the analog sticks to control the d-pad in digital mode, as well as the buttons.</source>
         <translation>允许你在数字模式下使用模拟摇杆去控制d-pad，同样还有按钮。</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="690"/>
+        <location filename="../../core/analog_controller.cpp" line="702"/>
         <source>Analog Axis Scale</source>
         <translation>模拟轴灵敏度</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="691"/>
+        <location filename="../../core/analog_controller.cpp" line="703"/>
         <source>Sets the analog stick axis scaling factor. A value between 1.30 and 1.40 is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
         <translation>设置模拟杆轴灵敏度。使用较新的控制器 (如DualShock 4、Xbox One控制器) 时，建议使用1.30到1.40之间的值。</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="696"/>
+        <location filename="../../core/analog_controller.cpp" line="708"/>
         <source>Vibration Bias</source>
         <translation>震动力</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="697"/>
+        <location filename="../../core/analog_controller.cpp" line="709"/>
         <source>Sets the rumble bias value. If rumble in some games is too weak or not functioning, try increasing this value.</source>
         <translation>设置震动力的值。如果震动在某些游戏中太弱或不起作用，尝试增大这个值。</translation>
     </message>
@@ -522,22 +530,22 @@
 <context>
     <name>AudioBackend</name>
     <message>
-        <location filename="../../core/settings.cpp" line="667"/>
+        <location filename="../../core/settings.cpp" line="668"/>
         <source>Null (No Output)</source>
         <translation>无 (无输出)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="668"/>
+        <location filename="../../core/settings.cpp" line="669"/>
         <source>Cubeb</source>
         <translation>Cubeb</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="670"/>
+        <location filename="../../core/settings.cpp" line="671"/>
         <source>SDL</source>
         <translation>SDL</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="672"/>
+        <location filename="../../core/settings.cpp" line="673"/>
         <source>OpenSL ES</source>
         <translation>OpenSL ES</translation>
     </message>
@@ -906,17 +914,17 @@
 <context>
     <name>CPUExecutionMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="471"/>
+        <location filename="../../core/settings.cpp" line="472"/>
         <source>Intepreter (Slowest)</source>
         <translation>解释器 (最慢)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="472"/>
+        <location filename="../../core/settings.cpp" line="473"/>
         <source>Cached Interpreter (Faster)</source>
         <translation>缓存解释器 (较快)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="473"/>
+        <location filename="../../core/settings.cpp" line="474"/>
         <source>Recompiler (Fastest)</source>
         <translation>重编译器 (最快)</translation>
     </message>
@@ -924,17 +932,17 @@
 <context>
     <name>CPUFastmemMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="502"/>
+        <location filename="../../core/settings.cpp" line="503"/>
         <source>Disabled (Slowest)</source>
         <translation>禁用 (最慢)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="503"/>
+        <location filename="../../core/settings.cpp" line="504"/>
         <source>MMap (Hardware, Fastest, 64-Bit Only)</source>
         <translation>内存映射 (硬件，最快，仅64位)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="504"/>
+        <location filename="../../core/settings.cpp" line="505"/>
         <source>LUT (Faster)</source>
         <translation>LUT (较快)</translation>
     </message>
@@ -1470,7 +1478,7 @@
         <translation>当前状态将会保存。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2022"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2024"/>
         <source>Invalid version %u (%s version %u)</source>
         <translation>无效版本%u (%s版本%u)</translation>
     </message>
@@ -1478,22 +1486,22 @@
 <context>
     <name>ConsoleRegion</name>
     <message>
-        <location filename="../../core/settings.cpp" line="413"/>
+        <location filename="../../core/settings.cpp" line="414"/>
         <source>Auto-Detect</source>
         <translation>自动检测</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="413"/>
+        <location filename="../../core/settings.cpp" line="414"/>
         <source>NTSC-J (Japan)</source>
         <translation>NTSC-J (日本)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="414"/>
+        <location filename="../../core/settings.cpp" line="415"/>
         <source>NTSC-U/C (US, Canada)</source>
         <translation>NTSC-U/C (美国/加拿大)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="414"/>
+        <location filename="../../core/settings.cpp" line="415"/>
         <source>PAL (Europe, Australia)</source>
         <translation>PAL (欧洲，澳大利亚)</translation>
     </message>
@@ -1815,37 +1823,37 @@ This warning will only be shown once.</source>
 <context>
     <name>ControllerType</name>
     <message>
-        <location filename="../../core/settings.cpp" line="703"/>
+        <location filename="../../core/settings.cpp" line="704"/>
         <source>None</source>
         <translation>无</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="703"/>
+        <location filename="../../core/settings.cpp" line="704"/>
         <source>Digital Controller</source>
         <translation>数字控制器</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="704"/>
+        <location filename="../../core/settings.cpp" line="705"/>
         <source>Analog Controller (DualShock)</source>
         <translation>模拟控制器 (DualShock)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="704"/>
+        <location filename="../../core/settings.cpp" line="705"/>
         <source>Analog Joystick</source>
         <translation>模拟操纵杆</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="705"/>
+        <location filename="../../core/settings.cpp" line="706"/>
         <source>Namco GunCon</source>
         <translation>南梦宫光枪</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="705"/>
+        <location filename="../../core/settings.cpp" line="706"/>
         <source>PlayStation Mouse</source>
         <translation>PlayStation鼠标</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="706"/>
+        <location filename="../../core/settings.cpp" line="707"/>
         <source>NeGcon</source>
         <translation>NeGcon</translation>
     </message>
@@ -1936,7 +1944,7 @@ This warning will only be shown once.</source>
 <context>
     <name>DiscRegion</name>
     <message>
-        <location filename="../../core/settings.cpp" line="442"/>
+        <location filename="../../core/settings.cpp" line="443"/>
         <source>NTSC-J (Japan)</source>
         <translation>NTSC-J (日本)</translation>
     </message>
@@ -1945,17 +1953,17 @@ This warning will only be shown once.</source>
         <translation type="vanished">NTSC-U (美国)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="442"/>
+        <location filename="../../core/settings.cpp" line="443"/>
         <source>NTSC-U/C (US, Canada)</source>
         <translation>NTSC-U/C (美国，加拿大)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="443"/>
+        <location filename="../../core/settings.cpp" line="444"/>
         <source>PAL (Europe, Australia)</source>
         <translation>PAL (欧洲，澳大利亚)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="443"/>
+        <location filename="../../core/settings.cpp" line="444"/>
         <source>Other</source>
         <translation>其他</translation>
     </message>
@@ -1963,17 +1971,17 @@ This warning will only be shown once.</source>
 <context>
     <name>DisplayCropMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="600"/>
+        <location filename="../../core/settings.cpp" line="601"/>
         <source>None</source>
         <translation>无</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="600"/>
+        <location filename="../../core/settings.cpp" line="601"/>
         <source>Only Overscan Area</source>
         <translation>仅限过扫描区域</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="601"/>
+        <location filename="../../core/settings.cpp" line="602"/>
         <source>All Borders</source>
         <translation>所有边界</translation>
     </message>
@@ -2110,7 +2118,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../displaysettingswidget.cpp" line="66"/>
         <source>Changes the aspect ratio used to display the console&apos;s output to the screen. The default is 4:3 which matches a typical TV of the era.</source>
-        <translation>更改用于在屏幕上显示控制台输出的纵横比。默认值是4:3，与那个时代的典型电视相匹配。</translation>
+        <translation>更改用于在屏幕上显示主机输出的纵横比。默认值是4:3，与那个时代的典型电视相匹配。</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="69"/>
@@ -2138,7 +2146,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../displaysettingswidget.cpp" line="75"/>
         <source>Uses bilinear texture filtering when displaying the console&apos;s framebuffer to the screen. &lt;br&gt;Disabling filtering will producer a sharper, blockier/pixelated image. Enabling will smooth out the image. &lt;br&gt;The option will be less noticable the higher the resolution scale.</source>
-        <translation>在将控制台帧缓冲区显示到屏幕时使用双线性纹理过滤。&lt;br&gt;禁用过滤将生成更锐利、更块状/像素化的图像。启用将使图像平滑。&lt;br&gt;分辨率越高越不明显。</translation>
+        <translation>在将主机帧缓冲区显示到屏幕时使用双线性纹理过滤。&lt;br&gt;禁用过滤将生成更锐利、更块状/像素化的图像。启用将使图像平滑。&lt;br&gt;分辨率越高越不明显。</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="81"/>
@@ -2151,7 +2159,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../displaysettingswidget.cpp" line="82"/>
         <source>Adds padding to the display area to ensure that the ratio between pixels on the host to pixels in the console is an integer number. &lt;br&gt;May result in a sharper image in some 2D games.</source>
-        <translation>向显示区域添加填充，以确保主机上的像素与控制台中的像素之间的比率为整数。&lt;br&gt;在一些2D游戏中可能会产生更锐利的图像。</translation>
+        <translation>向显示区域添加填充，以确保显示区域中的像素与主机中的像素之间的比率为整数。&lt;br&gt;在一些2D游戏中可能会产生更锐利的图像。</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="86"/>
@@ -2361,7 +2369,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="72"/>
         <source>Uses NTSC frame timings when the console is in PAL mode, forcing PAL games to run at 60hz. &lt;br&gt;For most games which have a speed tied to the framerate, this will result in the game running approximately 17% faster. &lt;br&gt;For variable frame rate games, it may not affect the speed.</source>
-        <translation>当游戏机处于PAL模式时使用NTSC帧计时，强制PAL游戏以60hz运行。&lt;br&gt;对于大多数速度与帧速率相关的游戏，这将导致游戏运行速度大约快17%。&lt;br&gt;对于可变帧速率游戏，它可能不会影响速度。</translation>
+        <translation>当主机处于PAL模式时使用NTSC帧计时，强制PAL游戏以60hz运行。&lt;br&gt;对于大多数速度与帧速率相关的游戏，这将导致游戏运行速度大约快17%。&lt;br&gt;对于可变帧速率游戏，它可能不会影响速度。</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="79"/>
@@ -2463,22 +2471,22 @@ This warning will only be shown once.</source>
 <context>
     <name>GPURenderer</name>
     <message>
-        <location filename="../../core/settings.cpp" line="537"/>
+        <location filename="../../core/settings.cpp" line="538"/>
         <source>Hardware (D3D11)</source>
         <translation>硬件 (D3D11)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="539"/>
+        <location filename="../../core/settings.cpp" line="540"/>
         <source>Hardware (Vulkan)</source>
         <translation>硬件 (Vulkan)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="539"/>
+        <location filename="../../core/settings.cpp" line="540"/>
         <source>Hardware (OpenGL)</source>
         <translation>硬件 (OpenGL)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="540"/>
+        <location filename="../../core/settings.cpp" line="541"/>
         <source>Software</source>
         <translation>软件</translation>
     </message>
@@ -2597,37 +2605,37 @@ This warning will only be shown once.</source>
 <context>
     <name>GPUTextureFilter</name>
     <message>
-        <location filename="../../core/settings.cpp" line="569"/>
+        <location filename="../../core/settings.cpp" line="570"/>
         <source>Nearest-Neighbor</source>
         <translation>最近邻</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="569"/>
+        <location filename="../../core/settings.cpp" line="570"/>
         <source>Bilinear</source>
         <translation>双线性</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="570"/>
+        <location filename="../../core/settings.cpp" line="571"/>
         <source>JINC2</source>
         <translation>JINC2</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="570"/>
+        <location filename="../../core/settings.cpp" line="571"/>
         <source>Bilinear (No Edge Blending)</source>
         <translation>双线性 (无边缘混合)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="571"/>
+        <location filename="../../core/settings.cpp" line="572"/>
         <source>xBR</source>
         <translation>xBR</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="571"/>
+        <location filename="../../core/settings.cpp" line="572"/>
         <source>JINC2 (No Edge Blending)</source>
         <translation>JINC2 (无边缘混合)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="572"/>
+        <location filename="../../core/settings.cpp" line="573"/>
         <source>xBR (No Edge Blending)</source>
         <translation>xBR (无边缘混合)</translation>
     </message>
@@ -3322,8 +3330,12 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="37"/>
+        <source>Disable Forcing Controller Analog Mode on Reset</source>
+        <translation>复位时不强制控制器进入模拟模式</translation>
+    </message>
+    <message>
         <source>Force Digital Controller</source>
-        <translation>强制数字控制器</translation>
+        <translation type="vanished">强制数字控制器</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="38"/>
@@ -3491,7 +3503,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../generalsettingswidget.cpp" line="68"/>
         <source>Renders the display of the simulated console to the main window of the application, over the game list. If unchecked, the display will render in a separate window.</source>
-        <translation>渲染模拟控制台的画面到应用程序的主窗口，显示于游戏列表上。如果未选中，则在单独的窗口中显示渲染画面。</translation>
+        <translation>渲染模拟主机的画面到应用程序的主窗口，显示于游戏列表上。如果未选中，则在单独的窗口中显示渲染画面。</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="71"/>
@@ -3932,7 +3944,7 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../../frontend-common/common_host_interface.cpp" line="1679"/>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1692"/>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1703"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1715"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1716"/>
         <source>Audio</source>
         <translation>声音</translation>
     </message>
@@ -3968,7 +3980,7 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>音量增大</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1716"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1717"/>
         <source>Volume Down</source>
         <translation>音量减小</translation>
     </message>
@@ -4029,22 +4041,22 @@ This will download approximately 4 megabytes over your current internet connecti
 <context>
     <name>LogLevel</name>
     <message>
-        <location filename="../../core/settings.cpp" line="382"/>
+        <location filename="../../core/settings.cpp" line="383"/>
         <source>None</source>
         <translation>无</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="382"/>
+        <location filename="../../core/settings.cpp" line="383"/>
         <source>Error</source>
         <translation>错误</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="382"/>
+        <location filename="../../core/settings.cpp" line="383"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="383"/>
+        <location filename="../../core/settings.cpp" line="384"/>
         <source>Performance</source>
         <translation>性能</translation>
     </message>
@@ -4053,32 +4065,32 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation type="vanished">成功</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="383"/>
+        <location filename="../../core/settings.cpp" line="384"/>
         <source>Information</source>
         <translation>信息</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="384"/>
+        <location filename="../../core/settings.cpp" line="385"/>
         <source>Developer</source>
         <translation>开发者</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="384"/>
+        <location filename="../../core/settings.cpp" line="385"/>
         <source>Profile</source>
         <translation>简介</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="384"/>
+        <location filename="../../core/settings.cpp" line="385"/>
         <source>Verbose</source>
         <translation>详尽</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="385"/>
+        <location filename="../../core/settings.cpp" line="386"/>
         <source>Debug</source>
         <translation>调试</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="385"/>
+        <location filename="../../core/settings.cpp" line="386"/>
         <source>Trace</source>
         <translation>跟踪</translation>
     </message>
@@ -4969,22 +4981,22 @@ This will download approximately 4 megabytes over your current internet connecti
 <context>
     <name>MemoryCardType</name>
     <message>
-        <location filename="../../core/settings.cpp" line="734"/>
+        <location filename="../../core/settings.cpp" line="735"/>
         <source>No Memory Card</source>
         <translation>无记忆卡</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="734"/>
+        <location filename="../../core/settings.cpp" line="735"/>
         <source>Shared Between All Games</source>
         <translation>所有游戏共用记忆卡</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="735"/>
+        <location filename="../../core/settings.cpp" line="736"/>
         <source>Separate Card Per Game (Game Code)</source>
         <translation>每个游戏独立记忆卡 (游戏编码)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="736"/>
+        <location filename="../../core/settings.cpp" line="737"/>
         <source>Separate Card Per Game (Game Title)</source>
         <translation>每个游戏独立记忆卡 (游戏标题)</translation>
     </message>
@@ -5193,8 +5205,8 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="736"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2180"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2571"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2182"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2573"/>
         <source>Failed to load post processing shader chain.</source>
         <translation>加载后处理着色器链失败。</translation>
     </message>
@@ -5223,8 +5235,8 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1689"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1712"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1724"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1713"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1726"/>
         <source>Volume: %d%%</source>
         <translation>音量: %d%%</translation>
     </message>
@@ -5239,82 +5251,82 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>CD音频已解除静音。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1873"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1875"/>
         <source>Loaded input profile from &apos;%s&apos;</source>
         <translation>从&apos;%s&apos;读取输入配置</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2333"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2335"/>
         <source>Started dumping audio to &apos;%s&apos;.</source>
         <translation>开始转储音频到&apos;%s&apos;。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2338"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2340"/>
         <source>Failed to start dumping audio to &apos;%s&apos;.</source>
         <translation>开始转储音频到&apos;%s&apos;失败。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2348"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2350"/>
         <source>Stopped dumping audio.</source>
         <translation>停止转储音频。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2378"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2380"/>
         <source>Screenshot file &apos;%s&apos; already exists.</source>
         <translation>截图文件&apos;%s&apos;已经存在。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2386"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2388"/>
         <source>Failed to save screenshot to &apos;%s&apos;</source>
         <translation>保存截图到&apos;%s&apos;失败</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2390"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2392"/>
         <source>Screenshot saved to &apos;%s&apos;.</source>
         <translation>截图已保存到&apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2418"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2420"/>
         <source>Input profile &apos;%s&apos; cannot be found.</source>
         <translation>无法找到输入配置文件&apos;%s&apos;。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2425"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2427"/>
         <source>Using input profile &apos;%s&apos;.</source>
         <translation>使用输入配置&apos;%s&apos;。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2451"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2453"/>
         <source>Failed to load cheats from &apos;%s&apos;.</source>
         <translation>从&apos;%s&apos;加载金手指失败。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2455"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2457"/>
         <source>Loaded %u cheats from list. %u cheats are enabled.</source>
         <translation>从列表中加载%u金手指。%u金手指已启用。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2479"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2481"/>
         <source>Loaded %u cheats from database.</source>
         <translation>从数据库中加载%u金手指。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2509"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2511"/>
         <source>Saved %u cheats to &apos;%s&apos;.</source>
         <translation>保存%u金手指到&apos;%s&apos;。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2531"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2533"/>
         <source>Cheat &apos;%s&apos; enabled.</source>
         <translation>金手指&apos;%s&apos;已启用。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2535"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2537"/>
         <source>Cheat &apos;%s&apos; disabled.</source>
         <translation>金手指&apos;%s&apos;已禁用。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2495"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2497"/>
         <source>Failed to save cheat list to &apos;%s&apos;</source>
         <translation>无法保存金手指列表到&apos;%s&apos;</translation>
     </message>
@@ -5344,32 +5356,32 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>停止快进。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2551"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2553"/>
         <source>Applied cheat &apos;%s&apos;.</source>
         <translation>应用金手指&apos;%s&apos;。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2555"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2557"/>
         <source>Cheat &apos;%s&apos; is already enabled.</source>
         <translation>金手指&apos;%s&apos;已启用。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2568"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2570"/>
         <source>Post-processing is now enabled.</source>
         <translation>后处理现在已启用。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2575"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2577"/>
         <source>Post-processing is now disabled.</source>
         <translation>后处理现在已禁用。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2586"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2588"/>
         <source>Failed to load post-processing shader chain.</source>
         <translation>无法加载后处理着色器链。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2588"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2590"/>
         <source>Post-processing shaders reloaded.</source>
         <translation>重新加载后处理着色器。</translation>
     </message>
@@ -5439,17 +5451,16 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>根据游戏设置强制PGXP在CPU模式。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_settings.cpp" line="722"/>
         <source>Controller %u changed to digital by game settings.</source>
-        <translation>根据游戏设置控制%u改为数字模式。</translation>
+        <translation type="vanished">根据游戏设置控制%u改为数字模式。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_settings.cpp" line="737"/>
+        <location filename="../../frontend-common/game_settings.cpp" line="723"/>
         <source>Recompiler memory exceptions forced by game settings.</source>
         <translation>根据游戏设置强制内存异常重编译器。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_settings.cpp" line="750"/>
+        <location filename="../../frontend-common/game_settings.cpp" line="736"/>
         <source>Recompiler ICache forced by game settings.</source>
         <translation>根据游戏设置强制ICache重编译器。</translation>
     </message>
@@ -5552,6 +5563,11 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../../core/gpu_hw_opengl.cpp" line="51"/>
         <source>OpenGL renderer unavailable, your driver or hardware is not recent enough. OpenGL 3.1 or OpenGL ES 3.0 is required.</source>
         <translation>OpenGL渲染器不可用，你的驱动程序或硬件不够新。需要OpenGL 3.1或OpenGL ES 3.0。</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="39"/>
+        <source>Analog mode forcing is disabled by game settings. Controller will start in digital mode.</source>
+        <translation>强制模拟模式被游戏设置禁用。控制器将以数字模式启动。</translation>
     </message>
 </context>
 <context>
@@ -5996,7 +6012,7 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../settingsdialog.cpp" line="96"/>
         <source>&lt;strong&gt;Enhancement Settings&lt;/strong&gt;&lt;hr&gt;These options control enhancements which can improve visuals compared to the original console. Mouse over each option for additional information.</source>
-        <translation>&lt;strong&gt;增强设置&lt;/strong&gt;&lt;hr&gt;这些选项控制增强功能，与原来的控制台相比，这些功能可以改善视觉效果。将鼠标悬停在每个选项上以获取其他信息。</translation>
+        <translation>&lt;strong&gt;增强设置&lt;/strong&gt;&lt;hr&gt;这些选项控制增强功能，与初始主机相比，这些功能可以改善视觉效果。将鼠标悬停在每个选项上以获取其他信息。</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="99"/>
