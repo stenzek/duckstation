@@ -453,7 +453,7 @@ bool GPU::HandleFillRectangleCommand()
 
   const u32 color = FifoPop() & 0x00FFFFFF;
   const u32 dst_x = FifoPeek() & 0x3F0;
-  const u32 dst_y = (FifoPop() >> 16) & VRAM_COORD_MASK;
+  const u32 dst_y = (FifoPop() >> 16) & VRAM_HEIGHT_MASK;
   const u32 width = ((FifoPeek() & VRAM_WIDTH_MASK) + 0xF) & ~0xF;
   const u32 height = (FifoPop() >> 16) & VRAM_HEIGHT_MASK;
 
@@ -473,8 +473,8 @@ bool GPU::HandleCopyRectangleCPUToVRAMCommand()
   CHECK_COMMAND_SIZE(3);
   m_fifo.RemoveOne();
 
-  const u32 dst_x = FifoPeek() & VRAM_COORD_MASK;
-  const u32 dst_y = (FifoPop() >> 16) & VRAM_COORD_MASK;
+  const u32 dst_x = FifoPeek() & VRAM_WIDTH_MASK;
+  const u32 dst_y = (FifoPop() >> 16) & VRAM_HEIGHT_MASK;
   const u32 copy_width = ReplaceZero(FifoPeek() & VRAM_WIDTH_MASK, 0x400);
   const u32 copy_height = ReplaceZero((FifoPop() >> 16) & VRAM_HEIGHT_MASK, 0x200);
   const u32 num_pixels = copy_width * copy_height;
@@ -550,8 +550,8 @@ bool GPU::HandleCopyRectangleVRAMToCPUCommand()
   CHECK_COMMAND_SIZE(3);
   m_fifo.RemoveOne();
 
-  m_vram_transfer.x = Truncate16(FifoPeek() & VRAM_COORD_MASK);
-  m_vram_transfer.y = Truncate16((FifoPop() >> 16) & VRAM_COORD_MASK);
+  m_vram_transfer.x = Truncate16(FifoPeek() & VRAM_WIDTH_MASK);
+  m_vram_transfer.y = Truncate16((FifoPop() >> 16) & VRAM_HEIGHT_MASK);
   m_vram_transfer.width = ((Truncate16(FifoPeek()) - 1) & VRAM_WIDTH_MASK) + 1;
   m_vram_transfer.height = ((Truncate16(FifoPop() >> 16) - 1) & VRAM_HEIGHT_MASK) + 1;
 
@@ -584,10 +584,10 @@ bool GPU::HandleCopyRectangleVRAMToVRAMCommand()
   CHECK_COMMAND_SIZE(4);
   m_fifo.RemoveOne();
 
-  const u32 src_x = FifoPeek() & VRAM_COORD_MASK;
-  const u32 src_y = (FifoPop() >> 16) & VRAM_COORD_MASK;
-  const u32 dst_x = FifoPeek() & VRAM_COORD_MASK;
-  const u32 dst_y = (FifoPop() >> 16) & VRAM_COORD_MASK;
+  const u32 src_x = FifoPeek() & VRAM_WIDTH_MASK;
+  const u32 src_y = (FifoPop() >> 16) & VRAM_HEIGHT_MASK;
+  const u32 dst_x = FifoPeek() & VRAM_WIDTH_MASK;
+  const u32 dst_y = (FifoPop() >> 16) & VRAM_HEIGHT_MASK;
   const u32 width = ReplaceZero(FifoPeek() & VRAM_WIDTH_MASK, 0x400);
   const u32 height = ReplaceZero((FifoPop() >> 16) & VRAM_HEIGHT_MASK, 0x200);
 
