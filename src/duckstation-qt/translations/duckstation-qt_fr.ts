@@ -1097,7 +1097,7 @@ Cet avertissement ne sera affiché qu&apos;une seule fois.</translation>
     <message>
         <location filename="../core/digital_controller.cpp" line="164"/>
         <source>Start</source>
-        <translation>Star</translation>
+        <translation>Start</translation>
     </message>
     <message>
         <location filename="../core/digital_controller.cpp" line="165"/>
