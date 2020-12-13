@@ -430,12 +430,10 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
 
                 case 5:     // Edit Touchscreen Controller Layout
                 {
-                    if (mTouchscreenController != null) {
+                    if (mTouchscreenController != null)
                         mTouchscreenController.startLayoutEditing();
-                    } else {
-                        Toast.makeText(this, R.string.emulation_activity_touchscreen_controller_not_active, Toast.LENGTH_SHORT);
-                    }
 
+                    onMenuClosed();
                     return;
                 }
             }
