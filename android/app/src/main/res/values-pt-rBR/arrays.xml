@@ -7,7 +7,7 @@
     </string-array>
     <string-array name="settings_cpu_execution_mode_entries">
         <item>Interpretador (Mais Lento)</item>
-        <item>Int. Armazenado (Rápido)</item>
+        <item>Interpretador Armazenado (Rápido)</item>
         <item>Recompilador (Mais Rápido)</item>
     </string-array>
     <string-array name="settings_cpu_fastmem_mode_entries">
@@ -71,14 +71,14 @@
     </string-array>
     <string-array name="settings_memory_card_mode_entries">
         <item>Sem Cartão de Memória</item>
-        <item>Comparrtilhada entre Jogos</item>
+        <item>Compartilhada entre Jogos</item>
         <item>Separado Por Jogo (Cód. Jogo)</item>
         <item>Separado Por Jogo (Título Jogo)</item>
     </string-array>
     <string-array name="emulation_menu">
         <item>Carregar Estado</item>
         <item>Salvar Estado</item>
-        <item>Salvar Para Compartimento</item>
+        <item>Salvar para Compartimento</item>
         <item>Avanço (Fixo)</item>
         <item>Mais Opções</item>
         <item>Sair</item>
@@ -89,7 +89,7 @@
         <item>Mudar Disco</item>
         <item>Configurações</item>
         <item>Mudar controle em Tela</item>
-        <item>Edit Touchscreen Controller Layout</item>
+        <item>Editar Posição dos Controles (Tela)</item>
     </string-array>
     <string-array name="emulation_save_state_slot_menu">
         <item>Armazenamento Rápido</item>
