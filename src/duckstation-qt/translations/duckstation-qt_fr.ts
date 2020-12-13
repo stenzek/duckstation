@@ -1312,7 +1312,7 @@ Cet avertissement ne sera affiché qu&apos;une seule fois.</translation>
     <message>
         <location filename="displaysettingswidget.cpp" line="66"/>
         <source>Only Overscan Area</source>
-        <translation>Zone Surbalayage uniquement</translation>
+        <translation>Zone de Surbalayage uniquement</translation>
     </message>
     <message>
         <location filename="displaysettingswidget.cpp" line="67"/>
