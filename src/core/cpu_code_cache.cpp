@@ -527,6 +527,11 @@ bool CompileBlock(CodeBlock* block)
         Log_WarningPrintf("Conditional branch delay slot at %08X, skipping block", cbi.pc);
         return false;
       }
+      if (!IsDirectBranchInstruction(cbi.instruction))
+      {
+        Log_WarningPrintf("Indirect branch in delay slot at %08X, skipping block", cbi.pc);
+        return false;
+      }
 
       // change the pc for the second branch's delay slot, it comes from the first branch
       const CodeBlockInstruction& prev_cbi = block->instructions.back();

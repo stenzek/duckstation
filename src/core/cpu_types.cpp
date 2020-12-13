@@ -80,6 +80,24 @@ bool IsUnconditionalBranchInstruction(const Instruction& instruction)
   }
 }
 
+bool IsDirectBranchInstruction(const Instruction& instruction)
+{
+  switch (instruction.op)
+  {
+    case InstructionOp::j:
+    case InstructionOp::jal:
+    case InstructionOp::b:
+    case InstructionOp::beq:
+    case InstructionOp::bgtz:
+    case InstructionOp::blez:
+    case InstructionOp::bne:
+      return true;
+
+    default:
+      return false;
+  }
+}
+
 u32 GetBranchInstructionTarget(const Instruction& instruction, u32 instruction_pc)
 {
   switch (instruction.op)
@@ -96,6 +114,7 @@ u32 GetBranchInstructionTarget(const Instruction& instruction, u32 instruction_p
       return instruction_pc + 4 + (instruction.i.imm_sext32() << 2);
 
     default:
+      Panic("Trying to get branch target of indirect or invalid branch");
       return instruction_pc;
   }
 }
