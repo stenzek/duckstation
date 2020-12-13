@@ -296,6 +296,9 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
             AndroidHostInterface.getInstance().setDisplayAlignment(AndroidHostInterface.DISPLAY_ALIGNMENT_TOP_OR_LEFT);
         else
             AndroidHostInterface.getInstance().setDisplayAlignment(AndroidHostInterface.DISPLAY_ALIGNMENT_CENTER);
+
+        if (mTouchscreenController != null)
+            mTouchscreenController.updateOrientation();
     }
 
     private void enableFullscreenImmersive() {
@@ -411,17 +414,28 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
                     return;
                 }
 
-                case 3:     // Change Touchscreen Controller
+                case 3:     // Settings
+                {
+                    Intent intent = new Intent(EmulationActivity.this, SettingsActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivityForResult(intent, REQUEST_CODE_SETTINGS);
+                    return;
+                }
+
+                case 4:     // Change Touchscreen Controller
                 {
                     showTouchscreenControllerMenu();
                     return;
                 }
 
-                case 4:     // Settings
+                case 5:     // Edit Touchscreen Controller Layout
                 {
-                    Intent intent = new Intent(EmulationActivity.this, SettingsActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    startActivityForResult(intent, REQUEST_CODE_SETTINGS);
+                    if (mTouchscreenController != null) {
+                        mTouchscreenController.startLayoutEditing();
+                    } else {
+                        Toast.makeText(this, R.string.emulation_activity_touchscreen_controller_not_active, Toast.LENGTH_SHORT);
+                    }
+
                     return;
                 }
             }

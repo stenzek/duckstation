@@ -87,8 +87,9 @@
         <item>Resetten</item>
         <item>Patch Codes</item>
         <item>Disc Veranderen</item>
-        <item>Touchscreen Controller Aanpassen</item>
         <item>Instellingen</item>
+        <item>Touchscreen Controller Aanpassen</item>
+        <item>Edit Touchscreen Controller Layout</item>
     </string-array>
     <string-array name="emulation_save_state_slot_menu">
         <item>Snel Slot</item>

@@ -87,8 +87,9 @@
         <item>Reset</item>
         <item>Codici Patch</item>
         <item>Cambia Disco</item>
-        <item>Cambia Controller Touchscreen</item>
         <item>Impostazioni</item>
+        <item>Cambia Controller Touchscreen</item>
+        <item>Edit Touchscreen Controller Layout</item>
     </string-array>
     <string-array name="emulation_save_state_slot_menu">
         <item>Slot Veloce</item>

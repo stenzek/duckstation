@@ -6,7 +6,7 @@ import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.View;
 
-public class TouchscreenControllerAxisView extends View {
+public final class TouchscreenControllerAxisView extends View {
     private Drawable mBaseDrawable;
     private Drawable mStickUnpressedDrawable;
     private Drawable mStickPressedDrawable;
@@ -17,6 +17,7 @@ public class TouchscreenControllerAxisView extends View {
     private int mDrawXPos = 0;
     private int mDrawYPos = 0;
 
+    private String mConfigName;
     private int mControllerIndex = -1;
     private int mXAxisCode = -1;
     private int mYAxisCode = -1;
@@ -47,6 +48,14 @@ public class TouchscreenControllerAxisView extends View {
         mStickUnpressedDrawable.setCallback(this);
         mStickPressedDrawable = getContext().getDrawable(R.drawable.ic_controller_analog_stick_pressed);
         mStickPressedDrawable.setCallback(this);
+    }
+
+    public String getConfigName() {
+        return mConfigName;
+    }
+
+    public void setConfigName(String configName) {
+        mConfigName = configName;
     }
 
     public void setControllerAxis(int controllerIndex, int xCode, int yCode) {

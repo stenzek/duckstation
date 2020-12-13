@@ -11,13 +11,14 @@ import android.view.View;
 /**
  * TODO: document your custom view class.
  */
-public class TouchscreenControllerButtonView extends View {
+public final class TouchscreenControllerButtonView extends View {
     private Drawable mUnpressedDrawable;
     private Drawable mPressedDrawable;
     private boolean mPressed = false;
     private boolean mHapticFeedback = false;
     private int mControllerIndex = -1;
     private int mButtonCode = -1;
+    private String mConfigName;
 
     public TouchscreenControllerButtonView(Context context) {
         super(context);
@@ -92,6 +93,14 @@ public class TouchscreenControllerButtonView extends View {
     public void setButtonCode(int controllerIndex, int code) {
         mControllerIndex = controllerIndex;
         mButtonCode = code;
+    }
+
+    public void setConfigName(String name) {
+        mConfigName = name;
+    }
+
+    public String getConfigName() {
+        return mConfigName;
     }
 
     public void setHapticFeedback(boolean enabled) {

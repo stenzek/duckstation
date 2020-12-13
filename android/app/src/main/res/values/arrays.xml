@@ -163,8 +163,9 @@
         <item>Reset</item>
         <item>Patch Codes</item>
         <item>Change Disc</item>
-        <item>Change Touchscreen Controller</item>
         <item>Settings</item>
+        <item>Change Touchscreen Controller</item>
+        <item>Edit Touchscreen Controller Layout</item>
     </string-array>
     <string-array name="emulation_save_state_slot_menu">
         <item>Quick Slot</item>
