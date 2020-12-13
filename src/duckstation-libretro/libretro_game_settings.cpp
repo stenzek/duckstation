@@ -599,5 +599,41 @@ std::unique_ptr<GameSettings::Entry> GetSettingsForGame(const std::string& game_
     return gs;
   }
 
+  if (game_code == "SLUS-00506")
+  {
+    gs->dma_max_slice_ticks = 100;
+    return gs;
+  }
+
+  if (game_code == "SLES-00704")
+  {
+    gs->dma_max_slice_ticks = 100;
+    return gs;
+  }
+
+  if (game_code == "SLPS-01399")
+  {
+    gs->dma_max_slice_ticks = 100;
+    return gs;
+  }
+
+  if (game_code == "SLUS-00232")
+  {
+    gs->dma_max_slice_ticks = 100;
+    return gs;
+  }
+
+  if (game_code == "SLES-00526")
+  {
+    gs->dma_max_slice_ticks = 100;
+    return gs;
+  }
+
+  if (game_code == "SLED-00570")
+  {
+    gs->dma_max_slice_ticks = 100;
+    return gs;
+  }
+
   return {};
 }
