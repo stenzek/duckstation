@@ -532,7 +532,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
 
         final boolean hasAnyControllers = mContentView.initControllerMapping(controllerType);
 
-        if (controllerType == "none" || viewType == "none" || (hasAnyControllers && autoHideTouchscreenController)) {
+        if (controllerType.equals("none") || viewType.equals("none") || (hasAnyControllers && autoHideTouchscreenController)) {
             if (mTouchscreenController != null) {
                 activityLayout.removeView(mTouchscreenController);
                 mTouchscreenController = null;
