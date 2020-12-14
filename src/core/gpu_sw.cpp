@@ -848,11 +848,13 @@ void GPU_SW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
   m_backend.PushCommand(cmd);
 }
 
-void GPU_SW::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data)
+void GPU_SW::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, bool set_mask, bool check_mask)
 {
   const u32 num_words = width * height;
   GPUBackendUpdateVRAMCommand* cmd = m_backend.NewUpdateVRAMCommand(num_words);
   FillBackendCommandParameters(cmd);
+  cmd->params.set_mask_while_drawing = set_mask;
+  cmd->params.check_mask_before_draw = check_mask;
   cmd->x = static_cast<u16>(x);
   cmd->y = static_cast<u16>(y);
   cmd->width = static_cast<u16>(width);

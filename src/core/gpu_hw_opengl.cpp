@@ -150,7 +150,7 @@ void GPU_HW_OpenGL::UpdateSettings()
   if (framebuffer_changed)
   {
     RestoreGraphicsAPIState();
-    UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, m_vram_ptr);
+    UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, m_vram_ptr, false, false);
     UpdateDepthBufferFromMaskBit();
     UpdateDisplay();
     ResetGraphicsAPIState();
@@ -258,7 +258,8 @@ void GPU_HW_OpenGL::SetCapabilities(HostDisplay* host_display)
   if (!m_supports_dual_source_blend)
     Log_WarningPrintf("Dual-source blending is not supported, this may break some mask effects.");
 
-  m_supports_geometry_shaders = GLAD_GL_VERSION_3_2 || GLAD_GL_ARB_geometry_shader4 || GLAD_GL_OES_geometry_shader || GLAD_GL_ES_VERSION_3_2;
+  m_supports_geometry_shaders =
+    GLAD_GL_VERSION_3_2 || GLAD_GL_ARB_geometry_shader4 || GLAD_GL_OES_geometry_shader || GLAD_GL_ES_VERSION_3_2;
   if (!m_supports_geometry_shaders)
   {
     Log_WarningPrintf("Geometry shaders are not supported, line rendering at higher resolutions may be incorrect. We "
@@ -799,7 +800,7 @@ void GPU_HW_OpenGL::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
     Log_WarningPrintf("Oversized VRAM fill (%u-%u, %u-%u), CPU round trip", x, x + width, y, y + height);
     ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
     GPU::FillVRAM(x, y, width, height, color);
-    UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, m_vram_shadow.data());
+    UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, m_vram_shadow.data(), false, false);
     return;
   }
 
@@ -837,13 +838,13 @@ void GPU_HW_OpenGL::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
   }
 }
 
-void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data)
+void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, bool set_mask, bool check_mask)
 {
   const u32 num_pixels = width * height;
   if (num_pixels < m_max_texture_buffer_size || m_use_ssbo_for_vram_writes)
   {
     const Common::Rectangle<u32> bounds = GetVRAMTransferBounds(x, y, width, height);
-    GPU_HW::UpdateVRAM(bounds.left, bounds.top, bounds.GetWidth(), bounds.GetHeight(), data);
+    GPU_HW::UpdateVRAM(bounds.left, bounds.top, bounds.GetWidth(), bounds.GetHeight(), data, set_mask, check_mask);
 
     const auto map_result = m_texture_stream_buffer->Map(sizeof(u16), num_pixels * sizeof(u16));
     std::memcpy(map_result.pointer, data, num_pixels * sizeof(u16));
@@ -851,7 +852,7 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
     m_texture_stream_buffer->Unbind();
 
     glDisable(GL_BLEND);
-    glDepthFunc(m_GPUSTAT.check_mask_before_draw ? GL_GEQUAL : GL_ALWAYS);
+    glDepthFunc(check_mask ? GL_GEQUAL : GL_ALWAYS);
 
     m_vram_write_program.Bind();
     if (m_use_ssbo_for_vram_writes)
@@ -859,7 +860,8 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
     else
       glBindTexture(GL_TEXTURE_BUFFER, m_texture_buffer_r16ui_texture);
 
-    const VRAMWriteUBOData uniforms = GetVRAMWriteUBOData(x, y, width, height, map_result.index_aligned);
+    const VRAMWriteUBOData uniforms =
+      GetVRAMWriteUBOData(x, y, width, height, map_result.index_aligned, set_mask, check_mask);
     UploadUniformBuffer(&uniforms, sizeof(uniforms));
 
     // the viewport should already be set to the full vram, so just adjust the scissor
@@ -879,12 +881,12 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
       // CPU round trip if oversized for now.
       Log_WarningPrintf("Oversized VRAM update (%u-%u, %u-%u), CPU round trip", x, x + width, y, y + height);
       ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
-      GPU::UpdateVRAM(x, y, width, height, data);
-      UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, m_vram_shadow.data());
+      GPU::UpdateVRAM(x, y, width, height, data, set_mask, check_mask);
+      UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, m_vram_shadow.data(), false, false);
       return;
     }
 
-    GPU_HW::UpdateVRAM(x, y, width, height, data);
+    GPU_HW::UpdateVRAM(x, y, width, height, data, set_mask, check_mask);
 
     const auto map_result = m_texture_stream_buffer->Map(sizeof(u32), num_pixels * sizeof(u32));
 

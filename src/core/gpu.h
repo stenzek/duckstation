@@ -273,7 +273,7 @@ protected:
   // Rendering in the backend
   virtual void ReadVRAM(u32 x, u32 y, u32 width, u32 height);
   virtual void FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color);
-  virtual void UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data);
+  virtual void UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, bool set_mask, bool check_mask);
   virtual void CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height);
   virtual void DispatchRenderCommand();
   virtual void FlushRender();

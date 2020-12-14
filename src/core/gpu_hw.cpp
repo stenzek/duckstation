@@ -780,17 +780,12 @@ Common::Rectangle<u32> GPU_HW::GetVRAMTransferBounds(u32 x, u32 y, u32 width, u3
   return out_rc;
 }
 
-GPU_HW::VRAMWriteUBOData GPU_HW::GetVRAMWriteUBOData(u32 x, u32 y, u32 width, u32 height, u32 buffer_offset) const
+GPU_HW::VRAMWriteUBOData GPU_HW::GetVRAMWriteUBOData(u32 x, u32 y, u32 width, u32 height, u32 buffer_offset,
+                                                     bool set_mask, bool check_mask) const
 {
-  const VRAMWriteUBOData uniforms = {(x % VRAM_WIDTH),
-                                     (y % VRAM_HEIGHT),
-                                     ((x + width) % VRAM_WIDTH),
-                                     ((y + height) % VRAM_HEIGHT),
-                                     width,
-                                     height,
-                                     buffer_offset,
-                                     m_GPUSTAT.set_mask_while_drawing ? 0x8000u : 0x00,
-                                     GetCurrentNormalizedVertexDepth()};
+  const VRAMWriteUBOData uniforms = {
+    (x % VRAM_WIDTH), (y % VRAM_HEIGHT), ((x + width) % VRAM_WIDTH),  ((y + height) % VRAM_HEIGHT),     width,
+    height,           buffer_offset,     (set_mask) ? 0x8000u : 0x00, GetCurrentNormalizedVertexDepth()};
   return uniforms;
 }
 
@@ -897,12 +892,12 @@ void GPU_HW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
     Common::Rectangle<u32>::FromExtents(x, y, width, height).Clamped(0, 0, VRAM_WIDTH, VRAM_HEIGHT));
 }
 
-void GPU_HW::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data)
+void GPU_HW::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, bool set_mask, bool check_mask)
 {
   DebugAssert((x + width) <= VRAM_WIDTH && (y + height) <= VRAM_HEIGHT);
   IncludeVRAMDityRectangle(Common::Rectangle<u32>::FromExtents(x, y, width, height));
 
-  if (m_GPUSTAT.check_mask_before_draw)
+  if (check_mask)
   {
     // set new vertex counter since we want this to take into consideration previous masked pixels
     m_current_depth++;

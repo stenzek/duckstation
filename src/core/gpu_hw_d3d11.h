@@ -31,7 +31,7 @@ protected:
   void UpdateDisplay() override;
   void ReadVRAM(u32 x, u32 y, u32 width, u32 height) override;
   void FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color) override;
-  void UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data) override;
+  void UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, bool set_mask, bool check_mask) override;
   void CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height) override;
   void UpdateVRAMReadTexture() override;
   void UpdateDepthBufferFromMaskBit() override;

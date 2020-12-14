@@ -147,7 +147,7 @@ void GPU_HW_Vulkan::UpdateSettings()
   if (framebuffer_changed)
   {
     RestoreGraphicsAPIState();
-    UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, m_vram_ptr);
+    UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, m_vram_ptr, false, false);
     UpdateDepthBufferFromMaskBit();
     UpdateDisplay();
     ResetGraphicsAPIState();
@@ -705,7 +705,8 @@ bool GPU_HW_Vulkan::CompilePipelines()
                 gpbuilder.SetBlendAttachment(
                   0, true, VK_BLEND_FACTOR_ONE,
                   m_supports_dual_source_blend ? VK_BLEND_FACTOR_SRC1_ALPHA : VK_BLEND_FACTOR_SRC_ALPHA,
-                  (static_cast<GPUTransparencyMode>(transparency_mode) == GPUTransparencyMode::BackgroundMinusForeground &&
+                  (static_cast<GPUTransparencyMode>(transparency_mode) ==
+                     GPUTransparencyMode::BackgroundMinusForeground &&
                    static_cast<BatchRenderMode>(render_mode) != BatchRenderMode::TransparencyDisabled &&
                    static_cast<BatchRenderMode>(render_mode) != BatchRenderMode::OnlyOpaque) ?
                     VK_BLEND_OP_REVERSE_SUBTRACT :
@@ -1115,7 +1116,7 @@ void GPU_HW_Vulkan::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
     Log_WarningPrintf("Oversized VRAM fill (%u-%u, %u-%u), CPU round trip", x, x + width, y, y + height);
     ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
     GPU::FillVRAM(x, y, width, height, color);
-    UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, m_vram_shadow.data());
+    UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, m_vram_shadow.data(), false, false);
     return;
   }
 
@@ -1140,10 +1141,10 @@ void GPU_HW_Vulkan::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
   RestoreGraphicsAPIState();
 }
 
-void GPU_HW_Vulkan::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data)
+void GPU_HW_Vulkan::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, bool set_mask, bool check_mask)
 {
   const Common::Rectangle<u32> bounds = GetVRAMTransferBounds(x, y, width, height);
-  GPU_HW::UpdateVRAM(bounds.left, bounds.top, bounds.GetWidth(), bounds.GetHeight(), data);
+  GPU_HW::UpdateVRAM(bounds.left, bounds.top, bounds.GetWidth(), bounds.GetHeight(), data, set_mask, check_mask);
 
   const u32 data_size = width * height * sizeof(u16);
   const u32 alignment = std::max<u32>(sizeof(u16), static_cast<u32>(g_vulkan_context->GetTexelBufferAlignment()));
@@ -1167,11 +1168,10 @@ void GPU_HW_Vulkan::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
   BeginVRAMRenderPass();
 
   VkCommandBuffer cmdbuf = g_vulkan_context->GetCurrentCommandBuffer();
-  const VRAMWriteUBOData uniforms = GetVRAMWriteUBOData(x, y, width, height, start_index);
+  const VRAMWriteUBOData uniforms = GetVRAMWriteUBOData(x, y, width, height, start_index, set_mask, check_mask);
   vkCmdPushConstants(cmdbuf, m_vram_write_pipeline_layout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(uniforms),
                      &uniforms);
-  vkCmdBindPipeline(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                    m_vram_write_pipelines[BoolToUInt8(m_GPUSTAT.check_mask_before_draw)]);
+  vkCmdBindPipeline(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, m_vram_write_pipelines[BoolToUInt8(check_mask)]);
   vkCmdBindDescriptorSets(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, m_vram_write_pipeline_layout, 0, 1,
                           &m_vram_write_descriptor_set, 0, nullptr);
 

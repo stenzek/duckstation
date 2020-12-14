@@ -213,18 +213,10 @@ bool GPU::DoState(StateWrapper& sw, bool update_display)
 
   if (sw.IsReading())
   {
-    // Need to clear the mask bits since we want to pull it in from the copy.
-    const u32 old_GPUSTAT = m_GPUSTAT.bits;
-    m_GPUSTAT.check_mask_before_draw = false;
-    m_GPUSTAT.set_mask_while_drawing = false;
-
     // Still need a temporary here.
     HeapArray<u16, VRAM_WIDTH * VRAM_HEIGHT> temp;
     sw.DoBytes(temp.data(), VRAM_WIDTH * VRAM_HEIGHT * sizeof(u16));
-    UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, temp.data());
-
-    // Restore mask setting.
-    m_GPUSTAT.bits = old_GPUSTAT;
+    UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, temp.data(), false, false);
 
     UpdateCRTCConfig();
     if (update_display)
@@ -1224,10 +1216,10 @@ void GPU::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
   }
 }
 
-void GPU::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data)
+void GPU::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, bool set_mask, bool check_mask)
 {
   // Fast path when the copy is not oversized.
-  if ((x + width) <= VRAM_WIDTH && (y + height) <= VRAM_HEIGHT && !m_GPUSTAT.IsMaskingEnabled())
+  if ((x + width) <= VRAM_WIDTH && (y + height) <= VRAM_HEIGHT && !set_mask && !check_mask)
   {
     const u16* src_ptr = static_cast<const u16*>(data);
     u16* dst_ptr = &m_vram_ptr[y * VRAM_WIDTH + x];
@@ -1241,9 +1233,10 @@ void GPU::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data)
   else
   {
     // Slow path when we need to handle wrap-around.
+    // During transfer/render operations, if ((dst_pixel & mask_and) == 0) { pixel = src_pixel | mask_or }
     const u16* src_ptr = static_cast<const u16*>(data);
-    const u16 mask_and = m_GPUSTAT.GetMaskAND();
-    const u16 mask_or = m_GPUSTAT.GetMaskOR();
+    const u16 mask_and = check_mask ? 0x8000 : 0;
+    const u16 mask_or = set_mask ? 0x8000 : 0;
 
     for (u32 row = 0; row < height;)
     {

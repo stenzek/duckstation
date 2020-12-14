@@ -512,7 +512,7 @@ void GPU::FinishVRAMWrite()
   if (m_blit_remaining_words == 0)
   {
     UpdateVRAM(m_vram_transfer.x, m_vram_transfer.y, m_vram_transfer.width, m_vram_transfer.height,
-               m_blit_buffer.data());
+               m_blit_buffer.data(), m_GPUSTAT.set_mask_while_drawing, m_GPUSTAT.check_mask_before_draw);
   }
   else
   {
@@ -530,12 +530,14 @@ void GPU::FinishVRAMWrite()
     const u8* blit_ptr = reinterpret_cast<const u8*>(m_blit_buffer.data());
     if (transferred_full_rows > 0)
     {
-      UpdateVRAM(m_vram_transfer.x, m_vram_transfer.y, m_vram_transfer.width, transferred_full_rows, blit_ptr);
+      UpdateVRAM(m_vram_transfer.x, m_vram_transfer.y, m_vram_transfer.width, transferred_full_rows, blit_ptr,
+                 m_GPUSTAT.set_mask_while_drawing, m_GPUSTAT.check_mask_before_draw);
       blit_ptr += (ZeroExtend32(m_vram_transfer.width) * transferred_full_rows) * sizeof(u16);
     }
     if (transferred_width_last_row > 0)
     {
-      UpdateVRAM(m_vram_transfer.x, m_vram_transfer.y + transferred_full_rows, transferred_width_last_row, 1, blit_ptr);
+      UpdateVRAM(m_vram_transfer.x, m_vram_transfer.y + transferred_full_rows, transferred_width_last_row, 1, blit_ptr,
+                 m_GPUSTAT.set_mask_while_drawing, m_GPUSTAT.check_mask_before_draw);
     }
   }
 

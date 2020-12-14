@@ -142,7 +142,7 @@ void GPU_HW_D3D11::UpdateSettings()
   if (framebuffer_changed)
   {
     RestoreGraphicsAPIState();
-    UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, m_vram_ptr);
+    UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, m_vram_ptr, false, false);
     UpdateDepthBufferFromMaskBit();
     UpdateDisplay();
     ResetGraphicsAPIState();
@@ -767,7 +767,7 @@ void GPU_HW_D3D11::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
     Log_WarningPrintf("Oversized VRAM fill (%u-%u, %u-%u), CPU round trip", x, x + width, y, y + height);
     ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
     GPU::FillVRAM(x, y, width, height, color);
-    UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, m_vram_shadow.data());
+    UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, m_vram_shadow.data(), false, false);
     return;
   }
 
@@ -786,19 +786,19 @@ void GPU_HW_D3D11::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
   RestoreGraphicsAPIState();
 }
 
-void GPU_HW_D3D11::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data)
+void GPU_HW_D3D11::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, bool set_mask, bool check_mask)
 {
   const Common::Rectangle<u32> bounds = GetVRAMTransferBounds(x, y, width, height);
-  GPU_HW::UpdateVRAM(bounds.left, bounds.top, bounds.GetWidth(), bounds.GetHeight(), data);
+  GPU_HW::UpdateVRAM(bounds.left, bounds.top, bounds.GetWidth(), bounds.GetHeight(), data, set_mask, check_mask);
 
   const u32 num_pixels = width * height;
   const auto map_result = m_texture_stream_buffer.Map(m_context.Get(), sizeof(u16), num_pixels * sizeof(u16));
   std::memcpy(map_result.pointer, data, num_pixels * sizeof(u16));
   m_texture_stream_buffer.Unmap(m_context.Get(), num_pixels * sizeof(u16));
 
-  const VRAMWriteUBOData uniforms = GetVRAMWriteUBOData(x, y, width, height, map_result.index_aligned);
-  m_context->OMSetDepthStencilState(
-    m_GPUSTAT.check_mask_before_draw ? m_depth_test_less_state.Get() : m_depth_test_always_state.Get(), 0);
+  const VRAMWriteUBOData uniforms =
+    GetVRAMWriteUBOData(x, y, width, height, map_result.index_aligned, set_mask, check_mask);
+  m_context->OMSetDepthStencilState(check_mask ? m_depth_test_less_state.Get() : m_depth_test_always_state.Get(), 0);
   m_context->PSSetShaderResources(0, 1, m_texture_stream_buffer_srv_r16ui.GetAddressOf());
 
   // the viewport should already be set to the full vram, so just adjust the scissor

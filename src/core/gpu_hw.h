@@ -248,7 +248,7 @@ protected:
   }
 
   void FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color) override;
-  void UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data) override;
+  void UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, bool set_mask, bool check_mask) override;
   void CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height) override;
   void DispatchRenderCommand() override;
   void FlushRender() override;
@@ -268,7 +268,8 @@ protected:
   bool UseVRAMCopyShader(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height) const;
 
   VRAMFillUBOData GetVRAMFillUBOData(u32 x, u32 y, u32 width, u32 height, u32 color) const;
-  VRAMWriteUBOData GetVRAMWriteUBOData(u32 x, u32 y, u32 width, u32 height, u32 buffer_offset) const;
+  VRAMWriteUBOData GetVRAMWriteUBOData(u32 x, u32 y, u32 width, u32 height, u32 buffer_offset, bool set_mask,
+                                       bool check_mask) const;
   VRAMCopyUBOData GetVRAMCopyUBOData(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height) const;
 
   /// Expands a line into two triangles.
