@@ -116,10 +116,6 @@ struct Settings
   s16 display_active_end_offset = 0;
   s8 display_line_start_offset = 0;
   s8 display_line_end_offset = 0;
-  s8 display_crop_left = 0;
-  s8 display_crop_right = 0;
-  s8 display_crop_top = 0;
-  s8 display_crop_bottom = 0;
   bool display_force_4_3_for_24bit = false;
   bool gpu_24bit_chroma_smoothing = false;
   bool display_linear_filtering = true;
