@@ -641,14 +641,14 @@ void GPU::UpdateCRTCDisplayParameters()
   if (horizontal_display_start >= cs.horizontal_visible_start)
   {
     cs.display_origin_left = (horizontal_display_start - cs.horizontal_visible_start) / cs.dot_clock_divider;
-    cs.display_vram_left = std::min<u16>(cs.regs.X, VRAM_WIDTH - 1);
+    cs.display_vram_left = cs.regs.X;
     horizontal_skip_pixels = 0;
   }
   else
   {
     horizontal_skip_pixels = (cs.horizontal_visible_start - horizontal_display_start) / cs.dot_clock_divider;
     cs.display_origin_left = 0;
-    cs.display_vram_left = std::min<u16>(cs.regs.X + horizontal_skip_pixels, VRAM_WIDTH - 1);
+    cs.display_vram_left = (cs.regs.X + horizontal_skip_pixels) % VRAM_WIDTH;
   }
 
   // apply the crop from the start (usually overscan)
@@ -665,7 +665,7 @@ void GPU::UpdateCRTCDisplayParameters()
   else
   {
     cs.display_origin_top = 0;
-    cs.display_vram_top = cs.regs.Y + ((cs.vertical_visible_start - vertical_display_start) << y_shift);
+    cs.display_vram_top = (cs.regs.Y + ((cs.vertical_visible_start - vertical_display_start) << y_shift)) % VRAM_HEIGHT;
   }
 
   if (vertical_display_end <= cs.vertical_visible_end)
