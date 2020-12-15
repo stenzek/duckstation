@@ -20,6 +20,7 @@
 #include "timers.h"
 #include <cstdio>
 #include <tuple>
+#include <utility>
 Log_SetChannel(Bus);
 
 namespace Bus {
@@ -563,6 +564,125 @@ bool HasCodePagesInRange(PhysicalMemoryAddress start_address, u32 size)
   }
 
   return false;
+}
+
+std::optional<MemoryRegion> GetMemoryRegionForAddress(PhysicalMemoryAddress address)
+{
+  if (address < RAM_SIZE)
+    return MemoryRegion::RAM;
+  else if (address < RAM_MIRROR_END)
+    return static_cast<MemoryRegion>(static_cast<u32>(MemoryRegion::RAM) + (address / RAM_SIZE));
+  else if (address >= EXP1_BASE && address < (EXP1_BASE + EXP1_SIZE))
+    return MemoryRegion::EXP1;
+  else if (address >= CPU::DCACHE_LOCATION && address < (CPU::DCACHE_LOCATION + CPU::DCACHE_SIZE))
+    return MemoryRegion::Scratchpad;
+  else if (address >= BIOS_BASE && address < (BIOS_BASE + BIOS_SIZE))
+    return MemoryRegion::BIOS;
+
+  return std::nullopt;
+}
+
+static constexpr std::array<std::pair<PhysicalMemoryAddress, PhysicalMemoryAddress>,
+                            static_cast<u32>(MemoryRegion::Count)>
+  s_code_region_ranges = {{
+    {0, RAM_SIZE},
+    {RAM_SIZE, RAM_SIZE * 2},
+    {RAM_SIZE * 2, RAM_SIZE * 3},
+    {RAM_SIZE * 3, RAM_MIRROR_END},
+    {EXP1_BASE, EXP1_BASE + EXP1_SIZE},
+    {CPU::DCACHE_LOCATION, CPU::DCACHE_LOCATION + CPU::DCACHE_SIZE},
+    {BIOS_BASE, BIOS_BASE + BIOS_SIZE},
+  }};
+
+PhysicalMemoryAddress GetMemoryRegionStart(MemoryRegion region)
+{
+  return s_code_region_ranges[static_cast<u32>(region)].first;
+}
+
+PhysicalMemoryAddress GetMemoryRegionEnd(MemoryRegion region)
+{
+  return s_code_region_ranges[static_cast<u32>(region)].second;
+}
+
+u8* GetMemoryRegionPointer(MemoryRegion region)
+{
+  switch (region)
+  {
+    case MemoryRegion::RAM:
+    case MemoryRegion::RAMMirror1:
+    case MemoryRegion::RAMMirror2:
+    case MemoryRegion::RAMMirror3:
+      return g_ram;
+
+    case MemoryRegion::EXP1:
+      return nullptr;
+
+    case MemoryRegion::Scratchpad:
+      return CPU::g_state.dcache.data();
+
+    case MemoryRegion::BIOS:
+      return g_bios;
+
+    default:
+      return nullptr;
+  }
+}
+
+static ALWAYS_INLINE_RELEASE bool MaskedMemoryCompare(const u8* pattern, const u8* mask, u32 pattern_length,
+                                                      const u8* mem)
+{
+  if (!mask)
+    return std::memcmp(mem, pattern, pattern_length) == 0;
+
+  for (u32 i = 0; i < pattern_length; i++)
+  {
+    if ((mem[i] & mask[i]) != (pattern[i] & mask[i]))
+      return false;
+  }
+
+  return true;
+}
+
+std::optional<PhysicalMemoryAddress> SearchMemory(PhysicalMemoryAddress start_address, const u8* pattern,
+                                                  const u8* mask, u32 pattern_length)
+{
+  std::optional<MemoryRegion> region = GetMemoryRegionForAddress(start_address);
+  if (!region.has_value())
+    return std::nullopt;
+
+  PhysicalMemoryAddress current_address = start_address;
+  MemoryRegion current_region = region.value();
+  while (current_region != MemoryRegion::Count)
+  {
+    const u8* mem = GetMemoryRegionPointer(current_region);
+    const PhysicalMemoryAddress region_start = GetMemoryRegionStart(current_region);
+    const PhysicalMemoryAddress region_end = GetMemoryRegionEnd(current_region);
+
+    if (mem)
+    {
+      PhysicalMemoryAddress region_offset = current_address - region_start;
+      PhysicalMemoryAddress bytes_remaining = region_end - current_address;
+      while (bytes_remaining >= pattern_length)
+      {
+        if (MaskedMemoryCompare(pattern, mask, pattern_length, mem + region_offset))
+          return region_start + region_offset;
+
+        region_offset++;
+        bytes_remaining--;
+      }
+    }
+
+    // skip RAM mirrors
+    if (current_region == MemoryRegion::RAM)
+      current_region = MemoryRegion::EXP1;
+    else
+      current_region = static_cast<MemoryRegion>(static_cast<int>(current_region) + 1);
+
+    if (current_region != MemoryRegion::Count)
+      current_address = GetMemoryRegionStart(current_region);
+  }
+
+  return std::nullopt;
 }
 
 static TickCount DoInvalidAccess(MemoryAccessType type, MemoryAccessSize size, PhysicalMemoryAddress address,
@@ -1569,6 +1689,7 @@ bool SafeReadInstruction(VirtualMemoryAddress addr, u32* value)
     case 0x04: // KSEG0 - physical memory cached
     case 0x05: // KSEG1 - physical memory uncached
     {
+      // TODO: Check icache.
       return DoInstructionRead<false, false, 1, false>(addr, value);
     }
 

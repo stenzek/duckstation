@@ -4,6 +4,7 @@
 #include "types.h"
 #include <array>
 #include <bitset>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -148,5 +149,24 @@ ALWAYS_INLINE TickCount GetDMARAMTickCount(u32 word_count)
   // plus 6 waitstates, ie. 7 cycles in total).
   return static_cast<TickCount>(word_count + ((word_count + 15) / 16));
 }
+
+enum class MemoryRegion
+{
+  RAM,
+  RAMMirror1,
+  RAMMirror2,
+  RAMMirror3,
+  EXP1,
+  Scratchpad,
+  BIOS,
+  Count
+};
+
+std::optional<MemoryRegion> GetMemoryRegionForAddress(PhysicalMemoryAddress address);
+PhysicalMemoryAddress GetMemoryRegionStart(MemoryRegion region);
+PhysicalMemoryAddress GetMemoryRegionEnd(MemoryRegion region);
+u8* GetMemoryRegionPointer(MemoryRegion region);
+std::optional<PhysicalMemoryAddress> SearchMemory(PhysicalMemoryAddress start_address, const u8* pattern,
+                                                  const u8* mask, u32 pattern_length);
 
 } // namespace Bus
