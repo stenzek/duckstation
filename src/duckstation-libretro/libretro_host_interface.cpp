@@ -502,7 +502,7 @@ static std::array<retro_core_option_definition, 49> s_option_definitions = {{
    "Fast Boot",
    "Skips the BIOS shell/intro, booting directly into the game. Usually safe to enable, but some games break.",
    {{"true", "Enabled"}, {"false", "Disabled"}},
-   "false"},
+   "true"},
   {"duckstation_CDROM.RegionCheck",
    "CD-ROM Region Check",
    "Prevents discs from incorrect regions being read by the emulator. Usually safe to disable.",

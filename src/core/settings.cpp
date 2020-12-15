@@ -208,7 +208,7 @@ void Settings::Load(SettingsInterface& si)
   gpu_max_run_ahead = si.GetIntValue("Hacks", "GPUMaxRunAhead", DEFAULT_GPU_MAX_RUN_AHEAD);
 
   bios_patch_tty_enable = si.GetBoolValue("BIOS", "PatchTTYEnable", false);
-  bios_patch_fast_boot = si.GetBoolValue("BIOS", "PatchFastBoot", false);
+  bios_patch_fast_boot = si.GetBoolValue("BIOS", "PatchFastBoot", true);
 
   controller_types[0] =
     ParseControllerTypeName(
