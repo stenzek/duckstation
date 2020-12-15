@@ -5177,7 +5177,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../core/system.cpp" line="999"/>
         <source>Failed to open CD image from save state: &apos;%s&apos;. Using existing image &apos;%s&apos;, this may result in instability.</source>
-        <translation type="unfinished">Не удалось открыть образ CD из сохраненного состояния: &apos;%s&apos;. Использование существующего образа  &apos;%s&apos;,  может привести к нестабильности.</translation>
+        <translation type="unfinished">Не удалось открыть образ CD из сохраненного состояния: &apos;%s&apos;. Использование существующего образа &apos;%s&apos;, может привести к нестабильности.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="736"/>
@@ -5891,7 +5891,7 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../../core/system.cpp" line="958"/>
         <source>Save state is incompatible: minimum version is %u but state is version %u.</source>
-        <translation type="unfinished">Сохраненное состояние несовместимо: минимальная версия -% u, но версия состояния - % u.</translation>
+        <translation type="unfinished">Сохраненное состояние несовместимо: минимальная версия -%u, но версия состояния - %u.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="967"/>
