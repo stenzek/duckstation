@@ -1166,7 +1166,8 @@ void QtHostInterface::setAudioOutputVolume(int volume, int fast_forward_volume)
 {
   if (!isOnWorkerThread())
   {
-    QMetaObject::invokeMethod(this, "setAudioOutputVolume", Q_ARG(int, volume), Q_ARG(int, fast_forward_volume));
+    QMetaObject::invokeMethod(this, "setAudioOutputVolume", Qt::QueuedConnection, Q_ARG(int, volume),
+                              Q_ARG(int, fast_forward_volume));
     return;
   }
 
@@ -1181,7 +1182,7 @@ void QtHostInterface::setAudioOutputMuted(bool muted)
 {
   if (!isOnWorkerThread())
   {
-    QMetaObject::invokeMethod(this, "setAudioOutputMuted", Q_ARG(bool, muted));
+    QMetaObject::invokeMethod(this, "setAudioOutputMuted", Qt::QueuedConnection, Q_ARG(bool, muted));
     return;
   }
 
@@ -1195,7 +1196,7 @@ void QtHostInterface::startDumpingAudio()
 {
   if (!isOnWorkerThread())
   {
-    QMetaObject::invokeMethod(this, "startDumpingAudio");
+    QMetaObject::invokeMethod(this, "startDumpingAudio", Qt::QueuedConnection);
     return;
   }
 
@@ -1206,7 +1207,7 @@ void QtHostInterface::stopDumpingAudio()
 {
   if (!isOnWorkerThread())
   {
-    QMetaObject::invokeMethod(this, "stopDumpingAudio");
+    QMetaObject::invokeMethod(this, "stopDumpingAudio", Qt::QueuedConnection);
     return;
   }
 
@@ -1217,7 +1218,7 @@ void QtHostInterface::dumpRAM(const QString& filename)
 {
   if (!isOnWorkerThread())
   {
-    QMetaObject::invokeMethod(this, "dumpRAM", Q_ARG(const QString&, filename));
+    QMetaObject::invokeMethod(this, "dumpRAM", Qt::QueuedConnection, Q_ARG(const QString&, filename));
     return;
   }
 
@@ -1235,7 +1236,7 @@ void QtHostInterface::saveScreenshot()
 {
   if (!isOnWorkerThread())
   {
-    QMetaObject::invokeMethod(this, "saveScreenshot");
+    QMetaObject::invokeMethod(this, Qt::QueuedConnection, "saveScreenshot");
     return;
   }
 
