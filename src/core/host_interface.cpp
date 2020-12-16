@@ -166,7 +166,12 @@ void HostInterface::ReportError(const char* message)
 
 void HostInterface::ReportMessage(const char* message)
 {
-  Log_InfoPrintf(message);
+  Log_InfoPrint(message);
+}
+
+void HostInterface::ReportDebuggerMessage(const char* message)
+{
+  Log_InfoPrintf("(Debugger) %s", message);
 }
 
 bool HostInterface::ConfirmMessage(const char* message)
@@ -193,6 +198,16 @@ void HostInterface::ReportFormattedMessage(const char* format, ...)
   va_end(ap);
 
   ReportMessage(message.c_str());
+}
+
+void HostInterface::ReportFormattedDebuggerMessage(const char* format, ...)
+{
+  std::va_list ap;
+  va_start(ap, format);
+  std::string message = StringUtil::StdStringFromFormatV(format, ap);
+  va_end(ap);
+
+  ReportDebuggerMessage(message.c_str());
 }
 
 bool HostInterface::ConfirmFormattedMessage(const char* format, ...)

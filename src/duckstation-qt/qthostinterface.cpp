@@ -161,6 +161,13 @@ void QtHostInterface::ReportMessage(const char* message)
   emit messageReported(QString::fromUtf8(message));
 }
 
+void QtHostInterface::ReportDebuggerMessage(const char* message)
+{
+  HostInterface::ReportDebuggerMessage(message);
+
+  emit debuggerMessageReported(QString::fromUtf8(message));
+}
+
 bool QtHostInterface::ConfirmMessage(const char* message)
 {
   const bool was_fullscreen = m_is_fullscreen;
