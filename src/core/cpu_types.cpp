@@ -119,6 +119,24 @@ u32 GetBranchInstructionTarget(const Instruction& instruction, u32 instruction_p
   }
 }
 
+bool IsCallInstruction(const Instruction& instruction)
+{
+  return (instruction.op == InstructionOp::funct && instruction.r.funct == InstructionFunct::jalr) ||
+         (instruction.op == InstructionOp::jal);
+}
+
+bool IsReturnInstruction(const Instruction& instruction)
+{
+  if (instruction.op != InstructionOp::funct)
+    return false;
+
+  // j(al)r ra
+  if (instruction.r.funct == InstructionFunct::jr || instruction.r.funct == InstructionFunct::jalr)
+    return (instruction.r.rs == Reg::ra);
+
+  return false;
+}
+
 bool IsMemoryLoadInstruction(const Instruction& instruction)
 {
   switch (instruction.op)
@@ -156,6 +174,33 @@ bool IsMemoryStoreInstruction(const Instruction& instruction)
 
     default:
       return false;
+  }
+}
+
+std::optional<VirtualMemoryAddress> GetLoadStoreEffectiveAddress(const Instruction& instruction, const Registers* regs)
+{
+  switch (instruction.op)
+  {
+    case InstructionOp::lb:
+    case InstructionOp::lh:
+    case InstructionOp::lw:
+    case InstructionOp::lbu:
+    case InstructionOp::lhu:
+    case InstructionOp::lwc2:
+    case InstructionOp::sb:
+    case InstructionOp::sh:
+    case InstructionOp::sw:
+    case InstructionOp::swc2:
+      return (regs->r[static_cast<u32>(instruction.i.rs.GetValue())] + instruction.i.imm_sext32());
+
+    case InstructionOp::lwl:
+    case InstructionOp::lwr:
+    case InstructionOp::swl:
+    case InstructionOp::swr:
+      return (regs->r[static_cast<u32>(instruction.i.rs.GetValue())] + instruction.i.imm_sext32()) & ~UINT32_C(3);
+
+    default:
+      return std::nullopt;
   }
 }
 

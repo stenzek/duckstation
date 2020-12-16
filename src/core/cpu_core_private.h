@@ -64,7 +64,41 @@ TickCount GetICacheFillTicks(VirtualMemoryAddress address);
 u32 FillICache(VirtualMemoryAddress address);
 void CheckAndUpdateICacheTags(u32 line_count, TickCount uncached_ticks);
 
-// defined in cpu_memory.cpp - memory access functions which return false if an exception was thrown.
+ALWAYS_INLINE Segment GetSegmentForAddress(VirtualMemoryAddress address)
+{
+  switch ((address >> 29))
+  {
+    case 0x00: // KUSEG 0M-512M
+    case 0x01: // KUSEG 512M-1024M
+    case 0x02: // KUSEG 1024M-1536M
+    case 0x03: // KUSEG 1536M-2048M
+      return Segment::KUSEG;
+
+    case 0x04: // KSEG0 - physical memory cached
+      return Segment::KSEG0;
+
+    case 0x05: // KSEG1 - physical memory uncached
+      return Segment::KSEG1;
+
+    case 0x06: // KSEG2
+    case 0x07: // KSEG2
+    default:
+      return Segment::KSEG2;
+  }
+}
+
+ALWAYS_INLINE PhysicalMemoryAddress VirtualAddressToPhysical(VirtualMemoryAddress address)
+{
+  return (address & PHYSICAL_MEMORY_ADDRESS_MASK);
+}
+
+ALWAYS_INLINE VirtualMemoryAddress PhysicalAddressToVirtual(PhysicalMemoryAddress address, Segment segment)
+{
+  static constexpr std::array<VirtualMemoryAddress, 4> bases = {{0x00000000, 0x80000000, 0xA0000000, 0xE0000000}};
+  return bases[static_cast<u32>(segment)] | address;
+}
+
+// defined in bus.cpp - memory access functions which return false if an exception was thrown.
 bool FetchInstruction();
 bool SafeReadInstruction(VirtualMemoryAddress addr, u32* value);
 bool ReadMemoryByte(VirtualMemoryAddress addr, u8* value);
