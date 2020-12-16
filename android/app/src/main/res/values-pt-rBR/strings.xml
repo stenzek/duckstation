@@ -38,7 +38,7 @@
     <string name="settings_cpu_recompiler_icache">Recompilador modo CPU ICache</string>
     <string name="settings_summary_cpu_recompiler_icache">Determina se a instrução enviada ao CPU emulado fica armazenada no recompilador. Melhor a precisão ao pequeno custo de performance. Se os jogos estão rodando muito rápido, tente ativar esta opção.</string>
     <string name="settings_cpu_recompiler_fastmem">Recompilador modo CPU (FASTMEM)</string>
-    <string name="settings_summary_cpu_recompiler_fastmem">Torna o acesso à memória mais eficiente. Desative se estiver instável em seu dispositivo.</string>
+    <string name="settings_summary_cpu_recompiler_fastmem">Torna o acesso à memória mais eficiente. Desative se estiver instável em seu aparelho.</string>
     <string name="settings_presented_frame_limit">Limite do Quadro atual.</string>
     <string name="settings_logging_level">Nível de Registro</string>
     <string name="settings_log_to_file">Registro para Arquivo</string>
@@ -62,9 +62,9 @@
     <string name="settings_auto_hide_touchscreen_controller">Auto ocultar controles em tela</string>
     <string name="settings_summary_auto_hide_touchscreen_controller">Esconde controles em tela quando um controle externo é detectado.</string>
     <string name="settings_vibrate_on_press">Vibrar ao Pressionar</string>
-    <string name="settings_summary_vibrate_on_press">Ativa vibração quando um botão da tela de toque é pressionado. Requer \"Vibrar ao Tocar\" ativado no seu dispositivo para funcionar.</string>
+    <string name="settings_summary_vibrate_on_press">Ativa vibração quando um botão da tela de toque é pressionado. Requer \"Vibrar ao Tocar\" ativado nas opções do seu dispositivo para funcionar.</string>
     <string name="settings_enable_vibration">Ativa Vibração</string>
-    <string name="settings_summary_enable_vibration">Encaminha vibração do jogo para o motor do aparelho.</string>
+    <string name="settings_summary_enable_vibration">Manda vibração do jogo para o motor do aparelho.</string>
     <string name="settings_memory_card_1_type">Tipo de Cartão de Memória 1</string>
     <string name="settings_memory_card_2_type">Tipo de Cartão de Memória 2</string>
     <string name="settings_crop_mode">Modo de Corte</string>
@@ -81,7 +81,7 @@
     <string name="settings_summary_cdrom_read_speedup">Acelera a leitura de CD-ROM. Aplica-se apenas a leituras de velocidade 2x é ignorado quando o áudio está sendo reproduzido. Pode melhorar a velocidade de carregamento em alguns jogos, ao custo de quebrar outros.</string>
     <string name="settings_summary_console_fast_boot">Pula a tela de abertura clássica da Sony seguro ativar porém alguns raros jogos podem quebrar.</string>
     <string name="settings_msaa">Filtro Anti-serrilhado (MSAA)</string>
-    <string name="settings_true_color">Renderização em (24 Cores, Desativa dithering)</string>
+    <string name="settings_true_color">Renderização em (24 Cores, desativa dithering)</string>
     <string name="settings_summary_true_color">Produz gradientes de aparência mais agradável ao custo de fazer algumas cores ficarem ligeiramente diferentes. A maioria dos jogos são compatíveis com esta opção.</string>
     <string name="settings_scaled_dithering">Efeito Dithering Escalado (escala pontilhados para resolução). </string>
     <string name="settings_summary_scaled_dithering">Escala o dithering para a resolução da GPU emulada. Torna o padrão do pontilhado muito menos óbvio em resoluções mais altas.</string>
