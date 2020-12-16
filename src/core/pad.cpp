@@ -71,7 +71,7 @@ bool Pad::DoState(StateWrapper& sw)
           if (state_controller_type != ControllerType::None)
           {
             m_controllers[i] = Controller::Create(state_controller_type, i);
-            if (!sw.DoMarker("Controller") || !m_controllers[i]->DoState(sw))
+            if (!sw.DoMarker("Controller") || !m_controllers[i]->DoState(sw, false))
               return false;
           }
         }
@@ -88,7 +88,7 @@ bool Pad::DoState(StateWrapper& sw)
             std::unique_ptr<Controller> dummy_controller = Controller::Create(state_controller_type, i);
             if (dummy_controller)
             {
-              if (!sw.DoMarker("Controller") || !dummy_controller->DoState(sw))
+              if (!sw.DoMarker("Controller") || !dummy_controller->DoState(sw, true))
                 return false;
             }
           }
@@ -98,21 +98,38 @@ bool Pad::DoState(StateWrapper& sw)
       {
         if (m_controllers[i])
         {
-          if (!sw.DoMarker("Controller") || !m_controllers[i]->DoState(sw))
+          if (!sw.DoMarker("Controller") || !m_controllers[i]->DoState(sw, true))
             return false;
         }
       }
     }
     else
     {
-      // we still need to read the save state controller state
       if (state_controller_type != ControllerType::None)
       {
-        std::unique_ptr<Controller> dummy_controller = Controller::Create(state_controller_type, i);
-        if (dummy_controller)
+        if (controller_type != state_controller_type)
         {
-          if (!sw.DoMarker("Controller") || !dummy_controller->DoState(sw))
-            return false;
+          g_host_interface->AddFormattedOSDMessage(
+            10.0f,
+            g_host_interface->TranslateString("OSDMessage", "Ignoring mismatched controller type %s in port %u."),
+            Settings::GetControllerTypeName(state_controller_type), i + 1u);
+
+          // we still need to read the save state controller state
+          std::unique_ptr<Controller> dummy_controller = Controller::Create(state_controller_type, i);
+          if (dummy_controller)
+          {
+            if (!sw.DoMarker("Controller") || !dummy_controller->DoState(sw, true))
+              return false;
+          }
+        }
+        else
+        {
+          // we still need to load some things from the state, e.g. configuration mode, analog mode
+          if (m_controllers[i])
+          {
+            if (!sw.DoMarker("Controller") || !m_controllers[i]->DoState(sw, false))
+              return false;
+          }
         }
       }
     }

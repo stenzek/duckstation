@@ -37,7 +37,7 @@ public:
   virtual std::optional<s32> GetButtonCodeByName(std::string_view button_name) const;
 
   virtual void Reset();
-  virtual bool DoState(StateWrapper& sw);
+  virtual bool DoState(StateWrapper& sw, bool apply_input_state);
 
   // Resets all state for the transferring to/from the device.
   virtual void ResetTransferState();

@@ -37,14 +37,24 @@ void PlayStationMouse::Reset()
   m_transfer_state = TransferState::Idle;
 }
 
-bool PlayStationMouse::DoState(StateWrapper& sw)
+bool PlayStationMouse::DoState(StateWrapper& sw, bool apply_input_state)
 {
-  if (!Controller::DoState(sw))
+  if (!Controller::DoState(sw, apply_input_state))
     return false;
 
-  sw.Do(&m_button_state);
-  sw.Do(&m_delta_x);
-  sw.Do(&m_delta_y);
+  u16 button_state = m_button_state;
+  u8 delta_x = m_delta_x;
+  u8 delta_y = m_delta_y;
+  sw.Do(&button_state);
+  sw.Do(&delta_x);
+  sw.Do(&delta_y);
+  if (apply_input_state)
+  {
+    m_button_state = button_state;
+    m_delta_x = delta_x;
+    m_delta_y = delta_y;
+  }
+
   sw.Do(&m_transfer_state);
   return true;
 }

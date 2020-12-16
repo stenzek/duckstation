@@ -34,14 +34,24 @@ void NamcoGunCon::Reset()
   m_transfer_state = TransferState::Idle;
 }
 
-bool NamcoGunCon::DoState(StateWrapper& sw)
+bool NamcoGunCon::DoState(StateWrapper& sw, bool apply_input_state)
 {
-  if (!Controller::DoState(sw))
+  if (!Controller::DoState(sw, apply_input_state))
     return false;
 
-  sw.Do(&m_button_state);
-  sw.Do(&m_position_x);
-  sw.Do(&m_position_y);
+  u16 button_state = m_button_state;
+  u16 position_x = m_position_x;
+  u16 position_y = m_position_y;
+  sw.Do(&button_state);
+  sw.Do(&position_x);
+  sw.Do(&position_y);
+  if (apply_input_state)
+  {
+    m_button_state = button_state;
+    m_position_x = position_x;
+    m_position_y = position_y;
+  }
+
   sw.Do(&m_transfer_state);
   return true;
 }

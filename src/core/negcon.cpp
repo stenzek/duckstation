@@ -34,12 +34,16 @@ void NeGcon::Reset()
   m_transfer_state = TransferState::Idle;
 }
 
-bool NeGcon::DoState(StateWrapper& sw)
+bool NeGcon::DoState(StateWrapper& sw, bool apply_input_state)
 {
-  if (!Controller::DoState(sw))
+  if (!Controller::DoState(sw, apply_input_state))
     return false;
 
-  sw.Do(&m_button_state);
+  u16 button_state = m_button_state;
+  sw.Do(&button_state);
+  if (apply_input_state)
+    m_button_state = button_state;
+
   sw.Do(&m_transfer_state);
   return true;
 }

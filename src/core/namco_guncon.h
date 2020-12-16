@@ -31,7 +31,7 @@ public:
   std::optional<s32> GetButtonCodeByName(std::string_view button_name) const override;
 
   void Reset() override;
-  bool DoState(StateWrapper& sw) override;
+  bool DoState(StateWrapper& sw, bool apply_input_state) override;
   void LoadSettings(const char* section) override;
   bool GetSoftwareCursor(const Common::RGBA8Image** image, float* image_scale) override;
 

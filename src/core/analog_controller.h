@@ -57,7 +57,7 @@ public:
   std::optional<s32> GetButtonCodeByName(std::string_view button_name) const override;
 
   void Reset() override;
-  bool DoState(StateWrapper& sw) override;
+  bool DoState(StateWrapper& sw, bool ignore_input_state) override;
 
   void SetAxisState(s32 axis_code, float value) override;
   void SetButtonState(s32 button_code, bool pressed) override;

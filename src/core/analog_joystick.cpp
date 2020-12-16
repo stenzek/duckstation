@@ -26,16 +26,26 @@ void AnalogJoystick::Reset()
   m_transfer_state = TransferState::Idle;
 }
 
-bool AnalogJoystick::DoState(StateWrapper& sw)
+bool AnalogJoystick::DoState(StateWrapper& sw, bool apply_input_state)
 {
-  if (!Controller::DoState(sw))
+  if (!Controller::DoState(sw, apply_input_state))
     return false;
 
   const bool old_analog_mode = m_analog_mode;
 
   sw.Do(&m_analog_mode);
-  sw.Do(&m_button_state);
-  sw.Do(&m_axis_state);
+
+  u16 button_state = m_button_state;
+  auto axis_state = m_axis_state;
+  sw.Do(&button_state);
+  sw.Do(&axis_state);
+
+  if (apply_input_state)
+  {
+    m_button_state = button_state;
+    m_axis_state = axis_state;
+  }
+
   sw.Do(&m_transfer_state);
 
   if (sw.IsReading() && (old_analog_mode != m_analog_mode))

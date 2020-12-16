@@ -13,7 +13,7 @@ Controller::~Controller() = default;
 
 void Controller::Reset() {}
 
-bool Controller::DoState(StateWrapper& sw)
+bool Controller::DoState(StateWrapper& sw, bool apply_input_state)
 {
   return !sw.HasError();
 }

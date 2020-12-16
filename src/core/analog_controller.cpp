@@ -45,9 +45,9 @@ void AnalogController::Reset()
   }
 }
 
-bool AnalogController::DoState(StateWrapper& sw)
+bool AnalogController::DoState(StateWrapper& sw, bool apply_input_state)
 {
-  if (!Controller::DoState(sw))
+  if (!Controller::DoState(sw, apply_input_state))
     return false;
 
   const bool old_analog_mode = m_analog_mode;
@@ -57,7 +57,12 @@ bool AnalogController::DoState(StateWrapper& sw)
   sw.DoEx(&m_legacy_rumble_unlocked, 44, false);
   sw.Do(&m_configuration_mode);
   sw.Do(&m_command_param);
-  sw.DoEx(&m_button_state, 44, static_cast<u16>(0xFFFF));
+
+  u16 button_state = m_button_state;
+  sw.DoEx(&button_state, 44, static_cast<u16>(0xFFFF));
+  if (apply_input_state)
+    m_button_state = button_state;
+
   sw.Do(&m_state);
 
   sw.DoEx(&m_rumble_config, 45, {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF});
