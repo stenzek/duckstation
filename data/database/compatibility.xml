@@ -753,6 +753,10 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-908-g9f22684</version-tested>
   </entry>
+  <entry code="SLES-01363" compatibility="5" region="PAL" title="C3 Racing - Car Constructors Championship (Europe) (En,Fr,De,Es,It)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2553-g3ed42977</version-tested>
+  </entry>
   <entry code="SCUS-94416" compatibility="5" region="NTSC-U" title="CART World Series (USA)">
     <compatibility>No Issues</compatibility>
   </entry>
@@ -849,6 +853,14 @@
   <entry code="SLUS-00814" compatibility="5" region="NTSC-U" title="Chocobo's Dungeon 2 (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1304-gc8b6712</version-tested>
+  </entry>
+  <entry code="SLPS-00710" compatibility="5" region="NTSC-J" title="Choro Q 2 (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2553-g3ed42977</version-tested>
+  </entry>
+  <entry code="SLPS-01244" compatibility="5" region="NTSC-J" title="Choro Q 3 (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2553-g3ed42977</version-tested>
   </entry>
   <entry code="SCUS-94700" compatibility="5" region="NTSC-U" title="Chronicles of the Sword (USA) (Disc 1)">
     <compatibility>No Issues</compatibility>
@@ -1064,6 +1076,11 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SCUS-94350" compatibility="5" region="NTSC-U" title="Destruction Derby 2 (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-2499-g770dd5a6</version-tested>
+  </entry>
+  <entry code="SLUS-00912" compatibility="4" region="NTSC-U" title="Destruction Derby Raw (USA)">
+    <compatibility>Graphical/Audio Issues</compatibility>
+    <version-tested>0.1-2553-g3ed42977</version-tested>
+    <comments>Menu images and car previews don't show properly</comments>
   </entry>
   <entry code="SLPS-00100" compatibility="5" region="NTSC-J" title="Detana Twinbee Yahoo! Deluxe Pack (Japan)">
     <compatibility>No Issues</compatibility>
@@ -1310,7 +1327,7 @@ Tetris with Card Captor Sakura (Japan)
   </entry>
   <entry code="SLUS-01072" compatibility="5" region="NTSC-U" title="Evil Dead - Hail to the King (USA) (Disc 1)">
     <compatibility>No Issues</compatibility>
-    <version-tested>0.1-2498-gd7de578d</version-tested>
+    <version-tested>0.1-2553-g3ed42977</version-tested>
   </entry>
   <entry code="SLUS-01585" compatibility="5" region="NTSC-U" title="FIFA Soccer 2005 (USA) (En,Es)">
     <compatibility>No Issues</compatibility>
@@ -2272,6 +2289,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1115-g0b261e8</version-tested>
   </entry>
+  <entry code="SLUS-01556" compatibility="5" region="NTSC-U" title="Miracle Space Race (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2553-g3ed42977</version-tested>
+  </entry>
   <entry code="SLES-02795" compatibility="5" region="PAL" title="Misadventures of Tron Bonne, The">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-826-g712168c</version-tested>
@@ -2755,6 +2776,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1308-g622e50fa</version-tested>
   </entry>
+  <entry code="SLUS-01168" compatibility="5" region="NTSC-U" title="RC Revenge (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2553-g3ed42977</version-tested>
+  </entry>
   <entry code="SLUS-00640" compatibility="5" region="NTSC-U" title="RPG Maker (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1445-ge5c46a54</version-tested>
@@ -3054,6 +3079,11 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLUS-01062" compatibility="5" region="NTSC-U" title="Roswell Conspiracies - Aliens, Myths &amp; Legends (USA)">
     <compatibility>No Issues</compatibility>
   </entry>
+  <entry code="SCUS-94417" compatibility="4" region="NTSC-U" title="Rush Hour (USA)">
+    <compatibility>Graphical/Audio Issues</compatibility>
+    <version-tested>0.1-2553-g3ed42977</version-tested>
+    <comments>Hangs at the Psygnosis logo when launched with a full boot. Game boots properly with a fast boot.</comments>
+  </entry>
   <entry code="SCUS-94230" compatibility="5" region="NTSC-U" title="SaGa Frontier (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-986-gfc911de1</version-tested>
@@ -3092,10 +3122,9 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1448-g472f1c1c</version-tested>
   </entry>
-  <entry code="SLUS-00545" compatibility="3" region="NTSC-U" title="Shadow Master (USA)">
-    <compatibility>Crashes In-Game</compatibility>
-    <version-tested>0.1-2538-g5c6ee953</version-tested>
-    <comments>Crashes with few seconds of gameplay ( Issue #1206 ).</comments>
+  <entry code="SLUS-00545" compatibility="5" region="NTSC-U" title="Shadow Master (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2553-g3ed42977</version-tested>
   </entry>
   <entry code="SLUS-00863" compatibility="5" region="NTSC-U" title="Shadow Tower (USA)">
     <compatibility>No Issues</compatibility>
@@ -4072,6 +4101,10 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLUS-00716" compatibility="5" region="NTSC-U" title="You Don't Know Jack (USA) (Disc 1)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1448-g472f1c1c</version-tested>
+  </entry>
+  <entry code="SLUS-01194" compatibility="5" region="NTSC-U" title="You Don't Know Jack - Mock 2 (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2553-g3ed42977</version-tested>
   </entry>
   <entry code="SLUS-01411" compatibility="5" region="NTSC-U" title="Yu-Gi-Oh! Forbidden Memories">
     <compatibility>No Issues</compatibility>
