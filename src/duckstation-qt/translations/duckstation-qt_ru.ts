@@ -6,7 +6,7 @@
     <message>
         <location filename="../aboutdialog.ui" line="14"/>
         <source>About DuckStation</source>
-        <translation>О DuckStation</translation>
+        <translation type="unfinished">Про DuckStation</translation>
     </message>
     <message>
         <location filename="../aboutdialog.ui" line="101"/>
@@ -234,22 +234,22 @@
     <message>
         <location filename="../../core/analog_controller.cpp" line="666"/>
         <source>Up</source>
-        <translation type="unfinished"></translation>
+        <translation>Вверх</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="667"/>
         <source>Down</source>
-        <translation type="unfinished"></translation>
+        <translation>Вниз</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="668"/>
         <source>Left</source>
-        <translation type="unfinished"></translation>
+        <translation>Влево</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="669"/>
         <source>Right</source>
-        <translation type="unfinished"></translation>
+        <translation>Вправо</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="670"/>
@@ -264,22 +264,22 @@
     <message>
         <location filename="../../core/analog_controller.cpp" line="672"/>
         <source>Triangle</source>
-        <translation type="unfinished"></translation>
+        <translation>Треугольник</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="673"/>
         <source>Cross</source>
-        <translation type="unfinished"></translation>
+        <translation>Крест</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="674"/>
         <source>Circle</source>
-        <translation type="unfinished"></translation>
+        <translation>Круг</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="675"/>
         <source>Square</source>
-        <translation type="unfinished"></translation>
+        <translation>Квадрат</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="676"/>
@@ -394,22 +394,22 @@
     <message>
         <location filename="../../core/analog_joystick.cpp" line="275"/>
         <source>Up</source>
-        <translation type="unfinished"></translation>
+        <translation>Вверх</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="276"/>
         <source>Down</source>
-        <translation type="unfinished"></translation>
+        <translation>Вниз</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="277"/>
         <source>Left</source>
-        <translation type="unfinished"></translation>
+        <translation>Влево</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="278"/>
         <source>Right</source>
-        <translation type="unfinished"></translation>
+        <translation>Вправо</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="279"/>
@@ -424,22 +424,22 @@
     <message>
         <location filename="../../core/analog_joystick.cpp" line="281"/>
         <source>Triangle</source>
-        <translation type="unfinished"></translation>
+        <translation>Треугольник</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="282"/>
         <source>Cross</source>
-        <translation type="unfinished"></translation>
+        <translation>Крест</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="283"/>
         <source>Circle</source>
-        <translation type="unfinished"></translation>
+        <translation>Круг</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="284"/>
         <source>Square</source>
-        <translation type="unfinished"></translation>
+        <translation>Квадрат</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="285"/>
@@ -848,7 +848,7 @@
     <message>
         <location filename="../biossettingswidget.cpp" line="16"/>
         <source>Auto-Detect</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Авто-определение</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.cpp" line="58"/>
@@ -864,7 +864,7 @@
     <message>
         <location filename="../biossettingswidget.cpp" line="97"/>
         <source>Patches the BIOS to skip the console&apos;s boot animation. Does not work with all games, but usually safe to enabled.</source>
-        <translation type="unfinished">Исправляет БИОС, чтобы пропустить загрузочную анимацию консоли. Не работает со всеми играми, но обычно безопасно для включения.</translation>
+        <translation type="unfinished">Исправляет BIOS, чтобы пропустить загрузочную анимацию консоли. Не работает со всеми играми, но обычно безопасно для включения.</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.cpp" line="153"/>
@@ -967,7 +967,7 @@
     <message>
         <location filename="../cheatmanagerdialog.ui" line="14"/>
         <source>Cheat Manager</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Менеджер читов</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="24"/>
@@ -1830,22 +1830,22 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../../core/digital_controller.cpp" line="164"/>
         <source>Up</source>
-        <translation type="unfinished"></translation>
+        <translation>Вверх</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="165"/>
         <source>Down</source>
-        <translation type="unfinished"></translation>
+        <translation>Вниз</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="166"/>
         <source>Left</source>
-        <translation type="unfinished"></translation>
+        <translation>Влево</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="167"/>
         <source>Right</source>
-        <translation type="unfinished"></translation>
+        <translation>Вправо</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="168"/>
@@ -1855,7 +1855,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../../core/digital_controller.cpp" line="169"/>
         <source>Start</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Начало</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="170"/>
@@ -2655,7 +2655,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../gamelistsettingswidget.ui" line="34"/>
         <source>Search Directories</source>
-        <translation>Папка для поиска</translation>
+        <translation type="unfinished">Каталоги поиска</translation>
     </message>
     <message>
         <location filename="../gamelistsettingswidget.ui" line="46"/>
@@ -2703,9 +2703,9 @@ This warning will only be shown once.</source>
         <source>Would you like to scan the directory &quot;%1&quot; recursively?
 
 Scanning recursively takes more time, but will identify files in subdirectories.</source>
-        <translation>Хотите рекурсивно просканировать папку &quot;%1&quot;?
+        <translation type="unfinished">Хотите рекурсивно просканировать каталог &quot;%1&quot;?
 
-Рекурсивное сканирование занимает больше времени, но распознает файлы в подпапках.</translation>
+Рекурсивное сканирование занимает больше времени, но распознает файлы в подкаталогах.</translation>
     </message>
     <message>
         <location filename="../gamelistsettingswidget.cpp" line="141"/>
@@ -4094,7 +4094,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../mainwindow.ui" line="280"/>
         <source>Start &amp;BIOS</source>
-        <translation>Запустить &amp;биос</translation>
+        <translation type="unfinished">Запустить &amp;BIOS</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="289"/>
@@ -4139,7 +4139,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../mainwindow.ui" line="360"/>
         <source>B&amp;IOS Settings...</source>
-        <translation>Настройки B&amp;IOS...</translation>
+        <translation type="unfinished">Настройки &amp;BIOS...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="369"/>
@@ -4184,7 +4184,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../mainwindow.ui" line="433"/>
         <source>&amp;GitHub Repository...</source>
-        <translation>Репозитория &amp;GitHub...</translation>
+        <translation type="unfinished">Репозиторий &amp;GitHub...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="438"/>
@@ -4209,7 +4209,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../mainwindow.ui" line="458"/>
         <source>&amp;About DuckStation...</source>
-        <translation type="unfinished">&amp;Про DuckStation...</translation>
+        <translation type="unfinished">Про &amp;DuckStation...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="713"/>
@@ -4219,7 +4219,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../mainwindow.ui" line="736"/>
         <source>C&amp;heat Manager</source>
-        <translation>Менеджер ч&amp;итов</translation>
+        <translation type="unfinished">Менеджер &amp;читов</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="741"/>
@@ -4558,7 +4558,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../mainwindow.cpp" line="742"/>
         <source>%1x Scale</source>
-        <translation type="unfinished">%1xМасштаб</translation>
+        <translation type="unfinished">%1x Масштаб</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="962"/>
@@ -4938,22 +4938,22 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../core/negcon.cpp" line="234"/>
         <source>Up</source>
-        <translation type="unfinished"></translation>
+        <translation>Вверх</translation>
     </message>
     <message>
         <location filename="../../core/negcon.cpp" line="235"/>
         <source>Down</source>
-        <translation type="unfinished"></translation>
+        <translation>Вниз</translation>
     </message>
     <message>
         <location filename="../../core/negcon.cpp" line="236"/>
         <source>Left</source>
-        <translation type="unfinished"></translation>
+        <translation>Влево</translation>
     </message>
     <message>
         <location filename="../../core/negcon.cpp" line="237"/>
         <source>Right</source>
-        <translation type="unfinished"></translation>
+        <translation>Вправо</translation>
     </message>
     <message>
         <location filename="../../core/negcon.cpp" line="238"/>
@@ -4973,7 +4973,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../core/negcon.cpp" line="241"/>
         <source>Start</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Начало</translation>
     </message>
     <message>
         <location filename="../../core/negcon.cpp" line="252"/>
@@ -5001,7 +5001,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../core/analog_controller.cpp" line="39"/>
         <source>Analog mode forcing is disabled by game settings. Controller will start in digital mode.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Аналоговый режим принудительно отключен настройками игры. Контроллер запустится в цифровом режиме.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="62"/>
@@ -5067,17 +5067,17 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../core/host_interface.cpp" line="546"/>
         <source>PGXP is incompatible with the software renderer, disabling PGXP.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">PGXP несовместим с программным рендерером, PGXP отключен.</translation>
     </message>
     <message>
         <location filename="../../core/host_interface.cpp" line="555"/>
         <source>PGXP CPU mode is incompatible with the recompiler, using Cached Interpreter instead.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Режим PGXP CPU несовместим с перекомпилятором, вместо него используется кэшированный интерпретатор.</translation>
     </message>
     <message>
         <location filename="../../core/host_interface.cpp" line="582"/>
         <source>Switching to %s%s GPU renderer.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Переключение на %s%s рендерер GPU.</translation>
     </message>
     <message>
         <location filename="../../core/host_interface.cpp" line="603"/>
@@ -5112,12 +5112,12 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../core/host_interface.cpp" line="681"/>
         <source>PGXP enabled, recompiling all blocks.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">PGXP включен, все блоки перекомпилированы.</translation>
     </message>
     <message>
         <location filename="../../core/host_interface.cpp" line="682"/>
         <source>PGXP disabled, recompiling all blocks.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">PGXP отключен, все блоки перекомпилированы.</translation>
     </message>
     <message>
         <location filename="../../core/host_interface.cpp" line="848"/>
@@ -5167,17 +5167,17 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../core/system.cpp" line="758"/>
         <source>CPU clock speed is set to %u%% (%u / %u). This may result in instability.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Частота процессора установлена в %u%% (%u / %u). Это может привести к нестабильности.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="899"/>
         <source>WARNING: CPU overclock (%u%%) was different in save state (%u%%).</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ВНИМАНИЕ: разгон ЦП (%u%%) отличался в сохранении состояния (%u%%).</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="999"/>
         <source>Failed to open CD image from save state: &apos;%s&apos;. Using existing image &apos;%s&apos;, this may result in instability.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Не удалось открыть образ CD из сохраненного состояния: &apos;%s&apos;. Использование существующего образа &apos;%s&apos;, может привести к нестабильности.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="736"/>
@@ -5435,12 +5435,12 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../core/playstation_mouse.cpp" line="193"/>
         <source>Left</source>
-        <translation type="unfinished">Левая</translation>
+        <translation>Влево</translation>
     </message>
     <message>
         <location filename="../../core/playstation_mouse.cpp" line="194"/>
         <source>Right</source>
-        <translation type="unfinished">Правая</translation>
+        <translation>Вправо</translation>
     </message>
 </context>
 <context>
@@ -5891,7 +5891,7 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../../core/system.cpp" line="958"/>
         <source>Save state is incompatible: minimum version is %u but state is version %u.</source>
-        <translation type="unfinished">Сохраненное состояние несовместимо: минимальная версия -% u, но версия состояния - % u.</translation>
+        <translation type="unfinished">Сохраненное состояние несовместимо: минимальная версия -%u, но версия состояния - %u.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="967"/>
