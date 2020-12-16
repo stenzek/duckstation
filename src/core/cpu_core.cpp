@@ -8,8 +8,10 @@
 #include "cpu_disasm.h"
 #include "cpu_recompiler_thunks.h"
 #include "gte.h"
+#include "host_interface.h"
 #include "pgxp.h"
 #include "settings.h"
+#include "system.h"
 #include "timing_event.h"
 #include <cstdio>
 Log_SetChannel(CPU::Core);
@@ -22,8 +24,15 @@ static void Branch(u32 target);
 static void FlushPipeline();
 
 State g_state;
+bool g_using_interpreter = false;
 bool TRACE_EXECUTION = false;
 bool LOG_EXECUTION = false;
+
+static constexpr u32 INVALID_BREAKPOINT_PC = UINT32_C(0xFFFFFFFF);
+static std::vector<Breakpoint> s_breakpoints;
+static u32 s_breakpoint_counter = 1;
+static u32 s_last_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
+static bool s_single_step = false;
 
 void WriteToExecutionLog(const char* format, ...)
 {
@@ -53,6 +62,12 @@ void Initialize()
   // From nocash spec.
   g_state.cop0_regs.PRID = UINT32_C(0x00000002);
 
+  g_state.use_debug_dispatcher = false;
+  s_breakpoints.clear();
+  s_breakpoint_counter = 1;
+  s_last_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
+  s_single_step = false;
+
   GTE::Initialize();
 
   if (g_settings.gpu_pgxp_enable)
@@ -63,6 +78,7 @@ void Shutdown()
 {
   // GTE::Shutdown();
   PGXP::Shutdown();
+  ClearBreakpoints();
 }
 
 void Reset()
@@ -427,7 +443,16 @@ ALWAYS_INLINE_RELEASE static void WriteCop0Reg(Cop0Reg reg, u32 value)
 static void PrintInstruction(u32 bits, u32 pc, Registers* regs)
 {
   TinyString instr;
-  DisassembleInstruction(&instr, pc, bits, regs);
+  TinyString comment;
+  DisassembleInstruction(&instr, pc, bits);
+  DisassembleInstructionComment(&comment, pc, bits, regs);
+  if (!comment.IsEmpty())
+  {
+    for (u32 i = instr.GetLength(); i < 30; i++)
+      instr.AppendCharacter(' ');
+    instr.AppendString("; ");
+    instr.AppendString(comment);
+  }
 
   std::printf("%08x: %08x %s\n", pc, bits, instr.GetCharArray());
 }
@@ -435,7 +460,16 @@ static void PrintInstruction(u32 bits, u32 pc, Registers* regs)
 static void LogInstruction(u32 bits, u32 pc, Registers* regs)
 {
   TinyString instr;
-  DisassembleInstruction(&instr, pc, bits, regs);
+  TinyString comment;
+  DisassembleInstruction(&instr, pc, bits);
+  DisassembleInstructionComment(&comment, pc, bits, regs);
+  if (!comment.IsEmpty())
+  {
+    for (u32 i = instr.GetLength(); i < 30; i++)
+      instr.AppendCharacter(' ');
+    instr.AppendString("; ");
+    instr.AppendString(comment);
+  }
 
   WriteToExecutionLog("%08x: %08x %s\n", pc, bits, instr.GetCharArray());
 }
@@ -1429,9 +1463,265 @@ void DispatchInterrupt()
     g_state.regs.pc);
 }
 
-template<PGXPMode pgxp_mode>
+static void UpdateDebugDispatcherFlag()
+{
+  const bool has_any_breakpoints = !s_breakpoints.empty();
+
+  // TODO: cop0 breakpoints
+
+  const bool use_debug_dispatcher = has_any_breakpoints;
+  if (use_debug_dispatcher == g_state.use_debug_dispatcher)
+    return;
+
+  g_state.use_debug_dispatcher = use_debug_dispatcher;
+  ForceDispatcherExit();
+}
+
+void ForceDispatcherExit()
+{
+  // zero the downcount so we break out and switch
+  g_state.downcount = 0;
+  g_state.frame_done = true;
+}
+
+bool HasAnyBreakpoints()
+{
+  return !s_breakpoints.empty();
+}
+
+bool HasBreakpointAtAddress(VirtualMemoryAddress address)
+{
+  for (const Breakpoint& bp : s_breakpoints)
+  {
+    if (bp.address == address)
+      return true;
+  }
+
+  return false;
+}
+
+BreakpointList GetBreakpointList(bool include_auto_clear, bool include_callbacks)
+{
+  BreakpointList bps;
+  bps.reserve(s_breakpoints.size());
+
+  for (const Breakpoint& bp : s_breakpoints)
+  {
+    if (bp.callback && !include_callbacks)
+      continue;
+    if (bp.auto_clear && !include_auto_clear)
+      continue;
+
+    bps.push_back(bp);
+  }
+
+  return bps;
+}
+
+bool AddBreakpoint(VirtualMemoryAddress address, bool auto_clear, bool enabled)
+{
+  if (HasBreakpointAtAddress(address))
+    return false;
+
+  Log_InfoPrintf("Adding breakpoint at %08X, auto clear = %u", address, static_cast<unsigned>(auto_clear));
+
+  Breakpoint bp{address, nullptr, auto_clear ? 0 : s_breakpoint_counter++, 0, auto_clear, enabled};
+  s_breakpoints.push_back(std::move(bp));
+  UpdateDebugDispatcherFlag();
+
+  if (!auto_clear)
+  {
+    g_host_interface->ReportFormattedDebuggerMessage(
+      g_host_interface->TranslateString("DebuggerMessage", "Added breakpoint at 0x%08X."), address);
+  }
+
+  return true;
+}
+
+bool AddBreakpointWithCallback(VirtualMemoryAddress address, BreakpointCallback callback)
+{
+  if (HasBreakpointAtAddress(address))
+    return false;
+
+  Log_InfoPrintf("Adding breakpoint with callback at %08X", address);
+
+  Breakpoint bp{address, callback, 0, 0, false, true};
+  s_breakpoints.push_back(std::move(bp));
+  UpdateDebugDispatcherFlag();
+  return true;
+}
+
+bool RemoveBreakpoint(VirtualMemoryAddress address)
+{
+  auto it = std::find_if(s_breakpoints.begin(), s_breakpoints.end(),
+                         [address](const Breakpoint& bp) { return bp.address == address; });
+  if (it == s_breakpoints.end())
+    return false;
+
+  g_host_interface->ReportFormattedDebuggerMessage(
+    g_host_interface->TranslateString("DebuggerMessage", "Removed breakpoint at 0x%08X."), address);
+
+  s_breakpoints.erase(it);
+  UpdateDebugDispatcherFlag();
+
+  if (address == s_last_breakpoint_check_pc)
+    s_last_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
+
+  return true;
+}
+
+void ClearBreakpoints()
+{
+  s_breakpoints.clear();
+  s_breakpoint_counter = 0;
+  s_last_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
+  UpdateDebugDispatcherFlag();
+}
+
+bool AddStepOverBreakpoint()
+{
+  u32 bp_pc = g_state.regs.pc;
+
+  Instruction inst;
+  if (!SafeReadInstruction(bp_pc, &inst.bits))
+    return false;
+
+  bp_pc += sizeof(Instruction);
+
+  if (!IsCallInstruction(inst))
+  {
+    g_host_interface->ReportFormattedDebuggerMessage(
+      g_host_interface->TranslateString("DebuggerMessage", "0x%08X is not a call instruction."), g_state.regs.pc);
+    return false;
+  }
+
+  if (!SafeReadInstruction(bp_pc, &inst.bits))
+    return false;
+
+  if (IsBranchInstruction(inst))
+  {
+    g_host_interface->ReportFormattedDebuggerMessage(
+      g_host_interface->TranslateString("DebuggerMessage", "Can't step over double branch at 0x%08X"), g_state.regs.pc);
+    return false;
+  }
+
+  // skip the delay slot
+  bp_pc += sizeof(Instruction);
+
+  g_host_interface->ReportFormattedDebuggerMessage(
+    g_host_interface->TranslateString("DebuggerMessage", "Stepping over to 0x%08X."), bp_pc);
+
+  return AddBreakpoint(bp_pc, true);
+}
+
+bool AddStepOutBreakpoint(u32 max_instructions_to_search)
+{
+  // find the branch-to-ra instruction.
+  u32 ret_pc = g_state.regs.pc;
+  for (u32 i = 0; i < max_instructions_to_search; i++)
+  {
+    ret_pc += sizeof(Instruction);
+
+    Instruction inst;
+    if (!SafeReadInstruction(ret_pc, &inst.bits))
+    {
+      g_host_interface->ReportFormattedDebuggerMessage(
+        g_host_interface->TranslateString("DebuggerMessage",
+                                          "Instruction read failed at %08X while searching for function end."),
+        ret_pc);
+      return false;
+    }
+
+    if (IsReturnInstruction(inst))
+    {
+      g_host_interface->ReportFormattedDebuggerMessage(
+        g_host_interface->TranslateString("DebuggerMessage", "Stepping out to 0x%08X."), ret_pc);
+
+      return AddBreakpoint(ret_pc, true);
+    }
+  }
+
+  g_host_interface->ReportFormattedDebuggerMessage(
+    g_host_interface->TranslateString("DebuggerMessage",
+                                      "No return instruction found after %u instructions for step-out at %08X."),
+    max_instructions_to_search, g_state.regs.pc);
+
+  return false;
+}
+
+static ALWAYS_INLINE_RELEASE bool BreakpointCheck()
+{
+  const u32 pc = g_state.regs.pc;
+
+  // single step - we want to break out after this instruction, so set a pending exit
+  // the bp check happens just before execution, so this is fine
+  if (s_single_step)
+  {
+    ForceDispatcherExit();
+    s_single_step = false;
+    s_last_breakpoint_check_pc = pc;
+    return false;
+  }
+
+  if (pc == s_last_breakpoint_check_pc)
+  {
+    // we don't want to trigger the same breakpoint which just paused us repeatedly.
+    return false;
+  }
+
+  u32 count = static_cast<u32>(s_breakpoints.size());
+  for (u32 i = 0; i < count;)
+  {
+    Breakpoint& bp = s_breakpoints[i];
+    if (!bp.enabled || bp.address != pc)
+    {
+      i++;
+      continue;
+    }
+
+    bp.hit_count++;
+
+    if (bp.callback)
+    {
+      // if callback returns false, the bp is no longer recorded
+      if (!bp.callback(pc))
+      {
+        s_breakpoints.erase(s_breakpoints.begin() + i);
+        count--;
+        UpdateDebugDispatcherFlag();
+      }
+      else
+      {
+        i++;
+      }
+    }
+    else
+    {
+      g_host_interface->PauseSystem(true);
+
+      if (bp.auto_clear)
+      {
+        g_host_interface->ReportFormattedDebuggerMessage("Stopped execution at 0x%08X.", pc);
+        s_breakpoints.erase(s_breakpoints.begin() + i);
+        count--;
+        UpdateDebugDispatcherFlag();
+      }
+      else
+      {
+        g_host_interface->ReportFormattedDebuggerMessage("Hit breakpoint %u at 0x%08X.", bp.number, pc);
+        i++;
+      }
+    }
+  }
+
+  s_last_breakpoint_check_pc = pc;
+  return System::IsPaused();
+}
+
+template<PGXPMode pgxp_mode, bool debug>
 static void ExecuteImpl()
 {
+  g_using_interpreter = true;
   g_state.frame_done = false;
   while (!g_state.frame_done)
   {
@@ -1441,6 +1731,15 @@ static void ExecuteImpl()
     {
       if (HasPendingInterrupt() && !g_state.interrupt_delay)
         DispatchInterrupt();
+
+      if constexpr (debug)
+      {
+        if (BreakpointCheck())
+        {
+          // continue is measurably faster than break on msvc for some reason
+          continue;
+        }
+      }
 
       g_state.interrupt_delay = false;
       g_state.pending_ticks++;
@@ -1454,7 +1753,7 @@ static void ExecuteImpl()
       g_state.branch_was_taken = false;
       g_state.exception_raised = false;
 
-      // fetch the next instruction
+      // fetch the next instruction - even if this fails, it'll still refetch on the flush so we can continue
       if (!FetchInstruction())
         continue;
 
@@ -1482,14 +1781,36 @@ void Execute()
   if (g_settings.gpu_pgxp_enable)
   {
     if (g_settings.gpu_pgxp_cpu)
-      ExecuteImpl<PGXPMode::CPU>();
+      ExecuteImpl<PGXPMode::CPU, false>();
     else
-      ExecuteImpl<PGXPMode::Memory>();
+      ExecuteImpl<PGXPMode::Memory, false>();
   }
   else
   {
-    ExecuteImpl<PGXPMode::Disabled>();
+    ExecuteImpl<PGXPMode::Disabled, false>();
   }
+}
+
+void ExecuteDebug()
+{
+  if (g_settings.gpu_pgxp_enable)
+  {
+    if (g_settings.gpu_pgxp_cpu)
+      ExecuteImpl<PGXPMode::CPU, true>();
+    else
+      ExecuteImpl<PGXPMode::Memory, true>();
+  }
+  else
+  {
+    ExecuteImpl<PGXPMode::Disabled, true>();
+  }
+}
+
+void SingleStep()
+{
+  s_single_step = true;
+  ExecuteDebug();
+  g_host_interface->ReportFormattedDebuggerMessage("Stepped to 0x%08X.", g_state.regs.pc);
 }
 
 namespace CodeCache {

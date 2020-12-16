@@ -5,6 +5,7 @@
 #include "types.h"
 #include <array>
 #include <optional>
+#include <vector>
 
 class StateWrapper;
 
@@ -74,6 +75,9 @@ struct State
   // GTE registers are stored here so we can access them on ARM with a single instruction
   GTE::Regs gte_regs = {};
 
+  // 4 bytes of padding here on x64
+  bool use_debug_dispatcher = false;
+
   u8* fastmem_base = nullptr;
 
   // data cache (used as scratchpad)
@@ -83,6 +87,7 @@ struct State
 };
 
 extern State g_state;
+extern bool g_using_interpreter;
 
 void Initialize();
 void Shutdown();
@@ -92,6 +97,11 @@ void ClearICache();
 
 /// Executes interpreter loop.
 void Execute();
+void ExecuteDebug();
+void SingleStep();
+
+// Forces an early exit from the CPU dispatcher.
+void ForceDispatcherExit();
 
 ALWAYS_INLINE Registers& GetRegs() { return g_state.regs; }
 
@@ -121,6 +131,32 @@ void DisassembleAndPrint(u32 addr, u32 instructions_before, u32 instructions_aft
 
 // Write to CPU execution log file.
 void WriteToExecutionLog(const char* format, ...);
+
+// Breakpoint callback - if the callback returns false, the breakpoint will be removed.
+using BreakpointCallback = bool (*)(VirtualMemoryAddress address);
+
+struct Breakpoint
+{
+  VirtualMemoryAddress address;
+  BreakpointCallback callback;
+  u32 number;
+  u32 hit_count;
+  bool auto_clear;
+  bool enabled;
+};
+
+using BreakpointList = std::vector<Breakpoint>;
+
+// Breakpoints
+bool HasAnyBreakpoints();
+bool HasBreakpointAtAddress(VirtualMemoryAddress address);
+BreakpointList GetBreakpointList(bool include_auto_clear = false, bool include_callbacks = false);
+bool AddBreakpoint(VirtualMemoryAddress address, bool auto_clear = false, bool enabled = true);
+bool AddBreakpointWithCallback(VirtualMemoryAddress address, BreakpointCallback callback);
+bool RemoveBreakpoint(VirtualMemoryAddress address);
+void ClearBreakpoints();
+bool AddStepOverBreakpoint();
+bool AddStepOutBreakpoint(u32 max_instructions_to_search = 1000);
 
 extern bool TRACE_EXECUTION;
 extern bool LOG_EXECUTION;

@@ -1,6 +1,6 @@
 #include "cpu_disasm.h"
-#include "cpu_core.h"
 #include "common/assert.h"
+#include "cpu_core.h"
 #include <array>
 
 namespace CPU {
@@ -167,11 +167,9 @@ static const std::array<std::pair<CopCommonInstruction, const char*>, 5> s_cop_c
 
 static const std::array<std::pair<Cop0Instruction, const char*>, 1> s_cop0_table = {{{Cop0Instruction::rfe, "rfe"}}};
 
-static void FormatInstruction(String* dest, const Instruction inst, u32 pc, Registers* regs, const char* format)
+static void FormatInstruction(String* dest, const Instruction inst, u32 pc, const char* format)
 {
   dest->Clear();
-
-  TinyString comment;
 
   const char* str = format;
   while (*str != '\0')
@@ -186,34 +184,16 @@ static void FormatInstruction(String* dest, const Instruction inst, u32 pc, Regi
     if (std::strncmp(str, "rs", 2) == 0)
     {
       dest->AppendString(GetRegName(inst.r.rs));
-      if (regs)
-      {
-        comment.AppendFormattedString("%s%s=0x%08X", comment.IsEmpty() ? "" : ", ", GetRegName(inst.r.rs),
-                                      regs->r[static_cast<u8>(inst.r.rs.GetValue())]);
-      }
-
       str += 2;
     }
     else if (std::strncmp(str, "rt", 2) == 0)
     {
       dest->AppendString(GetRegName(inst.r.rt));
-      if (regs)
-      {
-        comment.AppendFormattedString("%s%s=0x%08X", comment.IsEmpty() ? "" : ", ", GetRegName(inst.r.rt),
-                                      regs->r[static_cast<u8>(inst.r.rt.GetValue())]);
-      }
-
       str += 2;
     }
     else if (std::strncmp(str, "rd", 2) == 0)
     {
       dest->AppendString(GetRegName(inst.r.rd));
-      if (regs)
-      {
-        comment.AppendFormattedString("%s%s=0x%08X", comment.IsEmpty() ? "" : ", ", GetRegName(inst.r.rd),
-                                      regs->r[static_cast<u8>(inst.r.rd.GetValue())]);
-      }
-
       str += 2;
     }
     else if (std::strncmp(str, "shamt", 5) == 0)
@@ -242,12 +222,6 @@ static void FormatInstruction(String* dest, const Instruction inst, u32 pc, Regi
     {
       const s32 offset = static_cast<s32>(inst.i.imm_sext32());
       dest->AppendFormattedString("%d(%s)", offset, GetRegName(inst.i.rs));
-      if (regs)
-      {
-        comment.AppendFormattedString("%saddr=0x%08X", comment.IsEmpty() ? "" : ", ",
-                                      regs->r[static_cast<u8>(inst.i.rs.GetValue())] + offset);
-      }
-
       str += 8;
     }
     else if (std::strncmp(str, "jt", 2) == 0)
@@ -281,25 +255,95 @@ static void FormatInstruction(String* dest, const Instruction inst, u32 pc, Regi
       Panic("Unknown operand");
     }
   }
+}
 
-  if (!comment.IsEmpty())
+static void FormatComment(String* dest, const Instruction inst, u32 pc, Registers* regs, const char* format)
+{
+  const char* str = format;
+  while (*str != '\0')
   {
-    for (u32 i = dest->GetLength(); i < 30; i++)
-      dest->AppendCharacter(' ');
-    dest->AppendString("; ");
-    dest->AppendString(comment);
+    const char ch = *(str++);
+    if (ch != '$')
+      continue;
+
+    if (std::strncmp(str, "rs", 2) == 0)
+    {
+      dest->AppendFormattedString("%s%s=0x%08X", dest->IsEmpty() ? "" : ", ", GetRegName(inst.r.rs),
+                                  regs->r[static_cast<u8>(inst.r.rs.GetValue())]);
+
+      str += 2;
+    }
+    else if (std::strncmp(str, "rt", 2) == 0)
+    {
+      dest->AppendFormattedString("%s%s=0x%08X", dest->IsEmpty() ? "" : ", ", GetRegName(inst.r.rt),
+                                  regs->r[static_cast<u8>(inst.r.rt.GetValue())]);
+      str += 2;
+    }
+    else if (std::strncmp(str, "rd", 2) == 0)
+    {
+      dest->AppendFormattedString("%s%s=0x%08X", dest->IsEmpty() ? "" : ", ", GetRegName(inst.r.rd),
+                                  regs->r[static_cast<u8>(inst.r.rd.GetValue())]);
+      str += 2;
+    }
+    else if (std::strncmp(str, "shamt", 5) == 0)
+    {
+      str += 5;
+    }
+    else if (std::strncmp(str, "immu", 4) == 0)
+    {
+      str += 4;
+    }
+    else if (std::strncmp(str, "imm", 3) == 0)
+    {
+      str += 3;
+    }
+    else if (std::strncmp(str, "rel", 3) == 0)
+    {
+      str += 3;
+    }
+    else if (std::strncmp(str, "offsetrs", 8) == 0)
+    {
+      const s32 offset = static_cast<s32>(inst.i.imm_sext32());
+      dest->AppendFormattedString("%saddr=0x%08X", dest->IsEmpty() ? "" : ", ",
+                                  regs->r[static_cast<u8>(inst.i.rs.GetValue())] + offset);
+      str += 8;
+    }
+    else if (std::strncmp(str, "jt", 2) == 0)
+    {
+      str += 2;
+    }
+    else if (std::strncmp(str, "copcc", 5) == 0)
+    {
+      str += 5;
+    }
+    else if (std::strncmp(str, "coprd", 5) == 0)
+    {
+      str += 5;
+    }
+    else if (std::strncmp(str, "coprt", 5) == 0)
+    {
+      str += 5;
+    }
+    else if (std::strncmp(str, "cop", 3) == 0)
+    {
+      str += 3;
+    }
+    else
+    {
+      Panic("Unknown operand");
+    }
   }
 }
 
 template<typename T>
-void FormatCopInstruction(String* dest, u32 pc, Registers* regs, const Instruction inst,
-                          const std::pair<T, const char*>* table, size_t table_size, T table_key)
+void FormatCopInstruction(String* dest, u32 pc, const Instruction inst, const std::pair<T, const char*>* table,
+                          size_t table_size, T table_key)
 {
   for (size_t i = 0; i < table_size; i++)
   {
     if (table[i].first == table_key)
     {
-      FormatInstruction(dest, inst, pc, regs, table[i].second);
+      FormatInstruction(dest, inst, pc, table[i].second);
       return;
     }
   }
@@ -307,13 +351,27 @@ void FormatCopInstruction(String* dest, u32 pc, Registers* regs, const Instructi
   dest->Format("<cop%u 0x%08X>", ZeroExtend32(inst.cop.cop_n.GetValue()), inst.cop.imm25.GetValue());
 }
 
-void DisassembleInstruction(String* dest, u32 pc, u32 bits, Registers* regs)
+template<typename T>
+void FormatCopComment(String* dest, u32 pc, Registers* regs, const Instruction inst,
+                      const std::pair<T, const char*>* table, size_t table_size, T table_key)
+{
+  for (size_t i = 0; i < table_size; i++)
+  {
+    if (table[i].first == table_key)
+    {
+      FormatComment(dest, inst, pc, regs, table[i].second);
+      return;
+    }
+  }
+}
+
+void DisassembleInstruction(String* dest, u32 pc, u32 bits)
 {
   const Instruction inst{bits};
   switch (inst.op)
   {
     case InstructionOp::funct:
-      FormatInstruction(dest, inst, pc, regs, s_special_table[static_cast<u8>(inst.r.funct.GetValue())]);
+      FormatInstruction(dest, inst, pc, s_special_table[static_cast<u8>(inst.r.funct.GetValue())]);
       return;
 
     case InstructionOp::cop0:
@@ -323,8 +381,7 @@ void DisassembleInstruction(String* dest, u32 pc, u32 bits, Registers* regs)
     {
       if (inst.cop.IsCommonInstruction())
       {
-        FormatCopInstruction(dest, pc, regs, inst, s_cop_common_table.data(), s_cop_common_table.size(),
-                             inst.cop.CommonOp());
+        FormatCopInstruction(dest, pc, inst, s_cop_common_table.data(), s_cop_common_table.size(), inst.cop.CommonOp());
       }
       else
       {
@@ -332,7 +389,7 @@ void DisassembleInstruction(String* dest, u32 pc, u32 bits, Registers* regs)
         {
           case InstructionOp::cop0:
           {
-            FormatCopInstruction(dest, pc, regs, inst, s_cop0_table.data(), s_cop0_table.size(), inst.cop.Cop0Op());
+            FormatCopInstruction(dest, pc, inst, s_cop0_table.data(), s_cop0_table.size(), inst.cop.Cop0Op());
           }
           break;
 
@@ -356,14 +413,75 @@ void DisassembleInstruction(String* dest, u32 pc, u32 bits, Registers* regs)
       const bool bgez = ConvertToBoolUnchecked(rt & u8(1));
       const bool link = ConvertToBoolUnchecked((rt >> 4) & u8(1));
       if (link)
-        FormatInstruction(dest, inst, pc, regs, bgez ? "bgezal $rs, $rel" : "bltzal $rs, $rel");
+        FormatInstruction(dest, inst, pc, bgez ? "bgezal $rs, $rel" : "bltzal $rs, $rel");
       else
-        FormatInstruction(dest, inst, pc, regs, bgez ? "bgez $rs, $rel" : "bltz $rs, $rel");
+        FormatInstruction(dest, inst, pc, bgez ? "bgez $rs, $rel" : "bltz $rs, $rel");
     }
     break;
 
     default:
-      FormatInstruction(dest, inst, pc, regs, s_base_table[static_cast<u8>(inst.op.GetValue())]);
+      FormatInstruction(dest, inst, pc, s_base_table[static_cast<u8>(inst.op.GetValue())]);
+      break;
+  }
+}
+
+void DisassembleInstructionComment(String* dest, u32 pc, u32 bits, Registers* regs)
+{
+  const Instruction inst{bits};
+  switch (inst.op)
+  {
+    case InstructionOp::funct:
+      FormatComment(dest, inst, pc, regs, s_special_table[static_cast<u8>(inst.r.funct.GetValue())]);
+      return;
+
+    case InstructionOp::cop0:
+    case InstructionOp::cop1:
+    case InstructionOp::cop2:
+    case InstructionOp::cop3:
+    {
+      if (inst.cop.IsCommonInstruction())
+      {
+        FormatCopComment(dest, pc, regs, inst, s_cop_common_table.data(), s_cop_common_table.size(),
+                         inst.cop.CommonOp());
+      }
+      else
+      {
+        switch (inst.op)
+        {
+          case InstructionOp::cop0:
+          {
+            FormatCopComment(dest, pc, regs, inst, s_cop0_table.data(), s_cop0_table.size(), inst.cop.Cop0Op());
+          }
+          break;
+
+          case InstructionOp::cop1:
+          case InstructionOp::cop2:
+          case InstructionOp::cop3:
+          default:
+          {
+            dest->Format("<cop%u 0x%08X>", ZeroExtend32(inst.cop.cop_n.GetValue()), inst.cop.imm25.GetValue());
+          }
+          break;
+        }
+      }
+    }
+    break;
+
+      // special case for bltz/bgez{al}
+    case InstructionOp::b:
+    {
+      const u8 rt = static_cast<u8>(inst.i.rt.GetValue());
+      const bool bgez = ConvertToBoolUnchecked(rt & u8(1));
+      const bool link = ConvertToBoolUnchecked((rt >> 4) & u8(1));
+      if (link)
+        FormatComment(dest, inst, pc, regs, bgez ? "bgezal $rs, $rel" : "bltzal $rs, $rel");
+      else
+        FormatComment(dest, inst, pc, regs, bgez ? "bgez $rs, $rel" : "bltz $rs, $rel");
+    }
+    break;
+
+    default:
+      FormatComment(dest, inst, pc, regs, s_base_table[static_cast<u8>(inst.op.GetValue())]);
       break;
   }
 }

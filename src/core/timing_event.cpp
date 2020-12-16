@@ -48,8 +48,7 @@ std::unique_ptr<TimingEvent> CreateTimingEvent(std::string name, TickCount perio
 
 void UpdateCPUDowncount()
 {
-  if (!CPU::g_state.frame_done &&
-      (!CPU::HasPendingInterrupt() || g_settings.cpu_execution_mode == CPUExecutionMode::Interpreter))
+  if (!CPU::g_state.frame_done && (!CPU::HasPendingInterrupt() || CPU::g_using_interpreter))
   {
     CPU::g_state.downcount = s_active_events_head->GetDowncount();
   }

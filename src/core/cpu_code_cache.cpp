@@ -174,7 +174,9 @@ static void ExecuteImpl()
 {
   CodeBlockKey next_block_key;
 
+  g_using_interpreter = false;
   g_state.frame_done = false;
+
   while (!g_state.frame_done)
   {
     if (HasPendingInterrupt())
@@ -301,7 +303,9 @@ CodeBlock::HostCodePointer* GetFastMapPointer()
 
 void ExecuteRecompiler()
 {
+  g_using_interpreter = false;
   g_state.frame_done = false;
+
 #if 0
   while (!g_state.frame_done)
   {
@@ -568,7 +572,7 @@ bool CompileBlock(CodeBlock* block)
     Log_DebugPrintf("Block at 0x%08X", block->GetPC());
     for (const CodeBlockInstruction& cbi : block->instructions)
     {
-      CPU::DisassembleInstruction(&disasm, cbi.pc, cbi.instruction.bits, nullptr);
+      CPU::DisassembleInstruction(&disasm, cbi.pc, cbi.instruction.bits);
       Log_DebugPrintf("[%s %s 0x%08X] %08X %s", cbi.is_branch_delay_slot ? "BD" : "  ",
                       cbi.is_load_delay_slot ? "LD" : "  ", cbi.pc, cbi.instruction.bits, disasm.GetCharArray());
     }

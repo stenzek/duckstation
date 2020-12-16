@@ -35,7 +35,7 @@ bool CodeGenerator::CompileBlock(CodeBlock* block, CodeBlock::HostCodePointer* o
   {
 #ifdef _DEBUG
     SmallString disasm;
-    DisassembleInstruction(&disasm, cbi->pc, cbi->instruction.bits, nullptr);
+    DisassembleInstruction(&disasm, cbi->pc, cbi->instruction.bits);
     Log_DebugPrintf("Compiling instruction '%s'", disasm.GetCharArray());
 #endif
 

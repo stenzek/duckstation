@@ -144,6 +144,7 @@ bool SaveState(ByteStream* state, u32 screenshot_size = 128);
 /// Recreates the GPU component, saving/loading the state so it is preserved. Call when the GPU renderer changes.
 bool RecreateGPU(GPURenderer renderer, bool update_display = true);
 
+void SingleStepCPU();
 void RunFrame();
 
 /// Sets target emulation speed.

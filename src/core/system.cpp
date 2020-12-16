@@ -111,9 +111,15 @@ State GetState()
 
 void SetState(State new_state)
 {
+  if (s_state == new_state)
+    return;
+
   Assert(s_state == State::Paused || s_state == State::Running);
   Assert(new_state == State::Paused || new_state == State::Running);
   s_state = new_state;
+
+  if (new_state == State::Paused)
+    CPU::ForceDispatcherExit();
 }
 
 bool IsRunning()
@@ -1163,30 +1169,55 @@ bool SaveState(ByteStream* state, u32 screenshot_size /* = 128 */)
   return true;
 }
 
+void SingleStepCPU()
+{
+  const u32 old_frame_number = s_frame_number;
+
+  s_frame_timer.Reset();
+
+  g_gpu->RestoreGraphicsAPIState();
+
+  CPU::SingleStep();
+
+  g_spu.GeneratePendingSamples();
+
+  if (s_frame_number != old_frame_number && s_cheat_list)
+    s_cheat_list->Apply();
+
+  g_gpu->ResetGraphicsAPIState();
+}
+
 void RunFrame()
 {
   s_frame_timer.Reset();
 
   g_gpu->RestoreGraphicsAPIState();
 
-  switch (g_settings.cpu_execution_mode)
+  if (CPU::g_state.use_debug_dispatcher)
   {
-    case CPUExecutionMode::Recompiler:
+    CPU::ExecuteDebug();
+  }
+  else
+  {
+    switch (g_settings.cpu_execution_mode)
+    {
+      case CPUExecutionMode::Recompiler:
 #ifdef WITH_RECOMPILER
-      CPU::CodeCache::ExecuteRecompiler();
+        CPU::CodeCache::ExecuteRecompiler();
 #else
-      CPU::CodeCache::Execute();
+        CPU::CodeCache::Execute();
 #endif
-      break;
+        break;
 
-    case CPUExecutionMode::CachedInterpreter:
-      CPU::CodeCache::Execute();
-      break;
+      case CPUExecutionMode::CachedInterpreter:
+        CPU::CodeCache::Execute();
+        break;
 
-    case CPUExecutionMode::Interpreter:
-    default:
-      CPU::Execute();
-      break;
+      case CPUExecutionMode::Interpreter:
+      default:
+        CPU::Execute();
+        break;
+    }
   }
 
   // Generate any pending samples from the SPU before sleeping, this way we reduce the chances of underruns.
