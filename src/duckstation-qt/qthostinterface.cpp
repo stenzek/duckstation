@@ -1236,7 +1236,7 @@ void QtHostInterface::saveScreenshot()
 {
   if (!isOnWorkerThread())
   {
-    QMetaObject::invokeMethod(this, Qt::QueuedConnection, "saveScreenshot");
+    QMetaObject::invokeMethod(this, "saveScreenshot", Qt::QueuedConnection);
     return;
   }
 
