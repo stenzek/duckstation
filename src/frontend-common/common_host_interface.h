@@ -96,8 +96,6 @@ public:
   /// Returns true if running in batch mode, i.e. exit after emulation.
   ALWAYS_INLINE bool InBatchMode() const { return m_batch_mode; }
 
-  void PauseSystem(bool paused);
-
   /// Parses command line parameters for all frontends.
   bool ParseCommandLineParameters(int argc, char* argv[], std::unique_ptr<SystemBootParameters>* out_boot_params);
 

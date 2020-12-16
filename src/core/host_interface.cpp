@@ -130,6 +130,22 @@ void HostInterface::PowerOffSystem()
   DestroySystem();
 }
 
+void HostInterface::PauseSystem(bool paused)
+{
+  if (paused == System::IsPaused() || System::IsShutdown())
+    return;
+
+  System::SetState(paused ? System::State::Paused : System::State::Running);
+  if (!paused)
+    m_audio_stream->EmptyBuffers();
+  m_audio_stream->PauseOutput(paused);
+
+  OnSystemPaused(paused);
+
+  if (!paused)
+    System::ResetPerformanceCounters();
+}
+
 void HostInterface::DestroySystem()
 {
   if (System::IsShutdown())
@@ -398,6 +414,8 @@ bool HostInterface::SaveState(const char* filename)
 }
 
 void HostInterface::OnSystemCreated() {}
+
+void HostInterface::OnSystemPaused(bool paused) {}
 
 void HostInterface::OnSystemDestroyed() {}
 

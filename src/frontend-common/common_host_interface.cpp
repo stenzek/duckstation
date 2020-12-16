@@ -157,23 +157,6 @@ bool CommonHostInterface::BootSystem(const SystemBootParameters& parameters)
   return true;
 }
 
-void CommonHostInterface::PauseSystem(bool paused)
-{
-  if (paused == System::IsPaused() || System::IsShutdown())
-    return;
-
-  System::SetState(paused ? System::State::Paused : System::State::Running);
-  if (!paused)
-    m_audio_stream->EmptyBuffers();
-  m_audio_stream->PauseOutput(paused);
-
-  OnSystemPaused(paused);
-  UpdateSpeedLimiterState();
-
-  if (!paused)
-    System::ResetPerformanceCounters();
-}
-
 void CommonHostInterface::DestroySystem()
 {
   SetTimerResolutionIncreased(false);
@@ -748,7 +731,7 @@ void CommonHostInterface::OnSystemPaused(bool paused)
     StopControllerRumble();
   }
 
-  m_audio_stream->PauseOutput(paused);
+  UpdateSpeedLimiterState();
 }
 
 void CommonHostInterface::OnSystemDestroyed()

@@ -53,7 +53,7 @@ public:
 
   virtual bool BootSystem(const SystemBootParameters& parameters);
   virtual void PowerOffSystem();
-
+  virtual void PauseSystem(bool paused);
   virtual void ResetSystem();
   virtual void DestroySystem();
 
@@ -147,6 +147,7 @@ protected:
   virtual s32 GetAudioOutputVolume() const;
 
   virtual void OnSystemCreated();
+  virtual void OnSystemPaused(bool paused);
   virtual void OnSystemDestroyed();
   virtual void OnSystemStateSaved(bool global, s32 slot);
   virtual void OnControllerTypeChanged(u32 slot);
