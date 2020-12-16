@@ -16,6 +16,7 @@ class QtDisplayWidget;
 class AutoUpdaterDialog;
 class MemoryCardEditorDialog;
 class CheatManagerDialog;
+class DebuggerWindow;
 
 class HostDisplay;
 struct GameListEntry;
@@ -83,12 +84,14 @@ private Q_SLOTS:
   void onCheckForUpdatesActionTriggered();
   void onToolsMemoryCardEditorTriggered();
   void onToolsCheatManagerTriggered();
+  void onToolsCPUDebuggerTriggered();
   void onToolsOpenDataDirectoryTriggered();
 
   void onGameListEntrySelected(const GameListEntry* entry);
   void onGameListEntryDoubleClicked(const GameListEntry* entry);
   void onGameListContextMenuRequested(const QPoint& point, const GameListEntry* entry);
   void onGameListSetCoverImageRequested(const GameListEntry* entry);
+  void onCPUDebuggerClosed();
 
   void checkForUpdates(bool display_message);
   void onUpdateCheckComplete();
@@ -137,6 +140,7 @@ private:
   AutoUpdaterDialog* m_auto_updater_dialog = nullptr;
   MemoryCardEditorDialog* m_memory_card_editor_dialog = nullptr;
   CheatManagerDialog* m_cheat_manager_dialog = nullptr;
+  DebuggerWindow* m_debugger_window = nullptr;
 
   bool m_emulation_running = false;
   bool m_was_paused_by_focus_loss = false;

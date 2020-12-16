@@ -24,6 +24,17 @@
     <file>icons/conical-flask-red.png</file>
     <file>icons/conical-flask-red@2x.png</file>
     <file>icons/cover-placeholder.png</file>
+    <file>icons/debug-execute-from-cursor.png</file>
+    <file>icons/debug-execute-to-cursor.png</file>
+    <file>icons/debug-run-cursor.png</file>
+    <file>icons/debug-run.png</file>
+    <file>icons/debug-pc.png</file>
+    <file>icons/debug-pc@2x.png</file>
+    <file>icons/debug-step-instruction.png</file>
+    <file>icons/debug-step-into-instruction.png</file>
+    <file>icons/debug-step-into.png</file>
+    <file>icons/debug-step-out.png</file>
+    <file>icons/debug-step-over.png</file>
     <file>icons/document-open.png</file>
     <file>icons/document-open@2x.png</file>
     <file>icons/document-save.png</file>

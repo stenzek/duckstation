@@ -176,6 +176,8 @@
     <addaction name="actionDebugDumpCPUtoVRAMCopies"/>
     <addaction name="actionDebugDumpVRAMtoCPUCopies"/>
     <addaction name="actionDumpAudio"/>
+    <addaction name="separator"/>
+    <addaction name="actionCPUDebugger" />
     <addaction name="actionDumpRAM"/>
     <addaction name="separator"/>
     <addaction name="actionDebugShowVRAM"/>
@@ -734,6 +736,11 @@
   <action name="actionCheatManager">
    <property name="text">
     <string>C&amp;heat Manager</string>
+   </property>
+  </action>
+  <action name="actionCPUDebugger">
+   <property name="text">
+    <string>CPU D&amp;ebugger</string>
    </property>
   </action>
   <action name="actionViewGameGrid">

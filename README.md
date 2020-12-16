@@ -17,6 +17,7 @@ A "BIOS" ROM image is required to to start the emulator and to play games. You c
 
 ## Latest News
 
+- 2020/12/16: Integrated CPU debugger added in Qt frontend.
 - 2020/12/13: Button layout for the touchscreen controller in the Android version can now be customized.
 - 2020/12/10: Translation support added for Android version. Currently Brazillian Portuguese, Italian, and Dutch are available.
 - 2020/11/27: Cover support added for game list in Android version. Procedure is the same as the desktop version, except you should place cover images in `<storage>/duckstation/covers` (see [Adding Game Covers](https://github.com/stenzek/duckstation/wiki/Adding-Game-Covers)).

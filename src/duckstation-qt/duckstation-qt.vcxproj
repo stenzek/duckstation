@@ -59,6 +59,8 @@
     <ClCompile Include="cheatmanagerdialog.cpp" />
     <ClCompile Include="cheatcodeeditordialog.cpp" />
     <ClCompile Include="consolesettingswidget.cpp" />
+    <ClCompile Include="debuggermodels.cpp" />
+    <ClCompile Include="debuggerwindow.cpp" />
     <ClCompile Include="enhancementsettingswidget.cpp" />
     <ClCompile Include="gamelistmodel.cpp" />
     <ClCompile Include="gamelistsearchdirectoriesmodel.cpp" />
@@ -68,6 +70,7 @@
     <ClCompile Include="inputbindingdialog.cpp" />
     <ClCompile Include="inputbindingmonitor.cpp" />
     <ClCompile Include="inputbindingwidgets.cpp" />
+    <ClCompile Include="memoryviewwidget.cpp" />
     <ClCompile Include="qtdisplaywidget.cpp" />
     <ClCompile Include="gamelistsettingswidget.cpp" />
     <ClCompile Include="gamelistwidget.cpp" />
@@ -106,7 +109,10 @@
     <QtMoc Include="gamelistmodel.h" />
     <QtMoc Include="gamelistsearchdirectoriesmodel.h" />
     <QtMoc Include="autoupdaterdialog.h" />
+    <QtMoc Include="debuggermodels.h" />
+    <QtMoc Include="debuggerwindow.h" />
     <ClInclude Include="inputbindingmonitor.h" />
+    <QtMoc Include="memoryviewwidget.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="settingwidgetbinder.h" />
     <QtMoc Include="consolesettingswidget.h" />
@@ -216,6 +222,8 @@
     <ClCompile Include="$(IntDir)moc_gamelistwidget.cpp" />
     <ClCompile Include="$(IntDir)moc_gamepropertiesdialog.cpp" />
     <ClCompile Include="$(IntDir)moc_generalsettingswidget.cpp" />
+    <ClCompile Include="$(IntDir)moc_debuggermodels.cpp" />
+    <ClCompile Include="$(IntDir)moc_debuggerwindow.cpp" />
     <ClCompile Include="$(IntDir)moc_displaysettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_hotkeysettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_inputbindingdialog.cpp" />
@@ -223,6 +231,7 @@
     <ClCompile Include="$(IntDir)moc_mainwindow.cpp" />
     <ClCompile Include="$(IntDir)moc_memorycardsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_memorycardeditordialog.cpp" />
+    <ClCompile Include="$(IntDir)moc_memoryviewwidget.cpp" />
     <ClCompile Include="$(IntDir)moc_postprocessingchainconfigwidget.cpp" />
     <ClCompile Include="$(IntDir)moc_postprocessingshaderconfigwidget.cpp" />
     <ClCompile Include="$(IntDir)moc_postprocessingsettingswidget.cpp" />
@@ -252,10 +261,30 @@
     </QtUi>
   </ItemGroup>
   <ItemGroup>
+    <QtUi Include="autoupdaterdialog.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+  </ItemGroup>
+  <ItemGroup>
     <QtTs Include="translations\duckstation-qt_de.ts">
       <FileType>Document</FileType>
     </QtTs>
+    <QtTs Include="translations\duckstation-qt_es.ts">
+      <FileType>Document</FileType>
+    </QtTs>
+    <QtTs Include="translations\duckstation-qt_fr.ts">
+      <FileType>Document</FileType>
+    </QtTs>
     <QtTs Include="translations\duckstation-qt_he.ts">
+      <FileType>Document</FileType>
+    </QtTs>
+    <QtTs Include="translations\duckstation-qt_it.ts">
+      <FileType>Document</FileType>
+    </QtTs>
+    <QtTs Include="translations\duckstation-qt_ja.ts">
+      <FileType>Document</FileType>
+    </QtTs>
+    <QtTs Include="translations\duckstation-qt_nl.ts">
       <FileType>Document</FileType>
     </QtTs>
     <QtTs Include="translations\duckstation-qt_pt-br.ts">
@@ -264,22 +293,15 @@
     <QtTs Include="translations\duckstation-qt_pt-pt.ts">
       <FileType>Document</FileType>
     </QtTs>
+    <QtTs Include="translations\duckstation-qt_ru.ts">
+      <FileType>Document</FileType>
+    </QtTs>
     <QtTs Include="translations\duckstation-qt_zh-cn.ts">
       <FileType>Document</FileType>
     </QtTs>
   </ItemGroup>
   <ItemGroup>
-    <QtUi Include="autoupdaterdialog.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="translations\duckstation-qt_es.ts" />
-    <None Include="translations\duckstation-qt_fr.ts" />
-    <None Include="translations\duckstation-qt_it.ts" />
-    <None Include="translations\duckstation-qt_nl.ts" />
-    <None Include="translations\duckstation-qt_ru.ts" />
-    <None Include="translations\duckstation-qt_ja.ts" />
+    <None Include="debuggerwindow.ui" />
   </ItemGroup>
   <Target Name="CopyCommonDataFiles" AfterTargets="Build" Inputs="@(CommonDataFiles)" Outputs="@(CommonDataFiles -> '$(BinaryOutputDir)%(RecursiveDir)%(Filename)%(Extension)')">
     <Message Text="Copying common data files" Importance="High" />

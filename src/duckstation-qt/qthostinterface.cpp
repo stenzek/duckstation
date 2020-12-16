@@ -821,11 +821,13 @@ void QtHostInterface::resetSystem()
   HostInterface::ResetSystem();
 }
 
-void QtHostInterface::pauseSystem(bool paused)
+void QtHostInterface::pauseSystem(bool paused, bool wait_until_paused /* = false */)
 {
   if (!isOnWorkerThread())
   {
-    QMetaObject::invokeMethod(this, "pauseSystem", Qt::QueuedConnection, Q_ARG(bool, paused));
+    QMetaObject::invokeMethod(this, "pauseSystem",
+                              wait_until_paused ? Qt::BlockingQueuedConnection : Qt::QueuedConnection,
+                              Q_ARG(bool, paused), Q_ARG(bool, wait_until_paused));
     return;
   }
 
@@ -1220,6 +1222,21 @@ void QtHostInterface::stopDumpingAudio()
   }
 
   StopDumpingAudio();
+}
+
+void QtHostInterface::singleStepCPU()
+{
+  if (!isOnWorkerThread())
+  {
+    QMetaObject::invokeMethod(this, "singleStepCPU", Qt::BlockingQueuedConnection);
+    return;
+  }
+
+  if (!System::IsValid())
+    return;
+
+  System::SingleStepCPU();
+  renderDisplay();
 }
 
 void QtHostInterface::dumpRAM(const QString& filename)

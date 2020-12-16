@@ -29,6 +29,11 @@ set(SRCS
   consolesettingswidget.ui
   controllersettingswidget.cpp
   controllersettingswidget.h
+  debuggermodels.cpp
+  debuggermodels.h
+  debuggerwindow.cpp
+  debuggerwindow.h
+  debuggerwindow.ui
   displaysettingswidget.cpp
   displaysettingswidget.h
   displaysettingswidget.ui
@@ -68,6 +73,8 @@ set(SRCS
   memorycardeditordialog.ui
   memorycardsettingswidget.cpp
   memorycardsettingswidget.h
+  memoryviewwidget.cpp
+  memoryviewwidget.h
   postprocessingchainconfigwidget.cpp
   postprocessingchainconfigwidget.h
   postprocessingchainconfigwidget.ui

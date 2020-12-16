@@ -65,6 +65,12 @@
     <ClCompile Include="cheatcodeeditordialog.cpp" />
     <ClCompile Include="$(IntDir)moc_cheatmanagerdialog.cpp" />
     <ClCompile Include="$(IntDir)moc_cheatcodeeditordialog.cpp" />
+    <ClCompile Include="debuggerwindow.cpp" />
+    <ClCompile Include="debuggermodels.cpp" />
+    <ClCompile Include="memoryviewwidget.cpp" />
+    <ClCompile Include="$(IntDir)moc_debuggerdialog.cpp" />
+    <ClCompile Include="$(IntDir)moc_debuggermodels.cpp" />
+    <ClCompile Include="$(IntDir)moc_memoryviewwidget.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtutils.h" />
@@ -111,6 +117,9 @@
     <QtMoc Include="postprocessingsettingswidget.h" />
     <QtMoc Include="cheatmanagerdialog.h" />
     <QtMoc Include="cheatcodeeditordialog.h" />
+    <QtMoc Include="debuggermodels.h" />
+    <QtMoc Include="debuggerwindow.h" />
+    <QtMoc Include="memoryviewwidget.h" />
   </ItemGroup>
   <ItemGroup>
     <QtUi Include="consolesettingswidget.ui" />
@@ -143,10 +152,33 @@
     <Image Include="duckstation-qt.ico" />
   </ItemGroup>
   <ItemGroup>
+    <QtResource Include="resources\resources.qrc">
+      <Filter>resources</Filter>
+    </QtResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="debuggerwindow.ui" />
+  </ItemGroup>
+  <ItemGroup>
     <QtTs Include="translations\duckstation-qt_de.ts">
       <Filter>translations</Filter>
     </QtTs>
+    <QtTs Include="translations\duckstation-qt_es.ts">
+      <Filter>translations</Filter>
+    </QtTs>
+    <QtTs Include="translations\duckstation-qt_fr.ts">
+      <Filter>translations</Filter>
+    </QtTs>
     <QtTs Include="translations\duckstation-qt_he.ts">
+      <Filter>translations</Filter>
+    </QtTs>
+    <QtTs Include="translations\duckstation-qt_it.ts">
+      <Filter>translations</Filter>
+    </QtTs>
+    <QtTs Include="translations\duckstation-qt_ja.ts">
+      <Filter>translations</Filter>
+    </QtTs>
+    <QtTs Include="translations\duckstation-qt_nl.ts">
       <Filter>translations</Filter>
     </QtTs>
     <QtTs Include="translations\duckstation-qt_pt-br.ts">
@@ -155,33 +187,11 @@
     <QtTs Include="translations\duckstation-qt_pt-pt.ts">
       <Filter>translations</Filter>
     </QtTs>
+    <QtTs Include="translations\duckstation-qt_ru.ts">
+      <Filter>translations</Filter>
+    </QtTs>
     <QtTs Include="translations\duckstation-qt_zh-cn.ts">
       <Filter>translations</Filter>
     </QtTs>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="translations\duckstation-qt_es.ts">
-      <Filter>translations</Filter>
-    </None>
-    <None Include="translations\duckstation-qt_it.ts">
-      <Filter>translations</Filter>
-    </None>
-    <None Include="translations\duckstation-qt_ru.ts">
-      <Filter>translations</Filter>
-    </None>
-    <None Include="translations\duckstation-qt_nl.ts">
-      <Filter>translations</Filter>
-    </None>
-    <None Include="translations\duckstation-qt_fr.ts">
-      <Filter>translations</Filter>
-    </None>
-    <None Include="translations\duckstation-qt_ja.ts">
-      <Filter>translations</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <QtResource Include="resources\resources.qrc">
-      <Filter>resources</Filter>
-    </QtResource>
   </ItemGroup>
 </Project>

@@ -155,7 +155,7 @@ public Q_SLOTS:
   void powerOffSystem();
   void synchronousPowerOffSystem();
   void resetSystem();
-  void pauseSystem(bool paused);
+  void pauseSystem(bool paused, bool wait_until_paused = false);
   void changeDisc(const QString& new_disc_filename);
   void changeDiscFromPlaylist(quint32 index);
   void loadState(const QString& filename);
@@ -165,6 +165,7 @@ public Q_SLOTS:
   void setAudioOutputMuted(bool muted);
   void startDumpingAudio();
   void stopDumpingAudio();
+  void singleStepCPU();
   void dumpRAM(const QString& filename);
   void saveScreenshot();
   void redrawDisplayWindow();

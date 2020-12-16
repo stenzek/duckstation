@@ -6,6 +6,7 @@
 #include "core/host_display.h"
 #include "core/settings.h"
 #include "core/system.h"
+#include "debuggerwindow.h"
 #include "frontend-common/game_list.h"
 #include "gamelistsettingswidget.h"
 #include "gamelistwidget.h"
@@ -60,6 +61,8 @@ MainWindow::~MainWindow()
 {
   Assert(!m_display_widget);
   m_host_interface->setMainWindow(nullptr);
+
+  Assert(!m_debugger_window);
 }
 
 void MainWindow::reportError(const QString& message)
@@ -310,6 +313,12 @@ void MainWindow::onEmulationStopped()
   {
     delete m_cheat_manager_dialog;
     m_cheat_manager_dialog = nullptr;
+  }
+
+  if (m_debugger_window)
+  {
+    delete m_debugger_window;
+    m_debugger_window = nullptr;
   }
 }
 
@@ -761,6 +770,7 @@ void MainWindow::updateEmulationActions(bool starting, bool running)
   m_ui.menuChangeDisc->setDisabled(starting || !running);
   m_ui.menuCheats->setDisabled(starting || !running);
   m_ui.actionCheatManager->setDisabled(starting || !running);
+  m_ui.actionCPUDebugger->setDisabled(starting || !running);
 
   m_ui.actionSaveState->setDisabled(starting || !running);
   m_ui.menuSaveState->setDisabled(starting || !running);
@@ -850,7 +860,7 @@ void MainWindow::connectSignals()
           [this]() { getSettingsDialog()->getGameListSettingsWidget()->addSearchDirectory(this); });
   connect(m_ui.actionPowerOff, &QAction::triggered, m_host_interface, &QtHostInterface::powerOffSystem);
   connect(m_ui.actionReset, &QAction::triggered, m_host_interface, &QtHostInterface::resetSystem);
-  connect(m_ui.actionPause, &QAction::toggled, m_host_interface, &QtHostInterface::pauseSystem);
+  connect(m_ui.actionPause, &QAction::toggled, [this](bool active) { m_host_interface->pauseSystem(active); });
   connect(m_ui.actionScreenshot, &QAction::triggered, m_host_interface, &QtHostInterface::saveScreenshot);
   connect(m_ui.actionScanForNewGames, &QAction::triggered, this,
           [this]() { m_host_interface->refreshGameList(false, false); });
@@ -899,6 +909,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionCheckForUpdates, &QAction::triggered, this, &MainWindow::onCheckForUpdatesActionTriggered);
   connect(m_ui.actionMemory_Card_Editor, &QAction::triggered, this, &MainWindow::onToolsMemoryCardEditorTriggered);
   connect(m_ui.actionCheatManager, &QAction::triggered, this, &MainWindow::onToolsCheatManagerTriggered);
+  connect(m_ui.actionCPUDebugger, &QAction::triggered, this, &MainWindow::onToolsCPUDebuggerTriggered);
   connect(m_ui.actionOpenDataDirectory, &QAction::triggered, this, &MainWindow::onToolsOpenDataDirectoryTriggered);
   connect(m_ui.actionGridViewShowTitles, &QAction::triggered, m_game_list_widget, &GameListWidget::setShowCoverTitles);
   connect(m_ui.actionGridViewZoomIn, &QAction::triggered, m_game_list_widget, [this]() {
@@ -1323,6 +1334,26 @@ void MainWindow::onToolsCheatManagerTriggered()
 
   m_cheat_manager_dialog->setModal(false);
   m_cheat_manager_dialog->show();
+}
+
+void MainWindow::onToolsCPUDebuggerTriggered()
+{
+  if (!m_debugger_window)
+  {
+    m_debugger_window = new DebuggerWindow();
+    m_debugger_window->setWindowIcon(windowIcon());
+    connect(m_debugger_window, &DebuggerWindow::closed, this, &MainWindow::onCPUDebuggerClosed);
+  }
+
+  m_debugger_window->show();
+  m_host_interface->pauseSystem(true);
+}
+
+void MainWindow::onCPUDebuggerClosed()
+{
+  Assert(m_debugger_window);
+  m_debugger_window->deleteLater();
+  m_debugger_window = nullptr;
 }
 
 void MainWindow::onToolsOpenDataDirectoryTriggered()
