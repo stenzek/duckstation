@@ -408,20 +408,13 @@ TickCount GPU::CRTCTicksToSystemTicks(TickCount gpu_ticks, TickCount fractional_
 
 TickCount GPU::SystemTicksToCRTCTicks(TickCount sysclk_ticks, TickCount* fractional_ticks) const
 {
-  if (!m_console_is_pal)
-  {
-    const u64 mul = u64(sysclk_ticks) * u64(715909) + u64(*fractional_ticks);
-    const TickCount ticks = static_cast<TickCount>(mul / u64(451584));
-    *fractional_ticks = static_cast<TickCount>(mul % u64(451584));
-    return ticks;
-  }
-  else
-  {
-    const u64 mul = u64(sysclk_ticks) * u64(709379) + u64(*fractional_ticks);
-    const TickCount ticks = static_cast<TickCount>(mul / u64(451584));
-    *fractional_ticks = static_cast<TickCount>(mul % u64(451584));
-    return ticks;
-  }
+  u64 mul = u64(sysclk_ticks);
+  mul *= !m_console_is_pal ? u64(715909) : u64(709379);
+  mul += u64(*fractional_ticks);
+
+  const TickCount ticks = static_cast<TickCount>(mul / u64(451584));
+  *fractional_ticks = static_cast<TickCount>(mul % u64(451584));
+  return ticks;
 }
 
 void GPU::AddCommandTicks(TickCount ticks)
