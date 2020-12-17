@@ -1,6 +1,7 @@
 #include "memoryviewwidget.h"
 #include <QtGui/QPainter>
 #include <QtWidgets/QScrollBar>
+#include <cstring>
 
 MemoryViewWidget::MemoryViewWidget(QWidget* parent /* = nullptr */, size_t address_offset /* = 0 */,
                                    const void* data_ptr /* = nullptr */, size_t data_size /* = 0 */)
