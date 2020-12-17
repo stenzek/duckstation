@@ -4144,7 +4144,7 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <source>Loading state from &apos;%s&apos;...</source>
-        <translation>&apos;％s&apos;からステートロード中...</translation>
+        <translation>&apos;%s&apos;からステートロード中...</translation>
     </message>
     <message>
         <source>Saved %u cheats to &apos;%s&apos;.</source>
@@ -4619,7 +4619,7 @@ The saves will not be recoverable.</source>
     </message>
     <message>
         <source>Failed to open CD image from save state: &apos;%s&apos;.</source>
-        <translation>ステートセーブからCDイメージを開くことができませんでした: &apos;％s&apos;。</translation>
+        <translation>ステートセーブからCDイメージを開くことができませんでした: &apos;%s&apos;。</translation>
     </message>
     <message>
         <source>Changing current media from playlist, replacing current media.</source>

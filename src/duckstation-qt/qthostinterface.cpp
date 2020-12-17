@@ -1414,7 +1414,7 @@ static bool AddImGuiFont(const std::string& language, float size, float framebuf
   std::string path;
   const ImWchar* range = nullptr;
 #ifdef WIN32
-  if (language == "jp")
+  if (language == "ja")
   {
     path = GetFontPath("msgothic.ttc");
     range = ImGui::GetIO().Fonts->GetGlyphRangesJapanese();
