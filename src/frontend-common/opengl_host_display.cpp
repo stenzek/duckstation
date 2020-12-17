@@ -83,46 +83,6 @@ std::unique_ptr<HostDisplayTexture> OpenGLHostDisplay::CreateTexture(u32 width, 
   return OpenGLHostDisplayTexture::Create(width, height, initial_data, initial_data_stride);
 }
 
-void OpenGLHostDisplay::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height,
-                                      const void* texture_data, u32 texture_data_stride)
-{
-  OpenGLHostDisplayTexture* tex = static_cast<OpenGLHostDisplayTexture*>(texture);
-  Assert((texture_data_stride % sizeof(u32)) == 0);
-
-  GLint old_texture_binding = 0, old_alignment = 0, old_row_length = 0;
-  glGetIntegerv(GL_TEXTURE_BINDING_2D, &old_texture_binding);
-  glGetIntegerv(GL_UNPACK_ALIGNMENT, &old_alignment);
-  glGetIntegerv(GL_UNPACK_ROW_LENGTH, &old_row_length);
-
-  glBindTexture(GL_TEXTURE_2D, tex->GetGLID());
-  glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-  glPixelStorei(GL_UNPACK_ROW_LENGTH, texture_data_stride / sizeof(u32));
-
-  glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, texture_data);
-
-  glPixelStorei(GL_UNPACK_ALIGNMENT, old_alignment);
-  glPixelStorei(GL_UNPACK_ROW_LENGTH, old_row_length);
-  glBindTexture(GL_TEXTURE_2D, old_texture_binding);
-}
-
-bool OpenGLHostDisplay::DownloadTexture(const void* texture_handle, u32 x, u32 y, u32 width, u32 height, void* out_data,
-                                        u32 out_data_stride)
-{
-  GLint old_alignment = 0, old_row_length = 0;
-  glGetIntegerv(GL_PACK_ALIGNMENT, &old_alignment);
-  glGetIntegerv(GL_PACK_ROW_LENGTH, &old_row_length);
-  glPixelStorei(GL_PACK_ALIGNMENT, sizeof(u32));
-  glPixelStorei(GL_PACK_ROW_LENGTH, out_data_stride / sizeof(u32));
-
-  const GLuint texture = static_cast<GLuint>(reinterpret_cast<uintptr_t>(texture_handle));
-  GL::Texture::GetTextureSubImage(texture, 0, x, y, 0, width, height, 1, GL_RGBA, GL_UNSIGNED_BYTE,
-                                  height * out_data_stride, out_data);
-
-  glPixelStorei(GL_PACK_ALIGNMENT, old_alignment);
-  glPixelStorei(GL_PACK_ROW_LENGTH, old_row_length);
-  return true;
-}
-
 static constexpr std::array<std::tuple<GLenum, GLenum, GLenum>, static_cast<u32>(HostDisplayPixelFormat::Count)>
   s_display_pixel_format_mapping = {{
     {},                                                  // Unknown
@@ -131,6 +91,65 @@ static constexpr std::array<std::tuple<GLenum, GLenum, GLenum>, static_cast<u32>
     {GL_RGB, GL_RGB, GL_UNSIGNED_SHORT_5_6_5},           // RGB565
     {GL_RGB5_A1, GL_BGRA, GL_UNSIGNED_SHORT_1_5_5_5_REV} // RGBA5551
   }};
+
+void OpenGLHostDisplay::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height,
+                                      const void* texture_data, u32 texture_data_stride)
+{
+  OpenGLHostDisplayTexture* tex = static_cast<OpenGLHostDisplayTexture*>(texture);
+  const auto [gl_internal_format, gl_format, gl_type] =
+    s_display_pixel_format_mapping[static_cast<u32>(texture->GetFormat())];
+  GLint alignment;
+  if (texture_data_stride & 1)
+    alignment = 1;
+  else if (texture_data_stride & 2)
+    alignment = 2;
+  else
+    alignment = 4;
+
+  GLint old_texture_binding = 0, old_alignment = 0, old_row_length = 0;
+  glGetIntegerv(GL_TEXTURE_BINDING_2D, &old_texture_binding);
+  glGetIntegerv(GL_UNPACK_ALIGNMENT, &old_alignment);
+  glGetIntegerv(GL_UNPACK_ROW_LENGTH, &old_row_length);
+
+  glBindTexture(GL_TEXTURE_2D, tex->GetGLID());
+  glPixelStorei(GL_UNPACK_ALIGNMENT, alignment);
+  glPixelStorei(GL_UNPACK_ROW_LENGTH, texture_data_stride / GetDisplayPixelFormatSize(texture->GetFormat()));
+
+  glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height, gl_format, gl_type, texture_data);
+
+  glPixelStorei(GL_UNPACK_ALIGNMENT, old_alignment);
+  glPixelStorei(GL_UNPACK_ROW_LENGTH, old_row_length);
+  glBindTexture(GL_TEXTURE_2D, old_texture_binding);
+}
+
+bool OpenGLHostDisplay::DownloadTexture(const void* texture_handle, HostDisplayPixelFormat texture_format, u32 x, u32 y,
+                                        u32 width, u32 height, void* out_data, u32 out_data_stride)
+{
+  GLint alignment;
+  if (out_data_stride & 1)
+    alignment = 1;
+  else if (out_data_stride & 2)
+    alignment = 2;
+  else
+    alignment = 4;
+
+  GLint old_alignment = 0, old_row_length = 0;
+  glGetIntegerv(GL_PACK_ALIGNMENT, &old_alignment);
+  glGetIntegerv(GL_PACK_ROW_LENGTH, &old_row_length);
+  glPixelStorei(GL_PACK_ALIGNMENT, alignment);
+  glPixelStorei(GL_PACK_ROW_LENGTH, out_data_stride / GetDisplayPixelFormatSize(texture_format));
+
+  const GLuint texture = static_cast<GLuint>(reinterpret_cast<uintptr_t>(texture_handle));
+  const auto [gl_internal_format, gl_format, gl_type] =
+    s_display_pixel_format_mapping[static_cast<u32>(texture_format)];
+
+  GL::Texture::GetTextureSubImage(texture, 0, x, y, 0, width, height, 1, gl_format, gl_type, height * out_data_stride,
+                                  out_data);
+
+  glPixelStorei(GL_PACK_ALIGNMENT, old_alignment);
+  glPixelStorei(GL_PACK_ROW_LENGTH, old_row_length);
+  return true;
+}
 
 bool OpenGLHostDisplay::SupportsDisplayPixelFormat(HostDisplayPixelFormat format) const
 {

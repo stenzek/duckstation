@@ -230,14 +230,13 @@ void VulkanHostDisplay::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y,
   staging_texture->CopyToTexture(0, 0, vk_texture->GetTexture(), x, y, 0, 0, width, height);
 }
 
-bool VulkanHostDisplay::DownloadTexture(const void* texture_handle, u32 x, u32 y, u32 width, u32 height, void* out_data,
-                                        u32 out_data_stride)
+bool VulkanHostDisplay::DownloadTexture(const void* texture_handle, HostDisplayPixelFormat texture_format, u32 x, u32 y,
+                                        u32 width, u32 height, void* out_data, u32 out_data_stride)
 {
   Vulkan::Texture* texture = static_cast<Vulkan::Texture*>(const_cast<void*>(texture_handle));
 
   if ((m_readback_staging_texture.GetWidth() < width || m_readback_staging_texture.GetHeight() < height) &&
-      !m_readback_staging_texture.Create(Vulkan::StagingBuffer::Type::Readback, VK_FORMAT_R8G8B8A8_UNORM, width,
-                                         height))
+      !m_readback_staging_texture.Create(Vulkan::StagingBuffer::Type::Readback, texture->GetFormat(), width, height))
   {
     return false;
   }

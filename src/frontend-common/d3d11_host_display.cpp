@@ -155,8 +155,8 @@ void D3D11HostDisplay::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, 
   }
 }
 
-bool D3D11HostDisplay::DownloadTexture(const void* texture_handle, u32 x, u32 y, u32 width, u32 height, void* out_data,
-                                       u32 out_data_stride)
+bool D3D11HostDisplay::DownloadTexture(const void* texture_handle, HostDisplayPixelFormat texture_format, u32 x, u32 y,
+                                       u32 width, u32 height, void* out_data, u32 out_data_stride)
 {
   ID3D11ShaderResourceView* srv =
     const_cast<ID3D11ShaderResourceView*>(static_cast<const ID3D11ShaderResourceView*>(texture_handle));
@@ -169,8 +169,17 @@ bool D3D11HostDisplay::DownloadTexture(const void* texture_handle, u32 x, u32 y,
     return false;
 
   m_readback_staging_texture.CopyFromTexture(m_context.Get(), srv_resource.Get(), 0, x, y, 0, 0, width, height);
-  return m_readback_staging_texture.ReadPixels<u32>(m_context.Get(), 0, 0, width, height, out_data_stride / sizeof(u32),
-                                                    static_cast<u32*>(out_data));
+
+  if (srv_desc.Format == DXGI_FORMAT_B5G6R5_UNORM || srv_desc.Format == DXGI_FORMAT_B5G5R5A1_UNORM)
+  {
+    return m_readback_staging_texture.ReadPixels<u16>(m_context.Get(), 0, 0, width, height,
+                                                      out_data_stride / sizeof(u16), static_cast<u16*>(out_data));
+  }
+  else
+  {
+    return m_readback_staging_texture.ReadPixels<u32>(m_context.Get(), 0, 0, width, height,
+                                                      out_data_stride / sizeof(u32), static_cast<u32*>(out_data));
+  }
 }
 
 static constexpr std::array<DXGI_FORMAT, static_cast<u32>(HostDisplayPixelFormat::Count)>

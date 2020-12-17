@@ -38,8 +38,8 @@ public:
                                                     bool dynamic) override;
   void UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height, const void* data,
                      u32 data_stride) override;
-  bool DownloadTexture(const void* texture_handle, u32 x, u32 y, u32 width, u32 height, void* out_data,
-                       u32 out_data_stride) override;
+  bool DownloadTexture(const void* texture_handle, HostDisplayPixelFormat texture_format, u32 x, u32 y, u32 width,
+                       u32 height, void* out_data, u32 out_data_stride) override;
 
   void SetVSync(bool enabled) override;
 
