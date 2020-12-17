@@ -466,7 +466,7 @@
   <customwidget>
    <class>MemoryViewWidget</class>
    <extends>QWidget</extends>
-   <header>memoryviewwidget.h</header>
+   <header>duckstation-qt/memoryviewwidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
