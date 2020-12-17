@@ -124,6 +124,7 @@
     <ClCompile Include="gpu_sw_backend.cpp" />
     <ClCompile Include="gte.cpp" />
     <ClCompile Include="dma.cpp" />
+    <ClCompile Include="gdb_protocol.cpp" />
     <ClCompile Include="gpu.cpp" />
     <ClCompile Include="gpu_hw.cpp" />
     <ClCompile Include="gpu_hw_opengl.cpp" />
@@ -198,6 +199,7 @@
     <ClInclude Include="gte.h" />
     <ClInclude Include="cpu_types.h" />
     <ClInclude Include="dma.h" />
+    <ClCompile Include="gdb_protocol.h" />
     <ClInclude Include="gpu.h" />
     <ClInclude Include="gpu_hw.h" />
     <ClInclude Include="gpu_hw_opengl.h" />
