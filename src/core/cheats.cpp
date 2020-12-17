@@ -880,9 +880,39 @@ void CheatCode::Apply() const
       }
       break;
 
+      case InstructionCode::ExtConstantWrite32:
+      {
+        DoMemoryWrite<u32>(inst.address, inst.value32);
+        index++;
+      }
+      break;
+
       case InstructionCode::ScratchpadWrite16:
       {
         DoMemoryWrite<u16>(CPU::DCACHE_LOCATION | (inst.address & CPU::DCACHE_OFFSET_MASK), inst.value16);
+        index++;
+      }
+      break;
+
+      case InstructionCode::ExtScratchpadWrite32:
+      {
+        DoMemoryWrite<u32>(CPU::DCACHE_LOCATION | (inst.address & CPU::DCACHE_OFFSET_MASK), inst.value32);
+        index++;
+      }
+      break;
+
+      case InstructionCode::ExtIncrement32:
+      {
+        const u32 value = DoMemoryRead<u32>(inst.address);
+        DoMemoryWrite<u32>(inst.address, value + inst.value32);
+        index++;
+      }
+      break;
+
+      case InstructionCode::ExtDecrement32:
+      {
+        const u32 value = DoMemoryRead<u32>(inst.address);
+        DoMemoryWrite<u32>(inst.address, value - inst.value32);
         index++;
       }
       break;
@@ -916,6 +946,46 @@ void CheatCode::Apply() const
         const u8 value = DoMemoryRead<u8>(inst.address);
         DoMemoryWrite<u8>(inst.address, value - inst.value8);
         index++;
+      }
+      break;
+
+      case InstructionCode::ExtCompareEqual32:
+      {
+        const u32 value = DoMemoryRead<u32>(inst.address);
+        if (value == inst.value32)
+          index++;
+        else
+          index = GetNextNonConditionalInstruction(index);
+      }
+      break;
+
+      case InstructionCode::ExtCompareNotEqual32:
+      {
+        const u32 value = DoMemoryRead<u32>(inst.address);
+        if (value != inst.value32)
+          index++;
+        else
+          index = GetNextNonConditionalInstruction(index);
+      }
+      break;
+
+      case InstructionCode::ExtCompareLess32:
+      {
+        const u32 value = DoMemoryRead<u32>(inst.address);
+        if (value < inst.value32)
+          index++;
+        else
+          index = GetNextNonConditionalInstruction(index);
+      }
+      break;
+
+      case InstructionCode::ExtCompareGreater32:
+      {
+        const u32 value = DoMemoryRead<u32>(inst.address);
+        if (value > inst.value32)
+          index++;
+        else
+          index = GetNextNonConditionalInstruction(index);
       }
       break;
 
@@ -1009,6 +1079,7 @@ void CheatCode::Apply() const
       break;
 
       case InstructionCode::SkipIfNotEqual16:      // C0
+      case InstructionCode::ExtSkipIfNotEqual32:   // A4
       case InstructionCode::SkipIfButtonsNotEqual: // D5
       case InstructionCode::SkipIfButtonsEqual:    // D6
       {
@@ -1019,6 +1090,9 @@ void CheatCode::Apply() const
         {
           case InstructionCode::SkipIfNotEqual16: // C0
             activate_codes = (DoMemoryRead<u16>(inst.address) == inst.value16);
+            break;
+          case InstructionCode::ExtSkipIfNotEqual32: // A4
+            activate_codes = (DoMemoryRead<u32>(inst.address) == inst.value32);
             break;
           case InstructionCode::SkipIfButtonsNotEqual: // D5
             activate_codes = (GetControllerButtonBits() == inst.value16);

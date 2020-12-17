@@ -44,7 +44,18 @@ struct CheatCode
     CompareLess8 = 0xE2,
     CompareGreater8 = 0xE3,
     Slide = 0x50,
-    MemoryCopy = 0xC2
+    MemoryCopy = 0xC2,
+
+    // Extension opcodes, not present on original GameShark.
+    ExtConstantWrite32 = 0x90,
+    ExtScratchpadWrite32 = 0xA5,
+    ExtCompareEqual32 = 0xA0,
+    ExtCompareNotEqual32 = 0xA1,
+    ExtCompareLess32 = 0xA2,
+    ExtCompareGreater32 = 0xA3,
+    ExtSkipIfNotEqual32 = 0xA4,
+    ExtIncrement32 = 0x60,
+    ExtDecrement32 = 0x61,
   };
 
   union Instruction
@@ -59,6 +70,7 @@ struct CheatCode
 
     BitField<u64, InstructionCode, 32 + 24, 8> code;
     BitField<u64, u32, 32, 24> address;
+    BitField<u64, u32, 0, 32> value32;
     BitField<u64, u16, 0, 16> value16;
     BitField<u64, u8, 0, 8> value8;
   };
