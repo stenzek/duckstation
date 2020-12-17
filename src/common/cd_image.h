@@ -242,6 +242,9 @@ public:
   // Reads sub-channel Q for the current LBA.
   virtual bool ReadSubChannelQ(SubChannelQ* subq);
 
+  // Returns true if the image has replacement subchannel data.
+  virtual bool HasNonStandardSubchannel() const;
+
   // Reads a single sector from an index.
   virtual bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) = 0;
 

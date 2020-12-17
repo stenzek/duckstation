@@ -14,6 +14,7 @@ public:
   bool Open(const char* filename);
 
   bool ReadSubChannelQ(SubChannelQ* subq) override;
+  bool HasNonStandardSubchannel() const override;
 
 protected:
   bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) override;
@@ -101,6 +102,11 @@ bool CDImageBin::ReadSubChannelQ(SubChannelQ* subq)
     return true;
 
   return CDImage::ReadSubChannelQ(subq);
+}
+
+bool CDImageBin::HasNonStandardSubchannel() const
+{
+  return (m_sbi.GetReplacementSectorCount() > 0);
 }
 
 bool CDImageBin::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index)

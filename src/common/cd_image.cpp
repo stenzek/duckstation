@@ -255,6 +255,11 @@ bool CDImage::ReadSubChannelQ(SubChannelQ* subq)
   return true;
 }
 
+bool CDImage::HasNonStandardSubchannel() const
+{
+  return false;
+}
+
 const CDImage::Index* CDImage::GetIndexForDiscPosition(LBA pos)
 {
   for (const Index& index : m_indices)

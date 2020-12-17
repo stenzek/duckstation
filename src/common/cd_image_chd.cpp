@@ -49,6 +49,7 @@ public:
   bool Open(const char* filename);
 
   bool ReadSubChannelQ(SubChannelQ* subq) override;
+  bool HasNonStandardSubchannel() const override;
 
 protected:
   bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) override;
@@ -260,6 +261,11 @@ bool CDImageCHD::ReadSubChannelQ(SubChannelQ* subq)
   // TODO: Read subchannel data from CHD
 
   return CDImage::ReadSubChannelQ(subq);
+}
+
+bool CDImageCHD::HasNonStandardSubchannel() const
+{
+  return (m_sbi.GetReplacementSectorCount() > 0);
 }
 
 // There's probably a more efficient way of doing this with vectorization...
