@@ -655,6 +655,7 @@ static void RTPS(const s16 V[3], u8 shift, bool lm, bool last)
         Sx = ((((s64(result) * s64(REGS.IR1)) * s64(7)) / s64(6)) + s64(REGS.OFX));
         break;
 
+      case DisplayAspectRatio::Auto:
       case DisplayAspectRatio::R4_3:
       case DisplayAspectRatio::PAR1_1:
       default:
@@ -747,6 +748,7 @@ static void RTPS(const s16 V[3], u8 shift, bool lm, bool last)
           precise_x = (precise_x * 7.0f) / 6.0f;
           break;
 
+        case DisplayAspectRatio::Auto:
         case DisplayAspectRatio::R4_3:
         case DisplayAspectRatio::PAR1_1:
         default:

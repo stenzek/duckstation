@@ -56,6 +56,18 @@ public:
     PAL_TOTAL_LINES = 314,
   };
 
+  enum : u16
+  {
+    NTSC_HORIZONTAL_ACTIVE_START = 488,
+    NTSC_HORIZONTAL_ACTIVE_END = 3288,
+    NTSC_VERTICAL_ACTIVE_START = 16,
+    NTSC_VERTICAL_ACTIVE_END = 256,
+    PAL_HORIZONTAL_ACTIVE_START = 487,
+    PAL_HORIZONTAL_ACTIVE_END = 3282,
+    PAL_VERTICAL_ACTIVE_START = 20,
+    PAL_VERTICAL_ACTIVE_END = 308,
+  };
+
   // Base class constructor.
   GPU();
   virtual ~GPU();
@@ -89,7 +101,7 @@ public:
   }
   void EndDMAWrite();
 
-  /// Returns false if the DAC is loading any data from VRAM.
+  /// Returns true if no data is being sent from VRAM to the DAC or that no portion of VRAM would be visible on screen.
   ALWAYS_INLINE bool IsDisplayDisabled() const
   {
     return m_GPUSTAT.display_disable || m_crtc_state.display_vram_width == 0 || m_crtc_state.display_vram_height == 0;
@@ -98,13 +110,13 @@ public:
   /// Returns true if scanout should be interlaced.
   ALWAYS_INLINE bool IsInterlacedDisplayEnabled() const
   {
-    return (!m_force_progressive_scan) & m_GPUSTAT.vertical_interlace;
+    return (!m_force_progressive_scan) && m_GPUSTAT.vertical_interlace;
   }
 
   /// Returns true if interlaced rendering is enabled and force progressive scan is disabled.
   ALWAYS_INLINE bool IsInterlacedRenderingEnabled() const
   {
-    return (!m_force_progressive_scan) & m_GPUSTAT.SkipDrawingToActiveField();
+    return (!m_force_progressive_scan) && m_GPUSTAT.SkipDrawingToActiveField();
   }
 
   /// Returns the number of pending GPU ticks.
@@ -475,27 +487,30 @@ protected:
     u16 display_width;
     u16 display_height;
 
-    // Top-left corner where the VRAM is displayed. Depending on the CRTC config, this may indicate padding.
+    // Top-left corner in screen coordinates where the outputted portion of VRAM is first visible.
     u16 display_origin_left;
     u16 display_origin_top;
 
-    // Rectangle describing the displayed area of VRAM, in coordinates.
+    // Rectangle in VRAM coordinates describing the area of VRAM that is visible on screen.
     u16 display_vram_left;
     u16 display_vram_top;
     u16 display_vram_width;
     u16 display_vram_height;
 
-    u16 horizontal_total;
-    u16 horizontal_sync_start; // <- not currently saved to state, so we don't have to bump the version
-    u16 horizontal_active_start;
-    u16 horizontal_active_end;
+    // Visible range of the screen, in GPU ticks/lines. Clamped to lie within the active video region.
+    u16 horizontal_visible_start;
+    u16 horizontal_visible_end;
+    u16 vertical_visible_start;
+    u16 vertical_visible_end;
+
     u16 horizontal_display_start;
     u16 horizontal_display_end;
-    u16 vertical_total;
-    u16 vertical_active_start;
-    u16 vertical_active_end;
     u16 vertical_display_start;
     u16 vertical_display_end;
+
+    u16 horizontal_total;
+    u16 horizontal_sync_start; // <- not currently saved to state, so we don't have to bump the version
+    u16 vertical_total;
 
     TickCount fractional_ticks;
     TickCount current_tick_in_scanline;
