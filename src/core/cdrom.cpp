@@ -2074,7 +2074,6 @@ void CDROM::ProcessXAADPCMSector(const u8* raw_sector, const CDImage::SubChannel
       return;
     }
 
-    ResetAudioDecoder();
     m_xa_current_file_number = m_last_sector_subheader.file_number;
     m_xa_current_channel_number = m_last_sector_subheader.channel_number;
     m_xa_current_set = true;
