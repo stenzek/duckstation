@@ -53,6 +53,7 @@
     <ClCompile Include="cpu_recompiler_code_generator_aarch32.cpp" />
     <ClCompile Include="gpu_backend.cpp" />
     <ClCompile Include="gpu_sw_backend.cpp" />
+    <ClCompile Include="libcrypt_game_codes.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -109,5 +110,6 @@
     <ClInclude Include="gpu_types.h" />
     <ClInclude Include="gpu_backend.h" />
     <ClInclude Include="gpu_sw_backend.h" />
+    <ClInclude Include="libcrypt_game_codes.h" />
   </ItemGroup>
 </Project>

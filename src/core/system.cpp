@@ -19,6 +19,7 @@
 #include "host_interface.h"
 #include "host_interface_progress_callback.h"
 #include "interrupt_controller.h"
+#include "libcrypt_game_codes.h"
 #include "mdec.h"
 #include "memory_card.h"
 #include "pad.h"
@@ -1681,6 +1682,19 @@ void UpdateRunningGame(const char* path, CDImage* image)
   {
     s_running_game_path = path;
     g_host_interface->GetGameInfo(path, image, &s_running_game_code, &s_running_game_title);
+  }
+
+  if (!s_running_game_code.empty() && LibcryptGameList::IsLibcryptGameCode(s_running_game_code) &&
+      !image->HasNonStandardSubchannel())
+  {
+    Log_WarningPrintf("SBI file missing but required for %s (%s)", s_running_game_code.c_str(),
+                      s_running_game_title.c_str());
+
+    g_host_interface->ReportFormattedError(
+      g_host_interface->TranslateString(
+        "System", "You are attempting to run a libcrypt protected game without a SBI file:\n\n%s: %s\n\nThe game will "
+                  "likely not run properly.\n\nPlease check the README for instructions on how to add a SBI file."),
+      s_running_game_code.c_str(), s_running_game_title.c_str());
   }
 
   g_host_interface->OnRunningGameChanged();

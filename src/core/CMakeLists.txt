@@ -57,6 +57,8 @@ add_library(core
     host_interface_progress_callback.h
     interrupt_controller.cpp
     interrupt_controller.h
+    libcrypt_game_codes.cpp
+    libcrypt_game_codes.h
     mdec.cpp
     mdec.h
     memory_card.cpp
