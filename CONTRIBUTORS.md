@@ -17,6 +17,7 @@ The following people have contributed to the project in some way, and are credit
 - @r57zone - Russian
 - @DenSinH - Dutch
 - @BenjaminSiskoo - French
+- mikakunin - Japanese
 
 ## Cheat Database
 - Pugsy
