@@ -37,8 +37,13 @@ int MemoryViewWidget::asciiWidth() const
 
 void MemoryViewWidget::updateMetrics()
 {
-  m_char_width = fontMetrics().horizontalAdvance(QChar('0'));
-  m_char_height = fontMetrics().height();
+  const QFontMetrics fm(fontMetrics());
+#if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
+  m_char_width = fm.horizontalAdvance(QChar('0'));
+#else
+  m_char_width = fm.boundingRect(QChar('0')).width();
+#endif
+  m_char_height = fm.height();
 }
 
 void MemoryViewWidget::setData(size_t address_offset, const void* data_ptr, size_t data_size)
