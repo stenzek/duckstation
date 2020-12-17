@@ -95,8 +95,8 @@ public:
   virtual void UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height, const void* data,
                              u32 data_stride) = 0;
 
-  virtual bool DownloadTexture(const void* texture_handle, u32 x, u32 y, u32 width, u32 height, void* out_data,
-                               u32 out_data_stride) = 0;
+  virtual bool DownloadTexture(const void* texture_handle, HostDisplayPixelFormat texture_format, u32 x, u32 y,
+                               u32 width, u32 height, void* out_data, u32 out_data_stride) = 0;
 
   /// Returns false if the window was completely occluded.
   virtual bool Render() = 0;
@@ -194,8 +194,9 @@ public:
                                                                     s32 window_height, s32 top_margin) const;
 
   /// Helper function to save texture data to a PNG. If flip_y is set, the image will be flipped aka OpenGL.
-  bool WriteTextureToFile(const void* texture_handle, u32 x, u32 y, u32 width, u32 height, std::string filename,
-                          bool clear_alpha = true, bool flip_y = false, u32 resize_width = 0, u32 resize_height = 0,
+  bool WriteTextureToFile(const void* texture_handle, u32 x, u32 y, u32 width, u32 height,
+                          HostDisplayPixelFormat format, std::string filename, bool clear_alpha = true,
+                          bool flip_y = false, u32 resize_width = 0, u32 resize_height = 0,
                           bool compress_on_thread = false);
 
   /// Helper function to save current display texture to PNG.
