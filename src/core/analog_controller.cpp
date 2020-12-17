@@ -535,8 +535,7 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
 
     case State::Command4CMode:
     {
-      // SetAnalogMode(data_in != 0x00);
-      // Log_WarningPrintf("analog mode %s by 0x4c", m_analog_mode ? "enabled" : "disabled");
+      m_command_param = data_in;
       *data_out = 0x00;
       m_state = State::Command4C1;
       ack = true;
@@ -545,7 +544,22 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
 
       FIXED_REPLY_STATE(State::Command4C1, 0x00, true, State::Command4C2);
       FIXED_REPLY_STATE(State::Command4C2, 0x00, true, State::Command4C3);
-      FIXED_REPLY_STATE(State::Command4C3, m_analog_mode ? 0x07 : 0x04, true, State::Command4C4);
+
+    case State::Command4C3:
+    {
+      // Ape Escape sends both 0x00 and 0x01 sequences on startup and checks for correct response
+      if (m_command_param == 0x00)
+        *data_out = 0x04;
+      else if (m_command_param == 0x01)
+        *data_out = 0x07;
+      else
+        *data_out = 0x00;
+
+      m_state = State::Command4C4;
+      ack = true;
+    }
+    break;
+
       FIXED_REPLY_STATE(State::Command4C4, 0x00, true, State::Command4C5);
       FIXED_REPLY_STATE(State::Command4C5, 0x00, false, State::Idle);
 
