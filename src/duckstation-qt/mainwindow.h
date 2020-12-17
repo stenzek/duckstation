@@ -21,6 +21,8 @@ class DebuggerWindow;
 class HostDisplay;
 struct GameListEntry;
 
+class GDBServer;
+
 class MainWindow final : public QMainWindow
 {
   Q_OBJECT
@@ -144,4 +146,6 @@ private:
 
   bool m_emulation_running = false;
   bool m_was_paused_by_focus_loss = false;
+
+  GDBServer* m_gdb_server = nullptr;
 };
