@@ -510,9 +510,6 @@
              </item>
              <item>
               <widget class="QPushButton" name="scanAddManualAddress">
-               <property name="enabled">
-                <bool>false</bool>
-               </property>
                <property name="text">
                 <string>Add Manual Address</string>
                </property>

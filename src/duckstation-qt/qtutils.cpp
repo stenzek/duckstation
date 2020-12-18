@@ -8,6 +8,7 @@
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QHeaderView>
+#include <QtWidgets/QInputDialog>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QScrollBar>
@@ -734,6 +735,33 @@ void FillComboBoxWithEmulationSpeeds(QComboBox* cb)
                   .arg((50 * speed) / 100),
                 QVariant(static_cast<float>(speed) / 100.0f));
   }
+}
+
+std::optional<unsigned> PromptForAddress(QWidget* parent, const QString& title, const QString& label)
+{
+  const QString address_str(
+    QInputDialog::getText(parent, title, qApp->translate("DebuggerWindow", "Enter memory address:")));
+  if (address_str.isEmpty())
+    return std::nullopt;
+
+  bool ok;
+  uint address;
+  if (address_str.startsWith("0x"))
+    address = address_str.midRef(2).toUInt(&ok, 16);
+  else if (address_str[0] == '0' && address_str.length() > 1)
+    address = address_str.midRef(1).toUInt(&ok, 8);
+  else
+    address = address_str.toUInt(&ok, 10);
+
+  if (!ok)
+  {
+    QMessageBox::critical(
+      parent, title,
+      qApp->translate("DebuggerWindow", "Invalid address. It should be in hex (0x12345678) or decimal (12345678)"));
+    return std::nullopt;
+  }
+
+  return address;
 }
 
 } // namespace QtUtils

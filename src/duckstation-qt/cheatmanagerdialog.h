@@ -42,6 +42,7 @@ private Q_SLOTS:
   void exportClicked();
 
   void addToWatchClicked();
+  void addManualWatchAddressClicked();
   void removeWatchClicked();
   void scanCurrentItemChanged(QTableWidgetItem* current, QTableWidgetItem* previous);
   void watchCurrentItemChanged(QTableWidgetItem* current, QTableWidgetItem* previous);

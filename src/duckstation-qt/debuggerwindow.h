@@ -60,7 +60,6 @@ private:
   void setMemoryViewRegion(Bus::MemoryRegion region);
   void toggleBreakpoint(VirtualMemoryAddress address);
   void clearBreakpoints();
-  std::optional<VirtualMemoryAddress> promptForAddress(const QString& label);
   std::optional<VirtualMemoryAddress> getSelectedCodeAddress();
   bool tryFollowLoadStore(VirtualMemoryAddress address);
   void scrollToCodeAddress(VirtualMemoryAddress address);

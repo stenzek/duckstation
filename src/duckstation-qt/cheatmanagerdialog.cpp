@@ -17,6 +17,10 @@
 #include <array>
 #include <utility>
 
+static constexpr std::array<const char*, 6> s_size_strings = {
+  {QT_TR_NOOP("Byte"), QT_TR_NOOP("Halfword"), QT_TR_NOOP("Word"), QT_TR_NOOP("Signed Byte"),
+   QT_TR_NOOP("Signed Halfword"), QT_TR_NOOP("Signed Word")}};
+
 static QString formatHexValue(u32 value)
 {
   return QStringLiteral("0x%1").arg(static_cast<uint>(value), 8, 16, QChar('0'));
@@ -126,6 +130,7 @@ void CheatManagerDialog::connectUi()
     updateResults();
   });
   connect(m_ui.scanAddWatch, &QPushButton::clicked, this, &CheatManagerDialog::addToWatchClicked);
+  connect(m_ui.scanAddManualAddress, &QPushButton::clicked, this, &CheatManagerDialog::addManualWatchAddressClicked);
   connect(m_ui.scanRemoveWatch, &QPushButton::clicked, this, &CheatManagerDialog::removeWatchClicked);
   connect(m_ui.scanTable, &QTableWidget::currentItemChanged, this, &CheatManagerDialog::scanCurrentItemChanged);
   connect(m_ui.watchTable, &QTableWidget::currentItemChanged, this, &CheatManagerDialog::watchCurrentItemChanged);
@@ -628,6 +633,27 @@ void CheatManagerDialog::addToWatchClicked()
   updateWatch();
 }
 
+void CheatManagerDialog::addManualWatchAddressClicked()
+{
+  std::optional<unsigned> address = QtUtils::PromptForAddress(this, windowTitle(), tr("Enter memory address:"));
+  if (!address.has_value())
+    return;
+
+  QStringList items;
+  for (const char* title : s_size_strings)
+    items.append(tr(title));
+
+  bool ok = false;
+  QString selected_item(QInputDialog::getItem(this, windowTitle(), tr("Select data size:"), items, 0, false, &ok));
+  int index = items.indexOf(selected_item);
+  if (index < 0 || !ok)
+    return;
+
+  m_watch.AddEntry(StringUtil::StdStringFromFormat("0x%08x", address.value()), address.value(),
+                   static_cast<MemoryAccessSize>(index % 3), (index > 3), false);
+  updateWatch();
+}
+
 void CheatManagerDialog::removeWatchClicked()
 {
   const int index = getSelectedWatchIndex();
@@ -795,10 +821,6 @@ void CheatManagerDialog::updateResultsValues()
 
 void CheatManagerDialog::updateWatch()
 {
-  static constexpr std::array<const char*, 6> size_strings = {
-    {QT_TR_NOOP("Byte"), QT_TR_NOOP("Halfword"), QT_TR_NOOP("Word"), QT_TR_NOOP("Signed Byte"),
-     QT_TR_NOOP("Signed Halfword"), QT_TR_NOOP("Signed Word")}};
-
   m_watch.UpdateValues();
 
   QSignalBlocker sb(m_ui.watchTable);
@@ -825,7 +847,7 @@ void CheatManagerDialog::updateWatch()
       m_ui.watchTable->setItem(row, 2, address_item);
 
       QTableWidgetItem* size_item =
-        new QTableWidgetItem(tr(size_strings[static_cast<u32>(res.size) + (res.is_signed ? 3 : 0)]));
+        new QTableWidgetItem(tr(s_size_strings[static_cast<u32>(res.size) + (res.is_signed ? 3 : 0)]));
       size_item->setFlags(address_item->flags() & ~(Qt::ItemIsEditable));
       m_ui.watchTable->setItem(row, 3, size_item);
 

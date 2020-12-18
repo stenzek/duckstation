@@ -2,10 +2,10 @@
 #include "core/cpu_core_private.h"
 #include "debuggermodels.h"
 #include "qthostinterface.h"
+#include "qtutils.h"
 #include <QtCore/QSignalBlocker>
 #include <QtGui/QFontDatabase>
 #include <QtWidgets/QFileDialog>
-#include <QtWidgets/QInputDialog>
 #include <QtWidgets/QMessageBox>
 
 DebuggerWindow::DebuggerWindow(QWidget* parent /* = nullptr */)
@@ -103,7 +103,8 @@ void DebuggerWindow::onGoToPCTriggered()
 
 void DebuggerWindow::onGoToAddressTriggered()
 {
-  std::optional<VirtualMemoryAddress> address = promptForAddress(tr("Enter code address:"));
+  std::optional<VirtualMemoryAddress> address =
+    QtUtils::PromptForAddress(this, windowTitle(), tr("Enter code address:"));
   if (!address.has_value())
     return;
 
@@ -112,7 +113,8 @@ void DebuggerWindow::onGoToAddressTriggered()
 
 void DebuggerWindow::onDumpAddressTriggered()
 {
-  std::optional<VirtualMemoryAddress> address = promptForAddress(tr("Enter memory address:"));
+  std::optional<VirtualMemoryAddress> address =
+    QtUtils::PromptForAddress(this, windowTitle(), tr("Enter memory address:"));
   if (!address.has_value())
     return;
 
@@ -126,7 +128,8 @@ void DebuggerWindow::onFollowAddressTriggered()
 
 void DebuggerWindow::onAddBreakpointTriggered()
 {
-  std::optional<VirtualMemoryAddress> address = promptForAddress(tr("Enter code address:"));
+  std::optional<VirtualMemoryAddress> address =
+    QtUtils::PromptForAddress(this, windowTitle(), tr("Enter code address:"));
   if (!address.has_value())
     return;
 
@@ -513,31 +516,6 @@ void DebuggerWindow::clearBreakpoints()
 {
   m_code_model->clearBreakpoints();
   CPU::ClearBreakpoints();
-}
-
-std::optional<VirtualMemoryAddress> DebuggerWindow::promptForAddress(const QString& label)
-{
-  const QString address_str(QInputDialog::getText(this, windowTitle(), tr("Enter memory address:")));
-  if (address_str.isEmpty())
-    return std::nullopt;
-
-  bool ok;
-  uint address;
-  if (address_str.startsWith("0x"))
-    address = address_str.midRef(2).toUInt(&ok, 16);
-  else if (address_str[0] == '0')
-    address = address_str.midRef(2).toUInt(&ok, 8);
-  else
-    address = address_str.midRef(2).toUInt(&ok, 8);
-
-  if (!ok)
-  {
-    QMessageBox::critical(this, windowTitle(),
-                          tr("Invalid address. It should be in hex (0x12345678) or decimal (12345678)"));
-    return std::nullopt;
-  }
-
-  return address;
 }
 
 std::optional<VirtualMemoryAddress> DebuggerWindow::getSelectedCodeAddress()
