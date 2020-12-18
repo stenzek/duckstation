@@ -14,6 +14,7 @@
 #include <cctype>
 #include <iomanip>
 #include <sstream>
+bool RestoreValue = false;
 Log_SetChannel(Cheats);
 
 using KeyValuePairVector = std::vector<std::pair<std::string, std::string>>;
@@ -707,7 +708,11 @@ void CheatList::EnableCode(u32 index)
 
 void CheatList::DisableCode(u32 index)
 {
+  RestoreValue = true;
+  if (index < m_codes.size())
+    m_codes[index].Apply();
   SetCodeEnabled(index, false);
+  RestoreValue = false;
 }
 
 void CheatList::ApplyCode(u32 index)
@@ -986,6 +991,88 @@ void CheatCode::Apply() const
           index++;
         else
           index = GetNextNonConditionalInstruction(index);
+      }
+      break;
+
+      case InstructionCode::ExtConstantWriteIfMatch16:
+      {
+        const u16 value = DoMemoryRead<u16>(inst.address);
+        const u16 comparevalue = u16(inst.value32 >> 16);
+        const u16 newvalue = u16(inst.value32 & 0xFFFFu);
+        if (RestoreValue == false && value == comparevalue)
+            DoMemoryWrite<u16>(inst.address, newvalue);
+        else if (RestoreValue == true && value == newvalue)
+            DoMemoryWrite<u16>(inst.address, comparevalue);
+        index++;
+      }
+      break;
+
+      case InstructionCode::ExtConstantWriteIfMatchWithRestore16:
+      {
+        const u16 value = DoMemoryRead<u16>(inst.address);
+        const u16 comparevalue = inst.value32 >> 16;
+        const u16 newvalue = inst.value32 & 0xFFFFu;
+        if (value == comparevalue)
+            DoMemoryWrite<u16>(inst.address, newvalue);
+        index++;
+      }
+      break;
+
+      case InstructionCode::ExtConstantForceRange8:
+      {
+        const u8 value = DoMemoryRead<u8>(inst.address);
+        const u8 min = inst.value32 & 0x000000FFu;
+        const u8 max = (inst.value32 & 0x0000FF00u) >> 8;
+        const u8 overmin = (u8)((inst.value32 & 0x00FF0000u) >> 16);
+        const u8 overmax = (inst.value32 & 0xFF000000u) >> 24;
+        if ((value < min) || (value < min && min == 0x00u && max < 0xFEu))
+            DoMemoryWrite<u8>(inst.address, overmin); //also handles a min value of 0x00
+        else if (value > max)
+            DoMemoryWrite<u8>(inst.address, overmax);
+        index++;
+      }
+      break;
+
+      case InstructionCode::ExtConstantForceRangeLimits16:
+      {
+        const u16 value = DoMemoryRead<u16>(inst.address);
+        const u16 min = inst.value32 & 0x0000FFFFu;
+        const u16 max = (inst.value32 & 0xFFFF0000u) >> 16;
+        if ((value < min) || (value < min && min == 0x0000u && max < 0xFFFEu))
+            DoMemoryWrite<u16>(inst.address, min); //also handles a min value of 0x0000
+        else if (value > max)
+            DoMemoryWrite<u16>(inst.address, max);
+        index++;
+      }
+      break;
+
+      case InstructionCode::ExtConstantForceRangeRollRound16:
+      {
+        const u16 value = DoMemoryRead<u16>(inst.address);
+        const u16 min = inst.value32 & 0x0000FFFFu;
+        const u16 max = (inst.value32 & 0xFFFF0000u) >> 16;
+        if ((value < min) || (value < min && min == 0x0000u && max < 0xFFFEu))
+            DoMemoryWrite<u16>(inst.address, max); //also handles a min value of 0x0000
+        else if (value > max)
+            DoMemoryWrite<u16>(inst.address, min);
+        index++;
+      }
+      break;
+
+      case InstructionCode::ExtConstantForceRange16:
+      {
+        const u16 min = inst.value32 & 0x0000FFFFu;
+        const u16 max = (inst.value32 & 0xFFFF0000u) >> 16;
+        const u16 value = DoMemoryRead<u16>(inst.address);
+        const Instruction& inst2 = instructions[index + 1];
+        const u16 overmin = inst2.value32 & 0x0000FFFFu;
+        const u16 overmax = (inst2.value32 & 0xFFFF0000u) >> 16;
+
+        if ((value < min) || (value < min && min == 0x0000u && max < 0xFFFEu))
+            DoMemoryWrite<u16>(inst.address, overmin); //also handles a min value of 0x0000
+        else if (value > max)
+            DoMemoryWrite<u16>(inst.address, overmax);
+        index += 2;
       }
       break;
 

@@ -56,6 +56,12 @@ struct CheatCode
     ExtSkipIfNotEqual32 = 0xA4,
     ExtIncrement32 = 0x60,
     ExtDecrement32 = 0x61,
+    ExtConstantWriteIfMatch16 = 0xA6,
+    ExtConstantWriteIfMatchWithRestore16 = 0xA7,
+    ExtConstantForceRange8 = 0xF0,
+    ExtConstantForceRangeLimits16 = 0xF1,
+    ExtConstantForceRangeRollRound16 = 0xF2,
+    ExtConstantForceRange16 = 0xF3,
   };
 
   union Instruction
