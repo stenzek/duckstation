@@ -481,7 +481,7 @@ TickCount DMA::TransferMemoryToDevice(Channel channel, u32 address, u32 incremen
     case Channel::MDECout:
     case Channel::PIO:
     default:
-      Panic("Unhandled DMA channel for device write");
+      Log_ErrorPrintf("Unhandled DMA channel %u for device write", static_cast<u32>(channel));
       break;
   }
 
@@ -537,7 +537,7 @@ TickCount DMA::TransferDeviceToMemory(Channel channel, u32 address, u32 incremen
       break;
 
     default:
-      Panic("Unhandled DMA channel for device read");
+      Log_ErrorPrintf("Unhandled DMA channel %u for device read", static_cast<u32>(channel));
       std::fill_n(dest_pointer, word_count, UINT32_C(0xFFFFFFFF));
       break;
   }
