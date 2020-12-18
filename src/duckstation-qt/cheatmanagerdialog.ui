@@ -17,7 +17,7 @@
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
@@ -202,6 +202,9 @@
                   </item>
                   <item>
                    <widget class="QComboBox" name="scanValueSigned">
+                    <property name="currentIndex">
+                     <number>1</number>
+                    </property>
                     <item>
                      <property name="text">
                       <string>Signed</string>
@@ -216,6 +219,9 @@
                   </item>
                   <item>
                    <widget class="QComboBox" name="scanValueBase">
+                    <property name="currentIndex">
+                     <number>1</number>
+                    </property>
                     <item>
                      <property name="text">
                       <string>Decimal</string>
@@ -240,7 +246,7 @@
                 <item row="2" column="1">
                  <widget class="QComboBox" name="scanSize">
                   <property name="currentIndex">
-                   <number>2</number>
+                   <number>1</number>
                   </property>
                   <item>
                    <property name="text">

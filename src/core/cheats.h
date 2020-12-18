@@ -233,12 +233,12 @@ private:
   void SearchWords();
 
   u32 m_value = 0;
-  MemoryAccessSize m_size = MemoryAccessSize::Word;
+  MemoryAccessSize m_size = MemoryAccessSize::HalfWord;
   Operator m_operator = Operator::Equal;
   PhysicalMemoryAddress m_start_address = 0;
   PhysicalMemoryAddress m_end_address = 0x200000;
   ResultVector m_results;
-  bool m_signed = true;
+  bool m_signed = false;
 };
 
 class MemoryWatchList
