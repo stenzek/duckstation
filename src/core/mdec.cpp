@@ -270,9 +270,9 @@ void MDEC::Execute()
             break;
 
           default:
-            Panic("Unknown command");
-            num_words = 0;
-            new_state = State::Idle;
+            Log_DevPrintf("Invalid MDEC command 0x%08X", cw.bits);
+            num_words = cw.parameter_word_count.GetValue();
+            new_state = State::NoCommand;
             break;
         }
 
@@ -329,6 +329,20 @@ void MDEC::Execute()
           goto finished;
 
         HandleSetScaleCommand();
+        m_state = State::Idle;
+        UpdateStatus();
+        continue;
+      }
+
+      case State::NoCommand:
+      {
+        // can potentially have a large amount of halfwords, so eat them as we go
+        const u32 words_to_consume = std::min(m_remaining_halfwords, m_data_in_fifo.GetSize());
+        m_data_in_fifo.Remove(words_to_consume);
+        m_remaining_halfwords -= words_to_consume;
+        if (m_remaining_halfwords == 0)
+          goto finished;
+
         m_state = State::Idle;
         UpdateStatus();
         continue;

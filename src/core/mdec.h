@@ -56,7 +56,8 @@ private:
     DecodingMacroblock,
     WritingMacroblock,
     SetIqTable,
-    SetScaleTable
+    SetScaleTable,
+    NoCommand
   };
 
   union StatusRegister
