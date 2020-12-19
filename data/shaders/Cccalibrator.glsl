@@ -81,7 +81,7 @@ void main()
 
   
   float2 texcoord = GetCoordinates();
-  float2 time = GetTime();
+  float2 time = float2(GetTime());
 //  int FrameCount = GetFrameCount();
   float4 color = Sample();
 //  float brightness_scale = GetOption(BRIGHTNESS_SCALE);
