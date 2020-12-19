@@ -77,6 +77,8 @@ void MemoryCardEditorDialog::connectUi()
           [this](int index) { loadCardFromComboBox(&m_card_b, index); });
   connect(m_ui.newCardA, &QPushButton::clicked, [this]() { newCard(&m_card_a); });
   connect(m_ui.newCardB, &QPushButton::clicked, [this]() { newCard(&m_card_b); });
+  connect(m_ui.openCardA, &QPushButton::clicked, [this]() { openCard(&m_card_a); });
+  connect(m_ui.openCardB, &QPushButton::clicked, [this]() { openCard(&m_card_b); });
   connect(m_ui.saveCardA, &QPushButton::clicked, [this]() { saveCard(&m_card_a); });
   connect(m_ui.saveCardB, &QPushButton::clicked, [this]() { saveCard(&m_card_b); });
   connect(m_ui.importCardA, &QPushButton::clicked, [this]() { importCard(&m_card_a); });
@@ -256,6 +258,35 @@ void MemoryCardEditorDialog::newCard(Card* card)
   updateCardBlocksFree(card);
   updateButtonState();
   saveCard(card);
+}
+
+void MemoryCardEditorDialog::openCard(Card* card)
+{
+  promptForSave(card);
+
+  QString filename =
+    QFileDialog::getOpenFileName(this, tr("Select Memory Card"), QString(), tr(MEMORY_CARD_IMAGE_FILTER));
+  if (filename.isEmpty())
+    return;
+
+  if (!MemoryCardImage::LoadFromFile(&card->data, filename.toUtf8().constData()))
+  {
+    QMessageBox::critical(this, tr("Error"), tr("Failed to load memory card image."));
+    return;
+  }
+
+  {
+    // add to combo box
+    QFileInfo file(filename);
+    QSignalBlocker sb(card->path_cb);
+    card->path_cb->addItem(file.baseName(), QVariant(filename));
+    card->path_cb->setCurrentIndex(card->path_cb->count() - 1);
+  }
+
+  card->filename = filename.toStdString();
+  updateCardTable(card);
+  updateCardBlocksFree(card);
+  updateButtonState();
 }
 
 void MemoryCardEditorDialog::saveCard(Card* card)

@@ -57,7 +57,7 @@
     </widget>
    </item>
    <item row="0" column="3">
-    <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,1,0">
+    <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,1,0,0">
      <item>
       <widget class="QLabel" name="label_2">
        <property name="text">
@@ -73,9 +73,24 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="newCardB">
+      <widget class="QToolButton" name="newCardB">
        <property name="text">
         <string>New...</string>
+       </property>
+       <property name="icon">
+        <iconset resource="resources/resources.qrc">
+         <normaloff>:/icons/document-new.png</normaloff>:/icons/document-new.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="openCardB">
+       <property name="text">
+        <string>Open...</string>
+       </property>
+       <property name="icon">
+        <iconset resource="resources/resources.qrc">
+         <normaloff>:/icons/document-open.png</normaloff>:/icons/document-open.png</iconset>
        </property>
       </widget>
      </item>
@@ -164,7 +179,7 @@
     </layout>
    </item>
    <item row="0" column="0">
-    <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1,0">
+    <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1,0,0">
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
@@ -176,9 +191,24 @@
       <widget class="QComboBox" name="cardAPath"/>
      </item>
      <item>
-      <widget class="QPushButton" name="newCardA">
+      <widget class="QToolButton" name="newCardA">
        <property name="text">
         <string>New...</string>
+       </property>
+       <property name="icon">
+        <iconset resource="resources/resources.qrc">
+         <normaloff>:/icons/document-new.png</normaloff>:/icons/document-new.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="openCardA">
+       <property name="text">
+        <string>Open...</string>
+       </property>
+       <property name="icon">
+        <iconset resource="resources/resources.qrc">
+         <normaloff>:/icons/document-open.png</normaloff>:/icons/document-open.png</iconset>
        </property>
       </widget>
      </item>
@@ -285,6 +315,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="resources/resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

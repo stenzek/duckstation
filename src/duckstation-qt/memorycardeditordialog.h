@@ -52,6 +52,7 @@ private:
   void updateCardBlocksFree(Card* card);
   void setCardDirty(Card* card);
   void newCard(Card* card);
+  void openCard(Card* card);
   void saveCard(Card* card);
   void promptForSave(Card* card);
   void importCard(Card* card);
