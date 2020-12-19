@@ -121,10 +121,11 @@ bool QtDisplayWidget::event(QEvent* event)
     }
 
     case QEvent::MouseButtonPress:
+    case QEvent::MouseButtonDblClick:
     case QEvent::MouseButtonRelease:
     {
       const u32 button_index = CountTrailingZeros(static_cast<u32>(static_cast<const QMouseEvent*>(event)->button()));
-      emit windowMouseButtonEvent(static_cast<int>(button_index + 1u), event->type() == QEvent::MouseButtonPress);
+      emit windowMouseButtonEvent(static_cast<int>(button_index + 1u), event->type() != QEvent::MouseButtonRelease);
       return true;
     }
 
