@@ -927,15 +927,15 @@ bool GPU::ConvertScreenCoordinatesToBeamTicksAndLines(s32 window_x, s32 window_y
   if (x_scale != 1.0f)
   {
     const float dw = static_cast<float>(m_crtc_state.display_width);
-    float scaled_x = ((static_cast<float>(display_x) / dw) * 2.0f) - 1.0f; // 0..1 -> -1..1
+    float scaled_x = ((display_x / dw) * 2.0f) - 1.0f; // 0..1 -> -1..1
     scaled_x *= x_scale;
-    display_x = static_cast<s32>(((scaled_x + 1.0f) * 0.5f) * dw); // -1..1 -> 0..1
+    display_x = (((scaled_x + 1.0f) * 0.5f) * dw); // -1..1 -> 0..1
   }
 
-  Log_DebugPrintf("win %d,%d -> disp %d,%d (size %u,%u frac %f,%f)", window_x, window_y, display_x, display_y,
+  Log_DebugPrintf("win %d,%d -> disp %.2f,%.2f (size %u,%u frac %f,%f)", window_x, window_y, display_x, display_y,
                   m_crtc_state.display_width, m_crtc_state.display_height,
-                  static_cast<float>(display_x) / static_cast<float>(m_crtc_state.display_width),
-                  static_cast<float>(display_y) / static_cast<float>(m_crtc_state.display_height));
+                  display_x / static_cast<float>(m_crtc_state.display_width),
+                  display_y / static_cast<float>(m_crtc_state.display_height));
 
   if (display_x < 0 || static_cast<u32>(display_x) >= m_crtc_state.display_width || display_y < 0 ||
       static_cast<u32>(display_y) >= m_crtc_state.display_height)
@@ -943,9 +943,10 @@ bool GPU::ConvertScreenCoordinatesToBeamTicksAndLines(s32 window_x, s32 window_y
     return false;
   }
 
-  *out_line =
-    (static_cast<u32>(display_y) >> BoolToUInt8(m_GPUSTAT.vertical_interlace)) + m_crtc_state.vertical_visible_start;
-  *out_tick = (static_cast<u32>(display_x) * m_crtc_state.dot_clock_divider) + m_crtc_state.horizontal_visible_start;
+  *out_line = (static_cast<u32>(std::round(display_y)) >> BoolToUInt8(m_GPUSTAT.vertical_interlace)) +
+              m_crtc_state.vertical_visible_start;
+  *out_tick = static_cast<u32>(std::round(display_x * static_cast<float>(m_crtc_state.dot_clock_divider))) +
+              m_crtc_state.horizontal_visible_start;
   return true;
 }
 

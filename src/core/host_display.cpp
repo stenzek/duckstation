@@ -257,9 +257,9 @@ std::tuple<s32, s32, s32, s32> HostDisplay::CalculateSoftwareCursorDrawRect(s32 
   return std::tie(out_left, out_top, out_width, out_height);
 }
 
-std::tuple<s32, s32> HostDisplay::ConvertWindowCoordinatesToDisplayCoordinates(s32 window_x, s32 window_y,
-                                                                               s32 window_width, s32 window_height,
-                                                                               s32 top_margin) const
+std::tuple<float, float> HostDisplay::ConvertWindowCoordinatesToDisplayCoordinates(s32 window_x, s32 window_y,
+                                                                                   s32 window_width, s32 window_height,
+                                                                                   s32 top_margin) const
 {
   s32 left, top, width, height, left_padding, top_padding;
   float scale, y_scale;
@@ -274,7 +274,7 @@ std::tuple<s32, s32> HostDisplay::ConvertWindowCoordinatesToDisplayCoordinates(s
   const float display_x = scaled_display_x / scale;
   const float display_y = scaled_display_y / scale / y_scale;
 
-  return std::make_tuple(static_cast<s32>(display_x), static_cast<s32>(display_y));
+  return std::make_tuple(display_x, display_y);
 }
 
 static bool CompressAndWriteTextureToFile(u32 width, u32 height, std::string filename, FileSystem::ManagedCFilePtr fp,

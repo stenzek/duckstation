@@ -190,8 +190,8 @@ public:
                                                    bool apply_aspect_ratio = true) const;
 
   /// Helper function for converting window coordinates to display coordinates.
-  std::tuple<s32, s32> ConvertWindowCoordinatesToDisplayCoordinates(s32 window_x, s32 window_y, s32 window_width,
-                                                                    s32 window_height, s32 top_margin) const;
+  std::tuple<float, float> ConvertWindowCoordinatesToDisplayCoordinates(s32 window_x, s32 window_y, s32 window_width,
+                                                                        s32 window_height, s32 top_margin) const;
 
   /// Helper function to save texture data to a PNG. If flip_y is set, the image will be flipped aka OpenGL.
   bool WriteTextureToFile(const void* texture_handle, u32 x, u32 y, u32 width, u32 height, std::string filename,
