@@ -60,6 +60,13 @@ void NamcoGunCon::SetAxisState(s32 axis_code, float value) {}
 
 void NamcoGunCon::SetButtonState(Button button, bool pressed)
 {
+  if (button == Button::ShootOffscreen)
+  {
+    m_shoot_offscreen = pressed;
+    SetButtonState(Button::Trigger, pressed);
+    return;
+  }
+
   static constexpr std::array<u8, static_cast<size_t>(Button::Count)> indices = {{13, 3, 14}};
   if (pressed)
     m_button_state &= ~(u16(1) << indices[static_cast<u8>(button)]);
@@ -169,7 +176,8 @@ void NamcoGunCon::UpdatePosition()
 
   // are we within the active display area?
   u32 tick, line;
-  if (mouse_x < 0 || mouse_y < 0 || !g_gpu->ConvertScreenCoordinatesToBeamTicksAndLines(mouse_x, mouse_y, &tick, &line))
+  if (mouse_x < 0 || mouse_y < 0 ||
+      !g_gpu->ConvertScreenCoordinatesToBeamTicksAndLines(mouse_x, mouse_y, &tick, &line) || m_shoot_offscreen)
   {
     Log_DebugPrintf("Lightgun out of range for window coordinates %d,%d", mouse_x, mouse_y);
     m_position_x = 0x01;
@@ -204,6 +212,7 @@ std::optional<s32> NamcoGunCon::StaticGetButtonCodeByName(std::string_view butto
   }
 
   BUTTON(Trigger);
+  BUTTON(ShootOffscreen);
   BUTTON(A);
   BUTTON(B);
 
@@ -220,6 +229,7 @@ Controller::AxisList NamcoGunCon::StaticGetAxisNames()
 Controller::ButtonList NamcoGunCon::StaticGetButtonNames()
 {
   return {{TRANSLATABLE("NamcoGunCon", "Trigger"), static_cast<s32>(Button::Trigger)},
+          {TRANSLATABLE("NamcoGunCon", "ShootOffscreen"), static_cast<s32>(Button::ShootOffscreen)},
           {TRANSLATABLE("NamcoGunCon", "A"), static_cast<s32>(Button::A)},
           {TRANSLATABLE("NamcoGunCon", "B"), static_cast<s32>(Button::B)}};
 }
