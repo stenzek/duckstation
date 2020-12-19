@@ -137,7 +137,7 @@ bool CommonHostInterface::BootSystem(const SystemBootParameters& parameters)
   if (!HostInterface::BootSystem(parameters))
   {
     // if in batch mode, exit immediately if booting failed
-    if (m_batch_mode)
+    if (InBatchMode())
       RequestExit();
 
     return false;
@@ -176,7 +176,7 @@ void CommonHostInterface::PowerOffSystem()
 
   HostInterface::PowerOffSystem();
 
-  if (m_batch_mode)
+  if (InBatchMode())
     RequestExit();
 }
 
@@ -219,6 +219,9 @@ static void PrintCommandLineHelp(const char* progname, const char* frontend_name
   std::fprintf(stderr, "  -fullscreen: Enters fullscreen mode immediately after starting.\n");
   std::fprintf(stderr, "  -nofullscreen: Prevents fullscreen mode from triggering if enabled.\n");
   std::fprintf(stderr, "  -portable: Forces \"portable mode\", data in same directory.\n");
+  std::fprintf(stderr, "  -nocontroller: Prevents the emulator from polling for controllers.\n"
+                       "                 Try this option if you're having difficulties starting\n"
+                       "                 the emulator.\n");
   std::fprintf(stderr, "  --: Signals that no more arguments will follow and the remaining\n"
                        "    parameters make up the filename. Use when the filename contains\n"
                        "    spaces or starts with a dash.\n");
@@ -258,7 +261,7 @@ bool CommonHostInterface::ParseCommandLineParameters(int argc, char* argv[],
       else if (CHECK_ARG("-batch"))
       {
         Log_InfoPrintf("Enabling batch mode.");
-        m_batch_mode = true;
+        m_command_line_flags.batch_mode = true;
         continue;
       }
       else if (CHECK_ARG("-fastboot"))
@@ -271,6 +274,12 @@ bool CommonHostInterface::ParseCommandLineParameters(int argc, char* argv[],
       {
         Log_InfoPrintf("Forcing slow boot.");
         force_fast_boot = false;
+        continue;
+      }
+      else if (CHECK_ARG("-nocontroller"))
+      {
+        Log_InfoPrintf("Disabling controller support.");
+        m_command_line_flags.disable_controller_interface = true;
         continue;
       }
       else if (CHECK_ARG("-resume"))
@@ -470,7 +479,7 @@ void CommonHostInterface::UpdateControllerInterface()
     ControllerInterface::ParseBackendName(backend_str.c_str());
   const ControllerInterface::Backend current_backend =
     (m_controller_interface ? m_controller_interface->GetBackend() : ControllerInterface::Backend::None);
-  if (new_backend == current_backend)
+  if (new_backend == current_backend || m_command_line_flags.disable_controller_interface)
     return;
 
   if (m_controller_interface)
@@ -1463,7 +1472,7 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                  StaticString(TRANSLATABLE("Hotkeys", "Power Off System")), [this](bool pressed) {
                    if (pressed && System::IsValid())
                    {
-                     if (g_settings.confim_power_off && !m_batch_mode)
+                     if (g_settings.confim_power_off && !InBatchMode())
                      {
                        SmallString confirmation_message(
                          TranslateString("CommonHostInterface", "Are you sure you want to stop emulation?"));

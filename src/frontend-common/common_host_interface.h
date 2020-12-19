@@ -1,4 +1,5 @@
 #pragma once
+#include "common/bitfield.h"
 #include "common/string.h"
 #include "core/controller.h"
 #include "core/host_interface.h"
@@ -94,7 +95,7 @@ public:
   ALWAYS_INLINE ControllerInterface* GetControllerInterface() const { return m_controller_interface.get(); }
 
   /// Returns true if running in batch mode, i.e. exit after emulation.
-  ALWAYS_INLINE bool InBatchMode() const { return m_batch_mode; }
+  ALWAYS_INLINE bool InBatchMode() const { return m_command_line_flags.batch_mode; }
 
   /// Parses command line parameters for all frontends.
   bool ParseCommandLineParameters(int argc, char* argv[], std::unique_ptr<SystemBootParameters>* out_boot_params);
@@ -389,8 +390,16 @@ private:
   };
   std::vector<ControllerRumbleState> m_controller_vibration_motors;
 
-  // running in batch mode? i.e. exit after stopping emulation
-  bool m_batch_mode = false;
+  union
+  {
+    u8 bits;
+
+    // running in batch mode? i.e. exit after stopping emulation
+    BitField<u8, bool, 0, 1> batch_mode;
+
+    // disable controller interface (buggy devices with SDL)
+    BitField<u8, bool, 1, 1> disable_controller_interface;
+  } m_command_line_flags = {};
 
 #ifdef WITH_DISCORD_PRESENCE
   // discord rich presence
