@@ -177,7 +177,8 @@ void NamcoGunCon::UpdatePosition()
   // are we within the active display area?
   u32 tick, line;
   if (mouse_x < 0 || mouse_y < 0 ||
-      !g_gpu->ConvertScreenCoordinatesToBeamTicksAndLines(mouse_x, mouse_y, &tick, &line) || m_shoot_offscreen)
+      !g_gpu->ConvertScreenCoordinatesToBeamTicksAndLines(mouse_x, mouse_y, m_x_scale, &tick, &line) ||
+      m_shoot_offscreen)
   {
     Log_DebugPrintf("Lightgun out of range for window coordinates %d,%d", mouse_x, mouse_y);
     m_position_x = 0x01;
@@ -241,11 +242,14 @@ u32 NamcoGunCon::StaticGetVibrationMotorCount()
 
 Controller::SettingList NamcoGunCon::StaticGetSettings()
 {
-  static constexpr std::array<SettingInfo, 2> settings = {
+  static constexpr std::array<SettingInfo, 3> settings = {
     {{SettingInfo::Type::Path, "CrosshairImagePath", TRANSLATABLE("NamcoGunCon", "Crosshair Image Path"),
       TRANSLATABLE("NamcoGunCon", "Path to an image to use as a crosshair/cursor.")},
      {SettingInfo::Type::Float, "CrosshairScale", TRANSLATABLE("NamcoGunCon", "Crosshair Image Scale"),
-      TRANSLATABLE("NamcoGunCon", "Scale of crosshair image on screen."), "1.0", "0.0001", "100.0"}}};
+      TRANSLATABLE("NamcoGunCon", "Scale of crosshair image on screen."), "1.0", "0.0001", "100.0"},
+     {SettingInfo::Type::Float, "XScale", TRANSLATABLE("NamcoGunCon", "X Scale"),
+      TRANSLATABLE("NamcoGunCon", "Scales X coordinates relative to the center of the screen."), "1.0", "0.01", "2.0",
+      "0.01"}}};
 
   return SettingList(settings.begin(), settings.end());
 }
@@ -272,6 +276,8 @@ void NamcoGunCon::LoadSettings(const char* section)
   }
 
   m_crosshair_image_scale = g_host_interface->GetFloatSettingValue(section, "CrosshairScale", 1.0f);
+
+  m_x_scale = g_host_interface->GetFloatSettingValue(section, "XScale", 1.0f);
 }
 
 bool NamcoGunCon::GetSoftwareCursor(const Common::RGBA8Image** image, float* image_scale)

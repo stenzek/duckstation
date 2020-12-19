@@ -917,11 +917,21 @@ void GPU::UpdateCommandTickEvent()
     m_command_tick_event->SetIntervalAndSchedule(GPUTicksToSystemTicks(m_pending_command_ticks));
 }
 
-bool GPU::ConvertScreenCoordinatesToBeamTicksAndLines(s32 window_x, s32 window_y, u32* out_tick, u32* out_line) const
+bool GPU::ConvertScreenCoordinatesToBeamTicksAndLines(s32 window_x, s32 window_y, float x_scale, u32* out_tick,
+                                                      u32* out_line) const
 {
-  const auto [display_x, display_y] = m_host_display->ConvertWindowCoordinatesToDisplayCoordinates(
+  auto [display_x, display_y] = m_host_display->ConvertWindowCoordinatesToDisplayCoordinates(
     window_x, window_y, m_host_display->GetWindowWidth(), m_host_display->GetWindowHeight(),
     m_host_display->GetDisplayTopMargin());
+
+  if (x_scale != 1.0f)
+  {
+    const float dw = static_cast<float>(m_crtc_state.display_width);
+    float scaled_x = ((static_cast<float>(display_x) / dw) * 2.0f) - 1.0f; // 0..1 -> -1..1
+    scaled_x *= x_scale;
+    display_x = static_cast<s32>(((scaled_x + 1.0f) * 0.5f) * dw); // -1..1 -> 0..1
+  }
+
   Log_DebugPrintf("win %d,%d -> disp %d,%d (size %u,%u frac %f,%f)", window_x, window_y, display_x, display_y,
                   m_crtc_state.display_width, m_crtc_state.display_height,
                   static_cast<float>(display_x) / static_cast<float>(m_crtc_state.display_width),
