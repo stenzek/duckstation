@@ -129,12 +129,12 @@ void GPU_HW_Vulkan::UpdateSettings()
     ResetGraphicsAPIState();
   }
 
-  if (framebuffer_changed)
-    CreateFramebuffer();
-
   // Everything should be finished executing before recreating resources.
   m_host_display->ClearDisplayTexture();
   g_vulkan_context->ExecuteCommandBuffer(true);
+
+  if (framebuffer_changed)
+    CreateFramebuffer();
 
   if (shaders_changed)
   {
