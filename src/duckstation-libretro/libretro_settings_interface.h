@@ -22,4 +22,5 @@ public:
   bool AddToStringList(const char* section, const char* key, const char* item) override;
 
   void DeleteValue(const char* section, const char* key) override;
+  void ClearSection(const char* section) override;
 };

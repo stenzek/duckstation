@@ -29,6 +29,7 @@ public:
   virtual bool AddToStringList(const char* section, const char* key, const char* item) = 0;
 
   virtual void DeleteValue(const char* section, const char* key) = 0;
+  virtual void ClearSection(const char* section) = 0;
 };
 
 struct SettingInfo
