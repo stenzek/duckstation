@@ -382,11 +382,20 @@ void CheatManagerDialog::cheatListItemChanged(QTreeWidgetItem* item, int column)
   if (!item || column != 0)
     return;
 
+  CheatList* list = getCheatList();
+
   const int index = getCheatIndexFromItem(item);
   if (index < 0)
-    return;
+  {
+    // we're probably a parent/group node
+    const int child_count = item->childCount();
+    const Qt::CheckState cs = item->checkState(0);
+    for (int i = 0; i < child_count; i++)
+      item->child(i)->setCheckState(0, cs);
 
-  CheatList* list = getCheatList();
+    return;
+  }
+
   if (static_cast<u32>(index) >= list->GetCodeCount())
     return;
 
