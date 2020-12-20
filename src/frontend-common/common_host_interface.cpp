@@ -1846,9 +1846,12 @@ void CommonHostInterface::ApplyInputProfile(const char* profile_path, SettingsIn
     }
 
     si.DeleteValue(section_name, "Rumble");
-    const std::string rumble_value = profile.GetStringValue(section_name, "Rumble");
-    if (!rumble_value.empty())
-      si.SetStringValue(section_name, "Rumble", rumble_value.c_str());
+    if (Controller::GetVibrationMotorCount(*ctype) > 0)
+    {
+      const std::string rumble_value = profile.GetStringValue(section_name, "Rumble");
+      if (!rumble_value.empty())
+        si.SetStringValue(section_name, "Rumble", rumble_value.c_str());
+    }
 
     Controller::SettingList settings = Controller::GetSettings(*ctype);
     for (const SettingInfo& ssi : settings)
@@ -1903,9 +1906,12 @@ bool CommonHostInterface::SaveInputProfile(const char* profile_path, SettingsInt
         profile.AddToStringList(section_name, key_name, binding.c_str());
     }
 
-    const std::string rumble_value = si.GetStringValue(section_name, "Rumble");
-    if (!rumble_value.empty())
-      profile.SetStringValue(section_name, "Rumble", rumble_value.c_str());
+    if (Controller::GetVibrationMotorCount(ctype) > 0)
+    {
+      const std::string rumble_value = si.GetStringValue(section_name, "Rumble");
+      if (!rumble_value.empty())
+        profile.SetStringValue(section_name, "Rumble", rumble_value.c_str());
+    }
 
     Controller::SettingList settings = Controller::GetSettings(ctype);
     for (const SettingInfo& ssi : settings)
