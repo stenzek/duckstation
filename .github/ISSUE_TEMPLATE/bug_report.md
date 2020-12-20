@@ -26,6 +26,10 @@ Remove everything before and including this line before submitting.
 **Description of the issue / bug**
 [Describe what you are seeing and/or hearing during gameplay]
 
+**Controller Troubleshoot Report**
+1. Have you installed any drivers or wrappers on your system, or do you have any programs like Steam open?
+2. Which controller backend are you using in general settings
+
 **Steps to reproduce**
 [Try to provide as much detail as possible to reproduce the issue]
 
@@ -42,3 +46,4 @@ Remove everything before and including this line before submitting.
 
 **Additional context**
 [Add any other context about the problem here]
+
