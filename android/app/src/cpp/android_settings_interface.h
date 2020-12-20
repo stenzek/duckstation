@@ -20,6 +20,7 @@ public:
   void SetBoolValue(const char* section, const char* key, bool value) override;
   void SetStringValue(const char* section, const char* key, const char* value) override;
   void DeleteValue(const char* section, const char* key) override;
+  void ClearSection(const char* section) override;
 
   std::vector<std::string> GetStringList(const char* section, const char* key) override;
   void SetStringList(const char* section, const char* key, const std::vector<std::string>& items) override;

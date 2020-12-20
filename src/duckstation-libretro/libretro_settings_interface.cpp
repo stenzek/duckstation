@@ -115,3 +115,8 @@ void LibretroSettingsInterface::DeleteValue(const char* section, const char* key
 {
   Log_ErrorPrintf("DeleteValue(\"%s\", \"%s\") not implemented", section, key);
 }
+
+void LibretroSettingsInterface::ClearSection(const char* section)
+{
+  Log_ErrorPrintf("ClearSection(\"%s\") not implemented", section);
+}

@@ -204,6 +204,11 @@ void AndroidSettingsInterface::DeleteValue(const char* section, const char* key)
   Log_ErrorPrintf("DeleteValue(\"%s\", \"%s\") not implemented", section, key);
 }
 
+void AndroidSettingsInterface::ClearSection(const char* section)
+{
+  Log_ErrorPrintf("ClearSection(\"%s\") not implemented", section);
+}
+
 std::vector<std::string> AndroidSettingsInterface::GetStringList(const char* section, const char* key)
 {
   JNIEnv* env = AndroidHelpers::GetJNIEnv();

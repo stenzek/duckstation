@@ -1781,24 +1781,7 @@ std::string CommonHostInterface::GetInputProfilePath(const char* name) const
 void CommonHostInterface::ClearAllControllerBindings(SettingsInterface& si)
 {
   for (u32 controller_index = 1; controller_index <= NUM_CONTROLLER_AND_CARD_PORTS; controller_index++)
-  {
-    const ControllerType ctype = g_settings.controller_types[controller_index - 1];
-    if (ctype == ControllerType::None)
-      continue;
-
-    const auto section_name = TinyString::FromFormat("Controller%u", controller_index);
-
-    si.DeleteValue(section_name, "Type");
-
-    for (const auto& button : Controller::GetButtonNames(ctype))
-      si.DeleteValue(section_name, button.first.c_str());
-
-    for (const auto& axis : Controller::GetAxisNames(ctype))
-      si.DeleteValue(section_name, std::get<std::string>(axis).c_str());
-
-    if (Controller::GetVibrationMotorCount(ctype) > 0)
-      si.DeleteValue(section_name, "Rumble");
-  }
+    si.ClearSection(TinyString::FromFormat("Controller%u", controller_index));
 }
 
 void CommonHostInterface::ApplyInputProfile(const char* profile_path, SettingsInterface& si)
@@ -1813,7 +1796,11 @@ void CommonHostInterface::ApplyInputProfile(const char* profile_path, SettingsIn
     const auto section_name = TinyString::FromFormat("Controller%u", controller_index);
     const std::string ctype_str = profile.GetStringValue(section_name, "Type");
     if (ctype_str.empty())
+    {
+      si.SetStringValue(section_name, "Type", Settings::GetControllerTypeName(ControllerType::None));
+      g_settings.controller_types[controller_index - 1] = ControllerType::None;
       continue;
+    }
 
     std::optional<ControllerType> ctype = Settings::ParseControllerTypeName(ctype_str.c_str());
     if (!ctype)
