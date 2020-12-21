@@ -39,6 +39,8 @@ public Q_SLOTS:
   /// Updates debug menu visibility (hides if disabled).
   void updateDebugMenuVisibility();
 
+  void checkForUpdates(bool display_message);
+
 private Q_SLOTS:
   void reportError(const QString& message);
   void reportMessage(const QString& message);
@@ -93,7 +95,6 @@ private Q_SLOTS:
   void onGameListSetCoverImageRequested(const GameListEntry* entry);
   void onCPUDebuggerClosed();
 
-  void checkForUpdates(bool display_message);
   void onUpdateCheckComplete();
 
 protected:

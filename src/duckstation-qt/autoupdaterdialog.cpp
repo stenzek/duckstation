@@ -28,7 +28,7 @@ Log_SetChannel(AutoUpdaterDialog);
 #ifdef WIN32
 #if defined(__has_include) && __has_include("scmversion/tag.h")
 #include "scmversion/tag.h"
-#ifdef SCM_RELEASE_TAG
+#ifdef SCM_RELEASE_TAGS
 #define AUTO_UPDATER_SUPPORTED
 #endif
 #endif
@@ -36,11 +36,12 @@ Log_SetChannel(AutoUpdaterDialog);
 
 #ifdef AUTO_UPDATER_SUPPORTED
 
-static constexpr char LATEST_TAG_URL[] = "https://api.github.com/repos/stenzek/duckstation/tags";
-static constexpr char LATEST_RELEASE_URL[] =
-  "https://api.github.com/repos/stenzek/duckstation/releases/tags/" SCM_RELEASE_TAG;
-static constexpr char CHANGES_URL[] = "https://api.github.com/repos/stenzek/duckstation/compare/%s..." SCM_RELEASE_TAG;
-static constexpr char UPDATE_ASSET_FILENAME[] = SCM_RELEASE_ASSET;
+static constexpr char* LATEST_TAG_URL = "https://api.github.com/repos/stenzek/duckstation/tags";
+static constexpr char* LATEST_RELEASE_URL = "https://api.github.com/repos/stenzek/duckstation/releases/tags/%s";
+static constexpr char* CHANGES_URL = "https://api.github.com/repos/stenzek/duckstation/compare/%s...%s";
+static constexpr char* UPDATE_ASSET_FILENAME = SCM_RELEASE_ASSET;
+static constexpr char* UPDATE_TAGS[] = SCM_RELEASE_TAGS;
+static constexpr char* THIS_RELEASE_TAG = SCM_RELEASE_TAG;
 
 #endif
 
@@ -69,6 +70,33 @@ bool AutoUpdaterDialog::isSupported()
 #endif
 }
 
+QStringList AutoUpdaterDialog::getTagList()
+{
+#ifdef AUTO_UPDATER_SUPPORTED
+  return QStringList(std::begin(UPDATE_TAGS), std::end(UPDATE_TAGS));
+#else
+  return QStringList();
+#endif
+}
+
+std::string AutoUpdaterDialog::getDefaultTag()
+{
+#ifdef AUTO_UPDATER_SUPPORTED
+  return THIS_RELEASE_TAG;
+#else
+  return {};
+#endif
+}
+
+std::string AutoUpdaterDialog::getCurrentUpdateTag() const
+{
+#ifdef AUTO_UPDATER_SUPPORTED
+  return m_host_interface->GetStringSettingValue("AutoUpdater", "UpdateTag", THIS_RELEASE_TAG);
+#else
+  return {};
+#endif
+}
+
 void AutoUpdaterDialog::reportError(const char* msg, ...)
 {
   std::va_list ap;
@@ -86,7 +114,7 @@ void AutoUpdaterDialog::queueUpdateCheck(bool display_message)
 #ifdef AUTO_UPDATER_SUPPORTED
   connect(m_network_access_mgr, &QNetworkAccessManager::finished, this, &AutoUpdaterDialog::getLatestTagComplete);
 
-  QUrl url(QUrl::fromEncoded(QByteArray(LATEST_TAG_URL, sizeof(LATEST_TAG_URL) - 1)));
+  QUrl url(QUrl::fromEncoded(QByteArray(LATEST_TAG_URL)));
   QNetworkRequest request(url);
   request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
   m_network_access_mgr->get(request);
@@ -100,7 +128,10 @@ void AutoUpdaterDialog::queueGetLatestRelease()
 #ifdef AUTO_UPDATER_SUPPORTED
   connect(m_network_access_mgr, &QNetworkAccessManager::finished, this, &AutoUpdaterDialog::getLatestReleaseComplete);
 
-  QUrl url(QUrl::fromEncoded(QByteArray(LATEST_RELEASE_URL, sizeof(LATEST_RELEASE_URL) - 1)));
+  SmallString url_string;
+  url_string.Format(LATEST_RELEASE_URL, getCurrentUpdateTag().c_str());
+
+  QUrl url(QUrl::fromEncoded(QByteArray(url_string)));
   QNetworkRequest request(url);
   request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
   m_network_access_mgr->get(request);
@@ -110,6 +141,9 @@ void AutoUpdaterDialog::queueGetLatestRelease()
 void AutoUpdaterDialog::getLatestTagComplete(QNetworkReply* reply)
 {
 #ifdef AUTO_UPDATER_SUPPORTED
+  const std::string selected_tag(getCurrentUpdateTag());
+  const QString selected_tag_qstr = QString::fromStdString(selected_tag);
+
   // this might fail due to a lack of internet connection - in which case, don't spam the user with messages every time.
   m_network_access_mgr->disconnect(this);
   reply->deleteLater();
@@ -127,7 +161,7 @@ void AutoUpdaterDialog::getLatestTagComplete(QNetworkReply* reply)
         if (!val.isObject())
           continue;
 
-        if (val["name"].toString() != QStringLiteral(SCM_RELEASE_TAG))
+        if (val["name"].toString() != selected_tag_qstr)
           continue;
 
         m_latest_sha = val["commit"].toObject()["sha"].toString();
@@ -150,7 +184,7 @@ void AutoUpdaterDialog::getLatestTagComplete(QNetworkReply* reply)
       }
 
       if (m_display_messages)
-        reportError("latest release not found in JSON");
+        reportError("%s release not found in JSON", selected_tag.c_str());
     }
     else
     {
@@ -228,7 +262,8 @@ void AutoUpdaterDialog::queueGetChanges()
 #ifdef AUTO_UPDATER_SUPPORTED
   connect(m_network_access_mgr, &QNetworkAccessManager::finished, this, &AutoUpdaterDialog::getChangesComplete);
 
-  const std::string url_string(StringUtil::StdStringFromFormat(CHANGES_URL, g_scm_hash_str));
+  const std::string url_string(
+    StringUtil::StdStringFromFormat(CHANGES_URL, g_scm_hash_str, getCurrentUpdateTag().c_str()));
   QUrl url(QUrl::fromEncoded(QByteArray(url_string.c_str(), static_cast<int>(url_string.size()))));
   QNetworkRequest request(url);
   request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
@@ -275,7 +310,7 @@ void AutoUpdaterDialog::getChangesComplete(QNetworkReply* reply)
 
         if (message.contains(QStringLiteral("[SAVEVERSION+]")))
           update_will_break_save_states = true;
-        
+
         if (message.contains(QStringLiteral("[SETTINGSVERSION+]")))
           update_increases_settings_version = true;
       }

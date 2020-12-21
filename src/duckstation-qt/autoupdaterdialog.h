@@ -1,5 +1,7 @@
 #pragma once
 #include "ui_autoupdaterdialog.h"
+#include <string>
+#include <QtCore/QStringList>
 #include <QtWidgets/QDialog>
 
 class QNetworkAccessManager;
@@ -16,6 +18,8 @@ public:
   ~AutoUpdaterDialog();
 
   static bool isSupported();
+  static QStringList getTagList();
+  static std::string getDefaultTag();
 
 Q_SIGNALS:
   void updateCheckCompleted();
@@ -38,6 +42,7 @@ private Q_SLOTS:
 private:
   void reportError(const char* msg, ...);
   bool updateNeeded() const;
+  std::string getCurrentUpdateTag() const;
 
 #ifdef WIN32
   bool processUpdate(const QByteArray& update_data);

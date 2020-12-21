@@ -1,7 +1,9 @@
 #include "generalsettingswidget.h"
 #include "autoupdaterdialog.h"
 #include "frontend-common/controller_interface.h"
+#include "mainwindow.h"
 #include "qtutils.h"
+#include "scmversion/scmversion.h"
 #include "settingsdialog.h"
 #include "settingwidgetbinder.h"
 
@@ -113,16 +115,27 @@ GeneralSettingsWidget::GeneralSettingsWidget(QtHostInterface* host_interface, QW
 #endif
   if (AutoUpdaterDialog::isSupported())
   {
-    QCheckBox* enableDiscordPresence = new QCheckBox(tr("Enable Automatic Update Check"), m_ui.groupBox_4);
-    SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, enableDiscordPresence, "AutoUpdater",
+    SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.autoUpdateEnabled, "AutoUpdater",
                                                  "CheckAtStartup", true);
-    m_ui.formLayout_4->addWidget(enableDiscordPresence, current_row, current_col);
-    dialog->registerWidgetHelp(enableDiscordPresence, tr("Enable Automatic Update Check"), tr("Checked"),
+    dialog->registerWidgetHelp(m_ui.autoUpdateEnabled, tr("Enable Automatic Update Check"), tr("Checked"),
                                tr("Automatically checks for updates to the program on startup. Updates can be deferred "
                                   "until later or skipped entirely."));
+
+    m_ui.autoUpdateTag->addItems(AutoUpdaterDialog::getTagList());
+    SettingWidgetBinder::BindWidgetToStringSetting(m_host_interface, m_ui.autoUpdateTag, "AutoUpdater", "UpdateTag",
+                                                   AutoUpdaterDialog::getDefaultTag());
+
+    m_ui.autoUpdateCurrentVersion->setText(tr("%1 (%2)").arg(g_scm_tag_str).arg(g_scm_date_str));
+    connect(m_ui.checkForUpdates, &QPushButton::clicked,
+            [this]() { m_host_interface->getMainWindow()->checkForUpdates(true); });
     current_col++;
     current_row += (current_col / 2);
     current_col %= 2;
+  }
+  else
+  {
+    m_ui.verticalLayout->removeWidget(m_ui.automaticUpdaterGroup);
+    m_ui.automaticUpdaterGroup->hide();
   }
 }
 
