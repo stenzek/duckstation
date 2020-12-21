@@ -486,52 +486,29 @@ bool HostDisplay::WriteDisplayTextureToFile(std::string filename, bool full_reso
   if (!m_display_texture_handle)
     return false;
 
-  apply_aspect_ratio = (m_display_aspect_ratio > 0) ? apply_aspect_ratio : false;
-
   s32 resize_width = 0;
-  s32 resize_height = 0;
-  if (apply_aspect_ratio && full_resolution)
+  s32 resize_height = std::abs(m_display_texture_view_height);
+  if (apply_aspect_ratio)
   {
-    if (m_display_aspect_ratio > 1.0f)
-    {
-      resize_width = m_display_texture_view_width;
-      resize_height = static_cast<s32>(static_cast<float>(resize_width) / m_display_aspect_ratio);
-    }
-    else
-    {
-      resize_height = std::abs(m_display_texture_view_height);
-      resize_width = static_cast<s32>(static_cast<float>(resize_height) * m_display_aspect_ratio);
-    }
+    const float ss_width_scale = static_cast<float>(m_display_active_width) / static_cast<float>(m_display_width);
+    const float ss_height_scale = static_cast<float>(m_display_active_height) / static_cast<float>(m_display_height);
+    const float ss_aspect_ratio = m_display_aspect_ratio * ss_width_scale / ss_height_scale;
+    resize_width = static_cast<s32>(static_cast<float>(resize_height) * ss_aspect_ratio);
   }
-  else if (apply_aspect_ratio)
+  else
   {
-    const auto [left, top, right, bottom] =
-      CalculateDrawRect(GetWindowWidth(), GetWindowHeight(), m_display_top_margin);
-    resize_width = right - left;
-    resize_height = bottom - top;
-  }
-  else if (!full_resolution)
-  {
-    const auto [left, top, right, bottom] =
-      CalculateDrawRect(GetWindowWidth(), GetWindowHeight(), m_display_top_margin);
-    const float ratio =
-      static_cast<float>(m_display_texture_view_width) / static_cast<float>(std::abs(m_display_texture_view_height));
-    if (ratio > 1.0f)
-    {
-      resize_width = right - left;
-      resize_height = static_cast<s32>(static_cast<float>(resize_width) / ratio);
-    }
-    else
-    {
-      resize_height = bottom - top;
-      resize_width = static_cast<s32>(static_cast<float>(resize_height) * ratio);
-    }
+    resize_width = m_display_texture_view_width;
   }
 
-  if (resize_width < 0)
-    resize_width = 1;
-  if (resize_height < 0)
-    resize_height = 1;
+  if (!full_resolution)
+  {
+    const s32 resolution_scale = std::abs(m_display_texture_view_height) / m_display_active_height;
+    resize_height /= resolution_scale;
+    resize_width /= resolution_scale;
+  }
+
+  if (resize_width <= 0 || resize_height <= 0)
+    return false;
 
   const bool flip_y = (m_display_texture_view_height < 0);
   s32 read_height = m_display_texture_view_height;
