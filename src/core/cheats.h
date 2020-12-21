@@ -62,6 +62,12 @@ struct CheatCode
     ExtConstantForceRangeLimits16 = 0xF1,
     ExtConstantForceRangeRollRound16 = 0xF2,
     ExtConstantForceRange16 = 0xF3,
+    ExtConstantBitSet8 = 0x31,
+    ExtConstantBitClear8 = 0x32,
+    ExtConstantBitSet16 = 0x81,
+    ExtConstantBitClear16 = 0x82,    
+    ExtConstantBitSet32 = 0x91,
+    ExtConstantBitClear32 = 0x92,     
   };
 
   union Instruction

@@ -891,7 +891,55 @@ void CheatCode::Apply() const
         index++;
       }
       break;
+          
+      case InstructionCode::ExtConstantBitSet8:
+      {
+        const u8 value = DoMemoryRead<u8>(inst.address) | inst.value8;
+        DoMemoryWrite<u8>(inst.address, value);
+        index++;
+      }
+      break;
 
+      case InstructionCode::ExtConstantBitSet16:
+      {
+        const u16 value = DoMemoryRead<u16>(inst.address) | inst.value16;
+        DoMemoryWrite<u16>(inst.address, value);
+        index++;
+      }
+      break;
+      
+      case InstructionCode::ExtConstantBitSet32:
+      {
+        const u32 value = DoMemoryRead<u32>(inst.address) | inst.value32;  
+        DoMemoryWrite<u32>(inst.address, value);
+        index++;
+      }
+      break;
+       
+      case InstructionCode::ExtConstantBitClear8:
+      {
+        const u8 value = DoMemoryRead<u8>(inst.address) & ~inst.value8;
+        DoMemoryWrite<u8>(inst.address, value);
+        index++;
+      }
+      break;
+
+      case InstructionCode::ExtConstantBitClear16:
+      {
+        const u16 value = DoMemoryRead<u16>(inst.address) & ~inst.value16;
+        DoMemoryWrite<u16>(inst.address, value);
+        index++;
+      }
+      break;
+      
+      case InstructionCode::ExtConstantBitClear32:
+      {
+        const u32 value = DoMemoryRead<u32>(inst.address) & ~inst.value32;  
+        DoMemoryWrite<u32>(inst.address, value);
+        index++;
+      }
+      break;
+      
       case InstructionCode::ScratchpadWrite16:
       {
         DoMemoryWrite<u16>(CPU::DCACHE_LOCATION | (inst.address & CPU::DCACHE_OFFSET_MASK), inst.value16);
