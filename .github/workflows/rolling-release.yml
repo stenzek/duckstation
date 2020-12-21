@@ -422,6 +422,7 @@ jobs:
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           automatic_release_tag: "beta"
+          prerelease: true
           title: "Latest Beta/Development Build"
           files: |
             windows/duckstation-windows-x64-release.zip
@@ -446,6 +447,7 @@ jobs:
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           automatic_release_tag: "latest"
+          prerelease: false
           title: "Latest Stable Build"
           files: |
             windows/duckstation-windows-x64-release.zip
