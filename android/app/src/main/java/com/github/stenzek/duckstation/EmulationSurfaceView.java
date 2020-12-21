@@ -31,31 +31,53 @@ public class EmulationSurfaceView extends SurfaceView {
                 (source & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK;
     }
 
+    private boolean isExternalKeyCode(int keyCode) {
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_BACK:
+            case KeyEvent.KEYCODE_HOME:
+            case KeyEvent.KEYCODE_MENU:
+            case KeyEvent.KEYCODE_VOLUME_UP:
+            case KeyEvent.KEYCODE_VOLUME_DOWN:
+            case KeyEvent.KEYCODE_VOLUME_MUTE:
+            case KeyEvent.KEYCODE_POWER:
+            case KeyEvent.KEYCODE_CAMERA:
+            case KeyEvent.KEYCODE_CALL:
+            case KeyEvent.KEYCODE_ENDCALL:
+            case KeyEvent.KEYCODE_VOICE_ASSIST:
+                return true;
+
+            default:
+                return false;
+        }
+    }
+
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (isDPadOrButtonEvent(event) && event.getRepeatCount() == 0 &&
-                handleControllerKey(event.getDeviceId(), keyCode, true)) {
-            return true;
-        }
+        if (!isDPadOrButtonEvent(event) || isExternalKeyCode(keyCode))
+            return false;
 
-        return super.onKeyDown(keyCode, event);
+        if (event.getRepeatCount() == 0)
+            handleControllerKey(event.getDeviceId(), keyCode, true);
+
+        return true;
     }
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-        if (isDPadOrButtonEvent(event) && event.getRepeatCount() == 0 &&
-                handleControllerKey(event.getDeviceId(), keyCode, false)) {
-            return true;
-        }
+        if (!isDPadOrButtonEvent(event) || isExternalKeyCode(keyCode))
+            return false;
 
-        return super.onKeyDown(keyCode, event);
+        if (event.getRepeatCount() == 0)
+            handleControllerKey(event.getDeviceId(), keyCode, false);
+
+        return true;
     }
 
     @Override
     public boolean onGenericMotionEvent(MotionEvent event) {
         final int source = event.getSource();
-        if ((source & InputDevice.SOURCE_JOYSTICK) == 0)
-            return super.onGenericMotionEvent(event);
+        if ((source & (InputDevice.SOURCE_JOYSTICK | InputDevice.SOURCE_GAMEPAD | InputDevice.SOURCE_DPAD)) == 0)
+            return false;
 
         final int deviceId = event.getDeviceId();
         for (AxisMapping mapping : mControllerAxisMapping) {
