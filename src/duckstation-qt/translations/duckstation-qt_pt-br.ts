@@ -730,8 +730,8 @@
     <name>AutoUpdaterDialog</name>
     <message>
         <location filename="../autoupdaterdialog.ui" line="17"/>
-        <location filename="../autoupdaterdialog.cpp" line="145"/>
-        <location filename="../autoupdaterdialog.cpp" line="326"/>
+        <location filename="../autoupdaterdialog.cpp" line="179"/>
+        <location filename="../autoupdaterdialog.cpp" line="361"/>
         <source>Automatic Updater</source>
         <translation>Atualizador Automático</translation>
     </message>
@@ -770,58 +770,58 @@
         <translation>Deixar Para Depois</translation>
     </message>
     <message>
-        <location filename="../autoupdaterdialog.cpp" line="79"/>
+        <location filename="../autoupdaterdialog.cpp" line="107"/>
         <source>Updater Error</source>
         <translation>Erro na Atualização</translation>
     </message>
     <message>
-        <location filename="../autoupdaterdialog.cpp" line="146"/>
+        <location filename="../autoupdaterdialog.cpp" line="180"/>
         <source>No updates are currently available. Please try again later.</source>
         <translation>Não há novas atualizações no momento.</translation>
     </message>
     <message>
-        <location filename="../autoupdaterdialog.cpp" line="198"/>
+        <location filename="../autoupdaterdialog.cpp" line="232"/>
         <source>Current Version: %1 (%2)</source>
         <translation>Versão Atual: %1 (%2)</translation>
     </message>
     <message>
-        <location filename="../autoupdaterdialog.cpp" line="200"/>
+        <location filename="../autoupdaterdialog.cpp" line="234"/>
         <source>New Version: %1 (%2)</source>
         <translation>Nova Versão: %1 (%2)</translation>
     </message>
     <message>
-        <location filename="../autoupdaterdialog.cpp" line="201"/>
+        <location filename="../autoupdaterdialog.cpp" line="235"/>
         <source>Loading...</source>
         <translation>Carregando...</translation>
     </message>
     <message>
-        <location filename="../autoupdaterdialog.cpp" line="254"/>
+        <location filename="../autoupdaterdialog.cpp" line="289"/>
         <source>&lt;h2&gt;Changes:&lt;/h2&gt;</source>
         <translation>&lt;h2&gt;Mudanças:&lt;/h2&gt;</translation>
     </message>
     <message>
-        <location filename="../autoupdaterdialog.cpp" line="287"/>
+        <location filename="../autoupdaterdialog.cpp" line="322"/>
         <source>&lt;h2&gt;Save State Warning&lt;/h2&gt;&lt;p&gt;Installing this update will make your save states &lt;b&gt;incompatible&lt;/b&gt;. Please ensure you have saved your games to memory card before installing this update or you will lose progress.&lt;/p&gt;</source>
         <translation>&lt;h2&gt;Alerta para SAVE STATES&lt;/h2&gt;&lt;p&gt;Ao instalar esta atualização, seus SAVE STATES se tornarão&lt;b&gt; incompativeis&lt;/b&gt;. Tenha certeza de ter salvo todo o seu progresso no seu CARTÃO DE MEMÓRIA antes de instalar esta atualização ou você perderá todo o seu progresso.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../autoupdaterdialog.cpp" line="295"/>
+        <location filename="../autoupdaterdialog.cpp" line="330"/>
         <source>&lt;h2&gt;Settings Warning&lt;/h2&gt;&lt;p&gt;Installing this update will reset your program configuration. Please note that you will have to reconfigure your settings after this update.&lt;/p&gt;</source>
         <translatorcomment>Ao instalar esta atualização todas as suas configurações serão REDEFINIDAS para o padrão. Sendo assim, você terá que refazer todas elas novamente.</translatorcomment>
         <translation>&lt;h2&gt;Alerta Sobre suas Configurações&lt;/h2&gt;&lt;p&gt;Installing this update will reset your program configuration. Please note that you will have to reconfigure your settings after this update.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../autoupdaterdialog.cpp" line="299"/>
+        <location filename="../autoupdaterdialog.cpp" line="334"/>
         <source>&lt;h4&gt;Installing this update will download %1 MB through your internet connection.&lt;/h4&gt;</source>
         <translation>&lt;h4&gt;Esta atualização irá baixar %1 MB.&lt;/h4&gt;</translation>
     </message>
     <message>
-        <location filename="../autoupdaterdialog.cpp" line="325"/>
+        <location filename="../autoupdaterdialog.cpp" line="360"/>
         <source>Downloading %1...</source>
         <translation>Baixando %1...</translation>
     </message>
     <message>
-        <location filename="../autoupdaterdialog.cpp" line="325"/>
+        <location filename="../autoupdaterdialog.cpp" line="360"/>
         <source>Cancel</source>
         <translation>Cancelar</translation>
     </message>
@@ -1491,7 +1491,7 @@
         <translation>O estado atual será salvo.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2016"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2009"/>
         <source>Invalid version %u (%s version %u)</source>
         <translation>Versão Inválida %u (%s versão %u)</translation>
     </message>
@@ -4057,49 +4057,49 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="52"/>
-        <location filename="../generalsettingswidget.cpp" line="70"/>
+        <location filename="../generalsettingswidget.cpp" line="72"/>
         <source>Pause On Start</source>
         <translation>Pausar ao Iniciar</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="38"/>
-        <location filename="../generalsettingswidget.cpp" line="56"/>
+        <location filename="../generalsettingswidget.cpp" line="58"/>
         <source>Confirm Power Off</source>
         <translation>Confirmar ao Fechar</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="73"/>
-        <location filename="../generalsettingswidget.cpp" line="59"/>
+        <location filename="../generalsettingswidget.cpp" line="61"/>
         <source>Save State On Exit</source>
         <translation>Salvar ao Fechar</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="94"/>
-        <location filename="../generalsettingswidget.cpp" line="76"/>
+        <location filename="../generalsettingswidget.cpp" line="78"/>
         <source>Load Devices From Save States</source>
         <translation>Carregar a partir do estado salvo</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="66"/>
-        <location filename="../generalsettingswidget.cpp" line="62"/>
+        <location filename="../generalsettingswidget.cpp" line="64"/>
         <source>Start Fullscreen</source>
         <translation>Iniciar em Tela Cheia</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="45"/>
-        <location filename="../generalsettingswidget.cpp" line="67"/>
+        <location filename="../generalsettingswidget.cpp" line="69"/>
         <source>Render To Main Window</source>
         <translation>Carregar Jogo na janela principal</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="59"/>
-        <location filename="../generalsettingswidget.cpp" line="72"/>
+        <location filename="../generalsettingswidget.cpp" line="74"/>
         <source>Pause On Focus Loss</source>
         <translation>Pausar Quando Inativo</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="80"/>
-        <location filename="../generalsettingswidget.cpp" line="81"/>
+        <location filename="../generalsettingswidget.cpp" line="83"/>
         <source>Apply Per-Game Settings</source>
         <translation>Configurações Individuais</translation>
     </message>
@@ -4110,7 +4110,7 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="101"/>
-        <location filename="../generalsettingswidget.cpp" line="64"/>
+        <location filename="../generalsettingswidget.cpp" line="66"/>
         <source>Hide Cursor In Fullscreen</source>
         <translation>Esconder Cursor em tela cheia</translation>
     </message>
@@ -4130,7 +4130,27 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>Velocidade do Avanço Rápido:</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="85"/>
+        <location filename="../generalsettingswidget.ui" line="163"/>
+        <source>Automatic Updater</source>
+        <translation>Atualizador Automático</translation>
+    </message>
+    <message>
+        <location filename="../generalsettingswidget.ui" line="169"/>
+        <source>Update Channel:</source>
+        <translation>Canal de Atualização:</translation>
+    </message>
+    <message>
+        <location filename="../generalsettingswidget.ui" line="179"/>
+        <source>Current Version:</source>
+        <translation>Versão Atual: </translation>
+    </message>
+    <message>
+        <location filename="../generalsettingswidget.ui" line="215"/>
+        <source>Check for Updates...</source>
+        <translation>Procurar &amp;Atualizações...</translation>
+    </message>
+    <message>
+        <location filename="../generalsettingswidget.cpp" line="87"/>
         <source>Emulation Speed</source>
         <translation>Velocidade da emulação</translation>
     </message>
@@ -4181,78 +4201,83 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>Tipo de Controle:</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="56"/>
-        <location filename="../generalsettingswidget.cpp" line="59"/>
-        <location filename="../generalsettingswidget.cpp" line="64"/>
-        <location filename="../generalsettingswidget.cpp" line="67"/>
-        <location filename="../generalsettingswidget.cpp" line="81"/>
+        <location filename="../generalsettingswidget.cpp" line="58"/>
+        <location filename="../generalsettingswidget.cpp" line="61"/>
+        <location filename="../generalsettingswidget.cpp" line="66"/>
+        <location filename="../generalsettingswidget.cpp" line="69"/>
+        <location filename="../generalsettingswidget.cpp" line="83"/>
         <location filename="../generalsettingswidget.cpp" line="120"/>
         <source>Checked</source>
         <translation>Marcado</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="57"/>
+        <location filename="../generalsettingswidget.cpp" line="59"/>
         <source>Determines whether a prompt will be displayed to confirm shutting down the emulator/game when the hotkey is pressed.</source>
         <translation>Mostra uma janela de confirmação ao tentar fechar o emulador ou jogo quando atalho é pressionado.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="60"/>
+        <location filename="../generalsettingswidget.cpp" line="62"/>
         <source>Automatically saves the emulator state when powering down or exiting. You can then resume directly from where you left off next time.</source>
         <translation>Salva automaticamente o estado do emulador ao desligar ou sair. Você pode retomar diretamente de onde parou na próxima vez.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="62"/>
-        <location filename="../generalsettingswidget.cpp" line="70"/>
+        <location filename="../generalsettingswidget.cpp" line="64"/>
         <location filename="../generalsettingswidget.cpp" line="72"/>
-        <location filename="../generalsettingswidget.cpp" line="76"/>
-        <location filename="../generalsettingswidget.cpp" line="107"/>
+        <location filename="../generalsettingswidget.cpp" line="74"/>
+        <location filename="../generalsettingswidget.cpp" line="78"/>
+        <location filename="../generalsettingswidget.cpp" line="109"/>
         <source>Unchecked</source>
         <translation>Desmarcado</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="63"/>
+        <location filename="../generalsettingswidget.cpp" line="65"/>
         <source>Automatically switches to fullscreen mode when a game is started.</source>
         <translation>Muda para o modo Tela Cheia assim que um Jogo é Iniciado.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="65"/>
+        <location filename="../generalsettingswidget.cpp" line="67"/>
         <source>Hides the mouse pointer/cursor when the emulator is in fullscreen mode.</source>
         <translation>Esconde o cursor (ponteiro) do mouse quando o emulador estiver em tela cheia.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="68"/>
+        <location filename="../generalsettingswidget.cpp" line="70"/>
         <source>Renders the display of the simulated console to the main window of the application, over the game list. If unchecked, the display will render in a separate window.</source>
         <translation>Renderiza o jogo na janela principal do emulador sob a janela da lista de jogos. Se desmarcado, o jogo irá rodar em uma janela separada.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="71"/>
+        <location filename="../generalsettingswidget.cpp" line="73"/>
         <source>Pauses the emulator when a game is started.</source>
         <translation>Pausa a emulação quando um jogo é iniciado.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="73"/>
+        <location filename="../generalsettingswidget.cpp" line="75"/>
         <source>Pauses the emulator when you minimize the window or switch to another application, and unpauses when you switch back.</source>
         <translation>Pausa o emulador quando a janela é minimizada ou na mudança de foco para outro aplicativo aberto, e despausa quando volta ao foco.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="77"/>
+        <location filename="../generalsettingswidget.cpp" line="79"/>
         <source>When enabled, memory cards and controllers will be overwritten when save states are loaded. This can result in lost saves, and controller type mismatches. For deterministic save states, enable this option, otherwise leave disabled.</source>
         <translation>Quando ativado, os cartões de memória e os controles serão substituídos assim que os saves states forem carregados. Isso pode resultar em perda de Saves e incompatibilidade nos  controles. Sendo assim, deixe isto desativado.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="82"/>
+        <location filename="../generalsettingswidget.cpp" line="84"/>
         <source>When enabled, per-game settings will be applied, and incompatible enhancements will be disabled. You should leave this option enabled except when testing enhancements with incompatible games.</source>
         <translation>Quando ativada as configurações individuais por jogo serão aplicadas e os aprimoramentos incompatíveis serão desligados. Você pode deixar esta opção ativa exceto ao usar melhorias com jogos não compatíveis.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="89"/>
+        <location filename="../generalsettingswidget.cpp" line="91"/>
         <source>Fast Forward Speed</source>
         <translation>Velocidade do Avanço Rápido</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="90"/>
+        <location filename="../generalsettingswidget.cpp" line="92"/>
         <source>Sets the fast forward (turbo) speed. This speed will be used when the fast forward hotkey is pressed/toggled.</source>
         <translation>Define a velocidade do avanço rápido. Será usada quando o atalho de avanço rápido for pressionado ou alternado.</translation>
+    </message>
+    <message>
+        <location filename="../generalsettingswidget.cpp" line="128"/>
+        <source>%1 (%2)</source>
+        <translation>%1 (%2)</translation>
     </message>
     <message>
         <source>Throttles the emulation speed to the chosen speed above. If unchecked, the emulator will run as fast as possible, which may not be playable.</source>
@@ -4263,7 +4288,7 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation type="vanished">Aumenta a resolução em tempo real quando emulador é iniciado dando maior precisão nos quadros emulados. Pode aumentar o consumo de bateria em Laptops.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="86"/>
+        <location filename="../generalsettingswidget.cpp" line="88"/>
         <source>Sets the target emulation speed. It is not guaranteed that this speed will be reached, and if not, the emulator will run as fast as it can manage.</source>
         <translation>Ajusta a velocidade da emulação. Não é garantido que a velocidade será alcançada sendo assim o emulador irá tentar rodar o mais rápido que puder.</translation>
     </message>
@@ -4292,28 +4317,28 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation type="vanished">Mostra a velocidade de emulação atual do sistema no canto superior direito da tela registrado em porcentagem.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="92"/>
+        <location filename="../generalsettingswidget.cpp" line="94"/>
         <source>Controller Backend</source>
         <translation>Tipo de Controle</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="95"/>
+        <location filename="../generalsettingswidget.cpp" line="97"/>
         <source>Determines the backend which is used for controller input. Windows users may prefer to use XInput over SDL2 for compatibility.</source>
         <translation>Determina qual opção de controle será usada para o controle em uso. Para quem usa Windows dê preferência ao X-Input ao invés do SDL2 para melhor compatibilidade.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="103"/>
-        <location filename="../generalsettingswidget.cpp" line="107"/>
+        <location filename="../generalsettingswidget.cpp" line="105"/>
+        <location filename="../generalsettingswidget.cpp" line="109"/>
         <source>Enable Discord Presence</source>
         <translation>Ativar Presença Rica do Discord</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="108"/>
+        <location filename="../generalsettingswidget.cpp" line="110"/>
         <source>Shows the game you are currently playing as part of your profile in Discord.</source>
         <translation>Mostra o jogo que estiver jogando em seu perfil no Discord quando logado.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="116"/>
+        <location filename="../generalsettingswidget.ui" line="193"/>
         <location filename="../generalsettingswidget.cpp" line="120"/>
         <source>Enable Automatic Update Check</source>
         <translation>Verificar Por Atualizações</translation>
@@ -5981,8 +6006,8 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="728"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2174"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2565"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2167"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2558"/>
         <source>Failed to load post processing shader chain.</source>
         <translation>Falha ao carregar pós-processamento escolhido.</translation>
     </message>
@@ -6027,82 +6052,82 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>Mudo Desativado.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1867"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1857"/>
         <source>Loaded input profile from &apos;%s&apos;</source>
         <translation>Perfil de controle carregado de &apos;%s&apos;</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2327"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2320"/>
         <source>Started dumping audio to &apos;%s&apos;.</source>
         <translation>Iniciado despejo de Áudio para &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2332"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2325"/>
         <source>Failed to start dumping audio to &apos;%s&apos;.</source>
         <translation>Falha ao iniciar despejo de Áudio para &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2342"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2335"/>
         <source>Stopped dumping audio.</source>
         <translation>Despejo de Áudio parado.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2372"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2365"/>
         <source>Screenshot file &apos;%s&apos; already exists.</source>
         <translation>Captura de Tela &apos;%s&apos; já existe.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2380"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2373"/>
         <source>Failed to save screenshot to &apos;%s&apos;</source>
         <translation>Falha ao salvar captura para &apos;%s&apos;</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2384"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2377"/>
         <source>Screenshot saved to &apos;%s&apos;.</source>
         <translation>Captura de tela salva para &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2412"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2405"/>
         <source>Input profile &apos;%s&apos; cannot be found.</source>
         <translation>Perfil de controle &apos;%s&apos; não encontrado.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2419"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2412"/>
         <source>Using input profile &apos;%s&apos;.</source>
         <translation>Usando perfil de controle &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2445"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2438"/>
         <source>Failed to load cheats from &apos;%s&apos;.</source>
         <translation>Falha ao carregar trapaças da &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2449"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2442"/>
         <source>Loaded %u cheats from list. %u cheats are enabled.</source>
         <translation>Trapaças %u carregadas da lista. %u trapaças ativadas.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2473"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2466"/>
         <source>Loaded %u cheats from database.</source>
         <translation>Trapaças %u carregadas do bando de dados.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2503"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2496"/>
         <source>Saved %u cheats to &apos;%s&apos;.</source>
         <translation>Trapaça %u.salva para &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2525"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2518"/>
         <source>Cheat &apos;%s&apos; enabled.</source>
         <translation>Trapaça &apos;%s&apos; Ativada.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2529"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2522"/>
         <source>Cheat &apos;%s&apos; disabled.</source>
         <translation>Trapaça &apos;%s&apos; desativada.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2489"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2482"/>
         <source>Failed to save cheat list to &apos;%s&apos;</source>
         <translation>Falha ao salvar lista de trapaças para &apos;%s&apos;</translation>
     </message>
@@ -6132,32 +6157,32 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>Avanço rápido interrompido.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2545"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2538"/>
         <source>Applied cheat &apos;%s&apos;.</source>
         <translation>Trapaça Aplicada &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2549"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2542"/>
         <source>Cheat &apos;%s&apos; is already enabled.</source>
         <translation>Trapaça &apos;%s&apos; já ativada.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2562"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2555"/>
         <source>Post-processing is now enabled.</source>
         <translation>Pós-processamento Ativado.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2569"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2562"/>
         <source>Post-processing is now disabled.</source>
         <translation>Pós-processamento Desligado.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2580"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2573"/>
         <source>Failed to load post-processing shader chain.</source>
         <translation>Falha ao carregar texturas de pós-processamento.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2582"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2575"/>
         <source>Post-processing shaders reloaded.</source>
         <translation>Texturas de Pós-processamento Recarregadas.</translation>
     </message>
