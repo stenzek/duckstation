@@ -7,9 +7,12 @@ import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.hardware.input.InputManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.util.Log;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -209,7 +212,11 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
 
         mContentView = findViewById(R.id.fullscreen_content);
         mContentView.getHolder().addCallback(this);
+        mContentView.setFocusableInTouchMode(true);
         mContentView.setFocusable(true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            mContentView.setFocusedByDefault(true);
+        }
         mContentView.requestFocus();
 
         // Hook up controller input.
@@ -263,6 +270,27 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     @Override
     public void onBackPressed() {
         showMenu();
+    }
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        if (event.getAction() == KeyEvent.ACTION_DOWN) {
+            if (mContentView.onKeyDown(event.getKeyCode(), event))
+                return true;
+        } else if (event.getAction() == KeyEvent.ACTION_UP) {
+            if (mContentView.onKeyUp(event.getKeyCode(), event))
+                return true;
+        }
+
+        return super.dispatchKeyEvent(event);
+    }
+
+    @Override
+    public boolean dispatchGenericMotionEvent(MotionEvent ev) {
+        if (mContentView.onGenericMotionEvent(ev))
+            return true;
+
+        return super.dispatchGenericMotionEvent(ev);
     }
 
     @Override

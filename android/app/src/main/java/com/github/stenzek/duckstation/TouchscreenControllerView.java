@@ -41,6 +41,8 @@ public class TouchscreenControllerView extends FrameLayout {
 
     public TouchscreenControllerView(Context context) {
         super(context);
+        setFocusable(false);
+        setFocusableInTouchMode(false);
     }
 
     public TouchscreenControllerView(Context context, AttributeSet attrs) {
