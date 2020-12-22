@@ -487,6 +487,8 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("GPU", "PGXPCPU", false);
   si.SetBoolValue("GPU", "PGXPPreserveProjFP", false);
   si.SetFloatValue("GPU", "PGXPTolerance", -1.0f);
+  si.SetBoolValue("GPU", "PGXPDepthBuffer", false);
+  si.SetFloatValue("GPU", "PGXPDepthClearThreshold", Settings::DEFAULT_GPU_PGXP_DEPTH_THRESHOLD);
 
   si.SetStringValue("Display", "CropMode", Settings::GetDisplayCropModeName(Settings::DEFAULT_DISPLAY_CROP_MODE));
   si.SetIntValue("Display", "ActiveStartOffset", 0);
@@ -694,6 +696,7 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.display_crop_mode != old_settings.display_crop_mode ||
         g_settings.display_aspect_ratio != old_settings.display_aspect_ratio ||
         g_settings.gpu_pgxp_enable != old_settings.gpu_pgxp_enable ||
+        g_settings.gpu_pgxp_depth_buffer != old_settings.gpu_pgxp_depth_buffer ||
         g_settings.display_active_start_offset != old_settings.display_active_start_offset ||
         g_settings.display_active_end_offset != old_settings.display_active_end_offset ||
         g_settings.display_line_start_offset != old_settings.display_line_start_offset ||

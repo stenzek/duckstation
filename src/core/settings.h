@@ -111,6 +111,7 @@ struct Settings
   bool gpu_pgxp_vertex_cache = false;
   bool gpu_pgxp_cpu = false;
   bool gpu_pgxp_preserve_proj_fp = false;
+  bool gpu_pgxp_depth_buffer = false;
   DisplayCropMode display_crop_mode = DisplayCropMode::None;
   DisplayAspectRatio display_aspect_ratio = DisplayAspectRatio::Auto;
   s16 display_active_start_offset = 0;
@@ -130,6 +131,7 @@ struct Settings
   bool video_sync_enabled = true;
   float display_max_fps = 0.0f;
   float gpu_pgxp_tolerance = -1.0f;
+  float gpu_pgxp_depth_clear_threshold = 300.0f / 4096.0f;
 
   bool cdrom_read_thread = true;
   bool cdrom_region_check = true;
@@ -193,6 +195,10 @@ struct Settings
   {
     return gpu_pgxp_enable ? (gpu_pgxp_cpu ? PGXPMode::CPU : PGXPMode::Memory) : PGXPMode::Disabled;
   }
+
+  ALWAYS_INLINE bool UsingPGXPDepthBuffer() const { return gpu_pgxp_enable && gpu_pgxp_depth_buffer; }
+  ALWAYS_INLINE float GetPGXPDepthClearThreshold() const { return gpu_pgxp_depth_clear_threshold * 4096.0f; }
+  ALWAYS_INLINE void SetPGXPDepthClearThreshold(float value) { gpu_pgxp_depth_clear_threshold = value / 4096.0f; }
 
   ALWAYS_INLINE bool IsUsingFastmem() const
   {
@@ -281,6 +287,7 @@ struct Settings
 #endif
   static constexpr GPUTextureFilter DEFAULT_GPU_TEXTURE_FILTER = GPUTextureFilter::Nearest;
   static constexpr ConsoleRegion DEFAULT_CONSOLE_REGION = ConsoleRegion::Auto;
+  static constexpr float DEFAULT_GPU_PGXP_DEPTH_THRESHOLD = 300.0f;
 
 #ifdef WITH_RECOMPILER
   static constexpr CPUExecutionMode DEFAULT_CPU_EXECUTION_MODE = CPUExecutionMode::Recompiler;

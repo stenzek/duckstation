@@ -35,6 +35,7 @@ protected:
   void CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height) override;
   void UpdateVRAMReadTexture() override;
   void UpdateDepthBufferFromMaskBit() override;
+  void ClearDepthBuffer() override;
   void SetScissorFromDrawingArea() override;
   void MapBatchVertexPointer(u32 required_vertices) override;
   void UnmapBatchVertexPointer(u32 used_vertices) override;
@@ -94,6 +95,7 @@ private:
   ComPtr<ID3D11DepthStencilState> m_depth_disabled_state;
   ComPtr<ID3D11DepthStencilState> m_depth_test_always_state;
   ComPtr<ID3D11DepthStencilState> m_depth_test_less_state;
+  ComPtr<ID3D11DepthStencilState> m_depth_test_greater_state;
 
   ComPtr<ID3D11BlendState> m_blend_disabled_state;
   ComPtr<ID3D11BlendState> m_blend_no_color_writes_state;

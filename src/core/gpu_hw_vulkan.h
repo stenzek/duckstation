@@ -30,6 +30,7 @@ protected:
   void CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height) override;
   void UpdateVRAMReadTexture() override;
   void UpdateDepthBufferFromMaskBit() override;
+  void ClearDepthBuffer() override;
   void SetScissorFromDrawingArea() override;
   void MapBatchVertexPointer(u32 required_vertices) override;
   void UnmapBatchVertexPointer(u32 used_vertices) override;
@@ -107,7 +108,7 @@ private:
   VkBufferView m_texture_stream_buffer_view = VK_NULL_HANDLE;
 
   // [depth_test][render_mode][texture_mode][transparency_mode][dithering][interlacing]
-  DimensionalArray<VkPipeline, 2, 2, 5, 9, 4, 2> m_batch_pipelines{};
+  DimensionalArray<VkPipeline, 2, 2, 5, 9, 4, 3> m_batch_pipelines{};
 
   // [interlaced]
   std::array<VkPipeline, 2> m_vram_fill_pipelines{};

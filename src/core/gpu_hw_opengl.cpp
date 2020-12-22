@@ -124,6 +124,7 @@ void GPU_HW_OpenGL::RestoreGraphicsAPIState()
   m_uniform_stream_buffer->Bind();
   m_vram_read_texture.Bind();
   SetBlendMode();
+  m_current_depth_test = 0;
   SetDepthFunc();
   SetScissorFromDrawingArea();
   m_batch_ubo_dirty = true;
@@ -311,11 +312,14 @@ bool GPU_HW_OpenGL::CreateFramebuffer()
 
 void GPU_HW_OpenGL::ClearFramebuffer()
 {
+  const float depth_clear_value = m_pgxp_depth_buffer ? 1.0f : 0.0f;
+
   glDisable(GL_SCISSOR_TEST);
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-  IsGLES() ? glClearDepthf(0.0f) : glClearDepth(0.0f);
+  IsGLES() ? glClearDepthf(depth_clear_value) : glClearDepth(depth_clear_value);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glEnable(GL_SCISSOR_TEST);
+  m_last_depth_z = 1.0f;
   SetFullVRAMDirtyRectangle();
 }
 
@@ -386,7 +390,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
   const bool use_binding_layout = GPU_HW_ShaderGen::UseGLSLBindingLayout();
   GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_multisamples, m_per_sample_shading,
                              m_true_color, m_scaled_dithering, m_texture_filtering, m_using_uv_limits,
-                             m_supports_dual_source_blend);
+                             m_pgxp_depth_buffer, m_supports_dual_source_blend);
 
   Common::Timer compile_time;
   const int progress_total = (4 * 9 * 2 * 2) + (2 * 3) + 5;
@@ -592,11 +596,7 @@ void GPU_HW_OpenGL::DrawBatchVertices(BatchRenderMode render_mode, u32 base_vert
     SetBlendMode();
   }
 
-  if (m_current_check_mask_before_draw != m_batch.check_mask_before_draw)
-  {
-    m_current_check_mask_before_draw = m_batch.check_mask_before_draw;
-    SetDepthFunc();
-  }
+  SetDepthFunc();
 
   glDrawArrays(GL_TRIANGLES, m_batch_base_vertex, num_vertices);
 }
@@ -620,7 +620,16 @@ void GPU_HW_OpenGL::SetBlendMode()
 
 void GPU_HW_OpenGL::SetDepthFunc()
 {
-  glDepthFunc(m_current_check_mask_before_draw ? GL_GEQUAL : GL_ALWAYS);
+  SetDepthFunc(m_batch.use_depth_buffer ? GL_LEQUAL : (m_batch.check_mask_before_draw ? GL_GEQUAL : GL_ALWAYS));
+}
+
+void GPU_HW_OpenGL::SetDepthFunc(GLenum func)
+{
+  if (m_current_depth_test == func)
+    return;
+
+  glDepthFunc(func);
+  m_current_depth_test = func;
 }
 
 void GPU_HW_OpenGL::SetScissorFromDrawingArea()
@@ -830,7 +839,7 @@ void GPU_HW_OpenGL::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
     m_vram_interlaced_fill_program.Bind();
     UploadUniformBuffer(&uniforms, sizeof(uniforms));
     glDisable(GL_BLEND);
-    glDepthFunc(GL_ALWAYS);
+    SetDepthFunc(GL_ALWAYS);
     glBindVertexArray(m_attributeless_vao_id);
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
@@ -852,7 +861,7 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
     m_texture_stream_buffer->Unbind();
 
     glDisable(GL_BLEND);
-    glDepthFunc(check_mask ? GL_GEQUAL : GL_ALWAYS);
+    SetDepthFunc((check_mask && !m_pgxp_depth_buffer) ? GL_GEQUAL : GL_ALWAYS);
 
     m_vram_write_program.Bind();
     if (m_use_ssbo_for_vram_writes)
@@ -961,7 +970,7 @@ void GPU_HW_OpenGL::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 wid
 
     glDisable(GL_SCISSOR_TEST);
     glDisable(GL_BLEND);
-    glDepthFunc(m_GPUSTAT.check_mask_before_draw ? GL_GEQUAL : GL_ALWAYS);
+    SetDepthFunc((m_GPUSTAT.check_mask_before_draw && !m_pgxp_depth_buffer) ? GL_GEQUAL : GL_ALWAYS);
 
     const Common::Rectangle<u32> dst_bounds_scaled(dst_bounds * m_resolution_scale);
     glViewport(dst_bounds_scaled.left,
@@ -1056,6 +1065,9 @@ void GPU_HW_OpenGL::UpdateVRAMReadTexture()
 
 void GPU_HW_OpenGL::UpdateDepthBufferFromMaskBit()
 {
+  if (m_pgxp_depth_buffer)
+    return;
+
   glDisable(GL_SCISSOR_TEST);
   glDisable(GL_BLEND);
   glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
@@ -1071,6 +1083,15 @@ void GPU_HW_OpenGL::UpdateDepthBufferFromMaskBit()
   glEnable(GL_SCISSOR_TEST);
 
   m_vram_read_texture.Bind();
+}
+
+void GPU_HW_OpenGL::ClearDepthBuffer()
+{
+  glDisable(GL_SCISSOR_TEST);
+  IsGLES() ? glClearDepthf(1.0f) : glClearDepth(1.0f);
+  glClear(GL_DEPTH_BUFFER_BIT);
+  glEnable(GL_SCISSOR_TEST);
+  m_last_depth_z = 1.0f;
 }
 
 std::unique_ptr<GPU> GPU::CreateHardwareOpenGLRenderer()

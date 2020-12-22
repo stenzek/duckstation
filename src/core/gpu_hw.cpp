@@ -75,6 +75,7 @@ bool GPU_HW::Initialize(HostDisplay* host_display)
     m_texture_filtering = GPUTextureFilter::Nearest;
   }
 
+  m_pgxp_depth_buffer = g_settings.gpu_pgxp_depth_buffer;
   PrintSettingsToLog();
   return true;
 }
@@ -123,7 +124,8 @@ void GPU_HW::UpdateHWSettings(bool* framebuffer_changed, bool* shaders_changed)
     (m_resolution_scale != resolution_scale || m_multisamples != multisamples ||
      m_true_color != g_settings.gpu_true_color || m_per_sample_shading != per_sample_shading ||
      m_scaled_dithering != g_settings.gpu_scaled_dithering || m_texture_filtering != g_settings.gpu_texture_filter ||
-     m_using_uv_limits != use_uv_limits || m_chroma_smoothing != g_settings.gpu_24bit_chroma_smoothing);
+     m_using_uv_limits != use_uv_limits || m_chroma_smoothing != g_settings.gpu_24bit_chroma_smoothing ||
+     m_pgxp_depth_buffer != g_settings.UsingPGXPDepthBuffer());
 
   if (m_resolution_scale != resolution_scale)
   {
@@ -160,6 +162,14 @@ void GPU_HW::UpdateHWSettings(bool* framebuffer_changed, bool* shaders_changed)
 
   if (!m_supports_dual_source_blend && TextureFilterRequiresDualSourceBlend(m_texture_filtering))
     m_texture_filtering = GPUTextureFilter::Nearest;
+
+  if (m_pgxp_depth_buffer != g_settings.UsingPGXPDepthBuffer())
+  {
+    m_pgxp_depth_buffer = g_settings.UsingPGXPDepthBuffer();
+    m_batch.use_depth_buffer = false;
+    if (m_pgxp_depth_buffer)
+      ClearDepthBuffer();
+  }
 
   PrintSettingsToLog();
 }
@@ -202,6 +212,7 @@ void GPU_HW::PrintSettingsToLog()
   Log_InfoPrintf("Texture Filtering: %s", Settings::GetTextureFilterDisplayName(m_texture_filtering));
   Log_InfoPrintf("Dual-source blending: %s", m_supports_dual_source_blend ? "Supported" : "Not supported");
   Log_InfoPrintf("Using UV limits: %s", m_using_uv_limits ? "YES" : "NO");
+  Log_InfoPrintf("Depth buffer: %s", m_pgxp_depth_buffer ? "YES" : "NO");
 }
 
 void GPU_HW::UpdateVRAMReadTexture()
@@ -318,6 +329,44 @@ void GPU_HW::ComputePolygonUVLimits(BatchVertex* vertices, u32 num_vertices)
 
   for (u32 i = 0; i < num_vertices; i++)
     vertices[i].SetUVLimits(min_u, max_u, min_v, max_v);
+}
+
+void GPU_HW::SetBatchDepthBuffer(bool enabled)
+{
+  if (m_batch.use_depth_buffer == enabled)
+    return;
+
+  if (GetBatchVertexCount() > 0)
+  {
+    FlushRender();
+    EnsureVertexBufferSpaceForCurrentCommand();
+  }
+
+  m_batch.use_depth_buffer = enabled;
+  m_last_depth_z = 1.0f;
+}
+
+void GPU_HW::CheckForDepthClear(const BatchVertex* vertices, u32 num_vertices)
+{
+  DebugAssert(num_vertices == 3 || num_vertices == 4);
+  float average_z;
+  if (num_vertices == 3)
+    average_z = std::min((vertices[0].w + vertices[1].w + vertices[2].w) / 3.0f, 1.0f);
+  else
+    average_z = std::min((vertices[0].w + vertices[1].w + vertices[2].w + vertices[3].w) / 4.0f, 1.0f);
+
+  if ((average_z - m_last_depth_z) >= g_settings.gpu_pgxp_depth_clear_threshold)
+  {
+    if (GetBatchVertexCount() > 0)
+    {
+      FlushRender();
+      EnsureVertexBufferSpaceForCurrentCommand();
+    }
+
+    ClearDepthBuffer();
+  }
+
+  m_last_depth_z = average_z;
 }
 
 void GPU_HW::DrawLine(float x0, float y0, u32 col0, float x1, float y1, u32 col1, float depth)
@@ -453,10 +502,19 @@ void GPU_HW::LoadVertices()
                                    m_drawing_offset.y, &vertices[i].x, &vertices[i].y, &vertices[i].w);
         }
       }
-      if (!valid_w)
+      if (pgxp)
       {
-        for (BatchVertex& v : vertices)
-          v.w = 1.0f;
+        if (!valid_w)
+        {
+          SetBatchDepthBuffer(false);
+          for (BatchVertex& v : vertices)
+            v.w = 1.0f;
+        }
+        else if (g_settings.gpu_pgxp_depth_buffer)
+        {
+          SetBatchDepthBuffer(true);
+          CheckForDepthClear(vertices.data(), num_vertices);
+        }
       }
 
       if (rc.quad_polygon && m_resolution_scale > 1)
@@ -580,11 +638,12 @@ void GPU_HW::LoadVertices()
         break;
       }
 
-      // we can split the rectangle up into potentially 8 quads
-      DebugAssert(GetBatchVertexSpace() >= MAX_VERTICES_FOR_RECTANGLE);
-
       if (!IsDrawingAreaIsValid())
         return;
+
+      // we can split the rectangle up into potentially 8 quads
+      SetBatchDepthBuffer(false);
+      DebugAssert(GetBatchVertexSpace() >= MAX_VERTICES_FOR_RECTANGLE);
 
       // Split the rectangle into multiple quads if it's greater than 256x256, as the texture page should repeat.
       u16 tex_top = orig_tex_top;
@@ -634,6 +693,8 @@ void GPU_HW::LoadVertices()
 
     case GPUPrimitive::Line:
     {
+      SetBatchDepthBuffer(false);
+
       if (!rc.polyline)
       {
         DebugAssert(GetBatchVertexSpace() >= 2);
@@ -760,6 +821,10 @@ GPU_HW::VRAMFillUBOData GPU_HW::GetVRAMFillUBOData(u32 x, u32 y, u32 width, u32 
   VRAMFillUBOData uniforms;
   std::tie(uniforms.u_fill_color[0], uniforms.u_fill_color[1], uniforms.u_fill_color[2], uniforms.u_fill_color[3]) =
     RGBA8ToFloat(color);
+
+  if (m_pgxp_depth_buffer)
+    uniforms.u_fill_color[3] = 1.0f;
+
   uniforms.u_interlaced_displayed_field = GetActiveLineLSB();
   return uniforms;
 }
@@ -879,6 +944,9 @@ void GPU_HW::EnsureVertexBufferSpaceForCurrentCommand()
 
 void GPU_HW::ResetBatchVertexDepth()
 {
+  if (m_pgxp_depth_buffer)
+    return;
+
   Log_PerfPrint("Resetting batch vertex depth");
   FlushRender();
   UpdateDepthBufferFromMaskBit();
@@ -1023,6 +1091,9 @@ void GPU_HW::FlushRender()
   {
     m_drawing_area_changed = false;
     SetScissorFromDrawingArea();
+
+    if (m_pgxp_depth_buffer && m_last_depth_z < 1.0f)
+      ClearDepthBuffer();
   }
 
   if (m_batch_ubo_dirty)

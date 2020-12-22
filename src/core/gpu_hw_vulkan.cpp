@@ -506,8 +506,8 @@ void GPU_HW_Vulkan::ClearFramebuffer()
   m_vram_depth_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
   static constexpr VkClearColorValue cc = {};
+  const VkClearDepthStencilValue cds = {m_pgxp_depth_buffer ? 1.0f : 0.0f};
   static constexpr VkImageSubresourceRange csrr = {VK_IMAGE_ASPECT_COLOR_BIT, 0u, 1u, 0u, 1u};
-  static constexpr VkClearDepthStencilValue cds = {};
   static constexpr VkImageSubresourceRange dsrr = {VK_IMAGE_ASPECT_DEPTH_BIT, 0u, 1u, 0u, 1u};
   vkCmdClearColorImage(cmdbuf, m_vram_texture.GetImage(), m_vram_texture.GetLayout(), &cc, 1u, &csrr);
   vkCmdClearDepthStencilImage(cmdbuf, m_vram_depth_texture.GetImage(), m_vram_depth_texture.GetLayout(), &cds, 1u,
@@ -515,6 +515,7 @@ void GPU_HW_Vulkan::ClearFramebuffer()
 
   m_vram_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
   m_vram_depth_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+  m_last_depth_z = 1.0f;
 
   SetFullVRAMDirtyRectangle();
 }
@@ -597,7 +598,7 @@ bool GPU_HW_Vulkan::CompilePipelines()
 
   GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_multisamples, m_per_sample_shading,
                              m_true_color, m_scaled_dithering, m_texture_filtering, m_using_uv_limits,
-                             m_supports_dual_source_blend);
+                             m_pgxp_depth_buffer, m_supports_dual_source_blend);
 
   Common::Timer compile_time;
   const int progress_total = 2 + (4 * 9 * 2 * 2) + (2 * 4 * 5 * 9 * 2 * 2) + 1 + 2 + 2 + 2 + 2 + (2 * 3);
@@ -659,7 +660,7 @@ bool GPU_HW_Vulkan::CompilePipelines()
   Vulkan::GraphicsPipelineBuilder gpbuilder;
 
   // [depth_test][render_mode][texture_mode][transparency_mode][dithering][interlacing]
-  for (u8 depth_test = 0; depth_test < 2; depth_test++)
+  for (u8 depth_test = 0; depth_test < 3; depth_test++)
   {
     for (u8 render_mode = 0; render_mode < 4; render_mode++)
     {
@@ -671,6 +672,8 @@ bool GPU_HW_Vulkan::CompilePipelines()
           {
             for (u8 interlacing = 0; interlacing < 2; interlacing++)
             {
+              static constexpr std::array<VkCompareOp, 3> depth_test_values = {
+                VK_COMPARE_OP_ALWAYS, VK_COMPARE_OP_GREATER_OR_EQUAL, VK_COMPARE_OP_LESS_OR_EQUAL};
               const bool textured = (static_cast<GPUTextureMode>(texture_mode) != GPUTextureMode::Disabled);
 
               gpbuilder.SetPipelineLayout(m_batch_pipeline_layout);
@@ -692,8 +695,7 @@ bool GPU_HW_Vulkan::CompilePipelines()
               gpbuilder.SetFragmentShader(batch_fragment_shaders[render_mode][texture_mode][dithering][interlacing]);
 
               gpbuilder.SetRasterizationState(VK_POLYGON_MODE_FILL, VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE);
-              gpbuilder.SetDepthState(true, true,
-                                      (depth_test != 0) ? VK_COMPARE_OP_GREATER_OR_EQUAL : VK_COMPARE_OP_ALWAYS);
+              gpbuilder.SetDepthState(true, true, depth_test_values[depth_test]);
               gpbuilder.SetNoBlendingState();
               gpbuilder.SetMultisamples(m_multisamples, m_per_sample_shading);
 
@@ -935,11 +937,11 @@ void GPU_HW_Vulkan::DrawBatchVertices(BatchRenderMode render_mode, u32 base_vert
 
   VkCommandBuffer cmdbuf = g_vulkan_context->GetCurrentCommandBuffer();
 
-  // [primitive][depth_test][render_mode][texture_mode][transparency_mode][dithering][interlacing]
+  // [depth_test][render_mode][texture_mode][transparency_mode][dithering][interlacing]
+  const u8 depth_test = BoolToUInt8(m_batch.check_mask_before_draw) | (BoolToUInt8(m_batch.use_depth_buffer) << 1);
   VkPipeline pipeline =
-    m_batch_pipelines[BoolToUInt8(m_batch.check_mask_before_draw)][static_cast<u8>(render_mode)]
-                     [static_cast<u8>(m_batch.texture_mode)][static_cast<u8>(m_batch.transparency_mode)]
-                     [BoolToUInt8(m_batch.dithering)][BoolToUInt8(m_batch.interlacing)];
+    m_batch_pipelines[depth_test][static_cast<u8>(render_mode)][static_cast<u8>(m_batch.texture_mode)][static_cast<u8>(
+      m_batch.transparency_mode)][BoolToUInt8(m_batch.dithering)][BoolToUInt8(m_batch.interlacing)];
 
   vkCmdBindPipeline(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
   vkCmdDraw(cmdbuf, num_vertices, 1, base_vertex, 0);
@@ -1171,7 +1173,8 @@ void GPU_HW_Vulkan::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
   const VRAMWriteUBOData uniforms = GetVRAMWriteUBOData(x, y, width, height, start_index, set_mask, check_mask);
   vkCmdPushConstants(cmdbuf, m_vram_write_pipeline_layout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(uniforms),
                      &uniforms);
-  vkCmdBindPipeline(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, m_vram_write_pipelines[BoolToUInt8(check_mask)]);
+  vkCmdBindPipeline(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                    m_vram_write_pipelines[BoolToUInt8(check_mask && !m_pgxp_depth_buffer)]);
   vkCmdBindDescriptorSets(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, m_vram_write_pipeline_layout, 0, 1,
                           &m_vram_write_descriptor_set, 0, nullptr);
 
@@ -1201,7 +1204,7 @@ void GPU_HW_Vulkan::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 wid
 
     VkCommandBuffer cmdbuf = g_vulkan_context->GetCurrentCommandBuffer();
     vkCmdBindPipeline(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                      m_vram_copy_pipelines[BoolToUInt8(m_GPUSTAT.check_mask_before_draw)]);
+                      m_vram_copy_pipelines[BoolToUInt8(m_GPUSTAT.check_mask_before_draw && !m_pgxp_depth_buffer)]);
     vkCmdBindDescriptorSets(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, m_single_sampler_pipeline_layout, 0, 1,
                             &m_vram_copy_descriptor_set, 0, nullptr);
     vkCmdPushConstants(cmdbuf, m_single_sampler_pipeline_layout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(uniforms),
@@ -1283,6 +1286,9 @@ void GPU_HW_Vulkan::UpdateVRAMReadTexture()
 
 void GPU_HW_Vulkan::UpdateDepthBufferFromMaskBit()
 {
+  if (m_pgxp_depth_buffer)
+    return;
+
   EndRenderPass();
 
   VkCommandBuffer cmdbuf = g_vulkan_context->GetCurrentCommandBuffer();
@@ -1302,6 +1308,22 @@ void GPU_HW_Vulkan::UpdateDepthBufferFromMaskBit()
   m_vram_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
   RestoreGraphicsAPIState();
+}
+
+void GPU_HW_Vulkan::ClearDepthBuffer()
+{
+  EndRenderPass();
+
+  VkCommandBuffer cmdbuf = g_vulkan_context->GetCurrentCommandBuffer();
+  m_vram_depth_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
+  static const VkClearDepthStencilValue cds = {1.0f};
+  static constexpr VkImageSubresourceRange dsrr = {VK_IMAGE_ASPECT_DEPTH_BIT, 0u, 1u, 0u, 1u};
+  vkCmdClearDepthStencilImage(cmdbuf, m_vram_depth_texture.GetImage(), m_vram_depth_texture.GetLayout(), &cds, 1u,
+                              &dsrr);
+
+  m_vram_depth_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
+  m_last_depth_z = 1.0f;
 }
 
 std::unique_ptr<GPU> GPU::CreateHardwareVulkanRenderer()

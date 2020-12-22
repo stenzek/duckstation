@@ -100,6 +100,7 @@ protected:
     bool interlacing;
     bool set_mask_while_drawing;
     bool check_mask_before_draw;
+    bool use_depth_buffer;
 
     // We need two-pass rendering when using BG-FG blending and texturing, as the transparency can be enabled
     // on a per-pixel basis, and the opaque pixels shouldn't be blended at all.
@@ -179,6 +180,7 @@ protected:
 
   virtual void UpdateVRAMReadTexture();
   virtual void UpdateDepthBufferFromMaskBit() = 0;
+  virtual void ClearDepthBuffer() = 0;
   virtual void SetScissorFromDrawingArea() = 0;
   virtual void MapBatchVertexPointer(u32 required_vertices) = 0;
   virtual void UnmapBatchVertexPointer(u32 used_vertices) = 0;
@@ -280,7 +282,10 @@ protected:
 
   /// Computes polygon U/V boundaries.
   static void ComputePolygonUVLimits(BatchVertex* vertices, u32 num_vertices);
-  static bool AreUVLimitsNeeded();
+
+  /// Sets the depth test flag for PGXP depth buffering.
+  void SetBatchDepthBuffer(bool enabled);
+  void CheckForDepthClear(const BatchVertex* vertices, u32 num_vertices);
 
   HeapArray<u16, VRAM_WIDTH * VRAM_HEIGHT> m_vram_shadow;
 
@@ -289,6 +294,7 @@ protected:
   BatchVertex* m_batch_current_vertex_ptr = nullptr;
   u32 m_batch_base_vertex = 0;
   s32 m_current_depth = 0;
+  float m_last_depth_z = 1.0f;
 
   u32 m_resolution_scale = 1;
   u32 m_multisamples = 1;
@@ -303,6 +309,7 @@ protected:
   bool m_supports_per_sample_shading = false;
   bool m_supports_dual_source_blend = false;
   bool m_using_uv_limits = false;
+  bool m_pgxp_depth_buffer = false;
 
   BatchConfig m_batch = {};
   BatchUBOData m_batch_ubo_data = {};

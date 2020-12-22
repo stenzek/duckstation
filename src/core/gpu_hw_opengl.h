@@ -31,6 +31,7 @@ protected:
   void CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height) override;
   void UpdateVRAMReadTexture() override;
   void UpdateDepthBufferFromMaskBit() override;
+  void ClearDepthBuffer() override;
   void SetScissorFromDrawingArea() override;
   void MapBatchVertexPointer(u32 required_vertices) override;
   void UnmapBatchVertexPointer(u32 used_vertices) override;
@@ -63,6 +64,7 @@ private:
   bool CompilePrograms();
 
   void SetDepthFunc();
+  void SetDepthFunc(GLenum func);
   void SetBlendMode();
 
   // downsample texture - used for readbacks at >1xIR.
@@ -98,7 +100,7 @@ private:
   bool m_supports_geometry_shaders = false;
   bool m_use_ssbo_for_vram_writes = false;
 
-  bool m_current_check_mask_before_draw = false;
+  GLenum m_current_depth_test = 0;
   GPUTransparencyMode m_current_transparency_mode = GPUTransparencyMode::Disabled;
   BatchRenderMode m_current_render_mode = BatchRenderMode::TransparencyDisabled;
 };
