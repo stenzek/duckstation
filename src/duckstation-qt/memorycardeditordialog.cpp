@@ -33,7 +33,7 @@ MemoryCardEditorDialog::~MemoryCardEditorDialog() = default;
 
 bool MemoryCardEditorDialog::setCardA(const QString& path)
 {
-  const int index = m_ui.cardAPath->findData(QVariant(path));
+  const int index = m_ui.cardAPath->findData(QVariant(QDir::toNativeSeparators(path)));
   if (index < 0)
     return false;
 
@@ -43,7 +43,7 @@ bool MemoryCardEditorDialog::setCardA(const QString& path)
 
 bool MemoryCardEditorDialog::setCardB(const QString& path)
 {
-  const int index = m_ui.cardBPath->findData(QVariant(path));
+  const int index = m_ui.cardBPath->findData(QVariant(QDir::toNativeSeparators(path)));
   if (index < 0)
     return false;
 
@@ -114,7 +114,8 @@ void MemoryCardEditorDialog::loadCardFromComboBox(Card* card, int index)
   QString filename;
   if (index == 1)
   {
-    filename = QFileDialog::getOpenFileName(this, tr("Select Memory Card"), QString(), tr(MEMORY_CARD_IMAGE_FILTER));
+    filename = QDir::toNativeSeparators(
+      QFileDialog::getOpenFileName(this, tr("Select Memory Card"), QString(), tr(MEMORY_CARD_IMAGE_FILTER)));
     if (!filename.isEmpty())
     {
       // add to combo box
@@ -238,8 +239,8 @@ void MemoryCardEditorDialog::newCard(Card* card)
 {
   promptForSave(card);
 
-  QString filename =
-    QFileDialog::getSaveFileName(this, tr("Select Memory Card"), QString(), tr(MEMORY_CARD_IMAGE_FILTER));
+  QString filename = QDir::toNativeSeparators(
+    QFileDialog::getSaveFileName(this, tr("Select Memory Card"), QString(), tr(MEMORY_CARD_IMAGE_FILTER)));
   if (filename.isEmpty())
     return;
 
@@ -264,8 +265,8 @@ void MemoryCardEditorDialog::openCard(Card* card)
 {
   promptForSave(card);
 
-  QString filename =
-    QFileDialog::getOpenFileName(this, tr("Select Memory Card"), QString(), tr(MEMORY_CARD_IMAGE_FILTER));
+  QString filename = QDir::toNativeSeparators(
+    QFileDialog::getOpenFileName(this, tr("Select Memory Card"), QString(), tr(MEMORY_CARD_IMAGE_FILTER)));
   if (filename.isEmpty())
     return;
 
