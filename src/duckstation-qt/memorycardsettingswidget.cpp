@@ -11,7 +11,8 @@
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QLabel>
 
-static constexpr char MEMORY_CARD_IMAGE_FILTER[] = QT_TRANSLATE_NOOP("MemoryCardSettingsWidget", "All Memory Card Types (*.mcd *.mcr *.mc)");
+static constexpr char MEMORY_CARD_IMAGE_FILTER[] =
+  QT_TRANSLATE_NOOP("MemoryCardSettingsWidget", "All Memory Card Types (*.mcd *.mcr *.mc)");
 
 MemoryCardSettingsWidget::MemoryCardSettingsWidget(QtHostInterface* host_interface, QWidget* parent,
                                                    SettingsDialog* dialog)
@@ -104,8 +105,8 @@ void MemoryCardSettingsWidget::createPortSettingsUi(SettingsDialog* dialog, int 
 
 void MemoryCardSettingsWidget::onBrowseMemoryCardPathClicked(int index)
 {
-  QString path =
-    QFileDialog::getOpenFileName(this, tr("Select path to memory card image"), QString(), tr(MEMORY_CARD_IMAGE_FILTER));
+  QString path = QDir::toNativeSeparators(QFileDialog::getOpenFileName(this, tr("Select path to memory card image"),
+                                                                       QString(), tr(MEMORY_CARD_IMAGE_FILTER)));
   if (path.isEmpty())
     return;
 

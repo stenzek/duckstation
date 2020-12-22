@@ -950,7 +950,7 @@ void QtHostInterface::populateGameListContextMenu(const GameListEntry* entry, QW
 
   QAction* open_memory_cards_action = menu->addAction(tr("Edit Memory Cards..."));
   connect(open_memory_cards_action, &QAction::triggered, [this, entry]() {
-    std::string paths[2];
+    QString paths[2];
     for (u32 i = 0; i < 2; i++)
     {
       MemoryCardType type = g_settings.memory_card_types[i];
@@ -962,21 +962,29 @@ void QtHostInterface::populateGameListContextMenu(const GameListEntry* entry, QW
         case MemoryCardType::None:
           continue;
         case MemoryCardType::Shared:
-          paths[i] =
-            g_settings.memory_card_paths[i].empty() ? GetSharedMemoryCardPath(i) : g_settings.memory_card_paths[i];
+          if (g_settings.memory_card_paths[i].empty())
+          {
+            paths[i] = QString::fromStdString(GetSharedMemoryCardPath(i));
+          }
+          else
+          {
+            QFileInfo path(QString::fromStdString(g_settings.memory_card_paths[i]));
+            path.makeAbsolute();
+            paths[i] = QDir::toNativeSeparators(path.canonicalFilePath());
+          }
           break;
         case MemoryCardType::PerGame:
-          paths[i] = GetGameMemoryCardPath(entry->code.c_str(), i);
+          paths[i] = QString::fromStdString(GetGameMemoryCardPath(entry->code.c_str(), i));
           break;
         case MemoryCardType::PerGameTitle:
-          paths[i] = GetGameMemoryCardPath(entry->title.c_str(), i);
+          paths[i] = QString::fromStdString(GetGameMemoryCardPath(entry->title.c_str(), i));
           break;
         default:
           break;
       }
     }
 
-    m_main_window->openMemoryCardEditor(QString::fromStdString(paths[0]), QString::fromStdString(paths[1]));
+    m_main_window->openMemoryCardEditor(paths[0], paths[1]);
   });
 
   const bool has_any_states = resume_action->isEnabled() || load_state_menu->isEnabled();
