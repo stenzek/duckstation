@@ -22,6 +22,7 @@ enum class Trait : u32
   DisablePGXP,
   DisablePGXPCulling,
   DisablePGXPTextureCorrection,
+  DisablePGXPDepthBuffer,
   ForcePGXPVertexCache,
   ForcePGXPCPUMode,
   DisableAnalogModeForcing,
@@ -46,6 +47,7 @@ struct Entry
   std::optional<u32> gpu_fifo_size;
   std::optional<u32> gpu_max_run_ahead;
   std::optional<float> gpu_pgxp_tolerance;
+  std::optional<float> gpu_pgxp_depth_threshold;
 
   // user settings
   std::optional<u32> cpu_overclock_numerator;
@@ -66,6 +68,7 @@ struct Entry
   std::optional<GPUTextureFilter> gpu_texture_filter;
   std::optional<bool> gpu_widescreen_hack;
   std::optional<bool> gpu_pgxp;
+  std::optional<bool> gpu_pgxp_depth_buffer;
   std::optional<ControllerType> controller_1_type;
   std::optional<ControllerType> controller_2_type;
   std::optional<MemoryCardType> memory_card_1_type;

@@ -32,6 +32,7 @@ std::array<std::pair<const char*, const char*>, static_cast<u32>(Trait::Count)> 
   {"DisablePGXP", TRANSLATABLE("GameSettingsTrait", "Disable PGXP")},
   {"DisablePGXPCulling", TRANSLATABLE("GameSettingsTrait", "Disable PGXP Culling")},
   {"DisablePGXPTextureCorrection", TRANSLATABLE("GameSettingsTrait", "Disable PGXP Texture Correction")},
+  {"DisablePGXPDepthBuffer", TRANSLATABLE("GameSettingsTrait", "Disable PGXP Depth Buffer")},
   {"ForcePGXPVertexCache", TRANSLATABLE("GameSettingsTrait", "Force PGXP Vertex Cache")},
   {"ForcePGXPCPUMode", TRANSLATABLE("GameSettingsTrait", "Force PGXP CPU Mode")},
   {"DisableAnalogModeForcing", TRANSLATABLE("GameSettingsTrait", "Disable Forcing Controller Analog Mode on Reset")},
@@ -115,8 +116,9 @@ bool Entry::LoadFromStream(ByteStream* stream)
       !ReadOptionalFromStream(stream, &display_line_end_offset) ||
       !ReadOptionalFromStream(stream, &dma_max_slice_ticks) || !ReadOptionalFromStream(stream, &dma_halt_ticks) ||
       !ReadOptionalFromStream(stream, &gpu_fifo_size) || !ReadOptionalFromStream(stream, &gpu_max_run_ahead) ||
-      !ReadOptionalFromStream(stream, &gpu_pgxp_tolerance) || !ReadOptionalFromStream(stream, &display_crop_mode) ||
-      !ReadOptionalFromStream(stream, &display_aspect_ratio) ||
+      !ReadOptionalFromStream(stream, &gpu_pgxp_tolerance) ||
+      !ReadOptionalFromStream(stream, &gpu_pgxp_depth_threshold) ||
+      !ReadOptionalFromStream(stream, &display_crop_mode) || !ReadOptionalFromStream(stream, &display_aspect_ratio) ||
       !ReadOptionalFromStream(stream, &display_linear_upscaling) ||
       !ReadOptionalFromStream(stream, &display_integer_upscaling) ||
       !ReadOptionalFromStream(stream, &display_force_4_3_for_24bit) ||
@@ -125,9 +127,9 @@ bool Entry::LoadFromStream(ByteStream* stream)
       !ReadOptionalFromStream(stream, &gpu_scaled_dithering) ||
       !ReadOptionalFromStream(stream, &gpu_force_ntsc_timings) ||
       !ReadOptionalFromStream(stream, &gpu_texture_filter) || !ReadOptionalFromStream(stream, &gpu_widescreen_hack) ||
-      !ReadOptionalFromStream(stream, &gpu_pgxp) || !ReadOptionalFromStream(stream, &controller_1_type) ||
-      !ReadOptionalFromStream(stream, &controller_2_type) || !ReadOptionalFromStream(stream, &memory_card_1_type) ||
-      !ReadOptionalFromStream(stream, &memory_card_2_type) ||
+      !ReadOptionalFromStream(stream, &gpu_pgxp) || !ReadOptionalFromStream(stream, &gpu_pgxp_depth_buffer) ||
+      !ReadOptionalFromStream(stream, &controller_1_type) || !ReadOptionalFromStream(stream, &controller_2_type) ||
+      !ReadOptionalFromStream(stream, &memory_card_1_type) || !ReadOptionalFromStream(stream, &memory_card_2_type) ||
       !ReadStringFromStream(stream, &memory_card_1_shared_path) ||
       !ReadStringFromStream(stream, &memory_card_2_shared_path) || !ReadStringFromStream(stream, &input_profile_name))
   {
@@ -164,7 +166,8 @@ bool Entry::SaveToStream(ByteStream* stream) const
          WriteOptionalToStream(stream, display_line_end_offset) && WriteOptionalToStream(stream, dma_max_slice_ticks) &&
          WriteOptionalToStream(stream, dma_halt_ticks) && WriteOptionalToStream(stream, gpu_fifo_size) &&
          WriteOptionalToStream(stream, gpu_max_run_ahead) && WriteOptionalToStream(stream, gpu_pgxp_tolerance) &&
-         WriteOptionalToStream(stream, display_crop_mode) && WriteOptionalToStream(stream, display_aspect_ratio) &&
+         WriteOptionalToStream(stream, gpu_pgxp_depth_threshold) && WriteOptionalToStream(stream, display_crop_mode) &&
+         WriteOptionalToStream(stream, display_aspect_ratio) &&
          WriteOptionalToStream(stream, display_linear_upscaling) &&
          WriteOptionalToStream(stream, display_integer_upscaling) &&
          WriteOptionalToStream(stream, display_force_4_3_for_24bit) &&
@@ -172,9 +175,10 @@ bool Entry::SaveToStream(ByteStream* stream) const
          WriteOptionalToStream(stream, gpu_per_sample_shading) && WriteOptionalToStream(stream, gpu_true_color) &&
          WriteOptionalToStream(stream, gpu_scaled_dithering) && WriteOptionalToStream(stream, gpu_force_ntsc_timings) &&
          WriteOptionalToStream(stream, gpu_texture_filter) && WriteOptionalToStream(stream, gpu_widescreen_hack) &&
-         WriteOptionalToStream(stream, gpu_pgxp) && WriteOptionalToStream(stream, controller_1_type) &&
-         WriteOptionalToStream(stream, controller_2_type) && WriteOptionalToStream(stream, memory_card_1_type) &&
-         WriteOptionalToStream(stream, memory_card_2_type) && WriteStringToStream(stream, memory_card_1_shared_path) &&
+         WriteOptionalToStream(stream, gpu_pgxp) && WriteOptionalToStream(stream, gpu_pgxp_depth_buffer) &&
+         WriteOptionalToStream(stream, controller_1_type) && WriteOptionalToStream(stream, controller_2_type) &&
+         WriteOptionalToStream(stream, memory_card_1_type) && WriteOptionalToStream(stream, memory_card_2_type) &&
+         WriteStringToStream(stream, memory_card_1_shared_path) &&
          WriteStringToStream(stream, memory_card_2_shared_path) && WriteStringToStream(stream, input_profile_name);
 }
 
@@ -229,6 +233,9 @@ static void ParseIniSection(Entry* entry, const char* section, const CSimpleIniA
   float fvalue = static_cast<float>(ini.GetDoubleValue(section, "GPUPGXPTolerance", -1.0f));
   if (fvalue >= 0.0f)
     entry->gpu_pgxp_tolerance = fvalue;
+  fvalue = static_cast<float>(ini.GetDoubleValue(section, "GPUPGXPDepthThreshold", -1.0f));
+  if (fvalue > 0.0f)
+    entry->gpu_pgxp_depth_threshold = fvalue;
 
   cvalue = ini.GetValue(section, "DisplayCropMode", nullptr);
   if (cvalue)
@@ -273,6 +280,9 @@ static void ParseIniSection(Entry* entry, const char* section, const CSimpleIniA
   cvalue = ini.GetValue(section, "GPUPGXP", nullptr);
   if (cvalue)
     entry->gpu_pgxp = StringUtil::FromChars<bool>(cvalue);
+  cvalue = ini.GetValue(section, "GPUPGXPDepthBuffer", nullptr);
+  if (cvalue)
+    entry->gpu_pgxp_depth_buffer = StringUtil::FromChars<bool>(cvalue);
 
   cvalue = ini.GetValue(section, "Controller1Type", nullptr);
   if (cvalue)
@@ -334,6 +344,8 @@ static void StoreIniSection(const Entry& entry, const char* section, CSimpleIniA
     ini.SetLongValue(section, "GPUMaxRunAhead", static_cast<long>(entry.gpu_max_run_ahead.value()));
   if (entry.gpu_pgxp_tolerance.has_value())
     ini.SetDoubleValue(section, "GPUPGXPTolerance", static_cast<double>(entry.gpu_pgxp_tolerance.value()));
+  if (entry.gpu_pgxp_depth_threshold.has_value())
+    ini.SetDoubleValue(section, "GPUPGXPDepthThreshold", static_cast<double>(entry.gpu_pgxp_depth_threshold.value()));
 
   if (entry.display_crop_mode.has_value())
     ini.SetValue(section, "DisplayCropMode", Settings::GetDisplayCropModeName(entry.display_crop_mode.value()));
@@ -367,6 +379,8 @@ static void StoreIniSection(const Entry& entry, const char* section, CSimpleIniA
     ini.SetValue(section, "GPUWidescreenHack", entry.gpu_widescreen_hack.value() ? "true" : "false");
   if (entry.gpu_pgxp.has_value())
     ini.SetValue(section, "GPUPGXP", entry.gpu_pgxp.value() ? "true" : "false");
+  if (entry.gpu_pgxp_depth_buffer.has_value())
+    ini.SetValue(section, "GPUPGXPDepthBuffer", entry.gpu_pgxp_depth_buffer.value() ? "true" : "false");
 
   if (entry.controller_1_type.has_value())
     ini.SetValue(section, "Controller1Type", Settings::GetControllerTypeName(entry.controller_1_type.value()));
@@ -515,6 +529,8 @@ void Entry::ApplySettings(bool display_osd_messages) const
     g_settings.gpu_max_run_ahead = gpu_max_run_ahead.value();
   if (gpu_pgxp_tolerance.has_value())
     g_settings.gpu_pgxp_tolerance = gpu_pgxp_tolerance.value();
+  if (gpu_pgxp_depth_threshold.has_value())
+    g_settings.SetPGXPDepthClearThreshold(gpu_pgxp_depth_threshold.value());
 
   if (display_crop_mode.has_value())
     g_settings.display_crop_mode = display_crop_mode.value();
@@ -545,6 +561,8 @@ void Entry::ApplySettings(bool display_osd_messages) const
     g_settings.gpu_widescreen_hack = gpu_widescreen_hack.value();
   if (gpu_pgxp.has_value())
     g_settings.gpu_pgxp_enable = gpu_pgxp.value();
+  if (gpu_pgxp_depth_buffer.has_value())
+    g_settings.gpu_pgxp_depth_buffer = gpu_pgxp_depth_buffer.value();
 
   if (controller_1_type.has_value())
     g_settings.controller_types[0] = controller_1_type.value();
@@ -707,6 +725,18 @@ void Entry::ApplySettings(bool display_osd_messages) const
     }
 
     g_settings.gpu_pgxp_cpu = true;
+  }
+
+  if (HasTrait(Trait::DisablePGXPDepthBuffer))
+  {
+    if (display_osd_messages && g_settings.gpu_pgxp_enable && g_settings.gpu_pgxp_depth_buffer)
+    {
+      g_host_interface->AddOSDMessage(
+        g_host_interface->TranslateStdString("OSDMessage", "PGXP Depth Buffer disabled by game settings."),
+        osd_duration);
+    }
+
+    g_settings.gpu_pgxp_depth_buffer = false;
   }
 
   if (HasTrait(Trait::DisableAnalogModeForcing))

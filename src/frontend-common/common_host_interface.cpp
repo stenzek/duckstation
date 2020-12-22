@@ -1543,6 +1543,22 @@ void CommonHostInterface::RegisterGraphicsHotkeys()
                    }
                  });
 
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Graphics")), StaticString("TogglePGXPDepth"),
+                 StaticString(TRANSLATABLE("Hotkeys", "Toggle PGXP Depth Buffer")), [this](bool pressed) {
+                   if (pressed)
+                   {
+                     g_settings.gpu_pgxp_depth_buffer = !g_settings.gpu_pgxp_depth_buffer;
+                     if (!g_settings.gpu_pgxp_enable)
+                       return;
+
+                     g_gpu->UpdateSettings();
+                     AddOSDMessage(g_settings.gpu_pgxp_depth_buffer ?
+                                     TranslateStdString("OSDMessage", "PGXP Depth Buffer is now enabled.") :
+                                     TranslateStdString("OSDMessage", "PGXP Depth Buffer is now disabled."),
+                                   5.0f);
+                   }
+                 });
+
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Graphics")), StaticString("IncreaseResolutionScale"),
                  StaticString(TRANSLATABLE("Hotkeys", "Increase Resolution Scale")), [this](bool pressed) {
                    if (pressed)
