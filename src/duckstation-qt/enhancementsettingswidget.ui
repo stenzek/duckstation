@@ -128,25 +128,32 @@
      <property name="title">
       <string>PGXP (Precision Geometry Transform Pipeline)</string>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout">
-      <item>
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="0" column="0">
        <widget class="QCheckBox" name="pgxpEnable">
         <property name="text">
          <string>Geometry Correction</string>
         </property>
        </widget>
       </item>
-      <item>
+      <item row="0" column="1">
        <widget class="QCheckBox" name="pgxpCulling">
         <property name="text">
          <string>Culling Correction</string>
         </property>
        </widget>
       </item>
-      <item>
+      <item row="1" column="0">
        <widget class="QCheckBox" name="pgxpTextureCorrection">
         <property name="text">
          <string>Texture Correction</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QCheckBox" name="pgxpDepthBuffer">
+        <property name="text">
+         <string>Depth Buffer</string>
         </property>
        </widget>
       </item>

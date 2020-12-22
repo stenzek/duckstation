@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>750</width>
-    <height>548</height>
+    <height>567</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -346,40 +346,10 @@
           </item>
           <item row="3" column="0" colspan="2">
            <layout class="QGridLayout" name="gridLayout">
-            <item row="0" column="0">
-             <widget class="QCheckBox" name="userTrueColor">
-              <property name="text">
-               <string>True Color Rendering (24-bit, disables dithering)</string>
-              </property>
-              <property name="tristate">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
             <item row="0" column="1">
              <widget class="QCheckBox" name="userScaledDithering">
               <property name="text">
                <string>Scaled Dithering (scale dither pattern to resolution)</string>
-              </property>
-              <property name="tristate">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QCheckBox" name="userWidescreenHack">
-              <property name="text">
-               <string>Widescreen Hack</string>
-              </property>
-              <property name="tristate">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QCheckBox" name="userForceNTSCTimings">
-              <property name="text">
-               <string>Force NTSC Timings (60hz-on-PAL)</string>
               </property>
               <property name="tristate">
                <bool>true</bool>
@@ -396,10 +366,50 @@
               </property>
              </widget>
             </item>
+            <item row="1" column="1">
+             <widget class="QCheckBox" name="userForceNTSCTimings">
+              <property name="text">
+               <string>Force NTSC Timings (60hz-on-PAL)</string>
+              </property>
+              <property name="tristate">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QCheckBox" name="userTrueColor">
+              <property name="text">
+               <string>True Color Rendering (24-bit, disables dithering)</string>
+              </property>
+              <property name="tristate">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
             <item row="2" column="1">
              <widget class="QCheckBox" name="userPGXP">
               <property name="text">
                <string>PGXP Geometry Correction</string>
+              </property>
+              <property name="tristate">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QCheckBox" name="userWidescreenHack">
+              <property name="text">
+               <string>Widescreen Hack</string>
+              </property>
+              <property name="tristate">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QCheckBox" name="userPGXPDepthBuffer">
+              <property name="text">
+               <string>PGXP Depth Buffer</string>
               </property>
               <property name="tristate">
                <bool>true</bool>
@@ -798,16 +808,30 @@
           <item row="6" column="1">
            <widget class="QDoubleSpinBox" name="gpuPGXPTolerance">
             <property name="minimum">
-             <number>-1</number>
+             <double>-1.000000000000000</double>
             </property>
             <property name="maximum">
-             <number>10</number>
+             <double>10.000000000000000</double>
             </property>
             <property name="singleStep">
-             <number>0.5</number>
+             <double>0.000000000000000</double>
             </property>
             <property name="value">
-             <number>-1</number>
+             <double>-1.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="0">
+           <widget class="QLabel" name="label_30">
+            <property name="text">
+             <string>PGXP Depth Threshold:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="1">
+           <widget class="QDoubleSpinBox" name="gpuPGXPDepthThreshold">
+            <property name="maximum">
+             <double>4096.000000000000000</double>
             </property>
            </widget>
           </item>

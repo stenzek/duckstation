@@ -106,6 +106,8 @@
     <string name="settings_summary_pgxp_texture_correction">Uses perspective-correct interpolation for texture coordinates and colors, straightening out warped textures. Requires geometry correction enabled.</string>
     <string name="settings_pgxp_preserve_projection_precision">PGXP Preserve Projection Precision</string>
     <string name="settings_summary_pgxp_preserve_projection_precision">Enables additional precision for PGXP. May improve visuals in some games but break others.</string>
+    <string name="settings_pgxp_depth_buffer">PGXP Depth Buffer</string>
+    <string name="settings_summary_pgxp_depth_buffer">Attempts to reduce polygon Z-fighting by testing pixels against the depth values from PGXP. Low compatibility, but can work well in some games.</string>
     <string name="menu_main_resume_last_session">Resume Last Session</string>
     <string name="menu_main_start_file">Start File</string>
     <string name="menu_main_start_bios">Start BIOS</string>

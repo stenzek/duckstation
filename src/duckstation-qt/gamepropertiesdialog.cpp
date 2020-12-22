@@ -325,6 +325,11 @@ void GamePropertiesDialog::populateGameSettings()
     QSignalBlocker sb(m_ui.gpuPGXPTolerance);
     m_ui.gpuPGXPTolerance->setValue(static_cast<double>(gs.gpu_pgxp_tolerance.value()));
   }
+  if (gs.gpu_pgxp_depth_threshold.has_value())
+  {
+    QSignalBlocker sb(m_ui.gpuPGXPDepthThreshold);
+    m_ui.gpuPGXPDepthThreshold->setValue(static_cast<double>(gs.gpu_pgxp_depth_threshold.value()));
+  }
 
   if (gs.display_crop_mode.has_value())
   {
@@ -383,6 +388,7 @@ void GamePropertiesDialog::populateGameSettings()
   populateBooleanUserSetting(m_ui.userWidescreenHack, gs.gpu_widescreen_hack);
   populateBooleanUserSetting(m_ui.userForce43For24Bit, gs.display_force_4_3_for_24bit);
   populateBooleanUserSetting(m_ui.userPGXP, gs.gpu_pgxp);
+  populateBooleanUserSetting(m_ui.userPGXPDepthBuffer, gs.gpu_pgxp_depth_buffer);
 
   if (gs.controller_1_type.has_value())
   {
@@ -561,6 +567,7 @@ void GamePropertiesDialog::connectUi()
   connectBooleanUserSetting(m_ui.userWidescreenHack, &m_game_settings.gpu_widescreen_hack);
   connectBooleanUserSetting(m_ui.userForce43For24Bit, &m_game_settings.display_force_4_3_for_24bit);
   connectBooleanUserSetting(m_ui.userPGXP, &m_game_settings.gpu_pgxp);
+  connectBooleanUserSetting(m_ui.userPGXPDepthBuffer, &m_game_settings.gpu_pgxp_depth_buffer);
 
   connect(m_ui.userControllerType1, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
     if (index <= 0)
@@ -702,6 +709,13 @@ void GamePropertiesDialog::connectUi()
       m_game_settings.gpu_pgxp_tolerance.reset();
     else
       m_game_settings.gpu_pgxp_tolerance = static_cast<float>(value);
+    saveGameSettings();
+  });
+  connect(m_ui.gpuPGXPDepthThreshold, QOverload<double>::of(&QDoubleSpinBox::valueChanged), [this](double value) {
+    if (value <= 0.0)
+      m_game_settings.gpu_pgxp_depth_threshold.reset();
+    else
+      m_game_settings.gpu_pgxp_depth_threshold = static_cast<float>(value);
     saveGameSettings();
   });
 }

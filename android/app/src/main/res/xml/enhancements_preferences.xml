@@ -131,4 +131,11 @@
         app:summary="@string/settings_summary_pgxp_preserve_projection_precision"
         app:iconSpaceReserved="false" />
 
+    <SwitchPreferenceCompat
+        app:key="GPU/PGXPDepthBuffer"
+        app:title="@string/settings_pgxp_depth_buffer"
+        app:defaultValue="false"
+        app:summary="@string/settings_summary_pgxp_depth_buffer"
+        app:iconSpaceReserved="false" />
+
 </PreferenceScreen>

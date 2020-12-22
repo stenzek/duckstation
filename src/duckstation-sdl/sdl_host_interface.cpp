@@ -1042,6 +1042,8 @@ void SDLHostInterface::DrawQuickSettingsMenu()
       ImGui::MenuItem("PGXP CPU Instructions", nullptr, &m_settings_copy.gpu_pgxp_cpu, m_settings_copy.gpu_pgxp_enable);
     settings_changed |= ImGui::MenuItem("PGXP Preserve Projection Precision", nullptr,
                                         &m_settings_copy.gpu_pgxp_preserve_proj_fp, m_settings_copy.gpu_pgxp_enable);
+    settings_changed |= ImGui::MenuItem("PGXP Depth Buffer", nullptr, &m_settings_copy.gpu_pgxp_depth_buffer,
+                                        m_settings_copy.gpu_pgxp_enable);
     ImGui::EndMenu();
   }
 
@@ -1603,7 +1605,19 @@ void SDLHostInterface::DrawSettingsWindow()
         settings_changed |= ImGui::Checkbox("PGXP Culling", &m_settings_copy.gpu_pgxp_culling);
         settings_changed |= ImGui::Checkbox("PGXP Texture Correction", &m_settings_copy.gpu_pgxp_texture_correction);
         settings_changed |= ImGui::Checkbox("PGXP Vertex Cache", &m_settings_copy.gpu_pgxp_vertex_cache);
-        settings_changed |= ImGui::Checkbox("PGXP CPU", &m_settings_copy.gpu_pgxp_cpu);
+        settings_changed |= ImGui::Checkbox("PGXP CPU Instructions", &m_settings_copy.gpu_pgxp_cpu);
+        settings_changed |= ImGui::Checkbox("PGXP Preserve Projection Precision", &m_settings_copy.gpu_pgxp_enable);
+        settings_changed |= ImGui::Checkbox("PGXP Depth Buffer", &m_settings_copy.gpu_pgxp_depth_buffer);
+
+        ImGui::Text("PGXP Depth Clear Threshold:");
+        ImGui::SameLine(indent);
+
+        float depth_clear_threshold = m_settings_copy.GetPGXPDepthClearThreshold();
+        if (ImGui::SliderFloat("##clear_threshold", &depth_clear_threshold, 0.0f, 4096.0f))
+        {
+          m_settings_copy.SetPGXPDepthClearThreshold(depth_clear_threshold);
+          settings_changed = true;
+        }
       }
 
       ImGui::EndTabItem();

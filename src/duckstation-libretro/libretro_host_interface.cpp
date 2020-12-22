@@ -489,7 +489,7 @@ void LibretroHostInterface::OnSystemDestroyed()
   m_using_hardware_renderer = false;
 }
 
-static std::array<retro_core_option_definition, 49> s_option_definitions = {{
+static std::array<retro_core_option_definition, 51> s_option_definitions = {{
   {"duckstation_Console.Region",
    "Console Region",
    "Determines which region/hardware to emulate. Auto-Detect will use the region of the disc inserted.",
@@ -684,6 +684,12 @@ static std::array<retro_core_option_definition, 49> s_option_definitions = {{
    "Requires geometry correction enabled.",
    {{"true", "Enabled"}, {"false", "Disabled"}},
    "true"},
+  {"duckstation_GPU.PGXPDepthBuffer",
+   "PGXP Depth Buffer",
+   "Attempts to reduce polygon Z-fighting by testing pixels against the depth values from PGXP. Low compatibility, "
+   "but can work well in some games. Requires geometry correction enabled.",
+   {{"true", "Enabled"}, {"false", "Disabled"}},
+   "false"},
   {"duckstation_GPU.PGXPVertexCache",
    "PGXP Vertex Cache",
    "Uses screen coordinates as a fallback when tracking vertices through memory fails. May improve PGXP compatibility.",
@@ -864,6 +870,11 @@ static std::array<retro_core_option_definition, 49> s_option_definitions = {{
     {"19", "19"},   {"20", "20"},   {"21", "21"},   {"22", "22"},   {"23", "23"},   {"24", "24"},   {"25", "25"},
     {"26", "26"},   {"27", "27"},   {"28", "28"},   {"29", "29"},   {"30", "30"}},
    "0"},
+  {"duckstation_GPU.PGXPPreserveProjFP",
+   "PGXP Preserve Projection Precision",
+   "Enables additional precision for PGXP. May improve visuals in some games but break others.",
+   {{"true", "Enabled"}, {"false", "Disabled"}},
+   "false"},
   {"duckstation_GPU.PGXPTolerance",
    "PGXP Geometry Tolerance",
    "Ignores precise positions if the difference exceeds this threshold.",
