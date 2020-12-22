@@ -18,6 +18,7 @@ A "BIOS" ROM image is required to to start the emulator and to play games. You c
 ## Latest News
 
 - 2020/12/22: PGXP Depth Buffer enhancement added. This enhancement can eliminate "polygon fighting" in games, by giving the PS1 the depth buffer it never had. Compatibility is rather low at the moment, but for the games it does work in, it works very well. The depth buffer will be made available to postprocessing shaders in the future, enabling  effects such as SSAO.
+- 2020/12/21: DuckStation now has two releases - Beta and Release. New features will appear in Beta first, and make their way to the normal release a few days later. To switch to beta, download the beta release and run from a separate folder, or extract over the top. The next release will allow you to switch from within settings.
 - 2020/12/16: Integrated CPU debugger added in Qt frontend.
 - 2020/12/13: Button layout for the touchscreen controller in the Android version can now be customized.
 - 2020/12/10: Translation support added for Android version. Currently Brazillian Portuguese, Italian, and Dutch are available.
