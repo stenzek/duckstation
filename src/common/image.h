@@ -23,7 +23,7 @@ public:
   {
     m_width = move.m_width;
     m_height = move.m_height;
-    m_pixels = std::move(move.m_width);
+    m_pixels = std::move(move.m_pixels);
     move.m_width = 0;
     move.m_height = 0;
   }
@@ -39,7 +39,7 @@ public:
   {
     m_width = move.m_width;
     m_height = move.m_height;
-    m_pixels = std::move(move.m_width);
+    m_pixels = std::move(move.m_pixels);
     move.m_width = 0;
     move.m_height = 0;
     return *this;
@@ -94,5 +94,6 @@ using RGBA8Image = Image<u32>;
 
 bool LoadImageFromFile(Common::RGBA8Image* image, const char* filename);
 bool LoadImageFromBuffer(Common::RGBA8Image* image, const void* buffer, std::size_t buffer_size);
+bool WriteImageToFile(const Common::RGBA8Image& image, const char* filename);
 
 } // namespace Common

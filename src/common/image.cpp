@@ -2,6 +2,8 @@
 #include "file_system.h"
 #include "log.h"
 #include "stb_image.h"
+#include "stb_image_write.h"
+#include "string_util.h"
 Log_SetChannel(Common::Image);
 
 namespace Common {
@@ -43,4 +45,53 @@ bool LoadImageFromBuffer(Common::RGBA8Image* image, const void* buffer, std::siz
   stbi_image_free(pixel_data);
   return true;
 }
+
+bool WriteImageToFile(const RGBA8Image& image, const char* filename)
+{
+  const char* extension = std::strrchr(filename, '.');
+  if (!extension)
+  {
+    Log_ErrorPrintf("Unable to determine file extension for '%s'", filename);
+    return false;
+  }
+
+  auto fp = FileSystem::OpenManagedCFile(filename, "wb");
+  if (!fp)
+    return {};
+
+  const auto write_func = [](void* context, void* data, int size) {
+    std::fwrite(data, 1, size, static_cast<std::FILE*>(context));
+  };
+
+  bool result = false;
+  if (StringUtil::Strcasecmp(extension, ".png") == 0)
+  {
+    result = (stbi_write_png_to_func(write_func, fp.get(), image.GetWidth(), image.GetHeight(), 4, image.GetPixels(),
+                                     image.GetByteStride()) != 0);
+  }
+  else if (StringUtil::Strcasecmp(extension, ".jpg") == 0)
+  {
+    result = (stbi_write_jpg_to_func(write_func, fp.get(), image.GetWidth(), image.GetHeight(), 4, image.GetPixels(),
+                                     95) != 0);
+  }
+  else if (StringUtil::Strcasecmp(extension, ".tga") == 0)
+  {
+    result =
+      (stbi_write_tga_to_func(write_func, fp.get(), image.GetWidth(), image.GetHeight(), 4, image.GetPixels()) != 0);
+  }
+  else if (StringUtil::Strcasecmp(extension, ".bmp") == 0)
+  {
+    result =
+      (stbi_write_bmp_to_func(write_func, fp.get(), image.GetWidth(), image.GetHeight(), 4, image.GetPixels()) != 0);
+  }
+
+  if (!result)
+  {
+    Log_ErrorPrintf("Unknown extension in filename '%s' or save error: '%s'", filename, extension);
+    return false;
+  }
+
+  return true;
+}
+
 } // namespace Common
