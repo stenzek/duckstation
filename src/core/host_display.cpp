@@ -424,15 +424,15 @@ static bool CompressAndWriteTextureToFile(u32 width, u32 height, std::string fil
     result =
       (stbi_write_png_to_func(write_func, fp.get(), width, height, 4, texture_data.data(), texture_data_stride) != 0);
   }
-  else if (StringUtil::Strcasecmp(filename.c_str(), ".jpg") == 0)
+  else if (StringUtil::Strcasecmp(extension, ".jpg") == 0)
   {
     result = (stbi_write_jpg_to_func(write_func, fp.get(), width, height, 4, texture_data.data(), 95) != 0);
   }
-  else if (StringUtil::Strcasecmp(filename.c_str(), ".tga") == 0)
+  else if (StringUtil::Strcasecmp(extension, ".tga") == 0)
   {
     result = (stbi_write_tga_to_func(write_func, fp.get(), width, height, 4, texture_data.data()) != 0);
   }
-  else if (StringUtil::Strcasecmp(filename.c_str(), ".bmp") == 0)
+  else if (StringUtil::Strcasecmp(extension, ".bmp") == 0)
   {
     result = (stbi_write_bmp_to_func(write_func, fp.get(), width, height, 4, texture_data.data()) != 0);
   }
