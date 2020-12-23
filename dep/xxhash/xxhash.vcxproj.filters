@@ -2,9 +2,10 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="src\xxhash.c" />
+    <ClCompile Include="src\xxh_x86dispatch.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\xxh3.h" />
     <ClInclude Include="include\xxhash.h" />
+    <ClInclude Include="include\xxh_x86dispatch.h" />
   </ItemGroup>
 </Project>

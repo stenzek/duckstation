@@ -52,10 +52,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\xxhash.c" />
+    <ClCompile Include="src\xxh_x86dispatch.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\xxh3.h" />
     <ClInclude Include="include\xxhash.h" />
+    <ClInclude Include="include\xxh_x86dispatch.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{09553C96-9F39-49BF-8AE6-7ACBD07C410C}</ProjectGuid>
