@@ -1,31 +1,35 @@
 version: 1.0.{build}
 branches:
   only:
-  - dev
+    - dev
+
 skip_tags: true
 
-image:
-- Visual Studio 2019
+skip_commits:
+  files:
+    - '.github/**'
+    - '**.md'
+    - 'scripts/*'
+
+image: Visual Studio 2019
 
 install:
-- cmd: >-
-    git submodule update --init --depth 1
-    
-build_script:
-- cmd: >-
-      call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" x64
+  - git submodule update --init --depth 1
 
-      msbuild duckstation.sln -t:Build -p:Platform=x64;Configuration=ReleaseLTCG
+platform: x64
 
-      rm -f bin/x64/*.pdb bin/x64/*.exp bin/x64/*.lib bin/x64/*.iobj bin/x64/*.ipdb
+configuration: ReleaseLTCG
 
-      rm -f bin/x64/common-tests*
+build:
+  parallel: true
+  project: duckstation.sln
 
-      cp -a data/* bin/x64
-
-      "C:\Program Files\7-Zip\7z.exe" a -r duckstation-win64-release.7z ./bin/x64/*
-
-      appveyor PushArtifact duckstation-win64-release.7z
-
+after_build:
+  - |-
+      7z a  duckstation-windows-x64-release.zip .\bin\x64\* -r "-xr!*.pdb" "-xr!common-tests*"
+      7z rn duckstation-windows-x64-release.zip updater-x64-ReleaseLTCG.exe updater.exe
 
 test: off
+
+artifacts:
+  - path: duckstation-windows-x64-release.zip
