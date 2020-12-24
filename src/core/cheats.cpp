@@ -1279,8 +1279,8 @@ void CheatCode::Apply() const
         }
 
         const u32 slide_count = (inst.first >> 8) & 0xFFu;
-        const u32 address_increment = SignExtendN<8>(inst.first & 0xFFu);
-        const u16 value_increment = SignExtendN<8>(Truncate16(inst.second & 0xFFu));
+        const u32 address_increment = inst.first & 0xFFu;
+        const u16 value_increment = inst.second & 0xFFFFu;
         const Instruction& inst2 = instructions[index + 1];
         const InstructionCode write_type = inst2.code;
         u32 address = inst2.address;
