@@ -694,10 +694,12 @@ std::vector<std::string> CheatList::GetCodeGroups() const
 
 void CheatList::SetCodeEnabled(u32 index, bool state)
 {
-  if (index >= m_codes.size())
+  if (index >= m_codes.size() || m_codes[index].enabled == state)
     return;
 
   m_codes[index].enabled = state;
+  if (!state)
+    m_codes[index].ApplyOnDisable();
 }
 
 void CheatList::EnableCode(u32 index)
@@ -887,6 +889,54 @@ void CheatCode::Apply() const
       }
       break;
 
+      case InstructionCode::ExtConstantBitSet8:
+      {
+        const u8 value = DoMemoryRead<u8>(inst.address) | inst.value8;
+        DoMemoryWrite<u8>(inst.address, value);
+        index++;
+      }
+      break;
+
+      case InstructionCode::ExtConstantBitSet16:
+      {
+        const u16 value = DoMemoryRead<u16>(inst.address) | inst.value16;
+        DoMemoryWrite<u16>(inst.address, value);
+        index++;
+      }
+      break;
+
+      case InstructionCode::ExtConstantBitSet32:
+      {
+        const u32 value = DoMemoryRead<u32>(inst.address) | inst.value32;
+        DoMemoryWrite<u32>(inst.address, value);
+        index++;
+      }
+      break;
+
+      case InstructionCode::ExtConstantBitClear8:
+      {
+        const u8 value = DoMemoryRead<u8>(inst.address) & ~inst.value8;
+        DoMemoryWrite<u8>(inst.address, value);
+        index++;
+      }
+      break;
+
+      case InstructionCode::ExtConstantBitClear16:
+      {
+        const u16 value = DoMemoryRead<u16>(inst.address) & ~inst.value16;
+        DoMemoryWrite<u16>(inst.address, value);
+        index++;
+      }
+      break;
+
+      case InstructionCode::ExtConstantBitClear32:
+      {
+        const u32 value = DoMemoryRead<u32>(inst.address) & ~inst.value32;
+        DoMemoryWrite<u32>(inst.address, value);
+        index++;
+      }
+      break;
+
       case InstructionCode::ScratchpadWrite16:
       {
         DoMemoryWrite<u16>(CPU::DCACHE_LOCATION | (inst.address & CPU::DCACHE_OFFSET_MASK), inst.value16);
@@ -986,6 +1036,77 @@ void CheatCode::Apply() const
           index++;
         else
           index = GetNextNonConditionalInstruction(index);
+      }
+      break;
+
+      case InstructionCode::ExtConstantWriteIfMatch16:
+      case InstructionCode::ExtConstantWriteIfMatchWithRestore16:
+      {
+        const u16 value = DoMemoryRead<u16>(inst.address);
+        const u16 comparevalue = Truncate16(inst.value32 >> 16);
+        const u16 newvalue = Truncate16(inst.value32 & 0xFFFFu);
+        if (value == comparevalue)
+          DoMemoryWrite<u16>(inst.address, newvalue);
+
+        index++;
+      }
+      break;
+
+      case InstructionCode::ExtConstantForceRange8:
+      {
+        const u8 value = DoMemoryRead<u8>(inst.address);
+        const u8 min = Truncate8(inst.value32 & 0x000000FFu);
+        const u8 max = Truncate8((inst.value32 & 0x0000FF00u) >> 8);
+        const u8 overmin = Truncate8((inst.value32 & 0x00FF0000u) >> 16);
+        const u8 overmax = Truncate8((inst.value32 & 0xFF000000u) >> 24);
+        if ((value < min) || (value < min && min == 0x00u && max < 0xFEu))
+          DoMemoryWrite<u8>(inst.address, overmin); // also handles a min value of 0x00
+        else if (value > max)
+          DoMemoryWrite<u8>(inst.address, overmax);
+        index++;
+      }
+      break;
+
+      case InstructionCode::ExtConstantForceRangeLimits16:
+      {
+        const u16 value = DoMemoryRead<u16>(inst.address);
+        const u16 min = Truncate16(inst.value32 & 0x0000FFFFu);
+        const u16 max = Truncate16((inst.value32 & 0xFFFF0000u) >> 16);
+        if ((value < min) || (value < min && min == 0x0000u && max < 0xFFFEu))
+          DoMemoryWrite<u16>(inst.address, min); // also handles a min value of 0x0000
+        else if (value > max)
+          DoMemoryWrite<u16>(inst.address, max);
+        index++;
+      }
+      break;
+
+      case InstructionCode::ExtConstantForceRangeRollRound16:
+      {
+        const u16 value = DoMemoryRead<u16>(inst.address);
+        const u16 min = Truncate16(inst.value32 & 0x0000FFFFu);
+        const u16 max = Truncate16((inst.value32 & 0xFFFF0000u) >> 16);
+        if ((value < min) || (value < min && min == 0x0000u && max < 0xFFFEu))
+          DoMemoryWrite<u16>(inst.address, max); // also handles a min value of 0x0000
+        else if (value > max)
+          DoMemoryWrite<u16>(inst.address, min);
+        index++;
+      }
+      break;
+
+      case InstructionCode::ExtConstantForceRange16:
+      {
+        const u16 min = Truncate16(inst.value32 & 0x0000FFFFu);
+        const u16 max = Truncate16((inst.value32 & 0xFFFF0000u) >> 16);
+        const u16 value = DoMemoryRead<u16>(inst.address);
+        const Instruction& inst2 = instructions[index + 1];
+        const u16 overmin = Truncate16(inst2.value32 & 0x0000FFFFu);
+        const u16 overmax = Truncate16((inst2.value32 & 0xFFFF0000u) >> 16);
+
+        if ((value < min) || (value < min && min == 0x0000u && max < 0xFFFEu))
+          DoMemoryWrite<u16>(inst.address, overmin); // also handles a min value of 0x0000
+        else if (value > max)
+          DoMemoryWrite<u16>(inst.address, overmax);
+        index += 2;
       }
       break;
 
@@ -1200,6 +1321,95 @@ void CheatCode::Apply() const
         }
 
         index += 2;
+      }
+      break;
+
+      default:
+      {
+        Log_ErrorPrintf("Unhandled instruction code 0x%02X (%08X %08X)", static_cast<u8>(inst.code.GetValue()),
+                        inst.first, inst.second);
+        index++;
+      }
+      break;
+    }
+  }
+}
+
+void CheatCode::ApplyOnDisable() const
+{
+  const u32 count = static_cast<u32>(instructions.size());
+  u32 index = 0;
+  for (; index < count;)
+  {
+    const Instruction& inst = instructions[index];
+    switch (inst.code)
+    {
+      case InstructionCode::Nop:
+      case InstructionCode::ConstantWrite8:
+      case InstructionCode::ConstantWrite16:
+      case InstructionCode::ExtConstantWrite32:
+      case InstructionCode::ExtConstantBitSet8:
+      case InstructionCode::ExtConstantBitSet16:
+      case InstructionCode::ExtConstantBitSet32:
+      case InstructionCode::ExtConstantBitClear8:
+      case InstructionCode::ExtConstantBitClear16:
+      case InstructionCode::ExtConstantBitClear32:
+      case InstructionCode::ScratchpadWrite16:
+      case InstructionCode::ExtScratchpadWrite32:
+      case InstructionCode::ExtIncrement32:
+      case InstructionCode::ExtDecrement32:
+      case InstructionCode::Increment16:
+      case InstructionCode::Decrement16:
+      case InstructionCode::Increment8:
+      case InstructionCode::Decrement8:
+      case InstructionCode::ExtConstantForceRange8:
+      case InstructionCode::ExtConstantForceRangeLimits16:
+      case InstructionCode::ExtConstantForceRangeRollRound16:
+      case InstructionCode::DelayActivation: // C1
+      case InstructionCode::ExtConstantWriteIfMatch16:
+        index++;
+        break;
+
+      case InstructionCode::ExtConstantForceRange16:
+      case InstructionCode::Slide:
+      case InstructionCode::MemoryCopy:
+        index += 2;
+        break;
+
+      // for conditionals, we don't want to skip over in case it changed at some point
+      case InstructionCode::ExtCompareEqual32:
+      case InstructionCode::ExtCompareNotEqual32:
+      case InstructionCode::ExtCompareLess32:
+      case InstructionCode::ExtCompareGreater32:
+      case InstructionCode::CompareEqual16:
+      case InstructionCode::CompareNotEqual16:
+      case InstructionCode::CompareLess16:
+      case InstructionCode::CompareGreater16:
+      case InstructionCode::CompareEqual8:
+      case InstructionCode::CompareNotEqual8:
+      case InstructionCode::CompareLess8:
+      case InstructionCode::CompareGreater8:
+      case InstructionCode::CompareButtons: // D4
+        index++;
+        break;
+
+      // same deal for block conditionals
+      case InstructionCode::SkipIfNotEqual16:      // C0
+      case InstructionCode::ExtSkipIfNotEqual32:   // A4
+      case InstructionCode::SkipIfButtonsNotEqual: // D5
+      case InstructionCode::SkipIfButtonsEqual:    // D6
+        index++;
+        break;
+
+      case InstructionCode::ExtConstantWriteIfMatchWithRestore16:
+      {
+        const u16 value = DoMemoryRead<u16>(inst.address);
+        const u16 comparevalue = Truncate16(inst.value32 >> 16);
+        const u16 newvalue = Truncate16(inst.value32 & 0xFFFFu);
+        if (value == newvalue)
+          DoMemoryWrite<u16>(inst.address, comparevalue);
+
+        index++;
       }
       break;
 
