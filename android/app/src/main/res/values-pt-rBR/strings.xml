@@ -104,6 +104,8 @@
     <string name="settings_summary_pgxp_texture_correction">Utiliza interpolação corretiva em perspetiva para coordenadas e das cores na textura, endireitando as que estiverem distorcidas. Requer que a correção geométrica esteja ativada.</string>
     <string name="settings_pgxp_preserve_projection_precision">Preserva Precisão de Projeção PGXP</string>
     <string name="settings_summary_pgxp_preserve_projection_precision">Permite precisão adicional para PGXP. Pode melhorar o visual em alguns jogos, e prejudicar outros.</string>
+    <string name="settings_pgxp_depth_buffer">PGXP Modo Polimento (Z)</string>
+    <string name="settings_summary_pgxp_depth_buffer">Tenta reduzir os poligonos no eixo Z (parte inferior ou cantos em alguns casos) ajustando os limites dos valores para que não haja conflitos na renderização de poligonos 3D. Gerando um efeito de buracos ou quadrados piscando. Tem pouca compatibilidade no geral, mas pode funcionar bem em alguns jogos. Outros precisam ser ajustados via limitador.</string>
     <string name="menu_main_resume_last_session">Resumir Jogo</string>
     <string name="menu_main_start_file">Iniciar Arquivo</string>
     <string name="menu_main_start_bios">Iniciar BIOS</string>
@@ -147,4 +149,10 @@
     <string name="main_activity_invalid_error">Esse BIOS não é válido, ou já foi importado.</string>
     <string name="main_activity_show_version_title">Versão</string>
     <string name="main_activity_copy">Copiar</string>
+    <string name="settings_gpu_thread">Renderização Sequencial</string>
+    <string name="settings_summary_gpu_thread">Usa um segundo processo para desenhar gráficos em tela. Atualmente só disponível para renderizadores por software, pode fornecer uma melhoria significativa na velocidade, pode ser usado a vontade.</string>
+    <string name="settings_language">Linguagem (Necessário Reiniciar)</string>
+    <string name="touchscreen_controller_stop_editing">Terminado</string>
+    <string name="touchscreen_controller_reset_layout">Redefinir</string>
+    <string name="emulation_activity_touchscreen_controller_not_active">Controle em Tela não Ativado.</string>
 </resources>
