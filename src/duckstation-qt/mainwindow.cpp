@@ -11,6 +11,7 @@
 #include "gamelistsettingswidget.h"
 #include "gamelistwidget.h"
 #include "gamepropertiesdialog.h"
+#include "gdbserver.h"
 #include "memorycardeditordialog.h"
 #include "qtdisplaywidget.h"
 #include "qthostinterface.h"
@@ -811,6 +812,16 @@ void MainWindow::updateEmulationActions(bool starting, bool running)
     {
       m_ui.toolBar->insertAction(m_ui.actionPowerOff, m_ui.actionResumeLastState);
       m_ui.toolBar->removeAction(m_ui.actionPowerOff);
+    }
+  }
+
+  if (g_settings.debugging.enable_gdb_server) {
+    if (starting && !m_gdb_server) {
+      m_gdb_server = new GDBServer(this, g_settings.debugging.gdb_server_port);
+    }
+    else if (!running && m_gdb_server) {
+      delete m_gdb_server;
+      m_gdb_server = nullptr;
     }
   }
 

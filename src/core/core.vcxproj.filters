@@ -6,6 +6,7 @@
     <ClCompile Include="cpu_disasm.cpp" />
     <ClCompile Include="bus.cpp" />
     <ClCompile Include="dma.cpp" />
+    <ClCompile Include="gdb_protocol.cpp" />
     <ClCompile Include="gpu.cpp" />
     <ClCompile Include="gpu_hw_opengl.cpp" />
     <ClCompile Include="gpu_hw.cpp" />
@@ -64,6 +65,7 @@
     <ClInclude Include="cpu_disasm.h" />
     <ClInclude Include="bus.h" />
     <ClInclude Include="dma.h" />
+    <ClInclude Include="gdb_protocol.h" />
     <ClInclude Include="gpu.h" />
     <ClInclude Include="gpu_hw_opengl.h" />
     <ClInclude Include="gpu_hw.h" />

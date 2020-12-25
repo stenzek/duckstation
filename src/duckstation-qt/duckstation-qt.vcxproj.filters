@@ -31,6 +31,10 @@
     <ClCompile Include="$(IntDir)moc_advancedsettingswidget.cpp" />
     <ClCompile Include="gamepropertiesdialog.cpp" />
     <ClCompile Include="$(IntDir)moc_gamepropertiesdialog.cpp" />
+    <ClCompile Include="gdbconnection.cpp" />
+    <ClCompile Include="$(IntDir)moc_gdbconnection.cpp" />
+    <ClCompile Include="gdbserver.cpp" />
+    <ClCompile Include="$(IntDir)moc_gdbserver.cpp" />
     <ClCompile Include="controllersettingswidget.cpp" />
     <ClCompile Include="aboutdialog.cpp" />
     <ClCompile Include="memorycardsettingswidget.cpp" />
@@ -101,6 +105,8 @@
     <QtMoc Include="qtprogresscallback.h" />
     <QtMoc Include="advancedsettingswidget.h" />
     <QtMoc Include="gamepropertiesdialog.h" />
+    <QtMoc Include="gdbconnection.h" />
+    <QtMoc Include="gdbserver.h" />
     <QtMoc Include="controllersettingswidget.h" />
     <QtMoc Include="aboutdialog.h" />
     <QtMoc Include="memorycardsettingswidget.h" />
