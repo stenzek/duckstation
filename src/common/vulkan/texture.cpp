@@ -371,4 +371,22 @@ VkFramebuffer Texture::CreateFramebuffer(VkRenderPass render_pass)
   return fb;
 }
 
+void Texture::UpdateFromBuffer(VkCommandBuffer cmdbuf, u32 level, u32 layer, u32 x, u32 y, u32 width, u32 height,
+                             VkBuffer buffer, u32 buffer_offset)
+{
+  const VkImageLayout old_layout = m_layout;
+  TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
+  const VkBufferImageCopy bic = {static_cast<VkDeviceSize>(buffer_offset),
+                                 width,
+                                 height,
+                                 {VK_IMAGE_ASPECT_COLOR_BIT, 0u, 0u, 1u},
+                                 {static_cast<int32_t>(x), static_cast<int32_t>(y), 0},
+                                 {width, height, 1u}};
+
+  vkCmdCopyBufferToImage(cmdbuf, buffer, m_image, m_layout, 1, &bic);
+
+  TransitionToLayout(cmdbuf, old_layout);
+}
+
 } // namespace Vulkan
