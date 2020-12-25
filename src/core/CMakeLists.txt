@@ -114,7 +114,7 @@ set(RECOMPILER_SRCS
 target_include_directories(core PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_include_directories(core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_link_libraries(core PUBLIC Threads::Threads common zlib vulkan-loader)
-target_link_libraries(core PRIVATE glad stb)
+target_link_libraries(core PRIVATE glad stb xxhash)
 
 if(WIN32)
   target_sources(core PRIVATE
