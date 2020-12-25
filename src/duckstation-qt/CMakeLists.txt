@@ -99,10 +99,14 @@ set(SRCS
 set(TS_FILES
   translations/duckstation-qt_de.ts
   translations/duckstation-qt_es.ts
+  translations/duckstation-qt_fr.ts
   translations/duckstation-qt_he.ts
   translations/duckstation-qt_it.ts
+  translations/duckstation-qt_ja.ts
+  translations/duckstation-qt_nl.ts
   translations/duckstation-qt_pt-br.ts
   translations/duckstation-qt_pt-pt.ts
+  translations/duckstation-qt_ru.ts
   translations/duckstation-qt_zh-cn.ts
 )
 
