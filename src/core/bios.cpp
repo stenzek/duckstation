@@ -101,9 +101,11 @@ std::optional<Image> LoadImageFromFile(const char* filename)
   const u32 size = static_cast<u32>(std::ftell(fp.get()));
   std::fseek(fp.get(), 0, SEEK_SET);
 
-  if (size != BIOS_SIZE)
+  // Apparently some PS1/PS2 BIOS revisions found on the PS3 are neither 512KB nor 4MB, so just check within this range
+  if (size < BIOS_SIZE || size > BIOS_SIZE_PS2)
   {
-    Log_ErrorPrintf("BIOS image '%s' mismatch, expecting %u bytes, got %u bytes", filename, BIOS_SIZE, size);
+    Log_ErrorPrintf("BIOS image '%s' mismatch, expecting between %u and %u bytes, got %u bytes", filename, BIOS_SIZE,
+                    BIOS_SIZE_PS2, size);
     return std::nullopt;
   }
 
