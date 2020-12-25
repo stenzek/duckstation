@@ -1,4 +1,5 @@
 #include "texture_replacements.h"
+#include "common/cpu_detect.h"
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/string_util.h"
@@ -6,6 +7,9 @@
 #include "host_interface.h"
 #include "settings.h"
 #include "xxhash.h"
+#if defined(CPU_X86) || defined(CPU_X64)
+#include "xxh_x86dispatch.h"
+#endif
 #include <cinttypes>
 Log_SetChannel(TextureReplacements);
 
