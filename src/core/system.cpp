@@ -314,17 +314,11 @@ ConsoleRegion GetConsoleRegionForDiscRegion(DiscRegion region)
 
 std::string_view GetTitleForPath(const char* path)
 {
-  const char* extension = std::strrchr(path, '.');
-  if (path == extension)
-    return path;
-
-  const char* path_end = path + std::strlen(path);
-  const char* title_end = extension ? (extension - 1) : (path_end);
-  const char* title_start = std::max(std::strrchr(path, '/'), std::strrchr(path, '\\'));
-  if (!title_start || title_start == path)
-    return std::string_view(path, title_end - title_start);
-  else
-    return std::string_view(title_start + 1, title_end - title_start);
+  std::string_view path_view = path;
+  std::size_t title_start = path_view.find_last_of("/\\");
+  if (title_start != std::string_view::npos)
+    path_view.remove_prefix(title_start + 1);
+  return path_view.substr(0, path_view.find_last_of('.'));
 }
 
 std::string GetGameCodeForPath(const char* image_path)
