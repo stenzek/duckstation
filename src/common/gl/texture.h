@@ -12,6 +12,7 @@ public:
 
   bool Create(u32 width, u32 height, u32 samples, GLenum internal_format, GLenum format, GLenum type,
               const void* data = nullptr, bool linear_filter = false, bool wrap = false);
+  void Replace(u32 width, u32 height, GLenum internal_format, GLenum format, GLenum type, const void* data);
   bool CreateFramebuffer();
 
   void Destroy();

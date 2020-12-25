@@ -36,6 +36,7 @@ bool Texture::Create(u32 width, u32 height, u32 samples, GLenum internal_format,
 
   if (samples > 1)
   {
+    Assert(!data);
     if (GLAD_GL_ARB_texture_storage || GLAD_GL_ES_VERSION_3_1)
       glTexStorage2DMultisample(target, samples, internal_format, width, height, GL_FALSE);
     else
@@ -43,7 +44,7 @@ bool Texture::Create(u32 width, u32 height, u32 samples, GLenum internal_format,
   }
   else
   {
-    if (GLAD_GL_ARB_texture_storage || GLAD_GL_ES_VERSION_3_0)
+    if ((GLAD_GL_ARB_texture_storage || GLAD_GL_ES_VERSION_3_0) && !data)
       glTexStorage2D(target, 1, internal_format, width, height);
     else
       glTexImage2D(target, 0, internal_format, width, height, 0, format, type, data);
@@ -72,6 +73,17 @@ bool Texture::Create(u32 width, u32 height, u32 samples, GLenum internal_format,
   m_height = height;
   m_samples = samples;
   return true;
+}
+
+void Texture::Replace(u32 width, u32 height, GLenum internal_format, GLenum format, GLenum type, const void* data)
+{
+  Assert(IsValid() && m_samples == 1);
+
+  m_width = width;
+  m_height = height;
+
+  glBindTexture(GL_TEXTURE_2D, m_id);
+  glTexImage2D(GL_TEXTURE_2D, 0, internal_format, width, height, 0, format, type, data);
 }
 
 void Texture::SetLinearFilter(bool enabled)
