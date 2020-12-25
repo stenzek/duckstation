@@ -17,6 +17,7 @@
 #include "core/save_state_version.h"
 #include "core/spu.h"
 #include "core/system.h"
+#include "core/texture_replacements.h"
 #include "core/timers.h"
 #include "cubeb_audio_stream.h"
 #include "game_list.h"
@@ -122,11 +123,13 @@ void CommonHostInterface::InitializeUserDirectory()
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("covers").c_str(), false);
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("dump").c_str(), false);
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("dump/audio").c_str(), false);
+  result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("dump/textures").c_str(), false);
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("inputprofiles").c_str(), false);
+  result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("memcards").c_str(), false);
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("savestates").c_str(), false);
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("screenshots").c_str(), false);
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("shaders").c_str(), false);
-  result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("memcards").c_str(), false);
+  result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("textures").c_str(), false);
 
   if (!result)
     ReportError("Failed to create one or more user directories. This may cause issues at runtime.");
@@ -1581,6 +1584,15 @@ void CommonHostInterface::RegisterGraphicsHotkeys()
                  StaticString(TRANSLATABLE("Hotkeys", "Reload Post Processing Shaders")), [this](bool pressed) {
                    if (pressed)
                      ReloadPostProcessingShaders();
+                 });
+
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Graphics")), StaticString("ReloadTextureReplacements"),
+                 StaticString(TRANSLATABLE("Hotkeys", "Reload Texture Replacements")), [this](bool pressed) {
+                   if (pressed)
+                   {
+                     AddOSDMessage(TranslateStdString("OSDMessage", "Texture replacements reloaded."), 10.0f);
+                     g_texture_replacements.Reload();
+                   }
                  });
 }
 
