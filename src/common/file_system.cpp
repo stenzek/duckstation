@@ -19,6 +19,7 @@
 #else
 #include <dirent.h>
 #include <errno.h>
+#include <limits.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
