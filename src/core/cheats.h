@@ -56,6 +56,18 @@ struct CheatCode
     ExtSkipIfNotEqual32 = 0xA4,
     ExtIncrement32 = 0x60,
     ExtDecrement32 = 0x61,
+    ExtConstantWriteIfMatch16 = 0xA6,
+    ExtConstantWriteIfMatchWithRestore16 = 0xA7,
+    ExtConstantForceRange8 = 0xF0,
+    ExtConstantForceRangeLimits16 = 0xF1,
+    ExtConstantForceRangeRollRound16 = 0xF2,
+    ExtConstantForceRange16 = 0xF3,
+    ExtConstantBitSet8 = 0x31,
+    ExtConstantBitClear8 = 0x32,
+    ExtConstantBitSet16 = 0x81,
+    ExtConstantBitClear16 = 0x82,
+    ExtConstantBitSet32 = 0x91,
+    ExtConstantBitClear32 = 0x92,
   };
 
   union Instruction
@@ -92,6 +104,7 @@ struct CheatCode
   u32 GetNextNonConditionalInstruction(u32 index) const;
 
   void Apply() const;
+  void ApplyOnDisable() const;
 
   static const char* GetTypeName(Type type);
   static const char* GetTypeDisplayName(Type type);
