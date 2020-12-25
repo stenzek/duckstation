@@ -255,6 +255,17 @@ void Settings::Load(SettingsInterface& si)
   debugging.show_timers_state = si.GetBoolValue("Debug", "ShowTimersState");
   debugging.show_mdec_state = si.GetBoolValue("Debug", "ShowMDECState");
   debugging.show_dma_state = si.GetBoolValue("Debug", "ShowDMAState");
+
+  texture_replacements.enable_vram_write_replacements =
+    si.GetBoolValue("TextureReplacements", "EnableVRAMWriteReplacements", false);
+  texture_replacements.preload_textures = si.GetBoolValue("TextureReplacements", "PreloadTextures", false);
+  texture_replacements.dump_vram_writes = si.GetBoolValue("TextureReplacements", "DumpVRAMWrites", false);
+  texture_replacements.dump_vram_write_force_alpha_channel =
+    si.GetBoolValue("TextureReplacements", "DumpVRAMWriteForceAlphaChannel", true);
+  texture_replacements.dump_vram_write_width_threshold =
+    si.GetIntValue("TextureReplacements", "DumpVRAMWriteWidthThreshold", 128);
+  texture_replacements.dump_vram_write_height_threshold =
+    si.GetIntValue("TextureReplacements", "DumpVRAMWriteHeightThreshold", 128);
 }
 
 void Settings::Save(SettingsInterface& si) const
@@ -381,6 +392,17 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("Debug", "ShowTimersState", debugging.show_timers_state);
   si.SetBoolValue("Debug", "ShowMDECState", debugging.show_mdec_state);
   si.SetBoolValue("Debug", "ShowDMAState", debugging.show_dma_state);
+
+  si.SetBoolValue("TextureReplacements", "EnableVRAMWriteReplacements",
+                  texture_replacements.enable_vram_write_replacements);
+  si.SetBoolValue("TextureReplacements", "PreloadTextures", texture_replacements.preload_textures);
+  si.SetBoolValue("TextureReplacements", "DumpVRAMWrites", texture_replacements.dump_vram_writes);
+  si.SetBoolValue("TextureReplacements", "DumpVRAMWriteForceAlphaChannel",
+                  texture_replacements.dump_vram_write_force_alpha_channel);
+  si.SetIntValue("TextureReplacements", "DumpVRAMWriteWidthThreshold",
+                 texture_replacements.dump_vram_write_width_threshold);
+  si.SetIntValue("TextureReplacements", "DumpVRAMWriteHeightThreshold",
+                 texture_replacements.dump_vram_write_height_threshold);
 }
 
 static std::array<const char*, LOGLEVEL_COUNT> s_log_level_names = {
@@ -635,8 +657,8 @@ static std::array<const char*, 13> s_display_aspect_ratio_names = {{"Auto (Game 
                                                                     "19:9", "21:9", "32:9", "8:7", "5:4", "3:2",
                                                                     "2:1 (VRAM 1:1)", "1:1", "PAR 1:1"}};
 static constexpr std::array<float, 13> s_display_aspect_ratio_values = {
-  {-1.0f, 4.0f / 3.0f, 16.0f / 9.0f, 16.0f / 10.0f, 19.0f / 9.0f, 64.0f / 27.0f, 32.0f / 9.0f, 8.0f / 7.0f, 5.0f / 4.0f, 3.0f / 2.0f,
-   2.0f / 1.0f, 1.0f, -1.0f}};
+  {-1.0f, 4.0f / 3.0f, 16.0f / 9.0f, 16.0f / 10.0f, 19.0f / 9.0f, 64.0f / 27.0f, 32.0f / 9.0f, 8.0f / 7.0f, 5.0f / 4.0f,
+   3.0f / 2.0f, 2.0f / 1.0f, 1.0f, -1.0f}};
 
 std::optional<DisplayAspectRatio> Settings::ParseDisplayAspectRatio(const char* str)
 {

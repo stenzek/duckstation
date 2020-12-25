@@ -171,6 +171,25 @@ struct Settings
     mutable bool show_dma_state = false;
   } debugging;
 
+  // texture replacements
+  struct TextureReplacementSettings
+  {
+    bool enable_vram_write_replacements = false;
+    bool preload_textures = false;
+
+    bool dump_vram_writes = false;
+    bool dump_vram_write_force_alpha_channel = true;
+    u32 dump_vram_write_width_threshold = 128;
+    u32 dump_vram_write_height_threshold = 128;
+
+    ALWAYS_INLINE bool AnyReplacementsEnabled() const { return enable_vram_write_replacements; }
+
+    ALWAYS_INLINE bool ShouldDumpVRAMWrite(u32 width, u32 height)
+    {
+      return dump_vram_writes && width >= dump_vram_write_width_threshold && height >= dump_vram_write_height_threshold;
+    }
+  } texture_replacements;
+
   // TODO: Controllers, memory cards, etc.
 
   bool bios_patch_tty_enable = false;
@@ -228,7 +247,9 @@ struct Settings
     DEFAULT_DMA_MAX_SLICE_TICKS = 1000,
     DEFAULT_DMA_HALT_TICKS = 100,
     DEFAULT_GPU_FIFO_SIZE = 16,
-    DEFAULT_GPU_MAX_RUN_AHEAD = 128
+    DEFAULT_GPU_MAX_RUN_AHEAD = 128,
+    DEFAULT_VRAM_WRITE_DUMP_WIDTH_THRESHOLD = 128,
+    DEFAULT_VRAM_WRITE_DUMP_HEIGHT_THRESHOLD = 128,
   };
 
   void Load(SettingsInterface& si);

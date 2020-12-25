@@ -616,6 +616,52 @@ void GPU_HW_D3D11::DrawUtilityShader(ID3D11PixelShader* shader, const void* unif
   m_context->Draw(3, 0);
 }
 
+bool GPU_HW_D3D11::BlitVRAMReplacementTexture(const TextureReplacementTexture* tex, u32 dst_x, u32 dst_y, u32 width,
+                                              u32 height)
+{
+  if (m_vram_replacement_texture.GetWidth() < tex->GetWidth() ||
+      m_vram_replacement_texture.GetHeight() < tex->GetHeight())
+  {
+    if (!m_vram_replacement_texture.Create(m_device.Get(), tex->GetWidth(), tex->GetHeight(), 1,
+                                           DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE, tex->GetPixels(),
+                                           tex->GetByteStride(), true))
+    {
+      return false;
+    }
+  }
+  else
+  {
+    D3D11_MAPPED_SUBRESOURCE sr;
+    HRESULT hr = m_context->Map(m_vram_replacement_texture, 0, D3D11_MAP_WRITE_DISCARD, 0, &sr);
+    if (FAILED(hr))
+    {
+      Log_ErrorPrintf("Texture map failed: %08X", hr);
+      return false;
+    }
+
+    const u32 copy_size = std::min(tex->GetByteStride(), sr.RowPitch);
+    const u8* src_ptr = reinterpret_cast<const u8*>(tex->GetPixels());
+    u8* dst_ptr = static_cast<u8*>(sr.pData);
+    for (u32 i = 0; i < tex->GetHeight(); i++)
+    {
+      std::memcpy(dst_ptr, src_ptr, copy_size);
+      src_ptr += tex->GetByteStride();
+      dst_ptr += sr.RowPitch;
+    }
+
+    m_context->Unmap(m_vram_replacement_texture, 0);
+  }
+
+  m_context->OMSetDepthStencilState(m_depth_disabled_state.Get(), 0);
+  m_context->PSSetShaderResources(0, 1, m_vram_replacement_texture.GetD3DSRVArray());
+  SetViewportAndScissor(dst_x, dst_y, width, height);
+
+  const float uniforms[] = {0.0f, 0.0f, 1.0f, 1.0f};
+  DrawUtilityShader(m_copy_pixel_shader.Get(), uniforms, sizeof(uniforms));
+  RestoreGraphicsAPIState();
+  return true;
+}
+
 void GPU_HW_D3D11::DrawBatchVertices(BatchRenderMode render_mode, u32 base_vertex, u32 num_vertices)
 {
   const bool textured = (m_batch.texture_mode != GPUTextureMode::Disabled);
@@ -802,6 +848,16 @@ void GPU_HW_D3D11::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* d
 {
   const Common::Rectangle<u32> bounds = GetVRAMTransferBounds(x, y, width, height);
   GPU_HW::UpdateVRAM(bounds.left, bounds.top, bounds.GetWidth(), bounds.GetHeight(), data, set_mask, check_mask);
+
+  if (!check_mask)
+  {
+    const TextureReplacementTexture* rtex = g_texture_replacements.GetVRAMWriteReplacement(width, height, data);
+    if (rtex && BlitVRAMReplacementTexture(rtex, x * m_resolution_scale, y * m_resolution_scale,
+                                           width * m_resolution_scale, height * m_resolution_scale))
+    {
+      return;
+    }
+  }
 
   const u32 num_pixels = width * height;
   const auto map_result = m_texture_stream_buffer.Map(m_context.Get(), sizeof(u16), num_pixels * sizeof(u16));

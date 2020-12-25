@@ -5,6 +5,7 @@
 #include "gpu_hw_shadergen.h"
 #include "host_display.h"
 #include "system.h"
+#include "texture_replacements.h"
 Log_SetChannel(GPU_HW_OpenGL);
 
 GPU_HW_OpenGL::GPU_HW_OpenGL() : GPU_HW() {}
@@ -618,6 +619,37 @@ void GPU_HW_OpenGL::SetBlendMode()
   }
 }
 
+bool GPU_HW_OpenGL::BlitVRAMReplacementTexture(const TextureReplacementTexture* tex, u32 dst_x, u32 dst_y, u32 width,
+                                               u32 height)
+{
+  if (!m_vram_write_replacement_texture.IsValid())
+  {
+    if (!m_vram_write_replacement_texture.Create(tex->GetWidth(), tex->GetHeight(), 1, GL_RGBA, GL_RGBA,
+                                                 GL_UNSIGNED_BYTE, tex->GetPixels()) ||
+        !m_vram_write_replacement_texture.CreateFramebuffer())
+    {
+      m_vram_write_replacement_texture.Destroy();
+      return false;
+    }
+  }
+  else
+  {
+    m_vram_write_replacement_texture.Replace(tex->GetWidth(), tex->GetHeight(), GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE,
+                                             tex->GetPixels());
+  }
+
+  glDisable(GL_SCISSOR_TEST);
+  m_vram_write_replacement_texture.BindFramebuffer(GL_READ_FRAMEBUFFER);
+
+  dst_y = m_vram_texture.GetHeight() - dst_y - height;
+  glBlitFramebuffer(0, tex->GetHeight(), tex->GetWidth(), 0, dst_x, dst_y, dst_x + width, dst_y + height,
+                    GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
+  m_vram_read_texture.Bind();
+  glEnable(GL_SCISSOR_TEST);
+  return true;
+}
+
 void GPU_HW_OpenGL::SetDepthFunc()
 {
   SetDepthFunc(m_batch.use_depth_buffer ? GL_LEQUAL : (m_batch.check_mask_before_draw ? GL_GEQUAL : GL_ALWAYS));
@@ -849,12 +881,22 @@ void GPU_HW_OpenGL::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
 
 void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, bool set_mask, bool check_mask)
 {
+  const Common::Rectangle<u32> bounds = GetVRAMTransferBounds(x, y, width, height);
+  GPU_HW::UpdateVRAM(bounds.left, bounds.top, bounds.GetWidth(), bounds.GetHeight(), data, set_mask, check_mask);
+
+  if (!check_mask)
+  {
+    const TextureReplacementTexture* rtex = g_texture_replacements.GetVRAMWriteReplacement(width, height, data);
+    if (rtex && BlitVRAMReplacementTexture(rtex, x * m_resolution_scale, y * m_resolution_scale,
+                                           width * m_resolution_scale, height * m_resolution_scale))
+    {
+      return;
+    }
+  }
+
   const u32 num_pixels = width * height;
   if (num_pixels < m_max_texture_buffer_size || m_use_ssbo_for_vram_writes)
   {
-    const Common::Rectangle<u32> bounds = GetVRAMTransferBounds(x, y, width, height);
-    GPU_HW::UpdateVRAM(bounds.left, bounds.top, bounds.GetWidth(), bounds.GetHeight(), data, set_mask, check_mask);
-
     const auto map_result = m_texture_stream_buffer->Map(sizeof(u16), num_pixels * sizeof(u16));
     std::memcpy(map_result.pointer, data, num_pixels * sizeof(u16));
     m_texture_stream_buffer->Unmap(num_pixels * sizeof(u16));

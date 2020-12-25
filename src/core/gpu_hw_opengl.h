@@ -5,6 +5,7 @@
 #include "common/gl/texture.h"
 #include "glad.h"
 #include "gpu_hw.h"
+#include "texture_replacements.h"
 #include <array>
 #include <memory>
 #include <tuple>
@@ -67,12 +68,15 @@ private:
   void SetDepthFunc(GLenum func);
   void SetBlendMode();
 
+  bool BlitVRAMReplacementTexture(const TextureReplacementTexture* tex, u32 dst_x, u32 dst_y, u32 width, u32 height);
+
   // downsample texture - used for readbacks at >1xIR.
   GL::Texture m_vram_texture;
   GL::Texture m_vram_depth_texture;
   GL::Texture m_vram_read_texture;
   GL::Texture m_vram_encoding_texture;
   GL::Texture m_display_texture;
+  GL::Texture m_vram_write_replacement_texture;
 
   std::unique_ptr<GL::StreamBuffer> m_vertex_stream_buffer;
   GLuint m_vram_fbo_id = 0;

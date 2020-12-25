@@ -1148,6 +1148,16 @@ void GPU_HW_Vulkan::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
   const Common::Rectangle<u32> bounds = GetVRAMTransferBounds(x, y, width, height);
   GPU_HW::UpdateVRAM(bounds.left, bounds.top, bounds.GetWidth(), bounds.GetHeight(), data, set_mask, check_mask);
 
+  if (!check_mask)
+  {
+    const TextureReplacementTexture* rtex = g_texture_replacements.GetVRAMWriteReplacement(width, height, data);
+    if (rtex && BlitVRAMReplacementTexture(rtex, x * m_resolution_scale, y * m_resolution_scale,
+                                           width * m_resolution_scale, height * m_resolution_scale))
+    {
+      return;
+    }
+  }
+
   const u32 data_size = width * height * sizeof(u16);
   const u32 alignment = std::max<u32>(sizeof(u16), static_cast<u32>(g_vulkan_context->GetTexelBufferAlignment()));
   if (!m_texture_stream_buffer.ReserveMemory(data_size, alignment))
@@ -1324,6 +1334,80 @@ void GPU_HW_Vulkan::ClearDepthBuffer()
 
   m_vram_depth_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
   m_last_depth_z = 1.0f;
+}
+
+bool GPU_HW_Vulkan::CreateTextureReplacementStreamBuffer()
+{
+  if (m_texture_replacment_stream_buffer.IsValid())
+    return true;
+
+  if (!m_texture_replacment_stream_buffer.Create(VK_BUFFER_USAGE_TRANSFER_SRC_BIT, TEXTURE_REPLACEMENT_BUFFER_SIZE))
+  {
+    Log_ErrorPrint("Failed to allocate texture replacement streaming buffer");
+    return false;
+  }
+
+  return true;
+}
+
+bool GPU_HW_Vulkan::BlitVRAMReplacementTexture(const TextureReplacementTexture* tex, u32 dst_x, u32 dst_y, u32 width,
+                                               u32 height)
+{
+  if (!CreateTextureReplacementStreamBuffer())
+    return false;
+
+  if (m_vram_write_replacement_texture.GetWidth() < tex->GetWidth() ||
+      m_vram_write_replacement_texture.GetHeight() < tex->GetHeight())
+  {
+    if (!m_vram_write_replacement_texture.Create(tex->GetWidth(), tex->GetHeight(), 1, 1, VK_FORMAT_R8G8B8A8_UNORM,
+                                                 VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_TILING_OPTIMAL,
+                                                 VK_IMAGE_USAGE_TRANSFER_DST_BIT))
+    {
+      Log_ErrorPrint("Failed to create VRAM write replacement texture");
+      return false;
+    }
+  }
+
+  const u32 required_size = tex->GetWidth() * tex->GetHeight() * sizeof(u32);
+  const u32 alignment = static_cast<u32>(g_vulkan_context->GetBufferImageGranularity());
+  if (!m_texture_replacment_stream_buffer.ReserveMemory(required_size, alignment))
+  {
+    Log_PerfPrint("Executing command buffer while waiting for texture replacement buffer space");
+    g_vulkan_context->ExecuteCommandBuffer(false);
+    if (!m_texture_replacment_stream_buffer.ReserveMemory(required_size, alignment))
+    {
+      Log_ErrorPrintf("Failed to allocate %u bytes from texture replacement streaming buffer", required_size);
+      return false;
+    }
+  }
+
+  // upload to buffer
+  const u32 buffer_offset = m_texture_replacment_stream_buffer.GetCurrentOffset();
+  std::memcpy(m_texture_replacment_stream_buffer.GetCurrentHostPointer(), tex->GetPixels(), required_size);
+  m_texture_replacment_stream_buffer.CommitMemory(required_size);
+
+  // buffer -> texture
+  VkCommandBuffer cmdbuf = g_vulkan_context->GetCurrentCommandBuffer();
+  m_vram_write_replacement_texture.UpdateFromBuffer(cmdbuf, 0, 0, 0, 0, tex->GetWidth(), tex->GetHeight(),
+                                                    m_texture_replacment_stream_buffer.GetBuffer(), buffer_offset);
+
+  // texture -> vram
+  const VkImageBlit blit = {
+    {VK_IMAGE_ASPECT_COLOR_BIT, 0u, 0u, 1u},
+    {
+      {0, 0, 0},
+      {static_cast<int32_t>(tex->GetWidth()), static_cast<int32_t>(tex->GetHeight()), 1},
+    },
+    {VK_IMAGE_ASPECT_COLOR_BIT, 0u, 0u, 1u},
+    {{static_cast<int32_t>(dst_x), static_cast<int32_t>(dst_y), 0},
+     {static_cast<int32_t>(dst_x + width), static_cast<int32_t>(dst_y + height), 1}},
+  };
+  m_vram_write_replacement_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+  m_vram_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+  vkCmdBlitImage(cmdbuf, m_vram_write_replacement_texture.GetImage(), m_vram_write_replacement_texture.GetLayout(),
+                 m_vram_texture.GetImage(), m_vram_texture.GetLayout(), 1, &blit, VK_FILTER_LINEAR);
+  m_vram_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+  return true;
 }
 
 std::unique_ptr<GPU> GPU::CreateHardwareVulkanRenderer()

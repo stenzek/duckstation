@@ -4,6 +4,7 @@
 #include "gpu.h"
 #include "interrupt_controller.h"
 #include "system.h"
+#include "texture_replacements.h"
 Log_SetChannel(GPU);
 
 #define CHECK_COMMAND_SIZE(num_words)                                                                                  \
@@ -497,13 +498,6 @@ bool GPU::HandleCopyRectangleCPUToVRAMCommand()
 
 void GPU::FinishVRAMWrite()
 {
-  if (g_settings.debugging.dump_cpu_to_vram_copies && m_blit_remaining_words == 0)
-  {
-    DumpVRAMToFile(StringUtil::StdStringFromFormat("cpu_to_vram_copy_%u.png", s_cpu_to_vram_dump_id++).c_str(),
-                   m_vram_transfer.width, m_vram_transfer.height, sizeof(u16) * m_vram_transfer.width,
-                   m_blit_buffer.data(), true);
-  }
-
   if (IsInterlacedRenderingEnabled() && IsCRTCScanlinePending())
     SynchronizeCRTC();
 
@@ -511,6 +505,19 @@ void GPU::FinishVRAMWrite()
 
   if (m_blit_remaining_words == 0)
   {
+    if (g_settings.debugging.dump_cpu_to_vram_copies)
+    {
+      DumpVRAMToFile(StringUtil::StdStringFromFormat("cpu_to_vram_copy_%u.png", s_cpu_to_vram_dump_id++).c_str(),
+                     m_vram_transfer.width, m_vram_transfer.height, sizeof(u16) * m_vram_transfer.width,
+                     m_blit_buffer.data(), true);
+    }
+
+    if (g_settings.texture_replacements.ShouldDumpVRAMWrite(m_vram_transfer.width, m_vram_transfer.height))
+    {
+      g_texture_replacements.DumpVRAMWrite(m_vram_transfer.width, m_vram_transfer.height,
+                                           reinterpret_cast<const u16*>(m_blit_buffer.data()));
+    }
+
     UpdateVRAM(m_vram_transfer.x, m_vram_transfer.y, m_vram_transfer.width, m_vram_transfer.height,
                m_blit_buffer.data(), m_GPUSTAT.set_mask_while_drawing, m_GPUSTAT.check_mask_before_draw);
   }

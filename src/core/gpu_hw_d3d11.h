@@ -4,6 +4,7 @@
 #include "common/d3d11/stream_buffer.h"
 #include "common/d3d11/texture.h"
 #include "gpu_hw.h"
+#include "texture_replacements.h"
 #include <array>
 #include <d3d11.h>
 #include <memory>
@@ -68,6 +69,8 @@ private:
 
   void DrawUtilityShader(ID3D11PixelShader* shader, const void* uniforms, u32 uniforms_size);
 
+  bool BlitVRAMReplacementTexture(const TextureReplacementTexture* tex, u32 dst_x, u32 dst_y, u32 width, u32 height);
+
   ComPtr<ID3D11Device> m_device;
   ComPtr<ID3D11DeviceContext> m_context;
 
@@ -118,4 +121,6 @@ private:
   ComPtr<ID3D11PixelShader> m_vram_copy_pixel_shader;
   ComPtr<ID3D11PixelShader> m_vram_update_depth_pixel_shader;
   std::array<std::array<ComPtr<ID3D11PixelShader>, 3>, 2> m_display_pixel_shaders; // [depth_24][interlaced]
+
+  D3D11::Texture m_vram_replacement_texture;
 };

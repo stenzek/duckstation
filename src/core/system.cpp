@@ -27,6 +27,7 @@
 #include "save_state_version.h"
 #include "sio.h"
 #include "spu.h"
+#include "texture_replacements.h"
 #include "timers.h"
 #include <cctype>
 #include <cstdio>
@@ -769,6 +770,8 @@ void Shutdown()
 {
   if (s_state == State::Shutdown)
     return;
+
+  g_texture_replacements.Shutdown();
 
   g_sio.Shutdown();
   g_mdec.Shutdown();
@@ -1690,6 +1693,8 @@ void UpdateRunningGame(const char* path, CDImage* image)
                   "likely not run properly.\n\nPlease check the README for instructions on how to add a SBI file."),
       s_running_game_code.c_str(), s_running_game_title.c_str());
   }
+
+  g_texture_replacements.SetGameID(s_running_game_code);
 
   g_host_interface->OnRunningGameChanged();
 }

@@ -4,6 +4,7 @@
 #include "common/vulkan/stream_buffer.h"
 #include "common/vulkan/texture.h"
 #include "gpu_hw.h"
+#include "texture_replacements.h"
 #include <array>
 #include <memory>
 #include <tuple>
@@ -41,6 +42,7 @@ private:
   enum : u32
   {
     MAX_PUSH_CONSTANTS_SIZE = 64,
+    TEXTURE_REPLACEMENT_BUFFER_SIZE = 64 * 1024 * 1024
   };
   void SetCapabilities();
   void DestroyResources();
@@ -64,6 +66,10 @@ private:
   bool CompilePipelines();
   void DestroyPipelines();
 
+  bool CreateTextureReplacementStreamBuffer();
+
+  bool BlitVRAMReplacementTexture(const TextureReplacementTexture* tex, u32 dst_x, u32 dst_y, u32 width, u32 height);
+
   VkRenderPass m_current_render_pass = VK_NULL_HANDLE;
 
   VkRenderPass m_vram_render_pass = VK_NULL_HANDLE;
@@ -86,6 +92,7 @@ private:
   Vulkan::Texture m_vram_readback_texture;
   Vulkan::StagingTexture m_vram_readback_staging_texture;
   Vulkan::Texture m_display_texture;
+  bool m_use_ssbos_for_vram_writes = false;
 
   VkFramebuffer m_vram_framebuffer = VK_NULL_HANDLE;
   VkFramebuffer m_vram_update_depth_framebuffer = VK_NULL_HANDLE;
@@ -123,5 +130,7 @@ private:
   // [depth_24][interlace_mode]
   DimensionalArray<VkPipeline, 3, 2> m_display_pipelines{};
 
-  bool m_use_ssbos_for_vram_writes = false;
+  // texture replacements
+  Vulkan::Texture m_vram_write_replacement_texture;
+  Vulkan::StreamBuffer m_texture_replacment_stream_buffer;
 };
