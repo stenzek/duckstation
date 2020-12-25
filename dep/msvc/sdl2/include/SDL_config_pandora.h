@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -102,6 +102,8 @@
 #define HAVE_SQRTF 1
 #define HAVE_TAN 1
 #define HAVE_TANF 1
+#define HAVE_TRUNC 1
+#define HAVE_TRUNCF 1
 #define HAVE_SIGACTION 1
 #define HAVE_SETJMP 1
 #define HAVE_NANOSLEEP 1
@@ -110,8 +112,8 @@
 #define SDL_AUDIO_DRIVER_OSS 1
 
 #define SDL_INPUT_LINUXEV 1
-#define SDL_INPUT_TSLIB 1
 #define SDL_JOYSTICK_LINUX 1
+#define SDL_JOYSTICK_VIRTUAL 1
 #define SDL_HAPTIC_LINUX 1
 
 #define SDL_SENSOR_DUMMY 1

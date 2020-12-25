@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -84,7 +84,7 @@ typedef unsigned int uintptr_t;
 #define HAVE_XINPUT_H 1
 #define HAVE_MMDEVICEAPI_H 1
 #define HAVE_AUDIOCLIENT_H 1
-#define HAVE_ENDPOINTVOLUME_H 1
+#define HAVE_SENSORSAPI_H
 
 /* This is disabled by default to avoid C runtime dependencies and manifest requirements */
 #ifdef HAVE_LIBC
@@ -118,6 +118,10 @@ typedef unsigned int uintptr_t;
 #define HAVE_STRCHR 1
 #define HAVE_STRRCHR 1
 #define HAVE_STRSTR 1
+/* #undef HAVE_STRTOK_R */
+#if defined(_MSC_VER)
+#define HAVE_STRTOK_S 1
+#endif
 /* These functions have security warnings, so we won't use them */
 /* #undef HAVE__LTOA */
 /* #undef HAVE__ULTOA */
@@ -130,6 +134,8 @@ typedef unsigned int uintptr_t;
 #define HAVE_STRNCMP 1
 #define HAVE__STRICMP 1
 #define HAVE__STRNICMP 1
+#define HAVE__WCSICMP 1
+#define HAVE__WCSNICMP 1
 #define HAVE_ACOS   1
 #define HAVE_ACOSF  1
 #define HAVE_ASIN   1
@@ -139,7 +145,7 @@ typedef unsigned int uintptr_t;
 #define HAVE_ATAN2  1
 #define HAVE_ATAN2F 1
 #define HAVE_CEILF  1
-#define HAVE__COPYSIGN  1
+#define HAVE__COPYSIGN 1
 #define HAVE_COS    1
 #define HAVE_COSF   1
 #define HAVE_EXP    1
@@ -168,7 +174,9 @@ typedef unsigned int uintptr_t;
 #define HAVE_STRTOLL 1
 #define HAVE_VSSCANF 1
 #define HAVE_SCALBN 1
-#define HAVE_SCALBNF    1
+#define HAVE_SCALBNF 1
+#define HAVE_TRUNC  1
+#define HAVE_TRUNCF 1
 #endif
 /* This function is available with at least the VC++ 2008 C runtime library */
 #if _MSC_VER >= 1400
@@ -183,6 +191,20 @@ typedef unsigned int uintptr_t;
 #define HAVE_STDDEF_H   1
 #endif
 
+/* Check to see if we have Windows 10 build environment */
+#if _MSC_VER >= 1911        /* Visual Studio 15.3 */
+#include <sdkddkver.h>
+#if _WIN32_WINNT >= 0x0601  /* Windows 7 */
+#define SDL_WINDOWS7_SDK
+#endif
+#if _WIN32_WINNT >= 0x0602  /* Windows 8 */
+#define SDL_WINDOWS8_SDK
+#endif
+#if _WIN32_WINNT >= 0x0A00  /* Windows 10 */
+#define SDL_WINDOWS10_SDK
+#endif
+#endif /* _MSC_VER >= 1911 */
+
 /* Enable various audio drivers */
 #define SDL_AUDIO_DRIVER_WASAPI 1
 #define SDL_AUDIO_DRIVER_DSOUND 1
@@ -192,13 +214,20 @@ typedef unsigned int uintptr_t;
 
 /* Enable various input drivers */
 #define SDL_JOYSTICK_DINPUT 1
-#define SDL_JOYSTICK_XINPUT 1
 #define SDL_JOYSTICK_HIDAPI 1
+#ifndef __WINRT__
+#define SDL_JOYSTICK_RAWINPUT   1
+#endif
+#define SDL_JOYSTICK_VIRTUAL    1
+#ifdef SDL_WINDOWS10_SDK
+#define SDL_JOYSTICK_WGI    1
+#endif
+#define SDL_JOYSTICK_XINPUT 1
 #define SDL_HAPTIC_DINPUT   1
 #define SDL_HAPTIC_XINPUT   1
 
-/* Enable the dummy sensor driver */
-#define SDL_SENSOR_DUMMY  1
+/* Enable the sensor driver */
+#define SDL_SENSOR_WINDOWS  1
 
 /* Enable various shared object loading systems */
 #define SDL_LOADSO_WINDOWS  1
@@ -216,8 +245,8 @@ typedef unsigned int uintptr_t;
 #ifndef SDL_VIDEO_RENDER_D3D
 #define SDL_VIDEO_RENDER_D3D    1
 #endif
-#ifndef SDL_VIDEO_RENDER_D3D11
-#define SDL_VIDEO_RENDER_D3D11  0
+#ifdef SDL_WINDOWS7_SDK
+#define SDL_VIDEO_RENDER_D3D11  1
 #endif
 
 /* Enable OpenGL support */
@@ -255,3 +284,5 @@ typedef unsigned int uintptr_t;
 #endif
 
 #endif /* SDL_config_windows_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

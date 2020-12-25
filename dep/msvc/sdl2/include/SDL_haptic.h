@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -336,6 +336,14 @@ typedef struct _SDL_Haptic SDL_Haptic;
  */
 #define SDL_HAPTIC_SPHERICAL  2
 
+/**
+ *  \brief Use this value to play an effect on the steering wheel axis. This 
+ *  provides better compatibility across platforms and devices as SDL will guess 
+ *  the correct axis.
+ *  \sa SDL_HapticDirection
+ */
+#define SDL_HAPTIC_STEERING_AXIS 3
+
 /* @} *//* Direction encodings */
 
 /* @} *//* Haptic features */
@@ -444,6 +452,7 @@ typedef struct _SDL_Haptic SDL_Haptic;
  *  \sa SDL_HAPTIC_POLAR
  *  \sa SDL_HAPTIC_CARTESIAN
  *  \sa SDL_HAPTIC_SPHERICAL
+ *  \sa SDL_HAPTIC_STEERING_AXIS
  *  \sa SDL_HapticEffect
  *  \sa SDL_HapticNumAxes
  */
