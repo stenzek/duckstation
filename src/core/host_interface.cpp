@@ -17,6 +17,7 @@
 #include "pgxp.h"
 #include "save_state_version.h"
 #include "system.h"
+#include "texture_replacements.h"
 #include <cmath>
 #include <cstring>
 #include <cwchar>
@@ -736,6 +737,13 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
          System::HasMediaPlaylist()))
     {
       System::UpdateMemoryCards();
+    }
+
+    if (g_settings.texture_replacements.enable_vram_write_replacements !=
+          old_settings.texture_replacements.enable_vram_write_replacements ||
+        g_settings.texture_replacements.preload_textures != old_settings.texture_replacements.preload_textures)
+    {
+      g_texture_replacements.Reload();
     }
 
     g_dma.SetMaxSliceTicks(g_settings.dma_max_slice_ticks);

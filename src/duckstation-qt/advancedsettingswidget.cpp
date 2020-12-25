@@ -1,4 +1,5 @@
 #include "advancedsettingswidget.h"
+#include "core/gpu_types.h"
 #include "mainwindow.h"
 #include "qtutils.h"
 #include "settingsdialog.h"
@@ -166,6 +167,21 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(QtHostInterface* host_interface, 
   addBooleanTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Enable Recompiler ICache"), "CPU",
                         "RecompilerICache", false);
 
+  addBooleanTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Enable VRAM Write Texture Replacement"),
+                        "TextureReplacements", "EnableVRAMWriteReplacements", false);
+  addBooleanTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Preload Texture Replacements"),
+                        "TextureReplacements", "PreloadTextures", false);
+  addBooleanTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Dump Replacable VRAM Writes"),
+                        "TextureReplacements", "DumpVRAMWrites", false);
+  addBooleanTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Set Dumped VRAM Write Alpha Channel"),
+                        "TextureReplacements", "DumpVRAMWriteForceAlphaChannel", true);
+  addIntRangeTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Minimum Dumped VRAM Write Width"),
+                         "TextureReplacements", "DumpVRAMWriteWidthThreshold", 1, VRAM_WIDTH,
+                         Settings::DEFAULT_VRAM_WRITE_DUMP_WIDTH_THRESHOLD);
+  addIntRangeTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Minimum Dumped VRAM Write Width"),
+                         "TextureReplacements", "DumpVRAMWriteHeightThreshold", 1, VRAM_HEIGHT,
+                         Settings::DEFAULT_VRAM_WRITE_DUMP_HEIGHT_THRESHOLD);
+
   addIntRangeTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("DMA Max Slice Ticks"), "Hacks",
                          "DMAMaxSliceTicks", 100, 10000, Settings::DEFAULT_DMA_MAX_SLICE_TICKS);
   addIntRangeTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("DMA Halt Ticks"), "Hacks", "DMAHaltTicks", 100,
@@ -194,10 +210,16 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
   setBooleanTweakOption(m_ui.tweakOptionTable, 6, false);
   setChoiceTweakOption(m_ui.tweakOptionTable, 7, Settings::DEFAULT_CPU_FASTMEM_MODE);
   setBooleanTweakOption(m_ui.tweakOptionTable, 8, false);
-  setIntRangeTweakOption(m_ui.tweakOptionTable, 9, static_cast<int>(Settings::DEFAULT_DMA_MAX_SLICE_TICKS));
-  setIntRangeTweakOption(m_ui.tweakOptionTable, 10, static_cast<int>(Settings::DEFAULT_DMA_HALT_TICKS));
-  setIntRangeTweakOption(m_ui.tweakOptionTable, 11, static_cast<int>(Settings::DEFAULT_GPU_FIFO_SIZE));
-  setIntRangeTweakOption(m_ui.tweakOptionTable, 12, static_cast<int>(Settings::DEFAULT_GPU_MAX_RUN_AHEAD));
-  setBooleanTweakOption(m_ui.tweakOptionTable, 13, false);
-  setBooleanTweakOption(m_ui.tweakOptionTable, 14, true);
+  setBooleanTweakOption(m_ui.tweakOptionTable, 9, false);
+  setBooleanTweakOption(m_ui.tweakOptionTable, 10, false);
+  setBooleanTweakOption(m_ui.tweakOptionTable, 11, false);
+  setBooleanTweakOption(m_ui.tweakOptionTable, 12, false);
+  setIntRangeTweakOption(m_ui.tweakOptionTable, 13, Settings::DEFAULT_VRAM_WRITE_DUMP_WIDTH_THRESHOLD);
+  setIntRangeTweakOption(m_ui.tweakOptionTable, 14, Settings::DEFAULT_VRAM_WRITE_DUMP_HEIGHT_THRESHOLD);
+  setIntRangeTweakOption(m_ui.tweakOptionTable, 15, static_cast<int>(Settings::DEFAULT_DMA_MAX_SLICE_TICKS));
+  setIntRangeTweakOption(m_ui.tweakOptionTable, 16, static_cast<int>(Settings::DEFAULT_DMA_HALT_TICKS));
+  setIntRangeTweakOption(m_ui.tweakOptionTable, 17, static_cast<int>(Settings::DEFAULT_GPU_FIFO_SIZE));
+  setIntRangeTweakOption(m_ui.tweakOptionTable, 18, static_cast<int>(Settings::DEFAULT_GPU_MAX_RUN_AHEAD));
+  setBooleanTweakOption(m_ui.tweakOptionTable, 19, false);
+  setBooleanTweakOption(m_ui.tweakOptionTable, 20, true);
 }
