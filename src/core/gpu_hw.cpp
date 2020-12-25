@@ -343,7 +343,6 @@ void GPU_HW::SetBatchDepthBuffer(bool enabled)
   }
 
   m_batch.use_depth_buffer = enabled;
-  m_last_depth_z = 1.0f;
 }
 
 void GPU_HW::CheckForDepthClear(const BatchVertex* vertices, u32 num_vertices)
