@@ -75,6 +75,9 @@ void CanonicalizePath(char* Destination, u32 cbDestination, const char* Path, bo
           // remove the previous \, if we have one trailing the dot it'll append it anyway
           if (destinationLength > 0)
             Destination[--destinationLength] = '\0';
+          // if there was no previous \, skip past the next one
+          else if (nextCh != '\0')
+            i++;
 
           continue;
         }
@@ -125,6 +128,10 @@ void CanonicalizePath(char* Destination, u32 cbDestination, const char* Path, bo
     // increment position by one
     i++;
   }
+
+  // if we end up with the empty string, return '.'
+  if (destinationLength == 0)
+    Destination[destinationLength++] = '.';
 
   // ensure nullptr termination
   if (destinationLength < cbDestination)
