@@ -171,7 +171,7 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(QtHostInterface* host_interface, 
                         "TextureReplacements", "EnableVRAMWriteReplacements", false);
   addBooleanTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Preload Texture Replacements"),
                         "TextureReplacements", "PreloadTextures", false);
-  addBooleanTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Dump Replacable VRAM Writes"),
+  addBooleanTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Dump Replaceable VRAM Writes"),
                         "TextureReplacements", "DumpVRAMWrites", false);
   addBooleanTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Set Dumped VRAM Write Alpha Channel"),
                         "TextureReplacements", "DumpVRAMWriteForceAlphaChannel", true);
