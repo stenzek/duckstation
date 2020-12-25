@@ -18,7 +18,7 @@ A "BIOS" ROM image is required to to start the emulator and to play games. You c
 ## Latest News
 
 - 2020/12/22: PGXP Depth Buffer enhancement added. This enhancement can eliminate "polygon fighting" in games, by giving the PS1 the depth buffer it never had. Compatibility is rather low at the moment, but for the games it does work in, it works very well. The depth buffer will be made available to postprocessing shaders in the future, enabling  effects such as SSAO.
-- 2020/12/21: DuckStation now has two releases - Beta and Release. New features will appear in Beta first, and make their way to the normal release a few days later. To switch to beta, download the beta release and run from a separate folder, or extract over the top. The next release will allow you to switch from within settings.
+- 2020/12/21: DuckStation now has two releases - Development and Preview. New features will appear in Preview first, and make their way to the Development release a few days later. To switch to preview, update to the latest development build (older builds will update to development), change the channel from `latest` to `preview` in general settings, and click `Check for Updates`.
 - 2020/12/16: Integrated CPU debugger added in Qt frontend.
 - 2020/12/13: Button layout for the touchscreen controller in the Android version can now be customized.
 - 2020/12/10: Translation support added for Android version. Currently Brazillian Portuguese, Italian, and Dutch are available.
@@ -73,7 +73,7 @@ Other features include:
  - CPU Recompiler/JIT (x86-64, armv7/AArch32 and AArch64)
  - Hardware (D3D11, OpenGL, Vulkan) and software rendering
  - Upscaling, texture filtering, and true colour (24-bit) in hardware renderers
- - PGXP for geometry precision and texture correction
+ - PGXP for geometry precision, texture correction, and depth buffer emulation
  - Post processing shader chains
  - "Fast boot" for skipping BIOS splash/intro
  - Save state support
@@ -92,6 +92,7 @@ Other features include:
  - Supports loading cheats from libretro or PCSXR format lists
  - Memory card editor and save importer
  - Emulated CPU overclocking
+ - Integrated and remote debugging
 
 ## System Requirements
  - A CPU faster than a potato. But it needs to be x86_64, AArch32/armv7, or AArch64/ARMv8, otherwise you won't get a recompiler and it'll be slow.
@@ -187,7 +188,7 @@ For example, if your disc image was named `Spyro3.cue`, you would place the SBI 
 Requirements:
  - Visual Studio 2019
  
-1. Clone the respository with submodules (`git clone --recursive` or `git clone` and `git submodule update --init`).
+1. Clone the respository with submodules (`git clone --recursive https://github.com/stenzek/duckstation.git -b dev`).
 2. Open the Visual Studio solution `duckstation.sln` in the root, or "Open Folder" for cmake build.
 3. Build solution.
 4. Binaries are located in `bin/x64`.
@@ -201,7 +202,7 @@ Requirements (Debian/Ubuntu package names):
  - Qt 5 (`qtbase5-dev`, `qtbase5-private-dev`, `qtbase5-dev-tools`, `qttools5-dev`)
  - Optional for faster building: Ninja (`ninja-build`)
 
-1. Clone the repository. Submodules aren't necessary, there is only one and it is only used for Windows.
+1. Clone the repository. Submodules aren't necessary, there is only one and it is only used for Windows (`git clone https://github.com/stenzek/duckstation.git -b dev`).
 2. Create a build directory, either in-tree or elsewhere.
 3. Run cmake to configure the build system. Assuming a build subdirectory of `build-release`, `cd build-release && cmake -DCMAKE_BUILD_TYPE=Release -GNinja ..`.
 4. Compile the source code. For the example above, run `ninja`.
@@ -215,7 +216,7 @@ Requirements:
  - SDL2 (`brew install sdl2`)
  - Qt 5 (`brew install qt5`)
 
-1. Clone the repository. Submodules aren't necessary, there is only one and it is only used for Windows.
+1. Clone the repository. Submodules aren't necessary, there is only one and it is only used for Windows (`git clone https://github.com/stenzek/duckstation.git -b dev`).
 2. Clone the mac externals repository (for MoltenVK): `git clone https://github.com/stenzek/duckstation-ext-mac.git dep/mac`.
 2. Create a build directory, either in-tree or elsewhere, e.g. `mkdir build-release`, `cd build-release`.
 3. Run cmake to configure the build system: `cmake -DCMAKE_BUILD_TYPE=Release -DQt5_DIR=/usr/local/opt/qt/lib/cmake/Qt5 ..`. You may need to tweak `Qt5_DIR` depending on your system.
