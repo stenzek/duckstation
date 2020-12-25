@@ -10,7 +10,7 @@ on:
   push:
     branches:
       - master
-      - stable
+      - dev
     paths-ignore:
       - '**.md'
       - 'appveyor.yml'
@@ -27,23 +27,23 @@ jobs:
         fetch-depth: 0
         submodules: true
 
-    - name: Tag as development build
+    - name: Tag as preview build
       if: github.ref == 'refs/heads/master'
       shell: cmd
       run: |
         echo #pragma once > src/scmversion/tag.h
         echo #define SCM_RELEASE_ASSET "duckstation-windows-x64-release.zip" >> src/scmversion/tag.h
-        echo #define SCM_RELEASE_TAGS {"latest", "beta"} >> src/scmversion/tag.h
-        echo #define SCM_RELEASE_TAG "beta" >> src/scmversion/tag.h
+        echo #define SCM_RELEASE_TAGS {"latest", "preview"} >> src/scmversion/tag.h
+        echo #define SCM_RELEASE_TAG "preview" >> src/scmversion/tag.h
 
 
-    - name: Tag as stable build
-      if: github.ref == 'refs/heads/stable'
+    - name: Tag as dev build
+      if: github.ref == 'refs/heads/dev'
       shell: cmd
       run: |
         echo #pragma once > src/scmversion/tag.h
         echo #define SCM_RELEASE_ASSET "duckstation-windows-x64-release.zip" >> src/scmversion/tag.h
-        echo #define SCM_RELEASE_TAGS {"latest", "beta"} >> src/scmversion/tag.h
+        echo #define SCM_RELEASE_TAGS {"latest", "preview"} >> src/scmversion/tag.h
         echo #define SCM_RELEASE_TAG "latest" >> src/scmversion/tag.h
 
 
@@ -75,13 +75,6 @@ jobs:
       with:
         name: "windows"
         path: "duckstation-windows-x64-release.zip"
-
-    - name: Tag as release build
-      shell: cmd
-      run: |
-        echo #pragma once > src/scmversion/tag.h
-        echo #define SCM_RELEASE_TAG "latest" >> src/scmversion/tag.h
-        echo #define SCM_RELEASE_ASSET "duckstation-windows-arm64-release.zip" >> src/scmversion/tag.h
 
     - name: Compile arm64 release build
       shell: cmd
@@ -292,7 +285,7 @@ jobs:
         ./gradlew assembleRelease
 
     - name: Sign APK
-      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/stable'
+      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
       uses: r0adkll/sign-android-release@v1
       with:
         releaseDirectory: android/app/build/outputs/apk/release
@@ -302,14 +295,14 @@ jobs:
         keyPassword: ${{ secrets.APK_KEY_PASSWORD }}
 
     - name: Rename APK
-      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/stable'
+      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
       shell: bash
       run: |
         cd android
         mv app/build/outputs/apk/release/app-release-unsigned-signed.apk ../duckstation-android.apk
          
     - name: Upload APK
-      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/stable'
+      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
       uses: actions/upload-artifact@v1
       with:
         name: "android"
@@ -369,7 +362,7 @@ jobs:
   create-release:
     needs: [windows-build, windows-libretro-build, linux-build, linux-libretro-build, android-build, macos-build]
     runs-on: "ubuntu-latest"
-    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/stable'
+    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
     steps:
       - name: Download Windows Artifacts
         uses: actions/download-artifact@v1
@@ -416,14 +409,14 @@ jobs:
         with:
           name: "macos-x64"
 
-      - name: Create beta release
+      - name: Create preview release
         if: github.ref == 'refs/heads/master'
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "beta"
+          automatic_release_tag: "preview"
           prerelease: true
-          title: "Latest Beta/Development Build"
+          title: "Latest Preview Build"
           files: |
             windows/duckstation-windows-x64-release.zip
             windows/duckstation-windows-arm64-release.zip
@@ -441,14 +434,14 @@ jobs:
             macos-x64/duckstation-mac-release.zip
             macos-x64/duckstation_libretro_mac.dylib.zip
 
-      - name: Create stable release
-        if: github.ref == 'refs/heads/stable'
+      - name: Create dev release
+        if: github.ref == 'refs/heads/dev'
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           automatic_release_tag: "latest"
           prerelease: false
-          title: "Latest Stable Build"
+          title: "Latest Development Build"
           files: |
             windows/duckstation-windows-x64-release.zip
             windows/duckstation-windows-arm64-release.zip
