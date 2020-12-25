@@ -112,7 +112,7 @@ void CanonicalizePath(char* Destination, u32 cbDestination, const char* Path, bo
 
     // fix ospath
     if (OSPath && (currentCh == '\\' || currentCh == '/'))
-      currentCh = FS_OSPATH_SEPERATOR_CHARACTER;
+      currentCh = FS_OSPATH_SEPARATOR_CHARACTER;
 
     // copy character
     if (destinationLength < cbDestination)
@@ -547,7 +547,7 @@ void BuildOSPath(char* Destination, u32 cbDestination, const char* Path)
     for (i = 0; i < pathLength; i++)
     {
       if (Destination[i] == '/')
-        Destination[i] = FS_OSPATH_SEPERATOR_CHARACTER;
+        Destination[i] = FS_OSPATH_SEPARATOR_CHARACTER;
     }
   }
   else
@@ -556,7 +556,7 @@ void BuildOSPath(char* Destination, u32 cbDestination, const char* Path)
     pathLength = std::max(pathLength, cbDestination - 1);
     for (i = 0; i < pathLength; i++)
     {
-      Destination[i] = (Path[i] == '/') ? FS_OSPATH_SEPERATOR_CHARACTER : Path[i];
+      Destination[i] = (Path[i] == '/') ? FS_OSPATH_SEPARATOR_CHARACTER : Path[i];
     }
 
     Destination[pathLength] = '\0';
@@ -576,7 +576,7 @@ void BuildOSPath(String& Destination, const char* Path)
     for (i = 0; i < pathLength; i++)
     {
       if (Destination[i] == '/')
-        Destination[i] = FS_OSPATH_SEPERATOR_CHARACTER;
+        Destination[i] = FS_OSPATH_SEPARATOR_CHARACTER;
     }
   }
   else
@@ -586,7 +586,7 @@ void BuildOSPath(String& Destination, const char* Path)
     Destination.Resize(pathLength);
     for (i = 0; i < pathLength; i++)
     {
-      Destination[i] = (Path[i] == '/') ? FS_OSPATH_SEPERATOR_CHARACTER : Path[i];
+      Destination[i] = (Path[i] == '/') ? FS_OSPATH_SEPARATOR_CHARACTER : Path[i];
     }
   }
 }

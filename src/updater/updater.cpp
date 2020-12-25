@@ -98,15 +98,15 @@ bool Updater::ParseZip()
     for (size_t i = 0; i < len; i++)
     {
       if (zip_filename_buffer[i] == '/' || zip_filename_buffer[i] == '\\')
-        zip_filename_buffer[i] = FS_OSPATH_SEPERATOR_CHARACTER;
+        zip_filename_buffer[i] = FS_OSPATH_SEPARATOR_CHARACTER;
     }
 
     // should never have a leading slash. just in case.
-    while (zip_filename_buffer[0] == FS_OSPATH_SEPERATOR_CHARACTER)
+    while (zip_filename_buffer[0] == FS_OSPATH_SEPARATOR_CHARACTER)
       std::memmove(&zip_filename_buffer[1], &zip_filename_buffer[0], --len);
 
     // skip directories (we sort them out later)
-    if (len > 0 && zip_filename_buffer[len - 1] != FS_OSPATH_SEPERATOR_CHARACTER)
+    if (len > 0 && zip_filename_buffer[len - 1] != FS_OSPATH_SEPARATOR_CHARACTER)
     {
       // skip updater itself, since it was already pre-extracted.
       if (StringUtil::Strcasecmp(zip_filename_buffer, "updater.exe") != 0)
@@ -138,10 +138,10 @@ bool Updater::ParseZip()
     const size_t len = ftu.destination_filename.length();
     for (size_t i = 0; i < len; i++)
     {
-      if (ftu.destination_filename[i] == FS_OSPATH_SEPERATOR_CHARACTER)
+      if (ftu.destination_filename[i] == FS_OSPATH_SEPARATOR_CHARACTER)
       {
         std::string dir(ftu.destination_filename.begin(), ftu.destination_filename.begin() + i);
-        while (!dir.empty() && dir[dir.length() - 1] == FS_OSPATH_SEPERATOR_CHARACTER)
+        while (!dir.empty() && dir[dir.length() - 1] == FS_OSPATH_SEPARATOR_CHARACTER)
           dir.erase(dir.length() - 1);
 
         if (std::find(m_update_directories.begin(), m_update_directories.end(), dir) == m_update_directories.end())

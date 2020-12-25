@@ -767,7 +767,7 @@ void QtHostInterface::saveInputProfile(const QString& profile_name)
 QString QtHostInterface::getUserDirectoryRelativePath(const QString& arg) const
 {
   QString result = QString::fromStdString(m_user_directory);
-  result += FS_OSPATH_SEPERATOR_CHARACTER;
+  result += FS_OSPATH_SEPARATOR_CHARACTER;
   result += arg;
   return result;
 }
@@ -775,7 +775,7 @@ QString QtHostInterface::getUserDirectoryRelativePath(const QString& arg) const
 QString QtHostInterface::getProgramDirectoryRelativePath(const QString& arg) const
 {
   QString result = QString::fromStdString(m_program_directory);
-  result += FS_OSPATH_SEPERATOR_CHARACTER;
+  result += FS_OSPATH_SEPARATOR_CHARACTER;
   result += arg;
   return result;
 }

@@ -1157,9 +1157,9 @@ std::string GameList::GetCoverImagePathForEntry(const GameListEntry* entry) cons
     {
       cover_path.Clear();
       cover_path.AppendString(g_host_interface->GetUserDirectory().c_str());
-      cover_path.AppendCharacter(FS_OSPATH_SEPERATOR_CHARACTER);
+      cover_path.AppendCharacter(FS_OSPATH_SEPARATOR_CHARACTER);
       cover_path.AppendString("covers");
-      cover_path.AppendCharacter(FS_OSPATH_SEPERATOR_CHARACTER);
+      cover_path.AppendCharacter(FS_OSPATH_SEPARATOR_CHARACTER);
       cover_path.AppendString(file_title.data(), static_cast<u32>(file_title.size()));
       cover_path.AppendCharacter('.');
       cover_path.AppendString(extension);
