@@ -1,0 +1,43 @@
+- 2020/12/25: Partial texture replacement support added. For now, this is only applicable to a small number of games which upload backgrounds to video RAM every frame. Dumping and replacement options are available in `Advanced Settings`.
+- 2020/12/22: PGXP Depth Buffer enhancement added. This enhancement can eliminate "polygon fighting" in games, by giving the PS1 the depth buffer it never had. Compatibility is rather low at the moment, but for the games it does work in, it works very well. The depth buffer will be made available to postprocessing shaders in the future, enabling  effects such as SSAO.
+- 2020/12/21: DuckStation now has two releases - Development and Preview. New features will appear in Preview first, and make their way to the Development release a few days later. To switch to preview, update to the latest development build (older builds will update to development), change the channel from `latest` to `preview` in general settings, and click `Check for Updates`.
+- 2020/12/16: Integrated CPU debugger added in Qt frontend.
+- 2020/12/13: Button layout for the touchscreen controller in the Android version can now be customized.
+- 2020/12/10: Translation support added for Android version. Currently Brazillian Portuguese, Italian, and Dutch are available.
+- 2020/11/27: Cover support added for game list in Android version. Procedure is the same as the desktop version, except you should place cover images in `<storage>/duckstation/covers` (see [Adding Game Covers](https://github.com/stenzek/duckstation/wiki/Adding-Game-Covers)).
+- 2020/11/27: Disc database is shipped with desktop and Android versions courtesy of redump.org. This will provide titles for games on Android, where it was not possible previously.
+- 2020/11/27: Compatibility databases added to libretro core - broken enhancements will be automatically disabled. You can turn this off by disabling "Apply Compatibility Settings" in the core options.
+- 2020/11/27: SDL game controller database is included with desktop versions courtesy of https://github.com/gabomdq/SDL_GameControllerDB.
+- 2020/11/21: OpenGL ES 2.0 host display support added. You cannot use the hardware renderer with GLES2, it still requires GLES3, but GLES2 GPUs can now use the software renderer.
+- 2020/11/21: Threaded renderer for software renderer added. Can result in a significant speed boost depending on the game.
+- 2020/11/21: AArch32/armv7 recompiler added. Android and Linux builds will follow after further testing, but for now you can build it yourself.
+- 2020/11/18: Window size (resize window to Nx content resolution) added to Qt and SDL frontends.
+- 2020/11/10: Widescreen hack now renders in the display aspect ratio instead of always 16:9.
+- 2020/11/01: Exclusive fullscreen option added for Windows D3D11 users. Enjoy buttery smooth PAL games.
+- 2020/10/31: Multisample antialiasing added as an enhancement.
+- 2020/10/30: Option to use analog stick as d-pad for analog controller added.
+- 2020/10/20: New cheat manager with memory scanning added. More features will be added over time.
+- 2020/10/05: CD-ROM read speedup enhancement added.
+- 2020/09/30: CPU overclocking is now supported. Use with caution as it will break games and increase system requirements. It can be set globally or per-game.
+- 2020/09/25: Cheat support added for libretro core.
+- 2020/09/23: Game covers added to Qt frontend (see [Adding Game Covers](https://github.com/stenzek/duckstation/wiki/Adding-Game-Covers)).
+- 2020/09/19: Memory card importer/editor added to Qt frontend.
+- 2020/09/13: Support for chaining post processing shaders added.
+- 2020/09/12: Additional texture filtering options added.
+- 2020/09/09: Basic cheat support added. Not all instructions/commands are supported yet.
+- 2020/09/01: Many additional user settings available, including memory cards and enhancements. Now you can set these per-game.
+- 2020/08/25: Automated builds for macOS now available.
+- 2020/08/22: XInput controller backend added.
+- 2020/08/20: Per-game setting overrides added. Mostly for compatibility, but some options are customizable.
+- 2020/08/19: CPU PGXP mode added. It is very slow and incompatible with the recompiler, only use for games which need it.
+- 2020/08/15: Playlist support/single memcard for multi-disc games in Qt frontend added.
+- 2020/08/07: Automatic updater for standalone Windows builds.
+- 2020/08/01: Initial PGXP (geometry/perspective correction) support.
+- 2020/07/28: Qt frontend supports displaying interface in multiple languages.
+- 2020/07/23: m3u multi-disc support for libretro core.
+- 2020/07/22: Support multiple bindings for each controller button/axis.
+- 2020/07/18: Widescreen hack enhancement added.
+- 2020/07/04: Vulkan renderer now available in libretro core.
+- 2020/07/02: Now available as a libretro core.
+- 2020/07/01: Lightgun support with custom crosshairs.
+- 2020/06/19: Vulkan hardware renderer added.

@@ -16,6 +16,7 @@ DuckStation is an simulator/emulator of the Sony PlayStation(TM) console, focusi
 A "BIOS" ROM image is required to to start the emulator and to play games. You can use an image from any hardware version or region, although mismatching game regions and BIOS regions may have compatibility issues. A ROM image is not provided with the emulator for legal reasons, you should dump this from your own console using Caetla or other means.
 
 ## Latest News
+Older entries are available at https://github.com/stenzek/duckstation/blob/master/NEWS.md
 
 - 2020/12/25: Partial texture replacement support added. For now, this is only applicable to a small number of games which upload backgrounds to video RAM every frame. Dumping and replacement options are available in `Advanced Settings`.
 - 2020/12/22: PGXP Depth Buffer enhancement added. This enhancement can eliminate "polygon fighting" in games, by giving the PS1 the depth buffer it never had. Compatibility is rather low at the moment, but for the games it does work in, it works very well. The depth buffer will be made available to postprocessing shaders in the future, enabling  effects such as SSAO.
@@ -33,33 +34,6 @@ A "BIOS" ROM image is required to to start the emulator and to play games. You c
 - 2020/11/18: Window size (resize window to Nx content resolution) added to Qt and SDL frontends.
 - 2020/11/10: Widescreen hack now renders in the display aspect ratio instead of always 16:9.
 - 2020/11/01: Exclusive fullscreen option added for Windows D3D11 users. Enjoy buttery smooth PAL games.
-- 2020/10/31: Multisample antialiasing added as an enhancement.
-- 2020/10/30: Option to use analog stick as d-pad for analog controller added.
-- 2020/10/20: New cheat manager with memory scanning added. More features will be added over time.
-- 2020/10/05: CD-ROM read speedup enhancement added.
-- 2020/09/30: CPU overclocking is now supported. Use with caution as it will break games and increase system requirements. It can be set globally or per-game.
-- 2020/09/25: Cheat support added for libretro core.
-- 2020/09/23: Game covers added to Qt frontend (see [Adding Game Covers](https://github.com/stenzek/duckstation/wiki/Adding-Game-Covers)).
-- 2020/09/19: Memory card importer/editor added to Qt frontend.
-- 2020/09/13: Support for chaining post processing shaders added.
-- 2020/09/12: Additional texture filtering options added.
-- 2020/09/09: Basic cheat support added. Not all instructions/commands are supported yet.
-- 2020/09/01: Many additional user settings available, including memory cards and enhancements. Now you can set these per-game.
-- 2020/08/25: Automated builds for macOS now available.
-- 2020/08/22: XInput controller backend added.
-- 2020/08/20: Per-game setting overrides added. Mostly for compatibility, but some options are customizable.
-- 2020/08/19: CPU PGXP mode added. It is very slow and incompatible with the recompiler, only use for games which need it.
-- 2020/08/15: Playlist support/single memcard for multi-disc games in Qt frontend added.
-- 2020/08/07: Automatic updater for standalone Windows builds.
-- 2020/08/01: Initial PGXP (geometry/perspective correction) support.
-- 2020/07/28: Qt frontend supports displaying interface in multiple languages.
-- 2020/07/23: m3u multi-disc support for libretro core.
-- 2020/07/22: Support multiple bindings for each controller button/axis.
-- 2020/07/18: Widescreen hack enhancement added.
-- 2020/07/04: Vulkan renderer now available in libretro core.
-- 2020/07/02: Now available as a libretro core.
-- 2020/07/01: Lightgun support with custom crosshairs.
-- 2020/06/19: Vulkan hardware renderer added.
 
 ## Features
 
