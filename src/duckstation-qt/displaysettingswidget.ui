@@ -27,11 +27,11 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QGroupBox" name="groupBox">
+    <widget class="QGroupBox" name="basicGroupBox">
      <property name="title">
       <string>Basic</string>
      </property>
-     <layout class="QFormLayout" name="formLayout_3">
+     <layout class="QFormLayout" name="formLayout_2">
       <item row="0" column="0">
        <widget class="QLabel" name="label">
         <property name="text">
@@ -63,18 +63,22 @@
        <widget class="QComboBox" name="fullscreenMode"/>
       </item>
       <item row="3" column="0" colspan="2">
-       <widget class="QCheckBox" name="gpuThread">
-        <property name="text">
-         <string>Threaded Rendering</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0" colspan="2">
-       <widget class="QCheckBox" name="vsync">
-        <property name="text">
-         <string>VSync</string>
-        </property>
-       </widget>
+       <layout class="QGridLayout" name="basicCheckboxGridLayout">
+        <item row="0" column="0">
+         <widget class="QCheckBox" name="gpuThread">
+          <property name="text">
+           <string>Threaded Rendering</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QCheckBox" name="vsync">
+          <property name="text">
+           <string>VSync</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
      </layout>
     </widget>

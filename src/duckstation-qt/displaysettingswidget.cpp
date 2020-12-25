@@ -99,6 +99,18 @@ DisplaySettingsWidget::DisplaySettingsWidget(QtHostInterface* host_interface, QW
   dialog->registerWidgetHelp(
     m_ui.showSpeed, tr("Show Speed"), tr("Unchecked"),
     tr("Shows the current emulation speed of the system in the top-right corner of the display as a percentage."));
+
+#ifdef _WIN32
+  {
+    QCheckBox* cb = new QCheckBox(tr("Use Blit Swap Chain"), m_ui.basicGroupBox);
+    SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, cb, "Display", "UseBlitSwapChain", false);
+    m_ui.basicCheckboxGridLayout->addWidget(cb, 1, 0, 1, 1);
+    dialog->registerWidgetHelp(cb, tr("Use Blit Swap Chain"), tr("Unchecked"),
+                               tr("Uses a blit presentation model instead of flipping when using the Direct3D 11 "
+                                  "renderer. This usually results in slower performance, but may be required for some "
+                                  "streaming applications, or to uncap framerates on some systems."));
+  }
+#endif
 }
 
 DisplaySettingsWidget::~DisplaySettingsWidget() = default;
