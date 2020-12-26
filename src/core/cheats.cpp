@@ -390,6 +390,93 @@ bool CheatList::LoadFromLibretroString(const std::string& str)
   return !m_codes.empty();
 }
 
+bool CheatList::LoadFromEPSXeString(const std::string& str)
+{
+  std::istringstream iss(str);
+
+  std::string line;
+  std::string group;
+  CheatCode::Type type = CheatCode::Type::Gameshark;
+  CheatCode::Activation activation = CheatCode::Activation::EndFrame;
+  CheatCode current_code;
+  while (std::getline(iss, line))
+  {
+    char* start = line.data();
+    while (*start != '\0' && std::isspace(SignedCharToInt(*start)))
+      start++;
+
+    // skip empty lines
+    if (*start == '\0')
+      continue;
+
+    char* end = start + std::strlen(start) - 1;
+    while (end > start && std::isspace(SignedCharToInt(*end)))
+    {
+      *end = '\0';
+      end--;
+    }
+
+    // skip comments and empty line
+    if (*start == ';' || *start == '\0')
+      continue;
+
+    if (*start == '#')
+    {
+      start++;
+
+      // new cheat
+      if (current_code.Valid())
+        m_codes.push_back(std::move(current_code));
+
+      current_code = CheatCode();
+      if (group.empty())
+        group = "Ungrouped";
+
+      current_code.group = std::move(group);
+      group = std::string();
+      current_code.type = type;
+      type = CheatCode::Type::Gameshark;
+      current_code.activation = activation;
+      activation = CheatCode::Activation::EndFrame;
+
+      char* separator = std::strchr(start, '\\');
+      if (separator)
+      {
+        *separator = 0;
+        current_code.group = start;
+        start = separator + 1;
+      }
+
+      current_code.description.append(start);
+      continue;
+    }
+
+    while (!IsHexCharacter(*start) && start != end)
+      start++;
+    if (start == end)
+      continue;
+
+    char* end_ptr;
+    CheatCode::Instruction inst;
+    inst.first = static_cast<u32>(std::strtoul(start, &end_ptr, 16));
+    inst.second = 0;
+    if (end_ptr)
+    {
+      while (!IsHexCharacter(*end_ptr) && end_ptr != end)
+        end_ptr++;
+      if (end_ptr != end)
+        inst.second = static_cast<u32>(std::strtoul(end_ptr, nullptr, 16));
+    }
+    current_code.instructions.push_back(inst);
+  }
+
+  if (current_code.Valid())
+    m_codes.push_back(std::move(current_code));
+
+  Log_InfoPrintf("Loaded %zu cheats (EPSXe format)", m_codes.size());
+  return !m_codes.empty();
+}
+
 static bool IsLibretroSeparator(char ch)
 {
   return (ch == ' ' || ch == '-' || ch == ':' || ch == '+');
@@ -489,7 +576,7 @@ CheatList::Format CheatList::DetectFileFormat(const std::string& str)
       start++;
 
     // skip empty lines
-    if (*start == '\0' || *start == '=')
+    if (*start == '\0')
       continue;
 
     char* end = start + std::strlen(start) - 1;
@@ -499,10 +586,20 @@ CheatList::Format CheatList::DetectFileFormat(const std::string& str)
       end--;
     }
 
+    // eat comments
+    if (start[0] == '#' || start[0] == ';')
+      continue;
+
     if (std::strncmp(line.data(), "cheats", 6) == 0)
       return Format::Libretro;
-    else
+
+    // pcsxr if we see brackets
+    if (start[0] == '[')
       return Format::PCSXR;
+
+    // otherwise if it's a code, it's probably epsxe
+    if (std::isdigit(start[0]))
+      return Format::EPSXe;
   }
 
   return Format::Count;
@@ -526,6 +623,8 @@ bool CheatList::LoadFromString(const std::string& str, Format format)
     return LoadFromPCSXRString(str);
   else if (format == Format::Libretro)
     return LoadFromLibretroString(str);
+  else if (format == Format::EPSXe)
+    return LoadFromEPSXeString(str);
 
   Log_ErrorPrintf("Invalid or unknown cheat format");
   return false;

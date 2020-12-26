@@ -123,6 +123,7 @@ public:
     Autodetect,
     PCSXR,
     Libretro,
+    EPSXe,
     Count
   };
 
@@ -161,6 +162,7 @@ public:
   bool LoadFromString(const std::string& str, Format format);
   bool LoadFromPCSXRString(const std::string& str);
   bool LoadFromLibretroString(const std::string& str);
+  bool LoadFromEPSXeString(const std::string& str);
 
   bool SaveToPCSXRFile(const char* filename);
 
