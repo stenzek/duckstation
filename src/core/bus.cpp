@@ -106,6 +106,7 @@ static std::tuple<TickCount, TickCount, TickCount> CalculateMemoryTiming(MEMDELA
 static void RecalculateMemoryTimings();
 
 static bool AllocateMemory();
+static void ReleaseMemory();
 
 static void SetCodePageFastmemProtection(u32 page_index, bool writable);
 
@@ -149,11 +150,7 @@ void Shutdown()
   CPU::g_state.fastmem_base = nullptr;
   m_fastmem_mode = CPUFastmemMode::Disabled;
 
-  if (g_ram)
-  {
-    m_memory_arena.ReleaseViewPtr(g_ram, RAM_SIZE);
-    g_ram = nullptr;
-  }
+  ReleaseMemory();
 }
 
 void Reset()
@@ -276,7 +273,19 @@ bool AllocateMemory()
     return false;
   }
 
+  Log_InfoPrintf("RAM is %u bytes at %p", RAM_SIZE, g_ram);
   return true;
+}
+
+void ReleaseMemory()
+{
+  if (g_ram)
+  {
+    m_memory_arena.ReleaseViewPtr(g_ram, RAM_SIZE);
+    g_ram = nullptr;
+  }
+
+  m_memory_arena.Destroy();
 }
 
 static ALWAYS_INLINE u32 FastmemAddressToLUTPageIndex(u32 address)
