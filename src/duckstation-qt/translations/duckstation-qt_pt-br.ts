@@ -2252,8 +2252,8 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <location filename="../qtutils.cpp" line="760"/>
-        <source>Invalid address. It should be in hex (0x12345678) or decimal (12345678)</source>
-        <translation>Endereço inválido! Valores devem ser: hexa (0x12345678) ou decimal (12345678)</translation>
+        <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
+        <translation>Endereço inválido! Valores devem ser: hexa (0x12345678 ou 12345678)</translation>
     </message>
 </context>
 <context>

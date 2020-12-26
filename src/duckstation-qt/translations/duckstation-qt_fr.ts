@@ -2156,7 +2156,7 @@ Cet avertissement ne sera affiché qu&apos;une seule fois.</translation>
     </message>
     <message>
         <location filename="../qtutils.cpp" line="760"/>
-        <source>Invalid address. It should be in hex (0x12345678) or decimal (12345678)</source>
+        <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
