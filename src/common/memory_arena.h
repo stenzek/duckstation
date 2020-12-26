@@ -32,7 +32,9 @@ public:
 
   static void* FindBaseAddressForMapping(size_t size);
 
+  bool IsValid() const;
   bool Create(size_t size, bool writable, bool executable);
+  void Destroy();
 
   std::optional<View> CreateView(size_t offset, size_t size, bool writable, bool executable,
                                  void* fixed_address = nullptr);

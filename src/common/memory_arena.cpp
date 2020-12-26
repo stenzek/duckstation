@@ -63,13 +63,7 @@ MemoryArena::MemoryArena() = default;
 
 MemoryArena::~MemoryArena()
 {
-#if defined(WIN32)
-  if (m_file_handle)
-    CloseHandle(m_file_handle);
-#elif defined(__linux__)
-  if (m_shmem_fd > 0)
-    close(m_shmem_fd);
-#endif
+  Destroy();
 }
 
 void* MemoryArena::FindBaseAddressForMapping(size_t size)
@@ -100,8 +94,20 @@ void* MemoryArena::FindBaseAddressForMapping(size_t size)
   return base_address;
 }
 
+bool MemoryArena::IsValid() const
+{
+#if defined(WIN32)
+  return m_file_handle != nullptr;
+#else
+  return m_shmem_fd >= 0;
+#endif
+}
+
 bool MemoryArena::Create(size_t size, bool writable, bool executable)
 {
+  if (IsValid())
+    Destroy();
+
 #if defined(WIN32)
   const std::string file_mapping_name = StringUtil::StdStringFromFormat("duckstation_%u", GetCurrentProcessId());
 
@@ -170,6 +176,23 @@ bool MemoryArena::Create(size_t size, bool writable, bool executable)
   return true;
 #else
   return false;
+#endif
+}
+
+void MemoryArena::Destroy()
+{
+#if defined(WIN32)
+  if (m_file_handle)
+  {
+    CloseHandle(m_file_handle);
+    m_file_handle = nullptr;
+  }
+#elif defined(__linux__)
+  if (m_shmem_fd > 0)
+  {
+    close(m_shmem_fd);
+    m_shmem_fd = -1;
+  }
 #endif
 }
 
