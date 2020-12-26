@@ -599,6 +599,17 @@ void MainWindow::onGameListContextMenuRequested(const QPoint& point, const GameL
         boot_params->override_fast_boot = false;
         m_host_interface->bootSystem(std::move(boot_params));
       });
+
+      if (m_ui.menuDebug->menuAction()->isVisible())
+      {
+        connect(menu.addAction(tr("Boot and Debug")), &QAction::triggered, [this, entry]() {
+          m_open_debugger_on_start = true;
+
+          auto boot_params = std::make_shared<SystemBootParameters>(entry->path);
+          boot_params->override_start_paused = true;
+          m_host_interface->bootSystem(std::move(boot_params));
+        });
+      }
     }
     else
     {
@@ -815,6 +826,11 @@ void MainWindow::updateEmulationActions(bool starting, bool running)
     }
   }
 
+  if (m_open_debugger_on_start && running)
+    openCPUDebugger();
+  if ((!starting && !running) || running)
+    m_open_debugger_on_start = false;
+
   if (g_settings.debugging.enable_gdb_server)
   {
     if (starting && !m_gdb_server)
@@ -923,7 +939,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionCheckForUpdates, &QAction::triggered, this, &MainWindow::onCheckForUpdatesActionTriggered);
   connect(m_ui.actionMemory_Card_Editor, &QAction::triggered, this, &MainWindow::onToolsMemoryCardEditorTriggered);
   connect(m_ui.actionCheatManager, &QAction::triggered, this, &MainWindow::onToolsCheatManagerTriggered);
-  connect(m_ui.actionCPUDebugger, &QAction::triggered, this, &MainWindow::onToolsCPUDebuggerTriggered);
+  connect(m_ui.actionCPUDebugger, &QAction::triggered, this, &MainWindow::openCPUDebugger);
   connect(m_ui.actionOpenDataDirectory, &QAction::triggered, this, &MainWindow::onToolsOpenDataDirectoryTriggered);
   connect(m_ui.actionGridViewShowTitles, &QAction::triggered, m_game_list_widget, &GameListWidget::setShowCoverTitles);
   connect(m_ui.actionGridViewZoomIn, &QAction::triggered, m_game_list_widget, [this]() {
@@ -1350,16 +1366,17 @@ void MainWindow::onToolsCheatManagerTriggered()
   m_cheat_manager_dialog->show();
 }
 
-void MainWindow::onToolsCPUDebuggerTriggered()
+void MainWindow::openCPUDebugger()
 {
-  if (!m_debugger_window)
-  {
-    m_debugger_window = new DebuggerWindow();
-    m_debugger_window->setWindowIcon(windowIcon());
-    connect(m_debugger_window, &DebuggerWindow::closed, this, &MainWindow::onCPUDebuggerClosed);
-  }
-
   m_host_interface->pauseSystem(true, true);
+  if (!System::IsValid())
+    return;
+
+  Assert(!m_debugger_window);
+
+  m_debugger_window = new DebuggerWindow();
+  m_debugger_window->setWindowIcon(windowIcon());
+  connect(m_debugger_window, &DebuggerWindow::closed, this, &MainWindow::onCPUDebuggerClosed);
   m_debugger_window->show();
 
   // the debugger will miss the pause event above (or we were already paused), so fire it now

@@ -87,16 +87,17 @@ private Q_SLOTS:
   void onCheckForUpdatesActionTriggered();
   void onToolsMemoryCardEditorTriggered();
   void onToolsCheatManagerTriggered();
-  void onToolsCPUDebuggerTriggered();
   void onToolsOpenDataDirectoryTriggered();
 
   void onGameListEntrySelected(const GameListEntry* entry);
   void onGameListEntryDoubleClicked(const GameListEntry* entry);
   void onGameListContextMenuRequested(const QPoint& point, const GameListEntry* entry);
   void onGameListSetCoverImageRequested(const GameListEntry* entry);
-  void onCPUDebuggerClosed();
 
   void onUpdateCheckComplete();
+
+  void openCPUDebugger();
+  void onCPUDebuggerClosed();
 
 protected:
   void closeEvent(QCloseEvent* event) override;
@@ -146,6 +147,7 @@ private:
 
   bool m_emulation_running = false;
   bool m_was_paused_by_focus_loss = false;
+  bool m_open_debugger_on_start = false;
 
   GDBServer* m_gdb_server = nullptr;
 };
