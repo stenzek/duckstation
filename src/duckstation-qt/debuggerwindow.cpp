@@ -453,29 +453,9 @@ void DebuggerWindow::setMemoryViewRegion(Bus::MemoryRegion region)
 
   m_active_memory_region = region;
 
-  switch (region)
-  {
-    case Bus::MemoryRegion::RAM:
-    case Bus::MemoryRegion::RAMMirror1:
-    case Bus::MemoryRegion::RAMMirror2:
-    case Bus::MemoryRegion::RAMMirror3:
-      m_ui.memoryView->setData(Bus::GetMemoryRegionStart(region), Bus::g_ram, Bus::RAM_SIZE);
-      break;
-
-    case Bus::MemoryRegion::Scratchpad:
-      m_ui.memoryView->setData(CPU::DCACHE_LOCATION, CPU::g_state.dcache.data(), CPU::DCACHE_SIZE);
-      break;
-
-    case Bus::MemoryRegion::BIOS:
-      m_ui.memoryView->setData(Bus::BIOS_BASE, Bus::g_bios, Bus::BIOS_SIZE);
-      break;
-
-    case Bus::MemoryRegion::EXP1:
-    default:
-      // TODO
-      m_ui.memoryView->setData(Bus::EXP1_BASE, nullptr, 0);
-      break;
-  }
+  const PhysicalMemoryAddress start = Bus::GetMemoryRegionStart(region);
+  const PhysicalMemoryAddress end = Bus::GetMemoryRegionEnd(region);
+  m_ui.memoryView->setData(start, Bus::GetMemoryRegionPointer(region), end - start);
 
 #define SET_REGION_RADIO_BUTTON(name, rb_region)                                                                       \
   do                                                                                                                   \
