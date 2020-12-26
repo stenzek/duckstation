@@ -14,11 +14,8 @@
 #include "common/gl/texture.h"
 #include "common/window_info.h"
 #include "core/host_display.h"
-#include <memory>
-
-#ifndef LIBRETRO
 #include "postprocessing_chain.h"
-#endif
+#include <memory>
 
 namespace FrontendCommon {
 
@@ -86,7 +83,6 @@ protected:
                      s32 texture_view_height, bool linear_filter);
   void RenderSoftwareCursor(s32 left, s32 bottom, s32 width, s32 height, HostDisplayTexture* texture_handle);
 
-#ifndef LIBRETRO
   struct PostProcessingStage
   {
     GL::Program program;
@@ -98,7 +94,6 @@ protected:
   void ApplyPostProcessingChain(GLuint final_target, s32 final_left, s32 final_top, s32 final_width, s32 final_height,
                                 void* texture_handle, u32 texture_width, s32 texture_height, s32 texture_view_x,
                                 s32 texture_view_y, s32 texture_view_width, s32 texture_view_height);
-#endif
 
   std::unique_ptr<GL::Context> m_gl_context;
 
@@ -114,12 +109,10 @@ protected:
   u32 m_display_pixels_texture_pbo_map_offset = 0;
   u32 m_display_pixels_texture_pbo_map_size = 0;
 
-#ifndef LIBRETRO
   PostProcessingChain m_post_processing_chain;
   GL::Texture m_post_processing_input_texture;
   std::unique_ptr<GL::StreamBuffer> m_post_processing_ubo;
   std::vector<PostProcessingStage> m_post_processing_stages;
-#endif
 
   bool m_use_gles2_draw_path = false;
 };

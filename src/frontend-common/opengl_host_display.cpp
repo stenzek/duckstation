@@ -8,9 +8,7 @@
 #include "imgui.h"
 #include "imgui_impl_opengl3.h"
 #endif
-#ifndef LIBRETRO
 #include "postprocessing_shadergen.h"
-#endif
 Log_SetChannel(LibretroOpenGLHostDisplay);
 
 namespace FrontendCommon {
@@ -639,12 +637,10 @@ void main()
 
 void OpenGLHostDisplay::DestroyResources()
 {
-#ifndef LIBRETRO
   m_post_processing_chain.ClearStages();
   m_post_processing_input_texture.Destroy();
   m_post_processing_ubo.reset();
   m_post_processing_stages.clear();
-#endif
 
   if (m_display_pixels_texture_id != 0)
   {
@@ -727,7 +723,6 @@ void OpenGLHostDisplay::RenderDisplay()
 
   const auto [left, top, width, height] = CalculateDrawRect(GetWindowWidth(), GetWindowHeight(), m_display_top_margin);
 
-#ifndef LIBRETRO
   if (!m_post_processing_chain.IsEmpty())
   {
     ApplyPostProcessingChain(0, left, GetWindowHeight() - top - height, width, height, m_display_texture_handle,
@@ -735,7 +730,6 @@ void OpenGLHostDisplay::RenderDisplay()
                              m_display_texture_view_y, m_display_texture_view_width, m_display_texture_view_height);
     return;
   }
-#endif
 
   RenderDisplay(left, GetWindowHeight() - top - height, width, height, m_display_texture_handle,
                 m_display_texture_width, m_display_texture_height, m_display_texture_view_x, m_display_texture_view_y,
@@ -835,8 +829,6 @@ void OpenGLHostDisplay::RenderSoftwareCursor(s32 left, s32 bottom, s32 width, s3
     DrawFullscreenQuadES2(0, 0, tex_width, tex_height, tex_width, tex_height);
   }
 }
-
-#ifndef LIBRETRO
 
 bool OpenGLHostDisplay::SetPostProcessingChain(const std::string_view& config)
 {
@@ -1005,14 +997,5 @@ void OpenGLHostDisplay::ApplyPostProcessingChain(GLuint final_target, s32 final_
   glBindSampler(0, 0);
   m_post_processing_ubo->Unbind();
 }
-
-#else
-
-bool OpenGLHostDisplay::SetPostProcessingChain(const std::string_view& config)
-{
-  return false;
-}
-
-#endif
 
 } // namespace FrontendCommon

@@ -4,6 +4,7 @@
 #include "common/vulkan/swap_chain.h"
 #include "common/window_info.h"
 #include "core/host_display.h"
+#include "postprocessing_chain.h"
 #include "vulkan_loader.h"
 #include <memory>
 #include <string_view>
@@ -12,10 +13,6 @@ namespace Vulkan {
 class StreamBuffer;
 class SwapChain;
 } // namespace Vulkan
-
-#ifndef LIBRETRO
-#include "postprocessing_chain.h"
-#endif
 
 namespace FrontendCommon {
 
@@ -77,7 +74,6 @@ protected:
     float src_rect_height;
   };
 
-#ifndef LIBRETRO
   struct PostProcessingStage
   {
     PostProcessingStage() = default;
@@ -94,7 +90,6 @@ protected:
   void ApplyPostProcessingChain(s32 final_left, s32 final_top, s32 final_width, s32 final_height, void* texture_handle,
                                 u32 texture_width, s32 texture_height, s32 texture_view_x, s32 texture_view_y,
                                 s32 texture_view_width, s32 texture_view_height);
-#endif
 
   // Can be overridden by frontends.
   virtual VkRenderPass GetRenderPassForDisplay() const;
@@ -128,7 +123,6 @@ protected:
   Vulkan::StagingTexture m_upload_staging_texture;
   Vulkan::StagingTexture m_readback_staging_texture;
 
-#ifndef LIBRETRO
   VkDescriptorSetLayout m_post_process_descriptor_set_layout = VK_NULL_HANDLE;
   VkDescriptorSetLayout m_post_process_ubo_descriptor_set_layout = VK_NULL_HANDLE;
   VkPipelineLayout m_post_process_pipeline_layout = VK_NULL_HANDLE;
@@ -139,7 +133,6 @@ protected:
   VkFramebuffer m_post_processing_input_framebuffer = VK_NULL_HANDLE;
   Vulkan::StreamBuffer m_post_processing_ubo;
   std::vector<PostProcessingStage> m_post_processing_stages;
-#endif
 };
 
 } // namespace FrontendCommon

@@ -9,13 +9,11 @@
 #include "common/vulkan/stream_buffer.h"
 #include "common/vulkan/swap_chain.h"
 #include "common/vulkan/util.h"
+#include "postprocessing_shadergen.h"
 #include <array>
 #ifdef WITH_IMGUI
 #include "imgui.h"
 #include "imgui_impl_vulkan.h"
-#endif
-#ifndef LIBRETRO
-#include "postprocessing_shadergen.h"
 #endif
 Log_SetChannel(VulkanHostDisplay);
 
@@ -330,7 +328,8 @@ bool VulkanHostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_vie
   return true;
 }
 
-bool VulkanHostDisplay::InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device, bool threaded_presentation)
+bool VulkanHostDisplay::InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device,
+                                               bool threaded_presentation)
 {
   Vulkan::ShaderCache::Create(shader_cache_directory, debug_device);
 
@@ -424,8 +423,6 @@ void main()
   if (m_pipeline_layout == VK_NULL_HANDLE)
     return false;
 
-#ifndef LIBRETRO
-
   dslbuilder.AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
   m_post_process_descriptor_set_layout = dslbuilder.Create(device);
   if (m_post_process_descriptor_set_layout == VK_NULL_HANDLE)
@@ -449,8 +446,6 @@ void main()
   m_post_process_ubo_pipeline_layout = plbuilder.Create(device);
   if (m_post_process_ubo_pipeline_layout == VK_NULL_HANDLE)
     return false;
-
-#endif
 
   VkShaderModule vertex_shader = g_vulkan_shader_cache->GetVertexShader(fullscreen_quad_vertex_shader);
   if (vertex_shader == VK_NULL_HANDLE)
@@ -684,7 +679,6 @@ void VulkanHostDisplay::RenderDisplay()
 
   const auto [left, top, width, height] = CalculateDrawRect(GetWindowWidth(), GetWindowHeight(), m_display_top_margin);
 
-#ifndef LIBRETRO
   if (!m_post_processing_chain.IsEmpty())
   {
     ApplyPostProcessingChain(left, top, width, height, m_display_texture_handle, m_display_texture_width,
@@ -692,7 +686,6 @@ void VulkanHostDisplay::RenderDisplay()
                              m_display_texture_view_width, m_display_texture_view_height);
     return;
   }
-#endif
 
   BeginSwapChainRenderPass(m_swap_chain->GetCurrentFramebuffer());
   RenderDisplay(left, top, width, height, m_display_texture_handle, m_display_texture_width, m_display_texture_height,
@@ -797,8 +790,6 @@ std::vector<std::string> VulkanHostDisplay::EnumerateAdapterNames()
 
   return {};
 }
-
-#ifndef LIBRETRO
 
 VulkanHostDisplay::PostProcessingStage::PostProcessingStage(PostProcessingStage&& move)
   : pipeline(move.pipeline), output_framebuffer(move.output_framebuffer),
@@ -1057,14 +1048,5 @@ void VulkanHostDisplay::ApplyPostProcessingChain(s32 final_left, s32 final_top, 
     }
   }
 }
-
-#else // LIBRETRO
-
-bool VulkanHostDisplay::SetPostProcessingChain(const std::string_view& config)
-{
-  return false;
-}
-
-#endif
 
 } // namespace FrontendCommon

@@ -8,11 +8,9 @@
 #include "core/settings.h"
 #include "display_ps.hlsl.h"
 #include "display_vs.hlsl.h"
-#include <array>
-#ifndef LIBRETRO
 #include "frontend-common/postprocessing_shadergen.h"
+#include <array>
 #include <dxgi1_5.h>
-#endif
 #ifdef WITH_IMGUI
 #include "imgui.h"
 #include "imgui_impl_dx11.h"
@@ -78,9 +76,7 @@ D3D11HostDisplay::D3D11HostDisplay() = default;
 D3D11HostDisplay::~D3D11HostDisplay()
 {
   AssertMsg(!m_context, "Context should have been destroyed by now");
-#ifndef LIBRETRO
   AssertMsg(!m_swap_chain, "Swap chain should have been destroyed by now");
-#endif
 }
 
 HostDisplay::RenderAPI D3D11HostDisplay::GetRenderAPI() const
@@ -105,11 +101,7 @@ bool D3D11HostDisplay::HasRenderDevice() const
 
 bool D3D11HostDisplay::HasRenderSurface() const
 {
-#ifndef LIBRETRO
   return static_cast<bool>(m_swap_chain);
-#else
-  return true;
-#endif
 }
 
 std::unique_ptr<HostDisplayTexture> D3D11HostDisplay::CreateTexture(u32 width, u32 height, const void* initial_data,
@@ -236,15 +228,12 @@ void D3D11HostDisplay::EndSetDisplayPixels()
 
 void D3D11HostDisplay::SetVSync(bool enabled)
 {
-#ifndef LIBRETRO
   m_vsync = enabled;
-#endif
 }
 
 bool D3D11HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, bool debug_device,
                                           bool threaded_presentation)
 {
-#ifndef LIBRETRO
   UINT create_flags = 0;
   if (debug_device)
     create_flags |= D3D11_CREATE_DEVICE_DEBUG;
@@ -347,7 +336,6 @@ bool D3D11HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view
     if (SUCCEEDED(hr))
       m_allow_tearing_supported = (allow_tearing_supported == TRUE);
   }
-#endif
 
   m_window_info = wi;
   return true;
@@ -356,13 +344,11 @@ bool D3D11HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view
 bool D3D11HostDisplay::InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device,
                                               bool threaded_presentation)
 {
-#ifndef LIBRETRO
   if (m_window_info.type != WindowInfo::Type::Surfaceless && m_window_info.type != WindowInfo::Type::Libretro &&
       !CreateSwapChain(nullptr))
   {
     return false;
   }
-#endif
 
   if (!CreateResources())
     return false;
@@ -397,8 +383,6 @@ bool D3D11HostDisplay::DoneRenderContextCurrent()
 {
   return true;
 }
-
-#ifndef LIBRETRO
 
 bool D3D11HostDisplay::CreateSwapChain(const DXGI_MODE_DESC* fullscreen_mode)
 {
@@ -498,35 +482,25 @@ bool D3D11HostDisplay::CreateSwapChainRTV()
   return true;
 }
 
-#endif
-
 bool D3D11HostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
 {
-#ifndef LIBRETRO
   DestroyRenderSurface();
 
   m_window_info = new_wi;
   return CreateSwapChain(nullptr);
-#else
-  m_window_info = new_wi;
-  return true;
-#endif
 }
 
 void D3D11HostDisplay::DestroyRenderSurface()
 {
-#ifndef LIBRETRO
   if (IsFullscreen())
     SetFullscreen(false, 0, 0, 0.0f);
 
   m_swap_chain_rtv.Reset();
   m_swap_chain.Reset();
-#endif
 }
 
 void D3D11HostDisplay::ResizeRenderWindow(s32 new_window_width, s32 new_window_height)
 {
-#ifndef LIBRETRO
   if (!m_swap_chain)
     return;
 
@@ -539,31 +513,21 @@ void D3D11HostDisplay::ResizeRenderWindow(s32 new_window_width, s32 new_window_h
 
   if (!CreateSwapChainRTV())
     Panic("Failed to recreate swap chain RTV after resize");
-#endif
 }
 
 bool D3D11HostDisplay::SupportsFullscreen() const
 {
-#ifndef LIBRETRO
   return true;
-#else
-  return false;
-#endif
 }
 
 bool D3D11HostDisplay::IsFullscreen()
 {
-#ifndef LIBRETRO
   BOOL is_fullscreen = FALSE;
   return (m_swap_chain && SUCCEEDED(m_swap_chain->GetFullscreenState(&is_fullscreen, nullptr)) && is_fullscreen);
-#else
-  return false;
-#endif
 }
 
 bool D3D11HostDisplay::SetFullscreen(bool fullscreen, u32 width, u32 height, float refresh_rate)
 {
-#ifndef LIBRETRO
   if (!m_swap_chain)
     return false;
 
@@ -622,9 +586,6 @@ bool D3D11HostDisplay::SetFullscreen(bool fullscreen, u32 width, u32 height, flo
   }
 
   return true;
-#else
-  return false;
-#endif
 }
 
 bool D3D11HostDisplay::CreateResources()
@@ -687,11 +648,9 @@ bool D3D11HostDisplay::CreateResources()
 
 void D3D11HostDisplay::DestroyResources()
 {
-#ifndef LIBRETRO
   m_post_processing_chain.ClearStages();
   m_post_processing_input_texture.Destroy();
   m_post_processing_stages.clear();
-#endif
 
   m_display_uniform_buffer.Release();
   m_linear_sampler.Reset();
@@ -726,7 +685,6 @@ void D3D11HostDisplay::DestroyImGuiContext()
 
 bool D3D11HostDisplay::Render()
 {
-#ifndef LIBRETRO
   if (ShouldSkipDisplayingFrame())
   {
 #ifdef WITH_IMGUI
@@ -763,8 +721,6 @@ bool D3D11HostDisplay::Render()
     ImGui_ImplDX11_NewFrame();
 #endif
 
-#endif
-
   return true;
 }
 
@@ -783,7 +739,6 @@ void D3D11HostDisplay::RenderDisplay()
 
   const auto [left, top, width, height] = CalculateDrawRect(GetWindowWidth(), GetWindowHeight(), m_display_top_margin);
 
-#ifndef LIBRETRO
   if (!m_post_processing_chain.IsEmpty())
   {
     ApplyPostProcessingChain(m_swap_chain_rtv.Get(), left, top, width, height, m_display_texture_handle,
@@ -791,7 +746,6 @@ void D3D11HostDisplay::RenderDisplay()
                              m_display_texture_view_y, m_display_texture_view_width, m_display_texture_view_height);
     return;
   }
-#endif
 
   RenderDisplay(left, top, width, height, m_display_texture_handle, m_display_texture_width, m_display_texture_height,
                 m_display_texture_view_x, m_display_texture_view_y, m_display_texture_view_width,
@@ -860,8 +814,6 @@ void D3D11HostDisplay::RenderSoftwareCursor(s32 left, s32 top, s32 width, s32 he
 
   m_context->Draw(3, 0);
 }
-
-#ifndef LIBRETRO
 
 D3D11HostDisplay::AdapterInfo D3D11HostDisplay::GetAdapterInfo()
 {
@@ -1091,14 +1043,5 @@ void D3D11HostDisplay::ApplyPostProcessingChain(ID3D11RenderTargetView* final_ta
   ID3D11ShaderResourceView* null_srv = nullptr;
   m_context->PSSetShaderResources(0, 1, &null_srv);
 }
-
-#else // LIBRETRO
-
-bool D3D11HostDisplay::SetPostProcessingChain(const std::string_view& config)
-{
-  return false;
-}
-
-#endif
 
 } // namespace FrontendCommon
