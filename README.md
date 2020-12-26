@@ -60,7 +60,6 @@ Other features include:
  - Namco GunCon lightgun support (simulated with mouse)
  - NeGcon support
  - Qt and SDL frontends for desktop
- - libretro core for Windows and Linux
  - Automatic updates for Windows builds
  - Automatic content scanning - game titles/regions are provided by redump.org
  - Optional automatic switching of memory cards for each game
@@ -263,17 +262,10 @@ Hotkeys:
  
 ## Libretro Core
 
-DuckStation is available as a libretro core, which can be loaded into a frontend such as RetroArch. It supports most features of the full frontend, within the constraints and limitations of being a libretro core.
+DuckStation is available as a libretro core, supporting most of the features of the full frontend within the constraints and limitations of being a libretro core.
 
-Prebuilt binaries for 64-bit Windows, Linux and Android can be found on the releases page. Direct links:
-- 64-bit Windows: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro.dll.zip
-- 64-bit Linux: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro_x64.so.zip
-- armv7 Linux: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro_linux_armv7.so.zip
-- armv7 Android: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro_android_armv7.so.zip
-- AArch64 Linux: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro_linux_aarch64.so.zip
-- AArch64 Android: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro_android_aarch64.so.zip
-
-To use, download and extract, and install the core file in RetroArch or your preferred frontend.
+As of December 2020, the libretro core is no longer supported by the developer. The core will remain in the tree, but fixing any issues will not be a priority,
+and any bugs must be tested in the standalone version prior to being reported.
 
 To build on Windows, use cmake using the following commands from a `x64 Native Tools Command Prompt for VS 2019`:
 - mkdir build
