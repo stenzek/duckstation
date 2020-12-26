@@ -27,11 +27,11 @@ struct SystemBootParameters
   std::string filename;
   std::optional<bool> override_fast_boot;
   std::optional<bool> override_fullscreen;
+  std::optional<bool> override_start_paused;
   std::unique_ptr<ByteStream> state_stream;
   u32 media_playlist_index = 0;
   bool load_image_to_ram = false;
   bool force_software_renderer = false;
-  bool start_paused = false;
 };
 
 namespace System {

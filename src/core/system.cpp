@@ -560,7 +560,7 @@ bool Boot(const SystemBootParameters& params)
       return false;
     }
 
-    if (params.start_paused)
+    if (g_settings.start_paused || params.override_start_paused.value_or(false))
     {
       DebugAssert(s_state == State::Running);
       s_state = State::Paused;
@@ -705,7 +705,7 @@ bool Boot(const SystemBootParameters& params)
   }
 
   // Good to go.
-  s_state = params.start_paused ? State::Paused : State::Running;
+  s_state = (g_settings.start_paused || params.override_start_paused.value_or(false)) ? State::Paused : State::Running;
   return true;
 }
 
