@@ -47,9 +47,9 @@ uint fixYCoord(uint y)
 
 uint RGBA8ToRGBA5551(float4 v)
 {
-  uint r = uint(roundEven(v.r * 255.0)) >> 3;
-  uint g = uint(roundEven(v.g * 255.0)) >> 3;
-  uint b = uint(roundEven(v.b * 255.0)) >> 3;
+  uint r = uint(roundEven(v.r * 31.0));
+  uint g = uint(roundEven(v.g * 31.0));
+  uint b = uint(roundEven(v.b * 31.0));
   uint a = (v.a != 0.0) ? 1u : 0u;
   return (r) | (g << 5) | (b << 10) | (a << 15);
 }
@@ -61,12 +61,7 @@ float4 RGBA5551ToRGBA8(uint v)
   uint b = ((v >> 10) & 31u);
   uint a = ((v >> 15) & 1u);
 
-  // repeat lower bits
-  r = (r << 3) | (r & 7u);
-  g = (g << 3) | (g & 7u);
-  b = (b << 3) | (b & 7u);
-
-  return float4(float(r) / 255.0, float(g) / 255.0, float(b) / 255.0, float(a));
+  return float4(float(r) / 31.0, float(g) / 31.0, float(b) / 31.0, float(a));
 }
 )";
 }
