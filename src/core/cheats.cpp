@@ -147,6 +147,11 @@ static bool IsHexCharacter(char c)
   return (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f') || (c >= '0' && c <= '9');
 }
 
+static int SignedCharToInt(char ch)
+{
+  return static_cast<int>(static_cast<unsigned char>(ch));
+}
+
 static const std::string* FindKey(const KeyValuePairVector& kvp, const char* search)
 {
   for (const auto& it : kvp)
@@ -180,7 +185,7 @@ bool CheatList::LoadFromPCSXRString(const std::string& str)
   while (std::getline(iss, line))
   {
     char* start = line.data();
-    while (*start != '\0' && std::isspace(*start))
+    while (*start != '\0' && std::isspace(SignedCharToInt(*start)))
       start++;
 
     // skip empty lines
@@ -188,7 +193,7 @@ bool CheatList::LoadFromPCSXRString(const std::string& str)
       continue;
 
     char* end = start + std::strlen(start) - 1;
-    while (end > start && std::isspace(*end))
+    while (end > start && std::isspace(SignedCharToInt(*end)))
     {
       *end = '\0';
       end--;
@@ -299,7 +304,7 @@ bool CheatList::LoadFromLibretroString(const std::string& str)
   while (std::getline(iss, line))
   {
     char* start = line.data();
-    while (*start != '\0' && std::isspace(*start))
+    while (*start != '\0' && std::isspace(SignedCharToInt(*start)))
       start++;
 
     // skip empty lines
@@ -307,7 +312,7 @@ bool CheatList::LoadFromLibretroString(const std::string& str)
       continue;
 
     char* end = start + std::strlen(start) - 1;
-    while (end > start && std::isspace(*end))
+    while (end > start && std::isspace(SignedCharToInt(*end)))
     {
       *end = '\0';
       end--;
@@ -322,21 +327,21 @@ bool CheatList::LoadFromLibretroString(const std::string& str)
     *equals = '\0';
 
     char* key_end = equals - 1;
-    while (key_end > start && std::isspace(*key_end))
+    while (key_end > start && std::isspace(SignedCharToInt(*key_end)))
     {
       *key_end = '\0';
       key_end--;
     }
 
     char* value_start = equals + 1;
-    while (*value_start != '\0' && std::isspace(*value_start))
+    while (*value_start != '\0' && std::isspace(SignedCharToInt(*value_start)))
       value_start++;
 
     if (*value_start == '\0')
       continue;
 
     char* value_end = value_start + std::strlen(value_start) - 1;
-    while (value_end > value_start && std::isspace(*value_end))
+    while (value_end > value_start && std::isspace(SignedCharToInt(*value_end)))
     {
       *value_end = '\0';
       value_end--;
@@ -480,7 +485,7 @@ CheatList::Format CheatList::DetectFileFormat(const std::string& str)
   while (std::getline(iss, line))
   {
     char* start = line.data();
-    while (*start != '\0' && std::isspace(*start))
+    while (*start != '\0' && std::isspace(SignedCharToInt(*start)))
       start++;
 
     // skip empty lines
@@ -488,7 +493,7 @@ CheatList::Format CheatList::DetectFileFormat(const std::string& str)
       continue;
 
     char* end = start + std::strlen(start) - 1;
-    while (end > start && std::isspace(*end))
+    while (end > start && std::isspace(SignedCharToInt(*end)))
     {
       *end = '\0';
       end--;
@@ -566,7 +571,7 @@ bool CheatList::LoadFromPackage(const std::string& game_code)
   while (std::getline(iss, line))
   {
     char* start = line.data();
-    while (*start != '\0' && std::isspace(*start))
+    while (*start != '\0' && std::isspace(SignedCharToInt(*start)))
       start++;
 
     // skip empty lines
@@ -574,7 +579,7 @@ bool CheatList::LoadFromPackage(const std::string& game_code)
       continue;
 
     char* end = start + std::strlen(start) - 1;
-    while (end > start && std::isspace(*end))
+    while (end > start && std::isspace(SignedCharToInt(*end)))
     {
       *end = '\0';
       end--;
@@ -591,7 +596,7 @@ bool CheatList::LoadFromPackage(const std::string& game_code)
     while (std::getline(iss, line))
     {
       start = line.data();
-      while (*start != '\0' && std::isspace(*start))
+      while (*start != '\0' && std::isspace(SignedCharToInt(*start)))
         start++;
 
       // skip empty lines
@@ -599,7 +604,7 @@ bool CheatList::LoadFromPackage(const std::string& game_code)
         continue;
 
       end = start + std::strlen(start) - 1;
-      while (end > start && std::isspace(*end))
+      while (end > start && std::isspace(SignedCharToInt(*end)))
       {
         *end = '\0';
         end--;
@@ -774,7 +779,7 @@ bool CheatCode::SetInstructionsFromString(const std::string& str)
   for (std::string line; std::getline(ss, line);)
   {
     char* start = line.data();
-    while (*start != '\0' && std::isspace(*start))
+    while (*start != '\0' && std::isspace(SignedCharToInt(*start)))
       start++;
 
     // skip empty lines
@@ -782,7 +787,7 @@ bool CheatCode::SetInstructionsFromString(const std::string& str)
       continue;
 
     char* end = start + std::strlen(start) - 1;
-    while (end > start && std::isspace(*end))
+    while (end > start && std::isspace(SignedCharToInt(*end)))
     {
       *end = '\0';
       end--;
