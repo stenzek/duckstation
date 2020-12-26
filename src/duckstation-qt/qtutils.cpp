@@ -748,16 +748,15 @@ std::optional<unsigned> PromptForAddress(QWidget* parent, const QString& title, 
   uint address;
   if (address_str.startsWith("0x"))
     address = address_str.midRef(2).toUInt(&ok, 16);
-  else if (address_str[0] == '0' && address_str.length() > 1)
-    address = address_str.midRef(1).toUInt(&ok, 8);
   else
-    address = address_str.toUInt(&ok, 10);
-
+    address = address_str.toUInt(&ok, 16);  
+  address = address & 0xFFFFFFFC; //address should be divisible by 4 so make sure
+  
   if (!ok)
   {
     QMessageBox::critical(
       parent, title,
-      qApp->translate("DebuggerWindow", "Invalid address. It should be in hex (0x12345678) or decimal (12345678)"));
+      qApp->translate("DebuggerWindow", "Invalid address. It should be in hex (0x12345678 or 12345678)"));
     return std::nullopt;
   }
 
