@@ -24,11 +24,13 @@ public:
 Q_SIGNALS:
   void closed();
 
+public Q_SLOTS:
+  void onEmulationPaused(bool paused);
+
 protected:
   void closeEvent(QCloseEvent* event);
 
 private Q_SLOTS:
-  void onEmulationPaused(bool paused);
   void onDebuggerMessageReported(const QString& message);
 
   void refreshAll();

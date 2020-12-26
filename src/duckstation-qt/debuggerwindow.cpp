@@ -19,7 +19,7 @@ DebuggerWindow::DebuggerWindow(QWidget* parent /* = nullptr */)
   setUIEnabled(false);
 }
 
-DebuggerWindow::~DebuggerWindow() {}
+DebuggerWindow::~DebuggerWindow() = default;
 
 void DebuggerWindow::onEmulationPaused(bool paused)
 {

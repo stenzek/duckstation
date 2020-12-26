@@ -1359,8 +1359,11 @@ void MainWindow::onToolsCPUDebuggerTriggered()
     connect(m_debugger_window, &DebuggerWindow::closed, this, &MainWindow::onCPUDebuggerClosed);
   }
 
+  m_host_interface->pauseSystem(true, true);
   m_debugger_window->show();
-  m_host_interface->pauseSystem(true);
+
+  // the debugger will miss the pause event above (or we were already paused), so fire it now
+  m_debugger_window->onEmulationPaused(true);
 }
 
 void MainWindow::onCPUDebuggerClosed()

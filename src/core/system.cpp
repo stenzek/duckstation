@@ -560,6 +560,12 @@ bool Boot(const SystemBootParameters& params)
       return false;
     }
 
+    if (params.start_paused)
+    {
+      DebugAssert(s_state == State::Running);
+      s_state = State::Paused;
+    }
+
     return true;
   }
 
@@ -699,7 +705,7 @@ bool Boot(const SystemBootParameters& params)
   }
 
   // Good to go.
-  s_state = State::Running;
+  s_state = params.start_paused ? State::Paused : State::Running;
   return true;
 }
 

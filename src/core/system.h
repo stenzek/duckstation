@@ -31,6 +31,7 @@ struct SystemBootParameters
   u32 media_playlist_index = 0;
   bool load_image_to_ram = false;
   bool force_software_renderer = false;
+  bool start_paused = false;
 };
 
 namespace System {
