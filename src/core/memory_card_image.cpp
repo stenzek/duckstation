@@ -297,7 +297,7 @@ bool ReadFile(const DataArray& data, const FileInfo& fi, std::vector<u8>* buffer
     std::memcpy(buffer->data() + (i * BLOCK_SIZE), GetFramePtr<u8>(data, block_number, 0), BLOCK_SIZE);
 
     const DirectoryFrame* df = GetFramePtr<DirectoryFrame>(data, 0, block_number);
-    block_number = df->next_block_number;
+    block_number = df->next_block_number + 1;
   }
 
   return true;
