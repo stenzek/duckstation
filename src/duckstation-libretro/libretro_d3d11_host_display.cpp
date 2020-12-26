@@ -31,7 +31,7 @@ bool LibretroD3D11HostDisplay::RequestHardwareRendererContext(retro_hw_render_ca
 }
 
 bool LibretroD3D11HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name,
-                                                  bool debug_device)
+                                                  bool debug_device, bool threaded_presentation)
 {
   retro_hw_render_interface* ri = nullptr;
   if (!g_retro_environment_callback(RETRO_ENVIRONMENT_GET_HW_RENDER_INTERFACE, &ri))

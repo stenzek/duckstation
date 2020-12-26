@@ -473,11 +473,13 @@ bool D3D11HostDisplay::CreateSwapChainRTV()
   m_window_info.surface_width = backbuffer_desc.Width;
   m_window_info.surface_height = backbuffer_desc.Height;
 
+#ifdef WITH_IMGUI
   if (ImGui::GetCurrentContext())
   {
     ImGui::GetIO().DisplaySize.x = static_cast<float>(backbuffer_desc.Width);
     ImGui::GetIO().DisplaySize.y = static_cast<float>(backbuffer_desc.Height);
   }
+#endif
 
   return true;
 }
