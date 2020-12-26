@@ -644,7 +644,7 @@ void CheatManagerDialog::addToWatchClicked()
 
 void CheatManagerDialog::addManualWatchAddressClicked()
 {
-  std::optional<unsigned> address = QtUtils::PromptForAddress(this, windowTitle(), tr("Enter memory address:"));
+  std::optional<unsigned> address = QtUtils::PromptForAddress(this, windowTitle(), tr("Enter manual address:"), false);
   if (!address.has_value())
     return;
 

@@ -737,7 +737,7 @@ void FillComboBoxWithEmulationSpeeds(QComboBox* cb)
   }
 }
 
-std::optional<unsigned> PromptForAddress(QWidget* parent, const QString& title, const QString& label)
+std::optional<unsigned> PromptForAddress(QWidget* parent, const QString& title, const QString& label, bool code)
 {
   const QString address_str(
     QInputDialog::getText(parent, title, qApp->translate("DebuggerWindow", "Enter memory address:")));
@@ -749,8 +749,9 @@ std::optional<unsigned> PromptForAddress(QWidget* parent, const QString& title, 
   if (address_str.startsWith("0x"))
     address = address_str.midRef(2).toUInt(&ok, 16);
   else
-    address = address_str.toUInt(&ok, 16);  
-  address = address & 0xFFFFFFFC; //address should be divisible by 4 so make sure
+    address = address_str.toUInt(&ok, 16);
+  if ( code == true )
+    address = address & 0xFFFFFFFC; //disassembly address should be divisible by 4 so make sure
   
   if (!ok)
   {

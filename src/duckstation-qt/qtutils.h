@@ -71,7 +71,7 @@ void FillComboBoxWithMSAAModes(QComboBox* cb);
 /// Fills a combo box with emulation speed options.
 void FillComboBoxWithEmulationSpeeds(QComboBox* cb);
 
-/// Prompts for an address in decimal, octal, or hex.
-std::optional<unsigned> PromptForAddress(QWidget* parent, const QString& title, const QString& label);
+/// Prompts for an address in hex.
+std::optional<unsigned> PromptForAddress(QWidget* parent, const QString& title, const QString& label, bool code);
 
 } // namespace QtUtils

@@ -104,7 +104,7 @@ void DebuggerWindow::onGoToPCTriggered()
 void DebuggerWindow::onGoToAddressTriggered()
 {
   std::optional<VirtualMemoryAddress> address =
-    QtUtils::PromptForAddress(this, windowTitle(), tr("Enter code address:"));
+    QtUtils::PromptForAddress(this, windowTitle(), tr("Enter code address:"), true);
   if (!address.has_value())
     return;
 
@@ -114,7 +114,7 @@ void DebuggerWindow::onGoToAddressTriggered()
 void DebuggerWindow::onDumpAddressTriggered()
 {
   std::optional<VirtualMemoryAddress> address =
-    QtUtils::PromptForAddress(this, windowTitle(), tr("Enter memory address:"));
+    QtUtils::PromptForAddress(this, windowTitle(), tr("Enter memory address:"), false);
   if (!address.has_value())
     return;
 
@@ -129,7 +129,7 @@ void DebuggerWindow::onFollowAddressTriggered()
 void DebuggerWindow::onAddBreakpointTriggered()
 {
   std::optional<VirtualMemoryAddress> address =
-    QtUtils::PromptForAddress(this, windowTitle(), tr("Enter code address:"));
+    QtUtils::PromptForAddress(this, windowTitle(), tr("Enter code address:") , true);
   if (!address.has_value())
     return;
 
