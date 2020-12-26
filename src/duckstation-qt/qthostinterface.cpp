@@ -359,7 +359,11 @@ void QtHostInterface::bootSystem(std::shared_ptr<const SystemBootParameters> par
   }
 
   emit emulationStarting();
-  BootSystem(*params);
+  if (!BootSystem(*params))
+    return;
+
+  // force a frame to be drawn to repaint the window
+  renderDisplay();
 }
 
 void QtHostInterface::resumeSystemFromState(const QString& filename, bool boot_on_failure)
