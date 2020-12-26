@@ -106,6 +106,35 @@ jobs:
         path: "duckstation-windows-arm64-release.zip"
 
 
+  windows-libretro-build:
+    runs-on: windows-2019
+    steps:
+    - uses: actions/checkout@v2.3.1
+      with:
+        fetch-depth: 0
+
+    - name: Compile release build
+      shell: cmd
+      run: |
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
+        mkdir build
+        cd build
+        cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_LIBRETRO_CORE=ON -DCMAKE_C_COMPILER:FILEPATH="%VCToolsInstallDir%\bin\HostX64\x64\cl.exe" -DCMAKE_CXX_COMPILER:FILEPATH="%VCToolsInstallDir%\bin\HostX64\x64\cl.exe" ..
+        ninja
+        
+    - name: Create libretro core archive
+      shell: cmd
+      run: |
+        cd build
+        "C:\Program Files\7-Zip\7z.exe" a -r duckstation_libretro.dll.zip ./duckstation_libretro.dll
+
+    - name: Upload release artifact
+      uses: actions/upload-artifact@v1
+      with:
+        name: "windows-libretro-x64"
+        path: "build/duckstation_libretro.dll.zip"
+
+
   linux-build:
     runs-on: ubuntu-18.04
     steps:
@@ -151,6 +180,95 @@ jobs:
       with:
         name: "linux-x64-appimage-qt-zsync"
         path: "build/duckstation-qt-x64.AppImage.zsync"
+
+
+  linux-libretro-build:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2.3.1
+      with:
+        fetch-depth: 0
+
+    - name: Install packages
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get -y install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
+
+    - name: Compile and zip Linux x64 libretro core
+      shell: bash
+      run: |
+        mkdir build-libretro-linux-x64
+        cd build-libretro-linux-x64
+        cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_LIBRETRO_CORE=ON ..
+        cmake --build . --parallel 2
+        zip -j duckstation_libretro_x64.so.zip duckstation_libretro.so
+
+    - name: Upload Linux x64 libretro core
+      uses: actions/upload-artifact@v1
+      with:
+        name: "linux-libretro"
+        path: "build-libretro-linux-x64/duckstation_libretro_x64.so.zip"
+
+    - name: Compile and zip Linux armv7 libretro core
+      shell: bash
+      run: |
+        mkdir build-libretro-linux-armv7
+        cd build-libretro-linux-armv7
+        cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_LIBRETRO_CORE=ON -DCMAKE_TOOLCHAIN_FILE=../CMakeModules/armv7-cross-toolchain.cmake ..
+        cmake --build . --parallel 2
+        zip -j duckstation_libretro_linux_armv7.so.zip duckstation_libretro.so
+
+    - name: Upload Linux AArch64 libretro core
+      uses: actions/upload-artifact@v1
+      with:
+        name: "linux-libretro"
+        path: "build-libretro-linux-armv7/duckstation_libretro_linux_armv7.so.zip"
+      
+    - name: Compile and zip Linux AArch64 libretro core
+      shell: bash
+      run: |
+        mkdir build-libretro-linux-aarch64
+        cd build-libretro-linux-aarch64
+        cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_LIBRETRO_CORE=ON -DCMAKE_TOOLCHAIN_FILE=../CMakeModules/aarch64-cross-toolchain.cmake ..
+        cmake --build . --parallel 2
+        zip -j duckstation_libretro_linux_aarch64.so.zip duckstation_libretro.so
+
+    - name: Upload Linux AArch64 libretro core
+      uses: actions/upload-artifact@v1
+      with:
+        name: "linux-libretro"
+        path: "build-libretro-linux-aarch64/duckstation_libretro_linux_aarch64.so.zip"
+
+    - name: Compile and zip Android armv7 libretro core
+      shell: bash
+      run: |
+        mkdir build-libretro-android-armv7
+        cd build-libretro-android-armv7
+        cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_LIBRETRO_CORE=ON -DANDROID_ABI=armeabi-v7a -DANDROID_ARM_NEON=ON -DCMAKE_TOOLCHAIN_FILE=${ANDROID_SDK_ROOT}/ndk-bundle/build/cmake/android.toolchain.cmake ..
+        cmake --build . --parallel 2
+        zip -j duckstation_libretro_android_armv7.so.zip duckstation_libretro_android.so
+      
+    - name: Upload Android armv7 libretro core
+      uses: actions/upload-artifact@v1
+      with:
+        name: "linux-libretro"
+        path: "build-libretro-android-armv7/duckstation_libretro_android_armv7.so.zip"
+
+    - name: Compile and zip Android AArch64 libretro core
+      shell: bash
+      run: |
+        mkdir build-libretro-android-aarch64
+        cd build-libretro-android-aarch64
+        cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_LIBRETRO_CORE=ON -DANDROID_ABI=arm64-v8a -DCMAKE_TOOLCHAIN_FILE=${ANDROID_SDK_ROOT}/ndk-bundle/build/cmake/android.toolchain.cmake ..
+        cmake --build . --parallel 2
+        zip -j duckstation_libretro_android_aarch64.so.zip duckstation_libretro_android.so
+      
+    - name: Upload Android AArch64 libretro core
+      uses: actions/upload-artifact@v1
+      with:
+        name: "linux-libretro"
+        path: "build-libretro-android-aarch64/duckstation_libretro_android_aarch64.so.zip"
 
 
   android-build:
@@ -224,9 +342,25 @@ jobs:
         name: "macos-x64"
         path: "build/bin/duckstation-mac-release.zip"
 
+    - name: Compile libretro core and zip
+      shell: bash
+      run: |
+        mkdir build-libretro
+        cd build-libretro
+        export MACOSX_DEPLOYMENT_TARGET=10.14
+        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_BUILD_TYPE=Release -DBUILD_LIBRETRO_CORE=ON  ..
+        cmake --build . --parallel 2
+        zip -j duckstation_libretro_mac.dylib.zip duckstation_libretro.dylib
+
+    - name: Upload macOS libretro core
+      uses: actions/upload-artifact@v1
+      with:
+        name: "macos-x64"
+        path: "build-libretro/duckstation_libretro_mac.dylib.zip"
+
 
   create-release:
-    needs: [windows-build, linux-build, android-build, macos-build]
+    needs: [windows-build, windows-libretro-build, linux-build, linux-libretro-build, android-build, macos-build]
     runs-on: "ubuntu-latest"
     if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
     steps:
@@ -234,6 +368,11 @@ jobs:
         uses: actions/download-artifact@v1
         with:
           name: "windows"
+
+      - name: Download Windows libretro x64 Artifact
+        uses: actions/download-artifact@v1
+        with:
+          name: "windows-libretro-x64"
 
       - name: Download SDL AppImage Artifact
         uses: actions/download-artifact@v1
@@ -254,6 +393,11 @@ jobs:
         uses: actions/download-artifact@v1
         with:
           name: "linux-x64-appimage-qt-zsync"
+
+      - name: Download Linux libretro core
+        uses: actions/download-artifact@v1
+        with:
+          name: "linux-libretro"
 
       - name: Download Android APK
         uses: actions/download-artifact@v1
@@ -276,12 +420,19 @@ jobs:
           files: |
             windows/duckstation-windows-x64-release.zip
             windows/duckstation-windows-arm64-release.zip
+            windows-libretro-x64/duckstation_libretro.dll.zip
             linux-x64-appimage-sdl/duckstation-sdl-x64.AppImage
             linux-x64-appimage-sdl-zsync/duckstation-sdl-x64.AppImage.zsync
             linux-x64-appimage-qt/duckstation-qt-x64.AppImage
             linux-x64-appimage-qt-zsync/duckstation-qt-x64.AppImage.zsync
+            linux-libretro/duckstation_libretro_x64.so.zip
+            linux-libretro/duckstation_libretro_linux_armv7.so.zip
+            linux-libretro/duckstation_libretro_linux_aarch64.so.zip
+            linux-libretro/duckstation_libretro_android_armv7.so.zip
+            linux-libretro/duckstation_libretro_android_aarch64.so.zip
             android/duckstation-android.apk
             macos-x64/duckstation-mac-release.zip
+            macos-x64/duckstation_libretro_mac.dylib.zip
 
       - name: Create dev release
         if: github.ref == 'refs/heads/dev'
@@ -294,10 +445,17 @@ jobs:
           files: |
             windows/duckstation-windows-x64-release.zip
             windows/duckstation-windows-arm64-release.zip
+            windows-libretro-x64/duckstation_libretro.dll.zip
             linux-x64-appimage-sdl/duckstation-sdl-x64.AppImage
             linux-x64-appimage-sdl-zsync/duckstation-sdl-x64.AppImage.zsync
             linux-x64-appimage-qt/duckstation-qt-x64.AppImage
             linux-x64-appimage-qt-zsync/duckstation-qt-x64.AppImage.zsync
+            linux-libretro/duckstation_libretro_x64.so.zip
+            linux-libretro/duckstation_libretro_linux_armv7.so.zip
+            linux-libretro/duckstation_libretro_linux_aarch64.so.zip
+            linux-libretro/duckstation_libretro_android_armv7.so.zip
+            linux-libretro/duckstation_libretro_android_aarch64.so.zip
             android/duckstation-android.apk
             macos-x64/duckstation-mac-release.zip
+            macos-x64/duckstation_libretro_mac.dylib.zip
 
