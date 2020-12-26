@@ -474,6 +474,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("GPU", "UseDebugDevice", false);
   si.SetBoolValue("GPU", "PerSampleShading", false);
   si.SetBoolValue("GPU", "UseThread", true);
+  si.SetBoolValue("GPU", "ThreadedPresentation", true);
   si.SetBoolValue("GPU", "TrueColor", false);
   si.SetBoolValue("GPU", "ScaledDithering", true);
   si.SetStringValue("GPU", "TextureFilter", Settings::GetTextureFilterName(Settings::DEFAULT_GPU_TEXTURE_FILTER));
@@ -613,7 +614,8 @@ void HostInterface::SaveSettings(SettingsInterface& si)
 void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
 {
   if (System::IsValid() && (g_settings.gpu_renderer != old_settings.gpu_renderer ||
-                            g_settings.gpu_use_debug_device != old_settings.gpu_use_debug_device))
+                            g_settings.gpu_use_debug_device != old_settings.gpu_use_debug_device ||
+                            g_settings.gpu_threaded_presentation != old_settings.gpu_threaded_presentation))
   {
     AddFormattedOSDMessage(5.0f, TranslateString("OSDMessage", "Switching to %s%s GPU renderer."),
                            Settings::GetRendererName(g_settings.gpu_renderer),

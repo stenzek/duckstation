@@ -241,7 +241,8 @@ void D3D11HostDisplay::SetVSync(bool enabled)
 #endif
 }
 
-bool D3D11HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, bool debug_device)
+bool D3D11HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, bool debug_device,
+                                          bool threaded_presentation)
 {
 #ifndef LIBRETRO
   UINT create_flags = 0;
@@ -352,7 +353,8 @@ bool D3D11HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view
   return true;
 }
 
-bool D3D11HostDisplay::InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device)
+bool D3D11HostDisplay::InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device,
+                                              bool threaded_presentation)
 {
 #ifndef LIBRETRO
   if (m_window_info.type != WindowInfo::Type::Surfaceless && m_window_info.type != WindowInfo::Type::Libretro &&

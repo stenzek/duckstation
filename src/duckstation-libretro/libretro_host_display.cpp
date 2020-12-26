@@ -81,13 +81,15 @@ bool LibretroHostDisplay::HasRenderSurface() const
   return true;
 }
 
-bool LibretroHostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, bool debug_device)
+bool LibretroHostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, bool debug_device,
+                                             bool threaded_presentation)
 {
   m_window_info = wi;
   return true;
 }
 
-bool LibretroHostDisplay::InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device)
+bool LibretroHostDisplay::InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device,
+                                                 bool threaded_presentation)
 {
   return true;
 }

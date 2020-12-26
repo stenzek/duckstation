@@ -35,8 +35,8 @@ public:
   virtual bool HasRenderDevice() const override;
   virtual bool HasRenderSurface() const override;
 
-  virtual bool CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, bool debug_device) override;
-  virtual bool InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device) override;
+  virtual bool CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, bool debug_device, bool threaded_presentation) override;
+  virtual bool InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device, bool threaded_presentation) override;
   virtual void DestroyRenderDevice() override;
 
   virtual bool MakeRenderContextCurrent() override;

@@ -132,8 +132,10 @@ bool SDLHostInterface::CreateDisplay()
   }
 
   Assert(display);
-  if (!display->CreateRenderDevice(wi.value(), g_settings.gpu_adapter, g_settings.gpu_use_debug_device) ||
-      !display->InitializeRenderDevice(GetShaderCacheBasePath(), g_settings.gpu_use_debug_device))
+  if (!display->CreateRenderDevice(wi.value(), g_settings.gpu_adapter, g_settings.gpu_use_debug_device,
+                                   g_settings.gpu_threaded_presentation) ||
+      !display->InitializeRenderDevice(GetShaderCacheBasePath(), g_settings.gpu_use_debug_device,
+                                       g_settings.gpu_threaded_presentation))
   {
     ReportError("Failed to create/initialize display render device");
     return false;

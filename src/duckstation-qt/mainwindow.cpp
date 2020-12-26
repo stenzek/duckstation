@@ -90,8 +90,7 @@ bool MainWindow::shouldHideCursorInFullscreen() const
   return g_host_interface->GetBoolSettingValue("Main", "HideCursorInFullscreen", true);
 }
 
-QtDisplayWidget* MainWindow::createDisplay(QThread* worker_thread, const QString& adapter_name, bool use_debug_device,
-                                           bool fullscreen, bool render_to_main)
+QtDisplayWidget* MainWindow::createDisplay(QThread* worker_thread, bool fullscreen, bool render_to_main)
 {
   Assert(!m_host_display && !m_display_widget);
   Assert(!fullscreen || !render_to_main);
@@ -143,7 +142,8 @@ QtDisplayWidget* MainWindow::createDisplay(QThread* worker_thread, const QString
     return nullptr;
   }
 
-  if (!m_host_display->CreateRenderDevice(wi.value(), adapter_name.toStdString(), use_debug_device))
+  if (!m_host_display->CreateRenderDevice(wi.value(), g_settings.gpu_adapter, g_settings.gpu_use_debug_device,
+                                          g_settings.gpu_threaded_presentation))
   {
     reportError(tr("Failed to create host display device context."));
     destroyDisplayWidget();
@@ -815,11 +815,14 @@ void MainWindow::updateEmulationActions(bool starting, bool running)
     }
   }
 
-  if (g_settings.debugging.enable_gdb_server) {
-    if (starting && !m_gdb_server) {
+  if (g_settings.debugging.enable_gdb_server)
+  {
+    if (starting && !m_gdb_server)
+    {
       m_gdb_server = new GDBServer(this, g_settings.debugging.gdb_server_port);
     }
-    else if (!running && m_gdb_server) {
+    else if (!running && m_gdb_server)
+    {
       delete m_gdb_server;
       m_gdb_server = nullptr;
     }

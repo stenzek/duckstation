@@ -1297,8 +1297,8 @@ void LibretroHostInterface::SwitchToHardwareRenderer()
         Log_ErrorPrintf("Unhandled renderer '%s'", Settings::GetRendererName(renderer.value()));
         return;
     }
-    if (!display || !display->CreateRenderDevice(wi, {}, g_settings.gpu_use_debug_device) ||
-        !display->InitializeRenderDevice(GetShaderCacheBasePath(), g_settings.gpu_use_debug_device))
+    if (!display || !display->CreateRenderDevice(wi, {}, g_settings.gpu_use_debug_device, false) ||
+        !display->InitializeRenderDevice(GetShaderCacheBasePath(), g_settings.gpu_use_debug_device, false))
     {
       Log_ErrorPrintf("Failed to create hardware host display");
       return;

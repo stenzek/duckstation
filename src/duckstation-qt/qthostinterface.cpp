@@ -488,9 +488,7 @@ bool QtHostInterface::AcquireHostDisplay()
 
   m_is_rendering_to_main = m_settings_interface->GetBoolValue("Main", "RenderToMainWindow", true);
 
-  QtDisplayWidget* display_widget =
-    createDisplayRequested(m_worker_thread, QString::fromStdString(g_settings.gpu_adapter),
-                           g_settings.gpu_use_debug_device, m_is_fullscreen, m_is_rendering_to_main);
+  QtDisplayWidget* display_widget = createDisplayRequested(m_worker_thread, m_is_fullscreen, m_is_rendering_to_main);
   if (!display_widget || !m_display->HasRenderDevice())
   {
     emit destroyDisplayRequested();
@@ -501,7 +499,8 @@ bool QtHostInterface::AcquireHostDisplay()
   createImGuiContext(display_widget->devicePixelRatioFromScreen());
 
   if (!m_display->MakeRenderContextCurrent() ||
-      !m_display->InitializeRenderDevice(GetShaderCacheBasePath(), g_settings.gpu_use_debug_device) ||
+      !m_display->InitializeRenderDevice(GetShaderCacheBasePath(), g_settings.gpu_use_debug_device,
+                                         g_settings.gpu_threaded_presentation) ||
       !CreateHostDisplayResources())
   {
     destroyImGuiContext();

@@ -8,10 +8,14 @@
 #include "../types.h"
 #include "vulkan_loader.h"
 #include <array>
+#include <atomic>
+#include <condition_variable>
 #include <functional>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <string>
+#include <thread>
 #include <vector>
 
 struct WindowInfo;
@@ -44,7 +48,7 @@ public:
 
   // Creates a new context and sets it up as global.
   static bool Create(std::string_view gpu_name, const WindowInfo* wi, std::unique_ptr<SwapChain>* out_swap_chain,
-                     bool enable_debug_reports, bool enable_validation_layer);
+                     bool threaded_presentation, bool enable_debug_reports, bool enable_validation_layer);
 
   // Creates a new context from a pre-existing instance.
   static bool CreateFromExistingInstance(VkInstance instance, VkPhysicalDevice gpu, VkSurfaceKHR surface,
@@ -147,10 +151,11 @@ public:
 
   void SubmitCommandBuffer(VkSemaphore wait_semaphore = VK_NULL_HANDLE, VkSemaphore signal_semaphore = VK_NULL_HANDLE,
                            VkSwapchainKHR present_swap_chain = VK_NULL_HANDLE,
-                           uint32_t present_image_index = 0xFFFFFFFF);
+                           uint32_t present_image_index = 0xFFFFFFFF, bool submit_on_thread = false);
   void MoveToNextCommandBuffer();
 
   void ExecuteCommandBuffer(bool wait_for_completion);
+  void WaitForPresentComplete();
 
   // Was the last present submitted to the queue a failure? If so, we must recreate our swapchain.
   bool CheckLastPresentFail();
@@ -191,6 +196,13 @@ private:
   void ActivateCommandBuffer(u32 index);
   void WaitForCommandBufferCompletion(u32 index);
 
+  void DoSubmitCommandBuffer(u32 index, VkSemaphore wait_semaphore, VkSemaphore signal_semaphore);
+  void DoPresent(VkSemaphore wait_semaphore, VkSwapchainKHR present_swap_chain, uint32_t present_image_index);
+  void WaitForPresentComplete(std::unique_lock<std::mutex>& lock);
+  void PresentThread();
+  void StartPresentThread();
+  void StopPresentThread();
+
   struct FrameResources
   {
     // [0] - Init (upload) command buffer, [1] - draw command buffer
@@ -223,7 +235,25 @@ private:
   u32 m_current_frame;
 
   bool m_owns_device = false;
-  bool m_last_present_failed = false;
+
+  std::atomic_bool m_last_present_failed{false};
+  std::atomic_bool m_present_done{true};
+  std::mutex m_present_mutex;
+  std::condition_variable m_present_queued_cv;
+  std::condition_variable m_present_done_cv;
+  std::thread m_present_thread;
+  std::atomic_bool m_present_thread_done{false};
+
+  struct QueuedPresent
+  {
+    VkSemaphore wait_semaphore;
+    VkSemaphore signal_semaphore;
+    VkSwapchainKHR present_swap_chain;
+    u32 command_buffer_index;
+    u32 present_image_index;
+  };
+
+  QueuedPresent m_queued_present = {};
 
   // Render pass cache
   using RenderPassCacheKey = std::tuple<VkFormat, VkFormat, VkSampleCountFlagBits, VkAttachmentLoadOp>;

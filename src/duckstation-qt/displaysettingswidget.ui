@@ -78,6 +78,13 @@
           </property>
          </widget>
         </item>
+        <item row="1" column="0">
+         <widget class="QCheckBox" name="threadedPresentation">
+          <property name="text">
+           <string>Threaded Presentation</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </item>
      </layout>

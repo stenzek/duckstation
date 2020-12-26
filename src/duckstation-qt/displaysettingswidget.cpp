@@ -34,6 +34,8 @@ DisplaySettingsWidget::DisplaySettingsWidget(QtHostInterface* host_interface, QW
                                                "IntegerScaling");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.vsync, "Display", "VSync");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.gpuThread, "GPU", "UseThread", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.threadedPresentation, "GPU",
+                                               "ThreadedPresentation", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showOSDMessages, "Display", "ShowOSDMessages",
                                                true);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showFPS, "Display", "ShowFPS", false);
@@ -85,6 +87,9 @@ DisplaySettingsWidget::DisplaySettingsWidget(QtHostInterface* host_interface, QW
     m_ui.vsync, tr("VSync"), tr("Checked"),
     tr("Enable this option to match DuckStation's refresh rate with your current monitor or screen. "
        "VSync is automatically disabled when it is not possible (e.g. running at non-100% speed)."));
+  dialog->registerWidgetHelp(m_ui.threadedPresentation, tr("Threaded Presentation"), tr("Checked"),
+                             tr("Presents frames on a background thread when fast forwarding or vsync is disabled. "
+                                "This can measurably improve performance in the Vulkan renderer."));
   dialog->registerWidgetHelp(m_ui.gpuThread, tr("Threaded Rendering"), tr("Checked"),
                              tr("Uses a second thread for drawing graphics. Currently only available for the software "
                                 "renderer, but can provide a significant speed improvement, and is safe to use."));
@@ -104,7 +109,7 @@ DisplaySettingsWidget::DisplaySettingsWidget(QtHostInterface* host_interface, QW
   {
     QCheckBox* cb = new QCheckBox(tr("Use Blit Swap Chain"), m_ui.basicGroupBox);
     SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, cb, "Display", "UseBlitSwapChain", false);
-    m_ui.basicCheckboxGridLayout->addWidget(cb, 1, 0, 1, 1);
+    m_ui.basicCheckboxGridLayout->addWidget(cb, 1, 1, 1, 1);
     dialog->registerWidgetHelp(cb, tr("Use Blit Swap Chain"), tr("Unchecked"),
                                tr("Uses a blit presentation model instead of flipping when using the Direct3D 11 "
                                   "renderer. This usually results in slower performance, but may be required for some "
@@ -141,6 +146,7 @@ void DisplaySettingsWidget::populateGPUAdaptersAndResolutions()
   std::vector<std::string> adapter_names;
   std::vector<std::string> fullscreen_modes;
   bool thread_supported = false;
+  bool threaded_presentation_supported = false;
   switch (static_cast<GPURenderer>(m_ui.renderer->currentIndex()))
   {
 #ifdef WIN32
@@ -155,6 +161,7 @@ void DisplaySettingsWidget::populateGPUAdaptersAndResolutions()
 
     case GPURenderer::HardwareVulkan:
       adapter_names = FrontendCommon::VulkanHostDisplay::EnumerateAdapterNames();
+      threaded_presentation_supported = true;
       break;
 
     case GPURenderer::Software:
@@ -207,6 +214,7 @@ void DisplaySettingsWidget::populateGPUAdaptersAndResolutions()
   }
 
   m_ui.gpuThread->setEnabled(thread_supported);
+  m_ui.threadedPresentation->setEnabled(threaded_presentation_supported);
 }
 
 void DisplaySettingsWidget::onGPUAdapterIndexChanged()

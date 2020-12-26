@@ -459,8 +459,9 @@ bool AndroidHostInterface::AcquireHostDisplay()
       break;
   }
 
-  if (!display->CreateRenderDevice(wi, {}, g_settings.gpu_use_debug_device) ||
-      !display->InitializeRenderDevice(GetShaderCacheBasePath(), g_settings.gpu_use_debug_device))
+  if (!display->CreateRenderDevice(wi, {}, g_settings.gpu_use_debug_device, g_settings.gpu_threaded_presentation) ||
+      !display->InitializeRenderDevice(GetShaderCacheBasePath(), g_settings.gpu_use_debug_device,
+                                       g_settings.gpu_threaded_presentation))
   {
     ReportError("Failed to acquire host display.");
     display->DestroyRenderDevice();

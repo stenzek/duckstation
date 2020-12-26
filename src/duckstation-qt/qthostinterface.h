@@ -129,8 +129,7 @@ Q_SIGNALS:
   void emulationPaused(bool paused);
   void stateSaved(const QString& game_code, bool global, qint32 slot);
   void gameListRefreshed();
-  QtDisplayWidget* createDisplayRequested(QThread* worker_thread, const QString& adapter_name, bool use_debug_device,
-                                          bool fullscreen, bool render_to_main);
+  QtDisplayWidget* createDisplayRequested(QThread* worker_thread, bool fullscreen, bool render_to_main);
   QtDisplayWidget* updateDisplayRequested(QThread* worker_thread, bool fullscreen, bool render_to_main);
   void displaySizeRequested(qint32 width, qint32 height);
   void focusDisplayWidgetRequested();

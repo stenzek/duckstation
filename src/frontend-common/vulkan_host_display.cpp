@@ -192,6 +192,7 @@ bool VulkanHostDisplay::SetFullscreen(bool fullscreen, u32 width, u32 height, fl
 void VulkanHostDisplay::DestroyRenderSurface()
 {
   m_window_info = {};
+  g_vulkan_context->WaitForGPUIdle();
   m_swap_chain.reset();
 }
 
@@ -310,9 +311,10 @@ void VulkanHostDisplay::SetVSync(bool enabled)
   m_swap_chain->SetVSync(enabled);
 }
 
-bool VulkanHostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, bool debug_device)
+bool VulkanHostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, bool debug_device,
+                                           bool threaded_presentation)
 {
-  if (!Vulkan::Context::Create(adapter_name, &wi, &m_swap_chain, debug_device, false))
+  if (!Vulkan::Context::Create(adapter_name, &wi, &m_swap_chain, threaded_presentation, debug_device, false))
   {
     Log_ErrorPrintf("Failed to create Vulkan context");
     return false;
@@ -328,7 +330,7 @@ bool VulkanHostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_vie
   return true;
 }
 
-bool VulkanHostDisplay::InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device)
+bool VulkanHostDisplay::InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device, bool threaded_presentation)
 {
   Vulkan::ShaderCache::Create(shader_cache_directory, debug_device);
 
@@ -648,7 +650,7 @@ bool VulkanHostDisplay::Render()
 
   g_vulkan_context->SubmitCommandBuffer(m_swap_chain->GetImageAvailableSemaphore(),
                                         m_swap_chain->GetRenderingFinishedSemaphore(), m_swap_chain->GetSwapChain(),
-                                        m_swap_chain->GetCurrentImageIndex());
+                                        m_swap_chain->GetCurrentImageIndex(), !m_swap_chain->IsVSyncEnabled());
   g_vulkan_context->MoveToNextCommandBuffer();
 
 #ifdef WITH_IMGUI

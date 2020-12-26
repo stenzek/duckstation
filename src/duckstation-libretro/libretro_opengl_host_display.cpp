@@ -98,7 +98,7 @@ bool LibretroOpenGLHostDisplay::RequestHardwareRendererContext(retro_hw_render_c
 }
 
 bool LibretroOpenGLHostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name,
-                                                   bool debug_device)
+                                                   bool debug_device, bool threaded_presentation)
 {
   Assert(wi.type == WindowInfo::Type::Libretro);
 

@@ -50,6 +50,12 @@
         app:summary="@string/settings_summary_gpu_thread"
         app:iconSpaceReserved="false" />
     <SwitchPreferenceCompat
+        app:key="GPU/ThreadedPresentation"
+        app:title="@string/settings_gpu_threaded_presentation"
+        app:defaultValue="true"
+        app:summary="@string/settings_summary_gpu_threaded_presentation"
+        app:iconSpaceReserved="false" />
+    <SwitchPreferenceCompat
         app:key="GPU/PGXPVertexCache"
         app:title="@string/settings_pgxp_vertex_cache"
         app:defaultValue="false"

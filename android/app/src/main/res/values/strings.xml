@@ -153,6 +153,8 @@
     <string name="main_activity_copy">Copy</string>
     <string name="settings_gpu_thread">Threaded GPU Rendering</string>
     <string name="settings_summary_gpu_thread">Uses a second thread for drawing graphics. Currently only available for the software renderer, but can provide a significant speed improvement, and is safe to use.</string>
+    <string name="settings_gpu_threaded_presentation">Threaded GPU Presentation</string>
+    <string name="settings_summary_gpu_threaded_presentation">Presents frames on a background thread when fast forwarding or vsync is disabled. This can measurably improve performance in the Vulkan renderer.</string>
     <string name="settings_language">Language (restart to apply)</string>
     <string name="touchscreen_controller_stop_editing">Stop Editing</string>
     <string name="touchscreen_controller_reset_layout">Reset Layout</string>
