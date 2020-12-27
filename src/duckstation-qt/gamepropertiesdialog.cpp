@@ -122,7 +122,7 @@ void GamePropertiesDialog::setupAdditionalUi()
   for (u32 i = 0; i < static_cast<u32>(DisplayAspectRatio::Count); i++)
   {
     m_ui.userAspectRatio->addItem(
-      QString::fromUtf8(Settings::GetDisplayAspectRatioName(static_cast<DisplayAspectRatio>(i))));
+      qApp->translate("DisplayAspectRatio", Settings::GetDisplayAspectRatioName(static_cast<DisplayAspectRatio>(i))));
   }
 
   m_ui.userCropMode->addItem(tr("(unchanged)"));
