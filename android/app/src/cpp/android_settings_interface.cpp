@@ -309,6 +309,20 @@ std::vector<std::string> AndroidSettingsInterface::GetStringList(const char* sec
   if (env->ExceptionCheck())
   {
     env->ExceptionClear();
+
+    // this might just be a string, not a string set
+    LocalRefHolder<jstring> string_object(
+            env, reinterpret_cast<jstring>(env->CallObjectMethod(m_java_shared_preferences, m_get_string, key_string.Get(), nullptr)));
+
+    if (!env->ExceptionCheck()) {
+      std::vector<std::string> ret;
+      if (string_object)
+        ret.push_back(AndroidHelpers::JStringToString(env, string_object));
+
+      return ret;
+    }
+
+    env->ExceptionClear();
     return {};
   }
 

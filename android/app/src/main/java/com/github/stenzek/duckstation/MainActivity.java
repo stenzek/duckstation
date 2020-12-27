@@ -218,6 +218,10 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(this, SettingsActivity.class);
             startActivityForResult(intent, REQUEST_SETTINGS);
             return true;
+        } else if (id == R.id.action_controller_mapping) {
+            Intent intent = new Intent(this, ControllerMappingActivity.class);
+            startActivity(intent);
+            return true;
         } else if (id == R.id.action_show_version) {
             showVersion();
             return true;

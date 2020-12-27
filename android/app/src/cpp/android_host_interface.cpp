@@ -1,4 +1,5 @@
 #include "android_host_interface.h"
+#include "android_controller_interface.h"
 #include "android_progress_callback.h"
 #include "common/assert.h"
 #include "common/audio_stream.h"
@@ -503,6 +504,27 @@ std::unique_ptr<AudioStream> AndroidHostInterface::CreateAudioStream(AudioBacken
   return CommonHostInterface::CreateAudioStream(backend);
 }
 
+void AndroidHostInterface::UpdateControllerInterface()
+{
+  if (m_controller_interface)
+  {
+    m_controller_interface->Shutdown();
+    m_controller_interface.reset();
+  }
+
+  m_controller_interface = std::make_unique<AndroidControllerInterface>();
+  if (!m_controller_interface || !m_controller_interface->Initialize(this))
+  {
+    Log_WarningPrintf("Failed to initialize controller interface, bindings are not possible.");
+    if (m_controller_interface)
+    {
+      m_controller_interface->Shutdown();
+      m_controller_interface.reset();
+    }
+  }
+}
+
+
 void AndroidHostInterface::OnSystemPaused(bool paused)
 {
   CommonHostInterface::OnSystemPaused(paused);
@@ -637,6 +659,32 @@ void AndroidHostInterface::SetControllerAxisState(u32 index, s32 button_code, fl
     false);
 }
 
+void AndroidHostInterface::HandleControllerButtonEvent(u32 controller_index, u32 button_index, bool pressed)
+{
+  if (!IsEmulationThreadRunning())
+    return;
+
+  RunOnEmulationThread(
+    [this, controller_index, button_index, pressed]() {
+      AndroidControllerInterface* ci = static_cast<AndroidControllerInterface*>(m_controller_interface.get());
+      if (ci)
+        ci->HandleButtonEvent(controller_index, button_index, pressed);
+    });
+}
+
+void AndroidHostInterface::HandleControllerAxisEvent(u32 controller_index, u32 axis_index, float value)
+{
+  if (!IsEmulationThreadRunning())
+    return;
+
+  RunOnEmulationThread(
+    [this, controller_index, axis_index, value]() {
+        AndroidControllerInterface* ci = static_cast<AndroidControllerInterface*>(m_controller_interface.get());
+        if (ci)
+          ci->HandleAxisEvent(controller_index, axis_index, value);
+    });
+}
+
 void AndroidHostInterface::SetFastForwardEnabled(bool enabled)
 {
   m_fast_forward_enabled = enabled;
@@ -656,6 +704,7 @@ void AndroidHostInterface::ApplySettings(bool display_osd_messages)
   LoadAndConvertSettings();
   CommonHostInterface::ApplyGameSettings(display_osd_messages);
   CommonHostInterface::FixIncompatibleSettings(display_osd_messages);
+  UpdateInputMap();
 
   // Defer renderer changes, the app really doesn't like it.
   if (System::IsValid() && g_settings.gpu_renderer != old_settings.gpu_renderer)
@@ -741,6 +790,45 @@ void AndroidHostInterface::UpdateVibration()
   }
 
   SetVibration(vibration_state);
+}
+
+jobjectArray AndroidHostInterface::GetInputProfileNames(JNIEnv* env) const
+{
+  const InputProfileList profile_list(GetInputProfileList());
+  if (profile_list.empty())
+    return nullptr;
+
+  jobjectArray name_array = env->NewObjectArray(static_cast<u32>(profile_list.size()), s_String_class, nullptr);
+  u32 name_array_index = 0;
+  Assert(name_array != nullptr);
+  for (const InputProfileEntry& e : profile_list)
+  {
+    jstring axis_name_jstr = env->NewStringUTF(e.name.c_str());
+    env->SetObjectArrayElement(name_array, name_array_index++, axis_name_jstr);
+    env->DeleteLocalRef(axis_name_jstr);
+  }
+
+  return name_array;
+}
+
+bool AndroidHostInterface::ApplyInputProfile(const char *profile_name)
+{
+  const std::string path(GetInputProfilePath(profile_name));
+  if (path.empty())
+    return false;
+
+  Assert(!IsEmulationThreadRunning() || IsEmulationThreadPaused());
+  CommonHostInterface::ApplyInputProfile(path.c_str(), m_settings_interface);
+  return true;
+}
+
+bool AndroidHostInterface::SaveInputProfile(const char *profile_name)
+{
+  const std::string path(GetSavePathForInputProfile(profile_name));
+  if (path.empty())
+    return false;
+
+  return CommonHostInterface::SaveInputProfile(path.c_str(), m_settings_interface);
 }
 
 extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
@@ -936,6 +1024,82 @@ DEFINE_JNI_ARGS_METHOD(jint, AndroidHostInterface_getControllerAxisCode, jobject
   std::optional<s32> code =
     Controller::GetAxisCodeByName(type.value(), AndroidHelpers::JStringToString(env, axis_name));
   return code.value_or(-1);
+}
+
+DEFINE_JNI_ARGS_METHOD(jobjectArray, AndroidHostInterface_getControllerButtonNames, jobject unused, jstring controller_type)
+{
+  std::optional<ControllerType> type =
+          Settings::ParseControllerTypeName(AndroidHelpers::JStringToString(env, controller_type).c_str());
+  if (!type)
+    return nullptr;
+
+  const Controller::ButtonList buttons(Controller::GetButtonNames(type.value()));
+  if (buttons.empty())
+    return nullptr;
+
+  jobjectArray name_array = env->NewObjectArray(static_cast<u32>(buttons.size()), s_String_class, nullptr);
+  u32 name_array_index = 0;
+  Assert(name_array != nullptr);
+  for (const auto& [button_name, button_code] : buttons)
+  {
+    jstring button_name_jstr = env->NewStringUTF(button_name.c_str());
+    env->SetObjectArrayElement(name_array, name_array_index++, button_name_jstr);
+    env->DeleteLocalRef(button_name_jstr);
+  }
+
+  return name_array;
+}
+
+DEFINE_JNI_ARGS_METHOD(jobjectArray, AndroidHostInterface_getControllerAxisNames, jobject unused, jstring controller_type)
+{
+  std::optional<ControllerType> type =
+          Settings::ParseControllerTypeName(AndroidHelpers::JStringToString(env, controller_type).c_str());
+  if (!type)
+    return nullptr;
+
+  const Controller::AxisList axes(Controller::GetAxisNames(type.value()));
+  if (axes.empty())
+    return nullptr;
+
+  jobjectArray name_array = env->NewObjectArray(static_cast<u32>(axes.size()), s_String_class, nullptr);
+  u32 name_array_index = 0;
+  Assert(name_array != nullptr);
+  for (const auto& [axis_name, axis_code, axis_type] : axes)
+  {
+    jstring axis_name_jstr = env->NewStringUTF(axis_name.c_str());
+    env->SetObjectArrayElement(name_array, name_array_index++, axis_name_jstr);
+    env->DeleteLocalRef(axis_name_jstr);
+  }
+
+  return name_array;
+}
+
+DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_handleControllerButtonEvent, jobject obj, jint controller_index, jint button_index, jboolean pressed)
+{
+  AndroidHelpers::GetNativeClass(env, obj)->HandleControllerButtonEvent(controller_index, button_index, pressed);
+}
+
+DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_handleControllerAxisEvent, jobject obj, jint controller_index, jint axis_index, jfloat value)
+{
+  AndroidHelpers::GetNativeClass(env, obj)->HandleControllerAxisEvent(controller_index, axis_index, value);
+}
+
+DEFINE_JNI_ARGS_METHOD(jobjectArray, AndroidHostInterface_getInputProfileNames, jobject obj)
+{
+  AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
+  return hi->GetInputProfileNames(env);
+}
+
+DEFINE_JNI_ARGS_METHOD(jboolean, AndroidHostInterface_loadInputProfile, jobject obj, jstring name)
+{
+  AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
+  return hi->ApplyInputProfile(AndroidHelpers::JStringToString(env, name).c_str());
+}
+
+DEFINE_JNI_ARGS_METHOD(jboolean, AndroidHostInterface_saveInputProfile, jobject obj, jstring name)
+{
+  AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
+  return hi->SaveInputProfile(AndroidHelpers::JStringToString(env, name).c_str());
 }
 
 DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_refreshGameList, jobject obj, jboolean invalidate_cache,

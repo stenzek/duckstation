@@ -35,6 +35,15 @@
                 android:value="com.github.stenzek.duckstation.MainActivity" />
         </activity>
         <activity
+            android:name=".ControllerMappingActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_settings"
+            android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.github.stenzek.duckstation.MainActivity" />
+        </activity>
+        <activity
             android:name=".MainActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/app_name"

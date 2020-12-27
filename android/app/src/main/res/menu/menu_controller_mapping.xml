@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/action_load_profile"
+        android:title="Load Profile"
+        android:icon="@drawable/ic_baseline_folder_open_24"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_save_profile"
+        android:title="Save Profile"
+        android:icon="@drawable/ic_baseline_save_24"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_clear_bindings"
+        android:title="Clear Bindings"/>
+</menu>

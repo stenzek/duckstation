@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">DuckStation</string>
     <string name="action_settings">Settings</string>
+    <string name="action_controller_mapping">Controller Mapping</string>
     <string name="title_activity_settings">Settings</string>
     <string name="settings_console_region">Console Region</string>
     <string name="settings_console_tty_output">Enable TTY Output</string>
@@ -160,4 +161,20 @@
     <string name="touchscreen_controller_reset_layout">Reset Layout</string>
     <string name="emulation_activity_touchscreen_controller_not_active">Touchscreen controller is not active.</string>
     <string name="settings_theme">Theme</string>
+    <string name="settings_controller_mapping_summary">Allows you bind external controller buttons/axises to the emulated controller.</string>
+    <string name="settings_controller_mapping">Controller Mapping</string>
+    <string name="controller_binding_dialog_message">Press button on controller to set new binding.\n\nCurrent Binding: %s</string>
+    <string name="controller_binding_dialog_no_binding"><![CDATA[<No Binding>]]></string>
+    <string name="controller_binding_dialog_cancel">Cancel</string>
+    <string name="controller_binding_dialog_clear">Clear</string>
+    <string name="controller_mapping_activity_title">Controller Mapping</string>
+    <string name="controller_mapping_activity_no_profiles_found">No profiles found.</string>
+    <string name="controller_mapping_activity_select_input_profile">Select Input Profile</string>
+    <string name="controller_mapping_activity_failed_to_load_profile">Failed to load profile \'%s\'</string>
+    <string name="controller_mapping_activity_input_profile_name">Input Profile Name:</string>
+    <string name="controller_mapping_activity_save">Save</string>
+    <string name="controller_mapping_activity_name_must_be_provided">A name must be provided.</string>
+    <string name="controller_mapping_activity_failed_to_save_input_profile">Failed to save input profile.</string>
+    <string name="controller_mapping_activity_input_profile_saved">Input profile \'%s\' saved.</string>
+    <string name="controller_mapping_activity_cancel">Cancel</string>
 </resources>

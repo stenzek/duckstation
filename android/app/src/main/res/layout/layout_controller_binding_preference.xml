@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/linearLayout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <ImageView
+        android:id="@+id/controller_binding_icon"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="0dp"
+        android:layout_alignParentTop="true"
+        tools:srcCompat="@drawable/ic_media_cdrom" />
+
+    <TextView
+        android:id="@+id/controller_binding_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="0dp"
+        android:text="Up"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@id/controller_binding_icon" />
+
+    <TextView
+        android:id="@+id/controller_binding_value"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:text="Controller0/Button0"
+        android:textAppearance="@style/TextAppearance.AppCompat.Small"
+        android:layout_toRightOf="@id/controller_binding_icon"
+        android:layout_below="@id/controller_binding_name" />
+
+</RelativeLayout>
