@@ -175,6 +175,9 @@ protected:
   /// Switches the GPU renderer by saving state, recreating the display window, and restoring state (if needed).
   virtual void RecreateSystem();
 
+  /// Enables "relative" mouse mode, locking the cursor position and returning relative coordinates.
+  virtual void SetMouseMode(bool relative, bool hide_cursor);
+
   /// Sets the user directory to the program directory, i.e. "portable mode".
   void SetUserDirectoryToProgramDirectory();
 

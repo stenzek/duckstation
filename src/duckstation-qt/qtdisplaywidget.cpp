@@ -92,6 +92,29 @@ std::optional<WindowInfo> QtDisplayWidget::getWindowInfo() const
   return wi;
 }
 
+void QtDisplayWidget::setRelativeMode(bool enabled)
+{
+  if (m_relative_mouse_enabled == enabled)
+    return;
+
+  if (enabled)
+  {
+    m_relative_mouse_start_position = QCursor::pos();
+
+    const QPoint center_pos = mapToGlobal(QPoint(width() / 2, height() / 2));
+    QCursor::setPos(center_pos);
+    m_relative_mouse_last_position = center_pos;
+    grabMouse();
+  }
+  else
+  {
+    QCursor::setPos(m_relative_mouse_start_position);
+    releaseMouse();
+  }
+
+  m_relative_mouse_enabled = enabled;
+}
+
 QPaintEngine* QtDisplayWidget::paintEngine() const
 {
   return nullptr;
@@ -113,10 +136,35 @@ bool QtDisplayWidget::event(QEvent* event)
 
     case QEvent::MouseMove:
     {
-      const qreal dpr = devicePixelRatioFromScreen();
       const QMouseEvent* mouse_event = static_cast<QMouseEvent*>(event);
-      emit windowMouseMoveEvent(static_cast<int>(static_cast<double>(mouse_event->x()) * dpr),
-                                static_cast<int>(static_cast<double>(mouse_event->y()) * dpr));
+
+      if (!m_relative_mouse_enabled)
+      {
+        const qreal dpr = devicePixelRatioFromScreen();
+        const int scaled_x = static_cast<int>(static_cast<qreal>(mouse_event->x()) * dpr);
+        const int scaled_y = static_cast<int>(static_cast<qreal>(mouse_event->y()) * dpr);
+
+        windowMouseMoveEvent(scaled_x, scaled_y);
+      }
+      else
+      {
+        const QPoint center_pos = mapToGlobal(QPoint((width() + 1) / 2, (height() + 1) / 2));
+        const QPoint mouse_pos = mapToGlobal(mouse_event->pos());
+
+        const int dx = mouse_pos.x() - center_pos.x();
+        const int dy = mouse_pos.y() - center_pos.y();
+        m_relative_mouse_last_position.setX(m_relative_mouse_last_position.x() + dx);
+        m_relative_mouse_last_position.setY(m_relative_mouse_last_position.y() + dy);
+        windowMouseMoveEvent(m_relative_mouse_last_position.x(), m_relative_mouse_last_position.y());
+        QCursor::setPos(center_pos);
+
+#if 0
+        qCritical() << "center" << center_pos.x() << "," << center_pos.y();
+        qCritical() << "mouse" << mouse_pos.x() << "," << mouse_pos.y();
+        qCritical() << "dxdy" << dx << "," << dy;
+#endif
+      }
+
       return true;
     }
 

@@ -290,6 +290,22 @@ void MainWindow::focusDisplayWidget()
   m_display_widget->setFocus();
 }
 
+void MainWindow::onMouseModeRequested(bool relative_mode, bool hide_cursor)
+{
+  if (!m_display_widget)
+    return;
+
+  const bool paused = System::IsPaused();
+
+  if (hide_cursor)
+    m_display_widget->setCursor(Qt::BlankCursor);
+  else
+    m_display_widget->unsetCursor();
+
+  m_relative_mouse_mode = relative_mode;
+  m_display_widget->setRelativeMode(!paused && relative_mode);
+}
+
 void MainWindow::onEmulationStarting()
 {
   m_emulation_running = true;
@@ -327,6 +343,9 @@ void MainWindow::onEmulationPaused(bool paused)
 {
   QSignalBlocker blocker(m_ui.actionPause);
   m_ui.actionPause->setChecked(paused);
+
+  if (m_display_widget)
+    m_display_widget->setRelativeMode(!paused && m_relative_mouse_mode);
 }
 
 void MainWindow::onStateSaved(const QString& game_code, bool global, qint32 slot)
@@ -372,6 +391,9 @@ void MainWindow::onApplicationStateChanged(Qt::ApplicationState state)
     {
       m_host_interface->pauseSystem(true);
       m_was_paused_by_focus_loss = true;
+
+      if (m_display_widget)
+        m_display_widget->setRelativeMode(false);
     }
   }
   else
@@ -381,6 +403,9 @@ void MainWindow::onApplicationStateChanged(Qt::ApplicationState state)
       if (System::IsPaused())
         m_host_interface->pauseSystem(false);
       m_was_paused_by_focus_loss = false;
+
+      if (m_display_widget)
+        m_display_widget->setRelativeMode(m_relative_mouse_mode);
     }
   }
 }
@@ -974,6 +999,7 @@ void MainWindow::connectSignals()
           &MainWindow::onSystemPerformanceCountersUpdated);
   connect(m_host_interface, &QtHostInterface::runningGameChanged, this, &MainWindow::onRunningGameChanged);
   connect(m_host_interface, &QtHostInterface::exitRequested, this, &MainWindow::close);
+  connect(m_host_interface, &QtHostInterface::mouseModeRequested, this, &MainWindow::onMouseModeRequested);
 
   // These need to be queued connections to stop crashing due to menus opening/closing and switching focus.
   connect(m_game_list_widget, &GameListWidget::entrySelected, this, &MainWindow::onGameListEntrySelected,

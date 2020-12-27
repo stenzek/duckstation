@@ -39,6 +39,8 @@ public:
 
   void SetButtonState(Button button, bool pressed);
 
+  bool GetSoftwareCursor(const Common::RGBA8Image** image, float* image_scale, bool* relative_mode) override;
+
 private:
   void UpdatePosition();
 

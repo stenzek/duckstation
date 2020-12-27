@@ -139,6 +139,7 @@ Q_SIGNALS:
   void runningGameChanged(const QString& filename, const QString& game_code, const QString& game_title);
   void exitRequested();
   void inputProfileLoaded();
+  void mouseModeRequested(bool relative, bool hide_cursor);
 
 public Q_SLOTS:
   void setDefaultSettings();
@@ -202,6 +203,8 @@ protected:
   void LoadSettings() override;
   void SetDefaultSettings(SettingsInterface& si) override;
   void UpdateInputMap() override;
+
+  void SetMouseMode(bool relative, bool hide_cursor) override;
 
 private:
   enum : u32

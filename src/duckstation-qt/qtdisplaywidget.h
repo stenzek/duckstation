@@ -20,6 +20,8 @@ public:
 
   std::optional<WindowInfo> getWindowInfo() const;
 
+  void setRelativeMode(bool enabled);
+
 Q_SIGNALS:
   void windowResizedEvent(int width, int height);
   void windowRestoredEvent();
@@ -30,4 +32,9 @@ Q_SIGNALS:
 
 protected:
   bool event(QEvent* event) override;
+
+private:
+  QPoint m_relative_mouse_start_position{};
+  QPoint m_relative_mouse_last_position{};
+  bool m_relative_mouse_enabled = false;
 };

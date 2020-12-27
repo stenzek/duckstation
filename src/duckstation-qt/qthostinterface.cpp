@@ -577,6 +577,7 @@ void QtHostInterface::updateDisplayState()
   if (!System::IsShutdown())
   {
     g_gpu->UpdateResolutionScale();
+    UpdateSoftwareCursor();
     redrawDisplayWindow();
   }
   UpdateSpeedLimiterState();
@@ -734,6 +735,11 @@ void QtHostInterface::SetDefaultSettings(SettingsInterface& si)
 void QtHostInterface::UpdateInputMap()
 {
   updateInputMap();
+}
+
+void QtHostInterface::SetMouseMode(bool relative, bool hide_cursor)
+{
+  emit mouseModeRequested(relative, hide_cursor);
 }
 
 void QtHostInterface::updateInputMap()

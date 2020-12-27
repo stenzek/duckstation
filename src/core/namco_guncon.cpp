@@ -280,12 +280,13 @@ void NamcoGunCon::LoadSettings(const char* section)
   m_x_scale = g_host_interface->GetFloatSettingValue(section, "XScale", 1.0f);
 }
 
-bool NamcoGunCon::GetSoftwareCursor(const Common::RGBA8Image** image, float* image_scale)
+bool NamcoGunCon::GetSoftwareCursor(const Common::RGBA8Image** image, float* image_scale, bool* relative_mode)
 {
   if (!m_crosshair_image.IsValid())
     return false;
 
   *image = &m_crosshair_image;
   *image_scale = m_crosshair_image_scale;
+  *relative_mode = false;
   return true;
 }
