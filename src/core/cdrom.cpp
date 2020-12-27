@@ -200,7 +200,7 @@ bool CDROM::DoState(StateWrapper& sw)
   sw.Do(&m_async_command_parameter);
 
   // TODO: Uncomment on the next save state version bump.
-  //sw.Do(&m_fast_forward_rate);
+  // sw.Do(&m_fast_forward_rate);
 
   sw.Do(&m_cd_audio_volume_matrix);
   sw.Do(&m_next_cd_audio_volume_matrix);
@@ -936,8 +936,8 @@ void CDROM::ExecuteCommand()
 
     case Command::Play:
     {
-      u8 track = m_param_fifo.IsEmpty() ? 0 : m_param_fifo.Peek(0);
-      Log_DebugPrintf("CDROM play command, track=%u", track);
+      const u8 track_bcd = m_param_fifo.IsEmpty() ? 0 : PackedBCDToBinary(m_param_fifo.Peek(0));
+      Log_DebugPrintf("CDROM play command, track=%u", track_bcd);
 
       if (!CanReadMedia())
       {
@@ -947,7 +947,7 @@ void CDROM::ExecuteCommand()
       {
         SendACKAndStat();
 
-        if (track == 0 && (!m_setloc_pending || m_setloc_position.ToLBA() == GetNextSectorToBeRead()) &&
+        if (track_bcd == 0 && (!m_setloc_pending || m_setloc_position.ToLBA() == GetNextSectorToBeRead()) &&
             (m_drive_state == DriveState::Playing || (IsSeeking() && m_play_after_seek)))
         {
           Log_DevPrintf("Ignoring play command with no/same setloc, already playing/playing after seek");
@@ -958,7 +958,7 @@ void CDROM::ExecuteCommand()
           if (IsSeeking())
             UpdatePositionWhileSeeking();
 
-          BeginPlaying(track);
+          BeginPlaying(track_bcd);
         }
       }
 
