@@ -161,7 +161,7 @@ void PlayStationMouse::UpdatePosition()
   m_last_host_position_y = mouse_y;
 
   if (delta_x != 0 || delta_y != 0)
-    Log_InfoPrintf("dx=%d, dy=%d", delta_x, delta_y);
+    Log_DevPrintf("dx=%d, dy=%d", delta_x, delta_y);
 
   m_delta_x = static_cast<s8>(std::clamp<s32>(delta_x, std::numeric_limits<s8>::min(), std::numeric_limits<s8>::max()));
   m_delta_y = static_cast<s8>(std::clamp<s32>(delta_y, std::numeric_limits<s8>::min(), std::numeric_limits<s8>::max()));
@@ -207,4 +207,27 @@ Controller::ButtonList PlayStationMouse::StaticGetButtonNames()
 u32 PlayStationMouse::StaticGetVibrationMotorCount()
 {
   return 0;
+}
+
+Controller::SettingList PlayStationMouse::StaticGetSettings()
+{
+  static constexpr std::array<SettingInfo, 1> settings = {{
+    {SettingInfo::Type::Boolean, "RelativeMouseMode", TRANSLATABLE("PlaystationMouse", "Relative Mouse Mode"),
+     TRANSLATABLE("RelativeMouseMode", "Locks the mouse cursor to the window, use for FPS games.")},
+  }};
+
+  return SettingList(settings.begin(), settings.end());
+}
+
+void PlayStationMouse::LoadSettings(const char* section)
+{
+  Controller::LoadSettings(section);
+
+  m_use_relative_mode = g_host_interface->GetBoolSettingValue(section, "RelativeMouseMode");
+}
+
+bool PlayStationMouse::GetSoftwareCursor(const Common::RGBA8Image** image, float* image_scale, bool* relative_mode)
+{
+  *relative_mode = m_use_relative_mode;
+  return m_use_relative_mode;
 }

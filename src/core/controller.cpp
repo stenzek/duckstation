@@ -249,6 +249,9 @@ Controller::SettingList Controller::GetSettings(ControllerType type)
     case ControllerType::NeGcon:
       return NeGcon::StaticGetSettings();
 
+    case ControllerType::PlayStationMouse:
+      return PlayStationMouse::StaticGetSettings();
+
     default:
       return {};
   }
