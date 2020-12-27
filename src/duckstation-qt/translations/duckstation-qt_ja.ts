@@ -83,6 +83,26 @@
         <translation>リコンパイラの高速メモリアクセスを有効にする</translation>
     </message>
     <message>
+        <source>Enable VRAM Write Texture Replacement</source>
+        <translation>VRAM書き込みテクスチャ置換を有効にする</translation>
+    </message>
+    <message>
+        <source>Preload Texture Replacements</source>
+        <translation>テクスチャ置換をプリロードする</translation>
+    </message>
+    <message>
+        <source>Dump Replaceable VRAM Writes</source>
+        <translation>書き換え可能なVRAM書き込みをダンプする</translation>
+    </message>
+    <message>
+        <source>Set Dumped VRAM Write Alpha Channel</source>
+        <translation>ダンプ済みVRAM書き込みアルファチャネルを設定する</translation>
+    </message>
+    <message>
+        <source>Minimum Dumped VRAM Write Width</source>
+        <translation>最小ダンプVRAM書き込み幅</translation>
+    </message>
+    <message>
         <source>Log Level:</source>
         <translation>ログレベル :</translation>
     </message>
@@ -100,7 +120,7 @@
     </message>
     <message>
         <source>Reset To Default</source>
-        <translation>既定にリセット</translation>
+        <translation>デフォルトにリセット</translation>
     </message>
     <message>
         <source>GPU FIFO Size</source>
@@ -117,6 +137,10 @@
     <message>
         <source>Display FPS Limit</source>
         <translation>表示のFPS制限</translation>
+    </message>
+    <message>
+        <source>PGXP Depth Clear Threshold</source>
+        <translation>PGXPクリア深度 しきい値</translation>
     </message>
     <message>
         <source>Enable Recompiler Memory Exceptions</source>
@@ -141,10 +165,6 @@
     <message>
         <source>PGXP Geometry Tolerance</source>
         <translation>PGXPジオメトリトレランス(形状公差)を有効にする</translation>
-    </message>
-    <message>
-        <source>Use Blit Swap Chain</source>
-        <translation>ブリットスワップチェーンを使用する</translation>
     </message>
     <message>
         <source>PGXP Vertex Cache</source>
@@ -214,8 +234,8 @@
         <translation>アナログ軸スケール</translation>
     </message>
     <message>
-        <source>Enable Analog Mode on Reset</source>
-        <translation type="vanished">リセット時にアナログモードを有効にする</translation>
+        <source>Force Analog Mode on Reset</source>
+        <translation>リセット時、強制的にアナログモードに変更する</translation>
     </message>
     <message>
         <source>Analog</source>
@@ -254,10 +274,6 @@
         <translation>□</translation>
     </message>
     <message>
-        <source>Automatically enables analog mode when the console is reset/powered on.</source>
-        <translation type="vanished">コンソールがリセット/電源オンされると、アナログモードが自動的に有効になります。</translation>
-    </message>
-    <message>
         <source>Controller %u is locked to analog mode by the game.</source>
         <translation>コントローラー %u は、ゲームによってアナログモードにロックされています。</translation>
     </message>
@@ -274,6 +290,10 @@
         <translation>振動の強さ</translation>
     </message>
     <message>
+        <source>Forces the controller to analog mode when the console is reset/powered on. May cause issues with games, so it is recommended to leave this option off.</source>
+        <translation>コンソールがリセット/電源オンされると、コントローラーを強制的にアナログモードにします。ゲームで問題が発生する可能性があるため、このオプションをオフのままにしておくことをお勧めします。</translation>
+    </message>
+    <message>
         <source>Controller %u switched to digital mode.</source>
         <translation>コントローラ %u がデジタルモードに切り替わりました。</translation>
     </message>
@@ -285,116 +305,108 @@
         <source>Use Analog Sticks for D-Pad in Digital Mode</source>
         <translation>デジタルモードで十字キーの代わりににアナログスティックを使用する</translation>
     </message>
-    <message>
-        <source>Force Analog Mode on Reset</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Forces the controller to analog mode when the console is reset/powered on. May cause issues with games, so it is recommended to leave this option off.</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>AnalogJoystick</name>
+    <message>
+        <source>L1</source>
+        <translation>L1</translation>
+    </message>
+    <message>
+        <source>L2</source>
+        <translation>L2</translation>
+    </message>
+    <message>
+        <source>L3</source>
+        <translation>L3</translation>
+    </message>
+    <message>
+        <source>R1</source>
+        <translation>R1</translation>
+    </message>
+    <message>
+        <source>R2</source>
+        <translation>R2</translation>
+    </message>
+    <message>
+        <source>R3</source>
+        <translation>R3</translation>
+    </message>
+    <message>
+        <source>Up</source>
+        <translation>↑</translation>
+    </message>
+    <message>
+        <source>Down</source>
+        <translation>↓</translation>
+    </message>
+    <message>
+        <source>Left</source>
+        <translation>←</translation>
+    </message>
+    <message>
+        <source>Cross</source>
+        <translation>Ｘ</translation>
+    </message>
+    <message>
+        <source>LeftX</source>
+        <translation>左スティック X</translation>
+    </message>
+    <message>
+        <source>LeftY</source>
+        <translation>左スティック Y</translation>
+    </message>
+    <message>
+        <source>Right</source>
+        <translation>→</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation>スタート</translation>
+    </message>
     <message>
         <source>Analog Axis Scale</source>
         <translation>アナログ軸スケール</translation>
     </message>
     <message>
-        <source>Controller %u switched to analog mode.</source>
-        <translation type="unfinished">コントローラ %u がアナログモードに切り替わりました。</translation>
-    </message>
-    <message>
-        <source>Controller %u switched to digital mode.</source>
-        <translation type="unfinished">コントローラ %u がデジタルモードに切り替わりました。</translation>
-    </message>
-    <message>
-        <source>LeftX</source>
-        <translation type="unfinished">左スティック X</translation>
-    </message>
-    <message>
-        <source>LeftY</source>
-        <translation type="unfinished">左スティック Y</translation>
-    </message>
-    <message>
-        <source>RightX</source>
-        <translation type="unfinished">右スティック X</translation>
-    </message>
-    <message>
-        <source>RightY</source>
-        <translation type="unfinished">右スティック Y</translation>
-    </message>
-    <message>
-        <source>Up</source>
-        <translation type="unfinished">↑</translation>
-    </message>
-    <message>
-        <source>Down</source>
-        <translation type="unfinished">↓</translation>
-    </message>
-    <message>
-        <source>Left</source>
-        <translation type="unfinished">←</translation>
-    </message>
-    <message>
-        <source>Right</source>
-        <translation type="unfinished">→</translation>
-    </message>
-    <message>
-        <source>Select</source>
-        <translation type="unfinished">セレクト</translation>
-    </message>
-    <message>
-        <source>Start</source>
-        <translation type="unfinished">スタート</translation>
-    </message>
-    <message>
-        <source>Triangle</source>
-        <translation type="unfinished">△</translation>
-    </message>
-    <message>
-        <source>Cross</source>
-        <translation type="unfinished">Ｘ</translation>
+        <source>Analog</source>
+        <translation>アナログ切替</translation>
     </message>
     <message>
         <source>Circle</source>
-        <translation type="unfinished">○</translation>
-    </message>
-    <message>
-        <source>Square</source>
-        <translation type="unfinished">□</translation>
-    </message>
-    <message>
-        <source>L1</source>
-        <translation type="unfinished">L1</translation>
-    </message>
-    <message>
-        <source>L2</source>
-        <translation type="unfinished">L2</translation>
-    </message>
-    <message>
-        <source>R1</source>
-        <translation type="unfinished">R1</translation>
-    </message>
-    <message>
-        <source>R2</source>
-        <translation type="unfinished">R2</translation>
-    </message>
-    <message>
-        <source>L3</source>
-        <translation type="unfinished">L3</translation>
-    </message>
-    <message>
-        <source>R3</source>
-        <translation type="unfinished">R3</translation>
-    </message>
-    <message>
-        <source>Analog</source>
-        <translation type="unfinished">アナログ切替</translation>
+        <translation>○</translation>
     </message>
     <message>
         <source>Sets the analog stick axis scaling factor. A value between 1.30 and 1.40 is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
-        <translation type="unfinished">アナログスティックの軸の倍率を設定します。最近のコントローラーを使用する場合は、1.30〜1.40の値をお勧めします。 例：DualShock 4、XboxOneコントローラー。</translation>
+        <translation>アナログスティックの軸の倍率を設定します。最近のコントローラーを使用する場合は、1.30〜1.40の値をお勧めします。 例：DualShock 4、XboxOneコントローラー。</translation>
+    </message>
+    <message>
+        <source>Controller %u switched to analog mode.</source>
+        <translation>コントローラ %u がアナログモードに切り替わりました。</translation>
+    </message>
+    <message>
+        <source>RightX</source>
+        <translation>右スティック X</translation>
+    </message>
+    <message>
+        <source>RightY</source>
+        <translation>右スティック Y</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>セレクト</translation>
+    </message>
+    <message>
+        <source>Square</source>
+        <translation>□</translation>
+    </message>
+    <message>
+        <source>Triangle</source>
+        <translation>△</translation>
+    </message>
+    <message>
+        <source>Controller %u switched to digital mode.</source>
+        <translation>コントローラ %u がデジタルモードに切り替わりました。</translation>
     </message>
 </context>
 <context>
@@ -455,6 +467,14 @@
         <translation>全サウンドをミュート</translation>
     </message>
     <message>
+        <source>Output Volume</source>
+        <translation>出力音量</translation>
+    </message>
+    <message>
+        <source>Controls the volume of the audio played on the host when fast forwarding. Values are in percentage.</source>
+        <translation>早送り時に再生される音声の音量を調整します。値はパーセンテージです。</translation>
+    </message>
+    <message>
         <source>Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable background music in some games.</source>
         <translation>CD-ROMからCD-DAとXAの両方のオーディオを強制的にミュートします。一部のゲームでバックグラウンドミュージックを無効にするために使用できます。</translation>
     </message>
@@ -471,10 +491,6 @@
         <translation>バッファサイズは、ホストによってプルされるオーディオのチャンクのサイズを決定します。値を小さくすると出力レイテンシが減少しますが、エミュレーション速度に一貫性がない場合は問題が発生する可能性があります。 Cubebバックエンドは、この値に関係なく小さいチャンクを使用するため、ここで低い値を使用しても、レイテンシーが大幅に変わることはないことに注意してください。</translation>
     </message>
     <message>
-        <source>Volume</source>
-        <translation type="vanished">音量</translation>
-    </message>
-    <message>
         <source>Controls</source>
         <translation>コントロール</translation>
     </message>
@@ -488,7 +504,7 @@
     </message>
     <message>
         <source>Backend:</source>
-        <translation>BEデバイス:</translation>
+        <translation>バックエンド:</translation>
     </message>
     <message>
         <source>Start dumping audio to file as soon as the emulator is started. Mainly useful as a debug option.</source>
@@ -519,10 +535,6 @@
         <translation>バッファーサイズ</translation>
     </message>
     <message>
-        <source>Volume:</source>
-        <translation type="vanished">音量:</translation>
-    </message>
-    <message>
         <source>Fast Forward Volume:</source>
         <translation>早送り時音量:</translation>
     </message>
@@ -531,27 +543,19 @@
         <translation>最大レイテンシ― : %1 フレーム (%2ms)</translation>
     </message>
     <message>
-        <source>Output Volume</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Fast Forward Volume</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Controls the volume of the audio played on the host when fast forwarding. Values are in percentage.</source>
-        <translation type="unfinished"></translation>
+        <translation>早送り時の音量</translation>
     </message>
 </context>
 <context>
     <name>AutoUpdaterDialog</name>
     <message>
         <source>Current Version: %1 (%2)</source>
-        <translation>現行バージョン : %1 (%2)</translation>
+        <translation>使用バージョン : %1 (%2)</translation>
     </message>
     <message>
         <source>&lt;h2&gt;Save State Warning&lt;/h2&gt;&lt;p&gt;Installing this update will make your save states &lt;b&gt;incompatible&lt;/b&gt;. Please ensure you have saved your games to memory card before installing this update or you will lose progress.&lt;/p&gt;</source>
-        <translation>&lt;h2&gt;保存状態の警告&lt;/h2&gt;&lt;p&gt;この更新プログラムをインストールすると、保存状態が&lt;b&gt;互換性&lt;/b&gt;がなくなります。このアップデートをインストールする前に、ゲームをメモリカードに保存したことを確認してください。保存していないと、進行状況が失われます。&lt;/p&gt;</translation>
+        <translation>&lt;h2&gt;保存状態の警告&lt;/h2&gt;&lt;p&gt;この更新プログラムをインストールすると、保存状態が&lt;b&gt;互換性&lt;/b&gt;がなくなります。この更新をインストールする前に、ゲームをメモリカードに保存したことを確認してください。保存していないと、進行状況が失われます。&lt;/p&gt;</translation>
     </message>
     <message>
         <source>Remind Me Later</source>
@@ -563,7 +567,7 @@
     </message>
     <message>
         <source>Current Version: </source>
-        <translation>現行バージョン : </translation>
+        <translation>使用バージョン : </translation>
     </message>
     <message>
         <source>Skip This Update</source>
@@ -575,11 +579,11 @@
     </message>
     <message>
         <source>No updates are currently available. Please try again later.</source>
-        <translation>現在利用可能なアップデートはありません。後でもう一度やり直してください。</translation>
+        <translation>現在利用可能な更新はありません。後でもう一度やり直してください。</translation>
     </message>
     <message>
         <source>&lt;h2&gt;Settings Warning&lt;/h2&gt;&lt;p&gt;Installing this update will reset your program configuration. Please note that you will have to reconfigure your settings after this update.&lt;/p&gt;</source>
-        <translation>&lt;h2&gt;設定の警告&lt;/h2&gt;&lt;p&gt;このアップデートをインストールすると、プログラム構成がリセットされます。この更新後、設定を再構成する必要があることに注意してください。&lt;/p&gt;</translation>
+        <translation>&lt;h2&gt;設定の警告&lt;/h2&gt;&lt;p&gt;この更新をインストールすると、プログラム構成がリセットされます。この更新後、設定を再構成する必要があることに注意してください。&lt;/p&gt;</translation>
     </message>
     <message>
         <source>Downloading %1...</source>
@@ -603,7 +607,7 @@
     </message>
     <message>
         <source>&lt;h4&gt;Installing this update will download %1 MB through your internet connection.&lt;/h4&gt;</source>
-        <translation>&lt;h4&gt;このアップデートをインストールすると、インターネット接続を介して %1 MBがダウンロードされます。&lt;/h4&gt;</translation>
+        <translation>&lt;h4&gt;この更新をインストールすると、インターネット接続を介して %1 MBがダウンロードされます。&lt;/h4&gt;</translation>
     </message>
     <message>
         <source>Update Available</source>
@@ -615,7 +619,7 @@
     </message>
     <message>
         <source>Automatic Updater</source>
-        <translation>自動アップデーター</translation>
+        <translation>自動更新</translation>
     </message>
 </context>
 <context>
@@ -755,7 +759,7 @@
     </message>
     <message>
         <source>Group:</source>
-        <translation>グループ: </translation>
+        <translation>グループ:</translation>
     </message>
     <message>
         <source>Instructions are invalid.</source>
@@ -781,20 +785,12 @@
         <translation>BIOS</translation>
     </message>
     <message>
-        <source>Byte</source>
-        <translation>バイト</translation>
-    </message>
-    <message>
         <source>Name</source>
         <translation>名前</translation>
     </message>
     <message>
         <source>Type</source>
         <translation>種類</translation>
-    </message>
-    <message>
-        <source>Word</source>
-        <translation>単語</translation>
     </message>
     <message>
         <source>Word (4 bytes)</source>
@@ -949,10 +945,6 @@
         <translation>PCSXR/Libretro チートファイル(*.cht);;すべてのファイル(*.*)</translation>
     </message>
     <message>
-        <source>Halfword</source>
-        <translation>ハーフワード</translation>
-    </message>
-    <message>
         <source>Not Equal to...</source>
         <translation>異なる値...</translation>
     </message>
@@ -985,6 +977,10 @@
         <translation>コードを削除(&amp;D)</translation>
     </message>
     <message>
+        <source>Select data size:</source>
+        <translation>データサイズを選択:</translation>
+    </message>
+    <message>
         <source>Description</source>
         <translation>説明</translation>
     </message>
@@ -1013,10 +1009,6 @@
         <translation>以前と同じかそれ以上</translation>
     </message>
     <message>
-        <source>Signed Halfword</source>
-        <translation>署名されたハーフワード</translation>
-    </message>
-    <message>
         <source>Cheat Manager</source>
         <translation>チートマネージャ</translation>
     </message>
@@ -1027,14 +1019,6 @@
     <message>
         <source>Decimal</source>
         <translation>10進数</translation>
-    </message>
-    <message>
-        <source>Signed Word</source>
-        <translation>署名されたワード</translation>
-    </message>
-    <message>
-        <source>Signed Byte</source>
-        <translation>署名されたバイト</translation>
     </message>
     <message>
         <source>Any Value</source>
@@ -1104,6 +1088,34 @@
         <source>Search Again</source>
         <translation>再検索</translation>
     </message>
+    <message>
+        <source>Enter manual address:</source>
+        <translation type="unfinished">メモリアドレスを入力：</translation>
+    </message>
+    <message>
+        <source>Byte</source>
+        <translation>バイト</translation>
+    </message>
+    <message>
+        <source>Halfword</source>
+        <translation>ハーフワード</translation>
+    </message>
+    <message>
+        <source>Word</source>
+        <translation>ワード</translation>
+    </message>
+    <message>
+        <source>Signed Byte</source>
+        <translation>符号付きバイト</translation>
+    </message>
+    <message>
+        <source>Signed Halfword</source>
+        <translation>符号付きハーフワード</translation>
+    </message>
+    <message>
+        <source>Signed Word</source>
+        <translation>符号付きワード</translation>
+    </message>
 </context>
 <context>
     <name>Cheats</name>
@@ -1132,7 +1144,7 @@
     </message>
     <message>
         <source>Invalid version %u (%s version %u)</source>
-        <translation type="unfinished"></translation>
+        <translation>無効なバージョン %u (%s バージョン %u)</translation>
     </message>
 </context>
 <context>
@@ -1431,6 +1443,294 @@ This warning will only be shown once.</source>
     </message>
 </context>
 <context>
+    <name>DebuggerMessage</name>
+    <message>
+        <source>Stepping over to 0x%08X.</source>
+        <translation>0x%08X にステップオーバーします。</translation>
+    </message>
+    <message>
+        <source>Instruction read failed at %08X while searching for function end.</source>
+        <translation>関数endの検索中に、 %08X で命令の読み取りに失敗しました。</translation>
+    </message>
+    <message>
+        <source>0x%08X is not a call instruction.</source>
+        <translation>0x%08X は呼び出し命令ではありません。</translation>
+    </message>
+    <message>
+        <source>Added breakpoint at 0x%08X.</source>
+        <translation>0x%08X のブレークポイントを追加しました。</translation>
+    </message>
+    <message>
+        <source>Removed breakpoint at 0x%08X.</source>
+        <translation>0x%08X&#x3000;のブレークポイントを削除しました。</translation>
+    </message>
+    <message>
+        <source>No return instruction found after %u instructions for step-out at %08X.</source>
+        <translation>%08X でのステップアウトの %u 命令の後に、戻り命令が見つかりません。</translation>
+    </message>
+    <message>
+        <source>Can&apos;t step over double branch at 0x%08X</source>
+        <translation>0x%08X で二重分岐をステップオーバーできません</translation>
+    </message>
+    <message>
+        <source>Stepping out to 0x%08X.</source>
+        <translation>0x%08X にステップアウトします。</translation>
+    </message>
+</context>
+<context>
+    <name>DebuggerWindow</name>
+    <message>
+        <source>#</source>
+        <translation>#</translation>
+    </message>
+    <message>
+        <source>F5</source>
+        <translation>F5</translation>
+    </message>
+    <message>
+        <source>F9</source>
+        <translation>F9</translation>
+    </message>
+    <message>
+        <source>F10</source>
+        <oldsource>10x</oldsource>
+        <translation>F10</translation>
+    </message>
+    <message>
+        <source>F11</source>
+        <oldsource>11x</oldsource>
+        <translation>F11</translation>
+    </message>
+    <message>
+        <source>RAM</source>
+        <oldsource>RAM</oldsource>
+        <translation>RAM</translation>
+    </message>
+    <message>
+        <source>BIOS</source>
+        <translation>BIOS</translation>
+    </message>
+    <message>
+        <source>EXP1</source>
+        <translation>EXP1</translation>
+    </message>
+    <message>
+        <source>Enter memory address:</source>
+        <translation>メモリアドレスを入力：</translation>
+    </message>
+    <message>
+        <source>Stack</source>
+        <translation>スタック</translation>
+    </message>
+    <message>
+        <source>Go To PC</source>
+        <translation>PCに移動</translation>
+    </message>
+    <message>
+        <source>&amp;Go To PC</source>
+        <translation>PCに移動(&amp;G)</translation>
+    </message>
+    <message>
+        <source>Invalid search pattern. It should contain hex digits or question marks.</source>
+        <translation>無効な検索パターン。 16進数または疑問符を含める必要があります。</translation>
+    </message>
+    <message>
+        <source>Add &amp;Breakpoint</source>
+        <translation>ブレークポイントの追加(&amp;B)</translation>
+    </message>
+    <message>
+        <source>Step &amp;Over</source>
+        <translation>ステップオーバー(&amp;O)</translation>
+    </message>
+    <message>
+        <source>Breakpoints</source>
+        <translation>ブレークポイント</translation>
+    </message>
+    <message>
+        <source>&amp;Close</source>
+        <translation>閉じる(C)</translation>
+    </message>
+    <message>
+        <source>&amp;Debug</source>
+        <translation>デバッグ(&amp;D)</translation>
+    </message>
+    <message>
+        <source>&amp;Clear Breakpoints</source>
+        <translation>ブレークポイントのクリア(&amp;C)</translation>
+    </message>
+    <message>
+        <source>Ctrl+D</source>
+        <oldsource>Ctrl++</oldsource>
+        <translation>Ctrl+D</translation>
+    </message>
+    <message>
+        <source>Ctrl+G</source>
+        <oldsource>Ctrl++</oldsource>
+        <translation>Ctrl+G</translation>
+    </message>
+    <message>
+        <source>Ctrl+P</source>
+        <oldsource>Ctrl++</oldsource>
+        <translation>Ctrl+P</translation>
+    </message>
+    <message>
+        <source>Memory</source>
+        <translation>メモリー</translation>
+    </message>
+    <message>
+        <source>Search</source>
+        <translation>検索</translation>
+    </message>
+    <message>
+        <source>Toggle Breakpoint</source>
+        <translation>ブレークポイントの切り替え</translation>
+    </message>
+    <message>
+        <source>Pattern found at 0x%1 (passed the end of memory).</source>
+        <translation>0x%1 でパターンが見つかりました（メモリの終わりを通過しました）。</translation>
+    </message>
+    <message>
+        <source>Hit Count</source>
+        <translation>ヒットカウント</translation>
+    </message>
+    <message>
+        <source>Clear Breakpoints</source>
+        <translation>ブレークポイントのクリア</translation>
+    </message>
+    <message>
+        <source>Toggle &amp;Breakpoint</source>
+        <translation>ブレークポイントの切り替え(&amp;B)</translation>
+    </message>
+    <message>
+        <source>Go To &amp;Address</source>
+        <translation>アドレスに移動(&amp;A)</translation>
+    </message>
+    <message>
+        <source>Failed to add step-out breakpoint, are you in a valid function?</source>
+        <translation>ステップアウトブレークポイントの追加に失敗しました。有効な機能を使用していますか？</translation>
+    </message>
+    <message>
+        <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
+        <translation>無効なアドレス。 16進数（0x12345678または12345678）である必要があります</translation>
+    </message>
+    <message>
+        <source>A breakpoint already exists at this address.</source>
+        <translation>このアドレスにはすでにブレークポイントが存在します。</translation>
+    </message>
+    <message>
+        <source>Address</source>
+        <translation>アドレス</translation>
+    </message>
+    <message>
+        <source>Scratchpad</source>
+        <translation>スクラッチパッド</translation>
+    </message>
+    <message>
+        <source>Pattern not found.</source>
+        <translation>パターンが見つかりません。</translation>
+    </message>
+    <message>
+        <source>Go To Address</source>
+        <translation>アドレスに移動</translation>
+    </message>
+    <message>
+        <source>Ctrl+F9</source>
+        <oldsource>Ctrl++</oldsource>
+        <translation>Ctrl+F9</translation>
+    </message>
+    <message>
+        <source>Pattern found at 0x%1.</source>
+        <translation>0x%1 でパターンが見つかりました。</translation>
+    </message>
+    <message>
+        <source>Step Out</source>
+        <translation>ステップアウト</translation>
+    </message>
+    <message>
+        <source>Disassembly</source>
+        <translation>無効</translation>
+    </message>
+    <message>
+        <source>toolBar</source>
+        <translation>ツールバー</translation>
+    </message>
+    <message>
+        <source>Ctrl+F10</source>
+        <oldsource>Ctrl++</oldsource>
+        <translation>Ctrl+F10</translation>
+    </message>
+    <message>
+        <source>Ctrl+F11</source>
+        <oldsource>Ctrl++</oldsource>
+        <translation>Ctrl+F11</translation>
+    </message>
+    <message>
+        <source>Ctrl+Del</source>
+        <oldsource>Ctrl++</oldsource>
+        <translation>Ctrl+Del</translation>
+    </message>
+    <message>
+        <source>Debugger</source>
+        <translation>デバッガ</translation>
+    </message>
+    <message>
+        <source>Step Into</source>
+        <translation>ステップイン</translation>
+    </message>
+    <message>
+        <source>Step Over</source>
+        <translation>ステップオーバー</translation>
+    </message>
+    <message>
+        <source>Step O&amp;ut</source>
+        <translation>ステップアウト(&amp;U)</translation>
+    </message>
+    <message>
+        <source>&amp;Step Into</source>
+        <translation>ステップイン(&amp;S)</translation>
+    </message>
+    <message>
+        <source>Enter code address:</source>
+        <translation>コードアドレスを入力：</translation>
+    </message>
+    <message>
+        <source>&amp;Dump Address</source>
+        <translation>アドレスをダンプ(&amp;D)</translation>
+    </message>
+    <message>
+        <source>&amp;Run To Cursor</source>
+        <translation>カーソルまで実行(&amp;R)</translation>
+    </message>
+    <message>
+        <source>Run To Cursor</source>
+        <translation>カーソルまで実行</translation>
+    </message>
+    <message>
+        <source>Registers</source>
+        <translation>番目</translation>
+    </message>
+    <message>
+        <source>Add Breakpoint</source>
+        <translation>ブレークポイントの追加</translation>
+    </message>
+    <message>
+        <source>Pause/Continue</source>
+        <translation>一時停止/続行</translation>
+    </message>
+    <message>
+        <source>&amp;Pause/Continue</source>
+        <translation>一時停止/続行(&amp;P)</translation>
+    </message>
+    <message>
+        <source>CPU Debugger</source>
+        <translation>CPU デバッガ</translation>
+    </message>
+    <message>
+        <source>No address selected.</source>
+        <translation>アドレスが選択されていません。</translation>
+    </message>
+</context>
+<context>
     <name>DigitalController</name>
     <message>
         <source>L1</source>
@@ -1473,6 +1773,10 @@ This warning will only be shown once.</source>
         <translation>スタート</translation>
     </message>
     <message>
+        <source>Forces the Digital Controller to act as a Pop&apos;n Controller.</source>
+        <translation>デジタルコントローラーを強制的にポップンコントローラとして機能させます。</translation>
+    </message>
+    <message>
         <source>Force Pop&apos;n Controller Mode</source>
         <translation>強制的にポップンコントローラ扱いにする</translation>
     </message>
@@ -1491,10 +1795,6 @@ This warning will only be shown once.</source>
     <message>
         <source>Triangle</source>
         <translation>△</translation>
-    </message>
-    <message>
-        <source>Forces the Digital Controller to act as a Pop&apos;n Controller.</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1517,6 +1817,13 @@ This warning will only be shown once.</source>
     </message>
 </context>
 <context>
+    <name>DisplayAspectRatio</name>
+    <message>
+        <source>Auto (Game Native)</source>
+        <translation>自動(ゲームに基づく)</translation>
+    </message>
+</context>
+<context>
     <name>DisplayCropMode</name>
     <message>
         <source>None</source>
@@ -1536,6 +1843,10 @@ This warning will only be shown once.</source>
     <message>
         <source>Form</source>
         <translation>形式</translation>
+    </message>
+    <message>
+        <source>Changes the aspect ratio used to display the console&apos;s output to the screen. The default is Auto (Game Native) which automatically adjusts the aspect ratio to match how a game would be shown on a typical TV of the era.</source>
+        <translation>コンソールの出力を画面に表示するために使用するアスペクト比を変更します。デフォルトはAuto（Game Native）で、アスペクト比を自動的に調整して、その時代の典型的なテレビでのゲームの表示方法と一致させます。</translation>
     </message>
     <message>
         <source>Basic</source>
@@ -1570,12 +1881,8 @@ This warning will only be shown once.</source>
         <translation>リニアアップスケーリング</translation>
     </message>
     <message>
-        <source>Changes the aspect ratio used to display the console&apos;s output to the screen. The default is 4:3 which matches a typical TV of the era.</source>
-        <translation>コンソールの出力を画面に表示するために使用されるアスペクト比を変更します。デフォルトは4：3で、当時の典型的なテレビと一致します。</translation>
-    </message>
-    <message>
         <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide. &lt;br&gt;Some games display content in the overscan area, or use it for screen effects. &lt;br&gt;May not display correctly with the &quot;All Borders&quot; setting. &quot;Only Overscan&quot; offers a good compromise between stability and hiding black borders.</source>
-        <translation>トリミング/非表示にするために、消費者向けテレビに通常表示されない領域の量を決定します。 &lt;br&gt;一部のゲームでは、オーバースキャン領域にコンテンツを表示したり、画面効果に使用したりします。 &lt;br&gt;「すべての境界線」設定では正しく表示されない場合があります。 「OnlyOverscan」は、安定性と黒い境界線を隠すことの間の適切な妥協点を提供します。</translation>
+        <translation>トリミング/非表示にするために、消費者向けテレビに通常表示されない領域の量を決定します。 &lt;br&gt;一部のゲームでは、オーバースキャン領域にコンテンツを表示したり、画面効果に使用したりします。 &lt;br&gt;「すべてのボーダー」設定では正しく表示されない場合があります。  &lt;br&gt;「オーバースキャンエリアのみ」は、安定性と黒い境界線を隠すことの間の適切な妥協点を提供します。</translation>
     </message>
     <message>
         <source>Uses bilinear texture filtering when displaying the console&apos;s framebuffer to the screen. &lt;br&gt;Disabling filtering will producer a sharper, blockier/pixelated image. Enabling will smooth out the image. &lt;br&gt;The option will be less noticable the higher the resolution scale.</source>
@@ -1674,6 +1981,22 @@ This warning will only be shown once.</source>
         <translation>スレッドレンダリング</translation>
     </message>
     <message>
+        <source>Threaded Presentation</source>
+        <translation>スレッド化プレゼンテーション</translation>
+    </message>
+    <message>
+        <source>Presents frames on a background thread when fast forwarding or vsync is disabled. This can measurably improve performance in the Vulkan renderer.</source>
+        <translation>早送りまたは垂直同期が無効になっている場合、バックグラウンドスレッドにフレームを表示します。これにより、Vulkanレンダラーのパフォーマンスを大幅に向上させることができます。</translation>
+    </message>
+    <message>
+        <source>Uses a blit presentation model instead of flipping when using the Direct3D 11 renderer. This usually results in slower performance, but may be required for some streaming applications, or to uncap framerates on some systems.</source>
+        <translation>Direct3D 11レンダラーを使用する場合、反転する代わりにブリットプレゼンテーションモデルを使用します。これは通常、パフォーマンスの低下につながりますが、一部のストリーミングアプリケーション、または一部のシステムでフレームレートの上限を解除するために必要になる場合があります。</translation>
+    </message>
+    <message>
+        <source>Use Blit Swap Chain</source>
+        <translation>ブリットでのスワップチェーンを使用</translation>
+    </message>
+    <message>
         <source>(Default)</source>
         <translation>(デフォルト)</translation>
     </message>
@@ -1703,6 +2026,10 @@ This warning will only be shown once.</source>
     <message>
         <source>Form</source>
         <translation>形式</translation>
+    </message>
+    <message>
+        <source>Depth Buffer</source>
+        <translation>PGXP深度バッファ</translation>
     </message>
     <message>
         <source>Disabled</source>
@@ -1795,6 +2122,10 @@ This warning will only be shown once.</source>
     <message>
         <source>PGXP (Precision Geometry Transform Pipeline)</source>
         <translation>PGXP（精密ジオメトリ変換パイプライン）</translation>
+    </message>
+    <message>
+        <source>Attempts to reduce polygon Z-fighting by testing pixels against the depth values from PGXP. Low compatibility, but can work well in some games. Other games may need a threshold adjustment.</source>
+        <translation>PGXPからの深度値に対してピクセルをテストすることにより、ポリゴンのZファイティングを削減しようとします。互換性は低いですが、一部のゲームではうまく機能します。他のゲームでは、しきい値の調整が必要になる場合があります。</translation>
     </message>
     <message>
         <source>Smooths out blockyness between colour transitions in 24-bit content, usually FMVs. Only applies to the hardware renderers.</source>
@@ -1932,7 +2263,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Automatic based on window size</source>
-        <translation>ウィンドウサイズに基づいて自動ベース</translation>
+        <translation>ウィンドウサイズに基づく自動ベース</translation>
     </message>
     <message>
         <source>%1x MSAA</source>
@@ -2161,12 +2492,20 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>モード</translation>
     </message>
     <message>
+        <source>Display Line Offset:</source>
+        <translation>ディスプレイラインの位置調整:</translation>
+    </message>
+    <message>
         <source>Close</source>
         <translation>閉じる</translation>
     </message>
     <message>
         <source>Start</source>
         <translation>スタート</translation>
+    </message>
+    <message>
+        <source>PGXP Depth Buffer</source>
+        <translation>PGXP深度バッファ</translation>
     </message>
     <message>
         <source>Enable Clock Speed Control (Overclocking/Underclocking)</source>
@@ -2385,8 +2724,16 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>%1% (%2MHz)</translation>
     </message>
     <message>
+        <source>PGXP Depth Threshold:</source>
+        <translation>PGXPクリア深度 しきい値:</translation>
+    </message>
+    <message>
         <source>True Color Rendering (24-bit, disables dithering)</source>
         <translation>トゥルーカラー演色（24ビット、ディザリング）を無効にする</translation>
+    </message>
+    <message>
+        <source>Multisample Antialiasing:</source>
+        <translation>ﾏﾙﾁｻﾝﾌﾟﾙ ｱﾝﾁｴｲﾘｱｽ:</translation>
     </message>
     <message>
         <source>Tracks:</source>
@@ -2399,6 +2746,10 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <source>Force 4:3 For 24-Bit Display (disable widescreen for FMVs)</source>
         <translation>強制的に 4:3(24ビットディスプレイ)扱い (FMVのワイドスクリーンを無効)</translation>
+    </message>
+    <message>
+        <source>PGXP Geometry Tolerance:</source>
+        <translation>PGXPジオメトリトレランス(形状公差):</translation>
     </message>
     <message>
         <source>Overrides</source>
@@ -2460,18 +2811,6 @@ This will download approximately 4 megabytes over your current internet connecti
         <source>5x (10x Speed)</source>
         <translation>5x (10倍速)</translation>
     </message>
-    <message>
-        <source>Multisample Antialiasing:</source>
-        <translation type="unfinished">ﾏﾙﾁｻﾝﾌﾟﾙ ｱﾝﾁｴｲﾘｱｽ:</translation>
-    </message>
-    <message>
-        <source>Display Line Offset:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>PGXP Geometry Tolerance:</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>GameSettingsTrait</name>
@@ -2516,12 +2855,16 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>ワイドスクリーンを無効</translation>
     </message>
     <message>
-        <source>Force Digital Controller</source>
-        <translation type="vanished">強制的に デジタルコントローラー扱い</translation>
+        <source>Disable Forcing Controller Analog Mode on Reset</source>
+        <translation>リセット時にコントローラを強制的にアナログモードにしない</translation>
     </message>
     <message>
         <source>Force Recompiler Memory Exceptions</source>
         <translation>強制的に リコンパイラのメモリ例外を 使用</translation>
+    </message>
+    <message>
+        <source>Disable PGXP Depth Buffer</source>
+        <translation>PGXP深度バッファを無効</translation>
     </message>
     <message>
         <source>Force PGXP CPU Mode</source>
@@ -2539,10 +2882,6 @@ This will download approximately 4 megabytes over your current internet connecti
         <source>Disable PGXP Culling</source>
         <translation>PGXPカリングを無効</translation>
     </message>
-    <message>
-        <source>Disable Forcing Controller Analog Mode on Reset</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>GeneralSettingsWidget</name>
@@ -2553,6 +2892,10 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <source>Render To Main Window</source>
         <translation>メインウィンドウにレンダリング</translation>
+    </message>
+    <message>
+        <source>Check for Updates...</source>
+        <translation>更新の確認...</translation>
     </message>
     <message>
         <source>Hides the mouse pointer/cursor when the emulator is in fullscreen mode.</source>
@@ -2583,8 +2926,16 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>速度調整</translation>
     </message>
     <message>
+        <source>Current Version:</source>
+        <translation>使用バージョン :</translation>
+    </message>
+    <message>
         <source>Enable Discord Presence</source>
         <translation>Discord Presenceを有効にする</translation>
+    </message>
+    <message>
+        <source>Update Channel:</source>
+        <translation>更新種類:</translation>
     </message>
     <message>
         <source>When enabled, per-game settings will be applied, and incompatible enhancements will be disabled. You should leave this option enabled except when testing enhancements with incompatible games.</source>
@@ -2601,6 +2952,10 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <source>Automatically saves the emulator state when powering down or exiting. You can then resume directly from where you left off next time.</source>
         <translation>電源を切ったり終了したりすると、エミュレータの状態が自動的に保存されます。その後、次回中断したところから直接再開できます。</translation>
+    </message>
+    <message>
+        <source>%1 (%2)</source>
+        <translation>%1 (%2)</translation>
     </message>
     <message>
         <source>Pause On Start</source>
@@ -2699,6 +3054,10 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>コントローラバックエンド:</translation>
     </message>
     <message>
+        <source>Automatic Updater</source>
+        <translation>自動更新</translation>
+    </message>
+    <message>
         <source>Fast Forward Speed:</source>
         <translation>早送り速度:</translation>
     </message>
@@ -2749,6 +3108,10 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>ゲームステートセーブ 10</translation>
     </message>
     <message>
+        <source>Toggle PGXP Depth Buffer</source>
+        <translation>PGXP深度バッファの切り替え</translation>
+    </message>
+    <message>
         <source>Load Game State 10</source>
         <translation>ゲームステートロード 10</translation>
     </message>
@@ -2779,6 +3142,10 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <source>Reload Post Processing Shaders</source>
         <translation>ポストプロセスシェーダーをリロード</translation>
+    </message>
+    <message>
+        <source>Reload Texture Replacements</source>
+        <translation>テクスチャ置換をリロード</translation>
     </message>
     <message>
         <source>Save States</source>
@@ -3062,20 +3429,16 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>情報</translation>
     </message>
     <message>
-        <source>Success</source>
-        <translation type="vanished">成功</translation>
-    </message>
-    <message>
         <source>Developer</source>
         <translation>開発</translation>
     </message>
     <message>
-        <source>Warning</source>
-        <translation>警告</translation>
+        <source>Verbose</source>
+        <translation>詳細(Verbose)</translation>
     </message>
     <message>
-        <source>Verbose</source>
-        <translation type="unfinished"></translation>
+        <source>Warning</source>
+        <translation>警告</translation>
     </message>
 </context>
 <context>
@@ -3122,7 +3485,7 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <source>&lt;p&gt;Sorry, you are trying to update a DuckStation version which is not an official GitHub release. To prevent incompatibilities, the auto-updater is only enabled on official builds.&lt;/p&gt;&lt;p&gt;To obtain an official build, please follow the instructions under &quot;Downloading and Running&quot; at the link below:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt;https://github.com/stenzek/duckstation/&lt;/a&gt;&lt;/p&gt;</source>
-        <translation>&lt;p&gt;申し訳ありませんが、GitHubの公式リリースではないDuckStationバージョンを更新しようとしています。非互換性を防ぐために、自動アップデータは公式ビルドでのみ有効になっています。&lt;/p&gt; &lt;p&gt;公式ビルドを取得するには、以下のリンクの「ダウンロードと実行」の手順に従ってください。&lt;/p&gt; &lt;p&gt; &lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt; https://github.com/stenzek/duckstation/ &lt;/a&gt;&lt;/p&gt;</translation>
+        <translation>&lt;p&gt;申し訳ありませんが、GitHubの公式リリースではないDuckStationバージョンを更新しようとしています。非互換性を防ぐために、自動更新は公式ビルドでのみ有効になっています。&lt;/p&gt; &lt;p&gt;公式ビルドを取得するには、以下のリンクの「ダウンロードと実行」の手順に従ってください。&lt;/p&gt; &lt;p&gt; &lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt; https://github.com/stenzek/duckstation/ &lt;/a&gt;&lt;/p&gt;</translation>
     </message>
     <message>
         <source>Dump CPU to VRAM Copies</source>
@@ -3213,6 +3576,10 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>フルスクリーン</translation>
     </message>
     <message>
+        <source>CPU D&amp;ebugger</source>
+        <translation>CPU デバッガ(&amp;E)</translation>
+    </message>
+    <message>
         <source>Show MDEC State</source>
         <translation>MDEC状態を表示</translation>
     </message>
@@ -3255,6 +3622,10 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <source>Disable Interlacing</source>
         <translation>インターレースを無効</translation>
+    </message>
+    <message>
+        <source>All File Types (*.bin *.img *.iso *.cue *.chd *.exe *.psexe *.psf *.m3u);;Single-Track Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;PlayStation Executables (*.exe *.psexe);;Portable Sound Format Files (*.psf);;Playlists (*.m3u)</source>
+        <translation>すべてのファイルタイプ (*.bin *.img *.cue *.chd *.exe *.psexe *.psf *.m3u);;シングルトラック Raw イメージ (*.bin *.img *.iso);;キューシート (*.cue);;MAME CHD イメージ (*.chd);;PlayStation 実行可能ファイル (*.exe *.psexe);;ポータブルサウンドフォーマットファイル (*.psf);;プレイリスト (*.m3u)</translation>
     </message>
     <message>
         <source>Show Titles (Grid View)</source>
@@ -3322,7 +3693,7 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <source>Check for &amp;Updates...</source>
-        <translation>アップデートのチェック...(&amp;U)</translation>
+        <translation>更新の確認...(&amp;U)</translation>
     </message>
     <message>
         <source>&amp;Rescan All Games</source>
@@ -3521,10 +3892,6 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>プロパティ...</translation>
     </message>
     <message>
-        <source>All File Types (*.bin *.img *.cue *.chd *.exe *.psexe *.psf *.m3u);;Single-Track Raw Images (*.bin *.img);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;PlayStation Executables (*.exe *.psexe);;Portable Sound Format Files (*.psf);;Playlists (*.m3u)</source>
-        <translation type="vanished">すべてのファイルタイプ (*.bin *.img *.cue *.chd *.exe *.psexe *.psf *.m3u);;シングルトラック Raw イメージ (*.bin *.img);;キューシート (*.cue);;MAME CHD イメージ (*.chd);;PlayStation 実行可能ファイル (*.exe *.psexe);;ポータブルサウンドフォーマットファイル (*.psf);;プレイリスト (*.m3u)</translation>
-    </message>
-    <message>
         <source>General Settings...</source>
         <translation>一般設定...</translation>
     </message>
@@ -3569,7 +3936,7 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>ホットキー設定...(&amp;H)</translation>
     </message>
     <message>
-        <source>All File Types (*.bin *.img *.iso *.cue *.chd *.exe *.psexe *.psf *.m3u);;Single-Track Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;PlayStation Executables (*.exe *.psexe);;Portable Sound Format Files (*.psf);;Playlists (*.m3u)</source>
+        <source>Boot and Debug</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3622,6 +3989,10 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <source>Failed to load memory card image.</source>
         <translation>メモリカードイメージのロードに失敗しました。</translation>
+    </message>
+    <message>
+        <source>Open...</source>
+        <translation>開く ...</translation>
     </message>
     <message>
         <source>Failed to delete file %1</source>
@@ -3777,6 +4148,14 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>B</translation>
     </message>
     <message>
+        <source>Scales X coordinates relative to the center of the screen.</source>
+        <translation>画面の中心を基準にしてX座標をスケーリングします。</translation>
+    </message>
+    <message>
+        <source>ShootOffscreen</source>
+        <translation>画面外で撮影</translation>
+    </message>
+    <message>
         <source>Crosshair Image Path</source>
         <translation>十字線画像のパス</translation>
     </message>
@@ -3791,6 +4170,10 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <source>Crosshair Image Scale</source>
         <translation>十字線画像スケール</translation>
+    </message>
+    <message>
+        <source>X Scale</source>
+        <translation>X スケール</translation>
     </message>
     <message>
         <source>Trigger</source>
@@ -3871,10 +4254,6 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>早送りを停止しました。</translation>
     </message>
     <message>
-        <source>Controller %u changed to digital by game settings.</source>
-        <translation type="vanished">コントローラー %u はゲーム設定によりデジタルに変更されました。</translation>
-    </message>
-    <message>
         <source>SSAA is not supported, using MSAA instead.</source>
         <translation>SSAAはサポートされておらず、代わりにMSAAを使用しています。</translation>
     </message>
@@ -3911,6 +4290,10 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>ゲーム設定により強制的にPGXP頂点キャッシュが有効。</translation>
     </message>
     <message>
+        <source>No cheats are loaded.</source>
+        <translation>チートはロードされません。</translation>
+    </message>
+    <message>
         <source>Started dumping audio to &apos;%s&apos;.</source>
         <translation>オーディオの &apos;%s&apos;へのダンプを開始しました。</translation>
     </message>
@@ -3941,6 +4324,10 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <source>CPU interpreter forced by game settings.</source>
         <translation>ゲーム設定によって強制的にCPU&#x3000;インタープリタが有効。</translation>
+    </message>
+    <message>
+        <source>%u cheats are now active.</source>
+        <translation>%u チートは有効になりました。</translation>
     </message>
     <message>
         <source>Texture filter &apos;%s&apos; is not supported on your device.</source>
@@ -3987,6 +4374,10 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>ポストプロセスシェーダーがリロードされました。</translation>
     </message>
     <message>
+        <source>Screenshot file &apos;%s&apos; already exists.</source>
+        <translation>スクリーンショットは &apos;%s&apos; に保存されました。</translation>
+    </message>
+    <message>
         <source>Resolution scale set to %ux (display %ux%u, VRAM %ux%u)</source>
         <translation>解像度スケールを %ux に設定（表示 %ux%u, VRAM %ux%u）</translation>
     </message>
@@ -4031,6 +4422,10 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>ポストプロセスシェーダーチェーンの読み込みに失敗しました。</translation>
     </message>
     <message>
+        <source>OpenGL renderer unavailable, your driver or hardware is not recent enough. OpenGL 3.1 or OpenGL ES 3.0 is required.</source>
+        <translation>OpenGLレンダラーが利用できません。ドライバーまたはハードウェアが対応していません。 OpenGL3.1またはOpenGLES3.0が必要です。</translation>
+    </message>
+    <message>
         <source>Applied cheat &apos;%s&apos;.</source>
         <translation>適用されたチート &apos;%s&apos;.</translation>
     </message>
@@ -4039,12 +4434,24 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>リストからチート %u をロードしました。 チート %u が有効になっています。</translation>
     </message>
     <message>
+        <source>PGXP Depth Buffer is now disabled.</source>
+        <translation>PGXP深度バッファが無効になりました。</translation>
+    </message>
+    <message>
         <source>Memory card %u present in save state but not in system. Ignoring card.</source>
         <translation>メモリカード %u は保存状態にありますが、システムにはありません。カードを無視します。</translation>
     </message>
     <message>
         <source>CPU memory exceptions enabled, flushing all blocks.</source>
         <translation>CPUメモリ例外が有効になり、すべてのブロックがフラッシュされます。</translation>
+    </message>
+    <message>
+        <source>Loaded %u cheats from database.</source>
+        <translation>データベースから、チート %u をロードしました。</translation>
+    </message>
+    <message>
+        <source>Analog mode forcing is disabled by game settings. Controller will start in digital mode.</source>
+        <translation>アナログモードの強制は、ゲームの設定によって無効になります。コントローラはデジタルモードで起動します。</translation>
     </message>
     <message>
         <source>Cheat &apos;%s&apos; is already enabled.</source>
@@ -4079,8 +4486,16 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>入力プロファイル &apos;%s&apos; が見つかりません。</translation>
     </message>
     <message>
+        <source>PGXP Depth Buffer is now enabled.</source>
+        <translation>PGXP深度バッファが有効になりました。</translation>
+    </message>
+    <message>
         <source>Memory card %u present in save state but not in system. Creating temporary card.</source>
         <translation>メモリカード %u はステートセーブにありますが、システムにはありません。仮カードを作成します。</translation>
+    </message>
+    <message>
+        <source>Failed to open CD image from save state: &apos;%s&apos;. Using existing image &apos;%s&apos;, this may result in instability.</source>
+        <translation>ステートセーブからCDイメージを開くことができませんでした: &apos;%s&apos;. 既存のCDイメージ&#x3000;&apos;%s&apos;を使用すると、不安定になる可能性があります。</translation>
     </message>
     <message>
         <source>Failed to save memory card to &apos;%s&apos;</source>
@@ -4121,6 +4536,10 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <source>CPU ICache disabled, flushing all blocks.</source>
         <translation>CPU Iキャッシュが無効になり、すべてのブロックがフラッシュされます。</translation>
+    </message>
+    <message>
+        <source>PGXP Depth Buffer disabled by game settings.</source>
+        <translation>PGXP深度バッファはゲーム設定によって無効になっています。</translation>
     </message>
     <message>
         <source>Memory card %u from save state does match current card data. Simulating replugging.</source>
@@ -4167,6 +4586,10 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>&apos;%s&apos;から入力プロファイルを読み込みました</translation>
     </message>
     <message>
+        <source>%u cheats are now inactive.</source>
+        <translation>%u チートは無効になりました。</translation>
+    </message>
+    <message>
         <source>PGXP texture correction disabled by game settings.</source>
         <translation>PGXPテクスチャ補正はゲーム設定によって無効になっています。</translation>
     </message>
@@ -4179,35 +4602,7 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>PGXPジオメトリ補正は、ゲーム設定によって無効になっています。</translation>
     </message>
     <message>
-        <source>Analog mode forcing is disabled by game settings. Controller will start in digital mode.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>OpenGL renderer unavailable, your driver or hardware is not recent enough. OpenGL 3.1 or OpenGL ES 3.0 is required.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Failed to open CD image from save state: &apos;%s&apos;. Using existing image &apos;%s&apos;, this may result in instability.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>No cheats are loaded.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>%u cheats are now active.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>%u cheats are now inactive.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Screenshot file &apos;%s&apos; already exists.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Loaded %u cheats from database.</source>
+        <source>Texture replacements reloaded.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4343,18 +4738,7 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <source>Reset to Defaults</source>
-        <translation>既定にリセット</translation>
-    </message>
-</context>
-<context>
-    <name>QAndroidPlatformTheme</name>
-    <message>
-        <source>No</source>
-        <translation type="vanished">いいえ</translation>
-    </message>
-    <message>
-        <source>Yes</source>
-        <translation type="vanished">はい</translation>
+        <translation>デフォルトにリセット</translation>
     </message>
 </context>
 <context>
@@ -4378,28 +4762,6 @@ URLは次のとおりです : %1</translation>
     <message>
         <source>DuckStation Error</source>
         <translation>DuckStation エラー</translation>
-    </message>
-</context>
-<context>
-    <name>QPlatformTheme</name>
-    <message>
-        <source>&amp;No</source>
-        <translation type="vanished">いいえ(&amp;N)</translation>
-    </message>
-    <message>
-        <source>&amp;Yes</source>
-        <translation type="vanished">はい(&amp;Y)</translation>
-    </message>
-</context>
-<context>
-    <name>QShortcut</name>
-    <message>
-        <source>No</source>
-        <translation type="vanished">いいえ</translation>
-    </message>
-    <message>
-        <source>Yes</source>
-        <translation type="vanished">はい</translation>
     </message>
 </context>
 <context>
@@ -4606,8 +4968,28 @@ The saves will not be recoverable.</source>
         <translation>プレイリストから現在のメディアを削除し、CD-ROMからメディアを削除します。</translation>
     </message>
     <message>
+        <source>Save state is incompatible: maximum version is %u but state is version %u.</source>
+        <translation>ステートセーブに互換性がありません。最小バージョンは %u ですが、ステートセーブはバージョン %u です。</translation>
+    </message>
+    <message>
         <source>Save state is incompatible: minimum version is %u but state is version %u.</source>
         <translation>ステートセーブに互換性がありません。最小バージョンは %u ですが、ステートセーブはバージョン %u です。</translation>
+    </message>
+    <message>
+        <source>You are attempting to run a libcrypt protected game without a SBI file:
+
+%s: %s
+
+The game will likely not run properly.
+
+Please check the README for instructions on how to add a SBI file.</source>
+        <translation>SBIファイルなしでlibcryptで保護されたゲームを実行しようとしています。
+
+％s：％s
+
+ゲームは正しく実行されない可能性があります。
+
+SBIファイルを追加する方法については、READMEを確認してください。</translation>
     </message>
     <message>
         <source>Memory card path for slot %u is missing, using default.</source>
@@ -4628,10 +5010,6 @@ The saves will not be recoverable.</source>
     <message>
         <source>Per-game memory card cannot be used for slot %u as the running game has no code. Using shared card instead.</source>
         <translation>実行中のゲームにはコードがないため、ゲームごとのメモリカードをスロット %u に使用することはできません。代わりに共有カードを使用します。</translation>
-    </message>
-    <message>
-        <source>Save state is incompatible: maximum version is %u but state is version %u.</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>

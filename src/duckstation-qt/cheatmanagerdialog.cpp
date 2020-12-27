@@ -18,8 +18,9 @@
 #include <utility>
 
 static constexpr std::array<const char*, 6> s_size_strings = {
-  {QT_TR_NOOP("Byte"), QT_TR_NOOP("Halfword"), QT_TR_NOOP("Word"), QT_TR_NOOP("Signed Byte"),
-   QT_TR_NOOP("Signed Halfword"), QT_TR_NOOP("Signed Word")}};
+  {TRANSLATABLE("CheatManagerDialog", "Byte"), TRANSLATABLE("CheatManagerDialog", "Halfword"),
+   TRANSLATABLE("CheatManagerDialog", "Word"), TRANSLATABLE("CheatManagerDialog", "Signed Byte"),
+   TRANSLATABLE("CheatManagerDialog", "Signed Halfword"), TRANSLATABLE("CheatManagerDialog", "Signed Word")}};
 
 static QString formatHexValue(u32 value)
 {
