@@ -318,12 +318,12 @@ void DebuggerWindow::onMemorySearchTriggered()
   if (wrapped_around)
   {
     m_ui.statusbar->showMessage(tr("Pattern found at 0x%1 (passed the end of memory).")
-                                  .arg(static_cast<uint>(found_address.value()), 8, 10, static_cast<QChar>('0')));
+                                  .arg(static_cast<uint>(found_address.value()), 8, 16, static_cast<QChar>('0')));
   }
   else
   {
     m_ui.statusbar->showMessage(
-      tr("Pattern found at 0x%1.").arg(static_cast<uint>(found_address.value()), 8, 10, static_cast<QChar>('0')));
+      tr("Pattern found at 0x%1.").arg(static_cast<uint>(found_address.value()), 8, 16, static_cast<QChar>('0')));
   }
 }
 
