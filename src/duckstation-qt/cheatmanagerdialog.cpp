@@ -22,9 +22,25 @@ static constexpr std::array<const char*, 6> s_size_strings = {
    TRANSLATABLE("CheatManagerDialog", "Word"), TRANSLATABLE("CheatManagerDialog", "Signed Byte"),
    TRANSLATABLE("CheatManagerDialog", "Signed Halfword"), TRANSLATABLE("CheatManagerDialog", "Signed Word")}};
 
-static QString formatHexValue(u32 value)
+static QString formatHexValue(u32 value, u8 size)
 {
-  return QStringLiteral("0x%1").arg(static_cast<uint>(value), 8, 16, QChar('0'));
+  return QStringLiteral("0x%1").arg(static_cast<uint>(value), size, 16, QChar('0'));
+}
+
+static QString formatHexAndDecValue(u32 value, u8 size, bool is_signed)
+{
+    
+  if (is_signed)
+  { 
+    u32 value_raw = value;      
+    if (size==2)
+      value_raw &= 0xFF;  
+    else if (size==4)
+      value_raw &= 0xFFFF;     
+    return QStringLiteral("0x%1 (%2)").arg(static_cast<u32>(value_raw), size, 16, QChar('0')).arg(static_cast<int>(value)); 
+  }
+  else
+    return QStringLiteral("0x%1 (%2)").arg(static_cast<u32>(value), size, 16, QChar('0')).arg(static_cast<uint>(value)); 
 }
 
 static QString formatValue(u32 value, bool is_signed)
@@ -49,8 +65,8 @@ CheatManagerDialog::~CheatManagerDialog() = default;
 
 void CheatManagerDialog::setupAdditionalUi()
 {
-  m_ui.scanStartAddress->setText(formatHexValue(m_scanner.GetStartAddress()));
-  m_ui.scanEndAddress->setText(formatHexValue(m_scanner.GetEndAddress()));
+  m_ui.scanStartAddress->setText(formatHexValue(m_scanner.GetStartAddress(), 8));
+  m_ui.scanEndAddress->setText(formatHexValue(m_scanner.GetEndAddress(), 8));
 }
 
 void CheatManagerDialog::connectUi()
@@ -104,18 +120,18 @@ void CheatManagerDialog::connectUi()
   connect(m_ui.scanPresetRange, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
     if (index == 0)
     {
-      m_ui.scanStartAddress->setText(formatHexValue(0));
-      m_ui.scanEndAddress->setText(formatHexValue(Bus::RAM_SIZE));
+      m_ui.scanStartAddress->setText(formatHexValue(0, 8));
+      m_ui.scanEndAddress->setText(formatHexValue(Bus::RAM_SIZE, 8));
     }
     else if (index == 1)
     {
-      m_ui.scanStartAddress->setText(formatHexValue(CPU::DCACHE_LOCATION));
-      m_ui.scanEndAddress->setText(formatHexValue(CPU::DCACHE_LOCATION + CPU::DCACHE_SIZE));
+      m_ui.scanStartAddress->setText(formatHexValue(CPU::DCACHE_LOCATION, 8));
+      m_ui.scanEndAddress->setText(formatHexValue(CPU::DCACHE_LOCATION + CPU::DCACHE_SIZE, 8));
     }
     else
     {
-      m_ui.scanStartAddress->setText(formatHexValue(Bus::BIOS_BASE));
-      m_ui.scanEndAddress->setText(formatHexValue(Bus::BIOS_BASE + Bus::BIOS_SIZE));
+      m_ui.scanStartAddress->setText(formatHexValue(Bus::BIOS_BASE, 8));
+      m_ui.scanEndAddress->setText(formatHexValue(Bus::BIOS_BASE + Bus::BIOS_SIZE, 8));
     }
   });
   connect(m_ui.scanNewSearch, &QPushButton::clicked, [this]() {
@@ -659,6 +675,11 @@ void CheatManagerDialog::addManualWatchAddressClicked()
   if (index < 0 || !ok)
     return;
 
+  if (index==1 || index==4)
+    address.value() &= 0xFFFFFFFE;  
+  else if (index==2 || index==5)
+    address.value() &= 0xFFFFFFFC;    
+  
   m_watch.AddEntry(StringUtil::StdStringFromFormat("0x%08x", address.value()), address.value(),
                    static_cast<MemoryAccessSize>(index % 3), (index > 3), false);
   updateWatch();
@@ -790,14 +811,31 @@ void CheatManagerDialog::updateResults()
 
       m_ui.scanTable->insertRow(row);
 
-      QTableWidgetItem* address_item = new QTableWidgetItem(formatHexValue(res.address));
+      QTableWidgetItem* address_item = new QTableWidgetItem(formatHexValue(res.address, 8));
       address_item->setFlags(address_item->flags() & ~(Qt::ItemIsEditable));
       m_ui.scanTable->setItem(row, 0, address_item);
 
-      QTableWidgetItem* value_item = new QTableWidgetItem(formatValue(res.value, m_scanner.GetValueSigned()));
+      QTableWidgetItem* value_item;
+      if (m_ui.scanValueBase->currentIndex() == 0)
+        value_item = new QTableWidgetItem(formatValue(res.value, m_scanner.GetValueSigned()));
+      else if (m_scanner.GetSize() == MemoryAccessSize::Byte)
+        value_item = new QTableWidgetItem(formatHexValue(res.value, 2));
+      else if (m_scanner.GetSize() == MemoryAccessSize::HalfWord)
+        value_item = new QTableWidgetItem(formatHexValue(res.value, 4));
+      else
+        value_item = new QTableWidgetItem(formatHexValue(res.value, 8));
       m_ui.scanTable->setItem(row, 1, value_item);
 
-      QTableWidgetItem* previous_item = new QTableWidgetItem(formatValue(res.last_value, m_scanner.GetValueSigned()));
+      QTableWidgetItem* previous_item;
+      if (m_ui.scanValueBase->currentIndex() == 0)
+        previous_item = new QTableWidgetItem(formatValue(res.last_value, m_scanner.GetValueSigned()));
+      else if (m_scanner.GetSize() == MemoryAccessSize::Byte)
+        previous_item = new QTableWidgetItem(formatHexValue(res.last_value, 2));
+      else if (m_scanner.GetSize() == MemoryAccessSize::HalfWord)
+        previous_item = new QTableWidgetItem(formatHexValue(res.last_value, 4));
+      else
+        previous_item = new QTableWidgetItem(formatHexValue(res.last_value, 8));
+
       previous_item->setFlags(address_item->flags() & ~(Qt::ItemIsEditable));
       m_ui.scanTable->setItem(row, 2, previous_item);
       row++;
@@ -819,7 +857,14 @@ void CheatManagerDialog::updateResultsValues()
     if (res.value_changed)
     {
       QTableWidgetItem* item = m_ui.scanTable->item(row, 1);
-      item->setText(formatValue(res.value, m_scanner.GetValueSigned()));
+      if (m_ui.scanValueBase->currentIndex() == 0)
+        item->setText(formatValue(res.value, m_scanner.GetValueSigned()));  
+      else if (m_scanner.GetSize() == MemoryAccessSize::Byte)
+        item->setText(formatHexValue(res.value, 2));
+      else if (m_scanner.GetSize() == MemoryAccessSize::HalfWord)
+        item->setText(formatHexValue(res.value, 4));
+      else
+        item->setText(formatHexValue(res.value, 8));
       item->setForeground(Qt::red);
     }
 
@@ -852,7 +897,7 @@ void CheatManagerDialog::updateWatch()
       QTableWidgetItem* description_item = new QTableWidgetItem(QString::fromStdString(res.description));
       m_ui.watchTable->setItem(row, 1, description_item);
 
-      QTableWidgetItem* address_item = new QTableWidgetItem(formatHexValue(res.address));
+      QTableWidgetItem* address_item = new QTableWidgetItem(formatHexValue(res.address, 8));
       address_item->setFlags(address_item->flags() & ~(Qt::ItemIsEditable));
       m_ui.watchTable->setItem(row, 2, address_item);
 
@@ -861,9 +906,15 @@ void CheatManagerDialog::updateWatch()
       size_item->setFlags(address_item->flags() & ~(Qt::ItemIsEditable));
       m_ui.watchTable->setItem(row, 3, size_item);
 
-      QTableWidgetItem* value_item = new QTableWidgetItem(formatValue(res.value, res.is_signed));
-      m_ui.watchTable->setItem(row, 4, value_item);
+      QTableWidgetItem* value_item;
+      if (res.size == MemoryAccessSize::Byte)
+        value_item = new QTableWidgetItem(formatHexAndDecValue(res.value, 2, res.is_signed));
+      else if (res.size == MemoryAccessSize::HalfWord)
+        value_item = new QTableWidgetItem(formatHexAndDecValue(res.value, 4, res.is_signed));
+      else
+        value_item = new QTableWidgetItem(formatHexAndDecValue(res.value, 8, res.is_signed));
 
+      m_ui.watchTable->setItem(row, 4, value_item);
       row++;
     }
   }
@@ -879,8 +930,16 @@ void CheatManagerDialog::updateWatchValues()
   for (const MemoryWatchList::Entry& res : m_watch.GetEntries())
   {
     if (res.changed)
-      m_ui.watchTable->item(row, 4)->setText(formatValue(res.value, res.is_signed));
-
+    {
+      if (m_ui.scanValueBase->currentIndex() == 0)
+        m_ui.watchTable->item(row, 4)->setText(formatValue(res.value, res.is_signed));
+      else if (m_scanner.GetSize() == MemoryAccessSize::Byte)
+        m_ui.watchTable->item(row, 4)->setText(formatHexValue(res.value, 2));
+      else if (m_scanner.GetSize() == MemoryAccessSize::HalfWord)
+        m_ui.watchTable->item(row, 4)->setText(formatHexValue(res.value, 4));
+      else
+        m_ui.watchTable->item(row, 4)->setText(formatHexValue(res.value, 8));
+    }
     row++;
   }
 }
