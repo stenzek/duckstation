@@ -252,7 +252,7 @@ private:
   void UpdateCommandEvent();
   void ExecuteDrive(TickCount ticks_late);
   void BeginReading(TickCount ticks_late = 0, bool after_seek = false);
-  void BeginPlaying(u8 track_bcd, TickCount ticks_late = 0, bool after_seek = false);
+  void BeginPlaying(u8 track, TickCount ticks_late = 0, bool after_seek = false);
   void DoShellOpenComplete(TickCount ticks_late);
   void DoResetComplete(TickCount ticks_late);
   void DoSeekComplete(TickCount ticks_late);

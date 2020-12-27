@@ -936,8 +936,8 @@ void CDROM::ExecuteCommand()
 
     case Command::Play:
     {
-      const u8 track_bcd = m_param_fifo.IsEmpty() ? 0 : PackedBCDToBinary(m_param_fifo.Peek(0));
-      Log_DebugPrintf("CDROM play command, track=%u", track_bcd);
+      const u8 track = m_param_fifo.IsEmpty() ? 0 : PackedBCDToBinary(m_param_fifo.Peek(0));
+      Log_DebugPrintf("CDROM play command, track=%u", track);
 
       if (!CanReadMedia())
       {
@@ -947,7 +947,7 @@ void CDROM::ExecuteCommand()
       {
         SendACKAndStat();
 
-        if (track_bcd == 0 && (!m_setloc_pending || m_setloc_position.ToLBA() == GetNextSectorToBeRead()) &&
+        if (track == 0 && (!m_setloc_pending || m_setloc_position.ToLBA() == GetNextSectorToBeRead()) &&
             (m_drive_state == DriveState::Playing || (IsSeeking() && m_play_after_seek)))
         {
           Log_DevPrintf("Ignoring play command with no/same setloc, already playing/playing after seek");
@@ -958,7 +958,7 @@ void CDROM::ExecuteCommand()
           if (IsSeeking())
             UpdatePositionWhileSeeking();
 
-          BeginPlaying(track_bcd);
+          BeginPlaying(track);
         }
       }
 
@@ -1437,24 +1437,24 @@ void CDROM::BeginReading(TickCount ticks_late /* = 0 */, bool after_seek /* = fa
   m_reader.QueueReadSector(m_current_lba);
 }
 
-void CDROM::BeginPlaying(u8 track_bcd, TickCount ticks_late /* = 0 */, bool after_seek /* = false */)
+void CDROM::BeginPlaying(u8 track, TickCount ticks_late /* = 0 */, bool after_seek /* = false */)
 {
-  Log_DebugPrintf("Starting playing CDDA track %x", track_bcd);
+  Log_DebugPrintf("Starting playing CDDA track %x", track);
   m_last_cdda_report_frame_nibble = 0xFF;
-  m_play_track_number_bcd = track_bcd;
+  m_play_track_number_bcd = track;
   m_fast_forward_rate = 0;
 
   // if track zero, start from current position
-  if (track_bcd != 0)
+  if (track != 0)
   {
     // play specific track?
-    if (track_bcd > m_reader.GetMedia()->GetTrackCount())
+    if (track > m_reader.GetMedia()->GetTrackCount())
     {
       // restart current track
-      track_bcd = BinaryToBCD(Truncate8(m_reader.GetMedia()->GetTrackNumber()));
+      track = Truncate8(m_reader.GetMedia()->GetTrackNumber());
     }
 
-    m_setloc_position = m_reader.GetMedia()->GetTrackStartMSFPosition(PackedBCDToBinary(track_bcd));
+    m_setloc_position = m_reader.GetMedia()->GetTrackStartMSFPosition(track);
     m_setloc_pending = true;
   }
 
