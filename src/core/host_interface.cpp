@@ -507,6 +507,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetIntValue("GPU", "ResolutionScale", 1);
   si.SetIntValue("GPU", "Multisamples", 1);
   si.SetBoolValue("GPU", "UseDebugDevice", false);
+  si.SetBoolValue("GPU", "AllowShaderInterfaceBlock", true);
   si.SetBoolValue("GPU", "PerSampleShading", false);
   si.SetBoolValue("GPU", "UseThread", true);
   si.SetBoolValue("GPU", "ThreadedPresentation", true);

@@ -108,6 +108,7 @@ struct Settings
   bool gpu_use_thread = true;
   bool gpu_threaded_presentation = true;
   bool gpu_use_debug_device = false;
+  bool gpu_allow_shader_interface_block = true;
   bool gpu_per_sample_shading = false;
   bool gpu_true_color = true;
   bool gpu_scaled_dithering = false;

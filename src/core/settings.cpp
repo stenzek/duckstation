@@ -149,6 +149,7 @@ void Settings::Load(SettingsInterface& si)
   gpu_resolution_scale = static_cast<u32>(si.GetIntValue("GPU", "ResolutionScale", 1));
   gpu_multisamples = static_cast<u32>(si.GetIntValue("GPU", "Multisamples", 1));
   gpu_use_debug_device = si.GetBoolValue("GPU", "UseDebugDevice", false);
+  gpu_allow_shader_interface_block = si.GetBoolValue("GPU", "AllowShaderInterfaceBlock", true);
   gpu_per_sample_shading = si.GetBoolValue("GPU", "PerSampleShading", false);
   gpu_use_thread = si.GetBoolValue("GPU", "UseThread", true);
   gpu_threaded_presentation = si.GetBoolValue("GPU", "ThreadedPresentation", true);
@@ -319,6 +320,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetIntValue("GPU", "ResolutionScale", static_cast<long>(gpu_resolution_scale));
   si.SetIntValue("GPU", "Multisamples", static_cast<long>(gpu_multisamples));
   si.SetBoolValue("GPU", "UseDebugDevice", gpu_use_debug_device);
+  si.SetBoolValue("GPU", "AllowShaderInterfaceBlock", gpu_allow_shader_interface_block);
   si.SetBoolValue("GPU", "PerSampleShading", gpu_per_sample_shading);
   si.SetBoolValue("GPU", "UseThread", gpu_use_thread);
   si.SetBoolValue("GPU", "ThreadedPresentation", gpu_threaded_presentation);

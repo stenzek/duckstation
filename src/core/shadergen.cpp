@@ -1,6 +1,7 @@
 #include "shadergen.h"
 #include "common/assert.h"
 #include "common/log.h"
+#include "core/settings.h"
 #include <cstdio>
 #include <glad.h>
 Log_SetChannel(ShaderGen);
@@ -14,7 +15,7 @@ ShaderGen::ShaderGen(HostDisplay::RenderAPI render_api, bool supports_dual_sourc
     if (m_render_api == HostDisplay::RenderAPI::OpenGL || m_render_api == HostDisplay::RenderAPI::OpenGLES)
       SetGLSLVersionString();
 
-    m_use_glsl_interface_blocks = (IsVulkan() || GLAD_GL_ES_VERSION_3_2 || GLAD_GL_VERSION_3_2);
+    m_use_glsl_interface_blocks = (IsVulkan() || GLAD_GL_ES_VERSION_3_2 || GLAD_GL_VERSION_3_2) && g_settings.gpu_allow_shader_interface_block;
     m_use_glsl_binding_layout = (IsVulkan() || UseGLSLBindingLayout());
   }
 }
