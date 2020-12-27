@@ -24,6 +24,9 @@ public:
     XInput,
     DInput,
 #endif
+#ifdef ANDROID
+    Android,
+#endif
     Count
   };
 

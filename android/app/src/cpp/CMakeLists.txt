@@ -1,4 +1,6 @@
 set(SRCS
+  android_controller_interface.cpp
+  android_controller_interface.h
   android_host_interface.cpp
   android_host_interface.h
   android_progress_callback.cpp

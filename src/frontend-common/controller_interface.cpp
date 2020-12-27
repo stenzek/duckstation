@@ -91,6 +91,10 @@ static constexpr std::array<const char*, static_cast<u32>(ControllerInterface::B
   TRANSLATABLE("ControllerInterface", "XInput"),
   TRANSLATABLE("ControllerInterface", "DInput"),
 #endif
+#ifdef ANDROID
+  // Deliberately not translated as it's not exposed to users.
+  "Android",
+#endif
 }};
 
 std::optional<ControllerInterface::Backend> ControllerInterface::ParseBackendName(const char* name)
