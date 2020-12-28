@@ -53,6 +53,7 @@ private Q_SLOTS:
   void destroyDisplay();
   void focusDisplayWidget();
   void onMouseModeRequested(bool relative_mode, bool hide_cursor);
+  void updateMouseMode(bool paused);
 
   void setTheme(const QString& theme);
   void updateTheme();
@@ -150,6 +151,7 @@ private:
   bool m_was_paused_by_focus_loss = false;
   bool m_open_debugger_on_start = false;
   bool m_relative_mouse_mode = false;
+  bool m_mouse_cursor_hidden = false;
 
   GDBServer* m_gdb_server = nullptr;
 };

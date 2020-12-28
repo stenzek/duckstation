@@ -116,8 +116,7 @@ QtDisplayWidget* MainWindow::createDisplay(QThread* worker_thread, bool fullscre
     else
       m_display_widget->showNormal();
 
-    if (shouldHideCursorInFullscreen())
-      m_display_widget->setCursor(Qt::BlankCursor);
+    updateMouseMode(System::IsPaused());
   }
   else if (!render_to_main)
   {
@@ -181,8 +180,7 @@ QtDisplayWidget* MainWindow::updateDisplay(QThread* worker_thread, bool fullscre
     else
       m_display_widget->showNormal();
 
-    if (shouldHideCursorInFullscreen())
-      m_display_widget->setCursor(Qt::BlankCursor);
+    updateMouseMode(System::IsPaused());
   }
   else if (!render_to_main)
   {
@@ -292,18 +290,30 @@ void MainWindow::focusDisplayWidget()
 
 void MainWindow::onMouseModeRequested(bool relative_mode, bool hide_cursor)
 {
+  m_relative_mouse_mode = relative_mode;
+  m_mouse_cursor_hidden = hide_cursor;
+  updateMouseMode(System::IsPaused());
+}
+
+void MainWindow::updateMouseMode(bool paused)
+{
   if (!m_display_widget)
     return;
 
-  const bool paused = System::IsPaused();
+  if (paused)
+  {
+    m_display_widget->unsetCursor();
+    m_display_widget->setRelativeMode(false);
+    return;
+  }
 
-  if (hide_cursor)
+  const bool hide_mouse = m_mouse_cursor_hidden || (m_display_widget->isFullScreen() && shouldHideCursorInFullscreen());
+  if (hide_mouse)
     m_display_widget->setCursor(Qt::BlankCursor);
   else
     m_display_widget->unsetCursor();
 
-  m_relative_mouse_mode = relative_mode;
-  m_display_widget->setRelativeMode(!paused && relative_mode);
+  m_display_widget->setRelativeMode(m_relative_mouse_mode);
 }
 
 void MainWindow::onEmulationStarting()
@@ -343,9 +353,7 @@ void MainWindow::onEmulationPaused(bool paused)
 {
   QSignalBlocker blocker(m_ui.actionPause);
   m_ui.actionPause->setChecked(paused);
-
-  if (m_display_widget)
-    m_display_widget->setRelativeMode(!paused && m_relative_mouse_mode);
+  updateMouseMode(paused);
 }
 
 void MainWindow::onStateSaved(const QString& game_code, bool global, qint32 slot)
@@ -391,9 +399,7 @@ void MainWindow::onApplicationStateChanged(Qt::ApplicationState state)
     {
       m_host_interface->pauseSystem(true);
       m_was_paused_by_focus_loss = true;
-
-      if (m_display_widget)
-        m_display_widget->setRelativeMode(false);
+      updateMouseMode(true);
     }
   }
   else
@@ -403,9 +409,7 @@ void MainWindow::onApplicationStateChanged(Qt::ApplicationState state)
       if (System::IsPaused())
         m_host_interface->pauseSystem(false);
       m_was_paused_by_focus_loss = false;
-
-      if (m_display_widget)
-        m_display_widget->setRelativeMode(m_relative_mouse_mode);
+      updateMouseMode(false);
     }
   }
 }
