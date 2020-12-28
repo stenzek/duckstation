@@ -9,7 +9,8 @@ namespace BIOS {
 enum : u32
 {
   BIOS_BASE = 0x1FC00000,
-  BIOS_SIZE = 0x80000
+  BIOS_SIZE = 0x80000,
+  BIOS_SIZE_PS2 = 0x400000
 };
 
 using Image = std::vector<u8>;
@@ -29,6 +30,7 @@ struct ImageInfo
   const char* description;
   ConsoleRegion region;
   Hash hash;
+  bool patch_compatible;
 };
 
 #pragma pack(push, 1)

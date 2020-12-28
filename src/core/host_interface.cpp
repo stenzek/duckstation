@@ -304,7 +304,7 @@ std::optional<std::vector<u8>> HostInterface::FindBIOSImageInDirectory(ConsoleRe
 
   for (const FILESYSTEM_FIND_DATA& fd : results)
   {
-    if (fd.Size != BIOS::BIOS_SIZE)
+    if (fd.Size < BIOS::BIOS_SIZE || fd.Size > BIOS::BIOS_SIZE_PS2)
     {
       Log_WarningPrintf("Skipping '%s': incorrect size", fd.FileName.c_str());
       continue;
@@ -353,7 +353,7 @@ HostInterface::FindBIOSImagesInDirectory(const char* directory)
 
   for (FILESYSTEM_FIND_DATA& fd : files)
   {
-    if (fd.Size != BIOS::BIOS_SIZE)
+    if (fd.Size < BIOS::BIOS_SIZE || fd.Size > BIOS::BIOS_SIZE_PS2)
       continue;
 
     std::string full_path(
@@ -374,7 +374,7 @@ HostInterface::FindBIOSImagesInDirectory(const char* directory)
 bool HostInterface::HasAnyBIOSImages()
 {
   const std::string dir = GetBIOSDirectory();
-  return (FindBIOSImageInDirectory(ConsoleRegion::NTSC_U, dir.c_str()).has_value());
+  return (FindBIOSImageInDirectory(ConsoleRegion::Auto, dir.c_str()).has_value());
 }
 
 bool HostInterface::LoadState(const char* filename)
