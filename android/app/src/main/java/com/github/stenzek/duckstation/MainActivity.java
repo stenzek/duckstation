@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -22,6 +23,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -40,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_ADD_DIRECTORY_TO_GAME_LIST = 2;
     private static final int REQUEST_IMPORT_BIOS_IMAGE = 3;
     private static final int REQUEST_START_FILE = 4;
+    private static final int REQUEST_SETTINGS = 5;
 
     private GameList mGameList;
     private ListView mGameListView;
@@ -64,6 +67,26 @@ public class MainActivity extends AppCompatActivity {
         res.updateConfiguration(config, res.getDisplayMetrics());
     }
 
+    private void setTheme() {
+        String theme = PreferenceManager.getDefaultSharedPreferences(this).getString("Main/Theme", "follow_system");
+        if (theme == null)
+            return;
+
+        if (theme.equals("follow_system")) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+        } else if (theme.equals("light")) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+        } else if (theme.equals("dark")) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        }
+    }
+
+    private void loadSettings() {
+        setLanguage();
+        setTheme();
+    }
+
     private boolean shouldResumeStateByDefault() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         return prefs.getBoolean("Main/SaveStateOnExit", true);
@@ -81,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setLanguage();
+        loadSettings();
 
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -193,7 +216,7 @@ public class MainActivity extends AppCompatActivity {
             importBIOSImage();
         } else if (id == R.id.action_settings) {
             Intent intent = new Intent(this, SettingsActivity.class);
-            startActivity(intent);
+            startActivityForResult(intent, REQUEST_SETTINGS);
             return true;
         } else if (id == R.id.action_show_version) {
             showVersion();
@@ -285,6 +308,11 @@ public class MainActivity extends AppCompatActivity {
                     return;
 
                 startEmulation(path, shouldResumeStateByDefault());
+            }
+            break;
+
+            case REQUEST_SETTINGS: {
+                loadSettings();
             }
             break;
         }

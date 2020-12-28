@@ -45,6 +45,14 @@
         app:summary="@string/settings_summary_pause_when_menu_opened"
         app:iconSpaceReserved="false" />
     <ListPreference
+        app:key="Main/Theme"
+        app:title="@string/settings_theme"
+        app:entries="@array/settings_theme_entries"
+        app:entryValues="@array/settings_theme_values"
+        app:defaultValue="follow_system"
+        app:useSimpleSummaryProvider="true"
+        app:iconSpaceReserved="false" />
+    <ListPreference
         app:key="Main/EmulationScreenOrientation"
         app:title="@string/settings_emulation_screen_orientation"
         app:entries="@array/settings_emulation_screen_orientation_entries"
