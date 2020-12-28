@@ -30,6 +30,7 @@ struct ImageInfo
   const char* description;
   ConsoleRegion region;
   Hash hash;
+  bool patch_compatible;
 };
 
 #pragma pack(push, 1)
