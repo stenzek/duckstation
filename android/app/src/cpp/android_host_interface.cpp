@@ -81,6 +81,11 @@ std::string JStringToString(JNIEnv* env, jstring str)
   return ret;
 }
 
+jclass GetStringClass()
+{
+  return s_String_class;
+}
+
 std::unique_ptr<GrowableMemoryByteStream> ReadInputStreamToMemory(JNIEnv* env, jobject obj, u32 chunk_size /* = 65536*/)
 {
   std::unique_ptr<GrowableMemoryByteStream> bs = std::make_unique<GrowableMemoryByteStream>(nullptr, 0);

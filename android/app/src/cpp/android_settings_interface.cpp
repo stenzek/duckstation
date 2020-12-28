@@ -16,14 +16,21 @@ AndroidSettingsInterface::AndroidSettingsInterface(jobject java_context)
 {
   JNIEnv* env = AndroidHelpers::GetJNIEnv();
   jclass c_preference_manager = env->FindClass("androidx/preference/PreferenceManager");
+  jclass c_preference_editor = env->FindClass("android/content/SharedPreferences$Editor");
   jclass c_set = env->FindClass("java/util/Set");
+  jclass c_helper = env->FindClass("com/github/stenzek/duckstation/PreferenceHelpers");
   jmethodID m_get_default_shared_preferences =
     env->GetStaticMethodID(c_preference_manager, "getDefaultSharedPreferences",
                            "(Landroid/content/Context;)Landroid/content/SharedPreferences;");
-  Assert(c_preference_manager && c_set && m_get_default_shared_preferences);
+  Assert(c_preference_manager && c_preference_editor && c_set && c_helper && m_get_default_shared_preferences);
   m_set_class = reinterpret_cast<jclass>(env->NewGlobalRef(c_set));
-  Assert(m_set_class);
+  m_shared_preferences_editor_class = reinterpret_cast<jclass>(env->NewGlobalRef(c_preference_editor));
+  m_helper_class = reinterpret_cast<jclass>(env->NewGlobalRef(c_helper));
+  Assert(m_set_class && m_shared_preferences_editor_class && m_helper_class);
+
   env->DeleteLocalRef(c_set);
+  env->DeleteLocalRef(c_preference_editor);
+  env->DeleteLocalRef(c_helper);
 
   jobject shared_preferences =
     env->CallStaticObjectMethod(c_preference_manager, m_get_default_shared_preferences, java_context);
@@ -47,6 +54,18 @@ AndroidSettingsInterface::AndroidSettingsInterface(jobject java_context)
     env->GetMethodID(m_shared_preferences_class, "getStringSet", "(Ljava/lang/String;Ljava/util/Set;)Ljava/util/Set;");
   m_set_to_array = env->GetMethodID(m_set_class, "toArray", "()[Ljava/lang/Object;");
   Assert(m_get_boolean && m_get_int && m_get_float && m_get_string && m_get_string_set && m_set_to_array);
+
+  m_edit = env->GetMethodID(m_shared_preferences_class, "edit", "()Landroid/content/SharedPreferences$Editor;");
+  m_edit_set_string = env->GetMethodID(m_shared_preferences_editor_class, "putString", "(Ljava/lang/String;Ljava/lang/String;)Landroid/content/SharedPreferences$Editor;");
+  m_edit_commit = env->GetMethodID(m_shared_preferences_editor_class, "commit", "()Z");
+  m_edit_remove = env->GetMethodID(m_shared_preferences_editor_class, "remove", "(Ljava/lang/String;)Landroid/content/SharedPreferences$Editor;");
+  Assert(m_edit && m_edit_set_string && m_edit_commit && m_edit_remove);
+
+  m_helper_clear_section = env->GetStaticMethodID(m_helper_class, "clearSection", "(Landroid/content/SharedPreferences;Ljava/lang/String;)V");
+  m_helper_add_to_string_list = env->GetStaticMethodID(m_helper_class, "addToStringList", "(Landroid/content/SharedPreferences;Ljava/lang/String;Ljava/lang/String;)Z");
+  m_helper_remove_from_string_list = env->GetStaticMethodID(m_helper_class, "removeFromStringList", "(Landroid/content/SharedPreferences;Ljava/lang/String;Ljava/lang/String;)Z");
+  m_helper_set_string_list = env->GetStaticMethodID(m_helper_class, "setStringList", "(Landroid/content/SharedPreferences;Ljava/lang/String;[Ljava/lang/String;)V");
+  Assert(m_helper_clear_section && m_helper_add_to_string_list && m_helper_remove_from_string_list && m_helper_set_string_list);
 }
 
 AndroidSettingsInterface::~AndroidSettingsInterface()
@@ -54,10 +73,14 @@ AndroidSettingsInterface::~AndroidSettingsInterface()
   JNIEnv* env = AndroidHelpers::GetJNIEnv();
   if (m_java_shared_preferences)
     env->DeleteGlobalRef(m_java_shared_preferences);
+  if (m_shared_preferences_editor_class)
+    env->DeleteGlobalRef(m_shared_preferences_editor_class);
   if (m_shared_preferences_class)
     env->DeleteGlobalRef(m_shared_preferences_class);
   if (m_set_class)
     env->DeleteGlobalRef(m_set_class);
+  if (m_helper_class)
+    env->DeleteGlobalRef(m_helper_class);
 }
 
 void AndroidSettingsInterface::Clear()
@@ -179,34 +202,102 @@ std::string AndroidSettingsInterface::GetStringValue(const char* section, const 
   return ret;
 }
 
+jobject AndroidSettingsInterface::GetPreferencesEditor(JNIEnv* env)
+{
+  return env->CallObjectMethod(m_java_shared_preferences, m_edit);
+}
+
+void AndroidSettingsInterface::CheckForException(JNIEnv *env, const char *task)
+{
+  if (!env->ExceptionCheck())
+    return;
+
+  Log_ErrorPrintf("JNI exception during %s", task);
+  env->ExceptionClear();
+}
+
 void AndroidSettingsInterface::SetIntValue(const char* section, const char* key, int value)
 {
-  Log_ErrorPrintf("SetIntValue(\"%s\", \"%s\", %d) not implemented", section, key, value);
+  Log_DevPrintf("SetIntValue(\"%s\", \"%s\", %d)", section, key, value);
+
+  JNIEnv* env = AndroidHelpers::GetJNIEnv();
+  LocalRefHolder<jobject> editor(env, GetPreferencesEditor(env));
+  LocalRefHolder<jstring> key_string(env, env->NewStringUTF(GetSettingKey(section, key)));
+  LocalRefHolder<jstring> str_value(env, env->NewStringUTF(TinyString::FromFormat("%d", value)));
+
+  LocalRefHolder<jobject> dummy(env, env->CallObjectMethod(editor, m_edit_set_string, key_string.Get(), str_value.Get()));
+  env->CallBooleanMethod(editor, m_edit_commit);
+
+  CheckForException(env, "SetIntValue");
 }
 
 void AndroidSettingsInterface::SetFloatValue(const char* section, const char* key, float value)
 {
-  Log_ErrorPrintf("SetFloatValue(\"%s\", \"%s\", %f) not implemented", section, key, value);
+  Log_DevPrintf("SetFloatValue(\"%s\", \"%s\", %f)", section, key, value);
+
+  JNIEnv* env = AndroidHelpers::GetJNIEnv();
+  LocalRefHolder<jobject> editor(env, GetPreferencesEditor(env));
+  LocalRefHolder<jstring> key_string(env, env->NewStringUTF(GetSettingKey(section, key)));
+  LocalRefHolder<jstring> str_value(env, env->NewStringUTF(TinyString::FromFormat("%f", value)));
+
+  LocalRefHolder<jobject> dummy(env, env->CallObjectMethod(editor, m_edit_set_string, key_string.Get(), str_value.Get()));
+  env->CallBooleanMethod(editor, m_edit_commit);
+
+  CheckForException(env, "SetFloatValue");
 }
 
 void AndroidSettingsInterface::SetBoolValue(const char* section, const char* key, bool value)
 {
-  Log_ErrorPrintf("SetBoolValue(\"%s\", \"%s\", %u) not implemented", section, key, static_cast<unsigned>(value));
+  Log_DevPrintf("SetBoolValue(\"%s\", \"%s\", %u)", section, key, static_cast<unsigned>(value));
+
+  JNIEnv* env = AndroidHelpers::GetJNIEnv();
+  LocalRefHolder<jobject> editor(env, GetPreferencesEditor(env));
+  LocalRefHolder<jstring> key_string(env, env->NewStringUTF(GetSettingKey(section, key)));
+  LocalRefHolder<jstring> str_value(env, env->NewStringUTF(value ? "true" : "false"));
+
+  LocalRefHolder<jobject> dummy(env, env->CallObjectMethod(editor, m_edit_set_string, key_string.Get(), str_value.Get()));
+  env->CallBooleanMethod(editor, m_edit_commit);
+
+  CheckForException(env, "SetBoolValue");
 }
 
 void AndroidSettingsInterface::SetStringValue(const char* section, const char* key, const char* value)
 {
-  Log_ErrorPrintf("SetStringValue(\"%s\", \"%s\", \"%s\") not implemented", section, key, value);
+  Log_DevPrintf("SetStringValue(\"%s\", \"%s\", \"%s\")", section, key, value);
+
+  JNIEnv* env = AndroidHelpers::GetJNIEnv();
+  LocalRefHolder<jobject> editor(env, GetPreferencesEditor(env));
+  LocalRefHolder<jstring> key_string(env, env->NewStringUTF(GetSettingKey(section, key)));
+  LocalRefHolder<jstring> str_value(env, env->NewStringUTF(value));
+
+  LocalRefHolder<jobject> dummy(env, env->CallObjectMethod(editor, m_edit_set_string, key_string.Get(), str_value.Get()));
+  env->CallBooleanMethod(editor, m_edit_commit);
+
+  CheckForException(env, "SetStringValue");
 }
 
 void AndroidSettingsInterface::DeleteValue(const char* section, const char* key)
 {
-  Log_ErrorPrintf("DeleteValue(\"%s\", \"%s\") not implemented", section, key);
+  Log_DevPrintf("DeleteValue(\"%s\", \"%s\")", section, key);
+
+  JNIEnv* env = AndroidHelpers::GetJNIEnv();
+  LocalRefHolder<jobject> editor(env, GetPreferencesEditor(env));
+  LocalRefHolder<jstring> key_string(env, env->NewStringUTF(GetSettingKey(section, key)));
+  LocalRefHolder<jobject> dummy(env, env->CallObjectMethod(editor, m_edit_remove, key_string.Get()));
+  env->CallBooleanMethod(editor, m_edit_commit);
+
+  CheckForException(env, "DeleteValue");
 }
 
 void AndroidSettingsInterface::ClearSection(const char* section)
 {
-  Log_ErrorPrintf("ClearSection(\"%s\") not implemented", section);
+  Log_DevPrintf("ClearSection(\"%s\")", section);
+
+  JNIEnv* env = AndroidHelpers::GetJNIEnv();
+  LocalRefHolder<jstring> str_section(env, env->NewStringUTF(section));
+  env->CallStaticVoidMethod(m_helper_class, m_helper_clear_section, m_java_shared_preferences, str_section.Get());
+
+  CheckForException(env, "ClearSection");
 }
 
 std::vector<std::string> AndroidSettingsInterface::GetStringList(const char* section, const char* key)
@@ -251,17 +342,47 @@ std::vector<std::string> AndroidSettingsInterface::GetStringList(const char* sec
 void AndroidSettingsInterface::SetStringList(const char* section, const char* key,
                                              const std::vector<std::string>& items)
 {
-  Log_ErrorPrintf("SetStringList(\"%s\", \"%s\") not implemented", section, key);
+  Log_DevPrintf("SetStringList(\"%s\", \"%s\")", section, key);
+  if (items.empty())
+  {
+    DeleteValue(section, key);
+    return;
+  }
+
+  JNIEnv* env = AndroidHelpers::GetJNIEnv();
+  LocalRefHolder<jobjectArray> items_array(env, env->NewObjectArray(static_cast<jsize>(items.size()), AndroidHelpers::GetStringClass(), nullptr));
+  for (size_t i = 0; i < items.size(); i++)
+  {
+    LocalRefHolder<jstring> item_jstr(env, env->NewStringUTF(items[i].c_str()));
+    env->SetObjectArrayElement(items_array, static_cast<jsize>(i), item_jstr);
+  }
+
+  LocalRefHolder<jstring> key_string(env, env->NewStringUTF(GetSettingKey(section, key)));
+  env->CallStaticVoidMethod(m_helper_class, m_helper_set_string_list, m_java_shared_preferences, key_string.Get(), items_array.Get());
+
+  CheckForException(env, "SetStringList");
 }
 
 bool AndroidSettingsInterface::RemoveFromStringList(const char* section, const char* key, const char* item)
 {
-  Log_ErrorPrintf("RemoveFromStringList(\"%s\", \"%s\", \"%s\") not implemented", section, key, item);
-  return false;
+  Log_DevPrintf("RemoveFromStringList(\"%s\", \"%s\", \"%s\")", section, key, item);
+
+  JNIEnv* env = AndroidHelpers::GetJNIEnv();
+  LocalRefHolder<jstring> key_string(env, env->NewStringUTF(GetSettingKey(section, key)));
+  LocalRefHolder<jstring> item_string(env, env->NewStringUTF(item));
+  const bool result = env->CallStaticBooleanMethod(m_helper_class, m_helper_remove_from_string_list, m_java_shared_preferences, key_string.Get(), item_string.Get());
+  CheckForException(env, "RemoveFromStringList");
+  return result;
 }
 
 bool AndroidSettingsInterface::AddToStringList(const char* section, const char* key, const char* item)
 {
-  Log_ErrorPrintf("AddToStringList(\"%s\", \"%s\", \"%s\") not implemented", section, key, item);
-  return false;
+  Log_DevPrintf("AddToStringList(\"%s\", \"%s\", \"%s\")", section, key, item);
+
+  JNIEnv* env = AndroidHelpers::GetJNIEnv();
+  LocalRefHolder<jstring> key_string(env, env->NewStringUTF(GetSettingKey(section, key)));
+  LocalRefHolder<jstring> item_string(env, env->NewStringUTF(item));
+  const bool result = env->CallStaticBooleanMethod(m_helper_class, m_helper_add_to_string_list, m_java_shared_preferences, key_string.Get(), item_string.Get());
+  CheckForException(env, "AddToStringList");
+  return result;
 }
