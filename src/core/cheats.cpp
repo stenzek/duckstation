@@ -1216,6 +1216,12 @@ void CheatCode::Apply() const
       
       case InstructionCode::ExtFindAndReplace:
       {
+          
+        if ((index + 4) >= instructions.size())
+        {
+          Log_ErrorPrintf("Incomplete find/replace instruction");
+          return;
+        }
         const Instruction& inst2 = instructions[index + 1];
         const Instruction& inst3 = instructions[index + 2];
         const Instruction& inst4 = instructions[index + 3];
