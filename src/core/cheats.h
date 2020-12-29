@@ -62,6 +62,7 @@ struct CheatCode
     ExtConstantForceRangeLimits16 = 0xF1,
     ExtConstantForceRangeRollRound16 = 0xF2,
     ExtConstantForceRange16 = 0xF3,
+    ExtFindAndReplace = 0xF4,
     ExtConstantBitSet8 = 0x31,
     ExtConstantBitClear8 = 0x32,
     ExtConstantBitSet16 = 0x81,
