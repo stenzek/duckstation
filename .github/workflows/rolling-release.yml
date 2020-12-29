@@ -146,7 +146,7 @@ jobs:
       shell: bash
       run: |
         sudo apt-get update
-        sudo apt-get -y install cmake ninja-build ccache libsdl2-dev libgtk2.0-dev qtbase5-dev qtbase5-dev-tools qtbase5-private-dev qt5-default qttools5-dev
+        sudo apt-get -y install cmake ninja-build ccache libsdl2-dev libgtk-3-dev qtbase5-dev qtbase5-dev-tools qtbase5-private-dev qt5-default qttools5-dev
 
     - name: Compile build
       shell: bash
