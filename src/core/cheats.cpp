@@ -1197,6 +1197,23 @@ void CheatCode::Apply() const
       }
       break;
 
+      case InstructionCode::ExtConstantForceRange16:
+      {
+        const u16 min = Truncate16(inst.value32 & 0x0000FFFFu);
+        const u16 max = Truncate16((inst.value32 & 0xFFFF0000u) >> 16);
+        const u16 value = DoMemoryRead<u16>(inst.address);
+        const Instruction& inst2 = instructions[index + 1];
+        const u16 overmin = Truncate16(inst2.value32 & 0x0000FFFFu);
+        const u16 overmax = Truncate16((inst2.value32 & 0xFFFF0000u) >> 16);
+
+        if ((value < min) || (value < min && min == 0x0000u && max < 0xFFFEu))
+          DoMemoryWrite<u16>(inst.address, overmin); // also handles a min value of 0x0000
+        else if (value > max)
+          DoMemoryWrite<u16>(inst.address, overmax);
+        index += 2;
+      }
+      break;
+      
       case InstructionCode::ExtFindAndReplace:
       {
         const Instruction& inst2 = instructions[index + 1];
