@@ -652,12 +652,13 @@ void FlushBlock(CodeBlock* block)
 #endif
 
   // if it's been invalidated it won't be in the page map
-  if (block->invalidated)
+  if (!block->invalidated)
     RemoveBlockFromPageMap(block);
 
   UnlinkBlock(block);
 #ifdef WITH_RECOMPILER
-  RemoveBlockFromHostCodeMap(block);
+  if (!block->invalidated)
+    RemoveBlockFromHostCodeMap(block);
 #endif
 
   s_blocks.erase(iter);
