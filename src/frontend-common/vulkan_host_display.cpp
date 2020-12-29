@@ -1006,7 +1006,7 @@ void VulkanHostDisplay::ApplyPostProcessingChain(s32 final_left, s32 final_top, 
       Assert(pps.uniforms_size <= sizeof(buffer));
       m_post_processing_chain.GetShaderStage(i).FillUniformBuffer(
         buffer, texture_width, texture_height, texture_view_x, texture_view_y, texture_view_width, texture_view_height,
-        texture_width, texture_width, 0.0f);
+        GetWindowWidth(), GetWindowHeight(), 0.0f);
 
       vkCmdPushConstants(cmdbuffer, m_post_process_pipeline_layout,
                          VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, pps.uniforms_size, buffer);

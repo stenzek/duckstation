@@ -213,9 +213,9 @@ protected:
   ALWAYS_INLINE bool HasSoftwareCursor() const { return static_cast<bool>(m_cursor_texture); }
   ALWAYS_INLINE bool HasDisplayTexture() const { return (m_display_texture_handle != nullptr); }
 
-  void CalculateDrawRect(s32 window_width, s32 window_height, s32* out_left, s32* out_top, s32* out_width,
-                         s32* out_height, s32* out_left_padding, s32* out_top_padding, float* out_scale,
-                         float* out_y_scale, bool apply_aspect_ratio = true) const;
+  void CalculateDrawRect(s32 window_width, s32 window_height, float* out_left, float* out_top, float* out_width,
+                         float* out_height, float* out_left_padding, float* out_top_padding, float* out_scale,
+                         float* out_x_scale, bool apply_aspect_ratio = true) const;
 
   std::tuple<s32, s32, s32, s32> CalculateSoftwareCursorDrawRect() const;
   std::tuple<s32, s32, s32, s32> CalculateSoftwareCursorDrawRect(s32 cursor_x, s32 cursor_y) const;
