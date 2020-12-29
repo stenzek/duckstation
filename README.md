@@ -172,7 +172,8 @@ Requirements:
 Requirements (Debian/Ubuntu package names):
  - CMake (`cmake`)
  - SDL2 (`libsdl2-dev`)
- - GTK2.0 for file selector (`libgtk2.0-dev`)
+ - GTK3.0 for file selector (`libgtk-3-dev`)
+ - pkgconfig (`pkg-config`)
  - Qt 5 (`qtbase5-dev`, `qtbase5-private-dev`, `qtbase5-dev-tools`, `qttools5-dev`)
  - Optional for faster building: Ninja (`ninja-build`)
 
