@@ -47,6 +47,20 @@ MainWindow::MainWindow(QtHostInterface* host_interface)
 {
   m_host_interface->setMainWindow(this);
 
+  // force creation of native window
+  winId();
+}
+
+MainWindow::~MainWindow()
+{
+  Assert(!m_display_widget);
+  m_host_interface->setMainWindow(nullptr);
+
+  Assert(!m_debugger_window);
+}
+
+void MainWindow::initializeAndShow()
+{
   m_ui.setupUi(this);
   setupAdditionalUi();
   connectSignals();
@@ -56,14 +70,8 @@ MainWindow::MainWindow(QtHostInterface* host_interface)
 
   restoreStateFromConfig();
   switchToGameListView();
-}
 
-MainWindow::~MainWindow()
-{
-  Assert(!m_display_widget);
-  m_host_interface->setMainWindow(nullptr);
-
-  Assert(!m_debugger_window);
+  show();
 }
 
 void MainWindow::reportError(const QString& message)

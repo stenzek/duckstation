@@ -619,6 +619,11 @@ bool QtHostInterface::RequestRenderWindowSize(s32 new_window_width, s32 new_wind
   return true;
 }
 
+void* QtHostInterface::GetTopLevelWindowHandle() const
+{
+  return reinterpret_cast<void*>(m_main_window->winId());
+}
+
 void QtHostInterface::PollAndUpdate()
 {
   CommonHostInterface::PollAndUpdate();

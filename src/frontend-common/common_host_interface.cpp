@@ -2672,6 +2672,11 @@ bool CommonHostInterface::RequestRenderWindowScale(float scale)
   return RequestRenderWindowSize(static_cast<s32>(requested_width), static_cast<s32>(requested_height));
 }
 
+void* CommonHostInterface::GetTopLevelWindowHandle() const
+{
+  return nullptr;
+}
+
 std::unique_ptr<ByteStream> CommonHostInterface::OpenPackageFile(const char* path, u32 flags)
 {
   const u32 allowed_flags = (BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_SEEKABLE | BYTESTREAM_OPEN_STREAMED);

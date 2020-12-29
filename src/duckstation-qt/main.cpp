@@ -32,6 +32,8 @@ int main(int argc, char* argv[])
   if (!host_interface->ParseCommandLineParameters(argc, argv, &boot_params))
     return EXIT_FAILURE;
 
+  std::unique_ptr<MainWindow> window = std::make_unique<MainWindow>(host_interface.get());
+
   if (!host_interface->Initialize())
   {
     host_interface->Shutdown();
@@ -40,8 +42,7 @@ int main(int argc, char* argv[])
     return EXIT_FAILURE;
   }
 
-  std::unique_ptr<MainWindow> window = std::make_unique<MainWindow>(host_interface.get());
-  window->show();
+  window->initializeAndShow();
 
   // if we're in batch mode, don't bother refreshing the game list as it won't be used
   if (!host_interface->inBatchMode())

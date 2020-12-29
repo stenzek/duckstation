@@ -72,6 +72,7 @@ public:
   std::string TranslateStdString(const char* context, const char* str) const override;
 
   bool RequestRenderWindowSize(s32 new_window_width, s32 new_window_height) override;
+  void* GetTopLevelWindowHandle() const override;
 
   ALWAYS_INLINE const GameList* getGameList() const { return m_game_list.get(); }
   ALWAYS_INLINE GameList* getGameList() { return m_game_list.get(); }

@@ -31,6 +31,9 @@ public:
   explicit MainWindow(QtHostInterface* host_interface);
   ~MainWindow();
 
+  /// Initializes the window. Call once at startup.
+  void initializeAndShow();
+
   /// Performs update check if enabled in settings.
   void startupUpdateCheck();
 
