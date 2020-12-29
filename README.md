@@ -174,6 +174,7 @@ Requirements (Debian/Ubuntu package names):
  - SDL2 (`libsdl2-dev`)
  - GTK2.0 for file selector (`libgtk2.0-dev`)
  - Qt 5 (`qtbase5-dev`, `qtbase5-private-dev`, `qtbase5-dev-tools`, `qttools5-dev`)
+ - git (`git`) (Note: needed to clone the repository and at build time)
  - Optional for faster building: Ninja (`ninja-build`)
 
 1. Clone the repository. Submodules aren't necessary, there is only one and it is only used for Windows (`git clone https://github.com/stenzek/duckstation.git -b dev`).
