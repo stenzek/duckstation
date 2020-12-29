@@ -62,6 +62,8 @@ if(NOT BUILD_LIBRETRO_CORE)
 
   if(WIN32)
     target_sources(frontend-common PRIVATE
+      dinput_controller_interface.cpp
+      dinput_controller_interface.h
       xinput_controller_interface.cpp
       xinput_controller_interface.h
     )

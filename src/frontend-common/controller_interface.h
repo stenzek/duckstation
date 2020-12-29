@@ -22,6 +22,7 @@ public:
 #endif
 #ifdef WIN32
     XInput,
+    DInput,
 #endif
     Count
   };
@@ -29,7 +30,12 @@ public:
   enum : int
   {
     MAX_NUM_AXISES = 7,
-    MAX_NUM_BUTTONS = 15
+    MAX_NUM_BUTTONS = 15,
+    NUM_HAT_DIRECTIONS = 4,
+    HAT_DIRECTION_UP = 0,
+    HAT_DIRECTION_DOWN = 1,
+    HAT_DIRECTION_LEFT = 2,
+    HAT_DIRECTION_RIGHT = 3,
   };
 
   enum AxisSide

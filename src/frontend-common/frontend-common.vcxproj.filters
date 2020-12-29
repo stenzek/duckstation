@@ -23,6 +23,7 @@
     <ClCompile Include="postprocessing_shadergen.cpp" />
     <ClCompile Include="postprocessing_chain.cpp" />
     <ClCompile Include="cubeb_audio_stream.cpp" />
+    <ClCompile Include="dinput_controller_interface.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="icon.h" />
@@ -47,6 +48,7 @@
     <ClInclude Include="postprocessing_shadergen.h" />
     <ClInclude Include="postprocessing_chain.h" />
     <ClInclude Include="cubeb_audio_stream.h" />
+    <ClInclude Include="dinput_controller_interface.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="font_roboto_regular.inl" />
