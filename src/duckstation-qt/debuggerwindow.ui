@@ -36,12 +36,15 @@
     <addaction name="actionGoToPC"/>
     <addaction name="actionGoToAddress"/>
     <addaction name="actionDumpAddress"/>
+    <addaction name="separator"/>    
+    <addaction name="actionTrace"/>    
     <addaction name="separator"/>
     <addaction name="actionStepInto"/>
     <addaction name="actionStepOver"/>
     <addaction name="actionStepOut"/>
     <addaction name="separator"/>
     <addaction name="actionClose"/>
+
    </widget>
    <widget class="QMenu" name="menuBreakpoints">
     <property name="title">
@@ -79,6 +82,8 @@
    <addaction name="actionStepInto"/>
    <addaction name="actionStepOver"/>
    <addaction name="actionStepOut"/>
+   <addaction name="separator"/>   
+   <addaction name="actionTrace"/>
   </widget>
   <widget class="QDockWidget" name="dockWidget_2">
    <property name="features">
@@ -461,6 +466,23 @@
     <string>Ctrl+D</string>
    </property>
   </action>
+  <action name="actionTrace">
+   <property name="icon">
+    <iconset resource="resources/resources.qrc">
+     <normaloff>:/icons/debug-trace.png</normaloff>:/icons/debug-trace.png</iconset>
+   </property>
+   <property name="text">
+    <string>Trace</string>
+   </property>
+   <property name="toolTip">
+    <string>&amp;Trace</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+T</string>
+   </property>
+  </action>
+  
+  
  </widget>
  <customwidgets>
   <customwidget>
