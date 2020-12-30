@@ -35,6 +35,7 @@
     <file>icons/debug-step-into.png</file>
     <file>icons/debug-step-out.png</file>
     <file>icons/debug-step-over.png</file>
+	<file>icons/debug-trace.png</file>
     <file>icons/document-new.png</file>
     <file>icons/document-new@2x.png</file>
     <file>icons/document-open.png</file>
