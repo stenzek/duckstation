@@ -42,6 +42,8 @@ static bool s_single_step = false;
 void StartTrace(void)
 {
   trace_enabled = true;
+  g_state.use_debug_dispatcher = true;
+  ForceDispatcherExit();
 }
 
 void StopTrace(void)
@@ -49,7 +51,10 @@ void StopTrace(void)
   fclose(log_file);
   log_file_opened = false;
   trace_enabled = false;
-}
+  g_state.use_debug_dispatcher = false;
+  ForceDispatcherExit();  
+} 
+  
 void WriteToExecutionLog(const char* format, ...)
 {
 
@@ -538,10 +543,6 @@ restart_instruction:
   }
 #endif
 
-  if (trace_enabled == true)
-  {   
-    LogInstruction(inst.bits, g_state.current_instruction_pc, &g_state.regs);
-  }
 #ifdef _DEBUG
   if (TRACE_EXECUTION)
     PrintInstruction(inst.bits, g_state.current_instruction_pc, &g_state.regs);
@@ -1785,6 +1786,13 @@ static void ExecuteImpl()
 
       // execute the instruction we previously fetched
       ExecuteInstruction<pgxp_mode>();
+      
+      // trace functionality 
+      if constexpr (debug)
+      { 
+        if (trace_enabled == true)    
+          LogInstruction(g_state.current_instruction.bits, g_state.current_instruction_pc, &g_state.regs);
+      }  
 
       // next load delay
       UpdateLoadDelay();
