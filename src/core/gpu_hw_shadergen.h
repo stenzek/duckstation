@@ -21,6 +21,11 @@ public:
   std::string GenerateVRAMCopyFragmentShader();
   std::string GenerateVRAMUpdateDepthFragmentShader();
 
+  std::string GenerateAdaptiveDownsampleMipFragmentShader(bool first_pass);
+  std::string GenerateAdaptiveDownsampleBlurFragmentShader();
+  std::string GenerateAdaptiveDownsampleCompositeFragmentShader();
+  std::string GenerateBoxSampleDownsampleFragmentShader();
+
 private:
   ALWAYS_INLINE bool UsingMSAA() const { return m_multisamples > 1; }
   ALWAYS_INLINE bool UsingPerSampleShading() const { return m_multisamples > 1 && m_per_sample_shading; }

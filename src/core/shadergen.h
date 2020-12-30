@@ -13,6 +13,7 @@ public:
   static bool UseGLSLBindingLayout();
 
   std::string GenerateScreenQuadVertexShader();
+  std::string GenerateUVQuadVertexShader();
   std::string GenerateFillFragmentShader();
   std::string GenerateCopyFragmentShader();
 

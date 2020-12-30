@@ -69,6 +69,8 @@ private:
   void SetBlendMode();
 
   bool BlitVRAMReplacementTexture(const TextureReplacementTexture* tex, u32 dst_x, u32 dst_y, u32 width, u32 height);
+  void DownsampleFramebuffer(GL::Texture& source, u32 left, u32 top, u32 width, u32 height);
+  void DownsampleFramebufferBoxFilter(GL::Texture& source, u32 left, u32 top, u32 width, u32 height);
 
   // downsample texture - used for readbacks at >1xIR.
   GL::Texture m_vram_texture;
@@ -107,4 +109,7 @@ private:
   GLenum m_current_depth_test = 0;
   GPUTransparencyMode m_current_transparency_mode = GPUTransparencyMode::Disabled;
   BatchRenderMode m_current_render_mode = BatchRenderMode::TransparencyDisabled;
+
+  GL::Texture m_downsample_texture;
+  GL::Program m_downsample_program;
 };

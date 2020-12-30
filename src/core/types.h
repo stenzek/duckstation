@@ -75,6 +75,14 @@ enum class GPUTextureFilter : u8
   Count
 };
 
+enum GPUDownsampleMode : u8
+{
+  Disabled,
+  Box,
+  Adaptive,
+  Count
+};
+
 enum class DisplayCropMode : u8
 {
   None,

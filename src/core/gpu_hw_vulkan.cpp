@@ -243,6 +243,8 @@ void GPU_HW_Vulkan::SetCapabilities()
 
   m_supports_dual_source_blend = g_vulkan_context->GetDeviceFeatures().dualSrcBlend;
   m_supports_per_sample_shading = g_vulkan_context->GetDeviceFeatures().sampleRateShading;
+  m_supports_adaptive_downsampling = true;
+
   Log_InfoPrintf("Dual-source blend: %s", m_supports_dual_source_blend ? "supported" : "not supported");
   Log_InfoPrintf("Per-sample shading: %s", m_supports_per_sample_shading ? "supported" : "not supported");
   Log_InfoPrintf("Max multisamples: %u", m_max_multisamples);
@@ -270,6 +272,10 @@ void GPU_HW_Vulkan::DestroyResources()
   DestroyFramebuffer();
   DestroyPipelines();
 
+  Vulkan::Util::SafeDestroyPipelineLayout(m_downsample_pipeline_layout);
+  Vulkan::Util::SafeDestroyDescriptorSetLayout(m_downsample_composite_descriptor_set_layout);
+  Vulkan::Util::SafeDestroyPipelineLayout(m_downsample_composite_pipeline_layout);
+
   Vulkan::Util::SafeFreeGlobalDescriptorSet(m_vram_write_descriptor_set);
   Vulkan::Util::SafeDestroyBufferView(m_texture_stream_buffer_view);
 
@@ -286,6 +292,7 @@ void GPU_HW_Vulkan::DestroyResources()
   Vulkan::Util::SafeDestroyDescriptorSetLayout(m_batch_descriptor_set_layout);
   Vulkan::Util::SafeDestroySampler(m_point_sampler);
   Vulkan::Util::SafeDestroySampler(m_linear_sampler);
+  Vulkan::Util::SafeDestroySampler(m_trilinear_sampler);
 }
 
 void GPU_HW_Vulkan::BeginRenderPass(VkRenderPass render_pass, VkFramebuffer framebuffer, u32 x, u32 y, u32 width,
@@ -371,6 +378,24 @@ bool GPU_HW_Vulkan::CreatePipelineLayouts()
   if (m_vram_write_pipeline_layout == VK_NULL_HANDLE)
     return false;
 
+  plbuilder.AddDescriptorSet(m_single_sampler_descriptor_set_layout);
+  plbuilder.AddPushConstants(VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, MAX_PUSH_CONSTANTS_SIZE);
+  m_downsample_pipeline_layout = plbuilder.Create(device);
+  if (m_downsample_pipeline_layout == VK_NULL_HANDLE)
+    return false;
+
+  dslbuilder.AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+  dslbuilder.AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+  m_downsample_composite_descriptor_set_layout = dslbuilder.Create(device);
+  if (m_downsample_composite_descriptor_set_layout == VK_NULL_HANDLE)
+    return false;
+
+  plbuilder.AddDescriptorSet(m_downsample_composite_descriptor_set_layout);
+  plbuilder.AddPushConstants(VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, MAX_PUSH_CONSTANTS_SIZE);
+  m_downsample_composite_pipeline_layout = plbuilder.Create(device);
+  if (m_downsample_composite_pipeline_layout == VK_NULL_HANDLE)
+    return false;
+
   return true;
 }
 
@@ -391,6 +416,11 @@ bool GPU_HW_Vulkan::CreateSamplers()
                           VK_SAMPLER_ADDRESS_MODE_REPEAT);
   m_linear_sampler = sbuilder.Create(device);
   if (m_linear_sampler == VK_NULL_HANDLE)
+    return false;
+
+  sbuilder.SetLinearSampler(true, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER);
+  m_trilinear_sampler = sbuilder.Create(device);
+  if (m_trilinear_sampler == VK_NULL_HANDLE)
     return false;
 
   return true;
@@ -447,16 +477,14 @@ bool GPU_HW_Vulkan::CreateFramebuffer()
   }
 
   // vram framebuffer has both colour and depth
-  {
-    Vulkan::FramebufferBuilder fbb;
-    fbb.AddAttachment(m_vram_texture.GetView());
-    fbb.AddAttachment(m_vram_depth_texture.GetView());
-    fbb.SetRenderPass(m_vram_render_pass);
-    fbb.SetSize(m_vram_texture.GetWidth(), m_vram_texture.GetHeight(), m_vram_texture.GetLayers());
-    m_vram_framebuffer = fbb.Create(g_vulkan_context->GetDevice());
-    if (m_vram_framebuffer == VK_NULL_HANDLE)
-      return false;
-  }
+  Vulkan::FramebufferBuilder fbb;
+  fbb.AddAttachment(m_vram_texture.GetView());
+  fbb.AddAttachment(m_vram_depth_texture.GetView());
+  fbb.SetRenderPass(m_vram_render_pass);
+  fbb.SetSize(m_vram_texture.GetWidth(), m_vram_texture.GetHeight(), m_vram_texture.GetLayers());
+  m_vram_framebuffer = fbb.Create(g_vulkan_context->GetDevice());
+  if (m_vram_framebuffer == VK_NULL_HANDLE)
+    return false;
 
   m_vram_update_depth_framebuffer = m_vram_depth_texture.CreateFramebuffer(m_vram_update_depth_render_pass);
   m_vram_readback_framebuffer = m_vram_readback_texture.CreateFramebuffer(m_vram_readback_render_pass);
@@ -477,8 +505,9 @@ bool GPU_HW_Vulkan::CreateFramebuffer()
   m_batch_descriptor_set = g_vulkan_context->AllocateGlobalDescriptorSet(m_batch_descriptor_set_layout);
   m_vram_copy_descriptor_set = g_vulkan_context->AllocateGlobalDescriptorSet(m_single_sampler_descriptor_set_layout);
   m_vram_read_descriptor_set = g_vulkan_context->AllocateGlobalDescriptorSet(m_single_sampler_descriptor_set_layout);
+  m_display_descriptor_set = g_vulkan_context->AllocateGlobalDescriptorSet(m_single_sampler_descriptor_set_layout);
   if (m_batch_descriptor_set == VK_NULL_HANDLE || m_vram_copy_descriptor_set == VK_NULL_HANDLE ||
-      m_vram_read_descriptor_set == VK_NULL_HANDLE)
+      m_vram_read_descriptor_set == VK_NULL_HANDLE || m_display_descriptor_set == VK_NULL_HANDLE)
   {
     return false;
   }
@@ -491,7 +520,108 @@ bool GPU_HW_Vulkan::CreateFramebuffer()
                                                     m_point_sampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
   dsubuilder.AddCombinedImageSamplerDescriptorWrite(m_vram_read_descriptor_set, 1, m_vram_texture.GetView(),
                                                     m_point_sampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+  dsubuilder.AddCombinedImageSamplerDescriptorWrite(m_display_descriptor_set, 1, m_display_texture.GetView(),
+                                                    m_point_sampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
   dsubuilder.Update(g_vulkan_context->GetDevice());
+
+  if (m_downsample_mode == GPUDownsampleMode::Adaptive)
+  {
+    const u32 levels = GetAdaptiveDownsamplingMipLevels();
+
+    if (!m_downsample_texture.Create(texture_width, texture_height, levels, 1, texture_format, VK_SAMPLE_COUNT_1_BIT,
+                                     VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_TILING_OPTIMAL,
+                                     VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT |
+                                       VK_IMAGE_USAGE_TRANSFER_DST_BIT) ||
+        !m_downsample_weight_texture.Create(VRAM_WIDTH, VRAM_HEIGHT, 1, 1, VK_FORMAT_R8_UNORM, VK_SAMPLE_COUNT_1_BIT,
+                                            VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_TILING_OPTIMAL,
+                                            VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT))
+    {
+      return false;
+    }
+
+    m_downsample_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+    m_downsample_render_pass = g_vulkan_context->GetRenderPass(m_downsample_texture.GetFormat(), VK_FORMAT_UNDEFINED,
+                                                               VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_DONT_CARE);
+    m_downsample_weight_render_pass =
+      g_vulkan_context->GetRenderPass(m_downsample_weight_texture.GetFormat(), VK_FORMAT_UNDEFINED,
+                                      VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_DONT_CARE);
+    if (m_downsample_render_pass == VK_NULL_HANDLE || m_downsample_weight_render_pass == VK_NULL_HANDLE)
+      return false;
+
+    m_downsample_weight_framebuffer = m_downsample_weight_texture.CreateFramebuffer(m_downsample_weight_render_pass);
+    if (m_downsample_weight_framebuffer == VK_NULL_HANDLE)
+      return false;
+
+    m_downsample_mip_views.resize(levels);
+    for (u32 i = 0; i < levels; i++)
+    {
+      SmoothMipView& mv = m_downsample_mip_views[i];
+
+      const VkImageViewCreateInfo vci = {VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+                                         nullptr,
+                                         0,
+                                         m_downsample_texture.GetImage(),
+                                         VK_IMAGE_VIEW_TYPE_2D,
+                                         m_downsample_texture.GetFormat(),
+                                         {VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
+                                          VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY},
+                                         {VK_IMAGE_ASPECT_COLOR_BIT, i, 1u, 0u, 1u}};
+      VkResult res = vkCreateImageView(g_vulkan_context->GetDevice(), &vci, nullptr, &mv.image_view);
+      if (res != VK_SUCCESS)
+      {
+        LOG_VULKAN_ERROR(res, "vkCreateImageView() for smooth mip failed: ");
+        return false;
+      }
+
+      mv.descriptor_set = g_vulkan_context->AllocateGlobalDescriptorSet(m_single_sampler_descriptor_set_layout);
+      if (mv.descriptor_set == VK_NULL_HANDLE)
+        return false;
+
+      dsubuilder.AddCombinedImageSamplerDescriptorWrite(m_downsample_mip_views[i].descriptor_set, 1,
+                                                        m_downsample_mip_views[i].image_view, m_point_sampler,
+                                                        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+      fbb.AddAttachment(mv.image_view);
+      fbb.SetRenderPass(m_downsample_render_pass);
+      fbb.SetSize(texture_width >> i, texture_height >> i, 1);
+      mv.framebuffer = fbb.Create(g_vulkan_context->GetDevice());
+      if (mv.framebuffer == VK_NULL_HANDLE)
+        return false;
+    }
+
+    m_downsample_composite_descriptor_set =
+      g_vulkan_context->AllocateGlobalDescriptorSet(m_downsample_composite_descriptor_set_layout);
+    if (m_downsample_composite_descriptor_set_layout == VK_NULL_HANDLE)
+      return false;
+
+    dsubuilder.AddCombinedImageSamplerDescriptorWrite(m_downsample_composite_descriptor_set, 1,
+                                                      m_downsample_texture.GetView(), m_trilinear_sampler,
+                                                      VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    dsubuilder.AddCombinedImageSamplerDescriptorWrite(m_downsample_composite_descriptor_set, 2,
+                                                      m_downsample_weight_texture.GetView(), m_linear_sampler,
+                                                      VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+    dsubuilder.Update(g_vulkan_context->GetDevice());
+  }
+  else if (m_downsample_mode == GPUDownsampleMode::Box)
+  {
+    if (!m_downsample_texture.Create(VRAM_WIDTH, VRAM_HEIGHT, 1, 1, texture_format, VK_SAMPLE_COUNT_1_BIT,
+                                     VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_TILING_OPTIMAL,
+                                     VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT |
+                                       VK_IMAGE_USAGE_TRANSFER_SRC_BIT))
+    {
+      return false;
+    }
+
+    m_downsample_render_pass = g_vulkan_context->GetRenderPass(m_downsample_texture.GetFormat(), VK_FORMAT_UNDEFINED,
+                                                               VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_DONT_CARE);
+
+    m_downsample_mip_views.resize(1);
+    m_downsample_mip_views[0].framebuffer = m_downsample_texture.CreateFramebuffer(m_downsample_render_pass);
+    if (m_downsample_mip_views[0].framebuffer == VK_NULL_HANDLE)
+      return false;
+  }
 
   ClearDisplay();
   SetFullVRAMDirtyRectangle();
@@ -522,9 +652,23 @@ void GPU_HW_Vulkan::ClearFramebuffer()
 
 void GPU_HW_Vulkan::DestroyFramebuffer()
 {
+  Vulkan::Util::SafeFreeGlobalDescriptorSet(m_downsample_composite_descriptor_set);
+
+  for (SmoothMipView& mv : m_downsample_mip_views)
+  {
+    Vulkan::Util::SafeFreeGlobalDescriptorSet(mv.descriptor_set);
+    Vulkan::Util::SafeDestroyImageView(mv.image_view);
+    Vulkan::Util::SafeDestroyFramebuffer(mv.framebuffer);
+  }
+  m_downsample_mip_views.clear();
+  m_downsample_texture.Destroy(false);
+  Vulkan::Util::SafeDestroyFramebuffer(m_downsample_weight_framebuffer);
+  m_downsample_weight_texture.Destroy(false);
+
   Vulkan::Util::SafeFreeGlobalDescriptorSet(m_batch_descriptor_set);
   Vulkan::Util::SafeFreeGlobalDescriptorSet(m_vram_copy_descriptor_set);
   Vulkan::Util::SafeFreeGlobalDescriptorSet(m_vram_read_descriptor_set);
+  Vulkan::Util::SafeFreeGlobalDescriptorSet(m_display_descriptor_set);
 
   Vulkan::Util::SafeDestroyFramebuffer(m_vram_framebuffer);
   Vulkan::Util::SafeDestroyFramebuffer(m_vram_update_depth_framebuffer);
@@ -601,7 +745,7 @@ bool GPU_HW_Vulkan::CompilePipelines()
                              m_pgxp_depth_buffer, m_supports_dual_source_blend);
 
   Common::Timer compile_time;
-  const int progress_total = 2 + (4 * 9 * 2 * 2) + (2 * 4 * 5 * 9 * 2 * 2) + 1 + 2 + 2 + 2 + 2 + (2 * 3);
+  const int progress_total = 2 + (4 * 9 * 2 * 2) + (2 * 4 * 5 * 9 * 2 * 2) + 1 + 2 + 2 + 2 + 2 + (2 * 3) + 1;
   int progress_value = 0;
 #define UPDATE_PROGRESS()                                                                                              \
   do                                                                                                                   \
@@ -738,11 +882,18 @@ bool GPU_HW_Vulkan::CompilePipelines()
     g_vulkan_shader_cache->GetVertexShader(shadergen.GenerateScreenQuadVertexShader());
   if (fullscreen_quad_vertex_shader == VK_NULL_HANDLE)
     return false;
+  VkShaderModule uv_quad_vertex_shader = g_vulkan_shader_cache->GetVertexShader(shadergen.GenerateUVQuadVertexShader());
+  if (uv_quad_vertex_shader == VK_NULL_HANDLE)
+  {
+    vkDestroyShaderModule(g_vulkan_context->GetDevice(), uv_quad_vertex_shader, nullptr);
+    return false;
+  }
 
   UPDATE_PROGRESS();
 
-  Common::ScopeGuard fullscreen_quad_vertex_shader_guard([&fullscreen_quad_vertex_shader]() {
+  Common::ScopeGuard fullscreen_quad_vertex_shader_guard([&fullscreen_quad_vertex_shader, &uv_quad_vertex_shader]() {
     vkDestroyShaderModule(g_vulkan_context->GetDevice(), fullscreen_quad_vertex_shader, nullptr);
+    vkDestroyShaderModule(g_vulkan_context->GetDevice(), uv_quad_vertex_shader, nullptr);
   });
 
   // common state
@@ -907,6 +1058,87 @@ bool GPU_HW_Vulkan::CompilePipelines()
     }
   }
 
+  UPDATE_PROGRESS();
+
+  if (m_downsample_mode == GPUDownsampleMode::Adaptive)
+  {
+    gpbuilder.Clear();
+    gpbuilder.SetRenderPass(m_downsample_render_pass, 0);
+    gpbuilder.SetPipelineLayout(m_downsample_pipeline_layout);
+    gpbuilder.SetVertexShader(uv_quad_vertex_shader);
+    gpbuilder.SetNoCullRasterizationState();
+    gpbuilder.SetNoDepthTestState();
+    gpbuilder.SetNoBlendingState();
+    gpbuilder.SetDynamicViewportAndScissorState();
+
+    VkShaderModule fs =
+      g_vulkan_shader_cache->GetFragmentShader(shadergen.GenerateAdaptiveDownsampleMipFragmentShader(true));
+    if (fs == VK_NULL_HANDLE)
+      return false;
+
+    gpbuilder.SetFragmentShader(fs);
+    m_downsample_first_pass_pipeline = gpbuilder.Create(device, pipeline_cache, false);
+    vkDestroyShaderModule(g_vulkan_context->GetDevice(), fs, nullptr);
+    if (m_downsample_first_pass_pipeline == VK_NULL_HANDLE)
+      return false;
+
+    fs = g_vulkan_shader_cache->GetFragmentShader(shadergen.GenerateAdaptiveDownsampleMipFragmentShader(false));
+    if (fs == VK_NULL_HANDLE)
+      return false;
+
+    gpbuilder.SetFragmentShader(fs);
+    m_downsample_mid_pass_pipeline = gpbuilder.Create(device, pipeline_cache, false);
+    vkDestroyShaderModule(g_vulkan_context->GetDevice(), fs, nullptr);
+    if (m_downsample_mid_pass_pipeline == VK_NULL_HANDLE)
+      return false;
+
+    fs = g_vulkan_shader_cache->GetFragmentShader(shadergen.GenerateAdaptiveDownsampleBlurFragmentShader());
+    if (fs == VK_NULL_HANDLE)
+      return false;
+
+    gpbuilder.SetFragmentShader(fs);
+    gpbuilder.SetRenderPass(m_downsample_weight_render_pass, 0);
+    m_downsample_blur_pass_pipeline = gpbuilder.Create(device, pipeline_cache, false);
+    vkDestroyShaderModule(g_vulkan_context->GetDevice(), fs, nullptr);
+    if (m_downsample_blur_pass_pipeline == VK_NULL_HANDLE)
+      return false;
+
+    fs = g_vulkan_shader_cache->GetFragmentShader(shadergen.GenerateAdaptiveDownsampleCompositeFragmentShader());
+    if (fs == VK_NULL_HANDLE)
+      return false;
+
+    gpbuilder.SetFragmentShader(fs);
+    gpbuilder.SetPipelineLayout(m_downsample_composite_pipeline_layout);
+    gpbuilder.SetRenderPass(m_display_render_pass, 0);
+    m_downsample_composite_pass_pipeline = gpbuilder.Create(device, pipeline_cache, false);
+    vkDestroyShaderModule(g_vulkan_context->GetDevice(), fs, nullptr);
+    if (m_downsample_composite_pass_pipeline == VK_NULL_HANDLE)
+      return false;
+  }
+  else if (m_downsample_mode == GPUDownsampleMode::Box)
+  {
+    gpbuilder.Clear();
+    gpbuilder.SetRenderPass(m_downsample_render_pass, 0);
+    gpbuilder.SetPipelineLayout(m_single_sampler_pipeline_layout);
+    gpbuilder.SetVertexShader(fullscreen_quad_vertex_shader);
+    gpbuilder.SetNoCullRasterizationState();
+    gpbuilder.SetNoDepthTestState();
+    gpbuilder.SetNoBlendingState();
+    gpbuilder.SetDynamicViewportAndScissorState();
+
+    VkShaderModule fs = g_vulkan_shader_cache->GetFragmentShader(shadergen.GenerateBoxSampleDownsampleFragmentShader());
+    if (fs == VK_NULL_HANDLE)
+      return false;
+
+    gpbuilder.SetFragmentShader(fs);
+    m_downsample_first_pass_pipeline = gpbuilder.Create(device, pipeline_cache, false);
+    vkDestroyShaderModule(g_vulkan_context->GetDevice(), fs, nullptr);
+    if (m_downsample_first_pass_pipeline == VK_NULL_HANDLE)
+      return false;
+  }
+
+  UPDATE_PROGRESS();
+
 #undef UPDATE_PROGRESS
 
   return true;
@@ -927,6 +1159,11 @@ void GPU_HW_Vulkan::DestroyPipelines()
 
   Vulkan::Util::SafeDestroyPipeline(m_vram_readback_pipeline);
   Vulkan::Util::SafeDestroyPipeline(m_vram_update_depth_pipeline);
+
+  Vulkan::Util::SafeDestroyPipeline(m_downsample_first_pass_pipeline);
+  Vulkan::Util::SafeDestroyPipeline(m_downsample_mid_pass_pipeline);
+  Vulkan::Util::SafeDestroyPipeline(m_downsample_blur_pass_pipeline);
+  Vulkan::Util::SafeDestroyPipeline(m_downsample_composite_pass_pipeline);
 
   m_display_pipelines.enumerate(Vulkan::Util::SafeDestroyPipeline);
 }
@@ -1014,11 +1251,19 @@ void GPU_HW_Vulkan::UpdateDisplay()
              !IsUsingMultisampling() && (scaled_vram_offset_x + scaled_display_width) <= m_vram_texture.GetWidth() &&
              (scaled_vram_offset_y + scaled_display_height) <= m_vram_texture.GetHeight())
     {
-      m_vram_texture.TransitionToLayout(g_vulkan_context->GetCurrentCommandBuffer(),
-                                        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-      m_host_display->SetDisplayTexture(&m_vram_texture, HostDisplayPixelFormat::RGBA8, m_vram_texture.GetWidth(),
-                                        m_vram_texture.GetHeight(), scaled_vram_offset_x, scaled_vram_offset_y,
-                                        scaled_display_width, scaled_display_height);
+      if (IsUsingDownsampling())
+      {
+        DownsampleFramebuffer(m_vram_texture, scaled_vram_offset_x, scaled_vram_offset_y, scaled_display_width,
+                              scaled_display_height);
+      }
+      else
+      {
+        m_vram_texture.TransitionToLayout(g_vulkan_context->GetCurrentCommandBuffer(),
+                                          VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        m_host_display->SetDisplayTexture(&m_vram_texture, HostDisplayPixelFormat::RGBA8, m_vram_texture.GetWidth(),
+                                          m_vram_texture.GetHeight(), scaled_vram_offset_x, scaled_vram_offset_y,
+                                          scaled_display_width, scaled_display_height);
+      }
     }
     else
     {
@@ -1051,11 +1296,17 @@ void GPU_HW_Vulkan::UpdateDisplay()
       m_vram_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
       m_display_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-      m_host_display->SetDisplayTexture(&m_display_texture, HostDisplayPixelFormat::RGBA8, m_display_texture.GetWidth(),
-                                        m_display_texture.GetHeight(), 0, 0, scaled_display_width,
-                                        scaled_display_height);
-
-      RestoreGraphicsAPIState();
+      if (IsUsingDownsampling())
+      {
+        DownsampleFramebuffer(m_display_texture, 0, 0, scaled_display_width, scaled_display_height);
+      }
+      else
+      {
+        m_host_display->SetDisplayTexture(&m_display_texture, HostDisplayPixelFormat::RGBA8,
+                                          m_display_texture.GetWidth(), m_display_texture.GetHeight(), 0, 0,
+                                          scaled_display_width, scaled_display_height);
+        RestoreGraphicsAPIState();
+      }
     }
 
     m_host_display->SetDisplayParameters(m_crtc_state.display_width, m_crtc_state.display_height,
@@ -1408,6 +1659,138 @@ bool GPU_HW_Vulkan::BlitVRAMReplacementTexture(const TextureReplacementTexture* 
                  m_vram_texture.GetImage(), m_vram_texture.GetLayout(), 1, &blit, VK_FILTER_LINEAR);
   m_vram_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
   return true;
+}
+
+void GPU_HW_Vulkan::DownsampleFramebuffer(Vulkan::Texture& source, u32 left, u32 top, u32 width, u32 height)
+{
+  if (m_downsample_mode == GPUDownsampleMode::Adaptive)
+    DownsampleFramebufferAdaptive(source, left, top, width, height);
+  else
+    DownsampleFramebufferBoxFilter(source, left, top, width, height);
+}
+
+void GPU_HW_Vulkan::DownsampleFramebufferBoxFilter(Vulkan::Texture& source, u32 left, u32 top, u32 width, u32 height)
+{
+  VkCommandBuffer cmdbuf = g_vulkan_context->GetCurrentCommandBuffer();
+  source.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+  m_downsample_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+
+  Assert(&source == &m_vram_texture || &source == &m_display_texture);
+  VkDescriptorSet ds = (&source == &m_vram_texture) ? m_vram_copy_descriptor_set : m_display_descriptor_set;
+
+  const u32 ds_left = left / m_resolution_scale;
+  const u32 ds_top = top / m_resolution_scale;
+  const u32 ds_width = width / m_resolution_scale;
+  const u32 ds_height = height / m_resolution_scale;
+
+  BeginRenderPass(m_downsample_render_pass, m_downsample_mip_views[0].framebuffer, ds_left, ds_top, ds_width,
+                  ds_height);
+  Vulkan::Util::SetViewportAndScissor(cmdbuf, ds_left, ds_top, ds_width, ds_height);
+  vkCmdBindPipeline(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, m_downsample_first_pass_pipeline);
+  vkCmdBindDescriptorSets(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, m_single_sampler_pipeline_layout, 0, 1, &ds, 0,
+                          nullptr);
+  vkCmdDraw(cmdbuf, 3, 1, 0, 0);
+  EndRenderPass();
+
+  m_downsample_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+  RestoreGraphicsAPIState();
+
+  m_host_display->SetDisplayTexture(&m_downsample_texture, HostDisplayPixelFormat::RGBA8,
+                                    m_downsample_texture.GetWidth(), m_downsample_texture.GetHeight(), ds_left, ds_top,
+                                    ds_width, ds_height);
+}
+
+void GPU_HW_Vulkan::DownsampleFramebufferAdaptive(Vulkan::Texture& source, u32 left, u32 top, u32 width, u32 height)
+{
+  const VkImageCopy copy{{VK_IMAGE_ASPECT_COLOR_BIT, 0u, 0u, 1u},
+                         {static_cast<s32>(left), static_cast<s32>(top), 0},
+                         {VK_IMAGE_ASPECT_COLOR_BIT, 0u, 0u, 1u},
+                         {static_cast<s32>(left), static_cast<s32>(top), 0},
+                         {width, height, 1u}};
+
+  VkCommandBuffer cmdbuf = g_vulkan_context->GetCurrentCommandBuffer();
+  source.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+  m_downsample_texture.TransitionSubresourcesToLayout(cmdbuf, 0, 1, 0, 1, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                                                      VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+  vkCmdCopyImage(cmdbuf, source.GetImage(), source.GetLayout(), m_downsample_texture.GetImage(),
+                 VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copy);
+
+  m_downsample_texture.TransitionSubresourcesToLayout(cmdbuf, 0, 1, 0, 1, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                                                      VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+  // creating mip chain
+  const u32 levels = m_downsample_texture.GetLevels();
+  for (u32 level = 1; level < levels; level++)
+  {
+    m_downsample_texture.TransitionSubresourcesToLayout(
+      cmdbuf, level, 1, 0, 1, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+
+    BeginRenderPass(m_downsample_render_pass, m_downsample_mip_views[level].framebuffer, left >> level, top >> level,
+                    width >> level, height >> level);
+    Vulkan::Util::SetViewportAndScissor(cmdbuf, left >> level, top >> level, width >> level, height >> level);
+    vkCmdBindPipeline(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                      (level == 1) ? m_downsample_first_pass_pipeline : m_downsample_mid_pass_pipeline);
+    vkCmdBindDescriptorSets(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, m_downsample_pipeline_layout, 0, 1,
+                            &m_downsample_mip_views[level - 1].descriptor_set, 0, nullptr);
+
+    const SmoothingUBOData ubo = GetSmoothingUBO(level, left, top, width, height, m_downsample_texture.GetWidth(),
+                                                 m_downsample_texture.GetHeight());
+    vkCmdPushConstants(cmdbuf, m_downsample_pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                       0, sizeof(ubo), &ubo);
+
+    vkCmdDraw(cmdbuf, 3, 1, 0, 0);
+
+    EndRenderPass();
+
+    m_downsample_texture.TransitionSubresourcesToLayout(
+      cmdbuf, level, 1, 0, 1, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+  }
+
+  // blur pass at lowest resolution
+  {
+    const u32 last_level = levels - 1;
+
+    m_downsample_weight_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+
+    BeginRenderPass(m_downsample_weight_render_pass, m_downsample_weight_framebuffer, left >> last_level,
+                    top >> last_level, width >> last_level, height >> last_level);
+    Vulkan::Util::SetViewportAndScissor(cmdbuf, left >> last_level, top >> last_level, width >> last_level,
+                                        height >> last_level);
+    vkCmdBindPipeline(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, m_downsample_blur_pass_pipeline);
+    vkCmdBindDescriptorSets(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, m_downsample_pipeline_layout, 0, 1,
+                            &m_downsample_mip_views[last_level].descriptor_set, 0, nullptr);
+
+    const SmoothingUBOData ubo = GetSmoothingUBO(last_level, left, top, width, height, m_downsample_texture.GetWidth(),
+                                                 m_downsample_texture.GetHeight());
+    vkCmdPushConstants(cmdbuf, m_downsample_pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                       0, sizeof(ubo), &ubo);
+
+    vkCmdDraw(cmdbuf, 3, 1, 0, 0);
+    EndRenderPass();
+
+    m_downsample_weight_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+  }
+
+  // resolve pass
+  {
+    m_display_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+
+    BeginRenderPass(m_display_render_pass, m_display_framebuffer, left, top, width, height);
+    Vulkan::Util::SetViewportAndScissor(cmdbuf, left, top, width, height);
+    vkCmdBindPipeline(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, m_downsample_composite_pass_pipeline);
+    vkCmdBindDescriptorSets(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, m_downsample_composite_pipeline_layout, 0, 1,
+                            &m_downsample_composite_descriptor_set, 0, nullptr);
+    vkCmdDraw(cmdbuf, 3, 1, 0, 0);
+    EndRenderPass();
+
+    m_display_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+  }
+
+  RestoreGraphicsAPIState();
+
+  m_host_display->SetDisplayTexture(&m_display_texture, HostDisplayPixelFormat::RGBA8, m_display_texture.GetWidth(),
+                                    m_display_texture.GetHeight(), left, top, width, height);
 }
 
 std::unique_ptr<GPU> GPU::CreateHardwareVulkanRenderer()

@@ -182,4 +182,5 @@
     <string name="settings_summary_use_analog_sticks_for_dpad">Allows you to use the analog sticks to control the d-pad in digital mode, as well as the buttons.</string>
     <string name="settings_disable_all_enhancements">Disable All Enhancements</string>
     <string name="settings_summary_disable_all_enhancements">Temporarily disables all enhancements, which can be useful when debugging issues.</string>
+    <string name="settings_downsample_mode">Downsampling</string>
 </resources>

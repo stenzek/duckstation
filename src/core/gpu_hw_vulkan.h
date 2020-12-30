@@ -70,6 +70,10 @@ private:
 
   bool BlitVRAMReplacementTexture(const TextureReplacementTexture* tex, u32 dst_x, u32 dst_y, u32 width, u32 height);
 
+  void DownsampleFramebuffer(Vulkan::Texture& source, u32 left, u32 top, u32 width, u32 height);
+  void DownsampleFramebufferBoxFilter(Vulkan::Texture& source, u32 left, u32 top, u32 width, u32 height);
+  void DownsampleFramebufferAdaptive(Vulkan::Texture& source, u32 left, u32 top, u32 width, u32 height);
+
   VkRenderPass m_current_render_pass = VK_NULL_HANDLE;
 
   VkRenderPass m_vram_render_pass = VK_NULL_HANDLE;
@@ -101,11 +105,13 @@ private:
 
   VkSampler m_point_sampler = VK_NULL_HANDLE;
   VkSampler m_linear_sampler = VK_NULL_HANDLE;
+  VkSampler m_trilinear_sampler = VK_NULL_HANDLE;
 
   VkDescriptorSet m_batch_descriptor_set = VK_NULL_HANDLE;
   VkDescriptorSet m_vram_copy_descriptor_set = VK_NULL_HANDLE;
   VkDescriptorSet m_vram_read_descriptor_set = VK_NULL_HANDLE;
   VkDescriptorSet m_vram_write_descriptor_set = VK_NULL_HANDLE;
+  VkDescriptorSet m_display_descriptor_set = VK_NULL_HANDLE;
 
   Vulkan::StreamBuffer m_vertex_stream_buffer;
   Vulkan::StreamBuffer m_uniform_stream_buffer;
@@ -133,4 +139,28 @@ private:
   // texture replacements
   Vulkan::Texture m_vram_write_replacement_texture;
   Vulkan::StreamBuffer m_texture_replacment_stream_buffer;
+
+  // downsampling
+  Vulkan::Texture m_downsample_texture;
+  VkRenderPass m_downsample_render_pass = VK_NULL_HANDLE;
+  Vulkan::Texture m_downsample_weight_texture;
+  VkRenderPass m_downsample_weight_render_pass = VK_NULL_HANDLE;
+  VkFramebuffer m_downsample_weight_framebuffer = VK_NULL_HANDLE;
+
+  struct SmoothMipView
+  {
+    VkImageView image_view = VK_NULL_HANDLE;
+    VkDescriptorSet descriptor_set = VK_NULL_HANDLE;
+    VkFramebuffer framebuffer = VK_NULL_HANDLE;
+  };
+  std::vector<SmoothMipView> m_downsample_mip_views;
+
+  VkPipelineLayout m_downsample_pipeline_layout = VK_NULL_HANDLE;
+  VkDescriptorSetLayout m_downsample_composite_descriptor_set_layout = VK_NULL_HANDLE;
+  VkPipelineLayout m_downsample_composite_pipeline_layout = VK_NULL_HANDLE;
+  VkDescriptorSet m_downsample_composite_descriptor_set = VK_NULL_HANDLE;
+  VkPipeline m_downsample_first_pass_pipeline = VK_NULL_HANDLE;
+  VkPipeline m_downsample_mid_pass_pipeline = VK_NULL_HANDLE;
+  VkPipeline m_downsample_blur_pass_pipeline = VK_NULL_HANDLE;
+  VkPipeline m_downsample_composite_pass_pipeline = VK_NULL_HANDLE;
 };

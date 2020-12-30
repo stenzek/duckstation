@@ -28,6 +28,9 @@ DisplaySettingsWidget::DisplaySettingsWidget(QtHostInterface* host_interface, QW
   SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.displayCropMode, "Display", "CropMode",
                                                &Settings::ParseDisplayCropMode, &Settings::GetDisplayCropModeName,
                                                Settings::DEFAULT_DISPLAY_CROP_MODE);
+  SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.gpuDownsampleMode, "GPU", "DownsampleMode",
+                                               &Settings::ParseDownsampleModeName, &Settings::GetDownsampleModeName,
+                                               Settings::DEFAULT_GPU_DOWNSAMPLE_MODE);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.displayLinearFiltering, "Display",
                                                "LinearFiltering");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.displayIntegerScaling, "Display",
@@ -73,6 +76,10 @@ DisplaySettingsWidget::DisplaySettingsWidget(QtHostInterface* host_interface, QW
        "Some games display content in the overscan area, or use it for screen effects. <br>May "
        "not display correctly with the \"All Borders\" setting. \"Only Overscan\" offers a good "
        "compromise between stability and hiding black borders."));
+  dialog->registerWidgetHelp(
+    m_ui.gpuDownsampleMode, tr("Downsampling"), tr("Disabled"),
+    tr("Downsamples the rendered image prior to displaying it. Can improve overall image quality in mixed 2D/3D games, "
+       "but should be disabled for pure 3D games. Only applies to the hardware renderers."));
   dialog->registerWidgetHelp(m_ui.displayLinearFiltering, tr("Linear Upscaling"), tr("Checked"),
                              tr("Uses bilinear texture filtering when displaying the console's framebuffer to the "
                                 "screen. <br>Disabling filtering "
@@ -138,6 +145,12 @@ void DisplaySettingsWidget::setupAdditionalUi()
   {
     m_ui.displayCropMode->addItem(
       qApp->translate("DisplayCropMode", Settings::GetDisplayCropModeDisplayName(static_cast<DisplayCropMode>(i))));
+  }
+
+  for (u32 i = 0; i < static_cast<u32>(GPUDownsampleMode::Count); i++)
+  {
+    m_ui.gpuDownsampleMode->addItem(
+      qApp->translate("GPUDownsampleMode", Settings::GetDownsampleModeDisplayName(static_cast<GPUDownsampleMode>(i))));
   }
 }
 

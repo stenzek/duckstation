@@ -164,6 +164,9 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
     ss << "#define VECTOR_COMP_EQ(a, b) equal((a), (b))\n";
     ss << "#define VECTOR_COMP_NEQ(a, b) notEqual((a), (b))\n";
     ss << "#define SAMPLE_TEXTURE(name, coords) texture(name, coords)\n";
+    ss << "#define SAMPLE_TEXTURE_OFFSET(name, coords, offset) textureOffset(name, coords, offset)\n";
+    ss << "#define SAMPLE_TEXTURE_LEVEL(name, coords, level) textureLod(name, coords, level)\n";
+    ss << "#define SAMPLE_TEXTURE_LEVEL_OFFSET(name, coords, level, offset) textureLod(name, coords, level, offset)\n";
     ss << "#define LOAD_TEXTURE(name, coords, mip) texelFetch(name, coords, mip)\n";
     ss << "#define LOAD_TEXTURE_MS(name, coords, sample) texelFetch(name, coords, int(sample))\n";
     ss << "#define LOAD_TEXTURE_OFFSET(name, coords, mip, offset) texelFetchOffset(name, coords, mip, offset)\n";
@@ -202,6 +205,10 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
     ss << "#define VECTOR_COMP_EQ(a, b) ((a) == (b))\n";
     ss << "#define VECTOR_COMP_NEQ(a, b) ((a) != (b))\n";
     ss << "#define SAMPLE_TEXTURE(name, coords) name.Sample(name##_ss, coords)\n";
+    ss << "#define SAMPLE_TEXTURE_OFFSET(name, coords, offset) name.Sample(name##_ss, coords, offset)\n";
+    ss << "#define SAMPLE_TEXTURE_LEVEL(name, coords, level) name.SampleLevel(name##_ss, coords, level)\n";
+    ss << "#define SAMPLE_TEXTURE_LEVEL_OFFSET(name, coords, level, offset) name.SampleLevel(name##_ss, coords, level, "
+          "offset)\n";
     ss << "#define LOAD_TEXTURE(name, coords, mip) name.Load(int3(coords, mip))\n";
     ss << "#define LOAD_TEXTURE_MS(name, coords, sample) name.Load(coords, sample)\n";
     ss << "#define LOAD_TEXTURE_OFFSET(name, coords, mip, offset) name.Load(int3(coords, mip), offset)\n";
@@ -538,6 +545,26 @@ std::string ShaderGen::GenerateScreenQuadVertexShader()
 {
   v_tex0 = float2(float((v_id << 1) & 2u), float(v_id & 2u));
   v_pos = float4(v_tex0 * float2(2.0f, -2.0f) + float2(-1.0f, 1.0f), 0.0f, 1.0f);
+  #if API_OPENGL || API_OPENGL_ES || API_VULKAN
+    v_pos.y = -v_pos.y;
+  #endif
+}
+)";
+
+  return ss.str();
+}
+
+std::string ShaderGen::GenerateUVQuadVertexShader()
+{
+  std::stringstream ss;
+  WriteHeader(ss);
+  DeclareUniformBuffer(ss, {"float2 u_uv_min", "float2 u_uv_max"}, true);
+  DeclareVertexEntryPoint(ss, {}, 0, 1, {}, true);
+  ss << R"(
+{
+  v_tex0 = float2(float((v_id << 1) & 2u), float(v_id & 2u));
+  v_pos = float4(v_tex0 * float2(2.0f, -2.0f) + float2(-1.0f, 1.0f), 0.0f, 1.0f);
+  v_tex0 = u_uv_min + (u_uv_max - u_uv_min) * v_tex0;
   #if API_OPENGL || API_OPENGL_ES || API_VULKAN
     v_pos.y = -v_pos.y;
   #endif

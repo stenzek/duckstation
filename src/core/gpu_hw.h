@@ -188,8 +188,10 @@ protected:
   virtual void DrawBatchVertices(BatchRenderMode render_mode, u32 base_vertex, u32 num_vertices) = 0;
 
   u32 CalculateResolutionScale() const;
+  GPUDownsampleMode GetDownsampleMode(u32 resolution_scale) const;
 
   ALWAYS_INLINE bool IsUsingMultisampling() const { return m_multisamples > 1; }
+  ALWAYS_INLINE bool IsUsingDownsampling() const { return (m_downsample_mode != GPUDownsampleMode::Disabled); }
 
   void SetFullVRAMDirtyRectangle()
   {
@@ -287,6 +289,21 @@ protected:
   void SetBatchDepthBuffer(bool enabled);
   void CheckForDepthClear(const BatchVertex* vertices, u32 num_vertices);
 
+  /// UBO data for adaptive smoothing.
+  struct SmoothingUBOData
+  {
+    float min_uv[2];
+    float max_uv[2];
+    float rcp_size[2];
+  };
+
+  /// Returns the number of mipmap levels used for adaptive smoothing.
+  u32 GetAdaptiveDownsamplingMipLevels() const;
+
+  /// Returns the UBO data for an adaptive smoothing pass.
+  SmoothingUBOData GetSmoothingUBO(u32 level, u32 left, u32 top, u32 width, u32 height, u32 tex_width,
+                                   u32 tex_height) const;
+
   HeapArray<u16, VRAM_WIDTH * VRAM_HEIGHT> m_vram_shadow;
 
   BatchVertex* m_batch_start_vertex_ptr = nullptr;
@@ -301,13 +318,22 @@ protected:
   u32 m_max_resolution_scale = 1;
   u32 m_max_multisamples = 1;
   HostDisplay::RenderAPI m_render_api = HostDisplay::RenderAPI::None;
-  bool m_per_sample_shading = false;
   bool m_true_color = true;
-  bool m_scaled_dithering = false;
+
+  union
+  {
+    BitField<u8, bool, 0, 1> m_supports_per_sample_shading;
+    BitField<u8, bool, 1, 1> m_supports_dual_source_blend;
+    BitField<u8, bool, 2, 1> m_supports_adaptive_downsampling;
+    BitField<u8, bool, 3, 1> m_per_sample_shading;
+    BitField<u8, bool, 4, 1> m_scaled_dithering;
+    BitField<u8, bool, 5, 1> m_chroma_smoothing;
+
+    u8 bits = 0;
+  };
+
   GPUTextureFilter m_texture_filtering = GPUTextureFilter::Nearest;
-  bool m_chroma_smoothing = false;
-  bool m_supports_per_sample_shading = false;
-  bool m_supports_dual_source_blend = false;
+  GPUDownsampleMode m_downsample_mode = GPUDownsampleMode::Disabled;
   bool m_using_uv_limits = false;
   bool m_pgxp_depth_buffer = false;
 

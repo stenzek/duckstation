@@ -71,6 +71,10 @@ private:
 
   bool BlitVRAMReplacementTexture(const TextureReplacementTexture* tex, u32 dst_x, u32 dst_y, u32 width, u32 height);
 
+  void DownsampleFramebuffer(D3D11::Texture& source, u32 left, u32 top, u32 width, u32 height);
+  void DownsampleFramebufferAdaptive(D3D11::Texture& source, u32 left, u32 top, u32 width, u32 height);
+  void DownsampleFramebufferBoxFilter(D3D11::Texture& source, u32 left, u32 top, u32 width, u32 height);
+
   ComPtr<ID3D11Device> m_device;
   ComPtr<ID3D11DeviceContext> m_context;
 
@@ -105,6 +109,7 @@ private:
 
   ComPtr<ID3D11SamplerState> m_point_sampler_state;
   ComPtr<ID3D11SamplerState> m_linear_sampler_state;
+  ComPtr<ID3D11SamplerState> m_trilinear_sampler_state;
 
   std::array<ComPtr<ID3D11BlendState>, 5> m_batch_blend_states; // [transparency_mode]
   ComPtr<ID3D11InputLayout> m_batch_input_layout;
@@ -113,6 +118,7 @@ private:
     m_batch_pixel_shaders; // [render_mode][texture_mode][dithering][interlacing]
 
   ComPtr<ID3D11VertexShader> m_screen_quad_vertex_shader;
+  ComPtr<ID3D11VertexShader> m_uv_quad_vertex_shader;
   ComPtr<ID3D11PixelShader> m_copy_pixel_shader;
   ComPtr<ID3D11PixelShader> m_vram_fill_pixel_shader;
   ComPtr<ID3D11PixelShader> m_vram_interlaced_fill_pixel_shader;
@@ -123,4 +129,13 @@ private:
   std::array<std::array<ComPtr<ID3D11PixelShader>, 3>, 2> m_display_pixel_shaders; // [depth_24][interlaced]
 
   D3D11::Texture m_vram_replacement_texture;
+
+  // downsampling
+  ComPtr<ID3D11PixelShader> m_downsample_first_pass_pixel_shader;
+  ComPtr<ID3D11PixelShader> m_downsample_mid_pass_pixel_shader;
+  ComPtr<ID3D11PixelShader> m_downsample_blur_pass_pixel_shader;
+  ComPtr<ID3D11PixelShader> m_downsample_composite_pixel_shader;
+  D3D11::Texture m_downsample_texture;
+  D3D11::Texture m_downsample_weight_texture;
+  std::vector<std::pair<ComPtr<ID3D11ShaderResourceView>, ComPtr<ID3D11RenderTargetView>>> m_downsample_mip_views;
 };

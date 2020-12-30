@@ -450,4 +450,14 @@
         <item>light</item>
         <item>dark</item>
     </string-array>
+    <string-array name="settings_downsample_mode_entries">
+        <item>Disabled</item>
+        <item>Box (Downsample 3D/Smooth All)</item>
+        <item>Adaptive (Preserve 3D/Smooth 2D)</item>
+    </string-array>
+    <string-array name="settings_downsample_mode_values">
+        <item>Disabled</item>
+        <item>Box</item>
+        <item>Adaptive</item>
+    </string-array>
 </resources>

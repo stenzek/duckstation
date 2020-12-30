@@ -55,6 +55,7 @@ bool GPU_HW::Initialize(HostDisplay* host_display)
   m_texture_filtering = g_settings.gpu_texture_filter;
   m_using_uv_limits = ShouldUseUVLimits();
   m_chroma_smoothing = g_settings.gpu_24bit_chroma_smoothing;
+  m_downsample_mode = GetDownsampleMode(m_resolution_scale);
 
   if (m_multisamples != g_settings.gpu_multisamples)
   {
@@ -70,9 +71,19 @@ bool GPU_HW::Initialize(HostDisplay* host_display)
   if (!m_supports_dual_source_blend && TextureFilterRequiresDualSourceBlend(m_texture_filtering))
   {
     g_host_interface->AddFormattedOSDMessage(
-      20.0f, g_host_interface->TranslateString("OSDMessage", "Texture filter '%s' is not supported on your device."),
+      20.0f,
+      g_host_interface->TranslateString("OSDMessage",
+                                        "Texture filter '%s' is not supported with the current renderer."),
       Settings::GetTextureFilterDisplayName(m_texture_filtering));
     m_texture_filtering = GPUTextureFilter::Nearest;
+  }
+  if (!m_supports_adaptive_downsampling && g_settings.gpu_resolution_scale > 1 &&
+      g_settings.gpu_downsample_mode == GPUDownsampleMode::Adaptive)
+  {
+    g_host_interface->AddOSDMessage(
+      g_host_interface->TranslateStdString(
+        "OSDMessage", "Adaptive downsampling is not supported with the current renderer, using box filter instead."),
+      20.0f);
   }
 
   m_pgxp_depth_buffer = g_settings.gpu_pgxp_depth_buffer;
@@ -117,15 +128,17 @@ void GPU_HW::UpdateHWSettings(bool* framebuffer_changed, bool* shaders_changed)
   const u32 resolution_scale = CalculateResolutionScale();
   const u32 multisamples = std::min(m_max_multisamples, g_settings.gpu_multisamples);
   const bool per_sample_shading = g_settings.gpu_per_sample_shading && m_supports_per_sample_shading;
+  const GPUDownsampleMode downsample_mode = GetDownsampleMode(resolution_scale);
   const bool use_uv_limits = ShouldUseUVLimits();
 
-  *framebuffer_changed = (m_resolution_scale != resolution_scale || m_multisamples != multisamples);
+  *framebuffer_changed =
+    (m_resolution_scale != resolution_scale || m_multisamples != multisamples || m_downsample_mode != downsample_mode);
   *shaders_changed =
     (m_resolution_scale != resolution_scale || m_multisamples != multisamples ||
      m_true_color != g_settings.gpu_true_color || m_per_sample_shading != per_sample_shading ||
      m_scaled_dithering != g_settings.gpu_scaled_dithering || m_texture_filtering != g_settings.gpu_texture_filter ||
      m_using_uv_limits != use_uv_limits || m_chroma_smoothing != g_settings.gpu_24bit_chroma_smoothing ||
-     m_pgxp_depth_buffer != g_settings.UsingPGXPDepthBuffer());
+     m_downsample_mode != downsample_mode || m_pgxp_depth_buffer != g_settings.UsingPGXPDepthBuffer());
 
   if (m_resolution_scale != resolution_scale)
   {
@@ -159,6 +172,7 @@ void GPU_HW::UpdateHWSettings(bool* framebuffer_changed, bool* shaders_changed)
   m_texture_filtering = g_settings.gpu_texture_filter;
   m_using_uv_limits = use_uv_limits;
   m_chroma_smoothing = g_settings.gpu_24bit_chroma_smoothing;
+  m_downsample_mode = downsample_mode;
 
   if (!m_supports_dual_source_blend && TextureFilterRequiresDualSourceBlend(m_texture_filtering))
     m_texture_filtering = GPUTextureFilter::Nearest;
@@ -176,16 +190,30 @@ void GPU_HW::UpdateHWSettings(bool* framebuffer_changed, bool* shaders_changed)
 
 u32 GPU_HW::CalculateResolutionScale() const
 {
+  u32 scale;
   if (g_settings.gpu_resolution_scale != 0)
-    return std::clamp<u32>(g_settings.gpu_resolution_scale, 1, m_max_resolution_scale);
+  {
+    scale = std::clamp<u32>(g_settings.gpu_resolution_scale, 1, m_max_resolution_scale);
+  }
+  else
+  {
+    // auto scaling
+    const s32 height = (m_crtc_state.display_height != 0) ? static_cast<s32>(m_crtc_state.display_height) : 480;
+    const s32 preferred_scale =
+      static_cast<s32>(std::ceil(static_cast<float>(m_host_display->GetWindowHeight()) / height));
+    Log_InfoPrintf("Height = %d, preferred scale = %d", height, preferred_scale);
 
-  // auto scaling
-  const s32 height = (m_crtc_state.display_height != 0) ? static_cast<s32>(m_crtc_state.display_height) : 480;
-  const s32 preferred_scale =
-    static_cast<s32>(std::ceil(static_cast<float>(m_host_display->GetWindowHeight()) / height));
-  Log_InfoPrintf("Height = %d, preferred scale = %d", height, preferred_scale);
+    scale = static_cast<u32>(std::clamp<s32>(preferred_scale, 1, m_max_resolution_scale));
+  }
 
-  return static_cast<u32>(std::clamp<s32>(preferred_scale, 1, m_max_resolution_scale));
+  if (g_settings.gpu_downsample_mode == GPUDownsampleMode::Adaptive && m_supports_adaptive_downsampling && scale > 1 &&
+      (scale % 2) != 0)
+  {
+    Log_InfoPrintf("Resolution scale %u not supported for adaptive smoothing, using %u", scale, (scale - 1));
+    scale--;
+  }
+
+  return scale;
 }
 
 void GPU_HW::UpdateResolutionScale()
@@ -194,6 +222,17 @@ void GPU_HW::UpdateResolutionScale()
 
   if (CalculateResolutionScale() != m_resolution_scale)
     UpdateSettings();
+}
+
+GPUDownsampleMode GPU_HW::GetDownsampleMode(u32 resolution_scale) const
+{
+  if (resolution_scale == 1)
+    return GPUDownsampleMode::Disabled;
+
+  if (g_settings.gpu_downsample_mode == GPUDownsampleMode::Adaptive)
+    return m_supports_adaptive_downsampling ? GPUDownsampleMode::Adaptive : GPUDownsampleMode::Box;
+
+  return g_settings.gpu_downsample_mode;
 }
 
 std::tuple<u32, u32> GPU_HW::GetEffectiveDisplayResolution()
@@ -213,6 +252,7 @@ void GPU_HW::PrintSettingsToLog()
   Log_InfoPrintf("Dual-source blending: %s", m_supports_dual_source_blend ? "Supported" : "Not supported");
   Log_InfoPrintf("Using UV limits: %s", m_using_uv_limits ? "YES" : "NO");
   Log_InfoPrintf("Depth buffer: %s", m_pgxp_depth_buffer ? "YES" : "NO");
+  Log_InfoPrintf("Downsampling: %s", Settings::GetDownsampleModeDisplayName(m_downsample_mode));
 }
 
 void GPU_HW::UpdateVRAMReadTexture()
@@ -366,6 +406,36 @@ void GPU_HW::CheckForDepthClear(const BatchVertex* vertices, u32 num_vertices)
   }
 
   m_last_depth_z = average_z;
+}
+
+u32 GPU_HW::GetAdaptiveDownsamplingMipLevels() const
+{
+  u32 levels = 0;
+  u32 current_width = VRAM_WIDTH * m_resolution_scale;
+  while (current_width >= VRAM_WIDTH)
+  {
+    levels++;
+    current_width /= 2;
+  }
+
+  return levels;
+}
+
+GPU_HW::SmoothingUBOData GPU_HW::GetSmoothingUBO(u32 level, u32 left, u32 top, u32 width, u32 height, u32 tex_width,
+                                                 u32 tex_height) const
+{
+  const float rcp_width = 1.0f / static_cast<float>(tex_width >> level);
+  const float rcp_height = 1.0f / static_cast<float>(tex_height >> level);
+
+  SmoothingUBOData data;
+  data.min_uv[0] = static_cast<float>(left >> level) * rcp_width;
+  data.min_uv[1] = static_cast<float>(top >> level) * rcp_height;
+  data.max_uv[0] = static_cast<float>((left + width) >> level) * rcp_width;
+  data.max_uv[1] = static_cast<float>((top + height) >> level) * rcp_height;
+  data.rcp_size[0] = rcp_width;
+  data.rcp_size[1] = rcp_height;
+
+  return data;
 }
 
 void GPU_HW::DrawLine(float x0, float y0, u32 col0, float x1, float y1, u32 col1, float depth)

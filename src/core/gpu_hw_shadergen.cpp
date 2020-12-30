@@ -1340,3 +1340,143 @@ std::string GPU_HW_ShaderGen::GenerateVRAMUpdateDepthFragmentShader()
 
   return ss.str();
 }
+
+std::string GPU_HW_ShaderGen::GenerateAdaptiveDownsampleMipFragmentShader(bool first_pass)
+{
+  std::stringstream ss;
+  WriteHeader(ss);
+  WriteCommonFunctions(ss);
+  DeclareTexture(ss, "samp0", 0, false);
+  DeclareUniformBuffer(ss, { "float2 u_uv_min", "float2 u_uv_max", "float2 u_rcp_resolution" }, true);
+  DefineMacro(ss, "FIRST_PASS", first_pass);
+
+  // mipmap_energy.glsl ported from parallel-rsx.
+  ss << R"(
+
+float4 get_bias(float3 c00, float3 c01, float3 c10, float3 c11)
+{
+   // Measure the "energy" (variance) in the pixels.
+   // If the pixels are all the same (2D content), use maximum bias, otherwise, taper off quickly back to 0 (edges)
+   float3 avg = 0.25 * (c00 + c01 + c10 + c11);
+   float s00 = dot(c00 - avg, c00 - avg);
+   float s01 = dot(c01 - avg, c01 - avg);
+   float s10 = dot(c10 - avg, c10 - avg);
+   float s11 = dot(c11 - avg, c11 - avg);
+   return float4(avg, 1.0 - log2(1000.0 * (s00 + s01 + s10 + s11) + 1.0));
+}
+
+float4 get_bias(float4 c00, float4 c01, float4 c10, float4 c11)
+{
+   // Measure the "energy" (variance) in the pixels.
+   // If the pixels are all the same (2D content), use maximum bias, otherwise, taper off quickly back to 0 (edges)
+   float avg = 0.25 * (c00.a + c01.a + c10.a + c11.a);
+   float4 bias = get_bias(c00.rgb, c01.rgb, c10.rgb, c11.rgb);
+   bias.a *= avg;
+   return bias;
+}
+
+)";
+
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, false, 1, false, false, false, false);
+  ss << R"(
+{
+  float2 uv = v_tex0 - (u_rcp_resolution * 0.25);
+#ifdef FIRST_PASS
+   vec3 c00 = SAMPLE_TEXTURE_OFFSET(samp0, uv, int2(0, 0)).rgb;
+   vec3 c01 = SAMPLE_TEXTURE_OFFSET(samp0, uv, int2(0, 1)).rgb;
+   vec3 c10 = SAMPLE_TEXTURE_OFFSET(samp0, uv, int2(1, 0)).rgb;
+   vec3 c11 = SAMPLE_TEXTURE_OFFSET(samp0, uv, int2(1, 1)).rgb;
+   o_col0 = get_bias(c00, c01, c10, c11);
+#else
+   vec4 c00 = SAMPLE_TEXTURE_OFFSET(samp0, uv, int2(0, 0));
+   vec4 c01 = SAMPLE_TEXTURE_OFFSET(samp0, uv, int2(0, 1));
+   vec4 c10 = SAMPLE_TEXTURE_OFFSET(samp0, uv, int2(1, 0));
+   vec4 c11 = SAMPLE_TEXTURE_OFFSET(samp0, uv, int2(1, 1));
+   o_col0 = get_bias(c00, c01, c10, c11);
+#endif
+}
+)";
+
+  return ss.str();
+}
+
+std::string GPU_HW_ShaderGen::GenerateAdaptiveDownsampleBlurFragmentShader()
+{
+  std::stringstream ss;
+  WriteHeader(ss);
+  WriteCommonFunctions(ss);
+  DeclareTexture(ss, "samp0", 0, false);
+  DeclareUniformBuffer(ss, {"float2 u_uv_min", "float2 u_uv_max", "float2 u_rcp_resolution", "float sample_level"}, true);
+
+  // mipmap_blur.glsl ported from parallel-rsx.
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, false, 1, false, false, false, false);
+  ss << R"(
+{
+  float bias = 0.0;
+  const float w0 = 0.25;
+  const float w1 = 0.125;
+  const float w2 = 0.0625;
+#define UV(x, y) clamp((v_tex0 + float2(x, y) * u_rcp_resolution), u_uv_min, u_uv_max)
+  bias += w2 * SAMPLE_TEXTURE(samp0, UV(-1.0, -1.0)).a;
+  bias += w2 * SAMPLE_TEXTURE(samp0, UV(+1.0, -1.0)).a;
+  bias += w2 * SAMPLE_TEXTURE(samp0, UV(-1.0, +1.0)).a;
+  bias += w2 * SAMPLE_TEXTURE(samp0, UV(+1.0, +1.0)).a;
+  bias += w1 * SAMPLE_TEXTURE(samp0, UV( 0.0, -1.0)).a;
+  bias += w1 * SAMPLE_TEXTURE(samp0, UV(-1.0,  0.0)).a;
+  bias += w1 * SAMPLE_TEXTURE(samp0, UV(+1.0,  0.0)).a;
+  bias += w1 * SAMPLE_TEXTURE(samp0, UV( 0.0, +1.0)).a;
+  bias += w0 * SAMPLE_TEXTURE(samp0, UV( 0.0,  0.0)).a;
+  o_col0 = float4(bias, bias, bias, bias);
+}
+)";
+
+  return ss.str();
+}
+
+std::string GPU_HW_ShaderGen::GenerateAdaptiveDownsampleCompositeFragmentShader()
+{
+  std::stringstream ss;
+  WriteHeader(ss);
+  WriteCommonFunctions(ss);
+  DeclareTexture(ss, "samp0", 0, false);
+  DeclareTexture(ss, "samp1", 1, false);
+
+  // mipmap_resolve.glsl ported from parallel-rsx.
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1, false, false, false, false);
+  ss << R"(
+{
+  float2 uv = v_pos.xy * RCP_VRAM_SIZE;
+  float bias = SAMPLE_TEXTURE(samp1, uv).r;
+  float mip = float(RESOLUTION_SCALE - 1u) * bias;
+  float3 color = SAMPLE_TEXTURE_LEVEL(samp0, uv, mip).rgb;
+  o_col0 = float4(color, 1.0);
+}
+)";
+
+  return ss.str();
+}
+
+std::string GPU_HW_ShaderGen::GenerateBoxSampleDownsampleFragmentShader()
+{
+  std::stringstream ss;
+  WriteHeader(ss);
+  WriteCommonFunctions(ss);
+  DeclareTexture(ss, "samp0", 0, false);
+
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1, false, false, false, false);
+  ss << R"(
+{
+  float3 color = float3(0.0, 0.0, 0.0);
+  uint2 base_coords = uint2(v_pos.xy) * uint2(RESOLUTION_SCALE, RESOLUTION_SCALE);
+  for (uint offset_x = 0u; offset_x < RESOLUTION_SCALE; offset_x++)
+  {
+    for (uint offset_y = 0u; offset_y < RESOLUTION_SCALE; offset_y++)
+      color += LOAD_TEXTURE(samp0, int2(base_coords + uint2(offset_x, offset_y)), 0).rgb;
+  }
+  color /= float(RESOLUTION_SCALE * RESOLUTION_SCALE);
+  o_col0 = float4(color, 1.0);
+}
+)";
+
+  return ss.str();
+}

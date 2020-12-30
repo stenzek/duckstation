@@ -34,6 +34,15 @@
         app:useSimpleSummaryProvider="true"
         app:iconSpaceReserved="false" />
 
+    <ListPreference
+        app:key="GPU/DownsampleMode"
+        app:title="@string/settings_downsample_mode"
+        app:entries="@array/settings_downsample_mode_entries"
+        app:entryValues="@array/settings_downsample_mode_values"
+        app:defaultValue="Disabled"
+        app:useSimpleSummaryProvider="true"
+        app:iconSpaceReserved="false" />
+
     <SwitchPreferenceCompat
         app:key="Display/LinearFiltering"
         app:title="@string/settings_linear_upscaling"

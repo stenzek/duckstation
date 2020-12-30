@@ -273,6 +273,9 @@ void GPU_HW_OpenGL::SetCapabilities(HostDisplay* host_display)
 
     m_max_resolution_scale = std::min<int>(m_max_resolution_scale, line_width_range[1]);
   }
+
+  // adaptive smoothing would require texture views, which aren't in GLES.
+  m_supports_adaptive_downsampling = false;
 }
 
 bool GPU_HW_OpenGL::CreateFramebuffer()
@@ -306,6 +309,15 @@ bool GPU_HW_OpenGL::CreateFramebuffer()
   glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_vram_depth_texture.GetGLTarget(),
                          m_vram_depth_texture.GetGLId(), 0);
   Assert(glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+
+  if (m_downsample_mode == GPUDownsampleMode::Box)
+  {
+    if (!m_downsample_texture.Create(VRAM_WIDTH, VRAM_HEIGHT, 1, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE) ||
+        !m_downsample_texture.CreateFramebuffer())
+    {
+      return false;
+    }
+  }
 
   SetFullVRAMDirtyRectangle();
   return true;
@@ -394,7 +406,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
                              m_pgxp_depth_buffer, m_supports_dual_source_blend);
 
   Common::Timer compile_time;
-  const int progress_total = (4 * 9 * 2 * 2) + (2 * 3) + 5;
+  const int progress_total = (4 * 9 * 2 * 2) + (2 * 3) + 6;
   int progress_value = 0;
 #define UPDATE_PROGRESS()                                                                                              \
   do                                                                                                                   \
@@ -579,6 +591,28 @@ bool GPU_HW_OpenGL::CompilePrograms()
   }
 
   UPDATE_PROGRESS();
+
+  if (m_downsample_mode == GPUDownsampleMode::Box)
+  {
+    prog = shader_cache.GetProgram(shadergen.GenerateScreenQuadVertexShader(), {},
+                                   shadergen.GenerateBoxSampleDownsampleFragmentShader(),
+                                   [this, use_binding_layout](GL::Program& prog) {
+                                     if (!IsGLES() && !use_binding_layout)
+                                       prog.BindFragData(0, "o_col0");
+                                   });
+    if (!prog)
+      return false;
+
+    if (!use_binding_layout)
+    {
+      prog->Bind();
+      prog->Uniform1i("samp0", 0);
+    }
+
+    m_downsample_program = std::move(*prog);
+  }
+
+  UPDATE_PROGRESS();
 #undef UPDATE_PROGRESS
 
   return true;
@@ -748,11 +782,19 @@ void GPU_HW_OpenGL::UpdateDisplay()
              !IsUsingMultisampling() && (scaled_vram_offset_x + scaled_display_width) <= m_vram_texture.GetWidth() &&
              (scaled_vram_offset_y + scaled_display_height) <= m_vram_texture.GetHeight())
     {
-      m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_vram_texture.GetGLId())),
-                                        HostDisplayPixelFormat::RGBA8, m_vram_texture.GetWidth(),
-                                        m_vram_texture.GetHeight(), scaled_vram_offset_x,
-                                        m_vram_texture.GetHeight() - scaled_vram_offset_y, scaled_display_width,
-                                        -static_cast<s32>(scaled_display_height));
+      if (IsUsingDownsampling())
+      {
+        DownsampleFramebuffer(m_vram_texture, scaled_vram_offset_x, scaled_vram_offset_y, scaled_display_width,
+                              scaled_display_height);
+      }
+      else
+      {
+        m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_vram_texture.GetGLId())),
+                                          HostDisplayPixelFormat::RGBA8, m_vram_texture.GetWidth(),
+                                          m_vram_texture.GetHeight(), scaled_vram_offset_x,
+                                          m_vram_texture.GetHeight() - scaled_vram_offset_y, scaled_display_width,
+                                          -static_cast<s32>(scaled_display_height));
+      }
     }
     else
     {
@@ -779,10 +821,17 @@ void GPU_HW_OpenGL::UpdateDisplay()
       glBindVertexArray(m_attributeless_vao_id);
       glDrawArrays(GL_TRIANGLES, 0, 3);
 
-      m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_display_texture.GetGLId())),
-                                        HostDisplayPixelFormat::RGBA8, m_display_texture.GetWidth(),
-                                        m_display_texture.GetHeight(), 0, scaled_display_height, scaled_display_width,
-                                        -static_cast<s32>(scaled_display_height));
+      if (IsUsingDownsampling())
+      {
+        DownsampleFramebuffer(m_display_texture, 0, 0, scaled_display_width, scaled_display_height);
+      }
+      else
+      {
+        m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_display_texture.GetGLId())),
+                                          HostDisplayPixelFormat::RGBA8, m_display_texture.GetWidth(),
+                                          m_display_texture.GetHeight(), 0, scaled_display_height, scaled_display_width,
+                                          -static_cast<s32>(scaled_display_height));
+      }
 
       // restore state
       glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_vram_fbo_id);
@@ -1134,6 +1183,37 @@ void GPU_HW_OpenGL::ClearDepthBuffer()
   glClear(GL_DEPTH_BUFFER_BIT);
   glEnable(GL_SCISSOR_TEST);
   m_last_depth_z = 1.0f;
+}
+
+void GPU_HW_OpenGL::DownsampleFramebuffer(GL::Texture& source, u32 left, u32 top, u32 width, u32 height)
+{
+  DebugAssert(m_downsample_mode != GPUDownsampleMode::Adaptive);
+  DownsampleFramebufferBoxFilter(source, left, top, width, height);
+}
+
+void GPU_HW_OpenGL::DownsampleFramebufferBoxFilter(GL::Texture& source, u32 left, u32 top, u32 width, u32 height)
+{
+  const u32 ds_left = left / m_resolution_scale;
+  const u32 ds_top = top / m_resolution_scale;
+  const u32 ds_width = width / m_resolution_scale;
+  const u32 ds_height = height / m_resolution_scale;
+
+  glDisable(GL_BLEND);
+  glDisable(GL_DEPTH_TEST);
+  glDisable(GL_SCISSOR_TEST);
+  glViewport(ds_left, m_downsample_texture.GetHeight() - ds_top - ds_height, ds_width, ds_height);
+  glBindVertexArray(m_attributeless_vao_id);
+  source.Bind();
+  m_downsample_texture.BindFramebuffer(GL_DRAW_FRAMEBUFFER);
+  m_downsample_program.Bind();
+  glDrawArrays(GL_TRIANGLES, 0, 3);
+
+  RestoreGraphicsAPIState();
+
+  m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_downsample_texture.GetGLId())),
+                                    HostDisplayPixelFormat::RGBA8, m_downsample_texture.GetWidth(),
+                                    m_downsample_texture.GetHeight(), ds_left,
+                                    m_downsample_texture.GetHeight() - ds_top, ds_width, -static_cast<s32>(ds_height));
 }
 
 std::unique_ptr<GPU> GPU::CreateHardwareOpenGLRenderer()

@@ -151,6 +151,10 @@ void Settings::Load(SettingsInterface& si)
     ParseTextureFilterName(
       si.GetStringValue("GPU", "TextureFilter", GetTextureFilterName(DEFAULT_GPU_TEXTURE_FILTER)).c_str())
       .value_or(DEFAULT_GPU_TEXTURE_FILTER);
+  gpu_downsample_mode =
+    ParseDownsampleModeName(
+      si.GetStringValue("GPU", "DownsampleMode", GetDownsampleModeName(DEFAULT_GPU_DOWNSAMPLE_MODE)).c_str())
+      .value_or(DEFAULT_GPU_DOWNSAMPLE_MODE);
   gpu_disable_interlacing = si.GetBoolValue("GPU", "DisableInterlacing", false);
   gpu_force_ntsc_timings = si.GetBoolValue("GPU", "ForceNTSCTimings", false);
   gpu_widescreen_hack = si.GetBoolValue("GPU", "WidescreenHack", false);
@@ -306,6 +310,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("GPU", "TrueColor", gpu_true_color);
   si.SetBoolValue("GPU", "ScaledDithering", gpu_scaled_dithering);
   si.SetStringValue("GPU", "TextureFilter", GetTextureFilterName(gpu_texture_filter));
+  si.SetStringValue("GPU", "DownsampleMode", GetDownsampleModeName(gpu_downsample_mode));
   si.SetBoolValue("GPU", "DisableInterlacing", gpu_disable_interlacing);
   si.SetBoolValue("GPU", "ForceNTSCTimings", gpu_force_ntsc_timings);
   si.SetBoolValue("GPU", "WidescreenHack", gpu_widescreen_hack);
@@ -626,6 +631,35 @@ const char* Settings::GetTextureFilterName(GPUTextureFilter filter)
 const char* Settings::GetTextureFilterDisplayName(GPUTextureFilter filter)
 {
   return s_texture_filter_display_names[static_cast<int>(filter)];
+}
+
+static constexpr auto s_downsample_mode_names = make_array("Disabled", "Box", "Adaptive");
+static constexpr auto s_downsample_mode_display_names = make_array(
+  TRANSLATABLE("GPUDownsampleMode", "Disabled"), TRANSLATABLE("GPUDownsampleMode", "Box (Downsample 3D/Smooth All)"),
+  TRANSLATABLE("GPUDownsampleMode", "Adaptive (Preserve 3D/Smooth 2D)"));
+
+std::optional<GPUDownsampleMode> Settings::ParseDownsampleModeName(const char* str)
+{
+  int index = 0;
+  for (const char* name : s_downsample_mode_names)
+  {
+    if (StringUtil::Strcasecmp(name, str) == 0)
+      return static_cast<GPUDownsampleMode>(index);
+
+    index++;
+  }
+
+  return std::nullopt;
+}
+
+const char* Settings::GetDownsampleModeName(GPUDownsampleMode mode)
+{
+  return s_downsample_mode_names[static_cast<int>(mode)];
+}
+
+const char* Settings::GetDownsampleModeDisplayName(GPUDownsampleMode mode)
+{
+  return s_downsample_mode_display_names[static_cast<int>(mode)];
 }
 
 static std::array<const char*, 3> s_display_crop_mode_names = {{"None", "Overscan", "Borders"}};
