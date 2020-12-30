@@ -229,6 +229,15 @@ void SafeDestroyBufferView(VkBufferView& bv)
   }
 }
 
+void SafeDestroyImageView(VkImageView& iv)
+{
+  if (iv != VK_NULL_HANDLE)
+  {
+    vkDestroyImageView(g_vulkan_context->GetDevice(), iv, nullptr);
+    iv = VK_NULL_HANDLE;
+  }
+}
+
 void SafeDestroySampler(VkSampler& samp)
 {
   if (samp != VK_NULL_HANDLE)

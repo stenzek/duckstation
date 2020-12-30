@@ -40,6 +40,7 @@ void SafeDestroyPipeline(VkPipeline& p);
 void SafeDestroyPipelineLayout(VkPipelineLayout& pl);
 void SafeDestroyDescriptorSetLayout(VkDescriptorSetLayout& dsl);
 void SafeDestroyBufferView(VkBufferView& bv);
+void SafeDestroyImageView(VkImageView& iv);
 void SafeDestroySampler(VkSampler& samp);
 void SafeDestroySemaphore(VkSemaphore& sem);
 void SafeFreeGlobalDescriptorSet(VkDescriptorSet& ds);

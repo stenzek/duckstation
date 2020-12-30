@@ -51,11 +51,13 @@ public:
   void OverrideImageLayout(VkImageLayout new_layout);
 
   void TransitionToLayout(VkCommandBuffer command_buffer, VkImageLayout new_layout);
+  void TransitionSubresourcesToLayout(VkCommandBuffer command_buffer, u32 start_level, u32 num_levels, u32 start_layer,
+                                      u32 num_layers, VkImageLayout old_layout, VkImageLayout new_layout);
 
   VkFramebuffer CreateFramebuffer(VkRenderPass render_pass);
 
   void UpdateFromBuffer(VkCommandBuffer cmdbuf, u32 level, u32 layer, u32 x, u32 y, u32 width, u32 height,
-                      VkBuffer buffer, u32 buffer_offset);
+                        VkBuffer buffer, u32 buffer_offset);
 
 private:
   u32 m_width = 0;

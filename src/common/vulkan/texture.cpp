@@ -240,25 +240,34 @@ void Texture::TransitionToLayout(VkCommandBuffer command_buffer, VkImageLayout n
   if (m_layout == new_layout)
     return;
 
+  TransitionSubresourcesToLayout(command_buffer, 0, m_levels, 0, m_layers, m_layout, new_layout);
+
+  m_layout = new_layout;
+}
+
+void Texture::TransitionSubresourcesToLayout(VkCommandBuffer command_buffer, u32 start_level, u32 num_levels,
+                                             u32 start_layer, u32 num_layers, VkImageLayout old_layout,
+                                             VkImageLayout new_layout)
+{
   VkImageMemoryBarrier barrier = {
     VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER, // VkStructureType            sType
     nullptr,                                // const void*                pNext
     0,                                      // VkAccessFlags              srcAccessMask
     0,                                      // VkAccessFlags              dstAccessMask
-    m_layout,                               // VkImageLayout              oldLayout
+    old_layout,                             // VkImageLayout              oldLayout
     new_layout,                             // VkImageLayout              newLayout
     VK_QUEUE_FAMILY_IGNORED,                // uint32_t                   srcQueueFamilyIndex
     VK_QUEUE_FAMILY_IGNORED,                // uint32_t                   dstQueueFamilyIndex
     m_image,                                // VkImage                    image
     {static_cast<VkImageAspectFlags>(Util::IsDepthFormat(m_format) ? VK_IMAGE_ASPECT_DEPTH_BIT :
                                                                      VK_IMAGE_ASPECT_COLOR_BIT),
-     0, m_levels, 0, m_layers} // VkImageSubresourceRange    subresourceRange
+     start_level, num_levels, start_layer, num_layers} // VkImageSubresourceRange    subresourceRange
   };
 
   // srcStageMask -> Stages that must complete before the barrier
   // dstStageMask -> Stages that must wait for after the barrier before beginning
   VkPipelineStageFlags srcStageMask, dstStageMask;
-  switch (m_layout)
+  switch (old_layout)
   {
     case VK_IMAGE_LAYOUT_UNDEFINED:
       // Layout undefined therefore contents undefined, and we don't care what happens to it.
@@ -352,8 +361,6 @@ void Texture::TransitionToLayout(VkCommandBuffer command_buffer, VkImageLayout n
   }
 
   vkCmdPipelineBarrier(command_buffer, srcStageMask, dstStageMask, 0, 0, nullptr, 0, nullptr, 1, &barrier);
-
-  m_layout = new_layout;
 }
 
 VkFramebuffer Texture::CreateFramebuffer(VkRenderPass render_pass)
@@ -372,7 +379,7 @@ VkFramebuffer Texture::CreateFramebuffer(VkRenderPass render_pass)
 }
 
 void Texture::UpdateFromBuffer(VkCommandBuffer cmdbuf, u32 level, u32 layer, u32 x, u32 y, u32 width, u32 height,
-                             VkBuffer buffer, u32 buffer_offset)
+                               VkBuffer buffer, u32 buffer_offset)
 {
   const VkImageLayout old_layout = m_layout;
   TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
