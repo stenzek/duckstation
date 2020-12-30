@@ -1616,12 +1616,26 @@ void CDROM::DoSeekComplete(TickCount ticks_late)
         if (subq.control.data)
         {
           if (logical)
+          {
             ProcessDataSectorHeader(m_reader.GetSectorBuffer().data());
+            seek_okay = (m_last_sector_header.minute == seek_mm && m_last_sector_header.second == seek_ss &&
+                         m_last_sector_header.frame == seek_ff);
+          }
         }
         else
         {
           if (logical)
-            Log_WarningPrintf("Logical seek to non-data sector [%02x:%02x:%02x]", seek_mm, seek_ss, seek_ff);
+          {
+            Log_WarningPrintf("Logical seek to non-data sector [%02x:%02x:%02x]%s", seek_mm, seek_ss, seek_ff,
+                              m_read_after_seek ? ", reading after seek" : "");
+
+            // If CDDA mode isn't enabled and we're reading an audio sector, we need to fail the seek.
+            // Test cases:
+            //  - Wizard's Harmony does a logical seek to an audio sector, and expects it to succeed.
+            //  - Vib-ribbon starts a read at an audio sector, and expects it to fail.
+            if (m_read_after_seek)
+              seek_okay = m_mode.cdda;
+          }
         }
 
         if (subq.track_number_bcd == CDImage::LEAD_OUT_TRACK_NUMBER)
