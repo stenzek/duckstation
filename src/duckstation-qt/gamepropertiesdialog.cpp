@@ -132,6 +132,13 @@ void GamePropertiesDialog::setupAdditionalUi()
       qApp->translate("DisplayCropMode", Settings::GetDisplayCropModeDisplayName(static_cast<DisplayCropMode>(i))));
   }
 
+  m_ui.userDownsampleMode->addItem(tr("(unchanged)"));
+  for (u32 i = 0; i < static_cast<u32>(GPUDownsampleMode::Count); i++)
+  {
+    m_ui.userDownsampleMode->addItem(
+      qApp->translate("GPUDownsampleMode", Settings::GetDownsampleModeDisplayName(static_cast<GPUDownsampleMode>(i))));
+  }
+
   m_ui.userResolutionScale->addItem(tr("(unchanged)"));
   QtUtils::FillComboBoxWithResolutionScales(m_ui.userResolutionScale);
 
@@ -341,6 +348,11 @@ void GamePropertiesDialog::populateGameSettings()
     QSignalBlocker sb(m_ui.userAspectRatio);
     m_ui.userAspectRatio->setCurrentIndex(static_cast<int>(gs.display_aspect_ratio.value()) + 1);
   }
+  if (gs.gpu_downsample_mode.has_value())
+  {
+    QSignalBlocker sb(m_ui.userDownsampleMode);
+    m_ui.userDownsampleMode->setCurrentIndex(static_cast<int>(gs.gpu_downsample_mode.value()) + 1);
+  }
 
   populateBooleanUserSetting(m_ui.userLinearUpscaling, gs.display_linear_upscaling);
   populateBooleanUserSetting(m_ui.userIntegerUpscaling, gs.display_integer_upscaling);
@@ -522,6 +534,14 @@ void GamePropertiesDialog::connectUi()
       m_game_settings.display_crop_mode.reset();
     else
       m_game_settings.display_crop_mode = static_cast<DisplayCropMode>(index - 1);
+    saveGameSettings();
+  });
+
+  connect(m_ui.userDownsampleMode, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
+    if (index <= 0)
+      m_game_settings.gpu_downsample_mode.reset();
+    else
+      m_game_settings.gpu_downsample_mode = static_cast<GPUDownsampleMode>(index - 1);
     saveGameSettings();
   });
 

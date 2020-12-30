@@ -119,6 +119,7 @@ bool Entry::LoadFromStream(ByteStream* stream)
       !ReadOptionalFromStream(stream, &gpu_pgxp_tolerance) ||
       !ReadOptionalFromStream(stream, &gpu_pgxp_depth_threshold) ||
       !ReadOptionalFromStream(stream, &display_crop_mode) || !ReadOptionalFromStream(stream, &display_aspect_ratio) ||
+      !ReadOptionalFromStream(stream, &gpu_downsample_mode) ||
       !ReadOptionalFromStream(stream, &display_linear_upscaling) ||
       !ReadOptionalFromStream(stream, &display_integer_upscaling) ||
       !ReadOptionalFromStream(stream, &display_force_4_3_for_24bit) ||
@@ -167,7 +168,7 @@ bool Entry::SaveToStream(ByteStream* stream) const
          WriteOptionalToStream(stream, dma_halt_ticks) && WriteOptionalToStream(stream, gpu_fifo_size) &&
          WriteOptionalToStream(stream, gpu_max_run_ahead) && WriteOptionalToStream(stream, gpu_pgxp_tolerance) &&
          WriteOptionalToStream(stream, gpu_pgxp_depth_threshold) && WriteOptionalToStream(stream, display_crop_mode) &&
-         WriteOptionalToStream(stream, display_aspect_ratio) &&
+         WriteOptionalToStream(stream, display_aspect_ratio) && WriteOptionalToStream(stream, gpu_downsample_mode) &&
          WriteOptionalToStream(stream, display_linear_upscaling) &&
          WriteOptionalToStream(stream, display_integer_upscaling) &&
          WriteOptionalToStream(stream, display_force_4_3_for_24bit) &&
@@ -243,6 +244,9 @@ static void ParseIniSection(Entry* entry, const char* section, const CSimpleIniA
   cvalue = ini.GetValue(section, "DisplayAspectRatio", nullptr);
   if (cvalue)
     entry->display_aspect_ratio = Settings::ParseDisplayAspectRatio(cvalue);
+  cvalue = ini.GetValue(section, "GPUDownsampleMode", nullptr);
+  if (cvalue)
+    entry->gpu_downsample_mode = Settings::ParseDownsampleModeName(cvalue);
   cvalue = ini.GetValue(section, "DisplayLinearUpscaling", nullptr);
   if (cvalue)
     entry->display_linear_upscaling = StringUtil::FromChars<bool>(cvalue);
@@ -353,6 +357,10 @@ static void StoreIniSection(const Entry& entry, const char* section, CSimpleIniA
   {
     ini.SetValue(section, "DisplayAspectRatio",
                  Settings::GetDisplayAspectRatioName(entry.display_aspect_ratio.value()));
+  }
+  if (entry.gpu_downsample_mode.has_value())
+  {
+    ini.SetValue(section, "GPUDownsampleMode", Settings::GetDownsampleModeName(entry.gpu_downsample_mode.value()));
   }
   if (entry.display_linear_upscaling.has_value())
     ini.SetValue(section, "DisplayLinearUpscaling", entry.display_linear_upscaling.value() ? "true" : "false");
@@ -536,6 +544,8 @@ void Entry::ApplySettings(bool display_osd_messages) const
     g_settings.display_crop_mode = display_crop_mode.value();
   if (display_aspect_ratio.has_value())
     g_settings.display_aspect_ratio = display_aspect_ratio.value();
+  if (gpu_downsample_mode.has_value())
+    g_settings.gpu_downsample_mode = gpu_downsample_mode.value();
   if (display_linear_upscaling.has_value())
     g_settings.display_linear_filtering = display_linear_upscaling.value();
   if (display_integer_upscaling.has_value())
