@@ -46,6 +46,9 @@ The following people have contributed to the project in some way, and are credit
  - @JFD62780
  - @lmarciano9
  - @Facepalm38
+ - @Alien-Grey
+ - @dmlipat
+ - @Krusher97
 
 ## Special Thanks
 The following people did not directly contribute to the emulator, but it would not be in the state if not for them.
