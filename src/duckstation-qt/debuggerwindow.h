@@ -43,6 +43,7 @@ private Q_SLOTS:
   void onGoToAddressTriggered();
   void onDumpAddressTriggered();
   void onFollowAddressTriggered();
+  void onTraceTriggered();  
   void onAddBreakpointTriggered();
   void onToggleBreakpointTriggered();
   void onClearBreakpointsTriggered();
@@ -52,6 +53,7 @@ private Q_SLOTS:
   void onCodeViewItemActivated(QModelIndex index);
   void onMemorySearchTriggered();
   void onMemorySearchStringChanged(const QString&);
+
 
 private:
   void setupAdditionalUi();

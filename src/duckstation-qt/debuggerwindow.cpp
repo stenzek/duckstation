@@ -8,6 +8,8 @@
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMessageBox>
 
+static bool trace_enabled = false;
+
 DebuggerWindow::DebuggerWindow(QWidget* parent /* = nullptr */)
   : QMainWindow(parent), m_active_memory_region(Bus::MemoryRegion::Count)
 {
@@ -119,6 +121,23 @@ void DebuggerWindow::onDumpAddressTriggered()
     return;
 
   scrollToMemoryAddress(address.value());
+}
+
+void DebuggerWindow::onTraceTriggered()
+{
+  if (trace_enabled == false)
+  {
+    QMessageBox::critical(this, windowTitle(), tr("Trace Logging Started to cpu_log.txt\nThis file can be several gb in, so dont wear out your SSD.."));    
+    trace_enabled = true;
+    CPU::StartTrace();
+  }
+  else
+  {
+    CPU::StopTrace();
+    trace_enabled = false;
+    QMessageBox::critical(this, windowTitle(), tr("Trace Logging Stopped to cpu_log.txt"));   
+  }
+   return;
 }
 
 void DebuggerWindow::onFollowAddressTriggered()
@@ -372,6 +391,7 @@ void DebuggerWindow::connectSignals()
   connect(m_ui.actionGoToPC, &QAction::triggered, this, &DebuggerWindow::onGoToPCTriggered);
   connect(m_ui.actionGoToAddress, &QAction::triggered, this, &DebuggerWindow::onGoToAddressTriggered);
   connect(m_ui.actionDumpAddress, &QAction::triggered, this, &DebuggerWindow::onDumpAddressTriggered);
+  connect(m_ui.actionTrace, &QAction::triggered, this, &DebuggerWindow::onTraceTriggered);  
   connect(m_ui.actionStepInto, &QAction::triggered, this, &DebuggerWindow::onStepIntoActionTriggered);
   connect(m_ui.actionStepOver, &QAction::triggered, this, &DebuggerWindow::onStepOverActionTriggered);
   connect(m_ui.actionStepOut, &QAction::triggered, this, &DebuggerWindow::onStepOutActionTriggered);
@@ -379,13 +399,11 @@ void DebuggerWindow::connectSignals()
   connect(m_ui.actionToggleBreakpoint, &QAction::triggered, this, &DebuggerWindow::onToggleBreakpointTriggered);
   connect(m_ui.actionClearBreakpoints, &QAction::triggered, this, &DebuggerWindow::onClearBreakpointsTriggered);
   connect(m_ui.actionClose, &QAction::triggered, this, &DebuggerWindow::close);
-
   connect(m_ui.codeView, &QTreeView::activated, this, &DebuggerWindow::onCodeViewItemActivated);
 
   connect(m_ui.memoryRegionRAM, &QRadioButton::clicked, [this]() { setMemoryViewRegion(Bus::MemoryRegion::RAM); });
   connect(m_ui.memoryRegionEXP1, &QRadioButton::clicked, [this]() { setMemoryViewRegion(Bus::MemoryRegion::EXP1); });
-  connect(m_ui.memoryRegionScratchpad, &QRadioButton::clicked,
-          [this]() { setMemoryViewRegion(Bus::MemoryRegion::Scratchpad); });
+  connect(m_ui.memoryRegionScratchpad, &QRadioButton::clicked, [this]() { setMemoryViewRegion(Bus::MemoryRegion::Scratchpad); });
   connect(m_ui.memoryRegionBIOS, &QRadioButton::clicked, [this]() { setMemoryViewRegion(Bus::MemoryRegion::BIOS); });
 
   connect(m_ui.memorySearch, &QPushButton::clicked, this, &DebuggerWindow::onMemorySearchTriggered);
@@ -440,10 +458,11 @@ void DebuggerWindow::setUIEnabled(bool enabled)
   m_ui.actionStepOut->setEnabled(enabled);
   m_ui.actionGoToAddress->setEnabled(enabled);
   m_ui.actionGoToPC->setEnabled(enabled);
+  m_ui.actionTrace->setEnabled(enabled); 
   m_ui.memoryRegionRAM->setEnabled(enabled);
   m_ui.memoryRegionEXP1->setEnabled(enabled);
   m_ui.memoryRegionScratchpad->setEnabled(enabled);
-  m_ui.memoryRegionBIOS->setEnabled(enabled);
+  m_ui.memoryRegionBIOS->setEnabled(enabled); 
 }
 
 void DebuggerWindow::setMemoryViewRegion(Bus::MemoryRegion region)
