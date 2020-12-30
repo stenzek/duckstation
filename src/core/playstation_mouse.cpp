@@ -213,7 +213,7 @@ Controller::SettingList PlayStationMouse::StaticGetSettings()
 {
   static constexpr std::array<SettingInfo, 1> settings = {{
     {SettingInfo::Type::Boolean, "RelativeMouseMode", TRANSLATABLE("PlaystationMouse", "Relative Mouse Mode"),
-     TRANSLATABLE("RelativeMouseMode", "Locks the mouse cursor to the window, use for FPS games.")},
+     TRANSLATABLE("PlaystationMouse", "Locks the mouse cursor to the window, use for FPS games.")},
   }};
 
   return SettingList(settings.begin(), settings.end());
