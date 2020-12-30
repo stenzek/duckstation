@@ -28,10 +28,11 @@ D3D11_TEXTURE2D_DESC Texture::GetDesc() const
   return desc;
 }
 
-bool Texture::Create(ID3D11Device* device, u32 width, u32 height, u32 samples, DXGI_FORMAT format, u32 bind_flags,
-                     const void* initial_data /* = nullptr */, u32 initial_data_stride /* = 0 */, bool dynamic)
+bool Texture::Create(ID3D11Device* device, u32 width, u32 height, u16 levels, u16 samples, DXGI_FORMAT format,
+                     u32 bind_flags, const void* initial_data /* = nullptr */, u32 initial_data_stride /* = 0 */,
+                     bool dynamic)
 {
-  CD3D11_TEXTURE2D_DESC desc(format, width, height, 1, 1, bind_flags,
+  CD3D11_TEXTURE2D_DESC desc(format, width, height, 1, levels, bind_flags,
                              dynamic ? D3D11_USAGE_DYNAMIC : D3D11_USAGE_DEFAULT, dynamic ? D3D11_CPU_ACCESS_WRITE : 0,
                              samples, 0, 0);
 
@@ -79,9 +80,10 @@ bool Texture::Create(ID3D11Device* device, u32 width, u32 height, u32 samples, D
   m_texture = std::move(texture);
   m_srv = std::move(srv);
   m_rtv = std::move(rtv);
-  m_width = desc.Width;
-  m_height = desc.Height;
-  m_samples = desc.SampleDesc.Count;
+  m_width = width;
+  m_height = height;
+  m_levels = levels;
+  m_samples = samples;
   return true;
 }
 
@@ -123,7 +125,8 @@ bool Texture::Adopt(ID3D11Device* device, ComPtr<ID3D11Texture2D> texture)
   m_rtv = std::move(rtv);
   m_width = desc.Width;
   m_height = desc.Height;
-  m_samples = desc.SampleDesc.Count;
+  m_levels = static_cast<u16>(desc.MipLevels);
+  m_samples = static_cast<u16>(desc.SampleDesc.Count);
   return true;
 }
 
@@ -134,6 +137,7 @@ void Texture::Destroy()
   m_texture.Reset();
   m_width = 0;
   m_height = 0;
+  m_levels = 0;
   m_samples = 0;
 }
 
