@@ -2282,14 +2282,23 @@ void CDROM::DrawDebugWindow()
     {
       const CDImage* media = m_reader.GetMedia();
       const CDImage::Position disc_position = CDImage::Position::FromLBA(m_current_lba);
-      const CDImage::Position track_position = CDImage::Position::FromLBA(
-        m_current_lba - media->GetTrackStartPosition(static_cast<u8>(media->GetTrackNumber())));
 
       ImGui::Text("Filename: %s", media->GetFileName().c_str());
       ImGui::Text("Disc Position: MSF[%02u:%02u:%02u] LBA[%u]", disc_position.minute, disc_position.second,
                   disc_position.frame, disc_position.ToLBA());
-      ImGui::Text("Track Position: Number[%u] MSF[%02u:%02u:%02u] LBA[%u]", media->GetTrackNumber(),
-                  track_position.minute, track_position.second, track_position.frame, track_position.ToLBA());
+
+      if (media->GetTrackNumber() > media->GetTrackCount())
+      {
+        ImGui::Text("Track Position: Lead-out");
+      }
+      else
+      {
+        const CDImage::Position track_position = CDImage::Position::FromLBA(
+          m_current_lba - media->GetTrackStartPosition(static_cast<u8>(media->GetTrackNumber())));
+        ImGui::Text("Track Position: Number[%u] MSF[%02u:%02u:%02u] LBA[%u]", media->GetTrackNumber(),
+                    track_position.minute, track_position.second, track_position.frame, track_position.ToLBA());
+      }
+
       ImGui::Text("Last Sector: %02X:%02X:%02X (Mode %u)", m_last_sector_header.minute, m_last_sector_header.second,
                   m_last_sector_header.frame, m_last_sector_header.sector_mode);
     }
