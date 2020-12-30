@@ -1069,9 +1069,9 @@
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="66"/>
-        <location filename="../cheatmanagerdialog.cpp" line="323"/>
-        <location filename="../cheatmanagerdialog.cpp" line="361"/>
-        <location filename="../cheatmanagerdialog.cpp" line="366"/>
+        <location filename="../cheatmanagerdialog.cpp" line="340"/>
+        <location filename="../cheatmanagerdialog.cpp" line="378"/>
+        <location filename="../cheatmanagerdialog.cpp" line="383"/>
         <source>Activate</source>
         <translation>激活</translation>
     </message>
@@ -1352,92 +1352,92 @@
         <translation>保存监视</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="366"/>
+        <location filename="../cheatmanagerdialog.cpp" line="383"/>
         <source>Toggle</source>
         <translation>开/关</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="542"/>
+        <location filename="../cheatmanagerdialog.cpp" line="559"/>
         <source>Delete Code</source>
         <translation>删除代码</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="543"/>
+        <location filename="../cheatmanagerdialog.cpp" line="560"/>
         <source>Are you sure you wish to delete the selected code? This action is not reversible.</source>
         <translation>您确定要删除选中的代码吗? 这个动作是不可逆的。</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="577"/>
+        <location filename="../cheatmanagerdialog.cpp" line="594"/>
         <source>PCSXR/Libretro Cheat Files (*.cht *.txt);;All Files (*.*)</source>
         <translation>PCSXR/Libretro金手指文件 (*.cht *.txt);;所有文件 (*.*)</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="578"/>
-        <location filename="../cheatmanagerdialog.cpp" line="601"/>
+        <location filename="../cheatmanagerdialog.cpp" line="595"/>
+        <location filename="../cheatmanagerdialog.cpp" line="618"/>
         <source>Import Cheats</source>
         <translation>导入金手指</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="451"/>
-        <location filename="../cheatmanagerdialog.cpp" line="585"/>
-        <location filename="../cheatmanagerdialog.cpp" line="608"/>
-        <location filename="../cheatmanagerdialog.cpp" line="630"/>
+        <location filename="../cheatmanagerdialog.cpp" line="468"/>
+        <location filename="../cheatmanagerdialog.cpp" line="602"/>
+        <location filename="../cheatmanagerdialog.cpp" line="625"/>
+        <location filename="../cheatmanagerdialog.cpp" line="647"/>
         <source>Error</source>
         <translation>错误</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="445"/>
+        <location filename="../cheatmanagerdialog.cpp" line="462"/>
         <source>Add Group</source>
         <translation>新建分组</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="445"/>
+        <location filename="../cheatmanagerdialog.cpp" line="462"/>
         <source>Group Name:</source>
         <translation>分组名称:</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="451"/>
+        <location filename="../cheatmanagerdialog.cpp" line="468"/>
         <source>This group name already exists.</source>
         <translation>此分组名称已经存在。</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="570"/>
+        <location filename="../cheatmanagerdialog.cpp" line="587"/>
         <source>From File...</source>
         <translation>从文件...</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="571"/>
+        <location filename="../cheatmanagerdialog.cpp" line="588"/>
         <source>From Text...</source>
         <translation>从文本...</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="585"/>
-        <location filename="../cheatmanagerdialog.cpp" line="608"/>
+        <location filename="../cheatmanagerdialog.cpp" line="602"/>
+        <location filename="../cheatmanagerdialog.cpp" line="625"/>
         <source>Failed to parse cheat file. The log may contain more information.</source>
         <translation>解析金手指文件失败。日志可能包含更多信息。</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="601"/>
+        <location filename="../cheatmanagerdialog.cpp" line="618"/>
         <source>Cheat File Text:</source>
         <translation>金手指文本:</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="624"/>
+        <location filename="../cheatmanagerdialog.cpp" line="641"/>
         <source>PCSXR Cheat Files (*.cht);;All Files (*.*)</source>
         <translation>PCSXR金手指文件 (*.cht);;所有文件 (*.*)</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="625"/>
+        <location filename="../cheatmanagerdialog.cpp" line="642"/>
         <source>Export Cheats</source>
         <translation>导出金手指</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="630"/>
+        <location filename="../cheatmanagerdialog.cpp" line="647"/>
         <source>Failed to save cheat file. The log may contain more information.</source>
         <translation>保存金手指文件失败。日志可能包含更多信息。</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="647"/>
+        <location filename="../cheatmanagerdialog.cpp" line="664"/>
         <source>Enter manual address:</source>
         <translation>输入手动地址:</translation>
     </message>
@@ -1446,59 +1446,65 @@
         <translation type="vanished">输入内存地址:</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="656"/>
+        <location filename="../cheatmanagerdialog.cpp" line="673"/>
         <source>Select data size:</source>
         <translation>选择数据大小:</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="783"/>
+        <location filename="../cheatmanagerdialog.cpp" line="805"/>
         <source>Memory Scan</source>
         <translation>内存扫描</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="784"/>
+        <location filename="../cheatmanagerdialog.cpp" line="806"/>
         <source>Memory scan found %1 addresses, but only the first %2 are displayed.</source>
         <translation>内存扫描找到%1地址，但只显示第一个%2。</translation>
     </message>
     <message>
+        <location filename="../cheatmanagerdialog.cpp" line="21"/>
         <source>Byte</source>
-        <translation type="vanished">字节</translation>
+        <translation>字节</translation>
     </message>
     <message>
+        <location filename="../cheatmanagerdialog.cpp" line="21"/>
         <source>Halfword</source>
-        <translation type="vanished">半字</translation>
+        <translation>半字</translation>
     </message>
     <message>
+        <location filename="../cheatmanagerdialog.cpp" line="22"/>
         <source>Word</source>
-        <translation type="vanished">单字</translation>
+        <translation>单字</translation>
     </message>
     <message>
+        <location filename="../cheatmanagerdialog.cpp" line="22"/>
         <source>Signed Byte</source>
-        <translation type="vanished">有正负之分的字节</translation>
+        <translation>有正负之分的字节</translation>
     </message>
     <message>
+        <location filename="../cheatmanagerdialog.cpp" line="23"/>
         <source>Signed Halfword</source>
-        <translation type="vanished">有正负之分的半字</translation>
+        <translation>有正负之分的半字</translation>
     </message>
     <message>
+        <location filename="../cheatmanagerdialog.cpp" line="23"/>
         <source>Signed Word</source>
-        <translation type="vanished">有正负之分的单字</translation>
+        <translation>有正负之分的单字</translation>
     </message>
 </context>
 <context>
     <name>Cheats</name>
     <message>
-        <location filename="../../core/cheats.cpp" line="1532"/>
+        <location filename="../../core/cheats.cpp" line="1626"/>
         <source>Gameshark</source>
         <translation>金手指</translation>
     </message>
     <message>
-        <location filename="../../core/cheats.cpp" line="1557"/>
+        <location filename="../../core/cheats.cpp" line="1651"/>
         <source>Manual</source>
         <translation>手动操作</translation>
     </message>
     <message>
-        <location filename="../../core/cheats.cpp" line="1557"/>
+        <location filename="../../core/cheats.cpp" line="1651"/>
         <source>Automatic (Frame End)</source>
         <translation>自动操作 (帧尾)</translation>
     </message>
@@ -1743,6 +1749,11 @@ This warning will only be shown once.</source>
         <location filename="../../frontend-common/controller_interface.cpp" line="91"/>
         <source>XInput</source>
         <translation>XInput</translation>
+    </message>
+    <message>
+        <location filename="../../frontend-common/controller_interface.cpp" line="92"/>
+        <source>DInput</source>
+        <translation>DInput</translation>
     </message>
 </context>
 <context>
@@ -2357,6 +2368,14 @@ This warning will only be shown once.</source>
     </message>
 </context>
 <context>
+    <name>DisplayAspectRatio</name>
+    <message>
+        <location filename="../../core/settings.cpp" line="659"/>
+        <source>Auto (Game Native)</source>
+        <translation>自动 (游戏原设)</translation>
+    </message>
+</context>
+<context>
     <name>DisplayCropMode</name>
     <message>
         <location filename="../../core/settings.cpp" line="631"/>
@@ -2516,7 +2535,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../displaysettingswidget.cpp" line="68"/>
         <source>Changes the aspect ratio used to display the console&apos;s output to the screen. The default is Auto (Game Native) which automatically adjusts the aspect ratio to match how a game would be shown on a typical TV of the era.</source>
-        <translation>更改用于在屏幕上显示主机输出的纵横比。默认是自动(本地游戏)，它将自动调整显示纵横比，使呈现的画面匹配那个年代的典型电视机。</translation>
+        <translation>更改用于在屏幕上显示主机输出的纵横比。默认是自动 (游戏原设)，它将自动调整显示纵横比，使呈现的画面匹配那个年代的典型电视机。</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="71"/>
@@ -4579,9 +4598,9 @@ This will download approximately 4 megabytes over your current internet connecti
     <name>MainWindow</name>
     <message>
         <location filename="../mainwindow.ui" line="14"/>
-        <location filename="../mainwindow.cpp" line="71"/>
-        <location filename="../mainwindow.cpp" line="82"/>
-        <location filename="../mainwindow.cpp" line="756"/>
+        <location filename="../mainwindow.cpp" line="79"/>
+        <location filename="../mainwindow.cpp" line="90"/>
+        <location filename="../mainwindow.cpp" line="793"/>
         <source>DuckStation</source>
         <translation>DuckStation</translation>
     </message>
@@ -4591,7 +4610,7 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <location filename="../mainwindow.ui" line="42"/>
-        <location filename="../mainwindow.cpp" line="616"/>
+        <location filename="../mainwindow.cpp" line="653"/>
         <source>Change Disc</source>
         <translation>换碟</translation>
     </message>
@@ -5053,7 +5072,7 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation type="vanished">从小部件获取窗口信息失败</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="148"/>
+        <location filename="../mainwindow.cpp" line="155"/>
         <source>Failed to create host display device context.</source>
         <translation>无法创建主机显示设备环境。</translation>
     </message>
@@ -5071,129 +5090,129 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>所有文件类型 (*.bin *.img *.iso *.cue *.chd *.exe *.psexe *.psf *.m3u);;单轨源镜像 (*.bin *.img *.iso);;Cue表文件 (*.cue);;MAME CHD镜像 (*.chd);;PlayStation可执行文件 (*.exe *.psexe);;便携式声音格式文件 (*.psf);;播放列表 (*.m3u)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="101"/>
+        <location filename="../mainwindow.cpp" line="109"/>
         <source>Failed to create host display.</source>
         <translation>无法创建主机显示。</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="391"/>
-        <location filename="../mainwindow.cpp" line="406"/>
+        <location filename="../mainwindow.cpp" line="428"/>
+        <location filename="../mainwindow.cpp" line="443"/>
         <source>Select Disc Image</source>
         <translation>选择光盘镜像</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="432"/>
+        <location filename="../mainwindow.cpp" line="469"/>
         <source>Cheat Manager</source>
         <translation>金手指管理器</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="567"/>
+        <location filename="../mainwindow.cpp" line="604"/>
         <source>Properties...</source>
         <translation>属性...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="572"/>
+        <location filename="../mainwindow.cpp" line="609"/>
         <source>Open Containing Directory...</source>
         <translation>打开所在目录...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="577"/>
+        <location filename="../mainwindow.cpp" line="614"/>
         <source>Set Cover Image...</source>
         <translation>设置封面图片…</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="587"/>
+        <location filename="../mainwindow.cpp" line="624"/>
         <source>Default Boot</source>
         <translation>默认启动</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="591"/>
+        <location filename="../mainwindow.cpp" line="628"/>
         <source>Fast Boot</source>
         <translation>快速启动</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="597"/>
+        <location filename="../mainwindow.cpp" line="634"/>
         <source>Full Boot</source>
         <translation>完全启动</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="605"/>
+        <location filename="../mainwindow.cpp" line="642"/>
         <source>Boot and Debug</source>
         <translation>启动和调试</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="626"/>
+        <location filename="../mainwindow.cpp" line="663"/>
         <source>Add Search Directory...</source>
         <translation>添加搜索目录...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="634"/>
+        <location filename="../mainwindow.cpp" line="671"/>
         <source>Select Cover Image</source>
         <translation>选择封面图片</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="635"/>
+        <location filename="../mainwindow.cpp" line="672"/>
         <source>All Cover Image Types (*.jpg *.jpeg *.png)</source>
         <translation>所有封面图片类型 (*.jpg *.jpeg *.png)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="641"/>
+        <location filename="../mainwindow.cpp" line="678"/>
         <source>Cover Already Exists</source>
         <translation>封面已存在</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="642"/>
+        <location filename="../mainwindow.cpp" line="679"/>
         <source>A cover image for this game already exists, do you wish to replace it?</source>
         <translation>该游戏的封面图片已经存在，您要替换它吗？</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="656"/>
-        <location filename="../mainwindow.cpp" line="662"/>
+        <location filename="../mainwindow.cpp" line="693"/>
+        <location filename="../mainwindow.cpp" line="699"/>
         <source>Copy Error</source>
         <translation>复制错误</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="656"/>
+        <location filename="../mainwindow.cpp" line="693"/>
         <source>Failed to remove existing cover &apos;%1&apos;</source>
         <translation>无法移除现有封面&apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="662"/>
+        <location filename="../mainwindow.cpp" line="699"/>
         <source>Failed to copy &apos;%1&apos; to &apos;%2&apos;</source>
         <translation>复制&apos;%1&apos;到&apos;%2&apos;失败</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="757"/>
+        <location filename="../mainwindow.cpp" line="794"/>
         <source>Language changed. Please restart the application to apply.</source>
         <translation>语言已更改，请重新启动应用程序以应用。</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="763"/>
+        <location filename="../mainwindow.cpp" line="800"/>
         <source>%1x Scale</source>
         <translation>%1x</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1003"/>
+        <location filename="../mainwindow.cpp" line="1041"/>
         <source>Destination File</source>
         <translation>目标文件</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1020"/>
+        <location filename="../mainwindow.cpp" line="1058"/>
         <source>Default</source>
         <translation>默认</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1021"/>
+        <location filename="../mainwindow.cpp" line="1059"/>
         <source>Fusion</source>
         <translation>炼金</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1022"/>
+        <location filename="../mainwindow.cpp" line="1060"/>
         <source>Dark Fusion (Gray)</source>
         <translation>黑炼金 (灰色)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1023"/>
+        <location filename="../mainwindow.cpp" line="1061"/>
         <source>Dark Fusion (Blue)</source>
         <translation>黑炼金 (蓝色)</translation>
     </message>
@@ -5202,34 +5221,34 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation type="vanished">黑色</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1024"/>
+        <location filename="../mainwindow.cpp" line="1062"/>
         <source>QDarkStyle</source>
         <translation>暗夜</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1340"/>
-        <location filename="../mainwindow.cpp" line="1349"/>
+        <location filename="../mainwindow.cpp" line="1378"/>
+        <location filename="../mainwindow.cpp" line="1387"/>
         <source>Memory Card Not Found</source>
         <translation>无法找到记忆卡</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1341"/>
-        <location filename="../mainwindow.cpp" line="1350"/>
+        <location filename="../mainwindow.cpp" line="1379"/>
+        <location filename="../mainwindow.cpp" line="1388"/>
         <source>Memory card &apos;%1&apos; could not be found. Try starting the game and saving to create it.</source>
         <translation>无法找到记忆卡&apos;%1&apos;。尝试开始游戏并保存创建它。</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1405"/>
+        <location filename="../mainwindow.cpp" line="1443"/>
         <source>Updater Error</source>
         <translation>更新程序错误</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1411"/>
+        <location filename="../mainwindow.cpp" line="1449"/>
         <source>&lt;p&gt;Sorry, you are trying to update a DuckStation version which is not an official GitHub release. To prevent incompatibilities, the auto-updater is only enabled on official builds.&lt;/p&gt;&lt;p&gt;To obtain an official build, please follow the instructions under &quot;Downloading and Running&quot; at the link below:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt;https://github.com/stenzek/duckstation/&lt;/a&gt;&lt;/p&gt;</source>
         <translation>&lt;p&gt;抱歉，您正在尝试更新非GitHub官方版本的DuckStation版本。为防止不兼容，自动更新程序仅在正式版本上启用。&lt;/p&gt;&lt;p&gt;要获取正式版本，请按照下面链接中的&quot;下载并运行&quot;下的说明进行操作：&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt;https://github.com/stenzek/duckstation/&lt;/a&gt;lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1417"/>
+        <location filename="../mainwindow.cpp" line="1455"/>
         <source>Automatic updating is not supported on the current platform.</source>
         <translation>当前平台不支持自动更新。</translation>
     </message>
@@ -6085,7 +6104,7 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>保存记忆卡到&apos;%s&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="234"/>
+        <location filename="../mainwindow.cpp" line="240"/>
         <source>Failed to acquire exclusive fullscreen.</source>
         <translation>无法获取独占式全屏。</translation>
     </message>
@@ -6116,6 +6135,14 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../../core/playstation_mouse.cpp" line="204"/>
         <source>Right</source>
         <translation>右</translation>
+    </message>
+</context>
+<context>
+    <name>PlaystationMouse</name>
+    <message>
+        <location filename="../../core/playstation_mouse.cpp" line="215"/>
+        <source>Relative Mouse Mode</source>
+        <translation>相对鼠标模式</translation>
     </message>
 </context>
 <context>
@@ -6273,12 +6300,12 @@ This will download approximately 4 megabytes over your current internet connecti
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../main.cpp" line="38"/>
+        <location filename="../main.cpp" line="40"/>
         <source>DuckStation Error</source>
         <translation>DuckStation错误</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="39"/>
+        <location filename="../main.cpp" line="41"/>
         <source>Failed to initialize host interface. Cannot continue.</source>
         <translation>初始化主机接口失败，无法继续。</translation>
     </message>
@@ -6300,38 +6327,38 @@ URL: %1</translation>
 <context>
     <name>QtHostInterface</name>
     <message>
-        <location filename="../qthostinterface.cpp" line="905"/>
-        <location filename="../qthostinterface.cpp" line="947"/>
+        <location filename="../qthostinterface.cpp" line="916"/>
+        <location filename="../qthostinterface.cpp" line="958"/>
         <source>Game Save %1 (%2)</source>
         <translation>游戏存档%1 (%2)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="905"/>
+        <location filename="../qthostinterface.cpp" line="916"/>
         <source>Game Save %1 (Empty)</source>
         <translation>游戏存档%1 (空)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="912"/>
+        <location filename="../qthostinterface.cpp" line="923"/>
         <source>Global Save %1 (%2)</source>
         <translation>全局存档%1 (%2)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="912"/>
+        <location filename="../qthostinterface.cpp" line="923"/>
         <source>Global Save %1 (Empty)</source>
         <translation>全局存档%1 (空)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="917"/>
+        <location filename="../qthostinterface.cpp" line="928"/>
         <source>Resume</source>
         <translation>恢复</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="920"/>
+        <location filename="../qthostinterface.cpp" line="931"/>
         <source>Load State</source>
         <translation>即时读档</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="940"/>
+        <location filename="../qthostinterface.cpp" line="951"/>
         <source>Resume (%1)</source>
         <translation>恢复(%1)</translation>
     </message>
@@ -6353,22 +6380,22 @@ URL: %1</translation>
         <translation>没有发现可恢复的即时存档。</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="954"/>
+        <location filename="../qthostinterface.cpp" line="965"/>
         <source>Edit Memory Cards...</source>
         <translation>管理记忆卡...</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="994"/>
+        <location filename="../qthostinterface.cpp" line="1005"/>
         <source>Delete Save States...</source>
         <translation>删除即时存档...</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1000"/>
+        <location filename="../qthostinterface.cpp" line="1011"/>
         <source>Confirm Save State Deletion</source>
         <translation>确认删除即时存档</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1001"/>
+        <location filename="../qthostinterface.cpp" line="1012"/>
         <source>Are you sure you want to delete all save states for %1?
 
 The saves will not be recoverable.</source>
@@ -6395,12 +6422,12 @@ The saves will not be recoverable.</source>
         <translation type="vanished">PCSXR金手指文件 (*.cht);;所有文件 (*.*)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1039"/>
+        <location filename="../qthostinterface.cpp" line="1050"/>
         <source>&amp;Enabled Cheats</source>
         <translation>启用金手指(&amp;H)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1041"/>
+        <location filename="../qthostinterface.cpp" line="1052"/>
         <source>&amp;Apply Cheats</source>
         <translation>应用金手指(&amp;A)</translation>
     </message>
@@ -6431,6 +6458,14 @@ The saves will not be recoverable.</source>
         <location filename="../qtprogresscallback.cpp" line="93"/>
         <source>Information</source>
         <translation>信息</translation>
+    </message>
+</context>
+<context>
+    <name>RelativeMouseMode</name>
+    <message>
+        <location filename="../../core/playstation_mouse.cpp" line="216"/>
+        <source>Locks the mouse cursor to the window, use for FPS games.</source>
+        <translation>锁定鼠标光标到窗口，用于FPS游戏。</translation>
     </message>
 </context>
 <context>
