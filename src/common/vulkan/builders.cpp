@@ -454,6 +454,12 @@ void SamplerBuilder::SetLinearSampler(bool mipmaps,
   SetFilter(VK_FILTER_LINEAR, VK_FILTER_LINEAR,
             mipmaps ? VK_SAMPLER_MIPMAP_MODE_LINEAR : VK_SAMPLER_MIPMAP_MODE_NEAREST);
   SetAddressMode(address_mode, address_mode, address_mode);
+
+  if (mipmaps)
+  {
+    m_ci.minLod = std::numeric_limits<float>::min();
+    m_ci.maxLod = std::numeric_limits<float>::max();
+  }
 }
 
 DescriptorSetUpdateBuilder::DescriptorSetUpdateBuilder()
