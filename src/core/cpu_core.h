@@ -132,6 +132,10 @@ void DisassembleAndPrint(u32 addr, u32 instructions_before, u32 instructions_aft
 // Write to CPU execution log file.
 void WriteToExecutionLog(const char* format, ...);
 
+//Trace Routines
+void StartTrace();
+void StopTrace();
+
 // Breakpoint callback - if the callback returns false, the breakpoint will be removed.
 using BreakpointCallback = bool (*)(VirtualMemoryAddress address);
 

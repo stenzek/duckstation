@@ -14,6 +14,11 @@
 #include "system.h"
 #include "timing_event.h"
 #include <cstdio>
+
+static bool trace_enabled = false;
+static std::FILE* log_file = nullptr;
+static bool log_file_opened = false;
+
 Log_SetChannel(CPU::Core);
 
 namespace CPU {
@@ -34,10 +39,19 @@ static u32 s_breakpoint_counter = 1;
 static u32 s_last_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
 static bool s_single_step = false;
 
+void StartTrace(void)
+{
+  trace_enabled = true;
+}
+
+void StopTrace(void)
+{  
+  fclose(log_file);
+  log_file_opened = false;
+  trace_enabled = false;
+}
 void WriteToExecutionLog(const char* format, ...)
 {
-  static std::FILE* log_file = nullptr;
-  static bool log_file_opened = false;
 
   std::va_list ap;
   va_start(ap, format);
@@ -524,6 +538,10 @@ restart_instruction:
   }
 #endif
 
+  if (trace_enabled == true)
+  {   
+    LogInstruction(inst.bits, g_state.current_instruction_pc, &g_state.regs);
+  }
 #ifdef _DEBUG
   if (TRACE_EXECUTION)
     PrintInstruction(inst.bits, g_state.current_instruction_pc, &g_state.regs);
