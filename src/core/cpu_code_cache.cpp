@@ -85,7 +85,7 @@ static CodeBlock* LookupBlock(CodeBlockKey key);
 static bool RevalidateBlock(CodeBlock* block);
 
 static bool CompileBlock(CodeBlock* block);
-static void FlushBlock(CodeBlock* block);
+static void RemoveReferencesToBlock(CodeBlock* block);
 static void AddBlockToPageMap(CodeBlock* block);
 static void RemoveBlockFromPageMap(CodeBlock* block);
 
@@ -456,6 +456,11 @@ bool RevalidateBlock(CodeBlock* block)
   return true;
 
 recompile:
+  // remove any references to the block from the lookup table.
+  // this is an edge case where compiling causes a flush-all due to no space,
+  // and we don't want to nuke the block we're compiling...
+  RemoveReferencesToBlock(block);
+
 #ifdef WITH_RECOMPILER
   RemoveBlockFromHostCodeMap(block);
 #endif
@@ -464,17 +469,20 @@ recompile:
   if (!CompileBlock(block))
   {
     Log_WarningPrintf("Failed to recompile block 0x%08X - flushing.", block->GetPC());
-    FlushBlock(block);
+    delete block;
     return false;
   }
 
+  AddBlockToPageMap(block);
+
 #ifdef WITH_RECOMPILER
   // re-add to page map again
+  SetFastMap(block->GetPC(), block->host_code);
   AddBlockToHostCodeMap(block);
 #endif
-  if (block->IsInRAM())
-    AddBlockToPageMap(block);
 
+  // re-insert into the block map since we removed it earlier.
+  s_blocks.emplace(block->key.bits, block);
   return true;
 }
 
@@ -489,6 +497,11 @@ bool CompileBlock(CodeBlock* block)
   if (pc == 0x0005aa90)
     __debugbreak();
 #endif
+
+  block->icache_line_count = 0;
+  block->uncached_fetch_ticks = 0;
+  block->contains_double_branches = false;
+  block->contains_loadstore_instructions = false;
 
   u32 last_cache_line = ICACHE_LINES;
 
@@ -641,11 +654,10 @@ void InvalidateBlocksWithPageIndex(u32 page_index)
   Bus::ClearRAMCodePage(page_index);
 }
 
-void FlushBlock(CodeBlock* block)
+void RemoveReferencesToBlock(CodeBlock* block)
 {
   BlockMap::iterator iter = s_blocks.find(block->key.GetPC());
   Assert(iter != s_blocks.end() && iter->second == block);
-  Log_DevPrintf("Flushing block at address 0x%08X", block->GetPC());
 
 #ifdef WITH_RECOMPILER
   SetFastMap(block->GetPC(), FastCompileBlockFunction);
@@ -662,7 +674,6 @@ void FlushBlock(CodeBlock* block)
 #endif
 
   s_blocks.erase(iter);
-  delete block;
 }
 
 void AddBlockToPageMap(CodeBlock* block)
