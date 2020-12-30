@@ -81,6 +81,8 @@ public class AndroidHostInterface {
     public native boolean loadInputProfile(String name);
     public native boolean saveInputProfile(String name);
 
+    public native HotkeyInfo[] getHotkeyInfoList();
+
     public native void refreshGameList(boolean invalidateCache, boolean invalidateDatabase, AndroidProgressCallback progressCallback);
 
     public native GameListEntry[] getGameListEntries();

@@ -1170,6 +1170,43 @@ DEFINE_JNI_ARGS_METHOD(jarray, AndroidHostInterface_getGameListEntries, jobject 
   return entry_array;
 }
 
+DEFINE_JNI_ARGS_METHOD(jobjectArray , AndroidHostInterface_getHotkeyInfoList, jobject obj)
+{
+  jclass entry_class = env->FindClass("com/github/stenzek/duckstation/HotkeyInfo");
+  Assert(entry_class != nullptr);
+
+  jmethodID entry_constructor =
+          env->GetMethodID(entry_class, "<init>",
+                           "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
+  Assert(entry_constructor != nullptr);
+
+  AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
+  const CommonHostInterface::HotkeyInfoList& hotkeys = hi->GetHotkeyInfoList();
+  if (hotkeys.empty())
+    return nullptr;
+
+  jobjectArray entry_array = env->NewObjectArray(static_cast<jsize>(hotkeys.size()), entry_class, nullptr);
+  Assert(entry_array != nullptr);
+
+  u32 counter = 0;
+  for (const CommonHostInterface::HotkeyInfo& hk : hotkeys)
+  {
+    jstring category = env->NewStringUTF(hk.category.GetCharArray());
+    jstring name = env->NewStringUTF(hk.name.GetCharArray());
+    jstring display_name = env->NewStringUTF(hk.display_name.GetCharArray());
+
+    jobject entry_jobject = env->NewObject(entry_class, entry_constructor, category, name, display_name);
+
+    env->SetObjectArrayElement(entry_array, counter++, entry_jobject);
+    env->DeleteLocalRef(entry_jobject);
+    env->DeleteLocalRef(display_name);
+    env->DeleteLocalRef(name);
+    env->DeleteLocalRef(category);
+  }
+
+  return entry_array;
+}
+
 DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_applySettings, jobject obj)
 {
   AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);

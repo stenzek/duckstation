@@ -151,11 +151,11 @@ public class ControllerMappingActivity extends AppCompatActivity {
             pref.updateValue();
     }
 
-    public static class SettingsFragment extends PreferenceFragmentCompat {
+    public static class ControllerPortFragment extends PreferenceFragmentCompat {
         private ControllerMappingActivity activity;
         private int controllerIndex;
 
-        public SettingsFragment(ControllerMappingActivity activity, int controllerIndex) {
+        public ControllerPortFragment(ControllerMappingActivity activity, int controllerIndex) {
             this.activity = activity;
             this.controllerIndex = controllerIndex;
         }
@@ -189,6 +189,31 @@ public class ControllerMappingActivity extends AppCompatActivity {
         }
     }
 
+    public static class HotkeyFragment extends PreferenceFragmentCompat {
+        private ControllerMappingActivity activity;
+        private HotkeyInfo[] mHotkeyInfo;
+
+        public HotkeyFragment(ControllerMappingActivity activity) {
+            this.activity = activity;
+            this.mHotkeyInfo = AndroidHostInterface.getInstance().getHotkeyInfoList();
+        }
+
+        @Override
+        public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+            final PreferenceScreen ps = getPreferenceManager().createPreferenceScreen(getContext());
+            if (mHotkeyInfo != null) {
+                for (HotkeyInfo hotkeyInfo : mHotkeyInfo) {
+                    final ControllerBindingPreference cbp = new ControllerBindingPreference(getContext(), null);
+                    cbp.initHotkey(hotkeyInfo);
+                    ps.addPreference(cbp);
+                    activity.mPreferences.add(cbp);
+                }
+            }
+
+            setPreferenceScreen(ps);
+        }
+    }
+
     public static class SettingsCollectionFragment extends Fragment {
         private ControllerMappingActivity activity;
         private SettingsCollectionAdapter adapter;
@@ -211,9 +236,12 @@ public class ControllerMappingActivity extends AppCompatActivity {
             viewPager.setAdapter(adapter);
 
             TabLayout tabLayout = view.findViewById(R.id.tab_layout);
-            new TabLayoutMediator(tabLayout, viewPager,
-                    (tab, position) -> tab.setText(String.format("Port %d", position + 1))
-            ).attach();
+            new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
+                if (position == NUM_CONTROLLER_PORTS)
+                    tab.setText("Hotkeys");
+                else
+                    tab.setText(String.format("Port %d", position + 1));
+            }).attach();
         }
     }
 
@@ -228,12 +256,15 @@ public class ControllerMappingActivity extends AppCompatActivity {
         @NonNull
         @Override
         public Fragment createFragment(int position) {
-            return new SettingsFragment(activity, position + 1);
+            if (position != NUM_CONTROLLER_PORTS)
+                return new ControllerPortFragment(activity, position + 1);
+            else
+                return new HotkeyFragment(activity);
         }
 
         @Override
         public int getItemCount() {
-            return NUM_CONTROLLER_PORTS;
+            return NUM_CONTROLLER_PORTS + 1;
         }
     }
 }

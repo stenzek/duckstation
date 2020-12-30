@@ -14,10 +14,16 @@ import androidx.preference.PreferenceViewHolder;
 import java.util.Set;
 
 public class ControllerBindingPreference extends Preference {
-    private boolean mIsAxis;
+    private enum Type {
+        BUTTON,
+        AXIS,
+        HOTKEY
+    }
+
     private String mBindingName;
     private String mValue;
     private TextView mValueView;
+    private Type mType = Type.BUTTON;
 
     private static int getIconForButton(String buttonName) {
         if (buttonName.equals("Up")) {
@@ -57,6 +63,10 @@ public class ControllerBindingPreference extends Preference {
         return R.drawable.ic_baseline_radio_button_checked_24;
     }
 
+    private static int getIconForHotkey(String hotkeyDisplayName) {
+        return R.drawable.ic_baseline_category_24;
+    }
+
     public ControllerBindingPreference(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
         setWidgetLayoutResource(R.layout.layout_controller_binding_preference);
@@ -83,29 +93,44 @@ public class ControllerBindingPreference extends Preference {
         TextView nameView = ((TextView)holder.findViewById(R.id.controller_binding_name));
         mValueView = ((TextView)holder.findViewById(R.id.controller_binding_value));
 
-        iconView.setImageDrawable(ContextCompat.getDrawable(getContext(), getIconForButton(mBindingName)));
+        int drawableId = R.drawable.ic_baseline_radio_button_checked_24;
+        switch (mType)
+        {
+            case BUTTON: drawableId = getIconForButton(mBindingName); break;
+            case AXIS: drawableId = getIconForAxis(mBindingName); break;
+            case HOTKEY: drawableId = getIconForHotkey(mBindingName); break;
+        }
+
+        iconView.setImageDrawable(ContextCompat.getDrawable(getContext(), drawableId));
         nameView.setText(mBindingName);
         updateValue();
     }
 
     @Override
     protected void onClick() {
-        ControllerBindingDialog dialog = new ControllerBindingDialog(getContext(), mBindingName, getKey(), mValue, mIsAxis);
+        ControllerBindingDialog dialog = new ControllerBindingDialog(getContext(), mBindingName, getKey(), mValue, (mType == Type.AXIS));
         dialog.setOnDismissListener((dismissedDialog) -> updateValue());
         dialog.show();
     }
 
     public void initButton(int controllerIndex, String buttonName) {
         mBindingName = buttonName;
-        mIsAxis = false;
+        mType = Type.BUTTON;
         setKey(String.format("Controller%d/Button%s", controllerIndex, buttonName));
         updateValue();
     }
 
     public void initAxis(int controllerIndex, String axisName) {
         mBindingName = axisName;
-        mIsAxis = true;
+        mType = Type.AXIS;
         setKey(String.format("Controller%d/Axis%s", controllerIndex, axisName));
+        updateValue();
+    }
+
+    public void initHotkey(HotkeyInfo hotkeyInfo) {
+        mBindingName = hotkeyInfo.getDisplayName();
+        mType = Type.HOTKEY;
+        setKey(hotkeyInfo.getBindingConfigKey());
         updateValue();
     }
 
