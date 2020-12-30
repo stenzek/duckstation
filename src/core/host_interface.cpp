@@ -462,6 +462,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("Main", "ConfirmPowerOff", true);
   si.SetBoolValue("Main", "LoadDevicesFromSaveStates", false);
   si.SetBoolValue("Main", "ApplyGameSettings", true);
+  si.SetBoolValue("Main", "DisableAllEnhancements", false);
 
   si.SetStringValue("CPU", "ExecutionMode", Settings::GetCPUExecutionModeName(Settings::DEFAULT_CPU_EXECUTION_MODE));
   si.SetBoolValue("CPU", "RecompilerMemoryExceptions", false);
@@ -573,6 +574,28 @@ void HostInterface::LoadSettings(SettingsInterface& si)
 
 void HostInterface::FixIncompatibleSettings(bool display_osd_messages)
 {
+  if (g_settings.disable_all_enhancements)
+  {
+    g_settings.cpu_overclock_enable = false;
+    g_settings.cpu_overclock_active = false;
+    g_settings.gpu_resolution_scale = 1;
+    g_settings.gpu_multisamples = 1;
+    g_settings.gpu_per_sample_shading = false;
+    g_settings.gpu_true_color = false;
+    g_settings.gpu_scaled_dithering = false;
+    g_settings.gpu_texture_filter = GPUTextureFilter::Nearest;
+    g_settings.gpu_disable_interlacing = false;
+    g_settings.gpu_force_ntsc_timings = false;
+    g_settings.gpu_widescreen_hack = false;
+    g_settings.gpu_pgxp_enable = false;
+    g_settings.gpu_24bit_chroma_smoothing = false;
+    g_settings.cdrom_read_speedup = false;
+    g_settings.cdrom_mute_cd_audio = false;
+    g_settings.texture_replacements.enable_vram_write_replacements = false;
+    g_settings.bios_patch_fast_boot = false;
+    g_settings.bios_patch_tty_enable = false;
+  }
+
   if (g_settings.gpu_pgxp_enable)
   {
     if (g_settings.gpu_renderer == GPURenderer::Software)

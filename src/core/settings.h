@@ -90,6 +90,7 @@ struct Settings
   bool load_devices_from_save_states = false;
   bool apply_game_settings = true;
   bool auto_load_cheats = false;
+  bool disable_all_enhancements = false;
 
   GPURenderer gpu_renderer = GPURenderer::Software;
   std::string gpu_adapter;
