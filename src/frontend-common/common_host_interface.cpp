@@ -1452,7 +1452,7 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                                    2.0f);
                    }
                  });
-
+#ifndef ANDROID
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("ToggleFullscreen"),
                  StaticString(TRANSLATABLE("Hotkeys", "Toggle Fullscreen")), [this](bool pressed) {
                    if (pressed)
@@ -1496,6 +1496,13 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                      PowerOffSystem();
                    }
                  });
+#else
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("TogglePatchCodes"),
+                 StaticString(TRANSLATABLE("Hotkeys", "Toggle Patch Codes")), [this](bool pressed) {
+              if (pressed)
+                DoToggleCheats();
+          });
+#endif
 
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("Reset"),
                  StaticString(TRANSLATABLE("Hotkeys", "Reset System")), [this](bool pressed) {
