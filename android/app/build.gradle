@@ -59,7 +59,7 @@ def getVersion() {
     def versionNumber = '0.0-unknown'
 
     try {
-        versionNumber = 'git describe --tags --exclude latest'.execute([], project.rootDir).text
+        versionNumber = 'git describe --tags --exclude latest --exclude preview'.execute([], project.rootDir).text
                 .trim()
                 .replaceAll(/(-0)?-[^-]+$/, "")
     } catch (Exception e) {
