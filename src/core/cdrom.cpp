@@ -258,6 +258,7 @@ void CDROM::InsertMedia(std::unique_ptr<CDImage> media)
     m_last_subq = subq;
 
   m_reader.SetMedia(std::move(media));
+  m_current_lba = 0;
 }
 
 std::unique_ptr<CDImage> CDROM::RemoveMedia(bool force /* = false */)
