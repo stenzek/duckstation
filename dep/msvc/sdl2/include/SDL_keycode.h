@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -47,7 +47,7 @@ typedef Sint32 SDL_Keycode;
 #define SDLK_SCANCODE_MASK (1<<30)
 #define SDL_SCANCODE_TO_KEYCODE(X)  (X | SDLK_SCANCODE_MASK)
 
-typedef enum
+enum
 {
     SDLK_UNKNOWN = 0,
 
@@ -88,11 +88,9 @@ typedef enum
     SDLK_GREATER = '>',
     SDLK_QUESTION = '?',
     SDLK_AT = '@',
-
     /*
        Skip uppercase letters
      */
-
     SDLK_LEFTBRACKET = '[',
     SDLK_BACKSLASH = '\\',
     SDLK_RIGHTBRACKET = ']',
@@ -319,7 +317,7 @@ typedef enum
 
     SDLK_AUDIOREWIND = SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_AUDIOREWIND),
     SDLK_AUDIOFASTFORWARD = SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_AUDIOFASTFORWARD)
-} SDL_KeyCode;
+};
 
 /**
  * \brief Enumeration of valid key mods (possibly OR'd together).
@@ -338,13 +336,13 @@ typedef enum
     KMOD_NUM = 0x1000,
     KMOD_CAPS = 0x2000,
     KMOD_MODE = 0x4000,
-    KMOD_RESERVED = 0x8000,
-
-    KMOD_CTRL = KMOD_LCTRL | KMOD_RCTRL,
-    KMOD_SHIFT = KMOD_LSHIFT | KMOD_RSHIFT,
-    KMOD_ALT = KMOD_LALT | KMOD_RALT,
-    KMOD_GUI = KMOD_LGUI | KMOD_RGUI
+    KMOD_RESERVED = 0x8000
 } SDL_Keymod;
+
+#define KMOD_CTRL   (KMOD_LCTRL|KMOD_RCTRL)
+#define KMOD_SHIFT  (KMOD_LSHIFT|KMOD_RSHIFT)
+#define KMOD_ALT    (KMOD_LALT|KMOD_RALT)
+#define KMOD_GUI    (KMOD_LGUI|KMOD_RGUI)
 
 #endif /* SDL_keycode_h_ */
 

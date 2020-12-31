@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -74,7 +74,7 @@
 #    endif
 #    if defined (_M_ARM64)
 #      include <arm64intr.h>
-#      include <arm64_neon.h>
+#      include <arm_neon.h>
 #      define __ARM_NEON 1 /* Set __ARM_NEON so that it can be used elsewhere, at compile time */
 #    endif
 #  endif
@@ -187,11 +187,6 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasAVX2(void);
 extern DECLSPEC SDL_bool SDLCALL SDL_HasAVX512F(void);
 
 /**
- *  This function returns true if the CPU has ARM SIMD (ARMv6) features.
- */
-extern DECLSPEC SDL_bool SDLCALL SDL_HasARMSIMD(void);
-
-/**
  *  This function returns true if the CPU has NEON (ARM SIMD) features.
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_HasNEON(void);
@@ -246,32 +241,9 @@ extern DECLSPEC size_t SDLCALL SDL_SIMDGetAlignment(void);
  * \return Pointer to newly-allocated block, NULL if out of memory.
  *
  * \sa SDL_SIMDAlignment
- * \sa SDL_SIMDRealloc
  * \sa SDL_SIMDFree
  */
 extern DECLSPEC void * SDLCALL SDL_SIMDAlloc(const size_t len);
-
-/**
- * \brief Reallocate memory obtained from SDL_SIMDAlloc
- *
- * It is not valid to use this function on a pointer from anything but
- *  SDL_SIMDAlloc(). It can't be used on pointers from malloc, realloc,
- *  SDL_malloc, memalign, new[], etc.
- *
- *  \param mem The pointer obtained from SDL_SIMDAlloc. This function also
- *             accepts NULL, at which point this function is the same as
- *             calling SDL_realloc with a NULL pointer.
- *  \param len The length, in bytes, of the block to allocated. The actual
- *             allocated block might be larger due to padding, etc. Passing 0
- *             will return a non-NULL pointer, assuming the system isn't out of
- *             memory.
- * \return Pointer to newly-reallocated block, NULL if out of memory.
- *
- * \sa SDL_SIMDAlignment
- * \sa SDL_SIMDAlloc
- * \sa SDL_SIMDFree
- */
-extern DECLSPEC void * SDLCALL SDL_SIMDRealloc(void *mem, const size_t len);
 
 /**
  * \brief Deallocate memory obtained from SDL_SIMDAlloc
@@ -283,7 +255,6 @@ extern DECLSPEC void * SDLCALL SDL_SIMDRealloc(void *mem, const size_t len);
  * However, SDL_SIMDFree(NULL) is a legal no-op.
  *
  * \sa SDL_SIMDAlloc
- * \sa SDL_SIMDRealloc
  */
 extern DECLSPEC void SDLCALL SDL_SIMDFree(void *ptr);
 
