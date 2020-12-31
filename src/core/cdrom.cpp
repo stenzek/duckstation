@@ -1648,10 +1648,10 @@ void CDROM::DoSeekComplete(TickCount ticks_late)
     }
   }
 
+  m_current_lba = m_reader.GetLastReadSector();
+
   if (seek_okay)
   {
-    m_current_lba = m_reader.GetLastReadSector();
-
     // seek complete, transition to play/read if requested
     // INT2 is not sent on play/read
     if (m_read_after_seek)
