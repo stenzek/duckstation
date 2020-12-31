@@ -248,7 +248,7 @@ bool CDROM::DoesMediaRegionMatchConsole() const
   if (!g_settings.cdrom_region_check)
     return true;
 
-  return System::GetRegion() != System::GetConsoleRegionForDiscRegion(m_disc_region);
+  return System::GetRegion() == System::GetConsoleRegionForDiscRegion(m_disc_region);
 }
 
 void CDROM::InsertMedia(std::unique_ptr<CDImage> media)
@@ -1772,7 +1772,12 @@ void CDROM::DoIDRead()
     m_current_lba = 0;
     m_reader.QueueReadSector(0);
 
-    if (!IsMediaPS1Disc() || (g_settings.cdrom_region_check && !DoesMediaRegionMatchConsole()))
+    if (!IsMediaPS1Disc())
+    {
+      stat_byte |= STAT_ID_ERROR;
+      flags_byte |= (1 << 7) | (1 << 4); // Unlicensed + Audio CD
+    }
+    else if (!DoesMediaRegionMatchConsole())
     {
       stat_byte |= STAT_ID_ERROR;
       flags_byte |= (1 << 7); // Unlicensed
