@@ -46,10 +46,11 @@ private:
   struct ControllerData
   {
     void* haptic;
+    void* game_controller;
     int haptic_left_right_effect;
     int joystick_id;
     int player_id;
-    bool is_game_controller;
+    bool use_game_controller_rumble;
 
     float deadzone = 0.25f;
 
@@ -60,6 +61,8 @@ private:
     std::array<std::array<ButtonCallback, 2>, MAX_NUM_AXISES> axis_button_mapping;
     std::array<AxisCallback, MAX_NUM_BUTTONS> button_axis_mapping;
     std::vector<std::array<ButtonCallback, 4>> hat_button_mapping;
+
+    ALWAYS_INLINE bool IsGameController() const { return (game_controller != nullptr); }
   };
 
   using ControllerDataVector = std::vector<ControllerData>;

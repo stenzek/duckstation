@@ -203,39 +203,53 @@ bool SDLControllerInterface::OpenGameController(int index)
   cd.player_id = player_id;
   cd.joystick_id = joystick_id;
   cd.haptic_left_right_effect = -1;
-  cd.is_game_controller = true;
+  cd.game_controller = gcontroller;
 
-  SDL_Haptic* haptic = SDL_HapticOpenFromJoystick(joystick);
-  if (haptic)
+#if SDL_VERSION_ATLEAST(2, 0, 9)
+  cd.use_game_controller_rumble = (SDL_GameControllerRumble(gcontroller, 0, 0, 0) == 0);
+#else
+  cd.use_game_controller_rumble = false;
+#endif
+
+  if (cd.use_game_controller_rumble)
   {
-    SDL_HapticEffect ef = {};
-    ef.leftright.type = SDL_HAPTIC_LEFTRIGHT;
-    ef.leftright.length = 1000;
+    Log_InfoPrintf("Rumble is supported on '%s' via gamecontroller", SDL_GameControllerName(gcontroller));
+  }
+  else
+  {
+    SDL_Haptic* haptic = SDL_HapticOpenFromJoystick(joystick);
+    if (haptic)
+    {
+      SDL_HapticEffect ef = {};
+      ef.leftright.type = SDL_HAPTIC_LEFTRIGHT;
+      ef.leftright.length = 1000;
 
-    int ef_id = SDL_HapticNewEffect(haptic, &ef);
-    if (ef_id >= 0)
-    {
-      cd.haptic = haptic;
-      cd.haptic_left_right_effect = ef_id;
-    }
-    else
-    {
-      Log_ErrorPrintf("Failed to create haptic left/right effect: %s", SDL_GetError());
-      if (SDL_HapticRumbleSupported(haptic) && SDL_HapticRumbleInit(haptic) != 0)
+      int ef_id = SDL_HapticNewEffect(haptic, &ef);
+      if (ef_id >= 0)
       {
         cd.haptic = haptic;
+        cd.haptic_left_right_effect = ef_id;
       }
       else
       {
-        Log_ErrorPrintf("No haptic rumble supported: %s", SDL_GetError());
-        SDL_HapticClose(haptic);
+        Log_ErrorPrintf("Failed to create haptic left/right effect: %s", SDL_GetError());
+        if (SDL_HapticRumbleSupported(haptic) && SDL_HapticRumbleInit(haptic) != 0)
+        {
+          cd.haptic = haptic;
+        }
+        else
+        {
+          Log_ErrorPrintf("No haptic rumble supported: %s", SDL_GetError());
+          SDL_HapticClose(haptic);
+        }
       }
     }
+
+    if (cd.haptic)
+      Log_InfoPrintf("Rumble is supported on '%s' via haptic", SDL_GameControllerName(gcontroller));
   }
 
-  if (cd.haptic)
-    Log_InfoPrintf("Rumble is supported on '%s'", SDL_GameControllerName(gcontroller));
-  else
+  if (!cd.haptic && !cd.use_game_controller_rumble)
     Log_WarningPrintf("Rumble is not supported on '%s'", SDL_GameControllerName(gcontroller));
 
   m_controllers.push_back(std::move(cd));
@@ -254,7 +268,7 @@ bool SDLControllerInterface::CloseGameController(int joystick_index, bool notify
   if (it->haptic)
     SDL_HapticClose(static_cast<SDL_Haptic*>(it->haptic));
 
-  SDL_GameControllerClose(SDL_GameControllerFromInstanceID(joystick_index));
+  SDL_GameControllerClose(static_cast<SDL_GameController*>(it->game_controller));
   m_controllers.erase(it);
 
   if (notify)
@@ -295,7 +309,8 @@ bool SDLControllerInterface::OpenJoystick(int index)
   cd.player_id = player_id;
   cd.joystick_id = joystick_id;
   cd.haptic_left_right_effect = -1;
-  cd.is_game_controller = false;
+  cd.game_controller = nullptr;
+  cd.use_game_controller_rumble = false;
 
   SDL_Haptic* haptic = SDL_HapticOpenFromJoystick(joystick);
   if (haptic)
@@ -341,7 +356,7 @@ bool SDLControllerInterface::HandleJoystickAxisEvent(const SDL_JoyAxisEvent* eve
   Log_DebugPrintf("controller %d axis %d %d %f", event->which, event->axis, event->value, value);
 
   auto it = GetControllerDataForJoystickId(event->which);
-  if (it == m_controllers.end() || it->is_game_controller)
+  if (it == m_controllers.end() || it->IsGameController())
     return false;
 
   if (DoEventHook(Hook::Type::Axis, it->player_id, event->axis, value, true))
@@ -409,7 +424,7 @@ bool SDLControllerInterface::HandleJoystickButtonEvent(const SDL_JoyButtonEvent*
                   event->state == SDL_PRESSED ? "pressed" : "released");
 
   auto it = GetControllerDataForJoystickId(event->which);
-  if (it == m_controllers.end() || it->is_game_controller)
+  if (it == m_controllers.end() || it->IsGameController())
     return false;
 
   const bool pressed = (event->state == SDL_PRESSED);
@@ -438,7 +453,7 @@ bool SDLControllerInterface::HandleJoystickHatEvent(const SDL_JoyHatEvent* event
   Log_DebugPrintf("controller %d hat %d %d", event->which, event->hat, event->value);
 
   auto it = GetControllerDataForJoystickId(event->which);
-  if (it == m_controllers.end() || it->is_game_controller)
+  if (it == m_controllers.end() || it->IsGameController())
     return false;
 
   auto HatEventHook = [hat = event->hat, value = event->value, player_id = it->player_id, this](int hat_position) {
@@ -685,7 +700,7 @@ u32 SDLControllerInterface::GetControllerRumbleMotorCount(int controller_index)
   if (it == m_controllers.end())
     return 0;
 
-  return (it->haptic_left_right_effect >= 0) ? 2 : (it->haptic ? 1 : 0);
+  return (it->use_game_controller_rumble ? 2 : ((it->haptic_left_right_effect >= 0) ? 2 : (it->haptic ? 1 : 0)));
 }
 
 void SDLControllerInterface::SetControllerRumbleStrength(int controller_index, const float* strengths, u32 num_motors)
@@ -695,7 +710,17 @@ void SDLControllerInterface::SetControllerRumbleStrength(int controller_index, c
     return;
 
   // we'll update before this duration is elapsed
-  static constexpr u32 DURATION = 100000;
+  static constexpr u32 DURATION = 1000;
+
+#if SDL_VERSION_ATLEAST(2, 0, 9)
+  if (it->use_game_controller_rumble)
+  {
+    const u16 large = static_cast<u16>(strengths[0] * 65535.0f);
+    const u16 small = static_cast<u32>(strengths[1] * 65535.0f);
+    SDL_GameControllerRumble(static_cast<SDL_GameController*>(it->game_controller), large, small, DURATION);
+    return;
+  }
+#endif
 
   SDL_Haptic* haptic = static_cast<SDL_Haptic*>(it->haptic);
   if (it->haptic_left_right_effect >= 0 && num_motors > 1)
