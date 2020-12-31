@@ -67,11 +67,13 @@ DisplaySettingsWidget::DisplaySettingsWidget(QtHostInterface* host_interface, QW
        "renderers. <br>This option is only supported in Direct3D and Vulkan. OpenGL will always use the default "
        "device."));
   dialog->registerWidgetHelp(
-    m_ui.displayAspectRatio, tr("Aspect Ratio"), QStringLiteral("Auto (Game Native)"),
+    m_ui.displayAspectRatio, tr("Aspect Ratio"),
+    qApp->translate("DisplayAspectRatio", Settings::GetDisplayAspectRatioName(Settings::DEFAULT_DISPLAY_ASPECT_RATIO)),
     tr("Changes the aspect ratio used to display the console's output to the screen. The default is Auto (Game Native) "
        "which automatically adjusts the aspect ratio to match how a game would be shown on a typical TV of the era."));
   dialog->registerWidgetHelp(
-    m_ui.displayCropMode, tr("Crop Mode"), tr("Only Overscan Area"),
+    m_ui.displayCropMode, tr("Crop Mode"),
+    qApp->translate("DisplayCropMode", Settings::GetDisplayCropModeDisplayName(Settings::DEFAULT_DISPLAY_CROP_MODE)),
     tr("Determines how much of the area typically not visible on a consumer TV set to crop/hide. <br>"
        "Some games display content in the overscan area, or use it for screen effects. <br>May "
        "not display correctly with the \"All Borders\" setting. \"Only Overscan\" offers a good "
