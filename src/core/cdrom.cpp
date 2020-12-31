@@ -238,6 +238,19 @@ bool CDROM::DoState(StateWrapper& sw)
   return !sw.HasError();
 }
 
+bool CDROM::IsMediaPS1Disc() const
+{
+  return (m_disc_region != DiscRegion::Other);
+}
+
+bool CDROM::DoesMediaRegionMatchConsole() const
+{
+  if (!g_settings.cdrom_region_check)
+    return true;
+
+  return System::GetRegion() != System::GetConsoleRegionForDiscRegion(m_disc_region);
+}
+
 void CDROM::InsertMedia(std::unique_ptr<CDImage> media)
 {
   if (CanReadMedia())
@@ -913,6 +926,10 @@ void CDROM::ExecuteCommand()
       {
         SendErrorResponse(STAT_ERROR, 0x80);
       }
+      else if ((!IsMediaPS1Disc() || !DoesMediaRegionMatchConsole()) && !m_mode.cdda)
+      {
+        SendErrorResponse(STAT_ERROR, ERROR_REASON_INVALID_COMMAND);
+      }
       else
       {
         SendACKAndStat();
@@ -1166,6 +1183,9 @@ void CDROM::ExecuteCommand()
       {
         m_reader.WaitForReadToComplete();
 
+        Log_DevPrintf("GetTN -> %u %u", m_reader.GetMedia()->GetFirstTrackNumber(),
+                      m_reader.GetMedia()->GetLastTrackNumber());
+
         m_response_fifo.Push(m_secondary_status.bits);
         m_response_fifo.Push(BinaryToBCD(Truncate8(m_reader.GetMedia()->GetFirstTrackNumber())));
         m_response_fifo.Push(BinaryToBCD(Truncate8(m_reader.GetMedia()->GetLastTrackNumber())));
@@ -1205,6 +1225,8 @@ void CDROM::ExecuteCommand()
         m_response_fifo.Push(m_secondary_status.bits);
         m_response_fifo.Push(BinaryToBCD(Truncate8(pos.minute)));
         m_response_fifo.Push(BinaryToBCD(Truncate8(pos.second)));
+        Log_DevPrintf("GetTD %u -> %u %u", track, pos.minute, pos.second);
+
         SetInterrupt(Interrupt::ACK);
       }
 
@@ -1750,8 +1772,7 @@ void CDROM::DoIDRead()
     m_current_lba = 0;
     m_reader.QueueReadSector(0);
 
-    if (g_settings.cdrom_region_check && (m_disc_region == DiscRegion::Other ||
-                                          System::GetRegion() != System::GetConsoleRegionForDiscRegion(m_disc_region)))
+    if (!IsMediaPS1Disc() || (g_settings.cdrom_region_check && !DoesMediaRegionMatchConsole()))
     {
       stat_byte |= STAT_ID_ERROR;
       flags_byte |= (1 << 7); // Unlicensed

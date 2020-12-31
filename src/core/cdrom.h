@@ -27,6 +27,8 @@ public:
 
   bool HasMedia() const { return m_reader.HasMedia(); }
   const std::string& GetMediaFileName() const { return m_reader.GetMediaFileName(); }
+  bool IsMediaPS1Disc() const;
+  bool DoesMediaRegionMatchConsole() const;
 
   void InsertMedia(std::unique_ptr<CDImage> media);
   std::unique_ptr<CDImage> RemoveMedia(bool force = false);
