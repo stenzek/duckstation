@@ -193,7 +193,7 @@ static void ExecuteImpl()
       CodeBlock* block = LookupBlock(next_block_key);
       if (!block)
       {
-        InterpretUncachedBlock();
+        InterpretUncachedBlock<pgxp_mode>();
         continue;
       }
 
@@ -629,8 +629,10 @@ void FastCompileBlockFunction()
   CodeBlock* block = LookupBlock(GetNextBlockKey());
   if (block)
     s_single_block_asm_dispatcher(block->host_code);
+  else if (g_settings.gpu_pgxp_enable)
+    InterpretUncachedBlock<PGXPMode::Memory>();
   else
-    InterpretUncachedBlock();
+    InterpretUncachedBlock<PGXPMode::Disabled>();
 }
 
 #endif

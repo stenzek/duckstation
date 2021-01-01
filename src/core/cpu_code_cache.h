@@ -126,6 +126,8 @@ void InvalidateBlocksWithPageIndex(u32 page_index);
 
 template<PGXPMode pgxp_mode>
 void InterpretCachedBlock(const CodeBlock& block);
+
+template<PGXPMode pgxp_mode>
 void InterpretUncachedBlock();
 
 /// Invalidates any code pages which overlap the specified range.

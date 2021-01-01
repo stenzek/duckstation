@@ -1856,6 +1856,7 @@ template void InterpretCachedBlock<PGXPMode::Disabled>(const CodeBlock& block);
 template void InterpretCachedBlock<PGXPMode::Memory>(const CodeBlock& block);
 template void InterpretCachedBlock<PGXPMode::CPU>(const CodeBlock& block);
 
+template<PGXPMode pgxp_mode>
 void InterpretUncachedBlock()
 {
   g_state.regs.npc = g_state.regs.pc;
@@ -1890,7 +1891,7 @@ void InterpretUncachedBlock()
     }
 
     // execute the instruction we previously fetched
-    ExecuteInstruction<PGXPMode::Disabled>();
+    ExecuteInstruction<pgxp_mode>();
 
     // next load delay
     UpdateLoadDelay();
@@ -1904,6 +1905,10 @@ void InterpretUncachedBlock()
     in_branch_delay_slot = branch;
   }
 }
+
+template void InterpretUncachedBlock<PGXPMode::Disabled>();
+template void InterpretUncachedBlock<PGXPMode::Memory>();
+template void InterpretUncachedBlock<PGXPMode::CPU>();
 
 } // namespace CodeCache
 
