@@ -23,10 +23,12 @@ ControllerType AnalogController::GetType() const
 
 void AnalogController::Reset()
 {
-  m_state = State::Idle;
+  m_command = Command::Idle;
+  m_command_step = 0;
+  m_rx_buffer.fill(0x00);
+  m_tx_buffer.fill(0x00);
   m_analog_mode = false;
   m_configuration_mode = false;
-  m_command_param = 0;
   m_motor_state.fill(0);
 
   ResetRumbleConfig();
@@ -63,7 +65,7 @@ bool AnalogController::DoState(StateWrapper& sw, bool apply_input_state)
   if (apply_input_state)
     m_button_state = button_state;
 
-  sw.Do(&m_state);
+  sw.Do(&m_command);
 
   sw.DoEx(&m_rumble_config, 45, {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF});
   sw.DoEx(&m_rumble_config_large_motor_index, 45, -1);
@@ -195,19 +197,8 @@ void AnalogController::ResetTransferState()
     m_analog_toggle_queued = false;
   }
 
-  m_state = State::Idle;
-}
-
-u16 AnalogController::GetID() const
-{
-  static constexpr u16 DIGITAL_MODE_ID = 0x5A41;
-  static constexpr u16 ANALOG_MODE_ID = 0x5A73;
-  static constexpr u16 CONFIG_MODE_ID = 0x5AF3;
-
-  if (m_configuration_mode)
-    return CONFIG_MODE_ID;
-
-  return m_analog_mode ? ANALOG_MODE_ID : DIGITAL_MODE_ID;
+  m_command = Command::Idle;
+  m_command_step = 0;
 }
 
 void AnalogController::SetAnalogMode(bool enabled)
@@ -271,350 +262,366 @@ void AnalogController::SetMotorStateForConfigIndex(int index, u8 value)
     SetMotorState(LargeMotor, value);
 }
 
+u8 AnalogController::GetResponseNumHalfwords() const
+{
+  if (m_configuration_mode || m_analog_mode)
+    return 0x3;
+
+  return (0x1 + m_digital_mode_extra_halfwords);
+}
+
+u8 AnalogController::GetModeID() const
+{
+  if (m_configuration_mode)
+    return 0xF;
+
+  if (m_analog_mode)
+    return 0x7;
+
+  return 0x4;
+}
+
+u8 AnalogController::GetIDByte() const
+{
+  return Truncate8((GetModeID() << 4) | GetResponseNumHalfwords());
+}
+
 bool AnalogController::Transfer(const u8 data_in, u8* data_out)
 {
   bool ack;
-#ifdef _DEBUG
-  u8 old_state = static_cast<u8>(m_state);
-#endif
+  m_rx_buffer[m_command_step] = data_in;
 
-  switch (m_state)
+  switch (m_command)
   {
-#define FIXED_REPLY_STATE(state, reply, ack_value, next_state)                                                         \
-  case state:                                                                                                          \
-  {                                                                                                                    \
-    *data_out = reply;                                                                                                 \
-    m_state = next_state;                                                                                              \
-    ack = ack_value;                                                                                                   \
-  }                                                                                                                    \
-  break;
-
-#define ID_STATE_MSB(state, next_state)                                                                                \
-  case state:                                                                                                          \
-  {                                                                                                                    \
-    *data_out = Truncate8(GetID() >> 8);                                                                               \
-    m_state = next_state;                                                                                              \
-    ack = true;                                                                                                        \
-  }                                                                                                                    \
-  break;
-
-#define REPLY_RUMBLE_CONFIG(state, index, ack_value, next_state)                                                       \
-  case state:                                                                                                          \
-  {                                                                                                                    \
-    DebugAssert(index < m_rumble_config.size());                                                                       \
-    *data_out = m_rumble_config[index];                                                                                \
-    m_rumble_config[index] = data_in;                                                                                  \
-                                                                                                                       \
-    if (data_in == 0x00)                                                                                               \
-      m_rumble_config_small_motor_index = index;                                                                       \
-    else if (data_in == 0x01)                                                                                          \
-      m_rumble_config_large_motor_index = index;                                                                       \
-                                                                                                                       \
-    m_state = next_state;                                                                                              \
-    ack = ack_value;                                                                                                   \
-  }                                                                                                                    \
-  break;
-
-    case State::Idle:
+    case Command::Idle:
     {
       // ack when sent 0x01, send ID for 0x42
       if (data_in == 0x42)
       {
-        *data_out = Truncate8(GetID());
-        m_state = State::GetStateIDMSB;
-        ack = true;
+        Assert(m_command_step == 0);
+        m_response_length = (GetResponseNumHalfwords() + 1) * 2;
+        m_command = Command::ReadPad;
+        m_tx_buffer = {GetIDByte(), GetStatusByte(), 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
       }
       else if (data_in == 0x43)
       {
-        *data_out = Truncate8(GetID());
-        m_state = State::ConfigModeIDMSB;
-        ack = true;
+        Assert(m_command_step == 0);
+        m_response_length = (GetResponseNumHalfwords() + 1) * 2;
+        m_command = Command::ConfigModeSetMode;
+        m_tx_buffer = {GetIDByte(), GetStatusByte(), 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
       }
       else if (m_configuration_mode && data_in == 0x44)
       {
-        *data_out = Truncate8(GetID());
-        m_state = State::SetAnalogModeIDMSB;
-        ack = true;
+        Assert(m_command_step == 0);
+        m_response_length = (GetResponseNumHalfwords() + 1) * 2;
+        m_command = Command::SetAnalogMode;
+        m_tx_buffer = {GetIDByte(), GetStatusByte(), 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
       }
       else if (m_configuration_mode && data_in == 0x45)
       {
-        *data_out = Truncate8(GetID());
-        m_state = State::GetAnalogModeIDMSB;
-        ack = true;
+        Assert(m_command_step == 0);
+        m_response_length = (GetResponseNumHalfwords() + 1) * 2;
+        m_command = Command::GetAnalogMode;
+        m_tx_buffer = {GetIDByte(), GetStatusByte(), 0x01, 0x02, BoolToUInt8(m_analog_mode), 0x02, 0x01, 0x00};
       }
       else if (m_configuration_mode && data_in == 0x46)
       {
-        *data_out = Truncate8(GetID());
-        m_state = State::Command46IDMSB;
-        ack = true;
+        Assert(m_command_step == 0);
+        m_response_length = (GetResponseNumHalfwords() + 1) * 2;
+        m_command = Command::Command46;
+        m_tx_buffer = {GetIDByte(), GetStatusByte(), 0x00, 0x00, 0x01, 0x02, 0x00, 0x0A};
       }
       else if (m_configuration_mode && data_in == 0x47)
       {
-        *data_out = Truncate8(GetID());
-        m_state = State::Command47IDMSB;
-        ack = true;
+        Assert(m_command_step == 0);
+        m_response_length = (GetResponseNumHalfwords() + 1) * 2;
+        m_command = Command::Command47;
+        m_tx_buffer = {GetIDByte(), GetStatusByte(), 0x00, 0x00, 0x02, 0x00, 0x01, 0x00};
       }
       else if (m_configuration_mode && data_in == 0x4C)
       {
-        *data_out = Truncate8(GetID());
-        m_state = State::Command4CIDMSB;
-        ack = true;
+        Assert(m_command_step == 0);
+        m_response_length = (GetResponseNumHalfwords() + 1) * 2;
+        m_command = Command::Command4C;
+        m_tx_buffer = {GetIDByte(), GetStatusByte(), 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
       }
       else if (m_configuration_mode && data_in == 0x4D)
       {
+        Assert(m_command_step == 0);
+        m_response_length = (GetResponseNumHalfwords() + 1) * 2;
+        m_command = Command::GetSetRumble;
+        m_tx_buffer = {GetIDByte(), GetStatusByte(), 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+
         m_rumble_unlocked = true;
-        *data_out = Truncate8(GetID());
-        m_state = State::UnlockRumbleIDMSB;
         m_rumble_config_large_motor_index = -1;
         m_rumble_config_small_motor_index = -1;
-        ack = true;
       }
       else
       {
-        Log_DebugPrintf("data_in = 0x%02X", data_in);
         *data_out = 0xFF;
         ack = (data_in == 0x01);
+
+        if (ack)
+          Log_DevPrintf("ACK controller access");
+        else
+          Log_DevPrintf("Unknown data_in = 0x%02X", data_in);
+
+        return ack;
       }
     }
     break;
 
-      ID_STATE_MSB(State::GetStateIDMSB, State::GetStateButtonsLSB);
-
-    case State::GetStateButtonsLSB:
+    case Command::ReadPad:
     {
-      if (m_rumble_unlocked)
-        SetMotorStateForConfigIndex(0, data_in);
-      else if (data_in >= 0x40 && data_in <= 0x7F)
-        m_legacy_rumble_unlocked = true;
-      else
-        SetMotorState(SmallMotor, 0);
+      const int rumble_index = m_command_step - 2;
 
-      *data_out = Truncate8(m_button_state) & GetExtraButtonMaskLSB();
-      m_state = State::GetStateButtonsMSB;
-      ack = true;
-    }
-    break;
-
-    case State::GetStateButtonsMSB:
-    {
-      if (m_rumble_unlocked)
+      switch (m_command_step)
       {
-        SetMotorStateForConfigIndex(1, data_in);
+        case 2:
+        {
+          m_tx_buffer[m_command_step] = Truncate8(m_button_state) & GetExtraButtonMaskLSB();
+
+          if (m_rumble_unlocked)
+            SetMotorStateForConfigIndex(rumble_index, data_in);
+          else if (data_in >= 0x40 && data_in <= 0x7F)
+            m_legacy_rumble_unlocked = true;
+          else
+            SetMotorState(SmallMotor, 0);
+        }
+        break;
+
+        case 3:
+        {
+          m_tx_buffer[m_command_step] = Truncate8(m_button_state >> 8);
+
+          if (m_rumble_unlocked)
+          {
+            SetMotorStateForConfigIndex(rumble_index, data_in);
+          }
+          else if (m_legacy_rumble_unlocked)
+          {
+            SetMotorState(SmallMotor, ((data_in & 0x01) != 0) ? 255 : 0);
+            m_legacy_rumble_unlocked = false;
+          }
+        }
+        break;
+
+        case 4:
+        {
+          if (m_configuration_mode || m_analog_mode)
+            m_tx_buffer[m_command_step] = m_axis_state[static_cast<u8>(Axis::RightX)];
+
+          if (m_rumble_unlocked)
+            SetMotorStateForConfigIndex(rumble_index, data_in);
+        }
+        break;
+
+        case 5:
+        {
+          if (m_configuration_mode || m_analog_mode)
+            m_tx_buffer[m_command_step] = m_axis_state[static_cast<u8>(Axis::RightY)];
+
+          if (m_rumble_unlocked)
+            SetMotorStateForConfigIndex(rumble_index, data_in);
+        }
+        break;
+
+        case 6:
+        {
+          if (m_configuration_mode || m_analog_mode)
+            m_tx_buffer[m_command_step] = m_axis_state[static_cast<u8>(Axis::LeftX)];
+
+          if (m_rumble_unlocked)
+            SetMotorStateForConfigIndex(rumble_index, data_in);
+        }
+        break;
+
+        case 7:
+        {
+          if (m_configuration_mode || m_analog_mode)
+            m_tx_buffer[m_command_step] = m_axis_state[static_cast<u8>(Axis::LeftY)];
+
+          if (m_rumble_unlocked)
+            SetMotorStateForConfigIndex(rumble_index, data_in);
+        }
+        break;
+
+        default:
+        {
+        }
+        break;
       }
-      else if (m_legacy_rumble_unlocked)
+    }
+    break;
+
+    case Command::ConfigModeSetMode:
+    {
+      if (!m_configuration_mode)
       {
-        SetMotorState(SmallMotor, ((data_in & 0x01) != 0) ? 255 : 0);
-        m_legacy_rumble_unlocked = false;
+        switch (m_command_step)
+        {
+          case 2:
+          {
+            m_tx_buffer[m_command_step] = Truncate8(m_button_state) & GetExtraButtonMaskLSB();
+          }
+          break;
+
+          case 3:
+          {
+            m_tx_buffer[m_command_step] = Truncate8(m_button_state >> 8);
+          }
+          break;
+
+          case 4:
+          {
+            if (m_configuration_mode || m_analog_mode)
+              m_tx_buffer[m_command_step] = m_axis_state[static_cast<u8>(Axis::RightX)];
+          }
+          break;
+
+          case 5:
+          {
+            if (m_configuration_mode || m_analog_mode)
+              m_tx_buffer[m_command_step] = m_axis_state[static_cast<u8>(Axis::RightY)];
+          }
+          break;
+
+          case 6:
+          {
+            if (m_configuration_mode || m_analog_mode)
+              m_tx_buffer[m_command_step] = m_axis_state[static_cast<u8>(Axis::LeftX)];
+          }
+          break;
+
+          case 7:
+          {
+            if (m_configuration_mode || m_analog_mode)
+              m_tx_buffer[m_command_step] = m_axis_state[static_cast<u8>(Axis::LeftY)];
+          }
+          break;
+
+          default:
+          {
+          }
+          break;
+        }
       }
 
-      *data_out = Truncate8(m_button_state >> 8);
-      m_state = (m_analog_mode || m_configuration_mode) ? State::GetStateRightAxisX : State::Idle;
-      ack = m_analog_mode || m_configuration_mode;
+      if (m_command_step == (static_cast<s32>(m_response_length) - 1))
+      {
+        m_configuration_mode = (m_rx_buffer[2] == 1);
+        Log_DevPrintf("0x%02x(%s) config mode", m_rx_buffer[2], m_configuration_mode ? "enter" : "leave");
+      }
     }
     break;
 
-    case State::GetStateRightAxisX:
+    case Command::SetAnalogMode:
     {
-      if (m_rumble_unlocked)
-        SetMotorStateForConfigIndex(2, data_in);
+      if (m_command_step == 2)
+      {
+        Log_DevPrintf("analog mode val 0x%02x", data_in);
 
-      *data_out = Truncate8(m_axis_state[static_cast<u8>(Axis::RightX)]);
-      m_state = State::GetStateRightAxisY;
-      ack = true;
+        if (data_in == 0x00 || data_in == 0x01)
+          SetAnalogMode((data_in == 0x01));
+      }
+      else if (m_command_step == 3)
+      {
+        Log_DevPrintf("analog mode lock 0x%02x", data_in);
+
+        if (data_in == 0x02 || data_in == 0x03)
+          m_analog_locked = (data_in == 0x03);
+      }
     }
     break;
 
-    case State::GetStateRightAxisY:
+    case Command::GetAnalogMode:
     {
-      if (m_rumble_unlocked)
-        SetMotorStateForConfigIndex(3, data_in);
-
-      *data_out = Truncate8(m_axis_state[static_cast<u8>(Axis::RightY)]);
-      m_state = State::GetStateLeftAxisX;
-      ack = true;
+      // Intentionally empty, analog mode byte is set in reply buffer when command is first received
     }
     break;
 
-    case State::GetStateLeftAxisX:
+    case Command::Command46:
     {
-      if (m_rumble_unlocked)
-        SetMotorStateForConfigIndex(4, data_in);
-
-      *data_out = Truncate8(m_axis_state[static_cast<u8>(Axis::LeftX)]);
-      m_state = State::GetStateLeftAxisY;
-      ack = true;
+      if (m_command_step == 2 && data_in == 0x01)
+      {
+        m_tx_buffer[5] = 0x01;
+        m_tx_buffer[6] = 0x01;
+        m_tx_buffer[7] = 0x14;
+      }
     }
     break;
 
-    case State::GetStateLeftAxisY:
+    case Command::Command47:
     {
-      if (m_rumble_unlocked)
-        SetMotorStateForConfigIndex(5, data_in);
-
-      *data_out = Truncate8(m_axis_state[static_cast<u8>(Axis::LeftY)]);
-      m_state = State::Idle;
-      ack = false;
+      // Intentionally empty, use fixed reply buffer
     }
     break;
 
-      ID_STATE_MSB(State::ConfigModeIDMSB, State::ConfigModeSetMode);
-
-    case State::ConfigModeSetMode:
+    case Command::Command4C:
     {
-      // If 0x43 "enter/leave config mode" is called from within config mode, return all zeros
-      Log_DebugPrintf("0x%02x(%s) config mode", data_in, data_in == 1 ? "enter" : "leave");
-      bool prev_configuration_mode = m_configuration_mode;
-      m_configuration_mode = (data_in == 1);
-      *data_out = prev_configuration_mode ? 0x00 : Truncate8(m_button_state);
-      m_state = prev_configuration_mode ? State::Pad5Bytes : State::GetStateButtonsMSB;
-      ack = true;
+      if (m_command_step == 2)
+      {
+        if (data_in == 0x00)
+          m_tx_buffer[5] = 0x04;
+        else if (data_in == 0x01)
+          m_tx_buffer[5] = 0x07;
+      }
     }
     break;
 
-      ID_STATE_MSB(State::SetAnalogModeIDMSB, State::SetAnalogModeVal);
-
-    case State::SetAnalogModeVal:
+    case Command::GetSetRumble:
     {
-      Log_DevPrintf("analog mode val 0x%02x", data_in);
-      if (data_in == 0x00 || data_in == 0x01)
-        SetAnalogMode((data_in == 0x01));
+      int rumble_index = m_command_step - 2;
+      if (rumble_index >= 0)
+      {
+        m_tx_buffer[m_command_step] = m_rumble_config[rumble_index];
+        m_rumble_config[rumble_index] = data_in;
 
-      *data_out = 0x00;
-      m_state = State::SetAnalogModeSel;
-      ack = true;
-    }
-    break;
+        if (data_in == 0x00)
+          m_rumble_config_small_motor_index = rumble_index;
+        else if (data_in == 0x01)
+          m_rumble_config_large_motor_index = rumble_index;
+      }
 
-    case State::SetAnalogModeSel:
-    {
-      Log_DevPrintf("analog mode lock 0x%02x", data_in);
-      if (data_in == 0x02 || data_in == 0x03)
-        m_analog_locked = (data_in == 0x03);
+      if (m_command_step == 7)
+      {
+        if (m_rumble_config_large_motor_index == -1)
+          SetMotorState(LargeMotor, 0);
 
-      *data_out = 0x00;
-      m_state = State::Pad4Bytes;
-      ack = true;
-    }
-    break;
+        if (m_rumble_config_small_motor_index == -1)
+          SetMotorState(SmallMotor, 0);
 
-      ID_STATE_MSB(State::GetAnalogModeIDMSB, State::GetAnalogMode1);
-      FIXED_REPLY_STATE(State::GetAnalogMode1, 0x01, true, State::GetAnalogMode2);
-      FIXED_REPLY_STATE(State::GetAnalogMode2, 0x02, true, State::GetAnalogMode3);
-      FIXED_REPLY_STATE(State::GetAnalogMode3, BoolToUInt8(m_analog_mode), true, State::GetAnalogMode4);
-      FIXED_REPLY_STATE(State::GetAnalogMode4, 0x02, true, State::GetAnalogMode5);
-      FIXED_REPLY_STATE(State::GetAnalogMode5, 0x01, true, State::GetAnalogMode6);
-      FIXED_REPLY_STATE(State::GetAnalogMode6, 0x00, false, State::Idle);
-
-      ID_STATE_MSB(State::Command46IDMSB, State::Command461);
-
-    case State::Command461:
-    {
-      Log_DebugPrintf("command 46 param 0x%02X", data_in);
-      m_command_param = data_in;
-      *data_out = 0x00;
-      m_state = State::Command462;
-      ack = true;
-    }
-    break;
-
-      FIXED_REPLY_STATE(State::Command462, 0x00, true, State::Command463);
-      FIXED_REPLY_STATE(State::Command463, 0x01, true, State::Command464);
-      FIXED_REPLY_STATE(State::Command464, ((m_command_param == 1) ? 1 : 2), true, State::Command465);
-      FIXED_REPLY_STATE(State::Command465, ((m_command_param == 1) ? 1 : 0), true, State::Command466);
-      FIXED_REPLY_STATE(State::Command466, ((m_command_param == 1) ? 0x14 : 0x0A), false, State::Idle);
-
-      ID_STATE_MSB(State::Command47IDMSB, State::Command471);
-      FIXED_REPLY_STATE(State::Command471, 0x00, true, State::Command472);
-      FIXED_REPLY_STATE(State::Command472, 0x00, true, State::Command473);
-      FIXED_REPLY_STATE(State::Command473, 0x02, true, State::Command474);
-      FIXED_REPLY_STATE(State::Command474, 0x00, true, State::Command475);
-      FIXED_REPLY_STATE(State::Command475, 0x01, true, State::Command476);
-      FIXED_REPLY_STATE(State::Command476, 0x00, false, State::Idle);
-
-      ID_STATE_MSB(State::Command4CIDMSB, State::Command4CMode);
-
-    case State::Command4CMode:
-    {
-      m_command_param = data_in;
-      *data_out = 0x00;
-      m_state = State::Command4C1;
-      ack = true;
-    }
-    break;
-
-      FIXED_REPLY_STATE(State::Command4C1, 0x00, true, State::Command4C2);
-      FIXED_REPLY_STATE(State::Command4C2, 0x00, true, State::Command4C3);
-
-    case State::Command4C3:
-    {
-      // Ape Escape sends both 0x00 and 0x01 sequences on startup and checks for correct response
-      if (m_command_param == 0x00)
-        *data_out = 0x04;
-      else if (m_command_param == 0x01)
-        *data_out = 0x07;
-      else
-        *data_out = 0x00;
-
-      m_state = State::Command4C4;
-      ack = true;
-    }
-    break;
-
-      FIXED_REPLY_STATE(State::Command4C4, 0x00, true, State::Command4C5);
-      FIXED_REPLY_STATE(State::Command4C5, 0x00, false, State::Idle);
-
-      ID_STATE_MSB(State::UnlockRumbleIDMSB, State::GetSetRumble1);
-      REPLY_RUMBLE_CONFIG(State::GetSetRumble1, 0, true, State::GetSetRumble2);
-      REPLY_RUMBLE_CONFIG(State::GetSetRumble2, 1, true, State::GetSetRumble3);
-      REPLY_RUMBLE_CONFIG(State::GetSetRumble3, 2, true, State::GetSetRumble4);
-      REPLY_RUMBLE_CONFIG(State::GetSetRumble4, 3, true, State::GetSetRumble5);
-      REPLY_RUMBLE_CONFIG(State::GetSetRumble5, 4, true, State::GetSetRumble6);
-
-    case State::GetSetRumble6:
-    {
-      DebugAssert(5 < m_rumble_config.size());
-      *data_out = m_rumble_config[5];
-      m_rumble_config[5] = data_in;
-
-      if (data_in == 0x00)
-        m_rumble_config_small_motor_index = 5;
-      else if (data_in == 0x01)
-        m_rumble_config_large_motor_index = 5;
-
-      if (m_rumble_config_large_motor_index == -1)
-        SetMotorState(LargeMotor, 0);
-
-      if (m_rumble_config_small_motor_index == -1)
-        SetMotorState(SmallMotor, 0);
-
-      if (m_rumble_config_large_motor_index == -1 && m_rumble_config_small_motor_index == -1)
-        m_rumble_unlocked = false;
+        if (m_rumble_config_large_motor_index == -1 && m_rumble_config_small_motor_index == -1)
+          m_rumble_unlocked = false;
+      }
 
       // Unknown if motor config array forces 0xFF values if configured byte is not 0x00 or 0x01
       // Unknown under what circumstances rumble is locked and legacy rumble is re-enabled, if even possible
-      // e.g. need all 0xFFs?
-
-      m_state = State::Idle;
-      ack = false;
+      // Current assumption is that rumble is locked and legacy rumble is re-enabled when new config is all 0xFF
     }
     break;
 
-      FIXED_REPLY_STATE(State::Pad6Bytes, 0x00, true, State::Pad5Bytes);
-      FIXED_REPLY_STATE(State::Pad5Bytes, 0x00, true, State::Pad4Bytes);
-      FIXED_REPLY_STATE(State::Pad4Bytes, 0x00, true, State::Pad3Bytes);
-      FIXED_REPLY_STATE(State::Pad3Bytes, 0x00, true, State::Pad2Bytes);
-      FIXED_REPLY_STATE(State::Pad2Bytes, 0x00, true, State::Pad1Byte);
-      FIXED_REPLY_STATE(State::Pad1Byte, 0x00, false, State::Idle);
-
-    default:
-    {
-      UnreachableCode();
-      return false;
-    }
+      DefaultCaseIsUnreachable();
   }
 
-  Log_DebugPrintf("Transfer, old_state=%u, new_state=%u, data_in=0x%02X, data_out=0x%02X, ack=%s",
-                  static_cast<u32>(old_state), static_cast<u32>(m_state), data_in, *data_out, ack ? "true" : "false");
+  *data_out = m_tx_buffer[m_command_step];
+
+  m_command_step = (m_command_step + 1) % m_response_length;
+  ack = (m_command_step == 0) ? false : true;
+
+  if (m_command_step == 0)
+  {
+    m_command = Command::Idle;
+
+    Log_DevPrintf("Rx: %02x %02x %02x %02x %02x %02x %02x %02x", m_rx_buffer[0], m_rx_buffer[1], m_rx_buffer[2],
+                  m_rx_buffer[3], m_rx_buffer[4], m_rx_buffer[5], m_rx_buffer[6], m_rx_buffer[7]);
+    Log_DevPrintf("Tx: %02x %02x %02x %02x %02x %02x %02x %02x", m_tx_buffer[0], m_tx_buffer[1], m_tx_buffer[2],
+                  m_tx_buffer[3], m_tx_buffer[4], m_tx_buffer[5], m_tx_buffer[6], m_tx_buffer[7]);
+
+    m_rx_buffer.fill(0x00);
+    m_tx_buffer.fill(0x00);
+  }
+
   return ack;
 }
 
