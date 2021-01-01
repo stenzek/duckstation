@@ -1261,7 +1261,7 @@ void ResetThrottler()
 void Throttle()
 {
   // Reset the throttler on audio buffer overflow, so we don't end up out of phase.
-  if (g_host_interface->GetAudioStream()->DidUnderflow())
+  if (g_host_interface->GetAudioStream()->DidUnderflow() && s_target_speed >= 1.0f)
   {
     Log_DevPrintf("Audio buffer underflowed, resetting throttler");
     ResetThrottler();
