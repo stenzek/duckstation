@@ -86,7 +86,7 @@ bool GPU_HW::Initialize(HostDisplay* host_display)
       20.0f);
   }
 
-  m_pgxp_depth_buffer = g_settings.gpu_pgxp_depth_buffer;
+  m_pgxp_depth_buffer = g_settings.UsingPGXPDepthBuffer();
   PrintSettingsToLog();
   return true;
 }
@@ -890,9 +890,6 @@ GPU_HW::VRAMFillUBOData GPU_HW::GetVRAMFillUBOData(u32 x, u32 y, u32 width, u32 
   VRAMFillUBOData uniforms;
   std::tie(uniforms.u_fill_color[0], uniforms.u_fill_color[1], uniforms.u_fill_color[2], uniforms.u_fill_color[3]) =
     RGBA8ToFloat(color);
-
-  if (m_pgxp_depth_buffer)
-    uniforms.u_fill_color[3] = 1.0f;
 
   uniforms.u_interlaced_displayed_field = GetActiveLineLSB();
   return uniforms;
