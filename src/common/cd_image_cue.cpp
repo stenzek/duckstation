@@ -153,11 +153,13 @@ bool CDImageCueSheet::OpenAndParse(const char* filename)
     // Some people have broken (older) dumps where a two second pregap was implicit but not specified in the cuesheet.
     // The problem is we can't tell between a missing implicit two second pregap and a zero second pregap. Most of these
     // seem to be a single bin file for all tracks. So if this is the case, we add the two seconds in if it's not
-    // specified.
+    // specified. If this is an audio CD (likely when track 1 is not data), we don't add these pregaps, and rely on the
+    // cuesheet. If we did add them, it causes issues in some games (e.g. Dancing Stage featuring DREAMS COME TRUE).
     long pregap_frames = track_get_zero_pre(track);
     const bool pregap_in_file = pregap_frames > 0 && track_start >= pregap_frames;
     const bool is_multi_track_bin = (track_num > 1 && track_file_index == m_indices[0].file_index);
-    if ((track_num == 1 || is_multi_track_bin) && pregap_frames < 0)
+    const bool likely_audio_cd = static_cast<TrackMode>(track_get_mode(cd_get_track(m_cd, 1))) == TrackMode::Audio;
+    if ((track_num == 1 || is_multi_track_bin) && pregap_frames < 0 && (track_num == 1 || !likely_audio_cd))
       pregap_frames = 2 * FRAMES_PER_SECOND;
 
     // create the index for the pregap
