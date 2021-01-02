@@ -935,6 +935,10 @@ static bool IsConditionalInstruction(CheatCode::InstructionCode code)
     case CheatCode::InstructionCode::CompareLess8:      // E2
     case CheatCode::InstructionCode::CompareGreater8:   // E3
     case CheatCode::InstructionCode::CompareButtons:    // D4
+
+    case CheatCode::InstructionCode::ExtCompareBetween16:    // D8
+    case CheatCode::InstructionCode::ExtCompareNotBetween16: // D9
+    case CheatCode::InstructionCode::ExtCompareButtonsBetween:    // DC
       return true;
 
     default:
@@ -1213,10 +1217,10 @@ void CheatCode::Apply() const
         index += 2;
       }
       break;
-      
+
       case InstructionCode::ExtFindAndReplace:
       {
-          
+
         if ((index + 4) >= instructions.size())
         {
           Log_ErrorPrintf("Incomplete find/replace instruction");
@@ -1225,8 +1229,8 @@ void CheatCode::Apply() const
         const Instruction& inst2 = instructions[index + 1];
         const Instruction& inst3 = instructions[index + 2];
         const Instruction& inst4 = instructions[index + 3];
-        const Instruction& inst5 = instructions[index + 4];   
-        
+        const Instruction& inst5 = instructions[index + 4];
+
         const u32 offset = Truncate16(inst.value32 & 0x0000FFFFu) << 1;
         const u8 wildcard = Truncate8((inst.value32 & 0x00FF0000u) >> 16);
         const u32 minaddress = inst.address - offset;
@@ -1262,8 +1266,8 @@ void CheatCode::Apply() const
         const u8 r13 = Truncate8((inst5.value32 & 0xFF000000u) >> 24);
         const u8 r14 = Truncate8((inst5.value32 & 0x00FF0000u) >> 16);
         const u8 r15 = Truncate8((inst5.value32 & 0x0000FF00u) >> 8);
-        const u8 r16 = Truncate8 (inst5.value32 & 0x000000FFu);        
-        
+        const u8 r16 = Truncate8 (inst5.value32 & 0x000000FFu);
+
         for (u32 address = minaddress;address<=maxaddress;address+=2)
         {
           if ((DoMemoryRead<u8>(address   )==f1 || f1  == wildcard) &&
@@ -1281,26 +1285,26 @@ void CheatCode::Apply() const
               (DoMemoryRead<u8>(address+12)==f13|| f13 == wildcard) &&
               (DoMemoryRead<u8>(address+13)==f14|| f14 == wildcard) &&
               (DoMemoryRead<u8>(address+14)==f15|| f15 == wildcard) &&
-              (DoMemoryRead<u8>(address+15)==f16|| f16 == wildcard))           
+              (DoMemoryRead<u8>(address+15)==f16|| f16 == wildcard))
           {
             if (r1  != wildcard) DoMemoryWrite<u8>(address   , r1 );
             if (r2  != wildcard) DoMemoryWrite<u8>(address+1 , r2 );
             if (r3  != wildcard) DoMemoryWrite<u8>(address+2 , r3 );
             if (r4  != wildcard) DoMemoryWrite<u8>(address+3 , r4 );
             if (r5  != wildcard) DoMemoryWrite<u8>(address+4 , r5 );
-            if (r6  != wildcard) DoMemoryWrite<u8>(address+5 , r6 );  
-            if (r7  != wildcard) DoMemoryWrite<u8>(address+6 , r7 );  
-            if (r8  != wildcard) DoMemoryWrite<u8>(address+7 , r8 );  
-            if (r9  != wildcard) DoMemoryWrite<u8>(address+8 , r9 );  
-            if (r10 != wildcard) DoMemoryWrite<u8>(address+9 , r10);  
-            if (r11 != wildcard) DoMemoryWrite<u8>(address+10, r11);  
-            if (r12 != wildcard) DoMemoryWrite<u8>(address+11, r12);  
-            if (r13 != wildcard) DoMemoryWrite<u8>(address+12, r13);  
-            if (r14 != wildcard) DoMemoryWrite<u8>(address+13, r14);  
-            if (r15 != wildcard) DoMemoryWrite<u8>(address+14, r15);  
+            if (r6  != wildcard) DoMemoryWrite<u8>(address+5 , r6 );
+            if (r7  != wildcard) DoMemoryWrite<u8>(address+6 , r7 );
+            if (r8  != wildcard) DoMemoryWrite<u8>(address+7 , r8 );
+            if (r9  != wildcard) DoMemoryWrite<u8>(address+8 , r9 );
+            if (r10 != wildcard) DoMemoryWrite<u8>(address+9 , r10);
+            if (r11 != wildcard) DoMemoryWrite<u8>(address+10, r11);
+            if (r12 != wildcard) DoMemoryWrite<u8>(address+11, r12);
+            if (r13 != wildcard) DoMemoryWrite<u8>(address+12, r13);
+            if (r14 != wildcard) DoMemoryWrite<u8>(address+13, r14);
+            if (r15 != wildcard) DoMemoryWrite<u8>(address+14, r15);
             if (r16 != wildcard) DoMemoryWrite<u8>(address+15, r16);
-            address=address+15; 
-          }            
+            address=address+15;
+          }
         }
         index += 5;
       }
@@ -1395,14 +1399,56 @@ void CheatCode::Apply() const
       }
       break;
 
+      case InstructionCode::ExtCompareBetween16:
+      {
+        const u16 min = Truncate16(inst.value32 & 0x0000FFFFu);
+        const u16 max = Truncate16((inst.value32 & 0xFFFF0000u) >> 16);
+        const u16 value = DoMemoryRead<u16>(inst.address);
+        if (value >= min && value <= max)
+          index++;
+        else
+          index = GetNextNonConditionalInstruction(index);
+      }
+      break;
+
+      case InstructionCode::ExtCompareNotBetween16:
+      {
+        const u16 min = Truncate16(inst.value32 & 0x0000FFFFu);
+        const u16 max = Truncate16((inst.value32 & 0xFFFF0000u) >> 16);
+        const u16 value = DoMemoryRead<u16>(inst.address);
+        if (value > max || value < min)
+          index++;
+        else
+          index = GetNextNonConditionalInstruction(index);
+      }
+      break;
+
+
+      case InstructionCode::ExtCompareButtonsBetween: // DC
+      {
+        const u16 min = Truncate16(inst.value32 & 0x0000FFFFu);
+        const u16 max = Truncate16((inst.value32 & 0xFFFF0000u) >> 16);
+        const u16 value = GetControllerButtonBits();
+        if (value >= min && value <= max)
+          index++;
+        else
+          index = GetNextNonConditionalInstruction(index);
+      }
+      break;
+
       case InstructionCode::SkipIfNotEqual16:      // C0
       case InstructionCode::ExtSkipIfNotEqual32:   // A4
       case InstructionCode::SkipIfButtonsNotEqual: // D5
       case InstructionCode::SkipIfButtonsEqual:    // D6
+      case InstructionCode::ExtSkipIfButtonsNotBetween: // DD
+      case InstructionCode::ExtSkipIfButtonsBetween:    // DE
       {
         index++;
 
         bool activate_codes;
+        const u16 min = Truncate16(inst.value32 & 0x0000FFFFu);
+        const u16 max = Truncate16((inst.value32 & 0xFFFF0000u) >> 16);
+        const u16 value = GetControllerButtonBits();
         switch (inst.code)
         {
           case InstructionCode::SkipIfNotEqual16: // C0
@@ -1412,10 +1458,16 @@ void CheatCode::Apply() const
             activate_codes = (DoMemoryRead<u32>(inst.address) == inst.value32);
             break;
           case InstructionCode::SkipIfButtonsNotEqual: // D5
-            activate_codes = (GetControllerButtonBits() == inst.value16);
+            activate_codes = (value == inst.value16);
             break;
           case InstructionCode::SkipIfButtonsEqual: // D6
-            activate_codes = (GetControllerButtonBits() != inst.value16);
+            activate_codes = (value != inst.value16);
+            break;
+          case InstructionCode::ExtSkipIfButtonsNotBetween: // DD
+            activate_codes = !(value > max || value < min);
+            break;
+          case InstructionCode::ExtSkipIfButtonsBetween: // DE
+            activate_codes = (value > max || value < min);
             break;
           default:
             activate_codes = false;
@@ -1571,7 +1623,7 @@ void CheatCode::ApplyOnDisable() const
       case InstructionCode::MemoryCopy:
         index += 2;
         break;
-      case InstructionCode::ExtFindAndReplace:  
+      case InstructionCode::ExtFindAndReplace:
       index += 5;
         break;
       // for conditionals, we don't want to skip over in case it changed at some point
@@ -1588,6 +1640,7 @@ void CheatCode::ApplyOnDisable() const
       case InstructionCode::CompareLess8:
       case InstructionCode::CompareGreater8:
       case InstructionCode::CompareButtons: // D4
+      case InstructionCode::ExtCompareButtonsBetween: //DC
         index++;
         break;
 
@@ -1596,6 +1649,8 @@ void CheatCode::ApplyOnDisable() const
       case InstructionCode::ExtSkipIfNotEqual32:   // A4
       case InstructionCode::SkipIfButtonsNotEqual: // D5
       case InstructionCode::SkipIfButtonsEqual:    // D6
+      case InstructionCode::ExtSkipIfButtonsNotBetween: // DD
+      case InstructionCode::ExtSkipIfButtonsBetween:    // DE
         index++;
         break;
 

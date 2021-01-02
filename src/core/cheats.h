@@ -69,6 +69,18 @@ struct CheatCode
     ExtConstantBitClear16 = 0x82,
     ExtConstantBitSet32 = 0x91,
     ExtConstantBitClear32 = 0x92,
+
+    //Same as D0 types but Between rather than Equal, 8 added to cheat type
+    ExtSkipIfButtonsNotBetween = 0xDD,
+    ExtSkipIfButtonsBetween = 0xDE,
+    ExtCompareButtonsBetween = 0xDC,
+    ExtCompareBetween16 = 0xD8,
+    ExtCompareNotBetween16 = 0xD9,
+    //Not Required
+    //ExtCompareLess16 = 0xDA,
+    //ExtCompareGreater16 = 0xDB,
+
+
   };
 
   union Instruction
