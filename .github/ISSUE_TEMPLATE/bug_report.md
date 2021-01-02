@@ -10,7 +10,7 @@ assignees: ''
 Please read before creating a new issue:
 
 1. Make sure there is not already an open issue for this bug;
-2. All enhancements must be off;
+2. All enhancements must be off; (Including Cheats)
 3. All advanced options MUST be at their default values;
 4. Do not share save state files. Memory Cards are ok;
 5. Verify your dump as we can not assist with issues resulting from bad dumps;
@@ -30,6 +30,11 @@ Remove everything before and including this line before submitting.
 **Controller Troubleshoot Report**
 1. Have you installed any drivers or wrappers on your system, or do you have any programs like Steam open?
 2. Which controller backend are you using in general settings
+
+**Note:**
+If you are using Duckstation on Android device please consider the following before report:
+Are you using any kind of "memory optimizer" program such as: Ccleaner, Wisecleaner, Clean Master, Boost Android etc. ?
+(if so, please, consider create an exception on it first and test; or even remove / uninstall it retest and then, if the problem persists continue with the report.
 
 **Steps to reproduce**
 [Try to provide as much detail as possible to reproduce the issue]
