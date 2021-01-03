@@ -49,7 +49,6 @@ void GPU::ExecuteCommands()
           for (u32 i = 0; i < words_to_copy; i++)
             m_blit_buffer.push_back(FifoPop());
           m_blit_remaining_words -= words_to_copy;
-          AddCommandTicks(words_to_copy);
 
           Log_DebugPrintf("VRAM write burst of %u words, %u words remaining", words_to_copy, m_blit_remaining_words);
           if (m_blit_remaining_words == 0)

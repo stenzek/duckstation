@@ -284,7 +284,6 @@ bool DMA::TransferChannel(Channel channel)
 
     case SyncMode::LinkedList:
     {
-      TickCount used_ticks = 0;
       if (!copy_to_device)
       {
         Panic("Linked list not implemented for DMA reads");
@@ -295,12 +294,13 @@ bool DMA::TransferChannel(Channel channel)
                       current_address & ADDRESS_MASK);
 
       u8* ram_pointer = Bus::g_ram;
-      bool halt_transfer = false;
-      while (cs.request)
+      TickCount remaining_ticks = m_max_slice_ticks;
+      while (cs.request && remaining_ticks > 0)
       {
         u32 header;
         std::memcpy(&header, &ram_pointer[current_address & ADDRESS_MASK], sizeof(header));
-        used_ticks += 10;
+        CPU::AddPendingTicks(10);
+        remaining_ticks -= 10;
 
         const u32 word_count = header >> 24;
         const u32 next_address = header & UINT32_C(0x00FFFFFF);
@@ -308,35 +308,26 @@ bool DMA::TransferChannel(Channel channel)
                         word_count * UINT32_C(4), word_count, next_address);
         if (word_count > 0)
         {
-          used_ticks += 5;
-          used_ticks +=
+          CPU::AddPendingTicks(5);
+          remaining_ticks -= 5;
+
+          const TickCount block_ticks =
             TransferMemoryToDevice(channel, (current_address + sizeof(header)) & ADDRESS_MASK, 4, word_count);
-        }
-        else if ((current_address & ADDRESS_MASK) == (next_address & ADDRESS_MASK))
-        {
-          current_address = next_address;
-          halt_transfer = true;
-          break;
+          CPU::AddPendingTicks(block_ticks);
+          remaining_ticks -= block_ticks;
         }
 
         current_address = next_address;
         if (current_address & UINT32_C(0x800000))
           break;
-
-        if (used_ticks >= m_max_slice_ticks)
-        {
-          halt_transfer = true;
-          break;
-        }
       }
 
       cs.base_address = current_address;
-      CPU::AddPendingTicks(used_ticks);
 
       if (current_address & UINT32_C(0x800000))
         break;
 
-      if (halt_transfer)
+      if (cs.request)
       {
         // stall the transfer for a bit if we ran for too long
         HaltTransfer(m_halt_ticks);
@@ -359,34 +350,54 @@ bool DMA::TransferChannel(Channel channel)
 
       const u32 block_size = cs.block_control.request.GetBlockSize();
       u32 blocks_remaining = cs.block_control.request.GetBlockCount();
-      TickCount used_ticks = 0;
+      TickCount ticks_remaining = m_max_slice_ticks;
 
       if (copy_to_device)
       {
         do
         {
           blocks_remaining--;
-          used_ticks += TransferMemoryToDevice(channel, current_address & ADDRESS_MASK, increment, block_size);
+
+          const TickCount ticks =
+            TransferMemoryToDevice(channel, current_address & ADDRESS_MASK, increment, block_size);
+          CPU::AddPendingTicks(ticks);
+          ticks_remaining -= ticks;
+
           current_address = (current_address + (increment * block_size));
-        } while (cs.request && blocks_remaining > 0);
+        } while (cs.request && blocks_remaining > 0 && ticks_remaining > 0);
       }
       else
       {
         do
         {
           blocks_remaining--;
-          used_ticks += TransferDeviceToMemory(channel, current_address & ADDRESS_MASK, increment, block_size);
+
+          const TickCount ticks =
+            TransferDeviceToMemory(channel, current_address & ADDRESS_MASK, increment, block_size);
+          CPU::AddPendingTicks(ticks);
+          ticks_remaining -= ticks;
+
           current_address = (current_address + (increment * block_size));
-        } while (cs.request && blocks_remaining > 0);
+        } while (cs.request && blocks_remaining > 0 && ticks_remaining > 0);
       }
 
       cs.base_address = current_address & BASE_ADDRESS_MASK;
       cs.block_control.request.block_count = blocks_remaining;
-      CPU::AddPendingTicks(used_ticks);
 
       // finish transfer later if the request was cleared
       if (blocks_remaining > 0)
+      {
+        if (cs.request)
+        {
+          // we got halted
+          if (!m_unhalt_event->IsActive())
+            HaltTransfer(m_halt_ticks);
+
+          return false;
+        }
+
         return true;
+      }
     }
     break;
 

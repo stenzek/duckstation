@@ -167,7 +167,7 @@ protected:
   // The GPU internally appears to run at 2x the system clock.
   ALWAYS_INLINE static constexpr TickCount GPUTicksToSystemTicks(TickCount gpu_ticks)
   {
-    return std::max<TickCount>(gpu_ticks >> 1, 1);
+    return std::max<TickCount>((gpu_ticks + 1) >> 1, 1);
   }
   ALWAYS_INLINE static constexpr TickCount SystemTicksToGPUTicks(TickCount sysclk_ticks) { return sysclk_ticks << 1; }
 
