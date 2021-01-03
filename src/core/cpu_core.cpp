@@ -80,7 +80,9 @@ void WriteToExecutionLog(const char* format, ...)
   if (s_log_file)
   {
     std::vfprintf(s_log_file, format, ap);
+#ifdef _DEBUG
     std::fflush(s_log_file);
+#endif
   }
 
   va_end(ap);
