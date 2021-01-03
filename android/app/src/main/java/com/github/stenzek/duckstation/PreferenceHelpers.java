@@ -9,7 +9,8 @@ public class PreferenceHelpers {
     /**
      * Clears all preferences in the specified section (starting with sectionName/).
      * We really don't want to have to do this with JNI...
-     * @param prefs Preferences object.
+     *
+     * @param prefs       Preferences object.
      * @param sectionName Section to clear keys for.
      */
     public static void clearSection(SharedPreferences prefs, String sectionName) {
@@ -43,8 +44,7 @@ public class PreferenceHelpers {
         return values;
     }
 
-    public static boolean addToStringList(SharedPreferences prefs, String keyName, String valueToAdd)
-    {
+    public static boolean addToStringList(SharedPreferences prefs, String keyName, String valueToAdd) {
         Set<String> values = getStringSet(prefs, keyName);
         if (values == null)
             values = new ArraySet<>();
@@ -54,8 +54,7 @@ public class PreferenceHelpers {
         return result;
     }
 
-    public static boolean removeFromStringList(SharedPreferences prefs, String keyName, String valueToRemove)
-    {
+    public static boolean removeFromStringList(SharedPreferences prefs, String keyName, String valueToRemove) {
         Set<String> values = getStringSet(prefs, keyName);
         if (values == null)
             return false;

@@ -117,22 +117,22 @@ public class GamePropertiesActivity extends AppCompatActivity {
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             final PreferenceScreen ps = getPreferenceManager().createPreferenceScreen(getContext());
-            activity.createListGameSetting(ps, "CPUOverclock", R.string.settings_cpu_overclocking,  R.array.settings_advanced_cpu_overclock_entries, R.array.settings_advanced_cpu_overclock_values);
-            activity.createListGameSetting(ps,"CDROMReadSpeedup", R.string.settings_cdrom_read_speedup, R.array.settings_cdrom_read_speedup_entries, R.array.settings_cdrom_read_speedup_values);
+            activity.createListGameSetting(ps, "CPUOverclock", R.string.settings_cpu_overclocking, R.array.settings_advanced_cpu_overclock_entries, R.array.settings_advanced_cpu_overclock_values);
+            activity.createListGameSetting(ps, "CDROMReadSpeedup", R.string.settings_cdrom_read_speedup, R.array.settings_cdrom_read_speedup_entries, R.array.settings_cdrom_read_speedup_values);
 
             activity.createListGameSetting(ps, "DisplayAspectRatio", R.string.settings_aspect_ratio, R.array.settings_display_aspect_ratio_names, R.array.settings_display_aspect_ratio_values);
-            activity.createListGameSetting(ps, "DisplayCropMode", R.string.settings_crop_mode,R.array.settings_display_crop_mode_entries,R.array.settings_display_crop_mode_values);
-            activity.createListGameSetting(ps,"GPUDownsampleMode", R.string.settings_downsample_mode, R.array.settings_downsample_mode_entries, R.array.settings_downsample_mode_values);
+            activity.createListGameSetting(ps, "DisplayCropMode", R.string.settings_crop_mode, R.array.settings_display_crop_mode_entries, R.array.settings_display_crop_mode_values);
+            activity.createListGameSetting(ps, "GPUDownsampleMode", R.string.settings_downsample_mode, R.array.settings_downsample_mode_entries, R.array.settings_downsample_mode_values);
             activity.createBooleanGameSetting(ps, "DisplayLinearUpscaling", R.string.settings_linear_upscaling);
-            activity.createBooleanGameSetting(ps,"DisplayIntegerUpscaling",R.string.settings_integer_upscaling);
-            activity.createBooleanGameSetting(ps,"DisplayForce4_3For24Bit",R.string.settings_force_4_3_for_24bit);
+            activity.createBooleanGameSetting(ps, "DisplayIntegerUpscaling", R.string.settings_integer_upscaling);
+            activity.createBooleanGameSetting(ps, "DisplayForce4_3For24Bit", R.string.settings_force_4_3_for_24bit);
 
             activity.createListGameSetting(ps, "GPUResolutionScale", R.string.settings_gpu_resolution_scale, R.array.settings_gpu_resolution_scale_entries, R.array.settings_gpu_resolution_scale_values);
             activity.createListGameSetting(ps, "GPUMSAA", R.string.settings_msaa, R.array.settings_gpu_msaa_entries, R.array.settings_gpu_msaa_values);
             activity.createBooleanGameSetting(ps, "GPUTrueColor", R.string.settings_true_color);
-            activity.createBooleanGameSetting(ps,"GPUScaledDithering",R.string.settings_scaled_dithering);
+            activity.createBooleanGameSetting(ps, "GPUScaledDithering", R.string.settings_scaled_dithering);
             activity.createListGameSetting(ps, "GPUTextureFilter", R.string.settings_texture_filtering, R.array.settings_gpu_texture_filter_names, R.array.settings_gpu_texture_filter_values);
-            activity.createBooleanGameSetting(ps,"GPUForceNTSCTimings",R.string.settings_force_ntsc_timings);
+            activity.createBooleanGameSetting(ps, "GPUForceNTSCTimings", R.string.settings_force_ntsc_timings);
             activity.createBooleanGameSetting(ps, "GPUWidescreenHack", R.string.settings_widescreen_hack);
             activity.createBooleanGameSetting(ps, "GPUPGXP", R.string.settings_pgxp_geometry_correction);
             activity.createBooleanGameSetting(ps, "GPUPGXPDepthBuffer", R.string.settings_pgxp_depth_buffer);
@@ -193,11 +193,16 @@ public class GamePropertiesActivity extends AppCompatActivity {
 
             TabLayout tabLayout = view.findViewById(R.id.tab_layout);
             new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
-                switch (position)
-                {
-                    case 0: tab.setText("Summary"); break;
-                    case 1: tab.setText("Game Settings"); break;
-                    case 2: tab.setText("Controller Settings"); break;
+                switch (position) {
+                    case 0:
+                        tab.setText("Summary");
+                        break;
+                    case 1:
+                        tab.setText("Game Settings");
+                        break;
+                    case 2:
+                        tab.setText("Controller Settings");
+                        break;
                 }
             }).attach();
         }
@@ -214,8 +219,7 @@ public class GamePropertiesActivity extends AppCompatActivity {
         @NonNull
         @Override
         public Fragment createFragment(int position) {
-            switch (position)
-            {
+            switch (position) {
                 case 0: {           // Summary
                     ListFragment lf = new ListFragment();
                     lf.setListAdapter(activity.getPropertyListAdapter());

@@ -74,8 +74,8 @@ public class PropertyListAdapter extends BaseAdapter {
                     .inflate(R.layout.layout_game_property_entry, parent, false);
         }
 
-        TextView titleView = (TextView)convertView.findViewById(R.id.property_title);
-        TextView valueView = (TextView)convertView.findViewById(R.id.property_value);
+        TextView titleView = (TextView) convertView.findViewById(R.id.property_title);
+        TextView valueView = (TextView) convertView.findViewById(R.id.property_value);
         Item prop = mItems.get(position);
         titleView.setText(prop.title);
         valueView.setText(prop.value);

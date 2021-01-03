@@ -89,16 +89,21 @@ public class ControllerBindingPreference extends Preference {
     public void onBindViewHolder(PreferenceViewHolder holder) {
         super.onBindViewHolder(holder);
 
-        ImageView iconView = ((ImageView)holder.findViewById(R.id.controller_binding_icon));
-        TextView nameView = ((TextView)holder.findViewById(R.id.controller_binding_name));
-        mValueView = ((TextView)holder.findViewById(R.id.controller_binding_value));
+        ImageView iconView = ((ImageView) holder.findViewById(R.id.controller_binding_icon));
+        TextView nameView = ((TextView) holder.findViewById(R.id.controller_binding_name));
+        mValueView = ((TextView) holder.findViewById(R.id.controller_binding_value));
 
         int drawableId = R.drawable.ic_baseline_radio_button_checked_24;
-        switch (mType)
-        {
-            case BUTTON: drawableId = getIconForButton(mBindingName); break;
-            case AXIS: drawableId = getIconForAxis(mBindingName); break;
-            case HOTKEY: drawableId = getIconForHotkey(mBindingName); break;
+        switch (mType) {
+            case BUTTON:
+                drawableId = getIconForButton(mBindingName);
+                break;
+            case AXIS:
+                drawableId = getIconForAxis(mBindingName);
+                break;
+            case HOTKEY:
+                drawableId = getIconForHotkey(mBindingName);
+                break;
         }
 
         iconView.setImageDrawable(ContextCompat.getDrawable(getContext(), drawableId));

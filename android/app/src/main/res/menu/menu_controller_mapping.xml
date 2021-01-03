@@ -16,5 +16,5 @@
 
     <item
         android:id="@+id/action_clear_bindings"
-        android:title="Clear Bindings"/>
+        android:title="Clear Bindings" />
 </menu>

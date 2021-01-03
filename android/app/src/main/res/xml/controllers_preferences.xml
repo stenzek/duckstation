@@ -29,9 +29,10 @@
         app:title="@string/settings_controller_mapping"
         app:summary="@string/settings_controller_mapping_summary"
         app:iconSpaceReserved="false">
-        <intent android:action="android.intent.action.VIEW"
-                android:targetClass="com.github.stenzek.duckstation.ControllerMappingActivity"
-                android:targetPackage="com.github.stenzek.duckstation" />
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetClass="com.github.stenzek.duckstation.ControllerMappingActivity"
+            android:targetPackage="com.github.stenzek.duckstation" />
     </Preference>
     <SwitchPreferenceCompat
         app:key="Controller1/ForceAnalogOnReset"

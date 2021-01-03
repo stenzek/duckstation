@@ -55,38 +55,38 @@ public class EmulationSurfaceView extends SurfaceView {
         }
     }
 
-    private static final int[] buttonKeyCodes = new int[] {
-        KeyEvent.KEYCODE_BUTTON_A,      // 0/Cross
-        KeyEvent.KEYCODE_BUTTON_B,      // 1/Circle
-        KeyEvent.KEYCODE_BUTTON_X,      // 2/Square
-        KeyEvent.KEYCODE_BUTTON_Y,      // 3/Triangle
-        KeyEvent.KEYCODE_BUTTON_SELECT, // 4/Select
-        KeyEvent.KEYCODE_BUTTON_MODE,   // 5/Analog
-        KeyEvent.KEYCODE_BUTTON_START,  // 6/Start
-        KeyEvent.KEYCODE_BUTTON_THUMBL, // 7/L3
-        KeyEvent.KEYCODE_BUTTON_THUMBR, // 8/R3
-        KeyEvent.KEYCODE_BUTTON_L1,     // 9/L1
-        KeyEvent.KEYCODE_BUTTON_R1,     // 10/R1
-        KeyEvent.KEYCODE_DPAD_UP,       // 11/Up
-        KeyEvent.KEYCODE_DPAD_DOWN,     // 12/Down
-        KeyEvent.KEYCODE_DPAD_LEFT,     // 13/Left
-        KeyEvent.KEYCODE_DPAD_RIGHT,    // 14/Right
-        KeyEvent.KEYCODE_BUTTON_L2,     // 15
-        KeyEvent.KEYCODE_BUTTON_R2,     // 16
-        KeyEvent.KEYCODE_BUTTON_C,      // 17
-        KeyEvent.KEYCODE_BUTTON_Z,      // 18
+    private static final int[] buttonKeyCodes = new int[]{
+            KeyEvent.KEYCODE_BUTTON_A,      // 0/Cross
+            KeyEvent.KEYCODE_BUTTON_B,      // 1/Circle
+            KeyEvent.KEYCODE_BUTTON_X,      // 2/Square
+            KeyEvent.KEYCODE_BUTTON_Y,      // 3/Triangle
+            KeyEvent.KEYCODE_BUTTON_SELECT, // 4/Select
+            KeyEvent.KEYCODE_BUTTON_MODE,   // 5/Analog
+            KeyEvent.KEYCODE_BUTTON_START,  // 6/Start
+            KeyEvent.KEYCODE_BUTTON_THUMBL, // 7/L3
+            KeyEvent.KEYCODE_BUTTON_THUMBR, // 8/R3
+            KeyEvent.KEYCODE_BUTTON_L1,     // 9/L1
+            KeyEvent.KEYCODE_BUTTON_R1,     // 10/R1
+            KeyEvent.KEYCODE_DPAD_UP,       // 11/Up
+            KeyEvent.KEYCODE_DPAD_DOWN,     // 12/Down
+            KeyEvent.KEYCODE_DPAD_LEFT,     // 13/Left
+            KeyEvent.KEYCODE_DPAD_RIGHT,    // 14/Right
+            KeyEvent.KEYCODE_BUTTON_L2,     // 15
+            KeyEvent.KEYCODE_BUTTON_R2,     // 16
+            KeyEvent.KEYCODE_BUTTON_C,      // 17
+            KeyEvent.KEYCODE_BUTTON_Z,      // 18
     };
-    private static final int[] axisCodes = new int[] {
-        MotionEvent.AXIS_X,             // 0/LeftX
-        MotionEvent.AXIS_Y,             // 1/LeftY
-        MotionEvent.AXIS_Z,             // 2/RightX
-        MotionEvent.AXIS_RZ,            // 3/RightY
-        MotionEvent.AXIS_LTRIGGER,      // 4/L2
-        MotionEvent.AXIS_RTRIGGER,      // 5/R2
-        MotionEvent.AXIS_RX,            // 6
-        MotionEvent.AXIS_RY,            // 7
-        MotionEvent.AXIS_HAT_X,         // 8
-        MotionEvent.AXIS_HAT_Y,         // 9
+    private static final int[] axisCodes = new int[]{
+            MotionEvent.AXIS_X,             // 0/LeftX
+            MotionEvent.AXIS_Y,             // 1/LeftY
+            MotionEvent.AXIS_Z,             // 2/RightX
+            MotionEvent.AXIS_RZ,            // 3/RightY
+            MotionEvent.AXIS_LTRIGGER,      // 4/L2
+            MotionEvent.AXIS_RTRIGGER,      // 5/R2
+            MotionEvent.AXIS_RX,            // 6
+            MotionEvent.AXIS_RY,            // 7
+            MotionEvent.AXIS_HAT_X,         // 8
+            MotionEvent.AXIS_HAT_Y,         // 9
     };
 
     public static int getButtonIndexForKeyCode(int keyCode) {
