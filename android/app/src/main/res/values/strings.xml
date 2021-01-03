@@ -186,4 +186,7 @@
     <string name="activity_game_properties">Game Properties</string>
     <string name="game_properties_preference_use_global_setting">Use Global Setting</string>
     <string name="settings_input_profile">Input Profile</string>
+    <string name="game_properties_tab_summary">Summary</string>
+    <string name="game_properties_tab_game_settings">Game Settings</string>
+    <string name="game_properties_tab_controller_settings">Controller Settings</string>
 </resources>

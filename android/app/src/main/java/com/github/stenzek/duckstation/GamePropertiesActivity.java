@@ -195,13 +195,13 @@ public class GamePropertiesActivity extends AppCompatActivity {
             new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
                 switch (position) {
                     case 0:
-                        tab.setText("Summary");
+                        tab.setText(R.string.game_properties_tab_summary);
                         break;
                     case 1:
-                        tab.setText("Game Settings");
+                        tab.setText(R.string.game_properties_tab_game_settings);
                         break;
                     case 2:
-                        tab.setText("Controller Settings");
+                        tab.setText(R.string.game_properties_tab_controller_settings);
                         break;
                 }
             }).attach();
