@@ -887,8 +887,6 @@ void Database::SetEntry(const std::string& code, const std::string& name, const 
     m_entries.emplace(code, entry);
 }
 
-#endif
-
 std::optional<std::string> Entry::GetValueForKey(const std::string_view& key) const
 {
   return GetEntryValueForKey(*this, key);
@@ -898,6 +896,8 @@ void Entry::SetValueForKey(const std::string_view& key, const std::optional<std:
 {
   SetEntryValueForKey(*this, key, value);
 }
+
+#endif
 
 void Entry::ApplySettings(bool display_osd_messages) const
 {
