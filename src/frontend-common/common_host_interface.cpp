@@ -1967,7 +1967,7 @@ std::string CommonHostInterface::GetSettingsFileName() const
   {
     if (!FileSystem::FileExists(m_settings_filename.c_str()))
     {
-      Log_ErrorPrintf("Could not find settings file %s, using default", m_settings_filename);
+      Log_ErrorPrintf("Could not find settings file %s, using default", m_settings_filename.c_str());
     }
     else
     {
