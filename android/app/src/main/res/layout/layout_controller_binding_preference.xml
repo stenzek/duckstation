@@ -22,7 +22,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="0dp"
         android:text="Up"
-        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         android:layout_alignParentTop="true"
         android:layout_toRightOf="@id/controller_binding_icon" />
 
