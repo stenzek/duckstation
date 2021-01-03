@@ -60,6 +60,8 @@ private:
     Reserved = 3
   };
 
+  void ClearState();
+
   // is everything enabled for a channel to operate?
   bool CanTransferChannel(Channel channel) const;
   bool IsTransferHalted() const;

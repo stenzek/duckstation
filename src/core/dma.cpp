@@ -36,10 +36,17 @@ void DMA::Initialize()
 
 void DMA::Shutdown()
 {
+  ClearState();
   m_unhalt_event.reset();
 }
 
 void DMA::Reset()
+{
+  ClearState();
+  m_unhalt_event->Deactivate();
+}
+
+void DMA::ClearState()
 {
   for (u32 i = 0; i < NUM_CHANNELS; i++)
   {
@@ -54,7 +61,6 @@ void DMA::Reset()
   m_DICR.bits = 0;
 
   m_halt_ticks_remaining = 0;
-  m_unhalt_event->Deactivate();
 }
 
 bool DMA::DoState(StateWrapper& sw)
