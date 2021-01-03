@@ -460,4 +460,12 @@
         <item>Box</item>
         <item>Adaptive</item>
     </string-array>
+    <string-array name="settings_boolean_entries">
+        <item>Disabled</item>
+        <item>Enabled</item>
+    </string-array>
+    <string-array name="settings_boolean_values">
+        <item>false</item>
+        <item>true</item>
+    </string-array>
 </resources>

@@ -87,6 +87,11 @@ public class AndroidHostInterface {
 
     public native GameListEntry[] getGameListEntries();
 
+    public native GameListEntry getGameListEntry(String path);
+
+    public native String getGameSettingValue(String path, String key);
+    public native void setGameSettingValue(String path, String key, String value);
+
     public native void resetSystem();
 
     public native void loadState(boolean global, int slot);

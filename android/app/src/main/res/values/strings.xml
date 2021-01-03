@@ -183,4 +183,7 @@
     <string name="settings_disable_all_enhancements">Disable All Enhancements</string>
     <string name="settings_summary_disable_all_enhancements">Temporarily disables all enhancements, which can be useful when debugging issues.</string>
     <string name="settings_downsample_mode">Downsampling</string>
+    <string name="activity_game_properties">Game Properties</string>
+    <string name="game_properties_preference_use_global_setting">Use Global Setting</string>
+    <string name="settings_input_profile">Input Profile</string>
 </resources>

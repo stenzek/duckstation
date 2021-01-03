@@ -151,6 +151,9 @@ public class MainActivity extends AppCompatActivity {
                         } else if (id == R.id.game_list_entry_menu_resume_game) {
                             startEmulation(mGameList.getEntry(position).getPath(), true);
                             return true;
+                        } else if (id == R.id.game_list_entry_menu_properties) {
+                            openGameProperties(mGameList.getEntry(position).getPath());
+                            return true;
                         }
                         return false;
                     }
@@ -354,6 +357,13 @@ public class MainActivity extends AppCompatActivity {
                 finish();
             }
         }
+    }
+
+    private boolean openGameProperties(String path) {
+        Intent intent = new Intent(this, GamePropertiesActivity.class);
+        intent.putExtra("path", path);
+        startActivity(intent);
+        return true;
     }
 
     private boolean startEmulation(String bootPath, boolean resumeState) {
