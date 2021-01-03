@@ -39,7 +39,7 @@ union CacheControl
   BitField<u32, bool, 2, 1> tag_test_mode;
   BitField<u32, bool, 3, 1> dcache_scratchpad;
   BitField<u32, bool, 7, 1> dcache_enable;
-  BitField<u32, u8, 8, 2> icache_fill_size;   // actually dcache? icache always fills to 16 bytes
+  BitField<u32, u8, 8, 2> icache_fill_size; // actually dcache? icache always fills to 16 bytes
   BitField<u32, bool, 11, 1> icache_enable;
 };
 
@@ -70,7 +70,7 @@ struct State
   Reg next_load_delay_reg = Reg::count;
   u32 next_load_delay_value = 0;
 
-  CacheControl cache_control{ 0 };
+  CacheControl cache_control{0};
 
   // GTE registers are stored here so we can access them on ARM with a single instruction
   GTE::Regs gte_regs = {};
@@ -103,15 +103,33 @@ void SingleStep();
 // Forces an early exit from the CPU dispatcher.
 void ForceDispatcherExit();
 
-ALWAYS_INLINE Registers& GetRegs() { return g_state.regs; }
+ALWAYS_INLINE Registers& GetRegs()
+{
+  return g_state.regs;
+}
 
-ALWAYS_INLINE TickCount GetPendingTicks() { return g_state.pending_ticks; }
-ALWAYS_INLINE void ResetPendingTicks() { g_state.pending_ticks = 0; }
-ALWAYS_INLINE void AddPendingTicks(TickCount ticks) { g_state.pending_ticks += ticks; }
+ALWAYS_INLINE TickCount GetPendingTicks()
+{
+  return g_state.pending_ticks;
+}
+ALWAYS_INLINE void ResetPendingTicks()
+{
+  g_state.pending_ticks = 0;
+}
+ALWAYS_INLINE void AddPendingTicks(TickCount ticks)
+{
+  g_state.pending_ticks += ticks;
+}
 
 // state helpers
-ALWAYS_INLINE bool InUserMode() { return g_state.cop0_regs.sr.KUc; }
-ALWAYS_INLINE bool InKernelMode() { return !g_state.cop0_regs.sr.KUc; }
+ALWAYS_INLINE bool InUserMode()
+{
+  return g_state.cop0_regs.sr.KUc;
+}
+ALWAYS_INLINE bool InKernelMode()
+{
+  return !g_state.cop0_regs.sr.KUc;
+}
 
 // Memory reads variants which do not raise exceptions.
 bool SafeReadMemoryByte(VirtualMemoryAddress addr, u8* value);
@@ -131,6 +149,11 @@ void DisassembleAndPrint(u32 addr, u32 instructions_before, u32 instructions_aft
 
 // Write to CPU execution log file.
 void WriteToExecutionLog(const char* format, ...);
+
+// Trace Routines
+bool IsTraceEnabled();
+void StartTrace();
+void StopTrace();
 
 // Breakpoint callback - if the callback returns false, the breakpoint will be removed.
 using BreakpointCallback = bool (*)(VirtualMemoryAddress address);

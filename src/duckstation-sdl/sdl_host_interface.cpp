@@ -7,6 +7,7 @@
 #include "common/string_util.h"
 #include "core/cheats.h"
 #include "core/controller.h"
+#include "core/cpu_core.h"
 #include "core/gpu.h"
 #include "core/host_display.h"
 #include "core/system.h"
@@ -1174,6 +1175,14 @@ void SDLHostInterface::DrawDebugMenu()
   settings_changed |= ImGui::MenuItem("Disable All Enhancements", nullptr, &m_settings_copy.disable_all_enhancements);
   settings_changed |= ImGui::MenuItem("Dump CPU to VRAM Copies", nullptr, &debug_settings.dump_cpu_to_vram_copies);
   settings_changed |= ImGui::MenuItem("Dump VRAM to CPU Copies", nullptr, &debug_settings.dump_vram_to_cpu_copies);
+
+  if (ImGui::MenuItem("CPU Trace Logging", nullptr, CPU::IsTraceEnabled()))
+  {
+    if (!CPU::IsTraceEnabled())
+      CPU::StartTrace();
+    else
+      CPU::StopTrace();
+  }
 
   if (ImGui::MenuItem("Dump RAM...", nullptr, nullptr, system_valid))
     DoDumpRAM();
