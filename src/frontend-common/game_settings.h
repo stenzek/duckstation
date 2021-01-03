@@ -87,6 +87,10 @@ struct Entry
   bool SaveToStream(ByteStream* stream) const;
 
   void ApplySettings(bool display_osd_messages) const;
+
+  // Key-based interface, used by Android.
+  std::optional<std::string> GetValueForKey(const std::string_view& key) const;
+  void SetValueForKey(const std::string_view& key, const std::optional<std::string>& value);
 };
 
 #ifndef LIBRETRO
