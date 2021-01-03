@@ -41,7 +41,7 @@
         app:defaultValue="true"
         app:iconSpaceReserved="false" />
     <SwitchPreferenceCompat
-        app:key="Controller1/"
+        app:key="Controller1/AnalogDPadInDigitalMode"
         app:title="@string/settings_use_analog_sticks_for_dpad"
         app:summary="@string/settings_summary_use_analog_sticks_for_dpad"
         app:defaultValue="true"
