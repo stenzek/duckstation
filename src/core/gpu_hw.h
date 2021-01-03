@@ -191,7 +191,10 @@ protected:
   GPUDownsampleMode GetDownsampleMode(u32 resolution_scale) const;
 
   ALWAYS_INLINE bool IsUsingMultisampling() const { return m_multisamples > 1; }
-  ALWAYS_INLINE bool IsUsingDownsampling() const { return (m_downsample_mode != GPUDownsampleMode::Disabled); }
+  ALWAYS_INLINE bool IsUsingDownsampling() const
+  {
+    return (m_downsample_mode != GPUDownsampleMode::Disabled && !m_GPUSTAT.display_area_color_depth_24);
+  }
 
   void SetFullVRAMDirtyRectangle()
   {
