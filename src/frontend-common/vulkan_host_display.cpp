@@ -714,10 +714,12 @@ void VulkanHostDisplay::RenderDisplay(s32 left, s32 top, s32 width, s32 height, 
     dsupdate.Update(g_vulkan_context->GetDevice());
   }
 
-  const PushConstants pc{static_cast<float>(texture_view_x) / static_cast<float>(texture_width),
-                         static_cast<float>(texture_view_y) / static_cast<float>(texture_height),
-                         (static_cast<float>(texture_view_width) - 0.5f) / static_cast<float>(texture_width),
-                         (static_cast<float>(texture_view_height) - 0.5f) / static_cast<float>(texture_height)};
+  const float position_adjust = m_display_linear_filtering ? 0.5f : 0.0f;
+  const float size_adjust = m_display_linear_filtering ? 1.0f : 0.0f;
+  const PushConstants pc{(static_cast<float>(texture_view_x) + position_adjust) / static_cast<float>(texture_width),
+                         (static_cast<float>(texture_view_y) + position_adjust) / static_cast<float>(texture_height),
+                         (static_cast<float>(texture_view_width) - size_adjust) / static_cast<float>(texture_width),
+                         (static_cast<float>(texture_view_height) - size_adjust) / static_cast<float>(texture_height)};
 
   vkCmdBindPipeline(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_display_pipeline);
   vkCmdPushConstants(cmdbuffer, m_pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(pc), &pc);
