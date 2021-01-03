@@ -43,7 +43,7 @@ public:
     MAX_FIFO_SIZE = 4096,
     DOT_TIMER_INDEX = 0,
     HBLANK_TIMER_INDEX = 1,
-    MAX_RESOLUTION_SCALE = 16,
+    MAX_RESOLUTION_SCALE = 32,
   };
 
   enum : u16
