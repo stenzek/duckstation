@@ -304,7 +304,7 @@
     <message>
         <location filename="../../core/analog_controller.cpp" line="692"/>
         <source>Cross</source>
-        <translation>krzyżyk</translation>
+        <translation>Krzyżyk</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="693"/>
