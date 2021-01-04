@@ -67,6 +67,7 @@ std::vector<std::pair<QString, QString>> QtHostInterface::getAvailableLanguageLi
           {QStringLiteral("日本語"), QStringLiteral("ja")},
           {QStringLiteral("Italiano"), QStringLiteral("it")},
           {QStringLiteral("Nederlands"), QStringLiteral("nl")},
+          {QStringLiteral("Polski"), QStringLiteral("pl")},
           {QStringLiteral("Português (Pt)"), QStringLiteral("pt-pt")},
           {QStringLiteral("Português (Br)"), QStringLiteral("pt-br")},
           {QStringLiteral("Русский"), QStringLiteral("ru")},

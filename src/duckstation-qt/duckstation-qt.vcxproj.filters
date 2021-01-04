@@ -72,9 +72,9 @@
     <ClCompile Include="debuggerwindow.cpp" />
     <ClCompile Include="debuggermodels.cpp" />
     <ClCompile Include="memoryviewwidget.cpp" />
-    <ClCompile Include="$(IntDir)moc_debuggerdialog.cpp" />
     <ClCompile Include="$(IntDir)moc_debuggermodels.cpp" />
     <ClCompile Include="$(IntDir)moc_memoryviewwidget.cpp" />
+    <ClCompile Include="$(IntDir)moc_debuggerwindow.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtutils.h" />
@@ -197,6 +197,9 @@
       <Filter>translations</Filter>
     </QtTs>
     <QtTs Include="translations\duckstation-qt_zh-cn.ts">
+      <Filter>translations</Filter>
+    </QtTs>
+    <QtTs Include="translations\duckstation-qt_pl.ts">
       <Filter>translations</Filter>
     </QtTs>
   </ItemGroup>
