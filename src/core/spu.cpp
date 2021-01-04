@@ -437,6 +437,10 @@ void SPU::WriteRegister(u32 offset, u16 value)
       Log_DebugPrintf("SPU IRQ address register <- 0x%04X", ZeroExtend32(value));
       m_tick_event->InvokeEarly();
       m_irq_address = value;
+
+      if (m_SPUCNT.irq9_enable)
+        CheckForLateRAMIRQs();
+
       return;
     }
 
@@ -445,6 +449,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
       Log_DebugPrintf("SPU transfer address register <- 0x%04X", ZeroExtend32(value));
       m_transfer_address_reg = value;
       m_transfer_address = ZeroExtend32(value) * 8;
+      CheckRAMIRQ(m_transfer_address);
       return;
     }
 
@@ -489,6 +494,8 @@ void SPU::WriteRegister(u32 offset, u16 value)
 
       if (!m_SPUCNT.irq9_enable)
         m_SPUSTAT.irq9_flag = false;
+      else if (!m_SPUSTAT.irq9_flag)
+        CheckForLateRAMIRQs();
 
       UpdateEventInterval();
       UpdateDMARequest();
@@ -688,6 +695,21 @@ void SPU::CheckRAMIRQ(u32 address)
     Log_DebugPrintf("SPU IRQ at address 0x%08X", address);
     m_SPUSTAT.irq9_flag = true;
     g_interrupt_controller.InterruptRequest(InterruptController::IRQ::SPU);
+  }
+}
+
+void SPU::CheckForLateRAMIRQs()
+{
+  for (u32 i = 0; i < NUM_VOICES && !m_SPUSTAT.irq9_flag; i++)
+  {
+    // we skip voices which haven't started this block yet - because they'll check
+    // the next time they're sampled, and the delay might be important.
+    const Voice& v = m_voices[i];
+    if (!v.has_samples)
+      continue;
+
+    CheckRAMIRQ(v.current_address * 8);
+    CheckRAMIRQ(v.current_address * 8 + 8);
   }
 }
 

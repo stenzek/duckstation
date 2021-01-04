@@ -335,6 +335,7 @@ private:
   void WriteVoiceRegister(u32 offset, u16 value);
 
   void CheckRAMIRQ(u32 address);
+  void CheckForLateRAMIRQs();
   void WriteToCaptureBuffer(u32 index, s16 value);
   void IncrementCaptureBufferPosition();
 
