@@ -336,6 +336,8 @@ protected:
   void DoFrameStep();
   void DoToggleCheats();
 
+  std::string m_settings_filename;
+
   std::unique_ptr<GameList> m_game_list;
 
   std::unique_ptr<ControllerInterface> m_controller_interface;
@@ -344,8 +346,6 @@ protected:
 
   std::deque<OSDMessage> m_osd_messages;
   std::mutex m_osd_messages_lock;
-
-  std::string m_settings_filename;
 
   bool m_frame_step_request = false;
   bool m_fast_forward_enabled = false;
