@@ -182,6 +182,5 @@ bool AddStepOverBreakpoint();
 bool AddStepOutBreakpoint(u32 max_instructions_to_search = 1000);
 
 extern bool TRACE_EXECUTION;
-extern bool LOG_EXECUTION;
 
 } // namespace CPU

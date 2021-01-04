@@ -886,7 +886,7 @@ ALWAYS_INLINE static TickCount DoEXP2Access(u32 offset, u32& value)
         {
           Log_InfoPrintf("TTY: %s", m_tty_line_buffer.c_str());
 #ifdef _DEBUG
-          if (CPU::LOG_EXECUTION)
+          if (CPU::IsTraceEnabled())
             CPU::WriteToExecutionLog("TTY: %s\n", m_tty_line_buffer.c_str());
 #endif
         }

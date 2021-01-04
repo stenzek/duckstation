@@ -248,7 +248,7 @@ void RaiseException(u32 CAUSE_bits, u32 EPC)
                     g_state.cop0_regs.EPC, g_state.cop0_regs.cause.BD ? "true" : "false",
                     g_state.cop0_regs.cause.CE.GetValue());
     DisassembleAndPrint(g_state.current_instruction_pc, 4, 0);
-    if (LOG_EXECUTION)
+    if (s_trace_to_log)
     {
       CPU::WriteToExecutionLog("Exception %u at 0x%08X (epc=0x%08X, BD=%s, CE=%u)\n",
                                static_cast<u8>(g_state.cop0_regs.cause.Excode.GetValue()),
