@@ -225,6 +225,8 @@ static void PrintCommandLineHelp(const char* progname, const char* frontend_name
   std::fprintf(stderr, "  -nocontroller: Prevents the emulator from polling for controllers.\n"
                        "                 Try this option if you're having difficulties starting\n"
                        "                 the emulator.\n");
+  std::fprintf(stderr, "  -settings <filename>: Loads a custom settings configuration from the\n"
+                       "    specified filename. Default settings applied if file not found.\n");
   std::fprintf(stderr, "  --: Signals that no more arguments will follow and the remaining\n"
                        "    parameters make up the filename. Use when the filename contains\n"
                        "    spaces or starts with a dash.\n");
@@ -321,6 +323,11 @@ bool CommonHostInterface::ParseCommandLineParameters(int argc, char* argv[],
       else if (CHECK_ARG_PARAM("-resume"))
       {
         state_index = -1;
+        continue;
+      }
+      else if (CHECK_ARG_PARAM("-settings"))
+      {
+        m_settings_filename = argv[++i];
         continue;
       }
       else if (CHECK_ARG("--"))
@@ -1956,6 +1963,17 @@ bool CommonHostInterface::SaveInputProfile(const char* profile_path, SettingsInt
 
 std::string CommonHostInterface::GetSettingsFileName() const
 {
+  if (!m_settings_filename.empty())
+  {
+    if (!FileSystem::FileExists(m_settings_filename.c_str()))
+    {
+      Log_ErrorPrintf("Could not find settings file %s, using default", m_settings_filename.c_str());
+    }
+    else
+    {
+      return GetUserDirectoryRelativePath(m_settings_filename.c_str());
+    }
+  }
   return GetUserDirectoryRelativePath("settings.ini");
 }
 

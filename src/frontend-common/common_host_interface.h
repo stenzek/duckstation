@@ -345,6 +345,8 @@ protected:
   std::deque<OSDMessage> m_osd_messages;
   std::mutex m_osd_messages_lock;
 
+  std::string m_settings_filename;
+
   bool m_frame_step_request = false;
   bool m_fast_forward_enabled = false;
   bool m_timer_resolution_increased = false;
