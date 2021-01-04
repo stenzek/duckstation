@@ -77,65 +77,37 @@ public:
 private:
   using MotorState = std::array<u8, NUM_MOTORS>;
 
-  enum class State : u8
+  enum class Command : u8
   {
     Idle,
-    GetStateIDMSB,
-    GetStateButtonsLSB,
-    GetStateButtonsMSB,
-    GetStateRightAxisX,
-    GetStateRightAxisY,
-    GetStateLeftAxisX,
-    GetStateLeftAxisY,
-    ConfigModeIDMSB,
-    ConfigModeSetMode,
-    SetAnalogModeIDMSB,
-    SetAnalogModeVal,
-    SetAnalogModeSel,
-    GetAnalogModeIDMSB,
-    GetAnalogMode1,
-    GetAnalogMode2,
-    GetAnalogMode3,
-    GetAnalogMode4,
-    GetAnalogMode5,
-    GetAnalogMode6,
-    UnlockRumbleIDMSB,
-    GetSetRumble1,
-    GetSetRumble2,
-    GetSetRumble3,
-    GetSetRumble4,
-    GetSetRumble5,
-    GetSetRumble6,
-    Command46IDMSB,
-    Command461,
-    Command462,
-    Command463,
-    Command464,
-    Command465,
-    Command466,
-    Command47IDMSB,
-    Command471,
-    Command472,
-    Command473,
-    Command474,
-    Command475,
-    Command476,
-    Command4CIDMSB,
-    Command4CMode,
-    Command4C1,
-    Command4C2,
-    Command4C3,
-    Command4C4,
-    Command4C5,
-    Pad6Bytes,
-    Pad5Bytes,
-    Pad4Bytes,
-    Pad3Bytes,
-    Pad2Bytes,
-    Pad1Byte,
+    ReadPad,           // 0x42
+    ConfigModeSetMode, // 0x43
+    SetAnalogMode,     // 0x44
+    GetAnalogMode,     // 0x45
+    Command46,         // 0x46
+    Command47,         // 0x47
+    Command4C,         // 0x4C
+    GetSetRumble       // 0x4D
   };
 
-  u16 GetID() const;
+  Command m_command = Command::Idle;
+  int m_command_step = 0;
+
+  // Transmit and receive buffers, not including the first Hi-Z/ack response byte
+  static constexpr u32 MAX_RESPONSE_LENGTH = 8;
+  std::array<u8, MAX_RESPONSE_LENGTH> m_rx_buffer;
+  std::array<u8, MAX_RESPONSE_LENGTH> m_tx_buffer;
+  u32 m_response_length = 0;
+
+  // Get number of response halfwords (excluding the initial controller info halfword)
+  u8 GetResponseNumHalfwords() const;
+
+  u8 GetModeID() const;
+  u8 GetIDByte() const;
+
+  // TODO: Return 0x00 on manual toggles
+  constexpr u8 GetStatusByte() const { return 0x5A; };
+
   void SetAnalogMode(bool enabled);
   void SetMotorState(u8 motor, u8 value);
   u8 GetExtraButtonMaskLSB() const;
@@ -154,7 +126,6 @@ private:
   bool m_rumble_unlocked = false;
   bool m_legacy_rumble_unlocked = false;
   bool m_configuration_mode = false;
-  u8 m_command_param = 0;
 
   std::array<u8, static_cast<u8>(Axis::Count)> m_axis_state{};
 
@@ -171,12 +142,13 @@ private:
   bool m_analog_toggle_queued = false;
 
   // TODO: Set this with command 0x4D and increase response length in digital mode accordingly
-  u8 m_digital_mode_additional_bytes = 0;
+  u8 m_digital_mode_extra_halfwords = 0;
 
   // buttons are active low
   u16 m_button_state = UINT16_C(0xFFFF);
 
   MotorState m_motor_state{};
 
-  State m_state = State::Idle;
+  // Member variable that is no longer used, but kept and serialized for compatibility with older save states
+  u8 m_command_param = 0;
 };
