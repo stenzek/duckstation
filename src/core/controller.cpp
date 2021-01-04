@@ -35,6 +35,11 @@ u32 Controller::GetButtonStateBits() const
   return 0;
 }
 
+std::optional<u32> Controller::GetAnalogInputBytes() const
+{
+  return std::nullopt;
+}
+
 u32 Controller::GetVibrationMotorCount() const
 {
   return 0;

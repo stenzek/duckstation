@@ -54,6 +54,9 @@ public:
   /// Returns a bitmask of the current button states, 1 = on.
   virtual u32 GetButtonStateBits() const;
 
+  /// Returns analog input bytes packed as a u32. Values are specific to controller type.
+  virtual std::optional<u32> GetAnalogInputBytes() const;
+
   /// Returns the number of vibration motors.
   virtual u32 GetVibrationMotorCount() const;
 

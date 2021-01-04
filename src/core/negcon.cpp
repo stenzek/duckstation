@@ -97,6 +97,17 @@ void NeGcon::SetButtonState(Button button, bool pressed)
     m_button_state |= u16(1) << indices[static_cast<u8>(button)];
 }
 
+u32 NeGcon::GetButtonStateBits() const
+{
+  return m_button_state ^ 0xFFFF;
+}
+
+std::optional<u32> NeGcon::GetAnalogInputBytes() const
+{
+  return m_axis_state[static_cast<size_t>(Axis::L)] << 24 | m_axis_state[static_cast<size_t>(Axis::II)] << 16 |
+         m_axis_state[static_cast<size_t>(Axis::I)] << 8 | m_axis_state[static_cast<size_t>(Axis::Steering)];
+}
+
 void NeGcon::ResetTransferState()
 {
   m_transfer_state = TransferState::Idle;

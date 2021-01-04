@@ -57,6 +57,9 @@ public:
   void SetAxisState(Axis axis, u8 value);
   void SetButtonState(Button button, bool pressed);
 
+  u32 GetButtonStateBits() const override;
+  std::optional<u32> GetAnalogInputBytes() const override;
+
   void LoadSettings(const char* section) override;
 
 private:

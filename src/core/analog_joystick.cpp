@@ -115,6 +115,12 @@ u32 AnalogJoystick::GetButtonStateBits() const
   return m_button_state ^ 0xFFFF;
 }
 
+std::optional<u32> AnalogJoystick::GetAnalogInputBytes() const
+{
+  return m_axis_state[static_cast<size_t>(Axis::LeftY)] << 24 | m_axis_state[static_cast<size_t>(Axis::LeftX)] << 16 |
+         m_axis_state[static_cast<size_t>(Axis::RightY)] << 8 | m_axis_state[static_cast<size_t>(Axis::RightX)];
+}
+
 void AnalogJoystick::ResetTransferState()
 {
   m_transfer_state = TransferState::Idle;

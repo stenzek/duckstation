@@ -151,6 +151,12 @@ u32 AnalogController::GetButtonStateBits() const
   return m_button_state ^ 0xFFFF;
 }
 
+std::optional<u32> AnalogController::GetAnalogInputBytes() const
+{
+  return m_axis_state[static_cast<size_t>(Axis::LeftY)] << 24 | m_axis_state[static_cast<size_t>(Axis::LeftX)] << 16 |
+         m_axis_state[static_cast<size_t>(Axis::RightY)] << 8 | m_axis_state[static_cast<size_t>(Axis::RightX)];
+}
+
 u32 AnalogController::GetVibrationMotorCount() const
 {
   return NUM_MOTORS;
