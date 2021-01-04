@@ -1958,42 +1958,42 @@ This warning will only be shown once.</source>
 <context>
     <name>DebuggerMessage</name>
     <message>
-        <location filename="../../core/cpu_core.cpp" line="1535"/>
+        <location filename="../../core/cpu_core.cpp" line="1565"/>
         <source>Added breakpoint at 0x%08X.</source>
         <translation>Interruptor adicionado em 0x%08X.</translation>
     </message>
     <message>
-        <location filename="../../core/cpu_core.cpp" line="1562"/>
+        <location filename="../../core/cpu_core.cpp" line="1592"/>
         <source>Removed breakpoint at 0x%08X.</source>
         <translation>Interruptor removido em 0x%08X.</translation>
     </message>
     <message>
-        <location filename="../../core/cpu_core.cpp" line="1594"/>
+        <location filename="../../core/cpu_core.cpp" line="1624"/>
         <source>0x%08X is not a call instruction.</source>
         <translation>0x%08X não é uma chamada de instrução.</translation>
     </message>
     <message>
-        <location filename="../../core/cpu_core.cpp" line="1604"/>
+        <location filename="../../core/cpu_core.cpp" line="1634"/>
         <source>Can&apos;t step over double branch at 0x%08X</source>
         <translation>Não é possível duplicar ramficações em 0x%08X</translation>
     </message>
     <message>
-        <location filename="../../core/cpu_core.cpp" line="1612"/>
+        <location filename="../../core/cpu_core.cpp" line="1642"/>
         <source>Stepping over to 0x%08X.</source>
         <translation>Pullando para 0x%8X.</translation>
     </message>
     <message>
-        <location filename="../../core/cpu_core.cpp" line="1629"/>
+        <location filename="../../core/cpu_core.cpp" line="1659"/>
         <source>Instruction read failed at %08X while searching for function end.</source>
         <translation>Leitura de instrução falhou em %08X ao final da busca.</translation>
     </message>
     <message>
-        <location filename="../../core/cpu_core.cpp" line="1638"/>
+        <location filename="../../core/cpu_core.cpp" line="1668"/>
         <source>Stepping out to 0x%08X.</source>
         <translation>Saindo em 0x%08X.</translation>
     </message>
     <message>
-        <location filename="../../core/cpu_core.cpp" line="1645"/>
+        <location filename="../../core/cpu_core.cpp" line="1675"/>
         <source>No return instruction found after %u instructions for step-out at %08X.</source>
         <translation>Sem instrução de retorno encontrada após%u nas instruções de saída em %08X.</translation>
     </message>
@@ -2011,240 +2011,255 @@ This warning will only be shown once.</source>
         <translation>&amp;Depurar</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="48"/>
-        <location filename="../debuggerwindow.ui" line="240"/>
+        <location filename="../debuggerwindow.ui" line="51"/>
+        <location filename="../debuggerwindow.ui" line="245"/>
         <source>Breakpoints</source>
         <translation>Interruptores</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="60"/>
+        <location filename="../debuggerwindow.ui" line="63"/>
         <source>toolBar</source>
         <translation>#</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="88"/>
+        <location filename="../debuggerwindow.ui" line="93"/>
         <source>Disassembly</source>
         <translation>Desmontar</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="110"/>
+        <location filename="../debuggerwindow.ui" line="115"/>
         <source>Registers</source>
         <translation>Registros</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="141"/>
+        <location filename="../debuggerwindow.ui" line="146"/>
         <source>Memory</source>
         <translation>Memória</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="163"/>
+        <location filename="../debuggerwindow.ui" line="168"/>
         <source>RAM</source>
         <translation>RAM</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="173"/>
+        <location filename="../debuggerwindow.ui" line="178"/>
         <source>Scratchpad</source>
         <translation>Rascunho</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="180"/>
+        <location filename="../debuggerwindow.ui" line="185"/>
         <source>EXP1</source>
         <translation>EXP1</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="187"/>
+        <location filename="../debuggerwindow.ui" line="192"/>
         <source>BIOS</source>
         <translation>BIOS</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="212"/>
+        <location filename="../debuggerwindow.ui" line="217"/>
         <source>Search</source>
         <translation>Procurar</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="260"/>
+        <location filename="../debuggerwindow.ui" line="265"/>
         <source>#</source>
         <translation>#</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="265"/>
+        <location filename="../debuggerwindow.ui" line="270"/>
         <source>Address</source>
         <translation>Endereço</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="270"/>
+        <location filename="../debuggerwindow.ui" line="275"/>
         <source>Hit Count</source>
         <translation>Contador (Hit Count)</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="280"/>
+        <location filename="../debuggerwindow.ui" line="285"/>
         <source>Stack</source>
         <translation>Pilha</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="303"/>
+        <location filename="../debuggerwindow.ui" line="308"/>
         <source>Pause/Continue</source>
         <translation>Pausa/Continua</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="306"/>
+        <location filename="../debuggerwindow.ui" line="311"/>
         <source>&amp;Pause/Continue</source>
         <translation>&amp;Pausa/Continua</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="309"/>
+        <location filename="../debuggerwindow.ui" line="314"/>
         <source>F5</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="318"/>
+        <location filename="../debuggerwindow.ui" line="323"/>
         <source>Step Into</source>
         <translation>Entrar</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="321"/>
+        <location filename="../debuggerwindow.ui" line="326"/>
         <source>&amp;Step Into</source>
         <translation>Entrar</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="324"/>
+        <location filename="../debuggerwindow.ui" line="329"/>
         <source>F11</source>
         <translation>F11</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="333"/>
+        <location filename="../debuggerwindow.ui" line="338"/>
         <source>Step Over</source>
         <translation>Pular (Próximo)</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="336"/>
+        <location filename="../debuggerwindow.ui" line="341"/>
         <source>Step &amp;Over</source>
         <translation>Pular (Próximo)</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="339"/>
+        <location filename="../debuggerwindow.ui" line="344"/>
         <source>F10</source>
         <translation>F10</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="348"/>
+        <location filename="../debuggerwindow.ui" line="353"/>
         <source>Toggle Breakpoint</source>
         <translation>Alternar Interruptor</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="351"/>
+        <location filename="../debuggerwindow.ui" line="356"/>
         <source>Toggle &amp;Breakpoint</source>
         <translation>&amp;Alternar Interruptor</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="354"/>
+        <location filename="../debuggerwindow.ui" line="359"/>
         <source>F9</source>
         <translation>F9</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="359"/>
+        <location filename="../debuggerwindow.ui" line="364"/>
         <source>&amp;Close</source>
         <translation>&amp;Fechar</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="368"/>
+        <location filename="../debuggerwindow.ui" line="373"/>
         <source>Step Out</source>
         <translation>Sair</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="371"/>
+        <location filename="../debuggerwindow.ui" line="376"/>
         <source>Step O&amp;ut</source>
         <translation>Sair</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="374"/>
+        <location filename="../debuggerwindow.ui" line="379"/>
         <source>Ctrl+F11</source>
         <translation>Ctrl+F11</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="383"/>
+        <location filename="../debuggerwindow.ui" line="388"/>
         <source>Run To Cursor</source>
         <translation>Executar para Cursor</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="386"/>
+        <location filename="../debuggerwindow.ui" line="391"/>
         <source>&amp;Run To Cursor</source>
         <translation>&amp;Executar Cursores</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="389"/>
+        <location filename="../debuggerwindow.ui" line="394"/>
         <source>Ctrl+F10</source>
         <translation>Ctrl+F10</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="398"/>
+        <location filename="../debuggerwindow.ui" line="403"/>
         <source>Clear Breakpoints</source>
         <translation>Limpar Interruptores</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="401"/>
+        <location filename="../debuggerwindow.ui" line="406"/>
         <source>&amp;Clear Breakpoints</source>
         <translation>&amp;Limpar Interruptores</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="404"/>
+        <location filename="../debuggerwindow.ui" line="409"/>
         <source>Ctrl+Del</source>
         <translation>Ctrl+Del</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="413"/>
+        <location filename="../debuggerwindow.ui" line="418"/>
         <source>Add Breakpoint</source>
         <translation>Adicionar Interrupção</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="416"/>
+        <location filename="../debuggerwindow.ui" line="421"/>
         <source>Add &amp;Breakpoint</source>
         <translation>Adicionar &amp;Interruptor</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="419"/>
+        <location filename="../debuggerwindow.ui" line="424"/>
         <source>Ctrl+F9</source>
         <translation>Ctrl+F9</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="428"/>
+        <location filename="../debuggerwindow.ui" line="433"/>
         <source>Go To PC</source>
         <translation>Ir para (Próxima Instrução)</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="431"/>
+        <location filename="../debuggerwindow.ui" line="436"/>
         <source>&amp;Go To PC</source>
         <translation>&amp;Ir para (Próxima Instrução)</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="434"/>
+        <location filename="../debuggerwindow.ui" line="439"/>
         <source>Ctrl+P</source>
         <translation>Ctrl+P</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="443"/>
+        <location filename="../debuggerwindow.ui" line="448"/>
         <source>Go To Address</source>
         <translation>Ir para Endereço</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="446"/>
+        <location filename="../debuggerwindow.ui" line="451"/>
         <source>Go To &amp;Address</source>
         <translation>Ir Para &amp;Endereço</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="449"/>
+        <location filename="../debuggerwindow.ui" line="454"/>
         <source>Ctrl+G</source>
         <translation>Ctrl+G</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="458"/>
+        <location filename="../debuggerwindow.ui" line="463"/>
         <source>&amp;Dump Address</source>
         <translation>&amp;Despejar Endereço</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="461"/>
+        <location filename="../debuggerwindow.ui" line="466"/>
         <source>Ctrl+D</source>
         <translation>Ctrl+D</translation>
+    </message>
+    <message>
+        <location filename="../debuggerwindow.ui" line="475"/>
+        <source>Trace</source>
+        <translation>Rastreio</translation>
+    </message>
+    <message>
+        <location filename="../debuggerwindow.ui" line="478"/>
+        <source>&amp;Trace</source>
+        <translation>&amp;Rastreaar</translation>
+    </message>
+    <message>
+        <location filename="../debuggerwindow.ui" line="481"/>
+        <source>Ctrl+T</source>
+        <translation>Ctrl+T</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.cpp" line="91"/>
@@ -2253,7 +2268,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <location filename="../debuggerwindow.cpp" line="107"/>
-        <location filename="../debuggerwindow.cpp" line="132"/>
+        <location filename="../debuggerwindow.cpp" line="148"/>
         <source>Enter code address:</source>
         <translation>Digite o código do endereço:</translation>
     </message>
@@ -2264,38 +2279,49 @@ This warning will only be shown once.</source>
         <translation>Insira o endereço de memória:</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="138"/>
+        <location filename="../debuggerwindow.cpp" line="130"/>
+        <source>Trace logging started to cpu_log.txt.
+This file can be several gigabytes, so be aware of SSD wear.</source>
+        <translation>Registro de rastreio iniciado. Arquivo poderá ser muito grande (até GB) esteja ciente do desgaste a longo prazo no uso com SSD&apos;s.</translation>
+    </message>
+    <message>
+        <location filename="../debuggerwindow.cpp" line="136"/>
+        <source>Trace logging to cpu_log.txt stopped.</source>
+        <translation>Registro de rastreio parado.(cpu_log.txt)</translation>
+    </message>
+    <message>
+        <location filename="../debuggerwindow.cpp" line="154"/>
         <source>A breakpoint already exists at this address.</source>
         <translation>Ponto de interrupção já existente neste endereço.</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="186"/>
+        <location filename="../debuggerwindow.cpp" line="202"/>
         <source>Debugger</source>
         <translation>Depurador</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="186"/>
+        <location filename="../debuggerwindow.cpp" line="202"/>
         <source>Failed to add step-out breakpoint, are you in a valid function?</source>
         <translation>Falha ao adicionar um ponto de interrupção, você esta em uma função válida?</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="265"/>
-        <location filename="../debuggerwindow.cpp" line="292"/>
+        <location filename="../debuggerwindow.cpp" line="281"/>
+        <location filename="../debuggerwindow.cpp" line="308"/>
         <source>Invalid search pattern. It should contain hex digits or question marks.</source>
         <translation>Padrão de busca inválido! Valores devem conter digitos em hexadecimais ou pontos de exclamação.</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="304"/>
+        <location filename="../debuggerwindow.cpp" line="320"/>
         <source>Pattern not found.</source>
         <translation>Padrão não encontrado.</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="320"/>
+        <location filename="../debuggerwindow.cpp" line="336"/>
         <source>Pattern found at 0x%1 (passed the end of memory).</source>
         <translation>Padrão encontrado em 0x%1. (além do endereço de memória).</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="326"/>
+        <location filename="../debuggerwindow.cpp" line="342"/>
         <source>Pattern found at 0x%1.</source>
         <translation>Padrão encontrado em 0x%1.</translation>
     </message>
@@ -2478,13 +2504,13 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="70"/>
-        <location filename="../displaysettingswidget.cpp" line="100"/>
+        <location filename="../displaysettingswidget.cpp" line="102"/>
         <source>Threaded Rendering</source>
         <translation>Renderização Sequencial</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="84"/>
-        <location filename="../displaysettingswidget.cpp" line="97"/>
+        <location filename="../displaysettingswidget.cpp" line="99"/>
         <source>Threaded Presentation</source>
         <translation>Apresentação Sequencial</translation>
     </message>
@@ -2510,19 +2536,19 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="134"/>
-        <location filename="../displaysettingswidget.cpp" line="83"/>
+        <location filename="../displaysettingswidget.cpp" line="85"/>
         <source>Linear Upscaling</source>
         <translation>Escalonamento Linear</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="141"/>
-        <location filename="../displaysettingswidget.cpp" line="90"/>
+        <location filename="../displaysettingswidget.cpp" line="92"/>
         <source>Integer Upscaling</source>
         <translation>Escalonamento Integro</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="77"/>
-        <location filename="../displaysettingswidget.cpp" line="94"/>
+        <location filename="../displaysettingswidget.cpp" line="96"/>
         <source>VSync</source>
         <translation>Sincronização Vertical (V-Sync)</translation>
     </message>
@@ -2538,7 +2564,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="166"/>
-        <location filename="../displaysettingswidget.cpp" line="106"/>
+        <location filename="../displaysettingswidget.cpp" line="108"/>
         <source>Show FPS</source>
         <translation>Mostrar FPS</translation>
     </message>
@@ -2549,7 +2575,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="180"/>
-        <location filename="../displaysettingswidget.cpp" line="108"/>
+        <location filename="../displaysettingswidget.cpp" line="110"/>
         <source>Show VPS</source>
         <translation>Mostrar VPS</translation>
     </message>
@@ -2575,7 +2601,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="65"/>
-        <location filename="../displaysettingswidget.cpp" line="194"/>
+        <location filename="../displaysettingswidget.cpp" line="196"/>
         <source>(Default)</source>
         <translation>Padrão</translation>
     </message>
@@ -2594,126 +2620,125 @@ This warning will only be shown once.</source>
         <translation type="vanished">Altera a proporção usada para exibir o jogo na tela. O padrão é 4:3, que corresponde a uma TV típica da época.CRT mais conhecida como Tubão.</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="71"/>
+        <location filename="../displaysettingswidget.cpp" line="72"/>
         <source>Changes the aspect ratio used to display the console&apos;s output to the screen. The default is Auto (Game Native) which automatically adjusts the aspect ratio to match how a game would be shown on a typical TV of the era.</source>
         <translation>Altera a proporção de aspecto exibida em tela. O padrão é Auto (Resolução Nativa), que ajustará a proporção da imagem para como o jogo seria em uma TV típica da época.</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="74"/>
+        <location filename="../displaysettingswidget.cpp" line="75"/>
         <source>Crop Mode</source>
         <translation>Modo de Corte</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="74"/>
         <source>Only Overscan Area</source>
-        <translation>Somente área renderizada</translation>
+        <translation type="vanished">Somente área renderizada</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="75"/>
+        <location filename="../displaysettingswidget.cpp" line="77"/>
         <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide. &lt;br&gt;Some games display content in the overscan area, or use it for screen effects. &lt;br&gt;May not display correctly with the &quot;All Borders&quot; setting. &quot;Only Overscan&quot; offers a good compromise between stability and hiding black borders.</source>
         <translation>Determina quanto da área normalmente não visível em uma TV o usuário pode ver ou não.Alguns jogos mostram conteúdo fora desta area pré-determinada.Somente esta opção &quot;overscan&quot; (fora da área visível) pode oferecer um boa estabilidade na hora de ocultar as tarjas (bordas)pretas quando ocorrem.</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="80"/>
+        <location filename="../displaysettingswidget.cpp" line="82"/>
         <source>Downsampling</source>
         <translation>Suavização</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="80"/>
+        <location filename="../displaysettingswidget.cpp" line="82"/>
         <source>Disabled</source>
         <translation>Desativado</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="81"/>
+        <location filename="../displaysettingswidget.cpp" line="83"/>
         <source>Downsamples the rendered image prior to displaying it. Can improve overall image quality in mixed 2D/3D games, but should be disabled for pure 3D games. Only applies to the hardware renderers.</source>
         <translation>Suaviza a imagem renderizada antes de ser mostrada em tela. Pode melhorar a qualidade da imagem em jogos 2D / 3D, mas deve ser desativada em jogos completamente 3D. Só se aplica o uso em renderizadores por hardware; Placa de vídeo dedicadas.</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="83"/>
-        <location filename="../displaysettingswidget.cpp" line="94"/>
-        <location filename="../displaysettingswidget.cpp" line="97"/>
-        <location filename="../displaysettingswidget.cpp" line="100"/>
-        <location filename="../displaysettingswidget.cpp" line="103"/>
+        <location filename="../displaysettingswidget.cpp" line="85"/>
+        <location filename="../displaysettingswidget.cpp" line="96"/>
+        <location filename="../displaysettingswidget.cpp" line="99"/>
+        <location filename="../displaysettingswidget.cpp" line="102"/>
+        <location filename="../displaysettingswidget.cpp" line="105"/>
         <source>Checked</source>
         <translation>Marcado</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="84"/>
+        <location filename="../displaysettingswidget.cpp" line="86"/>
         <source>Uses bilinear texture filtering when displaying the console&apos;s framebuffer to the screen. &lt;br&gt;Disabling filtering will producer a sharper, blockier/pixelated image. Enabling will smooth out the image. &lt;br&gt;The option will be less noticable the higher the resolution scale.</source>
         <translation>Usa textura bilinear filtrando todo buffer para a tela principal.Desabilitar esta filtragem produzirá uma imagem mais nítida porém pixelada. Ativar irá deixar a imagem mais suave. Esta opção fica menos notável em resoluções mais altas.</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="90"/>
-        <location filename="../displaysettingswidget.cpp" line="106"/>
+        <location filename="../displaysettingswidget.cpp" line="92"/>
         <location filename="../displaysettingswidget.cpp" line="108"/>
-        <location filename="../displaysettingswidget.cpp" line="112"/>
-        <location filename="../displaysettingswidget.cpp" line="120"/>
+        <location filename="../displaysettingswidget.cpp" line="110"/>
+        <location filename="../displaysettingswidget.cpp" line="114"/>
+        <location filename="../displaysettingswidget.cpp" line="122"/>
         <source>Unchecked</source>
         <translation>Desmarcado</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="91"/>
+        <location filename="../displaysettingswidget.cpp" line="93"/>
         <source>Adds padding to the display area to ensure that the ratio between pixels on the host to pixels in the console is an integer number. &lt;br&gt;May result in a sharper image in some 2D games.</source>
         <translation>Adiciona preenchimento na tela para garantir que a proporção entre pixels seja um número inteiro. Pode resultar em uma imagem mais nítida em alguns jogos 2D.</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="95"/>
+        <location filename="../displaysettingswidget.cpp" line="97"/>
         <source>Enable this option to match DuckStation&apos;s refresh rate with your current monitor or screen. VSync is automatically disabled when it is not possible (e.g. running at non-100% speed).</source>
         <translation>Habilite esta opção para combinar a taxa de atualização do emulador com seu monitor. O V-Sync (sincronização vertical) será desativado automaticamente quando não for possível atingir 100% da velocidade.</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="98"/>
+        <location filename="../displaysettingswidget.cpp" line="100"/>
         <source>Presents frames on a background thread when fast forwarding or vsync is disabled. This can measurably improve performance in the Vulkan renderer.</source>
         <translation>Apresenta quadros sequêncialmente em segundo plano quando o avanço rápido ou sincronizador vertical (Vsync) está desativado Isso pode melhorar o desempenho no renderizador Vulkan.</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="101"/>
+        <location filename="../displaysettingswidget.cpp" line="103"/>
         <source>Uses a second thread for drawing graphics. Currently only available for the software renderer, but can provide a significant speed improvement, and is safe to use.</source>
         <translation>Usa um segundo processo para desenhar gráficos em tela. Atualmente só disponível para renderizadores por software, pode fornecer uma melhoria significativa na velocidade, pode ser usado a vontade.</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="103"/>
+        <location filename="../displaysettingswidget.cpp" line="105"/>
         <source>Show OSD Messages</source>
         <translation>Mostar mensagens em Tela</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="104"/>
+        <location filename="../displaysettingswidget.cpp" line="106"/>
         <source>Shows on-screen-display messages when events occur such as save states being created/loaded, screenshots being taken, etc.</source>
         <translation>Mostrar as mensagens na tela (canto superior esquerdo) quando eventos ocorrerem; Quando um SaveState é criado ou carregado, capturas de tela forem feitas etc.</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="107"/>
+        <location filename="../displaysettingswidget.cpp" line="109"/>
         <source>Shows the internal frame rate of the game in the top-right corner of the display.</source>
         <translation>Mostra o FPS atual do jogo no topo superior direito da tela.</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="109"/>
+        <location filename="../displaysettingswidget.cpp" line="111"/>
         <source>Shows the number of frames (or v-syncs) displayed per second by the system in the top-right corner of the display.</source>
         <translation>Mostra o VPS no canto superior direito da tela.</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="112"/>
+        <location filename="../displaysettingswidget.cpp" line="114"/>
         <source>Show Speed</source>
         <translation>Mostrar Velocidade</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="113"/>
+        <location filename="../displaysettingswidget.cpp" line="115"/>
         <source>Shows the current emulation speed of the system in the top-right corner of the display as a percentage.</source>
         <translation>Mostra a velocidade de emulação atual do sistema no canto superior direito da tela registrado em porcentagem.</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="117"/>
-        <location filename="../displaysettingswidget.cpp" line="120"/>
+        <location filename="../displaysettingswidget.cpp" line="119"/>
+        <location filename="../displaysettingswidget.cpp" line="122"/>
         <source>Use Blit Swap Chain</source>
         <translation>Usar Cadeia de Troca (Blit Blit)</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="121"/>
+        <location filename="../displaysettingswidget.cpp" line="123"/>
         <source>Uses a blit presentation model instead of flipping when using the Direct3D 11 renderer. This usually results in slower performance, but may be required for some streaming applications, or to uncap framerates on some systems.</source>
         <translation>Usado para transferir modelos de blocos ao invés da dobra dos mesmos / inversão; Normalmente quando usado renderizador Dx11. Geralmente resulta em uma performance mais lenta, pode ser útil para alguns aplicativos de Streaming ou ainda liberar taxas de quadros (FPS) em alguns sistemas.</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="214"/>
+        <location filename="../displaysettingswidget.cpp" line="216"/>
         <source>Borderless Fullscreen</source>
         <translation>Tela cheia sem bordas.</translation>
     </message>
@@ -6382,72 +6407,72 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>Texturas de Pós-processamento Recarregadas.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_settings.cpp" line="596"/>
+        <location filename="../../frontend-common/game_settings.cpp" line="991"/>
         <source>CPU interpreter forced by game settings.</source>
         <translation>Configurado o interpretador por CPU pela configuração personalizada.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_settings.cpp" line="607"/>
+        <location filename="../../frontend-common/game_settings.cpp" line="1002"/>
         <source>Software renderer forced by game settings.</source>
         <translation>Renderização por software forçada pelas configurações personalizadas.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_settings.cpp" line="618"/>
+        <location filename="../../frontend-common/game_settings.cpp" line="1013"/>
         <source>Interlacing forced by game settings.</source>
         <translation>Entrelaçamento forçado pela configuração personalizada.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_settings.cpp" line="629"/>
+        <location filename="../../frontend-common/game_settings.cpp" line="1024"/>
         <source>True color disabled by game settings.</source>
         <translation>Efeito Cor real (true color) desativada pelas configs. personalizadas.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_settings.cpp" line="640"/>
+        <location filename="../../frontend-common/game_settings.cpp" line="1035"/>
         <source>Upscaling disabled by game settings.</source>
         <translation>Escalonamento desativado pelas configurações personalizadas.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_settings.cpp" line="651"/>
+        <location filename="../../frontend-common/game_settings.cpp" line="1046"/>
         <source>Scaled dithering disabled by game settings.</source>
         <translation>Dithering escalonado desativado pelas configurações personalizadas.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_settings.cpp" line="664"/>
+        <location filename="../../frontend-common/game_settings.cpp" line="1059"/>
         <source>Widescreen disabled by game settings.</source>
         <translation>Visão Panoramica desativada pelas configurações.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_settings.cpp" line="676"/>
+        <location filename="../../frontend-common/game_settings.cpp" line="1071"/>
         <source>Forcing NTSC Timings disallowed by game settings.</source>
         <translation>Temporizadores NTSC não permitidos pela configuração personalizada.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_settings.cpp" line="688"/>
+        <location filename="../../frontend-common/game_settings.cpp" line="1083"/>
         <source>PGXP geometry correction disabled by game settings.</source>
         <translation>Correção geométrica desativada pelas configurações personalizadas.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_settings.cpp" line="700"/>
+        <location filename="../../frontend-common/game_settings.cpp" line="1095"/>
         <source>PGXP culling disabled by game settings.</source>
         <translation>Correção de curvas desativada pela configuração personalizada.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_settings.cpp" line="711"/>
+        <location filename="../../frontend-common/game_settings.cpp" line="1106"/>
         <source>PGXP texture correction disabled by game settings.</source>
         <translation>Correção de curvas desativada pela configuração personalizada.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_settings.cpp" line="723"/>
+        <location filename="../../frontend-common/game_settings.cpp" line="1118"/>
         <source>PGXP vertex cache forced by game settings.</source>
         <translation>Vértice Armazenado forçado pelas configurações personalizadas.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_settings.cpp" line="734"/>
+        <location filename="../../frontend-common/game_settings.cpp" line="1129"/>
         <source>PGXP CPU mode forced by game settings.</source>
         <translation>PGXP em modo CPU forçado pelas configurações personalizadas.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_settings.cpp" line="745"/>
+        <location filename="../../frontend-common/game_settings.cpp" line="1140"/>
         <source>PGXP Depth Buffer disabled by game settings.</source>
         <translation>PGXP modo profundo desativado pelas configurações individuais.</translation>
     </message>
@@ -6456,12 +6481,12 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation type="vanished">Controle %u mudado para modo analógico pela configuração personalizada.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_settings.cpp" line="763"/>
+        <location filename="../../frontend-common/game_settings.cpp" line="1158"/>
         <source>Recompiler memory exceptions forced by game settings.</source>
         <translation>Exeções de RAM forçada pelas configurações.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_settings.cpp" line="776"/>
+        <location filename="../../frontend-common/game_settings.cpp" line="1171"/>
         <source>Recompiler ICache forced by game settings.</source>
         <translation>Recompilador ICache forçado pelas configurações.</translation>
     </message>
