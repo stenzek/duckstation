@@ -720,6 +720,10 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1115-g0b261e8</version-tested>
   </entry>
+  <entry code="SLUS-00324" compatibility="5" region="NTSC-U" title="Burning Road (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2799-g0d281538</version-tested>
+  </entry>
   <entry code="SCUS-94180" compatibility="5" region="NTSC-U" title="Bushido Blade (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1529-ga895c027</version-tested>
@@ -1560,6 +1564,14 @@ Tetris with Card Captor Sakura (Japan)
   </entry>
   <entry code="SLPM-80205" compatibility="5" region="NTSC-J" title="G Darius">
     <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLUS-00544" compatibility="5" region="NTSC-U" title="G-Police (USA) (Disc 1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2799-g0d281538</version-tested>
+  </entry>
+  <entry code="SLUS-00798" compatibility="5" region="NTSC-U" title="G-Police - Weapons of Justice (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2799-g0d281538</version-tested>
   </entry>
   <entry code="SLUS-00690" compatibility="5" region="NTSC-U" title="G. Darius (USA)">
     <compatibility>No Issues</compatibility>
@@ -3870,10 +3882,9 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1265-gdd9a419</version-tested>
   </entry>
-  <entry code="SLES-00024" compatibility="4" region="PAL" title="Tomb Raider (Europe) (No EDC)">
-    <compatibility>Graphical/Audio Issues</compatibility>
-    <version-tested>0.1-1558-gf852be74</version-tested>
-    <comments>Game needs forced 60hz timing to run at correct speed, but rendered cutscenes desync as a consequence.</comments>
+  <entry code="SLES-00024" compatibility="5" region="PAL" title="Tomb Raider (Europe)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2790-gd588c26c</version-tested>
   </entry>
   <entry code="SLUS-00152" compatibility="5" region="NTSC-U" title="Tomb Raider (USA) (Rev 3)">
     <compatibility>No Issues</compatibility>
@@ -4082,10 +4093,9 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-887-g1eecd50</version-tested>
   </entry>
-  <entry code="SCES-00010" compatibility="4" region="PAL" title="WipEout (Europe)">
-    <compatibility>Graphical/Audio Issues</compatibility>
-    <version-tested>0.1-2733-gfa7442fd</version-tested>
-    <comments>Image not always centered on screen</comments>
+  <entry code="SCES-00010" compatibility="5" region="PAL" title="WipEout (Europe)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2790-gd588c26c</version-tested>
   </entry>
   <entry code="SIPS-60003" compatibility="5" region="NTSC-J" title="WipEout (Japan)">
     <compatibility>No Issues</compatibility>
