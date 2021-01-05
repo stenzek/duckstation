@@ -799,7 +799,7 @@ ALWAYS_INLINE static TickCount DoBIOSAccess(u32 offset, u32& value)
 }
 
 template<MemoryAccessType type, MemoryAccessSize size>
-ALWAYS_INLINE static TickCount DoEXP1Access(u32 offset, u32& value)
+static TickCount DoEXP1Access(u32 offset, u32& value)
 {
   if constexpr (type == MemoryAccessType::Read)
   {
@@ -851,7 +851,7 @@ ALWAYS_INLINE static TickCount DoEXP1Access(u32 offset, u32& value)
 }
 
 template<MemoryAccessType type, MemoryAccessSize size>
-ALWAYS_INLINE static TickCount DoEXP2Access(u32 offset, u32& value)
+static TickCount DoEXP2Access(u32 offset, u32& value)
 {
   if constexpr (type == MemoryAccessType::Read)
   {
