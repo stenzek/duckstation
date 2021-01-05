@@ -258,7 +258,7 @@ Controller 1:
  - **D-Pad:** W/A/S/D
  - **Triangle/Square/Circle/Cross:** Numpad8/Numpad4/Numpad6/Numpad2
  - **L1/R1:** Q/E
- - **L2/L2:** 1/3
+ - **L2/R2:** 1/3
  - **Start:** Enter
  - **Select:** Backspace
 
