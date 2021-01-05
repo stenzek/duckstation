@@ -50,7 +50,6 @@ public:
 private:
   static constexpr PhysicalMemoryAddress BASE_ADDRESS_MASK = UINT32_C(0x00FFFFFF);
   static constexpr PhysicalMemoryAddress ADDRESS_MASK = UINT32_C(0x001FFFFC);
-  static constexpr u32 TRANSFER_TICKS = 10;
 
   enum class SyncMode : u32
   {
@@ -68,6 +67,8 @@ private:
   void UpdateIRQ();
 
   // returns false if the DMA should now be halted
+  TickCount GetTransferSliceTicks() const;
+  TickCount GetTransferHaltTicks() const;
   bool TransferChannel(Channel channel);
   void HaltTransfer(TickCount duration);
   void UnhaltTransfer(TickCount ticks);

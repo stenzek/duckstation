@@ -31,6 +31,8 @@ public:
   u32 ReadRegister(u32 offset);
   void WriteRegister(u32 offset, u32 value);
 
+  ALWAYS_INLINE bool IsTransmitting() const { return m_state != State::Idle; }
+
 private:
   static constexpr u32 NUM_SLOTS = 2;
 
@@ -87,10 +89,9 @@ private:
     BitField<u16, u8, 8, 1> clk_polarity;
   };
 
-  bool IsTransmitting() const { return m_state != State::Idle; }
-  bool CanTransfer() const { return m_transmit_buffer_full && m_JOY_CTRL.SELECT && m_JOY_CTRL.TXEN; }
+  ALWAYS_INLINE bool CanTransfer() const { return m_transmit_buffer_full && m_JOY_CTRL.SELECT && m_JOY_CTRL.TXEN; }
 
-  TickCount GetTransferTicks() const { return static_cast<TickCount>(ZeroExtend32(m_JOY_BAUD) * 8); }
+  ALWAYS_INLINE TickCount GetTransferTicks() const { return static_cast<TickCount>(ZeroExtend32(m_JOY_BAUD) * 8); }
 
   // From @JaCzekanski
   // ACK lasts ~96 ticks or approximately 2.84us at master clock (not implemented).

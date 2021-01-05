@@ -9,6 +9,7 @@
 #include "gpu.h"
 #include "interrupt_controller.h"
 #include "mdec.h"
+#include "pad.h"
 #include "spu.h"
 #include "system.h"
 #ifdef WITH_IMGUI
@@ -253,6 +254,34 @@ void DMA::UpdateIRQ()
   }
 }
 
+// Plenty of games seem to suffer from this issue where they have a linked list DMA going while polling the
+// controller. Using a too-large slice size will result in the serial timing being off, and the game thinking
+// the controller is disconnected. So we don't hurt performance too much for the general case, we reduce this
+// to equal CPU and DMA time when the controller is transferring, but otherwise leave it at the higher size.
+enum : u32
+{
+  SLICE_SIZE_WHEN_TRANSMITTING_PAD = 100,
+  HALT_TICKS_WHEN_TRANSMITTING_PAD = 100
+};
+
+TickCount DMA::GetTransferSliceTicks() const
+{
+#ifdef _DEBUG
+  if (g_pad.IsTransmitting())
+  {
+    Log_DebugPrintf("DMA transfer while transmitting pad - using lower slice size of %u vs %u",
+                    SLICE_SIZE_WHEN_TRANSMITTING_PAD, m_max_slice_ticks);
+  }
+#endif
+
+  return g_pad.IsTransmitting() ? SLICE_SIZE_WHEN_TRANSMITTING_PAD : m_max_slice_ticks;
+}
+
+TickCount DMA::GetTransferHaltTicks() const
+{
+  return g_pad.IsTransmitting() ? HALT_TICKS_WHEN_TRANSMITTING_PAD : m_halt_ticks;
+}
+
 bool DMA::TransferChannel(Channel channel)
 {
   ChannelState& cs = m_state[static_cast<u32>(channel)];
@@ -294,7 +323,7 @@ bool DMA::TransferChannel(Channel channel)
                       current_address & ADDRESS_MASK);
 
       u8* ram_pointer = Bus::g_ram;
-      TickCount remaining_ticks = m_max_slice_ticks;
+      TickCount remaining_ticks = GetTransferSliceTicks();
       while (cs.request && remaining_ticks > 0)
       {
         u32 header;
@@ -330,7 +359,7 @@ bool DMA::TransferChannel(Channel channel)
       if (cs.request)
       {
         // stall the transfer for a bit if we ran for too long
-        HaltTransfer(m_halt_ticks);
+        HaltTransfer(GetTransferHaltTicks());
         return false;
       }
       else
@@ -350,7 +379,7 @@ bool DMA::TransferChannel(Channel channel)
 
       const u32 block_size = cs.block_control.request.GetBlockSize();
       u32 blocks_remaining = cs.block_control.request.GetBlockCount();
-      TickCount ticks_remaining = m_max_slice_ticks;
+      TickCount ticks_remaining = GetTransferSliceTicks();
 
       if (copy_to_device)
       {
@@ -391,7 +420,7 @@ bool DMA::TransferChannel(Channel channel)
         {
           // we got halted
           if (!m_unhalt_event->IsActive())
-            HaltTransfer(m_halt_ticks);
+            HaltTransfer(GetTransferHaltTicks());
 
           return false;
         }
