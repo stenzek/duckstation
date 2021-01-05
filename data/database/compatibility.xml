@@ -2420,10 +2420,9 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-2148-g7078f73e</version-tested>
   </entry>
-  <entry code="SLUS-00498" compatibility="4" region="NTSC-U" title="Moto Racer (USA)">
-    <compatibility>Graphical/Audio Issues</compatibility>
-    <version-tested>0.1-2499-g770dd5a6</version-tested>
-    <comments>Keeps autopausing (Issue #831).</comments>
+  <entry code="SLUS-00498" compatibility="5" region="NTSC-U" title="Moto Racer (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2837-g632909df</version-tested>
   </entry>
   <entry code="SCUS-94355" compatibility="5" region="NTSC-U" title="Motor Toon Grand Prix (USA)">
     <compatibility>No Issues</compatibility>
@@ -4038,10 +4037,9 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-986-gfc911de1</version-tested>
   </entry>
-  <entry code="SLUS-00510" compatibility="4" region="NTSC-U" title="Vigilante 8 (USA) (Rev 1)">
-    <compatibility>Graphical/Audio Issues</compatibility>
-    <version-tested>0.1-2499-g770dd5a6</version-tested>
-    <comments>[Regression] Textures corruption (Issue #711).</comments>
+  <entry code="SLUS-00510" compatibility="5" region="NTSC-U" title="Vigilante 8 (USA) (Rev 1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2837-g632909df</version-tested>
   </entry>
   <entry code="SLUS-00868" compatibility="5" region="NTSC-U" title="Vigilante 8 - 2nd Offense (USA)">
     <compatibility>No Issues</compatibility>
