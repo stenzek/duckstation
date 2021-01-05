@@ -37,7 +37,7 @@ std::string Hash::ToString() const
   return str;
 }
 
-static constexpr std::array<ImageInfo, 26> s_image_infos = {
+static constexpr std::array<ImageInfo, 27> s_image_infos = {
   {{"SCPH-1000, DTL-H1000 (v1.0)", ConsoleRegion::NTSC_J, MakeHashFromString("239665b1a3dade1b5a52c06338011044"), true},
    {"SCPH-1001, 5003, DTL-H1201, H3001 (v2.2 12-04-95 A)", ConsoleRegion::NTSC_U,
     MakeHashFromString("924e392ed05558ffdb115408c263dccf"), true},
@@ -79,6 +79,7 @@ static constexpr std::array<ImageInfo, 26> s_image_infos = {
     true},
    {"SCPH-1000R (v4.5 05-25-00 J)", ConsoleRegion::NTSC_J, MakeHashFromString("476d68a94ccec3b9c8303bbd1daf2810"),
     true},
+   {"PS3 (v5.0 06-23-03 A)", ConsoleRegion::Auto, MakeHashFromString("c02a6fbb1b27359f84e92fae8bc21316"), false},
    {"PS3 (v5.0 06-23-03 A)", ConsoleRegion::Auto, MakeHashFromString("81bbe60ba7a3d1cea1d48c14cbcc647b"), false}}};
 
 Hash GetHash(const Image& image)
@@ -104,11 +105,10 @@ std::optional<Image> LoadImageFromFile(const char* filename)
   const u32 size = static_cast<u32>(std::ftell(fp.get()));
   std::fseek(fp.get(), 0, SEEK_SET);
 
-  // Apparently some PS1/PS2 BIOS revisions found on the PS3 are neither 512KB nor 4MB, so just check within this range
-  if (size < BIOS_SIZE || size > BIOS_SIZE_PS2)
+  if (size != BIOS_SIZE && size != BIOS_SIZE_PS2 && size != BIOS_SIZE_PS3)
   {
-    Log_ErrorPrintf("BIOS image '%s' mismatch, expecting between %u and %u bytes, got %u bytes", filename, BIOS_SIZE,
-                    BIOS_SIZE_PS2, size);
+    Log_ErrorPrintf("BIOS image '%s' size mismatch, expecting either %u or %u or %u bytes but got %u bytes", filename,
+                    BIOS_SIZE, BIOS_SIZE_PS2, BIOS_SIZE_PS3, size);
     return std::nullopt;
   }
 
