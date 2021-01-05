@@ -301,6 +301,7 @@ std::optional<std::vector<u8>> HostInterface::FindBIOSImageInDirectory(ConsoleRe
 
   std::string fallback_path;
   std::optional<BIOS::Image> fallback_image;
+  const BIOS::ImageInfo* fallback_info = nullptr;
 
   for (const FILESYSTEM_FIND_DATA& fd : results)
   {
@@ -320,14 +321,21 @@ std::optional<std::vector<u8>> HostInterface::FindBIOSImageInDirectory(ConsoleRe
     BIOS::Hash found_hash = BIOS::GetHash(*found_image);
     Log_DevPrintf("Hash for BIOS '%s': %s", fd.FileName.c_str(), found_hash.ToString().c_str());
 
+    const BIOS::ImageInfo* ii = BIOS::GetImageInfoForHash(found_hash);
+
     if (BIOS::IsValidHashForRegion(region, found_hash))
     {
-      Log_InfoPrintf("Using BIOS '%s'", fd.FileName.c_str());
+      Log_InfoPrintf("Using BIOS '%s': %s", fd.FileName.c_str(), ii ? ii->description : "");
       return found_image;
     }
 
+    // don't let an unknown bios take precedence over a known one
+    if (!fallback_path.empty() && (fallback_info || !ii))
+      continue;
+
     fallback_path = std::move(full_path);
     fallback_image = std::move(found_image);
+    fallback_info = ii;
   }
 
   if (!fallback_image.has_value())
@@ -338,7 +346,16 @@ std::optional<std::vector<u8>> HostInterface::FindBIOSImageInDirectory(ConsoleRe
     return std::nullopt;
   }
 
-  Log_WarningPrintf("Falling back to possibly-incompatible image '%s'", fallback_path.c_str());
+  if (!fallback_info)
+  {
+    Log_WarningPrintf("Using unknown BIOS '%s'. This may crash.", fallback_path.c_str());
+  }
+  else
+  {
+    Log_WarningPrintf("Falling back to possibly-incompatible image '%s': %s", fallback_path.c_str(),
+                      fallback_info->description);
+  }
+
   return fallback_image;
 }
 
