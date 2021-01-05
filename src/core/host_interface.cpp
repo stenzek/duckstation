@@ -304,7 +304,7 @@ std::optional<std::vector<u8>> HostInterface::FindBIOSImageInDirectory(ConsoleRe
 
   for (const FILESYSTEM_FIND_DATA& fd : results)
   {
-    if (fd.Size < BIOS::BIOS_SIZE || fd.Size > BIOS::BIOS_SIZE_PS2)
+    if (fd.Size != BIOS::BIOS_SIZE && fd.Size != BIOS::BIOS_SIZE_PS2)
     {
       Log_WarningPrintf("Skipping '%s': incorrect size", fd.FileName.c_str());
       continue;
