@@ -124,7 +124,7 @@
     <message>
         <location filename="../advancedsettingswidget.cpp" line="156"/>
         <source>PGXP Preserve Projection Precision</source>
-        <translation type="unfinished"></translation>
+        <translation>PGXP Zachowaj precyzję projekcji</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="158"/>
@@ -134,7 +134,7 @@
     <message>
         <location filename="../advancedsettingswidget.cpp" line="160"/>
         <source>PGXP Depth Clear Threshold</source>
-        <translation type="unfinished"></translation>
+        <translation>Próg przezroczystości głębokości PGXP</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="163"/>
@@ -154,28 +154,28 @@
     <message>
         <location filename="../advancedsettingswidget.cpp" line="172"/>
         <source>Enable VRAM Write Texture Replacement</source>
-        <translation type="unfinished"></translation>
+        <translation>Włącz zastępowanie tekstur zapisu VRAM</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="174"/>
         <source>Preload Texture Replacements</source>
-        <translation type="unfinished"></translation>
+        <translation>Wczytaj wstępnie zamienniki tekstur</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="176"/>
         <source>Dump Replaceable VRAM Writes</source>
-        <translation type="unfinished"></translation>
+        <translation>Zrzuć wymienne zapisy VRAM</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="178"/>
         <source>Set Dumped VRAM Write Alpha Channel</source>
-        <translation type="unfinished"></translation>
+        <translation>Ustaw kanał alfa zapisu w pamięci VRAM</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="180"/>
         <location filename="../advancedsettingswidget.cpp" line="183"/>
         <source>Minimum Dumped VRAM Write Width</source>
-        <translation type="unfinished"></translation>
+        <translation>Minimalna szerokość zapisu w pamięci VRAM</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="187"/>
@@ -210,7 +210,7 @@
     <message>
         <location filename="../advancedsettingswidget.cpp" line="148"/>
         <source>Disable All Enhancements</source>
-        <translation type="unfinished"></translation>
+        <translation>Wyłączyć wszystkie rozszerzenia</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="198"/>
@@ -299,22 +299,22 @@
     <message>
         <location filename="../../core/analog_controller.cpp" line="691"/>
         <source>Triangle</source>
-        <translation>△</translation>
+        <translation>Trójkąt</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="692"/>
         <source>Cross</source>
-        <translation>✕</translation>
+        <translation>Krzyżyk</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="693"/>
         <source>Circle</source>
-        <translation>○</translation>
+        <translation>Koło</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="694"/>
         <source>Square</source>
-        <translation>□</translation>
+        <translation>Kwadrat</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="695"/>
@@ -2421,7 +2421,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../displaysettingswidget.ui" line="122"/>
         <source>Downsampling:</source>
-        <translation type="unfinished"></translation>
+        <translation>Downsampling:(przetwarzanie sygnału)</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="134"/>
