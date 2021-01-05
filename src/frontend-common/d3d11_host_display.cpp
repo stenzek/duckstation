@@ -186,7 +186,7 @@ bool D3D11HostDisplay::SupportsDisplayPixelFormat(HostDisplayPixelFormat format)
 
   UINT support = 0;
   const UINT required = D3D11_FORMAT_SUPPORT_TEXTURE2D | D3D11_FORMAT_SUPPORT_SHADER_SAMPLE;
-  return (SUCCEEDED(m_device->CheckFormatSupport(dfmt, &support) && ((support & required) == required)));
+  return (SUCCEEDED(m_device->CheckFormatSupport(dfmt, &support)) && ((support & required) == required));
 }
 
 bool D3D11HostDisplay::BeginSetDisplayPixels(HostDisplayPixelFormat format, u32 width, u32 height, void** out_buffer,
