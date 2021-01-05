@@ -875,7 +875,7 @@ ALWAYS_INLINE static TickCount DoEXP2Access(u32 offset, u32& value)
   }
   else
   {
-    if (offset == 0x23)
+    if (offset == 0x23 || offset == 0x80)
     {
       if (value == '\r')
       {
