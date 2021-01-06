@@ -1913,6 +1913,36 @@ This warning will only be shown once.</source>
     </message>
 </context>
 <context>
+    <name>DebuggerCodeModel</name>
+    <message>
+        <location filename="../debuggermodels.cpp" line="80"/>
+        <location filename="../debuggermodels.cpp" line="90"/>
+        <location filename="../debuggermodels.cpp" line="105"/>
+        <source>&lt;invalid&gt;</source>
+        <translation>&lt;无效&gt;</translation>
+    </message>
+    <message>
+        <location filename="../debuggermodels.cpp" line="173"/>
+        <source>Address</source>
+        <translation>地址</translation>
+    </message>
+    <message>
+        <location filename="../debuggermodels.cpp" line="175"/>
+        <source>Bytes</source>
+        <translation>字节</translation>
+    </message>
+    <message>
+        <location filename="../debuggermodels.cpp" line="177"/>
+        <source>Instruction</source>
+        <translation>指令</translation>
+    </message>
+    <message>
+        <location filename="../debuggermodels.cpp" line="179"/>
+        <source>Comment</source>
+        <translation>注释</translation>
+    </message>
+</context>
+<context>
     <name>DebuggerMessage</name>
     <message>
         <location filename="../../core/cpu_core.cpp" line="1565"/>
@@ -1953,6 +1983,37 @@ This warning will only be shown once.</source>
         <location filename="../../core/cpu_core.cpp" line="1675"/>
         <source>No return instruction found after %u instructions for step-out at %08X.</source>
         <translation>在%u指令后没有发现返回指令来跳出%08X。</translation>
+    </message>
+</context>
+<context>
+    <name>DebuggerRegistersModel</name>
+    <message>
+        <location filename="../debuggermodels.cpp" line="354"/>
+        <source>Register</source>
+        <translation>寄存器</translation>
+    </message>
+    <message>
+        <location filename="../debuggermodels.cpp" line="356"/>
+        <source>Value</source>
+        <translation>数值</translation>
+    </message>
+</context>
+<context>
+    <name>DebuggerStackModel</name>
+    <message>
+        <location filename="../debuggermodels.cpp" line="405"/>
+        <source>&lt;invalid&gt;</source>
+        <translation>&lt;无效&gt;</translation>
+    </message>
+    <message>
+        <location filename="../debuggermodels.cpp" line="421"/>
+        <source>Address</source>
+        <translation>地址</translation>
+    </message>
+    <message>
+        <location filename="../debuggermodels.cpp" line="423"/>
+        <source>Value</source>
+        <translation>数值</translation>
     </message>
 </context>
 <context>
@@ -4165,7 +4226,7 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>无法加载配置的BIOS文件&apos;%s&apos;</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="336"/>
+        <location filename="../../core/host_interface.cpp" line="344"/>
         <source>No BIOS image found for %s region</source>
         <translation>未发现适用%s区域的BIOS文件</translation>
     </message>
@@ -5734,32 +5795,32 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>系统重启。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="386"/>
+        <location filename="../../core/host_interface.cpp" line="403"/>
         <source>Loading state from &apos;%s&apos;...</source>
         <translation>从&apos;%s&apos;读取即时存档...</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="392"/>
+        <location filename="../../core/host_interface.cpp" line="409"/>
         <source>Loading state from &apos;%s&apos; failed. Resetting.</source>
         <translation>从&apos;%s&apos;读取即时存档失败，重启中。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="420"/>
+        <location filename="../../core/host_interface.cpp" line="437"/>
         <source>Saving state to &apos;%s&apos; failed.</source>
         <translation>保存即时存档到&apos;%s&apos;失败。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="425"/>
+        <location filename="../../core/host_interface.cpp" line="442"/>
         <source>State saved to &apos;%s&apos;.</source>
         <translation>保存即时存档到&apos;%s&apos;。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="607"/>
+        <location filename="../../core/host_interface.cpp" line="625"/>
         <source>PGXP is incompatible with the software renderer, disabling PGXP.</source>
         <translation>PGXP与软件呈现程序不兼容，禁用PGXP。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="616"/>
+        <location filename="../../core/host_interface.cpp" line="634"/>
         <source>PGXP CPU mode is incompatible with the recompiler, using Cached Interpreter instead.</source>
         <translation>PGXP在CPU模式与重编译器不兼容，改为使用缓存解释器。</translation>
     </message>
@@ -5768,52 +5829,52 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation type="vanished">快速内存映射在此平台上不可用，使用LUT代替。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="644"/>
+        <location filename="../../core/host_interface.cpp" line="662"/>
         <source>Switching to %s%s GPU renderer.</source>
         <translation>切换到%s%sGPU渲染器。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="665"/>
+        <location filename="../../core/host_interface.cpp" line="683"/>
         <source>Switching to %s audio backend.</source>
         <translation>切换到%s音频后端。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="681"/>
+        <location filename="../../core/host_interface.cpp" line="699"/>
         <source>Switching to %s CPU execution mode.</source>
         <translation>切换到%sCPU执行模式。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="692"/>
+        <location filename="../../core/host_interface.cpp" line="710"/>
         <source>CPU memory exceptions enabled, flushing all blocks.</source>
         <translation>启用CPU内存异常，刷新所有区块。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="693"/>
+        <location filename="../../core/host_interface.cpp" line="711"/>
         <source>CPU memory exceptions disabled, flushing all blocks.</source>
         <translation>禁用CPU内存异常，刷新所有区块。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="702"/>
+        <location filename="../../core/host_interface.cpp" line="720"/>
         <source>CPU ICache enabled, flushing all blocks.</source>
         <translation>启用CPU的ICache，刷新所有区块。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="703"/>
+        <location filename="../../core/host_interface.cpp" line="721"/>
         <source>CPU ICache disabled, flushing all blocks.</source>
         <translation>禁用CPU的ICache，刷新所有区块。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="745"/>
+        <location filename="../../core/host_interface.cpp" line="763"/>
         <source>PGXP enabled, recompiling all blocks.</source>
         <translation>启用PGXP，重编译所有区块。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="746"/>
+        <location filename="../../core/host_interface.cpp" line="764"/>
         <source>PGXP disabled, recompiling all blocks.</source>
         <translation>禁用PGXP，重编译所有区块。</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="919"/>
+        <location filename="../../core/host_interface.cpp" line="937"/>
         <source>Switching to %s renderer...</source>
         <translation>切换到%s渲染器...</translation>
     </message>
@@ -6226,9 +6287,6 @@ This will download approximately 4 megabytes over your current internet connecti
         <source>Right</source>
         <translation>右</translation>
     </message>
-</context>
-<context>
-    <name>PlaystationMouse</name>
     <message>
         <location filename="../../core/playstation_mouse.cpp" line="215"/>
         <source>Relative Mouse Mode</source>
@@ -6238,6 +6296,17 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../../core/playstation_mouse.cpp" line="216"/>
         <source>Locks the mouse cursor to the window, use for FPS games.</source>
         <translation>锁定鼠标光标到窗口，用于FPS游戏。</translation>
+    </message>
+</context>
+<context>
+    <name>PlaystationMouse</name>
+    <message>
+        <source>Relative Mouse Mode</source>
+        <translation type="vanished">相对鼠标模式</translation>
+    </message>
+    <message>
+        <source>Locks the mouse cursor to the window, use for FPS games.</source>
+        <translation type="vanished">锁定鼠标光标到窗口，用于FPS游戏。</translation>
     </message>
 </context>
 <context>
