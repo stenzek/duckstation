@@ -1126,6 +1126,11 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-2152-g70fa4143</version-tested>
   </entry>
+  <entry code="SCES-01312" compatibility="5" region="PAL" title="Devil Dice (Europe) (En,Fr,De,Es,It)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2854-g24c37324</version-tested>
+    <comments>Interlaced game, use &quot;Disable Interlacing&quot; to force Progressive without any glitch</comments>
+  </entry>
   <entry code="SLPS-02330" compatibility="5" region="NTSC-J" title="DewPrism (Japan, Asia)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-2152-g70fa4143</version-tested>
@@ -3987,6 +3992,10 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLPS-02549" compatibility="5" region="NTSC-J" title="Umihara Kawase Shun Second Edition">
     <compatibility>No Issues</compatibility>
   </entry>
+  <entry code="SLES-01300" compatibility="5" region="PAL" title="Unholy War, The (Europe) (En,Fr,De,Es,It)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2814-g8bb4c110</version-tested>
+  </entry>
   <entry code="SLUS-00686" compatibility="5" region="NTSC-U" title="Uprising X (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1448-g472f1c1c</version-tested>
@@ -4132,10 +4141,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-887-g1eecd50</version-tested>
   </entry>
-  <entry code="SLUS-00644" compatibility="4" region="NTSC-U" title="World Cup 98 (USA)">
+  <entry code="SLUS-00644" compatibility="5" region="NTSC-U" title="World Cup 98 (USA)">
     <compatibility>Graphical/Audio Issues</compatibility>
-    <version-tested>0.1-2499-g770dd5a6</version-tested>
-    <comments>Loud beeping sound during the loading screen before a match (Issue #456)</comments>
+    <version-tested>0.1-2854-g24c37324</version-tested>
+    <comments>There's a sound issues on the main menu with Recompiler or Cached Interpreter CPU mode. Use Interpreter, and must be applied from when you boot the game</comments>
   </entry>
   <entry code="SLPM-87056" compatibility="5" region="NTSC-J" title="World Soccer Winning Eleven 2002 (Japan)">
     <compatibility>No Issues</compatibility>
