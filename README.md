@@ -1,9 +1,9 @@
 # DuckStation - PlayStation 1, aka. PSX Emulator
-[Latest News](#latest-news) | [Features](#features) | [Screenshots](#screenshots) | [Downloading and Running](#downloading-and-running) | [Libretro Core](#libretro-core) | [Building](#building) | [Disclaimers](#disclaimers)
+[Latest News](#latest-news) | [Features](#features) | [Screenshots](#screenshots) | [Downloading and Running](#downloading-and-running) | [Building](#building) | [Disclaimers](#disclaimers)
 
 **Discord Server:** https://discord.gg/Buktv3t
 
-**Latest Windows, Linux (AppImage), Mac, Android, and Libretro Builds:** https://github.com/stenzek/duckstation/releases/tag/latest
+**Latest Windows, Linux (AppImage), Mac, Android** https://github.com/stenzek/duckstation/releases/tag/latest
 
 **Available on Google Play:** https://play.google.com/store/apps/details?id=com.github.stenzek.duckstation&hl=en_AU&gl=US
 
@@ -32,7 +32,6 @@ Older entries are available at https://github.com/stenzek/duckstation/blob/maste
 - 2020/12/10: Translation support added for Android version. Currently Brazillian Portuguese, Italian, and Dutch are available.
 - 2020/11/27: Cover support added for game list in Android version. Procedure is the same as the desktop version, except you should place cover images in `<storage>/duckstation/covers` (see [Adding Game Covers](https://github.com/stenzek/duckstation/wiki/Adding-Game-Covers)).
 - 2020/11/27: Disc database is shipped with desktop and Android versions courtesy of redump.org. This will provide titles for games on Android, where it was not possible previously.
-- 2020/11/27: Compatibility databases added to libretro core - broken enhancements will be automatically disabled. You can turn this off by disabling "Apply Compatibility Settings" in the core options.
 - 2020/11/27: SDL game controller database is included with desktop versions courtesy of https://github.com/gabomdq/SDL_GameControllerDB.
 - 2020/11/21: OpenGL ES 2.0 host display support added. You cannot use the hardware renderer with GLES2, it still requires GLES3, but GLES2 GPUs can now use the software renderer.
 - 2020/11/21: Threaded renderer for software renderer added. Can result in a significant speed boost depending on the game.
@@ -270,22 +269,6 @@ Hotkeys:
  - **Page Up/Down:** Increase/decrease resolution scale in hardware renderers
  - **End:** Toggle software renderer
  
-## Libretro Core
-
-DuckStation is available as a libretro core, supporting most of the features of the full frontend within the constraints and limitations of being a libretro core.
-
-As of December 2020, the libretro core is no longer supported by the developer. The core will remain in the tree, but fixing any issues will not be a priority,
-and any bugs must be tested in the standalone version prior to being reported.
-
-To build on Windows, use cmake using the following commands from a `x64 Native Tools Command Prompt for VS 2019`:
-- mkdir build
-- cd build
-- cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_LIBRETRO_CORE=ON ..
-
-You should then have a file named `duckstation_libretro.dll` which can be loaded as a core.
-
-To build on Linux, follow the same instructions as for a normal build, but for cmake use `cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_LIBRETRO_CORE=ON ..`. The shared library will be named `duckstation_libretro.so` in the current directory.
-
 ## Tests
  - Passes amidog's CPU and GTE tests in both interpreter and recompiler modes, partial passing of CPX tests
 

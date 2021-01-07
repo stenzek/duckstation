@@ -116,6 +116,9 @@ target_include_directories(core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_link_libraries(core PUBLIC Threads::Threads common zlib vulkan-loader)
 target_link_libraries(core PRIVATE glad stb xxhash)
 
+target_compile_definitions(core PRIVATE "WITH_IMGUI=1")
+target_link_libraries(core PRIVATE imgui)
+
 if(WIN32)
   target_sources(core PRIVATE
     gpu_hw_d3d11.cpp
@@ -147,9 +150,4 @@ elseif(${CPU_ARCH} STREQUAL "aarch64")
   message("Building AArch64 recompiler")
 else()
   message("Not building recompiler")
-endif()
-
-if(NOT BUILD_LIBRETRO_CORE)
-  target_link_libraries(core PRIVATE imgui)
-  target_compile_definitions(core PRIVATE "WITH_IMGUI=1")
 endif()
