@@ -11,6 +11,7 @@
 #include "windows_headers.h"
 #elif defined(__ANDROID__)
 #include <android/log.h>
+#include <unistd.h>
 #else
 #include <unistd.h>
 #endif
@@ -140,6 +141,10 @@ static void FormatLogMessageForDisplay(const char* channelName, const char* func
 static void StandardOutputLogCallback(void* pUserParam, const char* channelName, const char* functionName,
                                      LOGLEVEL level, const char* message)
 {
+  if (!s_consoleOutputEnabled || level > s_consoleOutputLevelFilter ||
+      s_consoleOutputChannelFilter.Find(channelName) >= 0)
+    return;
+
   static const char* const colorCodes[LOGLEVEL_COUNT] = {
     "\033[0m",    // NONE
     "\033[1;31m", // ERROR
@@ -260,60 +265,9 @@ bool msw_AllocLegacyConsole()
   return true;
 }
 
-static void msw_ConsoleOutputLogCallback(void* pUserParam, const char* channelName, const char* functionName,
-                                     LOGLEVEL level, const char* message)
-{
-  if (!s_consoleOutputEnabled || level > s_consoleOutputLevelFilter ||
-      s_consoleOutputChannelFilter.Find(channelName) >= 0)
-    return;
-
-  if (level > LOGLEVEL_COUNT)
-    level = LOGLEVEL_TRACE;
-
-  HANDLE hConsole = GetStdHandle((level <= LOGLEVEL_WARNING) ? STD_ERROR_HANDLE : STD_OUTPUT_HANDLE);
-  if (hConsole != INVALID_HANDLE_VALUE)
-  {
-    static const WORD levelColors[LOGLEVEL_COUNT] = {
-      FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_GREEN,                        // NONE
-      FOREGROUND_RED | FOREGROUND_INTENSITY,                                      // ERROR
-      FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY,                   // WARNING
-      FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_INTENSITY,                    // PERF
-      FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY, // INFO
-      FOREGROUND_GREEN | FOREGROUND_INTENSITY,                                    // VERBOSE
-      FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_GREEN,                        // DEV
-      FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY,                  // PROFILE
-      FOREGROUND_GREEN,                                                           // DEBUG
-      FOREGROUND_BLUE,                                                            // TRACE
-    };
-
-    CONSOLE_SCREEN_BUFFER_INFO oldConsoleScreenBufferInfo;
-    GetConsoleScreenBufferInfo(hConsole, &oldConsoleScreenBufferInfo);
-    SetConsoleTextAttribute(hConsole, levelColors[level]);
-
-    // write message in the formatted way
-    FormatLogMessageForDisplay(
-      channelName, functionName, level, message,
-      [](const char* text, void* hConsole) {
-        DWORD written;
-        WriteConsoleA(static_cast<HANDLE>(hConsole), text, static_cast<DWORD>(std::strlen(text)), &written, nullptr);
-      },
-      (void*)hConsole);
-
-    // write newline
-    DWORD written;
-    WriteConsoleA(hConsole, "\r\n", 2, &written, nullptr);
-
-    // restore color
-    SetConsoleTextAttribute(hConsole, oldConsoleScreenBufferInfo.wAttributes);
-  }
-}
-
 static void msw_DebugOutputLogCallback(void* pUserParam, const char* channelName, const char* functionName, LOGLEVEL level,
                                    const char* message)
 {
-  if (!s_debugOutputEnabled || level > s_debugOutputLevelFilter || s_debugOutputChannelFilter.Find(channelName) >= 0)
-    return;
-
   FormatLogMessageForDisplay(
     channelName, functionName, level, message, [](const char* text, void*) { OutputDebugStringA(text); }, nullptr);
 
@@ -325,9 +279,6 @@ static void msw_DebugOutputLogCallback(void* pUserParam, const char* channelName
 static void android_DebugOutputLogCallback(void* pUserParam, const char* channelName, const char* functionName, LOGLEVEL level,
                                    const char* message)
 {
-  if (!s_debugOutputEnabled || level > s_debugOutputLevelFilter || s_debugOutputChannelFilter.Find(functionName) >= 0)
-    return;
-
   static const int logPriority[LOGLEVEL_COUNT] = {
     ANDROID_LOG_INFO,  // NONE
     ANDROID_LOG_ERROR, // ERROR
@@ -345,30 +296,12 @@ static void android_DebugOutputLogCallback(void* pUserParam, const char* channel
 }
 #endif
 
-static void PlatformStandardOutputLogCallback(void* pUserParam, const char* channelName, const char* functionName,
-                                     LOGLEVEL level, const char* message)
-{
-#if defined(__ANDROID__)
-  return;
-#endif
-
-  if (!s_consoleOutputEnabled || level > s_consoleOutputLevelFilter ||
-      s_consoleOutputChannelFilter.Find(channelName) >= 0)
-    return;
-
-#if defined(_WIN32)
-  if (s_msw_console_allocated) {
-    msw_ConsoleOutputLogCallback(pUserParam, channelName, functionName, level, message);
-  }
-  else {
-    StandardOutputLogCallback(pUserParam, channelName, functionName, level, message);
-  }
-#endif
-}
-
 static void DebugOutputLogCallback(void* pUserParam, const char* channelName, const char* functionName, LOGLEVEL level,
                                    const char* message)
 {
+  if (!s_debugOutputEnabled || level > s_debugOutputLevelFilter || s_debugOutputChannelFilter.Find(channelName) >= 0)
+    return;
+
 #if defined(_WIN32)
   msw_DebugOutputLogCallback(pUserParam, channelName, functionName, level, message);
 #endif
@@ -390,11 +323,11 @@ void SetConsoleOutputParams(bool Enabled, const char* ChannelFilter, LOGLEVEL Le
   s_consoleOutputEnabled = Enabled;
 
   if (Enabled)
-    RegisterCallback(PlatformStandardOutputLogCallback, NULL);
+    RegisterCallback(StandardOutputLogCallback, NULL);
   else
-    UnregisterCallback(PlatformStandardOutputLogCallback, NULL);
+    UnregisterCallback(StandardOutputLogCallback, NULL);
 
-#if defined(WIN32)
+#if defined(_WIN32) && !defined(_CONSOLE)
   if (Enabled) {
     // Windows Console behavior is very tricky, and depends on:
     //  - Whether the application is built with defined(_CONSOLE) or not.
@@ -407,16 +340,21 @@ void SetConsoleOutputParams(bool Enabled, const char* ChannelFilter, LOGLEVEL Le
     //
     // To maintain some level of personal sanity, I'll disregard all the DLL/CRT caveats for now.
     //
-    // Microsoft CMD.EXE "does us a favor" and DETACHES the standard console pipes when it spawns
-    // windowed applications, but only if redirections are not specified at the command line.
-    // This creates all kinds of confusion and havok that could easy fill pages of the screen with
-    // comments. The TL;DR version is:
-    //  - only call AllocConsole() if the stdout/stderr pipes are DETACHED (null) - this avoids
-    //    clobbering pipe redirections specified from any shell (cmd/bash) and avoids creating
-    //    spurious console windows when running from MSYS/ConEmu/GitBash.
-    //  - Only use Microsoft's over-engineered Console text-coloring APIs if we called AllocConsole,
-    //    because those APIs result in a whole lot of black screen if you call them while attached to
-    //    a terminal app (ConEmu, ConsoleX, etc).
+    // Console Mode (_CONSOLE) vs Windowed Application
+    //   Microsoft CMD.EXE "does us a favor" and DETACHES the standard console pipes when it spawns
+    //   windowed applications, but only if redirections are not specified at the command line.
+    //   This creates all kinds of confusion and havok that could easy fill pages of the screen with
+    //   comments. The TL;DR version is:
+    //    - only call AllocConsole() if the stdout/stderr pipes are DETACHED (null) - this avoids
+    //      clobbering pipe redirections specified from any shell (cmd/bash) and avoids creating
+    //      spurious console windows when running from MSYS/ConEmu/GitBash.
+    //    - Only use Microsoft's over-engineered Console text-coloring APIs if we called AllocConsole,
+    //      because those APIs result in a whole lot of black screen if you call them while attached to
+    //      a terminal app (ConEmu, ConsoleX, etc).
+    //    - Ignore all of this if defined(_CONSOLE), in that case the OS behavior straightforward and a
+    //      console is always allocated/attached. This is its own annoyance, and thus why few devs use
+    //      it, even for console apps, because actually we DON'T want the console window popping up
+    //      every time we run some console app in the background. --jstine
 
     s_msw_prev_stdin  = ::GetStdHandle(STD_INPUT_HANDLE );
     s_msw_prev_stdout = ::GetStdHandle(STD_OUTPUT_HANDLE);
