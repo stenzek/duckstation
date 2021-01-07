@@ -256,12 +256,10 @@ std::unique_ptr<MemoryCard> MemoryCard::Open(std::string_view filename)
   mc->m_filename = filename;
   if (!mc->LoadFromFile())
   {
-    SmallString message;
-    message.AppendString("Memory card at '");
-    message.AppendString(filename.data(), static_cast<u32>(filename.length()));
-    message.AppendString("' could not be read, formatting.");
-    Log_ErrorPrint(message);
-    g_host_interface->AddOSDMessage(message.GetCharArray(), 5.0f);
+    Log_InfoPrintf("Memory card at '%s' could not be read, formatting.", mc->m_filename.c_str());
+    g_host_interface->AddFormattedOSDMessage(
+      5.0f, g_host_interface->TranslateString("OSDMessage", "Memory card at '%s' could not be read, formatting."),
+      mc->m_filename.c_str());
     mc->Format();
   }
 
