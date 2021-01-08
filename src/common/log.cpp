@@ -229,6 +229,15 @@ static void msw_FreeLegacyConsole()
 
   s_msw_console_allocated = false;
 
+  // clear C file handles to the console, otherwise FreeConsole() fails.
+  std::FILE* fp;
+  if (!s_msw_prev_stdin)
+    freopen_s(&fp, "NUL:", "w", stdin);
+  if (!s_msw_prev_stdout)
+    freopen_s(&fp, "NUL:", "w", stdout);
+  if (!s_msw_prev_stderr)
+    freopen_s(&fp, "NUL:", "w", stderr);
+
   // restore previous handles prior to creating the console.
   ::SetStdHandle(STD_INPUT_HANDLE, s_msw_prev_stdin);
   ::SetStdHandle(STD_OUTPUT_HANDLE, s_msw_prev_stdout);
