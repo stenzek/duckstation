@@ -1,7 +1,9 @@
-/*==========================================*\
-/*=======Calibrator by PavelDurov1488=======*\
-/*==========It's not ready yet...===========*\
-/*===I need to add blur, dynamic noise...===*\
+/*==========================================*/
+/*=======Calibrator by PavelDurov1488=======*/
+/*==============Use as you want=============*/
+/*===I need to add blur, dynamic noise...===*/
+
+/*
 [configuration]
 
 
@@ -66,22 +68,22 @@ DefaultValue = 50.000
 
 float pseudoNoise(vec2 co)
 {
-return fract(sin(dot(vec2(co.x+0.513,co.y+0.4124) ,vec2(12.9898,78.233))) * 43758.5453);// *fract(sin(dot(vec2(co.x+4.231,co.y+3.143) ,vec2(12.9898,78.233)*2.0)) * 43758.5453); //pseudo random number generator
+return fract(sin(dot(vec2(co.x,co.y) ,vec2(12.9898,78.233))) * 43758.5453);// *fract(sin(dot(vec2(co.x,co.y) ,vec2(12.9898,78.233)*2.0)) * 43758.5453); //pseudo random number generator
 }
 
-const vec3 RGBtoY = vec3(0.299, 0.587, 0.114);
-const vec3 RGBtoI = vec3(0.596,-0.275,-0.321);
-const vec3 RGBtoQ = vec3(0.212,-0.523, 0.311);
-const vec3 YIQtoR = vec3(1.0, 0.95568806036115671171, 0.61985809445637075388);
-const vec3 YIQtoG = vec3(1.0,-0.27158179694405859326,-0.64687381613840131330);
-const vec3 YIQtoB = vec3(1.0,-1.10817732668266195230, 1.70506455991918171490);  
+CONSTANT vec3 RGBtoY = vec3(0.299, 0.587, 0.114);
+CONSTANT vec3 RGBtoI = vec3(0.596,-0.275,-0.321);
+CONSTANT vec3 RGBtoQ = vec3(0.212,-0.523, 0.311);
+CONSTANT vec3 YIQtoR = vec3(1.0, 0.95568806036115671171, 0.61985809445637075388);
+CONSTANT vec3 YIQtoG = vec3(1.0,-0.27158179694405859326,-0.64687381613840131330);
+CONSTANT vec3 YIQtoB = vec3(1.0,-1.10817732668266195230, 1.70506455991918171490);  
 
 void main()
 {
 
   
   float2 texcoord = GetCoordinates();
-  float2 time = GetTime();
+  float2 time = float2(GetTime(), GetTime());
 //  int FrameCount = GetFrameCount();
   float4 color = Sample();
 //  float brightness_scale = GetOption(BRIGHTNESS_SCALE);
