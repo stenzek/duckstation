@@ -1055,16 +1055,10 @@ void CommonHostInterface::UpdateControllerRumble()
     if (!controller)
       continue;
 
-    bool changed = false;
     for (u32 i = 0; i < rumble.num_motors; i++)
-    {
-      const float strength = controller->GetVibrationMotorStrength(i);
-      changed |= (strength != rumble.last_strength[i]);
-      rumble.last_strength[i] = strength;
-    }
+      rumble.last_strength[i] = controller->GetVibrationMotorStrength(i);
 
-    if (changed)
-      rumble.update_callback(rumble.last_strength.data(), rumble.num_motors);
+    rumble.update_callback(rumble.last_strength.data(), rumble.num_motors);
   }
 }
 
@@ -1072,15 +1066,10 @@ void CommonHostInterface::StopControllerRumble()
 {
   for (ControllerRumbleState& rumble : m_controller_vibration_motors)
   {
-    bool changed = false;
     for (u32 i = 0; i < rumble.num_motors; i++)
-    {
-      changed |= (rumble.last_strength[i] != 0.0f);
       rumble.last_strength[i] = 0.0f;
-    }
 
-    if (changed)
-      rumble.update_callback(rumble.last_strength.data(), rumble.num_motors);
+    rumble.update_callback(rumble.last_strength.data(), rumble.num_motors);
   }
 }
 
