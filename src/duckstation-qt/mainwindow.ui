@@ -87,6 +87,7 @@
     <addaction name="actionResumeLastState"/>
     <addaction name="separator"/>
     <addaction name="actionPowerOff"/>
+    <addaction name="actionPowerOffWithoutSaving"/>
     <addaction name="actionReset"/>
     <addaction name="actionPause"/>
     <addaction name="menuChangeDisc"/>
@@ -177,7 +178,7 @@
     <addaction name="actionDebugDumpVRAMtoCPUCopies"/>
     <addaction name="actionDumpAudio"/>
     <addaction name="separator"/>
-    <addaction name="actionCPUDebugger" />
+    <addaction name="actionCPUDebugger"/>
     <addaction name="actionDumpRAM"/>
     <addaction name="separator"/>
     <addaction name="actionDebugShowVRAM"/>
@@ -788,6 +789,15 @@
   <action name="actionOpenDataDirectory">
    <property name="text">
     <string>Open Data Directory...</string>
+   </property>
+  </action>
+  <action name="actionPowerOffWithoutSaving">
+   <property name="icon">
+    <iconset resource="resources/resources.qrc">
+     <normaloff>:/icons/process-stop.png</normaloff>:/icons/process-stop.png</iconset>
+   </property>
+   <property name="text">
+    <string>Power Off &amp;Without Saving</string>
    </property>
   </action>
  </widget>

@@ -154,6 +154,7 @@ public Q_SLOTS:
   void resumeSystemFromState(const QString& filename, bool boot_on_failure);
   void resumeSystemFromMostRecentState();
   void powerOffSystem();
+  void powerOffSystemWithoutSaving();
   void synchronousPowerOffSystem();
   void resetSystem();
   void pauseSystem(bool paused, bool wait_until_paused = false);

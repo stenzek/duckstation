@@ -673,7 +673,11 @@ void SDLHostInterface::DrawMainMenuBar()
 
     if (ImGui::MenuItem("Power Off", nullptr, false, system_enabled))
     {
-      RunLater([this]() { DestroySystem(); });
+      RunLater([this]() {
+        if (g_settings.save_state_on_exit)
+          SaveResumeSaveState();
+        PowerOffSystem();
+      });
       ClearImGuiFocus();
     }
 

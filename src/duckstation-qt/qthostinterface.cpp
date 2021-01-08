@@ -808,6 +808,20 @@ void QtHostInterface::powerOffSystem()
     return;
   }
 
+  if (g_settings.save_state_on_exit)
+    SaveResumeSaveState();
+
+  PowerOffSystem();
+}
+
+void QtHostInterface::powerOffSystemWithoutSaving()
+{
+  if (!isOnWorkerThread())
+  {
+    QMetaObject::invokeMethod(this, "powerOffSystemWithoutSaving", Qt::QueuedConnection);
+    return;
+  }
+
   PowerOffSystem();
 }
 

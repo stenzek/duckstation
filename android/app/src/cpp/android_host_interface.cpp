@@ -374,6 +374,10 @@ void AndroidHostInterface::EmulationThreadEntryPoint(jobject emulation_activity,
   EmulationThreadLoop();
 
   thread_env->CallVoidMethod(m_emulation_activity_object, s_EmulationActivity_method_onEmulationStopped);
+
+  if (g_settings.save_state_on_exit)
+    SaveResumeSaveState();
+
   PowerOffSystem();
   DestroyImGuiContext();
   thread_env->DeleteGlobalRef(m_emulation_activity_object);

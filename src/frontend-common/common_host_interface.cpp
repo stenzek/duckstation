@@ -174,9 +174,6 @@ void CommonHostInterface::PowerOffSystem()
   if (System::IsShutdown())
     return;
 
-  if (g_settings.save_state_on_exit)
-    SaveResumeSaveState();
-
   HostInterface::PowerOffSystem();
 
   if (InBatchMode())
@@ -1488,6 +1485,9 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                          return;
                        }
                      }
+
+                     if (g_settings.save_state_on_exit)
+                       SaveResumeSaveState();
 
                      PowerOffSystem();
                    }

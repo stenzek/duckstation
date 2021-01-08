@@ -810,6 +810,7 @@ void MainWindow::updateEmulationActions(bool starting, bool running)
   m_ui.actionResumeLastState->setDisabled(starting || running);
 
   m_ui.actionPowerOff->setDisabled(starting || !running);
+  m_ui.actionPowerOffWithoutSaving->setDisabled(starting || !running);
   m_ui.actionReset->setDisabled(starting || !running);
   m_ui.actionPause->setDisabled(starting || !running);
   m_ui.actionChangeDisc->setDisabled(starting || !running);
@@ -926,6 +927,8 @@ void MainWindow::connectSignals()
   connect(m_ui.actionAddGameDirectory, &QAction::triggered,
           [this]() { getSettingsDialog()->getGameListSettingsWidget()->addSearchDirectory(this); });
   connect(m_ui.actionPowerOff, &QAction::triggered, m_host_interface, &QtHostInterface::powerOffSystem);
+  connect(m_ui.actionPowerOffWithoutSaving, &QAction::triggered, m_host_interface,
+          &QtHostInterface::powerOffSystemWithoutSaving);
   connect(m_ui.actionReset, &QAction::triggered, m_host_interface, &QtHostInterface::resetSystem);
   connect(m_ui.actionPause, &QAction::toggled, [this](bool active) { m_host_interface->pauseSystem(active); });
   connect(m_ui.actionScreenshot, &QAction::triggered, m_host_interface, &QtHostInterface::saveScreenshot);
