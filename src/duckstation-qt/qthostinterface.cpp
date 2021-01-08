@@ -719,7 +719,6 @@ void QtHostInterface::OnSystemStateSaved(bool global, s32 slot)
 void QtHostInterface::LoadSettings()
 {
   m_settings_interface = std::make_unique<INISettingsInterface>(CommonHostInterface::GetSettingsFileName());
-  Log::SetConsoleOutputParams(true);
 
   if (!CommonHostInterface::CheckSettings(*m_settings_interface.get()))
   {
