@@ -6245,12 +6245,17 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>多重采样反锯齿设置为%ux。</translation>
     </message>
     <message>
-        <location filename="../../core/memory_card.cpp" line="299"/>
+        <location filename="../../core/memory_card.cpp" line="261"/>
+        <source>Memory card at &apos;%s&apos; could not be read, formatting.</source>
+        <translation>无法读取位于 &apos;%s&apos; 的记忆卡，正在格式化。</translation>
+    </message>
+    <message>
+        <location filename="../../core/memory_card.cpp" line="297"/>
         <source>Failed to save memory card to &apos;%s&apos;</source>
         <translation>无法保存记忆卡到&apos;%s&apos;</translation>
     </message>
     <message>
-        <location filename="../../core/memory_card.cpp" line="308"/>
+        <location filename="../../core/memory_card.cpp" line="306"/>
         <source>Saved memory card to &apos;%s&apos;</source>
         <translation>保存记忆卡到&apos;%s&apos;</translation>
     </message>
