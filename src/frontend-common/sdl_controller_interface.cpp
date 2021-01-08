@@ -710,7 +710,7 @@ void SDLControllerInterface::SetControllerRumbleStrength(int controller_index, c
     return;
 
   // we'll update before this duration is elapsed
-  static constexpr u32 DURATION = 1000;
+  static constexpr u32 DURATION = 65535; // SDL_MAX_RUMBLE_DURATION_MS
 
 #if SDL_VERSION_ATLEAST(2, 0, 9)
   if (it->use_game_controller_rumble)
