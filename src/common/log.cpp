@@ -135,11 +135,11 @@ static void FormatLogMessageForDisplay(const char* channelName, const char* func
 #include <io.h>
 #define STDOUT_FILENO (_fileno(stdout))
 #define STDERR_FILENO (_fileno(stderr))
-#define write(fd, buf,count)  _write(fd,buf,(int)count)
+#define write(fd, buf, count) _write(fd, buf, (int)count)
 #endif
 
 static void StandardOutputLogCallback(void* pUserParam, const char* channelName, const char* functionName,
-                                     LOGLEVEL level, const char* message)
+                                      LOGLEVEL level, const char* message)
 {
   if (!s_consoleOutputEnabled || level > s_consoleOutputLevelFilter ||
       s_consoleOutputChannelFilter.Find(channelName) >= 0)
@@ -158,7 +158,8 @@ static void StandardOutputLogCallback(void* pUserParam, const char* channelName,
     "\033[0;34m", // TRACE
   };
 
-  if (int outputFd = (level <= LOGLEVEL_WARNING) ? STDERR_FILENO : STDOUT_FILENO; outputFd >= 0) {
+  if (int outputFd = (level <= LOGLEVEL_WARNING) ? STDERR_FILENO : STDOUT_FILENO; outputFd >= 0)
+  {
     write(outputFd, colorCodes[level], std::strlen(colorCodes[level]));
 
     Log::FormatLogMessageForDisplay(
@@ -171,16 +172,15 @@ static void StandardOutputLogCallback(void* pUserParam, const char* channelName,
   }
 }
 
-
 #if defined(_WIN32)
-static bool   s_msw_console_allocated = false;
-static HANDLE s_msw_prev_stdin  = {};
+static bool s_msw_console_allocated = false;
+static HANDLE s_msw_prev_stdin = {};
 static HANDLE s_msw_prev_stdout = {};
 static HANDLE s_msw_prev_stderr = {};
 
 #include <fcntl.h>
 
-void msw_ReopenStandardPipes()
+static void msw_ReopenStandardPipes()
 {
   if (s_msw_console_allocated)
     return;
@@ -195,14 +195,23 @@ void msw_ReopenStandardPipes()
 
   // open outputs as binary to suppress Windows newline corruption (\r mess)
   std::FILE* fp;
-  if (!s_msw_prev_stdin  ) { freopen_s(&fp, "CONIN$",  "r" , stdin ); }
-  if (!s_msw_prev_stdout ) { freopen_s(&fp, "CONOUT$", "wb", stdout); }
-  if (!s_msw_prev_stderr ) { freopen_s(&fp, "CONOUT$", "wb", stderr); }
+  if (!s_msw_prev_stdin)
+  {
+    freopen_s(&fp, "CONIN$", "r", stdin);
+  }
+  if (!s_msw_prev_stdout)
+  {
+    freopen_s(&fp, "CONOUT$", "wb", stdout);
+  }
+  if (!s_msw_prev_stderr)
+  {
+    freopen_s(&fp, "CONOUT$", "wb", stderr);
+  }
 
   // Windows Console Oddities - The only way to get windows built-in console is to render UTF chars from
   // the correct alt. fonts is to set either _O_U8TEXT or _O_U16TEXT. However, this imposes a requirement
   // that we must write UTF16 to the console using widechar versions of printf and friends (eg, wprintf)...
-  // EVEN IF YOU WANT TO USE UTF8. Worse, printf() doesn't do the smart thing and assume UTF8 and then 
+  // EVEN IF YOU WANT TO USE UTF8. Worse, printf() doesn't do the smart thing and assume UTF8 and then
   // convert it to UTF16 for us when the output file is in U16TEXT mode. Nope! It throws an ASSERTION and
   // forces us to call wprintf, which makes this all totally useless and not cross-platform.
 
@@ -213,35 +222,53 @@ void msw_ReopenStandardPipes()
   //_setmode(_fileno(stderr), _O_U8TEXT);
 }
 
-void msw_FreeLegacyConsole()
+static void msw_FreeLegacyConsole()
 {
-    if (!s_msw_console_allocated)
-      return;
+  if (!s_msw_console_allocated)
+    return;
 
-    s_msw_console_allocated = false;
+  s_msw_console_allocated = false;
 
-    // restore previous handles prior to creating the console.
-    ::SetStdHandle(STD_INPUT_HANDLE , s_msw_prev_stdin );
-    ::SetStdHandle(STD_OUTPUT_HANDLE, s_msw_prev_stdout);
-    ::SetStdHandle(STD_ERROR_HANDLE , s_msw_prev_stderr);
+  // restore previous handles prior to creating the console.
+  ::SetStdHandle(STD_INPUT_HANDLE, s_msw_prev_stdin);
+  ::SetStdHandle(STD_OUTPUT_HANDLE, s_msw_prev_stdout);
+  ::SetStdHandle(STD_ERROR_HANDLE, s_msw_prev_stderr);
 
-    ::FreeConsole();
+  ::FreeConsole();
 }
 
-bool msw_AttachLegacyConsole()
+static bool msw_AttachLegacyConsole()
 {
   if (::AttachConsole(ATTACH_PARENT_PROCESS))
     return true;
 
   // ERROR_ACCESS_DENIED means a windows Console is already attached.
-  if (auto err = ::GetLastError(); err == ERROR_ACCESS_DENIED) {
+  if (auto err = ::GetLastError(); err == ERROR_ACCESS_DENIED)
+  {
     return true;
   }
   return false;
 }
 
+static bool msw_EnableVirtualTerminalProcessing()
+{
+  HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+  if (!hConsole)
+    return false;
+
+  DWORD old_mode;
+  if (!GetConsoleMode(hConsole, &old_mode))
+    return false;
+
+  // already enabled?
+  if (old_mode & ENABLE_VIRTUAL_TERMINAL_PROCESSING)
+    return true;
+
+  return SetConsoleMode(hConsole, old_mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
+}
+
 // Creates an old-fashioned console window.
-bool msw_AllocLegacyConsole()
+static bool msw_AllocLegacyConsole()
 {
   // A potentially fancy solution which I haven't had time to experiment with yet is to spawn our own
   // terminal application and bind our standard pipes to it, instead of using AllocConsole(). This would
@@ -249,24 +276,26 @@ bool msw_AllocLegacyConsole()
   // than the windows legacy console (but would also depend on the user having them installed and PATH
   // accessible, so definitely not without annoying caveats) --jstine
 
-  if (!::AllocConsole()) {
-      // Console could fail to allocate on an Appveyor/Jenkins environment, for example, because
-      // when being run as a service the console may be unable to bind itself to a user login session.
-      // It may also fail if a console is already allocated <-- this is a problem since in this case
-      // we still want to set
+  if (!::AllocConsole())
+  {
+    // Console could fail to allocate on an Appveyor/Jenkins environment, for example, because
+    // when being run as a service the console may be unable to bind itself to a user login session.
+    // It may also fail if a console is already allocated <-- this is a problem since in this case
+    // we still want to set
 
-      if (auto err = ::GetLastError(); err == ERROR_ACCESS_DENIED) {
-        // ERROR_ACCESS_DENIED means a windows Console is already attached.
-        // whatever the console is, who knows, so let's early-out, and not mess with its font settings.
-        return true;
-      }
+    if (auto err = ::GetLastError(); err == ERROR_ACCESS_DENIED)
+    {
+      // ERROR_ACCESS_DENIED means a windows Console is already attached.
+      // whatever the console is, who knows, so let's early-out, and not mess with its font settings.
+      return true;
+    }
   }
 
   return true;
 }
 
-static void msw_DebugOutputLogCallback(void* pUserParam, const char* channelName, const char* functionName, LOGLEVEL level,
-                                   const char* message)
+static void msw_DebugOutputLogCallback(void* pUserParam, const char* channelName, const char* functionName,
+                                       LOGLEVEL level, const char* message)
 {
   FormatLogMessageForDisplay(
     channelName, functionName, level, message, [](const char* text, void*) { OutputDebugStringA(text); }, nullptr);
@@ -276,8 +305,8 @@ static void msw_DebugOutputLogCallback(void* pUserParam, const char* channelName
 #endif
 
 #if defined(__ANDROID__)
-static void android_DebugOutputLogCallback(void* pUserParam, const char* channelName, const char* functionName, LOGLEVEL level,
-                                   const char* message)
+static void android_DebugOutputLogCallback(void* pUserParam, const char* channelName, const char* functionName,
+                                           LOGLEVEL level, const char* message)
 {
   static const int logPriority[LOGLEVEL_COUNT] = {
     ANDROID_LOG_INFO,  // NONE
@@ -311,7 +340,6 @@ static void DebugOutputLogCallback(void* pUserParam, const char* channelName, co
 #endif
 }
 
-
 void SetConsoleOutputParams(bool Enabled, const char* ChannelFilter, LOGLEVEL LevelFilter)
 {
   s_consoleOutputChannelFilter = (ChannelFilter != NULL) ? ChannelFilter : "";
@@ -328,7 +356,8 @@ void SetConsoleOutputParams(bool Enabled, const char* ChannelFilter, LOGLEVEL Le
     UnregisterCallback(StandardOutputLogCallback, NULL);
 
 #if defined(_WIN32) && !defined(_CONSOLE)
-  if (Enabled) {
+  if (Enabled)
+  {
     // Windows Console behavior is very tricky, and depends on:
     //  - Whether the application is built with defined(_CONSOLE) or not.
     //  - Whether the application is started via a Microsoft shell (Cmd.exe) or a Unix'y shell
@@ -356,12 +385,15 @@ void SetConsoleOutputParams(bool Enabled, const char* ChannelFilter, LOGLEVEL Le
     //      it, even for console apps, because actually we DON'T want the console window popping up
     //      every time we run some console app in the background. --jstine
 
-    s_msw_prev_stdin  = ::GetStdHandle(STD_INPUT_HANDLE );
+    s_msw_prev_stdin = ::GetStdHandle(STD_INPUT_HANDLE);
     s_msw_prev_stdout = ::GetStdHandle(STD_OUTPUT_HANDLE);
-    s_msw_prev_stderr = ::GetStdHandle(STD_ERROR_HANDLE );
+    s_msw_prev_stderr = ::GetStdHandle(STD_ERROR_HANDLE);
 
-    if (!s_msw_prev_stdout || !s_msw_prev_stdin) {
-      if (msw_AttachLegacyConsole() || msw_AllocLegacyConsole()) {
+    if (!s_msw_prev_stdout || !s_msw_prev_stdin)
+    {
+      if (msw_AttachLegacyConsole() || msw_AllocLegacyConsole())
+      {
+        msw_EnableVirtualTerminalProcessing();
         msw_ReopenStandardPipes();
       }
     }
