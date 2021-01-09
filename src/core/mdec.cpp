@@ -18,8 +18,9 @@ MDEC::~MDEC() = default;
 
 void MDEC::Initialize()
 {
-  m_block_copy_out_event =
-    TimingEvents::CreateTimingEvent("MDEC Block Copy Out", 1, 1, std::bind(&MDEC::CopyOutBlock, this), false);
+  m_block_copy_out_event = TimingEvents::CreateTimingEvent(
+    "MDEC Block Copy Out", 1, 1,
+    [](void* param, TickCount ticks, TickCount ticks_late) { static_cast<MDEC*>(param)->CopyOutBlock(); }, this, false);
   m_total_blocks_decoded = 0;
   Reset();
 }

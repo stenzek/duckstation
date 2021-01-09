@@ -36,10 +36,10 @@ void Shutdown()
 }
 
 std::unique_ptr<TimingEvent> CreateTimingEvent(std::string name, TickCount period, TickCount interval,
-                                               TimingEventCallback callback, bool activate)
+                                               TimingEventCallback callback, void* callback_param, bool activate)
 {
   std::unique_ptr<TimingEvent> event =
-    std::make_unique<TimingEvent>(std::move(name), period, interval, std::move(callback));
+    std::make_unique<TimingEvent>(std::move(name), period, interval, callback, callback_param);
   if (activate)
     event->Activate();
 
@@ -291,7 +291,7 @@ void RunEvents()
       event->m_time_since_last_run = 0;
 
       // The cycles_late is only an indicator, it doesn't modify the cycles to execute.
-      event->m_callback(ticks_to_execute, ticks_late);
+      event->m_callback(event->m_callback_param, ticks_to_execute, ticks_late);
       if (event->m_active)
         SortEvent(event);
     }
@@ -369,9 +369,10 @@ bool DoState(StateWrapper& sw)
 
 } // namespace TimingEvents
 
-TimingEvent::TimingEvent(std::string name, TickCount period, TickCount interval, TimingEventCallback callback)
-  : m_downcount(interval), m_time_since_last_run(0), m_period(period), m_interval(interval),
-    m_callback(std::move(callback)), m_name(std::move(name)), m_active(false)
+TimingEvent::TimingEvent(std::string name, TickCount period, TickCount interval, TimingEventCallback callback,
+                         void* callback_param)
+  : m_downcount(interval), m_time_since_last_run(0), m_period(period), m_interval(interval), m_callback(callback),
+    m_callback_param(callback_param), m_name(std::move(name)), m_active(false)
 {
 }
 
@@ -448,7 +449,7 @@ void TimingEvent::InvokeEarly(bool force /* = false */)
 
   m_downcount = pending_ticks + m_interval;
   m_time_since_last_run -= ticks_to_execute;
-  m_callback(ticks_to_execute, 0);
+  m_callback(m_callback_param, ticks_to_execute, 0);
 
   // Since we've changed the downcount, we need to re-sort the events.
   DebugAssert(TimingEvents::s_current_event != this);

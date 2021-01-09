@@ -29,8 +29,10 @@ void DMA::Initialize()
   m_halt_ticks = g_settings.dma_halt_ticks;
 
   m_transfer_buffer.resize(32);
-  m_unhalt_event = TimingEvents::CreateTimingEvent("DMA Transfer Unhalt", 1, m_max_slice_ticks,
-                                                   std::bind(&DMA::UnhaltTransfer, this, std::placeholders::_1), false);
+  m_unhalt_event = TimingEvents::CreateTimingEvent(
+    "DMA Transfer Unhalt", 1, m_max_slice_ticks,
+    [](void* param, TickCount ticks, TickCount ticks_late) { static_cast<DMA*>(param)->UnhaltTransfer(ticks); }, this,
+    false);
 
   Reset();
 }

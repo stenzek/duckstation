@@ -78,10 +78,14 @@ CDROM::~CDROM() = default;
 
 void CDROM::Initialize()
 {
-  m_command_event =
-    TimingEvents::CreateTimingEvent("CDROM Command Event", 1, 1, std::bind(&CDROM::ExecuteCommand, this), false);
-  m_drive_event = TimingEvents::CreateTimingEvent("CDROM Drive Event", 1, 1,
-                                                  std::bind(&CDROM::ExecuteDrive, this, std::placeholders::_2), false);
+  m_command_event = TimingEvents::CreateTimingEvent(
+    "CDROM Command Event", 1, 1,
+    [](void* param, TickCount ticks, TickCount ticks_late) { static_cast<CDROM*>(param)->ExecuteCommand(); }, this,
+    false);
+  m_drive_event = TimingEvents::CreateTimingEvent(
+    "CDROM Drive Event", 1, 1,
+    [](void* param, TickCount ticks, TickCount ticks_late) { static_cast<CDROM*>(param)->ExecuteDrive(ticks_late); },
+    this, false);
 
   if (g_settings.cdrom_read_thread)
     m_reader.StartThread();

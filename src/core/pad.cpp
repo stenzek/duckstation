@@ -17,7 +17,9 @@ Pad::~Pad() = default;
 void Pad::Initialize()
 {
   m_transfer_event = TimingEvents::CreateTimingEvent(
-    "Pad Serial Transfer", 1, 1, std::bind(&Pad::TransferEvent, this, std::placeholders::_2), false);
+    "Pad Serial Transfer", 1, 1,
+    [](void* param, TickCount ticks, TickCount ticks_late) { static_cast<Pad*>(param)->TransferEvent(ticks_late); },
+    this, false);
   Reset();
 }
 

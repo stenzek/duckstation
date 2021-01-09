@@ -13,8 +13,10 @@ MemoryCard::MemoryCard()
 {
   m_FLAG.no_write_yet = true;
 
-  m_save_event = TimingEvents::CreateTimingEvent("Memory Card Host Flush", GetSaveDelayInTicks(), GetSaveDelayInTicks(),
-                                                 std::bind(&MemoryCard::SaveIfChanged, this, true), false);
+  m_save_event = TimingEvents::CreateTimingEvent(
+    "Memory Card Host Flush", GetSaveDelayInTicks(), GetSaveDelayInTicks(),
+    [](void* param, TickCount ticks, TickCount ticks_late) { static_cast<MemoryCard*>(param)->SaveIfChanged(true); },
+    this, false);
 }
 
 MemoryCard::~MemoryCard()

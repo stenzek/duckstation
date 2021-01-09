@@ -9,12 +9,13 @@
 class StateWrapper;
 
 // Event callback type. Second parameter is the number of cycles the event was executed "late".
-using TimingEventCallback = std::function<void(TickCount ticks, TickCount ticks_late)>;
+using TimingEventCallback = void (*)(void* param, TickCount ticks, TickCount ticks_late);
 
 class TimingEvent
 {
 public:
-  TimingEvent(std::string name, TickCount period, TickCount interval, TimingEventCallback callback);
+  TimingEvent(std::string name, TickCount period, TickCount interval, TimingEventCallback callback,
+              void* callback_param);
   ~TimingEvent();
 
   ALWAYS_INLINE const std::string& GetName() const { return m_name; }
@@ -59,14 +60,16 @@ public:
   TimingEvent* prev = nullptr;
   TimingEvent* next = nullptr;
 
+  TimingEventCallback m_callback;
+  void* m_callback_param;
+
   TickCount m_downcount;
   TickCount m_time_since_last_run;
   TickCount m_period;
   TickCount m_interval;
-
-  TimingEventCallback m_callback;
-  std::string m_name;
   bool m_active;
+
+  std::string m_name;
 };
 
 namespace TimingEvents {
@@ -79,7 +82,7 @@ void Shutdown();
 
 /// Creates a new event.
 std::unique_ptr<TimingEvent> CreateTimingEvent(std::string name, TickCount period, TickCount interval,
-                                               TimingEventCallback callback, bool activate);
+                                               TimingEventCallback callback, void* callback_param, bool activate);
 
 /// Serialization.
 bool DoState(StateWrapper& sw);
@@ -90,6 +93,4 @@ void UpdateCPUDowncount();
 
 TimingEvent** GetHeadEventPtr();
 
-
-
-} // namespace TimingEventManager
+} // namespace TimingEvents

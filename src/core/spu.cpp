@@ -24,11 +24,13 @@ void SPU::Initialize()
   // (X * D) / N / 768 -> (X * D) / (N * 768)
   m_cpu_ticks_per_spu_tick = System::ScaleTicksToOverclock(SYSCLK_TICKS_PER_SPU_TICK);
   m_cpu_tick_divider = static_cast<TickCount>(g_settings.cpu_overclock_numerator * SYSCLK_TICKS_PER_SPU_TICK);
-  m_tick_event = TimingEvents::CreateTimingEvent("SPU Sample", m_cpu_ticks_per_spu_tick, m_cpu_ticks_per_spu_tick,
-                                                 std::bind(&SPU::Execute, this, std::placeholders::_1), false);
-  m_transfer_event =
-    TimingEvents::CreateTimingEvent("SPU Transfer", TRANSFER_TICKS_PER_HALFWORD, TRANSFER_TICKS_PER_HALFWORD,
-                                    std::bind(&SPU::ExecuteTransfer, this, std::placeholders::_1), false);
+  m_tick_event = TimingEvents::CreateTimingEvent(
+    "SPU Sample", m_cpu_ticks_per_spu_tick, m_cpu_ticks_per_spu_tick,
+    [](void* param, TickCount ticks, TickCount ticks_late) { static_cast<SPU*>(param)->Execute(ticks); }, this, false);
+  m_transfer_event = TimingEvents::CreateTimingEvent(
+    "SPU Transfer", TRANSFER_TICKS_PER_HALFWORD, TRANSFER_TICKS_PER_HALFWORD,
+    [](void* param, TickCount ticks, TickCount ticks_late) { static_cast<SPU*>(param)->ExecuteTransfer(ticks); }, this,
+    false);
 
   Reset();
 }

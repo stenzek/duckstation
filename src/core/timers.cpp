@@ -18,7 +18,9 @@ Timers::~Timers() = default;
 void Timers::Initialize()
 {
   m_sysclk_event = TimingEvents::CreateTimingEvent(
-    "Timer SysClk Interrupt", 1, 1, std::bind(&Timers::AddSysClkTicks, this, std::placeholders::_1), false);
+    "Timer SysClk Interrupt", 1, 1,
+    [](void* param, TickCount ticks, TickCount ticks_late) { static_cast<Timers*>(param)->AddSysClkTicks(ticks); },
+    this, false);
   Reset();
 }
 
