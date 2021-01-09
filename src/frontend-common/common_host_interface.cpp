@@ -1880,11 +1880,6 @@ void CommonHostInterface::ApplyInputProfile(const char* profile_path, SettingsIn
     }
   }
 
-  if (System::IsValid())
-    System::UpdateControllers();
-
-  UpdateInputMap(si);
-
   ReportFormattedMessage(TranslateString("OSDMessage", "Loaded input profile from '%s'"), profile_path);
 }
 

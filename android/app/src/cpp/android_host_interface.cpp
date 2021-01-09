@@ -822,6 +822,7 @@ bool AndroidHostInterface::ApplyInputProfile(const char* profile_name)
 
   Assert(!IsEmulationThreadRunning() || IsEmulationThreadPaused());
   CommonHostInterface::ApplyInputProfile(path.c_str(), m_settings_interface);
+  ApplySettings(false);
   return true;
 }
 

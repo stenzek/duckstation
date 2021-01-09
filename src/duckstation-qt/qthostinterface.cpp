@@ -767,8 +767,17 @@ void QtHostInterface::applyInputProfile(const QString& profile_path)
     return;
   }
 
-  std::lock_guard<std::recursive_mutex> lock(m_settings_mutex);
-  ApplyInputProfile(profile_path.toUtf8().data(), *m_settings_interface.get());
+  Settings old_settings(std::move(g_settings));
+  {
+    std::lock_guard<std::recursive_mutex> lock(m_settings_mutex);
+    CommonHostInterface::ApplyInputProfile(profile_path.toUtf8().data(), *m_settings_interface.get());
+    CommonHostInterface::LoadSettings(*m_settings_interface.get());
+    CommonHostInterface::ApplyGameSettings(false);
+    CommonHostInterface::FixIncompatibleSettings(false);
+  }
+
+  CheckForSettingsChanges(old_settings);
+
   emit inputProfileLoaded();
 }
 
