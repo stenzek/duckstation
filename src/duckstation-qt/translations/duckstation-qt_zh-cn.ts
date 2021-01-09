@@ -1610,52 +1610,52 @@
     <message>
         <location filename="../consolesettingswidget.ui" line="170"/>
         <source>None (Double Speed)</source>
-        <translation>无 (二倍速)</translation>
+        <translation>无 (2倍速)</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="175"/>
         <source>2x (Quad Speed)</source>
-        <translation>2x (四倍速)</translation>
+        <translation>2x (4倍速)</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="180"/>
         <source>3x (6x Speed)</source>
-        <translation>3x (6x倍速)</translation>
+        <translation>3x (6倍速)</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="185"/>
         <source>4x (8x Speed)</source>
-        <translation>4x (8x倍速)</translation>
+        <translation>4x (8倍速)</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="190"/>
         <source>5x (10x Speed)</source>
-        <translation>5x (10x倍速)</translation>
+        <translation>5x (10倍速)</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="195"/>
         <source>6x (12x Speed)</source>
-        <translation>6x (12x倍速)</translation>
+        <translation>6x (12倍速)</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="200"/>
         <source>7x (14x Speed)</source>
-        <translation>7x (14x倍速)</translation>
+        <translation>7x (14倍速)</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="205"/>
         <source>8x (16x Speed)</source>
-        <translation>8x (16x倍速)</translation>
+        <translation>8x (16倍速)</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="210"/>
         <source>9x (18x Speed)</source>
-        <translation>9x (18x倍速)</translation>
+        <translation>9x (18倍速)</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="215"/>
         <source>10x (20x Speed)</source>
-        <translation>10x (20x倍速)</translation>
+        <translation>10x (20倍速)</translation>
     </message>
     <message>
         <source>CDROM Emulation</source>
@@ -1699,7 +1699,7 @@
     <message>
         <location filename="../consolesettingswidget.cpp" line="43"/>
         <source>None (Double Speed</source>
-        <translation>无 (二倍速)</translation>
+        <translation>无 (2倍速)</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="44"/>
@@ -3531,52 +3531,52 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../gamepropertiesdialog.ui" line="456"/>
         <source>None (Double Speed)</source>
-        <translation>无 (二倍速)</translation>
+        <translation>无 (2倍速)</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="461"/>
         <source>2x (Quad Speed)</source>
-        <translation>2x (四倍速)</translation>
+        <translation>2x (4倍速)</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="466"/>
         <source>3x (6x Speed)</source>
-        <translation>3x (6x倍速)</translation>
+        <translation>3x (6倍速)</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="471"/>
         <source>4x (8x Speed)</source>
-        <translation>4x (8x倍速)</translation>
+        <translation>4x (8倍速)</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="476"/>
         <source>5x (10x Speed)</source>
-        <translation>5x (10x倍速)</translation>
+        <translation>5x (10倍速)</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="481"/>
         <source>6x (12x Speed)</source>
-        <translation>6x (12x倍速)</translation>
+        <translation>6x (12倍速)</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="486"/>
         <source>7x (14x Speed)</source>
-        <translation>7x (14x倍速)</translation>
+        <translation>7x (14倍速)</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="491"/>
         <source>8x (16x Speed)</source>
-        <translation>8x (16x倍速)</translation>
+        <translation>8x (16倍速)</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="496"/>
         <source>9x (18x Speed)</source>
-        <translation>9x (18x倍速)</translation>
+        <translation>9x (18倍速)</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="501"/>
         <source>10x (20x Speed)</source>
-        <translation>10x (20x倍速)</translation>
+        <translation>10x (20倍速)</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="526"/>
@@ -3974,7 +3974,7 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../generalsettingswidget.ui" line="73"/>
         <location filename="../generalsettingswidget.cpp" line="61"/>
         <source>Save State On Exit</source>
-        <translation>退出时保存即时存档</translation>
+        <translation>退出时保存进度</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="94"/>
@@ -4097,7 +4097,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../generalsettingswidget.cpp" line="62"/>
         <source>Automatically saves the emulator state when powering down or exiting. You can then resume directly from where you left off next time.</source>
-        <translation>关闭或退出时自动保存模拟器状态。然后下次您可以直接从离开的地方继续。</translation>
+        <translation>关闭或退出模拟器时自动保存进度。然后下次您可以直接从离开的地方继续。</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="64"/>
