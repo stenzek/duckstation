@@ -17,8 +17,8 @@ public:
   TimingEvent(std::string name, TickCount period, TickCount interval, TimingEventCallback callback);
   ~TimingEvent();
 
-  const std::string& GetName() const { return m_name; }
-  bool IsActive() const { return m_active; }
+  ALWAYS_INLINE const std::string& GetName() const { return m_name; }
+  ALWAYS_INLINE bool IsActive() const { return m_active; }
 
   // Returns the number of ticks between each event.
   ALWAYS_INLINE TickCount GetPeriod() const { return m_period; }

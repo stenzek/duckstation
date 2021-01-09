@@ -158,6 +158,12 @@ void DMA::WriteRegister(u32 offset, u32 value)
 
       case 0x08:
       {
+        // HACK: Due to running DMA in slices, we can't wait for the current halt time to finish before running the
+        // first block of a new channel. This affects games like FF8, where they kick a SPU transfer while a GPU
+        // transfer is happening, and the SPU transfer gets delayed until the GPU transfer unhalts and finishes, and
+        // breaks the interrupt.
+        const bool ignore_halt = !state.channel_control.enable_busy && (value & (1u << 24));
+
         state.channel_control.bits = (state.channel_control.bits & ~ChannelState::ChannelControl::WRITE_MASK) |
                                      (value & ChannelState::ChannelControl::WRITE_MASK);
         Log_TracePrintf("DMA channel %u channel control <- 0x%08X", channel_index, state.channel_control.bits);
@@ -166,7 +172,7 @@ void DMA::WriteRegister(u32 offset, u32 value)
         if (static_cast<Channel>(channel_index) == Channel::OTC)
           SetRequest(static_cast<Channel>(channel_index), state.channel_control.start_trigger);
 
-        if (CanTransferChannel(static_cast<Channel>(channel_index)))
+        if (CanTransferChannel(static_cast<Channel>(channel_index), ignore_halt))
           TransferChannel(static_cast<Channel>(channel_index));
         return;
       }
@@ -186,7 +192,7 @@ void DMA::WriteRegister(u32 offset, u32 value)
 
         for (u32 i = 0; i < NUM_CHANNELS; i++)
         {
-          if (CanTransferChannel(static_cast<Channel>(i)))
+          if (CanTransferChannel(static_cast<Channel>(i), false))
           {
             if (!TransferChannel(static_cast<Channel>(i)))
               break;
@@ -220,11 +226,11 @@ void DMA::SetRequest(Channel channel, bool request)
     return;
 
   cs.request = request;
-  if (CanTransferChannel(channel))
+  if (CanTransferChannel(channel, false))
     TransferChannel(channel);
 }
 
-bool DMA::CanTransferChannel(Channel channel) const
+bool DMA::CanTransferChannel(Channel channel, bool ignore_halt) const
 {
   if (!m_DPCR.GetMasterEnable(channel))
     return false;
@@ -233,7 +239,7 @@ bool DMA::CanTransferChannel(Channel channel) const
   if (!cs.channel_control.enable_busy)
     return false;
 
-  if (cs.channel_control.sync_mode != SyncMode::Manual && IsTransferHalted())
+  if (cs.channel_control.sync_mode != SyncMode::Manual && (IsTransferHalted() && !ignore_halt))
     return false;
 
   return cs.request;
@@ -451,6 +457,8 @@ void DMA::HaltTransfer(TickCount duration)
 {
   m_halt_ticks_remaining += duration;
   Log_DebugPrintf("Halting DMA for %d ticks", m_halt_ticks_remaining);
+  if (m_unhalt_event->IsActive())
+    return;
 
   DebugAssert(!m_unhalt_event->IsActive());
   m_unhalt_event->SetIntervalAndSchedule(m_halt_ticks_remaining);
@@ -466,7 +474,7 @@ void DMA::UnhaltTransfer(TickCount ticks)
   // Main thing is that OTC happens after GPU, because otherwise it'll wipe out the LL.
   for (u32 i = 0; i < NUM_CHANNELS; i++)
   {
-    if (CanTransferChannel(static_cast<Channel>(i)))
+    if (CanTransferChannel(static_cast<Channel>(i), false))
     {
       if (!TransferChannel(static_cast<Channel>(i)))
         return;

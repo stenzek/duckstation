@@ -254,8 +254,7 @@ u16 SPU::ReadRegister(u32 offset)
       return m_transfer_control.bits;
 
     case 0x1F801DAE - SPU_BASE:
-      m_tick_event->InvokeEarly();
-      m_transfer_event->InvokeEarly();
+      GeneratePendingSamples();
       Log_TracePrintf("SPU status register -> 0x%04X", ZeroExtend32(m_SPUCNT.bits));
       return m_SPUSTAT.bits;
 
@@ -272,11 +271,11 @@ u16 SPU::ReadRegister(u32 offset)
       return m_external_volume_right;
 
     case 0x1F801DB8 - SPU_BASE:
-      m_tick_event->InvokeEarly();
+      GeneratePendingSamples();
       return m_main_volume_left.current_level;
 
     case 0x1F801DBA - SPU_BASE:
-      m_tick_event->InvokeEarly();
+      GeneratePendingSamples();
       return m_main_volume_right.current_level;
 
     default:
@@ -290,7 +289,7 @@ u16 SPU::ReadRegister(u32 offset)
       if (offset >= (0x1F801E00 - SPU_BASE) && offset < (0x1F801E60 - SPU_BASE))
       {
         const u32 voice_index = (offset - (0x1F801E00 - SPU_BASE)) / 4;
-        m_tick_event->InvokeEarly();
+        GeneratePendingSamples();
         if (offset & 0x02)
           return m_voices[voice_index].left_volume.current_level;
         else
@@ -310,7 +309,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801D80 - SPU_BASE:
     {
       Log_DebugPrintf("SPU main volume left <- 0x%04X", ZeroExtend32(value));
-      m_tick_event->InvokeEarly();
+      GeneratePendingSamples();
       m_main_volume_left_reg.bits = value;
       m_main_volume_left.Reset(m_main_volume_left_reg);
       return;
@@ -319,7 +318,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801D82 - SPU_BASE:
     {
       Log_DebugPrintf("SPU main volume right <- 0x%04X", ZeroExtend32(value));
-      m_tick_event->InvokeEarly();
+      GeneratePendingSamples();
       m_main_volume_right_reg.bits = value;
       m_main_volume_right.Reset(m_main_volume_right_reg);
       return;
@@ -328,7 +327,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801D84 - SPU_BASE:
     {
       Log_DebugPrintf("SPU reverb output volume left <- 0x%04X", ZeroExtend32(value));
-      m_tick_event->InvokeEarly();
+      GeneratePendingSamples();
       m_reverb_registers.vLOUT = value;
       return;
     }
@@ -336,7 +335,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801D86 - SPU_BASE:
     {
       Log_DebugPrintf("SPU reverb output volume right <- 0x%04X", ZeroExtend32(value));
-      m_tick_event->InvokeEarly();
+      GeneratePendingSamples();
       m_reverb_registers.vROUT = value;
       return;
     }
@@ -344,7 +343,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801D88 - SPU_BASE:
     {
       Log_DebugPrintf("SPU key on low <- 0x%04X", ZeroExtend32(value));
-      m_tick_event->InvokeEarly();
+      GeneratePendingSamples();
       m_key_on_register = (m_key_on_register & 0xFFFF0000) | ZeroExtend32(value);
     }
     break;
@@ -352,7 +351,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801D8A - SPU_BASE:
     {
       Log_DebugPrintf("SPU key on high <- 0x%04X", ZeroExtend32(value));
-      m_tick_event->InvokeEarly();
+      GeneratePendingSamples();
       m_key_on_register = (m_key_on_register & 0x0000FFFF) | (ZeroExtend32(value) << 16);
     }
     break;
@@ -360,7 +359,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801D8C - SPU_BASE:
     {
       Log_DebugPrintf("SPU key off low <- 0x%04X", ZeroExtend32(value));
-      m_tick_event->InvokeEarly();
+      GeneratePendingSamples();
       m_key_off_register = (m_key_off_register & 0xFFFF0000) | ZeroExtend32(value);
     }
     break;
@@ -368,14 +367,14 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801D8E - SPU_BASE:
     {
       Log_DebugPrintf("SPU key off high <- 0x%04X", ZeroExtend32(value));
-      m_tick_event->InvokeEarly();
+      GeneratePendingSamples();
       m_key_off_register = (m_key_off_register & 0x0000FFFF) | (ZeroExtend32(value) << 16);
     }
     break;
 
     case 0x1F801D90 - SPU_BASE:
     {
-      m_tick_event->InvokeEarly();
+      GeneratePendingSamples();
       m_pitch_modulation_enable_register = (m_pitch_modulation_enable_register & 0xFFFF0000) | ZeroExtend32(value);
       Log_DebugPrintf("SPU pitch modulation enable register <- 0x%08X", m_pitch_modulation_enable_register);
     }
@@ -383,7 +382,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
 
     case 0x1F801D92 - SPU_BASE:
     {
-      m_tick_event->InvokeEarly();
+      GeneratePendingSamples();
       m_pitch_modulation_enable_register =
         (m_pitch_modulation_enable_register & 0x0000FFFF) | (ZeroExtend32(value) << 16);
       Log_DebugPrintf("SPU pitch modulation enable register <- 0x%08X", m_pitch_modulation_enable_register);
@@ -393,7 +392,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801D94 - SPU_BASE:
     {
       Log_DebugPrintf("SPU noise mode register <- 0x%04X", ZeroExtend32(value));
-      m_tick_event->InvokeEarly();
+      GeneratePendingSamples();
       m_noise_mode_register = (m_noise_mode_register & 0xFFFF0000) | ZeroExtend32(value);
     }
     break;
@@ -401,7 +400,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801D96 - SPU_BASE:
     {
       Log_DebugPrintf("SPU noise mode register <- 0x%04X", ZeroExtend32(value));
-      m_tick_event->InvokeEarly();
+      GeneratePendingSamples();
       m_noise_mode_register = (m_noise_mode_register & 0x0000FFFF) | (ZeroExtend32(value) << 16);
     }
     break;
@@ -409,7 +408,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801D98 - SPU_BASE:
     {
       Log_DebugPrintf("SPU reverb on register <- 0x%04X", ZeroExtend32(value));
-      m_tick_event->InvokeEarly();
+      GeneratePendingSamples();
       m_reverb_on_register = (m_reverb_on_register & 0xFFFF0000) | ZeroExtend32(value);
     }
     break;
@@ -417,7 +416,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801D9A - SPU_BASE:
     {
       Log_DebugPrintf("SPU reverb on register <- 0x%04X", ZeroExtend32(value));
-      m_tick_event->InvokeEarly();
+      GeneratePendingSamples();
       m_reverb_on_register = (m_reverb_on_register & 0x0000FFFF) | (ZeroExtend32(value) << 16);
     }
     break;
@@ -425,7 +424,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801DA2 - SPU_BASE:
     {
       Log_DebugPrintf("SPU reverb base address < 0x%04X", ZeroExtend32(value));
-      m_tick_event->InvokeEarly();
+      GeneratePendingSamples();
       m_reverb_registers.mBASE = value;
       m_reverb_base_address = ZeroExtend32(value << 2) & 0x3FFFFu;
       m_reverb_current_address = m_reverb_base_address;
@@ -435,10 +434,10 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801DA4 - SPU_BASE:
     {
       Log_DebugPrintf("SPU IRQ address register <- 0x%04X", ZeroExtend32(value));
-      m_tick_event->InvokeEarly();
+      GeneratePendingSamples();
       m_irq_address = value;
 
-      if (m_SPUCNT.irq9_enable)
+      if (IsRAMIRQTriggerable())
         CheckForLateRAMIRQs();
 
       return;
@@ -446,10 +445,15 @@ void SPU::WriteRegister(u32 offset, u16 value)
 
     case 0x1F801DA6 - SPU_BASE:
     {
-      Log_DebugPrintf("SPU transfer address register <- 0x%04X", ZeroExtend32(value));
+        Log_DebugPrintf("SPU transfer address register <- 0x%04X", ZeroExtend32(value));
+      m_transfer_event->InvokeEarly();
       m_transfer_address_reg = value;
       m_transfer_address = ZeroExtend32(value) * 8;
-      CheckRAMIRQ(m_transfer_address);
+      if (IsRAMIRQTriggerable() && CheckRAMIRQ(m_transfer_address))
+      {
+        Log_DebugPrintf("Trigger IRQ @ %08X %04X from transfer address reg set", m_transfer_address, m_transfer_address / 8);
+        TriggerRAMIRQ();
+      }
       return;
     }
 
@@ -465,7 +469,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801DAA - SPU_BASE:
     {
       Log_DebugPrintf("SPU control register <- 0x%04X", ZeroExtend32(value));
-      m_tick_event->InvokeEarly(true);
+      GeneratePendingSamples();
 
       const SPUCNT new_value{value};
       if (new_value.ram_transfer_mode != m_SPUCNT.ram_transfer_mode &&
@@ -494,7 +498,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
 
       if (!m_SPUCNT.irq9_enable)
         m_SPUSTAT.irq9_flag = false;
-      else if (!m_SPUSTAT.irq9_flag)
+      else if (IsRAMIRQTriggerable())
         CheckForLateRAMIRQs();
 
       UpdateEventInterval();
@@ -513,7 +517,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801DB0 - SPU_BASE:
     {
       Log_DebugPrintf("SPU left cd audio register <- 0x%04X", ZeroExtend32(value));
-      m_tick_event->InvokeEarly();
+      GeneratePendingSamples();
       m_cd_audio_volume_left = value;
     }
     break;
@@ -521,7 +525,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801DB2 - SPU_BASE:
     {
       Log_DebugPrintf("SPU right cd audio register <- 0x%04X", ZeroExtend32(value));
-      m_tick_event->InvokeEarly();
+      GeneratePendingSamples();
       m_cd_audio_volume_right = value;
     }
     break;
@@ -560,7 +564,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
       {
         const u32 reg = (offset - (0x1F801DC0 - SPU_BASE)) / 2;
         Log_DebugPrintf("SPU reverb register %u <- 0x%04X", reg, value);
-        m_tick_event->InvokeEarly();
+        GeneratePendingSamples();
         m_reverb_registers.rev[reg] = value;
         return;
       }
@@ -581,7 +585,7 @@ u16 SPU::ReadVoiceRegister(u32 offset)
   // ADSR volume needs to be updated when reading. A voice might be off as well, but key on is pending.
   const Voice& voice = m_voices[voice_index];
   if (reg_index >= 6 && (voice.IsOn() || m_key_on_register & (1u << voice_index)))
-    m_tick_event->InvokeEarly();
+    GeneratePendingSamples();
 
   Log_TracePrintf("Read voice %u register %u -> 0x%02X", voice_index, reg_index, voice.regs.index[reg_index]);
   return voice.regs.index[reg_index];
@@ -596,7 +600,7 @@ void SPU::WriteVoiceRegister(u32 offset, u16 value)
 
   Voice& voice = m_voices[voice_index];
   if (voice.IsOn() || m_key_on_register & (1u << voice_index))
-    m_tick_event->InvokeEarly();
+    GeneratePendingSamples();
 
   switch (reg_index)
   {
@@ -685,22 +689,23 @@ void SPU::WriteVoiceRegister(u32 offset, u16 value)
   }
 }
 
-void SPU::CheckRAMIRQ(u32 address)
+void SPU::TriggerRAMIRQ()
 {
-  if (!m_SPUCNT.irq9_enable)
-    return;
-
-  if (ZeroExtend32(m_irq_address) * 8 == address)
-  {
-    Log_DebugPrintf("SPU IRQ at address 0x%08X", address);
-    m_SPUSTAT.irq9_flag = true;
-    g_interrupt_controller.InterruptRequest(InterruptController::IRQ::SPU);
-  }
+  DebugAssert(IsRAMIRQTriggerable());
+  m_SPUSTAT.irq9_flag = true;
+  g_interrupt_controller.InterruptRequest(InterruptController::IRQ::SPU);
 }
 
 void SPU::CheckForLateRAMIRQs()
 {
-  for (u32 i = 0; i < NUM_VOICES && !m_SPUSTAT.irq9_flag; i++)
+  if (CheckRAMIRQ(m_transfer_address))
+  {
+    Log_DebugPrintf("Trigger IRQ @ %08X %04X from late transfer", m_transfer_address, m_transfer_address / 8);
+    TriggerRAMIRQ();
+    return;
+  }
+
+  for (u32 i = 0; i < NUM_VOICES; i++)
   {
     // we skip voices which haven't started this block yet - because they'll check
     // the next time they're sampled, and the delay might be important.
@@ -708,8 +713,13 @@ void SPU::CheckForLateRAMIRQs()
     if (!v.has_samples)
       continue;
 
-    CheckRAMIRQ(v.current_address * 8);
-    CheckRAMIRQ(v.current_address * 8 + 8);
+    const u32 address = v.current_address * 8;
+    if (CheckRAMIRQ(address) || CheckRAMIRQ((address + 8) & RAM_MASK))
+    {
+      Log_DebugPrintf("Trigger IRQ @ %08X %04X from late", address, address / 8);
+      TriggerRAMIRQ();
+      return;
+    }
   }
 }
 
@@ -718,7 +728,11 @@ void SPU::WriteToCaptureBuffer(u32 index, s16 value)
   const u32 ram_address = (index * CAPTURE_BUFFER_SIZE_PER_CHANNEL) | ZeroExtend16(m_capture_buffer_position);
   // Log_DebugPrintf("write to capture buffer %u (0x%08X) <- 0x%04X", index, ram_address, u16(value));
   std::memcpy(&m_ram[ram_address], &value, sizeof(value));
-  CheckRAMIRQ(ram_address);
+  if (IsRAMIRQTriggerable() && CheckRAMIRQ(ram_address))
+  {
+    Log_DebugPrintf("Trigger IRQ @ %08X %04X from capture buffer", ram_address, ram_address / 8);
+    TriggerRAMIRQ();
+  }
 }
 
 void SPU::IncrementCaptureBufferPosition()
@@ -744,6 +758,12 @@ void SPU::ExecuteTransfer(TickCount ticks)
         m_transfer_address = (m_transfer_address + sizeof(u16)) & RAM_MASK;
         m_transfer_fifo.Push(value);
         ticks -= TRANSFER_TICKS_PER_HALFWORD;
+
+        if (IsRAMIRQTriggerable() && CheckRAMIRQ(m_transfer_address))
+        {
+          Log_DebugPrintf("Trigger IRQ @ %08X %04X from transfer read", m_transfer_address, m_transfer_address / 8);
+          TriggerRAMIRQ();
+        }
       }
 
       // this can result in the FIFO being emptied, hence double the while loop
@@ -774,6 +794,12 @@ void SPU::ExecuteTransfer(TickCount ticks)
         std::memcpy(&m_ram[m_transfer_address], &value, sizeof(u16));
         m_transfer_address = (m_transfer_address + sizeof(u16)) & RAM_MASK;
         ticks -= TRANSFER_TICKS_PER_HALFWORD;
+
+        if (IsRAMIRQTriggerable() && CheckRAMIRQ(m_transfer_address))
+        {
+          Log_DebugPrintf("Trigger IRQ @ %08X %04X from transfer write", m_transfer_address, m_transfer_address / 8);
+          TriggerRAMIRQ();
+        }
       }
 
       // similar deal here, the FIFO can be written out in a long slice
@@ -951,6 +977,9 @@ void SPU::DMAWrite(const u32* words, u32 word_count)
 
 void SPU::GeneratePendingSamples()
 {
+  if (m_transfer_event->IsActive())
+    m_transfer_event->InvokeEarly();
+
   m_tick_event->InvokeEarly();
 }
 
@@ -1322,8 +1351,11 @@ s32 SPU::Voice::Interpolate() const
 void SPU::ReadADPCMBlock(u16 address, ADPCMBlock* block)
 {
   u32 ram_address = (ZeroExtend32(address) * 8) & RAM_MASK;
-  CheckRAMIRQ(ram_address);
-  CheckRAMIRQ((ram_address + 8) & RAM_MASK);
+  if (IsRAMIRQTriggerable() && (CheckRAMIRQ(ram_address) || CheckRAMIRQ((ram_address + 8) & RAM_MASK)))
+  {
+    Log_DebugPrintf("Trigger IRQ @ %08X %04X from ADPCM reader", ram_address, ram_address / 8);
+    TriggerRAMIRQ();
+  }
 
   // fast path - no wrap-around
   if ((ram_address + sizeof(ADPCMBlock)) <= RAM_SIZE)

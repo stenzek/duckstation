@@ -62,7 +62,7 @@ private:
   void ClearState();
 
   // is everything enabled for a channel to operate?
-  bool CanTransferChannel(Channel channel) const;
+  bool CanTransferChannel(Channel channel, bool ignore_halt) const;
   bool IsTransferHalted() const;
   void UpdateIRQ();
 
