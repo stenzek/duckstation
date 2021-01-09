@@ -1324,9 +1324,9 @@ bool CodeGenerator::Compile_Load(const CodeBlockInstruction& cbi)
 
       if (address_spec)
       {
-        value_spec = SpeculativeReadMemory(*address_spec & ~1u);
+        value_spec = SpeculativeReadMemory(*address_spec & ~3u);
         if (value_spec)
-          value_spec = (*value_spec >> ((*address_spec & 1u) * 16u)) & 0xFFFFu;
+          value_spec = (*value_spec >> ((*address_spec & 3u) * 8u)) & 0xFFFFu;
       }
     }
     break;
