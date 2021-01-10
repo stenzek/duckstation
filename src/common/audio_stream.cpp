@@ -1,17 +1,23 @@
 #include "audio_stream.h"
 #include "assert.h"
 #include "log.h"
+#include "samplerate.h"
 #include <algorithm>
 #include <cstring>
 Log_SetChannel(AudioStream);
 
 AudioStream::AudioStream() = default;
 
-AudioStream::~AudioStream() = default;
-
-bool AudioStream::Reconfigure(u32 output_sample_rate /*= DefaultOutputSampleRate*/, u32 channels /*= 1*/,
-                              u32 buffer_size /*= DefaultBufferSize*/)
+AudioStream::~AudioStream()
 {
+  DestroyResampler();
+}
+
+bool AudioStream::Reconfigure(u32 input_sample_rate /* = DefaultInputSampleRate */,
+                              u32 output_sample_rate /* = DefaultOutputSampleRate */, u32 channels /* = 1 */,
+                              u32 buffer_size /* = DefaultBufferSize */)
+{
+  DestroyResampler();
   if (IsDeviceOpen())
     CloseDevice();
 
@@ -32,7 +38,22 @@ bool AudioStream::Reconfigure(u32 output_sample_rate /*= DefaultOutputSampleRate
     return false;
   }
 
+  CreateResampler();
+  SetInputSampleRate(input_sample_rate);
+
   return true;
+}
+
+void AudioStream::SetInputSampleRate(u32 sample_rate)
+{
+  if (m_input_sample_rate == sample_rate)
+    return;
+
+  std::unique_lock<std::mutex> lock(m_buffer_mutex);
+  m_input_sample_rate = sample_rate;
+  m_resampler_ratio = static_cast<double>(m_output_sample_rate) / static_cast<double>(sample_rate);
+  src_set_ratio(static_cast<SRC_STATE*>(m_resampler_state), m_resampler_ratio);
+  ResetResampler();
 }
 
 void AudioStream::SetOutputVolume(u32 volume)
@@ -136,9 +157,19 @@ void AudioStream::ReadFrames(SampleType* samples, u32 num_frames, bool apply_vol
   u32 samples_copied = 0;
   {
     std::unique_lock<std::mutex> lock(m_buffer_mutex);
-    samples_copied = std::min(m_buffer.GetSize(), total_samples);
-    if (samples_copied > 0)
-      m_buffer.PopRange(samples, samples_copied);
+    if (m_input_sample_rate == m_output_sample_rate)
+    {
+      samples_copied = std::min(m_buffer.GetSize(), total_samples);
+      if (samples_copied > 0)
+        m_buffer.PopRange(samples, samples_copied);
+    }
+    else
+    {
+      ResampleInput();
+      samples_copied = std::min(m_resampled_buffer.GetSize(), total_samples);
+      if (samples_copied > 0)
+        m_resampled_buffer.PopRange(samples, samples_copied);
+    }
 
     m_buffer_draining_cv.notify_one();
   }
@@ -221,4 +252,84 @@ void AudioStream::EmptyBuffers()
   std::unique_lock<std::mutex> lock(m_buffer_mutex);
   m_buffer.Clear();
   m_underflow_flag.store(false);
+}
+
+void AudioStream::CreateResampler()
+{
+  m_resampler_state = src_new(SRC_SINC_MEDIUM_QUALITY, static_cast<int>(m_channels), nullptr);
+  if (!m_resampler_state)
+    Panic("Failed to allocate resampler");
+}
+
+void AudioStream::DestroyResampler()
+{
+  if (m_resampler_state)
+  {
+    src_delete(static_cast<SRC_STATE*>(m_resampler_state));
+    m_resampler_state = nullptr;
+  }
+}
+
+void AudioStream::ResetResampler()
+{
+  m_resampled_buffer.Clear();
+  src_reset(static_cast<SRC_STATE*>(m_resampler_state));
+}
+
+void AudioStream::ResampleInput()
+{
+  const u32 input_space_from_output = (m_resampled_buffer.GetSpace() * m_output_sample_rate) / m_input_sample_rate;
+  u32 remaining = std::min(m_buffer.GetSize(), input_space_from_output);
+  if (m_resample_in_buffer.size() < remaining)
+  {
+    remaining -= static_cast<u32>(m_resample_in_buffer.size());
+    m_resample_in_buffer.reserve(m_resample_in_buffer.size() + remaining);
+    while (remaining > 0)
+    {
+      const u32 read_len = std::min(m_buffer.GetContiguousSize(), remaining);
+      const size_t old_pos = m_resample_in_buffer.size();
+      m_resample_in_buffer.resize(m_resample_in_buffer.size() + read_len);
+      src_short_to_float_array(m_buffer.GetReadPointer(), m_resample_in_buffer.data() + old_pos,
+                               static_cast<int>(read_len));
+      m_buffer.Remove(read_len);
+      remaining -= read_len;
+    }
+  }
+
+  const u32 potential_output_size =
+    (static_cast<u32>(m_resample_in_buffer.size()) * m_input_sample_rate) / m_output_sample_rate;
+  const u32 output_size = std::min(potential_output_size, m_resampled_buffer.GetSpace());
+  m_resample_out_buffer.resize(output_size);
+
+  SRC_DATA sd = {};
+  sd.data_in = m_resample_in_buffer.data();
+  sd.data_out = m_resample_out_buffer.data();
+  sd.input_frames = static_cast<u32>(m_resample_in_buffer.size()) / m_channels;
+  sd.output_frames = output_size / m_channels;
+  sd.src_ratio = m_resampler_ratio;
+
+  const int error = src_process(static_cast<SRC_STATE*>(m_resampler_state), &sd);
+  if (error)
+  {
+    Log_ErrorPrintf("Resampler error %d", error);
+    m_resample_in_buffer.clear();
+    m_resample_out_buffer.clear();
+    return;
+  }
+
+  m_resample_in_buffer.erase(m_resample_in_buffer.begin(),
+                             m_resample_in_buffer.begin() + (static_cast<u32>(sd.input_frames_used) * m_channels));
+
+  const float* write_ptr = m_resample_out_buffer.data();
+  remaining = static_cast<u32>(sd.output_frames_gen) * m_channels;
+  while (remaining > 0)
+  {
+    const u32 samples_to_write = std::min(m_resampled_buffer.GetContiguousSpace(), remaining);
+    src_float_to_short_array(write_ptr, m_resampled_buffer.GetWritePointer(), static_cast<int>(samples_to_write));
+    m_resampled_buffer.AdvanceTail(samples_to_write);
+    write_ptr += samples_to_write;
+    remaining -= samples_to_write;
+  }
+  m_resample_out_buffer.erase(m_resample_out_buffer.begin(),
+                              m_resample_out_buffer.begin() + (static_cast<u32>(sd.output_frames_gen) * m_channels));
 }

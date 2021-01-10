@@ -16,6 +16,7 @@ public:
 
   enum : u32
   {
+    DefaultInputSampleRate = 44100,
     DefaultOutputSampleRate = 44100,
     DefaultBufferSize = 2048,
     MaxSamples = 32768,
@@ -31,9 +32,11 @@ public:
   s32 GetOutputVolume() const { return m_output_volume; }
   bool IsSyncing() const { return m_sync; }
 
-  bool Reconfigure(u32 output_sample_rate = DefaultOutputSampleRate, u32 channels = 1,
-                   u32 buffer_size = DefaultBufferSize);
+  bool Reconfigure(u32 input_sample_rate = DefaultInputSampleRate, u32 output_sample_rate = DefaultOutputSampleRate,
+                   u32 channels = 1, u32 buffer_size = DefaultBufferSize);
   void SetSync(bool enable) { m_sync = enable; }
+
+  void SetInputSampleRate(u32 sample_rate);
 
   virtual void SetOutputVolume(u32 volume);
 
@@ -76,6 +79,7 @@ protected:
   void ReadFrames(SampleType* samples, u32 num_frames, bool apply_volume);
   void DropFrames(u32 count);
 
+  u32 m_input_sample_rate = 0;
   u32 m_output_sample_rate = 0;
   u32 m_channels = 0;
   u32 m_buffer_size = 0;
@@ -87,13 +91,26 @@ private:
   ALWAYS_INLINE u32 GetBufferSpace() const { return (m_max_samples - m_buffer.GetSize()); }
   void EnsureBuffer(u32 size);
 
+  void CreateResampler();
+  void DestroyResampler();
+  void ResetResampler();
+  void ResampleInput();
+
   HeapFIFOQueue<SampleType, MaxSamples> m_buffer;
   mutable std::mutex m_buffer_mutex;
   std::condition_variable m_buffer_draining_cv;
   std::vector<SampleType> m_resample_buffer;
+
   std::atomic_bool m_underflow_flag{false};
   u32 m_max_samples = 0;
 
   bool m_output_paused = true;
   bool m_sync = true;
+
+  // Resampling
+  double m_resampler_ratio = 1.0;
+  void* m_resampler_state = nullptr;
+  HeapFIFOQueue<SampleType, MaxSamples> m_resampled_buffer;
+  std::vector<float> m_resample_in_buffer;
+  std::vector<float> m_resample_out_buffer;
 };
