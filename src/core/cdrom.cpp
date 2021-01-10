@@ -244,7 +244,14 @@ bool CDROM::DoState(StateWrapper& sw)
 
 bool CDROM::IsMediaPS1Disc() const
 {
-  return (m_disc_region != DiscRegion::Other);
+  if (!m_reader.HasMedia())
+    return false;
+
+  // Check for a data track as the first track.
+  if (m_reader.GetMedia()->GetTrackMode(1) == CDImage::TrackMode::Audio)
+    return false;
+
+  return true;
 }
 
 bool CDROM::DoesMediaRegionMatchConsole() const
