@@ -57,7 +57,7 @@ void ImGui::StyleColorsDarker(ImGuiStyle* dst)
 
 #include "font_roboto_regular.inl"
 
-void ImGui::AddRobotoRegularFont(float size /*= 15.0f*/)
+ImFont* ImGui::AddRobotoRegularFont(float size /*= 15.0f*/)
 {
   static const ImWchar ranges[] = {
     // Basic Latin + Latin Supplement + Central European diacritics
@@ -79,6 +79,6 @@ void ImGui::AddRobotoRegularFont(float size /*= 15.0f*/)
     0,
   };
 
-  ImGui::GetIO().Fonts->AddFontFromMemoryCompressedTTF(s_font_roboto_regular_compressed_data,
-                                                       s_font_roboto_regular_compressed_size, size, nullptr, ranges);
+  return ImGui::GetIO().Fonts->AddFontFromMemoryCompressedTTF(
+    s_font_roboto_regular_compressed_data, s_font_roboto_regular_compressed_size, size, nullptr, ranges);
 }
