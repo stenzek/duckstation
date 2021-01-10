@@ -40,7 +40,7 @@ GeneralSettingsWidget::GeneralSettingsWidget(QtHostInterface* host_interface, QW
 
   QtUtils::FillComboBoxWithEmulationSpeeds(m_ui.emulationSpeed);
   const int emulation_speed_index =
-    m_ui.emulationSpeed->findData(QVariant(m_host_interface->GetFloatSettingValue("Main", "EmulationSpeed")));
+    m_ui.emulationSpeed->findData(QVariant(m_host_interface->GetFloatSettingValue("Main", "EmulationSpeed", 1.0f)));
   if (emulation_speed_index >= 0)
     m_ui.emulationSpeed->setCurrentIndex(emulation_speed_index);
   connect(m_ui.emulationSpeed, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
@@ -48,11 +48,18 @@ GeneralSettingsWidget::GeneralSettingsWidget(QtHostInterface* host_interface, QW
 
   QtUtils::FillComboBoxWithEmulationSpeeds(m_ui.fastForwardSpeed);
   const int fast_forward_speed_index =
-    m_ui.emulationSpeed->findData(QVariant(m_host_interface->GetFloatSettingValue("Main", "FastForwardSpeed")));
+    m_ui.fastForwardSpeed->findData(QVariant(m_host_interface->GetFloatSettingValue("Main", "FastForwardSpeed", 0.0f)));
   if (fast_forward_speed_index >= 0)
     m_ui.fastForwardSpeed->setCurrentIndex(fast_forward_speed_index);
   connect(m_ui.fastForwardSpeed, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
           &GeneralSettingsWidget::onFastForwardSpeedIndexChanged);
+  QtUtils::FillComboBoxWithEmulationSpeeds(m_ui.turboSpeed);
+  const int turbo_speed_index =
+    m_ui.turboSpeed->findData(QVariant(m_host_interface->GetFloatSettingValue("Main", "TurboSpeed", 0.0f)));
+  if (turbo_speed_index >= 0)
+    m_ui.turboSpeed->setCurrentIndex(turbo_speed_index);
+  connect(m_ui.turboSpeed, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+          &GeneralSettingsWidget::onTurboSpeedIndexChanged);
 
   dialog->registerWidgetHelp(
     m_ui.confirmPowerOff, tr("Confirm Power Off"), tr("Checked"),
@@ -89,8 +96,10 @@ GeneralSettingsWidget::GeneralSettingsWidget(QtHostInterface* host_interface, QW
        "and if not, the emulator will run as fast as it can manage."));
   dialog->registerWidgetHelp(
     m_ui.fastForwardSpeed, tr("Fast Forward Speed"), "100%",
-    tr(
-      "Sets the fast forward (turbo) speed. This speed will be used when the fast forward hotkey is pressed/toggled."));
+    tr("Sets the fast forward speed. This speed will be used when the fast forward hotkey is pressed/toggled."));
+  dialog->registerWidgetHelp(
+    m_ui.turboSpeed, tr("Turbo Speed"), "100%",
+    tr("Sets the turbo speed. This speed will be used when the turbo hotkey is pressed/toggled."));
   dialog->registerWidgetHelp(m_ui.controllerBackend, tr("Controller Backend"),
                              qApp->translate("ControllerInterface", ControllerInterface::GetBackendName(
                                                                       ControllerInterface::GetDefaultBackend())),
@@ -154,5 +163,13 @@ void GeneralSettingsWidget::onFastForwardSpeedIndexChanged(int index)
   bool okay;
   const float value = m_ui.fastForwardSpeed->currentData().toFloat(&okay);
   m_host_interface->SetFloatSettingValue("Main", "FastForwardSpeed", okay ? value : 0.0f);
+  m_host_interface->applySettings();
+}
+
+void GeneralSettingsWidget::onTurboSpeedIndexChanged(int index)
+{
+  bool okay;
+  const float value = m_ui.turboSpeed->currentData().toFloat(&okay);
+  m_host_interface->SetFloatSettingValue("Main", "TurboSpeed", okay ? value : 0.0f);
   m_host_interface->applySettings();
 }

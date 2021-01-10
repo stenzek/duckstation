@@ -81,6 +81,7 @@ struct Settings
 
   float emulation_speed = 1.0f;
   float fast_forward_speed = 0.0f;
+  float turbo_speed = 0.0f;
   bool increase_timer_resolution = true;
   bool start_paused = false;
   bool start_fullscreen = false;

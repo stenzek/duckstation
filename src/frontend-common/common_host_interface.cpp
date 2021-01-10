@@ -604,7 +604,9 @@ bool CommonHostInterface::ResumeSystemFromMostRecentState()
 
 void CommonHostInterface::UpdateSpeedLimiterState()
 {
-  const float target_speed = m_fast_forward_enabled ? g_settings.fast_forward_speed : g_settings.emulation_speed;
+  const float target_speed = m_turbo_enabled ?
+                               g_settings.turbo_speed :
+                               (m_fast_forward_enabled ? g_settings.fast_forward_speed : g_settings.emulation_speed);
   m_speed_limiter_enabled = (target_speed != 0.0f);
 
   const bool is_non_standard_speed = (std::abs(target_speed - 1.0f) > 0.05f);
@@ -1435,6 +1437,9 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                  TRANSLATABLE("Hotkeys", "Fast Forward"), [this](bool pressed) {
                    m_fast_forward_enabled = pressed;
                    UpdateSpeedLimiterState();
+                   AddOSDMessage(m_fast_forward_enabled ? TranslateStdString("OSDMessage", "Fast forwarding...") :
+                                                          TranslateStdString("OSDMessage", "Stopped fast forwarding."),
+                                 2.0f);
                  });
 
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("ToggleFastForward"),
@@ -1446,6 +1451,27 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                      AddOSDMessage(m_fast_forward_enabled ?
                                      TranslateStdString("OSDMessage", "Fast forwarding...") :
                                      TranslateStdString("OSDMessage", "Stopped fast forwarding."),
+                                   2.0f);
+                   }
+                 });
+
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("Turbo"),
+                 TRANSLATABLE("Hotkeys", "Turbo"), [this](bool pressed) {
+                   m_turbo_enabled = pressed;
+                   UpdateSpeedLimiterState();
+                   AddOSDMessage(m_turbo_enabled ? TranslateStdString("OSDMessage", "Turboing...") :
+                                                   TranslateStdString("OSDMessage", "Stopped turboing."),
+                                 2.0f);
+                 });
+
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("ToggleTurbo"),
+                 StaticString(TRANSLATABLE("Hotkeys", "Toggle Turbo")), [this](bool pressed) {
+                   if (pressed)
+                   {
+                     m_turbo_enabled = !m_turbo_enabled;
+                     UpdateSpeedLimiterState();
+                     AddOSDMessage(m_turbo_enabled ? TranslateStdString("OSDMessage", "Turboing...") :
+                                                     TranslateStdString("OSDMessage", "Stopped turboing."),
                                    2.0f);
                    }
                  });

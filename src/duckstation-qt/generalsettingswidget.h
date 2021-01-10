@@ -18,6 +18,7 @@ public:
 private Q_SLOTS:
   void onEmulationSpeedIndexChanged(int index);
   void onFastForwardSpeedIndexChanged(int index);
+  void onTurboSpeedIndexChanged(int index);
 
 private:
   Ui::GeneralSettingsWidget m_ui;
