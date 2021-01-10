@@ -67,9 +67,22 @@ ALWAYS_INLINE_RELEASE static void ResizeColumnsForView(T* view, const std::initi
                                view->verticalScrollBarPolicy() == Qt::ScrollBarAlwaysOn) ?
                                 view->verticalScrollBar()->width() :
                                 0;
-  const int flex_width = std::max(view->contentsRect().width() - total_width - scrollbar_width, 1);
-
+  int num_flex_items = 0;
   int column_index = 0;
+  for (const int spec_width : widths)
+  {
+    if (spec_width < 0 && !view->isColumnHidden(column_index))
+      num_flex_items++;
+
+    column_index++;
+  }
+
+  const int flex_width =
+    (num_flex_items > 0) ?
+      std::max((view->contentsRect().width() - total_width - scrollbar_width) / num_flex_items, 1) :
+      0;
+
+  column_index = 0;
   for (const int spec_width : widths)
   {
     if (view->isColumnHidden(column_index))
@@ -750,9 +763,9 @@ std::optional<unsigned> PromptForAddress(QWidget* parent, const QString& title, 
     address = address_str.midRef(2).toUInt(&ok, 16);
   else
     address = address_str.toUInt(&ok, 16);
-  if ( code == true )
-    address = address & 0xFFFFFFFC; //disassembly address should be divisible by 4 so make sure
-  
+  if (code)
+    address = address & 0xFFFFFFFC; // disassembly address should be divisible by 4 so make sure
+
   if (!ok)
   {
     QMessageBox::critical(
