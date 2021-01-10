@@ -57,7 +57,7 @@
        </layout>
       </item>
       <item>
-       <layout class="QFormLayout" name="formLayout_3">
+       <layout class="QGridLayout" name="gridLayout_2">
         <item row="0" column="0">
          <widget class="QCheckBox" name="logToConsole">
           <property name="text">
@@ -174,7 +174,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="resources/icons.qrc"/>
+  <include location="resources/resources.qrc"/>
  </resources>
  <connections/>
 </ui>

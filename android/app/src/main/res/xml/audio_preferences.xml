@@ -70,5 +70,11 @@
         app:defaultValue="true"
         app:summary="@string/settings_summary_audio_sync"
         app:iconSpaceReserved="false" />
+    <SwitchPreferenceCompat
+        app:key="Audio/Resampling"
+        app:title="@string/settings_audio_resampling"
+        app:defaultValue="false"
+        app:summary="@string/settings_summary_resampling"
+        app:iconSpaceReserved="false" />
 
 </PreferenceScreen>

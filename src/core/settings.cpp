@@ -207,7 +207,7 @@ void Settings::Load(SettingsInterface& si)
   audio_output_volume = si.GetIntValue("Audio", "OutputVolume", 100);
   audio_fast_forward_volume = si.GetIntValue("Audio", "FastForwardVolume", 100);
   audio_buffer_size = si.GetIntValue("Audio", "BufferSize", HostInterface::DEFAULT_AUDIO_BUFFER_SIZE);
-  audio_resampling = si.GetBoolValue("Audio", "Resampling", false);
+  audio_resampling = si.GetBoolValue("Audio", "Resampling", true);
   audio_output_muted = si.GetBoolValue("Audio", "OutputMuted", false);
   audio_sync_enabled = si.GetBoolValue("Audio", "Sync", true);
   audio_dump_on_boot = si.GetBoolValue("Audio", "DumpOnBoot", false);

@@ -24,7 +24,7 @@ AudioSettingsWidget::AudioSettingsWidget(QtHostInterface* host_interface, QWidge
   SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.bufferSize, "Audio", "BufferSize");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.startDumpingOnBoot, "Audio", "DumpOnBoot");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.muteCDAudio, "CDROM", "MuteCDAudio");
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.resampling, "Audio", "Resampling", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.resampling, "Audio", "Resampling", true);
 
   m_ui.volume->setValue(m_host_interface->GetIntSettingValue("Audio", "OutputVolume", 100));
   m_ui.fastForwardVolume->setValue(m_host_interface->GetIntSettingValue("Audio", "FastForwardVolume", 100));
@@ -66,6 +66,10 @@ AudioSettingsWidget::AudioSettingsWidget(QtHostInterface* host_interface, QWidge
   dialog->registerWidgetHelp(m_ui.muteCDAudio, tr("Mute CD Audio"), tr("Unchecked"),
                              tr("Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable "
                                 "background music in some games."));
+  dialog->registerWidgetHelp(
+    m_ui.resampling, tr("Resampling"), tr("Unchecked"),
+    tr("When running outside of 100% speed, resamples audio from the target speed instead of dropping frames. Produces "
+       "much nicer fast forward/slowdown audio at a small cost to performance."));
 }
 
 AudioSettingsWidget::~AudioSettingsWidget() = default;
