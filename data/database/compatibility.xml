@@ -1129,7 +1129,6 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SCES-01312" compatibility="5" region="PAL" title="Devil Dice (Europe) (En,Fr,De,Es,It)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-2854-g24c37324</version-tested>
-    <comments>Interlaced game, use &quot;Disable Interlacing&quot; to force Progressive without any glitch</comments>
   </entry>
   <entry code="SLPS-02330" compatibility="5" region="NTSC-J" title="DewPrism (Japan, Asia)">
     <compatibility>No Issues</compatibility>
@@ -1347,7 +1346,7 @@ Tetris with Card Captor Sakura (Japan)
   </entry>
   <entry code="SCUS-94243" compatibility="5" region="NTSC-U" title="Einhaender (USA)">
     <compatibility>No Issues</compatibility>
-    <version-tested>0.1-896-gc8a00c5</version-tested>
+    <version-tested>0.1-2862-g6fbffb6f</version-tested>
   </entry>
   <entry code="SLPM-86494" compatibility="4" region="NTSC-J" title="Elder Gate (Japan)">
     <compatibility>Graphical/Audio Issues</compatibility>
@@ -1423,7 +1422,19 @@ Tetris with Card Captor Sakura (Japan)
   </entry>
   <entry code="SLES-02965" compatibility="5" region="PAL" title="Final Fantasy IX (Europe) (Disc 1)">
     <compatibility>No Issues</compatibility>
-    <version-tested>0.1-1308-g622e50fa</version-tested>
+    <version-tested>0.1-2862-g6fbffb6f</version-tested>
+  </entry>
+  <entry code="SLES-12965" compatibility="5" region="PAL" title="Final Fantasy IX (Europe) (Disc 2)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2862-g6fbffb6f</version-tested>
+  </entry>
+  <entry code="SLES-22965" compatibility="5" region="PAL" title="Final Fantasy IX (Europe) (Disc 3)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2862-g6fbffb6f</version-tested>
+  </entry>
+  <entry code="SLES-32965" compatibility="5" region="PAL" title="Final Fantasy IX (Europe) (Disc 4)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2862-g6fbffb6f</version-tested>
   </entry>
   <entry code="SLES-02966" compatibility="5" region="PAL" title="Final Fantasy IX (France) (Disc 1)">
     <compatibility>No Issues</compatibility>
@@ -1779,7 +1790,8 @@ Tetris with Card Captor Sakura (Japan)
   </entry>
   <entry code="SLUS-00172" compatibility="5" region="NTSC-U" title="In the Hunt (USA)">
     <compatibility>No Issues</compatibility>
-    <version-tested>0.1-887-g1eecd50</version-tested>
+    <version-tested>0.1-2862-g6fbffb6f</version-tested>
+    <comments>Image cut off on top and bottom - can be fixed by disabling cropping</comments>
   </entry>
   <entry code="SLES-02933" compatibility="5" region="PAL" title="Incredible Crisis (Europe) (En,Fr,De,Es,It)">
     <compatibility>No Issues</compatibility>
@@ -2528,6 +2540,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1415-gdd9705ef</version-tested>
   </entry>
+  <entry code="SLES-00658" compatibility="5" region="PAL" title="Need for Speed II (Europe) (En,Fr,De,Es,It,Sv)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2862-g6fbffb6f</version-tested>
+  </entry>
   <entry code="SLUS-00276" compatibility="5" region="NTSC-U" title="Need for Speed II (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-986-gfc911de1</version-tested>
@@ -2568,10 +2584,20 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-2499-g770dd5a6</version-tested>
   </entry>
+  <entry code="SLES-01480" compatibility="5" region="PAL" title="Oddworld - Abe's Exoddus (Europe) (Disc 1)">
+    <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLES-11480" compatibility="5" region="PAL" title="Oddworld - Abe's Exoddus (Europe) (Disc 2)">
+    <compatibility>No Issues</compatibility>
+  </entry>
   <entry code="SLUS-00710" compatibility="5" region="NTSC-U" title="Oddworld - Abe's Exoddus (USA) (Disc 1)">
     <compatibility>No Issues</compatibility>
     <upscaling-issues>Other stuff like cords and buttons are blurry, transparent, and Abe's body gets more green and blurry as well as other mudokons. Background is unaffected?</upscaling-issues>
     <version-tested>0.1-1130-g38aa485</version-tested>
+  </entry>
+  <entry code="SLES-00664" compatibility="5" region="PAL" title="Oddworld - Abe's Oddysee (Europe)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2862-g6fbffb6f</version-tested>
   </entry>
   <entry code="SLUS-00190" compatibility="5" region="NTSC-U" title="Oddworld - Abe's Oddysee (USA) (Rev 2)">
     <compatibility>No Issues</compatibility>
@@ -3072,6 +3098,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-2663-gfd39f09a</version-tested>
   </entry>
+  <entry code="SLES-00223" compatibility="5" region="PAL" title="Road &amp; Track Presents - The Need for Speed (Europe) (En,De)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2862-g6fbffb6f</version-tested>
+  </entry>
   <entry code="SLUS-00204" compatibility="5" region="NTSC-U" title="Road &amp; Track Presents - The Need for Speed (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1115-g0b261e8</version-tested>
@@ -3165,6 +3195,14 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLPM-86959" compatibility="5" region="NTSC-J" title="Rockman X6 (Japan)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-884-g096ed21</version-tested>
+  </entry>
+  <entry code="SLES-01660" compatibility="5" region="PAL" title="Rollcage (Europe) (En,Fr,De,Es,It)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2862-g6fbffb6f</version-tested>
+  </entry>
+  <entry code="SCES-01922" compatibility="5" region="PAL" title="Rollcage Stage II (Europe) (En,Fr,De,Es,It)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2862-g6fbffb6f</version-tested>
   </entry>
   <entry code="SLUS-00867" compatibility="5" region="NTSC-U" title="Rollcage Stage II (USA)">
     <compatibility>No Issues</compatibility>
@@ -3507,6 +3545,10 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLUS-01163" compatibility="5" region="NTSC-U" title="Strider 2 (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1336-gd711baa</version-tested>
+  </entry>
+  <entry code="SLPS-01637" compatibility="5" region="NTSC-J" title="Strikers 1945 II (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2862-g6fbffb6f</version-tested>
   </entry>
   <entry code="SCUS-94669" compatibility="5" region="NTSC-U" title="Stuart Little 2 (USA)">
     <compatibility>No Issues</compatibility>
@@ -4000,6 +4042,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1448-g472f1c1c</version-tested>
   </entry>
+  <entry code="SLES-00250" compatibility="5" region="PAL" title="V-Rally - 97 Championship Edition (Europe) (En,Fr,De) (Rev 1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2862-g6fbffb6f</version-tested>
+  </entry>
   <entry code="SLES-01907" compatibility="5" region="PAL" title="V-Rally - Championship Edition 2 (Europe) (En,Fr,De)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1645-g42d49426</version-tested>
@@ -4129,9 +4175,7 @@ Tetris with Card Captor Sakura (Japan)
   </entry>
   <entry code="SCES-02845" compatibility="5" region="PAL" title="WipEout 3 - Special Edition (Europe) (En,Fr,De,Es,It)">
     <compatibility>No Issues</compatibility>
-    <upscaling-issues>The position counter is incorrectly rendered.</upscaling-issues>
-    <version-tested>0.1-887-g1eecd50</version-tested>
-    <comments>Game screen is slightly off-centered.</comments>
+    <version-tested>0.1-2862-g6fbffb6f</version-tested>
   </entry>
   <entry code="SIPS-60010" compatibility="5" region="NTSC-J" title="Wipeout XL (Japan, Asia)">
     <compatibility>No Issues</compatibility>
