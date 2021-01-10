@@ -25,6 +25,8 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QW
   SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.region, "Console", "Region",
                                                &Settings::ParseConsoleRegionName, &Settings::GetConsoleRegionName,
                                                Settings::DEFAULT_CONSOLE_REGION);
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.syncToHostRefreshRate, "Main",
+                                               "SyncToHostRefreshRate", true);
   SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.cpuExecutionMode, "CPU", "ExecutionMode",
                                                &Settings::ParseCPUExecutionMode, &Settings::GetCPUExecutionModeName,
                                                Settings::DEFAULT_CPU_EXECUTION_MODE);
@@ -75,6 +77,10 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QW
   dialog->registerWidgetHelp(
     m_ui.turboSpeed, tr("Turbo Speed"), "100%",
     tr("Sets the turbo speed. This speed will be used when the turbo hotkey is pressed/toggled."));
+  dialog->registerWidgetHelp(m_ui.syncToHostRefreshRate, tr("Sync To Host Refresh Rate"), "100%",
+                             tr("Adjusts the emulation speed so the console's refresh rate matches the host's refresh "
+                                "rate, when VSync is enabled. This results in the smoothest animations possible, at "
+                                "the cost of potentially increasing the emulation speed by less than 1%."));
 
   m_ui.cpuClockSpeed->setEnabled(m_ui.enableCPUClockSpeedControl->checkState() == Qt::Checked);
   m_ui.cdromReadSpeedup->setCurrentIndex(m_host_interface->GetIntSettingValue("CDROM", "ReadSpeedup", 1) - 1);

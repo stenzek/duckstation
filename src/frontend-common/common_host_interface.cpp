@@ -604,10 +604,25 @@ bool CommonHostInterface::ResumeSystemFromMostRecentState()
 
 void CommonHostInterface::UpdateSpeedLimiterState()
 {
-  const float target_speed = m_turbo_enabled ?
-                               g_settings.turbo_speed :
-                               (m_fast_forward_enabled ? g_settings.fast_forward_speed : g_settings.emulation_speed);
+  float target_speed = m_turbo_enabled ?
+                         g_settings.turbo_speed :
+                         (m_fast_forward_enabled ? g_settings.fast_forward_speed : g_settings.emulation_speed);
   m_speed_limiter_enabled = (target_speed != 0.0f);
+
+  if (g_settings.sync_to_host_refresh_rate && target_speed == 1.0f && g_settings.video_sync_enabled && m_display &&
+      System::IsRunning())
+  {
+    float host_refresh_rate;
+    if (m_display->GetHostRefreshRate(&host_refresh_rate))
+    {
+      const float ratio = host_refresh_rate / System::GetThrottleFrequency();
+      const bool can_sync = (ratio >= 0.95f && ratio <= 1.05f);
+      Log_InfoPrintf("Refresh rate: Host=%fhz Guest=%fhz Ratio=%f - %s", host_refresh_rate,
+                     System::GetThrottleFrequency(), ratio, can_sync ? "can sync" : "can't sync");
+      if (can_sync)
+        target_speed *= ratio;
+    }
+  }
 
   const bool is_non_standard_speed = (std::abs(target_speed - 1.0f) > 0.05f);
   const bool audio_sync_enabled =
@@ -615,15 +630,18 @@ void CommonHostInterface::UpdateSpeedLimiterState()
   const bool video_sync_enabled =
     !System::IsRunning() || (m_speed_limiter_enabled && g_settings.video_sync_enabled && !is_non_standard_speed);
   const float max_display_fps = m_speed_limiter_enabled ? 0.0f : g_settings.display_max_fps;
+  Log_InfoPrintf("Target speed: %f%%", target_speed * 100.0f);
   Log_InfoPrintf("Syncing to %s%s", audio_sync_enabled ? "audio" : "",
                  (audio_sync_enabled && video_sync_enabled) ? " and video" : (video_sync_enabled ? "video" : ""));
   Log_InfoPrintf("Max display fps: %f", max_display_fps);
 
   if (m_audio_stream)
   {
-    const u32 input_sample_rate = (!is_non_standard_speed || target_speed == 0.0f || !g_settings.audio_resampling) ?
+    const u32 input_sample_rate = (target_speed == 0.0f || !g_settings.audio_resampling) ?
                                     AUDIO_SAMPLE_RATE :
                                     static_cast<u32>(static_cast<float>(AUDIO_SAMPLE_RATE) * target_speed);
+    Log_InfoPrintf("Audio input sample rate: %u hz", input_sample_rate);
+
     m_audio_stream->SetInputSampleRate(input_sample_rate);
     m_audio_stream->SetOutputVolume(GetAudioOutputVolume());
     m_audio_stream->SetSync(audio_sync_enabled);
@@ -2221,7 +2239,8 @@ void CommonHostInterface::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.emulation_speed != old_settings.emulation_speed ||
         g_settings.fast_forward_speed != old_settings.fast_forward_speed ||
         g_settings.display_max_fps != old_settings.display_max_fps ||
-        g_settings.audio_resampling != old_settings.audio_resampling)
+        g_settings.audio_resampling != old_settings.audio_resampling ||
+        g_settings.sync_to_host_refresh_rate != old_settings.sync_to_host_refresh_rate)
     {
       UpdateSpeedLimiterState();
     }
