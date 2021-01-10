@@ -1,15 +1,15 @@
 set(SRCS
   include/imconfig.h
   include/imgui.h
+  include/imgui_internal.h
   include/imgui_stdlib.h
+  include/imstb_textedit.h
   src/imgui.cpp
   src/imgui_demo.cpp
   src/imgui_draw.cpp
   src/imgui_widgets.cpp
-  src/imgui_internal.h
   src/imstb_rectpack.h
   src/imgui_stdlib.cpp
-  src/imstb_textedit.h
   src/imstb_truetype.h
 )
 
