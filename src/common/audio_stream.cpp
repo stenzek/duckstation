@@ -252,6 +252,7 @@ void AudioStream::EmptyBuffers()
   std::unique_lock<std::mutex> lock(m_buffer_mutex);
   m_buffer.Clear();
   m_underflow_flag.store(false);
+  ResetResampler();
 }
 
 void AudioStream::CreateResampler()
@@ -273,6 +274,8 @@ void AudioStream::DestroyResampler()
 void AudioStream::ResetResampler()
 {
   m_resampled_buffer.Clear();
+  m_resample_in_buffer.clear();
+  m_resample_out_buffer.clear();
   src_reset(static_cast<SRC_STATE*>(m_resampler_state));
 }
 

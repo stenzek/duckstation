@@ -609,8 +609,8 @@ void CommonHostInterface::UpdateSpeedLimiterState()
                          (m_fast_forward_enabled ? g_settings.fast_forward_speed : g_settings.emulation_speed);
   m_speed_limiter_enabled = (target_speed != 0.0f);
 
-  if (g_settings.sync_to_host_refresh_rate && target_speed == 1.0f && g_settings.video_sync_enabled && m_display &&
-      System::IsRunning())
+  if (g_settings.sync_to_host_refresh_rate && g_settings.audio_resampling && target_speed == 1.0f &&
+      g_settings.video_sync_enabled && m_display && System::IsRunning())
   {
     float host_refresh_rate;
     if (m_display->GetHostRefreshRate(&host_refresh_rate))
