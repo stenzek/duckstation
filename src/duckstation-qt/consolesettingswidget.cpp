@@ -35,6 +35,28 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QW
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.cdromLoadImageToRAM, "CDROM", "LoadImageToRAM",
                                                false);
 
+  QtUtils::FillComboBoxWithEmulationSpeeds(m_ui.emulationSpeed);
+  const int emulation_speed_index =
+    m_ui.emulationSpeed->findData(QVariant(m_host_interface->GetFloatSettingValue("Main", "EmulationSpeed", 1.0f)));
+  if (emulation_speed_index >= 0)
+    m_ui.emulationSpeed->setCurrentIndex(emulation_speed_index);
+  connect(m_ui.emulationSpeed, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+          &ConsoleSettingsWidget::onEmulationSpeedIndexChanged);
+  QtUtils::FillComboBoxWithEmulationSpeeds(m_ui.fastForwardSpeed);
+  const int fast_forward_speed_index =
+    m_ui.fastForwardSpeed->findData(QVariant(m_host_interface->GetFloatSettingValue("Main", "FastForwardSpeed", 0.0f)));
+  if (fast_forward_speed_index >= 0)
+    m_ui.fastForwardSpeed->setCurrentIndex(fast_forward_speed_index);
+  connect(m_ui.fastForwardSpeed, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+          &ConsoleSettingsWidget::onFastForwardSpeedIndexChanged);
+  QtUtils::FillComboBoxWithEmulationSpeeds(m_ui.turboSpeed);
+  const int turbo_speed_index =
+    m_ui.turboSpeed->findData(QVariant(m_host_interface->GetFloatSettingValue("Main", "TurboSpeed", 0.0f)));
+  if (turbo_speed_index >= 0)
+    m_ui.turboSpeed->setCurrentIndex(turbo_speed_index);
+  connect(m_ui.turboSpeed, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+          &ConsoleSettingsWidget::onTurboSpeedIndexChanged);
+
   dialog->registerWidgetHelp(
     m_ui.cdromLoadImageToRAM, tr("Preload Image to RAM"), tr("Unchecked"),
     tr("Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay. In some "
@@ -43,6 +65,16 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QW
     m_ui.cdromReadSpeedup, tr("CDROM Read Speedup"), tr("None (Double Speed"),
     tr("Speeds up CD-ROM reads by the specified factor. Only applies to double-speed reads, and is ignored when audio "
        "is playing. May improve loading speeds in some games, at the cost of breaking others."));
+  dialog->registerWidgetHelp(
+    m_ui.emulationSpeed, tr("Emulation Speed"), "100%",
+    tr("Sets the target emulation speed. It is not guaranteed that this speed will be reached, "
+       "and if not, the emulator will run as fast as it can manage."));
+  dialog->registerWidgetHelp(
+    m_ui.fastForwardSpeed, tr("Fast Forward Speed"), "100%",
+    tr("Sets the fast forward speed. This speed will be used when the fast forward hotkey is pressed/toggled."));
+  dialog->registerWidgetHelp(
+    m_ui.turboSpeed, tr("Turbo Speed"), "100%",
+    tr("Sets the turbo speed. This speed will be used when the turbo hotkey is pressed/toggled."));
 
   m_ui.cpuClockSpeed->setEnabled(m_ui.enableCPUClockSpeedControl->checkState() == Qt::Checked);
   m_ui.cdromReadSpeedup->setCurrentIndex(m_host_interface->GetIntSettingValue("CDROM", "ReadSpeedup", 1) - 1);
@@ -117,4 +149,28 @@ void ConsoleSettingsWidget::calculateCPUClockValue()
   QSignalBlocker sb(m_ui.cpuClockSpeed);
   m_ui.cpuClockSpeed->setValue(static_cast<int>(percent));
   updateCPUClockSpeedLabel();
+}
+
+void ConsoleSettingsWidget::onEmulationSpeedIndexChanged(int index)
+{
+  bool okay;
+  const float value = m_ui.emulationSpeed->currentData().toFloat(&okay);
+  m_host_interface->SetFloatSettingValue("Main", "EmulationSpeed", okay ? value : 1.0f);
+  m_host_interface->applySettings();
+}
+
+void ConsoleSettingsWidget::onFastForwardSpeedIndexChanged(int index)
+{
+  bool okay;
+  const float value = m_ui.fastForwardSpeed->currentData().toFloat(&okay);
+  m_host_interface->SetFloatSettingValue("Main", "FastForwardSpeed", okay ? value : 0.0f);
+  m_host_interface->applySettings();
+}
+
+void ConsoleSettingsWidget::onTurboSpeedIndexChanged(int index)
+{
+  bool okay;
+  const float value = m_ui.turboSpeed->currentData().toFloat(&okay);
+  m_host_interface->SetFloatSettingValue("Main", "TurboSpeed", okay ? value : 0.0f);
+  m_host_interface->applySettings();
 }
