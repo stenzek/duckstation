@@ -61,6 +61,8 @@ public:
                              u32* out_pitch) override;
   void EndSetDisplayPixels() override;
 
+  bool GetHostRefreshRate(float* refresh_rate) override;
+
   virtual void SetVSync(bool enabled) override;
 
   virtual bool Render() override;

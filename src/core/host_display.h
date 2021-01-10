@@ -163,12 +163,15 @@ public:
 
   static u32 GetDisplayPixelFormatSize(HostDisplayPixelFormat format);
 
+
   virtual bool SupportsDisplayPixelFormat(HostDisplayPixelFormat format) const = 0;
 
   virtual bool BeginSetDisplayPixels(HostDisplayPixelFormat format, u32 width, u32 height, void** out_buffer,
                                      u32* out_pitch) = 0;
   virtual void EndSetDisplayPixels() = 0;
   virtual bool SetDisplayPixels(HostDisplayPixelFormat format, u32 width, u32 height, const void* buffer, u32 pitch);
+
+  virtual bool GetHostRefreshRate(float* refresh_rate);
 
   void SetDisplayLinearFiltering(bool enabled) { m_display_linear_filtering = enabled; }
   void SetDisplayTopMargin(s32 height) { m_display_top_margin = height; }

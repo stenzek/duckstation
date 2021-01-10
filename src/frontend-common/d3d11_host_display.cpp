@@ -226,6 +226,25 @@ void D3D11HostDisplay::EndSetDisplayPixels()
   m_context->Unmap(m_display_pixels_texture.GetD3DTexture(), 0);
 }
 
+bool D3D11HostDisplay::GetHostRefreshRate(float* refresh_rate)
+{
+  if (m_swap_chain && IsFullscreen())
+  {
+    DXGI_SWAP_CHAIN_DESC desc;
+    if (SUCCEEDED(m_swap_chain->GetDesc(&desc)) && desc.BufferDesc.RefreshRate.Numerator > 0 &&
+        desc.BufferDesc.RefreshRate.Denominator > 0)
+    {
+      Log_InfoPrintf("using fs rr: %u %u", desc.BufferDesc.RefreshRate.Numerator,
+                     desc.BufferDesc.RefreshRate.Denominator);
+      *refresh_rate = static_cast<float>(desc.BufferDesc.RefreshRate.Numerator) /
+                      static_cast<float>(desc.BufferDesc.RefreshRate.Denominator);
+      return true;
+    }
+  }
+
+  return HostDisplay::GetHostRefreshRate(refresh_rate);
+}
+
 void D3D11HostDisplay::SetVSync(bool enabled)
 {
   m_vsync = enabled;
