@@ -54,42 +54,42 @@
     <message>
         <location filename="../advancedsettingswidget.ui" line="40"/>
         <source>Log Level:</source>
-        <translation>Tryb Rejestru:</translation>
+        <translation>Tryb rejestru:</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="50"/>
         <source>Log Filters:</source>
-        <translation>Filtry Rejestru:</translation>
+        <translation>Filtry rejestru:</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="64"/>
         <source>Log To System Console</source>
-        <translation>Rejestr Do Konsoli Systemowej</translation>
+        <translation>Rejestr do konsoli systemowej</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="71"/>
         <source>Log To Window</source>
-        <translation>Rejestr Do Okna</translation>
+        <translation>Rejestr do okna</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="78"/>
         <source>Log To Debug Console</source>
-        <translation>Rejestr Do Konsoli Debugera</translation>
+        <translation>Rejestr do konsoli debugera</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="85"/>
         <source>Log To File</source>
-        <translation>Rejestr Do Pliku</translation>
+        <translation>Rejestr do pliku</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="97"/>
         <source>System Settings</source>
-        <translation>Ustawienia Systemowe</translation>
+        <translation>Ustawienia systemowe</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="103"/>
         <source>Show Debug Menu</source>
-        <translation>Pokaż Menu Debugera</translation>
+        <translation>Pokaż menu debugera</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="113"/>
@@ -109,7 +109,7 @@
     <message>
         <location filename="../advancedsettingswidget.ui" line="154"/>
         <source>Reset To Default</source>
-        <translation>Ustawienia Fabryczne</translation>
+        <translation>Ustawienia fabryczne</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="153"/>
@@ -354,7 +354,7 @@
     <message>
         <location filename="../../core/analog_controller.cpp" line="712"/>
         <source>Force Analog Mode on Reset</source>
-        <translation>Po Resecie Wymuś Tryb Analogowy</translation>
+        <translation>Po resecie wymuś tryb analogowy</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="713"/>
@@ -384,7 +384,7 @@
     <message>
         <location filename="../../core/analog_controller.cpp" line="727"/>
         <source>Vibration Bias</source>
-        <translation>Wzmocnienie Wibracji</translation>
+        <translation>Wzmocnienie wibracji</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="728"/>
@@ -459,7 +459,7 @@
     <message>
         <location filename="../../core/analog_joystick.cpp" line="291"/>
         <source>Triangle</source>
-        <translation>Trójkąt&gt;</translation>
+        <translation>Trójkąt</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="292"/>
@@ -576,13 +576,13 @@
         <location filename="../audiosettingswidget.ui" line="103"/>
         <location filename="../audiosettingswidget.cpp" line="51"/>
         <source>Sync To Output</source>
-        <translation type="unfinished"></translation>
+        <translation>Synchronizuj z wyjściem</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.ui" line="110"/>
         <location filename="../audiosettingswidget.cpp" line="56"/>
         <source>Start Dumping On Boot</source>
-        <translation>Synchronizuj z wyjściem</translation>
+        <translation>Synchronizuj z wyjściem przy starcie.</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.ui" line="120"/>
@@ -603,7 +603,7 @@
     <message>
         <location filename="../audiosettingswidget.ui" line="211"/>
         <source>Fast Forward Volume:</source>
-        <translation>Przyśpieszona Głośność</translation>
+        <translation>Przyśpieszona Głośność:</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.ui" line="218"/>
@@ -615,7 +615,7 @@
         <location filename="../audiosettingswidget.ui" line="225"/>
         <location filename="../audiosettingswidget.cpp" line="65"/>
         <source>Mute CD Audio</source>
-        <translation>Wycisz Dźwięk CD</translation>
+        <translation>Wycisz CD Audio</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="41"/>
@@ -726,12 +726,12 @@
     <message>
         <location filename="../autoupdaterdialog.ui" line="60"/>
         <source>Current Version: </source>
-        <translation type="unfinished"></translation>
+        <translation>Obecna wersja:</translation>
     </message>
     <message>
         <location filename="../autoupdaterdialog.ui" line="67"/>
         <source>New Version: </source>
-        <translation type="unfinished"></translation>
+        <translation>Nowa wersja: </translation>
     </message>
     <message>
         <location filename="../autoupdaterdialog.ui" line="95"/>
@@ -796,7 +796,7 @@
     <message>
         <location filename="../autoupdaterdialog.cpp" line="360"/>
         <source>Downloading %1...</source>
-        <translation>Pobieranie %1 ...</translation>
+        <translation>Pobieranie %1...</translation>
     </message>
     <message>
         <location filename="../autoupdaterdialog.cpp" line="360"/>
@@ -834,7 +834,7 @@
     <message>
         <location filename="../biossettingswidget.ui" line="104"/>
         <source>Open in Explorer...</source>
-        <translation>Otwórz w Eksploratorze ...</translation>
+        <translation>Otwórz w Eksploratorze...</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.ui" line="111"/>
@@ -865,7 +865,7 @@
         <location filename="../biossettingswidget.ui" line="162"/>
         <location filename="../biossettingswidget.cpp" line="96"/>
         <source>Fast Boot</source>
-        <translation>Fast Boot</translation>
+        <translation>Szybki start</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.ui" line="169"/>
@@ -903,17 +903,17 @@
     <message>
         <location filename="../../core/settings.cpp" line="509"/>
         <source>Intepreter (Slowest)</source>
-        <translation type="unfinished"></translation>
+        <translation>Intepreter (Najwolniej)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="510"/>
         <source>Cached Interpreter (Faster)</source>
-        <translation type="unfinished"></translation>
+        <translation>Buforowany interpreter (Szybciej)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="511"/>
         <source>Recompiler (Fastest)</source>
-        <translation type="unfinished"></translation>
+        <translation>Rekompilator (Najszybszy)</translation>
     </message>
 </context>
 <context>
@@ -993,12 +993,12 @@
     <message>
         <location filename="../cheatmanagerdialog.ui" line="14"/>
         <source>Cheat Manager</source>
-        <translation type="unfinished">Menadzer Kodów</translation>
+        <translation>Menadzer kodów</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="24"/>
         <source>Cheat List</source>
-        <translation type="unfinished"></translation>
+        <translation>Lista kodów</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="32"/>
@@ -1013,7 +1013,7 @@
     <message>
         <location filename="../cheatmanagerdialog.ui" line="46"/>
         <source>&amp;Edit Code...</source>
-        <translation>&gt;&amp;Edytuj kod...</translation>
+        <translation>&amp;Edytuj kod...</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="56"/>
@@ -1079,12 +1079,12 @@
     <message>
         <location filename="../cheatmanagerdialog.ui" line="178"/>
         <source>Previous Value</source>
-        <translation>Poprzednia Wartość</translation>
+        <translation>Poprzednia wartość</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="188"/>
         <source>Search Parameters</source>
-        <translation>Parametry Wyszukiwania</translation>
+        <translation>Parametry wyszukiwania</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="194"/>
@@ -1094,7 +1094,7 @@
     <message>
         <location filename="../cheatmanagerdialog.ui" line="210"/>
         <source>Signed</source>
-        <translation>Podpisany</translation>
+        <translation>Podpisz</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="215"/>
@@ -1124,17 +1124,17 @@
     <message>
         <location filename="../cheatmanagerdialog.ui" line="258"/>
         <source>Halfword (2 bytes)</source>
-        <translation>Halfword (2 bajty)</translation>
+        <translation>Półsłowa (2 bajty)</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="263"/>
         <source>Word (4 bytes)</source>
-        <translation>Word (4 bajty)</translation>
+        <translation>Słowo (4 bajty)</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="271"/>
         <source>Operator:</source>
-        <translation>Operator</translation>
+        <translation>Operator:</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="279"/>
@@ -1224,7 +1224,7 @@
     <message>
         <location filename="../cheatmanagerdialog.ui" line="372"/>
         <source>End Address:</source>
-        <translation>Adres Końcowy</translation>
+        <translation>Adres końcowy</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="382"/>
@@ -1254,7 +1254,7 @@
     <message>
         <location filename="../cheatmanagerdialog.ui" line="423"/>
         <source>Search Again</source>
-        <translation>Wyszukaj Ponownie</translation>
+        <translation>Wyszukaj ponownie</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="433"/>
@@ -1284,47 +1284,47 @@
     <message>
         <location filename="../cheatmanagerdialog.ui" line="530"/>
         <source>Remove Watch</source>
-        <translation>Usuń Oglądane</translation>
+        <translation>Usuń oglądane</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="540"/>
         <source>Load Watch</source>
-        <translation>Wczytaj Oglądane</translation>
+        <translation>Wczytaj oglądane</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="550"/>
         <source>Save Watch</source>
-        <translation>Zapisz Oglądane</translation>
+        <translation>Zapisz oglądane</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.cpp" line="21"/>
         <source>Byte</source>
-        <translation type="unfinished"></translation>
+        <translation>Bajt</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.cpp" line="21"/>
         <source>Halfword</source>
-        <translation type="unfinished"></translation>
+        <translation>Półsłowa</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.cpp" line="22"/>
         <source>Word</source>
-        <translation type="unfinished"></translation>
+        <translation>Słowo</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.cpp" line="22"/>
         <source>Signed Byte</source>
-        <translation type="unfinished"></translation>
+        <translation>Podpisz Bajt</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.cpp" line="23"/>
         <source>Signed Halfword</source>
-        <translation type="unfinished"></translation>
+        <translation>Podpisz półsłowo</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.cpp" line="23"/>
         <source>Signed Word</source>
-        <translation type="unfinished"></translation>
+        <translation>Podpisz słowo</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.cpp" line="383"/>
@@ -1339,7 +1339,7 @@
     <message>
         <location filename="../cheatmanagerdialog.cpp" line="462"/>
         <source>Group Name:</source>
-        <translation>Nazwa Grupy:</translation>
+        <translation>Nazwa grupy:</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.cpp" line="468"/>
@@ -1372,7 +1372,7 @@
     <message>
         <location filename="../cheatmanagerdialog.cpp" line="588"/>
         <source>From Text...</source>
-        <translation>Z tekstu ...</translation>
+        <translation>Z tekstu...</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.cpp" line="594"/>
@@ -1404,17 +1404,17 @@
     <message>
         <location filename="../cheatmanagerdialog.cpp" line="642"/>
         <source>Export Cheats</source>
-        <translation>Eksportuj Kody (Czity)</translation>
+        <translation>Eksportuj kody (czity)</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.cpp" line="647"/>
         <source>Failed to save cheat file. The log may contain more information.</source>
-        <translation>Nie udało się zapisać pliku kodów.(Czitów). Dziennik może zawierać więcej informacji.</translation>
+        <translation>Nie udało się zapisać pliku kodów, (czitów). Dziennik może zawierać więcej informacji.</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.cpp" line="664"/>
         <source>Enter manual address:</source>
-        <translation type="unfinished"></translation>
+        <translation>Wpisz adres ręcznie:</translation>
     </message>
     <message>
         <source>Enter memory address:</source>
@@ -1530,7 +1530,7 @@
     <message>
         <location filename="../consolesettingswidget.ui" line="78"/>
         <source>Enable Clock Speed Control (Overclocking/Underclocking)</source>
-        <translation>Włącz kontrolę szybkości zegara (podkręcanie / podkręcanie)</translation>
+        <translation>Włącz kontrolę szybkości zegara (podkręcanie/obniżanie)</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="98"/>
@@ -1620,7 +1620,7 @@
     <message>
         <location filename="../consolesettingswidget.cpp" line="39"/>
         <source>Unchecked</source>
-        <translation>nie zaznaczony</translation>
+        <translation>niezaznaczony</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="40"/>
@@ -1658,7 +1658,7 @@ To ostrzeżenie zostanie wyświetlone tylko raz.</translation>
     <message>
         <location filename="../consolesettingswidget.cpp" line="69"/>
         <source>Yes, I will confirm bugs without overclocking before reporting.</source>
-        <translation>Tak, przed zgłoszeniem potwierdź błędy bez podkręcania.</translation>
+        <translation>Tak, potwierdzę błędy bez podkręcania, przed zgłoszeniem ich.</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="70"/>
@@ -1696,7 +1696,7 @@ To ostrzeżenie zostanie wyświetlone tylko raz.</translation>
     <message>
         <location filename="../../frontend-common/controller_interface.cpp" line="92"/>
         <source>DInput</source>
-        <translation type="unfinished"></translation>
+        <translation>DInput</translation>
     </message>
 </context>
 <context>
@@ -1704,7 +1704,7 @@ To ostrzeżenie zostanie wyświetlone tylko raz.</translation>
     <message>
         <location filename="../controllersettingswidget.cpp" line="83"/>
         <source>Controller Type:</source>
-        <translation>Typ Kontrolera</translation>
+        <translation>Typ kontrolera</translation>
     </message>
     <message>
         <location filename="../controllersettingswidget.cpp" line="114"/>
@@ -1876,7 +1876,7 @@ To ostrzeżenie zostanie wyświetlone tylko raz.</translation>
     <message>
         <location filename="../../core/cpu_core.cpp" line="1659"/>
         <source>Instruction read failed at %08X while searching for function end.</source>
-        <translation>Przechodzenie do 0x%08X Odczyt instrukcji nie powiódł się w %08X podczas wyszukiwania końca funkcji.</translation>
+        <translation>Odczyt instrukcji nie powiódł się w %08X podczas wyszukiwania końca funkcji.</translation>
     </message>
     <message>
         <location filename="../../core/cpu_core.cpp" line="1668"/>
@@ -1899,7 +1899,7 @@ To ostrzeżenie zostanie wyświetlone tylko raz.</translation>
     <message>
         <location filename="../debuggerwindow.ui" line="31"/>
         <source>&amp;Debug</source>
-        <translation>Debuguj</translation>
+        <translation>&amp;Debuguj</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="51"/>
@@ -1910,7 +1910,7 @@ To ostrzeżenie zostanie wyświetlone tylko raz.</translation>
     <message>
         <location filename="../debuggerwindow.ui" line="63"/>
         <source>toolBar</source>
-        <translation>pasek narzędzi</translation>
+        <translation>Pasek narzędzi</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="93"/>
@@ -1980,7 +1980,7 @@ To ostrzeżenie zostanie wyświetlone tylko raz.</translation>
     <message>
         <location filename="../debuggerwindow.ui" line="311"/>
         <source>&amp;Pause/Continue</source>
-        <translation>Pauza/Wznów</translation>
+        <translation>&amp;Pauza/Wznów</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="314"/>
@@ -1995,7 +1995,7 @@ To ostrzeżenie zostanie wyświetlone tylko raz.</translation>
     <message>
         <location filename="../debuggerwindow.ui" line="326"/>
         <source>&amp;Step Into</source>
-        <translation>Krok w</translation>
+        <translation>&amp;Krok w</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="329"/>
@@ -2010,7 +2010,7 @@ To ostrzeżenie zostanie wyświetlone tylko raz.</translation>
     <message>
         <location filename="../debuggerwindow.ui" line="341"/>
         <source>Step &amp;Over</source>
-        <translation>Krok nad</translation>
+        <translation>Krok &amp;nad</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="344"/>
@@ -2025,7 +2025,7 @@ To ostrzeżenie zostanie wyświetlone tylko raz.</translation>
     <message>
         <location filename="../debuggerwindow.ui" line="356"/>
         <source>Toggle &amp;Breakpoint</source>
-        <translation>Przełącz punkt przerwania</translation>
+        <translation>Przełącz &amp;punkt przerwania</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="359"/>
@@ -2035,7 +2035,7 @@ To ostrzeżenie zostanie wyświetlone tylko raz.</translation>
     <message>
         <location filename="../debuggerwindow.ui" line="364"/>
         <source>&amp;Close</source>
-        <translation>Zamknij</translation>
+        <translation>&amp;Zamknij</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="373"/>
@@ -2045,7 +2045,7 @@ To ostrzeżenie zostanie wyświetlone tylko raz.</translation>
     <message>
         <location filename="../debuggerwindow.ui" line="376"/>
         <source>Step O&amp;ut</source>
-        <translation>Wyjdź</translation>
+        <translation>W&amp;yjdź</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="379"/>
@@ -2060,7 +2060,7 @@ To ostrzeżenie zostanie wyświetlone tylko raz.</translation>
     <message>
         <location filename="../debuggerwindow.ui" line="391"/>
         <source>&amp;Run To Cursor</source>
-        <translation>Przejdź do kursora</translation>
+        <translation>&amp;Przejdź do kursora</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="394"/>
@@ -2075,7 +2075,7 @@ To ostrzeżenie zostanie wyświetlone tylko raz.</translation>
     <message>
         <location filename="../debuggerwindow.ui" line="406"/>
         <source>&amp;Clear Breakpoints</source>
-        <translation>Wyczyść punkty przerwania</translation>
+        <translation>&amp;Wyczyść punkty przerwania</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="409"/>
@@ -2090,7 +2090,7 @@ To ostrzeżenie zostanie wyświetlone tylko raz.</translation>
     <message>
         <location filename="../debuggerwindow.ui" line="421"/>
         <source>Add &amp;Breakpoint</source>
-        <translation>Dodaj punkty przerwania</translation>
+        <translation>Dodaj punkty &amp;przerwania</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="424"/>
@@ -2105,7 +2105,7 @@ To ostrzeżenie zostanie wyświetlone tylko raz.</translation>
     <message>
         <location filename="../debuggerwindow.ui" line="436"/>
         <source>&amp;Go To PC</source>
-        <translation>Przejdź do komputera</translation>
+        <translation>&amp;Przejdź do komputera</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="439"/>
@@ -2120,7 +2120,7 @@ To ostrzeżenie zostanie wyświetlone tylko raz.</translation>
     <message>
         <location filename="../debuggerwindow.ui" line="451"/>
         <source>Go To &amp;Address</source>
-        <translation>Idź do adresu</translation>
+        <translation>Idź do &amp;adresu</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="454"/>
@@ -2130,7 +2130,7 @@ To ostrzeżenie zostanie wyświetlone tylko raz.</translation>
     <message>
         <location filename="../debuggerwindow.ui" line="463"/>
         <source>&amp;Dump Address</source>
-        <translation>Zrzut Adresu</translation>
+        <translation>&amp;Zrzut Adresu</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="466"/>
@@ -2140,17 +2140,17 @@ To ostrzeżenie zostanie wyświetlone tylko raz.</translation>
     <message>
         <location filename="../debuggerwindow.ui" line="475"/>
         <source>Trace</source>
-        <translation type="unfinished">Ślad</translation>
+        <translation>Śledzenie</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="478"/>
         <source>&amp;Trace</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Śledzenie</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="481"/>
         <source>Ctrl+T</source>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+T</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.cpp" line="91"/>
@@ -2173,12 +2173,13 @@ To ostrzeżenie zostanie wyświetlone tylko raz.</translation>
         <location filename="../debuggerwindow.cpp" line="130"/>
         <source>Trace logging started to cpu_log.txt.
 This file can be several gigabytes, so be aware of SSD wear.</source>
-        <translation type="unfinished"></translation>
+        <translation>Rozpoczęto rejestrowanie śledzenia do cpu_log.txt.
+Ten plik może mieć kilka gigabajtów, więc pamiętaj o zużyciu dysku SSD.</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.cpp" line="136"/>
         <source>Trace logging to cpu_log.txt stopped.</source>
-        <translation type="unfinished"></translation>
+        <translation>Rejestrowanie śledzenia do cpu_log.txt zostało zatrzymane.</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.cpp" line="154"/>
@@ -2223,7 +2224,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../qtutils.cpp" line="760"/>
         <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
-        <translation type="unfinished"></translation>
+        <translation>Błędny adres. Powinien być zapisany szesnastkowo (0x12345678 lub 12345678)</translation>
     </message>
 </context>
 <context>
@@ -2301,12 +2302,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../../core/digital_controller.cpp" line="193"/>
         <source>Force Pop&apos;n Controller Mode</source>
-        <translation>Wymuś tryb kontrolera</translation>
+        <translation>Wymuś tryb kontrolera Pop&apos;n</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="194"/>
         <source>Forces the Digital Controller to act as a Pop&apos;n Controller.</source>
-        <translation>Zmienia zachowanie cyfrowego kontrolera na działanie jak Pop&apos;n kontroller. (Muzyczny kontroler psx 8 przycisków i oś Y jako 9)</translation>
+        <translation>Zmienia zachowanie cyfrowego kontrolera na działanie jak Pop&apos;n kontroller. (Muzyczny kontroler psx 8 przycisków i oś Y jako 9-ty)</translation>
     </message>
 </context>
 <context>
@@ -2337,7 +2338,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../../core/settings.cpp" line="695"/>
         <source>Auto (Game Native)</source>
-        <translation type="unfinished"></translation>
+        <translation>Auto (natywna gra)</translation>
     </message>
 </context>
 <context>
@@ -2383,7 +2384,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../displaysettingswidget.ui" line="58"/>
         <source>Fullscreen Mode:</source>
-        <translation>Tryb Pełnego Ekranu</translation>
+        <translation>Tryb Pełnoekranowy:</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="70"/>
@@ -2401,7 +2402,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../displaysettingswidget.ui" line="84"/>
         <location filename="../displaysettingswidget.cpp" line="99"/>
         <source>Threaded Presentation</source>
-        <translation type="unfinished"></translation>
+        <translation>Prezentacja wątkowa</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="96"/>
@@ -2416,7 +2417,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../displaysettingswidget.ui" line="112"/>
         <source>Crop:</source>
-        <translation>kadrowanie:</translation>
+        <translation>Kadrowanie:</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="122"/>
@@ -2433,12 +2434,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../displaysettingswidget.ui" line="141"/>
         <location filename="../displaysettingswidget.cpp" line="92"/>
         <source>Integer Upscaling</source>
-        <translation>Integer Upscaling skalowanie w CPU intela 11 generacji</translation>
+        <translation>Integer Upscaling - całkowite skalowanie intel gen.11 CPU</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="153"/>
         <source>On-Screen Display</source>
-        <translation>Wyświetlacz ekranowy</translation>
+        <translation>Wyświetlacz ekranowy OSD</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="159"/>
@@ -2454,7 +2455,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../displaysettingswidget.ui" line="173"/>
         <source>Show Emulation Speed</source>
-        <translation>Pokarz Prękość Emulacji</translation>
+        <translation>Pokarz prękość emulacji</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="180"/>
@@ -2475,7 +2476,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../displaysettingswidget.cpp" line="61"/>
         <source>Chooses the backend to use for rendering the console/game visuals. &lt;br&gt;Depending on your system and hardware, Direct3D 11 and OpenGL hardware backends may be available. &lt;br&gt;The software renderer offers the best compatibility, but is the slowest and does not offer any enhancements.</source>
-        <translation>Wybiera zaplecze do renderowania wizualizacji konsoli / wizualizacji gry. &lt;br&gt;W zależności od systemu i sprzętu mogą być dostępne backendy sprzętowe Direct3D 11 i OpenGL. &lt;br&gt;Renderowanie oprogramowania zapewnia najlepszą zgodność, ale jest najwolniejsze i nie oferuje żadnych ulepszeń.</translation>
+        <translation>Wybiera zaplecze do renderowania wizualizacji konsoli/wizualizacji gry. &lt;br&gt;W zależności od systemu i sprzętu mogą być dostępne backendy sprzętowe Direct3D 11 i OpenGL. &lt;br&gt;Renderowanie oprogramowania zapewnia najlepszą zgodność, ale jest najwolniejsze i nie oferuje żadnych ulepszeń.</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="65"/>
@@ -2515,22 +2516,22 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../displaysettingswidget.cpp" line="77"/>
         <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide. &lt;br&gt;Some games display content in the overscan area, or use it for screen effects. &lt;br&gt;May not display correctly with the &quot;All Borders&quot; setting. &quot;Only Overscan&quot; offers a good compromise between stability and hiding black borders.</source>
-        <translation>Określa, jaka część obszaru zazwyczaj nie jest widoczna na odbiorniku telewizyjnym przeznaczonym do przycięcia / ukrycia. &lt;br&gt;Niektóre gry wyświetlają zawartość w obszarze overscan lub używają jej do efektów ekranowych. &lt;br&gt;Może nie wyświetlać się poprawnie z opcją &quot;Wszystkie obramowania &quot;ustawienia. &quot;Tylko Overscan&quot; oferuje dobry kompromis między stabilnością a ukrywaniem czarnych ramek.</translation>
+        <translation>Określa, jaka część obszaru zazwyczaj nie jest widoczna na odbiorniku telewizyjnym przeznaczonym do przycięcia/ukrycia. &lt;br&gt;Niektóre gry wyświetlają zawartość w obszarze overscan lub używają jej do efektów ekranowych. &lt;br&gt;Może nie wyświetlać się poprawnie z opcją &quot;Wszystkie obramowania &quot;ustawienia. &quot;Tylko Overscan&quot; oferuje dobry kompromis między stabilnością a ukrywaniem czarnych ramek.</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="82"/>
         <source>Downsampling</source>
-        <translation type="unfinished"></translation>
+        <translation>Downsampling próbkowanie w dół</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="82"/>
         <source>Disabled</source>
-        <translation type="unfinished">Wyłączone</translation>
+        <translation>Wyłączone</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="83"/>
         <source>Downsamples the rendered image prior to displaying it. Can improve overall image quality in mixed 2D/3D games, but should be disabled for pure 3D games. Only applies to the hardware renderers.</source>
-        <translation type="unfinished"></translation>
+        <translation>Próbkuje w dół renderowany obraz przed jego wyświetleniem. Może poprawić ogólną jakość obrazu w mieszanych grach 2D / 3D, ale należy ją wyłączyć w grach czysto 3D. Dotyczy tylko urządzeń renderujących.</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="85"/>
@@ -2539,12 +2540,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../displaysettingswidget.cpp" line="102"/>
         <location filename="../displaysettingswidget.cpp" line="105"/>
         <source>Checked</source>
-        <translation>Sprawdzone</translation>
+        <translation>Zaznaczone</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="86"/>
         <source>Uses bilinear texture filtering when displaying the console&apos;s framebuffer to the screen. &lt;br&gt;Disabling filtering will producer a sharper, blockier/pixelated image. Enabling will smooth out the image. &lt;br&gt;The option will be less noticable the higher the resolution scale.</source>
-        <translation>Używa dwuliniowego filtrowania tekstur podczas wyświetlania bufora ramki konsoli na ekranie. &lt;br&gt;Wyłączenie filtrowania zapewni ostrzejszy, bardziej blokowy / pikselowany obraz. Włączenie wygładzi obraz. &lt;br&gt;Im wyższa skala rozdzielczości, tym mniej widoczna opcja.</translation>
+        <translation>Używa dwuliniowego filtrowania tekstur podczas wyświetlania bufora ramki konsoli na ekranie. &lt;br&gt;Wyłączenie filtrowania zapewni ostrzejszy, bardziej blokowy/pikselowany obraz. Włączenie wygładzi obraz. &lt;br&gt;Im wyższa skala rozdzielczości, tym mniej widoczna opcja.</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="92"/>
@@ -2568,7 +2569,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../displaysettingswidget.cpp" line="100"/>
         <source>Presents frames on a background thread when fast forwarding or vsync is disabled. This can measurably improve performance in the Vulkan renderer.</source>
-        <translation type="unfinished"></translation>
+        <translation>Przedstawia ramki w wątku w tle, gdy szybkie przewijanie do przodu lub v-sync jest wyłączone. Może to wymiernie poprawić wydajność w rendererze Vulkan.</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="103"/>
@@ -2583,7 +2584,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../displaysettingswidget.cpp" line="106"/>
         <source>Shows on-screen-display messages when events occur such as save states being created/loaded, screenshots being taken, etc.</source>
-        <translation>Pokazuje komunikaty na ekranie, gdy wystąpią zdarzenia, takie jak tworzenie / ładowanie stanów zapisu, wykonywanie zrzutów ekranu itp.</translation>
+        <translation>Pokazuje komunikaty na ekranie, gdy wystąpią zdarzenia, takie jak tworzenie/ładowanie stanów zapisu, wykonywanie zrzutów ekranu itp.</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="109"/>
@@ -2593,7 +2594,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../displaysettingswidget.cpp" line="111"/>
         <source>Shows the number of frames (or v-syncs) displayed per second by the system in the top-right corner of the display.</source>
-        <translation>Pokazuje liczbę klatek (lub synchronizacji pionowych) wyświetlanych na sekundę przez system w prawym górnym rogu wyświetlacza.</translation>
+        <translation>Pokazuje liczbę klatek (lub v-sync) wyświetlanych na sekundę przez system w prawym górnym rogu wyświetlacza.</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="114"/>
@@ -2609,12 +2610,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../displaysettingswidget.cpp" line="119"/>
         <location filename="../displaysettingswidget.cpp" line="122"/>
         <source>Use Blit Swap Chain</source>
-        <translation type="unfinished">Użyj wiązania Blit Swap</translation>
+        <translation>Użyj wiązania Blit Swap</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="123"/>
         <source>Uses a blit presentation model instead of flipping when using the Direct3D 11 renderer. This usually results in slower performance, but may be required for some streaming applications, or to uncap framerates on some systems.</source>
-        <translation type="unfinished"></translation>
+        <translation>Używa blitowego modelu prezentacji zamiast odwracania się podczas korzystania z renderera Direct3D 11. Zwykle skutkuje to wolniejszą wydajnością, ale może być wymagane w przypadku niektórych aplikacji do przesyłania strumieniowego lub w celu zwolnienia liczby klatek na sekundę w niektórych systemach.</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="216"/>
@@ -2654,7 +2655,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../enhancementsettingswidget.ui" line="65"/>
         <location filename="../enhancementsettingswidget.cpp" line="69"/>
         <source>Scaled Dithering (scale dither pattern to resolution)</source>
-        <translation>Scaled Dithering (skalowanie wzorca ditheringu do rozdzielczości)</translation>
+        <translation>Scaled Dithering (skalowanie wzorca drgań do rozdzielczości)</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="72"/>
@@ -2675,7 +2676,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../enhancementsettingswidget.ui" line="98"/>
         <location filename="../enhancementsettingswidget.cpp" line="46"/>
         <source>Disable Interlacing (force progressive render/scan)</source>
-        <translation>Wyłącz przeplot (wymuś renderowanie / skanowanie progresywne)</translation>
+        <translation>Wyłącz przeplot (wymuś renderowanie/skanowanie progresywne)</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="105"/>
@@ -2691,24 +2692,24 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="119"/>
         <source>Chroma Smoothing For 24-Bit Display (reduce FMV color blockyness)</source>
-        <translation>Wygładzanie Chroma dla 24-bitowego wyświetlacza (redukcja blokowania kolorów FMV)</translation>
+        <translation>Wygładzanie Chroma dla 24-bit wyświetlacza (redukcja blokowania kolorów FMV)</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="129"/>
         <source>PGXP (Precision Geometry Transform Pipeline)</source>
-        <translation>Precyzyjna transformacja geometrii przetwarzania potokowego przez cpu</translation>
+        <translation>Precyzyjna transformacja geometrii przetwarzania potokowego przez CPU</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="135"/>
         <location filename="../enhancementsettingswidget.cpp" line="96"/>
         <source>Geometry Correction</source>
-        <translation>Korekta geometrii (poprawia skaczące piksele w grach)</translation>
+        <translation>Korekta geometrii (poprawia skaczące piksele)</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="142"/>
         <location filename="../enhancementsettingswidget.cpp" line="99"/>
         <source>Culling Correction</source>
-        <translation>Korekta Culling(powoduje wyświetlanie bardziej szczegółowych modeli szczególnie tych w oddali)</translation>
+        <translation>Korekta Culling (bardziej szczegółowe modele szczególnie te w oddali)</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="149"/>
@@ -2720,7 +2721,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../enhancementsettingswidget.ui" line="156"/>
         <location filename="../enhancementsettingswidget.cpp" line="106"/>
         <source>Depth Buffer</source>
-        <translation type="unfinished"></translation>
+        <translation>Bufor głębi</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="46"/>
@@ -2737,7 +2738,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="47"/>
         <source>Forces the rendering and display of frames to progressive mode. &lt;br&gt;This removes the &quot;combing&quot; effect seen in 480i games by rendering them in 480p. Usually safe to enable.&lt;br&gt; &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
-        <translation>Wymusza renderowanie i wyświetlanie klatek w trybie progresywnym. &lt;br&gt;Spowoduje to usunięcie &quot;czesania&quot; efekt widoczny w grach 480i poprzez renderowanie ich w rozdzielczości 480p. Zwykle włączanie jest bezpieczne. &lt;br&gt; &lt;b&gt;&lt;u&gt;Może nie być zgodne ze wszystkimi grami.&lt;/u&gt;&lt;/b&gt;</translation>
+        <translation>Wymusza renderowanie i wyświetlanie klatek w trybie progresywnym. &lt;br&gt;Spowoduje to usunięcie &quot;czesania&quot; efekt widoczny w grach 480i poprzez renderowanie ich w rozdzielczości 480p. Zwykle włączanie jest bezpieczne.&lt;br&gt; &lt;b&gt;&lt;u&gt;Może nie być zgodne ze wszystkimi grami.&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="52"/>
@@ -2767,7 +2768,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="63"/>
         <source>Forces the precision of colours output to the console&apos;s framebuffer to use the full 8 bits of precision per channel. This produces nicer looking gradients at the cost of making some colours look slightly different. Disabling the option also enables dithering, which makes the transition between colours less sharp by applying a pattern around those pixels. Most games are compatible with this option, but there is a number which aren&apos;t and will have broken effects with it enabled. Only applies to the hardware renderers.</source>
-        <translation>Wymusza precyzję kolorów wysyłanych do bufora ramki konsoli, aby używał pełnych 8 bitów precyzji na kanał. Daje to ładniejsze gradienty, kosztem tego, że niektóre kolory wyglądają nieco inaczej. Wyłączenie tej opcji włącza również dithering, co sprawia, że przejścia między kolorami są mniej ostre dzięki zastosowaniu wzoru wokół tych pikseli. Większość gier jest zgodnych z tą opcją, ale jest kilka, które nie są i będą miały zepsute efekty po włączeniu tej opcji. Dotyczy tylko urządzeń renderujących.</translation>
+        <translation>Wymusza precyzję kolorów wysyłanych do bufora ramki konsoli, aby używał pełnych 8 bitów precyzji na kanał. Daje to ładniejsze gradienty, kosztem tego, że niektóre kolory wyglądają nieco inaczej. Wyłączenie tej opcji włącza również dithering (drgania), co sprawia, że przejścia między kolorami są mniej ostre dzięki zastosowaniu wzoru wokół tych pikseli. Większość gier jest zgodnych z tą opcją, ale jest kilka, które nie są i będą miały zepsute efekty po włączeniu tej opcji. Dotyczy tylko urządzeń renderujących.</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="69"/>
@@ -2794,17 +2795,17 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="80"/>
         <source>Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs.</source>
-        <translation>Przełącza z powrotem do proporcji ekranu 4:3 podczas wyświetlania treści 24-bitowych, zwykle FMV.</translation>
+        <translation>Przełącza z powrotem do proporcji ekranu 4:3 podczas wyświetlania treści 24-bitowych, w FMVs.</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="81"/>
         <source>Chroma Smoothing For 24-Bit Display</source>
-        <translation>Wygładzanie Chroma dla 24-bitowego wyświetlacza (Nasze oczy są mniej wrażliwe na szczegóły w kanale chrominancji, więc jest to bardzo przydatny sposób radzenia sobie z szumem / artefaktami bez dużego wpływu na postrzegane szczegóły.)</translation>
+        <translation>Wygładzanie Chroma dla 24-bitowego wyświetlacza</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="82"/>
         <source>Smooths out blockyness between colour transitions in 24-bit content, usually FMVs. Only applies to the hardware renderers.</source>
-        <translation>Wygładza blokowanie między przejściami kolorów w treści 24-bitowej, zwykle w FORMACH. Dotyczy tylko urządzeń renderujących.</translation>
+        <translation>Wygładza blokowanie między przejściami kolorów w treści 24-bitowej, zwykle w FMVs. Dotyczy tylko urządzeń renderujących.</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="85"/>
@@ -2844,7 +2845,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="107"/>
         <source>Attempts to reduce polygon Z-fighting by testing pixels against the depth values from PGXP. Low compatibility, but can work well in some games. Other games may need a threshold adjustment.</source>
-        <translation type="unfinished"></translation>
+        <translation>Próbuje zredukować wielokąty za pomocą przełącznika &quot;Z-fight&quot; poprzez testowanie pikseli względem wartości głębi z PGXP. Niska kompatybilność, ale może działać dobrze w niektórych grach. Inne gry mogą wymagać dostosowania progu.</translation>
     </message>
 </context>
 <context>
@@ -2852,17 +2853,17 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../../core/settings.cpp" line="638"/>
         <source>Disabled</source>
-        <translation type="unfinished">Wyłączone</translation>
+        <translation>Wyłączone</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="638"/>
         <source>Box (Downsample 3D/Smooth All)</source>
-        <translation type="unfinished"></translation>
+        <translation>Box Pudełkowe (Downsample 3D/Wygładź wszystko)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="639"/>
         <source>Adaptive (Preserve 3D/Smooth 2D)</source>
-        <translation type="unfinished"></translation>
+        <translation>Adaptacyjne (Zachowaj 3D / Wygładź 2D)</translation>
     </message>
 </context>
 <context>
@@ -3021,7 +3022,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../../core/settings.cpp" line="609"/>
         <source>xBR</source>
-        <translation>unfinished</translation>
+        <translation>xBR</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="610"/>
@@ -3044,7 +3045,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../../frontend-common/game_list.cpp" line="44"/>
         <source>Crashes In Intro</source>
-        <translation>Awarie w Intro</translation>
+        <translation>Awarie w intro</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_list.cpp" line="45"/>
@@ -3054,7 +3055,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../../frontend-common/game_list.cpp" line="46"/>
         <source>Graphical/Audio Issues</source>
-        <translation>Problemy graficzne / audio</translation>
+        <translation>Problemy graficzne/audio</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_list.cpp" line="47"/>
@@ -3110,7 +3111,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../gamelistsearchdirectoriesmodel.cpp" line="31"/>
         <source>Recursive</source>
-        <translation>Rekursywne (Szuka w podfolderach)</translation>
+        <translation>Rekursywnie</translation>
     </message>
 </context>
 <context>
@@ -3134,7 +3135,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../gamelistsettingswidget.ui" line="57"/>
         <location filename="../gamelistsettingswidget.cpp" line="86"/>
         <source>Remove</source>
-        <translation type="unfinished">Usuń</translation>
+        <translation>Usuń</translation>
     </message>
     <message>
         <source>Usuń</source>
@@ -3143,27 +3144,27 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../gamelistsettingswidget.ui" line="81"/>
         <source>Scan New</source>
-        <translation>Skanuj Nowy</translation>
+        <translation>Skanuj nowy</translation>
     </message>
     <message>
         <location filename="../gamelistsettingswidget.ui" line="92"/>
         <source>Rescan All</source>
-        <translation>przeskanuj wszystko</translation>
+        <translation>Skanuj wszystko</translation>
     </message>
     <message>
         <location filename="../gamelistsettingswidget.ui" line="103"/>
         <source>Update Redump Database</source>
-        <translation>Zaktualizuj Baze Danych Redump</translation>
+        <translation>Zaktualizuj baze danych Redump</translation>
     </message>
     <message>
         <location filename="../gamelistsettingswidget.cpp" line="88"/>
         <source>Open Directory...</source>
-        <translation>Otwórz Katalog</translation>
+        <translation>Otwórz katalog</translation>
     </message>
     <message>
         <location filename="../gamelistsettingswidget.cpp" line="96"/>
         <source>Select Search Directory</source>
-        <translation>Wybierz Katalog wyszukiwania</translation>
+        <translation>Wybierz katalog wyszukiwania</translation>
     </message>
     <message>
         <location filename="../gamelistsettingswidget.cpp" line="102"/>
@@ -3196,7 +3197,7 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../gamelistsettingswidget.cpp" line="249"/>
         <source>Downloading %1...</source>
-        <translation>Pobieranie</translation>
+        <translation>Pobieranie %1...</translation>
     </message>
     <message>
         <location filename="../gamelistsettingswidget.cpp" line="249"/>
@@ -3206,7 +3207,7 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../gamelistsettingswidget.cpp" line="260"/>
         <source>Download failed</source>
-        <translation>Pobieranie nie udane</translation>
+        <translation>Pobieranie nieudane</translation>
     </message>
     <message>
         <location filename="../gamelistsettingswidget.cpp" line="267"/>
@@ -3216,12 +3217,12 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../gamelistsettingswidget.cpp" line="273"/>
         <source>Extract failed</source>
-        <translation>Wypakowanie nie powiodło się</translation>
+        <translation>Rozpakowanie nie powiodło się</translation>
     </message>
     <message>
         <location filename="../gamelistsettingswidget.cpp" line="273"/>
         <source>Extracting game database failed.</source>
-        <translation>Rozpakowanie bazy danych gry nie powiodło się.</translation>
+        <translation>Rozpakowanie bazy danych gier nie powiodło się.</translation>
     </message>
 </context>
 <context>
@@ -3229,7 +3230,7 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../gamepropertiesdialog.ui" line="14"/>
         <source>Dialog</source>
-        <translation>unfinished</translation>
+        <translation>Właściwości</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="28"/>
@@ -3239,7 +3240,7 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../gamepropertiesdialog.ui" line="34"/>
         <source>Image Path:</source>
-        <translation>Ścieżka Obrazu</translation>
+        <translation>Ścieżka obrazu</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="48"/>
@@ -3269,7 +3270,7 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../gamepropertiesdialog.ui" line="110"/>
         <source>Comments:</source>
-        <translation>komentarze:</translation>
+        <translation>Komentarz:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="120"/>
@@ -3309,7 +3310,7 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../gamepropertiesdialog.ui" line="178"/>
         <source>Hash</source>
-        <translation>Hash - sumakontrola</translation>
+        <translation>Hash PSX</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="187"/>
@@ -3324,7 +3325,7 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../gamepropertiesdialog.ui" line="201"/>
         <source>Enable Clock Speed Control (Overclocking/Underclocking)</source>
-        <translation>Włącz kontrolę szybkości zegara (podkręcanie / podkręcanie)</translation>
+        <translation>Włącz kontrolę szybkości zegara (podkręcanie/spowalnianie CPU)</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="224"/>
@@ -3374,7 +3375,7 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../gamepropertiesdialog.ui" line="350"/>
         <source>Texture Filtering:</source>
-        <translation>Filtrowanie Tekstur</translation>
+        <translation>Filtrowanie tekstur:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="392"/>
@@ -3384,12 +3385,12 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../gamepropertiesdialog.ui" line="362"/>
         <source>Scaled Dithering (scale dither pattern to resolution)</source>
-        <translation>Skalowanie Drgań (skalowanie wzorca drgań do rozdzielczości)</translation>
+        <translation>Skalowanie drgań (skalowanie wzorca drgań do rozdzielczości)</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="412"/>
         <source>Widescreen Hack</source>
-        <translation>Widescreen Hack (Szeroki ekran tam gdzie go nie ma oryginalnie)</translation>
+        <translation>Widescreen Hack (szeroki ekran)</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="382"/>
@@ -3399,12 +3400,12 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../gamepropertiesdialog.ui" line="287"/>
         <source>Downsampling:</source>
-        <translation type="unfinished"></translation>
+        <translation>Próbkowanie w dół:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="372"/>
         <source>Force 4:3 For 24-Bit Display (disable widescreen for FMVs)</source>
-        <translation>Wymuś 4:3 dla 24-bitowego wyświetlacza (wyłącz panoramiczny ekran dla FMV)</translation>
+        <translation>Wymuś 4:3 dla 24-bit wyświetlacza (wyłącz panoramiczny ekran dla FMVs)</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="402"/>
@@ -3414,7 +3415,7 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../gamepropertiesdialog.ui" line="422"/>
         <source>PGXP Depth Buffer</source>
-        <translation type="unfinished"></translation>
+        <translation>Bufor głębi PGXP</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="437"/>
@@ -3424,7 +3425,7 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../gamepropertiesdialog.ui" line="443"/>
         <source>CD-ROM Read Speedup:</source>
-        <translation>Predkość odczytu CD-ROM:</translation>
+        <translation>Predkość CD-ROM:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="451"/>
@@ -3440,7 +3441,7 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
         <location filename="../gamepropertiesdialog.cpp" line="171"/>
         <location filename="../gamepropertiesdialog.cpp" line="177"/>
         <source>(unchanged)</source>
-        <translation>(niezmieniona)</translation>
+        <translation>(Niezmieniona)</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="456"/>
@@ -3495,22 +3496,22 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../gamepropertiesdialog.ui" line="526"/>
         <source>User Settings (Input)</source>
-        <translation>Ustawienia użytkownika (Wejścia)</translation>
+        <translation>Ustawienia użytkownika (wejścia)</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="532"/>
         <source>Controller Settings</source>
-        <translation>Ustawienia Kontrolera</translation>
+        <translation>Ustawienia kontrolera</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="538"/>
         <source>Controller 1 Type:</source>
-        <translation>Kontroler 1 Typ:</translation>
+        <translation>Typ kontrolera 1:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="548"/>
         <source>Controller 2 Type:</source>
-        <translation>Kontroler 2 Typ:</translation>
+        <translation>Typ kontrolera 2:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="558"/>
@@ -3576,12 +3577,12 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../gamepropertiesdialog.ui" line="749"/>
         <source>DMA Max Slice Ticks:</source>
-        <translation>DMA Max przycięcie</translation>
+        <translation>DMA Maksymalne przycięcie:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="766"/>
         <source>DMA Halt Ticks:</source>
-        <translation>DMA połowiczne przycięcie:</translation>
+        <translation>DMA Połowiczne przycięcie:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="783"/>
@@ -3601,12 +3602,12 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../gamepropertiesdialog.ui" line="837"/>
         <source>PGXP Depth Threshold:</source>
-        <translation type="unfinished"></translation>
+        <translation>PGXP Próg głębokości:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="886"/>
         <source>Compute Hashes</source>
-        <translation>Oblicz skróty</translation>
+        <translation>Oblicz Hash</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="893"/>
@@ -3616,7 +3617,7 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../gamepropertiesdialog.ui" line="900"/>
         <source>Export Compatibility Info</source>
-        <translation>Eksportuj informacje o zgodności</translation>
+        <translation>Wyślij informacje o zgodności</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="907"/>
@@ -3626,18 +3627,18 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../gamepropertiesdialog.cpp" line="58"/>
         <source>Game Properties - %1</source>
-        <translation>Właściwości gry</translation>
+        <translation>Właściwości gry - %1</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.cpp" line="237"/>
         <source>&lt;not computed&gt;</source>
-        <translation>Nie obliczone</translation>
+        <translation>&lt;Nie obliczone&gt;</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.cpp" line="632"/>
         <location filename="../gamepropertiesdialog.cpp" line="655"/>
         <source>Select path to memory card image</source>
-        <translation>wybierz ścieżkę do obrazu karty pamięci</translation>
+        <translation>Wybierz ścieżkę do obrazu karty pamięci</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.cpp" line="747"/>
@@ -3665,7 +3666,7 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="24"/>
         <source>Force Interpreter</source>
-        <translation>unfinished</translation>
+        <translation>Wymuś interpreter</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="25"/>
@@ -3690,7 +3691,7 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="29"/>
         <source>Disable Scaled Dithering</source>
-        <translation>Wyłącz Skalowanie Drgań</translation>
+        <translation>Wyłącz &quot;skalowanie drgań&quot;</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="30"/>
@@ -3720,7 +3721,7 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="35"/>
         <source>Disable PGXP Depth Buffer</source>
-        <translation type="unfinished"></translation>
+        <translation>Wyłącz bufor głębi PGXP</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="36"/>
@@ -3805,7 +3806,7 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../generalsettingswidget.ui" line="87"/>
         <source>Automatically Load Cheats</source>
-        <translation>Automatycznie ładuj kody</translation>
+        <translation>Automatycznie ładuj kody/haki</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="94"/>
@@ -3832,7 +3833,7 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../generalsettingswidget.ui" line="127"/>
         <source>Fast Forward Speed:</source>
-        <translation>Szybka prędkość do przodu:</translation>
+        <translation>Przewijanie do przodu:</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="140"/>
@@ -3847,22 +3848,22 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../generalsettingswidget.ui" line="163"/>
         <source>Automatic Updater</source>
-        <translation type="unfinished">Automatyczny aktualizator</translation>
+        <translation>Automatyczny aktualizator</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="169"/>
         <source>Update Channel:</source>
-        <translation type="unfinished"></translation>
+        <translation>Kanał aktualizacji</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="179"/>
         <source>Current Version:</source>
-        <translation type="unfinished">Obecna wersja:</translation>
+        <translation>Obecna wersja:</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="215"/>
         <source>Check for Updates...</source>
-        <translation type="unfinished"></translation>
+        <translation>Sprawdź aktualizacje</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="58"/>
@@ -3936,12 +3937,12 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../generalsettingswidget.cpp" line="88"/>
         <source>Sets the target emulation speed. It is not guaranteed that this speed will be reached, and if not, the emulator will run as fast as it can manage.</source>
-        <translation>Ustawia docelową prędkość emulacji. Nie ma gwarancji, że ta prędkość zostanie osiągnięta, a jeśli nie, emulator będzie działał tak szybko, jak może.</translation>
+        <translation>Ustawia docelową prędkość emulacji. Nie ma gwarancji, że ta prędkość zostanie osiągnięta, a jeśli nie, emulator będzie działał tak szybko, jak tylko może.</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="91"/>
         <source>Fast Forward Speed</source>
-        <translation>Szybka prędkość do przodu</translation>
+        <translation>Przewija do przodu</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="92"/>
@@ -3972,7 +3973,7 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../generalsettingswidget.cpp" line="128"/>
         <source>%1 (%2)</source>
-        <translation type="unfinished">%1 (%2)</translation>
+        <translation>%1 (%2)</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="193"/>
@@ -4001,12 +4002,12 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../../core/host_interface.cpp" line="280"/>
         <source>Failed to load configured BIOS file &apos;%s&apos;</source>
-        <translation>Nie udało się załadować skonfigurowanego pliku BIOS</translation>
+        <translation>Nie udało się załadować skonfigurowanego pliku BIOS &apos;%s&apos;</translation>
     </message>
     <message>
         <location filename="../../core/host_interface.cpp" line="336"/>
         <source>No BIOS image found for %s region</source>
-        <translation>Nie znaleziono obrazu BIOS dla regionu</translation>
+        <translation>Nie znaleziono obrazu BIOS dla %s regionu</translation>
     </message>
 </context>
 <context>
@@ -4058,7 +4059,7 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1501"/>
         <source>Toggle Patch Codes</source>
-        <translation type="unfinished"></translation>
+        <translation>Przełącz kody łatki</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1508"/>
@@ -4100,7 +4101,7 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1557"/>
         <source>Toggle PGXP Depth Buffer</source>
-        <translation type="unfinished"></translation>
+        <translation>Przełącz bufor głębi PGXP</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1573"/>
@@ -4125,7 +4126,7 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1597"/>
         <source>Reload Texture Replacements</source>
-        <translation type="unfinished"></translation>
+        <translation>Wczytaj ponownie zamienniki tekstur</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1608"/>
@@ -4137,7 +4138,7 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
         <location filename="../../frontend-common/common_host_interface.cpp" line="1647"/>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1653"/>
         <source>Save States</source>
-        <translation>Stan Zapisu</translation>
+        <translation>Stan zapisu</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1609"/>
@@ -4152,12 +4153,12 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1619"/>
         <source>Select Previous Save Slot</source>
-        <translation>Wybierz Poprzedni slot zapisu</translation>
+        <translation>Wybierz poprzedni slot zapisu</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1624"/>
         <source>Select Next Save Slot</source>
-        <translation>Wybierz Następny slot zapisu</translation>
+        <translation>Wybierz następny slot zapisu</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1662"/>
@@ -4365,7 +4366,7 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
         <location filename="../../frontend-common/common_host_interface.cpp" line="1730"/>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1743"/>
         <source>Audio</source>
-        <translation>Dzwięk</translation>
+        <translation>Dźwięk</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1707"/>
@@ -4403,28 +4404,28 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../inputbindingdialog.ui" line="45"/>
         <source>Add Binding</source>
-        <translation>Dodaj Przypisanie</translation>
+        <translation>Dodaj przypisanie</translation>
     </message>
     <message>
         <location filename="../inputbindingdialog.ui" line="52"/>
         <source>Remove Binding</source>
-        <translation>Usuń Przypisanie</translation>
+        <translation>Usuń przypisanie</translation>
     </message>
     <message>
         <location filename="../inputbindingdialog.ui" line="59"/>
         <source>Clear Bindings</source>
-        <translation>Wyczyść Przypisanie</translation>
+        <translation>Wyczyść przypisane</translation>
     </message>
     <message>
         <location filename="../inputbindingdialog.cpp" line="22"/>
         <source>Bindings for %1 %2</source>
-        <translation>Przypisz dla</translation>
+        <translation>Przypisz dla %1 %2</translation>
     </message>
     <message>
         <location filename="../inputbindingdialog.cpp" line="82"/>
         <location filename="../inputbindingdialog.cpp" line="94"/>
         <source>Push Button/Axis... [%1]</source>
-        <translation>Przycisk / Oś...</translation>
+        <translation>Przycisk / Oś... [%1]</translation>
     </message>
 </context>
 <context>
@@ -4432,13 +4433,13 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../inputbindingwidgets.cpp" line="39"/>
         <source>%1 bindings</source>
-        <translation>przypisanie</translation>
+        <translation>%1 przypisanie</translation>
     </message>
     <message>
         <location filename="../inputbindingwidgets.cpp" line="196"/>
         <location filename="../inputbindingwidgets.cpp" line="208"/>
         <source>Push Button/Axis... [%1]</source>
-        <translation>Przycisk / Oś...</translation>
+        <translation>Przycisk / Oś... [%1]</translation>
     </message>
 </context>
 <context>
@@ -4456,7 +4457,7 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../../core/settings.cpp" line="420"/>
         <source>Warning</source>
-        <translation>Ostrzerzenie</translation>
+        <translation>Ostrzeżenie</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="421"/>
@@ -4507,23 +4508,23 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../mainwindow.ui" line="38"/>
         <source>&amp;System</source>
-        <translation>System</translation>
+        <translation>&amp;System</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="42"/>
         <location filename="../mainwindow.cpp" line="653"/>
         <source>Change Disc</source>
-        <translation>Change Disc</translation>
+        <translation>Zmień płytę</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="50"/>
         <source>From Playlist...</source>
-        <translation>Z listy odtwarzania...</translation>
+        <translation>Z listy odtwarzania</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="60"/>
         <source>Cheats</source>
-        <translation>Kody</translation>
+        <translation>Kody/Haki</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="69"/>
@@ -4538,7 +4539,7 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../mainwindow.ui" line="104"/>
         <source>S&amp;ettings</source>
-        <translation>Ustawienia</translation>
+        <translation>&amp;Ustawienia</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="108"/>
@@ -4553,12 +4554,12 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../mainwindow.ui" line="140"/>
         <source>&amp;Help</source>
-        <translation>Pomoc</translation>
+        <translation>&amp;Pomoc</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="153"/>
         <source>&amp;Debug</source>
-        <translation>Debuger</translation>
+        <translation>&amp;Debuger</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="157"/>
@@ -4578,107 +4579,107 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../mainwindow.ui" line="193"/>
         <source>&amp;View</source>
-        <translation>widok</translation>
+        <translation>&amp;Widok</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="197"/>
         <source>&amp;Window Size</source>
-        <translation>Rozmiar Okna</translation>
+        <translation>&amp;Rozmiar Okna</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="217"/>
         <source>&amp;Tools</source>
-        <translation>Narzędzia</translation>
+        <translation>&amp;Narzędzia</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="233"/>
         <source>toolBar</source>
-        <translation>pasek narzędzi</translation>
+        <translation>Pasek narzędzi</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="273"/>
         <source>Start &amp;Disc...</source>
-        <translation>Uruchom dysk</translation>
+        <translation>Uruchom &amp;płytę</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="282"/>
         <source>Start &amp;BIOS</source>
-        <translation>Uruchom BIOS</translation>
+        <translation>Uruchom &amp;BIOS</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="291"/>
         <source>&amp;Scan For New Games</source>
-        <translation>Skanuj w poszukiwaniu nowych gier</translation>
+        <translation>&amp;Skanuj w poszukiwaniu nowych gier</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="300"/>
         <source>&amp;Rescan All Games</source>
-        <translation>Przeskanuj ponownie wszystkie gry</translation>
+        <translation>&amp;Przeskanuj ponownie wszystkie gry</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="309"/>
         <source>Power &amp;Off</source>
-        <translation>Wyłacz zasilanie</translation>
+        <translation>&amp;Wyłącz zasilanie</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="318"/>
         <source>&amp;Reset</source>
-        <translation>Resetuj</translation>
+        <translation>&amp;Resetuj</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="330"/>
         <source>&amp;Pause</source>
-        <translation>Pauza</translation>
+        <translation>&amp;Pauza</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="339"/>
         <source>&amp;Load State</source>
-        <translation>Wczytaj Stan</translation>
+        <translation>&amp;Wczytaj Stan</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="348"/>
         <source>&amp;Save State</source>
-        <translation>Zapisz Stan</translation>
+        <translation>&amp;Zapisz Stan</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="353"/>
         <source>E&amp;xit</source>
-        <translation>Wyjdź</translation>
+        <translation>W&amp;yjdź</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="362"/>
         <source>B&amp;IOS Settings...</source>
-        <translation>Ustawienia BIOS</translation>
+        <translation>B&amp;IOS</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="371"/>
         <source>C&amp;onsole Settings...</source>
-        <translation>Ustawienia Konsoli</translation>
+        <translation>K&amp;onsola PSX</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="380"/>
         <source>&amp;Controller Settings...</source>
-        <translation>Ustawienia Kontrolera</translation>
+        <translation>&amp;Kontrolery</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="389"/>
         <source>&amp;Hotkey Settings...</source>
-        <translation>Skróty klawiszowe</translation>
+        <translation>&amp;Skróty klawiszowe</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="398"/>
         <source>&amp;Display Settings...</source>
-        <translation>Ustawienia Wyświetlania</translation>
+        <translation>&amp;Wyświetlanie</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="407"/>
         <source>&amp;Enhancement Settings...</source>
-        <translation>Ulepszenia Ustawienia</translation>
+        <translation>&amp;Ulepszenia</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="416"/>
         <source>&amp;Post-Processing Settings...</source>
-        <translation>Post-Processing Ustawiania</translation>
+        <translation>&amp;Post-Processing</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="425"/>
@@ -4688,27 +4689,27 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../mainwindow.ui" line="430"/>
         <source>Resolution Scale</source>
-        <translation>Skalowanie Rozdzielczości</translation>
+        <translation>Skalowanie rozdzielczości</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="435"/>
         <source>&amp;GitHub Repository...</source>
-        <translation>Repozytorium GitHub...</translation>
+        <translation>&amp;Repozytorium GitHub...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="440"/>
         <source>&amp;Issue Tracker...</source>
-        <translation>Lista problemow...</translation>
+        <translation>&amp;Lista problemow...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="445"/>
         <source>&amp;Discord Server...</source>
-        <translation>Serwer Discord...</translation>
+        <translation>&amp;Serwer Discord...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="450"/>
         <source>Check for &amp;Updates...</source>
-        <translation>Sprawdź Aktualizacje</translation>
+        <translation>Sprawdź &amp;Aktualizacje...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="455"/>
@@ -4718,37 +4719,37 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../mainwindow.ui" line="460"/>
         <source>&amp;About DuckStation...</source>
-        <translation>O DuckStation...</translation>
+        <translation>O DuckSt&amp;ation...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="469"/>
         <source>Change Disc...</source>
-        <translation>Zmień Dysk...</translation>
+        <translation>Zmień płytę</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="478"/>
         <source>Cheats...</source>
-        <translation>Kody</translation>
+        <translation>Kody/Haki</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="487"/>
         <source>Audio Settings...</source>
-        <translation>Ustawienia Dzwięku</translation>
+        <translation>Dźwięk</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="496"/>
         <source>Game List Settings...</source>
-        <translation>Ustawienia Listy Gier</translation>
+        <translation>Lista gier</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="505"/>
         <source>General Settings...</source>
-        <translation>Główne Ustawienia</translation>
+        <translation>Główne</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="514"/>
         <source>Advanced Settings...</source>
-        <translation>Zaawansowane Ustawienia</translation>
+        <translation>Zaawansowane</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="523"/>
@@ -4758,22 +4759,22 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../mainwindow.ui" line="532"/>
         <source>&amp;Settings...</source>
-        <translation>Ustawienia</translation>
+        <translation>&amp;Ustawienia</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="537"/>
         <source>From File...</source>
-        <translation>Z Pliku...</translation>
+        <translation>Z pliku...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="542"/>
         <source>From Game List...</source>
-        <translation>Z listy gier ...</translation>
+        <translation>Z listy gier...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="547"/>
         <source>Remove Disc</source>
-        <translation>Remove Disc</translation>
+        <translation>Wyjmij płytę</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="552"/>
@@ -4853,17 +4854,17 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../mainwindow.ui" line="667"/>
         <source>&amp;Screenshot</source>
-        <translation>zrzut ekranu</translation>
+        <translation>&amp;Zrzut ekranu</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="676"/>
         <source>&amp;Memory Card Settings...</source>
-        <translation>Ustawienia karty pamięci...</translation>
+        <translation>Karty Pamięci</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="685"/>
         <source>Resume</source>
-        <translation>wznawianie</translation>
+        <translation>Wznów</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="688"/>
@@ -4878,27 +4879,27 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../mainwindow.ui" line="710"/>
         <source>&amp;Status Bar</source>
-        <translation>pasek stanu</translation>
+        <translation>Pasek stanu</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="715"/>
         <source>Game &amp;List</source>
-        <translation>Lista Gier</translation>
+        <translation>&amp;Lista gier</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="723"/>
         <source>System &amp;Display</source>
-        <translation>Wyświetlacz Systemu</translation>
+        <translation>Wyświetlacz PSX</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="728"/>
         <source>Game &amp;Properties</source>
-        <translation>Właściwości Gry</translation>
+        <translation>&amp;Właściwości gry</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="733"/>
         <source>Memory &amp;Card Editor</source>
-        <translation>Edytor Karty Pamięci</translation>
+        <translation>Edytor &amp;Kart Pamięci</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="738"/>
@@ -4908,12 +4909,12 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../mainwindow.ui" line="743"/>
         <source>CPU D&amp;ebugger</source>
-        <translation>Debuger CPU</translation>
+        <translation>D&amp;ebuger CPU</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="748"/>
         <source>Game &amp;Grid</source>
-        <translation>Siatka Gier</translation>
+        <translation>Siatka &amp;gier</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="759"/>
@@ -4943,7 +4944,7 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../mainwindow.ui" line="780"/>
         <source>Refresh &amp;Covers (Grid View)</source>
-        <translation>Odśwież okładki (Widok Siatki)</translation>
+        <translation>Odśwież okładki (widok siatki)</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="785"/>
@@ -4974,7 +4975,7 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
         <location filename="../mainwindow.cpp" line="428"/>
         <location filename="../mainwindow.cpp" line="443"/>
         <source>Select Disc Image</source>
-        <translation>Wybierz Obraz płyty</translation>
+        <translation>Wybierz obraz płyty</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="469"/>
@@ -4989,22 +4990,22 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../mainwindow.cpp" line="609"/>
         <source>Open Containing Directory...</source>
-        <translation>Otwórz katalog zawierający ...</translation>
+        <translation>Otwórz katalog zawierający...</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="614"/>
         <source>Set Cover Image...</source>
-        <translation>Ustaw obraz okładki ...</translation>
+        <translation>Ustaw obraz okładki...</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="624"/>
         <source>Default Boot</source>
-        <translation>Domyślny Rozruch</translation>
+        <translation>Domyślny rozruch</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="628"/>
         <source>Fast Boot</source>
-        <translation>Szybki Rozruch</translation>
+        <translation>Szybki rozruch</translation>
     </message>
     <message>
         <source>Pełny Rozruch</source>
@@ -5013,12 +5014,12 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../mainwindow.cpp" line="634"/>
         <source>Full Boot</source>
-        <translation type="unfinished"></translation>
+        <translation>Pełny rozruch</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="642"/>
         <source>Boot and Debug</source>
-        <translation type="unfinished"></translation>
+        <translation>Rozruch i debugowanie</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="663"/>
@@ -5028,7 +5029,7 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../mainwindow.cpp" line="671"/>
         <source>Select Cover Image</source>
-        <translation>Wybierz Obraz okładki</translation>
+        <translation>Wybierz obraz okładki</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="672"/>
@@ -5105,7 +5106,7 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
         <location filename="../mainwindow.cpp" line="1378"/>
         <location filename="../mainwindow.cpp" line="1387"/>
         <source>Memory Card Not Found</source>
-        <translation>Nie znaleziono karty pamięci</translation>
+        <translation>Nie znaleziono Karty Pamięci</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1379"/>
@@ -5146,7 +5147,7 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
         <location filename="../memorycardeditordialog.ui" line="49"/>
         <location filename="../memorycardeditordialog.ui" line="249"/>
         <source>File Name</source>
-        <translation>Nazwa Pliku</translation>
+        <translation>Nazwa pliku</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.ui" line="54"/>
@@ -5158,7 +5159,7 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
         <location filename="../memorycardeditordialog.ui" line="64"/>
         <location filename="../memorycardeditordialog.ui" line="186"/>
         <source>Memory Card:</source>
-        <translation>Karta pamięci:</translation>
+        <translation>Karta Pamięci</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.ui" line="78"/>
@@ -5182,19 +5183,19 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
         <location filename="../memorycardeditordialog.ui" line="114"/>
         <location filename="../memorycardeditordialog.ui" line="155"/>
         <source>Import File...</source>
-        <translation>importować plik</translation>
+        <translation>Importuj plik</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.ui" line="124"/>
         <location filename="../memorycardeditordialog.ui" line="165"/>
         <source>Import Card...</source>
-        <translation>Importuj kartę...</translation>
+        <translation>Importuj kartę</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.ui" line="134"/>
         <location filename="../memorycardeditordialog.ui" line="175"/>
         <source>Save</source>
-        <translation>Zapis</translation>
+        <translation>Zapisz</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.ui" line="267"/>
@@ -5204,22 +5205,22 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../memorycardeditordialog.ui" line="277"/>
         <source>Export File</source>
-        <translation>Export File</translation>
+        <translation>Eksportuj plik</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.ui" line="287"/>
         <source>&lt;&lt;</source>
-        <translation>unfinished</translation>
+        <translation>&lt;&lt;</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.ui" line="297"/>
         <source>&gt;&gt;</source>
-        <translation>unfinished</translation>
+        <translation>&gt;&gt;</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="11"/>
         <source>All Memory Card Types (*.mcd *.mcr *.mc)</source>
-        <translation>Wszystkie typy kart pamięci (*.mcd *.mcr *.mc)</translation>
+        <translation>Wszystkie typy karty pamięci (*.mcd *.mcr *.mc)</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="13"/>
@@ -5236,7 +5237,7 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
         <location filename="../memorycardeditordialog.cpp" line="243"/>
         <location filename="../memorycardeditordialog.cpp" line="269"/>
         <source>Select Memory Card</source>
-        <translation>Wybierz kartę pamięci</translation>
+        <translation>Wybierz Kartę Pamięci</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="188"/>
@@ -5248,13 +5249,13 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
         <location filename="../memorycardeditordialog.cpp" line="371"/>
         <location filename="../memorycardeditordialog.cpp" line="394"/>
         <source>Error</source>
-        <translation>błąd</translation>
+        <translation>Błąd</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="188"/>
         <location filename="../memorycardeditordialog.cpp" line="275"/>
         <source>Failed to load memory card image.</source>
-        <translation>Nie udało się załadować obrazu karty pamięci.</translation>
+        <translation>Nie udało się załadować obrazu Karty Pamięci.</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="229"/>
@@ -5269,12 +5270,12 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../memorycardeditordialog.cpp" line="315"/>
         <source>Save memory card?</source>
-        <translation>Zapisać kartę pamięci?</translation>
+        <translation>Zapisać Kartę Pamięci?</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="316"/>
         <source>Memory card &apos;%1&apos; is not saved, do you want to save before closing?</source>
-        <translation>Karta pamięci &apos;%1&apos; nie jest zapisany, czy chcesz zapisać go przed zamknięciem?</translation>
+        <translation>Karta Pamięci &apos;%1&apos; nie jest zapisany, czy chcesz zapisać go przed zamknięciem?</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="337"/>
@@ -5299,7 +5300,7 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../memorycardeditordialog.cpp" line="387"/>
         <source>Select Import File</source>
-        <translation>Wybierz Importuj plik</translation>
+        <translation>Wybierz importowany plik</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="394"/>
@@ -5313,7 +5314,7 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
         <location filename="../gamepropertiesdialog.cpp" line="18"/>
         <location filename="../memorycardsettingswidget.cpp" line="15"/>
         <source>All Memory Card Types (*.mcd *.mcr *.mc)</source>
-        <translation>Wszystkie typy kart pamięci (*.mcd *.mcr *.mc)</translation>
+        <translation>Wszystkie typy Karty Pamięci (*.mcd *.mcr *.mc)</translation>
     </message>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="38"/>
@@ -5339,7 +5340,7 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="52"/>
         <source>If one of the &quot;separate card per game&quot; memory card modes is chosen, these memory cards will be saved to the memcards directory.</source>
-        <translation>Jeśli jedna z &quot;oddzielnych kart na grę&quot; Po wybraniu trybu karty pamięci te karty pamięci zostaną zapisane w katalogu kart pamięci.</translation>
+        <translation>Jeśli wybrano jeden z trybów karty pamięci &quot;oddzielnych kart na grę&quot; te karty pamięci zostaną zapisane w katalogu kart pamięci.</translation>
     </message>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="58"/>
@@ -5349,7 +5350,7 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="73"/>
         <source>Memory Card %1</source>
-        <translation>Karta pamięci %1</translation>
+        <translation>Karta Pamięci %1</translation>
     </message>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="87"/>
@@ -5364,12 +5365,12 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="100"/>
         <source>Shared Memory Card Path:</source>
-        <translation>Ścieżka współdzielonej karty pamięci:</translation>
+        <translation>Ścieżka współdzielonej Karty Pamięci:</translation>
     </message>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="108"/>
         <source>Select path to memory card image</source>
-        <translation>Wybierz ścieżkę do obrazu karty pamięci</translation>
+        <translation>Wybierz ścieżkę do obrazu Karty Pamięci</translation>
     </message>
 </context>
 <context>
@@ -5377,7 +5378,7 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../../core/settings.cpp" line="802"/>
         <source>No Memory Card</source>
-        <translation>brak karty pamięci</translation>
+        <translation>Brak karty pamięci</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="802"/>
@@ -5387,12 +5388,12 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../../core/settings.cpp" line="803"/>
         <source>Separate Card Per Game (Game Code)</source>
-        <translation>Oddzielna karta na grę (Kod Gry)</translation>
+        <translation>Oddzielna karta na grę (kod gry)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="804"/>
         <source>Separate Card Per Game (Game Title)</source>
-        <translation>Oddzielna karta na grę (Tytuł Gry)</translation>
+        <translation>Oddzielna karta na grę (tytuł gry)</translation>
     </message>
 </context>
 <context>
@@ -5555,12 +5556,12 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../../core/gpu_hw.cpp" line="75"/>
         <source>Texture filter &apos;%s&apos; is not supported with the current renderer.</source>
-        <translation type="unfinished"></translation>
+        <translation>Filtr tekstur „%s” nie jest obsługiwany przez bieżący mechanizm renderujący.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="84"/>
         <source>Adaptive downsampling is not supported with the current renderer, using box filter instead.</source>
-        <translation type="unfinished"></translation>
+        <translation>Adaptacyjne downsampling nie jest obsługiwany w bieżącym rendererze, zamiast tego używa się filtru pudełkowego box.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="146"/>
@@ -5575,12 +5576,12 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../../core/gpu_hw.cpp" line="163"/>
         <source>Multisample anti-aliasing set to %ux.</source>
-        <translation>Wygładzanie multisample ustawione na %ux.</translation>
+        <translation>Wygładzanie wielopróbkowe ustawione na %ux.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw_opengl.cpp" line="52"/>
         <source>OpenGL renderer unavailable, your driver or hardware is not recent enough. OpenGL 3.1 or OpenGL ES 3.0 is required.</source>
-        <translation>Moduł renderujący OpenGL jest niedostępny, Twój sterownik lub sprzęt nie jest wystarczająco nowy. Wymagany jest OpenGL 3.1 lub OpenGL ES 3.0.</translation>
+        <translation>Moduł renderujący OpenGL jest niedostępny, twój sterownik lub sprzęt nie jest wystarczająco nowy. Wymagany jest OpenGL 3.1 lub OpenGL ES 3.0.</translation>
     </message>
     <message>
         <location filename="../../core/host_interface.cpp" line="126"/>
@@ -5615,7 +5616,7 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../../core/host_interface.cpp" line="616"/>
         <source>PGXP CPU mode is incompatible with the recompiler, using Cached Interpreter instead.</source>
-        <translation>Tryb PGXP CPU jest niekompatybilny z rekompilatorem, zamiast tego używa się Cached Interpreter.</translation>
+        <translation>Tryb PGXP CPU jest niekompatybilny z rekompilatorem, zamiast tego używa się tłumacza pamięci podręcznej.</translation>
     </message>
     <message>
         <location filename="../../core/host_interface.cpp" line="644"/>
@@ -5665,7 +5666,7 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../../core/host_interface.cpp" line="919"/>
         <source>Switching to %s renderer...</source>
-        <translation>przełączenie na %s renderer...</translation>
+        <translation>Przełączenie na %s renderer...</translation>
     </message>
     <message>
         <location filename="../../core/memory_card.cpp" line="299"/>
@@ -5733,17 +5734,17 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="972"/>
         <source>No cheats are loaded.</source>
-        <translation>Żadne kody nie są załadowane.</translation>
+        <translation>Żadne kody/haki nie są załadowane.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="978"/>
         <source>%u cheats are now active.</source>
-        <translation>%u kody są teraz aktywne.</translation>
+        <translation>%u kody/haki są teraz aktywne.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="979"/>
         <source>%u cheats are now inactive.</source>
-        <translation>%u kody są teraz nieaktywne.</translation>
+        <translation>%u kody/haki są teraz nieaktywne.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1450"/>
@@ -5753,7 +5754,7 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1451"/>
         <source>Stopped fast forwarding.</source>
-        <translation>Zatrzymano przewijanie do przodu.</translation>
+        <translation>Zatrzymano szybkie przewijanie do przodu.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1541"/>
@@ -5768,17 +5769,17 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1566"/>
         <source>PGXP Depth Buffer is now enabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Bufor głębi PGXP jest teraz włączony.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1567"/>
         <source>PGXP Depth Buffer is now disabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Bufor głębi PGXP jest teraz wyłączony.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1600"/>
         <source>Texture replacements reloaded.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ponownie załadowano zamienniki tekstur.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1714"/>
@@ -5795,12 +5796,12 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1725"/>
         <source>CD Audio Muted.</source>
-        <translation>CD Audio Wyciszone</translation>
+        <translation>CD Audio wyciszone</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1726"/>
         <source>CD Audio Unmuted.</source>
-        <translation>CD Audio Nie wycuszone</translation>
+        <translation>CD Audio niewyciszone.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1892"/>
@@ -5940,7 +5941,7 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="1046"/>
         <source>Scaled dithering disabled by game settings.</source>
-        <translation>Drganie (Dithering) skalowane wyłączony w ustawieniach gry.</translation>
+        <translation>Drganie (Dithering) skalowane wyłączone w ustawieniach gry.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="1059"/>
@@ -5980,7 +5981,7 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="1140"/>
         <source>PGXP Depth Buffer disabled by game settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>Bufor głębi PGXP wyłączony przez ustawienia gry.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="1158"/>
@@ -6011,12 +6012,12 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../../core/playstation_mouse.cpp" line="215"/>
         <source>Relative Mouse Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Względny tryb myszy</translation>
     </message>
     <message>
         <location filename="../../core/playstation_mouse.cpp" line="216"/>
         <source>Locks the mouse cursor to the window, use for FPS games.</source>
-        <translation type="unfinished"></translation>
+        <translation>Blokuje kursor myszy w oknie, używaj w grach FPS.</translation>
     </message>
 </context>
 <context>
@@ -6087,12 +6088,12 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../postprocessingsettingswidget.ui" line="14"/>
         <source>Form</source>
-        <translation>unfinished</translation>
+        <translation>Form</translation>
     </message>
     <message>
         <location filename="../postprocessingsettingswidget.ui" line="34"/>
         <source>Enable Post Processing</source>
-        <translation>Włącz przetwarzanie końcowe</translation>
+        <translation>&amp;Włącz przetwarzanie końcowe</translation>
     </message>
     <message>
         <location filename="../postprocessingsettingswidget.ui" line="54"/>
@@ -6102,12 +6103,12 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     <message>
         <location filename="../postprocessingsettingswidget.ui" line="65"/>
         <source>Load Preset</source>
-        <translation>Załaduj ustawienie wstępne</translation>
+        <translation>&amp;Załaduj ustawienie wstępne</translation>
     </message>
     <message>
         <location filename="../postprocessingsettingswidget.ui" line="76"/>
         <source>Save Preset</source>
-        <translation>Zapisz ustawienie wstępne</translation>
+        <translation>Zapisz u&amp;stawienie wstępne</translation>
     </message>
     <message>
         <location filename="../postprocessingsettingswidget.ui" line="89"/>
@@ -6314,62 +6315,62 @@ Zapisów nie będzie można odzyskać.</translation>
     <message>
         <location filename="../settingsdialog.ui" line="58"/>
         <source>General Settings</source>
-        <translation>Ustawienia główne</translation>
+        <translation>Główne</translation>
     </message>
     <message>
         <location filename="../settingsdialog.ui" line="67"/>
         <source>BIOS Settings</source>
-        <translation>Ustawienia BIOS</translation>
+        <translation>BIOS</translation>
     </message>
     <message>
         <location filename="../settingsdialog.ui" line="76"/>
         <source>Console Settings</source>
-        <translation>Ustawienia Konsoli</translation>
+        <translation>Konsola PSX</translation>
     </message>
     <message>
         <location filename="../settingsdialog.ui" line="85"/>
         <source>Game List Settings</source>
-        <translation>Ustawienia listy gier</translation>
+        <translation>Lista gier</translation>
     </message>
     <message>
         <location filename="../settingsdialog.ui" line="94"/>
         <source>Hotkey Settings</source>
-        <translation>Skróty Klawiszowe</translation>
+        <translation>Skróty klawiszowe</translation>
     </message>
     <message>
         <location filename="../settingsdialog.ui" line="103"/>
         <source>Controller Settings</source>
-        <translation>Ustawienia kontrolera</translation>
+        <translation>Kontrolery</translation>
     </message>
     <message>
         <location filename="../settingsdialog.ui" line="112"/>
         <source>Memory Card Settings</source>
-        <translation>Ustawienia karty pamięci</translation>
+        <translation>Karty pamięci</translation>
     </message>
     <message>
         <location filename="../settingsdialog.ui" line="121"/>
         <source>Display Settings</source>
-        <translation>Ustawienia Wyświetlania</translation>
+        <translation>Wyświetlanie</translation>
     </message>
     <message>
         <location filename="../settingsdialog.ui" line="130"/>
         <source>Enhancement Settings</source>
-        <translation>Ustawienia ulepszeń</translation>
+        <translation>Ulepszenia</translation>
     </message>
     <message>
         <location filename="../settingsdialog.ui" line="139"/>
         <source>Post-Processing Settings</source>
-        <translation>Post-Processing Ustawiania</translation>
+        <translation>Post-Processing</translation>
     </message>
     <message>
         <location filename="../settingsdialog.ui" line="148"/>
         <source>Audio Settings</source>
-        <translation>Dzwięk Ustawienia</translation>
+        <translation>Dźwięk</translation>
     </message>
     <message>
         <location filename="../settingsdialog.ui" line="157"/>
         <source>Advanced Settings</source>
-        <translation>Zaawansowane ustawienia</translation>
+        <translation>Zaawansowane</translation>
     </message>
     <message>
         <location filename="../settingsdialog.ui" line="218"/>
@@ -6394,7 +6395,7 @@ Zapisów nie będzie można odzyskać.</translation>
     <message>
         <location filename="../settingsdialog.cpp" line="76"/>
         <source>&lt;strong&gt;Hotkey Settings&lt;/strong&gt;&lt;hr&gt;Binding a hotkey allows you to trigger events such as a resetting or taking screenshots at the press of a key/controller button. Hotkey titles are self-explanatory. Clicking a binding will start a countdown, in which case you should press the key or controller button/axis you wish to bind. If no button  is pressed and the timer lapses, the binding will be unchanged. To clear a binding, right-click the button. To  bind multiple buttons, hold Shift and click the button.</source>
-        <translation>&lt;strong&gt;Ustawienia klawiszy skrótu&lt;/strong&gt;&lt;hr&gt;Powiązanie skrótu umożliwia wyzwalanie zdarzeń, takich jak resetowanie lub wykonywanie zrzutów ekranu po naciśnięciu klawisza / przycisku kontrolera. Tytuły skrótów klawiaturowych są oczywiste. Kliknięcie powiązania rozpocznie odliczanie, w którym to przypadku należy nacisnąć klawisz lub przycisk / oś kontrolera, którą chcesz powiązać. Jeśli żaden przycisk nie zostanie naciśnięty i licznik czasu upłynie, wiązanie pozostanie niezmienione. Aby usunąć wiązanie, kliknij prawym przyciskiem myszy przycisk. Aby powiązać wiele przycisków, przytrzymaj Shift i kliknij przycisk.</translation>
+        <translation>&lt;strong&gt;Ustawienia klawiszy skrótu&lt;/strong&gt;&lt;hr&gt;Powiązanie skrótu umożliwia wyzwalanie zdarzeń, takich jak resetowanie lub wykonywanie zrzutów ekranu po naciśnięciu klawisza/przycisku kontrolera. Tytuły skrótów klawiaturowych są oczywiste. Kliknięcie powiązania rozpocznie odliczanie, w którym to przypadku należy nacisnąć klawisz lub przycisk / oś kontrolera, którą chcesz powiązać. Jeśli żaden przycisk nie zostanie naciśnięty i licznik czasu upłynie, wiązanie pozostanie niezmienione. Aby usunąć wiązanie, kliknij prawym przyciskiem myszy przycisk. Aby powiązać wiele przycisków, przytrzymaj Shift i kliknij przycisk.</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="82"/>
