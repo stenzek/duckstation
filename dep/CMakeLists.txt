@@ -16,6 +16,9 @@ add_subdirectory(imgui)
 add_subdirectory(simpleini)
 add_subdirectory(tinyxml2)
 
+set(LIBSAMPLERATE_ENABLE_SINC_BEST_CONVERTER OFF)
+add_subdirectory(libsamplerate)
+
 if(ENABLE_DISCORD_PRESENCE)
   add_subdirectory(discord-rpc)
 endif()

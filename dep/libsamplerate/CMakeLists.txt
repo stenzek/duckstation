@@ -92,35 +92,11 @@ endif()
 check_include_file(stdbool.h HAVE_STDBOOL_H)
 check_include_file(unistd.h HAVE_UNISTD_H)
 
-# For examples and tests
-
-if(LIBSAMPLERATE_EXAMPLES OR BUILD_TESTING)
-  find_package(SndFile)
-  set(HAVE_SNDFILE ${SndFile_FOUND})
-endif()
-
 # SampleRate library
 
 add_subdirectory(src)
 
-# Tests
-
-# BUILD_TESTING is declared by CTest module and is ON by default
-if(BUILD_TESTING)
-  add_subdirectory(tests)
-endif()
-
-# Examples
-
-if(LIBSAMPLERATE_EXAMPLES)
-  add_subdirectory(examples)
-endif()
-
 configure_file(config.h.cmake config.h)
-
-if(LIBSAMPLERATE_INSTALL)
-  add_subdirectory(docs)
-endif()
 
 # Packaging support
 
