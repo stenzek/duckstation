@@ -108,12 +108,24 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         });
     }
 
+    private EmulationThread mEmulationThread;
+
+    private void stopEmulationThread() {
+        if (mEmulationThread == null)
+            return;
+
+        mEmulationThread.stopAndJoin();
+        mEmulationThread = null;
+    }
+
     public void onEmulationStarted() {
+        runOnUiThread(() -> {
+            updateOrientation();
+        });
     }
 
     public void onEmulationStopped() {
         runOnUiThread(() -> {
-            AndroidHostInterface.getInstance().stopEmulationThread();
             if (!mWasDestroyed && !mStopRequested)
                 finish();
         });
@@ -159,7 +171,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
         // Once we get a surface, we can boot.
-        if (AndroidHostInterface.getInstance().isEmulationThreadRunning()) {
+        if (mEmulationThread != null) {
             AndroidHostInterface.getInstance().surfaceChanged(holder.getSurface(), format, width, height);
             updateOrientation();
 
@@ -175,9 +187,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         final boolean resumeState = getIntent().getBooleanExtra("resumeState", false);
         final String bootSaveStatePath = getIntent().getStringExtra("saveStatePath");
 
-        AndroidHostInterface.getInstance().startEmulationThread(this, holder.getSurface(), bootPath, resumeState, bootSaveStatePath);
-        updateRequestedOrientation();
-        updateOrientation();
+        mEmulationThread = EmulationThread.create(this, holder.getSurface(), bootPath, resumeState, bootSaveStatePath);
     }
 
     @Override
@@ -219,6 +229,10 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         }
         mContentView.requestFocus();
 
+        // Sort out rotation.
+        updateRequestedOrientation();
+        updateOrientation();
+
         // Hook up controller input.
         updateControllers();
         registerInputDeviceListener();
@@ -240,9 +254,9 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     protected void onDestroy() {
         super.onDestroy();
         Log.i("EmulationActivity", "OnStop");
-        if (AndroidHostInterface.getInstance().isEmulationThreadRunning()) {
+        if (mEmulationThread != null) {
             mWasDestroyed = true;
-            AndroidHostInterface.getInstance().stopEmulationThread();
+            stopEmulationThread();
         }
 
         unregisterInputDeviceListener();
@@ -317,9 +331,6 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     }
 
     private void updateOrientation(int newOrientation) {
-        if (!AndroidHostInterface.getInstance().isEmulationThreadRunning())
-            return;
-
         if (newOrientation == Configuration.ORIENTATION_PORTRAIT)
             AndroidHostInterface.getInstance().setDisplayAlignment(AndroidHostInterface.DISPLAY_ALIGNMENT_TOP_OR_LEFT);
         else

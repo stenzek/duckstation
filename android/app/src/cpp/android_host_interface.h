@@ -3,6 +3,7 @@
 #include "common/byte_stream.h"
 #include "common/event.h"
 #include "common/progress_callback.h"
+#include "core/host_display.h"
 #include "frontend-common/common_host_interface.h"
 #include <array>
 #include <atomic>
@@ -38,15 +39,17 @@ public:
   float GetFloatSettingValue(const char* section, const char* key, float default_value = 0.0f) override;
   std::unique_ptr<ByteStream> OpenPackageFile(const char* path, u32 flags) override;
 
-  bool IsEmulationThreadRunning() const { return m_emulation_thread.joinable(); }
+  bool IsEmulationThreadRunning() const { return m_emulation_thread_running.load(); }
   bool IsEmulationThreadPaused() const;
-  bool StartEmulationThread(jobject emulation_activity, ANativeWindow* initial_surface,
-                            SystemBootParameters boot_params, bool resume_state);
   void RunOnEmulationThread(std::function<void()> function, bool blocking = false);
   void PauseEmulationThread(bool paused);
-  void StopEmulationThread();
+  void StopEmulationThreadLoop();
+
+  void EmulationThreadEntryPoint(JNIEnv* env, jobject emulation_activity, jobject initial_surface,
+                                 SystemBootParameters boot_params, bool resume_state);
 
   void SurfaceChanged(ANativeWindow* surface, int format, int width, int height);
+  void SetDisplayAlignment(HostDisplay::Alignment alignment);
 
   void SetControllerType(u32 index, std::string_view type_name);
   void SetControllerButtonState(u32 index, s32 button_code, bool pressed);
@@ -79,9 +82,7 @@ protected:
   void OnRunningGameChanged() override;
 
 private:
-  void EmulationThreadEntryPoint(jobject emulation_activity, ANativeWindow* initial_surface,
-                                 SystemBootParameters boot_params, bool resume_state);
-  void EmulationThreadLoop();
+  void EmulationThreadLoop(JNIEnv* env);
 
   void CreateImGuiContext();
   void DestroyImGuiContext();
@@ -102,8 +103,10 @@ private:
   std::deque<std::function<void()>> m_callback_queue;
   std::atomic_bool m_callbacks_outstanding{false};
 
-  std::thread m_emulation_thread;
   std::atomic_bool m_emulation_thread_stop_request{false};
+  std::atomic_bool m_emulation_thread_running{false};
+
+  HostDisplay::Alignment m_display_alignment = HostDisplay::Alignment::Center;
 
   u64 m_last_vibration_update_time = 0;
   bool m_last_vibration_state = false;
@@ -111,11 +114,13 @@ private:
 };
 
 namespace AndroidHelpers {
+
 JNIEnv* GetJNIEnv();
 AndroidHostInterface* GetNativeClass(JNIEnv* env, jobject obj);
 std::string JStringToString(JNIEnv* env, jstring str);
 std::unique_ptr<GrowableMemoryByteStream> ReadInputStreamToMemory(JNIEnv* env, jobject obj, u32 chunk_size = 65536);
 jclass GetStringClass();
+
 } // namespace AndroidHelpers
 
 template<typename T>

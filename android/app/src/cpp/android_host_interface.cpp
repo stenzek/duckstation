@@ -265,39 +265,20 @@ bool AndroidHostInterface::IsEmulationThreadPaused() const
   return System::IsValid() && System::IsPaused();
 }
 
-bool AndroidHostInterface::StartEmulationThread(jobject emulation_activity, ANativeWindow* initial_surface,
-                                                SystemBootParameters boot_params, bool resume_state)
-{
-  Assert(!IsEmulationThreadRunning());
-
-  emulation_activity = AndroidHelpers::GetJNIEnv()->NewGlobalRef(emulation_activity);
-
-  Log_DevPrintf("Starting emulation thread...");
-  m_emulation_thread_stop_request.store(false);
-  m_emulation_thread = std::thread(&AndroidHostInterface::EmulationThreadEntryPoint, this, emulation_activity,
-                                   initial_surface, std::move(boot_params), resume_state);
-  return true;
-}
-
 void AndroidHostInterface::PauseEmulationThread(bool paused)
 {
   Assert(IsEmulationThreadRunning());
   RunOnEmulationThread([this, paused]() { PauseSystem(paused); });
 }
 
-void AndroidHostInterface::StopEmulationThread()
+void AndroidHostInterface::StopEmulationThreadLoop()
 {
   if (!IsEmulationThreadRunning())
     return;
 
-  Log_InfoPrint("Stopping emulation thread...");
-  {
-    std::unique_lock<std::mutex> lock(m_mutex);
-    m_emulation_thread_stop_request.store(true);
-    m_sleep_cv.notify_one();
-  }
-  m_emulation_thread.join();
-  Log_InfoPrint("Emulation thread stopped");
+  std::unique_lock<std::mutex> lock(m_mutex);
+  m_emulation_thread_stop_request.store(true);
+  m_sleep_cv.notify_one();
 }
 
 void AndroidHostInterface::RunOnEmulationThread(std::function<void()> function, bool blocking)
@@ -329,18 +310,19 @@ void AndroidHostInterface::RunOnEmulationThread(std::function<void()> function, 
   m_mutex.unlock();
 }
 
-void AndroidHostInterface::EmulationThreadEntryPoint(jobject emulation_activity, ANativeWindow* initial_surface,
+void AndroidHostInterface::EmulationThreadEntryPoint(JNIEnv* env, jobject emulation_activity, jobject surface,
                                                      SystemBootParameters boot_params, bool resume_state)
 {
-  JNIEnv* thread_env;
-  if (s_jvm->AttachCurrentThread(&thread_env, nullptr) != JNI_OK)
+  ANativeWindow* native_surface = ANativeWindow_fromSurface(env, surface);
+  if (!native_surface)
   {
-    ReportError("Failed to attach JNI to thread");
+    Log_ErrorPrint("ANativeWindow_fromSurface() returned null");
+    env->CallVoidMethod(m_emulation_activity_object, s_EmulationActivity_method_onEmulationStopped);
     return;
   }
 
   CreateImGuiContext();
-  m_surface = initial_surface;
+  m_surface = native_surface;
   m_emulation_activity_object = emulation_activity;
   ApplySettings(true);
 
@@ -358,35 +340,36 @@ void AndroidHostInterface::EmulationThreadEntryPoint(jobject emulation_activity,
     boot_result = BootSystem(boot_params);
   }
 
-  if (!boot_result)
+  if (boot_result)
+  {
+    // System is ready to go.
+    EmulationThreadLoop(env);
+
+    if (g_settings.save_state_on_exit)
+      SaveResumeSaveState();
+
+    PowerOffSystem();
+  }
+  else
   {
     ReportFormattedError("Failed to boot system on emulation thread (file:%s).", boot_params.filename.c_str());
-    DestroyImGuiContext();
-    thread_env->CallVoidMethod(m_emulation_activity_object, s_EmulationActivity_method_onEmulationStopped);
-    thread_env->DeleteGlobalRef(m_emulation_activity_object);
-    m_emulation_activity_object = {};
-    s_jvm->DetachCurrentThread();
-    return;
   }
 
-  // System is ready to go.
-  thread_env->CallVoidMethod(m_emulation_activity_object, s_EmulationActivity_method_onEmulationStarted);
-  EmulationThreadLoop();
+  env->CallVoidMethod(m_emulation_activity_object, s_EmulationActivity_method_onEmulationStopped);
 
-  thread_env->CallVoidMethod(m_emulation_activity_object, s_EmulationActivity_method_onEmulationStopped);
-
-  if (g_settings.save_state_on_exit)
-    SaveResumeSaveState();
-
-  PowerOffSystem();
   DestroyImGuiContext();
-  thread_env->DeleteGlobalRef(m_emulation_activity_object);
   m_emulation_activity_object = {};
-  s_jvm->DetachCurrentThread();
 }
 
-void AndroidHostInterface::EmulationThreadLoop()
+void AndroidHostInterface::EmulationThreadLoop(JNIEnv* env)
 {
+  {
+    std::unique_lock<std::mutex> lock(m_mutex);
+    m_emulation_thread_running.store(true);
+  }
+
+  env->CallVoidMethod(m_emulation_activity_object, s_EmulationActivity_method_onEmulationStarted);
+
   for (;;)
   {
     // run any events
@@ -408,7 +391,11 @@ void AndroidHostInterface::EmulationThreadLoop()
         }
 
         if (m_emulation_thread_stop_request.load())
+        {
+          m_emulation_thread_running.store(false);
+          m_emulation_thread_stop_request.store(false);
           return;
+        }
 
         if (System::IsPaused())
         {
@@ -475,11 +462,12 @@ bool AndroidHostInterface::AcquireHostDisplay()
       !display->InitializeRenderDevice(GetShaderCacheBasePath(), g_settings.gpu_use_debug_device,
                                        g_settings.gpu_threaded_presentation))
   {
-    ReportError("Failed to acquire host display.");
     display->DestroyRenderDevice();
     return false;
   }
 
+  // The alignement was set prior to booting.
+  display->SetDisplayAlignment(m_display_alignment);
   m_display = std::move(display);
 
   if (!CreateHostDisplayResources())
@@ -589,6 +577,13 @@ void AndroidHostInterface::SurfaceChanged(ANativeWindow* surface, int format, in
     else if (!surface && System::IsRunning())
       PauseSystem(true);
   }
+}
+
+void AndroidHostInterface::SetDisplayAlignment(HostDisplay::Alignment alignment)
+{
+  m_display_alignment = alignment;
+  if (m_display)
+    m_display->SetDisplayAlignment(alignment);
 }
 
 void AndroidHostInterface::CreateImGuiContext()
@@ -956,28 +951,21 @@ DEFINE_JNI_ARGS_METHOD(jboolean, AndroidHostInterface_isEmulationThreadRunning, 
   return AndroidHelpers::GetNativeClass(env, obj)->IsEmulationThreadRunning();
 }
 
-DEFINE_JNI_ARGS_METHOD(jboolean, AndroidHostInterface_startEmulationThread, jobject obj, jobject emulationActivity,
+DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_runEmulationThread, jobject obj, jobject emulationActivity,
                        jobject surface, jstring filename, jboolean resume_state, jstring state_filename)
 {
-  ANativeWindow* native_surface = ANativeWindow_fromSurface(env, surface);
-  if (!native_surface)
-  {
-    Log_ErrorPrint("ANativeWindow_fromSurface() returned null");
-    return false;
-  }
-
   std::string state_filename_str = AndroidHelpers::JStringToString(env, state_filename);
 
   SystemBootParameters boot_params;
   boot_params.filename = AndroidHelpers::JStringToString(env, filename);
 
-  return AndroidHelpers::GetNativeClass(env, obj)->StartEmulationThread(emulationActivity, native_surface,
-                                                                        std::move(boot_params), resume_state);
+  AndroidHelpers::GetNativeClass(env, obj)->EmulationThreadEntryPoint(env, emulationActivity, surface,
+                                                                      std::move(boot_params), resume_state);
 }
 
-DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_stopEmulationThread, jobject obj)
+DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_stopEmulationThreadLoop, jobject obj)
 {
-  AndroidHelpers::GetNativeClass(env, obj)->StopEmulationThread();
+  AndroidHelpers::GetNativeClass(env, obj)->StopEmulationThreadLoop();
 }
 
 DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_surfaceChanged, jobject obj, jobject surface, jint format, jint width,
@@ -1310,7 +1298,7 @@ DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_setDisplayAlignment, jobject o
 {
   AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
   hi->RunOnEmulationThread(
-    [hi, alignment]() { hi->GetDisplay()->SetDisplayAlignment(static_cast<HostDisplay::Alignment>(alignment)); });
+    [hi, alignment]() { hi->SetDisplayAlignment(static_cast<HostDisplay::Alignment>(alignment)); }, false);
 }
 
 DEFINE_JNI_ARGS_METHOD(bool, AndroidHostInterface_hasSurface, jobject obj)
