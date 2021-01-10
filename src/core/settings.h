@@ -146,6 +146,7 @@ struct Settings
   s32 audio_output_volume = 100;
   s32 audio_fast_forward_volume = 100;
   u32 audio_buffer_size = 2048;
+  bool audio_resampling = false;
   bool audio_output_muted = false;
   bool audio_sync_enabled = true;
   bool audio_dump_on_boot = true;

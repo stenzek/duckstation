@@ -619,6 +619,10 @@ void CommonHostInterface::UpdateSpeedLimiterState()
 
   if (m_audio_stream)
   {
+    const u32 input_sample_rate = (!is_non_standard_speed || target_speed == 0.0f || !g_settings.audio_resampling) ?
+                                    AUDIO_SAMPLE_RATE :
+                                    static_cast<u32>(static_cast<float>(AUDIO_SAMPLE_RATE) * target_speed);
+    m_audio_stream->SetInputSampleRate(input_sample_rate);
     m_audio_stream->SetOutputVolume(GetAudioOutputVolume());
     m_audio_stream->SetSync(audio_sync_enabled);
     if (audio_sync_enabled)
@@ -1495,9 +1499,9 @@ void CommonHostInterface::RegisterGeneralHotkeys()
 #else
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("TogglePatchCodes"),
                  StaticString(TRANSLATABLE("Hotkeys", "Toggle Patch Codes")), [this](bool pressed) {
-              if (pressed)
-                DoToggleCheats();
-          });
+                   if (pressed)
+                     DoToggleCheats();
+                 });
 #endif
 
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("Reset"),
@@ -2190,7 +2194,8 @@ void CommonHostInterface::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.increase_timer_resolution != old_settings.increase_timer_resolution ||
         g_settings.emulation_speed != old_settings.emulation_speed ||
         g_settings.fast_forward_speed != old_settings.fast_forward_speed ||
-        g_settings.display_max_fps != old_settings.display_max_fps)
+        g_settings.display_max_fps != old_settings.display_max_fps ||
+        g_settings.audio_resampling != old_settings.audio_resampling)
     {
       UpdateSpeedLimiterState();
     }

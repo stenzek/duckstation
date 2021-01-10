@@ -543,6 +543,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetIntValue("Audio", "OutputVolume", 100);
   si.SetIntValue("Audio", "FastForwardVolume", 100);
   si.SetIntValue("Audio", "BufferSize", DEFAULT_AUDIO_BUFFER_SIZE);
+  si.SetBoolValue("Audio", "Resampling", false);
   si.SetIntValue("Audio", "OutputMuted", false);
   si.SetBoolValue("Audio", "Sync", true);
   si.SetBoolValue("Audio", "DumpOnBoot", false);

@@ -24,6 +24,7 @@ AudioSettingsWidget::AudioSettingsWidget(QtHostInterface* host_interface, QWidge
   SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.bufferSize, "Audio", "BufferSize");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.startDumpingOnBoot, "Audio", "DumpOnBoot");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.muteCDAudio, "CDROM", "MuteCDAudio");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.resampling, "Audio", "Resampling", false);
 
   m_ui.volume->setValue(m_host_interface->GetIntSettingValue("Audio", "OutputVolume", 100));
   m_ui.fastForwardVolume->setValue(m_host_interface->GetIntSettingValue("Audio", "FastForwardVolume", 100));
