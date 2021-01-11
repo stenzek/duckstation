@@ -64,7 +64,7 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QW
     tr("Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay. In some "
        "cases also eliminates stutter when games initiate audio track playback."));
   dialog->registerWidgetHelp(
-    m_ui.cdromReadSpeedup, tr("CDROM Read Speedup"), tr("None (Double Speed"),
+    m_ui.cdromReadSpeedup, tr("CDROM Read Speedup"), tr("None (Double Speed)"),
     tr("Speeds up CD-ROM reads by the specified factor. Only applies to double-speed reads, and is ignored when audio "
        "is playing. May improve loading speeds in some games, at the cost of breaking others."));
   dialog->registerWidgetHelp(
@@ -72,16 +72,19 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QW
     tr("Sets the target emulation speed. It is not guaranteed that this speed will be reached, "
        "and if not, the emulator will run as fast as it can manage."));
   dialog->registerWidgetHelp(
-    m_ui.fastForwardSpeed, tr("Fast Forward Speed"), "100%",
+    m_ui.fastForwardSpeed, tr("Fast Forward Speed"), tr("User Preference"),
     tr("Sets the fast forward speed. This speed will be used when the fast forward hotkey is pressed/toggled."));
   dialog->registerWidgetHelp(
-    m_ui.turboSpeed, tr("Turbo Speed"), "100%",
-    tr("Sets the turbo speed. This speed will be used when the turbo hotkey is pressed/toggled."));
+    m_ui.turboSpeed, tr("Turbo Speed"), tr("User Preference"),
+    tr("Sets the turbo speed. This speed will be used when the turbo hotkey is pressed/toggled. Turboing will take "
+       "priority over fast forwarding if both hotkeys are pressed/toggled."));
   dialog->registerWidgetHelp(
-    m_ui.syncToHostRefreshRate, tr("Sync To Host Refresh Rate"), "100%",
-    tr("Adjusts the emulation speed so the console's refresh rate matches the host's refresh rate, when VSync and "
-       "Audio Resampling is enabled. This results in the smoothest animations possible, at the cost of potentially "
-       "increasing the emulation speed by less than 1%."));
+    m_ui.syncToHostRefreshRate, tr("Sync To Host Refresh Rate"), tr("Checked"),
+    tr("Adjusts the emulation speed so the console's refresh rate matches the host's refresh rate when both VSync and "
+       "Audio Resampling settings are enabled. This results in the smoothest animations possible, at the cost of "
+       "potentially increasing the emulation speed by less than 1%. Sync To Host Refresh Rate will not take effect if "
+       "the console's refresh rate is too far from the host's refresh rate. Users with variable refresh rate displays "
+       "should disable this option."));
 
   m_ui.cpuClockSpeed->setEnabled(m_ui.enableCPUClockSpeedControl->checkState() == Qt::Checked);
   m_ui.cdromReadSpeedup->setCurrentIndex(m_host_interface->GetIntSettingValue("CDROM", "ReadSpeedup", 1) - 1);

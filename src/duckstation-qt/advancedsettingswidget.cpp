@@ -180,7 +180,7 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(QtHostInterface* host_interface, 
   addIntRangeTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Minimum Dumped VRAM Write Width"),
                          "TextureReplacements", "DumpVRAMWriteWidthThreshold", 1, VRAM_WIDTH,
                          Settings::DEFAULT_VRAM_WRITE_DUMP_WIDTH_THRESHOLD);
-  addIntRangeTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Minimum Dumped VRAM Write Width"),
+  addIntRangeTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Minimum Dumped VRAM Write Height"),
                          "TextureReplacements", "DumpVRAMWriteHeightThreshold", 1, VRAM_HEIGHT,
                          Settings::DEFAULT_VRAM_WRITE_DUMP_HEIGHT_THRESHOLD);
 
