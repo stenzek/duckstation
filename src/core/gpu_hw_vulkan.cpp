@@ -1214,7 +1214,13 @@ void GPU_HW_Vulkan::UpdateDisplay()
   {
     if (IsUsingMultisampling())
     {
-      UpdateVRAMReadTexture();
+      if (m_vram_dirty_rect.Intersects(
+            Common::Rectangle<u32>::FromExtents(m_crtc_state.display_vram_left, m_crtc_state.display_vram_top,
+                                                m_crtc_state.display_vram_width, m_crtc_state.display_vram_height)))
+      {
+        UpdateVRAMReadTexture();
+      }
+
       m_host_display->SetDisplayTexture(&m_vram_read_texture, HostDisplayPixelFormat::RGBA8,
                                         m_vram_read_texture.GetWidth(), m_vram_read_texture.GetHeight(), 0, 0,
                                         m_vram_read_texture.GetWidth(), m_vram_read_texture.GetHeight());
