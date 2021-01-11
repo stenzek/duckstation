@@ -18,9 +18,9 @@ A "BIOS" ROM image is required to to start the emulator and to play games. You c
 ## Latest News
 Older entries are available at https://github.com/stenzek/duckstation/blob/master/NEWS.md
 
-- 2020/01/10: Option to sync to host refresh rate added (enabled by default). This will give the smoothest animation possible with zero duped frames, at the cost of running the game <1% faster. Users with variable refresh rate (GSync/FreeSync) displays will want to disable the option.
-- 2020/01/10: Audio resampling added when fast forwarding to fixed speeds. Instead of crackling audio, you'll now get pitch altered audio.
-- 2020/01/03: Per game settings and game properties added to Android version.
+- 2021/01/10: Option to sync to host refresh rate added (enabled by default). This will give the smoothest animation possible with zero duped frames, at the cost of running the game <1% faster. Users with variable refresh rate (GSync/FreeSync) displays will want to disable the option.
+- 2021/01/10: Audio resampling added when fast forwarding to fixed speeds. Instead of crackling audio, you'll now get pitch altered audio.
+- 2021/01/03: Per game settings and game properties added to Android version.
 - 2020/12/30: Box and Adaptive downsampling modes added. Adaptive downsampling will smooth 2D backgrounds but attempt to preserve 3D geometry via pixel similarity (only supported in D3D11/Vulkan). Box is a simple average filter which will downsample to native resolution.
 - 2020/12/30: Hotkey binding added to Android version. You can now bind hotkeys such as fast forward, save state, etc to controller buttons. The ability to bind multi-button combinations will be added in the future.
 - 2020/12/29: Controller mapping/binding added for Android version. By default mappings will be clear and you will have to set them, you can do this from `Settings -> Controllers -> Controller Mapping`. Profiles can be saved and loaded as well.

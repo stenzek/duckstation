@@ -38,6 +38,7 @@ public:
   int GetIntSettingValue(const char* section, const char* key, int default_value = 0) override;
   float GetFloatSettingValue(const char* section, const char* key, float default_value = 0.0f) override;
   std::unique_ptr<ByteStream> OpenPackageFile(const char* path, u32 flags) override;
+  bool GetMainDisplayRefreshRate(float* refresh_rate) override;
 
   bool IsEmulationThreadRunning() const { return m_emulation_thread_running.load(); }
   bool IsEmulationThreadPaused() const;

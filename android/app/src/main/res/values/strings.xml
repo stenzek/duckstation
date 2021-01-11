@@ -191,4 +191,6 @@
     <string name="game_properties_tab_controller_settings">Controller Settings</string>
     <string name="settings_audio_resampling">Audio Resampling</string>
     <string name="settings_summary_audio_resampling">When running outside of 100% speed, resamples audio from the target speed instead of dropping frames. Produces much nicer fast forward/slowdown audio at a small cost to performance.</string>
+    <string name="settings_general_sync_to_host_refresh_rate">Sync To Host Refresh Rate</string>
+    <string name="settings_summary_general_sync_to_host_refresh_rate">Adjusts the emulation speed so the console\'s refresh rate matches the host\'s refresh rate, when VSync and Audio Resampling is enabled. This results in the smoothest animations possible, at the cost of potentially increasing the emulation speed by less than 1%.</string>
 </resources>

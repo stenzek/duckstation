@@ -11,10 +11,12 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.util.Log;
+import android.view.Display;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
@@ -135,6 +137,21 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         runOnUiThread(() -> {
             mGameTitle = title;
         });
+    }
+
+    public float getRefreshRate() {
+        WindowManager windowManager = getWindowManager();
+        if (windowManager == null) {
+            windowManager = ((WindowManager) getSystemService(Context.WINDOW_SERVICE));
+            if (windowManager == null)
+                return -1.0f;
+        }
+
+        Display display = windowManager.getDefaultDisplay();
+        if (display == null)
+            return -1.0f;
+
+        return display.getRefreshRate();
     }
 
     private void doApplySettings() {

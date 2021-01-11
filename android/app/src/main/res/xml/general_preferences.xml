@@ -78,6 +78,13 @@
         app:defaultValue="false"
         app:summary="@string/settings_summary_video_sync"
         app:iconSpaceReserved="false" />
+    <SwitchPreferenceCompat
+        app:key="Main/SyncToHostRefreshRate"
+        app:title="@string/settings_general_sync_to_host_refresh_rate"
+        app:defaultValue="false"
+        app:summary="@string/settings_summary_general_sync_to_host_refresh_rate"
+        app:dependency="Display/VSync"
+        app:iconSpaceReserved="false" />
     <ListPreference
         app:key="Console/Region"
         app:title="@string/settings_console_region"
