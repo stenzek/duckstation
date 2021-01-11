@@ -56,18 +56,17 @@ AudioSettingsWidget::AudioSettingsWidget(QtHostInterface* host_interface, QWidge
   dialog->registerWidgetHelp(
     m_ui.startDumpingOnBoot, tr("Start Dumping On Boot"), tr("Unchecked"),
     tr("Start dumping audio to file as soon as the emulator is started. Mainly useful as a debug option."));
-  dialog->registerWidgetHelp(m_ui.volume, tr("Output Volume"), "100",
-                             tr("Controls the volume of the audio played on the host. Values are in percentage."));
-  dialog->registerWidgetHelp(
-    m_ui.fastForwardVolume, tr("Fast Forward Volume"), "100",
-    tr("Controls the volume of the audio played on the host when fast forwarding. Values are in percentage."));
+  dialog->registerWidgetHelp(m_ui.volume, tr("Output Volume"), "100%",
+                             tr("Controls the volume of the audio played on the host."));
+  dialog->registerWidgetHelp(m_ui.fastForwardVolume, tr("Fast Forward Volume"), "100%",
+                             tr("Controls the volume of the audio played on the host when fast forwarding."));
   dialog->registerWidgetHelp(m_ui.muted, tr("Mute All Sound"), tr("Unchecked"),
                              tr("Prevents the emulator from producing any audible sound."));
   dialog->registerWidgetHelp(m_ui.muteCDAudio, tr("Mute CD Audio"), tr("Unchecked"),
                              tr("Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable "
                                 "background music in some games."));
   dialog->registerWidgetHelp(
-    m_ui.resampling, tr("Resampling"), tr("Unchecked"),
+    m_ui.resampling, tr("Resampling"), tr("Checked"),
     tr("When running outside of 100% speed, resamples audio from the target speed instead of dropping frames. Produces "
        "much nicer fast forward/slowdown audio at a small cost to performance."));
 }
@@ -86,8 +85,9 @@ void AudioSettingsWidget::updateBufferingLabel()
   }
 
   const float max_latency = AudioStream::GetMaxLatency(HostInterface::AUDIO_SAMPLE_RATE, actual_buffer_size);
-  m_ui.bufferingLabel->setText(
-    tr("Maximum latency: %1 frames (%2ms)").arg(actual_buffer_size).arg(max_latency * 1000.0f, 0, 'f', 2));
+  m_ui.bufferingLabel->setText(tr("Maximum Latency: %1 frames (%2ms)")
+                                 .arg(actual_buffer_size)
+                                 .arg(static_cast<double>(max_latency) * 1000.0, 0, 'f', 2));
 }
 
 void AudioSettingsWidget::updateVolumeLabel()
