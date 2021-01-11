@@ -609,6 +609,7 @@ void CommonHostInterface::UpdateSpeedLimiterState()
                          (m_fast_forward_enabled ? g_settings.fast_forward_speed : g_settings.emulation_speed);
   m_speed_limiter_enabled = (target_speed != 0.0f);
 
+  bool syncing_to_host = false;
   if (g_settings.sync_to_host_refresh_rate && g_settings.audio_resampling && target_speed == 1.0f &&
       g_settings.video_sync_enabled && m_display && System::IsRunning())
   {
@@ -616,10 +617,10 @@ void CommonHostInterface::UpdateSpeedLimiterState()
     if (m_display->GetHostRefreshRate(&host_refresh_rate))
     {
       const float ratio = host_refresh_rate / System::GetThrottleFrequency();
-      const bool can_sync = (ratio >= 0.95f && ratio <= 1.05f);
+      syncing_to_host = (ratio >= 0.95f && ratio <= 1.05f);
       Log_InfoPrintf("Refresh rate: Host=%fhz Guest=%fhz Ratio=%f - %s", host_refresh_rate,
-                     System::GetThrottleFrequency(), ratio, can_sync ? "can sync" : "can't sync");
-      if (can_sync)
+                     System::GetThrottleFrequency(), ratio, syncing_to_host ? "can sync" : "can't sync");
+      if (syncing_to_host)
         target_speed *= ratio;
     }
   }
@@ -663,6 +664,9 @@ void CommonHostInterface::UpdateSpeedLimiterState()
     System::SetTargetSpeed(m_speed_limiter_enabled ? target_speed : 1.0f);
     System::ResetPerformanceCounters();
   }
+
+  if (syncing_to_host)
+    m_speed_limiter_enabled = false;
 }
 
 void CommonHostInterface::RecreateSystem()
