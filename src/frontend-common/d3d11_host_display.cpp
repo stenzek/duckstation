@@ -6,6 +6,7 @@
 #include "common/string_util.h"
 #include "core/host_interface.h"
 #include "core/settings.h"
+#include "core/shader_cache_version.h"
 #include "display_ps.hlsl.h"
 #include "display_vs.hlsl.h"
 #include "frontend-common/postprocessing_shadergen.h"
@@ -930,7 +931,7 @@ bool D3D11HostDisplay::SetPostProcessingChain(const std::string_view& config)
   m_post_processing_stages.clear();
 
   D3D11::ShaderCache shader_cache;
-  shader_cache.Open(g_host_interface->GetShaderCacheBasePath(), m_device->GetFeatureLevel(),
+  shader_cache.Open(g_host_interface->GetShaderCacheBasePath(), m_device->GetFeatureLevel(), SHADER_CACHE_VERSION,
                     g_settings.gpu_use_debug_device);
 
   FrontendCommon::PostProcessingShaderGen shadergen(HostDisplay::RenderAPI::D3D11, true);

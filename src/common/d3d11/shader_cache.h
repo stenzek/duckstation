@@ -21,7 +21,7 @@ public:
   ShaderCache();
   ~ShaderCache();
 
-  void Open(std::string_view base_path, D3D_FEATURE_LEVEL feature_level, bool debug);
+  void Open(std::string_view base_path, D3D_FEATURE_LEVEL feature_level, u32 version, bool debug);
 
   ComPtr<ID3DBlob> GetShaderBlob(ShaderCompiler::Type type, std::string_view shader_code);
 
@@ -31,7 +31,7 @@ public:
   ComPtr<ID3D11ComputeShader> GetComputeShader(ID3D11Device* device, std::string_view shader_code);
 
 private:
-  static constexpr u32 FILE_VERSION = 1;
+  static constexpr u32 FILE_VERSION = 2;
 
   struct CacheIndexKey
   {
@@ -62,7 +62,8 @@ private:
 
   using CacheIndex = std::unordered_map<CacheIndexKey, CacheIndexData, CacheIndexEntryHasher>;
 
-  static std::string GetCacheBaseFileName(const std::string_view& base_path, D3D_FEATURE_LEVEL feature_level, bool debug);
+  static std::string GetCacheBaseFileName(const std::string_view& base_path, D3D_FEATURE_LEVEL feature_level,
+                                          bool debug);
   static CacheIndexKey GetCacheKey(ShaderCompiler::Type type, const std::string_view& shader_code);
 
   bool CreateNew(const std::string& index_filename, const std::string& blob_filename);
@@ -77,6 +78,7 @@ private:
   CacheIndex m_index;
 
   D3D_FEATURE_LEVEL m_feature_level = D3D_FEATURE_LEVEL_11_0;
+  u32 m_version = 0;
   bool m_debug = false;
 };
 

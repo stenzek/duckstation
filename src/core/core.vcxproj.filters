@@ -56,6 +56,7 @@
     <ClCompile Include="gpu_sw_backend.cpp" />
     <ClCompile Include="libcrypt_game_codes.cpp" />
     <ClCompile Include="texture_replacements.cpp" />
+    <ClCompile Include="gdb_protocol.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -66,7 +67,6 @@
     <ClInclude Include="cpu_disasm.h" />
     <ClInclude Include="bus.h" />
     <ClInclude Include="dma.h" />
-    <ClInclude Include="gdb_protocol.h" />
     <ClInclude Include="gpu.h" />
     <ClInclude Include="gpu_hw_opengl.h" />
     <ClInclude Include="gpu_hw.h" />
@@ -115,5 +115,6 @@
     <ClInclude Include="gpu_sw_backend.h" />
     <ClInclude Include="libcrypt_game_codes.h" />
     <ClInclude Include="texture_replacements.h" />
+    <ClInclude Include="shader_cache_version.h" />
   </ItemGroup>
 </Project>

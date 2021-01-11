@@ -52,9 +52,10 @@ bool ShaderCache::CacheIndexKey::operator!=(const CacheIndexKey& key) const
     fragment_source_hash_high != key.fragment_source_hash_high || fragment_source_length != key.fragment_source_length);
 }
 
-void ShaderCache::Open(bool is_gles, std::string_view base_path)
+void ShaderCache::Open(bool is_gles, std::string_view base_path, u32 version)
 {
   m_base_path = base_path;
+  m_version = version;
   m_program_binary_supported = is_gles || GLAD_GL_ARB_get_program_binary;
   if (m_program_binary_supported)
   {
@@ -103,7 +104,8 @@ bool ShaderCache::CreateNew(const std::string& index_filename, const std::string
   }
 
   const u32 index_version = FILE_VERSION;
-  if (std::fwrite(&index_version, sizeof(index_version), 1, m_index_file) != 1)
+  if (std::fwrite(&index_version, sizeof(index_version), 1, m_index_file) != 1 ||
+      std::fwrite(&m_version, sizeof(m_version), 1, m_index_file) != 1)
   {
     Log_ErrorPrintf("Failed to write version to index file '%s'", index_filename.c_str());
     std::fclose(m_index_file);
@@ -131,10 +133,12 @@ bool ShaderCache::ReadExisting(const std::string& index_filename, const std::str
   if (!m_index_file)
     return false;
 
-  u32 file_version;
-  if (std::fread(&file_version, sizeof(file_version), 1, m_index_file) != 1 || file_version != FILE_VERSION)
+  u32 file_version = 0;
+  u32 data_version = 0;
+  if (std::fread(&file_version, sizeof(file_version), 1, m_index_file) != 1 || file_version != FILE_VERSION ||
+      std::fread(&data_version, sizeof(data_version), 1, m_index_file) != 1 || data_version != m_version)
   {
-    Log_ErrorPrintf("Bad file version in '%s'", index_filename.c_str());
+    Log_ErrorPrintf("Bad file/data version in '%s'", index_filename.c_str());
     std::fclose(m_index_file);
     m_index_file = nullptr;
     return false;

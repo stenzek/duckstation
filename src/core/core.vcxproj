@@ -224,6 +224,7 @@
     <ClInclude Include="save_state_version.h" />
     <ClInclude Include="settings.h" />
     <ClInclude Include="shadergen.h" />
+    <ClInclude Include="shader_cache_version.h" />
     <ClInclude Include="sio.h" />
     <ClInclude Include="spu.h" />
     <ClInclude Include="system.h" />

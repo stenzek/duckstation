@@ -105,11 +105,11 @@ bool ShaderCache::CacheIndexKey::operator!=(const CacheIndexKey& key) const
           source_length != key.source_length || shader_type != key.shader_type);
 }
 
-void ShaderCache::Create(std::string_view base_path, bool debug)
+void ShaderCache::Create(std::string_view base_path, u32 version, bool debug)
 {
   Assert(!g_vulkan_shader_cache);
   g_vulkan_shader_cache.reset(new ShaderCache());
-  g_vulkan_shader_cache->Open(base_path, debug);
+  g_vulkan_shader_cache->Open(base_path, debug, version);
 }
 
 void ShaderCache::Destroy()
@@ -117,8 +117,9 @@ void ShaderCache::Destroy()
   g_vulkan_shader_cache.reset();
 }
 
-void ShaderCache::Open(std::string_view base_path, bool debug)
+void ShaderCache::Open(std::string_view base_path, u32 version, bool debug)
 {
+  m_version = version;
   m_debug = debug;
 
   if (!base_path.empty())
@@ -175,6 +176,7 @@ bool ShaderCache::CreateNewShaderCache(const std::string& index_filename, const 
   FillPipelineCacheHeader(&header);
 
   if (std::fwrite(&index_version, sizeof(index_version), 1, m_index_file) != 1 ||
+      std::fwrite(&m_version, sizeof(m_version), 1, m_index_file) != 1 ||
       std::fwrite(&header, sizeof(header), 1, m_index_file) != 1)
   {
     Log_ErrorPrintf("Failed to write header to index file '%s'", index_filename.c_str());
@@ -203,10 +205,12 @@ bool ShaderCache::ReadExistingShaderCache(const std::string& index_filename, con
   if (!m_index_file)
     return false;
 
-  u32 file_version;
-  if (std::fread(&file_version, sizeof(file_version), 1, m_index_file) != 1 || file_version != FILE_VERSION)
+  u32 file_version = 0;
+  u32 data_version = 0;
+  if (std::fread(&file_version, sizeof(file_version), 1, m_index_file) != 1 || file_version != FILE_VERSION ||
+      std::fread(&data_version, sizeof(data_version), 1, m_index_file) != 1 || data_version != m_version)
   {
-    Log_ErrorPrintf("Bad file version in '%s'", index_filename.c_str());
+    Log_ErrorPrintf("Bad file/data version in '%s'", index_filename.c_str());
     std::fclose(m_index_file);
     m_index_file = nullptr;
     return false;

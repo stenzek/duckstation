@@ -84,6 +84,7 @@ add_library(core
     save_state_version.h
     settings.cpp
     settings.h
+    shader_cache_version.h
     shadergen.cpp
     shadergen.h
     sio.cpp

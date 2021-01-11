@@ -4,6 +4,7 @@
 #include "common/timer.h"
 #include "gpu_hw_shadergen.h"
 #include "host_display.h"
+#include "shader_cache_version.h"
 #include "system.h"
 #include "texture_replacements.h"
 Log_SetChannel(GPU_HW_OpenGL);
@@ -398,7 +399,7 @@ bool GPU_HW_OpenGL::CreateTextureBuffer()
 bool GPU_HW_OpenGL::CompilePrograms()
 {
   GL::ShaderCache shader_cache;
-  shader_cache.Open(IsGLES(), g_host_interface->GetShaderCacheBasePath());
+  shader_cache.Open(IsGLES(), g_host_interface->GetShaderCacheBasePath(), SHADER_CACHE_VERSION);
 
   const bool use_binding_layout = GPU_HW_ShaderGen::UseGLSLBindingLayout();
   GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_multisamples, m_per_sample_shading,

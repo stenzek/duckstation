@@ -9,6 +9,7 @@
 #include "common/vulkan/stream_buffer.h"
 #include "common/vulkan/swap_chain.h"
 #include "common/vulkan/util.h"
+#include "core/shader_cache_version.h"
 #include "postprocessing_shadergen.h"
 #include <array>
 #ifdef WITH_IMGUI
@@ -331,7 +332,7 @@ bool VulkanHostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_vie
 bool VulkanHostDisplay::InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device,
                                                bool threaded_presentation)
 {
-  Vulkan::ShaderCache::Create(shader_cache_directory, debug_device);
+  Vulkan::ShaderCache::Create(shader_cache_directory, SHADER_CACHE_VERSION, debug_device);
 
   if (!CreateResources())
     return false;

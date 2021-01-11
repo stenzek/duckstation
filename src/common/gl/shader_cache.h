@@ -20,13 +20,13 @@ public:
   ShaderCache();
   ~ShaderCache();
 
-  void Open(bool is_gles, std::string_view base_path);
+  void Open(bool is_gles, std::string_view base_path, u32 version);
 
   std::optional<Program> GetProgram(const std::string_view vertex_shader, const std::string_view geometry_shader,
                                     const std::string_view fragment_shader, const PreLinkCallback& callback = {});
 
 private:
-  static constexpr u32 FILE_VERSION = 2;
+  static constexpr u32 FILE_VERSION = 3;
 
   struct CacheIndexKey
   {
@@ -88,6 +88,7 @@ private:
   std::FILE* m_blob_file = nullptr;
 
   CacheIndex m_index;
+  u32 m_version = 0;
   bool m_program_binary_supported = false;
 };
 

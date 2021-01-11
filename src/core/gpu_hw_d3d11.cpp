@@ -6,6 +6,7 @@
 #include "gpu_hw_shadergen.h"
 #include "host_display.h"
 #include "host_interface.h"
+#include "shader_cache_version.h"
 #include "system.h"
 Log_SetChannel(GPU_HW_D3D11);
 
@@ -447,7 +448,7 @@ void GPU_HW_D3D11::DestroyStateObjects()
 bool GPU_HW_D3D11::CompileShaders()
 {
   D3D11::ShaderCache shader_cache;
-  shader_cache.Open(g_host_interface->GetShaderCacheBasePath(), m_device->GetFeatureLevel(),
+  shader_cache.Open(g_host_interface->GetShaderCacheBasePath(), m_device->GetFeatureLevel(), SHADER_CACHE_VERSION,
                     g_settings.gpu_use_debug_device);
 
   GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_multisamples, m_per_sample_shading,

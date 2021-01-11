@@ -42,9 +42,10 @@ bool ShaderCache::CacheIndexKey::operator!=(const CacheIndexKey& key) const
           source_length != key.source_length || shader_type != key.shader_type);
 }
 
-void ShaderCache::Open(std::string_view base_path, D3D_FEATURE_LEVEL feature_level, bool debug)
+void ShaderCache::Open(std::string_view base_path, D3D_FEATURE_LEVEL feature_level, u32 version, bool debug)
 {
   m_feature_level = feature_level;
+  m_version = version;
   m_debug = debug;
 
   if (!base_path.empty())
@@ -79,7 +80,8 @@ bool ShaderCache::CreateNew(const std::string& index_filename, const std::string
   }
 
   const u32 index_version = FILE_VERSION;
-  if (std::fwrite(&index_version, sizeof(index_version), 1, m_index_file) != 1)
+  if (std::fwrite(&index_version, sizeof(index_version), 1, m_index_file) != 1 ||
+      std::fwrite(&m_version, sizeof(m_version), 1, m_index_file) != 1)
   {
     Log_ErrorPrintf("Failed to write version to index file '%s'", index_filename.c_str());
     std::fclose(m_index_file);
@@ -107,10 +109,12 @@ bool ShaderCache::ReadExisting(const std::string& index_filename, const std::str
   if (!m_index_file)
     return false;
 
-  u32 file_version;
-  if (std::fread(&file_version, sizeof(file_version), 1, m_index_file) != 1 || file_version != FILE_VERSION)
+  u32 file_version = 0;
+  u32 data_version = 0;
+  if (std::fread(&file_version, sizeof(file_version), 1, m_index_file) != 1 || file_version != FILE_VERSION ||
+      std::fread(&data_version, sizeof(data_version), 1, m_index_file) != 1 || data_version != m_version)
   {
-    Log_ErrorPrintf("Bad file version in '%s'", index_filename.c_str());
+    Log_ErrorPrintf("Bad file/data version in '%s'", index_filename.c_str());
     std::fclose(m_index_file);
     m_index_file = nullptr;
     return false;
