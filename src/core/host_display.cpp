@@ -5,6 +5,7 @@
 #include "common/log.h"
 #include "common/string_util.h"
 #include "common/timer.h"
+#include "host_interface.h"
 #include "stb_image.h"
 #include "stb_image_resize.h"
 #include "stb_image_write.h"
@@ -14,11 +15,6 @@
 #include <thread>
 #include <vector>
 Log_SetChannel(HostDisplay);
-
-#ifdef _WIN32
-#include "common/windows_headers.h"
-#include <dwmapi.h>
-#endif
 
 HostDisplayTexture::~HostDisplayTexture() = default;
 
@@ -92,39 +88,7 @@ bool HostDisplay::SetDisplayPixels(HostDisplayPixelFormat format, u32 width, u32
 
 bool HostDisplay::GetHostRefreshRate(float* refresh_rate)
 {
-#ifdef _WIN32
-  static HMODULE dwm_module = nullptr;
-  static HRESULT(STDAPICALLTYPE * get_timing_info)(HWND hwnd, DWM_TIMING_INFO * pTimingInfo) = nullptr;
-  static bool load_tried = false;
-  if (!load_tried)
-  {
-    load_tried = true;
-    dwm_module = LoadLibrary("dwmapi.dll");
-    if (dwm_module)
-    {
-      std::atexit([]() {
-        FreeLibrary(dwm_module);
-        dwm_module = nullptr;
-      });
-      get_timing_info =
-        reinterpret_cast<decltype(get_timing_info)>(GetProcAddress(dwm_module, "DwmGetCompositionTimingInfo"));
-    }
-  }
-
-  DWM_TIMING_INFO ti = {};
-  ti.cbSize = sizeof(ti);
-  HRESULT hr = get_timing_info(nullptr, &ti);
-  if (SUCCEEDED(hr))
-  {
-    if (ti.rateRefresh.uiNumerator == 0 || ti.rateRefresh.uiDenominator == 0)
-      return false;
-
-    *refresh_rate = static_cast<float>(ti.rateRefresh.uiNumerator) / static_cast<float>(ti.rateRefresh.uiDenominator);
-    return true;
-  }
-#endif
-
-  return false;
+  return g_host_interface->GetMainDisplayRefreshRate(refresh_rate);
 }
 
 void HostDisplay::SetSoftwareCursor(std::unique_ptr<HostDisplayTexture> texture, float scale /*= 1.0f*/)
