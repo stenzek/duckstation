@@ -149,6 +149,7 @@ void SingleStepCPU();
 void RunFrame();
 
 /// Sets target emulation speed.
+float GetTargetSpeed();
 void SetTargetSpeed(float speed);
 
 /// Adjusts the throttle frequency, i.e. how many times we should sleep per second.

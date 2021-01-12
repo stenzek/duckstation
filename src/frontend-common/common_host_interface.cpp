@@ -475,7 +475,7 @@ std::unique_ptr<AudioStream> CommonHostInterface::CreateAudioStream(AudioBackend
 
 s32 CommonHostInterface::GetAudioOutputVolume() const
 {
-  return g_settings.GetAudioOutputVolume(!m_speed_limiter_enabled);
+  return g_settings.GetAudioOutputVolume(IsRunningAtNonStandardSpeed());
 }
 
 void CommonHostInterface::UpdateControllerInterface()
@@ -602,12 +602,21 @@ bool CommonHostInterface::ResumeSystemFromMostRecentState()
   return LoadState(path.c_str());
 }
 
+bool CommonHostInterface::IsRunningAtNonStandardSpeed() const
+{
+  if (!System::IsValid())
+    return false;
+
+  const float target_speed = System::GetTargetSpeed();
+  return (target_speed <= 0.95f || target_speed >= 1.05f);
+}
+
 void CommonHostInterface::UpdateSpeedLimiterState()
 {
   float target_speed = m_turbo_enabled ?
                          g_settings.turbo_speed :
                          (m_fast_forward_enabled ? g_settings.fast_forward_speed : g_settings.emulation_speed);
-  m_speed_limiter_enabled = (target_speed != 0.0f);
+  m_throttler_enabled = (target_speed != 0.0f);
 
   bool syncing_to_host = false;
   if (g_settings.sync_to_host_refresh_rate && g_settings.audio_resampling && target_speed == 1.0f &&
@@ -627,14 +636,20 @@ void CommonHostInterface::UpdateSpeedLimiterState()
 
   const bool is_non_standard_speed = (std::abs(target_speed - 1.0f) > 0.05f);
   const bool audio_sync_enabled =
-    !System::IsRunning() || (m_speed_limiter_enabled && g_settings.audio_sync_enabled && !is_non_standard_speed);
+    !System::IsRunning() || (m_throttler_enabled && g_settings.audio_sync_enabled && !is_non_standard_speed);
   const bool video_sync_enabled =
-    !System::IsRunning() || (m_speed_limiter_enabled && g_settings.video_sync_enabled && !is_non_standard_speed);
-  const float max_display_fps = m_speed_limiter_enabled ? 0.0f : g_settings.display_max_fps;
+    !System::IsRunning() || (m_throttler_enabled && g_settings.video_sync_enabled && !is_non_standard_speed);
+  const float max_display_fps = m_throttler_enabled ? 0.0f : g_settings.display_max_fps;
   Log_InfoPrintf("Target speed: %f%%", target_speed * 100.0f);
   Log_InfoPrintf("Syncing to %s%s", audio_sync_enabled ? "audio" : "",
                  (audio_sync_enabled && video_sync_enabled) ? " and video" : (video_sync_enabled ? "video" : ""));
   Log_InfoPrintf("Max display fps: %f", max_display_fps);
+
+  if (System::IsValid())
+  {
+    System::SetTargetSpeed(target_speed);
+    System::ResetPerformanceCounters();
+  }
 
   if (m_audio_stream)
   {
@@ -657,16 +672,10 @@ void CommonHostInterface::UpdateSpeedLimiterState()
   }
 
   if (g_settings.increase_timer_resolution)
-    SetTimerResolutionIncreased(m_speed_limiter_enabled);
-
-  if (System::IsValid())
-  {
-    System::SetTargetSpeed(m_speed_limiter_enabled ? target_speed : 1.0f);
-    System::ResetPerformanceCounters();
-  }
+    SetTimerResolutionIncreased(m_throttler_enabled);
 
   if (syncing_to_host)
-    m_speed_limiter_enabled = false;
+    m_throttler_enabled = false;
 }
 
 void CommonHostInterface::RecreateSystem()

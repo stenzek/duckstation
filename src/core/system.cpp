@@ -1233,6 +1233,11 @@ void RunFrame()
   g_gpu->ResetGraphicsAPIState();
 }
 
+float GetTargetSpeed()
+{
+  return s_target_speed;
+}
+
 void SetTargetSpeed(float speed)
 {
   s_target_speed = speed;

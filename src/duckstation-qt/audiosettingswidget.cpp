@@ -99,8 +99,7 @@ void AudioSettingsWidget::updateVolumeLabel()
 void AudioSettingsWidget::onOutputVolumeChanged(int new_value)
 {
   m_host_interface->SetIntSettingValue("Audio", "OutputVolume", new_value);
-  if (!m_ui.muted->isChecked() && !QtHostInterface::GetInstance()->IsFastForwardEnabled())
-    m_host_interface->setAudioOutputVolume(new_value, m_ui.fastForwardVolume->value());
+  m_host_interface->setAudioOutputVolume(new_value, m_ui.fastForwardVolume->value());
 
   updateVolumeLabel();
 }
@@ -108,8 +107,7 @@ void AudioSettingsWidget::onOutputVolumeChanged(int new_value)
 void AudioSettingsWidget::onFastForwardVolumeChanged(int new_value)
 {
   m_host_interface->SetIntSettingValue("Audio", "FastForwardVolume", new_value);
-  if (!m_ui.muted->isChecked() && QtHostInterface::GetInstance()->IsFastForwardEnabled())
-    m_host_interface->setAudioOutputVolume(m_ui.volume->value(), new_value);
+  m_host_interface->setAudioOutputVolume(m_ui.volume->value(), new_value);
 
   updateVolumeLabel();
 }

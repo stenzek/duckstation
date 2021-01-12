@@ -1226,11 +1226,11 @@ void QtHostInterface::setAudioOutputVolume(int volume, int fast_forward_volume)
     return;
   }
 
-  if (m_audio_stream)
-    m_audio_stream->SetOutputVolume(m_speed_limiter_enabled ? volume : fast_forward_volume);
-
   g_settings.audio_output_volume = volume;
   g_settings.audio_fast_forward_volume = fast_forward_volume;
+
+  if (m_audio_stream)
+    m_audio_stream->SetOutputVolume(GetAudioOutputVolume());
 }
 
 void QtHostInterface::setAudioOutputMuted(bool muted)
@@ -1400,7 +1400,7 @@ void QtHostInterface::threadEntryPoint()
 
     System::UpdatePerformanceCounters();
 
-    if (m_speed_limiter_enabled)
+    if (m_throttler_enabled)
       System::Throttle();
 
     m_worker_thread_event_loop->processEvents(QEventLoop::AllEvents);
