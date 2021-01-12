@@ -1411,7 +1411,7 @@ DEFINE_JNI_ARGS_METHOD(jboolean, AndroidHostInterface_hasAnyBIOSImages, jobject 
 
 DEFINE_JNI_ARGS_METHOD(jboolean, AndroidHostInterface_isFastForwardEnabled, jobject obj)
 {
-  return AndroidHelpers::GetNativeClass(env, obj)->IsFastForwardEnabled();
+  return AndroidHelpers::GetNativeClass(env, obj)->IsRunningAtNonStandardSpeed();
 }
 
 DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_setFastForwardEnabled, jobject obj, jboolean enabled)
