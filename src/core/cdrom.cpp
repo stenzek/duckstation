@@ -353,8 +353,8 @@ u8 CDROM::ReadRegister(u32 offset)
     {
       if (m_response_fifo.IsEmpty())
       {
-        Log_DebugPrintf("Response FIFO empty on read");
-        return 0xFF;
+        Log_DevPrint("Response FIFO empty on read");
+        return 0x00;
       }
 
       const u8 value = m_response_fifo.Pop();
