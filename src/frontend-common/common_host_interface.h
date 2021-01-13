@@ -225,6 +225,9 @@ protected:
   /// Request the frontend to exit.
   virtual void RequestExit() = 0;
 
+  /// Registers frontend-specific hotkeys.
+  virtual void RegisterHotkeys();
+
   /// Executes per-frame tasks such as controller polling.
   virtual void PollAndUpdate();
 

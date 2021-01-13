@@ -77,10 +77,7 @@ bool CommonHostInterface::Initialize()
 
   m_save_state_selector_ui = std::make_unique<FrontendCommon::SaveStateSelectorUI>(this);
 
-  RegisterGeneralHotkeys();
-  RegisterGraphicsHotkeys();
-  RegisterSaveStateHotkeys();
-  RegisterAudioHotkeys();
+  RegisterHotkeys();
 
   UpdateControllerInterface();
   return true;
@@ -1460,6 +1457,14 @@ bool CommonHostInterface::AddRumbleToInputMap(const std::string& binding, u32 co
 
   Log_WarningPrintf("Unknown input device in rumble binding '%s'", binding.c_str());
   return false;
+}
+
+void CommonHostInterface::RegisterHotkeys()
+{
+  RegisterGeneralHotkeys();
+  RegisterGraphicsHotkeys();
+  RegisterSaveStateHotkeys();
+  RegisterAudioHotkeys();
 }
 
 void CommonHostInterface::RegisterGeneralHotkeys()

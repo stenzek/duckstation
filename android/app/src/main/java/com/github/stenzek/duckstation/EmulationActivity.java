@@ -154,6 +154,12 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         return display.getRefreshRate();
     }
 
+    public void openPauseMenu() {
+        runOnUiThread(() -> {
+            showMenu();
+        });
+    }
+
     private void doApplySettings() {
         AndroidHostInterface.getInstance().applySettings();
         updateRequestedOrientation();

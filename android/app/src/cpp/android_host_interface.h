@@ -72,6 +72,7 @@ protected:
   void SetUserDirectory() override;
   void LoadSettings() override;
   void UpdateInputMap() override;
+  void RegisterHotkeys() override;
 
   bool AcquireHostDisplay() override;
   void ReleaseHostDisplay() override;

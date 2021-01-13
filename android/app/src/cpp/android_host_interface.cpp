@@ -45,6 +45,7 @@ static jmethodID s_EmulationActivity_method_onEmulationStopped;
 static jmethodID s_EmulationActivity_method_onGameTitleChanged;
 static jmethodID s_EmulationActivity_method_setVibration;
 static jmethodID s_EmulationActivity_method_getRefreshRate;
+static jmethodID s_EmulationActivity_method_openPauseMenu;
 static jclass s_PatchCode_class;
 static jmethodID s_PatchCode_constructor;
 static jclass s_GameListEntry_class;
@@ -222,6 +223,19 @@ std::unique_ptr<ByteStream> AndroidHostInterface::OpenPackageFile(const char* pa
   std::unique_ptr<ByteStream> ret(AndroidHelpers::ReadInputStreamToMemory(env, stream, 65536));
   env->DeleteLocalRef(stream);
   return ret;
+}
+
+void AndroidHostInterface::RegisterHotkeys()
+{
+    RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("OpenPauseMenu"),
+                   StaticString(TRANSLATABLE("Hotkeys", "Open Pause Menu")), [this](bool pressed) {
+                if (pressed) {
+                    AndroidHelpers::GetJNIEnv()->CallVoidMethod(m_emulation_activity_object,
+                                                                s_EmulationActivity_method_openPauseMenu);
+                }
+            });
+
+  CommonHostInterface::RegisterHotkeys();
 }
 
 bool AndroidHostInterface::GetMainDisplayRefreshRate(float* refresh_rate)
@@ -898,6 +912,8 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
         nullptr ||
       (s_EmulationActivity_method_getRefreshRate =
          env->GetMethodID(emulation_activity_class, "getRefreshRate", "()F")) == nullptr ||
+      (s_EmulationActivity_method_openPauseMenu =
+                   env->GetMethodID(emulation_activity_class, "openPauseMenu", "()V")) == nullptr ||
       (s_PatchCode_constructor = env->GetMethodID(s_PatchCode_class, "<init>", "(ILjava/lang/String;Z)V")) == nullptr ||
       (s_GameListEntry_constructor = env->GetMethodID(
          s_GameListEntry_class, "<init>",
