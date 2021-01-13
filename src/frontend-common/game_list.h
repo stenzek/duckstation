@@ -108,7 +108,7 @@ private:
   enum : u32
   {
     GAME_LIST_CACHE_SIGNATURE = 0x45434C47,
-    GAME_LIST_CACHE_VERSION = 20
+    GAME_LIST_CACHE_VERSION = 21
   };
 
   using DatabaseMap = std::unordered_map<std::string, GameListDatabaseEntry>;
