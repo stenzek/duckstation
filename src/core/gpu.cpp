@@ -3,6 +3,7 @@
 #include "common/heap_array.h"
 #include "common/log.h"
 #include "common/state_wrapper.h"
+#include "common/string_util.h"
 #include "dma.h"
 #include "host_display.h"
 #include "host_interface.h"
@@ -1451,6 +1452,26 @@ void GPU::SetTextureWindow(u32 value)
   m_draw_mode.texture_window.or_y = (offset_y & mask_y) * 8u;
   m_draw_mode.texture_window_value = value;
   m_draw_mode.texture_window_changed = true;
+}
+
+bool GPU::DumpVRAMToFile(const char* filename)
+{
+  ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
+
+  const char* extension = std::strrchr(filename, '.');
+  if (extension && StringUtil::Strcasecmp(extension, ".png") == 0)
+  {
+    return DumpVRAMToFile(filename, VRAM_WIDTH, VRAM_HEIGHT, sizeof(u16) * VRAM_WIDTH, m_vram_ptr, true);
+  }
+  else if (extension && StringUtil::Strcasecmp(extension, ".bin") == 0)
+  {
+    return FileSystem::WriteBinaryFile(filename, m_vram_ptr, VRAM_WIDTH * VRAM_HEIGHT * sizeof(u16));
+  }
+  else
+  {
+    Log_ErrorPrintf("Unknown extension: '%s'", filename);
+    return false;
+  }
 }
 
 bool GPU::DumpVRAMToFile(const char* filename, u32 width, u32 height, u32 stride, const void* buffer, bool remove_alpha)

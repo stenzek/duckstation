@@ -821,6 +821,9 @@ void MainWindow::updateEmulationActions(bool starting, bool running)
   m_ui.menuCheats->setDisabled(starting || !running);
   m_ui.actionCheatManager->setDisabled(starting || !running);
   m_ui.actionCPUDebugger->setDisabled(starting || !running);
+  m_ui.actionDumpRAM->setDisabled(starting || !running);
+  m_ui.actionDumpVRAM->setDisabled(starting || !running);
+  m_ui.actionDumpSPURAM->setDisabled(starting || !running);
 
   m_ui.actionSaveState->setDisabled(starting || !running);
   m_ui.menuSaveState->setDisabled(starting || !running);
@@ -1041,11 +1044,28 @@ void MainWindow::connectSignals()
       m_host_interface->stopDumpingAudio();
   });
   connect(m_ui.actionDumpRAM, &QAction::triggered, [this]() {
-    const QString filename = QFileDialog::getSaveFileName(this, tr("Destination File"));
+    const QString filename =
+      QFileDialog::getSaveFileName(this, tr("Destination File"), QString(), tr("Binary Files (*.bin)"));
     if (filename.isEmpty())
       return;
 
     m_host_interface->dumpRAM(filename);
+  });
+  connect(m_ui.actionDumpVRAM, &QAction::triggered, [this]() {
+    const QString filename = QFileDialog::getSaveFileName(this, tr("Destination File"), QString(),
+                                                          tr("Binary Files (*.bin);;PNG Images (*.png)"));
+    if (filename.isEmpty())
+      return;
+
+    m_host_interface->dumpVRAM(filename);
+  });
+  connect(m_ui.actionDumpSPURAM, &QAction::triggered, [this]() {
+    const QString filename =
+      QFileDialog::getSaveFileName(this, tr("Destination File"), QString(), tr("Binary Files (*.bin)"));
+    if (filename.isEmpty())
+      return;
+
+    m_host_interface->dumpSPURAM(filename);
   });
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugShowVRAM, "Debug", "ShowVRAM");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDebugShowGPUState, "Debug", "ShowGPUState");

@@ -1635,11 +1635,30 @@ void UpdateMemoryCards()
 
 bool DumpRAM(const char* filename)
 {
-  auto fp = FileSystem::OpenManagedCFile(filename, "wb");
-  if (!fp)
+  if (!IsValid())
     return false;
 
-  return std::fwrite(Bus::g_ram, Bus::RAM_SIZE, 1, fp.get()) == 1;
+  return FileSystem::WriteBinaryFile(filename, Bus::g_ram, Bus::RAM_SIZE);
+}
+
+bool DumpVRAM(const char* filename)
+{
+  if (!IsValid())
+    return false;
+
+  g_gpu->RestoreGraphicsAPIState();
+  const bool result = g_gpu->DumpVRAMToFile(filename);
+  g_gpu->ResetGraphicsAPIState();
+
+  return result;
+}
+
+bool DumpSPURAM(const char* filename)
+{
+  if (!IsValid())
+    return false;
+
+  return FileSystem::WriteBinaryFile(filename, g_spu.GetRAM().data(), SPU::RAM_SIZE);
 }
 
 bool HasMedia()

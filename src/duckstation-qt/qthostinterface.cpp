@@ -1292,14 +1292,41 @@ void QtHostInterface::dumpRAM(const QString& filename)
     return;
   }
 
-  if (System::IsShutdown())
-    return;
-
   const std::string filename_str = filename.toStdString();
   if (System::DumpRAM(filename_str.c_str()))
     ReportFormattedMessage("RAM dumped to '%s'", filename_str.c_str());
   else
     ReportFormattedMessage("Failed to dump RAM to '%s'", filename_str.c_str());
+}
+
+void QtHostInterface::dumpVRAM(const QString& filename)
+{
+  if (!isOnWorkerThread())
+  {
+    QMetaObject::invokeMethod(this, "dumpVRAM", Qt::QueuedConnection, Q_ARG(const QString&, filename));
+    return;
+  }
+
+  const std::string filename_str = filename.toStdString();
+  if (System::DumpVRAM(filename_str.c_str()))
+    ReportFormattedMessage("VRAM dumped to '%s'", filename_str.c_str());
+  else
+    ReportFormattedMessage("Failed to dump VRAM to '%s'", filename_str.c_str());
+}
+
+void QtHostInterface::dumpSPURAM(const QString& filename)
+{
+  if (!isOnWorkerThread())
+  {
+    QMetaObject::invokeMethod(this, "dumpSPURAM", Qt::QueuedConnection, Q_ARG(const QString&, filename));
+    return;
+  }
+
+  const std::string filename_str = filename.toStdString();
+  if (System::DumpSPURAM(filename_str.c_str()))
+    ReportFormattedMessage("SPU RAM dumped to '%s'", filename_str.c_str());
+  else
+    ReportFormattedMessage("Failed to dump SPU RAM to '%s'", filename_str.c_str());
 }
 
 void QtHostInterface::saveScreenshot()

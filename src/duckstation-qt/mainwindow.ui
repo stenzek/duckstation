@@ -174,12 +174,15 @@
     <addaction name="actionDisableInterlacing"/>
     <addaction name="actionForceNTSCTimings"/>
     <addaction name="separator"/>
+    <addaction name="actionCPUDebugger"/>
+    <addaction name="separator"/>
+    <addaction name="actionDumpRAM"/>
+    <addaction name="actionDumpVRAM"/>
+    <addaction name="actionDumpSPURAM"/>
+    <addaction name="separator"/>
     <addaction name="actionDebugDumpCPUtoVRAMCopies"/>
     <addaction name="actionDebugDumpVRAMtoCPUCopies"/>
     <addaction name="actionDumpAudio"/>
-    <addaction name="separator"/>
-    <addaction name="actionCPUDebugger"/>
-    <addaction name="actionDumpRAM"/>
     <addaction name="separator"/>
     <addaction name="actionDebugShowVRAM"/>
     <addaction name="actionDebugShowGPUState"/>
@@ -609,6 +612,16 @@
   <action name="actionDumpRAM">
    <property name="text">
     <string>Dump RAM...</string>
+   </property>
+  </action>
+  <action name="actionDumpVRAM">
+   <property name="text">
+    <string>Dump VRAM...</string>
+   </property>
+  </action>
+  <action name="actionDumpSPURAM">
+   <property name="text">
+    <string>Dump SPU RAM...</string>
    </property>
   </action>
   <action name="actionDebugShowGPUState">

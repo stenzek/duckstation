@@ -160,6 +160,9 @@ public:
   // Returns the video clock frequency.
   TickCount GetCRTCFrequency() const;
 
+  // Dumps raw VRAM to a file.
+  bool DumpVRAMToFile(const char* filename);
+
 protected:
   TickCount CRTCTicksToSystemTicks(TickCount crtc_ticks, TickCount fractional_ticks) const;
   TickCount SystemTicksToCRTCTicks(TickCount sysclk_ticks, TickCount* fractional_ticks) const;

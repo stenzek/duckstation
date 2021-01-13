@@ -17,6 +17,12 @@ class TimingEvent;
 class SPU
 {
 public:
+  enum : u32
+  {
+    RAM_SIZE = 512 * 1024,
+    RAM_MASK = RAM_SIZE - 1,
+  };
+
   SPU();
   ~SPU();
 
@@ -47,9 +53,11 @@ public:
   /// Stops dumping audio to file, if started.
   bool StopDumpingAudio();
 
+  /// Access to SPU RAM.
+  const std::array<u8, RAM_SIZE>& GetRAM() const { return m_ram; }
+  std::array<u8, RAM_SIZE>& GetRAM() { return m_ram; }
+
 private:
-  static constexpr u32 RAM_SIZE = 512 * 1024;
-  static constexpr u32 RAM_MASK = RAM_SIZE - 1;
   static constexpr u32 SPU_BASE = 0x1F801C00;
   static constexpr u32 NUM_VOICES = 24;
   static constexpr u32 NUM_VOICE_REGISTERS = 8;

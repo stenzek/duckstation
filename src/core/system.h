@@ -175,6 +175,12 @@ void UpdateMemoryCards();
 /// Dumps RAM to a file.
 bool DumpRAM(const char* filename);
 
+/// Dumps video RAM to a file.
+bool DumpVRAM(const char* filename);
+
+/// Dumps sound RAM to a file.
+bool DumpSPURAM(const char* filename);
+
 bool HasMedia();
 bool InsertMedia(const char* path);
 void RemoveMedia();

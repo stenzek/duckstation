@@ -169,6 +169,8 @@ public Q_SLOTS:
   void stopDumpingAudio();
   void singleStepCPU();
   void dumpRAM(const QString& filename);
+  void dumpVRAM(const QString& filename);
+  void dumpSPURAM(const QString& filename);
   void saveScreenshot();
   void redrawDisplayWindow();
   void toggleFullscreen();
