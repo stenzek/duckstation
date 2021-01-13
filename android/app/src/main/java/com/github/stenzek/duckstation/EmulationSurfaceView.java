@@ -78,7 +78,7 @@ public class EmulationSurfaceView extends SurfaceView {
             KeyEvent.KEYCODE_VOLUME_DOWN,   // 19
             KeyEvent.KEYCODE_VOLUME_UP,     // 20
             KeyEvent.KEYCODE_MENU,          // 21
-            KeyEvent.KEYCODE_POWER,         // 22
+            KeyEvent.KEYCODE_CAMERA,        // 22
     };
     private static final int[] axisCodes = new int[]{
             MotionEvent.AXIS_X,             // 0/LeftX
