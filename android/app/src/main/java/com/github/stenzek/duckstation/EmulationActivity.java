@@ -511,32 +511,35 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     }
 
     private void showPatchesMenu() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
         final PatchCode[] codes = AndroidHostInterface.getInstance().getPatchCodeList();
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-
-        CharSequence[] items = new CharSequence[(codes != null) ? (codes.length + 1) : 1];
-        items[0] = getString(R.string.emulation_activity_import_patch_codes);
         if (codes != null) {
+            CharSequence[] items = new CharSequence[codes.length];
+            boolean[] itemsChecked = new boolean[codes.length];
             for (int i = 0; i < codes.length; i++) {
                 final PatchCode cc = codes[i];
-                items[i + 1] = String.format("%s %s", cc.isEnabled() ? getString(R.string.emulation_activity_patch_on) : getString(R.string.emulation_activity_patch_off), cc.getDescription());
+                items[i] = cc.getDescription();
+                itemsChecked[i] = cc.isEnabled();
             }
+
+            builder.setMultiChoiceItems(items, itemsChecked, (dialogInterface, i, checked) -> {
+                AndroidHostInterface.getInstance().setPatchCodeEnabled(i, checked);
+            });
         }
 
-        builder.setItems(items, (dialogInterface, i) -> {
-            if (i > 0) {
-                AndroidHostInterface.getInstance().setPatchCodeEnabled(i - 1, !codes[i - 1].isEnabled());
-                onMenuClosed();
-            } else {
-                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                intent.setType("*/*");
-                intent.addCategory(Intent.CATEGORY_OPENABLE);
-                startActivityForResult(Intent.createChooser(intent, getString(R.string.emulation_activity_choose_patch_code_file)), REQUEST_IMPORT_PATCH_CODES);
-            }
+        builder.setNegativeButton(R.string.emulation_activity_ok, (dialogInterface, i) -> {
+            dialogInterface.dismiss();
         });
-        builder.setOnCancelListener(dialogInterface -> onMenuClosed());
+        builder.setNeutralButton(R.string.emulation_activity_import_patch_codes, (dialogInterface, i) -> {
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            intent.setType("*/*");
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            startActivityForResult(Intent.createChooser(intent, getString(R.string.emulation_activity_choose_patch_code_file)), REQUEST_IMPORT_PATCH_CODES);
+        });
+
+        builder.setOnDismissListener(dialogInterface -> onMenuClosed());
         builder.create().show();
     }
 
