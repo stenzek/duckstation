@@ -44,8 +44,8 @@ private:
   enum : u32
   {
     NUM_CONTROLLERS = 1,
-    NUM_AXISES = 10,
-    NUM_BUTTONS = 18
+    NUM_AXISES = 12,
+    NUM_BUTTONS = 23
   };
 
   struct ControllerData

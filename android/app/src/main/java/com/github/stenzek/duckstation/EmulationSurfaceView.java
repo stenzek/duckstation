@@ -75,6 +75,10 @@ public class EmulationSurfaceView extends SurfaceView {
             KeyEvent.KEYCODE_BUTTON_R2,     // 16
             KeyEvent.KEYCODE_BUTTON_C,      // 17
             KeyEvent.KEYCODE_BUTTON_Z,      // 18
+            KeyEvent.KEYCODE_VOLUME_DOWN,   // 19
+            KeyEvent.KEYCODE_VOLUME_UP,     // 20
+            KeyEvent.KEYCODE_MENU,          // 21
+            KeyEvent.KEYCODE_POWER,         // 22
     };
     private static final int[] axisCodes = new int[]{
             MotionEvent.AXIS_X,             // 0/LeftX
@@ -87,6 +91,8 @@ public class EmulationSurfaceView extends SurfaceView {
             MotionEvent.AXIS_RY,            // 7
             MotionEvent.AXIS_HAT_X,         // 8
             MotionEvent.AXIS_HAT_Y,         // 9
+            MotionEvent.AXIS_GAS,           // 10
+            MotionEvent.AXIS_BRAKE,         // 11
     };
 
     public static int getButtonIndexForKeyCode(int keyCode) {
@@ -161,14 +167,17 @@ public class EmulationSurfaceView extends SurfaceView {
     private ArrayList<ButtonMapping> mControllerKeyMapping;
     private ArrayList<AxisMapping> mControllerAxisMapping;
 
-    private boolean handleControllerKey(int deviceId, int keyCode, boolean pressed) {
+    private boolean handleControllerKey(int deviceId, int keyCode, int repeatCount, boolean pressed) {
         boolean result = false;
         for (ButtonMapping mapping : mControllerKeyMapping) {
             if (mapping.deviceId != deviceId || mapping.deviceAxisOrButton != keyCode)
                 continue;
 
-            AndroidHostInterface.getInstance().handleControllerButtonEvent(0, mapping.buttonMapping, pressed);
-            Log.d("EmulationSurfaceView", String.format("handleControllerKey %d -> %d %d", keyCode, mapping.buttonMapping, pressed ? 1 : 0));
+            if (repeatCount == 0) {
+                AndroidHostInterface.getInstance().handleControllerButtonEvent(0, mapping.buttonMapping, pressed);
+                Log.d("EmulationSurfaceView", String.format("handleControllerKey %d -> %d %d", keyCode, mapping.buttonMapping, pressed ? 1 : 0));
+            }
+
             result = true;
         }
 
@@ -177,24 +186,26 @@ public class EmulationSurfaceView extends SurfaceView {
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (!isDPadOrButtonEvent(event) || isExternalKeyCode(keyCode))
+        if (!isDPadOrButtonEvent(event))
             return false;
 
-        if (event.getRepeatCount() == 0)
-            handleControllerKey(event.getDeviceId(), keyCode, true);
+        if (handleControllerKey(event.getDeviceId(), keyCode, event.getRepeatCount(), true))
+            return true;
 
-        return true;
+        // eat non-external button events anyway
+        return !isExternalKeyCode(keyCode);
     }
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-        if (!isDPadOrButtonEvent(event) || isExternalKeyCode(keyCode))
+        if (!isDPadOrButtonEvent(event))
             return false;
 
-        if (event.getRepeatCount() == 0)
-            handleControllerKey(event.getDeviceId(), keyCode, false);
+        if (handleControllerKey(event.getDeviceId(), keyCode, 0, false))
+            return true;
 
-        return true;
+        // eat non-external button events anyway
+        return !isExternalKeyCode(keyCode);
     }
 
     @Override
