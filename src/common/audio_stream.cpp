@@ -156,12 +156,15 @@ void AudioStream::ReadFrames(SampleType* samples, u32 num_frames, bool apply_vol
   const u32 total_samples = num_frames * m_channels;
   u32 samples_copied = 0;
   {
-    std::unique_lock<std::mutex> lock(m_buffer_mutex);
+    m_buffer_mutex.lock();
     if (m_input_sample_rate == m_output_sample_rate)
     {
       samples_copied = std::min(m_buffer.GetSize(), total_samples);
       if (samples_copied > 0)
         m_buffer.PopRange(samples, samples_copied);
+
+      m_buffer_mutex.unlock();
+      m_buffer_draining_cv.notify_one();
     }
     else
     {
@@ -170,8 +173,6 @@ void AudioStream::ReadFrames(SampleType* samples, u32 num_frames, bool apply_vol
       if (samples_copied > 0)
         m_resampled_buffer.PopRange(samples, samples_copied);
     }
-
-    m_buffer_draining_cv.notify_one();
   }
 
   if (samples_copied < total_samples)
@@ -298,6 +299,9 @@ void AudioStream::ResampleInput()
       remaining -= read_len;
     }
   }
+
+  m_buffer_mutex.unlock();
+  m_buffer_draining_cv.notify_one();
 
   const u32 potential_output_size =
     (static_cast<u32>(m_resample_in_buffer.size()) * m_input_sample_rate) / m_output_sample_rate;
