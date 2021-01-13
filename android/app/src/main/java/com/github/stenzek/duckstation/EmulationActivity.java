@@ -16,6 +16,7 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.View;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.Toast;
@@ -164,6 +165,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         AndroidHostInterface.getInstance().applySettings();
         updateRequestedOrientation();
         updateControllers();
+        updateSustainedPerformanceMode();
     }
 
     private void applySettings() {
@@ -255,6 +257,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         // Sort out rotation.
         updateRequestedOrientation();
         updateOrientation();
+        updateSustainedPerformanceMode();
 
         // Hook up controller input.
         updateControllers();
@@ -673,5 +676,21 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
             else
                 mVibratorService.cancel();
         });
+    }
+
+    private boolean mSustainedPerformanceModeEnabled = false;
+    private void updateSustainedPerformanceMode() {
+        final boolean enabled = getBooleanSetting("Main/SustainedPerformanceMode", false);
+        if (mSustainedPerformanceModeEnabled == enabled)
+            return;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            getWindow().setSustainedPerformanceMode(enabled);
+            Log.i("EmulationActivity", String.format("%s sustained performance mode.", enabled ? "enabling" : "disabling"));
+        } else {
+            Log.e("EmulationActivity", "Sustained performance mode not supported.");
+        }
+        mSustainedPerformanceModeEnabled = enabled;
+
     }
 }

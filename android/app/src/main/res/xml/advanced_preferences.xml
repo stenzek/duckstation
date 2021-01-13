@@ -29,6 +29,12 @@
         app:defaultValue="false"
         app:summary="@string/settings_summary_disable_all_enhancements"
         app:iconSpaceReserved="false" />
+    <SwitchPreferenceCompat
+        app:key="Main/SustainedPerformanceMode"
+        app:title="@string/settings_sustained_performance_mode"
+        app:defaultValue="false"
+        app:summary="@string/settings_summary_sustained_performance_mode"
+        app:iconSpaceReserved="false" />
     <ListPreference
         app:key="CPU/Overclock"
         app:title="@string/settings_cpu_overclocking"
