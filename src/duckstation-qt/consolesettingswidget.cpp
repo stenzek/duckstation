@@ -26,7 +26,7 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QW
                                                &Settings::ParseConsoleRegionName, &Settings::GetConsoleRegionName,
                                                Settings::DEFAULT_CONSOLE_REGION);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.syncToHostRefreshRate, "Main",
-                                               "SyncToHostRefreshRate", true);
+                                               "SyncToHostRefreshRate", false);
   SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.cpuExecutionMode, "CPU", "ExecutionMode",
                                                &Settings::ParseCPUExecutionMode, &Settings::GetCPUExecutionModeName,
                                                Settings::DEFAULT_CPU_EXECUTION_MODE);
@@ -79,7 +79,7 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QW
     tr("Sets the turbo speed. This speed will be used when the turbo hotkey is pressed/toggled. Turboing will take "
        "priority over fast forwarding if both hotkeys are pressed/toggled."));
   dialog->registerWidgetHelp(
-    m_ui.syncToHostRefreshRate, tr("Sync To Host Refresh Rate"), tr("Checked"),
+    m_ui.syncToHostRefreshRate, tr("Sync To Host Refresh Rate"), tr("Unchecked"),
     tr("Adjusts the emulation speed so the console's refresh rate matches the host's refresh rate when both VSync and "
        "Audio Resampling settings are enabled. This results in the smoothest animations possible, at the cost of "
        "potentially increasing the emulation speed by less than 1%. Sync To Host Refresh Rate will not take effect if "

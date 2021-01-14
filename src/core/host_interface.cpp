@@ -478,7 +478,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetFloatValue("Main", "EmulationSpeed", 1.0f);
   si.SetFloatValue("Main", "FastForwardSpeed", 0.0f);
   si.SetFloatValue("Main", "TurboSpeed", 0.0f);
-  si.SetBoolValue("Main", "SyncToHostRefreshRate", true);
+  si.SetBoolValue("Main", "SyncToHostRefreshRate", false);
   si.SetBoolValue("Main", "IncreaseTimerResolution", true);
   si.SetBoolValue("Main", "StartPaused", false);
   si.SetBoolValue("Main", "StartFullscreen", false);
