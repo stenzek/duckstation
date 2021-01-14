@@ -17,7 +17,6 @@ Please read before creating a new issue:
 6. Verify your dump, as we can not assist with issues resulting from bad dumps.
 7. If playing PAL region software, please check whether or not the game has LibCrypt protection and that if it does, you have a correct SBI file (see https://github.com/stenzek/duckstation#libcrypt-protection-and-sbi-files for more information).
 8. Please post your issue report in English as unfortunately this is the only language spoken by the developers. The Discord server has many helpful people if you need help translating.
-9. If you are using the libretro core, please make sure that the bug also occurs in the standalone emulator. Bug reports only tested on the libretro core will not be investigated.
 
 **Remove everything before and including this line before submitting.**
 
