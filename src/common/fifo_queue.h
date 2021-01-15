@@ -151,7 +151,7 @@ public:
 
   void AdvanceTail(u32 count)
   {
-    DebugAssert((m_size + count) < CAPACITY);
+    DebugAssert((m_size + count) <= CAPACITY);
     DebugAssert((m_tail + count) <= CAPACITY);
     m_tail = (m_tail + count) % CAPACITY;
     m_size += count;
