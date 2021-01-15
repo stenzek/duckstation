@@ -89,12 +89,19 @@ protected:
 
 private:
   ALWAYS_INLINE u32 GetBufferSpace() const { return (m_max_samples - m_buffer.GetSize()); }
+  ALWAYS_INLINE void ReleaseBufferLock(std::unique_lock<std::mutex> lock)
+  {
+    // lock is released implicitly by destruction
+    m_buffer_draining_cv.notify_one();
+  }
+
   void EnsureBuffer(u32 size);
 
   void CreateResampler();
   void DestroyResampler();
   void ResetResampler();
-  void ResampleInput();
+  void InternalSetInputSampleRate(u32 sample_rate);
+  void ResampleInput(std::unique_lock<std::mutex> buffer_lock);
 
   HeapFIFOQueue<SampleType, MaxSamples> m_buffer;
   mutable std::mutex m_buffer_mutex;
@@ -110,6 +117,7 @@ private:
   // Resampling
   double m_resampler_ratio = 1.0;
   void* m_resampler_state = nullptr;
+  std::mutex m_resampler_mutex;
   HeapFIFOQueue<SampleType, MaxSamples> m_resampled_buffer;
   std::vector<float> m_resample_in_buffer;
   std::vector<float> m_resample_out_buffer;

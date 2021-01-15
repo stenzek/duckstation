@@ -17,6 +17,9 @@ bool AudioStream::Reconfigure(u32 input_sample_rate /* = DefaultInputSampleRate 
                               u32 output_sample_rate /* = DefaultOutputSampleRate */, u32 channels /* = 1 */,
                               u32 buffer_size /* = DefaultBufferSize */)
 {
+  std::unique_lock<std::mutex> buffer_lock(m_buffer_mutex);
+  std::unique_lock<std::mutex> resampler_Lock(m_resampler_mutex);
+
   DestroyResampler();
   if (IsDeviceOpen())
     CloseDevice();
@@ -39,17 +42,24 @@ bool AudioStream::Reconfigure(u32 input_sample_rate /* = DefaultInputSampleRate 
   }
 
   CreateResampler();
-  SetInputSampleRate(input_sample_rate);
+  InternalSetInputSampleRate(input_sample_rate);
 
   return true;
 }
 
 void AudioStream::SetInputSampleRate(u32 sample_rate)
 {
+  std::unique_lock<std::mutex> buffer_lock(m_buffer_mutex);
+  std::unique_lock<std::mutex> resampler_lock(m_resampler_mutex);
+
+  InternalSetInputSampleRate(sample_rate);
+}
+
+void AudioStream::InternalSetInputSampleRate(u32 sample_rate)
+{
   if (m_input_sample_rate == sample_rate)
     return;
 
-  std::unique_lock<std::mutex> lock(m_buffer_mutex);
   m_input_sample_rate = sample_rate;
   m_resampler_ratio = static_cast<double>(m_output_sample_rate) / static_cast<double>(sample_rate);
   src_set_ratio(static_cast<SRC_STATE*>(m_resampler_state), m_resampler_ratio);
@@ -156,19 +166,22 @@ void AudioStream::ReadFrames(SampleType* samples, u32 num_frames, bool apply_vol
   const u32 total_samples = num_frames * m_channels;
   u32 samples_copied = 0;
   {
-    m_buffer_mutex.lock();
+    std::unique_lock<std::mutex> buffer_lock(m_buffer_mutex);
     if (m_input_sample_rate == m_output_sample_rate)
     {
       samples_copied = std::min(m_buffer.GetSize(), total_samples);
       if (samples_copied > 0)
         m_buffer.PopRange(samples, samples_copied);
 
-      m_buffer_mutex.unlock();
-      m_buffer_draining_cv.notify_one();
+      ReleaseBufferLock(std::move(buffer_lock));
     }
     else
     {
-      ResampleInput();
+      if (m_resampled_buffer.GetSize() < total_samples)
+        ResampleInput(std::move(buffer_lock));
+      else
+        ReleaseBufferLock(std::move(buffer_lock));
+
       samples_copied = std::min(m_resampled_buffer.GetSize(), total_samples);
       if (samples_copied > 0)
         m_resampled_buffer.PopRange(samples, samples_copied);
@@ -251,6 +264,7 @@ void AudioStream::DropFrames(u32 count)
 void AudioStream::EmptyBuffers()
 {
   std::unique_lock<std::mutex> lock(m_buffer_mutex);
+  std::unique_lock<std::mutex> resampler_lock(m_resampler_mutex);
   m_buffer.Clear();
   m_underflow_flag.store(false);
   ResetResampler();
@@ -280,8 +294,10 @@ void AudioStream::ResetResampler()
   src_reset(static_cast<SRC_STATE*>(m_resampler_state));
 }
 
-void AudioStream::ResampleInput()
+void AudioStream::ResampleInput(std::unique_lock<std::mutex> buffer_lock)
 {
+  std::unique_lock<std::mutex> resampler_lock(m_resampler_mutex);
+
   const u32 input_space_from_output = (m_resampled_buffer.GetSpace() * m_output_sample_rate) / m_input_sample_rate;
   u32 remaining = std::min(m_buffer.GetSize(), input_space_from_output);
   if (m_resample_in_buffer.size() < remaining)
@@ -300,8 +316,7 @@ void AudioStream::ResampleInput()
     }
   }
 
-  m_buffer_mutex.unlock();
-  m_buffer_draining_cv.notify_one();
+  ReleaseBufferLock(std::move(buffer_lock));
 
   const u32 potential_output_size =
     (static_cast<u32>(m_resample_in_buffer.size()) * m_input_sample_rate) / m_output_sample_rate;
