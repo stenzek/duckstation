@@ -249,7 +249,7 @@ void GPU_SW::CopyOut15Bit(u32 src_x, u32 src_y, u32 width, u32 height, u32 field
   }
   else
   {
-    dst_stride = Common::AlignUpPow2<u32>(width * sizeof(OutputPixelType), 4);
+    dst_stride = VRAM_WIDTH * sizeof(OutputPixelType);
     dst_ptr = m_display_texture_buffer.data() + (field != 0 ? dst_stride : 0);
   }
 
