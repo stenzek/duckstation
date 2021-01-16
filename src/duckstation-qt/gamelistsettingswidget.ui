@@ -42,22 +42,34 @@
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
         <widget class="QPushButton" name="addSearchDirectoryButton">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="text">
           <string>Add</string>
          </property>
          <property name="icon">
-          <iconset resource="resources/icons.qrc">
+          <iconset resource="resources/resources.qrc">
            <normaloff>:/icons/list-add.png</normaloff>:/icons/list-add.png</iconset>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QPushButton" name="removeSearchDirectoryButton">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="text">
           <string>Remove</string>
          </property>
          <property name="icon">
-          <iconset resource="resources/icons.qrc">
+          <iconset resource="resources/resources.qrc">
            <normaloff>:/icons/list-remove.png</normaloff>:/icons/list-remove.png</iconset>
          </property>
         </widget>
@@ -77,33 +89,51 @@
        </item>
        <item>
         <widget class="QPushButton" name="scanForNewGames">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="text">
           <string>Scan New</string>
          </property>
          <property name="icon">
-          <iconset resource="resources/icons.qrc">
+          <iconset resource="resources/resources.qrc">
            <normaloff>:/icons/folder-open.png</normaloff>:/icons/folder-open.png</iconset>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QPushButton" name="rescanAllGames">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="text">
           <string>Rescan All</string>
          </property>
          <property name="icon">
-          <iconset resource="resources/icons.qrc">
+          <iconset resource="resources/resources.qrc">
            <normaloff>:/icons/view-refresh.png</normaloff>:/icons/view-refresh.png</iconset>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QPushButton" name="updateRedumpDatabase">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="text">
           <string>Update Redump Database</string>
          </property>
          <property name="icon">
-          <iconset resource="resources/icons.qrc">
+          <iconset resource="resources/resources.qrc">
            <normaloff>:/icons/applications-internet.png</normaloff>:/icons/applications-internet.png</iconset>
          </property>
         </widget>
@@ -115,7 +145,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="resources/icons.qrc"/>
+  <include location="resources/resources.qrc"/>
  </resources>
  <connections/>
 </ui>
