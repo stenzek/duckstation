@@ -57,10 +57,6 @@ struct VERTEX_CONSTANT_BUFFER
     float   mvp[4][4];
 };
 
-// Forward Declarations
-static void ImGui_ImplDX11_InitPlatformInterface();
-static void ImGui_ImplDX11_ShutdownPlatformInterface();
-
 // Render function
 // (this used to be set in io.RenderDrawListsFn and called by ImGui::Render(), but you can now call this directly from your main loop)
 void ImGui_ImplDX11_RenderDrawData(ImDrawData* draw_data)
@@ -487,7 +483,6 @@ bool    ImGui_ImplDX11_Init(ID3D11Device* device, ID3D11DeviceContext* device_co
 {
     // Setup back-end capabilities flags
     ImGuiIO& io = ImGui::GetIO();
-    io.BackendFlags |= ImGuiBackendFlags_RendererHasViewports;    // We can create multi-viewports on the Renderer side (optional)
     io.BackendRendererName = "imgui_impl_dx11";
 
     // Get factory from device
@@ -506,15 +501,11 @@ bool    ImGui_ImplDX11_Init(ID3D11Device* device, ID3D11DeviceContext* device_co
     if (pDXGIDevice) pDXGIDevice->Release();
     if (pDXGIAdapter) pDXGIAdapter->Release();
 
-    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-        ImGui_ImplDX11_InitPlatformInterface();
-
     return true;
 }
 
 void ImGui_ImplDX11_Shutdown()
 {
-    ImGui_ImplDX11_ShutdownPlatformInterface();
     ImGui_ImplDX11_InvalidateDeviceObjects();
     if (g_pFactory) { g_pFactory->Release(); g_pFactory = NULL; }
     g_pd3dDevice = NULL;
@@ -525,121 +516,4 @@ void ImGui_ImplDX11_NewFrame()
 {
     if (!g_pFontSampler)
         ImGui_ImplDX11_CreateDeviceObjects();
-}
-
-//--------------------------------------------------------------------------------------------------------
-// MULTI-VIEWPORT / PLATFORM INTERFACE SUPPORT
-// This is an _advanced_ and _optional_ feature, allowing the back-end to create and handle multiple viewports simultaneously.
-// If you are new to dear imgui or creating a new binding for dear imgui, it is recommended that you completely ignore this section first..
-//--------------------------------------------------------------------------------------------------------
-
-struct ImGuiViewportDataDx11
-{
-    IDXGISwapChain*             SwapChain;
-    ID3D11RenderTargetView*     RTView;
-
-    ImGuiViewportDataDx11()     { SwapChain = NULL; RTView = NULL; }
-    ~ImGuiViewportDataDx11()    { IM_ASSERT(SwapChain == NULL && RTView == NULL); }
-};
-
-static void ImGui_ImplDX11_CreateWindow(ImGuiViewport* viewport)
-{
-    ImGuiViewportDataDx11* data = IM_NEW(ImGuiViewportDataDx11)();
-    viewport->RendererUserData = data;
-
-    HWND hwnd = (HWND)viewport->PlatformHandle;
-    IM_ASSERT(hwnd != 0);
-
-    // Create swap chain
-    DXGI_SWAP_CHAIN_DESC sd;
-    ZeroMemory(&sd, sizeof(sd));
-    sd.BufferDesc.Width = (UINT)viewport->Size.x;
-    sd.BufferDesc.Height = (UINT)viewport->Size.y;
-    sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-    sd.SampleDesc.Count = 1;
-    sd.SampleDesc.Quality = 0;
-    sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    sd.BufferCount = 1;
-    sd.OutputWindow = hwnd;
-    sd.Windowed = TRUE;
-    sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-    sd.Flags = 0;
-
-    IM_ASSERT(data->SwapChain == NULL && data->RTView == NULL);
-    g_pFactory->CreateSwapChain(g_pd3dDevice, &sd, &data->SwapChain);
-
-    // Create the render target
-    if (data->SwapChain)
-    {
-        ID3D11Texture2D* pBackBuffer;
-        data->SwapChain->GetBuffer(0, IID_PPV_ARGS(&pBackBuffer));
-        g_pd3dDevice->CreateRenderTargetView(pBackBuffer, NULL, &data->RTView);
-        pBackBuffer->Release();
-    }
-}
-
-static void ImGui_ImplDX11_DestroyWindow(ImGuiViewport* viewport)
-{
-    // The main viewport (owned by the application) will always have RendererUserData == NULL since we didn't create the data for it.
-    if (ImGuiViewportDataDx11* data = (ImGuiViewportDataDx11*)viewport->RendererUserData)
-    {
-        if (data->SwapChain)
-            data->SwapChain->Release();
-        data->SwapChain = NULL;
-        if (data->RTView)
-            data->RTView->Release();
-        data->RTView = NULL;
-        IM_DELETE(data);
-    }
-    viewport->RendererUserData = NULL;
-}
-
-static void ImGui_ImplDX11_SetWindowSize(ImGuiViewport* viewport, ImVec2 size)
-{
-    ImGuiViewportDataDx11* data = (ImGuiViewportDataDx11*)viewport->RendererUserData;
-    if (data->RTView)
-    {
-        data->RTView->Release();
-        data->RTView = NULL;
-    }
-    if (data->SwapChain)
-    {
-        ID3D11Texture2D* pBackBuffer = NULL;
-        data->SwapChain->ResizeBuffers(0, (UINT)size.x, (UINT)size.y, DXGI_FORMAT_UNKNOWN, 0);
-        data->SwapChain->GetBuffer(0, IID_PPV_ARGS(&pBackBuffer));
-        if (pBackBuffer == NULL) { fprintf(stderr, "ImGui_ImplDX11_SetWindowSize() failed creating buffers.\n"); return; }
-        g_pd3dDevice->CreateRenderTargetView(pBackBuffer, NULL, &data->RTView);
-        pBackBuffer->Release();
-    }
-}
-
-static void ImGui_ImplDX11_RenderWindow(ImGuiViewport* viewport, void*)
-{
-    ImGuiViewportDataDx11* data = (ImGuiViewportDataDx11*)viewport->RendererUserData;
-    ImVec4 clear_color = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
-    g_pd3dDeviceContext->OMSetRenderTargets(1, &data->RTView, NULL);
-    if (!(viewport->Flags & ImGuiViewportFlags_NoRendererClear))
-        g_pd3dDeviceContext->ClearRenderTargetView(data->RTView, (float*)&clear_color);
-    ImGui_ImplDX11_RenderDrawData(viewport->DrawData);
-}
-
-static void ImGui_ImplDX11_SwapBuffers(ImGuiViewport* viewport, void*)
-{
-    ImGuiViewportDataDx11* data = (ImGuiViewportDataDx11*)viewport->RendererUserData;
-    data->SwapChain->Present(0, 0); // Present without vsync
-}
-
-static void ImGui_ImplDX11_InitPlatformInterface()
-{
-    ImGuiPlatformIO& platform_io = ImGui::GetPlatformIO();
-    platform_io.Renderer_CreateWindow = ImGui_ImplDX11_CreateWindow;
-    platform_io.Renderer_DestroyWindow = ImGui_ImplDX11_DestroyWindow;
-    platform_io.Renderer_SetWindowSize = ImGui_ImplDX11_SetWindowSize;
-    platform_io.Renderer_RenderWindow = ImGui_ImplDX11_RenderWindow;
-    platform_io.Renderer_SwapBuffers = ImGui_ImplDX11_SwapBuffers;
-}
-
-static void ImGui_ImplDX11_ShutdownPlatformInterface()
-{
-    ImGui::DestroyPlatformWindows();
 }

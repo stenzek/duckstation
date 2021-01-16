@@ -14,5 +14,6 @@
     <ClCompile Include="src\imgui.cpp" />
     <ClCompile Include="src\imgui_draw.cpp" />
     <ClCompile Include="src\imgui_stdlib.cpp" />
+    <ClCompile Include="src\imgui_tables.cpp" />
   </ItemGroup>
 </Project>
