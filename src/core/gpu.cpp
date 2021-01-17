@@ -1041,6 +1041,10 @@ void GPU::WriteGP1(u32 value)
       const bool disable = ConvertToBoolUnchecked(value & 0x01);
       Log_DebugPrintf("Display %s", disable ? "disabled" : "enabled");
       SynchronizeCRTC();
+
+      if (!m_GPUSTAT.display_disable && disable && m_GPUSTAT.vertical_interlace && !m_force_progressive_scan)
+        ClearDisplay();
+
       m_GPUSTAT.display_disable = disable;
     }
     break;
