@@ -363,6 +363,8 @@ private:
   void Execute(TickCount ticks);
   void UpdateEventInterval();
 
+  void ExecuteFIFOWriteToRAM(TickCount& ticks);
+  void ExecuteFIFOReadFromRAM(TickCount& ticks);
   void ExecuteTransfer(TickCount ticks);
   void ManualTransferWrite(u16 value);
   void UpdateTransferEvent();

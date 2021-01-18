@@ -447,13 +447,14 @@ void SPU::WriteRegister(u32 offset, u16 value)
 
     case 0x1F801DA6 - SPU_BASE:
     {
-        Log_DebugPrintf("SPU transfer address register <- 0x%04X", ZeroExtend32(value));
+      Log_DebugPrintf("SPU transfer address register <- 0x%04X", ZeroExtend32(value));
       m_transfer_event->InvokeEarly();
       m_transfer_address_reg = value;
       m_transfer_address = ZeroExtend32(value) * 8;
       if (IsRAMIRQTriggerable() && CheckRAMIRQ(m_transfer_address))
       {
-        Log_DebugPrintf("Trigger IRQ @ %08X %04X from transfer address reg set", m_transfer_address, m_transfer_address / 8);
+        Log_DebugPrintf("Trigger IRQ @ %08X %04X from transfer address reg set", m_transfer_address,
+                        m_transfer_address / 8);
         TriggerRAMIRQ();
       }
       return;
@@ -481,9 +482,19 @@ void SPU::WriteRegister(u32 offset, u16 value)
         if (!m_transfer_fifo.IsEmpty())
         {
           if (m_SPUCNT.ram_transfer_mode == RAMTransferMode::DMAWrite)
-            Log_WarningPrintf("Clearing SPU transfer FIFO with %u bytes left", m_transfer_fifo.GetSize());
-
-          m_transfer_fifo.Clear();
+          {
+            // I would guess on the console it would gradually write the FIFO out. Hopefully nothing relies on this
+            // level of timing granularity if we force it all out here.
+            Log_WarningPrintf("Draining write SPU transfer FIFO with %u bytes left", m_transfer_fifo.GetSize());
+            TickCount ticks = std::numeric_limits<TickCount>::max();
+            ExecuteFIFOWriteToRAM(ticks);
+            DebugAssert(m_transfer_fifo.IsEmpty());
+          }
+          else
+          {
+            Log_DebugPrintf("Clearing read SPU transfer FIFO with %u bytes left", m_transfer_fifo.GetSize());
+            m_transfer_fifo.Clear();
+          }
         }
       }
 
@@ -744,6 +755,41 @@ void SPU::IncrementCaptureBufferPosition()
   m_SPUSTAT.second_half_capture_buffer = m_capture_buffer_position >= (CAPTURE_BUFFER_SIZE_PER_CHANNEL / 2);
 }
 
+void ALWAYS_INLINE SPU::ExecuteFIFOReadFromRAM(TickCount& ticks)
+{
+  while (ticks > 0 && !m_transfer_fifo.IsFull())
+  {
+    u16 value;
+    std::memcpy(&value, &m_ram[m_transfer_address], sizeof(u16));
+    m_transfer_address = (m_transfer_address + sizeof(u16)) & RAM_MASK;
+    m_transfer_fifo.Push(value);
+    ticks -= TRANSFER_TICKS_PER_HALFWORD;
+
+    if (IsRAMIRQTriggerable() && CheckRAMIRQ(m_transfer_address))
+    {
+      Log_DebugPrintf("Trigger IRQ @ %08X %04X from transfer read", m_transfer_address, m_transfer_address / 8);
+      TriggerRAMIRQ();
+    }
+  }
+}
+
+void ALWAYS_INLINE SPU::ExecuteFIFOWriteToRAM(TickCount& ticks)
+{
+  while (ticks > 0 && !m_transfer_fifo.IsEmpty())
+  {
+    u16 value = m_transfer_fifo.Pop();
+    std::memcpy(&m_ram[m_transfer_address], &value, sizeof(u16));
+    m_transfer_address = (m_transfer_address + sizeof(u16)) & RAM_MASK;
+    ticks -= TRANSFER_TICKS_PER_HALFWORD;
+
+    if (IsRAMIRQTriggerable() && CheckRAMIRQ(m_transfer_address))
+    {
+      Log_DebugPrintf("Trigger IRQ @ %08X %04X from transfer write", m_transfer_address, m_transfer_address / 8);
+      TriggerRAMIRQ();
+    }
+  }
+}
+
 void SPU::ExecuteTransfer(TickCount ticks)
 {
   const RAMTransferMode mode = m_SPUCNT.ram_transfer_mode;
@@ -753,20 +799,7 @@ void SPU::ExecuteTransfer(TickCount ticks)
   {
     while (ticks > 0 && !m_transfer_fifo.IsFull())
     {
-      while (ticks > 0 && !m_transfer_fifo.IsFull())
-      {
-        u16 value;
-        std::memcpy(&value, &m_ram[m_transfer_address], sizeof(u16));
-        m_transfer_address = (m_transfer_address + sizeof(u16)) & RAM_MASK;
-        m_transfer_fifo.Push(value);
-        ticks -= TRANSFER_TICKS_PER_HALFWORD;
-
-        if (IsRAMIRQTriggerable() && CheckRAMIRQ(m_transfer_address))
-        {
-          Log_DebugPrintf("Trigger IRQ @ %08X %04X from transfer read", m_transfer_address, m_transfer_address / 8);
-          TriggerRAMIRQ();
-        }
-      }
+      ExecuteFIFOReadFromRAM(ticks);
 
       // this can result in the FIFO being emptied, hence double the while loop
       UpdateDMARequest();
@@ -790,19 +823,7 @@ void SPU::ExecuteTransfer(TickCount ticks)
     // write the fifo to ram, request dma again when empty
     while (ticks > 0 && !m_transfer_fifo.IsEmpty())
     {
-      while (ticks > 0 && !m_transfer_fifo.IsEmpty())
-      {
-        u16 value = m_transfer_fifo.Pop();
-        std::memcpy(&m_ram[m_transfer_address], &value, sizeof(u16));
-        m_transfer_address = (m_transfer_address + sizeof(u16)) & RAM_MASK;
-        ticks -= TRANSFER_TICKS_PER_HALFWORD;
-
-        if (IsRAMIRQTriggerable() && CheckRAMIRQ(m_transfer_address))
-        {
-          Log_DebugPrintf("Trigger IRQ @ %08X %04X from transfer write", m_transfer_address, m_transfer_address / 8);
-          TriggerRAMIRQ();
-        }
-      }
+      ExecuteFIFOWriteToRAM(ticks);
 
       // similar deal here, the FIFO can be written out in a long slice
       UpdateDMARequest();
@@ -841,10 +862,8 @@ void SPU::UpdateTransferEvent()
   if (mode == RAMTransferMode::Stopped)
   {
     m_transfer_event->Deactivate();
-    return;
   }
-
-  if (mode == RAMTransferMode::DMARead)
+  else if (mode == RAMTransferMode::DMARead)
   {
     // transfer event fills the fifo
     if (m_transfer_fifo.IsFull())
