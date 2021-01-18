@@ -396,6 +396,7 @@ private:
     u32 num_motors;
     std::array<float, MAX_MOTORS> last_strength;
     ControllerRumbleCallback update_callback;
+    u64 last_update_time;
   };
   std::vector<ControllerRumbleState> m_controller_vibration_motors;
 

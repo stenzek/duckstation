@@ -1075,21 +1075,44 @@ void CommonHostInterface::AddControllerRumble(u32 controller_index, u32 num_moto
   rumble.num_motors = std::min<u32>(num_motors, ControllerRumbleState::MAX_MOTORS);
   rumble.last_strength.fill(0.0f);
   rumble.update_callback = std::move(callback);
+  rumble.last_update_time = Common::Timer::GetValue();
   m_controller_vibration_motors.push_back(std::move(rumble));
 }
 
 void CommonHostInterface::UpdateControllerRumble()
 {
+  if (m_controller_vibration_motors.empty())
+    return;
+
+  // Rumble update frequency in milliseconds.
+  // We won't send an update to the controller unless this amount of time has passed, if the value has not changed.
+  // This is because the rumble update is synchronous, and with bluetooth latency can severely impact fast forward
+  // performance.
+  static constexpr float UPDATE_FREQUENCY = 1000.0f;
+  const u64 time = Common::Timer::GetValue();
+
   for (ControllerRumbleState& rumble : m_controller_vibration_motors)
   {
     Controller* controller = System::GetController(rumble.controller_index);
     if (!controller)
       continue;
 
+    bool changed = false;
     for (u32 i = 0; i < rumble.num_motors; i++)
-      rumble.last_strength[i] = controller->GetVibrationMotorStrength(i);
+    {
+      const float strength = controller->GetVibrationMotorStrength(i);
+      if (rumble.last_strength[i] != strength)
+      {
+        rumble.last_strength[i] = strength;
+        changed = true;
+      }
+    }
 
-    rumble.update_callback(rumble.last_strength.data(), rumble.num_motors);
+    if (changed || Common::Timer::ConvertValueToMilliseconds(time - rumble.last_update_time) >= UPDATE_FREQUENCY)
+    {
+      rumble.last_update_time = time;
+      rumble.update_callback(rumble.last_strength.data(), rumble.num_motors);
+    }
   }
 }
 
