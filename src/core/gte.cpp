@@ -31,7 +31,7 @@ ALWAYS_INLINE static u32 CountLeadingBits(u32 value)
 }
 
 template<u32 index>
-static void CheckMACOverflow(s64 value)
+ALWAYS_INLINE static void CheckMACOverflow(s64 value)
 {
   constexpr s64 MIN_VALUE = (index == 0) ? MAC0_MIN_VALUE : MAC123_MIN_VALUE;
   constexpr s64 MAX_VALUE = (index == 0) ? MAC0_MAX_VALUE : MAC123_MAX_VALUE;
@@ -60,14 +60,14 @@ static void CheckMACOverflow(s64 value)
 }
 
 template<u32 index>
-static s64 SignExtendMACResult(s64 value)
+ALWAYS_INLINE static s64 SignExtendMACResult(s64 value)
 {
   CheckMACOverflow<index>(value);
   return SignExtendN < index == 0 ? 31 : 44 > (value);
 }
 
 template<u32 index>
-static void TruncateAndSetMAC(s64 value, u8 shift)
+ALWAYS_INLINE static void TruncateAndSetMAC(s64 value, u8 shift)
 {
   CheckMACOverflow<index>(value);
 
@@ -78,7 +78,7 @@ static void TruncateAndSetMAC(s64 value, u8 shift)
 }
 
 template<u32 index>
-static void TruncateAndSetIR(s32 value, bool lm)
+ALWAYS_INLINE static void TruncateAndSetIR(s32 value, bool lm)
 {
   constexpr s32 MIN_VALUE = (index == 0) ? IR0_MIN_VALUE : IR123_MIN_VALUE;
   constexpr s32 MAX_VALUE = (index == 0) ? IR0_MAX_VALUE : IR123_MAX_VALUE;
@@ -113,7 +113,7 @@ static void TruncateAndSetIR(s32 value, bool lm)
 }
 
 template<u32 index>
-static void TruncateAndSetMACAndIR(s64 value, u8 shift, bool lm)
+ALWAYS_INLINE static void TruncateAndSetMACAndIR(s64 value, u8 shift, bool lm)
 {
   CheckMACOverflow<index>(value);
 
@@ -129,7 +129,7 @@ static void TruncateAndSetMACAndIR(s64 value, u8 shift, bool lm)
 }
 
 template<u32 index>
-static u32 TruncateRGB(s32 value)
+ALWAYS_INLINE static u32 TruncateRGB(s32 value)
 {
   if (value < 0 || value > 0xFF)
   {
@@ -289,7 +289,7 @@ u32* GetRegisterPtr(u32 index)
   return &REGS.r32[index];
 }
 
-static void SetOTZ(s32 value)
+ALWAYS_INLINE static void SetOTZ(s32 value)
 {
   if (value < 0)
   {
@@ -305,7 +305,7 @@ static void SetOTZ(s32 value)
   REGS.dr32[7] = static_cast<u32>(value);
 }
 
-static void PushSXY(s32 x, s32 y)
+ALWAYS_INLINE static void PushSXY(s32 x, s32 y)
 {
   if (x < -1024)
   {
@@ -334,7 +334,7 @@ static void PushSXY(s32 x, s32 y)
   REGS.dr32[14] = (static_cast<u32>(x) & 0xFFFFu) | (static_cast<u32>(y) << 16);
 }
 
-static void PushSZ(s32 value)
+ALWAYS_INLINE static void PushSZ(s32 value)
 {
   if (value < 0)
   {
@@ -366,7 +366,7 @@ static void PushRGBFromMAC()
   REGS.dr32[22] = r | (g << 8) | (b << 16) | (c << 24); // RGB2 <- Value
 }
 
-static u32 UNRDivide(u32 lhs, u32 rhs)
+ALWAYS_INLINE static u32 UNRDivide(u32 lhs, u32 rhs)
 {
   if (rhs * 2 <= lhs)
   {
@@ -862,7 +862,7 @@ static void Execute_AVSZ4(Instruction inst)
   REGS.FLAG.UpdateError();
 }
 
-static void InterpolateColor(s64 in_MAC1, s64 in_MAC2, s64 in_MAC3, u8 shift, bool lm)
+static ALWAYS_INLINE void InterpolateColor(s64 in_MAC1, s64 in_MAC2, s64 in_MAC3, u8 shift, bool lm)
 {
   // [MAC1,MAC2,MAC3] = MAC+(FC-MAC)*IR0
   //   [IR1,IR2,IR3] = (([RFC,GFC,BFC] SHL 12) - [MAC1,MAC2,MAC3]) SAR (sf*12)
