@@ -1089,8 +1089,8 @@ void GPU_HW::DispatchRenderCommand()
   const GPUTransparencyMode transparency_mode =
     rc.transparency_enable ? m_draw_mode.mode_reg.transparency_mode : GPUTransparencyMode::Disabled;
   const bool dithering_enable = (!m_true_color && rc.IsDitheringEnabled()) ? m_GPUSTAT.dither_enable : false;
-  if (m_batch.texture_mode != texture_mode || m_batch.transparency_mode != transparency_mode ||
-      dithering_enable != m_batch.dithering)
+  if (texture_mode != m_batch.texture_mode || transparency_mode != m_batch.transparency_mode ||
+      transparency_mode == GPUTransparencyMode::BackgroundMinusForeground || dithering_enable != m_batch.dithering)
   {
     FlushRender();
   }
