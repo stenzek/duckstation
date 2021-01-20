@@ -163,7 +163,8 @@ public class ControllerMappingActivity extends AppCompatActivity {
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             final SharedPreferences sp = getPreferenceManager().getSharedPreferences();
-            String controllerType = sp.getString(String.format("Controller%d/Type", controllerIndex), "None");
+            final String defaultControllerType = controllerIndex == 0 ? "DigitalController" : "None";
+            String controllerType = sp.getString(String.format("Controller%d/Type", controllerIndex), defaultControllerType);
             String[] controllerButtons = AndroidHostInterface.getControllerButtonNames(controllerType);
             String[] axisButtons = AndroidHostInterface.getControllerAxisNames(controllerType);
 
