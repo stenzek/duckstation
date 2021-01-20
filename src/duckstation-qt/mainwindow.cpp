@@ -174,6 +174,25 @@ QtDisplayWidget* MainWindow::updateDisplay(QThread* worker_thread, bool fullscre
   if (fullscreen == is_fullscreen && is_rendering_to_main == render_to_main)
     return m_display_widget;
 
+  // Skip recreating the surface if we're just transitioning between fullscreen and windowed with render-to-main off.
+  if (!is_rendering_to_main && !render_to_main && !is_exclusive_fullscreen)
+  {
+    qDebug() << "Toggling to" << (fullscreen ? "fullscreen" : "windowed") << "without recreating surface";
+    if (fullscreen)
+    {
+      m_display_widget->showFullScreen();
+    }
+    else
+    {
+      restoreDisplayWindowGeometryFromConfig();
+      m_display_widget->showNormal();
+    }
+
+    QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+    updateMouseMode(System::IsPaused());
+    return m_display_widget;
+  }
+
   m_host_display->DestroyRenderSurface();
 
   destroyDisplayWidget();
