@@ -1745,10 +1745,6 @@ void SPU::Execute(TickCount ticks)
       s32 reverb_in_left = 0;
       s32 reverb_in_right = 0;
 
-      u32 key_on_register = m_key_on_register;
-      m_key_on_register = 0;
-      u32 key_off_register = m_key_off_register;
-      m_key_off_register = 0;
       u32 reverb_on_register = m_reverb_on_register;
 
       for (u32 voice = 0; voice < NUM_VOICES; voice++)
@@ -1763,17 +1759,6 @@ void SPU::Execute(TickCount ticks)
           reverb_in_right += right;
         }
         reverb_on_register >>= 1;
-
-        if (key_off_register & 1u)
-          m_voices[voice].KeyOff();
-        key_off_register >>= 1;
-
-        if (key_on_register & 1u)
-        {
-          m_endx_register &= ~(1u << voice);
-          m_voices[voice].KeyOn();
-        }
-        key_on_register >>= 1;
       }
 
       if (!m_SPUCNT.mute_n)
@@ -1823,6 +1808,30 @@ void SPU::Execute(TickCount ticks)
       WriteToCaptureBuffer(2, static_cast<s16>(Clamp16(m_voices[1].last_volume)));
       WriteToCaptureBuffer(3, static_cast<s16>(Clamp16(m_voices[3].last_volume)));
       IncrementCaptureBufferPosition();
+
+      // Key off/on voices after the first frame.
+      if (i == 0 && (m_key_off_register != 0 || m_key_on_register != 0))
+      {
+        u32 key_off_register = m_key_off_register;
+        m_key_off_register = 0;
+
+        u32 key_on_register = m_key_on_register;
+        m_key_on_register = 0;
+
+        for (u32 voice = 0; voice < NUM_VOICES; voice++)
+        {
+          if (key_off_register & 1u)
+            m_voices[voice].KeyOff();
+          key_off_register >>= 1;
+
+          if (key_on_register & 1u)
+          {
+            m_endx_register &= ~(1u << voice);
+            m_voices[voice].KeyOn();
+          }
+          key_on_register >>= 1;
+        }
+      }
     }
 
     if (m_dump_writer)
