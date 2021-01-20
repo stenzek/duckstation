@@ -113,6 +113,7 @@
     <SwitchPreferenceCompat
         app:key="GPU/PGXPCulling"
         app:title="@string/settings_pgxp_culling_correction"
+        app:dependency="GPU/PGXPEnable"
         app:defaultValue="true"
         app:summary="@string/settings_summary_pgxp_culling_correction"
         app:iconSpaceReserved="false" />
@@ -120,6 +121,7 @@
     <SwitchPreferenceCompat
         app:key="GPU/PGXPTextureCorrection"
         app:title="@string/settings_pgxp_texture_correction"
+        app:dependency="GPU/PGXPEnable"
         app:defaultValue="true"
         app:summary="@string/settings_summary_pgxp_texture_correction"
         app:iconSpaceReserved="false" />
@@ -127,6 +129,7 @@
     <SwitchPreferenceCompat
         app:key="GPU/PGXPPreserveProjFP"
         app:title="@string/settings_pgxp_preserve_projection_precision"
+        app:dependency="GPU/PGXPEnable"
         app:defaultValue="false"
         app:summary="@string/settings_summary_pgxp_preserve_projection_precision"
         app:iconSpaceReserved="false" />
@@ -134,6 +137,7 @@
     <SwitchPreferenceCompat
         app:key="GPU/PGXPDepthBuffer"
         app:title="@string/settings_pgxp_depth_buffer"
+        app:dependency="GPU/PGXPEnable"
         app:defaultValue="false"
         app:summary="@string/settings_summary_pgxp_depth_buffer"
         app:iconSpaceReserved="false" />
