@@ -123,6 +123,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
 
     public void onEmulationStarted() {
         runOnUiThread(() -> {
+            updateRequestedOrientation();
             updateOrientation();
         });
     }
@@ -196,8 +197,9 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
         // Once we get a surface, we can boot.
+        AndroidHostInterface.getInstance().surfaceChanged(holder.getSurface(), format, width, height);
+
         if (mEmulationThread != null) {
-            AndroidHostInterface.getInstance().surfaceChanged(holder.getSurface(), format, width, height);
             updateOrientation();
 
             if (mApplySettingsOnSurfaceRestored) {
@@ -212,18 +214,15 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         final boolean resumeState = getIntent().getBooleanExtra("resumeState", false);
         final String bootSaveStatePath = getIntent().getStringExtra("saveStatePath");
 
-        mEmulationThread = EmulationThread.create(this, holder.getSurface(), bootPath, resumeState, bootSaveStatePath);
+        mEmulationThread = EmulationThread.create(this, bootPath, resumeState, bootSaveStatePath);
     }
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
-        if (!AndroidHostInterface.getInstance().isEmulationThreadRunning())
-            return;
-
         Log.i("EmulationActivity", "Surface destroyed");
 
         // Save the resume state in case we never get back again...
-        if (!mStopRequested)
+        if (AndroidHostInterface.getInstance().isEmulationThreadRunning() && !mStopRequested)
             AndroidHostInterface.getInstance().saveResumeState(true);
 
         AndroidHostInterface.getInstance().surfaceChanged(null, 0, 0, 0);
@@ -231,9 +230,9 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        mPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         super.onCreate(savedInstanceState);
 
-        mPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         Log.i("EmulationActivity", "OnCreate");
 
         // we might be coming from a third-party launcher if the host interface isn't setup
@@ -255,7 +254,6 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         mContentView.requestFocus();
 
         // Sort out rotation.
-        updateRequestedOrientation();
         updateOrientation();
         updateSustainedPerformanceMode();
 

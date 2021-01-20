@@ -46,8 +46,8 @@ public:
   void PauseEmulationThread(bool paused);
   void StopEmulationThreadLoop();
 
-  void EmulationThreadEntryPoint(JNIEnv* env, jobject emulation_activity, jobject initial_surface,
-                                 SystemBootParameters boot_params, bool resume_state);
+  void EmulationThreadEntryPoint(JNIEnv* env, jobject emulation_activity, SystemBootParameters boot_params,
+                                 bool resume_state);
 
   void SurfaceChanged(ANativeWindow* surface, int format, int width, int height);
   void SetDisplayAlignment(HostDisplay::Alignment alignment);

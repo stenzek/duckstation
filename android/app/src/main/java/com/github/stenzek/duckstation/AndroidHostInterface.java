@@ -49,7 +49,7 @@ public class AndroidHostInterface {
 
     public native boolean isEmulationThreadRunning();
 
-    public native boolean runEmulationThread(EmulationActivity emulationActivity, Surface surface, String filename, boolean resumeState, String state_filename);
+    public native boolean runEmulationThread(EmulationActivity emulationActivity, String filename, boolean resumeState, String state_filename);
 
     public native boolean isEmulationThreadPaused();
 

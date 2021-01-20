@@ -227,13 +227,14 @@ std::unique_ptr<ByteStream> AndroidHostInterface::OpenPackageFile(const char* pa
 
 void AndroidHostInterface::RegisterHotkeys()
 {
-    RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("OpenPauseMenu"),
-                   StaticString(TRANSLATABLE("Hotkeys", "Open Pause Menu")), [this](bool pressed) {
-                if (pressed) {
-                    AndroidHelpers::GetJNIEnv()->CallVoidMethod(m_emulation_activity_object,
-                                                                s_EmulationActivity_method_openPauseMenu);
-                }
-            });
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("OpenPauseMenu"),
+                 StaticString(TRANSLATABLE("Hotkeys", "Open Pause Menu")), [this](bool pressed) {
+                   if (pressed)
+                   {
+                     AndroidHelpers::GetJNIEnv()->CallVoidMethod(m_emulation_activity_object,
+                                                                 s_EmulationActivity_method_openPauseMenu);
+                   }
+                 });
 
   CommonHostInterface::RegisterHotkeys();
 }
@@ -339,19 +340,17 @@ void AndroidHostInterface::RunOnEmulationThread(std::function<void()> function, 
   m_mutex.unlock();
 }
 
-void AndroidHostInterface::EmulationThreadEntryPoint(JNIEnv* env, jobject emulation_activity, jobject surface,
+void AndroidHostInterface::EmulationThreadEntryPoint(JNIEnv* env, jobject emulation_activity,
                                                      SystemBootParameters boot_params, bool resume_state)
 {
-  ANativeWindow* native_surface = ANativeWindow_fromSurface(env, surface);
-  if (!native_surface)
+  if (!m_surface)
   {
-    Log_ErrorPrint("ANativeWindow_fromSurface() returned null");
+    Log_ErrorPrint("Emulation thread started without surface set.");
     env->CallVoidMethod(m_emulation_activity_object, s_EmulationActivity_method_onEmulationStopped);
     return;
   }
 
   CreateImGuiContext();
-  m_surface = native_surface;
   m_emulation_activity_object = emulation_activity;
   ApplySettings(true);
 
@@ -912,8 +911,8 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
         nullptr ||
       (s_EmulationActivity_method_getRefreshRate =
          env->GetMethodID(emulation_activity_class, "getRefreshRate", "()F")) == nullptr ||
-      (s_EmulationActivity_method_openPauseMenu =
-                   env->GetMethodID(emulation_activity_class, "openPauseMenu", "()V")) == nullptr ||
+      (s_EmulationActivity_method_openPauseMenu = env->GetMethodID(emulation_activity_class, "openPauseMenu", "()V")) ==
+        nullptr ||
       (s_PatchCode_constructor = env->GetMethodID(s_PatchCode_class, "<init>", "(ILjava/lang/String;Z)V")) == nullptr ||
       (s_GameListEntry_constructor = env->GetMethodID(
          s_GameListEntry_class, "<init>",
@@ -985,15 +984,15 @@ DEFINE_JNI_ARGS_METHOD(jboolean, AndroidHostInterface_isEmulationThreadRunning, 
 }
 
 DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_runEmulationThread, jobject obj, jobject emulationActivity,
-                       jobject surface, jstring filename, jboolean resume_state, jstring state_filename)
+                       jstring filename, jboolean resume_state, jstring state_filename)
 {
   std::string state_filename_str = AndroidHelpers::JStringToString(env, state_filename);
 
   SystemBootParameters boot_params;
   boot_params.filename = AndroidHelpers::JStringToString(env, filename);
 
-  AndroidHelpers::GetNativeClass(env, obj)->EmulationThreadEntryPoint(env, emulationActivity, surface,
-                                                                      std::move(boot_params), resume_state);
+  AndroidHelpers::GetNativeClass(env, obj)->EmulationThreadEntryPoint(env, emulationActivity, std::move(boot_params),
+                                                                      resume_state);
 }
 
 DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_stopEmulationThreadLoop, jobject obj)
