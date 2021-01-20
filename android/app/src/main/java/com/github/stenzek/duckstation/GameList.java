@@ -2,6 +2,7 @@ package com.github.stenzek.duckstation;
 
 import android.app.Activity;
 import android.os.AsyncTask;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,7 +39,12 @@ public class GameList {
             Arrays.sort(newEntries, new GameListEntryComparator());
 
             mContext.runOnUiThread(() -> {
-                progressCallback.dismiss();
+                try {
+                    progressCallback.dismiss();
+                } catch (Exception e) {
+                    Log.e("GameList", "Exception dismissing refresh progress");
+                    e.printStackTrace();
+                }
                 mEntries = newEntries;
                 mAdapter.notifyDataSetChanged();
             });
