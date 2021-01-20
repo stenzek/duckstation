@@ -1001,7 +1001,21 @@ void SPU::GeneratePendingSamples()
   if (m_transfer_event->IsActive())
     m_transfer_event->InvokeEarly();
 
-  m_tick_event->InvokeEarly();
+  const TickCount ticks_pending = m_tick_event->GetTicksSinceLastExecution();
+  TickCount frames_to_execute;
+  if (g_settings.cpu_overclock_active)
+  {
+    frames_to_execute = static_cast<u32>((static_cast<u64>(ticks_pending) * g_settings.cpu_overclock_denominator) +
+                                         static_cast<u32>(m_ticks_carry)) /
+                        static_cast<u32>(m_cpu_tick_divider);
+  }
+  else
+  {
+    frames_to_execute = (m_tick_event->GetTicksSinceLastExecution() + m_ticks_carry) / SYSCLK_TICKS_PER_SPU_TICK;
+  }
+
+  const bool force_exec = (frames_to_execute > 0);
+  m_tick_event->InvokeEarly(force_exec);
 }
 
 bool SPU::StartDumpingAudio(const char* filename)
