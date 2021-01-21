@@ -1,6 +1,7 @@
 #pragma once
 #include "common/bitfield.h"
 #include "common/fifo_queue.h"
+#include "multitap.h"
 #include "types.h"
 #include <array>
 #include <memory>
@@ -28,6 +29,9 @@ public:
   MemoryCard* GetMemoryCard(u32 slot) { return m_memory_cards[slot].get(); }
   void SetMemoryCard(u32 slot, std::unique_ptr<MemoryCard> dev);
 
+  Multitap* GetMultitap(u32 slot) { return &m_multitaps[slot]; };
+  void SetMultitapEnable(u32 port, bool enable);
+
   u32 ReadRegister(u32 offset);
   void WriteRegister(u32 offset, u32 value);
 
@@ -47,7 +51,8 @@ private:
   {
     None,
     Controller,
-    MemoryCard
+    MemoryCard,
+    Multitap
   };
 
   union JOY_CTRL
@@ -108,8 +113,10 @@ private:
   void EndTransfer();
   void ResetDeviceTransferState();
 
-  std::array<std::unique_ptr<Controller>, NUM_SLOTS> m_controllers;
-  std::array<std::unique_ptr<MemoryCard>, NUM_SLOTS> m_memory_cards;
+  std::array<std::unique_ptr<Controller>, NUM_CONTROLLER_AND_CARD_PORTS> m_controllers;
+  std::array<std::unique_ptr<MemoryCard>, NUM_CONTROLLER_AND_CARD_PORTS> m_memory_cards;
+
+  std::array<Multitap, NUM_MULTITAPS> m_multitaps = {Multitap(0), Multitap(1)};
 
   std::unique_ptr<TimingEvent> m_transfer_event;
   State m_state = State::Idle;

@@ -67,6 +67,8 @@ add_library(core
     memory_card.h
     memory_card_image.cpp
     memory_card_image.h
+    multitap.cpp
+    multitap.h
     namco_guncon.cpp
     namco_guncon.h
     negcon.cpp
