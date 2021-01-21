@@ -34,8 +34,6 @@ static jclass s_String_class;
 static jclass s_AndroidHostInterface_class;
 static jmethodID s_AndroidHostInterface_constructor;
 static jfieldID s_AndroidHostInterface_field_mNativePointer;
-static jmethodID s_AndroidHostInterface_method_reportError;
-static jmethodID s_AndroidHostInterface_method_reportMessage;
 static jmethodID s_AndroidHostInterface_method_openAssetStream;
 static jclass s_EmulationActivity_class;
 static jmethodID s_EmulationActivity_method_reportError;
@@ -163,13 +161,13 @@ void AndroidHostInterface::ReportError(const char* message)
 {
   CommonHostInterface::ReportError(message);
 
-  JNIEnv* env = AndroidHelpers::GetJNIEnv();
-  jstring message_jstr = env->NewStringUTF(message);
   if (m_emulation_activity_object)
+  {
+    JNIEnv* env = AndroidHelpers::GetJNIEnv();
+    jstring message_jstr = env->NewStringUTF(message);
     env->CallVoidMethod(m_emulation_activity_object, s_EmulationActivity_method_reportError, message_jstr);
-  else
-    env->CallVoidMethod(m_java_object, s_AndroidHostInterface_method_reportError, message_jstr);
-  env->DeleteLocalRef(message_jstr);
+    env->DeleteLocalRef(message_jstr);
+  }
 }
 
 void AndroidHostInterface::ReportMessage(const char* message)
@@ -177,12 +175,12 @@ void AndroidHostInterface::ReportMessage(const char* message)
   CommonHostInterface::ReportMessage(message);
 
   JNIEnv* env = AndroidHelpers::GetJNIEnv();
-  jstring message_jstr = env->NewStringUTF(message);
   if (m_emulation_activity_object)
+  {
+    jstring message_jstr = env->NewStringUTF(message);
     env->CallVoidMethod(m_emulation_activity_object, s_EmulationActivity_method_reportMessage, message_jstr);
-  else
-    env->CallVoidMethod(m_java_object, s_AndroidHostInterface_method_reportMessage, message_jstr);
-  env->DeleteLocalRef(message_jstr);
+    env->DeleteLocalRef(message_jstr);
+  }
 }
 
 std::string AndroidHostInterface::GetStringSettingValue(const char* section, const char* key, const char* default_value)
@@ -889,10 +887,6 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
          env->GetMethodID(s_AndroidHostInterface_class, "<init>", "(Landroid/content/Context;)V")) == nullptr ||
       (s_AndroidHostInterface_field_mNativePointer =
          env->GetFieldID(s_AndroidHostInterface_class, "mNativePointer", "J")) == nullptr ||
-      (s_AndroidHostInterface_method_reportError =
-         env->GetMethodID(s_AndroidHostInterface_class, "reportError", "(Ljava/lang/String;)V")) == nullptr ||
-      (s_AndroidHostInterface_method_reportMessage =
-         env->GetMethodID(s_AndroidHostInterface_class, "reportMessage", "(Ljava/lang/String;)V")) == nullptr ||
       (s_AndroidHostInterface_method_openAssetStream = env->GetMethodID(
          s_AndroidHostInterface_class, "openAssetStream", "(Ljava/lang/String;)Ljava/io/InputStream;")) == nullptr ||
       (emulation_activity_class = env->FindClass("com/github/stenzek/duckstation/EmulationActivity")) == nullptr ||
