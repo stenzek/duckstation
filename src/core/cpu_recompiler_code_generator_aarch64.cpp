@@ -1278,7 +1278,7 @@ void CodeGenerator::EmitAddCPUStructField(u32 offset, const Value& value)
     case RegSize_8:
     {
       m_emit->Ldrb(GetHostReg8(RSCRATCH), o_offset);
-      if (value.IsConstant())
+      if (real_value.IsConstant())
         m_emit->Add(GetHostReg8(RSCRATCH), GetHostReg8(RSCRATCH), real_value.GetS64ConstantValue());
       else
         m_emit->Add(GetHostReg8(RSCRATCH), GetHostReg8(RSCRATCH), GetHostReg8(real_value));
@@ -1289,7 +1289,7 @@ void CodeGenerator::EmitAddCPUStructField(u32 offset, const Value& value)
     case RegSize_16:
     {
       m_emit->Ldrh(GetHostReg16(RSCRATCH), o_offset);
-      if (value.IsConstant())
+      if (real_value.IsConstant())
         m_emit->Add(GetHostReg16(RSCRATCH), GetHostReg16(RSCRATCH), real_value.GetS64ConstantValue());
       else
         m_emit->Add(GetHostReg16(RSCRATCH), GetHostReg16(RSCRATCH), GetHostReg16(real_value));
@@ -1300,7 +1300,7 @@ void CodeGenerator::EmitAddCPUStructField(u32 offset, const Value& value)
     case RegSize_32:
     {
       m_emit->Ldr(GetHostReg32(RSCRATCH), o_offset);
-      if (value.IsConstant())
+      if (real_value.IsConstant())
         m_emit->Add(GetHostReg32(RSCRATCH), GetHostReg32(RSCRATCH), real_value.GetS64ConstantValue());
       else
         m_emit->Add(GetHostReg32(RSCRATCH), GetHostReg32(RSCRATCH), GetHostReg32(real_value));
@@ -1311,7 +1311,7 @@ void CodeGenerator::EmitAddCPUStructField(u32 offset, const Value& value)
     case RegSize_64:
     {
       m_emit->Ldr(GetHostReg64(RSCRATCH), o_offset);
-      if (value.IsConstant())
+      if (real_value.IsConstant())
         m_emit->Add(GetHostReg64(RSCRATCH), GetHostReg64(RSCRATCH), s64(real_value.constant_value));
       else
         m_emit->Add(GetHostReg64(RSCRATCH), GetHostReg64(RSCRATCH), GetHostReg64(real_value));

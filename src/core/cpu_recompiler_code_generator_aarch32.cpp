@@ -1090,7 +1090,7 @@ void CodeGenerator::EmitAddCPUStructField(u32 offset, const Value& value)
     // do we need temporary storage for the constant, if it won't fit in an immediate?
     Assert(value.IsConstant());
     const s32 constant_value = value.GetS32ConstantValue();
-    if (a32::ImmediateA32::IsImmediateA32(static_cast<u32>(constant_value)))
+    if (!a32::ImmediateA32::IsImmediateA32(static_cast<u32>(constant_value)))
     {
       real_value.SetHostReg(&m_register_cache, RARG2, value.size);
       EmitCopyValue(real_value.host_reg, value);
@@ -1107,7 +1107,7 @@ void CodeGenerator::EmitAddCPUStructField(u32 offset, const Value& value)
     case RegSize_8:
     {
       m_emit->Ldrb(GetHostReg8(RARG1), o_offset);
-      if (value.IsConstant())
+      if (real_value.IsConstant())
         m_emit->Add(GetHostReg8(RARG1), GetHostReg8(RARG1), real_value.GetS32ConstantValue());
       else
         m_emit->Add(GetHostReg8(RARG1), GetHostReg8(RARG1), GetHostReg8(real_value));
@@ -1118,7 +1118,7 @@ void CodeGenerator::EmitAddCPUStructField(u32 offset, const Value& value)
     case RegSize_16:
     {
       m_emit->Ldrh(GetHostReg16(RARG1), o_offset);
-      if (value.IsConstant())
+      if (real_value.IsConstant())
         m_emit->Add(GetHostReg16(RARG1), GetHostReg16(RARG1), real_value.GetS32ConstantValue());
       else
         m_emit->Add(GetHostReg16(RARG1), GetHostReg16(RARG1), GetHostReg16(real_value));
@@ -1129,7 +1129,7 @@ void CodeGenerator::EmitAddCPUStructField(u32 offset, const Value& value)
     case RegSize_32:
     {
       m_emit->Ldr(GetHostReg32(RARG1), o_offset);
-      if (value.IsConstant())
+      if (real_value.IsConstant())
         m_emit->Add(GetHostReg32(RARG1), GetHostReg32(RARG1), real_value.GetS32ConstantValue());
       else
         m_emit->Add(GetHostReg32(RARG1), GetHostReg32(RARG1), GetHostReg32(real_value));
