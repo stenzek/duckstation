@@ -31,6 +31,7 @@ void SPU::Initialize()
     "SPU Transfer", TRANSFER_TICKS_PER_HALFWORD, TRANSFER_TICKS_PER_HALFWORD,
     [](void* param, TickCount ticks, TickCount ticks_late) { static_cast<SPU*>(param)->ExecuteTransfer(ticks); }, this,
     false);
+  m_audio_stream = g_host_interface->GetAudioStream();
 
   Reset();
 }
@@ -49,6 +50,7 @@ void SPU::Shutdown()
   m_tick_event.reset();
   m_transfer_event.reset();
   m_dump_writer.reset();
+  m_audio_stream = nullptr;
 }
 
 void SPU::Reset()
@@ -172,7 +174,6 @@ bool SPU::DoState(StateWrapper& sw)
 
   if (sw.IsReading())
   {
-    g_host_interface->GetAudioStream()->EmptyBuffers();
     UpdateEventInterval();
     UpdateTransferEvent();
   }
@@ -1731,10 +1732,9 @@ void SPU::Execute(TickCount ticks)
 
   while (remaining_frames > 0)
   {
-    AudioStream* const output_stream = g_host_interface->GetAudioStream();
     s16* output_frame_start;
     u32 output_frame_space = remaining_frames;
-    output_stream->BeginWrite(&output_frame_start, &output_frame_space);
+    m_audio_stream->BeginWrite(&output_frame_start, &output_frame_space);
 
     s16* output_frame = output_frame_start;
     const u32 frames_in_this_batch = std::min(remaining_frames, output_frame_space);
@@ -1837,7 +1837,7 @@ void SPU::Execute(TickCount ticks)
     if (m_dump_writer)
       m_dump_writer->WriteFrames(output_frame_start, frames_in_this_batch);
 
-    output_stream->EndWrite(frames_in_this_batch);
+    m_audio_stream->EndWrite(frames_in_this_batch);
     remaining_frames -= frames_in_this_batch;
   }
 }

@@ -2,6 +2,7 @@
 #include "common/assert.h"
 #include "common/state_wrapper.h"
 #include "host_interface.h"
+#include "system.h"
 
 DigitalController::DigitalController() = default;
 
@@ -45,10 +46,21 @@ void DigitalController::SetAxisState(s32 axis_code, float value) {}
 
 void DigitalController::SetButtonState(Button button, bool pressed)
 {
+  const u16 bit = u16(1) << static_cast<u8>(button);
   if (pressed)
-    m_button_state &= ~(u16(1) << static_cast<u8>(button));
+  {
+    if (m_button_state & bit)
+      System::SetRunaheadReplayFlag();
+
+    m_button_state &= ~bit;
+  }
   else
-    m_button_state |= u16(1) << static_cast<u8>(button);
+  {
+    if (!(m_button_state & bit))
+      System::SetRunaheadReplayFlag();
+
+    m_button_state |= bit;
+  }
 }
 
 void DigitalController::SetButtonState(s32 button_code, bool pressed)

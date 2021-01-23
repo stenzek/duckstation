@@ -234,8 +234,8 @@ void SetCheatList(std::unique_ptr<CheatList> cheats);
 void CalculateRewindMemoryUsage(u32 num_saves, u64* ram_usage, u64* vram_usage);
 void ClearMemorySaveStates();
 void UpdateMemorySaveStateSettings();
-bool SaveRewindState();
 bool LoadRewindState(u32 skip_saves = 0, bool consume_state = true);
 void SetRewinding(bool enabled);
+void SetRunaheadReplayFlag();
 
 } // namespace System

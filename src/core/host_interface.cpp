@@ -16,6 +16,7 @@
 #include "host_display.h"
 #include "pgxp.h"
 #include "save_state_version.h"
+#include "spu.h"
 #include "system.h"
 #include "texture_replacements.h"
 #include <cmath>
@@ -78,6 +79,9 @@ void HostInterface::CreateAudioStream()
   }
 
   m_audio_stream->SetOutputVolume(GetAudioOutputVolume());
+
+  if (System::IsValid())
+    g_spu.SetAudioStream(m_audio_stream.get());
 }
 
 s32 HostInterface::GetAudioOutputVolume() const
@@ -491,6 +495,8 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("Main", "RewindEnable", false);
   si.SetFloatValue("Main", "RewindFrequency", 10.0f);
   si.SetIntValue("Main", "RewindSaveSlots", 10);
+  si.SetBoolValue("Main", "RunaheadEnable", false);
+  si.SetFloatValue("Main", "RunaheadFrames", 1);
 
   si.SetStringValue("CPU", "ExecutionMode", Settings::GetCPUExecutionModeName(Settings::DEFAULT_CPU_EXECUTION_MODE));
   si.SetBoolValue("CPU", "RecompilerMemoryExceptions", false);
@@ -660,7 +666,8 @@ void HostInterface::FixIncompatibleSettings(bool display_osd_messages)
 #endif
 
   // rewinding causes issues with mmap fastmem, so just use LUT
-  if (g_settings.rewind_enable && g_settings.IsUsingFastmem() && g_settings.cpu_fastmem_mode == CPUFastmemMode::MMap)
+  if ((g_settings.rewind_enable || g_settings.runahead_enable) && g_settings.IsUsingFastmem() &&
+      g_settings.cpu_fastmem_mode == CPUFastmemMode::MMap)
   {
     Log_WarningPrintf("Disabling mmap fastmem due to rewind being enabled");
     g_settings.cpu_fastmem_mode = CPUFastmemMode::LUT;
@@ -768,7 +775,8 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.display_active_end_offset != old_settings.display_active_end_offset ||
         g_settings.display_line_start_offset != old_settings.display_line_start_offset ||
         g_settings.display_line_end_offset != old_settings.display_line_end_offset ||
-        g_settings.rewind_enable != old_settings.rewind_enable)
+        g_settings.rewind_enable != old_settings.rewind_enable ||
+        g_settings.runahead_enable != old_settings.runahead_enable)
     {
       if (g_settings.IsUsingCodeCache())
         CPU::CodeCache::Reinitialize();
@@ -808,7 +816,9 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
 
     if (g_settings.rewind_enable != old_settings.rewind_enable ||
         g_settings.rewind_save_frequency != old_settings.rewind_save_frequency ||
-        g_settings.rewind_save_slots != old_settings.rewind_save_slots)
+        g_settings.rewind_save_slots != old_settings.rewind_save_slots ||
+        g_settings.runahead_enable != old_settings.runahead_enable ||
+        g_settings.runahead_frames != old_settings.runahead_frames)
     {
       System::UpdateMemorySaveStateSettings();
     }

@@ -95,8 +95,10 @@ struct Settings
   bool disable_all_enhancements = false;
 
   bool rewind_enable = false;
+  bool runahead_enable = false;
   float rewind_save_frequency = 10.0f;
   u32 rewind_save_slots = 10;
+  u32 runahead_frames = 1;
 
   GPURenderer gpu_renderer = GPURenderer::Software;
   std::string gpu_adapter;

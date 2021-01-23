@@ -83,6 +83,9 @@ void AnalogJoystick::SetAxisState(s32 axis_code, float value)
 
 void AnalogJoystick::SetAxisState(Axis axis, u8 value)
 {
+  if (m_axis_state[static_cast<u8>(axis)] != value)
+    System::SetRunaheadReplayFlag();
+
   m_axis_state[static_cast<u8>(axis)] = value;
 }
 
@@ -96,10 +99,22 @@ void AnalogJoystick::SetButtonState(Button button, bool pressed)
     return;
   }
 
+  const u16 bit = u16(1) << static_cast<u8>(button);
+
   if (pressed)
-    m_button_state &= ~(u16(1) << static_cast<u8>(button));
+  {
+    if (m_button_state & bit)
+      System::SetRunaheadReplayFlag();
+
+    m_button_state &= ~bit;
+  }
   else
-    m_button_state |= (u16(1) << static_cast<u8>(button));
+  {
+    if (!(m_button_state & bit))
+      System::SetRunaheadReplayFlag();
+
+    m_button_state |= bit;
+  }
 }
 
 void AnalogJoystick::SetButtonState(s32 button_code, bool pressed)
