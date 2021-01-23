@@ -99,7 +99,8 @@ void HostDisplay::SetSoftwareCursor(std::unique_ptr<HostDisplayTexture> texture,
 
 bool HostDisplay::SetSoftwareCursor(const void* pixels, u32 width, u32 height, u32 stride, float scale /*= 1.0f*/)
 {
-  std::unique_ptr<HostDisplayTexture> tex = CreateTexture(width, height, pixels, stride, false);
+  std::unique_ptr<HostDisplayTexture> tex =
+    CreateTexture(width, height, 1, 1, 1, HostDisplayPixelFormat::RGBA8, pixels, stride, false);
   if (!tex)
     return false;
 
@@ -124,8 +125,9 @@ bool HostDisplay::SetSoftwareCursor(const char* path, float scale /*= 1.0f*/)
     return false;
   }
 
-  std::unique_ptr<HostDisplayTexture> tex = CreateTexture(static_cast<u32>(width), static_cast<u32>(height), pixel_data,
-                                                          sizeof(u32) * static_cast<u32>(width), false);
+  std::unique_ptr<HostDisplayTexture> tex =
+    CreateTexture(static_cast<u32>(width), static_cast<u32>(height), 1, 1, 1, HostDisplayPixelFormat::RGBA8, pixel_data,
+                  sizeof(u32) * static_cast<u32>(width), false);
   stbi_image_free(pixel_data);
   if (!tex)
     return false;

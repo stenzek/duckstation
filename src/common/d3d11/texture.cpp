@@ -28,7 +28,7 @@ D3D11_TEXTURE2D_DESC Texture::GetDesc() const
   return desc;
 }
 
-bool Texture::Create(ID3D11Device* device, u32 width, u32 height, u16 levels, u16 samples, DXGI_FORMAT format,
+bool Texture::Create(ID3D11Device* device, u32 width, u32 height, u32 levels, u32 samples, DXGI_FORMAT format,
                      u32 bind_flags, const void* initial_data /* = nullptr */, u32 initial_data_stride /* = 0 */,
                      bool dynamic)
 {
@@ -84,8 +84,8 @@ bool Texture::Create(ID3D11Device* device, u32 width, u32 height, u16 levels, u1
   m_rtv = std::move(rtv);
   m_width = width;
   m_height = height;
-  m_levels = levels;
-  m_samples = samples;
+  m_levels = static_cast<u16>(levels);
+  m_samples = static_cast<u16>(samples);
   return true;
 }
 

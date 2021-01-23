@@ -170,8 +170,8 @@ bool SDLHostInterface::CreateDisplay()
     return false;
   }
 
-  m_app_icon_texture =
-    display->CreateTexture(APP_ICON_WIDTH, APP_ICON_HEIGHT, APP_ICON_DATA, APP_ICON_WIDTH * sizeof(u32));
+  m_app_icon_texture = display->CreateTexture(APP_ICON_WIDTH, APP_ICON_HEIGHT, 1, 1, 1, HostDisplayPixelFormat::RGBA8,
+                                              APP_ICON_DATA, APP_ICON_WIDTH * sizeof(u32));
   if (!m_app_icon_texture)
     return false;
 

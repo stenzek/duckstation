@@ -437,8 +437,8 @@ bool CommonHostInterface::SetFullscreen(bool enabled)
 
 bool CommonHostInterface::CreateHostDisplayResources()
 {
-  m_logo_texture =
-    m_display->CreateTexture(APP_ICON_WIDTH, APP_ICON_HEIGHT, APP_ICON_DATA, sizeof(u32) * APP_ICON_WIDTH, false);
+  m_logo_texture = m_display->CreateTexture(APP_ICON_WIDTH, APP_ICON_HEIGHT, 1, 1, 1, HostDisplayPixelFormat::RGBA8,
+                                            APP_ICON_DATA, sizeof(u32) * APP_ICON_WIDTH, false);
   if (!m_logo_texture)
     Log_WarningPrintf("Failed to create logo texture");
 

@@ -131,15 +131,15 @@ void SaveStateSelectorUI::InitializeListEntry(ListEntry* li, CommonHostInterface
   li->preview_texture.reset();
   if (ssi && !ssi->screenshot_data.empty())
   {
-    li->preview_texture = m_host_interface->GetDisplay()->CreateTexture(ssi->screenshot_width, ssi->screenshot_height,
-                                                                        ssi->screenshot_data.data(),
-                                                                        sizeof(u32) * ssi->screenshot_width, false);
+    li->preview_texture = m_host_interface->GetDisplay()->CreateTexture(
+      ssi->screenshot_width, ssi->screenshot_height, 1, 1, 1, HostDisplayPixelFormat::RGBA8,
+      ssi->screenshot_data.data(), sizeof(u32) * ssi->screenshot_width, false);
   }
   else
   {
-    li->preview_texture =
-      m_host_interface->GetDisplay()->CreateTexture(PLACEHOLDER_ICON_WIDTH, PLACEHOLDER_ICON_HEIGHT,
-                                                    PLACEHOLDER_ICON_DATA, sizeof(u32) * PLACEHOLDER_ICON_WIDTH, false);
+    li->preview_texture = m_host_interface->GetDisplay()->CreateTexture(
+      PLACEHOLDER_ICON_WIDTH, PLACEHOLDER_ICON_HEIGHT, 1, 1, 1, HostDisplayPixelFormat::RGBA8, PLACEHOLDER_ICON_DATA,
+      sizeof(u32) * PLACEHOLDER_ICON_WIDTH, false);
   }
 
   if (!li->preview_texture)
@@ -165,9 +165,9 @@ void SaveStateSelectorUI::InitializePlaceholderListEntry(ListEntry* li, s32 slot
   li->slot = slot;
   li->global = global;
 
-  li->preview_texture =
-    m_host_interface->GetDisplay()->CreateTexture(PLACEHOLDER_ICON_WIDTH, PLACEHOLDER_ICON_HEIGHT,
-                                                  PLACEHOLDER_ICON_DATA, sizeof(u32) * PLACEHOLDER_ICON_WIDTH, false);
+  li->preview_texture = m_host_interface->GetDisplay()->CreateTexture(
+    PLACEHOLDER_ICON_WIDTH, PLACEHOLDER_ICON_HEIGHT, 1, 1, 1, HostDisplayPixelFormat::RGBA8, PLACEHOLDER_ICON_DATA,
+    sizeof(u32) * PLACEHOLDER_ICON_WIDTH, false);
 
   if (!li->preview_texture)
     Log_ErrorPrintf("Failed to upload save state image to GPU");
