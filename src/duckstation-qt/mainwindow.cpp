@@ -969,6 +969,8 @@ void MainWindow::connectSignals()
           [this]() { doSettings(SettingsDialog::Category::BIOSSettings); });
   connect(m_ui.actionConsoleSettings, &QAction::triggered,
           [this]() { doSettings(SettingsDialog::Category::ConsoleSettings); });
+  connect(m_ui.actionEmulationSettings, &QAction::triggered,
+          [this]() { doSettings(SettingsDialog::Category::EmulationSettings); });
   connect(m_ui.actionGameListSettings, &QAction::triggered,
           [this]() { doSettings(SettingsDialog::Category::GameListSettings); });
   connect(m_ui.actionHotkeySettings, &QAction::triggered,

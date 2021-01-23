@@ -82,6 +82,15 @@
      </item>
      <item>
       <property name="text">
+       <string>Emulation Settings</string>
+      </property>
+      <property name="icon">
+       <iconset resource="resources/resources.qrc">
+        <normaloff>:/icons/applications-other.png</normaloff>:/icons/applications-other.png</iconset>
+      </property>
+     </item>
+     <item>
+      <property name="text">
        <string>Game List Settings</string>
       </property>
       <property name="icon">

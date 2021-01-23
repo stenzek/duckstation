@@ -37,6 +37,9 @@ set(SRCS
   displaysettingswidget.cpp
   displaysettingswidget.h
   displaysettingswidget.ui
+  emulationsettingswidget.cpp
+  emulationsettingswidget.h
+  emulationsettingswidget.ui
   enhancementsettingswidget.cpp
   enhancementsettingswidget.h
   enhancementsettingswidget.ui

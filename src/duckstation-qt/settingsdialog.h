@@ -12,6 +12,7 @@ class BIOSSettingsWidget;
 class GameListSettingsWidget;
 class HotkeySettingsWidget;
 class ConsoleSettingsWidget;
+class EmulationSettingsWidget;
 class ControllerSettingsWidget;
 class MemoryCardSettingsWidget;
 class DisplaySettingsWidget;
@@ -30,6 +31,7 @@ public:
     GeneralSettings,
     BIOSSettings,
     ConsoleSettings,
+    EmulationSettings,
     GameListSettings,
     HotkeySettings,
     ControllerSettings,
@@ -48,6 +50,7 @@ public:
   GeneralSettingsWidget* getGeneralSettingsWidget() const { return m_general_settings; }
   BIOSSettingsWidget* getBIOSSettingsWidget() const { return m_bios_settings; }
   ConsoleSettingsWidget* getConsoleSettingsWidget() const { return m_console_settings; }
+  EmulationSettingsWidget* getEmulationSettingsWidget() const { return m_emulation_settings; }
   GameListSettingsWidget* getGameListSettingsWidget() const { return m_game_list_settings; }
   HotkeySettingsWidget* getHotkeySettingsWidget() const { return m_hotkey_settings; }
   ControllerSettingsWidget* getControllerSettingsWidget() const { return m_controller_settings; }
@@ -77,6 +80,7 @@ private:
   GeneralSettingsWidget* m_general_settings = nullptr;
   BIOSSettingsWidget* m_bios_settings = nullptr;
   ConsoleSettingsWidget* m_console_settings = nullptr;
+  EmulationSettingsWidget* m_emulation_settings = nullptr;
   GameListSettingsWidget* m_game_list_settings = nullptr;
   HotkeySettingsWidget* m_hotkey_settings = nullptr;
   ControllerSettingsWidget* m_controller_settings = nullptr;

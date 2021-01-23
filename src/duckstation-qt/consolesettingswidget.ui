@@ -46,52 +46,6 @@
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="groupBox_5">
-     <property name="title">
-      <string>Speed Control</string>
-     </property>
-     <layout class="QFormLayout" name="formLayout_2">
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_4">
-        <property name="text">
-         <string>Emulation Speed:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QComboBox" name="emulationSpeed"/>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_5">
-        <property name="text">
-         <string>Fast Forward Speed:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QComboBox" name="fastForwardSpeed"/>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_6">
-        <property name="text">
-         <string>Turbo Speed:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QComboBox" name="turboSpeed"/>
-      </item>
-      <item row="3" column="0" colspan="2">
-       <widget class="QCheckBox" name="syncToHostRefreshRate">
-        <property name="text">
-         <string>Sync To Host Refresh Rate</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
     <widget class="QGroupBox" name="groupBox_2">
      <property name="title">
       <string>CPU Emulation</string>

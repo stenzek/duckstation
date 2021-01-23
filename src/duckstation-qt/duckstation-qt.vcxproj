@@ -59,6 +59,7 @@
     <ClCompile Include="cheatmanagerdialog.cpp" />
     <ClCompile Include="cheatcodeeditordialog.cpp" />
     <ClCompile Include="consolesettingswidget.cpp" />
+    <ClCompile Include="emulationsettingswidget.cpp" />
     <ClCompile Include="debuggermodels.cpp" />
     <ClCompile Include="debuggerwindow.cpp" />
     <ClCompile Include="enhancementsettingswidget.cpp" />
@@ -118,6 +119,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="settingwidgetbinder.h" />
     <QtMoc Include="consolesettingswidget.h" />
+    <QtMoc Include="emulationsettingswidget.h" />
     <QtMoc Include="gamelistsettingswidget.h" />
     <QtMoc Include="gamelistwidget.h" />
     <QtMoc Include="gamepropertiesdialog.h" />
@@ -162,6 +164,9 @@
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="consolesettingswidget.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="emulationsettingswidget.ui">
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="enhancementsettingswidget.ui">
@@ -219,6 +224,7 @@
     <ClCompile Include="$(IntDir)moc_cheatcodeeditordialog.cpp" />
     <ClCompile Include="$(IntDir)moc_consolesettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_controllersettingswidget.cpp" />
+    <ClCompile Include="$(IntDir)moc_emulationsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_enhancementsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_gamelistmodel.cpp" />
     <ClCompile Include="$(IntDir)moc_gamelistsearchdirectoriesmodel.cpp" />

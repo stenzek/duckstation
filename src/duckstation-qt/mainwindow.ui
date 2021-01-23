@@ -119,6 +119,7 @@
     <addaction name="actionGeneralSettings"/>
     <addaction name="actionBIOSSettings"/>
     <addaction name="actionConsoleSettings"/>
+    <addaction name="actionEmulationSettings"/>
     <addaction name="actionGameListSettings"/>
     <addaction name="actionHotkeySettings"/>
     <addaction name="actionControllerSettings"/>
@@ -375,6 +376,15 @@
     <string>C&amp;onsole Settings...</string>
    </property>
   </action>
+  <action name="actionEmulationSettings">
+   <property name="icon">
+    <iconset resource="resources/resources.qrc">
+     <normaloff>:/icons/applications-other.png</normaloff>:/icons/applications-other.png</iconset>
+   </property>
+   <property name="text">
+    <string>E&amp;mulation Settings...</string>
+   </property>
+  </action>
   <action name="actionControllerSettings">
    <property name="icon">
     <iconset resource="resources/resources.qrc">
@@ -387,7 +397,7 @@
   <action name="actionHotkeySettings">
    <property name="icon">
     <iconset resource="resources/resources.qrc">
-     <normaloff>:/icons/applications-other.png</normaloff>:/icons/applications-other.png</iconset>
+     <normaloff>:/icons/preferences-desktop-keyboard-shortcuts.png</normaloff>:/icons/preferences-desktop-keyboard-shortcuts.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Hotkey Settings...</string>

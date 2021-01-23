@@ -20,9 +20,6 @@ private Q_SLOTS:
   void onCPUClockSpeedValueChanged(int value);
   void updateCPUClockSpeedLabel();
   void onCDROMReadSpeedupValueChanged(int value);
-  void onEmulationSpeedIndexChanged(int index);
-  void onFastForwardSpeedIndexChanged(int index);
-  void onTurboSpeedIndexChanged(int index);
 
 private:
   void calculateCPUClockValue();
