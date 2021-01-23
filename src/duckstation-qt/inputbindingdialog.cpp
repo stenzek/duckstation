@@ -20,6 +20,7 @@ InputBindingDialog::InputBindingDialog(QtHostInterface* host_interface, std::str
   m_ui.setupUi(this);
   m_ui.title->setText(
     tr("Bindings for %1 %2").arg(QString::fromStdString(m_section_name)).arg(QString::fromStdString(m_key_name)));
+  m_ui.buttonBox->button(QDialogButtonBox::Close)->setText(tr("Close"));
 
   connect(m_ui.addBinding, &QPushButton::clicked, this, &InputBindingDialog::onAddBindingButtonClicked);
   connect(m_ui.removeBinding, &QPushButton::clicked, this, &InputBindingDialog::onRemoveBindingButtonClicked);
