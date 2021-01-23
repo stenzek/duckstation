@@ -2,6 +2,7 @@
 #include "common/assert.h"
 #include "common/d3d11/shader_compiler.h"
 #include "common/log.h"
+#include "common/state_wrapper.h"
 #include "common/timer.h"
 #include "gpu_hw_shadergen.h"
 #include "host_display.h"
@@ -82,11 +83,49 @@ bool GPU_HW_D3D11::Initialize(HostDisplay* host_display)
   return true;
 }
 
-void GPU_HW_D3D11::Reset()
+void GPU_HW_D3D11::Reset(bool clear_vram)
 {
-  GPU_HW::Reset();
+  GPU_HW::Reset(clear_vram);
 
-  ClearFramebuffer();
+  if (clear_vram)
+    ClearFramebuffer();
+}
+
+bool GPU_HW_D3D11::DoState(StateWrapper& sw, HostDisplayTexture** host_texture, bool update_display)
+{
+  if (host_texture)
+  {
+    const CD3D11_BOX src_box(0, 0, 0, static_cast<LONG>(m_vram_texture.GetWidth()),
+                             static_cast<LONG>(m_vram_texture.GetHeight()), 1);
+    ComPtr<ID3D11Resource> resource;
+
+    if (sw.IsReading())
+    {
+      HostDisplayTexture* tex = *host_texture;
+      if (tex->GetWidth() != m_vram_texture.GetWidth() || tex->GetHeight() != m_vram_texture.GetHeight() ||
+          tex->GetSamples() != m_vram_texture.GetSamples())
+      {
+        return false;
+      }
+
+      static_cast<ID3D11ShaderResourceView*>(tex->GetHandle())->GetResource(resource.GetAddressOf());
+      m_context->CopySubresourceRegion(m_vram_texture.GetD3DTexture(), 0, 0, 0, 0, resource.Get(), 0, &src_box);
+    }
+    else
+    {
+      std::unique_ptr<HostDisplayTexture> tex =
+        m_host_display->CreateTexture(m_vram_texture.GetWidth(), m_vram_texture.GetHeight(), 1, 1,
+                                      m_vram_texture.GetSamples(), HostDisplayPixelFormat::RGBA8, nullptr, 0, false);
+      if (!tex)
+        return false;
+
+      static_cast<ID3D11ShaderResourceView*>(tex->GetHandle())->GetResource(resource.GetAddressOf());
+      m_context->CopySubresourceRegion(resource.Get(), 0, 0, 0, 0, m_vram_texture.GetD3DTexture(), 0, &src_box);
+      *host_texture = tex.release();
+    }
+  }
+
+  return GPU_HW::DoState(sw, host_texture, update_display);
 }
 
 void GPU_HW_D3D11::ResetGraphicsAPIState()

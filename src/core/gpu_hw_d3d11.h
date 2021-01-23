@@ -21,7 +21,8 @@ public:
   ~GPU_HW_D3D11() override;
 
   bool Initialize(HostDisplay* host_display) override;
-  void Reset() override;
+  void Reset(bool clear_vram) override;
+  bool DoState(StateWrapper& sw, HostDisplayTexture** host_texture, bool update_display) override;
 
   void ResetGraphicsAPIState() override;
   void RestoreGraphicsAPIState() override;

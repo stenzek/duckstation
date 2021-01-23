@@ -23,7 +23,7 @@ public:
 
   virtual bool Initialize();
   virtual void UpdateSettings();
-  virtual void Reset();
+  virtual void Reset(bool clear_vram);
   virtual void Shutdown();
 
   GPUBackendFillVRAMCommand* NewFillVRAMCommand();

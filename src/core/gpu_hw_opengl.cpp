@@ -1,6 +1,7 @@
 #include "gpu_hw_opengl.h"
 #include "common/assert.h"
 #include "common/log.h"
+#include "common/state_wrapper.h"
 #include "common/timer.h"
 #include "gpu_hw_shadergen.h"
 #include "host_display.h"
@@ -95,11 +96,106 @@ bool GPU_HW_OpenGL::Initialize(HostDisplay* host_display)
   return true;
 }
 
-void GPU_HW_OpenGL::Reset()
+void GPU_HW_OpenGL::Reset(bool clear_vram)
 {
-  GPU_HW::Reset();
+  GPU_HW::Reset(clear_vram);
 
-  ClearFramebuffer();
+  if (clear_vram)
+    ClearFramebuffer();
+}
+
+bool GPU_HW_OpenGL::DoState(StateWrapper& sw, HostDisplayTexture** host_texture, bool update_display)
+{
+  if (host_texture)
+  {
+    if (sw.IsReading())
+    {
+      HostDisplayTexture* tex = *host_texture;
+      if (tex->GetWidth() != m_vram_texture.GetWidth() || tex->GetHeight() != m_vram_texture.GetHeight() ||
+          tex->GetSamples() != m_vram_texture.GetSamples())
+      {
+        return false;
+      }
+
+      CopyFramebufferForState(
+        m_vram_texture.GetGLTarget(), static_cast<GLuint>(reinterpret_cast<uintptr_t>(tex->GetHandle())), 0, 0, 0,
+        m_vram_texture.GetGLId(), m_vram_fbo_id, 0, 0, m_vram_texture.GetWidth(), m_vram_texture.GetHeight());
+    }
+    else
+    {
+      std::unique_ptr<HostDisplayTexture> tex =
+        m_host_display->CreateTexture(m_vram_texture.GetWidth(), m_vram_texture.GetHeight(), 1, 1,
+                                      m_vram_texture.GetSamples(), HostDisplayPixelFormat::RGBA8, nullptr, 0, false);
+      if (!tex)
+        return false;
+
+      CopyFramebufferForState(m_vram_texture.GetGLTarget(), m_vram_texture.GetGLId(), m_vram_fbo_id, 0, 0,
+                              static_cast<GLuint>(reinterpret_cast<uintptr_t>(tex->GetHandle())), 0, 0, 0,
+                              m_vram_texture.GetWidth(), m_vram_texture.GetHeight());
+      *host_texture = tex.release();
+    }
+  }
+
+  return GPU_HW::DoState(sw, host_texture, update_display);
+}
+
+void GPU_HW_OpenGL::CopyFramebufferForState(GLenum target, GLuint src_texture, u32 src_fbo, u32 src_x, u32 src_y,
+                                            GLuint dst_texture, u32 dst_fbo, u32 dst_x, u32 dst_y, u32 width,
+                                            u32 height)
+{
+  if (target != GL_TEXTURE_2D && GLAD_GL_VERSION_4_3)
+  {
+    glCopyImageSubData(src_texture, target, 0, src_x, src_y, 0, dst_texture, target, 0, dst_x, dst_y, 0, width, height,
+                       1);
+  }
+  else if (target != GL_TEXTURE_2D && GLAD_GL_EXT_copy_image)
+  {
+    glCopyImageSubDataEXT(src_texture, target, 0, src_x, src_y, 0, dst_texture, target, 0, dst_x, dst_y, 0, width,
+                          height, 1);
+  }
+  else if (target != GL_TEXTURE_2D && GLAD_GL_OES_copy_image)
+  {
+    glCopyImageSubDataOES(src_texture, target, 0, src_x, src_y, 0, dst_texture, target, 0, dst_x, dst_y, 0, width,
+                          height, 1);
+  }
+  else
+  {
+    if (src_fbo == 0)
+    {
+      glBindFramebuffer(GL_READ_FRAMEBUFFER, m_state_copy_fbo_id);
+      glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, target, src_texture, 0);
+    }
+    else
+    {
+      glBindFramebuffer(GL_READ_FRAMEBUFFER, src_fbo);
+    }
+
+    if (dst_fbo == 0)
+    {
+      glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_state_copy_fbo_id);
+      glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, target, dst_texture, 0);
+    }
+    else
+    {
+      glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dst_fbo);
+    }
+
+    glDisable(GL_SCISSOR_TEST);
+    glBlitFramebuffer(src_x, src_y, src_x + width, src_y + height, dst_x, dst_y, dst_x + width, dst_y + height,
+                      GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    glEnable(GL_SCISSOR_TEST);
+
+    if (src_fbo == 0)
+    {
+      glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 0, 0);
+    }
+    else if (dst_fbo == 0)
+    {
+      glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 0, 0);
+    }
+
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_vram_fbo_id);
+  }
 }
 
 void GPU_HW_OpenGL::ResetGraphicsAPIState()
@@ -303,7 +399,9 @@ bool GPU_HW_OpenGL::CreateFramebuffer()
     return false;
   }
 
-  glGenFramebuffers(1, &m_vram_fbo_id);
+  if (m_vram_fbo_id == 0)
+    glGenFramebuffers(1, &m_vram_fbo_id);
+
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_vram_fbo_id);
   glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_vram_texture.GetGLTarget(),
                          m_vram_texture.GetGLId(), 0);
@@ -319,6 +417,9 @@ bool GPU_HW_OpenGL::CreateFramebuffer()
       return false;
     }
   }
+
+  if (m_state_copy_fbo_id == 0)
+    glGenFramebuffers(1, &m_state_copy_fbo_id);
 
   SetFullVRAMDirtyRectangle();
   return true;

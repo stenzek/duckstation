@@ -91,9 +91,9 @@ bool GPU_HW::Initialize(HostDisplay* host_display)
   return true;
 }
 
-void GPU_HW::Reset()
+void GPU_HW::Reset(bool clear_vram)
 {
-  GPU::Reset();
+  GPU::Reset(clear_vram);
 
   m_batch_current_vertex_ptr = m_batch_start_vertex_ptr;
 
@@ -107,9 +107,9 @@ void GPU_HW::Reset()
   SetFullVRAMDirtyRectangle();
 }
 
-bool GPU_HW::DoState(StateWrapper& sw, bool update_display)
+bool GPU_HW::DoState(StateWrapper& sw, HostDisplayTexture** host_texture, bool update_display)
 {
-  if (!GPU::DoState(sw, update_display))
+  if (!GPU::DoState(sw, host_texture, update_display))
     return false;
 
   // invalidate the whole VRAM read texture when loading state

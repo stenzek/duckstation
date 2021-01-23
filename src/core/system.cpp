@@ -9,6 +9,7 @@
 #include "common/log.h"
 #include "common/state_wrapper.h"
 #include "common/string_util.h"
+#include "common/timestamp.h"
 #include "controller.h"
 #include "cpu_code_cache.h"
 #include "cpu_core.h"
@@ -30,7 +31,10 @@
 #include "texture_replacements.h"
 #include "timers.h"
 #include <cctype>
+#include <cinttypes>
+#include <cmath>
 #include <cstdio>
+#include <deque>
 #include <fstream>
 #include <limits>
 Log_SetChannel(System);
@@ -51,6 +55,12 @@ SystemBootParameters::~SystemBootParameters() = default;
 
 namespace System {
 
+struct MemorySaveState
+{
+  std::unique_ptr<HostDisplayTexture> vram_texture;
+  std::unique_ptr<GrowableMemoryByteStream> state_stream;
+};
+
 static bool LoadEXE(const char* filename);
 static bool SetExpansionROM(const char* filename);
 
@@ -58,7 +68,10 @@ static bool SetExpansionROM(const char* filename);
 static std::unique_ptr<CDImage> OpenCDImage(const char* path, bool force_preload);
 
 static bool DoLoadState(ByteStream* stream, bool force_software_renderer, bool update_display);
-static bool DoState(StateWrapper& sw, bool update_display);
+static bool DoState(StateWrapper& sw, HostDisplayTexture** host_texture, bool update_display);
+static void DoRunFrame();
+static void DoRewind();
+static void DoMemorySaveStates();
 static bool CreateGPU(GPURenderer renderer);
 
 static bool Initialize(bool force_software_renderer);
@@ -103,6 +116,15 @@ static std::vector<std::string> s_media_playlist;
 static std::string s_media_playlist_filename;
 
 static std::unique_ptr<CheatList> s_cheat_list;
+
+static bool s_memory_saves_enabled = false;
+
+static std::deque<MemorySaveState> s_rewind_states;
+static s32 s_rewind_load_frequency = -1;
+static s32 s_rewind_load_counter = -1;
+static s32 s_rewind_save_frequency = -1;
+static s32 s_rewind_save_counter = -1;
+static bool s_rewinding_first_save = false;
 
 State GetState()
 {
@@ -521,12 +543,13 @@ std::optional<DiscRegion> GetRegionForPath(const char* image_path)
 
 bool RecreateGPU(GPURenderer renderer, bool update_display /* = true*/)
 {
+  ClearMemorySaveStates();
   g_gpu->RestoreGraphicsAPIState();
 
   // save current state
   std::unique_ptr<ByteStream> state_stream = ByteStream_CreateGrowableMemoryStream();
   StateWrapper sw(state_stream.get(), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
-  const bool state_valid = g_gpu->DoState(sw, false) && TimingEvents::DoState(sw);
+  const bool state_valid = g_gpu->DoState(sw, nullptr, false) && TimingEvents::DoState(sw);
   if (!state_valid)
     Log_ErrorPrintf("Failed to save old GPU state when switching renderers");
 
@@ -548,7 +571,7 @@ bool RecreateGPU(GPURenderer renderer, bool update_display /* = true*/)
     state_stream->SeekAbsolute(0);
     sw.SetMode(StateWrapper::Mode::Read);
     g_gpu->RestoreGraphicsAPIState();
-    g_gpu->DoState(sw, update_display);
+    g_gpu->DoState(sw, nullptr, update_display);
     TimingEvents::DoState(sw);
     g_gpu->ResetGraphicsAPIState();
   }
@@ -802,6 +825,7 @@ bool Initialize(bool force_software_renderer)
   }
 
   UpdateThrottlePeriod();
+  UpdateMemorySaveStateSettings();
   return true;
 }
 
@@ -809,6 +833,8 @@ void Shutdown()
 {
   if (s_state == State::Shutdown)
     return;
+
+  ClearMemorySaveStates();
 
   g_texture_replacements.Shutdown();
 
@@ -868,11 +894,11 @@ bool CreateGPU(GPURenderer renderer)
   }
 
   // we put this here rather than in Initialize() because of the virtual calls
-  g_gpu->Reset();
+  g_gpu->Reset(true);
   return true;
 }
 
-bool DoState(StateWrapper& sw, bool update_display)
+bool DoState(StateWrapper& sw, HostDisplayTexture** host_texture, bool update_display)
 {
   if (!sw.DoMarker("System"))
     return false;
@@ -897,7 +923,7 @@ bool DoState(StateWrapper& sw, bool update_display)
     return false;
 
   g_gpu->RestoreGraphicsAPIState();
-  const bool gpu_result = sw.DoMarker("GPU") && g_gpu->DoState(sw, update_display);
+  const bool gpu_result = sw.DoMarker("GPU") && g_gpu->DoState(sw, host_texture, update_display);
   g_gpu->ResetGraphicsAPIState();
   if (!gpu_result)
     return false;
@@ -963,7 +989,7 @@ void Reset()
   Bus::Reset();
   g_dma.Reset();
   g_interrupt_controller.Reset();
-  g_gpu->Reset();
+  g_gpu->Reset(true);
   g_cdrom.Reset();
   g_pad.Reset();
   g_timers.Reset();
@@ -1076,6 +1102,7 @@ bool DoLoadState(ByteStream* state, bool force_software_renderer, bool update_di
   }
 
   UpdateRunningGame(media_filename.c_str(), media.get());
+  ClearMemorySaveStates();
 
   if (s_state == State::Starting)
   {
@@ -1117,7 +1144,7 @@ bool DoLoadState(ByteStream* state, bool force_software_renderer, bool update_di
     return false;
 
   StateWrapper sw(state, StateWrapper::Mode::Read, header.version);
-  if (!DoState(sw, update_display))
+  if (!DoState(sw, nullptr, update_display))
     return false;
 
   if (s_state == State::Starting)
@@ -1184,7 +1211,7 @@ bool SaveState(ByteStream* state, u32 screenshot_size /* = 128 */)
     g_gpu->RestoreGraphicsAPIState();
 
     StateWrapper sw(state, StateWrapper::Mode::Write, SAVE_STATE_VERSION);
-    const bool result = DoState(sw, false);
+    const bool result = DoState(sw, nullptr, false);
 
     g_gpu->ResetGraphicsAPIState();
 
@@ -1224,10 +1251,8 @@ void SingleStepCPU()
   g_gpu->ResetGraphicsAPIState();
 }
 
-void RunFrame()
+void DoRunFrame()
 {
-  s_frame_timer.Reset();
-
   g_gpu->RestoreGraphicsAPIState();
 
   if (CPU::g_state.use_debug_dispatcher)
@@ -1264,6 +1289,22 @@ void RunFrame()
     s_cheat_list->Apply();
 
   g_gpu->ResetGraphicsAPIState();
+}
+
+void RunFrame()
+{
+  s_frame_timer.Reset();
+
+  if (s_rewind_load_counter >= 0)
+  {
+    DoRewind();
+    return;
+  }
+
+  DoRunFrame();
+
+  if (s_memory_saves_enabled)
+    DoMemorySaveStates();
 }
 
 float GetTargetSpeed()
@@ -1739,12 +1780,14 @@ bool InsertMedia(const char* path)
   if (g_settings.IsUsingCodeCache())
     CPU::CodeCache::Reinitialize();
 
+  ClearMemorySaveStates();
   return true;
 }
 
 void RemoveMedia()
 {
   g_cdrom.RemoveMedia();
+  ClearMemorySaveStates();
 }
 
 void UpdateRunningGame(const char* path, CDImage* image)
@@ -1905,6 +1948,154 @@ void SetCheatList(std::unique_ptr<CheatList> cheats)
 {
   Assert(!IsShutdown());
   s_cheat_list = std::move(cheats);
+}
+
+void CalculateRewindMemoryUsage(u32 num_saves, u64* ram_usage, u64* vram_usage)
+{
+  *ram_usage = MAX_SAVE_STATE_SIZE * static_cast<u64>(num_saves);
+  *vram_usage = (VRAM_WIDTH * VRAM_HEIGHT * 4) * static_cast<u64>(std::max(g_settings.gpu_resolution_scale, 1u)) *
+                static_cast<u64>(num_saves);
+}
+
+void ClearMemorySaveStates()
+{
+  s_rewind_states.clear();
+}
+
+void UpdateMemorySaveStateSettings()
+{
+  ClearMemorySaveStates();
+
+  s_memory_saves_enabled = g_settings.rewind_enable;
+
+  if (g_settings.rewind_enable)
+  {
+    s_rewind_save_frequency = static_cast<s32>(std::ceil(g_settings.rewind_save_frequency * s_throttle_frequency));
+    s_rewind_save_counter = 0;
+
+    u64 ram_usage, vram_usage;
+    CalculateRewindMemoryUsage(g_settings.rewind_save_slots, &ram_usage, &vram_usage);
+    Log_InfoPrintf(
+      "Rewind is enabled, saving every %d frames, with %u slots and %" PRIu64 "MB RAM and %" PRIu64 "MB VRAM usage",
+      std::max(s_rewind_save_frequency, 1), g_settings.rewind_save_slots, ram_usage / 1048576, vram_usage / 1048576);
+  }
+  else
+  {
+    s_rewind_save_frequency = -1;
+    s_rewind_save_counter = -1;
+  }
+}
+
+bool SaveRewindState()
+{
+  Common::Timer save_timer;
+
+  const u32 save_slots = g_settings.rewind_save_slots;
+  while (s_rewind_states.size() >= save_slots)
+    s_rewind_states.pop_front();
+
+  MemorySaveState mss;
+  mss.state_stream = std::make_unique<GrowableMemoryByteStream>(nullptr, MAX_SAVE_STATE_SIZE);
+
+  HostDisplayTexture* host_texture = nullptr;
+  StateWrapper sw(mss.state_stream.get(), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
+  if (!DoState(sw, &host_texture, false))
+  {
+    Log_ErrorPrint("Failed to create rewind state.");
+    return false;
+  }
+
+  mss.vram_texture.reset(host_texture);
+  s_rewind_states.push_back(std::move(mss));
+
+  Log_DevPrintf("Saved rewind state (%u bytes, took %.4f ms)", s_rewind_states.back().state_stream->GetSize(),
+                save_timer.GetTimeMilliseconds());
+
+  return true;
+}
+
+bool LoadRewindState(u32 skip_saves /*= 0*/, bool consume_state /*=true */)
+{
+  while (skip_saves > 0 && !s_rewind_states.empty())
+  {
+    s_rewind_states.pop_back();
+    skip_saves--;
+  }
+
+  if (s_rewind_states.empty())
+    return false;
+
+  Common::Timer load_timer;
+
+  const MemorySaveState& mss = s_rewind_states.back();
+  mss.state_stream->SeekAbsolute(0);
+
+  StateWrapper sw(mss.state_stream.get(), StateWrapper::Mode::Read, SAVE_STATE_VERSION);
+  HostDisplayTexture* host_texture = mss.vram_texture.get();
+  if (!DoState(sw, &host_texture, true))
+  {
+    g_host_interface->ReportError("Failed to load rewind state from memory, resetting.");
+    Reset();
+    return false;
+  }
+
+  if (consume_state)
+    s_rewind_states.pop_back();
+
+  Log_DevPrintf("Rewind load took %.4f ms", load_timer.GetTimeMilliseconds());
+  return true;
+}
+
+void SetRewinding(bool enabled)
+{
+  if (enabled)
+  {
+    // Try to rewind at the replay speed, or one per second maximum.
+    const float load_frequency = std::min(g_settings.rewind_save_frequency, 1.0f);
+    s_rewind_load_frequency = static_cast<s32>(std::ceil(load_frequency * s_throttle_frequency));
+    s_rewind_load_counter = 0;
+  }
+  else
+  {
+    s_rewind_load_frequency = -1;
+    s_rewind_load_counter = -1;
+  }
+
+  s_rewinding_first_save = true;
+}
+
+void DoRewind()
+{
+  s_frame_timer.Reset();
+
+  if (s_rewind_load_counter == 0)
+  {
+    const u32 skip_saves = BoolToUInt32(!s_rewinding_first_save);
+    s_rewinding_first_save = false;
+    LoadRewindState(skip_saves, false);
+    ResetPerformanceCounters();
+    s_rewind_load_counter = s_rewind_load_frequency;
+  }
+  else
+  {
+    s_rewind_load_counter--;
+  }
+}
+
+void DoMemorySaveStates()
+{
+  if (s_rewind_save_counter >= 0)
+  {
+    if (s_rewind_save_counter == 0)
+    {
+      SaveRewindState();
+      s_rewind_save_counter = s_rewind_save_frequency;
+    }
+    else
+    {
+      s_rewind_save_counter--;
+    }
+  }
 }
 
 } // namespace System

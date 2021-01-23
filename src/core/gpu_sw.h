@@ -18,7 +18,7 @@ public:
   bool IsHardwareRenderer() const override;
 
   bool Initialize(HostDisplay* host_display) override;
-  void Reset() override;
+  void Reset(bool clear_vram) override;
   void UpdateSettings() override;
 
 protected:

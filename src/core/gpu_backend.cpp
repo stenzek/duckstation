@@ -19,7 +19,7 @@ bool GPUBackend::Initialize()
   return true;
 }
 
-void GPUBackend::Reset()
+void GPUBackend::Reset(bool clear_vram)
 {
   Sync();
   m_drawing_area = {};

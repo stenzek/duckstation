@@ -1549,7 +1549,7 @@ void CommonHostInterface::RegisterGeneralHotkeys()
 
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("ToggleCheats"),
                  StaticString(TRANSLATABLE("Hotkeys", "Toggle Cheats")), [this](bool pressed) {
-                   if (pressed)
+                   if (pressed && System::IsValid())
                      DoToggleCheats();
                  });
 
@@ -1584,7 +1584,7 @@ void CommonHostInterface::RegisterGeneralHotkeys()
 #else
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("TogglePatchCodes"),
                  StaticString(TRANSLATABLE("Hotkeys", "Toggle Patch Codes")), [this](bool pressed) {
-                   if (pressed)
+                   if (pressed && System::IsValid())
                      DoToggleCheats();
                  });
 #endif
@@ -1603,8 +1603,19 @@ void CommonHostInterface::RegisterGeneralHotkeys()
 
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("FrameStep"),
                  StaticString(TRANSLATABLE("Hotkeys", "Frame Step")), [this](bool pressed) {
-                   if (pressed)
+                   if (pressed && System::IsValid())
                      DoFrameStep();
+                 });
+
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("Rewind"),
+                 StaticString(TRANSLATABLE("Hotkeys", "Rewind")), [this](bool pressed) {
+                   if (System::IsValid())
+                   {
+                     AddOSDMessage(pressed ? TranslateStdString("OSDMessage", "Rewinding...") :
+                                             TranslateStdString("OSDMessage", "Stopped rewinding."),
+                                   5.0f);
+                     System::SetRewinding(pressed);
+                   }
                  });
 }
 
@@ -1612,16 +1623,19 @@ void CommonHostInterface::RegisterGraphicsHotkeys()
 {
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Graphics")), StaticString("ToggleSoftwareRendering"),
                  StaticString(TRANSLATABLE("Hotkeys", "Toggle Software Rendering")), [this](bool pressed) {
-                   if (pressed)
+                   if (pressed && System::IsValid())
                      ToggleSoftwareRendering();
                  });
 
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Graphics")), StaticString("TogglePGXP"),
                  StaticString(TRANSLATABLE("Hotkeys", "Toggle PGXP")), [this](bool pressed) {
-                   if (pressed)
+                   if (pressed && System::IsValid())
                    {
                      g_settings.gpu_pgxp_enable = !g_settings.gpu_pgxp_enable;
+                     g_gpu->RestoreGraphicsAPIState();
                      g_gpu->UpdateSettings();
+                     g_gpu->ResetGraphicsAPIState();
+                     System::ClearMemorySaveStates();
                      AddOSDMessage(g_settings.gpu_pgxp_enable ?
                                      TranslateStdString("OSDMessage", "PGXP is now enabled.") :
                                      TranslateStdString("OSDMessage", "PGXP is now disabled"),
@@ -1640,13 +1654,16 @@ void CommonHostInterface::RegisterGraphicsHotkeys()
 
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Graphics")), StaticString("TogglePGXPDepth"),
                  StaticString(TRANSLATABLE("Hotkeys", "Toggle PGXP Depth Buffer")), [this](bool pressed) {
-                   if (pressed)
+                   if (pressed && System::IsValid())
                    {
                      g_settings.gpu_pgxp_depth_buffer = !g_settings.gpu_pgxp_depth_buffer;
                      if (!g_settings.gpu_pgxp_enable)
                        return;
 
+                     g_gpu->RestoreGraphicsAPIState();
                      g_gpu->UpdateSettings();
+                     g_gpu->ResetGraphicsAPIState();
+                     System::ClearMemorySaveStates();
                      AddOSDMessage(g_settings.gpu_pgxp_depth_buffer ?
                                      TranslateStdString("OSDMessage", "PGXP Depth Buffer is now enabled.") :
                                      TranslateStdString("OSDMessage", "PGXP Depth Buffer is now disabled."),
@@ -1656,31 +1673,31 @@ void CommonHostInterface::RegisterGraphicsHotkeys()
 
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Graphics")), StaticString("IncreaseResolutionScale"),
                  StaticString(TRANSLATABLE("Hotkeys", "Increase Resolution Scale")), [this](bool pressed) {
-                   if (pressed)
+                   if (pressed && System::IsValid())
                      ModifyResolutionScale(1);
                  });
 
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Graphics")), StaticString("DecreaseResolutionScale"),
                  StaticString(TRANSLATABLE("Hotkeys", "Decrease Resolution Scale")), [this](bool pressed) {
-                   if (pressed)
+                   if (pressed && System::IsValid())
                      ModifyResolutionScale(-1);
                  });
 
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Graphics")), StaticString("TogglePostProcessing"),
                  StaticString(TRANSLATABLE("Hotkeys", "Toggle Post-Processing")), [this](bool pressed) {
-                   if (pressed)
+                   if (pressed && System::IsValid())
                      TogglePostProcessing();
                  });
 
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Graphics")), StaticString("ReloadPostProcessingShaders"),
                  StaticString(TRANSLATABLE("Hotkeys", "Reload Post Processing Shaders")), [this](bool pressed) {
-                   if (pressed)
+                   if (pressed && System::IsValid())
                      ReloadPostProcessingShaders();
                  });
 
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Graphics")), StaticString("ReloadTextureReplacements"),
                  StaticString(TRANSLATABLE("Hotkeys", "Reload Texture Replacements")), [this](bool pressed) {
-                   if (pressed)
+                   if (pressed && System::IsValid())
                    {
                      AddOSDMessage(TranslateStdString("OSDMessage", "Texture replacements reloaded."), 10.0f);
                      g_texture_replacements.Reload();

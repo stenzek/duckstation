@@ -2,6 +2,7 @@
 #include "common/assert.h"
 #include "common/log.h"
 #include "common/scope_guard.h"
+#include "common/state_wrapper.h"
 #include "common/timer.h"
 #include "common/vulkan/builders.h"
 #include "common/vulkan/context.h"
@@ -87,12 +88,75 @@ bool GPU_HW_Vulkan::Initialize(HostDisplay* host_display)
   return true;
 }
 
-void GPU_HW_Vulkan::Reset()
+void GPU_HW_Vulkan::Reset(bool clear_vram)
 {
-  GPU_HW::Reset();
+  GPU_HW::Reset(clear_vram);
 
   EndRenderPass();
-  ClearFramebuffer();
+
+  if (clear_vram)
+    ClearFramebuffer();
+}
+
+bool GPU_HW_Vulkan::DoState(StateWrapper& sw, HostDisplayTexture** host_texture, bool update_display)
+{
+  if (host_texture)
+  {
+    EndRenderPass();
+
+    const VkImageCopy ic{{VK_IMAGE_ASPECT_COLOR_BIT, 0u, 0u, 1u},
+                         {0, 0, 0},
+                         {VK_IMAGE_ASPECT_COLOR_BIT, 0u, 0u, 1u},
+                         {0, 0, 0},
+                         {m_vram_texture.GetWidth(), m_vram_texture.GetHeight(), 1u}};
+
+    if (sw.IsReading())
+    {
+      Vulkan::Texture* tex = static_cast<Vulkan::Texture*>((*host_texture)->GetHandle());
+      if (tex->GetWidth() != m_vram_texture.GetWidth() || tex->GetHeight() != m_vram_texture.GetHeight() ||
+          tex->GetSamples() != m_vram_texture.GetSamples())
+      {
+        return false;
+      }
+
+      VkCommandBuffer buf = g_vulkan_context->GetCurrentCommandBuffer();
+      const VkImageLayout old_tex_layout = tex->GetLayout();
+      const VkImageLayout old_vram_layout = m_vram_texture.GetLayout();
+      tex->TransitionToLayout(buf, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+      m_vram_texture.TransitionToLayout(buf, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+      vkCmdCopyImage(g_vulkan_context->GetCurrentCommandBuffer(), tex->GetImage(), tex->GetLayout(),
+                     m_vram_texture.GetImage(), m_vram_texture.GetLayout(), 1, &ic);
+      m_vram_texture.TransitionToLayout(buf, old_vram_layout);
+      tex->TransitionToLayout(buf, old_tex_layout);
+    }
+    else
+    {
+      std::unique_ptr<HostDisplayTexture> htex =
+        m_host_display->CreateTexture(m_vram_texture.GetWidth(), m_vram_texture.GetHeight(), 1, 1,
+                                      m_vram_texture.GetSamples(), HostDisplayPixelFormat::RGBA8, nullptr, 0, false);
+      if (!htex)
+        return false;
+
+      Vulkan::Texture* tex = static_cast<Vulkan::Texture*>(htex->GetHandle());
+      if (tex->GetWidth() != m_vram_texture.GetWidth() || tex->GetHeight() != m_vram_texture.GetHeight() ||
+          tex->GetSamples() != m_vram_texture.GetSamples())
+      {
+        return false;
+      }
+
+      VkCommandBuffer buf = g_vulkan_context->GetCurrentCommandBuffer();
+      const VkImageLayout old_vram_layout = m_vram_texture.GetLayout();
+      tex->TransitionToLayout(buf, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+      m_vram_texture.TransitionToLayout(buf, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+      vkCmdCopyImage(g_vulkan_context->GetCurrentCommandBuffer(), m_vram_texture.GetImage(), m_vram_texture.GetLayout(),
+                     tex->GetImage(), tex->GetLayout(), 1, &ic);
+      m_vram_texture.TransitionToLayout(buf, old_vram_layout);
+      tex->TransitionToLayout(buf, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+      *host_texture = htex.release();
+    }
+  }
+
+  return GPU_HW::DoState(sw, host_texture, update_display);
 }
 
 void GPU_HW_Vulkan::ResetGraphicsAPIState()

@@ -488,6 +488,9 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("Main", "LoadDevicesFromSaveStates", false);
   si.SetBoolValue("Main", "ApplyGameSettings", true);
   si.SetBoolValue("Main", "DisableAllEnhancements", false);
+  si.SetBoolValue("Main", "RewindEnable", false);
+  si.SetFloatValue("Main", "RewindFrequency", 10.0f);
+  si.SetIntValue("Main", "RewindSaveSlots", 10);
 
   si.SetStringValue("CPU", "ExecutionMode", Settings::GetCPUExecutionModeName(Settings::DEFAULT_CPU_EXECUTION_MODE));
   si.SetBoolValue("CPU", "RecompilerMemoryExceptions", false);
@@ -655,6 +658,13 @@ void HostInterface::FixIncompatibleSettings(bool display_osd_messages)
     g_settings.cpu_fastmem_mode = CPUFastmemMode::LUT;
   }
 #endif
+
+  // rewinding causes issues with mmap fastmem, so just use LUT
+  if (g_settings.rewind_enable && g_settings.IsUsingFastmem() && g_settings.cpu_fastmem_mode == CPUFastmemMode::MMap)
+  {
+    Log_WarningPrintf("Disabling mmap fastmem due to rewind being enabled");
+    g_settings.cpu_fastmem_mode = CPUFastmemMode::LUT;
+  }
 }
 
 void HostInterface::SaveSettings(SettingsInterface& si)
@@ -676,6 +686,8 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
 
   if (System::IsValid())
   {
+    System::ClearMemorySaveStates();
+
     if (g_settings.cpu_overclock_active != old_settings.cpu_overclock_active ||
         (g_settings.cpu_overclock_active &&
          (g_settings.cpu_overclock_numerator != old_settings.cpu_overclock_numerator ||
@@ -755,7 +767,8 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.display_active_start_offset != old_settings.display_active_start_offset ||
         g_settings.display_active_end_offset != old_settings.display_active_end_offset ||
         g_settings.display_line_start_offset != old_settings.display_line_start_offset ||
-        g_settings.display_line_end_offset != old_settings.display_line_end_offset)
+        g_settings.display_line_end_offset != old_settings.display_line_end_offset ||
+        g_settings.rewind_enable != old_settings.rewind_enable)
     {
       if (g_settings.IsUsingCodeCache())
         CPU::CodeCache::Reinitialize();
@@ -791,6 +804,13 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
          System::HasMediaPlaylist()))
     {
       System::UpdateMemoryCards();
+    }
+
+    if (g_settings.rewind_enable != old_settings.rewind_enable ||
+        g_settings.rewind_save_frequency != old_settings.rewind_save_frequency ||
+        g_settings.rewind_save_slots != old_settings.rewind_save_slots)
+    {
+      System::UpdateMemorySaveStateSettings();
     }
 
     if (g_settings.texture_replacements.enable_vram_write_replacements !=
@@ -999,6 +1019,7 @@ void HostInterface::ModifyResolutionScale(s32 increment)
     g_gpu->RestoreGraphicsAPIState();
     g_gpu->UpdateSettings();
     g_gpu->ResetGraphicsAPIState();
+    System::ClearMemorySaveStates();
   }
 }
 

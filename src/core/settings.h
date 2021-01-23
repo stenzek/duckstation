@@ -94,6 +94,10 @@ struct Settings
   bool auto_load_cheats = false;
   bool disable_all_enhancements = false;
 
+  bool rewind_enable = false;
+  float rewind_save_frequency = 10.0f;
+  u32 rewind_save_slots = 10;
+
   GPURenderer gpu_renderer = GPURenderer::Software;
   std::string gpu_adapter;
   std::string display_post_process_chain;

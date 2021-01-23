@@ -20,11 +20,12 @@ bool GPU_SW_Backend::Initialize()
   return GPUBackend::Initialize();
 }
 
-void GPU_SW_Backend::Reset()
+void GPU_SW_Backend::Reset(bool clear_vram)
 {
-  GPUBackend::Reset();
+  GPUBackend::Reset(clear_vram);
 
-  m_vram.fill(0);
+  if (clear_vram)
+    m_vram.fill(0);
 }
 
 void GPU_SW_Backend::DrawPolygon(const GPUBackendDrawPolygonCommand* cmd)

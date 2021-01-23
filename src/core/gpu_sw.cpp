@@ -75,11 +75,11 @@ bool GPU_SW::Initialize(HostDisplay* host_display)
   return true;
 }
 
-void GPU_SW::Reset()
+void GPU_SW::Reset(bool clear_vram)
 {
-  GPU::Reset();
+  GPU::Reset(clear_vram);
 
-  m_backend.Reset();
+  m_backend.Reset(clear_vram);
 }
 
 void GPU_SW::UpdateSettings()

@@ -75,7 +75,7 @@ std::tuple<u32, u32> GPU::GetEffectiveDisplayResolution()
   return std::tie(m_crtc_state.display_vram_width, m_crtc_state.display_vram_height);
 }
 
-void GPU::Reset()
+void GPU::Reset(bool clear_vram)
 {
   SoftReset();
   m_set_texture_disable_mask = false;
@@ -119,12 +119,12 @@ void GPU::SoftReset()
   UpdateCommandTickEvent();
 }
 
-bool GPU::DoState(StateWrapper& sw, bool update_display)
+bool GPU::DoState(StateWrapper& sw, HostDisplayTexture** host_texture, bool update_display)
 {
   if (sw.IsReading())
   {
     // perform a reset to discard all pending draws/fb state
-    Reset();
+    Reset(host_texture == nullptr);
   }
 
   sw.Do(&m_GPUSTAT.bits);
@@ -214,27 +214,33 @@ bool GPU::DoState(StateWrapper& sw, bool update_display)
     UpdateDMARequest();
   }
 
-  if (!sw.DoMarker("GPU-VRAM"))
-    return false;
+  if (!host_texture)
+  {
+    if (!sw.DoMarker("GPU-VRAM"))
+      return false;
+
+    if (sw.IsReading())
+    {
+      // Still need a temporary here.
+      HeapArray<u16, VRAM_WIDTH* VRAM_HEIGHT> temp;
+      sw.DoBytes(temp.data(), VRAM_WIDTH * VRAM_HEIGHT * sizeof(u16));
+      UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, temp.data(), false, false);
+    }
+    else
+    {
+      ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
+      sw.DoBytes(m_vram_ptr, VRAM_WIDTH * VRAM_HEIGHT * sizeof(u16));
+    }
+  }
 
   if (sw.IsReading())
   {
-    // Still need a temporary here.
-    HeapArray<u16, VRAM_WIDTH * VRAM_HEIGHT> temp;
-    sw.DoBytes(temp.data(), VRAM_WIDTH * VRAM_HEIGHT * sizeof(u16));
-    UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, temp.data(), false, false);
-
     UpdateCRTCConfig();
     if (update_display)
       UpdateDisplay();
 
     UpdateCRTCTickEvent();
     UpdateCommandTickEvent();
-  }
-  else
-  {
-    ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
-    sw.DoBytes(m_vram_ptr, VRAM_WIDTH * VRAM_HEIGHT * sizeof(u16));
   }
 
   return !sw.HasError();
