@@ -672,6 +672,19 @@ void HostInterface::FixIncompatibleSettings(bool display_osd_messages)
     Log_WarningPrintf("Disabling mmap fastmem due to rewind being enabled");
     g_settings.cpu_fastmem_mode = CPUFastmemMode::LUT;
   }
+
+  // code compilation is too slow with runahead, use the recompiler
+  if (g_settings.runahead_enable && g_settings.IsUsingCodeCache())
+  {
+    Log_WarningPrintf("Code cache/recompiler disabled due to runahead");
+    g_settings.cpu_execution_mode = CPUExecutionMode::Interpreter;
+  }
+
+  if (g_settings.runahead_enable && g_settings.rewind_enable)
+  {
+    Log_WarningPrintf("Rewind disabled due to runahead being enabled");
+    g_settings.rewind_enable = false;
+  }
 }
 
 void HostInterface::SaveSettings(SettingsInterface& si)

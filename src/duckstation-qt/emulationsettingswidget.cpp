@@ -101,7 +101,7 @@ void EmulationSettingsWidget::onTurboSpeedIndexChanged(int index)
 
 void EmulationSettingsWidget::updateRewindSummaryLabel()
 {
-  if (m_ui.rewindEnable->isChecked())
+  if (m_ui.rewindEnable->isEnabled() && m_ui.rewindEnable->isChecked())
   {
     const u32 frames = static_cast<u32>(m_ui.rewindSaveSlots->value());
     const float frequency = static_cast<float>(m_ui.rewindSaveFrequency->value());
@@ -122,8 +122,15 @@ void EmulationSettingsWidget::updateRewindSummaryLabel()
   }
   else
   {
-    m_ui.rewindSummary->setText(
-      tr("Rewind is not enabled. Please note that enabling rewind may significantly increase system requirements."));
+    if (!m_ui.rewindEnable->isEnabled())
+    {
+      m_ui.rewindSummary->setText(tr("Rewind is disabled because runahead is enabled."));
+    }
+    else
+    {
+      m_ui.rewindSummary->setText(
+        tr("Rewind is not enabled. Please note that enabling rewind may significantly increase system requirements."));
+    }
     m_ui.rewindSaveFrequency->setEnabled(false);
     m_ui.rewindSaveSlots->setEnabled(false);
   }
@@ -132,4 +139,6 @@ void EmulationSettingsWidget::updateRewindSummaryLabel()
 void EmulationSettingsWidget::updateRunaheadFields()
 {
   m_ui.runaheadFrames->setEnabled(m_ui.runaheadEnable->isChecked());
+  m_ui.rewindEnable->setEnabled(!m_ui.runaheadEnable->isChecked());
+  updateRewindSummaryLabel();
 }
