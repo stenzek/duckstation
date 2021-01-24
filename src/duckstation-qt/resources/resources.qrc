@@ -56,6 +56,8 @@
     <file>icons/flag-eu@2x.png</file>
     <file>icons/flag-jp.png</file>
     <file>icons/flag-jp@2x.png</file>
+    <file>icons/flag-other.png</file>
+    <file>icons/flag-other@2x.png</file>
     <file>icons/flag-uc.png</file>
     <file>icons/flag-uc@2x.png</file>
     <file>icons/flag-us.png</file>
@@ -88,6 +90,8 @@
     <file>icons/media-playback-start@2x.png</file>
     <file>icons/media-record.png</file>
     <file>icons/media-record@2x.png</file>
+    <file>icons/multimedia-player.png</file>
+    <file>icons/multimedia-player@2x.png</file>
     <file>icons/preferences-desktop-keyboard-shortcuts.png</file>
     <file>icons/preferences-desktop-keyboard-shortcuts@2x.png</file>
     <file>icons/preferences-system.png</file>
