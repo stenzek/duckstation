@@ -1,4 +1,5 @@
 #include "psf_loader.h"
+#include "bios.h"
 #include "common/assert.h"
 #include "common/file_system.h"
 #include "common/log.h"
@@ -158,6 +159,16 @@ bool File::Load(const char* path)
       }
     }
   }
+
+  // Region detection.
+  m_region = BIOS::GetPSExeDiscRegion(*reinterpret_cast<const BIOS::PSEXEHeader*>(m_program_data.data()));
+
+  // _refresh tag takes precedence.
+  const int refresh_tag = GetTagInt("_region", 0);
+  if (refresh_tag == 60)
+    m_region = DiscRegion::NTSC_U;
+  else if (refresh_tag == 50)
+    m_region = DiscRegion::PAL;
 
   return true;
 }

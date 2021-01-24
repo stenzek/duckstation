@@ -252,4 +252,20 @@ bool IsValidPSExeHeader(const PSEXEHeader& header, u32 file_size)
   return true;
 }
 
+DiscRegion GetPSExeDiscRegion(const PSEXEHeader& header)
+{
+  static constexpr char ntsc_u_id[] = "Sony Computer Entertainment Inc. for North America area";
+  static constexpr char ntsc_j_id[] = "Sony Computer Entertainment Inc. for Japan area";
+  static constexpr char pal_id[] = "Sony Computer Entertainment Inc. for Europe area";
+
+  if (std::memcmp(header.marker, ntsc_u_id, sizeof(ntsc_u_id) - 1) == 0)
+    return DiscRegion::NTSC_U;
+  else if (std::memcmp(header.marker, ntsc_j_id, sizeof(ntsc_j_id) - 1) == 0)
+    return DiscRegion::NTSC_J;
+  else if (std::memcmp(header.marker, pal_id, sizeof(pal_id) - 1) == 0)
+    return DiscRegion::PAL;
+  else
+    return DiscRegion::Other;
+}
+
 } // namespace BIOS

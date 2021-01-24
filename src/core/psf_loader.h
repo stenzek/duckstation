@@ -27,6 +27,7 @@ public:
 
   ALWAYS_INLINE const ProgramData& GetProgramData() const { return m_program_data; }
   ALWAYS_INLINE const TagMap& GetTagMap() const { return m_tags; }
+  ALWAYS_INLINE DiscRegion GetRegion() const { return m_region; }
 
   std::optional<std::string> GetTagString(const char* tag_name) const;
   std::optional<int> GetTagInt(const char* tag_name) const;
@@ -46,6 +47,7 @@ private:
 
   ProgramData m_program_data;
   TagMap m_tags;
+  DiscRegion m_region = DiscRegion::Other;
 };
 
 bool Load(const char* path);

@@ -69,4 +69,5 @@ bool PatchBIOSFastBoot(u8* image, u32 image_size, const Hash& hash);
 bool PatchBIOSForEXE(u8* image, u32 image_size, u32 r_pc, u32 r_gp, u32 r_sp, u32 r_fp);
 
 bool IsValidPSExeHeader(const PSEXEHeader& header, u32 file_size);
+DiscRegion GetPSExeDiscRegion(const PSEXEHeader& header);
 } // namespace BIOS
