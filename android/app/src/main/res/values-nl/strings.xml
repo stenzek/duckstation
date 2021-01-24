@@ -107,7 +107,7 @@
     <string name="menu_main_resume_last_session">Hervat Vorige Sessie</string>
     <string name="menu_main_start_file">Start Bestand</string>
     <string name="menu_main_start_bios">Start BIOS</string>
-    <string name="menu_main_add_game_directory">Voeg Game Folder Toe</string>
+    <string name="menu_main_edit_game_directories">Bewerk Gamemappen</string>
     <string name="menu_main_scan_for_new_games">Scan Naar Nieuwe Spellen</string>
     <string name="menu_main_rescan_all_games">Alle Spellen Opnieuw Scannen</string>
     <string name="menu_main_import_bios">Importeer BIOS</string>

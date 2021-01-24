@@ -109,7 +109,7 @@
     <string name="menu_main_resume_last_session">Resumir Jogo</string>
     <string name="menu_main_start_file">Iniciar Arquivo</string>
     <string name="menu_main_start_bios">Iniciar BIOS</string>
-    <string name="menu_main_add_game_directory">Adicionar Diretório de Jogo</string>
+    <string name="menu_main_edit_game_directories">Editar Diretórios de Jogos</string>
     <string name="menu_main_scan_for_new_games">Escanear Jogos Novos</string>
     <string name="menu_main_rescan_all_games">Rescanear Tudo</string>
     <string name="menu_main_import_bios">Importar BIOS</string>

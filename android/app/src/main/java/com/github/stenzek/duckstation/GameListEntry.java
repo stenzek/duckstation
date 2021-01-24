@@ -1,6 +1,5 @@
 package com.github.stenzek.duckstation;
 
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.view.View;
 import android.widget.ImageView;
@@ -12,7 +11,8 @@ public class GameListEntry {
     public enum EntryType {
         Disc,
         PSExe,
-        Playlist
+        Playlist,
+        PSF
     }
 
     public enum CompatibilityRating {
@@ -122,6 +122,9 @@ public class GameListEntry {
             case PAL:
                 regionDrawableId = R.drawable.flag_eu;
                 break;
+            case Other:
+                regionDrawableId = R.drawable.ic_baseline_help_24;
+                break;
             case NTSC_U:
             default:
                 regionDrawableId = R.drawable.flag_us;
@@ -139,6 +142,10 @@ public class GameListEntry {
 
             case Playlist:
                 typeDrawableId = R.drawable.ic_baseline_playlist_play_24;
+                break;
+
+            case PSF:
+                typeDrawableId = R.drawable.ic_baseline_library_music_24;
                 break;
 
             case Disc:
