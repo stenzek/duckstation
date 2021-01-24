@@ -15,12 +15,16 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
+            android:name=".GameDirectoriesActivity"
+            android:label="@string/title_activity_game_directories"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
+        <activity
             android:name=".EmulationActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
+            android:immersive="true"
             android:label="@string/title_activity_emulation"
             android:parentActivityName=".MainActivity"
-            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar"
-            android:immersive="true">
+            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.github.stenzek.duckstation.MainActivity" />

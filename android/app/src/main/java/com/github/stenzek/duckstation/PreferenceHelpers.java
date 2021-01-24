@@ -46,8 +46,14 @@ public class PreferenceHelpers {
 
     public static boolean addToStringList(SharedPreferences prefs, String keyName, String valueToAdd) {
         Set<String> values = getStringSet(prefs, keyName);
-        if (values == null)
+        if (values == null) {
             values = new ArraySet<>();
+        } else {
+            // We need to copy it otherwise the put doesn't save.
+            Set<String> valuesCopy = new ArraySet<>();
+            valuesCopy.addAll(values);
+            values = valuesCopy;
+        }
 
         final boolean result = values.add(valueToAdd);
         prefs.edit().putStringSet(keyName, values).commit();
@@ -58,6 +64,11 @@ public class PreferenceHelpers {
         Set<String> values = getStringSet(prefs, keyName);
         if (values == null)
             return false;
+
+        // We need to copy it otherwise the put doesn't save.
+        Set<String> valuesCopy = new ArraySet<>();
+        valuesCopy.addAll(values);
+        values = valuesCopy;
 
         final boolean result = values.remove(valueToRemove);
         prefs.edit().putStringSet(keyName, values).commit();

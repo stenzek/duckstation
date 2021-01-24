@@ -677,6 +677,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     }
 
     private boolean mSustainedPerformanceModeEnabled = false;
+
     private void updateSustainedPerformanceMode() {
         final boolean enabled = getBooleanSetting("Main/SustainedPerformanceMode", false);
         if (mSustainedPerformanceModeEnabled == enabled)

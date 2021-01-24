@@ -15,8 +15,8 @@
     </group>
     <group android:id="@+id/game_list">
         <item
-            android:id="@+id/action_add_game_directory"
-            android:title="@string/menu_main_add_game_directory" />
+            android:id="@+id/action_edit_game_directories"
+            android:title="@string/menu_main_edit_game_directories" />
         <item
             android:id="@+id/action_scan_for_new_games"
             android:title="@string/menu_main_scan_for_new_games" />

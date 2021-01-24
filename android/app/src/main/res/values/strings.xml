@@ -112,7 +112,7 @@
     <string name="menu_main_resume_last_session">Resume Last Session</string>
     <string name="menu_main_start_file">Start File</string>
     <string name="menu_main_start_bios">Start BIOS</string>
-    <string name="menu_main_add_game_directory">Add Game Directory</string>
+    <string name="menu_main_edit_game_directories">Edit Game Directories</string>
     <string name="menu_main_scan_for_new_games">Scan For New Games</string>
     <string name="menu_main_rescan_all_games">Rescan All Games</string>
     <string name="menu_main_import_bios">Import BIOS</string>
@@ -195,4 +195,9 @@
     <string name="settings_summary_general_sync_to_host_refresh_rate">Adjusts the emulation speed so the console\'s refresh rate matches the host\'s refresh rate, when VSync and Audio Resampling is enabled. This results in the smoothest animations possible, at the cost of potentially increasing the emulation speed by less than 1%.</string>
     <string name="settings_sustained_performance_mode">Sustained Performance Mode</string>
     <string name="settings_summary_sustained_performance_mode">Enables Android\'s sustained performance mode. May result in more consistent framerates for long sessions on some devices.</string>
+    <string name="title_activity_game_directories">Edit Game Directories</string>
+    <string name="settings_game_directories">Game Directories</string>
+    <string name="settings_summary_game_directories">Change the list of directories used to search for games.</string>
+    <string name="game_directories_scanning_subdirectories">Scanning subdirectories.</string>
+    <string name="game_directories_not_scanning_subdirectories">Not scanning subdirectories.</string>
 </resources>

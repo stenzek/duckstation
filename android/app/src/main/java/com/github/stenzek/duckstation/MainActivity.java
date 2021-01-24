@@ -43,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_IMPORT_BIOS_IMAGE = 3;
     private static final int REQUEST_START_FILE = 4;
     private static final int REQUEST_SETTINGS = 5;
+    private static final int REQUEST_EDIT_GAME_DIRECTORIES = 6;
 
     private GameList mGameList;
     private ListView mGameListView;
@@ -209,8 +210,10 @@ public class MainActivity extends AppCompatActivity {
             startEmulation(null, false);
         } else if (id == R.id.action_start_file) {
             startStartFile();
-        } else if (id == R.id.action_add_game_directory) {
-            startAddGameDirectory();
+        } else if (id == R.id.action_edit_game_directories) {
+            Intent intent = new Intent(this, GameDirectoriesActivity.class);
+            startActivityForResult(intent, REQUEST_EDIT_GAME_DIRECTORIES);
+            return true;
         } else if (id == R.id.action_scan_for_new_games) {
             mGameList.refresh(false, false, this);
         } else if (id == R.id.action_rescan_all_games) {
@@ -255,22 +258,6 @@ public class MainActivity extends AppCompatActivity {
         return path;
     }
 
-    private String getPathFromTreeUri(Uri treeUri) {
-        String path = FileUtil.getFullPathFromTreeUri(treeUri, this);
-        if (path.length() < 5) {
-            new AlertDialog.Builder(this)
-                    .setTitle(R.string.main_activity_error)
-                    .setMessage(R.string.main_activity_get_path_from_directory_error)
-                    .setPositiveButton(R.string.main_activity_ok, (dialog, button) -> {
-                    })
-                    .create()
-                    .show();
-            return null;
-        }
-
-        return path;
-    }
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -280,20 +267,11 @@ public class MainActivity extends AppCompatActivity {
                 if (resultCode != RESULT_OK)
                     return;
 
-                String path = getPathFromTreeUri(data.getData());
+                String path = GameDirectoriesActivity.getPathFromTreeUri(this, data.getData());
                 if (path == null)
                     return;
 
-                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-                Set<String> currentValues = prefs.getStringSet("GameList/RecursivePaths", null);
-                if (currentValues == null)
-                    currentValues = new HashSet<String>();
-
-                currentValues.add(path);
-                SharedPreferences.Editor editor = prefs.edit();
-                editor.putStringSet("GameList/RecursivePaths", currentValues);
-                editor.apply();
-                Log.i("MainActivity", "Added path '" + path + "' to game list search directories");
+                GameDirectoriesActivity.addSearchDirectory(this, path, true);
                 mGameList.refresh(false, false, this);
             }
             break;
@@ -320,6 +298,11 @@ public class MainActivity extends AppCompatActivity {
 
             case REQUEST_SETTINGS: {
                 loadSettings();
+            }
+            break;
+
+            case REQUEST_EDIT_GAME_DIRECTORIES: {
+                mGameList.refresh(false, false, this);
             }
             break;
         }

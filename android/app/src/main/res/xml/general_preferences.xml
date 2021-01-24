@@ -14,8 +14,17 @@
   ~ limitations under the License.
   -->
 
-<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
-
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <Preference
+        app:title="@string/settings_game_directories"
+        app:summary="@string/settings_summary_game_directories"
+        app:iconSpaceReserved="false">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetClass="com.github.stenzek.duckstation.GameDirectoriesActivity"
+            android:targetPackage="com.github.stenzek.duckstation" />
+    </Preference>
     <ListPreference
         app:key="Main/EmulationSpeed"
         app:title="@string/settings_emulation_speed"
