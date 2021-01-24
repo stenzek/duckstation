@@ -242,22 +242,6 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private String getPathFromUri(Uri uri) {
-        String path = FileUtil.getFullPathFromUri(uri, this);
-        if (path.length() < 5) {
-            new AlertDialog.Builder(this)
-                    .setTitle(R.string.main_activity_error)
-                    .setMessage(R.string.main_activity_get_path_from_file_error)
-                    .setPositiveButton(R.string.main_activity_ok, (dialog, button) -> {
-                    })
-                    .create()
-                    .show();
-            return null;
-        }
-
-        return path;
-    }
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -288,7 +272,7 @@ public class MainActivity extends AppCompatActivity {
                 if (resultCode != RESULT_OK)
                     return;
 
-                String path = getPathFromUri(data.getData());
+                String path = GameDirectoriesActivity.getPathFromUri(this, data.getData());
                 if (path == null)
                     return;
 

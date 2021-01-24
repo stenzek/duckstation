@@ -124,6 +124,8 @@ public class AndroidHostInterface {
 
     public native boolean setMediaPlaylistIndex(int index);
 
+    public native boolean setMediaFilename(String filename);
+
     static {
         System.loadLibrary("duckstation-native");
     }

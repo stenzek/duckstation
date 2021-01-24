@@ -1504,3 +1504,21 @@ DEFINE_JNI_ARGS_METHOD(jboolean, AndroidHostInterface_setMediaPlaylistIndex, job
 
   return true;
 }
+
+DEFINE_JNI_ARGS_METHOD(jboolean, AndroidHostInterface_setMediaFilename, jstring obj, jstring filename)
+{
+  if (!System::IsValid() || !filename)
+    return false;
+
+  std::string filename_str(AndroidHelpers::JStringToString(env, filename));
+  AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
+  hi->RunOnEmulationThread([filename_str, hi]() {
+    if (System::IsValid())
+    {
+      if (!System::InsertMedia(filename_str.c_str()))
+        hi->AddOSDMessage("Disc switch failed. Please make sure the file exists and is a supported disc image.");
+    }
+  });
+
+  return true;
+}

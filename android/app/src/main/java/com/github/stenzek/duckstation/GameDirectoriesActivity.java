@@ -235,6 +235,22 @@ public class GameDirectoriesActivity extends AppCompatActivity {
         return path;
     }
 
+    public static String getPathFromUri(Context context, Uri uri) {
+        String path = FileUtil.getFullPathFromUri(uri, context);
+        if (path.length() < 5) {
+            new AlertDialog.Builder(context)
+                    .setTitle(R.string.main_activity_error)
+                    .setMessage(R.string.main_activity_get_path_from_file_error)
+                    .setPositiveButton(R.string.main_activity_ok, (dialog, button) -> {
+                    })
+                    .create()
+                    .show();
+            return null;
+        }
+
+        return path;
+    }
+
     public static void addSearchDirectory(Context context, String path, boolean recursive) {
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         final String key = recursive ? "GameList/RecursivePaths" : "GameList/Paths";

@@ -300,8 +300,19 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
                 applySettings();
             }
         } else if (requestCode == REQUEST_IMPORT_PATCH_CODES) {
-            if (data != null)
-                importPatchesFromFile(data.getData());
+            if (data == null)
+                return;
+
+            importPatchesFromFile(data.getData());
+        } else if (requestCode == REQUEST_CHANGE_DISC_FILE) {
+            if (data == null)
+                return;
+
+            String path = GameDirectoriesActivity.getPathFromUri(this, data.getData());
+            if (path == null)
+                return;
+
+            AndroidHostInterface.getInstance().setMediaFilename(path);
         }
     }
 
@@ -378,6 +389,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
 
     private static final int REQUEST_CODE_SETTINGS = 0;
     private static final int REQUEST_IMPORT_PATCH_CODES = 1;
+    private static final int REQUEST_CHANGE_DISC_FILE = 2;
 
     private void onMenuClosed() {
         enableFullscreenImmersive();
@@ -560,21 +572,27 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     private void showDiscChangeMenu() {
         final String[] paths = AndroidHostInterface.getInstance().getMediaPlaylistPaths();
         final int currentPath = AndroidHostInterface.getInstance().getMediaPlaylistIndex();
-        if (paths == null) {
-            onMenuClosed();
-            return;
-        }
+        final int numPaths = (paths != null) ? paths.length : 0;
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
-        CharSequence[] items = new CharSequence[paths.length];
-        for (int i = 0; i < paths.length; i++)
+        CharSequence[] items = new CharSequence[numPaths + 1];
+        for (int i = 0; i < numPaths; i++)
             items[i] = GameListEntry.getFileNameForPath(paths[i]);
+        items[numPaths] = "Select New File...";
 
-        builder.setSingleChoiceItems(items, currentPath, (dialogInterface, i) -> {
-            AndroidHostInterface.getInstance().setMediaPlaylistIndex(i);
+        builder.setSingleChoiceItems(items, (currentPath < numPaths) ? currentPath : -1, (dialogInterface, i) -> {
             dialogInterface.dismiss();
             onMenuClosed();
+
+            if (i < numPaths) {
+                AndroidHostInterface.getInstance().setMediaPlaylistIndex(i);
+            } else {
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.setType("*/*");
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                startActivityForResult(Intent.createChooser(intent, getString(R.string.main_activity_choose_disc_image)), REQUEST_CHANGE_DISC_FILE);
+            }
         });
         builder.setOnCancelListener(dialogInterface -> onMenuClosed());
         builder.create().show();
