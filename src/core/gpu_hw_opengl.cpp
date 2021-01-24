@@ -108,9 +108,9 @@ bool GPU_HW_OpenGL::DoState(StateWrapper& sw, HostDisplayTexture** host_texture,
 {
   if (host_texture)
   {
+    HostDisplayTexture* tex = *host_texture;
     if (sw.IsReading())
     {
-      HostDisplayTexture* tex = *host_texture;
       if (tex->GetWidth() != m_vram_texture.GetWidth() || tex->GetHeight() != m_vram_texture.GetHeight() ||
           tex->GetSamples() != m_vram_texture.GetSamples())
       {
@@ -123,16 +123,23 @@ bool GPU_HW_OpenGL::DoState(StateWrapper& sw, HostDisplayTexture** host_texture,
     }
     else
     {
-      std::unique_ptr<HostDisplayTexture> tex =
-        m_host_display->CreateTexture(m_vram_texture.GetWidth(), m_vram_texture.GetHeight(), 1, 1,
-                                      m_vram_texture.GetSamples(), HostDisplayPixelFormat::RGBA8, nullptr, 0, false);
-      if (!tex)
-        return false;
+      if (!tex || tex->GetWidth() != m_vram_texture.GetWidth() || tex->GetHeight() != m_vram_texture.GetHeight() ||
+          tex->GetSamples() != m_vram_texture.GetSamples())
+      {
+        delete tex;
+
+        tex = m_host_display
+                ->CreateTexture(m_vram_texture.GetWidth(), m_vram_texture.GetHeight(), 1, 1,
+                                m_vram_texture.GetSamples(), HostDisplayPixelFormat::RGBA8, nullptr, 0, false)
+                .release();
+        *host_texture = tex;
+        if (!tex)
+          return false;
+      }
 
       CopyFramebufferForState(m_vram_texture.GetGLTarget(), m_vram_texture.GetGLId(), m_vram_fbo_id, 0, 0,
                               static_cast<GLuint>(reinterpret_cast<uintptr_t>(tex->GetHandle())), 0, 0, 0,
                               m_vram_texture.GetWidth(), m_vram_texture.GetHeight());
-      *host_texture = tex.release();
     }
   }
 

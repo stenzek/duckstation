@@ -2046,13 +2046,17 @@ bool LoadMemoryState(const MemorySaveState& mss)
 
 bool SaveMemoryState(MemorySaveState* mss)
 {
-  mss->state_stream = std::make_unique<GrowableMemoryByteStream>(nullptr, MAX_SAVE_STATE_SIZE);
+  if (!mss->state_stream)
+    mss->state_stream = std::make_unique<GrowableMemoryByteStream>(nullptr, MAX_SAVE_STATE_SIZE);
+  else
+    mss->state_stream->SeekAbsolute(0);
 
-  HostDisplayTexture* host_texture = nullptr;
+  HostDisplayTexture* host_texture = mss->vram_texture.release();
   StateWrapper sw(mss->state_stream.get(), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
   if (!DoState(sw, &host_texture, false))
   {
     Log_ErrorPrint("Failed to create rewind state.");
+    delete host_texture;
     return false;
   }
 
@@ -2064,11 +2068,15 @@ bool SaveRewindState()
 {
   Common::Timer save_timer;
 
+  // try to reuse the frontmost slot
   const u32 save_slots = g_settings.rewind_save_slots;
-  while (s_rewind_states.size() >= save_slots)
-    s_rewind_states.pop_front();
-
   MemorySaveState mss;
+  while (s_rewind_states.size() >= save_slots)
+  {
+    mss = std::move(s_rewind_states.front());
+    s_rewind_states.pop_front();
+  }
+
   if (!SaveMemoryState(&mss))
     return false;
 
@@ -2141,10 +2149,14 @@ void DoRewind()
 
 void SaveRunaheadState()
 {
-  if (s_runahead_states.size() >= s_runahead_frames)
-    s_runahead_states.pop_front();
-
+  // try to reuse the frontmost slot
   MemorySaveState mss;
+  while (s_runahead_states.size() >= s_runahead_frames)
+  {
+    mss = std::move(s_runahead_states.front());
+    s_runahead_states.pop_front();
+  }
+
   if (!SaveMemoryState(&mss))
   {
     Log_ErrorPrint("Failed to save runahead state.");

@@ -99,9 +99,9 @@ bool GPU_HW_D3D11::DoState(StateWrapper& sw, HostDisplayTexture** host_texture, 
                              static_cast<LONG>(m_vram_texture.GetHeight()), 1);
     ComPtr<ID3D11Resource> resource;
 
+    HostDisplayTexture* tex = *host_texture;
     if (sw.IsReading())
     {
-      HostDisplayTexture* tex = *host_texture;
       if (tex->GetWidth() != m_vram_texture.GetWidth() || tex->GetHeight() != m_vram_texture.GetHeight() ||
           tex->GetSamples() != m_vram_texture.GetSamples())
       {
@@ -113,15 +113,22 @@ bool GPU_HW_D3D11::DoState(StateWrapper& sw, HostDisplayTexture** host_texture, 
     }
     else
     {
-      std::unique_ptr<HostDisplayTexture> tex =
-        m_host_display->CreateTexture(m_vram_texture.GetWidth(), m_vram_texture.GetHeight(), 1, 1,
-                                      m_vram_texture.GetSamples(), HostDisplayPixelFormat::RGBA8, nullptr, 0, false);
-      if (!tex)
-        return false;
+      if (!tex || tex->GetWidth() != m_vram_texture.GetWidth() || tex->GetHeight() != m_vram_texture.GetHeight() ||
+          tex->GetSamples() != m_vram_texture.GetSamples())
+      {
+        delete tex;
+
+        tex = m_host_display
+                ->CreateTexture(m_vram_texture.GetWidth(), m_vram_texture.GetHeight(), 1, 1,
+                                m_vram_texture.GetSamples(), HostDisplayPixelFormat::RGBA8, nullptr, 0, false)
+                .release();
+        *host_texture = tex;
+        if (!tex)
+          return false;
+      }
 
       static_cast<ID3D11ShaderResourceView*>(tex->GetHandle())->GetResource(resource.GetAddressOf());
       m_context->CopySubresourceRegion(resource.Get(), 0, 0, 0, 0, m_vram_texture.GetD3DTexture(), 0, &src_box);
-      *host_texture = tex.release();
     }
   }
 

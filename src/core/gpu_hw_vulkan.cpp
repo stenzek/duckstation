@@ -131,11 +131,20 @@ bool GPU_HW_Vulkan::DoState(StateWrapper& sw, HostDisplayTexture** host_texture,
     }
     else
     {
-      std::unique_ptr<HostDisplayTexture> htex =
-        m_host_display->CreateTexture(m_vram_texture.GetWidth(), m_vram_texture.GetHeight(), 1, 1,
-                                      m_vram_texture.GetSamples(), HostDisplayPixelFormat::RGBA8, nullptr, 0, false);
-      if (!htex)
-        return false;
+      HostDisplayTexture* htex = *host_texture;
+      if (!htex || htex->GetWidth() != m_vram_texture.GetWidth() || htex->GetHeight() != m_vram_texture.GetHeight() ||
+          htex->GetSamples() != m_vram_texture.GetSamples())
+      {
+        delete htex;
+
+        htex = m_host_display
+                 ->CreateTexture(m_vram_texture.GetWidth(), m_vram_texture.GetHeight(), 1, 1,
+                                 m_vram_texture.GetSamples(), HostDisplayPixelFormat::RGBA8, nullptr, 0, false)
+                 .release();
+        *host_texture = htex;
+        if (!htex)
+          return false;
+      }
 
       Vulkan::Texture* tex = static_cast<Vulkan::Texture*>(htex->GetHandle());
       if (tex->GetWidth() != m_vram_texture.GetWidth() || tex->GetHeight() != m_vram_texture.GetHeight() ||
@@ -152,7 +161,6 @@ bool GPU_HW_Vulkan::DoState(StateWrapper& sw, HostDisplayTexture** host_texture,
                      tex->GetImage(), tex->GetLayout(), 1, &ic);
       m_vram_texture.TransitionToLayout(buf, old_vram_layout);
       tex->TransitionToLayout(buf, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-      *host_texture = htex.release();
     }
   }
 
