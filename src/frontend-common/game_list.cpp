@@ -9,6 +9,7 @@
 #include "common/string_util.h"
 #include "core/bios.h"
 #include "core/host_interface.h"
+#include "core/psf_loader.h"
 #include "core/settings.h"
 #include "core/system.h"
 #include <algorithm>
@@ -25,7 +26,8 @@ GameList::~GameList() = default;
 
 const char* GameList::EntryTypeToString(GameListEntryType type)
 {
-  static std::array<const char*, 3> names = {{"Disc", "PSExe", "Playlist"}};
+  static std::array<const char*, static_cast<int>(GameListEntryType::Count)> names = {
+    {"Disc", "PSExe", "Playlist", "PSF"}};
   return names[static_cast<int>(type)];
 }
 
@@ -107,6 +109,45 @@ bool GameList::GetExeListEntry(const char* path, GameListEntry* entry)
   return true;
 }
 
+bool GameList::GetPsfListEntry(const char* path, GameListEntry* entry)
+{
+  FILESYSTEM_STAT_DATA ffd;
+  if (!FileSystem::StatFile(path, &ffd))
+    return false;
+
+  PSFLoader::File file;
+  if (!file.Load(path))
+    return false;
+
+  entry->code.clear();
+  entry->path = path;
+  entry->region = file.GetRegion();
+  entry->total_size = ffd.Size;
+  entry->last_modified_time = ffd.ModificationTime.AsUnixTimestamp();
+  entry->type = GameListEntryType::PSF;
+  entry->compatibility_rating = GameListCompatibilityRating::Unknown;
+
+  // Game - Title
+  std::optional<std::string> game(file.GetTagString("game"));
+  if (game.has_value())
+  {
+    entry->title = std::move(game.value());
+    entry->title += " - ";
+  }
+  else
+  {
+    entry->title.clear();
+  }
+
+  std::optional<std::string> title(file.GetTagString("title"));
+  if (title.has_value())
+    entry->title += title.value();
+  else
+    entry->title += GetFileNameFromPath(path);
+
+  return true;
+}
+
 bool GameList::GetM3UListEntry(const char* path, GameListEntry* entry)
 {
   FILESYSTEM_STAT_DATA ffd;
@@ -158,6 +199,8 @@ bool GameList::GetGameListEntry(const std::string& path, GameListEntry* entry)
 {
   if (System::IsExeFileName(path.c_str()))
     return GetExeListEntry(path.c_str(), entry);
+  if (System::IsPsfFileName(path.c_str()))
+    return GetPsfListEntry(path.c_str(), entry);
   if (System::IsM3UFileName(path.c_str()))
     return GetM3UListEntry(path.c_str(), entry);
 
@@ -325,7 +368,7 @@ bool GameList::LoadEntriesFromCache(ByteStream* stream)
     if (!ReadString(stream, &path) || !ReadString(stream, &code) || !ReadString(stream, &title) ||
         !ReadU64(stream, &total_size) || !ReadU64(stream, &last_modified_time) || !ReadU8(stream, &region) ||
         region >= static_cast<u8>(DiscRegion::Count) || !ReadU8(stream, &type) ||
-        type > static_cast<u8>(GameListEntryType::Playlist) || !ReadU8(stream, &compatibility_rating) ||
+        type >= static_cast<u8>(GameListEntryType::Count) || !ReadU8(stream, &compatibility_rating) ||
         compatibility_rating >= static_cast<u8>(GameListCompatibilityRating::Count))
     {
       Log_WarningPrintf("Game list cache entry is corrupted");
