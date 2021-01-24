@@ -602,6 +602,9 @@ bool VulkanHostDisplay::Render()
     return false;
   }
 
+  // Previous frame needs to be presented before we can acquire the swap chain.
+  g_vulkan_context->WaitForPresentComplete();
+
   VkResult res = m_swap_chain->AcquireNextImage();
   if (res != VK_SUCCESS)
   {

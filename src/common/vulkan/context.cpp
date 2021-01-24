@@ -941,6 +941,9 @@ void Context::DoPresent(VkSemaphore wait_semaphore, VkSwapchainKHR present_swap_
 
 void Context::WaitForPresentComplete()
 {
+  if (m_present_done.load())
+    return;
+
   std::unique_lock<std::mutex> lock(m_present_mutex);
   WaitForPresentComplete(lock);
 }
