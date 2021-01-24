@@ -119,6 +119,10 @@ ALWAYS_INLINE_RELEASE TickCount UnscaleTicksToOverclock(TickCount ticks, TickCou
 TickCount GetMaxSliceTicks();
 void UpdateOverclock();
 
+/// Injects a PS-EXE into memory at its specified load location. If patch_loader is set, the BIOS will be patched to
+/// direct execution to this executable.
+bool InjectEXEFromBuffer(const void* buffer, u32 buffer_size, bool patch_loader = true);
+
 u32 GetFrameNumber();
 u32 GetInternalFrameNumber();
 void FrameDone();

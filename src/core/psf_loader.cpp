@@ -2,6 +2,7 @@
 #include "common/assert.h"
 #include "common/file_system.h"
 #include "common/log.h"
+#include "system.h"
 #include "zlib.h"
 #include <cctype>
 #include <cstring>
@@ -9,38 +10,60 @@ Log_SetChannel(PSFLoader);
 
 namespace PSFLoader {
 
-std::string File::GetTagString(const char* tag_name, const char* default_value) const
+std::optional<std::string> File::GetTagString(const char* tag_name) const
 {
   auto it = m_tags.find(tag_name);
   if (it == m_tags.end())
-    return default_value;
+    return std::nullopt;
 
   return it->second;
 }
 
-int File::GetTagInt(const char* tag_name, int default_value) const
+std::optional<int> File::GetTagInt(const char* tag_name) const
 {
   auto it = m_tags.find(tag_name);
   if (it == m_tags.end())
-    return default_value;
+    return std::nullopt;
 
   return std::atoi(it->second.c_str());
 }
 
-float File::GetTagFloat(const char* tag_name, float default_value) const
+std::optional<float> File::GetTagFloat(const char* tag_name) const
 {
   auto it = m_tags.find(tag_name);
   if (it == m_tags.end())
-    return default_value;
+    return std::nullopt;
 
   return static_cast<float>(std::atof(it->second.c_str()));
+}
+
+std::string File::GetTagString(const char* tag_name, const char* default_value) const
+{
+  std::optional<std::string> value(GetTagString(tag_name));
+  if (value.has_value())
+    return value.value();
+
+  return default_value;
+}
+
+int File::GetTagInt(const char* tag_name, int default_value) const
+{
+  return GetTagInt(tag_name).value_or(default_value);
+}
+
+float File::GetTagFloat(const char* tag_name, float default_value) const
+{
+  return GetTagFloat(tag_name).value_or(default_value);
 }
 
 bool File::Load(const char* path)
 {
   auto fp = FileSystem::OpenManagedCFile(path, "rb");
   if (!fp)
+  {
+    Log_ErrorPrintf("Failed to open PSF file '%s'", path);
     return false;
+  }
 
   // we could mmap this instead
   std::fseek(fp.get(), 0, SEEK_END);
@@ -130,13 +153,91 @@ bool File::Load(const char* path)
 
       if (!tag_key.empty())
       {
-        Log_InfoPrintf("PSF Tag: '%s' = '%s'", tag_key.c_str(), tag_value.c_str());
+        Log_DevPrintf("PSF Tag: '%s' = '%s'", tag_key.c_str(), tag_value.c_str());
         m_tags.emplace(std::move(tag_key), std::move(tag_value));
       }
     }
   }
 
   return true;
+}
+
+static std::string GetLibraryPSFPath(const char* main_path, const char* lib_path)
+{
+  std::string path(FileSystem::GetPathDirectory(main_path));
+  path += FS_OSPATH_SEPARATOR_CHARACTER;
+  path += lib_path;
+  return path;
+}
+
+static bool LoadLibraryPSF(const char* path, bool use_pc_sp, u32 depth = 0)
+{
+  // don't recurse past 10 levels just in case of broken files
+  if (depth >= 10)
+  {
+    Log_ErrorPrintf("Recursion depth exceeded when loading PSF '%s'", path);
+    return false;
+  }
+
+  File file;
+  if (!file.Load(path))
+  {
+    Log_ErrorPrintf("Failed to load main PSF '%s'", path);
+    return false;
+  }
+
+  // load the main parent library - this has to be done first so the specified PSF takes precedence
+  std::optional<std::string> lib_name(file.GetTagString("_lib"));
+  if (lib_name.has_value())
+  {
+    const std::string lib_path(GetLibraryPSFPath(path, lib_name->c_str()));
+    Log_InfoPrintf("Loading main parent PSF '%s'", lib_path.c_str());
+
+    // We should use the initial SP/PC from the **first** parent lib.
+    const bool lib_use_pc_sp = (depth == 0);
+    if (!LoadLibraryPSF(lib_path.c_str(), lib_use_pc_sp, depth + 1))
+    {
+      Log_ErrorPrintf("Failed to load main parent PSF '%s'", lib_path.c_str());
+      return false;
+    }
+
+    // Don't apply the PC/SP from the minipsf file.
+    if (lib_use_pc_sp)
+      use_pc_sp = false;
+  }
+
+  // apply the main psf
+  if (!System::InjectEXEFromBuffer(file.GetProgramData().data(), static_cast<u32>(file.GetProgramData().size()),
+                                   use_pc_sp))
+  {
+    Log_ErrorPrintf("Failed to parse EXE from PSF '%s'", path);
+    return false;
+  }
+
+  // load any other parent psfs
+  u32 lib_counter = 2;
+  for (;;)
+  {
+    lib_name = file.GetTagString(TinyString::FromFormat("_lib%u", lib_counter++));
+    if (!lib_name.has_value())
+      break;
+
+    const std::string lib_path(GetLibraryPSFPath(path, lib_name->c_str()));
+    Log_InfoPrintf("Loading parent PSF '%s'", lib_path.c_str());
+    if (!LoadLibraryPSF(lib_path.c_str(), false, depth + 1))
+    {
+      Log_ErrorPrintf("Failed to load parent PSF '%s'", lib_path.c_str());
+      return false;
+    }
+  }
+
+  return true;
+}
+
+bool Load(const char* path)
+{
+  Log_InfoPrintf("Loading PSF file from '%s'", path);
+  return LoadLibraryPSF(path, true);
 }
 
 } // namespace PSFLoader

@@ -28,6 +28,10 @@ public:
   ALWAYS_INLINE const ProgramData& GetProgramData() const { return m_program_data; }
   ALWAYS_INLINE const TagMap& GetTagMap() const { return m_tags; }
 
+  std::optional<std::string> GetTagString(const char* tag_name) const;
+  std::optional<int> GetTagInt(const char* tag_name) const;
+  std::optional<float> GetTagFloat(const char* tag_name) const;
+
   std::string GetTagString(const char* tag_name, const char* default_value) const;
   int GetTagInt(const char* tag_name, int default_value) const;
   float GetTagFloat(const char* tag_name, float default_value) const;
@@ -43,5 +47,7 @@ private:
   ProgramData m_program_data;
   TagMap m_tags;
 };
+
+bool Load(const char* path);
 
 } // namespace PSFLoader

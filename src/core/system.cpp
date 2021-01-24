@@ -52,8 +52,6 @@ SystemBootParameters::~SystemBootParameters() = default;
 namespace System {
 
 static bool LoadEXE(const char* filename);
-static bool LoadEXEFromBuffer(const void* buffer, u32 buffer_size);
-static bool LoadPSF(const char* filename);
 static bool SetExpansionROM(const char* filename);
 
 /// Opens CD image, preloading if needed.
@@ -241,7 +239,8 @@ bool IsExeFileName(const char* path)
 bool IsPsfFileName(const char* path)
 {
   const char* extension = std::strrchr(path, '.');
-  return (extension && StringUtil::Strcasecmp(extension, ".psf") == 0);
+  return (extension &&
+          (StringUtil::Strcasecmp(extension, ".psf") == 0 || StringUtil::Strcasecmp(extension, ".minipsf") == 0));
 }
 
 bool IsM3UFileName(const char* path)
@@ -688,7 +687,7 @@ bool Boot(const SystemBootParameters& params)
     Shutdown();
     return false;
   }
-  else if (psf_boot && !LoadPSF(params.filename.c_str()))
+  else if (psf_boot && !PSFLoader::Load(params.filename.c_str()))
   {
     g_host_interface->ReportFormattedError("Failed to load PSF file '%s'", params.filename.c_str());
     Shutdown();
@@ -1434,7 +1433,7 @@ bool LoadEXE(const char* filename)
   return BIOS::PatchBIOSForEXE(Bus::g_bios, Bus::BIOS_SIZE, r_pc, r_gp, r_sp, r_fp);
 }
 
-bool LoadEXEFromBuffer(const void* buffer, u32 buffer_size)
+bool InjectEXEFromBuffer(const void* buffer, u32 buffer_size, bool patch_bios)
 {
   const u8* buffer_ptr = static_cast<const u8*>(buffer);
   const u8* buffer_end = static_cast<const u8*>(buffer) + buffer_size;
@@ -1478,23 +1477,17 @@ bool LoadEXEFromBuffer(const void* buffer, u32 buffer_size)
   }
 
   // patch the BIOS to jump to the executable directly
-  const u32 r_pc = header.initial_pc;
-  const u32 r_gp = header.initial_gp;
-  const u32 r_sp = header.initial_sp_base + header.initial_sp_offset;
-  const u32 r_fp = header.initial_sp_base + header.initial_sp_offset;
-  return BIOS::PatchBIOSForEXE(Bus::g_bios, Bus::BIOS_SIZE, r_pc, r_gp, r_sp, r_fp);
-}
+  if (patch_bios)
+  {
+    const u32 r_pc = header.initial_pc;
+    const u32 r_gp = header.initial_gp;
+    const u32 r_sp = header.initial_sp_base + header.initial_sp_offset;
+    const u32 r_fp = header.initial_sp_base + header.initial_sp_offset;
+    if (!BIOS::PatchBIOSForEXE(Bus::g_bios, Bus::BIOS_SIZE, r_pc, r_gp, r_sp, r_fp))
+      return false;
+  }
 
-bool LoadPSF(const char* filename)
-{
-  Log_InfoPrintf("Loading PSF file from '%s'", filename);
-
-  PSFLoader::File psf;
-  if (!psf.Load(filename))
-    return false;
-
-  const std::vector<u8>& exe_data = psf.GetProgramData();
-  return LoadEXEFromBuffer(exe_data.data(), static_cast<u32>(exe_data.size()));
+  return true;
 }
 
 bool SetExpansionROM(const char* filename)
