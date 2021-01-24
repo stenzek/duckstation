@@ -932,6 +932,7 @@ void CommonHostInterface::DrawOSDMessages()
     return;
 
   const float scale = ImGui::GetIO().DisplayFramebufferScale.x;
+  const float max_width = ImGui::GetIO().DisplaySize.x - (20.0f * scale);
 
   auto iter = m_osd_messages.begin();
   float position_x = 10.0f * scale;
@@ -955,8 +956,11 @@ void CommonHostInterface::DrawOSDMessages()
     }
 
     const float opacity = std::min(time_remaining, 1.0f);
+    const ImVec2 text_size(ImGui::CalcTextSize(msg.text.c_str(), nullptr));
+    const bool wrapped = (text_size.x > max_width);
+
     ImGui::SetNextWindowPos(ImVec2(position_x, position_y));
-    ImGui::SetNextWindowSize(ImVec2(0.0f, 0.0f));
+    ImGui::SetNextWindowSize(ImVec2(wrapped ? max_width : 0.0f, 0.0f));
     ImGui::PushStyleVar(ImGuiStyleVar_Alpha, opacity);
 
     char buf[64];
@@ -964,7 +968,11 @@ void CommonHostInterface::DrawOSDMessages()
 
     if (ImGui::Begin(buf, nullptr, window_flags))
     {
-      ImGui::TextUnformatted(msg.text.c_str());
+      if (wrapped)
+        ImGui::TextWrapped("%s", msg.text.c_str());
+      else
+        ImGui::TextUnformatted(msg.text.c_str());
+
       position_y += ImGui::GetWindowSize().y + (4.0f * scale);
     }
 
