@@ -148,6 +148,12 @@ std::string ReplaceExtension(std::string_view path, std::string_view new_extensi
 /// Returns the directory component of a filename.
 std::string GetPathDirectory(const char* path);
 
+/// Returns the filename component of a filename.
+std::string_view GetFileNameFromPath(const char* path);
+
+/// Returns the file title (less the extension and path) from a filename.
+std::string_view GetFileTitleFromPath(const char* path);
+
 // search for files
 bool FindFiles(const char* Path, const char* Pattern, u32 Flags, FindResultsArray* pResults);
 

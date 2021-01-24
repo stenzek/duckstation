@@ -287,6 +287,32 @@ std::string GetPathDirectory(const char* path)
   return str;
 }
 
+std::string_view GetFileNameFromPath(const char* path)
+{
+  const char* end = path + std::strlen(path);
+  const char* start = std::max(std::strrchr(path, '/'), std::strrchr(path, '\\'));
+  if (!start)
+    return std::string_view(path, end - path);
+  else
+    return std::string_view(start + 1, end - start);
+}
+
+std::string_view GetFileTitleFromPath(const char* path)
+{
+  const char* end = path + std::strlen(path);
+  const char* extension = std::strrchr(path, '.');
+  if (extension && extension > path)
+    end = extension - 1;
+
+  const char* start = std::max(std::strrchr(path, '/'), std::strrchr(path, '\\'));
+  if (!start)
+    return std::string_view(path, end - path);
+  else if (start < end)
+    return std::string_view(start + 1, end - start);
+  else
+    return std::string_view(path);
+}
+
 void BuildPathRelativeToFile(char* Destination, u32 cbDestination, const char* CurrentFileName, const char* NewFileName,
                              bool OSPath /* = true */, bool Canonicalize /* = true */)
 {

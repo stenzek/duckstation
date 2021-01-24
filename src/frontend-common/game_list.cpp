@@ -52,16 +52,6 @@ const char* GameList::GetGameListCompatibilityRatingString(GameListCompatibility
            "";
 }
 
-static std::string_view GetFileNameFromPath(const char* path)
-{
-  const char* filename_end = path + std::strlen(path);
-  const char* filename_start = std::max(std::strrchr(path, '/'), std::strrchr(path, '\\'));
-  if (!filename_start)
-    return std::string_view(path, filename_end - path);
-  else
-    return std::string_view(filename_start + 1, filename_end - filename_start);
-}
-
 bool GameList::GetExeListEntry(const char* path, GameListEntry* entry)
 {
   FILESYSTEM_STAT_DATA ffd;
@@ -96,9 +86,7 @@ bool GameList::GetExeListEntry(const char* path, GameListEntry* entry)
     return false;
 
   entry->code.clear();
-  entry->title = GetFileNameFromPath(path);
-
-  // no way to detect region...
+  entry->title = FileSystem::GetFileTitleFromPath(path);
   entry->path = path;
   entry->region = BIOS::GetPSExeDiscRegion(header);
   entry->total_size = ZeroExtend64(file_size);
@@ -143,7 +131,7 @@ bool GameList::GetPsfListEntry(const char* path, GameListEntry* entry)
   if (title.has_value())
     entry->title += title.value();
   else
-    entry->title += GetFileNameFromPath(path);
+    entry->title += FileSystem::GetFileTitleFromPath(path);
 
   return true;
 }
