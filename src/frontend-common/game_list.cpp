@@ -498,6 +498,8 @@ void GameList::ScanDirectory(const char* path, bool recursive, ProgressCallback*
 
   for (const FILESYSTEM_FIND_DATA& ffd : files)
   {
+    progress->IncrementProgressValue();
+
     // if this is a .bin, check if we have a .cue. if there is one, skip it
     const char* extension = std::strrchr(ffd.FileName.c_str(), '.');
     if (extension && StringUtil::Strcasecmp(extension, ".bin") == 0)
@@ -532,7 +534,6 @@ void GameList::ScanDirectory(const char* path, bool recursive, ProgressCallback*
         std::max(std::strrchr(entry_path.c_str(), '/'), std::strrchr(entry_path.c_str(), '\\'));
       progress->SetFormattedStatusText("Scanning '%s'...",
                                        file_part_slash ? (file_part_slash + 1) : entry_path.c_str());
-      progress->IncrementProgressValue();
 
       if (GetGameListEntry(entry_path, &entry))
       {
