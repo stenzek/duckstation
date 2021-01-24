@@ -9,7 +9,7 @@ The following people have contributed to the project in some way, and are credit
 ## Translators
 - Anderson Cardoso - Portuguese (Br)
 - @bajolzas - Portuguese (Pt)
-- posix - @Richard-L - German
+- posix - @Richard-L, blexx - German
 - @phoe-nix, @zkdpower - Chinese (Simplified)
 - Sorer - @MojoJojoDojo - Hebrew
 - Hipnosis - @Hipnosis183, MrHomunculus - Spanish
