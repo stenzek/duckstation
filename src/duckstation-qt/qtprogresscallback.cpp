@@ -4,13 +4,13 @@
 #include <QtWidgets/QMessageBox>
 #include <array>
 
-QtProgressCallback::QtProgressCallback(QWidget* parent_widget)
-  : QObject(parent_widget), m_dialog(QString(), QString(), 0, 1, parent_widget)
+QtProgressCallback::QtProgressCallback(QWidget* parent_widget, float show_delay)
+  : QObject(parent_widget), m_dialog(QString(), QString(), 0, 1, parent_widget), m_show_delay(show_delay)
 {
   m_dialog.setWindowTitle(tr("DuckStation"));
   m_dialog.setMinimumSize(QSize(500, 0));
   m_dialog.setModal(parent_widget != nullptr);
-  m_dialog.show();
+  checkForDelayedShow();
 }
 
 QtProgressCallback::~QtProgressCallback() = default;
@@ -37,20 +37,27 @@ void QtProgressCallback::SetTitle(const char* title)
 void QtProgressCallback::SetStatusText(const char* text)
 {
   BaseProgressCallback::SetStatusText(text);
-  m_dialog.setLabelText(QString::fromUtf8(text));
+  checkForDelayedShow();
+
+  if (m_dialog.isVisible())
+    m_dialog.setLabelText(QString::fromUtf8(text));
 }
 
 void QtProgressCallback::SetProgressRange(u32 range)
 {
   BaseProgressCallback::SetProgressRange(range);
-  m_dialog.setRange(0, m_progress_range);
+  checkForDelayedShow();
+
+  if (m_dialog.isVisible())
+    m_dialog.setRange(0, m_progress_range);
 }
 
 void QtProgressCallback::SetProgressValue(u32 value)
 {
   BaseProgressCallback::SetProgressValue(value);
+  checkForDelayedShow();
 
-  if (static_cast<u32>(m_dialog.value()) == m_progress_range)
+  if (!m_dialog.isVisible() || static_cast<u32>(m_dialog.value()) == m_progress_range)
     return;
 
   m_dialog.setValue(m_progress_value);
@@ -91,4 +98,17 @@ bool QtProgressCallback::ModalConfirmation(const char* message)
 void QtProgressCallback::ModalInformation(const char* message)
 {
   QMessageBox::information(&m_dialog, tr("Information"), QString::fromUtf8(message));
+}
+
+void QtProgressCallback::checkForDelayedShow()
+{
+  if (m_dialog.isVisible())
+    return;
+
+  if (m_show_timer.GetTimeSeconds() >= m_show_delay)
+  {
+    m_dialog.setRange(0, m_progress_range);
+    m_dialog.setValue(m_progress_value);
+    m_dialog.show();
+  }
 }

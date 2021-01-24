@@ -339,7 +339,7 @@ void QtHostInterface::refreshGameList(bool invalidate_cache /* = false */, bool 
   std::lock_guard<std::recursive_mutex> lock(m_settings_mutex);
   m_game_list->SetSearchDirectoriesFromSettings(*m_settings_interface.get());
 
-  QtProgressCallback progress(m_main_window);
+  QtProgressCallback progress(m_main_window, invalidate_cache ? 0.0f : 1.0f);
   m_game_list->Refresh(invalidate_cache, invalidate_database, &progress);
   emit gameListRefreshed();
 }
