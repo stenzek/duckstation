@@ -98,7 +98,7 @@ bool GameList::GetExeListEntry(const char* path, GameListEntry* entry)
 
   // no way to detect region...
   entry->path = path;
-  entry->region = DiscRegion::Other;
+  entry->region = BIOS::GetPSExeDiscRegion(header);
   entry->total_size = ZeroExtend64(file_size);
   entry->last_modified_time = ffd.ModificationTime.AsUnixTimestamp();
   entry->type = GameListEntryType::PSExe;
