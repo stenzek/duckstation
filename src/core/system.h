@@ -77,6 +77,8 @@ std::string GetGameCodeForPath(const char* image_path);
 DiscRegion GetRegionForCode(std::string_view code);
 DiscRegion GetRegionFromSystemArea(CDImage* cdi);
 DiscRegion GetRegionForImage(CDImage* cdi);
+DiscRegion GetRegionForExe(const char* path);
+DiscRegion GetRegionForPsf(const char* path);
 std::optional<DiscRegion> GetRegionForPath(const char* image_path);
 std::string_view GetTitleForPath(const char* path);
 

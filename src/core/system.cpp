@@ -479,8 +479,39 @@ DiscRegion GetRegionForImage(CDImage* cdi)
   return GetRegionForCode(code);
 }
 
+DiscRegion GetRegionForExe(const char* path)
+{
+  auto fp = FileSystem::OpenManagedCFile(path, "rb");
+  if (!fp)
+    return DiscRegion::Other;
+
+  std::fseek(fp.get(), 0, SEEK_END);
+  const u32 file_size = static_cast<u32>(std::ftell(fp.get()));
+  std::fseek(fp.get(), 0, SEEK_SET);
+
+  BIOS::PSEXEHeader header;
+  if (std::fread(&header, sizeof(header), 1, fp.get()) != 1)
+    return DiscRegion::Other;
+
+  return BIOS::GetPSExeDiscRegion(header);
+}
+
+DiscRegion GetRegionForPsf(const char* path)
+{
+  PSFLoader::File psf;
+  if (!psf.Load(path))
+    return DiscRegion::Other;
+
+  return psf.GetRegion();
+}
+
 std::optional<DiscRegion> GetRegionForPath(const char* image_path)
 {
+  if (IsExeFileName(image_path))
+    return GetRegionForExe(image_path);
+  else if (IsPsfFileName(image_path))
+    return GetRegionForPsf(image_path);
+
   std::unique_ptr<CDImage> cdi = CDImage::Open(image_path);
   if (!cdi)
     return {};
@@ -578,11 +609,12 @@ bool Boot(const SystemBootParameters& params)
     psf_boot = (!exe_boot && IsPsfFileName(params.filename.c_str()));
     if (exe_boot || psf_boot)
     {
-      // TODO: Pull region from PSF
       if (s_region == ConsoleRegion::Auto)
       {
-        Log_InfoPrintf("Defaulting to NTSC-U/C region for executable.");
-        s_region = ConsoleRegion::NTSC_U;
+        const DiscRegion file_region =
+          (exe_boot ? GetRegionForExe(params.filename.c_str()) : GetRegionForPsf(params.filename.c_str()));
+        Log_InfoPrintf("EXE/PSF Region: %s", Settings::GetDiscRegionDisplayName(file_region));
+        s_region = GetConsoleRegionForDiscRegion(file_region);
       }
     }
     else
@@ -650,6 +682,8 @@ bool Boot(const SystemBootParameters& params)
     if (s_region == ConsoleRegion::Auto)
       s_region = ConsoleRegion::NTSC_U;
   }
+
+  Log_InfoPrintf("Console Region: %s", Settings::GetConsoleRegionDisplayName(s_region));
 
   // Load BIOS image.
   std::optional<BIOS::Image> bios_image = g_host_interface->GetBIOSImage(s_region);
