@@ -507,6 +507,7 @@ VkResult SwapChain::AcquireNextImage()
 
 bool SwapChain::ResizeSwapChain(u32 new_width /* = 0 */, u32 new_height /* = 0 */)
 {
+  DestroySemaphores();
   DestroySwapChainImages();
 
   if (new_width != 0 && new_height != 0)
@@ -515,7 +516,7 @@ bool SwapChain::ResizeSwapChain(u32 new_width /* = 0 */, u32 new_height /* = 0 *
     m_wi.surface_height = new_height;
   }
 
-  if (!CreateSwapChain() || !SetupSwapChainImages())
+  if (!CreateSwapChain() || !SetupSwapChainImages() || !CreateSemaphores())
   {
     Panic("Failed to re-configure swap chain images, this is fatal (for now)");
     return false;
@@ -526,9 +527,10 @@ bool SwapChain::ResizeSwapChain(u32 new_width /* = 0 */, u32 new_height /* = 0 *
 
 bool SwapChain::RecreateSwapChain()
 {
+  DestroySemaphores();
   DestroySwapChainImages();
   DestroySwapChain();
-  if (!CreateSwapChain() || !SetupSwapChainImages())
+  if (!CreateSwapChain() || !SetupSwapChainImages() || !CreateSemaphores())
   {
     Panic("Failed to re-configure swap chain images, this is fatal (for now)");
     return false;
@@ -550,6 +552,7 @@ bool SwapChain::SetVSync(bool enabled)
 bool SwapChain::RecreateSurface(const WindowInfo& new_wi)
 {
   // Destroy the old swap chain, images, and surface.
+  DestroySemaphores();
   DestroySwapChainImages();
   DestroySwapChain();
   DestroySurface();
@@ -577,7 +580,7 @@ bool SwapChain::RecreateSurface(const WindowInfo& new_wi)
   }
 
   // Finally re-create the swap chain
-  if (!CreateSwapChain() || !SetupSwapChainImages())
+  if (!CreateSwapChain() || !SetupSwapChainImages() || !CreateSemaphores())
     return false;
 
   return true;
