@@ -1977,7 +1977,7 @@ void UpdateMemorySaveStateSettings()
   s_rewind_load_frequency = -1;
   s_rewind_load_counter = -1;
 
-  s_runahead_frames = g_settings.runahead_enable ? g_settings.runahead_frames : 0;
+  s_runahead_frames = g_settings.runahead_frames;
   s_runahead_replay_pending = false;
   if (s_runahead_frames > 0)
   {

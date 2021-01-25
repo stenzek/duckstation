@@ -95,10 +95,9 @@ struct Settings
   bool disable_all_enhancements = false;
 
   bool rewind_enable = false;
-  bool runahead_enable = false;
   float rewind_save_frequency = 10.0f;
   u32 rewind_save_slots = 10;
-  u32 runahead_frames = 1;
+  u32 runahead_frames = 0;
 
   GPURenderer gpu_renderer = GPURenderer::Software;
   std::string gpu_adapter;
@@ -224,6 +223,7 @@ struct Settings
   ALWAYS_INLINE bool IsUsingCodeCache() const { return (cpu_execution_mode != CPUExecutionMode::Interpreter); }
   ALWAYS_INLINE bool IsUsingRecompiler() const { return (cpu_execution_mode == CPUExecutionMode::Recompiler); }
   ALWAYS_INLINE bool IsUsingSoftwareRenderer() const { return (gpu_renderer == GPURenderer::Software); }
+  ALWAYS_INLINE bool IsRunaheadEnabled() const { return (runahead_frames > 0); }
 
   ALWAYS_INLINE PGXPMode GetPGXPMode()
   {

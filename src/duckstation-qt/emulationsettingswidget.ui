@@ -75,7 +75,7 @@
    <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
-      <string>Rewind</string>
+      <string>Rewind/Runahead</string>
      </property>
      <layout class="QFormLayout" name="formLayout">
       <item row="0" column="0" colspan="2">
@@ -125,49 +125,79 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="0" colspan="2">
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>Runahead:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QComboBox" name="runaheadFrames">
+        <item>
+         <property name="text">
+          <string>Disabled</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>1 Frame</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>2 Frames</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>3 Frames</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>4 Frames</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>5 Frames</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>6 Frames</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>7 Frames</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>8 Frames</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>9 Frames</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>10 Frames</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="4" column="0" colspan="2">
        <widget class="QLabel" name="rewindSummary">
         <property name="text">
          <string>TextLabel</string>
         </property>
         <property name="wordWrap">
          <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
-    <widget class="QGroupBox" name="groupBox_2">
-     <property name="title">
-      <string>Runahead</string>
-     </property>
-     <layout class="QFormLayout" name="formLayout_3">
-      <item row="0" column="0">
-       <widget class="QCheckBox" name="runaheadEnable">
-        <property name="text">
-         <string>Enable Runahead</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_3">
-        <property name="text">
-         <string>Runahead Frames:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QSpinBox" name="runaheadFrames">
-        <property name="suffix">
-         <string> Frames</string>
-        </property>
-        <property name="minimum">
-         <number>1</number>
-        </property>
-        <property name="maximum">
-         <number>20</number>
         </property>
        </widget>
       </item>

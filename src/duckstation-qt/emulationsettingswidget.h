@@ -19,10 +19,10 @@ private Q_SLOTS:
   void onEmulationSpeedIndexChanged(int index);
   void onFastForwardSpeedIndexChanged(int index);
   void onTurboSpeedIndexChanged(int index);
-  void updateRewindSummaryLabel();
-  void updateRunaheadFields();
+  void updateRewind();
 
 private:
+  bool runaheadEnabled() { return m_ui.runaheadFrames->currentIndex() > 0; }
 
   Ui::EmulationSettingsWidget m_ui;
 

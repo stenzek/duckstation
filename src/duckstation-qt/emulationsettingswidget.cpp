@@ -18,8 +18,7 @@ EmulationSettingsWidget::EmulationSettingsWidget(QtHostInterface* host_interface
   SettingWidgetBinder::BindWidgetToFloatSetting(m_host_interface, m_ui.rewindSaveFrequency, "Main", "RewindFrequency",
                                                 10.0f);
   SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.rewindSaveSlots, "Main", "RewindSaveSlots", 10);
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.runaheadEnable, "Main", "RunaheadEnable", false);
-  SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.runaheadFrames, "Main", "RunaheadFrames", 1);
+  SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.runaheadFrames, "Main", "RunaheadFrameCount", 0);
 
   QtUtils::FillComboBoxWithEmulationSpeeds(m_ui.emulationSpeed);
   const int emulation_speed_index =
@@ -43,12 +42,13 @@ EmulationSettingsWidget::EmulationSettingsWidget(QtHostInterface* host_interface
   connect(m_ui.turboSpeed, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
           &EmulationSettingsWidget::onTurboSpeedIndexChanged);
 
-  connect(m_ui.rewindEnable, &QCheckBox::stateChanged, this, &EmulationSettingsWidget::updateRewindSummaryLabel);
+  connect(m_ui.rewindEnable, &QCheckBox::stateChanged, this, &EmulationSettingsWidget::updateRewind);
   connect(m_ui.rewindSaveFrequency, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this,
-          &EmulationSettingsWidget::updateRewindSummaryLabel);
+          &EmulationSettingsWidget::updateRewind);
   connect(m_ui.rewindSaveSlots, QOverload<int>::of(&QSpinBox::valueChanged), this,
-          &EmulationSettingsWidget::updateRewindSummaryLabel);
-  connect(m_ui.runaheadEnable, &QCheckBox::stateChanged, this, &EmulationSettingsWidget::updateRunaheadFields);
+          &EmulationSettingsWidget::updateRewind);
+  connect(m_ui.runaheadFrames, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+          &EmulationSettingsWidget::updateRewind);
 
   dialog->registerWidgetHelp(
     m_ui.emulationSpeed, tr("Emulation Speed"), "100%",
@@ -69,8 +69,7 @@ EmulationSettingsWidget::EmulationSettingsWidget(QtHostInterface* host_interface
        "the console's refresh rate is too far from the host's refresh rate. Users with variable refresh rate displays "
        "should disable this option."));
 
-  updateRewindSummaryLabel();
-  updateRunaheadFields();
+  updateRewind();
 }
 
 EmulationSettingsWidget::~EmulationSettingsWidget() = default;
@@ -99,8 +98,10 @@ void EmulationSettingsWidget::onTurboSpeedIndexChanged(int index)
   m_host_interface->applySettings();
 }
 
-void EmulationSettingsWidget::updateRewindSummaryLabel()
+void EmulationSettingsWidget::updateRewind()
 {
+  m_ui.rewindEnable->setEnabled(!runaheadEnabled());
+
   if (m_ui.rewindEnable->isEnabled() && m_ui.rewindEnable->isChecked())
   {
     const u32 frames = static_cast<u32>(m_ui.rewindSaveSlots->value());
@@ -124,7 +125,8 @@ void EmulationSettingsWidget::updateRewindSummaryLabel()
   {
     if (!m_ui.rewindEnable->isEnabled())
     {
-      m_ui.rewindSummary->setText(tr("Rewind is disabled because runahead is enabled."));
+      m_ui.rewindSummary->setText(tr(
+        "Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements."));
     }
     else
     {
@@ -134,11 +136,4 @@ void EmulationSettingsWidget::updateRewindSummaryLabel()
     m_ui.rewindSaveFrequency->setEnabled(false);
     m_ui.rewindSaveSlots->setEnabled(false);
   }
-}
-
-void EmulationSettingsWidget::updateRunaheadFields()
-{
-  m_ui.runaheadFrames->setEnabled(m_ui.runaheadEnable->isChecked());
-  m_ui.rewindEnable->setEnabled(!m_ui.runaheadEnable->isChecked());
-  updateRewindSummaryLabel();
 }
