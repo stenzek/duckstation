@@ -133,7 +133,7 @@ bool GPU_HW_Vulkan::DoState(StateWrapper& sw, HostDisplayTexture** host_texture,
     {
       HostDisplayTexture* htex = *host_texture;
       if (!htex || htex->GetWidth() != m_vram_texture.GetWidth() || htex->GetHeight() != m_vram_texture.GetHeight() ||
-          htex->GetSamples() != m_vram_texture.GetSamples())
+          htex->GetSamples() != static_cast<u32>(m_vram_texture.GetSamples()))
       {
         delete htex;
 
