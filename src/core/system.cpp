@@ -1973,7 +1973,7 @@ void CalculateRewindMemoryUsage(u32 num_saves, u64* ram_usage, u64* vram_usage)
 {
   *ram_usage = MAX_SAVE_STATE_SIZE * static_cast<u64>(num_saves);
   *vram_usage = (VRAM_WIDTH * VRAM_HEIGHT * 4) * static_cast<u64>(std::max(g_settings.gpu_resolution_scale, 1u)) *
-                static_cast<u64>(num_saves);
+                static_cast<u64>(g_settings.gpu_multisamples) * static_cast<u64>(num_saves);
 }
 
 void ClearMemorySaveStates()

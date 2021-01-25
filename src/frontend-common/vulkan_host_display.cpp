@@ -168,8 +168,9 @@ std::unique_ptr<HostDisplayTexture> VulkanHostDisplay::CreateTexture(u32 width, 
     VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
 
   Vulkan::Texture texture;
-  if (!texture.Create(width, height, levels, layers, vk_format, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_VIEW_TYPE_2D,
-                      VK_IMAGE_TILING_OPTIMAL, usage))
+  if (!texture.Create(width, height, levels, layers, vk_format, static_cast<VkSampleCountFlagBits>(samples),
+                      (layers > 1) ? VK_IMAGE_VIEW_TYPE_2D_ARRAY : VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_TILING_OPTIMAL,
+                      usage))
   {
     return {};
   }

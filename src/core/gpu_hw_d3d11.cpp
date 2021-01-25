@@ -95,8 +95,6 @@ bool GPU_HW_D3D11::DoState(StateWrapper& sw, HostDisplayTexture** host_texture, 
 {
   if (host_texture)
   {
-    const CD3D11_BOX src_box(0, 0, 0, static_cast<LONG>(m_vram_texture.GetWidth()),
-                             static_cast<LONG>(m_vram_texture.GetHeight()), 1);
     ComPtr<ID3D11Resource> resource;
 
     HostDisplayTexture* tex = *host_texture;
@@ -109,7 +107,7 @@ bool GPU_HW_D3D11::DoState(StateWrapper& sw, HostDisplayTexture** host_texture, 
       }
 
       static_cast<ID3D11ShaderResourceView*>(tex->GetHandle())->GetResource(resource.GetAddressOf());
-      m_context->CopySubresourceRegion(m_vram_texture.GetD3DTexture(), 0, 0, 0, 0, resource.Get(), 0, &src_box);
+      m_context->CopySubresourceRegion(m_vram_texture.GetD3DTexture(), 0, 0, 0, 0, resource.Get(), 0, nullptr);
     }
     else
     {
@@ -128,7 +126,7 @@ bool GPU_HW_D3D11::DoState(StateWrapper& sw, HostDisplayTexture** host_texture, 
       }
 
       static_cast<ID3D11ShaderResourceView*>(tex->GetHandle())->GetResource(resource.GetAddressOf());
-      m_context->CopySubresourceRegion(resource.Get(), 0, 0, 0, 0, m_vram_texture.GetD3DTexture(), 0, &src_box);
+      m_context->CopySubresourceRegion(resource.Get(), 0, 0, 0, 0, m_vram_texture.GetD3DTexture(), 0, nullptr);
     }
   }
 
