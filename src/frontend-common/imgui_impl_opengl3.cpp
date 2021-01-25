@@ -187,9 +187,13 @@ static void ImGui_ImplOpenGL3_SetupRenderState(ImDrawData* draw_data, int fb_wid
     if (!g_IsGLES2)
     {
         glBindVertexArray(g_VaoHandle);
+        glBindBuffer(GL_ARRAY_BUFFER, g_VboHandle);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_ElementsHandle);
     }
     else
     {
+        glBindBuffer(GL_ARRAY_BUFFER, g_VboHandle);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_ElementsHandle);
         glEnableVertexAttribArray(g_AttribLocationVtxPos);
         glEnableVertexAttribArray(g_AttribLocationVtxUV);
         glEnableVertexAttribArray(g_AttribLocationVtxColor);
@@ -200,9 +204,6 @@ static void ImGui_ImplOpenGL3_SetupRenderState(ImDrawData* draw_data, int fb_wid
         glVertexAttribPointer(g_AttribLocationVtxColor, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(ImDrawVert),
             (GLvoid*)IM_OFFSETOF(ImDrawVert, col));
     }
-
-    glBindBuffer(GL_ARRAY_BUFFER, g_VboHandle);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_ElementsHandle);
 }
 
 // OpenGL3 Render function.
