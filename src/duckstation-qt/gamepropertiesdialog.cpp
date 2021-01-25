@@ -268,6 +268,12 @@ void GamePropertiesDialog::populateGameSettings()
     m_trait_checkboxes[i]->setChecked(gs.HasTrait(static_cast<GameSettings::Trait>(i)));
   }
 
+  if (gs.runahead_frames.has_value())
+  {
+    QSignalBlocker sb(m_ui.userRunaheadFrames);
+    m_ui.userRunaheadFrames->setCurrentIndex(static_cast<int>(gs.runahead_frames.value()));
+  }
+
   if (gs.cpu_overclock_numerator.has_value() || gs.cpu_overclock_denominator.has_value())
   {
     const u32 numerator = gs.cpu_overclock_numerator.value_or(1);
@@ -489,6 +495,14 @@ void GamePropertiesDialog::connectUi()
     m_ui.computeHashes->setVisible(show_buttons);
     m_ui.verifyDump->setVisible(show_buttons);
     m_ui.exportCompatibilityInfo->setVisible(show_buttons);
+  });
+
+  connect(m_ui.userRunaheadFrames, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
+    if (index <= 0)
+      m_game_settings.runahead_frames.reset();
+    else
+      m_game_settings.runahead_frames = static_cast<u32>(index - 1);
+    saveGameSettings();
   });
 
   connectBooleanUserSetting(m_ui.userEnableCPUClockSpeedControl, &m_game_settings.cpu_overclock_enable);

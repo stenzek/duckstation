@@ -50,6 +50,7 @@ struct Entry
   std::optional<float> gpu_pgxp_depth_threshold;
 
   // user settings
+  std::optional<u32> runahead_frames;
   std::optional<u32> cpu_overclock_numerator;
   std::optional<u32> cpu_overclock_denominator;
   std::optional<bool> cpu_overclock_enable;
