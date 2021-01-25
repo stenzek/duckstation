@@ -104,17 +104,23 @@ void OpenGLHostDisplay::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y,
 
   GLint old_texture_binding = 0, old_alignment = 0, old_row_length = 0;
   glGetIntegerv(GL_TEXTURE_BINDING_2D, &old_texture_binding);
-  glGetIntegerv(GL_UNPACK_ALIGNMENT, &old_alignment);
-  glGetIntegerv(GL_UNPACK_ROW_LENGTH, &old_row_length);
-
   glBindTexture(GL_TEXTURE_2D, tex->GetGLID());
+
+  glGetIntegerv(GL_UNPACK_ALIGNMENT, &old_alignment);
   glPixelStorei(GL_UNPACK_ALIGNMENT, alignment);
-  glPixelStorei(GL_UNPACK_ROW_LENGTH, texture_data_stride / GetDisplayPixelFormatSize(texture->GetFormat()));
+
+  if (!m_use_gles2_draw_path)
+  {
+    glGetIntegerv(GL_UNPACK_ROW_LENGTH, &old_row_length);
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, texture_data_stride / GetDisplayPixelFormatSize(texture->GetFormat()));
+  }
 
   glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height, gl_format, gl_type, texture_data);
 
+  if (!m_use_gles2_draw_path)
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, old_row_length);
+
   glPixelStorei(GL_UNPACK_ALIGNMENT, old_alignment);
-  glPixelStorei(GL_UNPACK_ROW_LENGTH, old_row_length);
   glBindTexture(GL_TEXTURE_2D, old_texture_binding);
 }
 
@@ -131,9 +137,12 @@ bool OpenGLHostDisplay::DownloadTexture(const void* texture_handle, HostDisplayP
 
   GLint old_alignment = 0, old_row_length = 0;
   glGetIntegerv(GL_PACK_ALIGNMENT, &old_alignment);
-  glGetIntegerv(GL_PACK_ROW_LENGTH, &old_row_length);
   glPixelStorei(GL_PACK_ALIGNMENT, alignment);
-  glPixelStorei(GL_PACK_ROW_LENGTH, out_data_stride / GetDisplayPixelFormatSize(texture_format));
+  if (!m_use_gles2_draw_path)
+  {
+    glGetIntegerv(GL_PACK_ROW_LENGTH, &old_row_length);
+    glPixelStorei(GL_PACK_ROW_LENGTH, out_data_stride / GetDisplayPixelFormatSize(texture_format));
+  }
 
   const GLuint texture = static_cast<GLuint>(reinterpret_cast<uintptr_t>(texture_handle));
   const auto [gl_internal_format, gl_format, gl_type] =
@@ -143,7 +152,8 @@ bool OpenGLHostDisplay::DownloadTexture(const void* texture_handle, HostDisplayP
                                   out_data);
 
   glPixelStorei(GL_PACK_ALIGNMENT, old_alignment);
-  glPixelStorei(GL_PACK_ROW_LENGTH, old_row_length);
+  if (!m_use_gles2_draw_path)
+    glPixelStorei(GL_PACK_ROW_LENGTH, old_row_length);
   return true;
 }
 
@@ -333,7 +343,9 @@ bool OpenGLHostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_vie
 bool OpenGLHostDisplay::InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device,
                                                bool threaded_presentation)
 {
-  glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, reinterpret_cast<GLint*>(&m_uniform_buffer_alignment));
+  m_use_gles2_draw_path = (GetRenderAPI() == HostDisplay::RenderAPI::OpenGLES && !GLAD_GL_ES_VERSION_3_0);
+  if (!m_use_gles2_draw_path)
+    glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, reinterpret_cast<GLint*>(&m_uniform_buffer_alignment));
 
   if (debug_device && GLAD_GL_KHR_debug)
   {
@@ -483,7 +495,6 @@ void OpenGLHostDisplay::DestroyImGuiContext()
 
 bool OpenGLHostDisplay::CreateResources()
 {
-  m_use_gles2_draw_path = (GetRenderAPI() == HostDisplay::RenderAPI::OpenGLES && !GLAD_GL_ES_VERSION_3_0);
   if (!m_use_gles2_draw_path)
   {
     static constexpr char fullscreen_quad_vertex_shader[] = R"(

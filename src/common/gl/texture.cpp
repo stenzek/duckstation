@@ -184,23 +184,32 @@ void Texture::GetTextureSubImage(GLuint texture, GLint level, GLint xoffset, GLi
     return;
   }
 
+  GLenum target = GL_READ_FRAMEBUFFER;
+  GLenum target_binding = GL_READ_FRAMEBUFFER_BINDING;
+  if (GLAD_GL_ES_VERSION_2_0 && !GLAD_GL_ES_VERSION_3_0)
+  {
+    // GLES2 doesn't have GL_READ_FRAMEBUFFER.
+    target = GL_FRAMEBUFFER;
+    target_binding = GL_FRAMEBUFFER_BINDING;
+  }
+
   Assert(depth == 1);
 
   GLuint old_read_fbo;
-  glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, reinterpret_cast<GLint*>(&old_read_fbo));
+  glGetIntegerv(target_binding, reinterpret_cast<GLint*>(&old_read_fbo));
 
   GLuint temp_fbo;
   glGenFramebuffers(1, &temp_fbo);
-  glBindFramebuffer(GL_FRAMEBUFFER, temp_fbo);
+  glBindFramebuffer(target, temp_fbo);
   if (zoffset > 0 && (GLAD_GL_VERSION_3_0 || GLAD_GL_ES_VERSION_3_0))
-    glFramebufferTextureLayer(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture, level, zoffset);
+    glFramebufferTextureLayer(target, GL_COLOR_ATTACHMENT0, texture, level, zoffset);
   else
-    glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, level);
+    glFramebufferTexture2D(target, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, level);
 
-  DebugAssert(glCheckFramebufferStatus(GL_READ_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+  DebugAssert(glCheckFramebufferStatus(target) == GL_FRAMEBUFFER_COMPLETE);
   glReadPixels(xoffset, yoffset, width, height, format, type, pixels);
 
-  glBindFramebuffer(GL_READ_FRAMEBUFFER, old_read_fbo);
+  glBindFramebuffer(target, old_read_fbo);
   glDeleteFramebuffers(1, &temp_fbo);
 }
 
