@@ -24,6 +24,8 @@ public:
   AndroidHostInterface(jobject java_object, jobject context_object, std::string user_directory);
   ~AndroidHostInterface() override;
 
+  ALWAYS_INLINE ANativeWindow* GetSurface() const { return m_surface; }
+
   bool Initialize() override;
   void Shutdown() override;
 

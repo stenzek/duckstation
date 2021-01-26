@@ -1001,10 +1001,12 @@ DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_surfaceChanged, jobject obj, j
   if (surface && !native_surface)
     Log_ErrorPrint("ANativeWindow_fromSurface() returned null");
 
+  // We should wait for the emu to finish if the surface is being destroyed or changed.
   AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
+  const bool block = (!native_surface || native_surface != hi->GetSurface());
   hi->RunOnEmulationThread(
     [hi, native_surface, format, width, height]() { hi->SurfaceChanged(native_surface, format, width, height); },
-    false);
+    block);
 }
 
 DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_setControllerType, jobject obj, jint index, jstring controller_type)
