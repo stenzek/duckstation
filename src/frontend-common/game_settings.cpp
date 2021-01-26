@@ -274,7 +274,7 @@ static void ParseIniSection(Entry* entry, const char* section, const CSimpleIniA
   cvalue = ini.GetValue(section, "GPUScaledDithering", nullptr);
   if (cvalue)
     entry->gpu_scaled_dithering = StringUtil::FromChars<bool>(cvalue);
-  cvalue = ini.GetValue(section, "GPUBilinearTextureFiltering", nullptr);
+  cvalue = ini.GetValue(section, "GPUTextureFiltering", nullptr);
   if (cvalue)
     entry->gpu_texture_filter = Settings::ParseTextureFilterName(cvalue);
   cvalue = ini.GetValue(section, "GPUForceNTSCTimings", nullptr);
