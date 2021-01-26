@@ -528,7 +528,7 @@
     </message>
     <message>
         <source>Force 4:3 For 24-Bit Display (disable widescreen for FMVs)</source>
-        <translation>強制的に 4:3(24ビットディスプレイ)扱い (FMVのワイドスクリーンを無効)</translation>
+        <translation>強制的に 4:3(24ビットディスプレイ)扱い (ビデオ映像のワイドスクリーンを無効)</translation>
     </message>
     <message>
         <source>PGXP Geometry Tolerance:</source>
@@ -1304,11 +1304,7 @@
     </message>
     <message>
         <source>Start dumping audio to file as soon as the emulator is started. Mainly useful as a debug option.</source>
-        <translation>エミュレーターが起動したらすぐに、オーディオファイルへのダンプを開始します。主にデバッグオプションとして役立ちます。</translation>
-    </message>
-    <message>
-        <source>Maximum latency: 0 frames (0.00ms)</source>
-        <translation>最大レイテンシ― : 0  フレーム (0.00ms)</translation>
+        <translation>エミュレーターが起動したらすぐに、音声ファイルへのダンプを開始します。主にデバッグオプションとして役立ちます。</translation>
     </message>
     <message>
         <source>Resampling</source>
@@ -1669,7 +1665,7 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <source>PCSXR/Libretro Cheat Files (*.cht *.txt);;All Files (*.*)</source>
-        <translation>PCSXR/Libretro チートファイル(*.cht);;すべてのファイル(*.*)</translation>
+        <translation>PCSXR/Libretro チートファイル(*.cht *.txt);;すべてのファイル(*.*)</translation>
     </message>
     <message>
         <source>Halfword</source>
@@ -1864,6 +1860,10 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <source>XInput</source>
         <translation>XInput</translation>
+    </message>
+    <message>
+        <source>DInput</source>
+        <translation>DInput</translation>
     </message>
 </context>
 <context>
@@ -2332,7 +2332,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Changes the aspect ratio used to display the console&apos;s output to the screen. The default is Auto (Game Native) which automatically adjusts the aspect ratio to match how a game would be shown on a typical TV of the era.</source>
-        <translation>コンソールの出力を画面に表示するために使用するアスペクト比を変更します。デフォルトは 自動(ゲームに基づく)で、アスペクト比を自動的に調整して、その時代の典型的なテレビでのゲームの表示方法と一致させます。</translation>
+        <translation>コンソールの出力を画面に表示するために使用するアスペクト比を変更します。デフォルトは[自動(ゲームに基づく)]で、アスペクト比を自動的に調整して、その時代の典型的なテレビでのゲームの表示方法と一致させます。</translation>
     </message>
     <message>
         <source>Basic</source>
@@ -2344,7 +2344,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Enable this option to match DuckStation&apos;s refresh rate with your current monitor or screen. VSync is automatically disabled when it is not possible (e.g. running at non-100% speed).</source>
-        <translation>このオプションを有効にすると、DuckStationの更新レートが現在のモニターまたは画面と一致します。 VSyncが不可能な場合（100％以外の速度で実行している場合など）、VSyncは自動的に無効になります。</translation>
+        <translation>このオプションを有効にすると、DuckStationの更新レートが現在のモニターまたは画面と一致します。 垂直同期が不可能な場合（100％以外の速度で実行している場合など）、垂直同期は自動的に無効になります。</translation>
     </message>
     <message>
         <source>VSync</source>
@@ -2368,7 +2368,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide. &lt;br&gt;Some games display content in the overscan area, or use it for screen effects. &lt;br&gt;May not display correctly with the &quot;All Borders&quot; setting. &quot;Only Overscan&quot; offers a good compromise between stability and hiding black borders.</source>
-        <translation>トリミング/非表示にするために、消費者向けテレビに通常表示されない領域の量を決定します。 &lt;br&gt;一部のゲームでは、オーバースキャンエリアにコンテンツを表示したり、画面効果に使用したりします。 &lt;br&gt;「すべてのボーダー」設定では正しく表示されない場合があります。  &lt;br&gt;「オーバースキャンエリアのみ」は、安定性と黒い境界線を隠すことの間の適切な妥協点を提供します。</translation>
+        <translation>トリミング/非表示にするために、消費者向けテレビに通常表示されない領域の量を決定します。 &lt;br&gt;一部のゲームでは、オーバースキャンエリアにコンテンツを表示したり、画面効果に使用したりします。 &lt;br&gt;設定の[すべてのボーダー]では正しく表示されない場合があります。  &lt;br&gt;[オーバースキャンエリアのみ]は、安定性と黒い境界線を隠すことの間の適切な妥協点を提供します。</translation>
     </message>
     <message>
         <source>Uses bilinear texture filtering when displaying the console&apos;s framebuffer to the screen. &lt;br&gt;Disabling filtering will producer a sharper, blockier/pixelated image. Enabling will smooth out the image. &lt;br&gt;The option will be less noticable the higher the resolution scale.</source>
@@ -2546,21 +2546,34 @@ This warning will only be shown once.</source>
         <translation>巻き戻し保存頻度：</translation>
     </message>
     <message>
+        <source>Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.</source>
+        <translation>先行実行が有効になっているため、巻き戻しは無効になっています。
+先行実行は、システム要件を大幅に増加させます。</translation>
+    </message>
+    <message>
         <source>Rewind is not enabled. Please note that enabling rewind may significantly increase system requirements.</source>
-        <translation>巻き戻しが有効になっていません。
-巻き戻しを有効にすると、システム要件が大幅に 増加する可能性があることに注意してください。</translation>
+        <translation>巻き戻しは、有効になっていません。
+巻き戻しを有効にすると、システム要件が大幅に増加する可能性があることに注意してください。</translation>
     </message>
     <message>
         <source> Frames</source>
         <translation> フレーム</translation>
     </message>
     <message>
+        <source>Disabled</source>
+        <translation>使用しない</translation>
+    </message>
+    <message>
+        <source>1 Frame</source>
+        <translation>1 フレーム</translation>
+    </message>
+    <message>
         <source>Enable Rewinding</source>
         <translation>巻き戻しを有効</translation>
     </message>
     <message>
-        <source>Rewind</source>
-        <translation>巻き戻し</translation>
+        <source>Rewind/Runahead</source>
+        <translation>巻き戻し/先行実行(Runahead)</translation>
     </message>
     <message>
         <source>Sync To Host Refresh Rate</source>
@@ -2592,11 +2605,12 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Sets the fast forward speed. This speed will be used when the fast forward hotkey is pressed/toggled.</source>
-        <translation>早送り速度を設定します。この速度は、ホットキーの早送りを押すか切り替え時に 適用されます。</translation>
+        <translation>早送り速度を設定します。この速度は、ホットキーの早送りを押すか切り替え時に適用されます。</translation>
     </message>
     <message>
         <source>Sets the turbo speed. This speed will be used when the turbo hotkey is pressed/toggled. Turboing will take priority over fast forwarding if both hotkeys are pressed/toggled.</source>
-        <translation>ターボ速度を設定します。この速度は、ホットキーのターボ速度を押すか切り替え時に 早送りとターボ速度、両方のホットキーが押された/切り替えられた場合、ターボ速度を 優先します。</translation>
+        <translation>ターボ速度を設定します。この速度は、ホットキーのターボを押すか切り替え時に適用されます。 
+早送りとターボ、両方のホットキーが押された/切り替えられた場合、ターボを優先します。</translation>
     </message>
     <message>
         <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host&apos;s refresh rate when both VSync and Audio Resampling settings are enabled. This results in the smoothest animations possible, at the cost of potentially increasing the emulation speed by less than 1%. Sync To Host Refresh Rate will not take effect if the console&apos;s refresh rate is too far from the host&apos;s refresh rate. Users with variable refresh rate displays should disable this option.</source>
@@ -2607,8 +2621,8 @@ This warning will only be shown once.</source>
         <translation>エミュレーション目標速度を設定します。この速度に到達することは保証されていません。到達しない場合、エミュレーターは管理可能な速度で実行されます。</translation>
     </message>
     <message>
-        <source>Runahead</source>
-        <translation>先行実行(Runahead)</translation>
+        <source>Runahead:</source>
+        <translation>先行実行(Runahead):</translation>
     </message>
     <message>
         <source>Emulation Speed</source>
@@ -2667,7 +2681,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Chroma Smoothing For 24-Bit Display</source>
-        <translation>24ビットディスプレイをクロマスムージング処理（FMVの色のむらを減らす）</translation>
+        <translation>24ビットディスプレイをクロマスムージング処理（ビデオ映像の色のむらを減らす）</translation>
     </message>
     <message>
         <source>Force NTSC Timings (60hz-on-PAL)</source>
@@ -2723,7 +2737,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs.</source>
-        <translation>24ビットコンテンツ（通常はFMV）で表示すると、4：3のアスペクト比表示に戻ります。</translation>
+        <translation>24ビットコンテンツ（通常はビデオ映像）で表示すると、4：3のアスペクト比表示に戻ります。</translation>
     </message>
     <message>
         <source>Checked</source>
@@ -2743,7 +2757,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Smooths out blockyness between colour transitions in 24-bit content, usually FMVs. Only applies to the hardware renderers.</source>
-        <translation>24ビットコンテンツ（通常はFMV）の色遷移間のブロックを滑らかにします。ハードウェアレンダラーにのみ適用されます。</translation>
+        <translation>24ビットコンテンツ（通常はビデオ映像）の色遷移間のブロックを滑らかにします。ハードウェアレンダラーにのみ適用されます。</translation>
     </message>
     <message>
         <source>Multisample Antialiasing</source>
@@ -2763,7 +2777,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Force 4:3 For 24-Bit Display (disable widescreen for FMVs)</source>
-        <translation>強制的に 4:3(24ビットディスプレイ)扱い (FMVのワイドスクリーンを無効)</translation>
+        <translation>強制的に 4:3(24ビットディスプレイ)扱い (ビデオ映像のワイドスクリーンを無効)</translation>
     </message>
     <message>
         <source>Scales the dither pattern to the resolution scale of the emulated GPU. This makes the dither pattern much less obvious at higher resolutions. &lt;br&gt;Usually safe to enable, and only supported by the hardware renderers.</source>
@@ -2775,7 +2789,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Chroma Smoothing For 24-Bit Display (reduce FMV color blockyness)</source>
-        <translation>24ビットディスプレイをクロマスムージング処理（FMVの色のむらを減らす）</translation>
+        <translation>24ビットディスプレイをクロマスムージング処理（ビデオ映像の色のむらを減らす）</translation>
     </message>
     <message>
         <source>Display Enhancements</source>
@@ -2963,6 +2977,14 @@ This warning will only be shown once.</source>
     <message>
         <source>Automatic Updater</source>
         <translation>自動更新</translation>
+    </message>
+    <message>
+        <source>latest</source>
+        <translation>最新版</translation>
+    </message>
+    <message>
+        <source>preview</source>
+        <translation>プレビュー版</translation>
     </message>
 </context>
 <context>
@@ -3245,7 +3267,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Started dumping audio to &apos;%s&apos;.</source>
-        <translation>オーディオの &apos;%s&apos;へのダンプを開始しました。</translation>
+        <translation>音声の &apos;%s&apos;へのダンプを開始しました。</translation>
     </message>
     <message>
         <source>Recompiler memory exceptions forced by game settings.</source>
@@ -3325,7 +3347,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Screenshot file &apos;%s&apos; already exists.</source>
-        <translation>スクリーンショットは &apos;%s&apos; に保存されました。</translation>
+        <translation>スクリーンショット &apos;%s&apos; は既に存在します。</translation>
     </message>
     <message>
         <source>Resolution scale set to %ux (display %ux%u, VRAM %ux%u)</source>
@@ -3453,7 +3475,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>WARNING: CPU overclock (%u%%) was different in save state (%u%%).</source>
-        <translation>警告：CPUオーバークロック (%u%%)は保存状態 (%u%%).で異なりました。</translation>
+        <translation>警告：CPUオーバークロック (%u%%)は保存状態 (%u%%)で異なりました。</translation>
     </message>
     <message>
         <source>PGXP is now disabled</source>
@@ -3748,7 +3770,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>All File Types (*.bin *.img *.iso *.cue *.chd *.exe *.psexe *.psf *.m3u);;Single-Track Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;PlayStation Executables (*.exe *.psexe);;Portable Sound Format Files (*.psf);;Playlists (*.m3u)</source>
-        <translation>すべてのファイルタイプ (*.bin *.img *.cue *.chd *.exe *.psexe *.psf *.m3u);;シングルトラック Raw イメージ (*.bin *.img *.iso);;キューシート (*.cue);;MAME CHD イメージ (*.chd);;PlayStation 実行可能ファイル (*.exe *.psexe);;ポータブルサウンドフォーマットファイル (*.psf);;プレイリスト (*.m3u)</translation>
+        <translation>すべてのファイルタイプ (*.bin *.img *.iso *.cue *.chd *.exe *.psexe *.psf *.m3u);;シングルトラック Raw イメージ (*.bin *.img *.iso);;キューシート (*.cue);;MAME CHD イメージ (*.chd);;PlayStation 実行可能ファイル (*.exe *.psexe);;ポータブルサウンドフォーマットファイル (*.psf);;プレイリスト (*.m3u)</translation>
     </message>
     <message>
         <source>Show Titles (Grid View)</source>
@@ -5013,7 +5035,7 @@ The saves will not be recoverable.</source>
     </message>
     <message>
         <source>Save state is incompatible: maximum version is %u but state is version %u.</source>
-        <translation>ステートセーブに互換性がありません。最小バージョンは %u ですが、ステートセーブはバージョン %u です。</translation>
+        <translation>ステートセーブに互換性がありません。最大バージョンは %u ですが、ステートセーブはバージョン %u です。</translation>
     </message>
     <message>
         <source>Save state is incompatible: minimum version is %u but state is version %u.</source>
