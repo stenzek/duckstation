@@ -343,7 +343,7 @@ bool SwapChain::CreateSwapChain()
     return false;
 
   // Select number of images in swap chain, we prefer one buffer in the background to work on
-  u32 image_count = surface_capabilities.minImageCount + 1u;
+  u32 image_count = std::max(surface_capabilities.minImageCount + 1u, 2u);
 
   // maxImageCount can be zero, in which case there isn't an upper limit on the number of buffers.
   if (surface_capabilities.maxImageCount > 0)
