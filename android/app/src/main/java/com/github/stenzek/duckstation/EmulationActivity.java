@@ -104,13 +104,6 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         }
     }
 
-    public void reportMessage(String message) {
-        Log.i("EmulationActivity", message);
-        runOnUiThread(() -> {
-            Toast.makeText(this, message, Toast.LENGTH_SHORT);
-        });
-    }
-
     private EmulationThread mEmulationThread;
 
     private void stopEmulationThread() {

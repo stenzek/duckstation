@@ -34,10 +34,11 @@ static jclass s_String_class;
 static jclass s_AndroidHostInterface_class;
 static jmethodID s_AndroidHostInterface_constructor;
 static jfieldID s_AndroidHostInterface_field_mNativePointer;
+static jmethodID s_AndroidHostInterface_method_reportError;
+static jmethodID s_AndroidHostInterface_method_reportMessage;
 static jmethodID s_AndroidHostInterface_method_openAssetStream;
 static jclass s_EmulationActivity_class;
 static jmethodID s_EmulationActivity_method_reportError;
-static jmethodID s_EmulationActivity_method_reportMessage;
 static jmethodID s_EmulationActivity_method_onEmulationStarted;
 static jmethodID s_EmulationActivity_method_onEmulationStopped;
 static jmethodID s_EmulationActivity_method_onGameTitleChanged;
@@ -161,25 +162,29 @@ void AndroidHostInterface::ReportError(const char* message)
 {
   CommonHostInterface::ReportError(message);
 
+  JNIEnv* env = AndroidHelpers::GetJNIEnv();
+  jstring message_jstr = env->NewStringUTF(message);
   if (m_emulation_activity_object)
-  {
-    JNIEnv* env = AndroidHelpers::GetJNIEnv();
-    jstring message_jstr = env->NewStringUTF(message);
     env->CallVoidMethod(m_emulation_activity_object, s_EmulationActivity_method_reportError, message_jstr);
-    env->DeleteLocalRef(message_jstr);
-  }
+  else
+    env->CallVoidMethod(m_java_object, s_AndroidHostInterface_method_reportError, message_jstr);
+  env->DeleteLocalRef(message_jstr);
 }
 
 void AndroidHostInterface::ReportMessage(const char* message)
 {
   CommonHostInterface::ReportMessage(message);
 
-  JNIEnv* env = AndroidHelpers::GetJNIEnv();
-  if (m_emulation_activity_object)
+  if (IsOnEmulationThread())
   {
-    jstring message_jstr = env->NewStringUTF(message);
-    env->CallVoidMethod(m_emulation_activity_object, s_EmulationActivity_method_reportMessage, message_jstr);
-    env->DeleteLocalRef(message_jstr);
+    // The toasts are not visible when the emulation activity is running anyway.
+    AddOSDMessage(message, 5.0f);
+  }
+  else
+  {
+    JNIEnv* env = AndroidHelpers::GetJNIEnv();
+    LocalRefHolder<jstring> message_jstr(env, env->NewStringUTF(message));
+    env->CallVoidMethod(m_java_object, s_AndroidHostInterface_method_reportMessage, message_jstr.Get());
   }
 }
 
@@ -309,6 +314,11 @@ void AndroidHostInterface::StopEmulationThreadLoop()
   m_sleep_cv.notify_one();
 }
 
+bool AndroidHostInterface::IsOnEmulationThread() const
+{
+  return std::this_thread::get_id() == m_emulation_thread_id;
+}
+
 void AndroidHostInterface::RunOnEmulationThread(std::function<void()> function, bool blocking)
 {
   if (!IsEmulationThreadRunning())
@@ -350,6 +360,7 @@ void AndroidHostInterface::EmulationThreadEntryPoint(JNIEnv* env, jobject emulat
 
   CreateImGuiContext();
   m_emulation_activity_object = emulation_activity;
+  m_emulation_thread_id = std::this_thread::get_id();
   ApplySettings(true);
 
   // Boot system.
@@ -887,14 +898,16 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
          env->GetMethodID(s_AndroidHostInterface_class, "<init>", "(Landroid/content/Context;)V")) == nullptr ||
       (s_AndroidHostInterface_field_mNativePointer =
          env->GetFieldID(s_AndroidHostInterface_class, "mNativePointer", "J")) == nullptr ||
+      (s_AndroidHostInterface_method_reportError =
+         env->GetMethodID(s_AndroidHostInterface_class, "reportError", "(Ljava/lang/String;)V")) == nullptr ||
+      (s_AndroidHostInterface_method_reportMessage =
+         env->GetMethodID(s_AndroidHostInterface_class, "reportMessage", "(Ljava/lang/String;)V")) == nullptr ||
       (s_AndroidHostInterface_method_openAssetStream = env->GetMethodID(
          s_AndroidHostInterface_class, "openAssetStream", "(Ljava/lang/String;)Ljava/io/InputStream;")) == nullptr ||
       (emulation_activity_class = env->FindClass("com/github/stenzek/duckstation/EmulationActivity")) == nullptr ||
       (s_EmulationActivity_class = static_cast<jclass>(env->NewGlobalRef(emulation_activity_class))) == nullptr ||
       (s_EmulationActivity_method_reportError =
          env->GetMethodID(s_EmulationActivity_class, "reportError", "(Ljava/lang/String;)V")) == nullptr ||
-      (s_EmulationActivity_method_reportMessage =
-         env->GetMethodID(s_EmulationActivity_class, "reportMessage", "(Ljava/lang/String;)V")) == nullptr ||
       (s_EmulationActivity_method_onEmulationStarted =
          env->GetMethodID(s_EmulationActivity_class, "onEmulationStarted", "()V")) == nullptr ||
       (s_EmulationActivity_method_onEmulationStopped =
