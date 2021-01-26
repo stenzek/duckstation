@@ -67,6 +67,8 @@ GeneralSettingsWidget::GeneralSettingsWidget(QtHostInterface* host_interface, QW
     m_ui.applyGameSettings, tr("Apply Per-Game Settings"), tr("Checked"),
     tr("When enabled, per-game settings will be applied, and incompatible enhancements will be disabled. You should "
        "leave this option enabled except when testing enhancements with incompatible games."));
+  dialog->registerWidgetHelp(m_ui.autoLoadCheats, tr("Automatically Load Cheats"), tr("Unchecked"),
+                             tr("Automatically loads and applies cheats on game start."));
   dialog->registerWidgetHelp(m_ui.controllerBackend, tr("Controller Backend"),
                              qApp->translate("ControllerInterface", ControllerInterface::GetBackendName(
                                                                       ControllerInterface::GetDefaultBackend())),
