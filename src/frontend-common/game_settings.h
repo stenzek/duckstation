@@ -87,6 +87,8 @@ struct Entry
   bool LoadFromStream(ByteStream* stream);
   bool SaveToStream(ByteStream* stream) const;
 
+  u32 GetUserSettingsCount() const;
+
   void ApplySettings(bool display_osd_messages) const;
 
   // Key-based interface, used by Android.

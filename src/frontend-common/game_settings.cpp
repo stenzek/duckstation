@@ -416,6 +416,42 @@ static void StoreIniSection(const Entry& entry, const char* section, CSimpleIniA
     ini.SetValue(section, "InputProfileName", entry.input_profile_name.c_str());
 }
 
+u32 Entry::GetUserSettingsCount() const
+{
+  u32 count = 0;
+
+  count += BoolToUInt32(runahead_frames.has_value());
+  count += BoolToUInt32(cpu_overclock_numerator.has_value());
+  count += BoolToUInt32(cpu_overclock_denominator.has_value());
+  count += BoolToUInt32(cpu_overclock_enable.has_value());
+  count += BoolToUInt32(cdrom_read_speedup.has_value());
+  count += BoolToUInt32(display_crop_mode.has_value());
+  count += BoolToUInt32(display_aspect_ratio.has_value());
+  count += BoolToUInt32(gpu_downsample_mode.has_value());
+  count += BoolToUInt32(display_linear_upscaling.has_value());
+  count += BoolToUInt32(display_integer_upscaling.has_value());
+  count += BoolToUInt32(display_force_4_3_for_24bit.has_value());
+  count += BoolToUInt32(gpu_resolution_scale.has_value());
+  count += BoolToUInt32(gpu_multisamples.has_value());
+  count += BoolToUInt32(gpu_per_sample_shading.has_value());
+  count += BoolToUInt32(gpu_true_color.has_value());
+  count += BoolToUInt32(gpu_scaled_dithering.has_value());
+  count += BoolToUInt32(gpu_force_ntsc_timings.has_value());
+  count += BoolToUInt32(gpu_texture_filter.has_value());
+  count += BoolToUInt32(gpu_widescreen_hack.has_value());
+  count += BoolToUInt32(gpu_pgxp.has_value());
+  count += BoolToUInt32(gpu_pgxp_depth_buffer.has_value());
+  count += BoolToUInt32(controller_1_type.has_value());
+  count += BoolToUInt32(controller_2_type.has_value());
+  count += BoolToUInt32(memory_card_1_type.has_value());
+  count += BoolToUInt32(memory_card_2_type.has_value());
+  count += BoolToUInt32(!memory_card_1_shared_path.empty());
+  count += BoolToUInt32(!memory_card_2_shared_path.empty());
+  count += BoolToUInt32(!input_profile_name.empty());
+
+  return count;
+}
+
 static std::optional<std::string> GetEntryValueForKey(const Entry& entry, const std::string_view& key)
 {
   if (key == "RunaheadFrameCount")
