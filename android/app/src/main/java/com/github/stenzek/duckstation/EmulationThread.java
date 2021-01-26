@@ -1,5 +1,6 @@
 package com.github.stenzek.duckstation;
 
+import android.os.Build;
 import android.os.Process;
 import android.util.Log;
 import android.view.Surface;
@@ -28,10 +29,25 @@ public class EmulationThread extends Thread {
         return thread;
     }
 
+    private void setExclusiveCores() {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                int[] cores = Process.getExclusiveCores();
+                if (cores == null || cores.length == 0)
+                    throw new Exception("Invalid return value from getExclusiveCores()");
+
+                AndroidHostInterface.setThreadAffinity(cores);
+            }
+        } catch (Exception e) {
+            Log.e("EmulationThread", "getExclusiveCores() failed");
+        }
+    }
+
     @Override
     public void run() {
         try {
             Process.setThreadPriority(Process.THREAD_PRIORITY_MORE_FAVORABLE);
+            setExclusiveCores();
         } catch (Exception e) {
             Log.i("EmulationThread", "Failed to set priority for emulation thread: " + e.getMessage());
         }

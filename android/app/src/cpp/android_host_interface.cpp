@@ -22,6 +22,8 @@
 #include "scmversion/scmversion.h"
 #include <android/native_window_jni.h>
 #include <cmath>
+#include <unistd.h>
+#include <sched.h>
 #include <imgui.h>
 Log_SetChannel(AndroidHostInterface);
 
@@ -951,6 +953,31 @@ DEFINE_JNI_ARGS_METHOD(jstring, AndroidHostInterface_getFullScmVersion, jobject 
   return env->NewStringUTF(SmallString::FromFormat("DuckStation for Android %s (%s)\nBuilt %s %s", g_scm_tag_str,
                                                    g_scm_branch_str, __DATE__, __TIME__));
 }
+
+DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_setThreadAffinity, jobject unused, jintArray cores)
+{
+  // https://github.com/googlearchive/android-audio-high-performance/blob/c232c21bf35d3bfea16537b781c526b8abdcc3cf/SimpleSynth/app/src/main/cpp/audio_player.cc
+  int length = env->GetArrayLength(cores);
+  int* p_cores = env->GetIntArrayElements(cores, nullptr);
+
+  pid_t current_thread_id = gettid();
+  cpu_set_t cpu_set;
+  CPU_ZERO(&cpu_set);
+  for (int i = 0; i < length; i++)
+  {
+    Log_InfoPrintf("Binding to CPU %d", p_cores[i]);
+    CPU_SET(p_cores[i], &cpu_set);
+  }
+
+  int result = sched_setaffinity(current_thread_id, sizeof(cpu_set_t), &cpu_set);
+  if (result != 0)
+    Log_InfoPrintf("Thread affinity set.");
+  else
+    Log_ErrorPrintf("Error setting thread affinity: %d", result);
+
+  env->ReleaseIntArrayElements(cores, p_cores, 0);
+}
+
 
 DEFINE_JNI_ARGS_METHOD(jobject, AndroidHostInterface_create, jobject unused, jobject context_object,
                        jstring user_directory)

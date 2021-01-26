@@ -45,6 +45,8 @@ public class AndroidHostInterface {
 
     static public native String getFullScmVersion();
 
+    static public native boolean setThreadAffinity(int[] cpus);
+
     static public native AndroidHostInterface create(Context context, String userDirectory);
 
     public native boolean isEmulationThreadRunning();
