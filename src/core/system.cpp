@@ -37,6 +37,7 @@
 #include <deque>
 #include <fstream>
 #include <limits>
+#include <thread>
 Log_SetChannel(System);
 
 SystemBootParameters::SystemBootParameters() = default;
@@ -95,10 +96,8 @@ static std::string s_running_game_title;
 
 static float s_throttle_frequency = 60.0f;
 static float s_target_speed = 1.0f;
-static s32 s_throttle_period = 0;
-static u64 s_last_throttle_time = 0;
-static Common::Timer s_throttle_timer;
-static Common::Timer s_speed_lost_time_timestamp;
+static Common::Timer::Value s_frame_period = 0;
+static Common::Timer::Value s_next_frame_time = 0;
 
 static float s_average_frame_time_accumulator = 0.0f;
 static float s_worst_frame_time_accumulator = 0.0f;
@@ -781,10 +780,8 @@ bool Initialize(bool force_software_renderer)
   s_internal_frame_number = 1;
 
   s_throttle_frequency = 60.0f;
-  s_throttle_period = 0;
-  s_last_throttle_time = 0;
-  s_throttle_timer.Reset();
-  s_speed_lost_time_timestamp.Reset();
+  s_frame_period = 0;
+  s_next_frame_time = 0;
 
   s_average_frame_time_accumulator = 0.0f;
   s_worst_frame_time_accumulator = 0.0f;
@@ -1316,6 +1313,8 @@ void RunFrame()
 
   DoRunFrame();
 
+  s_next_frame_time += s_frame_period;
+
   if (s_memory_saves_enabled)
     DoMemorySaveStates();
 }
@@ -1339,15 +1338,23 @@ void SetThrottleFrequency(float frequency)
 
 void UpdateThrottlePeriod()
 {
-  s_throttle_period =
-    static_cast<s32>(1000000000.0 / static_cast<double>(s_throttle_frequency) / static_cast<double>(s_target_speed));
+  if (s_target_speed > std::numeric_limits<double>::epsilon())
+  {
+    const double target_speed = std::max(static_cast<double>(s_target_speed), std::numeric_limits<double>::epsilon());
+    s_frame_period =
+      Common::Timer::ConvertSecondsToValue(1.0 / (static_cast<double>(s_throttle_frequency) * target_speed));
+  }
+  else
+  {
+    s_frame_period = 1;
+  }
+
   ResetThrottler();
 }
 
 void ResetThrottler()
 {
-  s_last_throttle_time = 0;
-  s_throttle_timer.Reset();
+  s_next_frame_time = Common::Timer::GetValue();
 }
 
 void Throttle()
@@ -1355,44 +1362,60 @@ void Throttle()
   // Reset the throttler on audio buffer overflow, so we don't end up out of phase.
   if (g_host_interface->GetAudioStream()->DidUnderflow() && s_target_speed >= 1.0f)
   {
-    Log_DevPrintf("Audio buffer underflowed, resetting throttler");
+    Log_VerbosePrintf("Audio buffer underflowed, resetting throttler");
     ResetThrottler();
     return;
   }
 
   // Allow variance of up to 40ms either way.
-  constexpr s64 MAX_VARIANCE_TIME = INT64_C(40000000);
+#ifndef __ANDROID__
+  static constexpr double MAX_VARIANCE_TIME_NS = 40 * 1000000;
+#else
+  static constexpr double MAX_VARIANCE_TIME_NS = 50 * 1000000;
+#endif
 
   // Don't sleep for <1ms or >=period.
-  constexpr s64 MINIMUM_SLEEP_TIME = INT64_C(1000000);
+  static constexpr double MINIMUM_SLEEP_TIME_NS = 1 * 1000000;
 
   // Use unsigned for defined overflow/wrap-around.
-  const u64 time = static_cast<u64>(s_throttle_timer.GetTimeNanoseconds());
-  const s64 sleep_time = static_cast<s64>(s_last_throttle_time - time);
-  if (sleep_time < -MAX_VARIANCE_TIME)
+  const Common::Timer::Value time = Common::Timer::GetValue();
+  const double sleep_time = (s_next_frame_time >= time) ?
+                              Common::Timer::ConvertValueToNanoseconds(s_next_frame_time - time) :
+                              -Common::Timer::ConvertValueToNanoseconds(time - s_next_frame_time);
+  if (sleep_time < -MAX_VARIANCE_TIME_NS)
   {
-#ifndef _DEBUG
     // Don't display the slow messages in debug, it'll always be slow...
-    // Limit how often the messages are displayed.
-    if (s_speed_lost_time_timestamp.GetTimeSeconds() >= 1.0f)
-    {
-      Log_WarningPrintf("System too slow, lost %.2f ms",
-                        static_cast<double>(-sleep_time - MAX_VARIANCE_TIME) / 1000000.0);
-      s_speed_lost_time_timestamp.Reset();
-    }
+#ifndef _DEBUG
+    Log_VerbosePrintf("System too slow, lost %.2f ms", (-sleep_time - MAX_VARIANCE_TIME_NS) / 1000000.0);
 #endif
     ResetThrottler();
   }
-  else if (sleep_time >= MINIMUM_SLEEP_TIME)
+  else
   {
-#ifdef __ANDROID__
-    Common::Timer::HybridSleep(sleep_time);
-#else
-    Common::Timer::NanoSleep(sleep_time);
-#endif
+    Common::Timer::SleepUntil(s_next_frame_time, true);
+  }
+}
+
+void RunFrames()
+{
+  // If we're running more than this in a single loop... we're in for a bad time.
+  const u32 max_frames_to_run = 2;
+  u32 frames_run = 0;
+
+  Common::Timer::Value value = Common::Timer::GetValue();
+  while (frames_run < max_frames_to_run)
+  {
+    if (value < s_next_frame_time)
+      break;
+
+    RunFrame();
+    frames_run++;
+
+    value = Common::Timer::GetValue();
   }
 
-  s_last_throttle_time += s_throttle_period;
+  if (frames_run != 1)
+    Log_VerbosePrintf("Ran %u frames in a single host frame", frames_run);
 }
 
 void UpdatePerformanceCounters()

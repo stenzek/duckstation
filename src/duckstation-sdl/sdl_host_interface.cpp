@@ -1856,7 +1856,11 @@ void SDLHostInterface::Run()
 
     if (System::IsRunning())
     {
-      System::RunFrame();
+      if (m_display_all_frames)
+        System::RunFrame();
+      else
+        System::RunFrames();
+
       UpdateControllerRumble();
       if (m_frame_step_request)
       {

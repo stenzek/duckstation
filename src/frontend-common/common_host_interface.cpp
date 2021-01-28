@@ -614,10 +614,11 @@ void CommonHostInterface::UpdateSpeedLimiterState()
                          g_settings.turbo_speed :
                          (m_fast_forward_enabled ? g_settings.fast_forward_speed : g_settings.emulation_speed);
   m_throttler_enabled = (target_speed != 0.0f);
+  m_display_all_frames = !m_throttler_enabled || g_settings.display_all_frames;
 
   bool syncing_to_host = false;
-  if (g_settings.sync_to_host_refresh_rate && g_settings.audio_resampling && target_speed == 1.0f &&
-      g_settings.video_sync_enabled && m_display && System::IsRunning())
+  if (g_settings.sync_to_host_refresh_rate && g_settings.audio_resampling && target_speed == 1.0f && m_display &&
+      System::IsRunning())
   {
     float host_refresh_rate;
     if (m_display->GetHostRefreshRate(&host_refresh_rate))
@@ -640,7 +641,8 @@ void CommonHostInterface::UpdateSpeedLimiterState()
   Log_InfoPrintf("Target speed: %f%%", target_speed * 100.0f);
   Log_InfoPrintf("Syncing to %s%s", audio_sync_enabled ? "audio" : "",
                  (audio_sync_enabled && video_sync_enabled) ? " and video" : (video_sync_enabled ? "video" : ""));
-  Log_InfoPrintf("Max display fps: %f", max_display_fps);
+  Log_InfoPrintf("Max display fps: %f (%s)", max_display_fps,
+                 m_display_all_frames ? "displaying all frames" : "skipping displaying frames when needed");
 
   if (System::IsValid())
   {
@@ -656,6 +658,7 @@ void CommonHostInterface::UpdateSpeedLimiterState()
     Log_InfoPrintf("Audio input sample rate: %u hz", input_sample_rate);
 
     m_audio_stream->SetInputSampleRate(input_sample_rate);
+    m_audio_stream->SetWaitForBufferFill(!m_display_all_frames);
     m_audio_stream->SetOutputVolume(GetAudioOutputVolume());
     m_audio_stream->SetSync(audio_sync_enabled);
     if (audio_sync_enabled)
@@ -671,8 +674,12 @@ void CommonHostInterface::UpdateSpeedLimiterState()
   if (g_settings.increase_timer_resolution)
     SetTimerResolutionIncreased(m_throttler_enabled);
 
-  if (syncing_to_host)
+  // When syncing to host and using vsync, we don't need to sleep.
+  if (syncing_to_host && video_sync_enabled && m_display_all_frames)
+  {
+    Log_InfoPrintf("Using host vsync for throttling.");
     m_throttler_enabled = false;
+  }
 }
 
 void CommonHostInterface::RecreateSystem()
@@ -2305,6 +2312,7 @@ void CommonHostInterface::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.emulation_speed != old_settings.emulation_speed ||
         g_settings.fast_forward_speed != old_settings.fast_forward_speed ||
         g_settings.display_max_fps != old_settings.display_max_fps ||
+        g_settings.display_all_frames != old_settings.display_all_frames ||
         g_settings.audio_resampling != old_settings.audio_resampling ||
         g_settings.sync_to_host_refresh_rate != old_settings.sync_to_host_refresh_rate)
     {

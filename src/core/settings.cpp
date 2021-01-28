@@ -196,6 +196,7 @@ void Settings::Load(SettingsInterface& si)
   display_show_vps = si.GetBoolValue("Display", "ShowVPS", false);
   display_show_speed = si.GetBoolValue("Display", "ShowSpeed", false);
   display_show_resolution = si.GetBoolValue("Display", "ShowResolution", false);
+  display_all_frames = si.GetBoolValue("Display", "DisplayAllFrames", false);
   video_sync_enabled = si.GetBoolValue("Display", "VSync", true);
   display_post_process_chain = si.GetStringValue("Display", "PostProcessChain", "");
   display_max_fps = si.GetFloatValue("Display", "MaxFPS", 0.0f);
@@ -353,6 +354,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("Display", "ShowVPS", display_show_vps);
   si.SetBoolValue("Display", "ShowSpeed", display_show_speed);
   si.SetBoolValue("Display", "ShowResolution", display_show_speed);
+  si.SetBoolValue("Display", "DisplayAllFrames", display_all_frames);
   si.SetBoolValue("Display", "VSync", video_sync_enabled);
   if (display_post_process_chain.empty())
     si.DeleteValue("Display", "PostProcessChain");

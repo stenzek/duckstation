@@ -138,6 +138,7 @@ struct Settings
   bool display_show_vps = false;
   bool display_show_speed = false;
   bool display_show_resolution = false;
+  bool display_all_frames = false;
   bool video_sync_enabled = true;
   float display_max_fps = 0.0f;
   float gpu_pgxp_tolerance = -1.0f;
