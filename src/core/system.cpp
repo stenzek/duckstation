@@ -2226,6 +2226,9 @@ void DoMemorySaveStates()
 
 void SetRunaheadReplayFlag()
 {
+  if (s_runahead_frames == 0)
+    return;
+
   Log_DevPrintf("Runahead rewind pending...");
   s_runahead_replay_pending = true;
 }
