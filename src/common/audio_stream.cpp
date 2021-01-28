@@ -27,6 +27,7 @@ bool AudioStream::Reconfigure(u32 input_sample_rate /* = DefaultInputSampleRate 
   m_output_sample_rate = output_sample_rate;
   m_channels = channels;
   m_buffer_size = buffer_size;
+  m_buffer_filling.store(m_wait_for_buffer_fill);
   m_output_paused = true;
 
   if (!SetBufferSize(buffer_size))
@@ -53,6 +54,14 @@ void AudioStream::SetInputSampleRate(u32 sample_rate)
   std::unique_lock<std::mutex> resampler_lock(m_resampler_mutex);
 
   InternalSetInputSampleRate(sample_rate);
+}
+
+void AudioStream::SetWaitForBufferFill(bool enabled)
+{
+  std::unique_lock<std::mutex> buffer_lock(m_buffer_mutex);
+  m_wait_for_buffer_fill = enabled;
+  if (enabled && m_buffer.IsEmpty())
+    m_buffer_filling.store(true);
 }
 
 void AudioStream::InternalSetInputSampleRate(u32 sample_rate)
@@ -123,6 +132,11 @@ void AudioStream::WriteFrames(const SampleType* frames, u32 num_frames)
 void AudioStream::EndWrite(u32 num_frames)
 {
   m_buffer.AdvanceTail(num_frames * m_channels);
+  if (m_buffer_filling.load())
+  {
+    if ((m_buffer.GetSize() / m_channels) >= m_buffer_size)
+      m_buffer_filling.store(false);
+  }
   m_buffer_mutex.unlock();
   FramesAvailable();
 }
@@ -165,8 +179,9 @@ void AudioStream::ReadFrames(SampleType* samples, u32 num_frames, bool apply_vol
 {
   const u32 total_samples = num_frames * m_channels;
   u32 samples_copied = 0;
+  std::unique_lock<std::mutex> buffer_lock(m_buffer_mutex);
+  if (!m_buffer_filling.load())
   {
-    std::unique_lock<std::mutex> buffer_lock(m_buffer_mutex);
     if (m_input_sample_rate == m_output_sample_rate)
     {
       samples_copied = std::min(m_buffer.GetSize(), total_samples);
@@ -186,6 +201,10 @@ void AudioStream::ReadFrames(SampleType* samples, u32 num_frames, bool apply_vol
       if (samples_copied > 0)
         m_resampled_buffer.PopRange(samples, samples_copied);
     }
+  }
+  else
+  {
+    ReleaseBufferLock(std::move(buffer_lock));
   }
 
   if (samples_copied < total_samples)
@@ -214,16 +233,18 @@ void AudioStream::ReadFrames(SampleType* samples, u32 num_frames, bool apply_vol
         resample_subpos %= 65536u;
       }
 
-      Log_DevPrintf("Audio buffer underflow, resampled %u frames to %u", samples_copied / m_channels, num_frames);
+      Log_VerbosePrintf("Audio buffer underflow, resampled %u frames to %u", samples_copied / m_channels, num_frames);
       m_underflow_flag.store(true);
     }
     else
     {
       // read nothing, so zero-fill
       std::memset(samples, 0, sizeof(SampleType) * total_samples);
-      Log_DevPrintf("Audio buffer underflow with no samples, added %u frames silence", num_frames);
+      Log_VerbosePrintf("Audio buffer underflow with no samples, added %u frames silence", num_frames);
       m_underflow_flag.store(true);
     }
+
+    m_buffer_filling.store(m_wait_for_buffer_fill);
   }
 
   if (apply_volume && m_output_volume != FullVolume)
@@ -267,6 +288,7 @@ void AudioStream::EmptyBuffers()
   std::unique_lock<std::mutex> resampler_lock(m_resampler_mutex);
   m_buffer.Clear();
   m_underflow_flag.store(false);
+  m_buffer_filling.store(m_wait_for_buffer_fill);
   ResetResampler();
 }
 
