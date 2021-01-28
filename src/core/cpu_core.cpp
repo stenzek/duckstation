@@ -175,9 +175,19 @@ bool DoState(StateWrapper& sw)
   if (!GTE::DoState(sw))
     return false;
 
+  if (sw.GetVersion() < 48)
+  {
+    DebugAssert(sw.IsReading());
+    ClearICache();
+  }
+  else
+  {
+    sw.Do(&g_state.icache_tags);
+    sw.Do(&g_state.icache_data);
+  }
+
   if (sw.IsReading())
   {
-    ClearICache();
     if (g_settings.gpu_pgxp_enable)
       PGXP::Initialize();
   }
