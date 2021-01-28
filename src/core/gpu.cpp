@@ -222,7 +222,7 @@ bool GPU::DoState(StateWrapper& sw, HostDisplayTexture** host_texture, bool upda
     if (sw.IsReading())
     {
       // Still need a temporary here.
-      HeapArray<u16, VRAM_WIDTH* VRAM_HEIGHT> temp;
+      HeapArray<u16, VRAM_WIDTH * VRAM_HEIGHT> temp;
       sw.DoBytes(temp.data(), VRAM_WIDTH * VRAM_HEIGHT * sizeof(u16));
       UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, temp.data(), false, false);
     }
@@ -772,7 +772,8 @@ void GPU::UpdateCRTCTickEvent()
 
 bool GPU::IsCRTCScanlinePending() const
 {
-  return (GetPendingCRTCTicks() + m_crtc_state.current_tick_in_scanline) >= m_crtc_state.horizontal_total;
+  const TickCount ticks = (GetPendingCRTCTicks() + m_crtc_state.current_tick_in_scanline);
+  return (ticks >= (m_crtc_state.in_hblank ? m_crtc_state.horizontal_total : m_crtc_state.horizontal_sync_start));
 }
 
 bool GPU::IsCommandCompletionPending() const
