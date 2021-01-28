@@ -2692,7 +2692,7 @@ Diese Datei kann mehrere Gigabyte groß sein, achte also auf die Abnutzung der S
     <message>
         <location filename="../displaysettingswidget.cpp" line="102"/>
         <source>Enable this option will ensure every frame the console renders is displayed to the screen, for optimal frame pacing. If you are having difficulties maintaining full speed, or are getting audio glitches, try disabling this option.</source>
-        <translation>Wenn diese Option aktiviert ist, wird jedes Bild, den die Konsole rendert, auf dem Bildschirm angezeigt, um ein optimales Frame-Pacing zu erreichen. Wenn die volle Geschwindigkeit nicht beibehalten werden kann, oder Audiostörungen auftreten, sollte diese Option deaktiviert werden.</translation>
+        <translation>Wenn diese Option aktiviert ist, wird jedes Bild, das die Konsole rendert, auf dem Bildschirm angezeigt, um ein optimales Frame-Pacing zu erreichen. Wenn die volle Geschwindigkeit nicht beibehalten werden kann, oder Audiostörungen auftreten, sollte diese Option deaktiviert werden.</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="106"/>
