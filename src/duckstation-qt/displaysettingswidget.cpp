@@ -113,6 +113,8 @@ DisplaySettingsWidget::DisplaySettingsWidget(QtHostInterface* host_interface, QW
   dialog->registerWidgetHelp(
     m_ui.showSpeed, tr("Show Speed"), tr("Unchecked"),
     tr("Shows the current emulation speed of the system in the top-right corner of the display as a percentage."));
+  dialog->registerWidgetHelp(m_ui.showResolution, tr("Show Resolution"), tr("Unchecked"),
+                             tr("Shows the resolution of the game in the top-right corner of the display."));
 
 #ifdef _WIN32
   {
