@@ -12,18 +12,21 @@ EnhancementSettingsWidget::EnhancementSettingsWidget(QtHostInterface* host_inter
   m_ui.setupUi(this);
   setupAdditionalUi();
 
-  SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.resolutionScale, "GPU", "ResolutionScale");
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.trueColor, "GPU", "TrueColor");
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.scaledDithering, "GPU", "ScaledDithering");
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.disableInterlacing, "GPU", "DisableInterlacing");
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.forceNTSCTimings, "GPU", "ForceNTSCTimings");
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.force43For24Bit, "Display", "Force4_3For24Bit");
+  SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.resolutionScale, "GPU", "ResolutionScale", 1);
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.trueColor, "GPU", "TrueColor", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.scaledDithering, "GPU", "ScaledDithering", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.disableInterlacing, "GPU", "DisableInterlacing",
+                                               true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.forceNTSCTimings, "GPU", "ForceNTSCTimings",
+                                               false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.force43For24Bit, "Display", "Force4_3For24Bit",
+                                               false);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.chromaSmoothingFor24Bit, "GPU",
-                                               "ChromaSmoothing24Bit");
+                                               "ChromaSmoothing24Bit", false);
   SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.textureFiltering, "GPU", "TextureFilter",
                                                &Settings::ParseTextureFilterName, &Settings::GetTextureFilterName,
                                                Settings::DEFAULT_GPU_TEXTURE_FILTER);
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.widescreenHack, "GPU", "WidescreenHack");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.widescreenHack, "GPU", "WidescreenHack", false);
 
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.pgxpEnable, "GPU", "PGXPEnable", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.pgxpCulling, "GPU", "PGXPCulling", true);

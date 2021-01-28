@@ -161,7 +161,7 @@ void Settings::Load(SettingsInterface& si)
     ParseDownsampleModeName(
       si.GetStringValue("GPU", "DownsampleMode", GetDownsampleModeName(DEFAULT_GPU_DOWNSAMPLE_MODE)).c_str())
       .value_or(DEFAULT_GPU_DOWNSAMPLE_MODE);
-  gpu_disable_interlacing = si.GetBoolValue("GPU", "DisableInterlacing", false);
+  gpu_disable_interlacing = si.GetBoolValue("GPU", "DisableInterlacing", true);
   gpu_force_ntsc_timings = si.GetBoolValue("GPU", "ForceNTSCTimings", false);
   gpu_widescreen_hack = si.GetBoolValue("GPU", "WidescreenHack", false);
   gpu_24bit_chroma_smoothing = si.GetBoolValue("GPU", "ChromaSmoothing24Bit", false);

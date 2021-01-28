@@ -513,7 +513,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("GPU", "ScaledDithering", true);
   si.SetStringValue("GPU", "TextureFilter", Settings::GetTextureFilterName(Settings::DEFAULT_GPU_TEXTURE_FILTER));
   si.SetStringValue("GPU", "DownsampleMode", Settings::GetDownsampleModeName(Settings::DEFAULT_GPU_DOWNSAMPLE_MODE));
-  si.SetBoolValue("GPU", "DisableInterlacing", false);
+  si.SetBoolValue("GPU", "DisableInterlacing", true);
   si.SetBoolValue("GPU", "ForceNTSCTimings", false);
   si.SetBoolValue("GPU", "WidescreenHack", false);
   si.SetBoolValue("GPU", "ChromaSmoothing24Bit", false);
