@@ -200,6 +200,6 @@
     <string name="settings_summary_game_directories">Change the list of directories used to search for games.</string>
     <string name="game_directories_scanning_subdirectories">Scanning subdirectories.</string>
     <string name="game_directories_not_scanning_subdirectories">Not scanning subdirectories.</string>
-    <string name="settings_display_all_frames">Display All Frames</string>
+    <string name="settings_display_all_frames">Optimal Frame Pacing</string>
     <string name="settings_summary_display_all_frames">Enable this option will ensure every frame the console renders is displayed to the screen, for optimal frame pacing. If you are having difficulties maintaining full speed, or are getting audio glitches, try disabling this option.</string>
 </resources>

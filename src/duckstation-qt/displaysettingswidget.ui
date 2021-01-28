@@ -88,7 +88,7 @@
         <item row="1" column="1">
          <widget class="QCheckBox" name="displayAllFrames">
           <property name="text">
-           <string>Display All Frames</string>
+           <string>Optimal Frame Pacing</string>
           </property>
          </widget>
         </item>

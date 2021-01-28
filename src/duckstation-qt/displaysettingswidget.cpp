@@ -98,7 +98,7 @@ DisplaySettingsWidget::DisplaySettingsWidget(QtHostInterface* host_interface, QW
     m_ui.vsync, tr("VSync"), tr("Checked"),
     tr("Enable this option to match DuckStation's refresh rate with your current monitor or screen. "
        "VSync is automatically disabled when it is not possible (e.g. running at non-100% speed)."));
-  dialog->registerWidgetHelp(m_ui.displayAllFrames, tr("Display All Frames"), tr("Unchecked"),
+  dialog->registerWidgetHelp(m_ui.displayAllFrames, tr("Optimal Frame Pacing"), tr("Unchecked"),
                              tr("Enable this option will ensure every frame the console renders is displayed to the "
                                 "screen, for optimal frame pacing. If you are having difficulties maintaining full "
                                 "speed, or are getting audio glitches, try disabling this option."));
