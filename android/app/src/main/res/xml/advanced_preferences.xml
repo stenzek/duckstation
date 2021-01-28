@@ -94,6 +94,12 @@
         app:defaultValue="MMap"
         app:summary="@string/settings_summary_cpu_recompiler_fastmem"
         app:iconSpaceReserved="false" />
+    <SwitchPreferenceCompat
+        app:key="Display/DisplayAllFrames"
+        app:title="@string/settings_display_all_frames"
+        app:defaultValue="false"
+        app:summary="@string/settings_summary_display_all_frames"
+        app:iconSpaceReserved="false" />
     <ListPreference
         app:key="Display/MaxFPS"
         app:title="@string/settings_presented_frame_limit"

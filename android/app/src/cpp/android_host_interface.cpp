@@ -452,7 +452,10 @@ void AndroidHostInterface::EmulationThreadLoop(JNIEnv* env)
     // simulate the system if not paused
     if (System::IsRunning())
     {
-      System::RunFrame();
+      if (m_throttler_enabled)
+        System::RunFrames();
+      else
+        System::RunFrame();
 
       if (m_vibration_enabled)
         UpdateVibration();

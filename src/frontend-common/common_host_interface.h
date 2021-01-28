@@ -355,6 +355,7 @@ protected:
   bool m_turbo_enabled = false;
   bool m_timer_resolution_increased = false;
   bool m_throttler_enabled = true;
+  bool m_display_all_frames = true;
 
 private:
   void InitializeUserDirectory();

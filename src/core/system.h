@@ -153,6 +153,7 @@ bool RecreateGPU(GPURenderer renderer, bool update_display = true);
 
 void SingleStepCPU();
 void RunFrame();
+void RunFrames();
 
 /// Sets target emulation speed.
 float GetTargetSpeed();
