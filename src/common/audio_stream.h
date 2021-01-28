@@ -37,6 +37,7 @@ public:
   void SetSync(bool enable) { m_sync = enable; }
 
   void SetInputSampleRate(u32 sample_rate);
+  void SetWaitForBufferFill(bool enabled);
 
   virtual void SetOutputVolume(u32 volume);
 
@@ -109,10 +110,12 @@ private:
   std::vector<SampleType> m_resample_buffer;
 
   std::atomic_bool m_underflow_flag{false};
+  std::atomic_bool m_buffer_filling{false};
   u32 m_max_samples = 0;
 
   bool m_output_paused = true;
   bool m_sync = true;
+  bool m_wait_for_buffer_fill = false;
 
   // Resampling
   double m_resampler_ratio = 1.0;
