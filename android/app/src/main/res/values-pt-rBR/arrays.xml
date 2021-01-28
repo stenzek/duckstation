@@ -232,4 +232,14 @@
         <item>Retrato</item>
         <item>Paisagem</item>
     </string-array>
-</resources>
+    <String-array name="settings_theme">
+        <item>Padrão do Sistema</item>
+		<item>Claro</item>
+        <item>Escuro</item>
+	</string-array>
+	<String-array name="settings_downsampling">
+        <item>Desabilitado</item>
+		<item>Misto (Reduz 3D / Suaviza Tudo)</item>
+        <item>Adaptativo (Preserva o 3D / Suaviza 2D)</item>
+	</string-array>
+	</resources>
