@@ -20,6 +20,7 @@ public:
   static void BusyWait(std::uint64_t ns);
   static void HybridSleep(std::uint64_t ns, std::uint64_t min_sleep_time = UINT64_C(2000000));
   static void NanoSleep(std::uint64_t ns);
+  static void SleepUntil(Value value, bool exact);
 
   void Reset();
 

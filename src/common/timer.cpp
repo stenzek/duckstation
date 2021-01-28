@@ -17,6 +17,23 @@ namespace Common {
 static double s_counter_frequency;
 static bool s_counter_initialized = false;
 
+// This gets leaked... oh well.
+static thread_local HANDLE s_sleep_timer;
+static thread_local bool s_sleep_timer_created = false;
+
+static HANDLE GetSleepTimer()
+{
+  if (s_sleep_timer_created)
+    return s_sleep_timer;
+
+  s_sleep_timer_created = true;
+  s_sleep_timer = CreateWaitableTimer(nullptr, TRUE, nullptr);
+  if (!s_sleep_timer)
+    std::fprintf(stderr, "CreateWaitableTimer() failed, falling back to Sleep()\n");
+
+  return s_sleep_timer;
+}
+
 Timer::Value Timer::GetValue()
 {
   // even if this races, it should still result in the same value..
@@ -63,9 +80,40 @@ Timer::Value Timer::ConvertNanosecondsToValue(double ns)
   return static_cast<Value>(ns * s_counter_frequency);
 }
 
-#else
+void Timer::SleepUntil(Value value, bool exact)
+{
+  if (exact)
+  {
+    while (GetValue() < value)
+      SleepUntil(value, false);
+  }
+  else
+  {
+    const std::int64_t diff = static_cast<std::int64_t>(value - GetValue());
+    if (diff <= 0)
+      return;
 
-#if 1 // using clock_gettime()
+    HANDLE timer = GetSleepTimer();
+    if (timer)
+    {
+      FILETIME ft;
+      GetSystemTimeAsFileTime(&ft);
+
+      LARGE_INTEGER fti;
+      fti.LowPart = ft.dwLowDateTime;
+      fti.HighPart = ft.dwHighDateTime;
+      fti.QuadPart += diff;
+
+      if (SetWaitableTimer(timer, &fti, 0, nullptr, nullptr, FALSE))
+        WaitForSingleObject(timer, INFINITE);
+    }
+
+    // falling back to sleep... bad.
+    Sleep(static_cast<DWORD>(static_cast<std::uint64_t>(diff) / 1000000));
+  }
+}
+
+#else
 
 Timer::Value Timer::GetValue()
 {
@@ -104,46 +152,34 @@ Timer::Value Timer::ConvertNanosecondsToValue(double ns)
   return static_cast<Value>(ns);
 }
 
-#else // using gettimeofday()
-
-Timer::Value Timer::GetValue()
+void Timer::SleepUntil(Value value, bool exact)
 {
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  return ((Value)tv.tv_usec) + ((Value)tv.tv_sec * (Value)1000000);
-}
+  if (exact)
+  {
+    while (GetValue() < value)
+      SleepUntil(value, false);
+  }
+  else
+  {
+    // Apple doesn't have TIMER_ABSTIME, so fall back to nanosleep in such a case.
+#ifdef __APPLE__
+    const Value current_time = GetValue();
+    if (value <= current_time)
+      return;
 
-double Timer::ConvertValueToNanoseconds(Timer::Value value)
-{
-  return ((double)value * 1000.0);
-}
-
-double Timer::ConvertValueToMilliseconds(Timer::Value value)
-{
-  return ((double)value / 1000.0);
-}
-
-double Timer::ConvertValueToSeconds(Timer::Value value)
-{
-  return ((double)value / 1000000.0);
-}
-
-Timer::Value Timer::ConvertSecondsToValue(double s)
-{
-  return static_cast<Value>(ms * 1000000.0);
-}
-
-Timer::Value Timer::ConvertMillisecondsToValue(double ms)
-{
-  return static_cast<Value>(ms * 1000.0);
-}
-
-Timer::Value Timer::ConvertNanosecondsToValue(double ns)
-{
-  return static_cast<Value>(ns / 1000.0);
-}
-
+    const Value diff = value - current_time;
+    struct timespec ts;
+    ts.tv_sec = diff / UINT64_C(1000000000);
+    ts.tv_nsec = diff % UINT64_C(1000000000);
+    nanosleep(&ts, nullptr);
+#else
+    struct timespec ts;
+    ts.tv_sec = value / UINT64_C(1000000000);
+    ts.tv_nsec = value % UINT64_C(1000000000);
+    clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &ts, nullptr);
 #endif
+  }
+}
 
 #endif
 
@@ -212,24 +248,13 @@ void Timer::HybridSleep(std::uint64_t ns, std::uint64_t min_sleep_time)
 void Timer::NanoSleep(std::uint64_t ns)
 {
 #if defined(WIN32)
-  static HANDLE throttle_timer;
-  static bool throttle_timer_created = false;
-  if (!throttle_timer_created)
-  {
-    throttle_timer_created = true;
-    throttle_timer = CreateWaitableTimer(nullptr, TRUE, nullptr);
-    if (throttle_timer)
-      std::atexit([]() { CloseHandle(throttle_timer); });
-    else
-      std::fprintf(stderr, "CreateWaitableTimer() failed, falling back to Sleep()\n");
-  }
-
-  if (throttle_timer)
+  HANDLE timer = GetSleepTimer();
+  if (timer)
   {
     LARGE_INTEGER due_time;
     due_time.QuadPart = -static_cast<std::int64_t>(static_cast<std::uint64_t>(ns) / 100u);
-    if (SetWaitableTimer(throttle_timer, &due_time, 0, nullptr, nullptr, FALSE))
-      WaitForSingleObject(throttle_timer, INFINITE);
+    if (SetWaitableTimer(timer, &due_time, 0, nullptr, nullptr, FALSE))
+      WaitForSingleObject(timer, INFINITE);
     else
       std::fprintf(stderr, "SetWaitableTimer() failed: %08X\n", GetLastError());
   }
