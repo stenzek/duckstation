@@ -200,4 +200,6 @@
     <string name="settings_summary_game_directories">Cambia la lista de directorio que se utiliza para buscar juegos.</string>
     <string name="game_directories_scanning_subdirectories">Escaneo de subdirectorios.</string>
     <string name="game_directories_not_scanning_subdirectories">No escanear subdirectories.</string>
+    <string name="settings_display_all_frames">Optimizar Frame Pacing</string>
+    <string name="settings_summary_display_all_frames">Habilitar esta opción asegurará que cada fotograma que la consola renderice se muestre en la pantalla, para un ritmo de fotograma óptimo. Si tiene dificultades para mantener la velocidad máxima o problemas de audio, intente desactivar esta opción.</string>
 </resources>
