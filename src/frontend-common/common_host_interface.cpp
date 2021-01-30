@@ -931,6 +931,40 @@ void CommonHostInterface::ClearOSDMessages()
   m_osd_messages.clear();
 }
 
+bool CommonHostInterface::EnumerateOSDMessages(std::function<bool(const std::string&, float)> callback)
+{
+  std::unique_lock<std::mutex> lock(m_osd_messages_lock);
+  if (m_osd_messages.empty())
+    return true;
+
+  bool result = true;
+  auto iter = m_osd_messages.begin();
+  while (iter != m_osd_messages.end())
+  {
+    const OSDMessage& msg = *iter;
+    const double time = msg.time.GetTimeSeconds();
+    const float time_remaining = static_cast<float>(msg.duration - time);
+    if (time_remaining <= 0.0f)
+    {
+      iter = m_osd_messages.erase(iter);
+      continue;
+    }
+
+    if (!g_settings.display_show_osd_messages)
+    {
+      ++iter;
+      continue;
+    }
+
+    if (!callback(iter->text, time_remaining))
+      return false;
+
+    ++iter;
+  }
+
+  return true;
+}
+
 void CommonHostInterface::DrawOSDMessages()
 {
   constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoInputs |

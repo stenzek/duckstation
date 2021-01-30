@@ -130,6 +130,7 @@ public:
 
   /// Adds OSD messages, duration is in seconds.
   void AddOSDMessage(std::string message, float duration = 2.0f) override;
+  bool EnumerateOSDMessages(std::function<bool(const std::string&, float)> callback);
   void ClearOSDMessages();
 
   /// Displays a loading screen with the logo, rendered with ImGui. Use when executing possibly-time-consuming tasks
