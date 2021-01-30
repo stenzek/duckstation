@@ -8,6 +8,7 @@ public:
   AndroidSettingsInterface(jobject java_context);
   ~AndroidSettingsInterface();
 
+  bool Save() override;
   void Clear() override;
 
   int GetIntValue(const char* section, const char* key, int default_value = 0) override;

@@ -83,6 +83,11 @@ AndroidSettingsInterface::~AndroidSettingsInterface()
     env->DeleteGlobalRef(m_helper_class);
 }
 
+bool AndroidSettingsInterface::Save()
+{
+  return true;
+}
+
 void AndroidSettingsInterface::Clear()
 {
   Log_ErrorPrint("Not implemented");

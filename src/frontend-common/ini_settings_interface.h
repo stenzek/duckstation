@@ -13,7 +13,7 @@ public:
   INISettingsInterface(std::string filename);
   ~INISettingsInterface() override;
 
-  bool Save();
+  bool Save() override;
 
   void Clear() override;
 
