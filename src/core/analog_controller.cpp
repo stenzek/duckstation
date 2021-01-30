@@ -350,7 +350,7 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
         Assert(m_command_step == 0);
         m_response_length = (GetResponseNumHalfwords() + 1) * 2;
         m_command = Command::Command46;
-        m_tx_buffer = {GetIDByte(), GetStatusByte(), 0x00, 0x00, 0x01, 0x02, 0x00, 0x0A};
+        m_tx_buffer = {GetIDByte(), GetStatusByte(), 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
       }
       else if (m_configuration_mode && data_in == 0x47)
       {
@@ -563,18 +563,35 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
 
     case Command::Command46:
     {
-      if (m_command_step == 2 && data_in == 0x01)
+      if (m_command_step == 2)
       {
-        m_tx_buffer[5] = 0x01;
-        m_tx_buffer[6] = 0x01;
-        m_tx_buffer[7] = 0x14;
+        if (data_in == 0x00)
+        {
+          m_tx_buffer[4] = 0x01;
+          m_tx_buffer[5] = 0x02;
+          m_tx_buffer[6] = 0x00;
+          m_tx_buffer[7] = 0x0A;
+        }
+        else if (data_in == 0x01)
+        {
+          m_tx_buffer[4] = 0x01;
+          m_tx_buffer[5] = 0x01;
+          m_tx_buffer[6] = 0x01;
+          m_tx_buffer[7] = 0x14;
+        }
       }
     }
     break;
 
     case Command::Command47:
     {
-      // Intentionally empty, use fixed reply buffer
+      if (m_command_step == 2 && data_in != 0x00)
+      {
+        m_tx_buffer[4] = 0x00;
+        m_tx_buffer[5] = 0x00;
+        m_tx_buffer[6] = 0x00;
+        m_tx_buffer[7] = 0x00;
+      }
     }
     break;
 
