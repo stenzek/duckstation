@@ -187,6 +187,9 @@ bool WriteFileToString(const char* filename, const std::string_view& sv);
 std::string ReadStreamToString(ByteStream* stream, bool seek_to_start = true);
 bool WriteStreamToString(const std::string_view& sv, ByteStream* stream);
 
+std::vector<u8> ReadBinaryStream(ByteStream* stream, bool seek_to_start = true);
+bool WriteBinaryToSTream(ByteStream* stream, const void* data, size_t data_length);
+
 // creates a directory in the local filesystem
 // if the directory already exists, the return value will be true.
 // if Recursive is specified, all parent directories will be created
