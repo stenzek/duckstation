@@ -222,6 +222,14 @@ public:
   /// This is the APK for Android builds, or the program directory for standalone builds.
   virtual std::unique_ptr<ByteStream> OpenPackageFile(const char* path, u32 flags) override;
 
+  /// Toggles fast forward state.
+  bool IsFastForwardEnabled() const { return m_fast_forward_enabled; }
+  void SetFastForwardEnabled(bool enabled);
+
+  /// Toggles turbo state.
+  bool IsTurboEnabled() const { return m_turbo_enabled; }
+  void SetTurboEnabled(bool enabled);
+
 protected:
   enum : u32
   {

@@ -1535,6 +1535,30 @@ bool CommonHostInterface::AddRumbleToInputMap(const std::string& binding, u32 co
   return false;
 }
 
+void CommonHostInterface::SetFastForwardEnabled(bool enabled)
+{
+  if (!System::IsValid())
+    return;
+
+  m_fast_forward_enabled = enabled;
+  UpdateSpeedLimiterState();
+  AddOSDMessage(enabled ? TranslateStdString("OSDMessage", "Fast forwarding...") :
+                          TranslateStdString("OSDMessage", "Stopped fast forwarding."),
+                2.0f);
+}
+
+void CommonHostInterface::SetTurboEnabled(bool enabled)
+{
+  if (!System::IsValid())
+    return;
+
+  m_turbo_enabled = enabled;
+  UpdateSpeedLimiterState();
+  AddOSDMessage(enabled ? TranslateStdString("OSDMessage", "Turboing...") :
+                          TranslateStdString("OSDMessage", "Stopped turboing."),
+                2.0f);
+}
+
 void CommonHostInterface::RegisterHotkeys()
 {
   RegisterGeneralHotkeys();
@@ -1545,47 +1569,23 @@ void CommonHostInterface::RegisterHotkeys()
 
 void CommonHostInterface::RegisterGeneralHotkeys()
 {
+
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("FastForward"),
-                 TRANSLATABLE("Hotkeys", "Fast Forward"), [this](bool pressed) {
-                   m_fast_forward_enabled = pressed;
-                   UpdateSpeedLimiterState();
-                   AddOSDMessage(m_fast_forward_enabled ? TranslateStdString("OSDMessage", "Fast forwarding...") :
-                                                          TranslateStdString("OSDMessage", "Stopped fast forwarding."),
-                                 2.0f);
-                 });
+                 TRANSLATABLE("Hotkeys", "Fast Forward"), [this](bool pressed) { SetFastForwardEnabled(pressed); });
 
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("ToggleFastForward"),
                  StaticString(TRANSLATABLE("Hotkeys", "Toggle Fast Forward")), [this](bool pressed) {
                    if (pressed)
-                   {
-                     m_fast_forward_enabled = !m_fast_forward_enabled;
-                     UpdateSpeedLimiterState();
-                     AddOSDMessage(m_fast_forward_enabled ?
-                                     TranslateStdString("OSDMessage", "Fast forwarding...") :
-                                     TranslateStdString("OSDMessage", "Stopped fast forwarding."),
-                                   2.0f);
-                   }
+                     SetFastForwardEnabled(!m_fast_forward_enabled);
                  });
 
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("Turbo"),
-                 TRANSLATABLE("Hotkeys", "Turbo"), [this](bool pressed) {
-                   m_turbo_enabled = pressed;
-                   UpdateSpeedLimiterState();
-                   AddOSDMessage(m_turbo_enabled ? TranslateStdString("OSDMessage", "Turboing...") :
-                                                   TranslateStdString("OSDMessage", "Stopped turboing."),
-                                 2.0f);
-                 });
+                 TRANSLATABLE("Hotkeys", "Turbo"), [this](bool pressed) { SetTurboEnabled(pressed); });
 
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("ToggleTurbo"),
                  StaticString(TRANSLATABLE("Hotkeys", "Toggle Turbo")), [this](bool pressed) {
                    if (pressed)
-                   {
-                     m_turbo_enabled = !m_turbo_enabled;
-                     UpdateSpeedLimiterState();
-                     AddOSDMessage(m_turbo_enabled ? TranslateStdString("OSDMessage", "Turboing...") :
-                                                     TranslateStdString("OSDMessage", "Stopped turboing."),
-                                   2.0f);
-                   }
+                     SetTurboEnabled(!m_turbo_enabled);
                  });
 #ifndef ANDROID
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("ToggleFullscreen"),
