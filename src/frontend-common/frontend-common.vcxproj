@@ -88,9 +88,12 @@
     <ClCompile Include="cubeb_audio_stream.cpp" />
     <ClCompile Include="d3d11_host_display.cpp" />
     <ClCompile Include="dinput_controller_interface.cpp" />
+    <ClCompile Include="fullscreen_ui.cpp" />
+    <ClCompile Include="fullscreen_ui_progress_callback.cpp" />
     <ClCompile Include="game_list.cpp" />
     <ClCompile Include="game_settings.cpp" />
     <ClCompile Include="icon.cpp" />
+    <ClCompile Include="imgui_fullscreen.cpp" />
     <ClCompile Include="imgui_impl_dx11.cpp" />
     <ClCompile Include="imgui_impl_opengl3.cpp" />
     <ClCompile Include="imgui_impl_vulkan.cpp" />
@@ -113,9 +116,12 @@
     <ClInclude Include="cubeb_audio_stream.h" />
     <ClInclude Include="d3d11_host_display.h" />
     <ClInclude Include="dinput_controller_interface.h" />
+    <ClInclude Include="fullscreen_ui.h" />
+    <ClInclude Include="fullscreen_ui_progress_callback.h" />
     <ClInclude Include="game_list.h" />
     <ClInclude Include="game_settings.h" />
     <ClInclude Include="icon.h" />
+    <ClInclude Include="imgui_fullscreen.h" />
     <ClInclude Include="imgui_impl_dx11.h" />
     <ClInclude Include="imgui_impl_opengl3.h" />
     <ClInclude Include="imgui_impl_vulkan.h" />

@@ -130,6 +130,9 @@ public:
   /// Returns true if running in batch mode, i.e. exit after emulation.
   ALWAYS_INLINE bool InBatchMode() const { return m_command_line_flags.batch_mode; }
 
+  /// Returns true if the fullscreen UI is enabled.
+  ALWAYS_INLINE bool IsFullscreenUIEnabled() const { return m_fullscreen_ui_enabled; }
+
   /// Parses command line parameters for all frontends.
   bool ParseCommandLineParameters(int argc, char* argv[], std::unique_ptr<SystemBootParameters>* out_boot_params);
 
@@ -383,12 +386,24 @@ protected:
   std::deque<OSDMessage> m_osd_messages;
   std::mutex m_osd_messages_lock;
 
+  bool m_fullscreen_ui_enabled = false;
   bool m_frame_step_request = false;
   bool m_fast_forward_enabled = false;
   bool m_turbo_enabled = false;
   bool m_timer_resolution_increased = false;
   bool m_throttler_enabled = true;
   bool m_display_all_frames = true;
+
+  union
+  {
+    u8 bits;
+
+    // running in batch mode? i.e. exit after stopping emulation
+    BitField<u8, bool, 0, 1> batch_mode;
+
+    // disable controller interface (buggy devices with SDL)
+    BitField<u8, bool, 1, 1> disable_controller_interface;
+  } m_command_line_flags = {};
 
 private:
   void InitializeUserDirectory();
@@ -433,17 +448,6 @@ private:
     u64 last_update_time;
   };
   std::vector<ControllerRumbleState> m_controller_vibration_motors;
-
-  union
-  {
-    u8 bits;
-
-    // running in batch mode? i.e. exit after stopping emulation
-    BitField<u8, bool, 0, 1> batch_mode;
-
-    // disable controller interface (buggy devices with SDL)
-    BitField<u8, bool, 1, 1> disable_controller_interface;
-  } m_command_line_flags = {};
 
 #ifdef WITH_DISCORD_PRESENCE
   // discord rich presence

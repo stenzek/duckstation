@@ -21,6 +21,7 @@
 #include "core/texture_replacements.h"
 #include "core/timers.h"
 #include "cubeb_audio_stream.h"
+#include "fullscreen_ui.h"
 #include "game_list.h"
 #include "icon.h"
 #include "imgui.h"
@@ -786,7 +787,7 @@ void CommonHostInterface::OnSystemPaused(bool paused)
 
   if (paused)
   {
-    if (IsFullscreen())
+    if (IsFullscreen() && !m_fullscreen_ui_enabled)
       SetFullscreen(false);
 
     StopControllerRumble();
@@ -827,6 +828,12 @@ void CommonHostInterface::OnControllerTypeChanged(u32 slot)
 
 void CommonHostInterface::DrawImGuiWindows()
 {
+  if (m_fullscreen_ui_enabled)
+  {
+    FullscreenUI::Render();
+    return;
+  }
+
   if (System::IsValid())
   {
     DrawDebugWindows();
@@ -1569,6 +1576,11 @@ void CommonHostInterface::RegisterHotkeys()
 
 void CommonHostInterface::RegisterGeneralHotkeys()
 {
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("OpenQuickMenu"),
+                 TRANSLATABLE("Hotkeys", "Open Quick Menu"), [this](bool pressed) {
+                   if (pressed && m_fullscreen_ui_enabled)
+                     FullscreenUI::OpenQuickMenu();
+                 });
 
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("FastForward"),
                  TRANSLATABLE("Hotkeys", "Fast Forward"), [this](bool pressed) { SetFastForwardEnabled(pressed); });
@@ -2869,7 +2881,10 @@ std::unique_ptr<ByteStream> CommonHostInterface::OpenPackageFile(const char* pat
 bool CommonHostInterface::SetControllerNavigationButtonState(FrontendCommon::ControllerNavigationButton button,
                                                              bool pressed)
 {
-  return false;
+  if (!m_fullscreen_ui_enabled)
+    return false;
+
+  return FullscreenUI::SetControllerNavInput(button, pressed);
 }
 
 #ifdef WITH_DISCORD_PRESENCE

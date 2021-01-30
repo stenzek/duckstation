@@ -5,6 +5,10 @@ add_library(frontend-common
   controller_interface.h
   cubeb_audio_stream.cpp
   cubeb_audio_stream.h
+  fullscreen_ui.cpp
+  fullscreen_ui.h
+  fullscreen_ui_progress_callback.cpp
+  fullscreen_ui_progress_callback.h
   game_list.cpp
   game_list.h
   game_settings.cpp
@@ -13,6 +17,8 @@ add_library(frontend-common
   icon.h
   ini_settings_interface.cpp
   ini_settings_interface.h
+  imgui_fullscreen.h
+  imgui_fullscreen.cpp
   imgui_impl_opengl3.cpp
   imgui_impl_opengl3.h
   imgui_impl_vulkan.cpp
