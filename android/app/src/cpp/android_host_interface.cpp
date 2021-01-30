@@ -22,9 +22,9 @@
 #include "scmversion/scmversion.h"
 #include <android/native_window_jni.h>
 #include <cmath>
-#include <unistd.h>
-#include <sched.h>
 #include <imgui.h>
+#include <sched.h>
+#include <unistd.h>
 Log_SetChannel(AndroidHostInterface);
 
 #ifdef USE_OPENSLES
@@ -487,32 +487,32 @@ bool AndroidHostInterface::AcquireHostDisplay()
   wi.surface_width = ANativeWindow_getWidth(m_surface);
   wi.surface_height = ANativeWindow_getHeight(m_surface);
 
-  std::unique_ptr<HostDisplay> display;
   switch (g_settings.gpu_renderer)
   {
     case GPURenderer::HardwareVulkan:
-      display = std::make_unique<FrontendCommon::VulkanHostDisplay>();
+      m_display = std::make_unique<FrontendCommon::VulkanHostDisplay>();
       break;
 
     case GPURenderer::HardwareOpenGL:
     default:
-      display = std::make_unique<FrontendCommon::OpenGLHostDisplay>();
+      m_display = std::make_unique<FrontendCommon::OpenGLHostDisplay>();
       break;
   }
 
-  if (!display->CreateRenderDevice(wi, {}, g_settings.gpu_use_debug_device, g_settings.gpu_threaded_presentation) ||
-      !display->InitializeRenderDevice(GetShaderCacheBasePath(), g_settings.gpu_use_debug_device,
-                                       g_settings.gpu_threaded_presentation))
+  if (!m_display->CreateRenderDevice(wi, {}, g_settings.gpu_use_debug_device, g_settings.gpu_threaded_presentation) ||
+      !m_display->InitializeRenderDevice(GetShaderCacheBasePath(), g_settings.gpu_use_debug_device,
+                                         g_settings.gpu_threaded_presentation) ||
+      !m_display->CreateImGuiContext())
   {
-    display->DestroyRenderDevice();
+    m_display->DestroyRenderDevice();
+    m_display.reset();
     return false;
   }
 
   // The alignement was set prior to booting.
-  display->SetDisplayAlignment(m_display_alignment);
-  m_display = std::move(display);
+  m_display->SetDisplayAlignment(m_display_alignment);
 
-  if (!CreateHostDisplayResources())
+  if (!m_display->UpdateImGuiFontTexture() || !CreateHostDisplayResources())
   {
     ReportError("Failed to create host display resources");
     ReleaseHostDisplay();
@@ -526,6 +526,7 @@ bool AndroidHostInterface::AcquireHostDisplay()
 void AndroidHostInterface::ReleaseHostDisplay()
 {
   ReleaseHostDisplayResources();
+  m_display->DestroyImGuiContext();
   m_display->DestroyRenderDevice();
   m_display.reset();
 }
@@ -980,7 +981,6 @@ DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_setThreadAffinity, jobject unu
 
   env->ReleaseIntArrayElements(cores, p_cores, 0);
 }
-
 
 DEFINE_JNI_ARGS_METHOD(jobject, AndroidHostInterface_create, jobject unused, jobject context_object,
                        jstring user_directory)

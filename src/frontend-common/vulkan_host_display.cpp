@@ -343,11 +343,6 @@ bool VulkanHostDisplay::InitializeRenderDevice(std::string_view shader_cache_dir
   if (!CreateResources())
     return false;
 
-#ifdef WITH_IMGUI
-  if (ImGui::GetCurrentContext() && !CreateImGuiContext())
-    return false;
-#endif
-
   return true;
 }
 
@@ -528,10 +523,48 @@ void VulkanHostDisplay::DestroyResources()
   Vulkan::Util::SafeDestroySampler(m_linear_sampler);
 }
 
-void VulkanHostDisplay::DestroyImGuiContext()
+bool VulkanHostDisplay::CreateImGuiContext()
 {
 #ifdef WITH_IMGUI
+  ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_info.surface_width);
+  ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_info.surface_height);
+
+  ImGui_ImplVulkan_InitInfo vii = {};
+  vii.Instance = g_vulkan_context->GetVulkanInstance();
+  vii.PhysicalDevice = g_vulkan_context->GetPhysicalDevice();
+  vii.Device = g_vulkan_context->GetDevice();
+  vii.QueueFamily = g_vulkan_context->GetGraphicsQueueFamilyIndex();
+  vii.Queue = g_vulkan_context->GetGraphicsQueue();
+  vii.PipelineCache = g_vulkan_shader_cache->GetPipelineCache();
+  vii.MinImageCount = m_swap_chain->GetImageCount();
+  vii.ImageCount = m_swap_chain->GetImageCount();
+  vii.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+
+  if (!ImGui_ImplVulkan_Init(&vii, m_swap_chain->GetClearRenderPass()))
+    return false;
+#endif
+
+  return true;
+}
+
+void VulkanHostDisplay::DestroyImGuiContext()
+{
+  g_vulkan_context->WaitForGPUIdle();
+
+#ifdef WITH_IMGUI
   ImGui_ImplVulkan_Shutdown();
+#endif
+}
+
+bool VulkanHostDisplay::UpdateImGuiFontTexture()
+{
+#ifdef WITH_IMGUI
+  // Just in case we were drawing something.
+  g_vulkan_context->ExecuteCommandBuffer(true);
+  ImGui_ImplVulkan_DestroyFontUploadObjects();
+  return ImGui_ImplVulkan_CreateFontsTexture(g_vulkan_context->GetCurrentCommandBuffer());
+#else
+  return true;
 #endif
 }
 
@@ -541,11 +574,6 @@ void VulkanHostDisplay::DestroyRenderDevice()
     return;
 
   g_vulkan_context->WaitForGPUIdle();
-
-#ifdef WITH_IMGUI
-  if (ImGui::GetCurrentContext())
-    DestroyImGuiContext();
-#endif
 
   DestroyResources();
 
@@ -564,45 +592,13 @@ bool VulkanHostDisplay::DoneRenderContextCurrent()
   return true;
 }
 
-bool VulkanHostDisplay::CreateImGuiContext()
-{
-#ifdef WITH_IMGUI
-  ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_info.surface_width);
-  ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_info.surface_height);
-
-  ImGui_ImplVulkan_InitInfo vii = {};
-  vii.Instance = g_vulkan_context->GetVulkanInstance();
-  vii.PhysicalDevice = g_vulkan_context->GetPhysicalDevice();
-  vii.Device = g_vulkan_context->GetDevice();
-  vii.QueueFamily = g_vulkan_context->GetGraphicsQueueFamilyIndex();
-  vii.Queue = g_vulkan_context->GetGraphicsQueue();
-  vii.PipelineCache = g_vulkan_shader_cache->GetPipelineCache();
-  vii.MinImageCount = m_swap_chain->GetImageCount();
-  vii.ImageCount = m_swap_chain->GetImageCount();
-  vii.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
-
-  if (!ImGui_ImplVulkan_Init(&vii, m_swap_chain->GetClearRenderPass()) ||
-      !ImGui_ImplVulkan_CreateFontsTexture(g_vulkan_context->GetCurrentCommandBuffer()))
-  {
-    return false;
-  }
-
-  ImGui_ImplVulkan_NewFrame();
-#endif
-
-  return true;
-}
-
 bool VulkanHostDisplay::Render()
 {
   if (ShouldSkipDisplayingFrame())
   {
 #ifdef WITH_IMGUI
     if (ImGui::GetCurrentContext())
-    {
       ImGui::Render();
-      ImGui_ImplVulkan_NewFrame();
-    }
 #endif
 
     return false;
@@ -655,11 +651,6 @@ bool VulkanHostDisplay::Render()
                                         m_swap_chain->GetRenderingFinishedSemaphore(), m_swap_chain->GetSwapChain(),
                                         m_swap_chain->GetCurrentImageIndex(), !m_swap_chain->IsVSyncEnabled());
   g_vulkan_context->MoveToNextCommandBuffer();
-
-#ifdef WITH_IMGUI
-  if (ImGui::GetCurrentContext())
-    ImGui_ImplVulkan_NewFrame();
-#endif
 
   return true;
 }

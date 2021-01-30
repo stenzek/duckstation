@@ -108,6 +108,13 @@ public:
 
   virtual void SetVSync(bool enabled) = 0;
 
+#ifdef WITH_IMGUI
+  /// ImGui context management, usually called by derived classes.
+  virtual bool CreateImGuiContext() = 0;
+  virtual void DestroyImGuiContext() = 0;
+  virtual bool UpdateImGuiFontTexture() = 0;
+#endif
+
   const s32 GetDisplayTopMargin() const { return m_display_top_margin; }
   const s32 GetDisplayWidth() const { return m_display_width; }
   const s32 GetDisplayHeight() const { return m_display_height; }

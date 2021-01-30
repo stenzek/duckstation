@@ -36,7 +36,6 @@
 // DirectX data
 static ID3D11Device*            g_pd3dDevice = NULL;
 static ID3D11DeviceContext*     g_pd3dDeviceContext = NULL;
-static IDXGIFactory*            g_pFactory = NULL;
 static ID3D11Buffer*            g_pVB = NULL;
 static ID3D11Buffer*            g_pIB = NULL;
 static ID3D10Blob*              g_pVertexShaderBlob = NULL;
@@ -257,7 +256,7 @@ void ImGui_ImplDX11_RenderDrawData(ImDrawData* draw_data)
     ctx->IASetInputLayout(old.InputLayout); if (old.InputLayout) old.InputLayout->Release();
 }
 
-static void ImGui_ImplDX11_CreateFontsTexture()
+void ImGui_ImplDX11_CreateFontsTexture()
 {
     // Build texture atlas
     ImGuiIO& io = ImGui::GetIO();
@@ -266,6 +265,11 @@ static void ImGui_ImplDX11_CreateFontsTexture()
     io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 
     // Upload texture to graphics system
+    if (g_pFontTextureView)
+    {
+        g_pFontTextureView->Release();
+        g_pFontTextureView = nullptr;
+    }
     {
         D3D11_TEXTURE2D_DESC desc;
         ZeroMemory(&desc, sizeof(desc));
@@ -301,6 +305,7 @@ static void ImGui_ImplDX11_CreateFontsTexture()
     io.Fonts->TexID = (ImTextureID)g_pFontTextureView;
 
     // Create texture sampler
+    if (!g_pFontSampler)
     {
         D3D11_SAMPLER_DESC desc;
         ZeroMemory(&desc, sizeof(desc));
@@ -455,8 +460,6 @@ bool    ImGui_ImplDX11_CreateDeviceObjects()
         g_pd3dDevice->CreateDepthStencilState(&desc, &g_pDepthStencilState);
     }
 
-    ImGui_ImplDX11_CreateFontsTexture();
-
     return true;
 }
 
@@ -486,36 +489,15 @@ bool    ImGui_ImplDX11_Init(ID3D11Device* device, ID3D11DeviceContext* device_co
     // Setup back-end capabilities flags
     ImGuiIO& io = ImGui::GetIO();
     io.BackendRendererName = "imgui_impl_dx11";
+    g_pd3dDevice = device;
+    g_pd3dDeviceContext = device_context;
 
-    // Get factory from device
-    IDXGIDevice* pDXGIDevice = NULL;
-    IDXGIAdapter* pDXGIAdapter = NULL;
-    IDXGIFactory* pFactory = NULL;
-
-    if (device->QueryInterface(IID_PPV_ARGS(&pDXGIDevice)) == S_OK)
-        if (pDXGIDevice->GetParent(IID_PPV_ARGS(&pDXGIAdapter)) == S_OK)
-            if (pDXGIAdapter->GetParent(IID_PPV_ARGS(&pFactory)) == S_OK)
-            {
-                g_pd3dDevice = device;
-                g_pd3dDeviceContext = device_context;
-                g_pFactory = pFactory;
-            }
-    if (pDXGIDevice) pDXGIDevice->Release();
-    if (pDXGIAdapter) pDXGIAdapter->Release();
-
-    return true;
+    return ImGui_ImplDX11_CreateDeviceObjects();
 }
 
 void ImGui_ImplDX11_Shutdown()
 {
     ImGui_ImplDX11_InvalidateDeviceObjects();
-    if (g_pFactory) { g_pFactory->Release(); g_pFactory = NULL; }
     g_pd3dDevice = NULL;
     g_pd3dDeviceContext = NULL;
-}
-
-void ImGui_ImplDX11_NewFrame()
-{
-    if (!g_pFontSampler)
-        ImGui_ImplDX11_CreateDeviceObjects();
 }

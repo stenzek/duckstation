@@ -128,7 +128,7 @@ bool    ImGui_ImplOpenGL3_Init(const char* glsl_version)
     IM_ASSERT((int)strlen(glsl_version) + 2 < IM_ARRAYSIZE(g_GlslVersionString));
     strcpy(g_GlslVersionString, glsl_version);
     strcat(g_GlslVersionString, "\n");
-    return true;
+    return ImGui_ImplOpenGL3_CreateDeviceObjects();
 }
 
 void    ImGui_ImplOpenGL3_Shutdown()
@@ -537,8 +537,6 @@ bool    ImGui_ImplOpenGL3_CreateDeviceObjects()
         glVertexAttribPointer(g_AttribLocationVtxColor, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(ImDrawVert),
                               (GLvoid*)IM_OFFSETOF(ImDrawVert, col));
     }
-
-    ImGui_ImplOpenGL3_CreateFontsTexture();
 
     // Restore modified GL state
     glBindTexture(GL_TEXTURE_2D, last_texture);

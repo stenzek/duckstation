@@ -359,21 +359,11 @@ bool D3D11HostDisplay::InitializeRenderDevice(std::string_view shader_cache_dire
   if (!CreateResources())
     return false;
 
-#ifdef WITH_IMGUI
-  if (ImGui::GetCurrentContext() && !CreateImGuiContext())
-    return false;
-#endif
-
   return true;
 }
 
 void D3D11HostDisplay::DestroyRenderDevice()
 {
-#ifdef WITH_IMGUI
-  if (ImGui::GetCurrentContext())
-    DestroyImGuiContext();
-#endif
-
   DestroyResources();
   DestroyRenderSurface();
   m_context.Reset();
@@ -675,12 +665,10 @@ bool D3D11HostDisplay::CreateImGuiContext()
 #ifdef WITH_IMGUI
   ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_info.surface_width);
   ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_info.surface_height);
-
   if (!ImGui_ImplDX11_Init(m_device.Get(), m_context.Get()))
     return false;
-
-  ImGui_ImplDX11_NewFrame();
 #endif
+
   return true;
 }
 
@@ -691,16 +679,21 @@ void D3D11HostDisplay::DestroyImGuiContext()
 #endif
 }
 
+bool D3D11HostDisplay::UpdateImGuiFontTexture()
+{
+#ifdef WITH_IMGUI
+  ImGui_ImplDX11_CreateFontsTexture();
+#endif
+  return true;
+}
+
 bool D3D11HostDisplay::Render()
 {
   if (ShouldSkipDisplayingFrame())
   {
 #ifdef WITH_IMGUI
     if (ImGui::GetCurrentContext())
-    {
       ImGui::Render();
-      ImGui_ImplDX11_NewFrame();
-    }
 #endif
 
     return false;
@@ -723,11 +716,6 @@ bool D3D11HostDisplay::Render()
     m_swap_chain->Present(0, DXGI_PRESENT_ALLOW_TEARING);
   else
     m_swap_chain->Present(BoolToUInt32(m_vsync), 0);
-
-#ifdef WITH_IMGUI
-  if (ImGui::GetCurrentContext())
-    ImGui_ImplDX11_NewFrame();
-#endif
 
   return true;
 }

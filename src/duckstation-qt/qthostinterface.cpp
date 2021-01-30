@@ -506,8 +506,10 @@ bool QtHostInterface::AcquireHostDisplay()
   if (!m_display->MakeRenderContextCurrent() ||
       !m_display->InitializeRenderDevice(GetShaderCacheBasePath(), g_settings.gpu_use_debug_device,
                                          g_settings.gpu_threaded_presentation) ||
-      !CreateHostDisplayResources())
+      !m_display->CreateImGuiContext() || !m_display->UpdateImGuiFontTexture() || !CreateHostDisplayResources())
   {
+    ReleaseHostDisplayResources();
+    m_display->DestroyImGuiContext();
     destroyImGuiContext();
     m_display->DestroyRenderDevice();
     emit destroyDisplayRequested();
@@ -589,6 +591,7 @@ void QtHostInterface::ReleaseHostDisplay()
   Assert(m_display);
 
   ReleaseHostDisplayResources();
+  m_display->DestroyImGuiContext();
   m_display->DestroyRenderDevice();
   destroyImGuiContext();
   emit destroyDisplayRequested();

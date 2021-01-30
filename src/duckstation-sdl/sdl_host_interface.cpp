@@ -142,38 +142,24 @@ bool SDLHostInterface::CreateDisplay()
     return false;
   }
 
-  bool imgui_result;
-  switch (display->GetRenderAPI())
-  {
-#ifdef WIN32
-    case HostDisplay::RenderAPI::D3D11:
-      imgui_result = ImGui_ImplSDL2_InitForD3D(m_window);
-      break;
-#endif
-
-    case HostDisplay::RenderAPI::Vulkan:
-      imgui_result = ImGui_ImplSDL2_InitForVulkan(m_window);
-      break;
-
-    case HostDisplay::RenderAPI::OpenGL:
-    case HostDisplay::RenderAPI::OpenGLES:
-      imgui_result = ImGui_ImplSDL2_InitForOpenGL(m_window, nullptr);
-      break;
-
-    default:
-      imgui_result = true;
-      break;
-  }
-  if (!imgui_result)
+  if (!ImGui_ImplSDL2_Init(m_window) || !display->CreateImGuiContext())
   {
     ReportError("Failed to initialize ImGui SDL2 wrapper");
+    ImGui_ImplSDL2_Shutdown();
+    display->DestroyRenderDevice();
     return false;
   }
 
   m_app_icon_texture = display->CreateTexture(APP_ICON_WIDTH, APP_ICON_HEIGHT, 1, 1, 1, HostDisplayPixelFormat::RGBA8,
                                               APP_ICON_DATA, APP_ICON_WIDTH * sizeof(u32));
-  if (!m_app_icon_texture)
+  if (!display->UpdateImGuiFontTexture() || !m_app_icon_texture)
+  {
+    ReportError("Failed to upload textures");
+    display->DestroyImGuiContext();
+    ImGui_ImplSDL2_Shutdown();
+    display->DestroyRenderDevice();
     return false;
+  }
 
   display->SetDisplayTopMargin(m_fullscreen ? 0 : static_cast<int>(20.0f * ImGui::GetIO().DisplayFramebufferScale.x));
   m_display = std::move(display);
@@ -183,6 +169,7 @@ bool SDLHostInterface::CreateDisplay()
 void SDLHostInterface::DestroyDisplay()
 {
   m_app_icon_texture.reset();
+  m_display->DestroyImGuiContext();
   m_display->DestroyRenderDevice();
   m_display.reset();
 }

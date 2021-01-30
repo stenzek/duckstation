@@ -33,7 +33,6 @@ add_library(frontend-common
   vulkan_host_display.h
 )
 
-target_compile_definitions(frontend-common PRIVATE "WITH_IMGUI=1")
 target_link_libraries(frontend-common PUBLIC core common glad vulkan-loader cubeb imgui simpleini tinyxml2 scmversion)
 
 if(WIN32)

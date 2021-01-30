@@ -98,8 +98,11 @@ protected:
   virtual bool CreateResources() override;
   virtual void DestroyResources() override;
 
-  virtual bool CreateImGuiContext();
-  virtual void DestroyImGuiContext();
+#ifdef WITH_IMGUI
+  virtual bool CreateImGuiContext() override;
+  virtual void DestroyImGuiContext() override;
+  virtual bool UpdateImGuiFontTexture() override;
+#endif
 
   void BeginSwapChainRenderPass(VkFramebuffer framebuffer);
   void RenderDisplay();

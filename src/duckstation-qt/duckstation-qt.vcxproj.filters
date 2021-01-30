@@ -75,6 +75,8 @@
     <ClCompile Include="$(IntDir)moc_debuggermodels.cpp" />
     <ClCompile Include="$(IntDir)moc_memoryviewwidget.cpp" />
     <ClCompile Include="$(IntDir)moc_debuggerwindow.cpp" />
+    <ClCompile Include="emulationsettingswidget.cpp" />
+    <ClCompile Include="$(IntDir)moc_emulationsettingswidget.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtutils.h" />
@@ -126,6 +128,7 @@
     <QtMoc Include="debuggermodels.h" />
     <QtMoc Include="debuggerwindow.h" />
     <QtMoc Include="memoryviewwidget.h" />
+    <QtMoc Include="emulationsettingswidget.h" />
   </ItemGroup>
   <ItemGroup>
     <QtUi Include="consolesettingswidget.ui" />
@@ -147,6 +150,7 @@
     <QtUi Include="memorycardeditordialog.ui" />
     <QtUi Include="cheatmanagerdialog.ui" />
     <QtUi Include="cheatcodeeditordialog.ui" />
+    <QtUi Include="emulationsettingswidget.ui" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="qt5.natvis" />

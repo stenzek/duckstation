@@ -819,10 +819,6 @@ void ImGui_ImplVulkan_Shutdown()
     ImGui_ImplVulkan_DestroyDeviceObjects();
 }
 
-void ImGui_ImplVulkan_NewFrame()
-{
-}
-
 void ImGui_ImplVulkan_SetMinImageCount(uint32_t min_image_count)
 {
     IM_ASSERT(min_image_count >= 2);

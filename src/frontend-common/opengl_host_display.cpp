@@ -361,11 +361,6 @@ bool OpenGLHostDisplay::InitializeRenderDevice(std::string_view shader_cache_dir
   if (!CreateResources())
     return false;
 
-#ifdef WITH_IMGUI
-  if (ImGui::GetCurrentContext() && !CreateImGuiContext())
-    return false;
-#endif
-
   // Start with vsync on.
   SetVSync(true);
 
@@ -392,11 +387,6 @@ void OpenGLHostDisplay::DestroyRenderDevice()
 {
   if (!m_gl_context)
     return;
-
-#ifdef WITH_IMGUI
-  if (ImGui::GetCurrentContext())
-    DestroyImGuiContext();
-#endif
 
   DestroyResources();
 
@@ -477,12 +467,10 @@ bool OpenGLHostDisplay::CreateImGuiContext()
 #ifdef WITH_IMGUI
   ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_info.surface_width);
   ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_info.surface_height);
-
   if (!ImGui_ImplOpenGL3_Init(GetGLSLVersionString()))
     return false;
-
-  ImGui_ImplOpenGL3_NewFrame();
 #endif
+
   return true;
 }
 
@@ -490,6 +478,16 @@ void OpenGLHostDisplay::DestroyImGuiContext()
 {
 #ifdef WITH_IMGUI
   ImGui_ImplOpenGL3_Shutdown();
+#endif
+}
+
+bool OpenGLHostDisplay::UpdateImGuiFontTexture()
+{
+#ifdef WITH_IMGUI
+  ImGui_ImplOpenGL3_DestroyFontsTexture();
+  return ImGui_ImplOpenGL3_CreateFontsTexture();
+#else
+  return true;
 #endif
 }
 
@@ -683,10 +681,7 @@ bool OpenGLHostDisplay::Render()
   {
 #ifdef WITH_IMGUI
     if (ImGui::GetCurrentContext())
-    {
       ImGui::Render();
-      ImGui_ImplOpenGL3_NewFrame();
-    }
 #endif
 
     return false;
@@ -707,12 +702,6 @@ bool OpenGLHostDisplay::Render()
   RenderSoftwareCursor();
 
   m_gl_context->SwapBuffers();
-
-#ifdef WITH_IMGUI
-  if (ImGui::GetCurrentContext())
-    ImGui_ImplOpenGL3_NewFrame();
-#endif
-
   return true;
 }
 

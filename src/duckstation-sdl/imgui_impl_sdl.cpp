@@ -131,7 +131,7 @@ bool ImGui_ImplSDL2_ProcessEvent(const SDL_Event* event)
     return false;
 }
 
-static bool ImGui_ImplSDL2_Init(SDL_Window* window, void* sdl_gl_context)
+bool ImGui_ImplSDL2_Init(SDL_Window* window)
 {
     g_Window = window;
 
@@ -177,28 +177,6 @@ static bool ImGui_ImplSDL2_Init(SDL_Window* window, void* sdl_gl_context)
     g_MouseCursors[ImGuiMouseCursor_ResizeNWSE] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENWSE);
     g_MouseCursors[ImGuiMouseCursor_Hand] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND);
     return true;
-}
-
-bool ImGui_ImplSDL2_InitForOpenGL(SDL_Window* window, void* sdl_gl_context)
-{
-    (void)sdl_gl_context; // Viewport branch will need this.
-    return ImGui_ImplSDL2_Init(window, sdl_gl_context);
-}
-
-bool ImGui_ImplSDL2_InitForVulkan(SDL_Window* window)
-{
-#if !SDL_HAS_VULKAN
-    IM_ASSERT(0 && "Unsupported");
-#endif
-    return ImGui_ImplSDL2_Init(window, NULL);
-}
-
-bool ImGui_ImplSDL2_InitForD3D(SDL_Window* window)
-{
-#if !defined(_WIN32)
-    IM_ASSERT(0 && "Unsupported");
-#endif
-    return ImGui_ImplSDL2_Init(window, NULL);
 }
 
 void ImGui_ImplSDL2_Shutdown()
@@ -311,7 +289,6 @@ static void ImGui_ImplSDL2_UpdateGamepads()
 void ImGui_ImplSDL2_NewFrame(SDL_Window* window)
 {
     ImGuiIO& io = ImGui::GetIO();
-    IM_ASSERT(io.Fonts->IsBuilt() && "Font atlas not built! It is generally built by the renderer back-end. Missing call to renderer _NewFrame() function? e.g. ImGui_ImplOpenGL3_NewFrame().");
 
     // Setup time step (we don't use SDL_GetTicks() because it is using millisecond resolution)
     static Uint64 frequency = SDL_GetPerformanceFrequency();
