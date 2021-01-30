@@ -189,6 +189,7 @@ bool DumpVRAM(const char* filename);
 bool DumpSPURAM(const char* filename);
 
 bool HasMedia();
+const std::string& GetMediaFileName();
 bool InsertMedia(const char* path);
 void RemoveMedia();
 

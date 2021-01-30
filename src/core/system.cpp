@@ -1769,16 +1769,28 @@ bool HasMedia()
   return g_cdrom.HasMedia();
 }
 
+const std::string& GetMediaFileName()
+{
+  return g_cdrom.GetMediaFileName();
+}
+
 bool InsertMedia(const char* path)
 {
   std::unique_ptr<CDImage> image = OpenCDImage(path, false);
   if (!image)
+  {
+    g_host_interface->AddFormattedOSDMessage(
+      10.0f, g_host_interface->TranslateString("OSDMessage", "Failed to open disc image '%s'."), path);
     return false;
+  }
 
   UpdateRunningGame(path, image.get());
   g_cdrom.InsertMedia(std::move(image));
   Log_InfoPrintf("Inserted media from %s (%s, %s)", s_running_game_path.c_str(), s_running_game_code.c_str(),
                  s_running_game_title.c_str());
+  g_host_interface->AddFormattedOSDMessage(10.0f,
+                                           g_host_interface->TranslateString("OSDMessage", "Inserted disc '%s' (%s)."),
+                                           s_running_game_title.c_str(), s_running_game_code.c_str());
 
   if (g_settings.HasAnyPerGameMemoryCards())
   {
