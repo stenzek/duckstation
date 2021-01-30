@@ -353,7 +353,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("Display", "ShowFPS", display_show_fps);
   si.SetBoolValue("Display", "ShowVPS", display_show_vps);
   si.SetBoolValue("Display", "ShowSpeed", display_show_speed);
-  si.SetBoolValue("Display", "ShowResolution", display_show_speed);
+  si.SetBoolValue("Display", "ShowResolution", display_show_resolution);
   si.SetBoolValue("Display", "DisplayAllFrames", display_all_frames);
   si.SetBoolValue("Display", "VSync", video_sync_enabled);
   if (display_post_process_chain.empty())
