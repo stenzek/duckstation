@@ -85,6 +85,12 @@ public:
   /// Returns the name of the frontend.
   virtual const char* GetFrontendName() const = 0;
 
+  /// Request the frontend to exit.
+  virtual void RequestExit() = 0;
+
+  virtual bool IsFullscreen() const;
+  virtual bool SetFullscreen(bool enabled);
+
   virtual bool Initialize() override;
   virtual void Shutdown() override;
 
@@ -246,17 +252,11 @@ protected:
   CommonHostInterface();
   ~CommonHostInterface();
 
-  /// Request the frontend to exit.
-  virtual void RequestExit() = 0;
-
   /// Registers frontend-specific hotkeys.
   virtual void RegisterHotkeys();
 
   /// Executes per-frame tasks such as controller polling.
   virtual void PollAndUpdate();
-
-  virtual bool IsFullscreen() const;
-  virtual bool SetFullscreen(bool enabled);
 
   virtual std::unique_ptr<AudioStream> CreateAudioStream(AudioBackend backend) override;
   virtual s32 GetAudioOutputVolume() const override;
