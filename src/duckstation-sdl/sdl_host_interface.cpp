@@ -1861,7 +1861,7 @@ void SDLHostInterface::Run()
       DrawImGuiWindows();
 
       m_display->Render();
-      ImGui_ImplSDL2_NewFrame(m_window);
+      ImGui_ImplSDL2_NewFrame();
       ImGui::NewFrame();
 
       if (System::IsRunning())
