@@ -2,13 +2,11 @@
 #include "common/align.h"
 #include "common/assert.h"
 #include "common/log.h"
-#include <array>
-#include <tuple>
-#ifdef WITH_IMGUI
 #include "imgui.h"
 #include "imgui_impl_opengl3.h"
-#endif
 #include "postprocessing_shadergen.h"
+#include <array>
+#include <tuple>
 Log_SetChannel(OpenGLHostDisplay);
 
 namespace FrontendCommon {
@@ -62,9 +60,9 @@ void* OpenGLHostDisplay::GetRenderContext() const
 static constexpr std::array<std::tuple<GLenum, GLenum, GLenum>, static_cast<u32>(HostDisplayPixelFormat::Count)>
   s_display_pixel_format_mapping = {{
     {},                                                  // Unknown
-    {GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE},                // RGBA8
-    {GL_RGBA8, GL_BGRA, GL_UNSIGNED_BYTE},                // BGRA8
-    {GL_RGB565, GL_RGB, GL_UNSIGNED_SHORT_5_6_5},           // RGB565
+    {GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE},               // RGBA8
+    {GL_RGBA8, GL_BGRA, GL_UNSIGNED_BYTE},               // BGRA8
+    {GL_RGB565, GL_RGB, GL_UNSIGNED_SHORT_5_6_5},        // RGB565
     {GL_RGB5_A1, GL_BGRA, GL_UNSIGNED_SHORT_1_5_5_5_REV} // RGBA5551
   }};
 
@@ -408,13 +406,11 @@ bool OpenGLHostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
   m_window_info.surface_width = m_gl_context->GetSurfaceWidth();
   m_window_info.surface_height = m_gl_context->GetSurfaceHeight();
 
-#ifdef WITH_IMGUI
   if (ImGui::GetCurrentContext())
   {
     ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_info.surface_width);
     ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_info.surface_height);
   }
-#endif
 
   return true;
 }
@@ -428,13 +424,11 @@ void OpenGLHostDisplay::ResizeRenderWindow(s32 new_window_width, s32 new_window_
   m_window_info.surface_width = m_gl_context->GetSurfaceWidth();
   m_window_info.surface_height = m_gl_context->GetSurfaceHeight();
 
-#ifdef WITH_IMGUI
   if (ImGui::GetCurrentContext())
   {
     ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_info.surface_width);
     ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_info.surface_height);
   }
-#endif
 }
 
 bool OpenGLHostDisplay::SupportsFullscreen() const
@@ -464,31 +458,20 @@ void OpenGLHostDisplay::DestroyRenderSurface()
 
 bool OpenGLHostDisplay::CreateImGuiContext()
 {
-#ifdef WITH_IMGUI
   ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_info.surface_width);
   ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_info.surface_height);
-  if (!ImGui_ImplOpenGL3_Init(GetGLSLVersionString()))
-    return false;
-#endif
-
-  return true;
+  return ImGui_ImplOpenGL3_Init(GetGLSLVersionString());
 }
 
 void OpenGLHostDisplay::DestroyImGuiContext()
 {
-#ifdef WITH_IMGUI
   ImGui_ImplOpenGL3_Shutdown();
-#endif
 }
 
 bool OpenGLHostDisplay::UpdateImGuiFontTexture()
 {
-#ifdef WITH_IMGUI
   ImGui_ImplOpenGL3_DestroyFontsTexture();
   return ImGui_ImplOpenGL3_CreateFontsTexture();
-#else
-  return true;
-#endif
 }
 
 bool OpenGLHostDisplay::CreateResources()
@@ -679,10 +662,8 @@ bool OpenGLHostDisplay::Render()
 {
   if (ShouldSkipDisplayingFrame())
   {
-#ifdef WITH_IMGUI
     if (ImGui::GetCurrentContext())
       ImGui::Render();
-#endif
 
     return false;
   }
@@ -694,10 +675,8 @@ bool OpenGLHostDisplay::Render()
 
   RenderDisplay();
 
-#ifdef WITH_IMGUI
   if (ImGui::GetCurrentContext())
     RenderImGui();
-#endif
 
   RenderSoftwareCursor();
 
@@ -707,11 +686,9 @@ bool OpenGLHostDisplay::Render()
 
 void OpenGLHostDisplay::RenderImGui()
 {
-#ifdef WITH_IMGUI
   ImGui::Render();
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
   GL::Program::ResetLastProgram();
-#endif
 }
 
 void OpenGLHostDisplay::RenderDisplay()

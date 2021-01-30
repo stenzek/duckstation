@@ -12,10 +12,8 @@
 #include "core/shader_cache_version.h"
 #include "postprocessing_shadergen.h"
 #include <array>
-#ifdef WITH_IMGUI
 #include "imgui.h"
 #include "imgui_impl_vulkan.h"
-#endif
 Log_SetChannel(VulkanHostDisplay);
 
 namespace FrontendCommon {
@@ -99,13 +97,11 @@ bool VulkanHostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
   m_window_info.surface_width = m_swap_chain->GetWidth();
   m_window_info.surface_height = m_swap_chain->GetHeight();
 
-#ifdef WITH_IMGUI
   if (ImGui::GetCurrentContext())
   {
     ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_info.surface_width);
     ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_info.surface_height);
   }
-#endif
 
   return true;
 }
@@ -120,13 +116,11 @@ void VulkanHostDisplay::ResizeRenderWindow(s32 new_window_width, s32 new_window_
   m_window_info.surface_width = m_swap_chain->GetWidth();
   m_window_info.surface_height = m_swap_chain->GetHeight();
 
-#ifdef WITH_IMGUI
   if (ImGui::GetCurrentContext())
   {
     ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_info.surface_width);
     ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_info.surface_height);
   }
-#endif
 }
 
 bool VulkanHostDisplay::SupportsFullscreen() const
@@ -525,7 +519,6 @@ void VulkanHostDisplay::DestroyResources()
 
 bool VulkanHostDisplay::CreateImGuiContext()
 {
-#ifdef WITH_IMGUI
   ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_info.surface_width);
   ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_info.surface_height);
 
@@ -540,32 +533,21 @@ bool VulkanHostDisplay::CreateImGuiContext()
   vii.ImageCount = m_swap_chain->GetImageCount();
   vii.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
 
-  if (!ImGui_ImplVulkan_Init(&vii, m_swap_chain->GetClearRenderPass()))
-    return false;
-#endif
-
-  return true;
+  return ImGui_ImplVulkan_Init(&vii, m_swap_chain->GetClearRenderPass());
 }
 
 void VulkanHostDisplay::DestroyImGuiContext()
 {
   g_vulkan_context->WaitForGPUIdle();
-
-#ifdef WITH_IMGUI
   ImGui_ImplVulkan_Shutdown();
-#endif
 }
 
 bool VulkanHostDisplay::UpdateImGuiFontTexture()
 {
-#ifdef WITH_IMGUI
   // Just in case we were drawing something.
   g_vulkan_context->ExecuteCommandBuffer(true);
   ImGui_ImplVulkan_DestroyFontUploadObjects();
   return ImGui_ImplVulkan_CreateFontsTexture(g_vulkan_context->GetCurrentCommandBuffer());
-#else
-  return true;
-#endif
 }
 
 void VulkanHostDisplay::DestroyRenderDevice()
@@ -596,10 +578,8 @@ bool VulkanHostDisplay::Render()
 {
   if (ShouldSkipDisplayingFrame())
   {
-#ifdef WITH_IMGUI
     if (ImGui::GetCurrentContext())
       ImGui::Render();
-#endif
 
     return false;
   }
@@ -636,10 +616,8 @@ bool VulkanHostDisplay::Render()
 
   RenderDisplay();
 
-#ifdef WITH_IMGUI
   if (ImGui::GetCurrentContext())
     RenderImGui();
-#endif
 
   RenderSoftwareCursor();
 
@@ -729,10 +707,8 @@ void VulkanHostDisplay::RenderDisplay(s32 left, s32 top, s32 width, s32 height, 
 
 void VulkanHostDisplay::RenderImGui()
 {
-#ifdef WITH_IMGUI
   ImGui::Render();
   ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), g_vulkan_context->GetCurrentCommandBuffer());
-#endif
 }
 
 void VulkanHostDisplay::RenderSoftwareCursor()

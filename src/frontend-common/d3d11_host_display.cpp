@@ -10,12 +10,10 @@
 #include "display_ps.hlsl.h"
 #include "display_vs.hlsl.h"
 #include "frontend-common/postprocessing_shadergen.h"
-#include <array>
-#include <dxgi1_5.h>
-#ifdef WITH_IMGUI
 #include "imgui.h"
 #include "imgui_impl_dx11.h"
-#endif
+#include <array>
+#include <dxgi1_5.h>
 Log_SetChannel(D3D11HostDisplay);
 
 namespace FrontendCommon {
@@ -469,13 +467,11 @@ bool D3D11HostDisplay::CreateSwapChainRTV()
   m_window_info.surface_width = backbuffer_desc.Width;
   m_window_info.surface_height = backbuffer_desc.Height;
 
-#ifdef WITH_IMGUI
   if (ImGui::GetCurrentContext())
   {
     ImGui::GetIO().DisplaySize.x = static_cast<float>(backbuffer_desc.Width);
     ImGui::GetIO().DisplaySize.y = static_cast<float>(backbuffer_desc.Height);
   }
-#endif
 
   return true;
 }
@@ -662,28 +658,19 @@ void D3D11HostDisplay::DestroyResources()
 
 bool D3D11HostDisplay::CreateImGuiContext()
 {
-#ifdef WITH_IMGUI
   ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_info.surface_width);
   ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_info.surface_height);
-  if (!ImGui_ImplDX11_Init(m_device.Get(), m_context.Get()))
-    return false;
-#endif
-
-  return true;
+  return ImGui_ImplDX11_Init(m_device.Get(), m_context.Get());
 }
 
 void D3D11HostDisplay::DestroyImGuiContext()
 {
-#ifdef WITH_IMGUI
   ImGui_ImplDX11_Shutdown();
-#endif
 }
 
 bool D3D11HostDisplay::UpdateImGuiFontTexture()
 {
-#ifdef WITH_IMGUI
   ImGui_ImplDX11_CreateFontsTexture();
-#endif
   return true;
 }
 
@@ -691,10 +678,8 @@ bool D3D11HostDisplay::Render()
 {
   if (ShouldSkipDisplayingFrame())
   {
-#ifdef WITH_IMGUI
     if (ImGui::GetCurrentContext())
       ImGui::Render();
-#endif
 
     return false;
   }
@@ -705,10 +690,8 @@ bool D3D11HostDisplay::Render()
 
   RenderDisplay();
 
-#ifdef WITH_IMGUI
   if (ImGui::GetCurrentContext())
     RenderImGui();
-#endif
 
   RenderSoftwareCursor();
 
@@ -722,10 +705,8 @@ bool D3D11HostDisplay::Render()
 
 void D3D11HostDisplay::RenderImGui()
 {
-#ifdef WITH_IMGUI
   ImGui::Render();
   ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-#endif
 }
 
 void D3D11HostDisplay::RenderDisplay()
