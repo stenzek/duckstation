@@ -1,4 +1,5 @@
 #include "image.h"
+#include "byte_stream.h"
 #include "file_system.h"
 #include "log.h"
 #include "stb_image.h"
@@ -38,6 +39,32 @@ bool LoadImageFromBuffer(Common::RGBA8Image* image, const void* buffer, std::siz
   {
     const char* error_reason = stbi_failure_reason();
     Log_ErrorPrintf("Failed to load image from memory: %s", error_reason ? error_reason : "unknown error");
+    return false;
+  }
+
+  image->SetPixels(static_cast<u32>(width), static_cast<u32>(height), reinterpret_cast<const u32*>(pixel_data));
+  stbi_image_free(pixel_data);
+  return true;
+}
+
+bool LoadImageFromStream(RGBA8Image* image, ByteStream* stream)
+{
+  stbi_io_callbacks iocb;
+  iocb.read = [](void* user, char* data, int size) {
+    return static_cast<int>(static_cast<ByteStream*>(user)->Read(data, static_cast<u32>(size)));
+  };
+  iocb.skip = [](void* user, int n) { static_cast<ByteStream*>(user)->SeekRelative(n); };
+  iocb.eof = [](void* user) {
+    ByteStream* stream = static_cast<ByteStream*>(user);
+    return (stream->InErrorState() || stream->GetPosition() == stream->GetSize()) ? 1 : 0;
+  };
+
+  int width, height, file_channels;
+  u8* pixel_data = stbi_load_from_callbacks(&iocb, stream, &width, &height, &file_channels, 4);
+  if (!pixel_data)
+  {
+    const char* error_reason = stbi_failure_reason();
+    Log_ErrorPrintf("Failed to load image from stream: %s", error_reason ? error_reason : "unknown error");
     return false;
   }
 

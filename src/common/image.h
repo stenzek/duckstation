@@ -6,6 +6,8 @@
 #include <optional>
 #include <vector>
 
+class ByteStream;
+
 namespace Common {
 template<typename PixelType>
 class Image
@@ -94,6 +96,7 @@ using RGBA8Image = Image<u32>;
 
 bool LoadImageFromFile(Common::RGBA8Image* image, const char* filename);
 bool LoadImageFromBuffer(Common::RGBA8Image* image, const void* buffer, std::size_t buffer_size);
+bool LoadImageFromStream(Common::RGBA8Image* image, ByteStream* stream);
 bool WriteImageToFile(const Common::RGBA8Image& image, const char* filename);
 
 } // namespace Common
