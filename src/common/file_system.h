@@ -154,6 +154,9 @@ std::string_view GetFileNameFromPath(const char* path);
 /// Returns the file title (less the extension and path) from a filename.
 std::string_view GetFileTitleFromPath(const char* path);
 
+/// Returns a list of "root directories" (i.e. root/home directories on Linux, drive letters on Windows).
+std::vector<std::string> GetRootDirectoryList();
+
 // search for files
 bool FindFiles(const char* Path, const char* Pattern, u32 Flags, FindResultsArray* pResults);
 
