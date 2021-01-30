@@ -10,7 +10,7 @@ add_executable(duckstation-nogui
 )
 
 target_include_directories(duckstation-nogui PRIVATE ${SDL2_INCLUDE_DIRS})
-target_link_libraries(duckstation-nogui PRIVATE core common imgui nativefiledialog glad frontend-common scmversion vulkan-loader ${SDL2_LIBRARIES})
+target_link_libraries(duckstation-nogui PRIVATE core common imgui glad frontend-common scmversion vulkan-loader ${SDL2_LIBRARIES})
 
 if(WIN32)
   target_sources(duckstation-nogui PRIVATE

@@ -51,37 +51,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\dep\imgui\imgui.vcxproj">
-      <Project>{bb08260f-6fbc-46af-8924-090ee71360c6}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\dep\nativefiledialog\nativefiledialog.vcxproj">
-      <Project>{ace32f47-2960-4fb3-9f77-2c375625bf61}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\common\common.vcxproj">
-      <Project>{ee054e08-3799-4a59-a422-18259c105ffd}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\core\core.vcxproj">
-      <Project>{868b98c8-65a1-494b-8346-250a73a48c0a}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\frontend-common\frontend-common.vcxproj">
-      <Project>{6245dec8-d2da-47ee-a373-cbd6fcf3ece6}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\scmversion\scmversion.vcxproj">
-      <Project>{075ced82-6a20-46df-94c7-9624ac9ddbeb}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="imgui_impl_sdl.cpp" />
-    <ClCompile Include="sdl_host_interface.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="sdl_util.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="imgui_impl_sdl.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="sdl_host_interface.h" />
-    <ClInclude Include="sdl_key_names.h" />
-    <ClInclude Include="sdl_util.h" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="duckstation-sdl.manifest" />
@@ -99,9 +72,6 @@
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <ImportGroup Label="ExtensionSettings">
-    <Import Project="..\..\dep\msvc\vsprops\SDL2Compile.props" />
-  </ImportGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
@@ -301,10 +271,10 @@
       </PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WITH_DISCORD_PRESENCE=1;WITH_SDL2=1;WITH_IMGUI=1;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include;$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\nativefiledialog\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -314,7 +284,6 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;dxgi.lib;d3d11.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -323,10 +292,10 @@
       </PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WITH_DISCORD_PRESENCE=1;WITH_SDL2=1;WITH_IMGUI=1;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include;$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\nativefiledialog\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -336,7 +305,6 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;dxgi.lib;d3d11.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
@@ -345,10 +313,10 @@
       </PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WITH_DISCORD_PRESENCE=1;WITH_SDL2=1;WITH_IMGUI=1;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include;$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\nativefiledialog\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -358,7 +326,6 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;dxgi.lib;d3d11.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugFast|Win32'">
@@ -367,10 +334,10 @@
       </PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WITH_DISCORD_PRESENCE=1;WITH_SDL2=1;WITH_IMGUI=1;_ITERATOR_DEBUG_LEVEL=1;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUGFAST;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_ITERATOR_DEBUG_LEVEL=1;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUGFAST;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include;$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\nativefiledialog\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
@@ -383,7 +350,6 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;dxgi.lib;d3d11.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugFast|x64'">
@@ -392,10 +358,10 @@
       </PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WITH_DISCORD_PRESENCE=1;WITH_SDL2=1;WITH_IMGUI=1;_ITERATOR_DEBUG_LEVEL=1;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUGFAST;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_ITERATOR_DEBUG_LEVEL=1;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUGFAST;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include;$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\nativefiledialog\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
@@ -408,7 +374,6 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;dxgi.lib;d3d11.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugFast|ARM64'">
@@ -417,10 +382,10 @@
       </PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WITH_DISCORD_PRESENCE=1;WITH_SDL2=1;WITH_IMGUI=1;_ITERATOR_DEBUG_LEVEL=1;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUGFAST;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_ITERATOR_DEBUG_LEVEL=1;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUGFAST;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include;$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\nativefiledialog\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
@@ -433,7 +398,6 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;dxgi.lib;d3d11.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -443,8 +407,8 @@
       </PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WITH_DISCORD_PRESENCE=1;WITH_SDL2=1;WITH_IMGUI=1;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include;$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\nativefiledialog\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -456,7 +420,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;dxgi.lib;d3d11.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
     </Link>
   </ItemDefinitionGroup>
@@ -467,8 +430,8 @@
       </PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WITH_DISCORD_PRESENCE=1;WITH_SDL2=1;WITH_IMGUI=1;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include;$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\nativefiledialog\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -481,7 +444,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;dxgi.lib;d3d11.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
   </ItemDefinitionGroup>
@@ -492,8 +454,8 @@
       </PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WITH_DISCORD_PRESENCE=1;WITH_SDL2=1;WITH_IMGUI=1;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include;$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\nativefiledialog\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -505,7 +467,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;dxgi.lib;d3d11.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
     </Link>
   </ItemDefinitionGroup>
@@ -516,8 +477,8 @@
       </PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WITH_DISCORD_PRESENCE=1;WITH_SDL2=1;WITH_IMGUI=1;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include;$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\nativefiledialog\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -529,7 +490,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;dxgi.lib;d3d11.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
     </Link>
   </ItemDefinitionGroup>
@@ -540,8 +500,8 @@
       </PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WITH_DISCORD_PRESENCE=1;WITH_SDL2=1;WITH_IMGUI=1;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include;$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\nativefiledialog\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -554,7 +514,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;dxgi.lib;d3d11.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
   </ItemDefinitionGroup>
@@ -565,8 +524,8 @@
       </PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WITH_DISCORD_PRESENCE=1;WITH_SDL2=1;WITH_IMGUI=1;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include;$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\nativefiledialog\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -579,7 +538,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;dxgi.lib;d3d11.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
   </ItemDefinitionGroup>
