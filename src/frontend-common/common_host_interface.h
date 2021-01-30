@@ -49,6 +49,13 @@ public:
 
   using HotkeyInfoList = std::vector<HotkeyInfo>;
 
+  struct InputProfileEntry
+  {
+    std::string name;
+    std::string path;
+  };
+  using InputProfileList = std::vector<InputProfileEntry>;
+
   struct SaveStateInfo
   {
     std::string path;
@@ -99,6 +106,21 @@ public:
 
   /// Parses command line parameters for all frontends.
   bool ParseCommandLineParameters(int argc, char* argv[], std::unique_ptr<SystemBootParameters>* out_boot_params);
+
+  /// Returns a path where an input profile with the specified name would be saved.
+  std::string GetSavePathForInputProfile(const char* name) const;
+
+  /// Returns a list of all input profiles. first - name, second - path
+  InputProfileList GetInputProfileList() const;
+
+  /// Returns the path for an input profile.
+  std::string GetInputProfilePath(const char* name) const;
+
+  /// Applies the specified input profile.
+  void ApplyInputProfile(const char* profile_path, SettingsInterface& si);
+
+  /// Saves the current input configuration to the specified profile name.
+  bool SaveInputProfile(const char* profile_path, SettingsInterface& si);
 
   /// Loads the current emulation state from file. Specifying a slot of -1 loads the "resume" game state.
   bool LoadState(bool global, s32 slot);
@@ -213,13 +235,6 @@ protected:
     float duration;
   };
 
-  struct InputProfileEntry
-  {
-    std::string name;
-    std::string path;
-  };
-  using InputProfileList = std::vector<InputProfileEntry>;
-
   CommonHostInterface();
   ~CommonHostInterface();
 
@@ -256,21 +271,6 @@ protected:
 
   /// Reloads the input map from config. Callable from controller interface.
   virtual void UpdateInputMap() = 0;
-
-  /// Returns a path where an input profile with the specified name would be saved.
-  std::string GetSavePathForInputProfile(const char* name) const;
-
-  /// Returns a list of all input profiles. first - name, second - path
-  InputProfileList GetInputProfileList() const;
-
-  /// Returns the path for an input profile.
-  std::string GetInputProfilePath(const char* name) const;
-
-  /// Applies the specified input profile.
-  void ApplyInputProfile(const char* profile_path, SettingsInterface& si);
-
-  /// Saves the current input configuration to the specified profile name.
-  bool SaveInputProfile(const char* profile_path, SettingsInterface& si);
 
   void RegisterHotkey(String category, String name, String display_name, InputButtonHandler handler);
   bool HandleHostKeyEvent(HostKeyCode code, bool pressed);
