@@ -40,6 +40,12 @@ public:
 
   bool RequestRenderWindowSize(s32 new_window_width, s32 new_window_height) override;
 
+  bool IsFullscreen() const override;
+  bool SetFullscreen(bool enabled) override;
+
+  void RunLater(std::function<void()> callback) override;
+  void ApplySettings(bool display_osd_messages) override;
+
   void Run();
 
 protected:
@@ -67,13 +73,7 @@ private:
   void CreateImGuiContext();
   void UpdateFramebufferScale();
 
-  /// Executes a callback later, after the UI has finished rendering. Needed to boot while rendering ImGui.
-  void RunLater(std::function<void()> callback);
-
   void SaveAndUpdateSettings();
-
-  bool IsFullscreen() const override;
-  bool SetFullscreen(bool enabled) override;
 
   // We only pass mouse input through if it's grabbed
   void DrawImGuiWindows() override;

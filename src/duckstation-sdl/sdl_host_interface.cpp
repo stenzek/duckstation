@@ -325,13 +325,18 @@ void SDLHostInterface::SaveAndUpdateSettings()
 {
   m_settings_copy.Save(*m_settings_interface.get());
 
-  Settings old_settings(std::move(g_settings));
-  CommonHostInterface::LoadSettings(*m_settings_interface.get());
-  CommonHostInterface::ApplyGameSettings(false);
-  CommonHostInterface::FixIncompatibleSettings(false);
-  CheckForSettingsChanges(old_settings);
+  ApplySettings(false);
 
   m_settings_interface->Save();
+}
+
+void SDLHostInterface::ApplySettings(bool display_osd_messages)
+{
+  Settings old_settings(std::move(g_settings));
+  CommonHostInterface::LoadSettings(*m_settings_interface.get());
+  CommonHostInterface::ApplyGameSettings(display_osd_messages);
+  CommonHostInterface::FixIncompatibleSettings(display_osd_messages);
+  CheckForSettingsChanges(old_settings);
 }
 
 bool SDLHostInterface::IsFullscreen() const

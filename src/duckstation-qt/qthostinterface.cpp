@@ -306,6 +306,11 @@ void QtHostInterface::applySettings(bool display_osd_messages /* = false */)
     return;
   }
 
+  ApplySettings(display_osd_messages);
+}
+
+void QtHostInterface::ApplySettings(bool display_osd_messages)
+{
   Settings old_settings(std::move(g_settings));
   {
     std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
@@ -1168,7 +1173,7 @@ void QtHostInterface::executeOnEmulationThread(std::function<void()> callback, b
   }
 
   QMetaObject::invokeMethod(this, "executeOnEmulationThread", Qt::QueuedConnection,
-                            Q_ARG(std::function<void()>, callback), Q_ARG(bool, wait));
+                            Q_ARG(std::function<void()>, std::move(callback)), Q_ARG(bool, wait));
   if (wait)
   {
     // don't deadlock
@@ -1176,6 +1181,12 @@ void QtHostInterface::executeOnEmulationThread(std::function<void()> callback, b
       qApp->processEvents(QEventLoop::ExcludeSocketNotifiers);
     m_worker_thread_sync_execute_done.Reset();
   }
+}
+
+void QtHostInterface::RunLater(std::function<void()> func)
+{
+  QMetaObject::invokeMethod(this, "executeOnEmulationThread", Qt::QueuedConnection,
+                            Q_ARG(std::function<void()>, std::move(func)), Q_ARG(bool, false));
 }
 
 void QtHostInterface::loadState(const QString& filename)

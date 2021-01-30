@@ -88,6 +88,12 @@ public:
   /// Request the frontend to exit.
   virtual void RequestExit() = 0;
 
+  /// Runs an event next frame as part of the event loop.
+  virtual void RunLater(std::function<void()> func) = 0;
+
+  /// Loads new settings and applies them.
+  virtual void ApplySettings(bool display_osd_messages) = 0;
+
   virtual bool IsFullscreen() const;
   virtual bool SetFullscreen(bool enabled);
 

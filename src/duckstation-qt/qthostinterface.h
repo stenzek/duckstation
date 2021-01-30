@@ -2,6 +2,7 @@
 #include "common/event.h"
 #include "core/host_interface.h"
 #include "core/system.h"
+#include "qtutils.h"
 #include "frontend-common/common_host_interface.h"
 #include <QtCore/QByteArray>
 #include <QtCore/QObject>
@@ -205,10 +206,12 @@ protected:
   void OnSystemStateSaved(bool global, s32 slot) override;
 
   void LoadSettings() override;
+  void ApplySettings(bool display_osd_messages) override;
   void SetDefaultSettings(SettingsInterface& si) override;
   void UpdateInputMap() override;
 
   void SetMouseMode(bool relative, bool hide_cursor) override;
+  void RunLater(std::function<void()> func) override;
 
 private:
   enum : u32
