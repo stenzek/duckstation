@@ -23,10 +23,6 @@ if(ENABLE_DISCORD_PRESENCE)
   add_subdirectory(discord-rpc)
 endif()
 
-if(BUILD_SDL_FRONTEND)
-  add_subdirectory(nativefiledialog)
-endif()
-
 if(${CPU_ARCH} STREQUAL "aarch32" OR ${CPU_ARCH} STREQUAL "aarch64")
   add_subdirectory(vixl)
 endif()
