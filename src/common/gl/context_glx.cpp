@@ -221,6 +221,9 @@ bool ContextGLX::CreateWindow(int screen)
       attribs[nattribs++] = 5;
       break;
 
+    case WindowInfo::SurfaceFormat::Auto:
+      break;
+
     default:
       UnreachableCode();
       break;

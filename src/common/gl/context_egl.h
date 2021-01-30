@@ -23,6 +23,7 @@ public:
   virtual std::unique_ptr<Context> CreateSharedContext(const WindowInfo& wi) override;
 
 protected:
+  virtual bool SetDisplay();
   virtual EGLNativeWindowType GetNativeWindow(EGLConfig config);
 
   bool Initialize(const Version* versions_to_try, size_t num_versions_to_try);
@@ -31,6 +32,7 @@ protected:
   bool CreateContextAndSurface(const Version& version, EGLContext share_context, bool make_current);
   bool CreateSurface();
   bool CreatePBufferSurface();
+  bool CheckConfigSurfaceFormat(EGLConfig config, WindowInfo::SurfaceFormat format) const;
 
   EGLDisplay m_display = EGL_NO_DISPLAY;
   EGLSurface m_surface = EGL_NO_SURFACE;

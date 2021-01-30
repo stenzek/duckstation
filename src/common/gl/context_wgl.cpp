@@ -204,6 +204,9 @@ bool ContextWGL::InitializeDC()
       pfd.cBlueBits = 5;
       break;
 
+    case WindowInfo::SurfaceFormat::Auto:
+      break;
+
     default:
       UnreachableCode();
       break;

@@ -36,6 +36,9 @@ endif()
 if(LINUX OR ANDROID)
   option(USE_EGL "Support EGL OpenGL context creation" ON)
 endif()
+if(LINUX AND NOT ANDROID)
+  option(USE_DRMKMS "Support DRM/KMS display and contexts" OFF)
+endif()
 
 # Force EGL when using Wayland
 if(USE_WAYLAND)
@@ -111,6 +114,11 @@ if(USE_WAYLAND)
   list(APPEND CMAKE_MODULE_PATH "${ECM_MODULE_PATH}")
   find_package(Wayland REQUIRED Egl)
   message(STATUS "Wayland support enabled")
+endif()
+if(USE_DRMKMS)
+  find_package(GBM REQUIRED)
+  find_package(Libdrm REQUIRED)
+  message(STATUS "DRM/KMS support enabled")
 endif()
 
 # Set _DEBUG macro for Debug builds.

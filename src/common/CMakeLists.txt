@@ -142,6 +142,14 @@ if(USE_X11)
   target_link_libraries(common PRIVATE "${X11_LIBRARIES}")
 endif()
 
+if(USE_DRMKMS)
+  target_sources(common PRIVATE
+    drm_display.cpp
+    drm_display.h
+  )
+  target_link_libraries(common PUBLIC Libdrm::Libdrm)
+endif()
+
 if(USE_EGL)
   target_sources(common PRIVATE
     gl/context_egl.cpp
@@ -160,6 +168,14 @@ if(USE_EGL)
       gl/context_egl_android.cpp
       gl/context_egl_android.h
     )
+  endif()
+  if(USE_DRMKMS)
+    target_compile_definitions(common PRIVATE "-DUSE_GBM=1")
+    target_sources(common PRIVATE
+      gl/context_egl_gbm.cpp
+      gl/context_egl_gbm.h
+    )
+    target_link_libraries(common PUBLIC GBM::GBM)
   endif()
 endif()
 

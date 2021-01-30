@@ -12,11 +12,13 @@ struct WindowInfo
     Wayland,
     MacOS,
     Android,
+    DRM,
   };
 
   enum class SurfaceFormat
   {
     None,
+    Auto,
     RGB8,
     RGBA8,
     RGB565,
