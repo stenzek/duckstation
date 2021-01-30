@@ -298,6 +298,7 @@ bool ImGui_ImplOpenGL3_CreateFontsTexture()
 
     // Restore state
     glBindTexture(GL_TEXTURE_2D, last_texture);
+    io.Fonts->ClearTexData();
 
     return true;
 }

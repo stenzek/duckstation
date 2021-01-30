@@ -577,6 +577,7 @@ bool ImGui_ImplVulkan_CreateFontsTexture(VkCommandBuffer command_buffer)
 
     // Store our identifier
     io.Fonts->TexID = (ImTextureID)(intptr_t)&g_FontTexture;
+    io.Fonts->ClearTexData();
 
     return true;
 }
