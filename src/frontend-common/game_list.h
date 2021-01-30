@@ -70,6 +70,12 @@ class GameList
 public:
   using EntryList = std::vector<GameListEntry>;
 
+  struct DirectoryEntry
+  {
+    std::string path;
+    bool recursive;
+  };
+
   GameList();
   ~GameList();
 
@@ -90,6 +96,8 @@ public:
 
   const EntryList& GetEntries() const { return m_entries; }
   const u32 GetEntryCount() const { return static_cast<u32>(m_entries.size()); }
+  const std::vector<DirectoryEntry>& GetSearchDirectories() const { return m_search_directories; }
+  const u32 GetSearchDirectoryCount() const { return static_cast<u32>(m_search_directories.size()); }
 
   const GameListEntry* GetEntryForPath(const char* path) const;
   const GameListDatabaseEntry* GetDatabaseEntryForCode(const std::string& code) const;
@@ -97,7 +105,10 @@ public:
 
   void SetCacheFilename(std::string filename) { m_cache_filename = std::move(filename); }
   void SetUserDatabaseFilename(std::string filename) { m_user_database_filename = std::move(filename); }
-  void SetUserCompatibilityListFilename(std::string filename) { m_user_compatibility_list_filename = std::move(filename); }
+  void SetUserCompatibilityListFilename(std::string filename)
+  {
+    m_user_compatibility_list_filename = std::move(filename);
+  }
   void SetUserGameSettingsFilename(std::string filename) { m_user_game_settings_filename = std::move(filename); }
   void SetSearchDirectoriesFromSettings(SettingsInterface& si);
 
@@ -125,12 +136,6 @@ private:
   using DatabaseMap = std::unordered_map<std::string, GameListDatabaseEntry>;
   using CacheMap = std::unordered_map<std::string, GameListEntry>;
   using CompatibilityMap = std::unordered_map<std::string, GameListCompatibilityEntry>;
-
-  struct DirectoryEntry
-  {
-    std::string path;
-    bool recursive;
-  };
 
   class RedumpDatVisitor;
   class CompatibilityListVisitor;
