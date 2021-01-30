@@ -1,16 +1,35 @@
 add_executable(duckstation-nogui
-  imgui_impl_sdl.cpp
-  imgui_impl_sdl.h
   main.cpp
-  sdl_host_interface.cpp
-  sdl_host_interface.h
-  sdl_key_names.h
-  sdl_util.cpp
-  sdl_util.h
+  nogui_host_interface.cpp
+  nogui_host_interface.h
 )
 
-target_include_directories(duckstation-nogui PRIVATE ${SDL2_INCLUDE_DIRS})
-target_link_libraries(duckstation-nogui PRIVATE core common imgui glad frontend-common scmversion vulkan-loader ${SDL2_LIBRARIES})
+target_link_libraries(duckstation-nogui PRIVATE core common imgui glad frontend-common scmversion vulkan-loader)
+
+if(USE_SDL2)
+  target_sources(duckstation-nogui PRIVATE 
+    imgui_impl_sdl.cpp
+    imgui_impl_sdl.h
+    sdl_host_interface.cpp
+    sdl_host_interface.h
+    sdl_key_names.h
+  )
+  target_include_directories(duckstation-nogui PRIVATE ${SDL2_INCLUDE_DIRS})
+  target_link_libraries(duckstation-nogui PRIVATE ${SDL2_LIBRARIES})
+endif()
+
+if(USE_DRMKMS)
+  find_package(LIBEVDEV REQUIRED)
+
+  target_sources(duckstation-nogui PRIVATE 
+    drm_host_interface.cpp
+    drm_host_interface.h
+  )
+  target_compile_definitions(duckstation-nogui PRIVATE "-DUSE_DRMKMS=1")
+  target_compile_definitions(duckstation-nogui PRIVATE "-DUSE_LIBEVDEV=1")
+  target_include_directories(duckstation-nogui PRIVATE ${LIBEVDEV_INCLUDE_DIRS})
+  target_link_libraries(duckstation-nogui PRIVATE ${LIBEVDEV_LIBRARIES})
+endif()
 
 if(WIN32)
   target_sources(duckstation-nogui PRIVATE

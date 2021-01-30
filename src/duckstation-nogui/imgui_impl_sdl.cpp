@@ -131,7 +131,7 @@ bool ImGui_ImplSDL2_ProcessEvent(const SDL_Event* event)
     return false;
 }
 
-bool ImGui_ImplSDL2_Init(SDL_Window* window)
+void ImGui_ImplSDL2_Init(SDL_Window* window)
 {
     g_Window = window;
 
@@ -176,7 +176,6 @@ bool ImGui_ImplSDL2_Init(SDL_Window* window)
     g_MouseCursors[ImGuiMouseCursor_ResizeNESW] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENESW);
     g_MouseCursors[ImGuiMouseCursor_ResizeNWSE] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENWSE);
     g_MouseCursors[ImGuiMouseCursor_Hand] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND);
-    return true;
 }
 
 void ImGui_ImplSDL2_Shutdown()
