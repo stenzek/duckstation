@@ -2417,8 +2417,7 @@ void CommonHostInterface::DisplayLoadingScreen(const char* message, int progress
   const bool has_progress = (progress_min < progress_max);
 
   // eat the last imgui frame, it might've been partially rendered by the caller.
-  // ImGui::EndFrame();
-  // ImGui::NewFrame();
+  ImGui::NewFrame();
 
   const float logo_width = static_cast<float>(APP_ICON_WIDTH) * scale;
   const float logo_height = static_cast<float>(APP_ICON_HEIGHT) * scale;
@@ -2462,8 +2461,8 @@ void CommonHostInterface::DisplayLoadingScreen(const char* message, int progress
   }
   ImGui::End();
 
+  ImGui::EndFrame();
   m_display->Render();
-  ImGui::NewFrame();
 }
 
 void CommonHostInterface::GetGameInfo(const char* path, CDImage* image, std::string* code, std::string* title)
