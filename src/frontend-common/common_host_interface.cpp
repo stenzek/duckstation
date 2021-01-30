@@ -2213,6 +2213,15 @@ CommonHostInterface::GetExtendedSaveStateInfo(const char* game_code, s32 slot)
   header.game_code[sizeof(header.game_code) - 1] = 0;
   ssi.game_code = header.game_code;
 
+  if (header.media_filename_length > 0 &&
+      (header.offset_to_media_filename + header.media_filename_length) <= stream->GetSize())
+  {
+    stream->SeekAbsolute(header.offset_to_media_filename);
+    ssi.media_path.resize(header.media_filename_length);
+    if (!stream->Read2(ssi.media_path.data(), header.media_filename_length))
+      std::string().swap(ssi.media_path);
+  }
+
   if (header.screenshot_width > 0 && header.screenshot_height > 0 && header.screenshot_size > 0 &&
       (static_cast<u64>(header.offset_to_screenshot) + static_cast<u64>(header.screenshot_size)) <= stream->GetSize())
   {

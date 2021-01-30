@@ -67,12 +67,12 @@ public:
   struct ExtendedSaveStateInfo
   {
     std::string path;
+    std::string title;
+    std::string game_code;
+    std::string media_path;
     u64 timestamp;
     s32 slot;
     bool global;
-
-    std::string title;
-    std::string game_code;
 
     u32 screenshot_width;
     u32 screenshot_height;
