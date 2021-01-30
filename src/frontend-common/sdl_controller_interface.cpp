@@ -673,9 +673,36 @@ bool SDLControllerInterface::HandleControllerButtonEvent(const SDL_ControllerBut
   if (it == m_controllers.end())
     return false;
 
+  static constexpr std::array<FrontendCommon::ControllerNavigationButton, SDL_CONTROLLER_BUTTON_MAX>
+    nav_button_mapping = {{
+      FrontendCommon::ControllerNavigationButton::Activate,      // SDL_CONTROLLER_BUTTON_A
+      FrontendCommon::ControllerNavigationButton::Cancel,        // SDL_CONTROLLER_BUTTON_B
+      FrontendCommon::ControllerNavigationButton::Count,         // SDL_CONTROLLER_BUTTON_X
+      FrontendCommon::ControllerNavigationButton::Count,         // SDL_CONTROLLER_BUTTON_Y
+      FrontendCommon::ControllerNavigationButton::Count,         // SDL_CONTROLLER_BUTTON_BACK
+      FrontendCommon::ControllerNavigationButton::Count,         // SDL_CONTROLLER_BUTTON_GUIDE
+      FrontendCommon::ControllerNavigationButton::Count,         // SDL_CONTROLLER_BUTTON_START
+      FrontendCommon::ControllerNavigationButton::Count,         // SDL_CONTROLLER_BUTTON_LEFTSTICK
+      FrontendCommon::ControllerNavigationButton::Count,         // SDL_CONTROLLER_BUTTON_RIGHTSTICK
+      FrontendCommon::ControllerNavigationButton::LeftShoulder,  // SDL_CONTROLLER_BUTTON_LEFTSHOULDER
+      FrontendCommon::ControllerNavigationButton::RightShoulder, // SDL_CONTROLLER_BUTTON_RIGHTSHOULDER
+      FrontendCommon::ControllerNavigationButton::DPadUp,        // SDL_CONTROLLER_BUTTON_DPAD_UP
+      FrontendCommon::ControllerNavigationButton::DPadDown,      // SDL_CONTROLLER_BUTTON_DPAD_DOWN
+      FrontendCommon::ControllerNavigationButton::DPadLeft,      // SDL_CONTROLLER_BUTTON_DPAD_LEFT
+      FrontendCommon::ControllerNavigationButton::DPadRight,     // SDL_CONTROLLER_BUTTON_DPAD_RIGHT
+    }};
+
   const bool pressed = (ev->state == SDL_PRESSED);
   if (DoEventHook(Hook::Type::Button, it->player_id, ev->button, pressed ? 1.0f : 0.0f))
     return true;
+
+  if (ev->button < nav_button_mapping.size() &&
+      nav_button_mapping[ev->button] != FrontendCommon::ControllerNavigationButton::Count &&
+      m_host_interface->SetControllerNavigationButtonState(nav_button_mapping[ev->button], pressed))
+  {
+    // UI consumed the event
+    return true;
+  }
 
   const ButtonCallback& cb = it->button_mapping[ev->button];
   if (cb)

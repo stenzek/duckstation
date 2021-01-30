@@ -19,7 +19,21 @@ class ControllerInterface;
 
 namespace FrontendCommon {
 class SaveStateSelectorUI;
-}
+
+enum class ControllerNavigationButton : u32
+{
+  Activate,      // A on XBox Controller, Cross on PS Controller
+  Cancel,        // B on XBox Controller, Circle on PS Controller
+  LeftShoulder,  // LB on XBox Controller, L1 on PS Controller
+  RightShoulder, // RB on XBox Controller, R1 on PS Controller
+  DPadLeft,
+  DPadRight,
+  DPadUp,
+  DPadDown,
+  Count
+};
+
+} // namespace FrontendCommon
 
 class CommonHostInterface : public HostInterface
 {
@@ -233,6 +247,10 @@ public:
   /// Opens a file in the DuckStation "package".
   /// This is the APK for Android builds, or the program directory for standalone builds.
   virtual std::unique_ptr<ByteStream> OpenPackageFile(const char* path, u32 flags) override;
+
+  /// Controller navigation, used by fullscreen mode. Returns true if the UI consumed the event, and it should not
+  /// execute the normal handler.
+  bool SetControllerNavigationButtonState(FrontendCommon::ControllerNavigationButton button, bool pressed);
 
   /// Toggles fast forward state.
   bool IsFastForwardEnabled() const { return m_fast_forward_enabled; }

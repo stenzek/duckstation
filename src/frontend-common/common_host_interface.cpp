@@ -2866,6 +2866,12 @@ std::unique_ptr<ByteStream> CommonHostInterface::OpenPackageFile(const char* pat
   return FileSystem::OpenFile(full_path.c_str(), real_flags);
 }
 
+bool CommonHostInterface::SetControllerNavigationButtonState(FrontendCommon::ControllerNavigationButton button,
+                                                             bool pressed)
+{
+  return false;
+}
+
 #ifdef WITH_DISCORD_PRESENCE
 
 void CommonHostInterface::SetDiscordPresenceEnabled(bool enabled)
