@@ -111,7 +111,8 @@ void AudioStream::BeginWrite(SampleType** buffer_ptr, u32* num_frames)
 {
   m_buffer_mutex.lock();
 
-  EnsureBuffer(*num_frames * m_channels);
+  const u32 requested_frames = std::min(*num_frames, m_buffer_size);
+  EnsureBuffer(requested_frames * m_channels);
 
   *buffer_ptr = m_buffer.GetWritePointer();
   *num_frames = m_buffer.GetContiguousSpace() / m_channels;
@@ -119,6 +120,7 @@ void AudioStream::BeginWrite(SampleType** buffer_ptr, u32* num_frames)
 
 void AudioStream::WriteFrames(const SampleType* frames, u32 num_frames)
 {
+  Assert(num_frames <= m_buffer_size);
   const u32 num_samples = num_frames * m_channels;
   {
     std::unique_lock<std::mutex> lock(m_buffer_mutex);
@@ -261,6 +263,7 @@ void AudioStream::ReadFrames(SampleType* samples, u32 num_frames, bool apply_vol
 
 void AudioStream::EnsureBuffer(u32 size)
 {
+  DebugAssert(size <= m_buffer_size);
   if (GetBufferSpace() >= size)
     return;
 
