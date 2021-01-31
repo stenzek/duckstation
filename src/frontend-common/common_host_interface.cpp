@@ -2,10 +2,10 @@
 #include "common/assert.h"
 #include "common/audio_stream.h"
 #include "common/byte_stream.h"
+#include "common/crash_handler.h"
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/string_util.h"
-#include "common/crash_handler.h"
 #include "controller_interface.h"
 #include "core/cdrom.h"
 #include "core/cheats.h"
@@ -643,7 +643,7 @@ void CommonHostInterface::UpdateSpeedLimiterState()
     !System::IsRunning() || (m_throttler_enabled && g_settings.audio_sync_enabled && !is_non_standard_speed);
   const bool video_sync_enabled =
     !System::IsRunning() || (m_throttler_enabled && g_settings.video_sync_enabled && !is_non_standard_speed);
-  const float max_display_fps = m_throttler_enabled ? 0.0f : g_settings.display_max_fps;
+  const float max_display_fps = (!System::IsValid() || m_throttler_enabled) ? 0.0f : g_settings.display_max_fps;
   Log_InfoPrintf("Target speed: %f%%", target_speed * 100.0f);
   Log_InfoPrintf("Syncing to %s%s", audio_sync_enabled ? "audio" : "",
                  (audio_sync_enabled && video_sync_enabled) ? " and video" : (video_sync_enabled ? "video" : ""));
@@ -799,6 +799,10 @@ void CommonHostInterface::OnSystemPaused(bool paused)
 
 void CommonHostInterface::OnSystemDestroyed()
 {
+  // Restore present-all-frames behavior.
+  if (m_display)
+    m_display->SetDisplayMaxFPS(0.0f);
+
   HostInterface::OnSystemDestroyed();
 
   StopControllerRumble();
