@@ -131,7 +131,7 @@ ALWAYS_INLINE static TinyString GetWindowTitle()
   return TinyString::FromFormat("DuckStation %s (%s)", g_scm_tag_str, g_scm_branch_str);
 }
 
-bool SDLHostInterface::CreatePlatformWindow()
+bool SDLHostInterface::CreatePlatformWindow(bool fullscreen)
 {
   // Create window.
   const u32 window_flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
@@ -165,8 +165,11 @@ bool SDLHostInterface::CreatePlatformWindow()
     SDL_FreeSurface(icon_surface);
   }
 
-  if (m_fullscreen)
+  if (fullscreen || m_fullscreen)
+  {
     SDL_SetWindowFullscreen(m_window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+    m_fullscreen = true;
+  }
 
   ImGui_ImplSDL2_Init(m_window);
 

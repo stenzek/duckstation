@@ -405,6 +405,9 @@ protected:
 
     // disable controller interface (buggy devices with SDL)
     BitField<u8, bool, 1, 1> disable_controller_interface;
+
+    // starting fullscreen (outside of boot options)
+    BitField<u8, bool, 2, 1> start_fullscreen;
   } m_command_line_flags = {};
 
 private:

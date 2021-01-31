@@ -29,7 +29,7 @@ protected:
 
   std::optional<HostKeyCode> GetHostKeyCode(const std::string_view key_code) const override;
 
-  bool CreatePlatformWindow() override;
+  bool CreatePlatformWindow(bool fullscreen) override;
   void DestroyPlatformWindow() override;
   std::optional<WindowInfo> GetPlatformWindowInfo() override;
 

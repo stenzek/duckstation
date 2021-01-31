@@ -55,7 +55,7 @@ protected:
   void RequestExit() override;
   virtual void PollAndUpdate() override;
 
-  virtual bool CreatePlatformWindow() = 0;
+  virtual bool CreatePlatformWindow(bool fullscreen) = 0;
   virtual void DestroyPlatformWindow() = 0;
   virtual std::optional<WindowInfo> GetPlatformWindowInfo() = 0;
   void OnPlatformWindowResized(u32 new_width, u32 new_height, float new_scale);

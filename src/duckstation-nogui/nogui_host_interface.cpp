@@ -48,7 +48,8 @@ bool NoGUIHostInterface::Initialize()
 
   CreateImGuiContext();
 
-  if (!CreatePlatformWindow())
+  const bool start_fullscreen = m_command_line_flags.start_fullscreen || g_settings.start_fullscreen;
+  if (!CreatePlatformWindow(start_fullscreen))
   {
     Log_ErrorPrintf("Failed to create platform window");
     ImGui::DestroyContext();
@@ -264,12 +265,14 @@ bool NoGUIHostInterface::AcquireHostDisplay()
 
   if (needs_switch)
   {
+    const bool was_fullscreen = IsFullscreen();
+
     ImGui::EndFrame();
     DestroyDisplay();
 
     // We need to recreate the window, otherwise bad things happen...
     DestroyPlatformWindow();
-    if (!CreatePlatformWindow())
+    if (!CreatePlatformWindow(was_fullscreen))
       Panic("Failed to recreate platform window on GPU renderer switch");
 
     if (!CreateDisplay())

@@ -304,6 +304,7 @@ bool CommonHostInterface::ParseCommandLineParameters(int argc, char* argv[],
       else if (CHECK_ARG("-fullscreen"))
       {
         Log_InfoPrintf("Going fullscreen after booting.");
+        m_command_line_flags.start_fullscreen = true;
         force_fullscreen = true;
         continue;
       }

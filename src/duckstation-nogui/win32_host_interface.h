@@ -16,7 +16,7 @@ public:
   static std::unique_ptr<NoGUIHostInterface> Create();
 
 protected:
-  bool CreatePlatformWindow() override;
+  bool CreatePlatformWindow(bool fullscreen) override;
   void DestroyPlatformWindow() override;
   std::optional<WindowInfo> GetPlatformWindowInfo() override;
 

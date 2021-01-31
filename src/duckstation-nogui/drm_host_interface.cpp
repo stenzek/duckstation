@@ -58,7 +58,7 @@ void DRMHostInterface::FixIncompatibleSettings(bool display_osd_messages)
   g_settings.confim_power_off = false;
 }
 
-bool DRMHostInterface::CreatePlatformWindow()
+bool DRMHostInterface::CreatePlatformWindow(bool fullscreen)
 {
   Assert(!m_drm_display);
   m_drm_display = std::make_unique<DRMDisplay>();
