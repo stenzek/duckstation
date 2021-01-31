@@ -46,7 +46,11 @@ protected:
     UNIFORM_BUFFER_SIZE = 512 * 1024,
     MAX_BATCH_VERTEX_COUNTER_IDS = 65536 - 2,
     MAX_VERTICES_FOR_RECTANGLE = 6 * (((MAX_PRIMITIVE_WIDTH + (TEXTURE_PAGE_WIDTH - 1)) / TEXTURE_PAGE_WIDTH) + 1u) *
-                                 (((MAX_PRIMITIVE_HEIGHT + (TEXTURE_PAGE_HEIGHT - 1)) / TEXTURE_PAGE_HEIGHT) + 1u)
+                                 (((MAX_PRIMITIVE_HEIGHT + (TEXTURE_PAGE_HEIGHT - 1)) / TEXTURE_PAGE_HEIGHT) + 1u),
+
+    // In interlaced modes, we can exceed the 512 height of VRAM, up to 576 in PAL games.
+    BASE_DISPLAY_TEXTURE_WIDTH = 720,
+    BASE_DISPLAY_TEXTURE_HEIGHT = 576,
   };
 
   struct BatchVertex

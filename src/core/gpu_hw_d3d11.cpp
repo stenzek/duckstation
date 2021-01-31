@@ -256,7 +256,8 @@ bool GPU_HW_D3D11::CreateFramebuffer()
                                    D3D11_BIND_DEPTH_STENCIL) ||
       !m_vram_read_texture.Create(m_device.Get(), texture_width, texture_height, 1, 1, texture_format,
                                   D3D11_BIND_SHADER_RESOURCE) ||
-      !m_display_texture.Create(m_device.Get(), texture_width, texture_height, 1, 1, texture_format,
+      !m_display_texture.Create(m_device.Get(), BASE_DISPLAY_TEXTURE_WIDTH * m_resolution_scale,
+                                BASE_DISPLAY_TEXTURE_HEIGHT * m_resolution_scale, 1, 1, texture_format,
                                 D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET) ||
       !m_vram_encoding_texture.Create(m_device.Get(), VRAM_WIDTH, VRAM_HEIGHT, 1, 1, texture_format,
                                       D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET) ||
@@ -904,6 +905,9 @@ void GPU_HW_D3D11::UpdateDisplay()
                                reinterpret_crop_left, reinterpret_field_offset};
       ID3D11PixelShader* display_pixel_shader =
         m_display_pixel_shaders[BoolToUInt8(m_GPUSTAT.display_area_color_depth_24)][static_cast<u8>(interlaced)].Get();
+
+      Assert(scaled_display_width <= m_display_texture.GetWidth() &&
+             scaled_display_height <= m_display_texture.GetHeight());
 
       SetViewportAndScissor(0, 0, scaled_display_width, scaled_display_height);
       DrawUtilityShader(display_pixel_shader, uniforms, sizeof(uniforms));

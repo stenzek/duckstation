@@ -399,8 +399,9 @@ bool GPU_HW_OpenGL::CreateFramebuffer()
       !m_vram_encoding_texture.Create(VRAM_WIDTH, VRAM_HEIGHT, 1, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, nullptr,
                                       false) ||
       !m_vram_encoding_texture.CreateFramebuffer() ||
-      !m_display_texture.Create(texture_width, texture_height, 1, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, nullptr,
-                                false) ||
+      !m_display_texture.Create(BASE_DISPLAY_TEXTURE_WIDTH * m_resolution_scale,
+                                BASE_DISPLAY_TEXTURE_HEIGHT * m_resolution_scale, 1, GL_RGBA8, GL_RGBA,
+                                GL_UNSIGNED_BYTE, nullptr, false) ||
       !m_display_texture.CreateFramebuffer())
   {
     return false;
@@ -925,6 +926,9 @@ void GPU_HW_OpenGL::UpdateDisplay()
                                reinterpret_field_offset};
       UploadUniformBuffer(uniforms, sizeof(uniforms));
       m_batch_ubo_dirty = true;
+
+      Assert(scaled_display_width <= m_display_texture.GetWidth() &&
+             scaled_display_height <= m_display_texture.GetHeight());
 
       glViewport(0, 0, scaled_display_width, scaled_display_height);
       glBindVertexArray(m_attributeless_vao_id);
