@@ -53,6 +53,17 @@ jobs:
         call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
         msbuild duckstation.sln -t:Build -p:Platform=x64;Configuration=ReleaseLTCG
 
+    - name: Create x64 symbols archive
+      shell: cmd
+      run: |
+        "C:\Program Files\7-Zip\7z.exe" a -r duckstation-windows-x64-release-symbols.zip ./bin/x64/*.pdb
+
+    - name: Upload x64 release symbols artifact
+      uses: actions/upload-artifact@v1
+      with:
+        name: "windows"
+        path: "duckstation-windows-x64-release-symbols.zip"
+
     - name: Remove extra bloat before archiving
       shell: cmd
       run: |
@@ -109,6 +120,17 @@ jobs:
       run: |
         call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" amd64_arm64
         msbuild duckstation.sln -t:Build -p:Platform=ARM64;Configuration=ReleaseLTCG
+
+    - name: Create arm64 symbols archive
+      shell: cmd
+      run: |
+        "C:\Program Files\7-Zip\7z.exe" a -r duckstation-windows-arm64-release-symbols.zip ./bin/ARM64/*.pdb
+
+    - name: Upload arm64 release symbols artifact
+      uses: actions/upload-artifact@v1
+      with:
+        name: "windows-arm64"
+        path: "duckstation-windows-arm64-release-symbols.zip"
 
     - name: Remove extra bloat before archiving
       shell: cmd
@@ -307,7 +329,9 @@ jobs:
           title: "Latest Preview Build"
           files: |
             windows/duckstation-windows-x64-release.zip
+            windows/duckstation-windows-x64-release-symbols.zip
             windows-arm64/duckstation-windows-arm64-release.zip
+            windows-arm64/duckstation-windows-arm64-release-symbols.zip
             linux-x64-appimage-sdl/duckstation-sdl-x64.AppImage
             linux-x64-appimage-sdl-zsync/duckstation-sdl-x64.AppImage.zsync
             linux-x64-appimage-qt/duckstation-qt-x64.AppImage
@@ -324,7 +348,9 @@ jobs:
           title: "Latest Development Build"
           files: |
             windows/duckstation-windows-x64-release.zip
+            windows/duckstation-windows-x64-release-symbols.zip
             windows-arm64/duckstation-windows-arm64-release.zip
+            windows-arm64/duckstation-windows-arm64-release-symbols.zip
             linux-x64-appimage-sdl/duckstation-sdl-x64.AppImage
             linux-x64-appimage-sdl-zsync/duckstation-sdl-x64.AppImage.zsync
             linux-x64-appimage-qt/duckstation-qt-x64.AppImage
