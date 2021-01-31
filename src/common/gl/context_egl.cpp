@@ -10,11 +10,8 @@ ContextEGL::ContextEGL(const WindowInfo& wi) : Context(wi) {}
 
 ContextEGL::~ContextEGL()
 {
-  if (eglGetCurrentContext() == m_context)
-    eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-
-  if (m_context)
-    eglDestroyContext(m_display, m_context);
+  DestroySurface();
+  DestroyContext();
 }
 
 std::unique_ptr<Context> ContextEGL::Create(const WindowInfo& wi, const Version* versions_to_try,
@@ -253,6 +250,30 @@ bool ContextEGL::CheckConfigSurfaceFormat(EGLConfig config, WindowInfo::SurfaceF
 
     default:
       return false;
+  }
+}
+
+void ContextEGL::DestroyContext()
+{
+  if (eglGetCurrentContext() == m_context)
+    eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+
+  if (m_context != EGL_NO_CONTEXT)
+  {
+    eglDestroyContext(m_display, m_context);
+    m_context = EGL_NO_CONTEXT;
+  }
+}
+
+void ContextEGL::DestroySurface()
+{
+  if (eglGetCurrentSurface(EGL_DRAW) == m_surface)
+    eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+
+  if (m_surface != EGL_NO_SURFACE)
+  {
+    eglDestroySurface(m_display, m_surface);
+    m_surface = EGL_NO_SURFACE;
   }
 }
 

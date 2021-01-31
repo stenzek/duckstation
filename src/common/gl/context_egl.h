@@ -33,6 +33,8 @@ protected:
   bool CreateSurface();
   bool CreatePBufferSurface();
   bool CheckConfigSurfaceFormat(EGLConfig config, WindowInfo::SurfaceFormat format) const;
+  void DestroyContext();
+  void DestroySurface();
 
   EGLDisplay m_display = EGL_NO_DISPLAY;
   EGLSurface m_surface = EGL_NO_SURFACE;

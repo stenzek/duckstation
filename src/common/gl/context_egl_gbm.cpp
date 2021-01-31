@@ -21,6 +21,11 @@ ContextEGLGBM::~ContextEGLGBM()
   Assert(!m_current_present_buffer);
 #endif
 
+  // We have to destroy the context before the surface/device.
+  // Leaving it to the base class would be too late.
+  DestroySurface();
+  DestroyContext();
+
   while (m_num_buffers > 0)
   {
     Buffer& buffer = m_buffers[--m_num_buffers];
