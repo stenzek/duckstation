@@ -1,0 +1,256 @@
+<resources>
+    <string-array name="settings_console_region_entries">
+        <item>Auto-Detectar</item>
+        <item>NTSC-J (Japón)</item>
+        <item>NTSC-U (US)</item>
+        <item>PAL (Europa, Australia)</item>
+    </string-array>
+    <string-array name="settings_cpu_execution_mode_entries">
+        <item>Intérprete (El más lento)</item>
+        <item>Intérprete en Caché (Rápido)</item>
+        <item>Recompilador (Más rápido)</item>
+    </string-array>
+    <string-array name="settings_cpu_fastmem_mode_entries">
+        <item>Deshabilitado (El más lento)</item>
+        <item>MMap (Hardware, Más rápido, 64-Bit Solamente)</item>
+        <item>LUT (Rápido)</item>
+    </string-array>
+    <string-array name="gpu_renderer_entries">
+        <item>Hardware (OpenGL)</item>
+        <item>Hardware (Vulkan)</item>
+        <item>Software</item>
+    </string-array>
+    <string-array name="settings_gpu_resolution_scale_entries">
+        <item>1x</item>
+        <item>2x</item>
+        <item>3x (para 720p)</item>
+        <item>4x</item>
+        <item>5x (para 1080p)</item>
+        <item>6x (para 1440p)</item>
+        <item>7x</item>
+        <item>8x</item>
+        <item>9x (para 4K)</item>
+        <item>10x</item>
+        <item>11x</item>
+        <item>12x</item>
+        <item>13x</item>
+        <item>14x</item>
+        <item>15x</item>
+        <item>16x</item>
+    </string-array>
+    <string-array name="settings_display_crop_mode_entries">
+        <item>Ninguno</item>
+        <item>Sólo área de sobreescaneo</item>
+        <item>Todos los bordes</item>
+    </string-array>
+    <string-array name="settings_display_aspect_ratio_names">
+        <item>Auto (Nativo del juego)</item>
+        <item>4:3</item>
+        <item>16:9</item>
+        <item>16:10</item>
+        <item>19:9</item>
+        <item>20:9</item>
+        <item>21:9</item>
+        <item>32:9</item>
+        <item>8:7</item>
+        <item>5:4</item>
+        <item>3:2</item>
+        <item>2:1 (VRAM 1:1)</item>
+        <item>1:1</item>
+        <item>PAR 1:1</item>
+    </string-array>
+    <string-array name="settings_gpu_texture_filter_names">
+        <item>Nearest-Neighbor</item>
+        <item>Bilinear</item>
+        <item>Bilinear (Sin unión de bordes)</item>
+        <item>JINC2</item>
+        <item>JINC2 (Sin unión de bordes)</item>
+        <item>xBR</item>
+        <item>xBR (Sin unión de bordes)</item>
+    </string-array>
+    <string-array name="settings_controller_type_entries">
+        <item>Control Digital (Mando)</item>
+        <item>Control Analógico (DualShock)</item>
+    </string-array>
+    <string-array name="settings_memory_card_mode_entries">
+        <item>Sin tarjeta de memoria</item>
+        <item>Compartido entre todos los juegos</item>
+        <item>Tarjeta separada por juego (Código)</item>
+        <item>Tarjeta separada por juego (Título)</item>
+    </string-array>
+    <string-array name="emulation_menu">
+        <item>Cargar Estado</item>
+        <item>Guardar Estado</item>
+        <item>Guardar Estado en Ranura</item>
+        <item>Activar Avance Rápido</item>
+        <item>Más Opciones</item>
+        <item>Salir</item>
+    </string-array>
+    <string-array name="emulation_more_menu">
+        <item>Reiniciar</item>
+        <item>Códigos de Parche</item>
+        <item>Cambiar Disco</item>
+        <item>Configuraciones</item>
+        <item>Cambiar Control de Pantalla Tactil</item>
+        <item>Editar Diseño del Control de Pantalla Tactil</item>
+    </string-array>
+    <string-array name="emulation_save_state_slot_menu">
+        <item>Ranura Rápida</item>
+        <item>Ranura 1</item>
+        <item>Ranura 2</item>
+        <item>Ranura 3</item>
+        <item>Ranura 4</item>
+        <item>Ranura 5</item>
+        <item>Ranura 6</item>
+        <item>Ranura 7</item>
+        <item>Ranura 8</item>
+        <item>Ranura 9</item>
+        <item>Ranura 10</item>
+    </string-array>
+    <string-array name="settings_cdrom_read_speedup_entries">
+        <item>Ninguno (Velocidad Doble)</item>
+        <item>2x (Velocidad Cuádruple)</item>
+        <item>3x (6x Velocidad)</item>
+        <item>4x (8x Velocidad)</item>
+        <item>5x (10x Velocidad)</item>
+        <item>6x (12x Velocidad)</item>
+        <item>7x (14x Velocidad)</item>
+        <item>8x (16x Velocidad)</item>
+        <item>9x (18x Velocidad)</item>
+        <item>10x (20x Velocidad)</item>
+    </string-array>
+    <string-array name="settings_touchscreen_controller_view_entries">
+        <item>Ninguno</item>
+        <item>Digital Pad</item>
+        <item>Pad Analógico Unico</item>
+        <item>Pad Analógico Dual</item>
+    </string-array>
+    <string-array name="settings_audio_backend_entries">
+        <item>Nulo (Sin Salida)</item>
+        <item>Cubeb</item>
+        <item>OpenSL ES (Recomendado)</item>
+    </string-array>
+    <string-array name="settings_audio_buffer_size_entries">
+        <item>1024 Fotogramas (23.22ms)</item>
+        <item>2048 Fotogramas (46.44ms, Recomendado)</item>
+        <item>3072 Fotogramas (69.66ms)</item>
+        <item>4096 Fotogramas (92.88ms)</item>
+    </string-array>
+    <string-array name="settings_log_level_entries">
+        <item>Ninguno</item>
+        <item>Error</item>
+        <item>Alerta</item>
+        <item>Alertas de Rendimiento</item>
+        <item>Información</item>
+        <item>Detallado</item>
+        <item>Desarrollador</item>
+        <item>Perfil</item>
+        <item>Depurar</item>
+        <item>Seguimiento</item>
+    </string-array>
+    <string-array name="settings_tabs">
+        <item>General</item>
+        <item>Pantalla</item>
+        <item>Audio</item>
+        <item>Mejoras</item>
+        <item>Controles</item>
+        <item>Avanzado</item>
+    </string-array>
+    <string-array name="settings_gpu_msaa_entries">
+        <item>Deshabilitado</item>
+        <item>2x MSAA</item>
+        <item>4x MSAA</item>
+        <item>8x MSAA</item>
+        <item>2x SSAA</item>
+        <item>4x SSAA</item>
+        <item>8x SSAA</item>
+    </string-array>
+    <string-array name="settings_advanced_display_fps_limit_entries">
+        <item>Ilimitado (Mostrar fotogramas)</item>
+        <item>10 FPS</item>
+        <item>15 FPS</item>
+        <item>30 FPS</item>
+        <item>45 FPS</item>
+        <item>60 FPS</item>
+        <item>75 FPS</item>
+        <item>90 FPS</item>
+    </string-array>
+    <string-array name="settings_emulation_speed_entries">
+        <item>Ilimitado</item>
+        <item>10% [6 FPS (NTSC) / 5 FPS (PAL)]</item>
+        <item>20% [12 FPS (NTSC) / 10 FPS (PAL)]</item>
+        <item>30% [18 FPS (NTSC) / 15 FPS (PAL)]</item>
+        <item>40% [24 FPS (NTSC) / 20 FPS (PAL)]</item>
+        <item>50% [30 FPS (NTSC) / 25 FPS (PAL)]</item>
+        <item>60% [36 FPS (NTSC) / 30 FPS (PAL)]</item>
+        <item>70% [42 FPS (NTSC) / 35 FPS (PAL)]</item>
+        <item>80% [48 FPS (NTSC) / 40 FPS (PAL)]</item>
+        <item>90% [54 FPS (NTSC) / 45 FPS (PAL)]</item>
+        <item>100% [60 FPS (NTSC) / 50 FPS (PAL), Defecto]</item>
+        <item>125% [75 FPS (NTSC) / 62 FPS (PAL)]</item>
+        <item>150% [90 FPS (NTSC) / 75 FPS (PAL)]</item>
+        <item>175% [105 FPS (NTSC) / 87 FPS (PAL)]</item>
+        <item>200% [120 FPS (NTSC) / 100 FPS (PAL)]</item>
+        <item>250% [150 FPS (NTSC) / 125 FPS (PAL)]</item>
+        <item>300% [180 FPS (NTSC) / 150 FPS (PAL)]</item>
+        <item>350% [210 FPS (NTSC) / 175 FPS (PAL)]</item>
+        <item>400% [240 FPS (NTSC) / 200 FPS (PAL)]</item>
+        <item>450% [270 FPS (NTSC) / 225 FPS (PAL)]</item>
+        <item>500% [300 FPS (NTSC) / 250 FPS (PAL)]</item>
+        <item>600% [360 FPS (NTSC) / 300 FPS (PAL)]</item>
+        <item>700% [420 FPS (NTSC) / 350 FPS (PAL)]</item>
+        <item>800% [480 FPS (NTSC) / 400 FPS (PAL)]</item>
+        <item>900% [540 FPS (NTSC) / 450 FPS (PAL)]</item>
+        <item>1000% [600 FPS (NTSC) / 500 FPS (PAL)]</item>
+    </string-array>
+    <string-array name="settings_advanced_cpu_overclock_entries">
+        <item>25% (8MHz)</item>
+        <item>50% (16MHz)</item>
+        <item>75% (24MHz)</item>
+        <item>100% (33MHz, Defecto)</item>
+        <item>125% (41MHz)</item>
+        <item>150% (49MHz)</item>
+        <item>175% (57MHz)</item>
+        <item>200% (66MHz)</item>
+        <item>225% (74MHz)</item>
+        <item>250% (82MHz)</item>
+        <item>275% (90MHz)</item>
+        <item>300% (99MHz)</item>
+        <item>350% (115MHz)</item>
+        <item>400% (132MHz)</item>
+        <item>450% (148MHz)</item>
+        <item>500% (165MHz)</item>
+        <item>500% (165MHz)</item>
+        <item>600% (198MHz)</item>
+        <item>700% (231MHz)</item>
+        <item>800% (264MHz)</item>
+        <item>900% (297MHz)</item>
+        <item>1000% (330MHz)</item>
+    </string-array>
+    <string-array name="settings_emulation_screen_orientation_entries">
+        <item>Usar configuración del dipositivo</item>
+        <item>Vertical</item>
+        <item>Horizontal</item>
+    </string-array>
+    <string-array name="settings_language_entries">
+        <item>Usar configuración del dipositivo</item>
+        <item>Inglés</item>
+        <item>Portugués (pt) en Brasil (BR)</item>
+        <item>Italiano (it)</item>
+        <item>Holandés (nl)</item>
+    </string-array>
+    <string-array name="settings_theme_entries">
+        <item>Seguimiento del Sistema</item>
+        <item>Claro</item>
+        <item>Oscuro</item>
+    </string-array>
+    <string-array name="settings_downsample_mode_entries">
+        <item>Deshabilitado</item>
+        <item>Box (Downsample 3D/Smooth All)</item>
+        <item>Adaptativo (Preserve 3D/Smooth 2D)</item>
+    </string-array>
+    <string-array name="settings_boolean_entries">
+        <item>Deshabilitado</item>
+        <item>Halibtado</item>
+    </string-array>
+</resources>
