@@ -16,15 +16,15 @@ Log_SetChannel(GL::Context);
 #endif
 
 #ifdef USE_EGL
-#if defined(USE_X11) || defined(USE_WAYLAND) || defined(USE_GBM)
-#if defined(USE_X11)
-#include "context_egl_x11.h"
-#endif
+#if defined(USE_WAYLAND) || defined(USE_GBM) || defined(USE_X11)
 #if defined(USE_WAYLAND)
 #include "context_egl_wayland.h"
 #endif
 #if defined(USE_GBM)
 #include "context_egl_gbm.h"
+#endif
+#if defined(USE_X11)
+#include "context_egl_x11.h"
 #endif
 #elif defined(ANDROID)
 #include "context_egl_android.h"

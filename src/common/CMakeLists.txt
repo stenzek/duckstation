@@ -162,6 +162,11 @@ if(USE_EGL)
       gl/context_egl_x11.cpp
       gl/context_egl_x11.h
     )
+
+    # We set EGL_NO_X11 because otherwise X comes in with its macros and breaks
+    # a bunch of files from compiling, if we include the EGL headers. This just
+    # makes the data types opaque, we can still use it with X11 if needed.
+    target_compile_definitions(common PRIVATE "-DEGL_NO_X11=1")
   endif()
   if(ANDROID AND USE_EGL)
     target_sources(common PRIVATE
