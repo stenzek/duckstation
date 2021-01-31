@@ -290,7 +290,7 @@ protected:
   virtual void UpdateControllerInterface();
 
   virtual void OnSystemCreated() override;
-  virtual void OnSystemPaused(bool paused);
+  virtual void OnSystemPaused(bool paused) override;
   virtual void OnSystemDestroyed() override;
   virtual void OnRunningGameChanged() override;
   virtual void OnControllerTypeChanged(u32 slot) override;

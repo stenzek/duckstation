@@ -3,6 +3,7 @@
 #include "imgui.h"
 #include <functional>
 #include <string>
+#include <vector>
 
 namespace ImGuiFullscreen {
 #define HEX_TO_IMVEC4(hex, alpha)                                                                                      \

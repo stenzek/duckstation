@@ -1,5 +1,3 @@
-add_definitions("-DWITH_IMGUI=1")
-
 add_subdirectory(common)
 add_subdirectory(core)
 add_subdirectory(scmversion)

@@ -350,6 +350,13 @@ void AndroidHostInterface::RunOnEmulationThread(std::function<void()> function, 
   m_mutex.unlock();
 }
 
+void AndroidHostInterface::RunLater(std::function<void ()> func)
+{
+  std::unique_lock<std::mutex> lock(m_mutex);
+  m_callback_queue.push_back(std::move(func));
+  m_callbacks_outstanding.store(true);
+}
+
 void AndroidHostInterface::EmulationThreadEntryPoint(JNIEnv* env, jobject emulation_activity,
                                                      SystemBootParameters boot_params, bool resume_state)
 {

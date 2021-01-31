@@ -31,6 +31,7 @@ public:
 
   const char* GetFrontendName() const override;
   void RequestExit() override;
+  void RunLater(std::function<void()> func) override;
 
   void ReportError(const char* message) override;
   void ReportMessage(const char* message) override;
@@ -63,7 +64,7 @@ public:
   void SetFastForwardEnabled(bool enabled);
 
   void RefreshGameList(bool invalidate_cache, bool invalidate_database, ProgressCallback* progress_callback);
-  void ApplySettings(bool display_osd_messages);
+  void ApplySettings(bool display_osd_messages) override;
 
   bool ImportPatchCodesFromString(const std::string& str);
 
