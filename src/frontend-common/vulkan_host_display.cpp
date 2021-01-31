@@ -1,4 +1,4 @@
-﻿#include "vulkan_host_display.h"
+#include "vulkan_host_display.h"
 #include "common/assert.h"
 #include "common/log.h"
 #include "common/scope_guard.h"
@@ -517,6 +517,7 @@ void VulkanHostDisplay::DestroyResources()
   Vulkan::Util::SafeDestroySampler(m_linear_sampler);
 }
 
+#ifdef WITH_IMGUI
 bool VulkanHostDisplay::CreateImGuiContext()
 {
   ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_info.surface_width);
@@ -549,6 +550,7 @@ bool VulkanHostDisplay::UpdateImGuiFontTexture()
   ImGui_ImplVulkan_DestroyFontUploadObjects();
   return ImGui_ImplVulkan_CreateFontsTexture(g_vulkan_context->GetCurrentCommandBuffer());
 }
+#endif
 
 void VulkanHostDisplay::DestroyRenderDevice()
 {

@@ -406,11 +406,13 @@ bool OpenGLHostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
   m_window_info.surface_width = m_gl_context->GetSurfaceWidth();
   m_window_info.surface_height = m_gl_context->GetSurfaceHeight();
 
+#ifdef WITH_IMGUI
   if (ImGui::GetCurrentContext())
   {
     ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_info.surface_width);
     ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_info.surface_height);
   }
+#endif
 
   return true;
 }
@@ -424,11 +426,13 @@ void OpenGLHostDisplay::ResizeRenderWindow(s32 new_window_width, s32 new_window_
   m_window_info.surface_width = m_gl_context->GetSurfaceWidth();
   m_window_info.surface_height = m_gl_context->GetSurfaceHeight();
 
+#ifdef WITH_IMGUI
   if (ImGui::GetCurrentContext())
   {
     ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_info.surface_width);
     ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_info.surface_height);
   }
+#endif
 }
 
 bool OpenGLHostDisplay::SupportsFullscreen() const
@@ -456,6 +460,7 @@ void OpenGLHostDisplay::DestroyRenderSurface()
     Log_ErrorPrintf("Failed to switch to surfaceless");
 }
 
+#ifdef WITH_IMGUI
 bool OpenGLHostDisplay::CreateImGuiContext()
 {
   ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_info.surface_width);
@@ -473,6 +478,7 @@ bool OpenGLHostDisplay::UpdateImGuiFontTexture()
   ImGui_ImplOpenGL3_DestroyFontsTexture();
   return ImGui_ImplOpenGL3_CreateFontsTexture();
 }
+#endif
 
 bool OpenGLHostDisplay::CreateResources()
 {
@@ -662,8 +668,10 @@ bool OpenGLHostDisplay::Render()
 {
   if (ShouldSkipDisplayingFrame())
   {
+#ifdef WITH_IMGUI
     if (ImGui::GetCurrentContext())
       ImGui::Render();
+#endif
 
     return false;
   }
@@ -675,8 +683,10 @@ bool OpenGLHostDisplay::Render()
 
   RenderDisplay();
 
+#ifdef WITH_IMGUI
   if (ImGui::GetCurrentContext())
     RenderImGui();
+#endif
 
   RenderSoftwareCursor();
 
@@ -684,12 +694,14 @@ bool OpenGLHostDisplay::Render()
   return true;
 }
 
+#ifdef WITH_IMGUI
 void OpenGLHostDisplay::RenderImGui()
 {
   ImGui::Render();
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
   GL::Program::ResetLastProgram();
 }
+#endif
 
 void OpenGLHostDisplay::RenderDisplay()
 {

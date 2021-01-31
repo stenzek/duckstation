@@ -72,12 +72,16 @@ protected:
   virtual bool CreateResources() override;
   virtual void DestroyResources() override;
 
+#ifdef WITH_IMGUI
   virtual bool CreateImGuiContext() override;
   virtual void DestroyImGuiContext() override;
   virtual bool UpdateImGuiFontTexture() override;
+#endif
 
   void RenderDisplay();
+#ifdef WITH_IMGUI
   void RenderImGui();
+#endif
   void RenderSoftwareCursor();
 
   void RenderDisplay(s32 left, s32 bottom, s32 width, s32 height, void* texture_handle, u32 texture_width,
