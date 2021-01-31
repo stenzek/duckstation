@@ -27,7 +27,7 @@
         app:iconSpaceReserved="false"
         app:showSeekBarValue="true" />
     <SeekBarPreference
-        app:key="Audio/OutputVolume"
+        app:key="Audio/FastForwardVolume"
         app:title="@string/settings_fast_forward_volume"
         app:summary="@string/settings_summary_fast_forward_volume"
         app:defaultValue="100"
