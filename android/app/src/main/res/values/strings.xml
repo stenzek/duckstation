@@ -141,7 +141,7 @@
     <string name="main_activity_get_path_from_directory_error">Failed to get path for the selected directory. Please make sure the directory is in internal/external storage.\n\nTap the overflow button in the directory selector.\nSelect \"Show Internal Storage\".\nTap the menu button and select your device name or SD card.</string>
     <string name="main_activity_external_storage_permissions_error">External storage permissions are required to use DuckStation.</string>
     <string name="main_activity_choose_disc_image">Choose Disc Image</string>
-    <string name="main_activity_missing_bios_image_prompt">No BIOS image was found in DuckStation\'s bios directory. Do you with to locate and import a BIOS image now?</string>
+    <string name="main_activity_missing_bios_image_prompt">No BIOS image was found in DuckStation\'s bios directory. Do you wish to locate and import a BIOS image now?</string>
     <string name="main_activity_missing_bios_image">Missing BIOS Image</string>
     <string name="main_activity_yes">Yes</string>
     <string name="main_activity_no">No</string>
