@@ -125,7 +125,6 @@ private:
   bool m_analog_mode = false;
   bool m_analog_locked = false;
   bool m_rumble_unlocked = false;
-  bool m_legacy_rumble_unlocked = false;
   bool m_configuration_mode = false;
 
   std::array<u8, static_cast<u8>(Axis::Count)> m_axis_state{};
@@ -150,6 +149,7 @@ private:
 
   MotorState m_motor_state{};
 
-  // Member variable that is no longer used, but kept and serialized for compatibility with older save states
+  // Member variables that are no longer used, but kept and serialized for compatibility with older save states
   u8 m_command_param = 0;
+  bool m_legacy_rumble_unlocked = false;
 };
