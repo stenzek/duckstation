@@ -28,9 +28,9 @@ chmod a+x ${BUILD_DIR}/linuxdeploy-plugin-appimage-x86_64.AppImage
 
 # Copy icons into the <resolution>/<app_name>.<ext> directory structure that linuxdeploy nominally expects,
 # e.g. 16x16/duckstation-qt.png, 32x32/duckstation-qt.png, etc.
-FRONTENDS=("qt" "sdl")
+FRONTENDS=("qt" "nogui")
 ICONS_QT=()
-ICONS_SDL=()
+ICONS_NOGUI=()
 
 for filename in ${APPIMAGE_RESOURCES_DIR}/icon-*px.png; do
   [[ ${filename} =~ ${APPIMAGE_RESOURCES_DIR}/icon-(.*)px.png ]];
@@ -81,11 +81,11 @@ OUTPUT="duckstation-qt-x64.AppImage" \
 ${BUILD_DIR}/linuxdeploy-plugin-appimage-x86_64.AppImage \
   --appdir=${BUILD_DIR}/duckstation-qt.AppDir
 
-UPDATE_INFORMATION="zsync|https://github.com/stenzek/duckstation/releases/download/latest/duckstation-sdl-x64.AppImage.zsync" \
-OUTPUT="duckstation-sdl-x64.AppImage" \
+UPDATE_INFORMATION="zsync|https://github.com/stenzek/duckstation/releases/download/latest/duckstation-nogui-x64.AppImage.zsync" \
+OUTPUT="duckstation-nogui-x64.AppImage" \
 ${BUILD_DIR}/linuxdeploy-x86_64.AppImage \
-  --appdir=${BUILD_DIR}/duckstation-sdl.AppDir \
-  --executable=${BUILD_DIR}/bin/duckstation-sdl \
-  --desktop-file=${APPIMAGE_RESOURCES_DIR}/duckstation-sdl.desktop \
-  ${ICONS_SDL[@]/#/--icon-file=} \
+  --appdir=${BUILD_DIR}/duckstation-nogui.AppDir \
+  --executable=${BUILD_DIR}/bin/duckstation-nogui \
+  --desktop-file=${APPIMAGE_RESOURCES_DIR}/duckstation-nogui.desktop \
+  ${ICONS_NOGUI[@]/#/--icon-file=} \
   --output=appimage

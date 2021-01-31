@@ -173,21 +173,21 @@ jobs:
       run: |
         mkdir build
         cd build
-        cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SDL_FRONTEND=ON -DBUILD_QT_FRONTEND=ON -DUSE_SDL2=ON -G Ninja ..
+        cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_NOGUI_FRONTEND=ON -DBUILD_QT_FRONTEND=ON -DUSE_SDL2=ON -G Ninja ..
         ninja
         ../appimage/generate_appimages.sh $(pwd)
 
-    - name: Upload SDL AppImage
+    - name: Upload NoGUI AppImage
       uses: actions/upload-artifact@v1
       with:
-        name: "linux-x64-appimage-sdl"
-        path: "build/duckstation-sdl-x64.AppImage"
+        name: "linux-x64-appimage-nogui"
+        path: "build/duckstation-nogui-x64.AppImage"
 
-    - name: Upload SDL AppImage zsync
+    - name: Upload NoGUI AppImage zsync
       uses: actions/upload-artifact@v1
       with:
-        name: "linux-x64-appimage-sdl-zsync"
-        path: "build/duckstation-sdl-x64.AppImage.zsync"
+        name: "linux-x64-appimage-nogui-zsync"
+        path: "build/duckstation-nogui-x64.AppImage.zsync"
 
     - name: Upload Qt AppImage
       uses: actions/upload-artifact@v1
@@ -262,7 +262,7 @@ jobs:
         mkdir build
         cd build
         export MACOSX_DEPLOYMENT_TARGET=10.14
-        cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SDL_FRONTEND=OFF -DBUILD_QT_FRONTEND=ON -DUSE_SDL2=ON -DQt5_DIR=/usr/local/opt/qt/lib/cmake/Qt5 ..
+        cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_NOGUI_FRONTEND=OFF -DBUILD_QT_FRONTEND=ON -DUSE_SDL2=ON -DQt5_DIR=/usr/local/opt/qt/lib/cmake/Qt5 ..
         cmake --build . --parallel 2
         cd bin
         zip -r duckstation-mac-release.zip DuckStation.app/
@@ -289,15 +289,15 @@ jobs:
         with:
           name: "windows-arm64"
 
-      - name: Download SDL AppImage Artifact
+      - name: Download NoGUI AppImage Artifact
         uses: actions/download-artifact@v1
         with:
-          name: "linux-x64-appimage-sdl"
+          name: "linux-x64-appimage-nogui"
 
-      - name: Download SDL AppImage zsync Artifact
+      - name: Download NoGUI AppImage zsync Artifact
         uses: actions/download-artifact@v1
         with:
-          name: "linux-x64-appimage-sdl-zsync"
+          name: "linux-x64-appimage-nogui-zsync"
 
       - name: Download Qt AppImage Artifact
         uses: actions/download-artifact@v1
@@ -332,8 +332,8 @@ jobs:
             windows/duckstation-windows-x64-release-symbols.zip
             windows-arm64/duckstation-windows-arm64-release.zip
             windows-arm64/duckstation-windows-arm64-release-symbols.zip
-            linux-x64-appimage-sdl/duckstation-sdl-x64.AppImage
-            linux-x64-appimage-sdl-zsync/duckstation-sdl-x64.AppImage.zsync
+            linux-x64-appimage-nogui/duckstation-nogui-x64.AppImage
+            linux-x64-appimage-nogui-zsync/duckstation-nogui-x64.AppImage.zsync
             linux-x64-appimage-qt/duckstation-qt-x64.AppImage
             linux-x64-appimage-qt-zsync/duckstation-qt-x64.AppImage.zsync
             android/duckstation-android.apk
@@ -351,8 +351,8 @@ jobs:
             windows/duckstation-windows-x64-release-symbols.zip
             windows-arm64/duckstation-windows-arm64-release.zip
             windows-arm64/duckstation-windows-arm64-release-symbols.zip
-            linux-x64-appimage-sdl/duckstation-sdl-x64.AppImage
-            linux-x64-appimage-sdl-zsync/duckstation-sdl-x64.AppImage.zsync
+            linux-x64-appimage-nogui/duckstation-nogui-x64.AppImage
+            linux-x64-appimage-nogui-zsync/duckstation-nogui-x64.AppImage.zsync
             linux-x64-appimage-qt/duckstation-qt-x64.AppImage
             linux-x64-appimage-qt-zsync/duckstation-qt-x64.AppImage.zsync
             android/duckstation-android.apk

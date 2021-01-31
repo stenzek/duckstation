@@ -18,7 +18,7 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET "10.14.0" CACHE STRING "")
 
 # Global options.
 if(NOT ANDROID)
-  option(BUILD_SDL_FRONTEND "Build the SDL frontend" ON)
+  option(BUILD_SDL_FRONTEND "Build the SDL frontend" OFF)
   option(BUILD_NOGUI_FRONTEND "Build the NoGUI frontend" ON)
   option(BUILD_QT_FRONTEND "Build the Qt frontend" ON)
   option(ENABLE_DISCORD_PRESENCE "Build with Discord Rich Presence support" ON)
