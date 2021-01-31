@@ -387,6 +387,10 @@ void DestroyResources()
 {
   s_app_icon_texture.reset();
   s_placeholder_texture.reset();
+  s_fallback_playlist_texture.reset();
+  s_fallback_psf_texture.reset();
+  s_fallback_exe_texture.reset();
+  s_fallback_disc_texture.reset();
   for (auto& tex : s_game_compatibility_textures)
     tex.reset();
   for (auto& tex : s_disc_region_textures)
