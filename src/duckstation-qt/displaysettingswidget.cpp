@@ -69,6 +69,9 @@ DisplaySettingsWidget::DisplaySettingsWidget(QtHostInterface* host_interface, QW
        "renderers. <br>This option is only supported in Direct3D and Vulkan. OpenGL will always use the default "
        "device."));
   dialog->registerWidgetHelp(
+    m_ui.fullscreenMode, tr("Fullscreen Mode"), tr("Borderless Fullscreen"),
+    tr("Chooses the fullscreen resolution and frequency."));
+  dialog->registerWidgetHelp(
     m_ui.displayAspectRatio, tr("Aspect Ratio"),
     qApp->translate("DisplayAspectRatio", Settings::GetDisplayAspectRatioName(Settings::DEFAULT_DISPLAY_ASPECT_RATIO)),
     tr("Changes the aspect ratio used to display the console's output to the screen. The default is Auto (Game Native) "
