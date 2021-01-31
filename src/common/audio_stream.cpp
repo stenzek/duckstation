@@ -263,7 +263,7 @@ void AudioStream::ReadFrames(SampleType* samples, u32 num_frames, bool apply_vol
 
 void AudioStream::EnsureBuffer(u32 size)
 {
-  DebugAssert(size <= m_buffer_size);
+  DebugAssert(size <= (m_buffer_size * m_channels));
   if (GetBufferSpace() >= size)
     return;
 
