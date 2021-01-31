@@ -68,6 +68,14 @@ EmulationSettingsWidget::EmulationSettingsWidget(QtHostInterface* host_interface
        "potentially increasing the emulation speed by less than 1%. Sync To Host Refresh Rate will not take effect if "
        "the console's refresh rate is too far from the host's refresh rate. Users with variable refresh rate displays "
        "should disable this option."));
+  dialog->registerWidgetHelp(
+    m_ui.rewindEnable, tr("Rewinding"), tr("Unchecked"),
+    tr("<b>Enable Rewinding:</b> Saves state periodically so you can rewind any mistakes while playing.<br> "
+	   "<b>Rewind Save Frequency:</b> How often a rewind state will be created. Higher frequencies have greater system requirements.<br> "
+	   "<b>Rewind Buffer Size:</b> How many saves will be kept for rewinding. Higher values have greater memory requirements."));
+  dialog->registerWidgetHelp(
+    m_ui.runaheadFrames, tr("Runahead"), tr("Disabled"),
+    tr("Simulates the system ahead of time and rolls back/replays to reduce input lag. Very high system requirements."));
 
   updateRewind();
 }
