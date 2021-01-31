@@ -434,6 +434,7 @@
         <item>Portuguese (pt) in Brazil (BR)</item>
         <item>Italian (it)</item>
         <item>Dutch (nl)</item>
+        <item>Spanish (es)</item>
     </string-array>
     <string-array name="settings_language_values">
         <item>none</item>
@@ -441,6 +442,7 @@
         <item>pt-rBR</item>
         <item>it-IT</item>
         <item>nl-NL</item>
+        <item>es-ES</item>
     </string-array>
     <string-array name="settings_theme_entries">
         <item>Follow System</item>

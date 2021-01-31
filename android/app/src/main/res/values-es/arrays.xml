@@ -232,13 +232,6 @@
         <item>Vertical</item>
         <item>Horizontal</item>
     </string-array>
-    <string-array name="settings_language_entries">
-        <item>Usar configuración del dipositivo</item>
-        <item>Inglés</item>
-        <item>Portugués (pt) en Brasil (BR)</item>
-        <item>Italiano (it)</item>
-        <item>Holandés (nl)</item>
-    </string-array>
     <string-array name="settings_theme_entries">
         <item>Seguimiento del Sistema</item>
         <item>Claro</item>
