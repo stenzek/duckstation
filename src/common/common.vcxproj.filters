@@ -104,6 +104,10 @@
     <ClInclude Include="shiftjis.h" />
     <ClInclude Include="memory_arena.h" />
     <ClInclude Include="page_fault_handler.h" />
+    <ClInclude Include="thirdparty\StackWalker.h">
+      <Filter>thirdparty</Filter>
+    </ClInclude>
+    <ClInclude Include="crash_handler.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="jit_code_buffer.cpp" />
@@ -200,6 +204,10 @@
     <ClCompile Include="shiftjis.cpp" />
     <ClCompile Include="memory_arena.cpp" />
     <ClCompile Include="page_fault_handler.cpp" />
+    <ClCompile Include="thirdparty\StackWalker.cpp">
+      <Filter>thirdparty</Filter>
+    </ClCompile>
+    <ClCompile Include="crash_handler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />
@@ -213,6 +221,9 @@
     </Filter>
     <Filter Include="vulkan">
       <UniqueIdentifier>{642ff5eb-af39-4aab-a42f-6eb8188a11d7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty">
+      <UniqueIdentifier>{fd4150b0-6f82-4251-ab23-34c25fbc5b5e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

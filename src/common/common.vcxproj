@@ -60,6 +60,7 @@
     <ClInclude Include="cd_image.h" />
     <ClInclude Include="cd_image_hasher.h" />
     <ClInclude Include="cpu_detect.h" />
+    <ClInclude Include="crash_handler.h" />
     <ClInclude Include="d3d11\shader_cache.h" />
     <ClInclude Include="d3d11\shader_compiler.h" />
     <ClInclude Include="d3d11\staging_texture.h" />
@@ -99,6 +100,7 @@
     <ClInclude Include="state_wrapper.h" />
     <ClInclude Include="string.h" />
     <ClInclude Include="string_util.h" />
+    <ClInclude Include="thirdparty\StackWalker.h" />
     <ClInclude Include="timer.h" />
     <ClInclude Include="timestamp.h" />
     <ClInclude Include="types.h" />
@@ -128,6 +130,7 @@
     <ClCompile Include="cd_image_cue.cpp" />
     <ClCompile Include="cd_image_hasher.cpp" />
     <ClCompile Include="cd_image_memory.cpp" />
+    <ClCompile Include="crash_handler.cpp" />
     <ClCompile Include="d3d11\shader_cache.cpp" />
     <ClCompile Include="d3d11\shader_compiler.cpp" />
     <ClCompile Include="d3d11\staging_texture.cpp" />
@@ -162,6 +165,7 @@
     <ClCompile Include="cd_xa.cpp" />
     <ClCompile Include="string.cpp" />
     <ClCompile Include="string_util.cpp" />
+    <ClCompile Include="thirdparty\StackWalker.cpp" />
     <ClCompile Include="timer.cpp" />
     <ClCompile Include="timestamp.cpp" />
     <ClCompile Include="vulkan\builders.cpp" />

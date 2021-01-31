@@ -21,6 +21,8 @@ add_library(common
   cd_xa.cpp
   cd_xa.h
   cpu_detect.h
+  crash_handler.cpp
+  crash_handler.h
   dimensional_array.h
   event.cpp
   event.h
@@ -117,6 +119,8 @@ if(WIN32)
     d3d11/stream_buffer.h
     d3d11/texture.cpp
     d3d11/texture.h
+    thirdparty/StackWalker.cpp
+    thirdparty/StackWalker.h
     windows_headers.h
     win32_progress_callback.cpp
     win32_progress_callback.h
