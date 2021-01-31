@@ -5,6 +5,7 @@
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/string_util.h"
+#include "common/crash_handler.h"
 #include "controller_interface.h"
 #include "core/cdrom.h"
 #include "core/cheats.h"
@@ -63,6 +64,9 @@ bool CommonHostInterface::Initialize()
   // Change to the user directory so that all default/relative paths in the config are after this.
   if (!FileSystem::SetWorkingDirectory(m_user_directory.c_str()))
     Log_ErrorPrintf("Failed to set working directory to '%s'", m_user_directory.c_str());
+
+  // Set crash handler to dump to user directory, because of permissions.
+  CrashHandler::SetWriteDirectory(m_user_directory);
 
   LoadSettings();
   UpdateLogSettings(g_settings.log_level, g_settings.log_filter.empty() ? nullptr : g_settings.log_filter.c_str(),

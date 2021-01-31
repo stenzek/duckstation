@@ -1,4 +1,5 @@
 #include "common/log.h"
+#include "common/crash_handler.h"
 #include "mainwindow.h"
 #include "qthostinterface.h"
 #include "qtutils.h"
@@ -27,6 +28,8 @@ static bool ParseCommandLineParameters(QApplication& app, QtHostInterface* host_
 
 int main(int argc, char* argv[])
 {
+  CrashHandler::Install();
+
   // Register any standard types we need elsewhere
   qRegisterMetaType<std::optional<bool>>();
   qRegisterMetaType<std::function<void()>>();
