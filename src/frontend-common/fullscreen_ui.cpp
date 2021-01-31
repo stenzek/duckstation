@@ -772,7 +772,7 @@ void BeginInputBinding(InputBindingType type, const std::string_view& section, c
   {
     auto callback = [](const ControllerInterface::Hook& hook) -> ControllerInterface::Hook::CallbackResult {
       // ignore if axis isn't at least halfway
-      if (hook.type == ControllerInterface::Hook::Type::Axis && std::abs(std::get<float>(hook.value) > 0.5f))
+      if (hook.type == ControllerInterface::Hook::Type::Axis && std::abs(std::get<float>(hook.value)) < 0.5f)
         return ControllerInterface::Hook::CallbackResult::ContinueMonitoring;
 
       TinyString value;
