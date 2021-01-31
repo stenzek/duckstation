@@ -1178,7 +1178,7 @@ void DrawSettingsWindow()
         MenuHeading("CD-ROM Emulation");
 
         const u32 read_speed_index =
-          std::min(g_settings.cdrom_read_speedup, static_cast<u32>(cdrom_read_speeds.size() + 1)) - 1;
+          std::min(s_settings_copy.cdrom_read_speedup, static_cast<u32>(cdrom_read_speeds.size() + 1)) - 1;
         if (MenuButtonWithValue("Read Speedup",
                                 "Speeds up CD-ROM reads by the specified factor. May improve loading speeds in some "
                                 "games, and break others.",
@@ -1794,13 +1794,13 @@ void DrawSettingsWindow()
         MenuHeading("Logging Settings");
         settings_changed |=
           EnumChoiceButton("Log Level", "Sets the verbosity of messages logged. Higher levels will log more messages.",
-                           &g_settings.log_level, &Settings::GetLogLevelDisplayName, LOGLEVEL_COUNT);
-        settings_changed |=
-          ToggleButton("Log To System Console", "Logs messages to the console window.", &g_settings.log_to_console);
+                           &s_settings_copy.log_level, &Settings::GetLogLevelDisplayName, LOGLEVEL_COUNT);
+        settings_changed |= ToggleButton("Log To System Console", "Logs messages to the console window.",
+                                         &s_settings_copy.log_to_console);
         settings_changed |= ToggleButton("Log To Debug Console", "Logs messages to the debug console where supported.",
-                                         &g_settings.log_to_debug);
+                                         &s_settings_copy.log_to_debug);
         settings_changed |= ToggleButton("Log To File", "Logs messages to duckstation.log in the user directory.",
-                                         &g_settings.log_to_file);
+                                         &s_settings_copy.log_to_file);
 
         MenuHeading("Debugging Settings");
 
