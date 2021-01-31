@@ -37,6 +37,8 @@ using ImGuiFullscreen::g_large_font;
 using ImGuiFullscreen::g_medium_font;
 using ImGuiFullscreen::LAYOUT_LARGE_FONT_SIZE;
 using ImGuiFullscreen::LAYOUT_MEDIUM_FONT_SIZE;
+using ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT;
+using ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY;
 using ImGuiFullscreen::LAYOUT_SCREEN_HEIGHT;
 using ImGuiFullscreen::LAYOUT_SCREEN_WIDTH;
 
@@ -2300,17 +2302,22 @@ void DrawGameListWindow()
 
   if (BeginFullscreenColumnWindow(450.0f, LAYOUT_SCREEN_WIDTH, "game_list_entries"))
   {
+    const ImVec2 image_size(LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT, LAYOUT_MENU_BUTTON_HEIGHT));
+
     BeginMenuButtons();
 
     SmallString summary;
-    PathString title;
 
     for (const GameListEntry* entry : s_game_list_sorted_entries)
     {
+      ImRect bb;
+      bool visible, hovered;
+      bool pressed =
+        MenuButtonFrame(entry->path.c_str(), true, LAYOUT_MENU_BUTTON_HEIGHT, &visible, &hovered, &bb.Min, &bb.Max);
+      if (!visible)
+        continue;
+
       HostDisplayTexture* cover_texture = GetGameListCover(entry);
-
-      title.Format("%s##%s", entry->title.c_str(), entry->path.c_str());
-
       if (entry->code.empty())
         summary.Format("%s - ", Settings::GetDiscRegionName(entry->region));
       else
@@ -2318,16 +2325,35 @@ void DrawGameListWindow()
 
       summary.AppendString(FileSystem::GetFileNameFromPath(entry->path.c_str()));
 
-      if (MenuImageButton(
-            title, summary, static_cast<ImTextureID>(cover_texture->GetHandle()),
-            LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT)))
+      ImGui::GetWindowDrawList()->AddImage(cover_texture->GetHandle(), bb.Min, bb.Min + image_size, ImVec2(0.0f, 0.0f),
+                                           ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
+
+      const float midpoint = bb.Min.y + g_large_font->FontSize + LayoutScale(4.0f);
+      const float text_start_x = bb.Min.x + image_size.x + LayoutScale(15.0f);
+      const ImRect title_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
+      const ImRect summary_bb(ImVec2(text_start_x, midpoint), bb.Max);
+
+      ImGui::PushFont(g_large_font);
+      ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, entry->title.c_str(),
+                               entry->title.c_str() + entry->title.size(), nullptr, ImVec2(0.0f, 0.0f), &title_bb);
+      ImGui::PopFont();
+
+      if (summary)
+      {
+        ImGui::PushFont(g_medium_font);
+        ImGui::RenderTextClipped(summary_bb.Min, summary_bb.Max, summary, summary.GetCharArray() + summary.GetLength(),
+                                 nullptr, ImVec2(0.0f, 0.0f), &summary_bb);
+        ImGui::PopFont();
+      }
+
+      if (pressed)
       {
         // launch game
         const std::string& path_to_launch(entry->path);
         s_host_interface->RunLater([path_to_launch]() { DoStartPath(path_to_launch, true); });
       }
 
-      if (ImGui::IsItemHovered())
+      if (hovered)
         selected_entry = entry;
     }
 
