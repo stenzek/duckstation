@@ -264,9 +264,15 @@ void Shutdown()
 void Render()
 {
   if (s_debug_menu_enabled)
+  {
     DrawDebugMenu();
+    if (System::IsValid())
+      s_host_interface->DrawDebugWindows();
+  }
   else if (System::IsValid())
+  {
     DrawStatsOverlay();
+  }
 
   ImGuiFullscreen::BeginLayout();
 

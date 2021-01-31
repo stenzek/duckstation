@@ -263,6 +263,11 @@ public:
   bool IsTurboEnabled() const { return m_turbo_enabled; }
   void SetTurboEnabled(bool enabled);
 
+  /// ImGui window drawing.
+  void DrawFPSWindow();
+  void DrawOSDMessages();
+  void DrawDebugWindows();
+
 protected:
   enum : u32
   {
@@ -369,9 +374,6 @@ protected:
 
   virtual void DrawImGuiWindows();
 
-  void DrawFPSWindow();
-  void DrawOSDMessages();
-  void DrawDebugWindows();
   void DoFrameStep();
   void DoToggleCheats();
 
