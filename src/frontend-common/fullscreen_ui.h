@@ -47,6 +47,10 @@ void CloseQuickMenu();
 void Shutdown();
 void Render();
 
+// Returns true if the message has been dismissed.
+bool DrawErrorWindow(const char* message);
+bool DrawConfirmWindow(const char* message, bool* result);
+
 void EnsureGameListLoaded();
 
 Settings& GetSettingsCopy();

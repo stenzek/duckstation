@@ -12,10 +12,6 @@ public:
 
   const char* GetFrontendName() const override;
 
-  void ReportError(const char* message) override;
-  void ReportMessage(const char* message) override;
-  bool ConfirmMessage(const char* message) override;
-
   bool Initialize() override;
   void Shutdown() override;
 

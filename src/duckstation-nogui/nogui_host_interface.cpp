@@ -392,6 +392,66 @@ void NoGUIHostInterface::Run()
   }
 }
 
+void NoGUIHostInterface::ReportMessage(const char* message)
+{
+  Log_InfoPrint(message);
+  AddOSDMessage(message, 10.0f);
+}
+
+void NoGUIHostInterface::ReportError(const char* message)
+{
+  Log_ErrorPrint(message);
+
+  if (!m_display)
+    return;
+
+  ImGui::EndFrame();
+
+  bool done = false;
+  while (!done)
+  {
+    RunCallbacks();
+    PollAndUpdate();
+    if (m_fullscreen_ui_enabled)
+      FullscreenUI::SetImGuiNavInputs();
+
+    ImGui::NewFrame();
+    done = FullscreenUI::DrawErrorWindow(message);
+    ImGui::EndFrame();
+    m_display->Render();
+  }
+
+  ImGui::NewFrame();
+}
+
+bool NoGUIHostInterface::ConfirmMessage(const char* message)
+{
+  Log_InfoPrintf("Confirm: %s", message);
+
+  if (!m_display)
+    return true;
+
+  ImGui::EndFrame();
+
+  bool done = false;
+  bool result = true;
+  while (!done)
+  {
+    RunCallbacks();
+    PollAndUpdate();
+    if (m_fullscreen_ui_enabled)
+      FullscreenUI::SetImGuiNavInputs();
+
+    ImGui::NewFrame();
+    done = FullscreenUI::DrawConfirmWindow(message, &result);
+    ImGui::EndFrame();
+    m_display->Render();
+  }
+
+  ImGui::NewFrame();
+  return result;
+}
+
 void NoGUIHostInterface::RunLater(std::function<void()> callback)
 {
   std::unique_lock<std::mutex> lock(m_queued_callbacks_lock);

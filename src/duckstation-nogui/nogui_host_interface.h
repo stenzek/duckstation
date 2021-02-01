@@ -25,6 +25,10 @@ public:
   virtual void Shutdown() override;
   virtual void Run();
 
+  void ReportMessage(const char* message) override;
+  void ReportError(const char* message) override;
+  bool ConfirmMessage(const char* message) override;
+
   std::string GetStringSettingValue(const char* section, const char* key, const char* default_value = "") override;
   bool GetBoolSettingValue(const char* section, const char* key, bool default_value = false) override;
   int GetIntSettingValue(const char* section, const char* key, int default_value = 0) override;
