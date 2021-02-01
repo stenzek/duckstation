@@ -3368,6 +3368,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-2202-ga17e15f1</version-tested>
   </entry>
+  <entry code="SCES-00577" compatibility="5" region="PAL" title="Soul Blade (Europe)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-2949-gcd2c581f</version-tested>
+  </entry>
   <entry code="SLUS-00240" compatibility="5" region="NTSC-U" title="Soul Blade (USA)">
     <compatibility>No Issues</compatibility>
     <upscaling-issues>Water error in Li Long stage (Issue #371)</upscaling-issues>
