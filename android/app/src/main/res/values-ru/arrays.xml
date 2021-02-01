@@ -232,14 +232,6 @@
 		<item>Портретная</item>
 		<item>Ландшафтная</item>
 	</string-array>
-	<string-array name="settings_language_entries">
-		<item>Настройка системы</item>
-		<item>Английский</item>
-		<item>Бразильский португальский</item>
-		<item>Итальянский</item>
-		<item>Датский</item>
-		<item>Испанский</item>
-	</string-array>
 	<string-array name="settings_theme_entries">
 		<item>По выбору системы</item>
 		<item>Светлая</item>

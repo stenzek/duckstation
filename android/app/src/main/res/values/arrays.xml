@@ -435,6 +435,7 @@
         <item>Italian (it)</item>
         <item>Dutch (nl)</item>
         <item>Spanish (es)</item>
+        <item>Russian (ru)</item>
     </string-array>
     <string-array name="settings_language_values">
         <item>none</item>
@@ -443,6 +444,7 @@
         <item>it-IT</item>
         <item>nl-NL</item>
         <item>es-ES</item>
+        <item>ru-RU</item>
     </string-array>
     <string-array name="settings_theme_entries">
         <item>Follow System</item>

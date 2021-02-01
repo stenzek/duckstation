@@ -15,6 +15,7 @@ The following people have contributed to the project in some way, and are credit
 - Hipnosis - @Hipnosis183, MrHomunculus, @falsepopsky - Spanish
 - @RaydenX93 - Italian
 - @r57zone - Russian
+- @6lackmag3 - Russian (Android)
 - @DenSinH - Dutch
 - @BenjaminSiskoo - French
 - mikakunin - Japanese
