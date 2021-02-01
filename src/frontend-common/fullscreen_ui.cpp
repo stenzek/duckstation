@@ -1078,8 +1078,6 @@ void DrawSettingsWindow()
 
       case SettingsPage::GameListSettings:
       {
-        EnsureGameListLoaded();
-
         BeginMenuButtons();
 
         MenuHeading("Game List");
@@ -1089,8 +1087,10 @@ void DrawSettingsWindow()
           OpenFileSelector(ICON_FA_FOLDER_PLUS "  Add Search Directory", true, [](const std::string& dir) {
             if (!dir.empty())
             {
-              s_settings_interface->RemoveFromStringList("GameList", "RecursivePaths", dir.c_str());
-              s_settings_interface->AddToStringList("GameList", "Paths", dir.c_str());
+              s_settings_interface->AddToStringList("GameList", "RecursivePaths", dir.c_str());
+              s_settings_interface->RemoveFromStringList("GameList", "Paths", dir.c_str());
+              s_settings_interface->Save();
+              QueueGameListRefresh();
             }
 
             CloseFileSelector();
@@ -1116,7 +1116,8 @@ void DrawSettingsWindow()
                                s_settings_interface->AddToStringList("GameList", "Paths", title.c_str());
                              }
 
-                             s_host_interface->RunLater(SaveAndApplySettings);
+                             s_settings_interface->Save();
+                             QueueGameListRefresh();
                            });
         }
 
@@ -1130,14 +1131,18 @@ void DrawSettingsWindow()
 
                              s_settings_interface->RemoveFromStringList("GameList", "Paths", title.c_str());
                              s_settings_interface->RemoveFromStringList("GameList", "RecursivePaths", title.c_str());
-                             s_host_interface->RunLater(SaveAndApplySettings);
+                             s_settings_interface->Save();
+                             QueueGameListRefresh();
                              CloseChoiceDialog();
                            });
         }
 
         MenuHeading("Search Directories");
         for (const GameList::DirectoryEntry& entry : s_host_interface->GetGameList()->GetSearchDirectories())
-          ActiveButton(entry.path.c_str(), false, false);
+        {
+          MenuButton(entry.path.c_str(), entry.recursive ? "Scanning Subdirectories" : "Not Scanning Subdirectories",
+                     false);
+        }
 
         EndMenuButtons();
       }
