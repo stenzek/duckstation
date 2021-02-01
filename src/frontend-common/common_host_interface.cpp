@@ -2311,6 +2311,10 @@ void CommonHostInterface::SetDefaultSettings(SettingsInterface& si)
 {
   HostInterface::SetDefaultSettings(si);
 
+  // TODO: Maybe we should bind this to F1 in the future.
+  if (m_fullscreen_ui_enabled)
+    si.SetStringValue("Hotkeys", "OpenQuickMenu", "Keyboard/Escape");
+
   si.SetStringValue("Controller1", "ButtonUp", "Keyboard/W");
   si.SetStringValue("Controller1", "ButtonDown", "Keyboard/S");
   si.SetStringValue("Controller1", "ButtonLeft", "Keyboard/A");
@@ -2328,11 +2332,6 @@ void CommonHostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetStringValue("Hotkeys", "FastForward", "Keyboard/Tab");
   si.SetStringValue("Hotkeys", "TogglePause", "Keyboard/Pause");
   si.SetStringValue("Hotkeys", "ToggleFullscreen", "Keyboard/Alt+Return");
-  si.SetStringValue("Hotkeys", "PowerOff", "Keyboard/Escape");
-  si.SetStringValue("Hotkeys", "LoadSelectedSaveState", "Keyboard/F1");
-  si.SetStringValue("Hotkeys", "SaveSelectedSaveState", "Keyboard/F2");
-  si.SetStringValue("Hotkeys", "SelectPreviousSaveStateSlot", "Keyboard/F3");
-  si.SetStringValue("Hotkeys", "SelectNextSaveStateSlot", "Keyboard/F4");
   si.SetStringValue("Hotkeys", "Screenshot", "Keyboard/F10");
   si.SetStringValue("Hotkeys", "IncreaseResolutionScale", "Keyboard/PageUp");
   si.SetStringValue("Hotkeys", "DecreaseResolutionScale", "Keyboard/PageDown");

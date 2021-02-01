@@ -742,6 +742,12 @@ void QtHostInterface::SetDefaultSettings(SettingsInterface& si)
 {
   CommonHostInterface::SetDefaultSettings(si);
 
+  si.SetStringValue("Hotkeys", "PowerOff", "Keyboard/Escape");
+  si.SetStringValue("Hotkeys", "LoadSelectedSaveState", "Keyboard/F1");
+  si.SetStringValue("Hotkeys", "SaveSelectedSaveState", "Keyboard/F2");
+  si.SetStringValue("Hotkeys", "SelectPreviousSaveStateSlot", "Keyboard/F3");
+  si.SetStringValue("Hotkeys", "SelectNextSaveStateSlot", "Keyboard/F4");
+
   si.SetBoolValue("Main", "RenderToMainWindow", true);
 }
 

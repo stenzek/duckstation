@@ -109,6 +109,10 @@ float NoGUIHostInterface::GetFloatSettingValue(const char* section, const char* 
 void NoGUIHostInterface::LoadSettings()
 {
   m_settings_interface = std::make_unique<INISettingsInterface>(GetSettingsFileName());
+
+  if (!CommonHostInterface::CheckSettings(*m_settings_interface.get()))
+    AddOSDMessage("Settings version mismatch, settings have been reset to defaults.", 30.0f);
+
   CommonHostInterface::LoadSettings(*m_settings_interface.get());
   CommonHostInterface::FixIncompatibleSettings(false);
 }
