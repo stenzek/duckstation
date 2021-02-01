@@ -633,6 +633,12 @@ void HostInterface::FixIncompatibleSettings(bool display_osd_messages)
     g_settings.bios_patch_tty_enable = false;
   }
 
+  if (g_settings.display_integer_scaling && g_settings.display_linear_filtering)
+  {
+    Log_WarningPrintf("Disabling linear filter due to integer upscaling.");
+    g_settings.display_linear_filtering = false;
+  }
+
   if (g_settings.gpu_pgxp_enable)
   {
     if (g_settings.gpu_renderer == GPURenderer::Software)

@@ -20,6 +20,7 @@ private Q_SLOTS:
   void populateGPUAdaptersAndResolutions();
   void onGPUAdapterIndexChanged();
   void onGPUFullscreenModeIndexChanged();
+  void onIntegerFilteringChanged();
 
 private:
   void setupAdditionalUi();

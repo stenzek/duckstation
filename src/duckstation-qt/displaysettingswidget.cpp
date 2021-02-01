@@ -55,7 +55,10 @@ DisplaySettingsWidget::DisplaySettingsWidget(QtHostInterface* host_interface, QW
           &DisplaySettingsWidget::onGPUAdapterIndexChanged);
   connect(m_ui.fullscreenMode, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
           &DisplaySettingsWidget::onGPUFullscreenModeIndexChanged);
+  connect(m_ui.displayIntegerScaling, &QCheckBox::stateChanged, this,
+          &DisplaySettingsWidget::onIntegerFilteringChanged);
   populateGPUAdaptersAndResolutions();
+  onIntegerFilteringChanged();
 
   dialog->registerWidgetHelp(
     m_ui.renderer, tr("Renderer"),
@@ -68,9 +71,8 @@ DisplaySettingsWidget::DisplaySettingsWidget(QtHostInterface* host_interface, QW
     tr("If your system contains multiple GPUs or adapters, you can select which GPU you wish to use for the hardware "
        "renderers. <br>This option is only supported in Direct3D and Vulkan. OpenGL will always use the default "
        "device."));
-  dialog->registerWidgetHelp(
-    m_ui.fullscreenMode, tr("Fullscreen Mode"), tr("Borderless Fullscreen"),
-    tr("Chooses the fullscreen resolution and frequency."));
+  dialog->registerWidgetHelp(m_ui.fullscreenMode, tr("Fullscreen Mode"), tr("Borderless Fullscreen"),
+                             tr("Chooses the fullscreen resolution and frequency."));
   dialog->registerWidgetHelp(
     m_ui.displayAspectRatio, tr("Aspect Ratio"),
     qApp->translate("DisplayAspectRatio", Settings::GetDisplayAspectRatioName(Settings::DEFAULT_DISPLAY_ASPECT_RATIO)),
@@ -266,4 +268,9 @@ void DisplaySettingsWidget::onGPUFullscreenModeIndexChanged()
 
   m_host_interface->SetStringSettingValue("GPU", "FullscreenMode",
                                           m_ui.fullscreenMode->currentText().toUtf8().constData());
+}
+
+void DisplaySettingsWidget::onIntegerFilteringChanged()
+{
+  m_ui.displayLinearFiltering->setEnabled(!m_ui.displayIntegerScaling->isChecked());
 }

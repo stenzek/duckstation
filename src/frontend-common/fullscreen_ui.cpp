@@ -1631,7 +1631,7 @@ void DrawSettingsWindow()
 
         settings_changed |=
           ToggleButton("Linear Upscaling", "Uses a bilinear filter when upscaling to display, smoothing out the image.",
-                       &s_settings_copy.display_linear_filtering);
+                       &s_settings_copy.display_linear_filtering, !s_settings_copy.display_integer_scaling);
 
         settings_changed |=
           ToggleButton("Integer Upscaling", "Adds padding to ensure pixels are a whole number in size.",
