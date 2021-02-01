@@ -172,6 +172,9 @@ void GPU_HW_Vulkan::ResetGraphicsAPIState()
   GPU_HW::ResetGraphicsAPIState();
 
   EndRenderPass();
+
+  if (m_host_display->GetDisplayTextureHandle() == &m_vram_texture)
+    m_vram_texture.TransitionToLayout(g_vulkan_context->GetCurrentCommandBuffer(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
 
 void GPU_HW_Vulkan::RestoreGraphicsAPIState()
@@ -1300,8 +1303,6 @@ void GPU_HW_Vulkan::UpdateDisplay()
     }
     else
     {
-      m_vram_texture.TransitionToLayout(g_vulkan_context->GetCurrentCommandBuffer(),
-                                        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
       m_host_display->SetDisplayTexture(&m_vram_texture, HostDisplayPixelFormat::RGBA8, m_vram_texture.GetWidth(),
                                         m_vram_texture.GetHeight(), 0, 0, m_vram_texture.GetWidth(),
                                         m_vram_texture.GetHeight());
@@ -1337,8 +1338,6 @@ void GPU_HW_Vulkan::UpdateDisplay()
       }
       else
       {
-        m_vram_texture.TransitionToLayout(g_vulkan_context->GetCurrentCommandBuffer(),
-                                          VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
         m_host_display->SetDisplayTexture(&m_vram_texture, HostDisplayPixelFormat::RGBA8, m_vram_texture.GetWidth(),
                                           m_vram_texture.GetHeight(), scaled_vram_offset_x, scaled_vram_offset_y,
                                           scaled_display_width, scaled_display_height);

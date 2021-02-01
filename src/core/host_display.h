@@ -115,6 +115,7 @@ public:
   virtual bool UpdateImGuiFontTexture() = 0;
 #endif
 
+  const void* GetDisplayTextureHandle() const { return m_display_texture_handle; }
   const s32 GetDisplayTopMargin() const { return m_display_top_margin; }
   const s32 GetDisplayWidth() const { return m_display_width; }
   const s32 GetDisplayHeight() const { return m_display_height; }
