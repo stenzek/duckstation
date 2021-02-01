@@ -1,0 +1,257 @@
+<resources>
+	<string-array name="settings_console_region_entries">
+		<item>Автоопределение</item>
+		<item>NTSC-J (Япония)</item>
+		<item>NTSC-U (США)</item>
+		<item>PAL (Европа, Австралия)</item>
+	</string-array>
+	<string-array name="settings_cpu_execution_mode_entries">
+		<item>Интерпретатор (самый медленный)</item>
+		<item>Кэшированный интерпретатор (быстрее)</item>
+		<item>Рекомпилятор (самый быстрый)</item>
+	</string-array>
+	<string-array name="settings_cpu_fastmem_mode_entries">
+		<item>Выключен (самый медленный)</item>
+		<item>MMap (аппаратный, самый быстрый, только для 64-бит)</item>
+		<item>LUT (самый быстрый)</item>
+	</string-array>
+	<string-array name="gpu_renderer_entries">
+		<item>Аппаратный (OpenGL)</item>
+		<item>Аппаратный (Vulkan)</item>
+		<item>Программный</item>
+	</string-array>
+	<string-array name="settings_gpu_resolution_scale_entries">
+		<item>1x</item>
+		<item>2x</item>
+		<item>3x (для 720p)</item>
+		<item>4x</item>
+		<item>5x (для 1080p)</item>
+		<item>6x (для 1440p)</item>
+		<item>7x</item>
+		<item>8x</item>
+		<item>9x (для 4K)</item>
+		<item>10x</item>
+		<item>11x</item>
+		<item>12x</item>
+		<item>13x</item>
+		<item>14x</item>
+		<item>15x</item>
+		<item>16x</item>
+	</string-array>
+	<string-array name="settings_display_crop_mode_entries">
+		<item>Нет</item>
+		<item>Только вылеты развёртки</item>
+		<item>Все границы</item>
+	</string-array>
+	<string-array name="settings_display_aspect_ratio_names">
+		<item>Автонастройка (нативное игре)</item>
+		<item>4:3</item>
+		<item>16:9</item>
+		<item>16:10</item>
+		<item>19:9</item>
+		<item>20:9</item>
+		<item>21:9</item>
+		<item>32:9</item>
+		<item>8:7</item>
+		<item>5:4</item>
+		<item>3:2</item>
+		<item>2:1 (VRAM 1:1)</item>
+		<item>1:1</item>
+		<item>PAR 1:1</item>
+	</string-array>
+	<string-array name="settings_gpu_texture_filter_names">
+		<item>Метод ближайшего соседа</item>
+		<item>Билинейная</item>
+		<item>Билинейная (без сглаживания краёв)</item>
+		<item>JINC2</item>
+		<item>JINC2 (без сглаживания краёв)</item>
+		<item>xBR</item>
+		<item>xBR (без сглаживания краёв)</item>
+	</string-array>
+	<string-array name="settings_controller_type_entries">
+		<item>Цифровой</item>
+		<item>Аналоговый (DualShock)</item>
+	</string-array>
+	<string-array name="settings_memory_card_mode_entries">
+		<item>Без карты памяти</item>
+		<item>Общая для всех игр</item>
+		<item>Своя карта для каждой игры (по коду)</item>
+		<item>Своя карта для каждой игры (по названию)</item>
+	</string-array>
+	<string-array name="emulation_menu">
+		<item>Сохранить состояние</item>
+		<item>Загрузить состояние</item>
+		<item>Слот сохранения</item>
+		<item>Включить ускорение</item>
+		<item>Другие опции</item>
+		<item>Выход</item>
+	</string-array>
+	<string-array name="emulation_more_menu">
+		<item>Сброс</item>
+		<item>Чит-коды</item>
+		<item>Сменить диск</item>
+		<item>Настройки</item>
+		<item>Сменить экранный контроллер</item>
+		<item>Настроить экранный контроллер</item>
+	</string-array>
+	<string-array name="emulation_save_state_slot_menu">
+		<item>Быстрый слот</item>
+		<item>Игровой слот 1</item>
+		<item>Игровой слот 2</item>
+		<item>Игровой слот 3</item>
+		<item>Игровой слот 4</item>
+		<item>Игровой слот 5</item>
+		<item>Игровой слот 6</item>
+		<item>Игровой слот 7</item>
+		<item>Игровой слот 8</item>
+		<item>Игровой слот 9</item>
+		<item>Игровой слот 10</item>
+	</string-array>
+	<string-array name="settings_cdrom_read_speedup_entries">
+		<item>Нет (двойная скорость)</item>
+		<item>2x (скорость 4x)</item>
+		<item>3x (скорость 6x)</item>
+		<item>4x (скорость 8x)</item>
+		<item>5x (скорость 10x)</item>
+		<item>6x (скорость 12x)</item>
+		<item>7x (скорость 14x)</item>
+		<item>8x (скорость 16x)</item>
+		<item>9x (скорость 18x)</item>
+		<item>10x (скорость 20x)</item>
+	</string-array>
+	<string-array name="settings_touchscreen_controller_view_entries">
+		<item>Нет</item>
+		<item>Цифровой</item>
+		<item>Аналоговый с одним стиком</item>
+		<item>Аналоговый с двумя стиками</item>
+	</string-array>
+	<string-array name="settings_audio_backend_entries">
+		<item>Нет (без звука)</item>
+		<item>Cubeb</item>
+		<item>OpenSL ES (рекомендовано)</item>
+	</string-array>
+	<string-array name="settings_audio_buffer_size_entries">
+		<item>1024 блока (23.22 мс)</item>
+		<item>2048 блоков (46.44 мс, рекомендовано)</item>
+		<item>3072 блока (69.66 мс)</item>
+		<item>4096 блоков (92.88 мс)</item>
+	</string-array>
+	<string-array name="settings_log_level_entries">
+		<item>Нет</item>
+		<item>Error</item>
+		<item>Warning</item>
+		<item>Performance Warnings</item>
+		<item>Information</item>
+		<item>Verbose</item>
+		<item>Developer</item>
+		<item>Profile</item>
+		<item>Debug</item>
+		<item>Trace</item>
+	</string-array>
+	<string-array name="settings_tabs">
+		<item>Основные</item>
+		<item>Экран</item>
+		<item>Звук</item>
+		<item>Улучшения</item>
+		<item>Контроллеры</item>
+		<item>Расширенные</item>
+	</string-array>
+	<string-array name="settings_gpu_msaa_entries">
+		<item>Выключен</item>
+		<item>2x MSAA</item>
+		<item>4x MSAA</item>
+		<item>8x MSAA</item>
+		<item>2x SSAA</item>
+		<item>4x SSAA</item>
+		<item>8x SSAA</item>
+	</string-array>
+	<string-array name="settings_advanced_display_fps_limit_entries">
+		<item>Без ограничений (выводить все кадры)</item>
+		<item>10 FPS</item>
+		<item>15 FPS</item>
+		<item>30 FPS</item>
+		<item>45 FPS</item>
+		<item>60 FPS</item>
+		<item>75 FPS</item>
+		<item>90 FPS</item>
+	</string-array>
+	<string-array name="settings_emulation_speed_entries">
+		<item>Без ограничений</item>
+		<item>10% [6 FPS (NTSC) / 5 FPS (PAL)]</item>
+		<item>20% [12 FPS (NTSC) / 10 FPS (PAL)]</item>
+		<item>30% [18 FPS (NTSC) / 15 FPS (PAL)]</item>
+		<item>40% [24 FPS (NTSC) / 20 FPS (PAL)]</item>
+		<item>50% [30 FPS (NTSC) / 25 FPS (PAL)]</item>
+		<item>60% [36 FPS (NTSC) / 30 FPS (PAL)]</item>
+		<item>70% [42 FPS (NTSC) / 35 FPS (PAL)]</item>
+		<item>80% [48 FPS (NTSC) / 40 FPS (PAL)]</item>
+		<item>90% [54 FPS (NTSC) / 45 FPS (PAL)]</item>
+		<item>100% [60 FPS (NTSC) / 50 FPS (PAL), по умолчанию]</item>
+		<item>125% [75 FPS (NTSC) / 62 FPS (PAL)]</item>
+		<item>150% [90 FPS (NTSC) / 75 FPS (PAL)]</item>
+		<item>175% [105 FPS (NTSC) / 87 FPS (PAL)]</item>
+		<item>200% [120 FPS (NTSC) / 100 FPS (PAL)]</item>
+		<item>250% [150 FPS (NTSC) / 125 FPS (PAL)]</item>
+		<item>300% [180 FPS (NTSC) / 150 FPS (PAL)]</item>
+		<item>350% [210 FPS (NTSC) / 175 FPS (PAL)]</item>
+		<item>400% [240 FPS (NTSC) / 200 FPS (PAL)]</item>
+		<item>450% [270 FPS (NTSC) / 225 FPS (PAL)]</item>
+		<item>500% [300 FPS (NTSC) / 250 FPS (PAL)]</item>
+		<item>600% [360 FPS (NTSC) / 300 FPS (PAL)]</item>
+		<item>700% [420 FPS (NTSC) / 350 FPS (PAL)]</item>
+		<item>800% [480 FPS (NTSC) / 400 FPS (PAL)]</item>
+		<item>900% [540 FPS (NTSC) / 450 FPS (PAL)]</item>
+		<item>1000% [600 FPS (NTSC) / 500 FPS (PAL)]</item>
+	</string-array>
+	<string-array name="settings_advanced_cpu_overclock_entries">
+		<item>25% (8 МГц)</item>
+		<item>50% (16 МГц)</item>
+		<item>75% (24 МГц)</item>
+		<item>100% (33 МГц, по умолчанию)</item>
+		<item>125% (41 МГц)</item>
+		<item>150% (49 МГц)</item>
+		<item>175% (57 МГц)</item>
+		<item>200% (66 МГц)</item>
+		<item>225% (74 МГц)</item>
+		<item>250% (82 МГц)</item>
+		<item>275% (90 МГц)</item>
+		<item>300% (99 МГц)</item>
+		<item>350% (115 МГц)</item>
+		<item>400% (132 МГц)</item>
+		<item>450% (148 МГц)</item>
+		<item>500% (165 МГц)</item>
+		<item>500% (165 МГц)</item>
+		<item>600% (198 МГц)</item>
+		<item>700% (231 МГц)</item>
+		<item>800% (264 МГц)</item>
+		<item>900% (297 МГц)</item>
+		<item>1000% (330 МГц)</item>
+	</string-array>
+	<string-array name="settings_emulation_screen_orientation_entries">
+		<item>По выбору системы</item>
+		<item>Портретная</item>
+		<item>Ландшафтная</item>
+	</string-array>
+	<string-array name="settings_language_entries">
+		<item>Настройка системы</item>
+		<item>Английский</item>
+		<item>Бразильский португальский</item>
+		<item>Итальянский</item>
+		<item>Датский</item>
+		<item>Испанский</item>
+	</string-array>
+	<string-array name="settings_theme_entries">
+		<item>По выбору системы</item>
+		<item>Светлая</item>
+		<item>Тёмная</item>
+	</string-array>
+	<string-array name="settings_downsample_mode_entries">
+		<item>Выключен</item>
+		<item>Прямоугольный (понижать 3D/сглаживать всё)</item>
+		<item>Адаптивный (не понижать 3D/сглаживать 2D)</item>
+	</string-array>
+	<string-array name="settings_boolean_entries">
+		<item>Выключен</item>
+		<item>Включен</item>
+	</string-array>
+</resources>
