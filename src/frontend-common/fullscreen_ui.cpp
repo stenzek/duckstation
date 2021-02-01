@@ -2786,7 +2786,7 @@ bool DrawErrorWindow(const char* message)
   if (ImGui::BeginPopupModal("ReportError", &is_open, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize))
   {
     ImGui::SetCursorPos(LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
-    ImGui::TextWrapped(message);
+    ImGui::TextWrapped("%s", message);
     ImGui::GetCurrentWindow()->DC.CursorPos.y += LayoutScale(5.0f);
 
     BeginMenuButtons();
@@ -2825,7 +2825,7 @@ bool DrawConfirmWindow(const char* message, bool* result)
   if (ImGui::BeginPopupModal("ConfirmMessage", &is_open, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize))
   {
     ImGui::SetCursorPos(LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
-    ImGui::TextWrapped(message);
+    ImGui::TextWrapped("%s", message);
     ImGui::GetCurrentWindow()->DC.CursorPos.y += LayoutScale(5.0f);
 
     BeginMenuButtons();
