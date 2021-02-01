@@ -1751,7 +1751,7 @@
         <location filename="../consolesettingswidget.ui" line="199"/>
         <location filename="../consolesettingswidget.cpp" line="55"/>
         <source>Use Read Thread (Asynchronous)</source>
-        <translation>Usar Leitura Asincrona</translation>
+        <translation>Usar Leitura Assíncrona</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="206"/>
