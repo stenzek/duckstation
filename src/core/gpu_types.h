@@ -15,6 +15,11 @@ enum : u32
   TEXTURE_PAGE_HEIGHT = 256,
   MAX_PRIMITIVE_WIDTH = 1024,
   MAX_PRIMITIVE_HEIGHT = 512,
+
+  // In interlaced modes, we can exceed the 512 height of VRAM, up to 576 in PAL games.
+  GPU_MAX_DISPLAY_WIDTH = 720,
+  GPU_MAX_DISPLAY_HEIGHT = 576,
+
   DITHER_MATRIX_SIZE = 4
 };
 

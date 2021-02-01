@@ -399,8 +399,8 @@ bool GPU_HW_OpenGL::CreateFramebuffer()
       !m_vram_encoding_texture.Create(VRAM_WIDTH, VRAM_HEIGHT, 1, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, nullptr,
                                       false) ||
       !m_vram_encoding_texture.CreateFramebuffer() ||
-      !m_display_texture.Create(BASE_DISPLAY_TEXTURE_WIDTH * m_resolution_scale,
-                                BASE_DISPLAY_TEXTURE_HEIGHT * m_resolution_scale, 1, GL_RGBA8, GL_RGBA,
+      !m_display_texture.Create(GPU_MAX_DISPLAY_WIDTH * m_resolution_scale,
+                                GPU_MAX_DISPLAY_HEIGHT * m_resolution_scale, 1, GL_RGBA8, GL_RGBA,
                                 GL_UNSIGNED_BYTE, nullptr, false) ||
       !m_display_texture.CreateFramebuffer())
   {
