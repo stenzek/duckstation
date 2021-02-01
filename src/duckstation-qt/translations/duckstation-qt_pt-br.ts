@@ -1751,7 +1751,7 @@
         <location filename="../consolesettingswidget.ui" line="199"/>
         <location filename="../consolesettingswidget.cpp" line="55"/>
         <source>Use Read Thread (Asynchronous)</source>
-        <translation>Usar Leitura Asincrona</translation>
+        <translation>Usar Leitura Assíncrona</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="206"/>
@@ -5683,7 +5683,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../mainwindow.ui" line="198"/>
         <source>&amp;View</source>
-        <translation>&amp;Ver</translation>
+        <translation>&amp;Visualização</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="222"/>
@@ -6212,7 +6212,7 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../mainwindow.cpp" line="712"/>
         <location filename="../mainwindow.cpp" line="718"/>
         <source>Copy Error</source>
-        <translation>Erro na Cópia</translation>
+        <translation>Erro ao Copiar</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="712"/>
@@ -6222,7 +6222,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../mainwindow.cpp" line="718"/>
         <source>Failed to copy &apos;%1&apos; to &apos;%2&apos;</source>
-        <translation>Falha ao copiar &apos;%1&apos; para &apos;%2&apos;</translation>
+        <translation>Atenção imagem já copiada &apos;%1&apos; para &apos;%2&apos;</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="813"/>
