@@ -202,4 +202,8 @@
     <string name="game_directories_not_scanning_subdirectories">Not scanning subdirectories.</string>
     <string name="settings_display_all_frames">Optimal Frame Pacing</string>
     <string name="settings_summary_display_all_frames">Enable this option will ensure every frame the console renders is displayed to the screen, for optimal frame pacing. If you are having difficulties maintaining full speed, or are getting audio glitches, try disabling this option.</string>
+    <string name="menu_edit_game_directories_add_directory">Add Directory</string>
+    <string name="menu_edit_game_directories_add_path">Add Path</string>
+    <string name="edit_game_directories_add_path">Add Path</string>
+    <string name="edit_game_directories_add_path_summary">Enter the full path to the directory with games.\n\nYou can get this from a file manager app.\n\nExample: /storage/emulated/0/games</string>
 </resources>

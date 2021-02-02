@@ -1,6 +1,8 @@
 package com.github.stenzek.duckstation;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -210,9 +212,24 @@ public class GameDirectoriesActivity extends AppCompatActivity {
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_edit_game_directories, menu);
+        return true;
+    }
+
+    @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
             onBackPressed();
+            return true;
+        }
+
+        if (item.getItemId() == R.id.add_directory) {
+            startAddGameDirectory();
+            return true;
+        } else if (item.getItemId() == R.id.add_path) {
+            startAddPath();
             return true;
         }
 
@@ -271,6 +288,25 @@ public class GameDirectoriesActivity extends AppCompatActivity {
         i.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
         startActivityForResult(Intent.createChooser(i, getString(R.string.main_activity_choose_directory)),
                 REQUEST_ADD_DIRECTORY_TO_GAME_LIST);
+    }
+
+    private void startAddPath() {
+        final EditText text = new EditText(this);
+        text.setSingleLine();
+
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.edit_game_directories_add_path)
+                .setMessage(R.string.edit_game_directories_add_path_summary)
+                .setView(text)
+                .setPositiveButton("Add", (dialog, which) ->  {
+                    final String path = text.getText().toString();
+                    if (!path.isEmpty()) {
+                        addSearchDirectory(GameDirectoriesActivity.this, path, true);
+                        mDirectoryListAdapter.reload();
+                    }
+                })
+                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
+                .show();
     }
 
     @Override
