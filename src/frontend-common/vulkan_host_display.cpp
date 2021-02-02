@@ -10,10 +10,10 @@
 #include "common/vulkan/swap_chain.h"
 #include "common/vulkan/util.h"
 #include "core/shader_cache_version.h"
-#include "postprocessing_shadergen.h"
-#include <array>
 #include "imgui.h"
 #include "imgui_impl_vulkan.h"
+#include "postprocessing_shadergen.h"
+#include <array>
 Log_SetChannel(VulkanHostDisplay);
 
 namespace FrontendCommon {
@@ -79,7 +79,8 @@ bool VulkanHostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
   }
 
   WindowInfo wi_copy(new_wi);
-  VkSurfaceKHR surface = Vulkan::SwapChain::CreateVulkanSurface(g_vulkan_context->GetVulkanInstance(), wi_copy);
+  VkSurfaceKHR surface = Vulkan::SwapChain::CreateVulkanSurface(g_vulkan_context->GetVulkanInstance(),
+                                                                g_vulkan_context->GetPhysicalDevice(), wi_copy);
   if (surface == VK_NULL_HANDLE)
   {
     Log_ErrorPrintf("Failed to create new surface for swap chain");
@@ -755,7 +756,7 @@ std::vector<std::string> VulkanHostDisplay::EnumerateAdapterNames()
   {
     Common::ScopeGuard lib_guard([]() { Vulkan::UnloadVulkanLibrary(); });
 
-    VkInstance instance = Vulkan::Context::CreateVulkanInstance(false, false, false);
+    VkInstance instance = Vulkan::Context::CreateVulkanInstance(nullptr, false, false);
     if (instance != VK_NULL_HANDLE)
     {
       Common::ScopeGuard instance_guard([&instance]() { vkDestroyInstance(instance, nullptr); });

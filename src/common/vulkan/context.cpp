@@ -97,10 +97,10 @@ bool Context::CheckValidationLayerAvailablility()
           }) != layer_list.end());
 }
 
-VkInstance Context::CreateVulkanInstance(bool enable_surface, bool enable_debug_report, bool enable_validation_layer)
+VkInstance Context::CreateVulkanInstance(const WindowInfo* wi, bool enable_debug_report, bool enable_validation_layer)
 {
   ExtensionList enabled_extensions;
-  if (!SelectInstanceExtensions(&enabled_extensions, enable_surface, enable_debug_report))
+  if (!SelectInstanceExtensions(&enabled_extensions, wi, enable_debug_report))
     return VK_NULL_HANDLE;
 
   VkApplicationInfo app_info = {};
@@ -141,7 +141,7 @@ VkInstance Context::CreateVulkanInstance(bool enable_surface, bool enable_debug_
   return instance;
 }
 
-bool Context::SelectInstanceExtensions(ExtensionList* extension_list, bool enable_surface, bool enable_debug_report)
+bool Context::SelectInstanceExtensions(ExtensionList* extension_list, const WindowInfo* wi, bool enable_debug_report)
 {
   u32 extension_count = 0;
   VkResult res = vkEnumerateInstanceExtensionProperties(nullptr, &extension_count, nullptr);
@@ -182,31 +182,31 @@ bool Context::SelectInstanceExtensions(ExtensionList* extension_list, bool enabl
   };
 
   // Common extensions
-  if (enable_surface && !SupportsExtension(VK_KHR_SURFACE_EXTENSION_NAME, true))
+  if (wi && wi->type != WindowInfo::Type::Surfaceless && !SupportsExtension(VK_KHR_SURFACE_EXTENSION_NAME, true))
     return false;
 
 #if defined(VK_USE_PLATFORM_WIN32_KHR)
-  if (enable_surface && !SupportsExtension(VK_KHR_WIN32_SURFACE_EXTENSION_NAME, true))
+  if (wi && wi->type == WindowInfo::Type::Win32 && !SupportsExtension(VK_KHR_WIN32_SURFACE_EXTENSION_NAME, true))
     return false;
 #endif
 #if defined(VK_USE_PLATFORM_XLIB_KHR)
-  if (enable_surface && !SupportsExtension(VK_KHR_XLIB_SURFACE_EXTENSION_NAME, true))
+  if (wi && wi->type == WindowInfo::Type::X11 && !SupportsExtension(VK_KHR_XLIB_SURFACE_EXTENSION_NAME, true))
     return false;
 #endif
 #if defined(VK_USE_PLATFORM_WAYLAND_KHR)
-  if (enable_surface && !SupportsExtension(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME, true))
+  if (wi && wi->type == WindowInfo::Type::Wayland && !SupportsExtension(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME, true))
     return false;
 #endif
 #if defined(VK_USE_PLATFORM_ANDROID_KHR)
-  if (enable_surface && !SupportsExtension(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME, true))
-    return false;
-#endif
-#if defined(VK_USE_PLATFORM_MACOS_MVK)
-  if (enable_surface && !SupportsExtension(VK_MVK_MACOS_SURFACE_EXTENSION_NAME, true))
+  if (wi && wi->type == WindowInfo::Type::Android && !SupportsExtension(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME, true))
     return false;
 #endif
 #if defined(VK_USE_PLATFORM_METAL_EXT)
-  if (enable_surface && !SupportsExtension(VK_EXT_METAL_SURFACE_EXTENSION_NAME, true))
+  if (wi && wi->type == WindowInfo::Type::MacOS && !SupportsExtension(VK_EXT_METAL_SURFACE_EXTENSION_NAME, true))
+    return false;
+#endif
+#ifndef _WIN32
+  if (wi && wi->type == WindowInfo::Type::DRM && !SupportsExtension(VK_KHR_DISPLAY_EXTENSION_NAME, true))
     return false;
 #endif
 
@@ -302,7 +302,7 @@ bool Context::Create(std::string_view gpu_name, const WindowInfo* wi, std::uniqu
   }
 
   const bool enable_surface = (wi && wi->type != WindowInfo::Type::Surfaceless);
-  VkInstance instance = CreateVulkanInstance(enable_surface, enable_debug_reports, enable_validation_layer);
+  VkInstance instance = CreateVulkanInstance(wi, enable_debug_reports, enable_validation_layer);
   if (instance == VK_NULL_HANDLE)
   {
     Vulkan::UnloadVulkanLibrary();
@@ -349,8 +349,12 @@ bool Context::Create(std::string_view gpu_name, const WindowInfo* wi, std::uniqu
   }
 
   VkSurfaceKHR surface = VK_NULL_HANDLE;
-  WindowInfo wi_copy(*wi);
-  if (enable_surface && (surface = SwapChain::CreateVulkanSurface(instance, wi_copy)) == VK_NULL_HANDLE)
+  WindowInfo wi_copy;
+  if (wi)
+    wi_copy = *wi;
+
+  if (enable_surface &&
+      (surface = SwapChain::CreateVulkanSurface(instance, gpus[gpu_index], wi_copy)) == VK_NULL_HANDLE)
   {
     vkDestroyInstance(instance, nullptr);
     Vulkan::UnloadVulkanLibrary();

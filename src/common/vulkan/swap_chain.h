@@ -21,7 +21,7 @@ public:
   ~SwapChain();
 
   // Creates a vulkan-renderable surface for the specified window handle.
-  static VkSurfaceKHR CreateVulkanSurface(VkInstance instance, WindowInfo& wi);
+  static VkSurfaceKHR CreateVulkanSurface(VkInstance instance, VkPhysicalDevice physical_device, WindowInfo& wi);
 
   // Destroys a previously-created surface.
   static void DestroyVulkanSurface(VkInstance instance, WindowInfo& wi, VkSurfaceKHR surface);

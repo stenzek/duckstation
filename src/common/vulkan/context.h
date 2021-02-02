@@ -38,7 +38,7 @@ public:
   static bool CheckValidationLayerAvailablility();
 
   // Helper method to create a Vulkan instance.
-  static VkInstance CreateVulkanInstance(bool enable_surface, bool enable_debug_report, bool enable_validation_layer);
+  static VkInstance CreateVulkanInstance(const WindowInfo* wi, bool enable_debug_report, bool enable_validation_layer);
 
   // Returns a list of Vulkan-compatible GPUs.
   using GPUList = std::vector<VkPhysicalDevice>;
@@ -180,7 +180,7 @@ private:
   Context(VkInstance instance, VkPhysicalDevice physical_device, bool owns_device);
 
   using ExtensionList = std::vector<const char*>;
-  static bool SelectInstanceExtensions(ExtensionList* extension_list, bool enable_surface, bool enable_debug_report);
+  static bool SelectInstanceExtensions(ExtensionList* extension_list, const WindowInfo* wi, bool enable_debug_report);
   bool SelectDeviceExtensions(ExtensionList* extension_list, bool enable_surface);
   bool SelectDeviceFeatures(const VkPhysicalDeviceFeatures* required_features);
   bool CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer, const char** required_device_extensions,

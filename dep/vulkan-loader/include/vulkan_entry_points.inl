@@ -72,6 +72,14 @@ VULKAN_INSTANCE_ENTRY_POINT(vkDebugReportMessageEXT, false)
 VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceProperties2, false)
 VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceSurfaceCapabilities2KHR, false)
 
+VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceDisplayPropertiesKHR, false)
+VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceDisplayPlanePropertiesKHR, false)
+VULKAN_INSTANCE_ENTRY_POINT(vkGetDisplayPlaneSupportedDisplaysKHR, false)
+VULKAN_INSTANCE_ENTRY_POINT(vkGetDisplayModePropertiesKHR, false)
+VULKAN_INSTANCE_ENTRY_POINT(vkCreateDisplayModeKHR, false)
+VULKAN_INSTANCE_ENTRY_POINT(vkGetDisplayPlaneCapabilitiesKHR, false)
+VULKAN_INSTANCE_ENTRY_POINT(vkCreateDisplayPlaneSurfaceKHR, false)
+
 #endif  // VULKAN_INSTANCE_ENTRY_POINT
 
 #ifdef VULKAN_DEVICE_ENTRY_POINT

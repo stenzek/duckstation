@@ -87,7 +87,142 @@ SwapChain::~SwapChain()
   DestroySurface();
 }
 
-VkSurfaceKHR SwapChain::CreateVulkanSurface(VkInstance instance, WindowInfo& wi)
+#ifndef _WIN32
+
+static VkSurfaceKHR CreateDisplaySurface(VkInstance instance, VkPhysicalDevice physical_device, const WindowInfo& wi)
+{
+  Log_InfoPrintf("Trying to create a VK_KHR_display surface of %ux%u", wi.surface_width, wi.surface_height);
+
+  u32 num_displays;
+  VkResult res = vkGetPhysicalDeviceDisplayPropertiesKHR(physical_device, &num_displays, nullptr);
+  if (res != VK_SUCCESS || num_displays == 0)
+  {
+    LOG_VULKAN_ERROR(res, "vkGetPhysicalDeviceDisplayPropertiesKHR() failed:");
+    return {};
+  }
+
+  std::vector<VkDisplayPropertiesKHR> displays(num_displays);
+  res = vkGetPhysicalDeviceDisplayPropertiesKHR(physical_device, &num_displays, displays.data());
+  if (res != VK_SUCCESS || num_displays != displays.size())
+  {
+    LOG_VULKAN_ERROR(res, "vkGetPhysicalDeviceDisplayPropertiesKHR() failed:");
+    return {};
+  }
+
+  for (u32 display_index = 0; display_index < num_displays; display_index++)
+  {
+    const VkDisplayPropertiesKHR& props = displays[display_index];
+    Log_DevPrintf("Testing display '%s'", props.displayName);
+
+    u32 num_modes;
+    res = vkGetDisplayModePropertiesKHR(physical_device, props.display, &num_modes, nullptr);
+    if (res != VK_SUCCESS || num_modes == 0)
+    {
+      LOG_VULKAN_ERROR(res, "vkGetDisplayModePropertiesKHR() failed:");
+      continue;
+    }
+
+    std::vector<VkDisplayModePropertiesKHR> modes(num_modes);
+    res = vkGetDisplayModePropertiesKHR(physical_device, props.display, &num_modes, modes.data());
+    if (res != VK_SUCCESS || num_modes != modes.size())
+    {
+      LOG_VULKAN_ERROR(res, "vkGetDisplayModePropertiesKHR() failed:");
+      continue;
+    }
+
+    const VkDisplayModePropertiesKHR* matched_mode = nullptr;
+    for (const VkDisplayModePropertiesKHR& mode : modes)
+    {
+      Log_DevPrintf("  Mode %ux%u @ %u", mode.parameters.visibleRegion.width, mode.parameters.visibleRegion.height,
+                    mode.parameters.refreshRate);
+      if (!matched_mode && mode.parameters.visibleRegion.width == wi.surface_width &&
+          mode.parameters.visibleRegion.height)
+      {
+        matched_mode = &mode;
+      }
+    }
+
+    if (!matched_mode)
+    {
+      Log_DevPrintf("No modes matched on '%s'", props.displayName);
+      continue;
+    }
+
+    u32 num_planes;
+    res = vkGetPhysicalDeviceDisplayPlanePropertiesKHR(physical_device, &num_planes, nullptr);
+    if (res != VK_SUCCESS || num_planes == 0)
+    {
+      LOG_VULKAN_ERROR(res, "vkGetPhysicalDeviceDisplayPlanePropertiesKHR() failed:");
+      continue;
+    }
+
+    std::vector<VkDisplayPlanePropertiesKHR> planes(num_planes);
+    res = vkGetPhysicalDeviceDisplayPlanePropertiesKHR(physical_device, &num_planes, planes.data());
+    if (res != VK_SUCCESS || num_planes != planes.size())
+    {
+      LOG_VULKAN_ERROR(res, "vkGetPhysicalDeviceDisplayPlanePropertiesKHR() failed:");
+      continue;
+    }
+
+    u32 plane_index = 0;
+    for (; plane_index < num_planes; plane_index++)
+    {
+      u32 supported_display_count;
+      res = vkGetDisplayPlaneSupportedDisplaysKHR(physical_device, plane_index, &supported_display_count, nullptr);
+      if (res != VK_SUCCESS || supported_display_count == 0)
+      {
+        LOG_VULKAN_ERROR(res, "vkGetPhysicalDeviceDisplayPlanePropertiesKHR() failed:");
+        continue;
+      }
+
+      std::vector<VkDisplayKHR> supported_displays(supported_display_count);
+      res = vkGetDisplayPlaneSupportedDisplaysKHR(physical_device, plane_index, &supported_display_count,
+                                                  supported_displays.data());
+      if (res != VK_SUCCESS || supported_display_count == 0)
+      {
+        LOG_VULKAN_ERROR(res, "vkGetPhysicalDeviceDisplayPlanePropertiesKHR() failed:");
+        continue;
+      }
+
+      const bool is_supported =
+        std::find(supported_displays.begin(), supported_displays.end(), props.display) != supported_displays.end();
+      if (!is_supported)
+        continue;
+
+      break;
+    }
+
+    if (plane_index == num_planes)
+    {
+      Log_DevPrintf("No planes matched on '%s'", props.displayName);
+      continue;
+    }
+
+    VkDisplaySurfaceCreateInfoKHR info = {};
+    info.sType = VK_STRUCTURE_TYPE_DISPLAY_SURFACE_CREATE_INFO_KHR;
+    info.displayMode = matched_mode->displayMode;
+    info.planeIndex = plane_index;
+    info.planeStackIndex = planes[plane_index].currentStackIndex;
+    info.transform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+    info.globalAlpha = 1.0f;
+    info.alphaMode = VK_DISPLAY_PLANE_ALPHA_OPAQUE_BIT_KHR;
+    info.imageExtent = matched_mode->parameters.visibleRegion;
+
+    VkSurfaceKHR surface;
+    res = vkCreateDisplayPlaneSurfaceKHR(instance, &info, nullptr, &surface);
+    if (res != VK_SUCCESS)
+    {
+      LOG_VULKAN_ERROR(res, "vkCreateDisplayPlaneSurfaceKHR() failed: ");
+      continue;
+    }
+
+    return surface;
+  }
+}
+
+#endif
+
+VkSurfaceKHR SwapChain::CreateVulkanSurface(VkInstance instance, VkPhysicalDevice physical_device, WindowInfo& wi)
 {
 #if defined(VK_USE_PLATFORM_WIN32_KHR)
   if (wi.type == WindowInfo::Type::Win32)
@@ -211,6 +346,11 @@ VkSurfaceKHR SwapChain::CreateVulkanSurface(VkInstance instance, WindowInfo& wi)
 
     return surface;
   }
+#endif
+
+#ifndef _WIN32
+  if (wi.type == WindowInfo::Type::DRM)
+    return CreateDisplaySurface(instance, physical_device, wi);
 #endif
 
   return VK_NULL_HANDLE;
@@ -559,7 +699,7 @@ bool SwapChain::RecreateSurface(const WindowInfo& new_wi)
 
   // Re-create the surface with the new native handle
   m_wi = new_wi;
-  m_surface = CreateVulkanSurface(g_vulkan_context->GetVulkanInstance(), m_wi);
+  m_surface = CreateVulkanSurface(g_vulkan_context->GetVulkanInstance(), g_vulkan_context->GetPhysicalDevice(), m_wi);
   if (m_surface == VK_NULL_HANDLE)
     return false;
 
