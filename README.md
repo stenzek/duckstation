@@ -228,22 +228,14 @@ If you wish to use a "portable" build, where the user directory is the same as w
 in the same directory as the DuckStation executable.
 
 ## Bindings for Qt frontend
-Your keyboard and any SDL-compatible game controller can be used to simulate the PS Controller. To bind keys/controllers to buttons, go to
-`Settings -> Port Settings`. Each of the buttons will be listed, along with the corresponding key it is bound to. To re-bind the button to a new key,
-click the button next to button name, and press the key/button you want to use within 5 seconds.
+Your keyboard or game controller can be used to simulate a variety of PlayStation controllers. Controller input is supported through DInput, XInput, and SDL backends and can be changed through `Settings -> General Settings`.
 
-**Currently, it is only possible to bind one input to each controller button/axis. Multiple bindings per button are planned for the future.**
+To bind your input device, go to `Settings -> Controller Settings`. Each of the buttons/axes for the simulated controller will be listed, alongside the corresponding key/button on your device that it is currently bound to. To rebind, click the box next to the button/axis name, and press the key or button on your input device that you wish to bind to. When binding rumble, simply press any button on the controller you wish to send rumble to.
 
 ## SDL Game Controller Database
-DuckStation uses the SDL2 GameController API for input handling which requires controller devices to have known input mappings.
-SDL2 provides an embedded database of recognised controllers in its own source code, however it is rather small and thus limited in practice.
+DuckStation releases ship with a database of game controller mappings for the SDL controller backend, courtesy of https://github.com/gabomdq/SDL_GameControllerDB. The included `gamecontrollerdb.txt` file can be found in the `database` subdirectory of the DuckStation program directory.
 
-There is an officially endorsed [community sourced database](https://github.com/gabomdq/SDL_GameControllerDB) that can be used to support a much broader range of game controllers in DuckStation.
-If your controller is not recognized by DuckStation but can be found in the community database above, just download a recent copy of the `gamecontrollerdb.txt` database file and place it in your [User directory](#user-directories). Your controller should now be recognized by DuckStation.
-
-Alternatively, you can also create your own custom controller mappings from scratch easily using readily available tools. See the referenced community database repository for more information.
-
-Using a mappings database is specially useful when using non-XInput game controllers with DuckStation.
+If you are experiencing issues binding your controller with the SDL controller backend, you may need to add a custom mapping to the database file. Make a copy of `gamecontrollerdb.txt` and place it in your [user directory](#user-directories) (or directly in the program directory, if running in portable mode) and then follow the instructions in the [SDL_GameControllerDB repository](https://github.com/gabomdq/SDL_GameControllerDB) for creating a new mapping. Add this mapping to the new copy of `gamecontrollerdb.txt` and your controller should then be recognized properly.
 
 ## Default bindings
 Controller 1:
