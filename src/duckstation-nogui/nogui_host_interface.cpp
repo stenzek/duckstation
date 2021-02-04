@@ -16,11 +16,11 @@
 #include "frontend-common/ini_settings_interface.h"
 #include "frontend-common/opengl_host_display.h"
 #include "frontend-common/vulkan_host_display.h"
-#include <cinttypes>
-#include <cmath>
 #include "imgui.h"
 #include "imgui_internal.h"
 #include "imgui_stdlib.h"
+#include <cinttypes>
+#include <cmath>
 Log_SetChannel(NoGUIHostInterface);
 
 #ifdef WIN32
@@ -73,8 +73,6 @@ bool NoGUIHostInterface::Initialize()
 
 void NoGUIHostInterface::Shutdown()
 {
-  DestroySystem();
-
   CommonHostInterface::Shutdown();
 
   if (m_display)
@@ -205,9 +203,9 @@ bool NoGUIHostInterface::CreateDisplay()
       !m_display->InitializeRenderDevice(GetShaderCacheBasePath(), g_settings.gpu_use_debug_device,
                                          g_settings.gpu_threaded_presentation))
   {
-    ReportError("Failed to create/initialize display render device");
     m_display->DestroyRenderDevice();
     m_display.reset();
+    ReportError("Failed to create/initialize display render device");
     return false;
   }
 
@@ -215,13 +213,13 @@ bool NoGUIHostInterface::CreateDisplay()
       (m_fullscreen_ui_enabled && !FullscreenUI::Initialize(this, m_settings_interface.get())) ||
       !m_display->UpdateImGuiFontTexture())
   {
-    ReportError("Failed to initialize imgui/fonts/fullscreen UI");
     if (m_fullscreen_ui_enabled)
       FullscreenUI::Shutdown();
 
     m_display->DestroyImGuiContext();
     m_display->DestroyRenderDevice();
     m_display.reset();
+    ReportError("Failed to initialize imgui/fonts/fullscreen UI");
     return false;
   }
 
