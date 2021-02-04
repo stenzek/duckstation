@@ -129,6 +129,37 @@ ALWAYS_INLINE static bool EndsWith(const std::string_view& str, const char* suff
   return (str.length() >= suffix_length && str.compare(str.length() - suffix_length, suffix_length, suffix) == 0);
 }
 
+/// Strided memcpy/memcmp.
+ALWAYS_INLINE static void StrideMemCpy(void* dst, std::size_t dst_stride, const void* src, std::size_t src_stride,
+                                       std::size_t copy_size, std::size_t count)
+{
+  const u8* src_ptr = static_cast<const u8*>(src);
+  u8* dst_ptr = static_cast<u8*>(dst);
+  for (std::size_t i = 0; i < count; i++)
+  {
+    std::memcpy(dst_ptr, src_ptr, copy_size);
+    src_ptr += src_stride;
+    dst_ptr += dst_stride;
+  }
+}
+
+ALWAYS_INLINE static int StrideMemCmp(const void* p1, std::size_t p1_stride, const void* p2, std::size_t p2_stride,
+                                      std::size_t copy_size, std::size_t count)
+{
+  const u8* p1_ptr = static_cast<const u8*>(p1);
+  const u8* p2_ptr = static_cast<const u8*>(p2);
+  for (std::size_t i = 0; i < count; i++)
+  {
+    int result = std::memcmp(p1_ptr, p2_ptr, copy_size);
+    if (result != 0)
+      return result;
+    p2_ptr += p2_stride;
+    p1_ptr += p1_stride;
+  }
+
+  return 0;
+}
+
 #ifdef WIN32
 
 /// Converts the specified UTF-8 string to a wide string.
