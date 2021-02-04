@@ -117,6 +117,7 @@ protected:
   std::vector<PostProcessingStage> m_post_processing_stages;
 
   bool m_use_gles2_draw_path = false;
+  std::vector<u8> m_gles2_pixels_repack_buffer;
 };
 
 } // namespace FrontendCommon

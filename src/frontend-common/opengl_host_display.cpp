@@ -2,6 +2,7 @@
 #include "common/align.h"
 #include "common/assert.h"
 #include "common/log.h"
+#include "common/string_util.h"
 #include "imgui.h"
 #include "imgui_impl_opengl3.h"
 #include "postprocessing_shadergen.h"
@@ -238,8 +239,31 @@ bool OpenGLHostDisplay::SetDisplayPixels(HostDisplayPixelFormat format, u32 widt
   }
 
   const auto [gl_internal_format, gl_format, gl_type] = s_display_pixel_format_mapping[static_cast<u32>(format)];
+  const u32 pixel_size = GetDisplayPixelFormatSize(format);
+  const bool is_packed_tightly = (pitch == (pixel_size * width));
 
-  glTexImage2D(GL_TEXTURE_2D, 0, gl_internal_format, width, height, 0, gl_format, gl_type, buffer);
+  // If we have GLES3, we can set row_length.
+  if (!m_use_gles2_draw_path || is_packed_tightly)
+  {
+    if (!is_packed_tightly)
+      glPixelStorei(GL_UNPACK_ROW_LENGTH, pitch / pixel_size);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, gl_internal_format, width, height, 0, gl_format, gl_type, buffer);
+
+    if (!is_packed_tightly)
+      glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+  }
+  else
+  {
+    // Otherwise, we need to repack the image.
+    const u32 packed_pitch = width * pixel_size;
+    const u32 repack_size = packed_pitch * height;
+    if (m_gles2_pixels_repack_buffer.size() < repack_size)
+      m_gles2_pixels_repack_buffer.resize(repack_size);
+    StringUtil::StrideMemCpy(m_gles2_pixels_repack_buffer.data(), packed_pitch, buffer, pitch, packed_pitch, height);
+    glTexImage2D(GL_TEXTURE_2D, 0, gl_internal_format, width, height, 0, gl_format, gl_type,
+                 m_gles2_pixels_repack_buffer.data());
+  }
 
   glBindTexture(GL_TEXTURE_2D, 0);
 
