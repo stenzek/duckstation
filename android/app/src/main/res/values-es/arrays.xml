@@ -88,7 +88,7 @@
     </string-array>
     <string-array name="emulation_more_menu">
         <item>Reiniciar</item>
-        <item>Códigos de Parche</item>
+        <item>Código de Trucos</item>
         <item>Cambiar Disco</item>
         <item>Configuraciones</item>
         <item>Cambiar Control de Pantalla Tactil</item>
@@ -142,7 +142,7 @@
         <item>Alerta</item>
         <item>Alertas de Rendimiento</item>
         <item>Información</item>
-        <item>Detallado</item>
+        <item>Detalles</item>
         <item>Desarrollador</item>
         <item>Perfil</item>
         <item>Depurar</item>
@@ -233,14 +233,14 @@
         <item>Horizontal</item>
     </string-array>
     <string-array name="settings_theme_entries">
-        <item>Seguimiento del Sistema</item>
+        <item>Usar configuración del Sistema</item>
         <item>Claro</item>
         <item>Oscuro</item>
     </string-array>
     <string-array name="settings_downsample_mode_entries">
         <item>Deshabilitado</item>
-        <item>Box (Downsample 3D/Smooth All)</item>
-        <item>Adaptativo (Preserve 3D/Smooth 2D)</item>
+        <item>Cuadro (Reducir Resolución 3D/Suavizar todo)</item>
+        <item>Adaptable (Preservar 3D/Suavizar 2D)</item>
     </string-array>
     <string-array name="settings_boolean_entries">
         <item>Deshabilitado</item>
