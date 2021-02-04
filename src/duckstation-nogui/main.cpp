@@ -14,6 +14,20 @@
 
 #ifdef WITH_SDL2
 #include "sdl_host_interface.h"
+
+static bool IsSDLHostInterfaceAvailable()
+{
+#if defined(__linux__)
+  // Only available if we have a X11 or Wayland display.
+  if (std::getenv("DISPLAY") || std::getenv("WAYLAND_DISPLAY"))
+    return true;
+  else
+    return false;
+#else
+  // Always available on Windows/Apple.
+  return true;
+#endif
+}
 #endif
 
 #ifdef _WIN32
@@ -22,19 +36,19 @@
 #include <shellapi.h>
 #endif
 
-static std::unique_ptr<NoGUIHostInterface> CreateHostInterface(const char* platform)
+static std::unique_ptr<NoGUIHostInterface> CreateHostInterface()
 {
+  const char* platform = std::getenv("DUCKSTATION_NOGUI_PLATFORM");
   std::unique_ptr<NoGUIHostInterface> host_interface;
 
-#ifdef USE_DRMKMS
-  // TODO: We should detect if we have a display here...
-  if (!host_interface && (!platform || StringUtil::Strcasecmp(platform, "drm") == 0))
-    host_interface = DRMHostInterface::Create();
+#ifdef WITH_SDL2
+  if (!host_interface && (!platform || StringUtil::Strcasecmp(platform, "sdl") == 0) && IsSDLHostInterfaceAvailable())
+    host_interface = SDLHostInterface::Create();
 #endif
 
-#ifdef WITH_SDL2
-  if (!host_interface && (!platform || StringUtil::Strcasecmp(platform, "sdl") == 0))
-    host_interface = SDLHostInterface::Create();
+#ifdef USE_DRMKMS
+  if (!host_interface && (!platform || StringUtil::Strcasecmp(platform, "drm") == 0))
+    host_interface = DRMHostInterface::Create();
 #endif
 
 #ifdef _WIN32
@@ -76,7 +90,7 @@ static int Run(std::unique_ptr<NoGUIHostInterface> host_interface, std::unique_p
 
 int wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nShowCmd)
 {
-  std::unique_ptr<NoGUIHostInterface> host_interface = CreateHostInterface(nullptr);
+  std::unique_ptr<NoGUIHostInterface> host_interface = CreateHostInterface();
   std::unique_ptr<SystemBootParameters> boot_params;
 
   {
@@ -118,7 +132,7 @@ int wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int
 
 int main(int argc, char* argv[])
 {
-  std::unique_ptr<NoGUIHostInterface> host_interface = CreateHostInterface(nullptr);
+  std::unique_ptr<NoGUIHostInterface> host_interface = CreateHostInterface();
   std::unique_ptr<SystemBootParameters> boot_params;
   if (!host_interface->ParseCommandLineParameters(argc, argv, &boot_params))
     return EXIT_FAILURE;
