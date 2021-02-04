@@ -108,7 +108,7 @@
     <string name="settings_pgxp_preserve_projection_precision">PGXP Conservar la precisión de proyección</string>
     <string name="settings_summary_pgxp_preserve_projection_precision">Permite precisión adicional para PGXP. Puede mejorar las imágenes en algunos juegos pero fallar en otros.</string>
     <string name="settings_pgxp_depth_buffer">PGXP Búfer de Profundidad</string>
-    <string name="settings_summary_pgxp_depth_buffer">Intenta reducir la lucha Z de los polígonos probando píxeles con los valores de profundidad de PGXP. Tiene baja compatibilidad, pero puede funcionar bien en algunos juegos.</string>
+    <string name="settings_summary_pgxp_depth_buffer">Intenta reducir los polígonos en el eje Z probando píxeles con los valores de profundidad de PGXP. Tiene baja compatibilidad, pero puede funcionar bien en algunos juegos.</string>
     <string name="menu_main_resume_last_session">Reanudar la última sesión</string>
     <string name="menu_main_start_file">Iniciar Archivo</string>
     <string name="menu_main_start_bios">Iniciar BIOS</string>
@@ -199,7 +199,7 @@
     <string name="settings_game_directories">Directorio de juegos</string>
     <string name="settings_summary_game_directories">Cambia la lista de directorio que se utiliza para buscar juegos.</string>
     <string name="game_directories_scanning_subdirectories">Escaneo de subdirectorios.</string>
-    <string name="game_directories_not_scanning_subdirectories">No escanear subdirectories.</string>
+    <string name="game_directories_not_scanning_subdirectories">No escanear subdirectorios.</string>
     <string name="settings_display_all_frames">Optimizar Frame Pacing</string>
     <string name="settings_summary_display_all_frames">Habilitar esta opción asegurará que cada fotograma que la consola renderice se muestre en la pantalla, para un ritmo de fotograma óptimo. Si tiene dificultades para mantener la velocidad máxima o problemas de audio, intente desactivar esta opción.</string>
 </resources>
