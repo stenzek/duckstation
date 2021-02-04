@@ -208,6 +208,10 @@ public class EmulationSurfaceView extends SurfaceView {
         return !isExternalKeyCode(keyCode);
     }
 
+    private float clamp(float value, float min, float max) {
+        return (value < min) ? min : ((value > max) ? max : value);
+    }
+
     @Override
     public boolean onGenericMotionEvent(MotionEvent event) {
         final int source = event.getSource();
@@ -222,12 +226,21 @@ public class EmulationSurfaceView extends SurfaceView {
             final float axisValue = event.getAxisValue(mapping.deviceAxisOrButton);
             float emuValue;
 
-            if (mapping.deviceMotionRange != null) {
-                final float transformedValue = (axisValue - mapping.deviceMotionRange.getMin()) / mapping.deviceMotionRange.getRange();
-                emuValue = (transformedValue * 2.0f) - 1.0f;
-            } else {
-                emuValue = axisValue;
+            switch (mapping.deviceAxisOrButton) {
+                case MotionEvent.AXIS_BRAKE:
+                case MotionEvent.AXIS_GAS:
+                case MotionEvent.AXIS_LTRIGGER:
+                case MotionEvent.AXIS_RTRIGGER:
+                    // Scale 0..1 -> -1..1.
+                    emuValue = (clamp(axisValue, 0.0f, 1.0f) * 2.0f) - 1.0f;
+                    break;
+
+                default:
+                    // Everything else should already by -1..1 as per Android documentation.
+                    emuValue = clamp(axisValue, -1.0f, 1.0f);
+                    break;
             }
+
             Log.d("EmulationSurfaceView", String.format("axis %d value %f emuvalue %f", mapping.deviceAxisOrButton, axisValue, emuValue));
 
             if (mapping.axisMapping >= 0) {

@@ -112,15 +112,7 @@ bool AndroidControllerInterface::HandleAxisEvent(u32 index, u32 axis, float valu
   const AxisCallback& cb = m_controllers[index].axis_mapping[static_cast<u32>(axis)][AxisSide::Full];
   if (cb)
   {
-    // Extend triggers from a 0 - 1 range to a -1 - 1 range for consistency with other inputs
-    if (axis == 4 && axis == 5)
-    {
-      cb((value * 2.0f) - 1.0f);
-    }
-    else
-    {
-      cb(value);
-    }
+    cb(value);
     return true;
   }
 
