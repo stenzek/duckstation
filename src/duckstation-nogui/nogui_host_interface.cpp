@@ -18,8 +18,9 @@
 #include "frontend-common/vulkan_host_display.h"
 #include <cinttypes>
 #include <cmath>
-#include <imgui.h>
-#include <imgui_stdlib.h>
+#include "imgui.h"
+#include "imgui_internal.h"
+#include "imgui_stdlib.h"
 Log_SetChannel(NoGUIHostInterface);
 
 #ifdef WIN32
@@ -409,7 +410,9 @@ void NoGUIHostInterface::ReportError(const char* message)
   if (!m_display)
     return;
 
-  ImGui::EndFrame();
+  const bool was_in_frame = GImGui->FrameCount != GImGui->FrameCountEnded;
+  if (was_in_frame)
+    ImGui::EndFrame();
 
   bool done = false;
   while (!done)
@@ -425,7 +428,8 @@ void NoGUIHostInterface::ReportError(const char* message)
     m_display->Render();
   }
 
-  ImGui::NewFrame();
+  if (was_in_frame)
+    ImGui::NewFrame();
 }
 
 bool NoGUIHostInterface::ConfirmMessage(const char* message)
@@ -435,7 +439,9 @@ bool NoGUIHostInterface::ConfirmMessage(const char* message)
   if (!m_display)
     return true;
 
-  ImGui::EndFrame();
+  const bool was_in_frame = GImGui->FrameCount != GImGui->FrameCountEnded;
+  if (was_in_frame)
+    ImGui::EndFrame();
 
   bool done = false;
   bool result = true;
@@ -452,7 +458,9 @@ bool NoGUIHostInterface::ConfirmMessage(const char* message)
     m_display->Render();
   }
 
-  ImGui::NewFrame();
+  if (was_in_frame)
+    ImGui::NewFrame();
+
   return result;
 }
 
