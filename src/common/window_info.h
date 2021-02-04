@@ -12,7 +12,7 @@ struct WindowInfo
     Wayland,
     MacOS,
     Android,
-    DRM,
+    Display,
   };
 
   enum class SurfaceFormat

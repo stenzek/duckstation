@@ -60,30 +60,22 @@ void DRMHostInterface::FixIncompatibleSettings(bool display_osd_messages)
 
 bool DRMHostInterface::CreatePlatformWindow(bool fullscreen)
 {
-  Assert(!m_drm_display);
-  m_drm_display = std::make_unique<DRMDisplay>();
-  if (!m_drm_display->Initialize())
-  {
-    m_drm_display.reset();
-    return false;
-  }
-
   SetImGuiKeyMap();
   return true;
 }
 
 void DRMHostInterface::DestroyPlatformWindow()
 {
-  m_drm_display.reset();
+  // nothing to destroy, it's all in the context
 }
 
 std::optional<WindowInfo> DRMHostInterface::GetPlatformWindowInfo()
 {
+  // TODO: Set fullscreen resolution.
   WindowInfo wi;
-  wi.type = WindowInfo::Type::DRM;
-  wi.display_connection = m_drm_display.get();
-  wi.surface_width = m_drm_display->GetWidth();
-  wi.surface_height = m_drm_display->GetHeight();
+  wi.type = WindowInfo::Type::Display;
+  wi.surface_width = 0;
+  wi.surface_height = 0;
   wi.surface_format = WindowInfo::SurfaceFormat::Auto;
   return wi;
 }

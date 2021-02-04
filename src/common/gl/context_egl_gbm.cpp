@@ -29,7 +29,7 @@ ContextEGLGBM::~ContextEGLGBM()
   while (m_num_buffers > 0)
   {
     Buffer& buffer = m_buffers[--m_num_buffers];
-    GetDisplay()->RemoveBuffer(buffer.fb_id);
+    m_drm_display.RemoveBuffer(buffer.fb_id);
   }
 
   if (m_fb_surface)
@@ -43,8 +43,11 @@ std::unique_ptr<Context> ContextEGLGBM::Create(const WindowInfo& wi, const Versi
                                                size_t num_versions_to_try)
 {
   std::unique_ptr<ContextEGLGBM> context = std::make_unique<ContextEGLGBM>(wi);
-  if (!context->CreateGBMDevice() || !context->Initialize(versions_to_try, num_versions_to_try))
+  if (!context->CreateDisplay(wi) || !context->CreateGBMDevice() ||
+      !context->Initialize(versions_to_try, num_versions_to_try))
+  {
     return nullptr;
+  }
 
   return context;
 }
@@ -68,7 +71,7 @@ void ContextEGLGBM::ResizeSurface(u32 new_surface_width, u32 new_surface_height)
 bool ContextEGLGBM::CreateGBMDevice()
 {
   Assert(!m_gbm_device);
-  m_gbm_device = gbm_create_device(GetDisplay()->GetCardFD());
+  m_gbm_device = gbm_create_device(m_drm_display.GetCardFD());
   if (!m_gbm_device)
   {
     Log_ErrorPrintf("gbm_create_device() failed: %d", errno);
@@ -76,6 +79,11 @@ bool ContextEGLGBM::CreateGBMDevice()
   }
 
   return true;
+}
+
+bool ContextEGLGBM::CreateDisplay(const WindowInfo& wi)
+{
+  return m_drm_display.Initialize();
 }
 
 bool ContextEGLGBM::SetDisplay()
@@ -102,7 +110,7 @@ EGLNativeWindowType ContextEGLGBM::GetNativeWindow(EGLConfig config)
   eglGetConfigAttrib(m_display, config, EGL_NATIVE_VISUAL_ID, &visual_id);
 
   Assert(!m_fb_surface);
-  m_fb_surface = gbm_surface_create(m_gbm_device, GetDisplay()->GetWidth(), GetDisplay()->GetHeight(),
+  m_fb_surface = gbm_surface_create(m_gbm_device, m_drm_display.GetWidth(), m_drm_display.GetHeight(),
                                     static_cast<u32>(visual_id), GBM_BO_USE_RENDERING | GBM_BO_USE_SCANOUT);
   if (!m_fb_surface)
   {
@@ -138,7 +146,7 @@ ContextEGLGBM::Buffer* ContextEGLGBM::LockFrontBuffer()
     const u32 format = gbm_bo_get_format(bo);
     const u32 handle = gbm_bo_get_handle(bo).u32;
 
-    std::optional<u32> fb_id = GetDisplay()->AddBuffer(width, height, format, handle, stride, 0);
+    std::optional<u32> fb_id = m_drm_display.AddBuffer(width, height, format, handle, stride, 0);
     if (!fb_id.has_value())
       return nullptr;
 
@@ -158,7 +166,7 @@ void ContextEGLGBM::ReleaseBuffer(Buffer* buffer)
 
 void ContextEGLGBM::PresentBuffer(Buffer* buffer, bool wait_for_vsync)
 {
-  GetDisplay()->PresentBuffer(buffer->fb_id, wait_for_vsync);
+  m_drm_display.PresentBuffer(buffer->fb_id, wait_for_vsync);
 }
 
 bool ContextEGLGBM::SwapBuffers()

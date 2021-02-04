@@ -205,10 +205,9 @@ bool Context::SelectInstanceExtensions(ExtensionList* extension_list, const Wind
   if (wi && wi->type == WindowInfo::Type::MacOS && !SupportsExtension(VK_EXT_METAL_SURFACE_EXTENSION_NAME, true))
     return false;
 #endif
-#ifndef _WIN32
-  if (wi && wi->type == WindowInfo::Type::DRM && !SupportsExtension(VK_KHR_DISPLAY_EXTENSION_NAME, true))
+
+  if (wi && wi->type == WindowInfo::Type::Display && !SupportsExtension(VK_KHR_DISPLAY_EXTENSION_NAME, true))
     return false;
-#endif
 
   // VK_EXT_debug_report
   if (enable_debug_report && !SupportsExtension(VK_EXT_DEBUG_REPORT_EXTENSION_NAME, false))

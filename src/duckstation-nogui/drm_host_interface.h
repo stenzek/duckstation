@@ -1,5 +1,4 @@
 #pragma once
-#include "common/drm_display.h"
 #include "nogui_host_interface.h"
 #include <memory>
 #include <vector>
@@ -37,8 +36,6 @@ private:
   void CloseEVDevFDs();
   void PollEvDevKeyboards();
   void SetImGuiKeyMap();
-
-  std::unique_ptr<DRMDisplay> m_drm_display;
 
   struct EvDevKeyboard
   {

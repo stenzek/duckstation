@@ -87,8 +87,6 @@ SwapChain::~SwapChain()
   DestroySurface();
 }
 
-#ifndef _WIN32
-
 static VkSurfaceKHR CreateDisplaySurface(VkInstance instance, VkPhysicalDevice physical_device, const WindowInfo& wi)
 {
   Log_InfoPrintf("Trying to create a VK_KHR_display surface of %ux%u", wi.surface_width, wi.surface_height);
@@ -135,8 +133,8 @@ static VkSurfaceKHR CreateDisplaySurface(VkInstance instance, VkPhysicalDevice p
     {
       Log_DevPrintf("  Mode %ux%u @ %u", mode.parameters.visibleRegion.width, mode.parameters.visibleRegion.height,
                     mode.parameters.refreshRate);
-      if (!matched_mode && mode.parameters.visibleRegion.width == wi.surface_width &&
-          mode.parameters.visibleRegion.height)
+      if (!matched_mode && (wi.surface_width == 0 && wi.surface_height == 0) ||
+          (mode.parameters.visibleRegion.width == wi.surface_width && mode.parameters.visibleRegion.height))
       {
         matched_mode = &mode;
       }
@@ -218,9 +216,9 @@ static VkSurfaceKHR CreateDisplaySurface(VkInstance instance, VkPhysicalDevice p
 
     return surface;
   }
-}
 
-#endif
+  return VK_NULL_HANDLE;
+}
 
 VkSurfaceKHR SwapChain::CreateVulkanSurface(VkInstance instance, VkPhysicalDevice physical_device, WindowInfo& wi)
 {
@@ -348,10 +346,8 @@ VkSurfaceKHR SwapChain::CreateVulkanSurface(VkInstance instance, VkPhysicalDevic
   }
 #endif
 
-#ifndef _WIN32
-  if (wi.type == WindowInfo::Type::DRM)
+  if (wi.type == WindowInfo::Type::Display)
     return CreateDisplaySurface(instance, physical_device, wi);
-#endif
 
   return VK_NULL_HANDLE;
 }

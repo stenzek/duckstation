@@ -109,7 +109,7 @@ std::unique_ptr<GL::Context> Context::Create(const WindowInfo& wi, const Version
 #endif
 
 #if defined(USE_GBM)
-  if (wi.type == WindowInfo::Type::DRM)
+  if (wi.type == WindowInfo::Type::Display)
     context = ContextEGLGBM::Create(wi, versions_to_try, num_versions_to_try);
 #endif
 

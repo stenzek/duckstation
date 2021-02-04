@@ -42,7 +42,7 @@ private:
     u32 fb_id;
   };
 
-  DRMDisplay* GetDisplay() { return static_cast<DRMDisplay*>(m_wi.display_connection); }
+  bool CreateDisplay(const WindowInfo& wi);
 
   bool CreateGBMDevice();
   Buffer* LockFrontBuffer();
@@ -53,10 +53,10 @@ private:
   void StopPresentThread();
   void PresentThread();
 
-  bool m_vsync = true;
-
+  DRMDisplay m_drm_display;
   struct gbm_device* m_gbm_device = nullptr;
   struct gbm_surface* m_fb_surface = nullptr;
+  bool m_vsync = true;
 
 #ifdef CONTEXT_EGL_GBM_USE_PRESENT_THREAD
   std::thread m_present_thread;
