@@ -24,7 +24,8 @@
             android:immersive="true"
             android:label="@string/title_activity_emulation"
             android:parentActivityName=".MainActivity"
-            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar">
+            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar"
+            android:exported="true">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.github.stenzek.duckstation.MainActivity" />
