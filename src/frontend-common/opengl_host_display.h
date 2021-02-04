@@ -76,6 +76,9 @@ protected:
   virtual void DestroyImGuiContext() override;
   virtual bool UpdateImGuiFontTexture() override;
 
+  void BindDisplayPixelsTexture();
+  void UpdateDisplayPixelsTextureFilter();
+
   void RenderDisplay();
   void RenderImGui();
   void RenderSoftwareCursor();
@@ -116,6 +119,7 @@ protected:
   std::unique_ptr<GL::StreamBuffer> m_post_processing_ubo;
   std::vector<PostProcessingStage> m_post_processing_stages;
 
+  bool m_display_texture_is_linear_filtered = false;
   bool m_use_gles2_draw_path = false;
   std::vector<u8> m_gles2_pixels_repack_buffer;
 };

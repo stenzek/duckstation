@@ -156,6 +156,35 @@ bool OpenGLHostDisplay::DownloadTexture(const void* texture_handle, HostDisplayP
   return true;
 }
 
+void OpenGLHostDisplay::BindDisplayPixelsTexture()
+{
+  if (m_display_pixels_texture_id == 0)
+  {
+    glGenTextures(1, &m_display_pixels_texture_id);
+    glBindTexture(GL_TEXTURE_2D, m_display_pixels_texture_id);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_display_linear_filtering ? GL_LINEAR : GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, m_display_linear_filtering ? GL_LINEAR : GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 1);
+    m_display_texture_is_linear_filtered = m_display_linear_filtering;
+  }
+  else
+  {
+    glBindTexture(GL_TEXTURE_2D, m_display_pixels_texture_id);
+  }
+}
+
+void OpenGLHostDisplay::UpdateDisplayPixelsTextureFilter()
+{
+  if (m_display_linear_filtering == m_display_texture_is_linear_filtered)
+    return;
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_display_linear_filtering ? GL_LINEAR : GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, m_display_linear_filtering ? GL_LINEAR : GL_NEAREST);
+  m_display_texture_is_linear_filtered = m_display_linear_filtering;
+}
+
 bool OpenGLHostDisplay::SupportsDisplayPixelFormat(HostDisplayPixelFormat format) const
 {
   return (std::get<0>(s_display_pixel_format_mapping[static_cast<u32>(format)]) != static_cast<GLenum>(0));
@@ -183,17 +212,7 @@ bool OpenGLHostDisplay::BeginSetDisplayPixels(HostDisplayPixelFormat format, u32
   *out_buffer = map.pointer;
   *out_pitch = stride;
 
-  if (m_display_pixels_texture_id == 0)
-  {
-    glGenTextures(1, &m_display_pixels_texture_id);
-    glBindTexture(GL_TEXTURE_2D, m_display_pixels_texture_id);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 1);
-  }
-
+  BindDisplayPixelsTexture();
   SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_display_pixels_texture_id)), format, width, height,
                     0, 0, width, height);
   return true;
@@ -223,20 +242,7 @@ void OpenGLHostDisplay::EndSetDisplayPixels()
 bool OpenGLHostDisplay::SetDisplayPixels(HostDisplayPixelFormat format, u32 width, u32 height, const void* buffer,
                                          u32 pitch)
 {
-  if (m_display_pixels_texture_id == 0)
-  {
-    glGenTextures(1, &m_display_pixels_texture_id);
-    glBindTexture(GL_TEXTURE_2D, m_display_pixels_texture_id);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 1);
-  }
-  else
-  {
-    glBindTexture(GL_TEXTURE_2D, m_display_pixels_texture_id);
-  }
+  BindDisplayPixelsTexture();
 
   const auto [gl_internal_format, gl_format, gl_type] = s_display_pixel_format_mapping[static_cast<u32>(format)];
   const u32 pixel_size = GetDisplayPixelFormatSize(format);
@@ -789,6 +795,9 @@ void OpenGLHostDisplay::RenderDisplay(s32 left, s32 bottom, s32 width, s32 heigh
   }
   else
   {
+    if (static_cast<GLuint>(reinterpret_cast<uintptr_t>(texture_handle)) == m_display_pixels_texture_id)
+      UpdateDisplayPixelsTextureFilter();
+
     DrawFullscreenQuadES2(m_display_texture_view_x, m_display_texture_view_y, m_display_texture_view_width,
                           m_display_texture_view_height, m_display_texture_width, m_display_texture_height);
   }
