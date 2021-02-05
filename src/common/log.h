@@ -46,7 +46,7 @@ void SetFilterLevel(LOGLEVEL level);
 
 // writes a message to the log
 void Write(const char* channelName, const char* functionName, LOGLEVEL level, const char* message);
-void Writef(const char* channelName, const char* functionName, LOGLEVEL level, const char* format, ...);
+void Writef(const char* channelName, const char* functionName, LOGLEVEL level, const char* format, ...) printflike(4, 5);
 void Writev(const char* channelName, const char* functionName, LOGLEVEL level, const char* format, va_list ap);
 } // namespace Log
 
