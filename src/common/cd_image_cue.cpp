@@ -141,7 +141,7 @@ bool CDImageCueSheet::OpenAndParse(const char* filename)
       file_size /= track_sector_size;
       if (track_start >= file_size)
       {
-        Log_ErrorPrintf("Failed to open track %u in '%s': track start is out of range (%u vs %u)", track_num, filename,
+        Log_ErrorPrintf("Failed to open track %u in '%s': track start is out of range (%ld vs %ld)", track_num, filename,
                         track_start, file_size);
         return false;
       }

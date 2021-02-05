@@ -187,7 +187,7 @@ void HostInterface::ReportDebuggerMessage(const char* message)
 
 bool HostInterface::ConfirmMessage(const char* message)
 {
-  Log_WarningPrintf("ConfirmMessage(\"%s\") -> Yes");
+  Log_WarningPrintf("ConfirmMessage(\"%s\") -> Yes", message);
   return true;
 }
 

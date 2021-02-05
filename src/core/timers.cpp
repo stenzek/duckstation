@@ -239,7 +239,7 @@ u32 Timers::ReadRegister(u32 offset)
       return cs.target;
 
     default:
-      Log_ErrorPrintf("Read unknown register in timer %u (offset 0x%02X)", offset);
+      Log_ErrorPrintf("Read unknown register in timer %u (offset 0x%02X)", timer_index, offset);
       return UINT32_C(0xFFFFFFFF);
   }
 }
@@ -302,7 +302,7 @@ void Timers::WriteRegister(u32 offset, u32 value)
     break;
 
     default:
-      Log_ErrorPrintf("Write unknown register in timer %u (offset 0x%02X, value 0x%X)", offset, value);
+      Log_ErrorPrintf("Write unknown register in timer %u (offset 0x%02X, value 0x%X)", timer_index, offset, value);
       break;
   }
 }

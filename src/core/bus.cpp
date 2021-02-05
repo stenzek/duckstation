@@ -919,7 +919,7 @@ ALWAYS_INLINE static TickCount DoEXP3Access(u32 offset, u32& value)
 {
   if constexpr (type == MemoryAccessType::Read)
   {
-    Log_WarningPrintf("EXP3 read: 0x%08X -> 0x%08X", EXP3_BASE | offset);
+    Log_WarningPrintf("EXP3 read: 0x%08X -> 0x%08X", offset, EXP3_BASE | offset);
     value = UINT32_C(0xFFFFFFFF);
 
     return 0;

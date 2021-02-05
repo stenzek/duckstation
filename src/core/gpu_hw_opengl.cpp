@@ -341,7 +341,7 @@ void GPU_HW_OpenGL::SetCapabilities(HostDisplay* host_display)
     if (GLAD_GL_VERSION_4_3 || GLAD_GL_ES_VERSION_3_1 || GLAD_GL_ARB_shader_storage_buffer_object)
       glGetInteger64v(GL_MAX_SHADER_STORAGE_BLOCK_SIZE, &max_ssbo_size);
 
-    Log_InfoPrintf("Max shader storage buffer size: %u", max_ssbo_size);
+    Log_InfoPrintf("Max shader storage buffer size: %lld", max_ssbo_size);
     m_use_ssbo_for_vram_writes = (max_ssbo_size >= (VRAM_WIDTH * VRAM_HEIGHT * sizeof(u16)));
     if (m_use_ssbo_for_vram_writes)
     {

@@ -1488,7 +1488,7 @@ void CheatCode::Apply() const
         }
         else
         {
-          Log_ErrorPrintf("Invalid command in second slide parameter 0x%02X", write_type);
+          Log_ErrorPrintf("Invalid command in second slide parameter 0x%02hhX", write_type);
         }
 
         index += 2;
