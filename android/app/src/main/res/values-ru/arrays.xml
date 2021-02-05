@@ -13,7 +13,7 @@
 	<string-array name="settings_cpu_fastmem_mode_entries">
 		<item>Выключен (самый медленный)</item>
 		<item>MMap (аппаратный, самый быстрый, только для 64-бит)</item>
-		<item>LUT (самый быстрый)</item>
+		<item>LUT (быстрее)</item>
 	</string-array>
 	<string-array name="gpu_renderer_entries">
 		<item>Аппаратный (OpenGL)</item>
@@ -79,8 +79,8 @@
 		<item>Своя карта для каждой игры (по названию)</item>
 	</string-array>
 	<string-array name="emulation_menu">
-		<item>Сохранить состояние</item>
 		<item>Загрузить состояние</item>
+		<item>Сохранить состояние</item>
 		<item>Слот сохранения</item>
 		<item>Включить ускорение</item>
 		<item>Другие опции</item>
