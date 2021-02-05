@@ -49,6 +49,12 @@ char (&__countof_ArraySizeHelper(T (&array)[N]))[N];
 #define offsetof(st, m) ((size_t)((char*)&((st*)(0))->m - (char*)0))
 #endif
 
+#ifdef __GNUC__
+#define printflike(n,m) __attribute__((format(printf,n,m)))
+#else
+#define printflike(n,m)
+#endif
+
 // disable warnings that show up at warning level 4
 // TODO: Move to build system instead
 #ifdef _MSC_VER
