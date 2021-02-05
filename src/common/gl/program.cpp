@@ -159,7 +159,7 @@ bool Program::GetBinary(std::vector<u8>* out_data, u32* out_data_format)
   }
   else if (static_cast<size_t>(binary_size) != out_data->size())
   {
-    Log_WarningPrintf("Size changed from %zu to %d after glGetProgramBinary()", out_data->data(), binary_size);
+    Log_WarningPrintf("Size changed from %zu to %d after glGetProgramBinary()", out_data->size(), binary_size);
     out_data->resize(static_cast<size_t>(binary_size));
   }
 

@@ -328,13 +328,13 @@ static void APIENTRY GLDebugCallback(GLenum source, GLenum type, GLuint id, GLen
   switch (severity)
   {
     case GL_DEBUG_SEVERITY_HIGH_KHR:
-      Log_ErrorPrintf(message);
+      Log_ErrorPrint(message);
       break;
     case GL_DEBUG_SEVERITY_MEDIUM_KHR:
       Log_WarningPrint(message);
       break;
     case GL_DEBUG_SEVERITY_LOW_KHR:
-      Log_InfoPrintf(message);
+      Log_InfoPrint(message);
       break;
     case GL_DEBUG_SEVERITY_NOTIFICATION:
       // Log_DebugPrint(message);

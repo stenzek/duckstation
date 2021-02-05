@@ -2086,7 +2086,7 @@ bool SaveRewindState()
 
   s_rewind_states.push_back(std::move(mss));
 
-  Log_DevPrintf("Saved rewind state (%u bytes, took %.4f ms)", s_rewind_states.back().state_stream->GetSize(),
+  Log_DevPrintf("Saved rewind state (%llu bytes, took %.4f ms)", s_rewind_states.back().state_stream->GetSize(),
                 save_timer.GetTimeMilliseconds());
 
   return true;

@@ -85,7 +85,7 @@ void WAVWriter::WriteFrames(const s16* samples, u32 num_frames)
   const u32 num_frames_written =
     static_cast<u32>(std::fwrite(samples, sizeof(s16) * m_num_channels, num_frames, m_file));
   if (num_frames_written != num_frames)
-    Log_ErrorPrintf("Only wrote %u of %u frames to output file", num_frames_written);
+    Log_ErrorPrintf("Only wrote %u of %u frames to output file", num_frames_written, num_frames);
 
   m_num_frames += num_frames_written;
 }
