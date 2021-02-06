@@ -175,6 +175,7 @@ public class MainActivity extends AppCompatActivity {
             throw new RuntimeException("Failed to create host interface");
         }
 
+        AndroidHostInterface.getInstance().setContext(this);
         mGameList.refresh(false, false, this);
     }
 

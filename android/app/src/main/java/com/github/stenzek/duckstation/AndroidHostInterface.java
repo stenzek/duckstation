@@ -41,6 +41,10 @@ public class AndroidHostInterface {
         }
     }
 
+    public void setContext(Context context) {
+        mContext = context;
+    }
+
     static public native String getScmVersion();
 
     static public native String getFullScmVersion();
