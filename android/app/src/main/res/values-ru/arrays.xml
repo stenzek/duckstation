@@ -93,19 +93,6 @@
 		<item>Сменить экранный контроллер</item>
 		<item>Настроить экранный контроллер</item>
 	</string-array>
-	<string-array name="emulation_save_state_slot_menu">
-		<item>Быстрый слот</item>
-		<item>Игровой слот 1</item>
-		<item>Игровой слот 2</item>
-		<item>Игровой слот 3</item>
-		<item>Игровой слот 4</item>
-		<item>Игровой слот 5</item>
-		<item>Игровой слот 6</item>
-		<item>Игровой слот 7</item>
-		<item>Игровой слот 8</item>
-		<item>Игровой слот 9</item>
-		<item>Игровой слот 10</item>
-	</string-array>
 	<string-array name="settings_cdrom_read_speedup_entries">
 		<item>Нет (двойная скорость)</item>
 		<item>2x (скорость 4x)</item>
