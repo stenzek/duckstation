@@ -102,6 +102,8 @@ public:
   StackWalker(DWORD dwProcessId, HANDLE hProcess);
   virtual ~StackWalker();
 
+  static HMODULE LoadDbgHelpLibrary();
+
   typedef BOOL(__stdcall* PReadProcessMemoryRoutine)(
       HANDLE  hProcess,
       DWORD64 qwBaseAddress,

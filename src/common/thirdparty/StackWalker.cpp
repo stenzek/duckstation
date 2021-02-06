@@ -246,6 +246,81 @@ static void MyStrCpy(char* szDest, size_t nMaxDestSize, const char* szSrc)
 // Normally it should be enough to use 'CONTEXT_FULL' (better would be 'CONTEXT_ALL')
 #define USED_CONTEXT_FLAGS CONTEXT_FULL
 
+HMODULE StackWalker::LoadDbgHelpLibrary()
+{
+  HMODULE hModule = NULL;
+
+  // Dynamically load the Entry-Points for dbghelp.dll:
+    // First try to load the newest one from
+  TCHAR szTemp[4096];
+  // But before we do this, we first check if the ".local" file exists
+  if (GetModuleFileName(NULL, szTemp, 4096) > 0)
+  {
+    _tcscat_s(szTemp, _T(".local"));
+    if (GetFileAttributes(szTemp) == INVALID_FILE_ATTRIBUTES)
+    {
+      // ".local" file does not exist, so we can try to load the dbghelp.dll from the "Debugging Tools for Windows"
+      // Ok, first try the new path according to the architecture:
+#ifdef _M_IX86
+      if ((hModule == NULL) && (GetEnvironmentVariable(_T("ProgramFiles"), szTemp, 4096) > 0))
+      {
+        _tcscat_s(szTemp, _T("\\Debugging Tools for Windows (x86)\\dbghelp.dll"));
+        // now check if the file exists:
+        if (GetFileAttributes(szTemp) != INVALID_FILE_ATTRIBUTES)
+        {
+          hModule = LoadLibrary(szTemp);
+        }
+      }
+#elif _M_X64
+      if ((hModule == NULL) && (GetEnvironmentVariable(_T("ProgramFiles"), szTemp, 4096) > 0))
+      {
+        _tcscat_s(szTemp, _T("\\Debugging Tools for Windows (x64)\\dbghelp.dll"));
+        // now check if the file exists:
+        if (GetFileAttributes(szTemp) != INVALID_FILE_ATTRIBUTES)
+        {
+          hModule = LoadLibrary(szTemp);
+        }
+      }
+#elif _M_IA64
+      if ((hModule == NULL) && (GetEnvironmentVariable(_T("ProgramFiles"), szTemp, 4096) > 0))
+      {
+        _tcscat_s(szTemp, _T("\\Debugging Tools for Windows (ia64)\\dbghelp.dll"));
+        // now check if the file exists:
+        if (GetFileAttributes(szTemp) != INVALID_FILE_ATTRIBUTES)
+        {
+          hModule = LoadLibrary(szTemp);
+        }
+      }
+#endif
+      // If still not found, try the old directories...
+      if ((hModule == NULL) && (GetEnvironmentVariable(_T("ProgramFiles"), szTemp, 4096) > 0))
+      {
+        _tcscat_s(szTemp, _T("\\Debugging Tools for Windows\\dbghelp.dll"));
+        // now check if the file exists:
+        if (GetFileAttributes(szTemp) != INVALID_FILE_ATTRIBUTES)
+        {
+          hModule = LoadLibrary(szTemp);
+        }
+      }
+#if defined _M_X64 || defined _M_IA64
+      // Still not found? Then try to load the (old) 64-Bit version:
+      if ((hModule == NULL) && (GetEnvironmentVariable(_T("ProgramFiles"), szTemp, 4096) > 0))
+      {
+        _tcscat_s(szTemp, _T("\\Debugging Tools for Windows 64-Bit\\dbghelp.dll"));
+        if (GetFileAttributes(szTemp) != INVALID_FILE_ATTRIBUTES)
+        {
+          hModule = LoadLibrary(szTemp);
+        }
+      }
+#endif
+    }
+  }
+  if (hModule == NULL) // if not already loaded, try to load a default-one
+    hModule = LoadLibrary(_T("dbghelp.dll"));
+
+  return hModule;
+}
+
 class StackWalkerInternal
 {
 public:
@@ -285,73 +360,8 @@ public:
   {
     if (m_parent == NULL)
       return FALSE;
-    // Dynamically load the Entry-Points for dbghelp.dll:
-    // First try to load the newest one from
-    TCHAR szTemp[4096];
-    // But before we do this, we first check if the ".local" file exists
-    if (GetModuleFileName(NULL, szTemp, 4096) > 0)
-    {
-      _tcscat_s(szTemp, _T(".local"));
-      if (GetFileAttributes(szTemp) == INVALID_FILE_ATTRIBUTES)
-      {
-        // ".local" file does not exist, so we can try to load the dbghelp.dll from the "Debugging Tools for Windows"
-        // Ok, first try the new path according to the architecture:
-#ifdef _M_IX86
-        if ((m_hDbhHelp == NULL) && (GetEnvironmentVariable(_T("ProgramFiles"), szTemp, 4096) > 0))
-        {
-          _tcscat_s(szTemp, _T("\\Debugging Tools for Windows (x86)\\dbghelp.dll"));
-          // now check if the file exists:
-          if (GetFileAttributes(szTemp) != INVALID_FILE_ATTRIBUTES)
-          {
-            m_hDbhHelp = LoadLibrary(szTemp);
-          }
-        }
-#elif _M_X64
-        if ((m_hDbhHelp == NULL) && (GetEnvironmentVariable(_T("ProgramFiles"), szTemp, 4096) > 0))
-        {
-          _tcscat_s(szTemp, _T("\\Debugging Tools for Windows (x64)\\dbghelp.dll"));
-          // now check if the file exists:
-          if (GetFileAttributes(szTemp) != INVALID_FILE_ATTRIBUTES)
-          {
-            m_hDbhHelp = LoadLibrary(szTemp);
-          }
-        }
-#elif _M_IA64
-        if ((m_hDbhHelp == NULL) && (GetEnvironmentVariable(_T("ProgramFiles"), szTemp, 4096) > 0))
-        {
-          _tcscat_s(szTemp, _T("\\Debugging Tools for Windows (ia64)\\dbghelp.dll"));
-          // now check if the file exists:
-          if (GetFileAttributes(szTemp) != INVALID_FILE_ATTRIBUTES)
-          {
-            m_hDbhHelp = LoadLibrary(szTemp);
-          }
-        }
-#endif
-        // If still not found, try the old directories...
-        if ((m_hDbhHelp == NULL) && (GetEnvironmentVariable(_T("ProgramFiles"), szTemp, 4096) > 0))
-        {
-          _tcscat_s(szTemp, _T("\\Debugging Tools for Windows\\dbghelp.dll"));
-          // now check if the file exists:
-          if (GetFileAttributes(szTemp) != INVALID_FILE_ATTRIBUTES)
-          {
-            m_hDbhHelp = LoadLibrary(szTemp);
-          }
-        }
-#if defined _M_X64 || defined _M_IA64
-        // Still not found? Then try to load the (old) 64-Bit version:
-        if ((m_hDbhHelp == NULL) && (GetEnvironmentVariable(_T("ProgramFiles"), szTemp, 4096) > 0))
-        {
-          _tcscat_s(szTemp, _T("\\Debugging Tools for Windows 64-Bit\\dbghelp.dll"));
-          if (GetFileAttributes(szTemp) != INVALID_FILE_ATTRIBUTES)
-          {
-            m_hDbhHelp = LoadLibrary(szTemp);
-          }
-        }
-#endif
-      }
-    }
-    if (m_hDbhHelp == NULL) // if not already loaded, try to load a default-one
-      m_hDbhHelp = LoadLibrary(_T("dbghelp.dll"));
+    
+    m_hDbhHelp = StackWalker::LoadDbgHelpLibrary();
     if (m_hDbhHelp == NULL)
       return FALSE;
     pSI = (tSI)GetProcAddress(m_hDbhHelp, "SymInitialize");

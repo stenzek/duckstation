@@ -5,8 +5,10 @@
 #include <cstdio>
 
 #ifdef _WIN32
-#include "thirdparty/StackWalker.h"
 #include "windows_headers.h"
+
+#include "thirdparty/StackWalker.h"
+#include <DbgHelp.h>
 
 namespace CrashHandler {
 
@@ -45,32 +47,67 @@ void CrashHandlerStackWalker::OnOutput(LPCSTR szText)
   OutputDebugStringA(szText);
 }
 
+static bool WriteMinidump(HMODULE hDbgHelp, HANDLE hFile, HANDLE hProcess, DWORD process_id, DWORD thread_id,
+                          PEXCEPTION_POINTERS exception, MINIDUMP_TYPE type)
+{
+  using PFNMINIDUMPWRITEDUMP =
+    BOOL(WINAPI*)(HANDLE hProcess, DWORD ProcessId, HANDLE hFile, MINIDUMP_TYPE DumpType,
+                  PMINIDUMP_EXCEPTION_INFORMATION ExceptionParam, PMINIDUMP_USER_STREAM_INFORMATION UserStreamParam,
+                  PMINIDUMP_CALLBACK_INFORMATION CallbackParam);
+
+  PFNMINIDUMPWRITEDUMP minidump_write_dump =
+    reinterpret_cast<PFNMINIDUMPWRITEDUMP>(GetProcAddress(hDbgHelp, "MiniDumpWriteDump"));
+  if (!minidump_write_dump)
+    return false;
+
+  MINIDUMP_EXCEPTION_INFORMATION mei;
+  PMINIDUMP_EXCEPTION_INFORMATION mei_ptr = nullptr;
+  if (exception)
+  {
+    mei.ThreadId = thread_id;
+    mei.ExceptionPointers = exception;
+    mei.ClientPointers = FALSE;
+    mei_ptr = &mei;
+  }
+
+  return minidump_write_dump(hProcess, process_id, hFile, type, mei_ptr, nullptr, nullptr);
+}
+
 static std::wstring s_write_directory;
-static PVOID s_veh_handle;
+static PVOID s_veh_handle = nullptr;
+static bool s_in_crash_handler = false;
 
 static LONG ExceptionHandler(PEXCEPTION_POINTERS exi)
 {
+  if (s_in_crash_handler)
+    return EXCEPTION_CONTINUE_SEARCH;
+
   switch (exi->ExceptionRecord->ExceptionCode)
   {
-  case EXCEPTION_ACCESS_VIOLATION:
-  case EXCEPTION_BREAKPOINT:
-  case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
-  case EXCEPTION_INT_DIVIDE_BY_ZERO:
-  case EXCEPTION_INT_OVERFLOW:
-  case EXCEPTION_PRIV_INSTRUCTION:
-  case EXCEPTION_ILLEGAL_INSTRUCTION:
-  case EXCEPTION_NONCONTINUABLE_EXCEPTION:
-  case EXCEPTION_STACK_OVERFLOW:
-  case EXCEPTION_GUARD_PAGE:
-    break;
+    case EXCEPTION_ACCESS_VIOLATION:
+    case EXCEPTION_BREAKPOINT:
+    case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
+    case EXCEPTION_INT_DIVIDE_BY_ZERO:
+    case EXCEPTION_INT_OVERFLOW:
+    case EXCEPTION_PRIV_INSTRUCTION:
+    case EXCEPTION_ILLEGAL_INSTRUCTION:
+    case EXCEPTION_NONCONTINUABLE_EXCEPTION:
+    case EXCEPTION_STACK_OVERFLOW:
+    case EXCEPTION_GUARD_PAGE:
+      break;
 
-  default:
-    return EXCEPTION_CONTINUE_SEARCH;
+    default:
+      return EXCEPTION_CONTINUE_SEARCH;
   }
 
   // if the debugger is attached, let it take care of it.
   if (IsDebuggerPresent())
     return EXCEPTION_CONTINUE_SEARCH;
+
+  s_in_crash_handler = true;
+
+  // we definitely need dbg helper - maintain an extra reference here
+  HMODULE hDbgHelp = StackWalker::LoadDbgHelpLibrary();
 
   wchar_t filename[1024] = {};
   if (!s_write_directory.empty())
@@ -94,8 +131,42 @@ static LONG ExceptionHandler(PEXCEPTION_POINTERS exi)
     WriteFile(hFile, line, static_cast<DWORD>(std::strlen(line)), &written, nullptr);
   }
 
+  if (!s_write_directory.empty())
+  {
+    wcsncpy_s(filename, countof(filename), s_write_directory.c_str(), _TRUNCATE);
+    wcsncat_s(filename, countof(filename), L"\\crash.dmp", _TRUNCATE);
+  }
+  else
+  {
+    wcsncat_s(filename, countof(filename), L"crash.dmp", _TRUNCATE);
+  }
+
+  const MINIDUMP_TYPE minidump_type =
+    static_cast<MINIDUMP_TYPE>(MiniDumpNormal | MiniDumpWithHandleData | MiniDumpWithProcessThreadData |
+                               MiniDumpWithThreadInfo | MiniDumpWithIndirectlyReferencedMemory);
+  HANDLE hMinidumpFile = CreateFileW(filename, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, 0, nullptr);
+  if (!hMinidumpFile || !WriteMinidump(hDbgHelp, hMinidumpFile, GetCurrentProcess(), GetCurrentProcessId(),
+                                       GetCurrentThreadId(), exi, minidump_type))
+  {
+    static const char error_message[] = "Failed to write minidump file.\n";
+    if (hFile)
+    {
+      DWORD written;
+      WriteFile(hFile, error_message, sizeof(error_message) - 1, &written, nullptr);
+    }
+  }
+  if (hMinidumpFile)
+    CloseHandle(hMinidumpFile);
+
   CrashHandlerStackWalker sw(hFile);
   sw.ShowCallstack(GetCurrentThread(), exi->ContextRecord);
+
+  if (hFile)
+    CloseHandle(hFile);
+
+  if (hDbgHelp)
+    FreeLibrary(hDbgHelp);
+
   return EXCEPTION_CONTINUE_SEARCH;
 }
 
