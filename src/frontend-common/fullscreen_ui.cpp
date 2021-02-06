@@ -2391,7 +2391,6 @@ void DrawGameListWindow()
     const float work_width = ImGui::GetCurrentWindow()->WorkRect.GetWidth();
     constexpr float field_margin_y = 10.0f;
     constexpr float start_x = 50.0f;
-    constexpr float end_x = 400.0f;
     float text_y = 425.0f;
     float text_width;
     SmallString text;
@@ -2587,6 +2586,12 @@ HostDisplayTexture* GetCoverForCurrentGame()
 //////////////////////////////////////////////////////////////////////////
 // Overlays
 //////////////////////////////////////////////////////////////////////////
+static ImDrawList* GetDrawListForOverlay()
+{
+  // If we're in the landing page, draw the OSD over the windows (since it covers it)
+  return (s_current_main_window != MainWindowType::None) ? ImGui::GetForegroundDrawList() : ImGui::GetBackgroundDrawList();
+}
+
 void DrawStatsOverlay()
 {
   if (!(g_settings.display_show_fps || g_settings.display_show_vps || g_settings.display_show_speed ||
@@ -2598,7 +2603,7 @@ void DrawStatsOverlay()
 
   float margin = LayoutScale(10.0f);
   float position_y = margin;
-  ImDrawList* dl = ImGui::GetForegroundDrawList();
+  ImDrawList* dl = GetDrawListForOverlay();
   TinyString text;
   ImVec2 text_size;
   bool first = true;
@@ -2677,10 +2682,6 @@ void DrawOSDMessages()
     return;
   }
 
-  static constexpr ImGuiWindowFlags window_flags =
-    ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoMove |
-    ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoNav |
-    ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing;
   ImGui::PushFont(g_large_font);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(10.0f, 10.0f));
@@ -2691,7 +2692,6 @@ void DrawOSDMessages()
   const float padding = LayoutScale(10.0f);
   float position_x = margin;
   float position_y = (margin + ImGuiFullscreen::g_layout_padding_top);
-  u32 index = 0;
 
   s_host_interface->EnumerateOSDMessages(
     [max_width, spacing, padding, &position_x, &position_y](const std::string& message, float time_remaining) -> bool {
@@ -2704,7 +2704,7 @@ void DrawOSDMessages()
       const ImVec2 text_size(ImGui::CalcTextSize(message.c_str(), nullptr, max_width));
       const ImVec2 size(text_size + LayoutScale(20.0f, 20.0f));
       const ImVec4 text_rect(pos.x + padding, pos.y + padding, pos.x + size.x - padding, pos.y + size.y - padding);
-      ImDrawList* dl = ImGui::GetForegroundDrawList();
+      ImDrawList* dl = GetDrawListForOverlay();
       dl->AddRectFilled(pos, pos + size, ImGui::GetColorU32(ImGuiCol_WindowBg, opacity), LayoutScale(10.0f));
       dl->AddRect(pos, pos + size, ImGui::GetColorU32(ImGuiCol_Border), LayoutScale(10.0f));
       dl->AddText(g_large_font, g_large_font->FontSize, ImVec2(text_rect.x, text_rect.y),
@@ -3396,7 +3396,7 @@ void DrawDebugDebugMenu()
   settings_changed |= ImGui::MenuItem("Dump CPU to VRAM Copies", nullptr, &debug_settings.dump_cpu_to_vram_copies);
   settings_changed |= ImGui::MenuItem("Dump VRAM to CPU Copies", nullptr, &debug_settings.dump_vram_to_cpu_copies);
 
-  if (ImGui::MenuItem("CPU Trace Logging", nullptr, CPU::IsTraceEnabled()))
+  if (ImGui::MenuItem("CPU Trace Logging", nullptr, CPU::IsTraceEnabled(), system_valid))
   {
     if (!CPU::IsTraceEnabled())
       CPU::StartTrace();
