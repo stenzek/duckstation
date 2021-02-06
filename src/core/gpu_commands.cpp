@@ -602,8 +602,15 @@ bool GPU::HandleCopyRectangleVRAMToVRAMCommand()
   Log_DebugPrintf("Copy rectangle from VRAM to VRAM src=(%u,%u), dst=(%u,%u), size=(%u,%u)", src_x, src_y, dst_x, dst_y,
                   width, height);
 
-  FlushRender();
-  CopyVRAM(src_x, src_y, dst_x, dst_y, width, height);
+  // Some VRAM copies aren't going to do anything. Most games seem to send a 2x2 VRAM copy at the end of a frame.
+  const bool skip_copy =
+    width == 0 || height == 0 || (src_x == dst_x && src_y == dst_y && !m_GPUSTAT.set_mask_while_drawing);
+  if (!skip_copy)
+  {
+    FlushRender();
+    CopyVRAM(src_x, src_y, dst_x, dst_y, width, height);
+  }
+
   m_stats.num_vram_copies++;
   AddCommandTicks(width * height * 2);
   EndCommand();
