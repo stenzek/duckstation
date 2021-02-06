@@ -122,6 +122,7 @@ protected:
 
   bool m_display_texture_is_linear_filtered = false;
   bool m_use_gles2_draw_path = false;
+  bool m_use_pbo_for_pixels = false;
 };
 
 } // namespace FrontendCommon

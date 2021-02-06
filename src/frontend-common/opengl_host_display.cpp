@@ -392,9 +392,22 @@ bool OpenGLHostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_vie
 bool OpenGLHostDisplay::InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device,
                                                bool threaded_presentation)
 {
-  m_use_gles2_draw_path = (GetRenderAPI() == HostDisplay::RenderAPI::OpenGLES && !GLAD_GL_ES_VERSION_3_0);
+  m_use_gles2_draw_path = (m_gl_context->IsGLES() && !GLAD_GL_ES_VERSION_3_0);
   if (!m_use_gles2_draw_path)
     glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, reinterpret_cast<GLint*>(&m_uniform_buffer_alignment));
+
+  // Doubt GLES2 drivers will support PBOs efficiently.
+  m_use_pbo_for_pixels = m_use_gles2_draw_path;
+  if (m_gl_context->IsGLES())
+  {
+    // Adreno seems to corrupt textures through PBOs...
+    const char* gl_vendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
+    if (std::strstr(gl_vendor, "Qualcomm"))
+      m_use_pbo_for_pixels = false;
+  }
+
+  Log_VerbosePrintf("Using GLES2 draw path: %s", m_use_gles2_draw_path ? "yes" : "no");
+  Log_VerbosePrintf("Using PBO for streaming: %s", m_use_pbo_for_pixels ? "yes" : "no");
 
   if (debug_device && GLAD_GL_KHR_debug)
   {
