@@ -54,7 +54,7 @@ static bool ShouldPreferESContext()
 
 static void DisableBrokenExtensions(const char* gl_vendor, const char* gl_renderer)
 {
-  if (std::strstr(gl_vendor, "ARM") && std::strstr(gl_renderer, "Mali"))
+  if (std::strstr(gl_vendor, "ARM"))
   {
     // GL_{EXT,OES}_copy_image seem to be implemented on the CPU in the Mali drivers...
     Log_VerbosePrintf("Mali driver detected, disabling GL_{EXT,OES}_copy_image");
