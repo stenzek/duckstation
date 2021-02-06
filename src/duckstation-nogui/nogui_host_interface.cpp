@@ -270,7 +270,6 @@ bool NoGUIHostInterface::AcquireHostDisplay()
   {
     const bool was_fullscreen = IsFullscreen();
 
-    ImGui::EndFrame();
     DestroyDisplay();
 
     // We need to recreate the window, otherwise bad things happen...
@@ -280,8 +279,6 @@ bool NoGUIHostInterface::AcquireHostDisplay()
 
     if (!CreateDisplay())
       Panic("Failed to recreate display on GPU renderer switch");
-
-    ImGui::NewFrame();
   }
 
   if (!CreateHostDisplayResources())
