@@ -1,6 +1,6 @@
 #include "stream_buffer.h"
-#include "../assert.h"
 #include "../align.h"
+#include "../assert.h"
 #include <array>
 #include <cstdio>
 
@@ -236,20 +236,29 @@ public:
   void Unmap(u32 used_size) override
   {
     DebugAssert((m_position + used_size) <= m_size);
+    if (!m_coherent)
+    {
+      Bind();
+      glFlushMappedBufferRange(m_target, m_position, used_size);
+    }
+
     m_position += used_size;
   }
 
-  static std::unique_ptr<StreamBuffer> Create(GLenum target, u32 size)
+  static std::unique_ptr<StreamBuffer> Create(GLenum target, u32 size, bool coherent = true)
   {
     glGetError();
 
     GLuint buffer_id;
     glGenBuffers(1, &buffer_id);
     glBindBuffer(target, buffer_id);
+
+    const u32 flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | (coherent ? GL_MAP_COHERENT_BIT : 0);
+    const u32 map_flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | (coherent ? 0 : GL_MAP_FLUSH_EXPLICIT_BIT);
     if (GLAD_GL_VERSION_4_4 || GLAD_GL_ARB_buffer_storage)
-      glBufferStorage(target, size, nullptr, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
+      glBufferStorage(target, size, nullptr, flags);
     else if (GLAD_GL_EXT_buffer_storage)
-      glBufferStorageEXT(target, size, nullptr, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
+      glBufferStorageEXT(target, size, nullptr, flags);
 
     GLenum err = glGetError();
     if (err != GL_NO_ERROR)
@@ -258,20 +267,20 @@ public:
       return {};
     }
 
-    u8* mapped_ptr = static_cast<u8*>(
-      glMapBufferRange(target, 0, size, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT));
+    u8* mapped_ptr = static_cast<u8*>(glMapBufferRange(target, 0, size, map_flags));
     Assert(mapped_ptr);
 
-    return std::unique_ptr<StreamBuffer>(new BufferStorageStreamBuffer(target, buffer_id, size, mapped_ptr));
+    return std::unique_ptr<StreamBuffer>(new BufferStorageStreamBuffer(target, buffer_id, size, mapped_ptr, coherent));
   }
 
 private:
-  BufferStorageStreamBuffer(GLenum target, GLuint buffer_id, u32 size, u8* mapped_ptr)
-    : SyncingStreamBuffer(target, buffer_id, size), m_mapped_ptr(mapped_ptr)
+  BufferStorageStreamBuffer(GLenum target, GLuint buffer_id, u32 size, u8* mapped_ptr, bool coherent)
+    : SyncingStreamBuffer(target, buffer_id, size), m_mapped_ptr(mapped_ptr), m_coherent(coherent)
   {
   }
 
   u8* m_mapped_ptr;
+  bool m_coherent;
 };
 
 } // namespace detail
