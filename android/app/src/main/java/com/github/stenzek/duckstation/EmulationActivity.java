@@ -204,7 +204,8 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         }
 
         final String bootPath = getIntent().getStringExtra("bootPath");
-        final boolean resumeState = getIntent().getBooleanExtra("resumeState", false);
+        final boolean saveStateOnExit = getBooleanSetting("Main/SaveStateOnExit", true);
+        final boolean resumeState = getIntent().getBooleanExtra("resumeState", saveStateOnExit);
         final String bootSaveStatePath = getIntent().getStringExtra("saveStatePath");
 
         mEmulationThread = EmulationThread.create(this, bootPath, resumeState, bootSaveStatePath);
