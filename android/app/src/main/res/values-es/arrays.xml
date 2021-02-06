@@ -81,7 +81,6 @@
     <string-array name="emulation_menu">
         <item>Cargar Estado</item>
         <item>Guardar Estado</item>
-        <item>Guardar Estado en Ranura</item>
         <item>Activar Avance Rápido</item>
         <item>Más Opciones</item>
         <item>Salir</item>
@@ -93,19 +92,6 @@
         <item>Configuraciones</item>
         <item>Cambiar Control de Pantalla Tactil</item>
         <item>Editar Diseño del Control de Pantalla Tactil</item>
-    </string-array>
-    <string-array name="emulation_save_state_slot_menu">
-        <item>Ranura Rápida</item>
-        <item>Ranura 1</item>
-        <item>Ranura 2</item>
-        <item>Ranura 3</item>
-        <item>Ranura 4</item>
-        <item>Ranura 5</item>
-        <item>Ranura 6</item>
-        <item>Ranura 7</item>
-        <item>Ranura 8</item>
-        <item>Ranura 9</item>
-        <item>Ranura 10</item>
     </string-array>
     <string-array name="settings_cdrom_read_speedup_entries">
         <item>Ninguno (Velocidad Doble)</item>

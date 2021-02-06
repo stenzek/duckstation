@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/linearLayout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <ImageView
+        android:id="@+id/image"
+        android:layout_width="80dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="4dp"
+        android:layout_marginLeft="15dp"
+        android:layout_alignParentTop="true"
+        android:scaleType="fitXY"
+        tools:srcCompat="@drawable/ic_media_cdrom" />
+
+    <TextView
+        android:id="@+id/summary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="15dp"
+        android:layout_marginTop="8dp"
+        android:text="Game Slot 1"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@id/image" />
+
+    <TextView
+        android:id="@+id/game"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="15dp"
+        android:layout_marginTop="0dp"
+        android:text="SCES-0000 - Game Name"
+        android:textAppearance="@style/TextAppearance.AppCompat.Small"
+        android:layout_below="@id/summary"
+        android:layout_toRightOf="@id/image" />
+
+    <TextView
+        android:id="@+id/path"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="15dp"
+        android:layout_marginTop="0dp"
+        android:text="Dump Name.chd"
+        android:textAppearance="@style/TextAppearance.AppCompat.Small"
+        android:layout_below="@id/game"
+        android:layout_toRightOf="@id/image" />
+
+    <TextView
+        android:id="@+id/timestamp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="15dp"
+        android:layout_marginTop="0dp"
+        android:layout_marginBottom="14dp"
+        android:text="Saved at Timestamp"
+        android:textAppearance="@style/TextAppearance.AppCompat.Small"
+        android:layout_below="@id/path"
+        android:layout_toRightOf="@id/image" />
+
+</RelativeLayout>

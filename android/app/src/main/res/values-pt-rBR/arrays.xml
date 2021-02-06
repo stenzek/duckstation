@@ -81,7 +81,6 @@
     <string-array name="emulation_menu">
         <item>Carregar Estado</item>
         <item>Salvar Estado</item>
-        <item>Salvar para Compartimento</item>
         <item>Avanço (Fixo)</item>
         <item>Mais Opções</item>
         <item>Sair</item>
@@ -93,19 +92,6 @@
         <item>Configurações</item>
         <item>Mudar controle em Tela</item>
         <item>Editar Posição dos Controles (Tela)</item>
-    </string-array>
-    <string-array name="emulation_save_state_slot_menu">
-        <item>Armazenamento Rápido</item>
-        <item>Armazenamento 1</item>
-        <item>Armazenamento 2</item>
-        <item>Armazenamento 3</item>
-        <item>Armazenamento 4</item>
-        <item>Armazenamento 5</item>
-        <item>Armazenamento 6</item>
-        <item>Armazenamento 7</item>
-        <item>Armazenamento 8</item>
-        <item>Armazenamento 9</item>
-        <item>Armazenamento 10</item>
     </string-array>
     <string-array name="settings_cdrom_read_speedup_entries">
         <item>Nenhum</item>

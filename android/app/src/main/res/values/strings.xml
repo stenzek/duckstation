@@ -206,4 +206,8 @@
     <string name="menu_edit_game_directories_add_path">Add Path</string>
     <string name="edit_game_directories_add_path">Add Path</string>
     <string name="edit_game_directories_add_path_summary">Enter the full path to the directory with games.\n\nYou can get this from a file manager app.\n\nExample: /storage/emulated/0/games</string>
+    <string name="save_state_info_slot_is_empty">Slot Is Empty</string>
+    <string name="save_state_info_game_save_n">Game Save %d</string>
+    <string name="save_state_info_global_save_n">Global Save %d</string>
+    <string name="save_state_info_quick_save">Quick Save</string>
 </resources>

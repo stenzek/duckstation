@@ -81,7 +81,6 @@
 	<string-array name="emulation_menu">
 		<item>Загрузить состояние</item>
 		<item>Сохранить состояние</item>
-		<item>Слот сохранения</item>
 		<item>Включить ускорение</item>
 		<item>Другие опции</item>
 		<item>Выход</item>

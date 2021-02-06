@@ -136,6 +136,8 @@ public class AndroidHostInterface {
 
     public native boolean setMediaFilename(String filename);
 
+    public native SaveStateInfo[] getSaveStateInfo(boolean includeEmpty);
+
     static {
         System.loadLibrary("duckstation-native");
     }

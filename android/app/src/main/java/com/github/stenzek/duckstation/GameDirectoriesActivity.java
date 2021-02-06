@@ -298,7 +298,7 @@ public class GameDirectoriesActivity extends AppCompatActivity {
                 .setTitle(R.string.edit_game_directories_add_path)
                 .setMessage(R.string.edit_game_directories_add_path_summary)
                 .setView(text)
-                .setPositiveButton("Add", (dialog, which) ->  {
+                .setPositiveButton("Add", (dialog, which) -> {
                     final String path = text.getText().toString();
                     if (!path.isEmpty()) {
                         addSearchDirectory(GameDirectoriesActivity.this, path, true);

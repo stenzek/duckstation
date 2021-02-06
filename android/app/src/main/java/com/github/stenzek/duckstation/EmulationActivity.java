@@ -19,6 +19,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -41,7 +42,6 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     private boolean mApplySettingsOnSurfaceRestored = false;
     private String mGameTitle = null;
     private EmulationSurfaceView mContentView;
-    private int mSaveStateSlot = 0;
 
     private boolean getBooleanSetting(String key, boolean defaultValue) {
         return mPreferences.getBoolean(key, defaultValue);
@@ -398,42 +398,36 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        if (mGameTitle != null && !mGameTitle.isEmpty())
+            builder.setTitle(mGameTitle);
         builder.setItems(R.array.emulation_menu, (dialogInterface, i) -> {
             switch (i) {
-                case 0:     // Quick Load
+                case 0:     // Load State
                 {
-                    AndroidHostInterface.getInstance().loadState(false, mSaveStateSlot);
-                    onMenuClosed();
+                    showSaveStateMenu(false);
                     return;
                 }
 
-                case 1:     // Quick Save
+                case 1:     // Save State
                 {
-                    AndroidHostInterface.getInstance().saveState(false, mSaveStateSlot);
-                    onMenuClosed();
+                    showSaveStateMenu(true);
                     return;
                 }
 
-                case 2:     // Save State Slot
-                {
-                    showSaveStateSlotMenu();
-                    return;
-                }
-
-                case 3:     // Toggle Fast Forward
+                case 2:     // Toggle Fast Forward
                 {
                     AndroidHostInterface.getInstance().setFastForwardEnabled(!AndroidHostInterface.getInstance().isFastForwardEnabled());
                     onMenuClosed();
                     return;
                 }
 
-                case 4:     // More Options
+                case 3:     // More Options
                 {
                     showMoreMenu();
                     return;
                 }
 
-                case 5:     // Quit
+                case 4:     // Quit
                 {
                     mStopRequested = true;
                     finish();
@@ -445,15 +439,34 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         builder.create().show();
     }
 
-    private void showSaveStateSlotMenu() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setSingleChoiceItems(R.array.emulation_save_state_slot_menu, mSaveStateSlot, (dialogInterface, i) -> {
-            mSaveStateSlot = i;
-            dialogInterface.dismiss();
+    private void showSaveStateMenu(boolean saving) {
+        final SaveStateInfo[] infos = AndroidHostInterface.getInstance().getSaveStateInfo(true);
+        if (infos == null) {
+            onMenuClosed();
+            return;
+        }
+
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        final ListView listView = new ListView(this);
+        listView.setAdapter(new SaveStateInfo.ListAdapter(this, infos));
+        builder.setView(listView);
+        builder.setOnDismissListener((dialog) -> {
             onMenuClosed();
         });
-        builder.setOnCancelListener(dialogInterface -> onMenuClosed());
-        builder.create().show();
+
+        final AlertDialog dialog = builder.create();
+
+        listView.setOnItemClickListener((parent, view, position, id) -> {
+            SaveStateInfo info = infos[position];
+            if (saving) {
+                AndroidHostInterface.getInstance().saveState(info.isGlobal(), info.getSlot());
+            } else {
+                AndroidHostInterface.getInstance().loadState(info.isGlobal(), info.getSlot());
+            }
+            dialog.dismiss();
+        });
+
+        dialog.show();
     }
 
     private void showMoreMenu() {

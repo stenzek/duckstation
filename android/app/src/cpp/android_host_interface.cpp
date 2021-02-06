@@ -51,6 +51,8 @@ static jclass s_PatchCode_class;
 static jmethodID s_PatchCode_constructor;
 static jclass s_GameListEntry_class;
 static jmethodID s_GameListEntry_constructor;
+static jclass s_SaveStateInfo_class;
+static jmethodID s_SaveStateInfo_constructor;
 
 namespace AndroidHelpers {
 // helper for retrieving the current per-thread jni environment
@@ -350,7 +352,7 @@ void AndroidHostInterface::RunOnEmulationThread(std::function<void()> function, 
   m_mutex.unlock();
 }
 
-void AndroidHostInterface::RunLater(std::function<void ()> func)
+void AndroidHostInterface::RunLater(std::function<void()> func)
 {
   std::unique_lock<std::mutex> lock(m_mutex);
   m_callback_queue.push_back(std::move(func));
@@ -887,7 +889,7 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
 
   // Create global reference so it doesn't get cleaned up.
   JNIEnv* env = AndroidHelpers::GetJNIEnv();
-  jclass string_class, host_interface_class, patch_code_class, game_list_entry_class;
+  jclass string_class, host_interface_class, patch_code_class, game_list_entry_class, save_state_info_class;
   if ((string_class = env->FindClass("java/lang/String")) == nullptr ||
       (s_String_class = static_cast<jclass>(env->NewGlobalRef(string_class))) == nullptr ||
       (host_interface_class = env->FindClass("com/github/stenzek/duckstation/AndroidHostInterface")) == nullptr ||
@@ -895,7 +897,9 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
       (patch_code_class = env->FindClass("com/github/stenzek/duckstation/PatchCode")) == nullptr ||
       (s_PatchCode_class = static_cast<jclass>(env->NewGlobalRef(patch_code_class))) == nullptr ||
       (game_list_entry_class = env->FindClass("com/github/stenzek/duckstation/GameListEntry")) == nullptr ||
-      (s_GameListEntry_class = static_cast<jclass>(env->NewGlobalRef(game_list_entry_class))) == nullptr)
+      (s_GameListEntry_class = static_cast<jclass>(env->NewGlobalRef(game_list_entry_class))) == nullptr ||
+      (save_state_info_class = env->FindClass("com/github/stenzek/duckstation/SaveStateInfo")) == nullptr ||
+      (s_SaveStateInfo_class = static_cast<jclass>(env->NewGlobalRef(save_state_info_class))) == nullptr)
   {
     Log_ErrorPrint("AndroidHostInterface class lookup failed");
     return -1;
@@ -937,7 +941,11 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
       (s_GameListEntry_constructor = env->GetMethodID(
          s_GameListEntry_class, "<init>",
          "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JLjava/lang/String;Ljava/lang/"
-         "String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V")) == nullptr)
+         "String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V")) == nullptr ||
+      (s_SaveStateInfo_constructor = env->GetMethodID(
+         s_SaveStateInfo_class, "<init>",
+         "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IZII[B)V")) ==
+        nullptr)
   {
     Log_ErrorPrint("AndroidHostInterface lookups failed");
     return -1;
@@ -1573,4 +1581,97 @@ DEFINE_JNI_ARGS_METHOD(jboolean, AndroidHostInterface_setMediaFilename, jstring 
   });
 
   return true;
+}
+
+static jobject CreateSaveStateInfo(JNIEnv* env, const CommonHostInterface::ExtendedSaveStateInfo& ssi)
+{
+  LocalRefHolder<jstring> path(env, env->NewStringUTF(ssi.path.c_str()));
+  LocalRefHolder<jstring> title(env, env->NewStringUTF(ssi.title.c_str()));
+  LocalRefHolder<jstring> code(env, env->NewStringUTF(ssi.game_code.c_str()));
+  LocalRefHolder<jstring> media_path(env, env->NewStringUTF(ssi.media_path.c_str()));
+  LocalRefHolder<jstring> timestamp(env, env->NewStringUTF(Timestamp::FromUnixTimestamp(ssi.timestamp).ToString("%c")));
+  LocalRefHolder<jbyteArray> screenshot_data;
+  if (!ssi.screenshot_data.empty())
+  {
+    const jsize data_size = static_cast<jsize>(ssi.screenshot_data.size() * sizeof(u32));
+    screenshot_data = LocalRefHolder<jbyteArray>(env, env->NewByteArray(data_size));
+    env->SetByteArrayRegion(screenshot_data.Get(), 0, data_size,
+                            reinterpret_cast<const jbyte*>(ssi.screenshot_data.data()));
+  }
+
+  return env->NewObject(s_SaveStateInfo_class, s_SaveStateInfo_constructor, path.Get(), title.Get(), code.Get(),
+                        media_path.Get(), timestamp.Get(), static_cast<jint>(ssi.slot),
+                        static_cast<jboolean>(ssi.global), static_cast<jint>(ssi.screenshot_width),
+                        static_cast<jint>(ssi.screenshot_height), screenshot_data.Get());
+}
+
+static jobject CreateEmptySaveStateInfo(JNIEnv* env, s32 slot, bool global)
+{
+  return env->NewObject(s_SaveStateInfo_class, s_SaveStateInfo_constructor, nullptr, nullptr, nullptr, nullptr, nullptr,
+                        static_cast<jint>(slot), static_cast<jboolean>(global), static_cast<jint>(0),
+                        static_cast<jint>(0), nullptr);
+}
+
+DEFINE_JNI_ARGS_METHOD(jobjectArray, AndroidHostInterface_getSaveStateInfo, jobject obj, jboolean includeEmpty)
+{
+  if (!System::IsValid())
+    return nullptr;
+
+  AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
+  std::vector<jobject> infos;
+
+  // +1 for the quick save only in android.
+  infos.reserve(1 + CommonHostInterface::PER_GAME_SAVE_STATE_SLOTS + CommonHostInterface::GLOBAL_SAVE_STATE_SLOTS);
+
+  const std::string& game_code = System::GetRunningCode();
+  if (!game_code.empty())
+  {
+    for (u32 i = 0; i <= CommonHostInterface::PER_GAME_SAVE_STATE_SLOTS; i++)
+    {
+      std::optional<CommonHostInterface::ExtendedSaveStateInfo> esi =
+        hi->GetExtendedSaveStateInfo(game_code.c_str(), static_cast<s32>(i));
+      if (esi.has_value())
+      {
+        jobject obj = CreateSaveStateInfo(env, esi.value());
+        if (obj)
+          infos.push_back(obj);
+      }
+      else if (includeEmpty)
+      {
+        jobject obj = CreateEmptySaveStateInfo(env, static_cast<s32>(i), false);
+        if (obj)
+          infos.push_back(obj);
+      }
+    }
+  }
+
+  for (u32 i = 1; i <= CommonHostInterface::GLOBAL_SAVE_STATE_SLOTS; i++)
+  {
+    std::optional<CommonHostInterface::ExtendedSaveStateInfo> esi =
+      hi->GetExtendedSaveStateInfo(nullptr, static_cast<s32>(i));
+    if (esi.has_value())
+    {
+      jobject obj = CreateSaveStateInfo(env, esi.value());
+      if (obj)
+        infos.push_back(obj);
+    }
+    else if (includeEmpty)
+    {
+      jobject obj = CreateEmptySaveStateInfo(env, static_cast<s32>(i), true);
+      if (obj)
+        infos.push_back(obj);
+    }
+  }
+
+  if (infos.empty())
+    return nullptr;
+
+  jobjectArray ret = env->NewObjectArray(static_cast<jsize>(infos.size()), s_SaveStateInfo_class, nullptr);
+  for (size_t i = 0; i < infos.size(); i++)
+  {
+    env->SetObjectArrayElement(ret, static_cast<jsize>(i), infos[i]);
+    env->DeleteLocalRef(infos[i]);
+  }
+
+  return ret;
 }

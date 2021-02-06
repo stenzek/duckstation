@@ -81,7 +81,6 @@
     <string-array name="emulation_menu">
         <item>Carica Stato</item>
         <item>Salva Stato</item>
-        <item>Slot Salvataggio Stato</item>
         <item>Abilita/Disabilita Avanti Veloce</item>
         <item>Altre Opzioni</item>
         <item>Esci</item>
@@ -93,19 +92,6 @@
         <item>Impostazioni</item>
         <item>Cambia Controller Touchscreen</item>
         <item>Edit Touchscreen Controller Layout</item>
-    </string-array>
-    <string-array name="emulation_save_state_slot_menu">
-        <item>Slot Veloce</item>
-        <item>Slot Gioco 1</item>
-        <item>Slot Gioco 2</item>
-        <item>Slot Gioco 3</item>
-        <item>Slot Gioco 4</item>
-        <item>Slot Gioco 5</item>
-        <item>Slot Gioco 6</item>
-        <item>Slot Gioco 7</item>
-        <item>Slot Gioco 8</item>
-        <item>Slot Gioco 9</item>
-        <item>Slot Gioco 10</item>
     </string-array>
     <string-array name="settings_cdrom_read_speedup_entries">
         <item>Nessuna Velocità Doppia)</item>

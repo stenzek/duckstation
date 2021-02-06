@@ -81,7 +81,6 @@
     <string-array name="emulation_menu">
         <item>Staat Laden</item>
         <item>Staat Opslaan</item>
-        <item>Staat Nummer</item>
         <item>Doorspoelen aan/uitzetten</item>
         <item>Meer Opties</item>
         <item>Afsluiten</item>
@@ -93,19 +92,6 @@
         <item>Instellingen</item>
         <item>Touchscreen Controller Aanpassen</item>
         <item>Edit Touchscreen Controller Layout</item>
-    </string-array>
-    <string-array name="emulation_save_state_slot_menu">
-        <item>Snel Slot</item>
-        <item>Game Slot 1</item>
-        <item>Game Slot 2</item>
-        <item>Game Slot 3</item>
-        <item>Game Slot 4</item>
-        <item>Game Slot 5</item>
-        <item>Game Slot 6</item>
-        <item>Game Slot 7</item>
-        <item>Game Slot 8</item>
-        <item>Game Slot 9</item>
-        <item>Game Slot 10</item>
     </string-array>
     <string-array name="settings_cdrom_read_speedup_entries">
         <item>Geen (Dubbele Snelheid)</item>
