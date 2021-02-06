@@ -52,6 +52,17 @@ static bool ShouldPreferESContext()
 #endif
 }
 
+static void DisableBrokenExtensions(const char* gl_vendor, const char* gl_renderer)
+{
+  if (std::strstr(gl_vendor, "ARM") && std::strstr(gl_renderer, "Mali"))
+  {
+    // GL_{EXT,OES}_copy_image seem to be implemented on the CPU in the Mali drivers...
+    Log_VerbosePrintf("Mali driver detected, disabling GL_{EXT,OES}_copy_image");
+    GLAD_GL_EXT_copy_image = 0;
+    GLAD_GL_OES_copy_image = 0;
+  }
+}
+
 Context::Context(const WindowInfo& wi) : m_wi(wi) {}
 
 Context::~Context() = default;
@@ -148,6 +159,8 @@ std::unique_ptr<GL::Context> Context::Create(const WindowInfo& wi, const Version
   Log_InfoPrintf("GL_RENDERER: %s", gl_renderer);
   Log_InfoPrintf("GL_VERSION: %s", gl_version);
   Log_InfoPrintf("GL_SHADING_LANGUAGE_VERSION: %s", gl_shading_language_version);
+
+  DisableBrokenExtensions(gl_vendor, gl_renderer);
 
   return context;
 }
