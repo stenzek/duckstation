@@ -63,10 +63,6 @@
 //  ES 3.0    300       "#version 300 es"   = WebGL 2.0
 //----------------------------------------
 
-#if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_WARNINGS)
-#define _CRT_SECURE_NO_WARNINGS
-#endif
-
 #include "imgui.h"
 #include "imgui_impl_opengl3.h"
 #include <stdio.h>
@@ -126,8 +122,13 @@ bool    ImGui_ImplOpenGL3_Init(const char* glsl_version)
       io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;  // We can honor the ImDrawCmd::VtxOffset field, allowing for large meshes.
 
     IM_ASSERT((int)strlen(glsl_version) + 2 < IM_ARRAYSIZE(g_GlslVersionString));
+#ifndef _MSC_VER
     strcpy(g_GlslVersionString, glsl_version);
     strcat(g_GlslVersionString, "\n");
+#else
+    strncpy_s(g_GlslVersionString, sizeof(g_GlslVersionString), glsl_version, _TRUNCATE);
+    strncat_s(g_GlslVersionString, sizeof(g_GlslVersionString), "\n", _TRUNCATE);
+#endif
     return ImGui_ImplOpenGL3_CreateDeviceObjects();
 }
 
@@ -363,7 +364,11 @@ bool    ImGui_ImplOpenGL3_CreateDeviceObjects()
 
     // Parse GLSL version string
     int glsl_version = 130;
+#ifndef _MSC_VER
     sscanf(g_GlslVersionString, "#version %d", &glsl_version);
+#else
+    sscanf_s(g_GlslVersionString, "#version %d", &glsl_version);
+#endif
 
     const GLchar* vertex_shader_glsl_120 =
         "uniform mat4 ProjMtx;\n"
