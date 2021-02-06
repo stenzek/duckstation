@@ -133,8 +133,9 @@ static VkSurfaceKHR CreateDisplaySurface(VkInstance instance, VkPhysicalDevice p
     {
       Log_DevPrintf("  Mode %ux%u @ %u", mode.parameters.visibleRegion.width, mode.parameters.visibleRegion.height,
                     mode.parameters.refreshRate);
-      if (!matched_mode && (wi.surface_width == 0 && wi.surface_height == 0) ||
-          (mode.parameters.visibleRegion.width == wi.surface_width && mode.parameters.visibleRegion.height))
+      if (!matched_mode &&
+          ((wi.surface_width == 0 && wi.surface_height == 0) ||
+           (mode.parameters.visibleRegion.width == wi.surface_width && mode.parameters.visibleRegion.height)))
       {
         matched_mode = &mode;
       }

@@ -788,7 +788,7 @@ void ShutdownFastmem()
 Common::PageFaultHandler::HandlerResult MMapPageFaultHandler(void* exception_pc, void* fault_address, bool is_write)
 {
   if (static_cast<u8*>(fault_address) < g_state.fastmem_base ||
-      (static_cast<u8*>(fault_address) - g_state.fastmem_base) >= Bus::FASTMEM_REGION_SIZE)
+      (static_cast<u8*>(fault_address) - g_state.fastmem_base) >= static_cast<ptrdiff_t>(Bus::FASTMEM_REGION_SIZE))
   {
     return Common::PageFaultHandler::HandlerResult::ExecuteNextHandler;
   }

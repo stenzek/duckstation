@@ -514,10 +514,6 @@ DiscRegion GetRegionForExe(const char* path)
   if (!fp)
     return DiscRegion::Other;
 
-  std::fseek(fp.get(), 0, SEEK_END);
-  const u32 file_size = static_cast<u32>(std::ftell(fp.get()));
-  std::fseek(fp.get(), 0, SEEK_SET);
-
   BIOS::PSEXEHeader header;
   if (std::fread(&header, sizeof(header), 1, fp.get()) != 1)
     return DiscRegion::Other;
@@ -2086,7 +2082,7 @@ bool SaveRewindState()
 
   s_rewind_states.push_back(std::move(mss));
 
-  Log_DevPrintf("Saved rewind state (%llu bytes, took %.4f ms)", s_rewind_states.back().state_stream->GetSize(),
+  Log_DevPrintf("Saved rewind state (%" PRIu64 " bytes, took %.4f ms)", s_rewind_states.back().state_stream->GetSize(),
                 save_timer.GetTimeMilliseconds());
 
   return true;

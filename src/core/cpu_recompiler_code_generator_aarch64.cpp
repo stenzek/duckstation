@@ -202,11 +202,13 @@ void CodeGenerator::EmitBeginBlock()
   // Save the link register, since we'll be calling functions.
   const bool link_reg_allocated = m_register_cache.AllocateHostReg(30);
   DebugAssert(link_reg_allocated);
+  UNREFERENCED_VARIABLE(link_reg_allocated);
   m_register_cache.AssumeCalleeSavedRegistersAreSaved();
 
   // Store the CPU struct pointer. TODO: make this better.
   const bool cpu_reg_allocated = m_register_cache.AllocateHostReg(RCPUPTR);
   DebugAssert(cpu_reg_allocated);
+  UNREFERENCED_VARIABLE(cpu_reg_allocated);
 
   // If there's loadstore instructions, preload the fastmem base.
   if (m_block->contains_loadstore_instructions)

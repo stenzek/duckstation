@@ -183,8 +183,8 @@ void HostDisplay::CalculateDrawRect(s32 window_width, s32 window_height, float* 
     {
       switch (m_display_alignment)
       {
-        case Alignment::LeftOrTop:
-          *out_top_padding = 0.0f;
+        case Alignment::RightOrBottom:
+          *out_top_padding = std::max<float>(static_cast<float>(window_height) - (display_height * scale), 0.0f);
           break;
 
         case Alignment::Center:
@@ -192,8 +192,9 @@ void HostDisplay::CalculateDrawRect(s32 window_width, s32 window_height, float* 
             std::max<float>((static_cast<float>(window_height) - (display_height * scale)) / 2.0f, 0.0f);
           break;
 
-        case Alignment::RightOrBottom:
-          *out_top_padding = std::max<float>(static_cast<float>(window_height) - (display_height * scale), 0.0f);
+        case Alignment::LeftOrTop:
+        default:
+          *out_top_padding = 0.0f;
           break;
       }
     }
@@ -209,8 +210,8 @@ void HostDisplay::CalculateDrawRect(s32 window_width, s32 window_height, float* 
     {
       switch (m_display_alignment)
       {
-        case Alignment::LeftOrTop:
-          *out_left_padding = 0.0f;
+        case Alignment::RightOrBottom:
+          *out_left_padding = std::max<float>(static_cast<float>(window_width) - (display_width * scale), 0.0f);
           break;
 
         case Alignment::Center:
@@ -218,8 +219,9 @@ void HostDisplay::CalculateDrawRect(s32 window_width, s32 window_height, float* 
             std::max<float>((static_cast<float>(window_width) - (display_width * scale)) / 2.0f, 0.0f);
           break;
 
-        case Alignment::RightOrBottom:
-          *out_left_padding = std::max<float>(static_cast<float>(window_width) - (display_width * scale), 0.0f);
+        case Alignment::LeftOrTop:
+        default:
+          *out_left_padding = 0.0f;
           break;
       }
     }

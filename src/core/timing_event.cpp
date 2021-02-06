@@ -371,8 +371,8 @@ bool DoState(StateWrapper& sw)
 
 TimingEvent::TimingEvent(std::string name, TickCount period, TickCount interval, TimingEventCallback callback,
                          void* callback_param)
-  : m_downcount(interval), m_time_since_last_run(0), m_period(period), m_interval(interval), m_callback(callback),
-    m_callback_param(callback_param), m_name(std::move(name)), m_active(false)
+  : m_callback(callback), m_callback_param(callback_param), m_downcount(interval), m_time_since_last_run(0),
+    m_period(period), m_interval(interval), m_name(std::move(name))
 {
 }
 

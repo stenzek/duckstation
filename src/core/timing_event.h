@@ -67,7 +67,7 @@ public:
   TickCount m_time_since_last_run;
   TickCount m_period;
   TickCount m_interval;
-  bool m_active;
+  bool m_active = false;
 
   std::string m_name;
 };

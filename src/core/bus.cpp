@@ -361,7 +361,7 @@ void UpdateFastmemViews(CPUFastmemMode mode, bool isolate_cache)
           u8* page_address = map_address + (i * HOST_PAGE_SIZE);
           if (!m_memory_arena.SetPageProtection(page_address, HOST_PAGE_SIZE, true, false, false))
           {
-            Log_ErrorPrintf("Failed to write-protect code page at %p");
+            Log_ErrorPrintf("Failed to write-protect code page at %p", page_address);
             return;
           }
         }
@@ -504,7 +504,7 @@ void SetCodePageFastmemProtection(u32 page_index, bool writable)
       if (!m_memory_arena.SetPageProtection(page_address, HOST_PAGE_SIZE, true, writable, false))
       {
         Log_ErrorPrintf("Failed to %s code page %u (0x%08X) @ %p", writable ? "unprotect" : "protect", page_index,
-                        page_index * HOST_PAGE_SIZE, page_address);
+                        page_index * static_cast<u32>(HOST_PAGE_SIZE), page_address);
       }
     }
 
@@ -1421,8 +1421,6 @@ ALWAYS_INLINE_RELEASE static void WriteICache(VirtualMemoryAddress address, u32 
 static void WriteCacheControl(u32 value)
 {
   Log_DevPrintf("Cache control <- 0x%08X", value);
-
-  CacheControl changed_bits{g_state.cache_control.bits ^ value};
   g_state.cache_control.bits = value;
 }
 

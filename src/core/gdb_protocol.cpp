@@ -127,7 +127,7 @@ static std::optional<std::string> Cmd$g(const std::string_view& data)
   }
 
   // Pad with dummy data (FP registers stuff).
-  for (int i = 0; i < NUM_GDB_REGISTERS - REGISTERS.size(); i++) {
+  for (int i = 0; i < NUM_GDB_REGISTERS - static_cast<int>(REGISTERS.size()); i++) {
     ss << "00000000";
   }
 
@@ -150,7 +150,7 @@ static std::optional<std::string> Cmd$G(const std::string_view& data)
     }
   }
   else {
-    Log_ErrorPrintf("Wrong payload size for 'G' command, expected %d got %d", NUM_GDB_REGISTERS*8, data.size());
+    Log_ErrorPrintf("Wrong payload size for 'G' command, expected %d got %zu", NUM_GDB_REGISTERS*8, data.size());
   }
 
   return { "" };
@@ -291,7 +291,7 @@ std::string ProcessPacket(const std::string_view& data)
   // Validate packet.
   auto packet = DeserializePacket(trimmedData);
   if (!packet) {
-    Log_ErrorPrintf("Malformed packet '%*s'", trimmedData.size(), trimmedData.data());
+    Log_ErrorPrintf("Malformed packet '%*s'", static_cast<int>(trimmedData.size()), trimmedData.data());
     return "-";
   }
 
@@ -311,7 +311,7 @@ std::string ProcessPacket(const std::string_view& data)
   }
 
   if (!processed) {
-    Log_WarningPrintf("Failed to process packet '%*s'", trimmedData.size(), trimmedData.data());
+    Log_WarningPrintf("Failed to process packet '%*s'", static_cast<int>(trimmedData.size()), trimmedData.data());
   }
   return reply ? "+"+SerializePacket(*reply) : "+";
 }

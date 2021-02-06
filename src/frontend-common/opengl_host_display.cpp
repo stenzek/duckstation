@@ -946,8 +946,6 @@ void OpenGLHostDisplay::ApplyPostProcessingChain(GLuint final_target, s32 final_
                                                  s32 texture_height, s32 texture_view_x, s32 texture_view_y,
                                                  s32 texture_view_width, s32 texture_view_height)
 {
-  static constexpr std::array<float, 4> clear_color = {0.0f, 0.0f, 0.0f, 1.0f};
-
   if (!CheckPostProcessingRenderTargets(GetWindowWidth(), GetWindowHeight()))
   {
     RenderDisplay(final_left, GetWindowHeight() - final_top - final_height, final_width, final_height, texture_handle,

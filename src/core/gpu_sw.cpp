@@ -582,7 +582,6 @@ void GPU_SW::DispatchRenderCommand()
   }
 
   const GPURenderCommand rc{m_render_command.bits};
-  const bool dithering_enable = rc.IsDitheringEnabled() && m_GPUSTAT.dither_enable;
 
   switch (rc.primitive)
   {

@@ -9,7 +9,6 @@
 #include "../string_util.h"
 #include "context.h"
 #include "shader_compiler.h"
-Log_SetChannel(Vulkan::Util);
 
 namespace Vulkan {
 namespace Util {

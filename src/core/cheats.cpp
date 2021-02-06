@@ -1213,10 +1213,10 @@ void CheatCode::Apply() const
         index += 2;
       }
       break;
-      
+
       case InstructionCode::ExtFindAndReplace:
       {
-          
+
         if ((index + 4) >= instructions.size())
         {
           Log_ErrorPrintf("Incomplete find/replace instruction");
@@ -1225,82 +1225,98 @@ void CheatCode::Apply() const
         const Instruction& inst2 = instructions[index + 1];
         const Instruction& inst3 = instructions[index + 2];
         const Instruction& inst4 = instructions[index + 3];
-        const Instruction& inst5 = instructions[index + 4];   
-        
+        const Instruction& inst5 = instructions[index + 4];
+
         const u32 offset = Truncate16(inst.value32 & 0x0000FFFFu) << 1;
         const u8 wildcard = Truncate8((inst.value32 & 0x00FF0000u) >> 16);
         const u32 minaddress = inst.address - offset;
         const u32 maxaddress = inst.address + offset;
-        const u8 f1  = Truncate8((inst2.first & 0xFF000000u) >> 24);
-        const u8 f2  = Truncate8((inst2.first & 0x00FF0000u) >> 16);
-        const u8 f3  = Truncate8((inst2.first & 0x0000FF00u) >> 8);
-        const u8 f4  = Truncate8 (inst2.first & 0x000000FFu);
-        const u8 f5  = Truncate8((inst2.value32 & 0xFF000000u) >> 24);
-        const u8 f6  = Truncate8((inst2.value32 & 0x00FF0000u) >> 16);
-        const u8 f7  = Truncate8((inst2.value32 & 0x0000FF00u) >> 8);
-        const u8 f8  = Truncate8 (inst2.value32 & 0x000000FFu);
-        const u8 f9  = Truncate8((inst3.first & 0xFF000000u) >> 24);
+        const u8 f1 = Truncate8((inst2.first & 0xFF000000u) >> 24);
+        const u8 f2 = Truncate8((inst2.first & 0x00FF0000u) >> 16);
+        const u8 f3 = Truncate8((inst2.first & 0x0000FF00u) >> 8);
+        const u8 f4 = Truncate8(inst2.first & 0x000000FFu);
+        const u8 f5 = Truncate8((inst2.value32 & 0xFF000000u) >> 24);
+        const u8 f6 = Truncate8((inst2.value32 & 0x00FF0000u) >> 16);
+        const u8 f7 = Truncate8((inst2.value32 & 0x0000FF00u) >> 8);
+        const u8 f8 = Truncate8(inst2.value32 & 0x000000FFu);
+        const u8 f9 = Truncate8((inst3.first & 0xFF000000u) >> 24);
         const u8 f10 = Truncate8((inst3.first & 0x00FF0000u) >> 16);
         const u8 f11 = Truncate8((inst3.first & 0x0000FF00u) >> 8);
-        const u8 f12 = Truncate8 (inst3.first & 0x000000FFu);
+        const u8 f12 = Truncate8(inst3.first & 0x000000FFu);
         const u8 f13 = Truncate8((inst3.value32 & 0xFF000000u) >> 24);
         const u8 f14 = Truncate8((inst3.value32 & 0x00FF0000u) >> 16);
         const u8 f15 = Truncate8((inst3.value32 & 0x0000FF00u) >> 8);
-        const u8 f16 = Truncate8 (inst3.value32 & 0x000000FFu);
-        const u8 r1  = Truncate8((inst4.first & 0xFF000000u) >> 24);
-        const u8 r2  = Truncate8((inst4.first & 0x00FF0000u) >> 16);
-        const u8 r3  = Truncate8((inst4.first & 0x0000FF00u) >> 8);
-        const u8 r4  = Truncate8 (inst4.first & 0x000000FFu);
-        const u8 r5  = Truncate8((inst4.value32 & 0xFF000000u) >> 24);
-        const u8 r6  = Truncate8((inst4.value32 & 0x00FF0000u) >> 16);
-        const u8 r7  = Truncate8((inst4.value32 & 0x0000FF00u) >> 8);
-        const u8 r8  = Truncate8 (inst4.value32 & 0x000000FFu);
-        const u8 r9  = Truncate8((inst5.first & 0xFF000000u) >> 24);
+        const u8 f16 = Truncate8(inst3.value32 & 0x000000FFu);
+        const u8 r1 = Truncate8((inst4.first & 0xFF000000u) >> 24);
+        const u8 r2 = Truncate8((inst4.first & 0x00FF0000u) >> 16);
+        const u8 r3 = Truncate8((inst4.first & 0x0000FF00u) >> 8);
+        const u8 r4 = Truncate8(inst4.first & 0x000000FFu);
+        const u8 r5 = Truncate8((inst4.value32 & 0xFF000000u) >> 24);
+        const u8 r6 = Truncate8((inst4.value32 & 0x00FF0000u) >> 16);
+        const u8 r7 = Truncate8((inst4.value32 & 0x0000FF00u) >> 8);
+        const u8 r8 = Truncate8(inst4.value32 & 0x000000FFu);
+        const u8 r9 = Truncate8((inst5.first & 0xFF000000u) >> 24);
         const u8 r10 = Truncate8((inst5.first & 0x00FF0000u) >> 16);
         const u8 r11 = Truncate8((inst5.first & 0x0000FF00u) >> 8);
-        const u8 r12 = Truncate8 (inst5.first & 0x000000FFu);
+        const u8 r12 = Truncate8(inst5.first & 0x000000FFu);
         const u8 r13 = Truncate8((inst5.value32 & 0xFF000000u) >> 24);
         const u8 r14 = Truncate8((inst5.value32 & 0x00FF0000u) >> 16);
         const u8 r15 = Truncate8((inst5.value32 & 0x0000FF00u) >> 8);
-        const u8 r16 = Truncate8 (inst5.value32 & 0x000000FFu);        
-        
-        for (u32 address = minaddress;address<=maxaddress;address+=2)
+        const u8 r16 = Truncate8(inst5.value32 & 0x000000FFu);
+
+        for (u32 address = minaddress; address <= maxaddress; address += 2)
         {
-          if ((DoMemoryRead<u8>(address   )==f1 || f1  == wildcard) &&
-              (DoMemoryRead<u8>(address+1 )==f2 || f2  == wildcard) &&
-              (DoMemoryRead<u8>(address+2 )==f3 || f3  == wildcard) &&
-              (DoMemoryRead<u8>(address+3 )==f4 || f4  == wildcard) &&
-              (DoMemoryRead<u8>(address+4 )==f5 || f5  == wildcard) &&
-              (DoMemoryRead<u8>(address+5 )==f6 || f6  == wildcard) &&
-              (DoMemoryRead<u8>(address+6 )==f7 || f7  == wildcard) &&
-              (DoMemoryRead<u8>(address+7 )==f8 || f8  == wildcard) &&
-              (DoMemoryRead<u8>(address+8 )==f9 || f9  == wildcard) &&
-              (DoMemoryRead<u8>(address+9 )==f10|| f10 == wildcard) &&
-              (DoMemoryRead<u8>(address+10)==f11|| f11 == wildcard) &&
-              (DoMemoryRead<u8>(address+11)==f12|| f12 == wildcard) &&
-              (DoMemoryRead<u8>(address+12)==f13|| f13 == wildcard) &&
-              (DoMemoryRead<u8>(address+13)==f14|| f14 == wildcard) &&
-              (DoMemoryRead<u8>(address+14)==f15|| f15 == wildcard) &&
-              (DoMemoryRead<u8>(address+15)==f16|| f16 == wildcard))           
+          if ((DoMemoryRead<u8>(address) == f1 || f1 == wildcard) &&
+              (DoMemoryRead<u8>(address + 1) == f2 || f2 == wildcard) &&
+              (DoMemoryRead<u8>(address + 2) == f3 || f3 == wildcard) &&
+              (DoMemoryRead<u8>(address + 3) == f4 || f4 == wildcard) &&
+              (DoMemoryRead<u8>(address + 4) == f5 || f5 == wildcard) &&
+              (DoMemoryRead<u8>(address + 5) == f6 || f6 == wildcard) &&
+              (DoMemoryRead<u8>(address + 6) == f7 || f7 == wildcard) &&
+              (DoMemoryRead<u8>(address + 7) == f8 || f8 == wildcard) &&
+              (DoMemoryRead<u8>(address + 8) == f9 || f9 == wildcard) &&
+              (DoMemoryRead<u8>(address + 9) == f10 || f10 == wildcard) &&
+              (DoMemoryRead<u8>(address + 10) == f11 || f11 == wildcard) &&
+              (DoMemoryRead<u8>(address + 11) == f12 || f12 == wildcard) &&
+              (DoMemoryRead<u8>(address + 12) == f13 || f13 == wildcard) &&
+              (DoMemoryRead<u8>(address + 13) == f14 || f14 == wildcard) &&
+              (DoMemoryRead<u8>(address + 14) == f15 || f15 == wildcard) &&
+              (DoMemoryRead<u8>(address + 15) == f16 || f16 == wildcard))
           {
-            if (r1  != wildcard) DoMemoryWrite<u8>(address   , r1 );
-            if (r2  != wildcard) DoMemoryWrite<u8>(address+1 , r2 );
-            if (r3  != wildcard) DoMemoryWrite<u8>(address+2 , r3 );
-            if (r4  != wildcard) DoMemoryWrite<u8>(address+3 , r4 );
-            if (r5  != wildcard) DoMemoryWrite<u8>(address+4 , r5 );
-            if (r6  != wildcard) DoMemoryWrite<u8>(address+5 , r6 );  
-            if (r7  != wildcard) DoMemoryWrite<u8>(address+6 , r7 );  
-            if (r8  != wildcard) DoMemoryWrite<u8>(address+7 , r8 );  
-            if (r9  != wildcard) DoMemoryWrite<u8>(address+8 , r9 );  
-            if (r10 != wildcard) DoMemoryWrite<u8>(address+9 , r10);  
-            if (r11 != wildcard) DoMemoryWrite<u8>(address+10, r11);  
-            if (r12 != wildcard) DoMemoryWrite<u8>(address+11, r12);  
-            if (r13 != wildcard) DoMemoryWrite<u8>(address+12, r13);  
-            if (r14 != wildcard) DoMemoryWrite<u8>(address+13, r14);  
-            if (r15 != wildcard) DoMemoryWrite<u8>(address+14, r15);  
-            if (r16 != wildcard) DoMemoryWrite<u8>(address+15, r16);
-            address=address+15; 
-          }            
+            if (r1 != wildcard)
+              DoMemoryWrite<u8>(address, r1);
+            if (r2 != wildcard)
+              DoMemoryWrite<u8>(address + 1, r2);
+            if (r3 != wildcard)
+              DoMemoryWrite<u8>(address + 2, r3);
+            if (r4 != wildcard)
+              DoMemoryWrite<u8>(address + 3, r4);
+            if (r5 != wildcard)
+              DoMemoryWrite<u8>(address + 4, r5);
+            if (r6 != wildcard)
+              DoMemoryWrite<u8>(address + 5, r6);
+            if (r7 != wildcard)
+              DoMemoryWrite<u8>(address + 6, r7);
+            if (r8 != wildcard)
+              DoMemoryWrite<u8>(address + 7, r8);
+            if (r9 != wildcard)
+              DoMemoryWrite<u8>(address + 8, r9);
+            if (r10 != wildcard)
+              DoMemoryWrite<u8>(address + 9, r10);
+            if (r11 != wildcard)
+              DoMemoryWrite<u8>(address + 10, r11);
+            if (r12 != wildcard)
+              DoMemoryWrite<u8>(address + 11, r12);
+            if (r13 != wildcard)
+              DoMemoryWrite<u8>(address + 12, r13);
+            if (r14 != wildcard)
+              DoMemoryWrite<u8>(address + 13, r14);
+            if (r15 != wildcard)
+              DoMemoryWrite<u8>(address + 14, r15);
+            if (r16 != wildcard)
+              DoMemoryWrite<u8>(address + 15, r16);
+            address = address + 15;
+          }
         }
         index += 5;
       }
@@ -1488,7 +1504,7 @@ void CheatCode::Apply() const
         }
         else
         {
-          Log_ErrorPrintf("Invalid command in second slide parameter 0x%02hhX", write_type);
+          Log_ErrorPrintf("Invalid command in second slide parameter 0x%02X", static_cast<unsigned>(write_type));
         }
 
         index += 2;
@@ -1571,8 +1587,8 @@ void CheatCode::ApplyOnDisable() const
       case InstructionCode::MemoryCopy:
         index += 2;
         break;
-      case InstructionCode::ExtFindAndReplace:  
-      index += 5;
+      case InstructionCode::ExtFindAndReplace:
+        index += 5;
         break;
       // for conditionals, we don't want to skip over in case it changed at some point
       case InstructionCode::ExtCompareEqual32:

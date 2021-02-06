@@ -1,10 +1,8 @@
 #include "audiosettingswidget.h"
 #include "common/audio_stream.h"
-#include "common/log.h"
 #include "settingsdialog.h"
 #include "settingwidgetbinder.h"
 #include <cmath>
-Log_SetChannel(AudioSettingsWidget);
 
 AudioSettingsWidget::AudioSettingsWidget(QtHostInterface* host_interface, QWidget* parent, SettingsDialog* dialog)
   : QWidget(parent), m_host_interface(host_interface)

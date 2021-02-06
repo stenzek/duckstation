@@ -594,7 +594,7 @@ bool SDLControllerInterface::BindControllerHatToButton(int controller_index, int
     return false;
 
   // We need 4 entries per hat_number
-  if (it->hat_button_mapping.size() < hat_number + 1)
+  if (static_cast<int>(it->hat_button_mapping.size()) < hat_number + 1)
     it->hat_button_mapping.resize(hat_number + 1);
 
   it->hat_button_mapping[hat_number][index] = std::move(callback);

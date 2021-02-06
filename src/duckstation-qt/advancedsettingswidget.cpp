@@ -9,7 +9,6 @@ static void addBooleanTweakOption(QtHostInterface* host_interface, QTableWidget*
                                   std::string section, std::string key, bool default_value)
 {
   const int row = table->rowCount();
-  const bool current_value = host_interface->GetBoolSettingValue(section.c_str(), key.c_str(), default_value);
 
   table->insertRow(row);
 
@@ -35,7 +34,6 @@ static void addIntRangeTweakOption(QtHostInterface* host_interface, QTableWidget
                                    int default_value)
 {
   const int row = table->rowCount();
-  const bool current_value = host_interface->GetBoolSettingValue(section.c_str(), key.c_str(), default_value);
 
   table->insertRow(row);
 

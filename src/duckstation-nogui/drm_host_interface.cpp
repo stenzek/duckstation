@@ -150,7 +150,7 @@ void DRMHostInterface::PollEvDevKeyboards()
 
       const bool pressed = (ev.value == 1);
       const HostKeyCode code = static_cast<HostKeyCode>(ev.code);
-      if (code >= 0 && code < countof(ImGuiIO::KeysDown))
+      if (static_cast<unsigned>(code) < countof(ImGuiIO::KeysDown))
         ImGui::GetIO().KeysDown[code] = pressed;
 
       HandleHostKeyEvent(code, pressed);

@@ -949,7 +949,6 @@ bool CommonHostInterface::EnumerateOSDMessages(std::function<bool(const std::str
   if (m_osd_messages.empty())
     return true;
 
-  bool result = true;
   auto iter = m_osd_messages.begin();
   while (iter != m_osd_messages.end())
   {

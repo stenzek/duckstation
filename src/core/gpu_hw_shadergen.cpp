@@ -8,7 +8,7 @@ GPU_HW_ShaderGen::GPU_HW_ShaderGen(HostDisplay::RenderAPI render_api, u32 resolu
                                    GPUTextureFilter texture_filtering, bool uv_limits, bool pgxp_depth,
                                    bool supports_dual_source_blend)
   : ShaderGen(render_api, supports_dual_source_blend), m_resolution_scale(resolution_scale),
-    m_multisamples(multisamples), m_true_color(true_color), m_per_sample_shading(per_sample_shading),
+    m_multisamples(multisamples), m_per_sample_shading(per_sample_shading), m_true_color(true_color),
     m_scaled_dithering(scaled_dithering), m_texture_filter(texture_filtering), m_uv_limits(uv_limits),
     m_pgxp_depth(pgxp_depth)
 {
@@ -1343,7 +1343,7 @@ std::string GPU_HW_ShaderGen::GenerateAdaptiveDownsampleMipFragmentShader(bool f
   WriteHeader(ss);
   WriteCommonFunctions(ss);
   DeclareTexture(ss, "samp0", 0, false);
-  DeclareUniformBuffer(ss, { "float2 u_uv_min", "float2 u_uv_max", "float2 u_rcp_resolution" }, true);
+  DeclareUniformBuffer(ss, {"float2 u_uv_min", "float2 u_uv_max", "float2 u_rcp_resolution"}, true);
   DefineMacro(ss, "FIRST_PASS", first_pass);
 
   // mipmap_energy.glsl ported from parallel-rsx.
@@ -1402,7 +1402,8 @@ std::string GPU_HW_ShaderGen::GenerateAdaptiveDownsampleBlurFragmentShader()
   WriteHeader(ss);
   WriteCommonFunctions(ss);
   DeclareTexture(ss, "samp0", 0, false);
-  DeclareUniformBuffer(ss, {"float2 u_uv_min", "float2 u_uv_max", "float2 u_rcp_resolution", "float sample_level"}, true);
+  DeclareUniformBuffer(ss, {"float2 u_uv_min", "float2 u_uv_max", "float2 u_rcp_resolution", "float sample_level"},
+                       true);
 
   // mipmap_blur.glsl ported from parallel-rsx.
   DeclareFragmentEntryPoint(ss, 0, 1, {}, false, 1, false, false, false, false);

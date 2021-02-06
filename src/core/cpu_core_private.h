@@ -47,7 +47,6 @@ ALWAYS_INLINE u32 GetICacheFillTagForAddress(VirtualMemoryAddress address)
 }
 ALWAYS_INLINE u32 GetICacheTagMaskForAddress(VirtualMemoryAddress address)
 {
-  const u32 offset = (address >> 2) & 0x03u;
   static const u32 mask[4] = {ICACHE_TAG_ADDRESS_MASK | 1, ICACHE_TAG_ADDRESS_MASK | 2, ICACHE_TAG_ADDRESS_MASK | 4,
                               ICACHE_TAG_ADDRESS_MASK | 8};
   return mask[(address >> 2) & 0x03u];

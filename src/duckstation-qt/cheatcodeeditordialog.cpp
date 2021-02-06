@@ -2,7 +2,7 @@
 #include <QtWidgets/QMessageBox>
 
 CheatCodeEditorDialog::CheatCodeEditorDialog(const QStringList& group_names, CheatCode* code, QWidget* parent)
-  : m_code(code), QDialog(parent)
+  : QDialog(parent), m_code(code)
 {
   m_ui.setupUi(this);
   setupAdditionalUi(group_names);

@@ -36,11 +36,6 @@ static const ImWchar* s_font_glyph_range = nullptr;
 
 static u32 s_menu_button_index = 0;
 
-static ImRect PadRect(const ImRect& r, float padding)
-{
-  return ImRect(ImVec2(r.Min.x + padding, r.Min.y + padding), ImVec2(r.Max.x - padding, r.Max.y - padding));
-}
-
 void SetFontFilename(const char* filename)
 {
   if (filename)
@@ -330,7 +325,11 @@ static bool MenuButtonFrame(const char* str_id, bool enabled, float height, bool
 {
   ImGuiWindow* window = ImGui::GetCurrentWindow();
   if (window->SkipItems)
+  {
+    *visible = false;
+    *hovered = false;
     return false;
+  }
 
   ImVec2 pos, size;
   GetMenuButtonFrameBounds(height, &pos, &size);
@@ -774,7 +773,8 @@ bool EnumChoiceButtonImpl(const char* title, const char* summary, s32* value_poi
     ChoiceDialogOptions options;
     options.reserve(count);
     for (u32 i = 0; i < count; i++)
-      options.emplace_back(to_display_name_function(static_cast<s32>(i), opaque), *value_pointer == i);
+      options.emplace_back(to_display_name_function(static_cast<s32>(i), opaque),
+                           static_cast<u32>(*value_pointer) == i);
     OpenChoiceDialog(title, false, std::move(options), [](s32 index, const std::string& title, bool checked) {
       if (index >= 0)
         s_enum_choice_button_value = index;
@@ -1063,7 +1063,6 @@ void DrawChoiceDialog()
 
   bool is_open = (ImGui::GetNavInputAmount(ImGuiNavInput_Cancel, ImGuiInputReadMode_Pressed) < 1.0f);
   s32 choice = -1;
-  bool choice_checked = false;
 
   if (ImGui::BeginPopupModal(s_choice_dialog_title.c_str(), &is_open,
                              ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))

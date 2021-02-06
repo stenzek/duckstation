@@ -1,5 +1,4 @@
 #include "debuggermodels.h"
-#include "common/log.h"
 #include "core/cpu_core.h"
 #include "core/cpu_core_private.h"
 #include "core/cpu_disasm.h"
@@ -7,7 +6,6 @@
 #include <QtGui/QIcon>
 #include <QtGui/QPalette>
 #include <QtWidgets/QApplication>
-Log_SetChannel(DebuggerModels);
 
 static constexpr int NUM_COLUMNS = 5;
 static constexpr int STACK_RANGE = 128;
