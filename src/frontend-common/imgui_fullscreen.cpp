@@ -99,9 +99,9 @@ static void AddIconFonts(float size)
 
 bool UpdateFonts()
 {
-  const float standard_font_size = std::round(DPIScale(s_font_size));
-  const float medium_font_size = std::round(LayoutScale(LAYOUT_MEDIUM_FONT_SIZE));
-  const float large_font_size = std::round(LayoutScale(LAYOUT_LARGE_FONT_SIZE));
+  const float standard_font_size = std::ceil(DPIScale(s_font_size));
+  const float medium_font_size = std::ceil(LayoutScale(LAYOUT_MEDIUM_FONT_SIZE));
+  const float large_font_size = std::ceil(LayoutScale(LAYOUT_LARGE_FONT_SIZE));
 
   if (g_standard_font && g_standard_font->FontSize == standard_font_size && medium_font_size &&
       g_medium_font->FontSize == medium_font_size && large_font_size && g_large_font->FontSize == large_font_size)
