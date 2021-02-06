@@ -414,7 +414,8 @@ void MenuHeading(const char* title, bool draw_line /*= true*/)
   {
     const ImVec2 line_start(bb.Min.x, bb.Min.y + g_large_font->FontSize + line_padding);
     const ImVec2 line_end(bb.Max.x, line_start.y);
-    ImGui::GetWindowDrawList()->AddLine(line_start, line_end, ImGui::GetColorU32(ImGuiCol_TextDisabled));
+    ImGui::GetWindowDrawList()->AddLine(line_start, line_end, ImGui::GetColorU32(ImGuiCol_TextDisabled),
+                                        line_thickness);
   }
 }
 
