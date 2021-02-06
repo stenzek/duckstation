@@ -357,6 +357,13 @@ struct Settings
   static constexpr MemoryCardType DEFAULT_MEMORY_CARD_1_TYPE = MemoryCardType::PerGameTitle;
   static constexpr MemoryCardType DEFAULT_MEMORY_CARD_2_TYPE = MemoryCardType::None;
   static constexpr LOGLEVEL DEFAULT_LOG_LEVEL = LOGLEVEL_INFO;
+
+  // Enable console logging by default on Linux platforms.
+#if defined(__linux__) && !defined(__ANDROID__)
+  static constexpr bool DEFAULT_LOG_TO_CONSOLE = true;
+#else
+  static constexpr bool DEFAULT_LOG_TO_CONSOLE = false;
+#endif
 };
 
 extern Settings g_settings;

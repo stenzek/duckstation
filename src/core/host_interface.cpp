@@ -582,7 +582,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
 
   si.SetStringValue("Logging", "LogLevel", Settings::GetLogLevelName(Settings::DEFAULT_LOG_LEVEL));
   si.SetStringValue("Logging", "LogFilter", "");
-  si.SetBoolValue("Logging", "LogToConsole", false);
+  si.SetBoolValue("Logging", "LogToConsole", Settings::DEFAULT_LOG_TO_CONSOLE);
   si.SetBoolValue("Logging", "LogToDebug", false);
   si.SetBoolValue("Logging", "LogToWindow", false);
   si.SetBoolValue("Logging", "LogToFile", false);
