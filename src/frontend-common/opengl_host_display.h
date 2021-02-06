@@ -113,6 +113,7 @@ protected:
   std::unique_ptr<GL::StreamBuffer> m_display_pixels_texture_pbo;
   u32 m_display_pixels_texture_pbo_map_offset = 0;
   u32 m_display_pixels_texture_pbo_map_size = 0;
+  std::vector<u8> m_gles_pixels_repack_buffer;
 
   PostProcessingChain m_post_processing_chain;
   GL::Texture m_post_processing_input_texture;
@@ -121,7 +122,6 @@ protected:
 
   bool m_display_texture_is_linear_filtered = false;
   bool m_use_gles2_draw_path = false;
-  std::vector<u8> m_gles2_pixels_repack_buffer;
 };
 
 } // namespace FrontendCommon

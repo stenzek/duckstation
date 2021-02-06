@@ -196,21 +196,33 @@ bool OpenGLHostDisplay::BeginSetDisplayPixels(HostDisplayPixelFormat format, u32
   const u32 pixel_size = GetDisplayPixelFormatSize(format);
   const u32 stride = Common::AlignUpPow2(width * pixel_size, 4);
   const u32 size_required = stride * height * pixel_size;
-  const u32 buffer_size = Common::AlignUpPow2(size_required * 2, 4 * 1024 * 1024);
-  if (!m_display_pixels_texture_pbo || m_display_pixels_texture_pbo->GetSize() < buffer_size)
-  {
-    m_display_pixels_texture_pbo.reset();
-    m_display_pixels_texture_pbo = GL::StreamBuffer::Create(GL_PIXEL_UNPACK_BUFFER, buffer_size);
-    if (!m_display_pixels_texture_pbo)
-      return false;
-  }
 
-  const auto map = m_display_pixels_texture_pbo->Map(GetDisplayPixelFormatSize(format), size_required);
-  m_display_texture_format = format;
-  m_display_pixels_texture_pbo_map_offset = map.buffer_offset;
-  m_display_pixels_texture_pbo_map_size = size_required;
-  *out_buffer = map.pointer;
-  *out_pitch = stride;
+  if (!m_gl_context->IsGLES())
+  {
+    const u32 buffer_size = Common::AlignUpPow2(size_required * 2, 4 * 1024 * 1024);
+    if (!m_display_pixels_texture_pbo || m_display_pixels_texture_pbo->GetSize() < buffer_size)
+    {
+      m_display_pixels_texture_pbo.reset();
+      m_display_pixels_texture_pbo = GL::StreamBuffer::Create(GL_PIXEL_UNPACK_BUFFER, buffer_size);
+      if (!m_display_pixels_texture_pbo)
+        return false;
+    }
+
+    const auto map = m_display_pixels_texture_pbo->Map(GetDisplayPixelFormatSize(format), size_required);
+    m_display_texture_format = format;
+    m_display_pixels_texture_pbo_map_offset = map.buffer_offset;
+    m_display_pixels_texture_pbo_map_size = size_required;
+    *out_buffer = map.pointer;
+    *out_pitch = stride;
+  }
+  else
+  {
+    if (m_gles_pixels_repack_buffer.size() < size_required)
+      m_gles_pixels_repack_buffer.resize(size_required);
+
+    *out_buffer = m_gles_pixels_repack_buffer.data();
+    *out_pitch = stride;
+  }
 
   BindDisplayPixelsTexture();
   SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_display_pixels_texture_id)), format, width, height,
@@ -226,17 +238,26 @@ void OpenGLHostDisplay::EndSetDisplayPixels()
   const auto [gl_internal_format, gl_format, gl_type] =
     s_display_pixel_format_mapping[static_cast<u32>(m_display_texture_format)];
 
-  // glTexImage2D should be quicker on Mali...
-  m_display_pixels_texture_pbo->Unmap(m_display_pixels_texture_pbo_map_size);
-  m_display_pixels_texture_pbo->Bind();
   glBindTexture(GL_TEXTURE_2D, m_display_pixels_texture_id);
-  glTexImage2D(GL_TEXTURE_2D, 0, gl_internal_format, width, height, 0, gl_format, gl_type,
-               reinterpret_cast<void*>(static_cast<uintptr_t>(m_display_pixels_texture_pbo_map_offset)));
-  glBindTexture(GL_TEXTURE_2D, 0);
-  m_display_pixels_texture_pbo->Unbind();
+  if (!m_gl_context->IsGLES())
+  {
+    m_display_pixels_texture_pbo->Unmap(m_display_pixels_texture_pbo_map_size);
+    m_display_pixels_texture_pbo->Bind();
+    glTexImage2D(GL_TEXTURE_2D, 0, gl_internal_format, width, height, 0, gl_format, gl_type,
+                 reinterpret_cast<void*>(static_cast<uintptr_t>(m_display_pixels_texture_pbo_map_offset)));
+    m_display_pixels_texture_pbo->Unbind();
 
-  m_display_pixels_texture_pbo_map_offset = 0;
-  m_display_pixels_texture_pbo_map_size = 0;
+    m_display_pixels_texture_pbo_map_offset = 0;
+    m_display_pixels_texture_pbo_map_size = 0;
+  }
+  else
+  {
+    // glTexImage2D should be quicker on Mali...
+    glTexImage2D(GL_TEXTURE_2D, 0, gl_internal_format, width, height, 0, gl_format, gl_type,
+                 m_gles_pixels_repack_buffer.data());
+  }
+
+  glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 bool OpenGLHostDisplay::SetDisplayPixels(HostDisplayPixelFormat format, u32 width, u32 height, const void* buffer,
@@ -264,11 +285,11 @@ bool OpenGLHostDisplay::SetDisplayPixels(HostDisplayPixelFormat format, u32 widt
     // Otherwise, we need to repack the image.
     const u32 packed_pitch = width * pixel_size;
     const u32 repack_size = packed_pitch * height;
-    if (m_gles2_pixels_repack_buffer.size() < repack_size)
-      m_gles2_pixels_repack_buffer.resize(repack_size);
-    StringUtil::StrideMemCpy(m_gles2_pixels_repack_buffer.data(), packed_pitch, buffer, pitch, packed_pitch, height);
+    if (m_gles_pixels_repack_buffer.size() < repack_size)
+      m_gles_pixels_repack_buffer.resize(repack_size);
+    StringUtil::StrideMemCpy(m_gles_pixels_repack_buffer.data(), packed_pitch, buffer, pitch, packed_pitch, height);
     glTexImage2D(GL_TEXTURE_2D, 0, gl_internal_format, width, height, 0, gl_format, gl_type,
-                 m_gles2_pixels_repack_buffer.data());
+                 m_gles_pixels_repack_buffer.data());
   }
 
   glBindTexture(GL_TEXTURE_2D, 0);
