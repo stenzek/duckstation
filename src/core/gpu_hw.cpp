@@ -1168,7 +1168,7 @@ void GPU_HW::FlushRender()
     m_batch_ubo_dirty = false;
   }
 
-  if (m_batch.NeedsTwoPassRendering())
+  if (NeedsTwoPassRendering())
   {
     m_renderer_stats.num_batches += 2;
     DrawBatchVertices(BatchRenderMode::OnlyOpaque, m_batch_base_vertex, vertex_count);

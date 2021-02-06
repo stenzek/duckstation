@@ -939,12 +939,12 @@ float4 SampleFromVRAM(uint4 texpage, float2 coords)
         o_col0 = float4(color, oalpha);
         o_col1 = float4(0.0, 0.0, 0.0, u_dst_alpha_factor / ialpha);
       #else
-        o_col0 = float4(color, u_dst_alpha_factor / ialpha);
+        o_col0 = float4(color, oalpha);
       #endif
 
-#if !PGXP_DEPTH
-      o_depth = oalpha * v_pos.z;
-#endif
+      #if !PGXP_DEPTH
+        o_depth = oalpha * v_pos.z;
+      #endif
     }
     else
     {
@@ -952,24 +952,16 @@ float4 SampleFromVRAM(uint4 texpage, float2 coords)
         discard;
       #endif
 
-      #if TRANSPARENCY_ONLY_OPAQUE
-        // We don't output the second color here because it's not used (except for filtering).
+      #if USE_DUAL_SOURCE
         o_col0 = float4(color, oalpha);
-        #if USE_DUAL_SOURCE
-          o_col1 = float4(0.0, 0.0, 0.0, 1.0 - ialpha);
-        #endif
+        o_col1 = float4(0.0, 0.0, 0.0, 1.0 - ialpha);
       #else
-        #if USE_DUAL_SOURCE
-          o_col0 = float4(color, oalpha);
-          o_col1 = float4(0.0, 0.0, 0.0, 1.0 - ialpha);
-        #else
-          o_col0 = float4(color, 1.0 - ialpha);
-        #endif
+        o_col0 = float4(color, oalpha);
       #endif
 
-#if !PGXP_DEPTH
-      o_depth = oalpha * v_pos.z;
-#endif
+      #if !PGXP_DEPTH
+        o_depth = oalpha * v_pos.z;
+      #endif
     }
   #else
     // Non-transparency won't enable blending so we can write the mask here regardless.
@@ -979,9 +971,9 @@ float4 SampleFromVRAM(uint4 texpage, float2 coords)
       o_col1 = float4(0.0, 0.0, 0.0, 1.0 - ialpha);
     #endif
 
-#if !PGXP_DEPTH
-    o_depth = oalpha * v_pos.z;
-#endif
+    #if !PGXP_DEPTH
+      o_depth = oalpha * v_pos.z;
+    #endif
   #endif
 }
 )";

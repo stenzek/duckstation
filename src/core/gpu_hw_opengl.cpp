@@ -361,8 +361,6 @@ void GPU_HW_OpenGL::SetCapabilities(HostDisplay* host_display)
   m_supports_dual_source_blend =
     (max_dual_source_draw_buffers > 0) &&
     (GLAD_GL_VERSION_3_3 || GLAD_GL_ARB_blend_func_extended || GLAD_GL_EXT_blend_func_extended);
-  if (!m_supports_dual_source_blend)
-    Log_WarningPrintf("Dual-source blending is not supported, this may break some mask effects.");
 
   m_supports_geometry_shaders =
     GLAD_GL_VERSION_3_2 || GLAD_GL_ARB_geometry_shader4 || GLAD_GL_OES_geometry_shader || GLAD_GL_ES_VERSION_3_2;
@@ -754,7 +752,17 @@ void GPU_HW_OpenGL::SetBlendMode()
                               GL_FUNC_REVERSE_SUBTRACT :
                               GL_FUNC_ADD,
                             GL_FUNC_ADD);
-    glBlendFuncSeparate(GL_ONE, m_supports_dual_source_blend ? GL_SRC1_ALPHA : GL_SRC_ALPHA, GL_ONE, GL_ZERO);
+    if (m_supports_dual_source_blend)
+    {
+      glBlendFuncSeparate(GL_ONE, m_supports_dual_source_blend ? GL_SRC1_ALPHA : GL_SRC_ALPHA, GL_ONE, GL_ZERO);
+    }
+    else
+    {
+      const float factor =
+        (m_current_transparency_mode == GPUTransparencyMode::HalfBackgroundPlusHalfForeground) ? 0.5f : 1.0f;
+      glBlendFuncSeparate(GL_ONE, GL_CONSTANT_ALPHA, GL_ONE, GL_ZERO);
+      glBlendColor(0.0f, 0.0f, 0.0f, factor);
+    }
   }
   else
   {

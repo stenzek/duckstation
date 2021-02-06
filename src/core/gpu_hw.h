@@ -102,14 +102,6 @@ protected:
     bool check_mask_before_draw;
     bool use_depth_buffer;
 
-    // We need two-pass rendering when using BG-FG blending and texturing, as the transparency can be enabled
-    // on a per-pixel basis, and the opaque pixels shouldn't be blended at all.
-    bool NeedsTwoPassRendering() const
-    {
-      return transparency_mode == GPUTransparencyMode::BackgroundMinusForeground &&
-             texture_mode != GPUTextureMode::Disabled;
-    }
-
     // Returns the render mode for this batch.
     BatchRenderMode GetRenderMode() const
     {
@@ -252,6 +244,15 @@ protected:
       return false;
 
     return true;
+  }
+
+  /// We need two-pass rendering when using BG-FG blending and texturing, as the transparency can be enabled
+  /// on a per-pixel basis, and the opaque pixels shouldn't be blended at all.
+  bool NeedsTwoPassRendering() const
+  {
+    return (m_batch.transparency_mode == GPUTransparencyMode::BackgroundMinusForeground &&
+            m_batch.texture_mode != GPUTextureMode::Disabled) ||
+           (m_batch.transparency_mode != GPUTransparencyMode::Disabled && !m_supports_dual_source_blend);
   }
 
   void FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color) override;

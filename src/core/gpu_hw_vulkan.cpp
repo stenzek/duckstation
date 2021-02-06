@@ -174,7 +174,8 @@ void GPU_HW_Vulkan::ResetGraphicsAPIState()
   EndRenderPass();
 
   if (m_host_display->GetDisplayTextureHandle() == &m_vram_texture)
-    m_vram_texture.TransitionToLayout(g_vulkan_context->GetCurrentCommandBuffer(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    m_vram_texture.TransitionToLayout(g_vulkan_context->GetCurrentCommandBuffer(),
+                                      VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
 
 void GPU_HW_Vulkan::RestoreGraphicsAPIState()
@@ -522,9 +523,9 @@ bool GPU_HW_Vulkan::CreateFramebuffer()
       !m_vram_read_texture.Create(texture_width, texture_height, 1, 1, texture_format, VK_SAMPLE_COUNT_1_BIT,
                                   VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_TILING_OPTIMAL,
                                   VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT) ||
-      !m_display_texture.Create(GPU_MAX_DISPLAY_WIDTH * m_resolution_scale,
-                                GPU_MAX_DISPLAY_HEIGHT * m_resolution_scale, 1, 1, texture_format,
-                                VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_TILING_OPTIMAL,
+      !m_display_texture.Create(GPU_MAX_DISPLAY_WIDTH * m_resolution_scale, GPU_MAX_DISPLAY_HEIGHT * m_resolution_scale,
+                                1, 1, texture_format, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_VIEW_TYPE_2D,
+                                VK_IMAGE_TILING_OPTIMAL,
                                 VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT |
                                   VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT) ||
       !m_vram_readback_texture.Create(VRAM_WIDTH, VRAM_HEIGHT, 1, 1, texture_format, VK_SAMPLE_COUNT_1_BIT,
@@ -924,16 +925,35 @@ bool GPU_HW_Vulkan::CompilePipelines()
                     static_cast<BatchRenderMode>(render_mode) != BatchRenderMode::OnlyOpaque)) ||
                   m_texture_filtering != GPUTextureFilter::Nearest)
               {
-                gpbuilder.SetBlendAttachment(
-                  0, true, VK_BLEND_FACTOR_ONE,
-                  m_supports_dual_source_blend ? VK_BLEND_FACTOR_SRC1_ALPHA : VK_BLEND_FACTOR_SRC_ALPHA,
-                  (static_cast<GPUTransparencyMode>(transparency_mode) ==
-                     GPUTransparencyMode::BackgroundMinusForeground &&
-                   static_cast<BatchRenderMode>(render_mode) != BatchRenderMode::TransparencyDisabled &&
-                   static_cast<BatchRenderMode>(render_mode) != BatchRenderMode::OnlyOpaque) ?
-                    VK_BLEND_OP_REVERSE_SUBTRACT :
-                    VK_BLEND_OP_ADD,
-                  VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD);
+                if (m_supports_dual_source_blend)
+                {
+                  gpbuilder.SetBlendAttachment(
+                    0, true, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_SRC1_ALPHA,
+                    (static_cast<GPUTransparencyMode>(transparency_mode) ==
+                       GPUTransparencyMode::BackgroundMinusForeground &&
+                     static_cast<BatchRenderMode>(render_mode) != BatchRenderMode::TransparencyDisabled &&
+                     static_cast<BatchRenderMode>(render_mode) != BatchRenderMode::OnlyOpaque) ?
+                      VK_BLEND_OP_REVERSE_SUBTRACT :
+                      VK_BLEND_OP_ADD,
+                    VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD);
+                }
+                else
+                {
+                  const float factor = (static_cast<GPUTransparencyMode>(transparency_mode) ==
+                                        GPUTransparencyMode::HalfBackgroundPlusHalfForeground) ?
+                                         0.5f :
+                                         1.0f;
+                  gpbuilder.SetBlendAttachment(
+                    0, true, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_CONSTANT_ALPHA,
+                    (static_cast<GPUTransparencyMode>(transparency_mode) ==
+                       GPUTransparencyMode::BackgroundMinusForeground &&
+                     static_cast<BatchRenderMode>(render_mode) != BatchRenderMode::TransparencyDisabled &&
+                     static_cast<BatchRenderMode>(render_mode) != BatchRenderMode::OnlyOpaque) ?
+                      VK_BLEND_OP_REVERSE_SUBTRACT :
+                      VK_BLEND_OP_ADD,
+                    VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD);
+                  gpbuilder.SetBlendConstants(0.0f, 0.0f, 0.0f, factor);
+                }
               }
 
               gpbuilder.SetDynamicViewportAndScissorState();
