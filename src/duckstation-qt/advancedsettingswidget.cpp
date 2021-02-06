@@ -195,25 +195,19 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(QtHostInterface* host_interface, 
 
   addBooleanTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Increase Timer Resolution"), "Main",
                         "IncreaseTimerResolution", true);
-						
-  dialog->registerWidgetHelp(
-    m_ui.logLevel, tr("Log Level"), tr("Information"),
-    tr("Sets the verbosity of messages logged. Higher levels will log more messages."));
-  dialog->registerWidgetHelp(
-    m_ui.logToConsole, tr("Log To System Console"), tr("User Preference"),
-    tr("Logs messages to the console window."));
-  dialog->registerWidgetHelp(
-    m_ui.logToDebug, tr("Log To Debug Console"), tr("User Preference"),
-    tr("Logs messages to the debug console where supported."));
-  dialog->registerWidgetHelp(
-    m_ui.logToWindow, tr("Log To Window"), tr("User Preference"),
-    tr("Logs messages to the window."));
-  dialog->registerWidgetHelp(
-    m_ui.logToFile, tr("Log To File"), tr("User Preference"),
-    tr("Logs messages to duckstation.log in the user directory."));
-  dialog->registerWidgetHelp(
-    m_ui.showDebugMenu, tr("Show Debug Menu"), tr("Unchecked"),
-    tr("Shows a debug menu bar with additional statistics and quick settings."));
+
+  dialog->registerWidgetHelp(m_ui.logLevel, tr("Log Level"), tr("Information"),
+                             tr("Sets the verbosity of messages logged. Higher levels will log more messages."));
+  dialog->registerWidgetHelp(m_ui.logToConsole, tr("Log To System Console"), tr("User Preference"),
+                             tr("Logs messages to the console window."));
+  dialog->registerWidgetHelp(m_ui.logToDebug, tr("Log To Debug Console"), tr("User Preference"),
+                             tr("Logs messages to the debug console where supported."));
+  dialog->registerWidgetHelp(m_ui.logToWindow, tr("Log To Window"), tr("User Preference"),
+                             tr("Logs messages to the window."));
+  dialog->registerWidgetHelp(m_ui.logToFile, tr("Log To File"), tr("User Preference"),
+                             tr("Logs messages to duckstation.log in the user directory."));
+  dialog->registerWidgetHelp(m_ui.showDebugMenu, tr("Show Debug Menu"), tr("Unchecked"),
+                             tr("Shows a debug menu bar with additional statistics and quick settings."));
 }
 
 AdvancedSettingsWidget::~AdvancedSettingsWidget() = default;

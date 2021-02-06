@@ -172,6 +172,7 @@
     <addaction name="menuCPUExecutionMode"/>
     <addaction name="menuRenderer"/>
     <addaction name="menuCropMode"/>
+    <addaction name="actionDisableAllEnhancements"/>
     <addaction name="actionDisableInterlacing"/>
     <addaction name="actionForceNTSCTimings"/>
     <addaction name="separator"/>
@@ -595,6 +596,14 @@
     <string>Dump VRAM to CPU Copies</string>
    </property>
   </action>
+  <action name="actionDisableAllEnhancements">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Disable All Enhancements</string>
+   </property>
+  </action> 
   <action name="actionDisableInterlacing">
    <property name="checkable">
     <bool>true</bool>
