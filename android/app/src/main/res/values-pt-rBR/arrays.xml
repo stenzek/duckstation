@@ -12,7 +12,7 @@
     </string-array>
     <string-array name="settings_cpu_fastmem_mode_entries">
         <item>Desabilitado (Lento)</item>
-        <item>MMap (Hardware, Mais Rápido, só dispositivos 64-Bits)</item>
+        <item>MMap (Hardware, Mais Rápido, (Dispositivos 64-Bits)</item>
         <item>LUT (Rápido)</item>
     </string-array>
     <string-array name="gpu_renderer_entries">
@@ -44,7 +44,7 @@
         <item>Todas as Bordas</item>
     </string-array>
     <string-array name="settings_display_aspect_ratio_names">
-        <item>Auto (Game Native)</item>
+        <item>Auto (Nativo)</item>
         <item>4:3</item>
         <item>16:9</item>
         <item>16:10</item>
@@ -69,7 +69,7 @@
         <item>xBR (Sem ajustes laterais)</item>
     </string-array>
     <string-array name="settings_controller_type_entries">
-        <item>Controle digital (Gamepad)</item>
+        <item>Controle Digital (Gamepad)</item>
         <item>Controle Analógico (DualShock)</item>
     </string-array>
     <string-array name="settings_memory_card_mode_entries">
