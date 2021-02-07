@@ -397,7 +397,7 @@ bool OpenGLHostDisplay::InitializeRenderDevice(std::string_view shader_cache_dir
     glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, reinterpret_cast<GLint*>(&m_uniform_buffer_alignment));
 
   // Doubt GLES2 drivers will support PBOs efficiently.
-  m_use_pbo_for_pixels = m_use_gles2_draw_path;
+  m_use_pbo_for_pixels = !m_use_gles2_draw_path;
   if (m_gl_context->IsGLES())
   {
     // Adreno seems to corrupt textures through PBOs...
