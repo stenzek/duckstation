@@ -1166,11 +1166,13 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
 
 void GPU_HW_OpenGL::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height)
 {
+  const Common::Rectangle<u32> dst_bounds = GetVRAMTransferBounds(dst_x, dst_y, width, height);
+  const Common::Rectangle<u32> src_bounds = GetVRAMTransferBounds(src_x, src_y, width, height);
+  const bool src_dirty = m_vram_dirty_rect.Intersects(src_bounds);
+
   if (UseVRAMCopyShader(src_x, src_y, dst_x, dst_y, width, height))
   {
-    const Common::Rectangle<u32> src_bounds = GetVRAMTransferBounds(src_x, src_y, width, height);
-    const Common::Rectangle<u32> dst_bounds = GetVRAMTransferBounds(dst_x, dst_y, width, height);
-    if (m_vram_dirty_rect.Intersects(src_bounds))
+    if (src_dirty)
       UpdateVRAMReadTexture();
     IncludeVRAMDityRectangle(dst_bounds);
 
@@ -1229,12 +1231,19 @@ void GPU_HW_OpenGL::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 wid
   }
   else
   {
+    // glBlitFramebufer with same source/destination should be legal, but on Mali (at least Bifrost) it breaks.
+    // So, blit from the shadow texture, like in the other renderers.
+    if (src_dirty)
+      UpdateVRAMReadTexture();
+
     glDisable(GL_SCISSOR_TEST);
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, m_vram_fbo_id);
+    m_vram_read_texture.BindFramebuffer(GL_READ_FRAMEBUFFER);
     glBlitFramebuffer(src_x, src_y, src_x + width, src_y + height, dst_x, dst_y, dst_x + width, dst_y + height,
                       GL_COLOR_BUFFER_BIT, GL_NEAREST);
     glEnable(GL_SCISSOR_TEST);
   }
+
+  IncludeVRAMDityRectangle(dst_bounds);
 }
 
 void GPU_HW_OpenGL::UpdateVRAMReadTexture()
