@@ -75,9 +75,9 @@
     <string name="settings_summary_audio_sync">Limita a velocidade de emulação com base na opção escolhida. Isso ajuda a remover ruídos ou estalos se a emulação for muito rápida. A sincronização será automaticamente desativada se não funcionar a 100%.</string>
     <string name="settings_controller_type">Tipo de Controle</string>
     <string name="settings_enable_analog_mode_on_reset">Ativa modo analógico ao reiniciar</string>
-    <string name="settings_summary_summary_enable_analog_mode_on_reset">Força os controles ao modo analógico quando emulador é reiniciado.</string>
-    <string name="settings_use_analog_sticks_for_d-pad_in_digital_mode">Usar Analógicos como D-Pad no Modo Digital</string>
-    <string name="settings_summary_use_analog_sticks_for_d-pad_in_digital_mode">Permite usar os analógicos como (D-Pad) assim como os botões</string>
+    <string name="settings_summary_enable_analog_mode_on_reset">Força os controles ao modo analógico quando emulador é reiniciado.</string>
+    <string name="settings_use_analog_sticks_for_dpad">Usar Analógicos como D-Pad no Modo Digital</string>
+    <string name="settings_summary_use_analog_sticks_for_dpad">Permite usar os analógicos como (D-Pad) assim como os botões</string>
     <string name="settings_touchscreen_controller_view">Visualização do controle em tela</string>
     <string name="settings_auto_hide_touchscreen_controller">Auto ocultar controles em tela</string>
     <string name="settings_summary_auto_hide_touchscreen_controller">Esconde controles em tela quando um controle externo é detectado.</string>
@@ -89,7 +89,7 @@
     <string name="settings_memory_card_2_type">Tipo de Cartão de Memória 2</string>
     <string name="settings_crop_mode">Modo de Corte</string>
     <string name="settings_aspect_ratio">Razão de Aspecto</string>
-    <string name="settings_downsampling">Suavização da Imagem</string>
+    <string name="settings_downsample_mode">Suavização da Imagem</string>
     <string name="settings_linear_upscaling">Escalonamento Linear</string>
     <string name="settings_integer_upscaling">Escalonamento Integro</string>
     <string name="settings_summary_linear_upscaling">Suaviza a imagem ao aumentar a resolução da emulação.</string>
@@ -137,7 +137,7 @@
     <string name="menu_main_show_version">Mostrar Versão</string>
     <string name="menu_main_github_repository">Repositório no Github</string>
     <string name="menu_main_discord_server">Servidor no Discord</string>
-    <string name="menu_main_controller_mapping">Mapear Controles</string>
+    <string name="action_controller_mapping">Mapear Controles</string>
     <string name="settings_controller_mapping">Mapear Controles</string>
     <string name="settings_controller_mapping_summary">Permite configurar e atribuir os botões de seu controle externo no emulador.</string>
     <string name="menu_game_list_entry_start_game">Iniciar Jogo</string>
