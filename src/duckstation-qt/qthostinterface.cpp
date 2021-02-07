@@ -524,7 +524,6 @@ bool QtHostInterface::AcquireHostDisplay()
 
   connectDisplaySignals(display_widget);
   m_is_exclusive_fullscreen = m_display->IsFullscreen();
-  ImGui::NewFrame();
   return true;
 }
 
@@ -1474,10 +1473,10 @@ void QtHostInterface::threadEntryPoint()
 
 void QtHostInterface::renderDisplay()
 {
-  DrawImGuiWindows();
-
-  m_display->Render();
   ImGui::NewFrame();
+  DrawImGuiWindows();
+  m_display->Render();
+  ImGui::EndFrame();
 }
 
 void QtHostInterface::wakeThread()
