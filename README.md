@@ -178,8 +178,10 @@ Requirements (Debian/Ubuntu package names):
  - SDL2 (`libsdl2-dev`)
  - pkgconfig (`pkg-config`)
  - Qt 5 (`qtbase5-dev`, `qtbase5-private-dev`, `qtbase5-dev-tools`, `qttools5-dev`)
+ - libevdev (`libevdev-dev`)
  - git (`git`) (Note: needed to clone the repository and at build time)
  - Optional for faster building: Ninja (`ninja-build`)
+ - Optional for framebuffer output: DRM/GBM (`libgbm-dev`, `libdrm-dev`)
 
 1. Clone the repository. Submodules aren't necessary, there is only one and it is only used for Windows (`git clone https://github.com/stenzek/duckstation.git -b dev`).
 2. Create a build directory, either in-tree or elsewhere.
