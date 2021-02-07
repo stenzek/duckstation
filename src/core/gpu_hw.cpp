@@ -947,7 +947,7 @@ GPU_HW::VRAMCopyUBOData GPU_HW::GetVRAMCopyUBOData(u32 src_x, u32 src_y, u32 dst
   return uniforms;
 }
 
-void GPU_HW::IncludeVRAMDityRectangle(const Common::Rectangle<u32>& rect)
+void GPU_HW::IncludeVRAMDirtyRectangle(const Common::Rectangle<u32>& rect)
 {
   m_vram_dirty_rect.Include(rect);
 
@@ -1022,14 +1022,14 @@ void GPU_HW::ResetBatchVertexDepth()
 
 void GPU_HW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
 {
-  IncludeVRAMDityRectangle(
+  IncludeVRAMDirtyRectangle(
     Common::Rectangle<u32>::FromExtents(x, y, width, height).Clamped(0, 0, VRAM_WIDTH, VRAM_HEIGHT));
 }
 
 void GPU_HW::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, bool set_mask, bool check_mask)
 {
   DebugAssert((x + width) <= VRAM_WIDTH && (y + height) <= VRAM_HEIGHT);
-  IncludeVRAMDityRectangle(Common::Rectangle<u32>::FromExtents(x, y, width, height));
+  IncludeVRAMDirtyRectangle(Common::Rectangle<u32>::FromExtents(x, y, width, height));
 
   if (check_mask)
   {
@@ -1040,7 +1040,7 @@ void GPU_HW::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, b
 
 void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height)
 {
-  IncludeVRAMDityRectangle(
+  IncludeVRAMDirtyRectangle(
     Common::Rectangle<u32>::FromExtents(dst_x, dst_y, width, height).Clamped(0, 0, VRAM_WIDTH, VRAM_HEIGHT));
 
   if (m_GPUSTAT.check_mask_before_draw)

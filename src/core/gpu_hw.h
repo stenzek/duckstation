@@ -194,7 +194,7 @@ protected:
     m_draw_mode.SetTexturePageChanged();
   }
   void ClearVRAMDirtyRectangle() { m_vram_dirty_rect.SetInvalid(); }
-  void IncludeVRAMDityRectangle(const Common::Rectangle<u32>& rect);
+  void IncludeVRAMDirtyRectangle(const Common::Rectangle<u32>& rect);
 
   bool IsFlushed() const { return m_batch_current_vertex_ptr == m_batch_start_vertex_ptr; }
 

@@ -1557,7 +1557,7 @@ void GPU_HW_Vulkan::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 wid
     const Common::Rectangle<u32> dst_bounds = GetVRAMTransferBounds(dst_x, dst_y, width, height);
     if (m_vram_dirty_rect.Intersects(src_bounds))
       UpdateVRAMReadTexture();
-    IncludeVRAMDityRectangle(dst_bounds);
+    IncludeVRAMDirtyRectangle(dst_bounds);
 
     const VRAMCopyUBOData uniforms(GetVRAMCopyUBOData(src_x, src_y, dst_x, dst_y, width, height));
     const Common::Rectangle<u32> dst_bounds_scaled(dst_bounds * m_resolution_scale);

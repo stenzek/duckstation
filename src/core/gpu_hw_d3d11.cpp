@@ -1037,7 +1037,7 @@ void GPU_HW_D3D11::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 widt
     const Common::Rectangle<u32> dst_bounds = GetVRAMTransferBounds(dst_x, dst_y, width, height);
     if (m_vram_dirty_rect.Intersects(src_bounds))
       UpdateVRAMReadTexture();
-    IncludeVRAMDityRectangle(dst_bounds);
+    IncludeVRAMDirtyRectangle(dst_bounds);
 
     const VRAMCopyUBOData uniforms = GetVRAMCopyUBOData(src_x, src_y, dst_x, dst_y, width, height);
 

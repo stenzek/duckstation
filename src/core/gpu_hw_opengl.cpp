@@ -1174,7 +1174,7 @@ void GPU_HW_OpenGL::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 wid
   {
     if (src_dirty)
       UpdateVRAMReadTexture();
-    IncludeVRAMDityRectangle(dst_bounds);
+    IncludeVRAMDirtyRectangle(dst_bounds);
 
     VRAMCopyUBOData uniforms = GetVRAMCopyUBOData(src_x, src_y, dst_x, dst_y, width, height);
     uniforms.u_src_y = m_vram_texture.GetHeight() - uniforms.u_src_y - uniforms.u_height;
@@ -1243,7 +1243,7 @@ void GPU_HW_OpenGL::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 wid
     glEnable(GL_SCISSOR_TEST);
   }
 
-  IncludeVRAMDityRectangle(dst_bounds);
+  IncludeVRAMDirtyRectangle(dst_bounds);
 }
 
 void GPU_HW_OpenGL::UpdateVRAMReadTexture()
