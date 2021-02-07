@@ -27,6 +27,9 @@ public:
 #ifdef ANDROID
     Android,
 #endif
+#ifdef WITH_EVDEV
+    Evdev,
+#endif
     Count
   };
 

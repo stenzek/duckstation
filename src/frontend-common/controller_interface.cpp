@@ -95,6 +95,9 @@ static constexpr std::array<const char*, static_cast<u32>(ControllerInterface::B
   // Deliberately not translated as it's not exposed to users.
   "Android",
 #endif
+#ifdef WITH_EVDEV
+  TRANSLATABLE("ControllerInterface", "Evdev"),
+#endif
 }};
 
 std::optional<ControllerInterface::Backend> ControllerInterface::ParseBackendName(const char* name)
@@ -132,6 +135,9 @@ ControllerInterface::Backend ControllerInterface::GetDefaultBackend()
 #include "dinput_controller_interface.h"
 #include "xinput_controller_interface.h"
 #endif
+#ifdef WITH_EVDEV
+#include "evdev_controller_interface.h"
+#endif
 
 std::unique_ptr<ControllerInterface> ControllerInterface::Create(Backend type)
 {
@@ -144,6 +150,10 @@ std::unique_ptr<ControllerInterface> ControllerInterface::Create(Backend type)
     return std::make_unique<XInputControllerInterface>();
   if (type == Backend::DInput)
     return std::make_unique<DInputControllerInterface>();
+#endif
+#ifdef WITH_EVDEV
+  if (type == Backend::Evdev)
+    return std::make_unique<EvdevControllerInterface>();
 #endif
 
   return {};
