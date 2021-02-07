@@ -3,6 +3,7 @@
     <color name="colorPrimary">#6200EE</color>
     <color name="colorPrimaryDark">#3700B3</color>
     <color name="colorAccent">#D81B60</color>
+    <color name="colorNavigation">#000000</color>
 
     <color name="black_overlay">#66000000</color>
     <color name="fab_background">#ffffffff</color>
