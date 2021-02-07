@@ -472,10 +472,11 @@ void AndroidHostInterface::EmulationThreadLoop(JNIEnv* env)
 
     // rendering
     {
+      ImGui::NewFrame();
       DrawImGuiWindows();
 
       m_display->Render();
-      ImGui::NewFrame();
+      ImGui::EndFrame();
 
       if (System::IsRunning())
       {
@@ -528,7 +529,6 @@ bool AndroidHostInterface::AcquireHostDisplay()
     return false;
   }
 
-  ImGui::NewFrame();
   return true;
 }
 
