@@ -801,14 +801,15 @@ void BeginInputBinding(InputBindingType type, const std::string_view& section, c
         {
           if (hook.type == ControllerInterface::Hook::Type::Axis)
             value.Format("Controller%d/+Axis%d", hook.controller_index, hook.button_or_axis_number);
-          else if (hook.type == ControllerInterface::Hook::Type::Button)
+          else if (hook.type == ControllerInterface::Hook::Type::Button && std::get<float>(hook.value) > 0.0f)
             value.Format("Controller%d/Button%d", hook.controller_index, hook.button_or_axis_number);
         }
         break;
 
         case InputBindingType::Rumble:
         {
-          value.Format("Controller%d", hook.controller_index);
+          if (hook.type == ControllerInterface::Hook::Type::Button && std::get<float>(hook.value) > 0.0f)
+            value.Format("Controller%d", hook.controller_index);
         }
         break;
 
@@ -2589,7 +2590,8 @@ HostDisplayTexture* GetCoverForCurrentGame()
 static ImDrawList* GetDrawListForOverlay()
 {
   // If we're in the landing page, draw the OSD over the windows (since it covers it)
-  return (s_current_main_window != MainWindowType::None) ? ImGui::GetForegroundDrawList() : ImGui::GetBackgroundDrawList();
+  return (s_current_main_window != MainWindowType::None) ? ImGui::GetForegroundDrawList() :
+                                                           ImGui::GetBackgroundDrawList();
 }
 
 void DrawStatsOverlay()
