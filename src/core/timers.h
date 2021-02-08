@@ -85,6 +85,7 @@ private:
   };
 
   void UpdateCountingEnabled(CounterState& cs);
+  void CheckForIRQ(u32 index, u32 old_counter);
   void UpdateIRQ(u32 index);
 
   void AddSysClkTicks(TickCount sysclk_ticks);

@@ -129,20 +129,21 @@ void Timers::AddTicks(u32 timer, TickCount count)
   CounterState& cs = m_states[timer];
   const u32 old_counter = cs.counter;
   cs.counter += static_cast<u32>(count);
+  CheckForIRQ(timer, old_counter);
+}
+
+void Timers::CheckForIRQ(u32 timer, u32 old_counter)
+{
+  CounterState& cs = m_states[timer];
 
   bool interrupt_request = false;
-  if (cs.counter >= cs.target && old_counter < cs.target)
+  if (cs.counter >= cs.target && (old_counter < cs.target || cs.target == 0))
   {
     interrupt_request |= cs.mode.irq_at_target;
     cs.mode.reached_target = true;
 
-    if (cs.mode.reset_at_target)
-    {
-      if (cs.target > 0)
-        cs.counter %= cs.target;
-      else
-        cs.counter = 0;
-    }
+    if (cs.mode.reset_at_target && cs.target > 0)
+      cs.counter %= cs.target;
   }
   if (cs.counter >= 0xFFFF)
   {
@@ -265,12 +266,15 @@ void Timers::WriteRegister(u32 offset, u32 value)
 
   m_sysclk_event->InvokeEarly();
 
+  // Strictly speaking these IRQ checks should probably happen on the next tick.
   switch (port_offset)
   {
     case 0x00:
     {
+      const u32 old_counter = cs.counter;
       Log_DebugPrintf("Timer %u write counter %u", timer_index, value);
       cs.counter = value & u32(0xFFFF);
+      CheckForIRQ(timer_index, old_counter);
       if (timer_index == 2 || !cs.external_counting_enabled)
         UpdateSysClkEvent();
     }
@@ -287,6 +291,7 @@ void Timers::WriteRegister(u32 offset, u32 value)
       cs.irq_done = false;
 
       UpdateCountingEnabled(cs);
+      CheckForIRQ(timer_index, cs.counter);
       UpdateIRQ(timer_index);
       UpdateSysClkEvent();
     }
@@ -296,6 +301,7 @@ void Timers::WriteRegister(u32 offset, u32 value)
     {
       Log_DebugPrintf("Timer %u write target 0x%04X", timer_index, ZeroExtend32(Truncate16(value)));
       cs.target = value & u32(0xFFFF);
+      CheckForIRQ(timer_index, cs.counter);
       if (timer_index == 2 || !cs.external_counting_enabled)
         UpdateSysClkEvent();
     }
