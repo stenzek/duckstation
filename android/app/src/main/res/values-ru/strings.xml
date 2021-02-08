@@ -35,7 +35,7 @@
 	<string name="settings_pgxp_vertex_cache">Вершинный кэш PGXP</string>
 	<string name="settings_summary_pgxp_vertex_cache">Использовать координаты экрана в качестве резерва при отслеживании вершин с помощью отказов памяти. Может улучшать совместимость PGXP.</string>
 	<string name="settings_pgxp_cpu_mode">Режим CPU PGXP</string>
-	<string name="settings_summary_pgxp_cpu_mode">Пытаться отслеживать операции с вершинами через CPU. Требуется для правильной работы PGXP в некоторых играх. Очень медленный режим, несовместимый с рекомпилятором.</string>
+	<string name="settings_summary_pgxp_cpu_mode">Пытаться отслеживать изменения вершин с помощью CPU. Требуется для правильной работы PGXP в некоторых играх. Очень медленный режим, несовместимый с рекомпилятором.</string>
 	<string name="settings_cpu_recompiler_icache">Рекомпиляция кэша команд CPU</string>
 	<string name="settings_summary_cpu_recompiler_icache">Включает симуляцию кэша команд CPU в рекомпиляторе. Повышает точность, незначительно снижая производительность. Попробуйте включить данную опцию, если игры идут слишком быстро.</string>
 	<string name="settings_cpu_recompiler_fastmem">Быстрый доступ к памяти в рекомпиляторе CPU</string>
@@ -82,7 +82,7 @@
 	<string name="settings_summary_osd_show_vps">Показывать количество кадров (или синхронизаций) в секунду в правом верхнем углу экрана.</string>
 	<string name="settings_cdrom_read_speedup">Ускорение считывания CD-ROM</string>
 	<string name="settings_summary_cdrom_read_speedup">Повышает скорость чтения диска на заданный множитель. Применяется только при считывании с двойной скоростью и не учитывается при воспроизведении аудио. Ускоряет загрузки в некоторых играх, но приводит к ошибкам в других.</string>
-	<string name="settings_summary_console_fast_boot">Пропускать BIOS/заставку, загружаясь прямо в игру. Как правило, не влияет на стабильность, но некоторые игр могут перестать запускаться.</string>
+	<string name="settings_summary_console_fast_boot">Пропускать BIOS/заставку, загружаясь прямо в игру. Как правило, не влияет на стабильность, но некоторые игры могут перестать запускаться.</string>
 	<string name="settings_msaa">Мультисэмплинг</string>
 	<string name="settings_true_color">Рендеринг в True Color (24-бита, без дизеринга)</string>
 	<string name="settings_summary_true_color">Позволяет получить более качественные градиенты, но меняет отображение некоторых цветов. Отключение опции также включает дизеринг. Большинство игр совместимо с этой настройкой.</string>
@@ -105,8 +105,8 @@
 	<string name="settings_summary_pgxp_culling_correction">Повышает точность отбраковки полигонов, снижая количество провалов в геометрии. Требуется включение коррекции геометрии.</string>
 	<string name="settings_pgxp_texture_correction">Коррекция текстур PGXP</string>
 	<string name="settings_summary_pgxp_texture_correction">Использовать перспективно-корректную интерполяцию для координат текстур и цветов, выпрямляя искривлённые текстуры. Должна быть включена коррекция геометрии.</string>
-	<string name="settings_pgxp_preserve_projection_precision">Сохранять точность проекции PGXP</string>
-	<string name="settings_summary_pgxp_preserve_projection_precision">Включает повышение точности PGXP. Может улучшать графику в некоторых играх, но приводить к ошибкам в других.</string>
+	<string name="settings_pgxp_preserve_projection_precision">Точность проекции PGXP</string>
+	<string name="settings_summary_pgxp_preserve_projection_precision">Включает повышенную точность PGXP. Может улучшать графику в некоторых играх, но приводить к ошибкам в других.</string>
 	<string name="settings_pgxp_depth_buffer">Буфер глубины PGXP</string>
 	<string name="settings_summary_pgxp_depth_buffer">Пытаться устранять наложения полигонов проверкой пикселей по значениям глубины PGXP. Обладает низкой совместимостью, но в ряде игр даёт хороший эффект.</string>
 	<string name="menu_main_resume_last_session">Продолжить сеанс</string>
@@ -136,9 +136,9 @@
 	<string name="emulation_activity_failed_to_import_patch_codes">Не удалось импортировать чит-коды. Убедитесь, что выбранный файл в формате PCSXR или Libretro.</string>
 	<string name="main_activity_choose_directory">Выберите каталог</string>
 	<string name="main_activity_error">Ошибка</string>
-	<string name="main_activity_get_path_from_file_error">Не удалось получить путь к указанному файлу. Пожалуйста, убедитесь, что файл присутствует во внутреннем/внешнем хранилище. Нажмите значок настроек в окне выбора папки. Включите отображение внутренней памяти. Нажмите кнопку меню и выберите устройство или SD-карту.</string>
+	<string name="main_activity_get_path_from_file_error">Не удалось получить путь к указанному файлу. Пожалуйста, убедитесь, что файл присутствует во внутреннем/внешнем хранилище. Нажмите значок настроек в окне выбора каталога. Включите отображение внутренней памяти. Нажмите кнопку меню и выберите устройство или SD-карту.</string>
 	<string name="main_activity_ok">OK</string>
-	<string name="main_activity_get_path_from_directory_error">Не удалось получить путь к указанному каталогу. Пожалуйста, убедитесь, что каталог присутствует во внутреннем/внешнем хранилище. Нажмите значок настроек в окне выбора папки. Включите отображение внутренней памяти. Нажмите кнопку меню и выберите устройство или SD-карту.</string>
+	<string name="main_activity_get_path_from_directory_error">Не удалось получить путь к указанному каталогу. Пожалуйста, убедитесь, что каталог присутствует во внутреннем/внешнем хранилище. Нажмите значок настроек в окне выбора каталога. Включите отображение внутренней памяти. Нажмите кнопку меню и выберите устройство или SD-карту.</string>
 	<string name="main_activity_external_storage_permissions_error">DuckStation требуются разрешения для доступа к внешнему хранилищу.</string>
 	<string name="main_activity_choose_disc_image">Выберите образ диска</string>
 	<string name="main_activity_missing_bios_image_prompt">Не найдены образы BIOS в папке bios эмулятора. Указать путь и импортировать образ BIOS сейчас?</string>
