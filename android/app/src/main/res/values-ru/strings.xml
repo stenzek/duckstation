@@ -48,7 +48,7 @@
 	<string name="settings_summary_log_to_logcat">Записывать сообщения лога в журнал отладки Android. Полезно только при подключении к ПК с adb.</string>
 	<string name="settings_volume">Громкость</string>
 	<string name="settings_summary_volume">Управление громкостью звука эмулятора.</string>
-	<string name="settings_fast_forward_volume">Громокость при перемотке</string>
+	<string name="settings_fast_forward_volume">Громкость при ускорении</string>
 	<string name="settings_summary_fast_forward_volume">Управление громкостью звука эмулятора при ускоренной перемотке.</string>
 	<string name="settings_mute_all_sound">Отключить звук</string>
 	<string name="settings_summary_mute_all_sound">Отключает вывод звука в эмуляторе.</string>
