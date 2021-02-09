@@ -502,6 +502,12 @@ void MainWindow::onViewToolbarActionToggled(bool checked)
   saveStateToConfig();
 }
 
+void MainWindow::onViewLockToolbarActionToggled(bool checked)
+{
+  m_host_interface->SetBoolSettingValue("UI", "LockToolbar", checked);
+  m_ui.toolBar->setMovable(!checked);
+}
+
 void MainWindow::onViewStatusBarActionToggled(bool checked)
 {
   m_host_interface->SetBoolSettingValue("UI", "ShowStatusBar", checked);
@@ -729,6 +735,11 @@ void MainWindow::setupAdditionalUi()
   const bool status_bar_visible = m_host_interface->GetBoolSettingValue("UI", "ShowStatusBar", true);
   m_ui.actionViewStatusBar->setChecked(status_bar_visible);
   m_ui.statusBar->setVisible(status_bar_visible);
+
+  const bool toolbars_locked = m_host_interface->GetBoolSettingValue("UI", "LockToolbar", false);
+  m_ui.actionViewLockToolbar->setChecked(toolbars_locked);
+  m_ui.toolBar->setMovable(!toolbars_locked);
+  m_ui.toolBar->setContextMenuPolicy(Qt::PreventContextMenu);
 
   m_game_list_widget = new GameListWidget(m_ui.mainContainer);
   m_game_list_widget->initialize(m_host_interface);
@@ -990,6 +1001,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionAdvancedSettings, &QAction::triggered,
           [this]() { doSettings(SettingsDialog::Category::AdvancedSettings); });
   connect(m_ui.actionViewToolbar, &QAction::toggled, this, &MainWindow::onViewToolbarActionToggled);
+  connect(m_ui.actionViewLockToolbar, &QAction::toggled, this, &MainWindow::onViewLockToolbarActionToggled);
   connect(m_ui.actionViewStatusBar, &QAction::toggled, this, &MainWindow::onViewStatusBarActionToggled);
   connect(m_ui.actionViewGameList, &QAction::triggered, this, &MainWindow::onViewGameListActionTriggered);
   connect(m_ui.actionViewGameGrid, &QAction::triggered, this, &MainWindow::onViewGameGridActionTriggered);

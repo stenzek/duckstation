@@ -204,6 +204,7 @@
      </property>
     </widget>
     <addaction name="actionViewToolbar"/>
+    <addaction name="actionViewLockToolbar"/>
     <addaction name="actionViewStatusBar"/>
     <addaction name="separator"/>
     <addaction name="actionViewGameList"/>
@@ -730,6 +731,17 @@
    </property>
    <property name="text">
     <string>&amp;Toolbar</string>
+   </property>
+  </action>
+  <action name="actionViewLockToolbar">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Lock Toolbar</string>
    </property>
   </action>
   <action name="actionViewStatusBar">

@@ -80,6 +80,7 @@ private Q_SLOTS:
   void onCheatsMenuAboutToShow();
   void onRemoveDiscActionTriggered();
   void onViewToolbarActionToggled(bool checked);
+  void onViewLockToolbarActionToggled(bool checked);
   void onViewStatusBarActionToggled(bool checked);
   void onViewGameListActionTriggered();
   void onViewGameGridActionTriggered();
