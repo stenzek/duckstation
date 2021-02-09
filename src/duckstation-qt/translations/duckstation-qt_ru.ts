@@ -2944,7 +2944,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../emulationsettingswidget.ui" line="84"/>
         <source>Enable Rewinding</source>
-        <translation type="unfinished">Включить перемотку</translation>
+        <translation type="unfinished">Включить перемотку назад</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="91"/>
