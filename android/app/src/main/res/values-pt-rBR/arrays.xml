@@ -1,231 +1,213 @@
 <resources>
-    <string-array name="settings_console_region_entries">
-        <item>Auto-Detectar</item>
-        <item>NTSC-J (Japão)</item>
-        <item>NTSC-U (US)</item>
-        <item>PAL (Europa, Austrália)</item>
-    </string-array>
-    <string-array name="settings_cpu_execution_mode_entries">
-        <item>Interpretador (Mais Lento)</item>
-        <item>Interpretador Armazenado (Rápido)</item>
-        <item>Recompilador (Mais Rápido)</item>
-    </string-array>
-    <string-array name="settings_cpu_fastmem_mode_entries">
-        <item>Desabilitado (Lento)</item>
-        <item>MMap (Hardware, Mais Rápido, (Dispositivos 64-Bits)</item>
-        <item>LUT (Rápido)</item>
-    </string-array>
-    <string-array name="gpu_renderer_entries">
-        <item>Dedicado (OpenGL)</item>
-        <item>Dedicado (Vulkan)</item>
-        <item>Software</item>
-    </string-array>
-    <string-array name="settings_gpu_resolution_scale_entries">
-        <item>1x > (1024x512)</item>
-        <item>2x > (2048x1024)</item>
-        <item>3x > (3072x1536)</item>
-        <item>4x > (4096x2048)</item>
-        <item>5x > (5120x2560)</item>
-        <item>6x > (6144x3072)</item>
-        <item>7x > (7168x3584)</item>
-        <item>8x > (8192x4096)</item>
-        <item>9x > (9216x4608)</item>
-        <item>10x > (10240x5120)</item>
-        <item>11x > (11264x5632)</item>
-        <item>12x > (12288x6144)</item>
-        <item>13x > (13312x6656)</item>
-        <item>14x > (14336x7168)</item>
-        <item>15x > (15360x7680)</item>
-        <item>16x > (16384x8192)</item>
-    </string-array>
-    <string-array name="settings_display_crop_mode_entries">
-        <item>Nenhum</item>
-        <item>Área Renderizada</item>
-        <item>Todas as Bordas</item>
-    </string-array>
-    <string-array name="settings_display_aspect_ratio_names">
-        <item>Auto (Nativo)</item>
-        <item>4:3</item>
-        <item>16:9</item>
-        <item>16:10</item>
-        <item>19:9</item>
-        <item>20:9</item>
-        <item>21:9</item>
-        <item>32:9</item>
-        <item>8:7</item>
-        <item>5:4</item>
-        <item>3:2</item>
-        <item>2:1 (VRAM 1:1)</item>
-        <item>1:1</item>
-        <item>PAR 1:1</item>
-    </string-array>
-    <string-array name="settings_gpu_texture_filter_names">
-        <item>Nearest-Neighbor</item>
-        <item>Bilinear</item>
-        <item>Bilinear (Sem ajustes laterais)</item>
-        <item>JINC2</item>
-        <item>JINC2 (Sem ajustes laterais)</item>
-        <item>xBR</item>
-        <item>xBR (Sem ajustes laterais)</item>
-    </string-array>
-    <string-array name="settings_controller_type_entries">
-        <item>Controle Digital (Gamepad)</item>
-        <item>Controle Analógico (DualShock)</item>
-    </string-array>
-    <string-array name="settings_memory_card_mode_entries">
-        <item>Sem Cartão de Memória</item>
-        <item>Compartilhada entre Jogos</item>
-        <item>Separado Por Jogo (Cód. Jogo)</item>
-        <item>Separado Por Jogo (Título Jogo)</item>
-    </string-array>
-    <string-array name="emulation_menu">
-        <item>Carregar Estado</item>
-        <item>Salvar Estado</item>
-        <item>Avanço (Fixo)</item>
-        <item>Mais Opções</item>
-        <item>Sair</item>
-    </string-array>
-    <string-array name="emulation_more_menu">
-        <item>Reiniciar</item>
-        <item>Trapaças</item>
-        <item>Mudar Disco</item>
-        <item>Configurações</item>
-        <item>Mudar controle em Tela</item>
-        <item>Editar Posição dos Controles (Tela)</item>
-    </string-array>
-    <string-array name="settings_cdrom_read_speedup_entries">
-        <item>Nenhum</item>
-        <item>2x (4x Veloz)</item>
-        <item>3x (6x Veloz)</item>
-        <item>4x (8x Veloz)</item>
-        <item>5x (10x Veloz)</item>
-        <item>6x (12x Veloz)</item>
-        <item>7x (14x Veloz)</item>
-        <item>8x (16x Veloz)</item>
-        <item>9x (18x Veloz)</item>
-        <item>10x (20x Veloz)</item>
-    </string-array>
-    <string-array name="settings_touchscreen_controller_view_entries">
-        <item>Nenhum</item>
-        <item>Digital D-Pad</item>
-        <item>1 Analógico</item>
-        <item>2 Analógicos</item>
-    </string-array>
-    <string-array name="settings_audio_backend_entries">
-        <item>Mudo</item>
-        <item>Cubeb</item>
-        <item>SLES (Recomendado)</item>
-    </string-array>
-    <string-array name="settings_audio_buffer_size_entries">
-        <item>1024 Quadros (23.22ms)</item>
-        <item>2048 Quadros (46.44ms, Recomendado)</item>
-        <item>3072 Quadros (69.66ms)</item>
-        <item>4096 Quadros (92.88ms)</item>
-    </string-array>
-    <string-array name="settings_log_level_entries">
-        <item>Nenhum</item>
-        <item>Erro</item>
-        <item>Alerta</item>
-        <item>Alertas de Performance</item>
-        <item>Informação</item>
-        <item>Detalhado</item>
-        <item>Desenvolvedor</item>
-        <item>Perfil</item>
-        <item>Depuração</item>
-        <item>Rota</item>
-    </string-array>
-    <string-array name="settings_tabs">
-        <item>Geral</item>
-        <item>Vídeo</item>
-        <item>Áudio</item>
-        <item>Melhorias</item>
-        <item>Controles</item>
-        <item>Avançado</item>
-    </string-array>
-    <string-array name="settings_gpu_msaa_entries">
-        <item>Desativado</item>
-        <item>2x MSAA</item>
-        <item>4x MSAA</item>
-        <item>8x MSAA</item>
-        <item>2x SSAA</item>
-        <item>4x SSAA</item>
-        <item>8x SSAA</item>
-    </string-array>
-    <string-array name="settings_advanced_display_fps_limit_entries">
-        <item>ilimitado (Mostrar Quadros)</item>
-        <item>10 FPS</item>
-        <item>15 FPS</item>
-        <item>30 FPS</item>
-        <item>45 FPS</item>
-        <item>60 FPS</item>
-        <item>75 FPS</item>
-        <item>90 FPS</item>
-    </string-array>
-    <string-array name="settings_emulation_speed_entries">
-        <item>ilimitado</item>
-        <item>10% [6 FPS (NTSC) / 5 FPS (PAL)]</item>
-        <item>20% [12 FPS (NTSC) / 10 FPS (PAL)]</item>
-        <item>30% [18 FPS (NTSC) / 15 FPS (PAL)]</item>
-        <item>40% [24 FPS (NTSC) / 20 FPS (PAL)]</item>
-        <item>50% [30 FPS (NTSC) / 25 FPS (PAL)]</item>
-        <item>60% [36 FPS (NTSC) / 30 FPS (PAL)]</item>
-        <item>70% [42 FPS (NTSC) / 35 FPS (PAL)]</item>
-        <item>80% [48 FPS (NTSC) / 40 FPS (PAL)]</item>
-        <item>90% [54 FPS (NTSC) / 45 FPS (PAL)]</item>
-        <item>100% [60 FPS (NTSC) / 50 FPS (PAL), Padrão]</item>
-        <item>125% [75 FPS (NTSC) / 62 FPS (PAL)]</item>
-        <item>150% [90 FPS (NTSC) / 75 FPS (PAL)]</item>
-        <item>175% [105 FPS (NTSC) / 87 FPS (PAL)]</item>
-        <item>200% [120 FPS (NTSC) / 100 FPS (PAL)]</item>
-        <item>250% [150 FPS (NTSC) / 125 FPS (PAL)]</item>
-        <item>300% [180 FPS (NTSC) / 150 FPS (PAL)]</item>
-        <item>350% [210 FPS (NTSC) / 175 FPS (PAL)]</item>
-        <item>400% [240 FPS (NTSC) / 200 FPS (PAL)]</item>
-        <item>450% [270 FPS (NTSC) / 225 FPS (PAL)]</item>
-        <item>500% [300 FPS (NTSC) / 250 FPS (PAL)]</item>
-        <item>600% [360 FPS (NTSC) / 300 FPS (PAL)]</item>
-        <item>700% [420 FPS (NTSC) / 350 FPS (PAL)]</item>
-        <item>800% [480 FPS (NTSC) / 400 FPS (PAL)]</item>
-        <item>900% [540 FPS (NTSC) / 450 FPS (PAL)]</item>
-        <item>1000% [600 FPS (NTSC) / 500 FPS (PAL)]</item>
-    </string-array>
-    <string-array name="settings_advanced_cpu_overclock_entries">
-        <item>25% (8MHz)</item>
-        <item>50% (16MHz)</item>
-        <item>75% (24MHz)</item>
-        <item>100% (33MHz, Padrão)</item>
-        <item>125% (41MHz)</item>
-        <item>150% (49MHz)</item>
-        <item>175% (57MHz)</item>
-        <item>200% (66MHz)</item>
-        <item>225% (74MHz)</item>
-        <item>250% (82MHz)</item>
-        <item>275% (90MHz)</item>
-        <item>300% (99MHz)</item>
-        <item>350% (115MHz)</item>
-        <item>400% (132MHz)</item>
-        <item>450% (148MHz)</item>
-        <item>500% (165MHz)</item>
-        <item>500% (165MHz)</item>
-        <item>600% (198MHz)</item>
-        <item>700% (231MHz)</item>
-        <item>800% (264MHz)</item>
-        <item>900% (297MHz)</item>
-        <item>1000% (330MHz)</item>
-    </string-array>
-    <string-array name="settings_emulation_screen_orientation_entries">
-        <item>Padrão do Dispositivo</item>
-        <item>Retrato</item>
-        <item>Paisagem</item>
-    </string-array>
-    <string-array name="settings_theme_entries">
-        <item>Padrão do Sistema</item>
-		<item>Claro</item>
-        <item>Escuro</item>
-	</string-array>
-	<string-array name="settings_downsample_mode_entries">
-        <item>Desabilitado</item>
-		<item>Misto (Reduz 3D / Suaviza Tudo)</item>
-        <item>Adaptativo (Preserva o 3D / Suaviza 2D)</item>
-	</string-array>
-	</resources>
+    <string name="app_name">DuckStation</string>
+    <string name="action_settings">Configurações</string>
+    <string name="action_controller_mapping">Mapear Controles</string>
+    <string name="title_activity_settings">Configurações</string>
+    <string name="settings_console_region">Região do Console</string>
+    <string name="settings_console_tty_output">EAtivar saída TTY</string>
+    <string name="settings_console_fast_boot">Inicio Rápido</string>
+    <string name="settings_osd_show_messages">Mostrar Mensagens</string>
+    <string name="settings_osd_show_speed">Mostrar Velocidade da Emulação</string>
+    <string name="settings_osd_show_show_fps">Mostrar FPS</string>
+    <string name="settings_osd_show_show_vps">Mostrar VPS</string>
+    <string name="settings_cpu_execution_mode">Modo de execução CPU</string>
+    <string name="settings_gpu_renderer">Renderizado por GPU</string>
+    <string name="settings_gpu_resolution_scale">Escala de Resolução</string>
+    <string name="title_activity_emulation">Atividade da Emulação</string>
+    <string name="settings_emulation_speed">Velocidade da Emulação</string>
+    <string name="settings_fast_forward_speed">Velocidade de Avanço Rápido</string>
+    <string name="settings_save_state_on_exit">Salvar ao Sair</string>
+    <string name="settings_pause_when_menu_opened">Pausar ao abrir Menu</string>
+    <string name="settings_emulation_screen_orientation">Orientação de Tela</string>
+    <string name="settings_load_patch_codes">Carregar Trapaças</string>
+    <string name="settings_summary_save_state_on_exit">Salvar automaticamente o estado da emulação ao desligar.</string>
+    <string name="settings_summary_pause_when_menu_opened">Pausa a emulação assim que o menu é aberto.</string>
+    <string name="settings_summary_load_patch_codes"><![CDATA[Carregar códigos de trapaça formato .cht e ou PCSXR. Códigos podem ser alternados durante o jogo.]]></string>
+    <string name="settings_apply_compatibility_settings">Aplicar Configurações de Compatibilidade</string>
+    <string name="settings_summary_apply_compatibility_settings">Desativar automaticamente melhorias quando não são suportadas.</string>
+    <string name="settings_summary_video_sync">Ative essa opção para que o emulador sincronize a taxa de FPS de acordo com a taxa do seu aparelho.</string>
+    <string name="settings_video_sync">Sincronização Vertical</string>
+    <string name="settings_cpu_overclocking">Aumento de Velocidade CPU (Overclock)</string>
+    <string name="settings_cdrom_region_check">Checagem de Região do CD-ROM</string>
+    <string name="settings_summary_cdrom_region_check">Previne que discos de regiões incorretas sejam lidos pelo emulador. Pode ser Desligado.</string>
+    <string name="settings_cdrom_preload_image_to_ram">Carregar CD-ROM para memória RAM</string>
+    <string name="settings_summary_preload_image_to_ram">LCarrega o jogo todo na RAM. Útil para prevenir instabilidades durante o jogo. Em alguns casos também elimina travamentos durante os carregamentos.</string>
+    <string name="settings_pgxp_vertex_cache">PGXP - Vértice Armazenado</string>
+    <string name="settings_summary_pgxp_vertex_cache">Reduz as oscilações nos poligonos tentando preservar os mesmos na hora da transferência para a RAM.</string>
+    <string name="settings_pgxp_cpu_mode">PGXP - Modo CPU</string>
+    <string name="settings_summary_pgxp_cpu_mode">Tenta reduzir oscilações nos poligonos preservando-os na hora da transferência para o CPU. Alguns jogos se beneficiam com esta opção junto com o PGXP para que funcione corretamente. Muito lento, e imcompativel com o modo recompilador.</string>
+    <string name="settings_cpu_recompiler_icache">Recompilador CPU Modo ICache</string>
+    <string name="settings_summary_cpu_recompiler_icache">Determina se a instrução enviada ao CPU emulado fica armazenada no recompilador. Melhor a precisão ao pequeno custo de performance. Se os jogos estão rodando muito rápido, tente ativar esta opção.</string>
+    <string name="settings_cpu_recompiler_fastmem">Recompilador CPU Modo FASTMEM</string>
+    <string name="settings_summary_cpu_recompiler_fastmem">Torna o acesso à memória mais eficiente. Desative se estiver instável em seu aparelho.</string>
+    <string name="settings_presented_frame_limit">Limite do Quadro atual</string>
+    <string name="settings_logging_level">Nível de Registro</string>
+    <string name="settings_log_to_file">Registro para Arquivo</string>
+    <string name="settings_summary_log_to_file">Escreve mensagens em um arquivo duckstation.log em seu diretório raiz. Use só para depuração isto deixará o emulador lento.</string>
+    <string name="settings_log_to_logcat">Registro em Linha de Comando</string>
+    <string name="settings_summary_log_to_logcat">Escreve um arquivo de registro para arquivo no Android. Só útil quando atrelado ao PC com adb.</string>
+    <string name="settings_volume">Volume</string>
+    <string name="settings_summary_volume">Controla o volume do emulador.</string>
+    <string name="settings_fast_forward_volume">Volume do Avanço Rápido</string>
+    <string name="settings_summary_fast_forward_volume">Controla o volume do áudio quando o avanço rápido é usado.</string>
+    <string name="settings_mute_all_sound">Silenciar Tudo</string>
+    <string name="settings_summary_mute_all_sound">Silencia totalmente o emulador.</string>
+    <string name="settings_mute_cd_audio">Silenciar CD\'s de Áudio</string>
+    <string name="settings_summary_mute_cd_audio">Silencia de forma forçada tanto para CD\'s de música quanto em jogos.</string>
+    <string name="settings_audio_backend">Opções de Áudio</string>
+    <string name="settings_audio_buffer_size">Latência do Volume:</string>
+    <string name="settings_summary_audio_buffer_size">Determina a latência entre o áudio. Valores menores reduzem a latência (atraso), pode causar engasgos quando jogos são acelerados.</string>
+    <string name="settings_audio_sync">Sincronia de Áudio</string>
+    <string name="settings_summary_audio_sync">Limita a velocidade de emulação com base na opção escolhida. Isso ajuda a remover ruídos ou estalos se a emulação for muito rápida. A sincronização será automaticamente desativada se não funcionar a 100%.</string>
+    <string name="settings_controller_type">Tipo de Controle/string>
+    <string name="settings_enable_analog_mode_on_reset">Ativa modo analógico ao reiniciar</string>
+    <string name="settings_touchscreen_controller_view">Visualização do controle em tela</string>
+    <string name="settings_auto_hide_touchscreen_controller">Auto ocultar controles em tela</string>
+    <string name="settings_summary_auto_hide_touchscreen_controller">Esconde controles em tela quando um controle externo é detectado.</string>
+    <string name="settings_vibrate_on_press">Vibrar ao Pressionar</string>
+    <string name="settings_summary_vibrate_on_press">Ativa vibração quando um botão da tela de toque é pressionado. Requer \"Vibrar ao Tocar\" ativado nas opções do seu dispositivo para funcionar.</string>
+    <string name="settings_enable_vibration">Ativa Vibração</string>
+    <string name="settings_summary_enable_vibration">Encaminha vibração do jogo para o motor do aparelho</string>
+    <string name="settings_memory_card_1_type">Tipo de Cartão de Memória 1</string>
+    <string name="settings_memory_card_2_type">Tipo de Cartão de Memória 2</string>
+    <string name="settings_crop_mode">Modo de Corte</string>
+    <string name="settings_aspect_ratio">Aspect Ratio</string>
+    <string name="settings_linear_upscaling">Escalonamento Linear</string>
+    <string name="settings_integer_upscaling">Escalonamento Integro</string>
+    <string name="settings_summary_linear_upscaling">Suaviza a imagem ao aumentar a resolução da emulação.</string>
+    <string name="settings_summary_integer_upscaling">Adiciona preenchimento a área exibida para garantir a proporção entre os pixels. Pode resultar em uma imagem mais nítida em jogos 2D.</string>
+    <string name="settings_summary_osd_show_messages">Mostra mensagens em tela ao salvar, carregar, carregar trapaças quando eventos ou alertas ocorrerem.</strng>
+    <string name="settings_summary_osd_show_speed">Define a velocidade de emulação. Não é garantido que essa velocidade será atingida.</string>
+    <string name="settings_summary_osd_show_fps">Mostra a taxa de quadros (FPS) interna do jogo no canto superior direito da tela.</string>
+    <string name="settings_summary_osd_show_vps">Mostra o número de quadros (VPS) exibidos por segundo pelo sistema no canto superior direito da tela.</string>
+    <string name="settings_cdrom_read_speedup">Velocidade de leitura CD-ROM</string>
+    <string name="settings_summary_cdrom_read_speedup">Acelera a leitura de CD-ROM. Aplica-se apenas a leituras de velocidade 2x é ignorado quando o áudio está sendo reproduzido. Pode melhorar a velocidade de carregamento em alguns jogos, ao custo de quebrar outros.</string>
+    <string name="settings_summary_console_fast_boot">Pula a tela de abertura clássica da Sony seguro ativar porém alguns raros jogos podem quebrar.</string>
+    <string name="settings_msaa">Filtro Anti-serrilhado (MSAA)</string>
+    <string name="settings_true_color">Renderização em (24 Cores, desativa dithering)</string>
+    <string name="settings_summary_true_color">Produz gradientes de aparência mais agradável ao custo de fazer algumas cores ficarem ligeiramente diferentes. A maioria dos jogos são compatíveis com esta opção.</string>
+    <string name="settings_scaled_dithering">Efeito Dithering Escalado (escala pontilhados para resolução). </string>
+    <string name="settings_summary_scaled_dithering">Escala o dithering para a resolução da GPU emulada. Torna o padrão do pontilhado muito menos óbvio em resoluções mais altas.</string>
+    <string name="settings_disable_interlacing">Desativar Entrelaçamento (força redenrização progressiva).</string>
+    <string name="settings_summary_disable_interlacing">Força a renderização e exibição de quadros para o modo progressivo. Remove o efeito de \'alisamento\' visto em jogos 480i renderizando sempre em 480, seguro deixar ativo.</string>
+    <string name="settings_texture_filtering">Filtragem de textura</string>
+    <string name="settings_force_ntsc_timings">Força renderização em NTSC (60hz-em-PAL)</string>
+    <string name="settings_summary_force_ntsc_timings">Usa temporizadores de quadro NTSC forçando os jogos PAL a rodarem a 60 Hz.</string>
+    <string name="settings_widescreen_hack">Hack de tela panorâmica</string>
+    <string name="settings_summary_widescreen_hack">Dimensiona as posições dos vértices da tela para a proporção mais larga (Panoramicas), basicamente aumenta o campo de visão de 4:3 para 16:09 em jogos 3D. Não é compatível com todos os jogos.</string>
+    <string name="settings_force_4_3_for_24bit">Forçar 4:3 para telas 24-bits.</string>
+    <string name="settings_summary_force_4_3_for_24bit">Volta a tela para 4:3 (Desativa efeito Esticado em FMVs).</string>
+    <string name="settings_chroma_smoothing_24bit">Suavização de Croma</string>
+    <string name="settings_summary_chrome_smoothing_24bit">Suavização de Croma (reduz artefatos em cenas FMV).</string>
+	<string name="settings_pgxp_geometry_correction">Correção Geométrica PGXP</string>
+    <string name="settings_summary_pgxp_geometry_correction"><![CDATA[Reduz as "oscilações" nos polígonos tentando preservar os mesmos na hora da transferência para a memória. Funciona apenas se rederizado por hardware e pode não ser compatível com todos os jogos Não compativel com todos os jogos.]]></string>
+    <string name="settings_pgxp_culling_correction">Correção de Curvas PGXP</string>
+    <string name="settings_summary_pgxp_culling_correction">Aumenta a precisão das curvas nos polígonos, reduzindo o número de buracos na geometria do mesmo. Requer a Correção Geometrica ativada. Requer que a correção geométrica esteja ativada.</string>
+    <string name="settings_pgxp_texture_correction">Correção de Textura PGXP</string>
+    <string name="settings_summary_pgxp_texture_correction">Utiliza interpolação corretiva em perspetiva para coordenadas e das cores na textura, endireitando as que estiverem distorcidas. Requer que a correção geométrica esteja ativada.</string>
+    <string name="settings_pgxp_preserve_projection_precision">Preserva Precisão de Projeção PGXP</string>
+    <string name="settings_summary_pgxp_preserve_projection_precision">Permite precisão adicional para PGXP; Pode melhorar o visual em alguns jogos e prejudicar outros.</string>
+    <string name="settings_pgxp_depth_buffer">PGXP Modo Polimento (Z)</string>
+    <string name="settings_summary_pgxp_depth_buffer">Tenta reduzir os poligonos no eixo Z (parte inferior ou cantos em alguns casos) ajustando os limites dos valores para que não haja conflitos na renderização de poligonos 3D. Gerando um efeito de buracos ou quadrados piscando. Tem pouca compatibilidade no geral, mas pode funcionar bem em alguns jogos. Outros precisam ser ajustados via limitador.</string>
+    <string name="menu_main_resume_last_session">Resumir Jogo</string>
+    <string name="menu_main_start_file">Iniciar Arquivo</string>
+    <string name="menu_main_start_bios">Iniciar BIOS</string>
+    <string name="menu_main_edit_game_directories">Editar Diretórios de Jogos</string>
+    <string name="menu_main_scan_for_new_games">Escanear Jogos Novos</string>
+    <string name="menu_main_rescan_all_games">Rescanear Tudo</string>
+    <string name="menu_main_import_bios">Importar BIOS</string>
+    <string name="menu_main_show_version">Mostrar Versão</string>
+    <string name="menu_main_github_repository">Repositório no Github</string>
+    <string name="menu_main_discord_server">Servidor no Discord</string>
+    <string name="menu_game_list_entry_start_game">Iniciar Jogo</string>
+    <string name="menu_game_list_entry_resume_game">Resumir Jogo</string>
+    <string name="android_progress_callback_please_wait">Aguarde...</string>
+    <string name="android_progress_callback_ok">OK</string>
+    <string name="android_progress_callback_information">Informação</string>
+    <string name="android_progress_callback_confirmation">Confirmação</string>
+    <string name="android_progress_callback_yes">Sim</string>
+    <string name="android_progress_callback_no">Não</string>
+    <string name="emulation_activity_error">Erro</string>
+    <string name="emulation_activity_ok">Ok</string>
+    <string name="emulation_activity_import_patch_codes">Importar Trapaças...</string>
+    <string name="emulation_activity_patch_on">(Ligar)</string>
+    <string name="emulation_activity_patch_off">(Desligar)</string>
+    <string name="emulation_activity_choose_patch_code_file">Escolher Arquivo de Trapaça</string>
+    <string name="emulation_activity_failed_to_import_patch_codes">Falha ao importar trapaça. Assegure-se de ter escolhido o formato PCSXR ou Libretro CHT.</string>
+    <string name="main_activity_choose_directory">Escolher Diretório</string>
+    <string name="main_activity_error">Erro</string>
+    <string name="main_activity_get_path_from_file_error">Falha ao obter o caminho para o arquivo selecionado. Certifique-se de que o arquivo esteja no armazenamento interno / externo.\n\nTap.\nSelect "Mostrar armazenamento interno".\nTap selecione o nome do seu dispositivo ou cartão SD.</string>
+    <string name="main_activity_ok">OK</string>
+    <string name="main_activity_get_path_from_directory_error">Falha ao obter o caminho para o arquivo selecionado. Certifique-se de que o arquivo esteja no armazenamento interno / externo. \n\nTap the overflow button in the directory selector.\nSelect \"Mostrar armazenamento interno\".\nTap selecione o nome do seu dispositivo ou cartão SD.</string>
+    <string name="main_activity_external_storage_permissions_error">Permissões de armazenamento externo são necessárias para usar o DuckStation.</string>
+    <string name="main_activity_choose_disc_image">Escolha Arquivo de Jogo</string>
+    <string name="main_activity_missing_bios_image_prompt">Nenhum BIOS foi encontrada no diretório de BIOS do DuckStation. Deseja localizar e importar o BIOS agora?</string>
+    <string name="main_activity_missing_bios_image">BIOS ausente.</string>
+    <string name="main_activity_yes">Sim</string>
+    <string name="main_activity_no">Não</string>
+    <string name="main_activity_choose_bios_image">Escolher BIOS</string>
+    <string name="main_activity_failed_to_open_bios_image">Falha ao Abrir BIOS.</string>
+    <string name="main_activity_failed_to_read_bios_image_prefix">\"Falha ao ler BIOS: \"</string>
+    <string name="main_activity_bios_image_too_large">Aqruivo BIOS muito grande.</string>
+    <string name="main_activity_invalid_error">Esse BIOS não é válido, ou já foi importado.</string>
+    <string name="main_activity_show_version_title">Versão</string>
+    <string name="main_activity_copy">Copiar</string>
+    <string name="settings_gpu_thread">Renderização Sequencial</string>
+    <string name="settings_summary_gpu_thread">Usa um segundo processo para desenhar gráficos em tela. Atualmente só disponível para renderizadores por software, pode fornecer uma melhoria significativa na velocidade, pode ser usado a vontade.</string>
+    <string name="settings_gpu_threaded_presentation">Renderização Sequencial</string>
+    <string name="settings_summary_gpu_threaded_presentation">Apresenta quadros sequêncialmente em segundo plano quando o avanço rápido ou sincronizador vertical (Vsync) está desativado Isso pode melhorar o desempenho no renderizador Vulkan.</string>
+    <string name="settings_language">Linguagem (Necessário Reiniciar)</string>
+    <string name="touchscreen_controller_stop_editing">Terminado</string>
+    <string name="touchscreen_controller_reset_layout">Redefinir</string>
+    <string name="emulation_activity_touchscreen_controller_not_active">Controle em Tela não Ativado.</string>
+    <string name="settings_theme">Tema</string>
+    <string name="settings_controller_mapping_summary">Permite configurar e atribuir os botões de seu controle externo no emulador.</string>
+    <string name="settings_controller_mapping">Mapear Controles</string>
+    <string name="controller_binding_dialog_message">Pressione os botões para atribuí-los ao controle.\n\nAtribuição Atual: %s</string>
+    <string name="controller_binding_dialog_no_binding"><![CDATA[<Nenhuma>]]></string>
+    <string name="controller_binding_dialog_cancel">Cancelar</string>
+    <string name="controller_binding_dialog_clear">Limpar</string>
+    <string name="controller_mapping_activity_title">Mapear Controle</string>
+    <string name="controller_mapping_activity_no_profiles_found">Perfil não encontrado.</string>
+    <string name="controller_mapping_activity_select_input_profile">Escolha o Perfil de Entrada</string>
+    <string name="controller_mapping_activity_failed_to_load_profile">Falha ao carregar o perfil \'%s\'</string>
+    <string name="controller_mapping_activity_input_profile_name">Nome do Perfil:</string>
+    <string name="controller_mapping_activity_save">Salvar</string>
+    <string name="controller_mapping_activity_name_must_be_provided">Um nome deve ser escolhido.</string>
+    <string name="controller_mapping_activity_failed_to_save_input_profile">Falha ao salvar perfil.</string>
+    <string name="controller_mapping_activity_input_profile_saved">Perfil \'%s\' salvo.</string>
+    <string name="controller_mapping_activity_cancel">Cancelar</string>
+    <string name="settings_use_analog_sticks_for_dpad">Usar Analógicos como D-Pad no Modo Digital</string>
+    <string name="settings_summary_enable_analog_mode_on_reset">Força os controles ao modo analógico quando emulador é reiniciado.</string>
+    <string name="settings_summary_use_analog_sticks_for_dpad">Permite usar os analógicos como um direcional (D-Pad) no modo digital, assim como os botões.</string>
+    <string name="settings_disable_all_enhancements">Desativar todas as Melhorias</string>
+    <string name="settings_summary_disable_all_enhancements">Desliga temporariamente todas as melhorias, útil para achar problemas de performance.</string>
+    <string name="settings_downsample_mode">Suavização da Imagem</string>
+    <string name="activity_game_properties">Propriedades do Jogo</string>
+    <string name="game_properties_preference_use_global_setting">Usar configuração global</string>
+    <string name="settings_input_profile">Perfil de controle</string>
+    <string name="game_properties_tab_summary">Sumário</string>
+    <string name="game_properties_tab_game_settings">Configuração de Jogo</string>
+    <string name="game_properties_tab_controller_settings">Configurações de Controle</string>
+    <string name="settings_audio_resampling">Ajuste de Áudio</string>
+    <string name="settings_summary_audio_resampling">Quando estiver rodando fora dos 100% da velocidade, o áudio será ajustado para que não haja queda de quadros. Produz uma melhor qualidade do avanço rápido no áudio ao custo pequeno de perda de performance.</string>
+    <string name="settings_general_sync_to_host_refresh_rate">Sincronizar taxa de atualização</string>
+    <string name="settings_summary_general_sync_to_host_refresh_rate">Ajusta a velocidade da emulação de acordo com a mesma taxa de atualização do dispositivo.</string>
+    <string name="settings_sustained_performance_mode">Desempenho Contínuo</string>
+    <string name="settings_summary_sustained_performance_mode">Ativa o modo contínuo de perfomance do Android. Resulta em um melhor desempenho de quadros e perfomance por longos periodos em alguns dispositivos.</string>
+    <string name="title_activity_game_directories">Editar Diretórios de Jogos</string>
+    <string name="settings_game_directories">Diretório de Jogos</string>
+    <string name="settings_summary_game_directories">Altera a lista de diretórios usados ​​para pesquisar jogos.</string>
+    <string name="game_directories_scanning_subdirectories">Ler subdiretórios.</string>
+    <string name="game_directories_not_scanning_subdirectories">Não ver subdiretórios.</string>
+    <string name="settings_display_all_frames">Otimização de Quadros</string>
+    <string name="settings_summary_display_all_frames">Garante que cada quadro renderizado será mostrado em tela, no seu rtimo adequado. Se estiver tendo dificuldades ao manter uma boa velocidade, ou estiver enfrentando algumas falhas de áudio tente desativar esta opção.</string>
+    <string name="menu_edit_game_directories_add_directory">Adicionar Diretório</string>
+    <string name="menu_edit_game_directories_add_path">Adicionar Caminho</string>
+    <string name="edit_game_directories_add_path">Editar Caminho</string>
+    <string name="edit_game_directories_add_path_summary">Insira o caminho completo dos seus jogos.\n\nUse um gerenciador de arquivos para ver o caminho.\n\nExemplo: /storage/emulated/0/games</string>
+    <string name="save_state_info_slot_is_empty">Espaço Vazio</string>
+    <string name="save_state_info_game_save_n">Id do Jogo %d</string>
+    <string name="save_state_info_global_save_n">Espaço Global %d</string>
+    <string name="save_state_info_quick_save">Salvar Rápido</string>
+</resources>
