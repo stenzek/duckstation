@@ -81,6 +81,7 @@ static void DoMemorySaveStates();
 static bool Initialize(bool force_software_renderer);
 
 static void UpdateRunningGame(const char* path, CDImage* image);
+static bool CheckForSBIFile(CDImage* image);
 
 static State s_state = State::Shutdown;
 
@@ -722,6 +723,13 @@ bool Boot(const SystemBootParameters& params)
 
   // Notify change of disc.
   UpdateRunningGame(media ? media->GetFileName().c_str() : params.filename.c_str(), media.get());
+
+  // Check for SBI.
+  if (!CheckForSBIFile(media.get()))
+  {
+    Shutdown();
+    return false;
+  }
 
   // Component setup.
   if (!Initialize(params.force_software_renderer))
@@ -1824,22 +1832,31 @@ void UpdateRunningGame(const char* path, CDImage* image)
     g_host_interface->GetGameInfo(path, image, &s_running_game_code, &s_running_game_title);
   }
 
-  if (!s_running_game_code.empty() && LibcryptGameList::IsLibcryptGameCode(s_running_game_code) &&
-      !image->HasNonStandardSubchannel())
-  {
-    Log_WarningPrintf("SBI file missing but required for %s (%s)", s_running_game_code.c_str(),
-                      s_running_game_title.c_str());
-
-    g_host_interface->ReportFormattedError(
-      g_host_interface->TranslateString(
-        "System", "You are attempting to run a libcrypt protected game without a SBI file:\n\n%s: %s\n\nThe game will "
-                  "likely not run properly.\n\nPlease check the README for instructions on how to add a SBI file."),
-      s_running_game_code.c_str(), s_running_game_title.c_str());
-  }
-
   g_texture_replacements.SetGameID(s_running_game_code);
 
   g_host_interface->OnRunningGameChanged();
+}
+
+bool CheckForSBIFile(CDImage* image)
+{
+  if (s_running_game_code.empty() || !LibcryptGameList::IsLibcryptGameCode(s_running_game_code) || !image ||
+      image->HasNonStandardSubchannel())
+  {
+    return true;
+  }
+
+  Log_WarningPrintf("SBI file missing but required for %s (%s)", s_running_game_code.c_str(),
+                    s_running_game_title.c_str());
+
+  return g_host_interface->ConfirmMessage(
+    StringUtil::StdStringFromFormat(
+      g_host_interface->TranslateString(
+        "System",
+        "You are attempting to run a libcrypt protected game without a SBI file:\n\n%s: %s\n\nThe game will "
+        "likely not run properly.\n\nPlease check the README for instructions on how to add a SBI file.\n\nDo "
+        "you wish to continue?"),
+      s_running_game_code.c_str(), s_running_game_title.c_str())
+      .c_str());
 }
 
 bool HasMediaPlaylist()
