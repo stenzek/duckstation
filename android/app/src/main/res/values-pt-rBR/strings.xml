@@ -76,7 +76,7 @@
     <string name="settings_integer_upscaling">Escalonamento Integro</string>
     <string name="settings_summary_linear_upscaling">Suaviza a imagem ao aumentar a resolução da emulação.</string>
     <string name="settings_summary_integer_upscaling">Adiciona preenchimento a área exibida para garantir a proporção entre os pixels. Pode resultar em uma imagem mais nítida em jogos 2D.</string>
-    <string name="settings_summary_osd_show_messages">Mostra mensagens em tela ao salvar, carregar, carregar trapaças quando eventos ou alertas ocorrerem.</strng>
+    <string name="settings_summary_osd_show_messages">Mostra mensagens em tela ao salvar, carregar, carregar trapaças quando eventos ou alertas ocorrerem.</string>
     <string name="settings_summary_osd_show_speed">Define a velocidade de emulação. Não é garantido que essa velocidade será atingida.</string>
     <string name="settings_summary_osd_show_fps">Mostra a taxa de quadros (FPS) interna do jogo no canto superior direito da tela.</string>
     <string name="settings_summary_osd_show_vps">Mostra o número de quadros (VPS) exibidos por segundo pelo sistema no canto superior direito da tela.</string>
