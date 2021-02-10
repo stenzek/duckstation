@@ -1676,6 +1676,7 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                      DoFrameStep();
                  });
 
+#ifndef __ANDROID__
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("Rewind"),
                  StaticString(TRANSLATABLE("Hotkeys", "Rewind")), [this](bool pressed) {
                    if (System::IsValid())
@@ -1686,6 +1687,7 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                      System::SetRewinding(pressed);
                    }
                  });
+#endif
 }
 
 void CommonHostInterface::RegisterGraphicsHotkeys()
