@@ -522,7 +522,7 @@ const char* Settings::GetDiscRegionDisplayName(DiscRegion region)
 
 static std::array<const char*, 3> s_cpu_execution_mode_names = {{"Interpreter", "CachedInterpreter", "Recompiler"}};
 static std::array<const char*, 3> s_cpu_execution_mode_display_names = {
-  {TRANSLATABLE("CPUExecutionMode", "Intepreter (Slowest)"),
+  {TRANSLATABLE("CPUExecutionMode", "Interpreter (Slowest)"),
    TRANSLATABLE("CPUExecutionMode", "Cached Interpreter (Faster)"),
    TRANSLATABLE("CPUExecutionMode", "Recompiler (Fastest)")}};
 

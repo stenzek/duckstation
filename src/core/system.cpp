@@ -1852,8 +1852,8 @@ bool CheckForSBIFile(CDImage* image)
     StringUtil::StdStringFromFormat(
       g_host_interface->TranslateString(
         "System",
-        "You are attempting to run a libcrypt protected game without a SBI file:\n\n%s: %s\n\nThe game will "
-        "likely not run properly.\n\nPlease check the README for instructions on how to add a SBI file.\n\nDo "
+        "You are attempting to run a libcrypt protected game without an SBI file:\n\n%s: %s\n\nThe game will "
+        "likely not run properly.\n\nPlease check the README for instructions on how to add an SBI file.\n\nDo "
         "you wish to continue?"),
       s_running_game_code.c_str(), s_running_game_title.c_str())
       .c_str());
