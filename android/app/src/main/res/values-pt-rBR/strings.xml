@@ -59,7 +59,7 @@
     <string name="settings_summary_audio_buffer_size">Determina a latência entre o áudio. Valores menores reduzem a latência (atraso), pode causar engasgos quando jogos são acelerados.</string>
     <string name="settings_audio_sync">Sincronia de Áudio</string>
     <string name="settings_summary_audio_sync">Limita a velocidade de emulação com base na opção escolhida. Isso ajuda a remover ruídos ou estalos se a emulação for muito rápida. A sincronização será automaticamente desativada se não funcionar a 100%.</string>
-    <string name="settings_controller_type">Tipo de Controle/string>
+    <string name="settings_controller_type">Tipo de Controle</string>
     <string name="settings_enable_analog_mode_on_reset">Ativa modo analógico ao reiniciar</string>
     <string name="settings_touchscreen_controller_view">Visualização do controle em tela</string>
     <string name="settings_auto_hide_touchscreen_controller">Auto ocultar controles em tela</string>
