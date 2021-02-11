@@ -29,18 +29,20 @@ static QString formatHexValue(u32 value, u8 size)
 
 static QString formatHexAndDecValue(u32 value, u8 size, bool is_signed)
 {
-    
+
   if (is_signed)
-  { 
-    u32 value_raw = value;      
-    if (size==2)
-      value_raw &= 0xFF;  
-    else if (size==4)
-      value_raw &= 0xFFFF;     
-    return QStringLiteral("0x%1 (%2)").arg(static_cast<u32>(value_raw), size, 16, QChar('0')).arg(static_cast<int>(value)); 
+  {
+    u32 value_raw = value;
+    if (size == 2)
+      value_raw &= 0xFF;
+    else if (size == 4)
+      value_raw &= 0xFFFF;
+    return QStringLiteral("0x%1 (%2)")
+      .arg(static_cast<u32>(value_raw), size, 16, QChar('0'))
+      .arg(static_cast<int>(value));
   }
   else
-    return QStringLiteral("0x%1 (%2)").arg(static_cast<u32>(value), size, 16, QChar('0')).arg(static_cast<uint>(value)); 
+    return QStringLiteral("0x%1 (%2)").arg(static_cast<u32>(value), size, 16, QChar('0')).arg(static_cast<uint>(value));
 }
 
 static QString formatValue(u32 value, bool is_signed)
@@ -85,6 +87,8 @@ void CheatManagerDialog::connectUi()
   connect(m_ui.cheatListActivate, &QPushButton::clicked, this, &CheatManagerDialog::activateCodeClicked);
   connect(m_ui.cheatListImport, &QPushButton::clicked, this, &CheatManagerDialog::importClicked);
   connect(m_ui.cheatListExport, &QPushButton::clicked, this, &CheatManagerDialog::exportClicked);
+  connect(m_ui.cheatListClear, &QPushButton::clicked, this, &CheatManagerDialog::clearClicked);
+  connect(m_ui.cheatListReset, &QPushButton::clicked, this, &CheatManagerDialog::resetClicked);
 
   connect(m_ui.scanValue, &QLineEdit::textChanged, this, &CheatManagerDialog::updateScanValue);
   connect(m_ui.scanValueBase, QOverload<int>::of(&QComboBox::currentIndexChanged),
@@ -302,6 +306,11 @@ CheatList* CheatManagerDialog::getCheatList() const
   }
 
   return list;
+}
+
+void CheatManagerDialog::queueUpdateCheatList()
+{
+  QMetaObject::invokeMethod(this, &CheatManagerDialog::updateCheatList, Qt::QueuedConnection);
 }
 
 void CheatManagerDialog::updateCheatList()
@@ -647,6 +656,36 @@ void CheatManagerDialog::exportClicked()
     QMessageBox::critical(this, tr("Error"), tr("Failed to save cheat file. The log may contain more information."));
 }
 
+void CheatManagerDialog::clearClicked()
+{
+  if (QMessageBox::question(this, tr("Confirm Clear"),
+                            tr("Are you sure you want to remove all cheats? This is not reversible.")) !=
+      QMessageBox::Yes)
+  {
+    return;
+  }
+
+  QtHostInterface::GetInstance()->executeOnEmulationThread([] { QtHostInterface::GetInstance()->ClearCheatList(true); },
+                                                           true);
+  updateCheatList();
+}
+
+void CheatManagerDialog::resetClicked()
+{
+  if (QMessageBox::question(
+        this, tr("Confirm Reset"),
+        tr(
+          "Are you sure you want to reset the cheat list? Any cheats not in the DuckStation database WILL BE LOST.")) !=
+      QMessageBox::Yes)
+  {
+    return;
+  }
+
+  QtHostInterface::GetInstance()->executeOnEmulationThread([] { QtHostInterface::GetInstance()->DeleteCheatList(); },
+                                                           true);
+  updateCheatList();
+}
+
 void CheatManagerDialog::addToWatchClicked()
 {
   const int index = getSelectedResultIndex();
@@ -675,11 +714,11 @@ void CheatManagerDialog::addManualWatchAddressClicked()
   if (index < 0 || !ok)
     return;
 
-  if (index==1 || index==4)
-    address.value() &= 0xFFFFFFFE;  
-  else if (index==2 || index==5)
-    address.value() &= 0xFFFFFFFC;    
-  
+  if (index == 1 || index == 4)
+    address.value() &= 0xFFFFFFFE;
+  else if (index == 2 || index == 5)
+    address.value() &= 0xFFFFFFFC;
+
   m_watch.AddEntry(StringUtil::StdStringFromFormat("0x%08x", address.value()), address.value(),
                    static_cast<MemoryAccessSize>(index % 3), (index > 3), false);
   updateWatch();
@@ -858,7 +897,7 @@ void CheatManagerDialog::updateResultsValues()
     {
       QTableWidgetItem* item = m_ui.scanTable->item(row, 1);
       if (m_ui.scanValueBase->currentIndex() == 0)
-        item->setText(formatValue(res.value, m_scanner.GetValueSigned()));  
+        item->setText(formatValue(res.value, m_scanner.GetValueSigned()));
       else if (m_scanner.GetSize() == MemoryAccessSize::Byte)
         item->setText(formatHexValue(res.value, 2));
       else if (m_scanner.GetSize() == MemoryAccessSize::HalfWord)

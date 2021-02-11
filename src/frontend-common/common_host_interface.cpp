@@ -2722,6 +2722,40 @@ bool CommonHostInterface::SaveCheatList(const char* filename)
   return true;
 }
 
+bool CommonHostInterface::DeleteCheatList()
+{
+  if (!System::IsValid())
+    return false;
+
+  const std::string filename(GetCheatFileName());
+  if (!filename.empty())
+  {
+    if (!FileSystem::DeleteFile(filename.c_str()))
+      return false;
+
+    AddFormattedOSDMessage(5.0f, TranslateString("OSDMessage", "Deleted cheat list '%s'."), filename.c_str());
+  }
+
+  System::SetCheatList(nullptr);
+  return true;
+}
+
+void CommonHostInterface::ClearCheatList(bool save_to_file)
+{
+  if (!System::IsValid())
+    return;
+
+  CheatList* cl = System::GetCheatList();
+  if (!cl)
+    return;
+
+  while (cl->GetCodeCount() > 0)
+    cl->RemoveCode(cl->GetCodeCount() - 1);
+
+  if (save_to_file)
+    SaveCheatList();
+}
+
 void CommonHostInterface::SetCheatCodeState(u32 index, bool enabled, bool save_to_file)
 {
   if (!System::IsValid() || !System::HasCheatList())

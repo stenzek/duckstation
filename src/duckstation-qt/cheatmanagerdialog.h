@@ -40,6 +40,8 @@ private Q_SLOTS:
   void importFromFileTriggered();
   void importFromTextTriggered();
   void exportClicked();
+  void clearClicked();
+  void resetClicked();
 
   void addToWatchClicked();
   void addManualWatchAddressClicked();
@@ -73,6 +75,7 @@ private:
   int getSelectedCheatIndex() const;
   int getSelectedResultIndex() const;
   int getSelectedWatchIndex() const;
+  void queueUpdateCheatList();
 
   Ui::CheatManagerDialog m_ui;
 

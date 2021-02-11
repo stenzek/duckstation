@@ -607,9 +607,15 @@ CheatList::Format CheatList::DetectFileFormat(const std::string& str)
 
 bool CheatList::LoadFromFile(const char* filename, Format format)
 {
-  std::optional<std::string> str = FileSystem::ReadFileToString(filename);
-  if (!str.has_value() || str->empty())
+  if (!FileSystem::FileExists(filename))
     return false;
+
+  std::optional<std::string> str = FileSystem::ReadFileToString(filename);
+  if (!str.has_value())
+    return false;
+
+  if (str->empty())
+    return true;
 
   return LoadFromString(str.value(), format);
 }

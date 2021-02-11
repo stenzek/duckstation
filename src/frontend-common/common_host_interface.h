@@ -220,6 +220,12 @@ public:
   /// Saves the current cheat list to the specified file.
   bool SaveCheatList(const char* filename);
 
+  /// Deletes the cheat list, if present.
+  bool DeleteCheatList();
+
+  /// Removes all cheats from the cheat list.
+  void ClearCheatList(bool save_to_file);
+
   /// Enables/disabled the specified cheat code.
   void SetCheatCodeState(u32 index, bool enabled, bool save_to_file);
 
