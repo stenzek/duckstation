@@ -859,72 +859,68 @@ void CommonHostInterface::DrawFPSWindow()
     return;
   }
 
-  const ImVec2 window_size =
-    ImVec2(175.0f * ImGui::GetIO().DisplayFramebufferScale.x, 48.0f * ImGui::GetIO().DisplayFramebufferScale.y);
-  ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x - window_size.x, 0.0f), ImGuiCond_Always);
-  ImGui::SetNextWindowSize(window_size);
-
-  if (!ImGui::Begin("FPSWindow", nullptr,
-                    ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse |
-                      ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMouseInputs |
-                      ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNav))
-  {
-    ImGui::End();
-    return;
-  }
-
+  const float scale = ImGui::GetIO().DisplayFramebufferScale.x;
+  float margin = 10.0f * scale;
+  float spacing = 5.0f * scale;
+  float position_y = margin;
+  ImDrawList* dl = ImGui::GetBackgroundDrawList();
+  ImFont* font = ImGui::GetFont();
+  TinyString text;
+  ImVec2 text_size;
   bool first = true;
-  if (g_settings.display_show_fps)
-  {
-    ImGui::Text("%.2f", System::GetFPS());
-    first = false;
-  }
-  if (g_settings.display_show_vps)
-  {
-    if (first)
-    {
-      first = false;
-    }
-    else
-    {
-      ImGui::SameLine();
-      ImGui::Text("/");
-      ImGui::SameLine();
-    }
 
-    ImGui::Text("%.2f", System::GetVPS());
-  }
-  if (g_settings.display_show_speed)
-  {
-    if (first)
-    {
-      first = false;
-    }
-    else
-    {
-      ImGui::SameLine();
-      ImGui::Text("/");
-      ImGui::SameLine();
-    }
+#define DRAW_LINE(color)                                                                                               \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    text_size = font->CalcTextSizeA(font->FontSize, std::numeric_limits<float>::max(), -1.0f, text,                    \
+                                    text.GetCharArray() + text.GetLength(), nullptr);                                  \
+    dl->AddText(font, font->FontSize, ImVec2(ImGui::GetIO().DisplaySize.x - margin - text_size.x, position_y), color,  \
+                text, text.GetCharArray() + text.GetLength());                                                         \
+    position_y += text_size.y + spacing;                                                                               \
+  } while (0)
 
+  const System::State state = System::GetState();
+  if (System::GetState() == System::State::Running)
+  {
     const float speed = System::GetEmulationSpeed();
-    const u32 rounded_speed = static_cast<u32>(std::round(speed));
-    if (speed < 90.0f)
-      ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), "%u%%", rounded_speed);
-    else if (speed < 110.0f)
-      ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "%u%%", rounded_speed);
-    else
-      ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "%u%%", rounded_speed);
+    if (g_settings.display_show_fps)
+    {
+      text.AppendFormattedString("%.2f", System::GetFPS());
+      first = false;
+    }
+    if (g_settings.display_show_vps)
+    {
+      text.AppendFormattedString("%s%.2f", first ? "" : " / ", System::GetVPS());
+      first = false;
+    }
+    if (g_settings.display_show_speed)
+    {
+      text.AppendFormattedString("%s%u%%", first ? "" : " / ", static_cast<u32>(std::round(speed)));
+      first = false;
+    }
+    if (!text.IsEmpty())
+    {
+      ImU32 color;
+      if (speed < 95.0f)
+        color = IM_COL32(255, 100, 100, 255);
+      else if (speed > 105.0f)
+        color = IM_COL32(100, 255, 100, 255);
+      else
+        color = IM_COL32(255, 255, 255, 255);
+
+      DRAW_LINE(color);
+    }
+
+    if (g_settings.display_show_resolution)
+    {
+      const auto [effective_width, effective_height] = g_gpu->GetEffectiveDisplayResolution();
+      const bool interlaced = g_gpu->IsInterlacedDisplayEnabled();
+      text.Format("%ux%u (%s)", effective_width, effective_height, interlaced ? "interlaced" : "progressive");
+      DRAW_LINE(IM_COL32(255, 255, 255, 255));
+    }
   }
 
-  if (g_settings.display_show_resolution)
-  {
-    const auto [effective_width, effective_height] = g_gpu->GetEffectiveDisplayResolution();
-    const bool interlaced = g_gpu->IsInterlacedDisplayEnabled();
-    ImGui::Text("%ux%u (%s)", effective_width, effective_height, interlaced ? "interlaced" : "progressive");
-  }
-
-  ImGui::End();
+#undef DRAW_LINE
 }
 
 void CommonHostInterface::AddOSDMessage(std::string message, float duration /*= 2.0f*/)
@@ -988,12 +984,17 @@ void CommonHostInterface::DrawOSDMessages()
     return;
 
   const float scale = ImGui::GetIO().DisplayFramebufferScale.x;
-  const float max_width = ImGui::GetIO().DisplaySize.x - (20.0f * scale);
+  const float spacing = 5.0f * scale;
+  const float margin = 10.0f * scale;
+  const float padding = 8.0f * scale;
+  const float rounding = 5.0f * scale;
+  const float max_width = ImGui::GetIO().DisplaySize.x - margin;
+  float position_x = margin;
+  float position_y = margin;
 
+  ImDrawList* dl = ImGui::GetBackgroundDrawList();
+  ImFont* font = ImGui::GetFont();
   auto iter = m_osd_messages.begin();
-  float position_x = 10.0f * scale;
-  float position_y = (10.0f + (static_cast<float>(m_display->GetDisplayTopMargin()))) * scale;
-  u32 index = 0;
   while (iter != m_osd_messages.end())
   {
     const OSDMessage& msg = *iter;
@@ -1005,35 +1006,24 @@ void CommonHostInterface::DrawOSDMessages()
       continue;
     }
 
-    if (!g_settings.display_show_osd_messages)
+    if (!g_settings.display_show_osd_messages || position_y >= ImGui::GetIO().DisplaySize.y)
     {
       ++iter;
       continue;
     }
 
     const float opacity = std::min(time_remaining, 1.0f);
-    const ImVec2 text_size(ImGui::CalcTextSize(msg.text.c_str(), nullptr));
-    const bool wrapped = (text_size.x > max_width);
 
-    ImGui::SetNextWindowPos(ImVec2(position_x, position_y));
-    ImGui::SetNextWindowSize(ImVec2(wrapped ? max_width : 0.0f, 0.0f));
-    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, opacity);
-
-    char buf[64];
-    std::snprintf(buf, sizeof(buf), "osd_%u", index++);
-
-    if (ImGui::Begin(buf, nullptr, window_flags))
-    {
-      if (wrapped)
-        ImGui::TextWrapped("%s", msg.text.c_str());
-      else
-        ImGui::TextUnformatted(msg.text.c_str());
-
-      position_y += ImGui::GetWindowSize().y + (4.0f * scale);
-    }
-
-    ImGui::End();
-    ImGui::PopStyleVar();
+    const ImVec2 pos(position_x, position_y);
+    const ImVec2 text_size(ImGui::CalcTextSize(msg.text.c_str(), nullptr, false, max_width));
+    const ImVec2 size(text_size.x + padding * 2.0f, text_size.y + padding * 2.0f);
+    const ImVec4 text_rect(pos.x + padding, pos.y + padding, pos.x + size.x - padding, pos.y + size.y - padding);
+    dl->AddRectFilled(pos, ImVec2(pos.x + size.x, pos.y + size.y), ImGui::GetColorU32(ImGuiCol_WindowBg, opacity),
+                      rounding);
+    dl->AddRect(pos, ImVec2(pos.x + size.x, pos.y + size.y), ImGui::GetColorU32(ImGuiCol_Border), rounding);
+    dl->AddText(font, font->FontSize, ImVec2(text_rect.x, text_rect.y), ImGui::GetColorU32(ImGuiCol_Text, opacity),
+                msg.text.c_str(), nullptr, max_width, &text_rect);
+    position_y += size.y + spacing;
     ++iter;
   }
 }

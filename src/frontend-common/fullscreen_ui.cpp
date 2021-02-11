@@ -2685,8 +2685,6 @@ void DrawOSDMessages()
   }
 
   ImGui::PushFont(g_large_font);
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(10.0f, 10.0f));
 
   const float max_width = LayoutScale(1080.0f);
   const float spacing = LayoutScale(4.0f);
@@ -2703,7 +2701,7 @@ void DrawOSDMessages()
         return false;
 
       const ImVec2 pos(position_x, position_y);
-      const ImVec2 text_size(ImGui::CalcTextSize(message.c_str(), nullptr, max_width));
+      const ImVec2 text_size(ImGui::CalcTextSize(message.c_str(), nullptr, false, max_width));
       const ImVec2 size(text_size + LayoutScale(20.0f, 20.0f));
       const ImVec4 text_rect(pos.x + padding, pos.y + padding, pos.x + size.x - padding, pos.y + size.y - padding);
       ImDrawList* dl = GetDrawListForOverlay();
@@ -2715,7 +2713,6 @@ void DrawOSDMessages()
       return true;
     });
 
-  ImGui::PopStyleVar(2);
   ImGui::PopFont();
 }
 
