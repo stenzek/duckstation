@@ -308,11 +308,6 @@ CheatList* CheatManagerDialog::getCheatList() const
   return list;
 }
 
-void CheatManagerDialog::queueUpdateCheatList()
-{
-  QMetaObject::invokeMethod(this, &CheatManagerDialog::updateCheatList, Qt::QueuedConnection);
-}
-
 void CheatManagerDialog::updateCheatList()
 {
   QSignalBlocker sb(m_ui.cheatList);

@@ -75,7 +75,6 @@ private:
   int getSelectedCheatIndex() const;
   int getSelectedResultIndex() const;
   int getSelectedWatchIndex() const;
-  void queueUpdateCheatList();
 
   Ui::CheatManagerDialog m_ui;
 
