@@ -81,5 +81,11 @@
         app:defaultValue="false"
         app:summary="@string/settings_summary_osd_show_vps"
         app:iconSpaceReserved="false" />
+    <SwitchPreferenceCompat
+        app:key="Display/ShowResolution"
+        app:title="@string/settings_osd_show_show_resolution"
+        app:defaultValue="false"
+        app:summary="@string/settings_summary_osd_show_resolution"
+        app:iconSpaceReserved="false" />
 
 </PreferenceScreen>
