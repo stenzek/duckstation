@@ -1874,7 +1874,7 @@ void SPU::DrawDebugStateWindow()
   const float framebuffer_scale = ImGui::GetIO().DisplayFramebufferScale.x;
 
   ImGui::SetNextWindowSize(ImVec2(800.0f * framebuffer_scale, 800.0f * framebuffer_scale), ImGuiCond_FirstUseEver);
-  if (!ImGui::Begin("SPU State", &g_settings.debugging.show_spu_state))
+  if (!ImGui::Begin("SPU State", nullptr))
   {
     ImGui::End();
     return;

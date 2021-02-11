@@ -1525,7 +1525,7 @@ void GPU::DrawDebugStateWindow()
   const float framebuffer_scale = ImGui::GetIO().DisplayFramebufferScale.x;
 
   ImGui::SetNextWindowSize(ImVec2(450.0f * framebuffer_scale, 550.0f * framebuffer_scale), ImGuiCond_FirstUseEver);
-  if (!ImGui::Begin("GPU", &g_settings.debugging.show_gpu_state))
+  if (!ImGui::Begin("GPU", nullptr))
   {
     ImGui::End();
     return;

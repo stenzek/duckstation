@@ -726,7 +726,7 @@ void MDEC::DrawDebugStateWindow()
   const float framebuffer_scale = ImGui::GetIO().DisplayFramebufferScale.x;
 
   ImGui::SetNextWindowSize(ImVec2(300.0f * framebuffer_scale, 350.0f * framebuffer_scale), ImGuiCond_FirstUseEver);
-  if (!ImGui::Begin("MDEC State", &g_settings.debugging.show_mdec_state))
+  if (!ImGui::Begin("MDEC State", nullptr))
   {
     ImGui::End();
     return;

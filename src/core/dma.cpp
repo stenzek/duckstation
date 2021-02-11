@@ -625,7 +625,7 @@ void DMA::DrawDebugStateWindow()
   const float framebuffer_scale = ImGui::GetIO().DisplayFramebufferScale.x;
 
   ImGui::SetNextWindowSize(ImVec2(850.0f * framebuffer_scale, 250.0f * framebuffer_scale), ImGuiCond_FirstUseEver);
-  if (!ImGui::Begin("DMA State", &g_settings.debugging.show_dma_state))
+  if (!ImGui::Begin("DMA State", nullptr))
   {
     ImGui::End();
     return;
