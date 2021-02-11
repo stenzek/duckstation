@@ -21,22 +21,22 @@
         <item>Software</item>
     </string-array>
     <string-array name="settings_gpu_resolution_scale_entries">
-        <item>1x > (1024x512)</item>
-        <item>2x > (2048x1024)</item>
-        <item>3x > (3072x1536)</item>
-        <item>4x > (4096x2048)</item>
-        <item>5x > (5120x2560)</item>
-        <item>6x > (6144x3072)</item>
-        <item>7x > (7168x3584)</item>
-        <item>8x > (8192x4096)</item>
-        <item>9x > (9216x4608)</item>
-        <item>10x > (10240x5120)</item>
-        <item>11x > (11264x5632)</item>
-        <item>12x > (12288x6144)</item>
-        <item>13x > (13312x6656)</item>
-        <item>14x > (14336x7168)</item>
-        <item>15x > (15360x7680)</item>
-        <item>16x > (16384x8192)</item>
+        <item>1x</item>
+        <item>2x</item>
+        <item>3x (para 720p)</item>
+        <item>4x</item>
+        <item>5x (para 1080p)</item>
+        <item>6x (para 1440p)</item>
+        <item>7x</item>
+        <item>8x</item>
+        <item>9x (para 4K)</item>
+        <item>10x</item>
+        <item>11x</item>
+        <item>12x</item>
+        <item>13x</item>
+        <item>14x</item>
+        <item>15x</item>
+        <item>16x</item>
     </string-array>
     <string-array name="settings_display_crop_mode_entries">
         <item>None</item>
