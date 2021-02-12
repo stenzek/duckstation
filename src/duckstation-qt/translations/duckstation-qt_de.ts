@@ -5884,7 +5884,7 @@ Dies wird etwa 4 Megabyte über die aktuelle Internetverbindung herunterladen.</
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="47"/>
         <source>When using a playlist (m3u) and per-game (title) memory cards, a single memory card will be used for all discs. If unchecked, a separate card will be used for each disc.</source>
-        <translation>Wenn Wiedergabelisten (m3u-Datei) und spielspezifische Memory Cards verwendet werden, wird eine Memory Card für alle CDs verwendet. Wenn diese Option nicht aktiviert ist, wird für jede CD eine eigene Karte verwendet.</translation>
+        <translation>Wenn Wiedergabelisten (m3u) und spielspezifische Memory Cards verwendet werden, wird eine Memory Card für alle CDs verwendet. Wenn diese Option nicht aktiviert ist, wird für jede CD eine eigene Karte verwendet.</translation>
     </message>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="52"/>
