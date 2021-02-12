@@ -720,17 +720,17 @@
     <message>
         <location filename="../audiosettingswidget.cpp" line="58"/>
         <source>Controls the volume of the audio played on the host.</source>
-        <translation>Regelt die Gesamtlautstärke der Audiowiedergabe.</translation>
+        <translation>Regelt die Gesamtlautstärke.</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="60"/>
         <source>Controls the volume of the audio played on the host when fast forwarding.</source>
-        <translation>Regelt die Lautstärke der Audiowiedergabe beim Schnellvorlauf.</translation>
+        <translation>Regelt die Lautstärke beim Schnellvorlauf.</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="68"/>
         <source>When running outside of 100% speed, resamples audio from the target speed instead of dropping frames. Produces much nicer fast forward/slowdown audio at a small cost to performance.</source>
-        <translation>Wenn die Geschwindigkeit nicht 100% beträgt, wird Audio mit der entsprechenden Geschwindigkeit neu berechnet, anstatt Frames zu verwerfen. Dies erzeugt z. B. ein viel angenehmeres Schnellvorlauf-Audiosignal.</translation>
+        <translation>Wenn die Geschwindigkeit nicht 100% beträgt, wird Audio mit der entsprechenden Geschwindigkeit neu berechnet, anstatt Frames zu verwerfen. Dies erzeugt z. B. einen viel angenehmeren Ton beim Schnellvorlauf.</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="86"/>
@@ -959,7 +959,7 @@
     <message>
         <location filename="../biossettingswidget.cpp" line="100"/>
         <source>Patches the BIOS to log calls to printf(). Only use when debugging, can break games.</source>
-        <translation>Passt das BIOS an, damit Zugriffe zu printf() protokolliert werden. Dies hat zur Folge, dass man Debugmeldungen des Spiels angezeigt bekommt. Sollte nur beim Debuggen verwendet werden, da es die Spielbarkeit beeinträchtigt.</translation>
+        <translation>Passt das BIOS so an, dass Zugriffe zu printf() protokolliert werden. Dies hat zur Folge, dass man Debugmeldungen des Spiels angezeigt bekommt. Sollte nur beim Debuggen verwendet werden, da es die Spielbarkeit beeinträchtigt.</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.cpp" line="155"/>
@@ -3226,7 +3226,7 @@ Diese Datei kann mehrere Gigabyte groß sein, achte also auf die Abnutzung der S
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="66"/>
         <source>Forces the precision of colours output to the console&apos;s framebuffer to use the full 8 bits of precision per channel. This produces nicer looking gradients at the cost of making some colours look slightly different. Disabling the option also enables dithering, which makes the transition between colours less sharp by applying a pattern around those pixels. Most games are compatible with this option, but there is a number which aren&apos;t and will have broken effects with it enabled. Only applies to the hardware renderers.</source>
-        <translation>Erzwingt, dass die Farbgenauigkeit bei der Ausgabe an den Konsolen-Framebuffer die vollen 8 Bit Genauigkeit pro Kanal verwendet. Dies erzeugt schönere Farbverläufe, allerdings um den Preis, dass einige Farben etwas anders aussehen. Das Deaktivieren der Option aktiviert auch das Dithering, das den Übergang zwischen Farben weniger scharf macht, indem ein Muster um diese Pixel herum angewendet wird. Die meisten Spiele sind mit dieser Option kompatibel, aber es gibt einige, bei denen das nicht zutrifft - dann besteht die Möglichkeit, dass Effekte nicht richtig funktionieren. Gilt nur für die Hardware-Renderer.</translation>
+        <translation>Erzwingt, dass die Farbgenauigkeit bei der Ausgabe an den Konsolen-Framebuffer die vollen 8 Bit Genauigkeit pro Kanal verwendet. Dies erzeugt schönere Farbverläufe, allerdings um den Preis, dass einige Farben anders aussehen. Das Deaktivieren der Option aktiviert auch das Dithering, das den Übergang zwischen Farben weniger scharf macht, indem ein Muster um diese Pixel herum angewendet wird. Die meisten Spiele sind mit dieser Option kompatibel, aber es gibt einige, bei denen das nicht zutrifft - dann besteht die Möglichkeit, dass Effekte nicht richtig funktionieren. Gilt nur für die Hardware-Renderer.</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="72"/>
@@ -5884,7 +5884,7 @@ Dies wird etwa 4 Megabyte über die aktuelle Internetverbindung herunterladen.</
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="47"/>
         <source>When using a playlist (m3u) and per-game (title) memory cards, a single memory card will be used for all discs. If unchecked, a separate card will be used for each disc.</source>
-        <translation>Wenn Wiedergabelisten (m3u) und spielspezifische Memory Cards verwendet werden, wird eine Memory Card für alle CDs verwendet. Wenn diese Option nicht aktiviert ist, wird für jede CD eine eigene Karte verwendet.</translation>
+        <translation>Wenn Wiedergabelisten (m3u-Datei) und spielspezifische Memory Cards verwendet werden, wird eine Memory Card für alle CDs verwendet. Wenn diese Option nicht aktiviert ist, wird für jede CD eine eigene Karte verwendet.</translation>
     </message>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="52"/>
