@@ -7009,7 +7009,7 @@ Die Spielstände können nicht wiederhergestellt werden.</translation>
     <message>
         <location filename="../settingsdialog.cpp" line="99"/>
         <source>&lt;strong&gt;Enhancement Settings&lt;/strong&gt;&lt;hr&gt;These options control enhancements which can improve visuals compared to the original console. Mouse over each option for additional information.</source>
-        <translation>&lt;strong&gt;Verbesserungen&lt;/strong&gt;&lt;hr&gt;Diese Optionen steuern Erweiterungen, die die Darstellung im Vergleich zur Originalkonsole verbessern können.&lt;br&gt;&lt;br&gt;Für genauere Informationen den Mauszeiger über eine Option halten.</translation>
+        <translation>&lt;strong&gt;Verbesserungen&lt;/strong&gt;&lt;hr&gt;Diese Optionen ermöglichen die Regelung von Erweiterungen, die die Darstellung im Vergleich zur ursprünglichen Konsole verbessern können.&lt;br&gt;&lt;br&gt;Für genauere Informationen den Mauszeiger über eine Option halten.</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="102"/>
