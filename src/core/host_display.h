@@ -3,6 +3,7 @@
 #include "common/window_info.h"
 #include "types.h"
 #include <memory>
+#include <string>
 #include <string_view>
 #include <tuple>
 #include <vector>
@@ -52,6 +53,12 @@ public:
     RightOrBottom
   };
 
+  struct AdapterAndModeList
+  {
+    std::vector<std::string> adapter_names;
+    std::vector<std::string> fullscreen_modes;
+  };
+
   virtual ~HostDisplay();
 
   ALWAYS_INLINE s32 GetWindowWidth() const { return static_cast<s32>(m_window_info.surface_width); }
@@ -85,6 +92,7 @@ public:
   virtual bool SupportsFullscreen() const = 0;
   virtual bool IsFullscreen() = 0;
   virtual bool SetFullscreen(bool fullscreen, u32 width, u32 height, float refresh_rate) = 0;
+  virtual AdapterAndModeList GetAdapterAndModeList() = 0;
   virtual bool CreateResources() = 0;
   virtual void DestroyResources() = 0;
 

@@ -510,6 +510,11 @@ bool OpenGLHostDisplay::SetFullscreen(bool fullscreen, u32 width, u32 height, fl
   return false;
 }
 
+HostDisplay::AdapterAndModeList OpenGLHostDisplay::GetAdapterAndModeList()
+{
+  return {};
+}
+
 void OpenGLHostDisplay::DestroyRenderSurface()
 {
   if (!m_gl_context)

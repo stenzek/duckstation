@@ -256,7 +256,7 @@ bool D3D11HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view
   u32 adapter_index;
   if (!adapter_name.empty())
   {
-    AdapterInfo adapter_info = GetAdapterInfo(temp_dxgi_factory.Get());
+    AdapterAndModeList adapter_info(GetAdapterAndModeList(temp_dxgi_factory.Get()));
     for (adapter_index = 0; adapter_index < static_cast<u32>(adapter_info.adapter_names.size()); adapter_index++)
     {
       if (adapter_name == adapter_info.adapter_names[adapter_index])
@@ -795,19 +795,19 @@ void D3D11HostDisplay::RenderSoftwareCursor(s32 left, s32 top, s32 width, s32 he
   m_context->Draw(3, 0);
 }
 
-D3D11HostDisplay::AdapterInfo D3D11HostDisplay::GetAdapterInfo()
+HostDisplay::AdapterAndModeList D3D11HostDisplay::StaticGetAdapterAndModeList()
 {
   ComPtr<IDXGIFactory> dxgi_factory;
   HRESULT hr = CreateDXGIFactory(IID_PPV_ARGS(dxgi_factory.GetAddressOf()));
   if (FAILED(hr))
     return {};
 
-  return GetAdapterInfo(dxgi_factory.Get());
+  return GetAdapterAndModeList(dxgi_factory.Get());
 }
 
-D3D11HostDisplay::AdapterInfo D3D11HostDisplay::GetAdapterInfo(IDXGIFactory* dxgi_factory)
+HostDisplay::AdapterAndModeList D3D11HostDisplay::GetAdapterAndModeList(IDXGIFactory* dxgi_factory)
 {
-  AdapterInfo adapter_info;
+  AdapterAndModeList adapter_info;
   ComPtr<IDXGIAdapter> current_adapter;
   while (SUCCEEDED(dxgi_factory->EnumAdapters(static_cast<UINT>(adapter_info.adapter_names.size()),
                                               current_adapter.ReleaseAndGetAddressOf())))
@@ -871,6 +871,11 @@ D3D11HostDisplay::AdapterInfo D3D11HostDisplay::GetAdapterInfo(IDXGIFactory* dxg
   }
 
   return adapter_info;
+}
+
+HostDisplay::AdapterAndModeList D3D11HostDisplay::GetAdapterAndModeList()
+{
+  return GetAdapterAndModeList(m_dxgi_factory.Get());
 }
 
 bool D3D11HostDisplay::SetPostProcessingChain(const std::string_view& config)

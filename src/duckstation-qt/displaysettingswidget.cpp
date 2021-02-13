@@ -171,24 +171,19 @@ void DisplaySettingsWidget::setupAdditionalUi()
 
 void DisplaySettingsWidget::populateGPUAdaptersAndResolutions()
 {
-  std::vector<std::string> adapter_names;
-  std::vector<std::string> fullscreen_modes;
+  HostDisplay::AdapterAndModeList aml;
   bool thread_supported = false;
   bool threaded_presentation_supported = false;
   switch (static_cast<GPURenderer>(m_ui.renderer->currentIndex()))
   {
 #ifdef WIN32
     case GPURenderer::HardwareD3D11:
-    {
-      FrontendCommon::D3D11HostDisplay::AdapterInfo adapter_info = FrontendCommon::D3D11HostDisplay::GetAdapterInfo();
-      adapter_names = std::move(adapter_info.adapter_names);
-      fullscreen_modes = std::move(adapter_info.fullscreen_modes);
-    }
-    break;
+      aml = FrontendCommon::D3D11HostDisplay::StaticGetAdapterAndModeList();
+      break;
 #endif
 
     case GPURenderer::HardwareVulkan:
-      adapter_names = FrontendCommon::VulkanHostDisplay::EnumerateAdapterNames();
+      aml = FrontendCommon::VulkanHostDisplay::StaticGetAdapterAndModeList();
       threaded_presentation_supported = true;
       break;
 
@@ -209,7 +204,7 @@ void DisplaySettingsWidget::populateGPUAdaptersAndResolutions()
     m_ui.adapter->addItem(tr("(Default)"));
 
     // add the other adapters
-    for (const std::string& adapter_name : adapter_names)
+    for (const std::string& adapter_name : aml.adapter_names)
     {
       m_ui.adapter->addItem(QString::fromStdString(adapter_name));
 
@@ -218,7 +213,7 @@ void DisplaySettingsWidget::populateGPUAdaptersAndResolutions()
     }
 
     // disable it if we don't have a choice
-    m_ui.adapter->setEnabled(!adapter_names.empty());
+    m_ui.adapter->setEnabled(!aml.adapter_names.empty());
   }
 
   {
@@ -229,7 +224,7 @@ void DisplaySettingsWidget::populateGPUAdaptersAndResolutions()
     m_ui.fullscreenMode->addItem(tr("Borderless Fullscreen"));
     m_ui.fullscreenMode->setCurrentIndex(0);
 
-    for (const std::string& mode_name : fullscreen_modes)
+    for (const std::string& mode_name : aml.fullscreen_modes)
     {
       m_ui.fullscreenMode->addItem(QString::fromStdString(mode_name));
 
@@ -238,7 +233,7 @@ void DisplaySettingsWidget::populateGPUAdaptersAndResolutions()
     }
 
     // disable it if we don't have a choice
-    m_ui.fullscreenMode->setEnabled(!fullscreen_modes.empty());
+    m_ui.fullscreenMode->setEnabled(!aml.fullscreen_modes.empty());
   }
 
   m_ui.gpuThread->setEnabled(thread_supported);

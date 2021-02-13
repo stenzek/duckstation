@@ -139,6 +139,11 @@ bool VulkanHostDisplay::SetFullscreen(bool fullscreen, u32 width, u32 height, fl
   return false;
 }
 
+HostDisplay::AdapterAndModeList VulkanHostDisplay::GetAdapterAndModeList()
+{
+  return StaticGetAdapterAndModeList();
+}
+
 void VulkanHostDisplay::DestroyRenderSurface()
 {
   m_window_info = {};
@@ -747,12 +752,15 @@ void VulkanHostDisplay::RenderSoftwareCursor(s32 left, s32 top, s32 width, s32 h
   vkCmdDraw(cmdbuffer, 3, 1, 0, 0);
 }
 
-std::vector<std::string> VulkanHostDisplay::EnumerateAdapterNames()
+HostDisplay::AdapterAndModeList VulkanHostDisplay::StaticGetAdapterAndModeList()
 {
-  if (g_vulkan_context)
-    return Vulkan::Context::EnumerateGPUNames(g_vulkan_context->GetVulkanInstance());
+  AdapterAndModeList ret;
 
-  if (Vulkan::LoadVulkanLibrary())
+  if (g_vulkan_context)
+  {
+    ret.adapter_names = Vulkan::Context::EnumerateGPUNames(g_vulkan_context->GetVulkanInstance());
+  }
+  else if (Vulkan::LoadVulkanLibrary())
   {
     Common::ScopeGuard lib_guard([]() { Vulkan::UnloadVulkanLibrary(); });
 
@@ -762,7 +770,7 @@ std::vector<std::string> VulkanHostDisplay::EnumerateAdapterNames()
       Common::ScopeGuard instance_guard([&instance]() { vkDestroyInstance(instance, nullptr); });
 
       if (Vulkan::LoadVulkanInstanceFunctions(instance))
-        return Vulkan::Context::EnumerateGPUNames(instance);
+        ret.adapter_names = Vulkan::Context::EnumerateGPUNames(instance);
     }
   }
 

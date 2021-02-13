@@ -44,6 +44,7 @@ public:
   virtual bool SupportsFullscreen() const override;
   virtual bool IsFullscreen() override;
   virtual bool SetFullscreen(bool fullscreen, u32 width, u32 height, float refresh_rate) override;
+  virtual AdapterAndModeList GetAdapterAndModeList() override;
   virtual void DestroyRenderSurface() override;
 
   virtual bool SetPostProcessingChain(const std::string_view& config) override;

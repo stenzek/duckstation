@@ -46,6 +46,7 @@ public:
   virtual bool SupportsFullscreen() const override;
   virtual bool IsFullscreen() override;
   virtual bool SetFullscreen(bool fullscreen, u32 width, u32 height, float refresh_rate) override;
+  virtual AdapterAndModeList GetAdapterAndModeList() override;
   virtual void DestroyRenderSurface() override;
 
   virtual bool SetPostProcessingChain(const std::string_view& config) override;
@@ -68,17 +69,12 @@ public:
 
   virtual bool Render() override;
 
-  struct AdapterInfo
-  {
-    std::vector<std::string> adapter_names;
-    std::vector<std::string> fullscreen_modes;
-  };
-  static AdapterInfo GetAdapterInfo();
+  static AdapterAndModeList StaticGetAdapterAndModeList();
 
 protected:
   static constexpr u32 DISPLAY_UNIFORM_BUFFER_SIZE = 16;
 
-  static AdapterInfo GetAdapterInfo(IDXGIFactory* dxgi_factory);
+  static AdapterAndModeList GetAdapterAndModeList(IDXGIFactory* dxgi_factory);
 
   virtual bool CreateResources() override;
   virtual void DestroyResources() override;
