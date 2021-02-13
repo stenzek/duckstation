@@ -4,11 +4,11 @@
 #include <vector>
 #include <libevdev/libevdev.h>
 
-class DRMHostInterface final : public NoGUIHostInterface
+class VTYHostInterface final : public NoGUIHostInterface
 {
 public:
-  DRMHostInterface();
-  ~DRMHostInterface();
+  VTYHostInterface();
+  ~VTYHostInterface();
 
   bool Initialize();
   void Shutdown();

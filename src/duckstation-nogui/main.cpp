@@ -8,8 +8,8 @@
 #include <cstring>
 #include <vector>
 
-#ifdef USE_DRMKMS
-#include "drm_host_interface.h"
+#ifdef WITH_VTY
+#include "vty_host_interface.h"
 #endif
 
 #ifdef WITH_SDL2
@@ -46,9 +46,9 @@ static std::unique_ptr<NoGUIHostInterface> CreateHostInterface()
     host_interface = SDLHostInterface::Create();
 #endif
 
-#ifdef USE_DRMKMS
-  if (!host_interface && (!platform || StringUtil::Strcasecmp(platform, "drm") == 0))
-    host_interface = DRMHostInterface::Create();
+#ifdef WITH_VTY
+  if (!host_interface && (!platform || StringUtil::Strcasecmp(platform, "vty") == 0))
+    host_interface = VTYHostInterface::Create();
 #endif
 
 #ifdef _WIN32

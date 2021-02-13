@@ -1,4 +1,4 @@
-#include "drm_host_interface.h"
+#include "vty_host_interface.h"
 #include "common/log.h"
 #include "common/string_util.h"
 #include "evdev_key_names.h"
@@ -8,21 +8,21 @@
 #include <linux/input-event-codes.h>
 #include <signal.h>
 #include <unistd.h>
-Log_SetChannel(DRMHostInterface);
+Log_SetChannel(VTYHostInterface);
 
-DRMHostInterface::DRMHostInterface() = default;
+VTYHostInterface::VTYHostInterface() = default;
 
-DRMHostInterface::~DRMHostInterface()
+VTYHostInterface::~VTYHostInterface()
 {
   CloseEVDevFDs();
 }
 
-std::unique_ptr<NoGUIHostInterface> DRMHostInterface::Create()
+std::unique_ptr<NoGUIHostInterface> VTYHostInterface::Create()
 {
-  return std::make_unique<DRMHostInterface>();
+  return std::make_unique<VTYHostInterface>();
 }
 
-bool DRMHostInterface::Initialize()
+bool VTYHostInterface::Initialize()
 {
   if (!NoGUIHostInterface::Initialize())
     return false;
@@ -35,23 +35,23 @@ bool DRMHostInterface::Initialize()
   return true;
 }
 
-void DRMHostInterface::Shutdown()
+void VTYHostInterface::Shutdown()
 {
   CloseEVDevFDs();
   NoGUIHostInterface::Shutdown();
 }
 
-bool DRMHostInterface::IsFullscreen() const
+bool VTYHostInterface::IsFullscreen() const
 {
   return true;
 }
 
-bool DRMHostInterface::SetFullscreen(bool enabled)
+bool VTYHostInterface::SetFullscreen(bool enabled)
 {
   return enabled;
 }
 
-void DRMHostInterface::FixIncompatibleSettings(bool display_osd_messages)
+void VTYHostInterface::FixIncompatibleSettings(bool display_osd_messages)
 {
   NoGUIHostInterface::FixIncompatibleSettings(display_osd_messages);
 
@@ -59,18 +59,18 @@ void DRMHostInterface::FixIncompatibleSettings(bool display_osd_messages)
   g_settings.confim_power_off = false;
 }
 
-bool DRMHostInterface::CreatePlatformWindow(bool fullscreen)
+bool VTYHostInterface::CreatePlatformWindow(bool fullscreen)
 {
   SetImGuiKeyMap();
   return true;
 }
 
-void DRMHostInterface::DestroyPlatformWindow()
+void VTYHostInterface::DestroyPlatformWindow()
 {
   // nothing to destroy, it's all in the context
 }
 
-std::optional<WindowInfo> DRMHostInterface::GetPlatformWindowInfo()
+std::optional<WindowInfo> VTYHostInterface::GetPlatformWindowInfo()
 {
   WindowInfo wi;
   wi.type = WindowInfo::Type::Display;
@@ -91,14 +91,14 @@ std::optional<WindowInfo> DRMHostInterface::GetPlatformWindowInfo()
   return wi;
 }
 
-void DRMHostInterface::PollAndUpdate()
+void VTYHostInterface::PollAndUpdate()
 {
   PollEvDevKeyboards();
 
   NoGUIHostInterface::PollAndUpdate();
 }
 
-void DRMHostInterface::OpenEVDevFDs()
+void VTYHostInterface::OpenEVDevFDs()
 {
   for (int i = 0; i < 1000; i++)
   {
@@ -137,7 +137,7 @@ void DRMHostInterface::OpenEVDevFDs()
   }
 }
 
-void DRMHostInterface::CloseEVDevFDs()
+void VTYHostInterface::CloseEVDevFDs()
 {
   for (const EvDevKeyboard& kb : m_evdev_keyboards)
   {
@@ -148,7 +148,7 @@ void DRMHostInterface::CloseEVDevFDs()
   m_evdev_keyboards.clear();
 }
 
-void DRMHostInterface::PollEvDevKeyboards()
+void VTYHostInterface::PollEvDevKeyboards()
 {
   for (const EvDevKeyboard& kb : m_evdev_keyboards)
   {
@@ -169,7 +169,7 @@ void DRMHostInterface::PollEvDevKeyboards()
   }
 }
 
-void DRMHostInterface::SetImGuiKeyMap()
+void VTYHostInterface::SetImGuiKeyMap()
 {
   ImGuiIO& io = ImGui::GetIO();
 
@@ -197,7 +197,7 @@ void DRMHostInterface::SetImGuiKeyMap()
   io.KeyMap[ImGuiKey_Z] = KEY_Z;
 }
 
-std::optional<DRMHostInterface::HostKeyCode> DRMHostInterface::GetHostKeyCode(const std::string_view key_code) const
+std::optional<VTYHostInterface::HostKeyCode> VTYHostInterface::GetHostKeyCode(const std::string_view key_code) const
 {
   std::optional<int> kc = EvDevKeyNames::GetKeyCodeForName(key_code);
   if (!kc.has_value())
@@ -206,9 +206,9 @@ std::optional<DRMHostInterface::HostKeyCode> DRMHostInterface::GetHostKeyCode(co
   return static_cast<HostKeyCode>(kc.value());
 }
 
-void DRMHostInterface::SIGTERMHandler(int sig)
+void VTYHostInterface::SIGTERMHandler(int sig)
 {
   Log_InfoPrintf("Recieved SIGTERM");
-  static_cast<DRMHostInterface*>(g_host_interface)->m_quit_request = true;
+  static_cast<VTYHostInterface*>(g_host_interface)->m_quit_request = true;
   signal(sig, SIG_DFL);
 }

@@ -22,10 +22,10 @@ if(USE_DRMKMS)
   find_package(LIBEVDEV REQUIRED)
 
   target_sources(duckstation-nogui PRIVATE 
-    drm_host_interface.cpp
-    drm_host_interface.h
+    vty_host_interface.cpp
+    vty_host_interface.h
   )
-  target_compile_definitions(duckstation-nogui PRIVATE "-DUSE_DRMKMS=1")
+  target_compile_definitions(duckstation-nogui PRIVATE "-DWITH_VTY=1")
   target_compile_definitions(duckstation-nogui PRIVATE "-DUSE_LIBEVDEV=1")
   target_include_directories(duckstation-nogui PRIVATE ${LIBEVDEV_INCLUDE_DIRS})
   target_link_libraries(duckstation-nogui PRIVATE ${LIBEVDEV_LIBRARIES})
