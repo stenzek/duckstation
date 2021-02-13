@@ -1620,8 +1620,6 @@ bool CodeGenerator::Compile_LoadLeftRight(const CodeBlockInstruction& cbi)
   Value shift = ShlValues(AndValues(address, Value::FromConstantU32(3)), Value::FromConstantU32(3)); // * 8
   address = AndValues(address, Value::FromConstantU32(~u32(3)));
 
-  Value mem = EmitLoadGuestMemory(cbi, address, address_spec, RegSize_32);
-
   // hack to bypass load delays
   Value value;
   if (cbi.instruction.i.rt == m_register_cache.GetLoadDelayRegister())
@@ -1647,13 +1645,16 @@ bool CodeGenerator::Compile_LoadLeftRight(const CodeBlockInstruction& cbi)
     value = m_register_cache.ReadGuestRegister(cbi.instruction.i.rt, true, true);
   }
 
+  Value mem;
   if (cbi.instruction.op == InstructionOp::lwl)
   {
     Value lhs = ShrValues(Value::FromConstantU32(0x00FFFFFF), shift);
     AndValueInPlace(lhs, value);
+    shift = SubValues(Value::FromConstantU32(24), shift, false);
     value.ReleaseAndClear();
 
-    mem = ShlValues(mem, SubValues(Value::FromConstantU32(24), shift, false));
+    mem = EmitLoadGuestMemory(cbi, address, address_spec, RegSize_32);
+    EmitShl(mem.GetHostRegister(), mem.GetHostRegister(), RegSize_32, shift);
     EmitOr(mem.GetHostRegister(), mem.GetHostRegister(), lhs);
   }
   else
@@ -1662,6 +1663,7 @@ bool CodeGenerator::Compile_LoadLeftRight(const CodeBlockInstruction& cbi)
     AndValueInPlace(lhs, value);
     value.ReleaseAndClear();
 
+    mem = EmitLoadGuestMemory(cbi, address, address_spec, RegSize_32);
     EmitShr(mem.GetHostRegister(), mem.GetHostRegister(), RegSize_32, shift);
     EmitOr(mem.GetHostRegister(), mem.GetHostRegister(), lhs);
   }
@@ -1702,23 +1704,25 @@ bool CodeGenerator::Compile_StoreLeftRight(const CodeBlockInstruction& cbi)
 
   Value mem = EmitLoadGuestMemory(cbi, address, address_spec, RegSize_32);
 
-  Value reg = m_register_cache.ReadGuestRegister(cbi.instruction.r.rt);
-
   if (cbi.instruction.op == InstructionOp::swl)
   {
+    EmitAnd(mem.GetHostRegister(), mem.GetHostRegister(), ShlValues(Value::FromConstantU32(0xFFFFFF00), shift));
+
+    Value reg = m_register_cache.ReadGuestRegister(cbi.instruction.r.rt);
     Value lhs = ShrValues(reg, SubValues(Value::FromConstantU32(24), shift, false));
     reg.ReleaseAndClear();
 
-    EmitAnd(mem.GetHostRegister(), mem.GetHostRegister(), ShlValues(Value::FromConstantU32(0xFFFFFF00), shift));
     EmitOr(mem.GetHostRegister(), mem.GetHostRegister(), lhs);
   }
   else
   {
+    AndValueInPlace(mem,
+                    ShrValues(Value::FromConstantU32(0x00FFFFFF), SubValues(Value::FromConstantU32(24), shift, false)));
+
+    Value reg = m_register_cache.ReadGuestRegister(cbi.instruction.r.rt);
     Value lhs = ShlValues(reg, shift);
     reg.ReleaseAndClear();
 
-    AndValueInPlace(mem,
-                    ShrValues(Value::FromConstantU32(0x00FFFFFF), SubValues(Value::FromConstantU32(24), shift, false)));
     EmitOr(mem.GetHostRegister(), mem.GetHostRegister(), lhs);
   }
 
