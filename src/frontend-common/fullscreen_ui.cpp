@@ -1574,6 +1574,41 @@ void DrawSettingsWindow()
           EnumChoiceButton("GPU Renderer", "Chooses the backend to use for rendering the console/game visuals.",
                            &s_settings_copy.gpu_renderer, &Settings::GetRendererDisplayName, GPURenderer::Count);
 
+        static std::string fullscreen_mode;
+        static bool fullscreen_mode_set;
+        if (!fullscreen_mode_set)
+        {
+          fullscreen_mode = s_settings_interface->GetStringValue("GPU", "FullscreenMode", "");
+          fullscreen_mode_set = true;
+        }
+
+        if (MenuButtonWithValue("Fullscreen Resolution", "Selects the resolution to use in fullscreen modes.",
+                                fullscreen_mode.empty() ? "Borderless Fullscreen" : fullscreen_mode.c_str()))
+        {
+          HostDisplay::AdapterAndModeList aml(s_host_interface->GetDisplay()->GetAdapterAndModeList());
+
+          ImGuiFullscreen::ChoiceDialogOptions options;
+          options.reserve(aml.fullscreen_modes.size() + 1);
+          options.emplace_back("Borderless Fullscreen", fullscreen_mode.empty());
+          for (std::string& mode : aml.fullscreen_modes)
+            options.emplace_back(std::move(mode), mode == fullscreen_mode);
+
+          auto callback = [](s32 index, const std::string& title, bool checked) {
+            if (index < 0)
+              return;
+            else if (index == 0)
+              std::string().swap(fullscreen_mode);
+            else
+              fullscreen_mode = title;
+
+            s_settings_interface->SetStringValue("GPU", "FullscreenMode", fullscreen_mode.c_str());
+            s_settings_interface->Save();
+            s_host_interface->AddOSDMessage("Resolution change will be applied after restarting.", 10.0f);
+            CloseChoiceDialog();
+          };
+          OpenChoiceDialog(ICON_FA_TV "  Fullscreen Resolution", false, std::move(options), std::move(callback));
+        }
+
         settings_changed |=
           ToggleButton("Enable VSync",
                        "Synchronizes presentation of the console's frames to the host. Enable for smoother animations.",
