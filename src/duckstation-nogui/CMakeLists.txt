@@ -18,7 +18,7 @@ if(USE_SDL2)
   target_link_libraries(duckstation-nogui PRIVATE ${SDL2_LIBRARIES})
 endif()
 
-if(USE_DRMKMS)
+if(USE_DRMKMS OR USE_FBDEV)
   find_package(LIBEVDEV REQUIRED)
 
   target_sources(duckstation-nogui PRIVATE 

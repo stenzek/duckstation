@@ -182,6 +182,13 @@ if(USE_EGL)
     )
     target_link_libraries(common PUBLIC GBM::GBM)
   endif()
+  if(USE_FBDEV)
+    target_compile_definitions(common PRIVATE "-DUSE_FBDEV=1")
+    target_sources(common PRIVATE
+      gl/context_egl_fbdev.cpp
+      gl/context_egl_fbdev.h
+    )
+  endif()
 endif()
 
 if(USE_X11)

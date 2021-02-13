@@ -16,12 +16,15 @@ Log_SetChannel(GL::Context);
 #endif
 
 #ifdef USE_EGL
-#if defined(USE_WAYLAND) || defined(USE_GBM) || defined(USE_X11)
+#if defined(USE_WAYLAND) || defined(USE_GBM) || defined(USE_FBDEV) || defined(USE_X11)
 #if defined(USE_WAYLAND)
 #include "context_egl_wayland.h"
 #endif
 #if defined(USE_GBM)
 #include "context_egl_gbm.h"
+#endif
+#if defined(USE_FBDEV)
+#include "context_egl_fbdev.h"
 #endif
 #if defined(USE_X11)
 #include "context_egl_x11.h"
@@ -127,6 +130,11 @@ std::unique_ptr<GL::Context> Context::Create(const WindowInfo& wi, const Version
 #if defined(USE_GBM)
   if (wi.type == WindowInfo::Type::Display)
     context = ContextEGLGBM::Create(wi, versions_to_try, num_versions_to_try);
+#endif
+
+#if defined(USE_FBDEV)
+  if (wi.type == WindowInfo::Type::Display)
+    context = ContextEGLFBDev::Create(wi, versions_to_try, num_versions_to_try);
 #endif
 
   if (!context)
