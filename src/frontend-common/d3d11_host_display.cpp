@@ -4,14 +4,15 @@
 #include "common/d3d11/shader_compiler.h"
 #include "common/log.h"
 #include "common/string_util.h"
+#include "common_host_interface.h"
 #include "core/host_interface.h"
 #include "core/settings.h"
 #include "core/shader_cache_version.h"
 #include "display_ps.hlsl.h"
 #include "display_vs.hlsl.h"
-#include "frontend-common/postprocessing_shadergen.h"
 #include "imgui.h"
 #include "imgui_impl_dx11.h"
+#include "postprocessing_shadergen.h"
 #include <array>
 #include <dxgi1_5.h>
 Log_SetChannel(D3D11HostDisplay);
@@ -843,8 +844,8 @@ HostDisplay::AdapterAndModeList D3D11HostDisplay::GetAdapterAndModeList(IDXGIFac
           {
             for (const DXGI_MODE_DESC& mode : modes)
             {
-              adapter_info.fullscreen_modes.push_back(StringUtil::StdStringFromFormat(
-                "%u x %u @ %f hz", mode.Width, mode.Height,
+              adapter_info.fullscreen_modes.push_back(CommonHostInterface::GetFullscreenModeString(
+                mode.Width, mode.Height,
                 static_cast<float>(mode.RefreshRate.Numerator) / static_cast<float>(mode.RefreshRate.Denominator)));
             }
           }

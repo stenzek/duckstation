@@ -26,6 +26,8 @@ public:
   bool SwapBuffers() override;
   bool SetSwapInterval(s32 interval) override;
 
+  std::vector<FullscreenModeInfo> EnumerateFullscreenModes() override;
+
 protected:
   bool SetDisplay() override;
   EGLNativeWindowType GetNativeWindow(EGLConfig config) override;

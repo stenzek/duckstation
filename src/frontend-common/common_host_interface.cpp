@@ -2870,6 +2870,11 @@ bool CommonHostInterface::ParseFullscreenMode(const std::string_view& mode, u32*
   return false;
 }
 
+std::string CommonHostInterface::GetFullscreenModeString(u32 width, u32 height, float refresh_rate)
+{
+  return StringUtil::StdStringFromFormat("%u x %u @ %f hz", width, height, refresh_rate);
+}
+
 bool CommonHostInterface::RequestRenderWindowSize(s32 new_window_width, s32 new_window_height)
 {
   return false;

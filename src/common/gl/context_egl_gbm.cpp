@@ -206,6 +206,18 @@ bool ContextEGLGBM::SetSwapInterval(s32 interval)
   return true;
 }
 
+std::vector<Context::FullscreenModeInfo> ContextEGLGBM::EnumerateFullscreenModes()
+{
+  std::vector<Context::FullscreenModeInfo> modes;
+  modes.reserve(m_drm_display.GetModeCount());
+  for (u32 i = 0; i < m_drm_display.GetModeCount(); i++)
+  {
+    modes.push_back(FullscreenModeInfo{m_drm_display.GetModeWidth(i), m_drm_display.GetModeHeight(i),
+                                       m_drm_display.GetModeRefreshRate(i)});
+  }
+  return modes;
+}
+
 #ifdef CONTEXT_EGL_GBM_USE_PRESENT_THREAD
 
 void ContextEGLGBM::StartPresentThread()

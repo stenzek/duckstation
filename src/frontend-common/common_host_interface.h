@@ -241,6 +241,9 @@ public:
   /// Parses a fullscreen mode into its components (width * height @ refresh hz)
   static bool ParseFullscreenMode(const std::string_view& mode, u32* width, u32* height, float* refresh_rate);
 
+  /// Converts a fullscreen mode to a string.
+  static std::string GetFullscreenModeString(u32 width, u32 height, float refresh_rate);
+
   /// Returns true if fast forwarding or slow motion is currently active.
   bool IsRunningAtNonStandardSpeed() const;
 

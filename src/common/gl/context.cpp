@@ -67,6 +67,11 @@ Context::Context(const WindowInfo& wi) : m_wi(wi) {}
 
 Context::~Context() = default;
 
+std::vector<Context::FullscreenModeInfo> Context::EnumerateFullscreenModes()
+{
+  return {};
+}
+
 std::unique_ptr<GL::Context> Context::Create(const WindowInfo& wi, const Version* versions_to_try,
                                              size_t num_versions_to_try)
 {

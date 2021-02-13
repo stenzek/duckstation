@@ -3,6 +3,7 @@
 #include "../window_info.h"
 #include <array>
 #include <memory>
+#include <vector>
 
 namespace GL {
 class Context
@@ -25,6 +26,13 @@ public:
     int minor_version;
   };
 
+  struct FullscreenModeInfo
+  {
+    u32 width;
+    u32 height;
+    float refresh_rate;
+  };
+
   ALWAYS_INLINE const WindowInfo& GetWindowInfo() const { return m_wi; }
   ALWAYS_INLINE bool IsGLES() const { return (m_version.profile == Profile::ES); }
   ALWAYS_INLINE u32 GetSurfaceWidth() const { return m_wi.surface_width; }
@@ -39,6 +47,8 @@ public:
   virtual bool DoneCurrent() = 0;
   virtual bool SetSwapInterval(s32 interval) = 0;
   virtual std::unique_ptr<Context> CreateSharedContext(const WindowInfo& wi) = 0;
+
+  virtual std::vector<FullscreenModeInfo> EnumerateFullscreenModes();
 
   static std::unique_ptr<Context> Create(const WindowInfo& wi, const Version* versions_to_try,
                                          size_t num_versions_to_try);
