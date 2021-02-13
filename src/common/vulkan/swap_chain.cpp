@@ -10,6 +10,7 @@
 #include "util.h"
 #include <algorithm>
 #include <array>
+#include <cmath>
 Log_SetChannel(Vulkan::SwapChain);
 
 #if defined(VK_USE_PLATFORM_XLIB_KHR)
@@ -131,11 +132,14 @@ static VkSurfaceKHR CreateDisplaySurface(VkInstance instance, VkPhysicalDevice p
     const VkDisplayModePropertiesKHR* matched_mode = nullptr;
     for (const VkDisplayModePropertiesKHR& mode : modes)
     {
-      Log_DevPrintf("  Mode %ux%u @ %u", mode.parameters.visibleRegion.width, mode.parameters.visibleRegion.height,
-                    mode.parameters.refreshRate);
+      const float refresh_rate = static_cast<float>(mode.parameters.refreshRate) * 1000.0f;
+      Log_DevPrintf("  Mode %ux%u @ %f", mode.parameters.visibleRegion.width, mode.parameters.visibleRegion.height,
+                    refresh_rate);
+
       if (!matched_mode &&
           ((wi.surface_width == 0 && wi.surface_height == 0) ||
-           (mode.parameters.visibleRegion.width == wi.surface_width && mode.parameters.visibleRegion.height)))
+           (mode.parameters.visibleRegion.width == wi.surface_width && mode.parameters.visibleRegion.height &&
+            (wi.surface_refresh_rate == 0.0f || std::abs(refresh_rate - wi.surface_refresh_rate) < 0.1f))))
       {
         matched_mode = &mode;
       }

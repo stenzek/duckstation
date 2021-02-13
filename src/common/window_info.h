@@ -30,6 +30,7 @@ struct WindowInfo
   void* window_handle = nullptr;
   u32 surface_width = 0;
   u32 surface_height = 0;
+  float surface_refresh_rate = 0.0f;
   float surface_scale = 1.0f;
   SurfaceFormat surface_format = SurfaceFormat::RGB8;
 
