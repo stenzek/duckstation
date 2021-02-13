@@ -83,7 +83,7 @@ bool ContextEGLGBM::CreateGBMDevice()
 
 bool ContextEGLGBM::CreateDisplay(const WindowInfo& wi)
 {
-  return m_drm_display.Initialize();
+  return m_drm_display.Initialize(wi.surface_width, wi.surface_height, wi.surface_refresh_rate);
 }
 
 bool ContextEGLGBM::SetDisplay()

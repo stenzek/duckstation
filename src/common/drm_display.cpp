@@ -3,6 +3,7 @@
 #include "common/log.h"
 #include "common/string.h"
 #include "file_system.h"
+#include <cmath>
 #include <fcntl.h>
 #include <string.h>
 #include <unistd.h>
@@ -67,23 +68,23 @@ static uint32_t find_crtc_for_connector(int card_fd, const drmModeRes* resources
   return -1;
 }
 
-bool DRMDisplay::Initialize()
+bool DRMDisplay::Initialize(u32 width, u32 height, float refresh_rate)
 {
   if (m_card_id < 0)
   {
     for (int i = 0; i < 10; i++)
     {
-      if (TryOpeningCard(i))
+      if (TryOpeningCard(i, width, height, refresh_rate))
         return true;
     }
 
     return false;
   }
 
-  return TryOpeningCard(m_card_id);
+  return TryOpeningCard(m_card_id, width, height, refresh_rate);
 }
 
-bool DRMDisplay::TryOpeningCard(int card)
+bool DRMDisplay::TryOpeningCard(int card, u32 width, u32 height, float refresh_rate)
 {
   if (m_card_fd >= 0)
     close(m_card_fd);
@@ -126,15 +127,32 @@ bool DRMDisplay::TryOpeningCard(int card)
   for (int i = 0; i < m_connector->count_modes; i++)
   {
     drmModeModeInfo* next_mode = &m_connector->modes[i];
-    if (next_mode->type & DRM_MODE_TYPE_PREFERRED)
-    {
-      m_mode = next_mode;
-      break;
-    }
 
-    if (!m_mode || (next_mode->hdisplay * next_mode->vdisplay) > (m_mode->hdisplay * m_mode->vdisplay))
+    const float mode_refresh_rate = (static_cast<float>(next_mode->clock) * 1000.0f) /
+                                    (static_cast<float>(next_mode->htotal) * static_cast<float>(next_mode->vtotal));
+    Log_DevPrintf("Checking mode %u: %ux%u @ %f hz", i, next_mode->hdisplay, next_mode->vdisplay, mode_refresh_rate);
+
+    if (width == 0 && height == 0)
     {
-      m_mode = next_mode;
+      // use preferred mode if we're auto selecting
+      if (next_mode->type & DRM_MODE_TYPE_PREFERRED)
+      {
+        m_mode = next_mode;
+        break;
+      }
+      else if (!m_mode)
+      {
+        m_mode = next_mode;
+      }
+    }
+    else
+    {
+      if (width == next_mode->hdisplay && height == next_mode->vdisplay &&
+          (refresh_rate == 0.0f || std::abs(mode_refresh_rate - refresh_rate) < 0.1f))
+      {
+        m_mode = next_mode;
+        break;
+      }
     }
   }
 

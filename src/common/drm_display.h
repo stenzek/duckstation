@@ -11,7 +11,7 @@ public:
   DRMDisplay(int card = -1);
   ~DRMDisplay();
 
-  bool Initialize();
+  bool Initialize(u32 width, u32 height, float refresh_rate);
 
   int GetCardID() const { return m_card_id; }
   int GetCardFD() const { return m_card_fd; }
@@ -28,7 +28,7 @@ private:
     MAX_BUFFERS = 5
   };
 
-  bool TryOpeningCard(int card);
+  bool TryOpeningCard(int card, u32 width, u32 height, float refresh_rate);
 
   int m_card_id = 0;
   int m_card_fd = -1;
