@@ -2,6 +2,7 @@
 #include "common/log.h"
 #include "common/string_util.h"
 #include "evdev_key_names.h"
+#include "frontend-common/ini_settings_interface.h"
 #include "imgui.h"
 #include <fcntl.h>
 #include <linux/input-event-codes.h>
@@ -71,12 +72,22 @@ void DRMHostInterface::DestroyPlatformWindow()
 
 std::optional<WindowInfo> DRMHostInterface::GetPlatformWindowInfo()
 {
-  // TODO: Set fullscreen resolution.
   WindowInfo wi;
   wi.type = WindowInfo::Type::Display;
   wi.surface_width = 0;
   wi.surface_height = 0;
+  wi.surface_refresh_rate = 0.0f;
   wi.surface_format = WindowInfo::SurfaceFormat::Auto;
+
+  const std::string fullscreen_mode = m_settings_interface->GetStringValue("GPU", "FullscreenMode", "");
+  if (!fullscreen_mode.empty())
+  {
+    if (!ParseFullscreenMode(fullscreen_mode, &wi.surface_width, &wi.surface_height, &wi.surface_refresh_rate))
+    {
+      Log_ErrorPrintf("Failed to parse fullscreen mode '%s'", fullscreen_mode.c_str());
+    }
+  }
+
   return wi;
 }
 
