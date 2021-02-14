@@ -202,4 +202,6 @@
 	<string name="game_directories_not_scanning_subdirectories">Не сканировать подкаталоги.</string>
 	<string name="settings_display_all_frames">Оптимальное распределение кадров</string>
 	<string name="settings_summary_display_all_frames">Включение настройки гарантирует, что все кадры с консоли будут выведены на экран для оптимального распределения. Попробуйте отключить опцию, если не получается достичь полной скорости или есть проблемы со звуком.</string>
+        <string name="settings_osd_show_show_resolution">Показывать разрешение</string>
+        <string name="settings_summary_osd_show_resolution">Показывать разрешение рендеринга игры в правом верхнем углу экрана.</string>
 </resources>
