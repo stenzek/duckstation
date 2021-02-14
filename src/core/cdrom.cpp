@@ -127,6 +127,7 @@ void CDROM::SoftReset()
   m_pending_async_interrupt = 0;
   m_setloc_position = {};
   m_current_lba = 0;
+  ResetPhysicalPosition();
   if (m_reader.HasMedia())
     m_reader.QueueReadSector(m_current_lba);
   m_seek_start_lba = 0;
@@ -185,6 +186,8 @@ bool CDROM::DoState(StateWrapper& sw)
   sw.Do(&m_current_lba);
   sw.Do(&m_seek_start_lba);
   sw.Do(&m_seek_end_lba);
+  sw.DoEx(&m_physical_lba, 49, m_current_lba);
+  sw.DoEx(&m_physical_lba_update_tick, 49, static_cast<u32>(0));
   sw.Do(&m_setloc_pending);
   sw.Do(&m_read_after_seek);
   sw.Do(&m_play_after_seek);
@@ -203,8 +206,7 @@ bool CDROM::DoState(StateWrapper& sw)
   sw.Do(&m_play_track_number_bcd);
   sw.Do(&m_async_command_parameter);
 
-  // TODO: Uncomment on the next save state version bump.
-  // sw.Do(&m_fast_forward_rate);
+  sw.DoEx(&m_fast_forward_rate, 49, static_cast<s8>(0));
 
   sw.Do(&m_cd_audio_volume_matrix);
   sw.Do(&m_next_cd_audio_volume_matrix);
@@ -236,7 +238,6 @@ bool CDROM::DoState(StateWrapper& sw)
       m_reader.QueueReadSector(requested_sector);
     UpdateCommandEvent();
     m_drive_event->SetState(!IsDriveIdle());
-    m_fast_forward_rate = 0;
   }
 
   return !sw.HasError();
@@ -283,6 +284,7 @@ void CDROM::InsertMedia(std::unique_ptr<CDImage> media)
 
   m_reader.SetMedia(std::move(media));
   m_current_lba = 0;
+  ResetPhysicalPosition();
 }
 
 std::unique_ptr<CDImage> CDROM::RemoveMedia(bool force /* = false */)
@@ -1166,12 +1168,13 @@ void CDROM::ExecuteCommand()
       {
         if (IsSeeking())
           UpdatePositionWhileSeeking();
+        else
+          UpdatePhysicalPosition();
 
-        Log_DebugPrintf("CDROM GetlocP command - T%02x I%02x R[%02x:%02x:%02x] A[%02x:%02x:%02x]",
-                        m_last_subq.track_number_bcd, m_last_subq.index_number_bcd, m_last_subq.relative_minute_bcd,
-                        m_last_subq.relative_second_bcd, m_last_subq.relative_frame_bcd,
-                        m_last_subq.absolute_minute_bcd, m_last_subq.absolute_second_bcd,
-                        m_last_subq.absolute_frame_bcd);
+        Log_DevPrintf("CDROM GetlocP command - T%02x I%02x R[%02x:%02x:%02x] A[%02x:%02x:%02x]",
+                      m_last_subq.track_number_bcd, m_last_subq.index_number_bcd, m_last_subq.relative_minute_bcd,
+                      m_last_subq.relative_second_bcd, m_last_subq.relative_frame_bcd, m_last_subq.absolute_minute_bcd,
+                      m_last_subq.absolute_second_bcd, m_last_subq.absolute_frame_bcd);
 
         m_response_fifo.Push(m_last_subq.track_number_bcd);
         m_response_fifo.Push(m_last_subq.index_number_bcd);
@@ -1582,6 +1585,58 @@ void CDROM::UpdatePositionWhileSeeking()
   {
     m_last_subq = subq;
     m_current_lba = current_lba;
+    ResetPhysicalPosition();
+  }
+}
+
+void CDROM::ResetPhysicalPosition()
+{
+  const u32 ticks = TimingEvents::GetGlobalTickCounter();
+  m_physical_lba = m_physical_lba;
+  m_physical_lba_update_tick = ticks;
+}
+
+void CDROM::UpdatePhysicalPosition()
+{
+  const u32 ticks = TimingEvents::GetGlobalTickCounter();
+  if (IsSeeking() || IsReadingOrPlaying() || !m_secondary_status.motor_on)
+  {
+    // set by the event
+    return;
+  }
+
+  const CDImage::LBA SECTORS_TO_JUMP_BACK = 9;
+
+  const u32 diff = ticks - m_physical_lba_update_tick;
+  const u32 sector_diff = diff / GetTicksForRead();
+  if (sector_diff > 0)
+  {
+    const CDImage::LBA base =
+      (m_current_lba >= SECTORS_TO_JUMP_BACK) ? (m_current_lba - SECTORS_TO_JUMP_BACK) : m_current_lba;
+    if (m_physical_lba < base)
+      m_physical_lba = base;
+
+    const CDImage::LBA old_offset = m_physical_lba - base;
+    const CDImage::LBA new_offset = (old_offset + sector_diff) % SECTORS_TO_JUMP_BACK;
+    const CDImage::LBA new_physical_lba = base + new_offset;
+#ifdef _DEBUG
+    const CDImage::Position old_pos(CDImage::Position::FromLBA(m_physical_lba));
+    const CDImage::Position new_pos(CDImage::Position::FromLBA(new_physical_lba));
+    Log_DevPrintf("Tick diff %u, sector diff %u, old pos %02u:%02u:%02u, new pos %02u:%02u:%02u", diff, sector_diff,
+                  old_pos.minute, old_pos.second, old_pos.frame, new_pos.minute, new_pos.second, new_pos.frame);
+#endif
+    if (m_physical_lba != new_physical_lba)
+    {
+      m_physical_lba = new_physical_lba;
+
+      CDImage::SubChannelQ subq;
+      if (!m_reader.ReadSectorUncached(new_physical_lba, &subq, nullptr))
+        Log_ErrorPrintf("Failed to read subq for sector %u for physical position", new_physical_lba);
+      else if (subq.IsCRCValid())
+        m_last_subq = subq;
+
+      m_physical_lba_update_tick = ticks;
+    }
   }
 }
 
@@ -1615,6 +1670,7 @@ void CDROM::DoResetComplete(TickCount ticks_late)
   }
 
   m_current_lba = 0;
+  ResetPhysicalPosition();
   m_reader.QueueReadSector(0);
 
   m_async_response_fifo.Clear();
@@ -1683,6 +1739,7 @@ void CDROM::DoSeekComplete(TickCount ticks_late)
   }
 
   m_current_lba = m_reader.GetLastReadSector();
+  ResetPhysicalPosition();
 
   if (seek_okay)
   {
@@ -1782,6 +1839,7 @@ void CDROM::DoIDRead()
   {
     // this is where it would get read from the start of the disc?
     m_current_lba = 0;
+    ResetPhysicalPosition();
     m_reader.QueueReadSector(0);
 
     if (!IsMediaPS1Disc())
@@ -1839,6 +1897,7 @@ void CDROM::DoSectorRead()
 
   // TODO: Queue the next read here and swap the buffer.
   m_current_lba = m_reader.GetLastReadSector();
+  ResetPhysicalPosition();
 
   // TODO: Error handling
   const CDImage::SubChannelQ& subq = m_reader.GetSectorSubQ();

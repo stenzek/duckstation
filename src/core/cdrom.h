@@ -271,6 +271,8 @@ private:
   void StopReadingWithDataEnd();
   void BeginSeeking(bool logical, bool read_after_seek, bool play_after_seek);
   void UpdatePositionWhileSeeking();
+  void ResetPhysicalPosition();
+  void UpdatePhysicalPosition();
   void ResetCurrentXAFile();
   void ResetAudioDecoder();
   void LoadDataFIFO();
@@ -299,6 +301,8 @@ private:
   CDImage::LBA m_current_lba{};
   CDImage::LBA m_seek_start_lba{};
   CDImage::LBA m_seek_end_lba{};
+  CDImage::LBA m_physical_lba{};
+  u32 m_physical_lba_update_tick = 0;
   bool m_setloc_pending = false;
   bool m_read_after_seek = false;
   bool m_play_after_seek = false;
