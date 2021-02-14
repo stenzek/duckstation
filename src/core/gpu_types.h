@@ -221,7 +221,7 @@ struct GPUTextureWindow
 static constexpr s32 DITHER_MATRIX[DITHER_MATRIX_SIZE][DITHER_MATRIX_SIZE] = {{-4, +0, -3, +1},  // row 0
                                                                               {+2, -2, +3, -1},  // row 1
                                                                               {-3, +1, -4, +0},  // row 2
-                                                                              {+4, -1, +2, -2}}; // row 3
+                                                                              {+3, -1, +2, -2}}; // row 3
 
 #ifdef _MSC_VER
 #pragma warning(push)
