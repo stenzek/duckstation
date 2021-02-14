@@ -502,21 +502,21 @@ static std::optional<std::string> GetEntryValueForKey(const Entry& entry, const 
     if (!entry.display_linear_upscaling.has_value())
       return std::nullopt;
     else
-      return entry.display_linear_upscaling ? "true" : "false";
+      return entry.display_linear_upscaling.value() ? "true" : "false";
   }
   else if (key == "DisplayIntegerUpscaling")
   {
     if (!entry.display_integer_upscaling.has_value())
       return std::nullopt;
     else
-      return entry.display_integer_upscaling ? "true" : "false";
+      return entry.display_integer_upscaling.value() ? "true" : "false";
   }
   else if (key == "DisplayForce4_3For24Bit")
   {
     if (!entry.display_force_4_3_for_24bit.has_value())
       return std::nullopt;
     else
-      return entry.display_force_4_3_for_24bit ? "true" : "false";
+      return entry.display_force_4_3_for_24bit.value() ? "true" : "false";
   }
   else if (key == "GPUResolutionScale")
   {
@@ -542,49 +542,49 @@ static std::optional<std::string> GetEntryValueForKey(const Entry& entry, const 
     if (!entry.gpu_true_color.has_value())
       return std::nullopt;
     else
-      return entry.gpu_true_color ? "true" : "false";
+      return entry.gpu_true_color.value() ? "true" : "false";
   }
   else if (key == "GPUScaledDithering")
   {
     if (!entry.gpu_scaled_dithering.has_value())
       return std::nullopt;
     else
-      return entry.gpu_scaled_dithering ? "true" : "false";
+      return entry.gpu_scaled_dithering.value() ? "true" : "false";
   }
   else if (key == "GPUTextureFilter")
   {
     if (!entry.gpu_texture_filter.has_value())
       return std::nullopt;
     else
-      return entry.gpu_texture_filter ? "true" : "false";
+      return Settings::GetTextureFilterName(entry.gpu_texture_filter.value());
   }
   else if (key == "GPUForceNTSCTimings")
   {
     if (!entry.gpu_force_ntsc_timings.has_value())
       return std::nullopt;
     else
-      return entry.gpu_force_ntsc_timings ? "true" : "false";
+      return entry.gpu_force_ntsc_timings.value() ? "true" : "false";
   }
   else if (key == "GPUWidescreenHack")
   {
     if (!entry.gpu_widescreen_hack.has_value())
       return std::nullopt;
     else
-      return entry.gpu_widescreen_hack ? "true" : "false";
+      return entry.gpu_widescreen_hack.value() ? "true" : "false";
   }
   else if (key == "GPUPGXP")
   {
     if (!entry.gpu_pgxp.has_value())
       return std::nullopt;
     else
-      return entry.gpu_pgxp ? "true" : "false";
+      return entry.gpu_pgxp.value() ? "true" : "false";
   }
   else if (key == "GPUPGXPDepthBuffer")
   {
     if (!entry.gpu_pgxp_depth_buffer.has_value())
       return std::nullopt;
     else
-      return entry.gpu_pgxp_depth_buffer ? "true" : "false";
+      return entry.gpu_pgxp_depth_buffer.value() ? "true" : "false";
   }
   else if (key == "Controller1Type")
   {
@@ -702,21 +702,21 @@ static void SetEntryValueForKey(Entry& entry, const std::string_view& key, const
     if (!value.has_value())
       entry.display_linear_upscaling.reset();
     else
-      entry.display_linear_upscaling = StringUtil::FromChars<bool>(value.value());
+      entry.display_linear_upscaling = StringUtil::FromChars<bool>(value.value()).value_or(false);
   }
   else if (key == "DisplayIntegerUpscaling")
   {
     if (!value.has_value())
       entry.display_integer_upscaling.reset();
     else
-      entry.display_integer_upscaling = StringUtil::FromChars<bool>(value.value());
+      entry.display_integer_upscaling = StringUtil::FromChars<bool>(value.value()).value_or(false);
   }
   else if (key == "DisplayForce4_3For24Bit")
   {
     if (!value.has_value())
       entry.display_force_4_3_for_24bit.reset();
     else
-      entry.display_force_4_3_for_24bit = StringUtil::FromChars<bool>(value.value());
+      entry.display_force_4_3_for_24bit = StringUtil::FromChars<bool>(value.value()).value_or(false);
   }
   else if (key == "GPUResolutionScale")
   {
@@ -752,14 +752,14 @@ static void SetEntryValueForKey(Entry& entry, const std::string_view& key, const
     if (!value.has_value())
       entry.gpu_true_color.reset();
     else
-      entry.gpu_true_color = StringUtil::FromChars<bool>(value.value());
+      entry.gpu_true_color = StringUtil::FromChars<bool>(value.value()).value_or(false);
   }
   else if (key == "GPUScaledDithering")
   {
     if (!value.has_value())
       entry.gpu_scaled_dithering.reset();
     else
-      entry.gpu_scaled_dithering = StringUtil::FromChars<bool>(value.value());
+      entry.gpu_scaled_dithering = StringUtil::FromChars<bool>(value.value()).value_or(false);
   }
   else if (key == "GPUTextureFilter")
   {
@@ -773,28 +773,28 @@ static void SetEntryValueForKey(Entry& entry, const std::string_view& key, const
     if (!value.has_value())
       entry.gpu_force_ntsc_timings.reset();
     else
-      entry.gpu_force_ntsc_timings = StringUtil::FromChars<bool>(value.value());
+      entry.gpu_force_ntsc_timings = StringUtil::FromChars<bool>(value.value()).value_or(false);
   }
   else if (key == "GPUWidescreenHack")
   {
     if (!value.has_value())
       entry.gpu_widescreen_hack.reset();
     else
-      entry.gpu_widescreen_hack = StringUtil::FromChars<bool>(value.value());
+      entry.gpu_widescreen_hack = StringUtil::FromChars<bool>(value.value()).value_or(false);
   }
   else if (key == "GPUPGXP")
   {
     if (!value.has_value())
       entry.gpu_pgxp.reset();
     else
-      entry.gpu_pgxp = StringUtil::FromChars<bool>(value.value());
+      entry.gpu_pgxp = StringUtil::FromChars<bool>(value.value()).value_or(false);
   }
   else if (key == "GPUPGXPDepthBuffer")
   {
     if (!value.has_value())
       entry.gpu_pgxp_depth_buffer.reset();
     else
-      entry.gpu_pgxp_depth_buffer = StringUtil::FromChars<bool>(value.value());
+      entry.gpu_pgxp_depth_buffer = StringUtil::FromChars<bool>(value.value()).value_or(false);
   }
   else if (key == "Controller1Type")
   {
