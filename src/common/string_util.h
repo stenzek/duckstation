@@ -118,6 +118,13 @@ inline std::optional<bool> FromChars(const std::string_view& str, int base)
 std::optional<std::vector<u8>> DecodeHex(const std::string_view& str);
 std::string EncodeHex(const u8* data, int length);
 
+/// Trims whitespace characters
+void TrimWhitespace(std::string& str);
+std::string_view TrimWhitespace(const std::string_view& str);
+
+/// Splits a string into tokens.
+void SplitString(const std::string_view& str, char delim, std::vector<std::string_view>* tokens);
+
 /// starts_with from C++20
 ALWAYS_INLINE static bool StartsWith(const std::string_view& str, const char* prefix)
 {

@@ -112,6 +112,16 @@ bool DigitalController::Transfer(const u8 data_in, u8* data_out)
 
     case TransferState::ButtonsLSB:
     {
+        System::InputPolled();
+        {
+          for (u32 i = 0; i < 16; i++)
+          {
+            if (m_button_state & (1 << i))
+              continue;
+
+            printf("Button %u was down on poll\n", i);
+          }
+        }
       *data_out = Truncate8(m_button_state) & GetButtonsLSBMask();
       m_transfer_state = TransferState::ButtonsMSB;
       return true;

@@ -697,6 +697,8 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba)
     ticks += static_cast<u32>(static_cast<double>(tps) * 0.1);
   }
 
+  ticks = 20000;
+
   Log_DevPrintf("Seek time for %u LBAs: %d", lba_diff, ticks);
   return ticks;
 }

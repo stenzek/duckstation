@@ -129,6 +129,7 @@ u32 GetFrameNumber();
 u32 GetInternalFrameNumber();
 void FrameDone();
 void IncrementInternalFrameNumber();
+void InputPolled();
 
 const std::string& GetRunningPath();
 const std::string& GetRunningCode();

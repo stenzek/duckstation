@@ -186,8 +186,66 @@ std::string EncodeHex(const u8* data, int length)
   std::stringstream ss;
   for (int i = 0; i < length; i++)
     ss << std::hex << std::setfill('0') << std::setw(2) << static_cast<int>(data[i]);
-  
+
   return ss.str();
+}
+
+void TrimWhitespace(std::string& str)
+{
+  size_t pos = 0;
+  while (pos < str.size() && std::isspace(str[pos]))
+    pos++;
+
+  if (pos > 0)
+    str.erase(0, pos);
+
+  while (!str.empty() && std::isspace(str.back()))
+    str.pop_back();
+}
+
+std::string_view TrimWhitespace(const std::string_view& str)
+{
+  if (str.empty())
+    return {};
+
+  size_t start_pos = 0;
+  while (start_pos < str.size() && std::isspace(str[start_pos]))
+    start_pos++;
+
+  if (start_pos == str.size())
+    return {};
+
+  size_t end_pos = str.size() - 1;
+  while (end_pos > start_pos && std::isspace(str[end_pos]))
+    end_pos--;
+
+  return str.substr(start_pos, end_pos - start_pos + 1);
+}
+
+void SplitString(const std::string_view& str, char delim, std::vector<std::string_view>* tokens)
+{
+  tokens->clear();
+
+  std::string::size_type start_pos = 0;
+  std::string::size_type current_pos = 0;
+  while (current_pos < str.size())
+  {
+    if (str[current_pos] != delim)
+    {
+      current_pos++;
+      continue;
+    }
+
+    if (current_pos != start_pos)
+      tokens->push_back(str.substr(start_pos, current_pos - start_pos));
+    else
+      tokens->emplace_back();
+
+    start_pos = ++current_pos;
+  }
+
+  if (start_pos != current_pos)
+    tokens->push_back(str.substr(start_pos, current_pos - start_pos));
 }
 
 #ifdef WIN32

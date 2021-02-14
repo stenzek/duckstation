@@ -30,6 +30,7 @@
 #include "spu.h"
 #include "texture_replacements.h"
 #include "timers.h"
+#include "movie.h"
 #include <cctype>
 #include <cinttypes>
 #include <cmath>
@@ -119,6 +120,7 @@ static std::vector<std::string> s_media_playlist;
 static std::string s_media_playlist_filename;
 
 static std::unique_ptr<CheatList> s_cheat_list;
+static std::unique_ptr<Movie> s_movie;
 
 static bool s_memory_saves_enabled = false;
 
@@ -218,6 +220,15 @@ void FrameDone()
 void IncrementInternalFrameNumber()
 {
   s_internal_frame_number++;
+}
+
+void InputPolled()
+{
+#if 1
+  if (s_movie)
+    s_movie->NextFrame();
+#endif
+  Log_InfoPrintf("Input polled at frame %u", s_frame_number);
 }
 
 const std::string& GetRunningPath()
@@ -773,6 +784,9 @@ bool Boot(const SystemBootParameters& params)
 
   // Good to go.
   s_state = (g_settings.start_paused || params.override_start_paused.value_or(false)) ? State::Paused : State::Running;
+
+  s_movie = Movie::Load("D:\\test.txt");
+
   return true;
 }
 
@@ -1264,6 +1278,11 @@ void SingleStepCPU()
 
 void DoRunFrame()
 {
+#if 0
+  if (s_movie)
+    s_movie->NextFrame();
+#endif
+
   g_gpu->RestoreGraphicsAPIState();
 
   if (CPU::g_state.use_debug_dispatcher)
