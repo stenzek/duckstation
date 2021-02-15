@@ -5585,7 +5585,7 @@ Vous pourrez ainsi télécharger environ 4 mégaoctets via votre connexion Inter
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1535"/>
-        <source>PGXP is now disabled</source>
+        <source>PGXP is now disabled.</source>
         <translation>PGXP est maintenant Désactivé.</translation>
     </message>
     <message>

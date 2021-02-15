@@ -1699,7 +1699,7 @@ void CommonHostInterface::RegisterGraphicsHotkeys()
                      System::ClearMemorySaveStates();
                      AddOSDMessage(g_settings.gpu_pgxp_enable ?
                                      TranslateStdString("OSDMessage", "PGXP is now enabled.") :
-                                     TranslateStdString("OSDMessage", "PGXP is now disabled"),
+                                     TranslateStdString("OSDMessage", "PGXP is now disabled."),
                                    5.0f);
 
                      if (g_settings.gpu_pgxp_enable)

@@ -5895,8 +5895,8 @@ Spowoduje to pobranie około 4 megabajtów za pośrednictwem bieżącego połąc
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1627"/>
-        <source>PGXP is now disabled</source>
-        <translation>PGXP jest teraz wyłączone</translation>
+        <source>PGXP is now disabled.</source>
+        <translation>PGXP jest teraz wyłączone.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1651"/>

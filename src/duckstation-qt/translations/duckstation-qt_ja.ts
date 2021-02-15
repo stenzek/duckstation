@@ -3637,8 +3637,8 @@ This warning will only be shown once.</source>
         <translation>警告：CPUオーバークロック (%u%%)は保存状態 (%u%%)で異なりました。</translation>
     </message>
     <message>
-        <source>PGXP is now disabled</source>
-        <translation>PGXPが無効になりました</translation>
+        <source>PGXP is now disabled.</source>
+        <translation>PGXPが無効になりました。</translation>
     </message>
     <message>
         <source>Cheat &apos;%s&apos; disabled.</source>
