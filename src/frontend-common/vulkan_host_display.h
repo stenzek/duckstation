@@ -65,7 +65,7 @@ public:
 
   virtual bool Render() override;
 
-  static AdapterAndModeList StaticGetAdapterAndModeList();
+  static AdapterAndModeList StaticGetAdapterAndModeList(const WindowInfo* wi);
 
 protected:
   struct PushConstants

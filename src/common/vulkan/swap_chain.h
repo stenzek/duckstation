@@ -26,6 +26,16 @@ public:
   // Destroys a previously-created surface.
   static void DestroyVulkanSurface(VkInstance instance, WindowInfo& wi, VkSurfaceKHR surface);
 
+  // Enumerates fullscreen modes for window info.
+  struct FullscreenModeInfo
+  {
+    u32 width;
+    u32 height;
+    float refresh_rate;
+  };
+  static std::vector<FullscreenModeInfo>
+  GetSurfaceFullscreenModes(VkInstance instance, VkPhysicalDevice physical_device, const WindowInfo& wi);
+
   // Create a new swap chain from a pre-existing surface.
   static std::unique_ptr<SwapChain> Create(const WindowInfo& wi, VkSurfaceKHR surface, bool vsync);
 

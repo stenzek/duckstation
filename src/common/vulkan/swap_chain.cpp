@@ -132,7 +132,7 @@ static VkSurfaceKHR CreateDisplaySurface(VkInstance instance, VkPhysicalDevice p
     const VkDisplayModePropertiesKHR* matched_mode = nullptr;
     for (const VkDisplayModePropertiesKHR& mode : modes)
     {
-      const float refresh_rate = static_cast<float>(mode.parameters.refreshRate) * 1000.0f;
+      const float refresh_rate = static_cast<float>(mode.parameters.refreshRate) / 1000.0f;
       Log_DevPrintf("  Mode %ux%u @ %f", mode.parameters.visibleRegion.width, mode.parameters.visibleRegion.height,
                     refresh_rate);
 
@@ -223,6 +223,67 @@ static VkSurfaceKHR CreateDisplaySurface(VkInstance instance, VkPhysicalDevice p
   }
 
   return VK_NULL_HANDLE;
+}
+
+static std::vector<SwapChain::FullscreenModeInfo> GetDisplayModes(VkInstance instance, VkPhysicalDevice physical_device,
+                                                                  const WindowInfo& wi)
+{
+
+  u32 num_displays;
+  VkResult res = vkGetPhysicalDeviceDisplayPropertiesKHR(physical_device, &num_displays, nullptr);
+  if (res != VK_SUCCESS || num_displays == 0)
+  {
+    LOG_VULKAN_ERROR(res, "vkGetPhysicalDeviceDisplayPropertiesKHR() failed:");
+    return {};
+  }
+
+  std::vector<VkDisplayPropertiesKHR> displays(num_displays);
+  res = vkGetPhysicalDeviceDisplayPropertiesKHR(physical_device, &num_displays, displays.data());
+  if (res != VK_SUCCESS || num_displays != displays.size())
+  {
+    LOG_VULKAN_ERROR(res, "vkGetPhysicalDeviceDisplayPropertiesKHR() failed:");
+    return {};
+  }
+
+  std::vector<SwapChain::FullscreenModeInfo> result;
+  for (u32 display_index = 0; display_index < num_displays; display_index++)
+  {
+    const VkDisplayPropertiesKHR& props = displays[display_index];
+
+    u32 num_modes;
+    res = vkGetDisplayModePropertiesKHR(physical_device, props.display, &num_modes, nullptr);
+    if (res != VK_SUCCESS || num_modes == 0)
+    {
+      LOG_VULKAN_ERROR(res, "vkGetDisplayModePropertiesKHR() failed:");
+      continue;
+    }
+
+    std::vector<VkDisplayModePropertiesKHR> modes(num_modes);
+    res = vkGetDisplayModePropertiesKHR(physical_device, props.display, &num_modes, modes.data());
+    if (res != VK_SUCCESS || num_modes != modes.size())
+    {
+      LOG_VULKAN_ERROR(res, "vkGetDisplayModePropertiesKHR() failed:");
+      continue;
+    }
+
+    for (const VkDisplayModePropertiesKHR& mode : modes)
+    {
+      const float refresh_rate = static_cast<float>(mode.parameters.refreshRate) / 1000.0f;
+      if (std::find_if(result.begin(), result.end(), [&mode, refresh_rate](const SwapChain::FullscreenModeInfo& mi) {
+            return (mi.width == mode.parameters.visibleRegion.width &&
+                    mi.height == mode.parameters.visibleRegion.height && mode.parameters.refreshRate == refresh_rate);
+          }) != result.end())
+      {
+        continue;
+      }
+
+      result.push_back(SwapChain::FullscreenModeInfo{static_cast<u32>(mode.parameters.visibleRegion.width),
+                                                     static_cast<u32>(mode.parameters.visibleRegion.height),
+                                                     refresh_rate});
+    }
+  }
+
+  return result;
 }
 
 VkSurfaceKHR SwapChain::CreateVulkanSurface(VkInstance instance, VkPhysicalDevice physical_device, WindowInfo& wi)
@@ -365,6 +426,15 @@ void SwapChain::DestroyVulkanSurface(VkInstance instance, WindowInfo& wi, VkSurf
   if (wi.type == WindowInfo::Type::MacOS && wi.surface_handle)
     DestroyMetalLayer(wi);
 #endif
+}
+
+std::vector<SwapChain::FullscreenModeInfo>
+SwapChain::GetSurfaceFullscreenModes(VkInstance instance, VkPhysicalDevice physical_device, const WindowInfo& wi)
+{
+  if (wi.type == WindowInfo::Type::Display)
+    return GetDisplayModes(instance, physical_device, wi);
+
+  return {};
 }
 
 std::unique_ptr<SwapChain> SwapChain::Create(const WindowInfo& wi, VkSurfaceKHR surface, bool vsync)

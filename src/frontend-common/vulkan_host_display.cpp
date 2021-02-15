@@ -9,6 +9,7 @@
 #include "common/vulkan/stream_buffer.h"
 #include "common/vulkan/swap_chain.h"
 #include "common/vulkan/util.h"
+#include "common_host_interface.h"
 #include "core/shader_cache_version.h"
 #include "imgui.h"
 #include "imgui_impl_vulkan.h"
@@ -141,7 +142,7 @@ bool VulkanHostDisplay::SetFullscreen(bool fullscreen, u32 width, u32 height, fl
 
 HostDisplay::AdapterAndModeList VulkanHostDisplay::GetAdapterAndModeList()
 {
-  return StaticGetAdapterAndModeList();
+  return StaticGetAdapterAndModeList(m_window_info.type != WindowInfo::Type::Surfaceless ? &m_window_info : nullptr);
 }
 
 void VulkanHostDisplay::DestroyRenderSurface()
@@ -752,13 +753,19 @@ void VulkanHostDisplay::RenderSoftwareCursor(s32 left, s32 top, s32 width, s32 h
   vkCmdDraw(cmdbuffer, 3, 1, 0, 0);
 }
 
-HostDisplay::AdapterAndModeList VulkanHostDisplay::StaticGetAdapterAndModeList()
+HostDisplay::AdapterAndModeList VulkanHostDisplay::StaticGetAdapterAndModeList(const WindowInfo* wi)
 {
   AdapterAndModeList ret;
+  std::vector<Vulkan::SwapChain::FullscreenModeInfo> fsmodes;
 
   if (g_vulkan_context)
   {
     ret.adapter_names = Vulkan::Context::EnumerateGPUNames(g_vulkan_context->GetVulkanInstance());
+    if (wi)
+    {
+      fsmodes = Vulkan::SwapChain::GetSurfaceFullscreenModes(g_vulkan_context->GetVulkanInstance(),
+                                                             g_vulkan_context->GetPhysicalDevice(), *wi);
+    }
   }
   else if (Vulkan::LoadVulkanLibrary())
   {
@@ -774,7 +781,17 @@ HostDisplay::AdapterAndModeList VulkanHostDisplay::StaticGetAdapterAndModeList()
     }
   }
 
-  return {};
+  if (!fsmodes.empty())
+  {
+    ret.fullscreen_modes.reserve(fsmodes.size());
+    for (const Vulkan::SwapChain::FullscreenModeInfo& fmi : fsmodes)
+    {
+      ret.fullscreen_modes.push_back(
+        CommonHostInterface::GetFullscreenModeString(fmi.width, fmi.height, fmi.refresh_rate));
+    }
+  }
+
+  return ret;
 }
 
 VulkanHostDisplay::PostProcessingStage::PostProcessingStage(PostProcessingStage&& move)
