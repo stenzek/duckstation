@@ -930,30 +930,26 @@ void CommonHostInterface::AddOSDMessage(std::string message, float duration /*= 
   msg.duration = duration;
 
   std::unique_lock<std::mutex> lock(m_osd_messages_lock);
-  m_osd_messages.push_back(std::move(msg));
+  m_osd_posted_messages.push_back(std::move(msg));
 }
 
 void CommonHostInterface::ClearOSDMessages()
 {
   std::unique_lock<std::mutex> lock(m_osd_messages_lock);
-  m_osd_messages.clear();
+  m_osd_posted_messages.clear();
 }
 
 bool CommonHostInterface::EnumerateOSDMessages(std::function<bool(const std::string&, float)> callback)
 {
-  std::unique_lock<std::mutex> lock(m_osd_messages_lock);
-  if (m_osd_messages.empty())
-    return true;
-
-  auto iter = m_osd_messages.begin();
-  while (iter != m_osd_messages.end())
+  auto iter = m_osd_active_messages.begin();
+  while (iter != m_osd_active_messages.end())
   {
     const OSDMessage& msg = *iter;
     const double time = msg.time.GetTimeSeconds();
     const float time_remaining = static_cast<float>(msg.duration - time);
     if (time_remaining <= 0.0f)
     {
-      iter = m_osd_messages.erase(iter);
+      iter = m_osd_active_messages.erase(iter);
       continue;
     }
 
@@ -963,7 +959,7 @@ bool CommonHostInterface::EnumerateOSDMessages(std::function<bool(const std::str
       continue;
     }
 
-    if (!callback(iter->text, time_remaining))
+    if (callback && !callback(iter->text, time_remaining))
       return false;
 
     ++iter;
@@ -972,16 +968,48 @@ bool CommonHostInterface::EnumerateOSDMessages(std::function<bool(const std::str
   return true;
 }
 
+void CommonHostInterface::AcquirePendingOSDMessages()
+{
+  // memory_order_consume is roughly equivalent to adding a volatile keyword to the read from the deque.
+  // we just want to force the compiler to always reload the deque size value from memory.
+  //
+  // ARM doesn't have good atomic read guarantees so it _could_ read some non-zero value here spuriously,
+  // but that's OK because we lock the mutex later and recheck things anyway. This early out will still 
+  // avoid 99.99% of the unnecessary lock attempts when size == 0.
+
+  std::atomic_thread_fence(std::memory_order_consume);
+  if (!m_osd_posted_messages.empty())
+  {
+    std::unique_lock<std::mutex> lock(m_osd_messages_lock);
+    for(;;)
+    {
+      // lock-and-copy mechanism.
+      // this allows us to unlock the deque and minimize time that the mutex is held.
+      // it is almost always the best model to follow for multithread deque.
+
+      if (m_osd_posted_messages.empty())
+        break;
+
+      m_osd_active_messages.push_back(std::move(m_osd_posted_messages.front()));
+      m_osd_posted_messages.pop_front();
+
+      // somewhat arbitrary hard cap on # of messages. This might be unnecessarily paranoid. If something is
+      // spamming the osd message log this badly, then probably this isn't going to really help things much.
+      static constexpr size_t MAX_ACTIVE_OSD_MESSAGES = 512;
+      if (m_osd_active_messages.size() > MAX_ACTIVE_OSD_MESSAGES)
+        m_osd_active_messages.pop_front();
+    }
+  }
+}
+
 void CommonHostInterface::DrawOSDMessages()
 {
+  AcquirePendingOSDMessages();
+
   constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoInputs |
                                             ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings |
                                             ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoNav |
                                             ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing;
-
-  std::unique_lock<std::mutex> lock(m_osd_messages_lock);
-  if (m_osd_messages.empty())
-    return;
 
   const float scale = ImGui::GetIO().DisplayFramebufferScale.x;
   const float spacing = 5.0f * scale;
@@ -992,40 +1020,30 @@ void CommonHostInterface::DrawOSDMessages()
   float position_x = margin;
   float position_y = margin;
 
-  ImDrawList* dl = ImGui::GetBackgroundDrawList();
-  ImFont* font = ImGui::GetFont();
-  auto iter = m_osd_messages.begin();
-  while (iter != m_osd_messages.end())
-  {
-    const OSDMessage& msg = *iter;
-    const double time = msg.time.GetTimeSeconds();
-    const float time_remaining = static_cast<float>(msg.duration - time);
-    if (time_remaining <= 0.0f)
-    {
-      iter = m_osd_messages.erase(iter);
-      continue;
+  EnumerateOSDMessages(
+    [max_width, spacing, padding, rounding, &position_x, &position_y](const std::string& message, float time_remaining) -> bool {
+      const float opacity = std::min(time_remaining, 1.0f);
+
+      if (position_y >= ImGui::GetIO().DisplaySize.y)
+        return false;
+
+      const ImVec2 pos(position_x, position_y);
+      const ImVec2 text_size(ImGui::CalcTextSize(message.c_str(), nullptr, false, max_width));
+      const ImVec2 size(text_size.x + padding * 2.0f, text_size.y + padding * 2.0f);
+      const ImVec4 text_rect(pos.x + padding, pos.y + padding, pos.x + size.x - padding, pos.y + size.y - padding);
+
+      ImDrawList* dl = ImGui::GetBackgroundDrawList();
+      ImFont* font = ImGui::GetFont();
+      dl->AddRectFilled(pos, ImVec2(pos.x + size.x, pos.y + size.y), ImGui::GetColorU32(ImGuiCol_WindowBg, opacity),
+                        rounding);
+      dl->AddRect(pos, ImVec2(pos.x + size.x, pos.y + size.y), ImGui::GetColorU32(ImGuiCol_Border), rounding);
+      dl->AddText(font, font->FontSize, ImVec2(text_rect.x, text_rect.y), ImGui::GetColorU32(ImGuiCol_Text, opacity),
+                  message.c_str(), nullptr, max_width, &text_rect);
+      position_y += size.y + spacing;
+
+      return true;
     }
-
-    if (!g_settings.display_show_osd_messages || position_y >= ImGui::GetIO().DisplaySize.y)
-    {
-      ++iter;
-      continue;
-    }
-
-    const float opacity = std::min(time_remaining, 1.0f);
-
-    const ImVec2 pos(position_x, position_y);
-    const ImVec2 text_size(ImGui::CalcTextSize(msg.text.c_str(), nullptr, false, max_width));
-    const ImVec2 size(text_size.x + padding * 2.0f, text_size.y + padding * 2.0f);
-    const ImVec4 text_rect(pos.x + padding, pos.y + padding, pos.x + size.x - padding, pos.y + size.y - padding);
-    dl->AddRectFilled(pos, ImVec2(pos.x + size.x, pos.y + size.y), ImGui::GetColorU32(ImGuiCol_WindowBg, opacity),
-                      rounding);
-    dl->AddRect(pos, ImVec2(pos.x + size.x, pos.y + size.y), ImGui::GetColorU32(ImGuiCol_Border), rounding);
-    dl->AddText(font, font->FontSize, ImVec2(text_rect.x, text_rect.y), ImGui::GetColorU32(ImGuiCol_Text, opacity),
-                msg.text.c_str(), nullptr, max_width, &text_rect);
-    position_y += size.y + spacing;
-    ++iter;
-  }
+  );
 }
 
 void CommonHostInterface::DrawDebugWindows()
