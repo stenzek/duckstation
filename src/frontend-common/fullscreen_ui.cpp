@@ -587,7 +587,7 @@ static void DoChangeDiscFromFile()
   };
 
   OpenFileSelector(ICON_FA_COMPACT_DISC "  Select Disc Image", false, std::move(callback), GetDiscImageFilters(),
-                   FileSystem::GetPathDirectory(System::GetMediaFileName().c_str()));
+                   std::string(FileSystem::GetPathDirectory(System::GetMediaFileName().c_str())));
 }
 
 static void DoChangeDisc()
@@ -950,7 +950,7 @@ static bool SettingInfoButton(const SettingInfo& si, const char* section)
           CloseFileSelector();
         };
         OpenFileSelector(si.visible_name, false, std::move(callback), ImGuiFullscreen::FileSelectorFilters(),
-                         FileSystem::GetPathDirectory(value.c_str()).c_str());
+                         std::string(FileSystem::GetPathDirectory(value.c_str())));
       }
 
       return false;

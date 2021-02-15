@@ -143,16 +143,16 @@ void SanitizeFileName(String& Destination, bool StripSlashes = true);
 bool IsAbsolutePath(const std::string_view& path);
 
 /// Replaces the extension of a filename with another.
-std::string ReplaceExtension(std::string_view path, std::string_view new_extension);
+std::string ReplaceExtension(const std::string_view& path, const std::string_view& new_extension);
 
 /// Returns the directory component of a filename.
-std::string GetPathDirectory(const char* path);
+std::string_view GetPathDirectory(const std::string_view& path);
 
 /// Returns the filename component of a filename.
-std::string_view GetFileNameFromPath(const char* path);
+std::string_view GetFileNameFromPath(const std::string_view& path);
 
 /// Returns the file title (less the extension and path) from a filename.
-std::string_view GetFileTitleFromPath(const char* path);
+std::string_view GetFileTitleFromPath(const std::string_view& path);
 
 /// Returns a list of "root directories" (i.e. root/home directories on Linux, drive letters on Windows).
 std::vector<std::string> GetRootDirectoryList();

@@ -249,7 +249,7 @@ bool IsAbsolutePath(const std::string_view& path)
 #endif
 }
 
-std::string ReplaceExtension(std::string_view path, std::string_view new_extension)
+std::string ReplaceExtension(const std::string_view& path, const std::string_view& new_extension)
 {
   std::string_view::size_type pos = path.rfind('.');
   if (pos == std::string::npos)
@@ -260,58 +260,40 @@ std::string ReplaceExtension(std::string_view path, std::string_view new_extensi
   return ret;
 }
 
-std::string GetPathDirectory(const char* path)
+std::string_view GetPathDirectory(const std::string_view& path)
 {
-#ifdef WIN32
-  const char* forwardslash_ptr = std::strrchr(path, '/');
-  const char* backslash_ptr = std::strrchr(path, '\\');
-  const char* slash_ptr;
-  if (forwardslash_ptr && backslash_ptr)
-    slash_ptr = std::max(forwardslash_ptr, backslash_ptr);
-  else if (backslash_ptr)
-    slash_ptr = backslash_ptr;
-  else if (forwardslash_ptr)
-    slash_ptr = forwardslash_ptr;
-  else
-    return {};
+#ifdef _WIN32
+  std::string::size_type pos = path.find_last_of("/\\");
 #else
-  const char* slash_ptr = std::strrchr(path, '/');
-  if (!slash_ptr)
-    return {};
+  std::string::size_type pos = path.find_last_of("/");
 #endif
-
-  if (slash_ptr == path)
+  if (pos == std::string_view::npos)
     return {};
 
-  std::string str;
-  str.append(path, slash_ptr - path);
-  return str;
+  return path.substr(0, pos);
 }
 
-std::string_view GetFileNameFromPath(const char* path)
+std::string_view GetFileNameFromPath(const std::string_view& path)
 {
-  const char* end = path + std::strlen(path);
-  const char* start = std::max(std::strrchr(path, '/'), std::strrchr(path, '\\'));
-  if (!start)
-    return std::string_view(path, end - path);
-  else
-    return std::string_view(start + 1, end - start);
+#ifdef _WIN32
+  std::string::size_type pos = path.find_last_of("/\\");
+#else
+  std::string::size_type pos = path.find_last_of("/");
+#endif
+  if (pos == std::string_view::npos)
+    return path;
+
+  return path.substr(pos + 1);
 }
 
-std::string_view GetFileTitleFromPath(const char* path)
+std::string_view GetFileTitleFromPath(const std::string_view& path)
 {
-  const char* end = path + std::strlen(path);
-  const char* extension = std::strrchr(path, '.');
-  if (extension && extension > path)
-    end = extension - 1;
+  std::string_view filename(GetFileNameFromPath(path));
+  std::string::size_type pos = filename.rfind('.');
+  if (pos == std::string_view::npos)
+    return filename;
 
-  const char* start = std::max(std::strrchr(path, '/'), std::strrchr(path, '\\'));
-  if (!start)
-    return std::string_view(path, end - path);
-  else if (start < end)
-    return std::string_view(start + 1, end - start);
-  else
-    return std::string_view(path);
+  return filename.substr(0, pos);
 }
 
 std::vector<std::string> GetRootDirectoryList()

@@ -875,8 +875,8 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
 
 void HostInterface::SetUserDirectoryToProgramDirectory()
 {
-  const std::string program_path = FileSystem::GetProgramPath();
-  const std::string program_directory = FileSystem::GetPathDirectory(program_path.c_str());
+  const std::string program_path(FileSystem::GetProgramPath());
+  const std::string program_directory(FileSystem::GetPathDirectory(program_path.c_str()));
   m_user_directory = program_directory;
 }
 
