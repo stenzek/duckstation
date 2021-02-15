@@ -689,7 +689,7 @@
     <message>
         <location filename="../audiosettingswidget.cpp" line="41"/>
         <source>The audio backend determines how frames produced by the emulator are submitted to the host. Cubeb provides the lowest latency, if you encounter issues, try the SDL backend. The null backend disables all host audio output.</source>
-        <translation>Das Audio-Backend bestimmt, wie die vom Emulator erzeugten Frames an den Host gesendet werden. Cubeb hat die niedrigste Latenz. Wenn Probleme auftreten, sollte das SDL-Backend benutzt werden. Das Null-Backend deaktiviert die gesamte Audioausgabe.</translation>
+        <translation>Das Audio-Backend bestimmt, wie die vom Emulator erzeugten Frames an den PC gesendet werden. Cubeb hat die niedrigste Latenz. Wenn Probleme auftreten, sollte das SDL-Backend benutzt werden. Das Null-Backend deaktiviert die gesamte Audioausgabe.</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="45"/>
@@ -699,7 +699,7 @@
     <message>
         <location filename="../audiosettingswidget.cpp" line="46"/>
         <source>The buffer size determines the size of the chunks of audio which will be pulled by the host. Smaller values reduce the output latency, but may cause hitches if the emulation speed is inconsistent. Note that the Cubeb backend uses smaller chunks regardless of this value, so using a low value here may not significantly change latency.</source>
-        <translation>Die Puffergröße bestimmt die Größe der Audio-Blöcke, die vom Host abgerufen werden. Kleinere Werte verringern die Ausgabelatenz, können jedoch auch zu Problemen führen, wenn die Emulationsgeschwindigkeit inkonsistent ist. Dabei ist zu beachten, dass das Cubeb-Backend unabhängig von diesem Wert kleinere Blöcke verwendet, so dass die Verwendung eines niedrigen Wertes die Latenz möglicherweise nicht spürbar ändert.</translation>
+        <translation>Die Puffergröße bestimmt die Größe der Audio-Blöcke, die vom PC abgerufen werden. Kleinere Werte verringern die Ausgabelatenz, können jedoch auch zu Problemen führen, wenn die Emulationsgeschwindigkeit inkonsistent ist. Dabei ist zu beachten, dass das Cubeb-Backend unabhängig von diesem Wert kleinere Blöcke verwendet, so dass die Verwendung eines niedrigen Wertes die Latenz möglicherweise nicht spürbar ändert.</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="50"/>
@@ -2727,7 +2727,7 @@ Diese Datei kann mehrere Gigabyte groß sein, achte also auf die Abnutzung der S
     <message>
         <location filename="../displaysettingswidget.cpp" line="75"/>
         <source>Chooses the fullscreen resolution and frequency.</source>
-        <translation>Legt die Vollbildauflösung und Bildfrequenz fest. &quot;Rahmenloser Vollbildmodus&quot; verwendet ein randloses Fenster, das den kompletten Bildschirm füllt. Dies macht das Wechseln vom und zum Vollbild schneller, erhöht aber auch die Eingabeverzögerung (Input-Lag) und macht Bewegungen etwas ruckliger.</translation>
+        <translation>Legt die Vollbildauflösung und Bildfrequenz fest. &quot;Rahmenloser Vollbildmodus&quot; verwendet ein randloses Fenster, das den kompletten Bildschirm füllt - dies macht das Wechseln vom und zum Vollbild schneller.</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="77"/>
@@ -2776,7 +2776,7 @@ Diese Datei kann mehrere Gigabyte groß sein, achte also auf die Abnutzung der S
     <message>
         <location filename="../displaysettingswidget.cpp" line="93"/>
         <source>Uses bilinear texture filtering when displaying the console&apos;s framebuffer to the screen. &lt;br&gt;Disabling filtering will producer a sharper, blockier/pixelated image. Enabling will smooth out the image. &lt;br&gt;The option will be less noticable the higher the resolution scale.</source>
-        <translation>Verwendet bilineare Texturfilterung, wenn der Framebuffer der Konsole auf dem Bildschirm angezeigt wird. Das Deaktivieren der Filterung erzeugt schärfere Pixel und das Aktivieren glättet das Bild. Je höher die Auflösungsskalierung, desto weniger fällt diese Option auf.</translation>
+        <translation>Verwendet bilineare Texturfilterung, wenn der Framebuffer der Konsole auf dem Bildschirm angezeigt wird. Die Deaktivierung der Filterung erzeugt schärfere Pixel. Bei der Aktivierung wird das Bild weichgezeichnet. Je höher die Auflösungsskalierung, desto weniger fällt diese Option auf.</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="99"/>
@@ -2792,7 +2792,7 @@ Diese Datei kann mehrere Gigabyte groß sein, achte also auf die Abnutzung der S
     <message>
         <location filename="../displaysettingswidget.cpp" line="100"/>
         <source>Adds padding to the display area to ensure that the ratio between pixels on the host to pixels in the console is an integer number. &lt;br&gt;May result in a sharper image in some 2D games.</source>
-        <translation>Fügt dem Bildbereich eine Auffüllung hinzu, um sicherzustellen, dass das Verhältnis zwischen Pixeln auf dem Host und Pixeln in der Konsole eine ganze Zahl ist. Dies kann bei einigen 2D-Spielen zu einem schärferen Bild führen.</translation>
+        <translation>Fügt dem Bildbereich eine Auffüllung hinzu, um sicherzustellen, dass das Verhältnis zwischen Pixeln auf dem PC und Pixeln in der Konsole eine ganze Zahl ist. Dies kann bei einigen 2D-Spielen zu einem schärferen Bild führen.</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="104"/>
@@ -2898,7 +2898,7 @@ Diese Datei kann mehrere Gigabyte groß sein, achte also auf die Abnutzung der S
         <location filename="../emulationsettingswidget.ui" line="68"/>
         <location filename="../emulationsettingswidget.cpp" line="65"/>
         <source>Sync To Host Refresh Rate</source>
-        <translation>Synchronisierung mit der Host-Bildwiederholungsrate</translation>
+        <translation>Synchronisierung mit der Bildwiederholungsrate</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="78"/>
@@ -3041,7 +3041,7 @@ Diese Datei kann mehrere Gigabyte groß sein, achte also auf die Abnutzung der S
     <message>
         <location filename="../emulationsettingswidget.cpp" line="66"/>
         <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host&apos;s refresh rate when both VSync and Audio Resampling settings are enabled. This results in the smoothest animations possible, at the cost of potentially increasing the emulation speed by less than 1%. Sync To Host Refresh Rate will not take effect if the console&apos;s refresh rate is too far from the host&apos;s refresh rate. Users with variable refresh rate displays should disable this option.</source>
-        <translation>Passt die Emulationsgeschwindigkeit so an, dass die Bildwiederholungsrate der Konsole mit der des Hosts übereinstimmt, wenn die Einstellungen &quot;VSync&quot; und &quot;Neuabtastung&quot; aktiviert sind. Dies liefert die flüssigsten Animationen, die möglich sind, und erhöht die Emulationsgeschwindigkeit um knapp 1%. Dies wird nicht funktionieren, wenn die Bildwiederholungsrate der Konsole zu weit von der des Hosts entfernt ist. Benutzer mit Bildschirmen variabler Bildwiederholungsrate sollten diese Option nicht aktivieren.</translation>
+        <translation>Passt die Emulationsgeschwindigkeit so an, dass die Bildwiederholungsrate der Konsole mit der des PCs übereinstimmt, wenn die Einstellungen &quot;VSync&quot; und &quot;Neuabtastung&quot; aktiviert sind. Dies liefert die störungsfreisten Animationen, die möglich sind und erhöht die Emulationsgeschwindigkeit um knapp 1%. Dies wird nicht angewendet werden, wenn die Bildwiederholungsrate der Konsole zu weit von der des PCs entfernt ist. Benutzer mit Bildschirmen variabler Bildwiederholungsrate sollten diese Option nicht aktivieren.</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="72"/>
@@ -3063,7 +3063,7 @@ Diese Datei kann mehrere Gigabyte groß sein, achte also auf die Abnutzung der S
     <message>
         <location filename="../emulationsettingswidget.cpp" line="78"/>
         <source>Simulates the system ahead of time and rolls back/replays to reduce input lag. Very high system requirements.</source>
-        <translation>Simuliert das System im Voraus und ermöglicht ein Zurückspulen/Wiedergeben, um die Eingabeverzögerung (Input-Lag) zu reduzieren. Die Systemanforderungen sind sehr hoch.</translation>
+        <translation>Simuliert das System im Voraus und ermöglicht ein Zurückschalten/Wiedergeben, um die Eingabeverzögerung (Input-Lag) zu reduzieren. Die Systemanforderungen sind sehr hoch.</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="124"/>
@@ -3221,12 +3221,12 @@ Diese Datei kann mehrere Gigabyte groß sein, achte also auf die Abnutzung der S
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="61"/>
         <source>Uses multisample antialiasing for rendering 3D objects. Can smooth out jagged edges on polygons at a lower cost to performance compared to increasing the resolution scale, but may be more likely to cause rendering errors in some games. Only applies to the hardware backends.</source>
-        <translation>Verwendet Multisample-Antialiasing für das Rendern von 3D-Objekten. Dies glättet das Bild und entfernt Treppeneffekte und Flimmern an Polygonen (was im Vergleich zum Erhöhen der Auflösungsskalierung weniger Leistung kostet), aber kann in einigen Spielen auch zu Renderingfehlern führen. Gilt nur für die Hardware-Renderer.</translation>
+        <translation>Verwendet Multisample-Antialiasing für das Rendern von 3D-Objekten. Dies entfernt Treppeneffekte und Flimmern an Polygonen (was im Vergleich zum Erhöhen der Auflösungsskalierung weniger Leistung kostet), aber kann in einigen Spielen auch zu Renderingfehlern führen. Gilt nur für die Hardware-Renderer.</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="66"/>
         <source>Forces the precision of colours output to the console&apos;s framebuffer to use the full 8 bits of precision per channel. This produces nicer looking gradients at the cost of making some colours look slightly different. Disabling the option also enables dithering, which makes the transition between colours less sharp by applying a pattern around those pixels. Most games are compatible with this option, but there is a number which aren&apos;t and will have broken effects with it enabled. Only applies to the hardware renderers.</source>
-        <translation>Erzwingt, dass die Farbgenauigkeit bei der Ausgabe an den Konsolen-Framebuffer die vollen 8 Bit Genauigkeit pro Kanal verwendet. Dies erzeugt schönere Farbverläufe, allerdings um den Preis, dass einige Farben anders aussehen. Das Deaktivieren der Option aktiviert auch das Dithering, das den Übergang zwischen Farben weniger scharf macht, indem ein Muster um diese Pixel herum angewendet wird. Die meisten Spiele sind mit dieser Option kompatibel, aber es gibt einige, bei denen das nicht zutrifft - dann besteht die Möglichkeit, dass Effekte nicht richtig funktionieren. Gilt nur für die Hardware-Renderer.</translation>
+        <translation>Erzwingt, dass die Farbgenauigkeit bei der Ausgabe an den Konsolen-Framebuffer die vollen 8 Bit Genauigkeit pro Kanal verwendet. Dies erzeugt schönere Farbverläufe, allerdings um den Preis, dass einige Farben anders aussehen. Das Deaktivieren der Option aktiviert auch das Dithering, das den Übergang zwischen Farben weniger scharf macht, indem ein Muster um diese Pixel herum erzeugt wird. Die meisten Spiele sind mit dieser Option kompatibel, aber es gibt einige, bei denen das nicht zutrifft - dann besteht die Möglichkeit, dass Effekte nicht richtig funktionieren. Gilt nur für die Hardware-Renderer.</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="72"/>
@@ -4292,7 +4292,7 @@ Dies wird etwa 4 Megabyte über die aktuelle Internetverbindung herunterladen.</
         <location filename="../generalsettingswidget.ui" line="59"/>
         <location filename="../generalsettingswidget.cpp" line="58"/>
         <source>Pause On Focus Loss</source>
-        <translation>Pausieren wenn der Fokus verloren wird</translation>
+        <translation>Beim Fokusverlust pausieren</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="73"/>
@@ -5505,7 +5505,7 @@ Dies wird etwa 4 Megabyte über die aktuelle Internetverbindung herunterladen.</
     <message>
         <location filename="../mainwindow.cpp" line="155"/>
         <source>Failed to create host display device context.</source>
-        <translation>Host-Anzeigegerätekontext fehlgeschlagen.</translation>
+        <translation>PC-Anzeigegerätekontext fehlgeschlagen.</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="34"/>
@@ -5515,7 +5515,7 @@ Dies wird etwa 4 Megabyte über die aktuelle Internetverbindung herunterladen.</
     <message>
         <location filename="../mainwindow.cpp" line="109"/>
         <source>Failed to create host display.</source>
-        <translation>Host-Anzeige fehlgeschlagen.</translation>
+        <translation>PC-Anzeige fehlgeschlagen.</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="447"/>
@@ -6443,12 +6443,12 @@ Dies wird etwa 4 Megabyte über die aktuelle Internetverbindung herunterladen.</
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2656"/>
         <source>Loaded %u cheats from list. %u cheats are enabled.</source>
-        <translation>Anzahl der Cheats, die aus der Liste geladen wurden: %u. Aktivierte Cheats: %u.</translation>
+        <translation>Anzahl der Cheats, die aus der Liste geladen wurden: %u Aktivierte Cheats: %u</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2680"/>
         <source>Loaded %u cheats from database.</source>
-        <translation>Anzahl der Cheats, die aus der Datenbank geladen wurden: %u.</translation>
+        <translation>Anzahl der Cheats, die aus der Datenbank geladen wurden: %u</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2696"/>
@@ -6458,7 +6458,7 @@ Dies wird etwa 4 Megabyte über die aktuelle Internetverbindung herunterladen.</
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2710"/>
         <source>Saved %u cheats to &apos;%s&apos;.</source>
-        <translation>Anzahl der Cheats, die unter &apos;%s&apos; gespeichert wurden: %u.</translation>
+        <translation>Anzahl der Cheats, die unter &apos;%s&apos; gespeichert wurden: %u</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2726"/>
@@ -6771,7 +6771,7 @@ Dies wird etwa 4 Megabyte über die aktuelle Internetverbindung herunterladen.</
     <message>
         <location filename="../main.cpp" line="62"/>
         <source>Failed to initialize host interface. Cannot continue.</source>
-        <translation>Die Host-Schnittstelle konnte nicht initialisiert werden. Kann nicht fortgesetzt werden.</translation>
+        <translation>Die PC-Schnittstelle konnte nicht initialisiert werden. Kann nicht fortgesetzt werden.</translation>
     </message>
     <message>
         <location filename="../qtutils.cpp" line="674"/>
@@ -7009,7 +7009,7 @@ Die Spielstände können nicht wiederhergestellt werden.</translation>
     <message>
         <location filename="../settingsdialog.cpp" line="99"/>
         <source>&lt;strong&gt;Enhancement Settings&lt;/strong&gt;&lt;hr&gt;These options control enhancements which can improve visuals compared to the original console. Mouse over each option for additional information.</source>
-        <translation>&lt;strong&gt;Verbesserungen&lt;/strong&gt;&lt;hr&gt;Diese Optionen ermöglichen die Regelung von Erweiterungen, die die Darstellung im Vergleich zur ursprünglichen Konsole verbessern können.&lt;br&gt;&lt;br&gt;Für genauere Informationen den Mauszeiger über eine Option halten.</translation>
+        <translation>&lt;strong&gt;Verbesserungen&lt;/strong&gt;&lt;hr&gt;Diese Optionen steuern Erweiterungen, mit deren Hilfe die Darstellung im Vergleich zur ursprünglichen Konsole verbessert werden kann.&lt;br&gt;&lt;br&gt;Für genauere Informationen den Mauszeiger über eine Option halten.</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="102"/>
