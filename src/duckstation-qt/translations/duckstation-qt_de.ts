@@ -6443,12 +6443,12 @@ Dies wird etwa 4 Megabyte über die aktuelle Internetverbindung herunterladen.</
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2656"/>
         <source>Loaded %u cheats from list. %u cheats are enabled.</source>
-        <translation>Anzahl der Cheats, die aus der Liste geladen wurden: %u. Aktivierte Cheats: %u.</translation>
+        <translation>Anzahl der Cheats, die aus der Liste geladen wurden: %u Aktivierte Cheats: %u</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2680"/>
         <source>Loaded %u cheats from database.</source>
-        <translation>Anzahl der Cheats, die aus der Datenbank geladen wurden: %u.</translation>
+        <translation>Anzahl der Cheats, die aus der Datenbank geladen wurden: %u</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2696"/>
@@ -6458,7 +6458,7 @@ Dies wird etwa 4 Megabyte über die aktuelle Internetverbindung herunterladen.</
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2710"/>
         <source>Saved %u cheats to &apos;%s&apos;.</source>
-        <translation>Anzahl der Cheats, die unter &apos;%s&apos; gespeichert wurden: %u.</translation>
+        <translation>Anzahl der Cheats, die unter &apos;%s&apos; gespeichert wurden: %u</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2726"/>
