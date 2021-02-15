@@ -483,14 +483,19 @@ std::optional<std::vector<u8>> ReadBinaryFile(const char* filename)
   if (!fp)
     return std::nullopt;
 
-  std::fseek(fp.get(), 0, SEEK_END);
-  long size = std::ftell(fp.get());
-  std::fseek(fp.get(), 0, SEEK_SET);
+  return ReadBinaryFile(fp.get());
+}
+
+std::optional<std::vector<u8>> ReadBinaryFile(std::FILE* fp)
+{
+  std::fseek(fp, 0, SEEK_END);
+  long size = std::ftell(fp);
+  std::fseek(fp, 0, SEEK_SET);
   if (size < 0)
     return std::nullopt;
 
   std::vector<u8> res(static_cast<size_t>(size));
-  if (size > 0 && std::fread(res.data(), 1u, static_cast<size_t>(size), fp.get()) != static_cast<size_t>(size))
+  if (size > 0 && std::fread(res.data(), 1u, static_cast<size_t>(size), fp) != static_cast<size_t>(size))
     return std::nullopt;
 
   return res;
@@ -502,15 +507,20 @@ std::optional<std::string> ReadFileToString(const char* filename)
   if (!fp)
     return std::nullopt;
 
-  std::fseek(fp.get(), 0, SEEK_END);
-  long size = std::ftell(fp.get());
-  std::fseek(fp.get(), 0, SEEK_SET);
+  return ReadFileToString(fp.get());
+}
+
+std::optional<std::string> ReadFileToString(std::FILE* fp)
+{
+  std::fseek(fp, 0, SEEK_END);
+  long size = std::ftell(fp);
+  std::fseek(fp, 0, SEEK_SET);
   if (size < 0)
     return std::nullopt;
 
   std::string res;
   res.resize(static_cast<size_t>(size));
-  if (size > 0 && std::fread(res.data(), 1u, static_cast<size_t>(size), fp.get()) != static_cast<size_t>(size))
+  if (size > 0 && std::fread(res.data(), 1u, static_cast<size_t>(size), fp) != static_cast<size_t>(size))
     return std::nullopt;
 
   return res;
@@ -1030,6 +1040,33 @@ bool FileSystem::StatFile(const char* path, FILESYSTEM_STAT_DATA* pStatData)
   return true;
 }
 
+bool FileSystem::StatFile(std::FILE* fp, FILESYSTEM_STAT_DATA* pStatData)
+{
+  const int fd = _fileno(fp);
+  if (fd < 0)
+    return false;
+
+  struct _stat64 st;
+  if (_fstati64(fd, &st) != 0)
+    return false;
+
+  // parse attributes
+  pStatData->Attributes = 0;
+  if ((st.st_mode & _S_IFMT) == _S_IFDIR)
+    pStatData->Attributes |= FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY;
+
+  // parse times
+  pStatData->ModificationTime.SetUnixTimestamp((Timestamp::UnixTimestampValue)st.st_mtime);
+
+  // parse size
+  if ((st.st_mode & _S_IFMT) == _S_IFREG)
+    pStatData->Size = static_cast<u64>(st.st_size);
+  else
+    pStatData->Size = 0;
+
+  return true;
+}
+
 bool FileSystem::FileExists(const char* path)
 {
   // has a path
@@ -1464,6 +1501,40 @@ bool StatFile(const char* Path, FILESYSTEM_STAT_DATA* pStatData)
 #else
   struct stat64 sysStatData;
   if (stat64(Path, &sysStatData) < 0)
+#endif
+    return false;
+
+  // parse attributes
+  pStatData->Attributes = 0;
+  if (S_ISDIR(sysStatData.st_mode))
+    pStatData->Attributes |= FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY;
+
+  // parse times
+  pStatData->ModificationTime.SetUnixTimestamp((Timestamp::UnixTimestampValue)sysStatData.st_mtime);
+
+  // parse size
+  if (S_ISREG(sysStatData.st_mode))
+    pStatData->Size = static_cast<u64>(sysStatData.st_size);
+  else
+    pStatData->Size = 0;
+
+  // ok
+  return true;
+}
+
+bool StatFile(std::FILE* fp, FILESYSTEM_STAT_DATA* pStatData)
+{
+  int fd = fileno(fp);
+  if (fd < 0)
+    return false;
+
+    // stat file
+#if defined(__HAIKU__) || defined(__APPLE__)
+  struct stat sysStatData;
+  if (fstat(fd, &sysStatData) < 0)
+#else
+  struct stat64 sysStatData;
+  if (fstat64(fd, &sysStatData) < 0)
 #endif
     return false;
 

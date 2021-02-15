@@ -162,6 +162,7 @@ bool FindFiles(const char* Path, const char* Pattern, u32 Flags, FindResultsArra
 
 // stat file
 bool StatFile(const char* Path, FILESYSTEM_STAT_DATA* pStatData);
+bool StatFile(std::FILE* fp, FILESYSTEM_STAT_DATA* pStatData);
 
 // file exists?
 bool FileExists(const char* Path);
@@ -180,7 +181,9 @@ ManagedCFilePtr OpenManagedCFile(const char* filename, const char* mode);
 std::FILE* OpenCFile(const char* filename, const char* mode);
 
 std::optional<std::vector<u8>> ReadBinaryFile(const char* filename);
+std::optional<std::vector<u8>> ReadBinaryFile(std::FILE* fp);
 std::optional<std::string> ReadFileToString(const char* filename);
+std::optional<std::string> ReadFileToString(std::FILE* fp);
 bool WriteBinaryFile(const char* filename, const void* data, size_t data_length);
 bool WriteFileToString(const char* filename, const std::string_view& sv);
 
