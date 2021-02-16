@@ -201,7 +201,8 @@ bool Initialize(CommonHostInterface* host_interface, SettingsInterface* settings
 
 bool HasActiveWindow()
 {
-  return s_current_main_window != MainWindowType::None;
+  return s_current_main_window != MainWindowType::None || s_save_state_selector_open ||
+         ImGuiFullscreen::IsChoiceDialogOpen() || ImGuiFullscreen::IsFileSelectorOpen();
 }
 
 void SystemCreated()

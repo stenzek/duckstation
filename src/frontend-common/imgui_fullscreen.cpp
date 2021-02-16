@@ -902,6 +902,11 @@ static void SetFileSelectorDirectory(std::string dir)
   PopulateFileSelectorItems();
 }
 
+bool IsFileSelectorOpen()
+{
+  return s_file_selector_open;
+}
+
 void OpenFileSelector(const char* title, bool select_directory, FileSelectorCallback callback,
                       FileSelectorFilters filters, std::string initial_directory)
 {
@@ -1016,6 +1021,11 @@ static bool s_choice_dialog_checkable = false;
 static std::string s_choice_dialog_title;
 static ChoiceDialogOptions s_choice_dialog_options;
 static ChoiceDialogCallback s_choice_dialog_callback;
+
+bool IsChoiceDialogOpen()
+{
+  return s_choice_dialog_open;
+}
 
 void OpenChoiceDialog(const char* title, bool checkable, ChoiceDialogOptions options, ChoiceDialogCallback callback)
 {

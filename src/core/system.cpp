@@ -1773,8 +1773,11 @@ bool HasMedia()
   return g_cdrom.HasMedia();
 }
 
-const std::string& GetMediaFileName()
+std::string GetMediaFileName()
 {
+  if (!g_cdrom.HasMedia())
+    return {};
+
   return g_cdrom.GetMediaFileName();
 }
 

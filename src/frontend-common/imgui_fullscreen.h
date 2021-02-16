@@ -210,6 +210,7 @@ static ALWAYS_INLINE bool EnumChoiceButton(const char* title, const char* summar
 
 using FileSelectorCallback = std::function<void(const std::string& path)>;
 using FileSelectorFilters = std::vector<std::string>;
+bool IsFileSelectorOpen();
 void OpenFileSelector(const char* title, bool select_directory, FileSelectorCallback callback,
                       FileSelectorFilters filters = FileSelectorFilters(),
                       std::string initial_directory = std::string());
@@ -217,6 +218,7 @@ void CloseFileSelector();
 
 using ChoiceDialogCallback = std::function<void(s32 index, const std::string& title, bool checked)>;
 using ChoiceDialogOptions = std::vector<std::pair<std::string, bool>>;
+bool IsChoiceDialogOpen();
 void OpenChoiceDialog(const char* title, bool checkable, ChoiceDialogOptions options, ChoiceDialogCallback callback);
 void CloseChoiceDialog();
 
