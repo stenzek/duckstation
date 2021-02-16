@@ -163,7 +163,7 @@
       <item row="2" column="0">
        <widget class="QCheckBox" name="showOSDMessages">
         <property name="text">
-         <string>Show Messages</string>
+         <string>Show OSD Messages</string>
         </property>
        </widget>
       </item>
