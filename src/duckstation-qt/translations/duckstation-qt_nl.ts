@@ -3984,8 +3984,8 @@ Dit zal ongeveer 4 megabytes over je huidige internetverbinden downloaden.</tran
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1451"/>
-        <source>PGXP is now disabled</source>
-        <translation>PGXP is nu uitgeschakeld</translation>
+        <source>PGXP is now disabled.</source>
+        <translation>PGXP is nu uitgeschakeld.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1598"/>

@@ -6350,7 +6350,7 @@ Dies wird etwa 4 Megabyte über die aktuelle Internetverbindung herunterladen.</
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1702"/>
-        <source>PGXP is now disabled</source>
+        <source>PGXP is now disabled.</source>
         <translation>PGXP ist jetzt deaktiviert.</translation>
     </message>
     <message>

@@ -6297,8 +6297,8 @@ Esto descargará aproximadamente 4MB a través de tu conexión de internet.</tra
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1711"/>
-        <source>PGXP is now disabled</source>
-        <translation>PGXP está deshabilitado</translation>
+        <source>PGXP is now disabled.</source>
+        <translation>PGXP está deshabilitado.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1738"/>

@@ -6703,8 +6703,8 @@ Questo scaricherà circa 4 MB attraverso la tua connessione internet attuale.</t
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1711"/>
-        <source>PGXP is now disabled</source>
-        <translation>PGXP è ora disabilitato</translation>
+        <source>PGXP is now disabled.</source>
+        <translation>PGXP è ora disabilitato.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1738"/>
