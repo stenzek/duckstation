@@ -127,9 +127,10 @@ bool Entry::LoadFromStream(ByteStream* stream)
       !ReadOptionalFromStream(stream, &gpu_scaled_dithering) ||
       !ReadOptionalFromStream(stream, &gpu_force_ntsc_timings) ||
       !ReadOptionalFromStream(stream, &gpu_texture_filter) || !ReadOptionalFromStream(stream, &gpu_widescreen_hack) ||
-      !ReadOptionalFromStream(stream, &gpu_pgxp) || !ReadOptionalFromStream(stream, &gpu_pgxp_depth_buffer) ||
-      !ReadOptionalFromStream(stream, &controller_1_type) || !ReadOptionalFromStream(stream, &controller_2_type) ||
-      !ReadOptionalFromStream(stream, &memory_card_1_type) || !ReadOptionalFromStream(stream, &memory_card_2_type) ||
+      !ReadOptionalFromStream(stream, &gpu_pgxp) || !ReadOptionalFromStream(stream, &gpu_pgxp_projection_precision) ||
+      !ReadOptionalFromStream(stream, &gpu_pgxp_depth_buffer) || !ReadOptionalFromStream(stream, &controller_1_type) ||
+      !ReadOptionalFromStream(stream, &controller_2_type) || !ReadOptionalFromStream(stream, &memory_card_1_type) ||
+      !ReadOptionalFromStream(stream, &memory_card_2_type) ||
       !ReadStringFromStream(stream, &memory_card_1_shared_path) ||
       !ReadStringFromStream(stream, &memory_card_2_shared_path) || !ReadStringFromStream(stream, &input_profile_name))
   {
@@ -176,10 +177,10 @@ bool Entry::SaveToStream(ByteStream* stream) const
          WriteOptionalToStream(stream, gpu_per_sample_shading) && WriteOptionalToStream(stream, gpu_true_color) &&
          WriteOptionalToStream(stream, gpu_scaled_dithering) && WriteOptionalToStream(stream, gpu_force_ntsc_timings) &&
          WriteOptionalToStream(stream, gpu_texture_filter) && WriteOptionalToStream(stream, gpu_widescreen_hack) &&
-         WriteOptionalToStream(stream, gpu_pgxp) && WriteOptionalToStream(stream, gpu_pgxp_depth_buffer) &&
-         WriteOptionalToStream(stream, controller_1_type) && WriteOptionalToStream(stream, controller_2_type) &&
-         WriteOptionalToStream(stream, memory_card_1_type) && WriteOptionalToStream(stream, memory_card_2_type) &&
-         WriteStringToStream(stream, memory_card_1_shared_path) &&
+         WriteOptionalToStream(stream, gpu_pgxp) && WriteOptionalToStream(stream, gpu_pgxp_projection_precision) &&
+         WriteOptionalToStream(stream, gpu_pgxp_depth_buffer) && WriteOptionalToStream(stream, controller_1_type) &&
+         WriteOptionalToStream(stream, controller_2_type) && WriteOptionalToStream(stream, memory_card_1_type) &&
+         WriteOptionalToStream(stream, memory_card_2_type) && WriteStringToStream(stream, memory_card_1_shared_path) &&
          WriteStringToStream(stream, memory_card_2_shared_path) && WriteStringToStream(stream, input_profile_name);
 }
 
@@ -286,6 +287,9 @@ static void ParseIniSection(Entry* entry, const char* section, const CSimpleIniA
   cvalue = ini.GetValue(section, "GPUPGXP", nullptr);
   if (cvalue)
     entry->gpu_pgxp = StringUtil::FromChars<bool>(cvalue);
+  cvalue = ini.GetValue(section, "GPUPGXPPreserveProjFP", nullptr);
+  if (cvalue)
+    entry->gpu_pgxp_projection_precision = StringUtil::FromChars<bool>(cvalue);
   cvalue = ini.GetValue(section, "GPUPGXPDepthBuffer", nullptr);
   if (cvalue)
     entry->gpu_pgxp_depth_buffer = StringUtil::FromChars<bool>(cvalue);
@@ -392,6 +396,8 @@ static void StoreIniSection(const Entry& entry, const char* section, CSimpleIniA
     ini.SetValue(section, "GPUWidescreenHack", entry.gpu_widescreen_hack.value() ? "true" : "false");
   if (entry.gpu_pgxp.has_value())
     ini.SetValue(section, "GPUPGXP", entry.gpu_pgxp.value() ? "true" : "false");
+  if (entry.gpu_pgxp_projection_precision.has_value())
+    ini.SetValue(section, "GPUPGXPPreserveProjFP", entry.gpu_pgxp_projection_precision.value() ? "true" : "false");
   if (entry.gpu_pgxp_depth_buffer.has_value())
     ini.SetValue(section, "GPUPGXPDepthBuffer", entry.gpu_pgxp_depth_buffer.value() ? "true" : "false");
 
@@ -440,6 +446,7 @@ u32 Entry::GetUserSettingsCount() const
   count += BoolToUInt32(gpu_texture_filter.has_value());
   count += BoolToUInt32(gpu_widescreen_hack.has_value());
   count += BoolToUInt32(gpu_pgxp.has_value());
+  count += BoolToUInt32(gpu_pgxp_projection_precision.has_value());
   count += BoolToUInt32(gpu_pgxp_depth_buffer.has_value());
   count += BoolToUInt32(controller_1_type.has_value());
   count += BoolToUInt32(controller_2_type.has_value());
@@ -578,6 +585,13 @@ static std::optional<std::string> GetEntryValueForKey(const Entry& entry, const 
       return std::nullopt;
     else
       return entry.gpu_pgxp.value() ? "true" : "false";
+  }
+  else if (key == "GPUPGXPPreserveProjFP")
+  {
+    if (!entry.gpu_pgxp_projection_precision.has_value())
+      return std::nullopt;
+    else
+      return entry.gpu_pgxp_projection_precision.value() ? "true" : "false";
   }
   else if (key == "GPUPGXPDepthBuffer")
   {
@@ -788,6 +802,13 @@ static void SetEntryValueForKey(Entry& entry, const std::string_view& key, const
       entry.gpu_pgxp.reset();
     else
       entry.gpu_pgxp = StringUtil::FromChars<bool>(value.value()).value_or(false);
+  }
+  else if (key == "GPUPGXPPreserveProjFP")
+  {
+    if (!value.has_value())
+      entry.gpu_pgxp_projection_precision.reset();
+    else
+      entry.gpu_pgxp_projection_precision = StringUtil::FromChars<bool>(value.value()).value_or(false);
   }
   else if (key == "GPUPGXPDepthBuffer")
   {
@@ -1021,6 +1042,8 @@ void Entry::ApplySettings(bool display_osd_messages) const
     g_settings.gpu_widescreen_hack = gpu_widescreen_hack.value();
   if (gpu_pgxp.has_value())
     g_settings.gpu_pgxp_enable = gpu_pgxp.value();
+  if (gpu_pgxp_projection_precision.has_value())
+    g_settings.gpu_pgxp_preserve_proj_fp = gpu_pgxp_projection_precision.value();
   if (gpu_pgxp_depth_buffer.has_value())
     g_settings.gpu_pgxp_depth_buffer = gpu_pgxp_depth_buffer.value();
 

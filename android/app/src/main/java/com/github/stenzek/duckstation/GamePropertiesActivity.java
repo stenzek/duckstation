@@ -135,6 +135,7 @@ public class GamePropertiesActivity extends AppCompatActivity {
             activity.createBooleanGameSetting(ps, "GPUForceNTSCTimings", R.string.settings_force_ntsc_timings);
             activity.createBooleanGameSetting(ps, "GPUWidescreenHack", R.string.settings_widescreen_hack);
             activity.createBooleanGameSetting(ps, "GPUPGXP", R.string.settings_pgxp_geometry_correction);
+            activity.createBooleanGameSetting(ps, "PGXPPreserveProjFP", R.string.settings_pgxp_preserve_projection_precision);
             activity.createBooleanGameSetting(ps, "GPUPGXPDepthBuffer", R.string.settings_pgxp_depth_buffer);
 
             setPreferenceScreen(ps);

@@ -70,6 +70,7 @@ struct Entry
   std::optional<GPUTextureFilter> gpu_texture_filter;
   std::optional<bool> gpu_widescreen_hack;
   std::optional<bool> gpu_pgxp;
+  std::optional<bool> gpu_pgxp_projection_precision;
   std::optional<bool> gpu_pgxp_depth_buffer;
   std::optional<ControllerType> controller_1_type;
   std::optional<ControllerType> controller_2_type;
