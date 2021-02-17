@@ -187,52 +187,105 @@ void SaveStateSelectorUI::Draw()
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, rounding);
 
   if (ImGui::Begin("##save_state_selector", nullptr,
-                   ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoTitleBar))
+                   ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoTitleBar |
+                     ImGuiWindowFlags_NoScrollbar))
   {
+    // Leave 2 lines for the legend
+    const float legend_margin = ImGui::GetFontSize() * 2.0f + ImGui::GetStyle().ItemSpacing.y * 3.0f;
     const float padding = 10.0f * framebuffer_scale;
-    const ImVec2 image_size = ImVec2(128.0f * framebuffer_scale, (128.0f / (4.0f / 3.0f)) * framebuffer_scale);
-    const float item_height = image_size.y + padding * 2.0f;
-    const float text_indent = image_size.x + padding + padding;
 
-    for (size_t i = 0; i < m_slots.size(); i++)
+    ImGui::BeginChild("##item_list", ImVec2(0, -legend_margin), false,
+                      ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoTitleBar);
     {
-      const ListEntry& entry = m_slots[i];
-      const float y_start = item_height * static_cast<float>(i);
+      const ImVec2 image_size = ImVec2(128.0f * framebuffer_scale, (128.0f / (4.0f / 3.0f)) * framebuffer_scale);
+      const float item_height = image_size.y + padding * 2.0f;
+      const float text_indent = image_size.x + padding + padding;
 
-      if (i == m_current_selection)
+      for (size_t i = 0; i < m_slots.size(); i++)
       {
-        ImGui::SetCursorPosY(y_start);
-        ImGui::SetScrollHereY();
+        const ListEntry& entry = m_slots[i];
+        const float y_start = item_height * static_cast<float>(i);
 
-        const ImVec2 p_start(ImGui::GetCursorScreenPos());
-        const ImVec2 p_end(p_start.x + window_width, p_start.y + item_height);
-        ImGui::GetWindowDrawList()->AddRectFilled(p_start, p_end, ImColor(0.22f, 0.30f, 0.34f, 0.9f), rounding);
-      }
+        if (i == m_current_selection)
+        {
+          ImGui::SetCursorPosY(y_start);
+          ImGui::SetScrollHereY();
 
-      if (entry.preview_texture)
-      {
+          const ImVec2 p_start(ImGui::GetCursorScreenPos());
+          const ImVec2 p_end(p_start.x + window_width, p_start.y + item_height);
+          ImGui::GetWindowDrawList()->AddRectFilled(p_start, p_end, ImColor(0.22f, 0.30f, 0.34f, 0.9f), rounding);
+        }
+
+        if (entry.preview_texture)
+        {
+          ImGui::SetCursorPosY(y_start + padding);
+          ImGui::SetCursorPosX(padding);
+          ImGui::Image(reinterpret_cast<ImTextureID>(entry.preview_texture->GetHandle()), image_size);
+        }
+
         ImGui::SetCursorPosY(y_start + padding);
-        ImGui::SetCursorPosX(padding);
-        ImGui::Image(reinterpret_cast<ImTextureID>(entry.preview_texture->GetHandle()), image_size);
+
+        ImGui::Indent(text_indent);
+
+        ImGui::Text("%s Slot %d",
+                    entry.global ? "Global" : (entry.game_code.empty() ? "Game" : entry.game_code.c_str()), entry.slot);
+        ImGui::TextUnformatted(entry.title.c_str());
+        ImGui::TextUnformatted(entry.formatted_timestamp.c_str());
+        ImGui::TextUnformatted(entry.path.c_str());
+
+        ImGui::Unindent(text_indent);
       }
-
-      ImGui::SetCursorPosY(y_start + padding);
-
-      ImGui::Indent(text_indent);
-
-      ImGui::Text("%s Slot %d", entry.global ? "Global" : (entry.game_code.empty() ? "Game" : entry.game_code.c_str()),
-                  entry.slot);
-      ImGui::TextUnformatted(entry.title.c_str());
-      ImGui::TextUnformatted(entry.formatted_timestamp.c_str());
-      ImGui::TextUnformatted(entry.path.c_str());
-
-      ImGui::Unindent(text_indent);
     }
+    ImGui::EndChild();
+
+    ImGui::BeginChild("##legend", ImVec2(0, 0), false,
+                      ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoTitleBar |
+                        ImGuiWindowFlags_NoScrollbar);
+    {
+      ImGui::SetCursorPosX(padding);
+      ImGui::BeginTable("table", 2);
+
+      auto strip_device_name = [](std::string str) {
+        std::string result;
+
+        auto slash_pos = str.find_first_of('/');
+        if (slash_pos != str.npos)
+        {
+          result = str.substr(slash_pos + 1);
+        }
+        else
+        {
+          result = std::move(str);
+        }
+        return result;
+      };
+
+      const std::string load_savestate_hotkey =
+        strip_device_name(m_host_interface->GetStringSettingValue("Hotkeys", "LoadSelectedSaveState"));
+      const std::string save_savestate_hotkey =
+        strip_device_name(m_host_interface->GetStringSettingValue("Hotkeys", "SaveSelectedSaveState"));
+      const std::string next_savestate_hotkey =
+        strip_device_name(m_host_interface->GetStringSettingValue("Hotkeys", "SelectNextSaveStateSlot"));
+      const std::string prev_savestate_hotkey =
+        strip_device_name(m_host_interface->GetStringSettingValue("Hotkeys", "SelectPreviousSaveStateSlot"));
+
+      ImGui::TableNextColumn();
+      ImGui::Text("%s - %s", load_savestate_hotkey.c_str(), "Load");
+      ImGui::TableNextColumn();
+      ImGui::Text("%s - %s", prev_savestate_hotkey.c_str(), "Select Previous");
+      ImGui::TableNextColumn();
+      ImGui::Text("%s - %s", save_savestate_hotkey.c_str(), "Save");
+      ImGui::TableNextColumn();
+      ImGui::Text("%s - %s", next_savestate_hotkey.c_str(), "Select Next");
+
+      ImGui::EndTable();
+    }
+    ImGui::EndChild();
   }
+  ImGui::End();
 
   ImGui::PopStyleVar(2);
   ImGui::PopStyleColor();
-  ImGui::End();
 
   // auto-close
   if (m_open_timer.GetTimeSeconds() >= m_open_time)
