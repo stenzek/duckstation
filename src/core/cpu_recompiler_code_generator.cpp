@@ -1140,6 +1140,9 @@ bool CodeGenerator::Compile_Bitwise(const CodeBlockInstruction& cbi)
       result = OrValues(lhs, rhs);
       if (spec_lhs && spec_rhs)
         spec_value = *spec_lhs | *spec_rhs;
+
+      if (g_settings.UsingPGXPCPUMode())
+        EmitFunctionCall(nullptr, &PGXP::CPU_ORI, Value::FromConstantU32(cbi.instruction.bits), result, lhs);
     }
     break;
 
@@ -1148,6 +1151,9 @@ bool CodeGenerator::Compile_Bitwise(const CodeBlockInstruction& cbi)
       result = AndValues(lhs, rhs);
       if (spec_lhs && spec_rhs)
         spec_value = *spec_lhs & *spec_rhs;
+
+      if (g_settings.UsingPGXPCPUMode())
+        EmitFunctionCall(nullptr, &PGXP::CPU_ANDI, Value::FromConstantU32(cbi.instruction.bits), result, lhs);
     }
     break;
 
@@ -1156,6 +1162,9 @@ bool CodeGenerator::Compile_Bitwise(const CodeBlockInstruction& cbi)
       result = XorValues(lhs, rhs);
       if (spec_lhs && spec_rhs)
         spec_value = *spec_lhs ^ *spec_rhs;
+
+      if (g_settings.UsingPGXPCPUMode())
+        EmitFunctionCall(nullptr, &PGXP::CPU_XORI, Value::FromConstantU32(cbi.instruction.bits), result, lhs);
     }
     break;
 
@@ -1168,6 +1177,9 @@ bool CodeGenerator::Compile_Bitwise(const CodeBlockInstruction& cbi)
           result = OrValues(lhs, rhs);
           if (spec_lhs && spec_rhs)
             spec_value = *spec_lhs | *spec_rhs;
+
+          if (g_settings.UsingPGXPCPUMode())
+            EmitFunctionCall(nullptr, &PGXP::CPU_OR_, Value::FromConstantU32(cbi.instruction.bits), result, lhs, rhs);
         }
         break;
 
@@ -1176,6 +1188,9 @@ bool CodeGenerator::Compile_Bitwise(const CodeBlockInstruction& cbi)
           result = AndValues(lhs, rhs);
           if (spec_lhs && spec_rhs)
             spec_value = *spec_lhs & *spec_rhs;
+
+          if (g_settings.UsingPGXPCPUMode())
+            EmitFunctionCall(nullptr, &PGXP::CPU_AND_, Value::FromConstantU32(cbi.instruction.bits), result, lhs, rhs);
         }
         break;
 
@@ -1184,6 +1199,9 @@ bool CodeGenerator::Compile_Bitwise(const CodeBlockInstruction& cbi)
           result = XorValues(lhs, rhs);
           if (spec_lhs && spec_rhs)
             spec_value = *spec_lhs ^ *spec_rhs;
+
+          if (g_settings.UsingPGXPCPUMode())
+            EmitFunctionCall(nullptr, &PGXP::CPU_XOR_, Value::FromConstantU32(cbi.instruction.bits), result, lhs, rhs);
         }
         break;
 
@@ -1192,6 +1210,9 @@ bool CodeGenerator::Compile_Bitwise(const CodeBlockInstruction& cbi)
           result = NotValue(OrValues(lhs, rhs));
           if (spec_lhs && spec_rhs)
             spec_value = ~(*spec_lhs | *spec_rhs);
+
+          if (g_settings.UsingPGXPCPUMode())
+            EmitFunctionCall(nullptr, &PGXP::CPU_NOR, Value::FromConstantU32(cbi.instruction.bits), result, lhs, rhs);
         }
         break;
 
@@ -1246,6 +1267,14 @@ bool CodeGenerator::Compile_Shift(const CodeBlockInstruction& cbi)
       result = ShlValues(rt, shamt, false);
       if (rt_spec && shamt_spec)
         result_spec = *rt_spec << *shamt_spec;
+
+      if (g_settings.UsingPGXPCPUMode())
+      {
+        if (cbi.instruction.r.funct == InstructionFunct::sll)
+          EmitFunctionCall(nullptr, &PGXP::CPU_SLL, Value::FromConstantU32(cbi.instruction.bits), result, rt);
+        else // if (cbi.instruction.r.funct == InstructionFunct::sllv)
+          EmitFunctionCall(nullptr, &PGXP::CPU_SLLV, Value::FromConstantU32(cbi.instruction.bits), result, rt, shamt);
+      }
     }
     break;
 
@@ -1255,6 +1284,14 @@ bool CodeGenerator::Compile_Shift(const CodeBlockInstruction& cbi)
       result = ShrValues(rt, shamt, false);
       if (rt_spec && shamt_spec)
         result_spec = *rt_spec >> *shamt_spec;
+
+      if (g_settings.UsingPGXPCPUMode())
+      {
+        if (cbi.instruction.r.funct == InstructionFunct::srl)
+          EmitFunctionCall(nullptr, &PGXP::CPU_SRL, Value::FromConstantU32(cbi.instruction.bits), result, rt);
+        else // if (cbi.instruction.r.funct == InstructionFunct::srlv)
+          EmitFunctionCall(nullptr, &PGXP::CPU_SRLV, Value::FromConstantU32(cbi.instruction.bits), result, rt, shamt);
+      }
     }
     break;
 
@@ -1264,6 +1301,14 @@ bool CodeGenerator::Compile_Shift(const CodeBlockInstruction& cbi)
       result = SarValues(rt, shamt, false);
       if (rt_spec && shamt_spec)
         result_spec = static_cast<u32>(static_cast<s32>(*rt_spec) << *shamt_spec);
+
+      if (g_settings.UsingPGXPCPUMode())
+      {
+        if (cbi.instruction.r.funct == InstructionFunct::sra)
+          EmitFunctionCall(nullptr, &PGXP::CPU_SRA, Value::FromConstantU32(cbi.instruction.bits), result, rt);
+        else // if (cbi.instruction.r.funct == InstructionFunct::srav)
+          EmitFunctionCall(nullptr, &PGXP::CPU_SRAV, Value::FromConstantU32(cbi.instruction.bits), result, rt, shamt);
+      }
     }
     break;
 
@@ -1579,22 +1624,46 @@ bool CodeGenerator::Compile_MoveHiLo(const CodeBlockInstruction& cbi)
   switch (cbi.instruction.r.funct)
   {
     case InstructionFunct::mfhi:
-      m_register_cache.WriteGuestRegister(cbi.instruction.r.rd, m_register_cache.ReadGuestRegister(Reg::hi));
+    {
+      Value hi = m_register_cache.ReadGuestRegister(Reg::hi);
+      if (g_settings.UsingPGXPCPUMode())
+        EmitFunctionCall(nullptr, &PGXP::CPU_MFHI, Value::FromConstantU32(cbi.instruction.bits), hi);
+
+      m_register_cache.WriteGuestRegister(cbi.instruction.r.rd, std::move(hi));
       SpeculativeWriteReg(cbi.instruction.r.rd, std::nullopt);
-      break;
+    }
+    break;
 
     case InstructionFunct::mthi:
-      m_register_cache.WriteGuestRegister(Reg::hi, m_register_cache.ReadGuestRegister(cbi.instruction.r.rs));
-      break;
+    {
+      Value rs = m_register_cache.ReadGuestRegister(cbi.instruction.r.rs);
+      if (g_settings.UsingPGXPCPUMode())
+        EmitFunctionCall(nullptr, &PGXP::CPU_MTHI, Value::FromConstantU32(cbi.instruction.bits), rs);
+
+      m_register_cache.WriteGuestRegister(Reg::hi, std::move(rs));
+    }
+    break;
 
     case InstructionFunct::mflo:
-      m_register_cache.WriteGuestRegister(cbi.instruction.r.rd, m_register_cache.ReadGuestRegister(Reg::lo));
+    {
+      Value lo = m_register_cache.ReadGuestRegister(Reg::lo);
+      if (g_settings.UsingPGXPCPUMode())
+        EmitFunctionCall(nullptr, &PGXP::CPU_MFLO, Value::FromConstantU32(cbi.instruction.bits), lo);
+
+      m_register_cache.WriteGuestRegister(cbi.instruction.r.rd, std::move(lo));
       SpeculativeWriteReg(cbi.instruction.r.rd, std::nullopt);
-      break;
+    }
+    break;
 
     case InstructionFunct::mtlo:
-      m_register_cache.WriteGuestRegister(Reg::lo, m_register_cache.ReadGuestRegister(cbi.instruction.r.rs));
-      break;
+    {
+      Value rs = m_register_cache.ReadGuestRegister(cbi.instruction.r.rs);
+      if (g_settings.UsingPGXPCPUMode())
+        EmitFunctionCall(nullptr, &PGXP::CPU_MTLO, Value::FromConstantU32(cbi.instruction.bits), rs);
+
+      m_register_cache.WriteGuestRegister(Reg::lo, std::move(rs));
+    }
+    break;
 
     default:
       UnreachableCode();
@@ -1652,15 +1721,31 @@ bool CodeGenerator::Compile_Add(const CodeBlockInstruction& cbi)
   }
 
   // detect register moves and handle them for pgxp
+  bool do_pgxp_cpu = g_settings.UsingPGXPCPUMode();
   if (g_settings.gpu_pgxp_enable && rhs.HasConstantValue(0))
   {
     EmitFunctionCall(nullptr, &PGXP::CPU_MOVE,
                      Value::FromConstantU32((static_cast<u32>(dest) << 8) | (static_cast<u32>(lhs_src))), lhs);
+    do_pgxp_cpu = false;
   }
 
   Value result = AddValues(lhs, rhs, check_overflow);
   if (check_overflow)
     GenerateExceptionExit(cbi, Exception::Ov, Condition::Overflow);
+
+  if (do_pgxp_cpu)
+  {
+    if (cbi.instruction.op != InstructionOp::funct)
+    {
+      // addiu/addiu
+      EmitFunctionCall(nullptr, &PGXP::CPU_ADDI, Value::FromConstantU32(cbi.instruction.bits), result, lhs);
+    }
+    else
+    {
+      // add/addu
+      EmitFunctionCall(nullptr, &PGXP::CPU_ADD, Value::FromConstantU32(cbi.instruction.bits), result, lhs, rhs);
+    }
+  }
 
   m_register_cache.WriteGuestRegister(dest, std::move(result));
 
@@ -1690,6 +1775,9 @@ bool CodeGenerator::Compile_Subtract(const CodeBlockInstruction& cbi)
   if (check_overflow)
     GenerateExceptionExit(cbi, Exception::Ov, Condition::Overflow);
 
+  if (g_settings.UsingPGXPCPUMode())
+    EmitFunctionCall(nullptr, &PGXP::CPU_SUB, Value::FromConstantU32(cbi.instruction.bits), result, lhs, rhs);
+
   m_register_cache.WriteGuestRegister(cbi.instruction.r.rd, std::move(result));
 
   SpeculativeValue value_spec;
@@ -1706,8 +1794,14 @@ bool CodeGenerator::Compile_Multiply(const CodeBlockInstruction& cbi)
   InstructionPrologue(cbi, 1);
 
   const bool signed_multiply = (cbi.instruction.r.funct == InstructionFunct::mult);
-  std::pair<Value, Value> result = MulValues(m_register_cache.ReadGuestRegister(cbi.instruction.r.rs),
-                                             m_register_cache.ReadGuestRegister(cbi.instruction.r.rt), signed_multiply);
+  Value rs = m_register_cache.ReadGuestRegister(cbi.instruction.r.rs);
+  Value rt = m_register_cache.ReadGuestRegister(cbi.instruction.r.rt);
+  if (g_settings.UsingPGXPCPUMode())
+    EmitFunctionCall(nullptr, signed_multiply ? &PGXP::CPU_MULT : &PGXP::CPU_MULTU, rs, rt);
+
+  std::pair<Value, Value> result = MulValues(rs, rt, signed_multiply);
+  rs.ReleaseAndClear();
+  rt.ReleaseAndClear();
   m_register_cache.WriteGuestRegister(Reg::hi, std::move(result.first));
   m_register_cache.WriteGuestRegister(Reg::lo, std::move(result.second));
 
@@ -1764,6 +1858,10 @@ bool CodeGenerator::Compile_Divide(const CodeBlockInstruction& cbi)
 
   Value num = m_register_cache.ReadGuestRegister(cbi.instruction.r.rs);
   Value denom = m_register_cache.ReadGuestRegister(cbi.instruction.r.rt);
+
+  if (g_settings.UsingPGXPCPUMode())
+    EmitFunctionCall(nullptr, &PGXP::CPU_DIV, num, denom);
+
   if (num.IsConstant() && denom.IsConstant())
   {
     const auto [lo, hi] = MIPSDivide(static_cast<u32>(num.constant_value), static_cast<u32>(denom.constant_value));
@@ -1821,6 +1919,10 @@ bool CodeGenerator::Compile_SignedDivide(const CodeBlockInstruction& cbi)
 
   Value num = m_register_cache.ReadGuestRegister(cbi.instruction.r.rs);
   Value denom = m_register_cache.ReadGuestRegister(cbi.instruction.r.rt);
+
+  if (g_settings.UsingPGXPCPUMode())
+    EmitFunctionCall(nullptr, &PGXP::CPU_DIVU, num, denom);
+
   if (num.IsConstant() && denom.IsConstant())
   {
     const auto [lo, hi] = MIPSDivide(num.GetS32ConstantValue(), denom.GetS32ConstantValue());
@@ -1938,6 +2040,19 @@ bool CodeGenerator::Compile_SetLess(const CodeBlockInstruction& cbi)
   Value result = m_register_cache.AllocateScratch(RegSize_32);
   EmitCmp(lhs.host_reg, rhs);
   EmitSetConditionResult(result.host_reg, result.size, signed_comparison ? Condition::Less : Condition::Below);
+
+  if (g_settings.UsingPGXPCPUMode())
+  {
+    if (cbi.instruction.op == InstructionOp::slti)
+      EmitFunctionCall(nullptr, &PGXP::CPU_SLTI, Value::FromConstantU32(cbi.instruction.bits), result, lhs);
+    else if (cbi.instruction.op == InstructionOp::sltiu)
+      EmitFunctionCall(nullptr, &PGXP::CPU_SLTIU, Value::FromConstantU32(cbi.instruction.bits), result, lhs);
+    else if (cbi.instruction.r.funct == InstructionFunct::slt)
+      EmitFunctionCall(nullptr, &PGXP::CPU_SLT, Value::FromConstantU32(cbi.instruction.bits), result, lhs, rhs);
+    else // if (cbi.instruction.r.funct == InstructionFunct::sltu)
+      EmitFunctionCall(nullptr, &PGXP::CPU_SLTU, Value::FromConstantU32(cbi.instruction.bits), result, lhs, rhs);
+  }
+
   m_register_cache.WriteGuestRegister(dest, std::move(result));
 
   SpeculativeValue value_spec;
@@ -2161,6 +2276,14 @@ bool CodeGenerator::Compile_lui(const CodeBlockInstruction& cbi)
 
   // rt <- (imm << 16)
   const u32 value = cbi.instruction.i.imm_zext32() << 16;
+
+  if (g_settings.UsingPGXPCPUMode())
+  {
+    // TODO: rtVal can be skipped here, and probably worthwhile given this is a common instruction.
+    EmitFunctionCall(nullptr, &PGXP::CPU_LUI, Value::FromConstantU32(cbi.instruction.bits),
+                     Value::FromConstantU32(value));
+  }
+
   m_register_cache.WriteGuestRegister(cbi.instruction.i.rt, Value::FromConstantU32(value));
   SpeculativeWriteReg(cbi.instruction.i.rt, value);
 
@@ -2245,6 +2368,10 @@ bool CodeGenerator::Compile_cop0(const CodeBlockInstruction& cbi)
           // coprocessor loads are load-delayed
           Value value = m_register_cache.AllocateScratch(RegSize_32);
           EmitLoadCPUStructField(value.host_reg, value.size, offset);
+
+          if (g_settings.UsingPGXPCPUMode())
+            EmitFunctionCall(nullptr, &PGXP::CPU_MFC0, Value::FromConstantU32(cbi.instruction.bits), value);
+
           m_register_cache.WriteGuestRegisterDelayed(cbi.instruction.r.rt, std::move(value));
           SpeculativeWriteReg(cbi.instruction.r.rt, std::nullopt);
         }
@@ -2257,7 +2384,18 @@ bool CodeGenerator::Compile_cop0(const CodeBlockInstruction& cbi)
             if (write_mask != UINT32_C(0xFFFFFFFF))
             {
               // need to adjust the mask
-              value = AndValues(value, Value::FromConstantU32(write_mask));
+              Value masked_value = AndValues(value, Value::FromConstantU32(write_mask));
+              if (g_settings.UsingPGXPCPUMode())
+              {
+                EmitFunctionCall(nullptr, &PGXP::CPU_MTC0, Value::FromConstantU32(cbi.instruction.bits), masked_value,
+                                 value);
+              }
+              value = std::move(masked_value);
+            }
+            else
+            {
+              if (g_settings.UsingPGXPCPUMode())
+                EmitFunctionCall(nullptr, &PGXP::CPU_MTC0, Value::FromConstantU32(cbi.instruction.bits), value, value);
             }
 
             // changing SR[Isc] needs to update fastmem views
