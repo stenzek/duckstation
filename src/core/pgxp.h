@@ -56,7 +56,6 @@ void CPU_MOVE(u32 rd_and_rs, u32 rsVal);
 
 // Arithmetic with immediate value
 void CPU_ADDI(u32 instr, u32 rtVal, u32 rsVal);
-void CPU_ADDIU(u32 instr, u32 rtVal, u32 rsVal);
 void CPU_ANDI(u32 instr, u32 rtVal, u32 rsVal);
 void CPU_ORI(u32 instr, u32 rtVal, u32 rsVal);
 void CPU_XORI(u32 instr, u32 rtVal, u32 rsVal);
@@ -68,9 +67,7 @@ void CPU_LUI(u32 instr, u32 rtVal);
 
 // Register Arithmetic
 void CPU_ADD(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal);
-void CPU_ADDU(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal);
 void CPU_SUB(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal);
-void CPU_SUBU(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal);
 void CPU_AND_(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal);
 void CPU_OR_(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal);
 void CPU_XOR_(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal);

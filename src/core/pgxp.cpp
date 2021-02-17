@@ -920,12 +920,6 @@ void CPU_ADDI(u32 instr, u32 rtVal, u32 rsVal)
   CPU_reg[rt(instr)].value = rtVal;
 }
 
-void CPU_ADDIU(u32 instr, u32 rtVal, u32 rsVal)
-{
-  // Rt = Rs + Imm (signed) (unsafe?)
-  CPU_ADDI(instr, rtVal, rsVal);
-}
-
 void CPU_ANDI(u32 instr, u32 rtVal, u32 rsVal)
 {
   // Rt = Rs & Imm
@@ -1112,12 +1106,6 @@ void CPU_ADD(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal)
   CPU_reg[rd(instr)] = ret;
 }
 
-void CPU_ADDU(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal)
-{
-  // Rd = Rs + Rt (signed) (unsafe?)
-  CPU_ADD(instr, rdVal, rsVal, rtVal);
-}
-
 void CPU_SUB(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal)
 {
   // Rd = Rs - Rt (signed)
@@ -1154,12 +1142,6 @@ void CPU_SUB(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal)
   ret.value = rdVal;
 
   CPU_reg[rd(instr)] = ret;
-}
-
-void CPU_SUBU(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal)
-{
-  // Rd = Rs - Rt (signed) (unsafe?)
-  CPU_SUB(instr, rdVal, rsVal, rtVal);
 }
 
 void CPU_AND_(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal)

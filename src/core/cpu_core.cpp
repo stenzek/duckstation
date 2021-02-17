@@ -716,7 +716,7 @@ restart_instruction:
           const u32 add_value = ReadReg(inst.r.rt);
           const u32 new_value = old_value + add_value;
           if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_ADDU(inst.bits, new_value, old_value, add_value);
+            PGXP::CPU_ADD(inst.bits, new_value, old_value, add_value);
           else if constexpr (pgxp_mode >= PGXPMode::Memory)
           {
             if (add_value == 0)
@@ -752,7 +752,7 @@ restart_instruction:
         {
           const u32 new_value = ReadReg(inst.r.rs) - ReadReg(inst.r.rt);
           if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_SUBU(inst.bits, new_value, ReadReg(inst.r.rs), ReadReg(inst.r.rt));
+            PGXP::CPU_SUB(inst.bits, new_value, ReadReg(inst.r.rs), ReadReg(inst.r.rt));
 
           WriteReg(inst.r.rd, new_value);
         }
@@ -1009,7 +1009,7 @@ restart_instruction:
       const u32 new_value = old_value + add_value;
 
       if constexpr (pgxp_mode >= PGXPMode::CPU)
-        PGXP::CPU_ADDIU(inst.bits, new_value, ReadReg(inst.i.rs));
+        PGXP::CPU_ADDI(inst.bits, new_value, ReadReg(inst.i.rs));
       else if constexpr (pgxp_mode >= PGXPMode::Memory)
       {
         if (add_value == 0)
