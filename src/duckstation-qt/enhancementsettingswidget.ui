@@ -151,9 +151,23 @@
        </widget>
       </item>
       <item row="1" column="1">
+       <widget class="QCheckBox" name="pgxpPreserveProjPrecision">
+        <property name="text">
+         <string>Preserve Projection Precision</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
        <widget class="QCheckBox" name="pgxpDepthBuffer">
         <property name="text">
-         <string>Depth Buffer</string>
+         <string>Depth Buffer (Low Compatibility)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QCheckBox" name="pgxpCPU">
+        <property name="text">
+         <string>CPU Mode (Very Slow)</string>
         </property>
        </widget>
       </item>

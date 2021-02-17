@@ -1781,10 +1781,16 @@ void DrawSettingsWindow()
           ToggleButton("PGXP Culling Correction",
                        "Increases the precision of polygon culling, reducing the number of holes in geometry.",
                        &s_settings_copy.gpu_pgxp_culling, s_settings_copy.gpu_pgxp_enable);
+        settings_changed |=
+          ToggleButton("PGXP Preserve Projection Precision",
+                       "Adds additional precision to PGXP data post-projection. May improve visuals in some games.",
+                       &s_settings_copy.gpu_pgxp_preserve_proj_fp, s_settings_copy.gpu_pgxp_enable);
         settings_changed |= ToggleButton(
           "PGXP Depth Buffer", "Reduces polygon Z-fighting through depth testing. Low compatibility with games.",
           &s_settings_copy.gpu_pgxp_depth_buffer,
           s_settings_copy.gpu_pgxp_enable && s_settings_copy.gpu_pgxp_texture_correction);
+        settings_changed |= ToggleButton("PGXP CPU Mode", "Uses PGXP for all instructions, not just memory operations.",
+                                         &s_settings_copy.gpu_pgxp_cpu, s_settings_copy.gpu_pgxp_enable);
 
         EndMenuButtons();
       }
@@ -1876,16 +1882,9 @@ void DrawSettingsWindow()
 
         MenuHeading("PGXP Settings");
 
-        settings_changed |=
-          ToggleButton("Enable PGXP CPU Mode", "Uses PGXP for all instructions, not just memory operations.",
-                       &s_settings_copy.gpu_pgxp_cpu, s_settings_copy.gpu_pgxp_enable);
         settings_changed |= ToggleButton(
           "Enable PGXP Vertex Cache", "Uses screen positions to resolve PGXP data. May improve visuals in some games.",
           &s_settings_copy.gpu_pgxp_vertex_cache, s_settings_copy.gpu_pgxp_enable);
-        settings_changed |=
-          ToggleButton("Enable PGXP Preserve Projection Precision",
-                       "Adds additional precision to PGXP data post-projection. May improve visuals in some games.",
-                       &s_settings_copy.gpu_pgxp_preserve_proj_fp, s_settings_copy.gpu_pgxp_enable);
         settings_changed |= RangeButton(
           "PGXP Geometry Tolerance",
           "Sets a threshold for discarding precise values when exceeded. May help with glitches in some games.",
