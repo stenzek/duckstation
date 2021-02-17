@@ -160,13 +160,10 @@ static void PGXP_InitGTE();
 
 // pgxp_cpu.h
 static void PGXP_InitCPU();
-static PGXP_value CPU_reg_mem[34];
+static PGXP_value CPU_reg[34];
 #define CPU_Hi CPU_reg[32]
 #define CPU_Lo CPU_reg[33]
-static PGXP_value CP0_reg_mem[32];
-
-static PGXP_value* CPU_reg = CPU_reg_mem;
-static PGXP_value* CP0_reg = CP0_reg_mem;
+static PGXP_value CP0_reg[32];
 
 // pgxp_value.c
 void MakeValid(PGXP_value* pV, u32 psxV)
@@ -279,7 +276,7 @@ u32 PGXP_ConvertAddress(u32 addr)
   return paddr;
 }
 
-PGXP_value* GetPtr(u32 addr)
+ALWAYS_INLINE_RELEASE PGXP_value* GetPtr(u32 addr)
 {
   addr = PGXP_ConvertAddress(addr);
 
@@ -288,12 +285,12 @@ PGXP_value* GetPtr(u32 addr)
   return NULL;
 }
 
-PGXP_value* ReadMem(u32 addr)
+ALWAYS_INLINE_RELEASE PGXP_value* ReadMem(u32 addr)
 {
   return GetPtr(addr);
 }
 
-void ValidateAndCopyMem(PGXP_value* dest, u32 addr, u32 value)
+ALWAYS_INLINE_RELEASE void ValidateAndCopyMem(PGXP_value* dest, u32 addr, u32 value)
 {
   PGXP_value* pMem = GetPtr(addr);
   if (pMem != NULL)
@@ -351,7 +348,7 @@ void ValidateAndCopyMem16(PGXP_value* dest, u32 addr, u32 value, int sign)
   *dest = PGXP_value_invalid_address;
 }
 
-void WriteMem(PGXP_value* value, u32 addr)
+ALWAYS_INLINE_RELEASE void WriteMem(PGXP_value* value, u32 addr)
 {
   PGXP_value* pMem = GetPtr(addr);
 
@@ -421,16 +418,13 @@ void Shutdown()
 // pgxp_gte.c
 
 // GTE registers
-static PGXP_value GTE_data_reg_mem[32];
-static PGXP_value GTE_ctrl_reg_mem[32];
-
-static PGXP_value* GTE_data_reg = GTE_data_reg_mem;
-static PGXP_value* GTE_ctrl_reg = GTE_ctrl_reg_mem;
+static PGXP_value GTE_data_reg[32];
+static PGXP_value GTE_ctrl_reg[32];
 
 void PGXP_InitGTE()
 {
-  memset(GTE_data_reg_mem, 0, sizeof(GTE_data_reg_mem));
-  memset(GTE_ctrl_reg_mem, 0, sizeof(GTE_ctrl_reg_mem));
+  memset(GTE_data_reg, 0, sizeof(GTE_data_reg));
+  memset(GTE_ctrl_reg, 0, sizeof(GTE_ctrl_reg));
 }
 
 // Instruction register decoding
@@ -793,8 +787,8 @@ bool GetPreciseVertex(u32 addr, u32 value, int x, int y, int xOffs, int yOffs, f
 
 void PGXP_InitCPU()
 {
-  memset(CPU_reg_mem, 0, sizeof(CPU_reg_mem));
-  memset(CP0_reg_mem, 0, sizeof(CP0_reg_mem));
+  memset(CPU_reg, 0, sizeof(CPU_reg));
+  memset(CP0_reg, 0, sizeof(CP0_reg));
 }
 
 // invalidate register (invalid 8 bit read)
