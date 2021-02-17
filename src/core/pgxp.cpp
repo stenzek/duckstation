@@ -784,6 +784,8 @@ bool GetPreciseVertex(u32 addr, u32 value, int x, int y, int xOffs, int yOffs, f
 #define rt(_instr) ((_instr >> 16) & 0x1F) // The rt part of the instruction register
 #define rs(_instr) ((_instr >> 21) & 0x1F) // The rs part of the instruction register
 #define imm(_instr) (_instr & 0xFFFF)      // The immediate part of the instruction register
+#define imm_sext(_instr)                                                                                               \
+  static_cast<s32>(static_cast<s16>(_instr & 0xFFFF)) // The immediate part of the instruction register
 
 void PGXP_InitCPU()
 {
@@ -884,7 +886,7 @@ void CPU_MOVE(u32 rd_and_rs, u32 rsVal)
   CPU_reg[(rd_and_rs >> 8)] = CPU_reg[Rs];
 }
 
-void CPU_ADDI(u32 instr, u32 rtVal, u32 rsVal)
+void CPU_ADDI(u32 instr, u32 rsVal)
 {
   // Rt = Rs + Imm (signed)
   psx_value tempImm;
@@ -911,12 +913,13 @@ void CPU_ADDI(u32 instr, u32 rtVal, u32 rsVal)
   }
 
   CPU_reg[rt(instr)] = ret;
-  CPU_reg[rt(instr)].value = rtVal;
+  CPU_reg[rt(instr)].value = rsVal + imm_sext(instr);
 }
 
-void CPU_ANDI(u32 instr, u32 rtVal, u32 rsVal)
+void CPU_ANDI(u32 instr, u32 rsVal)
 {
   // Rt = Rs & Imm
+  const u32 rtVal = rsVal & imm(instr);
   psx_value vRt;
   PGXP_value ret;
 
@@ -948,9 +951,10 @@ void CPU_ANDI(u32 instr, u32 rtVal, u32 rsVal)
   CPU_reg[rt(instr)].value = rtVal;
 }
 
-void CPU_ORI(u32 instr, u32 rtVal, u32 rsVal)
+void CPU_ORI(u32 instr, u32 rsVal)
 {
   // Rt = Rs | Imm
+  const u32 rtVal = rsVal | imm(instr);
   psx_value vRt;
   PGXP_value ret;
 
@@ -974,9 +978,10 @@ void CPU_ORI(u32 instr, u32 rtVal, u32 rsVal)
   CPU_reg[rt(instr)] = ret;
 }
 
-void CPU_XORI(u32 instr, u32 rtVal, u32 rsVal)
+void CPU_XORI(u32 instr, u32 rsVal)
 {
   // Rt = Rs ^ Imm
+  const u32 rtVal = rsVal ^ imm(instr);
   psx_value vRt;
   PGXP_value ret;
 
@@ -1000,7 +1005,7 @@ void CPU_XORI(u32 instr, u32 rtVal, u32 rsVal)
   CPU_reg[rt(instr)] = ret;
 }
 
-void CPU_SLTI(u32 instr, u32 rtVal, u32 rsVal)
+void CPU_SLTI(u32 instr, u32 rsVal)
 {
   // Rt = Rs < Imm (signed)
   psx_value tempImm;
@@ -1013,12 +1018,12 @@ void CPU_SLTI(u32 instr, u32 rtVal, u32 rsVal)
   ret.y = 0.f;
   ret.x = (CPU_reg[rs(instr)].x < tempImm.sw.h) ? 1.f : 0.f;
   ret.flags |= VALID_1;
-  ret.value = rtVal;
+  ret.value = BoolToUInt32(static_cast<s32>(rsVal) < imm_sext(instr));
 
   CPU_reg[rt(instr)] = ret;
 }
 
-void CPU_SLTIU(u32 instr, u32 rtVal, u32 rsVal)
+void CPU_SLTIU(u32 instr, u32 rsVal)
 {
   // Rt = Rs < Imm (Unsigned)
   psx_value tempImm;
@@ -1031,7 +1036,7 @@ void CPU_SLTIU(u32 instr, u32 rtVal, u32 rsVal)
   ret.y = 0.f;
   ret.x = (f16Unsign(CPU_reg[rs(instr)].x) < tempImm.w.h) ? 1.f : 0.f;
   ret.flags |= VALID_1;
-  ret.value = rtVal;
+  ret.value = BoolToUInt32(rsVal < imm(instr));
 
   CPU_reg[rt(instr)] = ret;
 }
@@ -1053,7 +1058,7 @@ void CPU_LUI(u32 instr)
 // Register Arithmetic
 ////////////////////////////////////
 
-void CPU_ADD(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal)
+void CPU_ADD(u32 instr, u32 rsVal, u32 rtVal)
 {
   // Rd = Rs + Rt (signed)
   PGXP_value ret;
@@ -1095,12 +1100,12 @@ void CPU_ADD(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal)
     ret = CPU_reg[rs(instr)];
   }
 
-  ret.value = rdVal;
+  ret.value = rsVal + rtVal;
 
   CPU_reg[rd(instr)] = ret;
 }
 
-void CPU_SUB(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal)
+void CPU_SUB(u32 instr, u32 rsVal, u32 rtVal)
 {
   // Rd = Rs - Rt (signed)
   PGXP_value ret;
@@ -1133,12 +1138,12 @@ void CPU_SUB(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal)
   ret.lFlags |= CPU_reg[rt(instr)].lFlags;
   ret.hFlags |= CPU_reg[rt(instr)].hFlags;
 
-  ret.value = rdVal;
+  ret.value = rsVal - rtVal;
 
   CPU_reg[rd(instr)] = ret;
 }
 
-void CPU_AND_(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal)
+static void CPU_BITWISE(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal)
 {
   // Rd = Rs & Rt
   psx_value vald, vals, valt;
@@ -1230,25 +1235,35 @@ void CPU_AND_(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal)
   CPU_reg[rd(instr)] = ret;
 }
 
-void CPU_OR_(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal)
+void CPU_AND_(u32 instr, u32 rsVal, u32 rtVal)
+{
+  // Rd = Rs & Rt
+  const u32 rdVal = rsVal & rtVal;
+  CPU_BITWISE(instr, rdVal, rsVal, rtVal);
+}
+
+void CPU_OR_(u32 instr, u32 rsVal, u32 rtVal)
 {
   // Rd = Rs | Rt
-  CPU_AND_(instr, rdVal, rsVal, rtVal);
+  const u32 rdVal = rsVal | rtVal;
+  CPU_BITWISE(instr, rdVal, rsVal, rtVal);
 }
 
-void CPU_XOR_(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal)
+void CPU_XOR_(u32 instr, u32 rsVal, u32 rtVal)
 {
   // Rd = Rs ^ Rt
-  CPU_AND_(instr, rdVal, rsVal, rtVal);
+  const u32 rdVal = rsVal ^ rtVal;
+  CPU_BITWISE(instr, rdVal, rsVal, rtVal);
 }
 
-void CPU_NOR(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal)
+void CPU_NOR(u32 instr, u32 rsVal, u32 rtVal)
 {
   // Rd = Rs NOR Rt
-  CPU_AND_(instr, rdVal, rsVal, rtVal);
+  const u32 rdVal = ~(rsVal | rtVal);
+  CPU_BITWISE(instr, rdVal, rsVal, rtVal);
 }
 
-void CPU_SLT(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal)
+void CPU_SLT(u32 instr, u32 rsVal, u32 rtVal)
 {
   // Rd = Rs < Rt (signed)
   PGXP_value ret;
@@ -1270,11 +1285,11 @@ void CPU_SLT(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal)
             1.f :
             (f16Unsign(CPU_reg[rs(instr)].x) < f16Unsign(CPU_reg[rt(instr)].x)) ? 1.f : 0.f;
 
-  ret.value = rdVal;
+  ret.value = BoolToUInt32(static_cast<s32>(rsVal) < static_cast<s32>(rtVal));
   CPU_reg[rd(instr)] = ret;
 }
 
-void CPU_SLTU(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal)
+void CPU_SLTU(u32 instr, u32 rsVal, u32 rtVal)
 {
   // Rd = Rs < Rt (unsigned)
   PGXP_value ret;
@@ -1296,7 +1311,7 @@ void CPU_SLTU(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal)
             1.f :
             (f16Unsign(CPU_reg[rs(instr)].x) < f16Unsign(CPU_reg[rt(instr)].x)) ? 1.f : 0.f;
 
-  ret.value = rdVal;
+  ret.value = BoolToUInt32(rsVal < rtVal);
   CPU_reg[rd(instr)] = ret;
 }
 
@@ -1494,9 +1509,10 @@ void CPU_DIVU(u32 instr, u32 rsVal, u32 rtVal)
 ////////////////////////////////////
 // Shift operations (sa)
 ////////////////////////////////////
-void CPU_SLL(u32 instr, u32 rdVal, u32 rtVal)
+void CPU_SLL(u32 instr, u32 rtVal)
 {
   // Rd = Rt << Sa
+  const u32 rdVal = rtVal << sa(instr);
   PGXP_value ret;
   u32 sh = sa(instr);
   Validate(&CPU_reg[rt(instr)], rtVal);
@@ -1538,9 +1554,10 @@ void CPU_SLL(u32 instr, u32 rdVal, u32 rtVal)
   CPU_reg[rd(instr)] = ret;
 }
 
-void CPU_SRL(u32 instr, u32 rdVal, u32 rtVal)
+void CPU_SRL(u32 instr, u32 rtVal)
 {
   // Rd = Rt >> Sa
+  const u32 rdVal = rtVal >> sa(instr);
   PGXP_value ret;
   u32 sh = sa(instr);
   Validate(&CPU_reg[rt(instr)], rtVal);
@@ -1601,9 +1618,10 @@ void CPU_SRL(u32 instr, u32 rdVal, u32 rtVal)
   CPU_reg[rd(instr)] = ret;
 }
 
-void CPU_SRA(u32 instr, u32 rdVal, u32 rtVal)
+void CPU_SRA(u32 instr, u32 rtVal)
 {
   // Rd = Rt >> Sa
+  const u32 rdVal = static_cast<u32>(static_cast<s32>(rtVal) >> sa(instr));
   PGXP_value ret;
   u32 sh = sa(instr);
   Validate(&CPU_reg[rt(instr)], rtVal);
@@ -1666,9 +1684,10 @@ void CPU_SRA(u32 instr, u32 rdVal, u32 rtVal)
 ////////////////////////////////////
 // Shift operations variable
 ////////////////////////////////////
-void CPU_SLLV(u32 instr, u32 rdVal, u32 rtVal, u32 rsVal)
+void CPU_SLLV(u32 instr, u32 rtVal, u32 rsVal)
 {
   // Rd = Rt << Rs
+  const u32 rdVal = rtVal << rsVal;
   PGXP_value ret;
   u32 sh = rsVal & 0x1F;
   Validate(&CPU_reg[rt(instr)], rtVal);
@@ -1710,9 +1729,10 @@ void CPU_SLLV(u32 instr, u32 rdVal, u32 rtVal, u32 rsVal)
   CPU_reg[rd(instr)] = ret;
 }
 
-void CPU_SRLV(u32 instr, u32 rdVal, u32 rtVal, u32 rsVal)
+void CPU_SRLV(u32 instr, u32 rtVal, u32 rsVal)
 {
   // Rd = Rt >> Sa
+  const u32 rdVal = rtVal >> rsVal;
   PGXP_value ret;
   u32 sh = rsVal & 0x1F;
   Validate(&CPU_reg[rt(instr)], rtVal);
@@ -1774,9 +1794,10 @@ void CPU_SRLV(u32 instr, u32 rdVal, u32 rtVal, u32 rsVal)
   CPU_reg[rd(instr)] = ret;
 }
 
-void CPU_SRAV(u32 instr, u32 rdVal, u32 rtVal, u32 rsVal)
+void CPU_SRAV(u32 instr, u32 rtVal, u32 rsVal)
 {
   // Rd = Rt >> Sa
+  const u32 rdVal = static_cast<u32>(static_cast<s32>(rtVal) >> rsVal);
   PGXP_value ret;
   u32 sh = rsVal & 0x1F;
   Validate(&CPU_reg[rt(instr)], rtVal);

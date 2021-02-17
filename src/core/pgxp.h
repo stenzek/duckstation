@@ -55,25 +55,25 @@ void CPU_SW(u32 instr, u32 rtVal, u32 addr);
 void CPU_MOVE(u32 rd_and_rs, u32 rsVal);
 
 // Arithmetic with immediate value
-void CPU_ADDI(u32 instr, u32 rtVal, u32 rsVal);
-void CPU_ANDI(u32 instr, u32 rtVal, u32 rsVal);
-void CPU_ORI(u32 instr, u32 rtVal, u32 rsVal);
-void CPU_XORI(u32 instr, u32 rtVal, u32 rsVal);
-void CPU_SLTI(u32 instr, u32 rtVal, u32 rsVal);
-void CPU_SLTIU(u32 instr, u32 rtVal, u32 rsVal);
+void CPU_ADDI(u32 instr, u32 rsVal);
+void CPU_ANDI(u32 instr, u32 rsVal);
+void CPU_ORI(u32 instr, u32 rsVal);
+void CPU_XORI(u32 instr, u32 rsVal);
+void CPU_SLTI(u32 instr, u32 rsVal);
+void CPU_SLTIU(u32 instr, u32 rsVal);
 
 // Load Upper
 void CPU_LUI(u32 instr);
 
 // Register Arithmetic
-void CPU_ADD(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal);
-void CPU_SUB(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal);
-void CPU_AND_(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal);
-void CPU_OR_(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal);
-void CPU_XOR_(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal);
-void CPU_NOR(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal);
-void CPU_SLT(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal);
-void CPU_SLTU(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal);
+void CPU_ADD(u32 instr, u32 rsVal, u32 rtVal);
+void CPU_SUB(u32 instr, u32 rsVal, u32 rtVal);
+void CPU_AND_(u32 instr, u32 rsVal, u32 rtVal);
+void CPU_OR_(u32 instr, u32 rsVal, u32 rtVal);
+void CPU_XOR_(u32 instr, u32 rsVal, u32 rtVal);
+void CPU_NOR(u32 instr, u32 rsVal, u32 rtVal);
+void CPU_SLT(u32 instr, u32 rsVal, u32 rtVal);
+void CPU_SLTU(u32 instr, u32 rsVal, u32 rtVal);
 
 // Register mult/div
 void CPU_MULT(u32 instr, u32 rsVal, u32 rtVal);
@@ -82,14 +82,14 @@ void CPU_DIV(u32 instr, u32 rsVal, u32 rtVal);
 void CPU_DIVU(u32 instr, u32 rsVal, u32 rtVal);
 
 // Shift operations (sa)
-void CPU_SLL(u32 instr, u32 rdVal, u32 rtVal);
-void CPU_SRL(u32 instr, u32 rdVal, u32 rtVal);
-void CPU_SRA(u32 instr, u32 rdVal, u32 rtVal);
+void CPU_SLL(u32 instr, u32 rtVal);
+void CPU_SRL(u32 instr, u32 rtVal);
+void CPU_SRA(u32 instr, u32 rtVal);
 
 // Shift operations variable
-void CPU_SLLV(u32 instr, u32 rdVal, u32 rtVal, u32 rsVal);
-void CPU_SRLV(u32 instr, u32 rdVal, u32 rtVal, u32 rsVal);
-void CPU_SRAV(u32 instr, u32 rdVal, u32 rtVal, u32 rsVal);
+void CPU_SLLV(u32 instr, u32 rtVal, u32 rsVal);
+void CPU_SRLV(u32 instr, u32 rtVal, u32 rsVal);
+void CPU_SRAV(u32 instr, u32 rtVal, u32 rsVal);
 
 // Move registers
 void CPU_MFHI(u32 instr, u32 hiVal);
