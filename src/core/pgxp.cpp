@@ -1876,31 +1876,15 @@ void CPU_MTLO(u32 instr, u32 rdVal)
   CPU_Lo = CPU_reg[rd(instr)];
 }
 
-void CPU_MFC0(u32 instr, u32 rtVal, u32 rdVal)
+void CPU_MFC0(u32 instr, u32 rdVal)
 {
   // CPU[Rt] = CP0[Rd]
   Validate(&CP0_reg[rd(instr)], rdVal);
   CPU_reg[rt(instr)] = CP0_reg[rd(instr)];
-  CPU_reg[rt(instr)].value = rtVal;
+  CPU_reg[rt(instr)].value = rdVal;
 }
 
 void CPU_MTC0(u32 instr, u32 rdVal, u32 rtVal)
-{
-  // CP0[Rd] = CPU[Rt]
-  Validate(&CPU_reg[rt(instr)], rtVal);
-  CP0_reg[rd(instr)] = CPU_reg[rt(instr)];
-  CP0_reg[rd(instr)].value = rdVal;
-}
-
-void CPU_CFC0(u32 instr, u32 rtVal, u32 rdVal)
-{
-  // CPU[Rt] = CP0[Rd]
-  Validate(&CP0_reg[rd(instr)], rdVal);
-  CPU_reg[rt(instr)] = CP0_reg[rd(instr)];
-  CPU_reg[rt(instr)].value = rtVal;
-}
-
-void CPU_CTC0(u32 instr, u32 rdVal, u32 rtVal)
 {
   // CP0[Rd] = CPU[Rt]
   Validate(&CPU_reg[rt(instr)], rtVal);

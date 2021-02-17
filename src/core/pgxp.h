@@ -98,9 +98,7 @@ void CPU_MFLO(u32 instr, u32 loVal);
 void CPU_MTLO(u32 instr, u32 rdVal);
 
 // CP0 Data transfer tracking
-void CPU_MFC0(u32 instr, u32 rtVal, u32 rdVal);
+void CPU_MFC0(u32 instr, u32 rdVal);
 void CPU_MTC0(u32 instr, u32 rdVal, u32 rtVal);
-void CPU_CFC0(u32 instr, u32 rtVal, u32 rdVal);
-void CPU_CTC0(u32 instr, u32 rdVal, u32 rtVal);
 
 } // namespace PGXP

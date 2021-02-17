@@ -1303,7 +1303,7 @@ restart_instruction:
             const std::optional<u32> value = ReadCop0Reg(static_cast<Cop0Reg>(inst.r.rd.GetValue()));
 
             if constexpr (pgxp_mode == PGXPMode::CPU)
-              PGXP::CPU_MFC0(inst.bits, value.value_or(0), ReadReg(inst.i.rs));
+              PGXP::CPU_MFC0(inst.bits, value.value_or(0));
 
             if (value)
               WriteRegDelayed(inst.r.rt, value.value());
@@ -1319,7 +1319,7 @@ restart_instruction:
             if constexpr (pgxp_mode == PGXPMode::CPU)
             {
               PGXP::CPU_MTC0(inst.bits, ReadCop0Reg(static_cast<Cop0Reg>(inst.r.rd.GetValue())).value_or(0),
-                             ReadReg(inst.i.rs));
+                             ReadReg(inst.i.rt));
             }
           }
           break;
