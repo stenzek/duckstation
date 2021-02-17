@@ -92,10 +92,10 @@ void CPU_SRLV(u32 instr, u32 rdVal, u32 rtVal, u32 rsVal);
 void CPU_SRAV(u32 instr, u32 rdVal, u32 rtVal, u32 rsVal);
 
 // Move registers
-void CPU_MFHI(u32 instr, u32 rdVal, u32 hiVal);
-void CPU_MTHI(u32 instr, u32 hiVal, u32 rdVal);
-void CPU_MFLO(u32 instr, u32 rdVal, u32 loVal);
-void CPU_MTLO(u32 instr, u32 loVal, u32 rdVal);
+void CPU_MFHI(u32 instr, u32 hiVal);
+void CPU_MTHI(u32 instr, u32 rdVal);
+void CPU_MFLO(u32 instr, u32 loVal);
+void CPU_MTLO(u32 instr, u32 rdVal);
 
 // CP0 Data transfer tracking
 void CPU_MFC0(u32 instr, u32 rtVal, u32 rdVal);

@@ -781,7 +781,7 @@ restart_instruction:
         case InstructionFunct::mfhi:
         {
           if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_MFHI(inst.bits, ReadReg(inst.r.rd), g_state.regs.hi);
+            PGXP::CPU_MFHI(inst.bits, g_state.regs.hi);
 
           WriteReg(inst.r.rd, g_state.regs.hi);
         }
@@ -791,7 +791,7 @@ restart_instruction:
         {
           const u32 value = ReadReg(inst.r.rs);
           if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_MTHI(inst.bits, g_state.regs.hi, value);
+            PGXP::CPU_MTHI(inst.bits, value);
 
           g_state.regs.hi = value;
         }
@@ -800,7 +800,7 @@ restart_instruction:
         case InstructionFunct::mflo:
         {
           if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_MFLO(inst.bits, ReadReg(inst.r.rd), g_state.regs.lo);
+            PGXP::CPU_MFLO(inst.bits, g_state.regs.lo);
 
           WriteReg(inst.r.rd, g_state.regs.lo);
         }
@@ -810,7 +810,7 @@ restart_instruction:
         {
           const u32 value = ReadReg(inst.r.rs);
           if constexpr (pgxp_mode == PGXPMode::CPU)
-            PGXP::CPU_MTLO(inst.bits, g_state.regs.lo, value);
+            PGXP::CPU_MTLO(inst.bits, value);
 
           g_state.regs.lo = value;
         }

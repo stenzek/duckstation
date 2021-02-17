@@ -1815,7 +1815,7 @@ void CPU_SRAV(u32 instr, u32 rdVal, u32 rtVal, u32 rsVal)
   CPU_reg[rd(instr)] = ret;
 }
 
-void CPU_MFHI(u32 instr, u32 rdVal, u32 hiVal)
+void CPU_MFHI(u32 instr, u32 hiVal)
 {
   // Rd = Hi
   Validate(&CPU_Hi, hiVal);
@@ -1823,7 +1823,7 @@ void CPU_MFHI(u32 instr, u32 rdVal, u32 hiVal)
   CPU_reg[rd(instr)] = CPU_Hi;
 }
 
-void CPU_MTHI(u32 instr, u32 hiVal, u32 rdVal)
+void CPU_MTHI(u32 instr, u32 rdVal)
 {
   // Hi = Rd
   Validate(&CPU_reg[rd(instr)], rdVal);
@@ -1831,7 +1831,7 @@ void CPU_MTHI(u32 instr, u32 hiVal, u32 rdVal)
   CPU_Hi = CPU_reg[rd(instr)];
 }
 
-void CPU_MFLO(u32 instr, u32 rdVal, u32 loVal)
+void CPU_MFLO(u32 instr, u32 loVal)
 {
   // Rd = Lo
   Validate(&CPU_Lo, loVal);
@@ -1839,7 +1839,7 @@ void CPU_MFLO(u32 instr, u32 rdVal, u32 loVal)
   CPU_reg[rd(instr)] = CPU_Lo;
 }
 
-void CPU_MTLO(u32 instr, u32 loVal, u32 rdVal)
+void CPU_MTLO(u32 instr, u32 rdVal)
 {
   // Lo = Rd
   Validate(&CPU_reg[rd(instr)], rdVal);
