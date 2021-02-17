@@ -101,7 +101,7 @@ bool HostInterface::BootSystem(const SystemBootParameters& parameters)
 
   if (!AcquireHostDisplay())
   {
-    ReportFormattedError("Failed to acquire host display");
+    ReportFormattedError(g_host_interface->TranslateString("System", "Failed to acquire host display."));
     OnSystemDestroyed();
     return false;
   }
@@ -115,7 +115,8 @@ bool HostInterface::BootSystem(const SystemBootParameters& parameters)
 
   if (!System::Boot(parameters))
   {
-    ReportFormattedError("System failed to boot. The log may contain more information.");
+    ReportFormattedError(
+      g_host_interface->TranslateString("System", "System failed to boot. The log may contain more information."));
     OnSystemDestroyed();
     m_audio_stream.reset();
     ReleaseHostDisplay();

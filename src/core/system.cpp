@@ -716,7 +716,8 @@ bool Boot(const SystemBootParameters& params)
   std::optional<BIOS::Image> bios_image = g_host_interface->GetBIOSImage(s_region);
   if (!bios_image)
   {
-    g_host_interface->ReportFormattedError("Failed to load %s BIOS", Settings::GetConsoleRegionName(s_region));
+    g_host_interface->ReportFormattedError(g_host_interface->TranslateString("System", "Failed to load %s BIOS."),
+                                           Settings::GetConsoleRegionName(s_region));
     Shutdown();
     return false;
   }
