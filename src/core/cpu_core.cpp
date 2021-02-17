@@ -939,7 +939,7 @@ restart_instruction:
       WriteReg(inst.i.rt, value);
 
       if constexpr (pgxp_mode >= PGXPMode::CPU)
-        PGXP::CPU_LUI(inst.bits, value);
+        PGXP::CPU_LUI(inst.bits);
     }
     break;
 

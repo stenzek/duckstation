@@ -1045,13 +1045,13 @@ void CPU_SLTIU(u32 instr, u32 rtVal, u32 rsVal)
 ////////////////////////////////////
 // Load Upper
 ////////////////////////////////////
-void CPU_LUI(u32 instr, u32 rtVal)
+void CPU_LUI(u32 instr)
 {
   // Rt = Imm << 16
   CPU_reg[rt(instr)] = PGXP_value_zero;
   CPU_reg[rt(instr)].y = (float)(s16)imm(instr);
   CPU_reg[rt(instr)].hFlags = VALID_HALF;
-  CPU_reg[rt(instr)].value = rtVal;
+  CPU_reg[rt(instr)].value = static_cast<u32>(imm(instr)) << 16;
   CPU_reg[rt(instr)].flags = VALID_01;
 }
 

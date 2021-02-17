@@ -2274,16 +2274,11 @@ bool CodeGenerator::Compile_lui(const CodeBlockInstruction& cbi)
 {
   InstructionPrologue(cbi, 1);
 
+  if (g_settings.UsingPGXPCPUMode())
+    EmitFunctionCall(nullptr, &PGXP::CPU_LUI, Value::FromConstantU32(cbi.instruction.bits));
+
   // rt <- (imm << 16)
   const u32 value = cbi.instruction.i.imm_zext32() << 16;
-
-  if (g_settings.UsingPGXPCPUMode())
-  {
-    // TODO: rtVal can be skipped here, and probably worthwhile given this is a common instruction.
-    EmitFunctionCall(nullptr, &PGXP::CPU_LUI, Value::FromConstantU32(cbi.instruction.bits),
-                     Value::FromConstantU32(value));
-  }
-
   m_register_cache.WriteGuestRegister(cbi.instruction.i.rt, Value::FromConstantU32(value));
   SpeculativeWriteReg(cbi.instruction.i.rt, value);
 

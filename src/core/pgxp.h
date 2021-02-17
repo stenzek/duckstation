@@ -63,7 +63,7 @@ void CPU_SLTI(u32 instr, u32 rtVal, u32 rsVal);
 void CPU_SLTIU(u32 instr, u32 rtVal, u32 rsVal);
 
 // Load Upper
-void CPU_LUI(u32 instr, u32 rtVal);
+void CPU_LUI(u32 instr);
 
 // Register Arithmetic
 void CPU_ADD(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal);
