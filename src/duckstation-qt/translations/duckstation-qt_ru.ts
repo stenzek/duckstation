@@ -262,7 +262,7 @@
         <location filename="../advancedsettingswidget.cpp" line="148"/>
         <source>Display FPS Limit</source>
         <translatorcomment>**Отобразить**</translatorcomment>
-        <translation type="unfinished">Отображать Лимит FPS</translation>
+        <translation type="unfinished">Отображать лимит FPS</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="146"/>
@@ -1516,7 +1516,7 @@
     <message>
         <location filename="../cheatmanagerdialog.cpp" line="656"/>
         <source>Confirm Clear</source>
-        <translation type="unfinished">Подтвердить очиститку</translation>
+        <translation type="unfinished">Подтвердить очистку</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.cpp" line="657"/>
