@@ -183,28 +183,28 @@ void MakeValid(PGXP_value* pV, u32 psxV)
   }
 }
 
-void Validate(PGXP_value* pV, u32 psxV)
+void ALWAYS_INLINE_RELEASE Validate(PGXP_value* pV, u32 psxV)
 {
   // assume pV is not NULL
   pV->flags &= (pV->value == psxV) ? ALL : INV_VALID_ALL;
 }
 
-void MaskValidate(PGXP_value* pV, u32 psxV, u32 mask, u32 validMask)
+void ALWAYS_INLINE_RELEASE MaskValidate(PGXP_value* pV, u32 psxV, u32 mask, u32 validMask)
 {
   // assume pV is not NULL
   pV->flags &= ((pV->value & mask) == (psxV & mask)) ? ALL : (ALL ^ (validMask));
 }
 
-double f16Sign(double in)
+double ALWAYS_INLINE_RELEASE f16Sign(double in)
 {
   u32 s = (u32)(in * (double)((u32)1 << 16));
   return ((double)*((s32*)&s)) / (double)((s32)1 << 16);
 }
-double f16Unsign(double in)
+double ALWAYS_INLINE_RELEASE f16Unsign(double in)
 {
   return (in >= 0) ? in : ((double)in + (double)USHRT_MAX + 1);
 }
-double f16Overflow(double in)
+double ALWAYS_INLINE_RELEASE f16Overflow(double in)
 {
   double out = 0;
   s64 v = ((s64)in) >> 16;
@@ -1310,7 +1310,7 @@ void CPU_SLTU(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal)
 // Register mult/div
 ////////////////////////////////////
 
-void CPU_MULT(u32 instr, u32 hiVal, u32 loVal, u32 rsVal, u32 rtVal)
+void CPU_MULT(u32 instr, u32 rsVal, u32 rtVal)
 {
   // Hi/Lo = Rs * Rt (signed)
   Validate(&CPU_reg[rs(instr)], rsVal);
@@ -1352,11 +1352,13 @@ void CPU_MULT(u32 instr, u32 hiVal, u32 loVal, u32 rsVal, u32 rtVal)
   CPU_Hi.x = (float)f16Sign(hx);
   CPU_Hi.y = (float)f16Sign(hy);
 
-  CPU_Lo.value = loVal;
-  CPU_Hi.value = hiVal;
+  // compute PSX value
+  const u64 result = static_cast<u64>(static_cast<s64>(SignExtend64(rsVal)) * static_cast<s64>(SignExtend64(rtVal)));
+  CPU_Hi.value = Truncate32(result >> 32);
+  CPU_Lo.value = Truncate32(result);
 }
 
-void CPU_MULTU(u32 instr, u32 hiVal, u32 loVal, u32 rsVal, u32 rtVal)
+void CPU_MULTU(u32 instr, u32 rsVal, u32 rtVal)
 {
   // Hi/Lo = Rs * Rt (unsigned)
   Validate(&CPU_reg[rs(instr)], rsVal);
@@ -1398,11 +1400,13 @@ void CPU_MULTU(u32 instr, u32 hiVal, u32 loVal, u32 rsVal, u32 rtVal)
   CPU_Hi.x = (float)f16Sign(hx);
   CPU_Hi.y = (float)f16Sign(hy);
 
-  CPU_Lo.value = loVal;
-  CPU_Hi.value = hiVal;
+  // compute PSX value
+  const u64 result = ZeroExtend64(rsVal) * ZeroExtend64(rtVal);
+  CPU_Hi.value = Truncate32(result >> 32);
+  CPU_Lo.value = Truncate32(result);
 }
 
-void CPU_DIV(u32 instr, u32 hiVal, u32 loVal, u32 rsVal, u32 rtVal)
+void CPU_DIV(u32 instr, u32 rsVal, u32 rtVal)
 {
   // Lo = Rs / Rt (signed)
   // Hi = Rs % Rt (signed)
@@ -1431,11 +1435,27 @@ void CPU_DIV(u32 instr, u32 hiVal, u32 loVal, u32 rsVal, u32 rtVal)
   CPU_Hi.y = (float)f16Sign(f16Overflow(hi));
   CPU_Hi.x = (float)f16Sign(hi);
 
-  CPU_Lo.value = loVal;
-  CPU_Hi.value = hiVal;
+  // compute PSX value
+  if (static_cast<s32>(rtVal) == 0)
+  {
+    // divide by zero
+    CPU_Lo.value = (static_cast<s32>(rsVal) >= 0) ? UINT32_C(0xFFFFFFFF) : UINT32_C(1);
+    CPU_Hi.value = static_cast<u32>(static_cast<s32>(rsVal));
+  }
+  else if (rsVal == UINT32_C(0x80000000) && static_cast<s32>(rtVal) == -1)
+  {
+    // unrepresentable
+    CPU_Lo.value = UINT32_C(0x80000000);
+    CPU_Hi.value = 0;
+  }
+  else
+  {
+    CPU_Lo.value = static_cast<u32>(static_cast<s32>(rsVal) / static_cast<s32>(rtVal));
+    CPU_Hi.value = static_cast<u32>(static_cast<s32>(rsVal) % static_cast<s32>(rtVal));
+  }
 }
 
-void CPU_DIVU(u32 instr, u32 hiVal, u32 loVal, u32 rsVal, u32 rtVal)
+void CPU_DIVU(u32 instr, u32 rsVal, u32 rtVal)
 {
   // Lo = Rs / Rt (unsigned)
   // Hi = Rs % Rt (unsigned)
@@ -1464,8 +1484,17 @@ void CPU_DIVU(u32 instr, u32 hiVal, u32 loVal, u32 rsVal, u32 rtVal)
   CPU_Hi.y = (float)f16Sign(f16Overflow(hi));
   CPU_Hi.x = (float)f16Sign(hi);
 
-  CPU_Lo.value = loVal;
-  CPU_Hi.value = hiVal;
+  if (rtVal == 0)
+  {
+    // divide by zero
+    CPU_Lo.value = UINT32_C(0xFFFFFFFF);
+    CPU_Hi.value = rsVal;
+  }
+  else
+  {
+    CPU_Lo.value = rsVal / rtVal;
+    CPU_Hi.value = rsVal % rtVal;
+  }
 }
 
 ////////////////////////////////////

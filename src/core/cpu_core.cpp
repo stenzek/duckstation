@@ -827,7 +827,7 @@ restart_instruction:
           g_state.regs.lo = Truncate32(result);
 
           if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_MULT(inst.bits, g_state.regs.hi, g_state.regs.lo, lhs, rhs);
+            PGXP::CPU_MULT(inst.bits, lhs, rhs);
         }
         break;
 
@@ -838,7 +838,7 @@ restart_instruction:
           const u64 result = ZeroExtend64(lhs) * ZeroExtend64(rhs);
 
           if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_MULTU(inst.bits, g_state.regs.hi, g_state.regs.lo, lhs, rhs);
+            PGXP::CPU_MULTU(inst.bits, lhs, rhs);
 
           g_state.regs.hi = Truncate32(result >> 32);
           g_state.regs.lo = Truncate32(result);
@@ -869,7 +869,7 @@ restart_instruction:
           }
 
           if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_DIV(inst.bits, g_state.regs.hi, g_state.regs.lo, num, denom);
+            PGXP::CPU_DIV(inst.bits, num, denom);
         }
         break;
 
@@ -891,7 +891,7 @@ restart_instruction:
           }
 
           if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_DIVU(inst.bits, g_state.regs.hi, g_state.regs.lo, num, denom);
+            PGXP::CPU_DIVU(inst.bits, num, denom);
         }
         break;
 

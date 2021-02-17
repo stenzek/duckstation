@@ -76,10 +76,10 @@ void CPU_SLT(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal);
 void CPU_SLTU(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal);
 
 // Register mult/div
-void CPU_MULT(u32 instr, u32 hiVal, u32 loVal, u32 rsVal, u32 rtVal);
-void CPU_MULTU(u32 instr, u32 hiVal, u32 loVal, u32 rsVal, u32 rtVal);
-void CPU_DIV(u32 instr, u32 hiVal, u32 loVal, u32 rsVal, u32 rtVal);
-void CPU_DIVU(u32 instr, u32 hiVal, u32 loVal, u32 rsVal, u32 rtVal);
+void CPU_MULT(u32 instr, u32 rsVal, u32 rtVal);
+void CPU_MULTU(u32 instr, u32 rsVal, u32 rtVal);
+void CPU_DIV(u32 instr, u32 rsVal, u32 rtVal);
+void CPU_DIVU(u32 instr, u32 rsVal, u32 rtVal);
 
 // Shift operations (sa)
 void CPU_SLL(u32 instr, u32 rdVal, u32 rtVal);
