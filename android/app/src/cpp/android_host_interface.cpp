@@ -365,13 +365,17 @@ void AndroidHostInterface::EmulationThreadEntryPoint(JNIEnv* env, jobject emulat
   if (!m_surface)
   {
     Log_ErrorPrint("Emulation thread started without surface set.");
-    env->CallVoidMethod(m_emulation_activity_object, s_EmulationActivity_method_onEmulationStopped);
+    env->CallVoidMethod(emulation_activity, s_EmulationActivity_method_onEmulationStopped);
     return;
   }
 
+  {
+    std::unique_lock<std::mutex> lock(m_mutex);
+    m_emulation_thread_running.store(true);
+    m_emulation_activity_object = emulation_activity;
+    m_emulation_thread_id = std::this_thread::get_id();
+  }
   CreateImGuiContext();
-  m_emulation_activity_object = emulation_activity;
-  m_emulation_thread_id = std::this_thread::get_id();
   ApplySettings(true);
 
   // Boot system.
@@ -398,24 +402,31 @@ void AndroidHostInterface::EmulationThreadEntryPoint(JNIEnv* env, jobject emulat
 
     PowerOffSystem();
   }
-  else
+
+  // Drain any callbacks so we don't leave things in a screwed-up state for next boot.
   {
-    ReportFormattedError("Failed to boot system on emulation thread (file:%s).", boot_params.filename.c_str());
+    std::unique_lock<std::mutex> lock(m_mutex);
+    while (!m_callback_queue.empty())
+    {
+      auto callback = std::move(m_callback_queue.front());
+      m_callback_queue.pop_front();
+      lock.unlock();
+      callback();
+      lock.lock();
+    }
+    m_emulation_thread_running.store(false);
+    m_emulation_thread_id = {};
+    m_emulation_activity_object = {};
+    m_callbacks_outstanding.store(false);
   }
 
-  env->CallVoidMethod(m_emulation_activity_object, s_EmulationActivity_method_onEmulationStopped);
+  env->CallVoidMethod(emulation_activity, s_EmulationActivity_method_onEmulationStopped);
 
   DestroyImGuiContext();
-  m_emulation_activity_object = {};
 }
 
 void AndroidHostInterface::EmulationThreadLoop(JNIEnv* env)
 {
-  {
-    std::unique_lock<std::mutex> lock(m_mutex);
-    m_emulation_thread_running.store(true);
-  }
-
   env->CallVoidMethod(m_emulation_activity_object, s_EmulationActivity_method_onEmulationStarted);
 
   for (;;)
@@ -440,7 +451,6 @@ void AndroidHostInterface::EmulationThreadLoop(JNIEnv* env)
 
         if (m_emulation_thread_stop_request.load())
         {
-          m_emulation_thread_running.store(false);
           m_emulation_thread_stop_request.store(false);
           return;
         }
@@ -1059,6 +1069,13 @@ DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_surfaceChanged, jobject obj, j
   if (surface && !native_surface)
     Log_ErrorPrint("ANativeWindow_fromSurface() returned null");
 
+  if (!surface && System::GetState() == System::State::Starting)
+  {
+    // User switched away from the app while it was compiling shaders.
+    Log_ErrorPrintf("Surface destroyed while starting, cancelling");
+    System::CancelPendingStartup();
+  }
+
   // We should wait for the emu to finish if the surface is being destroyed or changed.
   AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
   const bool block = (!native_surface || native_surface != hi->GetSurface());
@@ -1376,6 +1393,12 @@ DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_saveState, jobject obj, jboole
 
 DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_saveResumeState, jobject obj, jboolean wait_for_completion)
 {
+  if (!System::IsValid() || System::GetState() == System::State::Starting)
+  {
+    // This gets called when the surface is destroyed, which can happen while starting.
+    return;
+  }
+
   AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
   hi->RunOnEmulationThread([hi]() { hi->SaveResumeSaveState(); }, wait_for_completion);
 }

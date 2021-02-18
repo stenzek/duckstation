@@ -829,6 +829,10 @@ bool GPU_HW_Vulkan::CompilePipelines()
   do                                                                                                                   \
   {                                                                                                                    \
     progress_value++;                                                                                                  \
+    if (System::IsStartupCancelled())                                                                                  \
+    {                                                                                                                  \
+      return false;                                                                                                    \
+    }                                                                                                                  \
     if (compile_time.GetTimeSeconds() >= 1.0f)                                                                         \
     {                                                                                                                  \
       compile_time.Reset();                                                                                            \

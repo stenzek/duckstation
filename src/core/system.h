@@ -92,6 +92,9 @@ bool IsPaused();
 bool IsShutdown();
 bool IsValid();
 
+bool IsStartupCancelled();
+void CancelPendingStartup();
+
 ConsoleRegion GetRegion();
 bool IsPALRegion();
 

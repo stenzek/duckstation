@@ -825,6 +825,7 @@ void QtHostInterface::powerOffSystem()
 {
   if (!isOnWorkerThread())
   {
+    System::CancelPendingStartup();
     QMetaObject::invokeMethod(this, "powerOffSystem", Qt::QueuedConnection);
     return;
   }
@@ -839,6 +840,7 @@ void QtHostInterface::powerOffSystemWithoutSaving()
 {
   if (!isOnWorkerThread())
   {
+    System::CancelPendingStartup();
     QMetaObject::invokeMethod(this, "powerOffSystemWithoutSaving", Qt::QueuedConnection);
     return;
   }
@@ -849,9 +851,14 @@ void QtHostInterface::powerOffSystemWithoutSaving()
 void QtHostInterface::synchronousPowerOffSystem()
 {
   if (!isOnWorkerThread())
+  {
+    System::CancelPendingStartup();
     QMetaObject::invokeMethod(this, "powerOffSystem", Qt::BlockingQueuedConnection);
+  }
   else
+  {
     powerOffSystem();
+  }
 }
 
 void QtHostInterface::resetSystem()

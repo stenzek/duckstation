@@ -509,6 +509,10 @@ bool GPU_HW_D3D11::CompileShaders()
   do                                                                                                                   \
   {                                                                                                                    \
     progress_value++;                                                                                                  \
+    if (System::IsStartupCancelled())                                                                                  \
+    {                                                                                                                  \
+      return false;                                                                                                    \
+    }                                                                                                                  \
     if (compile_time.GetTimeSeconds() >= 1.0f)                                                                         \
     {                                                                                                                  \
       compile_time.Reset();                                                                                            \

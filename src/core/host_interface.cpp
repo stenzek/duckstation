@@ -115,8 +115,12 @@ bool HostInterface::BootSystem(const SystemBootParameters& parameters)
 
   if (!System::Boot(parameters))
   {
-    ReportFormattedError(
-      g_host_interface->TranslateString("System", "System failed to boot. The log may contain more information."));
+    if (!System::IsStartupCancelled())
+    {
+      ReportFormattedError(
+        g_host_interface->TranslateString("System", "System failed to boot. The log may contain more information."));
+    }
+
     OnSystemDestroyed();
     m_audio_stream.reset();
     ReleaseHostDisplay();
