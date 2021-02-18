@@ -63,25 +63,25 @@
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="64"/>
-        <location filename="../advancedsettingswidget.cpp" line="201"/>
+        <location filename="../advancedsettingswidget.cpp" line="198"/>
         <source>Log To System Console</source>
         <translation>In Systemkonsole protokollieren</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="71"/>
-        <location filename="../advancedsettingswidget.cpp" line="205"/>
+        <location filename="../advancedsettingswidget.cpp" line="202"/>
         <source>Log To Window</source>
         <translation>In Fenster protokollieren</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="78"/>
-        <location filename="../advancedsettingswidget.cpp" line="203"/>
+        <location filename="../advancedsettingswidget.cpp" line="200"/>
         <source>Log To Debug Console</source>
         <translation>In Debugkonsole protokollieren</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="85"/>
-        <location filename="../advancedsettingswidget.cpp" line="207"/>
+        <location filename="../advancedsettingswidget.cpp" line="204"/>
         <source>Log To File</source>
         <translation>In Datei protokollieren</translation>
     </message>
@@ -92,7 +92,7 @@
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="103"/>
-        <location filename="../advancedsettingswidget.cpp" line="209"/>
+        <location filename="../advancedsettingswidget.cpp" line="206"/>
         <source>Show Debug Menu</source>
         <translation>Debugmenü anzeigen</translation>
     </message>
@@ -133,149 +133,139 @@
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="153"/>
-        <source>PGXP CPU Mode</source>
-        <translation>PGXP-CPU-Modus</translation>
-    </message>
-    <message>
-        <location filename="../advancedsettingswidget.cpp" line="154"/>
-        <source>PGXP Preserve Projection Precision</source>
-        <translation>PGXP-Darstellungsgenauigkeit beibehalten</translation>
-    </message>
-    <message>
-        <location filename="../advancedsettingswidget.cpp" line="156"/>
         <source>PGXP Geometry Tolerance</source>
         <translation>PGXP-Geometrietoleranz</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="158"/>
+        <location filename="../advancedsettingswidget.cpp" line="155"/>
         <source>PGXP Depth Clear Threshold</source>
         <translation>PGXP-Depth-Clear-Threshold</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="161"/>
+        <location filename="../advancedsettingswidget.cpp" line="158"/>
         <source>Enable Recompiler Memory Exceptions</source>
         <translation>Recompiler-Speicherausnahmen aktivieren</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="163"/>
+        <location filename="../advancedsettingswidget.cpp" line="160"/>
         <source>Enable Recompiler Fast Memory Access</source>
         <translation>Recompiler-Schnellspeicherzugriff aktivieren</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="167"/>
+        <location filename="../advancedsettingswidget.cpp" line="164"/>
         <source>Enable Recompiler ICache</source>
         <translation>Recompiler-ICache aktivieren</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="170"/>
+        <location filename="../advancedsettingswidget.cpp" line="167"/>
         <source>Enable VRAM Write Texture Replacement</source>
         <translation>VRAM-Schreib-Texturersetzung aktivieren</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="172"/>
+        <location filename="../advancedsettingswidget.cpp" line="169"/>
         <source>Preload Texture Replacements</source>
         <translation>Texturersetzungen vorladen</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="174"/>
+        <location filename="../advancedsettingswidget.cpp" line="171"/>
         <source>Dump Replaceable VRAM Writes</source>
         <translation>Ersetzbare VRAM-Schreibvorgänge dumpen</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="176"/>
+        <location filename="../advancedsettingswidget.cpp" line="173"/>
         <source>Set Dumped VRAM Write Alpha Channel</source>
         <translation>Gedumpte VRAM-Alphakanal-Schreibungen festlegen</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="178"/>
+        <location filename="../advancedsettingswidget.cpp" line="175"/>
         <source>Minimum Dumped VRAM Write Width</source>
         <translation>Minimum von gedumpter VRAM-Schreibbreite</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="181"/>
+        <location filename="../advancedsettingswidget.cpp" line="178"/>
         <source>Minimum Dumped VRAM Write Height</source>
         <translation>Minimum von gedumpter VRAM-Schreibhöhe</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="185"/>
+        <location filename="../advancedsettingswidget.cpp" line="182"/>
         <source>DMA Max Slice Ticks</source>
         <translation>DMA-Max-Slice-Ticks</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="187"/>
+        <location filename="../advancedsettingswidget.cpp" line="184"/>
         <source>DMA Halt Ticks</source>
         <translation>DMA-Halt-Ticks</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="189"/>
+        <location filename="../advancedsettingswidget.cpp" line="186"/>
         <source>GPU FIFO Size</source>
         <translation>GPU-FIFO-Größe</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="191"/>
+        <location filename="../advancedsettingswidget.cpp" line="188"/>
         <source>GPU Max Run-Ahead</source>
         <translation>GPU-Max-Runahead</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="193"/>
+        <location filename="../advancedsettingswidget.cpp" line="190"/>
         <source>Use Debug Host GPU Device</source>
         <translation>Debug-Host-GPU-Gerät verwenden</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="196"/>
+        <location filename="../advancedsettingswidget.cpp" line="193"/>
         <source>Increase Timer Resolution</source>
         <translation>Timerauflösung erhöhen</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="199"/>
+        <location filename="../advancedsettingswidget.cpp" line="196"/>
         <source>Log Level</source>
         <translation>Protokollstufe</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="199"/>
+        <location filename="../advancedsettingswidget.cpp" line="196"/>
         <source>Information</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="200"/>
+        <location filename="../advancedsettingswidget.cpp" line="197"/>
         <source>Sets the verbosity of messages logged. Higher levels will log more messages.</source>
         <translation>Legt die Detailliertheit der protokollierten Meldungen fest. Höhere Stufen protokollieren mehr Meldungen.</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="201"/>
-        <location filename="../advancedsettingswidget.cpp" line="203"/>
-        <location filename="../advancedsettingswidget.cpp" line="205"/>
-        <location filename="../advancedsettingswidget.cpp" line="207"/>
+        <location filename="../advancedsettingswidget.cpp" line="198"/>
+        <location filename="../advancedsettingswidget.cpp" line="200"/>
+        <location filename="../advancedsettingswidget.cpp" line="202"/>
+        <location filename="../advancedsettingswidget.cpp" line="204"/>
         <source>User Preference</source>
         <translation>Benutzerdefiniert</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="202"/>
+        <location filename="../advancedsettingswidget.cpp" line="199"/>
         <source>Logs messages to the console window.</source>
         <translation>Protokolliert Meldungen in das Konsolenfenster.</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="204"/>
+        <location filename="../advancedsettingswidget.cpp" line="201"/>
         <source>Logs messages to the debug console where supported.</source>
         <translation>Protokolliert Meldungen in die Debugkonsole, wenn es möglich ist.</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="206"/>
+        <location filename="../advancedsettingswidget.cpp" line="203"/>
         <source>Logs messages to the window.</source>
         <translation>Protokolliert Meldungen in das Fenster.</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="208"/>
+        <location filename="../advancedsettingswidget.cpp" line="205"/>
         <source>Logs messages to duckstation.log in the user directory.</source>
         <translation>Protokolliert Meldungen in die Datei &quot;duckstation.log&quot; im Benutzerverzeichnis.</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="209"/>
+        <location filename="../advancedsettingswidget.cpp" line="206"/>
         <source>Unchecked</source>
         <translation>Inaktiv</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="210"/>
+        <location filename="../advancedsettingswidget.cpp" line="207"/>
         <source>Shows a debug menu bar with additional statistics and quick settings.</source>
         <translation>Zeigt ein Debugmenü mit zusätzlichen Informationen und Schnelleinstellungen an.</translation>
     </message>
@@ -2666,11 +2656,6 @@ Diese Datei kann mehrere Gigabyte groß sein, achte also auf die Abnutzung der S
         <translation>Bildschirmanzeige</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="166"/>
-        <source>Show Messages</source>
-        <translation>Meldungen anzeigen</translation>
-    </message>
-    <message>
         <location filename="../displaysettingswidget.ui" line="173"/>
         <location filename="../displaysettingswidget.cpp" line="119"/>
         <source>Show FPS</source>
@@ -2678,6 +2663,7 @@ Diese Datei kann mehrere Gigabyte groß sein, achte also auf die Abnutzung der S
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="180"/>
+        <location filename="../displaysettingswidget.cpp" line="125"/>
         <source>Show Emulation Speed</source>
         <translation>Emulationsgeschwindigkeit anzeigen</translation>
     </message>
@@ -2710,7 +2696,7 @@ Diese Datei kann mehrere Gigabyte groß sein, achte also auf die Abnutzung der S
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="70"/>
-        <location filename="../displaysettingswidget.cpp" line="209"/>
+        <location filename="../displaysettingswidget.cpp" line="204"/>
         <source>(Default)</source>
         <translation>(Standard)</translation>
     </message>
@@ -2815,6 +2801,7 @@ Diese Datei kann mehrere Gigabyte groß sein, achte also auf die Abnutzung der S
         <translation>Verwendet zum Rendern von Grafiken einen zweiten Thread. Derzeit ist dies nur für den Software-Renderer verfügbar, bietet aber eine deutliche Geschwindigkeitssteigerung und ist sicher zu verwenden.</translation>
     </message>
     <message>
+        <location filename="../displaysettingswidget.ui" line="166"/>
         <location filename="../displaysettingswidget.cpp" line="116"/>
         <source>Show OSD Messages</source>
         <translation>Meldungen anzeigen</translation>
@@ -2833,11 +2820,6 @@ Diese Datei kann mehrere Gigabyte groß sein, achte also auf die Abnutzung der S
         <location filename="../displaysettingswidget.cpp" line="122"/>
         <source>Shows the number of frames (or v-syncs) displayed per second by the system in the top-right corner of the display.</source>
         <translation>Zeigt die Anzahl der vom System angezeigten Frames (oder V-Syncs) pro Sekunde in der oberen rechten Ecke des Bildschirms an.</translation>
-    </message>
-    <message>
-        <location filename="../displaysettingswidget.cpp" line="125"/>
-        <source>Show Speed</source>
-        <translation>Emulationsgeschwindigkeit anzeigen</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="126"/>
@@ -2862,7 +2844,7 @@ Diese Datei kann mehrere Gigabyte groß sein, achte also auf die Abnutzung der S
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="74"/>
-        <location filename="../displaysettingswidget.cpp" line="229"/>
+        <location filename="../displaysettingswidget.cpp" line="224"/>
         <source>Borderless Fullscreen</source>
         <translation>Rahmenloser Vollbildmodus</translation>
     </message>
@@ -3105,13 +3087,13 @@ Diese Datei kann mehrere Gigabyte groß sein, achte also auf die Abnutzung der S
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="58"/>
-        <location filename="../enhancementsettingswidget.cpp" line="65"/>
+        <location filename="../enhancementsettingswidget.cpp" line="68"/>
         <source>True Color Rendering (24-bit, disables dithering)</source>
         <translation>True-Color-Rendering (24 Bit, deaktiviert das Dithering)</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="65"/>
-        <location filename="../enhancementsettingswidget.cpp" line="72"/>
+        <location filename="../enhancementsettingswidget.cpp" line="75"/>
         <source>Scaled Dithering (scale dither pattern to resolution)</source>
         <translation>Skaliertes Dithering (Anpassung des Dithermusters auf die Auflösung)</translation>
     </message>
@@ -3132,13 +3114,13 @@ Diese Datei kann mehrere Gigabyte groß sein, achte also auf die Abnutzung der S
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="98"/>
-        <location filename="../enhancementsettingswidget.cpp" line="49"/>
+        <location filename="../enhancementsettingswidget.cpp" line="52"/>
         <source>Disable Interlacing (force progressive render/scan)</source>
         <translation>Interlace deaktivieren (progressives Rendern/Scannen erzwingen)</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="105"/>
-        <location filename="../enhancementsettingswidget.cpp" line="75"/>
+        <location filename="../enhancementsettingswidget.cpp" line="78"/>
         <source>Force NTSC Timings (60hz-on-PAL)</source>
         <translation>NTSC-Modus erzwingen (60 Hz bei PAL)</translation>
     </message>
@@ -3159,151 +3141,175 @@ Diese Datei kann mehrere Gigabyte groß sein, achte also auf die Abnutzung der S
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="135"/>
-        <location filename="../enhancementsettingswidget.cpp" line="99"/>
+        <location filename="../enhancementsettingswidget.cpp" line="102"/>
         <source>Geometry Correction</source>
         <translation>Geometriekorrektur</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="142"/>
-        <location filename="../enhancementsettingswidget.cpp" line="102"/>
+        <location filename="../enhancementsettingswidget.cpp" line="105"/>
         <source>Culling Correction</source>
         <translation>Cullingkorrektur</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="149"/>
-        <location filename="../enhancementsettingswidget.cpp" line="105"/>
+        <location filename="../enhancementsettingswidget.cpp" line="108"/>
         <source>Texture Correction</source>
         <translation>Texturkorrektur</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="156"/>
-        <location filename="../enhancementsettingswidget.cpp" line="109"/>
-        <source>Depth Buffer</source>
-        <translation>Tiefenpuffer (Depth-Buffer)</translation>
+        <location filename="../enhancementsettingswidget.cpp" line="116"/>
+        <source>Preserve Projection Precision</source>
+        <translation>Darstellungsgenauigkeit festlegen</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="49"/>
-        <location filename="../enhancementsettingswidget.cpp" line="65"/>
-        <location filename="../enhancementsettingswidget.cpp" line="75"/>
-        <location filename="../enhancementsettingswidget.cpp" line="82"/>
-        <location filename="../enhancementsettingswidget.cpp" line="84"/>
-        <location filename="../enhancementsettingswidget.cpp" line="93"/>
-        <location filename="../enhancementsettingswidget.cpp" line="99"/>
-        <location filename="../enhancementsettingswidget.cpp" line="109"/>
+        <location filename="../enhancementsettingswidget.ui" line="163"/>
+        <location filename="../enhancementsettingswidget.cpp" line="112"/>
+        <source>Depth Buffer (Low Compatibility)</source>
+        <translation>Tiefenpuffer (niedrige Kompatibilität)</translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.ui" line="170"/>
+        <location filename="../enhancementsettingswidget.cpp" line="118"/>
+        <source>CPU Mode (Very Slow)</source>
+        <translation>CPU-Modus (sehr langsam)</translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.cpp" line="52"/>
+        <location filename="../enhancementsettingswidget.cpp" line="68"/>
+        <location filename="../enhancementsettingswidget.cpp" line="78"/>
+        <location filename="../enhancementsettingswidget.cpp" line="85"/>
+        <location filename="../enhancementsettingswidget.cpp" line="87"/>
+        <location filename="../enhancementsettingswidget.cpp" line="96"/>
+        <location filename="../enhancementsettingswidget.cpp" line="102"/>
+        <location filename="../enhancementsettingswidget.cpp" line="112"/>
+        <location filename="../enhancementsettingswidget.cpp" line="116"/>
+        <location filename="../enhancementsettingswidget.cpp" line="118"/>
         <source>Unchecked</source>
         <translation>Inaktiv</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="50"/>
+        <location filename="../enhancementsettingswidget.cpp" line="53"/>
         <source>Forces the rendering and display of frames to progressive mode. &lt;br&gt;This removes the &quot;combing&quot; effect seen in 480i games by rendering them in 480p. Usually safe to enable.&lt;br&gt; &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
         <translation>Erzwingt das Rendering und Anzeigen von Frames im progressiven Modus. Dadurch wird der in 480i-Spielen auftretende Kammeffekt (Combing-Effect) beseitigt, indem sie in 480p gerendert werden. Diese Option ist normalerweise sicher zu aktivieren.&lt;br&gt; &lt;b&gt;&lt;u&gt;Ist unter Umständen nicht mit allen Spielen kompatibel.&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="55"/>
+        <location filename="../enhancementsettingswidget.cpp" line="58"/>
         <source>Resolution Scale</source>
         <translation>Interne Auflösungsskalierung</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="56"/>
+        <location filename="../enhancementsettingswidget.cpp" line="59"/>
         <source>Setting this beyond 1x will enhance the resolution of rendered 3D polygons and lines. Only applies to the hardware backends. &lt;br&gt;This option is usually safe, with most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</source>
         <translation>Wenn dieser Wert über 1x eingestellt ist, wird die Auflösung der gerenderten 3D-Polygone und -Linien erhöht. Die meisten Spiele sehen bei höheren Auflösungen gut aus, erfordern aber auch eine leistungsfähigere GPU. Diese Option ist normalerweise sicher zu aktivieren.&lt;br&gt;Gilt nur für die Hardware-Renderer.</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="60"/>
+        <location filename="../enhancementsettingswidget.cpp" line="63"/>
         <source>Multisample Antialiasing</source>
         <translation>Multisample-Antialiasing</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="60"/>
+        <location filename="../enhancementsettingswidget.cpp" line="63"/>
         <source>Disabled</source>
         <translation>Deaktiviert</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="61"/>
+        <location filename="../enhancementsettingswidget.cpp" line="64"/>
         <source>Uses multisample antialiasing for rendering 3D objects. Can smooth out jagged edges on polygons at a lower cost to performance compared to increasing the resolution scale, but may be more likely to cause rendering errors in some games. Only applies to the hardware backends.</source>
         <translation>Verwendet Multisample-Antialiasing für das Rendern von 3D-Objekten. Dies entfernt Treppeneffekte und Flimmern an Polygonen (was im Vergleich zum Erhöhen der Auflösungsskalierung weniger Leistung kostet), aber kann in einigen Spielen auch zu Renderingfehlern führen. Gilt nur für die Hardware-Renderer.</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="66"/>
+        <location filename="../enhancementsettingswidget.cpp" line="69"/>
         <source>Forces the precision of colours output to the console&apos;s framebuffer to use the full 8 bits of precision per channel. This produces nicer looking gradients at the cost of making some colours look slightly different. Disabling the option also enables dithering, which makes the transition between colours less sharp by applying a pattern around those pixels. Most games are compatible with this option, but there is a number which aren&apos;t and will have broken effects with it enabled. Only applies to the hardware renderers.</source>
         <translation>Erzwingt, dass die Farbgenauigkeit bei der Ausgabe an den Konsolen-Framebuffer die vollen 8 Bit Genauigkeit pro Kanal verwendet. Dies erzeugt schönere Farbverläufe, allerdings um den Preis, dass einige Farben anders aussehen. Das Deaktivieren der Option aktiviert auch das Dithering, das den Übergang zwischen Farben weniger scharf macht, indem ein Muster um diese Pixel herum erzeugt wird. Die meisten Spiele sind mit dieser Option kompatibel, aber es gibt einige, bei denen das nicht zutrifft - dann besteht die Möglichkeit, dass Effekte nicht richtig funktionieren. Gilt nur für die Hardware-Renderer.</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="72"/>
-        <location filename="../enhancementsettingswidget.cpp" line="102"/>
+        <location filename="../enhancementsettingswidget.cpp" line="75"/>
         <location filename="../enhancementsettingswidget.cpp" line="105"/>
+        <location filename="../enhancementsettingswidget.cpp" line="108"/>
         <source>Checked</source>
         <translation>Aktiv</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="73"/>
+        <location filename="../enhancementsettingswidget.cpp" line="76"/>
         <source>Scales the dither pattern to the resolution scale of the emulated GPU. This makes the dither pattern much less obvious at higher resolutions. &lt;br&gt;Usually safe to enable, and only supported by the hardware renderers.</source>
         <translation>Passt das Dithermuster auf die Auflösungsskalierung der emulierten GPU an. Dadurch wird das Dithermuster bei höheren Auflösungen viel weniger auffällig. Verursacht normalerweise keine Probleme und ist somit sicher zu aktivieren. Gilt nur für die Hardware-Renderer.</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="76"/>
+        <location filename="../enhancementsettingswidget.cpp" line="79"/>
         <source>Uses NTSC frame timings when the console is in PAL mode, forcing PAL games to run at 60hz. &lt;br&gt;For most games which have a speed tied to the framerate, this will result in the game running approximately 17% faster. &lt;br&gt;For variable frame rate games, it may not affect the speed.</source>
         <translation>Verwendet das NTSC-Frametiming, wenn sich die Konsole im PAL-Modus befindet, wodurch PAL-Spiele gezwungen werden, mit 60 Hz zu laufen. Die meisten Spiele laufen dadurch 17% schneller, da deren Geschwindigkeit an die Framerate gebunden ist. Bei Spielen mit variabler Framerate hat es möglicherweise keinen Einfluss auf die Geschwindigkeit.</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="82"/>
+        <location filename="../enhancementsettingswidget.cpp" line="85"/>
         <source>Force 4:3 For 24-bit Display</source>
         <translation>4:3 für 24-Bit-Darstellung erzwingen (Widescreen für FMVs deaktivieren)</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="83"/>
+        <location filename="../enhancementsettingswidget.cpp" line="86"/>
         <source>Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs.</source>
         <translation>Schaltet auf das 4:3-Seitenverhältnis zurück, wenn 24-Bit-Inhalte, normalerweise FMVs (Filmsequenzen im Spiel), angezeigt werden.</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="84"/>
+        <location filename="../enhancementsettingswidget.cpp" line="87"/>
         <source>Chroma Smoothing For 24-Bit Display</source>
         <translation>Farbglättung für 24-Bit-Darstellung (reduziert FMV-Farbblockbildungen)</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="85"/>
+        <location filename="../enhancementsettingswidget.cpp" line="88"/>
         <source>Smooths out blockyness between colour transitions in 24-bit content, usually FMVs. Only applies to the hardware renderers.</source>
         <translation>Glättet in 24-Bit-Inhalten Blockbildungen zwischen den Farbübergängen, die normalerweise in FMVs (Filmsequenzen im Spiel) vorkommen.&lt;br&gt;Gilt nur für die Hardware-Renderer.</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="88"/>
+        <location filename="../enhancementsettingswidget.cpp" line="91"/>
         <source>Texture Filtering</source>
         <translation>Texturfilterung</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="90"/>
+        <location filename="../enhancementsettingswidget.cpp" line="93"/>
         <source>Smooths out the blockyness of magnified textures on 3D object by using filtering. &lt;br&gt;Will have a greater effect on higher resolution scales. Only applies to the hardware renderers.</source>
         <translation>Glättet die Blockbildungen von großflächigen Texturen auf 3D-Objekten durch die Verwendung von Filtern. Wirkt sich bei höheren Auflösungsskalierungen stärker aus. Gilt nur für die Hardware-Renderer.</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="93"/>
+        <location filename="../enhancementsettingswidget.cpp" line="96"/>
         <source>Widescreen Hack</source>
         <translation>Widescreen-Hack</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="94"/>
+        <location filename="../enhancementsettingswidget.cpp" line="97"/>
         <source>Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to the chosen display aspect ratio in 3D games. &lt;br&gt;For 2D games, or games which use pre-rendered backgrounds, this enhancement will not work as expected. &lt;br&gt;&lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
         <translation>Skaliert Vertex-Positionen im Bildschirmbereich auf ein Widescreen-Seitenverhältnis, wodurch das Sichtfeld in 3D-Spielen von 4:3 auf das gewählte Seitenverhältnis vergrößert wird. Bei 2D-Spielen oder Spielen, die vorgerenderte Hintergründe verwenden, funktioniert diese Erweiterung vermutlich nicht. &lt;br&gt;&lt;b&gt;&lt;u&gt;Ist unter Umständen nicht mit allen Spielen kompatibel.&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="100"/>
+        <location filename="../enhancementsettingswidget.cpp" line="103"/>
         <source>Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. &lt;br&gt;Only works with the hardware renderers. &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
         <translation>Reduziert &quot;schiefe&quot; Polygone und &quot;verzerrte&quot; Texturen, die in PS1-Spielen üblich sind. Gilt nur für die Hardware-Renderer. &lt;br&gt;&lt;b&gt;&lt;u&gt;Ist unter Umständen nicht mit allen Spielen kompatibel.&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="103"/>
+        <location filename="../enhancementsettingswidget.cpp" line="106"/>
         <source>Increases the precision of polygon culling, reducing the number of holes in geometry. Requires geometry correction enabled.</source>
         <translation>Erhöht die Präzision der Polygon-Culling (Eliminierungsprozess von 3D-Polygonen, die außerhalb des Sichtfelds liegen), was die Anzahl der Geometriefehler reduziert. Erfordert die Aktivierung der Option &quot;Geometriekorrektur&quot;.</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="106"/>
+        <location filename="../enhancementsettingswidget.cpp" line="109"/>
         <source>Uses perspective-correct interpolation for texture coordinates and colors, straightening out warped textures. Requires geometry correction enabled.</source>
         <translation>Verwendet für Texturkoordinaten und Farben eine perspektivisch korrekte Interpolation, wodurch verzerrte Texturen geglättet werden. Erfordert die Aktivierung der Option &quot;Geometriekorrektur&quot;.</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="110"/>
+        <location filename="../enhancementsettingswidget.cpp" line="113"/>
         <source>Attempts to reduce polygon Z-fighting by testing pixels against the depth values from PGXP. Low compatibility, but can work well in some games. Other games may need a threshold adjustment.</source>
         <translation>Versucht, Polygon-Z-Fighting zu reduzieren, indem Pixel mit den Tiefenwerten aus PGXP getestet werden. Diese Option hat eine geringe Kompatibilität, kann aber in einigen Spielen gut funktionieren - andere Spiele benötigen möglicherweise eine Threshold-Anpassung.</translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.cpp" line="117"/>
+        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
+        <translation>Fügt den PGXP-Daten zusätzliche Präzisionswerte hinzu. Dies kann die Darstellung in einigen Spielen verbessern.</translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.cpp" line="119"/>
+        <source>Uses PGXP for all instructions, not just memory operations. Required for PGXP to correct wobble in some games, but has a very high performance cost.</source>
+        <translation>Verwendet für alle Befehle PGXP, nicht nur für Speicheroperationen. Dies wird für PGXP benötigt, um das Zittern in einigen Spielen zu korrigieren, hat aber einen sehr hohen Leistungsbedarf.</translation>
     </message>
 </context>
 <context>
@@ -3868,22 +3874,27 @@ Dies wird etwa 4 Megabyte über die aktuelle Internetverbindung herunterladen.</
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="422"/>
-        <source>PGXP Depth Buffer</source>
-        <translation>PGXP-Tiefenpuffer (Depth-Buffer)</translation>
+        <source>PGXP Preserve Projection Precision</source>
+        <translation>PGXP-Darstellungsgenauigkeit festlegen</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="437"/>
+        <location filename="../gamepropertiesdialog.ui" line="432"/>
+        <source>PGXP Depth Buffer</source>
+        <translation>PGXP-Tiefenpuffer</translation>
+    </message>
+    <message>
+        <location filename="../gamepropertiesdialog.ui" line="447"/>
         <source>Other Settings</source>
         <translation>Sonstige Einstellungen</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="443"/>
+        <location filename="../gamepropertiesdialog.ui" line="453"/>
         <source>CD-ROM Read Speedup:</source>
         <translation>CD-ROM-Lesegeschwindigkeit:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="451"/>
-        <location filename="../gamepropertiesdialog.ui" line="517"/>
+        <location filename="../gamepropertiesdialog.ui" line="461"/>
+        <location filename="../gamepropertiesdialog.ui" line="527"/>
         <location filename="../gamepropertiesdialog.cpp" line="121"/>
         <location filename="../gamepropertiesdialog.cpp" line="128"/>
         <location filename="../gamepropertiesdialog.cpp" line="135"/>
@@ -3899,243 +3910,243 @@ Dies wird etwa 4 Megabyte über die aktuelle Internetverbindung herunterladen.</
         <translation>(unverändert)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="456"/>
+        <location filename="../gamepropertiesdialog.ui" line="466"/>
         <source>None (Double Speed)</source>
         <translation>Standard (2x Geschwindigkeit)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="461"/>
+        <location filename="../gamepropertiesdialog.ui" line="471"/>
         <source>2x (Quad Speed)</source>
         <translation>2x (4x Geschwindigkeit)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="466"/>
+        <location filename="../gamepropertiesdialog.ui" line="476"/>
         <source>3x (6x Speed)</source>
         <translation>3x (6x Geschwindigkeit)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="471"/>
+        <location filename="../gamepropertiesdialog.ui" line="481"/>
         <source>4x (8x Speed)</source>
         <translation>4x (8x Geschwindigkeit)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="476"/>
+        <location filename="../gamepropertiesdialog.ui" line="486"/>
         <source>5x (10x Speed)</source>
         <translation>5x (10x Geschwindigkeit)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="481"/>
+        <location filename="../gamepropertiesdialog.ui" line="491"/>
         <source>6x (12x Speed)</source>
         <translation>6x (12x Geschwindigkeit)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="486"/>
+        <location filename="../gamepropertiesdialog.ui" line="496"/>
         <source>7x (14x Speed)</source>
         <translation>7x (14x Geschwindigkeit)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="491"/>
+        <location filename="../gamepropertiesdialog.ui" line="501"/>
         <source>8x (16x Speed)</source>
         <translation>8x (16x Geschwindigkeit)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="496"/>
+        <location filename="../gamepropertiesdialog.ui" line="506"/>
         <source>9x (18x Speed)</source>
         <translation>9x (18x Geschwindigkeit)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="501"/>
+        <location filename="../gamepropertiesdialog.ui" line="511"/>
         <source>10x (20x Speed)</source>
         <translation>10x (20x Geschwindigkeit)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="509"/>
+        <location filename="../gamepropertiesdialog.ui" line="519"/>
         <source>Runahead Frames:</source>
         <translation>Runahead-Frames:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="522"/>
+        <location filename="../gamepropertiesdialog.ui" line="532"/>
         <source>Disabled</source>
         <translation>Deaktiviert</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="527"/>
+        <location filename="../gamepropertiesdialog.ui" line="537"/>
         <source>1 Frame</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="532"/>
+        <location filename="../gamepropertiesdialog.ui" line="542"/>
         <source>2 Frames</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="537"/>
+        <location filename="../gamepropertiesdialog.ui" line="547"/>
         <source>3 Frames</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="542"/>
+        <location filename="../gamepropertiesdialog.ui" line="552"/>
         <source>4 Frames</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="547"/>
+        <location filename="../gamepropertiesdialog.ui" line="557"/>
         <source>5 Frames</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="552"/>
+        <location filename="../gamepropertiesdialog.ui" line="562"/>
         <source>6 Frames</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="557"/>
+        <location filename="../gamepropertiesdialog.ui" line="567"/>
         <source>7 Frames</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="562"/>
+        <location filename="../gamepropertiesdialog.ui" line="572"/>
         <source>8 Frames</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="567"/>
+        <location filename="../gamepropertiesdialog.ui" line="577"/>
         <source>9 Frames</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="572"/>
+        <location filename="../gamepropertiesdialog.ui" line="582"/>
         <source>10 Frames</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="597"/>
+        <location filename="../gamepropertiesdialog.ui" line="607"/>
         <source>User Settings (Input)</source>
         <translation>Benutzereinstellungen (Input)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="603"/>
+        <location filename="../gamepropertiesdialog.ui" line="613"/>
         <source>Controller Settings</source>
         <translation>Controller-Einstellungen</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="609"/>
+        <location filename="../gamepropertiesdialog.ui" line="619"/>
         <source>Controller 1 Type:</source>
         <translation>Typ des Controllers 1:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="619"/>
+        <location filename="../gamepropertiesdialog.ui" line="629"/>
         <source>Controller 2 Type:</source>
         <translation>Typ des Controllers 2:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="629"/>
+        <location filename="../gamepropertiesdialog.ui" line="639"/>
         <source>Input Profile For Bindings:</source>
         <translation>Belegungsprofil:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="642"/>
+        <location filename="../gamepropertiesdialog.ui" line="652"/>
         <source>Memory Card Settings</source>
         <translation>Memory-Card-Einstellungen</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="648"/>
+        <location filename="../gamepropertiesdialog.ui" line="658"/>
         <source>Memory Card 1 Type:</source>
         <translation>Typ der Memory Card 1:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="658"/>
+        <location filename="../gamepropertiesdialog.ui" line="668"/>
         <source>Memory Card 1 Shared Path:</source>
         <translation>Pfad zur gemeinsam genutzten Memory Card 1:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="670"/>
-        <location filename="../gamepropertiesdialog.ui" line="701"/>
+        <location filename="../gamepropertiesdialog.ui" line="680"/>
+        <location filename="../gamepropertiesdialog.ui" line="711"/>
         <source>Browse...</source>
         <translation>Durchsuchen…</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="679"/>
+        <location filename="../gamepropertiesdialog.ui" line="689"/>
         <source>Memory Card 2 Type:</source>
         <translation>Typ der Memory Card 2:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="689"/>
+        <location filename="../gamepropertiesdialog.ui" line="699"/>
         <source>Memory Card 2 Shared Path:</source>
         <translation>Pfad zur gemeinsam genutzten Memory Card 2:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="727"/>
+        <location filename="../gamepropertiesdialog.ui" line="737"/>
         <source>Compatibility Settings</source>
         <translation>Kompatibilitätseinstellungen</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="733"/>
+        <location filename="../gamepropertiesdialog.ui" line="743"/>
         <source>Traits</source>
         <translation>Eigenschaften</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="740"/>
+        <location filename="../gamepropertiesdialog.ui" line="750"/>
         <source>Overrides</source>
         <translation>Überschreibungen</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="746"/>
+        <location filename="../gamepropertiesdialog.ui" line="756"/>
         <source>Display Active Offset:</source>
         <translation>Active-Offset:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="783"/>
+        <location filename="../gamepropertiesdialog.ui" line="793"/>
         <source>Display Line Offset:</source>
         <translation>Line-Offset:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="820"/>
+        <location filename="../gamepropertiesdialog.ui" line="830"/>
         <source>DMA Max Slice Ticks:</source>
         <translation>DMA-Max-Slice-Ticks:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="837"/>
+        <location filename="../gamepropertiesdialog.ui" line="847"/>
         <source>DMA Halt Ticks:</source>
         <translation>DMA-Halt-Ticks:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="854"/>
+        <location filename="../gamepropertiesdialog.ui" line="864"/>
         <source>GPU FIFO Size:</source>
         <translation>GPU-FIFO-Größe:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="868"/>
+        <location filename="../gamepropertiesdialog.ui" line="878"/>
         <source>GPU Max Run Ahead:</source>
         <translation>GPU-Max-Runahead:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="885"/>
+        <location filename="../gamepropertiesdialog.ui" line="895"/>
         <source>PGXP Geometry Tolerance:</source>
         <translation>PGXP-Geometrietoleranz:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="908"/>
+        <location filename="../gamepropertiesdialog.ui" line="918"/>
         <source>PGXP Depth Threshold:</source>
         <translation>PGXP-Depth-Clear-Threshold:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="957"/>
+        <location filename="../gamepropertiesdialog.ui" line="967"/>
         <source>Compute Hashes</source>
         <translation>Prüfsummen berechnen</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="964"/>
+        <location filename="../gamepropertiesdialog.ui" line="974"/>
         <source>Verify Dump</source>
         <translation>Dump verifizieren</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="971"/>
+        <location filename="../gamepropertiesdialog.ui" line="981"/>
         <source>Export Compatibility Info</source>
         <translation>Informationen zur Exportkompatibilität</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="978"/>
+        <location filename="../gamepropertiesdialog.ui" line="988"/>
         <source>Close</source>
         <translation>Schließen</translation>
     </message>
@@ -4150,28 +4161,28 @@ Dies wird etwa 4 Megabyte über die aktuelle Internetverbindung herunterladen.</
         <translation>&lt;nicht berechnet&gt;</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.cpp" line="646"/>
-        <location filename="../gamepropertiesdialog.cpp" line="669"/>
+        <location filename="../gamepropertiesdialog.cpp" line="648"/>
+        <location filename="../gamepropertiesdialog.cpp" line="671"/>
         <source>Select path to memory card image</source>
         <translation>Pfad zum Memory-Card-Image auswählen</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.cpp" line="761"/>
+        <location filename="../gamepropertiesdialog.cpp" line="763"/>
         <source>%1% (%2MHz)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.cpp" line="817"/>
+        <location filename="../gamepropertiesdialog.cpp" line="819"/>
         <source>Not yet implemented</source>
         <translation>Noch nicht implementiert</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.cpp" line="831"/>
+        <location filename="../gamepropertiesdialog.cpp" line="833"/>
         <source>Compatibility Info Export</source>
         <translation>Kompatibilitätsinformationen</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.cpp" line="831"/>
+        <location filename="../gamepropertiesdialog.cpp" line="833"/>
         <source>Press OK to copy to clipboard.</source>
         <translation>Drücke OK, um in die Zwischenablage zu kopieren.</translation>
     </message>
@@ -4236,7 +4247,7 @@ Dies wird etwa 4 Megabyte über die aktuelle Internetverbindung herunterladen.</
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="33"/>
         <source>Disable PGXP Depth Buffer</source>
-        <translation>&quot;PGXP-Tiefenpuffer&quot; (Depth-Buffer) deaktivieren</translation>
+        <translation>&quot;PGXP-Tiefenpuffer&quot; deaktivieren</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="34"/>
@@ -4487,12 +4498,12 @@ Dies wird etwa 4 Megabyte über die aktuelle Internetverbindung herunterladen.</
 <context>
     <name>HostInterface</name>
     <message>
-        <location filename="../../core/host_interface.cpp" line="290"/>
+        <location filename="../../core/host_interface.cpp" line="291"/>
         <source>Failed to load configured BIOS file &apos;%s&apos;</source>
         <translation>Die konfigurierte BIOS-Datei &apos;%s&apos; konnte nicht geladen werden</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="354"/>
+        <location filename="../../core/host_interface.cpp" line="355"/>
         <source>No BIOS image found for %s region</source>
         <translation>Es wurde kein BIOS-Image für Region &apos;%s&apos; gefunden</translation>
     </message>
@@ -4612,7 +4623,7 @@ Dies wird etwa 4 Megabyte über die aktuelle Internetverbindung herunterladen.</
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1717"/>
         <source>Toggle PGXP Depth Buffer</source>
-        <translation>PGXP-Tiefenpuffer (Depth-Buffer) aktivieren/deaktivieren</translation>
+        <translation>PGXP-Tiefenpuffer aktivieren/deaktivieren</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1736"/>
@@ -5810,7 +5821,7 @@ Dies wird etwa 4 Megabyte über die aktuelle Internetverbindung herunterladen.</
         <location filename="../memorycardeditordialog.cpp" line="188"/>
         <location filename="../memorycardeditordialog.cpp" line="275"/>
         <source>Failed to load memory card image.</source>
-        <translation>Das Memory-Card-Image könnte nicht geladen werden.</translation>
+        <translation>Das Memory-Card-Image konnte nicht geladen werden.</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="229"/>
@@ -6136,87 +6147,82 @@ Dies wird etwa 4 Megabyte über die aktuelle Internetverbindung herunterladen.</
         <translation>OpenGL-Renderer nicht verfügbar. Der Treiber oder die Hardware ist nicht mehr aktuell. OpenGL 3.1 oder OpenGL ES 3.0 ist erforderlich.</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="136"/>
+        <location filename="../../core/host_interface.cpp" line="137"/>
         <source>System reset.</source>
         <translation>Systemreset wird durchgeführt.</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="413"/>
+        <location filename="../../core/host_interface.cpp" line="414"/>
         <source>Loading state from &apos;%s&apos;...</source>
         <translation>Lade Spielstand &apos;%s&apos;</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="419"/>
+        <location filename="../../core/host_interface.cpp" line="420"/>
         <source>Loading state from &apos;%s&apos; failed. Resetting.</source>
         <translation>&apos;%s&apos; konnte nicht geladen werden.</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="447"/>
+        <location filename="../../core/host_interface.cpp" line="448"/>
         <source>Saving state to &apos;%s&apos; failed.</source>
         <translation>&apos;%s&apos; konnte nicht gespeichert werden.</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="452"/>
+        <location filename="../../core/host_interface.cpp" line="453"/>
         <source>State saved to &apos;%s&apos;.</source>
         <translation>Spielstand gespeichert unter &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="649"/>
+        <location filename="../../core/host_interface.cpp" line="650"/>
         <source>PGXP is incompatible with the software renderer, disabling PGXP.</source>
         <translation>PGXP ist inkompatibel mit dem Software-Renderer, weshalb PGXP deaktiviert wird.</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="658"/>
-        <source>PGXP CPU mode is incompatible with the recompiler, using Cached Interpreter instead.</source>
-        <translation>PGXP-CPU-Modus ist nicht mit dem Recompiler kompatibel, stattdessen wird der Cached-Interpreter verwendet.</translation>
-    </message>
-    <message>
-        <location filename="../../core/host_interface.cpp" line="707"/>
+        <location filename="../../core/host_interface.cpp" line="697"/>
         <source>Switching to %s%s GPU renderer.</source>
         <translation>Umschaltung auf GPU-Renderer &apos;%s%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="730"/>
+        <location filename="../../core/host_interface.cpp" line="720"/>
         <source>Switching to %s audio backend.</source>
         <translation>Umschaltung auf Audio-Backend &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="746"/>
+        <location filename="../../core/host_interface.cpp" line="736"/>
         <source>Switching to %s CPU execution mode.</source>
         <translation>Umschaltung auf CPU-Ausführungsmodus &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="757"/>
+        <location filename="../../core/host_interface.cpp" line="747"/>
         <source>CPU memory exceptions enabled, flushing all blocks.</source>
         <translation>CPU-Speicherausnahmen aktiviert, alle Blöcke werden gelöscht.</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="758"/>
+        <location filename="../../core/host_interface.cpp" line="748"/>
         <source>CPU memory exceptions disabled, flushing all blocks.</source>
         <translation>CPU-Speicherausnahmen deaktiviert, alle Blöcke werden gelöscht.</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="767"/>
+        <location filename="../../core/host_interface.cpp" line="757"/>
         <source>CPU ICache enabled, flushing all blocks.</source>
         <translation>CPU-ICache aktiviert, alle Blöcke werden gelöscht.</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="768"/>
+        <location filename="../../core/host_interface.cpp" line="758"/>
         <source>CPU ICache disabled, flushing all blocks.</source>
         <translation>CPU-ICache deaktiviert, alle Blöcke werden gelöscht.</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="812"/>
+        <location filename="../../core/host_interface.cpp" line="803"/>
         <source>PGXP enabled, recompiling all blocks.</source>
         <translation>PGXP aktiviert, alle Blöcke werden neu kompiliert.</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="813"/>
+        <location filename="../../core/host_interface.cpp" line="804"/>
         <source>PGXP disabled, recompiling all blocks.</source>
         <translation>PGXP deaktiviert, alle Blöcke werden neu kompiliert.</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="1031"/>
+        <location filename="../../core/host_interface.cpp" line="1022"/>
         <source>Switching to %s renderer...</source>
         <translation>Umschaltung auf Renderer &apos;%s&apos;</translation>
     </message>
@@ -6267,27 +6273,27 @@ Dies wird etwa 4 Megabyte über die aktuelle Internetverbindung herunterladen.</
         <translation>Memory Card %u ist im System vorhanden, aber nicht im Spielstand. Karte wird entfernt.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="831"/>
+        <location filename="../../core/system.cpp" line="832"/>
         <source>CPU clock speed is set to %u%% (%u / %u). This may result in instability.</source>
         <translation>CPU-Taktfrequenz ist auf %u%% (%u / %u) festgelegt. Dies kann zu Instabilität führen.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="978"/>
+        <location filename="../../core/system.cpp" line="979"/>
         <source>WARNING: CPU overclock (%u%%) was different in save state (%u%%).</source>
         <translation>WARNUNG: CPU-Übertaktung (%u%%) war im Spielstand (%u%%) anders.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1078"/>
+        <location filename="../../core/system.cpp" line="1079"/>
         <source>Failed to open CD image from save state: &apos;%s&apos;. Using existing image &apos;%s&apos;, this may result in instability.</source>
         <translation>CD-Image konnte nicht aus dem Spielstand geöffnet werden: &apos;%s&apos;. Bei Verwendung des vorhandenen Images &apos;%s&apos; kann dies zu Instabilität führen.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1787"/>
+        <location filename="../../core/system.cpp" line="1791"/>
         <source>Failed to open disc image &apos;%s&apos;.</source>
         <translation>CD-Image konnte nicht geöffnet werden: &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1796"/>
+        <location filename="../../core/system.cpp" line="1800"/>
         <source>Inserted disc &apos;%s&apos; (%s).</source>
         <translation>CD &apos;%s&apos; (%s) eingefügt.</translation>
     </message>
@@ -6356,12 +6362,12 @@ Dies wird etwa 4 Megabyte über die aktuelle Internetverbindung herunterladen.</
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1729"/>
         <source>PGXP Depth Buffer is now enabled.</source>
-        <translation>PGXP-Tiefenpuffer (Depth-Buffer) ist jetzt aktiviert.</translation>
+        <translation>PGXP-Tiefenpuffer ist jetzt aktiviert.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1730"/>
         <source>PGXP Depth Buffer is now disabled.</source>
-        <translation>PGXP-Tiefenpuffer (Depth-Buffer) ist jetzt deaktiviert.</translation>
+        <translation>PGXP-Tiefenpuffer ist jetzt deaktiviert.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1763"/>
@@ -6506,82 +6512,82 @@ Dies wird etwa 4 Megabyte über die aktuelle Internetverbindung herunterladen.</
         <translation>Nachbearbeitungs-Shader neu geladen.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_settings.cpp" line="1046"/>
+        <location filename="../../frontend-common/game_settings.cpp" line="1069"/>
         <source>CPU interpreter forced by game settings.</source>
         <translation>CPU-Interpreter wird durch die Spieleinstellungen erzwungen.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_settings.cpp" line="1057"/>
+        <location filename="../../frontend-common/game_settings.cpp" line="1080"/>
         <source>Software renderer forced by game settings.</source>
         <translation>Software-Renderer wird durch die Spieleinstellungen erzwungen.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_settings.cpp" line="1068"/>
+        <location filename="../../frontend-common/game_settings.cpp" line="1091"/>
         <source>Interlacing forced by game settings.</source>
         <translation>Interlace wird durch die Spieleinstellungen erzwungen.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_settings.cpp" line="1079"/>
+        <location filename="../../frontend-common/game_settings.cpp" line="1102"/>
         <source>True color disabled by game settings.</source>
         <translation>True-Color wird durch die Spieleinstellungen deaktiviert.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_settings.cpp" line="1090"/>
+        <location filename="../../frontend-common/game_settings.cpp" line="1113"/>
         <source>Upscaling disabled by game settings.</source>
         <translation>Hochskalierung wird durch die Spieleinstellungen deaktiviert.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_settings.cpp" line="1101"/>
+        <location filename="../../frontend-common/game_settings.cpp" line="1124"/>
         <source>Scaled dithering disabled by game settings.</source>
         <translation>Skaliertes Dithering wird durch die Spieleinstellungen deaktiviert.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_settings.cpp" line="1114"/>
+        <location filename="../../frontend-common/game_settings.cpp" line="1137"/>
         <source>Widescreen disabled by game settings.</source>
         <translation>Widescreen wird durch die Spieleinstellungen deaktiviert.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_settings.cpp" line="1126"/>
+        <location filename="../../frontend-common/game_settings.cpp" line="1149"/>
         <source>Forcing NTSC Timings disallowed by game settings.</source>
         <translation>Erzwingung des NTSC-Modus wird durch die Spieleinstellungen verboten.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_settings.cpp" line="1138"/>
+        <location filename="../../frontend-common/game_settings.cpp" line="1161"/>
         <source>PGXP geometry correction disabled by game settings.</source>
         <translation>PGXP-Geometriekorrektur wird durch die Spieleinstellungen deaktiviert.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_settings.cpp" line="1150"/>
+        <location filename="../../frontend-common/game_settings.cpp" line="1173"/>
         <source>PGXP culling disabled by game settings.</source>
         <translation>PGXP-Culling wird durch die Spieleinstellungen deaktiviert.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_settings.cpp" line="1161"/>
+        <location filename="../../frontend-common/game_settings.cpp" line="1184"/>
         <source>PGXP texture correction disabled by game settings.</source>
         <translation>PGXP-Texturkorrektur wird durch die Spieleinstellungen deaktiviert.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_settings.cpp" line="1173"/>
+        <location filename="../../frontend-common/game_settings.cpp" line="1196"/>
         <source>PGXP vertex cache forced by game settings.</source>
         <translation>PGXP-Vertex-Cachespeicher wird durch die Spieleinstellungen erzwungen.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_settings.cpp" line="1184"/>
+        <location filename="../../frontend-common/game_settings.cpp" line="1207"/>
         <source>PGXP CPU mode forced by game settings.</source>
         <translation>PGXP-CPU-Modus wird durch die Spieleinstellungen erzwungen.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_settings.cpp" line="1195"/>
+        <location filename="../../frontend-common/game_settings.cpp" line="1218"/>
         <source>PGXP Depth Buffer disabled by game settings.</source>
-        <translation>PGXP-Tiefenpuffer (Depth-Buffer) wird durch die Spieleinstellungen deaktiviert.</translation>
+        <translation>PGXP-Tiefenpuffer wird durch die Spieleinstellungen deaktiviert.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_settings.cpp" line="1213"/>
+        <location filename="../../frontend-common/game_settings.cpp" line="1236"/>
         <source>Recompiler memory exceptions forced by game settings.</source>
         <translation>Recompiler-Speicherausnahmen werden durch die Spieleinstellungen erzwungen.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_settings.cpp" line="1226"/>
+        <location filename="../../frontend-common/game_settings.cpp" line="1249"/>
         <source>Recompiler ICache forced by game settings.</source>
         <translation>Recompiler-ICache wird durch die Spieleinstellungen erzwungen.</translation>
     </message>
@@ -7035,42 +7041,47 @@ Die Spielstände können nicht wiederhergestellt werden.</translation>
 <context>
     <name>System</name>
     <message>
-        <location filename="../../core/system.cpp" line="1037"/>
+        <location filename="../../core/system.cpp" line="719"/>
+        <source>Failed to load %s BIOS.</source>
+        <translation>%s-BIOS konnte nicht geladen werden.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="1038"/>
         <source>Save state is incompatible: minimum version is %u but state is version %u.</source>
         <translation>Spielstand ist inkompatibel: Mindestversion ist %u, aber es handelt sich um Version %u.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1046"/>
+        <location filename="../../core/system.cpp" line="1047"/>
         <source>Save state is incompatible: maximum version is %u but state is version %u.</source>
         <translation>Spielstand ist inkompatibel: Maximalversion ist %u, aber es handelt sich um Version %u.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1086"/>
+        <location filename="../../core/system.cpp" line="1087"/>
         <source>Failed to open CD image from save state: &apos;%s&apos;.</source>
         <translation>Das CD-Image konnte nicht aus dem Spielstand &apos;%s&apos; geöffnet werden.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1683"/>
+        <location filename="../../core/system.cpp" line="1684"/>
         <source>Per-game memory card cannot be used for slot %u as the running game has no code. Using shared card instead.</source>
         <translation>Spielspezifische Memory Card kann nicht für Slot %u verwendet werden, da das Spiel keinen Code hat. Gemeinsam genutzte Memory Card wird verwendet.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1707"/>
+        <location filename="../../core/system.cpp" line="1708"/>
         <source>Per-game memory card cannot be used for slot %u as the running game has no title. Using shared card instead.</source>
         <translation>Spielspezifische Memory Card kann nicht für Slot %u verwendet werden, da das Spiel keinen Titel hat. Gemeinsam genutzte Memory Card wird verwendet.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1726"/>
+        <location filename="../../core/system.cpp" line="1727"/>
         <source>Memory card path for slot %u is missing, using default.</source>
         <translation>Pfad zur Memory Card für Slot %u fehlt. Standard wird verwendet.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1802"/>
+        <location filename="../../core/system.cpp" line="1806"/>
         <source>Game changed, reloading memory cards.</source>
         <translation>Spiel geändert. Memory Cards wurden neu geladen.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1853"/>
+        <location filename="../../core/system.cpp" line="1857"/>
         <source>You are attempting to run a libcrypt protected game without an SBI file:
 
 %s: %s
@@ -7091,14 +7102,24 @@ Bitte in der README nachlesen, wie eine SBI-Datei hinzufügt werden kann.
 Möchtest du fortfahren?</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1924"/>
+        <location filename="../../core/system.cpp" line="1928"/>
         <source>Removing current media from playlist, removing media from CD-ROM.</source>
         <translation>Entfernen des aktuellen Mediums aus der Wiedergabeliste. Entfernen des Mediums von der CD-ROM.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1941"/>
+        <location filename="../../core/system.cpp" line="1945"/>
         <source>Changing current media from playlist, replacing current media.</source>
         <translation>Ändern des aktuellen Mediums aus der Wiedergabeliste. Ersetzung des aktuellen Mediums.</translation>
+    </message>
+    <message>
+        <location filename="../../core/host_interface.cpp" line="104"/>
+        <source>Failed to acquire host display.</source>
+        <translation>Erkennung der PC-Anzeige fehlgeschlagen.</translation>
+    </message>
+    <message>
+        <location filename="../../core/host_interface.cpp" line="119"/>
+        <source>System failed to boot. The log may contain more information.</source>
+        <translation>System konnte nicht booten. Das Protokoll enthält möglicherweise weitere Informationen.</translation>
     </message>
 </context>
 <context>
