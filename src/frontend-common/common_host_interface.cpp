@@ -139,6 +139,10 @@ void CommonHostInterface::InitializeUserDirectory()
 
 bool CommonHostInterface::BootSystem(const SystemBootParameters& parameters)
 {
+  // If the fullscreen UI is enabled, make sure it's finished loading the game list so we don't race it.
+  if (m_fullscreen_ui_enabled)
+    FullscreenUI::EnsureGameListLoaded();
+
   if (!HostInterface::BootSystem(parameters))
   {
     // if in batch mode, exit immediately if booting failed
