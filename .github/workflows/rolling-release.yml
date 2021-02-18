@@ -156,7 +156,7 @@ jobs:
 
 
   linux-build:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2.3.1
       with:
@@ -276,7 +276,7 @@ jobs:
 
   create-release:
     needs: [windows-build, windows-arm64-build, linux-build, android-build, macos-build]
-    runs-on: "ubuntu-latest"
+    runs-on: "ubuntu-20.04"
     if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
     steps:
       - name: Download Windows Artifacts
