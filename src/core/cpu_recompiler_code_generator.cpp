@@ -1008,6 +1008,13 @@ void CodeGenerator::InstructionEpilogue(const CodeBlockInstruction& cbi)
   }
 }
 
+void CodeGenerator::TruncateBlockAtCurrentInstruction()
+{
+  Log_DevPrintf("Truncating block %08X at %08X", m_block->GetPC(), m_current_instruction->pc);
+  m_block_end = m_current_instruction + 1;
+  WriteNewPC(CalculatePC(), true);
+}
+
 void CodeGenerator::AddPendingCycles(bool commit)
 {
   if (m_delayed_cycles_add == 0)
@@ -1496,6 +1503,25 @@ bool CodeGenerator::Compile_Store(const CodeBlockInstruction& cbi)
   }
 
   InstructionEpilogue(cbi);
+
+  if (address_spec)
+  {
+    const CPU::Segment seg = GetSegmentForAddress(*address_spec);
+    if (seg == Segment::KUSEG || seg == Segment::KSEG0 || seg == Segment::KSEG1)
+    {
+      const PhysicalMemoryAddress phys_addr = VirtualAddressToPhysical(*address_spec);
+      const PhysicalMemoryAddress block_start = VirtualAddressToPhysical(m_block->GetPC());
+      const PhysicalMemoryAddress block_end = VirtualAddressToPhysical(
+        m_block->GetPC() + static_cast<u32>(m_block->instructions.size()) * sizeof(Instruction));
+      if (phys_addr >= block_start && phys_addr < block_end)
+      {
+        Log_WarningPrintf("Instruction %08X speculatively writes to %08X inside block %08X-%08X. Truncating block.",
+                          cbi.pc, phys_addr, block_start, block_end);
+        TruncateBlockAtCurrentInstruction();
+      }
+    }
+  }
+
   return true;
 }
 

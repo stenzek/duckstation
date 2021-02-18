@@ -196,6 +196,7 @@ private:
   void BlockEpilogue();
   void InstructionPrologue(const CodeBlockInstruction& cbi, TickCount cycles, bool force_sync = false);
   void InstructionEpilogue(const CodeBlockInstruction& cbi);
+  void TruncateBlockAtCurrentInstruction();
   void AddPendingCycles(bool commit);
 
   Value CalculatePC(u32 offset = 0);
