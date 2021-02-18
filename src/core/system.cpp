@@ -7,6 +7,7 @@
 #include "common/file_system.h"
 #include "common/iso_reader.h"
 #include "common/log.h"
+#include "common/make_array.h"
 #include "common/state_wrapper.h"
 #include "common/string_util.h"
 #include "common/timestamp.h"
@@ -277,6 +278,26 @@ bool IsM3UFileName(const char* path)
 {
   const char* extension = std::strrchr(path, '.');
   return (extension && StringUtil::Strcasecmp(extension, ".m3u") == 0);
+}
+
+bool IsLoadableFilename(const char* path)
+{
+  static constexpr auto extensions = make_array(".bin", ".cue", ".img", ".iso", ".chd", // discs
+                                                ".exe", ".psexe",                       // exes
+                                                ".psf", ".minipsf",                     // psf
+                                                ".m3u"                                  // playlists
+  );
+  const char* extension = std::strrchr(path, '.');
+  if (!extension)
+    return false;
+
+  for (const char* test_extension : extensions)
+  {
+    if (StringUtil::Strcasecmp(extension, test_extension) == 0)
+      return true;
+  }
+
+  return false;
 }
 
 std::vector<std::string> ParseM3UFile(const char* path)

@@ -52,6 +52,16 @@ const char* GameList::GetGameListCompatibilityRatingString(GameListCompatibility
            "";
 }
 
+bool GameList::IsScannableFilename(const std::string& path)
+{
+  // we don't scan bin files because they'll duplicate
+  std::string::size_type pos = path.rfind('.');
+  if (pos != std::string::npos && StringUtil::Strcasecmp(path.c_str() + pos, ".bin") == 0)
+    return false;
+
+  return System::IsLoadableFilename(path.c_str());
+}
+
 bool GameList::GetExeListEntry(const char* path, GameListEntry* entry)
 {
   FILESYSTEM_STAT_DATA ffd;
@@ -499,24 +509,8 @@ void GameList::ScanDirectory(const char* path, bool recursive, ProgressCallback*
   for (const FILESYSTEM_FIND_DATA& ffd : files)
   {
     progress->IncrementProgressValue();
-
-    // if this is a .bin, check if we have a .cue. if there is one, skip it
-    const char* extension = std::strrchr(ffd.FileName.c_str(), '.');
-    if (extension && StringUtil::Strcasecmp(extension, ".bin") == 0)
-    {
-#if 0
-      std::string temp(ffd.FileName, extension - ffd.FileName);
-      temp += ".cue";
-      if (std::any_of(files.begin(), files.end(),
-                      [&temp](const FILESYSTEM_FIND_DATA& it) { return StringUtil::Strcasecmp(it.FileName, temp.c_str()) == 0; }))
-      {
-        Log_DebugPrintf("Skipping due to '%s' existing", temp.c_str());
-        continue;
-      }
-#else
+    if (!IsScannableFilename(ffd.FileName))
       continue;
-#endif
-    }
 
     std::string entry_path(ffd.FileName);
     if (std::any_of(m_entries.begin(), m_entries.end(),

@@ -94,6 +94,8 @@ public:
   /// Returns a string representation of a compatibility level.
   static const char* GetGameListCompatibilityRatingString(GameListCompatibilityRating rating);
 
+  static bool IsScannableFilename(const std::string& path);
+
   const EntryList& GetEntries() const { return m_entries; }
   const u32 GetEntryCount() const { return static_cast<u32>(m_entries.size()); }
   const std::vector<DirectoryEntry>& GetSearchDirectories() const { return m_search_directories; }

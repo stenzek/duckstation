@@ -66,6 +66,9 @@ bool IsPsfFileName(const char* path);
 /// Returns true if the filename is a M3U Playlist we can handle.
 bool IsM3UFileName(const char* path);
 
+/// Returns true if the filename is one we can load.
+bool IsLoadableFilename(const char* path);
+
 /// Parses an M3U playlist, returning the entries.
 std::vector<std::string> ParseM3UFile(const char* path);
 
