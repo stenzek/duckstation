@@ -355,41 +355,41 @@ void Timers::UpdateIRQ(u32 index)
 
 TickCount Timers::GetTicksUntilNextInterrupt() const
 {
-  TickCount min_ticks = std::numeric_limits<TickCount>::max();
+  TickCount min_ticks = System::GetMaxSliceTicks();
   for (u32 i = 0; i < NUM_TIMERS; i++)
   {
     const CounterState& cs = m_states[i];
     if (!cs.counting_enabled || (i < 2 && cs.external_counting_enabled) ||
-        (!cs.mode.irq_at_target && !cs.mode.irq_on_overflow))
+        (!cs.mode.irq_at_target && !cs.mode.irq_on_overflow && (cs.mode.irq_repeat || !cs.irq_done)))
     {
       continue;
     }
 
-    TickCount min_ticks_for_this_timer = std::numeric_limits<TickCount>::max();
-    if (cs.mode.irq_at_target && cs.counter < cs.target)
-      min_ticks_for_this_timer = static_cast<TickCount>(cs.target - cs.counter);
-    if (cs.mode.irq_on_overflow && cs.counter < cs.target)
-      min_ticks_for_this_timer = std::min(min_ticks_for_this_timer, static_cast<TickCount>(0xFFFF - cs.counter));
+    if (cs.mode.irq_at_target)
+    {
+      TickCount ticks = (cs.counter <= cs.target) ? static_cast<TickCount>(cs.target - cs.counter) :
+                                                    static_cast<TickCount>((0xFFFFu - cs.counter) + cs.target);
+      if (cs.external_counting_enabled) // sysclk/8 for timer 2
+        ticks *= 8;
 
-    if (cs.external_counting_enabled) // sysclk/8 for timer 2
-      min_ticks_for_this_timer = std::max<TickCount>(1, System::ScaleTicksToOverclock(min_ticks_for_this_timer * 8));
-    else
-      min_ticks_for_this_timer = std::max<TickCount>(1, System::ScaleTicksToOverclock(min_ticks_for_this_timer));
+      min_ticks = std::min(min_ticks, ticks);
+    }
+    if (cs.mode.irq_on_overflow)
+    {
+      TickCount ticks = static_cast<TickCount>(0xFFFFu - cs.counter);
+      if (cs.external_counting_enabled) // sysclk/8 for timer 2
+        ticks *= 8;
 
-    min_ticks = std::min(min_ticks, min_ticks_for_this_timer);
+      min_ticks = std::min(min_ticks, ticks);
+    }
   }
 
-  return min_ticks;
+  return System::ScaleTicksToOverclock(std::max<TickCount>(1, min_ticks));
 }
 
 void Timers::UpdateSysClkEvent()
 {
-  // Still update once every 100ms. If we get polled we'll execute sooner.
-  const TickCount ticks = GetTicksUntilNextInterrupt();
-  if (ticks == std::numeric_limits<TickCount>::max())
-    m_sysclk_event->Schedule(System::GetMaxSliceTicks());
-  else
-    m_sysclk_event->Schedule(ticks);
+  m_sysclk_event->Schedule(GetTicksUntilNextInterrupt());
 }
 
 void Timers::DrawDebugStateWindow()
