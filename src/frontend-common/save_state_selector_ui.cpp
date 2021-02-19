@@ -158,7 +158,7 @@ std::pair<s32, bool> SaveStateSelectorUI::GetSlotTypeFromSelection(u32 selection
 
 void SaveStateSelectorUI::InitializePlaceholderListEntry(ListEntry* li, s32 slot, bool global)
 {
-  li->title = "No Save State";
+  li->title = m_host_interface->TranslateStdString("SaveStateSelectorUI", "No Save State");
   std::string().swap(li->game_code);
   std::string().swap(li->path);
   std::string().swap(li->formatted_timestamp);
@@ -227,8 +227,19 @@ void SaveStateSelectorUI::Draw()
 
         ImGui::Indent(text_indent);
 
-        ImGui::Text("%s Slot %d",
-                    entry.global ? "Global" : (entry.game_code.empty() ? "Game" : entry.game_code.c_str()), entry.slot);
+        if (entry.global)
+        {
+          ImGui::Text(m_host_interface->TranslateString("SaveStateSelectorUI", "Global Slot %d"), entry.slot);
+        }
+        else if (entry.game_code.empty())
+        {
+          ImGui::Text(m_host_interface->TranslateString("SaveStateSelectorUI", "Gane Slot %d"), entry.slot);
+        }
+        else
+        {
+          ImGui::Text(m_host_interface->TranslateString("SaveStateSelectorUI", "%s Slot %d"), entry.game_code.c_str(),
+                      entry.slot);
+        }
         ImGui::TextUnformatted(entry.title.c_str());
         ImGui::TextUnformatted(entry.formatted_timestamp.c_str());
         ImGui::TextUnformatted(entry.path.c_str());
@@ -270,13 +281,17 @@ void SaveStateSelectorUI::Draw()
         strip_device_name(m_host_interface->GetStringSettingValue("Hotkeys", "SelectPreviousSaveStateSlot"));
 
       ImGui::TableNextColumn();
-      ImGui::Text("%s - %s", load_savestate_hotkey.c_str(), "Load");
+      ImGui::Text("%s - %s", load_savestate_hotkey.c_str(),
+                  m_host_interface->TranslateString("SaveStateSelectorUI", "Load").GetCharArray());
       ImGui::TableNextColumn();
-      ImGui::Text("%s - %s", prev_savestate_hotkey.c_str(), "Select Previous");
+      ImGui::Text("%s - %s", prev_savestate_hotkey.c_str(),
+                  m_host_interface->TranslateString("SaveStateSelectorUI", "Select Previous").GetCharArray());
       ImGui::TableNextColumn();
-      ImGui::Text("%s - %s", save_savestate_hotkey.c_str(), "Save");
+      ImGui::Text("%s - %s", save_savestate_hotkey.c_str(),
+                  m_host_interface->TranslateString("SaveStateSelectorUI", "Save").GetCharArray());
       ImGui::TableNextColumn();
-      ImGui::Text("%s - %s", next_savestate_hotkey.c_str(), "Select Next");
+      ImGui::Text("%s - %s", next_savestate_hotkey.c_str(),
+                  m_host_interface->TranslateString("SaveStateSelectorUI", "Select Next").GetCharArray());
 
       ImGui::EndTable();
     }
