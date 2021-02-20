@@ -75,6 +75,7 @@ protected:
   bool SetBufferSize(u32 buffer_size);
   bool IsDeviceOpen() const { return (m_output_sample_rate > 0); }
 
+  void LockedEmptyBuffers();
   u32 GetSamplesAvailable() const;
   u32 GetSamplesAvailableLocked() const;
   void ReadFrames(SampleType* samples, u32 num_frames, bool apply_volume);

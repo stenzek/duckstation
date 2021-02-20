@@ -35,7 +35,7 @@ bool AudioStream::Reconfigure(u32 input_sample_rate /* = DefaultInputSampleRate 
 
   if (!OpenDevice())
   {
-    EmptyBuffers();
+    LockedEmptyBuffers();
     m_buffer_size = 0;
     m_output_sample_rate = 0;
     m_channels = 0;
@@ -289,6 +289,11 @@ void AudioStream::EmptyBuffers()
 {
   std::unique_lock<std::mutex> lock(m_buffer_mutex);
   std::unique_lock<std::mutex> resampler_lock(m_resampler_mutex);
+  LockedEmptyBuffers();
+}
+
+void AudioStream::LockedEmptyBuffers()
+{
   m_buffer.Clear();
   m_underflow_flag.store(false);
   m_buffer_filling.store(m_wait_for_buffer_fill);
