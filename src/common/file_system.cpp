@@ -169,7 +169,7 @@ void CanonicalizePath(std::string& path, bool OSPath /*= true*/)
 static inline bool FileSystemCharacterIsSane(char c, bool StripSlashes)
 {
   if (!(c >= 'a' && c <= 'z') && !(c >= 'A' && c <= 'Z') && !(c >= '0' && c <= '9') && c != ' ' && c != ' ' &&
-      c != '_' && c != '-')
+      c != '_' && c != '-' && c != '.')
   {
     if (!StripSlashes && (c == '/' || c == '\\'))
       return true;
@@ -237,6 +237,16 @@ void SanitizeFileName(String& Destination, const char* FileName, bool StripSlash
 void SanitizeFileName(String& Destination, bool StripSlashes /* = true */)
 {
   return SanitizeFileName(Destination, Destination, StripSlashes);
+}
+
+void SanitizeFileName(std::string& Destination, bool StripSlashes /* = true*/)
+{
+  const std::size_t len = Destination.length();
+  for (std::size_t i = 0; i < len; i++)
+  {
+    if (!FileSystemCharacterIsSane(Destination[i], StripSlashes))
+      Destination[i] = '_';
+  }
 }
 
 bool IsAbsolutePath(const std::string_view& path)
