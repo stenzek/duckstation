@@ -108,6 +108,7 @@
       <Filter>thirdparty</Filter>
     </ClInclude>
     <ClInclude Include="crash_handler.h" />
+    <ClInclude Include="lru_cache.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="jit_code_buffer.cpp" />
