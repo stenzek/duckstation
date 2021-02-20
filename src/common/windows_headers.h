@@ -37,3 +37,6 @@
 #if defined(LoadIcon)
 #undef LoadIcon
 #endif
+#if defined(GetObject)
+#undef GetObject
+#endif
