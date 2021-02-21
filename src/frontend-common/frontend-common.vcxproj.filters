@@ -27,6 +27,8 @@
     <ClCompile Include="imgui_fullscreen.cpp" />
     <ClCompile Include="fullscreen_ui.cpp" />
     <ClCompile Include="fullscreen_ui_progress_callback.cpp" />
+    <ClCompile Include="http_downloader_wininet.cpp" />
+    <ClCompile Include="http_downloader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="icon.h" />
@@ -55,6 +57,8 @@
     <ClInclude Include="imgui_fullscreen.h" />
     <ClInclude Include="fullscreen_ui.h" />
     <ClInclude Include="fullscreen_ui_progress_callback.h" />
+    <ClInclude Include="http_downloader_wininet.h" />
+    <ClInclude Include="http_downloader.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="font_roboto_regular.inl" />
