@@ -81,6 +81,7 @@ private:
   enum class Command : u8
   {
     Idle,
+    Ready,
     ReadPad,           // 0x42
     ConfigModeSetMode, // 0x43
     SetAnalogMode,     // 0x44

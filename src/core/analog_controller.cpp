@@ -315,6 +315,22 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
   {
     case Command::Idle:
     {
+      *data_out = 0xFF;
+
+      if (data_in == 0x01)
+      {
+        Log_DevPrintf("ACK controller access");
+        m_command = Command::Ready;
+        return true;
+      }
+
+      Log_DevPrintf("Unknown data_in = 0x%02X", data_in);
+      return false;
+    }
+    break;
+
+    case Command::Ready:
+    {
       if (data_in == 0x42)
       {
         Assert(m_command_step == 0);
@@ -378,15 +394,8 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
       }
       else
       {
-        *data_out = 0xFF;
-        ack = (data_in == 0x01);
-
-        if (ack)
-          Log_DevPrintf("ACK controller access");
-        else
-          Log_DevPrintf("Unknown data_in = 0x%02X", data_in);
-
-        return ack;
+        Log_ErrorPrintf("Unimplemented analog controller command 0x%02X", data_in);
+        Panic("Unimplemented analog controller command");
       }
     }
     break;
