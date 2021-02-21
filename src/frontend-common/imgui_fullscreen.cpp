@@ -225,7 +225,7 @@ void EndLayout()
 
   const float notification_margin = LayoutScale(10.0f);
   const float spacing = LayoutScale(10.0f);
-  ImVec2 position(notification_margin, g_layout_padding_top + LayoutScale(LAYOUT_SCREEN_HEIGHT) - notification_margin);
+  ImVec2 position(notification_margin, ImGui::GetIO().DisplaySize.y - notification_margin);
   DrawBackgroundProgressDialogs(position, spacing);
   DrawNotifications(position, spacing);
 
@@ -235,8 +235,8 @@ void EndLayout()
 
 bool BeginFullscreenColumns(const char* title)
 {
-  ImGui::SetNextWindowPos(ImVec2(g_layout_padding_left, g_layout_padding_top));
-  ImGui::SetNextWindowSize(LayoutScale(ImVec2(LAYOUT_SCREEN_WIDTH, LAYOUT_SCREEN_HEIGHT)));
+  ImGui::SetNextWindowPos(ImVec2(g_layout_padding_left, 0.0f));
+  ImGui::SetNextWindowSize(ImVec2(LayoutScale(LAYOUT_SCREEN_WIDTH), ImGui::GetIO().DisplaySize.y));
 
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
@@ -267,7 +267,7 @@ void EndFullscreenColumns()
 bool BeginFullscreenColumnWindow(float start, float end, const char* name, const ImVec4& background)
 {
   const ImVec2 pos(LayoutScale(start), 0.0f);
-  const ImVec2 size(LayoutScale(ImVec2(end - start, LAYOUT_SCREEN_HEIGHT)));
+  const ImVec2 size(LayoutScale(end - start), ImGui::GetIO().DisplaySize.y);
 
   ImGui::PushStyleColor(ImGuiCol_ChildBg, background);
 

@@ -678,7 +678,7 @@ void DrawLandingWindow()
 
   if (BeginFullscreenColumnWindow(0.0f, 570.0f, "logo", ImVec4(0.11f, 0.15f, 0.17f, 1.00f)))
   {
-    ImGui::SetCursorPos(LayoutScale(ImVec2(120.0f, 170.0f)));
+    ImGui::SetCursorPos(ImVec2(120.0f, (ImGui::GetWindowHeight() * 0.5f) - LayoutScale(170.0f)));
     ImGui::Image(s_app_icon_texture->GetHandle(), LayoutScale(ImVec2(380.0f, 380.0f)));
   }
   EndFullscreenColumnWindow();
@@ -720,7 +720,7 @@ void DrawLandingWindow()
     {
       bool about_visible, about_hovered, about_pressed;
       ImRect about_rect;
-      ImGui::SetCursorPosY(LayoutScale(670.0f));
+      ImGui::SetCursorPosY(ImGui::GetWindowHeight() - LayoutScale(50.0f));
       about_pressed = MenuButtonFrame("About", true, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY,
                                       &about_visible, &about_hovered, &about_rect.Min, &about_rect.Max);
 
@@ -1041,7 +1041,7 @@ void DrawSettingsWindow()
         s_settings_page = static_cast<SettingsPage>(i);
     }
 
-    ImGui::SetCursorPosY(LayoutScale(670.0f));
+    ImGui::SetCursorPosY(ImGui::GetWindowHeight() - LayoutScale(50.0f));
     if (ActiveButton(ICON_FA_BACKWARD "  Back", false))
       ReturnToMainWindow();
 
@@ -2550,7 +2550,7 @@ void DrawGameListWindow()
     ImGui::EndGroup();
     ImGui::PopStyleVar();
 
-    ImGui::SetCursorPosY(LayoutScale(670.0f));
+    ImGui::SetCursorPosY(ImGui::GetWindowHeight() - LayoutScale(50.0f));
     BeginMenuButtons();
     if (ActiveButton(ICON_FA_BACKWARD "  Back", false))
       ReturnToMainWindow();
@@ -2779,7 +2779,7 @@ void DrawOSDMessages()
   const float margin = LayoutScale(10.0f);
   const float padding = LayoutScale(10.0f);
   float position_x = margin;
-  float position_y = (margin + ImGuiFullscreen::g_layout_padding_top);
+  float position_y = margin;
 
   s_host_interface->EnumerateOSDMessages(
     [max_width, spacing, padding, &position_x, &position_y](const std::string& message, float time_remaining) -> bool {
