@@ -197,10 +197,6 @@ u32 CDImage::Read(ReadMode read_mode, u32 sector_count, void* buffer)
         UnreachableCode();
         break;
     }
-
-    m_position_on_disc++;
-    m_position_in_index++;
-    m_position_in_track++;
   }
 
   return sectors_read;
