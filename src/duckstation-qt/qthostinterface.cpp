@@ -91,6 +91,9 @@ void QtHostInterface::Shutdown()
 
 bool QtHostInterface::initializeOnThread()
 {
+  SetUserDirectory();
+  m_settings_interface = std::make_unique<INISettingsInterface>(GetSettingsFileName());
+
   if (!CommonHostInterface::Initialize())
     return false;
 
@@ -181,37 +184,6 @@ bool QtHostInterface::ConfirmMessage(const char* message)
     SetFullscreen(true);
 
   return result;
-}
-
-std::string QtHostInterface::GetStringSettingValue(const char* section, const char* key,
-                                                   const char* default_value /*= ""*/)
-{
-  std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
-  return m_settings_interface->GetStringValue(section, key, default_value);
-}
-
-bool QtHostInterface::GetBoolSettingValue(const char* section, const char* key, bool default_value /* = false */)
-{
-  std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
-  return m_settings_interface->GetBoolValue(section, key, default_value);
-}
-
-int QtHostInterface::GetIntSettingValue(const char* section, const char* key, int default_value /* = 0 */)
-{
-  std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
-  return m_settings_interface->GetIntValue(section, key, default_value);
-}
-
-float QtHostInterface::GetFloatSettingValue(const char* section, const char* key, float default_value /* = 0.0f */)
-{
-  std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
-  return m_settings_interface->GetFloatValue(section, key, default_value);
-}
-
-std::vector<std::string> QtHostInterface::GetSettingStringList(const char* section, const char* key)
-{
-  std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
-  return m_settings_interface->GetStringList(section, key);
 }
 
 void QtHostInterface::SetBoolSettingValue(const char* section, const char* key, bool value)
@@ -311,15 +283,7 @@ void QtHostInterface::applySettings(bool display_osd_messages /* = false */)
 
 void QtHostInterface::ApplySettings(bool display_osd_messages)
 {
-  Settings old_settings(std::move(g_settings));
-  {
-    std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
-    CommonHostInterface::LoadSettings(*m_settings_interface.get());
-    CommonHostInterface::ApplyGameSettings(display_osd_messages);
-    CommonHostInterface::FixIncompatibleSettings(display_osd_messages);
-  }
-
-  CheckForSettingsChanges(old_settings);
+  CommonHostInterface::ApplySettings(display_osd_messages);
 
   // detect when render-to-main flag changes
   if (!System::IsShutdown())
@@ -724,20 +688,6 @@ void QtHostInterface::OnSystemStateSaved(bool global, s32 slot)
   emit stateSaved(QString::fromStdString(System::GetRunningCode()), global, slot);
 }
 
-void QtHostInterface::LoadSettings()
-{
-  m_settings_interface = std::make_unique<INISettingsInterface>(CommonHostInterface::GetSettingsFileName());
-
-  if (!CommonHostInterface::CheckSettings(*m_settings_interface.get()))
-  {
-    QTimer::singleShot(1000,
-                       [this]() { ReportError("Settings version mismatch, settings have been reset to defaults."); });
-  }
-
-  CommonHostInterface::LoadSettings(*m_settings_interface.get());
-  CommonHostInterface::FixIncompatibleSettings(false);
-}
-
 void QtHostInterface::SetDefaultSettings(SettingsInterface& si)
 {
   CommonHostInterface::SetDefaultSettings(si);
@@ -749,11 +699,6 @@ void QtHostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetStringValue("Hotkeys", "SelectNextSaveStateSlot", "Keyboard/F4");
 
   si.SetBoolValue("Main", "RenderToMainWindow", true);
-}
-
-void QtHostInterface::UpdateInputMap()
-{
-  updateInputMap();
 }
 
 void QtHostInterface::SetMouseMode(bool relative, bool hide_cursor)
@@ -781,24 +726,14 @@ void QtHostInterface::applyInputProfile(const QString& profile_path)
     return;
   }
 
-  Settings old_settings(std::move(g_settings));
-  {
-    std::lock_guard<std::recursive_mutex> lock(m_settings_mutex);
-    CommonHostInterface::ApplyInputProfile(profile_path.toUtf8().data(), *m_settings_interface.get());
-    CommonHostInterface::LoadSettings(*m_settings_interface.get());
-    CommonHostInterface::ApplyGameSettings(false);
-    CommonHostInterface::FixIncompatibleSettings(false);
-  }
-
-  CheckForSettingsChanges(old_settings);
-
+  ApplyInputProfile(profile_path.toUtf8().data());
   emit inputProfileLoaded();
 }
 
 void QtHostInterface::saveInputProfile(const QString& profile_name)
 {
   std::lock_guard<std::recursive_mutex> lock(m_settings_mutex);
-  SaveInputProfile(profile_name.toUtf8().data(), *m_settings_interface.get());
+  SaveInputProfile(profile_name.toUtf8().data());
 }
 
 QString QtHostInterface::getUserDirectoryRelativePath(const QString& arg) const

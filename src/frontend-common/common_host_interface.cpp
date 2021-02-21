@@ -59,7 +59,6 @@ bool CommonHostInterface::Initialize()
   if (!HostInterface::Initialize())
     return false;
 
-  SetUserDirectory();
   InitializeUserDirectory();
 
   // Change to the user directory so that all default/relative paths in the config are after this.
@@ -2001,18 +2000,23 @@ std::string CommonHostInterface::GetInputProfilePath(const char* name) const
   return {};
 }
 
-void CommonHostInterface::ClearAllControllerBindings(SettingsInterface& si)
+void CommonHostInterface::ClearAllControllerBindings()
 {
   for (u32 controller_index = 1; controller_index <= NUM_CONTROLLER_AND_CARD_PORTS; controller_index++)
-    si.ClearSection(TinyString::FromFormat("Controller%u", controller_index));
+    m_settings_interface->ClearSection(TinyString::FromFormat("Controller%u", controller_index));
 }
 
-void CommonHostInterface::ApplyInputProfile(const char* profile_path, SettingsInterface& si)
+bool CommonHostInterface::ApplyInputProfile(const char* profile_path)
 {
-  // clear bindings for all controllers
-  ClearAllControllerBindings(si);
+  if (!FileSystem::FileExists(profile_path))
+    return false;
 
   INISettingsInterface profile(profile_path);
+
+  std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
+
+  // clear bindings for all controllers
+  ClearAllControllerBindings();
 
   for (u32 controller_index = 1; controller_index <= NUM_CONTROLLER_AND_CARD_PORTS; controller_index++)
   {
@@ -2020,7 +2024,7 @@ void CommonHostInterface::ApplyInputProfile(const char* profile_path, SettingsIn
     const std::string ctype_str = profile.GetStringValue(section_name, "Type");
     if (ctype_str.empty())
     {
-      si.SetStringValue(section_name, "Type", Settings::GetControllerTypeName(ControllerType::None));
+      m_settings_interface->SetStringValue(section_name, "Type", Settings::GetControllerTypeName(ControllerType::None));
       g_settings.controller_types[controller_index - 1] = ControllerType::None;
       continue;
     }
@@ -2029,38 +2033,38 @@ void CommonHostInterface::ApplyInputProfile(const char* profile_path, SettingsIn
     if (!ctype)
     {
       Log_ErrorPrintf("Invalid controller type in profile: '%s'", ctype_str.c_str());
-      return;
+      continue;
     }
 
     g_settings.controller_types[controller_index - 1] = *ctype;
     HostInterface::OnControllerTypeChanged(controller_index - 1);
 
-    si.SetStringValue(section_name, "Type", Settings::GetControllerTypeName(*ctype));
+    m_settings_interface->SetStringValue(section_name, "Type", Settings::GetControllerTypeName(*ctype));
 
     for (const auto& button : Controller::GetButtonNames(*ctype))
     {
       const auto key_name = TinyString::FromFormat("Button%s", button.first.c_str());
-      si.DeleteValue(section_name, key_name);
+      m_settings_interface->DeleteValue(section_name, key_name);
       const std::vector<std::string> bindings = profile.GetStringList(section_name, key_name);
       for (const std::string& binding : bindings)
-        si.AddToStringList(section_name, key_name, binding.c_str());
+        m_settings_interface->AddToStringList(section_name, key_name, binding.c_str());
     }
 
     for (const auto& axis : Controller::GetAxisNames(*ctype))
     {
       const auto key_name = TinyString::FromFormat("Axis%s", std::get<std::string>(axis).c_str());
-      si.DeleteValue(section_name, std::get<std::string>(axis).c_str());
+      m_settings_interface->DeleteValue(section_name, std::get<std::string>(axis).c_str());
       const std::vector<std::string> bindings = profile.GetStringList(section_name, key_name);
       for (const std::string& binding : bindings)
-        si.AddToStringList(section_name, key_name, binding.c_str());
+        m_settings_interface->AddToStringList(section_name, key_name, binding.c_str());
     }
 
-    si.DeleteValue(section_name, "Rumble");
+    m_settings_interface->DeleteValue(section_name, "Rumble");
     if (Controller::GetVibrationMotorCount(*ctype) > 0)
     {
       const std::string rumble_value = profile.GetStringValue(section_name, "Rumble");
       if (!rumble_value.empty())
-        si.SetStringValue(section_name, "Rumble", rumble_value.c_str());
+        m_settings_interface->SetStringValue(section_name, "Rumble", rumble_value.c_str());
     }
 
     Controller::SettingList settings = Controller::GetSettings(*ctype);
@@ -2068,14 +2072,16 @@ void CommonHostInterface::ApplyInputProfile(const char* profile_path, SettingsIn
     {
       const std::string value = profile.GetStringValue(section_name, ssi.key, "");
       if (!value.empty())
-        si.SetStringValue(section_name, ssi.key, value.c_str());
+        m_settings_interface->SetStringValue(section_name, ssi.key, value.c_str());
     }
   }
 
   ReportFormattedMessage(TranslateString("OSDMessage", "Loaded input profile from '%s'"), profile_path);
+  ApplySettings(false);
+  return true;
 }
 
-bool CommonHostInterface::SaveInputProfile(const char* profile_path, SettingsInterface& si)
+bool CommonHostInterface::SaveInputProfile(const char* profile_path)
 {
   if (FileSystem::FileExists(profile_path))
     Log_WarningPrintf("Existing input profile at '%s' will be overwritten", profile_path);
@@ -2098,7 +2104,7 @@ bool CommonHostInterface::SaveInputProfile(const char* profile_path, SettingsInt
     for (const auto& button : Controller::GetButtonNames(ctype))
     {
       const auto key_name = TinyString::FromFormat("Button%s", button.first.c_str());
-      const std::vector<std::string> bindings = si.GetStringList(section_name, key_name);
+      const std::vector<std::string> bindings = m_settings_interface->GetStringList(section_name, key_name);
       for (const std::string& binding : bindings)
         profile.AddToStringList(section_name, key_name, binding.c_str());
     }
@@ -2106,14 +2112,14 @@ bool CommonHostInterface::SaveInputProfile(const char* profile_path, SettingsInt
     for (const auto& axis : Controller::GetAxisNames(ctype))
     {
       const auto key_name = TinyString::FromFormat("Axis%s", std::get<std::string>(axis).c_str());
-      const std::vector<std::string> bindings = si.GetStringList(section_name, key_name);
+      const std::vector<std::string> bindings = m_settings_interface->GetStringList(section_name, key_name);
       for (const std::string& binding : bindings)
         profile.AddToStringList(section_name, key_name, binding.c_str());
     }
 
     if (Controller::GetVibrationMotorCount(ctype) > 0)
     {
-      const std::string rumble_value = si.GetStringValue(section_name, "Rumble");
+      const std::string rumble_value = m_settings_interface->GetStringValue(section_name, "Rumble");
       if (!rumble_value.empty())
         profile.SetStringValue(section_name, "Rumble", rumble_value.c_str());
     }
@@ -2121,7 +2127,7 @@ bool CommonHostInterface::SaveInputProfile(const char* profile_path, SettingsInt
     Controller::SettingList settings = Controller::GetSettings(ctype);
     for (const SettingInfo& ssi : settings)
     {
-      const std::string value = si.GetStringValue(section_name, ssi.key, "");
+      const std::string value = m_settings_interface->GetStringValue(section_name, ssi.key, "");
       if (!value.empty())
         profile.SetStringValue(section_name, ssi.key, value.c_str());
     }
@@ -2308,21 +2314,6 @@ std::string CommonHostInterface::GetMostRecentResumeSaveStatePath() const
   return std::move(most_recent->FileName);
 }
 
-bool CommonHostInterface::CheckSettings(SettingsInterface& si)
-{
-  const int settings_version = si.GetIntValue("Main", "SettingsVersion", -1);
-  if (settings_version == SETTINGS_VERSION)
-    return true;
-
-  Log_ErrorPrintf("Settings version %d does not match expected version %d, resetting", settings_version,
-                  SETTINGS_VERSION);
-
-  si.Clear();
-  si.SetIntValue("Main", "SettingsVersion", SETTINGS_VERSION);
-  SetDefaultSettings(si);
-  return false;
-}
-
 void CommonHostInterface::SetDefaultSettings(SettingsInterface& si)
 {
   HostInterface::SetDefaultSettings(si);
@@ -2361,6 +2352,30 @@ void CommonHostInterface::SetDefaultSettings(SettingsInterface& si)
 #endif
 }
 
+void CommonHostInterface::LoadSettings()
+{
+  // no lock needed here since it's done on startup
+  Assert(m_settings_interface);
+
+#ifndef __ANDROID__
+  // we don't check the settings version on android, because it's not using the ini yet..
+  // we can re-enable this once we move it over.. eventually.
+  const int settings_version = m_settings_interface->GetIntValue("Main", "SettingsVersion", -1);
+  if (settings_version != SETTINGS_VERSION)
+  {
+    ReportFormattedError("Settings version %d does not match expected version %d, resetting", settings_version,
+                         SETTINGS_VERSION);
+
+    m_settings_interface->Clear();
+    m_settings_interface->SetIntValue("Main", "SettingsVersion", SETTINGS_VERSION);
+    SetDefaultSettings(*m_settings_interface);
+  }
+#endif
+
+  LoadSettings(*m_settings_interface);
+  FixIncompatibleSettings(false);
+}
+
 void CommonHostInterface::LoadSettings(SettingsInterface& si)
 {
   HostInterface::LoadSettings(si);
@@ -2373,6 +2388,25 @@ void CommonHostInterface::LoadSettings(SettingsInterface& si)
 void CommonHostInterface::SaveSettings(SettingsInterface& si)
 {
   HostInterface::SaveSettings(si);
+}
+
+void CommonHostInterface::ApplySettings(bool display_osd_messages)
+{
+  Settings old_settings(std::move(g_settings));
+  {
+    std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
+    LoadSettings(*m_settings_interface.get());
+    ApplyGameSettings(display_osd_messages);
+    FixIncompatibleSettings(display_osd_messages);
+  }
+
+  CheckForSettingsChanges(old_settings);
+}
+
+void CommonHostInterface::UpdateInputMap()
+{
+  std::lock_guard<std::recursive_mutex> lock(m_settings_mutex);
+  UpdateInputMap(*m_settings_interface.get());
 }
 
 void CommonHostInterface::CheckForSettingsChanges(const Settings& old_settings)
@@ -2423,6 +2457,37 @@ void CommonHostInterface::CheckForSettingsChanges(const Settings& old_settings)
   }
 
   UpdateInputMap();
+}
+
+std::string CommonHostInterface::GetStringSettingValue(const char* section, const char* key,
+                                                       const char* default_value /*= ""*/)
+{
+  std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
+  return m_settings_interface->GetStringValue(section, key, default_value);
+}
+
+bool CommonHostInterface::GetBoolSettingValue(const char* section, const char* key, bool default_value /* = false */)
+{
+  std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
+  return m_settings_interface->GetBoolValue(section, key, default_value);
+}
+
+int CommonHostInterface::GetIntSettingValue(const char* section, const char* key, int default_value /* = 0 */)
+{
+  std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
+  return m_settings_interface->GetIntValue(section, key, default_value);
+}
+
+float CommonHostInterface::GetFloatSettingValue(const char* section, const char* key, float default_value /* = 0.0f */)
+{
+  std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
+  return m_settings_interface->GetFloatValue(section, key, default_value);
+}
+
+std::vector<std::string> CommonHostInterface::GetSettingStringList(const char* section, const char* key)
+{
+  std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
+  return m_settings_interface->GetStringList(section, key);
 }
 
 void CommonHostInterface::SetTimerResolutionIncreased(bool enabled)

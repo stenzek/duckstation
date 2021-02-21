@@ -1497,7 +1497,7 @@ void DrawSettingsWindow()
               return;
 
             // needs a reload...
-            s_host_interface->ApplyInputProfile(profiles[index].path.c_str(), *s_settings_interface);
+            s_host_interface->ApplyInputProfile(profiles[index].path.c_str());
             s_settings_copy.Load(*s_settings_interface);
             s_host_interface->RunLater(SaveAndApplySettings);
             CloseChoiceDialog();

@@ -29,13 +29,7 @@ public:
   void ReportError(const char* message) override;
   bool ConfirmMessage(const char* message) override;
 
-  std::string GetStringSettingValue(const char* section, const char* key, const char* default_value = "") override;
-  bool GetBoolSettingValue(const char* section, const char* key, bool default_value = false) override;
-  int GetIntSettingValue(const char* section, const char* key, int default_value = 0) override;
-  float GetFloatSettingValue(const char* section, const char* key, float default_value = 0.0f) override;
-
   void RunLater(std::function<void()> callback) override;
-  void ApplySettings(bool display_osd_messages) override;
 
 protected:
   enum : u32
@@ -44,12 +38,8 @@ protected:
     DEFAULT_WINDOW_HEIGHT = 720
   };
 
-  virtual void LoadSettings() override;
-
   bool AcquireHostDisplay() override;
   void ReleaseHostDisplay() override;
-
-  void UpdateInputMap() override;
 
   void OnSystemCreated() override;
   void OnSystemPaused(bool paused) override;
@@ -70,7 +60,6 @@ protected:
   void CreateImGuiContext();
   void RunCallbacks();
 
-  std::unique_ptr<INISettingsInterface> m_settings_interface;
   std::deque<std::function<void()>> m_queued_callbacks;
   std::mutex m_queued_callbacks_lock;
 

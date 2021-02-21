@@ -38,6 +38,9 @@ const char* NoGUIHostInterface::GetFrontendName() const
 
 bool NoGUIHostInterface::Initialize()
 {
+  SetUserDirectory();
+  m_settings_interface = std::make_unique<INISettingsInterface>(GetSettingsFileName());
+
   // TODO: Make command line.
   m_fullscreen_ui_enabled = true;
 
@@ -79,52 +82,6 @@ void NoGUIHostInterface::Shutdown()
   }
 
   DestroyPlatformWindow();
-}
-
-std::string NoGUIHostInterface::GetStringSettingValue(const char* section, const char* key,
-                                                      const char* default_value /*= ""*/)
-{
-  return m_settings_interface->GetStringValue(section, key, default_value);
-}
-
-bool NoGUIHostInterface::GetBoolSettingValue(const char* section, const char* key, bool default_value /* = false */)
-{
-  return m_settings_interface->GetBoolValue(section, key, default_value);
-}
-
-int NoGUIHostInterface::GetIntSettingValue(const char* section, const char* key, int default_value /* = 0 */)
-{
-  return m_settings_interface->GetIntValue(section, key, default_value);
-}
-
-float NoGUIHostInterface::GetFloatSettingValue(const char* section, const char* key, float default_value /* = 0.0f */)
-{
-  return m_settings_interface->GetFloatValue(section, key, default_value);
-}
-
-void NoGUIHostInterface::LoadSettings()
-{
-  m_settings_interface = std::make_unique<INISettingsInterface>(GetSettingsFileName());
-
-  if (!CommonHostInterface::CheckSettings(*m_settings_interface.get()))
-    AddOSDMessage("Settings version mismatch, settings have been reset to defaults.", 30.0f);
-
-  CommonHostInterface::LoadSettings(*m_settings_interface.get());
-  CommonHostInterface::FixIncompatibleSettings(false);
-}
-
-void NoGUIHostInterface::UpdateInputMap()
-{
-  CommonHostInterface::UpdateInputMap(*m_settings_interface.get());
-}
-
-void NoGUIHostInterface::ApplySettings(bool display_osd_messages)
-{
-  Settings old_settings(std::move(g_settings));
-  CommonHostInterface::LoadSettings(*m_settings_interface.get());
-  CommonHostInterface::ApplyGameSettings(display_osd_messages);
-  CommonHostInterface::FixIncompatibleSettings(display_osd_messages);
-  CheckForSettingsChanges(old_settings);
 }
 
 void NoGUIHostInterface::CreateImGuiContext()

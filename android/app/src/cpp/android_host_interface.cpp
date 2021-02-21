@@ -128,9 +128,10 @@ std::unique_ptr<GrowableMemoryByteStream> ReadInputStreamToMemory(JNIEnv* env, j
 } // namespace AndroidHelpers
 
 AndroidHostInterface::AndroidHostInterface(jobject java_object, jobject context_object, std::string user_directory)
-  : m_java_object(java_object), m_settings_interface(context_object)
+  : m_java_object(java_object)
 {
   m_user_directory = std::move(user_directory);
+  m_settings_interface = std::make_unique<AndroidSettingsInterface>(context_object);
 }
 
 AndroidHostInterface::~AndroidHostInterface()
@@ -192,26 +193,6 @@ void AndroidHostInterface::ReportMessage(const char* message)
   }
 }
 
-std::string AndroidHostInterface::GetStringSettingValue(const char* section, const char* key, const char* default_value)
-{
-  return m_settings_interface.GetStringValue(section, key, default_value);
-}
-
-bool AndroidHostInterface::GetBoolSettingValue(const char* section, const char* key, bool default_value /* = false */)
-{
-  return m_settings_interface.GetBoolValue(section, key, default_value);
-}
-
-int AndroidHostInterface::GetIntSettingValue(const char* section, const char* key, int default_value /* = 0 */)
-{
-  return m_settings_interface.GetIntValue(section, key, default_value);
-}
-
-float AndroidHostInterface::GetFloatSettingValue(const char* section, const char* key, float default_value /* = 0.0f */)
-{
-  return m_settings_interface.GetFloatValue(section, key, default_value);
-}
-
 std::unique_ptr<ByteStream> AndroidHostInterface::OpenPackageFile(const char* path, u32 flags)
 {
   Log_DevPrintf("OpenPackageFile(%s, %x)", path, flags);
@@ -266,35 +247,33 @@ void AndroidHostInterface::SetUserDirectory()
   Assert(!m_user_directory.empty());
 }
 
-void AndroidHostInterface::LoadSettings()
+void AndroidHostInterface::LoadSettings(SettingsInterface& si)
 {
-  LoadAndConvertSettings();
-  CommonHostInterface::FixIncompatibleSettings(false);
-  CommonHostInterface::UpdateInputMap(m_settings_interface);
-}
+  const GPURenderer old_renderer = g_settings.gpu_renderer;
+  CommonHostInterface::LoadSettings(si);
 
-void AndroidHostInterface::LoadAndConvertSettings()
-{
-  CommonHostInterface::LoadSettings(m_settings_interface);
-
-  const std::string msaa_str = m_settings_interface.GetStringValue("GPU", "MSAA", "1");
+  const std::string msaa_str = si.GetStringValue("GPU", "MSAA", "1");
   g_settings.gpu_multisamples = std::max<u32>(StringUtil::FromChars<u32>(msaa_str).value_or(1), 1);
   g_settings.gpu_per_sample_shading = StringUtil::EndsWith(msaa_str, "-ssaa");
 
   // turn percentage into fraction for overclock
   const u32 overclock_percent =
-    static_cast<u32>(std::max(m_settings_interface.GetIntValue("CPU", "Overclock", 100), 1));
+    static_cast<u32>(std::max(si.GetIntValue("CPU", "Overclock", 100), 1));
   Settings::CPUOverclockPercentToFraction(overclock_percent, &g_settings.cpu_overclock_numerator,
                                           &g_settings.cpu_overclock_denominator);
   g_settings.cpu_overclock_enable = (overclock_percent != 100);
   g_settings.UpdateOverclockActive();
 
-  m_vibration_enabled = m_settings_interface.GetBoolValue("Controller1", "Vibration", false);
-}
+  m_vibration_enabled = si.GetBoolValue("Controller1", "Vibration", false);
 
-void AndroidHostInterface::UpdateInputMap()
-{
-  CommonHostInterface::UpdateInputMap(m_settings_interface);
+  // Defer renderer changes, the app really doesn't like it.
+  if (System::IsValid() && g_settings.gpu_renderer != old_renderer)
+  {
+    AddFormattedOSDMessage(5.0f,
+                           TranslateString("OSDMessage", "Change to %s GPU renderer will take effect on restart."),
+                           Settings::GetRendererName(g_settings.gpu_renderer));
+    g_settings.gpu_renderer = old_renderer;
+  }
 }
 
 bool AndroidHostInterface::IsEmulationThreadPaused() const
@@ -755,28 +734,8 @@ void AndroidHostInterface::SetFastForwardEnabled(bool enabled)
 void AndroidHostInterface::RefreshGameList(bool invalidate_cache, bool invalidate_database,
                                            ProgressCallback* progress_callback)
 {
-  m_game_list->SetSearchDirectoriesFromSettings(m_settings_interface);
+  m_game_list->SetSearchDirectoriesFromSettings(*m_settings_interface);
   m_game_list->Refresh(invalidate_cache, invalidate_database, progress_callback);
-}
-
-void AndroidHostInterface::ApplySettings(bool display_osd_messages)
-{
-  Settings old_settings = std::move(g_settings);
-  LoadAndConvertSettings();
-  CommonHostInterface::ApplyGameSettings(display_osd_messages);
-  CommonHostInterface::FixIncompatibleSettings(display_osd_messages);
-  UpdateInputMap();
-
-  // Defer renderer changes, the app really doesn't like it.
-  if (System::IsValid() && g_settings.gpu_renderer != old_settings.gpu_renderer)
-  {
-    AddFormattedOSDMessage(5.0f,
-                           TranslateString("OSDMessage", "Change to %s GPU renderer will take effect on restart."),
-                           Settings::GetRendererName(g_settings.gpu_renderer));
-    g_settings.gpu_renderer = old_settings.gpu_renderer;
-  }
-
-  CheckForSettingsChanges(old_settings);
 }
 
 bool AndroidHostInterface::ImportPatchCodesFromString(const std::string& str)
@@ -870,27 +829,6 @@ jobjectArray AndroidHostInterface::GetInputProfileNames(JNIEnv* env) const
   }
 
   return name_array;
-}
-
-bool AndroidHostInterface::ApplyInputProfile(const char* profile_name)
-{
-  const std::string path(GetInputProfilePath(profile_name));
-  if (path.empty())
-    return false;
-
-  Assert(!IsEmulationThreadRunning() || IsEmulationThreadPaused());
-  CommonHostInterface::ApplyInputProfile(path.c_str(), m_settings_interface);
-  ApplySettings(false);
-  return true;
-}
-
-bool AndroidHostInterface::SaveInputProfile(const char* profile_name)
-{
-  const std::string path(GetSavePathForInputProfile(profile_name));
-  if (path.empty())
-    return false;
-
-  return CommonHostInterface::SaveInputProfile(path.c_str(), m_settings_interface);
 }
 
 extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)

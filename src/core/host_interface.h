@@ -115,6 +115,9 @@ public:
   /// Returns a float setting from the configuration.
   virtual float GetFloatSettingValue(const char* section, const char* key, float default_value = 0.0f);
 
+  /// Returns a string list from the configuration.
+  virtual std::vector<std::string> GetSettingStringList(const char* section, const char* key) = 0;
+
   /// Translates a string to the current language.
   virtual TinyString TranslateString(const char* context, const char* str) const;
   virtual std::string TranslateStdString(const char* context, const char* str) const;
@@ -161,9 +164,6 @@ protected:
 
   /// Restores all settings to defaults.
   virtual void SetDefaultSettings(SettingsInterface& si);
-
-  /// Performs the initial load of settings. Should call CheckSettings() and LoadSettings(SettingsInterface&).
-  virtual void LoadSettings() = 0;
 
   /// Loads settings to m_settings and any frontend-specific parameters.
   virtual void LoadSettings(SettingsInterface& si);

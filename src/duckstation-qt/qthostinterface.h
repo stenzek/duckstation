@@ -57,11 +57,6 @@ public Q_SLOTS:
 
 public:
   /// Thread-safe settings access.
-  std::string GetStringSettingValue(const char* section, const char* key, const char* default_value = "") override;
-  bool GetBoolSettingValue(const char* section, const char* key, bool default_value = false) override;
-  int GetIntSettingValue(const char* section, const char* key, int default_value = 0) override;
-  float GetFloatSettingValue(const char* section, const char* key, float default_value = 0.0f) override;
-  std::vector<std::string> GetSettingStringList(const char* section, const char* key);
   void SetBoolSettingValue(const char* section, const char* key, bool value);
   void SetIntSettingValue(const char* section, const char* key, int value);
   void SetFloatSettingValue(const char* section, const char* key, float value);
@@ -206,10 +201,8 @@ protected:
                             const std::string& game_title) override;
   void OnSystemStateSaved(bool global, s32 slot) override;
 
-  void LoadSettings() override;
-  void ApplySettings(bool display_osd_messages) override;
   void SetDefaultSettings(SettingsInterface& si) override;
-  void UpdateInputMap() override;
+  void ApplySettings(bool display_osd_messages) override;
 
   void SetMouseMode(bool relative, bool hide_cursor) override;
   void RunLater(std::function<void()> func) override;
@@ -263,9 +256,6 @@ private:
   void updateDisplayState();
   void queueSettingsSave();
   void wakeThread();
-
-  std::unique_ptr<INISettingsInterface> m_settings_interface;
-  std::recursive_mutex m_settings_mutex;
 
   std::unique_ptr<QTranslator> m_translator;
 

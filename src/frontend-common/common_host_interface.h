@@ -105,8 +105,18 @@ public:
   /// Runs an event next frame as part of the event loop.
   virtual void RunLater(std::function<void()> func) = 0;
 
+  /// Thread-safe settings access.
+  std::string GetStringSettingValue(const char* section, const char* key, const char* default_value = "") override;
+  bool GetBoolSettingValue(const char* section, const char* key, bool default_value = false) override;
+  int GetIntSettingValue(const char* section, const char* key, int default_value = 0) override;
+  float GetFloatSettingValue(const char* section, const char* key, float default_value = 0.0f) override;
+  std::vector<std::string> GetSettingStringList(const char* section, const char* key) override;
+
   /// Loads new settings and applies them.
-  virtual void ApplySettings(bool display_osd_messages) = 0;
+  virtual void ApplySettings(bool display_osd_messages);
+
+  /// Reloads the input map from config. Callable from controller interface.
+  void UpdateInputMap();
 
   virtual bool IsFullscreen() const;
   virtual bool SetFullscreen(bool enabled);
@@ -117,6 +127,9 @@ public:
   virtual bool BootSystem(const SystemBootParameters& parameters) override;
   virtual void PowerOffSystem() override;
   virtual void DestroySystem() override;
+
+  /// Returns the settings interface.
+  ALWAYS_INLINE SettingsInterface* GetSettingsInterface() const { return m_settings_interface.get(); }
 
   /// Returns the game list.
   ALWAYS_INLINE GameList* GetGameList() const { return m_game_list.get(); }
@@ -146,10 +159,10 @@ public:
   std::string GetInputProfilePath(const char* name) const;
 
   /// Applies the specified input profile.
-  void ApplyInputProfile(const char* profile_path, SettingsInterface& si);
+  bool ApplyInputProfile(const char* profile_path);
 
   /// Saves the current input configuration to the specified profile name.
-  bool SaveInputProfile(const char* profile_path, SettingsInterface& si);
+  bool SaveInputProfile(const char* profile_path);
 
   /// Loads the current emulation state from file. Specifying a slot of -1 loads the "resume" game state.
   bool LoadState(bool global, s32 slot);
@@ -322,9 +335,6 @@ protected:
                                  InputAxisHandler handler);
   virtual bool AddRumbleToInputMap(const std::string& binding, u32 controller_index, u32 num_motors);
 
-  /// Reloads the input map from config. Callable from controller interface.
-  virtual void UpdateInputMap() = 0;
-
   void RegisterHotkey(String category, String name, String display_name, InputButtonHandler handler);
   bool HandleHostKeyEvent(HostKeyCode code, bool pressed);
   bool HandleHostMouseEvent(HostMouseButton button, bool pressed);
@@ -357,14 +367,10 @@ protected:
   /// Returns the path to the cheat file for the specified game title.
   std::string GetCheatFileName() const;
 
-  /// Ensures the settings is valid and the correct version. If not, resets to defaults.
-  bool CheckSettings(SettingsInterface& si);
-
   /// Restores all settings to defaults.
   virtual void SetDefaultSettings(SettingsInterface& si) override;
 
   /// Loads settings to m_settings and any frontend-specific parameters.
-  using HostInterface::LoadSettings;
   virtual void LoadSettings(SettingsInterface& si) override;
 
   /// Saves current settings variables to ini.
@@ -391,6 +397,8 @@ protected:
   void DoToggleCheats();
 
   std::string m_settings_filename;
+  std::unique_ptr<SettingsInterface> m_settings_interface;
+  std::recursive_mutex m_settings_mutex;
 
   std::unique_ptr<GameList> m_game_list;
 
@@ -425,6 +433,7 @@ protected:
   } m_command_line_flags = {};
 
 private:
+  void LoadSettings();
   void InitializeUserDirectory();
   void RegisterGeneralHotkeys();
   void RegisterGraphicsHotkeys();
@@ -434,7 +443,7 @@ private:
   void UpdateControllerInputMap(SettingsInterface& si);
   bool UpdateControllerInputMapFromGameSettings();
   void UpdateHotkeyInputMap(SettingsInterface& si);
-  void ClearAllControllerBindings(SettingsInterface& si);
+  void ClearAllControllerBindings();
 
 #ifdef WITH_DISCORD_PRESENCE
   void SetDiscordPresenceEnabled(bool enabled);

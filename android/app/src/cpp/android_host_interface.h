@@ -36,10 +36,6 @@ public:
   void ReportError(const char* message) override;
   void ReportMessage(const char* message) override;
 
-  std::string GetStringSettingValue(const char* section, const char* key, const char* default_value = "") override;
-  bool GetBoolSettingValue(const char* section, const char* key, bool default_value = false) override;
-  int GetIntSettingValue(const char* section, const char* key, int default_value = 0) override;
-  float GetFloatSettingValue(const char* section, const char* key, float default_value = 0.0f) override;
   std::unique_ptr<ByteStream> OpenPackageFile(const char* path, u32 flags) override;
   bool GetMainDisplayRefreshRate(float* refresh_rate) override;
 
@@ -64,18 +60,13 @@ public:
   void SetFastForwardEnabled(bool enabled);
 
   void RefreshGameList(bool invalidate_cache, bool invalidate_database, ProgressCallback* progress_callback);
-  void ApplySettings(bool display_osd_messages) override;
 
   bool ImportPatchCodesFromString(const std::string& str);
 
   jobjectArray GetInputProfileNames(JNIEnv* env) const;
-  bool ApplyInputProfile(const char* profile_name);
-  bool SaveInputProfile(const char* profile_name);
 
 protected:
   void SetUserDirectory() override;
-  void LoadSettings() override;
-  void UpdateInputMap() override;
   void RegisterHotkeys() override;
 
   bool AcquireHostDisplay() override;
@@ -94,14 +85,12 @@ private:
   void CreateImGuiContext();
   void DestroyImGuiContext();
 
-  void LoadAndConvertSettings();
+  void LoadSettings(SettingsInterface& si) override;
   void SetVibration(bool enabled);
   void UpdateVibration();
 
   jobject m_java_object = {};
   jobject m_emulation_activity_object = {};
-
-  AndroidSettingsInterface m_settings_interface;
 
   ANativeWindow* m_surface = nullptr;
 
