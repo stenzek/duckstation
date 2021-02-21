@@ -2,17 +2,17 @@
     <string-array name="settings_console_region_entries">
         <item>Auto-Rileva</item>
         <item>NTSC-J (Giappone)</item>
-        <item>NTSC-U (US, Canada)</item>
+        <item>NTSC-U (US)</item>
         <item>PAL (Europa, Australia)</item>
     </string-array>
     <string-array name="settings_cpu_execution_mode_entries">
-        <item>Interprete (Il più lento)</item>
+        <item>Interpreter (Il più lento)</item>
         <item>Cached Interpreter (Più veloce)</item>
         <item>Recompiler (Il più veloce)</item>
     </string-array>
     <string-array name="settings_cpu_fastmem_mode_entries">
         <item>Disabilitato (Il più lento)</item>
-        <item>MMap (Hardware, il più veloce, Solo 64-Bit)</item>
+        <item>MMap (Hardware, Il più veloce, Solo 64-Bit)</item>
         <item>LUT (Più veloce)</item>
     </string-array>
     <string-array name="gpu_renderer_entries">
@@ -39,12 +39,12 @@
         <item>16x</item>
     </string-array>
     <string-array name="settings_display_crop_mode_entries">
-        <item>None</item>
-        <item>Solo area di Overscan</item>
+        <item>Nessuno</item>
+        <item>Solo Area Overscan</item>
         <item>Tutti i bordi</item>
     </string-array>
     <string-array name="settings_display_aspect_ratio_names">
-        <item>Auto (Game Native)</item>
+        <item>Auto (Nativo Gioco)</item>
         <item>4:3</item>
         <item>16:9</item>
         <item>16:10</item>
@@ -73,29 +73,29 @@
         <item>Controller Analogico (DualShock)</item>
     </string-array>
     <string-array name="settings_memory_card_mode_entries">
-        <item>No Memory Card</item>
+        <item>Nessuna Memory Card</item>
         <item>Condivisa fra tutti i giochi</item>
-        <item>MC separata per ogni gioco (Codice Gioco)</item>
-        <item>MC separata per ogni gioco (Titolo Gioco)</item>
+        <item>MC separate per ogni gioco (Codice Gioco)</item>
+        <item>MC separate per ogni gioco(Titolo Gioco)</item>
     </string-array>
     <string-array name="emulation_menu">
         <item>Carica Stato</item>
         <item>Salva Stato</item>
-        <item>Abilita/Disabilita Avanti Veloce</item>
+        <item>Attiva/Disattiva Avanti Veloce</item>
         <item>Altre Opzioni</item>
         <item>Esci</item>
     </string-array>
     <string-array name="emulation_more_menu">
         <item>Reset</item>
         <item>Codici Patch</item>
-        <item>Cambia Disco</item>
+        <item>Cambia disco</item>
         <item>Impostazioni</item>
         <item>Cambia Controller Touchscreen</item>
-        <item>Edit Touchscreen Controller Layout</item>
+        <item>Modifica Layout Controller Touchscreen</item>
     </string-array>
     <string-array name="settings_cdrom_read_speedup_entries">
-        <item>Nessuna Velocità Doppia)</item>
-        <item>2x (Velocità Quadrupla</item>
+        <item>Nessuno (Velocità Doppia)</item>
+        <item>2x (Velocità Quadrupla)</item>
         <item>3x (Velocità 6x)</item>
         <item>4x (Velocità 8x)</item>
         <item>5x (Velocità 10x)</item>
@@ -108,8 +108,8 @@
     <string-array name="settings_touchscreen_controller_view_entries">
         <item>Nessuno</item>
         <item>Pad Digitale</item>
-        <item>Pad Analogico Singolo</item>
-        <item>Pad Analogico Doppio</item>
+        <item>Pad con Singolo Analogico</item>
+        <item>Pad con Doppio Analogico</item>
     </string-array>
     <string-array name="settings_audio_backend_entries">
         <item>Null (No Output)</item>
@@ -123,23 +123,23 @@
         <item>4096 Fotogrammi (92.88ms)</item>
     </string-array>
     <string-array name="settings_log_level_entries">
-        <item>None</item>
-        <item>Error</item>
-        <item>Warning</item>
-        <item>Performance Warnings</item>
-        <item>Information</item>
-        <item>Verbose</item>
-        <item>Developer</item>
-        <item>Profile</item>
+        <item>Nessuno</item>
+        <item>Errore</item>
+        <item>Avvertimento</item>
+        <item>Avvertimento Performance</item>
+        <item>Informazione</item>
+        <item>Verboso</item>
+        <item>Sviluppatore</item>
+        <item>Profilo</item>
         <item>Debug</item>
-        <item>Trace</item>
+        <item>Traccia</item>
     </string-array>
     <string-array name="settings_tabs">
-        <item>Generali</item>
+        <item>Generael</item>
         <item>Display</item>
         <item>Audio</item>
         <item>Miglioramenti</item>
-        <item>Controller</item>
+        <item>Controllers</item>
         <item>Avanzate</item>
     </string-array>
     <string-array name="settings_gpu_msaa_entries">
@@ -152,7 +152,7 @@
         <item>8x SSAA</item>
     </string-array>
     <string-array name="settings_advanced_display_fps_limit_entries">
-        <item>Senza Limite (Mostra tutti i fotogrammi)</item>
+        <item>Illimitato (Mostra tutti i fotogrammi)</item>
         <item>10 FPS</item>
         <item>15 FPS</item>
         <item>30 FPS</item>
@@ -162,7 +162,7 @@
         <item>90 FPS</item>
     </string-array>
     <string-array name="settings_emulation_speed_entries">
-        <item>Senza Limite</item>
+        <item>Illimitato</item>
         <item>10% [6 FPS (NTSC) / 5 FPS (PAL)]</item>
         <item>20% [12 FPS (NTSC) / 10 FPS (PAL)]</item>
         <item>30% [18 FPS (NTSC) / 15 FPS (PAL)]</item>
@@ -172,7 +172,7 @@
         <item>70% [42 FPS (NTSC) / 35 FPS (PAL)]</item>
         <item>80% [48 FPS (NTSC) / 40 FPS (PAL)]</item>
         <item>90% [54 FPS (NTSC) / 45 FPS (PAL)]</item>
-        <item>100% [60 FPS (NTSC) / 50 FPS (PAL), Default]</item>
+        <item>100% [60 FPS (NTSC) / 50 FPS (PAL), Predefinito]</item>
         <item>125% [75 FPS (NTSC) / 62 FPS (PAL)]</item>
         <item>150% [90 FPS (NTSC) / 75 FPS (PAL)]</item>
         <item>175% [105 FPS (NTSC) / 87 FPS (PAL)]</item>
@@ -193,7 +193,7 @@
         <item>25% (8MHz)</item>
         <item>50% (16MHz)</item>
         <item>75% (24MHz)</item>
-        <item>100% (33MHz, Default)</item>
+        <item>100% (33MHz, Predefinito)</item>
         <item>125% (41MHz)</item>
         <item>150% (49MHz)</item>
         <item>175% (57MHz)</item>
@@ -214,8 +214,31 @@
         <item>1000% (330MHz)</item>
     </string-array>
     <string-array name="settings_emulation_screen_orientation_entries">
-        <item>Usa Impostazione Dispositivo</item>
+        <item>Use Impostazione Dispositivo</item>
         <item>Verticale</item>
         <item>Orizzontale</item>
+    </string-array>
+    <string-array name="settings_language_entries">
+        <item>Use Impostazione Dispositivo</item>
+        <item>English</item>
+        <item>Portuguese (pt) in Brazil (BR)</item>
+        <item>Italian (it)</item>
+        <item>Dutch (nl)</item>
+        <item>Spanish (es)</item>
+        <item>Russian (ru)</item>
+    </string-array>
+    <string-array name="settings_theme_entries">
+        <item>Segui Sistema</item>
+        <item>Chiaro</item>
+        <item>Scuro</item>
+    </string-array>
+    <string-array name="settings_downsample_mode_entries">
+        <item>Disabilitato</item>
+        <item>Box (Downsample 3D/Smussa Tutto)</item>
+        <item>Adattivo (Mantieni 3D/Smussa 2D)</item>
+    </string-array>
+    <string-array name="settings_boolean_entries">
+        <item>Disabilitato</item>
+        <item>Abilitato</item>
     </string-array>
 </resources>
