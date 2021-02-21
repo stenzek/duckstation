@@ -85,7 +85,6 @@ static void DrawAboutWindow();
 static void OpenAboutWindow();
 
 static CommonHostInterface* s_host_interface;
-static SettingsInterface* s_settings_interface;
 static MainWindowType s_current_main_window = MainWindowType::Landing;
 static std::bitset<static_cast<u32>(FrontendCommon::ControllerNavigationButton::Count)> s_nav_input_values{};
 static bool s_debug_menu_enabled = false;
@@ -187,15 +186,14 @@ static std::thread s_game_list_load_thread;
 // Main
 //////////////////////////////////////////////////////////////////////////
 
-bool Initialize(CommonHostInterface* host_interface, SettingsInterface* settings_interface)
+bool Initialize(CommonHostInterface* host_interface)
 {
   s_host_interface = host_interface;
-  s_settings_interface = settings_interface;
   if (!LoadResources())
     return false;
 
-  s_settings_copy.Load(*settings_interface);
-  SetDebugMenuEnabled(settings_interface->GetBoolValue("Main", "ShowDebugMenu", false));
+  s_settings_copy.Load(*s_host_interface->GetSettingsInterface());
+  SetDebugMenuEnabled(s_host_interface->GetSettingsInterface()->GetBoolValue("Main", "ShowDebugMenu", false));
   QueueGameListRefresh();
 
   ImGuiFullscreen::UpdateLayoutScale();
@@ -266,7 +264,6 @@ void Shutdown()
   s_nav_input_values = {};
   DestroyResources();
 
-  s_settings_interface = nullptr;
   s_host_interface = nullptr;
 }
 
@@ -325,8 +322,8 @@ Settings& GetSettingsCopy()
 
 void SaveAndApplySettings()
 {
-  s_settings_copy.Save(*s_settings_interface);
-  s_settings_interface->Save();
+  s_settings_copy.Save(*s_host_interface->GetSettingsInterface());
+  s_host_interface->GetSettingsInterface()->Save();
   s_host_interface->ApplySettings(false);
 }
 
@@ -746,10 +743,10 @@ static ImGuiFullscreen::ChoiceDialogOptions GetGameListDirectoryOptions(bool rec
 {
   ImGuiFullscreen::ChoiceDialogOptions options;
 
-  for (std::string& dir : s_settings_interface->GetStringList("GameList", "Paths"))
+  for (std::string& dir : s_host_interface->GetSettingsInterface()->GetStringList("GameList", "Paths"))
     options.emplace_back(std::move(dir), false);
 
-  for (std::string& dir : s_settings_interface->GetStringList("GameList", "RecursivePaths"))
+  for (std::string& dir : s_host_interface->GetSettingsInterface()->GetStringList("GameList", "RecursivePaths"))
     options.emplace_back(std::move(dir), recursive_as_checked);
 
   std::sort(options.begin(), options.end(), [](const auto& lhs, const auto& rhs) {
@@ -796,7 +793,7 @@ static void DrawInputBindingButton(InputBindingType type, const char* section, c
   ImGui::PopFont();
 
   // eek, potential heap allocation :/
-  const std::string value = s_settings_interface->GetStringValue(section, name);
+  const std::string value = s_host_interface->GetSettingsInterface()->GetStringValue(section, name);
   ImGui::PushFont(g_medium_font);
   ImGui::RenderTextClipped(summary_bb.Min, summary_bb.Max, value.empty() ? "(No Binding)" : value.c_str(), nullptr,
                            nullptr, ImVec2(0.0f, 0.0f), &summary_bb);
@@ -864,7 +861,7 @@ void BeginInputBinding(InputBindingType type, const std::string_view& section, c
       if (value.IsEmpty())
         return ControllerInterface::Hook::CallbackResult::ContinueMonitoring;
 
-      s_settings_interface->SetStringValue(s_input_binding_section, s_input_binding_key, value);
+      s_host_interface->GetSettingsInterface()->SetStringValue(s_input_binding_section, s_input_binding_key, value);
       s_host_interface->AddFormattedOSDMessage(5.0f, "Set %s binding %s to %s.", s_input_binding_section.GetCharArray(),
                                                s_input_binding_display_name.GetCharArray(), value.GetCharArray());
 
@@ -932,11 +929,11 @@ static bool SettingInfoButton(const SettingInfo& si, const char* section)
   {
     case SettingInfo::Type::Boolean:
     {
-      bool value = s_settings_interface->GetBoolValue(section, si.key,
-                                                      StringUtil::FromChars<bool>(si.default_value).value_or(false));
+      bool value = s_host_interface->GetSettingsInterface()->GetBoolValue(
+        section, si.key, StringUtil::FromChars<bool>(si.default_value).value_or(false));
       if (ToggleButton(title, si.description, &value))
       {
-        s_settings_interface->SetBoolValue(section, si.key, value);
+        s_host_interface->GetSettingsInterface()->SetBoolValue(section, si.key, value);
         return true;
       }
 
@@ -945,14 +942,14 @@ static bool SettingInfoButton(const SettingInfo& si, const char* section)
 
     case SettingInfo::Type::Integer:
     {
-      int value =
-        s_settings_interface->GetIntValue(section, si.key, StringUtil::FromChars<int>(si.default_value).value_or(0));
+      int value = s_host_interface->GetSettingsInterface()->GetIntValue(
+        section, si.key, StringUtil::FromChars<int>(si.default_value).value_or(0));
       const int min = StringUtil::FromChars<int>(si.min_value).value_or(0);
       const int max = StringUtil::FromChars<int>(si.max_value).value_or(0);
       const int step = StringUtil::FromChars<int>(si.step_value).value_or(0);
       if (RangeButton(title, si.description, &value, min, max, step))
       {
-        s_settings_interface->SetIntValue(section, si.key, value);
+        s_host_interface->GetSettingsInterface()->SetIntValue(section, si.key, value);
         return true;
       }
 
@@ -961,14 +958,14 @@ static bool SettingInfoButton(const SettingInfo& si, const char* section)
 
     case SettingInfo::Type::Float:
     {
-      float value = s_settings_interface->GetFloatValue(section, si.key,
-                                                        StringUtil::FromChars<float>(si.default_value).value_or(0));
+      float value = s_host_interface->GetSettingsInterface()->GetFloatValue(
+        section, si.key, StringUtil::FromChars<float>(si.default_value).value_or(0));
       const float min = StringUtil::FromChars<float>(si.min_value).value_or(0);
       const float max = StringUtil::FromChars<float>(si.max_value).value_or(0);
       const float step = StringUtil::FromChars<float>(si.step_value).value_or(0);
       if (RangeButton(title, si.description, &value, min, max, step))
       {
-        s_settings_interface->SetFloatValue(section, si.key, value);
+        s_host_interface->GetSettingsInterface()->SetFloatValue(section, si.key, value);
         return true;
       }
 
@@ -977,7 +974,7 @@ static bool SettingInfoButton(const SettingInfo& si, const char* section)
 
     case SettingInfo::Type::Path:
     {
-      std::string value = s_settings_interface->GetStringValue(section, si.key);
+      std::string value = s_host_interface->GetSettingsInterface()->GetStringValue(section, si.key);
       if (MenuButtonWithValue(title, si.description, value.c_str()))
       {
         std::string section_copy(section);
@@ -985,7 +982,8 @@ static bool SettingInfoButton(const SettingInfo& si, const char* section)
         auto callback = [section_copy, key_copy](const std::string& path) {
           if (!path.empty())
           {
-            s_settings_interface->SetStringValue(section_copy.c_str(), key_copy.c_str(), path.c_str());
+            s_host_interface->GetSettingsInterface()->SetStringValue(section_copy.c_str(), key_copy.c_str(),
+                                                                     path.c_str());
             s_host_interface->RunLater(SaveAndApplySettings);
           }
 
@@ -1009,11 +1007,11 @@ static bool ToggleButtonForNonSetting(const char* title, const char* summary, co
                                       float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT,
                                       ImFont* font = g_large_font, ImFont* summary_font = g_medium_font)
 {
-  bool value = s_settings_interface->GetBoolValue(section, key, default_value);
+  bool value = s_host_interface->GetSettingsInterface()->GetBoolValue(section, key, default_value);
   if (!ToggleButton(title, summary, &value, enabled, height, font, summary_font))
     return false;
 
-  s_settings_interface->SetBoolValue(section, key, value);
+  s_host_interface->GetSettingsInterface()->SetBoolValue(section, key, value);
   return true;
 }
 
@@ -1104,7 +1102,7 @@ void DrawSettingsWindow()
         if (!cbtype_set)
         {
           cbtype = ControllerInterface::ParseBackendName(
-                     s_settings_interface->GetStringValue("Main", "ControllerBackend").c_str())
+                     s_host_interface->GetSettingsInterface()->GetStringValue("Main", "ControllerBackend").c_str())
                      .value_or(ControllerInterface::GetDefaultBackend());
           cbtype_set = true;
         }
@@ -1112,8 +1110,8 @@ void DrawSettingsWindow()
         if (EnumChoiceButton("Controller Backend", "Sets the API which is used to receive controller input.", &cbtype,
                              ControllerInterface::GetBackendName, ControllerInterface::Backend::Count))
         {
-          s_settings_interface->SetStringValue("Main", "ControllerBackend",
-                                               ControllerInterface::GetBackendName(cbtype));
+          s_host_interface->GetSettingsInterface()->SetStringValue("Main", "ControllerBackend",
+                                                                   ControllerInterface::GetBackendName(cbtype));
           settings_changed = true;
         }
 
@@ -1132,9 +1130,9 @@ void DrawSettingsWindow()
           OpenFileSelector(ICON_FA_FOLDER_PLUS "  Add Search Directory", true, [](const std::string& dir) {
             if (!dir.empty())
             {
-              s_settings_interface->AddToStringList("GameList", "RecursivePaths", dir.c_str());
-              s_settings_interface->RemoveFromStringList("GameList", "Paths", dir.c_str());
-              s_settings_interface->Save();
+              s_host_interface->GetSettingsInterface()->AddToStringList("GameList", "RecursivePaths", dir.c_str());
+              s_host_interface->GetSettingsInterface()->RemoveFromStringList("GameList", "Paths", dir.c_str());
+              s_host_interface->GetSettingsInterface()->Save();
               QueueGameListRefresh();
             }
 
@@ -1145,25 +1143,27 @@ void DrawSettingsWindow()
         if (MenuButton(ICON_FA_FOLDER_OPEN "  Change Recursive Directories",
                        "Sets whether subdirectories are searched for each game directory"))
         {
-          OpenChoiceDialog(ICON_FA_FOLDER_OPEN "  Change Recursive Directories", true,
-                           GetGameListDirectoryOptions(true), [](s32 index, const std::string& title, bool checked) {
-                             if (index < 0)
-                               return;
+          OpenChoiceDialog(
+            ICON_FA_FOLDER_OPEN "  Change Recursive Directories", true, GetGameListDirectoryOptions(true),
+            [](s32 index, const std::string& title, bool checked) {
+              if (index < 0)
+                return;
 
-                             if (checked)
-                             {
-                               s_settings_interface->RemoveFromStringList("GameList", "Paths", title.c_str());
-                               s_settings_interface->AddToStringList("GameList", "RecursivePaths", title.c_str());
-                             }
-                             else
-                             {
-                               s_settings_interface->RemoveFromStringList("GameList", "RecursivePaths", title.c_str());
-                               s_settings_interface->AddToStringList("GameList", "Paths", title.c_str());
-                             }
+              if (checked)
+              {
+                s_host_interface->GetSettingsInterface()->RemoveFromStringList("GameList", "Paths", title.c_str());
+                s_host_interface->GetSettingsInterface()->AddToStringList("GameList", "RecursivePaths", title.c_str());
+              }
+              else
+              {
+                s_host_interface->GetSettingsInterface()->RemoveFromStringList("GameList", "RecursivePaths",
+                                                                               title.c_str());
+                s_host_interface->GetSettingsInterface()->AddToStringList("GameList", "Paths", title.c_str());
+              }
 
-                             s_settings_interface->Save();
-                             QueueGameListRefresh();
-                           });
+              s_host_interface->GetSettingsInterface()->Save();
+              QueueGameListRefresh();
+            });
         }
 
         if (MenuButton(ICON_FA_FOLDER_MINUS "  Remove Search Directory",
@@ -1174,9 +1174,11 @@ void DrawSettingsWindow()
                              if (index < 0)
                                return;
 
-                             s_settings_interface->RemoveFromStringList("GameList", "Paths", title.c_str());
-                             s_settings_interface->RemoveFromStringList("GameList", "RecursivePaths", title.c_str());
-                             s_settings_interface->Save();
+                             s_host_interface->GetSettingsInterface()->RemoveFromStringList("GameList", "Paths",
+                                                                                            title.c_str());
+                             s_host_interface->GetSettingsInterface()->RemoveFromStringList(
+                               "GameList", "RecursivePaths", title.c_str());
+                             s_host_interface->GetSettingsInterface()->Save();
                              QueueGameListRefresh();
                              CloseChoiceDialog();
                            });
@@ -1406,7 +1408,7 @@ void DrawSettingsWindow()
           {
             if (i == static_cast<u32>(ConsoleRegion::Auto))
               continue;
-            bios_region_filenames[i] = s_settings_interface->GetStringValue("BIOS", config_keys[i]);
+            bios_region_filenames[i] = s_host_interface->GetSettingsInterface()->GetStringValue("BIOS", config_keys[i]);
           }
           bios_directory = s_host_interface->GetBIOSDirectory();
           bios_filenames_loaded = true;
@@ -1444,8 +1446,8 @@ void DrawSettingsWindow()
               if (index >= 0)
               {
                 bios_region_filenames[i] = path;
-                s_settings_interface->SetStringValue("BIOS", config_keys[i], path.c_str());
-                s_settings_interface->Save();
+                s_host_interface->GetSettingsInterface()->SetStringValue("BIOS", config_keys[i], path.c_str());
+                s_host_interface->GetSettingsInterface()->Save();
               }
               CloseChoiceDialog();
             });
@@ -1458,8 +1460,8 @@ void DrawSettingsWindow()
             if (!path.empty())
             {
               bios_directory = path;
-              s_settings_interface->SetStringValue("BIOS", "SearchDirectory", path.c_str());
-              s_settings_interface->Save();
+              s_host_interface->GetSettingsInterface()->SetStringValue("BIOS", "SearchDirectory", path.c_str());
+              s_host_interface->GetSettingsInterface()->Save();
             }
             CloseFileSelector();
           });
@@ -1498,7 +1500,7 @@ void DrawSettingsWindow()
 
             // needs a reload...
             s_host_interface->ApplyInputProfile(profiles[index].path.c_str());
-            s_settings_copy.Load(*s_settings_interface);
+            s_settings_copy.Load(*s_host_interface->GetSettingsInterface());
             s_host_interface->RunLater(SaveAndApplySettings);
             CloseChoiceDialog();
           };
@@ -1622,7 +1624,7 @@ void DrawSettingsWindow()
         static bool fullscreen_mode_set;
         if (!fullscreen_mode_set)
         {
-          fullscreen_mode = s_settings_interface->GetStringValue("GPU", "FullscreenMode", "");
+          fullscreen_mode = s_host_interface->GetSettingsInterface()->GetStringValue("GPU", "FullscreenMode", "");
           fullscreen_mode_set = true;
         }
 
@@ -1645,8 +1647,8 @@ void DrawSettingsWindow()
             else
               fullscreen_mode = title;
 
-            s_settings_interface->SetStringValue("GPU", "FullscreenMode", fullscreen_mode.c_str());
-            s_settings_interface->Save();
+            s_host_interface->GetSettingsInterface()->SetStringValue("GPU", "FullscreenMode", fullscreen_mode.c_str());
+            s_host_interface->GetSettingsInterface()->Save();
             s_host_interface->AddOSDMessage("Resolution change will be applied after restarting.", 10.0f);
             CloseChoiceDialog();
           };
@@ -2573,7 +2575,7 @@ void QueueGameListRefresh()
     s_game_list_load_thread.join();
 
   s_game_list_sorted_entries.clear();
-  s_host_interface->GetGameList()->SetSearchDirectoriesFromSettings(*s_settings_interface);
+  s_host_interface->GetGameList()->SetSearchDirectoriesFromSettings(*s_host_interface->GetSettingsInterface());
   s_game_list_load_thread = std::thread(GameListRefreshThread);
 }
 
@@ -2958,8 +2960,8 @@ void SetDebugMenuEnabled(bool enabled, bool save_to_ini)
 
   if (save_to_ini)
   {
-    s_settings_interface->SetBoolValue("Main", "ShowDebugMenu", enabled);
-    s_settings_interface->Save();
+    s_host_interface->GetSettingsInterface()->SetBoolValue("Main", "ShowDebugMenu", enabled);
+    s_host_interface->GetSettingsInterface()->Save();
   }
 }
 

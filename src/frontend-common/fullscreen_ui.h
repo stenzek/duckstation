@@ -38,7 +38,7 @@ enum class SettingsPage
   Count
 };
 
-bool Initialize(CommonHostInterface* host_interface, SettingsInterface* settings_interface);
+bool Initialize(CommonHostInterface* host_interface);
 bool HasActiveWindow();
 void SystemCreated();
 void SystemDestroyed();
