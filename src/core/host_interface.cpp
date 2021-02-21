@@ -172,7 +172,6 @@ void HostInterface::DestroySystem()
   UpdateSoftwareCursor();
   ReleaseHostDisplay();
   OnSystemDestroyed();
-  OnRunningGameChanged();
 }
 
 void HostInterface::ReportError(const char* message)
@@ -471,7 +470,10 @@ void HostInterface::OnSystemPerformanceCountersUpdated() {}
 
 void HostInterface::OnSystemStateSaved(bool global, s32 slot) {}
 
-void HostInterface::OnRunningGameChanged() {}
+void HostInterface::OnRunningGameChanged(const std::string& path, CDImage* image, const std::string& game_code,
+                                         const std::string& game_title)
+{
+}
 
 void HostInterface::OnControllerTypeChanged(u32 slot) {}
 

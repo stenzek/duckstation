@@ -812,9 +812,10 @@ void CommonHostInterface::OnSystemDestroyed()
   StopControllerRumble();
 }
 
-void CommonHostInterface::OnRunningGameChanged()
+void CommonHostInterface::OnRunningGameChanged(const std::string& path, CDImage* image, const std::string& game_code,
+                                               const std::string& game_title)
 {
-  HostInterface::OnRunningGameChanged();
+  HostInterface::OnRunningGameChanged(path, image, game_code, game_title);
 
   if (!System::IsShutdown())
   {

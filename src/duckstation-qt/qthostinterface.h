@@ -2,8 +2,8 @@
 #include "common/event.h"
 #include "core/host_interface.h"
 #include "core/system.h"
-#include "qtutils.h"
 #include "frontend-common/common_host_interface.h"
+#include "qtutils.h"
 #include <QtCore/QByteArray>
 #include <QtCore/QObject>
 #include <QtCore/QSettings>
@@ -202,7 +202,8 @@ protected:
   void OnSystemPaused(bool paused) override;
   void OnSystemDestroyed() override;
   void OnSystemPerformanceCountersUpdated() override;
-  void OnRunningGameChanged() override;
+  void OnRunningGameChanged(const std::string& path, CDImage* image, const std::string& game_code,
+                            const std::string& game_title) override;
   void OnSystemStateSaved(bool global, s32 slot) override;
 
   void LoadSettings() override;

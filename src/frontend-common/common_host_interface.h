@@ -309,7 +309,8 @@ protected:
   virtual void OnSystemCreated() override;
   virtual void OnSystemPaused(bool paused) override;
   virtual void OnSystemDestroyed() override;
-  virtual void OnRunningGameChanged() override;
+  virtual void OnRunningGameChanged(const std::string& path, CDImage* image, const std::string& game_code,
+                                    const std::string& game_title) override;
   virtual void OnControllerTypeChanged(u32 slot) override;
 
   virtual std::optional<HostKeyCode> GetHostKeyCode(const std::string_view key_code) const;

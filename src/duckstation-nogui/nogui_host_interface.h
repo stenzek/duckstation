@@ -54,7 +54,8 @@ protected:
   void OnSystemCreated() override;
   void OnSystemPaused(bool paused) override;
   void OnSystemDestroyed() override;
-  void OnRunningGameChanged() override;
+  void OnRunningGameChanged(const std::string& path, CDImage* image, const std::string& game_code,
+                            const std::string& game_title) override;
 
   void RequestExit() override;
   virtual void PollAndUpdate() override;

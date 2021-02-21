@@ -913,6 +913,8 @@ void Shutdown()
   s_media_playlist_filename.clear();
   s_cheat_list.reset();
   s_state = State::Shutdown;
+
+  g_host_interface->OnRunningGameChanged(s_running_game_path, nullptr, s_running_game_code, s_running_game_title);
 }
 
 bool CreateGPU(GPURenderer renderer)
@@ -1882,7 +1884,7 @@ void UpdateRunningGame(const char* path, CDImage* image)
 
   g_texture_replacements.SetGameID(s_running_game_code);
 
-  g_host_interface->OnRunningGameChanged();
+  g_host_interface->OnRunningGameChanged(s_running_game_path, image, s_running_game_code, s_running_game_title);
 }
 
 bool CheckForSBIFile(CDImage* image)
