@@ -395,10 +395,32 @@ std::string GetGameCodeForPath(const char* image_path)
 
 std::string GetGameCodeForImage(CDImage* cdi)
 {
-  ISOReader iso;
-  if (!iso.Open(cdi, 1))
+  std::string code(GetExecutableNameForImage(cdi));
+  if (code.empty())
     return {};
 
+  // SCES_123.45 -> SCES-12345
+  for (std::string::size_type pos = 0; pos < code.size();)
+  {
+    if (code[pos] == '.')
+    {
+      code.erase(pos, 1);
+      continue;
+    }
+
+    if (code[pos] == '_')
+      code[pos] = '-';
+    else
+      code[pos] = static_cast<char>(std::toupper(code[pos]));
+
+    pos++;
+  }
+
+  return code;
+}
+
+static std::string GetExecutableNameForImage(CDImage* cdi, ISOReader& iso)
+{
   // Read SYSTEM.CNF
   std::vector<u8> system_cnf_data;
   if (!iso.ReadFile("SYSTEM.CNF", &system_cnf_data))
@@ -461,28 +483,55 @@ std::string GetGameCodeForImage(CDImage* cdi)
       code.erase(0, pos + 1);
   }
 
-  pos = code.find(';');
+  // strip off ; or version number
+  pos = code.rfind(';');
   if (pos != std::string::npos)
     code.erase(pos);
 
-  // SCES_123.45 -> SCES-12345
-  for (pos = 0; pos < code.size();)
+  return code;
+}
+
+std::string GetExecutableNameForImage(CDImage* cdi)
+{
+  ISOReader iso;
+  if (!iso.Open(cdi, 1))
+    return {};
+
+  return GetExecutableNameForImage(cdi, iso);
+}
+
+bool ReadExecutableFromImage(CDImage* cdi, std::string* out_executable_name, std::vector<u8>* out_executable_data)
+{
+  ISOReader iso;
+  if (!iso.Open(cdi, 1))
+    return false;
+
+  bool result = false;
+
+  std::string executable_name(GetExecutableNameForImage(cdi, iso));
+  if (!executable_name.empty())
   {
-    if (code[pos] == '.')
-    {
-      code.erase(pos, 1);
-      continue;
-    }
-
-    if (code[pos] == '_')
-      code[pos] = '-';
-    else
-      code[pos] = static_cast<char>(std::toupper(code[pos]));
-
-    pos++;
+    result = iso.ReadFile(executable_name.c_str(), out_executable_data);
+    if (!result)
+      Log_ErrorPrintf("Failed to read executable '%s' from disc", executable_name.c_str());
   }
 
-  return code;
+  if (!result)
+  {
+    // fallback to PSX.EXE
+    executable_name = "PSX.EXE";
+    result = iso.ReadFile(executable_name.c_str(), out_executable_data);
+    if (!result)
+      Log_ErrorPrint("Failed to read fallback PSX.EXE from disc");
+  }
+
+  if (!result)
+    return false;
+
+  if (out_executable_name)
+    *out_executable_name = std::move(executable_name);
+
+  return true;
 }
 
 DiscRegion GetRegionForCode(std::string_view code)

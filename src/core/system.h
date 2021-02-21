@@ -75,6 +75,9 @@ std::vector<std::string> ParseM3UFile(const char* path);
 /// Returns the preferred console type for a disc.
 ConsoleRegion GetConsoleRegionForDiscRegion(DiscRegion region);
 
+std::string GetExecutableNameForImage(CDImage* cdi);
+bool ReadExecutableFromImage(CDImage* cdi, std::string* out_executable_name, std::vector<u8>* out_executable_data);
+
 std::string GetGameCodeForImage(CDImage* cdi);
 std::string GetGameCodeForPath(const char* image_path);
 DiscRegion GetRegionForCode(std::string_view code);
