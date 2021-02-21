@@ -10,7 +10,7 @@ namespace ImGuiFullscreen {
   ImVec4(static_cast<float>((hex >> 16) & 0xFFu) / 255.0f, static_cast<float>((hex >> 8) & 0xFFu) / 255.0f,            \
          static_cast<float>(hex & 0xFFu) / 255.0f, static_cast<float>(alpha) / 255.0f)
 
-using ResolveTextureHandleCallback = ImTextureID(*)(const std::string& path);
+using ResolveTextureHandleCallback = ImTextureID (*)(const std::string& path);
 
 static constexpr float LAYOUT_SCREEN_WIDTH = 1280.0f;
 static constexpr float LAYOUT_SCREEN_HEIGHT = 720.0f;
@@ -69,6 +69,11 @@ static ALWAYS_INLINE ImVec2 LayoutScale(const ImVec2& v)
 static ALWAYS_INLINE ImVec2 LayoutScale(float x, float y)
 {
   return ImVec2(x * g_layout_scale, y * g_layout_scale);
+}
+
+static ALWAYS_INLINE ImVec2 LayoutScaleAndOffset(float x, float y)
+{
+  return ImVec2(g_layout_padding_left + x * g_layout_scale, g_layout_padding_top + y * g_layout_scale);
 }
 
 static ALWAYS_INLINE ImVec4 UIPrimaryColor()
@@ -159,6 +164,9 @@ bool BeginFullscreenColumnWindow(float start, float end, const char* name,
 void EndFullscreenColumnWindow();
 
 bool BeginFullscreenWindow(float left, float top, float width, float height, const char* name,
+                           const ImVec4& background = HEX_TO_IMVEC4(0x212121, 0xFF), float rounding = 0.0f,
+                           float padding = 0.0f, ImGuiWindowFlags flags = 0);
+bool BeginFullscreenWindow(const ImVec2& position, const ImVec2& size, const char* name,
                            const ImVec4& background = HEX_TO_IMVEC4(0x212121, 0xFF), float rounding = 0.0f,
                            float padding = 0.0f, ImGuiWindowFlags flags = 0);
 void EndFullscreenWindow();

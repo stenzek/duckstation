@@ -1992,7 +1992,8 @@ void DrawSettingsWindow()
 void DrawQuickMenu(MainWindowType type)
 {
   ImDrawList* dl = ImGui::GetBackgroundDrawList();
-  dl->AddRectFilled(ImVec2(0.0f, 0.0f), ImGui::GetIO().DisplaySize, IM_COL32(0x21, 0x21, 0x21, 200));
+  const ImVec2 display_size(ImGui::GetIO().DisplaySize);
+  dl->AddRectFilled(ImVec2(0.0f, 0.0f), display_size, IM_COL32(0x21, 0x21, 0x21, 200));
 
   // title info
   {
@@ -2009,21 +2010,23 @@ void DrawQuickMenu(MainWindowType type)
     const ImVec2 subtitle_size(
       g_medium_font->CalcTextSizeA(g_medium_font->FontSize, std::numeric_limits<float>::max(), -1.0f, subtitle));
 
-    const ImVec2 title_pos(LayoutScale(LAYOUT_SCREEN_WIDTH - 20.0f - 50.0f - 20.0f) - title_size.x,
-                           LayoutScale(LAYOUT_SCREEN_HEIGHT - 20.0f - 50.0f));
-    const ImVec2 subtitle_pos(LayoutScale(LAYOUT_SCREEN_WIDTH - 20.0f - 50.0f - 20.0f) - subtitle_size.x,
+    const ImVec2 title_pos(display_size.x - LayoutScale(20.0f + 50.0f + 20.0f) - title_size.x,
+                           display_size.y - LayoutScale(20.0f + 50.0f));
+    const ImVec2 subtitle_pos(display_size.x - LayoutScale(20.0f + 50.0f + 20.0f) - subtitle_size.x,
                               title_pos.y + g_large_font->FontSize + LayoutScale(4.0f));
 
     dl->AddText(g_large_font, g_large_font->FontSize, title_pos, IM_COL32(255, 255, 255, 255), title.c_str());
     dl->AddText(g_medium_font, g_medium_font->FontSize, subtitle_pos, IM_COL32(255, 255, 255, 255), subtitle);
 
-    const ImVec2 image_min(LayoutScale(LAYOUT_SCREEN_WIDTH - 20.0f - 50.0f, LAYOUT_SCREEN_HEIGHT - 20.0f - 50.0f));
+    const ImVec2 image_min(display_size - LayoutScale(20.0f + 50.0f, 20.0f + 50.0f));
     const ImVec2 image_max(image_min + LayoutScale(50.0f, 50.0f));
     dl->AddImage(GetCoverForCurrentGame()->GetHandle(), image_min, image_max);
   }
 
-  if (BeginFullscreenWindow(0.0f, 0.0f, 500.0f, LAYOUT_SCREEN_HEIGHT, "pause_menu", ImVec4(0.0f, 0.0f, 0.0f, 0.0f),
-                            0.0f, 10.0f, ImGuiWindowFlags_NoBackground))
+  const ImVec2 window_size(LayoutScale(500.0f, LAYOUT_SCREEN_HEIGHT));
+  const ImVec2 window_pos(0.0f, display_size.y - window_size.y);
+  if (BeginFullscreenWindow(window_pos, window_size, "pause_menu", ImVec4(0.0f, 0.0f, 0.0f, 0.0f), 0.0f, 10.0f,
+                            ImGuiWindowFlags_NoBackground))
   {
     BeginMenuButtons(11, 1.0f, ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING,
                      ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING,

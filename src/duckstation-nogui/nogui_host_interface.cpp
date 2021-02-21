@@ -86,13 +86,6 @@ bool NoGUIHostInterface::CreateDisplay()
     return false;
   }
 
-  // imgui init from window
-  ImGui::GetIO().DisplayFramebufferScale.x = wi->surface_scale;
-  ImGui::GetIO().DisplayFramebufferScale.y = wi->surface_scale;
-  ImGui::GetStyle() = ImGuiStyle();
-  ImGui::GetStyle().ScaleAllSizes(wi->surface_scale);
-  ImGui::StyleColorsDarker();
-
   Assert(!m_display);
   switch (g_settings.gpu_renderer)
   {

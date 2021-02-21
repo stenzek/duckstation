@@ -291,8 +291,17 @@ bool BeginFullscreenWindow(float left, float top, float width, float height, con
   if (top < 0.0f)
     top = (LAYOUT_SCREEN_HEIGHT - height) * -top;
 
-  ImGui::SetNextWindowSize(LayoutScale(ImVec2(width, height)));
-  ImGui::SetNextWindowPos(ImVec2(LayoutScale(left) + g_layout_padding_left, LayoutScale(top) + g_layout_padding_top));
+  const ImVec2 pos(ImVec2(LayoutScale(left) + g_layout_padding_left, LayoutScale(top) + g_layout_padding_top));
+  const ImVec2 size(LayoutScale(ImVec2(width, height)));
+  return BeginFullscreenWindow(pos, size, name, background, rounding, padding, flags);
+}
+
+bool BeginFullscreenWindow(const ImVec2& position, const ImVec2& size, const char* name,
+                           const ImVec4& background /* = HEX_TO_IMVEC4(0x212121, 0xFF) */, float rounding /*= 0.0f*/,
+                           float padding /*= 0.0f*/, ImGuiWindowFlags flags /*= 0*/)
+{
+  ImGui::SetNextWindowPos(position);
+  ImGui::SetNextWindowSize(size);
 
   ImGui::PushStyleColor(ImGuiCol_WindowBg, background);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(padding, padding));
