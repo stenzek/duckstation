@@ -23,6 +23,10 @@ if(ENABLE_DISCORD_PRESENCE)
   add_subdirectory(discord-rpc)
 endif()
 
+if(ENABLE_RETROACHIEVEMENTS)
+  add_subdirectory(rcheevos)
+endif()
+
 if(${CPU_ARCH} STREQUAL "aarch32" OR ${CPU_ARCH} STREQUAL "aarch64")
   add_subdirectory(vixl)
 endif()
