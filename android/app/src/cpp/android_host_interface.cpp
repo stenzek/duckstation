@@ -354,7 +354,7 @@ void AndroidHostInterface::EmulationThreadEntryPoint(JNIEnv* env, jobject emulat
     m_emulation_activity_object = emulation_activity;
     m_emulation_thread_id = std::this_thread::get_id();
   }
-  CreateImGuiContext();
+
   ApplySettings(true);
 
   // Boot system.
@@ -400,8 +400,6 @@ void AndroidHostInterface::EmulationThreadEntryPoint(JNIEnv* env, jobject emulat
   }
 
   env->CallVoidMethod(emulation_activity, s_EmulationActivity_method_onEmulationStopped);
-
-  DestroyImGuiContext();
 }
 
 void AndroidHostInterface::EmulationThreadLoop(JNIEnv* env)
@@ -486,6 +484,9 @@ bool AndroidHostInterface::AcquireHostDisplay()
   wi.surface_width = ANativeWindow_getWidth(m_surface);
   wi.surface_height = ANativeWindow_getHeight(m_surface);
 
+  // TODO: Really need a better way of determining this.
+  wi.surface_scale = 2.0f;
+
   switch (g_settings.gpu_renderer)
   {
     case GPURenderer::HardwareVulkan:
@@ -500,20 +501,20 @@ bool AndroidHostInterface::AcquireHostDisplay()
 
   if (!m_display->CreateRenderDevice(wi, {}, g_settings.gpu_use_debug_device, g_settings.gpu_threaded_presentation) ||
       !m_display->InitializeRenderDevice(GetShaderCacheBasePath(), g_settings.gpu_use_debug_device,
-                                         g_settings.gpu_threaded_presentation) ||
-      !m_display->CreateImGuiContext())
+                                         g_settings.gpu_threaded_presentation))
   {
     m_display->DestroyRenderDevice();
     m_display.reset();
     return false;
   }
 
-  // The alignement was set prior to booting.
+  // The alignment was set prior to booting.
   m_display->SetDisplayAlignment(m_display_alignment);
 
-  if (!m_display->UpdateImGuiFontTexture() || !CreateHostDisplayResources())
+  if (!CreateHostDisplayResources())
   {
     ReportError("Failed to create host display resources");
+    ReleaseHostDisplayResources();
     ReleaseHostDisplay();
     return false;
   }
@@ -524,9 +525,11 @@ bool AndroidHostInterface::AcquireHostDisplay()
 void AndroidHostInterface::ReleaseHostDisplay()
 {
   ReleaseHostDisplayResources();
-  m_display->DestroyImGuiContext();
-  m_display->DestroyRenderDevice();
-  m_display.reset();
+  if (m_display)
+  {
+    m_display->DestroyRenderDevice();
+    m_display.reset();
+  }
 }
 
 std::unique_ptr<AudioStream> AndroidHostInterface::CreateAudioStream(AudioBackend backend)
@@ -611,6 +614,7 @@ void AndroidHostInterface::SurfaceChanged(ANativeWindow* surface, int format, in
     wi.window_handle = surface;
     wi.surface_width = width;
     wi.surface_height = height;
+    wi.surface_scale = m_display->GetWindowScale();
 
     m_display->ChangeRenderWindow(wi);
 
@@ -626,27 +630,6 @@ void AndroidHostInterface::SetDisplayAlignment(HostDisplay::Alignment alignment)
   m_display_alignment = alignment;
   if (m_display)
     m_display->SetDisplayAlignment(alignment);
-}
-
-void AndroidHostInterface::CreateImGuiContext()
-{
-  ImGui::CreateContext();
-
-  const float framebuffer_scale = 2.0f;
-
-  auto& io = ImGui::GetIO();
-  io.IniFilename = nullptr;
-  io.DisplayFramebufferScale.x = framebuffer_scale;
-  io.DisplayFramebufferScale.y = framebuffer_scale;
-  ImGui::GetStyle().ScaleAllSizes(framebuffer_scale);
-
-  ImGui::StyleColorsDarker();
-  ImGui::AddRobotoRegularFont(15.0f * framebuffer_scale);
-}
-
-void AndroidHostInterface::DestroyImGuiContext()
-{
-  ImGui::DestroyContext();
 }
 
 void AndroidHostInterface::SetControllerType(u32 index, std::string_view type_name)

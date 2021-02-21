@@ -33,6 +33,8 @@ GeneralSettingsWidget::GeneralSettingsWidget(QtHostInterface* host_interface, QW
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.applyGameSettings, "Main", "ApplyGameSettings",
                                                true);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.autoLoadCheats, "Main", "AutoLoadCheats", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.enableFullscreenUI, "Main", "EnableFullscreenUI",
+                                               false);
 
   SettingWidgetBinder::BindWidgetToEnumSetting(
     m_host_interface, m_ui.controllerBackend, "Main", "ControllerBackend", &ControllerInterface::ParseBackendName,
@@ -74,9 +76,12 @@ GeneralSettingsWidget::GeneralSettingsWidget(QtHostInterface* host_interface, QW
                                                                       ControllerInterface::GetDefaultBackend())),
                              tr("Determines the backend which is used for controller input. Windows users may prefer "
                                 "to use XInput over SDL2 for compatibility."));
+  dialog->registerWidgetHelp(
+    m_ui.enableFullscreenUI, tr("Enable Fullscreen UI"), tr("Unchecked"),
+    tr("Enables the fullscreen UI mode, suitable for controller operation which is used in the NoGUI frontend."));
 
   // Since this one is compile-time selected, we don't put it in the .ui file.
-  int current_col = 0;
+  int current_col = 1;
   int current_row = m_ui.formLayout_4->rowCount() - current_col;
 #ifdef WITH_DISCORD_PRESENCE
   {

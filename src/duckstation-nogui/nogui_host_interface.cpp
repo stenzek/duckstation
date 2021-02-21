@@ -11,7 +11,6 @@
 #include "frontend-common/controller_interface.h"
 #include "frontend-common/fullscreen_ui.h"
 #include "frontend-common/icon.h"
-#include "frontend-common/imgui_fullscreen.h"
 #include "frontend-common/imgui_styles.h"
 #include "frontend-common/ini_settings_interface.h"
 #include "frontend-common/opengl_host_display.h"
@@ -42,18 +41,15 @@ bool NoGUIHostInterface::Initialize()
   m_settings_interface = std::make_unique<INISettingsInterface>(GetSettingsFileName());
 
   // TODO: Make command line.
-  m_fullscreen_ui_enabled = true;
+  m_flags.force_fullscreen_ui = true;
 
   if (!CommonHostInterface::Initialize())
     return false;
 
-  CreateImGuiContext();
-
-  const bool start_fullscreen = m_command_line_flags.start_fullscreen || g_settings.start_fullscreen;
+  const bool start_fullscreen = m_flags.start_fullscreen || g_settings.start_fullscreen;
   if (!CreatePlatformWindow(start_fullscreen))
   {
     Log_ErrorPrintf("Failed to create platform window");
-    ImGui::DestroyContext();
     return false;
   }
 
@@ -61,9 +57,11 @@ bool NoGUIHostInterface::Initialize()
   {
     Log_ErrorPrintf("Failed to create host display");
     DestroyPlatformWindow();
-    ImGui::DestroyContext();
     return false;
   }
+
+  if (m_fullscreen_ui_enabled)
+    FullscreenUI::QueueGameListRefresh();
 
   // process events to pick up controllers before updating input map
   PollAndUpdate();
@@ -73,45 +71,10 @@ bool NoGUIHostInterface::Initialize()
 
 void NoGUIHostInterface::Shutdown()
 {
-  CommonHostInterface::Shutdown();
-
-  if (m_display)
-  {
-    DestroyDisplay();
-    ImGui::DestroyContext();
-  }
-
+  DestroyDisplay();
   DestroyPlatformWindow();
-}
 
-void NoGUIHostInterface::CreateImGuiContext()
-{
-  ImGui::CreateContext();
-  ImGui::GetIO().IniFilename = nullptr;
-  ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad;
-}
-
-void NoGUIHostInterface::OnPlatformWindowResized(u32 new_width, u32 new_height, float new_scale)
-{
-  if (new_scale != ImGui::GetIO().DisplayFramebufferScale.x)
-  {
-    ImGui::GetIO().DisplayFramebufferScale = ImVec2(new_scale, new_scale);
-    ImGui::GetStyle() = ImGuiStyle();
-    ImGui::StyleColorsDarker();
-    ImGui::GetStyle().ScaleAllSizes(new_scale);
-  }
-
-  if (ImGuiFullscreen::UpdateLayoutScale())
-  {
-    if (ImGuiFullscreen::UpdateFonts())
-    {
-      if (!m_display->UpdateImGuiFontTexture())
-        Panic("Failed to update font texture");
-    }
-  }
-
-  if (!System::IsShutdown())
-    g_gpu->UpdateResolutionScale();
+  CommonHostInterface::Shutdown();
 }
 
 bool NoGUIHostInterface::CreateDisplay()
@@ -163,33 +126,19 @@ bool NoGUIHostInterface::CreateDisplay()
     return false;
   }
 
-  if (!m_display->CreateImGuiContext() ||
-      (m_fullscreen_ui_enabled && !FullscreenUI::Initialize(this)) ||
-      !m_display->UpdateImGuiFontTexture())
-  {
-    if (m_fullscreen_ui_enabled)
-      FullscreenUI::Shutdown();
-
-    m_display->DestroyImGuiContext();
-    m_display->DestroyRenderDevice();
-    m_display.reset();
-    ReportError("Failed to initialize imgui/fonts/fullscreen UI");
-    return false;
-  }
+  if (!CreateHostDisplayResources())
+    Log_WarningPrint("Failed to create host display resources");
 
   return true;
 }
 
 void NoGUIHostInterface::DestroyDisplay()
 {
-  if (m_fullscreen_ui_enabled)
-    FullscreenUI::Shutdown();
+  ReleaseHostDisplayResources();
 
   if (m_display)
-  {
-    m_display->DestroyImGuiContext();
     m_display->DestroyRenderDevice();
-  }
+
   m_display.reset();
 }
 
@@ -235,40 +184,13 @@ bool NoGUIHostInterface::AcquireHostDisplay()
       Panic("Failed to recreate display on GPU renderer switch");
   }
 
-  if (!CreateHostDisplayResources())
-    return false;
-
   return true;
 }
 
 void NoGUIHostInterface::ReleaseHostDisplay()
 {
-  ReleaseHostDisplayResources();
-
   // restore vsync, since we don't want to burn cycles at the menu
   m_display->SetVSync(true);
-}
-
-void NoGUIHostInterface::OnSystemCreated()
-{
-  CommonHostInterface::OnSystemCreated();
-  if (m_fullscreen_ui_enabled)
-    FullscreenUI::SystemCreated();
-}
-
-void NoGUIHostInterface::OnSystemPaused(bool paused)
-{
-  CommonHostInterface::OnSystemPaused(paused);
-  if (m_fullscreen_ui_enabled)
-    FullscreenUI::SystemPaused(paused);
-}
-
-void NoGUIHostInterface::OnSystemDestroyed()
-{
-  CommonHostInterface::OnSystemDestroyed();
-  ReportFormattedMessage("System shut down.");
-  if (m_fullscreen_ui_enabled)
-    FullscreenUI::SystemDestroyed();
 }
 
 void NoGUIHostInterface::OnRunningGameChanged(const std::string& path, CDImage* image, const std::string& game_code,

@@ -10,6 +10,7 @@
 #include "core/gpu.h"
 #include "core/system.h"
 #include "frontend-common/game_list.h"
+#include "frontend-common/imgui_fullscreen.h"
 #include "frontend-common/imgui_styles.h"
 #include "frontend-common/ini_settings_interface.h"
 #include "frontend-common/opengl_host_display.h"
@@ -96,6 +97,10 @@ bool QtHostInterface::initializeOnThread()
 
   if (!CommonHostInterface::Initialize())
     return false;
+
+  // imgui setup
+  setImGuiFont();
+  setImGuiKeyMap();
 
   // make sure the controllers have been detected
   if (m_controller_interface)
@@ -294,7 +299,7 @@ void QtHostInterface::ApplySettings(bool display_osd_messages)
       m_is_rendering_to_main = render_to_main;
       updateDisplayState();
     }
-    else
+    else if (!m_fullscreen_ui_enabled)
     {
       renderDisplay();
     }
@@ -367,6 +372,11 @@ void QtHostInterface::resumeSystemFromMostRecentState()
 void QtHostInterface::onDisplayWindowKeyEvent(int key, bool pressed)
 {
   DebugAssert(isOnWorkerThread());
+
+  const u32 masked_key = static_cast<u32>(key) & IMGUI_KEY_MASK;
+  if (masked_key < countof(ImGuiIO::KeysDown))
+    ImGui::GetIO().KeysDown[masked_key] = pressed;
+
   HandleHostKeyEvent(key, pressed);
 }
 
@@ -377,14 +387,11 @@ void QtHostInterface::onDisplayWindowMouseMoveEvent(int x, int y)
   if (!m_display)
     return;
 
-  m_display->SetMousePosition(x, y);
+  ImGuiIO& io = ImGui::GetIO();
+  io.MousePos[0] = static_cast<float>(x);
+  io.MousePos[1] = static_cast<float>(y);
 
-  if (ImGui::GetCurrentContext())
-  {
-    ImGuiIO& io = ImGui::GetIO();
-    io.MousePos[0] = static_cast<float>(x);
-    io.MousePos[1] = static_cast<float>(y);
-  }
+  m_display->SetMousePosition(x, y);
 }
 
 void QtHostInterface::onDisplayWindowMouseButtonEvent(int button, bool pressed)
@@ -413,6 +420,7 @@ void QtHostInterface::onHostDisplayWindowResized(int width, int height)
     return;
 
   m_display->ResizeRenderWindow(width, height);
+  OnHostDisplayResized(width, height, m_display->GetWindowScale());
 
   // re-render the display, since otherwise it will be out of date and stretched if paused
   if (!System::IsShutdown())
@@ -426,8 +434,9 @@ void QtHostInterface::onHostDisplayWindowResized(int width, int height)
       updateDisplayState();
     }
 
-    g_gpu->UpdateResolutionScale();
-    renderDisplay();
+    // force redraw if we're paused
+    if (!m_fullscreen_ui_enabled)
+      renderDisplay();
   }
 }
 
@@ -470,16 +479,12 @@ bool QtHostInterface::AcquireHostDisplay()
     return false;
   }
 
-  createImGuiContext(display_widget->devicePixelRatioFromScreen());
-
   if (!m_display->MakeRenderContextCurrent() ||
       !m_display->InitializeRenderDevice(GetShaderCacheBasePath(), g_settings.gpu_use_debug_device,
                                          g_settings.gpu_threaded_presentation) ||
-      !m_display->CreateImGuiContext() || !m_display->UpdateImGuiFontTexture() || !CreateHostDisplayResources())
+      !CreateHostDisplayResources())
   {
     ReleaseHostDisplayResources();
-    m_display->DestroyImGuiContext();
-    destroyImGuiContext();
     m_display->DestroyRenderDevice();
     emit destroyDisplayRequested();
     m_display.reset();
@@ -545,12 +550,16 @@ void QtHostInterface::updateDisplayState()
   connectDisplaySignals(display_widget);
   m_is_exclusive_fullscreen = m_display->IsFullscreen();
 
+  OnHostDisplayResized(m_display->GetWindowWidth(), m_display->GetWindowHeight(), m_display->GetWindowScale());
+
   if (!System::IsShutdown())
   {
-    g_gpu->UpdateResolutionScale();
     UpdateSoftwareCursor();
-    redrawDisplayWindow();
+
+    if (!m_fullscreen_ui_enabled)
+      redrawDisplayWindow();
   }
+
   UpdateSpeedLimiterState();
 }
 
@@ -559,9 +568,7 @@ void QtHostInterface::ReleaseHostDisplay()
   Assert(m_display);
 
   ReleaseHostDisplayResources();
-  m_display->DestroyImGuiContext();
   m_display->DestroyRenderDevice();
-  destroyImGuiContext();
   emit destroyDisplayRequested();
   m_display.reset();
   m_is_fullscreen = false;
@@ -1370,31 +1377,39 @@ void QtHostInterface::threadEntryPoint()
   // TODO: Event which flags the thread as ready
   while (!m_shutdown_flag.load())
   {
-    if (!System::IsRunning())
+    if (System::IsRunning())
     {
-      // wait until we have a system before running
-      m_worker_thread_event_loop->exec();
-      continue;
-    }
+      if (m_display_all_frames)
+        System::RunFrame();
+      else
+        System::RunFrames();
 
-    if (m_display_all_frames)
-      System::RunFrame();
+      UpdateControllerRumble();
+      if (m_frame_step_request)
+      {
+        m_frame_step_request = false;
+        PauseSystem(true);
+      }
+
+      renderDisplay();
+
+      System::UpdatePerformanceCounters();
+
+      if (m_throttler_enabled)
+        System::Throttle();
+    }
     else
-      System::RunFrames();
-
-    UpdateControllerRumble();
-    if (m_frame_step_request)
     {
-      m_frame_step_request = false;
-      PauseSystem(true);
+      // we want to keep rendering the UI when paused and fullscreen UI is enabled
+      if (!m_fullscreen_ui_enabled || !System::IsValid())
+      {
+        // wait until we have a system before running
+        m_worker_thread_event_loop->exec();
+        continue;
+      }
+
+      renderDisplay();
     }
-
-    renderDisplay();
-
-    System::UpdatePerformanceCounters();
-
-    if (m_throttler_enabled)
-      System::Throttle();
 
     m_worker_thread_event_loop->processEvents(QEventLoop::AllEvents);
     PollAndUpdate();
@@ -1447,8 +1462,10 @@ static std::string GetFontPath(const char* name)
 #endif
 }
 
-static bool AddImGuiFont(const std::string& language, float size, float framebuffer_scale)
+void QtHostInterface::setImGuiFont()
 {
+  std::string language(GetStringSettingValue("Main", "Language", ""));
+
   std::string path;
   const ImWchar* range = nullptr;
 #ifdef WIN32
@@ -1465,34 +1482,35 @@ static bool AddImGuiFont(const std::string& language, float size, float framebuf
 #endif
 
   if (!path.empty())
-  {
-    return (ImGui::GetIO().Fonts->AddFontFromFileTTF(path.c_str(), size * framebuffer_scale, nullptr, range) !=
-            nullptr);
-  }
-
-  return false;
+    ImGuiFullscreen::SetFontFilename(std::move(path));
+  if (range)
+    ImGuiFullscreen::SetFontGlyphRanges(range);
 }
 
-void QtHostInterface::createImGuiContext(float framebuffer_scale)
+void QtHostInterface::setImGuiKeyMap()
 {
-  ImGui::CreateContext();
-
-  auto& io = ImGui::GetIO();
-  io.IniFilename = nullptr;
-  io.DisplayFramebufferScale.x = framebuffer_scale;
-  io.DisplayFramebufferScale.y = framebuffer_scale;
-  ImGui::GetStyle().ScaleAllSizes(framebuffer_scale);
-
-  ImGui::StyleColorsDarker();
-
-  std::string language = GetStringSettingValue("Main", "Language", "");
-  if (!AddImGuiFont(language, 15.0f, framebuffer_scale))
-    ImGui::AddRobotoRegularFont(15.0f * framebuffer_scale);
-}
-
-void QtHostInterface::destroyImGuiContext()
-{
-  ImGui::DestroyContext();
+  ImGuiIO& io = ImGui::GetIO();
+  io.KeyMap[ImGuiKey_Tab] = Qt::Key_Tab & IMGUI_KEY_MASK;
+  io.KeyMap[ImGuiKey_LeftArrow] = Qt::Key_Left & IMGUI_KEY_MASK;
+  io.KeyMap[ImGuiKey_RightArrow] = Qt::Key_Right & IMGUI_KEY_MASK;
+  io.KeyMap[ImGuiKey_UpArrow] = Qt::Key_Up & IMGUI_KEY_MASK;
+  io.KeyMap[ImGuiKey_DownArrow] = Qt::Key_Down & IMGUI_KEY_MASK;
+  io.KeyMap[ImGuiKey_PageUp] = Qt::Key_PageUp & IMGUI_KEY_MASK;
+  io.KeyMap[ImGuiKey_PageDown] = Qt::Key_PageDown & IMGUI_KEY_MASK;
+  io.KeyMap[ImGuiKey_Home] = Qt::Key_Home & IMGUI_KEY_MASK;
+  io.KeyMap[ImGuiKey_End] = Qt::Key_End & IMGUI_KEY_MASK;
+  io.KeyMap[ImGuiKey_Insert] = Qt::Key_Insert & IMGUI_KEY_MASK;
+  io.KeyMap[ImGuiKey_Delete] = Qt::Key_Delete & IMGUI_KEY_MASK;
+  io.KeyMap[ImGuiKey_Backspace] = Qt::Key_Backspace & IMGUI_KEY_MASK;
+  io.KeyMap[ImGuiKey_Space] = Qt::Key_Space & IMGUI_KEY_MASK;
+  io.KeyMap[ImGuiKey_Enter] = Qt::Key_Enter & IMGUI_KEY_MASK;
+  io.KeyMap[ImGuiKey_Escape] = Qt::Key_Escape & IMGUI_KEY_MASK;
+  io.KeyMap[ImGuiKey_A] = Qt::Key_A & IMGUI_KEY_MASK;
+  io.KeyMap[ImGuiKey_C] = Qt::Key_C & IMGUI_KEY_MASK;
+  io.KeyMap[ImGuiKey_V] = Qt::Key_V & IMGUI_KEY_MASK;
+  io.KeyMap[ImGuiKey_X] = Qt::Key_X & IMGUI_KEY_MASK;
+  io.KeyMap[ImGuiKey_Y] = Qt::Key_Y & IMGUI_KEY_MASK;
+  io.KeyMap[ImGuiKey_Z] = Qt::Key_Z & IMGUI_KEY_MASK;
 }
 
 TinyString QtHostInterface::TranslateString(const char* context, const char* str) const

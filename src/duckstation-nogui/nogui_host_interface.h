@@ -41,9 +41,6 @@ protected:
   bool AcquireHostDisplay() override;
   void ReleaseHostDisplay() override;
 
-  void OnSystemCreated() override;
-  void OnSystemPaused(bool paused) override;
-  void OnSystemDestroyed() override;
   void OnRunningGameChanged(const std::string& path, CDImage* image, const std::string& game_code,
                             const std::string& game_title) override;
 
@@ -53,11 +50,9 @@ protected:
   virtual bool CreatePlatformWindow(bool fullscreen) = 0;
   virtual void DestroyPlatformWindow() = 0;
   virtual std::optional<WindowInfo> GetPlatformWindowInfo() = 0;
-  void OnPlatformWindowResized(u32 new_width, u32 new_height, float new_scale);
 
   bool CreateDisplay();
   void DestroyDisplay();
-  void CreateImGuiContext();
   void RunCallbacks();
 
   std::deque<std::function<void()>> m_queued_callbacks;

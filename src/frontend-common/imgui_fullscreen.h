@@ -141,6 +141,9 @@ void SetResolveTextureFunction(ResolveTextureHandleCallback callback);
 /// Rebuilds fonts to a new scale if needed. Returns true if fonts have changed and the texture needs updating.
 bool UpdateFonts();
 
+/// Removes the fullscreen fonts, leaving only the standard font.
+void ResetFonts();
+
 bool UpdateLayoutScale();
 
 void BeginLayout();

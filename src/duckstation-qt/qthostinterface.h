@@ -213,7 +213,10 @@ private:
     BACKGROUND_CONTROLLER_POLLING_INTERVAL =
       100, /// Interval at which the controllers are polled when the system is not active.
 
-    SETTINGS_SAVE_DELAY = 1000
+    SETTINGS_SAVE_DELAY = 1000,
+
+    /// Crappy solution to the Qt indices being massive.
+    IMGUI_KEY_MASK = 511,
   };
 
   using InputButtonHandler = std::function<void(bool)>;
@@ -242,8 +245,8 @@ private:
   void startBackgroundControllerPollTimer();
   void stopBackgroundControllerPollTimer();
 
-  void createImGuiContext(float framebuffer_scale);
-  void destroyImGuiContext();
+  void setImGuiFont();
+  void setImGuiKeyMap();
 
   void createThread();
   void stopThread();

@@ -25,6 +25,8 @@
 #include "game_list.h"
 #include "icon.h"
 #include "imgui.h"
+#include "imgui_fullscreen.h"
+#include "imgui_styles.h"
 #include "ini_settings_interface.h"
 #include "save_state_selector_ui.h"
 #include "scmversion/scmversion.h"
@@ -84,12 +86,17 @@ bool CommonHostInterface::Initialize()
   RegisterHotkeys();
 
   UpdateControllerInterface();
+
+  CreateImGuiContext();
+
   return true;
 }
 
 void CommonHostInterface::Shutdown()
 {
   HostInterface::Shutdown();
+
+  ImGui::DestroyContext();
 
 #ifdef WITH_DISCORD_PRESENCE
   ShutdownDiscordPresence();
@@ -139,7 +146,7 @@ void CommonHostInterface::InitializeUserDirectory()
 bool CommonHostInterface::BootSystem(const SystemBootParameters& parameters)
 {
   // If the fullscreen UI is enabled, make sure it's finished loading the game list so we don't race it.
-  if (m_fullscreen_ui_enabled)
+  if (m_display && m_fullscreen_ui_enabled)
     FullscreenUI::EnsureGameListLoaded();
 
   if (!HostInterface::BootSystem(parameters))
@@ -268,7 +275,7 @@ bool CommonHostInterface::ParseCommandLineParameters(int argc, char* argv[],
       else if (CHECK_ARG("-batch"))
       {
         Log_InfoPrintf("Enabling batch mode.");
-        m_command_line_flags.batch_mode = true;
+        m_flags.batch_mode = true;
         continue;
       }
       else if (CHECK_ARG("-fastboot"))
@@ -286,7 +293,7 @@ bool CommonHostInterface::ParseCommandLineParameters(int argc, char* argv[],
       else if (CHECK_ARG("-nocontroller"))
       {
         Log_InfoPrintf("Disabling controller support.");
-        m_command_line_flags.disable_controller_interface = true;
+        m_flags.disable_controller_interface = true;
         continue;
       }
       else if (CHECK_ARG("-resume"))
@@ -307,7 +314,7 @@ bool CommonHostInterface::ParseCommandLineParameters(int argc, char* argv[],
       else if (CHECK_ARG("-fullscreen"))
       {
         Log_InfoPrintf("Going fullscreen after booting.");
-        m_command_line_flags.start_fullscreen = true;
+        m_flags.start_fullscreen = true;
         force_fullscreen = true;
         continue;
       }
@@ -444,6 +451,16 @@ bool CommonHostInterface::SetFullscreen(bool enabled)
   return false;
 }
 
+void CommonHostInterface::CreateImGuiContext()
+{
+  ImGui::CreateContext();
+  ImGui::GetIO().IniFilename = nullptr;
+#ifndef __ANDROID__
+  // Android has no keyboard, nor are we using ImGui for any actual user-interactable windows.
+  ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad;
+#endif
+}
+
 bool CommonHostInterface::CreateHostDisplayResources()
 {
   m_logo_texture = m_display->CreateTexture(APP_ICON_WIDTH, APP_ICON_HEIGHT, 1, 1, 1, HostDisplayPixelFormat::RGBA8,
@@ -451,12 +468,81 @@ bool CommonHostInterface::CreateHostDisplayResources()
   if (!m_logo_texture)
     Log_WarningPrintf("Failed to create logo texture");
 
+  const float framebuffer_scale = m_display->GetWindowScale();
+  ImGui::GetIO().DisplayFramebufferScale = ImVec2(framebuffer_scale, framebuffer_scale);
+  ImGui::GetStyle() = ImGuiStyle();
+  ImGui::StyleColorsDarker();
+  ImGui::GetStyle().ScaleAllSizes(framebuffer_scale);
+
+  if (!m_display->CreateImGuiContext())
+  {
+    Log_ErrorPrintf("Failed to create ImGui device context");
+    return false;
+  }
+
+  if (m_fullscreen_ui_enabled)
+  {
+    if (!FullscreenUI::Initialize(this))
+    {
+      Log_ErrorPrintf("Failed to initialize fullscreen UI, disabling.");
+      m_fullscreen_ui_enabled = false;
+    }
+  }
+
+  if (!m_fullscreen_ui_enabled)
+    ImGuiFullscreen::ResetFonts();
+
+  if (!m_display->UpdateImGuiFontTexture())
+  {
+    Log_ErrorPrintf("Failed to create ImGui font text");
+    if (m_fullscreen_ui_enabled)
+      FullscreenUI::Shutdown();
+
+    m_display->DestroyImGuiContext();
+    return false;
+  }
+
   return true;
 }
 
 void CommonHostInterface::ReleaseHostDisplayResources()
 {
+  if (m_fullscreen_ui_enabled)
+    FullscreenUI::Shutdown();
+
+  if (m_display)
+    m_display->DestroyImGuiContext();
+
   m_logo_texture.reset();
+}
+
+void CommonHostInterface::OnHostDisplayResized(u32 new_width, u32 new_height, float new_scale)
+{
+  if (new_scale != ImGui::GetIO().DisplayFramebufferScale.x)
+  {
+    ImGui::GetIO().DisplayFramebufferScale = ImVec2(new_scale, new_scale);
+    ImGui::GetStyle() = ImGuiStyle();
+    ImGui::StyleColorsDarker();
+    ImGui::GetStyle().ScaleAllSizes(new_scale);
+    ImGuiFullscreen::ResetFonts();
+    if (!m_display->UpdateImGuiFontTexture())
+      Panic("Failed to recreate font texture after resize");
+  }
+
+  if (m_fullscreen_ui_enabled)
+  {
+    if (ImGuiFullscreen::UpdateLayoutScale())
+    {
+      if (ImGuiFullscreen::UpdateFonts())
+      {
+        if (!m_display->UpdateImGuiFontTexture())
+          Panic("Failed to update font texture");
+      }
+    }
+  }
+
+  if (!System::IsShutdown())
+    g_gpu->UpdateResolutionScale();
 }
 
 std::unique_ptr<AudioStream> CommonHostInterface::CreateAudioStream(AudioBackend backend)
@@ -492,7 +578,7 @@ void CommonHostInterface::UpdateControllerInterface()
     ControllerInterface::ParseBackendName(backend_str.c_str());
   const ControllerInterface::Backend current_backend =
     (m_controller_interface ? m_controller_interface->GetBackend() : ControllerInterface::Backend::None);
-  if (new_backend == current_backend || m_command_line_flags.disable_controller_interface)
+  if (new_backend == current_backend || m_flags.disable_controller_interface)
     return;
 
   if (m_controller_interface)
@@ -781,6 +867,9 @@ void CommonHostInterface::OnSystemCreated()
 {
   HostInterface::OnSystemCreated();
 
+  if (m_fullscreen_ui_enabled)
+    FullscreenUI::SystemCreated();
+
   if (g_settings.display_post_processing && !m_display->SetPostProcessingChain(g_settings.display_post_process_chain))
     AddOSDMessage(TranslateStdString("OSDMessage", "Failed to load post processing shader chain."), 20.0f);
 }
@@ -788,6 +877,9 @@ void CommonHostInterface::OnSystemCreated()
 void CommonHostInterface::OnSystemPaused(bool paused)
 {
   ReportFormattedMessage("System %s.", paused ? "paused" : "resumed");
+
+  if (m_fullscreen_ui_enabled)
+    FullscreenUI::SystemPaused(paused);
 
   if (paused)
   {
@@ -807,6 +899,9 @@ void CommonHostInterface::OnSystemDestroyed()
     m_display->SetDisplayMaxFPS(0.0f);
 
   HostInterface::OnSystemDestroyed();
+
+  if (m_fullscreen_ui_enabled)
+    FullscreenUI::SystemDestroyed();
 
   StopControllerRumble();
 }
@@ -837,6 +932,9 @@ void CommonHostInterface::OnControllerTypeChanged(u32 slot)
 
 void CommonHostInterface::DrawImGuiWindows()
 {
+  if (m_save_state_selector_ui->IsOpen())
+    m_save_state_selector_ui->Draw();
+
   if (m_fullscreen_ui_enabled)
   {
     FullscreenUI::Render();
@@ -850,9 +948,6 @@ void CommonHostInterface::DrawImGuiWindows()
   }
 
   DrawOSDMessages();
-
-  if (m_save_state_selector_ui->IsOpen())
-    m_save_state_selector_ui->Draw();
 }
 
 void CommonHostInterface::DrawFPSWindow()
@@ -2383,6 +2478,36 @@ void CommonHostInterface::LoadSettings(SettingsInterface& si)
 #ifdef WITH_DISCORD_PRESENCE
   SetDiscordPresenceEnabled(si.GetBoolValue("Main", "EnableDiscordPresence", false));
 #endif
+
+  const bool fullscreen_ui_enabled =
+    si.GetBoolValue("Main", "EnableFullscreenUI", false) || m_flags.force_fullscreen_ui;
+  if (fullscreen_ui_enabled != m_fullscreen_ui_enabled)
+  {
+    m_fullscreen_ui_enabled = fullscreen_ui_enabled;
+    if (m_display)
+    {
+      if (!fullscreen_ui_enabled)
+      {
+        FullscreenUI::Shutdown();
+        ImGuiFullscreen::ResetFonts();
+        if (!m_display->UpdateImGuiFontTexture())
+          Panic("Failed to recreate font texture after fullscreen UI disable");
+      }
+      else
+      {
+        if (FullscreenUI::Initialize(this))
+        {
+          if (!m_display->UpdateImGuiFontTexture())
+            Panic("Failed to recreate font textre after fullscreen UI enable");
+        }
+        else
+        {
+          Log_ErrorPrintf("Failed to initialize fullscreen UI. Disabling.");
+          m_fullscreen_ui_enabled = false;
+        }
+      }
+    }
+  }
 }
 
 void CommonHostInterface::SaveSettings(SettingsInterface& si)

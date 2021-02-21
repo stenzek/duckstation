@@ -35,6 +35,8 @@ Log_SetChannel(FullscreenUI);
 static constexpr float LAYOUT_MAIN_MENU_BAR_SIZE = 20.0f; // Should be DPI scaled, not layout scaled!
 
 using ImGuiFullscreen::g_large_font;
+using ImGuiFullscreen::g_layout_padding_left;
+using ImGuiFullscreen::g_layout_padding_top;
 using ImGuiFullscreen::g_medium_font;
 using ImGuiFullscreen::LAYOUT_LARGE_FONT_SIZE;
 using ImGuiFullscreen::LAYOUT_MEDIUM_FONT_SIZE;
@@ -171,7 +173,6 @@ static bool s_save_state_selector_loading = true;
 //////////////////////////////////////////////////////////////////////////
 static void DrawGameListWindow();
 static void SwitchToGameList();
-static void QueueGameListRefresh();
 static void SortGameList();
 static HostDisplayTexture* GetTextureForGameListEntryType(GameListEntryType type);
 static HostDisplayTexture* GetGameListCover(const GameListEntry* entry);
@@ -194,11 +195,15 @@ bool Initialize(CommonHostInterface* host_interface)
 
   s_settings_copy.Load(*s_host_interface->GetSettingsInterface());
   SetDebugMenuEnabled(s_host_interface->GetSettingsInterface()->GetBoolValue("Main", "ShowDebugMenu", false));
-  QueueGameListRefresh();
 
   ImGuiFullscreen::UpdateLayoutScale();
   ImGuiFullscreen::UpdateFonts();
   ImGuiFullscreen::SetResolveTextureFunction(ResolveTextureHandle);
+
+  if (System::IsValid())
+    SystemCreated();
+  if (System::IsPaused())
+    SystemPaused(true);
 
   return true;
 }

@@ -54,6 +54,7 @@ bool InvalidateCachedTexture(const std::string& path);
 bool DrawErrorWindow(const char* message);
 bool DrawConfirmWindow(const char* message, bool* result);
 
+void QueueGameListRefresh();
 void EnsureGameListLoaded();
 
 Settings& GetSettingsCopy();

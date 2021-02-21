@@ -63,6 +63,7 @@ public:
 
   ALWAYS_INLINE s32 GetWindowWidth() const { return static_cast<s32>(m_window_info.surface_width); }
   ALWAYS_INLINE s32 GetWindowHeight() const { return static_cast<s32>(m_window_info.surface_height); }
+  ALWAYS_INLINE float GetWindowScale() const { return m_window_info.surface_scale; }
 
   // Position is relative to the top-left corner of the window.
   ALWAYS_INLINE s32 GetMousePositionX() const { return m_mouse_position_x; }

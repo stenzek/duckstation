@@ -82,9 +82,6 @@ protected:
 private:
   void EmulationThreadLoop(JNIEnv* env);
 
-  void CreateImGuiContext();
-  void DestroyImGuiContext();
-
   void LoadSettings(SettingsInterface& si) override;
   void SetVibration(bool enabled);
   void UpdateVibration();

@@ -122,6 +122,7 @@ public:
   virtual bool SetFullscreen(bool enabled);
 
   virtual bool Initialize() override;
+
   virtual void Shutdown() override;
 
   virtual bool BootSystem(const SystemBootParameters& parameters) override;
@@ -141,7 +142,7 @@ public:
   ALWAYS_INLINE ControllerInterface* GetControllerInterface() const { return m_controller_interface.get(); }
 
   /// Returns true if running in batch mode, i.e. exit after emulation.
-  ALWAYS_INLINE bool InBatchMode() const { return m_command_line_flags.batch_mode; }
+  ALWAYS_INLINE bool InBatchMode() const { return m_flags.batch_mode; }
 
   /// Returns true if the fullscreen UI is enabled.
   ALWAYS_INLINE bool IsFullscreenUIEnabled() const { return m_fullscreen_ui_enabled; }
@@ -390,6 +391,7 @@ protected:
 
   bool CreateHostDisplayResources();
   void ReleaseHostDisplayResources();
+  void OnHostDisplayResized(u32 new_width, u32 new_height, float new_scale);
 
   virtual void DrawImGuiWindows();
 
@@ -430,7 +432,10 @@ protected:
 
     // starting fullscreen (outside of boot options)
     BitField<u8, bool, 2, 1> start_fullscreen;
-  } m_command_line_flags = {};
+
+    // force fullscreen UI enabled (nogui)
+    BitField<u8, bool, 3, 1> force_fullscreen_ui;
+  } m_flags = {};
 
 private:
   void LoadSettings();
@@ -444,6 +449,7 @@ private:
   bool UpdateControllerInputMapFromGameSettings();
   void UpdateHotkeyInputMap(SettingsInterface& si);
   void ClearAllControllerBindings();
+  void CreateImGuiContext();
 
 #ifdef WITH_DISCORD_PRESENCE
   void SetDiscordPresenceEnabled(bool enabled);

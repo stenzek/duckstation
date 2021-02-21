@@ -47,10 +47,18 @@ void SetFontFilename(const char* filename)
     std::string().swap(s_font_filename);
 }
 
-void SetIconFontFilename(const char* icon_font_filename)
+void SetFontFilename(std::string filename)
 {
-  if (icon_font_filename)
-    s_icon_font_filename = icon_font_filename;
+  if (!filename.empty())
+    s_font_filename = std::move(filename);
+  else
+    std::string().swap(s_font_filename);
+}
+
+void SetIconFontFilename(std::string icon_font_filename)
+{
+  if (!icon_font_filename.empty())
+    s_icon_font_filename = std::move(icon_font_filename);
   else
     std::string().swap(s_icon_font_filename);
 }
@@ -111,8 +119,8 @@ bool UpdateFonts()
   const float medium_font_size = std::ceil(LayoutScale(LAYOUT_MEDIUM_FONT_SIZE));
   const float large_font_size = std::ceil(LayoutScale(LAYOUT_LARGE_FONT_SIZE));
 
-  if (g_standard_font && g_standard_font->FontSize == standard_font_size && medium_font_size &&
-      g_medium_font->FontSize == medium_font_size && large_font_size && g_large_font->FontSize == large_font_size)
+  if (g_standard_font && g_standard_font->FontSize == standard_font_size && g_medium_font &&
+      g_medium_font->FontSize == medium_font_size && g_large_font && g_large_font->FontSize == large_font_size)
   {
     return false;
   }
@@ -145,6 +153,30 @@ bool UpdateFonts()
     Panic("Failed to rebuild font atlas");
 
   return true;
+}
+
+void ResetFonts()
+{
+  const float standard_font_size = std::ceil(DPIScale(s_font_size));
+
+  ImGuiIO& io = ImGui::GetIO();
+  io.Fonts->Clear();
+
+  if (s_font_filename.empty())
+  {
+    g_standard_font = ImGui::AddRobotoRegularFont(standard_font_size);
+  }
+  else
+  {
+    g_standard_font =
+      io.Fonts->AddFontFromFileTTF(s_font_filename.c_str(), standard_font_size, nullptr, s_font_glyph_range);
+  }
+
+  g_medium_font = nullptr;
+  g_large_font = nullptr;
+
+  if (!io.Fonts->Build())
+    Panic("Failed to rebuild font atlas");
 }
 
 bool UpdateLayoutScale()
