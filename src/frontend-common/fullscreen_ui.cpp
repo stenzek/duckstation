@@ -5,6 +5,7 @@
 #include "common/byte_stream.h"
 #include "common/file_system.h"
 #include "common/log.h"
+#include "common/lru_cache.h"
 #include "common/make_array.h"
 #include "common/string.h"
 #include "common/string_util.h"
@@ -99,15 +100,19 @@ static std::unique_ptr<HostDisplayTexture> LoadTextureResource(const char* name)
 static bool LoadResources();
 static void DestroyResources();
 
-std::unique_ptr<HostDisplayTexture> s_app_icon_texture;
-std::unique_ptr<HostDisplayTexture> s_placeholder_texture;
-std::array<std::unique_ptr<HostDisplayTexture>, static_cast<u32>(DiscRegion::Count)> s_disc_region_textures;
-std::array<std::unique_ptr<HostDisplayTexture>, static_cast<u32>(GameListCompatibilityRating::Count)>
+static HostDisplayTexture* GetCachedTexture(const std::string& name);
+static ImTextureID ResolveTextureHandle(const std::string& name);
+
+static std::unique_ptr<HostDisplayTexture> s_app_icon_texture;
+static std::unique_ptr<HostDisplayTexture> s_placeholder_texture;
+static std::array<std::unique_ptr<HostDisplayTexture>, static_cast<u32>(DiscRegion::Count)> s_disc_region_textures;
+static std::array<std::unique_ptr<HostDisplayTexture>, static_cast<u32>(GameListCompatibilityRating::Count)>
   s_game_compatibility_textures;
-std::unique_ptr<HostDisplayTexture> s_fallback_disc_texture;
-std::unique_ptr<HostDisplayTexture> s_fallback_exe_texture;
-std::unique_ptr<HostDisplayTexture> s_fallback_psf_texture;
-std::unique_ptr<HostDisplayTexture> s_fallback_playlist_texture;
+static std::unique_ptr<HostDisplayTexture> s_fallback_disc_texture;
+static std::unique_ptr<HostDisplayTexture> s_fallback_exe_texture;
+static std::unique_ptr<HostDisplayTexture> s_fallback_psf_texture;
+static std::unique_ptr<HostDisplayTexture> s_fallback_playlist_texture;
+static LRUCache<std::string, std::unique_ptr<HostDisplayTexture>> s_texture_cache;
 
 //////////////////////////////////////////////////////////////////////////
 // Settings
@@ -195,6 +200,7 @@ bool Initialize(CommonHostInterface* host_interface, SettingsInterface* settings
 
   ImGuiFullscreen::UpdateLayoutScale();
   ImGuiFullscreen::UpdateFonts();
+  ImGuiFullscreen::SetResolveTextureFunction(ResolveTextureHandle);
 
   return true;
 }
@@ -388,6 +394,7 @@ bool LoadResources()
 
 void DestroyResources()
 {
+  s_texture_cache.Clear();
   s_app_icon_texture.reset();
   s_placeholder_texture.reset();
   s_fallback_playlist_texture.reset();
@@ -400,32 +407,45 @@ void DestroyResources()
     tex.reset();
 }
 
-std::unique_ptr<HostDisplayTexture> LoadTextureResource(const char* name)
+static std::unique_ptr<HostDisplayTexture> LoadTexture(const char* path, bool from_package)
 {
-  std::unique_ptr<HostDisplayTexture> texture;
-
-  const std::string path(StringUtil::StdStringFromFormat("resources" FS_OSPATH_SEPARATOR_STR "%s", name));
-  std::unique_ptr<ByteStream> stream = s_host_interface->OpenPackageFile(path.c_str(), BYTESTREAM_OPEN_READ);
+  std::unique_ptr<ByteStream> stream;
+  if (from_package)
+    stream = s_host_interface->OpenPackageFile(path, BYTESTREAM_OPEN_READ);
+  else
+    stream = FileSystem::OpenFile(path, BYTESTREAM_OPEN_READ);
   if (!stream)
   {
-    Log_ErrorPrintf("Failed to open texture resource '%s'", path.c_str());
+    Log_ErrorPrintf("Failed to open texture resource '%s'", path);
     return {};
   }
 
   Common::RGBA8Image image;
-  if (Common::LoadImageFromStream(&image, stream.get()) && image.IsValid())
+  if (!Common::LoadImageFromStream(&image, stream.get()) && image.IsValid())
   {
-    texture = s_host_interface->GetDisplay()->CreateTexture(image.GetWidth(), image.GetHeight(), 1, 1, 1,
-                                                            HostDisplayPixelFormat::RGBA8, image.GetPixels(),
-                                                            image.GetByteStride());
-    if (texture)
-    {
-      Log_DevPrintf("Uploaded texture resource '%s' (%ux%u)", name, image.GetWidth(), image.GetHeight());
-      return texture;
-    }
-
-    Log_ErrorPrintf("failed to create %ux%u texture for resource", image.GetWidth(), image.GetHeight());
+    Log_ErrorPrintf("Failed to read texture resource '%s'", path);
+    return {};
   }
+
+  std::unique_ptr<HostDisplayTexture> texture = s_host_interface->GetDisplay()->CreateTexture(
+    image.GetWidth(), image.GetHeight(), 1, 1, 1, HostDisplayPixelFormat::RGBA8, image.GetPixels(),
+    image.GetByteStride());
+  if (!texture)
+  {
+    Log_ErrorPrintf("failed to create %ux%u texture for resource", image.GetWidth(), image.GetHeight());
+    return {};
+  }
+
+  Log_DevPrintf("Uploaded texture resource '%s' (%ux%u)", path, image.GetWidth(), image.GetHeight());
+  return texture;
+}
+
+std::unique_ptr<HostDisplayTexture> LoadTextureResource(const char* name)
+{
+  const std::string path(StringUtil::StdStringFromFormat("resources" FS_OSPATH_SEPARATOR_STR "%s", name));
+  std::unique_ptr<HostDisplayTexture> texture = LoadTexture(path.c_str(), true);
+  if (texture)
+    return texture;
 
   Log_ErrorPrintf("Missing resource '%s', using fallback", name);
 
@@ -436,6 +456,29 @@ std::unique_ptr<HostDisplayTexture> LoadTextureResource(const char* name)
     Panic("Failed to create placeholder texture");
 
   return texture;
+}
+
+HostDisplayTexture* GetCachedTexture(const std::string& name)
+{
+  std::unique_ptr<HostDisplayTexture>* tex_ptr = s_texture_cache.Lookup(name);
+  if (!tex_ptr)
+  {
+    std::unique_ptr<HostDisplayTexture> tex = LoadTexture(name.c_str(), false);
+    tex_ptr = s_texture_cache.Insert(name, std::move(tex));
+  }
+
+  return tex_ptr->get();
+}
+
+ImTextureID ResolveTextureHandle(const std::string& name)
+{
+  HostDisplayTexture* tex = GetCachedTexture(name);
+  return tex ? tex->GetHandle() : nullptr;
+}
+
+bool InvalidateCachedTexture(const std::string& path)
+{
+  return s_texture_cache.Remove(path);
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -1,5 +1,6 @@
 #pragma once
 #include "common/types.h"
+#include <string>
 
 class CommonHostInterface;
 class SettingsInterface;
@@ -46,6 +47,8 @@ void OpenQuickMenu();
 void CloseQuickMenu();
 void Shutdown();
 void Render();
+
+bool InvalidateCachedTexture(const std::string& path);
 
 // Returns true if the message has been dismissed.
 bool DrawErrorWindow(const char* message);

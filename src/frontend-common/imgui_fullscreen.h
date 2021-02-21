@@ -10,6 +10,8 @@ namespace ImGuiFullscreen {
   ImVec4(static_cast<float>((hex >> 16) & 0xFFu) / 255.0f, static_cast<float>((hex >> 8) & 0xFFu) / 255.0f,            \
          static_cast<float>(hex & 0xFFu) / 255.0f, static_cast<float>(alpha) / 255.0f)
 
+using ResolveTextureHandleCallback = ImTextureID(*)(const std::string& path);
+
 static constexpr float LAYOUT_SCREEN_WIDTH = 1280.0f;
 static constexpr float LAYOUT_SCREEN_HEIGHT = 720.0f;
 static constexpr float LAYOUT_LARGE_FONT_SIZE = 26.0f;
@@ -133,6 +135,9 @@ void SetFontGlyphRanges(const ImWchar* glyph_ranges);
 /// Changes the menu bar size. Don't forget to call UpdateLayoutScale() and UpdateFonts().
 void SetMenuBarSize(float size);
 
+/// Resolves a texture name to a handle.
+void SetResolveTextureFunction(ResolveTextureHandleCallback callback);
+
 /// Rebuilds fonts to a new scale if needed. Returns true if fonts have changed and the texture needs updating.
 bool UpdateFonts();
 
@@ -159,7 +164,7 @@ void BeginMenuButtons(u32 num_items = 0, float y_align = 0.0f, float x_padding =
                       float y_padding = LAYOUT_MENU_BUTTON_Y_PADDING, float item_height = LAYOUT_MENU_BUTTON_HEIGHT);
 void EndMenuButtons();
 bool MenuButtonFrame(const char* str_id, bool enabled, float height, bool* visible, bool* hovered, ImVec2* min,
-                     ImVec2* max, ImGuiButtonFlags flags = 0);
+                     ImVec2* max, ImGuiButtonFlags flags = 0, float hover_alpha = 1.0f);
 void MenuHeading(const char* title, bool draw_line = true);
 bool ActiveButton(const char* title, bool is_active, bool enabled = true,
                   float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, ImFont* font = g_large_font);
@@ -225,5 +230,7 @@ void CloseChoiceDialog();
 void OpenBackgroundProgressDialog(const char* str_id, std::string message, s32 min, s32 max, s32 value);
 void UpdateBackgroundProgressDialog(const char* str_id, std::string message, s32 min, s32 max, s32 value);
 void CloseBackgroundProgressDialog(const char* str_id);
+
+void AddNotification(float duration, std::string title, std::string text, std::string image_path);
 
 } // namespace ImGuiFullscreen

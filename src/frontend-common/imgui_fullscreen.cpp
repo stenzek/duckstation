@@ -6,6 +6,7 @@
 #include "common/file_system.h"
 #include "common/string.h"
 #include "common/string_util.h"
+#include "common/timer.h"
 #include "core/host_display.h"
 #include "core/host_interface.h"
 #include "imgui_internal.h"
@@ -16,7 +17,8 @@
 namespace ImGuiFullscreen {
 static void DrawFileSelector();
 static void DrawChoiceDialog();
-static void DrawBackgroundProgressDialogs();
+static void DrawBackgroundProgressDialogs(ImVec2& position, float spacing);
+static void DrawNotifications(ImVec2& position, float spacing);
 
 ImFont* g_standard_font = nullptr;
 ImFont* g_medium_font = nullptr;
@@ -33,6 +35,7 @@ static std::string s_icon_font_filename;
 static std::vector<u8> s_icon_font_data;
 static float s_font_size = 15.0f;
 static const ImWchar* s_font_glyph_range = nullptr;
+static ResolveTextureHandleCallback s_resolve_texture_handle = nullptr;
 
 static u32 s_menu_button_index = 0;
 
@@ -73,6 +76,11 @@ void SetMenuBarSize(float size)
     return;
 
   s_menu_bar_size = size;
+}
+
+void SetResolveTextureFunction(ResolveTextureHandleCallback callback)
+{
+  s_resolve_texture_handle = callback;
 }
 
 static void AddIconFonts(float size)
@@ -182,7 +190,12 @@ void EndLayout()
 {
   DrawFileSelector();
   DrawChoiceDialog();
-  DrawBackgroundProgressDialogs();
+
+  const float notification_margin = LayoutScale(10.0f);
+  const float spacing = LayoutScale(10.0f);
+  ImVec2 position(notification_margin, g_layout_padding_top + LayoutScale(LAYOUT_SCREEN_HEIGHT) - notification_margin);
+  DrawBackgroundProgressDialogs(position, spacing);
+  DrawNotifications(position, spacing);
 
   ImGui::PopStyleColor(5);
   ImGui::PopStyleVar(2);
@@ -321,7 +334,7 @@ static void GetMenuButtonFrameBounds(float height, ImVec2* pos, ImVec2* size)
 }
 
 static bool MenuButtonFrame(const char* str_id, bool enabled, float height, bool* visible, bool* hovered, ImRect* bb,
-                            ImGuiButtonFlags flags = 0)
+                            ImGuiButtonFlags flags = 0, float hover_alpha = 1.0f)
 {
   ImGuiWindow* window = ImGui::GetCurrentWindow();
   if (window->SkipItems)
@@ -365,7 +378,7 @@ static bool MenuButtonFrame(const char* str_id, bool enabled, float height, bool
     pressed = ImGui::ButtonBehavior(*bb, id, hovered, &held, flags);
     if (*hovered)
     {
-      const ImU32 col = ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered);
+      const ImU32 col = ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered, hover_alpha);
       ImGui::RenderFrame(bb->Min, bb->Max, col, true, 0.0f);
     }
   }
@@ -383,10 +396,10 @@ static bool MenuButtonFrame(const char* str_id, bool enabled, float height, bool
 }
 
 bool MenuButtonFrame(const char* str_id, bool enabled, float height, bool* visible, bool* hovered, ImVec2* min,
-                     ImVec2* max, ImGuiButtonFlags flags /*= 0*/)
+                     ImVec2* max, ImGuiButtonFlags flags /*= 0*/, float hover_alpha /*= 0*/)
 {
   ImRect bb;
-  const bool result = MenuButtonFrame(str_id, enabled, height, visible, hovered, &bb, flags);
+  const bool result = MenuButtonFrame(str_id, enabled, height, visible, hovered, &bb, flags, hover_alpha);
   *min = bb.Min;
   *max = bb.Max;
   return result;
@@ -1214,7 +1227,7 @@ void CloseBackgroundProgressDialog(const char* str_id)
   Panic("Closing unknown progress entry.");
 }
 
-void DrawBackgroundProgressDialogs()
+void DrawBackgroundProgressDialogs(ImVec2& position, float spacing)
 {
   std::unique_lock<std::mutex> lock(s_background_progress_lock);
   if (s_background_progress_dialogs.empty())
@@ -1222,10 +1235,6 @@ void DrawBackgroundProgressDialogs()
 
   const float window_width = LayoutScale(500.0f);
   const float window_height = LayoutScale(75.0f);
-  const float window_spacing = LayoutScale(20.0f);
-
-  float current_pos_x = LayoutScale(10.0f);
-  float current_pos_y = (LayoutScale(LAYOUT_SCREEN_HEIGHT) + g_layout_padding_top) - window_height - LayoutScale(10.0f);
 
   ImGui::PushStyleColor(ImGuiCol_WindowBg, UIPrimaryDarkColor());
   ImGui::PushStyleColor(ImGuiCol_PlotHistogram, UISecondaryLightColor());
@@ -1239,11 +1248,14 @@ void DrawBackgroundProgressDialogs()
 
   for (const BackgroundProgressDialogData& data : s_background_progress_dialogs)
   {
-    dl->AddRectFilled(ImVec2(current_pos_x, current_pos_y),
-                      ImVec2(current_pos_x + window_width, current_pos_y + window_height),
+    const float window_pos_x = position.x;
+    const float window_pos_y = position.y - window_height;
+
+    dl->AddRectFilled(ImVec2(window_pos_x, window_pos_y),
+                      ImVec2(window_pos_x + window_width, window_pos_y + window_height),
                       IM_COL32(0x11, 0x11, 0x11, 200), LayoutScale(10.0f));
 
-    ImVec2 pos(current_pos_x + LayoutScale(10.0f), current_pos_y + LayoutScale(10.0f));
+    ImVec2 pos(window_pos_x + LayoutScale(10.0f), window_pos_y + LayoutScale(10.0f));
     dl->AddText(g_medium_font, g_medium_font->FontSize, pos, IM_COL32(255, 255, 255, 255), data.message.c_str(),
                 nullptr, 0.0f);
     pos.y += g_medium_font->FontSize + LayoutScale(10.0f);
@@ -1261,12 +1273,126 @@ void DrawBackgroundProgressDialogs()
                           pos.y + ((bar_end.y - pos.y) / 2.0f) - (text_size.y / 2.0f));
     dl->AddText(g_medium_font, g_medium_font->FontSize, text_pos, ImGui::GetColorU32(UIPrimaryTextColor()), text);
 
-    current_pos_y -= window_height - window_spacing;
+    position.y -= window_height + spacing;
   }
 
   ImGui::PopFont();
   ImGui::PopStyleVar(4);
   ImGui::PopStyleColor(2);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Notifications
+//////////////////////////////////////////////////////////////////////////
+struct Notification
+{
+  std::string title;
+  std::string text;
+  std::string badge_path;
+  Common::Timer::Value start_time;
+  float duration;
+};
+
+static std::vector<Notification> s_notifications;
+
+void AddNotification(float duration, std::string title, std::string text, std::string image_path)
+{
+  Notification notif;
+  notif.duration = duration;
+  notif.title = std::move(title);
+  notif.text = std::move(text);
+  notif.badge_path = std::move(image_path);
+  notif.start_time = Common::Timer::GetValue();
+  s_notifications.push_back(std::move(notif));
+}
+
+void DrawNotifications(ImVec2& position, float spacing)
+{
+  if (s_notifications.empty())
+    return;
+
+  const Common::Timer::Value current_time = Common::Timer::GetValue();
+
+  const float horizontal_padding = ImGuiFullscreen::LayoutScale(20.0f);
+  const float vertical_padding = ImGuiFullscreen::LayoutScale(10.0f);
+  const float horizontal_spacing = ImGuiFullscreen::LayoutScale(10.0f);
+  const float vertical_spacing = ImGuiFullscreen::LayoutScale(4.0f);
+  const float badge_size = ImGuiFullscreen::LayoutScale(48.0f);
+  const float min_width = ImGuiFullscreen::LayoutScale(200.0f);
+  const float max_width = ImGuiFullscreen::LayoutScale(800.0f);
+  const float max_text_width = max_width - badge_size - (horizontal_padding * 2.0f) - horizontal_spacing;
+  const float min_height = (vertical_padding * 2.0f) + badge_size;
+  const float shadow_size = ImGuiFullscreen::LayoutScale(4.0f);
+  const float rounding = ImGuiFullscreen::LayoutScale(4.0f);
+
+  ImFont* const title_font = ImGuiFullscreen::g_large_font;
+  ImFont* const text_font = ImGuiFullscreen::g_medium_font;
+
+#if 0
+  static constexpr u32 toast_background_color = IM_COL32(241, 241, 241, 255);
+  static constexpr u32 toast_border_color = IM_COL32(0x88, 0x88, 0x88, 255);
+  static constexpr u32 toast_title_color = IM_COL32(1, 1, 1, 255);
+  static constexpr u32 toast_text_color = IM_COL32(0, 0, 0, 255);
+#else
+  static constexpr u32 toast_background_color = IM_COL32(0x21, 0x21, 0x21, 255);
+  static constexpr u32 toast_border_color = IM_COL32(0x48, 0x48, 0x48, 255);
+  static constexpr u32 toast_title_color = IM_COL32(0xff, 0xff, 0xff, 255);
+  static constexpr u32 toast_text_color = IM_COL32(0xff, 0xff, 0xff, 255);
+#endif
+
+  for (u32 index = 0; index < static_cast<u32>(s_notifications.size());)
+  {
+    Notification& notif = s_notifications[index];
+    if (Common::Timer::ConvertValueToSeconds(current_time - notif.start_time) >= notif.duration)
+    {
+      s_notifications.erase(s_notifications.begin() + index);
+      continue;
+    }
+
+    const ImVec2 title_size(text_font->CalcTextSizeA(title_font->FontSize, max_text_width, max_text_width,
+                                                     notif.title.c_str(), notif.title.c_str() + notif.title.size()));
+
+    const ImVec2 text_size(text_font->CalcTextSizeA(text_font->FontSize, max_text_width, max_text_width,
+                                                    notif.text.c_str(), notif.text.c_str() + notif.text.size()));
+
+    const float box_width = std::max(
+      (horizontal_padding * 2.0f) + badge_size + horizontal_spacing + std::max(title_size.x, text_size.x), min_width);
+    const float box_height =
+      std::max((vertical_padding * 2.0f) + title_size.y + vertical_spacing + text_size.y, min_height);
+
+    const ImVec2 box_min(position.x, position.y - box_height);
+    const ImVec2 box_max(box_min.x + box_width, box_min.y + box_height);
+
+    ImDrawList* dl = ImGui::GetForegroundDrawList();
+    dl->AddRectFilled(ImVec2(box_min.x + shadow_size, box_min.y + shadow_size),
+                      ImVec2(box_max.x + shadow_size, box_max.y + shadow_size), IM_COL32(20, 20, 20, 180), rounding,
+                      ImDrawCornerFlags_All);
+    dl->AddRectFilled(box_min, box_max, toast_background_color, rounding, ImDrawCornerFlags_All);
+    dl->AddRect(box_min, box_max, toast_border_color, rounding, ImDrawCornerFlags_All,
+                ImGuiFullscreen::LayoutScale(1.0f));
+
+    const ImVec2 badge_min(box_min.x + horizontal_padding, box_min.y + vertical_padding);
+    const ImVec2 badge_max(badge_min.x + badge_size, badge_min.y + badge_size);
+    if (!notif.badge_path.empty() && s_resolve_texture_handle)
+    {
+      ImTextureID tex = s_resolve_texture_handle(notif.badge_path);
+      if (tex)
+        dl->AddImage(tex, badge_min, badge_max);
+    }
+
+    const ImVec2 title_min(badge_max.x + horizontal_spacing, box_min.y + vertical_padding);
+    const ImVec2 title_max(title_min.x + title_size.x, title_min.y + title_size.y);
+    dl->AddText(title_font, title_font->FontSize, title_min, toast_title_color, notif.title.c_str(),
+                notif.title.c_str() + notif.title.size(), max_text_width);
+
+    const ImVec2 text_min(badge_max.x + horizontal_spacing, title_max.y + vertical_spacing);
+    const ImVec2 text_max(text_min.x + text_size.x, text_min.y + text_size.y);
+    dl->AddText(text_font, text_font->FontSize, text_min, toast_text_color, notif.text.c_str(),
+                notif.text.c_str() + notif.text.size(), max_text_width);
+
+    position.y -= box_height + shadow_size + spacing;
+    index++;
+  }
 }
 
 } // namespace ImGuiFullscreen
