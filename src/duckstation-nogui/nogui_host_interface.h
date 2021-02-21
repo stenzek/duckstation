@@ -41,9 +41,6 @@ protected:
   bool AcquireHostDisplay() override;
   void ReleaseHostDisplay() override;
 
-  void OnRunningGameChanged(const std::string& path, CDImage* image, const std::string& game_code,
-                            const std::string& game_title) override;
-
   void RequestExit() override;
   virtual void PollAndUpdate() override;
 

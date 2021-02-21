@@ -911,6 +911,9 @@ void CommonHostInterface::OnRunningGameChanged(const std::string& path, CDImage*
 {
   HostInterface::OnRunningGameChanged(path, image, game_code, game_title);
 
+  if (g_settings.apply_game_settings)
+    ApplySettings(true);
+
   if (!System::IsShutdown())
   {
     System::SetCheatList(nullptr);

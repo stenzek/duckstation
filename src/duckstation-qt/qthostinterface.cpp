@@ -676,7 +676,6 @@ void QtHostInterface::OnRunningGameChanged(const std::string& path, CDImage* ima
                                            const std::string& game_title)
 {
   CommonHostInterface::OnRunningGameChanged(path, image, game_code, game_title);
-  applySettings(true);
 
   if (!System::IsShutdown())
   {

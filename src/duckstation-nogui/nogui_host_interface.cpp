@@ -186,16 +186,6 @@ void NoGUIHostInterface::ReleaseHostDisplay()
   m_display->SetVSync(true);
 }
 
-void NoGUIHostInterface::OnRunningGameChanged(const std::string& path, CDImage* image, const std::string& game_code,
-                                              const std::string& game_title)
-{
-  CommonHostInterface::OnRunningGameChanged(path, image, game_code, game_title);
-
-  // TODO: Move to common
-  if (g_settings.apply_game_settings)
-    ApplySettings(true);
-}
-
 void NoGUIHostInterface::RequestExit()
 {
   m_quit_request = true;

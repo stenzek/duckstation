@@ -583,7 +583,6 @@ void AndroidHostInterface::OnRunningGameChanged(const std::string& path, CDImage
                                                 const std::string& game_title)
 {
   CommonHostInterface::OnRunningGameChanged(path, image, game_code, game_title);
-  ApplySettings(true);
 
   if (m_emulation_activity_object)
   {
