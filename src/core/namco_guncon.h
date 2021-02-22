@@ -50,6 +50,7 @@ private:
   enum class TransferState : u8
   {
     Idle,
+    Ready,
     IDMSB,
     ButtonsLSB,
     ButtonsMSB,

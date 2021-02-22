@@ -81,6 +81,7 @@ private:
   enum class Command : u8
   {
     Idle,
+    Ready,
     ReadPad,           // 0x42
     ConfigModeSetMode, // 0x43
     SetAnalogMode,     // 0x44
@@ -110,6 +111,7 @@ private:
   constexpr u8 GetStatusByte() const { return 0x5A; };
 
   void SetAnalogMode(bool enabled);
+  void ProcessAnalogModeToggle();
   void SetMotorState(u8 motor, u8 value);
   u8 GetExtraButtonMaskLSB() const;
   void ResetRumbleConfig();
