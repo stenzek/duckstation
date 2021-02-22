@@ -109,6 +109,7 @@
     </ClInclude>
     <ClInclude Include="crash_handler.h" />
     <ClInclude Include="lru_cache.h" />
+    <ClInclude Include="easing.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="jit_code_buffer.cpp" />

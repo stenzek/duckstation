@@ -67,6 +67,7 @@
     <ClInclude Include="d3d11\stream_buffer.h" />
     <ClInclude Include="d3d11\texture.h" />
     <ClInclude Include="dimensional_array.h" />
+    <ClInclude Include="easing.h" />
     <ClInclude Include="event.h" />
     <ClInclude Include="fifo_queue.h" />
     <ClInclude Include="file_system.h" />
