@@ -130,7 +130,12 @@ void AnalogController::SetButtonState(Button button, bool pressed)
   {
     // analog toggle
     if (pressed)
-      m_analog_toggle_queued = true;
+    {
+      if (m_command == Command::Idle)
+        ProcessAnalogModeToggle();
+      else
+        m_analog_toggle_queued = true;
+    }
 
     return;
   }
@@ -197,26 +202,7 @@ void AnalogController::ResetTransferState()
 {
   if (m_analog_toggle_queued)
   {
-    if (m_analog_locked)
-    {
-      g_host_interface->AddFormattedOSDMessage(
-        5.0f,
-        m_analog_mode ?
-          g_host_interface->TranslateString("AnalogController", "Controller %u is locked to analog mode by the game.") :
-          g_host_interface->TranslateString("AnalogController", "Controller %u is locked to digital mode by the game."),
-        m_index + 1u);
-    }
-    else
-    {
-      SetAnalogMode(!m_analog_mode);
-
-      // Manually toggling controller mode resets and disables rumble configuration
-      m_rumble_unlocked = false;
-      ResetRumbleConfig();
-
-      // TODO: Mode switch detection (0x00 returned on certain commands instead of 0x5A)
-    }
-
+    ProcessAnalogModeToggle();
     m_analog_toggle_queued = false;
   }
 
@@ -236,6 +222,29 @@ void AnalogController::SetAnalogMode(bool enabled)
               g_host_interface->TranslateString("AnalogController", "Controller %u switched to digital mode."),
     m_index + 1u);
   m_analog_mode = enabled;
+}
+
+void AnalogController::ProcessAnalogModeToggle()
+{
+  if (m_analog_locked)
+  {
+    g_host_interface->AddFormattedOSDMessage(
+      5.0f,
+      m_analog_mode ?
+        g_host_interface->TranslateString("AnalogController", "Controller %u is locked to analog mode by the game.") :
+        g_host_interface->TranslateString("AnalogController", "Controller %u is locked to digital mode by the game."),
+      m_index + 1u);
+  }
+  else
+  {
+    SetAnalogMode(!m_analog_mode);
+
+    // Manually toggling controller mode resets and disables rumble configuration
+    m_rumble_unlocked = false;
+    ResetRumbleConfig();
+
+    // TODO: Mode switch detection (0x00 returned on certain commands instead of 0x5A)
+  }
 }
 
 void AnalogController::SetMotorState(u8 motor, u8 value)

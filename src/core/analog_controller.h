@@ -111,6 +111,7 @@ private:
   constexpr u8 GetStatusByte() const { return 0x5A; };
 
   void SetAnalogMode(bool enabled);
+  void ProcessAnalogModeToggle();
   void SetMotorState(u8 motor, u8 value);
   u8 GetExtraButtonMaskLSB() const;
   void ResetRumbleConfig();
