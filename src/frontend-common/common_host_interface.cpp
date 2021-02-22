@@ -1292,6 +1292,8 @@ void CommonHostInterface::UpdateHotkeyInputMap(SettingsInterface& si)
       AddButtonToInputMap(binding, device, button, hi.handler);
     }
   }
+
+  m_save_state_selector_ui->RefreshHotkeyLegend();
 }
 
 bool CommonHostInterface::AddButtonToInputMap(const std::string& binding, const std::string_view& device,

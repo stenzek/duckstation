@@ -1,5 +1,6 @@
 #include "save_state_selector_ui.h"
 #include "common/log.h"
+#include "common/string_util.h"
 #include "common/timestamp.h"
 #include "core/host_display.h"
 #include "core/system.h"
@@ -23,6 +24,7 @@ void SaveStateSelectorUI::Open(float open_time /* = DEFAULT_OPEN_TIME */)
 
   m_open = true;
   RefreshList();
+  RefreshHotkeyLegend();
 }
 
 void SaveStateSelectorUI::Close()
@@ -76,6 +78,32 @@ void SaveStateSelectorUI::RefreshList()
 
   if (m_slots.empty() || m_current_selection >= m_slots.size())
     m_current_selection = 0;
+}
+
+void SaveStateSelectorUI::RefreshHotkeyLegend()
+{
+  if (!m_open)
+    return;
+
+  auto format_legend_entry = [](std::string_view setting, std::string_view caption) {
+    auto slash_pos = setting.find_first_of('/');
+    if (slash_pos != setting.npos)
+    {
+      setting = setting.substr(slash_pos + 1);
+    }
+
+    return StringUtil::StdStringFromFormat("%.*s - %.*s", static_cast<int>(setting.size()), setting.data(),
+                                           static_cast<int>(caption.size()), caption.data());
+  };
+
+  m_load_legend = format_legend_entry(m_host_interface->GetStringSettingValue("Hotkeys", "LoadSelectedSaveState"),
+                                      m_host_interface->TranslateStdString("SaveStateSelectorUI", "Load"));
+  m_save_legend = format_legend_entry(m_host_interface->GetStringSettingValue("Hotkeys", "SaveSelectedSaveState"),
+                                      m_host_interface->TranslateStdString("SaveStateSelectorUI", "Save"));
+  m_prev_legend = format_legend_entry(m_host_interface->GetStringSettingValue("Hotkeys", "SelectPreviousSaveStateSlot"),
+                                      m_host_interface->TranslateStdString("SaveStateSelectorUI", "Select Previous"));
+  m_next_legend = format_legend_entry(m_host_interface->GetStringSettingValue("Hotkeys", "SelectNextSaveStateSlot"),
+                                      m_host_interface->TranslateStdString("SaveStateSelectorUI", "Select Next"));
 }
 
 const char* SaveStateSelectorUI::GetSelectedStatePath() const
@@ -256,42 +284,14 @@ void SaveStateSelectorUI::Draw()
       ImGui::SetCursorPosX(padding);
       ImGui::BeginTable("table", 2);
 
-      auto strip_device_name = [](std::string str) {
-        std::string result;
-
-        auto slash_pos = str.find_first_of('/');
-        if (slash_pos != str.npos)
-        {
-          result = str.substr(slash_pos + 1);
-        }
-        else
-        {
-          result = std::move(str);
-        }
-        return result;
-      };
-
-      const std::string load_savestate_hotkey =
-        strip_device_name(m_host_interface->GetStringSettingValue("Hotkeys", "LoadSelectedSaveState"));
-      const std::string save_savestate_hotkey =
-        strip_device_name(m_host_interface->GetStringSettingValue("Hotkeys", "SaveSelectedSaveState"));
-      const std::string next_savestate_hotkey =
-        strip_device_name(m_host_interface->GetStringSettingValue("Hotkeys", "SelectNextSaveStateSlot"));
-      const std::string prev_savestate_hotkey =
-        strip_device_name(m_host_interface->GetStringSettingValue("Hotkeys", "SelectPreviousSaveStateSlot"));
-
       ImGui::TableNextColumn();
-      ImGui::Text("%s - %s", load_savestate_hotkey.c_str(),
-                  m_host_interface->TranslateString("SaveStateSelectorUI", "Load").GetCharArray());
+      ImGui::TextUnformatted(m_load_legend.c_str());
       ImGui::TableNextColumn();
-      ImGui::Text("%s - %s", prev_savestate_hotkey.c_str(),
-                  m_host_interface->TranslateString("SaveStateSelectorUI", "Select Previous").GetCharArray());
+      ImGui::TextUnformatted(m_prev_legend.c_str());
       ImGui::TableNextColumn();
-      ImGui::Text("%s - %s", save_savestate_hotkey.c_str(),
-                  m_host_interface->TranslateString("SaveStateSelectorUI", "Save").GetCharArray());
+      ImGui::TextUnformatted(m_save_legend.c_str());
       ImGui::TableNextColumn();
-      ImGui::Text("%s - %s", next_savestate_hotkey.c_str(),
-                  m_host_interface->TranslateString("SaveStateSelectorUI", "Select Next").GetCharArray());
+      ImGui::TextUnformatted(m_next_legend.c_str());
 
       ImGui::EndTable();
     }

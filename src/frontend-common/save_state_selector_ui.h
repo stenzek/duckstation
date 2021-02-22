@@ -1,6 +1,6 @@
 #pragma once
-#include "common_host_interface.h"
 #include "common/timer.h"
+#include "common_host_interface.h"
 #include <memory>
 
 class HostDisplayTexture;
@@ -23,6 +23,8 @@ public:
 
   void ClearList();
   void RefreshList();
+
+  void RefreshHotkeyLegend();
 
   const char* GetSelectedStatePath() const;
   s32 GetSelectedStateSlot() const;
@@ -50,6 +52,11 @@ private:
   void InitializePlaceholderListEntry(ListEntry* li, s32 slot, bool global);
   void InitializeListEntry(ListEntry* li, CommonHostInterface::ExtendedSaveStateInfo* ssi);
   std::pair<s32, bool> GetSlotTypeFromSelection(u32 selection) const;
+
+  std::string m_load_legend;
+  std::string m_save_legend;
+  std::string m_prev_legend;
+  std::string m_next_legend;
 
   CommonHostInterface* m_host_interface;
   std::vector<ListEntry> m_slots;
