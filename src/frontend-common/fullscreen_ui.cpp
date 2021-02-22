@@ -2712,12 +2712,7 @@ void DrawStatsOverlay()
 
 void DrawOSDMessages()
 {
-  if (!g_settings.display_show_osd_messages)
-  {
-    // we still need to remove them from the queue
-    s_host_interface->EnumerateOSDMessages([](const std::string& message, float time_remaining) { return true; });
-    return;
-  }
+  s_host_interface->AcquirePendingOSDMessages();
 
   ImGui::PushFont(g_large_font);
 

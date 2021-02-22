@@ -184,6 +184,9 @@ public:
   bool EnumerateOSDMessages(std::function<bool(const std::string&, float)> callback);
   void ClearOSDMessages();
 
+  /// async message queue bookeeping for. Should be called on UI thread.
+  void AcquirePendingOSDMessages();
+
   /// Displays a loading screen with the logo, rendered with ImGui. Use when executing possibly-time-consuming tasks
   /// such as compiling shaders when starting up.
   void DisplayLoadingScreen(const char* message, int progress_min = -1, int progress_max = -1,
@@ -394,7 +397,8 @@ protected:
 
   std::unique_ptr<HostDisplayTexture> m_logo_texture;
 
-  std::deque<OSDMessage> m_osd_messages;
+  std::deque<OSDMessage> m_osd_active_messages;   // accessed only by GUI/OSD thread (no lock reqs)
+  std::deque<OSDMessage> m_osd_posted_messages;          // written to by multiple threads.
   std::mutex m_osd_messages_lock;
 
   bool m_fullscreen_ui_enabled = false;
