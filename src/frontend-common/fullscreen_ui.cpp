@@ -141,6 +141,7 @@ static InputBindingType s_input_binding_type = InputBindingType::None;
 static TinyString s_input_binding_section;
 static TinyString s_input_binding_key;
 static TinyString s_input_binding_display_name;
+static bool s_input_binding_keyboard_pressed;
 static Common::Timer s_input_binding_timer;
 
 //////////////////////////////////////////////////////////////////////////
@@ -814,6 +815,34 @@ static void ClearInputBindingVariables()
   s_input_binding_section.Clear();
   s_input_binding_key.Clear();
   s_input_binding_display_name.Clear();
+}
+
+bool HandleKeyboardBinding(const char* keyName, bool pressed)
+{
+  if (s_input_binding_type == InputBindingType::None)
+    return false;
+
+  if (pressed)
+  {
+    s_input_binding_keyboard_pressed = true;
+    return true;
+  }
+
+  if (!s_input_binding_keyboard_pressed)
+  {
+    return false;
+  }
+
+  TinyString value;
+  value.Format("Keyboard/%s", keyName);
+
+  s_host_interface->GetSettingsInterface()->SetStringValue(s_input_binding_section, s_input_binding_key, value);
+  s_host_interface->AddFormattedOSDMessage(5.0f, "Set %s binding %s to %s.", s_input_binding_section.GetCharArray(),
+                                           s_input_binding_display_name.GetCharArray(), value.GetCharArray());
+
+  EndInputBinding();
+  s_host_interface->RunLater(SaveAndApplySettings);
+  return true;
 }
 
 void BeginInputBinding(InputBindingType type, const std::string_view& section, const std::string_view& key,
