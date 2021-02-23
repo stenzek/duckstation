@@ -41,9 +41,6 @@ bool NoGUIHostInterface::Initialize()
   // TODO: Make command line.
   m_fullscreen_ui_enabled = true;
 
-  // we're always in batch mode for now
-  //m_command_line_flags.batch_mode = !m_fullscreen_ui_enabled;
-
   if (!CommonHostInterface::Initialize())
     return false;
 
