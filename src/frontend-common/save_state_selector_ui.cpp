@@ -1,5 +1,6 @@
 #include "save_state_selector_ui.h"
 #include "common/log.h"
+#include "common/string_util.h"
 #include "common/timestamp.h"
 #include "core/host_display.h"
 #include "core/system.h"
@@ -23,6 +24,7 @@ void SaveStateSelectorUI::Open(float open_time /* = DEFAULT_OPEN_TIME */)
 
   m_open = true;
   RefreshList();
+  RefreshHotkeyLegend();
 }
 
 void SaveStateSelectorUI::Close()
@@ -76,6 +78,32 @@ void SaveStateSelectorUI::RefreshList()
 
   if (m_slots.empty() || m_current_selection >= m_slots.size())
     m_current_selection = 0;
+}
+
+void SaveStateSelectorUI::RefreshHotkeyLegend()
+{
+  if (!m_open)
+    return;
+
+  auto format_legend_entry = [](std::string_view setting, std::string_view caption) {
+    auto slash_pos = setting.find_first_of('/');
+    if (slash_pos != setting.npos)
+    {
+      setting = setting.substr(slash_pos + 1);
+    }
+
+    return StringUtil::StdStringFromFormat("%.*s - %.*s", static_cast<int>(setting.size()), setting.data(),
+                                           static_cast<int>(caption.size()), caption.data());
+  };
+
+  m_load_legend = format_legend_entry(m_host_interface->GetStringSettingValue("Hotkeys", "LoadSelectedSaveState"),
+                                      m_host_interface->TranslateStdString("SaveStateSelectorUI", "Load"));
+  m_save_legend = format_legend_entry(m_host_interface->GetStringSettingValue("Hotkeys", "SaveSelectedSaveState"),
+                                      m_host_interface->TranslateStdString("SaveStateSelectorUI", "Save"));
+  m_prev_legend = format_legend_entry(m_host_interface->GetStringSettingValue("Hotkeys", "SelectPreviousSaveStateSlot"),
+                                      m_host_interface->TranslateStdString("SaveStateSelectorUI", "Select Previous"));
+  m_next_legend = format_legend_entry(m_host_interface->GetStringSettingValue("Hotkeys", "SelectNextSaveStateSlot"),
+                                      m_host_interface->TranslateStdString("SaveStateSelectorUI", "Select Next"));
 }
 
 const char* SaveStateSelectorUI::GetSelectedStatePath() const
@@ -158,7 +186,7 @@ std::pair<s32, bool> SaveStateSelectorUI::GetSlotTypeFromSelection(u32 selection
 
 void SaveStateSelectorUI::InitializePlaceholderListEntry(ListEntry* li, s32 slot, bool global)
 {
-  li->title = "No Save State";
+  li->title = m_host_interface->TranslateStdString("SaveStateSelectorUI", "No Save State");
   std::string().swap(li->game_code);
   std::string().swap(li->path);
   std::string().swap(li->formatted_timestamp);
@@ -187,52 +215,92 @@ void SaveStateSelectorUI::Draw()
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, rounding);
 
   if (ImGui::Begin("##save_state_selector", nullptr,
-                   ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoTitleBar))
+                   ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoTitleBar |
+                     ImGuiWindowFlags_NoScrollbar))
   {
+    // Leave 2 lines for the legend
+    const float legend_margin = ImGui::GetFontSize() * 2.0f + ImGui::GetStyle().ItemSpacing.y * 3.0f;
     const float padding = 10.0f * framebuffer_scale;
-    const ImVec2 image_size = ImVec2(128.0f * framebuffer_scale, (128.0f / (4.0f / 3.0f)) * framebuffer_scale);
-    const float item_height = image_size.y + padding * 2.0f;
-    const float text_indent = image_size.x + padding + padding;
 
-    for (size_t i = 0; i < m_slots.size(); i++)
+    ImGui::BeginChild("##item_list", ImVec2(0, -legend_margin), false,
+                      ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoTitleBar);
     {
-      const ListEntry& entry = m_slots[i];
-      const float y_start = item_height * static_cast<float>(i);
+      const ImVec2 image_size = ImVec2(128.0f * framebuffer_scale, (128.0f / (4.0f / 3.0f)) * framebuffer_scale);
+      const float item_height = image_size.y + padding * 2.0f;
+      const float text_indent = image_size.x + padding + padding;
 
-      if (i == m_current_selection)
+      for (size_t i = 0; i < m_slots.size(); i++)
       {
-        ImGui::SetCursorPosY(y_start);
-        ImGui::SetScrollHereY();
+        const ListEntry& entry = m_slots[i];
+        const float y_start = item_height * static_cast<float>(i);
 
-        const ImVec2 p_start(ImGui::GetCursorScreenPos());
-        const ImVec2 p_end(p_start.x + window_width, p_start.y + item_height);
-        ImGui::GetWindowDrawList()->AddRectFilled(p_start, p_end, ImColor(0.22f, 0.30f, 0.34f, 0.9f), rounding);
-      }
+        if (i == m_current_selection)
+        {
+          ImGui::SetCursorPosY(y_start);
+          ImGui::SetScrollHereY();
 
-      if (entry.preview_texture)
-      {
+          const ImVec2 p_start(ImGui::GetCursorScreenPos());
+          const ImVec2 p_end(p_start.x + window_width, p_start.y + item_height);
+          ImGui::GetWindowDrawList()->AddRectFilled(p_start, p_end, ImColor(0.22f, 0.30f, 0.34f, 0.9f), rounding);
+        }
+
+        if (entry.preview_texture)
+        {
+          ImGui::SetCursorPosY(y_start + padding);
+          ImGui::SetCursorPosX(padding);
+          ImGui::Image(reinterpret_cast<ImTextureID>(entry.preview_texture->GetHandle()), image_size);
+        }
+
         ImGui::SetCursorPosY(y_start + padding);
-        ImGui::SetCursorPosX(padding);
-        ImGui::Image(reinterpret_cast<ImTextureID>(entry.preview_texture->GetHandle()), image_size);
+
+        ImGui::Indent(text_indent);
+
+        if (entry.global)
+        {
+          ImGui::Text(m_host_interface->TranslateString("SaveStateSelectorUI", "Global Slot %d"), entry.slot);
+        }
+        else if (entry.game_code.empty())
+        {
+          ImGui::Text(m_host_interface->TranslateString("SaveStateSelectorUI", "Gane Slot %d"), entry.slot);
+        }
+        else
+        {
+          ImGui::Text(m_host_interface->TranslateString("SaveStateSelectorUI", "%s Slot %d"), entry.game_code.c_str(),
+                      entry.slot);
+        }
+        ImGui::TextUnformatted(entry.title.c_str());
+        ImGui::TextUnformatted(entry.formatted_timestamp.c_str());
+        ImGui::TextUnformatted(entry.path.c_str());
+
+        ImGui::Unindent(text_indent);
       }
-
-      ImGui::SetCursorPosY(y_start + padding);
-
-      ImGui::Indent(text_indent);
-
-      ImGui::Text("%s Slot %d", entry.global ? "Global" : (entry.game_code.empty() ? "Game" : entry.game_code.c_str()),
-                  entry.slot);
-      ImGui::TextUnformatted(entry.title.c_str());
-      ImGui::TextUnformatted(entry.formatted_timestamp.c_str());
-      ImGui::TextUnformatted(entry.path.c_str());
-
-      ImGui::Unindent(text_indent);
     }
+    ImGui::EndChild();
+
+    ImGui::BeginChild("##legend", ImVec2(0, 0), false,
+                      ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoTitleBar |
+                        ImGuiWindowFlags_NoScrollbar);
+    {
+      ImGui::SetCursorPosX(padding);
+      ImGui::BeginTable("table", 2);
+
+      ImGui::TableNextColumn();
+      ImGui::TextUnformatted(m_load_legend.c_str());
+      ImGui::TableNextColumn();
+      ImGui::TextUnformatted(m_prev_legend.c_str());
+      ImGui::TableNextColumn();
+      ImGui::TextUnformatted(m_save_legend.c_str());
+      ImGui::TableNextColumn();
+      ImGui::TextUnformatted(m_next_legend.c_str());
+
+      ImGui::EndTable();
+    }
+    ImGui::EndChild();
   }
+  ImGui::End();
 
   ImGui::PopStyleVar(2);
   ImGui::PopStyleColor();
-  ImGui::End();
 
   // auto-close
   if (m_open_timer.GetTimeSeconds() >= m_open_time)
