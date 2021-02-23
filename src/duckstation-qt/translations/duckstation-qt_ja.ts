@@ -474,6 +474,10 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>PGXPジオメトリ補正を有効にする</translation>
     </message>
     <message>
+        <source>PGXP Preserve Projection Precision</source>
+        <translation>PGXPで投影精度を維持する</translation>
+    </message>
+    <message>
         <source>GPU Max Run Ahead:</source>
         <translation>GPU最大ランアヘッド:</translation>
     </message>
@@ -1373,6 +1377,10 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <source>Fast Forward Volume</source>
         <translation>早送り時の音量</translation>
     </message>
+    <message>
+        <source>Mute</source>
+        <translation>ミュート</translation>
+    </message>
 </context>
 <context>
     <name>GameListSettingsWidget</name>
@@ -1600,7 +1608,7 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <source>&amp;Add Group...</source>
-        <translation>グループを追加...(&amp;A)</translation>
+        <translation>グループを追加...</translation>
     </message>
     <message>
         <source>Data Size:</source>
@@ -1691,6 +1699,14 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>インポート...</translation>
     </message>
     <message>
+        <source>Clear</source>
+        <translation>クリア</translation>
+    </message>
+    <message>
+        <source>Reset</source>
+        <translation>リセット</translation>
+    </message>
+    <message>
         <source>Address</source>
         <translation>アドレス</translation>
     </message>
@@ -1724,7 +1740,23 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <source>Failed to save cheat file. The log may contain more information.</source>
-        <translation>チートファイルの保存に失敗しました。ログには、より多くの情報が含まれている場合があります。</translation>
+        <translation>チートファイルの保存に失敗しました。ログに、より多くの情報が含まれている場合があります。</translation>
+    </message>
+    <message>
+        <source>Confirm Clear</source>
+        <translation>クリア確認をする</translation>
+    </message>
+    <message>
+        <source>Confirm Reset</source>
+        <translation>リセット確認をする</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to remove all cheats? This is not reversible.</source>
+        <translation>すべてのチートを削除してもよろしいですか？これは元に戻せません。</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to reset the cheat list? Any cheats not in the DuckStation database WILL BE LOST.</source>
+        <translation>チートリストをリセットしてもよろしいですか？DuckStationデータベースにないチートは失われます。</translation>
     </message>
     <message>
         <source>Scratchpad</source>
@@ -1808,7 +1840,7 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <source>&amp;Add Code...</source>
-        <translation>コードを追加...(&amp;A)</translation>
+        <translation>コードを追加...</translation>
     </message>
     <message>
         <source>Are you sure you wish to delete the selected code? This action is not reversible.</source>
@@ -1895,6 +1927,10 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <source>XInput</source>
         <translation>XInput</translation>
+    </message>
+    <message>
+        <source>Evdev</source>
+        <translation>Evdev</translation>
     </message>
 </context>
 <context>
@@ -2224,6 +2260,10 @@ This warning will only be shown once.</source>
         <translation>ログをユーザーディレクトリのduckstation.logに記録します。</translation>
     </message>
     <message>
+        <source>Unchecked</source>
+        <translation>チェックなし</translation>
+    </message>
+    <message>
         <source>Logs messages to the debug console where supported.</source>
         <translation>サポートされている場合は、ログをデバッグコンソールに記録します。</translation>
     </message>
@@ -2290,6 +2330,10 @@ This warning will only be shown once.</source>
     <message>
         <source>Sets the verbosity of messages logged. Higher levels will log more messages.</source>
         <translation>ログに記録される情報の詳細度を設定します。レベルが高いほど、より多くの情報がログに記録されます。</translation>
+    </message>
+    <message>
+        <source>User Preference</source>
+        <translation>ユーザー設定</translation>
     </message>
     <message>
         <source>Minimum Dumped VRAM Write Width</source>
@@ -2791,8 +2835,8 @@ This warning will only be shown once.</source>
         <translation>形式</translation>
     </message>
     <message>
-        <source>Depth Buffer</source>
-        <translation>PGXP深度バッファ</translation>
+        <source>Depth Buffer (Low Compatibility)</source>
+        <translation>深度バッファ（低互換性）</translation>
     </message>
     <message>
         <source>Disabled</source>
@@ -2853,6 +2897,14 @@ This warning will only be shown once.</source>
     <message>
         <source>Uses perspective-correct interpolation for texture coordinates and colors, straightening out warped textures. Requires geometry correction enabled.</source>
         <translation>テクスチャの座標と色に遠近法で正しい補間を使用し、歪んだテクスチャをまっすぐにします。ジオメトリ補正を有効にする必要があります。</translation>
+    </message>
+    <message>
+        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
+        <translation>投影後のPGXPデータに精度を追加します。一部のゲームでビジュアルが向上する場合があります。</translation>
+    </message>
+    <message>
+        <source>Uses PGXP for all instructions, not just memory operations. Required for PGXP to correct wobble in some games, but has a very high performance cost.</source>
+        <translation>メモリ操作だけでなく、すべての命令にPGXPを使用します。一部のゲームでPGXPがぐらつきを修正するために必要ですが、パフォーマンスコストが非常に高くなります。</translation>
     </message>
     <message>
         <source>Disable Interlacing (force progressive render/scan)</source>
@@ -2921,6 +2973,14 @@ This warning will only be shown once.</source>
     <message>
         <source>Geometry Correction</source>
         <translation>ジオメトリ補正を有効にする</translation>
+    </message>
+    <message>
+        <source>Preserve Projection Precision</source>
+        <translation>投影精度を維持する</translation>
+    </message>
+    <message>
+        <source>CPU Mode (Very Slow)</source>
+        <translation>CPUモード（非常に遅い）</translation>
     </message>
     <message>
         <source>Chroma Smoothing For 24-Bit Display (reduce FMV color blockyness)</source>
@@ -3116,6 +3176,14 @@ This warning will only be shown once.</source>
     <message>
         <source>preview</source>
         <translation>プレビュー版</translation>
+    </message>
+    <message>
+        <source>Enable Speed Limiter</source>
+        <translation>スピードリミッターを有効にする</translation>
+    </message>
+    <message>
+        <source>Increases the system timer resolution when emulation is started to provide more accurate frame pacing. May increase battery usage on laptops.</source>
+        <translation>エミュレーション開始時のシステムタイマーの解像度を上げて、より正確なフレームペーシングを提供します。ラップトップのバッテリー使用量が増える可能性があります。 </translation>
     </message>
 </context>
 <context>
@@ -3442,11 +3510,11 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>PGXP CPU mode is incompatible with the recompiler, using Cached Interpreter instead.</source>
-        <translation>PGXP CPUモードは、代わりにキャッシュインタープリターを使用するリコンパイラーと互換性がありません。</translation>
+        <translation>PGXP CPUモードは、代わりにキャッシュインタープリタを使用します。再コンパイルと互換性がありません。</translation>
     </message>
     <message>
         <source>CPU interpreter forced by game settings.</source>
-        <translation>ゲーム設定によって強制的にCPU&#x3000;インタープリタが有効。</translation>
+        <translation>ゲーム設定によって強制的にCPU インタープリタが有効。</translation>
     </message>
     <message>
         <source>%u cheats are now active.</source>
@@ -3626,7 +3694,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Failed to open CD image from save state: &apos;%s&apos;. Using existing image &apos;%s&apos;, this may result in instability.</source>
-        <translation>ステートセーブからCDイメージを開くことができませんでした: &apos;%s&apos;. 既存のCDイメージ&#x3000;&apos;%s&apos;を使用すると、不安定になる可能性があります。</translation>
+        <translation>ステートセーブからCDイメージを開くことができませんでした: &apos;%s&apos;. 既存のCDイメージ &apos;%s&apos;を使用すると、不安定になる可能性があります。</translation>
     </message>
     <message>
         <source>Failed to save memory card to &apos;%s&apos;</source>
@@ -3637,8 +3705,8 @@ This warning will only be shown once.</source>
         <translation>警告：CPUオーバークロック (%u%%)は保存状態 (%u%%)で異なりました。</translation>
     </message>
     <message>
-        <source>PGXP is now disabled.</source>
-        <translation>PGXPが無効になりました。</translation>
+        <source>PGXP is now disabled</source>
+        <translation>PGXPが無効になりました</translation>
     </message>
     <message>
         <source>Cheat &apos;%s&apos; disabled.</source>
@@ -3705,6 +3773,10 @@ This warning will only be shown once.</source>
         <translation>チート %u を &apos;%s&apos; に保存しました</translation>
     </message>
     <message>
+        <source>Deleted cheat list &apos;%s&apos;.</source>
+        <translation>チートリスト &apos;%s&apos;を削除しました</translation>
+    </message>
+    <message>
         <source>CPU memory exceptions disabled, flushing all blocks.</source>
         <translation>CPUメモリ例外が無効になり、すべてのブロックがフラッシュされます。</translation>
     </message>
@@ -3743,6 +3815,10 @@ This warning will only be shown once.</source>
     <message>
         <source>PGXP is now enabled.</source>
         <translation>PGXPが有効になりました。</translation>
+    </message>
+    <message>
+        <source>PGXP is now disabled.</source>
+        <translation>PGXPが無効になりました。</translation>
     </message>
     <message>
         <source>PGXP geometry correction disabled by game settings.</source>
@@ -3938,6 +4014,10 @@ This warning will only be shown once.</source>
     <message>
         <source>Dump RAM...</source>
         <translation>RAMダンプ...</translation>
+    </message>
+    <message>
+        <source>Disable All Enhancements</source>
+        <translation>すべての拡張機能を無効</translation>
     </message>
     <message>
         <source>Disable Interlacing</source>
@@ -4172,6 +4252,10 @@ This warning will only be shown once.</source>
         <translation>ツールバー(&amp;T)</translation>
     </message>
     <message>
+        <source>Lock Toolbar</source>
+        <translation>ツールバーを固定</translation>
+    </message>
+    <message>
         <source>Cheats...</source>
         <translation>チート...</translation>
     </message>
@@ -4328,7 +4412,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Force PGXP CPU Mode</source>
-        <translation>強制的に PGXP&#x3000;CPUモードを有効</translation>
+        <translation>強制的に PGXP CPUモードを有効</translation>
     </message>
     <message>
         <source>Force Interpreter</source>
@@ -4475,6 +4559,77 @@ URLは次のとおりです : %1</translation>
     <message>
         <source>&lt;strong&gt;Post-Processing Settings&lt;/strong&gt;&lt;hr&gt;Post processing allows you to alter the appearance of the image displayed on the screen with various filters. Shaders will be executed in sequence.</source>
         <translation>&lt;strong&gt;ポストプロセス設定&lt;/strong&gt;&lt;hr&gt;ポストプロセスを使用すると、さまざまなフィルターを使用して画面に表示される画像の外観を変更できます。シェーダーは順番に実行されます。</translation>
+    </message>
+</context>
+<context>
+    <name>System</name>
+    <message>
+        <source>Failed to load %s BIOS.</source>
+        <translation>BIOS %s の読み込みに失敗しました。</translation>
+    </message>
+    <message>
+        <source>Per-game memory card cannot be used for slot %u as the running game has no title. Using shared card instead.</source>
+        <translation>実行中のゲームにはタイトルがないため、ゲームごとのメモリカードをスロット %u に使用することはできません。代わりに共有カードを使用します。</translation>
+    </message>
+    <message>
+        <source>Removing current media from playlist, removing media from CD-ROM.</source>
+        <translation>プレイリストから現在のメディアを削除し、CD-ROMからメディアを削除します。</translation>
+    </message>
+    <message>
+        <source>Save state is incompatible: maximum version is %u but state is version %u.</source>
+        <translation>ステートセーブに互換性がありません。最大バージョンは %u ですが、ステートセーブはバージョン %u です。</translation>
+    </message>
+    <message>
+        <source>Save state is incompatible: minimum version is %u but state is version %u.</source>
+        <translation>ステートセーブに互換性がありません。最小バージョンは %u ですが、ステートセーブはバージョン %u です。</translation>
+    </message>
+    <message>
+        <source>You are attempting to run a libcrypt protected game without an SBI file:
+
+%s: %s
+
+The game will likely not run properly.
+
+Please check the README for instructions on how to add an SBI file.
+
+Do you wish to continue?</source>
+        <translation>SBIファイルなしでlibcryptで保護されたゲームを実行しようとしています。
+
+％s：％s
+
+ゲームは正しく実行されない可能性があります。
+
+SBIファイルを追加する方法については、READMEを確認してください。
+
+続行しますか？</translation>
+    </message>
+    <message>
+        <source>Memory card path for slot %u is missing, using default.</source>
+        <translation>メモリカードパスのスロット %u がありません。デフォルトを使用しました。</translation>
+    </message>
+    <message>
+        <source>Game changed, reloading memory cards.</source>
+        <translation>ゲームが変更され、メモリカードがリロードされました。</translation>
+    </message>
+    <message>
+        <source>Failed to open CD image from save state: &apos;%s&apos;.</source>
+        <translation>ステートセーブからCDイメージを開くことができませんでした: &apos;%s&apos;。</translation>
+    </message>
+    <message>
+        <source>Changing current media from playlist, replacing current media.</source>
+        <translation>プレイリストから現在のメディアを変更し、現在のメディアを置き換えます。</translation>
+    </message>
+    <message>
+        <source>Failed to acquire host display.</source>
+        <translation>ホストディスプレイの取得に失敗しました。</translation>
+    </message>
+    <message>
+        <source>Per-game memory card cannot be used for slot %u as the running game has no code. Using shared card instead.</source>
+        <translation>実行中のゲームにはコードがないため、ゲームごとのメモリカードをスロット %u に使用することはできません。代わりに共有カードを使用します。</translation>
+    </message>
+    <message>
+        <source>System failed to boot. The log may contain more information.</source>
+        <translation>システムの起動に失敗しました。ログに、より多くの情報が含まれている場合があります。</translation>
     </message>
 </context>
 <context>
@@ -5224,7 +5379,7 @@ The saves will not be recoverable.</source>
         <translation>キャッシュされたインタープリタ（高速）</translation>
     </message>
     <message>
-        <source>Intepreter (Slowest)</source>
+        <source>Interpreter (Slowest)</source>
         <translation>インタープリタ（最も遅い）</translation>
     </message>
 </context>
@@ -5257,61 +5412,6 @@ The saves will not be recoverable.</source>
     <message>
         <source>Icon by</source>
         <translation>アイコン</translation>
-    </message>
-</context>
-<context>
-    <name>System</name>
-    <message>
-        <source>Per-game memory card cannot be used for slot %u as the running game has no title. Using shared card instead.</source>
-        <translation>実行中のゲームにはタイトルがないため、ゲームごとのメモリカードをスロット %u に使用することはできません。代わりに共有カードを使用します。</translation>
-    </message>
-    <message>
-        <source>Removing current media from playlist, removing media from CD-ROM.</source>
-        <translation>プレイリストから現在のメディアを削除し、CD-ROMからメディアを削除します。</translation>
-    </message>
-    <message>
-        <source>Save state is incompatible: maximum version is %u but state is version %u.</source>
-        <translation>ステートセーブに互換性がありません。最大バージョンは %u ですが、ステートセーブはバージョン %u です。</translation>
-    </message>
-    <message>
-        <source>Save state is incompatible: minimum version is %u but state is version %u.</source>
-        <translation>ステートセーブに互換性がありません。最小バージョンは %u ですが、ステートセーブはバージョン %u です。</translation>
-    </message>
-    <message>
-        <source>You are attempting to run a libcrypt protected game without a SBI file:
-
-%s: %s
-
-The game will likely not run properly.
-
-Please check the README for instructions on how to add a SBI file.</source>
-        <translation>SBIファイルなしでlibcryptで保護されたゲームを実行しようとしています。
-
-％s：％s
-
-ゲームは正しく実行されない可能性があります。
-
-SBIファイルを追加する方法については、READMEを確認してください。</translation>
-    </message>
-    <message>
-        <source>Memory card path for slot %u is missing, using default.</source>
-        <translation>メモリカードパスのスロット %u がありません。デフォルトを使用しました。</translation>
-    </message>
-    <message>
-        <source>Game changed, reloading memory cards.</source>
-        <translation>ゲームが変更され、メモリカードがリロードされました。</translation>
-    </message>
-    <message>
-        <source>Failed to open CD image from save state: &apos;%s&apos;.</source>
-        <translation>ステートセーブからCDイメージを開くことができませんでした: &apos;%s&apos;。</translation>
-    </message>
-    <message>
-        <source>Changing current media from playlist, replacing current media.</source>
-        <translation>プレイリストから現在のメディアを変更し、現在のメディアを置き換えます。</translation>
-    </message>
-    <message>
-        <source>Per-game memory card cannot be used for slot %u as the running game has no code. Using shared card instead.</source>
-        <translation>実行中のゲームにはコードがないため、ゲームごとのメモリカードをスロット %u に使用することはできません。代わりに共有カードを使用します。</translation>
     </message>
 </context>
 <context>
@@ -5498,6 +5598,37 @@ SBIファイルを追加する方法については、READMEを確認してく�
     <message>
         <source>Close</source>
         <translation>閉じる</translation>
+    </message>
+</context>
+<context>
+    <name>QLineEdit</name>
+    <message>
+        <source>&amp;Undo</source>
+        <translation>元に戻す(&amp;U)</translation>
+    </message>
+    <message>
+        <source>&amp;Redo</source>
+        <translation>やり直す(&amp;R)</translation>
+    </message>
+    <message>
+        <source>Cu&amp;t</source>
+        <translation>切り取り(&amp;T)</translation>
+    </message>
+    <message>
+        <source>&amp;Copy</source>
+        <translation>コピー(&amp;C)</translation>
+    </message>
+    <message>
+        <source>&amp;Paste</source>
+        <translation>貼り付け(&amp;P)</translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation>削除</translation>
+    </message>
+    <message>
+        <source>Select All</source>
+        <translation>すべて選択</translation>
     </message>
 </context>
 </TS>
