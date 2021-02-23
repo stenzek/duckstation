@@ -333,6 +333,12 @@ std::optional<u32> ParseKeyString(const std::string_view key_str)
       break;
 
     const std::string_view mod_part = key_str.substr(pos, plus_pos - pos);
+    // Keypad in SDL is not a mod and should always be the last + in the string
+    if (mod_part == "Keypad")
+    {
+      break;
+    }
+
     for (const SDLKeyModifierEntry& mod : s_sdl_key_modifiers)
     {
       if (mod_part == mod.name)
