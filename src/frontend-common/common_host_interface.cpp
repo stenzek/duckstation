@@ -864,6 +864,7 @@ void CommonHostInterface::DrawFPSWindow()
   }
 
   const float scale = ImGui::GetIO().DisplayFramebufferScale.x;
+  const float shadow_offset = 1.0f * scale;
   float margin = 10.0f * scale;
   float spacing = 5.0f * scale;
   float position_y = margin;
@@ -878,6 +879,10 @@ void CommonHostInterface::DrawFPSWindow()
   {                                                                                                                    \
     text_size = font->CalcTextSizeA(font->FontSize, std::numeric_limits<float>::max(), -1.0f, text,                    \
                                     text.GetCharArray() + text.GetLength(), nullptr);                                  \
+    dl->AddText(                                                                                                       \
+      font, font->FontSize,                                                                                            \
+      ImVec2(ImGui::GetIO().DisplaySize.x - margin - text_size.x + shadow_offset, position_y + shadow_offset),         \
+      IM_COL32(0, 0, 0, 100), text, text.GetCharArray() + text.GetLength());                                           \
     dl->AddText(font, font->FontSize, ImVec2(ImGui::GetIO().DisplaySize.x - margin - text_size.x, position_y), color,  \
                 text, text.GetCharArray() + text.GetLength());                                                         \
     position_y += text_size.y + spacing;                                                                               \
@@ -972,14 +977,14 @@ void CommonHostInterface::AcquirePendingOSDMessages()
   // we just want to force the compiler to always reload the deque size value from memory.
   //
   // ARM doesn't have good atomic read guarantees so it _could_ read some non-zero value here spuriously,
-  // but that's OK because we lock the mutex later and recheck things anyway. This early out will still 
+  // but that's OK because we lock the mutex later and recheck things anyway. This early out will still
   // avoid 99.99% of the unnecessary lock attempts when size == 0.
 
   std::atomic_thread_fence(std::memory_order_consume);
   if (!m_osd_posted_messages.empty())
   {
     std::unique_lock<std::mutex> lock(m_osd_messages_lock);
-    for(;;)
+    for (;;)
     {
       // lock-and-copy mechanism.
       // this allows us to unlock the deque and minimize time that the mutex is held.
@@ -1020,30 +1025,29 @@ void CommonHostInterface::DrawOSDMessages()
   float position_x = margin;
   float position_y = margin;
 
-  EnumerateOSDMessages(
-    [max_width, spacing, padding, rounding, &position_x, &position_y](const std::string& message, float time_remaining) -> bool {
-      const float opacity = std::min(time_remaining, 1.0f);
+  EnumerateOSDMessages([max_width, spacing, padding, rounding, &position_x, &position_y](const std::string& message,
+                                                                                         float time_remaining) -> bool {
+    const float opacity = std::min(time_remaining, 1.0f);
+    const u32 alpha = static_cast<u32>(opacity * 255.0f);
 
-      if (position_y >= ImGui::GetIO().DisplaySize.y)
-        return false;
+    if (position_y >= ImGui::GetIO().DisplaySize.y)
+      return false;
 
-      const ImVec2 pos(position_x, position_y);
-      const ImVec2 text_size(ImGui::CalcTextSize(message.c_str(), nullptr, false, max_width));
-      const ImVec2 size(text_size.x + padding * 2.0f, text_size.y + padding * 2.0f);
-      const ImVec4 text_rect(pos.x + padding, pos.y + padding, pos.x + size.x - padding, pos.y + size.y - padding);
+    const ImVec2 pos(position_x, position_y);
+    const ImVec2 text_size(ImGui::CalcTextSize(message.c_str(), nullptr, false, max_width));
+    const ImVec2 size(text_size.x + padding * 2.0f, text_size.y + padding * 2.0f);
+    const ImVec4 text_rect(pos.x + padding, pos.y + padding, pos.x + size.x - padding, pos.y + size.y - padding);
 
-      ImDrawList* dl = ImGui::GetBackgroundDrawList();
-      ImFont* font = ImGui::GetFont();
-      dl->AddRectFilled(pos, ImVec2(pos.x + size.x, pos.y + size.y), ImGui::GetColorU32(ImGuiCol_WindowBg, opacity),
-                        rounding);
-      dl->AddRect(pos, ImVec2(pos.x + size.x, pos.y + size.y), ImGui::GetColorU32(ImGuiCol_Border), rounding);
-      dl->AddText(font, font->FontSize, ImVec2(text_rect.x, text_rect.y), ImGui::GetColorU32(ImGuiCol_Text, opacity),
-                  message.c_str(), nullptr, max_width, &text_rect);
-      position_y += size.y + spacing;
+    ImDrawList* dl = ImGui::GetBackgroundDrawList();
+    ImFont* font = ImGui::GetFont();
+    dl->AddRectFilled(pos, ImVec2(pos.x + size.x, pos.y + size.y), IM_COL32(0x21, 0x21, 0x21, alpha), rounding);
+    dl->AddRect(pos, ImVec2(pos.x + size.x, pos.y + size.y), IM_COL32(0x48, 0x48, 0x48, alpha), rounding);
+    dl->AddText(font, font->FontSize, ImVec2(text_rect.x, text_rect.y), IM_COL32(0xff, 0xff, 0xff, alpha),
+                message.c_str(), nullptr, max_width, &text_rect);
+    position_y += size.y + spacing;
 
-      return true;
-    }
-  );
+    return true;
+  });
 }
 
 void CommonHostInterface::DrawDebugWindows()
