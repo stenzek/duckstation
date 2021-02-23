@@ -957,12 +957,6 @@ bool CommonHostInterface::EnumerateOSDMessages(std::function<bool(const std::str
       continue;
     }
 
-    if (!g_settings.display_show_osd_messages)
-    {
-      ++iter;
-      continue;
-    }
-
     if (callback && !callback(iter->text, time_remaining))
       return false;
 
@@ -994,7 +988,9 @@ void CommonHostInterface::AcquirePendingOSDMessages()
       if (m_osd_posted_messages.empty())
         break;
 
-      m_osd_active_messages.push_back(std::move(m_osd_posted_messages.front()));
+      if (g_settings.display_show_osd_messages)
+        m_osd_active_messages.push_back(std::move(m_osd_posted_messages.front()));
+
       m_osd_posted_messages.pop_front();
 
       // somewhat arbitrary hard cap on # of messages. This might be unnecessarily paranoid. If something is
