@@ -3,6 +3,7 @@
 #include "imgui_fullscreen.h"
 #include "IconsFontAwesome5.h"
 #include "common/assert.h"
+#include "common/easing.h"
 #include "common/file_system.h"
 #include "common/string.h"
 #include "common/string_util.h"
@@ -1352,6 +1353,8 @@ void DrawNotifications(ImVec2& position, float spacing)
   if (s_notifications.empty())
     return;
 
+  static constexpr float EASE_IN_TIME = 0.6f;
+  static constexpr float EASE_OUT_TIME = 0.6f;
   const Common::Timer::Value current_time = Common::Timer::GetValue();
 
   const float horizontal_padding = ImGuiFullscreen::LayoutScale(20.0f);
@@ -1383,8 +1386,9 @@ void DrawNotifications(ImVec2& position, float spacing)
 
   for (u32 index = 0; index < static_cast<u32>(s_notifications.size());)
   {
-    Notification& notif = s_notifications[index];
-    if (Common::Timer::ConvertValueToSeconds(current_time - notif.start_time) >= notif.duration)
+    const Notification& notif = s_notifications[index];
+    const float time_passed = static_cast<float>(Common::Timer::ConvertValueToSeconds(current_time - notif.start_time));
+    if (time_passed >= notif.duration)
     {
       s_notifications.erase(s_notifications.begin() + index);
       continue;
@@ -1401,7 +1405,19 @@ void DrawNotifications(ImVec2& position, float spacing)
     const float box_height =
       std::max((vertical_padding * 2.0f) + title_size.y + vertical_spacing + text_size.y, min_height);
 
-    const ImVec2 box_min(position.x, position.y - box_height);
+    float x_offset = 0.0f;
+    if (time_passed < EASE_IN_TIME)
+    {
+      const float disp = (box_width + position.x);
+      x_offset = -(disp - (disp * Easing::InBack(time_passed / EASE_IN_TIME)));
+    }
+    else if (time_passed > (notif.duration - EASE_OUT_TIME))
+    {
+      const float disp = (box_width + position.x);
+      x_offset = -(disp - (disp * Easing::OutBack((notif.duration - time_passed) / EASE_OUT_TIME)));
+    }
+
+    const ImVec2 box_min(position.x + x_offset, position.y - box_height);
     const ImVec2 box_max(box_min.x + box_width, box_min.y + box_height);
 
     ImDrawList* dl = ImGui::GetForegroundDrawList();
