@@ -61,7 +61,10 @@ bool NoGUIHostInterface::Initialize()
   }
 
   if (m_fullscreen_ui_enabled)
+  {
+    FullscreenUI::SetDebugMenuAllowed(true);
     FullscreenUI::QueueGameListRefresh();
+  }
 
   // process events to pick up controllers before updating input map
   PollAndUpdate();

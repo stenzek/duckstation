@@ -85,11 +85,14 @@ static void DrawStatsOverlay();
 static void DrawOSDMessages();
 static void DrawAboutWindow();
 static void OpenAboutWindow();
+static void SetDebugMenuEnabled(bool enabled);
+static void UpdateDebugMenuVisibility();
 
 static CommonHostInterface* s_host_interface;
 static MainWindowType s_current_main_window = MainWindowType::Landing;
 static std::bitset<static_cast<u32>(FrontendCommon::ControllerNavigationButton::Count)> s_nav_input_values{};
 static bool s_debug_menu_enabled = false;
+static bool s_debug_menu_allowed = false;
 static bool s_quick_menu_was_open = false;
 static bool s_was_paused_on_quick_menu_open = false;
 static bool s_about_window_open = false;
@@ -195,7 +198,7 @@ bool Initialize(CommonHostInterface* host_interface)
     return false;
 
   s_settings_copy.Load(*s_host_interface->GetSettingsInterface());
-  SetDebugMenuEnabled(s_host_interface->GetSettingsInterface()->GetBoolValue("Main", "ShowDebugMenu", false));
+  UpdateDebugMenuVisibility();
 
   ImGuiFullscreen::UpdateLayoutScale();
   ImGuiFullscreen::UpdateFonts();
@@ -1937,7 +1940,7 @@ void DrawSettingsWindow()
         if (ToggleButton("Enable Debug Menu", "Shows a debug menu bar with additional statistics and quick settings.",
                          &debug_menu))
         {
-          s_host_interface->RunLater([debug_menu]() { SetDebugMenuEnabled(debug_menu, true); });
+          s_host_interface->RunLater([debug_menu]() { SetDebugMenuEnabled(debug_menu); });
         }
 
         settings_changed |=
@@ -2982,8 +2985,22 @@ bool DrawConfirmWindow(const char* message, bool* result)
 // Debug Menu
 //////////////////////////////////////////////////////////////////////////
 
-void SetDebugMenuEnabled(bool enabled, bool save_to_ini)
+void SetDebugMenuAllowed(bool allowed)
 {
+  s_debug_menu_enabled = allowed;
+  UpdateDebugMenuVisibility();
+}
+
+void SetDebugMenuEnabled(bool enabled)
+{
+  s_host_interface->GetSettingsInterface()->SetBoolValue("Main", "ShowDebugMenu", enabled);
+  s_host_interface->GetSettingsInterface()->Save();
+}
+
+void UpdateDebugMenuVisibility()
+{
+  const bool enabled =
+    s_debug_menu_allowed && s_host_interface->GetSettingsInterface()->GetBoolValue("Main", "ShowDebugMenu", false);
   if (s_debug_menu_enabled == enabled)
     return;
 
@@ -2994,12 +3011,6 @@ void SetDebugMenuEnabled(bool enabled, bool save_to_ini)
   if (ImGuiFullscreen::UpdateFonts())
     s_host_interface->GetDisplay()->UpdateImGuiFontTexture();
   s_debug_menu_enabled = enabled;
-
-  if (save_to_ini)
-  {
-    s_host_interface->GetSettingsInterface()->SetBoolValue("Main", "ShowDebugMenu", enabled);
-    s_host_interface->GetSettingsInterface()->Save();
-  }
 }
 
 static void DrawDebugStats();

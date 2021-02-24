@@ -60,7 +60,7 @@ void EnsureGameListLoaded();
 
 Settings& GetSettingsCopy();
 void SaveAndApplySettings();
-void SetDebugMenuEnabled(bool enabled, bool save_to_ini = false);
+void SetDebugMenuAllowed(bool allowed);
 
 /// Only ImGuiNavInput_Activate, ImGuiNavInput_Cancel, and DPad should be forwarded.
 /// Returns true if the UI consumed the event, and it should not execute the normal handler.
