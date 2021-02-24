@@ -307,7 +307,7 @@ void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
     case SDL_KEYUP:
     {
       // Binding mode
-      if (m_fullscreen_ui_enabled && m_controller_interface->HasHook() && event->key.repeat == 0)
+      if (m_fullscreen_ui_enabled && m_controller_interface && m_controller_interface->HasHook() && event->key.repeat == 0)
       {
         String keyName;
         if (!SDLKeyNames::KeyEventToString(event, keyName))
