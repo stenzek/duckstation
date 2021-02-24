@@ -579,6 +579,91 @@ bool MenuImageButton(const char* title, const char* summary, ImTextureID user_te
   return pressed;
 }
 
+bool FloatingButton(const char* text, float x, float y, float width, float height, float anchor_x, float anchor_y,
+                    bool enabled, ImFont* font, ImVec2* out_position)
+{
+  const ImVec2 text_size(font->CalcTextSizeA(font->FontSize, std::numeric_limits<float>::max(), 0.0f, text));
+  const ImVec2& padding(ImGui::GetStyle().FramePadding);
+  if (width < 0.0f)
+    width = (padding.x * 2.0f) + text_size.x;
+  if (height < 0.0f)
+    height = (padding.y * 2.0f) + text_size.y;
+
+  const ImVec2 window_size(ImGui::GetWindowSize());
+  if (anchor_x == -1.0f)
+    x -= width;
+  else if (anchor_x == -0.5f)
+    x -= (width * 0.5f);
+  else if (anchor_x == 0.5f)
+    x = (window_size.x * 0.5f) - (width * 0.5f) - x;
+  else if (anchor_x == 1.0f)
+    x = window_size.x - width - x;
+  if (anchor_y == -1.0f)
+    y -= height;
+  else if (anchor_y == -0.5f)
+    y -= (height * 0.5f);
+  else if (anchor_y == 0.5f)
+    y = (window_size.y * 0.5f) - (height * 0.5f) - y;
+  else if (anchor_y == 1.0f)
+    y = window_size.y - height - y;
+
+  if (out_position)
+    *out_position = ImVec2(x, y);
+
+  ImGuiWindow* window = ImGui::GetCurrentWindow();
+  if (window->SkipItems)
+    return false;
+
+  const ImVec2 base(ImGui::GetWindowPos() + ImVec2(x, y));
+  ImRect bb(base, base + ImVec2(width, height));
+
+  const ImGuiID id = window->GetID(text);
+  if (enabled)
+  {
+    if (!ImGui::ItemAdd(bb, id))
+      return false;
+  }
+  else
+  {
+    if (ImGui::IsClippedEx(bb, id, false))
+      return false;
+  }
+
+  bool hovered;
+  bool held;
+  bool pressed;
+  if (enabled)
+  {
+    pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, 0);
+    if (hovered)
+    {
+      const ImU32 col = ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered, 1.0f);
+      ImGui::RenderFrame(bb.Min, bb.Max, col, true, 0.0f);
+    }
+  }
+  else
+  {
+    hovered = false;
+    pressed = false;
+    held = false;
+  }
+
+  bb.Min += padding;
+  bb.Max -= padding;
+
+  if (!enabled)
+    ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetColorU32(ImGuiCol_TextDisabled));
+
+  ImGui::PushFont(font);
+  ImGui::RenderTextClipped(bb.Min, bb.Max, text, nullptr, nullptr, ImVec2(0.0f, 0.0f), &bb);
+  ImGui::PopFont();
+
+  if (!enabled)
+    ImGui::PopStyleColor();
+
+  return pressed;
+}
+
 bool ToggleButton(const char* title, const char* summary, bool* v, bool enabled, float height, ImFont* font,
                   ImFont* summary_font)
 {

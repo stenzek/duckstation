@@ -188,6 +188,9 @@ bool MenuImageButton(const char* title, const char* summary, ImTextureID user_te
                      bool enabled = true, float height = LAYOUT_MENU_BUTTON_HEIGHT,
                      const ImVec2& uv0 = ImVec2(0.0f, 0.0f), const ImVec2& uv1 = ImVec2(1.0f, 1.0f),
                      ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
+bool FloatingButton(const char* text, float x, float y, float width = -1.0f,
+                    float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, float anchor_x = 0.0f, float anchor_y = 0.0f,
+                    bool enabled = true, ImFont* font = g_large_font, ImVec2* out_position = nullptr);
 bool ToggleButton(const char* title, const char* summary, bool* v, bool enabled = true,
                   float height = LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font,
                   ImFont* summary_font = g_medium_font);

@@ -60,6 +60,7 @@ using ImGuiFullscreen::EndFullscreenColumnWindow;
 using ImGuiFullscreen::EndFullscreenWindow;
 using ImGuiFullscreen::EndMenuButtons;
 using ImGuiFullscreen::EnumChoiceButton;
+using ImGuiFullscreen::FloatingButton;
 using ImGuiFullscreen::LayoutScale;
 using ImGuiFullscreen::MenuButton;
 using ImGuiFullscreen::MenuButtonFrame;
@@ -731,21 +732,20 @@ void DrawLandingWindow()
       s_host_interface->RequestExit();
 
     {
-      bool about_visible, about_hovered, about_pressed;
-      ImRect about_rect;
-      ImGui::SetCursorPosY(ImGui::GetWindowHeight() - LayoutScale(50.0f));
-      about_pressed = MenuButtonFrame("About", true, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY,
-                                      &about_visible, &about_hovered, &about_rect.Min, &about_rect.Max);
-
-      if (about_visible)
+      ImVec2 fullscreen_pos;
+      if (FloatingButton(ICON_FA_WINDOW_CLOSE, 0.0f, 0.0f, -1.0f, -1.0f, 1.0f, 0.0f, true, g_large_font,
+                         &fullscreen_pos))
       {
-        ImGui::PushFont(g_large_font);
-        ImGui::RenderTextClipped(about_rect.Min, about_rect.Max, ICON_FA_QUESTION_CIRCLE, nullptr, nullptr,
-                                 ImVec2(1.0f, 0.0f), &about_rect);
-        ImGui::PopFont();
+        s_host_interface->RequestExit();
       }
 
-      if (about_pressed)
+      if (FloatingButton(ICON_FA_EXPAND, fullscreen_pos.x, 0.0f, -1.0f, -1.0f, -1.0f, 0.0f, true, g_large_font,
+                         &fullscreen_pos))
+      {
+        s_host_interface->RunLater([]() { s_host_interface->SetFullscreen(!s_host_interface->IsFullscreen()); });
+      }
+
+      if (FloatingButton(ICON_FA_QUESTION_CIRCLE, fullscreen_pos.x, 0.0f, -1.0f, -1.0f, -1.0f, 0.0f))
         OpenAboutWindow();
     }
 
@@ -2879,11 +2879,19 @@ void DrawAboutWindow()
 
     BeginMenuButtons();
     if (ActiveButton(ICON_FA_GLOBE "  GitHub Repository", false))
-      s_host_interface->ReportError("Go to https://github.com/stenzek/duckstation/");
+    {
+      s_host_interface->RunLater(
+        []() { s_host_interface->ReportError("Go to https://github.com/stenzek/duckstation/"); });
+    }
     if (ActiveButton(ICON_FA_BUG "  Issue Tracker", false))
-      s_host_interface->ReportError("Go to https://github.com/stenzek/duckstation/issues");
+    {
+      s_host_interface->RunLater(
+        []() { s_host_interface->ReportError("Go to https://github.com/stenzek/duckstation/issues"); });
+    }
     if (ActiveButton(ICON_FA_COMMENT "  Discord Server", false))
-      s_host_interface->ReportError("Go to https://discord.gg/Buktv3t");
+    {
+      s_host_interface->RunLater([]() { s_host_interface->ReportError("Go to https://discord.gg/Buktv3t"); });
+    }
 
     if (ActiveButton(ICON_FA_WINDOW_CLOSE "  Close", false))
     {
