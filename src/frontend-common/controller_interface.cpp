@@ -36,6 +36,12 @@ void ControllerInterface::ClearHook()
     m_event_intercept_callback = {};
 }
 
+bool ControllerInterface::HasHook()
+{
+  std::unique_lock<std::mutex> lock(m_event_intercept_mutex);
+  return (bool)m_event_intercept_callback;
+}
+
 bool ControllerInterface::DoEventHook(Hook::Type type, int controller_index, int button_or_axis_number,
                                       std::variant<float, std::string_view> value, bool track_history)
 {
