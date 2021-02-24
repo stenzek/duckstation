@@ -100,7 +100,7 @@ static bool s_about_window_open = false;
 //////////////////////////////////////////////////////////////////////////
 // Resources
 //////////////////////////////////////////////////////////////////////////
-static std::unique_ptr<HostDisplayTexture> LoadTextureResource(const char* name);
+static std::unique_ptr<HostDisplayTexture> LoadTextureResource(const char* name, bool allow_fallback = true);
 static bool LoadResources();
 static void DestroyResources();
 
@@ -351,7 +351,7 @@ void ReturnToMainWindow()
 
 bool LoadResources()
 {
-  if (!(s_app_icon_texture = LoadTextureResource("logo.png")) &&
+  if (!(s_app_icon_texture = LoadTextureResource("logo.png", false)) &&
       !(s_app_icon_texture = LoadTextureResource("duck.png")))
   {
     return false;
@@ -446,12 +446,15 @@ static std::unique_ptr<HostDisplayTexture> LoadTexture(const char* path, bool fr
   return texture;
 }
 
-std::unique_ptr<HostDisplayTexture> LoadTextureResource(const char* name)
+std::unique_ptr<HostDisplayTexture> LoadTextureResource(const char* name, bool allow_fallback /*= true*/)
 {
   const std::string path(StringUtil::StdStringFromFormat("resources" FS_OSPATH_SEPARATOR_STR "%s", name));
   std::unique_ptr<HostDisplayTexture> texture = LoadTexture(path.c_str(), true);
   if (texture)
     return texture;
+
+  if (!allow_fallback)
+    return nullptr;
 
   Log_ErrorPrintf("Missing resource '%s', using fallback", name);
 
@@ -686,8 +689,10 @@ void DrawLandingWindow()
 
   if (BeginFullscreenColumnWindow(0.0f, 570.0f, "logo", ImVec4(0.11f, 0.15f, 0.17f, 1.00f)))
   {
-    ImGui::SetCursorPos(ImVec2(120.0f, (ImGui::GetWindowHeight() * 0.5f) - LayoutScale(170.0f)));
-    ImGui::Image(s_app_icon_texture->GetHandle(), LayoutScale(ImVec2(380.0f, 380.0f)));
+    const float image_size = LayoutScale(380.f);
+    ImGui::SetCursorPos(ImVec2((ImGui::GetWindowWidth() * 0.5f) - (image_size * 0.5f),
+                               (ImGui::GetWindowHeight() * 0.5f) - (image_size * 0.5f)));
+    ImGui::Image(s_app_icon_texture->GetHandle(), ImVec2(image_size, image_size));
   }
   EndFullscreenColumnWindow();
 
