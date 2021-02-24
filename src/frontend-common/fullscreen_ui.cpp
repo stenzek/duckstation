@@ -242,7 +242,7 @@ void OpenQuickMenu()
     return;
 
   s_was_paused_on_quick_menu_open = System::IsPaused();
-  if (s_settings_copy.pause_on_focus_loss && !s_was_paused_on_quick_menu_open)
+  if (s_settings_copy.pause_on_menu && !s_was_paused_on_quick_menu_open)
     s_host_interface->RunLater([]() { s_host_interface->PauseSystem(true); });
 
   s_current_main_window = MainWindowType::QuickMenu;
@@ -343,10 +343,10 @@ void ClearImGuiFocus()
 
 void ReturnToMainWindow()
 {
-  if (System::IsValid())
-    s_current_main_window = s_quick_menu_was_open ? MainWindowType::QuickMenu : MainWindowType::None;
-  else
-    s_current_main_window = MainWindowType::Landing;
+  if (s_quick_menu_was_open)
+    CloseQuickMenu();
+
+  s_current_main_window = System::IsValid() ? MainWindowType::None : MainWindowType::Landing;
 }
 
 bool LoadResources()
@@ -592,7 +592,10 @@ static void DoCheatsMenu()
 
   auto callback = [](s32 index, const std::string& title, bool checked) {
     if (index < 0)
+    {
+      ReturnToMainWindow();
       return;
+    }
 
     CheatList* cl = System::GetCheatList();
     if (!cl)
@@ -633,6 +636,7 @@ static void DoChangeDiscFromFile()
 
     ClearImGuiFocus();
     CloseFileSelector();
+    ReturnToMainWindow();
   };
 
   OpenFileSelector(ICON_FA_COMPACT_DISC "  Select Disc Image", false, std::move(callback), GetDiscImageFilters(),
@@ -1100,6 +1104,9 @@ void DrawSettingsWindow()
                                          "Pauses the emulator when you minimize the window or switch to another "
                                          "application, and unpauses when you switch back.",
                                          &s_settings_copy.pause_on_focus_loss);
+        settings_changed |= ToggleButton(
+          "Pause On Menu", "Pauses the emulator when you open the quick menu, and unpauses when you close it.",
+          &s_settings_copy.pause_on_menu);
         settings_changed |=
           ToggleButton("Confirm Power Off",
                        "Determines whether a prompt will be displayed to confirm shutting down the emulator/game "
@@ -1888,7 +1895,7 @@ void DrawSettingsWindow()
                                         &s_settings_copy.audio_output_volume, 0, 100, 1, "%d%%");
         settings_changed |= RangeButton("Fast Forward Volume",
                                         "Controls the volume of the audio played on the host when fast forwarding.",
-                                        &s_settings_copy.audio_output_volume, 0, 100, 1, "%d%%");
+                                        &s_settings_copy.audio_fast_forward_volume, 0, 100, 1, "%d%%");
         settings_changed |= ToggleButton("Mute All Sound", "Prevents the emulator from producing any audible sound.",
                                          &s_settings_copy.audio_output_muted);
         settings_changed |= ToggleButton("Mute CD Audio",
@@ -2082,19 +2089,19 @@ void DrawQuickMenu(MainWindowType type)
 
     if (ActiveButton(ICON_FA_UNDO "  Load State", false))
     {
+      s_current_main_window = MainWindowType::None;
       OpenSaveStateSelector(true);
-      CloseQuickMenu();
     }
 
     if (ActiveButton(ICON_FA_SAVE "  Save State", false))
     {
+      s_current_main_window = MainWindowType::None;
       OpenSaveStateSelector(false);
-      CloseQuickMenu();
     }
 
     if (ActiveButton(ICON_FA_FROWN_OPEN "  Cheat List", false))
     {
-      CloseQuickMenu();
+      s_current_main_window = MainWindowType::None;
       DoCheatsMenu();
     }
 
@@ -2106,15 +2113,12 @@ void DrawQuickMenu(MainWindowType type)
 
     if (ActiveButton(ICON_FA_COMPACT_DISC "  Change Disc", false))
     {
-      CloseQuickMenu();
+      s_current_main_window = MainWindowType::None;
       DoChangeDisc();
     }
 
     if (ActiveButton(ICON_FA_SLIDERS_H "  Settings", false))
-    {
-      CloseQuickMenu();
       s_current_main_window = MainWindowType::Settings;
-    }
 
     if (ActiveButton(ICON_FA_SYNC "  Reset System", false))
     {
@@ -2290,6 +2294,7 @@ void CloseSaveStateSelector()
 {
   s_save_state_selector_slots.clear();
   s_save_state_selector_open = false;
+  ReturnToMainWindow();
 }
 
 void DrawSaveStateSelector(bool is_loading, bool fullscreen)

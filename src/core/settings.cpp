@@ -117,6 +117,7 @@ void Settings::Load(SettingsInterface& si)
   start_paused = si.GetBoolValue("Main", "StartPaused", false);
   start_fullscreen = si.GetBoolValue("Main", "StartFullscreen", false);
   pause_on_focus_loss = si.GetBoolValue("Main", "PauseOnFocusLoss", false);
+  pause_on_menu = si.GetBoolValue("Main", "PauseOnMenu", true);
   save_state_on_exit = si.GetBoolValue("Main", "SaveStateOnExit", true);
   confim_power_off = si.GetBoolValue("Main", "ConfirmPowerOff", true);
   load_devices_from_save_states = si.GetBoolValue("Main", "LoadDevicesFromSaveStates", false);
@@ -294,6 +295,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("Main", "StartPaused", start_paused);
   si.SetBoolValue("Main", "StartFullscreen", start_fullscreen);
   si.SetBoolValue("Main", "PauseOnFocusLoss", pause_on_focus_loss);
+  si.SetBoolValue("Main", "PauseOnMenu", pause_on_menu);
   si.SetBoolValue("Main", "SaveStateOnExit", save_state_on_exit);
   si.SetBoolValue("Main", "ConfirmPowerOff", confim_power_off);
   si.SetBoolValue("Main", "LoadDevicesFromSaveStates", load_devices_from_save_states);
