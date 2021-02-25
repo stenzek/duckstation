@@ -178,6 +178,9 @@ QtDisplayWidget* MainWindow::updateDisplay(QThread* worker_thread, bool fullscre
   if (!is_rendering_to_main && !render_to_main && !is_exclusive_fullscreen)
   {
     qDebug() << "Toggling to" << (fullscreen ? "fullscreen" : "windowed") << "without recreating surface";
+    if (m_host_display && m_host_display->IsFullscreen())
+      m_host_display->SetFullscreen(false, 0, 0, 0.0f);
+
     if (fullscreen)
     {
       m_display_widget->showFullScreen();
@@ -253,10 +256,15 @@ void MainWindow::setDisplayFullscreen(const std::string& fullscreen_mode)
   if (CommonHostInterface::ParseFullscreenMode(fullscreen_mode, &width, &height, &refresh_rate))
   {
     result = m_host_display->SetFullscreen(true, width, height, refresh_rate);
-    if (!result)
+    if (result)
     {
       m_host_interface->AddOSDMessage(
-        m_host_interface->TranslateStdString("OSDMessage", "Failed to acquire exclusive fullscreen."), 20.0f);
+        m_host_interface->TranslateStdString("OSDMessage", "Acquired exclusive fullscreen."), 10.0f);
+    }
+    else
+    {
+      m_host_interface->AddOSDMessage(
+        m_host_interface->TranslateStdString("OSDMessage", "Failed to acquire exclusive fullscreen."), 10.0f);
     }
   }
 }

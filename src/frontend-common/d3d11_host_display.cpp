@@ -436,9 +436,14 @@ bool D3D11HostDisplay::CreateSwapChain(const DXGI_MODE_DESC* fullscreen_mode)
     }
   }
 
-  hr = m_dxgi_factory->MakeWindowAssociation(swap_chain_desc.OutputWindow, DXGI_MWA_NO_WINDOW_CHANGES);
-  if (FAILED(hr))
-    Log_WarningPrintf("MakeWindowAssociation() to disable ALT+ENTER failed");
+  ComPtr<IDXGIFactory> dxgi_factory;
+  hr = m_swap_chain->GetParent(IID_PPV_ARGS(dxgi_factory.GetAddressOf()));
+  if (SUCCEEDED(hr))
+  {
+    hr = dxgi_factory->MakeWindowAssociation(swap_chain_desc.OutputWindow, DXGI_MWA_NO_WINDOW_CHANGES);
+    if (FAILED(hr))
+      Log_WarningPrintf("MakeWindowAssociation() to disable ALT+ENTER failed");
+  }
 
   return CreateSwapChainRTV();
 }

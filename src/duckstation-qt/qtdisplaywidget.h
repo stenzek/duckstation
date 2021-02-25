@@ -23,6 +23,7 @@ public:
   void setRelativeMode(bool enabled);
 
 Q_SIGNALS:
+  void windowFocusEvent();
   void windowResizedEvent(int width, int height);
   void windowRestoredEvent();
   void windowClosedEvent();

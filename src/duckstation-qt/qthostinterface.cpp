@@ -415,6 +415,7 @@ void QtHostInterface::onDisplayWindowMouseButtonEvent(int button, bool pressed)
 
 void QtHostInterface::onHostDisplayWindowResized(int width, int height)
 {
+  Log_WarningPrintf("resize %dx%d", width, height);
   // this can be null if it was destroyed and the main thread is late catching up
   if (!m_display)
     return;
@@ -427,17 +428,29 @@ void QtHostInterface::onHostDisplayWindowResized(int width, int height)
   {
     if (m_is_exclusive_fullscreen && !m_display->IsFullscreen())
     {
-      // we lost exclusive fullscreen
-      AddOSDMessage(TranslateStdString("OSDMessage", "Lost exclusive fullscreen."), 20.0f);
+      // we lost exclusive fullscreen, switch to borderless
+      AddOSDMessage(TranslateStdString("OSDMessage", "Lost exclusive fullscreen."), 10.0f);
       m_is_exclusive_fullscreen = false;
       m_is_fullscreen = false;
-      updateDisplayState();
+      m_lost_exclusive_fullscreen = true;
     }
 
     // force redraw if we're paused
     if (!m_fullscreen_ui_enabled)
       renderDisplay();
   }
+}
+
+void QtHostInterface::onHostDisplayWindowFocused()
+{
+  if (!m_display || !m_lost_exclusive_fullscreen)
+    return;
+
+  // try to restore exclusive fullscreen
+  m_lost_exclusive_fullscreen = false;
+  m_is_exclusive_fullscreen = true;
+  m_is_fullscreen = true;
+  updateDisplayState();
 }
 
 void QtHostInterface::redrawDisplayWindow()
@@ -526,6 +539,7 @@ void QtHostInterface::connectDisplaySignals(QtDisplayWidget* widget)
 {
   widget->disconnect(this);
 
+  connect(widget, &QtDisplayWidget::windowFocusEvent, this, &QtHostInterface::onHostDisplayWindowFocused);
   connect(widget, &QtDisplayWidget::windowResizedEvent, this, &QtHostInterface::onHostDisplayWindowResized);
   connect(widget, &QtDisplayWidget::windowRestoredEvent, this, &QtHostInterface::redrawDisplayWindow);
   connect(widget, &QtDisplayWidget::windowClosedEvent, this, &QtHostInterface::powerOffSystem,
@@ -543,7 +557,8 @@ void QtHostInterface::updateDisplayState()
   // this expects the context to get moved back to us afterwards
   m_display->DoneRenderContextCurrent();
 
-  QtDisplayWidget* display_widget = updateDisplayRequested(m_worker_thread, m_is_fullscreen, m_is_rendering_to_main);
+  QtDisplayWidget* display_widget =
+    updateDisplayRequested(m_worker_thread, m_is_fullscreen, m_is_rendering_to_main && !m_is_fullscreen);
   if (!display_widget || !m_display->MakeRenderContextCurrent())
     Panic("Failed to make device context current after updating");
 

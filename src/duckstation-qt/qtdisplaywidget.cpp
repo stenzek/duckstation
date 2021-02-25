@@ -202,6 +202,22 @@ bool QtDisplayWidget::event(QEvent* event)
       return true;
     }
 
+    case QEvent::FocusIn:
+    {
+      QWidget::event(event);
+      emit windowFocusEvent();
+      return true;
+    }
+
+    case QEvent::ActivationChange:
+    {
+      QWidget::event(event);
+      if (isActiveWindow())
+        emit windowFocusEvent();
+
+      return true;
+    }
+
     default:
       return QWidget::event(event);
   }
