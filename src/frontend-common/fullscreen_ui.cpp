@@ -1540,7 +1540,7 @@ void DrawSettingsWindow()
           CommonHostInterface::InputProfileList profiles(s_host_interface->GetInputProfileList());
           ImGuiFullscreen::ChoiceDialogOptions options;
           options.reserve(profiles.size());
-          for (const CommonHostInterface::InputProfileEntry& entry : profiles)
+          for (CommonHostInterface::InputProfileEntry& entry : profiles)
             options.emplace_back(std::move(entry.name), false);
 
           auto callback = [profiles](s32 index, const std::string& title, bool checked) {
@@ -1574,6 +1574,7 @@ void DrawSettingsWindow()
           const ControllerType ctype = s_settings_copy.controller_types[port];
           if (ctype != type_cache[port])
           {
+            type_cache[port] = ctype;
             button_cache[port] = Controller::GetButtonNames(ctype);
             axis_cache[port] = Controller::GetAxisNames(ctype);
             setting_cache[port] = Controller::GetSettings(ctype);
