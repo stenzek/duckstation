@@ -177,6 +177,13 @@ bool QtDisplayWidget::event(QEvent* event)
       return true;
     }
 
+    case QEvent::Wheel:
+    {
+      const QWheelEvent* wheel_event = static_cast<QWheelEvent*>(event);
+      emit windowMouseWheelEvent(wheel_event->angleDelta());
+      return true;
+    }
+
     case QEvent::Resize:
     {
       QWidget::event(event);

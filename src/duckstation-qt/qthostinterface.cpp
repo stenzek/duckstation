@@ -413,7 +413,35 @@ void QtHostInterface::onDisplayWindowMouseButtonEvent(int button, bool pressed)
   HandleHostMouseEvent(button, pressed);
 }
 
-void QtHostInterface::onHostDisplayWindowResized(int width, int height)
+void QtHostInterface::onDisplayWindowMouseWheelEvent(const QPoint& delta_angle)
+{
+  DebugAssert(isOnWorkerThread());
+
+  if (ImGui::GetCurrentContext())
+  {
+    ImGuiIO& io = ImGui::GetIO();
+
+    if (delta_angle.x() > 0)
+      io.MouseWheelH += 1.0f;
+    else if (delta_angle.x() < 0)
+      io.MouseWheelH -= 1.0f;
+
+    if (delta_angle.y() > 0)
+      io.MouseWheel += 1.0f;
+    else if (delta_angle.y() < 0)
+      io.MouseWheel -= 1.0f;
+
+    if (io.WantCaptureMouse)
+    {
+      // don't consume input events if it's hitting the UI instead
+      return;
+    }
+  }
+
+  // HandleHostMouseWheelEvent(delta_angle.x(), delta_angle.y());
+}
+
+void QtHostInterface::onDisplayWindowResized(int width, int height)
 {
   Log_WarningPrintf("resize %dx%d", width, height);
   // this can be null if it was destroyed and the main thread is late catching up
@@ -441,7 +469,7 @@ void QtHostInterface::onHostDisplayWindowResized(int width, int height)
   }
 }
 
-void QtHostInterface::onHostDisplayWindowFocused()
+void QtHostInterface::onDisplayWindowFocused()
 {
   if (!m_display || !m_lost_exclusive_fullscreen)
     return;
@@ -539,14 +567,15 @@ void QtHostInterface::connectDisplaySignals(QtDisplayWidget* widget)
 {
   widget->disconnect(this);
 
-  connect(widget, &QtDisplayWidget::windowFocusEvent, this, &QtHostInterface::onHostDisplayWindowFocused);
-  connect(widget, &QtDisplayWidget::windowResizedEvent, this, &QtHostInterface::onHostDisplayWindowResized);
+  connect(widget, &QtDisplayWidget::windowFocusEvent, this, &QtHostInterface::onDisplayWindowFocused);
+  connect(widget, &QtDisplayWidget::windowResizedEvent, this, &QtHostInterface::onDisplayWindowResized);
   connect(widget, &QtDisplayWidget::windowRestoredEvent, this, &QtHostInterface::redrawDisplayWindow);
   connect(widget, &QtDisplayWidget::windowClosedEvent, this, &QtHostInterface::powerOffSystem,
           Qt::BlockingQueuedConnection);
   connect(widget, &QtDisplayWidget::windowKeyEvent, this, &QtHostInterface::onDisplayWindowKeyEvent);
   connect(widget, &QtDisplayWidget::windowMouseMoveEvent, this, &QtHostInterface::onDisplayWindowMouseMoveEvent);
   connect(widget, &QtDisplayWidget::windowMouseButtonEvent, this, &QtHostInterface::onDisplayWindowMouseButtonEvent);
+  connect(widget, &QtDisplayWidget::windowMouseWheelEvent, this, &QtHostInterface::onDisplayWindowMouseWheelEvent);
 }
 
 void QtHostInterface::updateDisplayState()

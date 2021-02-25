@@ -143,9 +143,6 @@ public Q_SLOTS:
   void applySettings(bool display_osd_messages = false);
   void updateInputMap();
   void applyInputProfile(const QString& profile_path);
-  void onDisplayWindowKeyEvent(int key, bool pressed);
-  void onDisplayWindowMouseMoveEvent(int x, int y);
-  void onDisplayWindowMouseButtonEvent(int button, bool pressed);
   void bootSystem(std::shared_ptr<const SystemBootParameters> params);
   void resumeSystemFromState(const QString& filename, bool boot_on_failure);
   void resumeSystemFromMostRecentState();
@@ -179,8 +176,12 @@ public Q_SLOTS:
 
 private Q_SLOTS:
   void doStopThread();
-  void onHostDisplayWindowResized(int width, int height);
-  void onHostDisplayWindowFocused();
+  void onDisplayWindowMouseMoveEvent(int x, int y);
+  void onDisplayWindowMouseButtonEvent(int button, bool pressed);
+  void onDisplayWindowMouseWheelEvent(const QPoint& delta_angle);
+  void onDisplayWindowResized(int width, int height);
+  void onDisplayWindowFocused();
+  void onDisplayWindowKeyEvent(int key, bool pressed);
   void doBackgroundControllerPoll();
   void doSaveSettings();
 

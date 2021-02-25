@@ -30,6 +30,7 @@ Q_SIGNALS:
   void windowKeyEvent(int key_code, bool pressed);
   void windowMouseMoveEvent(int x, int y);
   void windowMouseButtonEvent(int button, bool pressed);
+  void windowMouseWheelEvent(const QPoint& angle_delta);
 
 protected:
   bool event(QEvent* event) override;
