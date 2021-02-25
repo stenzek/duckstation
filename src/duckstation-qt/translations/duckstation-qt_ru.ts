@@ -402,7 +402,7 @@
     <message>
         <location filename="../../core/analog_controller.cpp" line="753"/>
         <source>Analog</source>
-        <translation type="unfinished">Аналоговый</translation>
+        <translation type="unfinished">Аналог</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="764"/>
@@ -562,7 +562,7 @@
     <message>
         <location filename="../../core/analog_joystick.cpp" line="331"/>
         <source>Analog</source>
-        <translation type="unfinished">Аналоговый</translation>
+        <translation type="unfinished">Аналог</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="342"/>
