@@ -66,6 +66,9 @@
     <ProjectReference Include="..\..\dep\libcue\libcue.vcxproj">
       <Project>{6a4208ed-e3dc-41e1-81cd-f61025fc285a}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\..\dep\rcheevos\rcheevos.vcxproj">
+      <Project>{4ba0a6d4-3ae1-42b2-9347-096fd023ff64}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\dep\simpleini\simpleini.vcxproj">
       <Project>{3773f4cc-614e-4028-8595-22e08ca649e3}</Project>
     </ProjectReference>
@@ -92,6 +95,8 @@
     <ClCompile Include="fullscreen_ui_progress_callback.cpp" />
     <ClCompile Include="game_list.cpp" />
     <ClCompile Include="game_settings.cpp" />
+    <ClCompile Include="http_downloader.cpp" />
+    <ClCompile Include="http_downloader_winhttp.cpp" />
     <ClCompile Include="icon.cpp" />
     <ClCompile Include="imgui_fullscreen.cpp" />
     <ClCompile Include="imgui_impl_dx11.cpp" />
@@ -103,6 +108,7 @@
     <ClCompile Include="postprocessing_chain.cpp" />
     <ClCompile Include="postprocessing_shader.cpp" />
     <ClCompile Include="postprocessing_shadergen.cpp" />
+    <ClCompile Include="cheevos.cpp" />
     <ClCompile Include="save_state_selector_ui.cpp" />
     <ClCompile Include="sdl_audio_stream.cpp" />
     <ClCompile Include="sdl_controller_interface.cpp" />
@@ -120,6 +126,8 @@
     <ClInclude Include="fullscreen_ui_progress_callback.h" />
     <ClInclude Include="game_list.h" />
     <ClInclude Include="game_settings.h" />
+    <ClInclude Include="http_downloader.h" />
+    <ClInclude Include="http_downloader_winhttp.h" />
     <ClInclude Include="icon.h" />
     <ClInclude Include="imgui_fullscreen.h" />
     <ClInclude Include="imgui_impl_dx11.h" />
@@ -131,6 +139,7 @@
     <ClInclude Include="postprocessing_chain.h" />
     <ClInclude Include="postprocessing_shader.h" />
     <ClInclude Include="postprocessing_shadergen.h" />
+    <ClInclude Include="cheevos.h" />
     <ClInclude Include="save_state_selector_ui.h" />
     <ClInclude Include="sdl_audio_stream.h" />
     <ClInclude Include="sdl_controller_interface.h" />
@@ -343,10 +352,10 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WITH_IMGUI=1;WITH_SDL2=1;WITH_DISCORD_PRESENCE=1;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WITH_IMGUI=1;WITH_SDL2=1;WITH_DISCORD_PRESENCE=1;WITH_CHEEVOS=1;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\tinyxml2\include;$(SolutionDir)dep\discord-rpc\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\tinyxml2\include;$(SolutionDir)dep\discord-rpc\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)dep\rcheevos\include;$(SolutionDir)dep\rapidjson\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ConformanceMode>true</ConformanceMode>
@@ -361,7 +370,6 @@
     </Link>
     <Lib />
     <Lib>
-      <AdditionalDependencies>SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)\dep\msvc\lib32-debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
@@ -371,10 +379,10 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WITH_IMGUI=1;WITH_SDL2=1;WITH_DISCORD_PRESENCE=1;_ITERATOR_DEBUG_LEVEL=1;WIN32;_DEBUGFAST;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WITH_IMGUI=1;WITH_SDL2=1;WITH_DISCORD_PRESENCE=1;WITH_CHEEVOS=1;_ITERATOR_DEBUG_LEVEL=1;WIN32;_DEBUGFAST;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\tinyxml2\include;$(SolutionDir)dep\discord-rpc\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\tinyxml2\include;$(SolutionDir)dep\discord-rpc\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)dep\rcheevos\include;$(SolutionDir)dep\rapidjson\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <SupportJustMyCode>false</SupportJustMyCode>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -392,7 +400,6 @@
     </Link>
     <Lib />
     <Lib>
-      <AdditionalDependencies>SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)\dep\msvc\lib32-debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
@@ -402,10 +409,10 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WITH_IMGUI=1;WITH_SDL2=1;WITH_DISCORD_PRESENCE=1;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WITH_IMGUI=1;WITH_SDL2=1;WITH_DISCORD_PRESENCE=1;WITH_CHEEVOS=1;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\tinyxml2\include;$(SolutionDir)dep\discord-rpc\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\tinyxml2\include;$(SolutionDir)dep\discord-rpc\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)dep\rcheevos\include;$(SolutionDir)dep\rapidjson\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ConformanceMode>true</ConformanceMode>
@@ -420,7 +427,6 @@
     </Link>
     <Lib />
     <Lib>
-      <AdditionalDependencies>SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)\dep\msvc\lib64-debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
@@ -430,10 +436,10 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WITH_IMGUI=1;WITH_SDL2=1;WITH_DISCORD_PRESENCE=1;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WITH_IMGUI=1;WITH_SDL2=1;WITH_DISCORD_PRESENCE=1;WITH_CHEEVOS=1;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\tinyxml2\include;$(SolutionDir)dep\discord-rpc\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\tinyxml2\include;$(SolutionDir)dep\discord-rpc\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)dep\rcheevos\include;$(SolutionDir)dep\rapidjson\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ConformanceMode>true</ConformanceMode>
@@ -448,7 +454,6 @@
     </Link>
     <Lib />
     <Lib>
-      <AdditionalDependencies>SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)\dep\msvc\lib64-debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
@@ -458,10 +463,10 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WITH_IMGUI=1;WITH_SDL2=1;WITH_DISCORD_PRESENCE=1;_ITERATOR_DEBUG_LEVEL=1;WIN32;_DEBUGFAST;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WITH_IMGUI=1;WITH_SDL2=1;WITH_DISCORD_PRESENCE=1;WITH_CHEEVOS=1;_ITERATOR_DEBUG_LEVEL=1;WIN32;_DEBUGFAST;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\tinyxml2\include;$(SolutionDir)dep\discord-rpc\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\tinyxml2\include;$(SolutionDir)dep\discord-rpc\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)dep\rcheevos\include;$(SolutionDir)dep\rapidjson\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <SupportJustMyCode>false</SupportJustMyCode>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -479,7 +484,6 @@
     </Link>
     <Lib />
     <Lib>
-      <AdditionalDependencies>SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)\dep\msvc\lib64-debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
@@ -489,10 +493,10 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WITH_IMGUI=1;WITH_SDL2=1;WITH_DISCORD_PRESENCE=1;_ITERATOR_DEBUG_LEVEL=1;WIN32;_DEBUGFAST;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WITH_IMGUI=1;WITH_SDL2=1;WITH_DISCORD_PRESENCE=1;WITH_CHEEVOS=1;_ITERATOR_DEBUG_LEVEL=1;WIN32;_DEBUGFAST;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\tinyxml2\include;$(SolutionDir)dep\discord-rpc\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\tinyxml2\include;$(SolutionDir)dep\discord-rpc\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)dep\rcheevos\include;$(SolutionDir)dep\rapidjson\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <SupportJustMyCode>false</SupportJustMyCode>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -510,7 +514,6 @@
     </Link>
     <Lib />
     <Lib>
-      <AdditionalDependencies>SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)\dep\msvc\lib64-debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
@@ -522,9 +525,9 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WITH_IMGUI=1;WITH_SDL2=1;WITH_DISCORD_PRESENCE=1;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WITH_IMGUI=1;WITH_SDL2=1;WITH_DISCORD_PRESENCE=1;WITH_CHEEVOS=1;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\tinyxml2\include;$(SolutionDir)dep\discord-rpc\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\tinyxml2\include;$(SolutionDir)dep\discord-rpc\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)dep\rcheevos\include;$(SolutionDir)dep\rapidjson\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <WholeProgramOptimization>false</WholeProgramOptimization>
@@ -543,9 +546,7 @@
     <Lib />
     <Lib />
     <Lib />
-    <Lib>
-      <AdditionalDependencies>SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Lib>
+    <Lib />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseLTCG|Win32'">
     <ClCompile>
@@ -555,9 +556,9 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WITH_IMGUI=1;WITH_SDL2=1;WITH_DISCORD_PRESENCE=1;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WITH_IMGUI=1;WITH_SDL2=1;WITH_DISCORD_PRESENCE=1;WITH_CHEEVOS=1;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\tinyxml2\include;$(SolutionDir)dep\discord-rpc\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\tinyxml2\include;$(SolutionDir)dep\discord-rpc\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)dep\rcheevos\include;$(SolutionDir)dep\rapidjson\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OmitFramePointers>true</OmitFramePointers>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -575,7 +576,6 @@
     </Link>
     <Lib />
     <Lib>
-      <AdditionalDependencies>SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)\dep\msvc\lib32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
@@ -587,9 +587,9 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WITH_IMGUI=1;WITH_SDL2=1;WITH_DISCORD_PRESENCE=1;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WITH_IMGUI=1;WITH_SDL2=1;WITH_DISCORD_PRESENCE=1;WITH_CHEEVOS=1;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\tinyxml2\include;$(SolutionDir)dep\discord-rpc\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\tinyxml2\include;$(SolutionDir)dep\discord-rpc\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)dep\rcheevos\include;$(SolutionDir)dep\rapidjson\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <WholeProgramOptimization>false</WholeProgramOptimization>
@@ -608,9 +608,7 @@
     <Lib />
     <Lib />
     <Lib />
-    <Lib>
-      <AdditionalDependencies>SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Lib>
+    <Lib />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
     <ClCompile>
@@ -620,9 +618,9 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WITH_IMGUI=1;WITH_SDL2=1;WITH_DISCORD_PRESENCE=1;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WITH_IMGUI=1;WITH_SDL2=1;WITH_DISCORD_PRESENCE=1;WITH_CHEEVOS=1;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\tinyxml2\include;$(SolutionDir)dep\discord-rpc\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\tinyxml2\include;$(SolutionDir)dep\discord-rpc\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)dep\rcheevos\include;$(SolutionDir)dep\rapidjson\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <WholeProgramOptimization>false</WholeProgramOptimization>
@@ -641,9 +639,7 @@
     <Lib />
     <Lib />
     <Lib />
-    <Lib>
-      <AdditionalDependencies>SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Lib>
+    <Lib />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseLTCG|x64'">
     <ClCompile>
@@ -653,9 +649,9 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WITH_IMGUI=1;WITH_SDL2=1;WITH_DISCORD_PRESENCE=1;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WITH_IMGUI=1;WITH_SDL2=1;WITH_DISCORD_PRESENCE=1;WITH_CHEEVOS=1;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\tinyxml2\include;$(SolutionDir)dep\discord-rpc\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\tinyxml2\include;$(SolutionDir)dep\discord-rpc\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)dep\rcheevos\include;$(SolutionDir)dep\rapidjson\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OmitFramePointers>true</OmitFramePointers>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -673,7 +669,6 @@
     </Link>
     <Lib />
     <Lib>
-      <AdditionalDependencies>SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)\dep\msvc\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
@@ -685,9 +680,9 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WITH_IMGUI=1;WITH_SDL2=1;WITH_DISCORD_PRESENCE=1;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WITH_IMGUI=1;WITH_SDL2=1;WITH_DISCORD_PRESENCE=1;WITH_CHEEVOS=1;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\tinyxml2\include;$(SolutionDir)dep\discord-rpc\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\msvc\include\SDL;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\tinyxml2\include;$(SolutionDir)dep\discord-rpc\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)dep\rcheevos\include;$(SolutionDir)dep\rapidjson\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OmitFramePointers>true</OmitFramePointers>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -705,7 +700,6 @@
     </Link>
     <Lib />
     <Lib>
-      <AdditionalDependencies>SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)\dep\msvc\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>

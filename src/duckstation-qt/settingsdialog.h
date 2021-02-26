@@ -19,6 +19,7 @@ class DisplaySettingsWidget;
 class EnhancementSettingsWidget;
 class PostProcessingSettingsWidget;
 class AudioSettingsWidget;
+class AchievementSettingsWidget;
 class AdvancedSettingsWidget;
 
 class SettingsDialog final : public QDialog
@@ -40,6 +41,7 @@ public:
     EnhancementSettings,
     PostProcessingSettings,
     AudioSettings,
+    AchievementSettings,
     AdvancedSettings,
     Count
   };
@@ -58,6 +60,7 @@ public:
   DisplaySettingsWidget* getDisplaySettingsWidget() const { return m_display_settings; }
   EnhancementSettingsWidget* getEnhancementSettingsWidget() const { return m_enhancement_settings; }
   AudioSettingsWidget* getAudioSettingsWidget() const { return m_audio_settings; }
+  AchievementSettingsWidget* getAchievementSettingsWidget() const { return m_achievement_settings; }
   AdvancedSettingsWidget* getAdvancedSettingsWidget() const { return m_advanced_settings; }
   PostProcessingSettingsWidget* getPostProcessingSettingsWidget() { return m_post_processing_settings; }
 
@@ -89,6 +92,7 @@ private:
   EnhancementSettingsWidget* m_enhancement_settings = nullptr;
   PostProcessingSettingsWidget* m_post_processing_settings = nullptr;
   AudioSettingsWidget* m_audio_settings = nullptr;
+  AchievementSettingsWidget* m_achievement_settings = nullptr;
   AdvancedSettingsWidget* m_advanced_settings = nullptr;
 
   std::array<QString, static_cast<int>(Category::Count)> m_category_help_text;

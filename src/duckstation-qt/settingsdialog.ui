@@ -163,6 +163,15 @@
      </item>
      <item>
       <property name="text">
+       <string>Achievement Settings</string>
+      </property>
+      <property name="icon">
+       <iconset resource="resources/resources.qrc">
+        <normaloff>:/icons/trophy.png</normaloff>:/icons/trophy.png</iconset>
+      </property>
+     </item>
+     <item>
+      <property name="text">
        <string>Advanced Settings</string>
       </property>
       <property name="icon">

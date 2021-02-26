@@ -15,6 +15,10 @@
 #include "qthostinterface.h"
 #include <QtWidgets/QTextEdit>
 
+#ifdef WITH_CHEEVOS
+#include "achievementsettingswidget.h"
+#endif
+
 static constexpr char DEFAULT_SETTING_HELP_TEXT[] = "";
 
 SettingsDialog::SettingsDialog(QtHostInterface* host_interface, QWidget* parent /* = nullptr */)
@@ -39,6 +43,10 @@ SettingsDialog::SettingsDialog(QtHostInterface* host_interface, QWidget* parent 
   m_audio_settings = new AudioSettingsWidget(host_interface, m_ui.settingsContainer, this);
   m_advanced_settings = new AdvancedSettingsWidget(host_interface, m_ui.settingsContainer, this);
 
+#ifdef WITH_CHEEVOS
+  m_achievement_settings = new AchievementSettingsWidget(host_interface, m_ui.settingsContainer, this);
+#endif
+
   m_ui.settingsContainer->insertWidget(static_cast<int>(Category::GeneralSettings), m_general_settings);
   m_ui.settingsContainer->insertWidget(static_cast<int>(Category::BIOSSettings), m_bios_settings);
   m_ui.settingsContainer->insertWidget(static_cast<int>(Category::ConsoleSettings), m_console_settings);
@@ -51,6 +59,16 @@ SettingsDialog::SettingsDialog(QtHostInterface* host_interface, QWidget* parent 
   m_ui.settingsContainer->insertWidget(static_cast<int>(Category::EnhancementSettings), m_enhancement_settings);
   m_ui.settingsContainer->insertWidget(static_cast<int>(Category::PostProcessingSettings), m_post_processing_settings);
   m_ui.settingsContainer->insertWidget(static_cast<int>(Category::AudioSettings), m_audio_settings);
+
+#ifdef WITH_CHEEVOS
+  m_ui.settingsContainer->insertWidget(static_cast<int>(Category::AchievementSettings), m_achievement_settings);
+#else
+  QLabel* placeholder_label =
+    new QLabel(tr("This DuckStation build was not compiled with RetroAchievements support."), m_ui.settingsContainer);
+  placeholder_label->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+  m_ui.settingsContainer->insertWidget(static_cast<int>(Category::AchievementSettings), placeholder_label);
+#endif
+
   m_ui.settingsContainer->insertWidget(static_cast<int>(Category::AdvancedSettings), m_advanced_settings);
 
   m_ui.settingsCategory->setCurrentRow(0);

@@ -91,6 +91,26 @@ if(ENABLE_DISCORD_PRESENCE)
   target_link_libraries(frontend-common PRIVATE discord-rpc)
 endif()
 
+if(ENABLE_CHEEVOS)
+  target_sources(frontend-common PRIVATE
+    http_downloader.cpp
+    http_downloader.h
+  )
+  if(WIN32)
+    target_sources(frontend-common PRIVATE
+      http_downloader_winhttp.cpp
+      http_downloader_winhttp.h
+    )
+  endif()
+
+  target_sources(frontend-common PRIVATE
+    cheevos.cpp
+    cheevos.h
+  )
+  target_compile_definitions(frontend-common PUBLIC -DWITH_CHEEVOS=1)
+  target_link_libraries(frontend-common PRIVATE rcheevos rapidjson)
+endif()
+
 # Copy the provided data directory to the output directory.
 add_custom_command(TARGET frontend-common POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/data" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"

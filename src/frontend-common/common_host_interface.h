@@ -93,7 +93,6 @@ public:
     std::vector<u32> screenshot_data;
   };
 
-  using HostInterface::LoadState;
   using HostInterface::SaveState;
 
   /// Returns the name of the frontend.
@@ -127,10 +126,15 @@ public:
 
   virtual bool BootSystem(const SystemBootParameters& parameters) override;
   virtual void PowerOffSystem() override;
+  virtual void ResetSystem() override;
   virtual void DestroySystem() override;
 
   /// Returns the settings interface.
   ALWAYS_INLINE SettingsInterface* GetSettingsInterface() const { return m_settings_interface.get(); }
+  ALWAYS_INLINE std::lock_guard<std::recursive_mutex> GetSettingsLock()
+  {
+    return std::lock_guard<std::recursive_mutex>(m_settings_mutex);
+  }
 
   /// Returns the game list.
   ALWAYS_INLINE GameList* GetGameList() const { return m_game_list.get(); }
@@ -164,6 +168,9 @@ public:
 
   /// Saves the current input configuration to the specified profile name.
   bool SaveInputProfile(const char* profile_path);
+
+  /// Loads state from the specified filename.
+  bool LoadState(const char* filename);
 
   /// Loads the current emulation state from file. Specifying a slot of -1 loads the "resume" game state.
   bool LoadState(bool global, s32 slot);
@@ -272,6 +279,9 @@ public:
 
   /// Returns a pointer to the top-level window, needed by some controller interfaces.
   virtual void* GetTopLevelWindowHandle() const;
+
+  /// Called when achievements data is loaded.
+  virtual void OnAchievementsRefreshed();
 
   /// Opens a file in the DuckStation "package".
   /// This is the APK for Android builds, or the program directory for standalone builds.
@@ -408,8 +418,8 @@ protected:
 
   std::unique_ptr<HostDisplayTexture> m_logo_texture;
 
-  std::deque<OSDMessage> m_osd_active_messages;   // accessed only by GUI/OSD thread (no lock reqs)
-  std::deque<OSDMessage> m_osd_posted_messages;          // written to by multiple threads.
+  std::deque<OSDMessage> m_osd_active_messages; // accessed only by GUI/OSD thread (no lock reqs)
+  std::deque<OSDMessage> m_osd_posted_messages; // written to by multiple threads.
   std::mutex m_osd_messages_lock;
 
   bool m_fullscreen_ui_enabled = false;
@@ -457,6 +467,10 @@ private:
   void ShutdownDiscordPresence();
   void UpdateDiscordPresence();
   void PollDiscordPresence();
+#endif
+
+#ifdef WITH_CHEEVOS
+  void UpdateCheevosActive();
 #endif
 
   HotkeyInfoList m_hotkeys;

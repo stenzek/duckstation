@@ -1979,9 +1979,14 @@ u32 GetMediaPlaylistIndex()
     return std::numeric_limits<u32>::max();
 
   const std::string& media_path = g_cdrom.GetMediaFileName();
+  return GetMediaPlaylistIndexForPath(media_path);
+}
+
+u32 GetMediaPlaylistIndexForPath(const std::string& path)
+{
   for (u32 i = 0; i < static_cast<u32>(s_media_playlist.size()); i++)
   {
-    if (s_media_playlist[i] == media_path)
+    if (s_media_playlist[i] == path)
       return i;
   }
 

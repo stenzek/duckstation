@@ -52,6 +52,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="aboutdialog.cpp" />
+    <ClCompile Include="achievementsettingswidget.cpp" />
+    <ClCompile Include="achievementlogindialog.cpp" />
     <ClCompile Include="advancedsettingswidget.cpp" />
     <ClCompile Include="audiosettingswidget.cpp" />
     <ClCompile Include="autoupdaterdialog.cpp" />
@@ -114,6 +116,8 @@
     <QtMoc Include="autoupdaterdialog.h" />
     <QtMoc Include="debuggermodels.h" />
     <QtMoc Include="debuggerwindow.h" />
+    <QtMoc Include="achievementsettingswidget.h" />
+    <QtMoc Include="achievementlogindialog.h" />
     <ClInclude Include="inputbindingmonitor.h" />
     <QtMoc Include="memoryviewwidget.h" />
     <ClInclude Include="resource.h" />
@@ -216,6 +220,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(IntDir)moc_aboutdialog.cpp" />
+    <ClCompile Include="$(IntDir)moc_achievementlogindialog.cpp" />
+    <ClCompile Include="$(IntDir)moc_achievementsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_audiosettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_autoupdaterdialog.cpp" />
     <ClCompile Include="$(IntDir)moc_advancedsettingswidget.cpp" />
@@ -316,6 +322,12 @@
     </QtTs>
   </ItemGroup>
   <ItemGroup>
+    <QtUi Include="achievementsettingswidget.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="achievementlogindialog.ui">
+      <FileType>Document</FileType>
+    </QtUi>
     <None Include="debuggerwindow.ui" />
   </ItemGroup>
   <Target Name="CopyCommonDataFiles" AfterTargets="Build" Inputs="@(CommonDataFiles)" Outputs="@(CommonDataFiles -> '$(BinaryOutputDir)%(RecursiveDir)%(Filename)%(Extension)')">
@@ -532,7 +544,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WITH_DISCORD_PRESENCE=1;WITH_SDL2=1;WITH_IMGUI=1;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WITH_DISCORD_PRESENCE=1;WITH_CHEEVOS=1;WITH_SDL2=1;WITH_IMGUI=1;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\Include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\minizip\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;$(SolutionDir)dep\msvc\qt5-x86\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -554,7 +566,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WITH_DISCORD_PRESENCE=1;WITH_SDL2=1;WITH_IMGUI=1;WITH_RECOMPILER=1;WITH_MMAP_FASTMEM=1;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WITH_DISCORD_PRESENCE=1;WITH_CHEEVOS=1;WITH_SDL2=1;WITH_IMGUI=1;WITH_RECOMPILER=1;WITH_MMAP_FASTMEM=1;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\Include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\minizip\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;$(SolutionDir)dep\msvc\qt5-x64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -576,7 +588,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WITH_DISCORD_PRESENCE=1;WITH_SDL2=1;WITH_IMGUI=1;WITH_RECOMPILER=1;WITH_MMAP_FASTMEM=1;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WITH_DISCORD_PRESENCE=1;WITH_CHEEVOS=1;WITH_SDL2=1;WITH_IMGUI=1;WITH_RECOMPILER=1;WITH_MMAP_FASTMEM=1;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\Include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\minizip\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;$(SolutionDir)dep\msvc\qt5-x64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -598,7 +610,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WITH_DISCORD_PRESENCE=1;WITH_SDL2=1;WITH_IMGUI=1;_ITERATOR_DEBUG_LEVEL=1;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUGFAST;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WITH_DISCORD_PRESENCE=1;WITH_CHEEVOS=1;WITH_SDL2=1;WITH_IMGUI=1;_ITERATOR_DEBUG_LEVEL=1;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUGFAST;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\Include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\minizip\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;$(SolutionDir)dep\msvc\qt5-x86\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -622,7 +634,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WITH_DISCORD_PRESENCE=1;WITH_SDL2=1;WITH_IMGUI=1;WITH_RECOMPILER=1;WITH_MMAP_FASTMEM=1;_ITERATOR_DEBUG_LEVEL=1;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUGFAST;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WITH_DISCORD_PRESENCE=1;WITH_CHEEVOS=1;WITH_SDL2=1;WITH_IMGUI=1;WITH_RECOMPILER=1;WITH_MMAP_FASTMEM=1;_ITERATOR_DEBUG_LEVEL=1;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUGFAST;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\Include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\minizip\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;$(SolutionDir)dep\msvc\qt5-x64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -646,7 +658,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WITH_DISCORD_PRESENCE=1;WITH_SDL2=1;WITH_IMGUI=1;WITH_RECOMPILER=1;WITH_MMAP_FASTMEM=1;_ITERATOR_DEBUG_LEVEL=1;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUGFAST;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WITH_DISCORD_PRESENCE=1;WITH_CHEEVOS=1;WITH_SDL2=1;WITH_IMGUI=1;WITH_RECOMPILER=1;WITH_MMAP_FASTMEM=1;_ITERATOR_DEBUG_LEVEL=1;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUGFAST;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\Include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\minizip\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;$(SolutionDir)dep\msvc\qt5-x64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -671,7 +683,7 @@
       </PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WITH_DISCORD_PRESENCE=1;WITH_SDL2=1;WITH_IMGUI=1;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WITH_DISCORD_PRESENCE=1;WITH_CHEEVOS=1;WITH_SDL2=1;WITH_IMGUI=1;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\Include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\minizip\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;$(SolutionDir)dep\msvc\qt5-x86\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <WholeProgramOptimization>false</WholeProgramOptimization>
@@ -695,7 +707,7 @@
       </PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WITH_DISCORD_PRESENCE=1;WITH_SDL2=1;WITH_IMGUI=1;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WITH_DISCORD_PRESENCE=1;WITH_CHEEVOS=1;WITH_SDL2=1;WITH_IMGUI=1;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\Include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\minizip\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;$(SolutionDir)dep\msvc\qt5-x86\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -720,7 +732,7 @@
       </PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WITH_DISCORD_PRESENCE=1;WITH_SDL2=1;WITH_IMGUI=1;WITH_RECOMPILER=1;WITH_MMAP_FASTMEM=1;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WITH_DISCORD_PRESENCE=1;WITH_CHEEVOS=1;WITH_SDL2=1;WITH_IMGUI=1;WITH_RECOMPILER=1;WITH_MMAP_FASTMEM=1;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\Include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\minizip\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;$(SolutionDir)dep\msvc\qt5-x64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <WholeProgramOptimization>false</WholeProgramOptimization>
@@ -744,7 +756,7 @@
       </PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WITH_DISCORD_PRESENCE=1;WITH_SDL2=1;WITH_IMGUI=1;WITH_RECOMPILER=1;WITH_MMAP_FASTMEM=1;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WITH_DISCORD_PRESENCE=1;WITH_CHEEVOS=1;WITH_SDL2=1;WITH_IMGUI=1;WITH_RECOMPILER=1;WITH_MMAP_FASTMEM=1;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\Include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\minizip\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;$(SolutionDir)dep\msvc\qt5-x64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <WholeProgramOptimization>false</WholeProgramOptimization>
@@ -768,7 +780,7 @@
       </PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WITH_DISCORD_PRESENCE=1;WITH_SDL2=1;WITH_IMGUI=1;WITH_RECOMPILER=1;WITH_MMAP_FASTMEM=1;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WITH_DISCORD_PRESENCE=1;WITH_CHEEVOS=1;WITH_SDL2=1;WITH_IMGUI=1;WITH_RECOMPILER=1;WITH_MMAP_FASTMEM=1;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\Include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\minizip\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;$(SolutionDir)dep\msvc\qt5-x64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -793,7 +805,7 @@
       </PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WITH_DISCORD_PRESENCE=1;WITH_SDL2=1;WITH_IMGUI=1;WITH_RECOMPILER=1;WITH_MMAP_FASTMEM=1;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WITH_DISCORD_PRESENCE=1;WITH_CHEEVOS=1;WITH_SDL2=1;WITH_IMGUI=1;WITH_RECOMPILER=1;WITH_MMAP_FASTMEM=1;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\Include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\minizip\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;$(SolutionDir)dep\msvc\qt5-x64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <WholeProgramOptimization>true</WholeProgramOptimization>

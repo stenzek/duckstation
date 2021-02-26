@@ -52,6 +52,8 @@
     <file>icons/edit-clear-16.png</file>
     <file>icons/edit-clear-16@2x.png</file>
     <file>icons/edit-find.png</file>
+    <file>icons/emblem-person-blue.png</file>
+    <file>icons/emblem-person-blue@2x.png</file>
     <file>icons/flag-eu.png</file>
     <file>icons/flag-eu@2x.png</file>
     <file>icons/flag-jp.png</file>
@@ -112,6 +114,8 @@
     <file>icons/system-search@2x.png</file>
     <file>icons/system-shutdown.png</file>
     <file>icons/system-shutdown@2x.png</file>
+    <file>icons/trophy.png</file>
+    <file>icons/trophy@2x.png</file>
     <file>icons/utilities-system-monitor.png</file>
     <file>icons/utilities-system-monitor@2x.png</file>
     <file>icons/video-display.png</file>
