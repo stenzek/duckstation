@@ -387,15 +387,11 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("BIOS", "PatchTTYEnable", bios_patch_tty_enable);
   si.SetBoolValue("BIOS", "PatchFastBoot", bios_patch_fast_boot);
 
-  if (controller_types[0] != ControllerType::None)
-    si.SetStringValue("Controller1", "Type", GetControllerTypeName(controller_types[0]));
-  else
-    si.DeleteValue("Controller1", "Type");
-
-  if (controller_types[1] != ControllerType::None)
-    si.SetStringValue("Controller2", "Type", GetControllerTypeName(controller_types[1]));
-  else
-    si.DeleteValue("Controller2", "Type");
+  for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
+  {
+    si.SetStringValue(TinyString::FromFormat("Controller%u", i + 1u), "Type",
+                      GetControllerTypeName(controller_types[i]));
+  }
 
   si.SetStringValue("MemoryCards", "Card1Type", GetMemoryCardTypeName(memory_card_types[0]));
   si.SetStringValue("MemoryCards", "Card1Path", memory_card_paths[0].c_str());
