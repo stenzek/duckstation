@@ -194,22 +194,12 @@ void NoGUIHostInterface::RequestExit()
   m_quit_request = true;
 }
 
-void NoGUIHostInterface::PollAndUpdate()
-{
-  CommonHostInterface::PollAndUpdate();
-
-  if (m_controller_interface)
-    m_controller_interface->PollEvents();
-}
-
 void NoGUIHostInterface::Run()
 {
   while (!m_quit_request)
   {
     RunCallbacks();
     PollAndUpdate();
-    if (m_fullscreen_ui_enabled)
-      FullscreenUI::SetImGuiNavInputs();
 
     ImGui::NewFrame();
 

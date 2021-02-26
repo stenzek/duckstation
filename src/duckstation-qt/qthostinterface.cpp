@@ -651,14 +651,6 @@ void* QtHostInterface::GetTopLevelWindowHandle() const
   return reinterpret_cast<void*>(m_main_window->winId());
 }
 
-void QtHostInterface::PollAndUpdate()
-{
-  CommonHostInterface::PollAndUpdate();
-
-  if (m_controller_interface)
-    m_controller_interface->PollEvents();
-}
-
 void QtHostInterface::RequestExit()
 {
   emit exitRequested();

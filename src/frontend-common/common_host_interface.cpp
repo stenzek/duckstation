@@ -470,6 +470,12 @@ void CommonHostInterface::OnAchievementsRefreshed()
 
 void CommonHostInterface::PollAndUpdate()
 {
+  if (m_controller_interface)
+    m_controller_interface->PollEvents();
+
+  if (m_fullscreen_ui_enabled)
+    FullscreenUI::SetImGuiNavInputs();
+
 #ifdef WITH_DISCORD_PRESENCE
   PollDiscordPresence();
 #endif

@@ -42,7 +42,6 @@ protected:
   void ReleaseHostDisplay() override;
 
   void RequestExit() override;
-  virtual void PollAndUpdate() override;
 
   virtual bool CreatePlatformWindow(bool fullscreen) = 0;
   virtual void DestroyPlatformWindow() = 0;
