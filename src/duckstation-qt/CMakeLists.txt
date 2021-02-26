@@ -103,6 +103,17 @@ set(SRCS
   settingsdialog.ui
 )
 
+if(WITH_CHEEVOS)
+  set(SRCS ${SRCS}
+    achievementlogindialog.cpp
+    achievementlogindialog.h
+    achievementlogindialog.ui
+    achievementsettingswidget.cpp
+    achievementsettingswidget.h
+    achievementsettingswidget.ui
+  )
+endif()
+
 set(TS_FILES
   translations/duckstation-qt_de.ts
   translations/duckstation-qt_es.ts

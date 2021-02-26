@@ -23,7 +23,7 @@ if(ENABLE_DISCORD_PRESENCE)
   add_subdirectory(discord-rpc)
 endif()
 
-if(ENABLE_RETROACHIEVEMENTS)
+if(ENABLE_CHEEVOS)
   add_subdirectory(rcheevos)
 endif()
 

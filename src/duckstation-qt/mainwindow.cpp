@@ -1006,6 +1006,8 @@ void MainWindow::connectSignals()
           [this]() { doSettings(SettingsDialog::Category::PostProcessingSettings); });
   connect(m_ui.actionAudioSettings, &QAction::triggered,
           [this]() { doSettings(SettingsDialog::Category::AudioSettings); });
+  connect(m_ui.actionAchievementSettings, &QAction::triggered,
+          [this]() { doSettings(SettingsDialog::Category::AchievementSettings); });
   connect(m_ui.actionAdvancedSettings, &QAction::triggered,
           [this]() { doSettings(SettingsDialog::Category::AdvancedSettings); });
   connect(m_ui.actionViewToolbar, &QAction::toggled, this, &MainWindow::onViewToolbarActionToggled);

@@ -18,7 +18,7 @@ enum class MainWindowType
   GameList,
   Settings,
   QuickMenu,
-  MoreQuickMenu
+  Achievements,
 };
 
 enum class SettingsPage
@@ -34,6 +34,7 @@ enum class SettingsPage
   DisplaySettings,
   EnhancementSettings,
   AudioSettings,
+  AchievementsSetings,
   AdvancedSettings,
   Count
 };

@@ -211,6 +211,9 @@ u32 GetMediaPlaylistCount();
 /// Returns the current image from the media/disc playlist.
 u32 GetMediaPlaylistIndex();
 
+/// Returns the index of the specified path in the playlist, or UINT32_MAX if it does not exist.
+u32 GetMediaPlaylistIndexForPath(const std::string& path);
+
 /// Returns the path to the specified playlist index.
 const std::string& GetMediaPlaylistPath(u32 index);
 

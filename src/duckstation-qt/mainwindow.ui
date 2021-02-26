@@ -128,6 +128,7 @@
     <addaction name="actionEnhancementSettings"/>
     <addaction name="actionPostProcessingSettings"/>
     <addaction name="actionAudioSettings"/>
+    <addaction name="actionAchievementSettings"/>
     <addaction name="actionAdvancedSettings"/>
     <addaction name="separator"/>
     <addaction name="actionAddGameDirectory"/>
@@ -501,6 +502,15 @@
    </property>
    <property name="text">
     <string>Audio Settings...</string>
+   </property>
+  </action>
+  <action name="actionAchievementSettings">
+   <property name="icon">
+    <iconset resource="resources/resources.qrc">
+     <normaloff>:/icons/trophy.png</normaloff>:/icons/trophy.png</iconset>
+   </property>
+   <property name="text">
+    <string>Achievement Settings...</string>
    </property>
   </action>
   <action name="actionGameListSettings">

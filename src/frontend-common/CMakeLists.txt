@@ -91,7 +91,7 @@ if(ENABLE_DISCORD_PRESENCE)
   target_link_libraries(frontend-common PRIVATE discord-rpc)
 endif()
 
-if(ENABLE_RETROACHIEVEMENTS)
+if(ENABLE_CHEEVOS)
   target_sources(frontend-common PRIVATE
     http_downloader.cpp
     http_downloader.h
@@ -102,6 +102,13 @@ if(ENABLE_RETROACHIEVEMENTS)
       http_downloader_winhttp.h
     )
   endif()
+
+  target_sources(frontend-common PRIVATE
+    cheevos.cpp
+    cheevos.h
+  )
+  target_compile_definitions(frontend-common PUBLIC -DWITH_CHEEVOS=1)
+  target_link_libraries(frontend-common PRIVATE rcheevos rapidjson)
 endif()
 
 # Copy the provided data directory to the output directory.
