@@ -204,6 +204,9 @@ public class TouchscreenControllerView extends FrameLayout {
             linkAxisToButtons(mMainView, R.id.controller_axis_left, "LeftAxis", "");
 
         linkAxis(mMainView, R.id.controller_axis_right, "RightAxis", "Right");
+
+        linkHotkeyButton(mMainView, R.id.controller_button_fast_forward, TouchscreenControllerButtonView.Hotkey.FAST_FORWARD);
+
         reloadButtonTranslation();
         requestLayout();
     }
@@ -260,6 +263,15 @@ public class TouchscreenControllerView extends FrameLayout {
         axisView.setControllerButtons(mControllerIndex, leftCode, rightCode, upCode, downCode);
         mAxisViews.add(axisView);
         return true;
+    }
+
+    private void linkHotkeyButton(View view, int id, TouchscreenControllerButtonView.Hotkey hotkey) {
+        TouchscreenControllerButtonView buttonView = (TouchscreenControllerButtonView) view.findViewById(id);
+        if (buttonView == null)
+            return;
+
+        buttonView.setHotkey(hotkey);
+        mButtonViews.add(buttonView);
     }
 
     private int dpToPixels(float dp) {

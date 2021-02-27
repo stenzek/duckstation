@@ -107,7 +107,7 @@
         android:id="@+id/controller_button_start"
         android:layout_width="40dp"
         android:layout_height="25dp"
-        android:layout_marginStart="80dp"
+        android:layout_marginStart="70dp"
         android:layout_marginBottom="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -120,7 +120,7 @@
         android:id="@+id/controller_button_select"
         android:layout_width="40dp"
         android:layout_height="25dp"
-        android:layout_marginEnd="50dp"
+        android:layout_marginEnd="70dp"
         android:layout_marginBottom="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -172,4 +172,16 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:pressedDrawable="@drawable/ic_controller_circle_button_pressed"
         app:unpressedDrawable="@drawable/ic_controller_circle_button" />
+
+    <com.github.stenzek.duckstation.TouchscreenControllerButtonView
+        android:id="@+id/controller_button_fast_forward"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:layout_marginBottom="50dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:pressedDrawable="@drawable/ic_controller_fast_forward_pressed"
+        app:unpressedDrawable="@drawable/ic_controller_fast_forward" />
 </androidx.constraintlayout.widget.ConstraintLayout>
