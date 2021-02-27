@@ -213,7 +213,7 @@
             app:key="BIOS/PatchTTYEnable"
             app:title="@string/settings_console_tty_output"
             app:defaultValue="false"
-            app:summary="Logs debug messages printed by games."
+            app:summary="@string/settings_summary_console_tty_output"
             app:iconSpaceReserved="false" />
     </PreferenceCategory>
 

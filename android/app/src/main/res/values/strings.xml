@@ -226,4 +226,5 @@
     <string name="dialog_touchscreen_controller_opacity">Touchscreen Controller Opacity</string>
     <string name="dialog_touchscreen_controller_buttons">Touchscreen Controller Buttons</string>
     <string name="dialog_touchscreen_controller_settings">Touchscreen Controller Settings</string>
+    <string name="settings_summary_console_tty_output">Logs debug messages printed by games.</string>
 </resources>
