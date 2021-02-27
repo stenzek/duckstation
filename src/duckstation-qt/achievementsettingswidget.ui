@@ -109,7 +109,7 @@
          <bool>false</bool>
         </property>
         <property name="text">
-         <string>Enable Hardcode Mode</string>
+         <string>Enable Hardcore Mode</string>
         </property>
        </widget>
       </item>

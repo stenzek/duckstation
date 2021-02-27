@@ -261,7 +261,7 @@ void SaveStateSelectorUI::Draw()
         }
         else if (entry.game_code.empty())
         {
-          ImGui::Text(m_host_interface->TranslateString("SaveStateSelectorUI", "Gane Slot %d"), entry.slot);
+          ImGui::Text(m_host_interface->TranslateString("SaveStateSelectorUI", "Game Slot %d"), entry.slot);
         }
         else
         {
