@@ -72,7 +72,7 @@
     <SwitchPreferenceCompat
         app:key="Main/AutoLoadCheats"
         app:title="@string/settings_load_patch_codes"
-        app:defaultValue="false"
+        app:defaultValue="true"
         app:summary="@string/settings_summary_load_patch_codes"
         app:iconSpaceReserved="false" />
     <SwitchPreferenceCompat

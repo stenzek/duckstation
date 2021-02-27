@@ -32,7 +32,7 @@ GeneralSettingsWidget::GeneralSettingsWidget(QtHostInterface* host_interface, QW
                                                "LoadDevicesFromSaveStates", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.applyGameSettings, "Main", "ApplyGameSettings",
                                                true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.autoLoadCheats, "Main", "AutoLoadCheats", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.autoLoadCheats, "Main", "AutoLoadCheats", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.enableFullscreenUI, "Main", "EnableFullscreenUI",
                                                false);
 
