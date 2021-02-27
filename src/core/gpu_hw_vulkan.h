@@ -49,7 +49,8 @@ private:
   void DestroyResources();
 
   ALWAYS_INLINE bool InRenderPass() const { return (m_current_render_pass != VK_NULL_HANDLE); }
-  void BeginRenderPass(VkRenderPass render_pass, VkFramebuffer framebuffer, u32 x, u32 y, u32 width, u32 height);
+  void BeginRenderPass(VkRenderPass render_pass, VkFramebuffer framebuffer, u32 x, u32 y, u32 width, u32 height,
+                       const VkClearValue* clear_value = nullptr);
   void BeginVRAMRenderPass();
   void EndRenderPass();
 

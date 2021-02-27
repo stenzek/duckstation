@@ -372,7 +372,7 @@ void GPU_HW_Vulkan::DestroyResources()
 }
 
 void GPU_HW_Vulkan::BeginRenderPass(VkRenderPass render_pass, VkFramebuffer framebuffer, u32 x, u32 y, u32 width,
-                                    u32 height)
+                                    u32 height, const VkClearValue* clear_value /* = nullptr */)
 {
   DebugAssert(m_current_render_pass == VK_NULL_HANDLE);
 
@@ -381,8 +381,8 @@ void GPU_HW_Vulkan::BeginRenderPass(VkRenderPass render_pass, VkFramebuffer fram
                                     render_pass,
                                     framebuffer,
                                     {{static_cast<s32>(x), static_cast<s32>(y)}, {width, height}},
-                                    0u,
-                                    nullptr};
+                                    (clear_value ? 1u : 0u),
+                                    clear_value};
   vkCmdBeginRenderPass(g_vulkan_context->GetCurrentCommandBuffer(), &bi, VK_SUBPASS_CONTENTS_INLINE);
   m_current_render_pass = render_pass;
 }
@@ -620,10 +620,9 @@ bool GPU_HW_Vulkan::CreateFramebuffer()
     m_downsample_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
     m_downsample_render_pass = g_vulkan_context->GetRenderPass(m_downsample_texture.GetFormat(), VK_FORMAT_UNDEFINED,
-                                                               VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_DONT_CARE);
-    m_downsample_weight_render_pass =
-      g_vulkan_context->GetRenderPass(m_downsample_weight_texture.GetFormat(), VK_FORMAT_UNDEFINED,
-                                      VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_DONT_CARE);
+                                                               VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR);
+    m_downsample_weight_render_pass = g_vulkan_context->GetRenderPass(
+      m_downsample_weight_texture.GetFormat(), VK_FORMAT_UNDEFINED, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR);
     if (m_downsample_render_pass == VK_NULL_HANDLE || m_downsample_weight_render_pass == VK_NULL_HANDLE)
       return false;
 
@@ -693,7 +692,7 @@ bool GPU_HW_Vulkan::CreateFramebuffer()
     }
 
     m_downsample_render_pass = g_vulkan_context->GetRenderPass(m_downsample_texture.GetFormat(), VK_FORMAT_UNDEFINED,
-                                                               VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_DONT_CARE);
+                                                               VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR);
 
     m_downsample_mip_views.resize(1);
     m_downsample_mip_views[0].framebuffer = m_downsample_texture.CreateFramebuffer(m_downsample_render_pass);
@@ -1789,8 +1788,9 @@ void GPU_HW_Vulkan::DownsampleFramebufferBoxFilter(Vulkan::Texture& source, u32 
   const u32 ds_width = width / m_resolution_scale;
   const u32 ds_height = height / m_resolution_scale;
 
-  BeginRenderPass(m_downsample_render_pass, m_downsample_mip_views[0].framebuffer, ds_left, ds_top, ds_width,
-                  ds_height);
+  static constexpr VkClearValue clear_color = {};
+  BeginRenderPass(m_downsample_render_pass, m_downsample_mip_views[0].framebuffer, ds_left, ds_top, ds_width, ds_height,
+                  &clear_color);
   Vulkan::Util::SetViewportAndScissor(cmdbuf, ds_left, ds_top, ds_width, ds_height);
   vkCmdBindPipeline(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, m_downsample_first_pass_pipeline);
   vkCmdBindDescriptorSets(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, m_single_sampler_pipeline_layout, 0, 1, &ds, 0,
@@ -1832,8 +1832,9 @@ void GPU_HW_Vulkan::DownsampleFramebufferAdaptive(Vulkan::Texture& source, u32 l
     m_downsample_texture.TransitionSubresourcesToLayout(
       cmdbuf, level, 1, 0, 1, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
-    BeginRenderPass(m_downsample_render_pass, m_downsample_mip_views[level].framebuffer, left >> level, top >> level,
-                    width >> level, height >> level);
+    static constexpr VkClearValue clear_color = {};
+    BeginRenderPass(m_downsample_render_pass, m_downsample_mip_views[level].framebuffer, 0, 0,
+                    m_downsample_texture.GetMipWidth(level), m_downsample_texture.GetMipHeight(level), &clear_color);
     Vulkan::Util::SetViewportAndScissor(cmdbuf, left >> level, top >> level, width >> level, height >> level);
     vkCmdBindPipeline(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS,
                       (level == 1) ? m_downsample_first_pass_pipeline : m_downsample_mid_pass_pipeline);
@@ -1859,8 +1860,10 @@ void GPU_HW_Vulkan::DownsampleFramebufferAdaptive(Vulkan::Texture& source, u32 l
 
     m_downsample_weight_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
-    BeginRenderPass(m_downsample_weight_render_pass, m_downsample_weight_framebuffer, left >> last_level,
-                    top >> last_level, width >> last_level, height >> last_level);
+    static constexpr VkClearValue clear_color = {};
+    BeginRenderPass(m_downsample_weight_render_pass, m_downsample_weight_framebuffer, 0, 0,
+                    m_downsample_texture.GetMipWidth(last_level), m_downsample_texture.GetMipHeight(last_level),
+                    &clear_color);
     Vulkan::Util::SetViewportAndScissor(cmdbuf, left >> last_level, top >> last_level, width >> last_level,
                                         height >> last_level);
     vkCmdBindPipeline(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, m_downsample_blur_pass_pipeline);

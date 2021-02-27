@@ -1149,7 +1149,10 @@ void GPU_HW_D3D11::DownsampleFramebufferAdaptive(D3D11::Texture& source, u32 lef
   const u32 levels = m_downsample_texture.GetLevels();
   for (u32 level = 1; level < levels; level++)
   {
+    static constexpr float clear_color[4] = {};
+
     SetViewportAndScissor(left >> level, top >> level, width >> level, height >> level);
+    m_context->ClearRenderTargetView(m_downsample_mip_views[level].second.Get(), clear_color);
     m_context->OMSetRenderTargets(1, m_downsample_mip_views[level].second.GetAddressOf(), nullptr);
     m_context->PSSetShaderResources(0, 1, m_downsample_mip_views[level - 1].first.GetAddressOf());
 
@@ -1164,8 +1167,10 @@ void GPU_HW_D3D11::DownsampleFramebufferAdaptive(D3D11::Texture& source, u32 lef
   // blur pass at lowest level
   {
     const u32 last_level = levels - 1;
+    static constexpr float clear_color[4] = {};
 
     SetViewportAndScissor(left >> last_level, top >> last_level, width >> last_level, height >> last_level);
+    m_context->ClearRenderTargetView(m_downsample_weight_texture.GetD3DRTV(), clear_color);
     m_context->OMSetRenderTargets(1, m_downsample_weight_texture.GetD3DRTVArray(), nullptr);
     m_context->PSSetShaderResources(0, 1, m_downsample_mip_views.back().first.GetAddressOf());
     m_context->PSSetShader(m_downsample_blur_pass_pixel_shader.Get(), nullptr, 0);
@@ -1208,7 +1213,9 @@ void GPU_HW_D3D11::DownsampleFramebufferBoxFilter(D3D11::Texture& source, u32 le
   const u32 ds_top = top / m_resolution_scale;
   const u32 ds_width = width / m_resolution_scale;
   const u32 ds_height = height / m_resolution_scale;
+  static constexpr float clear_color[4] = {};
 
+  m_context->ClearRenderTargetView(m_downsample_texture.GetD3DRTV(), clear_color);
   m_context->OMSetDepthStencilState(m_depth_disabled_state.Get(), 0);
   m_context->OMSetRenderTargets(1, m_downsample_texture.GetD3DRTVArray(), nullptr);
   m_context->OMSetBlendState(m_blend_disabled_state.Get(), nullptr, 0xFFFFFFFFu);

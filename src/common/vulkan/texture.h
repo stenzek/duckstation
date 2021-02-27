@@ -6,6 +6,7 @@
 #pragma once
 #include "../types.h"
 #include "vulkan_loader.h"
+#include <functional>
 #include <memory>
 
 namespace Vulkan {
@@ -29,6 +30,8 @@ public:
   ALWAYS_INLINE u32 GetHeight() const { return m_height; }
   ALWAYS_INLINE u32 GetLevels() const { return m_levels; }
   ALWAYS_INLINE u32 GetLayers() const { return m_layers; }
+  ALWAYS_INLINE u32 GetMipWidth(u32 level) const { return std::max<u32>(m_width >> level, 1u); }
+  ALWAYS_INLINE u32 GetMipHeight(u32 level) const { return std::max<u32>(m_height >> level, 1u); }
   ALWAYS_INLINE VkFormat GetFormat() const { return m_format; }
   ALWAYS_INLINE VkSampleCountFlagBits GetSamples() const { return m_samples; }
   ALWAYS_INLINE VkImageLayout GetLayout() const { return m_layout; }
