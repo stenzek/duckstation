@@ -50,5 +50,5 @@ private:
   void onLoadProfileClicked();
   void onSaveProfileClicked();
 
-  std::array<PortSettingsUI, 2> m_port_ui = {};
+  std::array<PortSettingsUI, NUM_CONTROLLER_AND_CARD_PORTS> m_port_ui = {};
 };

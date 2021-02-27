@@ -136,6 +136,7 @@
     <ClCompile Include="mdec.cpp" />
     <ClCompile Include="memory_card.cpp" />
     <ClCompile Include="memory_card_image.cpp" />
+    <ClCompile Include="multitap.cpp" />
     <ClCompile Include="namco_guncon.cpp" />
     <ClCompile Include="negcon.cpp" />
     <ClCompile Include="pad.cpp" />
@@ -213,6 +214,7 @@
     <ClInclude Include="mdec.h" />
     <ClInclude Include="memory_card.h" />
     <ClInclude Include="memory_card_image.h" />
+    <ClInclude Include="multitap.h" />
     <ClInclude Include="namco_guncon.h" />
     <ClInclude Include="negcon.h" />
     <ClInclude Include="pad.h" />

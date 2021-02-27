@@ -187,6 +187,7 @@ void UpdateControllers();
 void UpdateControllerSettings();
 void ResetControllers();
 void UpdateMemoryCards();
+void UpdateMultitaps();
 
 /// Dumps RAM to a file.
 bool DumpRAM(const char* filename);

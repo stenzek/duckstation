@@ -580,13 +580,21 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("BIOS", "PatchFastBoot", false);
 
   si.SetStringValue("Controller1", "Type", Settings::GetControllerTypeName(Settings::DEFAULT_CONTROLLER_1_TYPE));
-  si.SetStringValue("Controller2", "Type", Settings::GetControllerTypeName(Settings::DEFAULT_CONTROLLER_2_TYPE));
+
+  for (u32 i = 1; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
+  {
+    si.SetStringValue(TinyString::FromFormat("Controller%u", i + 1u), "Type",
+                      Settings::GetControllerTypeName(Settings::DEFAULT_CONTROLLER_2_TYPE));
+  }
 
   si.SetStringValue("MemoryCards", "Card1Type", Settings::GetMemoryCardTypeName(Settings::DEFAULT_MEMORY_CARD_1_TYPE));
   si.SetStringValue("MemoryCards", "Card1Path", "memcards" FS_OSPATH_SEPARATOR_STR "shared_card_1.mcd");
   si.SetStringValue("MemoryCards", "Card2Type", Settings::GetMemoryCardTypeName(Settings::DEFAULT_MEMORY_CARD_2_TYPE));
   si.SetStringValue("MemoryCards", "Card2Path", "memcards" FS_OSPATH_SEPARATOR_STR "shared_card_2.mcd");
   si.SetBoolValue("MemoryCards", "UsePlaylistTitle", true);
+
+  si.SetStringValue("ControllerPorts", "MultitapMode",
+                    Settings::GetMultitapModeName(Settings::DEFAULT_MULTITAP_MODE));
 
   si.SetStringValue("Logging", "LogLevel", Settings::GetLogLevelName(Settings::DEFAULT_LOG_LEVEL));
   si.SetStringValue("Logging", "LogFilter", "");
@@ -872,6 +880,9 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
       UpdateSoftwareCursor();
     }
   }
+
+  if (g_settings.multitap_mode != old_settings.multitap_mode)
+    System::UpdateMultitaps();
 
   if (m_display && g_settings.display_linear_filtering != old_settings.display_linear_filtering)
     m_display->SetDisplayLinearFiltering(g_settings.display_linear_filtering);

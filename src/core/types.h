@@ -143,9 +143,18 @@ enum class MemoryCardType
   Count
 };
 
+enum class MultitapMode
+{
+  Disabled,
+  Port1Only,
+  BothPorts,
+  Count
+};
+
 enum : u32
 {
-  NUM_CONTROLLER_AND_CARD_PORTS = 2
+  NUM_CONTROLLER_AND_CARD_PORTS = 8,
+  NUM_MULTITAPS = 2
 };
 
 enum class CPUFastmemMode

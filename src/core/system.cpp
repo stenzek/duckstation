@@ -24,6 +24,7 @@
 #include "libcrypt_game_codes.h"
 #include "mdec.h"
 #include "memory_card.h"
+#include "multitap.h"
 #include "pad.h"
 #include "psf_loader.h"
 #include "save_state_version.h"
@@ -828,6 +829,7 @@ bool Boot(const SystemBootParameters& params)
   Bus::SetBIOS(*bios_image);
   UpdateControllers();
   UpdateMemoryCards();
+  UpdateMultitaps();
   Reset();
 
   // Enable tty by patching bios.
@@ -1223,6 +1225,7 @@ bool DoLoadState(ByteStream* state, bool force_software_renderer, bool update_di
 
     UpdateControllers();
     UpdateMemoryCards();
+    UpdateMultitaps();
   }
   else
   {
@@ -1835,6 +1838,34 @@ void UpdateMemoryCards()
       g_pad.SetMemoryCard(i, std::move(card));
   }
 }
+
+void UpdateMultitaps()
+{
+  switch (g_settings.multitap_mode)
+  {
+    case MultitapMode::Disabled:
+    {
+      g_pad.SetMultitapEnable(0, false);
+      g_pad.SetMultitapEnable(1, false);
+    }
+    break;
+
+    case MultitapMode::Port1Only:
+    {
+      g_pad.SetMultitapEnable(0, true);
+      g_pad.SetMultitapEnable(1, false);
+    }
+    break;
+
+    case MultitapMode::BothPorts:
+    {
+      g_pad.SetMultitapEnable(0, true);
+      g_pad.SetMultitapEnable(1, true);
+    }
+    break;
+  }
+}
+
 
 bool DumpRAM(const char* filename)
 {

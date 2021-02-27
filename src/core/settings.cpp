@@ -1,4 +1,5 @@
 #include "settings.h"
+#include "common/assert.h"
 #include "common/file_system.h"
 #include "common/make_array.h"
 #include "common/string_util.h"
@@ -75,6 +76,31 @@ bool Settings::HasAnyPerGameMemoryCards() const
   return std::any_of(memory_card_types.begin(), memory_card_types.end(), [](MemoryCardType t) {
     return (t == MemoryCardType::PerGame || t == MemoryCardType::PerGameTitle);
   });
+}
+
+bool Settings::IsMultitapEnabledOnPort(u32 port) const
+{
+  if (port < NUM_MULTITAPS)
+  {
+    switch (multitap_mode)
+    {
+      case MultitapMode::Disabled:
+        return false;
+        break;
+
+      case MultitapMode::Port1Only:
+        return port == 0u;
+        break;
+
+      case MultitapMode::BothPorts:
+        return true;
+        break;
+
+        DefaultCaseIsUnreachable();
+    }
+  }
+
+  return false;
 }
 
 void Settings::CPUOverclockPercentToFraction(u32 percent, u32* numerator, u32* denominator)
@@ -231,11 +257,15 @@ void Settings::Load(SettingsInterface& si)
     ParseControllerTypeName(
       si.GetStringValue("Controller1", "Type", GetControllerTypeName(DEFAULT_CONTROLLER_1_TYPE)).c_str())
       .value_or(DEFAULT_CONTROLLER_1_TYPE);
-  controller_types[1] =
-    ParseControllerTypeName(
-      si.GetStringValue("Controller2", "Type", GetControllerTypeName(DEFAULT_CONTROLLER_2_TYPE)).c_str())
-      .value_or(DEFAULT_CONTROLLER_2_TYPE);
-  controller_disable_analog_mode_forcing = false;
+
+  for (u32 i = 1; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
+  {
+    controller_types[i] =
+      ParseControllerTypeName(si.GetStringValue(TinyString::FromFormat("Controller%u", i + 1u), "Type",
+                                                GetControllerTypeName(DEFAULT_CONTROLLER_2_TYPE))
+                                .c_str())
+        .value_or(DEFAULT_CONTROLLER_2_TYPE);
+  }
 
   memory_card_types[0] =
     ParseMemoryCardTypeName(
@@ -250,6 +280,11 @@ void Settings::Load(SettingsInterface& si)
   memory_card_paths[1] =
     si.GetStringValue("MemoryCards", "Card2Path", "memcards" FS_OSPATH_SEPARATOR_STR "shared_card_2.mcd");
   memory_card_use_playlist_title = si.GetBoolValue("MemoryCards", "UsePlaylistTitle", true);
+
+  multitap_mode =
+    ParseMultitapModeName(
+      si.GetStringValue("ControllerPorts", "MultitapMode", GetMultitapModeName(DEFAULT_MULTITAP_MODE)).c_str())
+      .value_or(DEFAULT_MULTITAP_MODE);
 
   log_level = ParseLogLevelName(si.GetStringValue("Logging", "LogLevel", GetLogLevelName(DEFAULT_LOG_LEVEL)).c_str())
                 .value_or(DEFAULT_LOG_LEVEL);
@@ -398,6 +433,8 @@ void Settings::Save(SettingsInterface& si) const
   si.SetStringValue("MemoryCards", "Card2Type", GetMemoryCardTypeName(memory_card_types[1]));
   si.SetStringValue("MemoryCards", "Card2Path", memory_card_paths[1].c_str());
   si.SetBoolValue("MemoryCards", "UsePlaylistTitle", memory_card_use_playlist_title);
+
+  si.SetStringValue("ControllerPorts", "MultitapMode", GetMultitapModeName(multitap_mode));
 
   si.SetStringValue("Logging", "LogLevel", GetLogLevelName(log_level));
   si.SetStringValue("Logging", "LogFilter", log_filter.c_str());
@@ -839,4 +876,33 @@ const char* Settings::GetMemoryCardTypeName(MemoryCardType type)
 const char* Settings::GetMemoryCardTypeDisplayName(MemoryCardType type)
 {
   return s_memory_card_type_display_names[static_cast<int>(type)];
+}
+
+static std::array<const char*, 3> s_multitap_enable_mode_names = {{"Disabled", "Port1Only", "BothPorts"}};
+static std::array<const char*, 3> s_multitap_enable_mode_display_names = {
+  {TRANSLATABLE("MultitapMode", "Disabled"), TRANSLATABLE("MultitapMode", "Enable on Port 1 only"),
+   TRANSLATABLE("MultitapMode", "Enable on Ports 1 and 2")}};
+
+std::optional<MultitapMode> Settings::ParseMultitapModeName(const char* str)
+{
+  u32 index = 0;
+  for (const char* name : s_multitap_enable_mode_names)
+  {
+    if (StringUtil::Strcasecmp(name, str) == 0)
+      return static_cast<MultitapMode>(index);
+
+    index++;
+  }
+
+  return std::nullopt;
+}
+
+const char* Settings::GetMultitapModeName(MultitapMode mode)
+{
+  return s_multitap_enable_mode_names[static_cast<size_t>(mode)];
+}
+
+const char* Settings::GetMultitapModeDisplayName(MultitapMode mode)
+{
+  return s_multitap_enable_mode_display_names[static_cast<size_t>(mode)];
 }

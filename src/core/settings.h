@@ -216,6 +216,8 @@ struct Settings
   std::array<std::string, NUM_CONTROLLER_AND_CARD_PORTS> memory_card_paths{};
   bool memory_card_use_playlist_title = true;
 
+  MultitapMode multitap_mode = MultitapMode::Disabled;
+
   LOGLEVEL log_level = LOGLEVEL_INFO;
   std::string log_filter;
   bool log_to_console = false;
@@ -250,6 +252,8 @@ struct Settings
   }
 
   bool HasAnyPerGameMemoryCards() const;
+
+  bool IsMultitapEnabledOnPort(u32 port) const;
 
   static void CPUOverclockPercentToFraction(u32 percent, u32* numerator, u32* denominator);
   static u32 CPUOverclockFractionToPercent(u32 numerator, u32 denominator);
@@ -323,6 +327,10 @@ struct Settings
   static const char* GetMemoryCardTypeName(MemoryCardType type);
   static const char* GetMemoryCardTypeDisplayName(MemoryCardType type);
 
+  static std::optional<MultitapMode> ParseMultitapModeName(const char* str);
+  static const char* GetMultitapModeName(MultitapMode mode);
+  static const char* GetMultitapModeDisplayName(MultitapMode mode);
+
   // Default to D3D11 on Windows as it's more performant and at this point, less buggy.
 #ifdef WIN32
   static constexpr GPURenderer DEFAULT_GPU_RENDERER = GPURenderer::HardwareD3D11;
@@ -358,6 +366,8 @@ struct Settings
   static constexpr ControllerType DEFAULT_CONTROLLER_2_TYPE = ControllerType::None;
   static constexpr MemoryCardType DEFAULT_MEMORY_CARD_1_TYPE = MemoryCardType::PerGameTitle;
   static constexpr MemoryCardType DEFAULT_MEMORY_CARD_2_TYPE = MemoryCardType::None;
+  static constexpr MultitapMode DEFAULT_MULTITAP_MODE = MultitapMode::Disabled;
+
   static constexpr LOGLEVEL DEFAULT_LOG_LEVEL = LOGLEVEL_INFO;
 
   // Enable console logging by default on Linux platforms.

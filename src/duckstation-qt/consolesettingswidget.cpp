@@ -22,6 +22,12 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QW
       qApp->translate("CPUExecutionMode", Settings::GetCPUExecutionModeDisplayName(static_cast<CPUExecutionMode>(i))));
   }
 
+  for (u32 i = 0; i < static_cast<u32>(MultitapMode::Count); i++)
+  {
+    m_ui.multitapMode->addItem(
+      qApp->translate("MultitapMode", Settings::GetMultitapModeDisplayName(static_cast<MultitapMode>(i))));
+  }
+
   SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.region, "Console", "Region",
                                                &Settings::ParseConsoleRegionName, &Settings::GetConsoleRegionName,
                                                Settings::DEFAULT_CONSOLE_REGION);
@@ -34,19 +40,19 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QW
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.cdromRegionCheck, "CDROM", "RegionCheck");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.cdromLoadImageToRAM, "CDROM", "LoadImageToRAM",
                                                false);
+  SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.multitapMode, "ControllerPorts", "MultitapMode",
+                                               &Settings::ParseMultitapModeName, &Settings::GetMultitapModeName,
+                                               Settings::DEFAULT_MULTITAP_MODE);
 
-  dialog->registerWidgetHelp(
-    m_ui.region, tr("Region"), tr("Auto-Detect"),
-    tr("Determines the emulated hardware type."));
-  dialog->registerWidgetHelp(
-    m_ui.cpuExecutionMode, tr("Execution Mode"), tr("Recompiler (Fastest)"),
-    tr("Determines how the emulated CPU executes instructions."));
-  dialog->registerWidgetHelp(
-    m_ui.enableCPUClockSpeedControl, tr("Enable Clock Speed Control (Overclocking/Underclocking)"), tr("Unchecked"),
-    tr("When this option is chosen, the clock speed set below will be used."));
-  dialog->registerWidgetHelp(
-    m_ui.cpuClockSpeed, tr("Overclocking Percentage"), tr("100%"),
-    tr("Selects the percentage of the normal clock speed the emulated hardware will run at."));
+  dialog->registerWidgetHelp(m_ui.region, tr("Region"), tr("Auto-Detect"),
+                             tr("Determines the emulated hardware type."));
+  dialog->registerWidgetHelp(m_ui.cpuExecutionMode, tr("Execution Mode"), tr("Recompiler (Fastest)"),
+                             tr("Determines how the emulated CPU executes instructions."));
+  dialog->registerWidgetHelp(m_ui.enableCPUClockSpeedControl,
+                             tr("Enable Clock Speed Control (Overclocking/Underclocking)"), tr("Unchecked"),
+                             tr("When this option is chosen, the clock speed set below will be used."));
+  dialog->registerWidgetHelp(m_ui.cpuClockSpeed, tr("Overclocking Percentage"), tr("100%"),
+                             tr("Selects the percentage of the normal clock speed the emulated hardware will run at."));
   dialog->registerWidgetHelp(
     m_ui.cdromReadSpeedup, tr("CDROM Read Speedup"), tr("None (Double Speed)"),
     tr("Speeds up CD-ROM reads by the specified factor. Only applies to double-speed reads, and is ignored when audio "
@@ -54,13 +60,16 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QW
   dialog->registerWidgetHelp(
     m_ui.cdromReadThread, tr("Use Read Thread (Asynchronous)"), tr("Checked"),
     tr("Reduces hitches in emulation by reading/decompressing CD data asynchronously on a worker thread."));
-  dialog->registerWidgetHelp(
-    m_ui.cdromRegionCheck, tr("Enable Region Check"), tr("Checked"),
-    tr("Simulates the region check present in original, unmodified consoles."));
+  dialog->registerWidgetHelp(m_ui.cdromRegionCheck, tr("Enable Region Check"), tr("Checked"),
+                             tr("Simulates the region check present in original, unmodified consoles."));
   dialog->registerWidgetHelp(
     m_ui.cdromLoadImageToRAM, tr("Preload Image to RAM"), tr("Unchecked"),
     tr("Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay. In some "
        "cases also eliminates stutter when games initiate audio track playback."));
+  dialog->registerWidgetHelp(
+    m_ui.multitapMode, tr("Multitap"), tr("Disabled"),
+    tr("Enables multitap support on specified controller ports. Leave disabled for games that do "
+       "not support multitap input."));
 
   m_ui.cpuClockSpeed->setEnabled(m_ui.enableCPUClockSpeedControl->checkState() == Qt::Checked);
   m_ui.cdromReadSpeedup->setCurrentIndex(m_host_interface->GetIntSettingValue("CDROM", "ReadSpeedup", 1) - 1);

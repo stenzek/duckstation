@@ -5,6 +5,7 @@
 #include "host_interface.h"
 #include "interrupt_controller.h"
 #include "memory_card.h"
+#include "multitap.h"
 #include "system.h"
 Log_SetChannel(Pad);
 
@@ -27,7 +28,7 @@ void Pad::Shutdown()
 {
   m_transfer_event.reset();
 
-  for (u32 i = 0; i < NUM_SLOTS; i++)
+  for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
     m_controllers[i].reset();
     m_memory_cards[i].reset();
@@ -38,7 +39,7 @@ void Pad::Reset()
 {
   SoftReset();
 
-  for (u32 i = 0; i < NUM_SLOTS; i++)
+  for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
     if (m_controllers[i])
       m_controllers[i]->Reset();
@@ -46,12 +47,18 @@ void Pad::Reset()
     if (m_memory_cards[i])
       m_memory_cards[i]->Reset();
   }
+
+  for (u32 i = 0; i < NUM_MULTITAPS; i++)
+    m_multitaps[i].Reset();
 }
 
 bool Pad::DoState(StateWrapper& sw)
 {
-  for (u32 i = 0; i < NUM_SLOTS; i++)
+  for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
+    if (i > 1 && sw.GetVersion() < 50)
+      continue;
+
     ControllerType controller_type = m_controllers[i] ? m_controllers[i]->GetType() : ControllerType::None;
     ControllerType state_controller_type = controller_type;
     sw.Do(&state_controller_type);
@@ -205,6 +212,15 @@ bool Pad::DoState(StateWrapper& sw)
     }
   }
 
+  if (sw.GetVersion() > 49)
+  {
+    for (u32 i = 0; i < NUM_MULTITAPS; i++)
+    {
+      if (!m_multitaps[i].DoState(sw))
+        return false;
+    }
+  }
+
   sw.Do(&m_state);
   sw.Do(&m_JOY_CTRL.bits);
   sw.Do(&m_JOY_STAT.bits);
@@ -229,6 +245,15 @@ void Pad::SetController(u32 slot, std::unique_ptr<Controller> dev)
 void Pad::SetMemoryCard(u32 slot, std::unique_ptr<MemoryCard> dev)
 {
   m_memory_cards[slot] = std::move(dev);
+}
+
+void Pad::SetMultitapEnable(u32 port, bool enable)
+{
+  if (m_multitaps[port].IsEnabled() != enable)
+  {
+    m_multitaps[port].SetEnable(enable);
+    m_multitaps[port].Reset();
+  }
 }
 
 u32 Pad::ReadRegister(u32 offset)
@@ -409,8 +434,9 @@ void Pad::DoTransfer(TickCount ticks_late)
 {
   Log_DebugPrintf("Transferring slot %d", m_JOY_CTRL.SLOT.GetValue());
 
-  Controller* const controller = m_controllers[m_JOY_CTRL.SLOT].get();
-  MemoryCard* const memory_card = m_memory_cards[m_JOY_CTRL.SLOT].get();
+  const u8 device_index = m_multitaps[0].IsEnabled() ? 4u : m_JOY_CTRL.SLOT;
+  Controller* const controller = m_controllers[device_index].get();
+  MemoryCard* const memory_card = m_memory_cards[device_index].get();
 
   // set rx?
   m_JOY_CTRL.RXEN = true;
@@ -424,25 +450,37 @@ void Pad::DoTransfer(TickCount ticks_late)
   {
     case ActiveDevice::None:
     {
-      if (!controller || (ack = controller->Transfer(data_out, &data_in)) == false)
+      if (m_multitaps[m_JOY_CTRL.SLOT].IsEnabled())
       {
-        if (!memory_card || (ack = memory_card->Transfer(data_out, &data_in)) == false)
+        if ((ack = m_multitaps[m_JOY_CTRL.SLOT].Transfer(data_out, &data_in)) == true)
         {
-          // nothing connected to this port
-          Log_TracePrintf("Nothing connected or ACK'ed");
-        }
-        else
-        {
-          // memory card responded, make it the active device until non-ack
-          Log_TracePrintf("Transfer to memory card, data_out=0x%02X, data_in=0x%02X", data_out, data_in);
-          m_active_device = ActiveDevice::MemoryCard;
+          Log_TracePrintf("Active device set to tap %d, sent 0x%02X, received 0x%02X",
+                          static_cast<int>(m_JOY_CTRL.SLOT), data_out, data_in);
+          m_active_device = ActiveDevice::Multitap;
         }
       }
       else
       {
-        // controller responded, make it the active device until non-ack
-        Log_TracePrintf("Transfer to controller, data_out=0x%02X, data_in=0x%02X", data_out, data_in);
-        m_active_device = ActiveDevice::Controller;
+        if (!controller || (ack = controller->Transfer(data_out, &data_in)) == false)
+        {
+          if (!memory_card || (ack = memory_card->Transfer(data_out, &data_in)) == false)
+          {
+            // nothing connected to this port
+            Log_TracePrintf("Nothing connected or ACK'ed");
+          }
+          else
+          {
+            // memory card responded, make it the active device until non-ack
+            Log_TracePrintf("Transfer to memory card, data_out=0x%02X, data_in=0x%02X", data_out, data_in);
+            m_active_device = ActiveDevice::MemoryCard;
+          }
+        }
+        else
+        {
+          // controller responded, make it the active device until non-ack
+          Log_TracePrintf("Transfer to controller, data_out=0x%02X, data_in=0x%02X", data_out, data_in);
+          m_active_device = ActiveDevice::Controller;
+        }
       }
     }
     break;
@@ -466,6 +504,17 @@ void Pad::DoTransfer(TickCount ticks_late)
       }
     }
     break;
+
+    case ActiveDevice::Multitap:
+    {
+      if (m_multitaps[m_JOY_CTRL.SLOT].IsEnabled())
+      {
+        ack = m_multitaps[m_JOY_CTRL.SLOT].Transfer(data_out, &data_in);
+        Log_TracePrintf("Transfer tap %d, sent 0x%02X, received 0x%02X, acked: %s", static_cast<int>(m_JOY_CTRL.SLOT),
+                        data_out, data_in, ack ? "true" : "false");
+      }
+    }
+    break;
   }
 
   m_receive_buffer = data_in;
@@ -479,7 +528,11 @@ void Pad::DoTransfer(TickCount ticks_late)
   }
   else
   {
-    const TickCount ack_timer = GetACKTicks(m_active_device == ActiveDevice::MemoryCard);
+    const bool memcard_transfer =
+      m_active_device == ActiveDevice::MemoryCard ||
+      (m_active_device == ActiveDevice::Multitap && m_multitaps[m_JOY_CTRL.SLOT].IsReadingMemoryCard());
+
+    const TickCount ack_timer = GetACKTicks(memcard_transfer);
     Log_DebugPrintf("Delaying ACK for %d ticks", ack_timer);
     m_state = State::WaitingForACK;
     m_transfer_event->SetPeriodAndSchedule(ack_timer);
@@ -517,13 +570,16 @@ void Pad::EndTransfer()
 
 void Pad::ResetDeviceTransferState()
 {
-  for (u32 i = 0; i < NUM_SLOTS; i++)
+  for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
     if (m_controllers[i])
       m_controllers[i]->ResetTransferState();
     if (m_memory_cards[i])
       m_memory_cards[i]->ResetTransferState();
-
-    m_active_device = ActiveDevice::None;
   }
+
+  for (u32 i = 0; i < NUM_MULTITAPS; i++)
+    m_multitaps[i].ResetTransferState();
+
+  m_active_device = ActiveDevice::None;
 }

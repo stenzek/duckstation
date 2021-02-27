@@ -1384,7 +1384,7 @@ void CommonHostInterface::UpdateControllerInputMap(SettingsInterface& si)
   StopControllerRumble();
   m_controller_vibration_motors.clear();
 
-  for (u32 controller_index = 0; controller_index < 2; controller_index++)
+  for (u32 controller_index = 0; controller_index < NUM_CONTROLLER_AND_CARD_PORTS; controller_index++)
   {
     const ControllerType ctype = g_settings.controller_types[controller_index];
     if (ctype == ControllerType::None)

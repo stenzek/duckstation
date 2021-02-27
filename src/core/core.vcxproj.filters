@@ -57,6 +57,7 @@
     <ClCompile Include="libcrypt_game_codes.cpp" />
     <ClCompile Include="texture_replacements.cpp" />
     <ClCompile Include="gdb_protocol.h" />
+    <ClCompile Include="multitap.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -116,5 +117,6 @@
     <ClInclude Include="libcrypt_game_codes.h" />
     <ClInclude Include="texture_replacements.h" />
     <ClInclude Include="shader_cache_version.h" />
+    <ClInclude Include="multitap.h" />
   </ItemGroup>
 </Project>

@@ -1315,6 +1315,11 @@ void DrawSettingsWindow()
           "Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay.",
           &s_settings_copy.cdrom_load_image_to_ram);
 
+        MenuHeading("Controller Ports");
+
+        settings_changed |= EnumChoiceButton("Multitap", nullptr, &s_settings_copy.multitap_mode,
+                                             &Settings::GetMultitapModeDisplayName, MultitapMode::Count);
+
         EndMenuButtons();
       }
       break;
@@ -1569,7 +1574,16 @@ void DrawSettingsWindow()
 
         for (u32 port = 0; port < NUM_CONTROLLER_AND_CARD_PORTS; port++)
         {
-          MenuHeading(TinyString::FromFormat("Controller Port %u", port + 1));
+          u32 console_port = port / 4u;
+          if (s_settings_copy.IsMultitapEnabledOnPort(console_port))
+            MenuHeading(TinyString::FromFormat("Port %u%c", console_port + 1u, 'A' + (port % 4u)));
+          else if (port < 2u)
+            MenuHeading(TinyString::FromFormat("Port %u", port + 1u));
+          else if (port % 4u == 0u && s_settings_copy.IsMultitapEnabledOnPort(0))
+            MenuHeading(TinyString::FromFormat("Port %u", console_port + 1u));
+          else
+            continue;
+
           settings_changed |= EnumChoiceButton(
             TinyString::FromFormat(ICON_FA_GAMEPAD "  Controller Type##type%u", port),
             "Determines the simulated controller plugged into this port.", &s_settings_copy.controller_types[port],
