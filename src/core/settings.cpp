@@ -86,15 +86,12 @@ bool Settings::IsMultitapEnabledOnPort(u32 port) const
     {
       case MultitapMode::Disabled:
         return false;
-        break;
 
       case MultitapMode::Port1Only:
         return port == 0u;
-        break;
 
       case MultitapMode::BothPorts:
         return true;
-        break;
 
         DefaultCaseIsUnreachable();
     }
