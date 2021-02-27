@@ -205,9 +205,7 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_resume) {
-            startEmulation(null, true);
-        } else if (id == R.id.action_start_bios) {
+        if (id == R.id.action_start_bios) {
             startEmulation(null, false);
         } else if (id == R.id.action_start_file) {
             startStartFile();

@@ -4,28 +4,39 @@
     tools:context="com.github.stenzek.duckstation.MainActivity">
     <group android:id="@+id/start_menu">
         <item
-            android:id="@+id/action_resume"
-            android:title="@string/menu_main_resume_last_session" />
-        <item
             android:id="@+id/action_start_file"
             android:title="@string/menu_main_start_file" />
         <item
             android:id="@+id/action_start_bios"
             android:title="@string/menu_main_start_bios" />
     </group>
-    <group android:id="@+id/game_list">
+    <group android:id="@+id/settings">
+        <item
+            android:id="@+id/action_settings"
+            android:icon="@drawable/ic_baseline_settings_24"
+            android:orderInCategory="100"
+            android:title="@string/action_settings"
+            app:showAsAction="ifRoom" />
+        <item
+            android:id="@+id/action_controller_mapping"
+            android:icon="@drawable/ic_baseline_gamepad_24"
+            android:title="@string/action_controller_mapping" />
         <item
             android:id="@+id/action_edit_game_directories"
             android:title="@string/menu_main_edit_game_directories" />
+        <item
+            android:id="@+id/action_import_bios"
+            android:title="@string/menu_main_import_bios" />
+    </group>
+    <group android:id="@+id/game_list">
         <item
             android:id="@+id/action_scan_for_new_games"
             android:title="@string/menu_main_scan_for_new_games" />
         <item
             android:id="@+id/action_rescan_all_games"
             android:title="@string/menu_main_rescan_all_games" />
-        <item
-            android:id="@+id/action_import_bios"
-            android:title="@string/menu_main_import_bios" />
+    </group>
+    <group android:id="@+id/support">
         <item
             android:id="@+id/action_show_version"
             android:title="@string/menu_main_show_version" />
@@ -36,15 +47,4 @@
             android:id="@+id/action_discord_server"
             android:title="@string/menu_main_discord_server" />
     </group>
-    <item
-        android:id="@+id/action_controller_mapping"
-        android:icon="@drawable/ic_baseline_gamepad_24"
-        android:orderInCategory="100"
-        android:title="@string/action_controller_mapping" />
-    <item
-        android:id="@+id/action_settings"
-        android:icon="@drawable/ic_baseline_settings_24"
-        android:orderInCategory="100"
-        android:title="@string/action_settings"
-        app:showAsAction="ifRoom" />
 </menu>
