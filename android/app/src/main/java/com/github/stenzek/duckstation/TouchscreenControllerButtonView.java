@@ -26,6 +26,7 @@ public final class TouchscreenControllerButtonView extends View {
     private int mButtonCode = -1;
     private Hotkey mHotkey = Hotkey.NONE;
     private String mConfigName;
+    private boolean mDefaultVisibility = true;
 
     public TouchscreenControllerButtonView(Context context) {
         super(context);
@@ -106,13 +107,15 @@ public final class TouchscreenControllerButtonView extends View {
         mHotkey = hotkey;
     }
 
+    public String getConfigName() {
+        return mConfigName;
+    }
     public void setConfigName(String name) {
         mConfigName = name;
     }
 
-    public String getConfigName() {
-        return mConfigName;
-    }
+    public boolean getDefaultVisibility() { return mDefaultVisibility; }
+    public void setDefaultVisibility(boolean visibility) { mDefaultVisibility = visibility; }
 
     public void setHapticFeedback(boolean enabled) {
         mHapticFeedback = enabled;

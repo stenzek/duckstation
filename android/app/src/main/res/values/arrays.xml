@@ -168,9 +168,14 @@
         <item>Reset</item>
         <item>Patch Codes</item>
         <item>Change Disc</item>
-        <item>Settings</item>
         <item>Change Touchscreen Controller</item>
-        <item>Edit Touchscreen Controller Layout</item>
+        <item>Settings</item>
+    </string-array>
+    <string-array name="emulation_touchscreen_menu">
+        <item>Change Type</item>
+        <item>Change Opacity</item>
+        <item>Add/Remove Buttons</item>
+        <item>Edit Layout</item>
     </string-array>
     <string-array name="settings_cdrom_read_speedup_entries">
         <item>None (Double Speed)</item>

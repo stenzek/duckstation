@@ -91,7 +91,6 @@
         <item>Disc Veranderen</item>
         <item>Instellingen</item>
         <item>Touchscreen Controller Aanpassen</item>
-        <item>Edit Touchscreen Controller Layout</item>
     </string-array>
     <string-array name="settings_cdrom_read_speedup_entries">
         <item>Geen (Dubbele Snelheid)</item>

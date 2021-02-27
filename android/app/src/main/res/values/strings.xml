@@ -221,4 +221,8 @@
     <string name="settings_category_cpu">CPU Settings</string>
     <string name="settings_category_gpu">GPU Settings</string>
     <string name="settings_category_logging">Logging Settings</string>
+    <string name="dialog_done">Done</string>
+    <string name="dialog_touchscreen_controller_type">Touchscreen Controller Type</string>
+    <string name="dialog_touchscreen_controller_opacity">Touchscreen Controller Opacity</string>
+    <string name="dialog_touchscreen_controller_buttons">Touchscreen Controller Buttons</string>
 </resources>

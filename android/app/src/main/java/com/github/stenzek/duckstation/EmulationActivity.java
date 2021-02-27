@@ -496,26 +496,17 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
                     return;
                 }
 
-                case 3:     // Settings
-                {
-                    Intent intent = new Intent(EmulationActivity.this, SettingsActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    startActivityForResult(intent, REQUEST_CODE_SETTINGS);
-                    return;
-                }
-
-                case 4:     // Change Touchscreen Controller
+                case 3:     // Change Touchscreen Controller
                 {
                     showTouchscreenControllerMenu();
                     return;
                 }
 
-                case 5:     // Edit Touchscreen Controller Layout
+                case 4:     // Settings
                 {
-                    if (mTouchscreenController != null)
-                        mTouchscreenController.startLayoutEditing();
-
-                    onMenuClosed();
+                    Intent intent = new Intent(EmulationActivity.this, SettingsActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivityForResult(intent, REQUEST_CODE_SETTINGS);
                     return;
                 }
             }
@@ -526,14 +517,72 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
 
     private void showTouchscreenControllerMenu() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setItems(R.array.settings_touchscreen_controller_view_entries, (dialogInterface, i) -> {
-            String[] values = getResources().getStringArray(R.array.settings_touchscreen_controller_view_values);
-            setStringSetting("Controller1/TouchscreenControllerView", values[i]);
-            updateControllers();
-            onMenuClosed();
+        if (mGameTitle != null && !mGameTitle.isEmpty())
+            builder.setTitle(mGameTitle);
+
+        builder.setItems(R.array.emulation_touchscreen_menu, (dialogInterface, i) -> {
+            switch (i) {
+                case 0:     // Change Type
+                {
+                    final String currentValue = getStringSetting("Controller1/TouchscreenControllerView", "");
+                    final String[] values = getResources().getStringArray(R.array.settings_touchscreen_controller_view_values);
+                    int currentIndex = -1;
+                    for (int k = 0; k < values.length; k++) {
+                        if (currentValue.equals(values[k])) {
+                            currentIndex = k;
+                            break;
+                        }
+                    }
+
+                    final AlertDialog.Builder subBuilder = new AlertDialog.Builder(this);
+                    subBuilder.setTitle(R.string.dialog_touchscreen_controller_type);
+                    subBuilder.setSingleChoiceItems(R.array.settings_touchscreen_controller_view_entries, currentIndex, (dialog, j) -> {
+                        setStringSetting("Controller1/TouchscreenControllerView", values[j]);
+                        updateControllers();
+                    });
+                    subBuilder.setNegativeButton(R.string.dialog_done, (dialog, which) -> {
+                        dialog.dismiss();
+                    });
+                    subBuilder.setOnDismissListener(dialog -> onMenuClosed());
+                    subBuilder.create().show();
+                }
+                break;
+
+                case 1:     // Change Opacity
+                {
+                    if (mTouchscreenController != null) {
+                        AlertDialog.Builder subBuilder = mTouchscreenController.createOpacityDialog(this);
+                        subBuilder.setOnDismissListener(dialog -> onMenuClosed());
+                        subBuilder.create().show();
+                    }
+                }
+                break;
+
+                case 2:     // Add/Remove Buttons
+                {
+                    if (mTouchscreenController != null) {
+                        AlertDialog.Builder subBuilder = mTouchscreenController.createAddRemoveButtonDialog(this);
+                        subBuilder.setOnDismissListener(dialog -> onMenuClosed());
+                        subBuilder.create().show();
+                    }
+                }
+                break;
+
+                case 3:     // Edit Layout
+                {
+                    if (mTouchscreenController != null)
+                        mTouchscreenController.startLayoutEditing();
+                }
+                break;
+            }
         });
-        builder.setOnCancelListener(dialogInterface -> onMenuClosed());
+
+        builder.setOnDismissListener(dialogInterface -> onMenuClosed());
         builder.create().show();
+
+        /*
+
+        */
     }
 
     private void showPatchesMenu() {

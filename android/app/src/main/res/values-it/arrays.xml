@@ -91,7 +91,6 @@
         <item>Cambia Disco</item>
         <item>Impostazioni</item>
         <item>Cambia Controller Touchscreen</item>
-        <item>Edit Touchscreen Controller Layout</item>
     </string-array>
     <string-array name="settings_cdrom_read_speedup_entries">
         <item>Nessuna Velocità Doppia)</item>

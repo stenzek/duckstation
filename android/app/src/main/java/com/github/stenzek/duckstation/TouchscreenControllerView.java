@@ -13,8 +13,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
-import android.widget.RelativeLayout;
+import android.widget.SeekBar;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.preference.PreferenceManager;
 
@@ -24,6 +25,8 @@ import java.util.ArrayList;
  * TODO: document your custom view class.
  */
 public class TouchscreenControllerView extends FrameLayout {
+    public static final int DEFAULT_OPACITY = 100;
+
     private int mControllerIndex;
     private String mControllerType;
     private String mViewType;
@@ -38,6 +41,7 @@ public class TouchscreenControllerView extends FrameLayout {
     private float mMovingLastX = 0.0f;
     private float mMovingLastY = 0.0f;
     private ConstraintLayout mEditLayout = null;
+    private int mOpacity = 100;
 
     public TouchscreenControllerView(Context context) {
         super(context);
@@ -61,11 +65,22 @@ public class TouchscreenControllerView extends FrameLayout {
         return String.format("TouchscreenController/%s/%s%sYTranslation", mViewType, name, mLayoutOrientation);
     }
 
+    private String getConfigKeyForVisibility(String name) {
+        return String.format("TouchscreenController/%s/%s%sVisible", mViewType, name, mLayoutOrientation);
+    }
+
     private void saveTranslationForButton(String name, float xTranslation, float yTranslation) {
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
         final SharedPreferences.Editor editor = prefs.edit();
         editor.putFloat(getConfigKeyForXTranslation(name), xTranslation);
         editor.putFloat(getConfigKeyForYTranslation(name), yTranslation);
+        editor.commit();
+    }
+
+    private void saveVisibilityForButton(String name, boolean visible) {
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+        final SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean(getConfigKeyForVisibility(name), visible);
         editor.commit();
     }
 
@@ -91,7 +106,7 @@ public class TouchscreenControllerView extends FrameLayout {
         requestLayout();
     }
 
-    private void reloadButtonTranslation() {
+    private void reloadButtonSettings() {
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
 
         for (TouchscreenControllerButtonView buttonView : mButtonViews) {
@@ -100,6 +115,9 @@ public class TouchscreenControllerView extends FrameLayout {
                 buttonView.setTranslationY(prefs.getFloat(getConfigKeyForYTranslation(buttonView.getConfigName()), 0.0f));
                 //Log.i("TouchscreenController", String.format("Translation for %s %f %f", buttonView.getConfigName(),
                 //        buttonView.getTranslationX(), buttonView.getTranslationY()));
+
+                final boolean visible = prefs.getBoolean(getConfigKeyForVisibility(buttonView.getConfigName()), buttonView.getDefaultVisibility());
+                buttonView.setVisibility(visible ? VISIBLE : INVISIBLE);
             } catch (ClassCastException ex) {
 
             }
@@ -109,9 +127,35 @@ public class TouchscreenControllerView extends FrameLayout {
             try {
                 axisView.setTranslationX(prefs.getFloat(getConfigKeyForXTranslation(axisView.getConfigName()), 0.0f));
                 axisView.setTranslationY(prefs.getFloat(getConfigKeyForYTranslation(axisView.getConfigName()), 0.0f));
+
+                final boolean visible = prefs.getBoolean(getConfigKeyForVisibility(axisView.getConfigName()), axisView.getDefaultVisibility());
+                axisView.setVisibility(visible ? VISIBLE : INVISIBLE);
             } catch (ClassCastException ex) {
 
             }
+        }
+    }
+
+    private void setOpacity(int opacity) {
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+        final SharedPreferences.Editor editor = prefs.edit();
+        editor.putInt("TouchscreenController/Opacity", opacity);
+        editor.commit();
+
+        updateOpacity();
+    }
+
+    private void updateOpacity() {
+        mOpacity = PreferenceManager.getDefaultSharedPreferences(getContext()).getInt("TouchscreenController/Opacity", DEFAULT_OPACITY);
+
+        float alpha = (float)mOpacity / 100.0f;
+        alpha = (alpha < 0.0f) ? 0.0f : ((alpha > 1.0f) ? 1.0f : alpha);
+
+        for (TouchscreenControllerButtonView buttonView : mButtonViews) {
+            buttonView.setAlpha(alpha);
+        }
+        for (TouchscreenControllerAxisView axisView : mAxisViews) {
+            axisView.setAlpha(alpha);
         }
     }
 
@@ -135,7 +179,7 @@ public class TouchscreenControllerView extends FrameLayout {
 
         Log.i("TouchscreenController", "New orientation: " + newOrientation);
         mLayoutOrientation = newOrientation;
-        reloadButtonTranslation();
+        reloadButtonSettings();
         requestLayout();
     }
 
@@ -185,55 +229,63 @@ public class TouchscreenControllerView extends FrameLayout {
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
 
-        linkButton(mMainView, R.id.controller_button_up, "UpButton", "Up");
-        linkButton(mMainView, R.id.controller_button_right, "RightButton", "Right");
-        linkButton(mMainView, R.id.controller_button_down, "DownButton", "Down");
-        linkButton(mMainView, R.id.controller_button_left, "LeftButton", "Left");
-        linkButton(mMainView, R.id.controller_button_l1, "L1Button", "L1");
-        linkButton(mMainView, R.id.controller_button_l2, "L2Button", "L2");
-        linkButton(mMainView, R.id.controller_button_select, "SelectButton", "Select");
-        linkButton(mMainView, R.id.controller_button_start, "StartButton", "Start");
-        linkButton(mMainView, R.id.controller_button_triangle, "TriangleButton", "Triangle");
-        linkButton(mMainView, R.id.controller_button_circle, "CircleButton", "Circle");
-        linkButton(mMainView, R.id.controller_button_cross, "CrossButton", "Cross");
-        linkButton(mMainView, R.id.controller_button_square, "SquareButton", "Square");
-        linkButton(mMainView, R.id.controller_button_r1, "R1Button", "R1");
-        linkButton(mMainView, R.id.controller_button_r2, "R2Button", "R2");
+        linkButton(mMainView, R.id.controller_button_up, "UpButton", "Up", true);
+        linkButton(mMainView, R.id.controller_button_right, "RightButton", "Right", true);
+        linkButton(mMainView, R.id.controller_button_down, "DownButton", "Down", true);
+        linkButton(mMainView, R.id.controller_button_left, "LeftButton", "Left", true);
+        linkButton(mMainView, R.id.controller_button_l1, "L1Button", "L1", true);
+        linkButton(mMainView, R.id.controller_button_l2, "L2Button", "L2", true);
+        linkButton(mMainView, R.id.controller_button_select, "SelectButton", "Select", true);
+        linkButton(mMainView, R.id.controller_button_start, "StartButton", "Start", true);
+        linkButton(mMainView, R.id.controller_button_triangle, "TriangleButton", "Triangle", true);
+        linkButton(mMainView, R.id.controller_button_circle, "CircleButton", "Circle", true);
+        linkButton(mMainView, R.id.controller_button_cross, "CrossButton", "Cross", true);
+        linkButton(mMainView, R.id.controller_button_square, "SquareButton", "Square", true);
+        linkButton(mMainView, R.id.controller_button_r1, "R1Button", "R1", true);
+        linkButton(mMainView, R.id.controller_button_r2, "R2Button", "R2", true);
 
-        if (!linkAxis(mMainView, R.id.controller_axis_left, "LeftAxis", "Left"))
+        if (!linkAxis(mMainView, R.id.controller_axis_left, "LeftAxis", "Left", true))
             linkAxisToButtons(mMainView, R.id.controller_axis_left, "LeftAxis", "");
 
-        linkAxis(mMainView, R.id.controller_axis_right, "RightAxis", "Right");
+        linkAxis(mMainView, R.id.controller_axis_right, "RightAxis", "Right", true);
 
-        linkHotkeyButton(mMainView, R.id.controller_button_fast_forward, TouchscreenControllerButtonView.Hotkey.FAST_FORWARD);
+        linkHotkeyButton(mMainView, R.id.controller_button_fast_forward, "FastForward",
+                TouchscreenControllerButtonView.Hotkey.FAST_FORWARD, false);
 
-        reloadButtonTranslation();
+        reloadButtonSettings();
+        updateOpacity();
         requestLayout();
     }
 
-    private void linkButton(View view, int id, String configName, String buttonName) {
+    private void linkButton(View view, int id, String configName, String buttonName, boolean defaultVisibility) {
         TouchscreenControllerButtonView buttonView = (TouchscreenControllerButtonView) view.findViewById(id);
         if (buttonView == null)
             return;
+
+        buttonView.setConfigName(configName);
+        buttonView.setDefaultVisibility(defaultVisibility);
+        mButtonViews.add(buttonView);
 
         int code = AndroidHostInterface.getControllerButtonCode(mControllerType, buttonName);
         Log.i("TouchscreenController", String.format("%s -> %d", buttonName, code));
 
         if (code >= 0) {
-            buttonView.setConfigName(configName);
             buttonView.setButtonCode(mControllerIndex, code);
             buttonView.setHapticFeedback(mHapticFeedback);
-            mButtonViews.add(buttonView);
         } else {
             Log.e("TouchscreenController", String.format("Unknown button name '%s' " +
                     "for '%s'", buttonName, mControllerType));
         }
     }
 
-    private boolean linkAxis(View view, int id, String configName, String axisName) {
+    private boolean linkAxis(View view, int id, String configName, String axisName, boolean defaultVisibility) {
         TouchscreenControllerAxisView axisView = (TouchscreenControllerAxisView) view.findViewById(id);
         if (axisView == null)
             return false;
+
+        axisView.setConfigName(configName);
+        axisView.setDefaultVisibility(defaultVisibility);
+        mAxisViews.add(axisView);
 
         int xCode = AndroidHostInterface.getControllerAxisCode(mControllerType, axisName + "X");
         int yCode = AndroidHostInterface.getControllerAxisCode(mControllerType, axisName + "Y");
@@ -241,9 +293,7 @@ public class TouchscreenControllerView extends FrameLayout {
         if (xCode < 0 && yCode < 0)
             return false;
 
-        axisView.setConfigName(configName);
         axisView.setControllerAxis(mControllerIndex, xCode, yCode);
-        mAxisViews.add(axisView);
         return true;
     }
 
@@ -261,15 +311,16 @@ public class TouchscreenControllerView extends FrameLayout {
             return false;
 
         axisView.setControllerButtons(mControllerIndex, leftCode, rightCode, upCode, downCode);
-        mAxisViews.add(axisView);
         return true;
     }
 
-    private void linkHotkeyButton(View view, int id, TouchscreenControllerButtonView.Hotkey hotkey) {
+    private void linkHotkeyButton(View view, int id, String configName, TouchscreenControllerButtonView.Hotkey hotkey, boolean defaultVisibility) {
         TouchscreenControllerButtonView buttonView = (TouchscreenControllerButtonView) view.findViewById(id);
         if (buttonView == null)
             return;
 
+        buttonView.setConfigName(configName);
+        buttonView.setDefaultVisibility(defaultVisibility);
         buttonView.setHotkey(hotkey);
         mButtonViews.add(buttonView);
     }
@@ -407,6 +458,9 @@ public class TouchscreenControllerView extends FrameLayout {
                 final int pointerCount = event.getPointerCount();
                 final int liftedPointerIndex = (event.getActionMasked() == MotionEvent.ACTION_POINTER_UP) ? event.getActionIndex() : -1;
                 for (TouchscreenControllerButtonView buttonView : mButtonViews) {
+                    if (buttonView.getVisibility() != VISIBLE)
+                        continue;
+
                     buttonView.getHitRect(rect);
                     boolean pressed = false;
                     for (int i = 0; i < pointerCount; i++) {
@@ -427,6 +481,9 @@ public class TouchscreenControllerView extends FrameLayout {
                 }
 
                 for (TouchscreenControllerAxisView axisView : mAxisViews) {
+                    if (axisView.getVisibility() != VISIBLE)
+                        continue;
+
                     axisView.getHitRect(rect);
                     boolean pressed = false;
                     for (int i = 0; i < pointerCount; i++) {
@@ -453,5 +510,68 @@ public class TouchscreenControllerView extends FrameLayout {
         }
 
         return false;
+    }
+
+    public AlertDialog.Builder createAddRemoveButtonDialog(Context context) {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        final CharSequence[] items = new CharSequence[mButtonViews.size() + mAxisViews.size()];
+        final boolean[] itemsChecked = new boolean[mButtonViews.size() + mAxisViews.size()];
+        int itemCount = 0;
+        for (TouchscreenControllerButtonView buttonView : mButtonViews) {
+            items[itemCount] = buttonView.getConfigName();
+            itemsChecked[itemCount] = buttonView.getVisibility() == VISIBLE;
+            itemCount++;
+        }
+        for (TouchscreenControllerAxisView axisView : mAxisViews) {
+            items[itemCount] = axisView.getConfigName();
+            itemsChecked[itemCount] = axisView.getVisibility() == VISIBLE;
+            itemCount++;
+        }
+
+        builder.setTitle(R.string.dialog_touchscreen_controller_buttons);
+        builder.setMultiChoiceItems(items, itemsChecked, (dialog, which, isChecked) -> {
+            if (which < mButtonViews.size()) {
+                TouchscreenControllerButtonView buttonView = mButtonViews.get(which);
+                buttonView.setVisibility(isChecked ? VISIBLE : INVISIBLE);
+                saveVisibilityForButton(buttonView.getConfigName(), isChecked);
+            } else {
+                TouchscreenControllerAxisView axisView = mAxisViews.get(which - mButtonViews.size());
+                axisView.setVisibility(isChecked ? VISIBLE : INVISIBLE);
+                saveVisibilityForButton(axisView.getConfigName(), isChecked);
+            }
+        });
+        builder.setNegativeButton(R.string.dialog_done, (dialog, which) -> {
+            dialog.dismiss();
+        });
+
+        return builder;
+    }
+
+    public AlertDialog.Builder createOpacityDialog(Context context) {
+        final SeekBar seekBar = new SeekBar(context);
+        seekBar.setMax(100);
+        seekBar.setProgress(mOpacity);
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                setOpacity(progress);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
+        });
+
+        final AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle(R.string.dialog_touchscreen_controller_opacity);
+        builder.setView(seekBar);
+        builder.setNegativeButton(R.string.dialog_done, (dialog, which) -> {
+            dialog.dismiss();
+        });
+        return builder;
     }
 }

@@ -91,7 +91,6 @@
         <item>Cambiar Disco</item>
         <item>Configuraciones</item>
         <item>Cambiar Control de Pantalla Tactil</item>
-        <item>Editar Diseño del Control de Pantalla Tactil</item>
     </string-array>
     <string-array name="settings_cdrom_read_speedup_entries">
         <item>Ninguno (Velocidad Doble)</item>

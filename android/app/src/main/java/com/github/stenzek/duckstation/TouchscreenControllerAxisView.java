@@ -18,6 +18,8 @@ public final class TouchscreenControllerAxisView extends View {
     private int mDrawYPos = 0;
 
     private String mConfigName;
+    private boolean mDefaultVisibility = true;
+
     private int mControllerIndex = -1;
     private int mXAxisCode = -1;
     private int mYAxisCode = -1;
@@ -53,10 +55,12 @@ public final class TouchscreenControllerAxisView extends View {
     public String getConfigName() {
         return mConfigName;
     }
-
     public void setConfigName(String configName) {
         mConfigName = configName;
     }
+
+    public boolean getDefaultVisibility() { return mDefaultVisibility; }
+    public void setDefaultVisibility(boolean visibility) { mDefaultVisibility = visibility; }
 
     public void setControllerAxis(int controllerIndex, int xCode, int yCode) {
         mControllerIndex = controllerIndex;

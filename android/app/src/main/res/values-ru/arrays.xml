@@ -91,7 +91,6 @@
 		<item>Сменить диск</item>
 		<item>Настройки</item>
 		<item>Сменить экранный контроллер</item>
-		<item>Настроить экранный контроллер</item>
 	</string-array>
 	<string-array name="settings_cdrom_read_speedup_entries">
 		<item>Нет (двойная скорость)</item>

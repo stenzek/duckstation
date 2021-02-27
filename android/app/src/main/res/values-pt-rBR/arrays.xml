@@ -91,7 +91,6 @@
         <item>Mudar Disco</item>
         <item>Configurações</item>
         <item>Mudar controle em Tela</item>
-        <item>Editar Posição dos Controles (Tela)</item>
     </string-array>
     <string-array name="settings_cdrom_read_speedup_entries">
         <item>Nenhum</item>
