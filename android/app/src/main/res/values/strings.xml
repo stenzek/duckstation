@@ -35,7 +35,7 @@
     <string name="settings_pgxp_vertex_cache">PGXP Vertex Cache</string>
     <string name="settings_summary_pgxp_vertex_cache">Uses screen coordinates as a fallback when tracking vertices through memory fails. May improve PGXP compatibility.</string>
     <string name="settings_pgxp_cpu_mode">PGXP CPU Mode</string>
-    <string name="settings_summary_pgxp_cpu_mode">Tries to track vertex manipulation through the CPU. Some games require this option for PGXP to be effective. Very slow, and incompatible with the recompiler.</string>
+    <string name="settings_summary_pgxp_cpu_mode">Tries to track vertex manipulation through the CPU. Some games require this option for PGXP to be effective. Very high performance penalty.</string>
     <string name="settings_cpu_recompiler_icache">CPU Recompiler ICache</string>
     <string name="settings_summary_cpu_recompiler_icache">Determines whether the CPU\'s instruction cache is simulated in the recompiler. Improves accuracy at a small cost to performance. If games are running too fast, try enabling this option.</string>
     <string name="settings_cpu_recompiler_fastmem">CPU Recompiler Fast Memory Access</string>
