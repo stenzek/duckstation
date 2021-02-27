@@ -214,6 +214,7 @@ void Settings::Load(SettingsInterface& si)
   display_line_end_offset = static_cast<s8>(si.GetIntValue("Display", "LineEndOffset", 0));
   display_linear_filtering = si.GetBoolValue("Display", "LinearFiltering", true);
   display_integer_scaling = si.GetBoolValue("Display", "IntegerScaling", false);
+  display_stretch = si.GetBoolValue("Display", "Stretch", false);
   display_post_processing = si.GetBoolValue("Display", "PostProcessing", false);
   display_show_osd_messages = si.GetBoolValue("Display", "ShowOSDMessages", true);
   display_show_fps = si.GetBoolValue("Display", "ShowFPS", false);
@@ -382,6 +383,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetStringValue("Display", "AspectRatio", GetDisplayAspectRatioName(display_aspect_ratio));
   si.SetBoolValue("Display", "LinearFiltering", display_linear_filtering);
   si.SetBoolValue("Display", "IntegerScaling", display_integer_scaling);
+  si.SetBoolValue("Display", "Stretch", display_stretch);
   si.SetBoolValue("Display", "PostProcessing", display_post_processing);
   si.SetBoolValue("Display", "ShowOSDMessages", display_show_osd_messages);
   si.SetBoolValue("Display", "ShowFPS", display_show_fps);

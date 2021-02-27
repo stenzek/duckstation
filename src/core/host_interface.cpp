@@ -109,6 +109,7 @@ bool HostInterface::BootSystem(const SystemBootParameters& parameters)
   // set host display settings
   m_display->SetDisplayLinearFiltering(g_settings.display_linear_filtering);
   m_display->SetDisplayIntegerScaling(g_settings.display_integer_scaling);
+  m_display->SetDisplayStretch(g_settings.display_stretch);
 
   // create the audio stream. this will never fail, since we'll just fall back to null
   CreateAudioStream();
@@ -545,6 +546,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("Display", "Force4_3For24Bit", false);
   si.SetBoolValue("Display", "LinearFiltering", true);
   si.SetBoolValue("Display", "IntegerScaling", false);
+  si.SetBoolValue("Display", "Stretch", false);
   si.SetBoolValue("Display", "PostProcessing", false);
   si.SetBoolValue("Display", "ShowOSDMessages", true);
   si.SetBoolValue("Display", "ShowFPS", false);
@@ -593,8 +595,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetStringValue("MemoryCards", "Card2Path", "memcards" FS_OSPATH_SEPARATOR_STR "shared_card_2.mcd");
   si.SetBoolValue("MemoryCards", "UsePlaylistTitle", true);
 
-  si.SetStringValue("ControllerPorts", "MultitapMode",
-                    Settings::GetMultitapModeName(Settings::DEFAULT_MULTITAP_MODE));
+  si.SetStringValue("ControllerPorts", "MultitapMode", Settings::GetMultitapModeName(Settings::DEFAULT_MULTITAP_MODE));
 
   si.SetStringValue("Logging", "LogLevel", Settings::GetLogLevelName(Settings::DEFAULT_LOG_LEVEL));
   si.SetStringValue("Logging", "LogFilter", "");
@@ -653,6 +654,12 @@ void HostInterface::FixIncompatibleSettings(bool display_osd_messages)
   {
     Log_WarningPrintf("Disabling linear filter due to integer upscaling.");
     g_settings.display_linear_filtering = false;
+  }
+
+  if (g_settings.display_stretch && g_settings.display_linear_filtering)
+  {
+    Log_WarningPrintf("Disabling stretch due to integer upscaling.");
+    g_settings.display_stretch = false;
   }
 
   if (g_settings.gpu_pgxp_enable)
@@ -884,11 +891,17 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
   if (g_settings.multitap_mode != old_settings.multitap_mode)
     System::UpdateMultitaps();
 
-  if (m_display && g_settings.display_linear_filtering != old_settings.display_linear_filtering)
-    m_display->SetDisplayLinearFiltering(g_settings.display_linear_filtering);
+  if (m_display)
+  {
+    if (g_settings.display_linear_filtering != old_settings.display_linear_filtering)
+      m_display->SetDisplayLinearFiltering(g_settings.display_linear_filtering);
 
-  if (m_display && g_settings.display_integer_scaling != old_settings.display_integer_scaling)
-    m_display->SetDisplayIntegerScaling(g_settings.display_integer_scaling);
+    if (g_settings.display_integer_scaling != old_settings.display_integer_scaling)
+      m_display->SetDisplayIntegerScaling(g_settings.display_integer_scaling);
+
+    if (g_settings.display_stretch != old_settings.display_stretch)
+      m_display->SetDisplayStretch(g_settings.display_stretch);
+  }
 }
 
 void HostInterface::SetUserDirectoryToProgramDirectory()

@@ -447,11 +447,11 @@ void QtHostInterface::onDisplayWindowMouseWheelEvent(const QPoint& delta_angle)
 
 void QtHostInterface::onDisplayWindowResized(int width, int height)
 {
-  Log_WarningPrintf("resize %dx%d", width, height);
   // this can be null if it was destroyed and the main thread is late catching up
   if (!m_display)
     return;
 
+  Log_DevPrintf("Display window resized to %dx%d", width, height);
   m_display->ResizeRenderWindow(width, height);
   OnHostDisplayResized(width, height, m_display->GetWindowScale());
 

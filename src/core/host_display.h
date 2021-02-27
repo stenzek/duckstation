@@ -196,6 +196,7 @@ public:
   void SetDisplayTopMargin(s32 height) { m_display_top_margin = height; }
   void SetDisplayIntegerScaling(bool enabled) { m_display_integer_scaling = enabled; }
   void SetDisplayAlignment(Alignment alignment) { m_display_alignment = alignment; }
+  void SetDisplayStretch(bool stretch) { m_display_stretch = stretch; }
 
   /// Sets the software cursor to the specified texture. Ownership of the texture is transferred.
   void SetSoftwareCursor(std::unique_ptr<HostDisplayTexture> texture, float scale = 1.0f);
@@ -276,4 +277,5 @@ protected:
   bool m_display_linear_filtering = false;
   bool m_display_changed = false;
   bool m_display_integer_scaling = false;
+  bool m_display_stretch = false;
 };

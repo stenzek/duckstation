@@ -212,4 +212,6 @@
     <string name="save_state_info_quick_save">Quick Save</string>
     <string name="settings_osd_show_show_resolution">Show Resolution</string>
     <string name="settings_summary_osd_show_resolution">Shows the resolution the game is rendering at in the top-right corner of the display.</string>
+    <string name="settings_summary_display_stretch">Stretches the active display to fill the screen.</string>
+    <string name="settings_display_stretch">Stretch To Fill</string>
 </resources>

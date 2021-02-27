@@ -44,17 +44,27 @@
         app:iconSpaceReserved="false" />
 
     <SwitchPreferenceCompat
+        app:key="Display/IntegerScaling"
+        app:title="@string/settings_integer_upscaling"
+        app:defaultValue="false"
+        app:disableDependentsState="true"
+        app:summary="@string/settings_summary_integer_upscaling"
+        app:iconSpaceReserved="false" />
+
+    <SwitchPreferenceCompat
         app:key="Display/LinearFiltering"
         app:title="@string/settings_linear_upscaling"
         app:defaultValue="true"
+        app:dependency="Display/IntegerScaling"
         app:summary="@string/settings_summary_linear_upscaling"
         app:iconSpaceReserved="false" />
 
     <SwitchPreferenceCompat
-        app:key="Display/IntegerScaling"
-        app:title="@string/settings_integer_upscaling"
+        app:key="Display/Stretch"
+        app:title="@string/settings_display_stretch"
         app:defaultValue="false"
-        app:summary="@string/settings_summary_integer_upscaling"
+        app:dependency="Display/IntegerScaling"
+        app:summary="@string/settings_summary_display_stretch"
         app:iconSpaceReserved="false" />
 
     <SwitchPreferenceCompat
@@ -63,6 +73,7 @@
         app:defaultValue="true"
         app:summary="@string/settings_summary_osd_show_messages"
         app:iconSpaceReserved="false" />
+
     <SwitchPreferenceCompat
         app:key="Display/ShowSpeed"
         app:title="@string/settings_osd_show_speed"
