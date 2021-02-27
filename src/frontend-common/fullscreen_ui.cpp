@@ -186,7 +186,7 @@ static HostDisplayTexture* GetGameListCover(const GameListEntry* entry);
 static HostDisplayTexture* GetCoverForCurrentGame();
 
 // Lazily populated cover images.
-static std::unordered_map<std::string, std::unique_ptr<HostDisplayTexture>> s_cover_image_map;
+static std::unordered_map<std::string, std::string> s_cover_image_map;
 static std::vector<const GameListEntry*> s_game_list_sorted_entries;
 static std::thread s_game_list_load_thread;
 
@@ -197,6 +197,7 @@ static std::thread s_game_list_load_thread;
 bool Initialize(CommonHostInterface* host_interface)
 {
   s_host_interface = host_interface;
+  s_texture_cache.SetMaxCapacity(128);
   if (!LoadResources())
     return false;
 
@@ -2785,32 +2786,12 @@ HostDisplayTexture* GetGameListCover(const GameListEntry* entry)
   auto cover_it = s_cover_image_map.find(entry->path);
   if (cover_it == s_cover_image_map.end())
   {
-    const std::string cover_path(s_host_interface->GetGameList()->GetCoverImagePathForEntry(entry));
-    std::unique_ptr<HostDisplayTexture> texture;
-    if (!cover_path.empty())
-    {
-      Log_DevPrintf("Trying to load cover from '%s' for '%s'", cover_path.c_str(), entry->path.c_str());
-
-      Common::RGBA8Image image;
-      if (Common::LoadImageFromFile(&image, cover_path.c_str()) || !image.IsValid())
-      {
-        texture = s_host_interface->GetDisplay()->CreateTexture(image.GetWidth(), image.GetHeight(), 1, 1, 1,
-                                                                HostDisplayPixelFormat::RGBA8, image.GetPixels(),
-                                                                image.GetByteStride());
-        if (!texture)
-          Log_ErrorPrintf("Failed to upload %ux%u texture to GPU", image.GetWidth(), image.GetHeight());
-      }
-      else
-      {
-        Log_ErrorPrintf("Failed to load cover from '%s'", cover_path.c_str());
-      }
-    }
-
-    cover_it = s_cover_image_map.emplace(entry->path, std::move(texture)).first;
+    std::string cover_path(s_host_interface->GetGameList()->GetCoverImagePathForEntry(entry));
+    cover_it = s_cover_image_map.emplace(entry->path, std::move(cover_path)).first;
   }
 
-  if (cover_it->second)
-    return cover_it->second.get();
+  if (!cover_it->second.empty())
+    return GetCachedTexture(cover_it->second);
 
   return GetTextureForGameListEntryType(entry->type);
 }
