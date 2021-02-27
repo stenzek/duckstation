@@ -75,7 +75,7 @@ if(SDL2_FOUND)
   endif()
 endif()
 
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+if(USE_EVDEV)
   find_package(LIBEVDEV REQUIRED)
   target_compile_definitions(frontend-common PUBLIC "-DWITH_EVDEV=1")
   target_include_directories(frontend-common PRIVATE ${LIBEVDEV_INCLUDE_DIRS})

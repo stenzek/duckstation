@@ -40,6 +40,7 @@ endif()
 if(LINUX AND NOT ANDROID)
   option(USE_DRMKMS "Support DRM/KMS OpenGL contexts" OFF)
   option(USE_FBDEV "Support FBDev OpenGL contexts" OFF)
+  option(USE_EVDEV "Support EVDev controller interface" ON)
 endif()
 
 # Force EGL when using Wayland
@@ -54,7 +55,7 @@ if(ANDROID)
   endif()
   if(BUILD_NOGUI_FRONTEND)
     message(WARNING "Building for Android, disabling NoGUI frontend")
-    set(BUILD_QT_FRONTEND OFF)
+    set(BUILD_NOGUI_FRONTEND OFF)
   endif()
   if(BUILD_QT_FRONTEND)
     message(WARNING "Building for Android, disabling Qt frontend")
@@ -78,7 +79,7 @@ endif()
 
 
 # Common include/library directories on Windows.
-if(WIN32)
+if(WIN32 AND USE_SDL2)
   set(SDL2_FOUND TRUE)
   set(SDL2_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/dep/msvc/sdl2/include")
   if(CMAKE_SIZEOF_VOID_P EQUAL 8)
@@ -127,6 +128,10 @@ if(USE_DRMKMS)
 endif()
 if(USE_FBDEV)
   message(STATUS "FBDev Support enabled")
+endif()
+if(USE_EVDEV)
+  message(STATUS "EVDev Support enabled")
+  find_package(LIBEVDEV REQUIRED)
 endif()
 
 # Set _DEBUG macro for Debug builds.

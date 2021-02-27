@@ -198,7 +198,7 @@ bool OpenGLHostDisplay::BeginSetDisplayPixels(HostDisplayPixelFormat format, u32
   const u32 stride = Common::AlignUpPow2(width * pixel_size, 4);
   const u32 size_required = stride * height * pixel_size;
 
-  if (!m_gl_context->IsGLES())
+  if (m_use_pbo_for_pixels)
   {
     const u32 buffer_size = Common::AlignUpPow2(size_required * 2, 4 * 1024 * 1024);
     if (!m_display_pixels_texture_pbo || m_display_pixels_texture_pbo->GetSize() < buffer_size)
@@ -240,7 +240,7 @@ void OpenGLHostDisplay::EndSetDisplayPixels()
     s_display_pixel_format_mapping[static_cast<u32>(m_display_texture_format)];
 
   glBindTexture(GL_TEXTURE_2D, m_display_pixels_texture_id);
-  if (!m_gl_context->IsGLES())
+  if (m_use_pbo_for_pixels)
   {
     m_display_pixels_texture_pbo->Unmap(m_display_pixels_texture_pbo_map_size);
     m_display_pixels_texture_pbo->Bind();
@@ -393,13 +393,13 @@ bool OpenGLHostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_vie
 bool OpenGLHostDisplay::InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device,
                                                bool threaded_presentation)
 {
-  m_use_gles2_draw_path = (m_gl_context->IsGLES() && !GLAD_GL_ES_VERSION_3_0);
+  m_use_gles2_draw_path = (GetRenderAPI() == RenderAPI::OpenGLES && !GLAD_GL_ES_VERSION_3_0);
   if (!m_use_gles2_draw_path)
     glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, reinterpret_cast<GLint*>(&m_uniform_buffer_alignment));
 
   // Doubt GLES2 drivers will support PBOs efficiently.
   m_use_pbo_for_pixels = !m_use_gles2_draw_path;
-  if (m_gl_context->IsGLES())
+  if (GetRenderAPI() == RenderAPI::OpenGLES)
   {
     // Adreno seems to corrupt textures through PBOs...
     const char* gl_vendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
