@@ -258,13 +258,13 @@ static const std::map<int, const char*> s_evdev_key_names = {{KEY_ESC, "Escape"}
                                                              {KEY_RFKILL, "Rfkill"},
                                                              {KEY_MICMUTE, "Micmute"}};
 
-const char* GetKeyName(int key)
+static const char* GetKeyName(int key)
 {
   const auto it = s_evdev_key_names.find(key);
   return it == s_evdev_key_names.end() ? nullptr : it->second;
 }
 
-std::optional<int> GetKeyCodeForName(const std::string_view key_name)
+static std::optional<int> GetKeyCodeForName(const std::string_view key_name)
 {
   for (const auto& it : s_evdev_key_names)
   {

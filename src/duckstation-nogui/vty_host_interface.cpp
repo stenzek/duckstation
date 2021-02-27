@@ -164,7 +164,7 @@ void VTYHostInterface::PollEvDevKeyboards()
       if (static_cast<unsigned>(code) < countof(ImGuiIO::KeysDown))
         ImGui::GetIO().KeysDown[code] = pressed;
 
-      HandleHostKeyEvent(code, pressed);
+      HandleHostKeyEvent(code, 0, pressed);
     }
   }
 }

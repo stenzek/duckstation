@@ -6,7 +6,7 @@
 #pragma once
 #include "../types.h"
 #include "vulkan_loader.h"
-#include <functional>
+#include <algorithm>
 #include <memory>
 
 namespace Vulkan {
