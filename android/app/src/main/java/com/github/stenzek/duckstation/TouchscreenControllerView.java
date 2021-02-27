@@ -250,7 +250,7 @@ public class TouchscreenControllerView extends FrameLayout {
         linkAxis(mMainView, R.id.controller_axis_right, "RightAxis", "Right", true);
 
         linkHotkeyButton(mMainView, R.id.controller_button_fast_forward, "FastForward",
-                TouchscreenControllerButtonView.Hotkey.FAST_FORWARD, false);
+                TouchscreenControllerButtonView.Hotkey.FAST_FORWARD, true);
 
         reloadButtonSettings();
         updateOpacity();
