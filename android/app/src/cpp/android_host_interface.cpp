@@ -1619,3 +1619,20 @@ DEFINE_JNI_ARGS_METHOD(jobjectArray, AndroidHostInterface_getSaveStateInfo, jobj
 
   return ret;
 }
+
+DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_toggleControllerAnalogMode, jobject obj) {
+  // hacky way to toggle analog mode
+  for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
+  {
+    Controller* ctrl = System::GetController(i);
+    if (!ctrl)
+      continue;
+
+    std::optional<s32> code = Controller::GetButtonCodeByName(ctrl->GetType(), "Analog");
+    if (!code.has_value())
+      continue;
+
+    ctrl->SetButtonState(code.value(), true);
+    ctrl->SetButtonState(code.value(), false);
+  }
+}

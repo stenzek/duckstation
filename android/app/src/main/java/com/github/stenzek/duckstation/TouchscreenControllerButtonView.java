@@ -15,7 +15,8 @@ public final class TouchscreenControllerButtonView extends View {
     public enum Hotkey
     {
         NONE,
-        FAST_FORWARD
+        FAST_FORWARD,
+        ANALOG_TOGGLE
     }
 
     private Drawable mUnpressedDrawable;
@@ -130,6 +131,12 @@ public final class TouchscreenControllerButtonView extends View {
             case FAST_FORWARD:
                 AndroidHostInterface.getInstance().setFastForwardEnabled(mPressed);
                 break;
+
+            case ANALOG_TOGGLE: {
+                if (mPressed)
+                    AndroidHostInterface.getInstance().toggleControllerAnalogMode();
+            }
+            break;
 
             case NONE:
             default:

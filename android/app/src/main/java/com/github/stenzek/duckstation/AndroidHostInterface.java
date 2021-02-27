@@ -86,6 +86,8 @@ public class AndroidHostInterface {
 
     public native void handleControllerAxisEvent(int controllerIndex, int axisIndex, float value);
 
+    public native void toggleControllerAnalogMode();
+
     public native String[] getInputProfileNames();
 
     public native boolean loadInputProfile(String name);

@@ -145,4 +145,16 @@
         app:layout_constraintStart_toStartOf="parent"
         app:pressedDrawable="@drawable/ic_controller_fast_forward_pressed"
         app:unpressedDrawable="@drawable/ic_controller_fast_forward" />
+
+    <com.github.stenzek.duckstation.TouchscreenControllerButtonView
+        android:id="@+id/controller_button_analog"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:layout_marginBottom="95dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:pressedDrawable="@drawable/ic_controller_analog_button_pressed"
+        app:unpressedDrawable="@drawable/ic_controller_analog_button" />
 </androidx.constraintlayout.widget.ConstraintLayout>
