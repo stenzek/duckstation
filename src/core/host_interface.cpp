@@ -657,7 +657,7 @@ void HostInterface::FixIncompatibleSettings(bool display_osd_messages)
     g_settings.display_linear_filtering = false;
   }
 
-  if (g_settings.display_stretch && g_settings.display_linear_filtering)
+  if (g_settings.display_integer_scaling && g_settings.display_stretch)
   {
     Log_WarningPrintf("Disabling stretch due to integer upscaling.");
     g_settings.display_stretch = false;
