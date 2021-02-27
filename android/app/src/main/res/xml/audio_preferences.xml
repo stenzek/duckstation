@@ -47,34 +47,5 @@
         app:defaultValue="false"
         app:summary="@string/settings_summary_mute_cd_audio"
         app:iconSpaceReserved="false" />
-    <ListPreference
-        app:key="Audio/Backend"
-        app:title="@string/settings_audio_backend"
-        app:entries="@array/settings_audio_backend_entries"
-        app:entryValues="@array/settings_audio_backend_values"
-        app:defaultValue="OpenSLES"
-        app:useSimpleSummaryProvider="true"
-        app:iconSpaceReserved="false" />
-    <ListPreference
-        app:key="Audio/BufferSize"
-        app:title="@string/settings_audio_buffer_size"
-        app:entries="@array/settings_audio_buffer_size_entries"
-        app:entryValues="@array/settings_audio_buffer_size_values"
-        app:defaultValue="2048"
-        app:summary="@string/settings_summary_audio_buffer_size"
-        app:useSimpleSummaryProvider="true"
-        app:iconSpaceReserved="false" />
-    <SwitchPreferenceCompat
-        app:key="Audio/Sync"
-        app:title="@string/settings_audio_sync"
-        app:defaultValue="true"
-        app:summary="@string/settings_summary_audio_sync"
-        app:iconSpaceReserved="false" />
-    <SwitchPreferenceCompat
-        app:key="Audio/Resampling"
-        app:title="@string/settings_audio_resampling"
-        app:defaultValue="true"
-        app:summary="@string/settings_summary_audio_resampling"
-        app:iconSpaceReserved="false" />
 
 </PreferenceScreen>

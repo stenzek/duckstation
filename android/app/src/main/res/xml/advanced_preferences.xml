@@ -15,123 +15,206 @@
   -->
 
 <PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
-    <ListPreference
-        app:key="Main/Language"
-        app:title="@string/settings_language"
-        app:defaultValue="none"
-        app:entries="@array/settings_language_entries"
-        app:entryValues="@array/settings_language_values"
-        app:useSimpleSummaryProvider="true"
-        app:iconSpaceReserved="false" />
-    <SwitchPreferenceCompat
-        app:key="Main/DisableAllEnhancements"
-        app:title="@string/settings_disable_all_enhancements"
-        app:defaultValue="false"
-        app:summary="@string/settings_summary_disable_all_enhancements"
-        app:iconSpaceReserved="false" />
-    <SwitchPreferenceCompat
-        app:key="Main/SustainedPerformanceMode"
-        app:title="@string/settings_sustained_performance_mode"
-        app:defaultValue="false"
-        app:summary="@string/settings_summary_sustained_performance_mode"
-        app:iconSpaceReserved="false" />
-    <ListPreference
-        app:key="CPU/Overclock"
-        app:title="@string/settings_cpu_overclocking"
-        app:defaultValue="100"
-        app:entries="@array/settings_advanced_cpu_overclock_entries"
-        app:entryValues="@array/settings_advanced_cpu_overclock_values"
-        app:useSimpleSummaryProvider="true"
-        app:iconSpaceReserved="false" />
-    <SwitchPreferenceCompat
-        app:key="CDROM/RegionCheck"
-        app:title="@string/settings_cdrom_region_check"
-        app:defaultValue="false"
-        app:summary="@string/settings_summary_cdrom_region_check"
-        app:iconSpaceReserved="false" />
-    <SwitchPreferenceCompat
-        app:key="CDROM/LoadImageToRAM"
-        app:title="@string/settings_cdrom_preload_image_to_ram"
-        app:defaultValue="false"
-        app:summary="@string/settings_summary_preload_image_to_ram"
-        app:iconSpaceReserved="false" />
-    <SwitchPreferenceCompat
-        app:key="GPU/UseThread"
-        app:title="@string/settings_gpu_thread"
-        app:defaultValue="true"
-        app:summary="@string/settings_summary_gpu_thread"
-        app:iconSpaceReserved="false" />
-    <SwitchPreferenceCompat
-        app:key="GPU/ThreadedPresentation"
-        app:title="@string/settings_gpu_threaded_presentation"
-        app:defaultValue="true"
-        app:summary="@string/settings_summary_gpu_threaded_presentation"
-        app:iconSpaceReserved="false" />
-    <SwitchPreferenceCompat
-        app:key="GPU/PGXPVertexCache"
-        app:title="@string/settings_pgxp_vertex_cache"
-        app:defaultValue="false"
-        app:summary="@string/settings_summary_pgxp_vertex_cache"
-        app:iconSpaceReserved="false" />
-    <SwitchPreferenceCompat
-        app:key="GPU/PGXPCPU"
-        app:title="@string/settings_pgxp_cpu_mode"
-        app:defaultValue="false"
-        app:summary="@string/settings_summary_pgxp_cpu_mode"
-        app:iconSpaceReserved="false" />
-    <SwitchPreferenceCompat
-        app:key="CPU/RecompilerICache"
-        app:title="@string/settings_cpu_recompiler_icache"
-        app:defaultValue="false"
-        app:summary="@string/settings_summary_cpu_recompiler_icache"
-        app:iconSpaceReserved="false" />
-    <ListPreference
-        app:key="CPU/FastmemMode"
-        app:title="@string/settings_cpu_recompiler_fastmem"
-        app:entries="@array/settings_cpu_fastmem_mode_entries"
-        app:entryValues="@array/settings_cpu_fastmem_mode_values"
-        app:useSimpleSummaryProvider="true"
-        app:defaultValue="MMap"
-        app:summary="@string/settings_summary_cpu_recompiler_fastmem"
-        app:iconSpaceReserved="false" />
-    <SwitchPreferenceCompat
-        app:key="Display/DisplayAllFrames"
-        app:title="@string/settings_display_all_frames"
-        app:defaultValue="false"
-        app:summary="@string/settings_summary_display_all_frames"
-        app:iconSpaceReserved="false" />
-    <ListPreference
-        app:key="Display/MaxFPS"
-        app:title="@string/settings_presented_frame_limit"
-        app:defaultValue="60"
-        app:entries="@array/settings_advanced_display_fps_limit_entries"
-        app:entryValues="@array/settings_advanced_display_fps_limit_values"
-        app:useSimpleSummaryProvider="true"
-        app:iconSpaceReserved="false" />
-    <SwitchPreferenceCompat
-        app:key="BIOS/PatchTTYEnable"
-        app:title="@string/settings_console_tty_output"
-        app:defaultValue="false"
-        app:iconSpaceReserved="false" />
-    <ListPreference
-        app:key="Logging/LogLevel"
-        app:title="@string/settings_logging_level"
-        app:defaultValue="Warning"
-        app:entries="@array/settings_log_level_entries"
-        app:entryValues="@array/settings_log_level_values"
-        app:useSimpleSummaryProvider="true"
-        app:iconSpaceReserved="false" />
-    <SwitchPreferenceCompat
-        app:key="Logging/LogToFile"
-        app:title="@string/settings_log_to_file"
-        app:defaultValue="false"
-        app:summary="@string/settings_summary_log_to_file"
-        app:iconSpaceReserved="false" />
-    <SwitchPreferenceCompat
-        app:key="Logging/LogToDebug"
-        app:title="@string/settings_log_to_logcat"
-        app:defaultValue="false"
-        app:summary="@string/settings_summary_log_to_logcat"
-        app:iconSpaceReserved="false" />
+    <PreferenceCategory app:title="@string/settings_category_global" app:iconSpaceReserved="false">
+        <SwitchPreferenceCompat
+            app:key="Main/AutoLoadCheats"
+            app:title="@string/settings_load_patch_codes"
+            app:defaultValue="true"
+            app:summary="@string/settings_summary_load_patch_codes"
+            app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat
+            app:key="Main/ApplyGameSettings"
+            app:title="@string/settings_apply_compatibility_settings"
+            app:defaultValue="true"
+            app:summary="@string/settings_summary_apply_compatibility_settings"
+            app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat
+            app:key="Main/DisableAllEnhancements"
+            app:title="@string/settings_disable_all_enhancements"
+            app:defaultValue="false"
+            app:summary="@string/settings_summary_disable_all_enhancements"
+            app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat
+            app:key="Main/SustainedPerformanceMode"
+            app:title="@string/settings_sustained_performance_mode"
+            app:defaultValue="false"
+            app:summary="@string/settings_summary_sustained_performance_mode"
+            app:iconSpaceReserved="false" />
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/settings_category_display" app:iconSpaceReserved="false">
+        <SwitchPreferenceCompat
+            app:key="Display/VSync"
+            app:title="@string/settings_video_sync"
+            app:defaultValue="false"
+            app:summary="@string/settings_summary_video_sync"
+            app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat
+            app:key="Main/SyncToHostRefreshRate"
+            app:title="@string/settings_general_sync_to_host_refresh_rate"
+            app:defaultValue="false"
+            app:summary="@string/settings_summary_general_sync_to_host_refresh_rate"
+            app:dependency="Display/VSync"
+            app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat
+            app:key="Display/DisplayAllFrames"
+            app:title="@string/settings_display_all_frames"
+            app:defaultValue="false"
+            app:summary="@string/settings_summary_display_all_frames"
+            app:iconSpaceReserved="false" />
+        <ListPreference
+            app:key="Display/MaxFPS"
+            app:title="@string/settings_presented_frame_limit"
+            app:defaultValue="60"
+            app:entries="@array/settings_advanced_display_fps_limit_entries"
+            app:entryValues="@array/settings_advanced_display_fps_limit_values"
+            app:useSimpleSummaryProvider="true"
+            app:iconSpaceReserved="false" />
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/settings_category_audio" app:iconSpaceReserved="false">
+        <ListPreference
+            app:key="Audio/Backend"
+            app:title="@string/settings_audio_backend"
+            app:entries="@array/settings_audio_backend_entries"
+            app:entryValues="@array/settings_audio_backend_values"
+            app:defaultValue="OpenSLES"
+            app:useSimpleSummaryProvider="true"
+            app:iconSpaceReserved="false" />
+        <ListPreference
+            app:key="Audio/BufferSize"
+            app:title="@string/settings_audio_buffer_size"
+            app:entries="@array/settings_audio_buffer_size_entries"
+            app:entryValues="@array/settings_audio_buffer_size_values"
+            app:defaultValue="2048"
+            app:summary="@string/settings_summary_audio_buffer_size"
+            app:useSimpleSummaryProvider="true"
+            app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat
+            app:key="Audio/Sync"
+            app:title="@string/settings_audio_sync"
+            app:defaultValue="true"
+            app:summary="@string/settings_summary_audio_sync"
+            app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat
+            app:key="Audio/Resampling"
+            app:title="@string/settings_audio_resampling"
+            app:defaultValue="true"
+            app:summary="@string/settings_summary_audio_resampling"
+            app:iconSpaceReserved="false" />
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/settings_category_console" app:iconSpaceReserved="false">
+        <ListPreference
+            app:key="Console/Region"
+            app:title="@string/settings_console_region"
+            app:entries="@array/settings_console_region_entries"
+            app:entryValues="@array/settings_console_region_values"
+            app:defaultValue="Auto"
+            app:useSimpleSummaryProvider="true"
+            app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat
+            app:key="CDROM/RegionCheck"
+            app:title="@string/settings_cdrom_region_check"
+            app:defaultValue="false"
+            app:summary="@string/settings_summary_cdrom_region_check"
+            app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat
+            app:key="CDROM/LoadImageToRAM"
+            app:title="@string/settings_cdrom_preload_image_to_ram"
+            app:defaultValue="false"
+            app:summary="@string/settings_summary_preload_image_to_ram"
+            app:iconSpaceReserved="false" />
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/settings_category_cpu" app:iconSpaceReserved="false">
+        <ListPreference
+            app:key="CPU/ExecutionMode"
+            app:title="@string/settings_cpu_execution_mode"
+            app:entries="@array/settings_cpu_execution_mode_entries"
+            app:entryValues="@array/settings_cpu_execution_mode_values"
+            app:defaultValue="Recompiler"
+            app:useSimpleSummaryProvider="true"
+            app:iconSpaceReserved="false" />
+        <ListPreference
+            app:key="CPU/Overclock"
+            app:title="@string/settings_cpu_overclocking"
+            app:defaultValue="100"
+            app:entries="@array/settings_advanced_cpu_overclock_entries"
+            app:entryValues="@array/settings_advanced_cpu_overclock_values"
+            app:useSimpleSummaryProvider="true"
+            app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat
+            app:key="CPU/RecompilerICache"
+            app:title="@string/settings_cpu_recompiler_icache"
+            app:defaultValue="false"
+            app:summary="@string/settings_summary_cpu_recompiler_icache"
+            app:iconSpaceReserved="false" />
+        <ListPreference
+            app:key="CPU/FastmemMode"
+            app:title="@string/settings_cpu_recompiler_fastmem"
+            app:entries="@array/settings_cpu_fastmem_mode_entries"
+            app:entryValues="@array/settings_cpu_fastmem_mode_values"
+            app:useSimpleSummaryProvider="true"
+            app:defaultValue="MMap"
+            app:summary="@string/settings_summary_cpu_recompiler_fastmem"
+            app:iconSpaceReserved="false" />
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/settings_category_gpu" app:iconSpaceReserved="false">
+        <SwitchPreferenceCompat
+            app:key="GPU/UseThread"
+            app:title="@string/settings_gpu_thread"
+            app:defaultValue="true"
+            app:summary="@string/settings_summary_gpu_thread"
+            app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat
+            app:key="GPU/ThreadedPresentation"
+            app:title="@string/settings_gpu_threaded_presentation"
+            app:defaultValue="true"
+            app:summary="@string/settings_summary_gpu_threaded_presentation"
+            app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat
+            app:key="GPU/PGXPVertexCache"
+            app:title="@string/settings_pgxp_vertex_cache"
+            app:defaultValue="false"
+            app:summary="@string/settings_summary_pgxp_vertex_cache"
+            app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat
+            app:key="GPU/PGXPCPU"
+            app:title="@string/settings_pgxp_cpu_mode"
+            app:defaultValue="false"
+            app:summary="@string/settings_summary_pgxp_cpu_mode"
+            app:iconSpaceReserved="false" />
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/settings_category_logging" app:iconSpaceReserved="false">
+        <ListPreference
+            app:key="Logging/LogLevel"
+            app:title="@string/settings_logging_level"
+            app:defaultValue="Warning"
+            app:entries="@array/settings_log_level_entries"
+            app:entryValues="@array/settings_log_level_values"
+            app:useSimpleSummaryProvider="true"
+            app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat
+            app:key="Logging/LogToFile"
+            app:title="@string/settings_log_to_file"
+            app:defaultValue="false"
+            app:summary="@string/settings_summary_log_to_file"
+            app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat
+            app:key="Logging/LogToDebug"
+            app:title="@string/settings_log_to_logcat"
+            app:defaultValue="false"
+            app:summary="@string/settings_summary_log_to_logcat"
+            app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat
+            app:key="BIOS/PatchTTYEnable"
+            app:title="@string/settings_console_tty_output"
+            app:defaultValue="false"
+            app:summary="Logs debug messages printed by games."
+            app:iconSpaceReserved="false" />
+    </PreferenceCategory>
 
 </PreferenceScreen>
