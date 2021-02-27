@@ -381,7 +381,7 @@ void QtHostInterface::onDisplayWindowKeyEvent(int key, bool pressed)
   if (masked_key < countof(ImGuiIO::KeysDown))
     ImGui::GetIO().KeysDown[masked_key] = pressed;
 
-  HandleHostKeyEvent(key, pressed);
+  HandleHostKeyEvent(key & ~Qt::KeyboardModifierMask, key & Qt::KeyboardModifierMask, pressed);
 }
 
 void QtHostInterface::onDisplayWindowMouseMoveEvent(int x, int y)

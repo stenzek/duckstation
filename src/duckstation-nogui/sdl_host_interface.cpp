@@ -1,10 +1,10 @@
 #include "sdl_host_interface.h"
 #include "frontend-common/controller_interface.h"
+#include "frontend-common/fullscreen_ui.h"
 #include "frontend-common/icon.h"
 #include "frontend-common/ini_settings_interface.h"
 #include "frontend-common/sdl_controller_interface.h"
 #include "frontend-common/sdl_initializer.h"
-#include "frontend-common/fullscreen_ui.h"
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
 #include "scmversion/scmversion.h"
@@ -307,7 +307,8 @@ void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
     case SDL_KEYUP:
     {
       // Binding mode
-      if (m_fullscreen_ui_enabled && m_controller_interface && m_controller_interface->HasHook() && event->key.repeat == 0)
+      if (m_fullscreen_ui_enabled && m_controller_interface && m_controller_interface->HasHook() &&
+          event->key.repeat == 0)
       {
         String keyName;
         if (!SDLKeyNames::KeyEventToString(event, keyName))
@@ -324,9 +325,9 @@ void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
 
       if (!ImGui::GetIO().WantCaptureKeyboard && event->key.repeat == 0)
       {
-        const HostKeyCode code = static_cast<HostKeyCode>(SDLKeyNames::KeyEventToInt(event));
+        const u32 code = SDLKeyNames::KeyEventToInt(event);
         const bool pressed = (event->type == SDL_KEYDOWN);
-        HandleHostKeyEvent(code, pressed);
+        HandleHostKeyEvent(code & SDLKeyNames::KEY_MASK, code & SDLKeyNames::MODIFIER_MASK, pressed);
       }
     }
     break;

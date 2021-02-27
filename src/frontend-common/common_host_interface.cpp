@@ -1267,11 +1267,15 @@ void CommonHostInterface::RegisterHotkey(String category, String name, String di
   m_hotkeys.push_back(HotkeyInfo{std::move(category), std::move(name), std::move(display_name), std::move(handler)});
 }
 
-bool CommonHostInterface::HandleHostKeyEvent(HostKeyCode key, bool pressed)
+bool CommonHostInterface::HandleHostKeyEvent(HostKeyCode code, HostKeyCode modifiers, bool pressed)
 {
-  const auto iter = m_keyboard_input_handlers.find(key);
+  auto iter = m_keyboard_input_handlers.find(code | modifiers);
   if (iter == m_keyboard_input_handlers.end())
-    return false;
+  {
+    // try without the modifier
+    if (modifiers == 0 || (iter = m_keyboard_input_handlers.find(code)) == m_keyboard_input_handlers.end())
+      return false;
+  }
 
   iter->second(pressed);
   return true;

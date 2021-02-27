@@ -10,6 +10,13 @@
 
 namespace SDLKeyNames {
 
+enum : u32
+{
+  MODIFIER_SHIFT = 16,
+  KEY_MASK = ((1 << MODIFIER_SHIFT) - 1),
+  MODIFIER_MASK = ~KEY_MASK,
+};
+
 static const std::map<int, const char*> s_sdl_key_names = {{SDLK_RETURN, "Return"},
                                                            {SDLK_ESCAPE, "Escape"},
                                                            {SDLK_BACKSPACE, "Backspace"},
@@ -265,13 +272,13 @@ static const std::array<SDLKeyModifierEntry, 4> s_sdl_key_modifiers = {
    {KMOD_LALT, static_cast<SDL_Keymod>(KMOD_LALT | KMOD_RALT), SDLK_LALT, SDLK_RALT, "Alt"},
    {KMOD_LGUI, static_cast<SDL_Keymod>(KMOD_LGUI | KMOD_RGUI), SDLK_LGUI, SDLK_RGUI, "Meta"}}};
 
-const char* GetKeyName(SDL_Keycode key)
+static const char* GetKeyName(SDL_Keycode key)
 {
   const auto it = s_sdl_key_names.find(key);
   return it == s_sdl_key_names.end() ? nullptr : it->second;
 }
 
-std::optional<SDL_Keycode> GetKeyCodeForName(const std::string_view key_name)
+static std::optional<SDL_Keycode> GetKeyCodeForName(const std::string_view key_name)
 {
   for (const auto& it : s_sdl_key_names)
   {
@@ -282,24 +289,24 @@ std::optional<SDL_Keycode> GetKeyCodeForName(const std::string_view key_name)
   return std::nullopt;
 }
 
-u32 KeyEventToInt(const SDL_Event* event)
+static u32 KeyEventToInt(const SDL_Event* event)
 {
   u32 code = static_cast<u32>(event->key.keysym.sym);
 
   const SDL_Keymod mods = static_cast<SDL_Keymod>(event->key.keysym.mod);
   if (mods & (KMOD_LSHIFT | KMOD_RSHIFT))
-    code |= static_cast<u32>(KMOD_LSHIFT) << 16;
+    code |= static_cast<u32>(KMOD_LSHIFT) << MODIFIER_SHIFT;
   if (mods & (KMOD_LCTRL | KMOD_RCTRL))
-    code |= static_cast<u32>(KMOD_LCTRL) << 16;
+    code |= static_cast<u32>(KMOD_LCTRL) << MODIFIER_SHIFT;
   if (mods & (KMOD_LALT | KMOD_RALT))
-    code |= static_cast<u32>(KMOD_LALT) << 16;
+    code |= static_cast<u32>(KMOD_LALT) << MODIFIER_SHIFT;
   if (mods & (KMOD_LGUI | KMOD_RGUI))
-    code |= static_cast<u32>(KMOD_LGUI) << 16;
+    code |= static_cast<u32>(KMOD_LGUI) << MODIFIER_SHIFT;
 
   return code;
 }
 
-bool KeyEventToString(const SDL_Event* event, String& out_string)
+static bool KeyEventToString(const SDL_Event* event, String& out_string)
 {
   const SDL_Keycode key = event->key.keysym.sym;
   const SDL_Keymod mods = static_cast<SDL_Keymod>(event->key.keysym.mod);
@@ -322,7 +329,7 @@ bool KeyEventToString(const SDL_Event* event, String& out_string)
   return true;
 }
 
-std::optional<u32> ParseKeyString(const std::string_view key_str)
+static std::optional<u32> ParseKeyString(const std::string_view key_str)
 {
   u32 modifiers = 0;
   std::string_view::size_type pos = 0;
@@ -356,6 +363,6 @@ std::optional<u32> ParseKeyString(const std::string_view key_str)
   if (!key_code)
     return std::nullopt;
 
-  return static_cast<u32>(key_code.value()) | (modifiers << 16);
+  return static_cast<u32>(key_code.value()) | (modifiers << MODIFIER_SHIFT);
 }
 } // namespace SDLKeyNames

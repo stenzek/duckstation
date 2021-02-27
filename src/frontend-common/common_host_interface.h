@@ -347,7 +347,7 @@ protected:
   virtual bool AddRumbleToInputMap(const std::string& binding, u32 controller_index, u32 num_motors);
 
   void RegisterHotkey(String category, String name, String display_name, InputButtonHandler handler);
-  bool HandleHostKeyEvent(HostKeyCode code, bool pressed);
+  bool HandleHostKeyEvent(HostKeyCode code, HostKeyCode modifiers, bool pressed);
   bool HandleHostMouseEvent(HostMouseButton button, bool pressed);
   void UpdateInputMap(SettingsInterface& si);
   void ClearInputMap();
@@ -492,8 +492,8 @@ private:
     u32 controller_index;
     u32 num_motors;
     std::array<float, MAX_MOTORS> last_strength;
-    ControllerRumbleCallback update_callback;
     u64 last_update_time;
+    ControllerRumbleCallback update_callback;
   };
   std::vector<ControllerRumbleState> m_controller_vibration_motors;
 
