@@ -352,6 +352,10 @@ public class TouchscreenControllerView extends FrameLayout {
         mMovingName = null;
         mMovingLastX = 0.0f;
         mMovingLastY = 0.0f;
+
+        // unpause if we're paused (from the setting)
+        if (AndroidHostInterface.getInstance().isEmulationThreadPaused())
+            AndroidHostInterface.getInstance().pauseEmulationThread(false);
     }
 
     private boolean handleEditingTouchEvent(MotionEvent event) {

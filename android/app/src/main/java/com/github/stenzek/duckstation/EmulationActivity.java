@@ -517,9 +517,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
 
     private void showTouchscreenControllerMenu() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        if (mGameTitle != null && !mGameTitle.isEmpty())
-            builder.setTitle(mGameTitle);
-
+        builder.setTitle(R.string.dialog_touchscreen_controller_settings);
         builder.setItems(R.array.emulation_touchscreen_menu, (dialogInterface, i) -> {
             switch (i) {
                 case 0:     // Change Type
@@ -554,7 +552,10 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
                         AlertDialog.Builder subBuilder = mTouchscreenController.createOpacityDialog(this);
                         subBuilder.setOnDismissListener(dialog -> onMenuClosed());
                         subBuilder.create().show();
+                    } else {
+                        onMenuClosed();
                     }
+
                 }
                 break;
 
@@ -564,25 +565,30 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
                         AlertDialog.Builder subBuilder = mTouchscreenController.createAddRemoveButtonDialog(this);
                         subBuilder.setOnDismissListener(dialog -> onMenuClosed());
                         subBuilder.create().show();
+                    } else {
+                        onMenuClosed();
                     }
                 }
                 break;
 
                 case 3:     // Edit Layout
                 {
-                    if (mTouchscreenController != null)
+                    if (mTouchscreenController != null) {
+                        // we deliberately don't call onMenuClosed() here to keep the system paused.
+                        // but we need to re-enable immersive mode to get proper editing.
+                        enableFullscreenImmersive();
                         mTouchscreenController.startLayoutEditing();
+                    } else {
+                        // no controller
+                        onMenuClosed();
+                    }
                 }
                 break;
             }
         });
 
-        builder.setOnDismissListener(dialogInterface -> onMenuClosed());
+        builder.setOnCancelListener(dialogInterface -> onMenuClosed());
         builder.create().show();
-
-        /*
-
-        */
     }
 
     private void showPatchesMenu() {
