@@ -5,8 +5,10 @@
 #include "qtutils.h"
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMessageBox>
+#include <cstdio>
 #include <cstdlib>
 #include <memory>
+#include <csignal>
 
 static bool ParseCommandLineParameters(QApplication& app, QtHostInterface* host_interface,
                                        std::unique_ptr<SystemBootParameters>* boot_params)
@@ -24,6 +26,28 @@ static bool ParseCommandLineParameters(QApplication& app, QtHostInterface* host_
     converted_argv.push_back(arg.data());
 
   return host_interface->ParseCommandLineParameters(args.size(), converted_argv.data(), boot_params);
+}
+
+static void SignalHandler(int signal)
+{
+  // First try the normal (graceful) shutdown/exit.
+  static bool graceful_shutdown_attempted = false;
+  if (!graceful_shutdown_attempted)
+  {
+    std::fprintf(stderr, "Received CTRL+C, attempting graceful shutdown. Press CTRL+C again to force.\n");
+    graceful_shutdown_attempted = true;
+    QtHostInterface::GetInstance()->requestExit();
+    return;
+  }
+
+  std::signal(signal, SIG_DFL);
+  std::quick_exit(1);
+}
+
+static void HookSignals()
+{
+  std::signal(SIGINT, SignalHandler);
+  std::signal(SIGTERM, SignalHandler);
 }
 
 int main(int argc, char* argv[])
@@ -64,6 +88,7 @@ int main(int argc, char* argv[])
   }
 
   window->initializeAndShow();
+  HookSignals();
 
   // if we're in batch mode, don't bother refreshing the game list as it won't be used
   if (!host_interface->inBatchMode())
