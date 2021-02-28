@@ -1128,7 +1128,7 @@ void DrawSettingsWindow()
                        "resume directly from where you left off next time.",
                        &s_settings_copy.save_state_on_exit);
         settings_changed |=
-          ToggleButton("Start Fullscreen", "Automatically switches to fullscreen mode when a game is started.",
+          ToggleButton("Start Fullscreen", "Automatically switches to fullscreen mode when the program is started.",
                        &s_settings_copy.start_fullscreen);
         settings_changed |=
           ToggleButton("Load Devices From Save States",
@@ -3118,7 +3118,7 @@ bool DrawConfirmWindow(const char* message, bool* result)
 
 void SetDebugMenuAllowed(bool allowed)
 {
-  s_debug_menu_enabled = allowed;
+  s_debug_menu_allowed = allowed;
   UpdateDebugMenuVisibility();
 }
 
@@ -3126,6 +3126,7 @@ void SetDebugMenuEnabled(bool enabled)
 {
   s_host_interface->GetSettingsInterface()->SetBoolValue("Main", "ShowDebugMenu", enabled);
   s_host_interface->GetSettingsInterface()->Save();
+  UpdateDebugMenuVisibility();
 }
 
 void UpdateDebugMenuVisibility()
@@ -3431,9 +3432,8 @@ void DrawDebugSettingsMenu()
     ImGui::EndMenu();
   }
 
-  bool fullscreen = s_host_interface->IsFullscreen();
-  if (ImGui::MenuItem("Fullscreen", nullptr, &fullscreen))
-    s_host_interface->RunLater([fullscreen] { s_host_interface->SetFullscreen(fullscreen); });
+  if (ImGui::MenuItem("Toggle Fullscreen"))
+    s_host_interface->RunLater([] { s_host_interface->SetFullscreen(!s_host_interface->IsFullscreen()); });
 
   if (ImGui::BeginMenu("Resize to Game", System::IsValid()))
   {

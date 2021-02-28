@@ -236,8 +236,8 @@ void EndLayout()
 
 bool BeginFullscreenColumns(const char* title)
 {
-  ImGui::SetNextWindowPos(ImVec2(g_layout_padding_left, 0.0f));
-  ImGui::SetNextWindowSize(ImVec2(LayoutScale(LAYOUT_SCREEN_WIDTH), ImGui::GetIO().DisplaySize.y));
+  ImGui::SetNextWindowPos(ImVec2(g_layout_padding_left, s_menu_bar_size));
+  ImGui::SetNextWindowSize(ImVec2(LayoutScale(LAYOUT_SCREEN_WIDTH), ImGui::GetIO().DisplaySize.y - s_menu_bar_size));
 
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
@@ -268,7 +268,7 @@ void EndFullscreenColumns()
 bool BeginFullscreenColumnWindow(float start, float end, const char* name, const ImVec4& background)
 {
   const ImVec2 pos(LayoutScale(start), 0.0f);
-  const ImVec2 size(LayoutScale(end - start), ImGui::GetIO().DisplaySize.y);
+  const ImVec2 size(LayoutScale(end - start), ImGui::GetIO().DisplaySize.y - s_menu_bar_size);
 
   ImGui::PushStyleColor(ImGuiCol_ChildBg, background);
 
