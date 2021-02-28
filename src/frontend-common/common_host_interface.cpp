@@ -3311,7 +3311,7 @@ void CommonHostInterface::UpdateCheevosActive()
     Cheevos::Shutdown();
     if (cheevos_enabled)
     {
-      if (!Cheevos::Initialize(this, cheevos_test_mode, cheevos_use_first_disc_from_playlist, cheevos_rich_presence))
+      if (!Cheevos::Initialize(cheevos_test_mode, cheevos_use_first_disc_from_playlist, cheevos_rich_presence))
         ReportError("Failed to initialize cheevos after settings change.");
     }
   }

@@ -4,8 +4,6 @@
 #include <string>
 
 class CDImage;
-class CommonHostInterface;
-class SettingsInterface;
 
 namespace Cheevos {
 
@@ -40,7 +38,7 @@ ALWAYS_INLINE u32 GetGameID()
   return g_game_id;
 }
 
-bool Initialize(CommonHostInterface* hi, bool test_mode, bool use_first_disc_from_playlist, bool enable_rich_presence);
+bool Initialize(bool test_mode, bool use_first_disc_from_playlist, bool enable_rich_presence);
 void Reset();
 void Shutdown();
 void Update();

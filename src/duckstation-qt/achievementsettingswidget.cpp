@@ -53,6 +53,7 @@ void AchievementSettingsWidget::updateEnableState()
   const bool enabled = m_host_interface->GetBoolSettingValue("Cheevos", "Enabled", false);
   m_ui.testMode->setEnabled(enabled);
   m_ui.useFirstDiscFromPlaylist->setEnabled(enabled);
+  m_ui.richPresence->setEnabled(enabled);
 }
 
 void AchievementSettingsWidget::updateLoginState()
@@ -80,7 +81,7 @@ void AchievementSettingsWidget::updateLoginState()
 
 void AchievementSettingsWidget::onLoginLogoutPressed()
 {
-  if (Cheevos::IsLoggedIn())
+  if (!m_host_interface->GetStringSettingValue("Cheevos", "Username").empty())
   {
     m_host_interface->executeOnEmulationThread([]() { Cheevos::Logout(); }, true);
     updateLoginState();
