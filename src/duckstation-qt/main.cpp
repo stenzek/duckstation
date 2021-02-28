@@ -1,14 +1,13 @@
-#include "common/log.h"
 #include "common/crash_handler.h"
 #include "mainwindow.h"
 #include "qthostinterface.h"
 #include "qtutils.h"
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMessageBox>
+#include <csignal>
 #include <cstdio>
 #include <cstdlib>
 #include <memory>
-#include <csignal>
 
 static bool ParseCommandLineParameters(QApplication& app, QtHostInterface* host_interface,
                                        std::unique_ptr<SystemBootParameters>* boot_params)
@@ -41,7 +40,13 @@ static void SignalHandler(int signal)
   }
 
   std::signal(signal, SIG_DFL);
+
+  // MacOS is missing std::quick_exit() despite it being C++11...
+#ifndef __APPLE__
   std::quick_exit(1);
+#else
+  _Exit(1);
+#endif
 }
 
 static void HookSignals()
