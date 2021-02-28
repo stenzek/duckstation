@@ -319,10 +319,14 @@ void ExecuteRecompiler()
 
     while (g_state.pending_ticks < g_state.downcount)
     {
+#if 0
+      LogCurrentState();
+#endif
+
       const u32 pc = g_state.regs.pc;
       g_state.current_instruction_pc = pc;
       const u32 fast_map_index = GetFastMapIndex(pc);
-      s_single_block_asm_dispatcher[fast_map_index]();
+      s_single_block_asm_dispatcher(s_fast_map[fast_map_index]);
     }
 
     TimingEvents::RunEvents();

@@ -163,6 +163,7 @@ public:
   Value ShrValues(const Value& lhs, const Value& rhs, bool assume_amount_masked = true);
   Value SarValues(const Value& lhs, const Value& rhs, bool assume_amount_masked = true);
   Value OrValues(const Value& lhs, const Value& rhs);
+  void OrValueInPlace(Value& lhs, const Value& rhs);
   Value AndValues(const Value& lhs, const Value& rhs);
   void AndValueInPlace(Value& lhs, const Value& rhs);
   Value XorValues(const Value& lhs, const Value& rhs);

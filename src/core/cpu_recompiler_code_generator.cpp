@@ -684,6 +684,54 @@ Value CodeGenerator::OrValues(const Value& lhs, const Value& rhs)
   return res;
 }
 
+void CodeGenerator::OrValueInPlace(Value& lhs, const Value& rhs)
+{
+  DebugAssert(lhs.size == rhs.size);
+  if (lhs.IsConstant() && rhs.IsConstant())
+  {
+    // compile-time
+    u64 new_cv = lhs.constant_value | rhs.constant_value;
+    switch (lhs.size)
+    {
+      case RegSize_8:
+        lhs = Value::FromConstantU8(Truncate8(new_cv));
+        break;
+
+      case RegSize_16:
+        lhs = Value::FromConstantU16(Truncate16(new_cv));
+        break;
+
+      case RegSize_32:
+        lhs = Value::FromConstantU32(Truncate32(new_cv));
+        break;
+
+      case RegSize_64:
+        lhs = Value::FromConstantU64(new_cv);
+        break;
+
+      default:
+        lhs = Value();
+        break;
+    }
+  }
+
+  // unlikely
+  if (rhs.HasConstantValue(0))
+    return;
+
+  if (lhs.IsInHostRegister())
+  {
+    EmitOr(lhs.host_reg, lhs.host_reg, rhs);
+  }
+  else
+  {
+    Value new_lhs = m_register_cache.AllocateScratch(lhs.size);
+    EmitCopyValue(new_lhs.host_reg, lhs);
+    EmitOr(new_lhs.host_reg, new_lhs.host_reg, rhs);
+    lhs = std::move(new_lhs);
+  }
+}
+
 Value CodeGenerator::AndValues(const Value& lhs, const Value& rhs)
 {
   DebugAssert(lhs.size == rhs.size);
@@ -2397,6 +2445,13 @@ bool CodeGenerator::Compile_cop0(const CodeBlockInstruction& cbi)
             {
               // need to adjust the mask
               Value masked_value = AndValues(value, Value::FromConstantU32(write_mask));
+              {
+                Value old_value = m_register_cache.AllocateScratch(RegSize_32);
+                EmitLoadCPUStructField(old_value.GetHostRegister(), RegSize_32, offset);
+                EmitAnd(old_value.GetHostRegister(), old_value.GetHostRegister(), Value::FromConstantU32(~write_mask));
+                OrValueInPlace(masked_value, old_value);
+              }
+
               if (g_settings.UsingPGXPCPUMode())
               {
                 EmitFunctionCall(nullptr, &PGXP::CPU_MTC0, Value::FromConstantU32(cbi.instruction.bits), masked_value,
