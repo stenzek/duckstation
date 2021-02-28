@@ -337,6 +337,7 @@ jobs:
             linux-x64-appimage-qt/duckstation-qt-x64.AppImage
             linux-x64-appimage-qt-zsync/duckstation-qt-x64.AppImage.zsync
             android/duckstation-android.apk
+            macos-x64/duckstation-mac-release.zip
 
       - name: Create dev release
         if: github.ref == 'refs/heads/dev'
