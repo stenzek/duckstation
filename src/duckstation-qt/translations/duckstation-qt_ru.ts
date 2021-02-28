@@ -7469,7 +7469,7 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../settingsdialog.ui" line="58"/>
         <source>General Settings</source>
-        <translation>Главные настройки</translation>
+        <translation>Общие настройки</translation>
     </message>
     <message>
         <location filename="../settingsdialog.ui" line="67"/>
