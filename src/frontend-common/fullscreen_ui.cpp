@@ -2934,7 +2934,7 @@ void DrawOSDMessages()
   const float margin = LayoutScale(10.0f);
   const float padding = LayoutScale(10.0f);
   float position_x = margin;
-  float position_y = margin;
+  float position_y = margin + static_cast<float>(s_host_interface->GetDisplay()->GetDisplayTopMargin());
 
   s_host_interface->EnumerateOSDMessages(
     [max_width, spacing, padding, &position_x, &position_y](const std::string& message, float time_remaining) -> bool {
