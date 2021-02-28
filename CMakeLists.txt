@@ -22,7 +22,7 @@ if(NOT ANDROID)
   option(BUILD_NOGUI_FRONTEND "Build the NoGUI frontend" ON)
   option(BUILD_QT_FRONTEND "Build the Qt frontend" ON)
   option(ENABLE_DISCORD_PRESENCE "Build with Discord Rich Presence support" ON)
-  option(ENABLE_CHEEVOS "Build with RetroAchievements support" OFF)
+  option(ENABLE_CHEEVOS "Build with RetroAchievements support" ON)
   option(USE_SDL2 "Link with SDL2 for controller support" ON)
 endif()
 

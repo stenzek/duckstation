@@ -70,6 +70,8 @@ Other features include:
  - Memory card editor and save importer
  - Emulated CPU overclocking
  - Integrated and remote debugging
+ - Multitap controllers (up to 8 devices)
+ - RetroAchievements
 
 ## System Requirements
  - A CPU faster than a potato. But it needs to be x86_64, AArch32/armv7, or AArch64/ARMv8, otherwise you won't get a recompiler and it'll be slow.
@@ -180,8 +182,9 @@ Requirements (Debian/Ubuntu package names):
  - Qt 5 (`qtbase5-dev`, `qtbase5-private-dev`, `qtbase5-dev-tools`, `qttools5-dev`)
  - libevdev (`libevdev-dev`)
  - git (`git`) (Note: needed to clone the repository and at build time)
- - Optional for faster building: Ninja (`ninja-build`)
+ - Optional for RetroAchievements (on by default): libcurl (`libcurl4-gnutls-dev`)
  - Optional for framebuffer output: DRM/GBM (`libgbm-dev`, `libdrm-dev`)
+ - Optional for faster building: Ninja (`ninja-build`)
 
 1. Clone the repository. Submodules aren't necessary, there is only one and it is only used for Windows (`git clone https://github.com/stenzek/duckstation.git -b dev`).
 2. Create a build directory, either in-tree or elsewhere.
