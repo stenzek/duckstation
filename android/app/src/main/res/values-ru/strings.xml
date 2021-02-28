@@ -4,7 +4,7 @@
 	<string name="action_controller_mapping">Привязки геймпада</string>
 	<string name="title_activity_settings">Настройки</string>
 	<string name="settings_console_region">Регион консоли</string>
-	<string name="settings_console_tty_output">Включить вывод в TTY</string>
+	<string name="settings_console_tty_output">Вывод в TTY</string>
 	<string name="settings_console_fast_boot">Быстрый запуск</string>
 	<string name="settings_osd_show_messages">Показывать сообщения</string>
 	<string name="settings_osd_show_speed">Показывать скорость эмуляции</string>
@@ -43,9 +43,9 @@
 	<string name="settings_presented_frame_limit">Ограничение частоты кадров</string>
 	<string name="settings_logging_level">Уровень логирования</string>
 	<string name="settings_log_to_file">Лог в файл</string>
-	<string name="settings_summary_log_to_file">Записывать сообщения лога в duckstation.log в папке эмулятора. Используйте только для отладки из-за замедления эмуляции.</string>
+	<string name="settings_summary_log_to_file">Записывать сообщения лога в duckstation.log в папке эмулятора. Из-за снижения скорости эмуляции используйте только для отладки.</string>
 	<string name="settings_log_to_logcat">Лог в Logcat</string>
-	<string name="settings_summary_log_to_logcat">Записывать сообщения лога в журнал отладки Android. Полезно только при подключении к ПК с adb.</string>
+	<string name="settings_summary_log_to_logcat">Записывать сообщения лога в журнал отладки Android. Полезно только при подключении к компьютеру с adb.</string>
 	<string name="settings_volume">Громкость</string>
 	<string name="settings_summary_volume">Изменение громкости звука эмулятора.</string>
 	<string name="settings_fast_forward_volume">Громкость при ускорении</string>
@@ -83,7 +83,7 @@
 	<string name="settings_cdrom_read_speedup">Ускорение считывания CD-ROM</string>
 	<string name="settings_summary_cdrom_read_speedup">Повышать скорость чтения диска на заданный множитель. Применяется только при считываниях с двойной скоростью и не учитывается при воспроизведении аудио. Ускоряет загрузки в некоторых играх, но может приводить к ошибкам.</string>
 	<string name="settings_summary_console_fast_boot">Пропускать BIOS/заставку, загружаясь прямо в игру. Как правило, не влияет на стабильность, но некоторые игры могут перестать запускаться.</string>
-	<string name="settings_msaa">Мультисемплинг</string>
+	<string name="settings_msaa">Мультисэмплинг</string>
 	<string name="settings_true_color">Рендеринг в True Color (24-бита, без дизеринга)</string>
 	<string name="settings_summary_true_color">Позволяет получить более качественные градиенты, но меняет отображение некоторых цветов. Отключение опции также включает дизеринг. Большинство игр совместимо с этой настройкой.</string>
 	<string name="settings_scaled_dithering">Масштабируемый дизеринг (изменять паттерн дизеринга под разрешение)</string>
@@ -205,7 +205,7 @@
         <string name="settings_osd_show_show_resolution">Показывать разрешение</string>
         <string name="settings_summary_osd_show_resolution">Показывать разрешение рендеринга игры в правом верхнем углу экрана.</string>
 	<string name="settings_summary_display_stretch">Растягивать изображение под пропорции экрана.</string>
-    	<string name="settings_display_stretch">Растягивать под экран</string>
+    	<string name="settings_display_stretch">Растягивать на весь экран</string>
     	<string name="settings_category_global">Основные настройки</string>
     	<string name="settings_category_display">Настройки экрана</string>
     	<string name="settings_category_audio">Настройки звука</string>
@@ -217,4 +217,5 @@
     	<string name="dialog_touchscreen_controller_type">Тип экранного контроллера</string>
     	<string name="dialog_touchscreen_controller_opacity">Видимость экранного контроллера</string>
     	<string name="dialog_touchscreen_controller_buttons">Кнопки экранного контроллера</string>
+	<string name="settings_summary_console_tty_output">Выводить отладочную информацию по игре в консоль.</string>
 </resources>
