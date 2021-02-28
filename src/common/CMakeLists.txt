@@ -72,6 +72,8 @@ add_library(common
   string.h
   string_util.cpp
   string_util.h
+  thirdparty/thread_pool.cpp
+  thirdparty/thread_pool.h
   timer.cpp
   timer.h
   timestamp.cpp

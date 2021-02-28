@@ -177,9 +177,10 @@ ALWAYS_INLINE_RELEASE static T InBack(T t)
 }
 
 template<typename T>
-ALWAYS_INLINE_RELEASE static T OutBack(T t)
+static T OutBack(T t)
 {
-  return 1 + (--t) * t * (2.70158f * t + 1.70158f);
+  t -= 1;
+  return 1 + t * t * (2.70158f * t + 1.70158f);
 }
 
 template<typename T>

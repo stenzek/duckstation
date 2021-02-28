@@ -103,7 +103,7 @@ set(SRCS
   settingsdialog.ui
 )
 
-if(WITH_CHEEVOS)
+if(ENABLE_CHEEVOS)
   set(SRCS ${SRCS}
     achievementlogindialog.cpp
     achievementlogindialog.h

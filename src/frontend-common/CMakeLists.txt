@@ -76,7 +76,6 @@ if(SDL2_FOUND)
 endif()
 
 if(USE_EVDEV)
-  find_package(LIBEVDEV REQUIRED)
   target_compile_definitions(frontend-common PUBLIC "-DWITH_EVDEV=1")
   target_include_directories(frontend-common PRIVATE ${LIBEVDEV_INCLUDE_DIRS})
   target_link_libraries(frontend-common PRIVATE ${LIBEVDEV_LIBRARIES})
@@ -101,6 +100,14 @@ if(ENABLE_CHEEVOS)
       http_downloader_winhttp.cpp
       http_downloader_winhttp.h
     )
+    else()
+      target_sources(frontend-common PRIVATE
+        http_downloader_curl.cpp
+        http_downloader_curl.h
+      )
+      target_link_libraries(frontend-common PRIVATE
+        CURL::libcurl
+      )
   endif()
 
   target_sources(frontend-common PRIVATE
