@@ -4,7 +4,7 @@
     <string name="action_controller_mapping">Mapear Controles</string>
     <string name="title_activity_settings">Configurações</string>
     <string name="settings_console_region">Região do Console</string>
-    <string name="settings_console_tty_output">EAtivar saída TTY</string>
+    <string name="settings_console_tty_output">Desativar saída TTY</string>
     <string name="settings_console_fast_boot">Inicio Rápido</string>
     <string name="settings_osd_show_messages">Mostrar Mensagens</string>
     <string name="settings_osd_show_speed">Mostrar Velocidade da Emulação</string>
@@ -71,7 +71,7 @@
     <string name="settings_memory_card_1_type">Tipo de Cartão de Memória 1</string>
     <string name="settings_memory_card_2_type">Tipo de Cartão de Memória 2</string>
     <string name="settings_crop_mode">Modo de Corte</string>
-    <string name="settings_aspect_ratio">Aspect Ratio</string>
+    <string name="settings_aspect_ratio">Razão de Aspecto</string>
     <string name="settings_linear_upscaling">Escalonamento Linear</string>
     <string name="settings_integer_upscaling">Escalonamento Integro</string>
     <string name="settings_summary_linear_upscaling">Suaviza a imagem ao aumentar a resolução da emulação.</string>
@@ -79,7 +79,9 @@
     <string name="settings_summary_osd_show_messages">Mostra mensagens em tela ao salvar, carregar, carregar trapaças quando eventos ou alertas ocorrerem.</string>
     <string name="settings_summary_osd_show_speed">Define a velocidade de emulação. Não é garantido que essa velocidade será atingida.</string>
     <string name="settings_summary_osd_show_fps">Mostra a taxa de quadros (FPS) interna do jogo no canto superior direito da tela.</string>
-    <string name="settings_summary_osd_show_vps">Mostra o número de quadros (VPS) exibidos por segundo pelo sistema no canto superior direito da tela.</string>
+    <string name="settings_display_stretch">Esticar para Preencher</string>
+	<string name="settings_summary_display_stretch">Estica a imagem para preencher toda a tela.</string>
+	<string name="settings_summary_osd_show_vps">Mostra o número de quadros (VPS) exibidos por segundo pelo sistema no canto superior direito da tela.</string>
     <string name="settings_cdrom_read_speedup">Velocidade de leitura CD-ROM</string>
     <string name="settings_summary_cdrom_read_speedup">Acelera a leitura de CD-ROM. Aplica-se apenas a leituras de velocidade 2x é ignorado quando o áudio está sendo reproduzido. Pode melhorar a velocidade de carregamento em alguns jogos, ao custo de quebrar outros.</string>
     <string name="settings_summary_console_fast_boot">Pula a tela de abertura clássica da Sony seguro ativar porém alguns raros jogos podem quebrar.</string>
