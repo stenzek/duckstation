@@ -89,8 +89,8 @@
         <item>Reiniciar</item>
         <item>Trapaças</item>
         <item>Mudar Disco</item>
-        <item>Configurações</item>
         <item>Mudar controle em Tela</item>
+        <item>Configurações</item>
     </string-array>
     <string-array name="settings_cdrom_read_speedup_entries">
         <item>Nenhum</item>

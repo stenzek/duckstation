@@ -89,8 +89,8 @@
         <item>Reiniciar</item>
         <item>Código de Trucos</item>
         <item>Cambiar Disco</item>
-        <item>Configuraciones</item>
         <item>Cambiar Control de Pantalla Tactil</item>
+        <item>Configuraciones</item>
     </string-array>
     <string-array name="settings_cdrom_read_speedup_entries">
         <item>Ninguno (Velocidad Doble)</item>
