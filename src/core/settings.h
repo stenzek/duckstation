@@ -1,5 +1,6 @@
 #pragma once
 #include "common/log.h"
+#include "common/string.h"
 #include "types.h"
 #include <array>
 #include <optional>
@@ -219,6 +220,8 @@ struct Settings
 
   MultitapMode multitap_mode = MultitapMode::Disabled;
 
+  std::array<TinyString, NUM_CONTROLLER_AND_CARD_PORTS> GeneratePortLabels() const;
+
   LOGLEVEL log_level = LOGLEVEL_INFO;
   std::string log_filter;
   bool log_to_console = false;
@@ -253,8 +256,6 @@ struct Settings
   }
 
   bool HasAnyPerGameMemoryCards() const;
-
-  bool IsMultitapEnabledOnPort(u32 port) const;
 
   static void CPUOverclockPercentToFraction(u32 percent, u32* numerator, u32* denominator);
   static u32 CPUOverclockFractionToPercent(u32 numerator, u32 denominator);
