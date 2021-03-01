@@ -18,7 +18,7 @@
     <string-array name="gpu_renderer_entries">
         <item>Dedicado (OpenGL)</item>
         <item>Dedicado (Vulkan)</item>
-        <item>Software</item>
+        <item>Aplicativo</item>
     </string-array>
     <string-array name="settings_gpu_resolution_scale_entries">
         <item>1x</item>
@@ -39,7 +39,7 @@
         <item>16x</item>
     </string-array>
     <string-array name="settings_display_crop_mode_entries">
-        <item>None</item>
+        <item>Nenhum</item>
         <item>Área Renderizada</item>
         <item>Todas as Bordas</item>
     </string-array>
