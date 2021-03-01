@@ -257,8 +257,7 @@ void AndroidHostInterface::LoadSettings(SettingsInterface& si)
   g_settings.gpu_per_sample_shading = StringUtil::EndsWith(msaa_str, "-ssaa");
 
   // turn percentage into fraction for overclock
-  const u32 overclock_percent =
-    static_cast<u32>(std::max(si.GetIntValue("CPU", "Overclock", 100), 1));
+  const u32 overclock_percent = static_cast<u32>(std::max(si.GetIntValue("CPU", "Overclock", 100), 1));
   Settings::CPUOverclockPercentToFraction(overclock_percent, &g_settings.cpu_overclock_numerator,
                                           &g_settings.cpu_overclock_denominator);
   g_settings.cpu_overclock_enable = (overclock_percent != 100);
@@ -1120,13 +1119,29 @@ DEFINE_JNI_ARGS_METHOD(jobjectArray, AndroidHostInterface_getInputProfileNames, 
 DEFINE_JNI_ARGS_METHOD(jboolean, AndroidHostInterface_loadInputProfile, jobject obj, jstring name)
 {
   AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
-  return hi->ApplyInputProfile(AndroidHelpers::JStringToString(env, name).c_str());
+  const std::string profile_name(AndroidHelpers::JStringToString(env, name));
+  if (profile_name.empty())
+    return false;
+
+  const std::string profile_path(hi->GetInputProfilePath(profile_name.c_str()));
+  if (profile_path.empty())
+    return false;
+
+  return hi->ApplyInputProfile(profile_path.c_str());
 }
 
 DEFINE_JNI_ARGS_METHOD(jboolean, AndroidHostInterface_saveInputProfile, jobject obj, jstring name)
 {
   AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
-  return hi->SaveInputProfile(AndroidHelpers::JStringToString(env, name).c_str());
+  const std::string profile_name(AndroidHelpers::JStringToString(env, name));
+  if (profile_name.empty())
+    return false;
+
+  const std::string profile_path(hi->GetSavePathForInputProfile(profile_name.c_str()));
+  if (profile_path.empty())
+    return false;
+
+  return hi->SaveInputProfile(profile_path.c_str());
 }
 
 DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_refreshGameList, jobject obj, jboolean invalidate_cache,
@@ -1620,7 +1635,8 @@ DEFINE_JNI_ARGS_METHOD(jobjectArray, AndroidHostInterface_getSaveStateInfo, jobj
   return ret;
 }
 
-DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_toggleControllerAnalogMode, jobject obj) {
+DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_toggleControllerAnalogMode, jobject obj)
+{
   // hacky way to toggle analog mode
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
