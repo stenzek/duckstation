@@ -420,7 +420,7 @@ std::string GetGameCodeForImage(CDImage* cdi)
   return code;
 }
 
-static std::string GetExecutableNameForImage(CDImage* cdi, ISOReader& iso)
+static std::string GetExecutableNameForImage(CDImage* cdi, ISOReader& iso, bool strip_subdirectories)
 {
   // Read SYSTEM.CNF
   std::vector<u8> system_cnf_data;
@@ -469,19 +469,34 @@ static std::string GetExecutableNameForImage(CDImage* cdi, ISOReader& iso)
   if (iter == lines.end())
     return {};
 
-  // cdrom:\SCES_123.45;1
   std::string code = iter->second;
-  std::string::size_type pos = code.rfind('\\');
-  if (pos != std::string::npos)
+  std::string::size_type pos;
+  if (strip_subdirectories)
   {
-    code.erase(0, pos + 1);
+    // cdrom:\SCES_123.45;1
+    pos = code.rfind('\\');
+    if (pos != std::string::npos)
+    {
+      code.erase(0, pos + 1);
+    }
+    else
+    {
+      // cdrom:SCES_123.45;1
+      pos = code.rfind(':');
+      if (pos != std::string::npos)
+        code.erase(0, pos + 1);
+    }
   }
   else
   {
-    // cdrom:SCES_123.45;1
-    pos = code.rfind(':');
-    if (pos != std::string::npos)
-      code.erase(0, pos + 1);
+    if (code.compare(0, 6, "cdrom:") == 0)
+      code.erase(0, 6);
+    else
+      Log_WarningPrintf("Unknown prefix in executable path: '%s'", code.c_str());
+
+    // remove leading slashes
+    while (code[0] == '/' || code[0] == '\\')
+      code.erase(0, 1);
   }
 
   // strip off ; or version number
@@ -498,7 +513,7 @@ std::string GetExecutableNameForImage(CDImage* cdi)
   if (!iso.Open(cdi, 1))
     return {};
 
-  return GetExecutableNameForImage(cdi, iso);
+  return GetExecutableNameForImage(cdi, iso, true);
 }
 
 bool ReadExecutableFromImage(CDImage* cdi, std::string* out_executable_name, std::vector<u8>* out_executable_data)
@@ -509,19 +524,20 @@ bool ReadExecutableFromImage(CDImage* cdi, std::string* out_executable_name, std
 
   bool result = false;
 
-  std::string executable_name(GetExecutableNameForImage(cdi, iso));
-  if (!executable_name.empty())
+  std::string executable_path(GetExecutableNameForImage(cdi, iso, false));
+  Log_DevPrintf("Executable path: '%s'", executable_path.c_str());
+  if (!executable_path.empty())
   {
-    result = iso.ReadFile(executable_name.c_str(), out_executable_data);
+    result = iso.ReadFile(executable_path.c_str(), out_executable_data);
     if (!result)
-      Log_ErrorPrintf("Failed to read executable '%s' from disc", executable_name.c_str());
+      Log_ErrorPrintf("Failed to read executable '%s' from disc", executable_path.c_str());
   }
 
   if (!result)
   {
     // fallback to PSX.EXE
-    executable_name = "PSX.EXE";
-    result = iso.ReadFile(executable_name.c_str(), out_executable_data);
+    executable_path = "PSX.EXE";
+    result = iso.ReadFile(executable_path.c_str(), out_executable_data);
     if (!result)
       Log_ErrorPrint("Failed to read fallback PSX.EXE from disc");
   }
@@ -530,7 +546,7 @@ bool ReadExecutableFromImage(CDImage* cdi, std::string* out_executable_name, std
     return false;
 
   if (out_executable_name)
-    *out_executable_name = std::move(executable_name);
+    *out_executable_name = std::move(executable_path);
 
   return true;
 }
@@ -1865,7 +1881,6 @@ void UpdateMultitaps()
     break;
   }
 }
-
 
 bool DumpRAM(const char* filename)
 {
