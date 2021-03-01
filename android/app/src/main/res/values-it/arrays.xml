@@ -89,8 +89,8 @@
         <item>Reset</item>
         <item>Codici Patch</item>
         <item>Cambia Disco</item>
-        <item>Impostazioni</item>
         <item>Cambia Controller Touchscreen</item>
+        <item>Impostazioni</item>
     </string-array>
     <string-array name="settings_cdrom_read_speedup_entries">
         <item>Nessuna Velocità Doppia)</item>
