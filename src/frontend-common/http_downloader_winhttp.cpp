@@ -35,11 +35,20 @@ bool HTTPDownloaderWinHttp::Initialize()
   m_hSession = WinHttpOpen(StringUtil::UTF8StringToWideString(m_user_agent).c_str(),
                            WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY, nullptr, nullptr, WINHTTP_FLAG_ASYNC);
   if (m_hSession == NULL)
+  {
+    Log_ErrorPrintf("WinHttpOpen() failed: %u", GetLastError());
     return false;
+  }
 
   const DWORD notification_flags = WINHTTP_CALLBACK_FLAG_ALL_COMPLETIONS | WINHTTP_CALLBACK_FLAG_REQUEST_ERROR |
                                    WINHTTP_CALLBACK_FLAG_HANDLES | WINHTTP_CALLBACK_FLAG_SECURE_FAILURE;
-  WinHttpSetStatusCallback(m_hSession, HTTPStatusCallback, notification_flags, NULL);
+  if (WinHttpSetStatusCallback(m_hSession, HTTPStatusCallback, notification_flags, NULL) ==
+      WINHTTP_INVALID_STATUS_CALLBACK)
+  {
+    Log_ErrorPrint("WinHttpSetStatusCallback() failed: %u", GetLastError());
+    return false;
+  }
+
   return true;
 }
 
