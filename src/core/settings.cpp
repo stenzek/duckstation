@@ -78,26 +78,32 @@ bool Settings::HasAnyPerGameMemoryCards() const
   });
 }
 
-bool Settings::IsMultitapEnabledOnPort(u32 port) const
+std::array<TinyString, NUM_CONTROLLER_AND_CARD_PORTS> Settings::GeneratePortLabels() const
 {
-  if (port < NUM_MULTITAPS)
+  static constexpr std::array<std::array<bool, NUM_MULTITAPS>, static_cast<size_t>(MultitapMode::Count)>
+    multitap_enabled_on_port = {{{false, false}, {true, false}, {false, true}, {true, true}}};
+
+  std::array<TinyString, NUM_CONTROLLER_AND_CARD_PORTS> labels;
+
+  u32 logical_port = 0;
+  for (u32 physical_port = 0; physical_port < NUM_MULTITAPS; physical_port++)
   {
-    switch (multitap_mode)
+    if (multitap_enabled_on_port[static_cast<size_t>(multitap_mode)][physical_port])
     {
-      case MultitapMode::Disabled:
-        return false;
-
-      case MultitapMode::Port1Only:
-        return port == 0u;
-
-      case MultitapMode::BothPorts:
-        return true;
-
-        DefaultCaseIsUnreachable();
+      for (u32 i = 0; i < 4; i++)
+      {
+        labels[logical_port] = TinyString::FromFormat("Port %u%c", physical_port + 1u, 'A' + i);
+        logical_port++;
+      }
+    }
+    else
+    {
+      labels[logical_port] = TinyString::FromFormat("Port %u", physical_port + 1u);
+      logical_port++;
     }
   }
 
-  return false;
+  return labels;
 }
 
 void Settings::CPUOverclockPercentToFraction(u32 percent, u32* numerator, u32* denominator)
@@ -877,10 +883,10 @@ const char* Settings::GetMemoryCardTypeDisplayName(MemoryCardType type)
   return s_memory_card_type_display_names[static_cast<int>(type)];
 }
 
-static std::array<const char*, 3> s_multitap_enable_mode_names = {{"Disabled", "Port1Only", "BothPorts"}};
-static std::array<const char*, 3> s_multitap_enable_mode_display_names = {
+static std::array<const char*, 4> s_multitap_enable_mode_names = {{"Disabled", "Port1Only", "Port2Only", "BothPorts"}};
+static std::array<const char*, 4> s_multitap_enable_mode_display_names = {
   {TRANSLATABLE("MultitapMode", "Disabled"), TRANSLATABLE("MultitapMode", "Enable on Port 1 only"),
-   TRANSLATABLE("MultitapMode", "Enable on Ports 1 and 2")}};
+   TRANSLATABLE("MultitapMode", "Enable on Port 2 only"), TRANSLATABLE("MultitapMode", "Enable on Ports 1 and 2")}};
 
 std::optional<MultitapMode> Settings::ParseMultitapModeName(const char* str)
 {

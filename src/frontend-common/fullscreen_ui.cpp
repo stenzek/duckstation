@@ -1573,17 +1573,14 @@ void DrawSettingsWindow()
         TinyString section;
         TinyString key;
 
+        std::array<TinyString, NUM_CONTROLLER_AND_CARD_PORTS> port_labels = s_settings_copy.GeneratePortLabels();
+
         for (u32 port = 0; port < NUM_CONTROLLER_AND_CARD_PORTS; port++)
         {
-          u32 console_port = port / 4u;
-          if (s_settings_copy.IsMultitapEnabledOnPort(console_port))
-            MenuHeading(TinyString::FromFormat("Port %u%c", console_port + 1u, 'A' + (port % 4u)));
-          else if (port < 2u)
-            MenuHeading(TinyString::FromFormat("Port %u", port + 1u));
-          else if (port % 4u == 0u && s_settings_copy.IsMultitapEnabledOnPort(0))
-            MenuHeading(TinyString::FromFormat("Port %u", console_port + 1u));
-          else
+          if (port_labels[port].IsEmpty())
             continue;
+          else
+            MenuHeading(port_labels[port]);
 
           settings_changed |= EnumChoiceButton(
             TinyString::FromFormat(ICON_FA_GAMEPAD "  Controller Type##type%u", port),

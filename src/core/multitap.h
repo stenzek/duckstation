@@ -8,25 +8,22 @@
 class Multitap final
 {
 public:
-  Multitap(u32 index);
+  Multitap();
 
   void Reset();
 
-  ALWAYS_INLINE void SetEnable(bool enable) { m_enabled = enable; };
+  void SetEnable(bool enable, u32 base_index);
   ALWAYS_INLINE bool IsEnabled() const { return m_enabled; };
 
   bool DoState(StateWrapper& sw);
 
   void ResetTransferState();
   bool Transfer(const u8 data_in, u8* data_out);
-  ALWAYS_INLINE bool IsReadingMemoryCard() { return m_enabled && m_transfer_state == TransferState::MemoryCard; };
+  ALWAYS_INLINE bool IsReadingMemoryCard() { return IsEnabled() && m_transfer_state == TransferState::MemoryCard; };
 
 private:
   ALWAYS_INLINE static constexpr u8 GetMultitapIDByte() { return 0x80; };
   ALWAYS_INLINE static constexpr u8 GetStatusByte() { return 0x5A; };
-
-  Controller* GetControllerForSlot(u32 slot) const;
-  MemoryCard* GetMemoryCardForSlot(u32 slot) const;
 
   bool TransferController(u32 slot, const u8 data_in, u8* data_out) const;
   bool TransferMemoryCard(u32 slot, const u8 data_in, u8* data_out) const;
@@ -51,6 +48,6 @@ private:
 
   std::array<u8, 32> m_transfer_buffer{};
 
-  u32 m_index;
+  u32 m_base_index;
   bool m_enabled = false;
 };

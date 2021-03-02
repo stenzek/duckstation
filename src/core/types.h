@@ -147,6 +147,7 @@ enum class MultitapMode
 {
   Disabled,
   Port1Only,
+  Port2Only,
   BothPorts,
   Count
 };

@@ -247,15 +247,6 @@ void Pad::SetMemoryCard(u32 slot, std::unique_ptr<MemoryCard> dev)
   m_memory_cards[slot] = std::move(dev);
 }
 
-void Pad::SetMultitapEnable(u32 port, bool enable)
-{
-  if (m_multitaps[port].IsEnabled() != enable)
-  {
-    m_multitaps[port].SetEnable(enable);
-    m_multitaps[port].Reset();
-  }
-}
-
 u32 Pad::ReadRegister(u32 offset)
 {
   switch (offset)

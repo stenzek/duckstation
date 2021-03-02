@@ -1861,22 +1861,29 @@ void UpdateMultitaps()
   {
     case MultitapMode::Disabled:
     {
-      g_pad.SetMultitapEnable(0, false);
-      g_pad.SetMultitapEnable(1, false);
+      g_pad.GetMultitap(0)->SetEnable(false, 0);
+      g_pad.GetMultitap(1)->SetEnable(false, 0);
     }
     break;
 
     case MultitapMode::Port1Only:
     {
-      g_pad.SetMultitapEnable(0, true);
-      g_pad.SetMultitapEnable(1, false);
+      g_pad.GetMultitap(0)->SetEnable(true, 0);
+      g_pad.GetMultitap(1)->SetEnable(false, 0);
+    }
+    break;
+
+    case MultitapMode::Port2Only:
+    {
+      g_pad.GetMultitap(0)->SetEnable(false, 0);
+      g_pad.GetMultitap(1)->SetEnable(true, 1);
     }
     break;
 
     case MultitapMode::BothPorts:
     {
-      g_pad.SetMultitapEnable(0, true);
-      g_pad.SetMultitapEnable(1, true);
+      g_pad.GetMultitap(0)->SetEnable(true, 0);
+      g_pad.GetMultitap(1)->SetEnable(true, 4);
     }
     break;
   }
