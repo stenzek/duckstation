@@ -199,12 +199,15 @@ void CommonHostInterface::DestroySystem()
   HostInterface::DestroySystem();
 }
 
-void CommonHostInterface::PowerOffSystem()
+void CommonHostInterface::PowerOffSystem(bool save_resume_state)
 {
   if (System::IsShutdown())
     return;
 
-  HostInterface::PowerOffSystem();
+  if (save_resume_state)
+    SaveResumeSaveState();
+
+  DestroySystem();
 
   if (InBatchMode())
     RequestExit();
@@ -751,6 +754,11 @@ bool CommonHostInterface::ResumeSystemFromMostRecentState()
   }
 
   return LoadState(path.c_str());
+}
+
+bool CommonHostInterface::ShouldSaveResumeState() const
+{
+  return g_settings.save_state_on_exit;
 }
 
 bool CommonHostInterface::IsRunningAtNonStandardSpeed() const
@@ -1810,7 +1818,7 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                      {
                        SmallString confirmation_message(
                          TranslateString("CommonHostInterface", "Are you sure you want to stop emulation?"));
-                       if (g_settings.save_state_on_exit)
+                       if (ShouldSaveResumeState())
                        {
                          confirmation_message.AppendString("\n\n");
                          confirmation_message.AppendString(
@@ -1824,10 +1832,7 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                        }
                      }
 
-                     if (g_settings.save_state_on_exit)
-                       SaveResumeSaveState();
-
-                     PowerOffSystem();
+                     PowerOffSystem(ShouldSaveResumeState());
                    }
                  });
 #else

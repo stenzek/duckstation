@@ -45,7 +45,7 @@ bool HTTPDownloaderWinHttp::Initialize()
   if (WinHttpSetStatusCallback(m_hSession, HTTPStatusCallback, notification_flags, NULL) ==
       WINHTTP_INVALID_STATUS_CALLBACK)
   {
-    Log_ErrorPrint("WinHttpSetStatusCallback() failed: %u", GetLastError());
+    Log_ErrorPrintf("WinHttpSetStatusCallback() failed: %u", GetLastError());
     return false;
   }
 

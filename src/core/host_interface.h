@@ -52,7 +52,6 @@ public:
   virtual void Shutdown();
 
   virtual bool BootSystem(const SystemBootParameters& parameters);
-  virtual void PowerOffSystem();
   virtual void PauseSystem(bool paused);
   virtual void ResetSystem();
   virtual void DestroySystem();

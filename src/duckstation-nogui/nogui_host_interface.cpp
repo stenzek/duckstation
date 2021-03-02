@@ -238,11 +238,7 @@ void NoGUIHostInterface::Run()
 
   // Save state on exit so it can be resumed
   if (!System::IsShutdown())
-  {
-    if (g_settings.save_state_on_exit)
-      SaveResumeSaveState();
-    DestroySystem();
-  }
+    PowerOffSystem(ShouldSaveResumeState());
 }
 
 void NoGUIHostInterface::ReportMessage(const char* message)

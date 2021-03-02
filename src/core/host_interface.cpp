@@ -142,11 +142,6 @@ void HostInterface::ResetSystem()
   AddOSDMessage(TranslateStdString("OSDMessage", "System reset."));
 }
 
-void HostInterface::PowerOffSystem()
-{
-  DestroySystem();
-}
-
 void HostInterface::PauseSystem(bool paused)
 {
   if (paused == System::IsPaused() || System::IsShutdown())

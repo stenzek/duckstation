@@ -125,7 +125,6 @@ public:
   virtual void Shutdown() override;
 
   virtual bool BootSystem(const SystemBootParameters& parameters) override;
-  virtual void PowerOffSystem() override;
   virtual void ResetSystem() override;
   virtual void DestroySystem() override;
 
@@ -169,6 +168,9 @@ public:
   /// Saves the current input configuration to the specified profile name.
   bool SaveInputProfile(const char* profile_path);
 
+  /// Powers off the system, optionally saving the resume state.
+  void PowerOffSystem(bool save_resume_state);
+
   /// Loads state from the specified filename.
   bool LoadState(const char* filename);
 
@@ -184,8 +186,7 @@ public:
   /// Loads the most recent resume save state. This may be global or per-game.
   bool ResumeSystemFromMostRecentState();
 
-  /// Saves the resume save state, call when shutting down. Not called automatically on DestroySystem() since that can
-  /// be called as a result of an error.
+  /// Saves the resume save state, call when shutting down.
   bool SaveResumeSaveState();
 
   /// Returns a list of save states for the specified game code.
@@ -267,6 +268,9 @@ public:
 
   /// Converts a fullscreen mode to a string.
   static std::string GetFullscreenModeString(u32 width, u32 height, float refresh_rate);
+
+  /// Returns true if the state should be saved on shutdown.
+  bool ShouldSaveResumeState() const;
 
   /// Returns true if fast forwarding or slow motion is currently active.
   bool IsRunningAtNonStandardSpeed() const;

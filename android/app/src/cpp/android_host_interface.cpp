@@ -374,11 +374,7 @@ void AndroidHostInterface::EmulationThreadEntryPoint(JNIEnv* env, jobject emulat
   {
     // System is ready to go.
     EmulationThreadLoop(env);
-
-    if (g_settings.save_state_on_exit)
-      SaveResumeSaveState();
-
-    PowerOffSystem();
+    PowerOffSystem(ShouldSaveResumeState());
   }
 
   // Drain any callbacks so we don't leave things in a screwed-up state for next boot.

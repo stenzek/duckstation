@@ -550,9 +550,7 @@ static void DoPowerOff()
     if (!System::IsValid())
       return;
 
-    if (g_settings.save_state_on_exit)
-      s_host_interface->SaveResumeSaveState();
-    s_host_interface->PowerOffSystem();
+    s_host_interface->PowerOffSystem(s_host_interface->ShouldSaveResumeState());
 
     ReturnToMainWindow();
   });

@@ -812,10 +812,7 @@ void QtHostInterface::powerOffSystem()
     return;
   }
 
-  if (g_settings.save_state_on_exit)
-    SaveResumeSaveState();
-
-  PowerOffSystem();
+  PowerOffSystem(ShouldSaveResumeState());
 }
 
 void QtHostInterface::powerOffSystemWithoutSaving()
@@ -827,7 +824,7 @@ void QtHostInterface::powerOffSystemWithoutSaving()
     return;
   }
 
-  PowerOffSystem();
+  PowerOffSystem(false);
 }
 
 void QtHostInterface::synchronousPowerOffSystem()
