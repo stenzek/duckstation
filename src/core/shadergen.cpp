@@ -23,7 +23,7 @@ ShaderGen::~ShaderGen() = default;
 
 bool ShaderGen::UseGLSLBindingLayout()
 {
-  return (GLAD_GL_ES_VERSION_3_1 || GLAD_GL_VERSION_4_2 ||
+  return (GLAD_GL_ES_VERSION_3_1 || GLAD_GL_VERSION_4_3 ||
           (GLAD_GL_ARB_explicit_attrib_location && GLAD_GL_ARB_explicit_uniform_location &&
            GLAD_GL_ARB_shading_language_420pack));
 }
