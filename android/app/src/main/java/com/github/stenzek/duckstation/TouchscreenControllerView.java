@@ -20,6 +20,9 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.preference.PreferenceManager;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * TODO: document your custom view class.
@@ -42,6 +45,8 @@ public class TouchscreenControllerView extends FrameLayout {
     private float mMovingLastY = 0.0f;
     private ConstraintLayout mEditLayout = null;
     private int mOpacity = 100;
+    private Map<Integer, View> mFirstHolds = new HashMap<>();
+    private ArrayList<String> mDpadButtons = new ArrayList<String>(Arrays.asList("UpButton", "DownButton", "LeftButton", "RightButton"));
 
     public TouchscreenControllerView(Context context) {
         super(context);
@@ -442,6 +447,8 @@ public class TouchscreenControllerView extends FrameLayout {
                 if (!AndroidHostInterface.hasInstanceAndEmulationThreadIsRunning())
                     return false;
 
+                mFirstHolds.clear();
+
                 for (TouchscreenControllerButtonView buttonView : mButtonViews) {
                     buttonView.setPressed(false);
                 }
@@ -455,7 +462,13 @@ public class TouchscreenControllerView extends FrameLayout {
 
             case MotionEvent.ACTION_DOWN:
             case MotionEvent.ACTION_POINTER_DOWN:
-            case MotionEvent.ACTION_POINTER_UP:
+            case MotionEvent.ACTION_POINTER_UP: {
+                int pointerID = event.getPointerId(event.getActionIndex());
+                if (mFirstHolds.containsKey(pointerID))
+                    mFirstHolds.remove(pointerID);
+
+                return true;
+            }
             case MotionEvent.ACTION_MOVE: {
                 if (!AndroidHostInterface.hasInstanceAndEmulationThreadIsRunning())
                     return false;
@@ -477,12 +490,17 @@ public class TouchscreenControllerView extends FrameLayout {
                         final int y = (int) event.getY(i);
                         if (rect.contains(x, y)) {
                             buttonView.setPressed(true);
+                            int pointerID = event.getPointerId(i);
+                            if (!mFirstHolds.containsKey(pointerID) && !mFirstHolds.containsValue(buttonView)) {
+                                if (!mDpadButtons.contains(buttonView.getConfigName()))
+                                    mFirstHolds.put(pointerID, buttonView);
+                            }
                             pressed = true;
                             break;
                         }
                     }
 
-                    if (!pressed)
+                    if (!pressed  && !mFirstHolds.containsValue(buttonView))
                         buttonView.setPressed(pressed);
                 }
 
