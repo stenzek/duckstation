@@ -207,7 +207,7 @@ void MemoryCardEditorDialog::updateCardTable(Card* card)
 
     card->table->setItem(row, 1, new QTableWidgetItem(QString::fromStdString(fi.title)));
     card->table->setItem(row, 2, new QTableWidgetItem(QString::fromStdString(fi.filename)));
-    card->table->setItem(row, 3, new QTableWidgetItem(QStringLiteral("%1").arg(fi.num_blocks)));
+    card->table->setItem(row, 3, new QTableWidgetItem(QString::number(fi.num_blocks)));
   }
 }
 

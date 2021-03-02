@@ -48,9 +48,9 @@ static QString formatHexAndDecValue(u32 value, u8 size, bool is_signed)
 static QString formatValue(u32 value, bool is_signed)
 {
   if (is_signed)
-    return QStringLiteral("%1").arg(static_cast<int>(value));
+    return QString::number(static_cast<int>(value));
   else
-    return QStringLiteral("%1").arg(static_cast<uint>(value));
+    return QString::number(static_cast<uint>(value));
 }
 
 CheatManagerDialog::CheatManagerDialog(QWidget* parent) : QDialog(parent)
