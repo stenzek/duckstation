@@ -121,8 +121,7 @@ void EmulationSettingsWidget::updateRewind()
     System::CalculateRewindMemoryUsage(frames, &ram_usage, &vram_usage);
 
     m_ui.rewindSummary->setText(
-      tr("Rewind for %1 frames, lasting %2 seconds will require up to %3MB of RAM and %4MB of VRAM.")
-        .arg(frames)
+      tr("Rewind for %n frame(s), lasting %1 second(s) will require up to %2MB of RAM and %3MB of VRAM.", "", frames)
         .arg(duration)
         .arg(ram_usage / 1048576)
         .arg(vram_usage / 1048576));
