@@ -3885,7 +3885,7 @@ void DrawAchievementWindow()
 
   ImGui::SetNextWindowBgAlpha(alpha);
 
-  if (BeginFullscreenWindow(ImVec2(0.0f, heading_height), ImVec2(display_size.x, display_size.x - heading_height),
+  if (BeginFullscreenWindow(ImVec2(0.0f, heading_height), ImVec2(display_size.x, display_size.y - heading_height),
                             "achievements", background, 0.0f, 0.0f, 0))
   {
 
