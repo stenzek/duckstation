@@ -455,7 +455,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Image Path:</source>
-        <translation>画像パス :</translation>
+        <translation>イメージファイルパス :</translation>
     </message>
     <message>
         <source>Texture Filtering:</source>
@@ -2214,6 +2214,99 @@ This warning will only be shown once.</source>
     </message>
 </context>
 <context>
+    <name>AchievementSettingsWidget</name>
+    <message>
+        <source>Form</source>
+        <translation>から</translation>
+    </message>
+    <message>
+        <source>View Profile...</source>
+        <translation>プロフィール表示...</translation>
+    </message>
+    <message>
+        <source>When enabled, rich presence information will be collected and sent to the server where supported.</source>
+        <translation>有効にすると、リッチプレゼンス情報が収集され、サポートされているサーバーに送信されます。</translation>
+    </message>
+    <message>
+        <source>Enable Hardcore Mode</source>
+        <translation>ハードコアモードを有効にする</translation>
+    </message>
+    <message>
+        <source>Enable Test Mode</source>
+        <translation>テストモードを有効にする</translation>
+    </message>
+    <message>
+        <source>Game Info</source>
+        <translation>ゲーム情報</translation>
+    </message>
+    <message>
+        <source>When enabled and logged in, DuckStation will scan for achievements on startup.</source>
+        <translation>有効にしてログインすると、DuckStationは起動時に実績をスキャンします。</translation>
+    </message>
+    <message>
+        <source>Enable Rich Presence</source>
+        <translation>リッチプレゼンスを有効にする</translation>
+    </message>
+    <message>
+        <source>Enable Achievements</source>
+        <translation>実績を有効にする</translation>
+    </message>
+    <message>
+        <source>Logout</source>
+        <translation>ログアウト</translation>
+    </message>
+    <message>
+        <source>Enabling hardcore mode will disable cheats, save sates, and debugging features.</source>
+        <translation>ハードコアモードを有効にすると、チート、保存状態、およびデバッグ機能が無効になります。</translation>
+    </message>
+    <message>
+        <source>Login...</source>
+        <translation>ログイン...</translation>
+    </message>
+    <message>
+        <source>Account</source>
+        <translation>アカウント</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.</source>
+        <translation>有効にすると、DuckStationはすべての実績がロックされていると見なし、サーバーにロック解除通知を送信しません。</translation>
+    </message>
+    <message>
+        <source>Global Settings</source>
+        <translation>全体設定</translation>
+    </message>
+    <message>
+        <source>Unchecked</source>
+        <translation>チェック無し</translation>
+    </message>
+    <message>
+        <source>Account Settings</source>
+        <translation>アカウント設定</translation>
+    </message>
+    <message>
+        <source>Not Logged In.</source>
+        <translation>未登録</translation>
+    </message>
+    <message>
+        <source>Username: %1
+Login token generated on %2.</source>
+        <translation>ユーザー名:%1
+%2で生成されたログイントークン</translation>
+    </message>
+    <message>
+        <source>When enabled, the first disc in a playlist will be used for achievements, regardless of which disc is active.</source>
+        <translation>有効にすると、アクティブなディスクに関係なく、プレイリストの最初のディスクが実績に使用されます。</translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at &lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStationは、RetroAchievementsを実績データベースおよび進行状況の追跡に使用します。使用するには、&lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <source>Use First Disc From Playlist</source>
+        <translation>プレイリストの最初のディスクを使用する</translation>
+    </message>
+</context>
+<context>
     <name>AdvancedSettingsWidget</name>
     <message>
         <source>Form</source>
@@ -3150,6 +3243,14 @@ This warning will only be shown once.</source>
         <translation>自動的にチートを読込む</translation>
     </message>
     <message>
+        <source>Enable Fullscreen UI</source>
+        <translation>フルスクリーンUIを有効にする</translation>
+    </message>
+    <message>
+        <source>Enables the fullscreen UI mode, suitable for controller operation which is used in the NoGUI frontend.</source>
+        <translation>NoGUIフロントエンドで使用されるコントローラー操作に適したフルスクリーンUIモードを有効にします。</translation>
+    </message>
+    <message>
         <source>%1% [%2 FPS (NTSC) / %3 FPS (PAL)]</source>
         <translation>%1% [%2 FPS (NTSC) / %3 FPS (PAL)]</translation>
     </message>
@@ -3551,6 +3652,10 @@ This warning will only be shown once.</source>
     <message>
         <source>CPU clock speed is set to %u%% (%u / %u). This may result in instability.</source>
         <translation>CPUクロック速度は %u%% (%u / %u)に設定されます。これにより、不安定になる可能性があります。</translation>
+    </message>
+    <message>
+        <source>Failed to read executable from disc. Achievements disabled.</source>
+        <translation>ディスクから実行可能ファイルを読み取れませんでした。実績が無効になっています。</translation>
     </message>
     <message>
         <source>Failed to load post-processing shader chain.</source>
@@ -4088,6 +4193,10 @@ This warning will only be shown once.</source>
         <translation>VRAMを表示</translation>
     </message>
     <message>
+        <source>Achievement Settings...</source>
+        <translation>Achievement 設定...</translation>
+    </message>
+    <message>
         <source>&amp;Post-Processing Settings...</source>
         <translation>ポストプロセス設定...(&amp;P)</translation>
     </message>
@@ -4357,6 +4466,57 @@ This warning will only be shown once.</source>
     </message>
 </context>
 <context>
+    <name>AchievementLoginDialog</name>
+    <message>
+        <source>Login Error</source>
+        <translation>ログインエラー</translation>
+    </message>
+    <message>
+        <source>&amp;Login</source>
+        <translation>ログイン(&amp;L)</translation>
+    </message>
+    <message>
+        <source>User Name:</source>
+        <translation>ユーザー名:</translation>
+    </message>
+    <message>
+        <source>Please enter user name and password for retroachievements.org below. Your password will not be saved in DuckStation, instead an access token will be generated and used instead.</source>
+        <translation>以下にretroachievements.orgのユーザー名とパスワードを入力してください。  パスワードはDuckStationに保存されず、代わりにアクセストークンが生成されて使用されます。</translation>
+    </message>
+    <message>
+        <source>Login failed. Please check your username and password, and try again.</source>
+        <translation>ログインに失敗しました。ユーザー名とパスワードを確認して、もう一度お試しください。</translation>
+    </message>
+    <message>
+        <source>A user name and password must be provided.</source>
+        <translation>ユーザー名とパスワードを入力する必要があります。</translation>
+    </message>
+    <message>
+        <source>Logging in...</source>
+        <translation>登録...</translation>
+    </message>
+    <message>
+        <source>&amp;Cancel</source>
+        <translation>取消(&amp;C)</translation>
+    </message>
+    <message>
+        <source>Password:</source>
+        <translation>パスワード:</translation>
+    </message>
+    <message>
+        <source>RetroAchievements Login</source>
+        <translation>RetroAchievementsログイン</translation>
+    </message>
+    <message>
+        <source>Ready...</source>
+        <translation>準備中...</translation>
+    </message>
+    <message>
+        <source>Login failed.</source>
+        <translation>ログインに失敗しました。</translation>
+    </message>
+</context>
+<context>
     <name>GameSettingsTrait</name>
     <message>
         <source>Force Interlacing</source>
@@ -4505,6 +4665,10 @@ URLは次のとおりです : %1</translation>
         <translation>コントローラ設定</translation>
     </message>
     <message>
+        <source>Achievement Settings</source>
+        <translation>Achievement設定</translation>
+    </message>
+    <message>
         <source>Console Settings</source>
         <translation>コンソール設定</translation>
     </message>
@@ -4515,6 +4679,10 @@ URLは次のとおりです : %1</translation>
     <message>
         <source>Hotkey Settings</source>
         <translation>ホットキー設定</translation>
+    </message>
+    <message>
+        <source>This DuckStation build was not compiled with RetroAchievements support.</source>
+        <translation>このDuckStationビルドは、RetroAchievementsを使用できるようにコンパイルされていません。</translation>
     </message>
     <message>
         <source>Post-Processing Settings</source>
@@ -5313,6 +5481,10 @@ SBIファイルを追加する方法については、READMEを確認してく�
         <translation>グローバルセーブ %1 (%2)</translation>
     </message>
     <message>
+        <source>Game not loaded or no RetroAchievements available.</source>
+        <translation>ゲームが読み込まれていないか、RetroAchievementsが利用できません。</translation>
+    </message>
+    <message>
         <source>Resume</source>
         <translation>再開</translation>
     </message>
@@ -5347,6 +5519,22 @@ The saves will not be recoverable.</source>
         <translation>%1 のすべてのステートセーブを削除してもよろしいですか？
 
 元に戻すことはできません。</translation>
+    </message>
+    <message>
+        <source>Game ID: %1
+Game Title: %2
+Game Developer: %3
+Game Publisher: %4
+Achievements: %5 (%6 points)
+
+</source>
+        <translation>ゲームID:%1
+ゲームタイトル:%2
+開発元:%3
+販売元:%4
+Achievements:%5 (%6点)
+
+</translation>
     </message>
 </context>
 <context>
