@@ -62,6 +62,7 @@ using ImGuiFullscreen::EndFullscreenWindow;
 using ImGuiFullscreen::EndMenuButtons;
 using ImGuiFullscreen::EnumChoiceButton;
 using ImGuiFullscreen::FloatingButton;
+using ImGuiFullscreen::IsCancelButtonPressed;
 using ImGuiFullscreen::LayoutScale;
 using ImGuiFullscreen::MenuButton;
 using ImGuiFullscreen::MenuButtonFrame;
@@ -1087,7 +1088,7 @@ void DrawSettingsWindow()
     }
 
     ImGui::SetCursorPosY(ImGui::GetWindowHeight() - LayoutScale(50.0f));
-    if (ActiveButton(ICON_FA_BACKWARD "  Back", false))
+    if (ActiveButton(ICON_FA_BACKWARD "  Back", false) || IsCancelButtonPressed())
       ReturnToMainWindow();
 
     EndMenuButtons();
@@ -2194,7 +2195,7 @@ void DrawQuickMenu(MainWindowType type)
                      ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING,
                      ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
 
-    if (ActiveButton(ICON_FA_PLAY "  Resume Game", false))
+    if (ActiveButton(ICON_FA_PLAY "  Resume Game", false) || IsCancelButtonPressed())
       CloseQuickMenu();
 
     if (ActiveButton(ICON_FA_FAST_FORWARD "  Fast Forward", false))
@@ -2458,7 +2459,7 @@ void DrawSaveStateSelector(bool is_loading, bool fullscreen)
     ImGui::SetNextWindowSize(LayoutScale(1000.0f, 680.0f));
     ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
     ImGui::OpenPopup(window_title);
-    bool is_open = true;
+    bool is_open = !IsCancelButtonPressed();
     if (!ImGui::BeginPopupModal(window_title, &is_open,
                                 ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove) ||
         !is_open)
@@ -3802,28 +3803,11 @@ void DrawAchievementWindow()
       const u32 current_points = Cheevos::GetCurrentPointsForGame();
       const u32 total_points = Cheevos::GetMaximumPointsForGame();
 
-      text.Format(ICON_FA_TIMES);
-      text_size = g_large_font->CalcTextSizeA(g_large_font->FontSize, right, -1.0f, text.GetCharArray(),
-                                              text.GetCharArray() + text.GetLength());
-      const ImRect close_button_bb(ImVec2(right - padding - text_size.x, top), ImVec2(right, top + text_size.y));
-
-      bool close_held, close_hovered;
-      bool close_clicked = ImGui::ButtonBehavior(close_button_bb, ImGui::GetCurrentWindow()->GetID("close_button"),
-                                                 &close_hovered, &close_held);
-      if (close_clicked)
+      if (FloatingButton(ICON_FA_WINDOW_CLOSE, 10.0f, 10.0f, -1.0f, -1.0f, 1.0f, 0.0f, true, g_large_font) ||
+          IsCancelButtonPressed())
       {
         ReturnToMainWindow();
       }
-      else if (close_hovered || close_held)
-      {
-        const ImU32 col = ImGui::GetColorU32(close_held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered, alpha);
-        ImGui::RenderFrame(close_button_bb.Min, close_button_bb.Max, col, true, 0.0f);
-      }
-
-      ImGui::PushFont(g_large_font);
-      ImGui::RenderTextClipped(close_button_bb.Min, close_button_bb.Max, text.GetCharArray(),
-                               text.GetCharArray() + text.GetLength(), nullptr, ImVec2(0.0f, 0.0f), &close_button_bb);
-      ImGui::PopFont();
 
       const ImRect title_bb(ImVec2(left, top), ImVec2(right, top + g_large_font->FontSize));
       text.Assign(Cheevos::GetGameTitle());
@@ -3887,9 +3871,8 @@ void DrawAchievementWindow()
 
     static bool unlocked_achievements_collapsed = false;
 
-    unlocked_achievements_collapsed ^=
-      MenuHeadingButton("Unlocked Achievements",
-                        unlocked_achievements_collapsed ? ICON_FA_CHEVRON_DOWN : ICON_FA_CHEVRON_UP);
+    unlocked_achievements_collapsed ^= MenuHeadingButton(
+      "Unlocked Achievements", unlocked_achievements_collapsed ? ICON_FA_CHEVRON_DOWN : ICON_FA_CHEVRON_UP);
     if (!unlocked_achievements_collapsed)
     {
       Cheevos::EnumerateAchievements([](const Cheevos::Achievement& cheevo) -> bool {

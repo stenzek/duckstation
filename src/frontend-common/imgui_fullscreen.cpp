@@ -234,6 +234,11 @@ void EndLayout()
   ImGui::PopStyleVar(2);
 }
 
+bool IsCancelButtonPressed()
+{
+  return ImGui::IsNavInputTest(ImGuiNavInput_Cancel, ImGuiInputReadMode_Pressed);
+}
+
 bool BeginFullscreenColumns(const char* title)
 {
   ImGui::SetNextWindowPos(ImVec2(g_layout_padding_left, s_menu_bar_size));
@@ -1135,7 +1140,7 @@ void DrawFileSelector()
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
                       LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
 
-  bool is_open = (ImGui::GetNavInputAmount(ImGuiNavInput_Cancel, ImGuiInputReadMode_Pressed) < 1.0f);
+  bool is_open = !IsCancelButtonPressed();
   bool directory_selected = false;
   if (ImGui::BeginPopupModal(s_file_selector_title.c_str(), &is_open,
                              ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
@@ -1251,7 +1256,7 @@ void DrawChoiceDialog()
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
                       LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
 
-  bool is_open = (ImGui::GetNavInputAmount(ImGuiNavInput_Cancel, ImGuiInputReadMode_Pressed) < 1.0f);
+  bool is_open = !IsCancelButtonPressed();
   s32 choice = -1;
 
   if (ImGui::BeginPopupModal(s_choice_dialog_title.c_str(), &is_open,

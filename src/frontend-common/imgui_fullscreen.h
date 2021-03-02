@@ -154,6 +154,8 @@ bool UpdateLayoutScale();
 void BeginLayout();
 void EndLayout();
 
+bool IsCancelButtonPressed();
+
 void DrawWindowTitle(const char* title);
 
 bool BeginFullscreenColumns(const char* title = nullptr);
