@@ -2207,10 +2207,8 @@ void DrawQuickMenu(MainWindowType type)
 #ifdef WITH_CHEEVOS
     const bool achievements_enabled = Cheevos::HasActiveGame() && (Cheevos::GetAchievementCount() > 0);
     if (ActiveButton(ICON_FA_TROPHY "  Achievements", false, achievements_enabled))
-    {
-      CloseQuickMenu();
       s_current_main_window = MainWindowType::Achievements;
-    }
+
 #else
     ActiveButton(ICON_FA_TROPHY "  Achievements", false, false);
 #endif
