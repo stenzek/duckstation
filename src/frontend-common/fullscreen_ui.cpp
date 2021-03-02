@@ -2824,13 +2824,6 @@ HostDisplayTexture* GetCoverForCurrentGame()
 //////////////////////////////////////////////////////////////////////////
 // Overlays
 //////////////////////////////////////////////////////////////////////////
-static ImDrawList* GetDrawListForOverlay()
-{
-  // If we're in the landing page, draw the OSD over the windows (since it covers it)
-  return (s_current_main_window != MainWindowType::None) ? ImGui::GetForegroundDrawList() :
-                                                           ImGui::GetBackgroundDrawList();
-}
-
 void DrawStatsOverlay()
 {
   if (!(g_settings.display_show_fps || g_settings.display_show_vps || g_settings.display_show_speed ||
@@ -2843,7 +2836,7 @@ void DrawStatsOverlay()
   const float margin = LayoutScale(10.0f);
   const float shadow_offset = DPIScale(1.0f);
   float position_y = margin;
-  ImDrawList* dl = GetDrawListForOverlay();
+  ImDrawList* dl = ImGui::GetBackgroundDrawList();
   TinyString text;
   ImVec2 text_size;
   bool first = true;
@@ -2942,7 +2935,10 @@ void DrawOSDMessages()
       const ImVec2 text_size(ImGui::CalcTextSize(message.c_str(), nullptr, false, max_width));
       const ImVec2 size(text_size + LayoutScale(20.0f, 20.0f));
       const ImVec4 text_rect(pos.x + padding, pos.y + padding, pos.x + size.x - padding, pos.y + size.y - padding);
-      ImDrawList* dl = GetDrawListForOverlay();
+
+      // If we're in the landing page, draw the OSD over the windows (since it covers it)
+      ImDrawList* dl = (s_current_main_window != MainWindowType::None) ? ImGui::GetForegroundDrawList() :
+                                                                         ImGui::GetBackgroundDrawList();
       dl->AddRectFilled(pos, pos + size, IM_COL32(0x21, 0x21, 0x21, alpha), LayoutScale(10.0f));
       dl->AddRect(pos, pos + size, IM_COL32(0x48, 0x48, 0x48, alpha), LayoutScale(10.0f));
       dl->AddText(g_large_font, g_large_font->FontSize, ImVec2(text_rect.x, text_rect.y),
