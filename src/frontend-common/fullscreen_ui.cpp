@@ -67,6 +67,7 @@ using ImGuiFullscreen::MenuButton;
 using ImGuiFullscreen::MenuButtonFrame;
 using ImGuiFullscreen::MenuButtonWithValue;
 using ImGuiFullscreen::MenuHeading;
+using ImGuiFullscreen::MenuHeadingButton;
 using ImGuiFullscreen::MenuImageButton;
 using ImGuiFullscreen::OpenChoiceDialog;
 using ImGuiFullscreen::OpenFileSelector;
@@ -3888,26 +3889,37 @@ void DrawAchievementWindow()
   if (BeginFullscreenWindow(ImVec2(0.0f, heading_height), ImVec2(display_size.x, display_size.y - heading_height),
                             "achievements", background, 0.0f, 0.0f, 0))
   {
-
     BeginMenuButtons();
 
-    MenuHeading("Unlocked Achievements");
-    Cheevos::EnumerateAchievements([](const Cheevos::Achievement& cheevo) -> bool {
-      if (!cheevo.locked)
-        DrawAchievement(cheevo);
+    static bool unlocked_achievements_collapsed = false;
 
-      return true;
-    });
-
-    if (Cheevos::GetUnlockedAchiementCount() != Cheevos::GetAchievementCount())
+    unlocked_achievements_collapsed ^=
+      MenuHeadingButton("Unlocked Achievements",
+                        unlocked_achievements_collapsed ? ICON_FA_CHEVRON_DOWN : ICON_FA_CHEVRON_UP);
+    if (!unlocked_achievements_collapsed)
     {
-      MenuHeading("Locked Achievements");
       Cheevos::EnumerateAchievements([](const Cheevos::Achievement& cheevo) -> bool {
-        if (cheevo.locked)
+        if (!cheevo.locked)
           DrawAchievement(cheevo);
 
         return true;
       });
+    }
+
+    if (Cheevos::GetUnlockedAchiementCount() != Cheevos::GetAchievementCount())
+    {
+      static bool locked_achievements_collapsed = false;
+      locked_achievements_collapsed ^= MenuHeadingButton(
+        "Locked Achievements", locked_achievements_collapsed ? ICON_FA_CHEVRON_DOWN : ICON_FA_CHEVRON_UP);
+      if (!locked_achievements_collapsed)
+      {
+        Cheevos::EnumerateAchievements([](const Cheevos::Achievement& cheevo) -> bool {
+          if (cheevo.locked)
+            DrawAchievement(cheevo);
+
+          return true;
+        });
+      }
     }
 
     EndMenuButtons();

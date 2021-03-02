@@ -454,7 +454,7 @@ void MenuHeading(const char* title, bool draw_line /*= true*/)
 
   bool visible, hovered;
   ImRect bb;
-  MenuButtonFrame("menu_heading", false, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, &visible, &hovered, &bb);
+  MenuButtonFrame(title, false, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, &visible, &hovered, &bb);
   if (!visible)
     return;
 
@@ -471,6 +471,46 @@ void MenuHeading(const char* title, bool draw_line /*= true*/)
     ImGui::GetWindowDrawList()->AddLine(line_start, line_end, ImGui::GetColorU32(ImGuiCol_TextDisabled),
                                         line_thickness);
   }
+}
+
+bool MenuHeadingButton(const char* title, const char* value /*= nullptr*/, bool enabled /*= true*/,
+                       bool draw_line /*= true*/)
+{
+  const float line_thickness = draw_line ? LayoutScale(1.0f) : 0.0f;
+  const float line_padding = draw_line ? LayoutScale(5.0f) : 0.0f;
+
+  ImRect bb;
+  bool visible, hovered;
+  bool pressed = MenuButtonFrame(title, enabled, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, &visible, &hovered, &bb);
+  if (!visible)
+    return false;
+
+  if (!enabled)
+    ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetColorU32(ImGuiCol_TextDisabled));
+  ImGui::PushFont(g_large_font);
+  ImGui::RenderTextClipped(bb.Min, bb.Max, title, nullptr, nullptr, ImVec2(0.0f, 0.0f), &bb);
+
+  if (value)
+  {
+    const ImVec2 value_size(
+      g_large_font->CalcTextSizeA(g_large_font->FontSize, std::numeric_limits<float>::max(), 0.0f, value));
+    const ImRect value_bb(ImVec2(bb.Max.x - value_size.x, bb.Min.y), ImVec2(bb.Max.x, bb.Max.y));
+    ImGui::RenderTextClipped(value_bb.Min, value_bb.Max, value, nullptr, nullptr, ImVec2(0.0f, 0.0f), &value_bb);
+  }
+
+  ImGui::PopFont();
+  if (!enabled)
+    ImGui::PopStyleColor();
+
+  if (draw_line)
+  {
+    const ImVec2 line_start(bb.Min.x, bb.Min.y + g_large_font->FontSize + line_padding);
+    const ImVec2 line_end(bb.Max.x, line_start.y);
+    ImGui::GetWindowDrawList()->AddLine(line_start, line_end, ImGui::GetColorU32(ImGuiCol_TextDisabled),
+                                        line_thickness);
+  }
+
+  return pressed;
 }
 
 bool ActiveButton(const char* title, bool is_active, bool enabled, float height, ImFont* font)
