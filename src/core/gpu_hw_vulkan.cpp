@@ -1515,7 +1515,9 @@ void GPU_HW_Vulkan::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
   }
 
   const u32 data_size = width * height * sizeof(u16);
-  const u32 alignment = std::max<u32>(sizeof(u16), static_cast<u32>(g_vulkan_context->GetTexelBufferAlignment()));
+  const u32 alignment = std::max<u32>(sizeof(u32), static_cast<u32>(m_use_ssbos_for_vram_writes ?
+                                                                      g_vulkan_context->GetStorageBufferAlignment() :
+                                                                      g_vulkan_context->GetTexelBufferAlignment()));
   if (!m_texture_stream_buffer.ReserveMemory(data_size, alignment))
   {
     Log_PerfPrintf("Executing command buffer while waiting for %u bytes in stream buffer", data_size);
