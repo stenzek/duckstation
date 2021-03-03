@@ -354,7 +354,7 @@ void MainWindow::updateMouseMode(bool paused)
 void MainWindow::onEmulationStarting()
 {
   m_emulation_running = true;
-  updateEmulationActions(true, false);
+  updateEmulationActions(true, false, m_host_interface->IsCheevosChallengeModeActive());
 
   // ensure it gets updated, since the boot can take a while
   QGuiApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
@@ -362,13 +362,13 @@ void MainWindow::onEmulationStarting()
 
 void MainWindow::onEmulationStarted()
 {
-  updateEmulationActions(false, true);
+  updateEmulationActions(false, true, m_host_interface->IsCheevosChallengeModeActive());
 }
 
 void MainWindow::onEmulationStopped()
 {
   m_emulation_running = false;
-  updateEmulationActions(false, false);
+  updateEmulationActions(false, false, m_host_interface->IsCheevosChallengeModeActive());
   switchToGameListView();
 
   if (m_cheat_manager_dialog)
@@ -610,7 +610,8 @@ void MainWindow::onGameListEntryDoubleClicked(const GameListEntry* entry)
   QString path = QString::fromStdString(entry->path);
   if (!m_emulation_running)
   {
-    if (!entry->code.empty() && m_host_interface->GetBoolSettingValue("Main", "SaveStateOnExit", true))
+    if (!entry->code.empty() && m_host_interface->GetBoolSettingValue("Main", "SaveStateOnExit", true) &&
+        !m_host_interface->IsCheevosChallengeModeActive())
     {
       m_host_interface->resumeSystemFromState(path, true);
     }
@@ -670,7 +671,7 @@ void MainWindow::onGameListContextMenuRequested(const QPoint& point, const GameL
         m_host_interface->bootSystem(std::move(boot_params));
       });
 
-      if (m_ui.menuDebug->menuAction()->isVisible())
+      if (m_ui.menuDebug->menuAction()->isVisible() && !m_host_interface->IsCheevosChallengeModeActive())
       {
         connect(menu.addAction(tr("Boot and Debug")), &QAction::triggered, [this, entry]() {
           m_open_debugger_on_start = true;
@@ -841,33 +842,36 @@ void MainWindow::setupAdditionalUi()
   }
 }
 
-void MainWindow::updateEmulationActions(bool starting, bool running)
+void MainWindow::updateEmulationActions(bool starting, bool running, bool cheevos_challenge_mode)
 {
   m_ui.actionStartDisc->setDisabled(starting || running);
   m_ui.actionStartBios->setDisabled(starting || running);
-  m_ui.actionResumeLastState->setDisabled(starting || running);
+  m_ui.actionResumeLastState->setDisabled(starting || running || cheevos_challenge_mode);
 
   m_ui.actionPowerOff->setDisabled(starting || !running);
   m_ui.actionPowerOffWithoutSaving->setDisabled(starting || !running);
   m_ui.actionReset->setDisabled(starting || !running);
   m_ui.actionPause->setDisabled(starting || !running);
   m_ui.actionChangeDisc->setDisabled(starting || !running);
-  m_ui.actionCheats->setDisabled(starting || !running);
+  m_ui.actionCheats->setDisabled(starting || !running || cheevos_challenge_mode);
   m_ui.actionScreenshot->setDisabled(starting || !running);
   m_ui.actionViewSystemDisplay->setEnabled(starting || running);
   m_ui.menuChangeDisc->setDisabled(starting || !running);
-  m_ui.menuCheats->setDisabled(starting || !running);
-  m_ui.actionCheatManager->setDisabled(starting || !running);
-  m_ui.actionCPUDebugger->setDisabled(starting || !running);
-  m_ui.actionDumpRAM->setDisabled(starting || !running);
-  m_ui.actionDumpVRAM->setDisabled(starting || !running);
-  m_ui.actionDumpSPURAM->setDisabled(starting || !running);
+  m_ui.menuCheats->setDisabled(starting || !running || cheevos_challenge_mode);
+  m_ui.actionCheatManager->setDisabled(starting || !running || cheevos_challenge_mode);
+  m_ui.actionCPUDebugger->setDisabled(starting || !running || cheevos_challenge_mode);
+  m_ui.actionDumpRAM->setDisabled(starting || !running || cheevos_challenge_mode);
+  m_ui.actionDumpVRAM->setDisabled(starting || !running || cheevos_challenge_mode);
+  m_ui.actionDumpSPURAM->setDisabled(starting || !running || cheevos_challenge_mode);
 
   m_ui.actionSaveState->setDisabled(starting || !running);
   m_ui.menuSaveState->setDisabled(starting || !running);
   m_ui.menuWindowSize->setDisabled(starting || !running);
 
   m_ui.actionFullscreen->setDisabled(starting || !running);
+
+  m_ui.actionLoadState->setDisabled(cheevos_challenge_mode);
+  m_ui.menuLoadState->setDisabled(cheevos_challenge_mode);
 
   if (running && m_status_speed_widget->isHidden())
   {
@@ -945,7 +949,7 @@ void MainWindow::switchToEmulationView()
 
 void MainWindow::connectSignals()
 {
-  updateEmulationActions(false, false);
+  updateEmulationActions(false, false, m_host_interface->IsCheevosChallengeModeActive());
   onEmulationPaused(false);
 
   connect(qApp, &QGuiApplication::applicationStateChanged, this, &MainWindow::onApplicationStateChanged);
@@ -1456,6 +1460,28 @@ void MainWindow::openMemoryCardEditor(const QString& card_a_path, const QString&
         tr("Memory card '%1' could not be found. Try starting the game and saving to create it.").arg(card_b_path));
     }
   }
+}
+
+void MainWindow::onAchievementsChallengeModeToggled(bool enabled)
+{
+  if (enabled)
+  {
+    if (m_cheat_manager_dialog)
+    {
+      m_cheat_manager_dialog->close();
+      delete m_cheat_manager_dialog;
+      m_cheat_manager_dialog = nullptr;
+    }
+
+    if (m_debugger_window)
+    {
+      m_debugger_window->close();
+      delete m_debugger_window;
+      m_debugger_window = nullptr;
+    }
+  }
+
+  updateEmulationActions(false, System::IsValid(), enabled);
 }
 
 void MainWindow::onToolsMemoryCardEditorTriggered()

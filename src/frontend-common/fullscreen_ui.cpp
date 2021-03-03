@@ -93,6 +93,15 @@ static void OpenAboutWindow();
 static void SetDebugMenuEnabled(bool enabled);
 static void UpdateDebugMenuVisibility();
 
+static ALWAYS_INLINE bool IsCheevosHardcoreModeActive()
+{
+#ifdef WITH_CHEEVOS
+  return Cheevos::IsChallengeModeActive();
+#else
+  return false;
+#endif
+}
+
 static CommonHostInterface* s_host_interface;
 static MainWindowType s_current_main_window = MainWindowType::Landing;
 static std::bitset<static_cast<u32>(FrontendCommon::ControllerNavigationButton::Count)> s_nav_input_values{};
@@ -285,14 +294,14 @@ void Shutdown()
 void Render()
 {
   if (s_debug_menu_enabled)
-  {
     DrawDebugMenu();
-    if (System::IsValid())
-      s_host_interface->DrawDebugWindows();
-  }
-  else if (System::IsValid())
+
+  if (System::IsValid())
   {
     DrawStatsOverlay();
+
+    if (!IsCheevosHardcoreModeActive())
+      s_host_interface->DrawDebugWindows();
   }
 
   ImGuiFullscreen::BeginLayout();
@@ -707,7 +716,7 @@ void DrawLandingWindow()
     BeginMenuButtons(7, 0.5f);
 
     if (MenuButton(" " ICON_FA_PLAY_CIRCLE "  Resume",
-                   "Starts the console from where it was before it was last closed."))
+                   "Starts the console from where it was before it was last closed.", !IsCheevosHardcoreModeActive()))
     {
       s_host_interface->RunLater([]() { s_host_interface->ResumeSystemFromMostRecentState(); });
       ClearImGuiFocus();
@@ -725,7 +734,7 @@ void DrawLandingWindow()
     if (MenuButton(" " ICON_FA_TOOLBOX "  Start BIOS", "Start the console without any disc inserted."))
       s_host_interface->RunLater(DoStartBIOS);
 
-    if (MenuButton(" " ICON_FA_UNDO "  Load State", "Loads a global save state."))
+    if (MenuButton(" " ICON_FA_UNDO "  Load State", "Loads a global save state.", !IsCheevosHardcoreModeActive()))
     {
       OpenSaveStateSelector(true);
     }
@@ -1063,6 +1072,91 @@ static bool ToggleButtonForNonSetting(const char* title, const char* summary, co
     return false;
 
   s_host_interface->GetSettingsInterface()->SetBoolValue(section, key, value);
+  return true;
+}
+
+static void DrawAchievementsLoginWindow()
+{
+  ImGui::SetNextWindowSize(LayoutScale(700.0f, 0.0f));
+  ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(10.0f, 10.0f));
+  ImGui::PushFont(g_large_font);
+
+  bool is_open = true;
+  if (ImGui::BeginPopupModal("Achievements Login", &is_open, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize))
+  {
+
+    ImGui::TextWrapped("Please enter user name and password for retroachievements.org.");
+    ImGui::NewLine();
+    ImGui::TextWrapped(
+      "Your password will not be saved in DuckStation, an access token will be generated and used instead.");
+
+    ImGui::NewLine();
+
+    static char username[256] = {};
+    static char password[256] = {};
+
+    ImGui::Text("User Name: ");
+    ImGui::SameLine(LayoutScale(200.0f));
+    ImGui::InputText("##username", username, sizeof(username));
+
+    ImGui::Text("Password: ");
+    ImGui::SameLine(LayoutScale(200.0f));
+    ImGui::InputText("##password", password, sizeof(password), ImGuiInputTextFlags_Password);
+
+    ImGui::NewLine();
+
+    BeginMenuButtons();
+
+    const bool login_enabled = (std::strlen(username) > 0 && std::strlen(password) > 0);
+
+    if (ActiveButton(ICON_FA_KEY "  Login", false, login_enabled))
+    {
+      Cheevos::LoginAsync(username, password);
+      std::memset(username, 0, sizeof(username));
+      std::memset(password, 0, sizeof(password));
+      ImGui::CloseCurrentPopup();
+    }
+
+    if (ActiveButton(ICON_FA_TIMES "  Cancel", false))
+      ImGui::CloseCurrentPopup();
+
+    EndMenuButtons();
+
+    ImGui::EndPopup();
+  }
+
+  ImGui::PopFont();
+  ImGui::PopStyleVar(2);
+}
+
+static bool ConfirmChallengeModeEnable()
+{
+  if (!System::IsValid())
+    return true;
+
+  const bool cheevos_enabled = s_host_interface->GetBoolSettingValue("Cheevos", "Enabled", false);
+  const bool cheevos_hardcore = s_host_interface->GetBoolSettingValue("Cheevos", "ChallengeMode", false);
+  if (!cheevos_enabled || !cheevos_hardcore)
+    return true;
+
+  SmallString message;
+  message.AppendString("Enabling hardcore mode will shut down your current game.\n\n");
+
+  if (s_host_interface->ShouldSaveResumeState())
+  {
+    message.AppendString(
+      "The current state will be saved, but you will be unable to load it until you disable hardcore mode.\n\n");
+  }
+
+  message.AppendString("Do you want to continue?");
+
+  if (!s_host_interface->ConfirmMessage(message))
+    return false;
+
+  s_host_interface->PowerOffSystem(s_host_interface->ShouldSaveResumeState());
   return true;
 }
 
@@ -1954,22 +2048,44 @@ void DrawSettingsWindow()
         BeginMenuButtons();
 
         MenuHeading("Settings");
+        if (ToggleButtonForNonSetting(ICON_FA_TROPHY "  Enable RetroAchievements",
+                                      "When enabled and logged in, DuckStation will scan for achievements on startup.",
+                                      "Cheevos", "Enabled", false))
+        {
+          s_host_interface->RunLater([]() {
+            if (!ConfirmChallengeModeEnable())
+              s_host_interface->GetSettingsInterface()->SetBoolValue("Cheevos", "Enabled", false);
+            else
+              SaveAndApplySettings();
+          });
+        }
+
         settings_changed |= ToggleButtonForNonSetting(
-          "Enable RetroAchievements", "When enabled and logged in, DuckStation will scan for achievements on startup.",
-          "Cheevos", "Enabled", false);
-        settings_changed |= ToggleButtonForNonSetting(
-          "Rich Presence",
+          ICON_FA_USER_FRIENDS "  Rich Presence",
           "When enabled, rich presence information will be collected and sent to the server where supported.",
           "Cheevos", "RichPresence", true);
         settings_changed |=
-          ToggleButtonForNonSetting("Test Mode",
+          ToggleButtonForNonSetting(ICON_FA_STETHOSCOPE "  Test Mode",
                                     "When enabled, DuckStation will assume all achievements are locked and not "
                                     "send any unlock notifications to the server.",
                                     "Cheevos", "TestMode", false);
-        settings_changed |= ToggleButtonForNonSetting("Use First Disc From Playlist",
+        settings_changed |= ToggleButtonForNonSetting(ICON_FA_COMPACT_DISC "  Use First Disc From Playlist",
                                                       "When enabled, the first disc in a playlist will be used for "
                                                       "achievements, regardless of which disc is active.",
                                                       "Cheevos", "UseFirstDiscFromPlaylist", true);
+
+        if (ToggleButtonForNonSetting(ICON_FA_HARD_HAT "  Hardcore Mode",
+                                      "\"Challenge\" mode for achievements. Disables save state, cheats, and slowdown "
+                                      "functions, but you receive double the achievement points.",
+                                      "Cheevos", "ChallengeMode", false))
+        {
+          s_host_interface->RunLater([]() {
+            if (!ConfirmChallengeModeEnable())
+              s_host_interface->GetSettingsInterface()->SetBoolValue("Cheevos", "ChallengeMode", false);
+            else
+              SaveAndApplySettings();
+          });
+        }
 
         MenuHeading("Account");
         if (Cheevos::IsLoggedIn())
@@ -1991,13 +2107,20 @@ void DrawSettingsWindow()
           if (MenuButton(ICON_FA_KEY "  Logout", "Logs out of RetroAchievements."))
             Cheevos::Logout();
         }
-        else
+        else if (Cheevos::IsActive())
         {
-          ActiveButton(SmallString::FromFormat(ICON_FA_USER "  Not Logged In", Cheevos::GetUsername().c_str()), false,
-                       false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+          ActiveButton(ICON_FA_USER "  Not Logged In", false, false,
+                       ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
 
           if (MenuButton(ICON_FA_KEY "  Login", "Logs in to RetroAchievements."))
-            Cheevos::LoginAsync("", "");
+            ImGui::OpenPopup("Achievements Login");
+
+          DrawAchievementsLoginWindow();
+        }
+        else
+        {
+          ActiveButton(ICON_FA_USER "  Achievements are disabled.", false, false,
+                       ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
         }
 
         MenuHeading("Current Game");
@@ -2220,7 +2343,7 @@ void DrawQuickMenu(MainWindowType type)
       s_host_interface->RunLater([]() { s_host_interface->SaveScreenshot(); });
     }
 
-    if (ActiveButton(ICON_FA_UNDO "  Load State", false))
+    if (ActiveButton(ICON_FA_UNDO "  Load State", false, !IsCheevosHardcoreModeActive()))
     {
       s_current_main_window = MainWindowType::None;
       OpenSaveStateSelector(true);
@@ -2232,7 +2355,7 @@ void DrawQuickMenu(MainWindowType type)
       OpenSaveStateSelector(false);
     }
 
-    if (ActiveButton(ICON_FA_FROWN_OPEN "  Cheat List", false))
+    if (ActiveButton(ICON_FA_FROWN_OPEN "  Cheat List", false, !IsCheevosHardcoreModeActive()))
     {
       s_current_main_window = MainWindowType::None;
       DoCheatsMenu();
@@ -3248,9 +3371,7 @@ void DrawDebugSystemMenu()
 
   if (ImGui::MenuItem("Change Disc", nullptr, false, system_enabled))
   {
-#if 0
     DoChangeDisc();
-#endif
     ClearImGuiFocus();
   }
 
@@ -3260,17 +3381,9 @@ void DrawDebugSystemMenu()
     ClearImGuiFocus();
   }
 
-  if (ImGui::MenuItem("Frame Step", nullptr, false, system_enabled))
-  {
-#if 0
-    s_host_interface->RunLater([]() { DoFrameStep(); });
-#endif
-    ClearImGuiFocus();
-  }
-
   ImGui::Separator();
 
-  if (ImGui::BeginMenu("Load State"))
+  if (ImGui::BeginMenu("Load State", !IsCheevosHardcoreModeActive()))
   {
     for (u32 i = 1; i <= CommonHostInterface::GLOBAL_SAVE_STATE_SLOTS; i++)
     {
@@ -3302,7 +3415,7 @@ void DrawDebugSystemMenu()
 
   ImGui::Separator();
 
-  if (ImGui::BeginMenu("Cheats", system_enabled))
+  if (ImGui::BeginMenu("Cheats", system_enabled && !IsCheevosHardcoreModeActive()))
   {
     const bool has_cheat_file = System::HasCheatList();
     if (ImGui::BeginMenu("Enabled Cheats", has_cheat_file))
@@ -3812,9 +3925,8 @@ void DrawAchievementWindow()
       const ImRect title_bb(ImVec2(left, top), ImVec2(right, top + g_large_font->FontSize));
       text.Assign(Cheevos::GetGameTitle());
 
-      const std::string& developer = Cheevos::GetGameDeveloper();
-      if (!developer.empty())
-        text.AppendFormattedString(" (%s)", developer.c_str());
+      if (Cheevos::IsChallengeModeActive())
+        text.AppendString(" (Hardcore Mode)");
 
       top += g_large_font->FontSize + spacing;
 

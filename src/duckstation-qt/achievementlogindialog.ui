@@ -66,7 +66,7 @@
    <item>
     <widget class="QLabel" name="label_3">
      <property name="text">
-      <string>Please enter user name and password for retroachievements.org below. Your password will not be saved in DuckStation, instead an access token will be generated and used instead.</string>
+      <string>Please enter user name and password for retroachievements.org below. Your password will not be saved in DuckStation, an access token will be generated and used instead.</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>

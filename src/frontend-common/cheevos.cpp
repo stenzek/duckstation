@@ -49,12 +49,12 @@ static void SendPlaying();
 static void GameChanged();
 
 bool g_active = false;
+bool g_challenge_mode = false;
 u32 g_game_id = 0;
 
 static bool s_logged_in = false;
 static bool s_test_mode = false;
 static bool s_use_first_disc_from_playlist = true;
-static bool s_hardcode_mode = false;
 static bool s_rich_presence_enabled = false;
 
 static rc_runtime_t s_rcheevos_runtime;
@@ -210,7 +210,7 @@ static std::string GetUserAgent()
   return StringUtil::StdStringFromFormat("DuckStation %s", g_scm_tag_str);
 }
 
-bool Initialize(bool test_mode, bool use_first_disc_from_playlist, bool enable_rich_presence)
+bool Initialize(bool test_mode, bool use_first_disc_from_playlist, bool enable_rich_presence, bool challenge_mode)
 {
   s_http_downloader = FrontendCommon::HTTPDownloader::Create();
   if (!s_http_downloader)
@@ -221,6 +221,7 @@ bool Initialize(bool test_mode, bool use_first_disc_from_playlist, bool enable_r
 
   s_http_downloader->SetUserAgent(GetUserAgent());
   g_active = true;
+  g_challenge_mode = challenge_mode;
   s_test_mode = test_mode;
   s_use_first_disc_from_playlist = use_first_disc_from_playlist;
   s_rich_presence_enabled = enable_rich_presence;
@@ -318,6 +319,9 @@ const std::string& GetRichPresenceString()
 
 static void LoginASyncCallback(s32 status_code, const FrontendCommon::HTTPDownloader::Request::Data& data)
 {
+  if (GetHostInterface()->IsFullscreenUIEnabled())
+    ImGuiFullscreen::CloseBackgroundProgressDialog("cheevos_async_login");
+
   rapidjson::Document doc;
   if (!ParseResponseJSON("Login", status_code, data, doc))
     return;
@@ -341,7 +345,12 @@ static void LoginASyncCallback(s32 status_code, const FrontendCommon::HTTPDownlo
     GetHostInterface()->GetSettingsInterface()->Save();
   }
 
-  GetHostInterface()->ReportFormattedMessage("Logged into RetroAchievements using username '%s'.", username.c_str());
+  if (GetHostInterface()->IsFullscreenUIEnabled())
+  {
+    GetHostInterface()->ReportFormattedMessage(
+      GetHostInterface()->TranslateString("Cheevos", "Logged into RetroAchievements using username '%s'."),
+      username.c_str());
+  }
 
   if (g_active)
   {
@@ -370,6 +379,13 @@ bool LoginAsync(const char* username, const char* password)
 
   if (s_logged_in || std::strlen(username) == 0 || std::strlen(password) == 0)
     return false;
+
+  if (GetHostInterface()->IsFullscreenUIEnabled())
+  {
+    ImGuiFullscreen::OpenBackgroundProgressDialog(
+      "cheevos_async_login", GetHostInterface()->TranslateStdString("Cheevos", "Logging in to RetroAchivements..."), 0,
+      1, 0);
+  }
 
   SendLogin(username, password, s_http_downloader.get());
   return true;
@@ -444,7 +460,7 @@ static void UpdateImageDownloadProgress()
   if (!GetHostInterface()->IsFullscreenUIEnabled())
     return;
 
-  std::string message("Downloading achievement resources...");
+  std::string message(g_host_interface->TranslateStdString("Cheevos", "Downloading achievement resources..."));
   if (!s_image_download_progress_active)
   {
     ImGuiFullscreen::OpenBackgroundProgressDialog(str_id, std::move(message), 0,
@@ -497,8 +513,8 @@ static std::string GetBadgeImageFilename(const char* badge_name, bool locked, bo
     SmallString clean_name(badge_name);
     FileSystem::SanitizeFileName(clean_name);
     return GetHostInterface()->GetUserDirectoryRelativePath("cache" FS_OSPATH_SEPARATOR_STR
-                                                          "achievement_badge" FS_OSPATH_SEPARATOR_STR "%s%s.png",
-                                                          clean_name.GetCharArray(), locked ? "_lock" : "");
+                                                            "achievement_badge" FS_OSPATH_SEPARATOR_STR "%s%s.png",
+                                                            clean_name.GetCharArray(), locked ? "_lock" : "");
   }
 }
 
@@ -520,19 +536,20 @@ static std::string ResolveBadgePath(const char* badge_name, bool locked)
 
 static void DisplayAchievementSummary()
 {
-  std::string title(
-    StringUtil::StdStringFromFormat("%s%s", s_game_title.c_str(), s_hardcode_mode ? " (Hardcore Mode)" : ""));
-  std::string summary;
+  std::string title = s_game_title;
+  if (g_challenge_mode)
+    title += GetHostInterface()->TranslateString("Cheevos", " (Hardcore Mode)");
 
+  std::string summary;
   if (GetAchievementCount() > 0)
   {
-    summary = StringUtil::StdStringFromFormat("You have earned %u of %u achievements, and %u of %u points.",
-                                              GetUnlockedAchiementCount(), GetAchievementCount(),
-                                              GetCurrentPointsForGame(), GetMaximumPointsForGame());
+    summary = StringUtil::StdStringFromFormat(
+      GetHostInterface()->TranslateString("Cheevos", "You have earned %u of %u achievements, and %u of %u points."),
+      GetUnlockedAchiementCount(), GetAchievementCount(), GetCurrentPointsForGame(), GetMaximumPointsForGame());
   }
   else
   {
-    summary = "This game has no achievements.";
+    summary = GetHostInterface()->TranslateString("Cheevos", "This game has no achievements.");
   }
 
   ImGuiFullscreen::AddNotification(10.0f, std::move(title), std::move(summary), s_game_icon);
@@ -588,7 +605,7 @@ static void GetUserUnlocks()
 {
   char url[256];
   int res = rc_url_get_unlock_list(url, sizeof(url), s_username.c_str(), s_login_token.c_str(), g_game_id,
-                                   static_cast<int>(s_hardcode_mode));
+                                   static_cast<int>(g_challenge_mode));
   Assert(res == 0);
 
   s_http_downloader->CreateRequest(url, GetUserUnlocksCallback);
@@ -681,7 +698,8 @@ static void GetPatchesCallback(s32 status_code, const FrontendCommon::HTTPDownlo
   }
 
   // parse rich presence
-  if (s_rich_presence_enabled && patch_data.HasMember("RichPresencePatch") && patch_data["RichPresencePatch"].IsString())
+  if (s_rich_presence_enabled && patch_data.HasMember("RichPresencePatch") &&
+      patch_data["RichPresencePatch"].IsString())
   {
     const char* patch = patch_data["RichPresencePatch"].GetString();
     int res = rc_runtime_activate_richpresence(&s_rcheevos_runtime, patch, nullptr, 0);
@@ -855,9 +873,9 @@ void GameChanged(const std::string& path, CDImage* image)
 
   if (s_game_hash.empty())
   {
-    GetHostInterface()->AddOSDMessage(
-      GetHostInterface()->TranslateStdString("OSDMessage", "Failed to read executable from disc. Achievements disabled."),
-      10.0f);
+    GetHostInterface()->AddOSDMessage(GetHostInterface()->TranslateStdString(
+                                        "OSDMessage", "Failed to read executable from disc. Achievements disabled."),
+                                      10.0f);
     return;
   }
 
@@ -1086,7 +1104,7 @@ void UnlockAchievement(u32 achievement_id, bool add_notification /* = true*/)
 
   char url[256];
   rc_url_award_cheevo(url, sizeof(url), s_username.c_str(), s_login_token.c_str(), achievement_id,
-                      static_cast<int>(s_hardcode_mode), s_game_hash.c_str());
+                      static_cast<int>(g_challenge_mode), s_game_hash.c_str());
   s_http_downloader->CreateRequest(url, UnlockAchievementCallback);
 }
 

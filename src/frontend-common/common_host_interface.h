@@ -308,6 +308,9 @@ public:
   void DrawOSDMessages();
   void DrawDebugWindows();
 
+  /// Returns true if features such as save states should be disabled.
+  bool IsCheevosChallengeModeActive() const;
+
 protected:
   enum : u32
   {
@@ -390,6 +393,9 @@ protected:
 
   /// Saves current settings variables to ini.
   virtual void SaveSettings(SettingsInterface& si) override;
+
+  /// Checks and fixes up any incompatible settings.
+  virtual void FixIncompatibleSettings(bool display_osd_messages);
 
   /// Checks for settings changes, std::move() the old settings away for comparing beforehand.
   virtual void CheckForSettingsChanges(const Settings& old_settings) override;
