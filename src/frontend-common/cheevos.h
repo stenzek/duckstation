@@ -7,6 +7,13 @@ class CDImage;
 
 namespace Cheevos {
 
+enum class AchievementCategory : u32
+{
+  Local = 0,
+  Core = 3,
+  Unofficial = 5
+};
+
 struct Achievement
 {
   u32 id;

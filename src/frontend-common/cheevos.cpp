@@ -659,18 +659,28 @@ static void GetPatchesCallback(s32 status_code, const FrontendCommon::HTTPDownlo
     const auto achievements(patch_data["Achievements"].GetArray());
     for (const auto& achievement : achievements)
     {
-      if (!achievement.HasMember("ID") || !achievement["ID"].IsNumber() || !achievement.HasMember("MemAddr") ||
-          !achievement["MemAddr"].IsString() || !achievement.HasMember("Title") || !achievement["Title"].IsString())
+      if (!achievement.HasMember("ID") || !achievement["ID"].IsNumber() || !achievement.HasMember("Flags") ||
+          !achievement["Flags"].IsNumber() || !achievement.HasMember("MemAddr") || !achievement["MemAddr"].IsString() ||
+          !achievement.HasMember("Title") || !achievement["Title"].IsString())
       {
         continue;
       }
 
       const u32 id = achievement["ID"].GetUint();
+      const u32 category = achievement["Flags"].GetUint();
       const char* memaddr = achievement["MemAddr"].GetString();
       std::string title = achievement["Title"].GetString();
       std::string description = GetOptionalString(achievement, "Description");
       std::string badge_name = GetOptionalString(achievement, "BadgeName");
       const u32 points = GetOptionalUInt(achievement, "Points");
+
+      // Skip local and unofficial achievements for now.
+      if (static_cast<AchievementCategory>(category) == AchievementCategory::Local ||
+          static_cast<AchievementCategory>(category) == AchievementCategory::Unofficial)
+      {
+        Log_WarningPrintf("Skipping unofficial achievement %u (%s)", id, title.c_str());
+        continue;
+      }
 
       if (GetAchievementByID(id))
       {
@@ -737,19 +747,11 @@ static void GetPatchesCallback(s32 status_code, const FrontendCommon::HTTPDownlo
 
 static void GetPatches(u32 game_id)
 {
-#if 1
   char url[256] = {};
   int res = rc_url_get_patch(url, sizeof(url), s_username.c_str(), s_login_token.c_str(), game_id);
   Assert(res == 0);
 
   s_http_downloader->CreateRequest(url, GetPatchesCallback);
-#else
-  std::optional<std::vector<u8>> f = FileSystem::ReadBinaryFile("D:\\10434.txt");
-  if (!f)
-    return;
-
-  GetPatchesCallback(200, *f);
-#endif
 }
 
 static std::string GetGameHash(CDImage* cdi)
