@@ -107,14 +107,11 @@ void ControllerSettingsWidget::createUi()
 
 void ControllerSettingsWidget::updateMultitapControllerTitles()
 {
-  const MultitapMode mode = getMultitapMode();
+  m_tab_widget->clear();
 
+  const MultitapMode multitap_mode = getMultitapMode();
   for (int i = 0; i < static_cast<int>(m_port_ui.size()); i++)
-  {
-    const QString tab_title(getTabTitleForPort(i, mode));
-    m_tab_widget->setTabVisible(i, !tab_title.isEmpty());
-    m_tab_widget->setTabText(i, tab_title);
-  }
+    createPortSettingsUi(i, &m_port_ui[i], multitap_mode);
 }
 
 void ControllerSettingsWidget::onProfileLoaded()
@@ -151,6 +148,16 @@ void ControllerSettingsWidget::reloadBindingButtons()
 
 void ControllerSettingsWidget::createPortSettingsUi(int index, PortSettingsUI* ui, MultitapMode multitap_mode)
 {
+  if (ui->widget)
+  {
+    delete ui->widget;
+    *ui = {};
+  }
+
+  const QString tab_title(getTabTitleForPort(index, multitap_mode));
+  if (tab_title.isEmpty())
+    return;
+
   ui->widget = new QWidget(m_tab_widget);
   ui->layout = new QVBoxLayout(ui->widget);
 
@@ -240,9 +247,7 @@ void ControllerSettingsWidget::createPortSettingsUi(int index, PortSettingsUI* u
 
   ui->widget->setLayout(ui->layout);
 
-  const QString tab_title(getTabTitleForPort(index, multitap_mode));
   m_tab_widget->addTab(ui->widget, tab_title);
-  m_tab_widget->setTabVisible(index, !tab_title.isEmpty());
 }
 
 void ControllerSettingsWidget::createPortBindingSettingsUi(int index, PortSettingsUI* ui, ControllerType ctype)
