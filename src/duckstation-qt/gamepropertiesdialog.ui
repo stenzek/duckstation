@@ -613,35 +613,45 @@
           <string>Controller Settings</string>
          </property>
          <layout class="QFormLayout" name="formLayout_4">
-          <item row="0" column="0">
+          <item row="1" column="0">
            <widget class="QLabel" name="label_15">
             <property name="text">
              <string>Controller 1 Type:</string>
             </property>
            </widget>
           </item>
-          <item row="0" column="1">
+          <item row="1" column="1">
            <widget class="QComboBox" name="userControllerType1"/>
           </item>
-          <item row="1" column="0">
+          <item row="2" column="0">
            <widget class="QLabel" name="label_16">
             <property name="text">
              <string>Controller 2 Type:</string>
             </property>
            </widget>
           </item>
-          <item row="1" column="1">
+          <item row="2" column="1">
            <widget class="QComboBox" name="userControllerType2"/>
           </item>
-          <item row="2" column="0">
+          <item row="3" column="0">
            <widget class="QLabel" name="label_19">
             <property name="text">
              <string>Input Profile For Bindings:</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="1">
+          <item row="3" column="1">
            <widget class="QComboBox" name="userInputProfile"/>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_33">
+            <property name="text">
+             <string>Multitap Mode:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="userMultitapMode"/>
           </item>
          </layout>
         </widget>

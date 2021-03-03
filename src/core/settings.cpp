@@ -885,8 +885,8 @@ const char* Settings::GetMemoryCardTypeDisplayName(MemoryCardType type)
 
 static std::array<const char*, 4> s_multitap_enable_mode_names = {{"Disabled", "Port1Only", "Port2Only", "BothPorts"}};
 static std::array<const char*, 4> s_multitap_enable_mode_display_names = {
-  {TRANSLATABLE("MultitapMode", "Disabled"), TRANSLATABLE("MultitapMode", "Enable on Port 1 only"),
-   TRANSLATABLE("MultitapMode", "Enable on Port 2 only"), TRANSLATABLE("MultitapMode", "Enable on Ports 1 and 2")}};
+  {TRANSLATABLE("MultitapMode", "Disabled"), TRANSLATABLE("MultitapMode", "Enable on Port 1 Only"),
+   TRANSLATABLE("MultitapMode", "Enable on Port 2 Only"), TRANSLATABLE("MultitapMode", "Enable on Ports 1 and 2")}};
 
 std::optional<MultitapMode> Settings::ParseMultitapModeName(const char* str)
 {

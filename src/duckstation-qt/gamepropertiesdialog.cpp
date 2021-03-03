@@ -152,6 +152,12 @@ void GamePropertiesDialog::setupAdditionalUi()
       qApp->translate("GPUTextureFilter", Settings::GetTextureFilterDisplayName(static_cast<GPUTextureFilter>(i))));
   }
 
+  m_ui.userMultitapMode->addItem(tr("(unchanged)"));
+  for (u32 i = 0; i < static_cast<u32>(MultitapMode::Count); i++)
+  {
+    m_ui.userMultitapMode->addItem(
+      qApp->translate("MultitapMode", Settings::GetMultitapModeDisplayName(static_cast<MultitapMode>(i))));
+  }
   m_ui.userControllerType1->addItem(tr("(unchanged)"));
   for (u32 i = 0; i < static_cast<u32>(ControllerType::Count); i++)
   {
@@ -409,6 +415,11 @@ void GamePropertiesDialog::populateGameSettings()
   populateBooleanUserSetting(m_ui.userPGXPProjectionPrecision, gs.gpu_pgxp_projection_precision);
   populateBooleanUserSetting(m_ui.userPGXPDepthBuffer, gs.gpu_pgxp_depth_buffer);
 
+  if (gs.multitap_mode.has_value())
+  {
+    QSignalBlocker sb(m_ui.userMultitapMode);
+    m_ui.userMultitapMode->setCurrentIndex(static_cast<int>(gs.multitap_mode.value()) + 1);
+  }
   if (gs.controller_1_type.has_value())
   {
     QSignalBlocker sb(m_ui.userControllerType1);
@@ -604,6 +615,14 @@ void GamePropertiesDialog::connectUi()
   connectBooleanUserSetting(m_ui.userPGXP, &m_game_settings.gpu_pgxp);
   connectBooleanUserSetting(m_ui.userPGXPProjectionPrecision, &m_game_settings.gpu_pgxp_projection_precision);
   connectBooleanUserSetting(m_ui.userPGXPDepthBuffer, &m_game_settings.gpu_pgxp_depth_buffer);
+
+  connect(m_ui.userMultitapMode, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
+    if (index <= 0)
+      m_game_settings.multitap_mode.reset();
+    else
+      m_game_settings.multitap_mode = static_cast<MultitapMode>(index - 1);
+    saveGameSettings();
+  });
 
   connect(m_ui.userControllerType1, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
     if (index <= 0)

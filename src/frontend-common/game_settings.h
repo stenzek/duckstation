@@ -72,6 +72,7 @@ struct Entry
   std::optional<bool> gpu_pgxp;
   std::optional<bool> gpu_pgxp_projection_precision;
   std::optional<bool> gpu_pgxp_depth_buffer;
+  std::optional<MultitapMode> multitap_mode;
   std::optional<ControllerType> controller_1_type;
   std::optional<ControllerType> controller_2_type;
   std::optional<MemoryCardType> memory_card_1_type;
