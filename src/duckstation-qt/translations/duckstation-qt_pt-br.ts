@@ -14,27 +14,27 @@
         <translation>Duckstation</translation>
     </message>
     <message>
-        <location filename="../aboutdialog.cpp" line="14"/>
+        <location filename="../aboutdialog.cpp" line="15"/>
         <source>%1 (%2)</source>
         <translation>%1 (%2)</translation>
     </message>
     <message>
-        <location filename="../aboutdialog.cpp" line="30"/>
+        <location filename="../aboutdialog.cpp" line="31"/>
         <source>DuckStation is a free and open-source simulator/emulator of the Sony PlayStation&lt;span style=&quot;vertical-align:super;&quot;&gt;TM&lt;/span&gt; console, focusing on playability, speed, and long-term maintainability.</source>
         <translation>Duckstation é um emulador de código aberto do console Playstation 1 &lt;span style=&quot;vertical-align:super;&quot;&gt;&lt;/span&gt;focado na velocidade, jogabilidade e suporte a longo prazo.</translation>
     </message>
     <message>
-        <location filename="../aboutdialog.cpp" line="33"/>
+        <location filename="../aboutdialog.cpp" line="34"/>
         <source>Authors</source>
         <translation>Autores</translation>
     </message>
     <message>
-        <location filename="../aboutdialog.cpp" line="34"/>
+        <location filename="../aboutdialog.cpp" line="35"/>
         <source>Icon by</source>
         <translation>Icone</translation>
     </message>
     <message>
-        <location filename="../aboutdialog.cpp" line="35"/>
+        <location filename="../aboutdialog.cpp" line="36"/>
         <source>License</source>
         <translation>Licença</translation>
     </message>
@@ -147,7 +147,7 @@
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="84"/>
-        <location filename="../achievementsettingswidget.cpp" line="76"/>
+        <location filename="../achievementsettingswidget.cpp" line="77"/>
         <source>Login...</source>
         <translation>Entrar...</translation>
     </message>
@@ -216,19 +216,19 @@ função, considere fazer sua conta em:&lt;a href=&quot;https://retroachievement
         <translation>Quando ativado, o primeiro disco em uma lista de reprodução será usado para conquistas, independente de qual disco está ativo.</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="68"/>
+        <location filename="../achievementsettingswidget.cpp" line="69"/>
         <source>Username: %1
 Login token generated on %2.</source>
         <translation>Usuário: %1
 Token Gerado %2.</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="71"/>
+        <location filename="../achievementsettingswidget.cpp" line="72"/>
         <source>Logout</source>
         <translation>Sair</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="75"/>
+        <location filename="../achievementsettingswidget.cpp" line="76"/>
         <source>Not Logged In.</source>
         <translation>Não Logado.</translation>
     </message>
@@ -823,22 +823,22 @@ Token Gerado %2.</translation>
 <context>
     <name>AudioBackend</name>
     <message>
-        <location filename="../../core/settings.cpp" line="785"/>
+        <location filename="../../core/settings.cpp" line="791"/>
         <source>Null (No Output)</source>
         <translation>Mudo</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="786"/>
+        <location filename="../../core/settings.cpp" line="792"/>
         <source>Cubeb</source>
         <translation>Cubed</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="788"/>
+        <location filename="../../core/settings.cpp" line="794"/>
         <source>SDL</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="790"/>
+        <location filename="../../core/settings.cpp" line="796"/>
         <source>OpenSL ES</source>
         <translation>OpenSL ES</translation>
     </message>
@@ -1247,17 +1247,17 @@ Token Gerado %2.</translation>
         <translation type="vanished">Interpretador (Mais Lento)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="559"/>
+        <location filename="../../core/settings.cpp" line="565"/>
         <source>Interpreter (Slowest)</source>
         <translation>Interpretador (Mais Lento)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="560"/>
+        <location filename="../../core/settings.cpp" line="566"/>
         <source>Cached Interpreter (Faster)</source>
         <translation>Interpretador Armazenado (Rápido)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="561"/>
+        <location filename="../../core/settings.cpp" line="567"/>
         <source>Recompiler (Fastest)</source>
         <translation>Recompilador (Mais Rápido)</translation>
     </message>
@@ -1265,17 +1265,17 @@ Token Gerado %2.</translation>
 <context>
     <name>CPUFastmemMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="590"/>
+        <location filename="../../core/settings.cpp" line="596"/>
         <source>Disabled (Slowest)</source>
         <translation>Desativado (Lento)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="591"/>
+        <location filename="../../core/settings.cpp" line="597"/>
         <source>MMap (Hardware, Fastest, 64-Bit Only)</source>
         <translation>MMap (Hardware, Mais rápido)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="592"/>
+        <location filename="../../core/settings.cpp" line="598"/>
         <source>LUT (Faster)</source>
         <translation>LUT (Rápido)</translation>
     </message>
@@ -1845,17 +1845,17 @@ Token Gerado %2.</translation>
 <context>
     <name>CommonHostInterface</name>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1812"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1820"/>
         <source>Are you sure you want to stop emulation?</source>
         <translation>Quer mesmo parar a Emulação?</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1817"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1825"/>
         <source>The current state will be saved.</source>
         <translation>O estado atual será salvo.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2410"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2415"/>
         <source>Invalid version %u (%s version %u)</source>
         <translation>Versão Inválida %u (%s versão %u)</translation>
     </message>
@@ -1867,17 +1867,17 @@ Token Gerado %2.</translation>
 <context>
     <name>ConsoleRegion</name>
     <message>
-        <location filename="../../core/settings.cpp" line="501"/>
+        <location filename="../../core/settings.cpp" line="507"/>
         <source>Auto-Detect</source>
         <translation>Auto Detectar</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="501"/>
+        <location filename="../../core/settings.cpp" line="507"/>
         <source>NTSC-J (Japan)</source>
         <translation>NTSC-J (Japão)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="502"/>
+        <location filename="../../core/settings.cpp" line="508"/>
         <source>NTSC-U/C (US, Canada)</source>
         <translation>NTSC-U/C (US, Canadá)</translation>
     </message>
@@ -1886,7 +1886,7 @@ Token Gerado %2.</translation>
         <translation type="vanished">NTSC-U (US)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="502"/>
+        <location filename="../../core/settings.cpp" line="508"/>
         <source>PAL (Europe, Australia)</source>
         <translation>PAL (Europeu, Austrália)</translation>
     </message>
@@ -2394,37 +2394,37 @@ This warning will only be shown once.</source>
 <context>
     <name>ControllerType</name>
     <message>
-        <location filename="../../core/settings.cpp" line="821"/>
+        <location filename="../../core/settings.cpp" line="827"/>
         <source>None</source>
         <translation>Nenhum</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="821"/>
+        <location filename="../../core/settings.cpp" line="827"/>
         <source>Digital Controller</source>
         <translation>Controle Digital</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="822"/>
+        <location filename="../../core/settings.cpp" line="828"/>
         <source>Analog Controller (DualShock)</source>
         <translation>Controle Analógico (Dualshock)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="822"/>
+        <location filename="../../core/settings.cpp" line="828"/>
         <source>Analog Joystick</source>
         <translation>Controle Analógico</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="823"/>
+        <location filename="../../core/settings.cpp" line="829"/>
         <source>Namco GunCon</source>
         <translation>Namco GunCon</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="823"/>
+        <location filename="../../core/settings.cpp" line="829"/>
         <source>PlayStation Mouse</source>
         <translation>Playstation Mouse</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="824"/>
+        <location filename="../../core/settings.cpp" line="830"/>
         <source>NeGcon</source>
         <translation>NeGcon</translation>
     </message>
@@ -2960,7 +2960,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
 <context>
     <name>DiscRegion</name>
     <message>
-        <location filename="../../core/settings.cpp" line="530"/>
+        <location filename="../../core/settings.cpp" line="536"/>
         <source>NTSC-J (Japan)</source>
         <translation>NTSC-J (Japão)</translation>
     </message>
@@ -2969,17 +2969,17 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation type="vanished">NTSC-U (US)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="530"/>
+        <location filename="../../core/settings.cpp" line="536"/>
         <source>NTSC-U/C (US, Canada)</source>
         <translation>NTSC-U/C (US, Canadá)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="531"/>
+        <location filename="../../core/settings.cpp" line="537"/>
         <source>PAL (Europe, Australia)</source>
         <translation>PAL (Europeu, Austrália)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="531"/>
+        <location filename="../../core/settings.cpp" line="537"/>
         <source>Other</source>
         <translation>Outros</translation>
     </message>
@@ -2987,7 +2987,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
 <context>
     <name>DisplayAspectRatio</name>
     <message>
-        <location filename="../../core/settings.cpp" line="745"/>
+        <location filename="../../core/settings.cpp" line="751"/>
         <source>Auto (Game Native)</source>
         <translation>Auto (Resolução Nativa)</translation>
     </message>
@@ -2995,17 +2995,17 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
 <context>
     <name>DisplayCropMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="717"/>
+        <location filename="../../core/settings.cpp" line="723"/>
         <source>None</source>
         <translation>Nenhum</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="717"/>
+        <location filename="../../core/settings.cpp" line="723"/>
         <source>Only Overscan Area</source>
         <translation>Somente Área Renderizada</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="718"/>
+        <location filename="../../core/settings.cpp" line="724"/>
         <source>All Borders</source>
         <translation>Todas as Bordas</translation>
     </message>
@@ -3824,17 +3824,17 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
 <context>
     <name>GPUDownsampleMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="688"/>
+        <location filename="../../core/settings.cpp" line="694"/>
         <source>Disabled</source>
         <translation>Desativado</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="688"/>
+        <location filename="../../core/settings.cpp" line="694"/>
         <source>Box (Downsample 3D/Smooth All)</source>
         <translation>Misto (Reduz 3D / Suaviza Tudo)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="689"/>
+        <location filename="../../core/settings.cpp" line="695"/>
         <source>Adaptive (Preserve 3D/Smooth 2D)</source>
         <translation>Adaptativo (Preserva o 3D / Suaviza 2D)</translation>
     </message>
@@ -3842,22 +3842,22 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
 <context>
     <name>GPURenderer</name>
     <message>
-        <location filename="../../core/settings.cpp" line="625"/>
+        <location filename="../../core/settings.cpp" line="631"/>
         <source>Hardware (D3D11)</source>
         <translation>Placa de Vídeo (D3D11)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="627"/>
+        <location filename="../../core/settings.cpp" line="633"/>
         <source>Hardware (Vulkan)</source>
         <translation>Placa de Vídeo (Vulkan)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="627"/>
+        <location filename="../../core/settings.cpp" line="633"/>
         <source>Hardware (OpenGL)</source>
         <translation>Placa de Vídeo (OpenGL)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="628"/>
+        <location filename="../../core/settings.cpp" line="634"/>
         <source>Software</source>
         <translation>Software</translation>
     </message>
@@ -4280,37 +4280,37 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
 <context>
     <name>GPUTextureFilter</name>
     <message>
-        <location filename="../../core/settings.cpp" line="657"/>
+        <location filename="../../core/settings.cpp" line="663"/>
         <source>Nearest-Neighbor</source>
         <translation>Nearest-Neighbor</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="657"/>
+        <location filename="../../core/settings.cpp" line="663"/>
         <source>Bilinear</source>
         <translation>Bilinear</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="658"/>
+        <location filename="../../core/settings.cpp" line="664"/>
         <source>JINC2</source>
         <translation>JINC2</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="658"/>
+        <location filename="../../core/settings.cpp" line="664"/>
         <source>Bilinear (No Edge Blending)</source>
         <translation>Bilinear (Sem ajuste nas Bordas)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="659"/>
+        <location filename="../../core/settings.cpp" line="665"/>
         <source>xBR</source>
         <translation>xBR</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="659"/>
+        <location filename="../../core/settings.cpp" line="665"/>
         <source>JINC2 (No Edge Blending)</source>
         <translation>JINC2 (Sem ajuste nas Bordas)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="660"/>
+        <location filename="../../core/settings.cpp" line="666"/>
         <source>xBR (No Edge Blending)</source>
         <translation>xBR (Sem ajuste nas Bordas)</translation>
     </message>
@@ -5464,12 +5464,12 @@ This will download approximately 4 megabytes over your current internet connecti
 <context>
     <name>HostInterface</name>
     <message>
-        <location filename="../../core/host_interface.cpp" line="295"/>
+        <location filename="../../core/host_interface.cpp" line="290"/>
         <source>Failed to load configured BIOS file &apos;%s&apos;</source>
         <translation>Falha ao carregar o arquivo de BIOS &apos;%s&apos;</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="359"/>
+        <location filename="../../core/host_interface.cpp" line="354"/>
         <source>No BIOS image found for %s region</source>
         <translation>BIOS não encontrado para %s região</translation>
     </message>
@@ -5477,382 +5477,382 @@ This will download approximately 4 megabytes over your current internet connecti
 <context>
     <name>Hotkeys</name>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1763"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1769"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1772"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1778"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1781"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1787"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1793"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1799"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1805"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1834"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1841"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1847"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1853"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1860"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1771"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1777"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1780"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1786"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1789"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1795"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1801"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1807"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1813"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1839"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1846"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1852"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1858"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1865"/>
         <source>General</source>
         <translation>Geral</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1764"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1772"/>
         <source>Open Quick Menu</source>
         <translation>Abrir menu rápido</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1770"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1778"/>
         <source>Fast Forward</source>
         <translation>Avanço Rápido</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1773"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1781"/>
         <source>Toggle Fast Forward</source>
         <translation>Pulo de Quadros (Alternado)</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1779"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1787"/>
         <source>Turbo</source>
         <translation>Turbo</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1782"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1790"/>
         <source>Toggle Turbo</source>
         <translation>Turbo Alternado</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1788"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1796"/>
         <source>Toggle Fullscreen</source>
         <translation>Tela Cheia</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1794"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1802"/>
         <source>Toggle Pause</source>
         <translation>Pausa</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1800"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1808"/>
         <source>Toggle Cheats</source>
         <translation>Alternar Trapaças</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1806"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1814"/>
         <source>Power Off System</source>
         <translation>Desligar o Sistema</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1835"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1840"/>
         <source>Toggle Patch Codes</source>
         <translation>Ativar / Desativar Trapaças</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1842"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1847"/>
         <source>Reset System</source>
         <translation>Reiniciar Sistema</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1848"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1853"/>
         <source>Save Screenshot</source>
         <translation>Salvar Caputra de tela</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1854"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1859"/>
         <source>Frame Step</source>
         <translation>Pulo de quadro (Fixo)</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1861"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1866"/>
         <source>Rewind</source>
         <translation>Rebobinar</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1875"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1881"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1906"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1925"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1931"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1937"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1943"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1949"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1880"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1886"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1911"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1930"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1936"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1942"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1948"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1954"/>
         <source>Graphics</source>
         <translation>Gráficos</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1876"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1881"/>
         <source>Toggle Software Rendering</source>
         <translation>Alternar para Renderizador por Software</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1882"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1887"/>
         <source>Toggle PGXP</source>
         <translation>PGXP</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1907"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1912"/>
         <source>Toggle PGXP Depth Buffer</source>
         <translation>Alternar PGXP Polimento Profundo</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1926"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1931"/>
         <source>Increase Resolution Scale</source>
         <translation>Aumentar Escala de Resolução</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1932"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1937"/>
         <source>Decrease Resolution Scale</source>
         <translation>Diminuir Escala de Resolução</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1938"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1943"/>
         <source>Toggle Post-Processing</source>
         <translation>Alternar pós-processamento</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1944"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1949"/>
         <source>Reload Post Processing Shaders</source>
         <translation>Recarregar pós-processamento (Shaders)</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1950"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1955"/>
         <source>Reload Texture Replacements</source>
         <translation>Recarregar Texturas Customizadas</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1961"/>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1966"/>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1971"/>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1976"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1984"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1990"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2000"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2006"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1981"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1989"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1995"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2005"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2011"/>
         <source>Save States</source>
         <translation>Estados Salvos</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1962"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1967"/>
         <source>Load From Selected Slot</source>
         <translation>Carregar do Estado Salvo</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1967"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1972"/>
         <source>Save To Selected Slot</source>
         <translation>Salvar para compartimento Selecionado</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1972"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1977"/>
         <source>Select Previous Save Slot</source>
         <translation>Selecionar compartimento anterior</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1977"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1982"/>
         <source>Select Next Save Slot</source>
         <translation>Selecionar próximo compartimento</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2015"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2020"/>
         <source>Load Game State 1</source>
         <translation>Carregar Estado 1</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2016"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2021"/>
         <source>Load Game State 2</source>
         <translation>Carregar Estado 2</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2017"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2022"/>
         <source>Load Game State 3</source>
         <translation>Carregar Estado 3</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2018"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2023"/>
         <source>Load Game State 4</source>
         <translation>Carregar Estado 4</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2019"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2024"/>
         <source>Load Game State 5</source>
         <translation>Carregar Estado 5</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2020"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2025"/>
         <source>Load Game State 6</source>
         <translation>Carregar Estado 6</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2021"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2026"/>
         <source>Load Game State 7</source>
         <translation>Carregar Estado 7</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2022"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2027"/>
         <source>Load Game State 8</source>
         <translation>Carregar Estado 8</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2023"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2028"/>
         <source>Load Game State 9</source>
         <translation>Carregar Estado 9</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2024"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2029"/>
         <source>Load Game State 10</source>
         <translation>Carregar Estado 10</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2025"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2030"/>
         <source>Save Game State 1</source>
         <translation>Salvar Estado 1</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2026"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2031"/>
         <source>Save Game State 2</source>
         <translation>Salvar Estado 2</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2027"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2032"/>
         <source>Save Game State 3</source>
         <translation>Salvar Estado 3</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2028"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2033"/>
         <source>Save Game State 4</source>
         <translation>Salvar Estado 4</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2029"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2034"/>
         <source>Save Game State 5</source>
         <translation>Salvar Estado 5</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2030"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2035"/>
         <source>Save Game State 6</source>
         <translation>Salvar Estado 6</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2031"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2036"/>
         <source>Save Game State 7</source>
         <translation>Salvar Estado 7</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2032"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2037"/>
         <source>Save Game State 8</source>
         <translation>Salvar Estado 8</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2033"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2038"/>
         <source>Save Game State 9</source>
         <translation>Salvar Estado 9</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2034"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2039"/>
         <source>Save Game State 10</source>
         <translation>Salvar Estado 10</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2035"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2040"/>
         <source>Load Global State 1</source>
         <translation>Carregar Estado Global 1</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2036"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2041"/>
         <source>Load Global State 2</source>
         <translation>Carregar Estado Global 2</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2037"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2042"/>
         <source>Load Global State 3</source>
         <translation>Carregar Estado Global 3</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2038"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2043"/>
         <source>Load Global State 4</source>
         <translation>Carregar Estado Global 4</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2039"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2044"/>
         <source>Load Global State 5</source>
         <translation>Carregar Estado Global 5</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2040"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2045"/>
         <source>Load Global State 6</source>
         <translation>Carregar Estado Global 6</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2041"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2046"/>
         <source>Load Global State 7</source>
         <translation>Carregar Estado Global 7</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2042"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2047"/>
         <source>Load Global State 8</source>
         <translation>Carregar Estado Global 8</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2043"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2048"/>
         <source>Load Global State 9</source>
         <translation>Carregar Estado Global 9</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2044"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2049"/>
         <source>Load Global State 10</source>
         <translation>Carregar Estado Global 10</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2045"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2050"/>
         <source>Save Global State 1</source>
         <translation>Salvar Estado Global 1</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2046"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2051"/>
         <source>Save Global State 2</source>
         <translation>Salvar Estado Global 2</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2047"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2052"/>
         <source>Save Global State 3</source>
         <translation>Salvar Estado Global 3</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2048"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2053"/>
         <source>Save Global State 4</source>
         <translation>Salvar Estado Global 4</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2049"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2054"/>
         <source>Save Global State 5</source>
         <translation>Salvar Estado Global 5</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2050"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2055"/>
         <source>Save Global State 6</source>
         <translation>Salvar Estado Global 6</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2051"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2056"/>
         <source>Save Global State 7</source>
         <translation>Salvar Estado Global 7</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2052"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2057"/>
         <source>Save Global State 8</source>
         <translation>Salvar Estado Global 8</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2053"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2058"/>
         <source>Save Global State 9</source>
         <translation>Salvar Estado Global 9</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2054"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2059"/>
         <source>Save Global State 10</source>
         <translation>Salvar Estado Global 10</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2059"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2072"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2083"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2096"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2064"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2077"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2088"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2101"/>
         <source>Audio</source>
         <translation>Áudio</translation>
     </message>
@@ -5873,22 +5873,22 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation type="vanished">Salvar Estado Global %u</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2060"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2065"/>
         <source>Toggle Mute</source>
         <translation>Mudo</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2073"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2078"/>
         <source>Toggle CD Audio Mute</source>
         <translation>Silenciar Áudio de CD</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2084"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2089"/>
         <source>Volume Up</source>
         <translation>Volume +</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2097"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2102"/>
         <source>Volume Down</source>
         <translation>Volume -</translation>
     </message>
@@ -5954,22 +5954,22 @@ This will download approximately 4 megabytes over your current internet connecti
 <context>
     <name>LogLevel</name>
     <message>
-        <location filename="../../core/settings.cpp" line="470"/>
+        <location filename="../../core/settings.cpp" line="476"/>
         <source>None</source>
         <translation>Nenhum</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="470"/>
+        <location filename="../../core/settings.cpp" line="476"/>
         <source>Error</source>
         <translation>Erro</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="470"/>
+        <location filename="../../core/settings.cpp" line="476"/>
         <source>Warning</source>
         <translation>Atenção</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="471"/>
+        <location filename="../../core/settings.cpp" line="477"/>
         <source>Performance</source>
         <translation>Performance</translation>
     </message>
@@ -5978,32 +5978,32 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation type="vanished">Sucesso</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="471"/>
+        <location filename="../../core/settings.cpp" line="477"/>
         <source>Information</source>
         <translation>Informação</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="472"/>
+        <location filename="../../core/settings.cpp" line="478"/>
         <source>Developer</source>
         <translation>Desenvolvedor</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="472"/>
+        <location filename="../../core/settings.cpp" line="478"/>
         <source>Profile</source>
         <translation>Perfil</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="472"/>
+        <location filename="../../core/settings.cpp" line="478"/>
         <source>Verbose</source>
         <translation>Detalhado</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="473"/>
+        <location filename="../../core/settings.cpp" line="479"/>
         <source>Debug</source>
         <translation>Depurar</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="473"/>
+        <location filename="../../core/settings.cpp" line="479"/>
         <source>Trace</source>
         <translation>Rastreio</translation>
     </message>
@@ -6973,22 +6973,22 @@ This will download approximately 4 megabytes over your current internet connecti
 <context>
     <name>MemoryCardType</name>
     <message>
-        <location filename="../../core/settings.cpp" line="852"/>
+        <location filename="../../core/settings.cpp" line="858"/>
         <source>No Memory Card</source>
         <translation>Sem Cartão de Memória</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="852"/>
+        <location filename="../../core/settings.cpp" line="858"/>
         <source>Shared Between All Games</source>
         <translation>Compartrilhada Entre Jogos</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="853"/>
+        <location filename="../../core/settings.cpp" line="859"/>
         <source>Separate Card Per Game (Game Code)</source>
         <translation>Separar Cartão Por Jogo (Cód. Jogo)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="854"/>
+        <location filename="../../core/settings.cpp" line="860"/>
         <source>Separate Card Per Game (Game Title)</source>
         <translation>Separar Cartão Por Jogo (Título. Jogo)</translation>
     </message>
@@ -6996,19 +6996,24 @@ This will download approximately 4 megabytes over your current internet connecti
 <context>
     <name>MultitapMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="882"/>
+        <location filename="../../core/settings.cpp" line="888"/>
         <source>Disabled</source>
         <translation>Desativado</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="882"/>
+        <location filename="../../core/settings.cpp" line="888"/>
         <source>Enable on Port 1 only</source>
-        <translation>Ativar na Porta 1 somente</translation>
+        <translation>Ativar somente na Porta 1</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="883"/>
+        <location filename="../../core/settings.cpp" line="889"/>
         <source>Enable on Ports 1 and 2</source>
-        <translation>Ativar na Porta 2 somente</translation>
+        <translation>Ativar nas Portas 1 e 2</translation>
+    </message>
+    <message>
+        <location filename="../../core/settings.cpp" line="889"/>
+        <source>Enable on Port 2 only</source>
+        <translation>Ativar somente na Porta 2</translation>
     </message>
 </context>
 <context>
@@ -7145,27 +7150,27 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>Sistema Reiniciado.</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="418"/>
+        <location filename="../../core/host_interface.cpp" line="413"/>
         <source>Loading state from &apos;%s&apos;...</source>
         <translation>Carregando estado de &apos;%s&apos;...</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="424"/>
+        <location filename="../../core/host_interface.cpp" line="419"/>
         <source>Loading state from &apos;%s&apos; failed. Resetting.</source>
         <translation>Carregamento de estado &apos;%s&apos;.falhou. Reiniciando.</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="452"/>
+        <location filename="../../core/host_interface.cpp" line="447"/>
         <source>Saving state to &apos;%s&apos; failed.</source>
         <translation>Salvando estado para &apos;%s&apos; falhou.</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="457"/>
+        <location filename="../../core/host_interface.cpp" line="452"/>
         <source>State saved to &apos;%s&apos;.</source>
         <translation>Estado salvo para &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="673"/>
+        <location filename="../../core/host_interface.cpp" line="668"/>
         <source>PGXP is incompatible with the software renderer, disabling PGXP.</source>
         <translation>PGXP é incompatível com o rederizador por software, desativando PGXP.</translation>
     </message>
@@ -7178,59 +7183,59 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation type="vanished">Fastmem não disponível nesta plataforma, LUT será usado no lugar.</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="720"/>
+        <location filename="../../core/host_interface.cpp" line="715"/>
         <source>Switching to %s%s GPU renderer.</source>
         <translation>Mudando renderizador de GPU para %s%s.</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="743"/>
+        <location filename="../../core/host_interface.cpp" line="738"/>
         <source>Switching to %s audio backend.</source>
         <translation>Mudando tipo de saída de som para %s.</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="759"/>
+        <location filename="../../core/host_interface.cpp" line="754"/>
         <source>Switching to %s CPU execution mode.</source>
         <translation>Mudando para Modo de Execução de CPU.</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="770"/>
+        <location filename="../../core/host_interface.cpp" line="765"/>
         <source>CPU memory exceptions enabled, flushing all blocks.</source>
         <translation>Exceção de RAM em modo CPU ativado, limpando blocos.</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="771"/>
+        <location filename="../../core/host_interface.cpp" line="766"/>
         <source>CPU memory exceptions disabled, flushing all blocks.</source>
         <translation>Exceção de RAM em modo CPU desativado, limpando blocos.</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="780"/>
+        <location filename="../../core/host_interface.cpp" line="775"/>
         <source>CPU ICache enabled, flushing all blocks.</source>
         <translation>Icache ativado, limpando blocos.</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="781"/>
+        <location filename="../../core/host_interface.cpp" line="776"/>
         <source>CPU ICache disabled, flushing all blocks.</source>
         <translation>Icache desativado, limpando blocos.</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="826"/>
+        <location filename="../../core/host_interface.cpp" line="821"/>
         <source>PGXP enabled, recompiling all blocks.</source>
         <translation>PGXP ativado, reconstruindo blocos.</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="827"/>
+        <location filename="../../core/host_interface.cpp" line="822"/>
         <source>PGXP disabled, recompiling all blocks.</source>
         <translation>PGXP desativado, reconstruindo blocos.</translation>
     </message>
     <message>
-        <location filename="../../core/host_interface.cpp" line="1054"/>
+        <location filename="../../core/host_interface.cpp" line="1049"/>
         <source>Switching to %s renderer...</source>
         <translation>Mudando para %s...</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="933"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2652"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3107"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="941"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2657"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3112"/>
         <source>Failed to load post processing shader chain.</source>
         <translation>Falha ao carregar pós-processamento escolhido.</translation>
     </message>
@@ -7243,209 +7248,209 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation type="vanished">Limitador de Velocidade Desativado.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1891"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1896"/>
         <source>PGXP is now enabled.</source>
         <translation>PGXP Ativado.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1892"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1897"/>
         <source>PGXP is now disabled.</source>
         <translation>PGXP Desativado.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1919"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1924"/>
         <source>PGXP Depth Buffer is now enabled.</source>
         <translation>PGXP Modo Profundo Ligado.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1920"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1925"/>
         <source>PGXP Depth Buffer is now disabled.</source>
         <translation>PGXP Modo Profundo Desligado.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1953"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1958"/>
         <source>Texture replacements reloaded.</source>
         <translation>Texturas Customizadas Recarregadas.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2067"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2072"/>
         <source>Volume: Muted</source>
         <translation>Volume: Mudo</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2069"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2093"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2106"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2074"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2098"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2111"/>
         <source>Volume: %d%%</source>
         <translation>Volume: %d%%</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2078"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2083"/>
         <source>CD Audio Muted.</source>
         <translation>Mudo Ativado.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2079"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2084"/>
         <source>CD Audio Unmuted.</source>
         <translation>Mudo Desativado.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2245"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2250"/>
         <source>Loaded input profile from &apos;%s&apos;</source>
         <translation>Perfil de controle carregado de &apos;%s&apos;</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2835"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2840"/>
         <source>Started dumping audio to &apos;%s&apos;.</source>
         <translation>Iniciado despejo de Áudio para &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2840"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2845"/>
         <source>Failed to start dumping audio to &apos;%s&apos;.</source>
         <translation>Falha ao iniciar despejo de Áudio para &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2850"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2855"/>
         <source>Stopped dumping audio.</source>
         <translation>Despejo de Áudio terminado.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2880"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2885"/>
         <source>Screenshot file &apos;%s&apos; already exists.</source>
         <translation>Captura de Tela &apos;%s&apos; já existe.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2888"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2893"/>
         <source>Failed to save screenshot to &apos;%s&apos;</source>
         <translation>Falha ao salvar captura para &apos;%s&apos;</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2892"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2897"/>
         <source>Screenshot saved to &apos;%s&apos;.</source>
         <translation>Captura de tela salva para &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2920"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2925"/>
         <source>Input profile &apos;%s&apos; cannot be found.</source>
         <translation>Perfil de controle &apos;%s&apos; não encontrado.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2927"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2932"/>
         <source>Using input profile &apos;%s&apos;.</source>
         <translation>Usando perfil de controle &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2953"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2958"/>
         <source>Failed to load cheats from &apos;%s&apos;.</source>
         <translation>Falha ao carregar trapaças da &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2957"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2962"/>
         <source>Loaded %u cheats from list. %u cheats are enabled.</source>
         <translation>Trapaças %u carregadas da lista. %u trapaças ativadas.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2981"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2986"/>
         <source>Loaded %u cheats from database.</source>
         <translation>Trapaças %u carregadas do bando de dados.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3011"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3016"/>
         <source>Saved %u cheats to &apos;%s&apos;.</source>
         <translation>Trapaça %u.salva para &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3027"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3032"/>
         <source>Deleted cheat list &apos;%s&apos;.</source>
         <translation>Trapaça apagada da lista &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3067"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3072"/>
         <source>Cheat &apos;%s&apos; enabled.</source>
         <translation>Trapaça &apos;%s&apos; Ativada.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3071"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3076"/>
         <source>Cheat &apos;%s&apos; disabled.</source>
         <translation>Trapaça &apos;%s&apos; desativada.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2997"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3002"/>
         <source>Failed to save cheat list to &apos;%s&apos;</source>
         <translation>Falha ao salvar lista de trapaças para &apos;%s&apos;</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1248"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1256"/>
         <source>No cheats are loaded.</source>
         <translation>Sem trapaças carregadas.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1254"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1262"/>
         <source>%u cheats are now active.</source>
         <translation>%u trapaças ativadas.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1255"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1263"/>
         <source>%u cheats are now inactive.</source>
         <translation>%u trapaças desativadas.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1736"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1744"/>
         <source>Fast forwarding...</source>
         <translation>Avanço Rápido...</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1737"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1745"/>
         <source>Stopped fast forwarding.</source>
         <translation>Avanço rápido interrompido.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1748"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1756"/>
         <source>Turboing...</source>
         <translation>Turbo Ligado...</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1749"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1757"/>
         <source>Stopped turboing.</source>
         <translation>Turbo Desligado.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1864"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1869"/>
         <source>Rewinding...</source>
         <translation>Rebobinando...</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1865"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1870"/>
         <source>Stopped rewinding.</source>
         <translation>Retrocesso Terminado.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3087"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3092"/>
         <source>Applied cheat &apos;%s&apos;.</source>
         <translation>Trapaça Aplicada &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3091"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3096"/>
         <source>Cheat &apos;%s&apos; is already enabled.</source>
         <translation>Trapaça &apos;%s&apos; já ativada.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3104"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3109"/>
         <source>Post-processing is now enabled.</source>
         <translation>Pós-processamento Ativado.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3111"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3116"/>
         <source>Post-processing is now disabled.</source>
         <translation>Pós-processamento Desligado.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3122"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3127"/>
         <source>Failed to load post-processing shader chain.</source>
         <translation>Falha ao carregar texturas de pós-processamento.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3124"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3129"/>
         <source>Post-processing shaders reloaded.</source>
         <translation>Texturas de Pós-processamento Recarregadas.</translation>
     </message>
@@ -7565,27 +7570,27 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>Cartão de Memória %u presente no sistema mas não ao estado salvo, removendo cartão.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="927"/>
+        <location filename="../../core/system.cpp" line="943"/>
         <source>CPU clock speed is set to %u%% (%u / %u). This may result in instability.</source>
         <translation>Velocidade do CPU foi mudada para %u%% Isto resultará em instabilidades.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1076"/>
+        <location filename="../../core/system.cpp" line="1092"/>
         <source>WARNING: CPU overclock (%u%%) was different in save state (%u%%).</source>
         <translation>ATENÇÃO: Aumento da velocidade (%u%%) era diferente do que no seu save anterior (%u%%).</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1176"/>
+        <location filename="../../core/system.cpp" line="1192"/>
         <source>Failed to open CD image from save state: &apos;%s&apos;. Using existing image &apos;%s&apos;, this may result in instability.</source>
         <translation>Falha ao abrir imagem do estado salvo: &apos;%s&apos; Usando imagem existente &apos;%s&apos;, isto, resultará em instabilidades.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1917"/>
+        <location filename="../../core/system.cpp" line="1939"/>
         <source>Failed to open disc image &apos;%s&apos;.</source>
         <translation>Falha ao abrir o disco &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1926"/>
+        <location filename="../../core/system.cpp" line="1948"/>
         <source>Inserted disc &apos;%s&apos; (%s).</source>
         <translation>Disco Inserido &apos;%s&apos; (%s).</translation>
     </message>
@@ -7670,7 +7675,7 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>Modo analógico forçado desativado pelas configurações. Controles iniciados em modo digital.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/cheevos.cpp" line="814"/>
+        <location filename="../../frontend-common/cheevos.cpp" line="859"/>
         <source>Failed to read executable from disc. Achievements disabled.</source>
         <translation>Falha ao ler o jogo. Conquistas desativadas.</translation>
     </message>
@@ -7864,12 +7869,12 @@ This will download approximately 4 megabytes over your current internet connecti
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../main.cpp" line="61"/>
+        <location filename="../main.cpp" line="90"/>
         <source>DuckStation Error</source>
         <translation>Erro no Duckstation</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="62"/>
+        <location filename="../main.cpp" line="91"/>
         <source>Failed to initialize host interface. Cannot continue.</source>
         <translation>Falha ao Iniciar Interface. Não é possível Continuar.</translation>
     </message>
@@ -7889,43 +7894,43 @@ The URL was: %1</source>
 <context>
     <name>QtHostInterface</name>
     <message>
-        <location filename="../qthostinterface.cpp" line="941"/>
-        <location filename="../qthostinterface.cpp" line="983"/>
+        <location filename="../qthostinterface.cpp" line="938"/>
+        <location filename="../qthostinterface.cpp" line="980"/>
         <source>Game Save %1 (%2)</source>
         <translation>Jogo Salvo %1 (%2)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="941"/>
+        <location filename="../qthostinterface.cpp" line="938"/>
         <source>Game Save %1 (Empty)</source>
         <translation>Jogo Salvo %1 (Vazio)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="948"/>
+        <location filename="../qthostinterface.cpp" line="945"/>
         <source>Global Save %1 (%2)</source>
         <translation>Compartimento Global %1 (%2)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="948"/>
+        <location filename="../qthostinterface.cpp" line="945"/>
         <source>Global Save %1 (Empty)</source>
         <translation>Compartimento Global %1 (Vazio)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="953"/>
+        <location filename="../qthostinterface.cpp" line="950"/>
         <source>Resume</source>
         <translation>Resumir</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="956"/>
+        <location filename="../qthostinterface.cpp" line="953"/>
         <source>Load State</source>
         <translation>Carregar Estado</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="976"/>
+        <location filename="../qthostinterface.cpp" line="973"/>
         <source>Resume (%1)</source>
         <translation>Resumir (%1)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1358"/>
+        <location filename="../qthostinterface.cpp" line="1355"/>
         <source>Game ID: %1
 Game Title: %2
 Game Developer: %3
@@ -7941,12 +7946,12 @@ Total de Conquistas: %5 (%6 pontos)
 </translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1374"/>
+        <location filename="../qthostinterface.cpp" line="1371"/>
         <source>Rich presence inactive or unsupported.</source>
         <translation>Presença rica do Discord inativa ou não suportada.</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1378"/>
+        <location filename="../qthostinterface.cpp" line="1375"/>
         <source>Game not loaded or no RetroAchievements available.</source>
         <translation>Jogo não carregado ou sem Conquistas disponiveis.</translation>
     </message>
@@ -7968,22 +7973,22 @@ Total de Conquistas: %5 (%6 pontos)
         <translation>Salvamento rápido não encontrado.</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="990"/>
+        <location filename="../qthostinterface.cpp" line="987"/>
         <source>Edit Memory Cards...</source>
         <translation>Editar Cartões de Memória...</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1030"/>
+        <location filename="../qthostinterface.cpp" line="1027"/>
         <source>Delete Save States...</source>
         <translation>Apagar Jogos Salvos...</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1036"/>
+        <location filename="../qthostinterface.cpp" line="1033"/>
         <source>Confirm Save State Deletion</source>
         <translation>Confirma deleção de Estado Salvo</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1037"/>
+        <location filename="../qthostinterface.cpp" line="1034"/>
         <source>Are you sure you want to delete all save states for %1?
 
 The saves will not be recoverable.</source>
@@ -8010,12 +8015,12 @@ The saves will not be recoverable.</source>
         <translation type="vanished">Arquivos Suportados PCSXR/Libretro (*.cht *.txt);;Todos (*.*)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1075"/>
+        <location filename="../qthostinterface.cpp" line="1072"/>
         <source>&amp;Enabled Cheats</source>
         <translation>&amp;Habilitar Trapaças</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1077"/>
+        <location filename="../qthostinterface.cpp" line="1074"/>
         <source>&amp;Apply Cheats</source>
         <translation>&amp;Aplicar Trapaças</translation>
     </message>
@@ -8265,47 +8270,47 @@ The saves will not be recoverable.</source>
         <translation type="vanished">Estado salvo incompatível: versão do mesmo esperada %u não a versão %u.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="806"/>
+        <location filename="../../core/system.cpp" line="822"/>
         <source>Failed to load %s BIOS.</source>
         <translation>Falha ao carregar %s BIOS.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1135"/>
+        <location filename="../../core/system.cpp" line="1151"/>
         <source>Save state is incompatible: minimum version is %u but state is version %u.</source>
         <translation>Estado salvo incompatível: Versão Esperada %u Não versão %u.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1144"/>
+        <location filename="../../core/system.cpp" line="1160"/>
         <source>Save state is incompatible: maximum version is %u but state is version %u.</source>
         <translation>Estado salvo incompatível: Versão Esperada %u Não versão %u.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1184"/>
+        <location filename="../../core/system.cpp" line="1200"/>
         <source>Failed to open CD image from save state: &apos;%s&apos;.</source>
         <translation>Falha ao abrir estado salvo: &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1782"/>
+        <location filename="../../core/system.cpp" line="1798"/>
         <source>Per-game memory card cannot be used for slot %u as the running game has no code. Using shared card instead.</source>
         <translation>Caminho para o Cartão de Memória no compartimento %u não pôde ser usado pois o jogo iniciado não possui um cód. válido. Será usado cartão compartilhado.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1806"/>
+        <location filename="../../core/system.cpp" line="1822"/>
         <source>Per-game memory card cannot be used for slot %u as the running game has no title. Using shared card instead.</source>
         <translation>Caminho para o Cartão de Memória no compartimento %u não pôde ser usado pois o jogo iniciado não possui um nome. válido. Será usado cartão compartilhado.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1825"/>
+        <location filename="../../core/system.cpp" line="1841"/>
         <source>Memory card path for slot %u is missing, using default.</source>
         <translation>Caminho para o Cartão de Memória %u incorreto, usando o padrão.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1932"/>
+        <location filename="../../core/system.cpp" line="1954"/>
         <source>Game changed, reloading memory cards.</source>
         <translation>Jogo trocado, recarregando Cartões de Memória.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1983"/>
+        <location filename="../../core/system.cpp" line="2005"/>
         <source>You are attempting to run a libcrypt protected game without an SBI file:
 
 %s: %s
@@ -8334,12 +8339,12 @@ Please check the README for instructions on how to add a SBI file.</source>
         <translation type="vanished">Você está tentando rodar um jogo que contém proteção contra cópias, sem o arquivo SBI. %s: %s o jogo provavelmente não irá funcionar corrretamente. Por gentileza leia o arquivo README para maiores instruções de como adicionar tais arquivos ao seu jogo.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2059"/>
+        <location filename="../../core/system.cpp" line="2081"/>
         <source>Removing current media from playlist, removing media from CD-ROM.</source>
         <translation>Mudando media atual da lista, removendo media do leitor de CD.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2076"/>
+        <location filename="../../core/system.cpp" line="2098"/>
         <source>Changing current media from playlist, replacing current media.</source>
         <translation>Mudando media atual da lista, recalculando media atual.</translation>
     </message>
