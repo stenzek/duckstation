@@ -15,6 +15,7 @@
 #include <iomanip>
 #include <sstream>
 Log_SetChannel(Cheats);
+static std::array<u32, 256> temp_variable; //Used for D7 ,51 & 52 cheat types
 
 using KeyValuePairVector = std::vector<std::pair<std::string, std::string>>;
 
@@ -136,6 +137,58 @@ static u32 GetControllerButtonBits()
   }
 
   return translated_bits;
+}
+
+static u32 GetControllerAnalogBits()
+{
+  // 0x010000 - Right Thumb Up
+  // 0x020000 - Right Thumb Right
+  // 0x040000 - Right Thumb Down
+  // 0x080000 - Right Thumb Left
+  // 0x100000 - Left Thumb Up
+  // 0x200000 - Left Thumb Right
+  // 0x400000 - Left Thumb Down
+  // 0x800000 - Left Thumb Left
+
+  u32 bits = 0;
+  u8 l_ypos = 0;
+  u8 l_xpos = 0;
+  u8 r_ypos = 0;
+  u8 r_xpos = 0;
+
+  std::optional<u32> analog = 0;
+  for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
+  {
+    Controller* controller = System::GetController(i);
+    if (!controller)
+      continue;
+
+    analog = controller->GetAnalogInputBytes();
+    if (analog.has_value())
+    {
+      l_ypos = Truncate8((analog.value() & 0xFF000000u) >> 24);
+      l_xpos = Truncate8((analog.value() & 0x00FF0000u) >> 16);
+      r_ypos = Truncate8((analog.value() & 0x0000FF00u) >> 8);
+      r_xpos = Truncate8(analog.value() & 0x000000FFu);
+      if (l_ypos < 0x50)
+        bits |= 0x100000;
+      else if (l_ypos > 0xA0)
+        bits |= 0x400000;
+      if (l_xpos < 0x50)
+        bits |= 0x800000;
+      else if (l_xpos > 0xA0)
+        bits |= 0x200000;
+      if (r_ypos < 0x50)
+        bits |= 0x10000;
+      else if (r_ypos > 0xA0)
+        bits |= 0x40000;
+      if (r_xpos < 0x50)
+        bits |= 0x80000;
+      else if (r_xpos > 0xA0)
+        bits |= 0x20000;
+    }
+  }
+  return bits;
 }
 
 CheatList::CheatList() = default;
@@ -629,11 +682,8 @@ bool CheatList::LoadFromString(const std::string& str, Format format)
     return LoadFromPCSXRString(str);
   else if (format == Format::Libretro)
     return LoadFromLibretroString(str);
-  else if (format == Format::EPSXe)
-    return LoadFromEPSXeString(str);
-
-  Log_ErrorPrintf("Invalid or unknown cheat format");
-  return false;
+  format = Format::EPSXe;
+  return LoadFromEPSXeString(str);
 }
 
 bool CheatList::SaveToPCSXRFile(const char* filename)
@@ -1417,10 +1467,109 @@ void CheatCode::Apply() const
       }
       break;
 
+      case InstructionCode::ExtTempVariable: // 51
+      {
+        const u32 poke_value = inst.address;
+        const u8 temp_variable_number1 = Truncate8(inst.value32 & 0xFFu);
+        const u8 temp_variable_number2 = Truncate8((inst.value32 & 0xFF00u) >> 8);
+        const u8 sub_type = Truncate8((inst.value32 & 0xFF0000u) >> 16);
+
+        switch (sub_type)
+        {
+          case 0x00: // Write the u8 from temp_variable[temp_variable_number1] to address
+            DoMemoryWrite<u8>(inst.address, Truncate8(temp_variable[temp_variable_number1]));
+            index++;
+            break;
+          case 0x01: // Read the u8 from address to temp_variable[temp_variable_number1]
+            temp_variable[temp_variable_number1] = DoMemoryRead<u8>(inst.address);
+            index++;
+            break;
+          case 0x02: // Write the u8 from address field to the address stored in temp_variable[temp_variable_number1]
+            DoMemoryWrite<u8>(temp_variable[temp_variable_number1], Truncate8(poke_value));
+            index++;
+            break;
+
+          case 0x10: // Write the u16 from temp_variable[temp_variable_number1] to address
+            DoMemoryWrite<u16>(inst.address, Truncate16(temp_variable[temp_variable_number1]));
+            index++;
+            break;
+          case 0x11: // Read the u16 from address to temp_variable[temp_variable_number1]
+            temp_variable[temp_variable_number1] = DoMemoryRead<u16>(inst.address);
+            index++;
+            break;
+          case 0x12: // Write the u16 from address field to the address stored in temp_variable[temp_variable_number1]
+            DoMemoryWrite<u16>(temp_variable[temp_variable_number1], Truncate16(poke_value));
+            index++;
+            break;
+
+          case 0x30: // Write the u32 from temp_variable[temp_variable_number1] to address
+            DoMemoryWrite<u32>(inst.address, temp_variable[temp_variable_number1]);
+            index++;
+            break;
+          case 0x31: // Read the u32 from address to temp_variable[temp_variable_number1]
+            temp_variable[temp_variable_number1] = DoMemoryRead<u32>(inst.address);
+            index++;
+            break;
+          case 0x32: // Write the u16 from address field to the address stored in temp_variable[temp_variable_number]
+            DoMemoryWrite<u32>(temp_variable[temp_variable_number1], poke_value);
+            index++;
+            break;
+
+          case 0x04: // Write the u8 from temp_variable[temp_variable_number2] to the address stored in
+                     // temp_variable[temp_variable_number1]
+            DoMemoryWrite<u8>(temp_variable[temp_variable_number1], Truncate8(temp_variable[temp_variable_number2]));
+            index++;
+            break;
+          case 0x14: // Write the u16 from temp_variable[temp_variable_number2] to the address stored in
+                     // temp_variable[temp_variable_number1]
+            DoMemoryWrite<u16>(temp_variable[temp_variable_number1], Truncate16(temp_variable[temp_variable_number2]));
+            index++;
+            break;
+          case 0x24: // Write the u32 from temp_variable[temp_variable_number2] to the address stored in
+                     // temp_variable[temp_variable_number1]
+            DoMemoryWrite<u32>(temp_variable[temp_variable_number1], temp_variable[temp_variable_number2]);
+            index++;
+            break;
+          case 0x34: // Write the u16 from address field to the address stored in temp_variable[temp_variable_number]
+            DoMemoryWrite<u32>(temp_variable[temp_variable_number1], poke_value);
+            index++;
+            break;
+
+          case 0x05: // Write the u8 from the address stored in temp_variable[temp_variable_number2] to the address
+                     // stored in temp_variable[temp_variable_number1]
+            DoMemoryWrite<u8>(temp_variable[temp_variable_number1],
+                              DoMemoryRead<u8>(temp_variable[temp_variable_number2]));
+            index++;
+            break;
+          case 0x15: // Write the u16 from the address stored in temp_variable[temp_variable_number2] to the address
+                     // stored in temp_variable[temp_variable_number1]
+            DoMemoryWrite<u16>(temp_variable[temp_variable_number1],
+                               DoMemoryRead<u16>(temp_variable[temp_variable_number2]));
+            index++;
+            break;
+          case 0x25: // Write the u32 from the address stored in temp_variable[temp_variable_number2] to the address
+                     // stored in temp_variable[temp_variable_number1]
+            DoMemoryWrite<u32>(temp_variable[temp_variable_number1],
+                               DoMemoryRead<u32>(temp_variable[temp_variable_number2]));
+            index++;
+            break;
+
+          // Lots of options exist for expanding into this space
+          default:
+            index++;
+            break;
+        }
+      }
+      break;
+
       case InstructionCode::SkipIfNotEqual16:      // C0
       case InstructionCode::ExtSkipIfNotEqual32:   // A4
       case InstructionCode::SkipIfButtonsNotEqual: // D5
       case InstructionCode::SkipIfButtonsEqual:    // D6
+      case InstructionCode::ExtSkipIfNotLess8:     // C3
+      case InstructionCode::ExtSkipIfNotGreater8:  // C4
+      case InstructionCode::ExtSkipIfNotLess16:    // C5
+      case InstructionCode::ExtSkipIfNotGreater16: // C6
       {
         index++;
 
@@ -1439,9 +1588,84 @@ void CheatCode::Apply() const
           case InstructionCode::SkipIfButtonsEqual: // D6
             activate_codes = (GetControllerButtonBits() != inst.value16);
             break;
+          case InstructionCode::ExtSkipIfNotLess8: // C3
+            activate_codes = (DoMemoryRead<u8>(inst.address) < inst.value8);
+            break;
+          case InstructionCode::ExtSkipIfNotGreater8: // C4
+            activate_codes = (DoMemoryRead<u8>(inst.address) > inst.value8);
+            break;
+          case InstructionCode::ExtSkipIfNotLess16: // C5
+            activate_codes = (DoMemoryRead<u16>(inst.address) < inst.value16);
+            break;
+          case InstructionCode::ExtSkipIfNotGreater16: // C6
+            activate_codes = (DoMemoryRead<u16>(inst.address) > inst.value16);
+            break;
           default:
             activate_codes = false;
             break;
+        }
+
+        if (activate_codes)
+        {
+          // execute following instructions
+          continue;
+        }
+
+        // skip to the next separator (00000000 FFFF), or end
+        constexpr u64 separator_value = UINT64_C(0x000000000000FFFF);
+        while (index < count)
+        {
+          // we don't want to execute the separator instruction
+          const u64 bits = instructions[index++].bits;
+          if (bits == separator_value)
+            break;
+        }
+      }
+      break;
+
+      case InstructionCode::ExtBitCompareButtons:  // D7
+      {
+        index++;
+        bool activate_codes;
+        const u32 frame_compare_value  = inst.address & 0xFFFFu;
+        const u8 temp_variable_number = Truncate8((inst.value32 & 0xFF000000u)>>24);
+        const bool bit_comparison_type = ((inst.address & 0x100000u) >>20);
+        const u8 frame_comparison = Truncate8((inst.address & 0xF0000u) >>16);
+        const u32 check_value = (inst.value32 & 0xFFFFFFu);
+        const u32 value1 = GetControllerButtonBits();
+        const u32 value2 = GetControllerAnalogBits();
+        u32 value = value1 | value2;
+
+        if ((bit_comparison_type==false && check_value==(value & check_value))//Check Bits are set
+            || (bit_comparison_type==true && check_value!=(value & check_value))) //Check Bits are clear
+        {
+            temp_variable[temp_variable_number]+=1;
+            switch (frame_comparison)
+            {
+              case 0x0: // No comparison on frame count, just do it
+                activate_codes = true;
+                break;
+              case 0x1: // Check if frame_compare_value == current count
+                activate_codes = (temp_variable[temp_variable_number] == frame_compare_value);
+                break;
+              case 0x2: // Check if frame_compare_value < current count
+                activate_codes = (temp_variable[temp_variable_number] < frame_compare_value);
+                break;
+              case 0x3: // Check if frame_compare_value > current count
+                activate_codes = (temp_variable[temp_variable_number] > frame_compare_value);
+                break;
+              case 0x4: // Check if frame_compare_value != current count
+                activate_codes = (temp_variable[temp_variable_number] != frame_compare_value);
+                break;
+              default:
+                activate_codes = false;
+                break;
+            }
+        }
+        else
+        {
+            temp_variable[temp_variable_number]=0;
+            activate_codes = false;
         }
 
         if (activate_codes)
@@ -1585,6 +1809,7 @@ void CheatCode::ApplyOnDisable() const
       case InstructionCode::ExtConstantForceRangeRollRound16:
       case InstructionCode::DelayActivation: // C1
       case InstructionCode::ExtConstantWriteIfMatch16:
+      case InstructionCode::ExtTempVariable:
         index++;
         break;
 
@@ -1618,6 +1843,11 @@ void CheatCode::ApplyOnDisable() const
       case InstructionCode::ExtSkipIfNotEqual32:   // A4
       case InstructionCode::SkipIfButtonsNotEqual: // D5
       case InstructionCode::SkipIfButtonsEqual:    // D6
+      case InstructionCode::ExtBitCompareButtons:  // D7
+      case InstructionCode::ExtSkipIfNotLess8:     // C3
+      case InstructionCode::ExtSkipIfNotGreater8:  // C4
+      case InstructionCode::ExtSkipIfNotLess16:    // C5
+      case InstructionCode::ExtSkipIfNotGreater16: // C6
         index++;
         break;
 
