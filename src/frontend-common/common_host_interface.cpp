@@ -985,7 +985,10 @@ void CommonHostInterface::OnRunningGameChanged(const std::string& path, CDImage*
   {
     System::SetCheatList(nullptr);
     if (g_settings.auto_load_cheats)
+    {
+      DebugAssert(!IsCheevosChallengeModeActive());
       LoadCheatListFromGameTitle();
+    }
   }
 
 #ifdef WITH_DISCORD_PRESENCE
@@ -1018,7 +1021,8 @@ void CommonHostInterface::DrawImGuiWindows()
 
   if (System::IsValid())
   {
-    DrawDebugWindows();
+    if (!IsCheevosChallengeModeActive())
+      DrawDebugWindows();
     DrawFPSWindow();
   }
 
@@ -1234,6 +1238,15 @@ void CommonHostInterface::DrawDebugWindows()
     g_mdec.DrawDebugStateWindow();
   if (g_settings.debugging.show_dma_state)
     g_dma.DrawDebugStateWindow();
+}
+
+bool CommonHostInterface::IsCheevosChallengeModeActive() const
+{
+#ifdef WITH_CHEEVOS
+  return Cheevos::IsChallengeModeActive();
+#else
+  return false;
+#endif
 }
 
 void CommonHostInterface::DoFrameStep()
@@ -1766,6 +1779,12 @@ void CommonHostInterface::RegisterHotkeys()
   RegisterAudioHotkeys();
 }
 
+static void DisplayHotkeyBlockedByChallengeModeMessage()
+{
+  g_host_interface->AddOSDMessage(g_host_interface->TranslateStdString(
+    "OSDMessage", "Hotkey unavailable because achievements hardcore mode is active."));
+}
+
 void CommonHostInterface::RegisterGeneralHotkeys()
 {
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("OpenQuickMenu"),
@@ -1807,7 +1826,12 @@ void CommonHostInterface::RegisterGeneralHotkeys()
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("ToggleCheats"),
                  StaticString(TRANSLATABLE("Hotkeys", "Toggle Cheats")), [this](bool pressed) {
                    if (pressed && System::IsValid())
-                     DoToggleCheats();
+                   {
+                     if (!IsCheevosChallengeModeActive())
+                       DoToggleCheats();
+                     else
+                       DisplayHotkeyBlockedByChallengeModeMessage();
+                   }
                  });
 
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("PowerOff"),
@@ -1838,7 +1862,7 @@ void CommonHostInterface::RegisterGeneralHotkeys()
 #else
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("TogglePatchCodes"),
                  StaticString(TRANSLATABLE("Hotkeys", "Toggle Patch Codes")), [this](bool pressed) {
-                   if (pressed && System::IsValid())
+                   if (pressed && System::IsValid() && !IsCheevosChallengeModeActive())
                      DoToggleCheats();
                  });
 #endif
@@ -1858,7 +1882,12 @@ void CommonHostInterface::RegisterGeneralHotkeys()
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("FrameStep"),
                  StaticString(TRANSLATABLE("Hotkeys", "Frame Step")), [this](bool pressed) {
                    if (pressed && System::IsValid())
-                     DoFrameStep();
+                   {
+                     if (!IsCheevosChallengeModeActive())
+                       DoFrameStep();
+                     else
+                       DisplayHotkeyBlockedByChallengeModeMessage();
+                   }
                  });
 
 #ifndef __ANDROID__
@@ -1866,10 +1895,17 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                  StaticString(TRANSLATABLE("Hotkeys", "Rewind")), [this](bool pressed) {
                    if (System::IsValid())
                    {
-                     AddOSDMessage(pressed ? TranslateStdString("OSDMessage", "Rewinding...") :
-                                             TranslateStdString("OSDMessage", "Stopped rewinding."),
-                                   5.0f);
-                     System::SetRewinding(pressed);
+                     if (!IsCheevosChallengeModeActive())
+                     {
+                       AddOSDMessage(pressed ? TranslateStdString("OSDMessage", "Rewinding...") :
+                                               TranslateStdString("OSDMessage", "Stopped rewinding."),
+                                     5.0f);
+                       System::SetRewinding(pressed);
+                     }
+                     else
+                     {
+                       DisplayHotkeyBlockedByChallengeModeMessage();
+                     }
                    }
                  });
 #endif
@@ -1966,7 +2002,12 @@ void CommonHostInterface::RegisterSaveStateHotkeys()
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Save States")), StaticString("LoadSelectedSaveState"),
                  StaticString(TRANSLATABLE("Hotkeys", "Load From Selected Slot")), [this](bool pressed) {
                    if (pressed)
-                     m_save_state_selector_ui->LoadCurrentSlot();
+                   {
+                     if (!IsCheevosChallengeModeActive())
+                       m_save_state_selector_ui->LoadCurrentSlot();
+                     else
+                       DisplayHotkeyBlockedByChallengeModeMessage();
+                   }
                  });
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Save States")), StaticString("SaveSelectedSaveState"),
                  StaticString(TRANSLATABLE("Hotkeys", "Save To Selected Slot")), [this](bool pressed) {
@@ -1990,7 +2031,12 @@ void CommonHostInterface::RegisterSaveStateHotkeys()
                    TinyString::FromFormat("LoadGameState%u", slot), TinyString::FromFormat("Load Game State %u", slot),
                    [this, slot](bool pressed) {
                      if (pressed)
-                       LoadState(false, slot);
+                     {
+                       if (!IsCheevosChallengeModeActive())
+                         LoadState(false, slot);
+                       else
+                         DisplayHotkeyBlockedByChallengeModeMessage();
+                     }
                    });
     RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Save States")),
                    TinyString::FromFormat("SaveGameState%u", slot), TinyString::FromFormat("Save Game State %u", slot),
@@ -2006,7 +2052,12 @@ void CommonHostInterface::RegisterSaveStateHotkeys()
                    TinyString::FromFormat("LoadGlobalState%u", slot),
                    TinyString::FromFormat("Load Global State %u", slot), [this, slot](bool pressed) {
                      if (pressed)
-                       LoadState(true, slot);
+                     {
+                       if (!IsCheevosChallengeModeActive())
+                         LoadState(true, slot);
+                       else
+                         DisplayHotkeyBlockedByChallengeModeMessage();
+                     }
                    });
     RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Save States")),
                    TinyString::FromFormat("SaveGlobalState%u", slot),
@@ -2606,6 +2657,31 @@ void CommonHostInterface::SaveSettings(SettingsInterface& si)
   HostInterface::SaveSettings(si);
 }
 
+void CommonHostInterface::FixIncompatibleSettings(bool display_osd_messages)
+{
+  // if challenge mode is enabled, disable things like rewind since they use save states
+  if (IsCheevosChallengeModeActive())
+  {
+    g_settings.emulation_speed = std::max(g_settings.emulation_speed, 1.0f);
+    g_settings.fast_forward_speed = std::max(g_settings.fast_forward_speed, 1.0f);
+    g_settings.turbo_speed = std::max(g_settings.turbo_speed, 1.0f);
+    g_settings.rewind_enable = false;
+    g_settings.auto_load_cheats = false;
+    g_settings.debugging.enable_gdb_server = false;
+    g_settings.debugging.show_vram = false;
+    g_settings.debugging.show_gpu_state = false;
+    g_settings.debugging.show_cdrom_state = false;
+    g_settings.debugging.show_spu_state = false;
+    g_settings.debugging.show_timers_state = false;
+    g_settings.debugging.show_mdec_state = false;
+    g_settings.debugging.show_dma_state = false;
+    g_settings.debugging.dump_cpu_to_vram_copies = false;
+    g_settings.debugging.dump_vram_to_cpu_copies = false;
+  }
+
+  HostInterface::FixIncompatibleSettings(display_osd_messages);
+}
+
 void CommonHostInterface::ApplySettings(bool display_osd_messages)
 {
   Settings old_settings(std::move(g_settings));
@@ -2967,6 +3043,9 @@ bool CommonHostInterface::LoadCheatList(const char* filename)
 
 bool CommonHostInterface::LoadCheatListFromGameTitle()
 {
+  if (IsCheevosChallengeModeActive())
+    return false;
+
   const std::string filename(GetCheatFileName());
   if (filename.empty() || !FileSystem::FileExists(filename.c_str()))
     return false;
@@ -2976,7 +3055,7 @@ bool CommonHostInterface::LoadCheatListFromGameTitle()
 
 bool CommonHostInterface::LoadCheatListFromDatabase()
 {
-  if (System::GetRunningCode().empty())
+  if (System::GetRunningCode().empty() || IsCheevosChallengeModeActive())
     return false;
 
   std::unique_ptr<CheatList> cl = std::make_unique<CheatList>();
@@ -3308,15 +3387,18 @@ void CommonHostInterface::UpdateCheevosActive()
   const bool cheevos_test_mode = GetBoolSettingValue("Cheevos", "TestMode", false);
   const bool cheevos_use_first_disc_from_playlist = GetBoolSettingValue("Cheevos", "UseFirstDiscFromPlaylist", true);
   const bool cheevos_rich_presence = GetBoolSettingValue("Cheevos", "RichPresence", true);
+  const bool cheevos_hardcore = GetBoolSettingValue("Cheevos", "ChallengeMode", false);
 
   if (cheevos_enabled != Cheevos::IsActive() || cheevos_test_mode != Cheevos::IsTestModeActive() ||
       cheevos_use_first_disc_from_playlist != Cheevos::IsUsingFirstDiscFromPlaylist() ||
-      cheevos_rich_presence != Cheevos::IsRichPresenceEnabled())
+      cheevos_rich_presence != Cheevos::IsRichPresenceEnabled() ||
+      cheevos_hardcore != Cheevos::IsChallengeModeEnabled())
   {
     Cheevos::Shutdown();
     if (cheevos_enabled)
     {
-      if (!Cheevos::Initialize(cheevos_test_mode, cheevos_use_first_disc_from_playlist, cheevos_rich_presence))
+      if (!Cheevos::Initialize(cheevos_test_mode, cheevos_use_first_disc_from_playlist, cheevos_rich_presence,
+                               cheevos_hardcore))
         ReportError("Failed to initialize cheevos after settings change.");
     }
   }

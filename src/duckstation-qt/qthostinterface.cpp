@@ -957,6 +957,7 @@ void QtHostInterface::populateGameListContextMenu(const GameListEntry* entry, QW
   {
     const std::vector<SaveStateInfo> available_states(GetAvailableSaveStates(entry->code.c_str()));
     const QString timestamp_format = QLocale::system().dateTimeFormat(QLocale::ShortFormat);
+    const bool challenge_mode = IsCheevosChallengeModeActive();
     for (const SaveStateInfo& ssi : available_states)
     {
       if (ssi.global)
@@ -971,7 +972,7 @@ void QtHostInterface::populateGameListContextMenu(const GameListEntry* entry, QW
       if (slot < 0)
       {
         resume_action->setText(tr("Resume (%1)").arg(timestamp_str));
-        resume_action->setEnabled(true);
+        resume_action->setEnabled(!challenge_mode);
         action = resume_action;
       }
       else
@@ -980,6 +981,7 @@ void QtHostInterface::populateGameListContextMenu(const GameListEntry* entry, QW
         action = load_state_menu->addAction(tr("Game Save %1 (%2)").arg(slot).arg(timestamp_str));
       }
 
+      action->setDisabled(challenge_mode);
       connect(action, &QAction::triggered, [this, path]() { loadState(path); });
     }
   }
