@@ -29,8 +29,8 @@ namespace detail {
 template<typename T, std::size_t rank, std::size_t... sizes>
 struct DimensionalArrayExplicitRank;
 
-// Workaround for VC2017
-#if defined(_MSC_VER) && _MSC_VER < 1920
+// Workaround for MSVC
+#if defined(_MSC_VER)
 
 template<std::size_t rank, std::size_t... sizes>
 struct GetRankSize
