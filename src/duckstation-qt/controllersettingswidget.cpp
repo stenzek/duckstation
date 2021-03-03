@@ -28,18 +28,93 @@ ControllerSettingsWidget::ControllerSettingsWidget(QtHostInterface* host_interfa
 
 ControllerSettingsWidget::~ControllerSettingsWidget() = default;
 
+MultitapMode ControllerSettingsWidget::getMultitapMode()
+{
+  return Settings::ParseMultitapModeName(
+           QtHostInterface::GetInstance()
+             ->GetStringSettingValue("ControllerPorts", "MultitapMode",
+                                     Settings::GetMultitapModeName(Settings::DEFAULT_MULTITAP_MODE))
+             .c_str())
+    .value_or(Settings::DEFAULT_MULTITAP_MODE);
+}
+
+QString ControllerSettingsWidget::getTabTitleForPort(u32 index, MultitapMode mode) const
+{
+  constexpr u32 NUM_PORTS_PER_MULTITAP = 4;
+
+  u32 port_number, subport_number;
+
+  switch (mode)
+  {
+    case MultitapMode::Port1Only:
+    {
+      if (index == NUM_PORTS_PER_MULTITAP)
+        return tr("Port %1").arg((index / NUM_PORTS_PER_MULTITAP) + 1);
+      else if (index > NUM_PORTS_PER_MULTITAP)
+        return QString();
+
+      port_number = 0;
+      subport_number = index;
+    }
+    break;
+
+    case MultitapMode::Port2Only:
+    {
+      if (index == 0)
+        return tr("Port %1").arg(index + 1);
+      else if (index > NUM_PORTS_PER_MULTITAP)
+        return QString();
+
+      port_number = 1;
+      subport_number = (index - 1);
+    }
+    break;
+
+    case MultitapMode::BothPorts:
+    {
+      port_number = index / NUM_PORTS_PER_MULTITAP;
+      subport_number = (index % NUM_PORTS_PER_MULTITAP);
+    }
+    break;
+
+    case MultitapMode::Disabled:
+    default:
+    {
+      if (index >= (NUM_CONTROLLER_AND_CARD_PORTS / NUM_PORTS_PER_MULTITAP))
+        return QString();
+
+      return tr("Port %1").arg(index + 1);
+    }
+  }
+
+  return tr("Port %1%2").arg(port_number + 1).arg(QChar::fromLatin1('A' + subport_number));
+}
+
 void ControllerSettingsWidget::createUi()
 {
   QGridLayout* layout = new QGridLayout(this);
   layout->setContentsMargins(0, 0, 0, 0);
 
+  const MultitapMode multitap_mode = getMultitapMode();
   m_tab_widget = new QTabWidget(this);
   for (int i = 0; i < static_cast<int>(m_port_ui.size()); i++)
-    createPortSettingsUi(i, &m_port_ui[i]);
+    createPortSettingsUi(i, &m_port_ui[i], multitap_mode);
 
   layout->addWidget(m_tab_widget, 0, 0, 1, 1);
 
   setLayout(layout);
+}
+
+void ControllerSettingsWidget::updateMultitapControllerTitles()
+{
+  const MultitapMode mode = getMultitapMode();
+
+  for (int i = 0; i < static_cast<int>(m_port_ui.size()); i++)
+  {
+    const QString tab_title(getTabTitleForPort(i, mode));
+    m_tab_widget->setTabVisible(i, !tab_title.isEmpty());
+    m_tab_widget->setTabText(i, tab_title);
+  }
 }
 
 void ControllerSettingsWidget::onProfileLoaded()
@@ -74,7 +149,7 @@ void ControllerSettingsWidget::reloadBindingButtons()
   }
 }
 
-void ControllerSettingsWidget::createPortSettingsUi(int index, PortSettingsUI* ui)
+void ControllerSettingsWidget::createPortSettingsUi(int index, PortSettingsUI* ui, MultitapMode multitap_mode)
 {
   ui->widget = new QWidget(m_tab_widget);
   ui->layout = new QVBoxLayout(ui->widget);
@@ -165,7 +240,9 @@ void ControllerSettingsWidget::createPortSettingsUi(int index, PortSettingsUI* u
 
   ui->widget->setLayout(ui->layout);
 
-  m_tab_widget->addTab(ui->widget, tr("Port %1").arg(index + 1));
+  const QString tab_title(getTabTitleForPort(index, multitap_mode));
+  m_tab_widget->addTab(ui->widget, tab_title);
+  m_tab_widget->setTabVisible(index, !tab_title.isEmpty());
 }
 
 void ControllerSettingsWidget::createPortBindingSettingsUi(int index, PortSettingsUI* ui, ControllerType ctype)

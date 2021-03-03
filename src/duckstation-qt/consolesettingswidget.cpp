@@ -79,6 +79,8 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QW
   connect(m_ui.cpuClockSpeed, &QSlider::valueChanged, this, &ConsoleSettingsWidget::onCPUClockSpeedValueChanged);
   connect(m_ui.cdromReadSpeedup, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
           &ConsoleSettingsWidget::onCDROMReadSpeedupValueChanged);
+  connect(m_ui.multitapMode, QOverload<int>::of(&QComboBox::currentIndexChanged),
+          [this](int index) { emit multitapModeChanged(); });
 
   calculateCPUClockValue();
 }

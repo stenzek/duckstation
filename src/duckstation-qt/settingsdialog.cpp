@@ -76,6 +76,9 @@ SettingsDialog::SettingsDialog(QtHostInterface* host_interface, QWidget* parent 
   m_ui.helpText->setText(m_category_help_text[0]);
   connect(m_ui.settingsCategory, &QListWidget::currentRowChanged, this, &SettingsDialog::onCategoryCurrentRowChanged);
   connect(m_ui.closeButton, &QPushButton::clicked, this, &SettingsDialog::accept);
+
+  connect(m_console_settings, &ConsoleSettingsWidget::multitapModeChanged, m_controller_settings,
+          &ControllerSettingsWidget::updateMultitapControllerTitles);
 }
 
 SettingsDialog::~SettingsDialog() = default;
