@@ -1010,7 +1010,13 @@ bool CreateGPU(GPURenderer renderer)
 
   if (!g_gpu || !g_gpu->Initialize(g_host_interface->GetDisplay()))
   {
-    Log_ErrorPrintf("Failed to initialize GPU, falling back to software");
+    Log_ErrorPrintf("Failed to initialize %s renderer, falling back to software renderer",
+                    Settings::GetRendererName(renderer));
+    g_host_interface->AddFormattedOSDMessage(
+      30.0f,
+      g_host_interface->TranslateString("OSDMessage",
+                                        "Failed to initialize %s renderer, falling back to software renderer."),
+      Settings::GetRendererName(renderer));
     g_gpu.reset();
     g_gpu = GPU::CreateSoftwareRenderer();
     if (!g_gpu->Initialize(g_host_interface->GetDisplay()))
