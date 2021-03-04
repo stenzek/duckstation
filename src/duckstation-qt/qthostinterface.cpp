@@ -379,7 +379,12 @@ void QtHostInterface::onDisplayWindowKeyEvent(int key, bool pressed)
 
   const u32 masked_key = static_cast<u32>(key) & IMGUI_KEY_MASK;
   if (masked_key < countof(ImGuiIO::KeysDown))
-    ImGui::GetIO().KeysDown[masked_key] = pressed;
+  {
+    ImGuiIO& io = ImGui::GetIO();
+    io.KeysDown[masked_key] = pressed;
+    if (io.WantCaptureKeyboard)
+      return;
+  }
 
   HandleHostKeyEvent(key & ~Qt::KeyboardModifierMask, key & Qt::KeyboardModifierMask, pressed);
 }
