@@ -525,6 +525,9 @@ bool CheatList::ParseLibretroCheat(CheatCode* cc, const char* line)
 
 void CheatList::Apply()
 {
+  if (!m_master_enable)
+    return;
+
   for (const CheatCode& code : m_codes)
   {
     if (code.enabled)
