@@ -53,8 +53,8 @@ bool MemoryCardEditorDialog::setCardB(const QString& path)
 
 void MemoryCardEditorDialog::resizeEvent(QResizeEvent* ev)
 {
-  QtUtils::ResizeColumnsForTableView(m_card_a.table, {32, -1, 100, 45});
-  QtUtils::ResizeColumnsForTableView(m_card_b.table, {32, -1, 100, 45});
+  QtUtils::ResizeColumnsForTableView(m_card_a.table, {32, -1, 155, 45});
+  QtUtils::ResizeColumnsForTableView(m_card_b.table, {32, -1, 155, 45});
 }
 
 void MemoryCardEditorDialog::closeEvent(QCloseEvent* ev)
