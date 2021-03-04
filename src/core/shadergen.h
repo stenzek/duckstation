@@ -40,6 +40,7 @@ protected:
                                  const std::initializer_list<std::pair<const char*, const char*>>& additional_inputs,
                                  bool declare_fragcoord = false, u32 num_color_outputs = 1, bool depth_output = false,
                                  bool msaa = false, bool ssaa = false, bool declare_sample_id = false);
+  void DeclareComputeEntryPoint(std::stringstream& ss, u32 local_size_x, u32 local_size_y, u32 local_size_z);
 
   HostDisplay::RenderAPI m_render_api;
   bool m_glsl;

@@ -81,28 +81,27 @@ private:
   VkRenderPass m_vram_render_pass = VK_NULL_HANDLE;
   VkRenderPass m_vram_update_depth_render_pass = VK_NULL_HANDLE;
   VkRenderPass m_display_render_pass = VK_NULL_HANDLE;
-  VkRenderPass m_vram_readback_render_pass = VK_NULL_HANDLE;
 
   VkDescriptorSetLayout m_batch_descriptor_set_layout = VK_NULL_HANDLE;
   VkDescriptorSetLayout m_single_sampler_descriptor_set_layout = VK_NULL_HANDLE;
+  VkDescriptorSetLayout m_vram_read_descriptor_set_layout = VK_NULL_HANDLE;
   VkDescriptorSetLayout m_vram_write_descriptor_set_layout = VK_NULL_HANDLE;
 
   VkPipelineLayout m_batch_pipeline_layout = VK_NULL_HANDLE;
   VkPipelineLayout m_no_samplers_pipeline_layout = VK_NULL_HANDLE;
   VkPipelineLayout m_single_sampler_pipeline_layout = VK_NULL_HANDLE;
+  VkPipelineLayout m_vram_read_pipeline_layout = VK_NULL_HANDLE;
   VkPipelineLayout m_vram_write_pipeline_layout = VK_NULL_HANDLE;
 
   Vulkan::Texture m_vram_texture;
   Vulkan::Texture m_vram_depth_texture;
   Vulkan::Texture m_vram_read_texture;
-  Vulkan::Texture m_vram_readback_texture;
-  Vulkan::StagingTexture m_vram_readback_staging_texture;
+  Vulkan::StagingBuffer m_vram_read_staging_buffer;
   Vulkan::Texture m_display_texture;
   bool m_use_ssbos_for_vram_writes = false;
 
   VkFramebuffer m_vram_framebuffer = VK_NULL_HANDLE;
   VkFramebuffer m_vram_update_depth_framebuffer = VK_NULL_HANDLE;
-  VkFramebuffer m_vram_readback_framebuffer = VK_NULL_HANDLE;
   VkFramebuffer m_display_framebuffer = VK_NULL_HANDLE;
 
   VkSampler m_point_sampler = VK_NULL_HANDLE;
@@ -113,6 +112,7 @@ private:
   VkDescriptorSet m_vram_copy_descriptor_set = VK_NULL_HANDLE;
   VkDescriptorSet m_vram_read_descriptor_set = VK_NULL_HANDLE;
   VkDescriptorSet m_vram_write_descriptor_set = VK_NULL_HANDLE;
+  VkDescriptorSet m_vram_update_depth_descriptor_set = VK_NULL_HANDLE;
   VkDescriptorSet m_display_descriptor_set = VK_NULL_HANDLE;
 
   Vulkan::StreamBuffer m_vertex_stream_buffer;
@@ -132,7 +132,7 @@ private:
   std::array<VkPipeline, 2> m_vram_write_pipelines{};
   std::array<VkPipeline, 2> m_vram_copy_pipelines{};
 
-  VkPipeline m_vram_readback_pipeline = VK_NULL_HANDLE;
+  VkPipeline m_vram_read_pipeline = VK_NULL_HANDLE;
   VkPipeline m_vram_update_depth_pipeline = VK_NULL_HANDLE;
 
   // [depth_24][interlace_mode]

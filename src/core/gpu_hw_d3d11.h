@@ -84,7 +84,6 @@ private:
   D3D11::Texture m_vram_depth_texture;
   ComPtr<ID3D11DepthStencilView> m_vram_depth_view;
   D3D11::Texture m_vram_read_texture;
-  D3D11::Texture m_vram_encoding_texture;
   D3D11::Texture m_display_texture;
 
   D3D11::StreamBuffer m_vertex_stream_buffer;
@@ -93,7 +92,9 @@ private:
 
   D3D11::StreamBuffer m_texture_stream_buffer;
 
-  D3D11::StagingTexture m_vram_readback_texture;
+  ComPtr<ID3D11Buffer> m_vram_read_buffer;
+  ComPtr<ID3D11Buffer> m_vram_read_staging_buffer;
+  ComPtr<ID3D11UnorderedAccessView> m_vram_read_buffer_view;
 
   ComPtr<ID3D11ShaderResourceView> m_texture_stream_buffer_srv_r16ui;
 
@@ -123,7 +124,7 @@ private:
   ComPtr<ID3D11PixelShader> m_copy_pixel_shader;
   ComPtr<ID3D11PixelShader> m_vram_fill_pixel_shader;
   ComPtr<ID3D11PixelShader> m_vram_interlaced_fill_pixel_shader;
-  ComPtr<ID3D11PixelShader> m_vram_read_pixel_shader;
+  ComPtr<ID3D11ComputeShader> m_vram_read_compute_shader;
   ComPtr<ID3D11PixelShader> m_vram_write_pixel_shader;
   ComPtr<ID3D11PixelShader> m_vram_copy_pixel_shader;
   ComPtr<ID3D11PixelShader> m_vram_update_depth_pixel_shader;
@@ -139,4 +140,9 @@ private:
   D3D11::Texture m_downsample_texture;
   D3D11::Texture m_downsample_weight_texture;
   std::vector<std::pair<ComPtr<ID3D11ShaderResourceView>, ComPtr<ID3D11RenderTargetView>>> m_downsample_mip_views;
+
+  // fallback vram read
+  D3D11::Texture m_vram_encoding_texture;
+  D3D11::StagingTexture m_vram_readback_texture;
+  ComPtr<ID3D11PixelShader> m_vram_read_pixel_shader;
 };

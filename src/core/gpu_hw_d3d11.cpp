@@ -1,4 +1,5 @@
 #include "gpu_hw_d3d11.h"
+#include "common/align.h"
 #include "common/assert.h"
 #include "common/d3d11/shader_compiler.h"
 #include "common/log.h"
@@ -363,11 +364,34 @@ bool GPU_HW_D3D11::CreateTextureBuffer()
 
   const CD3D11_SHADER_RESOURCE_VIEW_DESC srv_desc(D3D11_SRV_DIMENSION_BUFFER, DXGI_FORMAT_R16_UINT, 0,
                                                   VRAM_UPDATE_TEXTURE_BUFFER_SIZE / sizeof(u16));
-  const HRESULT hr = m_device->CreateShaderResourceView(m_texture_stream_buffer.GetD3DBuffer(), &srv_desc,
-                                                        m_texture_stream_buffer_srv_r16ui.ReleaseAndGetAddressOf());
+  HRESULT hr = m_device->CreateShaderResourceView(m_texture_stream_buffer.GetD3DBuffer(), &srv_desc,
+                                                  m_texture_stream_buffer_srv_r16ui.ReleaseAndGetAddressOf());
   if (FAILED(hr))
   {
     Log_ErrorPrintf("Creation of texture buffer SRV failed: 0x%08X", hr);
+    return false;
+  }
+
+  const u32 buffer_elements = (VRAM_WIDTH / 2) * VRAM_HEIGHT;
+  const CD3D11_BUFFER_DESC read_buffer_desc(buffer_elements * sizeof(u32), D3D11_BIND_UNORDERED_ACCESS,
+                                            D3D11_USAGE_DEFAULT, 0, 0, sizeof(u32));
+  const CD3D11_BUFFER_DESC staging_buffer_desc(buffer_elements * sizeof(u32), 0, D3D11_USAGE_STAGING,
+                                               D3D11_CPU_ACCESS_READ, 0, 0);
+  const CD3D11_UNORDERED_ACCESS_VIEW_DESC uav_desc(D3D11_UAV_DIMENSION_BUFFER, DXGI_FORMAT_R32_UINT, 0, buffer_elements,
+                                                   0);
+  hr = m_device->CreateBuffer(&read_buffer_desc, nullptr, m_vram_read_buffer.ReleaseAndGetAddressOf());
+  if (SUCCEEDED(hr))
+  {
+    hr = m_device->CreateBuffer(&staging_buffer_desc, nullptr, m_vram_read_staging_buffer.ReleaseAndGetAddressOf());
+    if (SUCCEEDED(hr))
+    {
+      hr = m_device->CreateUnorderedAccessView(m_vram_read_buffer.Get(), &uav_desc,
+                                               m_vram_read_buffer_view.ReleaseAndGetAddressOf());
+    }
+  }
+  if (FAILED(hr))
+  {
+    Log_ErrorPrintf("Creation of buffer/UAV failed: 0x%08X", hr);
     return false;
   }
 
@@ -610,6 +634,10 @@ bool GPU_HW_D3D11::CompileShaders()
 
   m_vram_read_pixel_shader = shader_cache.GetPixelShader(m_device.Get(), shadergen.GenerateVRAMReadFragmentShader());
   if (!m_vram_read_pixel_shader)
+    return false;
+
+  m_vram_read_compute_shader = shader_cache.GetComputeShader(m_device.Get(), shadergen.GenerateVRAMReadComputeShader());
+  if (!m_vram_read_compute_shader)
     return false;
 
   UPDATE_PROGRESS();
@@ -946,6 +974,7 @@ void GPU_HW_D3D11::ReadVRAM(u32 x, u32 y, u32 width, u32 height)
   const u32 encoded_width = (copy_rect.GetWidth() + 1) / 2;
   const u32 encoded_height = copy_rect.GetHeight();
 
+#if 0
   // Encode the 24-bit texture as 16-bit.
   const u32 uniforms[4] = {copy_rect.left, copy_rect.top, copy_rect.GetWidth(), copy_rect.GetHeight()};
   m_context->RSSetState(m_cull_none_rasterizer_state_no_msaa.Get());
@@ -971,6 +1000,50 @@ void GPU_HW_D3D11::ReadVRAM(u32 x, u32 y, u32 width, u32 height)
   }
 
   RestoreGraphicsAPIState();
+#else
+  // Encode the 24-bit texture as 16-bit.
+  const u32 uniforms[5] = {copy_rect.left, copy_rect.top, copy_rect.GetWidth(), copy_rect.GetHeight(), encoded_width};
+  const auto res = m_uniform_stream_buffer.Map(m_context.Get(), MAX_UNIFORM_BUFFER_SIZE, sizeof(uniforms));
+  std::memcpy(res.pointer, uniforms, sizeof(uniforms));
+  m_uniform_stream_buffer.Unmap(m_context.Get(), sizeof(uniforms));
+  m_context->CSSetConstantBuffers(0, 1, m_uniform_stream_buffer.GetD3DBufferArray());
+
+  m_context->OMSetRenderTargets(0, nullptr, nullptr);
+  m_context->CSSetUnorderedAccessViews(0, 1, m_vram_read_buffer_view.GetAddressOf(), nullptr);
+  m_context->CSSetShaderResources(0, 1, m_vram_texture.GetD3DSRVArray());
+  m_context->CSSetShader(m_vram_read_compute_shader.Get(), nullptr, 0);
+
+  const u32 groups_x = (encoded_width + 7) / 8;
+  const u32 groups_y = (encoded_height + 7) / 8;
+  m_context->Dispatch(groups_x, groups_y, 1);
+
+  ID3D11ShaderResourceView* null_view[1] = {nullptr};
+  m_context->CSSetShaderResources(0, 1, null_view);
+  m_context->OMSetRenderTargets(1, m_vram_texture.GetD3DRTVArray(), m_vram_depth_view.Get());
+
+  const CD3D11_BOX copy_box(0, 0, 0, static_cast<LONG>(encoded_width * encoded_height * sizeof(u32)), 1, 1);
+  m_context->CopySubresourceRegion(m_vram_read_staging_buffer.Get(), 0, 0, 0, 0, m_vram_read_buffer.Get(), 0,
+                                   &copy_box);
+
+  D3D11_MAPPED_SUBRESOURCE msr;
+  HRESULT hr = m_context->Map(m_vram_read_staging_buffer.Get(), 0, D3D11_MAP_READ, 0, &msr);
+  if (FAILED(hr))
+  {
+    Log_ErrorPrintf("Failed to map VRAM readback buffer");
+    return;
+  }
+
+  u16* dst_ptr = &m_vram_shadow[copy_rect.top * VRAM_WIDTH + copy_rect.left];
+  const u8* src_ptr = static_cast<const u8*>(msr.pData);
+  for (u32 row = 0; row < encoded_height; row++)
+  {
+    std::memcpy(dst_ptr, src_ptr, sizeof(u32) * encoded_width);
+    src_ptr += sizeof(u32) * encoded_width;
+    dst_ptr += VRAM_WIDTH;
+  }
+
+  m_context->Unmap(m_vram_read_staging_buffer.Get(), 0);
+#endif
 }
 
 void GPU_HW_D3D11::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)

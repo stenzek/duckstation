@@ -1192,6 +1192,88 @@ uint SampleVRAM(uint2 coords)
   return ss.str();
 }
 
+std::string GPU_HW_ShaderGen::GenerateVRAMReadComputeShader()
+{
+  std::stringstream ss;
+  WriteHeader(ss);
+  WriteCommonFunctions(ss);
+  DeclareUniformBuffer(ss, {"uint2 u_base_coords", "uint2 u_size", "uint u_buffer_stride"}, true);
+
+  DeclareTexture(ss, "samp0", 0, UsingMSAA());
+
+  if (m_glsl)
+  {
+    ss << "layout(std430";
+    if (IsVulkan())
+      ss << ", set = 0, binding = 2";
+    else if (m_use_glsl_binding_layout)
+      ss << ", binding = 1";
+
+    ss << ") restrict writeonly buffer SSBO {\n";
+    ss << "  uint s_output_buffer[];\n";
+    ss << "};\n";
+  }
+  else
+  {
+    ss << "RWBuffer<uint> s_output_buffer : register(u0);\n";
+  }
+
+  ss << R"(
+float4 LoadVRAM(int2 coords)
+{
+#if MULTISAMPLING
+  float4 value = LOAD_TEXTURE_MS(samp0, coords, 0u);
+  for (uint sample_index = 1u; sample_index < MULTISAMPLES; sample_index++)
+    value += LOAD_TEXTURE_MS(samp0, coords, sample_index);
+  value /= float(MULTISAMPLES);
+  return value;
+#else
+  return LOAD_TEXTURE(samp0, coords, 0);
+#endif
+}
+
+uint SampleVRAM(uint2 coords)
+{
+  if (RESOLUTION_SCALE == 1u)
+    return RGBA8ToRGBA5551(LoadVRAM(int2(coords)));
+
+  // Box filter for downsampling.
+  float4 value = float4(0.0, 0.0, 0.0, 0.0);
+  uint2 base_coords = coords * uint2(RESOLUTION_SCALE, RESOLUTION_SCALE);
+  for (uint offset_x = 0u; offset_x < RESOLUTION_SCALE; offset_x++)
+  {
+    for (uint offset_y = 0u; offset_y < RESOLUTION_SCALE; offset_y++)
+      value += LoadVRAM(int2(base_coords + uint2(offset_x, offset_y)));
+  }
+  value /= float(RESOLUTION_SCALE * RESOLUTION_SCALE);
+  return RGBA8ToRGBA5551(value);
+}
+)";
+
+  DeclareComputeEntryPoint(ss, 8, 8, 1);
+  ss << R"(
+{
+  uint2 sample_coords = uint2(uint(c_global_id.x) * 2u, uint(c_global_id.y));
+
+  #if API_OPENGL || API_OPENGL_ES
+    // Lower-left origin flip for OpenGL.
+    // We want to write the image out upside-down so we can read it top-to-bottom.
+    sample_coords.y = u_size.y - sample_coords.y - 1u;
+  #endif
+
+  sample_coords += u_base_coords;
+
+  // We're encoding as 32-bit, so the output width is halved and we pack two 16-bit pixels in one 32-bit pixel.
+  uint left = SampleVRAM(sample_coords);
+  uint right = SampleVRAM(uint2(sample_coords.x + 1u, sample_coords.y));
+
+  uint buffer_offset = c_global_id.y * u_buffer_stride + c_global_id.x;
+  s_output_buffer[buffer_offset] = left | (right << 16);
+})";
+
+  return ss.str();
+}
+
 std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader(bool use_ssbo)
 {
   std::stringstream ss;

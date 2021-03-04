@@ -402,6 +402,46 @@ void GraphicsPipelineBuilder::SetRenderPass(VkRenderPass render_pass, u32 subpas
   m_ci.subpass = subpass;
 }
 
+ComputePipelineBuilder::ComputePipelineBuilder()
+{
+  Clear();
+}
+
+void ComputePipelineBuilder::Clear()
+{
+  m_ci = {};
+  m_ci.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+}
+
+VkPipeline ComputePipelineBuilder::Create(VkDevice device, VkPipelineCache pipeline_cache, bool clear /* = true */)
+{
+  VkPipeline pipeline;
+  VkResult res = vkCreateComputePipelines(device, pipeline_cache, 1, &m_ci, nullptr, &pipeline);
+  if (res != VK_SUCCESS)
+  {
+    LOG_VULKAN_ERROR(res, "vkCreateComputePipelines() failed: ");
+    return VK_NULL_HANDLE;
+  }
+
+  if (clear)
+    Clear();
+
+  return pipeline;
+}
+
+void ComputePipelineBuilder::SetShader(VkShaderModule module, const char* entry_point)
+{
+  m_ci.stage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+  m_ci.stage.stage = VK_SHADER_STAGE_COMPUTE_BIT;
+  m_ci.stage.module = module;
+  m_ci.stage.pName = entry_point;
+}
+
+void ComputePipelineBuilder::SetPipelineLayout(VkPipelineLayout layout)
+{
+  m_ci.layout = layout;
+}
+
 SamplerBuilder::SamplerBuilder()
 {
   Clear();
@@ -542,7 +582,7 @@ void DescriptorSetUpdateBuilder::AddCombinedImageSamplerDescriptorWrite(
 }
 
 void DescriptorSetUpdateBuilder::AddBufferDescriptorWrite(VkDescriptorSet set, u32 binding, VkDescriptorType dtype,
-                                                          VkBuffer buffer, u32 offset, u32 size)
+                                                          VkBuffer buffer, VkDeviceSize offset, VkDeviceSize size)
 {
   Assert(m_num_writes < MAX_WRITES && m_num_infos < MAX_INFOS);
 

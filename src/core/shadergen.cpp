@@ -340,7 +340,7 @@ void ShaderGen::DeclareVertexEntryPoint(
       for (u32 i = 0; i < num_texcoord_outputs; i++)
         ss << "  " << qualifier << "float2 v_tex" << i << ";\n";
 
-      for (const auto &[qualifiers, name] : additional_outputs)
+      for (const auto& [qualifiers, name] : additional_outputs)
       {
         const char* qualifier_to_use = (std::strlen(qualifiers) > 0) ? qualifiers : qualifier;
         ss << "  " << qualifier_to_use << " " << name << ";\n";
@@ -357,7 +357,7 @@ void ShaderGen::DeclareVertexEntryPoint(
       for (u32 i = 0; i < num_texcoord_outputs; i++)
         ss << qualifier << "out float2 v_tex" << i << ";\n";
 
-      for (const auto &[qualifiers, name] : additional_outputs)
+      for (const auto& [qualifiers, name] : additional_outputs)
       {
         const char* qualifier_to_use = (std::strlen(qualifiers) > 0) ? qualifiers : qualifier;
         ss << qualifier_to_use << " out " << name << ";\n";
@@ -399,7 +399,7 @@ void ShaderGen::DeclareVertexEntryPoint(
       ss << "  " << qualifier << "out float2 v_tex" << i << " : TEXCOORD" << i << ",\n";
 
     u32 additional_counter = num_texcoord_outputs;
-    for (const auto &[qualifiers, name] : additional_outputs)
+    for (const auto& [qualifiers, name] : additional_outputs)
     {
       const char* qualifier_to_use = (std::strlen(qualifiers) > 0) ? qualifiers : qualifier;
       ss << "  " << qualifier_to_use << " out " << name << " : TEXCOORD" << additional_counter << ",\n";
@@ -433,7 +433,7 @@ void ShaderGen::DeclareFragmentEntryPoint(
       for (u32 i = 0; i < num_texcoord_inputs; i++)
         ss << "  " << qualifier << "float2 v_tex" << i << ";\n";
 
-      for (const auto &[qualifiers, name] : additional_inputs)
+      for (const auto& [qualifiers, name] : additional_inputs)
       {
         const char* qualifier_to_use = (std::strlen(qualifiers) > 0) ? qualifiers : qualifier;
         ss << "  " << qualifier_to_use << " " << name << ";\n";
@@ -450,7 +450,7 @@ void ShaderGen::DeclareFragmentEntryPoint(
       for (u32 i = 0; i < num_texcoord_inputs; i++)
         ss << qualifier << "in float2 v_tex" << i << ";\n";
 
-      for (const auto &[qualifiers, name] : additional_inputs)
+      for (const auto& [qualifiers, name] : additional_inputs)
       {
         const char* qualifier_to_use = (std::strlen(qualifiers) > 0) ? qualifiers : qualifier;
         ss << qualifier_to_use << " in " << name << ";\n";
@@ -503,7 +503,7 @@ void ShaderGen::DeclareFragmentEntryPoint(
       ss << "  " << qualifier << "in float2 v_tex" << i << " : TEXCOORD" << i << ",\n";
 
     u32 additional_counter = num_texcoord_inputs;
-    for (const auto &[qualifiers, name] : additional_inputs)
+    for (const auto& [qualifiers, name] : additional_inputs)
     {
       const char* qualifier_to_use = (std::strlen(qualifiers) > 0) ? qualifiers : qualifier;
       ss << "  " << qualifier_to_use << " in " << name << " : TEXCOORD" << additional_counter << ",\n";
@@ -533,6 +533,23 @@ void ShaderGen::DeclareFragmentEntryPoint(
       else
         ss << ",\n";
     }
+  }
+}
+
+void ShaderGen::DeclareComputeEntryPoint(std::stringstream& ss, u32 local_size_x, u32 local_size_y, u32 local_size_z)
+{
+  if (m_glsl)
+  {
+    ss << "#define c_local_id gl_LocalInvocationID\n";
+    ss << "#define c_global_id gl_GlobalInvocationID\n";
+    ss << "layout(local_size_x = " << local_size_x << ", local_size_y = " << local_size_y
+       << ", local_size_z = " << local_size_z << ") in;\n";
+    ss << "void main()\n";
+  }
+  else
+  {
+    ss << "[numthreads(" << local_size_x << ", " << local_size_y << ", " << local_size_z << ")]\n";
+    ss << "void main(uint3 c_local_id : SV_GroupID, uint3 c_global_id : SV_DispatchThreadID)\n";
   }
 }
 

@@ -17,6 +17,7 @@ public:
   std::string GenerateDisplayFragmentShader(bool depth_24bit, GPU_HW::InterlacedRenderMode interlace_mode,
                                             bool smooth_chroma);
   std::string GenerateVRAMReadFragmentShader();
+  std::string GenerateVRAMReadComputeShader();
   std::string GenerateVRAMWriteFragmentShader(bool use_ssbo);
   std::string GenerateVRAMCopyFragmentShader();
   std::string GenerateVRAMUpdateDepthFragmentShader();

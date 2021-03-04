@@ -138,6 +138,23 @@ private:
   VkPipelineMultisampleStateCreateInfo m_multisample_state;
 };
 
+class ComputePipelineBuilder
+{
+public:
+  ComputePipelineBuilder();
+
+  void Clear();
+
+  VkPipeline Create(VkDevice device, VkPipelineCache pipeline_cache = VK_NULL_HANDLE, bool clear = true);
+
+  void SetShader(VkShaderModule module, const char* entry_point);
+
+  void SetPipelineLayout(VkPipelineLayout layout);
+
+private:
+  VkComputePipelineCreateInfo m_ci;
+};
+
 class SamplerBuilder
 {
 public:
@@ -177,8 +194,8 @@ public:
   void AddSamplerDescriptorWrite(VkDescriptorSet set, u32 binding, VkSampler sampler);
   void AddCombinedImageSamplerDescriptorWrite(VkDescriptorSet set, u32 binding, VkImageView view, VkSampler sampler,
                                               VkImageLayout layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-  void AddBufferDescriptorWrite(VkDescriptorSet set, u32 binding, VkDescriptorType dtype, VkBuffer buffer, u32 offset,
-                                u32 size);
+  void AddBufferDescriptorWrite(VkDescriptorSet set, u32 binding, VkDescriptorType dtype, VkBuffer buffer,
+                                VkDeviceSize offset, VkDeviceSize size);
   void AddBufferViewDescriptorWrite(VkDescriptorSet set, u32 binding, VkDescriptorType dtype, VkBufferView view);
 
 private:

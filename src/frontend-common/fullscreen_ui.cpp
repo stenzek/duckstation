@@ -1970,7 +1970,7 @@ void DrawSettingsWindow()
           "to the hardware renderers.",
           &s_settings_copy.gpu_24bit_chroma_smoothing);
 
-        MenuHeading("PGXP (Precision Geometry Transform Pipeline");
+        MenuHeading("PGXP (Precision Geometry Transform Pipeline)");
 
         settings_changed |=
           ToggleButton("PGXP Geometry Correction",
