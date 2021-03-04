@@ -118,6 +118,9 @@ void ControllerSettingsWidget::onProfileLoaded()
 {
   for (int i = 0; i < static_cast<int>(m_port_ui.size()); i++)
   {
+    if (!m_port_ui[i].widget)
+      continue;
+
     ControllerType ctype = Settings::ParseControllerTypeName(
                              m_host_interface
                                ->GetStringSettingValue(QStringLiteral("Controller%1").arg(i + 1).toStdString().c_str(),
