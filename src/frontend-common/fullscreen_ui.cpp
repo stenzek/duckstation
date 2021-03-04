@@ -253,7 +253,7 @@ void SystemPaused(bool paused)
 
 void OpenQuickMenu()
 {
-  if (!System::IsValid())
+  if (!System::IsValid() || s_current_main_window != MainWindowType::None)
     return;
 
   s_was_paused_on_quick_menu_open = System::IsPaused();
