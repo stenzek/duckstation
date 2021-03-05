@@ -52,6 +52,7 @@ struct CodeBlockInstruction
   u32 pc;
 
   bool is_branch_instruction : 1;
+  bool is_direct_branch_instruction : 1;
   bool is_unconditional_branch_instruction : 1;
   bool is_branch_delay_slot : 1;
   bool is_load_instruction : 1;
