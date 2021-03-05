@@ -32,11 +32,12 @@ DisplaySettingsWidget::DisplaySettingsWidget(QtHostInterface* host_interface, QW
                                                &Settings::ParseDownsampleModeName, &Settings::GetDownsampleModeName,
                                                Settings::DEFAULT_GPU_DOWNSAMPLE_MODE);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.displayLinearFiltering, "Display",
-                                               "LinearFiltering");
+                                               "LinearFiltering", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.displayIntegerScaling, "Display",
-                                               "IntegerScaling");
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.displayStretch, "Display",
-                                               "Stretch");
+                                               "IntegerScaling", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.displayStretch, "Display", "Stretch", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.internalResolutionScreenshots, "Display",
+                                               "InternalResolutionScreenshots", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.vsync, "Display", "VSync");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.displayAllFrames, "Display", "DisplayAllFrames",
                                                false);
@@ -101,9 +102,12 @@ DisplaySettingsWidget::DisplaySettingsWidget(QtHostInterface* host_interface, QW
     m_ui.displayIntegerScaling, tr("Integer Upscaling"), tr("Unchecked"),
     tr("Adds padding to the display area to ensure that the ratio between pixels on the host to "
        "pixels in the console is an integer number. <br>May result in a sharper image in some 2D games."));
-  dialog->registerWidgetHelp(
-    m_ui.displayStretch, tr("Stretch To Fill"), tr("Unchecked"),
-    tr("Fills the window with the active display area, regardless of the aspect ratio."));
+  dialog->registerWidgetHelp(m_ui.displayStretch, tr("Stretch To Fill"), tr("Unchecked"),
+                             tr("Fills the window with the active display area, regardless of the aspect ratio."));
+  dialog->registerWidgetHelp(m_ui.internalResolutionScreenshots, tr("Internal Resolution Screenshots"), tr("Unchecked"),
+                             tr("Saves screenshots at internal render resolution and without postprocessing. If this "
+                                "option is disabled, the screenshots will be taken at the window's resolution. "
+                                "Internal resolution screenshots can be very large at high rendering scales."));
   dialog->registerWidgetHelp(
     m_ui.vsync, tr("VSync"), tr("Checked"),
     tr("Enable this option to match DuckStation's refresh rate with your current monitor or screen. "

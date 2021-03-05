@@ -2569,6 +2569,8 @@ void CommonHostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetStringValue("Main", "ControllerBackend",
                     ControllerInterface::GetBackendName(ControllerInterface::GetDefaultBackend()));
 
+  si.SetBoolValue("Display", "InternalResolutionScreenshots", false);
+
 #ifdef WITH_DISCORD_PRESENCE
   si.SetBoolValue("Main", "EnableDiscordPresence", false);
 #endif
@@ -2962,8 +2964,12 @@ bool CommonHostInterface::SaveScreenshot(const char* filename /* = nullptr */, b
     return false;
   }
 
+  const bool internal_resolution = GetBoolSettingValue("Display", "InternalResolutionScreenshots", false);
   const bool screenshot_saved =
-    m_display->WriteDisplayTextureToFile(filename, full_resolution, apply_aspect_ratio, compress_on_thread);
+    internal_resolution ?
+      m_display->WriteDisplayTextureToFile(filename, full_resolution, apply_aspect_ratio, compress_on_thread) :
+      m_display->WriteScreenshotToFile(filename, compress_on_thread);
+
   if (!screenshot_saved)
   {
     AddFormattedOSDMessage(10.0f, TranslateString("OSDMessage", "Failed to save screenshot to '%s'"), filename);

@@ -156,6 +156,13 @@
           </property>
          </widget>
         </item>
+        <item row="1" column="1">
+         <widget class="QCheckBox" name="internalResolutionScreenshots">
+          <property name="text">
+           <string>Internal Resolution Screenshots</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </item>
      </layout>
