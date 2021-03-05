@@ -1886,6 +1886,15 @@ void DrawSettingsWindow()
           ToggleButton("Integer Upscaling", "Adds padding to ensure pixels are a whole number in size.",
                        &s_settings_copy.display_integer_scaling);
 
+        settings_changed |= ToggleButton(
+          "Stretch To Fit", "Fills the window with the active display area, regardless of the aspect ratio.",
+          &s_settings_copy.display_stretch);
+
+        settings_changed |=
+          ToggleButtonForNonSetting("Internal Resolution Screenshots",
+                                    "Saves screenshots at internal render resolution and without postprocessing.",
+                                    "Display", "InternalResolutionScreenshots", false);
+
         MenuHeading("On-Screen Display");
 
         settings_changed |= ToggleButton("Show OSD Messages", "Shows on-screen-display messages when events occur.",
