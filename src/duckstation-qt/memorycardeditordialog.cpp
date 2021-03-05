@@ -92,7 +92,6 @@ void MemoryCardEditorDialog::populateComboBox(QComboBox* cb)
   cb->clear();
 
   cb->addItem(QString());
-  cb->addItem(tr("Browse..."));
 
   const std::string base_path(g_host_interface->GetUserDirectoryRelativePath("memcards"));
   FileSystem::FindResultsArray results;
@@ -111,24 +110,7 @@ void MemoryCardEditorDialog::populateComboBox(QComboBox* cb)
 
 void MemoryCardEditorDialog::loadCardFromComboBox(Card* card, int index)
 {
-  QString filename;
-  if (index == 1)
-  {
-    filename = QDir::toNativeSeparators(
-      QFileDialog::getOpenFileName(this, tr("Select Memory Card"), QString(), tr(MEMORY_CARD_IMAGE_FILTER)));
-    if (!filename.isEmpty())
-    {
-      // add to combo box
-      QFileInfo file(filename);
-      QSignalBlocker sb(card->path_cb);
-      card->path_cb->addItem(file.baseName(), QVariant(filename));
-      card->path_cb->setCurrentIndex(card->path_cb->count() - 1);
-    }
-  }
-  else
-  {
-    filename = card->path_cb->itemData(index).toString();
-  }
+  QString filename = card->path_cb->itemData(index).toString();
 
   if (filename.isEmpty())
     return;
