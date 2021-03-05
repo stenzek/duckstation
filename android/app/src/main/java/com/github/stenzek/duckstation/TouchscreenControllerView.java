@@ -44,7 +44,7 @@ public class TouchscreenControllerView extends FrameLayout {
     private float mMovingLastY = 0.0f;
     private ConstraintLayout mEditLayout = null;
     private int mOpacity = 100;
-    private Map<Integer, View> mFirstHolds = new HashMap<>();
+    private Map<Integer, View> mGlidePairs = new HashMap<>();
 
     public TouchscreenControllerView(Context context) {
         super(context);
@@ -446,7 +446,7 @@ public class TouchscreenControllerView extends FrameLayout {
                 if (!AndroidHostInterface.hasInstanceAndEmulationThreadIsRunning())
                     return false;
 
-                mFirstHolds.clear();
+                mGlidePairs.clear();
 
                 for (TouchscreenControllerButtonView buttonView : mButtonViews) {
                     buttonView.setPressed(false);
@@ -463,8 +463,8 @@ public class TouchscreenControllerView extends FrameLayout {
             case MotionEvent.ACTION_POINTER_DOWN:
             case MotionEvent.ACTION_POINTER_UP: {
                 int pointerID = event.getPointerId(event.getActionIndex());
-                if (mFirstHolds.containsKey(pointerID))
-                    mFirstHolds.remove(pointerID);
+                if (mGlidePairs.containsKey(pointerID))
+                    mGlidePairs.remove(pointerID);
 
                 return true;
             }
@@ -490,16 +490,16 @@ public class TouchscreenControllerView extends FrameLayout {
                         if (rect.contains(x, y)) {
                             buttonView.setPressed(true);
                             int pointerID = event.getPointerId(i);
-                            if (!mFirstHolds.containsKey(pointerID) && !mFirstHolds.containsValue(buttonView)) {
+                            if (!mGlidePairs.containsKey(pointerID) && !mGlidePairs.containsValue(buttonView)) {
                                 if (buttonView.getIsGlidable())
-                                    mFirstHolds.put(pointerID, buttonView);
+                                    mGlidePairs.put(pointerID, buttonView);
                             }
                             pressed = true;
                             break;
                         }
                     }
 
-                    if (!pressed  && !mFirstHolds.containsValue(buttonView))
+                    if (!pressed  && !mGlidePairs.containsValue(buttonView))
                         buttonView.setPressed(pressed);
                 }
 
