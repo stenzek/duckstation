@@ -36,7 +36,7 @@ void InputBindingWidget::updateText()
   if (m_bindings.empty())
     setText(QString());
   else if (m_bindings.size() > 1)
-    setText(tr("%1 bindings").arg(m_bindings.size()));
+    setText(tr("%n bindings", "", m_bindings.size()));
   else
     setText(QString::fromStdString(m_bindings[0]));
 }

@@ -207,7 +207,7 @@ void MemoryCardEditorDialog::updateCardTable(Card* card)
 
     card->table->setItem(row, 1, new QTableWidgetItem(QString::fromStdString(fi.title)));
     card->table->setItem(row, 2, new QTableWidgetItem(QString::fromStdString(fi.filename)));
-    card->table->setItem(row, 3, new QTableWidgetItem(QStringLiteral("%1").arg(fi.num_blocks)));
+    card->table->setItem(row, 3, new QTableWidgetItem(QString::number(fi.num_blocks)));
   }
 }
 
@@ -215,7 +215,7 @@ void MemoryCardEditorDialog::updateCardBlocksFree(Card* card)
 {
   card->blocks_free = MemoryCardImage::GetFreeBlockCount(card->data);
   card->blocks_free_label->setText(
-    tr("%1 blocks free%2").arg(card->blocks_free).arg(card->dirty ? QStringLiteral(" (*)") : QString()));
+    tr("%n block(s) free%1", "", card->blocks_free).arg(card->dirty ? QStringLiteral(" (*)") : QString()));
 }
 
 void MemoryCardEditorDialog::setCardDirty(Card* card)

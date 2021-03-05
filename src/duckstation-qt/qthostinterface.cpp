@@ -64,7 +64,7 @@ const char* QtHostInterface::GetFrontendName() const
 
 std::vector<std::pair<QString, QString>> QtHostInterface::getAvailableLanguageList()
 {
-  return {{QStringLiteral("English"), QStringLiteral("")},
+  return {{QStringLiteral("English"), QStringLiteral("en")},
           {QStringLiteral("Deutsch"), QStringLiteral("de")},
           {QStringLiteral("Español"), QStringLiteral("es")},
           {QStringLiteral("Français"), QStringLiteral("fr")},
@@ -129,7 +129,7 @@ void QtHostInterface::installTranslator()
 
   std::string language = GetStringSettingValue("Main", "Language", "");
   if (language.empty())
-    return;
+    language = "en";
 
   const QString path =
     QStringLiteral("%1/translations/duckstation-qt_%3.qm").arg(qApp->applicationDirPath()).arg(language.c_str());

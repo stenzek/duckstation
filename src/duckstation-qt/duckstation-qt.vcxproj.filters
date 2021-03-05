@@ -181,6 +181,9 @@
     <QtTs Include="translations\duckstation-qt_de.ts">
       <Filter>translations</Filter>
     </QtTs>
+	<QtTs Include="translations\duckstation-qt_en.ts">
+      <Filter>translations</Filter>
+    </QtTs>
     <QtTs Include="translations\duckstation-qt_es.ts">
       <Filter>translations</Filter>
     </QtTs>

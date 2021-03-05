@@ -236,7 +236,7 @@ void GamePropertiesDialog::populateTracksInfo(const std::string& image_path)
     const CDImage::TrackMode mode = image->GetTrackMode(static_cast<u8>(track));
     const int row = static_cast<int>(track - 1u);
     m_ui.tracks->insertRow(row);
-    m_ui.tracks->setItem(row, 0, new QTableWidgetItem(QStringLiteral("%1").arg(track)));
+    m_ui.tracks->setItem(row, 0, new QTableWidgetItem(QString::number(track)));
     m_ui.tracks->setItem(row, 1, new QTableWidgetItem(track_mode_strings[static_cast<u32>(mode)]));
     m_ui.tracks->setItem(row, 2, new QTableWidgetItem(MSFTotString(position)));
     m_ui.tracks->setItem(row, 3, new QTableWidgetItem(MSFTotString(length)));

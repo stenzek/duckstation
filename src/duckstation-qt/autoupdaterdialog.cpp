@@ -544,7 +544,7 @@ bool AutoUpdaterDialog::doUpdate(const QString& zip_path, const QString& updater
   }
 
   QStringList arguments;
-  arguments << QStringLiteral("%1").arg(QCoreApplication::applicationPid());
+  arguments << QString::number(QCoreApplication::applicationPid());
   arguments << destination_path;
   arguments << zip_path;
   arguments << program_path;

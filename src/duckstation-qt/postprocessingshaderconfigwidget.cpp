@@ -47,7 +47,7 @@ void PostProcessingShaderConfigWidget::createUi()
         QString label;
         if (option.vector_size <= 1)
         {
-          label = QStringLiteral("%1").arg(QString::fromStdString(option.ui_name));
+          label = QString::fromStdString(option.ui_name);
         }
         else
         {
@@ -66,7 +66,7 @@ void PostProcessingShaderConfigWidget::createUi()
 
         if (option.type == PostProcessingShader::Option::Type::Int)
         {
-          slider_label->setText(QStringLiteral("%1").arg(option.value[i].int_value));
+          slider_label->setText(QString::number(option.value[i].int_value));
 
           const int range = std::max(option.max_value[i].int_value - option.min_value[i].int_value, 1);
           const int step_value =
@@ -81,20 +81,20 @@ void PostProcessingShaderConfigWidget::createUi()
             const int new_value = std::clamp(option.min_value[i].int_value + (value * option.step_value[i].int_value),
                                              option.min_value[i].int_value, option.max_value[i].int_value);
             option.value[i].int_value = new_value;
-            slider_label->setText(QStringLiteral("%1").arg(new_value));
+            slider_label->setText(QString::number(new_value));
             configChanged();
           });
           connect(this, &PostProcessingShaderConfigWidget::resettingtoDefaults,
                   [&option, i, slider, slider_label, step_value]() {
                     QSignalBlocker sb(slider);
                     slider->setValue((option.default_value[i].int_value - option.min_value[i].int_value) / step_value);
-                    slider_label->setText(QStringLiteral("%1").arg(option.default_value[i].int_value));
+                    slider_label->setText(QString::number(option.default_value[i].int_value));
                     option.value = option.default_value;
                   });
         }
         else
         {
-          slider_label->setText(QStringLiteral("%1").arg(option.value[i].float_value));
+          slider_label->setText(QString::number(option.value[i].float_value));
 
           const float range = std::max(option.max_value[i].float_value - option.min_value[i].float_value, 1.0f);
           const float step_value =
@@ -111,7 +111,7 @@ void PostProcessingShaderConfigWidget::createUi()
                                                  (static_cast<float>(value) * option.step_value[i].float_value),
                                                option.min_value[i].float_value, option.max_value[i].float_value);
             option.value[i].float_value = new_value;
-            slider_label->setText(QStringLiteral("%1").arg(new_value));
+            slider_label->setText(QString::number(new_value));
             configChanged();
           });
           connect(this, &PostProcessingShaderConfigWidget::resettingtoDefaults,
@@ -119,7 +119,7 @@ void PostProcessingShaderConfigWidget::createUi()
                     QSignalBlocker sb(slider);
                     slider->setValue(static_cast<int>(
                       (option.default_value[i].float_value - option.min_value[i].float_value) / step_value));
-                    slider_label->setText(QStringLiteral("%1").arg(option.default_value[i].float_value));
+                    slider_label->setText(QString::number(option.default_value[i].float_value));
                     option.value = option.default_value;
                   });
         }

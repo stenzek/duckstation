@@ -102,7 +102,7 @@ DisplaySettingsWidget::DisplaySettingsWidget(QtHostInterface* host_interface, QW
     tr("Adds padding to the display area to ensure that the ratio between pixels on the host to "
        "pixels in the console is an integer number. <br>May result in a sharper image in some 2D games."));
   dialog->registerWidgetHelp(
-    m_ui.displayIntegerScaling, tr("Stretch To Fill"), tr("Unchecked"),
+    m_ui.displayStretch, tr("Stretch To Fill"), tr("Unchecked"),
     tr("Fills the window with the active display area, regardless of the aspect ratio."));
   dialog->registerWidgetHelp(
     m_ui.vsync, tr("VSync"), tr("Checked"),
