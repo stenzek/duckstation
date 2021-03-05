@@ -112,12 +112,7 @@ void MemoryCardEditorDialog::populateComboBox(QComboBox* cb)
 
 void MemoryCardEditorDialog::loadCardFromComboBox(Card* card, int index)
 {
-  QString filename = card->path_cb->itemData(index).toString();
-
-  if (filename.isEmpty())
-    return;
-
-  loadCard(filename, card);
+  loadCard(card->path_cb->itemData(index).toString(), card);
 }
 
 void MemoryCardEditorDialog::onCardASelectionChanged()
@@ -165,6 +160,12 @@ bool MemoryCardEditorDialog::loadCard(const QString& filename, Card* card)
   card->save_button->setEnabled(false);
 
   card->filename.clear();
+
+  if (filename.isEmpty())
+  {
+    updateButtonState();
+    return false;
+  }
 
   std::string filename_str = filename.toStdString();
   if (!MemoryCardImage::LoadFromFile(&card->data, filename_str.c_str()))
@@ -435,4 +436,6 @@ void MemoryCardEditorDialog::updateButtonState()
   m_ui.moveRight->setEnabled(both_cards_present && has_selection && !is_card_b);
   m_ui.importCardA->setEnabled(card_a_present);
   m_ui.importCardB->setEnabled(card_b_present);
+  m_ui.importFileToCardA->setEnabled(card_a_present);
+  m_ui.importFileToCardB->setEnabled(card_b_present);
 }
