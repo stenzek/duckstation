@@ -68,6 +68,8 @@ public:
   virtual void SetVSync(bool enabled) override;
 
   virtual bool Render() override;
+  virtual bool RenderScreenshot(u32 width, u32 height, std::vector<u32>* out_pixels, u32* out_stride,
+                                HostDisplayPixelFormat* out_format) override;
 
   static AdapterAndModeList StaticGetAdapterAndModeList();
 
@@ -107,7 +109,7 @@ protected:
   void ApplyPostProcessingChain(ID3D11RenderTargetView* final_target, s32 final_left, s32 final_top, s32 final_width,
                                 s32 final_height, void* texture_handle, u32 texture_width, s32 texture_height,
                                 s32 texture_view_x, s32 texture_view_y, s32 texture_view_width,
-                                s32 texture_view_height);
+                                s32 texture_view_height, u32 target_width, u32 target_height);
 
   ComPtr<ID3D11Device> m_device;
   ComPtr<ID3D11DeviceContext> m_context;

@@ -640,14 +640,107 @@ bool VulkanHostDisplay::Render()
   return true;
 }
 
-void VulkanHostDisplay::BeginSwapChainRenderPass(VkFramebuffer framebuffer)
+bool VulkanHostDisplay::RenderScreenshot(u32 width, u32 height, std::vector<u32>* out_pixels, u32* out_stride,
+                                         HostDisplayPixelFormat* out_format)
+{
+  // in theory we could do this without a swap chain, but postprocessing assumes it for now...
+  if (!m_swap_chain)
+    return false;
+
+  const VkFormat format = m_swap_chain ? m_swap_chain->GetTextureFormat() : VK_FORMAT_R8G8B8A8_UNORM;
+  switch (format)
+  {
+    case VK_FORMAT_R8G8B8A8_UNORM:
+    case VK_FORMAT_R8G8B8A8_SRGB:
+      *out_format = HostDisplayPixelFormat::RGBA8;
+      *out_stride = sizeof(u32) * width;
+      out_pixels->resize(width * height);
+      break;
+
+    case VK_FORMAT_B8G8R8A8_UNORM:
+    case VK_FORMAT_B8G8R8A8_SRGB:
+      *out_format = HostDisplayPixelFormat::BGRA8;
+      *out_stride = sizeof(u32) * width;
+      out_pixels->resize(width * height);
+      break;
+
+    case VK_FORMAT_A1R5G5B5_UNORM_PACK16:
+      *out_format = HostDisplayPixelFormat::RGBA5551;
+      *out_stride = sizeof(u16) * width;
+      out_pixels->resize(((width * height) + 1) / 2);
+      break;
+
+    case VK_FORMAT_R5G6B5_UNORM_PACK16:
+      *out_format = HostDisplayPixelFormat::RGB565;
+      *out_stride = sizeof(u16) * width;
+      out_pixels->resize(((width * height) + 1) / 2);
+      break;
+
+    default:
+      Log_ErrorPrintf("Unhandled swap chain pixel format %u", static_cast<unsigned>(format));
+      break;
+  }
+
+  Vulkan::Texture tex;
+  Vulkan::StagingTexture staging_tex;
+  if (!tex.Create(width, height, 1, 1, format, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_TILING_OPTIMAL,
+                  VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT) ||
+      !staging_tex.Create(Vulkan::StagingBuffer::Type::Readback, format, width, height))
+  {
+    return false;
+  }
+
+  const VkRenderPass rp =
+    m_swap_chain ?
+      m_swap_chain->GetClearRenderPass() :
+      g_vulkan_context->GetRenderPass(format, VK_FORMAT_UNDEFINED, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR);
+  if (!rp)
+    return false;
+
+  const VkFramebuffer fb = tex.CreateFramebuffer(rp);
+  if (!fb)
+    return false;
+
+  tex.TransitionToLayout(g_vulkan_context->GetCurrentCommandBuffer(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+
+  const auto [left, top, draw_width, draw_height] =
+    CalculateDrawRect(GetWindowWidth(), GetWindowHeight(), m_display_top_margin);
+
+  if (!m_post_processing_chain.IsEmpty())
+  {
+    ApplyPostProcessingChain(fb, left, top, draw_width, draw_height, m_display_texture_handle, m_display_texture_width,
+                             m_display_texture_height, m_display_texture_view_x, m_display_texture_view_y,
+                             m_display_texture_view_width, m_display_texture_view_height, width, height);
+  }
+  else
+  {
+    BeginSwapChainRenderPass(fb, width, height);
+    RenderDisplay(left, top, draw_width, draw_height, m_display_texture_handle, m_display_texture_width,
+                  m_display_texture_height, m_display_texture_view_x, m_display_texture_view_y,
+                  m_display_texture_view_width, m_display_texture_view_height, m_display_linear_filtering);
+  }
+
+  vkCmdEndRenderPass(g_vulkan_context->GetCurrentCommandBuffer());
+  tex.TransitionToLayout(g_vulkan_context->GetCurrentCommandBuffer(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+  staging_tex.CopyFromTexture(tex, 0, 0, 0, 0, 0, 0, width, height);
+  staging_tex.ReadTexels(0, 0, width, height, out_pixels->data(), *out_stride);
+
+  // destroying these immediately should be safe since nothing's going to access them, and it's not part of the command
+  // stream
+  vkDestroyFramebuffer(g_vulkan_context->GetDevice(), fb, nullptr);
+  staging_tex.Destroy(false);
+  tex.Destroy(false);
+  return true;
+}
+
+void VulkanHostDisplay::BeginSwapChainRenderPass(VkFramebuffer framebuffer, u32 width, u32 height)
 {
   const VkClearValue clear_value = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
   const VkRenderPassBeginInfo rp = {VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
                                     nullptr,
                                     m_swap_chain->GetClearRenderPass(),
                                     framebuffer,
-                                    {{0, 0}, {m_swap_chain->GetWidth(), m_swap_chain->GetHeight()}},
+                                    {{0, 0}, {width, height}},
                                     1u,
                                     &clear_value};
   vkCmdBeginRenderPass(g_vulkan_context->GetCurrentCommandBuffer(), &rp, VK_SUBPASS_CONTENTS_INLINE);
@@ -657,7 +750,8 @@ void VulkanHostDisplay::RenderDisplay()
 {
   if (!HasDisplayTexture())
   {
-    BeginSwapChainRenderPass(m_swap_chain->GetCurrentFramebuffer());
+    BeginSwapChainRenderPass(m_swap_chain->GetCurrentFramebuffer(), m_swap_chain->GetWidth(),
+                             m_swap_chain->GetHeight());
     return;
   }
 
@@ -665,13 +759,14 @@ void VulkanHostDisplay::RenderDisplay()
 
   if (!m_post_processing_chain.IsEmpty())
   {
-    ApplyPostProcessingChain(left, top, width, height, m_display_texture_handle, m_display_texture_width,
-                             m_display_texture_height, m_display_texture_view_x, m_display_texture_view_y,
-                             m_display_texture_view_width, m_display_texture_view_height);
+    ApplyPostProcessingChain(m_swap_chain->GetCurrentFramebuffer(), left, top, width, height, m_display_texture_handle,
+                             m_display_texture_width, m_display_texture_height, m_display_texture_view_x,
+                             m_display_texture_view_y, m_display_texture_view_width, m_display_texture_view_height,
+                             m_swap_chain->GetWidth(), m_swap_chain->GetHeight());
     return;
   }
 
-  BeginSwapChainRenderPass(m_swap_chain->GetCurrentFramebuffer());
+  BeginSwapChainRenderPass(m_swap_chain->GetCurrentFramebuffer(), m_swap_chain->GetWidth(), m_swap_chain->GetHeight());
   RenderDisplay(left, top, width, height, m_display_texture_handle, m_display_texture_width, m_display_texture_height,
                 m_display_texture_view_x, m_display_texture_view_y, m_display_texture_view_width,
                 m_display_texture_view_height, m_display_linear_filtering);
@@ -946,14 +1041,15 @@ bool VulkanHostDisplay::CheckPostProcessingRenderTargets(u32 target_width, u32 t
   return true;
 }
 
-void VulkanHostDisplay::ApplyPostProcessingChain(s32 final_left, s32 final_top, s32 final_width, s32 final_height,
-                                                 void* texture_handle, u32 texture_width, s32 texture_height,
-                                                 s32 texture_view_x, s32 texture_view_y, s32 texture_view_width,
-                                                 s32 texture_view_height)
+void VulkanHostDisplay::ApplyPostProcessingChain(VkFramebuffer target_fb, s32 final_left, s32 final_top,
+                                                 s32 final_width, s32 final_height, void* texture_handle,
+                                                 u32 texture_width, s32 texture_height, s32 texture_view_x,
+                                                 s32 texture_view_y, s32 texture_view_width, s32 texture_view_height,
+                                                 u32 target_width, u32 target_height)
 {
-  if (!CheckPostProcessingRenderTargets(m_swap_chain->GetWidth(), m_swap_chain->GetHeight()))
+  if (!CheckPostProcessingRenderTargets(target_width, target_height))
   {
-    BeginSwapChainRenderPass(m_swap_chain->GetCurrentFramebuffer());
+    BeginSwapChainRenderPass(target_fb, target_width, target_height);
     RenderDisplay(final_left, final_top, final_width, final_height, texture_handle, texture_width, texture_height,
                   texture_view_x, texture_view_y, texture_view_width, texture_view_height, m_display_linear_filtering);
     return;
@@ -962,7 +1058,7 @@ void VulkanHostDisplay::ApplyPostProcessingChain(s32 final_left, s32 final_top, 
   // downsample/upsample - use same viewport for remainder
   VkCommandBuffer cmdbuffer = g_vulkan_context->GetCurrentCommandBuffer();
   m_post_processing_input_texture.TransitionToLayout(cmdbuffer, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-  BeginSwapChainRenderPass(m_post_processing_input_framebuffer);
+  BeginSwapChainRenderPass(m_post_processing_input_framebuffer, target_width, target_height);
   RenderDisplay(final_left, final_top, final_width, final_height, texture_handle, texture_width, texture_height,
                 texture_view_x, texture_view_y, texture_view_width, texture_view_height, m_display_linear_filtering);
   vkCmdEndRenderPass(cmdbuffer);
@@ -983,11 +1079,11 @@ void VulkanHostDisplay::ApplyPostProcessingChain(s32 final_left, s32 final_top, 
     if (i != final_stage)
     {
       pps.output_texture.TransitionToLayout(cmdbuffer, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-      BeginSwapChainRenderPass(pps.output_framebuffer);
+      BeginSwapChainRenderPass(pps.output_framebuffer, target_width, target_height);
     }
     else
     {
-      BeginSwapChainRenderPass(m_swap_chain->GetCurrentFramebuffer());
+      BeginSwapChainRenderPass(target_fb, target_width, target_height);
     }
 
     const bool use_push_constants = m_post_processing_chain.GetShaderStage(i).UsePushConstants();

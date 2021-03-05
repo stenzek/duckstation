@@ -32,8 +32,10 @@ public:
   virtual bool HasRenderDevice() const override;
   virtual bool HasRenderSurface() const override;
 
-  virtual bool CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, bool debug_device, bool threaded_presentation) override;
-  virtual bool InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device, bool threaded_presentation) override;
+  virtual bool CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, bool debug_device,
+                                  bool threaded_presentation) override;
+  virtual bool InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device,
+                                      bool threaded_presentation) override;
   virtual void DestroyRenderDevice() override;
 
   virtual bool MakeRenderContextCurrent() override;
@@ -65,6 +67,8 @@ public:
   virtual void SetVSync(bool enabled) override;
 
   virtual bool Render() override;
+  virtual bool RenderScreenshot(u32 width, u32 height, std::vector<u32>* out_pixels, u32* out_stride,
+                                HostDisplayPixelFormat* out_format) override;
 
 protected:
   const char* GetGLSLVersionString() const;
@@ -99,7 +103,8 @@ protected:
   bool CheckPostProcessingRenderTargets(u32 target_width, u32 target_height);
   void ApplyPostProcessingChain(GLuint final_target, s32 final_left, s32 final_top, s32 final_width, s32 final_height,
                                 void* texture_handle, u32 texture_width, s32 texture_height, s32 texture_view_x,
-                                s32 texture_view_y, s32 texture_view_width, s32 texture_view_height);
+                                s32 texture_view_y, s32 texture_view_width, s32 texture_view_height, u32 target_width,
+                                u32 target_height);
 
   std::unique_ptr<GL::Context> m_gl_context;
 
