@@ -183,6 +183,10 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1308-g622e50fa</version-tested>
   </entry>
+  <entry code="SLUS-00547" compatibility="5" region="NTSC-U" title="Adidas Power Soccer 98 (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-3187-gf580dbc6</version-tested>
+  </entry>
   <entry code="SLPS-01689" compatibility="5" region="NTSC-J" title="Advan Racing (Japan)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1304-gc8b6712</version-tested>
@@ -960,6 +964,10 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1400-gb527118c</version-tested>
   </entry>
+  <entry code="SCUS-94597" compatibility="5" region="NTSC-U" title="Cool Boarders 2001 (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-3187-gf580dbc6</version-tested>
+  </entry>
   <entry code="SLUS-01151" compatibility="5" region="NTSC-U" title="Covert Ops - Nuclear Dawn (USA) (Disc 1)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-986-gfc911de1</version-tested>
@@ -1727,6 +1735,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1425-g05f0ce6d</version-tested>
   </entry>
+  <entry code="SLUS-01027" compatibility="5" region="NTSC-U" title="HBO Boxing (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-3187-gf580dbc6</version-tested>
+  </entry>
   <entry code="SLPS-00498" compatibility="5" region="NTSC-J" title="Harmful Park (Japan)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1031-g47138aa</version-tested>
@@ -2409,6 +2421,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-2663-gfd39f09a</version-tested>
   </entry>
+  <entry code="SLUS-01021" compatibility="5" region="NTSC-U" title="Mort the Chicken (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-3224 Android Preview</version-tested>
+  </entry>
   <entry code="SLUS-00824" compatibility="5" region="NTSC-U" title="Mortal Kombat - Special Forces (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1407-g08b81764</version-tested>
@@ -2702,7 +2718,6 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLPS-01762" compatibility="5" region="NTSC-J" title="Pepsiman (Japan)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1333-g5a955a4</version-tested>
-    <comments>No music ingame (just FX Sounds). Tested in both SDL and cubeb (Issue #655).</comments>
   </entry>
   <entry code="SLUS-00339" compatibility="5" region="NTSC-U" title="Persona (USA)">
     <compatibility>No Issues</compatibility>
@@ -4046,6 +4061,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1448-g472f1c1c</version-tested>
   </entry>
+  <entry code="SLPS-01317" compatibility="5" region="NTSC-J" title="Utchan Nanchan no Honoo no Challenger - Denryuu Ira Ira Bou Returns (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-3109-gfd269ec9</version-tested>
+  </entry>
   <entry code="SLES-00250" compatibility="5" region="PAL" title="V-Rally - 97 Championship Edition (Europe) (En,Fr,De) (Rev 1)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-2862-g6fbffb6f</version-tested>
@@ -4098,7 +4117,7 @@ Tetris with Card Captor Sakura (Japan)
   </entry>
   <entry code="SLUS-00510" compatibility="5" region="NTSC-U" title="Vigilante 8 (USA) (Rev 1)">
     <compatibility>No Issues</compatibility>
-    <version-tested>0.1-2837-g632909df</version-tested>
+    <version-tested>0.1-3187-gf580dbc6</version-tested>
   </entry>
   <entry code="SLUS-00868" compatibility="5" region="NTSC-U" title="Vigilante 8 - 2nd Offense (USA)">
     <compatibility>No Issues</compatibility>
