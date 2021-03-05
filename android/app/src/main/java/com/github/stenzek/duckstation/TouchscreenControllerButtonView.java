@@ -28,6 +28,7 @@ public final class TouchscreenControllerButtonView extends View {
     private Hotkey mHotkey = Hotkey.NONE;
     private String mConfigName;
     private boolean mDefaultVisibility = true;
+    private boolean mIsGlidable = true;
 
     public TouchscreenControllerButtonView(Context context) {
         super(context);
@@ -114,6 +115,9 @@ public final class TouchscreenControllerButtonView extends View {
     public void setConfigName(String name) {
         mConfigName = name;
     }
+
+    public boolean getIsGlidable() { return mIsGlidable; }
+    public void setIsGlidable(boolean isGlidable) { mIsGlidable = isGlidable; }
 
     public boolean getDefaultVisibility() { return mDefaultVisibility; }
     public void setDefaultVisibility(boolean visibility) { mDefaultVisibility = visibility; }
