@@ -331,6 +331,19 @@ void MemoryCardEditorDialog::doCopyFile()
 
   Card* dst = (src == &m_card_a) ? &m_card_b : &m_card_a;
 
+  for (const MemoryCardImage::FileInfo& dst_fi : dst->files)
+  {
+    if (dst_fi.filename == fi->filename)
+    {
+      QMessageBox::critical(
+        this, tr("Error"),
+        tr("Destination memory card already contains a save file with the same name (%1) as the one you are attempting "
+           "to copy. Please delete this file from the destination memory card before copying.")
+          .arg(QString(fi->filename.c_str())));
+      return;
+    }
+  }
+
   if (dst->blocks_free < fi->num_blocks)
   {
     QMessageBox::critical(this, tr("Error"),
