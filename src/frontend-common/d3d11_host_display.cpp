@@ -157,13 +157,13 @@ bool D3D11HostDisplay::DownloadTexture(const void* texture_handle, HostDisplayPi
 
   if (srv_desc.Format == DXGI_FORMAT_B5G6R5_UNORM || srv_desc.Format == DXGI_FORMAT_B5G5R5A1_UNORM)
   {
-    return m_readback_staging_texture.ReadPixels<u16>(m_context.Get(), 0, 0, width, height,
-                                                      out_data_stride / sizeof(u16), static_cast<u16*>(out_data));
+    return m_readback_staging_texture.ReadPixels<u16>(m_context.Get(), 0, 0, width, height, out_data_stride,
+                                                      static_cast<u16*>(out_data));
   }
   else
   {
-    return m_readback_staging_texture.ReadPixels<u32>(m_context.Get(), 0, 0, width, height,
-                                                      out_data_stride / sizeof(u32), static_cast<u32*>(out_data));
+    return m_readback_staging_texture.ReadPixels<u32>(m_context.Get(), 0, 0, width, height, out_data_stride,
+                                                      static_cast<u32*>(out_data));
   }
 }
 

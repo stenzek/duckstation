@@ -961,8 +961,9 @@ void GPU_HW_D3D11::ReadVRAM(u32 x, u32 y, u32 width, u32 height)
   // And copy it into our shadow buffer.
   if (m_vram_readback_texture.Map(m_context.Get(), false))
   {
-    m_vram_readback_texture.ReadPixels(0, 0, encoded_width * 2, encoded_height, VRAM_WIDTH,
-                                       &m_vram_shadow[copy_rect.top * VRAM_WIDTH + copy_rect.left]);
+    m_vram_readback_texture.ReadPixels<u32>(
+      0, 0, encoded_width, encoded_height, VRAM_WIDTH * sizeof(u16),
+      reinterpret_cast<u32*>(&m_vram_shadow[copy_rect.top * VRAM_WIDTH + copy_rect.left]));
     m_vram_readback_texture.Unmap(m_context.Get());
   }
   else
