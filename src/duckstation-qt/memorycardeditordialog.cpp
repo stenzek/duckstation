@@ -15,6 +15,8 @@ static constexpr char MEMORY_CARD_IMPORT_FILTER[] =
 MemoryCardEditorDialog::MemoryCardEditorDialog(QWidget* parent) : QDialog(parent)
 {
   m_ui.setupUi(this);
+  setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
+
   m_card_a.path_cb = m_ui.cardAPath;
   m_card_a.table = m_ui.cardA;
   m_card_a.blocks_free_label = m_ui.cardAUsage;
