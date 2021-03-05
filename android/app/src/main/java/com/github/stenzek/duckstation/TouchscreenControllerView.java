@@ -20,7 +20,6 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.preference.PreferenceManager;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -46,7 +45,6 @@ public class TouchscreenControllerView extends FrameLayout {
     private ConstraintLayout mEditLayout = null;
     private int mOpacity = 100;
     private Map<Integer, View> mFirstHolds = new HashMap<>();
-    private ArrayList<String> mDpadButtons = new ArrayList<String>(Arrays.asList("UpButton", "DownButton", "LeftButton", "RightButton"));
 
     public TouchscreenControllerView(Context context) {
         super(context);
