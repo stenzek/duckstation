@@ -20,6 +20,8 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.preference.PreferenceManager;
 
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * TODO: document your custom view class.
@@ -42,6 +44,7 @@ public class TouchscreenControllerView extends FrameLayout {
     private float mMovingLastY = 0.0f;
     private ConstraintLayout mEditLayout = null;
     private int mOpacity = 100;
+    private Map<Integer, View> mGlidePairs = new HashMap<>();
 
     public TouchscreenControllerView(Context context) {
         super(context);
@@ -229,20 +232,20 @@ public class TouchscreenControllerView extends FrameLayout {
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
 
-        linkButton(mMainView, R.id.controller_button_up, "UpButton", "Up", true);
-        linkButton(mMainView, R.id.controller_button_right, "RightButton", "Right", true);
-        linkButton(mMainView, R.id.controller_button_down, "DownButton", "Down", true);
-        linkButton(mMainView, R.id.controller_button_left, "LeftButton", "Left", true);
-        linkButton(mMainView, R.id.controller_button_l1, "L1Button", "L1", true);
-        linkButton(mMainView, R.id.controller_button_l2, "L2Button", "L2", true);
-        linkButton(mMainView, R.id.controller_button_select, "SelectButton", "Select", true);
-        linkButton(mMainView, R.id.controller_button_start, "StartButton", "Start", true);
-        linkButton(mMainView, R.id.controller_button_triangle, "TriangleButton", "Triangle", true);
-        linkButton(mMainView, R.id.controller_button_circle, "CircleButton", "Circle", true);
-        linkButton(mMainView, R.id.controller_button_cross, "CrossButton", "Cross", true);
-        linkButton(mMainView, R.id.controller_button_square, "SquareButton", "Square", true);
-        linkButton(mMainView, R.id.controller_button_r1, "R1Button", "R1", true);
-        linkButton(mMainView, R.id.controller_button_r2, "R2Button", "R2", true);
+        linkButton(mMainView, R.id.controller_button_up, "UpButton", "Up", true, false);
+        linkButton(mMainView, R.id.controller_button_right, "RightButton", "Right", true, false);
+        linkButton(mMainView, R.id.controller_button_down, "DownButton", "Down", true, false);
+        linkButton(mMainView, R.id.controller_button_left, "LeftButton", "Left", true, false);
+        linkButton(mMainView, R.id.controller_button_l1, "L1Button", "L1", true, true);
+        linkButton(mMainView, R.id.controller_button_l2, "L2Button", "L2", true, true);
+        linkButton(mMainView, R.id.controller_button_select, "SelectButton", "Select", true, true);
+        linkButton(mMainView, R.id.controller_button_start, "StartButton", "Start", true, true);
+        linkButton(mMainView, R.id.controller_button_triangle, "TriangleButton", "Triangle", true, true);
+        linkButton(mMainView, R.id.controller_button_circle, "CircleButton", "Circle", true, true);
+        linkButton(mMainView, R.id.controller_button_cross, "CrossButton", "Cross", true, true);
+        linkButton(mMainView, R.id.controller_button_square, "SquareButton", "Square", true, true);
+        linkButton(mMainView, R.id.controller_button_r1, "R1Button", "R1", true, true);
+        linkButton(mMainView, R.id.controller_button_r2, "R2Button", "R2", true, true);
 
         if (!linkAxis(mMainView, R.id.controller_axis_left, "LeftAxis", "Left", true))
             linkAxisToButtons(mMainView, R.id.controller_axis_left, "LeftAxis", "");
@@ -259,13 +262,14 @@ public class TouchscreenControllerView extends FrameLayout {
         requestLayout();
     }
 
-    private void linkButton(View view, int id, String configName, String buttonName, boolean defaultVisibility) {
+    private void linkButton(View view, int id, String configName, String buttonName, boolean defaultVisibility, boolean isGlidable) {
         TouchscreenControllerButtonView buttonView = (TouchscreenControllerButtonView) view.findViewById(id);
         if (buttonView == null)
             return;
 
         buttonView.setConfigName(configName);
         buttonView.setDefaultVisibility(defaultVisibility);
+        buttonView.setIsGlidable(isGlidable);
         mButtonViews.add(buttonView);
 
         int code = AndroidHostInterface.getControllerButtonCode(mControllerType, buttonName);
@@ -442,6 +446,8 @@ public class TouchscreenControllerView extends FrameLayout {
                 if (!AndroidHostInterface.hasInstanceAndEmulationThreadIsRunning())
                     return false;
 
+                mGlidePairs.clear();
+
                 for (TouchscreenControllerButtonView buttonView : mButtonViews) {
                     buttonView.setPressed(false);
                 }
@@ -455,7 +461,13 @@ public class TouchscreenControllerView extends FrameLayout {
 
             case MotionEvent.ACTION_DOWN:
             case MotionEvent.ACTION_POINTER_DOWN:
-            case MotionEvent.ACTION_POINTER_UP:
+            case MotionEvent.ACTION_POINTER_UP: {
+                int pointerID = event.getPointerId(event.getActionIndex());
+                if (mGlidePairs.containsKey(pointerID))
+                    mGlidePairs.remove(pointerID);
+
+                return true;
+            }
             case MotionEvent.ACTION_MOVE: {
                 if (!AndroidHostInterface.hasInstanceAndEmulationThreadIsRunning())
                     return false;
@@ -477,12 +489,17 @@ public class TouchscreenControllerView extends FrameLayout {
                         final int y = (int) event.getY(i);
                         if (rect.contains(x, y)) {
                             buttonView.setPressed(true);
+                            int pointerID = event.getPointerId(i);
+                            if (!mGlidePairs.containsKey(pointerID) && !mGlidePairs.containsValue(buttonView)) {
+                                if (buttonView.getIsGlidable())
+                                    mGlidePairs.put(pointerID, buttonView);
+                            }
                             pressed = true;
                             break;
                         }
                     }
 
-                    if (!pressed)
+                    if (!pressed  && !mGlidePairs.containsValue(buttonView))
                         buttonView.setPressed(pressed);
                 }
 
