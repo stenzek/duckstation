@@ -66,7 +66,7 @@
     <string name="settings_summary_auto_hide_touchscreen_controller">Hides the touchscreen controller when an external controller is detected.</string>
     <string name="settings_vibrate_on_press">Vibrate On Press</string>
     <string name="settings_summary_vibrate_on_press">Enables a short vibration when a touchscreen button is pressed. Requires \"Vibrate on Touch\" to be enabled on your device.</string>
-    <string name="settings_enable_vibration">Enable Vibration</string>
+    <string name="settings_enable_vibration">Device Vibration</string>
     <string name="settings_summary_enable_vibration">Forwards rumble from the game to the phone\'s vibration motor.</string>
     <string name="settings_memory_card_1_type">Memory Card 1 Type</string>
     <string name="settings_memory_card_2_type">Memory Card 2 Type</string>

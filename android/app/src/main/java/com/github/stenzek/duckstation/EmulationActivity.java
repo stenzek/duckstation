@@ -682,19 +682,20 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
             if (mTouchscreenController != null) {
                 activityLayout.removeView(mTouchscreenController);
                 mTouchscreenController = null;
-                mVibratorService = null;
             }
         } else {
             if (mTouchscreenController == null) {
                 mTouchscreenController = new TouchscreenControllerView(this);
-                if (vibration)
-                    mVibratorService = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-
                 activityLayout.addView(mTouchscreenController);
             }
 
             mTouchscreenController.init(0, controllerType, viewType, hapticFeedback);
         }
+
+        if (vibration)
+            mVibratorService = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+        else
+            mVibratorService = null;
     }
 
     private InputManager.InputDeviceListener mInputDeviceListener;
