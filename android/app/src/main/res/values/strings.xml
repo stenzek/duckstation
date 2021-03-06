@@ -229,4 +229,6 @@
     <string name="settings_summary_console_tty_output">Logs debug messages printed by games.</string>
     <string name="action_show_game_list">List View</string>
     <string name="action_show_game_grid">Grid View</string>
+    <string name="settings_touch_gliding">Touch Gliding</string>
+    <string name="settings_summary_touch_gliding">Allows you to press multiple controller face buttons by dragging your finger along the screen.</string>
 </resources>

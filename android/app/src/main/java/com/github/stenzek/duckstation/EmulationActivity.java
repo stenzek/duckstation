@@ -669,6 +669,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         final String controllerType = getStringSetting("Controller1/Type", "DigitalController");
         final String viewType = getStringSetting("Controller1/TouchscreenControllerView", "digital");
         final boolean autoHideTouchscreenController = getBooleanSetting("Controller1/AutoHideTouchscreenController", false);
+        final boolean touchGliding = getBooleanSetting("Controller1/TouchGliding", false);
         final boolean hapticFeedback = getBooleanSetting("Controller1/HapticFeedback", false);
         final boolean vibration = getBooleanSetting("Controller1/Vibration", false);
         final FrameLayout activityLayout = findViewById(R.id.frameLayout);
@@ -689,7 +690,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
                 activityLayout.addView(mTouchscreenController);
             }
 
-            mTouchscreenController.init(0, controllerType, viewType, hapticFeedback);
+            mTouchscreenController.init(0, controllerType, viewType, hapticFeedback, touchGliding);
         }
 
         if (vibration)

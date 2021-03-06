@@ -5,6 +5,7 @@ The following people have contributed to the project in some way, and are credit
 - Connor McLaughlin - @stenzek
 - @ggrtk
 - @CookiePLMonster
+- @PookaMustard
 
 ## Translators
 - Anderson Cardoso - Portuguese (Br)

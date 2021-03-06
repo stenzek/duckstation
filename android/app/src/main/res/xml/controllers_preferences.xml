@@ -74,6 +74,13 @@
         app:summary="@string/settings_summary_enable_vibration"
         app:iconSpaceReserved="false" />
 
+    <SwitchPreferenceCompat
+        app:key="Controller1/TouchGliding"
+        app:title="@string/settings_touch_gliding"
+        app:defaultValue="false"
+        app:summary="@string/settings_summary_touch_gliding"
+        app:iconSpaceReserved="false" />
+
     <ListPreference
         app:key="MemoryCards/Card1Type"
         app:title="@string/settings_memory_card_1_type"

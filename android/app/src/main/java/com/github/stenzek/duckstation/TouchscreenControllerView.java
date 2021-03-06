@@ -186,7 +186,7 @@ public class TouchscreenControllerView extends FrameLayout {
         requestLayout();
     }
 
-    public void init(int controllerIndex, String controllerType, String viewType, boolean hapticFeedback) {
+    public void init(int controllerIndex, String controllerType, String viewType, boolean hapticFeedback, boolean gliding) {
         mControllerIndex = controllerIndex;
         mControllerType = controllerType;
         mViewType = viewType;
@@ -236,16 +236,16 @@ public class TouchscreenControllerView extends FrameLayout {
         linkButton(mMainView, R.id.controller_button_right, "RightButton", "Right", true, false);
         linkButton(mMainView, R.id.controller_button_down, "DownButton", "Down", true, false);
         linkButton(mMainView, R.id.controller_button_left, "LeftButton", "Left", true, false);
-        linkButton(mMainView, R.id.controller_button_l1, "L1Button", "L1", true, true);
-        linkButton(mMainView, R.id.controller_button_l2, "L2Button", "L2", true, true);
-        linkButton(mMainView, R.id.controller_button_select, "SelectButton", "Select", true, true);
-        linkButton(mMainView, R.id.controller_button_start, "StartButton", "Start", true, true);
-        linkButton(mMainView, R.id.controller_button_triangle, "TriangleButton", "Triangle", true, true);
-        linkButton(mMainView, R.id.controller_button_circle, "CircleButton", "Circle", true, true);
-        linkButton(mMainView, R.id.controller_button_cross, "CrossButton", "Cross", true, true);
-        linkButton(mMainView, R.id.controller_button_square, "SquareButton", "Square", true, true);
-        linkButton(mMainView, R.id.controller_button_r1, "R1Button", "R1", true, true);
-        linkButton(mMainView, R.id.controller_button_r2, "R2Button", "R2", true, true);
+        linkButton(mMainView, R.id.controller_button_l1, "L1Button", "L1", true, gliding);
+        linkButton(mMainView, R.id.controller_button_l2, "L2Button", "L2", true, gliding);
+        linkButton(mMainView, R.id.controller_button_select, "SelectButton", "Select", true, gliding);
+        linkButton(mMainView, R.id.controller_button_start, "StartButton", "Start", true, gliding);
+        linkButton(mMainView, R.id.controller_button_triangle, "TriangleButton", "Triangle", true, gliding);
+        linkButton(mMainView, R.id.controller_button_circle, "CircleButton", "Circle", true, gliding);
+        linkButton(mMainView, R.id.controller_button_cross, "CrossButton", "Cross", true, gliding);
+        linkButton(mMainView, R.id.controller_button_square, "SquareButton", "Square", true, gliding);
+        linkButton(mMainView, R.id.controller_button_r1, "R1Button", "R1", true, gliding);
+        linkButton(mMainView, R.id.controller_button_r2, "R2Button", "R2", true, gliding);
 
         if (!linkAxis(mMainView, R.id.controller_axis_left, "LeftAxis", "Left", true))
             linkAxisToButtons(mMainView, R.id.controller_axis_left, "LeftAxis", "");
