@@ -440,6 +440,69 @@ public class TouchscreenControllerView extends FrameLayout {
         return false;
     }
 
+    private boolean updateTouchButtonsFromEvent(MotionEvent event) {
+        if (!AndroidHostInterface.hasInstanceAndEmulationThreadIsRunning())
+            return false;
+
+        Rect rect = new Rect();
+        final int pointerCount = event.getPointerCount();
+        final int liftedPointerIndex = (event.getActionMasked() == MotionEvent.ACTION_POINTER_UP) ? event.getActionIndex() : -1;
+        for (TouchscreenControllerButtonView buttonView : mButtonViews) {
+            if (buttonView.getVisibility() != VISIBLE)
+                continue;
+
+            buttonView.getHitRect(rect);
+            boolean pressed = false;
+            for (int i = 0; i < pointerCount; i++) {
+                if (i == liftedPointerIndex)
+                    continue;
+
+                final int x = (int) event.getX(i);
+                final int y = (int) event.getY(i);
+                if (rect.contains(x, y)) {
+                    buttonView.setPressed(true);
+                    int pointerID = event.getPointerId(i);
+                    if (!mGlidePairs.containsKey(pointerID) && !mGlidePairs.containsValue(buttonView)) {
+                        if (buttonView.getIsGlidable())
+                            mGlidePairs.put(pointerID, buttonView);
+                    }
+                    pressed = true;
+                    break;
+                }
+            }
+
+            if (!pressed  && !mGlidePairs.containsValue(buttonView))
+                buttonView.setPressed(pressed);
+        }
+
+        for (TouchscreenControllerAxisView axisView : mAxisViews) {
+            if (axisView.getVisibility() != VISIBLE)
+                continue;
+
+            axisView.getHitRect(rect);
+            boolean pressed = false;
+            for (int i = 0; i < pointerCount; i++) {
+                if (i == liftedPointerIndex)
+                    continue;
+
+                final int pointerId = event.getPointerId(i);
+                final int x = (int) event.getX(i);
+                final int y = (int) event.getY(i);
+
+                if ((rect.contains(x, y) && !axisView.isPressed()) ||
+                        (axisView.isPressed() && axisView.getPointerId() == pointerId)) {
+                    axisView.setPressed(pointerId, x, y);
+                    pressed = true;
+                    break;
+                }
+            }
+            if (!pressed)
+                axisView.setUnpressed();
+        }
+
+        return true;
+    }
+
     private boolean handleTouchEvent(MotionEvent event) {
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_UP: {
@@ -466,69 +529,10 @@ public class TouchscreenControllerView extends FrameLayout {
                 if (mGlidePairs.containsKey(pointerID))
                     mGlidePairs.remove(pointerID);
 
-                return true;
+                return updateTouchButtonsFromEvent(event);
             }
             case MotionEvent.ACTION_MOVE: {
-                if (!AndroidHostInterface.hasInstanceAndEmulationThreadIsRunning())
-                    return false;
-
-                Rect rect = new Rect();
-                final int pointerCount = event.getPointerCount();
-                final int liftedPointerIndex = (event.getActionMasked() == MotionEvent.ACTION_POINTER_UP) ? event.getActionIndex() : -1;
-                for (TouchscreenControllerButtonView buttonView : mButtonViews) {
-                    if (buttonView.getVisibility() != VISIBLE)
-                        continue;
-
-                    buttonView.getHitRect(rect);
-                    boolean pressed = false;
-                    for (int i = 0; i < pointerCount; i++) {
-                        if (i == liftedPointerIndex)
-                            continue;
-
-                        final int x = (int) event.getX(i);
-                        final int y = (int) event.getY(i);
-                        if (rect.contains(x, y)) {
-                            buttonView.setPressed(true);
-                            int pointerID = event.getPointerId(i);
-                            if (!mGlidePairs.containsKey(pointerID) && !mGlidePairs.containsValue(buttonView)) {
-                                if (buttonView.getIsGlidable())
-                                    mGlidePairs.put(pointerID, buttonView);
-                            }
-                            pressed = true;
-                            break;
-                        }
-                    }
-
-                    if (!pressed  && !mGlidePairs.containsValue(buttonView))
-                        buttonView.setPressed(pressed);
-                }
-
-                for (TouchscreenControllerAxisView axisView : mAxisViews) {
-                    if (axisView.getVisibility() != VISIBLE)
-                        continue;
-
-                    axisView.getHitRect(rect);
-                    boolean pressed = false;
-                    for (int i = 0; i < pointerCount; i++) {
-                        if (i == liftedPointerIndex)
-                            continue;
-
-                        final int pointerId = event.getPointerId(i);
-                        final int x = (int) event.getX(i);
-                        final int y = (int) event.getY(i);
-
-                        if ((rect.contains(x, y) && !axisView.isPressed()) ||
-                                (axisView.isPressed() && axisView.getPointerId() == pointerId)) {
-                            axisView.setPressed(pointerId, x, y);
-                            pressed = true;
-                            break;
-                        }
-                    }
-                    if (!pressed)
-                        axisView.setUnpressed();
-                }
-
-                return true;
+                return updateTouchButtonsFromEvent(event);
             }
         }
 
