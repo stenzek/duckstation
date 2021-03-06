@@ -69,6 +69,14 @@ struct CheatCode
     ExtConstantBitClear16 = 0x82,
     ExtConstantBitSet32 = 0x91,
     ExtConstantBitClear32 = 0x92,
+
+    ExtBitCompareButtons = 0xD7,
+    ExtSkipIfNotLess8 = 0xC3,
+    ExtSkipIfNotGreater8 = 0xC4,
+    ExtSkipIfNotLess16 = 0xC5,
+    ExtSkipIfNotGreater16 = 0xC6,
+
+    ExtTempVariable = 0x51,
   };
 
   union Instruction
