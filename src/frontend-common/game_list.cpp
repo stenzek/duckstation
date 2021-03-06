@@ -181,7 +181,7 @@ bool GameList::GetM3UListEntry(const char* path, GameListEntry* entry)
 
     if (entry->compatibility_rating == GameListCompatibilityRating::Unknown)
     {
-      std::string code = System::GetGameCodeForImage(entry_image.get());
+      std::string code = System::GetGameCodeForImage(entry_image.get(), true);
       const GameListCompatibilityEntry* compatibility_entry = GetCompatibilityEntryForCode(entry->code);
       if (compatibility_entry)
         entry->compatibility_rating = compatibility_entry->compatibility_rating;
@@ -206,7 +206,7 @@ bool GameList::GetGameListEntry(const std::string& path, GameListEntry* entry)
   if (!cdi)
     return false;
 
-  std::string code = System::GetGameCodeForImage(cdi.get());
+  std::string code = System::GetGameCodeForImage(cdi.get(), true);
   DiscRegion region = System::GetRegionFromSystemArea(cdi.get());
   if (region == DiscRegion::Other)
     region = System::GetRegionForCode(code);

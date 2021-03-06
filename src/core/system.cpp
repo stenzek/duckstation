@@ -32,6 +32,7 @@
 #include "spu.h"
 #include "texture_replacements.h"
 #include "timers.h"
+#include "xxhash.h"
 #include <cctype>
 #include <cinttypes>
 #include <cmath>
@@ -385,39 +386,57 @@ std::string_view GetTitleForPath(const char* path)
   return path_view.substr(0, path_view.find_last_of('.'));
 }
 
-std::string GetGameCodeForPath(const char* image_path)
+std::string GetGameCodeForPath(const char* image_path, bool fallback_to_hash)
 {
   std::unique_ptr<CDImage> cdi = CDImage::Open(image_path);
   if (!cdi)
     return {};
 
-  return GetGameCodeForImage(cdi.get());
+  return GetGameCodeForImage(cdi.get(), fallback_to_hash);
 }
 
-std::string GetGameCodeForImage(CDImage* cdi)
+std::string GetGameCodeForImage(CDImage* cdi, bool fallback_to_hash)
 {
   std::string code(GetExecutableNameForImage(cdi));
-  if (code.empty())
-    return {};
-
-  // SCES_123.45 -> SCES-12345
-  for (std::string::size_type pos = 0; pos < code.size();)
+  if (!code.empty())
   {
-    if (code[pos] == '.')
+    // SCES_123.45 -> SCES-12345
+    for (std::string::size_type pos = 0; pos < code.size();)
     {
-      code.erase(pos, 1);
-      continue;
+      if (code[pos] == '.')
+      {
+        code.erase(pos, 1);
+        continue;
+      }
+
+      if (code[pos] == '_')
+        code[pos] = '-';
+      else
+        code[pos] = static_cast<char>(std::toupper(code[pos]));
+
+      pos++;
     }
 
-    if (code[pos] == '_')
-      code[pos] = '-';
-    else
-      code[pos] = static_cast<char>(std::toupper(code[pos]));
-
-    pos++;
+    return code;
   }
 
-  return code;
+  if (!fallback_to_hash)
+    return {};
+
+  std::string exe_name;
+  std::vector<u8> exe_buffer;
+  if (!ReadExecutableFromImage(cdi, &exe_name, &exe_buffer))
+    return {};
+
+  XXH64_state_t* state = XXH64_createState();
+  XXH64_reset(state, 0x4242D00C);
+  XXH64_update(state, exe_name.c_str(), exe_name.size());
+  XXH64_update(state, exe_buffer.data(), exe_buffer.size());
+  const u64 hash = XXH64_digest(state);
+  XXH64_freeState(state);
+
+  Log_InfoPrintf("Hash for '%s' - %" PRIX64, exe_name.c_str(), hash);
+  return StringUtil::StdStringFromFormat("HASH-%" PRIX64, hash);
 }
 
 static std::string GetExecutableNameForImage(CDImage* cdi, ISOReader& iso, bool strip_subdirectories)
@@ -601,7 +620,7 @@ DiscRegion GetRegionForImage(CDImage* cdi)
   if (system_area_region != DiscRegion::Other)
     return system_area_region;
 
-  std::string code = GetGameCodeForImage(cdi);
+  std::string code = GetGameCodeForImage(cdi, false);
   if (code.empty())
     return DiscRegion::Other;
 

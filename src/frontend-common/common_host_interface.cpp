@@ -415,7 +415,7 @@ bool CommonHostInterface::ParseCommandLineParameters(int argc, char* argv[],
       else
       {
         // find the game id, and get its save state path
-        std::string game_code = System::GetGameCodeForPath(boot_filename.c_str());
+        std::string game_code = System::GetGameCodeForPath(boot_filename.c_str(), true);
         if (game_code.empty())
         {
           Log_WarningPrintf("Could not identify game code for '%s', cannot load save state %d.", boot_filename.c_str(),
@@ -2867,7 +2867,7 @@ void CommonHostInterface::GetGameInfo(const char* path, CDImage* image, std::str
   else
   {
     if (image)
-      *code = System::GetGameCodeForImage(image);
+      *code = System::GetGameCodeForImage(image, true);
 
     const GameListDatabaseEntry* db_entry = (!code->empty()) ? m_game_list->GetDatabaseEntryForCode(*code) : nullptr;
     if (db_entry)

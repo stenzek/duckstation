@@ -78,8 +78,8 @@ ConsoleRegion GetConsoleRegionForDiscRegion(DiscRegion region);
 std::string GetExecutableNameForImage(CDImage* cdi);
 bool ReadExecutableFromImage(CDImage* cdi, std::string* out_executable_name, std::vector<u8>* out_executable_data);
 
-std::string GetGameCodeForImage(CDImage* cdi);
-std::string GetGameCodeForPath(const char* image_path);
+std::string GetGameCodeForImage(CDImage* cdi, bool fallback_to_hash);
+std::string GetGameCodeForPath(const char* image_path, bool fallback_to_hash);
 DiscRegion GetRegionForCode(std::string_view code);
 DiscRegion GetRegionFromSystemArea(CDImage* cdi);
 DiscRegion GetRegionForImage(CDImage* cdi);
