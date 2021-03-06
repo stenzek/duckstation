@@ -50,10 +50,6 @@ public class MainActivity extends AppCompatActivity {
     private boolean mHasExternalStoragePermissions = false;
     private boolean mIsShowingGameGrid = false;
 
-    public MainActivity() {
-        getSupportFragmentManager().setFragmentFactory(createFragmentFactory());
-    }
-
     private static String getTitleString() {
         String scmVersion = AndroidHostInterface.getScmVersion();
         final int gitHashPos = scmVersion.indexOf("-g");
@@ -113,21 +109,6 @@ public class MainActivity extends AppCompatActivity {
         mIsShowingGameGrid = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("Main/GameGridView", false);
     }
 
-    private FragmentFactory createFragmentFactory() {
-        return new FragmentFactory() {
-            @NonNull
-            @Override
-            public Fragment instantiate(@NonNull ClassLoader classLoader, @NonNull String className) {
-                if (className == GameListFragment.class.getName())
-                    return new GameListFragment(MainActivity.this);
-                else if (className == GameGridFragment.class.getName())
-                    return new GameGridFragment(MainActivity.this);
-
-                return super.instantiate(classLoader, className);
-            }
-        };
-    }
-
     private void switchGameListView() {
         mIsShowingGameGrid = !mIsShowingGameGrid;
         PreferenceManager.getDefaultSharedPreferences(this)
@@ -179,6 +160,12 @@ public class MainActivity extends AppCompatActivity {
         mHasExternalStoragePermissions = checkForExternalStoragePermissions();
         if (mHasExternalStoragePermissions)
             completeStartup();
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.remove("android:support:fragments");
     }
 
     private void completeStartup() {
