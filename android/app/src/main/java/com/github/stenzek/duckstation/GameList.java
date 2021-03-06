@@ -19,12 +19,10 @@ public class GameList {
 
     private Activity mContext;
     private GameListEntry[] mEntries;
-    private ListViewAdapter mAdapter;
     private ArrayList<OnRefreshListener> mRefreshListeners = new ArrayList<>();
 
     public GameList(Activity context) {
         mContext = context;
-        mAdapter = new ListViewAdapter();
         mEntries = new GameListEntry[0];
     }
 
@@ -58,7 +56,6 @@ public class GameList {
                     e.printStackTrace();
                 }
                 mEntries = newEntries;
-                mAdapter.notifyDataSetChanged();
                 for (OnRefreshListener listener : mRefreshListeners)
                     listener.onGameListRefresh();
             });
@@ -71,42 +68,5 @@ public class GameList {
 
     public GameListEntry getEntry(int index) {
         return mEntries[index];
-    }
-
-    private class ListViewAdapter extends BaseAdapter {
-        @Override
-        public int getCount() {
-            return mEntries.length;
-        }
-
-        @Override
-        public Object getItem(int position) {
-            return mEntries[position];
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return position;
-        }
-
-        @Override
-        public int getViewTypeCount() {
-            return 1;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            if (convertView == null) {
-                convertView = LayoutInflater.from(mContext)
-                        .inflate(R.layout.game_list_view_entry, parent, false);
-            }
-
-            mEntries[position].fillView(convertView);
-            return convertView;
-        }
-    }
-
-    public BaseAdapter getListViewAdapter() {
-        return mAdapter;
     }
 }
