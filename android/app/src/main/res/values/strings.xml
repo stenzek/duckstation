@@ -227,4 +227,6 @@
     <string name="dialog_touchscreen_controller_buttons">Touchscreen Controller Buttons</string>
     <string name="dialog_touchscreen_controller_settings">Touchscreen Controller Settings</string>
     <string name="settings_summary_console_tty_output">Logs debug messages printed by games.</string>
+    <string name="action_show_game_list">List View</string>
+    <string name="action_show_game_grid">Grid View</string>
 </resources>

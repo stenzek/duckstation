@@ -8,18 +8,31 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 
 public class GameList {
+    public interface OnRefreshListener {
+        void onGameListRefresh();
+    }
+
     private Activity mContext;
     private GameListEntry[] mEntries;
     private ListViewAdapter mAdapter;
+    private ArrayList<OnRefreshListener> mRefreshListeners = new ArrayList<>();
 
     public GameList(Activity context) {
         mContext = context;
         mAdapter = new ListViewAdapter();
         mEntries = new GameListEntry[0];
+    }
+
+    public void addRefreshListener(OnRefreshListener listener) {
+        mRefreshListeners.add(listener);
+    }
+    public void removeRefreshListener(OnRefreshListener listener) {
+        mRefreshListeners.remove(listener);
     }
 
     private class GameListEntryComparator implements Comparator<GameListEntry> {
@@ -28,7 +41,6 @@ public class GameList {
             return left.getTitle().compareTo(right.getTitle());
         }
     }
-
 
     public void refresh(boolean invalidateCache, boolean invalidateDatabase, Activity parentActivity) {
         // Search and get entries from native code
@@ -47,6 +59,8 @@ public class GameList {
                 }
                 mEntries = newEntries;
                 mAdapter.notifyDataSetChanged();
+                for (OnRefreshListener listener : mRefreshListeners)
+                    listener.onGameListRefresh();
             });
         });
     }

@@ -12,30 +12,28 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.PopupMenu;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentFactory;
 import androidx.preference.PreferenceManager;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashSet;
 import java.util.Locale;
-import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_EXTERNAL_STORAGE_PERMISSIONS = 1;
@@ -47,7 +45,32 @@ public class MainActivity extends AppCompatActivity {
 
     private GameList mGameList;
     private ListView mGameListView;
+    private GameListFragment mGameListFragment;
+    private GameGridFragment mGameGridFragment;
     private boolean mHasExternalStoragePermissions = false;
+    private boolean mIsShowingGameGrid = false;
+
+    public MainActivity() {
+        getSupportFragmentManager().setFragmentFactory(createFragmentFactory());
+    }
+
+    private static String getTitleString() {
+        String scmVersion = AndroidHostInterface.getScmVersion();
+        final int gitHashPos = scmVersion.indexOf("-g");
+        if (gitHashPos > 0)
+            scmVersion = scmVersion.substring(0, gitHashPos);
+
+        return String.format("DuckStation %s", scmVersion);
+    }
+
+    public GameList getGameList() {
+        return mGameList;
+    }
+
+    public boolean shouldResumeStateByDefault() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        return prefs.getBoolean("Main/SaveStateOnExit", true);
+    }
 
     private void setLanguage() {
         String language = PreferenceManager.getDefaultSharedPreferences(this).getString("Main/Language", "none");
@@ -86,20 +109,42 @@ public class MainActivity extends AppCompatActivity {
     private void loadSettings() {
         setLanguage();
         setTheme();
+
+        mIsShowingGameGrid = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("Main/GameGridView", false);
     }
 
-    private boolean shouldResumeStateByDefault() {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        return prefs.getBoolean("Main/SaveStateOnExit", true);
+    private FragmentFactory createFragmentFactory() {
+        return new FragmentFactory() {
+            @NonNull
+            @Override
+            public Fragment instantiate(@NonNull ClassLoader classLoader, @NonNull String className) {
+                if (className == GameListFragment.class.getName())
+                    return new GameListFragment(MainActivity.this);
+                else if (className == GameGridFragment.class.getName())
+                    return new GameGridFragment(MainActivity.this);
+
+                return super.instantiate(classLoader, className);
+            }
+        };
     }
 
-    private static String getTitleString() {
-        String scmVersion = AndroidHostInterface.getScmVersion();
-        final int gitHashPos = scmVersion.indexOf("-g");
-        if (gitHashPos > 0)
-            scmVersion = scmVersion.substring(0, gitHashPos);
+    private void switchGameListView() {
+        mIsShowingGameGrid = !mIsShowingGameGrid;
+        PreferenceManager.getDefaultSharedPreferences(this)
+                .edit()
+                .putBoolean("Main/GameGridView", mIsShowingGameGrid)
+                .commit();
 
-        return String.format("DuckStation %s", scmVersion);
+        updateGameListFragment();
+        invalidateOptionsMenu();
+    }
+
+    private void updateGameListFragment() {
+        getSupportFragmentManager()
+                .beginTransaction()
+                .setReorderingAllowed(true).
+                replace(R.id.content_fragment, mIsShowingGameGrid ? mGameGridFragment : mGameListFragment)
+                .commit();
     }
 
     @Override
@@ -127,42 +172,9 @@ public class MainActivity extends AppCompatActivity {
 
         // Set up game list view.
         mGameList = new GameList(this);
-        mGameListView = findViewById(R.id.game_list_view);
-        mGameListView.setAdapter(mGameList.getListViewAdapter());
-        mGameListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                startEmulation(mGameList.getEntry(position).getPath(), shouldResumeStateByDefault());
-            }
-        });
-        mGameListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position,
-                                           long id) {
-                PopupMenu menu = new PopupMenu(MainActivity.this, view,
-                        Gravity.RIGHT | Gravity.TOP);
-                menu.getMenuInflater().inflate(R.menu.menu_game_list_entry, menu.getMenu());
-                menu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                    @Override
-                    public boolean onMenuItemClick(MenuItem item) {
-                        int id = item.getItemId();
-                        if (id == R.id.game_list_entry_menu_start_game) {
-                            startEmulation(mGameList.getEntry(position).getPath(), false);
-                            return true;
-                        } else if (id == R.id.game_list_entry_menu_resume_game) {
-                            startEmulation(mGameList.getEntry(position).getPath(), true);
-                            return true;
-                        } else if (id == R.id.game_list_entry_menu_properties) {
-                            openGameProperties(mGameList.getEntry(position).getPath());
-                            return true;
-                        }
-                        return false;
-                    }
-                });
-                menu.show();
-                return true;
-            }
-        });
+        mGameListFragment = new GameListFragment(this);
+        mGameGridFragment = new GameGridFragment(this);
+        updateGameListFragment();
 
         mHasExternalStoragePermissions = checkForExternalStoragePermissions();
         if (mHasExternalStoragePermissions)
@@ -194,6 +206,13 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
+
+        final MenuItem switchViewItem = menu.findItem(R.id.action_switch_view);
+        if (switchViewItem != null) {
+            switchViewItem.setTitle(mIsShowingGameGrid ? R.string.action_show_game_list : R.string.action_show_game_grid);
+            switchViewItem.setIcon(mIsShowingGameGrid ? R.drawable.ic_baseline_view_list_24 : R.drawable.ic_baseline_grid_view_24);
+        }
+
         return true;
     }
 
@@ -226,6 +245,9 @@ public class MainActivity extends AppCompatActivity {
         } else if (id == R.id.action_controller_mapping) {
             Intent intent = new Intent(this, ControllerMappingActivity.class);
             startActivity(intent);
+            return true;
+        } else if (id == R.id.action_switch_view) {
+            switchGameListView();
             return true;
         } else if (id == R.id.action_show_version) {
             showVersion();
@@ -325,14 +347,14 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private boolean openGameProperties(String path) {
+    public boolean openGameProperties(String path) {
         Intent intent = new Intent(this, GamePropertiesActivity.class);
         intent.putExtra("path", path);
         startActivity(intent);
         return true;
     }
 
-    private boolean startEmulation(String bootPath, boolean resumeState) {
+    public boolean startEmulation(String bootPath, boolean resumeState) {
         if (!doBIOSCheck())
             return false;
 

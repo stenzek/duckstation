@@ -14,6 +14,12 @@
         <item
             android:id="@+id/action_settings"
             android:icon="@drawable/ic_baseline_settings_24"
+            android:orderInCategory="101"
+            android:title="@string/action_settings"
+            app:showAsAction="ifRoom" />
+        <item
+            android:id="@+id/action_switch_view"
+            android:icon="@drawable/ic_baseline_settings_24"
             android:orderInCategory="100"
             android:title="@string/action_settings"
             app:showAsAction="ifRoom" />

@@ -96,6 +96,8 @@ public class GameListEntry {
         return mCompatibilityRating;
     }
 
+    public String getCoverPath() { return mCoverPath; }
+
     public static String getFileNameForPath(String path) {
         int lastSlash = path.lastIndexOf('/');
         if (lastSlash > 0 && lastSlash < path.length() - 1)
