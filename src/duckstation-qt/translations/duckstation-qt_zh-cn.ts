@@ -695,7 +695,7 @@ Login token generated on %2.</source>
     <message>
         <location filename="../../core/analog_controller.cpp" line="773"/>
         <source>Analog Axis Scale</source>
-        <translation>模拟轴灵敏度</translation>
+        <translation>模拟轴缩放</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="774"/>
@@ -835,7 +835,7 @@ Login token generated on %2.</source>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="342"/>
         <source>Analog Axis Scale</source>
-        <translation>模拟轴灵敏度</translation>
+        <translation>模拟轴缩放</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="343"/>
@@ -1010,10 +1010,16 @@ Login token generated on %2.</source>
         <source>Controls the volume of the audio played on the host when fast forwarding.</source>
         <translation>控制快进时主机播放的音频的音量。</translation>
     </message>
-    <message>
+    <message numerus="yes">
         <location filename="../audiosettingswidget.cpp" line="86"/>
+        <source>Maximum Latency: %n frames (%1ms)</source>
+        <translation>
+            <numerusform>最大延迟: %n帧 (%1ms)</numerusform>
+        </translation>
+    </message>
+    <message>
         <source>Maximum Latency: %1 frames (%2ms)</source>
-        <translation>最大延迟: %1帧 (%2ms)</translation>
+        <translation type="vanished">最大延迟: %1帧 (%2ms)</translation>
     </message>
     <message>
         <source>Volume</source>
@@ -1035,7 +1041,7 @@ Login token generated on %2.</source>
     <message>
         <location filename="../audiosettingswidget.cpp" line="62"/>
         <source>Prevents the emulator from producing any audible sound.</source>
-        <translation>防止模拟器产生任何可听见的声音。</translation>
+        <translation>阻止模拟器产生任何可听见的声音。</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="64"/>
@@ -1052,8 +1058,8 @@ Login token generated on %2.</source>
         <translation type="vanished">最大延迟: %1帧 (%2ms)</translation>
     </message>
     <message>
+        <location filename="../audiosettingswidget.cpp" line="92"/>
         <location filename="../audiosettingswidget.cpp" line="93"/>
-        <location filename="../audiosettingswidget.cpp" line="94"/>
         <source>%1%</source>
         <translation>%1%</translation>
     </message>
@@ -1845,17 +1851,17 @@ Login token generated on %2.</source>
 <context>
     <name>Cheats</name>
     <message>
-        <location filename="../../core/cheats.cpp" line="1648"/>
+        <location filename="../../core/cheats.cpp" line="1651"/>
         <source>Gameshark</source>
         <translation>金手指</translation>
     </message>
     <message>
-        <location filename="../../core/cheats.cpp" line="1673"/>
+        <location filename="../../core/cheats.cpp" line="1676"/>
         <source>Manual</source>
         <translation>手动操作</translation>
     </message>
     <message>
-        <location filename="../../core/cheats.cpp" line="1673"/>
+        <location filename="../../core/cheats.cpp" line="1676"/>
         <source>Automatic (Frame End)</source>
         <translation>自动操作 (帧尾)</translation>
     </message>
@@ -2302,43 +2308,43 @@ This warning will only be shown once.</source>
 <context>
     <name>ControllerSettingsWidget</name>
     <message>
-        <location filename="../controllersettingswidget.cpp" line="165"/>
+        <location filename="../controllersettingswidget.cpp" line="168"/>
         <source>Controller Type:</source>
         <translation>控制器类型:</translation>
     </message>
     <message>
-        <location filename="../controllersettingswidget.cpp" line="196"/>
+        <location filename="../controllersettingswidget.cpp" line="199"/>
         <source>Load Profile</source>
         <translation>载入配置</translation>
     </message>
     <message>
-        <location filename="../controllersettingswidget.cpp" line="200"/>
+        <location filename="../controllersettingswidget.cpp" line="203"/>
         <source>Save Profile</source>
         <translation>保存配置</translation>
     </message>
     <message>
-        <location filename="../controllersettingswidget.cpp" line="206"/>
+        <location filename="../controllersettingswidget.cpp" line="209"/>
         <source>Clear All</source>
         <translation>清除全部</translation>
     </message>
     <message>
-        <location filename="../controllersettingswidget.cpp" line="208"/>
+        <location filename="../controllersettingswidget.cpp" line="211"/>
         <source>Clear Bindings</source>
         <translation>清除绑定</translation>
     </message>
     <message>
-        <location filename="../controllersettingswidget.cpp" line="209"/>
+        <location filename="../controllersettingswidget.cpp" line="212"/>
         <source>Are you sure you want to clear all bound controls? This can not be reversed.</source>
         <translation>确实要清除所有绑定控件吗？这是无法撤消的。</translation>
     </message>
     <message>
-        <location filename="../controllersettingswidget.cpp" line="223"/>
-        <location filename="../controllersettingswidget.cpp" line="225"/>
+        <location filename="../controllersettingswidget.cpp" line="226"/>
+        <location filename="../controllersettingswidget.cpp" line="228"/>
         <source>Rebind All</source>
         <translation>全部重新绑定</translation>
     </message>
     <message>
-        <location filename="../controllersettingswidget.cpp" line="226"/>
+        <location filename="../controllersettingswidget.cpp" line="229"/>
         <source>Are you sure you want to rebind all controls? All currently-bound controls will be irreversibly cleared. Rebinding will begin after confirmation.</source>
         <translation>是否确实要重新绑定所有控件？所有当前绑定的控件都将被不可逆转地清除。确认后将开始重新绑定。</translation>
     </message>
@@ -2355,62 +2361,62 @@ This warning will only be shown once.</source>
         <translation>接口%1%2</translation>
     </message>
     <message>
-        <location filename="../controllersettingswidget.cpp" line="267"/>
+        <location filename="../controllersettingswidget.cpp" line="270"/>
         <source>Button Bindings:</source>
         <translation>按钮绑定:</translation>
     </message>
     <message>
-        <location filename="../controllersettingswidget.cpp" line="304"/>
+        <location filename="../controllersettingswidget.cpp" line="307"/>
         <source>Axis Bindings:</source>
         <translation>轴绑定:</translation>
     </message>
     <message>
-        <location filename="../controllersettingswidget.cpp" line="343"/>
+        <location filename="../controllersettingswidget.cpp" line="346"/>
         <source>Rumble</source>
         <translation>震动</translation>
     </message>
     <message>
-        <location filename="../controllersettingswidget.cpp" line="429"/>
-        <location filename="../controllersettingswidget.cpp" line="478"/>
-        <location filename="../controllersettingswidget.cpp" line="519"/>
+        <location filename="../controllersettingswidget.cpp" line="432"/>
+        <location filename="../controllersettingswidget.cpp" line="481"/>
+        <location filename="../controllersettingswidget.cpp" line="522"/>
         <source>Browse...</source>
         <translation>浏览...</translation>
     </message>
     <message>
-        <location filename="../controllersettingswidget.cpp" line="433"/>
+        <location filename="../controllersettingswidget.cpp" line="436"/>
         <source>Select File</source>
         <translation>选择文件</translation>
     </message>
     <message>
-        <location filename="../controllersettingswidget.cpp" line="481"/>
-        <location filename="../controllersettingswidget.cpp" line="521"/>
+        <location filename="../controllersettingswidget.cpp" line="484"/>
+        <location filename="../controllersettingswidget.cpp" line="524"/>
         <source>Select path to input profile ini</source>
         <translation>选择输入配置文件ini的路径</translation>
     </message>
     <message>
-        <location filename="../controllersettingswidget.cpp" line="505"/>
+        <location filename="../controllersettingswidget.cpp" line="508"/>
         <source>New...</source>
         <translation>新建...</translation>
     </message>
     <message>
-        <location filename="../controllersettingswidget.cpp" line="507"/>
-        <location filename="../controllersettingswidget.cpp" line="508"/>
+        <location filename="../controllersettingswidget.cpp" line="510"/>
+        <location filename="../controllersettingswidget.cpp" line="511"/>
         <source>Enter Input Profile Name</source>
         <translation>输入输入配置文件名</translation>
     </message>
     <message>
-        <location filename="../controllersettingswidget.cpp" line="511"/>
-        <location filename="../controllersettingswidget.cpp" line="525"/>
+        <location filename="../controllersettingswidget.cpp" line="514"/>
+        <location filename="../controllersettingswidget.cpp" line="528"/>
         <source>Error</source>
         <translation>错误</translation>
     </message>
     <message>
-        <location filename="../controllersettingswidget.cpp" line="512"/>
+        <location filename="../controllersettingswidget.cpp" line="515"/>
         <source>No name entered, input profile was not saved.</source>
         <translation>未输入名称，未保存输入配置文件。</translation>
     </message>
     <message>
-        <location filename="../controllersettingswidget.cpp" line="526"/>
+        <location filename="../controllersettingswidget.cpp" line="529"/>
         <source>No path selected, input profile was not saved.</source>
         <translation>未选择路径，未保存输入配置文件。</translation>
     </message>
@@ -2882,17 +2888,17 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../debuggerwindow.cpp" line="336"/>
         <source>Pattern found at 0x%1 (passed the end of memory).</source>
-        <translation>在0x%1处发现模式(通过了内存的末端)。</translation>
+        <translation>模式找到于0x%1 (通过了内存的末端)。</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.cpp" line="342"/>
         <source>Pattern found at 0x%1.</source>
-        <translation>在0x%1处发现模式。</translation>
+        <translation>模式找到于0x%1。</translation>
     </message>
     <message>
         <location filename="../qtutils.cpp" line="773"/>
         <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
-        <translation>无效的地址。它应该是十六进制(0x12345678或12345678)</translation>
+        <translation>无效的地址。它应该是十六进制 (0x12345678或12345678)</translation>
     </message>
 </context>
 <context>
@@ -3060,19 +3066,19 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="70"/>
-        <location filename="../displaysettingswidget.cpp" line="118"/>
+        <location filename="../displaysettingswidget.cpp" line="122"/>
         <source>Threaded Rendering</source>
         <translation>线程渲染</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="84"/>
-        <location filename="../displaysettingswidget.cpp" line="115"/>
+        <location filename="../displaysettingswidget.cpp" line="119"/>
         <source>Threaded Presentation</source>
         <translation>线程显示</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="91"/>
-        <location filename="../displaysettingswidget.cpp" line="111"/>
+        <location filename="../displaysettingswidget.cpp" line="115"/>
         <source>Optimal Frame Pacing</source>
         <translation>优化帧距</translation>
     </message>
@@ -3104,24 +3110,30 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="155"/>
-        <location filename="../displaysettingswidget.cpp" line="94"/>
+        <location filename="../displaysettingswidget.cpp" line="95"/>
         <source>Linear Upscaling</source>
         <translation>线性放大</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="141"/>
-        <location filename="../displaysettingswidget.cpp" line="101"/>
+        <location filename="../displaysettingswidget.cpp" line="102"/>
         <source>Integer Upscaling</source>
         <translation>整数放大</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="77"/>
-        <location filename="../displaysettingswidget.cpp" line="108"/>
+        <location filename="../displaysettingswidget.cpp" line="112"/>
         <source>VSync</source>
         <translation>垂直同步</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="167"/>
+        <location filename="../displaysettingswidget.ui" line="162"/>
+        <location filename="../displaysettingswidget.cpp" line="107"/>
+        <source>Internal Resolution Screenshots</source>
+        <translation>内部分辨率截图</translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.ui" line="174"/>
         <source>On-Screen Display</source>
         <translation>屏幕显示</translation>
     </message>
@@ -3130,67 +3142,67 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation type="vanished">显示消息</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="180"/>
-        <location filename="../displaysettingswidget.cpp" line="124"/>
+        <location filename="../displaysettingswidget.ui" line="187"/>
+        <location filename="../displaysettingswidget.cpp" line="128"/>
         <source>Show FPS</source>
         <translation>显示FPS</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="187"/>
-        <location filename="../displaysettingswidget.cpp" line="130"/>
+        <location filename="../displaysettingswidget.ui" line="194"/>
+        <location filename="../displaysettingswidget.cpp" line="134"/>
         <source>Show Emulation Speed</source>
         <translation>显示模拟速度</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="194"/>
-        <location filename="../displaysettingswidget.cpp" line="126"/>
+        <location filename="../displaysettingswidget.ui" line="201"/>
+        <location filename="../displaysettingswidget.cpp" line="130"/>
         <source>Show VPS</source>
         <translation>显示VPS</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="201"/>
-        <location filename="../displaysettingswidget.cpp" line="132"/>
+        <location filename="../displaysettingswidget.ui" line="208"/>
+        <location filename="../displaysettingswidget.cpp" line="136"/>
         <source>Show Resolution</source>
         <translation>显示分辨率</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="66"/>
+        <location filename="../displaysettingswidget.cpp" line="67"/>
         <source>Renderer</source>
         <translation>渲染器</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="68"/>
+        <location filename="../displaysettingswidget.cpp" line="69"/>
         <source>Chooses the backend to use for rendering the console/game visuals. &lt;br&gt;Depending on your system and hardware, Direct3D 11 and OpenGL hardware backends may be available. &lt;br&gt;The software renderer offers the best compatibility, but is the slowest and does not offer any enhancements.</source>
         <translation>选择用来渲染操纵台/游戏画面的后端。&lt;br&gt;Direct3D 11和OpenGL硬件后端是否可用将取决于您的系统和硬件。&lt;br&gt;软件渲染器提供了最好的兼容性，但速度最慢，并且不提供任何增强功能。</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="72"/>
+        <location filename="../displaysettingswidget.cpp" line="73"/>
         <source>Adapter</source>
         <translation>适配器</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="72"/>
-        <location filename="../displaysettingswidget.cpp" line="209"/>
+        <location filename="../displaysettingswidget.cpp" line="73"/>
+        <location filename="../displaysettingswidget.cpp" line="213"/>
         <source>(Default)</source>
         <translation>(默认)</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="73"/>
+        <location filename="../displaysettingswidget.cpp" line="74"/>
         <source>If your system contains multiple GPUs or adapters, you can select which GPU you wish to use for the hardware renderers. &lt;br&gt;This option is only supported in Direct3D and Vulkan. OpenGL will always use the default device.</source>
         <translation>如果系统包含多个GPU或适配器，则可以选择要将哪个GPU用于硬件渲染器。&lt;br&gt;此选项仅在Direct3D和Vulkan中受支持，OpenGL将始终使用默认设备。</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="76"/>
+        <location filename="../displaysettingswidget.cpp" line="77"/>
         <source>Fullscreen Mode</source>
         <translation>全屏模式</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="77"/>
+        <location filename="../displaysettingswidget.cpp" line="78"/>
         <source>Chooses the fullscreen resolution and frequency.</source>
         <translation>选择全屏分辨率和频率。</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="79"/>
+        <location filename="../displaysettingswidget.cpp" line="80"/>
         <source>Aspect Ratio</source>
         <translation>高宽比</translation>
     </message>
@@ -3199,12 +3211,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation type="vanished">更改用于在屏幕上显示主机输出的纵横比。默认值是4:3，与那个时代的典型电视相匹配。</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="81"/>
+        <location filename="../displaysettingswidget.cpp" line="82"/>
         <source>Changes the aspect ratio used to display the console&apos;s output to the screen. The default is Auto (Game Native) which automatically adjusts the aspect ratio to match how a game would be shown on a typical TV of the era.</source>
         <translation>更改用于在屏幕上显示操纵台输出的纵横比。默认是自动 (游戏原设)，它将自动调整显示纵横比，使呈现的画面匹配那个年代的典型电视机。</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="84"/>
+        <location filename="../displaysettingswidget.cpp" line="85"/>
         <source>Crop Mode</source>
         <translation>裁剪模式</translation>
     </message>
@@ -3213,53 +3225,54 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation type="vanished">仅限过扫描区域</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="86"/>
+        <location filename="../displaysettingswidget.cpp" line="87"/>
         <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide. &lt;br&gt;Some games display content in the overscan area, or use it for screen effects. &lt;br&gt;May not display correctly with the &quot;All Borders&quot; setting. &quot;Only Overscan&quot; offers a good compromise between stability and hiding black borders.</source>
         <translation>确定用户电视机上通常不可见的区域有多少要裁剪/隐藏。&lt;br&gt;有些游戏在“过扫描”区域显示内容，或将其用于屏幕效果。&lt;br&gt;在“所有边框”设置下可能无法正确显示。只有过度扫描才能在稳定和隐藏黑边界之间提供一个很好的折衷方案。</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="91"/>
+        <location filename="../displaysettingswidget.cpp" line="92"/>
         <source>Downsampling</source>
         <translation>缩减采样</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="91"/>
+        <location filename="../displaysettingswidget.cpp" line="92"/>
         <source>Disabled</source>
         <translation>禁用</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="92"/>
+        <location filename="../displaysettingswidget.cpp" line="93"/>
         <source>Downsamples the rendered image prior to displaying it. Can improve overall image quality in mixed 2D/3D games, but should be disabled for pure 3D games. Only applies to the hardware renderers.</source>
         <translation>在显示之前先对渲染的图像进行缩减采样。可以提高2D/3D混合游戏的整体图像质量，但对于纯3D游戏应该禁用。仅适用于硬件渲染器。</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="94"/>
-        <location filename="../displaysettingswidget.cpp" line="108"/>
-        <location filename="../displaysettingswidget.cpp" line="115"/>
-        <location filename="../displaysettingswidget.cpp" line="118"/>
-        <location filename="../displaysettingswidget.cpp" line="121"/>
+        <location filename="../displaysettingswidget.cpp" line="95"/>
+        <location filename="../displaysettingswidget.cpp" line="112"/>
+        <location filename="../displaysettingswidget.cpp" line="119"/>
+        <location filename="../displaysettingswidget.cpp" line="122"/>
+        <location filename="../displaysettingswidget.cpp" line="125"/>
         <source>Checked</source>
         <translation>勾选</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="95"/>
+        <location filename="../displaysettingswidget.cpp" line="96"/>
         <source>Uses bilinear texture filtering when displaying the console&apos;s framebuffer to the screen. &lt;br&gt;Disabling filtering will producer a sharper, blockier/pixelated image. Enabling will smooth out the image. &lt;br&gt;The option will be less noticable the higher the resolution scale.</source>
-        <translation>在将操纵台的帧缓冲显示到屏幕时使用双线性纹理过滤。&lt;br&gt;禁用过滤将生成更锐利、更块状/像素化的图像。启用将使图像平滑。&lt;br&gt;分辨率越高越不明显。</translation>
+        <translation>在将操纵台的帧缓冲显示到屏幕时使用双线性纹理过滤。&lt;br&gt;禁用过滤将生成更锐利、更块状/像素化的图像。启用将使图像平滑。&lt;br&gt;分辨率缩放越高越不明显。</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="101"/>
+        <location filename="../displaysettingswidget.cpp" line="102"/>
         <location filename="../displaysettingswidget.cpp" line="105"/>
-        <location filename="../displaysettingswidget.cpp" line="111"/>
-        <location filename="../displaysettingswidget.cpp" line="124"/>
-        <location filename="../displaysettingswidget.cpp" line="126"/>
+        <location filename="../displaysettingswidget.cpp" line="107"/>
+        <location filename="../displaysettingswidget.cpp" line="115"/>
+        <location filename="../displaysettingswidget.cpp" line="128"/>
         <location filename="../displaysettingswidget.cpp" line="130"/>
-        <location filename="../displaysettingswidget.cpp" line="132"/>
-        <location filename="../displaysettingswidget.cpp" line="140"/>
+        <location filename="../displaysettingswidget.cpp" line="134"/>
+        <location filename="../displaysettingswidget.cpp" line="136"/>
+        <location filename="../displaysettingswidget.cpp" line="144"/>
         <source>Unchecked</source>
         <translation>不勾选</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="102"/>
+        <location filename="../displaysettingswidget.cpp" line="103"/>
         <source>Adds padding to the display area to ensure that the ratio between pixels on the host to pixels in the console is an integer number. &lt;br&gt;May result in a sharper image in some 2D games.</source>
         <translation>向显示区域添加填充，以确保主机上的像素与操纵台中的像素之间的比率是一个整数。&lt;br&gt;可以在一些2D游戏中产生更清晰的图像。</translation>
     </message>
@@ -3269,43 +3282,48 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>以活动显示区域来填充窗口，而不管纵横比如何。</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="109"/>
+        <location filename="../displaysettingswidget.cpp" line="108"/>
+        <source>Saves screenshots at internal render resolution and without postprocessing. If this option is disabled, the screenshots will be taken at the window&apos;s resolution. Internal resolution screenshots can be very large at high rendering scales.</source>
+        <translation>保存截图使用不带后处理的内部渲染分辨率。如果禁用此选项，屏幕截图将按照窗口的分辨率进行截取。在高渲染缩放下，内置分辨率截图会非常大。</translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.cpp" line="113"/>
         <source>Enable this option to match DuckStation&apos;s refresh rate with your current monitor or screen. VSync is automatically disabled when it is not possible (e.g. running at non-100% speed).</source>
         <translation>启用此选项可使DuckStation的刷新率与当前监视器或屏幕相匹配。当无法匹配时，垂直同步将自动禁用 (例如以非100%速度运行)。</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="112"/>
+        <location filename="../displaysettingswidget.cpp" line="116"/>
         <source>Enable this option will ensure every frame the console renders is displayed to the screen, for optimal frame pacing. If you are having difficulties maintaining full speed, or are getting audio glitches, try disabling this option.</source>
         <translation>启用此选项将确保操纵台渲染的每一帧都显示在屏幕上，以使帧之间获得最理想的间距。如果您难以保持全速运行，或者出现音频故障，尝试禁用这个选项。</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="116"/>
+        <location filename="../displaysettingswidget.cpp" line="120"/>
         <source>Presents frames on a background thread when fast forwarding or vsync is disabled. This can measurably improve performance in the Vulkan renderer.</source>
         <translation>当快进或垂直同步被禁用时，在后台线程上显示帧。这可以显著提高Vulkan渲染器的性能。</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="119"/>
+        <location filename="../displaysettingswidget.cpp" line="123"/>
         <source>Uses a second thread for drawing graphics. Currently only available for the software renderer, but can provide a significant speed improvement, and is safe to use.</source>
         <translation>使用第二个线程绘制图形。目前仅限软件渲染器可用，但可以在速度上提供显著的改进，并且安全使用。</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="173"/>
-        <location filename="../displaysettingswidget.cpp" line="121"/>
+        <location filename="../displaysettingswidget.ui" line="180"/>
+        <location filename="../displaysettingswidget.cpp" line="125"/>
         <source>Show OSD Messages</source>
         <translation>显示屏幕消息</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="122"/>
+        <location filename="../displaysettingswidget.cpp" line="126"/>
         <source>Shows on-screen-display messages when events occur such as save states being created/loaded, screenshots being taken, etc.</source>
         <translation>在发生事件，如正在创建/读取存档、正在抓取屏幕截图等…情况时，在屏幕上显示事件消息。</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="125"/>
+        <location filename="../displaysettingswidget.cpp" line="129"/>
         <source>Shows the internal frame rate of the game in the top-right corner of the display.</source>
         <translation>在显示屏的右上角显示游戏的内部帧速率。</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="127"/>
+        <location filename="../displaysettingswidget.cpp" line="131"/>
         <source>Shows the number of frames (or v-syncs) displayed per second by the system in the top-right corner of the display.</source>
         <translation>在显示屏的右上角显示系统每秒显示的帧数 (或垂直同步)。</translation>
     </message>
@@ -3314,29 +3332,29 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation type="vanished">显示速度</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="131"/>
+        <location filename="../displaysettingswidget.cpp" line="135"/>
         <source>Shows the current emulation speed of the system in the top-right corner of the display as a percentage.</source>
         <translation>在显示屏的右上角以百分比显示系统的当前模拟速度。</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="133"/>
+        <location filename="../displaysettingswidget.cpp" line="137"/>
         <source>Shows the resolution of the game in the top-right corner of the display.</source>
         <translation>在显示器的右上角显示游戏的分辨率。</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="137"/>
-        <location filename="../displaysettingswidget.cpp" line="140"/>
+        <location filename="../displaysettingswidget.cpp" line="141"/>
+        <location filename="../displaysettingswidget.cpp" line="144"/>
         <source>Use Blit Swap Chain</source>
         <translation>使用位块传输交换链</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="141"/>
+        <location filename="../displaysettingswidget.cpp" line="145"/>
         <source>Uses a blit presentation model instead of flipping when using the Direct3D 11 renderer. This usually results in slower performance, but may be required for some streaming applications, or to uncap framerates on some systems.</source>
         <translation>当Direct3D 11渲染器运行时使用一个位块展示模型进行替代翻转。这通常会导致性能下降，但可能需要一些流应用程序，或者在某些系统上打开帧率上限。</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="76"/>
-        <location filename="../displaysettingswidget.cpp" line="229"/>
+        <location filename="../displaysettingswidget.cpp" line="77"/>
+        <location filename="../displaysettingswidget.cpp" line="233"/>
         <source>Borderless Fullscreen</source>
         <translation>无边界全屏</translation>
     </message>
@@ -3549,13 +3567,19 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <source>Simulates the system ahead of time and rolls back/replays to reduce input lag. Very high system requirements.</source>
         <translation>提前模拟系统并回滚/回放以减少输入延迟。非常高的系统要求。</translation>
     </message>
-    <message>
+    <message numerus="yes">
         <location filename="../emulationsettingswidget.cpp" line="124"/>
-        <source>Rewind for %1 frames, lasting %2 seconds will require up to %3MB of RAM and %4MB of VRAM.</source>
-        <translation>回退%1帧，持续%2秒将需要相当于%3MB内存和%4MB显存。</translation>
+        <source>Rewind for %n frame(s), lasting %1 second(s) will require up to %2MB of RAM and %3MB of VRAM.</source>
+        <translation>
+            <numerusform>回退%n帧，持续%1秒将需要相当于%2MB内存和%3MB显存。</numerusform>
+        </translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="136"/>
+        <source>Rewind for %1 frames, lasting %2 seconds will require up to %3MB of RAM and %4MB of VRAM.</source>
+        <translation type="vanished">回退%1帧，持续%2秒将需要相当于%3MB内存和%4MB显存。</translation>
+    </message>
+    <message>
+        <location filename="../emulationsettingswidget.cpp" line="135"/>
         <source>Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.</source>
         <translation>回退被禁用，因为启用了预运行。预运行会显著增加系统负荷。</translation>
     </message>
@@ -3564,7 +3588,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation type="vanished">回退被禁用，因为启用了预运行。</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="142"/>
+        <location filename="../emulationsettingswidget.cpp" line="141"/>
         <source>Rewind is not enabled. Please note that enabling rewind may significantly increase system requirements.</source>
         <translation>回退无法启用，请注意启用回退可能会显著增加系统需求。</translation>
     </message>
@@ -3748,7 +3772,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="64"/>
         <source>Uses multisample antialiasing for rendering 3D objects. Can smooth out jagged edges on polygons at a lower cost to performance compared to increasing the resolution scale, but may be more likely to cause rendering errors in some games. Only applies to the hardware backends.</source>
-        <translation>与增加分辨率相比，渲染3D对象使用多重采样反锯齿，能够以更低的性能代价来平滑多边形上的锯齿状边缘。但在一些游戏中可能更容易导致渲染错误。只适用于硬件后端。</translation>
+        <translation>与增加分辨率缩放相比，渲染3D对象使用多重采样反锯齿，能够以更低的性能代价来平滑多边形上的锯齿状边缘。但在一些游戏中可能更容易导致渲染错误。只适用于硬件后端。</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="79"/>
@@ -3773,7 +3797,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="93"/>
         <source>Smooths out the blockyness of magnified textures on 3D object by using filtering. &lt;br&gt;Will have a greater effect on higher resolution scales. Only applies to the hardware renderers.</source>
-        <translation>使用滤镜来平滑因放大3D对象的纹理所导致的块状。&lt;br&gt;在较高的分辨率下将有更好的效果。只适用于硬件渲染器。</translation>
+        <translation>使用滤镜来平滑因放大3D对象的纹理所导致的块状。&lt;br&gt;在较高的分辨率缩放下将有更好的效果。只适用于硬件渲染器。</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="96"/>
@@ -5278,12 +5302,12 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1967"/>
         <source>Increase Resolution Scale</source>
-        <translation>提高分辨率比例</translation>
+        <translation>提高分辨率缩放</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1973"/>
         <source>Decrease Resolution Scale</source>
-        <translation>降低分辨率比例</translation>
+        <translation>降低分辨率缩放</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1979"/>
@@ -5624,9 +5648,15 @@ This will download approximately 4 megabytes over your current internet connecti
 <context>
     <name>InputBindingWidget</name>
     <message>
-        <location filename="../inputbindingwidgets.cpp" line="39"/>
         <source>%1 bindings</source>
-        <translation>%1绑定</translation>
+        <translation type="vanished">%1绑定</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../inputbindingwidgets.cpp" line="39"/>
+        <source>%n bindings</source>
+        <translation>
+            <numerusform>%n绑定</numerusform>
+        </translation>
     </message>
     <message>
         <location filename="../inputbindingwidgets.cpp" line="196"/>
@@ -6326,7 +6356,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../mainwindow.cpp" line="839"/>
         <source>%1x Scale</source>
-        <translation>%1x</translation>
+        <translation>%1x缩放</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1097"/>
@@ -6435,9 +6465,8 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>记忆卡:</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="95"/>
         <source>Browse...</source>
-        <translation>浏览...</translation>
+        <translation type="vanished">浏览...</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="11"/>
@@ -6457,15 +6486,12 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>打开...</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.ui" line="104"/>
-        <location filename="../memorycardeditordialog.ui" line="145"/>
         <source>0 blocks used</source>
-        <translation>已使用0格</translation>
+        <translation type="vanished">已使用0格</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="229"/>
         <source>%1 blocks free%2</source>
-        <translation>剩余%1格%2</translation>
+        <translation type="vanished">剩余%1格%2</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.ui" line="114"/>
@@ -6506,27 +6532,26 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>复制&gt;&gt;</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="118"/>
-        <location filename="../memorycardeditordialog.cpp" line="243"/>
-        <location filename="../memorycardeditordialog.cpp" line="269"/>
+        <location filename="../memorycardeditordialog.cpp" line="232"/>
+        <location filename="../memorycardeditordialog.cpp" line="258"/>
         <source>Select Memory Card</source>
         <translation>选择记忆卡</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="188"/>
-        <location filename="../memorycardeditordialog.cpp" line="275"/>
+        <location filename="../memorycardeditordialog.cpp" line="177"/>
+        <location filename="../memorycardeditordialog.cpp" line="264"/>
         <source>Failed to load memory card image.</source>
         <translation>无法载入记忆卡文件。</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="316"/>
+        <location filename="../memorycardeditordialog.cpp" line="305"/>
         <source>Memory card &apos;%1&apos; is not saved, do you want to save before closing?</source>
         <translation>记忆卡&apos;%1&apos;未保存，在关闭前要保存吗?</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="315"/>
+        <location filename="../memorycardeditordialog.cpp" line="304"/>
         <source>Save memory card?</source>
-        <translation>保存记忆卡?</translation>
+        <translation>保存记忆卡？</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="13"/>
@@ -6534,49 +6559,89 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>所有可导入的记忆卡类型 (*.mcd *.mcr *.mc *.gme)</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="188"/>
-        <location filename="../memorycardeditordialog.cpp" line="275"/>
-        <location filename="../memorycardeditordialog.cpp" line="300"/>
-        <location filename="../memorycardeditordialog.cpp" line="336"/>
-        <location filename="../memorycardeditordialog.cpp" line="346"/>
-        <location filename="../memorycardeditordialog.cpp" line="352"/>
-        <location filename="../memorycardeditordialog.cpp" line="371"/>
-        <location filename="../memorycardeditordialog.cpp" line="394"/>
+        <location filename="../memorycardeditordialog.cpp" line="14"/>
+        <source>Single Save Files (*.mcs)</source>
+        <translation>单个保存文件 (*.mcs)</translation>
+    </message>
+    <message>
+        <location filename="../memorycardeditordialog.cpp" line="177"/>
+        <location filename="../memorycardeditordialog.cpp" line="264"/>
+        <location filename="../memorycardeditordialog.cpp" line="289"/>
+        <location filename="../memorycardeditordialog.cpp" line="328"/>
+        <location filename="../memorycardeditordialog.cpp" line="338"/>
+        <location filename="../memorycardeditordialog.cpp" line="348"/>
+        <location filename="../memorycardeditordialog.cpp" line="354"/>
+        <location filename="../memorycardeditordialog.cpp" line="373"/>
+        <location filename="../memorycardeditordialog.cpp" line="399"/>
+        <location filename="../memorycardeditordialog.cpp" line="417"/>
+        <location filename="../memorycardeditordialog.cpp" line="440"/>
         <source>Error</source>
         <translation>错误</translation>
     </message>
+    <message numerus="yes">
+        <location filename="../memorycardeditordialog.cpp" line="218"/>
+        <source>%n block(s) free%1</source>
+        <translation>
+            <numerusform>%n格 空余%1</numerusform>
+        </translation>
+    </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="301"/>
+        <location filename="../memorycardeditordialog.cpp" line="290"/>
         <source>Failed to write card to &apos;%1&apos;</source>
         <translation>无法写入记忆卡到&apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="346"/>
+        <location filename="../memorycardeditordialog.cpp" line="329"/>
+        <source>Destination memory card already contains a save file with the same name (%1) as the one you are attempting to copy. Please delete this file from the destination memory card before copying.</source>
+        <translation>目标记忆卡已包含一个保存文件 (%1) 与您正在尝试复制的文件同名。复制前请先在目标记忆卡中删除该文件。</translation>
+    </message>
+    <message>
+        <location filename="../memorycardeditordialog.cpp" line="348"/>
         <source>Failed to read file %1</source>
         <translation>无法读取文件%1</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="352"/>
+        <location filename="../memorycardeditordialog.cpp" line="354"/>
         <source>Failed to write file %1</source>
         <translation>无法将文件写入到&apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="371"/>
+        <location filename="../memorycardeditordialog.cpp" line="373"/>
         <source>Failed to delete file %1</source>
         <translation>无法删除文件%1</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="387"/>
+        <source>Select Single Savefile</source>
+        <translation>选择单个保存文件</translation>
+    </message>
+    <message>
+        <location filename="../memorycardeditordialog.cpp" line="400"/>
+        <source>Failed to export save file %1. Check the log for more details.</source>
+        <translation>无法导出保存文件%1。查看日志获取更多细节。</translation>
+    </message>
+    <message>
+        <location filename="../memorycardeditordialog.cpp" line="410"/>
         <source>Select Import File</source>
         <translation>选择导入文件</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="394"/>
+        <location filename="../memorycardeditordialog.cpp" line="417"/>
         <source>Failed to import memory card. The log may contain more information.</source>
-        <translation>无法导入记忆卡。该日志可能包含更多信息。</translation>
+        <translation>无法导入记忆卡。日志可能包含更多信息。</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="337"/>
+        <location filename="../memorycardeditordialog.cpp" line="433"/>
+        <source>Select Import Save File</source>
+        <translation>选择导入保存文件</translation>
+    </message>
+    <message>
+        <location filename="../memorycardeditordialog.cpp" line="441"/>
+        <source>Failed to import save. Check if there is enough room on the memory card or if an existing save with the same name already exists.</source>
+        <translation>无法导入保存。检查记忆卡上是否有足够的空间，或者是否已经存在同名的保存。</translation>
+    </message>
+    <message>
+        <location filename="../memorycardeditordialog.cpp" line="339"/>
         <source>Insufficient blocks, this file needs %1 but only %2 are available.</source>
         <translation>空间不足，此文件需要%1格，但只有%2格可用。</translation>
     </message>
@@ -6741,7 +6806,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../core/namco_guncon.cpp" line="259"/>
         <source>X Scale</source>
-        <translation>X坐标</translation>
+        <translation>缩放X坐标</translation>
     </message>
     <message>
         <location filename="../../core/namco_guncon.cpp" line="260"/>
@@ -6914,8 +6979,8 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="941"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2733"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3191"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2735"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3197"/>
         <source>Failed to load post processing shader chain.</source>
         <translation>无法加载后处理着色器链。</translation>
     </message>
@@ -6980,82 +7045,82 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>从&apos;%s&apos;读取输入配置</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2916"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2918"/>
         <source>Started dumping audio to &apos;%s&apos;.</source>
         <translation>开始转储音频到&apos;%s&apos;。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2921"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2923"/>
         <source>Failed to start dumping audio to &apos;%s&apos;.</source>
         <translation>无法开始转储音频到&apos;%s&apos;。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2931"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2933"/>
         <source>Stopped dumping audio.</source>
         <translation>停止转储音频。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2961"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2963"/>
         <source>Screenshot file &apos;%s&apos; already exists.</source>
         <translation>截图文件&apos;%s&apos;已经存在。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2969"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2975"/>
         <source>Failed to save screenshot to &apos;%s&apos;</source>
         <translation>无法保存截图到&apos;%s&apos;</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2973"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2979"/>
         <source>Screenshot saved to &apos;%s&apos;.</source>
         <translation>截图已保存到&apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3001"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3007"/>
         <source>Input profile &apos;%s&apos; cannot be found.</source>
         <translation>无法找到输入配置文件&apos;%s&apos;。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3008"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3014"/>
         <source>Using input profile &apos;%s&apos;.</source>
         <translation>使用输入配置&apos;%s&apos;。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3034"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3040"/>
         <source>Failed to load cheats from &apos;%s&apos;.</source>
         <translation>无法从&apos;%s&apos;加载金手指。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3038"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3044"/>
         <source>Loaded %u cheats from list. %u cheats are enabled.</source>
         <translation>从列表中加载%u金手指。%u金手指已启用。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3065"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3071"/>
         <source>Loaded %u cheats from database.</source>
         <translation>从数据库中加载%u金手指。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3095"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3101"/>
         <source>Saved %u cheats to &apos;%s&apos;.</source>
         <translation>保存%u金手指到&apos;%s&apos;。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3111"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3117"/>
         <source>Deleted cheat list &apos;%s&apos;.</source>
         <translation>删除金手指列表&apos;%s。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3151"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3157"/>
         <source>Cheat &apos;%s&apos; enabled.</source>
         <translation>金手指&apos;%s&apos;已启用。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3155"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3161"/>
         <source>Cheat &apos;%s&apos; disabled.</source>
         <translation>金手指&apos;%s&apos;已禁用。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3081"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3087"/>
         <source>Failed to save cheat list to &apos;%s&apos;</source>
         <translation>无法保存金手指列表到&apos;%s&apos;</translation>
     </message>
@@ -7110,32 +7175,32 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>停止回退。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3171"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3177"/>
         <source>Applied cheat &apos;%s&apos;.</source>
         <translation>应用金手指&apos;%s&apos;。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3175"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3181"/>
         <source>Cheat &apos;%s&apos; is already enabled.</source>
         <translation>金手指&apos;%s&apos;已启用。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3188"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3194"/>
         <source>Post-processing is now enabled.</source>
         <translation>后处理现在已启用。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3195"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3201"/>
         <source>Post-processing is now disabled.</source>
         <translation>后处理现在已禁用。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3206"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3212"/>
         <source>Failed to load post-processing shader chain.</source>
         <translation>无法加载后处理着色器链。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3208"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3214"/>
         <source>Post-processing shaders reloaded.</source>
         <translation>重新加载后处理着色器。</translation>
     </message>
@@ -7260,22 +7325,27 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>CPU速率设置为%u%% (%u / %u)。这可能导致不稳定。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1092"/>
-        <source>WARNING: CPU overclock (%u%%) was different in save state (%u%%).</source>
-        <translation>警告: CPU速率 (%u%%) 不同于存档 (%u%%).</translation>
+        <location filename="../../core/system.cpp" line="1017"/>
+        <source>Failed to initialize %s renderer, falling back to software renderer.</source>
+        <translation>无法初始化%s渲染器，退回到软件渲染器。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1192"/>
+        <location filename="../../core/system.cpp" line="1098"/>
+        <source>WARNING: CPU overclock (%u%%) was different in save state (%u%%).</source>
+        <translation>警告: CPU速率 (%u%%) 不同于存档 (%u%%)。</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="1198"/>
         <source>Failed to open CD image from save state: &apos;%s&apos;. Using existing image &apos;%s&apos;, this may result in instability.</source>
         <translation>无法从存档&apos;%s&apos;打开CD映像。使用现有镜像&apos;%s&apos;，这可能会导致不稳定。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1939"/>
+        <location filename="../../core/system.cpp" line="1945"/>
         <source>Failed to open disc image &apos;%s&apos;.</source>
         <translation>无法打开光盘镜像&apos;%s&apos;。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1948"/>
+        <location filename="../../core/system.cpp" line="1954"/>
         <source>Inserted disc &apos;%s&apos; (%s).</source>
         <translation>已插入光盘&apos;%s&apos; (%s)。</translation>
     </message>
@@ -7306,7 +7376,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../core/gpu_hw.cpp" line="146"/>
         <source>Resolution scale set to %ux (display %ux%u, VRAM %ux%u)</source>
-        <translation>分辨率设置为%ux (显示%ux%u，显存%ux%u)</translation>
+        <translation>分辨率缩放设置为%ux (显示%ux%u，显存%ux%u)</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="157"/>
@@ -7344,7 +7414,7 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>无法获取独占式全屏。</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="464"/>
+        <location filename="../qthostinterface.cpp" line="469"/>
         <source>Lost exclusive fullscreen.</source>
         <translation>丢失独占式全屏。</translation>
     </message>
@@ -7448,7 +7518,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../postprocessingchainconfigwidget.cpp" line="127"/>
         <source>Failed to add shader. The log may contain more information.</source>
-        <translation>无法添加着色器，日志中可能包含更多信息。</translation>
+        <translation>无法添加着色器，日志可能包含更多信息。</translation>
     </message>
     <message>
         <location filename="../postprocessingchainconfigwidget.cpp" line="159"/>
@@ -7560,7 +7630,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../main.cpp" line="91"/>
         <source>Failed to initialize host interface. Cannot continue.</source>
-        <translation>无法初始化主机接口，无法继续。</translation>
+        <translation>无法初始化主机界面，无法继续。</translation>
     </message>
     <message>
         <location filename="../qtutils.cpp" line="674"/>
@@ -7580,43 +7650,43 @@ URL: %1</translation>
 <context>
     <name>QtHostInterface</name>
     <message>
-        <location filename="../qthostinterface.cpp" line="938"/>
-        <location filename="../qthostinterface.cpp" line="981"/>
+        <location filename="../qthostinterface.cpp" line="943"/>
+        <location filename="../qthostinterface.cpp" line="986"/>
         <source>Game Save %1 (%2)</source>
         <translation>游戏档%1 (%2)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="938"/>
+        <location filename="../qthostinterface.cpp" line="943"/>
         <source>Game Save %1 (Empty)</source>
         <translation>游戏档%1 (空)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="945"/>
+        <location filename="../qthostinterface.cpp" line="950"/>
         <source>Global Save %1 (%2)</source>
         <translation>全局档%1 (%2)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="945"/>
+        <location filename="../qthostinterface.cpp" line="950"/>
         <source>Global Save %1 (Empty)</source>
         <translation>全局档%1 (空)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="950"/>
+        <location filename="../qthostinterface.cpp" line="955"/>
         <source>Resume</source>
         <translation>恢复</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="953"/>
+        <location filename="../qthostinterface.cpp" line="958"/>
         <source>Load State</source>
         <translation>读档</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="974"/>
+        <location filename="../qthostinterface.cpp" line="979"/>
         <source>Resume (%1)</source>
         <translation>恢复 (%1)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1357"/>
+        <location filename="../qthostinterface.cpp" line="1362"/>
         <source>Game ID: %1
 Game Title: %2
 Game Developer: %3
@@ -7633,12 +7703,12 @@ Achievements: %5 (%6 points)
 </translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1373"/>
+        <location filename="../qthostinterface.cpp" line="1378"/>
         <source>Rich presence inactive or unsupported.</source>
         <translation>Rich Presence不活跃或不支持。</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1377"/>
+        <location filename="../qthostinterface.cpp" line="1382"/>
         <source>Game not loaded or no RetroAchievements available.</source>
         <translation>游戏未加载或RetroAchievements不可用。</translation>
     </message>
@@ -7660,22 +7730,22 @@ Achievements: %5 (%6 points)
         <translation>没有发现可恢复的存档。</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="989"/>
+        <location filename="../qthostinterface.cpp" line="994"/>
         <source>Edit Memory Cards...</source>
         <translation>管理记忆卡...</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1029"/>
+        <location filename="../qthostinterface.cpp" line="1034"/>
         <source>Delete Save States...</source>
         <translation>删除存档...</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1035"/>
+        <location filename="../qthostinterface.cpp" line="1040"/>
         <source>Confirm Save State Deletion</source>
         <translation>确认存档删除</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1036"/>
+        <location filename="../qthostinterface.cpp" line="1041"/>
         <source>Are you sure you want to delete all save states for %1?
 
 The saves will not be recoverable.</source>
@@ -7704,12 +7774,12 @@ The saves will not be recoverable.</source>
         <translation type="vanished">PCSXR金手指文件 (*.cht);;所有文件 (*.*)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1074"/>
+        <location filename="../qthostinterface.cpp" line="1079"/>
         <source>&amp;Enabled Cheats</source>
         <translation>启用金手指(&amp;H)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1076"/>
+        <location filename="../qthostinterface.cpp" line="1081"/>
         <source>&amp;Apply Cheats</source>
         <translation>应用金手指(&amp;A)</translation>
     </message>
@@ -7959,7 +8029,7 @@ The saves will not be recoverable.</source>
         <translation type="vanished">保存状态不兼容: 要求版本%u，但状态为版本%u。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1151"/>
+        <location filename="../../core/system.cpp" line="1157"/>
         <source>Save state is incompatible: minimum version is %u but state is version %u.</source>
         <translation>存档不兼容: 最低可兼容版本为%u但存档版本为%u。</translation>
     </message>
@@ -7973,37 +8043,37 @@ The saves will not be recoverable.</source>
         <translation>无法加载%sBIOS。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1160"/>
+        <location filename="../../core/system.cpp" line="1166"/>
         <source>Save state is incompatible: maximum version is %u but state is version %u.</source>
         <translation>存档不兼容: 最高可兼容版本为%u但存档版本为%u。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1200"/>
+        <location filename="../../core/system.cpp" line="1206"/>
         <source>Failed to open CD image from save state: &apos;%s&apos;.</source>
         <translation>无法从存档打开CD镜像: &apos;%s&apos;。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1798"/>
+        <location filename="../../core/system.cpp" line="1804"/>
         <source>Per-game memory card cannot be used for slot %u as the running game has no code. Using shared card instead.</source>
         <translation>游戏没有编码，插槽%u无法使用独立记忆卡的，改用共用记忆卡。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1822"/>
+        <location filename="../../core/system.cpp" line="1828"/>
         <source>Per-game memory card cannot be used for slot %u as the running game has no title. Using shared card instead.</source>
         <translation>游戏没有标题，插槽%u无法使用独立记忆卡的，改用共用记忆卡。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1841"/>
+        <location filename="../../core/system.cpp" line="1847"/>
         <source>Memory card path for slot %u is missing, using default.</source>
         <translation>插槽%u的记忆卡路径丢失，使用默认值。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1954"/>
+        <location filename="../../core/system.cpp" line="1960"/>
         <source>Game changed, reloading memory cards.</source>
         <translation>游戏已改变，重新加载记忆卡。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2005"/>
+        <location filename="../../core/system.cpp" line="2011"/>
         <source>You are attempting to run a libcrypt protected game without an SBI file:
 
 %s: %s
@@ -8037,12 +8107,12 @@ Please check the README for instructions on how to add a SBI file.</source>
 请查看自述文件以了解如何添加SBI文件。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2081"/>
+        <location filename="../../core/system.cpp" line="2087"/>
         <source>Removing current media from playlist, removing media from CD-ROM.</source>
         <translation>在播放列表中删除当前媒体，并从CD-ROM中卸载媒体。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2098"/>
+        <location filename="../../core/system.cpp" line="2104"/>
         <source>Changing current media from playlist, replacing current media.</source>
         <translation>变更原播放列表中的“当前媒体”，替换为当前新的指定媒体。</translation>
     </message>
@@ -8054,7 +8124,7 @@ Please check the README for instructions on how to add a SBI file.</source>
     <message>
         <location filename="../../core/host_interface.cpp" line="122"/>
         <source>System failed to boot. The log may contain more information.</source>
-        <translation>系统启动失败。日志可能包含更多的信息。</translation>
+        <translation>系统启动失败。日志可能包含更多信息。</translation>
     </message>
 </context>
 </TS>
