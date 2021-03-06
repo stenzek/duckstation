@@ -1,7 +1,5 @@
 package com.github.stenzek.duckstation;
 
-import android.content.Context;
-import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.TypedValue;
@@ -17,16 +15,13 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 public class GameGridFragment extends Fragment implements GameList.OnRefreshListener {
     private static final int SPACING_DIPS = 25;
     private static final int WIDTH_DIPS = 160;
 
-    private MainActivity mParent;
+    private final MainActivity mParent;
     private RecyclerView mRecyclerView;
     private ViewAdapter mAdapter;
     private GridAutofitLayoutManager mLayoutManager;
@@ -69,8 +64,8 @@ public class GameGridFragment extends Fragment implements GameList.OnRefreshList
     }
 
     private static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
-        private MainActivity mParent;
-        private ImageView mImageView;
+        private final MainActivity mParent;
+        private final ImageView mImageView;
         private GameListEntry mEntry;
 
         public ViewHolder(@NonNull MainActivity parent, @NonNull View itemView) {
@@ -84,9 +79,12 @@ public class GameGridFragment extends Fragment implements GameList.OnRefreshList
         public void bindToEntry(GameListEntry entry) {
             mEntry = entry;
 
+            // while it loads/generates
+            mImageView.setImageDrawable(ContextCompat.getDrawable(mParent, R.drawable.ic_media_cdrom));
+
             final String coverPath = entry.getCoverPath();
             if (coverPath == null) {
-                mImageView.setImageDrawable(ContextCompat.getDrawable(mParent, R.drawable.ic_media_cdrom));
+                new GenerateCoverTask(mParent, mImageView, mEntry.getTitle()).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 return;
             }
 
@@ -125,9 +123,9 @@ public class GameGridFragment extends Fragment implements GameList.OnRefreshList
     }
 
     private static class ViewAdapter extends RecyclerView.Adapter<ViewHolder> {
-        private MainActivity mParent;
-        private LayoutInflater mInflater;
-        private GameList mGameList;
+        private final MainActivity mParent;
+        private final LayoutInflater mInflater;
+        private final GameList mGameList;
 
         public ViewAdapter(@NonNull MainActivity parent, @NonNull GameList gameList) {
             mParent = parent;
