@@ -295,10 +295,10 @@ bool IsM3UFileName(const char* path)
 
 bool IsLoadableFilename(const char* path)
 {
-  static constexpr auto extensions = make_array(".bin", ".cue", ".img", ".iso", ".chd", // discs
-                                                ".exe", ".psexe",                       // exes
-                                                ".psf", ".minipsf",                     // psf
-                                                ".m3u"                                  // playlists
+  static constexpr auto extensions = make_array(".bin", ".cue", ".img", ".iso", ".chd", ".ecm", // discs
+                                                ".exe", ".psexe",                               // exes
+                                                ".psf", ".minipsf",                             // psf
+                                                ".m3u"                                          // playlists
   );
   const char* extension = std::strrchr(path, '.');
   if (!extension)

@@ -42,6 +42,10 @@ std::unique_ptr<CDImage> CDImage::Open(const char* filename)
   {
     return OpenCHDImage(filename);
   }
+  else if (CASE_COMPARE(extension, ".ecm") == 0)
+  {
+    return OpenEcmImage(filename);
+  }
 
 #undef CASE_COMPARE
 

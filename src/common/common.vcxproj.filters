@@ -210,6 +210,7 @@
       <Filter>thirdparty</Filter>
     </ClCompile>
     <ClCompile Include="crash_handler.cpp" />
+    <ClCompile Include="cd_image_ecm.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />

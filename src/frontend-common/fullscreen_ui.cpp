@@ -513,7 +513,7 @@ bool InvalidateCachedTexture(const std::string& path)
 
 static ImGuiFullscreen::FileSelectorFilters GetDiscImageFilters()
 {
-  return {"*.bin", "*.cue", "*.iso", "*.img", "*.chd", "*.psexe", "*.exe", "*.psf", "*.minipsf", "*.m3u"};
+  return {"*.bin", "*.cue", "*.iso", "*.img", "*.chd", "*.ecm", "*.psexe", "*.exe", "*.psf", "*.minipsf", "*.m3u"};
 }
 
 static void DoStartPath(const std::string& path, bool allow_resume)
