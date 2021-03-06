@@ -3130,7 +3130,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../displaysettingswidget.ui" line="162"/>
         <location filename="../displaysettingswidget.cpp" line="107"/>
         <source>Internal Resolution Screenshots</source>
-        <translation>内部分辨率截图</translation>
+        <translation>内置分辨率截图</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="174"/>
@@ -3284,7 +3284,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../displaysettingswidget.cpp" line="108"/>
         <source>Saves screenshots at internal render resolution and without postprocessing. If this option is disabled, the screenshots will be taken at the window&apos;s resolution. Internal resolution screenshots can be very large at high rendering scales.</source>
-        <translation>保存截图使用不带后处理的内部渲染分辨率。如果禁用此选项，屏幕截图将按照窗口的分辨率进行截取。在高渲染缩放下，内置分辨率截图会非常大。</translation>
+        <translation>保存截图使用不带后处理的内置渲染分辨率。如果禁用此选项，屏幕截图将按照窗口的分辨率进行截取。在高渲染缩放下，内置分辨率截图会非常大。</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="113"/>
@@ -3603,7 +3603,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="38"/>
         <source>Internal Resolution Scale:</source>
-        <translation>内部分辨率缩放:</translation>
+        <translation>内置分辨率缩放:</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="58"/>
