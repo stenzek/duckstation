@@ -477,7 +477,7 @@ void ShaderGen::DeclareFragmentEntryPoint(
       {
         Assert(num_color_outputs <= 1);
         for (u32 i = 0; i < num_color_outputs; i++)
-          ss << "layout(location = 0" << i << ") out float4 o_col" << i << ";\n";
+          ss << "layout(location = " << i << ") out float4 o_col" << i << ";\n";
       }
     }
     else
