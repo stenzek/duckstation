@@ -183,7 +183,7 @@ private Q_SLOTS:
   void onDisplayWindowMouseWheelEvent(const QPoint& delta_angle);
   void onDisplayWindowResized(int width, int height);
   void onDisplayWindowFocused();
-  void onDisplayWindowKeyEvent(int key, bool pressed);
+  void onDisplayWindowKeyEvent(int key, int mods, bool pressed);
   void doBackgroundControllerPoll();
   void doSaveSettings();
 

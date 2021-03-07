@@ -306,27 +306,25 @@ void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
     case SDL_KEYDOWN:
     case SDL_KEYUP:
     {
-      // Binding mode
-      if (m_fullscreen_ui_enabled && m_controller_interface && m_controller_interface->HasHook() &&
-          event->key.repeat == 0)
-      {
-        String keyName;
-        if (!SDLKeyNames::KeyEventToString(event, keyName))
-        {
-          break;
-        }
+      const bool pressed = (event->type == SDL_KEYDOWN);
 
-        const bool pressed = (event->type == SDL_KEYDOWN);
-        if (FullscreenUI::HandleKeyboardBinding(keyName, pressed))
+      // Binding mode
+      if (m_fullscreen_ui_enabled && FullscreenUI::IsBindingInput())
+      {
+        if (event->key.repeat > 0)
+          return;
+
+        TinyString key_string;
+        if (SDLKeyNames::KeyEventToString(event, key_string))
         {
-          break;
+          if (FullscreenUI::HandleKeyboardBinding(key_string, pressed))
+            return;
         }
       }
 
       if (!ImGui::GetIO().WantCaptureKeyboard && event->key.repeat == 0)
       {
         const u32 code = SDLKeyNames::KeyEventToInt(event);
-        const bool pressed = (event->type == SDL_KEYDOWN);
         HandleHostKeyEvent(code & SDLKeyNames::KEY_MASK, code & SDLKeyNames::MODIFIER_MASK, pressed);
       }
     }

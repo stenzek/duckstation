@@ -47,7 +47,8 @@ bool InputBindingDialog::eventFilter(QObject* watched, QEvent* event)
   }
   else if (event_type == QEvent::KeyPress)
   {
-    QString binding = QtUtils::KeyEventToString(static_cast<QKeyEvent*>(event));
+    const QKeyEvent* key_event = static_cast<const QKeyEvent*>(event);
+    const QString binding(QtUtils::KeyEventToString(key_event->key(), key_event->modifiers()));
     if (!binding.isEmpty())
       m_new_binding_value = QStringLiteral("Keyboard/%1").arg(binding).toStdString();
 

@@ -9,6 +9,7 @@
 #include "core/controller.h"
 #include "core/gpu.h"
 #include "core/system.h"
+#include "frontend-common/fullscreen_ui.h"
 #include "frontend-common/game_list.h"
 #include "frontend-common/imgui_fullscreen.h"
 #include "frontend-common/imgui_styles.h"
@@ -29,6 +30,7 @@
 #include <QtCore/QFile>
 #include <QtCore/QTimer>
 #include <QtCore/QTranslator>
+#include <QtGui/QKeyEvent>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMessageBox>
@@ -373,20 +375,30 @@ void QtHostInterface::resumeSystemFromMostRecentState()
   loadState(QString::fromStdString(state_filename));
 }
 
-void QtHostInterface::onDisplayWindowKeyEvent(int key, bool pressed)
+void QtHostInterface::onDisplayWindowKeyEvent(int key, int mods, bool pressed)
 {
   DebugAssert(isOnWorkerThread());
 
+  ImGuiIO& io = ImGui::GetIO();
   const u32 masked_key = static_cast<u32>(key) & IMGUI_KEY_MASK;
   if (masked_key < countof(ImGuiIO::KeysDown))
-  {
-    ImGuiIO& io = ImGui::GetIO();
     io.KeysDown[masked_key] = pressed;
-    if (io.WantCaptureKeyboard)
-      return;
+
+  if (m_fullscreen_ui_enabled && FullscreenUI::IsBindingInput())
+  {
+    QString key_string(QtUtils::KeyEventToString(key, static_cast<Qt::KeyboardModifier>(mods)));
+    if (!key_string.isEmpty())
+    {
+      if (FullscreenUI::HandleKeyboardBinding(key_string.toUtf8().constData(), pressed))
+        return;
+    }
   }
 
-  HandleHostKeyEvent(key & ~Qt::KeyboardModifierMask, key & Qt::KeyboardModifierMask, pressed);
+  if (io.WantCaptureKeyboard)
+    return;
+
+  const int key_id = QtUtils::KeyEventToInt(key, static_cast<Qt::KeyboardModifier>(mods));
+  HandleHostKeyEvent(key_id & ~Qt::KeyboardModifierMask, key_id & Qt::KeyboardModifierMask, pressed);
 }
 
 void QtHostInterface::onDisplayWindowMouseMoveEvent(int x, int y)
