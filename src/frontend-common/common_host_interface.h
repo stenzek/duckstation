@@ -395,7 +395,7 @@ protected:
   virtual void SaveSettings(SettingsInterface& si) override;
 
   /// Checks and fixes up any incompatible settings.
-  virtual void FixIncompatibleSettings(bool display_osd_messages);
+  virtual void FixIncompatibleSettings(bool display_osd_messages) override;
 
   /// Checks for settings changes, std::move() the old settings away for comparing beforehand.
   virtual void CheckForSettingsChanges(const Settings& old_settings) override;
