@@ -231,4 +231,6 @@
     <string name="action_show_game_grid">Grid View</string>
     <string name="settings_touch_gliding">Touch Gliding</string>
     <string name="settings_summary_touch_gliding">Allows you to press multiple controller face buttons by dragging your finger along the screen.</string>
+    <string name="menu_game_list_entry_game_properties">Game Properties</string>
+    <string name="emulation_activity_change_disc_select_new_file">Select New File...</string>
 </resources>

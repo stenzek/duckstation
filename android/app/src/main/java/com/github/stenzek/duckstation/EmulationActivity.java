@@ -641,7 +641,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         CharSequence[] items = new CharSequence[numPaths + 1];
         for (int i = 0; i < numPaths; i++)
             items[i] = GameListEntry.getFileNameForPath(paths[i]);
-        items[numPaths] = "Select New File...";
+        items[numPaths] = getString(R.string.emulation_activity_change_disc_select_new_file);
 
         builder.setSingleChoiceItems(items, (currentPath < numPaths) ? currentPath : -1, (dialogInterface, i) -> {
             dialogInterface.dismiss();
