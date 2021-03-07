@@ -1592,7 +1592,7 @@ void CDROM::UpdatePositionWhileSeeking()
 void CDROM::ResetPhysicalPosition()
 {
   const u32 ticks = TimingEvents::GetGlobalTickCounter();
-  m_physical_lba = m_physical_lba;
+  m_physical_lba = m_current_lba;
   m_physical_lba_update_tick = ticks;
 }
 
