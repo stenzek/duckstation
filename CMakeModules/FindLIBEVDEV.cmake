@@ -12,6 +12,7 @@ FIND_PATH(
     HINTS ${PC_LIBEVDEV_INCLUDEDIR} ${PC_LIBEVDEV_INCLUDE_DIRS}
     /usr/include
     /usr/local/include
+    /usr/local/include/libevdev-1.0
     ${LIBEVDEV_PATH_INCLUDES}
 )
 

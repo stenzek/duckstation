@@ -28,6 +28,7 @@ target_link_libraries(vulkan-loader PRIVATE ${CMAKE_DL_LIBS})
 
 if(USE_X11)
   target_compile_definitions(vulkan-loader PUBLIC "VULKAN_USE_X11=1")
+  target_include_directories(vulkan-loader PUBLIC "${X11_INCLUDE_DIR}")
 endif()
 
 if(USE_WAYLAND)
