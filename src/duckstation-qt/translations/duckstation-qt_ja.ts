@@ -1319,7 +1319,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Configuration</source>
-        <translation>設定</translation>
+        <translation>音声出力</translation>
     </message>
     <message>
         <source>Throttles the emulation speed based on the audio backend pulling audio frames. This helps to remove noises or crackling if emulation is too fast. Sync will automatically be disabled if not running at 100% speed.</source>
@@ -1370,8 +1370,8 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>早送り時に再生される音声の音量を調整します。</translation>
     </message>
     <message>
-        <source>Maximum Latency: %1 frames (%2ms)</source>
-        <translation>最大レイテンシ― : %1 フレーム (%2ms)</translation>
+        <source>Maximum Latency: %n frames (%1ms)</source>
+        <translation>最大レイテンシ― : %n フレーム (%1ms)</translation>
     </message>
     <message>
         <source>Fast Forward Volume</source>
@@ -2178,6 +2178,22 @@ This warning will only be shown once.</source>
         <translation>5x (10倍速)</translation>
     </message>
     <message>
+        <source>Controller Ports</source>
+        <translation>コントローラポート</translation>
+    </message>
+    <message>
+        <source>Enables multitap support on specified controller ports. Leave disabled for games that do not support multitap input.</source>
+        <translation>指定されたコントローラポートでマルチタップを有効にします。マルチタップ入力をサポートしないゲームでは、使用しないでください。</translation>
+    </message>
+    <message>
+        <source>Multitap:</source>
+        <translation>マルチタップ：</translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <translation>使用しない</translation>
+    </message>
+    <message>
         <source>CPU Overclocking Warning</source>
         <translation>CPUオーバークロック警告</translation>
     </message>
@@ -2217,7 +2233,7 @@ This warning will only be shown once.</source>
     <name>AchievementSettingsWidget</name>
     <message>
         <source>Form</source>
-        <translation>から</translation>
+        <translation>形式</translation>
     </message>
     <message>
         <source>View Profile...</source>
@@ -2588,7 +2604,7 @@ Login token generated on %2.</source>
     </message>
     <message>
         <source>Basic</source>
-        <translation>基本</translation>
+        <translation>表示方式</translation>
     </message>
     <message>
         <source>Crop:</source>
@@ -2645,6 +2661,22 @@ Login token generated on %2.</source>
     <message>
         <source>Integer Upscaling</source>
         <translation>整数アップスケーリング</translation>
+    </message>
+    <message>
+        <source>Stretch To Fill</source>
+        <translation>ストレッチで埋める</translation>
+    </message>
+    <message>
+        <source>Fills the window with the active display area, regardless of the aspect ratio.</source>
+        <translation>アスペクト比に関係なく、ウィンドウをアクティブな表示領域で埋めます。</translation>
+    </message>
+    <message>
+        <source>Internal Resolution Screenshots</source>
+        <translation>内部解像度のスクリーンショット</translation>
+    </message>
+    <message>
+        <source>Saves screenshots at internal render resolution and without postprocessing. If this option is disabled, the screenshots will be taken at the window&apos;s resolution. Internal resolution screenshots can be very large at high rendering scales.</source>
+        <translation>スクリーンショットを内部レンダリング解像度で後処理なしで保存します。このオプションが無効になっている場合、スクリーンショットはウィンドウの解像度で撮影されます。内部解像度のスクリーンショットは、レンダリングスケールが大きいと非常に大きくなる可能性があります。</translation>
     </message>
     <message>
         <source>Show Resolution</source>
@@ -2810,12 +2842,48 @@ Login token generated on %2.</source>
         <translation>ターボ速度</translation>
     </message>
     <message>
-        <source>Rewind for %1 frames, lasting %2 seconds will require up to %3MB of RAM and %4MB of VRAM.</source>
-        <translation>%1 フレーム巻き戻しが、%2 秒間続くと、最大 %3MBのRAMと %4MBのVRAMが必要になります。</translation>
+        <source>Rewind for %n frame(s), lasting %1 second(s) will require up to %2MB of RAM and %3MB of VRAM.</source>
+        <translation>%n フレーム巻き戻しが、%1 秒間続くと、最大 %2 MBのRAMと %3 MBのVRAMが必要になります。</translation>
     </message>
     <message>
         <source>1 Frame</source>
         <translation>1 フレーム</translation>
+    </message>
+    <message>
+        <source>2 Frames</source>
+        <translation>2 フレーム</translation>
+    </message>
+    <message>
+        <source>3 Frames</source>
+        <translation>3 フレーム</translation>
+    </message>
+    <message>
+        <source>4 Frames</source>
+        <translation>4 フレーム</translation>
+    </message>
+    <message>
+        <source>5 Frames</source>
+        <translation>5 フレーム</translation>
+    </message>
+    <message>
+        <source>6 Frames</source>
+        <translation>6 フレーム</translation>
+    </message>
+    <message>
+        <source>7 Frames</source>
+        <translation>7 フレーム</translation>
+    </message>
+    <message>
+        <source>8 Frames</source>
+        <translation>8 フレーム</translation>
+    </message>
+    <message>
+        <source>9 Frames</source>
+        <translation>9 フレーム</translation>
+    </message>
+    <message>
+        <source>10 Frames</source>
+        <translation>10 フレーム</translation>
     </message>
     <message>
         <source>Speed Control</source>
@@ -5437,6 +5505,25 @@ SBIファイルを追加する方法については、READMEを確認してく�
     <message>
         <source>Adaptive (Preserve 3D/Smooth 2D)</source>
         <translation>アダプティブ（3Dを保持/スムーズ2D）</translation>
+    </message>
+</context>
+<context>
+    <name>MultitapMode</name>
+    <message>
+        <source>Disabled</source>
+        <translation>使用しない</translation>
+    </message>
+    <message>
+        <source>Enable on Port 2 Only</source>
+        <translation>ポート2のみ有効にする</translation>
+    </message>
+    <message>
+        <source>Enable on Port 1 Only</source>
+        <translation>ポート1のみ有効にする</translation>
+    </message>
+    <message>
+        <source>Enable on Ports 1 and 2</source>
+        <translation>ポート1および2で有効にする</translation>
     </message>
 </context>
 <context>
