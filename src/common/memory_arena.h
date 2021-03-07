@@ -48,7 +48,7 @@ public:
 private:
 #if defined(WIN32)
   void* m_file_handle = nullptr;
-#elif defined(__linux__) || defined(ANDROID) || defined(__APPLE__)
+#elif defined(__linux__) || defined(ANDROID) || defined(__APPLE__) || defined(__FreeBSD__)
   int m_shmem_fd = -1;
 #endif
 

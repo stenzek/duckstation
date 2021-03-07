@@ -83,7 +83,7 @@ constexpr u32 CODE_STORAGE_ALIGNMENT = 4096;
 // ABI selection
 #if defined(WIN32)
 #define ABI_WIN64 1
-#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__) || defined(__HAIKU__)
+#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__) || defined(__HAIKU__) || defined(__FreeBSD__)
 #define ABI_SYSV 1
 #else
 #error Unknown ABI.

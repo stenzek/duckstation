@@ -889,7 +889,7 @@ void CommonHostInterface::SetUserDirectory()
   }
   else
   {
-#ifdef WIN32
+#if defined(WIN32)
     // On Windows, use My Documents\DuckStation.
     PWSTR documents_directory;
     if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_Documents, 0, NULL, &documents_directory)))
@@ -902,7 +902,7 @@ void CommonHostInterface::SetUserDirectory()
       }
       CoTaskMemFree(documents_directory);
     }
-#elif __linux__
+#elif defined(__linux__) || defined(__FreeBSD__)
     // On Linux, use .local/share/duckstation as a user directory by default.
     const char* xdg_data_home = getenv("XDG_DATA_HOME");
     if (xdg_data_home && xdg_data_home[0] == '/')
@@ -915,7 +915,7 @@ void CommonHostInterface::SetUserDirectory()
       if (home_path)
         m_user_directory = StringUtil::StdStringFromFormat("%s/.local/share/duckstation", home_path);
     }
-#elif __APPLE__
+#elif defined(__APPLE__)
     // On macOS, default to ~/Library/Application Support/DuckStation.
     const char* home_path = getenv("HOME");
     if (home_path)

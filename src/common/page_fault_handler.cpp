@@ -14,7 +14,7 @@ Log_SetChannel(Common::PageFaultHandler);
 #include <ucontext.h>
 #include <unistd.h>
 #define USE_SIGSEGV 1
-#elif defined(__APPLE__)
+#elif defined(__APPLE__) || defined(__FreeBSD__)
 #include <signal.h>
 #include <unistd.h>
 #define USE_SIGSEGV 1
@@ -36,7 +36,7 @@ static bool IsStoreInstruction(const void* ptr)
 {
   u32 bits;
   std::memcpy(&bits, ptr, sizeof(bits));
-  
+
   // TODO
   return false;
 }
@@ -125,7 +125,7 @@ static void SIGSEGVHandler(int sig, siginfo_t* info, void* ctx)
   if ((info->si_code != SEGV_MAPERR && info->si_code != SEGV_ACCERR) || s_in_handler)
     return;
 
-#ifndef __APPLE__
+#if defined(__linux__) || defined(__ANDROID__)
   void* const exception_address = reinterpret_cast<void*>(info->si_addr);
 
 #if defined(CPU_X64)
@@ -141,7 +141,9 @@ static void SIGSEGVHandler(int sig, siginfo_t* info, void* ctx)
   void* const exception_pc = nullptr;
   const bool is_write = false;
 #endif
-#else // __APPLE__
+
+#elif defined(__APPLE__)
+
 #if defined(CPU_X64)
   void* const exception_address =
     reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__es.__faultvaddr);
@@ -156,7 +158,24 @@ static void SIGSEGVHandler(int sig, siginfo_t* info, void* ctx)
   void* const exception_pc = nullptr;
   const bool is_write = false;
 #endif
-#endif // __APPLE__
+
+#elif defined(__FreeBSD__)
+
+#if defined(CPU_X64)
+  void* const exception_address = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.mc_addr);
+  void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.mc_rip);
+  const bool is_write = (static_cast<ucontext_t*>(ctx)->uc_mcontext.mc_err & 2) != 0;
+#elif defined(CPU_AARCH64)
+  void* const exception_address = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__es.__far);
+  void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__ss.__pc);
+  const bool is_write = IsStoreInstruction(exception_pc);
+#else
+  void* const exception_address = reinterpret_cast<void*>(info->si_addr);
+  void* const exception_pc = nullptr;
+  const bool is_write = false;
+#endif
+
+#endif
 
   std::lock_guard<std::mutex> guard(m_handler_lock);
   for (const RegisteredHandler& rh : m_handlers)
