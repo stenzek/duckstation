@@ -1851,17 +1851,17 @@ Login token generated on %2.</source>
 <context>
     <name>Cheats</name>
     <message>
-        <location filename="../../core/cheats.cpp" line="1651"/>
+        <location filename="../../core/cheats.cpp" line="1881"/>
         <source>Gameshark</source>
         <translation>金手指</translation>
     </message>
     <message>
-        <location filename="../../core/cheats.cpp" line="1676"/>
+        <location filename="../../core/cheats.cpp" line="1906"/>
         <source>Manual</source>
         <translation>手动操作</translation>
     </message>
     <message>
-        <location filename="../../core/cheats.cpp" line="1676"/>
+        <location filename="../../core/cheats.cpp" line="1906"/>
         <source>Automatic (Frame End)</source>
         <translation>自动操作 (帧尾)</translation>
     </message>
@@ -6252,9 +6252,13 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation type="vanished">所有文件类型 (*.bin *.img *.iso *.cue *.chd *.exe *.psexe *.psf *.m3u);;单轨源镜像 (*.bin *.img *.iso);;Cue表文件 (*.cue);;MAME CHD镜像 (*.chd);;PlayStation可执行文件 (*.exe *.psexe);;便携式声音格式文件 (*.psf);;播放列表 (*.m3u)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="34"/>
         <source>All File Types (*.bin *.img *.iso *.cue *.chd *.exe *.psexe *.psf *.minipsf *.m3u);;Single-Track Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;PlayStation Executables (*.exe *.psexe);;Portable Sound Format Files (*.psf *.minipsf);;Playlists (*.m3u)</source>
-        <translation>所有文件类型 (*.bin *.img *.iso *.cue *.chd *.exe *.psexe *.psf *.minipsf *.m3u);;单轨源镜像 (*.bin *.img *.iso);;Cue表文件 (*.cue);;MAME CHD镜像 (*.chd);;PlayStation可执行文件 (*.exe *.psexe);;便携式声音格式文件 (*.psf *.minipsf);;播放列表 (*.m3u)</translation>
+        <translation type="vanished">所有文件类型 (*.bin *.img *.iso *.cue *.chd *.exe *.psexe *.psf *.minipsf *.m3u);;单轨源镜像 (*.bin *.img *.iso);;Cue表文件 (*.cue);;MAME CHD镜像 (*.chd);;PlayStation可执行文件 (*.exe *.psexe);;便携式声音格式文件 (*.psf *.minipsf);;播放列表 (*.m3u)</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="34"/>
+        <source>All File Types (*.bin *.img *.iso *.cue *.chd *.ecm *.exe *.psexe *.psf *.minipsf *.m3u);;Single-Track Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;Error Code Modeler Images (*.ecm);;PlayStation Executables (*.exe *.psexe);;Portable Sound Format Files (*.psf *.minipsf);;Playlists (*.m3u)</source>
+        <translation>所有文件类型 (*.bin *.img *.iso *.cue *.chd *.ecm *.exe *.psexe *.psf *.minipsf *.m3u);;单轨源镜像 (*.bin *.img *.iso);;Cue表单 (*.cue);;MAME CHD镜像 (*.chd);;错误码建模镜像 (*.ecm);;PlayStation可执行文件 (*.exe *.psexe);;便携式声音格式文件 (*.psf *.minipsf);;播放列表 (*.m3u)</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="109"/>
@@ -7320,32 +7324,32 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>记忆卡%u当前接入系统中，没有接入存档。移除记忆卡。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="943"/>
+        <location filename="../../core/system.cpp" line="962"/>
         <source>CPU clock speed is set to %u%% (%u / %u). This may result in instability.</source>
         <translation>CPU速率设置为%u%% (%u / %u)。这可能导致不稳定。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1017"/>
+        <location filename="../../core/system.cpp" line="1036"/>
         <source>Failed to initialize %s renderer, falling back to software renderer.</source>
         <translation>无法初始化%s渲染器，退回到软件渲染器。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1098"/>
+        <location filename="../../core/system.cpp" line="1117"/>
         <source>WARNING: CPU overclock (%u%%) was different in save state (%u%%).</source>
         <translation>警告: CPU速率 (%u%%) 不同于存档 (%u%%)。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1198"/>
+        <location filename="../../core/system.cpp" line="1217"/>
         <source>Failed to open CD image from save state: &apos;%s&apos;. Using existing image &apos;%s&apos;, this may result in instability.</source>
         <translation>无法从存档&apos;%s&apos;打开CD映像。使用现有镜像&apos;%s&apos;，这可能会导致不稳定。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1945"/>
+        <location filename="../../core/system.cpp" line="1964"/>
         <source>Failed to open disc image &apos;%s&apos;.</source>
         <translation>无法打开光盘镜像&apos;%s&apos;。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1954"/>
+        <location filename="../../core/system.cpp" line="1973"/>
         <source>Inserted disc &apos;%s&apos; (%s).</source>
         <translation>已插入光盘&apos;%s&apos; (%s)。</translation>
     </message>
@@ -8029,7 +8033,7 @@ The saves will not be recoverable.</source>
         <translation type="vanished">保存状态不兼容: 要求版本%u，但状态为版本%u。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1157"/>
+        <location filename="../../core/system.cpp" line="1176"/>
         <source>Save state is incompatible: minimum version is %u but state is version %u.</source>
         <translation>存档不兼容: 最低可兼容版本为%u但存档版本为%u。</translation>
     </message>
@@ -8038,42 +8042,42 @@ The saves will not be recoverable.</source>
         <translation type="vanished">即时存档不兼容: %s版本为%u但存档版本为%u。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="822"/>
+        <location filename="../../core/system.cpp" line="841"/>
         <source>Failed to load %s BIOS.</source>
         <translation>无法加载%sBIOS。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1166"/>
+        <location filename="../../core/system.cpp" line="1185"/>
         <source>Save state is incompatible: maximum version is %u but state is version %u.</source>
         <translation>存档不兼容: 最高可兼容版本为%u但存档版本为%u。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1206"/>
+        <location filename="../../core/system.cpp" line="1225"/>
         <source>Failed to open CD image from save state: &apos;%s&apos;.</source>
         <translation>无法从存档打开CD镜像: &apos;%s&apos;。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1804"/>
+        <location filename="../../core/system.cpp" line="1823"/>
         <source>Per-game memory card cannot be used for slot %u as the running game has no code. Using shared card instead.</source>
         <translation>游戏没有编码，插槽%u无法使用独立记忆卡的，改用共用记忆卡。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1828"/>
+        <location filename="../../core/system.cpp" line="1847"/>
         <source>Per-game memory card cannot be used for slot %u as the running game has no title. Using shared card instead.</source>
         <translation>游戏没有标题，插槽%u无法使用独立记忆卡的，改用共用记忆卡。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1847"/>
+        <location filename="../../core/system.cpp" line="1866"/>
         <source>Memory card path for slot %u is missing, using default.</source>
         <translation>插槽%u的记忆卡路径丢失，使用默认值。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1960"/>
+        <location filename="../../core/system.cpp" line="1979"/>
         <source>Game changed, reloading memory cards.</source>
         <translation>游戏已改变，重新加载记忆卡。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2011"/>
+        <location filename="../../core/system.cpp" line="2030"/>
         <source>You are attempting to run a libcrypt protected game without an SBI file:
 
 %s: %s
@@ -8107,12 +8111,12 @@ Please check the README for instructions on how to add a SBI file.</source>
 请查看自述文件以了解如何添加SBI文件。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2087"/>
+        <location filename="../../core/system.cpp" line="2106"/>
         <source>Removing current media from playlist, removing media from CD-ROM.</source>
         <translation>在播放列表中删除当前媒体，并从CD-ROM中卸载媒体。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2104"/>
+        <location filename="../../core/system.cpp" line="2123"/>
         <source>Changing current media from playlist, replacing current media.</source>
         <translation>变更原播放列表中的“当前媒体”，替换为当前新的指定媒体。</translation>
     </message>
