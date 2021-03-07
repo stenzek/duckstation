@@ -1375,13 +1375,13 @@ void QtHostInterface::OnAchievementsRefreshed()
                    "Game Title: %2\n"
                    "Game Developer: %3\n"
                    "Game Publisher: %4\n"
-                   "Achievements: %5 (%6 points)\n\n")
+                   "Achievements: %5 (%6)\n\n")
                   .arg(Cheevos::GetGameID())
                   .arg(QString::fromStdString(Cheevos::GetGameTitle()))
                   .arg(QString::fromStdString(Cheevos::GetGameDeveloper()))
                   .arg(QString::fromStdString(Cheevos::GetGamePublisher()))
                   .arg(Cheevos::GetAchievementCount())
-                  .arg(Cheevos::GetMaximumPointsForGame());
+                  .arg(tr("%n points", "", Cheevos::GetMaximumPointsForGame()));
 
     const std::string& rich_presence_string = Cheevos::GetRichPresenceString();
     if (!rich_presence_string.empty())

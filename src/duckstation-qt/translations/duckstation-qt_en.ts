@@ -41,4 +41,14 @@
         </translation>
     </message>
 </context>
+<context>
+    <name>QtHostInterface</name>
+    <message numerus="yes">
+        <source>%n points</source>
+        <translation>
+            <numerusform>%n point</numerusform>
+            <numerusform>%n points</numerusform>
+        </translation>
+    </message>
+</context>
 </TS>
