@@ -8,6 +8,6 @@
         android:id="@+id/game_list_entry_menu_resume_game"
         android:title="@string/menu_game_list_entry_resume_game" />
     <item
-        android:id="@+id/menu_game_list_entry_game_properties"
-        android:title="Game Properties" />
+        android:id="@+id/game_list_entry_menu_properties"
+        android:title="@string/menu_game_list_entry_game_properties" />
 </menu>
