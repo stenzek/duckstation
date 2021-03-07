@@ -366,7 +366,7 @@ static void LoginASyncCallback(s32 status_code, const FrontendCommon::HTTPDownlo
 
 static void SendLogin(const char* username, const char* password, FrontendCommon::HTTPDownloader* http_downloader)
 {
-  char url[256] = {};
+  char url[768] = {};
   int res = rc_url_login_with_password(url, sizeof(url), username, password);
   Assert(res == 0);
 
