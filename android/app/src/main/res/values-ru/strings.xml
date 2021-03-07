@@ -64,7 +64,7 @@
 	<string name="settings_touchscreen_controller_view">Вид экранного контроллера</string>
 	<string name="settings_auto_hide_touchscreen_controller">Автоотключение экранного контроллера</string>
 	<string name="settings_summary_auto_hide_touchscreen_controller">Скрывать экранный контроллер при подключении внешнего геймпада.</string>
-	<string name="settings_vibrate_on_press">Вибрация при нажатии</string>
+	<string name="settings_vibrate_on_press">Вибрация при касании</string>
 	<string name="settings_summary_vibrate_on_press">Включить короткую вибрацию при нажатии экранных кнопок. Виброотклик должен быть включен в настройках системы.</string>
 	<string name="settings_enable_vibration">Включить вибрацию</string>
 	<string name="settings_summary_enable_vibration">Перенаправлять отдачу в игре на вибромотор смартфона.</string>
@@ -77,11 +77,11 @@
 	<string name="settings_summary_linear_upscaling">Сглаживать картинку при масштабировании изображения с консоли под экран.</string>
 	<string name="settings_summary_integer_upscaling">Добавлять пустое пространство к изображению, чтобы пиксельное соотношение устройства и консоли равнялось целому числу. Позволяет получить более чёткую картинку в некоторых 2D-играх.</string>
 	<string name="settings_summary_osd_show_messages">Выводить на экран сообщения о системных событиях, таких как сохранение/загрузка, снимок экрана и т.д.</string>
-	<string name="settings_summary_osd_show_speed">Установка скорости эмуляции. Достижение заданной скорости не гарантируется и в этом случае эмулятор будет работать на максимально возможной скорости</string>
+	<string name="settings_summary_osd_show_speed">Показывать скорость эмуляции в правом верхнем углу экрана.</string>
 	<string name="settings_summary_osd_show_fps">Показывать внутреннюю частоту кадров игры в правом верхнем углу экрана.</string>
 	<string name="settings_summary_osd_show_vps">Показывать количество кадров (синхронизаций) в секунду в правом верхнем углу экрана.</string>
 	<string name="settings_cdrom_read_speedup">Ускорение считывания CD-ROM</string>
-	<string name="settings_summary_cdrom_read_speedup">Повышать скорость чтения диска на заданный множитель. Применяется только при считываниях с двойной скоростью и не учитывается при воспроизведении аудио. Ускоряет загрузки в некоторых играх, но может приводить к ошибкам.</string>
+	<string name="settings_summary_cdrom_read_speedup">Повышать скорость чтения диска на заданный множитель. Применяется только при считывании с двойной скоростью и не учитывается при воспроизведении аудио. Ускоряет загрузки в некоторых играх, но может приводить к ошибкам.</string>
 	<string name="settings_summary_console_fast_boot">Пропускать BIOS/заставку, загружаясь прямо в игру. Как правило, не влияет на стабильность, но некоторые игры могут перестать запускаться.</string>
 	<string name="settings_msaa">Мультисэмплинг</string>
 	<string name="settings_true_color">Рендеринг в True Color (24-бита, без дизеринга)</string>
@@ -197,7 +197,7 @@
 	<string name="settings_summary_sustained_performance_mode">Включить режим устойчивой производительности Андроид. Обеспечивает стабильный фреймрейт при продолжительных сеансах игры на некоторых устройствах.</string>
 	<string name="title_activity_game_directories">Настройка каталогов игр</string>
 	<string name="settings_game_directories">Каталоги игр</string>
-	<string name="settings_summary_game_directories">Настроить список каталогов, используемых для поиска игр.</string>
+	<string name="settings_summary_game_directories">Редактировать список каталогов для поиска игр.</string>
 	<string name="game_directories_scanning_subdirectories">Сканировать подкаталоги.</string>
 	<string name="game_directories_not_scanning_subdirectories">Не сканировать подкаталоги.</string>
 	<string name="settings_display_all_frames">Оптимальное распределение кадров</string>
@@ -217,9 +217,12 @@
     	<string name="dialog_touchscreen_controller_type">Вид экранного контроллера</string>
     	<string name="dialog_touchscreen_controller_opacity">Видимость экранного контроллера</string>
     	<string name="dialog_touchscreen_controller_buttons">Кнопки экранного контроллера</string>
+	<string name="dialog_touchscreen_controller_settings">Настройки экранного контроллера</string>
 	<string name="settings_summary_console_tty_output">Выводить отладочную информацию по игре в консоль.</string>
         <string name="action_show_game_list">Вид списка</string>
         <string name="action_show_game_grid">Вид сетки</string>
         <string name="settings_touch_gliding">Скольжение касаний</string>
         <string name="settings_summary_touch_gliding">Позволяет нажимать комбинации кнопок скольжением пальца по экрану.</string>
+	<string name="menu_game_list_entry_game_properties">Свойства</string>
+	<string name="emulation_activity_change_disc_select_new_file">Выбрать файл...</string>
 </resources>
