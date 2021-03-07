@@ -93,7 +93,7 @@
 		<item>Настройки эмулятора</item>
 	</string-array>
 	<string-array name="emulation_touchscreen_menu">
-        	<item>Сменить тип</item>
+        	<item>Сменить вид</item>
         	<item>Настроить видимость</item>
         	<item>Добавить/убрать кнопки</item>
         	<item>Изменить макет</item>
