@@ -48,6 +48,8 @@ void OpenQuickMenu();
 void CloseQuickMenu();
 void Shutdown();
 void Render();
+
+bool IsBindingInput();
 bool HandleKeyboardBinding(const char* keyName, bool pressed);
 
 bool InvalidateCachedTexture(const std::string& path);

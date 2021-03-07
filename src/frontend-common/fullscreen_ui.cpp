@@ -150,6 +150,7 @@ static void DrawSettingsWindow();
 static void BeginInputBinding(InputBindingType type, const std::string_view& section, const std::string_view& key,
                               const std::string_view& display_name);
 static void EndInputBinding();
+static void ClearInputBinding(const char* section, const char* key);
 static void DrawInputBindingWindow();
 
 static SettingsPage s_settings_page = SettingsPage::InterfaceSettings;
@@ -834,6 +835,8 @@ static void DrawInputBindingButton(InputBindingType type, const char* section, c
 
   if (clicked)
     BeginInputBinding(type, section, name, display_name);
+  else if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+    ClearInputBinding(section, name);
 }
 
 static void ClearInputBindingVariables()
@@ -842,6 +845,11 @@ static void ClearInputBindingVariables()
   s_input_binding_section.Clear();
   s_input_binding_key.Clear();
   s_input_binding_display_name.Clear();
+}
+
+bool IsBindingInput()
+{
+  return s_input_binding_type != InputBindingType::None;
 }
 
 bool HandleKeyboardBinding(const char* keyName, bool pressed)
@@ -856,16 +864,15 @@ bool HandleKeyboardBinding(const char* keyName, bool pressed)
   }
 
   if (!s_input_binding_keyboard_pressed)
-  {
     return false;
-  }
 
   TinyString value;
   value.Format("Keyboard/%s", keyName);
 
-  s_host_interface->GetSettingsInterface()->SetStringValue(s_input_binding_section, s_input_binding_key, value);
-  s_host_interface->AddFormattedOSDMessage(5.0f, "Set %s binding %s to %s.", s_input_binding_section.GetCharArray(),
-                                           s_input_binding_display_name.GetCharArray(), value.GetCharArray());
+  {
+    auto lock = s_host_interface->GetSettingsLock();
+    s_host_interface->GetSettingsInterface()->SetStringValue(s_input_binding_section, s_input_binding_key, value);
+  }
 
   EndInputBinding();
   s_host_interface->RunLater(SaveAndApplySettings);
@@ -922,9 +929,10 @@ void BeginInputBinding(InputBindingType type, const std::string_view& section, c
       if (value.IsEmpty())
         return ControllerInterface::Hook::CallbackResult::ContinueMonitoring;
 
-      s_host_interface->GetSettingsInterface()->SetStringValue(s_input_binding_section, s_input_binding_key, value);
-      s_host_interface->AddFormattedOSDMessage(5.0f, "Set %s binding %s to %s.", s_input_binding_section.GetCharArray(),
-                                               s_input_binding_display_name.GetCharArray(), value.GetCharArray());
+      {
+        auto lock = s_host_interface->GetSettingsLock();
+        s_host_interface->GetSettingsInterface()->SetStringValue(s_input_binding_section, s_input_binding_key, value);
+      }
 
       ClearInputBindingVariables();
       s_host_interface->RunLater(SaveAndApplySettings);
@@ -942,6 +950,16 @@ void EndInputBinding()
   ControllerInterface* ci = s_host_interface->GetControllerInterface();
   if (ci)
     ci->ClearHook();
+}
+
+void ClearInputBinding(const char* section, const char* key)
+{
+  {
+    auto lock = s_host_interface->GetSettingsLock();
+    s_host_interface->GetSettingsInterface()->DeleteValue(section, key);
+  }
+
+  s_host_interface->RunLater(SaveAndApplySettings);
 }
 
 void DrawInputBindingWindow()
