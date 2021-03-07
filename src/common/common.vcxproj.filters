@@ -211,6 +211,7 @@
     </ClCompile>
     <ClCompile Include="crash_handler.cpp" />
     <ClCompile Include="cd_image_ecm.cpp" />
+    <ClCompile Include="cd_image_mds.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />

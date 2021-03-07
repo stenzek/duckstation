@@ -46,6 +46,10 @@ std::unique_ptr<CDImage> CDImage::Open(const char* filename)
   {
     return OpenEcmImage(filename);
   }
+  else if (CASE_COMPARE(extension, ".mds") == 0)
+  {
+    return OpenMdsImage(filename);
+  }
 
 #undef CASE_COMPARE
 
