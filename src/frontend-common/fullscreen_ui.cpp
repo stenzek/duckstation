@@ -62,7 +62,6 @@ using ImGuiFullscreen::EndFullscreenWindow;
 using ImGuiFullscreen::EndMenuButtons;
 using ImGuiFullscreen::EnumChoiceButton;
 using ImGuiFullscreen::FloatingButton;
-using ImGuiFullscreen::IsCancelButtonPressed;
 using ImGuiFullscreen::LayoutScale;
 using ImGuiFullscreen::MenuButton;
 using ImGuiFullscreen::MenuButtonFrame;
@@ -110,6 +109,7 @@ static bool s_debug_menu_allowed = false;
 static bool s_quick_menu_was_open = false;
 static bool s_was_paused_on_quick_menu_open = false;
 static bool s_about_window_open = false;
+static u32 s_close_button_state = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Resources
@@ -357,6 +357,7 @@ void SaveAndApplySettings()
 void ClearImGuiFocus()
 {
   ImGui::SetWindowFocus(nullptr);
+  s_close_button_state = 0;
 }
 
 void ReturnToMainWindow()
@@ -1179,6 +1180,25 @@ static bool ConfirmChallengeModeEnable()
   return true;
 }
 
+static bool WantsToCloseMenu()
+{
+  // Wait for the Close button to be released, THEN pressed
+  if (s_close_button_state == 0)
+  {
+    if (!ImGuiFullscreen::IsCancelButtonPressed())
+      s_close_button_state = 1;
+  }
+  else if (s_close_button_state == 1)
+  {
+    if (ImGuiFullscreen::IsCancelButtonPressed())
+    {
+      s_close_button_state = 0;
+      return true;
+    }
+  }
+  return false;
+}
+
 void DrawSettingsWindow()
 {
   BeginFullscreenColumns();
@@ -1201,7 +1221,7 @@ void DrawSettingsWindow()
     }
 
     ImGui::SetCursorPosY(ImGui::GetWindowHeight() - LayoutScale(50.0f));
-    if (ActiveButton(ICON_FA_BACKWARD "  Back", false) || IsCancelButtonPressed())
+    if (ActiveButton(ICON_FA_BACKWARD "  Back", false) || WantsToCloseMenu())
       ReturnToMainWindow();
 
     EndMenuButtons();
@@ -2346,7 +2366,7 @@ void DrawQuickMenu(MainWindowType type)
                      ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING,
                      ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
 
-    if (ActiveButton(ICON_FA_PLAY "  Resume Game", false) || IsCancelButtonPressed())
+    if (ActiveButton(ICON_FA_PLAY "  Resume Game", false) || WantsToCloseMenu())
       CloseQuickMenu();
 
     if (ActiveButton(ICON_FA_FAST_FORWARD "  Fast Forward", false))
@@ -2610,7 +2630,7 @@ void DrawSaveStateSelector(bool is_loading, bool fullscreen)
     ImGui::SetNextWindowSize(LayoutScale(1000.0f, 680.0f));
     ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
     ImGui::OpenPopup(window_title);
-    bool is_open = !IsCancelButtonPressed();
+    bool is_open = !WantsToCloseMenu();
     if (!ImGui::BeginPopupModal(window_title, &is_open,
                                 ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove) ||
         !is_open)
@@ -3945,7 +3965,7 @@ void DrawAchievementWindow()
       const u32 total_points = Cheevos::GetMaximumPointsForGame();
 
       if (FloatingButton(ICON_FA_WINDOW_CLOSE, 10.0f, 10.0f, -1.0f, -1.0f, 1.0f, 0.0f, true, g_large_font) ||
-          IsCancelButtonPressed())
+          WantsToCloseMenu())
       {
         ReturnToMainWindow();
       }
