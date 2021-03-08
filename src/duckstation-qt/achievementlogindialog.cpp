@@ -16,11 +16,6 @@ void AchievementLoginDialog::loginClicked()
 {
   const std::string username(m_ui.userName->text().toStdString());
   const std::string password(m_ui.password->text().toStdString());
-  if (username.empty() || password.empty())
-  {
-    QMessageBox::critical(this, tr("Login Error"), tr("A user name and password must be provided."));
-    return;
-  }
 
   // TODO: Make cancellable.
   m_ui.status->setText(tr("Logging in..."));
@@ -52,6 +47,10 @@ void AchievementLoginDialog::connectUi()
 {
   connect(m_ui.login, &QPushButton::clicked, this, &AchievementLoginDialog::loginClicked);
   connect(m_ui.cancel, &QPushButton::clicked, this, &AchievementLoginDialog::cancelClicked);
+
+  auto enableLoginButton = [this](const QString&) { m_ui.login->setEnabled(canEnableLoginButton()); };
+  connect(m_ui.userName, &QLineEdit::textChanged, enableLoginButton);
+  connect(m_ui.password, &QLineEdit::textChanged, enableLoginButton);
 }
 
 void AchievementLoginDialog::enableUI(bool enabled)
@@ -59,5 +58,10 @@ void AchievementLoginDialog::enableUI(bool enabled)
   m_ui.userName->setEnabled(enabled);
   m_ui.password->setEnabled(enabled);
   m_ui.cancel->setEnabled(enabled);
-  m_ui.login->setEnabled(enabled);
+  m_ui.login->setEnabled(enabled && canEnableLoginButton());
+}
+
+bool AchievementLoginDialog::canEnableLoginButton() const
+{
+  return !m_ui.userName->text().isEmpty() && !m_ui.password->text().isEmpty();
 }
