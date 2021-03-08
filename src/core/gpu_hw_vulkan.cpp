@@ -1690,7 +1690,7 @@ void GPU_HW_Vulkan::ClearDepthBuffer()
   vkCmdClearDepthStencilImage(cmdbuf, m_vram_depth_texture.GetImage(), m_vram_depth_texture.GetLayout(), &cds, 1u,
                               &dsrr);
 
-  m_vram_depth_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
+  m_vram_depth_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
   m_last_depth_z = 1.0f;
 }
 
