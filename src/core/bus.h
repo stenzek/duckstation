@@ -72,7 +72,7 @@ enum : u32
 
 enum : TickCount
 {
-  RAM_READ_TICKS = 4
+  RAM_READ_TICKS = 6
 };
 
 enum : size_t
