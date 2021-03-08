@@ -77,7 +77,7 @@
     <string name="settings_summary_linear_upscaling">Smooths out the image when upscaling the console to the screen.</string>
     <string name="settings_summary_integer_upscaling">Adds padding to the display area to ensure that the ratio between pixels on the host to pixels in the console is an integer number. May result in a sharper image in some 2D games.</string>
     <string name="settings_summary_osd_show_messages">Shows on-screen-display messages when events occur such as save states being created/loaded, screenshots being taken, etc.</string>
-    <string name="settings_summary_osd_show_speed">Sets the target emulation speed. It is not guaranteed that this speed will be reached, and if not, the emulator will run as fast as it can manage.</string>
+    <string name="settings_summary_osd_show_speed">Shows the current emulation speed of the system in the top-right corner of the display as a percentage.</string>
     <string name="settings_summary_osd_show_fps">Shows the internal frame rate of the game in the top-right corner of the display.</string>
     <string name="settings_summary_osd_show_vps">Shows the number of frames (or v-syncs) displayed per second by the system in the top-right corner of the display.</string>
     <string name="settings_cdrom_read_speedup">CD-ROM Read Speedup</string>
