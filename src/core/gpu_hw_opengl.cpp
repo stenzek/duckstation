@@ -362,20 +362,6 @@ void GPU_HW_OpenGL::SetCapabilities(HostDisplay* host_display)
     (max_dual_source_draw_buffers > 0) &&
     (GLAD_GL_VERSION_3_3 || GLAD_GL_ARB_blend_func_extended || GLAD_GL_EXT_blend_func_extended);
 
-  m_supports_geometry_shaders =
-    GLAD_GL_VERSION_3_2 || GLAD_GL_ARB_geometry_shader4 || GLAD_GL_OES_geometry_shader || GLAD_GL_ES_VERSION_3_2;
-  if (!m_supports_geometry_shaders)
-  {
-    Log_WarningPrintf("Geometry shaders are not supported, line rendering at higher resolutions may be incorrect. We "
-                      "will try to use glLineWidth() to emulate this, but the accuracy depends on your driver.");
-
-    std::array<int, 2> line_width_range = {{1, 1}};
-    glGetIntegerv(GL_ALIASED_LINE_WIDTH_RANGE, line_width_range.data());
-    Log_InfoPrintf("Max line width: %d", line_width_range[1]);
-
-    m_max_resolution_scale = std::min<int>(m_max_resolution_scale, line_width_range[1]);
-  }
-
   // adaptive smoothing would require texture views, which aren't in GLES.
   m_supports_adaptive_downsampling = false;
 }

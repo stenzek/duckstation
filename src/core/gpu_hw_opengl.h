@@ -107,7 +107,6 @@ private:
   u32 m_max_texture_buffer_size = 0;
 
   bool m_supports_texture_buffer = false;
-  bool m_supports_geometry_shaders = false;
   bool m_use_ssbo_for_vram_writes = false;
 
   GLenum m_current_depth_test = 0;
