@@ -1789,7 +1789,7 @@ void CommonHostInterface::RegisterGeneralHotkeys()
 {
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("OpenQuickMenu"),
                  TRANSLATABLE("Hotkeys", "Open Quick Menu"), [this](bool pressed) {
-                   if (!pressed && m_fullscreen_ui_enabled)
+                   if (pressed && m_fullscreen_ui_enabled)
                      FullscreenUI::OpenQuickMenu();
                  });
 
