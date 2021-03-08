@@ -337,12 +337,18 @@ void GPU_HW_OpenGL::SetCapabilities(HostDisplay* host_display)
   if (!m_supports_texture_buffer || m_max_texture_buffer_size < VRAM_WIDTH * VRAM_HEIGHT)
   {
     // Try SSBOs.
+    GLint max_fragment_storage_blocks = 0;
     GLint64 max_ssbo_size = 0;
     if (GLAD_GL_VERSION_4_3 || GLAD_GL_ES_VERSION_3_1 || GLAD_GL_ARB_shader_storage_buffer_object)
+    {
+      glGetIntegerv(GL_MAX_FRAGMENT_SHADER_STORAGE_BLOCKS, &max_fragment_storage_blocks);
       glGetInteger64v(GL_MAX_SHADER_STORAGE_BLOCK_SIZE, &max_ssbo_size);
+    }
 
+    Log_InfoPrintf("Max fragment shader storage blocks: %d", max_fragment_storage_blocks);
     Log_InfoPrintf("Max shader storage buffer size: %" PRId64, max_ssbo_size);
-    m_use_ssbo_for_vram_writes = (max_ssbo_size >= static_cast<GLint64>(VRAM_WIDTH * VRAM_HEIGHT * sizeof(u16)));
+    m_use_ssbo_for_vram_writes = (max_fragment_storage_blocks > 0 &&
+                                  max_ssbo_size >= static_cast<GLint64>(VRAM_WIDTH * VRAM_HEIGHT * sizeof(u16)));
     if (m_use_ssbo_for_vram_writes)
     {
       Log_InfoPrintf("Using shader storage buffers for VRAM writes.");
