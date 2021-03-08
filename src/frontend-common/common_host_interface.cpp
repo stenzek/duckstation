@@ -2664,9 +2664,11 @@ void CommonHostInterface::FixIncompatibleSettings(bool display_osd_messages)
   // if challenge mode is enabled, disable things like rewind since they use save states
   if (IsCheevosChallengeModeActive())
   {
-    g_settings.emulation_speed = std::max(g_settings.emulation_speed, 1.0f);
-    g_settings.fast_forward_speed = std::max(g_settings.fast_forward_speed, 1.0f);
-    g_settings.turbo_speed = std::max(g_settings.turbo_speed, 1.0f);
+    g_settings.emulation_speed =
+      (g_settings.emulation_speed != 0.0f) ? std::max(g_settings.emulation_speed, 1.0f) : 0.0f;
+    g_settings.fast_forward_speed =
+      (g_settings.fast_forward_speed != 0.0f) ? std::max(g_settings.fast_forward_speed, 1.0f) : 0.0f;
+    g_settings.turbo_speed = (g_settings.turbo_speed != 0.0f) ? std::max(g_settings.turbo_speed, 1.0f) : 0.0f;
     g_settings.rewind_enable = false;
     g_settings.auto_load_cheats = false;
     g_settings.debugging.enable_gdb_server = false;
