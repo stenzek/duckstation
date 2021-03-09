@@ -36,7 +36,6 @@ void ShaderGen::DefineMacro(std::stringstream& ss, const char* name, bool enable
 void ShaderGen::SetGLSLVersionString()
 {
   const char* glsl_version = reinterpret_cast<const char*>(glGetString(GL_SHADING_LANGUAGE_VERSION));
-  const char* gl_renderer = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
   const bool glsl_es = (m_render_api == HostDisplay::RenderAPI::OpenGLES);
   Assert(glsl_version != nullptr);
 
@@ -59,10 +58,6 @@ void ShaderGen::SetGLSLVersionString()
       major_version = 3;
       minor_version = 20;
     }
-
-    // Special cases - PowerVR's GLES 3.2 driver seems to choke on our shaders.
-    if (glsl_es && std::strstr(gl_renderer, "PowerVR Rogue") && major_version >= 3)
-      minor_version = std::min(minor_version, 10);
   }
   else
   {

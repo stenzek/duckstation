@@ -64,12 +64,6 @@ static void DisableBrokenExtensions(const char* gl_vendor, const char* gl_render
     GLAD_GL_EXT_copy_image = 0;
     GLAD_GL_OES_copy_image = 0;
   }
-
-  if (std::strstr(gl_renderer, "PowerVR Rogue"))
-  {
-    Log_VerbosePrintf("PowerVR Rogue driver detected, disabling GLES3.2");
-    GLAD_GL_ES_VERSION_3_2 = 0;
-  }
 }
 
 Context::Context(const WindowInfo& wi) : m_wi(wi) {}
