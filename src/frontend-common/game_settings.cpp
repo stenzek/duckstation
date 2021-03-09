@@ -1241,34 +1241,13 @@ void Entry::ApplySettings(bool display_osd_messages) const
   }
 
   if (HasTrait(Trait::DisableAnalogModeForcing))
-  {
     g_settings.controller_disable_analog_mode_forcing = true;
-  }
 
   if (HasTrait(Trait::ForceRecompilerMemoryExceptions))
-  {
-    if (display_osd_messages && g_settings.cpu_execution_mode == CPUExecutionMode::Recompiler &&
-        !g_settings.cpu_recompiler_memory_exceptions)
-    {
-      g_host_interface->AddOSDMessage(
-        g_host_interface->TranslateStdString("OSDMessage", "Recompiler memory exceptions forced by game settings."),
-        osd_duration);
-    }
-
     g_settings.cpu_recompiler_memory_exceptions = true;
-  }
 
   if (HasTrait(Trait::ForceRecompilerICache))
-  {
-    if (display_osd_messages && g_settings.cpu_execution_mode != CPUExecutionMode::Interpreter &&
-        !g_settings.cpu_recompiler_icache)
-    {
-      g_host_interface->AddOSDMessage(
-        g_host_interface->TranslateStdString("OSDMessage", "Recompiler ICache forced by game settings."), osd_duration);
-    }
-
     g_settings.cpu_recompiler_icache = true;
-  }
 }
 
 } // namespace GameSettings
