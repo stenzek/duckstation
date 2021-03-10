@@ -779,6 +779,9 @@
    </property>
   </action>
   <action name="actionViewGameProperties">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Game &amp;Properties</string>
    </property>

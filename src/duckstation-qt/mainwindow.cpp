@@ -421,6 +421,15 @@ void MainWindow::onRunningGameChanged(const QString& filename, const QString& ga
 
   if (m_display_widget)
     m_display_widget->setWindowTitle(windowTitle());
+
+  bool has_game_list_entry = false;
+  if (!filename.isEmpty())
+  {
+    const GameListEntry* entry = m_host_interface->getGameList()->GetEntryForPath(filename.toStdString().c_str());
+    has_game_list_entry = (entry != nullptr);
+  }
+
+  m_ui.actionViewGameProperties->setEnabled(has_game_list_entry);
 }
 
 void MainWindow::onApplicationStateChanged(Qt::ApplicationState state)
@@ -550,21 +559,14 @@ void MainWindow::onViewSystemDisplayTriggered()
 
 void MainWindow::onViewGamePropertiesActionTriggered()
 {
-  const GameListEntry* entry;
+  if (!m_emulation_running)
+    return;
 
-  if (m_emulation_running)
-  {
-    const std::string& path = System::GetRunningPath();
-    if (path.empty())
-      return;
+  const std::string& path = System::GetRunningPath();
+  if (path.empty())
+    return;
 
-    entry = m_host_interface->getGameList()->GetEntryForPath(path.c_str());
-  }
-  else
-  {
-    entry = m_game_list_widget->getSelectedEntry();
-  }
-
+  const GameListEntry* entry = m_host_interface->getGameList()->GetEntryForPath(path.c_str());
   if (!entry)
     return;
 
@@ -908,6 +910,8 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool cheevo
       m_ui.toolBar->insertAction(m_ui.actionPowerOff, m_ui.actionResumeLastState);
       m_ui.toolBar->removeAction(m_ui.actionPowerOff);
     }
+
+    m_ui.actionViewGameProperties->setEnabled(false);
   }
 
   if (m_open_debugger_on_start && running)
