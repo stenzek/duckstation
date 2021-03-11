@@ -56,6 +56,8 @@
 
 Log_SetChannel(CommonHostInterface);
 
+static std::string s_settings_filename;
+
 CommonHostInterface::CommonHostInterface() = default;
 
 CommonHostInterface::~CommonHostInterface() = default;
@@ -367,7 +369,7 @@ bool CommonHostInterface::ParseCommandLineParameters(int argc, char* argv[],
       }
       else if (CHECK_ARG_PARAM("-settings"))
       {
-        m_settings_filename = argv[++i];
+        s_settings_filename = argv[++i];
         continue;
       }
       else if (CHECK_ARG("--"))
@@ -2367,18 +2369,13 @@ bool CommonHostInterface::SaveInputProfile(const char* profile_path)
 
 std::string CommonHostInterface::GetSettingsFileName() const
 {
-  if (!m_settings_filename.empty())
-  {
-    if (!FileSystem::FileExists(m_settings_filename.c_str()))
-    {
-      Log_ErrorPrintf("Could not find settings file %s, using default", m_settings_filename.c_str());
-    }
-    else
-    {
-      return GetUserDirectoryRelativePath(m_settings_filename.c_str());
-    }
-  }
-  return GetUserDirectoryRelativePath("settings.ini");
+  std::string filename;
+  if (!s_settings_filename.empty())
+    filename = s_settings_filename;
+  else
+    filename = GetUserDirectoryRelativePath("settings.ini");
+
+  return filename;
 }
 
 std::string CommonHostInterface::GetGameSaveStateFileName(const char* game_code, s32 slot) const

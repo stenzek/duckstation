@@ -418,7 +418,6 @@ protected:
   void DoFrameStep();
   void DoToggleCheats();
 
-  std::string m_settings_filename;
   std::unique_ptr<SettingsInterface> m_settings_interface;
   std::recursive_mutex m_settings_mutex;
 
