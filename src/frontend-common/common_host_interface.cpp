@@ -2601,6 +2601,7 @@ void CommonHostInterface::LoadSettings()
     m_settings_interface->Clear();
     m_settings_interface->SetIntValue("Main", "SettingsVersion", SETTINGS_VERSION);
     SetDefaultSettings(*m_settings_interface);
+    m_settings_interface->Save();
   }
 #endif
 
