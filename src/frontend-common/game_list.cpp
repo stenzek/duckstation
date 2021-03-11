@@ -5,6 +5,7 @@
 #include "common/file_system.h"
 #include "common/iso_reader.h"
 #include "common/log.h"
+#include "common/make_array.h"
 #include "common/progress_callback.h"
 #include "common/string_util.h"
 #include "core/bios.h"
@@ -1172,7 +1173,7 @@ void GameList::UpdateGameSettings(const std::string& filename, const std::string
 
 std::string GameList::GetCoverImagePathForEntry(const GameListEntry* entry) const
 {
-  static constexpr std::array<const char*, 3> extensions = {{"jpg", "jpeg", "png"}};
+  static constexpr auto extensions = make_array("jpg", "jpeg", "png", "webp");
 
   PathString cover_path;
   for (const char* extension : extensions)
