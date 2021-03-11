@@ -42,14 +42,24 @@
 <context>
     <name>AchievementLoginDialog</name>
     <message>
-        <location filename="../achievementlogindialog.ui" line="29"/>
-        <location filename="../achievementlogindialog.ui" line="57"/>
         <source>RetroAchievements Login</source>
-        <translation>Credenciais do RetroAchievements</translation>
+        <translation type="vanished">Credenciais do RetroAchievements</translation>
     </message>
     <message>
         <source>Please enter user name and password for retroachievements.org below. Your password will not be saved in DuckStation, instead an access token will be generated and used instead.</source>
         <translation type="vanished">Por favor entre com um nome de usuário e senha para se autenticar no retroachievements.org conforme abaixo. Suas credenciais não serão salvas no emulador. Será criado um token único de acesso para autenticação.</translation>
+    </message>
+    <message>
+        <location filename="../achievementlogindialog.ui" line="29"/>
+        <source>RetroAchievements Login</source>
+        <comment>Window title</comment>
+        <translation>Credenciais do RetroAchievements</translation>
+    </message>
+    <message>
+        <location filename="../achievementlogindialog.ui" line="57"/>
+        <source>RetroAchievements Login</source>
+        <comment>Header text</comment>
+        <translation>Credenciais do RetroAchievements</translation>
     </message>
     <message>
         <location filename="../achievementlogindialog.ui" line="69"/>
@@ -72,38 +82,36 @@
         <translation>Pronto...</translation>
     </message>
     <message>
-        <location filename="../achievementlogindialog.ui" line="129"/>
+        <location filename="../achievementlogindialog.ui" line="132"/>
         <source>&amp;Login</source>
         <translation>&amp;Entrar</translation>
     </message>
     <message>
-        <location filename="../achievementlogindialog.ui" line="139"/>
+        <location filename="../achievementlogindialog.ui" line="142"/>
         <source>&amp;Cancel</source>
         <translation>&amp;Cancelar</translation>
     </message>
     <message>
-        <location filename="../achievementlogindialog.cpp" line="21"/>
-        <location filename="../achievementlogindialog.cpp" line="36"/>
+        <location filename="../achievementlogindialog.cpp" line="31"/>
         <source>Login Error</source>
         <translation>Erro de Entrada</translation>
     </message>
     <message>
-        <location filename="../achievementlogindialog.cpp" line="21"/>
         <source>A user name and password must be provided.</source>
-        <translation>Um nome de usuário e senha precisam ser inseridos.</translation>
+        <translation type="vanished">Um nome de usuário e senha precisam ser inseridos.</translation>
     </message>
     <message>
-        <location filename="../achievementlogindialog.cpp" line="26"/>
+        <location filename="../achievementlogindialog.cpp" line="21"/>
         <source>Logging in...</source>
         <translation>Entrando...</translation>
     </message>
     <message>
-        <location filename="../achievementlogindialog.cpp" line="37"/>
+        <location filename="../achievementlogindialog.cpp" line="32"/>
         <source>Login failed. Please check your username and password, and try again.</source>
         <translation>Falha na entrada, Por favor verifique seu usuário e senha e tente de novo.</translation>
     </message>
     <message>
-        <location filename="../achievementlogindialog.cpp" line="38"/>
+        <location filename="../achievementlogindialog.cpp" line="33"/>
         <source>Login failed.</source>
         <translation>Falha na Entrada.</translation>
     </message>
@@ -3755,7 +3763,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../enhancementsettingswidget.ui" line="105"/>
         <location filename="../enhancementsettingswidget.cpp" line="78"/>
         <source>Force NTSC Timings (60hz-on-PAL)</source>
-        <translation>Força rodar em modo NTSC (60hz Jogos EU)</translation>
+        <translation>Força 60hz em Jogos PAL</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="96"/>
@@ -3849,7 +3857,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="79"/>
         <source>Uses NTSC frame timings when the console is in PAL mode, forcing PAL games to run at 60hz. &lt;br&gt;For most games which have a speed tied to the framerate, this will result in the game running approximately 17% faster. &lt;br&gt;For variable frame rate games, it may not affect the speed.</source>
-        <translation>Quando o console está no modo PAL - Geralmente jogos Europeus rodam a 50hz. força estes jogos a rodar em até 60hz sendo assim, resulta em um jogo mais rápido até 15%. Em jogos com taxas de quadro (FPS) variável isto não surtirá efeito.</translation>
+        <translation>Geralmente jogos Europeus rodam a 50hz. esta opção força estes jogos a rodarem em até 60hz sendo assim, resulta em um jogo mais rápido até 15%. Em jogos com taxas de quadro (FPS) variável isto não surtirá efeito.</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="85"/>
@@ -7312,7 +7320,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../core/host_interface.cpp" line="142"/>
         <source>System reset.</source>
-        <translation>Sistema Reiniciado.</translation>
+        <translation>Sistema Reiniciado</translation>
     </message>
     <message>
         <location filename="../../core/host_interface.cpp" line="413"/>
@@ -7399,10 +7407,10 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="941"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2735"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3197"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2737"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3199"/>
         <source>Failed to load post processing shader chain.</source>
-        <translation>Falha ao carregar pós-processamento escolhido.</translation>
+        <translation>Falha ao carregar shader escolhido.</translation>
     </message>
     <message>
         <source>Speed limiter enabled.</source>
@@ -7465,82 +7473,82 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>Perfil de controle carregado de &apos;%s&apos;</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2918"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2920"/>
         <source>Started dumping audio to &apos;%s&apos;.</source>
         <translation>Iniciado despejo de Áudio para &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2923"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2925"/>
         <source>Failed to start dumping audio to &apos;%s&apos;.</source>
         <translation>Falha ao iniciar despejo de Áudio para &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2933"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2935"/>
         <source>Stopped dumping audio.</source>
         <translation>Despejo de Áudio terminado.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2963"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2965"/>
         <source>Screenshot file &apos;%s&apos; already exists.</source>
         <translation>Captura de Tela &apos;%s&apos; já existe.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2975"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2977"/>
         <source>Failed to save screenshot to &apos;%s&apos;</source>
         <translation>Falha ao salvar captura para &apos;%s&apos;</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2979"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2981"/>
         <source>Screenshot saved to &apos;%s&apos;.</source>
         <translation>Captura de tela salva para &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3007"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3009"/>
         <source>Input profile &apos;%s&apos; cannot be found.</source>
         <translation>Perfil de controle &apos;%s&apos; não encontrado.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3014"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3016"/>
         <source>Using input profile &apos;%s&apos;.</source>
         <translation>Usando perfil de controle &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3040"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3042"/>
         <source>Failed to load cheats from &apos;%s&apos;.</source>
-        <translation>Falha ao carregar trapaças da &apos;%s&apos;.</translation>
+        <translation>Falha ao carregar &apos;%s&apos; trapaças.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3044"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3046"/>
         <source>Loaded %u cheats from list. %u cheats are enabled.</source>
         <translation>Trapaças %u carregadas da lista. %u trapaças ativadas.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3071"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3073"/>
         <source>Loaded %u cheats from database.</source>
         <translation>Trapaças %u carregadas do bando de dados.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3101"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3103"/>
         <source>Saved %u cheats to &apos;%s&apos;.</source>
         <translation>Trapaça %u.salva para &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3117"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3119"/>
         <source>Deleted cheat list &apos;%s&apos;.</source>
-        <translation>Trapaça apagada da lista &apos;%s&apos;.</translation>
+        <translation>Trapaça &apos;%s&apos; apagada da lista.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3157"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3159"/>
         <source>Cheat &apos;%s&apos; enabled.</source>
         <translation>Trapaça &apos;%s&apos; Ativada.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3161"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3163"/>
         <source>Cheat &apos;%s&apos; disabled.</source>
         <translation>Trapaça &apos;%s&apos; desativada.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3087"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3089"/>
         <source>Failed to save cheat list to &apos;%s&apos;</source>
         <translation>Falha ao salvar lista de trapaças para &apos;%s&apos;</translation>
     </message>
@@ -7567,7 +7575,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1758"/>
         <source>Stopped fast forwarding.</source>
-        <translation>Avanço rápido interrompido.</translation>
+        <translation>Avanço Rápido terminado</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1769"/>
@@ -7577,12 +7585,12 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1770"/>
         <source>Stopped turboing.</source>
-        <translation>Turbo Desligado.</translation>
+        <translation>Turbo desligado</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1784"/>
         <source>Hotkey unavailable because achievements hardcore mode is active.</source>
-        <translation>Atalhos desativados porque o modo Hardcore foi ligado.</translation>
+        <translation>Atalho desativado Modo Hardcore ligado.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1900"/>
@@ -7592,35 +7600,35 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1901"/>
         <source>Stopped rewinding.</source>
-        <translation>Retrocesso Terminado.</translation>
+        <translation>Retrocesso Terminado</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3177"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3179"/>
         <source>Applied cheat &apos;%s&apos;.</source>
         <translation>Trapaça Aplicada &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3181"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3183"/>
         <source>Cheat &apos;%s&apos; is already enabled.</source>
         <translation>Trapaça &apos;%s&apos; já ativada.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3194"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3196"/>
         <source>Post-processing is now enabled.</source>
         <translation>Pós-processamento Ativado.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3201"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3203"/>
         <source>Post-processing is now disabled.</source>
         <translation>Pós-processamento Desligado.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3212"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3214"/>
         <source>Failed to load post-processing shader chain.</source>
         <translation>Falha ao carregar texturas de pós-processamento.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3214"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3216"/>
         <source>Post-processing shaders reloaded.</source>
         <translation>Texturas de Pós-processamento Recarregadas.</translation>
     </message>
@@ -7699,14 +7707,12 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation type="vanished">Controle %u mudado para modo analógico pela configuração personalizada.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_settings.cpp" line="1254"/>
         <source>Recompiler memory exceptions forced by game settings.</source>
-        <translation>Exeções de RAM forçada pelas configurações.</translation>
+        <translation type="vanished">Exeções de RAM forçada pelas configurações.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_settings.cpp" line="1267"/>
         <source>Recompiler ICache forced by game settings.</source>
-        <translation>Recompilador ICache forçado pelas configurações.</translation>
+        <translation type="vanished">Recompilador ICache forçado pelas configurações.</translation>
     </message>
     <message>
         <location filename="../../core/pad.cpp" line="74"/>
@@ -7812,7 +7818,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../core/memory_card.cpp" line="263"/>
         <source>Memory card at &apos;%s&apos; could not be read, formatting.</source>
-        <translation>Cartão de Memória &apos;%s&apos; não pôde ser lida, formatando.</translation>
+        <translation>Cartão de Memória &apos;%s&apos; não pôde ser lido, formatando.</translation>
     </message>
     <message>
         <location filename="../../core/memory_card.cpp" line="299"/>
@@ -7832,12 +7838,12 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../mainwindow.cpp" line="268"/>
         <source>Failed to acquire exclusive fullscreen.</source>
-        <translation>Falha ao acionar Função Tela cheia exclusiva.</translation>
+        <translation>Falha ao ativar tela cheia em modo exclusivo.</translation>
     </message>
     <message>
         <location filename="../qthostinterface.cpp" line="481"/>
         <source>Lost exclusive fullscreen.</source>
-        <translation>Função Tela-cheia perdida.</translation>
+        <translation>Tela-cheia perdida.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw_opengl.cpp" line="54"/>
@@ -8110,10 +8116,33 @@ The URL was: %1</source>
 Game Title: %2
 Game Developer: %3
 Game Publisher: %4
-Achievements: %5 (%6 points)
+Achievements: %5 (%6)
 
 </source>
         <translation>ID do Jogo: %1
+Título do Jogo: %2
+Desenvolvido por: %3
+Publicado Por: %4
+Conquistas: %5 (%6)
+</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qthostinterface.cpp" line="1384"/>
+        <source>%n points</source>
+        <translation>
+            <numerusform>%n pontos</numerusform>
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Game ID: %1
+Game Title: %2
+Game Developer: %3
+Game Publisher: %4
+Achievements: %5 (%6 points)
+
+</source>
+        <translation type="vanished">ID do Jogo: %1
 Título do Jogo: %2
 Desenvolvido por: %3
 Publicado Por: %4
