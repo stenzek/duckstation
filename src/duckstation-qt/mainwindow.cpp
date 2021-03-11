@@ -22,6 +22,7 @@
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
+#include <QtCore/QMimeData>
 #include <QtCore/QUrl>
 #include <QtGui/QCursor>
 #include <QtGui/QWindowStateChangeEvent>
@@ -609,26 +610,7 @@ void MainWindow::onGameListEntrySelected(const GameListEntry* entry)
 
 void MainWindow::onGameListEntryDoubleClicked(const GameListEntry* entry)
 {
-  // if we're not running, boot the system, otherwise swap discs
-  QString path = QString::fromStdString(entry->path);
-  if (!m_emulation_running)
-  {
-    if (!entry->code.empty() && m_host_interface->GetBoolSettingValue("Main", "SaveStateOnExit", true) &&
-        !m_host_interface->IsCheevosChallengeModeActive())
-    {
-      m_host_interface->resumeSystemFromState(path, true);
-    }
-    else
-    {
-      m_host_interface->bootSystem(std::make_shared<const SystemBootParameters>(path.toStdString()));
-    }
-  }
-  else
-  {
-    m_host_interface->changeDisc(path);
-    m_host_interface->pauseSystem(false);
-    switchToEmulationView();
-  }
+  startGameOrChangeDiscs(entry->path);
 }
 
 void MainWindow::onGameListContextMenuRequested(const QPoint& point, const GameListEntry* entry)
@@ -950,6 +932,34 @@ void MainWindow::switchToEmulationView()
   if (m_display_widget->parent())
     m_ui.mainContainer->setCurrentIndex(1);
   m_display_widget->setFocus();
+}
+
+void MainWindow::startGameOrChangeDiscs(const std::string& path)
+{
+  // if we're not running, boot the system, otherwise swap discs
+  if (!m_emulation_running)
+  {
+    if (m_host_interface->GetBoolSettingValue("Main", "SaveStateOnExit", true) &&
+        !m_host_interface->IsCheevosChallengeModeActive())
+    {
+      const GameListEntry* entry = m_host_interface->getGameList()->GetEntryForPath(path.c_str());
+      if ((entry && !entry->code.empty()) || !System::GetGameCodeForPath(path.c_str(), true).empty())
+      {
+        m_host_interface->resumeSystemFromState(QString::fromStdString(path), true);
+        return;
+      }
+    }
+    else
+    {
+      m_host_interface->bootSystem(std::make_shared<const SystemBootParameters>(path));
+    }
+  }
+  else
+  {
+    m_host_interface->changeDisc(QString::fromStdString(path));
+    m_host_interface->pauseSystem(false);
+    switchToEmulationView();
+  }
 }
 
 void MainWindow::connectSignals()
@@ -1416,6 +1426,39 @@ void MainWindow::changeEvent(QEvent* event)
   }
 
   QMainWindow::changeEvent(event);
+}
+
+static std::string getFilenameFromMimeData(const QMimeData* md)
+{
+  std::string filename;
+  if (md->hasUrls())
+  {
+    // only one url accepted
+    const QList<QUrl> urls(md->urls());
+    if (urls.size() == 1)
+      filename = urls.front().toLocalFile().toStdString();
+  }
+
+  return filename;
+}
+
+void MainWindow::dragEnterEvent(QDragEnterEvent* event)
+{
+  const std::string filename(getFilenameFromMimeData(event->mimeData()));
+  if (!System::IsLoadableFilename(filename.c_str()))
+    return;
+
+  event->acceptProposedAction();
+}
+
+void MainWindow::dropEvent(QDropEvent* event)
+{
+  const std::string filename(getFilenameFromMimeData(event->mimeData()));
+  if (!System::IsLoadableFilename(filename.c_str()))
+    return;
+
+  event->acceptProposedAction();
+  startGameOrChangeDiscs(filename);
 }
 
 void MainWindow::startupUpdateCheck()

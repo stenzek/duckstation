@@ -17,6 +17,9 @@
    <iconset resource="resources/resources.qrc">
     <normaloff>:/icons/duck.png</normaloff>:/icons/duck.png</iconset>
   </property>
+  <property name="acceptDrops">
+    <bool>true</bool>
+  </property>
   <widget class="QStackedWidget" name="mainContainer">
    <property name="currentIndex">
     <number>0</number>

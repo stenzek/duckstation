@@ -111,6 +111,8 @@ private Q_SLOTS:
 protected:
   void closeEvent(QCloseEvent* event) override;
   void changeEvent(QEvent* event) override;
+  void dragEnterEvent(QDragEnterEvent* event) override;
+  void dropEvent(QDropEvent* event) override;
 
 private:
   void setupAdditionalUi();
@@ -120,6 +122,7 @@ private:
   bool isShowingGameList() const;
   void switchToGameListView();
   void switchToEmulationView();
+  void startGameOrChangeDiscs(const std::string& path);
   void saveStateToConfig();
   void restoreStateFromConfig();
   void saveDisplayWindowGeometryToConfig();
