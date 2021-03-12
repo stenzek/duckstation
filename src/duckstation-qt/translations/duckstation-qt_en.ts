@@ -42,6 +42,51 @@
     </message>
 </context>
 <context>
+    <name>OSDMessage</name>
+    <message numerus="yes">
+        <source>Loaded %n cheats from list.</source>
+        <translation>
+            <numerusform>Loaded %n cheat from list.</numerusform>
+            <numerusform>Loaded %n cheats from list.</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source> %n cheats are enabled.</source>
+        <translation>
+            <numerusform> %n cheat is enabled.</numerusform>
+            <numerusform> %n cheats are enabled.</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n cheats are now active.</source>
+        <translation>
+            <numerusform>%n cheat is now active.</numerusform>
+            <numerusform>%n cheats are now active.</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n cheats are now inactive.</source>
+        <translation>
+            <numerusform>%n cheat is now inactive.</numerusform>
+            <numerusform>%n cheats are now inactive.</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>Loaded %n cheats from database.</source>
+        <translation>
+            <numerusform>Loaded %n cheat from database.</numerusform>
+            <numerusform>Loaded %n cheats from database.</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>Saved %n cheats to &apos;%s&apos;.</source>
+        <translation>
+            <numerusform>Saved %n cheat to &apos;%s&apos;.</numerusform>
+            <numerusform>Saved %n cheats to &apos;%s&apos;.</numerusform>
+        </translation>
+    </message>
+</context>
+<context>
     <name>QtHostInterface</name>
     <message numerus="yes">
         <source>%n points</source>

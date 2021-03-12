@@ -1273,10 +1273,10 @@ void CommonHostInterface::DoToggleCheats()
   }
 
   cl->SetMasterEnable(!cl->GetMasterEnable());
-  AddFormattedOSDMessage(10.0f,
-                         cl->GetMasterEnable() ? TranslateString("OSDMessage", "%u cheats are now active.") :
-                                                 TranslateString("OSDMessage", "%u cheats are now inactive."),
-                         cl->GetEnabledCodeCount());
+  AddOSDMessage(cl->GetMasterEnable() ?
+                  TranslateStdString("OSDMessage", "%n cheats are now active.", "", cl->GetEnabledCodeCount()) :
+                  TranslateStdString("OSDMessage", "%n cheats are now inactive.", "", cl->GetEnabledCodeCount()),
+                10.0f);
 }
 
 std::optional<CommonHostInterface::HostKeyCode>
@@ -3041,8 +3041,9 @@ bool CommonHostInterface::LoadCheatList(const char* filename)
     return false;
   }
 
-  AddFormattedOSDMessage(10.0f, TranslateString("OSDMessage", "Loaded %u cheats from list. %u cheats are enabled."),
-                         cl->GetCodeCount(), cl->GetEnabledCodeCount());
+  AddOSDMessage(TranslateStdString("OSDMessage", "Loaded %n cheats from list.", "", cl->GetCodeCount()) +
+                  TranslateStdString("OSDMessage", " %n cheats are enabled.", "", cl->GetEnabledCodeCount()),
+                10.0f);
   System::SetCheatList(std::move(cl));
   return true;
 }
@@ -3068,7 +3069,7 @@ bool CommonHostInterface::LoadCheatListFromDatabase()
   if (!cl->LoadFromPackage(System::GetRunningCode()))
     return false;
 
-  AddFormattedOSDMessage(10.0f, TranslateString("OSDMessage", "Loaded %u cheats from database."), cl->GetCodeCount());
+  AddOSDMessage(TranslateStdString("OSDMessage", "Loaded %n cheats from database.", "", cl->GetCodeCount()), 10.0f);
   System::SetCheatList(std::move(cl));
   return true;
 }
@@ -3098,8 +3099,9 @@ bool CommonHostInterface::SaveCheatList(const char* filename)
   if (!System::GetCheatList()->SaveToPCSXRFile(filename))
     return false;
 
-  AddFormattedOSDMessage(5.0f, TranslateString("OSDMessage", "Saved %u cheats to '%s'."),
-                         System::GetCheatList()->GetCodeCount(), filename);
+  // This shouldn't be needed, but lupdate doesn't gather this string otherwise...
+  const u32 code_count = System::GetCheatList()->GetCodeCount();
+  AddFormattedOSDMessage(5.0f, TranslateString("OSDMessage", "Saved %n cheats to '%s'.", "", code_count), filename);
   return true;
 }
 
