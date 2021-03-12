@@ -161,6 +161,11 @@ String::String(const char* Text) : m_pStringData(const_cast<String::StringData*>
   Assign(Text);
 }
 
+String::String(const char* Text, u32 Count) : m_pStringData(const_cast<String::StringData*>(&s_EmptyStringData))
+{
+  AppendString(Text, Count);
+}
+
 String::String(String&& moveString)
 {
   Assign(moveString);
