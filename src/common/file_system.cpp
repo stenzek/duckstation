@@ -263,6 +263,15 @@ bool IsAbsolutePath(const std::string_view& path)
 #endif
 }
 
+std::string StripExtension(const std::string_view& path)
+{
+  std::string_view::size_type pos = path.rfind('.');
+  if (pos == std::string::npos)
+    return std::string(path);
+
+  return std::string(path, 0, pos);
+}
+
 std::string ReplaceExtension(const std::string_view& path, const std::string_view& new_extension)
 {
   std::string_view::size_type pos = path.rfind('.');

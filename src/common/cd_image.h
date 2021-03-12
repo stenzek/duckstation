@@ -197,6 +197,7 @@ public:
   static std::unique_ptr<CDImage> OpenCHDImage(const char* filename);
   static std::unique_ptr<CDImage> OpenEcmImage(const char* filename);
   static std::unique_ptr<CDImage> OpenMdsImage(const char* filename);
+  static std::unique_ptr<CDImage> OpenPBPImage(const char* filename);
   static std::unique_ptr<CDImage>
   CreateMemoryImage(CDImage* image, ProgressCallback* progress = ProgressCallback::NullProgressCallback);
 

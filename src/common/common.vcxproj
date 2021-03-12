@@ -92,6 +92,7 @@
     <ClInclude Include="make_array.h" />
     <ClInclude Include="md5_digest.h" />
     <ClInclude Include="null_audio_stream.h" />
+    <ClInclude Include="pbp_types.h" />
     <ClInclude Include="progress_callback.h" />
     <ClInclude Include="memory_arena.h" />
     <ClInclude Include="page_fault_handler.h" />
@@ -134,6 +135,7 @@
     <ClCompile Include="cd_image_hasher.cpp" />
     <ClCompile Include="cd_image_mds.cpp" />
     <ClCompile Include="cd_image_memory.cpp" />
+    <ClCompile Include="cd_image_pbp.cpp" />
     <ClCompile Include="crash_handler.cpp" />
     <ClCompile Include="d3d11\shader_cache.cpp" />
     <ClCompile Include="d3d11\shader_compiler.cpp" />

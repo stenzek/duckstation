@@ -143,6 +143,9 @@ void SanitizeFileName(std::string& Destination, bool StripSlashes = true);
 /// Returns true if the specified path is an absolute path (C:\Path on Windows or /path on Unix).
 bool IsAbsolutePath(const std::string_view& path);
 
+/// Removes the extension of a filename.
+std::string StripExtension(const std::string_view& path);
+
 /// Replaces the extension of a filename with another.
 std::string ReplaceExtension(const std::string_view& path, const std::string_view& new_extension);
 

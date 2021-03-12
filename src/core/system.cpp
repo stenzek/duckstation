@@ -299,8 +299,8 @@ bool IsLoadableFilename(const char* path)
   static constexpr auto extensions = make_array(".bin", ".cue", ".img", ".iso", ".chd", ".ecm", ".mds", // discs
                                                 ".exe", ".psexe",                                       // exes
                                                 ".psf", ".minipsf",                                     // psf
-                                                ".m3u"                                                  // playlists
-  );
+                                                ".m3u",                                                 // playlists
+                                                ".pbp");
   const char* extension = std::strrchr(path, '.');
   if (!extension)
     return false;
