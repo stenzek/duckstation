@@ -118,8 +118,10 @@ public:
   virtual std::vector<std::string> GetSettingStringList(const char* section, const char* key) = 0;
 
   /// Translates a string to the current language.
-  virtual TinyString TranslateString(const char* context, const char* str) const;
-  virtual std::string TranslateStdString(const char* context, const char* str) const;
+  virtual TinyString TranslateString(const char* context, const char* str, const char* disambiguation = nullptr,
+                                     int n = -1) const;
+  virtual std::string TranslateStdString(const char* context, const char* str, const char* disambiguation = nullptr,
+                                         int n = -1) const;
 
   /// Returns the refresh rate for the "main" display. Use when it's not possible to query the graphics API for the
   /// refresh rate of the monitor the window is running in.

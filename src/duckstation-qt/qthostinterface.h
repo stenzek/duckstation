@@ -64,8 +64,10 @@ public:
   void SetStringListSettingValue(const char* section, const char* key, const std::vector<std::string>& values);
   void RemoveSettingValue(const char* section, const char* key);
 
-  TinyString TranslateString(const char* context, const char* str) const override;
-  std::string TranslateStdString(const char* context, const char* str) const override;
+  TinyString TranslateString(const char* context, const char* str, const char* disambiguation = nullptr,
+                             int n = -1) const override;
+  std::string TranslateStdString(const char* context, const char* str, const char* disambiguation = nullptr,
+                                 int n = -1) const override;
 
   bool RequestRenderWindowSize(s32 new_window_width, s32 new_window_height) override;
   void* GetTopLevelWindowHandle() const override;
@@ -262,8 +264,6 @@ private:
   void updateDisplayState();
   void queueSettingsSave();
   void wakeThread();
-
-  std::unique_ptr<QTranslator> m_translator;
 
   MainWindow* m_main_window = nullptr;
   QThread* m_original_thread = nullptr;
