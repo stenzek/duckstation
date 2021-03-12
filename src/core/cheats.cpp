@@ -771,7 +771,8 @@ bool CheatList::LoadFromPackage(const std::string& game_code)
       if (start == end)
         continue;
 
-      if (start[0] == ':' && !m_codes.empty())
+      // stop adding codes when we hit a different game
+      if (start[0] == ':' && (!m_codes.empty() || current_code.Valid()))
         break;
 
       if (start[0] == '#')
