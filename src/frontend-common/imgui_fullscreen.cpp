@@ -226,7 +226,10 @@ void EndLayout()
 
   const float notification_margin = LayoutScale(10.0f);
   const float spacing = LayoutScale(10.0f);
-  ImVec2 position(notification_margin, ImGui::GetIO().DisplaySize.y - notification_margin);
+  const float notification_vertical_pos = GetNotificationVerticalPosition();
+  ImVec2 position(notification_margin,
+                  notification_vertical_pos * ImGui::GetIO().DisplaySize.y +
+                    ((notification_vertical_pos >= 0.5f) ? -notification_margin : notification_margin));
   DrawBackgroundProgressDialogs(position, spacing);
   DrawNotifications(position, spacing);
 
@@ -1323,6 +1326,25 @@ void DrawChoiceDialog()
   }
 }
 
+static float s_notification_vertical_position = 1.0f;
+static float s_notification_vertical_direction = -1.0f;
+
+float GetNotificationVerticalPosition()
+{
+  return s_notification_vertical_position;
+}
+
+float GetNotificationVerticalDirection()
+{
+  return s_notification_vertical_direction;
+}
+
+void SetNotificationVerticalPosition(float position, float direction)
+{
+  s_notification_vertical_position = position;
+  s_notification_vertical_direction = direction;
+}
+
 struct BackgroundProgressDialogData
 {
   std::string message;
@@ -1421,7 +1443,7 @@ void DrawBackgroundProgressDialogs(ImVec2& position, float spacing)
   for (const BackgroundProgressDialogData& data : s_background_progress_dialogs)
   {
     const float window_pos_x = position.x;
-    const float window_pos_y = position.y - window_height;
+    const float window_pos_y = position.y - ((s_notification_vertical_direction < 0.0f) ? window_height : 0.0f);
 
     dl->AddRectFilled(ImVec2(window_pos_x, window_pos_y),
                       ImVec2(window_pos_x + window_width, window_pos_y + window_height),
@@ -1445,7 +1467,7 @@ void DrawBackgroundProgressDialogs(ImVec2& position, float spacing)
                           pos.y + ((bar_end.y - pos.y) / 2.0f) - (text_size.y / 2.0f));
     dl->AddText(g_medium_font, g_medium_font->FontSize, text_pos, ImGui::GetColorU32(UIPrimaryTextColor()), text);
 
-    position.y -= window_height + spacing;
+    position.y += s_notification_vertical_direction * (window_height + spacing);
   }
 
   ImGui::PopFont();
@@ -1547,7 +1569,8 @@ void DrawNotifications(ImVec2& position, float spacing)
       x_offset = -(disp - (disp * Easing::OutBack((notif.duration - time_passed) / EASE_OUT_TIME)));
     }
 
-    const ImVec2 box_min(position.x + x_offset, position.y - box_height);
+    const ImVec2 box_min(position.x + x_offset,
+                         position.y - ((s_notification_vertical_direction < 0.0f) ? box_height : 0.0f));
     const ImVec2 box_max(box_min.x + box_width, box_min.y + box_height);
 
     ImDrawList* dl = ImGui::GetForegroundDrawList();
@@ -1577,7 +1600,7 @@ void DrawNotifications(ImVec2& position, float spacing)
     dl->AddText(text_font, text_font->FontSize, text_min, toast_text_color, notif.text.c_str(),
                 notif.text.c_str() + notif.text.size(), max_text_width);
 
-    position.y -= box_height + shadow_size + spacing;
+    position.y += s_notification_vertical_direction * (box_height + shadow_size + spacing);
     index++;
   }
 }

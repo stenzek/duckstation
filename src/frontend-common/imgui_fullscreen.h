@@ -244,6 +244,10 @@ bool IsChoiceDialogOpen();
 void OpenChoiceDialog(const char* title, bool checkable, ChoiceDialogOptions options, ChoiceDialogCallback callback);
 void CloseChoiceDialog();
 
+float GetNotificationVerticalPosition();
+float GetNotificationVerticalDirection();
+void SetNotificationVerticalPosition(float position, float direction);
+
 void OpenBackgroundProgressDialog(const char* str_id, std::string message, s32 min, s32 max, s32 value);
 void UpdateBackgroundProgressDialog(const char* str_id, std::string message, s32 min, s32 max, s32 value);
 void CloseBackgroundProgressDialog(const char* str_id);
