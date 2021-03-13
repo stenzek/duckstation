@@ -435,6 +435,7 @@ void Logout()
   {
     GetHostInterface()->GetSettingsInterface()->DeleteValue("Cheevos", "Username");
     GetHostInterface()->GetSettingsInterface()->DeleteValue("Cheevos", "Token");
+    GetHostInterface()->GetSettingsInterface()->DeleteValue("Cheevos", "LoginTimestamp");
     GetHostInterface()->GetSettingsInterface()->Save();
   }
 }
