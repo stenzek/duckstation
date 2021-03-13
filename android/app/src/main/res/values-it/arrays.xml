@@ -82,6 +82,7 @@
         <item>Carica Stato</item>
         <item>Salva Stato</item>
         <item>Abilita/Disabilita Avanti Veloce</item>
+        <item>Achievements</item>
         <item>Altre Opzioni</item>
         <item>Esci</item>
     </string-array>
@@ -139,6 +140,7 @@
         <item>Audio</item>
         <item>Miglioramenti</item>
         <item>Controller</item>
+        <item>Achievements</item>
         <item>Avanzate</item>
     </string-array>
     <string-array name="settings_gpu_msaa_entries">

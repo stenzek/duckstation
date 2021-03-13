@@ -82,6 +82,7 @@
 		<item>Загрузить состояние</item>
 		<item>Сохранить состояние</item>
 		<item>Включить ускорение</item>
+		<item>Achievements</item>
 		<item>Другие опции</item>
 		<item>Выход</item>
 	</string-array>
@@ -93,11 +94,11 @@
 		<item>Настройки эмулятора</item>
 	</string-array>
 	<string-array name="emulation_touchscreen_menu">
-        	<item>Сменить вид</item>
-        	<item>Настроить видимость</item>
-        	<item>Добавить/убрать кнопки</item>
-        	<item>Изменить макет</item>
-    	</string-array>
+		<item>Сменить вид</item>
+		<item>Настроить видимость</item>
+		<item>Добавить/убрать кнопки</item>
+		<item>Изменить макет</item>
+	</string-array>
 	<string-array name="settings_cdrom_read_speedup_entries">
 		<item>Нет (двойная скорость)</item>
 		<item>2x (скорость 4x)</item>
@@ -145,6 +146,7 @@
 		<item>Звук</item>
 		<item>Улучшения</item>
 		<item>Контроллеры</item>
+		<item>Achievements</item>
 		<item>Расширенные</item>
 	</string-array>
 	<string-array name="settings_gpu_msaa_entries">

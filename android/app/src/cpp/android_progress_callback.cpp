@@ -1,11 +1,10 @@
 #include "android_progress_callback.h"
 #include "android_host_interface.h"
-#include "common/log.h"
 #include "common/assert.h"
+#include "common/log.h"
 Log_SetChannel(AndroidProgressCallback);
 
-AndroidProgressCallback::AndroidProgressCallback(JNIEnv* env, jobject java_object)
-  : m_java_object(java_object)
+AndroidProgressCallback::AndroidProgressCallback(JNIEnv* env, jobject java_object) : m_java_object(java_object)
 {
   jclass cls = env->GetObjectClass(java_object);
   m_set_title_method = env->GetMethodID(cls, "setTitle", "(Ljava/lang/String;)V");
@@ -15,7 +14,8 @@ AndroidProgressCallback::AndroidProgressCallback(JNIEnv* env, jobject java_objec
   m_modal_error_method = env->GetMethodID(cls, "modalError", "(Ljava/lang/String;)V");
   m_modal_information_method = env->GetMethodID(cls, "modalInformation", "(Ljava/lang/String;)V");
   m_modal_confirmation_method = env->GetMethodID(cls, "modalConfirmation", "(Ljava/lang/String;)Z");
-  Assert(m_set_status_text_method && m_set_progress_range_method && m_set_progress_value_method && m_modal_error_method && m_modal_information_method && m_modal_confirmation_method);
+  Assert(m_set_status_text_method && m_set_progress_range_method && m_set_progress_value_method &&
+         m_modal_error_method && m_modal_information_method && m_modal_confirmation_method);
 }
 
 AndroidProgressCallback::~AndroidProgressCallback() = default;

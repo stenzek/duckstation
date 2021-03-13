@@ -3,6 +3,8 @@ set(SRCS
   android_controller_interface.h
   android_host_interface.cpp
   android_host_interface.h
+  android_http_downloader.cpp
+  android_http_downloader.h
   android_progress_callback.cpp
   android_progress_callback.h
   android_settings_interface.cpp

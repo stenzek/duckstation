@@ -109,6 +109,7 @@ private:
 
 namespace AndroidHelpers {
 
+JavaVM* GetJavaVM();
 JNIEnv* GetJNIEnv();
 AndroidHostInterface* GetNativeClass(JNIEnv* env, jobject obj);
 std::string JStringToString(JNIEnv* env, jstring str);
