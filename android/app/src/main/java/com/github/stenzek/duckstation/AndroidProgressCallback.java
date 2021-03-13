@@ -12,6 +12,8 @@ public class AndroidProgressCallback {
     public AndroidProgressCallback(Activity context) {
         mContext = context;
         mDialog = new ProgressDialog(context);
+        mDialog.setCancelable(false);
+        mDialog.setCanceledOnTouchOutside(false);
         mDialog.setMessage(context.getString(R.string.android_progress_callback_please_wait));
         mDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         mDialog.setIndeterminate(false);
