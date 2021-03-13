@@ -543,7 +543,7 @@ static std::optional<std::string> GetEntryValueForKey(const Entry& entry, const 
     else
     {
       return StringUtil::StdStringFromFormat("%u%s", entry.gpu_multisamples.value(),
-                                             entry.gpu_multisamples.value_or(false) ? "-ssaa" : "");
+                                             entry.gpu_per_sample_shading.value_or(false) ? "-ssaa" : "");
     }
   }
   else if (key == "GPUTrueColor")
