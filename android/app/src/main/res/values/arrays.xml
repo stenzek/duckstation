@@ -104,7 +104,7 @@
         <item>PAR 1:1</item>
     </string-array>
     <string-array name="settings_display_aspect_ratio_values">
-        <item>Auto</item>
+        <item>Auto (Game Native)</item>
         <item>4:3</item>
         <item>16:9</item>
         <item>16:10</item>
