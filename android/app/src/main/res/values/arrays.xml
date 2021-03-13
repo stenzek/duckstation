@@ -161,6 +161,7 @@
         <item>Load State</item>
         <item>Save State</item>
         <item>Toggle Fast Forward</item>
+        <item>Achievements</item>
         <item>More Options</item>
         <item>Quit</item>
     </string-array>
@@ -265,6 +266,7 @@
         <item>Audio</item>
         <item>Enhancements</item>
         <item>Controllers</item>
+        <item>Achievements</item>
         <item>Advanced</item>
     </string-array>
     <string-array name="settings_gpu_msaa_entries">

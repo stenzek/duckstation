@@ -51,7 +51,7 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     public static class SettingsFragment extends PreferenceFragmentCompat {
-        private int resourceId;
+        private final int resourceId;
 
         public SettingsFragment(int resourceId) {
             this.resourceId = resourceId;
@@ -110,7 +110,10 @@ public class SettingsActivity extends AppCompatActivity {
                 case 4:     // Controllers
                     return new SettingsFragment(R.xml.controllers_preferences);
 
-                case 5:     // Advanced
+                case 5:     // Achievements
+                    return new AchievementSettingsFragment();
+
+                case 6:     // Advanced
                     return new SettingsFragment(R.xml.advanced_preferences);
 
                 default:
@@ -120,7 +123,7 @@ public class SettingsActivity extends AppCompatActivity {
 
         @Override
         public int getItemCount() {
-            return 6;
+            return 7;
         }
     }
 }

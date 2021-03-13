@@ -144,6 +144,20 @@ public class AndroidHostInterface {
 
     public native SaveStateInfo[] getSaveStateInfo(boolean includeEmpty);
 
+    public native void setFullscreenUINotificationVerticalPosition(float position, float direction);
+
+    public native boolean isCheevosActive();
+    public native boolean isCheevosChallengeModeActive();
+    public native Achievement[] getCheevoList();
+    public native int getCheevoCount();
+    public native int getUnlockedCheevoCount();
+    public native int getCheevoPointsForGame();
+    public native int getCheevoMaximumPointsForGame();
+    public native String getCheevoGameTitle();
+    public native String getCheevoGameIconPath();
+    public native boolean cheevosLogin(String username, String password);
+    public native void cheevosLogout();
+
     static {
         System.loadLibrary("duckstation-native");
     }

@@ -1,6 +1,7 @@
 package com.github.stenzek.duckstation;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
@@ -26,6 +27,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentManager;
 import androidx.preference.PreferenceManager;
 
 /**
@@ -392,6 +394,21 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
             AndroidHostInterface.getInstance().pauseEmulationThread(false);
     }
 
+    private boolean disableDialogMenuItem(AlertDialog dialog, int index) {
+        final ListView listView = dialog.getListView();
+        if (listView == null)
+            return false;
+
+        final View childItem = listView.getChildAt(index);
+        if (childItem == null)
+            return false;
+
+        childItem.setEnabled(false);
+        childItem.setClickable(false);
+        childItem.setOnClickListener((v) -> {});
+        return true;
+    }
+
     private void showMenu() {
         if (getBooleanSetting("Main/PauseOnMenu", false) &&
                 !AndroidHostInterface.getInstance().isEmulationThreadPaused()) {
@@ -401,6 +418,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         if (mGameTitle != null && !mGameTitle.isEmpty())
             builder.setTitle(mGameTitle);
+
         builder.setItems(R.array.emulation_menu, (dialogInterface, i) -> {
             switch (i) {
                 case 0:     // Load State
@@ -422,13 +440,19 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
                     return;
                 }
 
-                case 3:     // More Options
+                case 3:     // Achievements
+                {
+                    showAchievementsPopup();
+                    return;
+                }
+
+                case 4:     // More Options
                 {
                     showMoreMenu();
                     return;
                 }
 
-                case 4:     // Quit
+                case 5:     // Quit
                 {
                     mStopRequested = true;
                     finish();
@@ -437,7 +461,18 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
             }
         });
         builder.setOnCancelListener(dialogInterface -> onMenuClosed());
-        builder.create().show();
+
+        final AlertDialog dialog = builder.create();
+        dialog.setOnShowListener(dialogInterface -> {
+            // Disable cheevos if not loaded.
+            if (AndroidHostInterface.getInstance().getCheevoCount() == 0)
+                disableDialogMenuItem(dialog, 3);
+
+            // Disable load state for challenge mode.
+            if (AndroidHostInterface.getInstance().isCheevosChallengeModeActive())
+                disableDialogMenuItem(dialog, 0);
+        });
+        dialog.show();
     }
 
     private void showSaveStateMenu(boolean saving) {
@@ -512,7 +547,14 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
             }
         });
         builder.setOnCancelListener(dialogInterface -> onMenuClosed());
-        builder.create().show();
+
+        final AlertDialog dialog = builder.create();
+        dialog.setOnShowListener(dialogInterface -> {
+            // Disable patch codes when challenge mode is active.
+            if (AndroidHostInterface.getInstance().isCheevosChallengeModeActive())
+                disableDialogMenuItem(dialog, 1);
+        });
+        dialog.show();
     }
 
     private void showTouchscreenControllerMenu() {
@@ -660,6 +702,18 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         builder.create().show();
     }
 
+    private void showAchievementsPopup() {
+        final Achievement[] achievements = AndroidHostInterface.getInstance().getCheevoList();
+        if (achievements == null) {
+            onMenuClosed();
+            return;
+        }
+
+        final AchievementListFragment alf = new AchievementListFragment(achievements);
+        alf.show(getSupportFragmentManager(), "fragment_achievement_list");
+        alf.setOnDismissListener(dialog -> onMenuClosed());
+    }
+
     /**
      * Touchscreen controller overlay
      */
@@ -697,6 +751,16 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
             mVibratorService = (Vibrator) getSystemService(VIBRATOR_SERVICE);
         else
             mVibratorService = null;
+
+        // Place notifications in the middle of the screen, rather then the bottom (because touchscreen).
+        float notificationVerticalPosition = 1.0f;
+        float notificationVerticalDirection = -1.0f;
+        if (mTouchscreenController != null) {
+            notificationVerticalPosition = 0.3f;
+            notificationVerticalDirection = -1.0f;
+        }
+        AndroidHostInterface.getInstance().setFullscreenUINotificationVerticalPosition(
+                notificationVerticalPosition, notificationVerticalDirection);
     }
 
     private InputManager.InputDeviceListener mInputDeviceListener;

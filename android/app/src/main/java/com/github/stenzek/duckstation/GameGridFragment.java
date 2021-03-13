@@ -98,26 +98,7 @@ public class GameGridFragment extends Fragment implements GameList.OnRefreshList
 
         @Override
         public boolean onLongClick(View v) {
-            PopupMenu menu = new PopupMenu(mParent, v, Gravity.RIGHT | Gravity.TOP);
-            menu.getMenuInflater().inflate(R.menu.menu_game_list_entry, menu.getMenu());
-            menu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                @Override
-                public boolean onMenuItemClick(MenuItem item) {
-                    int id = item.getItemId();
-                    if (id == R.id.game_list_entry_menu_start_game) {
-                        mParent.startEmulation(mEntry.getPath(), false);
-                        return true;
-                    } else if (id == R.id.game_list_entry_menu_resume_game) {
-                        mParent.startEmulation(mEntry.getPath(), true);
-                        return true;
-                    } else if (id == R.id.game_list_entry_menu_properties) {
-                        mParent.openGameProperties(mEntry.getPath());
-                        return true;
-                    }
-                    return false;
-                }
-            });
-            menu.show();
+            mParent.openGamePopupMenu(v, mEntry);
             return true;
         }
     }

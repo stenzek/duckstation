@@ -15,7 +15,9 @@
 #include "core/gpu.h"
 #include "core/host_display.h"
 #include "core/system.h"
+#include "frontend-common/cheevos.h"
 #include "frontend-common/game_list.h"
+#include "frontend-common/imgui_fullscreen.h"
 #include "frontend-common/imgui_styles.h"
 #include "frontend-common/opengl_host_display.h"
 #include "frontend-common/vulkan_host_display.h"
@@ -53,6 +55,8 @@ static jclass s_GameListEntry_class;
 static jmethodID s_GameListEntry_constructor;
 static jclass s_SaveStateInfo_class;
 static jmethodID s_SaveStateInfo_constructor;
+static jclass s_Achievement_class;
+static jmethodID s_Achievement_constructor;
 
 namespace AndroidHelpers {
 JavaVM* GetJavaVM()
@@ -445,6 +449,10 @@ void AndroidHostInterface::EmulationThreadLoop(JNIEnv* env)
       }
     }
 
+    // we don't do a full PollAndUpdate() here
+    if (Cheevos::IsActive())
+      Cheevos::Update();
+
     // simulate the system if not paused
     if (System::IsRunning())
     {
@@ -598,8 +606,11 @@ void AndroidHostInterface::SurfaceChanged(ANativeWindow* surface, int format, in
   Log_InfoPrintf("SurfaceChanged %p %d %d %d", surface, format, width, height);
   if (m_surface == surface)
   {
-    if (m_display)
+    if (m_display && (width != m_display->GetWindowWidth() || height != m_display->GetWindowHeight()))
+    {
       m_display->ResizeRenderWindow(width, height);
+      OnHostDisplayResized(width, height, m_display->GetWindowScale());
+    }
 
     return;
   }
@@ -616,6 +627,8 @@ void AndroidHostInterface::SurfaceChanged(ANativeWindow* surface, int format, in
     wi.surface_scale = m_display->GetWindowScale();
 
     m_display->ChangeRenderWindow(wi);
+    if (surface)
+      OnHostDisplayResized(width, height, m_display->GetWindowScale());
 
     if (surface && System::GetState() == System::State::Paused)
       PauseSystem(false);
@@ -820,7 +833,8 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
 
   // Create global reference so it doesn't get cleaned up.
   JNIEnv* env = AndroidHelpers::GetJNIEnv();
-  jclass string_class, host_interface_class, patch_code_class, game_list_entry_class, save_state_info_class;
+  jclass string_class, host_interface_class, patch_code_class, game_list_entry_class, save_state_info_class,
+    achievement_class;
   if ((string_class = env->FindClass("java/lang/String")) == nullptr ||
       (s_String_class = static_cast<jclass>(env->NewGlobalRef(string_class))) == nullptr ||
       (host_interface_class = env->FindClass("com/github/stenzek/duckstation/AndroidHostInterface")) == nullptr ||
@@ -830,7 +844,9 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
       (game_list_entry_class = env->FindClass("com/github/stenzek/duckstation/GameListEntry")) == nullptr ||
       (s_GameListEntry_class = static_cast<jclass>(env->NewGlobalRef(game_list_entry_class))) == nullptr ||
       (save_state_info_class = env->FindClass("com/github/stenzek/duckstation/SaveStateInfo")) == nullptr ||
-      (s_SaveStateInfo_class = static_cast<jclass>(env->NewGlobalRef(save_state_info_class))) == nullptr)
+      (s_SaveStateInfo_class = static_cast<jclass>(env->NewGlobalRef(save_state_info_class))) == nullptr ||
+      (achievement_class = env->FindClass("com/github/stenzek/duckstation/Achievement")) == nullptr ||
+      (s_Achievement_class = static_cast<jclass>(env->NewGlobalRef(achievement_class))) == nullptr)
   {
     Log_ErrorPrint("AndroidHostInterface class lookup failed");
     return -1;
@@ -840,6 +856,7 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
   env->DeleteLocalRef(host_interface_class);
   env->DeleteLocalRef(patch_code_class);
   env->DeleteLocalRef(game_list_entry_class);
+  env->DeleteLocalRef(achievement_class);
 
   jclass emulation_activity_class;
   if ((s_AndroidHostInterface_constructor =
@@ -876,7 +893,10 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
       (s_SaveStateInfo_constructor = env->GetMethodID(
          s_SaveStateInfo_class, "<init>",
          "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IZII[B)V")) ==
-        nullptr)
+        nullptr ||
+      (s_Achievement_constructor =
+         env->GetMethodID(s_Achievement_class, "<init>",
+                          "(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IZ)V")) == nullptr)
   {
     Log_ErrorPrint("AndroidHostInterface lookups failed");
     return -1;
@@ -1652,4 +1672,107 @@ DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_toggleControllerAnalogMode, jo
     ctrl->SetButtonState(code.value(), true);
     ctrl->SetButtonState(code.value(), false);
   }
+}
+
+DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_setFullscreenUINotificationVerticalPosition, jobject obj,
+                       jfloat position, jfloat direction)
+{
+  AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
+  hi->RunOnEmulationThread(
+    [position, direction]() { ImGuiFullscreen::SetNotificationVerticalPosition(position, direction); });
+}
+
+DEFINE_JNI_ARGS_METHOD(jboolean, AndroidHostInterface_isCheevosActive, jobject obj)
+{
+  return Cheevos::IsActive();
+}
+
+DEFINE_JNI_ARGS_METHOD(jboolean, AndroidHostInterface_isCheevosChallengeModeActive, jobject obj)
+{
+  return Cheevos::IsChallengeModeActive();
+}
+
+DEFINE_JNI_ARGS_METHOD(jobjectArray, AndroidHostInterface_getCheevoList, jobject obj)
+{
+  if (!Cheevos::IsActive())
+    return nullptr;
+
+  std::vector<jobject> cheevos;
+  Cheevos::EnumerateAchievements([env, &cheevos](const Cheevos::Achievement& cheevo) {
+    jstring title = env->NewStringUTF(cheevo.title.c_str());
+    jstring description = env->NewStringUTF(cheevo.description.c_str());
+    jstring locked_badge_path =
+      cheevo.locked_badge_path.empty() ? nullptr : env->NewStringUTF(cheevo.locked_badge_path.c_str());
+    jstring unlocked_badge_path =
+      cheevo.unlocked_badge_path.empty() ? nullptr : env->NewStringUTF(cheevo.unlocked_badge_path.c_str());
+
+    jobject object = env->NewObject(s_Achievement_class, s_Achievement_constructor, static_cast<jint>(cheevo.id), title,
+                                    description, locked_badge_path, unlocked_badge_path,
+                                    static_cast<jint>(cheevo.points), static_cast<jboolean>(cheevo.locked));
+    cheevos.push_back(object);
+
+    if (unlocked_badge_path)
+      env->DeleteLocalRef(unlocked_badge_path);
+    if (locked_badge_path)
+      env->DeleteLocalRef(locked_badge_path);
+    env->DeleteLocalRef(description);
+    env->DeleteLocalRef(title);
+    return true;
+  });
+
+  if (cheevos.empty())
+    return nullptr;
+
+  jobjectArray ret = env->NewObjectArray(static_cast<jsize>(cheevos.size()), s_Achievement_class, nullptr);
+  for (size_t i = 0; i < cheevos.size(); i++)
+  {
+    env->SetObjectArrayElement(ret, static_cast<jsize>(i), cheevos[i]);
+    env->DeleteLocalRef(cheevos[i]);
+  }
+
+  return ret;
+}
+
+DEFINE_JNI_ARGS_METHOD(jint, AndroidHostInterface_getCheevoCount, jobject obj)
+{
+  return Cheevos::GetAchievementCount();
+}
+
+DEFINE_JNI_ARGS_METHOD(jint, AndroidHostInterface_getUnlockedCheevoCount, jobject obj)
+{
+  return Cheevos::GetUnlockedAchiementCount();
+}
+
+DEFINE_JNI_ARGS_METHOD(jint, AndroidHostInterface_getCheevoPointsForGame, jobject obj)
+{
+  return Cheevos::GetCurrentPointsForGame();
+}
+
+DEFINE_JNI_ARGS_METHOD(jint, AndroidHostInterface_getCheevoMaximumPointsForGame, jobject obj)
+{
+  return Cheevos::GetMaximumPointsForGame();
+}
+
+DEFINE_JNI_ARGS_METHOD(jstring, AndroidHostInterface_getCheevoGameTitle, jobject obj)
+{
+  const std::string& title = Cheevos::GetGameTitle();
+  return title.empty() ? nullptr : env->NewStringUTF(title.c_str());
+}
+
+DEFINE_JNI_ARGS_METHOD(jstring, AndroidHostInterface_getCheevoGameIconPath, jobject obj)
+{
+  const std::string& path = Cheevos::GetGameIcon();
+  return path.empty() ? nullptr : env->NewStringUTF(path.c_str());
+}
+
+DEFINE_JNI_ARGS_METHOD(jboolean, AndroidHostInterface_cheevosLogin, jobject obj, jstring username, jstring password)
+{
+  const std::string username_str(AndroidHelpers::JStringToString(env, username));
+  const std::string password_str(AndroidHelpers::JStringToString(env, password));
+  return Cheevos::Login(username_str.c_str(), password_str.c_str());
+}
+
+DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_cheevosLogout, jobject obj)
+{
+  return Cheevos::Logout();
 }

@@ -114,6 +114,7 @@ void AndroidHTTPDownloader::ProcessRequest(Request* req)
     }
 
     env->DeleteLocalRef(obj);
+    AndroidHelpers::GetJavaVM()->DetachCurrentThread();
   }
   else
   {

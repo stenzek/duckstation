@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -65,7 +66,14 @@ public class MainActivity extends AppCompatActivity {
 
     public boolean shouldResumeStateByDefault() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        return prefs.getBoolean("Main/SaveStateOnExit", true);
+        if (!prefs.getBoolean("Main/SaveStateOnExit", true))
+            return false;
+
+        // don't resume with challenge mode on
+        if (Achievement.willChallengeModeBeEnabled(this))
+            return false;
+
+        return true;
     }
 
     private void setLanguage() {
@@ -339,6 +347,34 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra("path", path);
         startActivity(intent);
         return true;
+    }
+
+    public void openGamePopupMenu(View anchorToView, GameListEntry entry) {
+        androidx.appcompat.widget.PopupMenu menu = new androidx.appcompat.widget.PopupMenu(this, anchorToView, Gravity.RIGHT | Gravity.TOP);
+        menu.getMenuInflater().inflate(R.menu.menu_game_list_entry, menu.getMenu());
+        menu.setOnMenuItemClickListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.game_list_entry_menu_start_game) {
+                startEmulation(entry.getPath(), false);
+                return true;
+            } else if (id == R.id.game_list_entry_menu_resume_game) {
+                startEmulation(entry.getPath(), true);
+                return true;
+            } else if (id == R.id.game_list_entry_menu_properties) {
+                openGameProperties(entry.getPath());
+                return true;
+            }
+            return false;
+        });
+
+        // disable resume state when challenge mode is on
+        if (Achievement.willChallengeModeBeEnabled(this)) {
+            MenuItem item = menu.getMenu().findItem(R.id.game_list_entry_menu_resume_game);
+            if (item != null)
+                item.setEnabled(false);
+        }
+
+        menu.show();
     }
 
     public boolean startEmulation(String bootPath, boolean resumeState) {

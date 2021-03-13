@@ -82,6 +82,7 @@
         <item>Staat Laden</item>
         <item>Staat Opslaan</item>
         <item>Doorspoelen aan/uitzetten</item>
+        <item>Achievements</item>
         <item>Meer Opties</item>
         <item>Afsluiten</item>
     </string-array>
@@ -139,6 +140,7 @@
         <item>Audio</item>
         <item>Verbeteringen</item>
         <item>Controllers</item>
+        <item>Achievements</item>
         <item>Geavanceerd</item>
     </string-array>
     <string-array name="settings_gpu_msaa_entries">
