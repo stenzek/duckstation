@@ -174,8 +174,13 @@ void GPU_HW_Vulkan::ResetGraphicsAPIState()
   EndRenderPass();
 
   if (m_host_display->GetDisplayTextureHandle() == &m_vram_texture)
+  {
     m_vram_texture.TransitionToLayout(g_vulkan_context->GetCurrentCommandBuffer(),
                                       VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+  }
+
+  // this is called at the end of the frame, so the UBO is associated with the previous command buffer.
+  m_batch_ubo_dirty = true;
 }
 
 void GPU_HW_Vulkan::RestoreGraphicsAPIState()
@@ -238,9 +243,7 @@ void GPU_HW_Vulkan::MapBatchVertexPointer(u32 required_vertices)
   if (!m_vertex_stream_buffer.ReserveMemory(required_space, sizeof(BatchVertex)))
   {
     Log_PerfPrintf("Executing command buffer while waiting for %u bytes in vertex stream buffer", required_space);
-    EndRenderPass();
-    g_vulkan_context->ExecuteCommandBuffer(false);
-    RestoreGraphicsAPIState();
+    ExecuteCommandBuffer(false, true);
     if (!m_vertex_stream_buffer.ReserveMemory(required_space, sizeof(BatchVertex)))
       Panic("Failed to reserve vertex stream buffer memory");
   }
@@ -268,9 +271,7 @@ void GPU_HW_Vulkan::UploadUniformBuffer(const void* data, u32 data_size)
   if (!m_uniform_stream_buffer.ReserveMemory(data_size, alignment))
   {
     Log_PerfPrintf("Executing command buffer while waiting for %u bytes in uniform stream buffer", data_size);
-    EndRenderPass();
-    g_vulkan_context->ExecuteCommandBuffer(false);
-    RestoreGraphicsAPIState();
+    ExecuteCommandBuffer(false, true);
     if (!m_uniform_stream_buffer.ReserveMemory(data_size, alignment))
       Panic("Failed to reserve uniform stream buffer memory");
   }
@@ -403,6 +404,15 @@ void GPU_HW_Vulkan::EndRenderPass()
 
   vkCmdEndRenderPass(g_vulkan_context->GetCurrentCommandBuffer());
   m_current_render_pass = VK_NULL_HANDLE;
+}
+
+void GPU_HW_Vulkan::ExecuteCommandBuffer(bool wait_for_completion, bool restore_state)
+{
+  EndRenderPass();
+  g_vulkan_context->ExecuteCommandBuffer(wait_for_completion);
+  m_batch_ubo_dirty = true;
+  if (restore_state)
+    RestoreGraphicsAPIState();
 }
 
 bool GPU_HW_Vulkan::CreatePipelineLayouts()
@@ -1459,11 +1469,10 @@ void GPU_HW_Vulkan::ReadVRAM(u32 x, u32 y, u32 width, u32 height)
                                                   encoded_height);
 
   // And copy it into our shadow buffer (will execute command buffer and stall).
+  ExecuteCommandBuffer(true, true);
   m_vram_readback_staging_texture.ReadTexels(0, 0, encoded_width, encoded_height,
                                              &m_vram_shadow[copy_rect.top * VRAM_WIDTH + copy_rect.left],
                                              VRAM_WIDTH * sizeof(u16));
-
-  RestoreGraphicsAPIState();
 }
 
 void GPU_HW_Vulkan::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
@@ -1521,9 +1530,7 @@ void GPU_HW_Vulkan::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
   if (!m_texture_stream_buffer.ReserveMemory(data_size, alignment))
   {
     Log_PerfPrintf("Executing command buffer while waiting for %u bytes in stream buffer", data_size);
-    EndRenderPass();
-    g_vulkan_context->ExecuteCommandBuffer(false);
-    RestoreGraphicsAPIState();
+    ExecuteCommandBuffer(false, true);
     if (!m_texture_stream_buffer.ReserveMemory(data_size, alignment))
     {
       Panic("Failed to allocate space in stream buffer for VRAM write");
@@ -1731,7 +1738,7 @@ bool GPU_HW_Vulkan::BlitVRAMReplacementTexture(const TextureReplacementTexture* 
   if (!m_texture_replacment_stream_buffer.ReserveMemory(required_size, alignment))
   {
     Log_PerfPrint("Executing command buffer while waiting for texture replacement buffer space");
-    g_vulkan_context->ExecuteCommandBuffer(false);
+    ExecuteCommandBuffer(false, true);
     if (!m_texture_replacment_stream_buffer.ReserveMemory(required_size, alignment))
     {
       Log_ErrorPrintf("Failed to allocate %u bytes from texture replacement streaming buffer", required_size);

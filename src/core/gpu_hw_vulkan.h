@@ -53,6 +53,7 @@ private:
                        const VkClearValue* clear_value = nullptr);
   void BeginVRAMRenderPass();
   void EndRenderPass();
+  void ExecuteCommandBuffer(bool wait_for_completion, bool restore_state);
 
   bool CreatePipelineLayouts();
   bool CreateSamplers();
