@@ -15,7 +15,7 @@
 #include <iomanip>
 #include <sstream>
 Log_SetChannel(Cheats);
-static std::array<u32, 256> temp_variable; //Used for D7 ,51 & 52 cheat types
+static std::array<u32, 256> cht_register; //Used for D7 ,51 & 52 cheat types
 
 using KeyValuePairVector = std::vector<std::pair<std::string, std::string>>;
 
@@ -1274,6 +1274,20 @@ void CheatCode::Apply() const
       }
       break;
 
+      case InstructionCode::ExtConstantSwap16:
+      {
+        const u16 value1 = Truncate16(inst.value32 & 0x0000FFFFu);
+        const u16 value2 = Truncate16((inst.value32 & 0xFFFF0000u) >> 16);
+        const u16 value = DoMemoryRead<u16>(inst.address);
+
+        if (value==value1)
+          DoMemoryWrite<u16>(inst.address, value2);
+        else if (value==value2)
+          DoMemoryWrite<u16>(inst.address, value1);
+        index++;
+      }
+      break;
+
       case InstructionCode::ExtFindAndReplace:
       {
 
@@ -1471,98 +1485,125 @@ void CheatCode::Apply() const
       }
       break;
 
-      case InstructionCode::ExtTempVariable: // 51
+      case InstructionCode::ExtCheatRegisters: // 51
       {
-        const u32 poke_value = inst.address;
-        const u8 temp_variable_number1 = Truncate8(inst.value32 & 0xFFu);
-        const u8 temp_variable_number2 = Truncate8((inst.value32 & 0xFF00u) >> 8);
-        const u8 sub_type = Truncate8((inst.value32 & 0xFF0000u) >> 16);
+        const u32 poke_value = inst.value32;
+        const u8 cht_reg_no1 = Truncate8(inst.address & 0xFFu);
+        const u8 cht_reg_no2 = Truncate8((inst.address & 0xFF00u) >> 8);
+        const u8 cht_reg_no3 = Truncate8(inst.value32 & 0xFFu);
+        const u8 sub_type = Truncate8((inst.address & 0xFF0000u) >> 16);
 
         switch (sub_type)
         {
-          case 0x00: // Write the u8 from temp_variable[temp_variable_number1] to address
-            DoMemoryWrite<u8>(inst.address, Truncate8(temp_variable[temp_variable_number1]));
-            index++;
+          case 0x00: // Write the u8 from cht_register[cht_reg_no1] to address
+            DoMemoryWrite<u8>(inst.value32, Truncate8(cht_register[cht_reg_no1]) & 0xFFu);
             break;
-          case 0x01: // Read the u8 from address to temp_variable[temp_variable_number1]
-            temp_variable[temp_variable_number1] = DoMemoryRead<u8>(inst.address);
-            index++;
+          case 0x01: // Read the u8 from address to cht_register[cht_reg_no1]
+            cht_register[cht_reg_no1] = DoMemoryRead<u8>(inst.value32);
             break;
-          case 0x02: // Write the u8 from address field to the address stored in temp_variable[temp_variable_number1]
-            DoMemoryWrite<u8>(temp_variable[temp_variable_number1], Truncate8(poke_value));
-            index++;
+          case 0x02: // Write the u8 from address field to the address stored in cht_register[cht_reg_no1]
+            DoMemoryWrite<u8>(cht_register[cht_reg_no1], Truncate8(poke_value & 0xFFu));
             break;
-
-          case 0x10: // Write the u16 from temp_variable[temp_variable_number1] to address
-            DoMemoryWrite<u16>(inst.address, Truncate16(temp_variable[temp_variable_number1]));
-            index++;
+          case 0x03: // Write the u8 from cht_register[cht_reg_no2] to cht_register[cht_reg_no1]
+                     // and add the u8 from the address field to it
+            cht_register[cht_reg_no1] = Truncate8(cht_register[cht_reg_no2] & 0xFFu) + Truncate8(poke_value & 0xFFu);
             break;
-          case 0x11: // Read the u16 from address to temp_variable[temp_variable_number1]
-            temp_variable[temp_variable_number1] = DoMemoryRead<u16>(inst.address);
-            index++;
+          case 0x04: // Write the u8 from the value stored in cht_register[cht_reg_no2] + poke_value to the address
+                     // stored in cht_register[cht_reg_no1]
+            DoMemoryWrite<u8>(cht_register[cht_reg_no1],
+                              Truncate8(cht_register[cht_reg_no2] & 0xFFu) + Truncate8(poke_value & 0xFFu));
             break;
-          case 0x12: // Write the u16 from address field to the address stored in temp_variable[temp_variable_number1]
-            DoMemoryWrite<u16>(temp_variable[temp_variable_number1], Truncate16(poke_value));
-            index++;
+          case 0x05: // Write the u8 poke value to cht_register[cht_reg_no1]
+            cht_register[cht_reg_no1] = Truncate8(poke_value & 0xFFu);
             break;
 
-          case 0x30: // Write the u32 from temp_variable[temp_variable_number1] to address
-            DoMemoryWrite<u32>(inst.address, temp_variable[temp_variable_number1]);
-            index++;
+          case 0x40: // Write the u16 from cht_register[cht_reg_no1] to address
+            DoMemoryWrite<u16>(inst.value32, Truncate16(cht_register[cht_reg_no1] & 0xFFFFu));
             break;
-          case 0x31: // Read the u32 from address to temp_variable[temp_variable_number1]
-            temp_variable[temp_variable_number1] = DoMemoryRead<u32>(inst.address);
-            index++;
+          case 0x41: // Read the u16 from address to cht_register[cht_reg_no1]
+            cht_register[cht_reg_no1] = DoMemoryRead<u16>(inst.value32);
             break;
-          case 0x32: // Write the u16 from address field to the address stored in temp_variable[temp_variable_number]
-            DoMemoryWrite<u32>(temp_variable[temp_variable_number1], poke_value);
-            index++;
+          case 0x42: // Write the u16 from address field to the address stored in cht_register[cht_reg_no1]
+            DoMemoryWrite<u16>(cht_register[cht_reg_no1], Truncate16(poke_value & 0xFFFFu));
             break;
-
-          case 0x04: // Write the u8 from temp_variable[temp_variable_number2] to the address stored in
-                     // temp_variable[temp_variable_number1]
-            DoMemoryWrite<u8>(temp_variable[temp_variable_number1], Truncate8(temp_variable[temp_variable_number2]));
-            index++;
+          case 0x43: // Write the u16 from cht_register[cht_reg_no2] to cht_register[cht_reg_no1]
+                     // and add the u16 from the address field to it
+            cht_register[cht_reg_no1] = Truncate16(cht_register[cht_reg_no2] & 0xFFFFu) + Truncate16(poke_value & 0xFFFFu);
             break;
-          case 0x14: // Write the u16 from temp_variable[temp_variable_number2] to the address stored in
-                     // temp_variable[temp_variable_number1]
-            DoMemoryWrite<u16>(temp_variable[temp_variable_number1], Truncate16(temp_variable[temp_variable_number2]));
-            index++;
+          case 0x44: // Write the u16 from the value stored in cht_register[cht_reg_no2] + poke_value to the address
+                     // stored in cht_register[cht_reg_no1]
+            DoMemoryWrite<u16>(cht_register[cht_reg_no1],
+                               Truncate16(cht_register[cht_reg_no2] & 0xFFFFu) + Truncate16(poke_value & 0xFFFFu));
             break;
-          case 0x24: // Write the u32 from temp_variable[temp_variable_number2] to the address stored in
-                     // temp_variable[temp_variable_number1]
-            DoMemoryWrite<u32>(temp_variable[temp_variable_number1], temp_variable[temp_variable_number2]);
-            index++;
-            break;
-          case 0x34: // Write the u16 from address field to the address stored in temp_variable[temp_variable_number]
-            DoMemoryWrite<u32>(temp_variable[temp_variable_number1], poke_value);
-            index++;
+          case 0x45: // Write the u16 poke value to cht_register[cht_reg_no1]
+            cht_register[cht_reg_no1] = Truncate16(poke_value & 0xFFFFu);
             break;
 
-          case 0x05: // Write the u8 from the address stored in temp_variable[temp_variable_number2] to the address
-                     // stored in temp_variable[temp_variable_number1]
-            DoMemoryWrite<u8>(temp_variable[temp_variable_number1],
-                              DoMemoryRead<u8>(temp_variable[temp_variable_number2]));
-            index++;
+          case 0x80: // Write the u32 from cht_register[cht_reg_no1] to address
+            DoMemoryWrite<u32>(inst.value32, cht_register[cht_reg_no1]);
             break;
-          case 0x15: // Write the u16 from the address stored in temp_variable[temp_variable_number2] to the address
-                     // stored in temp_variable[temp_variable_number1]
-            DoMemoryWrite<u16>(temp_variable[temp_variable_number1],
-                               DoMemoryRead<u16>(temp_variable[temp_variable_number2]));
-            index++;
+          case 0x81: // Read the u32 from address to cht_register[cht_reg_no1]
+            cht_register[cht_reg_no1] = DoMemoryRead<u32>(inst.value32);
             break;
-          case 0x25: // Write the u32 from the address stored in temp_variable[temp_variable_number2] to the address
-                     // stored in temp_variable[temp_variable_number1]
-            DoMemoryWrite<u32>(temp_variable[temp_variable_number1],
-                               DoMemoryRead<u32>(temp_variable[temp_variable_number2]));
-            index++;
+          case 0x82: // Write the u32 from address field to the address stored in cht_register[cht_reg_no]
+            DoMemoryWrite<u32>(cht_register[cht_reg_no1], poke_value);
+            break;
+          case 0x83: // Write the u32 from cht_register[cht_reg_no2] to cht_register[cht_reg_no1]
+                     // and add the u32 from the address field to it
+            cht_register[cht_reg_no1] = cht_register[cht_reg_no2] + poke_value;
+            break;
+          case 0x84: // Write the u32 from the value stored in cht_register[cht_reg_no2] + poke_value to the address
+                     // stored in cht_register[cht_reg_no1]
+            DoMemoryWrite<u32>(cht_register[cht_reg_no1], cht_register[cht_reg_no2] + poke_value);
+            break;
+          case 0x85: // Write the u32 poke value to cht_register[cht_reg_no1]
+            cht_register[cht_reg_no1] = poke_value;
             break;
 
+          case 0xC0: // Reg3 = Reg2 + Reg1
+            cht_register[cht_reg_no3] = cht_register[cht_reg_no2] + cht_register[cht_reg_no1];
+            break;
+          case 0xC1: // Reg3 = Reg2 - Reg1
+            cht_register[cht_reg_no3] = cht_register[cht_reg_no2] - cht_register[cht_reg_no1];
+            break;
+          case 0xC2: // Reg3 = Reg2 * Reg1
+            cht_register[cht_reg_no3] = cht_register[cht_reg_no2] * cht_register[cht_reg_no1];
+            break;
+          case 0xC3: // Reg3 = Reg2 / Reg1 with DIV0 handling
+            if (cht_register[cht_reg_no1] == 0)
+              cht_register[cht_reg_no3] = 0;
+            else
+              cht_register[cht_reg_no3] = cht_register[cht_reg_no2] / cht_register[cht_reg_no1];
+            break;
+          case 0xC4: // Reg3 = Reg2 % Reg1 (with DIV0 handling)
+            if (cht_register[cht_reg_no1] == 0)
+              cht_register[cht_reg_no3] = cht_register[cht_reg_no2];
+            else
+              cht_register[cht_reg_no3] = cht_register[cht_reg_no2] % cht_register[cht_reg_no1];
+            break;
+          case 0xC5: // Reg3 = Reg2 & Reg1
+            cht_register[cht_reg_no3] = cht_register[cht_reg_no2] & cht_register[cht_reg_no1];
+            break;
+          case 0xC6: // Reg3 = Reg2 | Reg1
+            cht_register[cht_reg_no3] = cht_register[cht_reg_no2] | cht_register[cht_reg_no1];
+            break;
+          case 0xC7: // Reg3 = Reg2 ^ Reg1
+            cht_register[cht_reg_no3] = cht_register[cht_reg_no2] ^ cht_register[cht_reg_no1];
+            break;
+          case 0xC8: // Reg3 = ~Reg1
+            cht_register[cht_reg_no3] = ~cht_register[cht_reg_no1];
+            break;
+          case 0xC9: // Reg3 = Reg1 << X
+            cht_register[cht_reg_no3] = cht_register[cht_reg_no1] << cht_reg_no2;
+            break;
+          case 0xCA: // Reg3 = Reg1 >> X
+            cht_register[cht_reg_no3] = cht_register[cht_reg_no1] >> cht_reg_no2;
+            break;
           // Lots of options exist for expanding into this space
           default:
-            index++;
             break;
         }
+        index++;
       }
       break;
 
@@ -1632,7 +1673,7 @@ void CheatCode::Apply() const
         index++;
         bool activate_codes;
         const u32 frame_compare_value  = inst.address & 0xFFFFu;
-        const u8 temp_variable_number = Truncate8((inst.value32 & 0xFF000000u)>>24);
+        const u8 cht_reg_no = Truncate8((inst.value32 & 0xFF000000u)>>24);
         const bool bit_comparison_type = ((inst.address & 0x100000u) >>20);
         const u8 frame_comparison = Truncate8((inst.address & 0xF0000u) >>16);
         const u32 check_value = (inst.value32 & 0xFFFFFFu);
@@ -1643,35 +1684,527 @@ void CheatCode::Apply() const
         if ((bit_comparison_type==false && check_value==(value & check_value))//Check Bits are set
             || (bit_comparison_type==true && check_value!=(value & check_value))) //Check Bits are clear
         {
-            temp_variable[temp_variable_number]+=1;
-            switch (frame_comparison)
-            {
-              case 0x0: // No comparison on frame count, just do it
-                activate_codes = true;
-                break;
-              case 0x1: // Check if frame_compare_value == current count
-                activate_codes = (temp_variable[temp_variable_number] == frame_compare_value);
-                break;
-              case 0x2: // Check if frame_compare_value < current count
-                activate_codes = (temp_variable[temp_variable_number] < frame_compare_value);
-                break;
-              case 0x3: // Check if frame_compare_value > current count
-                activate_codes = (temp_variable[temp_variable_number] > frame_compare_value);
-                break;
-              case 0x4: // Check if frame_compare_value != current count
-                activate_codes = (temp_variable[temp_variable_number] != frame_compare_value);
-                break;
-              default:
-                activate_codes = false;
-                break;
-            }
+            cht_register[cht_reg_no]+=1;
+          switch (frame_comparison)
+          {
+            case 0x0: // No comparison on frame count, just do it
+              activate_codes = true;
+              break;
+            case 0x1: // Check if frame_compare_value == current count
+              activate_codes = (cht_register[cht_reg_no] == frame_compare_value);
+              break;
+            case 0x2: // Check if frame_compare_value < current count
+              activate_codes = (cht_register[cht_reg_no] < frame_compare_value);
+              break;
+            case 0x3: // Check if frame_compare_value > current count
+              activate_codes = (cht_register[cht_reg_no] > frame_compare_value);
+              break;
+            case 0x4: // Check if frame_compare_value != current count
+              activate_codes = (cht_register[cht_reg_no] != frame_compare_value);
+              break;
+            default:
+              activate_codes = false;
+              break;
+          }
         }
         else
         {
-            temp_variable[temp_variable_number]=0;
+            cht_register[cht_reg_no]=0;
             activate_codes = false;
         }
 
+        if (activate_codes)
+        {
+          // execute following instructions
+          continue;
+        }
+
+        // skip to the next separator (00000000 FFFF), or end
+        constexpr u64 separator_value = UINT64_C(0x000000000000FFFF);
+        while (index < count)
+        {
+          // we don't want to execute the separator instruction
+          const u64 bits = instructions[index++].bits;
+          if (bits == separator_value)
+            break;
+        }
+      }
+      break;
+
+
+      case InstructionCode::ExtCheatRegistersCompare: // 52
+      {
+        index++;
+        bool activate_codes = false;
+        const u8 cht_reg_no1 = Truncate8(inst.address & 0xFFu);
+        const u8 cht_reg_no2 = Truncate8((inst.address & 0xFF00u) >> 8);
+        const u8 sub_type = Truncate8((inst.value32 & 0xFF0000u) >> 16);
+
+        switch (sub_type)
+        {
+          case 0x00:
+            activate_codes =
+              (Truncate8(cht_register[cht_reg_no2] & 0xFFu) == Truncate8(cht_register[cht_reg_no1] & 0xFFu));
+            break;
+          case 0x01:
+            activate_codes =
+              (Truncate8(cht_register[cht_reg_no2] & 0xFFu) != Truncate8(cht_register[cht_reg_no1] & 0xFFu));
+            break;
+          case 0x02:
+            activate_codes =
+              (Truncate8(cht_register[cht_reg_no2] & 0xFFu) > Truncate8(cht_register[cht_reg_no1] & 0xFFu));
+            break;
+          case 0x03:
+            activate_codes =
+              (Truncate8(cht_register[cht_reg_no2] & 0xFFu) >= Truncate8(cht_register[cht_reg_no1] & 0xFFu));
+            break;
+          case 0x04:
+            activate_codes =
+              (Truncate8(cht_register[cht_reg_no2] & 0xFFu) < Truncate8(cht_register[cht_reg_no1] & 0xFFu));
+            break;
+          case 0x05:
+            activate_codes =
+              (Truncate8(cht_register[cht_reg_no2] & 0xFFu) <= Truncate8(cht_register[cht_reg_no1] & 0xFFu));
+            break;
+          case 0x06:
+            activate_codes =
+              ((Truncate8(cht_register[cht_reg_no2] & 0xFFu) & Truncate8(cht_register[cht_reg_no1] & 0xFFu)) ==
+               (Truncate8(cht_register[cht_reg_no1] & 0xFFu)));
+            break;
+          case 0x07:
+            activate_codes =
+              ((Truncate8(cht_register[cht_reg_no2] & 0xFFu) & Truncate8(cht_register[cht_reg_no1] & 0xFFu)) !=
+               (Truncate8(cht_register[cht_reg_no1] & 0xFFu)));
+            break;
+          case 0x0A:
+            activate_codes =
+              ((Truncate8(cht_register[cht_reg_no2] & 0xFFu) & Truncate8(cht_register[cht_reg_no1] & 0xFFu)) ==
+               (Truncate8(cht_register[cht_reg_no2] & 0xFFu)));
+            break;
+          case 0x0B:
+            activate_codes =
+              ((Truncate8(cht_register[cht_reg_no2] & 0xFFu) & Truncate8(cht_register[cht_reg_no1] & 0xFFu)) !=
+               (Truncate8(cht_register[cht_reg_no2] & 0xFFu)));
+            break;
+          case 0x10:
+            activate_codes = (Truncate8(cht_register[cht_reg_no1] & 0xFFu) == inst.value8);
+            break;
+          case 0x11:
+            activate_codes = (Truncate8(cht_register[cht_reg_no1] & 0xFFu) != inst.value8);
+            break;
+          case 0x12:
+            activate_codes = (Truncate8(cht_register[cht_reg_no1] & 0xFFu) > inst.value8);
+            break;
+          case 0x13:
+            activate_codes = (Truncate8(cht_register[cht_reg_no1] & 0xFFu) >= inst.value8);
+            break;
+          case 0x14:
+            activate_codes = (Truncate8(cht_register[cht_reg_no1] & 0xFFu) < inst.value8);
+            break;
+          case 0x15:
+            activate_codes = (Truncate8(cht_register[cht_reg_no1] & 0xFFu) <= inst.value8);
+            break;
+          case 0x16:
+            activate_codes = ((Truncate8(cht_register[cht_reg_no1] & 0xFFu) & inst.value8) == inst.value8);
+            break;
+          case 0x17:
+            activate_codes = ((Truncate8(cht_register[cht_reg_no1] & 0xFFu) & inst.value8) != inst.value8);
+            break;
+          case 0x18:
+            activate_codes =
+              ((Truncate8(cht_register[cht_reg_no1] & 0xFFu) > inst.value8) &&
+               (Truncate8(cht_register[cht_reg_no1] & 0xFFu) < Truncate8((inst.value32 & 0xFF0000u) >> 16)));
+            break;
+          case 0x19:
+            activate_codes =
+              ((Truncate8(cht_register[cht_reg_no1] & 0xFFu) >= inst.value8) &&
+               (Truncate8(cht_register[cht_reg_no1] & 0xFFu) <= Truncate8((inst.value32 & 0xFF0000u) >> 16)));
+            break;
+          case 0x1A:
+            activate_codes = ((Truncate8(cht_register[cht_reg_no2] & 0xFFu) & inst.value8) ==
+                              Truncate8(cht_register[cht_reg_no1] & 0xFFu));
+            break;
+          case 0x1B:
+            activate_codes = ((Truncate8(cht_register[cht_reg_no1] & 0xFFu) & inst.value8) !=
+                              Truncate8(cht_register[cht_reg_no1] & 0xFFu));
+            break;
+          case 0x20:
+            activate_codes =
+              (DoMemoryRead<u8>(cht_register[cht_reg_no2]) == DoMemoryRead<u8>(cht_register[cht_reg_no1]));
+            break;
+          case 0x21:
+            activate_codes =
+              (DoMemoryRead<u8>(cht_register[cht_reg_no2]) != DoMemoryRead<u8>(cht_register[cht_reg_no1]));
+            break;
+          case 0x22:
+            activate_codes =
+              (DoMemoryRead<u8>(cht_register[cht_reg_no2]) > DoMemoryRead<u8>(cht_register[cht_reg_no1]));
+            break;
+          case 0x23:
+            activate_codes =
+              (DoMemoryRead<u8>(cht_register[cht_reg_no2]) >= DoMemoryRead<u8>(cht_register[cht_reg_no1]));
+            break;
+          case 0x24:
+            activate_codes =
+              (DoMemoryRead<u8>(cht_register[cht_reg_no2]) < DoMemoryRead<u8>(cht_register[cht_reg_no1]));
+            break;
+          case 0x25:
+            activate_codes =
+              (DoMemoryRead<u8>(cht_register[cht_reg_no2]) <= DoMemoryRead<u8>(cht_register[cht_reg_no1]));
+            break;
+          case 0x26:
+            activate_codes = ((DoMemoryRead<u8>(cht_register[cht_reg_no1]) & inst.value8) == inst.value8);
+            break;
+          case 0x27:
+            activate_codes = ((DoMemoryRead<u8>(cht_register[cht_reg_no1]) & inst.value8) != inst.value8);
+            break;
+          case 0x28:
+            activate_codes =
+              ((DoMemoryRead<u8>(cht_register[cht_reg_no1]) > inst.value8) &&
+               (DoMemoryRead<u8>(cht_register[cht_reg_no1]) < Truncate8((inst.value32 & 0xFF0000u) >> 16)));
+            break;
+          case 0x29:
+            activate_codes =
+              ((DoMemoryRead<u8>(cht_register[cht_reg_no1]) >= inst.value8) &&
+               (DoMemoryRead<u8>(cht_register[cht_reg_no1]) <= Truncate8((inst.value32 & 0xFF0000u) >> 16)));
+            break;
+          case 0x2A:
+            activate_codes = ((DoMemoryRead<u8>(cht_register[cht_reg_no1]) & inst.value8) ==
+                              DoMemoryRead<u8>(cht_register[cht_reg_no1]));
+            break;
+          case 0x2B:
+            activate_codes = ((DoMemoryRead<u8>(cht_register[cht_reg_no1]) & inst.value8) !=
+                              DoMemoryRead<u8>(cht_register[cht_reg_no1]));
+            break;
+          case 0x30:
+            activate_codes = (Truncate8(cht_register[cht_reg_no1] & 0xFFu) == DoMemoryRead<u8>(inst.value32));
+            break;
+          case 0x31:
+            activate_codes = (Truncate8(cht_register[cht_reg_no1] & 0xFFu) != DoMemoryRead<u8>(inst.value32));
+            break;
+          case 0x32:
+            activate_codes = (Truncate8(cht_register[cht_reg_no1] & 0xFFu) > DoMemoryRead<u8>(inst.value32));
+            break;
+          case 0x33:
+            activate_codes = (Truncate8(cht_register[cht_reg_no1] & 0xFFu) >= DoMemoryRead<u8>(inst.value32));
+            break;
+          case 0x34:
+            activate_codes = (Truncate8(cht_register[cht_reg_no1] & 0xFFu) < DoMemoryRead<u8>(inst.value32));
+            break;
+          case 0x36:
+            activate_codes = ((Truncate8(cht_register[cht_reg_no1] & 0xFFu) & DoMemoryRead<u8>(inst.value32)) ==
+                              DoMemoryRead<u8>(inst.value32));
+            break;
+          case 0x37:
+            activate_codes = ((Truncate8(cht_register[cht_reg_no1] & 0xFFu) & DoMemoryRead<u8>(inst.value32)) !=
+                              DoMemoryRead<u8>(inst.value32));
+            break;
+          case 0x3A:
+            activate_codes = ((Truncate8(cht_register[cht_reg_no1] & 0xFFu) & DoMemoryRead<u8>(inst.value32)) ==
+                              Truncate8(cht_register[cht_reg_no1] & 0xFFu));
+            break;
+          case 0x3B:
+            activate_codes = ((Truncate8(cht_register[cht_reg_no1] & 0xFFu) & DoMemoryRead<u8>(inst.value32)) !=
+                              Truncate8(cht_register[cht_reg_no1] & 0xFFu));
+            break;
+          case 0x40:
+            activate_codes =
+              (Truncate16(cht_register[cht_reg_no2] & 0xFFFFu) == Truncate16(cht_register[cht_reg_no1] & 0xFFFFu));
+            break;
+          case 0x41:
+            activate_codes =
+              (Truncate16(cht_register[cht_reg_no2] & 0xFFFFu) != Truncate16(cht_register[cht_reg_no1] & 0xFFFFu));
+            break;
+          case 0x42:
+            activate_codes =
+              (Truncate16(cht_register[cht_reg_no2] & 0xFFFFu) > Truncate16(cht_register[cht_reg_no1] & 0xFFFFu));
+            break;
+          case 0x43:
+            activate_codes =
+              (Truncate16(cht_register[cht_reg_no2] & 0xFFFFu) >= Truncate16(cht_register[cht_reg_no1] & 0xFFFFu));
+            break;
+          case 0x44:
+            activate_codes =
+              (Truncate16(cht_register[cht_reg_no2] & 0xFFFFu) < Truncate16(cht_register[cht_reg_no1] & 0xFFFFu));
+            break;
+          case 0x45:
+            activate_codes =
+              (Truncate16(cht_register[cht_reg_no2] & 0xFFFFu) <= Truncate16(cht_register[cht_reg_no1] & 0xFFFFu));
+            break;
+          case 0x46:
+            activate_codes =
+              ((Truncate16(cht_register[cht_reg_no2] & 0xFFFFu) & Truncate16(cht_register[cht_reg_no1] & 0xFFFFu)) ==
+               Truncate16(cht_register[cht_reg_no1] & 0xFFFFu));
+            break;
+          case 0x47:
+            activate_codes =
+              ((Truncate16(cht_register[cht_reg_no2] & 0xFFFFu) & Truncate16(cht_register[cht_reg_no1] & 0xFFFFu)) !=
+               Truncate16(cht_register[cht_reg_no1] & 0xFFFFu));
+            break;
+          case 0x4A:
+            activate_codes =
+              ((Truncate16(cht_register[cht_reg_no2] & 0xFFFFu) & Truncate16(cht_register[cht_reg_no1] & 0xFFFFu)) ==
+               Truncate16(cht_register[cht_reg_no2] & 0xFFFFu));
+            break;
+          case 0x4B:
+            activate_codes =
+              ((Truncate16(cht_register[cht_reg_no2] & 0xFFFFu) & Truncate16(cht_register[cht_reg_no1] & 0xFFFFu)) !=
+               Truncate16(cht_register[cht_reg_no2] & 0xFFFFu));
+            break;
+          case 0x50:
+            activate_codes = (Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) == inst.value16);
+            break;
+          case 0x51:
+            activate_codes = (Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) != inst.value16);
+            break;
+          case 0x52:
+            activate_codes = (Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) > inst.value16);
+            break;
+          case 0x53:
+            activate_codes = (Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) >= inst.value16);
+            break;
+          case 0x54:
+            activate_codes = (Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) < inst.value16);
+            break;
+          case 0x55:
+            activate_codes = (Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) <= inst.value16);
+            break;
+          case 0x56:
+            activate_codes = ((Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) & inst.value16) == inst.value16);
+            break;
+          case 0x57:
+            activate_codes = ((Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) & inst.value16) != inst.value16);
+            break;
+          case 0x58:
+            activate_codes =
+              ((Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) > inst.value16) &&
+               (Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) < Truncate16((inst.value32 & 0xFFFF0000u) >> 16)));
+            break;
+          case 0x59:
+            activate_codes =
+              ((Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) >= inst.value16) &&
+               (Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) <= Truncate16((inst.value32 & 0xFFFF0000u) >> 16)));
+            break;
+          case 0x5A:
+            activate_codes = ((Truncate16(cht_register[cht_reg_no2] & 0xFFFFu) & inst.value16) ==
+                              Truncate16(cht_register[cht_reg_no1] & 0xFFFFu));
+            break;
+          case 0x5B:
+            activate_codes = ((Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) & inst.value16) !=
+                              Truncate16(cht_register[cht_reg_no1] & 0xFFFFu));
+            break;
+          case 0x60:
+            activate_codes =
+              (DoMemoryRead<u16>(cht_register[cht_reg_no2]) == DoMemoryRead<u16>(cht_register[cht_reg_no1]));
+            break;
+          case 0x61:
+            activate_codes =
+              (DoMemoryRead<u16>(cht_register[cht_reg_no2]) != DoMemoryRead<u16>(cht_register[cht_reg_no1]));
+            break;
+          case 0x62:
+            activate_codes =
+              (DoMemoryRead<u16>(cht_register[cht_reg_no2]) > DoMemoryRead<u16>(cht_register[cht_reg_no1]));
+            break;
+          case 0x63:
+            activate_codes =
+              (DoMemoryRead<u16>(cht_register[cht_reg_no2]) >= DoMemoryRead<u16>(cht_register[cht_reg_no1]));
+            break;
+          case 0x64:
+            activate_codes =
+              (DoMemoryRead<u16>(cht_register[cht_reg_no2]) < DoMemoryRead<u16>(cht_register[cht_reg_no1]));
+            break;
+          case 0x65:
+            activate_codes =
+              (DoMemoryRead<u16>(cht_register[cht_reg_no2]) <= DoMemoryRead<u16>(cht_register[cht_reg_no1]));
+            break;
+          case 0x66:
+            activate_codes = ((DoMemoryRead<u16>(cht_register[cht_reg_no1]) & inst.value16) == inst.value16);
+            break;
+          case 0x67:
+            activate_codes = ((DoMemoryRead<u16>(cht_register[cht_reg_no1]) & inst.value16) != inst.value16);
+            break;
+          case 0x68:
+            activate_codes =
+              ((DoMemoryRead<u16>(cht_register[cht_reg_no1]) > inst.value16) &&
+               (DoMemoryRead<u16>(cht_register[cht_reg_no1]) < Truncate16((inst.value32 & 0xFFFF0000u) >> 16)));
+            break;
+          case 0x69:
+            activate_codes =
+              ((DoMemoryRead<u16>(cht_register[cht_reg_no1]) >= inst.value16) &&
+               (DoMemoryRead<u16>(cht_register[cht_reg_no1]) <= Truncate16((inst.value32 & 0xFFFF0000u) >> 16)));
+            break;
+          case 0x6A:
+            activate_codes = ((DoMemoryRead<u16>(cht_register[cht_reg_no1]) & inst.value16) ==
+                              DoMemoryRead<u16>(cht_register[cht_reg_no1]));
+            break;
+          case 0x6B:
+            activate_codes = ((DoMemoryRead<u16>(cht_register[cht_reg_no1]) & inst.value16) !=
+                              DoMemoryRead<u16>(cht_register[cht_reg_no1]));
+            break;
+          case 0x70:
+            activate_codes = (Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) == DoMemoryRead<u16>(inst.value32));
+            break;
+          case 0x71:
+            activate_codes = (Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) != DoMemoryRead<u16>(inst.value32));
+            break;
+          case 0x72:
+            activate_codes = (Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) > DoMemoryRead<u16>(inst.value32));
+            break;
+          case 0x73:
+            activate_codes = (Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) >= DoMemoryRead<u16>(inst.value32));
+            break;
+          case 0x74:
+            activate_codes = (Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) < DoMemoryRead<u16>(inst.value32));
+            break;
+          case 0x76:
+            activate_codes = ((Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) & DoMemoryRead<u16>(inst.value32)) ==
+                              DoMemoryRead<u16>(inst.value32));
+            break;
+          case 0x77:
+            activate_codes = ((Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) & DoMemoryRead<u16>(inst.value32)) !=
+                              DoMemoryRead<u16>(inst.value32));
+            break;
+          case 0x7A:
+            activate_codes = ((Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) & DoMemoryRead<u16>(inst.value32)) ==
+                              Truncate16(cht_register[cht_reg_no1] & 0xFFFFu));
+            break;
+          case 0x7B:
+            activate_codes = ((Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) & DoMemoryRead<u16>(inst.value32)) !=
+                              Truncate16(cht_register[cht_reg_no1] & 0xFFFFu));
+            break;
+          case 0x80:
+            activate_codes = (cht_register[cht_reg_no2] == cht_register[cht_reg_no1]);
+            break;
+          case 0x81:
+            activate_codes = (cht_register[cht_reg_no2] != cht_register[cht_reg_no1]);
+            break;
+          case 0x82:
+            activate_codes = (cht_register[cht_reg_no2] > cht_register[cht_reg_no1]);
+            break;
+          case 0x83:
+            activate_codes = (cht_register[cht_reg_no2] >= cht_register[cht_reg_no1]);
+            break;
+          case 0x84:
+            activate_codes = (cht_register[cht_reg_no2] < cht_register[cht_reg_no1]);
+            break;
+          case 0x85:
+            activate_codes = (cht_register[cht_reg_no2] <= cht_register[cht_reg_no1]);
+            break;
+          case 0x86:
+            activate_codes = ((cht_register[cht_reg_no2] & cht_register[cht_reg_no1]) == cht_register[cht_reg_no1]);
+            break;
+          case 0x87:
+            activate_codes = ((cht_register[cht_reg_no2] & cht_register[cht_reg_no1]) != cht_register[cht_reg_no1]);
+            break;
+          case 0x8A:
+            activate_codes = ((cht_register[cht_reg_no2] & cht_register[cht_reg_no1]) == cht_register[cht_reg_no2]);
+            break;
+          case 0x8B:
+            activate_codes = ((cht_register[cht_reg_no2] & cht_register[cht_reg_no1]) != cht_register[cht_reg_no2]);
+            break;
+          case 0x90:
+            activate_codes = (cht_register[cht_reg_no1] == inst.value32);
+            break;
+          case 0x91:
+            activate_codes = (cht_register[cht_reg_no1] != inst.value32);
+            break;
+          case 0x92:
+            activate_codes = (cht_register[cht_reg_no1] > inst.value32);
+            break;
+          case 0x93:
+            activate_codes = (cht_register[cht_reg_no1] >= inst.value32);
+            break;
+          case 0x94:
+            activate_codes = (cht_register[cht_reg_no1] < inst.value32);
+            break;
+          case 0x95:
+            activate_codes = (cht_register[cht_reg_no1] <= inst.value32);
+            break;
+          case 0x96:
+            activate_codes = ((cht_register[cht_reg_no1] & inst.value32) == inst.value32);
+            break;
+          case 0x97:
+            activate_codes = ((cht_register[cht_reg_no1] & inst.value32) != inst.value32);
+            break;
+          case 0x9A:
+            activate_codes = ((cht_register[cht_reg_no2] & inst.value32) == cht_register[cht_reg_no1]);
+            break;
+          case 0x9B:
+            activate_codes = ((cht_register[cht_reg_no1] & inst.value32) != cht_register[cht_reg_no1]);
+            break;
+          case 0xA0:
+            activate_codes =
+              (DoMemoryRead<u32>(cht_register[cht_reg_no2]) == DoMemoryRead<u32>(cht_register[cht_reg_no1]));
+            break;
+          case 0xA1:
+            activate_codes =
+              (DoMemoryRead<u32>(cht_register[cht_reg_no2]) != DoMemoryRead<u32>(cht_register[cht_reg_no1]));
+            break;
+          case 0xA2:
+            activate_codes =
+              (DoMemoryRead<u32>(cht_register[cht_reg_no2]) > DoMemoryRead<u32>(cht_register[cht_reg_no1]));
+            break;
+          case 0xA3:
+            activate_codes =
+              (DoMemoryRead<u32>(cht_register[cht_reg_no2]) >= DoMemoryRead<u32>(cht_register[cht_reg_no1]));
+            break;
+          case 0xA4:
+            activate_codes =
+              (DoMemoryRead<u32>(cht_register[cht_reg_no2]) < DoMemoryRead<u32>(cht_register[cht_reg_no1]));
+            break;
+          case 0xA5:
+            activate_codes =
+              (DoMemoryRead<u32>(cht_register[cht_reg_no2]) <= DoMemoryRead<u32>(cht_register[cht_reg_no1]));
+            break;
+          case 0xA6:
+            activate_codes = ((DoMemoryRead<u32>(cht_register[cht_reg_no1]) & inst.value32) == inst.value32);
+            break;
+          case 0xA7:
+            activate_codes = ((DoMemoryRead<u32>(cht_register[cht_reg_no1]) & inst.value32) != inst.value32);
+            break;
+          case 0xAA:
+            activate_codes = ((DoMemoryRead<u32>(cht_register[cht_reg_no1]) & inst.value32) ==
+                              DoMemoryRead<u32>(cht_register[cht_reg_no1]));
+            break;
+          case 0xAB:
+            activate_codes = ((DoMemoryRead<u32>(cht_register[cht_reg_no1]) & inst.value32) !=
+                              DoMemoryRead<u32>(cht_register[cht_reg_no1]));
+            break;
+          case 0xB0:
+            activate_codes = (cht_register[cht_reg_no1] == DoMemoryRead<u32>(inst.value32));
+            break;
+          case 0xB1:
+            activate_codes = (cht_register[cht_reg_no1] != DoMemoryRead<u32>(inst.value32));
+            break;
+          case 0xB2:
+            activate_codes = (cht_register[cht_reg_no1] > DoMemoryRead<u32>(inst.value32));
+            break;
+          case 0xB3:
+            activate_codes = (cht_register[cht_reg_no1] >= DoMemoryRead<u32>(inst.value32));
+            break;
+          case 0xB4:
+            activate_codes = (cht_register[cht_reg_no1] < DoMemoryRead<u32>(inst.value32));
+            break;
+          case 0xB6:
+            activate_codes =
+              ((cht_register[cht_reg_no1] & DoMemoryRead<u32>(inst.value32)) == DoMemoryRead<u32>(inst.value32));
+            break;
+          case 0xB7:
+            activate_codes =
+              ((cht_register[cht_reg_no1] & DoMemoryRead<u32>(inst.value32)) != DoMemoryRead<u32>(inst.value32));
+            break;
+          case 0xBA:
+            activate_codes =
+              ((cht_register[cht_reg_no1] & DoMemoryRead<u32>(inst.value32)) == cht_register[cht_reg_no1]);
+            break;
+          case 0xBB:
+            activate_codes =
+              ((cht_register[cht_reg_no1] & DoMemoryRead<u32>(inst.value32)) != cht_register[cht_reg_no1]);
+            break;
+          default:
+            activate_codes = false;
+            break;
+        }
         if (activate_codes)
         {
           // execute following instructions
@@ -1745,6 +2278,80 @@ void CheatCode::Apply() const
       }
       break;
 
+      case InstructionCode::ExtImprovedSlide:
+      {
+        if ((index + 1) >= instructions.size())
+        {
+          Log_ErrorPrintf("Incomplete slide instruction");
+          return;
+        }
+
+        const u32 slide_count = inst.first & 0xFFFFu;
+        const u32 address_change = (inst.second >> 16) & 0xFFFFu;
+        const u16 value_change = Truncate16(inst.second);
+        const Instruction& inst2 = instructions[index + 1];
+        const InstructionCode write_type = inst2.code;
+        const bool address_change_negative = (inst.first >> 20) & 0x1u;
+        const bool value_change_negative = (inst.first >> 16) & 0x1u;
+        u32 address = inst2.address;
+        u32 value = inst2.value32;
+
+        if (write_type == InstructionCode::ConstantWrite8)
+        {
+          for (u32 i = 0; i < slide_count; i++)
+          {
+            DoMemoryWrite<u8>(address, Truncate8(value));
+            if (address_change_negative)
+                address -= address_change;
+            else
+                address += address_change;
+            if (value_change_negative)
+                value -= value_change;
+            else
+                value += value_change;
+          }
+        }
+        else if (write_type == InstructionCode::ConstantWrite16)
+        {
+          for (u32 i = 0; i < slide_count; i++)
+          {
+            DoMemoryWrite<u16>(address, Truncate16(value));
+            if (address_change_negative)
+                address -= address_change;
+            else
+                address += address_change;
+            if (value_change_negative)
+                value -= value_change;
+            else
+                value += value_change;
+          }
+        }
+        else if (write_type == InstructionCode::ExtConstantWrite32)
+        {
+          for (u32 i = 0; i < slide_count; i++)
+          {
+            DoMemoryWrite<u32>(address, value);
+            if (address_change_negative)
+                address -= address_change;
+            else
+                address += address_change;
+            if (value_change_negative)
+                value -= value_change;
+            else
+                value += value_change;
+          }
+        }
+        else
+        {
+          Log_ErrorPrintf("Invalid command in second slide parameter 0x%02X", static_cast<unsigned>(write_type));
+        }
+
+        index += 2;
+      }
+      break;
+
+
+
       case InstructionCode::MemoryCopy:
       {
         if ((index + 1) >= instructions.size())
@@ -1811,14 +2418,16 @@ void CheatCode::ApplyOnDisable() const
       case InstructionCode::ExtConstantForceRange8:
       case InstructionCode::ExtConstantForceRangeLimits16:
       case InstructionCode::ExtConstantForceRangeRollRound16:
+      case InstructionCode::ExtConstantSwap16:
       case InstructionCode::DelayActivation: // C1
       case InstructionCode::ExtConstantWriteIfMatch16:
-      case InstructionCode::ExtTempVariable:
+      case InstructionCode::ExtCheatRegisters:
         index++;
         break;
 
       case InstructionCode::ExtConstantForceRange16:
       case InstructionCode::Slide:
+      case InstructionCode::ExtImprovedSlide:
       case InstructionCode::MemoryCopy:
         index += 2;
         break;
@@ -1852,6 +2461,7 @@ void CheatCode::ApplyOnDisable() const
       case InstructionCode::ExtSkipIfNotGreater8:  // C4
       case InstructionCode::ExtSkipIfNotLess16:    // C5
       case InstructionCode::ExtSkipIfNotGreater16: // C6
+      case InstructionCode::ExtCheatRegistersCompare: // 52
         index++;
         break;
 
