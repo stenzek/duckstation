@@ -56,16 +56,25 @@ AndroidSettingsInterface::AndroidSettingsInterface(jobject java_context)
   Assert(m_get_boolean && m_get_int && m_get_float && m_get_string && m_get_string_set && m_set_to_array);
 
   m_edit = env->GetMethodID(m_shared_preferences_class, "edit", "()Landroid/content/SharedPreferences$Editor;");
-  m_edit_set_string = env->GetMethodID(m_shared_preferences_editor_class, "putString", "(Ljava/lang/String;Ljava/lang/String;)Landroid/content/SharedPreferences$Editor;");
+  m_edit_set_string =
+    env->GetMethodID(m_shared_preferences_editor_class, "putString",
+                     "(Ljava/lang/String;Ljava/lang/String;)Landroid/content/SharedPreferences$Editor;");
   m_edit_commit = env->GetMethodID(m_shared_preferences_editor_class, "commit", "()Z");
-  m_edit_remove = env->GetMethodID(m_shared_preferences_editor_class, "remove", "(Ljava/lang/String;)Landroid/content/SharedPreferences$Editor;");
+  m_edit_remove = env->GetMethodID(m_shared_preferences_editor_class, "remove",
+                                   "(Ljava/lang/String;)Landroid/content/SharedPreferences$Editor;");
   Assert(m_edit && m_edit_set_string && m_edit_commit && m_edit_remove);
 
-  m_helper_clear_section = env->GetStaticMethodID(m_helper_class, "clearSection", "(Landroid/content/SharedPreferences;Ljava/lang/String;)V");
-  m_helper_add_to_string_list = env->GetStaticMethodID(m_helper_class, "addToStringList", "(Landroid/content/SharedPreferences;Ljava/lang/String;Ljava/lang/String;)Z");
-  m_helper_remove_from_string_list = env->GetStaticMethodID(m_helper_class, "removeFromStringList", "(Landroid/content/SharedPreferences;Ljava/lang/String;Ljava/lang/String;)Z");
-  m_helper_set_string_list = env->GetStaticMethodID(m_helper_class, "setStringList", "(Landroid/content/SharedPreferences;Ljava/lang/String;[Ljava/lang/String;)V");
-  Assert(m_helper_clear_section && m_helper_add_to_string_list && m_helper_remove_from_string_list && m_helper_set_string_list);
+  m_helper_clear_section =
+    env->GetStaticMethodID(m_helper_class, "clearSection", "(Landroid/content/SharedPreferences;Ljava/lang/String;)V");
+  m_helper_add_to_string_list = env->GetStaticMethodID(
+    m_helper_class, "addToStringList", "(Landroid/content/SharedPreferences;Ljava/lang/String;Ljava/lang/String;)Z");
+  m_helper_remove_from_string_list =
+    env->GetStaticMethodID(m_helper_class, "removeFromStringList",
+                           "(Landroid/content/SharedPreferences;Ljava/lang/String;Ljava/lang/String;)Z");
+  m_helper_set_string_list = env->GetStaticMethodID(
+    m_helper_class, "setStringList", "(Landroid/content/SharedPreferences;Ljava/lang/String;[Ljava/lang/String;)V");
+  Assert(m_helper_clear_section && m_helper_add_to_string_list && m_helper_remove_from_string_list &&
+         m_helper_set_string_list);
 }
 
 AndroidSettingsInterface::~AndroidSettingsInterface()
@@ -212,7 +221,7 @@ jobject AndroidSettingsInterface::GetPreferencesEditor(JNIEnv* env)
   return env->CallObjectMethod(m_java_shared_preferences, m_edit);
 }
 
-void AndroidSettingsInterface::CheckForException(JNIEnv *env, const char *task)
+void AndroidSettingsInterface::CheckForException(JNIEnv* env, const char* task)
 {
   if (!env->ExceptionCheck())
     return;
@@ -230,7 +239,8 @@ void AndroidSettingsInterface::SetIntValue(const char* section, const char* key,
   LocalRefHolder<jstring> key_string(env, env->NewStringUTF(GetSettingKey(section, key)));
   LocalRefHolder<jstring> str_value(env, env->NewStringUTF(TinyString::FromFormat("%d", value)));
 
-  LocalRefHolder<jobject> dummy(env, env->CallObjectMethod(editor, m_edit_set_string, key_string.Get(), str_value.Get()));
+  LocalRefHolder<jobject> dummy(env,
+                                env->CallObjectMethod(editor, m_edit_set_string, key_string.Get(), str_value.Get()));
   env->CallBooleanMethod(editor, m_edit_commit);
 
   CheckForException(env, "SetIntValue");
@@ -245,7 +255,8 @@ void AndroidSettingsInterface::SetFloatValue(const char* section, const char* ke
   LocalRefHolder<jstring> key_string(env, env->NewStringUTF(GetSettingKey(section, key)));
   LocalRefHolder<jstring> str_value(env, env->NewStringUTF(TinyString::FromFormat("%f", value)));
 
-  LocalRefHolder<jobject> dummy(env, env->CallObjectMethod(editor, m_edit_set_string, key_string.Get(), str_value.Get()));
+  LocalRefHolder<jobject> dummy(env,
+                                env->CallObjectMethod(editor, m_edit_set_string, key_string.Get(), str_value.Get()));
   env->CallBooleanMethod(editor, m_edit_commit);
 
   CheckForException(env, "SetFloatValue");
@@ -260,7 +271,8 @@ void AndroidSettingsInterface::SetBoolValue(const char* section, const char* key
   LocalRefHolder<jstring> key_string(env, env->NewStringUTF(GetSettingKey(section, key)));
   LocalRefHolder<jstring> str_value(env, env->NewStringUTF(value ? "true" : "false"));
 
-  LocalRefHolder<jobject> dummy(env, env->CallObjectMethod(editor, m_edit_set_string, key_string.Get(), str_value.Get()));
+  LocalRefHolder<jobject> dummy(env,
+                                env->CallObjectMethod(editor, m_edit_set_string, key_string.Get(), str_value.Get()));
   env->CallBooleanMethod(editor, m_edit_commit);
 
   CheckForException(env, "SetBoolValue");
@@ -275,7 +287,8 @@ void AndroidSettingsInterface::SetStringValue(const char* section, const char* k
   LocalRefHolder<jstring> key_string(env, env->NewStringUTF(GetSettingKey(section, key)));
   LocalRefHolder<jstring> str_value(env, env->NewStringUTF(value));
 
-  LocalRefHolder<jobject> dummy(env, env->CallObjectMethod(editor, m_edit_set_string, key_string.Get(), str_value.Get()));
+  LocalRefHolder<jobject> dummy(env,
+                                env->CallObjectMethod(editor, m_edit_set_string, key_string.Get(), str_value.Get()));
   env->CallBooleanMethod(editor, m_edit_commit);
 
   CheckForException(env, "SetStringValue");
@@ -316,10 +329,11 @@ std::vector<std::string> AndroidSettingsInterface::GetStringList(const char* sec
     env->ExceptionClear();
 
     // this might just be a string, not a string set
-    LocalRefHolder<jstring> string_object(
-            env, reinterpret_cast<jstring>(env->CallObjectMethod(m_java_shared_preferences, m_get_string, key_string.Get(), nullptr)));
+    LocalRefHolder<jstring> string_object(env, reinterpret_cast<jstring>(env->CallObjectMethod(
+                                                 m_java_shared_preferences, m_get_string, key_string.Get(), nullptr)));
 
-    if (!env->ExceptionCheck()) {
+    if (!env->ExceptionCheck())
+    {
       std::vector<std::string> ret;
       if (string_object)
         ret.push_back(AndroidHelpers::JStringToString(env, string_object));
@@ -369,7 +383,8 @@ void AndroidSettingsInterface::SetStringList(const char* section, const char* ke
   }
 
   JNIEnv* env = AndroidHelpers::GetJNIEnv();
-  LocalRefHolder<jobjectArray> items_array(env, env->NewObjectArray(static_cast<jsize>(items.size()), AndroidHelpers::GetStringClass(), nullptr));
+  LocalRefHolder<jobjectArray> items_array(
+    env, env->NewObjectArray(static_cast<jsize>(items.size()), AndroidHelpers::GetStringClass(), nullptr));
   for (size_t i = 0; i < items.size(); i++)
   {
     LocalRefHolder<jstring> item_jstr(env, env->NewStringUTF(items[i].c_str()));
@@ -377,7 +392,8 @@ void AndroidSettingsInterface::SetStringList(const char* section, const char* ke
   }
 
   LocalRefHolder<jstring> key_string(env, env->NewStringUTF(GetSettingKey(section, key)));
-  env->CallStaticVoidMethod(m_helper_class, m_helper_set_string_list, m_java_shared_preferences, key_string.Get(), items_array.Get());
+  env->CallStaticVoidMethod(m_helper_class, m_helper_set_string_list, m_java_shared_preferences, key_string.Get(),
+                            items_array.Get());
 
   CheckForException(env, "SetStringList");
 }
@@ -389,7 +405,8 @@ bool AndroidSettingsInterface::RemoveFromStringList(const char* section, const c
   JNIEnv* env = AndroidHelpers::GetJNIEnv();
   LocalRefHolder<jstring> key_string(env, env->NewStringUTF(GetSettingKey(section, key)));
   LocalRefHolder<jstring> item_string(env, env->NewStringUTF(item));
-  const bool result = env->CallStaticBooleanMethod(m_helper_class, m_helper_remove_from_string_list, m_java_shared_preferences, key_string.Get(), item_string.Get());
+  const bool result = env->CallStaticBooleanMethod(m_helper_class, m_helper_remove_from_string_list,
+                                                   m_java_shared_preferences, key_string.Get(), item_string.Get());
   CheckForException(env, "RemoveFromStringList");
   return result;
 }
@@ -401,7 +418,8 @@ bool AndroidSettingsInterface::AddToStringList(const char* section, const char* 
   JNIEnv* env = AndroidHelpers::GetJNIEnv();
   LocalRefHolder<jstring> key_string(env, env->NewStringUTF(GetSettingKey(section, key)));
   LocalRefHolder<jstring> item_string(env, env->NewStringUTF(item));
-  const bool result = env->CallStaticBooleanMethod(m_helper_class, m_helper_add_to_string_list, m_java_shared_preferences, key_string.Get(), item_string.Get());
+  const bool result = env->CallStaticBooleanMethod(m_helper_class, m_helper_add_to_string_list,
+                                                   m_java_shared_preferences, key_string.Get(), item_string.Get());
   CheckForException(env, "AddToStringList");
   return result;
 }

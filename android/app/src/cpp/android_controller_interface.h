@@ -1,6 +1,6 @@
 #pragma once
-#include "frontend-common/controller_interface.h"
 #include "core/types.h"
+#include "frontend-common/controller_interface.h"
 #include <array>
 #include <functional>
 #include <mutex>

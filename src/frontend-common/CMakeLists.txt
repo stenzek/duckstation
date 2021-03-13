@@ -100,14 +100,14 @@ if(ENABLE_CHEEVOS)
       http_downloader_winhttp.cpp
       http_downloader_winhttp.h
     )
-    else()
-      target_sources(frontend-common PRIVATE
-        http_downloader_curl.cpp
-        http_downloader_curl.h
-      )
-      target_link_libraries(frontend-common PRIVATE
-        CURL::libcurl
-      )
+  elseif(NOT ANDROID)
+    target_sources(frontend-common PRIVATE
+      http_downloader_curl.cpp
+      http_downloader_curl.h
+    )
+    target_link_libraries(frontend-common PRIVATE
+      CURL::libcurl
+    )
   endif()
 
   target_sources(frontend-common PRIVATE

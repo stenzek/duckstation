@@ -129,8 +129,8 @@ bool OpenSLESAudioStream::OpenDevice()
   for (u32 i = 0; i < NUM_BUFFERS; i++)
     m_buffers[i] = std::make_unique<SampleType[]>(m_buffer_size * m_channels);
 
-  Log_InfoPrintf("OpenSL ES device opened: %uhz, %u channels, %u buffer size, %u buffers",
-      m_output_sample_rate, m_channels, m_buffer_size, NUM_BUFFERS);
+  Log_InfoPrintf("OpenSL ES device opened: %uhz, %u channels, %u buffer size, %u buffers", m_output_sample_rate,
+                 m_channels, m_buffer_size, NUM_BUFFERS);
   return true;
 }
 
@@ -139,7 +139,8 @@ void OpenSLESAudioStream::PauseDevice(bool paused)
   if (m_paused == paused)
     return;
 
-  SLresult res = (*m_play_interface)->SetPlayState(m_play_interface, paused ? SL_PLAYSTATE_PAUSED : SL_PLAYSTATE_PLAYING);
+  SLresult res =
+    (*m_play_interface)->SetPlayState(m_play_interface, paused ? SL_PLAYSTATE_PAUSED : SL_PLAYSTATE_PLAYING);
   if (res != SL_RESULT_SUCCESS)
     Log_ErrorPrintf("SetPlayState failed: %d", res);
 

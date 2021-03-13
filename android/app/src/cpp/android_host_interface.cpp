@@ -55,6 +55,11 @@ static jclass s_SaveStateInfo_class;
 static jmethodID s_SaveStateInfo_constructor;
 
 namespace AndroidHelpers {
+JavaVM* GetJavaVM()
+{
+  return s_jvm;
+}
+
 // helper for retrieving the current per-thread jni environment
 JNIEnv* GetJNIEnv()
 {
