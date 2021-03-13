@@ -2,6 +2,7 @@
 #include "common/assert.h"
 #include "common/log.h"
 #include <cstdio>
+#include <cstring>
 #include <glad.h>
 Log_SetChannel(ShaderGen);
 
@@ -16,6 +17,14 @@ ShaderGen::ShaderGen(HostDisplay::RenderAPI render_api, bool supports_dual_sourc
 
     m_use_glsl_interface_blocks = (IsVulkan() || GLAD_GL_ES_VERSION_3_2 || GLAD_GL_VERSION_3_2);
     m_use_glsl_binding_layout = (IsVulkan() || UseGLSLBindingLayout());
+
+    if (m_render_api == HostDisplay::RenderAPI::OpenGL)
+    {
+      // SSAA with interface blocks is broken on AMD's OpenGL driver.
+      const char* gl_vendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
+      if (std::strcmp(gl_vendor, "ATI Technologies Inc.") == 0)
+        m_use_glsl_interface_blocks = false;
+    }
   }
 }
 
