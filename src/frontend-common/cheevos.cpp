@@ -345,13 +345,6 @@ static void LoginASyncCallback(s32 status_code, const FrontendCommon::HTTPDownlo
     GetHostInterface()->GetSettingsInterface()->Save();
   }
 
-  if (GetHostInterface()->IsFullscreenUIEnabled())
-  {
-    GetHostInterface()->ReportFormattedMessage(
-      GetHostInterface()->TranslateString("Cheevos", "Logged into RetroAchievements using username '%s'."),
-      username.c_str());
-  }
-
   if (g_active)
   {
     s_username = std::move(username);
