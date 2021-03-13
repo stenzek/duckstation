@@ -992,14 +992,51 @@ float HostInterface::GetFloatSettingValue(const char* section, const char* key, 
   return float_value.value_or(default_value);
 }
 
-TinyString HostInterface::TranslateString(const char* context, const char* str) const
+TinyString HostInterface::TranslateString(const char* context, const char* str,
+                                          const char* disambiguation /*= nullptr*/, int n /*= -1*/) const
 {
-  return str;
+  TinyString result(str);
+  if (n >= 0)
+  {
+    const std::string number = std::to_string(n);
+    result.Replace("%n", number.c_str());
+    result.Replace("%Ln", number.c_str());
+  }
+  return result;
 }
 
-std::string HostInterface::TranslateStdString(const char* context, const char* str) const
+std::string HostInterface::TranslateStdString(const char* context, const char* str,
+                                              const char* disambiguation /*= nullptr*/, int n /*= -1*/) const
 {
-  return str;
+  std::string result(str);
+  if (n >= 0)
+  {
+    const std::string number = std::to_string(n);
+    // Made to mimick Qt's behaviour
+    // https://github.com/qt/qtbase/blob/255459250d450286a8c5c492dab3f6d3652171c9/src/corelib/kernel/qcoreapplication.cpp#L2099
+    size_t percent_pos = 0;
+    size_t len = 0;
+    while ((percent_pos = result.find('%', percent_pos + len)) != std::string::npos)
+    {
+      len = 1;
+      if (percent_pos + len == result.length())
+        break;
+      if (result[percent_pos + len] == 'L')
+      {
+        ++len;
+        if (percent_pos + len == result.length())
+          break;
+      }
+      if (result[percent_pos + len] == 'n')
+      {
+        ++len;
+        result.replace(percent_pos, len, number);
+        len = number.length();
+      }
+    }
+  }
+
+  return result;
 }
 
 bool HostInterface::GetMainDisplayRefreshRate(float* refresh_rate)

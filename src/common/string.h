@@ -46,6 +46,9 @@ public:
   // For strings that do not allocate any space on the heap, see StaticString.
   String(const char* Text);
 
+  // Creates a string contained the specified text (with length).
+  String(const char* Text, u32 Count);
+
   // Creates a string using the same buffer as another string (copy-on-write).
   String(const String& copyString);
 
@@ -313,6 +316,12 @@ public:
   {
     InitStackStringData();
     Assign(Text);
+  }
+
+  StackString(const char* Text, u32 Count) : String(&m_sStringData)
+  {
+    InitStackStringData();
+    AppendString(Text, Count);
   }
 
   StackString(const String& copyString) : String(&m_sStringData)

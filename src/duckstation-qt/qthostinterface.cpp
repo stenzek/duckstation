@@ -127,8 +127,6 @@ void QtHostInterface::shutdownOnThread()
 
 void QtHostInterface::installTranslator()
 {
-  m_translator = std::make_unique<QTranslator>();
-
   std::string language = GetStringSettingValue("Main", "Language", "");
   if (language.empty())
     language = "en";
@@ -143,7 +141,8 @@ void QtHostInterface::installTranslator()
     return;
   }
 
-  if (!m_translator->load(path))
+  auto translator = std::make_unique<QTranslator>(qApp);
+  if (!translator->load(path))
   {
     QMessageBox::warning(
       nullptr, QStringLiteral("Translation Error"),
@@ -152,7 +151,7 @@ void QtHostInterface::installTranslator()
   }
 
   Log_InfoPrintf("Loaded translation file for language '%s'", language.c_str());
-  qApp->installTranslator(m_translator.get());
+  qApp->installTranslator(translator.release());
 }
 
 void QtHostInterface::ReportError(const char* message)
@@ -1602,22 +1601,17 @@ void QtHostInterface::setImGuiKeyMap()
   io.KeyMap[ImGuiKey_Z] = Qt::Key_Z & IMGUI_KEY_MASK;
 }
 
-TinyString QtHostInterface::TranslateString(const char* context, const char* str) const
+TinyString QtHostInterface::TranslateString(const char* context, const char* str,
+                                            const char* disambiguation /*= nullptr*/, int n /*= -1*/) const
 {
-  const QString translated(m_translator->translate(context, str));
-  if (translated.isEmpty())
-    return TinyString(str);
-
-  return TinyString(translated.toUtf8().constData());
+  const QByteArray bytes(qApp->translate(context, str, disambiguation, n).toUtf8());
+  return TinyString(bytes.constData(), bytes.size());
 }
 
-std::string QtHostInterface::TranslateStdString(const char* context, const char* str) const
+std::string QtHostInterface::TranslateStdString(const char* context, const char* str,
+                                                const char* disambiguation /*= nullptr*/, int n /*= -1*/) const
 {
-  const QString translated(m_translator->translate(context, str));
-  if (translated.isEmpty())
-    return std::string(str);
-
-  return translated.toStdString();
+  return qApp->translate(context, str, disambiguation, n).toStdString();
 }
 
 QtHostInterface::Thread::Thread(QtHostInterface* parent) : QThread(parent), m_parent(parent) {}
