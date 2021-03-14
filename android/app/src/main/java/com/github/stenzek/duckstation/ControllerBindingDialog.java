@@ -120,15 +120,15 @@ public class ControllerBindingDialog extends AlertDialog {
             for (int axisIndex = 0; axisIndex < motionEventList.size(); axisIndex++) {
                 final int axisCode = motionEventList.get(axisIndex).getAxis();
 
-                // these are binary, so start at zero
-                if (axisCode == MotionEvent.AXIS_HAT_X || axisCode == MotionEvent.AXIS_HAT_Y)
+                if (event.getHistorySize() > 0)
+                    axisValues[axisIndex] = event.getHistoricalAxisValue(axisCode, 0);
+                else if (axisCode == MotionEvent.AXIS_HAT_X || axisCode == MotionEvent.AXIS_HAT_Y)
                     axisValues[axisIndex] = 0.0f;
                 else
                     axisValues[axisIndex] = event.getAxisValue(axisCode);
             }
 
             mStartingAxisValues.put(deviceId, axisValues);
-            return false;
         }
 
         final float[] axisValues = mStartingAxisValues.get(deviceId);
