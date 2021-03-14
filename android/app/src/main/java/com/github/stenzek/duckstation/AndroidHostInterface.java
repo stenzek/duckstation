@@ -82,9 +82,13 @@ public class AndroidHostInterface {
 
     public static native String[] getControllerAxisNames(String controllerType);
 
+    public static native int getControllerVibrationMotorCount(String controllerType);
+
     public native void handleControllerButtonEvent(int controllerIndex, int buttonIndex, boolean pressed);
 
     public native void handleControllerAxisEvent(int controllerIndex, int axisIndex, float value);
+
+    public native boolean hasControllerButtonBinding(int controllerIndex, int buttonIndex);
 
     public native void toggleControllerAnalogMode();
 
@@ -115,6 +119,7 @@ public class AndroidHostInterface {
     public native void saveResumeState(boolean waitForCompletion);
 
     public native void applySettings();
+    public native void updateInputMap();
 
     public native void setDisplayAlignment(int alignment);
 

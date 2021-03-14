@@ -22,6 +22,22 @@ void ControllerInterface::Shutdown()
   m_host_interface = nullptr;
 }
 
+std::optional<int> ControllerInterface::GetControllerIndex(const std::string_view& device)
+{
+  if (!StringUtil::StartsWith(device, "Controller"))
+    return std::nullopt;
+
+  const std::optional<int> controller_index = StringUtil::FromChars<int>(device.substr(10));
+  if (!controller_index || *controller_index < 0)
+  {
+    Log_WarningPrintf("Invalid controller index in button binding '%*s'", static_cast<int>(device.length()),
+                      device.data());
+    return std::nullopt;
+  }
+
+  return controller_index;
+}
+
 void ControllerInterface::SetHook(Hook::Callback callback)
 {
   std::unique_lock<std::mutex> lock(m_event_intercept_mutex);

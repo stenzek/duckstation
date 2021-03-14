@@ -21,6 +21,8 @@ class Controller;
 class AndroidHostInterface final : public CommonHostInterface
 {
 public:
+  using CommonHostInterface::UpdateInputMap;
+
   AndroidHostInterface(jobject java_object, jobject context_object, std::string user_directory);
   ~AndroidHostInterface() override;
 
@@ -57,6 +59,8 @@ public:
   void SetControllerAxisState(u32 index, s32 button_code, float value);
   void HandleControllerButtonEvent(u32 controller_index, u32 button_index, bool pressed);
   void HandleControllerAxisEvent(u32 controller_index, u32 axis_index, float value);
+  bool HasControllerButtonBinding(u32 controller_index, u32 button);
+  void SetControllerVibration(u32 controller_index, float small_motor, float large_motor);
   void SetFastForwardEnabled(bool enabled);
 
   void RefreshGameList(bool invalidate_cache, bool invalidate_database, ProgressCallback* progress_callback);
@@ -83,6 +87,7 @@ private:
   void EmulationThreadLoop(JNIEnv* env);
 
   void LoadSettings(SettingsInterface& si) override;
+  void UpdateInputMap(SettingsInterface& si) override;
   void SetVibration(bool enabled);
   void UpdateVibration();
 

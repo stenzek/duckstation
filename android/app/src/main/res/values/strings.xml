@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">DuckStation</string>
     <string name="action_settings">Settings</string>
-    <string name="action_controller_mapping">Controller Mapping</string>
+    <string name="action_controller_mapping">Controller Settings</string>
     <string name="title_activity_settings">Settings</string>
     <string name="settings_console_region">Console Region</string>
     <string name="settings_console_tty_output">Enable TTY Output</string>
@@ -167,7 +167,7 @@
     <string name="controller_binding_dialog_no_binding"><![CDATA[<No Binding>]]></string>
     <string name="controller_binding_dialog_cancel">Cancel</string>
     <string name="controller_binding_dialog_clear">Clear</string>
-    <string name="controller_mapping_activity_title">Controller Mapping</string>
+    <string name="controller_mapping_activity_title">Controller Settings</string>
     <string name="controller_mapping_activity_no_profiles_found">No profiles found.</string>
     <string name="controller_mapping_activity_select_input_profile">Select Input Profile</string>
     <string name="controller_mapping_activity_failed_to_load_profile">Failed to load profile \'%s\'</string>
@@ -266,4 +266,14 @@
     <string name="settings_achievements_disclaimer">DuckStation uses RetroAchievements (retroachievements.org) as an achievement database and for tracking progress.</string>
     <string name="settings_achievements_confirm_logout_title">Confirm Logout</string>
     <string name="settings_achievements_confirm_logout_message">After logging out, no more achievements will be unlocked until you log back in again. Achievements already unlocked will not be lost.</string>
+    <string name="controller_binding_device_for_vibration">Device for Vibration</string>
+    <string name="controller_settings_tab_settings">Settings</string>
+    <string name="controller_settings_tab_hotkeys">Hotkeys</string>
+    <string name="controller_settings_category_button_bindings">Button Bindings</string>
+    <string name="controller_settings_category_axis_bindings">Axis Bindings</string>
+    <string name="controller_settings_category_settings">Settings</string>
+    <string name="controller_settings_category_touchscreen_controller">Touchscreen Controller</string>
+    <string name="controller_settings_category_ports">Ports</string>
+    <string name="controller_settings_main_port_format">Port %d</string>
+    <string name="controller_settings_sub_port_format">Port %1$d%2$c</string>
 </resources>

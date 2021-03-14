@@ -1,7 +1,6 @@
 package com.github.stenzek.duckstation;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
@@ -17,17 +16,14 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.View;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentManager;
 import androidx.preference.PreferenceManager;
 
 /**
@@ -155,6 +151,19 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         runOnUiThread(() -> {
             showMenu();
         });
+    }
+
+    public String[] getInputDeviceNames() {
+        return (mContentView != null) ? mContentView.getInputDeviceNames() : null;
+    }
+
+    public boolean hasInputDeviceVibration(int controllerIndex) {
+        return (mContentView != null) ? mContentView.hasInputDeviceVibration(controllerIndex) : null;
+    }
+
+    public void setInputDeviceVibration(int controllerIndex, float smallMotor, float largeMotor) {
+        if (mContentView != null)
+            mContentView.setInputDeviceVibration(controllerIndex, smallMotor, largeMotor);
     }
 
     private void doApplySettings() {
@@ -731,8 +740,10 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         Log.i("EmulationActivity", "Controller type: " + controllerType);
         Log.i("EmulationActivity", "View type: " + viewType);
 
-        final boolean hasAnyControllers = mContentView.initControllerMapping(controllerType);
+        mContentView.updateInputDevices();
+        AndroidHostInterface.getInstance().updateInputMap();
 
+        final boolean hasAnyControllers = mContentView.hasAnyGamePads();
         if (controllerType.equals("none") || viewType.equals("none") || (hasAnyControllers && autoHideTouchscreenController)) {
             if (mTouchscreenController != null) {
                 activityLayout.removeView(mTouchscreenController);

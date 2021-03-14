@@ -49,6 +49,9 @@ static jmethodID s_EmulationActivity_method_onGameTitleChanged;
 static jmethodID s_EmulationActivity_method_setVibration;
 static jmethodID s_EmulationActivity_method_getRefreshRate;
 static jmethodID s_EmulationActivity_method_openPauseMenu;
+static jmethodID s_EmulationActivity_method_getInputDeviceNames;
+static jmethodID s_EmulationActivity_method_hasInputDeviceVibration;
+static jmethodID s_EmulationActivity_method_setInputDeviceVibration;
 static jclass s_PatchCode_class;
 static jmethodID s_PatchCode_constructor;
 static jclass s_GameListEntry_class;
@@ -284,6 +287,48 @@ void AndroidHostInterface::LoadSettings(SettingsInterface& si)
   }
 }
 
+void AndroidHostInterface::UpdateInputMap(SettingsInterface& si)
+{
+  if (m_emulation_activity_object)
+  {
+    JNIEnv* env = AndroidHelpers::GetJNIEnv();
+    DebugAssert(env);
+
+    std::vector<std::string> device_names;
+
+    jobjectArray const java_names = reinterpret_cast<jobjectArray>(
+      env->CallObjectMethod(m_emulation_activity_object, s_EmulationActivity_method_getInputDeviceNames));
+    if (java_names)
+    {
+      const u32 count = static_cast<u32>(env->GetArrayLength(java_names));
+      for (u32 i = 0; i < count; i++)
+      {
+        device_names.push_back(
+          AndroidHelpers::JStringToString(env, reinterpret_cast<jstring>(env->GetObjectArrayElement(java_names, i))));
+      }
+
+      env->DeleteLocalRef(java_names);
+    }
+
+    if (m_controller_interface)
+    {
+      AndroidControllerInterface* ci = static_cast<AndroidControllerInterface*>(m_controller_interface.get());
+      if (ci)
+      {
+        ci->SetDeviceNames(std::move(device_names));
+        for (u32 i = 0; i < ci->GetControllerCount(); i++)
+        {
+          const bool has_vibration = env->CallBooleanMethod(
+            m_emulation_activity_object, s_EmulationActivity_method_hasInputDeviceVibration, static_cast<jint>(i));
+          ci->SetDeviceRumble(i, has_vibration);
+        }
+      }
+    }
+  }
+
+  CommonHostInterface::UpdateInputMap(si);
+}
+
 bool AndroidHostInterface::IsEmulationThreadPaused() const
 {
   return System::IsValid() && System::IsPaused();
@@ -461,6 +506,7 @@ void AndroidHostInterface::EmulationThreadLoop(JNIEnv* env)
       else
         System::RunFrame();
 
+      UpdateControllerRumble();
       if (m_vibration_enabled)
         UpdateVibration();
     }
@@ -720,6 +766,28 @@ void AndroidHostInterface::HandleControllerAxisEvent(u32 controller_index, u32 a
   });
 }
 
+bool AndroidHostInterface::HasControllerButtonBinding(u32 controller_index, u32 button)
+{
+  AndroidControllerInterface* ci = static_cast<AndroidControllerInterface*>(m_controller_interface.get());
+  if (!ci)
+    return false;
+
+  return ci->HasButtonBinding(controller_index, button);
+}
+
+void AndroidHostInterface::SetControllerVibration(u32 controller_index, float small_motor, float large_motor)
+{
+  if (!m_emulation_activity_object)
+    return;
+
+  JNIEnv* env = AndroidHelpers::GetJNIEnv();
+  DebugAssert(env);
+
+  env->CallVoidMethod(m_emulation_activity_object, s_EmulationActivity_method_setInputDeviceVibration,
+          static_cast<jint>(controller_index), static_cast<jfloat>(small_motor),
+          static_cast<jfloat>(large_motor));
+}
+
 void AndroidHostInterface::SetFastForwardEnabled(bool enabled)
 {
   m_fast_forward_enabled = enabled;
@@ -885,6 +953,12 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
          env->GetMethodID(emulation_activity_class, "getRefreshRate", "()F")) == nullptr ||
       (s_EmulationActivity_method_openPauseMenu = env->GetMethodID(emulation_activity_class, "openPauseMenu", "()V")) ==
         nullptr ||
+      (s_EmulationActivity_method_getInputDeviceNames =
+         env->GetMethodID(s_EmulationActivity_class, "getInputDeviceNames", "()[Ljava/lang/String;")) == nullptr ||
+      (s_EmulationActivity_method_hasInputDeviceVibration =
+         env->GetMethodID(s_EmulationActivity_class, "hasInputDeviceVibration", "(I)Z")) == nullptr ||
+      (s_EmulationActivity_method_setInputDeviceVibration =
+         env->GetMethodID(s_EmulationActivity_class, "setInputDeviceVibration", "(IFF)V")) == nullptr ||
       (s_PatchCode_constructor = env->GetMethodID(s_PatchCode_class, "<init>", "(ILjava/lang/String;Z)V")) == nullptr ||
       (s_GameListEntry_constructor = env->GetMethodID(
          s_GameListEntry_class, "<init>",
@@ -1119,16 +1193,35 @@ DEFINE_JNI_ARGS_METHOD(jobjectArray, AndroidHostInterface_getControllerAxisNames
   return name_array;
 }
 
+DEFINE_JNI_ARGS_METHOD(jint, AndroidHostInterface_getControllerVibrationMotorCount, jobject unused, jstring controller_type)
+{
+  std::optional<ControllerType> type =
+          Settings::ParseControllerTypeName(AndroidHelpers::JStringToString(env, controller_type).c_str());
+  if (!type)
+    return 0;
+
+  return static_cast<jint>(Controller::GetVibrationMotorCount(type.value()));
+}
+
 DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_handleControllerButtonEvent, jobject obj, jint controller_index,
                        jint button_index, jboolean pressed)
 {
-  AndroidHelpers::GetNativeClass(env, obj)->HandleControllerButtonEvent(controller_index, button_index, pressed);
+  AndroidHelpers::GetNativeClass(env, obj)->HandleControllerButtonEvent(static_cast<u32>(controller_index),
+                                                                        static_cast<u32>(button_index), pressed);
 }
 
 DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_handleControllerAxisEvent, jobject obj, jint controller_index,
                        jint axis_index, jfloat value)
 {
-  AndroidHelpers::GetNativeClass(env, obj)->HandleControllerAxisEvent(controller_index, axis_index, value);
+  AndroidHelpers::GetNativeClass(env, obj)->HandleControllerAxisEvent(static_cast<u32>(controller_index),
+                                                                      static_cast<u32>(axis_index), value);
+}
+
+DEFINE_JNI_ARGS_METHOD(jboolean, AndroidHostInterface_hasControllerButtonBinding, jobject obj, jint controller_index,
+                       jint button_index)
+{
+  return AndroidHelpers::GetNativeClass(env, obj)->HasControllerButtonBinding(static_cast<u32>(controller_index),
+                                                                              static_cast<u32>(button_index));
 }
 
 DEFINE_JNI_ARGS_METHOD(jobjectArray, AndroidHostInterface_getInputProfileNames, jobject obj)
@@ -1327,6 +1420,19 @@ DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_applySettings, jobject obj)
   else
   {
     hi->ApplySettings(false);
+  }
+}
+
+DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_updateInputMap, jobject obj)
+{
+  AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
+  if (hi->IsEmulationThreadRunning())
+  {
+    hi->RunOnEmulationThread([hi]() { hi->UpdateInputMap(); });
+  }
+  else
+  {
+    hi->UpdateInputMap();
   }
 }
 

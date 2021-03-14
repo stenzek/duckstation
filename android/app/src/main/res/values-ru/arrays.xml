@@ -69,8 +69,11 @@
 		<item>xBR (без сглаживания краёв)</item>
 	</string-array>
 	<string-array name="settings_controller_type_entries">
+		<item>None</item>
 		<item>Цифровой</item>
 		<item>Аналоговый (DualShock)</item>
+		<item>Analog Joystick</item>
+		<item>NeGcon</item>
 	</string-array>
 	<string-array name="settings_memory_card_mode_entries">
 		<item>Без карты памяти</item>
@@ -145,7 +148,6 @@
 		<item>Экран</item>
 		<item>Звук</item>
 		<item>Улучшения</item>
-		<item>Контроллеры</item>
 		<item>Достижения</item>
 		<item>Расширенные</item>
 	</string-array>

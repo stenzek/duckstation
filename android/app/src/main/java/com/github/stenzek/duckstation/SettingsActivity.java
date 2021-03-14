@@ -107,13 +107,10 @@ public class SettingsActivity extends AppCompatActivity {
                 case 3:     // Enhancements
                     return new SettingsFragment(R.xml.enhancements_preferences);
 
-                case 4:     // Controllers
-                    return new SettingsFragment(R.xml.controllers_preferences);
-
-                case 5:     // Achievements
+                case 4:     // Achievements
                     return new AchievementSettingsFragment();
 
-                case 6:     // Advanced
+                case 5:     // Advanced
                     return new SettingsFragment(R.xml.advanced_preferences);
 
                 default:
@@ -123,7 +120,7 @@ public class SettingsActivity extends AppCompatActivity {
 
         @Override
         public int getItemCount() {
-            return 7;
+            return 6;
         }
     }
 }

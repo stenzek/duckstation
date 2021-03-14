@@ -14,88 +14,72 @@
   ~ limitations under the License.
   -->
 
-<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <ListPreference
-        app:key="Controller1/Type"
-        app:title="@string/settings_controller_type"
-        app:entries="@array/settings_controller_type_entries"
-        app:entryValues="@array/settings_controller_type_values"
-        app:defaultValue="DigitalController"
-        app:useSimpleSummaryProvider="true"
-        app:iconSpaceReserved="false" />
-    <ListPreference
-        app:key="Controller1/TouchscreenControllerView"
-        app:title="@string/settings_touchscreen_controller_view"
-        app:entries="@array/settings_touchscreen_controller_view_entries"
-        app:entryValues="@array/settings_touchscreen_controller_view_values"
-        app:defaultValue="digital"
-        app:useSimpleSummaryProvider="true"
-        app:iconSpaceReserved="false" />
-    <Preference
-        app:title="@string/settings_controller_mapping"
-        app:summary="@string/settings_controller_mapping_summary"
-        app:iconSpaceReserved="false">
-        <intent
-            android:action="android.intent.action.VIEW"
-            android:targetClass="com.github.stenzek.duckstation.ControllerMappingActivity"
-            android:targetPackage="com.github.stenzek.duckstation" />
-    </Preference>
-    <SwitchPreferenceCompat
-        app:key="Controller1/ForceAnalogOnReset"
-        app:title="@string/settings_enable_analog_mode_on_reset"
-        app:summary="@string/settings_summary_enable_analog_mode_on_reset"
-        app:defaultValue="true"
-        app:iconSpaceReserved="false" />
-    <SwitchPreferenceCompat
-        app:key="Controller1/AnalogDPadInDigitalMode"
-        app:title="@string/settings_use_analog_sticks_for_dpad"
-        app:summary="@string/settings_summary_use_analog_sticks_for_dpad"
-        app:defaultValue="true"
-        app:iconSpaceReserved="false" />
-    <SwitchPreferenceCompat
-        app:key="Controller1/AutoHideTouchscreenController"
-        app:title="@string/settings_auto_hide_touchscreen_controller"
-        app:defaultValue="false"
-        app:summary="@string/settings_summary_auto_hide_touchscreen_controller"
-        app:iconSpaceReserved="false" />
-    <SwitchPreferenceCompat
-        app:key="Controller1/HapticFeedback"
-        app:title="@string/settings_vibrate_on_press"
-        app:defaultValue="false"
-        app:summary="@string/settings_summary_vibrate_on_press"
-        app:iconSpaceReserved="false" />
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
+        app:title="@string/controller_settings_category_touchscreen_controller">
+        <ListPreference
+            app:defaultValue="digital"
+            app:entries="@array/settings_touchscreen_controller_view_entries"
+            app:entryValues="@array/settings_touchscreen_controller_view_values"
+            app:iconSpaceReserved="false"
+            app:key="Controller1/TouchscreenControllerView"
+            app:title="@string/settings_touchscreen_controller_view"
+            app:useSimpleSummaryProvider="true" />
+        <SwitchPreferenceCompat
+            app:defaultValue="false"
+            app:iconSpaceReserved="false"
+            app:key="Controller1/AutoHideTouchscreenController"
+            app:summary="@string/settings_summary_auto_hide_touchscreen_controller"
+            app:title="@string/settings_auto_hide_touchscreen_controller" />
+        <SwitchPreferenceCompat
+            app:defaultValue="false"
+            app:iconSpaceReserved="false"
+            app:key="Controller1/TouchGliding"
+            app:summary="@string/settings_summary_touch_gliding"
+            app:title="@string/settings_touch_gliding" />
+        <SwitchPreferenceCompat
+            app:defaultValue="false"
+            app:iconSpaceReserved="false"
+            app:key="Controller1/HapticFeedback"
+            app:summary="@string/settings_summary_vibrate_on_press"
+            app:title="@string/settings_vibrate_on_press" />
+        <SwitchPreferenceCompat
+            app:defaultValue="false"
+            app:iconSpaceReserved="false"
+            app:key="Controller1/Vibration"
+            app:summary="@string/settings_summary_enable_vibration"
+            app:title="@string/settings_enable_vibration" />
+    </PreferenceCategory>
 
-    <SwitchPreferenceCompat
-        app:key="Controller1/Vibration"
-        app:title="@string/settings_enable_vibration"
-        app:defaultValue="false"
-        app:summary="@string/settings_summary_enable_vibration"
-        app:iconSpaceReserved="false" />
-
-    <SwitchPreferenceCompat
-        app:key="Controller1/TouchGliding"
-        app:title="@string/settings_touch_gliding"
-        app:defaultValue="false"
-        app:summary="@string/settings_summary_touch_gliding"
-        app:iconSpaceReserved="false" />
-
-    <ListPreference
-        app:key="MemoryCards/Card1Type"
-        app:title="@string/settings_memory_card_1_type"
-        app:entries="@array/settings_memory_card_mode_entries"
-        app:entryValues="@array/settings_memory_card_mode_values"
-        app:defaultValue="PerGameTitle"
-        app:useSimpleSummaryProvider="true"
-        app:iconSpaceReserved="false" />
-    <ListPreference
-        app:key="MemoryCards/Card2Type"
-        app:title="@string/settings_memory_card_2_type"
-        app:entries="@array/settings_memory_card_mode_entries"
-        app:entryValues="@array/settings_memory_card_mode_values"
-        app:defaultValue="None"
-        app:useSimpleSummaryProvider="true"
-        app:iconSpaceReserved="false" />
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
+        app:title="@string/controller_settings_category_ports">
+        <ListPreference
+            app:defaultValue="Disabled"
+            app:entries="@array/settings_multitap_mode_entries"
+            app:entryValues="@array/settings_multitap_mode_values"
+            app:iconSpaceReserved="false"
+            app:key="ControllerPorts/MultitapMode"
+            app:title="Multitap Mode"
+            app:useSimpleSummaryProvider="true" />
+        <ListPreference
+            app:defaultValue="PerGameTitle"
+            app:entries="@array/settings_memory_card_mode_entries"
+            app:entryValues="@array/settings_memory_card_mode_values"
+            app:iconSpaceReserved="false"
+            app:key="MemoryCards/Card1Type"
+            app:title="@string/settings_memory_card_1_type"
+            app:useSimpleSummaryProvider="true" />
+        <ListPreference
+            app:defaultValue="None"
+            app:entries="@array/settings_memory_card_mode_entries"
+            app:entryValues="@array/settings_memory_card_mode_values"
+            app:iconSpaceReserved="false"
+            app:key="MemoryCards/Card2Type"
+            app:title="@string/settings_memory_card_2_type"
+            app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
 
 </PreferenceScreen>
