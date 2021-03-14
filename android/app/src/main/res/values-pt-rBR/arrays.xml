@@ -62,11 +62,11 @@
     <string-array name="settings_gpu_texture_filter_names">
         <item>Nearest-Neighbor</item>
         <item>Bilinear</item>
-        <item>Bilinear (Sem ajustes laterais)</item>
+        <item>Bilinear (Sem AA)</item>
         <item>JINC2</item>
-        <item>JINC2 (Sem ajustes laterais)</item>
+        <item>JINC2 (Sem AA)</item>
         <item>xBR</item>
-        <item>xBR (Sem ajustes laterais)</item>
+        <item>xBR (Sem AA)</item>
     </string-array>
     <string-array name="settings_controller_type_entries">
         <item>None</item>
@@ -96,6 +96,12 @@
         <item>Mudar controle em Tela</item>
         <item>Configurações</item>
     </string-array>
+		<string-array name="emulation_touchscreen_menu">
+		<item>Mudar</item>
+		<item>Ajustar Visibilidade</item>
+		<item>Adicionar/Remover botões</item>
+		<item>Mudar Layout</item>
+	</string-array>
     <string-array name="settings_cdrom_read_speedup_entries">
         <item>Nenhum</item>
         <item>2x (4x Veloz)</item>
@@ -142,7 +148,7 @@
         <item>Vídeo</item>
         <item>Áudio</item>
         <item>Melhorias</item>
-        <item>Achievements</item>
+        <item>Conquistas</item>
         <item>Avançado</item>
     </string-array>
     <string-array name="settings_gpu_msaa_entries">
