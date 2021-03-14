@@ -3,6 +3,7 @@ package com.github.stenzek.duckstation;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.AttributeSet;
+import android.view.InputDevice;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -175,6 +176,49 @@ public class ControllerBindingPreference extends Preference {
         updateValue();
     }
 
+    private String prettyPrintBinding(String value) {
+        final int index = value.indexOf('/');
+        String device, binding;
+        if (index >= 0) {
+            device = value.substring(0, index);
+            binding = value.substring(index);
+        } else {
+            device = value;
+            binding = "";
+        }
+
+        String humanName = device;
+        int deviceIndex = -1;
+
+        final int[] deviceIds = InputDevice.getDeviceIds();
+        for (int i = 0; i < deviceIds.length; i++) {
+            final InputDevice inputDevice = InputDevice.getDevice(deviceIds[i]);
+            if (inputDevice == null || !inputDevice.getDescriptor().equals(device)) {
+                continue;
+            }
+
+            humanName = inputDevice.getName();
+            deviceIndex = i;
+            break;
+        }
+
+        final int MAX_LENGTH = 40;
+        if (humanName.length() > MAX_LENGTH) {
+            final StringBuilder shortenedName = new StringBuilder();
+            shortenedName.append(humanName, 0, MAX_LENGTH / 2);
+            shortenedName.append("...");
+            shortenedName.append(humanName, humanName.length() - (MAX_LENGTH / 2),
+                    humanName.length());
+
+            humanName = shortenedName.toString();
+        }
+
+        if (deviceIndex < 0)
+            return String.format("%s[??]%s", humanName, binding);
+        else
+            return String.format("%s[%d]%s", humanName, deviceIndex, binding);
+    }
+
     private void updateValue(String value) {
         mValue = value;
         if (mValueView != null) {
@@ -193,7 +237,7 @@ public class ControllerBindingPreference extends Preference {
             for (String value : values) {
                 if (sb.length() > 0)
                     sb.append(", ");
-                sb.append(value);
+                sb.append(prettyPrintBinding(value));
             }
 
             updateValue(sb.toString());
