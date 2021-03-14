@@ -401,10 +401,15 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
         m_rumble_config_large_motor_index = -1;
         m_rumble_config_small_motor_index = -1;
       }
+      else if (m_configuration_mode)
+      {
+        Log_ErrorPrintf("Unimplemented config mode command 0x%02X", data_in);
+        Panic("Unimplemented config mode command");
+      }
       else
       {
-        Log_ErrorPrintf("Unimplemented analog controller command 0x%02X", data_in);
-        Panic("Unimplemented analog controller command");
+        *data_out = 0xFF;
+        return false;
       }
     }
     break;
