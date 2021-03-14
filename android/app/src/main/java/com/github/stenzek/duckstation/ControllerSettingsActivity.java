@@ -16,11 +16,12 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
-import androidx.fragment.app.FragmentFactory;
+import androidx.preference.ListPreference;
+import androidx.preference.PreferenceCategory;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 import androidx.preference.PreferenceScreen;
+import androidx.preference.SwitchPreferenceCompat;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -29,7 +30,7 @@ import com.google.android.material.tabs.TabLayoutMediator;
 
 import java.util.ArrayList;
 
-public class ControllerMappingActivity extends AppCompatActivity {
+public class ControllerSettingsActivity extends AppCompatActivity {
 
     private static final int NUM_CONTROLLER_PORTS = 2;
 
@@ -109,7 +110,7 @@ public class ControllerMappingActivity extends AppCompatActivity {
                     doLoadProfile(profileNames[choice]);
                     dialog.dismiss();
                 })
-                .setNegativeButton("Cancel", ((dialog, which) -> dialog.dismiss()))
+                .setNegativeButton(R.string.controller_mapping_activity_cancel, ((dialog, which) -> dialog.dismiss()))
                 .create()
                 .show();
     }
@@ -140,7 +141,7 @@ public class ControllerMappingActivity extends AppCompatActivity {
                 return;
             }
 
-            Toast.makeText(ControllerMappingActivity.this, String.format(ControllerMappingActivity.this.getString(R.string.controller_mapping_activity_input_profile_saved), name),
+            Toast.makeText(ControllerSettingsActivity.this, String.format(ControllerSettingsActivity.this.getString(R.string.controller_mapping_activity_input_profile_saved), name),
                     Toast.LENGTH_LONG).show();
         });
         builder.setNegativeButton(R.string.controller_mapping_activity_cancel, (dialog, which) -> dialog.dismiss());
@@ -159,57 +160,150 @@ public class ControllerMappingActivity extends AppCompatActivity {
             pref.updateValue();
     }
 
-    public static class ControllerPortFragment extends PreferenceFragmentCompat {
-        private ControllerMappingActivity activity;
-        private int controllerIndex;
+    public static class SettingsFragment extends PreferenceFragmentCompat {
+        @Override
+        public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+            setPreferencesFromResource(R.xml.controllers_preferences, rootKey);
+        }
+    }
 
-        public ControllerPortFragment(ControllerMappingActivity activity, int controllerIndex) {
+    public static class ControllerPortFragment extends PreferenceFragmentCompat {
+        private ControllerSettingsActivity activity;
+        private int controllerIndex;
+        private PreferenceCategory mButtonsCategory;
+        private PreferenceCategory mAxisCategory;
+        private PreferenceCategory mSettingsCategory;
+
+        public ControllerPortFragment(ControllerSettingsActivity activity, int controllerIndex) {
             this.activity = activity;
             this.controllerIndex = controllerIndex;
         }
 
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+            final PreferenceScreen ps = getPreferenceManager().createPreferenceScreen(getContext());
+            setPreferenceScreen(ps);
+            createPreferences();
+        }
+
+        private SwitchPreferenceCompat createTogglePreference(String key, int title, int summary, boolean defaultValue) {
+            final SwitchPreferenceCompat pref = new SwitchPreferenceCompat(getContext());
+            pref.setKey(key);
+            pref.setTitle(title);
+            pref.setSummary(summary);
+            pref.setIconSpaceReserved(false);
+            pref.setDefaultValue(defaultValue);
+            return pref;
+        }
+
+        private void createPreferences() {
+            final PreferenceScreen ps = getPreferenceScreen();
             final SharedPreferences sp = getPreferenceManager().getSharedPreferences();
             final String defaultControllerType = controllerIndex == 0 ? "DigitalController" : "None";
-            final String controllerType = sp.getString(String.format("Controller%d/Type", controllerIndex), defaultControllerType);
+            final String controllerTypeKey = String.format("Controller%d/Type", controllerIndex);
+            final String controllerType = sp.getString(controllerTypeKey, defaultControllerType);
             final String[] controllerButtons = AndroidHostInterface.getControllerButtonNames(controllerType);
             final String[] axisButtons = AndroidHostInterface.getControllerAxisNames(controllerType);
             final int vibrationMotors = AndroidHostInterface.getControllerVibrationMotorCount(controllerType);
 
-            final PreferenceScreen ps = getPreferenceManager().createPreferenceScreen(getContext());
+            final ListPreference typePreference = new ListPreference(getContext());
+            typePreference.setEntries(R.array.settings_controller_type_entries);
+            typePreference.setEntryValues(R.array.settings_controller_type_values);
+            typePreference.setKey(controllerTypeKey);
+            typePreference.setTitle(R.string.settings_controller_type);
+            typePreference.setSummaryProvider(ListPreference.SimpleSummaryProvider.getInstance());
+            typePreference.setIconSpaceReserved(false);
+            typePreference.setOnPreferenceChangeListener((pref, value) -> {
+                removePreferences();
+                createPreferences(value.toString());
+                return true;
+            });
+            ps.addPreference(typePreference);
+
+            mButtonsCategory = new PreferenceCategory(getContext());
+            mButtonsCategory.setTitle(getContext().getString(R.string.controller_settings_category_button_bindings));
+            mButtonsCategory.setIconSpaceReserved(false);
+            ps.addPreference(mButtonsCategory);
+
+            mAxisCategory = new PreferenceCategory(getContext());
+            mAxisCategory.setTitle(getContext().getString(R.string.controller_settings_category_axis_bindings));
+            mAxisCategory.setIconSpaceReserved(false);
+            ps.addPreference(mAxisCategory);
+
+            mSettingsCategory = new PreferenceCategory(getContext());
+            mSettingsCategory.setTitle(getContext().getString(R.string.controller_settings_category_settings));
+            mSettingsCategory.setIconSpaceReserved(false);
+            ps.addPreference(mSettingsCategory);
+
+            createPreferences(controllerType);
+        }
+
+        private void createPreferences(String controllerType) {
+            final PreferenceScreen ps = getPreferenceScreen();
+            final SharedPreferences sp = getPreferenceManager().getSharedPreferences();
+            final String[] controllerButtons = AndroidHostInterface.getControllerButtonNames(controllerType);
+            final String[] axisButtons = AndroidHostInterface.getControllerAxisNames(controllerType);
+            final int vibrationMotors = AndroidHostInterface.getControllerVibrationMotorCount(controllerType);
+
             if (controllerButtons != null) {
                 for (String buttonName : controllerButtons) {
                     final ControllerBindingPreference cbp = new ControllerBindingPreference(getContext(), null);
                     cbp.initButton(controllerIndex, buttonName);
-                    ps.addPreference(cbp);
+                    mButtonsCategory.addPreference(cbp);
                     activity.mPreferences.add(cbp);
                 }
             }
+
             if (axisButtons != null) {
                 for (String axisName : axisButtons) {
                     final ControllerBindingPreference cbp = new ControllerBindingPreference(getContext(), null);
                     cbp.initAxis(controllerIndex, axisName);
-                    ps.addPreference(cbp);
+                    mAxisCategory.addPreference(cbp);
                     activity.mPreferences.add(cbp);
                 }
             }
+
             if (vibrationMotors > 0) {
                 final ControllerBindingPreference cbp = new ControllerBindingPreference(getContext(), null);
                 cbp.initVibration(controllerIndex);
-                ps.addPreference(cbp);
+                mSettingsCategory.addPreference(cbp);
                 activity.mPreferences.add(cbp);
             }
 
-            setPreferenceScreen(ps);
+            if (controllerType.equals("AnalogController")) {
+                mSettingsCategory.addPreference(
+                        createTogglePreference(String.format("Controller%d/ForceAnalogOnReset", controllerIndex),
+                                R.string.settings_use_analog_sticks_for_dpad, R.string.settings_summary_enable_analog_mode_on_reset, true));
+
+                mSettingsCategory.addPreference(
+                        createTogglePreference(String.format("Controller%d/AnalogDPadInDigitalMode", controllerIndex),
+                                R.string.settings_enable_analog_mode_on_reset, R.string.settings_summary_use_analog_sticks_for_dpad, true));
+            }
+        }
+
+        private void removePreferences() {
+            for (int i = 0; i < mButtonsCategory.getPreferenceCount(); i++) {
+                activity.mPreferences.remove(mButtonsCategory.getPreference(i));
+            }
+            mButtonsCategory.removeAll();
+
+            for (int i = 0; i < mAxisCategory.getPreferenceCount(); i++) {
+                activity.mPreferences.remove(mAxisCategory.getPreference(i));
+            }
+            mAxisCategory.removeAll();
+
+            for (int i = 0; i < mSettingsCategory.getPreferenceCount(); i++) {
+                activity.mPreferences.remove(mSettingsCategory.getPreference(i));
+            }
+            mSettingsCategory.removeAll();
         }
     }
 
     public static class HotkeyFragment extends PreferenceFragmentCompat {
-        private ControllerMappingActivity activity;
+        private ControllerSettingsActivity activity;
         private HotkeyInfo[] mHotkeyInfo;
 
-        public HotkeyFragment(ControllerMappingActivity activity) {
+        public HotkeyFragment(ControllerSettingsActivity activity) {
             this.activity = activity;
             this.mHotkeyInfo = AndroidHostInterface.getInstance().getHotkeyInfoList();
         }
@@ -231,56 +325,65 @@ public class ControllerMappingActivity extends AppCompatActivity {
     }
 
     public static class SettingsCollectionFragment extends Fragment {
-        private ControllerMappingActivity activity;
+        private ControllerSettingsActivity activity;
         private SettingsCollectionAdapter adapter;
         private ViewPager2 viewPager;
+        private String[] controllerPortNames;
 
-        public SettingsCollectionFragment(ControllerMappingActivity activity) {
+        public SettingsCollectionFragment(ControllerSettingsActivity activity) {
             this.activity = activity;
+
+            controllerPortNames = new String[] { "Port 1", "Port 2" };
         }
 
         @Nullable
         @Override
         public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-            return inflater.inflate(R.layout.fragment_controller_mapping, container, false);
+            return inflater.inflate(R.layout.fragment_controller_settings, container, false);
         }
 
         @Override
         public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-            adapter = new SettingsCollectionAdapter(activity, this);
+            adapter = new SettingsCollectionAdapter(activity, this, controllerPortNames.length);
             viewPager = view.findViewById(R.id.view_pager);
             viewPager.setAdapter(adapter);
 
             TabLayout tabLayout = view.findViewById(R.id.tab_layout);
             new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
-                if (position == NUM_CONTROLLER_PORTS)
-                    tab.setText("Hotkeys");
+                if (position == 0)
+                    tab.setText(R.string.controller_settings_tab_settings);
+                else if (position <= controllerPortNames.length)
+                    tab.setText(controllerPortNames[position - 1]);
                 else
-                    tab.setText(String.format("Port %d", position + 1));
+                    tab.setText(R.string.controller_settings_tab_hotkeys);
             }).attach();
         }
     }
 
     public static class SettingsCollectionAdapter extends FragmentStateAdapter {
-        private ControllerMappingActivity activity;
+        private ControllerSettingsActivity activity;
+        private int controllerPorts;
 
-        public SettingsCollectionAdapter(@NonNull ControllerMappingActivity activity, @NonNull Fragment fragment) {
+        public SettingsCollectionAdapter(@NonNull ControllerSettingsActivity activity, @NonNull Fragment fragment, int controllerPorts) {
             super(fragment);
             this.activity = activity;
+            this.controllerPorts = controllerPorts;
         }
 
         @NonNull
         @Override
         public Fragment createFragment(int position) {
-            if (position != NUM_CONTROLLER_PORTS)
-                return new ControllerPortFragment(activity, position + 1);
+            if (position == 0)
+                return new SettingsFragment();
+            else if (position <= controllerPorts)
+                return new ControllerPortFragment(activity, position);
             else
                 return new HotkeyFragment(activity);
         }
 
         @Override
         public int getItemCount() {
-            return NUM_CONTROLLER_PORTS + 1;
+            return NUM_CONTROLLER_PORTS + 2;
         }
     }
 }

@@ -26,8 +26,6 @@ import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentFactory;
 import androidx.preference.PreferenceManager;
 
 import java.io.ByteArrayOutputStream;
@@ -237,8 +235,8 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(this, SettingsActivity.class);
             startActivityForResult(intent, REQUEST_SETTINGS);
             return true;
-        } else if (id == R.id.action_controller_mapping) {
-            Intent intent = new Intent(this, ControllerMappingActivity.class);
+        } else if (id == R.id.action_controller_settings) {
+            Intent intent = new Intent(this, ControllerSettingsActivity.class);
             startActivity(intent);
             return true;
         } else if (id == R.id.action_switch_view) {
