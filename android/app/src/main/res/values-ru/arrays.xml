@@ -82,15 +82,15 @@
 		<item>Загрузить состояние</item>
 		<item>Сохранить состояние</item>
 		<item>Включить ускорение</item>
-		<item>Achievements</item>
-		<item>Другие опции</item>
+		<item>Достижения</item>
+		<item>Опции</item>
 		<item>Выход</item>
 	</string-array>
 	<string-array name="emulation_more_menu">
 		<item>Сброс</item>
 		<item>Чит-коды</item>
 		<item>Сменить диск</item>
-		<item>Настроить экранный контроллер</item>
+		<item>Настроить экранный геймпад</item>
 		<item>Настройки эмулятора</item>
 	</string-array>
 	<string-array name="emulation_touchscreen_menu">
@@ -146,7 +146,7 @@
 		<item>Звук</item>
 		<item>Улучшения</item>
 		<item>Контроллеры</item>
-		<item>Achievements</item>
+		<item>Достижения</item>
 		<item>Расширенные</item>
 	</string-array>
 	<string-array name="settings_gpu_msaa_entries">
@@ -236,7 +236,7 @@
 		<item>Адаптивный (не понижать 3D/сглаживать 2D)</item>
 	</string-array>
 	<string-array name="settings_boolean_entries">
-		<item>Выключен</item>
-		<item>Включен</item>
+		<item>Выключено</item>
+		<item>Включено</item>
 	</string-array>
 </resources>
