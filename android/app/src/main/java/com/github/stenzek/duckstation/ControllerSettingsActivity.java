@@ -30,6 +30,7 @@ import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class ControllerSettingsActivity extends AppCompatActivity {
 
@@ -328,10 +329,22 @@ public class ControllerSettingsActivity extends AppCompatActivity {
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             final PreferenceScreen ps = getPreferenceManager().createPreferenceScreen(getContext());
             if (mHotkeyInfo != null) {
+                final HashMap<String, PreferenceCategory> categoryMap = new HashMap<>();
+
                 for (HotkeyInfo hotkeyInfo : mHotkeyInfo) {
+                    PreferenceCategory category = categoryMap.containsKey(hotkeyInfo.getCategory()) ?
+                            categoryMap.get(hotkeyInfo.getCategory()) : null;
+                    if (category == null) {
+                        category = new PreferenceCategory(getContext());
+                        category.setTitle(hotkeyInfo.getCategory());
+                        category.setIconSpaceReserved(false);
+                        categoryMap.put(hotkeyInfo.getCategory(), category);
+                        ps.addPreference(category);
+                    }
+
                     final ControllerBindingPreference cbp = new ControllerBindingPreference(getContext(), null);
                     cbp.initHotkey(hotkeyInfo);
-                    ps.addPreference(cbp);
+                    category.addPreference(cbp);
                     activity.mPreferences.add(cbp);
                 }
             }
