@@ -1538,21 +1538,9 @@ bool CommonHostInterface::AddButtonToInputMap(const std::string& binding, const 
     return false;
   }
 
-  if (StringUtil::StartsWith(device, "Controller"))
+  std::optional<int> controller_index;
+  if (m_controller_interface && (controller_index = m_controller_interface->GetControllerIndex(device)))
   {
-    if (!m_controller_interface)
-    {
-      Log_ErrorPrintf("No controller interface set, cannot bind '%s'", binding.c_str());
-      return false;
-    }
-
-    const std::optional<int> controller_index = StringUtil::FromChars<int>(device.substr(10));
-    if (!controller_index || *controller_index < 0)
-    {
-      Log_WarningPrintf("Invalid controller index in button binding '%s'", binding.c_str());
-      return false;
-    }
-
     if (StringUtil::StartsWith(button, "Button"))
     {
       const std::optional<int> button_index = StringUtil::FromChars<int>(button.substr(6));
@@ -1652,21 +1640,9 @@ bool CommonHostInterface::AddAxisToInputMap(const std::string& binding, const st
     }
   }
 
-  if (StringUtil::StartsWith(device, "Controller"))
+  std::optional<int> controller_index;
+  if (m_controller_interface && (controller_index = m_controller_interface->GetControllerIndex(device)))
   {
-    if (!m_controller_interface)
-    {
-      Log_ErrorPrintf("No controller interface set, cannot bind '%s'", binding.c_str());
-      return false;
-    }
-
-    const std::optional<int> controller_index = StringUtil::FromChars<int>(device.substr(10));
-    if (!controller_index || *controller_index < 0)
-    {
-      Log_WarningPrintf("Invalid controller index in axis binding '%s'", binding.c_str());
-      return false;
-    }
-
     if (StringUtil::StartsWith(axis, "Axis") || StringUtil::StartsWith(axis, "+Axis") ||
         StringUtil::StartsWith(axis, "-Axis"))
     {
@@ -1723,21 +1699,9 @@ bool CommonHostInterface::AddAxisToInputMap(const std::string& binding, const st
 
 bool CommonHostInterface::AddRumbleToInputMap(const std::string& binding, u32 controller_index, u32 num_motors)
 {
-  if (StringUtil::StartsWith(binding, "Controller"))
+  std::optional<int> host_controller_index;
+  if (m_controller_interface && (host_controller_index = m_controller_interface->GetControllerIndex(binding)))
   {
-    if (!m_controller_interface)
-    {
-      Log_ErrorPrintf("No controller interface set, cannot bind '%s'", binding.c_str());
-      return false;
-    }
-
-    const std::optional<int> host_controller_index = StringUtil::FromChars<int>(binding.substr(10));
-    if (!host_controller_index || *host_controller_index < 0)
-    {
-      Log_WarningPrintf("Invalid controller index in rumble binding '%s'", binding.c_str());
-      return false;
-    }
-
     AddControllerRumble(controller_index, num_motors,
                         std::bind(&ControllerInterface::SetControllerRumbleStrength, m_controller_interface.get(),
                                   host_controller_index.value(), std::placeholders::_1, std::placeholders::_2));

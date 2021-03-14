@@ -356,7 +356,7 @@ protected:
   void RegisterHotkey(String category, String name, String display_name, InputButtonHandler handler);
   bool HandleHostKeyEvent(HostKeyCode code, HostKeyCode modifiers, bool pressed);
   bool HandleHostMouseEvent(HostMouseButton button, bool pressed);
-  void UpdateInputMap(SettingsInterface& si);
+  virtual void UpdateInputMap(SettingsInterface& si);
   void ClearInputMap();
 
   void AddControllerRumble(u32 controller_index, u32 num_motors, ControllerRumbleCallback callback);
