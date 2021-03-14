@@ -17,6 +17,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.preference.ListPreference;
+import androidx.preference.Preference;
 import androidx.preference.PreferenceCategory;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
@@ -33,6 +34,7 @@ import java.util.ArrayList;
 public class ControllerSettingsActivity extends AppCompatActivity {
 
     private static final int NUM_CONTROLLER_PORTS = 2;
+    public static final String MULTITAP_MODE_SETTINGS_KEY = "ControllerPorts/MultitapMode";
 
     private ArrayList<ControllerBindingPreference> mPreferences = new ArrayList<>();
 
@@ -161,9 +163,23 @@ public class ControllerSettingsActivity extends AppCompatActivity {
     }
 
     public static class SettingsFragment extends PreferenceFragmentCompat {
+        ControllerSettingsActivity parent;
+
+        public SettingsFragment(ControllerSettingsActivity parent) {
+            this.parent = parent;
+        }
+
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             setPreferencesFromResource(R.xml.controllers_preferences, rootKey);
+
+            final Preference multitapModePreference = getPreferenceScreen().findPreference(MULTITAP_MODE_SETTINGS_KEY);
+            if (multitapModePreference != null) {
+                multitapModePreference.setOnPreferenceChangeListener((pref, newValue) -> {
+                    parent.recreate();
+                    return true;
+                });
+            }
         }
     }
 
@@ -330,10 +346,37 @@ public class ControllerSettingsActivity extends AppCompatActivity {
         private ViewPager2 viewPager;
         private String[] controllerPortNames;
 
+        private static final int NUM_MAIN_CONTROLLER_PORTS = 2;
+        private static final int NUM_SUB_CONTROLLER_PORTS = 4;
+        private static final char[] SUB_CONTROLLER_PORT_NAMES = new char[] {'A', 'B', 'C', 'D'};
+
         public SettingsCollectionFragment(ControllerSettingsActivity activity) {
             this.activity = activity;
 
-            controllerPortNames = new String[] { "Port 1", "Port 2" };
+            final String multitapMode = PreferenceManager.getDefaultSharedPreferences(activity).getString(
+                    MULTITAP_MODE_SETTINGS_KEY, "Disabled");
+
+            final ArrayList<String> portNames = new ArrayList<>();
+            for (int i = 0; i < NUM_MAIN_CONTROLLER_PORTS; i++) {
+                final boolean isMultitap = (multitapMode.equals("BothPorts") ||
+                        (i == 0 && multitapMode.equals("Port1Only")) ||
+                        (i == 1 && multitapMode.equals("Port2Only")));
+
+                if (isMultitap) {
+                    for (int j = 0; j < NUM_SUB_CONTROLLER_PORTS; j++) {
+                        portNames.add(activity.getString(
+                                R.string.controller_settings_sub_port_format,
+                                i + 1, SUB_CONTROLLER_PORT_NAMES[j]));
+                    }
+                } else {
+                    portNames.add(activity.getString(
+                            R.string.controller_settings_main_port_format,
+                            i + 1));
+                }
+            }
+
+            controllerPortNames = new String[portNames.size()];
+            portNames.toArray(controllerPortNames);
         }
 
         @Nullable
@@ -374,7 +417,7 @@ public class ControllerSettingsActivity extends AppCompatActivity {
         @Override
         public Fragment createFragment(int position) {
             if (position == 0)
-                return new SettingsFragment();
+                return new SettingsFragment(activity);
             else if (position <= controllerPorts)
                 return new ControllerPortFragment(activity, position);
             else
@@ -383,7 +426,7 @@ public class ControllerSettingsActivity extends AppCompatActivity {
 
         @Override
         public int getItemCount() {
-            return NUM_CONTROLLER_PORTS + 2;
+            return controllerPorts + 2;
         }
     }
 }

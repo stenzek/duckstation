@@ -472,4 +472,16 @@
         <item>false</item>
         <item>true</item>
     </string-array>
+    <string-array name="settings_multitap_mode_entries">
+        <item>Disabled</item>
+        <item>Enable on Port 1 Only</item>
+        <item>Enable on Port 2 Only</item>
+        <item>Enable on Ports 1 and 2</item>
+    </string-array>
+    <string-array name="settings_multitap_mode_values">
+        <item>Disabled</item>
+        <item>Port1Only</item>
+        <item>Port2Only</item>
+        <item>BothPorts</item>
+    </string-array>
 </resources>

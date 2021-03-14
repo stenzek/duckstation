@@ -55,7 +55,15 @@
 
     <PreferenceCategory
         app:iconSpaceReserved="false"
-        app:title="@string/controller_settings_category_memory_cards">
+        app:title="@string/controller_settings_category_ports">
+        <ListPreference
+            app:defaultValue="Disabled"
+            app:entries="@array/settings_multitap_mode_entries"
+            app:entryValues="@array/settings_multitap_mode_values"
+            app:iconSpaceReserved="false"
+            app:key="ControllerPorts/MultitapMode"
+            app:title="Multitap Mode"
+            app:useSimpleSummaryProvider="true" />
         <ListPreference
             app:defaultValue="PerGameTitle"
             app:entries="@array/settings_memory_card_mode_entries"
