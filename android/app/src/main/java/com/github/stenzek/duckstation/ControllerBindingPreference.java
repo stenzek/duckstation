@@ -14,16 +14,25 @@ import androidx.preference.PreferenceViewHolder;
 import java.util.Set;
 
 public class ControllerBindingPreference extends Preference {
-    private enum Type {
+    public enum Type {
         BUTTON,
         AXIS,
+        VIBRATION
+    }
+
+    private enum VisualType {
+        BUTTON,
+        AXIS,
+        VIBRATION,
         HOTKEY
     }
 
     private String mBindingName;
+    private String mDisplayName;
     private String mValue;
     private TextView mValueView;
     private Type mType = Type.BUTTON;
+    private VisualType mVisualType = VisualType.BUTTON;
 
     private static int getIconForButton(String buttonName) {
         if (buttonName.equals("Up")) {
@@ -64,7 +73,16 @@ public class ControllerBindingPreference extends Preference {
     }
 
     private static int getIconForHotkey(String hotkeyDisplayName) {
-        return R.drawable.ic_baseline_category_24;
+        switch (hotkeyDisplayName) {
+            case "FastForward":
+            case "ToggleFastForward":
+            case "Turbo":
+            case "ToggleTurbo":
+                return R.drawable.ic_controller_fast_forward;
+
+            default:
+                return R.drawable.ic_baseline_category_24;
+        }
     }
 
     public ControllerBindingPreference(Context context, AttributeSet attrs) {
@@ -94,7 +112,7 @@ public class ControllerBindingPreference extends Preference {
         mValueView = ((TextView) holder.findViewById(R.id.controller_binding_value));
 
         int drawableId = R.drawable.ic_baseline_radio_button_checked_24;
-        switch (mType) {
+        switch (mVisualType) {
             case BUTTON:
                 drawableId = getIconForButton(mBindingName);
                 break;
@@ -104,37 +122,55 @@ public class ControllerBindingPreference extends Preference {
             case HOTKEY:
                 drawableId = getIconForHotkey(mBindingName);
                 break;
+            case VIBRATION:
+                drawableId = R.drawable.ic_baseline_vibration_24;
+                break;
         }
 
         iconView.setImageDrawable(ContextCompat.getDrawable(getContext(), drawableId));
-        nameView.setText(mBindingName);
+        nameView.setText(mDisplayName);
         updateValue();
     }
 
     @Override
     protected void onClick() {
-        ControllerBindingDialog dialog = new ControllerBindingDialog(getContext(), mBindingName, getKey(), mValue, (mType == Type.AXIS));
+        ControllerBindingDialog dialog = new ControllerBindingDialog(getContext(), mBindingName, getKey(), mValue, mType);
         dialog.setOnDismissListener((dismissedDialog) -> updateValue());
         dialog.show();
     }
 
     public void initButton(int controllerIndex, String buttonName) {
         mBindingName = buttonName;
+        mDisplayName = buttonName;
         mType = Type.BUTTON;
+        mVisualType = VisualType.BUTTON;
         setKey(String.format("Controller%d/Button%s", controllerIndex, buttonName));
         updateValue();
     }
 
     public void initAxis(int controllerIndex, String axisName) {
         mBindingName = axisName;
+        mDisplayName = axisName;
         mType = Type.AXIS;
+        mVisualType = VisualType.AXIS;
         setKey(String.format("Controller%d/Axis%s", controllerIndex, axisName));
         updateValue();
     }
 
+    public void initVibration(int controllerIndex) {
+        mBindingName = "Rumble";
+        mDisplayName = getContext().getString(R.string.controller_binding_device_for_vibration);
+        mType = Type.VIBRATION;
+        mVisualType = VisualType.VIBRATION;
+        setKey(String.format("Controller%d/Rumble", controllerIndex));
+        updateValue();
+    }
+
     public void initHotkey(HotkeyInfo hotkeyInfo) {
-        mBindingName = hotkeyInfo.getDisplayName();
-        mType = Type.HOTKEY;
+        mBindingName = hotkeyInfo.getName();
+        mDisplayName = hotkeyInfo.getDisplayName();
+        mType = Type.BUTTON;
+        mVisualType = VisualType.HOTKEY;
         setKey(hotkeyInfo.getBindingConfigKey());
         updateValue();
     }

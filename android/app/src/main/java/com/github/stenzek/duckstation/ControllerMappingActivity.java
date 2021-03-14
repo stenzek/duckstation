@@ -172,9 +172,10 @@ public class ControllerMappingActivity extends AppCompatActivity {
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             final SharedPreferences sp = getPreferenceManager().getSharedPreferences();
             final String defaultControllerType = controllerIndex == 0 ? "DigitalController" : "None";
-            String controllerType = sp.getString(String.format("Controller%d/Type", controllerIndex), defaultControllerType);
-            String[] controllerButtons = AndroidHostInterface.getControllerButtonNames(controllerType);
-            String[] axisButtons = AndroidHostInterface.getControllerAxisNames(controllerType);
+            final String controllerType = sp.getString(String.format("Controller%d/Type", controllerIndex), defaultControllerType);
+            final String[] controllerButtons = AndroidHostInterface.getControllerButtonNames(controllerType);
+            final String[] axisButtons = AndroidHostInterface.getControllerAxisNames(controllerType);
+            final int vibrationMotors = AndroidHostInterface.getControllerVibrationMotorCount(controllerType);
 
             final PreferenceScreen ps = getPreferenceManager().createPreferenceScreen(getContext());
             if (controllerButtons != null) {
@@ -192,6 +193,12 @@ public class ControllerMappingActivity extends AppCompatActivity {
                     ps.addPreference(cbp);
                     activity.mPreferences.add(cbp);
                 }
+            }
+            if (vibrationMotors > 0) {
+                final ControllerBindingPreference cbp = new ControllerBindingPreference(getContext(), null);
+                cbp.initVibration(controllerIndex);
+                ps.addPreference(cbp);
+                activity.mPreferences.add(cbp);
             }
 
             setPreferenceScreen(ps);

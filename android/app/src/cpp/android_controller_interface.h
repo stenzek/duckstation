@@ -3,6 +3,7 @@
 #include "frontend-common/controller_interface.h"
 #include <array>
 #include <functional>
+#include <map>
 #include <mutex>
 #include <vector>
 
@@ -12,6 +13,8 @@ public:
   AndroidControllerInterface();
   ~AndroidControllerInterface() override;
 
+  ALWAYS_INLINE u32 GetControllerCount() const { return static_cast<u32>(m_controllers.size()); }
+
   Backend GetBackend() const override;
   bool Initialize(CommonHostInterface* host_interface) override;
   void Shutdown() override;
@@ -20,6 +23,7 @@ public:
   void ClearBindings() override;
 
   // Binding to events. If a binding for this axis/button already exists, returns false.
+  std::optional<int> GetControllerIndex(const std::string_view& device) override;
   bool BindControllerAxis(int controller_index, int axis_number, AxisSide axis_side, AxisCallback callback) override;
   bool BindControllerButton(int controller_index, int button_number, ButtonCallback callback) override;
   bool BindControllerAxisToButton(int controller_index, int axis_number, bool direction,
@@ -37,30 +41,32 @@ public:
 
   void PollEvents() override;
 
-  bool HandleAxisEvent(u32 index, u32 axis, float value);
-  bool HandleButtonEvent(u32 index, u32 button, bool pressed);
+  void SetDeviceNames(std::vector<std::string> device_names);
+  void SetDeviceRumble(u32 index, bool has_vibrator);
+  void HandleAxisEvent(u32 index, u32 axis, float value);
+  void HandleButtonEvent(u32 index, u32 button, bool pressed);
+  bool HasButtonBinding(u32 index, u32 button);
 
 private:
   enum : u32
   {
-    NUM_CONTROLLERS = 1,
-    NUM_AXISES = 12,
-    NUM_BUTTONS = 23
+    NUM_RUMBLE_MOTORS = 2
   };
 
   struct ControllerData
   {
     float deadzone = 0.25f;
 
-    std::array<std::array<AxisCallback, 3>, NUM_AXISES> axis_mapping;
-    std::array<ButtonCallback, NUM_BUTTONS> button_mapping;
-    std::array<std::array<ButtonCallback, 2>, NUM_AXISES> axis_button_mapping;
-    std::array<AxisCallback, NUM_BUTTONS> button_axis_mapping;
+    std::map<u32, std::array<AxisCallback, 3>> axis_mapping;
+    std::map<u32, ButtonCallback> button_mapping;
+    std::map<u32, std::array<ButtonCallback, 2>> axis_button_mapping;
+    std::map<u32, AxisCallback> button_axis_mapping;
+    bool has_rumble = false;
   };
 
-  using ControllerDataArray = std::array<ControllerData, NUM_CONTROLLERS>;
-
-  ControllerDataArray m_controllers;
+  std::vector<std::string> m_device_names;
+  std::vector<ControllerData> m_controllers;
+  std::mutex m_controllers_mutex;
 
   std::mutex m_event_intercept_mutex;
   Hook::Callback m_event_intercept_callback;

@@ -266,4 +266,5 @@
     <string name="settings_achievements_disclaimer">DuckStation uses RetroAchievements (retroachievements.org) as an achievement database and for tracking progress.</string>
     <string name="settings_achievements_confirm_logout_title">Confirm Logout</string>
     <string name="settings_achievements_confirm_logout_message">After logging out, no more achievements will be unlocked until you log back in again. Achievements already unlocked will not be lost.</string>
+    <string name="controller_binding_device_for_vibration">Device for Vibration</string>
 </resources>
