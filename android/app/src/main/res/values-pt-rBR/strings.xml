@@ -186,7 +186,6 @@
     <string name="settings_summary_disable_all_enhancements">Desliga temporariamente todas as melhorias, útil para achar problemas de performance.</string>
     <string name="settings_downsample_mode">Suavização da Imagem</string>
     <string name="activity_game_properties">Propriedades do Jogo</string>
-    <string name="activity_game_properties">Propriedades</string>
     <string name="game_properties_preference_use_global_setting">Usar configuração global</string>
     <string name="settings_input_profile">Perfil de controle</string>
     <string name="game_properties_tab_summary">Sumário</string>
