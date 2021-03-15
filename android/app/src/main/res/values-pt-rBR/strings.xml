@@ -209,8 +209,8 @@
     <string name="edit_game_directories_add_path">Editar Caminho</string>
     <string name="edit_game_directories_add_path_summary">Insira o caminho completo dos seus jogos.\n\nUse um gerenciador de arquivos para ver o caminho.\n\nExemplo: /storage/emulated/0/games</string>
     <string name="save_state_info_slot_is_empty">Espaço Vazio</string>
-    <string name="save_state_info_game_save_n">Espaço %d</string>
-    <string name="save_state_info_game_global_save_n">Espaço Global %d</string>
+    <string name="save_state_info_game_save_n">Id do Jogo %d</string>
+    <string name="save_state_info_global_save_n">Espaço Global %d</string>
     <string name="save_state_info_quick_save">Salvar Rápido</string>
     <string name="settings_category_global">Configurações Básicas</string>
     <string name="settings_category_display">Configurações de Tela</string>
@@ -266,7 +266,4 @@
     <string name="settings_achievements_confirm_logout_message">O encerramento de uma sessão desabilitará as conquistas até que entre novamente. Conquistas abertas anteriormente não serão perdidas.</string>
     <string name="settings_osd_show_show_resolution">Mostrar Resolução</string>
     <string name="settings_summary_osd_show_resolution">Mostra a resolução de renderização do jogo no canto superior direito da tela</string>
-    <string name="save_state_info_game_save_n">Id do Jogo %d</string>
-    <string name="save_state_info_global_save_n">Espaço Global %d</string>
-    <string name="save_state_info_quick_save">Salvar Rápido</string>
 </resources>
