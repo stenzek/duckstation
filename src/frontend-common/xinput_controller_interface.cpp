@@ -126,12 +126,12 @@ void XInputControllerInterface::CheckForStateChanges(u32 index, const XINPUT_STA
   }
   if (ogp.bLeftTrigger != ngp.bLeftTrigger)
   {
-    HandleAxisEvent(index, Axis::LeftTrigger, static_cast<s32>(ZeroExtend32(ngp.bLeftTrigger) << 8));
+    HandleAxisEvent(index, Axis::LeftTrigger, static_cast<s32>(ZeroExtend32(ngp.bLeftTrigger) << 7));
     ogp.bLeftTrigger = ngp.bLeftTrigger;
   }
   if (ogp.bRightTrigger != ngp.bRightTrigger)
   {
-    HandleAxisEvent(index, Axis::RightTrigger, static_cast<s32>(ZeroExtend32(ngp.bRightTrigger) << 8));
+    HandleAxisEvent(index, Axis::RightTrigger, static_cast<s32>(ZeroExtend32(ngp.bRightTrigger) << 7));
     ogp.bRightTrigger = ngp.bRightTrigger;
   }
 
