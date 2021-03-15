@@ -180,6 +180,9 @@ public:
   /// Saves the current emulation state to a file. Specifying a slot of -1 saves the "resume" save state.
   bool SaveState(bool global, s32 slot);
 
+  /// Returns true if the specified file/disc image is resumable.
+  bool CanResumeSystemFromFile(const char* filename);
+
   /// Loads the resume save state for the given game. Optionally boots the game anyway if loading fails.
   bool ResumeSystemFromState(const char* filename, bool boot_on_failure);
 

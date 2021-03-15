@@ -706,6 +706,20 @@ bool CommonHostInterface::SaveState(bool global, s32 slot)
   return true;
 }
 
+bool CommonHostInterface::CanResumeSystemFromFile(const char* filename)
+{
+  if (GetBoolSettingValue("Main", "SaveStateOnExit", true) && !IsCheevosChallengeModeActive())
+  {
+    const GameListEntry* entry = m_game_list->GetEntryForPath(filename);
+    if (entry)
+      return !entry->code.empty();
+    else
+      return !System::GetGameCodeForPath(filename, true).empty();
+  }
+
+  return false;
+}
+
 bool CommonHostInterface::ResumeSystemFromState(const char* filename, bool boot_on_failure)
 {
   SystemBootParameters boot_params;

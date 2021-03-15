@@ -412,17 +412,12 @@ void AndroidHostInterface::EmulationThreadEntryPoint(JNIEnv* env, jobject emulat
 
   // Boot system.
   bool boot_result = false;
-  if (resume_state)
-  {
-    if (boot_params.filename.empty())
-      boot_result = ResumeSystemFromMostRecentState();
-    else
-      boot_result = ResumeSystemFromState(boot_params.filename.c_str(), true);
-  }
+  if (resume_state && boot_params.filename.empty())
+    boot_result = ResumeSystemFromMostRecentState();
+  else if (resume_state && CanResumeSystemFromFile(boot_params.filename.c_str()))
+    boot_result = ResumeSystemFromState(boot_params.filename.c_str(), true);
   else
-  {
     boot_result = BootSystem(boot_params);
-  }
 
   if (boot_result)
   {
@@ -784,8 +779,8 @@ void AndroidHostInterface::SetControllerVibration(u32 controller_index, float sm
   DebugAssert(env);
 
   env->CallVoidMethod(m_emulation_activity_object, s_EmulationActivity_method_setInputDeviceVibration,
-          static_cast<jint>(controller_index), static_cast<jfloat>(small_motor),
-          static_cast<jfloat>(large_motor));
+                      static_cast<jint>(controller_index), static_cast<jfloat>(small_motor),
+                      static_cast<jfloat>(large_motor));
 }
 
 void AndroidHostInterface::SetFastForwardEnabled(bool enabled)
@@ -1193,10 +1188,11 @@ DEFINE_JNI_ARGS_METHOD(jobjectArray, AndroidHostInterface_getControllerAxisNames
   return name_array;
 }
 
-DEFINE_JNI_ARGS_METHOD(jint, AndroidHostInterface_getControllerVibrationMotorCount, jobject unused, jstring controller_type)
+DEFINE_JNI_ARGS_METHOD(jint, AndroidHostInterface_getControllerVibrationMotorCount, jobject unused,
+                       jstring controller_type)
 {
   std::optional<ControllerType> type =
-          Settings::ParseControllerTypeName(AndroidHelpers::JStringToString(env, controller_type).c_str());
+    Settings::ParseControllerTypeName(AndroidHelpers::JStringToString(env, controller_type).c_str());
   if (!type)
     return 0;
 

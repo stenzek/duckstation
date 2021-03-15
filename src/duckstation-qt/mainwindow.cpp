@@ -939,20 +939,10 @@ void MainWindow::startGameOrChangeDiscs(const std::string& path)
   // if we're not running, boot the system, otherwise swap discs
   if (!m_emulation_running)
   {
-    if (m_host_interface->GetBoolSettingValue("Main", "SaveStateOnExit", true) &&
-        !m_host_interface->IsCheevosChallengeModeActive())
-    {
-      const GameListEntry* entry = m_host_interface->getGameList()->GetEntryForPath(path.c_str());
-      if ((entry && !entry->code.empty()) || !System::GetGameCodeForPath(path.c_str(), true).empty())
-      {
-        m_host_interface->resumeSystemFromState(QString::fromStdString(path), true);
-        return;
-      }
-    }
+    if (m_host_interface->CanResumeSystemFromFile(path.c_str()))
+      m_host_interface->resumeSystemFromState(QString::fromStdString(path), true);
     else
-    {
       m_host_interface->bootSystem(std::make_shared<const SystemBootParameters>(path));
-    }
   }
   else
   {
