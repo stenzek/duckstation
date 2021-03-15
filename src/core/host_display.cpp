@@ -5,6 +5,7 @@
 #include "common/log.h"
 #include "common/string_util.h"
 #include "common/timer.h"
+#include "settings.h"
 #include "host_interface.h"
 #include "stb_image.h"
 #include "stb_image_resize.h"
@@ -27,6 +28,9 @@ void HostDisplay::SetDisplayMaxFPS(float max_fps)
 
 bool HostDisplay::ShouldSkipDisplayingFrame()
 {
+  if (!m_display_duplicate_frames && !m_display_changed)
+    return true;
+
   if (m_display_frame_interval == 0.0f)
     return false;
 

@@ -636,6 +636,7 @@ bool VulkanHostDisplay::Render()
                                         m_swap_chain->GetRenderingFinishedSemaphore(), m_swap_chain->GetSwapChain(),
                                         m_swap_chain->GetCurrentImageIndex(), !m_swap_chain->IsVSyncEnabled());
   g_vulkan_context->MoveToNextCommandBuffer();
+  m_display_changed = false;
 
   return true;
 }

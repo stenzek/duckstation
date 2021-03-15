@@ -56,11 +56,13 @@
             app:summary="@string/settings_summary_general_sync_to_host_refresh_rate"
             app:dependency="Display/VSync"
             app:iconSpaceReserved="false" />
-        <SwitchPreferenceCompat
-            app:key="Display/DisplayAllFrames"
-            app:title="@string/settings_display_all_frames"
-            app:defaultValue="false"
-            app:summary="@string/settings_summary_display_all_frames"
+        <ListPreference
+            app:key="Display/FramePacingMode"
+            app:entries="@array/settings_display_frame_pacing_entries"
+            app:entryValues="@array/settings_display_frame_pacing_values"
+            app:title="@string/settings_display_frame_pacing"
+            app:defaultValue="DisplayAllFramesWhenPossible"
+            app:useSimpleSummaryProvider="true"
             app:iconSpaceReserved="false" />
         <ListPreference
             app:key="Display/MaxFPS"

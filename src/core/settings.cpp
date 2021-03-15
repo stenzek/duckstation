@@ -227,7 +227,11 @@ void Settings::Load(SettingsInterface& si)
   display_show_vps = si.GetBoolValue("Display", "ShowVPS", false);
   display_show_speed = si.GetBoolValue("Display", "ShowSpeed", false);
   display_show_resolution = si.GetBoolValue("Display", "ShowResolution", false);
-  display_all_frames = si.GetBoolValue("Display", "DisplayAllFrames", false);
+  display_frame_pacing_mode =
+    ParseDisplayFramePacingMode(
+      si.GetStringValue("Display", "FramePacingMode", GetDisplayFramePacingModeName(DEFAULT_DISPLAY_FRAME_PACING_MODE))
+        .c_str())
+      .value_or(DEFAULT_DISPLAY_FRAME_PACING_MODE);
   video_sync_enabled = si.GetBoolValue("Display", "VSync", true);
   display_post_process_chain = si.GetStringValue("Display", "PostProcessChain", "");
   display_max_fps = si.GetFloatValue("Display", "MaxFPS", 0.0f);
@@ -387,6 +391,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetIntValue("Display", "LineEndOffset", display_line_end_offset);
   si.SetBoolValue("Display", "Force4_3For24Bit", display_force_4_3_for_24bit);
   si.SetStringValue("Display", "AspectRatio", GetDisplayAspectRatioName(display_aspect_ratio));
+  si.SetStringValue("Display", "FramePacingMode", GetDisplayAspectRatioName(display_aspect_ratio));
   si.SetBoolValue("Display", "LinearFiltering", display_linear_filtering);
   si.SetBoolValue("Display", "IntegerScaling", display_integer_scaling);
   si.SetBoolValue("Display", "Stretch", display_stretch);
@@ -396,7 +401,6 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("Display", "ShowVPS", display_show_vps);
   si.SetBoolValue("Display", "ShowSpeed", display_show_speed);
   si.SetBoolValue("Display", "ShowResolution", display_show_resolution);
-  si.SetBoolValue("Display", "DisplayAllFrames", display_all_frames);
   si.SetBoolValue("Display", "VSync", video_sync_enabled);
   if (display_post_process_chain.empty())
     si.DeleteValue("Display", "PostProcessChain");
@@ -776,6 +780,38 @@ const char* Settings::GetDisplayAspectRatioName(DisplayAspectRatio ar)
 float Settings::GetDisplayAspectRatioValue(DisplayAspectRatio ar)
 {
   return s_display_aspect_ratio_values[static_cast<int>(ar)];
+}
+
+static std::array<const char*, 4> s_display_frame_pacing_mode_names = {
+  {"DisplayAllFrames", "DisplayAllFramesWhenPossible", "SkipDuplicateFrames", "ClampToMaxFPS"}};
+static std::array<const char*, 4> s_display_frame_pacing_mode_display_names = {
+  {TRANSLATABLE("DisplayFramePacingMode", "Display All Frames"),
+   TRANSLATABLE("DisplayFramePacingMode", "Display All Frames When Possible"),
+   TRANSLATABLE("DisplayFramePacingMode", "Skip Duplicate Frames"),
+   TRANSLATABLE("DisplayFramePacingMode", "Clamp To Max FPS")}};
+
+std::optional<DisplayFramePacingMode> Settings::ParseDisplayFramePacingMode(const char* str)
+{
+  int index = 0;
+  for (const char* name : s_display_frame_pacing_mode_names)
+  {
+    if (StringUtil::Strcasecmp(name, str) == 0)
+      return static_cast<DisplayFramePacingMode>(index);
+
+    index++;
+  }
+
+  return std::nullopt;
+}
+
+const char* Settings::GetDisplayFramePacingModeName(DisplayFramePacingMode mode)
+{
+  return s_display_frame_pacing_mode_names[static_cast<int>(mode)];
+}
+
+const char* Settings::GetDisplayFramePacingModeDisplayName(DisplayFramePacingMode mode)
+{
+  return s_display_frame_pacing_mode_display_names[static_cast<int>(mode)];
 }
 
 static std::array<const char*, 3> s_audio_backend_names = {{

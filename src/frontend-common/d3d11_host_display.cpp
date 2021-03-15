@@ -706,6 +706,7 @@ bool D3D11HostDisplay::Render()
   else
     m_swap_chain->Present(BoolToUInt32(m_vsync), 0);
 
+  m_display_changed = false;
   return true;
 }
 

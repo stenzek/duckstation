@@ -276,4 +276,5 @@
     <string name="controller_settings_category_ports">Ports</string>
     <string name="controller_settings_main_port_format">Port %d</string>
     <string name="controller_settings_sub_port_format">Port %1$d%2$c</string>
+    <string name="settings_display_frame_pacing">Frame Pacing</string>
 </resources>

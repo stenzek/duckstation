@@ -539,6 +539,8 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetIntValue("Display", "LineEndOffset", 0);
   si.SetStringValue("Display", "AspectRatio",
                     Settings::GetDisplayAspectRatioName(Settings::DEFAULT_DISPLAY_ASPECT_RATIO));
+  si.SetStringValue("Display", "FramePacingMode",
+                    Settings::GetDisplayFramePacingModeName(Settings::DEFAULT_DISPLAY_FRAME_PACING_MODE));
   si.SetBoolValue("Display", "Force4_3For24Bit", false);
   si.SetBoolValue("Display", "LinearFiltering", true);
   si.SetBoolValue("Display", "IntegerScaling", false);
@@ -551,7 +553,6 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("Display", "ShowResolution", false);
   si.SetBoolValue("Display", "Fullscreen", false);
   si.SetBoolValue("Display", "VSync", true);
-  si.SetBoolValue("Display", "DisplayAllFrames", false);
   si.SetStringValue("Display", "PostProcessChain", "");
   si.SetFloatValue("Display", "MaxFPS", 0.0f);
 

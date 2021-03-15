@@ -1895,10 +1895,12 @@ void DrawSettingsWindow()
             break;
         }
 
-        settings_changed |= ToggleButton("Optimal Frame Pacing",
-                                         "Ensures every frame generated is displayed for optimal pacing. Disable if "
-                                         "you are having speed or sound issues.",
-                                         &s_settings_copy.display_all_frames);
+        settings_changed |=
+          EnumChoiceButton("Frame Pacing Mode",
+                           "Ensures every frame generated is displayed for optimal pacing. Disable if "
+                           "you are having speed or sound issues.",
+                           &s_settings_copy.display_frame_pacing_mode, &Settings::GetDisplayFramePacingModeDisplayName,
+                           DisplayFramePacingMode::Count);
 
         MenuHeading("Screen Display");
 

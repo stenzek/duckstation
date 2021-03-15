@@ -761,6 +761,7 @@ bool OpenGLHostDisplay::Render()
   RenderSoftwareCursor();
 
   m_gl_context->SwapBuffers();
+  m_display_changed = false;
   return true;
 }
 

@@ -127,6 +127,7 @@ struct Settings
   bool gpu_pgxp_depth_buffer = false;
   DisplayCropMode display_crop_mode = DisplayCropMode::None;
   DisplayAspectRatio display_aspect_ratio = DisplayAspectRatio::Auto;
+  DisplayFramePacingMode display_frame_pacing_mode = DisplayFramePacingMode::DisplayAllFramesWhenPossible;
   s16 display_active_start_offset = 0;
   s16 display_active_end_offset = 0;
   s8 display_line_start_offset = 0;
@@ -142,7 +143,6 @@ struct Settings
   bool display_show_vps = false;
   bool display_show_speed = false;
   bool display_show_resolution = false;
-  bool display_all_frames = false;
   bool video_sync_enabled = true;
   float display_max_fps = 0.0f;
   float gpu_pgxp_tolerance = -1.0f;
@@ -317,6 +317,10 @@ struct Settings
   static const char* GetDisplayAspectRatioName(DisplayAspectRatio ar);
   static float GetDisplayAspectRatioValue(DisplayAspectRatio ar);
 
+  static std::optional<DisplayFramePacingMode> ParseDisplayFramePacingMode(const char* str);
+  static const char* GetDisplayFramePacingModeName(DisplayFramePacingMode mode);
+  static const char* GetDisplayFramePacingModeDisplayName(DisplayFramePacingMode mode);
+
   static std::optional<AudioBackend> ParseAudioBackend(const char* str);
   static const char* GetAudioBackendName(AudioBackend backend);
   static const char* GetAudioBackendDisplayName(AudioBackend backend);
@@ -364,6 +368,8 @@ struct Settings
 
   static constexpr DisplayCropMode DEFAULT_DISPLAY_CROP_MODE = DisplayCropMode::Overscan;
   static constexpr DisplayAspectRatio DEFAULT_DISPLAY_ASPECT_RATIO = DisplayAspectRatio::Auto;
+  static constexpr DisplayFramePacingMode DEFAULT_DISPLAY_FRAME_PACING_MODE =
+    DisplayFramePacingMode::DisplayAllFramesWhenPossible;
   static constexpr ControllerType DEFAULT_CONTROLLER_1_TYPE = ControllerType::DigitalController;
   static constexpr ControllerType DEFAULT_CONTROLLER_2_TYPE = ControllerType::None;
   static constexpr MemoryCardType DEFAULT_MEMORY_CARD_1_TYPE = MemoryCardType::PerGameTitle;

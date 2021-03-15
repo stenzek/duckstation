@@ -110,6 +110,15 @@ enum class DisplayAspectRatio : u8
   Count
 };
 
+enum class DisplayFramePacingMode : u8
+{
+  DisplayAllFrames,
+  DisplayAllFramesWhenPossible,
+  SkipDuplicateFrames,
+  ClampToFPS,
+  Count
+};
+
 enum class AudioBackend : u8
 {
   Null,

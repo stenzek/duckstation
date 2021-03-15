@@ -855,7 +855,14 @@ void GPU::CRTCTickEvent(TickCount ticks)
 
         // flush any pending draws and "scan out" the image
         FlushRender();
-        UpdateDisplay();
+        if (IsInterlacedDisplayEnabled() || m_crtc_state.display_changed ||
+            g_settings.display_frame_pacing_mode != DisplayFramePacingMode::SkipDuplicateFrames ||
+            g_settings.debugging.show_vram)
+        {
+          m_crtc_state.display_changed = false;
+          UpdateDisplay();
+        }
+
         System::FrameDone();
 
         // switch fields early. this is needed so we draw to the correct one.
@@ -1073,6 +1080,7 @@ void GPU::WriteGP1(u32 value)
       Log_DebugPrintf("Display address start <- 0x%08X", new_value);
 
       System::IncrementInternalFrameNumber();
+      m_crtc_state.display_changed = true;
       if (m_crtc_state.regs.display_address_start != new_value)
       {
         SynchronizeCRTC();

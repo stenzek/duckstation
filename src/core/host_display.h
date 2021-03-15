@@ -8,7 +8,7 @@
 #include <tuple>
 #include <vector>
 
-enum class HostDisplayPixelFormat : u32
+enum class HostDisplayPixelFormat : u8
 {
   Unknown,
   RGBA8,
@@ -46,7 +46,7 @@ public:
     OpenGLES
   };
 
-  enum class Alignment
+  enum class Alignment : u8
   {
     LeftOrTop,
     Center,
@@ -135,6 +135,7 @@ public:
   const float GetDisplayAspectRatio() const { return m_display_aspect_ratio; }
 
   void SetDisplayMaxFPS(float max_fps);
+  void SetDisplayDuplicateFrames(bool enabled) { m_display_duplicate_frames = enabled; }
   bool ShouldSkipDisplayingFrame();
 
   void ClearDisplayTexture()
@@ -267,7 +268,7 @@ protected:
   float m_display_frame_interval = 0.0f;
 
   void* m_display_texture_handle = nullptr;
-  HostDisplayPixelFormat m_display_texture_format = HostDisplayPixelFormat::Count;
+  std::unique_ptr<HostDisplayTexture> m_cursor_texture;
   s32 m_display_texture_width = 0;
   s32 m_display_texture_height = 0;
   s32 m_display_texture_view_x = 0;
@@ -276,13 +277,14 @@ protected:
   s32 m_display_texture_view_height = 0;
 
   s32 m_display_top_margin = 0;
-  Alignment m_display_alignment = Alignment::Center;
-
-  std::unique_ptr<HostDisplayTexture> m_cursor_texture;
   float m_cursor_texture_scale = 1.0f;
 
-  bool m_display_linear_filtering = false;
+  HostDisplayPixelFormat m_display_texture_format = HostDisplayPixelFormat::Count;
+  Alignment m_display_alignment = Alignment::Center;
+
   bool m_display_changed = false;
+  bool m_display_linear_filtering = false;
   bool m_display_integer_scaling = false;
   bool m_display_stretch = false;
+  bool m_display_duplicate_frames = false;
 };

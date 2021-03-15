@@ -484,7 +484,13 @@ protected:
         BitField<u32, u16, 0, 10> Y1;
         BitField<u32, u16, 10, 10> Y2;
       };
-    } regs;
+    };
+
+    bool in_hblank;
+    bool in_vblank;
+    bool display_changed;
+
+    Regs regs;
 
     u16 dot_clock_divider;
 
@@ -522,9 +528,6 @@ protected:
     u32 current_scanline;
 
     TickCount fractional_dot_ticks; // only used when timer0 is enabled
-
-    bool in_hblank;
-    bool in_vblank;
 
     u8 interlaced_field; // 0 = odd, 1 = even
     u8 interlaced_display_field;

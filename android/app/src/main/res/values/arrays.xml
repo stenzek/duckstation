@@ -485,4 +485,16 @@
         <item>Port2Only</item>
         <item>BothPorts</item>
     </string-array>
+    <string-array name="settings_display_frame_pacing_entries">
+        <item>Always Display All Frames</item>
+        <item>Display All Frames When Possible</item>
+        <item>Skip Duplicate Frames</item>
+        <item>Clamp To Max FPS</item>
+    </string-array>
+    <string-array name="settings_display_frame_pacing_values">
+        <item>DisplayAllFrames</item>
+        <item>DisplayAllFramesWhenPossible</item>
+        <item>SkipDuplicateFrames</item>
+        <item>ClampToMaxFPS</item>
+    </string-array>
 </resources>

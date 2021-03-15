@@ -792,7 +792,8 @@ void CommonHostInterface::UpdateSpeedLimiterState()
                          g_settings.turbo_speed :
                          (m_fast_forward_enabled ? g_settings.fast_forward_speed : g_settings.emulation_speed);
   m_throttler_enabled = (target_speed != 0.0f);
-  m_display_all_frames = !m_throttler_enabled || g_settings.display_all_frames;
+  m_display_all_frames =
+    (!m_throttler_enabled || (g_settings.display_frame_pacing_mode == DisplayFramePacingMode::DisplayAllFrames));
 
   bool syncing_to_host = false;
   if (g_settings.sync_to_host_refresh_rate && g_settings.audio_resampling && target_speed == 1.0f && m_display &&
@@ -815,12 +816,18 @@ void CommonHostInterface::UpdateSpeedLimiterState()
     !System::IsRunning() || (m_throttler_enabled && g_settings.audio_sync_enabled && !is_non_standard_speed);
   const bool video_sync_enabled =
     !System::IsRunning() || (m_throttler_enabled && g_settings.video_sync_enabled && !is_non_standard_speed);
-  const float max_display_fps = (!System::IsValid() || m_throttler_enabled) ? 0.0f : g_settings.display_max_fps;
+  const float max_display_fps = (g_settings.display_frame_pacing_mode != DisplayFramePacingMode::ClampToFPS &&
+                                 (!System::IsValid() || m_throttler_enabled)) ?
+                                  0.0f :
+                                  g_settings.display_max_fps;
+  const bool display_duplicate_frames =
+    (g_settings.display_frame_pacing_mode != DisplayFramePacingMode::SkipDuplicateFrames) || !System::IsRunning();
   Log_InfoPrintf("Target speed: %f%%", target_speed * 100.0f);
   Log_InfoPrintf("Syncing to %s%s", audio_sync_enabled ? "audio" : "",
                  (audio_sync_enabled && video_sync_enabled) ? " and video" : (video_sync_enabled ? "video" : ""));
-  Log_InfoPrintf("Max display fps: %f (%s)", max_display_fps,
-                 m_display_all_frames ? "displaying all frames" : "skipping displaying frames when needed");
+  Log_InfoPrintf("Max display fps: %f", max_display_fps);
+  Log_InfoPrint(m_display_all_frames ? "Displaying all frames" : "Skipping displaying frames when needed");
+  Log_InfoPrint(display_duplicate_frames ? "Displaying duplicate frames" : "Skipping displaying duplicate frames");
 
   if (System::IsValid())
   {
@@ -979,7 +986,10 @@ void CommonHostInterface::OnSystemDestroyed()
 {
   // Restore present-all-frames behavior.
   if (m_display)
+  {
     m_display->SetDisplayMaxFPS(0.0f);
+    m_display->SetDisplayDuplicateFrames(true);
+  }
 
   HostInterface::OnSystemDestroyed();
 
@@ -2697,7 +2707,7 @@ void CommonHostInterface::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.emulation_speed != old_settings.emulation_speed ||
         g_settings.fast_forward_speed != old_settings.fast_forward_speed ||
         g_settings.display_max_fps != old_settings.display_max_fps ||
-        g_settings.display_all_frames != old_settings.display_all_frames ||
+        g_settings.display_frame_pacing_mode != old_settings.display_frame_pacing_mode ||
         g_settings.audio_resampling != old_settings.audio_resampling ||
         g_settings.sync_to_host_refresh_rate != old_settings.sync_to_host_refresh_rate)
     {
