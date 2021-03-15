@@ -94,6 +94,7 @@
         <item>Trapaças</item>
         <item>Mudar Disco</item>
         <item>Mudar controle em Tela</item>
+        <item>Controller Settings</item>
         <item>Configurações</item>
     </string-array>
 		<string-array name="emulation_touchscreen_menu">

@@ -94,6 +94,7 @@
         <item>Código de Trucos</item>
         <item>Cambiar Disco</item>
         <item>Cambiar Control de Pantalla Tactil</item>
+        <item>Controller Settings</item>
         <item>Configuraciones</item>
     </string-array>
     <string-array name="settings_cdrom_read_speedup_entries">

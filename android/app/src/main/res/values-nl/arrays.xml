@@ -94,6 +94,7 @@
         <item>Patch Codes</item>
         <item>Disc Veranderen</item>
         <item>Touchscreen Controller Aanpassen</item>
+        <item>Controller Settings</item>
         <item>Instellingen</item>
     </string-array>
     <string-array name="settings_cdrom_read_speedup_entries">

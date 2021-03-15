@@ -94,6 +94,7 @@
         <item>Codici Patch</item>
         <item>Cambia Disco</item>
         <item>Cambia Controller Touchscreen</item>
+        <item>Controller Settings</item>
         <item>Impostazioni</item>
     </string-array>
     <string-array name="settings_cdrom_read_speedup_entries">

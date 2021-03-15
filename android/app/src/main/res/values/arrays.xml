@@ -176,6 +176,7 @@
         <item>Patch Codes</item>
         <item>Change Disc</item>
         <item>Change Touchscreen Controller</item>
+        <item>Controller Settings</item>
         <item>Settings</item>
     </string-array>
     <string-array name="emulation_touchscreen_menu">

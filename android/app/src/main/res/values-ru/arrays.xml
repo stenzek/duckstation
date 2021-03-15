@@ -94,6 +94,7 @@
 		<item>Чит-коды</item>
 		<item>Сменить диск</item>
 		<item>Настроить экранный геймпад</item>
+		<item>Controller Settings</item>
 		<item>Настройки эмулятора</item>
 	</string-array>
 	<string-array name="emulation_touchscreen_menu">

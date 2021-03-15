@@ -548,6 +548,14 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
 
                 case 4:     // Settings
                 {
+                    Intent intent = new Intent(EmulationActivity.this, ControllerSettingsActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivityForResult(intent, REQUEST_CODE_SETTINGS);
+                    return;
+                }
+
+                case 5:     // Controller Settings
+                {
                     Intent intent = new Intent(EmulationActivity.this, SettingsActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivityForResult(intent, REQUEST_CODE_SETTINGS);
