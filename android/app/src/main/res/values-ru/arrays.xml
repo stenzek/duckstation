@@ -72,7 +72,7 @@
 		<item>None</item>
 		<item>Цифровой</item>
 		<item>Аналоговый (DualShock)</item>
-		<item>Analog Joystick</item>
+		<item>Аналоговый джойстик</item>
 		<item>NeGcon</item>
 	</string-array>
 	<string-array name="settings_memory_card_mode_entries">
@@ -241,4 +241,10 @@
 		<item>Выключено</item>
 		<item>Включено</item>
 	</string-array>
+	    <string-array name="settings_multitap_mode_entries">
+        	<item>Отключен</item>
+        	<item>Подключен к порту 1</item>
+        	<item>Подключен к порту 2</item>
+        	<item>Подключен к портам 1 и 2</item>
+    	</string-array>
 </resources>
