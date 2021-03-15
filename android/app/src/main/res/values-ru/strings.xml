@@ -205,7 +205,7 @@
 	<string name="menu_edit_game_directories_add_directory">Добавить каталог</string>
     	<string name="menu_edit_game_directories_add_path">Добавить путь</string>
     	<string name="edit_game_directories_add_path">Добавить путь</string>
-    	<string name="edit_game_directories_add_path_summary">Введите полный путь к каталогу с играми.\n\nВы можете узнать его с помощью файлового менеджера.\n\nПример: /storage/emulated/0/games</string>
+    	<string name="edit_game_directories_add_path_summary">Введите полный путь к каталогу с играми.\n\nВы можете уточнить его с помощью файлового менеджера.\n\nПример: /storage/emulated/0/games</string>
         <string name="save_state_info_slot_is_empty">Свободный слот</string>
     	<string name="save_state_info_game_save_n">Сохранение %d</string>
     	<string name="save_state_info_global_save_n">Глобальное сохранение %d</string>
@@ -266,4 +266,14 @@
     	<string name="settings_achievements_disclaimer">DuckStation использует RetroAchievements (retroachievements.org) для отслеживания прогресса и получения данных по достижениям.</string>
     	<string name="settings_achievements_confirm_logout_title">Подтвердите выход</string>
     	<string name="settings_achievements_confirm_logout_message">Завершение сеанса отключает достижения до следующего входа в аккаунт. Открытые ранее достижения потеряны не будут.</string>
+	<string name="controller_binding_device_for_vibration">Вибрация для устройства</string>
+    	<string name="controller_settings_tab_settings">Настройки</string>
+    	<string name="controller_settings_tab_hotkeys">Горячие клавиши</string>
+    	<string name="controller_settings_category_button_bindings">Привязки кнопок</string>
+    	<string name="controller_settings_category_axis_bindings">Привязки осей</string>
+    	<string name="controller_settings_category_settings">Настройки</string>
+    	<string name="controller_settings_category_touchscreen_controller">Экранный геймпад</string>
+    	<string name="controller_settings_category_ports">Порты</string>
+    	<string name="controller_settings_main_port_format">Порт %d</string>
+    	<string name="controller_settings_sub_port_format">Порт %1$d%2$c</string>
 </resources>
