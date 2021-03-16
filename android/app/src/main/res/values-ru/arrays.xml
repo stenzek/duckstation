@@ -69,7 +69,7 @@
 		<item>xBR (без сглаживания краёв)</item>
 	</string-array>
 	<string-array name="settings_controller_type_entries">
-		<item>None</item>
+		<item>Нет</item>
 		<item>Цифровой</item>
 		<item>Аналоговый (DualShock)</item>
 		<item>Аналоговый джойстик</item>
@@ -93,8 +93,8 @@
 		<item>Сброс</item>
 		<item>Чит-коды</item>
 		<item>Сменить диск</item>
-		<item>Настроить экранный геймпад</item>
-		<item>Controller Settings</item>
+		<item>Экранный геймпад</item>
+		<item>Настройки управления</item>
 		<item>Настройки эмулятора</item>
 	</string-array>
 	<string-array name="emulation_touchscreen_menu">
