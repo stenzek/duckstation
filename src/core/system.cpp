@@ -963,6 +963,14 @@ bool Initialize(bool force_software_renderer)
                                         "CPU clock speed is set to %u%% (%u / %u). This may result in instability."),
       g_settings.GetCPUOverclockPercent(), g_settings.cpu_overclock_numerator, g_settings.cpu_overclock_denominator);
   }
+  if (g_settings.cdrom_read_speedup > 1)
+  {
+    g_host_interface->AddFormattedOSDMessage(
+      10.0f,
+      g_host_interface->TranslateString(
+        "OSDMessage", "CD-ROM read speedup set to %ux (effective speed %ux). This may result in instability."),
+      g_settings.cdrom_read_speedup, g_settings.cdrom_read_speedup * 2);
+  }
 
   UpdateThrottlePeriod();
   UpdateMemorySaveStateSettings();
