@@ -317,11 +317,8 @@ const std::string& GetRichPresenceString()
   return s_rich_presence_string;
 }
 
-static void LoginASyncCallback(s32 status_code, const FrontendCommon::HTTPDownloader::Request::Data& data)
+static void LoginCallback(s32 status_code, const FrontendCommon::HTTPDownloader::Request::Data& data)
 {
-  if (GetHostInterface()->IsFullscreenUIEnabled())
-    ImGuiFullscreen::CloseBackgroundProgressDialog("cheevos_async_login");
-
   rapidjson::Document doc;
   if (!ParseResponseJSON("Login", status_code, data, doc))
     return;
@@ -357,13 +354,22 @@ static void LoginASyncCallback(s32 status_code, const FrontendCommon::HTTPDownlo
   }
 }
 
-static void SendLogin(const char* username, const char* password, FrontendCommon::HTTPDownloader* http_downloader)
+static void LoginASyncCallback(s32 status_code, const FrontendCommon::HTTPDownloader::Request::Data& data)
+{
+  if (GetHostInterface()->IsFullscreenUIEnabled())
+    ImGuiFullscreen::CloseBackgroundProgressDialog("cheevos_async_login");
+
+  LoginCallback(status_code, data);
+}
+
+static void SendLogin(const char* username, const char* password, FrontendCommon::HTTPDownloader* http_downloader,
+                      FrontendCommon::HTTPDownloader::Request::Callback callback)
 {
   char url[768] = {};
   int res = rc_url_login_with_password(url, sizeof(url), username, password);
   Assert(res == 0);
 
-  http_downloader->CreateRequest(url, LoginASyncCallback);
+  http_downloader->CreateRequest(url, std::move(callback));
 }
 
 bool LoginAsync(const char* username, const char* password)
@@ -380,17 +386,21 @@ bool LoginAsync(const char* username, const char* password)
       1, 0);
   }
 
-  SendLogin(username, password, s_http_downloader.get());
+  SendLogin(username, password, s_http_downloader.get(), LoginASyncCallback);
   return true;
 }
 
 bool Login(const char* username, const char* password)
 {
   if (g_active)
-  {
-    if (!LoginAsync(username, password))
-      return false;
+    s_http_downloader->WaitForAllRequests();
 
+  if (s_logged_in || std::strlen(username) == 0 || std::strlen(password) == 0)
+    return false;
+
+  if (g_active)
+  {
+    SendLogin(username, password, s_http_downloader.get(), LoginCallback);
     s_http_downloader->WaitForAllRequests();
     return IsLoggedIn();
   }
@@ -402,7 +412,7 @@ bool Login(const char* username, const char* password)
     return false;
 
   http_downloader->SetUserAgent(GetUserAgent());
-  SendLogin(username, password, http_downloader.get());
+  SendLogin(username, password, http_downloader.get(), LoginCallback);
   http_downloader->WaitForAllRequests();
 
   return !GetHostInterface()->GetStringSettingValue("Cheevos", "Token").empty();
