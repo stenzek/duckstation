@@ -83,8 +83,9 @@ void AchievementSettingsWidget::updateLoginState()
   {
     m_ui.loginStatus->setText(tr("Not Logged In."));
     m_ui.loginButton->setText(tr("Login..."));
-    m_ui.viewProfile->setEnabled(false);
   }
+
+  m_ui.viewProfile->setEnabled(logged_in);
 }
 
 void AchievementSettingsWidget::onLoginLogoutPressed()
