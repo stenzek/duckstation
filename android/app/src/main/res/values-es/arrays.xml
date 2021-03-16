@@ -85,7 +85,7 @@
         <item>Cargar Estado</item>
         <item>Guardar Estado</item>
         <item>Activar Avance Rápido</item>
-        <item>Achievements</item>
+        <item>Logros</item>
         <item>Más Opciones</item>
         <item>Salir</item>
     </string-array>
@@ -94,7 +94,7 @@
         <item>Código de Trucos</item>
         <item>Cambiar Disco</item>
         <item>Cambiar Control de Pantalla Tactil</item>
-        <item>Controller Settings</item>
+        <item>Configuración del control</item>
         <item>Configuraciones</item>
     </string-array>
     <string-array name="settings_cdrom_read_speedup_entries">
@@ -143,7 +143,7 @@
         <item>Pantalla</item>
         <item>Audio</item>
         <item>Mejoras</item>
-        <item>Achievements</item>
+        <item>Logros</item>
         <item>Avanzado</item>
     </string-array>
     <string-array name="settings_gpu_msaa_entries">
@@ -234,6 +234,6 @@
     </string-array>
     <string-array name="settings_boolean_entries">
         <item>Deshabilitado</item>
-        <item>Halibtado</item>
+        <item>Habilitado</item>
     </string-array>
 </resources>
