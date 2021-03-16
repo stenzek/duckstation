@@ -18,6 +18,7 @@ add_library(common
   cd_image_hasher.h
   cd_image_memory.cpp
   cd_image_mds.cpp
+  cd_image_pbp.cpp
   cd_subchannel_replacement.cpp
   cd_subchannel_replacement.h
   cd_xa.cpp
@@ -62,9 +63,10 @@ add_library(common
   memory_arena.h
   page_fault_handler.cpp
   page_fault_handler.h
-  rectangle.h
+  pbp_types.h
   progress_callback.cpp
   progress_callback.h
+  rectangle.h
   scope_guard.h
   shiftjis.cpp
   shiftjis.h

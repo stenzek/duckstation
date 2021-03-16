@@ -110,6 +110,7 @@
     <ClInclude Include="crash_handler.h" />
     <ClInclude Include="lru_cache.h" />
     <ClInclude Include="easing.h" />
+    <ClInclude Include="pbp_types.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="jit_code_buffer.cpp" />
@@ -212,6 +213,7 @@
     <ClCompile Include="crash_handler.cpp" />
     <ClCompile Include="cd_image_ecm.cpp" />
     <ClCompile Include="cd_image_mds.cpp" />
+    <ClCompile Include="cd_image_pbp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />

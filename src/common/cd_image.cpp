@@ -50,6 +50,10 @@ std::unique_ptr<CDImage> CDImage::Open(const char* filename)
   {
     return OpenMdsImage(filename);
   }
+  else if (CASE_COMPARE(extension, ".pbp") == 0)
+  {
+    return OpenPBPImage(filename);
+  }
 
 #undef CASE_COMPARE
 
