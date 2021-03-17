@@ -465,6 +465,7 @@ public class TouchscreenControllerView extends FrameLayout {
                     if (!mGlidePairs.containsKey(pointerID) && !mGlidePairs.containsValue(buttonView)) {
                         if (buttonView.getIsGlidable())
                             mGlidePairs.put(pointerID, buttonView);
+                        else { mGlidePairs.put(pointerID, null); }
                     }
                     pressed = true;
                     break;
