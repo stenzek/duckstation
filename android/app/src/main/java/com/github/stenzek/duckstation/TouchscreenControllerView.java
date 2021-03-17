@@ -461,11 +461,11 @@ public class TouchscreenControllerView extends FrameLayout {
                 final int y = (int) event.getY(i);
                 if (rect.contains(x, y)) {
                     buttonView.setPressed(true);
-                    int pointerID = event.getPointerId(i);
-                    if (!mGlidePairs.containsKey(pointerID) && !mGlidePairs.containsValue(buttonView)) {
+                    final int pointerId = event.getPointerId(i);
+                    if (!mGlidePairs.containsKey(pointerId) && !mGlidePairs.containsValue(buttonView)) {
                         if (buttonView.getIsGlidable())
-                            mGlidePairs.put(pointerID, buttonView);
-                        else { mGlidePairs.put(pointerID, null); }
+                            mGlidePairs.put(pointerId, buttonView);
+                        else { mGlidePairs.put(pointerId, null); }
                     }
                     pressed = true;
                     break;
@@ -494,6 +494,7 @@ public class TouchscreenControllerView extends FrameLayout {
                         (axisView.isPressed() && axisView.getPointerId() == pointerId)) {
                     axisView.setPressed(pointerId, x, y);
                     pressed = true;
+                    mGlidePairs.put(pointerId, null);
                     break;
                 }
             }
@@ -526,9 +527,9 @@ public class TouchscreenControllerView extends FrameLayout {
             case MotionEvent.ACTION_DOWN:
             case MotionEvent.ACTION_POINTER_DOWN:
             case MotionEvent.ACTION_POINTER_UP: {
-                int pointerID = event.getPointerId(event.getActionIndex());
-                if (mGlidePairs.containsKey(pointerID))
-                    mGlidePairs.remove(pointerID);
+                final int pointerId = event.getPointerId(event.getActionIndex());
+                if (mGlidePairs.containsKey(pointerId))
+                    mGlidePairs.remove(pointerId);
 
                 return updateTouchButtonsFromEvent(event);
             }
