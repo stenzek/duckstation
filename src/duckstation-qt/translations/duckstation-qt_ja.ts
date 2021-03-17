@@ -2289,7 +2289,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Global Settings</source>
-        <translation>全体設定</translation>
+        <translation>Achievement設定</translation>
     </message>
     <message>
         <source>Unchecked</source>
@@ -2314,8 +2314,20 @@ Login token generated on %2.</source>
         <translation>有効にすると、アクティブなディスクに関係なく、プレイリストの最初のディスクが実績に使用されます。</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at &lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStationは、RetroAchievementsを実績データベースおよび進行状況の追跡に使用します。使用するには、&lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <source>The current state will be saved, but you will be unable to load it until you disable hardcore mode.
+
+</source>
+        <translation>現在の状態は保存されますが、ハードコアモードを無効にするまで読込できません。
+
+</translation>
+    </message>
+    <message>
+        <source>&quot;Challenge&quot; mode for achievements. Disables save state, cheats, and slowdown functions, but you receive double the achievement points.</source>
+        <translation>achievementsの&quot;チャレンジモード&quot;&#x3000;セーブステート、チート、スローダウン機能を無効にしますが、アチーブメントポイントは2倍になります。</translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;DuckStation uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at &lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;To view the achievement list in-game, press the hotkey for &lt;span style=&quot; font-weight:600;&quot;&gt;Open Quick Menu&lt;/span&gt; and select &lt;span style=&quot; font-weight:600;&quot;&gt;Achievements&lt;/span&gt; from the menu.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;DuckStationは、RetroAchievementsを達成実績データベースとして使用し、進行状況を保存します。Achievementsを使用するには、&lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;でアカウントにサインアップしてください。&#x3000;&#x3000;&#x3000;&#x3000;&#x3000;メニューからホットキーの&lt;span style=&quot; font-weight:600;&quot;&gt; [クイックメニューを開く] &lt;/span&gt; を押して、  &lt;span style=&quot; font-weight:600;&quot;&gt; Achievements &lt;/span&gt; を選択します。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Use First Disc From Playlist</source>
@@ -4548,10 +4560,6 @@ Login token generated on %2.</source>
         <translation>ユーザー名:</translation>
     </message>
     <message>
-        <source>Please enter user name and password for retroachievements.org below. Your password will not be saved in DuckStation, instead an access token will be generated and used instead.</source>
-        <translation>以下にretroachievements.orgのユーザー名とパスワードを入力してください。  パスワードはDuckStationに保存されず、代わりにアクセストークンが生成されて使用されます。</translation>
-    </message>
-    <message>
         <source>Login failed. Please check your username and password, and try again.</source>
         <translation>ログインに失敗しました。ユーザー名とパスワードを確認して、もう一度お試しください。</translation>
     </message>
@@ -4573,11 +4581,15 @@ Login token generated on %2.</source>
     </message>
     <message>
         <source>RetroAchievements Login</source>
-        <translation>RetroAchievementsログイン</translation>
+        <translation>RetroAchievements ログイン</translation>
     </message>
     <message>
         <source>Ready...</source>
         <translation>準備中...</translation>
+    </message>
+    <message>
+        <source>Please enter user name and password for retroachievements.org below. Your password will not be saved in DuckStation, an access token will be generated and used instead.</source>
+        <translation>retroachievements.org のユーザー名とパスワードを入力してください。&#x3000;&#x3000;&#x3000;&#x3000;&#x3000;パスワードは、DuckStationに保存されずにアクセストークンが生成されて使用されます。</translation>
     </message>
     <message>
         <source>Login failed.</source>
