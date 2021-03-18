@@ -527,7 +527,18 @@ void CDROM::WriteRegister(u32 offset, u8 value)
     case 11:
     {
       Log_DebugPrintf("Audio volume apply changes <- 0x%02X", value);
-      m_adpcm_muted = ConvertToBoolUnchecked(value & u8(0x01));
+
+      const bool adpcm_muted = ConvertToBoolUnchecked(value & u8(0x01));
+      if (adpcm_muted != m_adpcm_muted ||
+          (value & 0x20 && std::memcmp(m_cd_audio_volume_matrix.data(), m_next_cd_audio_volume_matrix.data(),
+                                       sizeof(m_cd_audio_volume_matrix)) != 0))
+      {
+        if (HasPendingDiscEvent())
+          m_drive_event->InvokeEarly();
+        g_spu.GeneratePendingSamples();
+      }
+
+      m_adpcm_muted = adpcm_muted;
       if (value & 0x20)
         m_cd_audio_volume_matrix = m_next_cd_audio_volume_matrix;
       return;
@@ -638,6 +649,11 @@ void CDROM::UpdateInterruptRequest()
     return;
 
   g_interrupt_controller.InterruptRequest(InterruptController::IRQ::CDROM);
+}
+
+bool CDROM::HasPendingDiscEvent() const
+{
+  return (m_drive_event->IsActive() && m_drive_event->GetTicksUntilNextExecution() <= 0);
 }
 
 TickCount CDROM::GetAckDelayForCommand(Command command)
@@ -2072,16 +2088,6 @@ static s16 ZigZagInterpolate(const s16* ringbuf, const s16* table, u8 p)
   return static_cast<s16>(std::clamp<s32>(sum, -0x8000, 0x7FFF));
 }
 
-static constexpr s32 ApplyVolume(s16 sample, u8 volume)
-{
-  return s32(sample) * static_cast<s32>(ZeroExtend32(volume)) >> 7;
-}
-
-static constexpr s16 SaturateVolume(s32 volume)
-{
-  return static_cast<s16>(std::clamp<s32>(volume, -0x8000, 0x7FFF));
-}
-
 template<bool STEREO, bool SAMPLE_RATE>
 void CDROM::ResampleXAADPCM(const s16* frames_in, u32 num_frames_in)
 {
@@ -2123,12 +2129,7 @@ void CDROM::ResampleXAADPCM(const s16* frames_in, u32 num_frames_in)
         {
           const s16 left_interp = ZigZagInterpolate(left_ringbuf, s_zigzag_table[j].data(), p);
           const s16 right_interp = STEREO ? ZigZagInterpolate(right_ringbuf, s_zigzag_table[j].data(), p) : left_interp;
-
-          const s16 left_out = SaturateVolume(ApplyVolume(left_interp, m_cd_audio_volume_matrix[0][0]) +
-                                              ApplyVolume(right_interp, m_cd_audio_volume_matrix[1][0]));
-          const s16 right_out = SaturateVolume(ApplyVolume(left_interp, m_cd_audio_volume_matrix[0][1]) +
-                                               ApplyVolume(right_interp, m_cd_audio_volume_matrix[1][1]));
-          AddCDAudioFrame(left_out, right_out);
+          AddCDAudioFrame(left_interp, right_interp);
         }
       }
     }
@@ -2333,12 +2334,7 @@ void CDROM::ProcessCDDASector(const u8* raw_sector, const CDImage::SubChannelQ& 
     std::memcpy(&samp_left, sector_ptr, sizeof(samp_left));
     std::memcpy(&samp_right, sector_ptr + sizeof(s16), sizeof(samp_right));
     sector_ptr += sizeof(s16) * 2;
-
-    const s16 left = SaturateVolume(ApplyVolume(samp_left, m_cd_audio_volume_matrix[0][0]) +
-                                    ApplyVolume(samp_right, m_cd_audio_volume_matrix[1][0]));
-    const s16 right = SaturateVolume(ApplyVolume(samp_left, m_cd_audio_volume_matrix[0][1]) +
-                                     ApplyVolume(samp_right, m_cd_audio_volume_matrix[1][1]));
-    AddCDAudioFrame(left, right);
+    AddCDAudioFrame(samp_left, samp_right);
   }
 }
 
