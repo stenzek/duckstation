@@ -8,6 +8,10 @@
 #include <tuple>
 #include <vector>
 
+namespace Common {
+class Error;
+}
+
 class CDImage
 {
 public:
@@ -191,13 +195,13 @@ public:
   static u32 GetBytesPerSector(TrackMode mode);
 
   // Opening disc image.
-  static std::unique_ptr<CDImage> Open(const char* filename);
-  static std::unique_ptr<CDImage> OpenBinImage(const char* filename);
-  static std::unique_ptr<CDImage> OpenCueSheetImage(const char* filename);
-  static std::unique_ptr<CDImage> OpenCHDImage(const char* filename);
-  static std::unique_ptr<CDImage> OpenEcmImage(const char* filename);
-  static std::unique_ptr<CDImage> OpenMdsImage(const char* filename);
-  static std::unique_ptr<CDImage> OpenPBPImage(const char* filename);
+  static std::unique_ptr<CDImage> Open(const char* filename, Common::Error* error);
+  static std::unique_ptr<CDImage> OpenBinImage(const char* filename, Common::Error* error);
+  static std::unique_ptr<CDImage> OpenCueSheetImage(const char* filename, Common::Error* error);
+  static std::unique_ptr<CDImage> OpenCHDImage(const char* filename, Common::Error* error);
+  static std::unique_ptr<CDImage> OpenEcmImage(const char* filename, Common::Error* error);
+  static std::unique_ptr<CDImage> OpenMdsImage(const char* filename, Common::Error* error);
+  static std::unique_ptr<CDImage> OpenPBPImage(const char* filename, Common::Error* error);
   static std::unique_ptr<CDImage>
   CreateMemoryImage(CDImage* image, ProgressCallback* progress = ProgressCallback::NullProgressCallback);
 

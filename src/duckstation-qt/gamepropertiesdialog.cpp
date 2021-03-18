@@ -224,7 +224,7 @@ void GamePropertiesDialog::populateTracksInfo(const std::string& image_path)
   m_ui.tracks->clearContents();
   m_path = image_path;
 
-  std::unique_ptr<CDImage> image = CDImage::Open(image_path.c_str());
+  std::unique_ptr<CDImage> image = CDImage::Open(image_path.c_str(), nullptr);
   if (!image)
     return;
 
@@ -860,7 +860,7 @@ void GamePropertiesDialog::computeTrackHashes()
   if (m_path.empty())
     return;
 
-  std::unique_ptr<CDImage> image = CDImage::Open(m_path.c_str());
+  std::unique_ptr<CDImage> image = CDImage::Open(m_path.c_str(), nullptr);
   if (!image)
     return;
 

@@ -1,6 +1,7 @@
 #include "assert.h"
 #include "cd_image.h"
 #include "cd_subchannel_replacement.h"
+#include "error.h"
 #include "file_system.h"
 #include "log.h"
 #include <algorithm>
@@ -34,7 +35,7 @@ public:
   CDImageMds();
   ~CDImageMds() override;
 
-  bool OpenAndParse(const char* filename);
+  bool OpenAndParse(const char* filename, Common::Error* error);
 
   bool ReadSubChannelQ(SubChannelQ* subq) override;
   bool HasNonStandardSubchannel() const override;
@@ -56,12 +57,15 @@ CDImageMds::~CDImageMds()
     std::fclose(m_mdf_file);
 }
 
-bool CDImageMds::OpenAndParse(const char* filename)
+bool CDImageMds::OpenAndParse(const char* filename, Common::Error* error)
 {
   std::FILE* mds_fp = FileSystem::OpenCFile(filename, "rb");
   if (!mds_fp)
   {
     Log_ErrorPrintf("Failed to open mds '%s': errno %d", filename, errno);
+    if (error)
+      error->SetErrno(errno);
+
     return false;
   }
 
@@ -70,6 +74,9 @@ bool CDImageMds::OpenAndParse(const char* filename)
   if (!mds_data_opt.has_value() || mds_data_opt->size() < 0x54)
   {
     Log_ErrorPrintf("Failed to read mds file '%s'", filename);
+    if (error)
+      error->SetFormattedMessage("Failed to read mds file '%s'", filename);
+
     return false;
   }
 
@@ -78,6 +85,9 @@ bool CDImageMds::OpenAndParse(const char* filename)
   if (!m_mdf_file)
   {
     Log_ErrorPrintf("Failed to open mdf file '%s': errno %d", mdf_filename.c_str(), errno);
+    if (error)
+      error->SetFormattedMessage("Failed to open mdf file '%s': errno %d", mdf_filename.c_str(), errno);
+
     return false;
   }
 
@@ -86,6 +96,9 @@ bool CDImageMds::OpenAndParse(const char* filename)
   if (std::memcmp(&mds[0], expected_signature, sizeof(expected_signature) - 1) != 0)
   {
     Log_ErrorPrintf("Incorrect signature in '%s'", filename);
+    if (error)
+      error->SetFormattedMessage("Incorrect signature in '%s'", filename);
+
     return false;
   }
 
@@ -94,6 +107,9 @@ bool CDImageMds::OpenAndParse(const char* filename)
   if ((session_offset + 24) > mds.size())
   {
     Log_ErrorPrintf("Invalid session offset in '%s'", filename);
+    if (error)
+      error->SetFormattedMessage("Invalid session offset in '%s'", filename);
+
     return false;
   }
 
@@ -104,6 +120,9 @@ bool CDImageMds::OpenAndParse(const char* filename)
   if (track_count > 99 || track_offset >= mds.size())
   {
     Log_ErrorPrintf("Invalid track count/block offset %u/%u in '%s'", track_count, track_offset, filename);
+    if (error)
+      error->SetFormattedMessage("Invalid track count/block offset %u/%u in '%s'", track_count, track_offset, filename);
+
     return false;
   }
 
@@ -122,6 +141,9 @@ bool CDImageMds::OpenAndParse(const char* filename)
     if ((track_offset + sizeof(TrackEntry)) > mds.size())
     {
       Log_ErrorPrintf("End of file in '%s' at track %u", filename, track_number);
+      if (error)
+        error->SetFormattedMessage("End of file in '%s' at track %u", filename, track_number);
+
       return false;
     }
 
@@ -130,9 +152,12 @@ bool CDImageMds::OpenAndParse(const char* filename)
     if (PackedBCDToBinary(track.track_number) != track_number)
     {
       Log_ErrorPrintf("Unexpected track number 0x%02X in track %u", track.track_number, track_number);
+      if (error)
+        error->SetFormattedMessage("Unexpected track number 0x%02X in track %u", track.track_number, track_number);
+
       return false;
     }
-    
+
     const bool contains_subchannel = (track.has_subchannel_data != 0);
     const u32 track_sector_size = (contains_subchannel ? 2448 : RAW_SECTOR_SIZE);
     const TrackMode mode = (track.track_type == 0xA9) ? TrackMode::Audio : TrackMode::Mode2Raw;
@@ -140,6 +165,9 @@ bool CDImageMds::OpenAndParse(const char* filename)
     if ((track.extra_offset + sizeof(u32) + sizeof(u32)) > mds.size())
     {
       Log_ErrorPrintf("Invalid extra offset %u in track %u", track.extra_offset, track_number);
+      if (error)
+        error->SetFormattedMessage("Invalid extra offset %u in track %u", track.extra_offset, track_number);
+
       return false;
     }
 
@@ -162,6 +190,9 @@ bool CDImageMds::OpenAndParse(const char* filename)
       if (track_pregap > track_start_lba)
       {
         Log_ErrorPrintf("Track pregap %u is too large for start lba %u", track_pregap, track_start_lba);
+        if (error)
+          error->SetFormattedMessage("Track pregap %u is too large for start lba %u", track_pregap, track_start_lba);
+
         return false;
       }
 
@@ -210,6 +241,9 @@ bool CDImageMds::OpenAndParse(const char* filename)
   if (m_tracks.empty())
   {
     Log_ErrorPrintf("File '%s' contains no tracks", filename);
+    if (error)
+      error->SetFormattedMessage("File '%s' contains no tracks", filename);
+
     return false;
   }
 
@@ -257,10 +291,10 @@ bool CDImageMds::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_i
   return true;
 }
 
-std::unique_ptr<CDImage> CDImage::OpenMdsImage(const char* filename)
+std::unique_ptr<CDImage> CDImage::OpenMdsImage(const char* filename, Common::Error* error)
 {
   std::unique_ptr<CDImageMds> image = std::make_unique<CDImageMds>();
-  if (!image->OpenAndParse(filename))
+  if (!image->OpenAndParse(filename, error))
     return {};
 
   return image;

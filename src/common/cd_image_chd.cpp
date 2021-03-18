@@ -7,6 +7,7 @@
 #include "cd_image.h"
 #include "cd_subchannel_replacement.h"
 #include "cpu_detect.h"
+#include "error.h"
 #include "file_system.h"
 #include "libchdr/chd.h"
 #include "log.h"
@@ -46,7 +47,7 @@ public:
   CDImageCHD();
   ~CDImageCHD() override;
 
-  bool Open(const char* filename);
+  bool Open(const char* filename, Common::Error* error);
 
   bool ReadSubChannelQ(SubChannelQ* subq) override;
   bool HasNonStandardSubchannel() const override;
@@ -84,13 +85,16 @@ CDImageCHD::~CDImageCHD()
     std::fclose(m_fp);
 }
 
-bool CDImageCHD::Open(const char* filename)
+bool CDImageCHD::Open(const char* filename, Common::Error* error)
 {
   Assert(!m_fp);
   m_fp = FileSystem::OpenCFile(filename, "rb");
   if (!m_fp)
   {
     Log_ErrorPrintf("Failed to open CHD '%s': errno %d", filename, errno);
+    if (error)
+      error->SetErrno(errno);
+
     return false;
   }
 
@@ -98,6 +102,9 @@ bool CDImageCHD::Open(const char* filename)
   if (err != CHDERR_NONE)
   {
     Log_ErrorPrintf("Failed to open CHD '%s': %s", filename, chd_error_string(err));
+    if (error)
+      error->SetMessage(chd_error_string(err));
+
     return false;
   }
 
@@ -106,6 +113,9 @@ bool CDImageCHD::Open(const char* filename)
   if ((m_hunk_size % CHD_CD_SECTOR_DATA_SIZE) != 0)
   {
     Log_ErrorPrintf("Hunk size (%u) is not a multiple of %u", m_hunk_size, CHD_CD_SECTOR_DATA_SIZE);
+    if (error)
+      error->SetFormattedMessage("Hunk size (%u) is not a multiple of %u", m_hunk_size, CHD_CD_SECTOR_DATA_SIZE);
+
     return false;
   }
 
@@ -136,6 +146,9 @@ bool CDImageCHD::Open(const char* filename)
                       &pregap_frames, pgtype_str, pgsub_str, &postgap_frames) != 8)
       {
         Log_ErrorPrintf("Invalid track v2 metadata: '%s'", metadata_str);
+        if (error)
+          error->SetFormattedMessage("Invalid track v2 metadata: '%s'", metadata_str);
+
         return false;
       }
     }
@@ -153,6 +166,9 @@ bool CDImageCHD::Open(const char* filename)
       if (std::sscanf(metadata_str, CDROM_TRACK_METADATA_FORMAT, &track_num, type_str, subtype_str, &frames) != 4)
       {
         Log_ErrorPrintf("Invalid track metadata: '%s'", metadata_str);
+        if (error)
+          error->SetFormattedMessage("Invalid track v2 metadata: '%s'", metadata_str);
+
         return false;
       }
     }
@@ -161,6 +177,12 @@ bool CDImageCHD::Open(const char* filename)
     {
       Log_ErrorPrintf("Incorrect track number at index %d, expected %d got %d", num_tracks, (num_tracks + 1),
                       track_num);
+      if (error)
+      {
+        error->SetFormattedMessage("Incorrect track number at index %d, expected %d got %d", num_tracks,
+                                        (num_tracks + 1), track_num);
+      }
+
       return false;
     }
 
@@ -168,6 +190,9 @@ bool CDImageCHD::Open(const char* filename)
     if (!mode.has_value())
     {
       Log_ErrorPrintf("Invalid track mode: '%s'", type_str);
+      if (error)
+        error->SetFormattedMessage("Invalid track mode: '%s'", type_str);
+
       return false;
     }
 
@@ -198,6 +223,9 @@ bool CDImageCHD::Open(const char* filename)
         if (pregap_frames > frames)
         {
           Log_ErrorPrintf("Pregap length %u exceeds track length %u", pregap_frames, frames);
+          if (error)
+            error->SetFormattedMessage("Pregap length %u exceeds track length %u", pregap_frames, frames);
+
           return false;
         }
 
@@ -242,6 +270,9 @@ bool CDImageCHD::Open(const char* filename)
   if (m_tracks.empty())
   {
     Log_ErrorPrintf("File '%s' contains no tracks", filename);
+    if (error)
+      error->SetFormattedMessage("File '%s' contains no tracks", filename);
+
     return false;
   }
 
@@ -343,10 +374,10 @@ bool CDImageCHD::ReadHunk(u32 hunk_index)
   return true;
 }
 
-std::unique_ptr<CDImage> CDImage::OpenCHDImage(const char* filename)
+std::unique_ptr<CDImage> CDImage::OpenCHDImage(const char* filename, Common::Error* error)
 {
   std::unique_ptr<CDImageCHD> image = std::make_unique<CDImageCHD>();
-  if (!image->Open(filename))
+  if (!image->Open(filename, error))
     return {};
 
   return image;

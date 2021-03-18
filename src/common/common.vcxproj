@@ -68,6 +68,7 @@
     <ClInclude Include="d3d11\texture.h" />
     <ClInclude Include="dimensional_array.h" />
     <ClInclude Include="easing.h" />
+    <ClInclude Include="error.h" />
     <ClInclude Include="event.h" />
     <ClInclude Include="fifo_queue.h" />
     <ClInclude Include="file_system.h" />
@@ -142,6 +143,7 @@
     <ClCompile Include="d3d11\staging_texture.cpp" />
     <ClCompile Include="d3d11\stream_buffer.cpp" />
     <ClCompile Include="d3d11\texture.cpp" />
+    <ClCompile Include="error.cpp" />
     <ClCompile Include="event.cpp" />
     <ClCompile Include="file_system.cpp" />
     <ClCompile Include="gl\context.cpp" />

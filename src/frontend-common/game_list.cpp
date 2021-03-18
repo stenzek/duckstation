@@ -168,7 +168,7 @@ bool GameList::GetM3UListEntry(const char* path, GameListEntry* entry)
 
   for (size_t i = 0; i < entries.size(); i++)
   {
-    std::unique_ptr<CDImage> entry_image = CDImage::Open(entries[i].c_str());
+    std::unique_ptr<CDImage> entry_image = CDImage::Open(entries[i].c_str(), nullptr);
     if (!entry_image)
     {
       Log_ErrorPrintf("Failed to open entry %zu ('%s') in playlist %s", i, entries[i].c_str(), path);
@@ -203,7 +203,7 @@ bool GameList::GetGameListEntry(const std::string& path, GameListEntry* entry)
   if (System::IsM3UFileName(path.c_str()))
     return GetM3UListEntry(path.c_str(), entry);
 
-  std::unique_ptr<CDImage> cdi = CDImage::Open(path.c_str());
+  std::unique_ptr<CDImage> cdi = CDImage::Open(path.c_str(), nullptr);
   if (!cdi)
     return false;
 

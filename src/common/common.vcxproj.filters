@@ -111,6 +111,7 @@
     <ClInclude Include="lru_cache.h" />
     <ClInclude Include="easing.h" />
     <ClInclude Include="pbp_types.h" />
+    <ClInclude Include="error.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="jit_code_buffer.cpp" />
@@ -214,6 +215,7 @@
     <ClCompile Include="cd_image_ecm.cpp" />
     <ClCompile Include="cd_image_mds.cpp" />
     <ClCompile Include="cd_image_pbp.cpp" />
+    <ClCompile Include="error.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />

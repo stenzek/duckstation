@@ -4,6 +4,7 @@
 #include "cdrom.h"
 #include "cheats.h"
 #include "common/audio_stream.h"
+#include "common/error.h"
 #include "common/file_system.h"
 #include "common/iso_reader.h"
 #include "common/log.h"
@@ -66,7 +67,7 @@ static bool LoadEXE(const char* filename);
 static bool SetExpansionROM(const char* filename);
 
 /// Opens CD image, preloading if needed.
-static std::unique_ptr<CDImage> OpenCDImage(const char* path, bool force_preload);
+static std::unique_ptr<CDImage> OpenCDImage(const char* path, Common::Error* error, bool force_preload);
 
 static bool DoLoadState(ByteStream* stream, bool force_software_renderer, bool update_display);
 static bool DoState(StateWrapper& sw, HostDisplayTexture** host_texture, bool update_display);
@@ -388,7 +389,7 @@ std::string_view GetTitleForPath(const char* path)
 
 std::string GetGameCodeForPath(const char* image_path, bool fallback_to_hash)
 {
-  std::unique_ptr<CDImage> cdi = CDImage::Open(image_path);
+  std::unique_ptr<CDImage> cdi = CDImage::Open(image_path, nullptr);
   if (!cdi)
     return {};
 
@@ -656,7 +657,7 @@ std::optional<DiscRegion> GetRegionForPath(const char* image_path)
   else if (IsPsfFileName(image_path))
     return GetRegionForPsf(image_path);
 
-  std::unique_ptr<CDImage> cdi = CDImage::Open(image_path);
+  std::unique_ptr<CDImage> cdi = CDImage::Open(image_path, nullptr);
   if (!cdi)
     return {};
 
@@ -704,9 +705,9 @@ bool RecreateGPU(GPURenderer renderer, bool update_display /* = true*/)
   return true;
 }
 
-std::unique_ptr<CDImage> OpenCDImage(const char* path, bool force_preload)
+std::unique_ptr<CDImage> OpenCDImage(const char* path, Common::Error* error, bool force_preload)
 {
-  std::unique_ptr<CDImage> media = CDImage::Open(path);
+  std::unique_ptr<CDImage> media = CDImage::Open(path, error);
   if (!media)
     return {};
 
@@ -796,12 +797,14 @@ bool Boot(const SystemBootParameters& params)
         playlist_index = 0;
       }
 
+      Common::Error error;
       const std::string& media_path = s_media_playlist[playlist_index];
       Log_InfoPrintf("Loading CD image '%s' from playlist index %u...", media_path.c_str(), playlist_index);
-      media = OpenCDImage(media_path.c_str(), params.load_image_to_ram);
+      media = OpenCDImage(media_path.c_str(), &error, params.load_image_to_ram);
       if (!media)
       {
-        g_host_interface->ReportFormattedError("Failed to load CD image '%s'", params.filename.c_str());
+        g_host_interface->ReportFormattedError("Failed to load CD image '%s': %s", params.filename.c_str(),
+                                               error.GetCodeAndMessage().GetCharArray());
         Shutdown();
         return false;
       }
@@ -1215,22 +1218,24 @@ bool DoLoadState(ByteStream* state, bool force_software_renderer, bool update_di
     }
     else
     {
-      media = OpenCDImage(media_filename.c_str(), false);
+      Common::Error error;
+      media = OpenCDImage(media_filename.c_str(), &error, false);
       if (!media)
       {
         if (old_media)
         {
           g_host_interface->AddFormattedOSDMessage(
             30.0f,
-            g_host_interface->TranslateString("OSDMessage", "Failed to open CD image from save state: '%s'. Using "
+            g_host_interface->TranslateString("OSDMessage", "Failed to open CD image from save state '%s': %s. Using "
                                                             "existing image '%s', this may result in instability."),
-            media_filename.c_str(), old_media->GetFileName().c_str());
+            media_filename.c_str(), error.GetCodeAndMessage().GetCharArray(), old_media->GetFileName().c_str());
           media = std::move(old_media);
         }
         else
         {
           g_host_interface->ReportFormattedError(
-            g_host_interface->TranslateString("System", "Failed to open CD image from save state: '%s'."),
+            g_host_interface->TranslateString("System", "Failed to open CD image from save state '%s': %s.",
+                                              error.GetCodeAndMessage().GetCharArray()),
             media_filename.c_str());
           return false;
         }
@@ -1965,11 +1970,13 @@ std::string GetMediaFileName()
 
 bool InsertMedia(const char* path)
 {
-  std::unique_ptr<CDImage> image = OpenCDImage(path, false);
+  Common::Error error;
+  std::unique_ptr<CDImage> image = OpenCDImage(path, &error, false);
   if (!image)
   {
     g_host_interface->AddFormattedOSDMessage(
-      10.0f, g_host_interface->TranslateString("OSDMessage", "Failed to open disc image '%s'."), path);
+      10.0f, g_host_interface->TranslateString("OSDMessage", "Failed to open disc image '%s': %s."), path,
+      error.GetCodeAndMessage().GetCharArray());
     return false;
   }
 

@@ -816,7 +816,7 @@ void GameChanged()
   if (path.empty() || s_game_path == path)
     return;
 
-  std::unique_ptr<CDImage> cdi = CDImage::Open(path.c_str());
+  std::unique_ptr<CDImage> cdi = CDImage::Open(path.c_str(), nullptr);
   if (!cdi)
   {
     Log_ErrorPrintf("Failed to open temporary CD image '%s'", path.c_str());
@@ -855,7 +855,7 @@ void GameChanged(const std::string& path, CDImage* image)
     if (playlist_index > 0 && playlist_index < playlist_count)
     {
       const std::string& first_disc_path(System::GetMediaPlaylistPath(0));
-      std::unique_ptr<CDImage> first_disc_image(CDImage::Open(first_disc_path.c_str()));
+      std::unique_ptr<CDImage> first_disc_image(CDImage::Open(first_disc_path.c_str(), nullptr));
       if (first_disc_image)
       {
         Log_InfoPrintf("Using first disc '%s' from playlist (currently '%s')", first_disc_path.c_str(), path.c_str());

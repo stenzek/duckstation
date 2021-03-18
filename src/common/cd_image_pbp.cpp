@@ -1,5 +1,6 @@
 #include "cd_image.h"
 #include "cd_subchannel_replacement.h"
+#include "error.h"
 #include "file_system.h"
 #include "log.h"
 #include "pbp_types.h"
@@ -18,7 +19,7 @@ public:
   CDImagePBP() = default;
   ~CDImagePBP() override;
 
-  bool Open(const char* filename);
+  bool Open(const char* filename, Common::Error* error);
 
   bool ReadSubChannelQ(SubChannelQ* subq) override;
   bool HasNonStandardSubchannel() const override;
@@ -45,7 +46,7 @@ private:
   bool LoadSFOIndexTable();
   bool LoadSFOTable();
 
-  bool IsValidEboot();
+  bool IsValidEboot(Common::Error* error);
 
   bool InitDecompressionStream();
   bool DecompressBlock(BlockInfo block_info);
@@ -257,7 +258,7 @@ bool CDImagePBP::LoadSFOTable()
   return true;
 }
 
-bool CDImagePBP::IsValidEboot()
+bool CDImagePBP::IsValidEboot(Common::Error* error)
 {
   // Check some fields to make sure this is a valid PS1 EBOOT.PBP
 
@@ -268,12 +269,16 @@ bool CDImagePBP::IsValidEboot()
     if (!std::holds_alternative<u32>(data_value) || std::get<u32>(data_value) != 1)
     {
       Log_ErrorPrint("Invalid BOOTABLE value");
+      if (error)
+        error->SetMessage("Invalid BOOTABLE value");
       return false;
     }
   }
   else
   {
     Log_ErrorPrint("No BOOTABLE value found");
+    if (error)
+      error->SetMessage("No BOOTABLE value found");
     return false;
   }
 
@@ -284,19 +289,23 @@ bool CDImagePBP::IsValidEboot()
     if (!std::holds_alternative<std::string>(data_value) || std::get<std::string>(data_value) != "ME")
     {
       Log_ErrorPrint("Invalid CATEGORY value");
+      if (error)
+        error->SetMessage("Invalid CATEGORY value");
       return false;
     }
   }
   else
   {
     Log_ErrorPrint("No CATEGORY value found");
+    if (error)
+      error->SetMessage("No CATEGORY value found");
     return false;
   }
 
   return true;
 }
 
-bool CDImagePBP::Open(const char* filename)
+bool CDImagePBP::Open(const char* filename, Common::Error* error)
 {
   if (!EndianHelper::HostIsLittleEndian())
   {
@@ -306,7 +315,12 @@ bool CDImagePBP::Open(const char* filename)
 
   m_file = FileSystem::OpenCFile(filename, "rb");
   if (!m_file)
+  {
+    if (error)
+      error->SetErrno(errno);
+
     return false;
+  }
 
   m_filename = filename;
 
@@ -314,6 +328,8 @@ bool CDImagePBP::Open(const char* filename)
   if (!LoadPBPHeader())
   {
     Log_ErrorPrint("Failed to load PBP header");
+    if (error)
+      error->SetMessage("Failed to load PBP header");
     return false;
   }
 
@@ -321,6 +337,8 @@ bool CDImagePBP::Open(const char* filename)
   if (!LoadSFOHeader())
   {
     Log_ErrorPrint("Failed to load SFO header");
+    if (error)
+      error->SetMessage("Failed to load SFO header");
     return false;
   }
 
@@ -328,6 +346,8 @@ bool CDImagePBP::Open(const char* filename)
   if (!LoadSFOIndexTable())
   {
     Log_ErrorPrint("Failed to load SFO index table");
+    if (error)
+      error->SetMessage("Failed to load SFO index table");
     return false;
   }
 
@@ -335,11 +355,13 @@ bool CDImagePBP::Open(const char* filename)
   if (!LoadSFOTable())
   {
     Log_ErrorPrint("Failed to load SFO table");
+    if (error)
+      error->SetMessage("Failed to load SFO table");
     return false;
   }
 
   // Since PBP files can store things that aren't PS1 CD images, make sure we're loading the right kind
-  if (!IsValidEboot())
+  if (!IsValidEboot(error))
   {
     Log_ErrorPrint("Couldn't validate EBOOT");
     return false;
@@ -372,6 +394,9 @@ bool CDImagePBP::Open(const char* filename)
     if (disc_table[0] == 0x44475000) // "\0PGD"
     {
       Log_ErrorPrint("Encrypted PBP images are not supported");
+      if (error)
+        error->SetMessage("Encrypted PBP images are not supported");
+
       return false;
     }
 
@@ -421,6 +446,9 @@ bool CDImagePBP::Open(const char* filename)
   if (pgd_magic == 0x44475000) // "\0PGD"
   {
     Log_ErrorPrint("Encrypted PBP images are not supported");
+    if (error)
+      error->SetMessage("Encrypted PBP images are not supported");
+
     return false;
   }
 
@@ -739,10 +767,10 @@ void CDImagePBP::PrintSFOTable(const SFOTable& sfo_table)
 }
 #endif
 
-std::unique_ptr<CDImage> CDImage::OpenPBPImage(const char* filename)
+std::unique_ptr<CDImage> CDImage::OpenPBPImage(const char* filename, Common::Error* error)
 {
   std::unique_ptr<CDImagePBP> image = std::make_unique<CDImagePBP>();
-  if (!image->Open(filename))
+  if (!image->Open(filename, error))
     return {};
 
   return image;
