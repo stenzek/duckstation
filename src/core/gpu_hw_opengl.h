@@ -104,9 +104,9 @@ private:
   GL::Program m_vram_update_depth_program;
 
   u32 m_uniform_buffer_alignment = 1;
-  u32 m_max_texture_buffer_size = 0;
+  u32 m_texture_stream_buffer_size = 0;
 
-  bool m_supports_texture_buffer = false;
+  bool m_use_texture_buffer_for_vram_writes = false;
   bool m_use_ssbo_for_vram_writes = false;
 
   GLenum m_current_depth_test = 0;

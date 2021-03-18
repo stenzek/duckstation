@@ -319,22 +319,29 @@ void GPU_HW_OpenGL::SetCapabilities(HostDisplay* host_display)
 
 #ifdef __APPLE__
   // Partial texture buffer uploads appear to be broken in macOS's OpenGL driver.
-  m_supports_texture_buffer = false;
+  m_use_texture_buffer_for_vram_writes = false;
 #else
-  m_supports_texture_buffer = (GLAD_GL_VERSION_3_1 || GLAD_GL_ES_VERSION_3_2);
+  m_use_texture_buffer_for_vram_writes = (GLAD_GL_VERSION_3_1 || GLAD_GL_ES_VERSION_3_2);
 #endif
-  if (m_supports_texture_buffer)
+  m_texture_stream_buffer_size = VRAM_UPDATE_TEXTURE_BUFFER_SIZE;
+  if (m_use_texture_buffer_for_vram_writes)
   {
-    glGetIntegerv(GL_MAX_TEXTURE_BUFFER_SIZE, reinterpret_cast<GLint*>(&m_max_texture_buffer_size));
-    Log_InfoPrintf("Max texel buffer size: %u", m_max_texture_buffer_size);
-    if (m_max_texture_buffer_size < VRAM_WIDTH * VRAM_HEIGHT)
+    GLint max_texel_buffer_size;
+    glGetIntegerv(GL_MAX_TEXTURE_BUFFER_SIZE, reinterpret_cast<GLint*>(&max_texel_buffer_size));
+    Log_InfoPrintf("Max texel buffer size: %u", max_texel_buffer_size);
+    if (max_texel_buffer_size < VRAM_WIDTH * VRAM_HEIGHT)
     {
       Log_WarningPrintf("Maximum texture buffer size is less than VRAM size, not using texel buffers.");
-      m_supports_texture_buffer = false;
+      m_use_texture_buffer_for_vram_writes = false;
+    }
+    else
+    {
+      m_texture_stream_buffer_size =
+        std::min<u32>(VRAM_UPDATE_TEXTURE_BUFFER_SIZE, static_cast<u32>(max_texel_buffer_size) * sizeof(u16));
     }
   }
 
-  if (!m_supports_texture_buffer || m_max_texture_buffer_size < VRAM_WIDTH * VRAM_HEIGHT)
+  if (!m_use_texture_buffer_for_vram_writes)
   {
     // Try SSBOs.
     GLint max_fragment_storage_blocks = 0;
@@ -352,11 +359,13 @@ void GPU_HW_OpenGL::SetCapabilities(HostDisplay* host_display)
     if (m_use_ssbo_for_vram_writes)
     {
       Log_InfoPrintf("Using shader storage buffers for VRAM writes.");
+      m_texture_stream_buffer_size =
+        static_cast<u32>(std::min<u64>(VRAM_UPDATE_TEXTURE_BUFFER_SIZE, static_cast<u64>(max_ssbo_size)));
     }
     else
     {
-      Log_WarningPrintf(
-        "Texture buffers are not supported, VRAM writes will be slower and multisampling will be unavailable.");
+      Log_WarningPrintf("Texture buffers and SSBOs are not supported, VRAM writes will be slower and multisampling "
+                        "will be unavailable.");
       m_max_multisamples = 1;
       m_supports_per_sample_shading = false;
     }
@@ -475,15 +484,14 @@ bool GPU_HW_OpenGL::CreateUniformBuffer()
 
 bool GPU_HW_OpenGL::CreateTextureBuffer()
 {
-  // We use the pixel unpack buffer here because we share it with CPU-decoded VRAM writes.
   const GLenum target =
     (m_use_ssbo_for_vram_writes ? GL_SHADER_STORAGE_BUFFER :
-                                  (m_supports_texture_buffer ? GL_TEXTURE_BUFFER : GL_PIXEL_UNPACK_BUFFER));
-  m_texture_stream_buffer = GL::StreamBuffer::Create(target, VRAM_UPDATE_TEXTURE_BUFFER_SIZE);
+                                  (m_use_texture_buffer_for_vram_writes ? GL_TEXTURE_BUFFER : GL_PIXEL_UNPACK_BUFFER));
+  m_texture_stream_buffer = GL::StreamBuffer::Create(target, m_texture_stream_buffer_size);
   if (!m_texture_stream_buffer)
     return false;
 
-  if (m_max_texture_buffer_size > 0)
+  if (m_use_texture_buffer_for_vram_writes)
   {
     glGenTextures(1, &m_texture_buffer_r16ui_texture);
     glBindTexture(GL_TEXTURE_BUFFER, m_texture_buffer_r16ui_texture);
@@ -673,7 +681,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
   m_vram_update_depth_program = std::move(*prog);
   UPDATE_PROGRESS();
 
-  if (m_supports_texture_buffer || m_use_ssbo_for_vram_writes)
+  if (m_use_texture_buffer_for_vram_writes || m_use_ssbo_for_vram_writes)
   {
     prog = shader_cache.GetProgram(shadergen.GenerateScreenQuadVertexShader(), {},
                                    shadergen.GenerateVRAMWriteFragmentShader(m_use_ssbo_for_vram_writes),
@@ -1060,7 +1068,7 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
   }
 
   const u32 num_pixels = width * height;
-  if (num_pixels < m_max_texture_buffer_size || m_use_ssbo_for_vram_writes)
+  if (m_use_texture_buffer_for_vram_writes || m_use_ssbo_for_vram_writes)
   {
     const auto map_result = m_texture_stream_buffer->Map(sizeof(u16), num_pixels * sizeof(u16));
     std::memcpy(map_result.pointer, data, num_pixels * sizeof(u16));
@@ -1092,10 +1100,10 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
   }
   else
   {
-    if ((x + width) > VRAM_WIDTH || (y + height) > VRAM_HEIGHT)
+    if ((x + width) > VRAM_WIDTH || (y + height) > VRAM_HEIGHT || check_mask)
     {
       // CPU round trip if oversized for now.
-      Log_WarningPrintf("Oversized VRAM update (%u-%u, %u-%u), CPU round trip", x, x + width, y, y + height);
+      Log_WarningPrintf("Oversized/masked VRAM update (%u-%u, %u-%u), CPU round trip", x, x + width, y, y + height);
       ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
       GPU::UpdateVRAM(x, y, width, height, data, set_mask, check_mask);
       UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, m_vram_shadow.data(), false, false);
@@ -1109,6 +1117,7 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
     // reverse copy the rows so it matches opengl's lower-left origin
     const u32 source_stride = width * sizeof(u16);
     const u8* source_ptr = static_cast<const u8*>(data) + (source_stride * (height - 1));
+    const u16 mask_or = set_mask ? 0x8000 : 0x0000;
     u32* dest_ptr = static_cast<u32*>(map_result.pointer);
     for (u32 row = 0; row < height; row++)
     {
@@ -1119,8 +1128,7 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
         u16 src_col;
         std::memcpy(&src_col, source_row_ptr, sizeof(src_col));
         source_row_ptr += sizeof(src_col);
-
-        *(dest_ptr++) = RGBA5551ToRGBA8888(src_col);
+        *(dest_ptr++) = RGBA5551ToRGBA8888(src_col | mask_or);
       }
 
       source_ptr -= source_stride;
