@@ -175,31 +175,25 @@ protected:
   }
   ALWAYS_INLINE static constexpr TickCount SystemTicksToGPUTicks(TickCount sysclk_ticks) { return sysclk_ticks << 1; }
 
-  // Helper/format conversion functions.
-  static constexpr u32 RGBA5551ToRGBA8888(u16 color)
+  // Helper/format conversion functions - constants from https://stackoverflow.com/a/9069480
+  ALWAYS_INLINE static constexpr u32 Convert5To8(u32 color) { return (((color * 527u) + 23u) >> 6); }
+  ALWAYS_INLINE static constexpr u32 Convert8To5(u32 color) { return (((color * 249u) + 1014u) >> 11); }
+  static constexpr u32 RGBA5551ToRGBA8888(u32 color)
   {
-    u8 r = Truncate8(color & 31);
-    u8 g = Truncate8((color >> 5) & 31);
-    u8 b = Truncate8((color >> 10) & 31);
-    u8 a = Truncate8((color >> 15) & 1);
-
-    // 00012345 -> 1234545
-    b = (b << 3) | (b & 0b111);
-    g = (g << 3) | (g & 0b111);
-    r = (r << 3) | (r & 0b111);
-    a = a ? 255 : 0;
-
+    const u32 r = Convert5To8(color & 31u);
+    const u32 g = Convert5To8((color >> 5) & 31u);
+    const u32 b = Convert5To8((color >> 10) & 31u);
+    const u32 a = ((color >> 15) != 0) ? 255 : 0;
     return ZeroExtend32(r) | (ZeroExtend32(g) << 8) | (ZeroExtend32(b) << 16) | (ZeroExtend32(a) << 24);
   }
 
   static constexpr u16 RGBA8888ToRGBA5551(u32 color)
   {
-    const u16 r = Truncate16((color >> 3) & 0x1Fu);
-    const u16 g = Truncate16((color >> 11) & 0x1Fu);
-    const u16 b = Truncate16((color >> 19) & 0x1Fu);
-    const u16 a = Truncate16((color >> 31) & 0x01u);
-
-    return r | (g << 5) | (b << 10) | (a << 15);
+    const u32 r = Convert8To5(color & 0xFFu);
+    const u32 g = Convert8To5((color >> 8) & 0xFFu);
+    const u32 b = Convert8To5((color >> 16) & 0xFFu);
+    const u32 a = ((color >> 24) & 0x01u);
+    return Truncate16(r | (g << 5) | (b << 10) | (a << 15));
   }
 
   static constexpr std::tuple<u8, u8> UnpackTexcoord(u16 texcoord)
