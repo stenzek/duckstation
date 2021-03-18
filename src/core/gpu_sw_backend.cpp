@@ -769,7 +769,7 @@ GPU_SW_Backend::GetDrawRectangleFunction(bool texture_enable, bool raw_texture_e
 
 void GPU_SW_Backend::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color, GPUBackendCommandParameters params)
 {
-  const u16 color16 = RGBA8888ToRGBA5551(color);
+  const u16 color16 = VRAMRGBA8888ToRGBA5551(color);
   if ((x + width) <= VRAM_WIDTH && !params.interlaced_rendering)
   {
     for (u32 yoffs = 0; yoffs < height; yoffs++)

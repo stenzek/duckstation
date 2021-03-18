@@ -15,7 +15,7 @@ Log_SetChannel(TextureReplacements);
 
 TextureReplacements g_texture_replacements;
 
-static constexpr u32 RGBA5551ToRGBA8888(u16 color)
+static constexpr u32 VRAMRGBA5551ToRGBA8888(u16 color)
 {
   u8 r = Truncate8(color & 31);
   u8 g = Truncate8((color >> 5) & 31);
@@ -90,7 +90,7 @@ void TextureReplacements::DumpVRAMWrite(u32 width, u32 height, const void* pixel
   {
     for (u32 x = 0; x < width; x++)
     {
-      image.SetPixel(x, y, RGBA5551ToRGBA8888(*src_pixels));
+      image.SetPixel(x, y, VRAMRGBA5551ToRGBA8888(*src_pixels));
       src_pixels++;
     }
   }

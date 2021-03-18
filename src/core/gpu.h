@@ -175,27 +175,6 @@ protected:
   }
   ALWAYS_INLINE static constexpr TickCount SystemTicksToGPUTicks(TickCount sysclk_ticks) { return sysclk_ticks << 1; }
 
-  // Helper/format conversion functions - constants from https://stackoverflow.com/a/9069480
-  ALWAYS_INLINE static constexpr u32 Convert5To8(u32 color) { return (((color * 527u) + 23u) >> 6); }
-  ALWAYS_INLINE static constexpr u32 Convert8To5(u32 color) { return (((color * 249u) + 1014u) >> 11); }
-  static constexpr u32 RGBA5551ToRGBA8888(u32 color)
-  {
-    const u32 r = Convert5To8(color & 31u);
-    const u32 g = Convert5To8((color >> 5) & 31u);
-    const u32 b = Convert5To8((color >> 10) & 31u);
-    const u32 a = ((color >> 15) != 0) ? 255 : 0;
-    return ZeroExtend32(r) | (ZeroExtend32(g) << 8) | (ZeroExtend32(b) << 16) | (ZeroExtend32(a) << 24);
-  }
-
-  static constexpr u16 RGBA8888ToRGBA5551(u32 color)
-  {
-    const u32 r = Convert8To5(color & 0xFFu);
-    const u32 g = Convert8To5((color >> 8) & 0xFFu);
-    const u32 b = Convert8To5((color >> 16) & 0xFFu);
-    const u32 a = ((color >> 24) & 0x01u);
-    return Truncate16(r | (g << 5) | (b << 10) | (a << 15));
-  }
-
   static constexpr std::tuple<u8, u8> UnpackTexcoord(u16 texcoord)
   {
     return std::make_tuple(static_cast<u8>(texcoord), static_cast<u8>(texcoord >> 8));

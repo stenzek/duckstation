@@ -1245,7 +1245,7 @@ void GPU::ReadVRAM(u32 x, u32 y, u32 width, u32 height) {}
 
 void GPU::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
 {
-  const u16 color16 = RGBA8888ToRGBA5551(color);
+  const u16 color16 = VRAMRGBA8888ToRGBA5551(color);
   if ((x + width) <= VRAM_WIDTH && !IsInterlacedRenderingEnabled())
   {
     for (u32 yoffs = 0; yoffs < height; yoffs++)
@@ -1507,7 +1507,7 @@ bool GPU::DumpVRAMToFile(const char* filename, u32 width, u32 height, u32 stride
       u16 src_col;
       std::memcpy(&src_col, row_ptr_in, sizeof(u16));
       row_ptr_in += sizeof(u16);
-      *(ptr_out++) = RGBA5551ToRGBA8888(remove_alpha ? (src_col | u16(0x8000)) : src_col);
+      *(ptr_out++) = VRAMRGBA5551ToRGBA8888(remove_alpha ? (src_col | u16(0x8000)) : src_col);
     }
 
     ptr_in += stride;

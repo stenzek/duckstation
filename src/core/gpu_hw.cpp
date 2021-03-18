@@ -885,7 +885,7 @@ GPU_HW::VRAMFillUBOData GPU_HW::GetVRAMFillUBOData(u32 x, u32 y, u32 width, u32 
 {
   // drop precision unless true colour is enabled
   if (!m_true_color)
-    color = RGBA5551ToRGBA8888(RGBA8888ToRGBA5551(color));
+    color = VRAMRGBA5551ToRGBA8888(VRAMRGBA8888ToRGBA5551(color));
 
   VRAMFillUBOData uniforms;
   std::tie(uniforms.u_fill_color[0], uniforms.u_fill_color[1], uniforms.u_fill_color[2], uniforms.u_fill_color[3]) =

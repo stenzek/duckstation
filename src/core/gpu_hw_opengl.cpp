@@ -1031,7 +1031,8 @@ void GPU_HW_OpenGL::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
   // fast path when not using interlaced rendering
   if (!IsInterlacedRenderingEnabled())
   {
-    const auto [r, g, b, a] = RGBA8ToFloat(m_true_color ? color : RGBA5551ToRGBA8888(RGBA8888ToRGBA5551(color)));
+    const auto [r, g, b, a] =
+      RGBA8ToFloat(m_true_color ? color : VRAMRGBA5551ToRGBA8888(VRAMRGBA8888ToRGBA5551(color)));
     glClearColor(r, g, b, a);
     IsGLES() ? glClearDepthf(a) : glClearDepth(a);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -1128,7 +1129,7 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
         u16 src_col;
         std::memcpy(&src_col, source_row_ptr, sizeof(src_col));
         source_row_ptr += sizeof(src_col);
-        *(dest_ptr++) = RGBA5551ToRGBA8888(src_col | mask_or);
+        *(dest_ptr++) = VRAMRGBA5551ToRGBA8888(src_col | mask_or);
       }
 
       source_ptr -= source_stride;
