@@ -24,9 +24,6 @@ public:
   static constexpr DitherLUT ComputeDitherLUT();
 
 protected:
-  static constexpr u8 Convert5To8(u8 x5) { return (x5 << 3) | (x5 & 7); }
-  static constexpr u8 Convert8To5(u8 x8) { return (x8 >> 3); }
-
   union VRAMPixel
   {
     u16 bits;
@@ -35,10 +32,6 @@ protected:
     BitField<u16, u8, 5, 5> g;
     BitField<u16, u8, 10, 5> b;
     BitField<u16, bool, 15, 1> c;
-
-    u8 GetR8() const { return Convert5To8(r); }
-    u8 GetG8() const { return Convert5To8(g); }
-    u8 GetB8() const { return Convert5To8(b); }
 
     void Set(u8 r_, u8 g_, u8 b_, bool c_ = false)
     {
