@@ -370,7 +370,10 @@ bool CDImagePBP::Open(const char* filename)
 
     // Ignore encrypted files
     if (disc_table[0] == 0x44475000) // "\0PGD"
+    {
+      Log_ErrorPrint("Encrypted PBP images are not supported");
       return false;
+    }
 
     // Convert relative offsets to absolute offsets for available discs
     for (u32 i = 0; i < DISC_TABLE_NUM_ENTRIES; i++)
@@ -416,7 +419,10 @@ bool CDImagePBP::Open(const char* filename)
     return false;
 
   if (pgd_magic == 0x44475000) // "\0PGD"
+  {
+    Log_ErrorPrint("Encrypted PBP images are not supported");
     return false;
+  }
 
   // Read in the TOC
   if (fseek(m_file, iso_header_start + 0x800, SEEK_SET) != 0)
