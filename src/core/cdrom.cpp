@@ -1908,20 +1908,14 @@ void CDROM::StopReadingWithDataEnd()
 
 void CDROM::DoSectorRead()
 {
+  // TODO: Queue the next read here and swap the buffer.
   if (!m_reader.WaitForReadToComplete())
     Panic("Sector read failed");
 
-  // TODO: Queue the next read here and swap the buffer.
-  m_current_lba = m_reader.GetLastReadSector();
-  ResetPhysicalPosition();
-
   // TODO: Error handling
   const CDImage::SubChannelQ& subq = m_reader.GetSectorSubQ();
-  if (subq.IsCRCValid())
-  {
-    m_last_subq = subq;
-  }
-  else
+  const bool subq_valid = subq.IsCRCValid();
+  if (!subq_valid)
   {
     const CDImage::Position pos(CDImage::Position::FromLBA(m_current_lba));
     Log_DevPrintf("Sector %u [%02u:%02u:%02u] has invalid subchannel Q", m_current_lba, pos.minute, pos.second,
@@ -1930,8 +1924,9 @@ void CDROM::DoSectorRead()
 
   if (subq.track_number_bcd == CDImage::LEAD_OUT_TRACK_NUMBER)
   {
-    Log_DevPrintf("Read reached lead-out area of disc at LBA %u, pausing", m_reader.GetLastReadSector());
+    Log_DevPrintf("Read reached lead-out area of disc at LBA %u, stopping", m_reader.GetLastReadSector());
     StopReadingWithDataEnd();
+    m_secondary_status.motor_on = false;
     return;
   }
 
@@ -1947,9 +1942,7 @@ void CDROM::DoSectorRead()
     else if (m_mode.auto_pause && subq.track_number_bcd != m_play_track_number_bcd)
     {
       // we don't want to update the position if the track changes, so we check it before reading the actual sector.
-      Log_DevPrintf("Auto pause at the end of track %u (LBA %u)", m_play_track_number_bcd,
-                    m_reader.GetLastReadSector());
-
+      Log_DevPrintf("Auto pause at the end of track %02x (LBA %u)", m_last_subq.track_number_bcd, m_current_lba);
       StopReadingWithDataEnd();
       return;
     }
@@ -1958,6 +1951,11 @@ void CDROM::DoSectorRead()
   {
     ProcessDataSectorHeader(m_reader.GetSectorBuffer().data());
   }
+
+  m_current_lba = m_reader.GetLastReadSector();
+  ResetPhysicalPosition();
+  if (subq_valid)
+    m_last_subq = subq;
 
   u32 next_sector = m_current_lba + 1u;
   if (is_data_sector && m_drive_state == DriveState::Reading)
