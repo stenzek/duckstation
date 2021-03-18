@@ -27,6 +27,8 @@ add_library(common
   crash_handler.cpp
   crash_handler.h
   dimensional_array.h
+  error.cpp
+  error.h
   event.cpp
   event.h
   fifo_queue.h
