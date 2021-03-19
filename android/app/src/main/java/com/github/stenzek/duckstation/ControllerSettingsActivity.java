@@ -216,7 +216,7 @@ public class ControllerSettingsActivity extends AppCompatActivity {
         private void createPreferences() {
             final PreferenceScreen ps = getPreferenceScreen();
             final SharedPreferences sp = getPreferenceManager().getSharedPreferences();
-            final String defaultControllerType = controllerIndex == 0 ? "DigitalController" : "None";
+            final String defaultControllerType = (controllerIndex == 1) ? "DigitalController" : "None";
             final String controllerTypeKey = String.format("Controller%d/Type", controllerIndex);
             final String controllerType = sp.getString(controllerTypeKey, defaultControllerType);
             final String[] controllerButtons = AndroidHostInterface.getControllerButtonNames(controllerType);
@@ -227,6 +227,7 @@ public class ControllerSettingsActivity extends AppCompatActivity {
             typePreference.setEntries(R.array.settings_controller_type_entries);
             typePreference.setEntryValues(R.array.settings_controller_type_values);
             typePreference.setKey(controllerTypeKey);
+            typePreference.setValue(controllerType);
             typePreference.setTitle(R.string.settings_controller_type);
             typePreference.setSummaryProvider(ListPreference.SimpleSummaryProvider.getInstance());
             typePreference.setIconSpaceReserved(false);
