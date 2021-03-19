@@ -785,6 +785,15 @@ void CodeGenerator::EmitDiv(HostReg to_reg_quotient, HostReg to_reg_remainder, H
     // what we want, but swapped, so exchange them
     m_emit->xchg(m_emit->rax, m_emit->rdx);
   }
+  else if (to_reg_quotient != Xbyak::Operand::RAX && to_reg_quotient != Xbyak::Operand::RDX &&
+           to_reg_remainder != Xbyak::Operand::RAX && to_reg_remainder != Xbyak::Operand::RDX)
+  {
+    // store to the registers we want.. this could be optimized better
+    if (to_reg_quotient != HostReg_Count)
+      m_emit->mov(GetHostReg64(to_reg_quotient), m_emit->rax);
+    if (to_reg_remainder != HostReg_Count)
+      m_emit->mov(GetHostReg64(to_reg_remainder), m_emit->rdx);
+  }
   else
   {
     // store to the registers we want.. this could be optimized better
