@@ -4,6 +4,7 @@
 #include "file_system.h"
 #include "log.h"
 #include "pbp_types.h"
+#include "string.h"
 #include "string_util.h"
 #include "zlib.h"
 #include <array>
@@ -51,6 +52,8 @@ private:
   bool InitDecompressionStream();
   bool DecompressBlock(BlockInfo block_info);
 
+  bool OpenDisc(u32 index, Common::Error* error);
+
   FILE* m_file = nullptr;
 
   PBPHeader m_pbp_header;
@@ -58,9 +61,8 @@ private:
   SFOTable m_sfo_table;
   SFOIndexTable m_sfo_index_table;
 
-  // Absolute offsets to ISO headers for multidisc file
-  std::vector<u32> m_multidisc_file_offsets;
-  u32 m_current_disc;
+  // Absolute offsets to ISO headers, size is the number of discs in the file
+  std::vector<u32> m_disc_offsets;
 
   // Absolute offsets and sizes of blocks in m_file
   std::array<BlockInfo, BLOCK_TABLE_NUM_ENTRIES> m_blockinfo_table;
@@ -376,7 +378,6 @@ bool CDImagePBP::Open(const char* filename, Common::Error* error)
   if (fread(data_psar_magic, sizeof(data_psar_magic), 1, m_file) != 1)
     return false;
 
-  u32 iso_header_start = m_pbp_header.data_psar_offset;
   if (strncmp(data_psar_magic, "PSTITLEIMG000000", 16) == 0) // Multi-disc header found
   {
     // For multi-disc, the five disc offsets are located at data_psar_offset + 0x200. Non-present discs have an offset
@@ -393,7 +394,7 @@ bool CDImagePBP::Open(const char* filename, Common::Error* error)
     // Ignore encrypted files
     if (disc_table[0] == 0x44475000) // "\0PGD"
     {
-      Log_ErrorPrint("Encrypted PBP images are not supported");
+      Log_ErrorPrintf("Encrypted PBP images are not supported, skipping %s", m_filename.c_str());
       if (error)
         error->SetMessage("Encrypted PBP images are not supported");
 
@@ -404,24 +405,44 @@ bool CDImagePBP::Open(const char* filename, Common::Error* error)
     for (u32 i = 0; i < DISC_TABLE_NUM_ENTRIES; i++)
     {
       if (disc_table[i] != 0)
-        m_multidisc_file_offsets.push_back(m_pbp_header.data_psar_offset + disc_table[i]);
+        m_disc_offsets.push_back(m_pbp_header.data_psar_offset + disc_table[i]);
       else
         break;
     }
 
-    if (m_multidisc_file_offsets.size() < 2)
+    if (m_disc_offsets.size() < 2)
     {
-      Log_ErrorPrintf("Invalid number of discs (%u) in multi-disc PBP file",
-                      static_cast<u32>(m_multidisc_file_offsets.size()));
+      Log_ErrorPrintf("Invalid number of discs (%u) in multi-disc PBP file", static_cast<u32>(m_disc_offsets.size()));
       return false;
     }
-
-    // Default to first disc for now, we can change this later
-    iso_header_start = m_multidisc_file_offsets[0];
-    m_current_disc = 0;
+  }
+  else // Single-disc
+  {
+    m_disc_offsets.push_back(m_pbp_header.data_psar_offset);
   }
 
+  // Default to first disc for now
+  return OpenDisc(0, error);
+}
+
+bool CDImagePBP::OpenDisc(u32 index, Common::Error* error)
+{
+  if (index >= m_disc_offsets.size())
+  {
+    Log_ErrorPrintf("File does not contain disc %u", index + 1);
+    if (error)
+      error->SetMessage(TinyString::FromFormat("File does not contain disc %u", index + 1));
+    return false;
+  }
+
+  m_current_block = static_cast<u32>(-1);
+  m_blockinfo_table.fill({});
+  m_toc.fill({});
+  m_decompressed_block.fill(0x00);
+  m_compressed_block.clear();
+
   // Go to ISO header
+  const u32 iso_header_start = m_disc_offsets[index];
   if (fseek(m_file, iso_header_start, SEEK_SET) != 0)
     return false;
 
@@ -445,7 +466,7 @@ bool CDImagePBP::Open(const char* filename, Common::Error* error)
 
   if (pgd_magic == 0x44475000) // "\0PGD"
   {
-    Log_ErrorPrint("Encrypted PBP images are not supported");
+    Log_ErrorPrintf("Encrypted PBP images are not supported, skipping %s", m_filename.c_str());
     if (error)
       error->SetMessage("Encrypted PBP images are not supported");
 
@@ -624,14 +645,14 @@ bool CDImagePBP::Open(const char* filename, Common::Error* error)
     return false;
   }
 
-  if (m_multidisc_file_offsets.size() > 0)
+  if (m_disc_offsets.size() > 1)
   {
     std::string sbi_path =
-      FileSystem::StripExtension(filename) + StringUtil::StdStringFromFormat("_%u.sbi", m_current_disc + 1);
+      FileSystem::StripExtension(m_filename) + StringUtil::StdStringFromFormat("_%u.sbi", index + 1);
     m_sbi.LoadSBI(sbi_path.c_str());
   }
   else
-    m_sbi.LoadSBI(FileSystem::ReplaceExtension(filename, "sbi").c_str());
+    m_sbi.LoadSBI(FileSystem::ReplaceExtension(m_filename, "sbi").c_str());
 
   return Seek(1, Position{0, 0, 0});
 }
