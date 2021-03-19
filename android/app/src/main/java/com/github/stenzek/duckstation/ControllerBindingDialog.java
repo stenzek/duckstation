@@ -107,7 +107,7 @@ public class ControllerBindingDialog extends AlertDialog {
     }
 
     private boolean doAxisDetection(MotionEvent event) {
-        if (!EmulationSurfaceView.isBindableDevice(event.getDevice()))
+        if (!EmulationSurfaceView.isBindableDevice(event.getDevice()) || !EmulationSurfaceView.isJoystickMotionEvent(event))
             return false;
 
         final List<InputDevice.MotionRange> motionEventList = event.getDevice().getMotionRanges();

@@ -1,7 +1,6 @@
 package com.github.stenzek.duckstation;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Vibrator;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -10,10 +9,7 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
 
-import androidx.core.util.Pair;
-
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 public class EmulationSurfaceView extends SurfaceView {
@@ -30,17 +26,18 @@ public class EmulationSurfaceView extends SurfaceView {
     }
 
     public static boolean isBindableDevice(InputDevice inputDevice) {
-        if (inputDevice == null)
+        if (inputDevice == null || inputDevice.isVirtual())
             return false;
 
+        // Accept all devices with an axis or buttons, filter in events.
         final int sources = inputDevice.getSources();
-
-        // Prevent binding pointer devices such as a mouse.
-        if ((sources & InputDevice.SOURCE_CLASS_POINTER) == InputDevice.SOURCE_CLASS_POINTER)
-            return false;
-
         return ((sources & InputDevice.SOURCE_CLASS_JOYSTICK) == InputDevice.SOURCE_CLASS_JOYSTICK) ||
                 ((sources & InputDevice.SOURCE_CLASS_BUTTON) == InputDevice.SOURCE_CLASS_BUTTON);
+    }
+
+    public static boolean isJoystickMotionEvent(MotionEvent event) {
+        final int source = event.getSource();
+        return ((source & InputDevice.SOURCE_CLASS_JOYSTICK) == InputDevice.SOURCE_CLASS_JOYSTICK);
     }
 
     public static boolean isGamepadDevice(InputDevice inputDevice) {
@@ -233,7 +230,7 @@ public class EmulationSurfaceView extends SurfaceView {
 
     @Override
     public boolean onGenericMotionEvent(MotionEvent event) {
-        if (!isBindableDevice(event.getDevice()))
+        if (!isJoystickMotionEvent(event))
             return false;
 
         final InputDeviceData data = getDataForDeviceId(event.getDeviceId());
