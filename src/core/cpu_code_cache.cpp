@@ -286,6 +286,8 @@ void Execute()
 
 void CompileDispatcher()
 {
+  s_code_buffer.WriteProtect(false);
+
   {
     Recompiler::CodeGenerator cg(&s_code_buffer);
     s_asm_dispatcher = cg.CompileDispatcher();
@@ -294,6 +296,8 @@ void CompileDispatcher()
     Recompiler::CodeGenerator cg(&s_code_buffer);
     s_single_block_asm_dispatcher = cg.CompileSingleBlockDispatcher();
   }
+
+  s_code_buffer.WriteProtect(true);
 }
 
 CodeBlock::HostCodePointer* GetFastMapPointer()
@@ -613,8 +617,12 @@ bool CompileBlock(CodeBlock* block)
       Flush();
     }
 
+    s_code_buffer.WriteProtect(false);
     Recompiler::CodeGenerator codegen(&s_code_buffer);
-    if (!codegen.CompileBlock(block, &block->host_code, &block->host_code_size))
+    const bool compile_result = codegen.CompileBlock(block, &block->host_code, &block->host_code_size);
+    s_code_buffer.WriteProtect(true);
+
+    if (!compile_result)
     {
       Log_ErrorPrintf("Failed to compile host code for block at 0x%08X", block->key.GetPC());
       return false;
@@ -839,7 +847,10 @@ Common::PageFaultHandler::HandlerResult MMapPageFaultHandler(void* exception_pc,
       }
 
       // found it, do fixup
-      if (Recompiler::CodeGenerator::BackpatchLoadStore(lbi))
+      s_code_buffer.WriteProtect(false);
+      const bool backpatch_result = Recompiler::CodeGenerator::BackpatchLoadStore(lbi);
+      s_code_buffer.WriteProtect(true);
+      if (backpatch_result)
       {
         // remove the backpatch entry since we won't be coming back to this one
         block->loadstore_backpatch_info.erase(bpi_iter);
@@ -880,7 +891,10 @@ Common::PageFaultHandler::HandlerResult LUTPageFaultHandler(void* exception_pc, 
     if (lbi.host_pc == exception_pc)
     {
       // found it, do fixup
-      if (Recompiler::CodeGenerator::BackpatchLoadStore(lbi))
+      s_code_buffer.WriteProtect(false);
+      const bool backpatch_result = Recompiler::CodeGenerator::BackpatchLoadStore(lbi);
+      s_code_buffer.WriteProtect(true);
+      if (backpatch_result)
       {
         // remove the backpatch entry since we won't be coming back to this one
         block->loadstore_backpatch_info.erase(bpi_iter);
