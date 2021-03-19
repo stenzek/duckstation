@@ -72,8 +72,8 @@ public class ControllerBindingDialog extends AlertDialog {
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (!EmulationSurfaceView.isBindableDevice(event.getDevice()) || !EmulationSurfaceView.isBindableKeyCode(event.getKeyCode())) {
-            return super.onKeyUp(keyCode, event);
+        if (!EmulationSurfaceView.isBindableDevice(event.getDevice()) || !EmulationSurfaceView.isBindableKeyEvent(event)) {
+            return super.onKeyDown(keyCode, event);
         }
 
         if (mType == ControllerBindingPreference.Type.BUTTON)
@@ -81,7 +81,7 @@ public class ControllerBindingDialog extends AlertDialog {
         else if (mType == ControllerBindingPreference.Type.VIBRATION)
             mCurrentBinding = event.getDevice().getDescriptor();
         else
-            return super.onKeyUp(keyCode, event);
+            return super.onKeyDown(keyCode, event);
 
         updateMessage();
         updateBinding();

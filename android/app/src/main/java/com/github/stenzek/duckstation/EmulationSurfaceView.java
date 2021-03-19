@@ -35,46 +35,62 @@ public class EmulationSurfaceView extends SurfaceView {
                 ((sources & InputDevice.SOURCE_CLASS_BUTTON) == InputDevice.SOURCE_CLASS_BUTTON);
     }
 
+    public static boolean isGamepadDevice(InputDevice inputDevice) {
+        final int sources = (inputDevice != null) ? inputDevice.getSources() : 0;
+        return ((sources & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD);
+    }
+
     public static boolean isJoystickMotionEvent(MotionEvent event) {
         final int source = event.getSource();
         return ((source & InputDevice.SOURCE_CLASS_JOYSTICK) == InputDevice.SOURCE_CLASS_JOYSTICK);
     }
 
-    public static boolean isGamepadDevice(InputDevice inputDevice) {
-        final int sources = inputDevice.getSources();
-        return ((sources & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD);
-    }
-
-    public static boolean isBindableKeyCode(int keyCode) {
-        switch (keyCode) {
+    public static boolean isBindableKeyEvent(KeyEvent event) {
+        switch (event.getKeyCode()) {
             case KeyEvent.KEYCODE_BACK:
             case KeyEvent.KEYCODE_HOME:
-            case KeyEvent.KEYCODE_MENU:
             case KeyEvent.KEYCODE_POWER:
-            case KeyEvent.KEYCODE_CAMERA:
-            case KeyEvent.KEYCODE_CALL:
-            case KeyEvent.KEYCODE_ENDCALL:
-            case KeyEvent.KEYCODE_VOICE_ASSIST:
-                return false;
+                // We're okay if we get these from a gamepad.
+                return isGamepadDevice(event.getDevice());
 
             default:
                 return true;
         }
     }
 
-    private static boolean isExternalKeyCode(int keyCode) {
+    private static boolean isSystemKeyCode(int keyCode) {
         switch (keyCode) {
-            case KeyEvent.KEYCODE_BACK:
-            case KeyEvent.KEYCODE_HOME:
             case KeyEvent.KEYCODE_MENU:
+            case KeyEvent.KEYCODE_SOFT_RIGHT:
+            case KeyEvent.KEYCODE_HOME:
+            case KeyEvent.KEYCODE_BACK:
+            case KeyEvent.KEYCODE_CALL:
+            case KeyEvent.KEYCODE_ENDCALL:
             case KeyEvent.KEYCODE_VOLUME_UP:
             case KeyEvent.KEYCODE_VOLUME_DOWN:
             case KeyEvent.KEYCODE_VOLUME_MUTE:
+            case KeyEvent.KEYCODE_MUTE:
             case KeyEvent.KEYCODE_POWER:
+            case KeyEvent.KEYCODE_HEADSETHOOK:
+            case KeyEvent.KEYCODE_MEDIA_PLAY:
+            case KeyEvent.KEYCODE_MEDIA_PAUSE:
+            case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
+            case KeyEvent.KEYCODE_MEDIA_STOP:
+            case KeyEvent.KEYCODE_MEDIA_NEXT:
+            case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
+            case KeyEvent.KEYCODE_MEDIA_REWIND:
+            case KeyEvent.KEYCODE_MEDIA_RECORD:
+            case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:
             case KeyEvent.KEYCODE_CAMERA:
-            case KeyEvent.KEYCODE_CALL:
-            case KeyEvent.KEYCODE_ENDCALL:
-            case KeyEvent.KEYCODE_VOICE_ASSIST:
+            case KeyEvent.KEYCODE_FOCUS:
+            case KeyEvent.KEYCODE_SEARCH:
+            case KeyEvent.KEYCODE_BRIGHTNESS_DOWN:
+            case KeyEvent.KEYCODE_BRIGHTNESS_UP:
+            case KeyEvent.KEYCODE_MEDIA_AUDIO_TRACK:
+            case KeyEvent.KEYCODE_SYSTEM_NAVIGATION_UP:
+            case KeyEvent.KEYCODE_SYSTEM_NAVIGATION_DOWN:
+            case KeyEvent.KEYCODE_SYSTEM_NAVIGATION_LEFT:
+            case KeyEvent.KEYCODE_SYSTEM_NAVIGATION_RIGHT:
                 return true;
 
             default:
@@ -208,7 +224,7 @@ public class EmulationSurfaceView extends SurfaceView {
             hi.handleControllerButtonEvent(controllerIndex, keyCode, pressed);
 
         // We don't want to eat external button events unless it's actually bound.
-        if (isExternalKeyCode(keyCode))
+        if (isSystemKeyCode(keyCode))
             return (controllerIndex >= 0 && hi.hasControllerButtonBinding(controllerIndex, keyCode));
         else
             return true;
