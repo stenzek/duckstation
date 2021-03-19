@@ -291,11 +291,11 @@ public class ControllerSettingsActivity extends AppCompatActivity {
             if (controllerType.equals("AnalogController")) {
                 mSettingsCategory.addPreference(
                         createTogglePreference(String.format("Controller%d/ForceAnalogOnReset", controllerIndex),
-                                R.string.settings_use_analog_sticks_for_dpad, R.string.settings_summary_enable_analog_mode_on_reset, true));
+                                R.string.settings_enable_analog_mode_on_reset, R.string.settings_summary_enable_analog_mode_on_reset, true));
 
                 mSettingsCategory.addPreference(
                         createTogglePreference(String.format("Controller%d/AnalogDPadInDigitalMode", controllerIndex),
-                                R.string.settings_enable_analog_mode_on_reset, R.string.settings_summary_use_analog_sticks_for_dpad, true));
+                                R.string.settings_use_analog_sticks_for_dpad, R.string.settings_summary_use_analog_sticks_for_dpad, true));
             }
         }
 
