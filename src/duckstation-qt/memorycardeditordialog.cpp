@@ -62,8 +62,8 @@ void MemoryCardEditorDialog::resizeEvent(QResizeEvent* ev)
 
 void MemoryCardEditorDialog::closeEvent(QCloseEvent* ev)
 {
-  promptForSave(&m_card_a);
-  promptForSave(&m_card_b);
+  m_card_a.path_cb->setCurrentIndex(0);
+  m_card_b.path_cb->setCurrentIndex(0);
 }
 
 void MemoryCardEditorDialog::connectUi()
