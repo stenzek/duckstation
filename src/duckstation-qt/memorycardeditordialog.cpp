@@ -30,6 +30,13 @@ MemoryCardEditorDialog::MemoryCardEditorDialog(QWidget* parent) : QDialog(parent
   connectUi();
   populateComboBox(m_ui.cardAPath);
   populateComboBox(m_ui.cardBPath);
+
+  static constexpr char new_card_hover_text[] = TRANSLATABLE("MemoryCardEditorDialog", "New Card...");
+  static constexpr char open_card_hover_text[] = TRANSLATABLE("MemoryCardEditorDialog", "Open Card...");
+  m_ui.newCardA->setToolTip(QString(new_card_hover_text));
+  m_ui.newCardB->setToolTip(QString(new_card_hover_text));
+  m_ui.openCardA->setToolTip(QString(open_card_hover_text));
+  m_ui.openCardB->setToolTip(QString(open_card_hover_text));
 }
 
 MemoryCardEditorDialog::~MemoryCardEditorDialog() = default;
@@ -62,8 +69,8 @@ void MemoryCardEditorDialog::resizeEvent(QResizeEvent* ev)
 
 void MemoryCardEditorDialog::closeEvent(QCloseEvent* ev)
 {
-  promptForSave(&m_card_a);
-  promptForSave(&m_card_b);
+  m_card_a.path_cb->setCurrentIndex(0);
+  m_card_b.path_cb->setCurrentIndex(0);
 }
 
 void MemoryCardEditorDialog::connectUi()
