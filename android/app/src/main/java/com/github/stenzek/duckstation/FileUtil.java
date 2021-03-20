@@ -6,6 +6,9 @@ import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.ImageDecoder;
 import android.net.Uri;
 import android.os.Build;
 import android.os.storage.StorageManager;
@@ -270,6 +273,21 @@ public final class FileUtil {
         } finally {
             if (cursor != null)
                 cursor.close();
+        }
+    }
+
+    public static Bitmap loadBitmapFromUri(final Context context, final Uri uri) {
+        InputStream stream = null;
+        try {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                final ImageDecoder.Source source =ImageDecoder.createSource(context.getContentResolver(), uri);
+                return ImageDecoder.decodeBitmap(source);
+            } else {
+                return MediaStore.Images.Media.getBitmap(context.getContentResolver(), uri);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
     }
 }

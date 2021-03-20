@@ -8,6 +8,8 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -29,9 +31,12 @@ import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
@@ -41,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_START_FILE = 4;
     private static final int REQUEST_SETTINGS = 5;
     private static final int REQUEST_EDIT_GAME_DIRECTORIES = 6;
+    private static final int REQUEST_CHOOSE_COVER_IMAGE = 7;
 
     private GameList mGameList;
     private ListView mGameListView;
@@ -48,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
     private GameGridFragment mGameGridFragment;
     private boolean mHasExternalStoragePermissions = false;
     private boolean mIsShowingGameGrid = false;
+    private String mPathForChosenCoverImage = null;
 
     public GameList getGameList() {
         return mGameList;
@@ -297,6 +304,16 @@ public class MainActivity extends AppCompatActivity {
                 mGameList.refresh(false, false, this);
             }
             break;
+
+            case REQUEST_CHOOSE_COVER_IMAGE: {
+                final String gamePath = mPathForChosenCoverImage;
+                mPathForChosenCoverImage = null;
+                if (resultCode != RESULT_OK)
+                    return;
+
+                finishChooseCoverImage(gamePath, data.getData());
+            }
+            break;
         }
     }
 
@@ -355,6 +372,9 @@ public class MainActivity extends AppCompatActivity {
             } else if (id == R.id.game_list_entry_menu_properties) {
                 openGameProperties(entry.getPath());
                 return true;
+            } else if (id == R.id.game_list_entry_menu_choose_cover_image) {
+                startChooseCoverImage(entry.getPath());
+                return true;
             }
             return false;
         });
@@ -385,6 +405,48 @@ public class MainActivity extends AppCompatActivity {
         intent.setType("*/*");
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         startActivityForResult(Intent.createChooser(intent, getString(R.string.main_activity_choose_disc_image)), REQUEST_START_FILE);
+    }
+
+    private void startChooseCoverImage(String gamePath) {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("image/*");
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        mPathForChosenCoverImage = gamePath;
+        startActivityForResult(Intent.createChooser(intent, getString(R.string.menu_game_list_entry_choose_cover_image)),
+                REQUEST_CHOOSE_COVER_IMAGE);
+    }
+
+    private void finishChooseCoverImage(String gamePath, Uri uri) {
+        final GameListEntry gameListEntry = mGameList.getEntryForPath(gamePath);
+        if (gameListEntry == null)
+            return;
+
+        final Bitmap bitmap = FileUtil.loadBitmapFromUri(this, uri);
+        if (bitmap == null) {
+            Toast.makeText(this, "Failed to open/decode image.", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        final String coverFileName = String.format("%s/covers/%s.png",
+                AndroidHostInterface.getUserDirectory(), gameListEntry.getTitle());
+        try {
+            final File file = new File(coverFileName);
+            final OutputStream outputStream = new FileOutputStream(file);
+            final boolean result = bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
+            outputStream.close();;
+            if (!result) {
+                file.delete();
+                throw new Exception("Failed to compress bitmap.");
+            }
+
+            gameListEntry.setCoverPath(coverFileName);
+            mGameList.fireRefreshListeners();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Failed to save image.", Toast.LENGTH_LONG).show();
+        }
+
+        bitmap.recycle();
     }
 
     private boolean doBIOSCheck() {

@@ -32,6 +32,10 @@ public class GameList {
     public void removeRefreshListener(OnRefreshListener listener) {
         mRefreshListeners.remove(listener);
     }
+    public void fireRefreshListeners() {
+        for (OnRefreshListener listener : mRefreshListeners)
+            listener.onGameListRefresh();
+    }
 
     private class GameListEntryComparator implements Comparator<GameListEntry> {
         @Override
@@ -56,8 +60,7 @@ public class GameList {
                     e.printStackTrace();
                 }
                 mEntries = newEntries;
-                for (OnRefreshListener listener : mRefreshListeners)
-                    listener.onGameListRefresh();
+                fireRefreshListeners();
             });
         });
     }
@@ -68,5 +71,14 @@ public class GameList {
 
     public GameListEntry getEntry(int index) {
         return mEntries[index];
+    }
+
+    public GameListEntry getEntryForPath(String path) {
+        for (final GameListEntry entry : mEntries) {
+            if (entry.getPath().equals(path))
+                return entry;
+        }
+
+        return null;
     }
 }

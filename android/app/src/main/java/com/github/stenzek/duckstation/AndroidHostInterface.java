@@ -168,16 +168,17 @@ public class AndroidHostInterface {
     }
 
     static private AndroidHostInterface mInstance;
+    static private String mUserDirectory;
 
     static public boolean createInstance(Context context) {
         // Set user path.
-        String externalStorageDirectory = Environment.getExternalStorageDirectory().getAbsolutePath();
-        if (externalStorageDirectory.isEmpty())
-            externalStorageDirectory = "/sdcard";
+        mUserDirectory = Environment.getExternalStorageDirectory().getAbsolutePath();
+        if (mUserDirectory.isEmpty())
+            mUserDirectory = "/sdcard";
 
-        externalStorageDirectory += "/duckstation";
-        Log.i("AndroidHostInterface", "User directory: " + externalStorageDirectory);
-        mInstance = create(context, externalStorageDirectory);
+        mUserDirectory += "/duckstation";
+        Log.i("AndroidHostInterface", "User directory: " + mUserDirectory);
+        mInstance = create(context, mUserDirectory);
         return mInstance != null;
     }
 
@@ -188,6 +189,8 @@ public class AndroidHostInterface {
     static public AndroidHostInterface getInstance() {
         return mInstance;
     }
+
+    static public String getUserDirectory() { return mUserDirectory; }
 
     static public boolean hasInstanceAndEmulationThreadIsRunning() {
         return hasInstance() && getInstance().isEmulationThreadRunning();
