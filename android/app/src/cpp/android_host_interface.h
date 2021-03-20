@@ -120,7 +120,11 @@ AndroidHostInterface* GetNativeClass(JNIEnv* env, jobject obj);
 std::string JStringToString(JNIEnv* env, jstring str);
 std::unique_ptr<GrowableMemoryByteStream> ReadInputStreamToMemory(JNIEnv* env, jobject obj, u32 chunk_size = 65536);
 jclass GetStringClass();
-
+std::vector<u8> ByteArrayToVector(JNIEnv* env, jbyteArray obj);
+jbyteArray NewByteArray(JNIEnv* env, const void* data, size_t size);
+jbyteArray VectorToByteArray(JNIEnv* env, const std::vector<u8>& data);
+jobjectArray CreateObjectArray(JNIEnv* env, jclass object_class, const jobject* objects, size_t num_objects,
+                               bool release_refs = false);
 } // namespace AndroidHelpers
 
 template<typename T>

@@ -14,6 +14,7 @@
 #include "core/controller.h"
 #include "core/gpu.h"
 #include "core/host_display.h"
+#include "core/memory_card_image.h"
 #include "core/system.h"
 #include "frontend-common/cheevos.h"
 #include "frontend-common/game_list.h"
@@ -60,6 +61,8 @@ static jclass s_SaveStateInfo_class;
 static jmethodID s_SaveStateInfo_constructor;
 static jclass s_Achievement_class;
 static jmethodID s_Achievement_constructor;
+static jclass s_MemoryCardFileInfo_class;
+static jmethodID s_MemoryCardFileInfo_constructor;
 
 namespace AndroidHelpers {
 JavaVM* GetJavaVM()
@@ -136,6 +139,58 @@ std::unique_ptr<GrowableMemoryByteStream> ReadInputStreamToMemory(JNIEnv* env, j
   env->DeleteLocalRef(temp);
   env->DeleteLocalRef(cls);
   return bs;
+}
+
+std::vector<u8> ByteArrayToVector(JNIEnv* env, jbyteArray obj)
+{
+  std::vector<u8> ret;
+  const jsize size = obj ? env->GetArrayLength(obj) : 0;
+  if (size > 0)
+  {
+    jbyte* data = env->GetByteArrayElements(obj, nullptr);
+    ret.resize(static_cast<size_t>(size));
+    std::memcpy(ret.data(), data, ret.size());
+    env->ReleaseByteArrayElements(obj, data, 0);
+  }
+
+  return ret;
+}
+
+jbyteArray NewByteArray(JNIEnv* env, const void* data, size_t size)
+{
+  if (!data || size == 0)
+    return nullptr;
+
+  jbyteArray obj = env->NewByteArray(static_cast<jsize>(size));
+  jbyte* obj_data = env->GetByteArrayElements(obj, nullptr);
+  std::memcpy(obj_data, data, static_cast<size_t>(static_cast<jsize>(size)));
+  env->ReleaseByteArrayElements(obj, obj_data, 0);
+  return obj;
+}
+
+jbyteArray VectorToByteArray(JNIEnv* env, const std::vector<u8>& data)
+{
+  if (data.empty())
+    return nullptr;
+
+  return NewByteArray(env, data.data(), data.size());
+}
+
+jobjectArray CreateObjectArray(JNIEnv* env, jclass object_class, const jobject* objects, size_t num_objects,
+                               bool release_refs/* = false*/)
+{
+  if (!objects || num_objects == 0)
+    return nullptr;
+
+  jobjectArray arr = env->NewObjectArray(static_cast<jsize>(num_objects), object_class, nullptr);
+  for (jsize i = 0; i < static_cast<jsize>(num_objects); i++)
+  {
+    env->SetObjectArrayElement(arr, i, objects[i]);
+    if (release_refs && objects[i])
+      env->DeleteLocalRef(objects[i]);
+  }
+
+  return arr;
 }
 } // namespace AndroidHelpers
 
@@ -897,7 +952,7 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
   // Create global reference so it doesn't get cleaned up.
   JNIEnv* env = AndroidHelpers::GetJNIEnv();
   jclass string_class, host_interface_class, patch_code_class, game_list_entry_class, save_state_info_class,
-    achievement_class;
+    achievement_class, memory_card_file_info_class;
   if ((string_class = env->FindClass("java/lang/String")) == nullptr ||
       (s_String_class = static_cast<jclass>(env->NewGlobalRef(string_class))) == nullptr ||
       (host_interface_class = env->FindClass("com/github/stenzek/duckstation/AndroidHostInterface")) == nullptr ||
@@ -909,7 +964,9 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
       (save_state_info_class = env->FindClass("com/github/stenzek/duckstation/SaveStateInfo")) == nullptr ||
       (s_SaveStateInfo_class = static_cast<jclass>(env->NewGlobalRef(save_state_info_class))) == nullptr ||
       (achievement_class = env->FindClass("com/github/stenzek/duckstation/Achievement")) == nullptr ||
-      (s_Achievement_class = static_cast<jclass>(env->NewGlobalRef(achievement_class))) == nullptr)
+      (s_Achievement_class = static_cast<jclass>(env->NewGlobalRef(achievement_class))) == nullptr ||
+      (memory_card_file_info_class = env->FindClass("com/github/stenzek/duckstation/MemoryCardFileInfo")) == nullptr ||
+      (s_MemoryCardFileInfo_class = static_cast<jclass>(env->NewGlobalRef(memory_card_file_info_class))) == nullptr)
   {
     Log_ErrorPrint("AndroidHostInterface class lookup failed");
     return -1;
@@ -920,6 +977,7 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
   env->DeleteLocalRef(patch_code_class);
   env->DeleteLocalRef(game_list_entry_class);
   env->DeleteLocalRef(achievement_class);
+  env->DeleteLocalRef(memory_card_file_info_class);
 
   jclass emulation_activity_class;
   if ((s_AndroidHostInterface_constructor =
@@ -963,9 +1021,11 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
          s_SaveStateInfo_class, "<init>",
          "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IZII[B)V")) ==
         nullptr ||
-      (s_Achievement_constructor =
-         env->GetMethodID(s_Achievement_class, "<init>",
-                          "(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IZ)V")) == nullptr)
+      (s_Achievement_constructor = env->GetMethodID(
+         s_Achievement_class, "<init>",
+         "(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IZ)V")) == nullptr ||
+      (s_MemoryCardFileInfo_constructor = env->GetMethodID(s_MemoryCardFileInfo_class, "<init>",
+                                                           "(Ljava/lang/String;Ljava/lang/String;III[[B)V")) == nullptr)
   {
     Log_ErrorPrint("AndroidHostInterface lookups failed");
     return -1;
@@ -1877,4 +1937,202 @@ DEFINE_JNI_ARGS_METHOD(jboolean, AndroidHostInterface_cheevosLogin, jobject obj,
 DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_cheevosLogout, jobject obj)
 {
   return Cheevos::Logout();
+}
+
+static_assert(sizeof(MemoryCardImage::DataArray) == MemoryCardImage::DATA_SIZE);
+
+static MemoryCardImage::DataArray* GetMemoryCardData(JNIEnv* env, jbyteArray obj)
+{
+  if (!obj || env->GetArrayLength(obj) != MemoryCardImage::DATA_SIZE)
+    return nullptr;
+
+  return reinterpret_cast<MemoryCardImage::DataArray*>(env->GetByteArrayElements(obj, nullptr));
+}
+
+static void ReleaseMemoryCardData(JNIEnv* env, jbyteArray obj, MemoryCardImage::DataArray* data)
+{
+  env->ReleaseByteArrayElements(obj, reinterpret_cast<jbyte*>(data), 0);
+}
+
+DEFINE_JNI_ARGS_METHOD(jboolean, MemoryCardImage_isValid, jclass clazz, jbyteArray obj)
+{
+  MemoryCardImage::DataArray* data = GetMemoryCardData(env, obj);
+  if (!data)
+    return false;
+
+  const bool res = MemoryCardImage::IsValid(*data);
+  ReleaseMemoryCardData(env, obj, data);
+  return res;
+}
+
+DEFINE_JNI_ARGS_METHOD(void, MemoryCardImage_format, jclass clazz, jbyteArray obj)
+{
+  MemoryCardImage::DataArray* data = GetMemoryCardData(env, obj);
+  if (!data)
+    return;
+
+  MemoryCardImage::Format(data);
+  ReleaseMemoryCardData(env, obj, data);
+}
+
+DEFINE_JNI_ARGS_METHOD(jint, MemoryCardImage_getFreeBlocks, jclass clazz, jbyteArray obj)
+{
+  MemoryCardImage::DataArray* data = GetMemoryCardData(env, obj);
+  if (!data)
+    return 0;
+
+  const u32 free_blocks = MemoryCardImage::GetFreeBlockCount(*data);
+  ReleaseMemoryCardData(env, obj, data);
+  return free_blocks;
+}
+
+DEFINE_JNI_ARGS_METHOD(jobjectArray, MemoryCardImage_getFiles, jclass clazz, jbyteArray obj)
+{
+  MemoryCardImage::DataArray* data = GetMemoryCardData(env, obj);
+  if (!data)
+    return nullptr;
+
+  const std::vector<MemoryCardImage::FileInfo> files(MemoryCardImage::EnumerateFiles(*data));
+
+  std::vector<jobject> file_objects;
+  file_objects.reserve(files.size());
+
+  jclass byteArrayClass = env->FindClass("[B");
+
+  for (const MemoryCardImage::FileInfo& file : files)
+  {
+    jobject filename = env->NewStringUTF(file.filename.c_str());
+    jobject title = env->NewStringUTF(file.title.c_str());
+    jobjectArray frames = nullptr;
+    if (!file.icon_frames.empty())
+    {
+      frames = env->NewObjectArray(static_cast<jint>(file.icon_frames.size()), byteArrayClass, nullptr);
+      for (jsize i = 0; i < static_cast<jsize>(file.icon_frames.size()); i++)
+      {
+        static constexpr jsize frame_size = MemoryCardImage::ICON_WIDTH * MemoryCardImage::ICON_HEIGHT * sizeof(u32);
+        jbyteArray frame_data = env->NewByteArray(frame_size);
+        jbyte* frame_data_ptr = env->GetByteArrayElements(frame_data, nullptr);
+        std::memcpy(frame_data_ptr, file.icon_frames[i].pixels, frame_size);
+        env->ReleaseByteArrayElements(frame_data, frame_data_ptr, 0);
+        env->SetObjectArrayElement(frames, i, frame_data);
+        env->DeleteLocalRef(frame_data);
+      }
+    }
+
+    file_objects.push_back(env->NewObject(s_MemoryCardFileInfo_class, s_MemoryCardFileInfo_constructor, filename, title,
+                                          static_cast<jint>(file.size), static_cast<jint>(file.first_block),
+                                          static_cast<int>(file.num_blocks), frames));
+
+    env->DeleteLocalRef(frames);
+    env->DeleteLocalRef(title);
+    env->DeleteLocalRef(filename);
+  }
+
+  jobjectArray file_object_array =
+    AndroidHelpers::CreateObjectArray(env, s_MemoryCardFileInfo_class, file_objects.data(), file_objects.size(), true);
+  ReleaseMemoryCardData(env, obj, data);
+  return file_object_array;
+}
+
+DEFINE_JNI_ARGS_METHOD(jboolean, MemoryCardImage_hasFile, jclass clazz, jbyteArray obj, jstring filename)
+{
+  MemoryCardImage::DataArray* data = GetMemoryCardData(env, obj);
+  if (!data)
+    return false;
+
+  const std::string filename_str(AndroidHelpers::JStringToString(env, filename));
+  bool result = false;
+  if (!filename_str.empty())
+  {
+    const std::vector<MemoryCardImage::FileInfo> files(MemoryCardImage::EnumerateFiles(*data));
+    result = std::any_of(files.begin(), files.end(),
+                         [&filename_str](const MemoryCardImage::FileInfo& fi) { return fi.filename == filename_str; });
+  }
+
+  ReleaseMemoryCardData(env, obj, data);
+  return result;
+}
+
+DEFINE_JNI_ARGS_METHOD(jbyteArray, MemoryCardImage_readFile, jclass clazz, jbyteArray obj, jstring filename)
+{
+  MemoryCardImage::DataArray* data = GetMemoryCardData(env, obj);
+  if (!data)
+    return nullptr;
+
+  const std::string filename_str(AndroidHelpers::JStringToString(env, filename));
+  jbyteArray ret = nullptr;
+  if (!filename_str.empty())
+  {
+    const std::vector<MemoryCardImage::FileInfo> files(MemoryCardImage::EnumerateFiles(*data));
+    auto iter = std::find_if(files.begin(), files.end(), [&filename_str](const MemoryCardImage::FileInfo& fi) {
+      return fi.filename == filename_str;
+    });
+    if (iter != files.end())
+    {
+      std::vector<u8> file_data;
+      if (MemoryCardImage::ReadFile(*data, *iter, &file_data))
+        ret = AndroidHelpers::VectorToByteArray(env, file_data);
+    }
+  }
+
+  ReleaseMemoryCardData(env, obj, data);
+  return ret;
+}
+
+DEFINE_JNI_ARGS_METHOD(jboolean, MemoryCardImage_writeFile, jclass clazz, jbyteArray obj, jstring filename,
+                       jbyteArray file_data)
+{
+  MemoryCardImage::DataArray* data = GetMemoryCardData(env, obj);
+  if (!data)
+    return false;
+
+  const std::string filename_str(AndroidHelpers::JStringToString(env, filename));
+  const std::vector<u8> file_data_vec(AndroidHelpers::ByteArrayToVector(env, file_data));
+  bool ret = false;
+  if (!filename_str.empty())
+    ret = MemoryCardImage::WriteFile(data, filename_str, file_data_vec);
+
+  ReleaseMemoryCardData(env, obj, data);
+  return ret;
+}
+
+DEFINE_JNI_ARGS_METHOD(jboolean, MemoryCardImage_deleteFile, jclass clazz, jbyteArray obj, jstring filename)
+{
+  MemoryCardImage::DataArray* data = GetMemoryCardData(env, obj);
+  if (!data)
+    return false;
+
+  const std::string filename_str(AndroidHelpers::JStringToString(env, filename));
+  bool ret = false;
+
+  if (!filename_str.empty())
+  {
+    const std::vector<MemoryCardImage::FileInfo> files(MemoryCardImage::EnumerateFiles(*data));
+    auto iter = std::find_if(files.begin(), files.end(), [&filename_str](const MemoryCardImage::FileInfo& fi) {
+      return fi.filename == filename_str;
+    });
+
+    if (iter != files.end())
+      ret = MemoryCardImage::DeleteFile(data, *iter);
+  }
+
+  ReleaseMemoryCardData(env, obj, data);
+  return ret;
+}
+
+DEFINE_JNI_ARGS_METHOD(jboolean, MemoryCardImage_importCard, jclass clazz, jbyteArray obj, jstring filename,
+                       jbyteArray import_data)
+{
+  MemoryCardImage::DataArray* data = GetMemoryCardData(env, obj);
+  if (!data)
+    return false;
+
+  const std::string filename_str(AndroidHelpers::JStringToString(env, filename));
+  std::vector<u8> import_data_vec(AndroidHelpers::ByteArrayToVector(env, import_data));
+  bool ret = false;
+  if (!filename_str.empty() && !import_data_vec.empty())
+    ret = MemoryCardImage::ImportCard(data, filename_str.c_str(), std::move(import_data_vec));
+
+  ReleaseMemoryCardData(env, obj, data);
+  return ret;
 }
