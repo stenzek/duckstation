@@ -129,6 +129,13 @@ bool SaveToFile(const DataArray& data, const char* filename)
   return true;
 }
 
+bool IsValid(const DataArray& data)
+{
+  // TODO: Check checksum?
+  const u8* fptr = GetFramePtr<u8>(data, 0, 0);
+  return fptr[0] == 'M' && fptr[1] == 'C';
+}
+
 void Format(DataArray* data)
 {
   // fill everything with FF
@@ -385,23 +392,19 @@ bool DeleteFile(DataArray* data, const FileInfo& fi)
   return true;
 }
 
-static bool ImportCardMCD(DataArray* data, const char* filename)
+static bool ImportCardMCD(DataArray* data, const char* filename, std::vector<u8> file_data)
 {
-  std::optional<std::vector<u8>> file_data = FileSystem::ReadBinaryFile(filename);
-  if (!file_data.has_value())
-    return false;
-
-  if (file_data->size() != DATA_SIZE)
+  if (file_data.size() != DATA_SIZE)
   {
     Log_ErrorPrintf("Failed to import memory card from '%s': file is incorrect size.", filename);
     return false;
   }
 
-  std::memcpy(data->data(), file_data->data(), DATA_SIZE);
+  std::memcpy(data->data(), file_data.data(), DATA_SIZE);
   return true;
 }
 
-static bool ImportCardGME(DataArray* data, const char* filename)
+static bool ImportCardGME(DataArray* data, const char* filename, std::vector<u8> file_data)
 {
 #pragma pack(push, 1)
   struct GMEHeader
@@ -417,11 +420,7 @@ static bool ImportCardGME(DataArray* data, const char* filename)
   static_assert(sizeof(GMEHeader) == 0xF40);
 #pragma pack(pop)
 
-  std::optional<std::vector<u8>> file_data = FileSystem::ReadBinaryFile(filename);
-  if (!file_data.has_value())
-    return false;
-
-  if (file_data->size() < (sizeof(GMEHeader) + BLOCK_SIZE))
+  if (file_data.size() < (sizeof(GMEHeader) + BLOCK_SIZE))
   {
     Log_ErrorPrintf("Failed to import GME memory card from '%s': file is incorrect size.", filename);
     return false;
@@ -429,19 +428,19 @@ static bool ImportCardGME(DataArray* data, const char* filename)
 
   // if it's too small, pad it
   const u32 expected_size = sizeof(GMEHeader) + DATA_SIZE;
-  if (file_data->size() < expected_size)
+  if (file_data.size() < expected_size)
   {
     Log_WarningPrintf("GME memory card '%s' is too small (got %zu expected %u), padding with zeroes", filename,
-                      file_data->size(), expected_size);
-    file_data->resize(expected_size);
+                      file_data.size(), expected_size);
+    file_data.resize(expected_size);
   }
 
   // we don't actually care about the header, just skip over it
-  std::memcpy(data->data(), file_data->data() + sizeof(GMEHeader), DATA_SIZE);
+  std::memcpy(data->data(), file_data.data() + sizeof(GMEHeader), DATA_SIZE);
   return true;
 }
 
-bool ImportCard(DataArray* data, const char* filename)
+bool ImportCard(DataArray* data, const char* filename, std::vector<u8> file_data)
 {
   const char* extension = std::strrchr(filename, '.');
   if (!extension)
@@ -453,17 +452,26 @@ bool ImportCard(DataArray* data, const char* filename)
   if (StringUtil::Strcasecmp(extension, ".mcd") == 0 || StringUtil::Strcasecmp(extension, ".mcr") == 0 ||
       StringUtil::Strcasecmp(extension, ".mc") == 0 || StringUtil::Strcasecmp(extension, ".srm") == 0)
   {
-    return ImportCardMCD(data, filename);
+    return ImportCardMCD(data, filename, std::move(file_data));
   }
   else if (StringUtil::Strcasecmp(extension, ".gme") == 0)
   {
-    return ImportCardGME(data, filename);
+    return ImportCardGME(data, filename, std::move(file_data));
   }
   else
   {
     Log_ErrorPrintf("Failed to import memory card from '%s': unknown extension?", filename);
     return false;
   }
+}
+
+bool ImportCard(DataArray* data, const char* filename)
+{
+  std::optional<std::vector<u8>> file_data = FileSystem::ReadBinaryFile(filename);
+  if (!file_data.has_value())
+    return false;
+
+  return ImportCard(data, filename, std::move(file_data.value()));
 }
 
 bool ExportSave(DataArray* data, const FileInfo& fi, const char* filename)
