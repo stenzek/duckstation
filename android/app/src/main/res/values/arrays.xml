@@ -485,4 +485,8 @@
         <item>Port2Only</item>
         <item>BothPorts</item>
     </string-array>
+    <string-array name="memory_card_editor_save_menu">
+        <item>Copy Save</item>
+        <item>Delete Save</item>
+    </string-array>
 </resources>

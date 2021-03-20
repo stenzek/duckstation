@@ -239,6 +239,10 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(this, ControllerSettingsActivity.class);
             startActivity(intent);
             return true;
+        } else if (id == R.id.action_memory_card_editor) {
+            Intent intent = new Intent(this, MemoryCardEditorActivity.class);
+            startActivity(intent);
+            return true;
         } else if (id == R.id.action_switch_view) {
             switchGameListView();
             return true;
