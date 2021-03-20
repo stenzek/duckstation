@@ -49,15 +49,6 @@ public class MainActivity extends AppCompatActivity {
     private boolean mHasExternalStoragePermissions = false;
     private boolean mIsShowingGameGrid = false;
 
-    private static String getTitleString() {
-        String scmVersion = AndroidHostInterface.getScmVersion();
-        final int gitHashPos = scmVersion.indexOf("-g");
-        if (gitHashPos > 0)
-            scmVersion = scmVersion.substring(0, gitHashPos);
-
-        return String.format("DuckStation %s", scmVersion);
-    }
-
     public GameList getGameList() {
         return mGameList;
     }
@@ -142,7 +133,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setTitle(getTitleString());
 
         findViewById(R.id.fab_add_game_directory).setOnClickListener(new View.OnClickListener() {
             @Override
