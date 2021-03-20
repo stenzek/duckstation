@@ -63,7 +63,8 @@ public class MemoryCardImage {
     }
 
     public static Uri[] getCardUris(Context context) {
-        final String directory = "/sdcard/duckstation/memcards";
+        final String directory = String.format("%s/memcards",
+                AndroidHostInterface.getUserDirectory());
         final ArrayList<Uri> results = new ArrayList<>();
 
         if (directory.charAt(0) == '/') {
