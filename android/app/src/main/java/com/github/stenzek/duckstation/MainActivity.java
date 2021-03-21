@@ -18,16 +18,19 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
 import androidx.preference.PreferenceManager;
 
 import java.io.ByteArrayOutputStream;
@@ -52,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
     private ListView mGameListView;
     private GameListFragment mGameListFragment;
     private GameGridFragment mGameGridFragment;
+    private Fragment mEmptyGameListFragment;
     private boolean mHasExternalStoragePermissions = false;
     private boolean mIsShowingGameGrid = false;
     private String mPathForChosenCoverImage = null;
@@ -120,15 +124,19 @@ public class MainActivity extends AppCompatActivity {
                 .putBoolean("Main/GameGridView", mIsShowingGameGrid)
                 .commit();
 
-        updateGameListFragment();
+        updateGameListFragment(true);
         invalidateOptionsMenu();
     }
 
-    private void updateGameListFragment() {
+    private void updateGameListFragment(boolean allowEmpty) {
+        final Fragment listFragment = (allowEmpty && mGameList.getEntryCount() == 0) ?
+                mEmptyGameListFragment :
+                (mIsShowingGameGrid ? mGameGridFragment : mGameListFragment);
+
         getSupportFragmentManager()
                 .beginTransaction()
                 .setReorderingAllowed(true).
-                replace(R.id.content_fragment, mIsShowingGameGrid ? mGameGridFragment : mGameListFragment)
+                replace(R.id.content_fragment, listFragment)
                 .commit();
     }
 
@@ -141,12 +149,6 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        findViewById(R.id.fab_add_game_directory).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startAddGameDirectory();
-            }
-        });
         findViewById(R.id.fab_resume).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -156,9 +158,11 @@ public class MainActivity extends AppCompatActivity {
 
         // Set up game list view.
         mGameList = new GameList(this);
+        mGameList.addRefreshListener(() -> updateGameListFragment(true));
         mGameListFragment = new GameListFragment(this);
         mGameGridFragment = new GameGridFragment(this);
-        updateGameListFragment();
+        mEmptyGameListFragment = new EmptyGameListFragment(this);
+        updateGameListFragment(false);
 
         mHasExternalStoragePermissions = checkForExternalStoragePermissions();
         if (mHasExternalStoragePermissions)
@@ -182,7 +186,7 @@ public class MainActivity extends AppCompatActivity {
         UpdateNotes.displayUpdateNotes(this);
     }
 
-    private void startAddGameDirectory() {
+    public void startAddGameDirectory() {
         if (!checkForExternalStoragePermissions())
             return;
 
@@ -401,7 +405,7 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    private void startStartFile() {
+    public void startStartFile() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("*/*");
         intent.addCategory(Intent.CATEGORY_OPENABLE);
