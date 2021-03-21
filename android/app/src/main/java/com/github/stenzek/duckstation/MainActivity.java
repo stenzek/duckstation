@@ -179,6 +179,7 @@ public class MainActivity extends AppCompatActivity {
 
         AndroidHostInterface.getInstance().setContext(this);
         mGameList.refresh(false, false, this);
+        UpdateNotes.displayUpdateNotes(this);
     }
 
     private void startAddGameDirectory() {

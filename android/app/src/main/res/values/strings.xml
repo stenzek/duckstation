@@ -312,4 +312,6 @@
     <string name="memory_card_editor_import_card_failed">Failed to import card \'%s\'. It may not be a supported format.</string>
     <string name="memory_card_editor_import_card_success">Imported card \'%s\'.</string>
     <string name="menu_game_list_entry_choose_cover_image">Choose Cover Image</string>
+    <string name="update_notes_title">Update Notes</string>
+    <string name="update_notes_message_version_controller_update">This DuckStation update includes support for multiple controllers, and binding devices such as keyboards/volume buttons.\n\nYou must re-bind your controllers, otherwise they will no longer function. Do you want to do this now?</string>
 </resources>
