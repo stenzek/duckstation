@@ -312,6 +312,15 @@
     <string name="memory_card_editor_import_card_failed">Failed to import card \'%s\'. It may not be a supported format.</string>
     <string name="memory_card_editor_import_card_success">Imported card \'%s\'.</string>
     <string name="menu_game_list_entry_choose_cover_image">Choose Cover Image</string>
+    <string name="controller_settings_automatic_mapping">Perform Automatic Mapping</string>
+    <string name="controller_settings_summary_automatic_mapping">Attempts to automatically bind all buttons/axes to a connected controller.</string>
+    <string name="controller_settings_clear_controller_bindings">Clear Bindings</string>
+    <string name="controller_settings_summary_clear_controller_bindings">Unbinds all buttons/axes for this controller.</string>
+    <string name="controller_settings_clear_controller_bindings_confirm">Are you sure you want to clear all bindings? This cannot be reversed.</string>
+    <string name="controller_settings_clear_controller_bindings_done">All bindings cleared for Controller %d.</string>
+    <string name="controller_auto_mapping_no_devices">No suitable devices found. Automatic binding only supports gamepad devices, but you can still bind other device types manually.</string>
+    <string name="controller_auto_mapping_select_device">Select Device</string>
+    <string name="controller_auto_mapping_results">Automatic Binding Results</string>
     <string name="update_notes_title">Update Notes</string>
     <string name="update_notes_message_version_controller_update">This DuckStation update includes support for multiple controllers, and binding devices such as keyboards/volume buttons.\n\nYou must re-bind your controllers, otherwise they will no longer function. Do you want to do this now?</string>
 </resources>

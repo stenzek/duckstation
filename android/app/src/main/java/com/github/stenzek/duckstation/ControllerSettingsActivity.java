@@ -163,6 +163,15 @@ public class ControllerSettingsActivity extends AppCompatActivity {
             pref.updateValue();
     }
 
+    public static String getControllerTypeKey(int port) {
+        return String.format("Controller%d/Type", port);
+    }
+
+    public static String getControllerType(SharedPreferences prefs, int port) {
+        final String defaultControllerType = (port == 1) ? "DigitalController" : "None";
+        return prefs.getString(getControllerTypeKey(port), defaultControllerType);
+    }
+
     public static class SettingsFragment extends PreferenceFragmentCompat {
         ControllerSettingsActivity parent;
 
@@ -216,9 +225,7 @@ public class ControllerSettingsActivity extends AppCompatActivity {
         private void createPreferences() {
             final PreferenceScreen ps = getPreferenceScreen();
             final SharedPreferences sp = getPreferenceManager().getSharedPreferences();
-            final String defaultControllerType = (controllerIndex == 1) ? "DigitalController" : "None";
-            final String controllerTypeKey = String.format("Controller%d/Type", controllerIndex);
-            final String controllerType = sp.getString(controllerTypeKey, defaultControllerType);
+            final String controllerType = getControllerType(sp, controllerIndex);
             final String[] controllerButtons = AndroidHostInterface.getControllerButtonNames(controllerType);
             final String[] axisButtons = AndroidHostInterface.getControllerAxisNames(controllerType);
             final int vibrationMotors = AndroidHostInterface.getControllerVibrationMotorCount(controllerType);
@@ -226,7 +233,7 @@ public class ControllerSettingsActivity extends AppCompatActivity {
             final ListPreference typePreference = new ListPreference(getContext());
             typePreference.setEntries(R.array.settings_controller_type_entries);
             typePreference.setEntryValues(R.array.settings_controller_type_values);
-            typePreference.setKey(controllerTypeKey);
+            typePreference.setKey(getControllerTypeKey(controllerIndex));
             typePreference.setValue(controllerType);
             typePreference.setTitle(R.string.settings_controller_type);
             typePreference.setSummaryProvider(ListPreference.SimpleSummaryProvider.getInstance());
@@ -237,6 +244,37 @@ public class ControllerSettingsActivity extends AppCompatActivity {
                 return true;
             });
             ps.addPreference(typePreference);
+
+            final Preference autoBindPreference = new Preference(getContext());
+            autoBindPreference.setTitle(R.string.controller_settings_automatic_mapping);
+            autoBindPreference.setSummary(R.string.controller_settings_summary_automatic_mapping);
+            autoBindPreference.setIconSpaceReserved(false);
+            autoBindPreference.setOnPreferenceClickListener(preference -> {
+                final ControllerAutoMapper mapper = new ControllerAutoMapper(activity, controllerIndex, () -> {
+                    removePreferences();
+                    createPreferences(typePreference.getValue());
+                });
+                mapper.start();
+                return true;
+            });
+            ps.addPreference(autoBindPreference);
+
+            final Preference clearBindingsPreference = new Preference(getContext());
+            clearBindingsPreference.setTitle(R.string.controller_settings_clear_controller_bindings);
+            clearBindingsPreference.setSummary(R.string.controller_settings_summary_clear_controller_bindings);
+            clearBindingsPreference.setIconSpaceReserved(false);
+            clearBindingsPreference.setOnPreferenceClickListener(preference -> {
+                final AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+                builder.setMessage(R.string.controller_settings_clear_controller_bindings_confirm);
+                builder.setPositiveButton(R.string.main_activity_yes, (dialog, which) -> {
+                    dialog.dismiss();
+                    clearBindings();
+                });
+                builder.setNegativeButton(R.string.main_activity_no, (dialog, which) -> dialog.dismiss());
+                builder.create().show();
+                return true;
+            });
+            ps.addPreference(clearBindingsPreference);
 
             mButtonsCategory = new PreferenceCategory(getContext());
             mButtonsCategory.setTitle(getContext().getString(R.string.controller_settings_category_button_bindings));
@@ -314,6 +352,26 @@ public class ControllerSettingsActivity extends AppCompatActivity {
                 activity.mPreferences.remove(mSettingsCategory.getPreference(i));
             }
             mSettingsCategory.removeAll();
+        }
+
+        private static void clearBindingsInCategory(SharedPreferences.Editor editor, PreferenceCategory category) {
+            for (int i = 0; i < category.getPreferenceCount(); i++) {
+                final Preference preference = category.getPreference(i);
+                if (preference instanceof ControllerBindingPreference)
+                    ((ControllerBindingPreference)preference).clearBinding(editor);
+            }
+        }
+
+        private void clearBindings() {
+            final SharedPreferences.Editor editor = getPreferenceManager().getSharedPreferences().edit();
+            clearBindingsInCategory(editor, mButtonsCategory);
+            clearBindingsInCategory(editor, mAxisCategory);
+            clearBindingsInCategory(editor, mSettingsCategory);
+            editor.commit();
+
+            Toast.makeText(activity, activity.getString(
+                    R.string.controller_settings_clear_controller_bindings_done, controllerIndex),
+                    Toast.LENGTH_LONG).show();
         }
     }
 
