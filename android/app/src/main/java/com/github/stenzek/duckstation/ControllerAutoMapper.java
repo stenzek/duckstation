@@ -169,7 +169,6 @@ public class ControllerAutoMapper {
         editText.setText(log.toString());
         editText.setInputType(InputType.TYPE_NULL | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
         editText.setSingleLine(false);
-        editText.setMinLines(10);
         builder.setView(editText);
 
         builder.setPositiveButton(R.string.main_activity_ok, (dialog, which) -> dialog.dismiss());
@@ -222,13 +221,13 @@ public class ControllerAutoMapper {
                     doAutoBindingButton(buttonName, new int[]{KeyEvent.KEYCODE_BUTTON_L1}, null);
                     break;
                 case "L2":
-                    doAutoBindingButton(buttonName, new int[]{KeyEvent.KEYCODE_BUTTON_L2}, new int[][]{{MotionEvent.AXIS_LTRIGGER, 1}, {MotionEvent.AXIS_BRAKE, 1}});
+                    doAutoBindingButton(buttonName, new int[]{KeyEvent.KEYCODE_BUTTON_L2}, new int[][]{{MotionEvent.AXIS_LTRIGGER, 1}, {MotionEvent.AXIS_Z, 1}, {MotionEvent.AXIS_BRAKE, 1}});
                     break;
                 case "R1":
                     doAutoBindingButton(buttonName, new int[]{KeyEvent.KEYCODE_BUTTON_R1}, null);
                     break;
                 case "R2":
-                    doAutoBindingButton(buttonName, new int[]{KeyEvent.KEYCODE_BUTTON_R2}, new int[][]{{MotionEvent.AXIS_RTRIGGER, 1}, {MotionEvent.AXIS_GAS, 1}});
+                    doAutoBindingButton(buttonName, new int[]{KeyEvent.KEYCODE_BUTTON_R2}, new int[][]{{MotionEvent.AXIS_RTRIGGER, 1}, {MotionEvent.AXIS_RZ, 1}, {MotionEvent.AXIS_GAS, 1}});
                     break;
                 case "L3":
                     doAutoBindingButton(buttonName, new int[]{KeyEvent.KEYCODE_BUTTON_THUMBL}, null);
@@ -262,10 +261,10 @@ public class ControllerAutoMapper {
                     doAutoBindingAxis(axisName, new int[]{MotionEvent.AXIS_Y});
                     break;
                 case "RightX":
-                    doAutoBindingAxis(axisName, new int[]{MotionEvent.AXIS_Z, MotionEvent.AXIS_RX});
+                    doAutoBindingAxis(axisName, new int[]{MotionEvent.AXIS_RX, MotionEvent.AXIS_Z});
                     break;
                 case "RightY":
-                    doAutoBindingAxis(axisName, new int[]{MotionEvent.AXIS_RZ, MotionEvent.AXIS_RY});
+                    doAutoBindingAxis(axisName, new int[]{MotionEvent.AXIS_RY, MotionEvent.AXIS_RZ});
                     break;
                 default:
                     log("Axis '%s' not supported by auto mapping.", axisName);
@@ -286,5 +285,10 @@ public class ControllerAutoMapper {
             log("Selected device has no vibrator, cannot bind vibration.");
             return;
         }
+
+        log("Binding vibration to device '%s'.", device.getDescriptor());
+
+        final String key = String.format("%sRumble", keyBase);
+        editor.putString(key, device.getDescriptor());
     }
 }

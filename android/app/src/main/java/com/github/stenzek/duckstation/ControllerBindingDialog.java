@@ -9,6 +9,7 @@ import android.util.ArraySet;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -72,16 +73,24 @@ public class ControllerBindingDialog extends AlertDialog {
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (!EmulationSurfaceView.isBindableDevice(event.getDevice()) || !EmulationSurfaceView.isBindableKeyEvent(event)) {
+        final InputDevice device = event.getDevice();
+        if (!EmulationSurfaceView.isBindableDevice(device) || !EmulationSurfaceView.isBindableKeyEvent(event)) {
             return super.onKeyDown(keyCode, event);
         }
 
-        if (mType == ControllerBindingPreference.Type.BUTTON)
-            mCurrentBinding = String.format("%s/Button%d", event.getDevice().getDescriptor(), event.getKeyCode());
-        else if (mType == ControllerBindingPreference.Type.VIBRATION)
-            mCurrentBinding = event.getDevice().getDescriptor();
-        else
+        if (mType == ControllerBindingPreference.Type.BUTTON) {
+            mCurrentBinding = String.format("%s/Button%d", device.getDescriptor(), event.getKeyCode());
+        }  else if (mType == ControllerBindingPreference.Type.VIBRATION) {
+            if (device.getVibrator() == null || !device.getVibrator().hasVibrator()) {
+                Toast.makeText(getContext(), getContext().getString(R.string.controller_settings_vibration_unsupported), Toast.LENGTH_LONG).show();
+                dismiss();
+                return true;
+            }
+
+            mCurrentBinding = device.getDescriptor();
+        } else {
             return super.onKeyDown(keyCode, event);
+        }
 
         updateMessage();
         updateBinding();
@@ -135,8 +144,9 @@ public class ControllerBindingDialog extends AlertDialog {
         for (int axisIndex = 0; axisIndex < motionEventList.size(); axisIndex++) {
             final int axisCode = motionEventList.get(axisIndex).getAxis();
             final float newValue = event.getAxisValue(axisCode);
-            if (Math.abs(newValue - axisValues[axisIndex]) >= DETECT_THRESHOLD) {
-                setAxisCode(event.getDevice(), axisCode, newValue >= 0.0f);
+            final float delta = newValue - axisValues[axisIndex];
+            if (Math.abs(delta) >= DETECT_THRESHOLD) {
+                setAxisCode(event.getDevice(), axisCode, delta >= 0.0f);
                 break;
             }
         }

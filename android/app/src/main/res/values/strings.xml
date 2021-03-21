@@ -312,6 +312,7 @@
     <string name="memory_card_editor_import_card_failed">Failed to import card \'%s\'. It may not be a supported format.</string>
     <string name="memory_card_editor_import_card_success">Imported card \'%s\'.</string>
     <string name="menu_game_list_entry_choose_cover_image">Choose Cover Image</string>
+    <string name="controller_settings_vibration_unsupported">The selected device does not support vibration.</string>
     <string name="controller_settings_automatic_mapping">Perform Automatic Mapping</string>
     <string name="controller_settings_summary_automatic_mapping">Attempts to automatically bind all buttons/axes to a connected controller.</string>
     <string name="controller_settings_clear_controller_bindings">Clear Bindings</string>
@@ -326,5 +327,5 @@
     <string name="main_activity_empty_game_list_add_directory">Add Game Directory</string>
     <string name="main_activity_empty_game_list_start_file">Start File</string>
     <string name="update_notes_title">Update Notes</string>
-    <string name="update_notes_message_version_controller_update">This DuckStation update includes support for multiple controllers, and binding devices such as keyboards/volume buttons.\n\nYou must re-bind your controllers, otherwise they will no longer function. Do you want to do this now?</string>
+    <string name="update_notes_message_version_controller_update">This DuckStation update includes support for multiple controllers with vibration, and binding devices such as keyboards/volume buttons.\n\nYou must re-bind your controllers, otherwise they will no longer function. Do you want to do this now?</string>
 </resources>
