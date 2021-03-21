@@ -137,13 +137,14 @@ public class MainActivity extends AppCompatActivity {
                 .beginTransaction()
                 .setReorderingAllowed(true).
                 replace(R.id.content_fragment, listFragment)
-                .commit();
+                .commitAllowingStateLoss();
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
         loadSettings();
+
+        super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
