@@ -140,15 +140,20 @@ public class EmulationSurfaceView extends SurfaceView {
         final ArrayList<InputDeviceData> inputDeviceIds = new ArrayList<>();
         for (int deviceId : InputDevice.getDeviceIds()) {
             final InputDevice device = InputDevice.getDevice(deviceId);
-            if (device == null || !isBindableDevice(device))
+            if (device == null || !isBindableDevice(device)) {
+                Log.d("EmulationSurfaceView",
+                        String.format("Skipping device %s sources %d",
+                                (device != null) ? device.toString() : "",
+                                (device != null) ? 0 : device.getSources()));
                 continue;
+            }
 
             if (isGamepadDevice(device))
                 mHasAnyGamepads = true;
 
             final int controllerIndex = inputDeviceIds.size();
-            Log.d("EmulationSurfaceView", String.format("Tracking device %d/%s (%s)",
-                    controllerIndex, device.getDescriptor(), device.getName()));
+            Log.d("EmulationSurfaceView", String.format("Tracking device %d/%s (%s, sources %d)",
+                    controllerIndex, device.getDescriptor(), device.getName(), device.getSources()));
             inputDeviceIds.add(new InputDeviceData(device, controllerIndex));
         }
 
@@ -211,16 +216,13 @@ public class EmulationSurfaceView extends SurfaceView {
         return (data != null) ? data.controllerIndex : -1;
     }
 
-    private boolean handleKeyEvent(int keyCode, KeyEvent event, boolean pressed) {
-        if (!isBindableDevice(event.getDevice()))
-            return false;
-
-        /*Log.e("ESV", String.format("Code %d RC %d Pressed %d %s", keyCode,
-                event.getRepeatCount(), pressed? 1 : 0, event.toString()));*/
+    private boolean handleKeyEvent(int deviceId, int repeatCount, int keyCode, boolean pressed) {
+        final int controllerIndex = getControllerIndexForDeviceId(deviceId);
+        Log.d("EmulationSurfaceView", String.format("Controller %d Code %d RC %d Pressed %d",
+                controllerIndex, keyCode, repeatCount, pressed? 1 : 0));
 
         final AndroidHostInterface hi = AndroidHostInterface.getInstance();
-        final int controllerIndex = getControllerIndexForDeviceId(event.getDeviceId());
-        if (event.getRepeatCount() == 0 && controllerIndex >= 0)
+        if (repeatCount == 0 && controllerIndex >= 0)
             hi.handleControllerButtonEvent(controllerIndex, keyCode, pressed);
 
         // We don't want to eat external button events unless it's actually bound.
@@ -232,12 +234,12 @@ public class EmulationSurfaceView extends SurfaceView {
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        return handleKeyEvent(keyCode, event, true);
+        return handleKeyEvent(event.getDeviceId(), event.getRepeatCount(), keyCode, true);
     }
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-        return handleKeyEvent(keyCode, event, false);
+        return handleKeyEvent(event.getDeviceId(), 0, keyCode, false);
     }
 
     private float clamp(float value, float min, float max) {
@@ -276,8 +278,8 @@ public class EmulationSurfaceView extends SurfaceView {
             if (data.axisValues[i] == emuValue)
                 continue;
 
-            /*Log.d("EmulationSurfaceView",
-                    String.format("axis %d value %f emuvalue %f", axis, axisValue, emuValue));*/
+            Log.d("EmulationSurfaceView",
+                    String.format("axis %d value %f emuvalue %f", axis, axisValue, emuValue));
 
             data.axisValues[i] = emuValue;
             AndroidHostInterface.getInstance().handleControllerAxisEvent(data.controllerIndex, axis, emuValue);
