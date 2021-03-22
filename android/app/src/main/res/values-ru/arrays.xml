@@ -228,6 +228,15 @@
 		<item>Портретная</item>
 		<item>Ландшафтная</item>
 	</string-array>
+	<string-array name="settings_language_entries">
+        	<item>По выбору системы</item>
+        	<item>Английский</item>
+		<item>Бразильский португальский</item>
+        	<item>Итальянский</item>
+        	<item>Нидерландский</item>
+        	<item>Испанский</item>
+        	<item>Русский</item>
+ 	</string-array>
 	<string-array name="settings_theme_entries">
 		<item>По выбору системы</item>
 		<item>Светлая</item>
@@ -248,4 +257,8 @@
         	<item>Подключен к порту 2</item>
         	<item>Подключен к портам 1 и 2</item>
     	</string-array>
+ 	   <string-array name="memory_card_editor_save_menu">
+     		<item>Скопировать сохранение</item>
+     		<item>Удалить сохранение</item>
+    </string-array>
 </resources>
