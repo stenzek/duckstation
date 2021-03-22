@@ -2350,6 +2350,14 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-905-g237f469</version-tested>
   </entry>
+  <entry code="SLPM-86247" compatibility="5" region="NTSC-J" title="Metal Gear Solid - Integral (Japan, Asia) (En,Ja) (Disc 1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-3652-g4c3d2cd3</version-tested>
+  </entry>
+  <entry code="SLPM-86248" compatibility="5" region="NTSC-J" title="Metal Gear Solid - Integral (Japan, Asia) (En,Ja) (Disc 2)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-3652-g4c3d2cd3</version-tested>
+  </entry>
   <entry code="SLUS-00957" compatibility="5" region="NTSC-U" title="Metal Gear Solid - VR Missions (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1790-ge8e461c0</version-tested>
@@ -2941,6 +2949,10 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLUS-00549" compatibility="5" region="NTSC-U" title="Rampage - World Tour (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1445-ge5c46a54</version-tested>
+  </entry>
+  <entry code="SLUS-00742" compatibility="5" region="NTSC-U" title="Rampage 2 - Universal Tour (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-3597-gb1cf2555</version-tested>
   </entry>
   <entry code="SCES-00004" compatibility="5" region="PAL" title="Rapid Reload (Europe)">
     <compatibility>No Issues</compatibility>
@@ -4020,6 +4032,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-986-gfc911de1</version-tested>
   </entry>
+  <entry code="SCUS-94642" compatibility="5" region="NTSC-U" title="Twisted Metal - Small Brawl (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>Android Touch Gliding Preview</version-tested>
+  </entry>
   <entry code="SCUS-94306" compatibility="5" region="NTSC-U" title="Twisted Metal 2">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1047-g8ae04f6</version-tested>
@@ -4132,6 +4148,10 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLPS-00775" compatibility="5" region="NTSC-J" title="Voice Idol Collection - Pool Bar Story (Japan) (Disc 1)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLUS-01234" compatibility="5" region="NTSC-U" title="WWF SmackDown! 2 - Know Your Role (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-3575-ga8fd4d5b</version-tested>
   </entry>
   <entry code="SLPS-01157" compatibility="5" region="NTSC-J" title="Waku Waku Derby (Japan)">
     <compatibility>No Issues</compatibility>
