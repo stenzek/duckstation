@@ -242,7 +242,7 @@ public class MemoryCardEditorActivity extends AppCompatActivity {
         if (cards.isEmpty())
             return;
 
-        if (newSelection < 0) {
+        if (newSelection < 0 || newSelection >= tabLayout.getTabCount()) {
             if (oldPos < cards.size())
                 tabLayout.getTabAt(oldPos).select();
             else
