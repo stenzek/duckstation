@@ -5,7 +5,9 @@
     <group android:id="@+id/start_menu">
         <item
             android:id="@+id/action_start_file"
-            android:title="@string/menu_main_start_file" />
+            android:icon="@drawable/ic_baseline_insert_drive_file_24"
+            android:title="@string/menu_main_start_file"
+            app:showAsAction="always" />
         <item
             android:id="@+id/action_start_bios"
             android:title="@string/menu_main_start_bios" />

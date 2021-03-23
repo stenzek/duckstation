@@ -143,6 +143,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         loadSettings();
+        setTitle(null);
 
         super.onCreate(savedInstanceState);
 
