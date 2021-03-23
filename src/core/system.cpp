@@ -1234,9 +1234,8 @@ bool DoLoadState(ByteStream* state, bool force_software_renderer, bool update_di
         else
         {
           g_host_interface->ReportFormattedError(
-            g_host_interface->TranslateString("System", "Failed to open CD image from save state '%s': %s.",
-                                              error.GetCodeAndMessage().GetCharArray()),
-            media_filename.c_str());
+            g_host_interface->TranslateString("System", "Failed to open CD image '%s' used by save state: %s."),
+            media_filename.c_str(), error.GetCodeAndMessage().GetCharArray());
           return false;
         }
       }
