@@ -1790,7 +1790,7 @@ void GPU_HW_Vulkan::DownsampleFramebufferBoxFilter(Vulkan::Texture& source, u32 
   m_downsample_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
   Assert(&source == &m_vram_texture || &source == &m_display_texture);
-  VkDescriptorSet ds = (&source == &m_vram_texture) ? m_vram_copy_descriptor_set : m_display_descriptor_set;
+  VkDescriptorSet ds = (&source == &m_vram_texture) ? m_vram_read_descriptor_set : m_display_descriptor_set;
 
   const u32 ds_left = left / m_resolution_scale;
   const u32 ds_top = top / m_resolution_scale;
