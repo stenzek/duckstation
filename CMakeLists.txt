@@ -22,7 +22,6 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET "10.14.0" CACHE STRING "")
 
 # Global options.
 if(NOT ANDROID)
-  option(BUILD_SDL_FRONTEND "Build the SDL frontend" OFF)
   option(BUILD_NOGUI_FRONTEND "Build the NoGUI frontend" ON)
   option(BUILD_QT_FRONTEND "Build the Qt frontend" ON)
   option(ENABLE_DISCORD_PRESENCE "Build with Discord Rich Presence support" ON)
@@ -53,10 +52,6 @@ if(USE_WAYLAND)
 endif()
 
 if(ANDROID)
-  if(BUILD_SDL_FRONTEND)
-    message(WARNING "Building for Android, disabling SDL frontend")
-    set(BUILD_SDL_FRONTEND OFF)
-  endif()
   if(BUILD_NOGUI_FRONTEND)
     message(WARNING "Building for Android, disabling NoGUI frontend")
     set(BUILD_NOGUI_FRONTEND OFF)
@@ -105,7 +100,7 @@ endif()
 
 # Required libraries.
 if(NOT ANDROID)
-  if(NOT WIN32 AND (BUILD_SDL_FRONTEND OR USE_SDL2))
+  if(NOT WIN32 AND USE_SDL2)
     find_package(SDL2 REQUIRED)
   endif()
   if(BUILD_QT_FRONTEND)
