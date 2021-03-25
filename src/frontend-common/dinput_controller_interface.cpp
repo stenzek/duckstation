@@ -222,19 +222,24 @@ void DInputControllerInterface::PollEvents()
   }
 }
 
-u32 DInputControllerInterface::GetHatDirection(DWORD hat)
+std::array<bool, ControllerInterface::NUM_HAT_DIRECTIONS> DInputControllerInterface::GetHatButtons(DWORD hat)
 {
+  std::array<bool, NUM_HAT_DIRECTIONS> buttons = {};
+
   const WORD hv = LOWORD(hat);
-  if (hv == 0xFFFF)
-    return NUM_HAT_DIRECTIONS;
-  else if (hv < 9000)
-    return HAT_DIRECTION_UP;
-  else if (hv < 18000)
-    return HAT_DIRECTION_RIGHT;
-  else if (hv < 27000)
-    return HAT_DIRECTION_DOWN;
-  else
-    return HAT_DIRECTION_LEFT;
+  if (hv != 0xFFFF)
+  {
+    if ((hv >= 0 && hv < 9000) || hv >= 31500)
+      buttons[HAT_DIRECTION_UP] = true;
+    if (hv >= 4500 && hv < 18000)
+      buttons[HAT_DIRECTION_RIGHT] = true;
+    if (hv >= 13500 && hv < 27000)
+      buttons[HAT_DIRECTION_DOWN] = true;
+    if (hv >= 22500)
+      buttons[HAT_DIRECTION_LEFT] = true;
+  }
+
+  return buttons;
 }
 
 void DInputControllerInterface::CheckForStateChanges(u32 index, const DIJOYSTATE& new_state)
@@ -268,14 +273,16 @@ void DInputControllerInterface::CheckForStateChanges(u32 index, const DIJOYSTATE
   {
     if (last_state.rgdwPOV[0] != new_state.rgdwPOV[0])
     {
+      Log_InfoPrintf("Hat %u", LOWORD(new_state.rgdwPOV[0]));
       // map hats to the last buttons
-      const u32 old_direction = GetHatDirection(last_state.rgdwPOV[0]);
-      if (old_direction != NUM_HAT_DIRECTIONS)
-        HandleButtonEvent(index, cd.num_buttons + old_direction, false);
+      const std::array<bool, NUM_HAT_DIRECTIONS> old_buttons(GetHatButtons(last_state.rgdwPOV[0]));
+      const std::array<bool, NUM_HAT_DIRECTIONS> new_buttons(GetHatButtons(new_state.rgdwPOV[0]));
+      for (u32 i = 0; i < NUM_HAT_DIRECTIONS; i++)
+      {
+        if (old_buttons[i] != new_buttons[i])
+          HandleButtonEvent(index, cd.num_buttons + i, new_buttons[i]);
+      }
 
-      const u32 new_direction = GetHatDirection(new_state.rgdwPOV[0]);
-      if (new_direction != NUM_HAT_DIRECTIONS)
-        HandleButtonEvent(index, cd.num_buttons + new_direction, true);
       last_state.rgdwPOV[0] = new_state.rgdwPOV[0];
     }
   }

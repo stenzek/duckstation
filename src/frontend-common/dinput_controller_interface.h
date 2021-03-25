@@ -79,7 +79,7 @@ private:
   void AddDevices();
   bool AddDevice(ControllerData& cd, const char* name);
 
-  static u32 GetHatDirection(DWORD hat);
+  static std::array<bool, NUM_HAT_DIRECTIONS> GetHatButtons(DWORD hat);
 
   void CheckForStateChanges(u32 index, const DIJOYSTATE& new_state);
 
