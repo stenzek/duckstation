@@ -682,19 +682,23 @@ static void DoChangeDisc()
     options.emplace_back(System::GetMediaPlaylistPath(i), i == current_index);
 
   auto callback = [](s32 index, const std::string& title, bool checked) {
-    if (index < 0)
-      return;
     if (index == 0)
     {
+      CloseChoiceDialog();
       DoChangeDiscFromFile();
       return;
     }
+    else if (index > 0)
+    {
+      System::SwitchMediaFromPlaylist(static_cast<u32>(index - 1));
+    }
 
-    System::SwitchMediaFromPlaylist(static_cast<u32>(index - 1));
+    ClearImGuiFocus();
     CloseChoiceDialog();
+    ReturnToMainWindow();
   };
 
-  OpenChoiceDialog(ICON_FA_LIST, true, std::move(options), std::move(callback));
+  OpenChoiceDialog(ICON_FA_COMPACT_DISC "  Select Disc Image", true, std::move(options), std::move(callback));
 }
 
 //////////////////////////////////////////////////////////////////////////
