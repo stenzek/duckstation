@@ -8,6 +8,7 @@
 #include "types.h"
 #include <array>
 #include <string>
+#include <string_view>
 #include <tuple>
 #include <vector>
 
@@ -27,6 +28,7 @@ public:
 
   bool HasMedia() const { return m_reader.HasMedia(); }
   const std::string& GetMediaFileName() const { return m_reader.GetMediaFileName(); }
+  const CDImage* GetMedia() const { return m_reader.GetMedia(); }
   bool IsMediaPS1Disc() const;
   bool DoesMediaRegionMatchConsole() const;
 

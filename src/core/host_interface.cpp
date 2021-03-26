@@ -837,7 +837,7 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
     if (g_settings.memory_card_types != old_settings.memory_card_types ||
         g_settings.memory_card_paths != old_settings.memory_card_paths ||
         (g_settings.memory_card_use_playlist_title != old_settings.memory_card_use_playlist_title &&
-         System::HasMediaPlaylist()))
+         System::HasMediaSubImages()))
     {
       System::UpdateMemoryCards();
     }

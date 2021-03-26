@@ -22,7 +22,7 @@ public:
 
   bool Open(const char* filename, Common::Error* error);
 
-  bool ReadSubChannelQ(SubChannelQ* subq) override;
+  bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index) override;
   bool HasNonStandardSubchannel() const override;
 
 protected:
@@ -698,12 +698,12 @@ bool CDImagePBP::DecompressBlock(BlockInfo block_info)
   return true;
 }
 
-bool CDImagePBP::ReadSubChannelQ(SubChannelQ* subq)
+bool CDImagePBP::ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index)
 {
-  if (m_sbi.GetReplacementSubChannelQ(m_position_on_disc, subq))
+  if (m_sbi.GetReplacementSubChannelQ(index.start_lba_on_disc + lba_in_index, subq))
     return true;
 
-  return CDImage::ReadSubChannelQ(subq);
+  return CDImage::ReadSubChannelQ(subq, index, lba_in_index);
 }
 
 bool CDImagePBP::HasNonStandardSubchannel() const

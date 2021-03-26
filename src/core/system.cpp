@@ -119,10 +119,6 @@ static u32 s_last_global_tick_counter = 0;
 static Common::Timer s_fps_timer;
 static Common::Timer s_frame_timer;
 
-// Playlist of disc images.
-static std::vector<std::string> s_media_playlist;
-static std::string s_media_playlist_filename;
-
 static std::unique_ptr<CheatList> s_cheat_list;
 
 static bool s_memory_saves_enabled = false;
@@ -287,12 +283,6 @@ bool IsPsfFileName(const char* path)
   const char* extension = std::strrchr(path, '.');
   return (extension &&
           (StringUtil::Strcasecmp(extension, ".psf") == 0 || StringUtil::Strcasecmp(extension, ".minipsf") == 0));
-}
-
-bool IsM3UFileName(const char* path)
-{
-  const char* extension = std::strrchr(path, '.');
-  return (extension && StringUtil::Strcasecmp(extension, ".m3u") == 0);
 }
 
 bool IsLoadableFilename(const char* path)
@@ -727,7 +717,6 @@ std::unique_ptr<CDImage> OpenCDImage(const char* path, Common::Error* error, boo
 bool Boot(const SystemBootParameters& params)
 {
   Assert(s_state == State::Shutdown);
-  Assert(s_media_playlist.empty());
   s_state = State::Starting;
   s_startup_cancelled.store(false);
   s_region = g_settings.region;
@@ -750,6 +739,7 @@ bool Boot(const SystemBootParameters& params)
   }
 
   // Load CD image up and detect region.
+  Common::Error error;
   std::unique_ptr<CDImage> media;
   bool exe_boot = false;
   bool psf_boot = false;
@@ -769,38 +759,8 @@ bool Boot(const SystemBootParameters& params)
     }
     else
     {
-      u32 playlist_index;
-      if (IsM3UFileName(params.filename.c_str()))
-      {
-        s_media_playlist = ParseM3UFile(params.filename.c_str());
-        s_media_playlist_filename = params.filename;
-        if (s_media_playlist.empty())
-        {
-          g_host_interface->ReportFormattedError("Failed to parse playlist '%s'", params.filename.c_str());
-          Shutdown();
-          return false;
-        }
-
-        if (params.media_playlist_index >= s_media_playlist.size())
-        {
-          Log_WarningPrintf("Media playlist index %u out of range, using first", params.media_playlist_index);
-          playlist_index = 0;
-        }
-        else
-        {
-          playlist_index = params.media_playlist_index;
-        }
-      }
-      else
-      {
-        AddMediaPathToPlaylist(params.filename);
-        playlist_index = 0;
-      }
-
-      Common::Error error;
-      const std::string& media_path = s_media_playlist[playlist_index];
-      Log_InfoPrintf("Loading CD image '%s' from playlist index %u...", media_path.c_str(), playlist_index);
-      media = OpenCDImage(media_path.c_str(), &error, params.load_image_to_ram);
+      Log_InfoPrintf("Loading CD image '%s'...", params.filename.c_str());
+      media = OpenCDImage(params.filename.c_str(), &error, params.load_image_to_ram);
       if (!media)
       {
         g_host_interface->ReportFormattedError("Failed to load CD image '%s': %s", params.filename.c_str(),
@@ -853,6 +813,15 @@ bool Boot(const SystemBootParameters& params)
   // Check for SBI.
   if (!CheckForSBIFile(media.get()))
   {
+    Shutdown();
+    return false;
+  }
+
+  // Switch subimage.
+  if (media && params.media_playlist_index != 0 && !media->SwitchSubImage(params.media_playlist_index, &error))
+  {
+    g_host_interface->ReportFormattedError("Failed to switch to subimage %u in '%s': %s", params.media_playlist_index,
+                                           params.filename.c_str(), error.GetCodeAndMessage().GetCharArray());
     Shutdown();
     return false;
   }
@@ -1006,8 +975,6 @@ void Shutdown()
   s_running_game_code.clear();
   s_running_game_path.clear();
   s_running_game_title.clear();
-  s_media_playlist.clear();
-  s_media_playlist_filename.clear();
   s_cheat_list.reset();
   s_state = State::Shutdown;
 
@@ -1199,6 +1166,7 @@ bool DoLoadState(ByteStream* state, bool force_software_renderer, bool update_di
     return false;
   }
 
+  Common::Error error;
   std::string media_filename;
   std::unique_ptr<CDImage> media;
   if (header.media_filename_length > 0)
@@ -1218,7 +1186,6 @@ bool DoLoadState(ByteStream* state, bool force_software_renderer, bool update_di
     }
     else
     {
-      Common::Error error;
       media = OpenCDImage(media_filename.c_str(), &error, false);
       if (!media)
       {
@@ -1242,27 +1209,27 @@ bool DoLoadState(ByteStream* state, bool force_software_renderer, bool update_di
     }
   }
 
-  std::string playlist_filename;
-  std::vector<std::string> playlist_entries;
-  if (header.playlist_filename_length > 0)
+  UpdateRunningGame(media_filename.c_str(), media.get());
+
+  if (media && header.version >= 51)
   {
-    playlist_filename.resize(header.offset_to_playlist_filename);
-    if (!state->SeekAbsolute(header.offset_to_playlist_filename) ||
-        !state->Read2(playlist_filename.data(), header.playlist_filename_length))
+    const u32 num_subimages = media->HasSubImages() ? media->GetSubImageCount() : 0;
+    if (header.media_subimage_index >= num_subimages ||
+        (media->HasSubImages() && media->GetCurrentSubImage() != header.media_subimage_index &&
+         !media->SwitchSubImage(header.media_subimage_index, &error)))
     {
+      g_host_interface->ReportFormattedError(
+        g_host_interface->TranslateString("System",
+                                          "Failed to switch to subimage %u in CD image '%s' used by save state: %s."),
+        header.media_subimage_index + 1u, media_filename.c_str(), error.GetCodeAndMessage().GetCharArray());
       return false;
     }
-
-    playlist_entries = ParseM3UFile(playlist_filename.c_str());
-    if (playlist_entries.empty())
+    else
     {
-      g_host_interface->ReportFormattedError("Failed to load save state playlist entries from '%s'",
-                                             playlist_filename.c_str());
-      return false;
+      Log_InfoPrintf("Switched to subimage %u in '%s'", header.media_subimage_index, media_filename.c_str());
     }
   }
 
-  UpdateRunningGame(media_filename.c_str(), media.get());
   ClearMemorySaveStates();
 
   if (s_state == State::Starting)
@@ -1272,9 +1239,6 @@ bool DoLoadState(ByteStream* state, bool force_software_renderer, bool update_di
 
     if (media)
       g_cdrom.InsertMedia(std::move(media));
-
-    s_media_playlist_filename = std::move(playlist_filename);
-    s_media_playlist = std::move(playlist_entries);
 
     UpdateControllers();
     UpdateMemoryCards();
@@ -1287,9 +1251,6 @@ bool DoLoadState(ByteStream* state, bool force_software_renderer, bool update_di
       g_cdrom.InsertMedia(std::move(media));
     else
       g_cdrom.RemoveMedia();
-
-    s_media_playlist_filename = std::move(playlist_filename);
-    s_media_playlist = std::move(playlist_entries);
 
     // ensure the correct card is loaded
     if (g_settings.HasAnyPerGameMemoryCards())
@@ -1338,15 +1299,8 @@ bool SaveState(ByteStream* state, u32 screenshot_size /* = 128 */)
     const std::string& media_filename = g_cdrom.GetMediaFileName();
     header.offset_to_media_filename = static_cast<u32>(state->GetPosition());
     header.media_filename_length = static_cast<u32>(media_filename.length());
+    header.media_subimage_index = g_cdrom.GetMedia()->HasSubImages() ? g_cdrom.GetMedia()->GetCurrentSubImage() : 0;
     if (!media_filename.empty() && !state->Write2(media_filename.data(), header.media_filename_length))
-      return false;
-  }
-
-  if (!s_media_playlist_filename.empty())
-  {
-    header.offset_to_playlist_filename = static_cast<u32>(state->GetPosition());
-    header.playlist_filename_length = static_cast<u32>(s_media_playlist_filename.length());
-    if (!state->Write2(s_media_playlist_filename.data(), header.playlist_filename_length))
       return false;
   }
 
@@ -1847,12 +1801,7 @@ void UpdateMemoryCards()
 
       case MemoryCardType::PerGameTitle:
       {
-        if (!s_media_playlist_filename.empty() && g_settings.memory_card_use_playlist_title)
-        {
-          const std::string playlist_title(GetTitleForPath(s_media_playlist_filename.c_str()));
-          card = MemoryCard::Open(g_host_interface->GetGameMemoryCardPath(playlist_title.c_str(), i));
-        }
-        else if (s_running_game_title.empty())
+        if (s_running_game_title.empty())
         {
           g_host_interface->AddFormattedOSDMessage(
             5.0f,
@@ -2021,6 +1970,13 @@ void UpdateRunningGame(const char* path, CDImage* image)
   {
     s_running_game_path = path;
     g_host_interface->GetGameInfo(path, image, &s_running_game_code, &s_running_game_title);
+
+    if (image->HasSubImages() && g_settings.memory_card_use_playlist_title)
+    {
+      std::string image_title(image->GetMetadata("title"));
+      if (!image_title.empty())
+        s_running_game_title = std::move(image_title);
+    }
   }
 
   g_texture_replacements.SetGameID(s_running_game_code);
@@ -2050,114 +2006,78 @@ bool CheckForSBIFile(CDImage* image)
       .c_str());
 }
 
-bool HasMediaPlaylist()
+bool HasMediaSubImages()
 {
-  return !s_media_playlist_filename.empty();
+  const CDImage* cdi = g_cdrom.GetMedia();
+  return cdi ? cdi->HasSubImages() : false;
 }
 
-u32 GetMediaPlaylistCount()
+u32 GetMediaSubImageCount()
 {
-  return static_cast<u32>(s_media_playlist.size());
+  const CDImage* cdi = g_cdrom.GetMedia();
+  return cdi ? cdi->GetSubImageCount() : 0;
 }
 
-const std::string& GetMediaPlaylistPath(u32 index)
+u32 GetMediaSubImageIndex()
 {
-  return s_media_playlist[index];
+  const CDImage* cdi = g_cdrom.GetMedia();
+  return cdi ? cdi->GetCurrentSubImage() : 0;
 }
 
-u32 GetMediaPlaylistIndex()
+u32 GetMediaSubImageIndexForTitle(const std::string_view& title)
 {
-  if (!g_cdrom.HasMedia())
-    return std::numeric_limits<u32>::max();
+  const CDImage* cdi = g_cdrom.GetMedia();
+  if (!cdi)
+    return 0;
 
-  const std::string& media_path = g_cdrom.GetMediaFileName();
-  return GetMediaPlaylistIndexForPath(media_path);
-}
-
-u32 GetMediaPlaylistIndexForPath(const std::string& path)
-{
-  for (u32 i = 0; i < static_cast<u32>(s_media_playlist.size()); i++)
+  const u32 count = cdi->GetSubImageCount();
+  for (u32 i = 0; i < count; i++)
   {
-    if (s_media_playlist[i] == path)
+    if (title == cdi->GetSubImageMetadata(i, "title"))
       return i;
   }
 
   return std::numeric_limits<u32>::max();
 }
 
-bool AddMediaPathToPlaylist(const std::string_view& path)
+std::string GetMediaSubImageTitle(u32 index)
 {
-  if (std::any_of(s_media_playlist.begin(), s_media_playlist.end(),
-                  [&path](const std::string& p) { return (path == p); }))
-  {
-    return false;
-  }
+  const CDImage* cdi = g_cdrom.GetMedia();
+  if (!cdi)
+    return {};
 
-  s_media_playlist.emplace_back(path);
-  return true;
+  return cdi->GetSubImageMetadata(index, "title");
 }
 
-bool RemoveMediaPathFromPlaylist(const std::string_view& path)
+bool SwitchMediaSubImage(u32 index)
 {
-  for (u32 i = 0; i < static_cast<u32>(s_media_playlist.size()); i++)
-  {
-    if (path == s_media_playlist[i])
-      return RemoveMediaPathFromPlaylist(i);
-  }
-
-  return false;
-}
-
-bool RemoveMediaPathFromPlaylist(u32 index)
-{
-  if (index >= static_cast<u32>(s_media_playlist.size()))
+  if (!g_cdrom.HasMedia())
     return false;
 
-  if (GetMediaPlaylistIndex() == index)
+  std::unique_ptr<CDImage> image = g_cdrom.RemoveMedia();
+  Assert(image);
+
+  Common::Error error;
+  if (!image->SwitchSubImage(index, &error))
   {
     g_host_interface->AddFormattedOSDMessage(
-      10.0f,
-      g_host_interface->TranslateString("System", "Removing current media from playlist, removing media from CD-ROM."));
-    g_cdrom.RemoveMedia();
-  }
-
-  s_media_playlist.erase(s_media_playlist.begin() + index);
-  return true;
-}
-
-bool ReplaceMediaPathFromPlaylist(u32 index, const std::string_view& path)
-{
-  if (index >= static_cast<u32>(s_media_playlist.size()))
+      10.0f, g_host_interface->TranslateString("OSDMessage", "Failed to switch to subimage %u in '%s': %s."),
+      index + 1u, image->GetFileName().c_str(), error.GetCodeAndMessage().GetCharArray());
+    g_cdrom.InsertMedia(std::move(image));
     return false;
-
-  if (GetMediaPlaylistIndex() == index)
-  {
-    g_host_interface->AddFormattedOSDMessage(
-      10.0f,
-      g_host_interface->TranslateString("System", "Changing current media from playlist, replacing current media."));
-    g_cdrom.RemoveMedia();
-
-    s_media_playlist[index] = path;
-    InsertMedia(s_media_playlist[index].c_str());
-  }
-  else
-  {
-    s_media_playlist[index] = path;
   }
 
+  g_host_interface->AddFormattedOSDMessage(
+    20.0f, g_host_interface->TranslateString("OSDMessage", "Switched to sub-image %s (%u) in '%s'."),
+    image->GetSubImageMetadata(index, "title").c_str(), index + 1u, image->GetMetadata("title").c_str());
+  g_cdrom.InsertMedia(std::move(image));
+
+  // reinitialize recompiler, because especially with preloading this might overlap the fastmem area
+  if (g_settings.IsUsingCodeCache())
+    CPU::CodeCache::Reinitialize();
+
+  ClearMemorySaveStates();
   return true;
-}
-
-bool SwitchMediaFromPlaylist(u32 index)
-{
-  if (index >= s_media_playlist.size())
-    return false;
-
-  const std::string& path = s_media_playlist[index];
-  if (g_cdrom.HasMedia() && g_cdrom.GetMediaFileName() == path)
-    return true;
-
-  return InsertMedia(path.c_str());
 }
 
 bool HasCheatList()

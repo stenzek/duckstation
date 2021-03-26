@@ -2389,7 +2389,16 @@ void CDROM::DrawDebugWindow()
       const CDImage* media = m_reader.GetMedia();
       const CDImage::Position disc_position = CDImage::Position::FromLBA(m_current_lba);
 
-      ImGui::Text("Filename: %s", media->GetFileName().c_str());
+      if (media->HasSubImages())
+      {
+        ImGui::Text("Filename: %s [Subimage %u of %u]", media->GetFileName().c_str(), media->GetCurrentSubImage() + 1u,
+                    media->GetSubImageCount());
+      }
+      else
+      {
+        ImGui::Text("Filename: %s", media->GetFileName().c_str());
+      }
+
       ImGui::Text("Disc Position: MSF[%02u:%02u:%02u] LBA[%u]", disc_position.minute, disc_position.second,
                   disc_position.frame, disc_position.ToLBA());
 

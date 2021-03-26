@@ -134,6 +134,7 @@
     <ClCompile Include="cd_image_cue.cpp" />
     <ClCompile Include="cd_image_ecm.cpp" />
     <ClCompile Include="cd_image_hasher.cpp" />
+    <ClCompile Include="cd_image_m3u.cpp" />
     <ClCompile Include="cd_image_mds.cpp" />
     <ClCompile Include="cd_image_memory.cpp" />
     <ClCompile Include="cd_image_pbp.cpp" />

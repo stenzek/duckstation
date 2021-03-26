@@ -63,14 +63,8 @@ bool IsExeFileName(const char* path);
 /// Returns true if the filename is a Portable Sound Format file we can uncompress/load.
 bool IsPsfFileName(const char* path);
 
-/// Returns true if the filename is a M3U Playlist we can handle.
-bool IsM3UFileName(const char* path);
-
 /// Returns true if the filename is one we can load.
 bool IsLoadableFilename(const char* path);
-
-/// Parses an M3U playlist, returning the entries.
-std::vector<std::string> ParseM3UFile(const char* path);
 
 /// Returns the preferred console type for a disc.
 ConsoleRegion GetConsoleRegionForDiscRegion(DiscRegion region);
@@ -203,33 +197,23 @@ std::string GetMediaFileName();
 bool InsertMedia(const char* path);
 void RemoveMedia();
 
-/// Returns true if a playlist is being used.
-bool HasMediaPlaylist();
+/// Returns true if this is a multi-subimage image (e.g. m3u).
+bool HasMediaSubImages();
 
 /// Returns the number of entries in the media/disc playlist.
-u32 GetMediaPlaylistCount();
+u32 GetMediaSubImageCount();
 
 /// Returns the current image from the media/disc playlist.
-u32 GetMediaPlaylistIndex();
+u32 GetMediaSubImageIndex();
 
 /// Returns the index of the specified path in the playlist, or UINT32_MAX if it does not exist.
-u32 GetMediaPlaylistIndexForPath(const std::string& path);
+u32 GetMediaSubImageIndexForTitle(const std::string_view& title);
 
 /// Returns the path to the specified playlist index.
-const std::string& GetMediaPlaylistPath(u32 index);
-
-/// Adds a new path to the media playlist.
-bool AddMediaPathToPlaylist(const std::string_view& path);
-
-/// Removes a path from the media playlist.
-bool RemoveMediaPathFromPlaylist(const std::string_view& path);
-bool RemoveMediaPathFromPlaylist(u32 index);
-
-/// Changes a path from the media playlist.
-bool ReplaceMediaPathFromPlaylist(u32 index, const std::string_view& path);
+std::string GetMediaSubImageTitle(u32 index);
 
 /// Switches to the specified media/disc playlist index.
-bool SwitchMediaFromPlaylist(u32 index);
+bool SwitchMediaSubImage(u32 index);
 
 /// Returns true if there is currently a cheat list.
 bool HasCheatList();

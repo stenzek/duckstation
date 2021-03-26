@@ -1,5 +1,6 @@
 #include "cd_image.h"
 #include "assert.h"
+#include "file_system.h"
 #include "log.h"
 #include <array>
 Log_SetChannel(CDImage);
@@ -53,6 +54,10 @@ std::unique_ptr<CDImage> CDImage::Open(const char* filename, Common::Error* erro
   else if (CASE_COMPARE(extension, ".pbp") == 0)
   {
     return OpenPBPImage(filename, error);
+  }
+  else if (CASE_COMPARE(extension, ".m3u") == 0)
+  {
+    return OpenM3uImage(filename, error);
   }
 
 #undef CASE_COMPARE
@@ -254,18 +259,63 @@ bool CDImage::ReadRawSector(void* buffer)
 
 bool CDImage::ReadSubChannelQ(SubChannelQ* subq)
 {
-  // handle case where we're at the end of the track/index
-  if (!m_current_index || m_position_in_index == m_current_index->length)
-    return GenerateSubChannelQ(subq, m_position_on_disc);
+  return ReadSubChannelQ(subq, *m_current_index, m_position_in_index);
+}
 
-  // otherwise save the index lookup
-  GenerateSubChannelQ(subq, m_current_index, m_position_in_index);
+bool CDImage::ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index)
+{
+  GenerateSubChannelQ(subq, index, lba_in_index);
   return true;
 }
 
 bool CDImage::HasNonStandardSubchannel() const
 {
   return false;
+}
+
+std::string CDImage::GetMetadata(const std::string_view& type) const
+{
+  std::string result;
+  if (type == "title")
+    result = FileSystem::GetFileTitleFromPath(m_filename);
+
+  return result;
+}
+
+bool CDImage::HasSubImages() const
+{
+  return false;
+}
+
+u32 CDImage::GetSubImageCount() const
+{
+  return 0;
+}
+
+u32 CDImage::GetCurrentSubImage() const
+{
+  return 0;
+}
+
+bool CDImage::SwitchSubImage(u32 index, Common::Error* error)
+{
+  return false;
+}
+
+std::string CDImage::GetSubImageMetadata(u32 index, const std::string_view& type) const
+{
+  return {};
+}
+
+void CDImage::CopyTOC(const CDImage* image)
+{
+  m_lba_count = image->m_lba_count;
+  m_indices = image->m_indices;
+  m_tracks = image->m_tracks;
+  m_current_index = nullptr;
+  m_position_in_index = 0;
+  m_position_in_track = 0;
+  m_position_on_disc = 0;
 }
 
 const CDImage::Index* CDImage::GetIndexForDiscPosition(LBA pos)
@@ -304,23 +354,23 @@ bool CDImage::GenerateSubChannelQ(SubChannelQ* subq, LBA lba)
     return false;
 
   const u32 index_offset = index->start_lba_on_disc - lba;
-  GenerateSubChannelQ(subq, index, index_offset);
+  GenerateSubChannelQ(subq, *index, index_offset);
   return true;
 }
 
-void CDImage::GenerateSubChannelQ(SubChannelQ* subq, const Index* index, u32 index_offset)
+void CDImage::GenerateSubChannelQ(SubChannelQ* subq, const Index& index, u32 index_offset)
 {
-  subq->control.bits = index->control.bits;
+  subq->control.bits = index.control.bits;
   subq->track_number_bcd =
-    (index->track_number <= m_tracks.size() ? BinaryToBCD(index->track_number) : index->track_number);
-  subq->index_number_bcd = BinaryToBCD(index->index_number);
+    (index.track_number <= m_tracks.size() ? BinaryToBCD(index.track_number) : index.track_number);
+  subq->index_number_bcd = BinaryToBCD(index.index_number);
 
   const Position relative_position =
-    Position::FromLBA(std::abs(static_cast<s32>(index->start_lba_in_track + index_offset)));
+    Position::FromLBA(std::abs(static_cast<s32>(index.start_lba_in_track + index_offset)));
   std::tie(subq->relative_minute_bcd, subq->relative_second_bcd, subq->relative_frame_bcd) = relative_position.ToBCD();
   subq->reserved = 0;
 
-  const Position absolute_position = Position::FromLBA(index->start_lba_on_disc + index_offset);
+  const Position absolute_position = Position::FromLBA(index.start_lba_on_disc + index_offset);
   std::tie(subq->absolute_minute_bcd, subq->absolute_second_bcd, subq->absolute_frame_bcd) = absolute_position.ToBCD();
   subq->crc = SubChannelQ::ComputeCRC(subq->data);
 }

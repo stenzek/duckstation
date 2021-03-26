@@ -16,6 +16,7 @@ add_library(common
   cd_image_ecm.cpp
   cd_image_hasher.cpp
   cd_image_hasher.h
+  cd_image_m3u.cpp
   cd_image_memory.cpp
   cd_image_mds.cpp
   cd_image_pbp.cpp

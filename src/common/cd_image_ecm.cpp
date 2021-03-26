@@ -164,7 +164,7 @@ public:
 
   bool Open(const char* filename, Common::Error* error);
 
-  bool ReadSubChannelQ(SubChannelQ* subq) override;
+  bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index) override;
   bool HasNonStandardSubchannel() const override;
 
 protected:
@@ -492,12 +492,12 @@ bool CDImageEcm::ReadChunks(u32 disc_offset, u32 size)
   return true;
 }
 
-bool CDImageEcm::ReadSubChannelQ(SubChannelQ* subq)
+bool CDImageEcm::ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index)
 {
-  if (m_sbi.GetReplacementSubChannelQ(m_position_on_disc, subq))
+  if (m_sbi.GetReplacementSubChannelQ(index.start_lba_on_disc + lba_in_index, subq))
     return true;
 
-  return CDImage::ReadSubChannelQ(subq);
+  return CDImage::ReadSubChannelQ(subq, index, lba_in_index);
 }
 
 bool CDImageEcm::HasNonStandardSubchannel() const

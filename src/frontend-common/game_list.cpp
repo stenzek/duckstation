@@ -147,61 +147,12 @@ bool GameList::GetPsfListEntry(const char* path, GameListEntry* entry)
   return true;
 }
 
-bool GameList::GetM3UListEntry(const char* path, GameListEntry* entry)
-{
-  FILESYSTEM_STAT_DATA ffd;
-  if (!FileSystem::StatFile(path, &ffd))
-    return false;
-
-  std::vector<std::string> entries = System::ParseM3UFile(path);
-  if (entries.empty())
-    return false;
-
-  entry->code.clear();
-  entry->title = System::GetTitleForPath(path);
-  entry->path = path;
-  entry->region = DiscRegion::Other;
-  entry->total_size = 0;
-  entry->last_modified_time = ffd.ModificationTime.AsUnixTimestamp();
-  entry->type = GameListEntryType::Playlist;
-  entry->compatibility_rating = GameListCompatibilityRating::Unknown;
-
-  for (size_t i = 0; i < entries.size(); i++)
-  {
-    std::unique_ptr<CDImage> entry_image = CDImage::Open(entries[i].c_str(), nullptr);
-    if (!entry_image)
-    {
-      Log_ErrorPrintf("Failed to open entry %zu ('%s') in playlist %s", i, entries[i].c_str(), path);
-      return false;
-    }
-
-    entry->total_size += static_cast<u64>(CDImage::RAW_SECTOR_SIZE) * static_cast<u64>(entry_image->GetLBACount());
-
-    if (entry->region == DiscRegion::Other)
-      entry->region = System::GetRegionForImage(entry_image.get());
-
-    if (entry->compatibility_rating == GameListCompatibilityRating::Unknown)
-    {
-      std::string code = System::GetGameCodeForImage(entry_image.get(), true);
-      const GameListCompatibilityEntry* compatibility_entry = GetCompatibilityEntryForCode(entry->code);
-      if (compatibility_entry)
-        entry->compatibility_rating = compatibility_entry->compatibility_rating;
-      else
-        Log_WarningPrintf("'%s' (%s) not found in compatibility list", entry->code.c_str(), entry->title.c_str());
-    }
-  }
-
-  return true;
-}
-
 bool GameList::GetGameListEntry(const std::string& path, GameListEntry* entry)
 {
   if (System::IsExeFileName(path.c_str()))
     return GetExeListEntry(path.c_str(), entry);
   if (System::IsPsfFileName(path.c_str()))
     return GetPsfListEntry(path.c_str(), entry);
-  if (System::IsM3UFileName(path.c_str()))
-    return GetM3UListEntry(path.c_str(), entry);
 
   std::unique_ptr<CDImage> cdi = CDImage::Open(path.c_str(), nullptr);
   if (!cdi)
@@ -218,7 +169,6 @@ bool GameList::GetGameListEntry(const std::string& path, GameListEntry* entry)
   entry->total_size = static_cast<u64>(CDImage::RAW_SECTOR_SIZE) * static_cast<u64>(cdi->GetLBACount());
   entry->type = GameListEntryType::Disc;
   entry->compatibility_rating = GameListCompatibilityRating::Unknown;
-  cdi.reset();
 
   if (entry->code.empty())
   {
@@ -253,6 +203,28 @@ bool GameList::GetGameListEntry(const std::string& path, GameListEntry* entry)
     const GameSettings::Entry* settings = m_game_settings.GetEntry(entry->code);
     if (settings)
       entry->settings = *settings;
+  }
+
+  if (cdi->HasSubImages())
+  {
+    entry->type = GameListEntryType::Playlist;
+
+    std::string image_title(cdi->GetMetadata("title"));
+    if (!image_title.empty())
+      entry->title = std::move(image_title);
+
+    // get the size of all the subimages
+    const u32 subimage_count = cdi->GetSubImageCount();
+    for (u32 i = 1; i < subimage_count; i++)
+    {
+      if (!cdi->SwitchSubImage(i, nullptr))
+      {
+        Log_ErrorPrintf("Failed to switch to subimage %u in '%s'", i, entry->path.c_str());
+        continue;
+      }
+
+      entry->total_size += static_cast<u64>(CDImage::RAW_SECTOR_SIZE) * static_cast<u64>(cdi->GetLBACount());
+    }
   }
 
   FILESYSTEM_STAT_DATA ffd;

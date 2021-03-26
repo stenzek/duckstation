@@ -847,27 +847,19 @@ void GameChanged(const std::string& path, CDImage* image)
 
   s_http_downloader->WaitForAllRequests();
 
-  const u32 playlist_count = System::GetMediaPlaylistCount();
-  if (playlist_count > 1 && s_use_first_disc_from_playlist)
+  if (image && image->HasSubImages() && image->GetCurrentSubImage() != 0)
   {
-    // have to pass the path in, because the image isn't owned by the system yet
-    const u32 playlist_index = System::GetMediaPlaylistIndexForPath(path);
-    if (playlist_index > 0 && playlist_index < playlist_count)
+    std::unique_ptr<CDImage> image_copy(CDImage::Open(image->GetFileName().c_str(), nullptr));
+    if (!image_copy)
     {
-      const std::string& first_disc_path(System::GetMediaPlaylistPath(0));
-      std::unique_ptr<CDImage> first_disc_image(CDImage::Open(first_disc_path.c_str(), nullptr));
-      if (first_disc_image)
-      {
-        Log_InfoPrintf("Using first disc '%s' from playlist (currently '%s')", first_disc_path.c_str(), path.c_str());
-        GameChanged(first_disc_path, first_disc_image.get());
-        return;
-      }
-      else
-      {
-        Log_ErrorPrintf("Failed to open first disc '%s' from playlist", first_disc_path.c_str());
-        return;
-      }
+      Log_ErrorPrintf("Failed to reopen image '%s'", image->GetFileName().c_str());
+      return;
     }
+
+    // this will go to subimage zero automatically
+    Assert(image_copy->GetCurrentSubImage() == 0);
+    GameChanged(path, image_copy.get());
+    return;
   }
 
   ClearGameInfo();

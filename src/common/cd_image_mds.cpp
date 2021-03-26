@@ -37,7 +37,7 @@ public:
 
   bool OpenAndParse(const char* filename, Common::Error* error);
 
-  bool ReadSubChannelQ(SubChannelQ* subq) override;
+  bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index) override;
   bool HasNonStandardSubchannel() const override;
 
 protected:
@@ -255,12 +255,12 @@ bool CDImageMds::OpenAndParse(const char* filename, Common::Error* error)
   return Seek(1, Position{0, 0, 0});
 }
 
-bool CDImageMds::ReadSubChannelQ(SubChannelQ* subq)
+bool CDImageMds::ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index)
 {
-  if (m_sbi.GetReplacementSubChannelQ(m_position_on_disc, subq))
+  if (m_sbi.GetReplacementSubChannelQ(index.start_lba_on_disc + lba_in_index, subq))
     return true;
 
-  return CDImage::ReadSubChannelQ(subq);
+  return CDImage::ReadSubChannelQ(subq, index, lba_in_index);
 }
 
 bool CDImageMds::HasNonStandardSubchannel() const
