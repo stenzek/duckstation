@@ -1662,19 +1662,28 @@ DEFINE_JNI_ARGS_METHOD(jstring, AndroidHostInterface_importBIOSImage, jobject ob
     return env->NewStringUTF(hash.ToString().c_str());
 }
 
-DEFINE_JNI_ARGS_METHOD(jobjectArray, AndroidHostInterface_getMediaPlaylistPaths, jobject obj)
+
+DEFINE_JNI_ARGS_METHOD(jboolean, AndroidHostInterface_hasMediaSubImages, jobject obj)
+{
+  if (!System::IsValid())
+    return false;
+
+  return System::HasMediaSubImages();
+}
+
+DEFINE_JNI_ARGS_METHOD(jobjectArray, AndroidHostInterface_getMediaSubImageTitles, jobject obj)
 {
   if (!System::IsValid())
     return nullptr;
 
-  const u32 count = System::GetMediaPlaylistCount();
+  const u32 count = System::GetMediaSubImageCount();
   if (count == 0)
     return nullptr;
 
   jobjectArray arr = env->NewObjectArray(static_cast<jsize>(count), s_String_class, nullptr);
   for (u32 i = 0; i < count; i++)
   {
-    jstring str = env->NewStringUTF(System::GetMediaPlaylistPath(i).c_str());
+    jstring str = env->NewStringUTF(System::GetMediaSubImageTitle(i).c_str());
     env->SetObjectArrayElement(arr, static_cast<jsize>(i), str);
     env->DeleteLocalRef(str);
   }
@@ -1682,24 +1691,24 @@ DEFINE_JNI_ARGS_METHOD(jobjectArray, AndroidHostInterface_getMediaPlaylistPaths,
   return arr;
 }
 
-DEFINE_JNI_ARGS_METHOD(jint, AndroidHostInterface_getMediaPlaylistIndex, jobject obj)
+DEFINE_JNI_ARGS_METHOD(jint, AndroidHostInterface_getMediaSubImageIndex, jobject obj)
 {
   if (!System::IsValid())
     return -1;
 
-  return System::GetMediaPlaylistIndex();
+  return System::GetMediaSubImageIndex();
 }
 
-DEFINE_JNI_ARGS_METHOD(jboolean, AndroidHostInterface_setMediaPlaylistIndex, jobject obj, jint index)
+DEFINE_JNI_ARGS_METHOD(jboolean, AndroidHostInterface_switchMediaSubImage, jobject obj, jint index)
 {
-  if (!System::IsValid() || index < 0 || static_cast<u32>(index) >= System::GetMediaPlaylistCount())
+  if (!System::IsValid() || index < 0 || static_cast<u32>(index) >= System::GetMediaSubImageCount())
     return false;
 
   AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
   hi->RunOnEmulationThread([index, hi]() {
     if (System::IsValid())
     {
-      if (!System::SwitchMediaFromPlaylist(index))
+      if (!System::SwitchMediaSubImage(static_cast<u32>(index)))
         hi->AddOSDMessage("Disc switch failed. Please make sure the file exists.");
     }
   });

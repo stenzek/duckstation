@@ -307,6 +307,17 @@ std::string CDImage::GetSubImageMetadata(u32 index, const std::string_view& type
   return {};
 }
 
+void CDImage::ClearTOC()
+{
+  m_lba_count = 0;
+  m_indices.clear();
+  m_tracks.clear();
+  m_current_index = nullptr;
+  m_position_in_index = 0;
+  m_position_in_track = 0;
+  m_position_on_disc = 0;
+}
+
 void CDImage::CopyTOC(const CDImage* image)
 {
   m_lba_count = image->m_lba_count;

@@ -280,6 +280,7 @@ public:
   virtual std::string GetSubImageMetadata(u32 index, const std::string_view& type) const;
 
 protected:
+  void ClearTOC();
   void CopyTOC(const CDImage* image);
 
   const Index* GetIndexForDiscPosition(LBA pos);

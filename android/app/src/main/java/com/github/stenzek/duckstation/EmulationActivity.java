@@ -690,9 +690,23 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         }
     }
 
+    private void startDiscChangeFromFile() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("*/*");
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        startActivityForResult(Intent.createChooser(intent, getString(R.string.main_activity_choose_disc_image)), REQUEST_CHANGE_DISC_FILE);
+    }
+
     private void showDiscChangeMenu() {
-        final String[] paths = AndroidHostInterface.getInstance().getMediaPlaylistPaths();
-        final int currentPath = AndroidHostInterface.getInstance().getMediaPlaylistIndex();
+        final AndroidHostInterface hi = AndroidHostInterface.getInstance();
+
+        if (!hi.hasMediaSubImages()) {
+            startDiscChangeFromFile();
+            return;
+        }
+
+        final String[] paths = AndroidHostInterface.getInstance().getMediaSubImageTitles();
+        final int currentPath = AndroidHostInterface.getInstance().getMediaSubImageIndex();
         final int numPaths = (paths != null) ? paths.length : 0;
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -707,12 +721,9 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
             onMenuClosed();
 
             if (i < numPaths) {
-                AndroidHostInterface.getInstance().setMediaPlaylistIndex(i);
+                AndroidHostInterface.getInstance().switchMediaSubImage(i);
             } else {
-                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                intent.setType("*/*");
-                intent.addCategory(Intent.CATEGORY_OPENABLE);
-                startActivityForResult(Intent.createChooser(intent, getString(R.string.main_activity_choose_disc_image)), REQUEST_CHANGE_DISC_FILE);
+                startDiscChangeFromFile();
             }
         });
         builder.setOnCancelListener(dialogInterface -> onMenuClosed());

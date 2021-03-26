@@ -139,11 +139,13 @@ public class AndroidHostInterface {
 
     public native void setFastForwardEnabled(boolean enabled);
 
-    public native String[] getMediaPlaylistPaths();
+    public native boolean hasMediaSubImages();
 
-    public native int getMediaPlaylistIndex();
+    public native String[] getMediaSubImageTitles();
 
-    public native boolean setMediaPlaylistIndex(int index);
+    public native int getMediaSubImageIndex();
+
+    public native boolean switchMediaSubImage(int index);
 
     public native boolean setMediaFilename(String filename);
 
