@@ -1213,7 +1213,7 @@ bool DoLoadState(ByteStream* state, bool force_software_renderer, bool update_di
 
   if (media && header.version >= 51)
   {
-    const u32 num_subimages = media->HasSubImages() ? media->GetSubImageCount() : 0;
+    const u32 num_subimages = media->HasSubImages() ? media->GetSubImageCount() : 1;
     if (header.media_subimage_index >= num_subimages ||
         (media->HasSubImages() && media->GetCurrentSubImage() != header.media_subimage_index &&
          !media->SwitchSubImage(header.media_subimage_index, &error)))
