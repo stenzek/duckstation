@@ -112,6 +112,9 @@ private:
   void EndTransfer();
   void ResetDeviceTransferState();
 
+  bool DoStateController(StateWrapper& sw, u32 i);
+  bool DoStateMemcard(StateWrapper& sw, u32 i);
+
   std::array<std::unique_ptr<Controller>, NUM_CONTROLLER_AND_CARD_PORTS> m_controllers;
   std::array<std::unique_ptr<MemoryCard>, NUM_CONTROLLER_AND_CARD_PORTS> m_memory_cards;
 
