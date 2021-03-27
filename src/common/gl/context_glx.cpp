@@ -113,7 +113,7 @@ bool ContextGLX::ChangeSurface(const WindowInfo& new_wi)
 
 void ContextGLX::ResizeSurface(u32 new_surface_width /*= 0*/, u32 new_surface_height /*= 0*/)
 {
-  m_window.Resize();
+  m_window.Resize(new_surface_width, new_surface_height);
   m_wi.surface_width = m_window.GetWidth();
   m_wi.surface_height = m_window.GetHeight();
 }
