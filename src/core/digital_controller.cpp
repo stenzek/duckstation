@@ -36,7 +36,7 @@ bool DigitalController::DoState(StateWrapper& sw, bool apply_input_state)
   u16 button_state = m_button_state;
   sw.Do(&button_state);
   if (apply_input_state)
-    m_button_state = apply_input_state;
+    m_button_state = button_state;
 
   sw.Do(&m_transfer_state);
   return true;
