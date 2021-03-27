@@ -135,8 +135,6 @@ public:
       BitField<u8, bool, 5, 1> digital_copy_permitted;
       BitField<u8, bool, 6, 1> data;
       BitField<u8, bool, 7, 1> four_channel_audio;
-
-      Control& operator=(const Control& c) { bits = c.bits; return *this; }
     };
 
     struct
