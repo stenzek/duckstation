@@ -3,6 +3,7 @@
 #include "core/controller.h"
 #include "core/settings.h"
 #include "inputbindingwidgets.h"
+#include "mainwindow.h"
 #include "qthostinterface.h"
 #include "qtutils.h"
 #include "settingsdialog.h"
@@ -73,6 +74,8 @@ void MemoryCardSettingsWidget::createUi(SettingsDialog* dialog)
       tr("When using a multi-disc format (m3u/pbp) and per-game (title) memory cards, a single memory card "
          "will be used for all discs. If unchecked, a separate card will be used for each disc."));
 
+    box_layout->addWidget(QtUtils::CreateHorizontalLine(box));
+
     {
 
       QHBoxLayout* note_layout = new QHBoxLayout();
@@ -83,10 +86,25 @@ void MemoryCardSettingsWidget::createUi(SettingsDialog* dialog)
       note_label->setWordWrap(true);
       note_layout->addWidget(note_label, 1);
 
-      QPushButton* open_memcards = new QPushButton(tr("Open..."), box);
+      QPushButton* open_memcards = new QPushButton(tr("Open Directory..."), box);
       connect(open_memcards, &QPushButton::clicked, this, &MemoryCardSettingsWidget::onOpenMemCardsDirectoryClicked);
       note_layout->addWidget(open_memcards);
       box_layout->addLayout(note_layout);
+    }
+
+    {
+      QHBoxLayout* hbox = new QHBoxLayout();
+      QLabel* label = new QLabel(
+        tr("The memory card editor enables you to move saves between cards, as well as import cards of other formats."),
+        box);
+      label->setWordWrap(true);
+      hbox->addWidget(label, 1);
+
+      QPushButton* button = new QPushButton(tr("Memory Card Editor..."), box);
+      connect(button, &QPushButton::clicked,
+              []() { QtHostInterface::GetInstance()->getMainWindow()->openMemoryCardEditor(QString(), QString()); });
+      hbox->addWidget(button);
+      box_layout->addLayout(hbox);
     }
 
     layout->addWidget(box);

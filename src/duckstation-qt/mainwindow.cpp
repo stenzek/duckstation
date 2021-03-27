@@ -1477,10 +1477,13 @@ void MainWindow::onCheckForUpdatesActionTriggered()
 void MainWindow::openMemoryCardEditor(const QString& card_a_path, const QString& card_b_path)
 {
   if (!m_memory_card_editor_dialog)
+  {
     m_memory_card_editor_dialog = new MemoryCardEditorDialog(this);
+    m_memory_card_editor_dialog->setModal(false);
+  }
 
-  m_memory_card_editor_dialog->setModal(false);
   m_memory_card_editor_dialog->show();
+  m_memory_card_editor_dialog->activateWindow();
 
   if (!card_a_path.isEmpty())
   {
