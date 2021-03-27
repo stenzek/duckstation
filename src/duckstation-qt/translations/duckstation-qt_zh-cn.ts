@@ -6743,12 +6743,12 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../memorycardsettingswidget.cpp" line="68"/>
         <location filename="../memorycardsettingswidget.cpp" line="73"/>
         <source>Use Single Card For Sub-Images</source>
-        <translation>为子镜像使用单个记忆卡</translation>
+        <translation>为子镜像使用单记忆卡</translation>
     </message>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="74"/>
         <source>When using a multi-disc format (m3u/pbp) and per-game (title) memory cards, a single memory card will be used for all discs. If unchecked, a separate card will be used for each disc.</source>
-        <translation>当使用多光盘格式 (m3u/pbp) 和每个游戏独立记忆卡 (游戏标题) 时，所有光盘将共用一个记忆卡。如果不勾选，每一张光盘将使用各自独立的记忆卡。</translation>
+        <translation>当使用多光盘格式 (m3u/pbp) 并且每个游戏独立记忆卡 (游戏标题) 时，所有光盘将共用一个单记忆卡。如果不勾选，每一张光盘将使用各自独立的记忆卡。</translation>
     </message>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="83"/>
