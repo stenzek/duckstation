@@ -143,7 +143,7 @@
     <string name="main_activity_choose_bios_image">Kies BIOS Image</string>
     <string name="main_activity_failed_to_open_bios_image">BIOS image openen mislukt.</string>
     <string name="main_activity_failed_to_read_bios_image_prefix">\"BIOS image lezen mislukt: \"</string>
-    <string name="main_activity_bios_image_too_large">BIOS image is te groot.</string>
+    <string name="main_activity_bios_image_too_large">BIOS-image is te groot. U moet een BIOS-image selecteren, geen game, en deze moet 512 KB groot zijn.</string>
     <string name="main_activity_invalid_error">Deze BIOS image is ongeldig, of is al geimporteerd.</string>
     <string name="main_activity_show_version_title">Versie</string>
     <string name="main_activity_copy">Kopieer</string>

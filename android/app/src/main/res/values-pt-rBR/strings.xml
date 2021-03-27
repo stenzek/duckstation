@@ -150,7 +150,7 @@
     <string name="main_activity_choose_bios_image">Escolher BIOS</string>
     <string name="main_activity_failed_to_open_bios_image">Falha ao Abrir BIOS.</string>
     <string name="main_activity_failed_to_read_bios_image_prefix">\"Falha ao ler BIOS: \"</string>
-    <string name="main_activity_bios_image_too_large">Aqruivo BIOS muito grande.</string>
+    <string name="main_activity_bios_image_too_large">Aqruivo BIOS muito grande. Você deve selecionar uma imagem do BIOS, não um jogo, e deve ter 512 KB de tamanho.</string>
     <string name="main_activity_invalid_error">Esse BIOS não é válido, ou já foi importado.</string>
     <string name="main_activity_show_version_title">Versão</string>
     <string name="main_activity_copy">Copiar</string>

@@ -148,7 +148,7 @@
 	<string name="main_activity_choose_bios_image">Выберите образ BIOS</string>
 	<string name="main_activity_failed_to_open_bios_image">Не удалось открыть образ BIOS.</string>
 	<string name="main_activity_failed_to_read_bios_image_prefix">\"Не удалось прочитать образ BIOS: \"</string>
-	<string name="main_activity_bios_image_too_large">Образ BIOS слишком большой.</string>
+	<string name="main_activity_bios_image_too_large">Образ BIOS слишком большой. Вы должны выбрать образ BIOS, а не игру, и он должен быть размером 512 KB.</string>
 	<string name="main_activity_invalid_error">Образ BIOS неправильный или уже был импортирован.</string>
 	<string name="main_activity_show_version_title">Версия</string>
 	<string name="main_activity_copy">Копировать</string>

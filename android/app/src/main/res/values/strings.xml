@@ -148,7 +148,7 @@
     <string name="main_activity_choose_bios_image">Choose BIOS Image</string>
     <string name="main_activity_failed_to_open_bios_image">Failed to open BIOS image.</string>
     <string name="main_activity_failed_to_read_bios_image_prefix">\"Failed to read BIOS image: \"</string>
-    <string name="main_activity_bios_image_too_large">BIOS image is too large.</string>
+    <string name="main_activity_bios_image_too_large">BIOS image is too large. You must select a BIOS image, not a game, and it should be 512KB in size.</string>
     <string name="main_activity_invalid_error">This BIOS image is invalid, or has already been imported.</string>
     <string name="main_activity_show_version_title">Version</string>
     <string name="main_activity_copy">Copy</string>

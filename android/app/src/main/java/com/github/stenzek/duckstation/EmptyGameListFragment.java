@@ -10,7 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 public class EmptyGameListFragment extends Fragment {
-    private static final String SUPPORTED_FORMATS_STRING = ".cue, .iso, .img, .ecm, .mds, .chd, .pbp";
+    private static final String SUPPORTED_FORMATS_STRING = ".cue, .iso, .img, .ecm, .mds, .chd, .pbp (unencrypted)";
 
     private MainActivity parent;
 
