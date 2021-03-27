@@ -1821,17 +1821,9 @@ void UpdateMemoryCards()
       case MemoryCardType::Shared:
       {
         if (g_settings.memory_card_paths[i].empty())
-        {
-          g_host_interface->AddFormattedOSDMessage(
-            10.0f,
-            g_host_interface->TranslateString("System", "Memory card path for slot %u is missing, using default."),
-            i + 1u);
           card = MemoryCard::Open(g_host_interface->GetSharedMemoryCardPath(i));
-        }
         else
-        {
           card = MemoryCard::Open(g_settings.memory_card_paths[i]);
-        }
       }
       break;
     }

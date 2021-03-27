@@ -38,6 +38,32 @@ void MemoryCardSettingsWidget::createUi(SettingsDialog* dialog)
     QGroupBox* box = new QGroupBox(tr("Shared Settings"), this);
     QVBoxLayout* box_layout = new QVBoxLayout(box);
 
+    {
+      QLabel* label = new QLabel(tr("Memory Card Directory:"), box);
+      box_layout->addWidget(label);
+
+      QHBoxLayout* hbox = new QHBoxLayout();
+      m_memory_card_directory = new QLineEdit(box);
+      SettingWidgetBinder::BindWidgetToStringSetting(m_host_interface, m_memory_card_directory, "MemoryCards",
+                                                     "Directory");
+      if (m_memory_card_directory->text().isEmpty())
+      {
+        QSignalBlocker sb(m_memory_card_directory);
+        m_memory_card_directory->setText(QString::fromStdString(m_host_interface->GetMemoryCardDirectory()));
+      }
+      hbox->addWidget(m_memory_card_directory);
+
+      QPushButton* browse = new QPushButton(tr("Browse..."), box);
+      connect(browse, &QPushButton::clicked, this, &MemoryCardSettingsWidget::onBrowseMemCardsDirectoryClicked);
+      hbox->addWidget(browse);
+
+      QPushButton* reset = new QPushButton(tr("Reset"), box);
+      connect(reset, &QPushButton::clicked, this, &MemoryCardSettingsWidget::onResetMemCardsDirectoryClicked);
+      hbox->addWidget(reset);
+
+      box_layout->addLayout(hbox);
+    }
+
     QCheckBox* playlist_title_as_game_title = new QCheckBox(tr("Use Single Card For Sub-Images"), box);
     SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, playlist_title_as_game_title, "MemoryCards",
                                                  "UsePlaylistTitle", true);
@@ -47,18 +73,21 @@ void MemoryCardSettingsWidget::createUi(SettingsDialog* dialog)
       tr("When using a multi-disc format (m3u/pbp) and per-game (title) memory cards, a single memory card "
          "will be used for all discs. If unchecked, a separate card will be used for each disc."));
 
-    QHBoxLayout* note_layout = new QHBoxLayout();
-    QLabel* note_label =
-      new QLabel(tr("If one of the \"separate card per game\" memory card modes is chosen, these memory "
-                    "cards will be saved to the memcards directory."),
-                 box);
-    note_label->setWordWrap(true);
-    note_layout->addWidget(note_label, 1);
+    {
 
-    QPushButton* open_memcards = new QPushButton(tr("Open..."), box);
-    connect(open_memcards, &QPushButton::clicked, this, &MemoryCardSettingsWidget::onOpenMemCardsDirectoryClicked);
-    note_layout->addWidget(open_memcards);
-    box_layout->addLayout(note_layout);
+      QHBoxLayout* note_layout = new QHBoxLayout();
+      QLabel* note_label =
+        new QLabel(tr("If one of the \"separate card per game\" memory card modes is chosen, these memory "
+                      "cards will be saved to the memory cards directory."),
+                   box);
+      note_label->setWordWrap(true);
+      note_layout->addWidget(note_label, 1);
+
+      QPushButton* open_memcards = new QPushButton(tr("Open..."), box);
+      connect(open_memcards, &QPushButton::clicked, this, &MemoryCardSettingsWidget::onOpenMemCardsDirectoryClicked);
+      note_layout->addWidget(open_memcards);
+      box_layout->addLayout(note_layout);
+    }
 
     layout->addWidget(box);
   }
@@ -91,11 +120,21 @@ void MemoryCardSettingsWidget::createPortSettingsUi(SettingsDialog* dialog, int 
   ui->memory_card_path = new QLineEdit(ui->container);
   SettingWidgetBinder::BindWidgetToStringSetting(m_host_interface, ui->memory_card_path, "MemoryCards",
                                                  StringUtil::StdStringFromFormat("Card%dPath", index + 1));
+  if (ui->memory_card_path->text().isEmpty())
+  {
+    QSignalBlocker sb(ui->memory_card_path);
+    ui->memory_card_path->setText(
+      QString::fromStdString(m_host_interface->GetSharedMemoryCardPath(static_cast<u32>(index))));
+  }
   memory_card_layout->addWidget(ui->memory_card_path);
 
   QPushButton* memory_card_path_browse = new QPushButton(tr("Browse..."), ui->container);
   connect(memory_card_path_browse, &QPushButton::clicked, [this, index]() { onBrowseMemoryCardPathClicked(index); });
   memory_card_layout->addWidget(memory_card_path_browse);
+
+  QPushButton* memory_card_path_reset = new QPushButton(tr("Reset"), ui->container);
+  connect(memory_card_path_reset, &QPushButton::clicked, [this, index]() { onResetMemoryCardPathClicked(index); });
+  memory_card_layout->addWidget(memory_card_path_reset);
 
   ui->layout->addWidget(new QLabel(tr("Shared Memory Card Path:"), ui->container));
   ui->layout->addLayout(memory_card_layout);
@@ -113,8 +152,38 @@ void MemoryCardSettingsWidget::onBrowseMemoryCardPathClicked(int index)
   m_port_ui[index].memory_card_path->setText(path);
 }
 
+void MemoryCardSettingsWidget::onResetMemoryCardPathClicked(int index)
+{
+  m_host_interface->RemoveSettingValue("MemoryCards", TinyString::FromFormat("Card%dPath", index + 1));
+  m_host_interface->applySettings();
+
+  QSignalBlocker db(m_port_ui[index].memory_card_path);
+  m_port_ui[index].memory_card_path->setText(QString::fromStdString(m_host_interface->GetSharedMemoryCardPath(index)));
+}
+
 void MemoryCardSettingsWidget::onOpenMemCardsDirectoryClicked()
 {
-  QtUtils::OpenURL(this,
-                   QUrl::fromLocalFile(m_host_interface->getUserDirectoryRelativePath(QStringLiteral("memcards"))));
+  QtUtils::OpenURL(this, QUrl::fromLocalFile(m_memory_card_directory->text()));
+}
+
+void MemoryCardSettingsWidget::onBrowseMemCardsDirectoryClicked()
+{
+  QString path =
+    QDir::toNativeSeparators(QFileDialog::getExistingDirectory(this, tr("Select path to memory card directory")));
+  if (path.isEmpty())
+    return;
+
+  m_memory_card_directory->setText(path);
+  m_host_interface->applySettings();
+}
+
+void MemoryCardSettingsWidget::onResetMemCardsDirectoryClicked()
+{
+  m_host_interface->RemoveSettingValue("MemoryCards", "Directory");
+  m_host_interface->applySettings();
+
+  // This sucks.. settings are applied asynchronously, so we have to manually build the path here.
+  QString memory_card_directory(m_host_interface->getUserDirectoryRelativePath(QStringLiteral("memcards")));
+  QSignalBlocker db(m_memory_card_directory);
+  m_memory_card_directory->setText(memory_card_directory);
 }

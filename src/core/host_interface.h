@@ -93,6 +93,9 @@ public:
   /// Retrieves information about specified game from game list.
   virtual void GetGameInfo(const char* path, CDImage* image, std::string* code, std::string* title);
 
+  /// Returns the directory where per-game memory cards will be saved.
+  virtual std::string GetMemoryCardDirectory() const;
+
   /// Returns the default path to a memory card.
   virtual std::string GetSharedMemoryCardPath(u32 slot) const;
 

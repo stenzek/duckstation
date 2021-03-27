@@ -216,6 +216,7 @@ struct Settings
 
   std::array<MemoryCardType, NUM_CONTROLLER_AND_CARD_PORTS> memory_card_types{};
   std::array<std::string, NUM_CONTROLLER_AND_CARD_PORTS> memory_card_paths{};
+  std::string memory_card_directory;
   bool memory_card_use_playlist_title = true;
 
   MultitapMode multitap_mode = MultitapMode::Disabled;

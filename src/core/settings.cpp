@@ -275,14 +275,13 @@ void Settings::Load(SettingsInterface& si)
     ParseMemoryCardTypeName(
       si.GetStringValue("MemoryCards", "Card1Type", GetMemoryCardTypeName(DEFAULT_MEMORY_CARD_1_TYPE)).c_str())
       .value_or(DEFAULT_MEMORY_CARD_1_TYPE);
-  memory_card_paths[0] =
-    si.GetStringValue("MemoryCards", "Card1Path", "memcards" FS_OSPATH_SEPARATOR_STR "shared_card_1.mcd");
   memory_card_types[1] =
     ParseMemoryCardTypeName(
       si.GetStringValue("MemoryCards", "Card2Type", GetMemoryCardTypeName(DEFAULT_MEMORY_CARD_2_TYPE)).c_str())
       .value_or(DEFAULT_MEMORY_CARD_2_TYPE);
-  memory_card_paths[1] =
-    si.GetStringValue("MemoryCards", "Card2Path", "memcards" FS_OSPATH_SEPARATOR_STR "shared_card_2.mcd");
+  memory_card_paths[0] = si.GetStringValue("MemoryCards", "Card1Path", "");
+  memory_card_paths[1] = si.GetStringValue("MemoryCards", "Card2Path", "");
+  memory_card_directory = si.GetStringValue("MemoryCards", "Directory", "");
   memory_card_use_playlist_title = si.GetBoolValue("MemoryCards", "UsePlaylistTitle", true);
 
   multitap_mode =
@@ -434,9 +433,21 @@ void Settings::Save(SettingsInterface& si) const
   }
 
   si.SetStringValue("MemoryCards", "Card1Type", GetMemoryCardTypeName(memory_card_types[0]));
-  si.SetStringValue("MemoryCards", "Card1Path", memory_card_paths[0].c_str());
   si.SetStringValue("MemoryCards", "Card2Type", GetMemoryCardTypeName(memory_card_types[1]));
-  si.SetStringValue("MemoryCards", "Card2Path", memory_card_paths[1].c_str());
+  if (!memory_card_paths[0].empty())
+    si.SetStringValue("MemoryCards", "Card1Path", memory_card_paths[0].c_str());
+  else
+    si.DeleteValue("MemoryCards", "Card1Path");
+
+  if (!memory_card_paths[1].empty())
+    si.SetStringValue("MemoryCards", "Card2Path", memory_card_paths[1].c_str());
+  else
+    si.DeleteValue("MemoryCards", "Card2Path");
+
+  if (!memory_card_directory.empty())
+    si.SetStringValue("MemoryCards", "Directory", memory_card_directory.c_str());
+  else
+    si.DeleteValue("MemoryCards", "Directory");
   si.SetBoolValue("MemoryCards", "UsePlaylistTitle", memory_card_use_playlist_title);
 
   si.SetStringValue("ControllerPorts", "MultitapMode", GetMultitapModeName(multitap_mode));

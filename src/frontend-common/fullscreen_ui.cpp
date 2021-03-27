@@ -1804,10 +1804,32 @@ void DrawSettingsWindow()
                                          &s_settings_copy.memory_card_use_playlist_title);
 
         static std::string memory_card_directory;
-        if (memory_card_directory.empty())
-          memory_card_directory = s_host_interface->GetUserDirectoryRelativePath("memcards");
+        static bool memory_card_directory_set = false;
+        if (!memory_card_directory_set)
+        {
+          memory_card_directory = s_host_interface->GetMemoryCardDirectory();
+          memory_card_directory_set = true;
+        }
 
-        MenuButton("Per-Game Memory Card Directory", memory_card_directory.c_str(), false);
+        if (MenuButton("Memory Card Directory", memory_card_directory.c_str()))
+        {
+          OpenFileSelector("Memory Card Directory", true, [](const std::string& path) {
+            if (!path.empty())
+            {
+              memory_card_directory = path;
+              s_settings_copy.memory_card_directory = path;
+              s_host_interface->RunLater(SaveAndApplySettings);
+            }
+            CloseFileSelector();
+          });
+        }
+
+        if (MenuButton("Reset Memory Card Directory", "Resets memory card directory to default (user directory)."))
+        {
+          s_settings_copy.memory_card_directory.clear();
+          s_host_interface->RunLater(SaveAndApplySettings);
+          memory_card_directory_set = false;
+        }
 
         EndMenuButtons();
       }

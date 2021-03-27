@@ -586,9 +586,10 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   }
 
   si.SetStringValue("MemoryCards", "Card1Type", Settings::GetMemoryCardTypeName(Settings::DEFAULT_MEMORY_CARD_1_TYPE));
-  si.SetStringValue("MemoryCards", "Card1Path", "memcards" FS_OSPATH_SEPARATOR_STR "shared_card_1.mcd");
   si.SetStringValue("MemoryCards", "Card2Type", Settings::GetMemoryCardTypeName(Settings::DEFAULT_MEMORY_CARD_2_TYPE));
-  si.SetStringValue("MemoryCards", "Card2Path", "memcards" FS_OSPATH_SEPARATOR_STR "shared_card_2.mcd");
+  si.DeleteValue("MemoryCards", "Card1Path");
+  si.DeleteValue("MemoryCards", "Card2Path");
+  si.DeleteValue("MemoryCards", "Directory");
   si.SetBoolValue("MemoryCards", "UsePlaylistTitle", true);
 
   si.SetStringValue("ControllerPorts", "MultitapMode", Settings::GetMultitapModeName(Settings::DEFAULT_MULTITAP_MODE));
@@ -837,7 +838,8 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
     if (g_settings.memory_card_types != old_settings.memory_card_types ||
         g_settings.memory_card_paths != old_settings.memory_card_paths ||
         (g_settings.memory_card_use_playlist_title != old_settings.memory_card_use_playlist_title &&
-         System::HasMediaSubImages()))
+         System::HasMediaSubImages()) ||
+        g_settings.memory_card_directory != old_settings.memory_card_directory)
     {
       System::UpdateMemoryCards();
     }
@@ -952,14 +954,38 @@ TinyString HostInterface::GetTimestampStringForFileName()
   return str;
 }
 
+std::string HostInterface::GetMemoryCardDirectory() const
+{
+  if (g_settings.memory_card_directory.empty())
+    return GetUserDirectoryRelativePath("memcards");
+  else
+    return g_settings.memory_card_directory;
+}
+
 std::string HostInterface::GetSharedMemoryCardPath(u32 slot) const
 {
-  return GetUserDirectoryRelativePath("memcards" FS_OSPATH_SEPARATOR_STR "shared_card_%u.mcd", slot + 1);
+  if (g_settings.memory_card_directory.empty())
+  {
+    return GetUserDirectoryRelativePath("memcards" FS_OSPATH_SEPARATOR_STR "shared_card_%u.mcd", slot + 1);
+  }
+  else
+  {
+    return StringUtil::StdStringFromFormat("%s" FS_OSPATH_SEPARATOR_STR "shared_card_%u.mcd",
+                                           g_settings.memory_card_directory.c_str(), slot + 1);
+  }
 }
 
 std::string HostInterface::GetGameMemoryCardPath(const char* game_code, u32 slot) const
 {
-  return GetUserDirectoryRelativePath("memcards" FS_OSPATH_SEPARATOR_STR "%s_%u.mcd", game_code, slot + 1);
+  if (g_settings.memory_card_directory.empty())
+  {
+    return GetUserDirectoryRelativePath("memcards" FS_OSPATH_SEPARATOR_STR "%s_%u.mcd", game_code, slot + 1);
+  }
+  else
+  {
+    return StringUtil::StdStringFromFormat("%s" FS_OSPATH_SEPARATOR_STR "%s_%u.mcd",
+                                           g_settings.memory_card_directory.c_str(), game_code, slot + 1);
+  }
 }
 
 bool HostInterface::GetBoolSettingValue(const char* section, const char* key, bool default_value /*= false*/)
