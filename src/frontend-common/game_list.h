@@ -79,15 +79,6 @@ public:
   GameList();
   ~GameList();
 
-  /// Returns true if the filename is a PlayStation executable we can inject.
-  static bool IsExeFileName(const char* path);
-
-  /// Returns true if the filename is a Portable Sound Format file we can uncompress/load.
-  static bool IsPsfFileName(const char* path);
-
-  /// Returns true if the filename is a M3U Playlist we can handle.
-  static bool IsM3UFileName(const char* path);
-
   static const char* EntryTypeToString(GameListEntryType type);
   static const char* EntryCompatibilityRatingToString(GameListCompatibilityRating rating);
 
@@ -132,7 +123,7 @@ private:
   enum : u32
   {
     GAME_LIST_CACHE_SIGNATURE = 0x45434C47,
-    GAME_LIST_CACHE_VERSION = 24
+    GAME_LIST_CACHE_VERSION = 25
   };
 
   using DatabaseMap = std::unordered_map<std::string, GameListDatabaseEntry>;
@@ -146,7 +137,6 @@ private:
 
   static bool GetExeListEntry(const char* path, GameListEntry* entry);
   static bool GetPsfListEntry(const char* path, GameListEntry* entry);
-  bool GetM3UListEntry(const char* path, GameListEntry* entry);
 
   bool GetGameListEntry(const std::string& path, GameListEntry* entry);
   bool GetGameListEntryFromCache(const std::string& path, GameListEntry* entry);
