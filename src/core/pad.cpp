@@ -119,9 +119,9 @@ bool Pad::DoStateController(StateWrapper& sw, u32 i)
     return false;
 
   if (auto& controller = m_controllers[i]; controller && controller->GetType() == state_controller_type)
-    return controller->DoState(sw, true);
+    return controller->DoState(sw, g_settings.load_devices_from_save_states);
   else if (auto dummy = Controller::Create(state_controller_type, i); dummy)
-    return dummy->DoState(sw, true);
+    return dummy->DoState(sw, g_settings.load_devices_from_save_states);
 
   return true;
 }
