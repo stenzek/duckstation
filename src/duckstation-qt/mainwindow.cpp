@@ -491,14 +491,19 @@ void MainWindow::onChangeDiscFromGameListActionTriggered()
   switchToGameListView();
 }
 
-void MainWindow::onChangeDiscFromPlaylistMenuAboutToShow()
+void MainWindow::onChangeDiscMenuAboutToShow()
 {
-  m_host_interface->populatePlaylistEntryMenu(m_ui.menuChangeDiscFromPlaylist);
+  m_host_interface->populateChangeDiscSubImageMenu(m_ui.menuChangeDisc, m_ui.actionGroupChangeDiscSubImages);
 }
 
-void MainWindow::onChangeDiscFromPlaylistMenuAboutToHide()
+void MainWindow::onChangeDiscMenuAboutToHide()
 {
-  m_ui.menuChangeDiscFromPlaylist->clear();
+  for (QAction* action : m_ui.actionGroupChangeDiscSubImages->actions())
+  {
+    m_ui.actionGroupChangeDiscSubImages->removeAction(action);
+    m_ui.menuChangeDisc->removeAction(action);
+    action->deleteLater();
+  }
 }
 
 void MainWindow::onCheatsMenuAboutToShow()
@@ -621,7 +626,6 @@ void MainWindow::onGameListContextMenuRequested(const QPoint& point, const GameL
   if (entry)
   {
     QAction* action = menu.addAction(tr("Properties..."));
-    action->setEnabled(entry->type == GameListEntryType::Disc);
     connect(action, &QAction::triggered,
             [this, entry]() { GamePropertiesDialog::showForEntry(m_host_interface, entry, this); });
 
@@ -967,10 +971,8 @@ void MainWindow::connectSignals()
   connect(m_ui.actionChangeDiscFromFile, &QAction::triggered, this, &MainWindow::onChangeDiscFromFileActionTriggered);
   connect(m_ui.actionChangeDiscFromGameList, &QAction::triggered, this,
           &MainWindow::onChangeDiscFromGameListActionTriggered);
-  connect(m_ui.menuChangeDiscFromPlaylist, &QMenu::aboutToShow, this,
-          &MainWindow::onChangeDiscFromPlaylistMenuAboutToShow);
-  connect(m_ui.menuChangeDiscFromPlaylist, &QMenu::aboutToHide, this,
-          &MainWindow::onChangeDiscFromPlaylistMenuAboutToHide);
+  connect(m_ui.menuChangeDisc, &QMenu::aboutToShow, this, &MainWindow::onChangeDiscMenuAboutToShow);
+  connect(m_ui.menuChangeDisc, &QMenu::aboutToHide, this, &MainWindow::onChangeDiscMenuAboutToHide);
   connect(m_ui.menuCheats, &QMenu::aboutToShow, this, &MainWindow::onCheatsMenuAboutToShow);
   connect(m_ui.actionCheats, &QAction::triggered, [this] { m_ui.menuCheats->exec(QCursor::pos()); });
   connect(m_ui.actionRemoveDisc, &QAction::triggered, this, &MainWindow::onRemoveDiscActionTriggered);

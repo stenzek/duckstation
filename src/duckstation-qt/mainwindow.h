@@ -78,8 +78,8 @@ private Q_SLOTS:
   void onStartBIOSActionTriggered();
   void onChangeDiscFromFileActionTriggered();
   void onChangeDiscFromGameListActionTriggered();
-  void onChangeDiscFromPlaylistMenuAboutToShow();
-  void onChangeDiscFromPlaylistMenuAboutToHide();
+  void onChangeDiscMenuAboutToShow();
+  void onChangeDiscMenuAboutToHide();
   void onCheatsMenuAboutToShow();
   void onRemoveDiscActionTriggered();
   void onViewToolbarActionToggled(bool checked);

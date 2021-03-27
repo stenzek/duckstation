@@ -1061,17 +1061,16 @@ void QtHostInterface::populateGameListContextMenu(const GameListEntry* entry, QW
   }
 }
 
-void QtHostInterface::populatePlaylistEntryMenu(QMenu* menu)
+void QtHostInterface::populateChangeDiscSubImageMenu(QMenu* menu, QActionGroup* action_group)
 {
   if (!System::IsValid() || !System::HasMediaSubImages())
     return;
 
-  QActionGroup* ag = new QActionGroup(menu);
   const u32 count = System::GetMediaSubImageCount();
   const u32 current = System::GetMediaSubImageIndex();
   for (u32 i = 0; i < count; i++)
   {
-    QAction* action = ag->addAction(QString::fromStdString(System::GetMediaSubImageTitle(i)));
+    QAction* action = action_group->addAction(QString::fromStdString(System::GetMediaSubImageTitle(i)));
     action->setCheckable(true);
     action->setChecked(i == current);
     connect(action, &QAction::triggered, [this, i]() { changeDiscFromPlaylist(i); });

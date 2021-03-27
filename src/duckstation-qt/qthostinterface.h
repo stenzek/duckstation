@@ -19,6 +19,7 @@
 
 class ByteStream;
 
+class QActionGroup;
 class QEventLoop;
 class QMenu;
 class QWidget;
@@ -93,7 +94,7 @@ public:
   void populateGameListContextMenu(const GameListEntry* entry, QWidget* parent_window, QMenu* menu);
 
   /// Fills menu with the current playlist entries. The disc index is marked as checked.
-  void populatePlaylistEntryMenu(QMenu* menu);
+  void populateChangeDiscSubImageMenu(QMenu* menu, QActionGroup* action_group);
 
   /// Fills menu with the current cheat options.
   void populateCheatsMenu(QMenu* menu);

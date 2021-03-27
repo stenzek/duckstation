@@ -38,13 +38,13 @@ void MemoryCardSettingsWidget::createUi(SettingsDialog* dialog)
     QGroupBox* box = new QGroupBox(tr("Shared Settings"), this);
     QVBoxLayout* box_layout = new QVBoxLayout(box);
 
-    QCheckBox* playlist_title_as_game_title = new QCheckBox(tr("Use Single Card For Playlist"), box);
+    QCheckBox* playlist_title_as_game_title = new QCheckBox(tr("Use Single Card For Sub-Images"), box);
     SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, playlist_title_as_game_title, "MemoryCards",
                                                  "UsePlaylistTitle", true);
     box_layout->addWidget(playlist_title_as_game_title);
     dialog->registerWidgetHelp(
-      playlist_title_as_game_title, tr("Use Single Card For Playlist"), tr("Checked"),
-      tr("When using a playlist (m3u) and per-game (title) memory cards, a single memory card "
+      playlist_title_as_game_title, tr("Use Single Card For Sub-Images"), tr("Checked"),
+      tr("When using a multi-disc format (m3u/pbp) and per-game (title) memory cards, a single memory card "
          "will be used for all discs. If unchecked, a separate card will be used for each disc."));
 
     QHBoxLayout* note_layout = new QHBoxLayout();

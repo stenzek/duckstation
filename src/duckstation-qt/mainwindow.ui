@@ -48,15 +48,11 @@
       <iconset resource="resources/resources.qrc">
        <normaloff>:/icons/media-optical.png</normaloff>:/icons/media-optical.png</iconset>
      </property>
-     <widget class="QMenu" name="menuChangeDiscFromPlaylist">
-      <property name="title">
-       <string>From Playlist...</string>
-      </property>
-     </widget>
      <addaction name="actionChangeDiscFromFile"/>
      <addaction name="actionChangeDiscFromGameList"/>
-     <addaction name="menuChangeDiscFromPlaylist"/>
      <addaction name="actionRemoveDisc"/>
+     <actiongroup name="actionGroupChangeDiscSubImages" />
+     <addaction name="separator"/>
     </widget>
     <widget class="QMenu" name="menuCheats">
      <property name="title">
