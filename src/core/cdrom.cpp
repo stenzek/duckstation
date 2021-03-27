@@ -120,6 +120,7 @@ void CDROM::SoftReset()
   m_status.bits = 0;
   m_secondary_status.bits = 0;
   m_secondary_status.motor_on = CanReadMedia();
+  m_secondary_status.shell_open = !CanReadMedia();
   m_mode.bits = 0;
   m_current_double_speed = false;
   m_interrupt_enable_register = INTERRUPT_REGISTER_MASK;
@@ -833,10 +834,18 @@ void CDROM::ExecuteCommand()
     case Command::GetID:
     {
       Log_DebugPrintf("CDROM GetID command");
-      SendACKAndStat();
 
-      m_drive_state = DriveState::ReadingID;
-      m_drive_event->Schedule(GetTicksForSeek(0) + GetTicksForRead());
+      if (!CanReadMedia())
+      {
+        SendErrorResponse(STAT_ERROR, ERROR_REASON_NOT_READY);
+      }
+      else
+      {
+        SendACKAndStat();
+
+        m_drive_state = DriveState::ReadingID;
+        m_drive_event->Schedule(GetTicksForSeek(0) + GetTicksForRead());
+      }
 
       EndCommand();
       return;
@@ -847,7 +856,7 @@ void CDROM::ExecuteCommand()
       Log_DebugPrintf("CDROM ReadTOC command");
       if (!CanReadMedia())
       {
-        SendErrorResponse(STAT_ERROR, 0x80);
+        SendErrorResponse(STAT_ERROR, ERROR_REASON_NOT_READY);
       }
       else
       {
@@ -909,7 +918,7 @@ void CDROM::ExecuteCommand()
 
       if (!CanReadMedia())
       {
-        SendErrorResponse(STAT_ERROR, 0x80);
+        SendErrorResponse(STAT_ERROR, ERROR_REASON_NOT_READY);
       }
       else
       {
@@ -928,11 +937,11 @@ void CDROM::ExecuteCommand()
 
       if (!CanReadMedia() || m_drive_state == DriveState::Reading || m_drive_state == DriveState::Playing)
       {
-        SendErrorResponse(STAT_ERROR, 0x80);
+        SendErrorResponse(STAT_ERROR, ERROR_REASON_NOT_READY);
       }
       else if (session == 0)
       {
-        SendErrorResponse(STAT_ERROR, 0x10);
+        SendErrorResponse(STAT_ERROR, ERROR_REASON_INVALID_ARGUMENT);
       }
       else
       {
@@ -953,7 +962,7 @@ void CDROM::ExecuteCommand()
       Log_DebugPrintf("CDROM read command");
       if (!CanReadMedia())
       {
-        SendErrorResponse(STAT_ERROR, 0x80);
+        SendErrorResponse(STAT_ERROR, ERROR_REASON_NOT_READY);
       }
       else if ((!IsMediaPS1Disc() || !DoesMediaRegionMatchConsole()) && !m_mode.cdda)
       {
@@ -988,7 +997,7 @@ void CDROM::ExecuteCommand()
 
       if (!CanReadMedia())
       {
-        SendErrorResponse(STAT_ERROR, 0x80);
+        SendErrorResponse(STAT_ERROR, ERROR_REASON_NOT_READY);
       }
       else
       {
@@ -1118,7 +1127,7 @@ void CDROM::ExecuteCommand()
       Log_DebugPrintf("CDROM motor on command");
       if (m_secondary_status.motor_on)
       {
-        SendErrorResponse(STAT_ERROR, 0x20);
+        SendErrorResponse(STAT_ERROR, ERROR_REASON_INCORRECT_NUMBER_OF_PARAMETERS);
       }
       else
       {
@@ -1224,7 +1233,7 @@ void CDROM::ExecuteCommand()
       }
       else
       {
-        SendErrorResponse(STAT_ERROR, 0x80);
+        SendErrorResponse(STAT_ERROR, ERROR_REASON_NOT_READY);
       }
 
       EndCommand();
@@ -1239,11 +1248,11 @@ void CDROM::ExecuteCommand()
 
       if (!CanReadMedia())
       {
-        SendErrorResponse(STAT_ERROR, 0x80);
+        SendErrorResponse(STAT_ERROR, ERROR_REASON_NOT_READY);
       }
       else if (track > m_reader.GetMedia()->GetTrackCount())
       {
-        SendErrorResponse(STAT_ERROR, 0x10);
+        SendErrorResponse(STAT_ERROR, ERROR_REASON_INVALID_ARGUMENT);
       }
       else
       {
@@ -1283,7 +1292,7 @@ void CDROM::ExecuteCommand()
     {
       Log_DebugPrintf("CDROM sync command");
 
-      SendErrorResponse(STAT_ERROR, 0x40);
+      SendErrorResponse(STAT_ERROR, ERROR_REASON_INVALID_COMMAND);
       EndCommand();
     }
     break;
@@ -1849,6 +1858,7 @@ void CDROM::DoIDRead()
   u8 flags_byte = 0;
   if (!CanReadMedia())
   {
+    stat_byte |= STAT_ID_ERROR;
     flags_byte |= (1 << 6); // Disc Missing
   }
   else
