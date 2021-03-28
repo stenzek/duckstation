@@ -27,7 +27,7 @@
     <SwitchPreferenceCompat
         app:key="BIOS/PatchFastBoot"
         app:title="@string/settings_console_fast_boot"
-        app:defaultValue="false"
+        app:defaultValue="true"
         app:summary="@string/settings_summary_console_fast_boot"
         app:iconSpaceReserved="false" />
     <ListPreference
