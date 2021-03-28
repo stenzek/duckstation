@@ -1965,9 +1965,9 @@ void DrawSettingsWindow()
         settings_changed |= ToggleButton("Show OSD Messages", "Shows on-screen-display messages when events occur.",
                                          &s_settings_copy.display_show_osd_messages);
         settings_changed |= ToggleButton(
-          "Show Game FPS", "Shows the internal frame rate of the game in the top-right corner of the display.",
+          "Show Game Frame Rate", "Shows the internal frame rate of the game in the top-right corner of the display.",
           &s_settings_copy.display_show_fps);
-        settings_changed |= ToggleButton("Show Display FPS (VPS)",
+        settings_changed |= ToggleButton("Show Display FPS",
                                          "Shows the number of frames (or v-syncs) displayed per second by the system "
                                          "in the top-right corner of the display.",
                                          &s_settings_copy.display_show_vps);

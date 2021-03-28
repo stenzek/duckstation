@@ -184,7 +184,7 @@
       <item row="2" column="1">
        <widget class="QCheckBox" name="showFPS">
         <property name="text">
-         <string>Show FPS</string>
+         <string>Show Game Frame Rate</string>
         </property>
        </widget>
       </item>
@@ -198,7 +198,7 @@
       <item row="3" column="1">
        <widget class="QCheckBox" name="showVPS">
         <property name="text">
-         <string>Show VPS</string>
+         <string>Show Display FPS</string>
         </property>
        </widget>
       </item>

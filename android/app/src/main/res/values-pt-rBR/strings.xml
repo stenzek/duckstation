@@ -8,8 +8,8 @@
     <string name="settings_console_fast_boot">Inicio Rápido</string>
     <string name="settings_osd_show_messages">Mostrar Mensagens</string>
     <string name="settings_osd_show_speed">Mostrar Velocidade da Emulação</string>
-    <string name="settings_osd_show_show_fps">Mostrar FPS</string>
-    <string name="settings_osd_show_show_vps">Mostrar VPS</string>
+    <string name="settings_osd_show_show_fps">Mostrar taxa de quadros do jogo</string>
+    <string name="settings_osd_show_show_vps">Mostrar tela FPS</string>
     <string name="settings_cpu_execution_mode">Modo de execução CPU</string>
     <string name="settings_gpu_renderer">Renderizado por GPU</string>
     <string name="settings_gpu_resolution_scale">Escala de Resolução</string>

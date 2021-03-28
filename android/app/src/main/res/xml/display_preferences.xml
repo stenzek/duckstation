@@ -81,16 +81,16 @@
         app:summary="@string/settings_summary_osd_show_speed"
         app:iconSpaceReserved="false" />
     <SwitchPreferenceCompat
-        app:key="Display/ShowFPS"
-        app:title="@string/settings_osd_show_show_fps"
-        app:defaultValue="false"
-        app:summary="@string/settings_summary_osd_show_fps"
-        app:iconSpaceReserved="false" />
-    <SwitchPreferenceCompat
         app:key="Display/ShowVPS"
         app:title="@string/settings_osd_show_show_vps"
         app:defaultValue="false"
         app:summary="@string/settings_summary_osd_show_vps"
+        app:iconSpaceReserved="false" />
+    <SwitchPreferenceCompat
+        app:key="Display/ShowFPS"
+        app:title="@string/settings_osd_show_show_fps"
+        app:defaultValue="false"
+        app:summary="@string/settings_summary_osd_show_fps"
         app:iconSpaceReserved="false" />
     <SwitchPreferenceCompat
         app:key="Display/ShowResolution"

@@ -7,8 +7,8 @@
     <string name="settings_console_fast_boot">Snel Starten</string>
     <string name="settings_osd_show_messages">Toon Berichten</string>
     <string name="settings_osd_show_speed">Toon Emulatiesnelheid</string>
-    <string name="settings_osd_show_show_fps">Toon FPS</string>
-    <string name="settings_osd_show_show_vps">Toon VPS</string>
+    <string name="settings_osd_show_show_fps">Framesnelheid van games weergeven</string>
+    <string name="settings_osd_show_show_vps">Toon weergave FPS</string>
     <string name="settings_cpu_execution_mode">CPU Executie Modus</string>
     <string name="settings_gpu_renderer">GPU Renderer</string>
     <string name="settings_gpu_resolution_scale">Resolutie Schaal</string>
