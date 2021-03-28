@@ -43,11 +43,11 @@ public:
   void SetErrno(int err);
   void SetSocket(int err);
   void SetMessage(const char* msg);
-  void SetFormattedMessage(const char* format, ...);
+  void SetFormattedMessage(const char* format, ...) printflike(2, 3);
   void SetUser(int err, const char* msg);
   void SetUser(const char* code, const char* message);
-  void SetUserFormatted(int err, const char* format, ...);
-  void SetUserFormatted(const char* code, const char* format, ...);
+  void SetUserFormatted(int err, const char* format, ...) printflike(3, 4);
+  void SetUserFormatted(const char* code, const char* format, ...) printflike(3, 4);
 #ifdef _WIN32
   void SetWin32(unsigned long err);
   void SetHResult(long err);
@@ -58,11 +58,11 @@ public:
   static Error CreateErrno(int err);
   static Error CreateSocket(int err);
   static Error CreateMessage(const char* msg);
-  static Error CreateMessageFormatted(const char* format, ...);
+  static Error CreateMessageFormatted(const char* format, ...) printflike(1, 2);
   static Error CreateUser(int err, const char* msg);
   static Error CreateUser(const char* code, const char* message);
-  static Error CreateUserFormatted(int err, const char* format, ...);
-  static Error CreateUserFormatted(const char* code, const char* format, ...);
+  static Error CreateUserFormatted(int err, const char* format, ...) printflike(2, 3);
+  static Error CreateUserFormatted(const char* code, const char* format, ...) printflike(2, 3);
 #ifdef _WIN32
   static Error CreateWin32(unsigned long err);
   static Error CreateHResult(long err);
