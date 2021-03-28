@@ -1963,7 +1963,7 @@ void UpdateRunningGame(const char* path, CDImage* image)
     s_running_game_path = path;
     g_host_interface->GetGameInfo(path, image, &s_running_game_code, &s_running_game_title);
 
-    if (image->HasSubImages() && g_settings.memory_card_use_playlist_title)
+    if (image && image->HasSubImages() && g_settings.memory_card_use_playlist_title)
     {
       std::string image_title(image->GetMetadata("title"));
       if (!image_title.empty())
