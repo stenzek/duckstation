@@ -4,6 +4,7 @@
 #include <QtWidgets/QMainWindow>
 #include <memory>
 
+#include "core/types.h"
 #include "settingsdialog.h"
 #include "ui_mainwindow.h"
 
@@ -70,7 +71,8 @@ private Q_SLOTS:
   void onEmulationPaused(bool paused);
   void onStateSaved(const QString& game_code, bool global, qint32 slot);
   void onSystemPerformanceCountersUpdated(float speed, float fps, float vps, float average_frame_time,
-                                          float worst_frame_time);
+                                          float worst_frame_time, GPURenderer renderer, quint32 render_width,
+                                          quint32 render_height, bool render_interlaced);
   void onRunningGameChanged(const QString& filename, const QString& game_code, const QString& game_title);
   void onApplicationStateChanged(Qt::ApplicationState state);
 
@@ -150,6 +152,8 @@ private:
   QLabel* m_status_speed_widget = nullptr;
   QLabel* m_status_fps_widget = nullptr;
   QLabel* m_status_frame_time_widget = nullptr;
+  QLabel* m_status_renderer_widget = nullptr;
+  QLabel* m_status_resolution_widget = nullptr;
 
   SettingsDialog* m_settings_dialog = nullptr;
   AutoUpdaterDialog* m_auto_updater_dialog = nullptr;

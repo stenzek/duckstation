@@ -25,6 +25,11 @@ GPU_HW_D3D11::~GPU_HW_D3D11()
   DestroyStateObjects();
 }
 
+GPURenderer GPU_HW_D3D11::GetRendererType() const
+{
+  return GPURenderer::HardwareD3D11;
+}
+
 bool GPU_HW_D3D11::Initialize(HostDisplay* host_display)
 {
   if (host_display->GetRenderAPI() != HostDisplay::RenderAPI::D3D11)

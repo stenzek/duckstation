@@ -403,13 +403,19 @@ void MainWindow::onStateSaved(const QString& game_code, bool global, qint32 slot
 }
 
 void MainWindow::onSystemPerformanceCountersUpdated(float speed, float fps, float vps, float average_frame_time,
-                                                    float worst_frame_time)
+                                                    float worst_frame_time, GPURenderer renderer, quint32 render_width,
+                                                    quint32 render_height, bool render_interlaced)
 {
   m_status_speed_widget->setText(QStringLiteral("%1%").arg(speed, 0, 'f', 0));
   m_status_fps_widget->setText(
     QStringLiteral("FPS: %1/%2").arg(std::round(fps), 0, 'f', 0).arg(std::round(vps), 0, 'f', 0));
   m_status_frame_time_widget->setText(
     QStringLiteral("%1ms average, %2ms worst").arg(average_frame_time, 0, 'f', 2).arg(worst_frame_time, 0, 'f', 2));
+  m_status_renderer_widget->setText(QString::fromUtf8(Settings::GetRendererName(renderer)));
+  m_status_resolution_widget->setText(
+    (render_interlaced ? QStringLiteral("%1x%2 (Interlaced)") : QStringLiteral("%1x%2 (Progressive)"))
+      .arg(render_width)
+      .arg(render_height));
 }
 
 void MainWindow::onRunningGameChanged(const QString& filename, const QString& game_code, const QString& game_title)
@@ -746,7 +752,7 @@ void MainWindow::setupAdditionalUi()
 
   m_status_speed_widget = new QLabel(m_ui.statusBar);
   m_status_speed_widget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
-  m_status_speed_widget->setFixedSize(40, 16);
+  m_status_speed_widget->setFixedSize(50, 16);
   m_status_speed_widget->hide();
 
   m_status_fps_widget = new QLabel(m_ui.statusBar);
@@ -758,6 +764,16 @@ void MainWindow::setupAdditionalUi()
   m_status_frame_time_widget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
   m_status_frame_time_widget->setFixedSize(190, 16);
   m_status_frame_time_widget->hide();
+
+  m_status_renderer_widget = new QLabel(m_ui.statusBar);
+  m_status_renderer_widget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+  m_status_renderer_widget->setFixedSize(50, 16);
+  m_status_renderer_widget->hide();
+
+  m_status_resolution_widget = new QLabel(m_ui.statusBar);
+  m_status_resolution_widget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+  m_status_resolution_widget->setFixedSize(140, 16);
+  m_status_resolution_widget->hide();
 
   m_ui.actionGridViewShowTitles->setChecked(m_game_list_widget->getShowGridCoverTitles());
 
@@ -867,18 +883,26 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool cheevo
     m_status_speed_widget->show();
     m_status_fps_widget->show();
     m_status_frame_time_widget->show();
+    m_status_renderer_widget->show();
+    m_status_resolution_widget->show();
     m_ui.statusBar->addPermanentWidget(m_status_speed_widget);
     m_ui.statusBar->addPermanentWidget(m_status_fps_widget);
+    m_ui.statusBar->addPermanentWidget(m_status_resolution_widget);
+    m_ui.statusBar->addPermanentWidget(m_status_renderer_widget);
     m_ui.statusBar->addPermanentWidget(m_status_frame_time_widget);
   }
   else if (!running && m_status_speed_widget->isVisible())
   {
+    m_ui.statusBar->removeWidget(m_status_renderer_widget);
+    m_ui.statusBar->removeWidget(m_status_resolution_widget);
     m_ui.statusBar->removeWidget(m_status_speed_widget);
     m_ui.statusBar->removeWidget(m_status_fps_widget);
     m_ui.statusBar->removeWidget(m_status_frame_time_widget);
     m_status_speed_widget->hide();
     m_status_fps_widget->hide();
     m_status_frame_time_widget->hide();
+    m_status_renderer_widget->hide();
+    m_status_resolution_widget->hide();
   }
 
   if (starting || running)

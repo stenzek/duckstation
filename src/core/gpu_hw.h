@@ -29,8 +29,6 @@ public:
   GPU_HW();
   virtual ~GPU_HW();
 
-  virtual bool IsHardwareRenderer() const override;
-
   virtual bool Initialize(HostDisplay* host_display) override;
   virtual void Reset(bool clear_vram) override;
   virtual bool DoState(StateWrapper& sw, HostDisplayTexture** host_texture, bool update_display) override;

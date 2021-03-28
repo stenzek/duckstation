@@ -40,9 +40,9 @@ GPU_SW::~GPU_SW()
     m_host_display->ClearDisplayTexture();
 }
 
-bool GPU_SW::IsHardwareRenderer() const
+GPURenderer GPU_SW::GetRendererType() const
 {
-  return false;
+  return GPURenderer::Software;
 }
 
 bool GPU_SW::Initialize(HostDisplay* host_display)

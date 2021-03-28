@@ -34,6 +34,7 @@ class MainWindow;
 class QtDisplayWidget;
 
 Q_DECLARE_METATYPE(std::shared_ptr<const SystemBootParameters>);
+Q_DECLARE_METATYPE(GPURenderer);
 
 class QtHostInterface final : public QObject, public CommonHostInterface
 {
@@ -134,8 +135,9 @@ Q_SIGNALS:
   void displaySizeRequested(qint32 width, qint32 height);
   void focusDisplayWidgetRequested();
   void destroyDisplayRequested();
-  void systemPerformanceCountersUpdated(float speed, float fps, float vps, float avg_frame_time,
-                                        float worst_frame_time);
+  void systemPerformanceCountersUpdated(float speed, float fps, float vps, float avg_frame_time, float worst_frame_time,
+                                        GPURenderer renderer, quint32 render_width, quint32 render_height,
+                                        bool render_interlaced);
   void runningGameChanged(const QString& filename, const QString& game_code, const QString& game_title);
   void exitRequested();
   void inputProfileLoaded();

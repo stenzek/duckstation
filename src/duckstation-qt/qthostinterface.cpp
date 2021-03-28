@@ -52,6 +52,7 @@ Log_SetChannel(QtHostInterface);
 QtHostInterface::QtHostInterface(QObject* parent) : QObject(parent), CommonHostInterface()
 {
   qRegisterMetaType<std::shared_ptr<const SystemBootParameters>>();
+  qRegisterMetaType<GPURenderer>();
 }
 
 QtHostInterface::~QtHostInterface()
@@ -724,8 +725,21 @@ void QtHostInterface::OnSystemPerformanceCountersUpdated()
 {
   HostInterface::OnSystemPerformanceCountersUpdated();
 
+  GPURenderer renderer = GPURenderer::Count;
+  u32 render_width = 0;
+  u32 render_height = 0;
+  bool render_interlaced = false;
+
+  if (g_gpu)
+  {
+    renderer = g_gpu->GetRendererType();
+    std::tie(render_width, render_height) = g_gpu->GetEffectiveDisplayResolution();
+    render_interlaced = g_gpu->IsInterlacedDisplayEnabled();
+  }
+
   emit systemPerformanceCountersUpdated(System::GetEmulationSpeed(), System::GetFPS(), System::GetVPS(),
-                                        System::GetAverageFrameTime(), System::GetWorstFrameTime());
+                                        System::GetAverageFrameTime(), System::GetWorstFrameTime(), renderer,
+                                        render_width, render_height, render_interlaced);
 }
 
 void QtHostInterface::OnRunningGameChanged(const std::string& path, CDImage* image, const std::string& game_code,

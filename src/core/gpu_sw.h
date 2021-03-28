@@ -15,7 +15,7 @@ public:
   GPU_SW();
   ~GPU_SW() override;
 
-  bool IsHardwareRenderer() const override;
+  GPURenderer GetRendererType() const override;
 
   bool Initialize(HostDisplay* host_display) override;
   bool DoState(StateWrapper& sw, HostDisplayTexture** host_texture, bool update_display) override;

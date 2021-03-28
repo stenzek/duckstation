@@ -35,6 +35,11 @@ GPU_HW_OpenGL::~GPU_HW_OpenGL()
   glUseProgram(0);
 }
 
+GPURenderer GPU_HW_OpenGL::GetRendererType() const
+{
+  return GPURenderer::HardwareOpenGL;
+}
+
 bool GPU_HW_OpenGL::Initialize(HostDisplay* host_display)
 {
   if (host_display->GetRenderAPI() != HostDisplay::RenderAPI::OpenGL &&

@@ -63,6 +63,12 @@ void GPU::UpdateSettings()
   UpdateCRTCDisplayParameters();
 }
 
+bool GPU::IsHardwareRenderer()
+{
+  const GPURenderer renderer = GetRendererType();
+  return (renderer != GPURenderer::Software);
+}
+
 void GPU::CPUClockChanged()
 {
   UpdateCRTCConfig();
