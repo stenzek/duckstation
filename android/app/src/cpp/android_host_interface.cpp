@@ -456,6 +456,9 @@ void AndroidHostInterface::EmulationThreadEntryPoint(JNIEnv* env, jobject emulat
     return;
   }
 
+  emulation_activity = env->NewGlobalRef(emulation_activity);
+  Assert(emulation_activity != nullptr);
+
   {
     std::unique_lock<std::mutex> lock(m_mutex);
     m_emulation_thread_running.store(true);
@@ -499,6 +502,7 @@ void AndroidHostInterface::EmulationThreadEntryPoint(JNIEnv* env, jobject emulat
   }
 
   env->CallVoidMethod(emulation_activity, s_EmulationActivity_method_onEmulationStopped);
+  env->DeleteGlobalRef(emulation_activity);
 }
 
 void AndroidHostInterface::EmulationThreadLoop(JNIEnv* env)
