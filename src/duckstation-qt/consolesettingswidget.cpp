@@ -36,8 +36,8 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QW
                                                Settings::DEFAULT_CPU_EXECUTION_MODE);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.enableCPUClockSpeedControl, "CPU",
                                                "OverclockEnable", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.cdromReadThread, "CDROM", "ReadThread");
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.cdromRegionCheck, "CDROM", "RegionCheck");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.cdromReadThread, "CDROM", "ReadThread", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.cdromRegionCheck, "CDROM", "RegionCheck", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.cdromLoadImageToRAM, "CDROM", "LoadImageToRAM",
                                                false);
   SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.multitapMode, "ControllerPorts", "MultitapMode",

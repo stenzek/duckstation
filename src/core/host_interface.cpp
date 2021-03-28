@@ -556,7 +556,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetFloatValue("Display", "MaxFPS", 0.0f);
 
   si.SetBoolValue("CDROM", "ReadThread", true);
-  si.SetBoolValue("CDROM", "RegionCheck", true);
+  si.SetBoolValue("CDROM", "RegionCheck", false);
   si.SetBoolValue("CDROM", "LoadImageToRAM", false);
   si.SetBoolValue("CDROM", "MuteCDAudio", false);
   si.SetIntValue("CDROM", "ReadSpeedup", 1);
