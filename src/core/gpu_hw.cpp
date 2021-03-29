@@ -576,8 +576,10 @@ void GPU_HW::LoadVertices()
         }
         else if (g_settings.gpu_pgxp_depth_buffer)
         {
-          SetBatchDepthBuffer(true);
-          CheckForDepthClear(vertices.data(), num_vertices);
+          const bool use_depth = (m_batch.transparency_mode == GPUTransparencyMode::Disabled);
+          SetBatchDepthBuffer(use_depth);
+          if (use_depth)
+            CheckForDepthClear(vertices.data(), num_vertices);
         }
       }
 
