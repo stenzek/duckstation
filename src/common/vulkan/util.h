@@ -74,7 +74,7 @@ VkShaderModule CompileAndCreateFragmentShader(std::string_view source_code);
 VkShaderModule CompileAndCreateComputeShader(std::string_view source_code);
 
 const char* VkResultToString(VkResult res);
-void LogVulkanResult(int level, const char* func_name, VkResult res, const char* msg, ...);
+void LogVulkanResult(int level, const char* func_name, VkResult res, const char* msg, ...)  __printflike(4, 5);
 
 #define LOG_VULKAN_ERROR(res, ...) ::Vulkan::Util::LogVulkanResult(1, __func__, res, __VA_ARGS__)
 

@@ -21,7 +21,7 @@
 namespace StringUtil {
 
 /// Constructs a std::string from a format string.
-std::string StdStringFromFormat(const char* format, ...);
+std::string StdStringFromFormat(const char* format, ...) __printflike(1, 2);
 std::string StdStringFromFormatV(const char* format, std::va_list ap);
 
 /// Checks if a wildcard matches a search string.
