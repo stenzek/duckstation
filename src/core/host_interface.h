@@ -64,23 +64,23 @@ public:
   virtual void ReportDebuggerMessage(const char* message);
   virtual bool ConfirmMessage(const char* message);
 
-  void ReportFormattedError(const char* format, ...);
-  void ReportFormattedMessage(const char* format, ...);
-  void ReportFormattedDebuggerMessage(const char* format, ...);
-  bool ConfirmFormattedMessage(const char* format, ...);
+  void ReportFormattedError(const char* format, ...) printflike(2, 3);
+  void ReportFormattedMessage(const char* format, ...) printflike(2, 3);
+  void ReportFormattedDebuggerMessage(const char* format, ...) printflike(2, 3);
+  bool ConfirmFormattedMessage(const char* format, ...) printflike(2, 3);
 
   /// Adds OSD messages, duration is in seconds.
   virtual void AddOSDMessage(std::string message, float duration = 2.0f);
-  void AddFormattedOSDMessage(float duration, const char* format, ...);
+  void AddFormattedOSDMessage(float duration, const char* format, ...) printflike(3, 4);
 
   /// Returns the base user directory path.
   ALWAYS_INLINE const std::string& GetUserDirectory() const { return m_user_directory; }
 
   /// Returns a path relative to the user directory.
-  std::string GetUserDirectoryRelativePath(const char* format, ...) const;
+  std::string GetUserDirectoryRelativePath(const char* format, ...) const printflike(2, 3);
 
   /// Returns a path relative to the application directory (for system files).
-  std::string GetProgramDirectoryRelativePath(const char* format, ...) const;
+  std::string GetProgramDirectoryRelativePath(const char* format, ...) const printflike(2, 3);
 
   /// Returns a string which can be used as part of a filename, based on the current date/time.
   static TinyString GetTimestampStringForFileName();
