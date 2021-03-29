@@ -8,8 +8,8 @@
 	<string name="settings_console_fast_boot">Быстрый запуск</string>
 	<string name="settings_osd_show_messages">Показывать сообщения</string>
 	<string name="settings_osd_show_speed">Показывать скорость эмуляции</string>
-	<string name="settings_osd_show_show_fps">Показать частоту кадров в игре</string>
-	<string name="settings_osd_show_show_vps">Показать FPS на дисплее</string>
+	<string name="settings_osd_show_show_fps">Показывать частоту кадров в игре</string>
+	<string name="settings_osd_show_show_vps">Показывать частоту кадров дисплея</string>
 	<string name="settings_cpu_execution_mode">Режим работы CPU</string>
 	<string name="settings_gpu_renderer">Графический движок</string>
 	<string name="settings_gpu_resolution_scale">Масштаб разрешения</string>
@@ -115,12 +115,12 @@
 	<string name="menu_main_edit_game_directories">Настроить каталоги игр</string>
 	<string name="menu_main_scan_for_new_games">Обновить список игр</string>
 	<string name="menu_main_rescan_all_games">Проверить игры в списке</string>
-	<string name="menu_main_import_bios">Импорт BIOS</string>
-	<string name="menu_main_show_version">Показать версию</string>
+	<string name="menu_main_import_bios">Импортировать BIOS</string>
+	<string name="menu_main_show_version">Версия приложения</string>
 	<string name="menu_main_github_repository">Репозиторий GitHub</string>
 	<string name="menu_main_discord_server">Сервер Discord</string>
-	<string name="menu_game_list_entry_start_game">Запустить игру</string>
-	<string name="menu_game_list_entry_resume_game">Продолжить игру</string>
+	<string name="menu_game_list_entry_start_game">Запустить</string>
+	<string name="menu_game_list_entry_resume_game">Продолжить</string>
 	<string name="android_progress_callback_please_wait">Пожалуйста, подождите...</string>
 	<string name="android_progress_callback_ok">OK</string>
 	<string name="android_progress_callback_information">Информация</string>
@@ -311,7 +311,7 @@
 	<string name="memory_card_editor_import_card_read_failed">Не удалось прочитать \'%s\'.</string>
 	<string name="memory_card_editor_import_card_failed">Не удалось импортировать карту \'%s\'. Возможно, формат не поддерживается.</string>
 	<string name="memory_card_editor_import_card_success">Карта \'%s\' импортирована.</string>
-	<string name="menu_game_list_entry_choose_cover_image">Выбор обложки</string>
+	<string name="menu_game_list_entry_choose_cover_image">Обложка</string>
 	<string name="controller_settings_vibration_unsupported">Данное устройство не поддерживает вибрацию.</string>
 	<string name="controller_settings_automatic_mapping">Выполнить автонастройку</string>
 	<string name="controller_settings_summary_automatic_mapping">Попытаться автоматически привязать все кнопки/оси для подключенного устройства.</string>
@@ -319,7 +319,7 @@
 	<string name="controller_settings_summary_clear_controller_bindings">Удалить привязки для всех кнопок и осей данного устройства.</string>
 	<string name="controller_settings_clear_controller_bindings_confirm">Вы действительно хотите удалить все привязки? Это действие нельзя отменить.</string>
 	<string name="controller_settings_clear_controller_bindings_done">Выполнен сброс привязок для устройства %d.</string>
-	<string name="controller_auto_mapping_no_devices">Подходящие устройства не найдены. Автонастройка поддерживается только для геймпадов, но вы можете настроить другие устройства вручную.</string>
+	<string name="controller_auto_mapping_no_devices">Подходящие устройства не найдены. Автонастройка поддерживается только для геймпадов. Вы можете настроить другие устройства вручную.</string>
 	<string name="controller_auto_mapping_select_device">Выбор устройства</string>
 	<string name="controller_auto_mapping_results">Результаты автонастройки</string>
 	<string name="main_activity_empty_game_list_title">Игры не найдены. Пожалуйста, добавьте каталог с играми или выберите файл вручную.</string>
