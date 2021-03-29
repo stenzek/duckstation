@@ -61,7 +61,7 @@ bool CDImageMemory::CopyImage(CDImage* image, ProgressCallback* progress)
     static_cast<u8*>(std::malloc(static_cast<size_t>(RAW_SECTOR_SIZE) * static_cast<size_t>(m_memory_sectors)));
   if (!m_memory)
   {
-    progress->DisplayFormattedModalError("Failed to allocate memory for %llu sectors", m_memory_sectors);
+    progress->DisplayFormattedModalError("Failed to allocate memory for %u sectors", m_memory_sectors);
     return false;
   }
 
