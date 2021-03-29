@@ -57,7 +57,7 @@ char (&__countof_ArraySizeHelper(T (&array)[N]))[N];
   __attribute__((format(printf, n, m)))
 #endif
 #else
-#define printflike(n,m)
+#define __printflike(n,m)
 #endif
 
 // disable warnings that show up at warning level 4
