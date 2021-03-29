@@ -101,7 +101,7 @@ bool HostInterface::BootSystem(const SystemBootParameters& parameters)
 
   if (!AcquireHostDisplay())
   {
-    ReportFormattedError(g_host_interface->TranslateString("System", "Failed to acquire host display."));
+    ReportError(g_host_interface->TranslateString("System", "Failed to acquire host display."));
     OnSystemDestroyed();
     return false;
   }
@@ -118,7 +118,7 @@ bool HostInterface::BootSystem(const SystemBootParameters& parameters)
   {
     if (!System::IsStartupCancelled())
     {
-      ReportFormattedError(
+      ReportError(
         g_host_interface->TranslateString("System", "System failed to boot. The log may contain more information."));
     }
 
