@@ -1767,11 +1767,13 @@ static void DisplayHotkeyBlockedByChallengeModeMessage()
 
 void CommonHostInterface::RegisterGeneralHotkeys()
 {
+#ifndef __ANDROID__
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("OpenQuickMenu"),
                  TRANSLATABLE("Hotkeys", "Open Quick Menu"), [this](bool pressed) {
                    if (pressed && m_fullscreen_ui_enabled)
                      FullscreenUI::OpenQuickMenu();
                  });
+#endif
 
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("FastForward"),
                  TRANSLATABLE("Hotkeys", "Fast Forward"), [this](bool pressed) { SetFastForwardEnabled(pressed); });
