@@ -419,7 +419,7 @@
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="36"/>
-        <source>Patches the BIOS to skip the console&apos;s boot animation. Does not work with all games, but usually safe to enabled.</source>
+        <source>Patches the BIOS to skip the console&apos;s boot animation. Does not work with all games, but usually safe to enable.</source>
         <translation>מתקן את הBios כך שידלג על אנימציית האתחול של הקונסולה. לא ובד עם כל המשחקים.</translation>
     </message>
     <message>

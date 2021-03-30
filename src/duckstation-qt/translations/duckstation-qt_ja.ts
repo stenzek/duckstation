@@ -2552,7 +2552,7 @@ Login token generated on %2.</source>
         <translation>DuckStationは、このディレクトリのBIOSイメージを検索します。</translation>
     </message>
     <message>
-        <source>Patches the BIOS to skip the console&apos;s boot animation. Does not work with all games, but usually safe to enabled.</source>
+        <source>Patches the BIOS to skip the console&apos;s boot animation. Does not work with all games, but usually safe to enable.</source>
         <translation>コンソールの起動アニメーションをスキップするようにBIOSにパッチを適用します。すべてのゲームで機能するわけではありませんが、通常は安全に有効にできます。</translation>
     </message>
     <message>

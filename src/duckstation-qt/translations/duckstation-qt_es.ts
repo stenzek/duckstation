@@ -1155,7 +1155,7 @@ Token de inicio de sesión generado en %2.</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.cpp" line="97"/>
-        <source>Patches the BIOS to skip the console&apos;s boot animation. Does not work with all games, but usually safe to enabled.</source>
+        <source>Patches the BIOS to skip the console&apos;s boot animation. Does not work with all games, but usually safe to enable.</source>
         <translation>Parchea el BIOS para saltar la animación de inicio de la consola. No funciona con todos los juegos, pero es  seguro de activar.</translation>
     </message>
     <message>

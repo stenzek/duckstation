@@ -890,7 +890,7 @@
     </message>
     <message>
         <location filename="../biossettingswidget.cpp" line="97"/>
-        <source>Patches the BIOS to skip the console&apos;s boot animation. Does not work with all games, but usually safe to enabled.</source>
+        <source>Patches the BIOS to skip the console&apos;s boot animation. Does not work with all games, but usually safe to enable.</source>
         <translation>Patche le BIOS pour ignorer l&apos;animation de démarrage de la console. Ne fonctionne pas avec tous les jeux, mais généralement sûr.</translation>
     </message>
     <message>

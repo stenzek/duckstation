@@ -1262,7 +1262,7 @@ Login token generated on %2.</source>
     </message>
     <message>
         <location filename="../biossettingswidget.cpp" line="97"/>
-        <source>Patches the BIOS to skip the console&apos;s boot animation. Does not work with all games, but usually safe to enabled.</source>
+        <source>Patches the BIOS to skip the console&apos;s boot animation. Does not work with all games, but usually safe to enable.</source>
         <translation>对BIOS应用补丁以跳过操纵台的启动动画，不适用于所有游戏，但通常可以安全启用。</translation>
     </message>
     <message>
