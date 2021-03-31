@@ -1125,10 +1125,9 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-2499-g770dd5a6</version-tested>
   </entry>
-  <entry code="SLUS-00912" compatibility="4" region="NTSC-U" title="Destruction Derby Raw (USA)">
-    <compatibility>Graphical/Audio Issues</compatibility>
-    <version-tested>0.1-2553-g3ed42977</version-tested>
-    <comments>Menu images and car previews don't show properly</comments>
+  <entry code="SLUS-00912" compatibility="5" region="NTSC-U" title="Destruction Derby Raw (USA)">
+    <compatibility>No Issues</compatibility>
+    <upscaling-issues>Menu images and car previews don't show properly</upscaling-issues>
   </entry>
   <entry code="SLPS-00100" compatibility="5" region="NTSC-J" title="Detana Twinbee Yahoo! Deluxe Pack (Japan)">
     <compatibility>No Issues</compatibility>
@@ -1356,10 +1355,8 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-2862-g6fbffb6f</version-tested>
   </entry>
-  <entry code="SLPM-86494" compatibility="4" region="NTSC-J" title="Elder Gate (Japan)">
-    <compatibility>Graphical/Audio Issues</compatibility>
-    <version-tested>0.1-2433-g9089c973</version-tested>
-    <comments>Artifacts in map screen (Issue #256 ).</comments>
+  <entry code="SLPM-86494" compatibility="5" region="NTSC-J" title="Elder Gate (Japan)">
+    <compatibility>No Issues</compatibility>
   </entry>
   <entry code="SLUS-00654" compatibility="5" region="NTSC-U" title="Elemental Gearbolt (USA)">
     <compatibility>No Issues</compatibility>
@@ -2232,6 +2229,10 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SCES-00311" compatibility="5" region="PAL" title="MediEvil (Europe)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1419-g34a515cd</version-tested>
+  </entry>
+  <entry code="SCES-01494" compatibility="5" region="PAL" title="MediEvil (Italy)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-3694-g19734190</version-tested>
   </entry>
   <entry code="SCUS-94227" compatibility="5" region="NTSC-U" title="MediEvil (USA)">
     <compatibility>No Issues</compatibility>
@@ -3653,8 +3654,8 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-2483-g98d6b499</version-tested>
   </entry>
-  <entry code="SLPM-87135" compatibility="1" region="NTSC-J" title="Super Gals! Kotobuki Ran Special - Ikemen Get You Gals Party (Japan)">
-    <compatibility>Doesn't Boot</compatibility>
+  <entry code="SLPM-87135" compatibility="5" region="NTSC-J" title="Super Gals! Kotobuki Ran Special - Ikemen Get You Gals Party (Japan)">
+    <compatibility>No Issues</compatibility>
   </entry>
   <entry code="SLUS-00418" compatibility="5" region="NTSC-U" title="Super Puzzle Fighter II Turbo (USA)">
     <compatibility>No Issues</compatibility>
@@ -3695,6 +3696,9 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SCES-01910" compatibility="5" region="PAL" title="Syphon Filter (Europe)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1308-g622e50fa</version-tested>
+  </entry>
+  <entry code="SCES-01914" compatibility="5" region="PAL" title="Syphon Filter (Spain)">
+    <compatibility>No Issues</compatibility>
   </entry>
   <entry code="SCUS-94240" compatibility="5" region="NTSC-U" title="Syphon Filter (USA)">
     <compatibility>No Issues</compatibility>
