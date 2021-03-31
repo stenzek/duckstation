@@ -104,7 +104,7 @@ public:
   void AppendSubString(const char* appendText, s32 Offset = 0, s32 Count = std::numeric_limits<s32>::max());
 
   // append formatted string to this string
-  void AppendFormattedString(const char* FormatString, ...);
+  void AppendFormattedString(const char* FormatString, ...) printflike(2, 3);
   void AppendFormattedStringVA(const char* FormatString, va_list ArgPtr);
 
   // append a single character to this string
@@ -122,7 +122,7 @@ public:
   void PrependSubString(const char* appendText, s32 Offset = 0, s32 Count = std::numeric_limits<s32>::max());
 
   // append formatted string to this string
-  void PrependFormattedString(const char* FormatString, ...);
+  void PrependFormattedString(const char* FormatString, ...) printflike(2, 3);
   void PrependFormattedStringVA(const char* FormatString, va_list ArgPtr);
 
   // insert a string at the specified offset
@@ -133,7 +133,7 @@ public:
   void InsertString(s32 offset, const std::string_view& appendStr);
 
   // set to formatted string
-  void Format(const char* FormatString, ...);
+  void Format(const char* FormatString, ...) printflike(2, 3);
   void FormatVA(const char* FormatString, va_list ArgPtr);
 
   // compare one string to another
@@ -229,7 +229,7 @@ public:
   }
 
   // creates a new string from the specified format
-  static String FromFormat(const char* FormatString, ...);
+  static String FromFormat(const char* FormatString, ...) printflike(1, 2);
 
   // accessor operators
   // const char &operator[](u32 i) const { DebugAssert(i < m_pStringData->StringLength); return
@@ -345,7 +345,7 @@ public:
   }
 
   // Override the fromstring method
-  static StackString FromFormat(const char* FormatString, ...)
+  static StackString FromFormat(const char* FormatString, ...) printflike(1, 2)
   {
     va_list argPtr;
     va_start(argPtr, FormatString);
