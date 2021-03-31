@@ -1155,7 +1155,7 @@ Anmelde-Zugangsschlüssel generiert (%2).</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.cpp" line="97"/>
-        <source>Patches the BIOS to skip the console&apos;s boot animation. Does not work with all games, but usually safe to enabled.</source>
+        <source>Patches the BIOS to skip the console&apos;s boot animation. Does not work with all games, but usually safe to enable.</source>
         <translation>Überspringt im BIOS die Bootanimation der Konsole. Diese Option funktioniert nicht mit allen Spielen, aber ist normalerweise sicher zu aktivieren.</translation>
     </message>
     <message>

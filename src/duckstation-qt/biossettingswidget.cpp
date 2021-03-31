@@ -95,7 +95,7 @@ BIOSSettingsWidget::BIOSSettingsWidget(QtHostInterface* host_interface, QWidget*
 
   dialog->registerWidgetHelp(m_ui.fastBoot, tr("Fast Boot"), tr("Unchecked"),
                              tr("Patches the BIOS to skip the console's boot animation. Does not work with all games, "
-                                "but usually safe to enabled."));
+                                "but usually safe to enable."));
   dialog->registerWidgetHelp(m_ui.enableTTYOutput, tr("Enable TTY Output"), tr("Unchecked"),
                              tr("Patches the BIOS to log calls to printf(). Only use when debugging, can break games."));
 

@@ -1203,7 +1203,7 @@ Código de auteticação gerado em %2.</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.cpp" line="97"/>
-        <source>Patches the BIOS to skip the console&apos;s boot animation. Does not work with all games, but usually safe to enabled.</source>
+        <source>Patches the BIOS to skip the console&apos;s boot animation. Does not work with all games, but usually safe to enable.</source>
         <translation>Modifica o BIOS para saltar a animação de início da consola. Não funciona com todos os jogos, mas é geralmente seguro ativar.</translation>
     </message>
     <message>
