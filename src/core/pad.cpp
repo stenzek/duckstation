@@ -71,25 +71,20 @@ bool Pad::DoStateController(StateWrapper& sw, u32 i)
         g_host_interface->TranslateString(
           "OSDMessage", "Save state contains controller type %s in port %u, but %s is used. Switching."),
         Settings::GetControllerTypeName(state_controller_type), i + 1u,
-        Settings::GetControllerTypeName(controller_type)
-      );
+        Settings::GetControllerTypeName(controller_type));
     }
     else
     {
       g_host_interface->AddFormattedOSDMessage(
-        10.0f,
-        g_host_interface->TranslateString("OSDMessage", "Ignoring mismatched controller type %s in port %u."),
-        Settings::GetControllerTypeName(state_controller_type), i + 1u
-      );
+        10.0f, g_host_interface->TranslateString("OSDMessage", "Ignoring mismatched controller type %s in port %u."),
+        Settings::GetControllerTypeName(state_controller_type), i + 1u);
     }
 
     // dev-friendly untranslated console log.
-    Log_DevPrintf("Controller type mismatch in slot %u: state=%s(%u) ui=%s(%u) load_from_state=%s",
-      i + 1u,
-      Settings::GetControllerTypeName(state_controller_type), state_controller_type,
-      Settings::GetControllerTypeName(controller_type), controller_type,
-      g_settings.load_devices_from_save_states ? "yes" : "no"
-    );
+    Log_DevPrintf("Controller type mismatch in slot %u: state=%s(%u) ui=%s(%u) load_from_state=%s", i + 1u,
+                  Settings::GetControllerTypeName(state_controller_type), state_controller_type,
+                  Settings::GetControllerTypeName(controller_type), controller_type,
+                  g_settings.load_devices_from_save_states ? "yes" : "no");
 
     if (g_settings.load_devices_from_save_states)
     {
@@ -128,95 +123,92 @@ bool Pad::DoStateController(StateWrapper& sw, u32 i)
 
 bool Pad::DoStateMemcard(StateWrapper& sw, u32 i)
 {
-    bool card_present_in_state = static_cast<bool>(m_memory_cards[i]);
+  bool card_present_in_state = static_cast<bool>(m_memory_cards[i]);
 
-    sw.Do(&card_present_in_state);
+  sw.Do(&card_present_in_state);
 
-    MemoryCard* card_ptr = m_memory_cards[i].get();
-    std::unique_ptr<MemoryCard> card_from_state;
+  if (card_present_in_state && !m_memory_cards[i] && g_settings.load_devices_from_save_states)
+  {
+    g_host_interface->AddFormattedOSDMessage(
+      20.0f,
+      g_host_interface->TranslateString(
+        "OSDMessage", "Memory card %u present in save state but not in system. Creating temporary card."),
+      i + 1u);
+    m_memory_cards[i] = MemoryCard::Create();
+  }
 
-    if (card_present_in_state)
+  MemoryCard* card_ptr = m_memory_cards[i].get();
+  std::unique_ptr<MemoryCard> card_from_state;
+
+  if (card_present_in_state)
+  {
+    if (sw.IsReading() && !g_settings.load_devices_from_save_states)
     {
-      if (sw.IsReading() && !g_settings.load_devices_from_save_states)
-      {
-        // load memcard into a temporary: If the card datas match, take the one from the savestate
-        // since it has other useful non-data state information. Otherwise take the user's card
-        // and perform a re-plugging.
+      // load memcard into a temporary: If the card datas match, take the one from the savestate
+      // since it has other useful non-data state information. Otherwise take the user's card
+      // and perform a re-plugging.
 
-        card_from_state = std::make_unique<MemoryCard>();
-        card_ptr = card_from_state.get();
-      }
-    
-      if (!sw.DoMarker("MemoryCard") || !card_ptr->DoState(sw))
-        return false;
+      card_from_state = std::make_unique<MemoryCard>();
+      card_ptr = card_from_state.get();
     }
 
-    if (sw.IsWriting())
-      return true;    // all done as far as writes concerned.
+    if (!sw.DoMarker("MemoryCard") || !card_ptr->DoState(sw))
+      return false;
+  }
 
-    if (card_from_state)
+  if (sw.IsWriting())
+    return true; // all done as far as writes concerned.
+
+  if (card_from_state)
+  {
+    if (m_memory_cards[i])
     {
-      if (m_memory_cards[i])
+      if (m_memory_cards[i]->GetData() == card_from_state->GetData())
       {
-        if (m_memory_cards[i]->GetData() == card_from_state->GetData())
-        {
-          card_from_state->SetFilename(m_memory_cards[i]->GetFilename());
-          m_memory_cards[i] = std::move(card_from_state);
-        }
-        else
-        {
-          g_host_interface->AddFormattedOSDMessage(
-            20.0f,
-            g_host_interface->TranslateString(
-              "OSDMessage", "Memory card %u from save state does match current card data. Simulating replugging."),
-            i + 1u
-          );
-
-          // this is a potentially serious issue - some games cache info from memcards and jumping around
-          // with savestates can lead to card corruption on the next save attempts (and may not be obvious
-          // until much later). One workaround is to forcibly eject the card for 30+ frames, long enough
-          // for the game to decide it was removed and purge its cache. Once implemented, this could be
-          // described as deferred re-plugging in the log.
-
-          Log_WarningPrintf("Memory card %u data mismatch. Using current data via instant-replugging.", i + 1u);
-          m_memory_cards[i]->Reset();
-        }
+        card_from_state->SetFilename(m_memory_cards[i]->GetFilename());
+        m_memory_cards[i] = std::move(card_from_state);
       }
       else
       {
         g_host_interface->AddFormattedOSDMessage(
           20.0f,
           g_host_interface->TranslateString(
-            "OSDMessage", "Memory card %u present in save state but not in system. Ignoring card."),
-          i + 1u
-        );
+            "OSDMessage", "Memory card %u from save state does match current card data. Simulating replugging."),
+          i + 1u);
+
+        // this is a potentially serious issue - some games cache info from memcards and jumping around
+        // with savestates can lead to card corruption on the next save attempts (and may not be obvious
+        // until much later). One workaround is to forcibly eject the card for 30+ frames, long enough
+        // for the game to decide it was removed and purge its cache. Once implemented, this could be
+        // described as deferred re-plugging in the log.
+
+        Log_WarningPrintf("Memory card %u data mismatch. Using current data via instant-replugging.", i + 1u);
+        m_memory_cards[i]->Reset();
       }
-
-      return true;
     }
-
-    if (card_present_in_state && !m_memory_cards[i])
+    else
     {
       g_host_interface->AddFormattedOSDMessage(
         20.0f,
-        g_host_interface->TranslateString(
-          "OSDMessage", "Memory card %u present in save state but not in system. Creating temporary card."),
-        i + 1u
-      );
-      m_memory_cards[i] = MemoryCard::Create();
-    }
-    else if (!card_present_in_state && m_memory_cards[i])
-    {
-      g_host_interface->AddFormattedOSDMessage(
-        20.0f,
-        g_host_interface->TranslateString(
-          "OSDMessage", "Memory card %u present in system but not in save state. Removing card."),
-        i + 1u
-      );
-      m_memory_cards[i].reset();
+        g_host_interface->TranslateString("OSDMessage",
+                                          "Memory card %u present in save state but not in system. Ignoring card."),
+        i + 1u);
     }
 
     return true;
+  }
+
+  if (!card_present_in_state && m_memory_cards[i])
+  {
+    g_host_interface->AddFormattedOSDMessage(
+      20.0f,
+      g_host_interface->TranslateString("OSDMessage",
+                                        "Memory card %u present in system but not in save state. Removing card."),
+      i + 1u);
+    m_memory_cards[i].reset();
+  }
+
+  return true;
 }
 
 bool Pad::DoState(StateWrapper& sw)
@@ -238,9 +230,9 @@ bool Pad::DoState(StateWrapper& sw)
       if (m_memory_cards[i])
       {
         if (g_settings.load_devices_from_save_states)
-            m_memory_cards[i].reset();
-          else
-            m_memory_cards[i]->Reset();
+          m_memory_cards[i].reset();
+        else
+          m_memory_cards[i]->Reset();
       }
 
       // ... and make sure to skip trying to read controller_type / card_present flags which don't exist in old states.
@@ -494,27 +486,27 @@ void Pad::DoTransfer(TickCount ticks_late)
       }
       else
       {
-      if (!controller || (ack = controller->Transfer(data_out, &data_in)) == false)
-      {
-        if (!memory_card || (ack = memory_card->Transfer(data_out, &data_in)) == false)
+        if (!controller || (ack = controller->Transfer(data_out, &data_in)) == false)
         {
-          // nothing connected to this port
-          Log_TracePrintf("Nothing connected or ACK'ed");
+          if (!memory_card || (ack = memory_card->Transfer(data_out, &data_in)) == false)
+          {
+            // nothing connected to this port
+            Log_TracePrintf("Nothing connected or ACK'ed");
+          }
+          else
+          {
+            // memory card responded, make it the active device until non-ack
+            Log_TracePrintf("Transfer to memory card, data_out=0x%02X, data_in=0x%02X", data_out, data_in);
+            m_active_device = ActiveDevice::MemoryCard;
+          }
         }
         else
         {
-          // memory card responded, make it the active device until non-ack
-          Log_TracePrintf("Transfer to memory card, data_out=0x%02X, data_in=0x%02X", data_out, data_in);
-          m_active_device = ActiveDevice::MemoryCard;
+          // controller responded, make it the active device until non-ack
+          Log_TracePrintf("Transfer to controller, data_out=0x%02X, data_in=0x%02X", data_out, data_in);
+          m_active_device = ActiveDevice::Controller;
         }
       }
-      else
-      {
-        // controller responded, make it the active device until non-ack
-        Log_TracePrintf("Transfer to controller, data_out=0x%02X, data_in=0x%02X", data_out, data_in);
-        m_active_device = ActiveDevice::Controller;
-      }
-    }
     }
     break;
 
@@ -545,7 +537,7 @@ void Pad::DoTransfer(TickCount ticks_late)
         ack = m_multitaps[m_JOY_CTRL.SLOT].Transfer(data_out, &data_in);
         Log_TracePrintf("Transfer tap %d, sent 0x%02X, received 0x%02X, acked: %s", static_cast<int>(m_JOY_CTRL.SLOT),
                         data_out, data_in, ack ? "true" : "false");
-  }
+      }
     }
     break;
   }
