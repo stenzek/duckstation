@@ -557,10 +557,7 @@ bool CDImagePBP::OpenDisc(u32 index, Common::Error* error)
     const TOCEntry& t = m_toc[static_cast<size_t>(curr_track) + 2];
     const u8 track_num = PackedBCDToBinary(t.point);
     if (track_num != curr_track)
-    {
-      Log_ErrorPrintf("Mismatched TOC track number, expected %u but got %u", static_cast<u32>(curr_track), track_num);
-      return false;
-    }
+      Log_WarningPrintf("Mismatched TOC track number, expected %u but got %u", static_cast<u32>(curr_track), track_num);
 
     const bool is_audio_track = t.type == 0x01;
     const bool is_first_track = curr_track == 1;
@@ -573,15 +570,30 @@ bool CDImagePBP::OpenDisc(u32 index, Common::Error* error)
 
     const LBA pregap_start = Position::FromBCD(t.pregap_start.m, t.pregap_start.s, t.pregap_start.f).ToLBA();
     const LBA userdata_start = Position::FromBCD(t.userdata_start.m, t.userdata_start.s, t.userdata_start.f).ToLBA();
+    LBA pregap_frames;
+    u32 pregap_sector_size;
 
     if (userdata_start < pregap_start)
     {
-      Log_ErrorPrintf("Invalid TOC entry at index %u, user data should not start before pregap",
-                      static_cast<u32>(curr_track));
-      return false;
+      if (!is_first_track || is_audio_track)
+      {
+        Log_ErrorPrintf("Invalid TOC entry at index %u, user data (%u) should not start before pregap (%u)",
+                        static_cast<u32>(curr_track), userdata_start, pregap_start);
+        return false;
+      }
+
+      Log_WarningPrintf(
+        "Invalid TOC entry at index %u, user data (%u) should not start before pregap (%u), assuming not in file.",
+        static_cast<u32>(curr_track), userdata_start, pregap_start);
+      pregap_frames = userdata_start;
+      pregap_sector_size = 0;
+    }
+    else
+    {
+      pregap_frames = userdata_start - pregap_start;
+      pregap_sector_size = track_sector_size;
     }
 
-    const LBA pregap_frames = userdata_start - pregap_start;
     if (is_first_track)
     {
       m_lba_count += pregap_frames;
@@ -590,9 +602,9 @@ bool CDImagePBP::OpenDisc(u32 index, Common::Error* error)
 
     Index pregap_index = {};
     pregap_index.file_offset =
-      is_first_track ? 0 : (static_cast<u64>(pregap_start - track1_pregap_frames) * track_sector_size);
+      is_first_track ? 0 : (static_cast<u64>(pregap_start - track1_pregap_frames) * pregap_sector_size);
     pregap_index.file_index = 0;
-    pregap_index.file_sector_size = track_sector_size;
+    pregap_index.file_sector_size = pregap_sector_size;
     pregap_index.start_lba_on_disc = pregap_start;
     pregap_index.track_number = curr_track;
     pregap_index.index_number = 0;
