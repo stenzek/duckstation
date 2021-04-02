@@ -384,9 +384,7 @@ bool OpenGLHostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_vie
     return false;
   }
 
-  m_window_info = wi;
-  m_window_info.surface_width = m_gl_context->GetSurfaceWidth();
-  m_window_info.surface_height = m_gl_context->GetSurfaceHeight();
+  m_window_info = m_gl_context->GetWindowInfo();
   return true;
 }
 
@@ -467,16 +465,7 @@ bool OpenGLHostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
     return false;
   }
 
-  m_window_info = new_wi;
-  m_window_info.surface_width = m_gl_context->GetSurfaceWidth();
-  m_window_info.surface_height = m_gl_context->GetSurfaceHeight();
-
-  if (ImGui::GetCurrentContext())
-  {
-    ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_info.surface_width);
-    ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_info.surface_height);
-  }
-
+  m_window_info = m_gl_context->GetWindowInfo();
   return true;
 }
 
@@ -486,14 +475,7 @@ void OpenGLHostDisplay::ResizeRenderWindow(s32 new_window_width, s32 new_window_
     return;
 
   m_gl_context->ResizeSurface(static_cast<u32>(new_window_width), static_cast<u32>(new_window_height));
-  m_window_info.surface_width = m_gl_context->GetSurfaceWidth();
-  m_window_info.surface_height = m_gl_context->GetSurfaceHeight();
-
-  if (ImGui::GetCurrentContext())
-  {
-    ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_info.surface_width);
-    ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_info.surface_height);
-  }
+  m_window_info = m_gl_context->GetWindowInfo();
 }
 
 bool OpenGLHostDisplay::SupportsFullscreen() const
@@ -539,8 +521,6 @@ void OpenGLHostDisplay::DestroyRenderSurface()
 
 bool OpenGLHostDisplay::CreateImGuiContext()
 {
-  ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_info.surface_width);
-  ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_info.surface_height);
   return ImGui_ImplOpenGL3_Init(GetGLSLVersionString());
 }
 

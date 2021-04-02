@@ -126,10 +126,6 @@ public:
   virtual std::string TranslateStdString(const char* context, const char* str, const char* disambiguation = nullptr,
                                          int n = -1) const;
 
-  /// Returns the refresh rate for the "main" display. Use when it's not possible to query the graphics API for the
-  /// refresh rate of the monitor the window is running in.
-  virtual bool GetMainDisplayRefreshRate(float* refresh_rate);
-
   /// Returns the path to the directory to search for BIOS images.
   virtual std::string GetBIOSDirectory();
 

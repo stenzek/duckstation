@@ -43,7 +43,7 @@ std::unique_ptr<Context> ContextEGLGBM::Create(const WindowInfo& wi, const Versi
                                                size_t num_versions_to_try)
 {
   std::unique_ptr<ContextEGLGBM> context = std::make_unique<ContextEGLGBM>(wi);
-  if (!context->CreateDisplay(wi) || !context->CreateGBMDevice() ||
+  if (!context->CreateDisplay() || !context->CreateGBMDevice() ||
       !context->Initialize(versions_to_try, num_versions_to_try))
   {
     return nullptr;
@@ -81,9 +81,15 @@ bool ContextEGLGBM::CreateGBMDevice()
   return true;
 }
 
-bool ContextEGLGBM::CreateDisplay(const WindowInfo& wi)
+bool ContextEGLGBM::CreateDisplay()
 {
-  return m_drm_display.Initialize(wi.surface_width, wi.surface_height, wi.surface_refresh_rate);
+  if (!m_drm_display.Initialize(m_wi.surface_width, m_wi.surface_height, m_wi.surface_refresh_rate))
+    return false;
+
+  m_wi.surface_width = m_drm_display.GetWidth();
+  m_wi.surface_height = m_drm_display.GetHeight();
+  m_wi.surface_refresh_rate = m_drm_display.GetRefreshRate();
+  return true;
 }
 
 bool ContextEGLGBM::SetDisplay()

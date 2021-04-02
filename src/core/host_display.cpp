@@ -88,7 +88,13 @@ bool HostDisplay::SetDisplayPixels(HostDisplayPixelFormat format, u32 width, u32
 
 bool HostDisplay::GetHostRefreshRate(float* refresh_rate)
 {
-  return g_host_interface->GetMainDisplayRefreshRate(refresh_rate);
+  if (m_window_info.surface_refresh_rate > 0.0f)
+  {
+    *refresh_rate = m_window_info.surface_refresh_rate;
+    return true;
+  }
+
+  return WindowInfo::QueryRefreshRateForWindow(m_window_info, refresh_rate);
 }
 
 void HostDisplay::SetSoftwareCursor(std::unique_ptr<HostDisplayTexture> texture, float scale /*= 1.0f*/)

@@ -189,6 +189,7 @@
     <ClCompile Include="vulkan\util.cpp" />
     <ClCompile Include="wav_writer.cpp" />
     <ClCompile Include="win32_progress_callback.cpp" />
+    <ClCompile Include="window_info.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />

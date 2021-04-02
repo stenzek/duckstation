@@ -177,7 +177,7 @@ jbyteArray VectorToByteArray(JNIEnv* env, const std::vector<u8>& data)
 }
 
 jobjectArray CreateObjectArray(JNIEnv* env, jclass object_class, const jobject* objects, size_t num_objects,
-                               bool release_refs/* = false*/)
+                               bool release_refs /* = false*/)
 {
   if (!objects || num_objects == 0)
     return nullptr;
@@ -294,18 +294,23 @@ void AndroidHostInterface::RegisterHotkeys()
   CommonHostInterface::RegisterHotkeys();
 }
 
-bool AndroidHostInterface::GetMainDisplayRefreshRate(float* refresh_rate)
+float AndroidHostInterface::GetRefreshRate() const
 {
   if (!m_emulation_activity_object)
-    return false;
+    return 0.0f;
 
-  float value = AndroidHelpers::GetJNIEnv()->CallFloatMethod(m_emulation_activity_object,
-                                                             s_EmulationActivity_method_getRefreshRate);
-  if (value <= 0.0f)
-    return false;
+  const float value = AndroidHelpers::GetJNIEnv()->CallFloatMethod(m_emulation_activity_object,
+                                                                   s_EmulationActivity_method_getRefreshRate);
+  return (value > 0.0f) ? value : 0.0f;
+}
 
-  *refresh_rate = value;
-  return true;
+float AndroidHostInterface::GetSurfaceScale(int width, int height) const
+{
+  if (width <= 0 || height <= 0)
+    return 1.0f;
+
+  // TODO: Really need a better way of determining this.
+  return (width > height) ? (static_cast<float>(width) / 1280.0f) : (static_cast<float>(height) / 1280.0f);
 }
 
 void AndroidHostInterface::SetUserDirectory()
@@ -591,9 +596,8 @@ bool AndroidHostInterface::AcquireHostDisplay()
   wi.window_handle = m_surface;
   wi.surface_width = ANativeWindow_getWidth(m_surface);
   wi.surface_height = ANativeWindow_getHeight(m_surface);
-
-  // TODO: Really need a better way of determining this.
-  wi.surface_scale = 2.0f;
+  wi.surface_refresh_rate = GetRefreshRate();
+  wi.surface_scale = GetSurfaceScale(wi.surface_width, wi.surface_height);
 
   switch (g_settings.gpu_renderer)
   {
@@ -709,7 +713,7 @@ void AndroidHostInterface::SurfaceChanged(ANativeWindow* surface, int format, in
     if (m_display && (width != m_display->GetWindowWidth() || height != m_display->GetWindowHeight()))
     {
       m_display->ResizeRenderWindow(width, height);
-      OnHostDisplayResized(width, height, m_display->GetWindowScale());
+      OnHostDisplayResized();
     }
 
     return;
@@ -724,11 +728,12 @@ void AndroidHostInterface::SurfaceChanged(ANativeWindow* surface, int format, in
     wi.window_handle = surface;
     wi.surface_width = width;
     wi.surface_height = height;
-    wi.surface_scale = m_display->GetWindowScale();
+    wi.surface_refresh_rate = GetRefreshRate();
+    wi.surface_scale = GetSurfaceScale(width, height);
 
     m_display->ChangeRenderWindow(wi);
     if (surface)
-      OnHostDisplayResized(width, height, m_display->GetWindowScale());
+      OnHostDisplayResized();
 
     if (surface && System::GetState() == System::State::Paused)
       PauseSystem(false);
@@ -1665,7 +1670,6 @@ DEFINE_JNI_ARGS_METHOD(jstring, AndroidHostInterface_importBIOSImage, jobject ob
   else
     return env->NewStringUTF(hash.ToString().c_str());
 }
-
 
 DEFINE_JNI_ARGS_METHOD(jboolean, AndroidHostInterface_hasMediaSubImages, jobject obj)
 {

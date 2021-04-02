@@ -414,7 +414,7 @@ protected:
 
   bool CreateHostDisplayResources();
   void ReleaseHostDisplayResources();
-  void OnHostDisplayResized(u32 new_width, u32 new_height, float new_scale);
+  void OnHostDisplayResized();
 
   virtual void DrawImGuiWindows();
 

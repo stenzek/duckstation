@@ -108,6 +108,8 @@ add_library(common
   vulkan/util.h
   wav_writer.cpp
   wav_writer.h
+  window_info.cpp
+  window_info.h
 )
 
 target_include_directories(common PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
@@ -147,8 +149,8 @@ if(USE_X11)
     gl/x11_window.h
   )
   target_compile_definitions(common PRIVATE "-DUSE_X11=1")
-  target_include_directories(common PRIVATE "${X11_INCLUDE_DIR}")
-  target_link_libraries(common PRIVATE "${X11_LIBRARIES}")
+  target_include_directories(common PRIVATE "${X11_INCLUDE_DIR}" "${X11_Xrandr_INCLUDE_PATH}")
+  target_link_libraries(common PRIVATE "${X11_LIBRARIES}" "${X11_Xrandr_LIB}")
 endif()
 
 if(USE_DRMKMS)

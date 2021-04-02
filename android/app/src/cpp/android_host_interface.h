@@ -39,7 +39,6 @@ public:
   void ReportMessage(const char* message) override;
 
   std::unique_ptr<ByteStream> OpenPackageFile(const char* path, u32 flags) override;
-  bool GetMainDisplayRefreshRate(float* refresh_rate) override;
 
   bool IsEmulationThreadRunning() const { return m_emulation_thread_running.load(); }
   bool IsEmulationThreadPaused() const;
@@ -90,6 +89,8 @@ private:
   void UpdateInputMap(SettingsInterface& si) override;
   void SetVibration(bool enabled);
   void UpdateVibration();
+  float GetRefreshRate() const;
+  float GetSurfaceScale(int width, int height) const;
 
   jobject m_java_object = {};
   jobject m_emulation_activity_object = {};

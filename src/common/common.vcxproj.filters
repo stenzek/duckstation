@@ -217,6 +217,7 @@
     <ClCompile Include="cd_image_pbp.cpp" />
     <ClCompile Include="error.cpp" />
     <ClCompile Include="cd_image_m3u.cpp" />
+    <ClCompile Include="window_info.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />

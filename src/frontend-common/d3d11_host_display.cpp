@@ -473,10 +473,17 @@ bool D3D11HostDisplay::CreateSwapChainRTV()
   m_window_info.surface_width = backbuffer_desc.Width;
   m_window_info.surface_height = backbuffer_desc.Height;
 
-  if (ImGui::GetCurrentContext())
+  BOOL fullscreen = FALSE;
+  DXGI_SWAP_CHAIN_DESC desc;
+  if (SUCCEEDED(m_swap_chain->GetFullscreenState(&fullscreen, nullptr)) && fullscreen &&
+      SUCCEEDED(m_swap_chain->GetDesc(&desc)))
   {
-    ImGui::GetIO().DisplaySize.x = static_cast<float>(backbuffer_desc.Width);
-    ImGui::GetIO().DisplaySize.y = static_cast<float>(backbuffer_desc.Height);
+    m_window_info.surface_refresh_rate = static_cast<float>(desc.BufferDesc.RefreshRate.Numerator) /
+                                         static_cast<float>(desc.BufferDesc.RefreshRate.Denominator);
+  }
+  else
+  {
+    m_window_info.surface_refresh_rate = 0.0f;
   }
 
   return true;
@@ -664,8 +671,6 @@ void D3D11HostDisplay::DestroyResources()
 
 bool D3D11HostDisplay::CreateImGuiContext()
 {
-  ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_info.surface_width);
-  ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_info.surface_height);
   return ImGui_ImplDX11_Init(m_device.Get(), m_context.Get());
 }
 

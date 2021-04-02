@@ -76,12 +76,13 @@ bool VulkanHostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
   {
     g_vulkan_context->ExecuteCommandBuffer(true);
     m_swap_chain.reset();
+    m_window_info = new_wi;
     return true;
   }
 
   WindowInfo wi_copy(new_wi);
   VkSurfaceKHR surface = Vulkan::SwapChain::CreateVulkanSurface(g_vulkan_context->GetVulkanInstance(),
-                                                                g_vulkan_context->GetPhysicalDevice(), wi_copy);
+                                                                g_vulkan_context->GetPhysicalDevice(), &wi_copy);
   if (surface == VK_NULL_HANDLE)
   {
     Log_ErrorPrintf("Failed to create new surface for swap chain");
@@ -95,16 +96,7 @@ bool VulkanHostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
     return false;
   }
 
-  m_window_info = wi_copy;
-  m_window_info.surface_width = m_swap_chain->GetWidth();
-  m_window_info.surface_height = m_swap_chain->GetHeight();
-
-  if (ImGui::GetCurrentContext())
-  {
-    ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_info.surface_width);
-    ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_info.surface_height);
-  }
-
+  m_window_info = m_swap_chain->GetWindowInfo();
   return true;
 }
 
@@ -115,14 +107,7 @@ void VulkanHostDisplay::ResizeRenderWindow(s32 new_window_width, s32 new_window_
   if (!m_swap_chain->ResizeSwapChain(new_window_width, new_window_height))
     Panic("Failed to resize swap chain");
 
-  m_window_info.surface_width = m_swap_chain->GetWidth();
-  m_window_info.surface_height = m_swap_chain->GetHeight();
-
-  if (ImGui::GetCurrentContext())
-  {
-    ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_info.surface_width);
-    ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_info.surface_height);
-  }
+  m_window_info = m_swap_chain->GetWindowInfo();
 }
 
 bool VulkanHostDisplay::SupportsFullscreen() const
@@ -320,19 +305,15 @@ void VulkanHostDisplay::SetVSync(bool enabled)
 bool VulkanHostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, bool debug_device,
                                            bool threaded_presentation)
 {
-  if (!Vulkan::Context::Create(adapter_name, &wi, &m_swap_chain, threaded_presentation, debug_device, false))
+  WindowInfo local_wi(wi);
+  if (!Vulkan::Context::Create(adapter_name, &local_wi, &m_swap_chain, threaded_presentation, debug_device, false))
   {
     Log_ErrorPrintf("Failed to create Vulkan context");
+    m_window_info = {};
     return false;
   }
 
-  m_window_info = wi;
-  if (m_swap_chain)
-  {
-    m_window_info.surface_width = m_swap_chain->GetWidth();
-    m_window_info.surface_height = m_swap_chain->GetHeight();
-  }
-
+  m_window_info = m_swap_chain ? m_swap_chain->GetWindowInfo() : local_wi;
   return true;
 }
 
@@ -526,9 +507,6 @@ void VulkanHostDisplay::DestroyResources()
 
 bool VulkanHostDisplay::CreateImGuiContext()
 {
-  ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_info.surface_width);
-  ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_info.surface_height);
-
   ImGui_ImplVulkan_InitInfo vii = {};
   vii.Instance = g_vulkan_context->GetVulkanInstance();
   vii.PhysicalDevice = g_vulkan_context->GetPhysicalDevice();

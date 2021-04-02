@@ -184,7 +184,7 @@ Requirements:
 ### Linux
 Requirements (Debian/Ubuntu package names):
  - CMake (`cmake`)
- - SDL2 (`libsdl2-dev`)
+ - SDL2 (`libsdl2-dev`, `libxrandr-dev`)
  - pkgconfig (`pkg-config`)
  - Qt 5 (`qtbase5-dev`, `qtbase5-private-dev`, `qtbase5-dev-tools`, `qttools5-dev`)
  - libevdev (`libevdev-dev`)

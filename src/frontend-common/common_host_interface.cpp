@@ -520,6 +520,8 @@ bool CommonHostInterface::CreateHostDisplayResources()
 
   const float framebuffer_scale = m_display->GetWindowScale();
   ImGui::GetIO().DisplayFramebufferScale = ImVec2(framebuffer_scale, framebuffer_scale);
+  ImGui::GetIO().DisplaySize.x = static_cast<float>(m_display->GetWindowWidth());
+  ImGui::GetIO().DisplaySize.y = static_cast<float>(m_display->GetWindowHeight());
   ImGui::GetStyle() = ImGuiStyle();
   ImGui::StyleColorsDarker();
   ImGui::GetStyle().ScaleAllSizes(framebuffer_scale);
@@ -566,8 +568,15 @@ void CommonHostInterface::ReleaseHostDisplayResources()
   m_logo_texture.reset();
 }
 
-void CommonHostInterface::OnHostDisplayResized(u32 new_width, u32 new_height, float new_scale)
+void CommonHostInterface::OnHostDisplayResized()
 {
+  const u32 new_width = m_display ? std::max<u32>(m_display->GetWindowWidth(), 1) : 0;
+  const u32 new_height = m_display ? std::max<u32>(m_display->GetWindowHeight(), 1) : 0;
+  const float new_scale = m_display ? m_display->GetWindowScale() : 1.0f;
+
+  ImGui::GetIO().DisplaySize.x = static_cast<float>(new_width);
+  ImGui::GetIO().DisplaySize.y = static_cast<float>(new_height);
+
   if (new_scale != ImGui::GetIO().DisplayFramebufferScale.x)
   {
     ImGui::GetIO().DisplayFramebufferScale = ImVec2(new_scale, new_scale);
@@ -1792,7 +1801,7 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                    if (pressed)
                      SetTurboEnabled(!m_turbo_enabled);
                  });
-#ifndef ANDROID
+#ifndef __ANDROID__
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("ToggleFullscreen"),
                  StaticString(TRANSLATABLE("Hotkeys", "Toggle Fullscreen")), [this](bool pressed) {
                    if (pressed)

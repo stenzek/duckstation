@@ -470,7 +470,7 @@ void QtHostInterface::onDisplayWindowResized(int width, int height)
 
   Log_DevPrintf("Display window resized to %dx%d", width, height);
   m_display->ResizeRenderWindow(width, height);
-  OnHostDisplayResized(width, height, m_display->GetWindowScale());
+  OnHostDisplayResized();
 
   // re-render the display, since otherwise it will be out of date and stretched if paused
   if (!System::IsShutdown())
@@ -615,7 +615,7 @@ void QtHostInterface::updateDisplayState()
   connectDisplaySignals(display_widget);
   m_is_exclusive_fullscreen = m_display->IsFullscreen();
 
-  OnHostDisplayResized(m_display->GetWindowWidth(), m_display->GetWindowHeight(), m_display->GetWindowScale());
+  OnHostDisplayResized();
 
   if (!System::IsShutdown())
   {
