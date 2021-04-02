@@ -83,7 +83,7 @@ bool WindowInfo::QueryRefreshRateForWindow(const WindowInfo& wi, float* refresh_
   return GetRefreshRateFromDWM(hwnd, refresh_rate) || GetRefreshRateFromMonitor(hwnd, refresh_rate);
 }
 
-#elif defined(__linux__)
+#else
 
 #ifdef USE_X11
 
