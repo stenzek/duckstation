@@ -29,8 +29,8 @@ ImFont* g_icon_font = nullptr;
 float g_layout_scale = 1.0f;
 float g_layout_padding_left = 0.0f;
 float g_layout_padding_top = 0.0f;
+float g_menu_bar_size = 0.0f;
 
-static float s_menu_bar_size;
 static std::string s_font_filename;
 static std::string s_icon_font_filename;
 static std::vector<u8> s_icon_font_data;
@@ -81,10 +81,10 @@ void SetFontGlyphRanges(const ImWchar* glyph_ranges)
 
 void SetMenuBarSize(float size)
 {
-  if (s_menu_bar_size == size)
+  if (g_menu_bar_size == size)
     return;
 
-  s_menu_bar_size = size;
+  g_menu_bar_size = size;
 }
 
 void SetResolveTextureFunction(ResolveTextureHandleCallback callback)
@@ -186,7 +186,7 @@ bool UpdateLayoutScale()
   const ImGuiIO& io = ImGui::GetIO();
 
   const float screen_width = io.DisplaySize.x;
-  const float screen_height = io.DisplaySize.y - s_menu_bar_size;
+  const float screen_height = io.DisplaySize.y - g_menu_bar_size;
   const float screen_ratio = screen_width / screen_height;
   const float old_scale = g_layout_scale;
 
@@ -194,14 +194,14 @@ bool UpdateLayoutScale()
   {
     // screen is wider, use height, pad width
     g_layout_scale = screen_height / LAYOUT_SCREEN_HEIGHT;
-    g_layout_padding_top = s_menu_bar_size;
+    g_layout_padding_top = g_menu_bar_size;
     g_layout_padding_left = (screen_width - (LAYOUT_SCREEN_WIDTH * g_layout_scale)) / 2.0f;
   }
   else
   {
     // screen is taller, use width, pad height
     g_layout_scale = screen_width / LAYOUT_SCREEN_WIDTH;
-    g_layout_padding_top = (screen_height - (LAYOUT_SCREEN_HEIGHT * g_layout_scale)) / 2.0f + s_menu_bar_size;
+    g_layout_padding_top = (screen_height - (LAYOUT_SCREEN_HEIGHT * g_layout_scale)) / 2.0f + g_menu_bar_size;
     g_layout_padding_left = 0.0f;
   }
 
@@ -244,8 +244,8 @@ bool IsCancelButtonPressed()
 
 bool BeginFullscreenColumns(const char* title)
 {
-  ImGui::SetNextWindowPos(ImVec2(g_layout_padding_left, s_menu_bar_size));
-  ImGui::SetNextWindowSize(ImVec2(LayoutScale(LAYOUT_SCREEN_WIDTH), ImGui::GetIO().DisplaySize.y - s_menu_bar_size));
+  ImGui::SetNextWindowPos(ImVec2(g_layout_padding_left, g_menu_bar_size));
+  ImGui::SetNextWindowSize(ImVec2(LayoutScale(LAYOUT_SCREEN_WIDTH), ImGui::GetIO().DisplaySize.y - g_menu_bar_size));
 
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
@@ -276,7 +276,7 @@ void EndFullscreenColumns()
 bool BeginFullscreenColumnWindow(float start, float end, const char* name, const ImVec4& background)
 {
   const ImVec2 pos(LayoutScale(start), 0.0f);
-  const ImVec2 size(LayoutScale(end - start), ImGui::GetIO().DisplaySize.y - s_menu_bar_size);
+  const ImVec2 size(LayoutScale(end - start), ImGui::GetIO().DisplaySize.y - g_menu_bar_size);
 
   ImGui::PushStyleColor(ImGuiCol_ChildBg, background);
 

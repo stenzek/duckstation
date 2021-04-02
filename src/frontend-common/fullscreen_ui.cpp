@@ -299,7 +299,8 @@ void Render()
 
   if (System::IsValid())
   {
-    DrawStatsOverlay();
+    if (!s_debug_menu_enabled)
+      DrawStatsOverlay();
 
     if (!IsCheevosHardcoreModeActive())
       s_host_interface->DrawDebugWindows();
@@ -3033,7 +3034,7 @@ void DrawStatsOverlay()
 
   const float margin = LayoutScale(10.0f);
   const float shadow_offset = DPIScale(1.0f);
-  float position_y = margin;
+  float position_y = ImGuiFullscreen::g_menu_bar_size + margin;
   ImDrawList* dl = ImGui::GetBackgroundDrawList();
   TinyString text;
   ImVec2 text_size;
@@ -3119,7 +3120,7 @@ void DrawOSDMessages()
   const float margin = LayoutScale(10.0f);
   const float padding = LayoutScale(10.0f);
   float position_x = margin;
-  float position_y = margin + static_cast<float>(s_host_interface->GetDisplay()->GetDisplayTopMargin());
+  float position_y = margin + ImGuiFullscreen::g_menu_bar_size;
 
   s_host_interface->EnumerateOSDMessages(
     [max_width, spacing, padding, &position_x, &position_y](const std::string& message, float time_remaining) -> bool {
@@ -3371,21 +3372,27 @@ void DrawDebugStats()
   if (!System::IsShutdown())
   {
     const float framebuffer_scale = ImGui::GetIO().DisplayFramebufferScale.x;
+    const float framebuffer_width = ImGui::GetIO().DisplaySize.x;
 
     if (System::IsPaused())
     {
-      ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - (50.0f * framebuffer_scale));
+      ImGui::SetCursorPosX(framebuffer_width - (50.0f * framebuffer_scale));
       ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Paused");
     }
     else
     {
-      ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - (420.0f * framebuffer_scale));
+      const auto [display_width, display_height] = g_gpu->GetEffectiveDisplayResolution();
+      ImGui::SetCursorPosX(framebuffer_width - (580.0f * framebuffer_scale));
+      ImGui::Text("%ux%u (%s)", display_width, display_height,
+                  g_gpu->IsInterlacedDisplayEnabled() ? "interlaced" : "progressive");
+
+      ImGui::SetCursorPosX(framebuffer_width - (420.0f * framebuffer_scale));
       ImGui::Text("Average: %.2fms", System::GetAverageFrameTime());
 
-      ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - (310.0f * framebuffer_scale));
+      ImGui::SetCursorPosX(framebuffer_width - (310.0f * framebuffer_scale));
       ImGui::Text("Worst: %.2fms", System::GetWorstFrameTime());
 
-      ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - (210.0f * framebuffer_scale));
+      ImGui::SetCursorPosX(framebuffer_width - (210.0f * framebuffer_scale));
 
       const float speed = System::GetEmulationSpeed();
       const u32 rounded_speed = static_cast<u32>(std::round(speed));
@@ -3396,10 +3403,10 @@ void DrawDebugStats()
       else
         ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "%u%%", rounded_speed);
 
-      ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - (165.0f * framebuffer_scale));
+      ImGui::SetCursorPosX(framebuffer_width - (165.0f * framebuffer_scale));
       ImGui::Text("FPS: %.2f", System::GetFPS());
 
-      ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - (80.0f * framebuffer_scale));
+      ImGui::SetCursorPosX(framebuffer_width - (80.0f * framebuffer_scale));
       ImGui::Text("VPS: %.2f", System::GetVPS());
     }
   }

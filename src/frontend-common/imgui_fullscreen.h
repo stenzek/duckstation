@@ -29,6 +29,7 @@ extern ImFont* g_large_font;
 extern float g_layout_scale;
 extern float g_layout_padding_left;
 extern float g_layout_padding_top;
+extern float g_menu_bar_size;
 
 static ALWAYS_INLINE float DPIScale(float v)
 {
