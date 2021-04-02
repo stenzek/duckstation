@@ -2289,7 +2289,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Global Settings</source>
-        <translation>Achievement設定</translation>
+        <translation>全体設定</translation>
     </message>
     <message>
         <source>Unchecked</source>
@@ -2317,17 +2317,21 @@ Login token generated on %2.</source>
         <source>The current state will be saved, but you will be unable to load it until you disable hardcore mode.
 
 </source>
-        <translation>現在の状態は保存されますが、ハードコアモードを無効にするまで読込できません。
+        <translation>現在の状態は保存されますが、ハードコアモードを無効にするまで読み込めません。
 
 </translation>
     </message>
     <message>
         <source>&quot;Challenge&quot; mode for achievements. Disables save state, cheats, and slowdown functions, but you receive double the achievement points.</source>
-        <translation>achievementsの&quot;チャレンジモード&quot;&#x3000;セーブステート、チート、スローダウン機能を無効にしますが、アチーブメントポイントは2倍になります。</translation>
+        <translation>アチーブメントの&quot;チャレンジ&quot; モード。ステートロード、チート、スローダウン機能を無効にしますが、アチーブメントポイントは2倍になります。</translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at &lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStationは、RetroAchievementsを実績データベースおよび進行状況の追跡に使用します。使用するには、&lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;DuckStation uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at &lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;To view the achievement list in-game, press the hotkey for &lt;span style=&quot; font-weight:600;&quot;&gt;Open Quick Menu&lt;/span&gt; and select &lt;span style=&quot; font-weight:600;&quot;&gt;Achievements&lt;/span&gt; from the menu.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;DuckStationは、RetroAchievementsを達成実績データベースとして使用し、進行状況を保存します。Achievementsを使用するには、&lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;でアカウントにサインアップしてください。&#x3000;&#x3000;&#x3000;&#x3000;&#x3000;メニューからホットキーの&lt;span style=&quot; font-weight:600;&quot;&gt; [クイックメニューを開く] &lt;/span&gt; を押して、  &lt;span style=&quot; font-weight:600;&quot;&gt; Achievements &lt;/span&gt; を選択します。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;DuckStationは、RetroAchievementsを実績データベースとして使用し、進行状況を追跡します。使用するには、 &lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;でアカウントにサインアップしてください。ゲーム内でアチーブメントリストを表示するには、 &lt;span style=&quot; font-weight:600;&quot;&gt;クイックメニューを開く&lt;/span&gt; のホットキーを押して &lt;span style=&quot; font-weight:600;&quot;&gt;メニューから選択&lt;/span&gt;します。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Use First Disc From Playlist</source>
@@ -2552,7 +2556,7 @@ Login token generated on %2.</source>
         <translation>DuckStationは、このディレクトリのBIOSイメージを検索します。</translation>
     </message>
     <message>
-        <source>Patches the BIOS to skip the console&apos;s boot animation. Does not work with all games, but usually safe to enable.</source>
+        <source>Patches the BIOS to skip the console&apos;s boot animation. Does not work with all games, but usually safe to enabled.</source>
         <translation>コンソールの起動アニメーションをスキップするようにBIOSにパッチを適用します。すべてのゲームで機能するわけではありませんが、通常は安全に有効にできます。</translation>
     </message>
     <message>
@@ -2829,6 +2833,14 @@ Login token generated on %2.</source>
     <message>
         <source>Show VPS</source>
         <translation>VPSを表示</translation>
+    </message>
+    <message>
+        <source>Show Display FPS</source>
+        <translation>ディスプレイFPSを表示</translation>
+    </message>
+    <message>
+        <source>Show Game Frame Rate</source>
+        <translation>ゲームフレームレートを表示</translation>
     </message>
 </context>
 <context>
@@ -4229,8 +4241,8 @@ Login token generated on %2.</source>
         <translation>ホスト表示の作成に失敗しました。</translation>
     </message>
     <message>
-        <source>All File Types (*.bin *.img *.iso *.cue *.chd *.exe *.psexe *.psf *.minipsf *.m3u);;Single-Track Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;PlayStation Executables (*.exe *.psexe);;Portable Sound Format Files (*.psf *.minipsf);;Playlists (*.m3u)</source>
-        <translation>すべてのファイルタイプ (*.bin *.img *.iso *.cue *.chd *.exe *.psexe *.psf *.m3u);;シングルトラック Raw イメージ (*.bin *.img *.iso);;キューシート (*.cue);;MAME CHD イメージ (*.chd);;PlayStation 実行可能ファイル (*.exe *.psexe);;ポータブルサウンドフォーマットファイル (*.psf *.minipsf);;プレイリスト (*.m3u)</translation>
+        <source>All File Types (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.pbp *.exe *.psexe *.psf *.minipsf *.m3u);;Single-Track Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;Error Code Modeler Images (*.ecm);;Media Descriptor Sidecar Images (*.mds);;PlayStation EBOOTs (*.pbp);;PlayStation Executables (*.exe *.psexe);;Portable Sound Format Files (*.psf *.minipsf);;Playlists (*.m3u)</source>
+        <translation>すべてのファイル (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.pbp *.exe *.psexe *.psf *.minipsf *.m3u);;シングルトラックイメージ (*.bin *.img *.iso);;Cueファイル (*.cue);;MAME CHDイメージ (*.chd);;Error Code Modeler イメージ (*.ecm);;Media Descriptor Sidecarイメージ (*.mds);;PlayStation EBOOT形式 (*.pbp);;PlayStation実行ファイル (*.exe *.psexe);;ポータブルサウンド形式 (*.psf *.minipsf);;プレイリスト (*.m3u)</translation>
     </message>
     <message>
         <source>Memory &amp;Card Editor</source>
@@ -4560,6 +4572,10 @@ Login token generated on %2.</source>
         <translation>ユーザー名:</translation>
     </message>
     <message>
+        <source>Please enter user name and password for retroachievements.org below. Your password will not be saved in DuckStation, an access token will be generated and used instead.</source>
+        <translation>以下に retroachievements.org のユーザー名とパスワードを入力してください。  パスワードはDuckStationに保存されず、代わりにアクセストークンが生成されて使用されます。</translation>
+    </message>
+    <message>
         <source>Login failed. Please check your username and password, and try again.</source>
         <translation>ログインに失敗しました。ユーザー名とパスワードを確認して、もう一度お試しください。</translation>
     </message>
@@ -4581,15 +4597,11 @@ Login token generated on %2.</source>
     </message>
     <message>
         <source>RetroAchievements Login</source>
-        <translation>RetroAchievements ログイン</translation>
+        <translation>RetroAchievementsログイン</translation>
     </message>
     <message>
         <source>Ready...</source>
         <translation>準備中...</translation>
-    </message>
-    <message>
-        <source>Please enter user name and password for retroachievements.org below. Your password will not be saved in DuckStation, an access token will be generated and used instead.</source>
-        <translation>retroachievements.org のユーザー名とパスワードを入力してください。&#x3000;&#x3000;&#x3000;&#x3000;&#x3000;パスワードは、DuckStationに保存されずにアクセストークンが生成されて使用されます。</translation>
     </message>
     <message>
         <source>Login failed.</source>
@@ -5656,6 +5668,89 @@ Achievements:%5 (%6点)
     </message>
 </context>
 <context>
+    <name>MemoryCardSettingsWidget</name>
+    <message>
+        <source>Reset</source>
+        <translation>リセット</translation>
+    </message>
+    <message>
+        <source>Open Directory...</source>
+        <translation>ディレクトリを開く...</translation>
+    </message>
+    <message>
+        <source>If one of the &quot;separate card per game&quot; memory card modes is chosen, these memory cards will be saved to the memcards directory.</source>
+        <translation>「ゲームごとに別々のカード」メモリカードモードの1つを選択すると、これらのメモリカードはmemcardsディレクトリに保存されます。</translation>
+    </message>
+    <message>
+        <source>Select path to memory card image</source>
+        <translation>メモリカードイメージのパスを選択します</translation>
+    </message>
+    <message>
+        <source>Shared Settings</source>
+        <translation>共有設定</translation>
+    </message>
+    <message>
+        <source>Memory Card Directory:</source>
+        <translation>メモリカードディレクトリ:</translation>
+    </message>
+    <message>
+        <source>Use Single Card For Sub-Images</source>
+        <translation>サブイメージにメモリカード(1枚分)を使用する</translation>
+    </message>
+    <message>
+        <source>Use Single Card For Playlist</source>
+        <translation>プレイリストにメモリカード(1枚分)を使用する</translation>
+    </message>
+    <message>
+        <source>Memory Card %1</source>
+        <translation>メモリーカード %1</translation>
+    </message>
+    <message>
+        <source>Open...</source>
+        <translation>開く...</translation>
+    </message>
+    <message>
+        <source>Browse...</source>
+        <translation>参照...</translation>
+    </message>
+    <message>
+        <source>Checked</source>
+        <translation>チェックする</translation>
+    </message>
+    <message>
+        <source>All Memory Card Types (*.mcd *.mcr *.mc)</source>
+        <translation>すべてのメモリカードタイプ (*.mcd *.mcr *.mc)</translation>
+    </message>
+    <message>
+        <source>When using a multi-disc format (m3u/pbp) and per-game (title) memory cards, a single memory card will be used for all discs. If unchecked, a separate card will be used for each disc.</source>
+        <translation>マルチディスクフォーマット（m3u / pbp）およびゲームごと（タイトル）のメモリカードを使用する場合、すべてのディスクに1枚のメモリカードが使用されます。チェックを外すと、ディスクごとに別々のカードが使用されます。</translation>
+    </message>
+    <message>
+        <source>If one of the &quot;separate card per game&quot; memory card modes is chosen, these memory cards will be saved to the memory cards directory.</source>
+        <translation>&quot;ゲームごとに別々のカード&quot;メモリカードモードの1つを選択すると、これらのメモリカードはメモリカードディレクトリに保存されます。</translation>
+    </message>
+    <message>
+        <source>Shared Memory Card Path:</source>
+        <translation>共有メモリカードパス :</translation>
+    </message>
+    <message>
+        <source>Memory Card Editor...</source>
+        <translation>メモリーカードエディタ...</translation>
+    </message>
+    <message>
+        <source>The memory card editor enables you to move saves between cards, as well as import cards of other formats.</source>
+        <translation>メモリカードエディタを使用すると、カード間でセーブデータを移動したり、他の形式のカードをインポートしたりできます。</translation>
+    </message>
+    <message>
+        <source>When using a playlist (m3u) and per-game (title) memory cards, a single memory card will be used for all discs. If unchecked, a separate card will be used for each disc.</source>
+        <translation>プレイリスト（m3u）とゲームごと（タイトル）のメモリーカードを使用する場合、すべてのディスクに1枚のメモリーカードが使用されます。チェックを外すと、ディスクごとに別々のカードが使用されます。</translation>
+    </message>
+    <message>
+        <source>Memory Card Type:</source>
+        <translation>メモリーカード タイプ :</translation>
+    </message>
+</context>
+<context>
     <name>CPUExecutionMode</name>
     <message>
         <source>Recompiler (Fastest)</source>
@@ -5740,61 +5835,10 @@ Achievements:%5 (%6点)
     </message>
 </context>
 <context>
-    <name>MemoryCardSettingsWidget</name>
-    <message>
-        <source>If one of the &quot;separate card per game&quot; memory card modes is chosen, these memory cards will be saved to the memcards directory.</source>
-        <translation>「ゲームごとに個別のカード」メモリカードモードの1つを選択すると、これらのメモリカードはmemcardsディレクトリに保存されます。</translation>
-    </message>
-    <message>
-        <source>Select path to memory card image</source>
-        <translation>メモリカードイメージのパスを選択します</translation>
-    </message>
-    <message>
-        <source>Shared Settings</source>
-        <translation>共有設定</translation>
-    </message>
-    <message>
-        <source>Use Single Card For Playlist</source>
-        <translation>プレイリストにシングルカードを使用する</translation>
-    </message>
-    <message>
-        <source>Memory Card %1</source>
-        <translation>メモリーカード %1</translation>
-    </message>
-    <message>
-        <source>Open...</source>
-        <translation>開く...</translation>
-    </message>
-    <message>
-        <source>Browse...</source>
-        <translation>参照...</translation>
-    </message>
-    <message>
-        <source>Checked</source>
-        <translation>チェックする</translation>
-    </message>
-    <message>
-        <source>All Memory Card Types (*.mcd *.mcr *.mc)</source>
-        <translation>すべてのメモリカードタイプ (*.mcd *.mcr *.mc)</translation>
-    </message>
-    <message>
-        <source>Shared Memory Card Path:</source>
-        <translation>共有メモリカードパス :</translation>
-    </message>
-    <message>
-        <source>When using a playlist (m3u) and per-game (title) memory cards, a single memory card will be used for all discs. If unchecked, a separate card will be used for each disc.</source>
-        <translation>プレイリスト（m3u）とゲームごと（タイトル）のメモリーカードを使用する場合、すべてのディスクに1枚のメモリーカードが使用されます。チェックを外すと、ディスクごとに別々のカードが使用されます。</translation>
-    </message>
-    <message>
-        <source>Memory Card Type:</source>
-        <translation>メモリーカード タイプ :</translation>
-    </message>
-</context>
-<context>
     <name>MemoryCardType</name>
     <message>
         <source>Separate Card Per Game (Game Title)</source>
-        <translation>ゲームごとに個別のカード（ゲームタイトル）</translation>
+        <translation>ゲームごとに別々のカード（ゲームタイトル）</translation>
     </message>
     <message>
         <source>Shared Between All Games</source>
@@ -5806,7 +5850,7 @@ Achievements:%5 (%6点)
     </message>
     <message>
         <source>Separate Card Per Game (Game Code)</source>
-        <translation>ゲームごとに個別のカード（ゲームコード）</translation>
+        <translation>ゲームごとに別々のカード（ゲームコード）</translation>
     </message>
 </context>
 <context>
