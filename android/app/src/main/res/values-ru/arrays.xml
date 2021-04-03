@@ -95,8 +95,8 @@
 		<item>Чит-коды</item>
 		<item>Сменить диск</item>
 		<item>Экранный геймпад</item>
-		<item>Настройки управления</item>
-		<item>Настройки эмулятора</item>
+		<item>Управление</item>
+		<item>Настройки</item>
 	</string-array>
 	<string-array name="emulation_touchscreen_menu">
 		<item>Сменить вид</item>
@@ -121,7 +121,7 @@
 		<item>Цифровой</item>
 		<item>Аналоговый, один джойстик</item>
 		<item>Аналоговый, два джойстика</item>
-		<item>Lightgun</item>
+		<item>Световой пистолет</item>
 	</string-array>
 	<string-array name="settings_audio_backend_entries">
 		<item>Нет (без звука)</item>
