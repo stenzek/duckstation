@@ -35,6 +35,7 @@ public class TouchscreenControllerView extends FrameLayout {
     private View mMainView;
     private ArrayList<TouchscreenControllerButtonView> mButtonViews = new ArrayList<>();
     private ArrayList<TouchscreenControllerAxisView> mAxisViews = new ArrayList<>();
+    private TouchscreenControllerDPadView mDPadView = null;
     private boolean mHapticFeedback;
     private String mLayoutOrientation;
     private boolean mEditingLayout = false;
@@ -105,6 +106,13 @@ public class TouchscreenControllerView extends FrameLayout {
             axisView.setTranslationY(0.0f);
         }
 
+        if (mDPadView != null) {
+            editor.remove(getConfigKeyForXTranslation(mDPadView.getConfigName()));
+            editor.remove(getConfigKeyForYTranslation(mDPadView.getConfigName()));
+            mDPadView.setTranslationX(0.0f);
+            mDPadView.setTranslationY(0.0f);
+        }
+
         editor.commit();
         requestLayout();
     }
@@ -137,6 +145,18 @@ public class TouchscreenControllerView extends FrameLayout {
 
             }
         }
+
+        if (mDPadView != null) {
+            try {
+                mDPadView.setTranslationX(prefs.getFloat(getConfigKeyForXTranslation(mDPadView.getConfigName()), 0.0f));
+                mDPadView.setTranslationY(prefs.getFloat(getConfigKeyForYTranslation(mDPadView.getConfigName()), 0.0f));
+
+                final boolean visible = prefs.getBoolean(getConfigKeyForVisibility(mDPadView.getConfigName()), mDPadView.getDefaultVisibility());
+                mDPadView.setVisibility(visible ? VISIBLE : INVISIBLE);
+            } catch (ClassCastException ex) {
+
+            }
+        }
     }
 
     private void setOpacity(int opacity) {
@@ -160,6 +180,8 @@ public class TouchscreenControllerView extends FrameLayout {
         for (TouchscreenControllerAxisView axisView : mAxisViews) {
             axisView.setAlpha(alpha);
         }
+        if (mDPadView != null)
+            mDPadView.setAlpha(alpha);
     }
 
     private String getOrientationString() {
@@ -232,10 +254,7 @@ public class TouchscreenControllerView extends FrameLayout {
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
 
-        linkButton(mMainView, R.id.controller_button_up, "UpButton", "Up", true, false);
-        linkButton(mMainView, R.id.controller_button_right, "RightButton", "Right", true, false);
-        linkButton(mMainView, R.id.controller_button_down, "DownButton", "Down", true, false);
-        linkButton(mMainView, R.id.controller_button_left, "LeftButton", "Left", true, false);
+        linkDPadToButtons(mMainView, R.id.controller_dpad, "DPad", "", true);
         linkButton(mMainView, R.id.controller_button_l1, "L1Button", "L1", true, gliding);
         linkButton(mMainView, R.id.controller_button_l2, "L2Button", "L2", true, gliding);
         linkButton(mMainView, R.id.controller_button_select, "SelectButton", "Select", true, gliding);
@@ -317,6 +336,27 @@ public class TouchscreenControllerView extends FrameLayout {
             return false;
 
         axisView.setControllerButtons(mControllerIndex, leftCode, rightCode, upCode, downCode);
+        return true;
+    }
+
+    private boolean linkDPadToButtons(View view, int id, String configName, String buttonPrefix, boolean defaultVisibility) {
+        TouchscreenControllerDPadView dpadView = (TouchscreenControllerDPadView) view.findViewById(id);
+        if (dpadView == null)
+            return false;
+
+        dpadView.setConfigName(configName);
+        dpadView.setDefaultVisibility(defaultVisibility);
+        mDPadView = dpadView;
+
+        int leftCode = AndroidHostInterface.getControllerButtonCode(mControllerType, buttonPrefix + "Left");
+        int rightCode = AndroidHostInterface.getControllerButtonCode(mControllerType, buttonPrefix + "Right");
+        int upCode = AndroidHostInterface.getControllerButtonCode(mControllerType, buttonPrefix + "Up");
+        int downCode = AndroidHostInterface.getControllerButtonCode(mControllerType, buttonPrefix + "Down");
+        Log.i("TouchscreenController", String.format("%s(DPad) -> %d,%d,%d,%d", buttonPrefix, leftCode, rightCode, upCode, downCode));
+        if (leftCode < 0 && rightCode < 0 && upCode < 0 && downCode < 0)
+            return false;
+
+        dpadView.setControllerButtons(mControllerIndex, leftCode, rightCode, upCode, downCode);
         return true;
     }
 
@@ -404,6 +444,17 @@ public class TouchscreenControllerView extends FrameLayout {
                     if (rect.contains((int) x, (int) y)) {
                         mMovingView = axisView;
                         mMovingName = axisView.getConfigName();
+                        mMovingLastX = x;
+                        mMovingLastY = y;
+                        return true;
+                    }
+                }
+
+                if (mDPadView != null) {
+                    mDPadView.getHitRect(rect);
+                    if (rect.contains((int) x, (int) y)) {
+                        mMovingView = mDPadView;
+                        mMovingName = mDPadView.getConfigName();
                         mMovingLastX = x;
                         mMovingLastY = y;
                         return true;
@@ -502,6 +553,23 @@ public class TouchscreenControllerView extends FrameLayout {
                 axisView.setUnpressed();
         }
 
+        if (mDPadView != null && mDPadView.getVisibility() == VISIBLE) {
+            mDPadView.getHitRect(rect);
+
+            boolean pressed = false;
+            for (int i = 0; i < pointerCount; i++) {
+                final int x = (int) event.getX(i);
+                final int y = (int) event.getY(i);
+                if (rect.contains(x, y)) {
+                    mDPadView.setPressed(event.getPointerId(i), x, y);
+                    pressed = true;
+                }
+            }
+
+            if (!pressed)
+                mDPadView.setUnpressed();
+        }
+
         return true;
     }
 
@@ -520,6 +588,9 @@ public class TouchscreenControllerView extends FrameLayout {
                 for (TouchscreenControllerAxisView axisView : mAxisViews) {
                     axisView.setUnpressed();
                 }
+
+                if (mDPadView != null)
+                    mDPadView.setUnpressed();
 
                 return true;
             }
