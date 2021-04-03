@@ -74,6 +74,7 @@
         <item>Control Analógico (DualShock)</item>
         <item>Analog Joystick</item>
         <item>NeGcon</item>
+        <item>GunCon</item>
     </string-array>
     <string-array name="settings_memory_card_mode_entries">
         <item>Sin tarjeta de memoria</item>
@@ -114,6 +115,7 @@
         <item>Digital Pad</item>
         <item>Pad Analógico Unico</item>
         <item>Pad Analógico Dual</item>
+        <item>Lightgun</item>
     </string-array>
     <string-array name="settings_audio_backend_entries">
         <item>Nulo (Sin Salida)</item>

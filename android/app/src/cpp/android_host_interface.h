@@ -53,7 +53,6 @@ public:
   void SurfaceChanged(ANativeWindow* surface, int format, int width, int height);
   void SetDisplayAlignment(HostDisplay::Alignment alignment);
 
-  void SetControllerType(u32 index, std::string_view type_name);
   void SetControllerButtonState(u32 index, s32 button_code, bool pressed);
   void SetControllerAxisState(u32 index, s32 button_code, float value);
   void HandleControllerButtonEvent(u32 controller_index, u32 button_index, bool pressed);

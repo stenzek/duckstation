@@ -749,26 +749,6 @@ void AndroidHostInterface::SetDisplayAlignment(HostDisplay::Alignment alignment)
     m_display->SetDisplayAlignment(alignment);
 }
 
-void AndroidHostInterface::SetControllerType(u32 index, std::string_view type_name)
-{
-  ControllerType type =
-    Settings::ParseControllerTypeName(std::string(type_name).c_str()).value_or(ControllerType::None);
-
-  if (!IsEmulationThreadRunning())
-  {
-    g_settings.controller_types[index] = type;
-    return;
-  }
-
-  RunOnEmulationThread(
-    [index, type]() {
-      Log_InfoPrintf("Changing controller slot %d to %s", index, Settings::GetControllerTypeName(type));
-      g_settings.controller_types[index] = type;
-      System::UpdateControllers();
-    },
-    false);
-}
-
 void AndroidHostInterface::SetControllerButtonState(u32 index, s32 button_code, bool pressed)
 {
   if (!IsEmulationThreadRunning())
@@ -1163,10 +1143,14 @@ DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_surfaceChanged, jobject obj, j
     block);
 }
 
-DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_setControllerType, jobject obj, jint index, jstring controller_type)
+DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_setMousePosition, jobject obj, jint positionX, jint positionY)
 {
-  AndroidHelpers::GetNativeClass(env, obj)->SetControllerType(index,
-                                                              AndroidHelpers::JStringToString(env, controller_type));
+  HostDisplay* display = AndroidHelpers::GetNativeClass(env, obj)->GetDisplay();
+  if (!display)
+    return;
+
+  // Technically a race, but shouldn't cause any issues.
+  display->SetMousePosition(positionX, positionY);
 }
 
 DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_setControllerButtonState, jobject obj, jint index, jint button_code,

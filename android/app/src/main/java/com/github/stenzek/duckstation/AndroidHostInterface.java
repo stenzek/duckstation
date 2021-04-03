@@ -67,12 +67,11 @@ public class AndroidHostInterface {
 
     public native void surfaceChanged(Surface surface, int format, int width, int height);
 
-    // TODO: Find a better place for this.
-    public native void setControllerType(int index, String typeName);
-
     public native void setControllerButtonState(int index, int buttonCode, boolean pressed);
 
     public native void setControllerAxisState(int index, int axisCode, float value);
+
+    public native void setMousePosition(int positionX, int positionY);
 
     public static native int getControllerButtonCode(String controllerType, String buttonName);
 

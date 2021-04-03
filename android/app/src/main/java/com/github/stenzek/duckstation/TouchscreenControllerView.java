@@ -36,6 +36,7 @@ public class TouchscreenControllerView extends FrameLayout {
     private ArrayList<TouchscreenControllerButtonView> mButtonViews = new ArrayList<>();
     private ArrayList<TouchscreenControllerAxisView> mAxisViews = new ArrayList<>();
     private TouchscreenControllerDPadView mDPadView = null;
+    private int mPointerButtonCode = -1;
     private boolean mHapticFeedback;
     private String mLayoutOrientation;
     private boolean mEditingLayout = false;
@@ -223,6 +224,7 @@ public class TouchscreenControllerView extends FrameLayout {
         removeAllViews();
 
         LayoutInflater inflater = LayoutInflater.from(getContext());
+        String pointerButtonName = null;
         switch (viewType) {
             case "digital":
                 mMainView = inflater.inflate(R.layout.layout_touchscreen_controller_digital, this, true);
@@ -234,6 +236,11 @@ public class TouchscreenControllerView extends FrameLayout {
 
             case "analog_sticks":
                 mMainView = inflater.inflate(R.layout.layout_touchscreen_controller_analog_sticks, this, true);
+                break;
+
+            case "lightgun":
+                mMainView = inflater.inflate(R.layout.layout_touchscreen_controller_lightgun, this, true);
+                pointerButtonName = "Trigger";
                 break;
 
             case "none":
@@ -275,6 +282,11 @@ public class TouchscreenControllerView extends FrameLayout {
                 TouchscreenControllerButtonView.Hotkey.FAST_FORWARD, false);
         linkHotkeyButton(mMainView, R.id.controller_button_analog, "AnalogToggle",
                 TouchscreenControllerButtonView.Hotkey.ANALOG_TOGGLE, false);
+
+        linkButton(mMainView, R.id.controller_button_a, "AButton", "A", true, true);
+        linkButton(mMainView, R.id.controller_button_b, "BButton", "B", true, true);
+        if (pointerButtonName != null)
+            linkPointer(pointerButtonName);
 
         reloadButtonSettings();
         updateOpacity();
@@ -369,6 +381,12 @@ public class TouchscreenControllerView extends FrameLayout {
         buttonView.setDefaultVisibility(defaultVisibility);
         buttonView.setHotkey(hotkey);
         mButtonViews.add(buttonView);
+    }
+
+    private boolean linkPointer(String buttonName) {
+        mPointerButtonCode = AndroidHostInterface.getInstance().getControllerButtonCode(mControllerType, buttonName);
+        Log.i("TouchscreenController", String.format("Pointer -> %s,%d", buttonName, mPointerButtonCode));
+        return (mPointerButtonCode >= 0);
     }
 
     private int dpToPixels(float dp) {
@@ -570,6 +588,18 @@ public class TouchscreenControllerView extends FrameLayout {
                 mDPadView.setUnpressed();
         }
 
+        if (mPointerButtonCode >= 0 && pointerCount > 0) {
+            if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+                AndroidHostInterface.getInstance().setControllerButtonState(mControllerIndex,
+                        mPointerButtonCode, true);
+            }
+
+            final int pointerId = event.getPointerId(0);
+            AndroidHostInterface.getInstance().setMousePosition(
+                    (int)event.getX(pointerId),
+                    (int)event.getY(pointerId));
+        }
+
         return true;
     }
 
@@ -591,6 +621,11 @@ public class TouchscreenControllerView extends FrameLayout {
 
                 if (mDPadView != null)
                     mDPadView.setUnpressed();
+
+                if (mPointerButtonCode >= 0) {
+                    AndroidHostInterface.getInstance().setControllerButtonState(
+                            mControllerIndex, mPointerButtonCode, false);
+                }
 
                 return true;
             }

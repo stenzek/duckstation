@@ -143,6 +143,7 @@
         <item>Analog Controller (DualShock)</item>
         <item>Analog Joystick</item>
         <item>NeGcon</item>
+        <item>GunCon</item>
     </string-array>
     <string-array name="settings_controller_type_values">
         <item>None</item>
@@ -150,6 +151,7 @@
         <item>AnalogController</item>
         <item>AnalogJoystick</item>
         <item>NeGcon</item>
+        <item>NamcoGunCon</item>
     </string-array>
     <string-array name="settings_memory_card_mode_entries">
         <item>No Memory Card</item>
@@ -214,12 +216,14 @@
         <item>Digital Pad</item>
         <item>Single Analog Pad</item>
         <item>Dual Analog Pad</item>
+        <item>Lightgun</item>
     </string-array>
     <string-array name="settings_touchscreen_controller_view_values">
         <item>none</item>
         <item>digital</item>
         <item>analog_stick</item>
         <item>analog_sticks</item>
+        <item>lightgun</item>
     </string-array>
     <string-array name="settings_audio_backend_entries">
         <item>Null (No Output)</item>
