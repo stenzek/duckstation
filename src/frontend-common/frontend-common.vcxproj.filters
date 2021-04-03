@@ -30,6 +30,7 @@
     <ClCompile Include="cheevos.cpp" />
     <ClCompile Include="http_downloader.cpp" />
     <ClCompile Include="http_downloader_winhttp.cpp" />
+    <ClCompile Include="input_overlay_ui.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="icon.h" />
@@ -61,6 +62,7 @@
     <ClInclude Include="cheevos.h" />
     <ClInclude Include="http_downloader.h" />
     <ClInclude Include="http_downloader_winhttp.h" />
+    <ClInclude Include="input_overlay_ui.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="font_roboto_regular.inl" />

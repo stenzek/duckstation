@@ -46,7 +46,13 @@ public:
   virtual bool Transfer(const u8 data_in, u8* data_out);
 
   /// Changes the specified axis state. Values are normalized from -1..1.
+  virtual float GetAxisState(s32 axis_code) const;
+
+  /// Changes the specified axis state. Values are normalized from -1..1.
   virtual void SetAxisState(s32 axis_code, float value);
+
+  /// Returns the specified button state.
+  virtual bool GetButtonState(s32 button_code) const;
 
   /// Changes the specified button state.
   virtual void SetButtonState(s32 button_code, bool pressed);

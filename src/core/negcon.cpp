@@ -48,6 +48,16 @@ bool NeGcon::DoState(StateWrapper& sw, bool apply_input_state)
   return true;
 }
 
+float NeGcon::GetAxisState(s32 axis_code) const
+{
+  if (axis_code < 0 || axis_code >= static_cast<s32>(Axis::Count))
+    return 0.0f;
+
+  // 0..255 -> -1..1
+  const float value = (((static_cast<float>(m_axis_state[static_cast<s32>(axis_code)]) / 255.0f) * 2.0f) - 1.0f);
+  return std::clamp(value, -1.0f, 1.0f);
+}
+
 void NeGcon::SetAxisState(s32 axis_code, float value)
 {
   if (axis_code < 0 || axis_code >= static_cast<s32>(Axis::Count))
@@ -76,6 +86,15 @@ void NeGcon::SetAxisState(s32 axis_code, float value)
 void NeGcon::SetAxisState(Axis axis, u8 value)
 {
   m_axis_state[static_cast<u8>(axis)] = value;
+}
+
+bool NeGcon::GetButtonState(s32 button_code) const
+{
+  if (button_code < 0 || button_code >= static_cast<s32>(Button::Count))
+    return false;
+
+  const u16 bit = u16(1) << static_cast<u8>(button_code);
+  return ((m_button_state & bit) == 0);
 }
 
 void NeGcon::SetButtonState(s32 button_code, bool pressed)

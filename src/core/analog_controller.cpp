@@ -104,6 +104,16 @@ std::optional<s32> AnalogController::GetButtonCodeByName(std::string_view button
   return StaticGetButtonCodeByName(button_name);
 }
 
+float AnalogController::GetAxisState(s32 axis_code) const
+{
+  if (axis_code < 0 || axis_code >= static_cast<s32>(Axis::Count))
+    return 0.0f;
+
+  // 0..255 -> -1..1
+  const float value = (((static_cast<float>(m_axis_state[static_cast<s32>(axis_code)]) / 255.0f) * 2.0f) - 1.0f);
+  return std::clamp(value / m_axis_scale, -1.0f, 1.0f);
+}
+
 void AnalogController::SetAxisState(s32 axis_code, float value)
 {
   if (axis_code < 0 || axis_code >= static_cast<s32>(Axis::Count))
@@ -122,6 +132,15 @@ void AnalogController::SetAxisState(Axis axis, u8 value)
     System::SetRunaheadReplayFlag();
 
   m_axis_state[static_cast<u8>(axis)] = value;
+}
+
+bool AnalogController::GetButtonState(s32 button_code) const
+{
+  if (button_code < 0 || button_code >= static_cast<s32>(Button::Analog))
+    return false;
+
+  const u16 bit = u16(1) << static_cast<u8>(button_code);
+  return ((m_button_state & bit) == 0);
 }
 
 void AnalogController::SetButtonState(Button button, bool pressed)

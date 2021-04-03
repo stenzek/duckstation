@@ -98,5 +98,11 @@
         app:defaultValue="false"
         app:summary="@string/settings_summary_osd_show_resolution"
         app:iconSpaceReserved="false" />
+    <SwitchPreferenceCompat
+        app:key="Display/ShowInputs"
+        app:title="@string/settings_osd_show_show_inputs"
+        app:defaultValue="false"
+        app:summary="@string/settings_summary_osd_show_inputs"
+        app:iconSpaceReserved="false" />
 
 </PreferenceScreen>

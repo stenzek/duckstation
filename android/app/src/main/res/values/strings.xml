@@ -328,4 +328,6 @@
     <string name="main_activity_empty_game_list_start_file">Start File</string>
     <string name="update_notes_title">Update Notes</string>
     <string name="update_notes_message_version_controller_update">This DuckStation update includes support for multiple controllers with vibration, and binding devices such as keyboards/volume buttons.\n\nYou must re-bind your controllers, otherwise they will no longer function. Do you want to do this now?</string>
+    <string name="settings_osd_show_show_inputs">Show Controller Input</string>
+    <string name="settings_summary_osd_show_inputs">Shows the current controller state of the system in the bottom-left corner of the display.</string>
 </resources>

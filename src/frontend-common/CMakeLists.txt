@@ -17,8 +17,10 @@ add_library(frontend-common
   icon.h
   ini_settings_interface.cpp
   ini_settings_interface.h
-  imgui_fullscreen.h
+  input_overlay_ui.cpp
+  input_overlay_ui.h
   imgui_fullscreen.cpp
+  imgui_fullscreen.h
   imgui_impl_opengl3.cpp
   imgui_impl_opengl3.h
   imgui_impl_vulkan.cpp

@@ -104,6 +104,7 @@
     <ClCompile Include="imgui_impl_vulkan.cpp" />
     <ClCompile Include="imgui_styles.cpp" />
     <ClCompile Include="ini_settings_interface.cpp" />
+    <ClCompile Include="input_overlay_ui.cpp" />
     <ClCompile Include="opengl_host_display.cpp" />
     <ClCompile Include="postprocessing_chain.cpp" />
     <ClCompile Include="postprocessing_shader.cpp" />
@@ -135,6 +136,7 @@
     <ClInclude Include="imgui_impl_vulkan.h" />
     <ClInclude Include="imgui_styles.h" />
     <ClInclude Include="ini_settings_interface.h" />
+    <ClInclude Include="input_overlay_ui.h" />
     <ClInclude Include="opengl_host_display.h" />
     <ClInclude Include="postprocessing_chain.h" />
     <ClInclude Include="postprocessing_shader.h" />

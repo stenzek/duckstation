@@ -51,6 +51,7 @@ DisplaySettingsWidget::DisplaySettingsWidget(QtHostInterface* host_interface, QW
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showSpeed, "Display", "ShowSpeed", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showResolution, "Display", "ShowResolution",
                                                false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showInput, "Display", "ShowInputs", false);
 
   connect(m_ui.renderer, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
           &DisplaySettingsWidget::populateGPUAdaptersAndResolutions);
@@ -135,6 +136,9 @@ DisplaySettingsWidget::DisplaySettingsWidget(QtHostInterface* host_interface, QW
     tr("Shows the current emulation speed of the system in the top-right corner of the display as a percentage."));
   dialog->registerWidgetHelp(m_ui.showResolution, tr("Show Resolution"), tr("Unchecked"),
                              tr("Shows the resolution of the game in the top-right corner of the display."));
+  dialog->registerWidgetHelp(
+    m_ui.showInput, tr("Show Controller Input"), tr("Unchecked"),
+    tr("Shows the current controller state of the system in the bottom-left corner of the display."));
 
 #ifdef _WIN32
   {

@@ -42,7 +42,14 @@ bool DigitalController::DoState(StateWrapper& sw, bool apply_input_state)
   return true;
 }
 
-void DigitalController::SetAxisState(s32 axis_code, float value) {}
+bool DigitalController::GetButtonState(s32 button_code) const
+{
+  if (button_code < 0 || button_code >= static_cast<s32>(Button::Count))
+    return false;
+
+  const u16 bit = u16(1) << static_cast<u8>(button_code);
+  return ((m_button_state & bit) == 0);
+}
 
 void DigitalController::SetButtonState(Button button, bool pressed)
 {

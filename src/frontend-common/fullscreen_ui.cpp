@@ -1980,6 +1980,10 @@ void DrawSettingsWindow()
           ToggleButton("Show Resolution",
                        "Shows the current rendering resolution of the system in the top-right corner of the display.",
                        &s_settings_copy.display_show_resolution);
+        settings_changed |= ToggleButtonForNonSetting(
+          "Show Controller Input",
+          "Shows the current controller state of the system in the bottom-left corner of the display.", "Display",
+          "ShowInputs", false);
 
         EndMenuButtons();
       }

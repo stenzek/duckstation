@@ -28,6 +28,7 @@
 #include "imgui_fullscreen.h"
 #include "imgui_styles.h"
 #include "ini_settings_interface.h"
+#include "input_overlay_ui.h"
 #include "save_state_selector_ui.h"
 #include "scmversion/scmversion.h"
 #include <cmath>
@@ -57,6 +58,7 @@
 Log_SetChannel(CommonHostInterface);
 
 static std::string s_settings_filename;
+static std::unique_ptr<FrontendCommon::InputOverlayUI> s_input_overlay_ui;
 
 CommonHostInterface::CommonHostInterface() = default;
 
@@ -104,6 +106,8 @@ bool CommonHostInterface::Initialize()
 
 void CommonHostInterface::Shutdown()
 {
+  s_input_overlay_ui.reset();
+
   HostInterface::Shutdown();
 
   ImGui::DestroyContext();
@@ -1038,6 +1042,9 @@ void CommonHostInterface::DrawImGuiWindows()
   if (m_save_state_selector_ui->IsOpen())
     m_save_state_selector_ui->Draw();
 
+  if (s_input_overlay_ui)
+    s_input_overlay_ui->Draw();
+
   if (m_fullscreen_ui_enabled)
   {
     FullscreenUI::Render();
@@ -1209,11 +1216,6 @@ void CommonHostInterface::AcquirePendingOSDMessages()
 void CommonHostInterface::DrawOSDMessages()
 {
   AcquirePendingOSDMessages();
-
-  constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoInputs |
-                                            ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings |
-                                            ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoNav |
-                                            ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing;
 
   const float scale = ImGui::GetIO().DisplayFramebufferScale.x;
   const float spacing = 5.0f * scale;
@@ -2639,6 +2641,13 @@ void CommonHostInterface::LoadSettings(SettingsInterface& si)
       }
     }
   }
+
+  const bool input_display_enabled = si.GetBoolValue("Display", "ShowInputs", false);
+  const bool input_display_state = static_cast<bool>(s_input_overlay_ui);
+  if (input_display_enabled && !s_input_overlay_ui)
+    s_input_overlay_ui = std::make_unique<FrontendCommon::InputOverlayUI>();
+  else if (!input_display_enabled && s_input_overlay_ui)
+    s_input_overlay_ui.reset();
 }
 
 void CommonHostInterface::SaveSettings(SettingsInterface& si)
