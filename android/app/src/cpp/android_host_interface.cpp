@@ -1191,6 +1191,24 @@ DEFINE_JNI_ARGS_METHOD(jint, AndroidHostInterface_getControllerAxisCode, jobject
   return code.value_or(-1);
 }
 
+DEFINE_JNI_ARGS_METHOD(jint, AndroidHostInterface_getControllerAxisType, jobject unused, jstring controller_type,
+                       jstring axis_name)
+{
+  std::optional<ControllerType> type =
+          Settings::ParseControllerTypeName(AndroidHelpers::JStringToString(env, controller_type).c_str());
+  if (!type)
+    return -1;
+
+  const std::string axis_name_str(AndroidHelpers::JStringToString(env, axis_name));
+  for (const auto& [name, code, type] : Controller::GetAxisNames(type.value()))
+  {
+    if (name == axis_name_str)
+      return static_cast<jint>(type);
+  }
+
+  return -1;
+}
+
 DEFINE_JNI_ARGS_METHOD(jobjectArray, AndroidHostInterface_getControllerButtonNames, jobject unused,
                        jstring controller_type)
 {

@@ -18,6 +18,9 @@ public class AndroidHostInterface {
     public final static int DISPLAY_ALIGNMENT_CENTER = 1;
     public final static int DISPLAY_ALIGNMENT_RIGHT_OR_BOTTOM = 2;
 
+    public final static int CONTROLLER_AXIS_TYPE_FULL = 0;
+    public final static int CONTROLLER_AXIS_TYPE_HALF = 1;
+
     private long mNativePointer;
     private Context mContext;
 
@@ -76,6 +79,8 @@ public class AndroidHostInterface {
     public static native int getControllerButtonCode(String controllerType, String buttonName);
 
     public static native int getControllerAxisCode(String controllerType, String axisName);
+
+    public static native int getControllerAxisType(String controllerType, String axisName);
 
     public static native String[] getControllerButtonNames(String controllerType);
 

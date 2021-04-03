@@ -78,7 +78,7 @@ public class ControllerBindingDialog extends AlertDialog {
             return super.onKeyDown(keyCode, event);
         }
 
-        if (mType == ControllerBindingPreference.Type.BUTTON) {
+        if (mType == ControllerBindingPreference.Type.BUTTON || mType == ControllerBindingPreference.Type.HALF_AXIS) {
             mCurrentBinding = String.format("%s/Button%d", device.getDescriptor(), event.getKeyCode());
         }  else if (mType == ControllerBindingPreference.Type.VIBRATION) {
             if (device.getVibrator() == null || !device.getVibrator().hasVibrator()) {
@@ -105,7 +105,7 @@ public class ControllerBindingDialog extends AlertDialog {
         mUpdatedAxisCode = axisCode;
 
         final int controllerIndex = 0;
-        if (mType == ControllerBindingPreference.Type.AXIS)
+        if (mType == ControllerBindingPreference.Type.AXIS || mType == ControllerBindingPreference.Type.HALF_AXIS)
             mCurrentBinding = String.format("%s/Axis%d", device.getDescriptor(), axisCode);
         else
             mCurrentBinding = String.format("%s/%cAxis%d", device.getDescriptor(), (positive) ? '+' : '-', axisCode);
@@ -156,7 +156,9 @@ public class ControllerBindingDialog extends AlertDialog {
 
     @Override
     public boolean onGenericMotionEvent(@NonNull MotionEvent event) {
-        if (mType != ControllerBindingPreference.Type.AXIS && mType != ControllerBindingPreference.Type.BUTTON) {
+        if (mType != ControllerBindingPreference.Type.AXIS &&
+            mType != ControllerBindingPreference.Type.HALF_AXIS &&
+            mType != ControllerBindingPreference.Type.BUTTON) {
             return false;
         }
 

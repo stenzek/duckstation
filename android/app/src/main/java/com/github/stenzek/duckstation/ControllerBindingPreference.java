@@ -18,6 +18,7 @@ public class ControllerBindingPreference extends Preference {
     public enum Type {
         BUTTON,
         AXIS,
+        HALF_AXIS,
         VIBRATION
     }
 
@@ -149,10 +150,10 @@ public class ControllerBindingPreference extends Preference {
         updateValue();
     }
 
-    public void initAxis(int controllerIndex, String axisName) {
+    public void initAxis(int controllerIndex, String axisName, int axisType) {
         mBindingName = axisName;
         mDisplayName = axisName;
-        mType = Type.AXIS;
+        mType = (axisType == AndroidHostInterface.CONTROLLER_AXIS_TYPE_HALF) ? Type.HALF_AXIS : Type.AXIS;
         mVisualType = VisualType.AXIS;
         setKey(String.format("Controller%d/Axis%s", controllerIndex, axisName));
         updateValue();

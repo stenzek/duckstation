@@ -297,12 +297,12 @@ public class ControllerSettingsActivity extends AppCompatActivity {
         private void createPreferences(String controllerType) {
             final PreferenceScreen ps = getPreferenceScreen();
             final SharedPreferences sp = getPreferenceManager().getSharedPreferences();
-            final String[] controllerButtons = AndroidHostInterface.getControllerButtonNames(controllerType);
-            final String[] axisButtons = AndroidHostInterface.getControllerAxisNames(controllerType);
+            final String[] buttonNames = AndroidHostInterface.getControllerButtonNames(controllerType);
+            final String[] axisNames = AndroidHostInterface.getControllerAxisNames(controllerType);
             final int vibrationMotors = AndroidHostInterface.getControllerVibrationMotorCount(controllerType);
 
-            if (controllerButtons != null) {
-                for (String buttonName : controllerButtons) {
+            if (buttonNames != null) {
+                for (String buttonName : buttonNames) {
                     final ControllerBindingPreference cbp = new ControllerBindingPreference(getContext(), null);
                     cbp.initButton(controllerIndex, buttonName);
                     mButtonsCategory.addPreference(cbp);
@@ -310,10 +310,11 @@ public class ControllerSettingsActivity extends AppCompatActivity {
                 }
             }
 
-            if (axisButtons != null) {
-                for (String axisName : axisButtons) {
+            if (axisNames != null) {
+                for (String axisName : axisNames) {
+                    final int axisType = AndroidHostInterface.getControllerAxisType(controllerType, axisName);
                     final ControllerBindingPreference cbp = new ControllerBindingPreference(getContext(), null);
-                    cbp.initAxis(controllerIndex, axisName);
+                    cbp.initAxis(controllerIndex, axisName, axisType);
                     mAxisCategory.addPreference(cbp);
                     activity.mPreferences.add(cbp);
                 }
