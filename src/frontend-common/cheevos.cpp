@@ -3,6 +3,7 @@
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/md5_digest.h"
+#include "common/platform.h"
 #include "common/string.h"
 #include "common/string_util.h"
 #include "common/timestamp.h"
@@ -208,7 +209,7 @@ static void ClearGamePath()
 
 static std::string GetUserAgent()
 {
-  return StringUtil::StdStringFromFormat("DuckStation %s", g_scm_tag_str);
+  return StringUtil::StdStringFromFormat("DuckStation for %s (%s) %s", SYSTEM_STR, CPU_ARCH_STR, g_scm_tag_str);
 }
 
 bool Initialize(bool test_mode, bool use_first_disc_from_playlist, bool enable_rich_presence, bool challenge_mode)
