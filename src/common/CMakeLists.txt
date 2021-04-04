@@ -24,7 +24,6 @@ add_library(common
   cd_subchannel_replacement.h
   cd_xa.cpp
   cd_xa.h
-  cpu_detect.h
   crash_handler.cpp
   crash_handler.h
   dimensional_array.h
@@ -66,6 +65,7 @@ add_library(common
   memory_arena.h
   page_fault_handler.cpp
   page_fault_handler.h
+  platform.h
   pbp_types.h
   progress_callback.cpp
   progress_callback.h

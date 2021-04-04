@@ -1,5 +1,5 @@
 #pragma once
-#include "common/cpu_detect.h"
+#include "common/platform.h"
 #include "cpu_types.h"
 
 #if defined(CPU_X64)

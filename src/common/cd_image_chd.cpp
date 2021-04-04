@@ -6,11 +6,11 @@
 #include "assert.h"
 #include "cd_image.h"
 #include "cd_subchannel_replacement.h"
-#include "cpu_detect.h"
 #include "error.h"
 #include "file_system.h"
 #include "libchdr/chd.h"
 #include "log.h"
+#include "platform.h"
 #include <algorithm>
 #include <cerrno>
 #include <cstdio>
@@ -180,7 +180,7 @@ bool CDImageCHD::Open(const char* filename, Common::Error* error)
       if (error)
       {
         error->SetFormattedMessage("Incorrect track number at index %d, expected %d got %d", num_tracks,
-                                        (num_tracks + 1), track_num);
+                                   (num_tracks + 1), track_num);
       }
 
       return false;

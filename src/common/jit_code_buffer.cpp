@@ -1,8 +1,8 @@
 #include "jit_code_buffer.h"
 #include "align.h"
 #include "assert.h"
-#include "common/log.h"
-#include "cpu_detect.h"
+#include "log.h"
+#include "platform.h"
 #include <algorithm>
 Log_SetChannel(JitCodeBuffer);
 

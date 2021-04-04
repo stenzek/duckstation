@@ -59,7 +59,6 @@
     <ClInclude Include="byte_stream.h" />
     <ClInclude Include="cd_image.h" />
     <ClInclude Include="cd_image_hasher.h" />
-    <ClInclude Include="cpu_detect.h" />
     <ClInclude Include="crash_handler.h" />
     <ClInclude Include="d3d11\shader_cache.h" />
     <ClInclude Include="d3d11\shader_compiler.h" />
@@ -94,6 +93,7 @@
     <ClInclude Include="md5_digest.h" />
     <ClInclude Include="null_audio_stream.h" />
     <ClInclude Include="pbp_types.h" />
+    <ClInclude Include="platform.h" />
     <ClInclude Include="progress_callback.h" />
     <ClInclude Include="memory_arena.h" />
     <ClInclude Include="page_fault_handler.h" />

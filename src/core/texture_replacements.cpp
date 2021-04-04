@@ -1,7 +1,7 @@
 #include "texture_replacements.h"
-#include "common/cpu_detect.h"
 #include "common/file_system.h"
 #include "common/log.h"
+#include "common/platform.h"
 #include "common/string_util.h"
 #include "common/timer.h"
 #include "host_interface.h"

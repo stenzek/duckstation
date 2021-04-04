@@ -45,7 +45,6 @@
     <ClInclude Include="file_system.h" />
     <ClInclude Include="string_util.h" />
     <ClInclude Include="md5_digest.h" />
-    <ClInclude Include="cpu_detect.h" />
     <ClInclude Include="d3d11\shader_cache.h">
       <Filter>d3d11</Filter>
     </ClInclude>
@@ -112,6 +111,7 @@
     <ClInclude Include="easing.h" />
     <ClInclude Include="pbp_types.h" />
     <ClInclude Include="error.h" />
+    <ClInclude Include="platform.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="jit_code_buffer.cpp" />

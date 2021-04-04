@@ -1,6 +1,6 @@
 #include "page_fault_handler.h"
-#include "common/cpu_detect.h"
-#include "common/log.h"
+#include "log.h"
+#include "platform.h"
 #include <algorithm>
 #include <cstring>
 #include <mutex>
@@ -8,7 +8,7 @@
 Log_SetChannel(Common::PageFaultHandler);
 
 #if defined(WIN32)
-#include "common/windows_headers.h"
+#include "windows_headers.h"
 #elif defined(__linux__) || defined(__ANDROID__)
 #include <signal.h>
 #include <ucontext.h>
