@@ -14,7 +14,7 @@ public:
   AndroidHTTPDownloader();
   ~AndroidHTTPDownloader() override;
 
-  bool Initialize();
+  bool Initialize(const char* user_agent);
 
 protected:
   Request* InternalCreateRequest() override;
@@ -30,6 +30,7 @@ private:
 
   void ProcessRequest(Request* req);
 
+  std::string m_user_agent;
   std::unique_ptr<cb::ThreadPool> m_thread_pool;
   std::mutex m_cancel_mutex;
 

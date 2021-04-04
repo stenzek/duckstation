@@ -52,9 +52,8 @@ public:
   HTTPDownloader();
   virtual ~HTTPDownloader();
 
-  static std::unique_ptr<HTTPDownloader> Create();
+  static std::unique_ptr<HTTPDownloader> Create(const char* user_agent = DEFAULT_USER_AGENT);
 
-  void SetUserAgent(std::string name);
   void SetTimeout(float timeout);
   void SetMaxActiveRequests(u32 max_active_requests);
 
@@ -62,6 +61,8 @@ public:
   void CreatePostRequest(std::string url, std::string post_data, Request::Callback callback);
   void PollRequests();
   void WaitForAllRequests();
+
+  static const char DEFAULT_USER_AGENT[];
 
 protected:
   virtual Request* InternalCreateRequest() = 0;

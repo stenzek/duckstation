@@ -14,7 +14,7 @@ public:
   HTTPDownloaderCurl();
   ~HTTPDownloaderCurl() override;
 
-  bool Initialize();
+  bool Initialize(const char* user_agent);
 
 protected:
   Request* InternalCreateRequest() override;
@@ -32,6 +32,7 @@ private:
   static size_t WriteCallback(char* ptr, size_t size, size_t nmemb, void* userdata);
   void ProcessRequest(Request* req);
 
+  std::string m_user_agent;
   std::unique_ptr<cb::ThreadPool> m_thread_pool;
   std::mutex m_cancel_mutex;
 };

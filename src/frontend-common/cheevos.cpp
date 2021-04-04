@@ -213,14 +213,13 @@ static std::string GetUserAgent()
 
 bool Initialize(bool test_mode, bool use_first_disc_from_playlist, bool enable_rich_presence, bool challenge_mode)
 {
-  s_http_downloader = FrontendCommon::HTTPDownloader::Create();
+  s_http_downloader = FrontendCommon::HTTPDownloader::Create(GetUserAgent().c_str());
   if (!s_http_downloader)
   {
     Log_ErrorPrint("Failed to create HTTP downloader, cannot use cheevos");
     return false;
   }
 
-  s_http_downloader->SetUserAgent(GetUserAgent());
   g_active = true;
   g_challenge_mode = challenge_mode;
   s_test_mode = test_mode;
@@ -408,11 +407,11 @@ bool Login(const char* username, const char* password)
 
   // create a temporary downloader if we're not initialized
   Assert(!g_active);
-  std::unique_ptr<FrontendCommon::HTTPDownloader> http_downloader = FrontendCommon::HTTPDownloader::Create();
+  std::unique_ptr<FrontendCommon::HTTPDownloader> http_downloader =
+    FrontendCommon::HTTPDownloader::Create(GetUserAgent().c_str());
   if (!http_downloader)
     return false;
 
-  http_downloader->SetUserAgent(GetUserAgent());
   SendLogin(username, password, http_downloader.get(), LoginCallback);
   http_downloader->WaitForAllRequests();
 

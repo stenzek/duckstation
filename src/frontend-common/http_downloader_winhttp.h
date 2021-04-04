@@ -13,7 +13,7 @@ public:
   HTTPDownloaderWinHttp();
   ~HTTPDownloaderWinHttp() override;
 
-  bool Initialize();
+  bool Initialize(const char* user_agent);
 
 protected:
   Request* InternalCreateRequest() override;

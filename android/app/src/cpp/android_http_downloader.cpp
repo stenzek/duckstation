@@ -19,16 +19,16 @@ AndroidHTTPDownloader::~AndroidHTTPDownloader()
     env->DeleteGlobalRef(m_URLDownloader_class);
 }
 
-std::unique_ptr<HTTPDownloader> HTTPDownloader::Create()
+std::unique_ptr<HTTPDownloader> HTTPDownloader::Create(const char* user_agent)
 {
   std::unique_ptr<AndroidHTTPDownloader> instance(std::make_unique<AndroidHTTPDownloader>());
-  if (!instance->Initialize())
+  if (!instance->Initialize(user_agent))
     return {};
 
   return instance;
 }
 
-bool AndroidHTTPDownloader::Initialize()
+bool AndroidHTTPDownloader::Initialize(const char* user_agent)
 {
   JNIEnv* env = AndroidHelpers::GetJNIEnv();
   jclass klass = env->FindClass("com/github/stenzek/duckstation/URLDownloader");
@@ -39,7 +39,7 @@ bool AndroidHTTPDownloader::Initialize()
   if (!m_URLDownloader_class)
     return false;
 
-  m_URLDownloader_constructor = env->GetMethodID(klass, "<init>", "()V");
+  m_URLDownloader_constructor = env->GetMethodID(klass, "<init>", "(Ljava/lang/String;)V");
   m_URLDownloader_get = env->GetMethodID(klass, "get", "(Ljava/lang/String;)Z");
   m_URLDownloader_post = env->GetMethodID(klass, "post", "(Ljava/lang/String;[B)Z");
   m_URLDownloader_getStatusCode = env->GetMethodID(klass, "getStatusCode", "()I");
@@ -50,6 +50,7 @@ bool AndroidHTTPDownloader::Initialize()
     return false;
   }
 
+  m_user_agent = user_agent;
   m_thread_pool = std::make_unique<cb::ThreadPool>(m_max_active_requests);
   return true;
 }
@@ -68,8 +69,10 @@ void AndroidHTTPDownloader::ProcessRequest(Request* req)
   JNIEnv* env;
   if (AndroidHelpers::GetJavaVM()->AttachCurrentThread(&env, nullptr) == JNI_OK)
   {
-    jobject obj = env->NewObject(m_URLDownloader_class, m_URLDownloader_constructor);
     jstring url_string = env->NewStringUTF(req->url.c_str());
+    jstring user_agent_string = env->NewStringUTF(m_user_agent.c_str());
+
+    jobject obj = env->NewObject(m_URLDownloader_class, m_URLDownloader_constructor, user_agent_string);
     jboolean result;
     if (req->post_data.empty())
     {
@@ -85,6 +88,7 @@ void AndroidHTTPDownloader::ProcessRequest(Request* req)
     }
 
     env->DeleteLocalRef(url_string);
+    env->DeleteLocalRef(user_agent_string);
 
     if (result)
     {

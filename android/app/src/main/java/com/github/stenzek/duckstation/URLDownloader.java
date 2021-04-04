@@ -15,17 +15,21 @@ import java.net.URL;
 public class URLDownloader {
     private int statusCode = -1;
     private byte[] data = null;
+    private final String userAgent;
 
-    public URLDownloader() {
+    public URLDownloader(String userAgent) {
+        this.userAgent = userAgent;
     }
 
-    static private HttpURLConnection getConnection(String url) {
+    private HttpURLConnection getConnection(String url) {
         try {
             final URL parsedUrl = new URL(url);
             HttpURLConnection connection = (HttpURLConnection) parsedUrl.openConnection();
             if (connection == null)
                 throw new RuntimeException(String.format("openConnection(%s) returned null", url));
 
+            if (userAgent != null)
+                connection.addRequestProperty("User-Agent", userAgent);
             return connection;
         } catch (Exception e) {
             e.printStackTrace();

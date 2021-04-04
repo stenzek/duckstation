@@ -13,10 +13,10 @@ HTTPDownloaderCurl::HTTPDownloaderCurl() : HTTPDownloader() {}
 
 HTTPDownloaderCurl::~HTTPDownloaderCurl() = default;
 
-std::unique_ptr<HTTPDownloader> HTTPDownloader::Create()
+std::unique_ptr<HTTPDownloader> HTTPDownloader::Create(const char* user_agent)
 {
   std::unique_ptr<HTTPDownloaderCurl> instance(std::make_unique<HTTPDownloaderCurl>());
-  if (!instance->Initialize())
+  if (!instance->Initialize(user_agent))
     return {};
 
   return instance;
@@ -25,7 +25,7 @@ std::unique_ptr<HTTPDownloader> HTTPDownloader::Create()
 static bool s_curl_initialized = false;
 static std::once_flag s_curl_initialized_once_flag;
 
-bool HTTPDownloaderCurl::Initialize()
+bool HTTPDownloaderCurl::Initialize(const char* user_agent)
 {
   if (!s_curl_initialized)
   {
@@ -45,6 +45,8 @@ bool HTTPDownloaderCurl::Initialize()
       return false;
     }
   }
+
+  m_user_agent = user_agent;
   m_thread_pool = std::make_unique<cb::ThreadPool>(m_max_active_requests);
   return true;
 }
@@ -75,8 +77,8 @@ void HTTPDownloaderCurl::ProcessRequest(Request* req)
     long response_code = 0;
     curl_easy_getinfo(req->handle, CURLINFO_RESPONSE_CODE, &response_code);
     req->status_code = static_cast<s32>(response_code);
-    Log_DevPrintf("Request for '%s' returned status code %d and %zu bytes",
-                  req->url.c_str(), req->status_code, req->data.size());
+    Log_DevPrintf("Request for '%s' returned status code %d and %zu bytes", req->url.c_str(), req->status_code,
+                  req->data.size());
   }
   else
   {

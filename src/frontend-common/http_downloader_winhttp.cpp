@@ -22,16 +22,16 @@ HTTPDownloaderWinHttp::~HTTPDownloaderWinHttp()
   }
 }
 
-std::unique_ptr<HTTPDownloader> HTTPDownloader::Create()
+std::unique_ptr<HTTPDownloader> HTTPDownloader::Create(const char* user_agent)
 {
   std::unique_ptr<HTTPDownloaderWinHttp> instance(std::make_unique<HTTPDownloaderWinHttp>());
-  if (!instance->Initialize())
+  if (!instance->Initialize(user_agent))
     return {};
 
   return instance;
 }
 
-bool HTTPDownloaderWinHttp::Initialize()
+bool HTTPDownloaderWinHttp::Initialize(const char* user_agent)
 {
   // WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY is not supported before Win8.1.
   const DWORD dwAccessType =
