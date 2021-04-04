@@ -31,7 +31,7 @@
 	<string name="settings_cdrom_region_check">Проверка региона CD-ROM</string>
 	<string name="settings_summary_cdrom_region_check">Снижает вероятность некорректного определения региона диска эмулятором. Как правило, не влияет на стабильность.</string>
 	<string name="settings_cdrom_preload_image_to_ram">Предзагрузка образа CD-ROM в ОЗУ</string>
-	<string name="settings_summary_preload_image_to_ram">Загружать образ диска в оперативную память. Полезно при запуске игр с ненадёжных сетевых ресурсов. В некоторых случаях помогает устранить заикания при запуске игрой аудиодорожек.</string>
+	<string name="settings_summary_preload_image_to_ram">Загружать образ диска в оперативную память. Полезно при запуске игр с ненадёжных сетевых ресурсов. В некоторых случаях помогает устранить замедления при запуске игрой аудиодорожек.</string>
 	<string name="settings_pgxp_vertex_cache">Вершинный кэш PGXP</string>
 	<string name="settings_summary_pgxp_vertex_cache">Использовать координаты экрана в качестве резервных при отслеживании вершин с помощью отказов памяти. Может улучшать совместимость PGXP.</string>
 	<string name="settings_pgxp_cpu_mode">Режим CPU PGXP</string>
@@ -167,7 +167,7 @@
 	<string name="controller_binding_dialog_no_binding">&lt;Нет привязки&gt;</string>
 	<string name="controller_binding_dialog_cancel">Отмена</string>
 	<string name="controller_binding_dialog_clear">Удалить</string>
-	<string name="controller_mapping_activity_title">Настройки управления</string>
+	<string name="controller_mapping_activity_title">Управление</string>
 	<string name="controller_mapping_activity_no_profiles_found">Профили не найдены.</string>
 	<string name="controller_mapping_activity_select_input_profile">Профиль устройства ввода</string>
 	<string name="controller_mapping_activity_failed_to_load_profile">Не удалось загрузить профиль \'%s\'</string>
@@ -178,7 +178,7 @@
 	<string name="controller_mapping_activity_input_profile_saved">Профиль ввода \'%s\' сохранён.</string>
 	<string name="controller_mapping_activity_cancel">Отмена</string>
 	<string name="settings_use_analog_sticks_for_dpad">Джойстик как d-pad в цифровом режиме</string>
-	<string name="settings_summary_enable_analog_mode_on_reset">Переключать контроллер в аналоговый режим при включении/перезагрузке консоли.</string>
+	<string name="settings_summary_enable_analog_mode_on_reset">Переключить контроллер в аналоговый режим при включении/перезагрузке консоли.</string>
 	<string name="settings_summary_use_analog_sticks_for_dpad">Позволяет использовать аналоговый джойстик как d-pad для DualShock в цифровом режиме.</string>
 	<string name="settings_disable_all_enhancements">Отключить улучшения</string>
 	<string name="settings_summary_disable_all_enhancements">Временно отключить все улучшения. Используйте для отладки.</string>
@@ -263,9 +263,9 @@
     	<string name="achievement_points_format_string">%d очков</string>
     	<string name="achievement_summary_format_string">Вы открыли %1$d из %2$d достижений, заработав %3$d очков из %4$d возможных.</string>
     	<string name="achievement_title_challenge_mode_format_string">%s (Режим хардкора)</string>
-    	<string name="settings_achievements_disclaimer">DuckStation использует RetroAchievements (retroachievements.org) для отслеживания прогресса и получения данных по достижениям.</string>
+    	<string name="settings_achievements_disclaimer">DuckStation использует RetroAchievements (retroachievements.org) для отслеживания прогресса и получения данных о достижениях.</string>
     	<string name="settings_achievements_confirm_logout_title">Подтвердите выход</string>
-    	<string name="settings_achievements_confirm_logout_message">Завершение сеанса отключает достижения до следующего входа в аккаунт. Открытые ранее достижения потеряны не будут.</string>
+    	<string name="settings_achievements_confirm_logout_message">Завершение сеанса отключит получение достижений до следующего входа в аккаунт. Открытые ранее достижения потеряны не будут.</string>
 	<string name="controller_binding_device_for_vibration">Вибрация для устройства</string>
     	<string name="controller_settings_tab_settings">Настройки</string>
     	<string name="controller_settings_tab_hotkeys">Горячие клавиши</string>
@@ -327,5 +327,7 @@
 	<string name="main_activity_empty_game_list_add_directory">Добавить каталог с играми</string>
 	<string name="main_activity_empty_game_list_start_file">Открыть файл</string>
 	<string name="update_notes_title">Примечание к обновлению</string>
-	<string name="update_notes_message_version_controller_update">В данном обновлении DuckStation добавлена поддержка подключения нескольких геймпадов с вибрацией, возможность привязки клавиатур/кнопок громкости.\n\nТребуется перенастроить геймпады, иначе они перестанут функционировать. Выполнить этой сейчас?</string>
+	<string name="update_notes_message_version_controller_update">В текущем обновлении DuckStation добавлена поддержка подключения нескольких геймпадов с вибрацией, клавиатур, возможность привязки кнопок громкости.\n\nТребуется перенастроить привязки геймпадов, иначе они не будут функционировать. Выполнить этой сейчас?</string>
+	<string name="settings_osd_show_show_inputs">Показывать нажатия контроллера</string>
+    	<string name="settings_summary_osd_show_inputs">Показывать системное состояние контроллера в левом нижнем углу экрана.</string>
 </resources>
