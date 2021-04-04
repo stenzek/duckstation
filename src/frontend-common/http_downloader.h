@@ -75,7 +75,6 @@ protected:
   u32 LockedGetActiveRequestCount();
   void LockedPollRequests(std::unique_lock<std::mutex>& lock);
 
-  std::string m_user_agent;
   float m_timeout;
   u32 m_max_active_requests;
 

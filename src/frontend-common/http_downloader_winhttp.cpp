@@ -37,7 +37,7 @@ bool HTTPDownloaderWinHttp::Initialize(const char* user_agent)
   const DWORD dwAccessType =
     IsWindows8Point1OrGreater() ? WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY : WINHTTP_ACCESS_TYPE_DEFAULT_PROXY;
 
-  m_hSession = WinHttpOpen(StringUtil::UTF8StringToWideString(m_user_agent).c_str(), dwAccessType, nullptr, nullptr,
+  m_hSession = WinHttpOpen(StringUtil::UTF8StringToWideString(user_agent).c_str(), dwAccessType, nullptr, nullptr,
                            WINHTTP_FLAG_ASYNC);
   if (m_hSession == NULL)
   {
