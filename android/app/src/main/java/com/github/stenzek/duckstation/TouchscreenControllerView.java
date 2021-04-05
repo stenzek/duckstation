@@ -576,6 +576,9 @@ public class TouchscreenControllerView extends FrameLayout {
 
             boolean pressed = false;
             for (int i = 0; i < pointerCount; i++) {
+                if (i == liftedPointerIndex)
+                    continue;
+
                 final int x = (int) event.getX(i);
                 final int y = (int) event.getY(i);
                 if (rect.contains(x, y)) {
