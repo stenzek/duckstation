@@ -369,10 +369,7 @@ void GPU_HW_OpenGL::SetCapabilities(HostDisplay* host_display)
     }
     else
     {
-      Log_WarningPrintf("Texture buffers and SSBOs are not supported, VRAM writes will be slower and multisampling "
-                        "will be unavailable.");
-      m_max_multisamples = 1;
-      m_supports_per_sample_shading = false;
+      Log_WarningPrintf("Texture buffers and SSBOs are not supported, VRAM writes will be slower.");
     }
   }
 
@@ -1158,21 +1155,20 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
     m_texture_stream_buffer->Unmap(num_pixels * sizeof(u32));
     m_texture_stream_buffer->Bind();
 
-    // have to write to the 1x texture first
-    if (m_resolution_scale > 1)
-      m_vram_encoding_texture.Bind();
-    else
-      m_vram_texture.Bind();
-
     // lower-left origin flip happens here
     const u32 flipped_y = VRAM_HEIGHT - y - height;
 
+    // have to write to the 1x texture first
+    GL::Texture& dst_texture =
+      (m_resolution_scale > 1 || m_multisamples > 1) ? m_vram_encoding_texture : m_vram_texture;
+
     // update texture data
-    glTexSubImage2D(m_vram_texture.GetGLTarget(), 0, x, flipped_y, width, height, GL_RGBA, GL_UNSIGNED_BYTE,
+    dst_texture.Bind();
+    glTexSubImage2D(dst_texture.GetGLTarget(), 0, x, flipped_y, width, height, GL_RGBA, GL_UNSIGNED_BYTE,
                     reinterpret_cast<void*>(static_cast<uintptr_t>(map_result.buffer_offset)));
     m_texture_stream_buffer->Unbind();
 
-    if (m_resolution_scale > 1)
+    if (&dst_texture != &m_vram_texture)
     {
       // scale to internal resolution
       const u32 scaled_width = width * m_resolution_scale;
@@ -1181,8 +1177,8 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
       const u32 scaled_y = y * m_resolution_scale;
       const u32 scaled_flipped_y = m_vram_texture.GetHeight() - scaled_y - scaled_height;
 
-      BlitTexture(m_vram_encoding_texture, x, flipped_y, width, height, scaled_x, scaled_flipped_y, scaled_width,
-                  scaled_height);
+      BlitTextureToFramebuffer(dst_texture, x, flipped_y, width, height, scaled_x, scaled_flipped_y, scaled_width,
+                               scaled_height);
     }
 
     RestoreGraphicsAPIState();
@@ -1260,25 +1256,26 @@ void GPU_HW_OpenGL::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 wid
     if (src_dirty)
       UpdateVRAMReadTexture();
 
-    CopyTexture(m_vram_texture, m_vram_fbo_id, m_vram_read_texture, src_x, src_y, dst_x, dst_y, width, height);
+    CopyTexture(m_vram_texture, m_vram_fbo_id, m_vram_read_texture, m_vram_read_texture.GetGLFramebufferID(), src_x,
+                src_y, dst_x, dst_y, width, height);
   }
 
   IncludeVRAMDirtyRectangle(dst_bounds);
 }
 
-void GPU_HW_OpenGL::CopyTexture(GL::Texture& dest, GLuint dest_fbo, GL::Texture& src, u32 src_x, u32 src_y, u32 dst_x,
-                                u32 dst_y, u32 width, u32 height)
+void GPU_HW_OpenGL::CopyTexture(GL::Texture& dest, GLuint dest_fbo, GL::Texture& src, GLuint src_fbo, u32 src_x,
+                                u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height)
 {
   if (src.IsMultisampled())
   {
     // The MSAA case still needs framebuffer blits.
-    dest.BindFramebuffer(GL_DRAW_FRAMEBUFFER);
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, dest_fbo);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dest_fbo);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, src_fbo);
     glDisable(GL_SCISSOR_TEST);
     glBlitFramebuffer(src_x, src_y, src_x + width, src_y + height, dst_x, dst_y, dst_x + width, dst_y + height,
                       GL_COLOR_BUFFER_BIT, GL_NEAREST);
     glEnable(GL_SCISSOR_TEST);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dest_fbo);
+    RestoreGraphicsAPIState();
     return;
   }
 
@@ -1300,13 +1297,13 @@ void GPU_HW_OpenGL::CopyTexture(GL::Texture& dest, GLuint dest_fbo, GL::Texture&
   else
   {
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dest_fbo);
-    BlitTexture(src, src_x, src_y, width, height, dst_x, dst_y, width, height);
+    BlitTextureToFramebuffer(src, src_x, src_y, width, height, dst_x, dst_y, width, height);
     RestoreGraphicsAPIState();
   }
 }
 
-void GPU_HW_OpenGL::BlitTexture(GL::Texture& src, u32 src_x, u32 src_y, u32 src_width, u32 src_height, u32 dst_x,
-                                u32 dst_y, u32 dst_width, u32 dst_height)
+void GPU_HW_OpenGL::BlitTextureToFramebuffer(GL::Texture& src, u32 src_x, u32 src_y, u32 src_width, u32 src_height,
+                                             u32 dst_x, u32 dst_y, u32 dst_width, u32 dst_height)
 {
   // But a copy shader is probably better on mobile drivers.
   const float uniforms[4] = {
@@ -1336,7 +1333,8 @@ void GPU_HW_OpenGL::UpdateVRAMReadTexture()
   const u32 x = scaled_rect.left;
   const u32 y = m_vram_texture.GetHeight() - scaled_rect.top - height;
 
-  CopyTexture(m_vram_read_texture, m_vram_read_texture.GetGLFramebufferID(), m_vram_texture, x, y, x, y, width, height);
+  CopyTexture(m_vram_read_texture, m_vram_read_texture.GetGLFramebufferID(), m_vram_texture, m_vram_fbo_id, x, y, x, y,
+              width, height);
 
   GPU_HW::UpdateVRAMReadTexture();
 }
