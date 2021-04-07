@@ -135,6 +135,15 @@ void Settings::UpdateOverclockActive()
 
 void Settings::Load(SettingsInterface& si)
 {
+  // Android doesn't create settings until they're first opened, so we have to override the defaults here.
+#ifndef __ANDROID__
+  static constexpr bool DEFAULT_FAST_BOOT_VALUE = false;
+  static constexpr float DEFAULT_DISPLAY_MAX_FPS = 0.0f;
+#else
+  static constexpr bool DEFAULT_FAST_BOOT_VALUE = true;
+  static constexpr float DEFAULT_DISPLAY_MAX_FPS = 60.0f;
+#endif
+
   region =
     ParseConsoleRegionName(si.GetStringValue("Console", "Region", "NTSC-U").c_str()).value_or(DEFAULT_CONSOLE_REGION);
 
@@ -230,7 +239,7 @@ void Settings::Load(SettingsInterface& si)
   display_all_frames = si.GetBoolValue("Display", "DisplayAllFrames", false);
   video_sync_enabled = si.GetBoolValue("Display", "VSync", true);
   display_post_process_chain = si.GetStringValue("Display", "PostProcessChain", "");
-  display_max_fps = si.GetFloatValue("Display", "MaxFPS", 0.0f);
+  display_max_fps = si.GetFloatValue("Display", "MaxFPS", DEFAULT_DISPLAY_MAX_FPS);
 
   cdrom_read_thread = si.GetBoolValue("CDROM", "ReadThread", true);
   cdrom_region_check = si.GetBoolValue("CDROM", "RegionCheck", true);
@@ -255,7 +264,7 @@ void Settings::Load(SettingsInterface& si)
   gpu_max_run_ahead = si.GetIntValue("Hacks", "GPUMaxRunAhead", DEFAULT_GPU_MAX_RUN_AHEAD);
 
   bios_patch_tty_enable = si.GetBoolValue("BIOS", "PatchTTYEnable", false);
-  bios_patch_fast_boot = si.GetBoolValue("BIOS", "PatchFastBoot", false);
+  bios_patch_fast_boot = si.GetBoolValue("BIOS", "PatchFastBoot", DEFAULT_FAST_BOOT_VALUE);
 
   controller_types[0] =
     ParseControllerTypeName(
