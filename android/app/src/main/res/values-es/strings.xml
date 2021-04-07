@@ -8,8 +8,8 @@
     <string name="settings_console_fast_boot">Inicio Rápido</string>
     <string name="settings_osd_show_messages">Mostrar Mensajes</string>
     <string name="settings_osd_show_speed">Mostrar Velocidad de Emulación</string>
-    <string name="settings_osd_show_show_fps">Mostrar FPS</string>
-    <string name="settings_osd_show_show_vps">Mostrar VPS</string>
+    <string name="settings_osd_show_show_fps">Mostrar velocidad de fotogramas del juego</string>
+    <string name="settings_osd_show_show_vps">Mostrar pantalla FPS</string>
     <string name="settings_cpu_execution_mode">Modo de Ejecución de CPU</string>
     <string name="settings_gpu_renderer">Renderizador de GPU</string>
     <string name="settings_gpu_resolution_scale">Escala de Resolución</string>
@@ -148,7 +148,7 @@
     <string name="main_activity_choose_bios_image">Elegir Imagen BIOS</string>
     <string name="main_activity_failed_to_open_bios_image">Fallo al cargar la imagen BIOS.</string>
     <string name="main_activity_failed_to_read_bios_image_prefix">\"Fallo al leer la imagen BIOS: \"</string>
-    <string name="main_activity_bios_image_too_large">La imagen de BIOS es demasiado grande.</string>
+    <string name="main_activity_bios_image_too_large">La imagen de BIOS es demasiado grande. Debes seleccionar una imagen de BIOS, no un juego, y debe tener un tamaño de 512 KB.</string>
     <string name="main_activity_invalid_error">Esta Imagen BIOS es incorrecta, o ya ha sido importado.</string>
     <string name="main_activity_show_version_title">Version</string>
     <string name="main_activity_copy">Copiar</string>

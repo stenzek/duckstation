@@ -69,8 +69,12 @@
         <item>xBR (No Blending Bordi)</item>
     </string-array>
     <string-array name="settings_controller_type_entries">
+        <item>None</item>
         <item>Controller Digitale (Gamepad)</item>
         <item>Controller Analogico (DualShock)</item>
+        <item>Analog Joystick</item>
+        <item>NeGcon</item>
+        <item>GunCon</item>
     </string-array>
     <string-array name="settings_memory_card_mode_entries">
         <item>No Memory Card</item>
@@ -82,6 +86,7 @@
         <item>Carica Stato</item>
         <item>Salva Stato</item>
         <item>Abilita/Disabilita Avanti Veloce</item>
+        <item>Achievements</item>
         <item>Altre Opzioni</item>
         <item>Esci</item>
     </string-array>
@@ -89,8 +94,9 @@
         <item>Reset</item>
         <item>Codici Patch</item>
         <item>Cambia Disco</item>
-        <item>Impostazioni</item>
         <item>Cambia Controller Touchscreen</item>
+        <item>Controller Settings</item>
+        <item>Impostazioni</item>
     </string-array>
     <string-array name="settings_cdrom_read_speedup_entries">
         <item>Nessuna Velocità Doppia)</item>
@@ -109,6 +115,7 @@
         <item>Pad Digitale</item>
         <item>Pad Analogico Singolo</item>
         <item>Pad Analogico Doppio</item>
+        <item>Lightgun</item>
     </string-array>
     <string-array name="settings_audio_backend_entries">
         <item>Null (No Output)</item>
@@ -138,7 +145,7 @@
         <item>Display</item>
         <item>Audio</item>
         <item>Miglioramenti</item>
-        <item>Controller</item>
+        <item>Achievements</item>
         <item>Avanzate</item>
     </string-array>
     <string-array name="settings_gpu_msaa_entries">

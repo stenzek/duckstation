@@ -1,6 +1,6 @@
 #include "iso_reader.h"
-#include "log.h"
 #include "cd_image.h"
+#include "log.h"
 #include <cctype>
 Log_SetChannel(ISOReader);
 
@@ -84,12 +84,12 @@ std::optional<ISOReader::ISODirectoryEntry> ISOReader::LocateFile(const char* pa
 
   // strip any leading slashes
   const char* path_component_start = path;
-  while (*path_component_start == '/')
+  while (*path_component_start == '/' || *path_component_start == '\\')
     path_component_start++;
 
   u32 path_component_length = 0;
   const char* path_component_end = path_component_start;
-  while (*path_component_end != '\0' && *path_component_end != '/')
+  while (*path_component_end != '\0' && *path_component_end != '/' && *path_component_end != '\\')
   {
     path_component_length++;
     path_component_end++;
@@ -133,11 +133,23 @@ std::optional<ISOReader::ISODirectoryEntry> ISOReader::LocateFile(const char* pa
       if (de->filename_length < path_component_length)
         continue;
 
-      // compare filename
-      if (!FilenamesEqual(de_filename, path_component_start, path_component_length) ||
-          de_filename[path_component_length] != ';')
+      if (de->flags & ISODirectoryEntryFlag_Directory)
       {
-        continue;
+        // directories don't have the version? so check the length instead
+        if (de->filename_length != path_component_length ||
+            !FilenamesEqual(de_filename, path_component_start, path_component_length))
+        {
+          continue;
+        }
+      }
+      else
+      {
+        // compare filename
+        if (!FilenamesEqual(de_filename, path_component_start, path_component_length) ||
+            de_filename[path_component_length] != ';')
+        {
+          continue;
+        }
       }
 
       // found it. is this the file we're looking for?

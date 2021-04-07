@@ -28,6 +28,7 @@
 #include "imgui_fullscreen.h"
 #include "imgui_styles.h"
 #include "ini_settings_interface.h"
+#include "input_overlay_ui.h"
 #include "save_state_selector_ui.h"
 #include "scmversion/scmversion.h"
 #include <cmath>
@@ -55,6 +56,9 @@
 #endif
 
 Log_SetChannel(CommonHostInterface);
+
+static std::string s_settings_filename;
+static std::unique_ptr<FrontendCommon::InputOverlayUI> s_input_overlay_ui;
 
 CommonHostInterface::CommonHostInterface() = default;
 
@@ -102,6 +106,8 @@ bool CommonHostInterface::Initialize()
 
 void CommonHostInterface::Shutdown()
 {
+  s_input_overlay_ui.reset();
+
   HostInterface::Shutdown();
 
   ImGui::DestroyContext();
@@ -199,12 +205,15 @@ void CommonHostInterface::DestroySystem()
   HostInterface::DestroySystem();
 }
 
-void CommonHostInterface::PowerOffSystem()
+void CommonHostInterface::PowerOffSystem(bool save_resume_state)
 {
   if (System::IsShutdown())
     return;
 
-  HostInterface::PowerOffSystem();
+  if (save_resume_state)
+    SaveResumeSaveState();
+
+  DestroySystem();
 
   if (InBatchMode())
     RequestExit();
@@ -364,7 +373,7 @@ bool CommonHostInterface::ParseCommandLineParameters(int argc, char* argv[],
       }
       else if (CHECK_ARG_PARAM("-settings"))
       {
-        m_settings_filename = argv[++i];
+        s_settings_filename = argv[++i];
         continue;
       }
       else if (CHECK_ARG("--"))
@@ -412,7 +421,7 @@ bool CommonHostInterface::ParseCommandLineParameters(int argc, char* argv[],
       else
       {
         // find the game id, and get its save state path
-        std::string game_code = System::GetGameCodeForPath(boot_filename.c_str());
+        std::string game_code = System::GetGameCodeForPath(boot_filename.c_str(), true);
         if (game_code.empty())
         {
           Log_WarningPrintf("Could not identify game code for '%s', cannot load save state %d.", boot_filename.c_str(),
@@ -515,6 +524,8 @@ bool CommonHostInterface::CreateHostDisplayResources()
 
   const float framebuffer_scale = m_display->GetWindowScale();
   ImGui::GetIO().DisplayFramebufferScale = ImVec2(framebuffer_scale, framebuffer_scale);
+  ImGui::GetIO().DisplaySize.x = static_cast<float>(m_display->GetWindowWidth());
+  ImGui::GetIO().DisplaySize.y = static_cast<float>(m_display->GetWindowHeight());
   ImGui::GetStyle() = ImGuiStyle();
   ImGui::StyleColorsDarker();
   ImGui::GetStyle().ScaleAllSizes(framebuffer_scale);
@@ -561,8 +572,15 @@ void CommonHostInterface::ReleaseHostDisplayResources()
   m_logo_texture.reset();
 }
 
-void CommonHostInterface::OnHostDisplayResized(u32 new_width, u32 new_height, float new_scale)
+void CommonHostInterface::OnHostDisplayResized()
 {
+  const u32 new_width = m_display ? std::max<u32>(m_display->GetWindowWidth(), 1) : 0;
+  const u32 new_height = m_display ? std::max<u32>(m_display->GetWindowHeight(), 1) : 0;
+  const float new_scale = m_display ? m_display->GetWindowScale() : 1.0f;
+
+  ImGui::GetIO().DisplaySize.x = static_cast<float>(new_width);
+  ImGui::GetIO().DisplaySize.y = static_cast<float>(new_height);
+
   if (new_scale != ImGui::GetIO().DisplayFramebufferScale.x)
   {
     ImGui::GetIO().DisplayFramebufferScale = ImVec2(new_scale, new_scale);
@@ -701,6 +719,20 @@ bool CommonHostInterface::SaveState(bool global, s32 slot)
   return true;
 }
 
+bool CommonHostInterface::CanResumeSystemFromFile(const char* filename)
+{
+  if (GetBoolSettingValue("Main", "SaveStateOnExit", true) && !IsCheevosChallengeModeActive())
+  {
+    const GameListEntry* entry = m_game_list->GetEntryForPath(filename);
+    if (entry)
+      return !entry->code.empty();
+    else
+      return !System::GetGameCodeForPath(filename, true).empty();
+  }
+
+  return false;
+}
+
 bool CommonHostInterface::ResumeSystemFromState(const char* filename, bool boot_on_failure)
 {
   SystemBootParameters boot_params;
@@ -751,6 +783,11 @@ bool CommonHostInterface::ResumeSystemFromMostRecentState()
   }
 
   return LoadState(path.c_str());
+}
+
+bool CommonHostInterface::ShouldSaveResumeState() const
+{
+  return g_settings.save_state_on_exit;
 }
 
 bool CommonHostInterface::IsRunningAtNonStandardSpeed() const
@@ -881,7 +918,7 @@ void CommonHostInterface::SetUserDirectory()
   }
   else
   {
-#ifdef WIN32
+#if defined(WIN32)
     // On Windows, use My Documents\DuckStation.
     PWSTR documents_directory;
     if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_Documents, 0, NULL, &documents_directory)))
@@ -894,7 +931,7 @@ void CommonHostInterface::SetUserDirectory()
       }
       CoTaskMemFree(documents_directory);
     }
-#elif __linux__
+#elif defined(__linux__) || defined(__FreeBSD__)
     // On Linux, use .local/share/duckstation as a user directory by default.
     const char* xdg_data_home = getenv("XDG_DATA_HOME");
     if (xdg_data_home && xdg_data_home[0] == '/')
@@ -907,7 +944,7 @@ void CommonHostInterface::SetUserDirectory()
       if (home_path)
         m_user_directory = StringUtil::StdStringFromFormat("%s/.local/share/duckstation", home_path);
     }
-#elif __APPLE__
+#elif defined(__APPLE__)
     // On macOS, default to ~/Library/Application Support/DuckStation.
     const char* home_path = getenv("HOME");
     if (home_path)
@@ -977,7 +1014,10 @@ void CommonHostInterface::OnRunningGameChanged(const std::string& path, CDImage*
   {
     System::SetCheatList(nullptr);
     if (g_settings.auto_load_cheats)
+    {
+      DebugAssert(!IsCheevosChallengeModeActive());
       LoadCheatListFromGameTitle();
+    }
   }
 
 #ifdef WITH_DISCORD_PRESENCE
@@ -1002,6 +1042,9 @@ void CommonHostInterface::DrawImGuiWindows()
   if (m_save_state_selector_ui->IsOpen())
     m_save_state_selector_ui->Draw();
 
+  if (s_input_overlay_ui)
+    s_input_overlay_ui->Draw();
+
   if (m_fullscreen_ui_enabled)
   {
     FullscreenUI::Render();
@@ -1010,7 +1053,8 @@ void CommonHostInterface::DrawImGuiWindows()
 
   if (System::IsValid())
   {
-    DrawDebugWindows();
+    if (!IsCheevosChallengeModeActive())
+      DrawDebugWindows();
     DrawFPSWindow();
   }
 
@@ -1173,11 +1217,6 @@ void CommonHostInterface::DrawOSDMessages()
 {
   AcquirePendingOSDMessages();
 
-  constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoInputs |
-                                            ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings |
-                                            ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoNav |
-                                            ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing;
-
   const float scale = ImGui::GetIO().DisplayFramebufferScale.x;
   const float spacing = 5.0f * scale;
   const float margin = 10.0f * scale;
@@ -1228,6 +1267,15 @@ void CommonHostInterface::DrawDebugWindows()
     g_dma.DrawDebugStateWindow();
 }
 
+bool CommonHostInterface::IsCheevosChallengeModeActive() const
+{
+#ifdef WITH_CHEEVOS
+  return Cheevos::IsChallengeModeActive();
+#else
+  return false;
+#endif
+}
+
 void CommonHostInterface::DoFrameStep()
 {
   if (System::IsShutdown())
@@ -1250,10 +1298,10 @@ void CommonHostInterface::DoToggleCheats()
   }
 
   cl->SetMasterEnable(!cl->GetMasterEnable());
-  AddFormattedOSDMessage(10.0f,
-                         cl->GetMasterEnable() ? TranslateString("OSDMessage", "%u cheats are now active.") :
-                                                 TranslateString("OSDMessage", "%u cheats are now inactive."),
-                         cl->GetEnabledCodeCount());
+  AddOSDMessage(cl->GetMasterEnable() ?
+                  TranslateStdString("OSDMessage", "%n cheats are now active.", "", cl->GetEnabledCodeCount()) :
+                  TranslateStdString("OSDMessage", "%n cheats are now inactive.", "", cl->GetEnabledCodeCount()),
+                10.0f);
 }
 
 std::optional<CommonHostInterface::HostKeyCode>
@@ -1515,21 +1563,9 @@ bool CommonHostInterface::AddButtonToInputMap(const std::string& binding, const 
     return false;
   }
 
-  if (StringUtil::StartsWith(device, "Controller"))
+  std::optional<int> controller_index;
+  if (m_controller_interface && (controller_index = m_controller_interface->GetControllerIndex(device)))
   {
-    if (!m_controller_interface)
-    {
-      Log_ErrorPrintf("No controller interface set, cannot bind '%s'", binding.c_str());
-      return false;
-    }
-
-    const std::optional<int> controller_index = StringUtil::FromChars<int>(device.substr(10));
-    if (!controller_index || *controller_index < 0)
-    {
-      Log_WarningPrintf("Invalid controller index in button binding '%s'", binding.c_str());
-      return false;
-    }
-
     if (StringUtil::StartsWith(button, "Button"))
     {
       const std::optional<int> button_index = StringUtil::FromChars<int>(button.substr(6));
@@ -1629,21 +1665,9 @@ bool CommonHostInterface::AddAxisToInputMap(const std::string& binding, const st
     }
   }
 
-  if (StringUtil::StartsWith(device, "Controller"))
+  std::optional<int> controller_index;
+  if (m_controller_interface && (controller_index = m_controller_interface->GetControllerIndex(device)))
   {
-    if (!m_controller_interface)
-    {
-      Log_ErrorPrintf("No controller interface set, cannot bind '%s'", binding.c_str());
-      return false;
-    }
-
-    const std::optional<int> controller_index = StringUtil::FromChars<int>(device.substr(10));
-    if (!controller_index || *controller_index < 0)
-    {
-      Log_WarningPrintf("Invalid controller index in axis binding '%s'", binding.c_str());
-      return false;
-    }
-
     if (StringUtil::StartsWith(axis, "Axis") || StringUtil::StartsWith(axis, "+Axis") ||
         StringUtil::StartsWith(axis, "-Axis"))
     {
@@ -1700,21 +1724,9 @@ bool CommonHostInterface::AddAxisToInputMap(const std::string& binding, const st
 
 bool CommonHostInterface::AddRumbleToInputMap(const std::string& binding, u32 controller_index, u32 num_motors)
 {
-  if (StringUtil::StartsWith(binding, "Controller"))
+  std::optional<int> host_controller_index;
+  if (m_controller_interface && (host_controller_index = m_controller_interface->GetControllerIndex(binding)))
   {
-    if (!m_controller_interface)
-    {
-      Log_ErrorPrintf("No controller interface set, cannot bind '%s'", binding.c_str());
-      return false;
-    }
-
-    const std::optional<int> host_controller_index = StringUtil::FromChars<int>(binding.substr(10));
-    if (!host_controller_index || *host_controller_index < 0)
-    {
-      Log_WarningPrintf("Invalid controller index in rumble binding '%s'", binding.c_str());
-      return false;
-    }
-
     AddControllerRumble(controller_index, num_motors,
                         std::bind(&ControllerInterface::SetControllerRumbleStrength, m_controller_interface.get(),
                                   host_controller_index.value(), std::placeholders::_1, std::placeholders::_2));
@@ -1758,13 +1770,21 @@ void CommonHostInterface::RegisterHotkeys()
   RegisterAudioHotkeys();
 }
 
+static void DisplayHotkeyBlockedByChallengeModeMessage()
+{
+  g_host_interface->AddOSDMessage(g_host_interface->TranslateStdString(
+    "OSDMessage", "Hotkey unavailable because achievements hardcore mode is active."));
+}
+
 void CommonHostInterface::RegisterGeneralHotkeys()
 {
+#ifndef __ANDROID__
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("OpenQuickMenu"),
                  TRANSLATABLE("Hotkeys", "Open Quick Menu"), [this](bool pressed) {
                    if (pressed && m_fullscreen_ui_enabled)
                      FullscreenUI::OpenQuickMenu();
                  });
+#endif
 
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("FastForward"),
                  TRANSLATABLE("Hotkeys", "Fast Forward"), [this](bool pressed) { SetFastForwardEnabled(pressed); });
@@ -1783,7 +1803,7 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                    if (pressed)
                      SetTurboEnabled(!m_turbo_enabled);
                  });
-#ifndef ANDROID
+#ifndef __ANDROID__
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("ToggleFullscreen"),
                  StaticString(TRANSLATABLE("Hotkeys", "Toggle Fullscreen")), [this](bool pressed) {
                    if (pressed)
@@ -1799,7 +1819,12 @@ void CommonHostInterface::RegisterGeneralHotkeys()
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("ToggleCheats"),
                  StaticString(TRANSLATABLE("Hotkeys", "Toggle Cheats")), [this](bool pressed) {
                    if (pressed && System::IsValid())
-                     DoToggleCheats();
+                   {
+                     if (!IsCheevosChallengeModeActive())
+                       DoToggleCheats();
+                     else
+                       DisplayHotkeyBlockedByChallengeModeMessage();
+                   }
                  });
 
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("PowerOff"),
@@ -1810,7 +1835,7 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                      {
                        SmallString confirmation_message(
                          TranslateString("CommonHostInterface", "Are you sure you want to stop emulation?"));
-                       if (g_settings.save_state_on_exit)
+                       if (ShouldSaveResumeState())
                        {
                          confirmation_message.AppendString("\n\n");
                          confirmation_message.AppendString(
@@ -1824,16 +1849,13 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                        }
                      }
 
-                     if (g_settings.save_state_on_exit)
-                       SaveResumeSaveState();
-
-                     PowerOffSystem();
+                     PowerOffSystem(ShouldSaveResumeState());
                    }
                  });
 #else
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("TogglePatchCodes"),
                  StaticString(TRANSLATABLE("Hotkeys", "Toggle Patch Codes")), [this](bool pressed) {
-                   if (pressed && System::IsValid())
+                   if (pressed && System::IsValid() && !IsCheevosChallengeModeActive())
                      DoToggleCheats();
                  });
 #endif
@@ -1853,7 +1875,12 @@ void CommonHostInterface::RegisterGeneralHotkeys()
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("FrameStep"),
                  StaticString(TRANSLATABLE("Hotkeys", "Frame Step")), [this](bool pressed) {
                    if (pressed && System::IsValid())
-                     DoFrameStep();
+                   {
+                     if (!IsCheevosChallengeModeActive())
+                       DoFrameStep();
+                     else
+                       DisplayHotkeyBlockedByChallengeModeMessage();
+                   }
                  });
 
 #ifndef __ANDROID__
@@ -1861,10 +1888,17 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                  StaticString(TRANSLATABLE("Hotkeys", "Rewind")), [this](bool pressed) {
                    if (System::IsValid())
                    {
-                     AddOSDMessage(pressed ? TranslateStdString("OSDMessage", "Rewinding...") :
-                                             TranslateStdString("OSDMessage", "Stopped rewinding."),
-                                   5.0f);
-                     System::SetRewinding(pressed);
+                     if (!IsCheevosChallengeModeActive())
+                     {
+                       AddOSDMessage(pressed ? TranslateStdString("OSDMessage", "Rewinding...") :
+                                               TranslateStdString("OSDMessage", "Stopped rewinding."),
+                                     5.0f);
+                       System::SetRewinding(pressed);
+                     }
+                     else
+                     {
+                       DisplayHotkeyBlockedByChallengeModeMessage();
+                     }
                    }
                  });
 #endif
@@ -1961,7 +1995,12 @@ void CommonHostInterface::RegisterSaveStateHotkeys()
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Save States")), StaticString("LoadSelectedSaveState"),
                  StaticString(TRANSLATABLE("Hotkeys", "Load From Selected Slot")), [this](bool pressed) {
                    if (pressed)
-                     m_save_state_selector_ui->LoadCurrentSlot();
+                   {
+                     if (!IsCheevosChallengeModeActive())
+                       m_save_state_selector_ui->LoadCurrentSlot();
+                     else
+                       DisplayHotkeyBlockedByChallengeModeMessage();
+                   }
                  });
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Save States")), StaticString("SaveSelectedSaveState"),
                  StaticString(TRANSLATABLE("Hotkeys", "Save To Selected Slot")), [this](bool pressed) {
@@ -1985,7 +2024,12 @@ void CommonHostInterface::RegisterSaveStateHotkeys()
                    TinyString::FromFormat("LoadGameState%u", slot), TinyString::FromFormat("Load Game State %u", slot),
                    [this, slot](bool pressed) {
                      if (pressed)
-                       LoadState(false, slot);
+                     {
+                       if (!IsCheevosChallengeModeActive())
+                         LoadState(false, slot);
+                       else
+                         DisplayHotkeyBlockedByChallengeModeMessage();
+                     }
                    });
     RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Save States")),
                    TinyString::FromFormat("SaveGameState%u", slot), TinyString::FromFormat("Save Game State %u", slot),
@@ -2001,7 +2045,12 @@ void CommonHostInterface::RegisterSaveStateHotkeys()
                    TinyString::FromFormat("LoadGlobalState%u", slot),
                    TinyString::FromFormat("Load Global State %u", slot), [this, slot](bool pressed) {
                      if (pressed)
-                       LoadState(true, slot);
+                     {
+                       if (!IsCheevosChallengeModeActive())
+                         LoadState(true, slot);
+                       else
+                         DisplayHotkeyBlockedByChallengeModeMessage();
+                     }
                    });
     RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Save States")),
                    TinyString::FromFormat("SaveGlobalState%u", slot),
@@ -2311,18 +2360,13 @@ bool CommonHostInterface::SaveInputProfile(const char* profile_path)
 
 std::string CommonHostInterface::GetSettingsFileName() const
 {
-  if (!m_settings_filename.empty())
-  {
-    if (!FileSystem::FileExists(m_settings_filename.c_str()))
-    {
-      Log_ErrorPrintf("Could not find settings file %s, using default", m_settings_filename.c_str());
-    }
-    else
-    {
-      return GetUserDirectoryRelativePath(m_settings_filename.c_str());
-    }
-  }
-  return GetUserDirectoryRelativePath("settings.ini");
+  std::string filename;
+  if (!s_settings_filename.empty())
+    filename = s_settings_filename;
+  else
+    filename = GetUserDirectoryRelativePath("settings.ini");
+
+  return filename;
 }
 
 std::string CommonHostInterface::GetGameSaveStateFileName(const char* game_code, s32 slot) const
@@ -2513,6 +2557,8 @@ void CommonHostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetStringValue("Main", "ControllerBackend",
                     ControllerInterface::GetBackendName(ControllerInterface::GetDefaultBackend()));
 
+  si.SetBoolValue("Display", "InternalResolutionScreenshots", false);
+
 #ifdef WITH_DISCORD_PRESENCE
   si.SetBoolValue("Main", "EnableDiscordPresence", false);
 #endif
@@ -2543,6 +2589,7 @@ void CommonHostInterface::LoadSettings()
     m_settings_interface->Clear();
     m_settings_interface->SetIntValue("Main", "SettingsVersion", SETTINGS_VERSION);
     SetDefaultSettings(*m_settings_interface);
+    m_settings_interface->Save();
   }
 #endif
 
@@ -2594,11 +2641,45 @@ void CommonHostInterface::LoadSettings(SettingsInterface& si)
       }
     }
   }
+
+  const bool input_display_enabled = si.GetBoolValue("Display", "ShowInputs", false);
+  const bool input_display_state = static_cast<bool>(s_input_overlay_ui);
+  if (input_display_enabled && !s_input_overlay_ui)
+    s_input_overlay_ui = std::make_unique<FrontendCommon::InputOverlayUI>();
+  else if (!input_display_enabled && s_input_overlay_ui)
+    s_input_overlay_ui.reset();
 }
 
 void CommonHostInterface::SaveSettings(SettingsInterface& si)
 {
   HostInterface::SaveSettings(si);
+}
+
+void CommonHostInterface::FixIncompatibleSettings(bool display_osd_messages)
+{
+  // if challenge mode is enabled, disable things like rewind since they use save states
+  if (IsCheevosChallengeModeActive())
+  {
+    g_settings.emulation_speed =
+      (g_settings.emulation_speed != 0.0f) ? std::max(g_settings.emulation_speed, 1.0f) : 0.0f;
+    g_settings.fast_forward_speed =
+      (g_settings.fast_forward_speed != 0.0f) ? std::max(g_settings.fast_forward_speed, 1.0f) : 0.0f;
+    g_settings.turbo_speed = (g_settings.turbo_speed != 0.0f) ? std::max(g_settings.turbo_speed, 1.0f) : 0.0f;
+    g_settings.rewind_enable = false;
+    g_settings.auto_load_cheats = false;
+    g_settings.debugging.enable_gdb_server = false;
+    g_settings.debugging.show_vram = false;
+    g_settings.debugging.show_gpu_state = false;
+    g_settings.debugging.show_cdrom_state = false;
+    g_settings.debugging.show_spu_state = false;
+    g_settings.debugging.show_timers_state = false;
+    g_settings.debugging.show_mdec_state = false;
+    g_settings.debugging.show_dma_state = false;
+    g_settings.debugging.dump_cpu_to_vram_copies = false;
+    g_settings.debugging.dump_vram_to_cpu_copies = false;
+  }
+
+  HostInterface::FixIncompatibleSettings(display_osd_messages);
 }
 
 void CommonHostInterface::ApplySettings(bool display_osd_messages)
@@ -2784,7 +2865,7 @@ void CommonHostInterface::GetGameInfo(const char* path, CDImage* image, std::str
   else
   {
     if (image)
-      *code = System::GetGameCodeForImage(image);
+      *code = System::GetGameCodeForImage(image, true);
 
     const GameListDatabaseEntry* db_entry = (!code->empty()) ? m_game_list->GetDatabaseEntryForCode(*code) : nullptr;
     if (db_entry)
@@ -2881,8 +2962,12 @@ bool CommonHostInterface::SaveScreenshot(const char* filename /* = nullptr */, b
     return false;
   }
 
+  const bool internal_resolution = GetBoolSettingValue("Display", "InternalResolutionScreenshots", false);
   const bool screenshot_saved =
-    m_display->WriteDisplayTextureToFile(filename, full_resolution, apply_aspect_ratio, compress_on_thread);
+    internal_resolution ?
+      m_display->WriteDisplayTextureToFile(filename, full_resolution, apply_aspect_ratio, compress_on_thread) :
+      m_display->WriteScreenshotToFile(filename, compress_on_thread);
+
   if (!screenshot_saved)
   {
     AddFormattedOSDMessage(10.0f, TranslateString("OSDMessage", "Failed to save screenshot to '%s'"), filename);
@@ -2954,14 +3039,18 @@ bool CommonHostInterface::LoadCheatList(const char* filename)
     return false;
   }
 
-  AddFormattedOSDMessage(10.0f, TranslateString("OSDMessage", "Loaded %u cheats from list. %u cheats are enabled."),
-                         cl->GetCodeCount(), cl->GetEnabledCodeCount());
+  AddOSDMessage(TranslateStdString("OSDMessage", "Loaded %n cheats from list.", "", cl->GetCodeCount()) +
+                  TranslateStdString("OSDMessage", " %n cheats are enabled.", "", cl->GetEnabledCodeCount()),
+                10.0f);
   System::SetCheatList(std::move(cl));
   return true;
 }
 
 bool CommonHostInterface::LoadCheatListFromGameTitle()
 {
+  if (IsCheevosChallengeModeActive())
+    return false;
+
   const std::string filename(GetCheatFileName());
   if (filename.empty() || !FileSystem::FileExists(filename.c_str()))
     return false;
@@ -2971,14 +3060,14 @@ bool CommonHostInterface::LoadCheatListFromGameTitle()
 
 bool CommonHostInterface::LoadCheatListFromDatabase()
 {
-  if (System::GetRunningCode().empty())
+  if (System::GetRunningCode().empty() || IsCheevosChallengeModeActive())
     return false;
 
   std::unique_ptr<CheatList> cl = std::make_unique<CheatList>();
   if (!cl->LoadFromPackage(System::GetRunningCode()))
     return false;
 
-  AddFormattedOSDMessage(10.0f, TranslateString("OSDMessage", "Loaded %u cheats from database."), cl->GetCodeCount());
+  AddOSDMessage(TranslateStdString("OSDMessage", "Loaded %n cheats from database.", "", cl->GetCodeCount()), 10.0f);
   System::SetCheatList(std::move(cl));
   return true;
 }
@@ -3008,8 +3097,9 @@ bool CommonHostInterface::SaveCheatList(const char* filename)
   if (!System::GetCheatList()->SaveToPCSXRFile(filename))
     return false;
 
-  AddFormattedOSDMessage(5.0f, TranslateString("OSDMessage", "Saved %u cheats to '%s'."),
-                         System::GetCheatList()->GetCodeCount(), filename);
+  // This shouldn't be needed, but lupdate doesn't gather this string otherwise...
+  const u32 code_count = System::GetCheatList()->GetCodeCount();
+  AddFormattedOSDMessage(5.0f, TranslateString("OSDMessage", "Saved %n cheats to '%s'.", "", code_count), filename);
   return true;
 }
 
@@ -3303,15 +3393,18 @@ void CommonHostInterface::UpdateCheevosActive()
   const bool cheevos_test_mode = GetBoolSettingValue("Cheevos", "TestMode", false);
   const bool cheevos_use_first_disc_from_playlist = GetBoolSettingValue("Cheevos", "UseFirstDiscFromPlaylist", true);
   const bool cheevos_rich_presence = GetBoolSettingValue("Cheevos", "RichPresence", true);
+  const bool cheevos_hardcore = GetBoolSettingValue("Cheevos", "ChallengeMode", false);
 
   if (cheevos_enabled != Cheevos::IsActive() || cheevos_test_mode != Cheevos::IsTestModeActive() ||
       cheevos_use_first_disc_from_playlist != Cheevos::IsUsingFirstDiscFromPlaylist() ||
-      cheevos_rich_presence != Cheevos::IsRichPresenceEnabled())
+      cheevos_rich_presence != Cheevos::IsRichPresenceEnabled() ||
+      cheevos_hardcore != Cheevos::IsChallengeModeEnabled())
   {
     Cheevos::Shutdown();
     if (cheevos_enabled)
     {
-      if (!Cheevos::Initialize(cheevos_test_mode, cheevos_use_first_disc_from_playlist, cheevos_rich_presence))
+      if (!Cheevos::Initialize(cheevos_test_mode, cheevos_use_first_disc_from_playlist, cheevos_rich_presence,
+                               cheevos_hardcore))
         ReportError("Failed to initialize cheevos after settings change.");
     }
   }

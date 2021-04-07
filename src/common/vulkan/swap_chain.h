@@ -21,10 +21,10 @@ public:
   ~SwapChain();
 
   // Creates a vulkan-renderable surface for the specified window handle.
-  static VkSurfaceKHR CreateVulkanSurface(VkInstance instance, VkPhysicalDevice physical_device, WindowInfo& wi);
+  static VkSurfaceKHR CreateVulkanSurface(VkInstance instance, VkPhysicalDevice physical_device, WindowInfo* wi);
 
   // Destroys a previously-created surface.
-  static void DestroyVulkanSurface(VkInstance instance, WindowInfo& wi, VkSurfaceKHR surface);
+  static void DestroyVulkanSurface(VkInstance instance, WindowInfo* wi, VkSurfaceKHR surface);
 
   // Enumerates fullscreen modes for window info.
   struct FullscreenModeInfo
@@ -44,8 +44,9 @@ public:
   ALWAYS_INLINE VkFormat GetTextureFormat() const { return m_surface_format.format; }
   ALWAYS_INLINE bool IsVSyncEnabled() const { return m_vsync_enabled; }
   ALWAYS_INLINE VkSwapchainKHR GetSwapChain() const { return m_swap_chain; }
-  ALWAYS_INLINE u32 GetWidth() const { return m_width; }
-  ALWAYS_INLINE u32 GetHeight() const { return m_height; }
+  ALWAYS_INLINE const WindowInfo& GetWindowInfo() const { return m_window_info; }
+  ALWAYS_INLINE u32 GetWidth() const { return m_window_info.surface_width; }
+  ALWAYS_INLINE u32 GetHeight() const { return m_window_info.surface_height; }
   ALWAYS_INLINE u32 GetCurrentImageIndex() const { return m_current_image; }
   ALWAYS_INLINE u32 GetImageCount() const { return static_cast<u32>(m_images.size()); }
   ALWAYS_INLINE VkImage GetCurrentImage() const { return m_images[m_current_image].image; }
@@ -87,10 +88,7 @@ private:
     VkFramebuffer framebuffer;
   };
 
-  u32 m_width = 0;
-  u32 m_height = 0;
-  WindowInfo m_wi;
-  bool m_vsync_enabled = false;
+  WindowInfo m_window_info;
 
   VkSurfaceKHR m_surface = VK_NULL_HANDLE;
   VkSurfaceFormatKHR m_surface_format = {};
@@ -105,6 +103,7 @@ private:
   VkSwapchainKHR m_swap_chain = VK_NULL_HANDLE;
   std::vector<SwapChainImage> m_images;
   u32 m_current_image = 0;
+  bool m_vsync_enabled = false;
 };
 
 } // namespace Vulkan

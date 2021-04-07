@@ -115,6 +115,10 @@ public:
   /// Returns false if the window was completely occluded.
   virtual bool Render() = 0;
 
+  /// Renders the display with postprocessing to the specified image.
+  virtual bool RenderScreenshot(u32 width, u32 height, std::vector<u32>* out_pixels, u32* out_stride,
+                                HostDisplayPixelFormat* out_format) = 0;
+
   virtual void SetVSync(bool enabled) = 0;
 
 #ifdef WITH_IMGUI
@@ -231,6 +235,9 @@ public:
   /// Helper function to save current display texture to a buffer.
   bool WriteDisplayTextureToBuffer(std::vector<u32>* buffer, u32 resize_width = 0, u32 resize_height = 0,
                                    bool clear_alpha = true);
+
+  /// Helper function to save screenshot to PNG.
+  bool WriteScreenshotToFile(std::string filename, bool compress_on_thread = false);
 
 protected:
   ALWAYS_INLINE bool HasSoftwareCursor() const { return static_cast<bool>(m_cursor_texture); }

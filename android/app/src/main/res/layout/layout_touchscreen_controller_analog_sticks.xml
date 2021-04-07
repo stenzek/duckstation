@@ -147,57 +147,14 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <com.github.stenzek.duckstation.TouchscreenControllerButtonView
-        android:id="@+id/controller_button_left"
-        android:layout_width="50dp"
+    <com.github.stenzek.duckstation.TouchscreenControllerDPadView
+        android:id="@+id/controller_dpad"
+        android:layout_width="150dp"
         android:layout_height="150dp"
         android:layout_marginStart="20dp"
         android:layout_marginBottom="300dp"
-        android:paddingTop="50dp"
-        android:paddingBottom="50dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:pressedDrawable="@drawable/ic_controller_left_button_pressed"
-        app:unpressedDrawable="@drawable/ic_controller_left_button" />
-
-    <com.github.stenzek.duckstation.TouchscreenControllerButtonView
-        android:id="@+id/controller_button_down"
-        android:layout_width="150dp"
-        android:layout_height="50dp"
-        android:layout_marginStart="20dp"
-        android:layout_marginBottom="300dp"
-        android:paddingStart="50dp"
-        android:paddingEnd="50dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:pressedDrawable="@drawable/ic_controller_down_button_pressed"
-        app:unpressedDrawable="@drawable/ic_controller_down_button" />
-
-    <com.github.stenzek.duckstation.TouchscreenControllerButtonView
-        android:id="@+id/controller_button_right"
-        android:layout_width="50dp"
-        android:layout_height="150dp"
-        android:layout_marginStart="120dp"
-        android:layout_marginBottom="300dp"
-        android:paddingTop="50dp"
-        android:paddingBottom="50dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:pressedDrawable="@drawable/ic_controller_right_button_pressed"
-        app:unpressedDrawable="@drawable/ic_controller_right_button" />
-
-    <com.github.stenzek.duckstation.TouchscreenControllerButtonView
-        android:id="@+id/controller_button_up"
-        android:layout_width="150dp"
-        android:layout_height="50dp"
-        android:layout_marginStart="20dp"
-        android:layout_marginBottom="400dp"
-        android:paddingStart="50dp"
-        android:paddingEnd="50dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:pressedDrawable="@drawable/ic_controller_up_button_pressed"
-        app:unpressedDrawable="@drawable/ic_controller_up_button" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <com.github.stenzek.duckstation.TouchscreenControllerButtonView
         android:id="@+id/controller_button_fast_forward"

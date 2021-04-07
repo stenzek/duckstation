@@ -286,6 +286,8 @@ void Execute()
 
 void CompileDispatcher()
 {
+  s_code_buffer.WriteProtect(false);
+
   {
     Recompiler::CodeGenerator cg(&s_code_buffer);
     s_asm_dispatcher = cg.CompileDispatcher();
@@ -294,6 +296,8 @@ void CompileDispatcher()
     Recompiler::CodeGenerator cg(&s_code_buffer);
     s_single_block_asm_dispatcher = cg.CompileSingleBlockDispatcher();
   }
+
+  s_code_buffer.WriteProtect(true);
 }
 
 CodeBlock::HostCodePointer* GetFastMapPointer()
@@ -494,7 +498,6 @@ bool CompileBlock(CodeBlock* block)
 {
   u32 pc = block->GetPC();
   bool is_branch_delay_slot = false;
-  bool is_unconditional_branch_delay_slot = false;
   bool is_load_delay_slot = false;
 
 #if 0
@@ -519,6 +522,7 @@ bool CompileBlock(CodeBlock* block)
     cbi.is_branch_delay_slot = is_branch_delay_slot;
     cbi.is_load_delay_slot = is_load_delay_slot;
     cbi.is_branch_instruction = IsBranchInstruction(cbi.instruction);
+    cbi.is_direct_branch_instruction = IsDirectBranchInstruction(cbi.instruction);
     cbi.is_unconditional_branch_instruction = IsUnconditionalBranchInstruction(cbi.instruction);
     cbi.is_load_instruction = IsMemoryLoadInstruction(cbi.instruction);
     cbi.is_store_instruction = IsMemoryStoreInstruction(cbi.instruction);
@@ -543,9 +547,10 @@ bool CompileBlock(CodeBlock* block)
 
     if (is_branch_delay_slot && cbi.is_branch_instruction)
     {
-      if (!is_unconditional_branch_delay_slot)
+      const CodeBlockInstruction& prev_cbi = block->instructions.back();
+      if (!prev_cbi.is_unconditional_branch_instruction || !prev_cbi.is_direct_branch_instruction)
       {
-        Log_WarningPrintf("Conditional branch delay slot at %08X, skipping block", cbi.pc);
+        Log_WarningPrintf("Conditional or indirect branch delay slot at %08X, skipping block", cbi.pc);
         return false;
       }
       if (!IsDirectBranchInstruction(cbi.instruction))
@@ -555,7 +560,6 @@ bool CompileBlock(CodeBlock* block)
       }
 
       // change the pc for the second branch's delay slot, it comes from the first branch
-      const CodeBlockInstruction& prev_cbi = block->instructions.back();
       pc = GetBranchInstructionTarget(prev_cbi.instruction, prev_cbi.pc);
       Log_DevPrintf("Double branch at %08X, using delay slot from %08X -> %08X", cbi.pc, prev_cbi.pc, pc);
     }
@@ -570,7 +574,6 @@ bool CompileBlock(CodeBlock* block)
 
     // if this is a branch, we grab the next instruction (delay slot), and then exit
     is_branch_delay_slot = cbi.is_branch_instruction;
-    is_unconditional_branch_delay_slot = cbi.is_unconditional_branch_instruction;
 
     // same for load delay
     is_load_delay_slot = cbi.has_load_delay;
@@ -614,8 +617,12 @@ bool CompileBlock(CodeBlock* block)
       Flush();
     }
 
+    s_code_buffer.WriteProtect(false);
     Recompiler::CodeGenerator codegen(&s_code_buffer);
-    if (!codegen.CompileBlock(block, &block->host_code, &block->host_code_size))
+    const bool compile_result = codegen.CompileBlock(block, &block->host_code, &block->host_code_size);
+    s_code_buffer.WriteProtect(true);
+
+    if (!compile_result)
     {
       Log_ErrorPrintf("Failed to compile host code for block at 0x%08X", block->key.GetPC());
       return false;
@@ -840,7 +847,10 @@ Common::PageFaultHandler::HandlerResult MMapPageFaultHandler(void* exception_pc,
       }
 
       // found it, do fixup
-      if (Recompiler::CodeGenerator::BackpatchLoadStore(lbi))
+      s_code_buffer.WriteProtect(false);
+      const bool backpatch_result = Recompiler::CodeGenerator::BackpatchLoadStore(lbi);
+      s_code_buffer.WriteProtect(true);
+      if (backpatch_result)
       {
         // remove the backpatch entry since we won't be coming back to this one
         block->loadstore_backpatch_info.erase(bpi_iter);
@@ -881,7 +891,10 @@ Common::PageFaultHandler::HandlerResult LUTPageFaultHandler(void* exception_pc, 
     if (lbi.host_pc == exception_pc)
     {
       // found it, do fixup
-      if (Recompiler::CodeGenerator::BackpatchLoadStore(lbi))
+      s_code_buffer.WriteProtect(false);
+      const bool backpatch_result = Recompiler::CodeGenerator::BackpatchLoadStore(lbi);
+      s_code_buffer.WriteProtect(true);
+      if (backpatch_result)
       {
         // remove the backpatch entry since we won't be coming back to this one
         block->loadstore_backpatch_info.erase(bpi_iter);

@@ -16,6 +16,8 @@ public:
   GPU_HW_OpenGL();
   ~GPU_HW_OpenGL() override;
 
+  GPURenderer GetRendererType() const override;
+
   bool Initialize(HostDisplay* host_display) override;
   void Reset(bool clear_vram) override;
   bool DoState(StateWrapper& sw, HostDisplayTexture** host_texture, bool update_display) override;
@@ -74,6 +76,10 @@ private:
   bool BlitVRAMReplacementTexture(const TextureReplacementTexture* tex, u32 dst_x, u32 dst_y, u32 width, u32 height);
   void DownsampleFramebuffer(GL::Texture& source, u32 left, u32 top, u32 width, u32 height);
   void DownsampleFramebufferBoxFilter(GL::Texture& source, u32 left, u32 top, u32 width, u32 height);
+  void CopyTexture(GL::Texture& dest, GLuint dest_fbo, GL::Texture& src, GLuint src_fbo, u32 src_x, u32 src_y,
+                   u32 dst_x, u32 dst_y, u32 width, u32 height);
+  void BlitTextureToFramebuffer(GL::Texture& src, u32 src_x, u32 src_y, u32 src_width, u32 src_height, u32 dst_x, u32 dst_y,
+                   u32 dst_width, u32 dst_height);
 
   // downsample texture - used for readbacks at >1xIR.
   GL::Texture m_vram_texture;
@@ -102,12 +108,12 @@ private:
   GL::Program m_vram_write_program;
   GL::Program m_vram_copy_program;
   GL::Program m_vram_update_depth_program;
+  GL::Program m_blit_program;
 
   u32 m_uniform_buffer_alignment = 1;
-  u32 m_max_texture_buffer_size = 0;
+  u32 m_texture_stream_buffer_size = 0;
 
-  bool m_supports_texture_buffer = false;
-  bool m_supports_geometry_shaders = false;
+  bool m_use_texture_buffer_for_vram_writes = false;
   bool m_use_ssbo_for_vram_writes = false;
 
   GLenum m_current_depth_test = 0;

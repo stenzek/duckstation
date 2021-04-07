@@ -16,11 +16,9 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.View;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -153,6 +151,19 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         runOnUiThread(() -> {
             showMenu();
         });
+    }
+
+    public String[] getInputDeviceNames() {
+        return (mContentView != null) ? mContentView.getInputDeviceNames() : null;
+    }
+
+    public boolean hasInputDeviceVibration(int controllerIndex) {
+        return (mContentView != null) ? mContentView.hasInputDeviceVibration(controllerIndex) : null;
+    }
+
+    public void setInputDeviceVibration(int controllerIndex, float smallMotor, float largeMotor) {
+        if (mContentView != null)
+            mContentView.setInputDeviceVibration(controllerIndex, smallMotor, largeMotor);
     }
 
     private void doApplySettings() {
@@ -392,6 +403,21 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
             AndroidHostInterface.getInstance().pauseEmulationThread(false);
     }
 
+    private boolean disableDialogMenuItem(AlertDialog dialog, int index) {
+        final ListView listView = dialog.getListView();
+        if (listView == null)
+            return false;
+
+        final View childItem = listView.getChildAt(index);
+        if (childItem == null)
+            return false;
+
+        childItem.setEnabled(false);
+        childItem.setClickable(false);
+        childItem.setOnClickListener((v) -> {});
+        return true;
+    }
+
     private void showMenu() {
         if (getBooleanSetting("Main/PauseOnMenu", false) &&
                 !AndroidHostInterface.getInstance().isEmulationThreadPaused()) {
@@ -401,6 +427,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         if (mGameTitle != null && !mGameTitle.isEmpty())
             builder.setTitle(mGameTitle);
+
         builder.setItems(R.array.emulation_menu, (dialogInterface, i) -> {
             switch (i) {
                 case 0:     // Load State
@@ -422,13 +449,19 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
                     return;
                 }
 
-                case 3:     // More Options
+                case 3:     // Achievements
+                {
+                    showAchievementsPopup();
+                    return;
+                }
+
+                case 4:     // More Options
                 {
                     showMoreMenu();
                     return;
                 }
 
-                case 4:     // Quit
+                case 5:     // Quit
                 {
                     mStopRequested = true;
                     finish();
@@ -437,7 +470,18 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
             }
         });
         builder.setOnCancelListener(dialogInterface -> onMenuClosed());
-        builder.create().show();
+
+        final AlertDialog dialog = builder.create();
+        dialog.setOnShowListener(dialogInterface -> {
+            // Disable cheevos if not loaded.
+            if (AndroidHostInterface.getInstance().getCheevoCount() == 0)
+                disableDialogMenuItem(dialog, 3);
+
+            // Disable load state for challenge mode.
+            if (AndroidHostInterface.getInstance().isCheevosChallengeModeActive())
+                disableDialogMenuItem(dialog, 0);
+        });
+        dialog.show();
     }
 
     private void showSaveStateMenu(boolean saving) {
@@ -504,6 +548,14 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
 
                 case 4:     // Settings
                 {
+                    Intent intent = new Intent(EmulationActivity.this, ControllerSettingsActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivityForResult(intent, REQUEST_CODE_SETTINGS);
+                    return;
+                }
+
+                case 5:     // Controller Settings
+                {
                     Intent intent = new Intent(EmulationActivity.this, SettingsActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivityForResult(intent, REQUEST_CODE_SETTINGS);
@@ -512,7 +564,14 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
             }
         });
         builder.setOnCancelListener(dialogInterface -> onMenuClosed());
-        builder.create().show();
+
+        final AlertDialog dialog = builder.create();
+        dialog.setOnShowListener(dialogInterface -> {
+            // Disable patch codes when challenge mode is active.
+            if (AndroidHostInterface.getInstance().isCheevosChallengeModeActive())
+                disableDialogMenuItem(dialog, 1);
+        });
+        dialog.show();
     }
 
     private void showTouchscreenControllerMenu() {
@@ -631,9 +690,23 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         }
     }
 
+    private void startDiscChangeFromFile() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("*/*");
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        startActivityForResult(Intent.createChooser(intent, getString(R.string.main_activity_choose_disc_image)), REQUEST_CHANGE_DISC_FILE);
+    }
+
     private void showDiscChangeMenu() {
-        final String[] paths = AndroidHostInterface.getInstance().getMediaPlaylistPaths();
-        final int currentPath = AndroidHostInterface.getInstance().getMediaPlaylistIndex();
+        final AndroidHostInterface hi = AndroidHostInterface.getInstance();
+
+        if (!hi.hasMediaSubImages()) {
+            startDiscChangeFromFile();
+            return;
+        }
+
+        final String[] paths = AndroidHostInterface.getInstance().getMediaSubImageTitles();
+        final int currentPath = AndroidHostInterface.getInstance().getMediaSubImageIndex();
         final int numPaths = (paths != null) ? paths.length : 0;
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -641,23 +714,32 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         CharSequence[] items = new CharSequence[numPaths + 1];
         for (int i = 0; i < numPaths; i++)
             items[i] = GameListEntry.getFileNameForPath(paths[i]);
-        items[numPaths] = "Select New File...";
+        items[numPaths] = getString(R.string.emulation_activity_change_disc_select_new_file);
 
         builder.setSingleChoiceItems(items, (currentPath < numPaths) ? currentPath : -1, (dialogInterface, i) -> {
             dialogInterface.dismiss();
             onMenuClosed();
 
             if (i < numPaths) {
-                AndroidHostInterface.getInstance().setMediaPlaylistIndex(i);
+                AndroidHostInterface.getInstance().switchMediaSubImage(i);
             } else {
-                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                intent.setType("*/*");
-                intent.addCategory(Intent.CATEGORY_OPENABLE);
-                startActivityForResult(Intent.createChooser(intent, getString(R.string.main_activity_choose_disc_image)), REQUEST_CHANGE_DISC_FILE);
+                startDiscChangeFromFile();
             }
         });
         builder.setOnCancelListener(dialogInterface -> onMenuClosed());
         builder.create().show();
+    }
+
+    private void showAchievementsPopup() {
+        final Achievement[] achievements = AndroidHostInterface.getInstance().getCheevoList();
+        if (achievements == null) {
+            onMenuClosed();
+            return;
+        }
+
+        final AchievementListFragment alf = new AchievementListFragment(achievements);
+        alf.show(getSupportFragmentManager(), "fragment_achievement_list");
+        alf.setOnDismissListener(dialog -> onMenuClosed());
     }
 
     /**
@@ -669,6 +751,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         final String controllerType = getStringSetting("Controller1/Type", "DigitalController");
         final String viewType = getStringSetting("Controller1/TouchscreenControllerView", "digital");
         final boolean autoHideTouchscreenController = getBooleanSetting("Controller1/AutoHideTouchscreenController", false);
+        final boolean touchGliding = getBooleanSetting("Controller1/TouchGliding", false);
         final boolean hapticFeedback = getBooleanSetting("Controller1/HapticFeedback", false);
         final boolean vibration = getBooleanSetting("Controller1/Vibration", false);
         final FrameLayout activityLayout = findViewById(R.id.frameLayout);
@@ -676,25 +759,38 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         Log.i("EmulationActivity", "Controller type: " + controllerType);
         Log.i("EmulationActivity", "View type: " + viewType);
 
-        final boolean hasAnyControllers = mContentView.initControllerMapping(controllerType);
+        mContentView.updateInputDevices();
+        AndroidHostInterface.getInstance().updateInputMap();
 
+        final boolean hasAnyControllers = mContentView.hasAnyGamePads();
         if (controllerType.equals("none") || viewType.equals("none") || (hasAnyControllers && autoHideTouchscreenController)) {
             if (mTouchscreenController != null) {
                 activityLayout.removeView(mTouchscreenController);
                 mTouchscreenController = null;
-                mVibratorService = null;
             }
         } else {
             if (mTouchscreenController == null) {
                 mTouchscreenController = new TouchscreenControllerView(this);
-                if (vibration)
-                    mVibratorService = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-
                 activityLayout.addView(mTouchscreenController);
             }
 
-            mTouchscreenController.init(0, controllerType, viewType, hapticFeedback);
+            mTouchscreenController.init(0, controllerType, viewType, hapticFeedback, touchGliding);
         }
+
+        if (vibration)
+            mVibratorService = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+        else
+            mVibratorService = null;
+
+        // Place notifications in the middle of the screen, rather then the bottom (because touchscreen).
+        float notificationVerticalPosition = 1.0f;
+        float notificationVerticalDirection = -1.0f;
+        if (mTouchscreenController != null) {
+            notificationVerticalPosition = 0.3f;
+            notificationVerticalDirection = -1.0f;
+        }
+        AndroidHostInterface.getInstance().setFullscreenUINotificationVerticalPosition(
+                notificationVerticalPosition, notificationVerticalDirection);
     }
 
     private InputManager.InputDeviceListener mInputDeviceListener;

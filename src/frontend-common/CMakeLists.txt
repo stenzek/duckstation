@@ -17,8 +17,10 @@ add_library(frontend-common
   icon.h
   ini_settings_interface.cpp
   ini_settings_interface.h
-  imgui_fullscreen.h
+  input_overlay_ui.cpp
+  input_overlay_ui.h
   imgui_fullscreen.cpp
+  imgui_fullscreen.h
   imgui_impl_opengl3.cpp
   imgui_impl_opengl3.h
   imgui_impl_vulkan.cpp
@@ -100,14 +102,14 @@ if(ENABLE_CHEEVOS)
       http_downloader_winhttp.cpp
       http_downloader_winhttp.h
     )
-    else()
-      target_sources(frontend-common PRIVATE
-        http_downloader_curl.cpp
-        http_downloader_curl.h
-      )
-      target_link_libraries(frontend-common PRIVATE
-        CURL::libcurl
-      )
+  elseif(NOT ANDROID)
+    target_sources(frontend-common PRIVATE
+      http_downloader_curl.cpp
+      http_downloader_curl.h
+    )
+    target_link_libraries(frontend-common PRIVATE
+      CURL::libcurl
+    )
   endif()
 
   target_sources(frontend-common PRIVATE

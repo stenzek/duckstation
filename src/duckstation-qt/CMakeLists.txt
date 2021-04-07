@@ -116,6 +116,7 @@ endif()
 
 set(TS_FILES
   translations/duckstation-qt_de.ts
+  translations/duckstation-qt_en.ts
   translations/duckstation-qt_es.ts
   translations/duckstation-qt_fr.ts
   translations/duckstation-qt_he.ts

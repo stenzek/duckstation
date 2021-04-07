@@ -6,6 +6,7 @@
 #include <map>
 #include <mutex>
 #include <optional>
+#include <string_view>
 #include <variant>
 
 class HostInterface;
@@ -70,6 +71,7 @@ public:
   virtual void ClearBindings() = 0;
 
   // Binding to events. If a binding for this axis/button already exists, returns false.
+  virtual std::optional<int> GetControllerIndex(const std::string_view& device);
   virtual bool BindControllerAxis(int controller_index, int axis_number, AxisSide axis_side, AxisCallback callback) = 0;
   virtual bool BindControllerButton(int controller_index, int button_number, ButtonCallback callback) = 0;
   virtual bool BindControllerAxisToButton(int controller_index, int axis_number, bool direction,

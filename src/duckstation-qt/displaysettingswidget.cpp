@@ -32,11 +32,12 @@ DisplaySettingsWidget::DisplaySettingsWidget(QtHostInterface* host_interface, QW
                                                &Settings::ParseDownsampleModeName, &Settings::GetDownsampleModeName,
                                                Settings::DEFAULT_GPU_DOWNSAMPLE_MODE);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.displayLinearFiltering, "Display",
-                                               "LinearFiltering");
+                                               "LinearFiltering", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.displayIntegerScaling, "Display",
-                                               "IntegerScaling");
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.displayStretch, "Display",
-                                               "Stretch");
+                                               "IntegerScaling", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.displayStretch, "Display", "Stretch", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.internalResolutionScreenshots, "Display",
+                                               "InternalResolutionScreenshots", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.vsync, "Display", "VSync");
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.displayAllFrames, "Display", "DisplayAllFrames",
                                                false);
@@ -50,6 +51,7 @@ DisplaySettingsWidget::DisplaySettingsWidget(QtHostInterface* host_interface, QW
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showSpeed, "Display", "ShowSpeed", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showResolution, "Display", "ShowResolution",
                                                false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showInput, "Display", "ShowInputs", false);
 
   connect(m_ui.renderer, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
           &DisplaySettingsWidget::populateGPUAdaptersAndResolutions);
@@ -101,9 +103,12 @@ DisplaySettingsWidget::DisplaySettingsWidget(QtHostInterface* host_interface, QW
     m_ui.displayIntegerScaling, tr("Integer Upscaling"), tr("Unchecked"),
     tr("Adds padding to the display area to ensure that the ratio between pixels on the host to "
        "pixels in the console is an integer number. <br>May result in a sharper image in some 2D games."));
-  dialog->registerWidgetHelp(
-    m_ui.displayIntegerScaling, tr("Stretch To Fill"), tr("Unchecked"),
-    tr("Fills the window with the active display area, regardless of the aspect ratio."));
+  dialog->registerWidgetHelp(m_ui.displayStretch, tr("Stretch To Fill"), tr("Unchecked"),
+                             tr("Fills the window with the active display area, regardless of the aspect ratio."));
+  dialog->registerWidgetHelp(m_ui.internalResolutionScreenshots, tr("Internal Resolution Screenshots"), tr("Unchecked"),
+                             tr("Saves screenshots at internal render resolution and without postprocessing. If this "
+                                "option is disabled, the screenshots will be taken at the window's resolution. "
+                                "Internal resolution screenshots can be very large at high rendering scales."));
   dialog->registerWidgetHelp(
     m_ui.vsync, tr("VSync"), tr("Checked"),
     tr("Enable this option to match DuckStation's refresh rate with your current monitor or screen. "
@@ -121,9 +126,9 @@ DisplaySettingsWidget::DisplaySettingsWidget(QtHostInterface* host_interface, QW
   dialog->registerWidgetHelp(m_ui.showOSDMessages, tr("Show OSD Messages"), tr("Checked"),
                              tr("Shows on-screen-display messages when events occur such as save states being "
                                 "created/loaded, screenshots being taken, etc."));
-  dialog->registerWidgetHelp(m_ui.showFPS, tr("Show FPS"), tr("Unchecked"),
+  dialog->registerWidgetHelp(m_ui.showFPS, tr("Show Game Frame Rate"), tr("Unchecked"),
                              tr("Shows the internal frame rate of the game in the top-right corner of the display."));
-  dialog->registerWidgetHelp(m_ui.showVPS, tr("Show VPS"), tr("Unchecked"),
+  dialog->registerWidgetHelp(m_ui.showVPS, tr("Show Display FPS"), tr("Unchecked"),
                              tr("Shows the number of frames (or v-syncs) displayed per second by the system in the "
                                 "top-right corner of the display."));
   dialog->registerWidgetHelp(
@@ -131,6 +136,9 @@ DisplaySettingsWidget::DisplaySettingsWidget(QtHostInterface* host_interface, QW
     tr("Shows the current emulation speed of the system in the top-right corner of the display as a percentage."));
   dialog->registerWidgetHelp(m_ui.showResolution, tr("Show Resolution"), tr("Unchecked"),
                              tr("Shows the resolution of the game in the top-right corner of the display."));
+  dialog->registerWidgetHelp(
+    m_ui.showInput, tr("Show Controller Input"), tr("Unchecked"),
+    tr("Shows the current controller state of the system in the bottom-left corner of the display."));
 
 #ifdef _WIN32
   {

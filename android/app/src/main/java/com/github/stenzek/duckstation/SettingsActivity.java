@@ -35,6 +35,12 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.remove("android:support:fragments");
+    }
+
+    @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
             onBackPressed();
@@ -45,7 +51,7 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     public static class SettingsFragment extends PreferenceFragmentCompat {
-        private int resourceId;
+        private final int resourceId;
 
         public SettingsFragment(int resourceId) {
             this.resourceId = resourceId;
@@ -101,8 +107,8 @@ public class SettingsActivity extends AppCompatActivity {
                 case 3:     // Enhancements
                     return new SettingsFragment(R.xml.enhancements_preferences);
 
-                case 4:     // Controllers
-                    return new SettingsFragment(R.xml.controllers_preferences);
+                case 4:     // Achievements
+                    return new AchievementSettingsFragment();
 
                 case 5:     // Advanced
                     return new SettingsFragment(R.xml.advanced_preferences);

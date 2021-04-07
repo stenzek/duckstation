@@ -26,7 +26,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>RetroAchievements Login</string>
+   <string comment="Window title">RetroAchievements Login</string>
   </property>
   <property name="modal">
    <bool>true</bool>
@@ -54,7 +54,7 @@
         </font>
        </property>
        <property name="text">
-        <string>RetroAchievements Login</string>
+        <string comment="Header text">RetroAchievements Login</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
@@ -66,7 +66,7 @@
    <item>
     <widget class="QLabel" name="label_3">
      <property name="text">
-      <string>Please enter user name and password for retroachievements.org below. Your password will not be saved in DuckStation, instead an access token will be generated and used instead.</string>
+      <string>Please enter user name and password for retroachievements.org below. Your password will not be saved in DuckStation, an access token will be generated and used instead.</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
@@ -125,6 +125,9 @@
      </item>
      <item>
       <widget class="QPushButton" name="login">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="text">
         <string>&amp;Login</string>
        </property>

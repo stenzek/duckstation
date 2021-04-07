@@ -5,18 +5,27 @@ package com.github.stenzek.duckstation;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.ImageDecoder;
 import android.net.Uri;
 import android.os.Build;
 import android.os.storage.StorageManager;
 import android.provider.DocumentsContract;
+import android.provider.MediaStore;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
@@ -163,6 +172,8 @@ public final class FileUtil {
                 if (os.length() > maxSize)
                     return null;
             }
+
+            stream.close();
         } catch (IOException e) {
             return null;
         }
@@ -171,5 +182,112 @@ public final class FileUtil {
             return null;
 
         return os.toString();
+    }
+
+    public static byte[] readBytesFromUri(final Context context, final Uri uri, int maxSize) {
+        InputStream stream = null;
+        try {
+            stream = context.getContentResolver().openInputStream(uri);
+        } catch (FileNotFoundException e) {
+            return null;
+        }
+
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        try {
+            byte[] buffer = new byte[512 * 1024];
+            int len;
+            while ((len = stream.read(buffer)) > 0) {
+                os.write(buffer, 0, len);
+                if (maxSize > 0 && os.size() > maxSize) {
+                    return null;
+                }
+            }
+
+            stream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        if (os.size() == 0)
+            return null;
+
+        return os.toByteArray();
+    }
+
+    public static boolean writeBytesToUri(final Context context, final Uri uri, final byte[] bytes) {
+        OutputStream stream = null;
+        try {
+            stream = context.getContentResolver().openOutputStream(uri);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        if (bytes != null && bytes.length > 0) {
+            try {
+                stream.write(bytes);
+                stream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public static boolean deleteFileAtUri(final Context context, final Uri uri) {
+        try {
+            if (uri.getScheme() == "file") {
+                final File file = new File(uri.getPath());
+                if (!file.isFile())
+                    return false;
+
+                return file.delete();
+            }
+            return (context.getContentResolver().delete(uri, null, null) > 0);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Returns the name of the file pointed at by a SAF URI.
+     * @param context context to access file under
+     * @param uri uri to retrieve file name for
+     * @return the name of the file, or null
+     */
+    public static String getDocumentNameFromUri(final Context context, final Uri uri) {
+        Cursor cursor = null;
+        try {
+            final String[] proj = {DocumentsContract.Document.COLUMN_DISPLAY_NAME};
+            cursor = context.getContentResolver().query(uri, proj, null, null, null);
+            final int columnIndex = cursor.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_DISPLAY_NAME);
+            cursor.moveToFirst();
+            return cursor.getString(columnIndex);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        } finally {
+            if (cursor != null)
+                cursor.close();
+        }
+    }
+
+    public static Bitmap loadBitmapFromUri(final Context context, final Uri uri) {
+        InputStream stream = null;
+        try {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                final ImageDecoder.Source source =ImageDecoder.createSource(context.getContentResolver(), uri);
+                return ImageDecoder.decodeBitmap(source);
+            } else {
+                return MediaStore.Images.Media.getBitmap(context.getContentResolver(), uri);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }

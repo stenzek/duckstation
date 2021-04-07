@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>846</width>
+    <width>889</width>
     <height>515</height>
    </rect>
   </property>
@@ -101,7 +101,7 @@
      <item>
       <widget class="QLabel" name="cardBUsage">
        <property name="text">
-        <string>0 blocks used</string>
+        <string notr="true"/>
        </property>
       </widget>
      </item>
@@ -142,7 +142,7 @@
      <item>
       <widget class="QLabel" name="cardAUsage">
        <property name="text">
-        <string>0 blocks used</string>
+        <string notr="true"/>
        </property>
       </widget>
      </item>

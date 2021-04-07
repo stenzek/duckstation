@@ -13,7 +13,7 @@ Log_SetChannel(Common::MemoryArena);
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 #include <unistd.h>
-#elif defined(__linux__) || defined(__APPLE__)
+#elif defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
 #include <cerrno>
 #include <fcntl.h>
 #include <sys/mman.h>
@@ -73,7 +73,7 @@ void* MemoryArena::FindBaseAddressForMapping(size_t size)
   base_address = VirtualAlloc(nullptr, size, MEM_RESERVE, PAGE_READWRITE);
   if (base_address)
     VirtualFree(base_address, 0, MEM_RELEASE);
-#elif defined(__linux__) || defined(__APPLE__)
+#elif defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
   base_address = mmap(nullptr, size, PROT_NONE, MAP_ANON | MAP_PRIVATE, -1, 0);
   if (base_address)
     munmap(base_address, size);
@@ -153,18 +153,25 @@ bool MemoryArena::Create(size_t size, bool writable, bool executable)
   }
 
   return true;
-#elif defined(__APPLE__)
+#elif defined(__APPLE__) || defined(__FreeBSD__)
+#if defined(__APPLE__)
   const std::string file_mapping_name =
     StringUtil::StdStringFromFormat("duckstation_%u", static_cast<unsigned>(getpid()));
   m_shmem_fd = shm_open(file_mapping_name.c_str(), O_CREAT | O_EXCL | (writable ? O_RDWR : O_RDONLY), 0600);
+#else
+  m_shmem_fd = shm_open(SHM_ANON, O_CREAT | O_EXCL | (writable ? O_RDWR : O_RDONLY), 0600);
+#endif
+
   if (m_shmem_fd < 0)
   {
     Log_ErrorPrintf("shm_open failed: %d", errno);
     return false;
   }
 
+#ifdef __APPLE__
   // we're not going to be opening this mapping in other processes, so remove the file
   shm_unlink(file_mapping_name.c_str());
+#endif
 
   // ensure it's the correct size
   if (ftruncate(m_shmem_fd, static_cast<off_t>(size)) < 0)
@@ -187,7 +194,7 @@ void MemoryArena::Destroy()
     CloseHandle(m_file_handle);
     m_file_handle = nullptr;
   }
-#elif defined(__linux__)
+#elif defined(__linux__) || defined(__FreeBSD__)
   if (m_shmem_fd > 0)
   {
     close(m_shmem_fd);
@@ -222,7 +229,7 @@ void* MemoryArena::CreateViewPtr(size_t offset, size_t size, bool writable, bool
   base_pointer = mmap64(fixed_address, size, prot, flags, m_shmem_fd, static_cast<off64_t>(offset));
   if (base_pointer == reinterpret_cast<void*>(-1))
     return nullptr;
-#elif defined(__APPLE__)
+#elif defined(__APPLE__) || defined(__FreeBSD__)
   const int flags = (fixed_address != nullptr) ? (MAP_SHARED | MAP_FIXED) : MAP_SHARED;
   const int prot = PROT_READ | (writable ? PROT_WRITE : 0) | (executable ? PROT_EXEC : 0);
   base_pointer = mmap(fixed_address, size, prot, flags, m_shmem_fd, static_cast<off_t>(offset));
@@ -240,7 +247,7 @@ bool MemoryArena::FlushViewPtr(void* address, size_t size)
 {
 #if defined(WIN32)
   return FlushViewOfFile(address, size);
-#elif defined(__linux__) || defined(__APPLE__)
+#elif defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
   return (msync(address, size, 0) >= 0);
 #else
   return false;
@@ -252,7 +259,7 @@ bool MemoryArena::ReleaseViewPtr(void* address, size_t size)
   bool result;
 #if defined(WIN32)
   result = static_cast<bool>(UnmapViewOfFile(address));
-#elif defined(__linux__) || defined(__APPLE__)
+#elif defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
   result = (munmap(address, size) >= 0);
 #else
   result = false;
@@ -279,7 +286,7 @@ bool MemoryArena::SetPageProtection(void* address, size_t length, bool readable,
   DWORD old_protect;
   return static_cast<bool>(
     VirtualProtect(address, length, protection_table[readable][writable][executable], &old_protect));
-#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
+#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__) || defined(__FreeBSD__)
   const int prot = (readable ? PROT_READ : 0) | (writable ? PROT_WRITE : 0) | (executable ? PROT_EXEC : 0);
   return (mprotect(address, length, prot) >= 0);
 #else

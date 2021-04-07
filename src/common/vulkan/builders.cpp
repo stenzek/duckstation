@@ -252,7 +252,7 @@ void GraphicsPipelineBuilder::SetMultisamples(u32 multisamples, bool per_sample_
 {
   m_multisample_state.rasterizationSamples = static_cast<VkSampleCountFlagBits>(multisamples);
   m_multisample_state.sampleShadingEnable = per_sample_shading;
-  m_multisample_state.minSampleShading = (multisamples > 1) ? 0.0f : 1.0f;
+  m_multisample_state.minSampleShading = (multisamples > 1) ? 1.0f : 0.0f;
 }
 
 void GraphicsPipelineBuilder::SetNoCullRasterizationState()

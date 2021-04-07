@@ -20,6 +20,8 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.preference.PreferenceManager;
 
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * TODO: document your custom view class.
@@ -33,6 +35,8 @@ public class TouchscreenControllerView extends FrameLayout {
     private View mMainView;
     private ArrayList<TouchscreenControllerButtonView> mButtonViews = new ArrayList<>();
     private ArrayList<TouchscreenControllerAxisView> mAxisViews = new ArrayList<>();
+    private TouchscreenControllerDPadView mDPadView = null;
+    private int mPointerButtonCode = -1;
     private boolean mHapticFeedback;
     private String mLayoutOrientation;
     private boolean mEditingLayout = false;
@@ -42,6 +46,7 @@ public class TouchscreenControllerView extends FrameLayout {
     private float mMovingLastY = 0.0f;
     private ConstraintLayout mEditLayout = null;
     private int mOpacity = 100;
+    private Map<Integer, View> mGlidePairs = new HashMap<>();
 
     public TouchscreenControllerView(Context context) {
         super(context);
@@ -102,6 +107,13 @@ public class TouchscreenControllerView extends FrameLayout {
             axisView.setTranslationY(0.0f);
         }
 
+        if (mDPadView != null) {
+            editor.remove(getConfigKeyForXTranslation(mDPadView.getConfigName()));
+            editor.remove(getConfigKeyForYTranslation(mDPadView.getConfigName()));
+            mDPadView.setTranslationX(0.0f);
+            mDPadView.setTranslationY(0.0f);
+        }
+
         editor.commit();
         requestLayout();
     }
@@ -134,6 +146,18 @@ public class TouchscreenControllerView extends FrameLayout {
 
             }
         }
+
+        if (mDPadView != null) {
+            try {
+                mDPadView.setTranslationX(prefs.getFloat(getConfigKeyForXTranslation(mDPadView.getConfigName()), 0.0f));
+                mDPadView.setTranslationY(prefs.getFloat(getConfigKeyForYTranslation(mDPadView.getConfigName()), 0.0f));
+
+                final boolean visible = prefs.getBoolean(getConfigKeyForVisibility(mDPadView.getConfigName()), mDPadView.getDefaultVisibility());
+                mDPadView.setVisibility(visible ? VISIBLE : INVISIBLE);
+            } catch (ClassCastException ex) {
+
+            }
+        }
     }
 
     private void setOpacity(int opacity) {
@@ -157,6 +181,8 @@ public class TouchscreenControllerView extends FrameLayout {
         for (TouchscreenControllerAxisView axisView : mAxisViews) {
             axisView.setAlpha(alpha);
         }
+        if (mDPadView != null)
+            mDPadView.setAlpha(alpha);
     }
 
     private String getOrientationString() {
@@ -183,7 +209,7 @@ public class TouchscreenControllerView extends FrameLayout {
         requestLayout();
     }
 
-    public void init(int controllerIndex, String controllerType, String viewType, boolean hapticFeedback) {
+    public void init(int controllerIndex, String controllerType, String viewType, boolean hapticFeedback, boolean gliding) {
         mControllerIndex = controllerIndex;
         mControllerType = controllerType;
         mViewType = viewType;
@@ -198,6 +224,7 @@ public class TouchscreenControllerView extends FrameLayout {
         removeAllViews();
 
         LayoutInflater inflater = LayoutInflater.from(getContext());
+        String pointerButtonName = null;
         switch (viewType) {
             case "digital":
                 mMainView = inflater.inflate(R.layout.layout_touchscreen_controller_digital, this, true);
@@ -209,6 +236,11 @@ public class TouchscreenControllerView extends FrameLayout {
 
             case "analog_sticks":
                 mMainView = inflater.inflate(R.layout.layout_touchscreen_controller_analog_sticks, this, true);
+                break;
+
+            case "lightgun":
+                mMainView = inflater.inflate(R.layout.layout_touchscreen_controller_lightgun, this, true);
+                pointerButtonName = "Trigger";
                 break;
 
             case "none":
@@ -229,20 +261,17 @@ public class TouchscreenControllerView extends FrameLayout {
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
 
-        linkButton(mMainView, R.id.controller_button_up, "UpButton", "Up", true);
-        linkButton(mMainView, R.id.controller_button_right, "RightButton", "Right", true);
-        linkButton(mMainView, R.id.controller_button_down, "DownButton", "Down", true);
-        linkButton(mMainView, R.id.controller_button_left, "LeftButton", "Left", true);
-        linkButton(mMainView, R.id.controller_button_l1, "L1Button", "L1", true);
-        linkButton(mMainView, R.id.controller_button_l2, "L2Button", "L2", true);
-        linkButton(mMainView, R.id.controller_button_select, "SelectButton", "Select", true);
-        linkButton(mMainView, R.id.controller_button_start, "StartButton", "Start", true);
-        linkButton(mMainView, R.id.controller_button_triangle, "TriangleButton", "Triangle", true);
-        linkButton(mMainView, R.id.controller_button_circle, "CircleButton", "Circle", true);
-        linkButton(mMainView, R.id.controller_button_cross, "CrossButton", "Cross", true);
-        linkButton(mMainView, R.id.controller_button_square, "SquareButton", "Square", true);
-        linkButton(mMainView, R.id.controller_button_r1, "R1Button", "R1", true);
-        linkButton(mMainView, R.id.controller_button_r2, "R2Button", "R2", true);
+        linkDPadToButtons(mMainView, R.id.controller_dpad, "DPad", "", true);
+        linkButton(mMainView, R.id.controller_button_l1, "L1Button", "L1", true, gliding);
+        linkButton(mMainView, R.id.controller_button_l2, "L2Button", "L2", true, gliding);
+        linkButton(mMainView, R.id.controller_button_select, "SelectButton", "Select", true, gliding);
+        linkButton(mMainView, R.id.controller_button_start, "StartButton", "Start", true, gliding);
+        linkButton(mMainView, R.id.controller_button_triangle, "TriangleButton", "Triangle", true, gliding);
+        linkButton(mMainView, R.id.controller_button_circle, "CircleButton", "Circle", true, gliding);
+        linkButton(mMainView, R.id.controller_button_cross, "CrossButton", "Cross", true, gliding);
+        linkButton(mMainView, R.id.controller_button_square, "SquareButton", "Square", true, gliding);
+        linkButton(mMainView, R.id.controller_button_r1, "R1Button", "R1", true, gliding);
+        linkButton(mMainView, R.id.controller_button_r2, "R2Button", "R2", true, gliding);
 
         if (!linkAxis(mMainView, R.id.controller_axis_left, "LeftAxis", "Left", true))
             linkAxisToButtons(mMainView, R.id.controller_axis_left, "LeftAxis", "");
@@ -254,18 +283,24 @@ public class TouchscreenControllerView extends FrameLayout {
         linkHotkeyButton(mMainView, R.id.controller_button_analog, "AnalogToggle",
                 TouchscreenControllerButtonView.Hotkey.ANALOG_TOGGLE, false);
 
+        linkButton(mMainView, R.id.controller_button_a, "AButton", "A", true, true);
+        linkButton(mMainView, R.id.controller_button_b, "BButton", "B", true, true);
+        if (pointerButtonName != null)
+            linkPointer(pointerButtonName);
+
         reloadButtonSettings();
         updateOpacity();
         requestLayout();
     }
 
-    private void linkButton(View view, int id, String configName, String buttonName, boolean defaultVisibility) {
+    private void linkButton(View view, int id, String configName, String buttonName, boolean defaultVisibility, boolean isGlidable) {
         TouchscreenControllerButtonView buttonView = (TouchscreenControllerButtonView) view.findViewById(id);
         if (buttonView == null)
             return;
 
         buttonView.setConfigName(configName);
         buttonView.setDefaultVisibility(defaultVisibility);
+        buttonView.setIsGlidable(isGlidable);
         mButtonViews.add(buttonView);
 
         int code = AndroidHostInterface.getControllerButtonCode(mControllerType, buttonName);
@@ -316,6 +351,27 @@ public class TouchscreenControllerView extends FrameLayout {
         return true;
     }
 
+    private boolean linkDPadToButtons(View view, int id, String configName, String buttonPrefix, boolean defaultVisibility) {
+        TouchscreenControllerDPadView dpadView = (TouchscreenControllerDPadView) view.findViewById(id);
+        if (dpadView == null)
+            return false;
+
+        dpadView.setConfigName(configName);
+        dpadView.setDefaultVisibility(defaultVisibility);
+        mDPadView = dpadView;
+
+        int leftCode = AndroidHostInterface.getControllerButtonCode(mControllerType, buttonPrefix + "Left");
+        int rightCode = AndroidHostInterface.getControllerButtonCode(mControllerType, buttonPrefix + "Right");
+        int upCode = AndroidHostInterface.getControllerButtonCode(mControllerType, buttonPrefix + "Up");
+        int downCode = AndroidHostInterface.getControllerButtonCode(mControllerType, buttonPrefix + "Down");
+        Log.i("TouchscreenController", String.format("%s(DPad) -> %d,%d,%d,%d", buttonPrefix, leftCode, rightCode, upCode, downCode));
+        if (leftCode < 0 && rightCode < 0 && upCode < 0 && downCode < 0)
+            return false;
+
+        dpadView.setControllerButtons(mControllerIndex, leftCode, rightCode, upCode, downCode);
+        return true;
+    }
+
     private void linkHotkeyButton(View view, int id, String configName, TouchscreenControllerButtonView.Hotkey hotkey, boolean defaultVisibility) {
         TouchscreenControllerButtonView buttonView = (TouchscreenControllerButtonView) view.findViewById(id);
         if (buttonView == null)
@@ -325,6 +381,12 @@ public class TouchscreenControllerView extends FrameLayout {
         buttonView.setDefaultVisibility(defaultVisibility);
         buttonView.setHotkey(hotkey);
         mButtonViews.add(buttonView);
+    }
+
+    private boolean linkPointer(String buttonName) {
+        mPointerButtonCode = AndroidHostInterface.getInstance().getControllerButtonCode(mControllerType, buttonName);
+        Log.i("TouchscreenController", String.format("Pointer -> %s,%d", buttonName, mPointerButtonCode));
+        return (mPointerButtonCode >= 0);
     }
 
     private int dpToPixels(float dp) {
@@ -406,6 +468,17 @@ public class TouchscreenControllerView extends FrameLayout {
                     }
                 }
 
+                if (mDPadView != null) {
+                    mDPadView.getHitRect(rect);
+                    if (rect.contains((int) x, (int) y)) {
+                        mMovingView = mDPadView;
+                        mMovingName = mDPadView.getConfigName();
+                        mMovingLastX = x;
+                        mMovingLastY = y;
+                        return true;
+                    }
+                }
+
                 // nothing..
                 return true;
             }
@@ -436,11 +509,110 @@ public class TouchscreenControllerView extends FrameLayout {
         return false;
     }
 
+    private boolean updateTouchButtonsFromEvent(MotionEvent event) {
+        if (!AndroidHostInterface.hasInstanceAndEmulationThreadIsRunning())
+            return false;
+
+        Rect rect = new Rect();
+        final int pointerCount = event.getPointerCount();
+        final int liftedPointerIndex = (event.getActionMasked() == MotionEvent.ACTION_POINTER_UP) ? event.getActionIndex() : -1;
+        for (TouchscreenControllerButtonView buttonView : mButtonViews) {
+            if (buttonView.getVisibility() != VISIBLE)
+                continue;
+
+            buttonView.getHitRect(rect);
+            boolean pressed = false;
+            for (int i = 0; i < pointerCount; i++) {
+                if (i == liftedPointerIndex)
+                    continue;
+
+                final int x = (int) event.getX(i);
+                final int y = (int) event.getY(i);
+                if (rect.contains(x, y)) {
+                    buttonView.setPressed(true);
+                    final int pointerId = event.getPointerId(i);
+                    if (!mGlidePairs.containsKey(pointerId) && !mGlidePairs.containsValue(buttonView)) {
+                        if (buttonView.getIsGlidable())
+                            mGlidePairs.put(pointerId, buttonView);
+                        else { mGlidePairs.put(pointerId, null); }
+                    }
+                    pressed = true;
+                    break;
+                }
+            }
+
+            if (!pressed  && !mGlidePairs.containsValue(buttonView))
+                buttonView.setPressed(pressed);
+        }
+
+        for (TouchscreenControllerAxisView axisView : mAxisViews) {
+            if (axisView.getVisibility() != VISIBLE)
+                continue;
+
+            axisView.getHitRect(rect);
+            boolean pressed = false;
+            for (int i = 0; i < pointerCount; i++) {
+                if (i == liftedPointerIndex)
+                    continue;
+
+                final int pointerId = event.getPointerId(i);
+                final int x = (int) event.getX(i);
+                final int y = (int) event.getY(i);
+
+                if ((rect.contains(x, y) && !axisView.isPressed()) ||
+                        (axisView.isPressed() && axisView.getPointerId() == pointerId)) {
+                    axisView.setPressed(pointerId, x, y);
+                    pressed = true;
+                    mGlidePairs.put(pointerId, null);
+                    break;
+                }
+            }
+            if (!pressed)
+                axisView.setUnpressed();
+        }
+
+        if (mDPadView != null && mDPadView.getVisibility() == VISIBLE) {
+            mDPadView.getHitRect(rect);
+
+            boolean pressed = false;
+            for (int i = 0; i < pointerCount; i++) {
+                if (i == liftedPointerIndex)
+                    continue;
+
+                final int x = (int) event.getX(i);
+                final int y = (int) event.getY(i);
+                if (rect.contains(x, y)) {
+                    mDPadView.setPressed(event.getPointerId(i), x, y);
+                    pressed = true;
+                }
+            }
+
+            if (!pressed)
+                mDPadView.setUnpressed();
+        }
+
+        if (mPointerButtonCode >= 0 && pointerCount > 0) {
+            if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+                AndroidHostInterface.getInstance().setControllerButtonState(mControllerIndex,
+                        mPointerButtonCode, true);
+            }
+
+            final int pointerId = event.getPointerId(0);
+            AndroidHostInterface.getInstance().setMousePosition(
+                    (int)event.getX(pointerId),
+                    (int)event.getY(pointerId));
+        }
+
+        return true;
+    }
+
     private boolean handleTouchEvent(MotionEvent event) {
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_UP: {
                 if (!AndroidHostInterface.hasInstanceAndEmulationThreadIsRunning())
                     return false;
+
+                mGlidePairs.clear();
 
                 for (TouchscreenControllerButtonView buttonView : mButtonViews) {
                     buttonView.setPressed(false);
@@ -450,68 +622,28 @@ public class TouchscreenControllerView extends FrameLayout {
                     axisView.setUnpressed();
                 }
 
+                if (mDPadView != null)
+                    mDPadView.setUnpressed();
+
+                if (mPointerButtonCode >= 0) {
+                    AndroidHostInterface.getInstance().setControllerButtonState(
+                            mControllerIndex, mPointerButtonCode, false);
+                }
+
                 return true;
             }
 
             case MotionEvent.ACTION_DOWN:
             case MotionEvent.ACTION_POINTER_DOWN:
-            case MotionEvent.ACTION_POINTER_UP:
+            case MotionEvent.ACTION_POINTER_UP: {
+                final int pointerId = event.getPointerId(event.getActionIndex());
+                if (mGlidePairs.containsKey(pointerId))
+                    mGlidePairs.remove(pointerId);
+
+                return updateTouchButtonsFromEvent(event);
+            }
             case MotionEvent.ACTION_MOVE: {
-                if (!AndroidHostInterface.hasInstanceAndEmulationThreadIsRunning())
-                    return false;
-
-                Rect rect = new Rect();
-                final int pointerCount = event.getPointerCount();
-                final int liftedPointerIndex = (event.getActionMasked() == MotionEvent.ACTION_POINTER_UP) ? event.getActionIndex() : -1;
-                for (TouchscreenControllerButtonView buttonView : mButtonViews) {
-                    if (buttonView.getVisibility() != VISIBLE)
-                        continue;
-
-                    buttonView.getHitRect(rect);
-                    boolean pressed = false;
-                    for (int i = 0; i < pointerCount; i++) {
-                        if (i == liftedPointerIndex)
-                            continue;
-
-                        final int x = (int) event.getX(i);
-                        final int y = (int) event.getY(i);
-                        if (rect.contains(x, y)) {
-                            buttonView.setPressed(true);
-                            pressed = true;
-                            break;
-                        }
-                    }
-
-                    if (!pressed)
-                        buttonView.setPressed(pressed);
-                }
-
-                for (TouchscreenControllerAxisView axisView : mAxisViews) {
-                    if (axisView.getVisibility() != VISIBLE)
-                        continue;
-
-                    axisView.getHitRect(rect);
-                    boolean pressed = false;
-                    for (int i = 0; i < pointerCount; i++) {
-                        if (i == liftedPointerIndex)
-                            continue;
-
-                        final int pointerId = event.getPointerId(i);
-                        final int x = (int) event.getX(i);
-                        final int y = (int) event.getY(i);
-
-                        if ((rect.contains(x, y) && !axisView.isPressed()) ||
-                                (axisView.isPressed() && axisView.getPointerId() == pointerId)) {
-                            axisView.setPressed(pointerId, x, y);
-                            pressed = true;
-                            break;
-                        }
-                    }
-                    if (!pressed)
-                        axisView.setUnpressed();
-                }
-
-                return true;
+                return updateTouchButtonsFromEvent(event);
             }
         }
 

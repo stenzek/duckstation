@@ -8,18 +8,33 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 
 public class GameList {
+    public interface OnRefreshListener {
+        void onGameListRefresh();
+    }
+
     private Activity mContext;
     private GameListEntry[] mEntries;
-    private ListViewAdapter mAdapter;
+    private ArrayList<OnRefreshListener> mRefreshListeners = new ArrayList<>();
 
     public GameList(Activity context) {
         mContext = context;
-        mAdapter = new ListViewAdapter();
         mEntries = new GameListEntry[0];
+    }
+
+    public void addRefreshListener(OnRefreshListener listener) {
+        mRefreshListeners.add(listener);
+    }
+    public void removeRefreshListener(OnRefreshListener listener) {
+        mRefreshListeners.remove(listener);
+    }
+    public void fireRefreshListeners() {
+        for (OnRefreshListener listener : mRefreshListeners)
+            listener.onGameListRefresh();
     }
 
     private class GameListEntryComparator implements Comparator<GameListEntry> {
@@ -28,7 +43,6 @@ public class GameList {
             return left.getTitle().compareTo(right.getTitle());
         }
     }
-
 
     public void refresh(boolean invalidateCache, boolean invalidateDatabase, Activity parentActivity) {
         // Search and get entries from native code
@@ -46,7 +60,7 @@ public class GameList {
                     e.printStackTrace();
                 }
                 mEntries = newEntries;
-                mAdapter.notifyDataSetChanged();
+                fireRefreshListeners();
             });
         });
     }
@@ -59,40 +73,12 @@ public class GameList {
         return mEntries[index];
     }
 
-    private class ListViewAdapter extends BaseAdapter {
-        @Override
-        public int getCount() {
-            return mEntries.length;
+    public GameListEntry getEntryForPath(String path) {
+        for (final GameListEntry entry : mEntries) {
+            if (entry.getPath().equals(path))
+                return entry;
         }
 
-        @Override
-        public Object getItem(int position) {
-            return mEntries[position];
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return position;
-        }
-
-        @Override
-        public int getViewTypeCount() {
-            return 1;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            if (convertView == null) {
-                convertView = LayoutInflater.from(mContext)
-                        .inflate(R.layout.game_list_view_entry, parent, false);
-            }
-
-            mEntries[position].fillView(convertView);
-            return convertView;
-        }
-    }
-
-    public BaseAdapter getListViewAdapter() {
-        return mAdapter;
+        return null;
     }
 }

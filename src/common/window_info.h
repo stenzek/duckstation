@@ -38,4 +38,6 @@ struct WindowInfo
 #ifdef __APPLE__
   void* surface_handle = nullptr;
 #endif
+
+  static bool QueryRefreshRateForWindow(const WindowInfo& wi, float* refresh_rate);
 };

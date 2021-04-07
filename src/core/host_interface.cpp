@@ -25,11 +25,6 @@
 #include <stdlib.h>
 Log_SetChannel(HostInterface);
 
-#ifdef _WIN32
-#include "common/windows_headers.h"
-#include <dwmapi.h>
-#endif
-
 HostInterface* g_host_interface;
 
 HostInterface::HostInterface()
@@ -101,7 +96,7 @@ bool HostInterface::BootSystem(const SystemBootParameters& parameters)
 
   if (!AcquireHostDisplay())
   {
-    ReportFormattedError(g_host_interface->TranslateString("System", "Failed to acquire host display."));
+    ReportError(g_host_interface->TranslateString("System", "Failed to acquire host display."));
     OnSystemDestroyed();
     return false;
   }
@@ -118,7 +113,7 @@ bool HostInterface::BootSystem(const SystemBootParameters& parameters)
   {
     if (!System::IsStartupCancelled())
     {
-      ReportFormattedError(
+      ReportError(
         g_host_interface->TranslateString("System", "System failed to boot. The log may contain more information."));
     }
 
@@ -140,11 +135,6 @@ void HostInterface::ResetSystem()
   System::Reset();
   System::ResetPerformanceCounters();
   AddOSDMessage(TranslateStdString("OSDMessage", "System reset."));
-}
-
-void HostInterface::PowerOffSystem()
-{
-  DestroySystem();
 }
 
 void HostInterface::PauseSystem(bool paused)
@@ -561,7 +551,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetFloatValue("Display", "MaxFPS", 0.0f);
 
   si.SetBoolValue("CDROM", "ReadThread", true);
-  si.SetBoolValue("CDROM", "RegionCheck", true);
+  si.SetBoolValue("CDROM", "RegionCheck", false);
   si.SetBoolValue("CDROM", "LoadImageToRAM", false);
   si.SetBoolValue("CDROM", "MuteCDAudio", false);
   si.SetIntValue("CDROM", "ReadSpeedup", 1);
@@ -591,9 +581,10 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   }
 
   si.SetStringValue("MemoryCards", "Card1Type", Settings::GetMemoryCardTypeName(Settings::DEFAULT_MEMORY_CARD_1_TYPE));
-  si.SetStringValue("MemoryCards", "Card1Path", "memcards" FS_OSPATH_SEPARATOR_STR "shared_card_1.mcd");
   si.SetStringValue("MemoryCards", "Card2Type", Settings::GetMemoryCardTypeName(Settings::DEFAULT_MEMORY_CARD_2_TYPE));
-  si.SetStringValue("MemoryCards", "Card2Path", "memcards" FS_OSPATH_SEPARATOR_STR "shared_card_2.mcd");
+  si.DeleteValue("MemoryCards", "Card1Path");
+  si.DeleteValue("MemoryCards", "Card2Path");
+  si.DeleteValue("MemoryCards", "Directory");
   si.SetBoolValue("MemoryCards", "UsePlaylistTitle", true);
 
   si.SetStringValue("ControllerPorts", "MultitapMode", Settings::GetMultitapModeName(Settings::DEFAULT_MULTITAP_MODE));
@@ -842,7 +833,8 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
     if (g_settings.memory_card_types != old_settings.memory_card_types ||
         g_settings.memory_card_paths != old_settings.memory_card_paths ||
         (g_settings.memory_card_use_playlist_title != old_settings.memory_card_use_playlist_title &&
-         System::HasMediaPlaylist()))
+         System::HasMediaSubImages()) ||
+        g_settings.memory_card_directory != old_settings.memory_card_directory)
     {
       System::UpdateMemoryCards();
     }
@@ -957,14 +949,38 @@ TinyString HostInterface::GetTimestampStringForFileName()
   return str;
 }
 
+std::string HostInterface::GetMemoryCardDirectory() const
+{
+  if (g_settings.memory_card_directory.empty())
+    return GetUserDirectoryRelativePath("memcards");
+  else
+    return g_settings.memory_card_directory;
+}
+
 std::string HostInterface::GetSharedMemoryCardPath(u32 slot) const
 {
-  return GetUserDirectoryRelativePath("memcards" FS_OSPATH_SEPARATOR_STR "shared_card_%u.mcd", slot + 1);
+  if (g_settings.memory_card_directory.empty())
+  {
+    return GetUserDirectoryRelativePath("memcards" FS_OSPATH_SEPARATOR_STR "shared_card_%u.mcd", slot + 1);
+  }
+  else
+  {
+    return StringUtil::StdStringFromFormat("%s" FS_OSPATH_SEPARATOR_STR "shared_card_%u.mcd",
+                                           g_settings.memory_card_directory.c_str(), slot + 1);
+  }
 }
 
 std::string HostInterface::GetGameMemoryCardPath(const char* game_code, u32 slot) const
 {
-  return GetUserDirectoryRelativePath("memcards" FS_OSPATH_SEPARATOR_STR "%s_%u.mcd", game_code, slot + 1);
+  if (g_settings.memory_card_directory.empty())
+  {
+    return GetUserDirectoryRelativePath("memcards" FS_OSPATH_SEPARATOR_STR "%s_%u.mcd", game_code, slot + 1);
+  }
+  else
+  {
+    return StringUtil::StdStringFromFormat("%s" FS_OSPATH_SEPARATOR_STR "%s_%u.mcd",
+                                           g_settings.memory_card_directory.c_str(), game_code, slot + 1);
+  }
 }
 
 bool HostInterface::GetBoolSettingValue(const char* section, const char* key, bool default_value /*= false*/)
@@ -997,51 +1013,51 @@ float HostInterface::GetFloatSettingValue(const char* section, const char* key, 
   return float_value.value_or(default_value);
 }
 
-TinyString HostInterface::TranslateString(const char* context, const char* str) const
+TinyString HostInterface::TranslateString(const char* context, const char* str,
+                                          const char* disambiguation /*= nullptr*/, int n /*= -1*/) const
 {
-  return str;
-}
-
-std::string HostInterface::TranslateStdString(const char* context, const char* str) const
-{
-  return str;
-}
-
-bool HostInterface::GetMainDisplayRefreshRate(float* refresh_rate)
-{
-#ifdef _WIN32
-  static HMODULE dwm_module = nullptr;
-  static HRESULT(STDAPICALLTYPE * get_timing_info)(HWND hwnd, DWM_TIMING_INFO * pTimingInfo) = nullptr;
-  static bool load_tried = false;
-  if (!load_tried)
+  TinyString result(str);
+  if (n >= 0)
   {
-    load_tried = true;
-    dwm_module = LoadLibrary("dwmapi.dll");
-    if (dwm_module)
+    const std::string number = std::to_string(n);
+    result.Replace("%n", number.c_str());
+    result.Replace("%Ln", number.c_str());
+  }
+  return result;
+}
+
+std::string HostInterface::TranslateStdString(const char* context, const char* str,
+                                              const char* disambiguation /*= nullptr*/, int n /*= -1*/) const
+{
+  std::string result(str);
+  if (n >= 0)
+  {
+    const std::string number = std::to_string(n);
+    // Made to mimick Qt's behaviour
+    // https://github.com/qt/qtbase/blob/255459250d450286a8c5c492dab3f6d3652171c9/src/corelib/kernel/qcoreapplication.cpp#L2099
+    size_t percent_pos = 0;
+    size_t len = 0;
+    while ((percent_pos = result.find('%', percent_pos + len)) != std::string::npos)
     {
-      std::atexit([]() {
-        FreeLibrary(dwm_module);
-        dwm_module = nullptr;
-      });
-      get_timing_info =
-        reinterpret_cast<decltype(get_timing_info)>(GetProcAddress(dwm_module, "DwmGetCompositionTimingInfo"));
+      len = 1;
+      if (percent_pos + len == result.length())
+        break;
+      if (result[percent_pos + len] == 'L')
+      {
+        ++len;
+        if (percent_pos + len == result.length())
+          break;
+      }
+      if (result[percent_pos + len] == 'n')
+      {
+        ++len;
+        result.replace(percent_pos, len, number);
+        len = number.length();
+      }
     }
   }
 
-  DWM_TIMING_INFO ti = {};
-  ti.cbSize = sizeof(ti);
-  HRESULT hr = get_timing_info(nullptr, &ti);
-  if (SUCCEEDED(hr))
-  {
-    if (ti.rateRefresh.uiNumerator == 0 || ti.rateRefresh.uiDenominator == 0)
-      return false;
-
-    *refresh_rate = static_cast<float>(ti.rateRefresh.uiNumerator) / static_cast<float>(ti.rateRefresh.uiDenominator);
-    return true;
-  }
-#endif
-
-  return false;
+  return result;
 }
 
 void HostInterface::ToggleSoftwareRendering()

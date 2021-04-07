@@ -455,7 +455,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Image Path:</source>
-        <translation>画像パス :</translation>
+        <translation>イメージファイルパス :</translation>
     </message>
     <message>
         <source>Texture Filtering:</source>
@@ -1319,7 +1319,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Configuration</source>
-        <translation>設定</translation>
+        <translation>音声出力</translation>
     </message>
     <message>
         <source>Throttles the emulation speed based on the audio backend pulling audio frames. This helps to remove noises or crackling if emulation is too fast. Sync will automatically be disabled if not running at 100% speed.</source>
@@ -1370,8 +1370,8 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>早送り時に再生される音声の音量を調整します。</translation>
     </message>
     <message>
-        <source>Maximum Latency: %1 frames (%2ms)</source>
-        <translation>最大レイテンシ― : %1 フレーム (%2ms)</translation>
+        <source>Maximum Latency: %n frames (%1ms)</source>
+        <translation>最大レイテンシ― : %n フレーム (%1ms)</translation>
     </message>
     <message>
         <source>Fast Forward Volume</source>
@@ -2178,6 +2178,22 @@ This warning will only be shown once.</source>
         <translation>5x (10倍速)</translation>
     </message>
     <message>
+        <source>Controller Ports</source>
+        <translation>コントローラポート</translation>
+    </message>
+    <message>
+        <source>Enables multitap support on specified controller ports. Leave disabled for games that do not support multitap input.</source>
+        <translation>指定されたコントローラポートでマルチタップを有効にします。マルチタップ入力をサポートしないゲームでは、使用しないでください。</translation>
+    </message>
+    <message>
+        <source>Multitap:</source>
+        <translation>マルチタップ：</translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <translation>使用しない</translation>
+    </message>
+    <message>
         <source>CPU Overclocking Warning</source>
         <translation>CPUオーバークロック警告</translation>
     </message>
@@ -2211,6 +2227,115 @@ This warning will only be shown once.</source>
     <message>
         <source>File Title</source>
         <translation>ファイルタイトル</translation>
+    </message>
+</context>
+<context>
+    <name>AchievementSettingsWidget</name>
+    <message>
+        <source>Form</source>
+        <translation>形式</translation>
+    </message>
+    <message>
+        <source>View Profile...</source>
+        <translation>プロフィール表示...</translation>
+    </message>
+    <message>
+        <source>When enabled, rich presence information will be collected and sent to the server where supported.</source>
+        <translation>有効にすると、リッチプレゼンス情報が収集され、サポートされているサーバーに送信されます。</translation>
+    </message>
+    <message>
+        <source>Enable Hardcore Mode</source>
+        <translation>ハードコアモードを有効にする</translation>
+    </message>
+    <message>
+        <source>Enable Test Mode</source>
+        <translation>テストモードを有効にする</translation>
+    </message>
+    <message>
+        <source>Game Info</source>
+        <translation>ゲーム情報</translation>
+    </message>
+    <message>
+        <source>When enabled and logged in, DuckStation will scan for achievements on startup.</source>
+        <translation>有効にしてログインすると、DuckStationは起動時に実績をスキャンします。</translation>
+    </message>
+    <message>
+        <source>Enable Rich Presence</source>
+        <translation>リッチプレゼンスを有効にする</translation>
+    </message>
+    <message>
+        <source>Enable Achievements</source>
+        <translation>実績を有効にする</translation>
+    </message>
+    <message>
+        <source>Logout</source>
+        <translation>ログアウト</translation>
+    </message>
+    <message>
+        <source>Enabling hardcore mode will disable cheats, save sates, and debugging features.</source>
+        <translation>ハードコアモードを有効にすると、チート、保存状態、およびデバッグ機能が無効になります。</translation>
+    </message>
+    <message>
+        <source>Login...</source>
+        <translation>ログイン...</translation>
+    </message>
+    <message>
+        <source>Account</source>
+        <translation>アカウント</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.</source>
+        <translation>有効にすると、DuckStationはすべての実績がロックされていると見なし、サーバーにロック解除通知を送信しません。</translation>
+    </message>
+    <message>
+        <source>Global Settings</source>
+        <translation>全体設定</translation>
+    </message>
+    <message>
+        <source>Unchecked</source>
+        <translation>チェック無し</translation>
+    </message>
+    <message>
+        <source>Account Settings</source>
+        <translation>アカウント設定</translation>
+    </message>
+    <message>
+        <source>Not Logged In.</source>
+        <translation>未登録</translation>
+    </message>
+    <message>
+        <source>Username: %1
+Login token generated on %2.</source>
+        <translation>ユーザー名:%1
+%2で生成されたログイントークン</translation>
+    </message>
+    <message>
+        <source>When enabled, the first disc in a playlist will be used for achievements, regardless of which disc is active.</source>
+        <translation>有効にすると、アクティブなディスクに関係なく、プレイリストの最初のディスクが実績に使用されます。</translation>
+    </message>
+    <message>
+        <source>The current state will be saved, but you will be unable to load it until you disable hardcore mode.
+
+</source>
+        <translation>現在の状態は保存されますが、ハードコアモードを無効にするまで読み込めません。
+
+</translation>
+    </message>
+    <message>
+        <source>&quot;Challenge&quot; mode for achievements. Disables save state, cheats, and slowdown functions, but you receive double the achievement points.</source>
+        <translation>アチーブメントの&quot;チャレンジ&quot; モード。ステートロード、チート、スローダウン機能を無効にしますが、アチーブメントポイントは2倍になります。</translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at &lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStationは、RetroAchievementsを実績データベースおよび進行状況の追跡に使用します。使用するには、&lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;DuckStation uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at &lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;To view the achievement list in-game, press the hotkey for &lt;span style=&quot; font-weight:600;&quot;&gt;Open Quick Menu&lt;/span&gt; and select &lt;span style=&quot; font-weight:600;&quot;&gt;Achievements&lt;/span&gt; from the menu.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;DuckStationは、RetroAchievementsを実績データベースとして使用し、進行状況を追跡します。使用するには、 &lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;でアカウントにサインアップしてください。ゲーム内でアチーブメントリストを表示するには、 &lt;span style=&quot; font-weight:600;&quot;&gt;クイックメニューを開く&lt;/span&gt; のホットキーを押して &lt;span style=&quot; font-weight:600;&quot;&gt;メニューから選択&lt;/span&gt;します。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <source>Use First Disc From Playlist</source>
+        <translation>プレイリストの最初のディスクを使用する</translation>
     </message>
 </context>
 <context>
@@ -2495,7 +2620,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Basic</source>
-        <translation>基本</translation>
+        <translation>表示方式</translation>
     </message>
     <message>
         <source>Crop:</source>
@@ -2552,6 +2677,22 @@ This warning will only be shown once.</source>
     <message>
         <source>Integer Upscaling</source>
         <translation>整数アップスケーリング</translation>
+    </message>
+    <message>
+        <source>Stretch To Fill</source>
+        <translation>ストレッチで埋める</translation>
+    </message>
+    <message>
+        <source>Fills the window with the active display area, regardless of the aspect ratio.</source>
+        <translation>アスペクト比に関係なく、ウィンドウをアクティブな表示領域で埋めます。</translation>
+    </message>
+    <message>
+        <source>Internal Resolution Screenshots</source>
+        <translation>内部解像度のスクリーンショット</translation>
+    </message>
+    <message>
+        <source>Saves screenshots at internal render resolution and without postprocessing. If this option is disabled, the screenshots will be taken at the window&apos;s resolution. Internal resolution screenshots can be very large at high rendering scales.</source>
+        <translation>スクリーンショットを内部レンダリング解像度で後処理なしで保存します。このオプションが無効になっている場合、スクリーンショットはウィンドウの解像度で撮影されます。内部解像度のスクリーンショットは、レンダリングスケールが大きいと非常に大きくなる可能性があります。</translation>
     </message>
     <message>
         <source>Show Resolution</source>
@@ -2693,6 +2834,14 @@ This warning will only be shown once.</source>
         <source>Show VPS</source>
         <translation>VPSを表示</translation>
     </message>
+    <message>
+        <source>Show Display FPS</source>
+        <translation>ディスプレイFPSを表示</translation>
+    </message>
+    <message>
+        <source>Show Game Frame Rate</source>
+        <translation>ゲームフレームレートを表示</translation>
+    </message>
 </context>
 <context>
     <name>EmulationSettingsWidget</name>
@@ -2717,12 +2866,48 @@ This warning will only be shown once.</source>
         <translation>ターボ速度</translation>
     </message>
     <message>
-        <source>Rewind for %1 frames, lasting %2 seconds will require up to %3MB of RAM and %4MB of VRAM.</source>
-        <translation>%1 フレーム巻き戻しが、%2 秒間続くと、最大 %3MBのRAMと %4MBのVRAMが必要になります。</translation>
+        <source>Rewind for %n frame(s), lasting %1 second(s) will require up to %2MB of RAM and %3MB of VRAM.</source>
+        <translation>%n フレーム巻き戻しが、%1 秒間続くと、最大 %2 MBのRAMと %3 MBのVRAMが必要になります。</translation>
     </message>
     <message>
         <source>1 Frame</source>
         <translation>1 フレーム</translation>
+    </message>
+    <message>
+        <source>2 Frames</source>
+        <translation>2 フレーム</translation>
+    </message>
+    <message>
+        <source>3 Frames</source>
+        <translation>3 フレーム</translation>
+    </message>
+    <message>
+        <source>4 Frames</source>
+        <translation>4 フレーム</translation>
+    </message>
+    <message>
+        <source>5 Frames</source>
+        <translation>5 フレーム</translation>
+    </message>
+    <message>
+        <source>6 Frames</source>
+        <translation>6 フレーム</translation>
+    </message>
+    <message>
+        <source>7 Frames</source>
+        <translation>7 フレーム</translation>
+    </message>
+    <message>
+        <source>8 Frames</source>
+        <translation>8 フレーム</translation>
+    </message>
+    <message>
+        <source>9 Frames</source>
+        <translation>9 フレーム</translation>
+    </message>
+    <message>
+        <source>10 Frames</source>
+        <translation>10 フレーム</translation>
     </message>
     <message>
         <source>Speed Control</source>
@@ -3150,6 +3335,14 @@ This warning will only be shown once.</source>
         <translation>自動的にチートを読込む</translation>
     </message>
     <message>
+        <source>Enable Fullscreen UI</source>
+        <translation>フルスクリーンUIを有効にする</translation>
+    </message>
+    <message>
+        <source>Enables the fullscreen UI mode, suitable for controller operation which is used in the NoGUI frontend.</source>
+        <translation>NoGUIフロントエンドで使用されるコントローラー操作に適したフルスクリーンUIモードを有効にします。</translation>
+    </message>
+    <message>
         <source>%1% [%2 FPS (NTSC) / %3 FPS (PAL)]</source>
         <translation>%1% [%2 FPS (NTSC) / %3 FPS (PAL)]</translation>
     </message>
@@ -3551,6 +3744,10 @@ This warning will only be shown once.</source>
     <message>
         <source>CPU clock speed is set to %u%% (%u / %u). This may result in instability.</source>
         <translation>CPUクロック速度は %u%% (%u / %u)に設定されます。これにより、不安定になる可能性があります。</translation>
+    </message>
+    <message>
+        <source>Failed to read executable from disc. Achievements disabled.</source>
+        <translation>ディスクから実行可能ファイルを読み取れませんでした。実績が無効になっています。</translation>
     </message>
     <message>
         <source>Failed to load post-processing shader chain.</source>
@@ -4044,8 +4241,8 @@ This warning will only be shown once.</source>
         <translation>ホスト表示の作成に失敗しました。</translation>
     </message>
     <message>
-        <source>All File Types (*.bin *.img *.iso *.cue *.chd *.exe *.psexe *.psf *.minipsf *.m3u);;Single-Track Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;PlayStation Executables (*.exe *.psexe);;Portable Sound Format Files (*.psf *.minipsf);;Playlists (*.m3u)</source>
-        <translation>すべてのファイルタイプ (*.bin *.img *.iso *.cue *.chd *.exe *.psexe *.psf *.m3u);;シングルトラック Raw イメージ (*.bin *.img *.iso);;キューシート (*.cue);;MAME CHD イメージ (*.chd);;PlayStation 実行可能ファイル (*.exe *.psexe);;ポータブルサウンドフォーマットファイル (*.psf *.minipsf);;プレイリスト (*.m3u)</translation>
+        <source>All File Types (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.pbp *.exe *.psexe *.psf *.minipsf *.m3u);;Single-Track Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;Error Code Modeler Images (*.ecm);;Media Descriptor Sidecar Images (*.mds);;PlayStation EBOOTs (*.pbp);;PlayStation Executables (*.exe *.psexe);;Portable Sound Format Files (*.psf *.minipsf);;Playlists (*.m3u)</source>
+        <translation>すべてのファイル (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.pbp *.exe *.psexe *.psf *.minipsf *.m3u);;シングルトラックイメージ (*.bin *.img *.iso);;Cueファイル (*.cue);;MAME CHDイメージ (*.chd);;Error Code Modeler イメージ (*.ecm);;Media Descriptor Sidecarイメージ (*.mds);;PlayStation EBOOT形式 (*.pbp);;PlayStation実行ファイル (*.exe *.psexe);;ポータブルサウンド形式 (*.psf *.minipsf);;プレイリスト (*.m3u)</translation>
     </message>
     <message>
         <source>Memory &amp;Card Editor</source>
@@ -4086,6 +4283,10 @@ This warning will only be shown once.</source>
     <message>
         <source>Show VRAM</source>
         <translation>VRAMを表示</translation>
+    </message>
+    <message>
+        <source>Achievement Settings...</source>
+        <translation>Achievement 設定...</translation>
     </message>
     <message>
         <source>&amp;Post-Processing Settings...</source>
@@ -4357,6 +4558,57 @@ This warning will only be shown once.</source>
     </message>
 </context>
 <context>
+    <name>AchievementLoginDialog</name>
+    <message>
+        <source>Login Error</source>
+        <translation>ログインエラー</translation>
+    </message>
+    <message>
+        <source>&amp;Login</source>
+        <translation>ログイン(&amp;L)</translation>
+    </message>
+    <message>
+        <source>User Name:</source>
+        <translation>ユーザー名:</translation>
+    </message>
+    <message>
+        <source>Please enter user name and password for retroachievements.org below. Your password will not be saved in DuckStation, an access token will be generated and used instead.</source>
+        <translation>以下に retroachievements.org のユーザー名とパスワードを入力してください。  パスワードはDuckStationに保存されず、代わりにアクセストークンが生成されて使用されます。</translation>
+    </message>
+    <message>
+        <source>Login failed. Please check your username and password, and try again.</source>
+        <translation>ログインに失敗しました。ユーザー名とパスワードを確認して、もう一度お試しください。</translation>
+    </message>
+    <message>
+        <source>A user name and password must be provided.</source>
+        <translation>ユーザー名とパスワードを入力する必要があります。</translation>
+    </message>
+    <message>
+        <source>Logging in...</source>
+        <translation>登録...</translation>
+    </message>
+    <message>
+        <source>&amp;Cancel</source>
+        <translation>取消(&amp;C)</translation>
+    </message>
+    <message>
+        <source>Password:</source>
+        <translation>パスワード:</translation>
+    </message>
+    <message>
+        <source>RetroAchievements Login</source>
+        <translation>RetroAchievementsログイン</translation>
+    </message>
+    <message>
+        <source>Ready...</source>
+        <translation>準備中...</translation>
+    </message>
+    <message>
+        <source>Login failed.</source>
+        <translation>ログインに失敗しました。</translation>
+    </message>
+</context>
+<context>
     <name>GameSettingsTrait</name>
     <message>
         <source>Force Interlacing</source>
@@ -4505,6 +4757,10 @@ URLは次のとおりです : %1</translation>
         <translation>コントローラ設定</translation>
     </message>
     <message>
+        <source>Achievement Settings</source>
+        <translation>Achievement設定</translation>
+    </message>
+    <message>
         <source>Console Settings</source>
         <translation>コンソール設定</translation>
     </message>
@@ -4515,6 +4771,10 @@ URLは次のとおりです : %1</translation>
     <message>
         <source>Hotkey Settings</source>
         <translation>ホットキー設定</translation>
+    </message>
+    <message>
+        <source>This DuckStation build was not compiled with RetroAchievements support.</source>
+        <translation>このDuckStationビルドは、RetroAchievementsを使用できるようにコンパイルされていません。</translation>
     </message>
     <message>
         <source>Post-Processing Settings</source>
@@ -5272,6 +5532,25 @@ SBIファイルを追加する方法については、READMEを確認してく�
     </message>
 </context>
 <context>
+    <name>MultitapMode</name>
+    <message>
+        <source>Disabled</source>
+        <translation>使用しない</translation>
+    </message>
+    <message>
+        <source>Enable on Port 2 Only</source>
+        <translation>ポート2のみ有効にする</translation>
+    </message>
+    <message>
+        <source>Enable on Port 1 Only</source>
+        <translation>ポート1のみ有効にする</translation>
+    </message>
+    <message>
+        <source>Enable on Ports 1 and 2</source>
+        <translation>ポート1および2で有効にする</translation>
+    </message>
+</context>
+<context>
     <name>CommonHostInterface</name>
     <message>
         <source>Are you sure you want to stop emulation?</source>
@@ -5313,6 +5592,10 @@ SBIファイルを追加する方法については、READMEを確認してく�
         <translation>グローバルセーブ %1 (%2)</translation>
     </message>
     <message>
+        <source>Game not loaded or no RetroAchievements available.</source>
+        <translation>ゲームが読み込まれていないか、RetroAchievementsが利用できません。</translation>
+    </message>
+    <message>
         <source>Resume</source>
         <translation>再開</translation>
     </message>
@@ -5348,6 +5631,22 @@ The saves will not be recoverable.</source>
 
 元に戻すことはできません。</translation>
     </message>
+    <message>
+        <source>Game ID: %1
+Game Title: %2
+Game Developer: %3
+Game Publisher: %4
+Achievements: %5 (%6 points)
+
+</source>
+        <translation>ゲームID:%1
+ゲームタイトル:%2
+開発元:%3
+販売元:%4
+Achievements:%5 (%6点)
+
+</translation>
+    </message>
 </context>
 <context>
     <name>ConsoleRegion</name>
@@ -5366,6 +5665,89 @@ The saves will not be recoverable.</source>
     <message>
         <source>NTSC-U/C (US, Canada)</source>
         <translation>NTSC-U/C (US, カナダ)</translation>
+    </message>
+</context>
+<context>
+    <name>MemoryCardSettingsWidget</name>
+    <message>
+        <source>Reset</source>
+        <translation>リセット</translation>
+    </message>
+    <message>
+        <source>Open Directory...</source>
+        <translation>ディレクトリを開く...</translation>
+    </message>
+    <message>
+        <source>If one of the &quot;separate card per game&quot; memory card modes is chosen, these memory cards will be saved to the memcards directory.</source>
+        <translation>「ゲームごとに別々のカード」メモリカードモードの1つを選択すると、これらのメモリカードはmemcardsディレクトリに保存されます。</translation>
+    </message>
+    <message>
+        <source>Select path to memory card image</source>
+        <translation>メモリカードイメージのパスを選択します</translation>
+    </message>
+    <message>
+        <source>Shared Settings</source>
+        <translation>共有設定</translation>
+    </message>
+    <message>
+        <source>Memory Card Directory:</source>
+        <translation>メモリカードディレクトリ:</translation>
+    </message>
+    <message>
+        <source>Use Single Card For Sub-Images</source>
+        <translation>サブイメージにメモリカード(1枚分)を使用する</translation>
+    </message>
+    <message>
+        <source>Use Single Card For Playlist</source>
+        <translation>プレイリストにメモリカード(1枚分)を使用する</translation>
+    </message>
+    <message>
+        <source>Memory Card %1</source>
+        <translation>メモリーカード %1</translation>
+    </message>
+    <message>
+        <source>Open...</source>
+        <translation>開く...</translation>
+    </message>
+    <message>
+        <source>Browse...</source>
+        <translation>参照...</translation>
+    </message>
+    <message>
+        <source>Checked</source>
+        <translation>チェックする</translation>
+    </message>
+    <message>
+        <source>All Memory Card Types (*.mcd *.mcr *.mc)</source>
+        <translation>すべてのメモリカードタイプ (*.mcd *.mcr *.mc)</translation>
+    </message>
+    <message>
+        <source>When using a multi-disc format (m3u/pbp) and per-game (title) memory cards, a single memory card will be used for all discs. If unchecked, a separate card will be used for each disc.</source>
+        <translation>マルチディスクフォーマット（m3u / pbp）およびゲームごと（タイトル）のメモリカードを使用する場合、すべてのディスクに1枚のメモリカードが使用されます。チェックを外すと、ディスクごとに別々のカードが使用されます。</translation>
+    </message>
+    <message>
+        <source>If one of the &quot;separate card per game&quot; memory card modes is chosen, these memory cards will be saved to the memory cards directory.</source>
+        <translation>&quot;ゲームごとに別々のカード&quot;メモリカードモードの1つを選択すると、これらのメモリカードはメモリカードディレクトリに保存されます。</translation>
+    </message>
+    <message>
+        <source>Shared Memory Card Path:</source>
+        <translation>共有メモリカードパス :</translation>
+    </message>
+    <message>
+        <source>Memory Card Editor...</source>
+        <translation>メモリーカードエディタ...</translation>
+    </message>
+    <message>
+        <source>The memory card editor enables you to move saves between cards, as well as import cards of other formats.</source>
+        <translation>メモリカードエディタを使用すると、カード間でセーブデータを移動したり、他の形式のカードをインポートしたりできます。</translation>
+    </message>
+    <message>
+        <source>When using a playlist (m3u) and per-game (title) memory cards, a single memory card will be used for all discs. If unchecked, a separate card will be used for each disc.</source>
+        <translation>プレイリスト（m3u）とゲームごと（タイトル）のメモリーカードを使用する場合、すべてのディスクに1枚のメモリーカードが使用されます。チェックを外すと、ディスクごとに別々のカードが使用されます。</translation>
+    </message>
+    <message>
+        <source>Memory Card Type:</source>
+        <translation>メモリーカード タイプ :</translation>
     </message>
 </context>
 <context>
@@ -5453,61 +5835,10 @@ The saves will not be recoverable.</source>
     </message>
 </context>
 <context>
-    <name>MemoryCardSettingsWidget</name>
-    <message>
-        <source>If one of the &quot;separate card per game&quot; memory card modes is chosen, these memory cards will be saved to the memcards directory.</source>
-        <translation>「ゲームごとに個別のカード」メモリカードモードの1つを選択すると、これらのメモリカードはmemcardsディレクトリに保存されます。</translation>
-    </message>
-    <message>
-        <source>Select path to memory card image</source>
-        <translation>メモリカードイメージのパスを選択します</translation>
-    </message>
-    <message>
-        <source>Shared Settings</source>
-        <translation>共有設定</translation>
-    </message>
-    <message>
-        <source>Use Single Card For Playlist</source>
-        <translation>プレイリストにシングルカードを使用する</translation>
-    </message>
-    <message>
-        <source>Memory Card %1</source>
-        <translation>メモリーカード %1</translation>
-    </message>
-    <message>
-        <source>Open...</source>
-        <translation>開く...</translation>
-    </message>
-    <message>
-        <source>Browse...</source>
-        <translation>参照...</translation>
-    </message>
-    <message>
-        <source>Checked</source>
-        <translation>チェックする</translation>
-    </message>
-    <message>
-        <source>All Memory Card Types (*.mcd *.mcr *.mc)</source>
-        <translation>すべてのメモリカードタイプ (*.mcd *.mcr *.mc)</translation>
-    </message>
-    <message>
-        <source>Shared Memory Card Path:</source>
-        <translation>共有メモリカードパス :</translation>
-    </message>
-    <message>
-        <source>When using a playlist (m3u) and per-game (title) memory cards, a single memory card will be used for all discs. If unchecked, a separate card will be used for each disc.</source>
-        <translation>プレイリスト（m3u）とゲームごと（タイトル）のメモリーカードを使用する場合、すべてのディスクに1枚のメモリーカードが使用されます。チェックを外すと、ディスクごとに別々のカードが使用されます。</translation>
-    </message>
-    <message>
-        <source>Memory Card Type:</source>
-        <translation>メモリーカード タイプ :</translation>
-    </message>
-</context>
-<context>
     <name>MemoryCardType</name>
     <message>
         <source>Separate Card Per Game (Game Title)</source>
-        <translation>ゲームごとに個別のカード（ゲームタイトル）</translation>
+        <translation>ゲームごとに別々のカード（ゲームタイトル）</translation>
     </message>
     <message>
         <source>Shared Between All Games</source>
@@ -5519,7 +5850,7 @@ The saves will not be recoverable.</source>
     </message>
     <message>
         <source>Separate Card Per Game (Game Code)</source>
-        <translation>ゲームごとに個別のカード（ゲームコード）</translation>
+        <translation>ゲームごとに別々のカード（ゲームコード）</translation>
     </message>
 </context>
 <context>

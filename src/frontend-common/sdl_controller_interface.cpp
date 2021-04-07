@@ -497,25 +497,28 @@ bool SDLControllerInterface::HandleJoystickHatEvent(const SDL_JoyHatEvent* event
 
   bool processed = false;
 
-  if (const ButtonCallback& cb = it->hat_button_mapping[event->hat][0]; cb)
+  if (event->hat < it->hat_button_mapping.size())
   {
-    cb(event->value & SDL_HAT_UP);
-    processed = true;
-  }
-  if (const ButtonCallback& cb = it->hat_button_mapping[event->hat][1]; cb)
-  {
-    cb(event->value & SDL_HAT_RIGHT);
-    processed = true;
-  }
-  if (const ButtonCallback& cb = it->hat_button_mapping[event->hat][2]; cb)
-  {
-    cb(event->value & SDL_HAT_DOWN);
-    processed = true;
-  }
-  if (const ButtonCallback& cb = it->hat_button_mapping[event->hat][3]; cb)
-  {
-    cb(event->value & SDL_HAT_LEFT);
-    processed = true;
+    if (const ButtonCallback& cb = it->hat_button_mapping[event->hat][0]; cb)
+    {
+      cb(event->value & SDL_HAT_UP);
+      processed = true;
+    }
+    if (const ButtonCallback& cb = it->hat_button_mapping[event->hat][1]; cb)
+    {
+      cb(event->value & SDL_HAT_RIGHT);
+      processed = true;
+    }
+    if (const ButtonCallback& cb = it->hat_button_mapping[event->hat][2]; cb)
+    {
+      cb(event->value & SDL_HAT_DOWN);
+      processed = true;
+    }
+    if (const ButtonCallback& cb = it->hat_button_mapping[event->hat][3]; cb)
+    {
+      cb(event->value & SDL_HAT_LEFT);
+      processed = true;
+    }
   }
 
   return processed;

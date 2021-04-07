@@ -17,6 +17,11 @@ public:
   int GetCardFD() const { return m_card_fd; }
   u32 GetWidth() const { return m_mode->hdisplay; }
   u32 GetHeight() const { return m_mode->vdisplay; }
+  float GetRefreshRate() const
+  {
+    return (static_cast<float>(m_mode->clock) * 1000.0f) /
+           (static_cast<float>(m_mode->htotal) * static_cast<float>(m_mode->vtotal));
+  }
 
   u32 GetModeCount() const { return m_connector->count_modes; }
   u32 GetModeWidth(u32 i) const { return m_connector->modes[i].hdisplay; }

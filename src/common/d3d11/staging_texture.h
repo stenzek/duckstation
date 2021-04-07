@@ -55,18 +55,18 @@ public:
   {
     const u8* src_ptr = static_cast<u8*>(m_map.pData) + (y * m_map.RowPitch) + (x * sizeof(T));
     u8* dst_ptr = reinterpret_cast<u8*>(data);
-    if (m_map.RowPitch != (sizeof(T) * stride))
+    if (m_map.RowPitch != stride)
     {
       for (u32 row = 0; row < height; row++)
       {
         std::memcpy(dst_ptr, src_ptr, sizeof(T) * width);
         src_ptr += m_map.RowPitch;
-        dst_ptr += sizeof(T) * stride;
+        dst_ptr += stride;
       }
     }
     else
     {
-      std::memcpy(dst_ptr, src_ptr, (sizeof(T) * stride) * height);
+      std::memcpy(dst_ptr, src_ptr, stride * height);
     }
   }
 
@@ -89,18 +89,18 @@ public:
   {
     const u8* src_ptr = reinterpret_cast<const u8*>(data);
     u8* dst_ptr = static_cast<u8*>(m_map.pData) + (y * m_map.RowPitch) + (x * sizeof(T));
-    if (m_map.RowPitch != (sizeof(T) * stride))
+    if (m_map.RowPitch != stride)
     {
       for (u32 row = 0; row < height; row++)
       {
         std::memcpy(dst_ptr, src_ptr, sizeof(T) * width);
-        src_ptr += sizeof(T) * stride;
+        src_ptr += stride;
         dst_ptr += m_map.RowPitch;
       }
     }
     else
     {
-      std::memcpy(dst_ptr, src_ptr, (sizeof(T) * stride) * height);
+      std::memcpy(dst_ptr, src_ptr, stride * height);
     }
   }
 

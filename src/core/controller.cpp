@@ -26,7 +26,17 @@ bool Controller::Transfer(const u8 data_in, u8* data_out)
   return false;
 }
 
+float Controller::GetAxisState(s32 axis_code) const
+{
+  return 0.0f;
+}
+
 void Controller::SetAxisState(s32 axis_code, float value) {}
+
+bool Controller::GetButtonState(s32 button_code) const
+{
+  return false;
+}
 
 void Controller::SetButtonState(s32 button_code, bool pressed) {}
 

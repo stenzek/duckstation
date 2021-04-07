@@ -36,11 +36,6 @@ GPU_HW::GPU_HW() : GPU()
 
 GPU_HW::~GPU_HW() = default;
 
-bool GPU_HW::IsHardwareRenderer() const
-{
-  return true;
-}
-
 bool GPU_HW::Initialize(HostDisplay* host_display)
 {
   if (!GPU::Initialize(host_display))
@@ -581,8 +576,10 @@ void GPU_HW::LoadVertices()
         }
         else if (g_settings.gpu_pgxp_depth_buffer)
         {
-          SetBatchDepthBuffer(true);
-          CheckForDepthClear(vertices.data(), num_vertices);
+          const bool use_depth = (m_batch.transparency_mode == GPUTransparencyMode::Disabled);
+          SetBatchDepthBuffer(use_depth);
+          if (use_depth)
+            CheckForDepthClear(vertices.data(), num_vertices);
         }
       }
 
@@ -885,7 +882,7 @@ GPU_HW::VRAMFillUBOData GPU_HW::GetVRAMFillUBOData(u32 x, u32 y, u32 width, u32 
 {
   // drop precision unless true colour is enabled
   if (!m_true_color)
-    color = RGBA5551ToRGBA8888(RGBA8888ToRGBA5551(color));
+    color = VRAMRGBA5551ToRGBA8888(VRAMRGBA8888ToRGBA5551(color));
 
   VRAMFillUBOData uniforms;
   std::tie(uniforms.u_fill_color[0], uniforms.u_fill_color[1], uniforms.u_fill_color[2], uniforms.u_fill_color[3]) =

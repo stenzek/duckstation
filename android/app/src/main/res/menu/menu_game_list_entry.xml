@@ -9,5 +9,8 @@
         android:title="@string/menu_game_list_entry_resume_game" />
     <item
         android:id="@+id/game_list_entry_menu_properties"
-        android:title="Game Properties" />
+        android:title="@string/menu_game_list_entry_game_properties" />
+    <item
+        android:id="@+id/game_list_entry_menu_choose_cover_image"
+        android:title="@string/menu_game_list_entry_choose_cover_image" />
 </menu>

@@ -25,7 +25,7 @@ elseif(APPLE)
     src/connection_unix.cpp
     src/discord_register_osx.m
   )
-elseif(CMAKE_SYSTEM_NAME STREQUAL Linux)
+elseif(LINUX OR FREEBSD)
   target_sources(discord-rpc PRIVATE
     src/connection_unix.cpp
     src/discord_register_linux.cpp

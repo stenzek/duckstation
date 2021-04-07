@@ -1,8 +1,8 @@
 #include "jit_code_buffer.h"
 #include "align.h"
 #include "assert.h"
-#include "common/log.h"
-#include "cpu_detect.h"
+#include "log.h"
+#include "platform.h"
 #include <algorithm>
 Log_SetChannel(JitCodeBuffer);
 
@@ -11,6 +11,11 @@ Log_SetChannel(JitCodeBuffer);
 #else
 #include <errno.h>
 #include <sys/mman.h>
+#endif
+
+#if defined(__APPLE__) && defined(__aarch64__)
+// pthread_jit_write_protect_np()
+#include <pthread.h>
 #endif
 
 JitCodeBuffer::JitCodeBuffer() = default;
@@ -45,9 +50,14 @@ bool JitCodeBuffer::Allocate(u32 size /* = 64 * 1024 * 1024 */, u32 far_code_siz
     Log_ErrorPrintf("VirtualAlloc(RWX, %u) for internal buffer failed: %u", m_total_size, GetLastError());
     return false;
   }
-#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__) || defined(__HAIKU__)
-  m_code_ptr = static_cast<u8*>(
-    mmap(nullptr, m_total_size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0));
+#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__) || defined(__HAIKU__) || defined(__FreeBSD__)
+  int flags = MAP_PRIVATE | MAP_ANONYMOUS;
+#if defined(__APPLE__) && defined(__aarch64__)
+  // MAP_JIT and toggleable write protection is required on Apple Silicon.
+  flags |= MAP_JIT;
+#endif
+
+  m_code_ptr = static_cast<u8*>(mmap(nullptr, m_total_size, PROT_READ | PROT_WRITE | PROT_EXEC, flags, -1, 0));
   if (!m_code_ptr)
   {
     Log_ErrorPrintf("mmap(RWX, %u) for internal buffer failed: %d", m_total_size, errno);
@@ -100,7 +110,7 @@ bool JitCodeBuffer::Initialize(void* buffer, u32 size, u32 far_code_size /* = 0 
 
   m_code_ptr = static_cast<u8*>(buffer);
   m_old_protection = static_cast<u32>(old_protect);
-#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__) || defined(__HAIKU__)
+#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__) || defined(__HAIKU__) || defined(__FreeBSD__)
   if (mprotect(buffer, size, PROT_READ | PROT_WRITE | PROT_EXEC) != 0)
   {
     Log_ErrorPrintf("mprotect(RWX) for external buffer failed: %d", errno);
@@ -148,7 +158,7 @@ void JitCodeBuffer::Destroy()
   {
 #if defined(WIN32)
     VirtualFree(m_code_ptr, 0, MEM_RELEASE);
-#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__) || defined(__HAIKU__)
+#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__) || defined(__HAIKU__) || defined(__FreeBSD__)
     munmap(m_code_ptr, m_total_size);
 #endif
   }
@@ -195,6 +205,8 @@ void JitCodeBuffer::CommitFarCode(u32 length)
 
 void JitCodeBuffer::Reset()
 {
+  WriteProtect(false);
+
   m_free_code_ptr = m_code_ptr + m_guard_size;
   m_code_used = 0;
   std::memset(m_free_code_ptr, 0, m_code_size);
@@ -207,6 +219,8 @@ void JitCodeBuffer::Reset()
     std::memset(m_free_far_code_ptr, 0, m_far_code_size);
     FlushInstructionCache(m_free_far_code_ptr, m_far_code_size);
   }
+
+  WriteProtect(true);
 }
 
 void JitCodeBuffer::Align(u32 alignment, u8 padding_value)
@@ -231,3 +245,26 @@ void JitCodeBuffer::FlushInstructionCache(void* address, u32 size)
 #error Unknown platform.
 #endif
 }
+
+#if defined(__APPLE__) && defined(__aarch64__)
+
+void JitCodeBuffer::WriteProtect(bool enabled)
+{
+  static bool initialized = false;
+  static bool needs_write_protect = false;
+
+  if (!initialized)
+  {
+    initialized = true;
+    needs_write_protect = (pthread_jit_write_protect_supported_np() != 0);
+    if (needs_write_protect)
+      Log_InfoPrint("pthread_jit_write_protect_np() will be used before writing to JIT space.");
+  }
+
+  if (!needs_write_protect)
+    return;
+
+  pthread_jit_write_protect_np(enabled ? 1 : 0);
+}
+
+#endif

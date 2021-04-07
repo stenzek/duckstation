@@ -1,30 +1,33 @@
 package com.github.stenzek.duckstation;
 
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.ArraySet;
-import android.util.Log;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
 import java.util.HashMap;
+import java.util.List;
 
 public class ControllerBindingDialog extends AlertDialog {
-    private boolean mIsAxis;
-    private String mSettingKey;
+    final static float DETECT_THRESHOLD = 0.25f;
+    private final ControllerBindingPreference.Type mType;
+    private final String mSettingKey;
     private String mCurrentBinding;
+    private int mUpdatedAxisCode = -1;
+    private final HashMap<Integer, float[]> mStartingAxisValues = new HashMap<>();
 
-    public ControllerBindingDialog(Context context, String buttonName, String settingKey, String currentBinding, boolean isAxis) {
+    public ControllerBindingDialog(Context context, String buttonName, String settingKey, String currentBinding, ControllerBindingPreference.Type type) {
         super(context);
 
-        mIsAxis = isAxis;
+        mType = type;
         mSettingKey = settingKey;
         mCurrentBinding = currentBinding;
         if (mCurrentBinding == null)
@@ -42,10 +45,7 @@ public class ControllerBindingDialog extends AlertDialog {
         setOnKeyListener(new DialogInterface.OnKeyListener() {
             @Override
             public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
-                if (onKeyDown(keyCode, event))
-                    return true;
-
-                return false;
+                return onKeyDown(keyCode, event);
             }
         });
     }
@@ -73,60 +73,65 @@ public class ControllerBindingDialog extends AlertDialog {
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (mIsAxis || !EmulationSurfaceView.isDPadOrButtonEvent(event))
-            return super.onKeyUp(keyCode, event);
+        final InputDevice device = event.getDevice();
+        if (!EmulationSurfaceView.isBindableDevice(device) || !EmulationSurfaceView.isBindableKeyEvent(event)) {
+            return super.onKeyDown(keyCode, event);
+        }
 
-        int buttonIndex = EmulationSurfaceView.getButtonIndexForKeyCode(keyCode);
-        if (buttonIndex < 0)
-            return super.onKeyUp(keyCode, event);
+        if (mType == ControllerBindingPreference.Type.BUTTON || mType == ControllerBindingPreference.Type.HALF_AXIS) {
+            mCurrentBinding = String.format("%s/Button%d", device.getDescriptor(), event.getKeyCode());
+        }  else if (mType == ControllerBindingPreference.Type.VIBRATION) {
+            if (device.getVibrator() == null || !device.getVibrator().hasVibrator()) {
+                Toast.makeText(getContext(), getContext().getString(R.string.controller_settings_vibration_unsupported), Toast.LENGTH_LONG).show();
+                dismiss();
+                return true;
+            }
 
-        // TODO: Multiple controllers
-        final int controllerIndex = 0;
-        mCurrentBinding = String.format("Controller%d/Button%d", controllerIndex, buttonIndex);
+            mCurrentBinding = device.getDescriptor();
+        } else {
+            return super.onKeyDown(keyCode, event);
+        }
+
         updateMessage();
         updateBinding();
         dismiss();
         return true;
     }
 
-    private int mUpdatedAxisCode = -1;
-
-    private void setAxisCode(int axisCode, boolean positive) {
-        final int axisIndex = EmulationSurfaceView.getAxisIndexForAxisCode(axisCode);
-        if (mUpdatedAxisCode >= 0 || axisIndex < 0)
+    private void setAxisCode(InputDevice device, int axisCode, boolean positive) {
+        if (mUpdatedAxisCode >= 0)
             return;
 
         mUpdatedAxisCode = axisCode;
 
         final int controllerIndex = 0;
-        if (mIsAxis)
-            mCurrentBinding = String.format("Controller%d/Axis%d", controllerIndex, axisIndex);
+        if (mType == ControllerBindingPreference.Type.AXIS || mType == ControllerBindingPreference.Type.HALF_AXIS)
+            mCurrentBinding = String.format("%s/Axis%d", device.getDescriptor(), axisCode);
         else
-            mCurrentBinding = String.format("Controller%d/%cAxis%d", controllerIndex, (positive) ? '+' : '-', axisIndex);
+            mCurrentBinding = String.format("%s/%cAxis%d", device.getDescriptor(), (positive) ? '+' : '-', axisCode);
 
         updateBinding();
         updateMessage();
         dismiss();
     }
 
-    final static float DETECT_THRESHOLD = 0.25f;
-
-    private HashMap<Integer, float[]> mStartingAxisValues = new HashMap<>();
-
     private boolean doAxisDetection(MotionEvent event) {
-        if ((event.getSource() & (InputDevice.SOURCE_JOYSTICK | InputDevice.SOURCE_GAMEPAD | InputDevice.SOURCE_DPAD)) == 0)
+        if (!EmulationSurfaceView.isBindableDevice(event.getDevice()) || !EmulationSurfaceView.isJoystickMotionEvent(event))
             return false;
 
-        final int[] axisCodes = EmulationSurfaceView.getKnownAxisCodes();
+        final List<InputDevice.MotionRange> motionEventList = event.getDevice().getMotionRanges();
+        if (motionEventList == null || motionEventList.isEmpty())
+            return false;
+
         final int deviceId = event.getDeviceId();
-
         if (!mStartingAxisValues.containsKey(deviceId)) {
-            final float[] axisValues = new float[axisCodes.length];
-            for (int axisIndex = 0; axisIndex < axisCodes.length; axisIndex++) {
-                final int axisCode = axisCodes[axisIndex];
+            final float[] axisValues = new float[motionEventList.size()];
+            for (int axisIndex = 0; axisIndex < motionEventList.size(); axisIndex++) {
+                final int axisCode = motionEventList.get(axisIndex).getAxis();
 
-                // these are binary, so start at zero
-                if (axisCode == MotionEvent.AXIS_HAT_X || axisCode == MotionEvent.AXIS_HAT_Y)
+                if (event.getHistorySize() > 0)
+                    axisValues[axisIndex] = event.getHistoricalAxisValue(axisCode, 0);
+                else if (axisCode == MotionEvent.AXIS_HAT_X || axisCode == MotionEvent.AXIS_HAT_Y)
                     axisValues[axisIndex] = 0.0f;
                 else
                     axisValues[axisIndex] = event.getAxisValue(axisCode);
@@ -136,10 +141,12 @@ public class ControllerBindingDialog extends AlertDialog {
         }
 
         final float[] axisValues = mStartingAxisValues.get(deviceId);
-        for (int axisIndex = 0; axisIndex < axisCodes.length; axisIndex++) {
-            final float newValue = event.getAxisValue(axisCodes[axisIndex]);
-            if (Math.abs(newValue - axisValues[axisIndex]) >= DETECT_THRESHOLD) {
-                setAxisCode(axisCodes[axisIndex], newValue >= 0.0f);
+        for (int axisIndex = 0; axisIndex < motionEventList.size(); axisIndex++) {
+            final int axisCode = motionEventList.get(axisIndex).getAxis();
+            final float newValue = event.getAxisValue(axisCode);
+            final float delta = newValue - axisValues[axisIndex];
+            if (Math.abs(delta) >= DETECT_THRESHOLD) {
+                setAxisCode(event.getDevice(), axisCode, delta >= 0.0f);
                 break;
             }
         }
@@ -149,6 +156,12 @@ public class ControllerBindingDialog extends AlertDialog {
 
     @Override
     public boolean onGenericMotionEvent(@NonNull MotionEvent event) {
+        if (mType != ControllerBindingPreference.Type.AXIS &&
+            mType != ControllerBindingPreference.Type.HALF_AXIS &&
+            mType != ControllerBindingPreference.Type.BUTTON) {
+            return false;
+        }
+
         if (doAxisDetection(event))
             return true;
 

@@ -83,8 +83,7 @@ void AudioSettingsWidget::updateBufferingLabel()
   }
 
   const float max_latency = AudioStream::GetMaxLatency(HostInterface::AUDIO_SAMPLE_RATE, actual_buffer_size);
-  m_ui.bufferingLabel->setText(tr("Maximum Latency: %1 frames (%2ms)")
-                                 .arg(actual_buffer_size)
+  m_ui.bufferingLabel->setText(tr("Maximum Latency: %n frames (%1ms)", "", actual_buffer_size)
                                  .arg(static_cast<double>(max_latency) * 1000.0, 0, 'f', 2));
 }
 

@@ -13,10 +13,6 @@ if(BUILD_NOGUI_FRONTEND)
   add_subdirectory(duckstation-nogui)
 endif()
 
-if(BUILD_SDL_FRONTEND)
-  add_subdirectory(duckstation-sdl)
-endif()
-
 if(BUILD_QT_FRONTEND)
   add_subdirectory(duckstation-qt)
 endif()

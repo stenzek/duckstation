@@ -126,12 +126,12 @@ void XInputControllerInterface::CheckForStateChanges(u32 index, const XINPUT_STA
   }
   if (ogp.bLeftTrigger != ngp.bLeftTrigger)
   {
-    HandleAxisEvent(index, Axis::LeftTrigger, static_cast<s32>(ZeroExtend32(ngp.bLeftTrigger) << 8));
+    HandleAxisEvent(index, Axis::LeftTrigger, static_cast<s32>(ZeroExtend32(ngp.bLeftTrigger) << 7));
     ogp.bLeftTrigger = ngp.bLeftTrigger;
   }
   if (ogp.bRightTrigger != ngp.bRightTrigger)
   {
-    HandleAxisEvent(index, Axis::RightTrigger, static_cast<s32>(ZeroExtend32(ngp.bRightTrigger) << 8));
+    HandleAxisEvent(index, Axis::RightTrigger, static_cast<s32>(ZeroExtend32(ngp.bRightTrigger) << 7));
     ogp.bRightTrigger = ngp.bRightTrigger;
   }
 
@@ -279,8 +279,34 @@ bool XInputControllerInterface::HandleButtonEvent(u32 index, u32 button, bool pr
   Log_DevPrintf("controller %u button %u %s", index, button, pressed ? "pressed" : "released");
   DebugAssert(index < XUSER_MAX_COUNT);
 
+  static constexpr std::array<FrontendCommon::ControllerNavigationButton, MAX_NUM_BUTTONS> nav_button_mapping = {{
+    FrontendCommon::ControllerNavigationButton::Activate,      // XINPUT_GAMEPAD_A
+    FrontendCommon::ControllerNavigationButton::Cancel,        // XINPUT_GAMEPAD_B
+    FrontendCommon::ControllerNavigationButton::Count,         // XINPUT_GAMEPAD_X
+    FrontendCommon::ControllerNavigationButton::Count,         // XINPUT_GAMEPAD_Y
+    FrontendCommon::ControllerNavigationButton::Count,         // XINPUT_GAMEPAD_BACK
+    FrontendCommon::ControllerNavigationButton::Count,         // XINPUT_GAMEPAD_GUIDE
+    FrontendCommon::ControllerNavigationButton::Count,         // XINPUT_GAMEPAD_START
+    FrontendCommon::ControllerNavigationButton::Count,         // XINPUT_GAMEPAD_LEFT_THUMB
+    FrontendCommon::ControllerNavigationButton::Count,         // XINPUT_GAMEPAD_RIGHT_THUMB
+    FrontendCommon::ControllerNavigationButton::LeftShoulder,  // XINPUT_GAMEPAD_LEFT_SHOULDER
+    FrontendCommon::ControllerNavigationButton::RightShoulder, // XINPUT_GAMEPAD_RIGHT_SHOULDER
+    FrontendCommon::ControllerNavigationButton::DPadUp,        // XINPUT_GAMEPAD_DPAD_UP
+    FrontendCommon::ControllerNavigationButton::DPadDown,      // XINPUT_GAMEPAD_DPAD_DOWN
+    FrontendCommon::ControllerNavigationButton::DPadLeft,      // XINPUT_GAMEPAD_DPAD_LEFT
+    FrontendCommon::ControllerNavigationButton::DPadRight,     // XINPUT_GAMEPAD_DPAD_RIGHT
+  }};
+
   if (DoEventHook(Hook::Type::Button, index, button, pressed ? 1.0f : 0.0f))
     return true;
+
+  if (button < nav_button_mapping.size() &&
+      nav_button_mapping[button] != FrontendCommon::ControllerNavigationButton::Count &&
+      m_host_interface->SetControllerNavigationButtonState(nav_button_mapping[button], pressed))
+  {
+    // UI consumed the event
+    return true;
+  }
 
   const ButtonCallback& cb = m_controllers[index].button_mapping[button];
   if (cb)

@@ -15,6 +15,8 @@ public:
   GPU_HW_Vulkan();
   ~GPU_HW_Vulkan() override;
 
+  GPURenderer GetRendererType() const override;
+
   bool Initialize(HostDisplay* host_display) override;
   void Reset(bool clear_vram) override;
   bool DoState(StateWrapper& sw, HostDisplayTexture** host_texture, bool update_display) override;
@@ -53,6 +55,7 @@ private:
                        const VkClearValue* clear_value = nullptr);
   void BeginVRAMRenderPass();
   void EndRenderPass();
+  void ExecuteCommandBuffer(bool wait_for_completion, bool restore_state);
 
   bool CreatePipelineLayouts();
   bool CreateSamplers();

@@ -3,36 +3,38 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/linearLayout"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp"
+    android:background="?android:attr/selectableItemBackground">
 
     <ImageView
-        android:id="@+id/game_list_view_entry_type_icon"
+        android:id="@+id/icon"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
+        android:foregroundGravity="center_vertical"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:srcCompat="@drawable/ic_media_cdrom" />
 
     <TextView
-        android:id="@+id/game_list_view_entry_title"
+        android:id="@+id/title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginLeft="10dp"
-        android:layout_marginTop="8dp"
         android:layout_marginRight="80dp"
         android:focusable="false"
         android:focusableInTouchMode="false"
-        android:text="Game Title"
+        android:text="Achievement Title"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/game_list_view_entry_type_icon"
+        app:layout_constraintStart_toEndOf="@+id/icon"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/game_list_view_entry_subtitle"
+        android:id="@+id/description"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginLeft="10dp"
@@ -40,27 +42,14 @@
         android:focusable="false"
         android:focusableInTouchMode="false"
         android:paddingBottom="8px"
-        android:text="Game Path"
+        android:text="Achievement Description"
         android:textAppearance="@style/TextAppearance.AppCompat.Small"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/game_list_view_entry_type_icon"
-        app:layout_constraintTop_toBottomOf="@+id/game_list_view_entry_title" />
+        app:layout_constraintStart_toEndOf="@+id/icon"
+        app:layout_constraintTop_toBottomOf="@+id/title" />
 
     <ImageView
-        android:id="@+id/game_list_view_compatibility_icon"
-        android:layout_width="64dp"
-        android:layout_height="16dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:focusable="false"
-        android:focusableInTouchMode="false"
-        android:textAppearance="@style/TextAppearance.AppCompat.Small"
-        app:srcCompat="@drawable/ic_star_5"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <ImageView
-        android:id="@+id/game_list_view_entry_region_icon"
+        android:id="@+id/locked_icon"
         android:layout_width="32dp"
         android:layout_height="28dp"
         android:layout_marginTop="4dp"
@@ -69,7 +58,22 @@
         android:focusableInTouchMode="false"
         android:paddingBottom="8px"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/game_list_view_compatibility_icon"
-        app:srcCompat="@drawable/flag_jp" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_baseline_lock_24" />
+
+    <TextView
+        android:id="@+id/points"
+        android:layout_width="64dp"
+        android:layout_height="16dp"
+        android:layout_marginEnd="8dp"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        android:text="5 Points"
+        android:textAlignment="center"
+        android:textAppearance="@style/TextAppearance.AppCompat.Small"
+        app:srcCompat="@drawable/ic_star_5"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/locked_icon" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

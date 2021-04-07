@@ -15,6 +15,10 @@
 #include <malloc.h>
 #endif
 
+#ifdef __FreeBSD__
+#include <sys/sysctl.h>
+#endif
+
 #if defined(WIN32)
 #include <shlobj.h>
 #else
@@ -257,6 +261,15 @@ bool IsAbsolutePath(const std::string_view& path)
 #else
   return (path.length() >= 1 && path[0] == '/');
 #endif
+}
+
+std::string StripExtension(const std::string_view& path)
+{
+  std::string_view::size_type pos = path.rfind('.');
+  if (pos == std::string::npos)
+    return std::string(path);
+
+  return std::string(path, 0, pos);
 }
 
 std::string ReplaceExtension(const std::string_view& path, const std::string_view& new_extension)
@@ -1407,7 +1420,7 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
     FILESYSTEM_FIND_DATA outData;
     outData.Attributes = 0;
 
-#if defined(__HAIKU__) || defined(__APPLE__)
+#if defined(__HAIKU__) || defined(__APPLE__) || defined(__FreeBSD__)
     struct stat sDir;
     if (stat(full_path, &sDir) < 0)
       continue;
@@ -1505,7 +1518,7 @@ bool StatFile(const char* Path, FILESYSTEM_STAT_DATA* pStatData)
     return false;
 
     // stat file
-#if defined(__HAIKU__) || defined(__APPLE__)
+#if defined(__HAIKU__) || defined(__APPLE__) || defined(__FreeBSD__)
   struct stat sysStatData;
   if (stat(Path, &sysStatData) < 0)
 #else
@@ -1539,7 +1552,7 @@ bool StatFile(std::FILE* fp, FILESYSTEM_STAT_DATA* pStatData)
     return false;
 
     // stat file
-#if defined(__HAIKU__) || defined(__APPLE__)
+#if defined(__HAIKU__) || defined(__APPLE__) || defined(__FreeBSD__)
   struct stat sysStatData;
   if (fstat(fd, &sysStatData) < 0)
 #else
@@ -1573,7 +1586,7 @@ bool FileExists(const char* Path)
     return false;
 
     // stat file
-#if defined(__HAIKU__) || defined(__APPLE__)
+#if defined(__HAIKU__) || defined(__APPLE__) || defined(__FreeBSD__)
   struct stat sysStatData;
   if (stat(Path, &sysStatData) < 0)
 #else
@@ -1595,7 +1608,7 @@ bool DirectoryExists(const char* Path)
     return false;
 
     // stat file
-#if defined(__HAIKU__) || defined(__APPLE__)
+#if defined(__HAIKU__) || defined(__APPLE__) || defined(__FreeBSD__)
   struct stat sysStatData;
   if (stat(Path, &sysStatData) < 0)
 #else
@@ -1752,6 +1765,16 @@ std::string GetProgramPath()
     buffer = static_cast<char*>(std::realloc(buffer, curSize + 1));
   }
 
+#elif defined(__FreeBSD__)
+  int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1};
+  char buffer[PATH_MAX];
+  size_t cb = sizeof(buffer) - 1;
+  int res = sysctl(mib, countof(mib), buffer, &cb, nullptr, 0);
+  if (res != 0)
+    return {};
+
+  buffer[cb] = '\0';
+  return buffer;
 #else
   return {};
 #endif

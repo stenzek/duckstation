@@ -29,6 +29,7 @@ extern ImFont* g_large_font;
 extern float g_layout_scale;
 extern float g_layout_padding_left;
 extern float g_layout_padding_top;
+extern float g_menu_bar_size;
 
 static ALWAYS_INLINE float DPIScale(float v)
 {
@@ -154,6 +155,8 @@ bool UpdateLayoutScale();
 void BeginLayout();
 void EndLayout();
 
+bool IsCancelButtonPressed();
+
 void DrawWindowTitle(const char* title);
 
 bool BeginFullscreenColumns(const char* title = nullptr);
@@ -177,6 +180,7 @@ void EndMenuButtons();
 bool MenuButtonFrame(const char* str_id, bool enabled, float height, bool* visible, bool* hovered, ImVec2* min,
                      ImVec2* max, ImGuiButtonFlags flags = 0, float hover_alpha = 1.0f);
 void MenuHeading(const char* title, bool draw_line = true);
+bool MenuHeadingButton(const char* title, const char* value = nullptr, bool enabled = true, bool draw_line = true);
 bool ActiveButton(const char* title, bool is_active, bool enabled = true,
                   float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, ImFont* font = g_large_font);
 bool MenuButton(const char* title, const char* summary, bool enabled = true, float height = LAYOUT_MENU_BUTTON_HEIGHT,
@@ -240,6 +244,10 @@ using ChoiceDialogOptions = std::vector<std::pair<std::string, bool>>;
 bool IsChoiceDialogOpen();
 void OpenChoiceDialog(const char* title, bool checkable, ChoiceDialogOptions options, ChoiceDialogCallback callback);
 void CloseChoiceDialog();
+
+float GetNotificationVerticalPosition();
+float GetNotificationVerticalDirection();
+void SetNotificationVerticalPosition(float position, float direction);
 
 void OpenBackgroundProgressDialog(const char* str_id, std::string message, s32 min, s32 max, s32 value);
 void UpdateBackgroundProgressDialog(const char* str_id, std::string message, s32 min, s32 max, s32 value);

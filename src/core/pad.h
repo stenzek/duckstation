@@ -30,7 +30,6 @@ public:
   void SetMemoryCard(u32 slot, std::unique_ptr<MemoryCard> dev);
 
   Multitap* GetMultitap(u32 slot) { return &m_multitaps[slot]; };
-  void SetMultitapEnable(u32 port, bool enable);
 
   u32 ReadRegister(u32 offset);
   void WriteRegister(u32 offset, u32 value);
@@ -113,10 +112,13 @@ private:
   void EndTransfer();
   void ResetDeviceTransferState();
 
+  bool DoStateController(StateWrapper& sw, u32 i);
+  bool DoStateMemcard(StateWrapper& sw, u32 i);
+
   std::array<std::unique_ptr<Controller>, NUM_CONTROLLER_AND_CARD_PORTS> m_controllers;
   std::array<std::unique_ptr<MemoryCard>, NUM_CONTROLLER_AND_CARD_PORTS> m_memory_cards;
 
-  std::array<Multitap, NUM_MULTITAPS> m_multitaps = {Multitap(0), Multitap(1)};
+  std::array<Multitap, NUM_MULTITAPS> m_multitaps;
 
   std::unique_ptr<TimingEvent> m_transfer_event;
   State m_state = State::Idle;

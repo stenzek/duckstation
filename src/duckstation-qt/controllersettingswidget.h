@@ -24,6 +24,9 @@ public:
   ControllerSettingsWidget(QtHostInterface* host_interface, QWidget* parent = nullptr);
   ~ControllerSettingsWidget();
 
+public Q_SLOTS:
+  void updateMultitapControllerTitles();
+
 private Q_SLOTS:
   void onProfileLoaded();
 
@@ -42,9 +45,13 @@ private:
     InputBindingWidget* first_button;
   };
 
+  static MultitapMode getMultitapMode();
+
+  QString getTabTitleForPort(u32 index, MultitapMode mode) const;
+
   void createUi();
   void reloadBindingButtons();
-  void createPortSettingsUi(int index, PortSettingsUI* ui);
+  void createPortSettingsUi(int index, PortSettingsUI* ui, MultitapMode multitap_mode);
   void createPortBindingSettingsUi(int index, PortSettingsUI* ui, ControllerType ctype);
   void onControllerTypeChanged(int index);
   void onLoadProfileClicked();

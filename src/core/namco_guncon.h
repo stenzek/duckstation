@@ -36,7 +36,7 @@ public:
   void LoadSettings(const char* section) override;
   bool GetSoftwareCursor(const Common::RGBA8Image** image, float* image_scale, bool* relative_mode) override;
 
-  void SetAxisState(s32 axis_code, float value) override;
+  bool GetButtonState(s32 button_code) const override;
   void SetButtonState(s32 button_code, bool pressed) override;
 
   void ResetTransferState() override;

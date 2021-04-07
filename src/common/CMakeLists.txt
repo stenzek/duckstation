@@ -13,17 +13,22 @@ add_library(common
   cd_image_bin.cpp
   cd_image_cue.cpp
   cd_image_chd.cpp
+  cd_image_ecm.cpp
   cd_image_hasher.cpp
   cd_image_hasher.h
+  cd_image_m3u.cpp
   cd_image_memory.cpp
+  cd_image_mds.cpp
+  cd_image_pbp.cpp
   cd_subchannel_replacement.cpp
   cd_subchannel_replacement.h
   cd_xa.cpp
   cd_xa.h
-  cpu_detect.h
   crash_handler.cpp
   crash_handler.h
   dimensional_array.h
+  error.cpp
+  error.h
   event.cpp
   event.h
   fifo_queue.h
@@ -60,9 +65,11 @@ add_library(common
   memory_arena.h
   page_fault_handler.cpp
   page_fault_handler.h
-  rectangle.h
+  platform.h
+  pbp_types.h
   progress_callback.cpp
   progress_callback.h
+  rectangle.h
   scope_guard.h
   shiftjis.cpp
   shiftjis.h
@@ -101,6 +108,8 @@ add_library(common
   vulkan/util.h
   wav_writer.cpp
   wav_writer.h
+  window_info.cpp
+  window_info.h
 )
 
 target_include_directories(common PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
@@ -140,8 +149,8 @@ if(USE_X11)
     gl/x11_window.h
   )
   target_compile_definitions(common PRIVATE "-DUSE_X11=1")
-  target_include_directories(common PRIVATE "${X11_INCLUDE_DIR}")
-  target_link_libraries(common PRIVATE "${X11_LIBRARIES}")
+  target_include_directories(common PRIVATE "${X11_INCLUDE_DIR}" "${X11_Xrandr_INCLUDE_PATH}")
+  target_link_libraries(common PRIVATE "${X11_LIBRARIES}" "${X11_Xrandr_LIB}")
 endif()
 
 if(USE_DRMKMS)

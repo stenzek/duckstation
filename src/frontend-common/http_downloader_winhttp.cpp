@@ -3,6 +3,7 @@
 #include "common/log.h"
 #include "common/string_util.h"
 #include "common/timer.h"
+#include <VersionHelpers.h>
 #include <algorithm>
 Log_SetChannel(HTTPDownloaderWinHttp);
 
@@ -21,25 +22,38 @@ HTTPDownloaderWinHttp::~HTTPDownloaderWinHttp()
   }
 }
 
-std::unique_ptr<HTTPDownloader> HTTPDownloader::Create()
+std::unique_ptr<HTTPDownloader> HTTPDownloader::Create(const char* user_agent)
 {
   std::unique_ptr<HTTPDownloaderWinHttp> instance(std::make_unique<HTTPDownloaderWinHttp>());
-  if (!instance->Initialize())
+  if (!instance->Initialize(user_agent))
     return {};
 
   return instance;
 }
 
-bool HTTPDownloaderWinHttp::Initialize()
+bool HTTPDownloaderWinHttp::Initialize(const char* user_agent)
 {
-  m_hSession = WinHttpOpen(StringUtil::UTF8StringToWideString(m_user_agent).c_str(),
-                           WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY, nullptr, nullptr, WINHTTP_FLAG_ASYNC);
+  // WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY is not supported before Win8.1.
+  const DWORD dwAccessType =
+    IsWindows8Point1OrGreater() ? WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY : WINHTTP_ACCESS_TYPE_DEFAULT_PROXY;
+
+  m_hSession = WinHttpOpen(StringUtil::UTF8StringToWideString(user_agent).c_str(), dwAccessType, nullptr, nullptr,
+                           WINHTTP_FLAG_ASYNC);
   if (m_hSession == NULL)
+  {
+    Log_ErrorPrintf("WinHttpOpen() failed: %u", GetLastError());
     return false;
+  }
 
   const DWORD notification_flags = WINHTTP_CALLBACK_FLAG_ALL_COMPLETIONS | WINHTTP_CALLBACK_FLAG_REQUEST_ERROR |
                                    WINHTTP_CALLBACK_FLAG_HANDLES | WINHTTP_CALLBACK_FLAG_SECURE_FAILURE;
-  WinHttpSetStatusCallback(m_hSession, HTTPStatusCallback, notification_flags, NULL);
+  if (WinHttpSetStatusCallback(m_hSession, HTTPStatusCallback, notification_flags, NULL) ==
+      WINHTTP_INVALID_STATUS_CALLBACK)
+  {
+    Log_ErrorPrintf("WinHttpSetStatusCallback() failed: %u", GetLastError());
+    return false;
+  }
+
   return true;
 }
 

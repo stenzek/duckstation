@@ -2,6 +2,7 @@
 #include "common/assert.h"
 #include "common/log.h"
 #include <cstdio>
+#include <cstring>
 #include <glad.h>
 Log_SetChannel(ShaderGen);
 
@@ -16,6 +17,14 @@ ShaderGen::ShaderGen(HostDisplay::RenderAPI render_api, bool supports_dual_sourc
 
     m_use_glsl_interface_blocks = (IsVulkan() || GLAD_GL_ES_VERSION_3_2 || GLAD_GL_VERSION_3_2);
     m_use_glsl_binding_layout = (IsVulkan() || UseGLSLBindingLayout());
+
+    if (m_render_api == HostDisplay::RenderAPI::OpenGL)
+    {
+      // SSAA with interface blocks is broken on AMD's OpenGL driver.
+      const char* gl_vendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
+      if (std::strcmp(gl_vendor, "ATI Technologies Inc.") == 0)
+        m_use_glsl_interface_blocks = false;
+    }
   }
 }
 
@@ -23,7 +32,7 @@ ShaderGen::~ShaderGen() = default;
 
 bool ShaderGen::UseGLSLBindingLayout()
 {
-  return (GLAD_GL_ES_VERSION_3_1 || GLAD_GL_VERSION_4_2 ||
+  return (GLAD_GL_ES_VERSION_3_1 || GLAD_GL_VERSION_4_3 ||
           (GLAD_GL_ARB_explicit_attrib_location && GLAD_GL_ARB_explicit_uniform_location &&
            GLAD_GL_ARB_shading_language_420pack));
 }
@@ -477,7 +486,7 @@ void ShaderGen::DeclareFragmentEntryPoint(
       {
         Assert(num_color_outputs <= 1);
         for (u32 i = 0; i < num_color_outputs; i++)
-          ss << "layout(location = 0" << i << ") out float4 o_col" << i << ";\n";
+          ss << "layout(location = " << i << ") out float4 o_col" << i << ";\n";
       }
     }
     else
@@ -603,6 +612,22 @@ std::string ShaderGen::GenerateCopyFragmentShader()
 {
   float2 coords = u_src_rect.xy + v_tex0 * u_src_rect.zw;
   o_col0 = SAMPLE_TEXTURE(samp0, coords);
+}
+)";
+
+  return ss.str();
+}
+
+std::string ShaderGen::GenerateSampleFragmentShader()
+{
+  std::stringstream ss;
+  WriteHeader(ss);
+  DeclareTexture(ss, "samp0", 0);
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, false, 1);
+
+  ss << R"(
+{
+  o_col0 = SAMPLE_TEXTURE(samp0, v_tex0);
 }
 )";
 

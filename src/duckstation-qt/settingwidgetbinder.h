@@ -44,10 +44,10 @@ struct SettingAccessor<QLineEdit>
   }
 
   static int getIntValue(const QLineEdit* widget) { return widget->text().toInt(); }
-  static void setIntValue(QLineEdit* widget, int value) { widget->setText(QStringLiteral("%1").arg(value)); }
+  static void setIntValue(QLineEdit* widget, int value) { widget->setText(QString::number(value)); }
 
   static float getFloatValue(const QLineEdit* widget) { return widget->text().toFloat(); }
-  static void setFloatValue(QLineEdit* widget, float value) { widget->setText(QStringLiteral("%1").arg(value)); }
+  static void setFloatValue(QLineEdit* widget, float value) { widget->setText(QString::number(value)); }
 
   static QString getStringValue(const QLineEdit* widget) { return widget->text(); }
   static void setStringValue(QLineEdit* widget, const QString& value) { widget->setText(value); }
@@ -118,7 +118,7 @@ struct SettingAccessor<QSlider>
   static float getFloatValue(const QSlider* widget) { return static_cast<float>(widget->value()); }
   static void setFloatValue(QSlider* widget, float value) { widget->setValue(static_cast<int>(value)); }
 
-  static QString getStringValue(const QSlider* widget) { return QStringLiteral("%1").arg(widget->value()); }
+  static QString getStringValue(const QSlider* widget) { return QString::number(widget->value()); }
   static void setStringValue(QSlider* widget, const QString& value) { widget->setValue(value.toInt()); }
 
   template<typename F>
@@ -140,7 +140,7 @@ struct SettingAccessor<QSpinBox>
   static float getFloatValue(const QSpinBox* widget) { return static_cast<float>(widget->value()); }
   static void setFloatValue(QSpinBox* widget, float value) { widget->setValue(static_cast<int>(value)); }
 
-  static QString getStringValue(const QSpinBox* widget) { return QStringLiteral("%1").arg(widget->value()); }
+  static QString getStringValue(const QSpinBox* widget) { return QString::number(widget->value()); }
   static void setStringValue(QSpinBox* widget, const QString& value) { widget->setValue(value.toInt()); }
 
   template<typename F>
@@ -162,7 +162,7 @@ struct SettingAccessor<QDoubleSpinBox>
   static float getFloatValue(const QDoubleSpinBox* widget) { return static_cast<float>(widget->value()); }
   static void setFloatValue(QDoubleSpinBox* widget, float value) { widget->setValue(static_cast<double>(value)); }
 
-  static QString getStringValue(const QDoubleSpinBox* widget) { return QStringLiteral("%1").arg(widget->value()); }
+  static QString getStringValue(const QDoubleSpinBox* widget) { return QString::number(widget->value()); }
   static void setStringValue(QDoubleSpinBox* widget, const QString& value) { widget->setValue(value.toDouble()); }
 
   template<typename F>

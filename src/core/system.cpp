@@ -4,6 +4,7 @@
 #include "cdrom.h"
 #include "cheats.h"
 #include "common/audio_stream.h"
+#include "common/error.h"
 #include "common/file_system.h"
 #include "common/iso_reader.h"
 #include "common/log.h"
@@ -32,6 +33,7 @@
 #include "spu.h"
 #include "texture_replacements.h"
 #include "timers.h"
+#include "xxhash.h"
 #include <cctype>
 #include <cinttypes>
 #include <cmath>
@@ -65,7 +67,7 @@ static bool LoadEXE(const char* filename);
 static bool SetExpansionROM(const char* filename);
 
 /// Opens CD image, preloading if needed.
-static std::unique_ptr<CDImage> OpenCDImage(const char* path, bool force_preload);
+static std::unique_ptr<CDImage> OpenCDImage(const char* path, Common::Error* error, bool force_preload);
 
 static bool DoLoadState(ByteStream* stream, bool force_software_renderer, bool update_display);
 static bool DoState(StateWrapper& sw, HostDisplayTexture** host_texture, bool update_display);
@@ -116,10 +118,6 @@ static u32 s_last_internal_frame_number = 0;
 static u32 s_last_global_tick_counter = 0;
 static Common::Timer s_fps_timer;
 static Common::Timer s_frame_timer;
-
-// Playlist of disc images.
-static std::vector<std::string> s_media_playlist;
-static std::string s_media_playlist_filename;
 
 static std::unique_ptr<CheatList> s_cheat_list;
 
@@ -287,19 +285,13 @@ bool IsPsfFileName(const char* path)
           (StringUtil::Strcasecmp(extension, ".psf") == 0 || StringUtil::Strcasecmp(extension, ".minipsf") == 0));
 }
 
-bool IsM3UFileName(const char* path)
-{
-  const char* extension = std::strrchr(path, '.');
-  return (extension && StringUtil::Strcasecmp(extension, ".m3u") == 0);
-}
-
 bool IsLoadableFilename(const char* path)
 {
-  static constexpr auto extensions = make_array(".bin", ".cue", ".img", ".iso", ".chd", // discs
-                                                ".exe", ".psexe",                       // exes
-                                                ".psf", ".minipsf",                     // psf
-                                                ".m3u"                                  // playlists
-  );
+  static constexpr auto extensions = make_array(".bin", ".cue", ".img", ".iso", ".chd", ".ecm", ".mds", // discs
+                                                ".exe", ".psexe",                                       // exes
+                                                ".psf", ".minipsf",                                     // psf
+                                                ".m3u",                                                 // playlists
+                                                ".pbp");
   const char* extension = std::strrchr(path, '.');
   if (!extension)
     return false;
@@ -385,42 +377,60 @@ std::string_view GetTitleForPath(const char* path)
   return path_view.substr(0, path_view.find_last_of('.'));
 }
 
-std::string GetGameCodeForPath(const char* image_path)
+std::string GetGameCodeForPath(const char* image_path, bool fallback_to_hash)
 {
-  std::unique_ptr<CDImage> cdi = CDImage::Open(image_path);
+  std::unique_ptr<CDImage> cdi = CDImage::Open(image_path, nullptr);
   if (!cdi)
     return {};
 
-  return GetGameCodeForImage(cdi.get());
+  return GetGameCodeForImage(cdi.get(), fallback_to_hash);
 }
 
-std::string GetGameCodeForImage(CDImage* cdi)
+std::string GetGameCodeForImage(CDImage* cdi, bool fallback_to_hash)
 {
   std::string code(GetExecutableNameForImage(cdi));
-  if (code.empty())
-    return {};
-
-  // SCES_123.45 -> SCES-12345
-  for (std::string::size_type pos = 0; pos < code.size();)
+  if (!code.empty())
   {
-    if (code[pos] == '.')
+    // SCES_123.45 -> SCES-12345
+    for (std::string::size_type pos = 0; pos < code.size();)
     {
-      code.erase(pos, 1);
-      continue;
+      if (code[pos] == '.')
+      {
+        code.erase(pos, 1);
+        continue;
+      }
+
+      if (code[pos] == '_')
+        code[pos] = '-';
+      else
+        code[pos] = static_cast<char>(std::toupper(code[pos]));
+
+      pos++;
     }
 
-    if (code[pos] == '_')
-      code[pos] = '-';
-    else
-      code[pos] = static_cast<char>(std::toupper(code[pos]));
-
-    pos++;
+    return code;
   }
 
-  return code;
+  if (!fallback_to_hash)
+    return {};
+
+  std::string exe_name;
+  std::vector<u8> exe_buffer;
+  if (!ReadExecutableFromImage(cdi, &exe_name, &exe_buffer))
+    return {};
+
+  XXH64_state_t* state = XXH64_createState();
+  XXH64_reset(state, 0x4242D00C);
+  XXH64_update(state, exe_name.c_str(), exe_name.size());
+  XXH64_update(state, exe_buffer.data(), exe_buffer.size());
+  const u64 hash = XXH64_digest(state);
+  XXH64_freeState(state);
+
+  Log_InfoPrintf("Hash for '%s' - %" PRIX64, exe_name.c_str(), hash);
+  return StringUtil::StdStringFromFormat("HASH-%" PRIX64, hash);
 }
 
-static std::string GetExecutableNameForImage(CDImage* cdi, ISOReader& iso)
+static std::string GetExecutableNameForImage(CDImage* cdi, ISOReader& iso, bool strip_subdirectories)
 {
   // Read SYSTEM.CNF
   std::vector<u8> system_cnf_data;
@@ -469,19 +479,34 @@ static std::string GetExecutableNameForImage(CDImage* cdi, ISOReader& iso)
   if (iter == lines.end())
     return {};
 
-  // cdrom:\SCES_123.45;1
   std::string code = iter->second;
-  std::string::size_type pos = code.rfind('\\');
-  if (pos != std::string::npos)
+  std::string::size_type pos;
+  if (strip_subdirectories)
   {
-    code.erase(0, pos + 1);
+    // cdrom:\SCES_123.45;1
+    pos = code.rfind('\\');
+    if (pos != std::string::npos)
+    {
+      code.erase(0, pos + 1);
+    }
+    else
+    {
+      // cdrom:SCES_123.45;1
+      pos = code.rfind(':');
+      if (pos != std::string::npos)
+        code.erase(0, pos + 1);
+    }
   }
   else
   {
-    // cdrom:SCES_123.45;1
-    pos = code.rfind(':');
-    if (pos != std::string::npos)
-      code.erase(0, pos + 1);
+    if (code.compare(0, 6, "cdrom:") == 0)
+      code.erase(0, 6);
+    else
+      Log_WarningPrintf("Unknown prefix in executable path: '%s'", code.c_str());
+
+    // remove leading slashes
+    while (code[0] == '/' || code[0] == '\\')
+      code.erase(0, 1);
   }
 
   // strip off ; or version number
@@ -498,7 +523,7 @@ std::string GetExecutableNameForImage(CDImage* cdi)
   if (!iso.Open(cdi, 1))
     return {};
 
-  return GetExecutableNameForImage(cdi, iso);
+  return GetExecutableNameForImage(cdi, iso, true);
 }
 
 bool ReadExecutableFromImage(CDImage* cdi, std::string* out_executable_name, std::vector<u8>* out_executable_data)
@@ -509,19 +534,20 @@ bool ReadExecutableFromImage(CDImage* cdi, std::string* out_executable_name, std
 
   bool result = false;
 
-  std::string executable_name(GetExecutableNameForImage(cdi, iso));
-  if (!executable_name.empty())
+  std::string executable_path(GetExecutableNameForImage(cdi, iso, false));
+  Log_DevPrintf("Executable path: '%s'", executable_path.c_str());
+  if (!executable_path.empty())
   {
-    result = iso.ReadFile(executable_name.c_str(), out_executable_data);
+    result = iso.ReadFile(executable_path.c_str(), out_executable_data);
     if (!result)
-      Log_ErrorPrintf("Failed to read executable '%s' from disc", executable_name.c_str());
+      Log_ErrorPrintf("Failed to read executable '%s' from disc", executable_path.c_str());
   }
 
   if (!result)
   {
     // fallback to PSX.EXE
-    executable_name = "PSX.EXE";
-    result = iso.ReadFile(executable_name.c_str(), out_executable_data);
+    executable_path = "PSX.EXE";
+    result = iso.ReadFile(executable_path.c_str(), out_executable_data);
     if (!result)
       Log_ErrorPrint("Failed to read fallback PSX.EXE from disc");
   }
@@ -530,7 +556,7 @@ bool ReadExecutableFromImage(CDImage* cdi, std::string* out_executable_name, std
     return false;
 
   if (out_executable_name)
-    *out_executable_name = std::move(executable_name);
+    *out_executable_name = std::move(executable_path);
 
   return true;
 }
@@ -585,7 +611,7 @@ DiscRegion GetRegionForImage(CDImage* cdi)
   if (system_area_region != DiscRegion::Other)
     return system_area_region;
 
-  std::string code = GetGameCodeForImage(cdi);
+  std::string code = GetGameCodeForImage(cdi, false);
   if (code.empty())
     return DiscRegion::Other;
 
@@ -621,7 +647,7 @@ std::optional<DiscRegion> GetRegionForPath(const char* image_path)
   else if (IsPsfFileName(image_path))
     return GetRegionForPsf(image_path);
 
-  std::unique_ptr<CDImage> cdi = CDImage::Open(image_path);
+  std::unique_ptr<CDImage> cdi = CDImage::Open(image_path, nullptr);
   if (!cdi)
     return {};
 
@@ -669,9 +695,9 @@ bool RecreateGPU(GPURenderer renderer, bool update_display /* = true*/)
   return true;
 }
 
-std::unique_ptr<CDImage> OpenCDImage(const char* path, bool force_preload)
+std::unique_ptr<CDImage> OpenCDImage(const char* path, Common::Error* error, bool force_preload)
 {
-  std::unique_ptr<CDImage> media = CDImage::Open(path);
+  std::unique_ptr<CDImage> media = CDImage::Open(path, error);
   if (!media)
     return {};
 
@@ -691,7 +717,6 @@ std::unique_ptr<CDImage> OpenCDImage(const char* path, bool force_preload)
 bool Boot(const SystemBootParameters& params)
 {
   Assert(s_state == State::Shutdown);
-  Assert(s_media_playlist.empty());
   s_state = State::Starting;
   s_startup_cancelled.store(false);
   s_region = g_settings.region;
@@ -714,6 +739,7 @@ bool Boot(const SystemBootParameters& params)
   }
 
   // Load CD image up and detect region.
+  Common::Error error;
   std::unique_ptr<CDImage> media;
   bool exe_boot = false;
   bool psf_boot = false;
@@ -733,40 +759,12 @@ bool Boot(const SystemBootParameters& params)
     }
     else
     {
-      u32 playlist_index;
-      if (IsM3UFileName(params.filename.c_str()))
-      {
-        s_media_playlist = ParseM3UFile(params.filename.c_str());
-        s_media_playlist_filename = params.filename;
-        if (s_media_playlist.empty())
-        {
-          g_host_interface->ReportFormattedError("Failed to parse playlist '%s'", params.filename.c_str());
-          Shutdown();
-          return false;
-        }
-
-        if (params.media_playlist_index >= s_media_playlist.size())
-        {
-          Log_WarningPrintf("Media playlist index %u out of range, using first", params.media_playlist_index);
-          playlist_index = 0;
-        }
-        else
-        {
-          playlist_index = params.media_playlist_index;
-        }
-      }
-      else
-      {
-        AddMediaPathToPlaylist(params.filename);
-        playlist_index = 0;
-      }
-
-      const std::string& media_path = s_media_playlist[playlist_index];
-      Log_InfoPrintf("Loading CD image '%s' from playlist index %u...", media_path.c_str(), playlist_index);
-      media = OpenCDImage(media_path.c_str(), params.load_image_to_ram);
+      Log_InfoPrintf("Loading CD image '%s'...", params.filename.c_str());
+      media = OpenCDImage(params.filename.c_str(), &error, params.load_image_to_ram);
       if (!media)
       {
-        g_host_interface->ReportFormattedError("Failed to load CD image '%s'", params.filename.c_str());
+        g_host_interface->ReportFormattedError("Failed to load CD image '%s': %s", params.filename.c_str(),
+                                               error.GetCodeAndMessage().GetCharArray());
         Shutdown();
         return false;
       }
@@ -815,6 +813,15 @@ bool Boot(const SystemBootParameters& params)
   // Check for SBI.
   if (!CheckForSBIFile(media.get()))
   {
+    Shutdown();
+    return false;
+  }
+
+  // Switch subimage.
+  if (media && params.media_playlist_index != 0 && !media->SwitchSubImage(params.media_playlist_index, &error))
+  {
+    g_host_interface->ReportFormattedError("Failed to switch to subimage %u in '%s': %s", params.media_playlist_index,
+                                           params.filename.c_str(), error.GetCodeAndMessage().GetCharArray());
     Shutdown();
     return false;
   }
@@ -928,6 +935,14 @@ bool Initialize(bool force_software_renderer)
                                         "CPU clock speed is set to %u%% (%u / %u). This may result in instability."),
       g_settings.GetCPUOverclockPercent(), g_settings.cpu_overclock_numerator, g_settings.cpu_overclock_denominator);
   }
+  if (g_settings.cdrom_read_speedup > 1)
+  {
+    g_host_interface->AddFormattedOSDMessage(
+      10.0f,
+      g_host_interface->TranslateString(
+        "OSDMessage", "CD-ROM read speedup set to %ux (effective speed %ux). This may result in instability."),
+      g_settings.cdrom_read_speedup, g_settings.cdrom_read_speedup * 2);
+  }
 
   UpdateThrottlePeriod();
   UpdateMemorySaveStateSettings();
@@ -960,8 +975,6 @@ void Shutdown()
   s_running_game_code.clear();
   s_running_game_path.clear();
   s_running_game_title.clear();
-  s_media_playlist.clear();
-  s_media_playlist_filename.clear();
   s_cheat_list.reset();
   s_state = State::Shutdown;
 
@@ -994,7 +1007,13 @@ bool CreateGPU(GPURenderer renderer)
 
   if (!g_gpu || !g_gpu->Initialize(g_host_interface->GetDisplay()))
   {
-    Log_ErrorPrintf("Failed to initialize GPU, falling back to software");
+    Log_ErrorPrintf("Failed to initialize %s renderer, falling back to software renderer",
+                    Settings::GetRendererName(renderer));
+    g_host_interface->AddFormattedOSDMessage(
+      30.0f,
+      g_host_interface->TranslateString("OSDMessage",
+                                        "Failed to initialize %s renderer, falling back to software renderer."),
+      Settings::GetRendererName(renderer));
     g_gpu.reset();
     g_gpu = GPU::CreateSoftwareRenderer();
     if (!g_gpu->Initialize(g_host_interface->GetDisplay()))
@@ -1147,6 +1166,7 @@ bool DoLoadState(ByteStream* state, bool force_software_renderer, bool update_di
     return false;
   }
 
+  Common::Error error;
   std::string media_filename;
   std::unique_ptr<CDImage> media;
   if (header.media_filename_length > 0)
@@ -1166,50 +1186,50 @@ bool DoLoadState(ByteStream* state, bool force_software_renderer, bool update_di
     }
     else
     {
-      media = OpenCDImage(media_filename.c_str(), false);
+      media = OpenCDImage(media_filename.c_str(), &error, false);
       if (!media)
       {
         if (old_media)
         {
           g_host_interface->AddFormattedOSDMessage(
             30.0f,
-            g_host_interface->TranslateString("OSDMessage", "Failed to open CD image from save state: '%s'. Using "
+            g_host_interface->TranslateString("OSDMessage", "Failed to open CD image from save state '%s': %s. Using "
                                                             "existing image '%s', this may result in instability."),
-            media_filename.c_str(), old_media->GetFileName().c_str());
+            media_filename.c_str(), error.GetCodeAndMessage().GetCharArray(), old_media->GetFileName().c_str());
           media = std::move(old_media);
         }
         else
         {
           g_host_interface->ReportFormattedError(
-            g_host_interface->TranslateString("System", "Failed to open CD image from save state: '%s'."),
-            media_filename.c_str());
+            g_host_interface->TranslateString("System", "Failed to open CD image '%s' used by save state: %s."),
+            media_filename.c_str(), error.GetCodeAndMessage().GetCharArray());
           return false;
         }
       }
     }
   }
 
-  std::string playlist_filename;
-  std::vector<std::string> playlist_entries;
-  if (header.playlist_filename_length > 0)
+  UpdateRunningGame(media_filename.c_str(), media.get());
+
+  if (media && header.version >= 51)
   {
-    playlist_filename.resize(header.offset_to_playlist_filename);
-    if (!state->SeekAbsolute(header.offset_to_playlist_filename) ||
-        !state->Read2(playlist_filename.data(), header.playlist_filename_length))
+    const u32 num_subimages = media->HasSubImages() ? media->GetSubImageCount() : 1;
+    if (header.media_subimage_index >= num_subimages ||
+        (media->HasSubImages() && media->GetCurrentSubImage() != header.media_subimage_index &&
+         !media->SwitchSubImage(header.media_subimage_index, &error)))
     {
+      g_host_interface->ReportFormattedError(
+        g_host_interface->TranslateString("System",
+                                          "Failed to switch to subimage %u in CD image '%s' used by save state: %s."),
+        header.media_subimage_index + 1u, media_filename.c_str(), error.GetCodeAndMessage().GetCharArray());
       return false;
     }
-
-    playlist_entries = ParseM3UFile(playlist_filename.c_str());
-    if (playlist_entries.empty())
+    else
     {
-      g_host_interface->ReportFormattedError("Failed to load save state playlist entries from '%s'",
-                                             playlist_filename.c_str());
-      return false;
+      Log_InfoPrintf("Switched to subimage %u in '%s'", header.media_subimage_index, media_filename.c_str());
     }
   }
 
-  UpdateRunningGame(media_filename.c_str(), media.get());
   ClearMemorySaveStates();
 
   if (s_state == State::Starting)
@@ -1219,9 +1239,6 @@ bool DoLoadState(ByteStream* state, bool force_software_renderer, bool update_di
 
     if (media)
       g_cdrom.InsertMedia(std::move(media));
-
-    s_media_playlist_filename = std::move(playlist_filename);
-    s_media_playlist = std::move(playlist_entries);
 
     UpdateControllers();
     UpdateMemoryCards();
@@ -1234,9 +1251,6 @@ bool DoLoadState(ByteStream* state, bool force_software_renderer, bool update_di
       g_cdrom.InsertMedia(std::move(media));
     else
       g_cdrom.RemoveMedia();
-
-    s_media_playlist_filename = std::move(playlist_filename);
-    s_media_playlist = std::move(playlist_entries);
 
     // ensure the correct card is loaded
     if (g_settings.HasAnyPerGameMemoryCards())
@@ -1285,15 +1299,8 @@ bool SaveState(ByteStream* state, u32 screenshot_size /* = 128 */)
     const std::string& media_filename = g_cdrom.GetMediaFileName();
     header.offset_to_media_filename = static_cast<u32>(state->GetPosition());
     header.media_filename_length = static_cast<u32>(media_filename.length());
+    header.media_subimage_index = g_cdrom.GetMedia()->HasSubImages() ? g_cdrom.GetMedia()->GetCurrentSubImage() : 0;
     if (!media_filename.empty() && !state->Write2(media_filename.data(), header.media_filename_length))
-      return false;
-  }
-
-  if (!s_media_playlist_filename.empty())
-  {
-    header.offset_to_playlist_filename = static_cast<u32>(state->GetPosition());
-    header.playlist_filename_length = static_cast<u32>(s_media_playlist_filename.length());
-    if (!state->Write2(s_media_playlist_filename.data(), header.playlist_filename_length))
       return false;
   }
 
@@ -1794,12 +1801,7 @@ void UpdateMemoryCards()
 
       case MemoryCardType::PerGameTitle:
       {
-        if (!s_media_playlist_filename.empty() && g_settings.memory_card_use_playlist_title)
-        {
-          const std::string playlist_title(GetTitleForPath(s_media_playlist_filename.c_str()));
-          card = MemoryCard::Open(g_host_interface->GetGameMemoryCardPath(playlist_title.c_str(), i));
-        }
-        else if (s_running_game_title.empty())
+        if (s_running_game_title.empty())
         {
           g_host_interface->AddFormattedOSDMessage(
             5.0f,
@@ -1819,17 +1821,9 @@ void UpdateMemoryCards()
       case MemoryCardType::Shared:
       {
         if (g_settings.memory_card_paths[i].empty())
-        {
-          g_host_interface->AddFormattedOSDMessage(
-            10.0f,
-            g_host_interface->TranslateString("System", "Memory card path for slot %u is missing, using default."),
-            i + 1u);
           card = MemoryCard::Open(g_host_interface->GetSharedMemoryCardPath(i));
-        }
         else
-        {
           card = MemoryCard::Open(g_settings.memory_card_paths[i]);
-        }
       }
       break;
     }
@@ -1845,27 +1839,33 @@ void UpdateMultitaps()
   {
     case MultitapMode::Disabled:
     {
-      g_pad.SetMultitapEnable(0, false);
-      g_pad.SetMultitapEnable(1, false);
+      g_pad.GetMultitap(0)->SetEnable(false, 0);
+      g_pad.GetMultitap(1)->SetEnable(false, 0);
     }
     break;
 
     case MultitapMode::Port1Only:
     {
-      g_pad.SetMultitapEnable(0, true);
-      g_pad.SetMultitapEnable(1, false);
+      g_pad.GetMultitap(0)->SetEnable(true, 0);
+      g_pad.GetMultitap(1)->SetEnable(false, 0);
+    }
+    break;
+
+    case MultitapMode::Port2Only:
+    {
+      g_pad.GetMultitap(0)->SetEnable(false, 0);
+      g_pad.GetMultitap(1)->SetEnable(true, 1);
     }
     break;
 
     case MultitapMode::BothPorts:
     {
-      g_pad.SetMultitapEnable(0, true);
-      g_pad.SetMultitapEnable(1, true);
+      g_pad.GetMultitap(0)->SetEnable(true, 0);
+      g_pad.GetMultitap(1)->SetEnable(true, 4);
     }
     break;
   }
 }
-
 
 bool DumpRAM(const char* filename)
 {
@@ -1910,11 +1910,13 @@ std::string GetMediaFileName()
 
 bool InsertMedia(const char* path)
 {
-  std::unique_ptr<CDImage> image = OpenCDImage(path, false);
+  Common::Error error;
+  std::unique_ptr<CDImage> image = OpenCDImage(path, &error, false);
   if (!image)
   {
     g_host_interface->AddFormattedOSDMessage(
-      10.0f, g_host_interface->TranslateString("OSDMessage", "Failed to open disc image '%s'."), path);
+      10.0f, g_host_interface->TranslateString("OSDMessage", "Failed to open disc image '%s': %s."), path,
+      error.GetCodeAndMessage().GetCharArray());
     return false;
   }
 
@@ -1960,6 +1962,13 @@ void UpdateRunningGame(const char* path, CDImage* image)
   {
     s_running_game_path = path;
     g_host_interface->GetGameInfo(path, image, &s_running_game_code, &s_running_game_title);
+
+    if (image && image->HasSubImages() && g_settings.memory_card_use_playlist_title)
+    {
+      std::string image_title(image->GetMetadata("title"));
+      if (!image_title.empty())
+        s_running_game_title = std::move(image_title);
+    }
   }
 
   g_texture_replacements.SetGameID(s_running_game_code);
@@ -1989,114 +1998,78 @@ bool CheckForSBIFile(CDImage* image)
       .c_str());
 }
 
-bool HasMediaPlaylist()
+bool HasMediaSubImages()
 {
-  return !s_media_playlist_filename.empty();
+  const CDImage* cdi = g_cdrom.GetMedia();
+  return cdi ? cdi->HasSubImages() : false;
 }
 
-u32 GetMediaPlaylistCount()
+u32 GetMediaSubImageCount()
 {
-  return static_cast<u32>(s_media_playlist.size());
+  const CDImage* cdi = g_cdrom.GetMedia();
+  return cdi ? cdi->GetSubImageCount() : 0;
 }
 
-const std::string& GetMediaPlaylistPath(u32 index)
+u32 GetMediaSubImageIndex()
 {
-  return s_media_playlist[index];
+  const CDImage* cdi = g_cdrom.GetMedia();
+  return cdi ? cdi->GetCurrentSubImage() : 0;
 }
 
-u32 GetMediaPlaylistIndex()
+u32 GetMediaSubImageIndexForTitle(const std::string_view& title)
 {
-  if (!g_cdrom.HasMedia())
-    return std::numeric_limits<u32>::max();
+  const CDImage* cdi = g_cdrom.GetMedia();
+  if (!cdi)
+    return 0;
 
-  const std::string& media_path = g_cdrom.GetMediaFileName();
-  return GetMediaPlaylistIndexForPath(media_path);
-}
-
-u32 GetMediaPlaylistIndexForPath(const std::string& path)
-{
-  for (u32 i = 0; i < static_cast<u32>(s_media_playlist.size()); i++)
+  const u32 count = cdi->GetSubImageCount();
+  for (u32 i = 0; i < count; i++)
   {
-    if (s_media_playlist[i] == path)
+    if (title == cdi->GetSubImageMetadata(i, "title"))
       return i;
   }
 
   return std::numeric_limits<u32>::max();
 }
 
-bool AddMediaPathToPlaylist(const std::string_view& path)
+std::string GetMediaSubImageTitle(u32 index)
 {
-  if (std::any_of(s_media_playlist.begin(), s_media_playlist.end(),
-                  [&path](const std::string& p) { return (path == p); }))
-  {
-    return false;
-  }
+  const CDImage* cdi = g_cdrom.GetMedia();
+  if (!cdi)
+    return {};
 
-  s_media_playlist.emplace_back(path);
-  return true;
+  return cdi->GetSubImageMetadata(index, "title");
 }
 
-bool RemoveMediaPathFromPlaylist(const std::string_view& path)
+bool SwitchMediaSubImage(u32 index)
 {
-  for (u32 i = 0; i < static_cast<u32>(s_media_playlist.size()); i++)
-  {
-    if (path == s_media_playlist[i])
-      return RemoveMediaPathFromPlaylist(i);
-  }
-
-  return false;
-}
-
-bool RemoveMediaPathFromPlaylist(u32 index)
-{
-  if (index >= static_cast<u32>(s_media_playlist.size()))
+  if (!g_cdrom.HasMedia())
     return false;
 
-  if (GetMediaPlaylistIndex() == index)
+  std::unique_ptr<CDImage> image = g_cdrom.RemoveMedia();
+  Assert(image);
+
+  Common::Error error;
+  if (!image->SwitchSubImage(index, &error))
   {
     g_host_interface->AddFormattedOSDMessage(
-      10.0f,
-      g_host_interface->TranslateString("System", "Removing current media from playlist, removing media from CD-ROM."));
-    g_cdrom.RemoveMedia();
-  }
-
-  s_media_playlist.erase(s_media_playlist.begin() + index);
-  return true;
-}
-
-bool ReplaceMediaPathFromPlaylist(u32 index, const std::string_view& path)
-{
-  if (index >= static_cast<u32>(s_media_playlist.size()))
+      10.0f, g_host_interface->TranslateString("OSDMessage", "Failed to switch to subimage %u in '%s': %s."),
+      index + 1u, image->GetFileName().c_str(), error.GetCodeAndMessage().GetCharArray());
+    g_cdrom.InsertMedia(std::move(image));
     return false;
-
-  if (GetMediaPlaylistIndex() == index)
-  {
-    g_host_interface->AddFormattedOSDMessage(
-      10.0f,
-      g_host_interface->TranslateString("System", "Changing current media from playlist, replacing current media."));
-    g_cdrom.RemoveMedia();
-
-    s_media_playlist[index] = path;
-    InsertMedia(s_media_playlist[index].c_str());
-  }
-  else
-  {
-    s_media_playlist[index] = path;
   }
 
+  g_host_interface->AddFormattedOSDMessage(
+    20.0f, g_host_interface->TranslateString("OSDMessage", "Switched to sub-image %s (%u) in '%s'."),
+    image->GetSubImageMetadata(index, "title").c_str(), index + 1u, image->GetMetadata("title").c_str());
+  g_cdrom.InsertMedia(std::move(image));
+
+  // reinitialize recompiler, because especially with preloading this might overlap the fastmem area
+  if (g_settings.IsUsingCodeCache())
+    CPU::CodeCache::Reinitialize();
+
+  ClearMemorySaveStates();
   return true;
-}
-
-bool SwitchMediaFromPlaylist(u32 index)
-{
-  if (index >= s_media_playlist.size())
-    return false;
-
-  const std::string& path = s_media_playlist[index];
-  if (g_cdrom.HasMedia() && g_cdrom.GetMediaFileName() == path)
-    return true;
-
-  return InsertMedia(path.c_str());
 }
 
 bool HasCheatList()

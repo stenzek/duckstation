@@ -156,6 +156,13 @@
           </property>
          </widget>
         </item>
+        <item row="1" column="1">
+         <widget class="QCheckBox" name="internalResolutionScreenshots">
+          <property name="text">
+           <string>Internal Resolution Screenshots</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </item>
      </layout>
@@ -177,7 +184,7 @@
       <item row="2" column="1">
        <widget class="QCheckBox" name="showFPS">
         <property name="text">
-         <string>Show FPS</string>
+         <string>Show Game Frame Rate</string>
         </property>
        </widget>
       </item>
@@ -191,7 +198,7 @@
       <item row="3" column="1">
        <widget class="QCheckBox" name="showVPS">
         <property name="text">
-         <string>Show VPS</string>
+         <string>Show Display FPS</string>
         </property>
        </widget>
       </item>
@@ -199,6 +206,13 @@
        <widget class="QCheckBox" name="showResolution">
         <property name="text">
          <string>Show Resolution</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QCheckBox" name="showInput">
+        <property name="text">
+         <string>Show Controller Input</string>
         </property>
        </widget>
       </item>

@@ -1,5 +1,6 @@
 #include "cd_image.h"
 #include "cd_subchannel_replacement.h"
+#include "error.h"
 #include "file_system.h"
 #include "log.h"
 #include <cerrno>
@@ -11,9 +12,9 @@ public:
   CDImageBin();
   ~CDImageBin() override;
 
-  bool Open(const char* filename);
+  bool Open(const char* filename, Common::Error* error);
 
-  bool ReadSubChannelQ(SubChannelQ* subq) override;
+  bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index) override;
   bool HasNonStandardSubchannel() const override;
 
 protected:
@@ -34,13 +35,15 @@ CDImageBin::~CDImageBin()
     std::fclose(m_fp);
 }
 
-bool CDImageBin::Open(const char* filename)
+bool CDImageBin::Open(const char* filename, Common::Error* error)
 {
   m_filename = filename;
   m_fp = FileSystem::OpenCFile(filename, "rb");
   if (!m_fp)
   {
     Log_ErrorPrintf("Failed to open binfile '%s': errno %d", filename, errno);
+    if (error)
+      error->SetErrno(errno);
     return false;
   }
 
@@ -96,12 +99,12 @@ bool CDImageBin::Open(const char* filename)
   return Seek(1, Position{0, 0, 0});
 }
 
-bool CDImageBin::ReadSubChannelQ(SubChannelQ* subq)
+bool CDImageBin::ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index)
 {
-  if (m_sbi.GetReplacementSubChannelQ(m_position_on_disc, subq))
+  if (m_sbi.GetReplacementSubChannelQ(index.start_lba_on_disc + lba_in_index, subq))
     return true;
 
-  return CDImage::ReadSubChannelQ(subq);
+  return CDImage::ReadSubChannelQ(subq, index, lba_in_index);
 }
 
 bool CDImageBin::HasNonStandardSubchannel() const
@@ -130,10 +133,10 @@ bool CDImageBin::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_i
   return true;
 }
 
-std::unique_ptr<CDImage> CDImage::OpenBinImage(const char* filename)
+std::unique_ptr<CDImage> CDImage::OpenBinImage(const char* filename, Common::Error* error)
 {
   std::unique_ptr<CDImageBin> image = std::make_unique<CDImageBin>();
-  if (!image->Open(filename))
+  if (!image->Open(filename, error))
     return {};
 
   return image;

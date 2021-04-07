@@ -152,6 +152,12 @@ void GamePropertiesDialog::setupAdditionalUi()
       qApp->translate("GPUTextureFilter", Settings::GetTextureFilterDisplayName(static_cast<GPUTextureFilter>(i))));
   }
 
+  m_ui.userMultitapMode->addItem(tr("(unchanged)"));
+  for (u32 i = 0; i < static_cast<u32>(MultitapMode::Count); i++)
+  {
+    m_ui.userMultitapMode->addItem(
+      qApp->translate("MultitapMode", Settings::GetMultitapModeDisplayName(static_cast<MultitapMode>(i))));
+  }
   m_ui.userControllerType1->addItem(tr("(unchanged)"));
   for (u32 i = 0; i < static_cast<u32>(ControllerType::Count); i++)
   {
@@ -218,7 +224,7 @@ void GamePropertiesDialog::populateTracksInfo(const std::string& image_path)
   m_ui.tracks->clearContents();
   m_path = image_path;
 
-  std::unique_ptr<CDImage> image = CDImage::Open(image_path.c_str());
+  std::unique_ptr<CDImage> image = CDImage::Open(image_path.c_str(), nullptr);
   if (!image)
     return;
 
@@ -230,7 +236,7 @@ void GamePropertiesDialog::populateTracksInfo(const std::string& image_path)
     const CDImage::TrackMode mode = image->GetTrackMode(static_cast<u8>(track));
     const int row = static_cast<int>(track - 1u);
     m_ui.tracks->insertRow(row);
-    m_ui.tracks->setItem(row, 0, new QTableWidgetItem(QStringLiteral("%1").arg(track)));
+    m_ui.tracks->setItem(row, 0, new QTableWidgetItem(QString::number(track)));
     m_ui.tracks->setItem(row, 1, new QTableWidgetItem(track_mode_strings[static_cast<u32>(mode)]));
     m_ui.tracks->setItem(row, 2, new QTableWidgetItem(MSFTotString(position)));
     m_ui.tracks->setItem(row, 3, new QTableWidgetItem(MSFTotString(length)));
@@ -409,6 +415,11 @@ void GamePropertiesDialog::populateGameSettings()
   populateBooleanUserSetting(m_ui.userPGXPProjectionPrecision, gs.gpu_pgxp_projection_precision);
   populateBooleanUserSetting(m_ui.userPGXPDepthBuffer, gs.gpu_pgxp_depth_buffer);
 
+  if (gs.multitap_mode.has_value())
+  {
+    QSignalBlocker sb(m_ui.userMultitapMode);
+    m_ui.userMultitapMode->setCurrentIndex(static_cast<int>(gs.multitap_mode.value()) + 1);
+  }
   if (gs.controller_1_type.has_value())
   {
     QSignalBlocker sb(m_ui.userControllerType1);
@@ -604,6 +615,14 @@ void GamePropertiesDialog::connectUi()
   connectBooleanUserSetting(m_ui.userPGXP, &m_game_settings.gpu_pgxp);
   connectBooleanUserSetting(m_ui.userPGXPProjectionPrecision, &m_game_settings.gpu_pgxp_projection_precision);
   connectBooleanUserSetting(m_ui.userPGXPDepthBuffer, &m_game_settings.gpu_pgxp_depth_buffer);
+
+  connect(m_ui.userMultitapMode, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
+    if (index <= 0)
+      m_game_settings.multitap_mode.reset();
+    else
+      m_game_settings.multitap_mode = static_cast<MultitapMode>(index - 1);
+    saveGameSettings();
+  });
 
   connect(m_ui.userControllerType1, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
     if (index <= 0)
@@ -841,7 +860,7 @@ void GamePropertiesDialog::computeTrackHashes()
   if (m_path.empty())
     return;
 
-  std::unique_ptr<CDImage> image = CDImage::Open(m_path.c_str());
+  std::unique_ptr<CDImage> image = CDImage::Open(m_path.c_str(), nullptr);
   if (!image)
     return;
 

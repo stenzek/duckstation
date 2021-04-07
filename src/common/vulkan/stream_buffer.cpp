@@ -173,8 +173,9 @@ bool StreamBuffer::ReserveMemory(u32 num_bytes, u32 alignment)
     return false;
   }
 
+  UpdateGPUPosition();
+
   // Is the GPU behind or up to date with our current offset?
-  UpdateCurrentFencePosition();
   if (m_current_offset >= m_current_gpu_position)
   {
     const u32 remaining_bytes = m_size - m_current_offset;
@@ -194,7 +195,7 @@ bool StreamBuffer::ReserveMemory(u32 num_bytes, u32 alignment)
     {
       // Reset offset to zero, since we're allocating behind the gpu now
       m_current_offset = 0;
-      m_current_space = m_current_gpu_position;
+      m_current_space = m_current_gpu_position - 1;
       return true;
     }
   }
@@ -208,7 +209,7 @@ bool StreamBuffer::ReserveMemory(u32 num_bytes, u32 alignment)
     {
       // Place at the current position, since this is still behind the GPU.
       m_current_offset = Common::AlignUp(m_current_offset, alignment);
-      m_current_space = m_current_gpu_position - m_current_offset;
+      m_current_space = m_current_gpu_position - m_current_offset - 1;
       return true;
     }
   }
@@ -243,14 +244,11 @@ void StreamBuffer::CommitMemory(u32 final_num_bytes)
 
   m_current_offset += final_num_bytes;
   m_current_space -= final_num_bytes;
+  UpdateCurrentFencePosition();
 }
 
 void StreamBuffer::UpdateCurrentFencePosition()
 {
-  // Don't create a tracking entry if the GPU is caught up with the buffer.
-  if (m_current_offset == m_current_gpu_position)
-    return;
-
   // Has the offset changed since the last fence?
   const u64 counter = g_vulkan_context->GetCurrentFenceCounter();
   if (!m_tracked_fences.empty() && m_tracked_fences.back().first == counter)
@@ -261,7 +259,6 @@ void StreamBuffer::UpdateCurrentFencePosition()
   }
 
   // New buffer, so update the GPU position while we're at it.
-  UpdateGPUPosition();
   m_tracked_fences.emplace_back(counter, m_current_offset);
 }
 
@@ -278,7 +275,16 @@ void StreamBuffer::UpdateGPUPosition()
   }
 
   if (start != end)
+  {
     m_tracked_fences.erase(start, end);
+    if (m_current_offset == m_current_gpu_position)
+    {
+      // GPU is all caught up now.
+      m_current_offset = 0;
+      m_current_gpu_position = 0;
+      m_current_space = m_size;
+    }
+  }
 }
 
 bool StreamBuffer::WaitForClearSpace(u32 num_bytes)
@@ -324,7 +330,7 @@ bool StreamBuffer::WaitForClearSpace(u32 num_bytes)
       if (gpu_position > num_bytes)
       {
         new_offset = 0;
-        new_space = gpu_position;
+        new_space = gpu_position - 1;
         new_gpu_position = gpu_position;
         break;
       }
@@ -339,7 +345,7 @@ bool StreamBuffer::WaitForClearSpace(u32 num_bytes)
       {
         // Leave the offset as-is, but update the GPU position.
         new_offset = m_current_offset;
-        new_space = gpu_position - m_current_offset;
+        new_space = available_space_inbetween - 1;
         new_gpu_position = gpu_position;
         break;
       }

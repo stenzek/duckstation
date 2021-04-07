@@ -95,12 +95,6 @@ bool SDLHostInterface::SetFullscreen(bool enabled)
     return true;
 
   SDL_SetWindowFullscreen(m_window, enabled ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
-
-  int window_width, window_height;
-  SDL_GetWindowSize(m_window, &window_width, &window_height);
-  m_display->ResizeRenderWindow(window_width, window_height);
-  OnHostDisplayResized(window_width, window_height, GetDPIScaleFactor(m_window));
-
   m_fullscreen = enabled;
   return true;
 }
@@ -119,11 +113,6 @@ bool SDLHostInterface::RequestRenderWindowSize(s32 new_window_width, s32 new_win
     1);
 
   SDL_SetWindowSize(m_window, scaled_width, scaled_height);
-
-  s32 window_width, window_height;
-  SDL_GetWindowSize(m_window, &window_width, &window_height);
-  m_display->ResizeRenderWindow(window_width, window_height);
-
   return true;
 }
 
@@ -287,14 +276,12 @@ void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
   {
     case SDL_WINDOWEVENT:
     {
-      if (event->window.event == SDL_WINDOWEVENT_RESIZED)
+      if (event->window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
       {
-        m_display->ResizeRenderWindow(event->window.data1, event->window.data2);
-        OnHostDisplayResized(event->window.data1, event->window.data2, GetDPIScaleFactor(m_window));
-      }
-      else if (event->window.event == SDL_WINDOWEVENT_MOVED)
-      {
-        // TODO: Do we want to update DPI scale here?
+        s32 window_width, window_height;
+        SDL_GetWindowSize(m_window, &window_width, &window_height);
+        m_display->ResizeRenderWindow(window_width, window_height);
+        OnHostDisplayResized();
       }
     }
     break;
@@ -306,27 +293,25 @@ void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
     case SDL_KEYDOWN:
     case SDL_KEYUP:
     {
-      // Binding mode
-      if (m_fullscreen_ui_enabled && m_controller_interface && m_controller_interface->HasHook() &&
-          event->key.repeat == 0)
-      {
-        String keyName;
-        if (!SDLKeyNames::KeyEventToString(event, keyName))
-        {
-          break;
-        }
+      const bool pressed = (event->type == SDL_KEYDOWN);
 
-        const bool pressed = (event->type == SDL_KEYDOWN);
-        if (FullscreenUI::HandleKeyboardBinding(keyName, pressed))
+      // Binding mode
+      if (m_fullscreen_ui_enabled && FullscreenUI::IsBindingInput())
+      {
+        if (event->key.repeat > 0)
+          return;
+
+        TinyString key_string;
+        if (SDLKeyNames::KeyEventToString(event, key_string))
         {
-          break;
+          if (FullscreenUI::HandleKeyboardBinding(key_string, pressed))
+            return;
         }
       }
 
       if (!ImGui::GetIO().WantCaptureKeyboard && event->key.repeat == 0)
       {
         const u32 code = SDLKeyNames::KeyEventToInt(event);
-        const bool pressed = (event->type == SDL_KEYDOWN);
         HandleHostKeyEvent(code & SDLKeyNames::KEY_MASK, code & SDLKeyNames::MODIFIER_MASK, pressed);
       }
     }

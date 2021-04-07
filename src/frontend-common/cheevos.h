@@ -7,6 +7,13 @@ class CDImage;
 
 namespace Cheevos {
 
+enum class AchievementCategory : u32
+{
+  Local = 0,
+  Core = 3,
+  Unofficial = 5
+};
+
 struct Achievement
 {
   u32 id;
@@ -21,11 +28,22 @@ struct Achievement
 };
 
 extern bool g_active;
+extern bool g_challenge_mode;
 extern u32 g_game_id;
 
 ALWAYS_INLINE bool IsActive()
 {
   return g_active;
+}
+
+ALWAYS_INLINE bool IsChallengeModeEnabled()
+{
+  return g_challenge_mode;
+}
+
+ALWAYS_INLINE bool IsChallengeModeActive()
+{
+  return g_active && g_challenge_mode;
 }
 
 ALWAYS_INLINE bool HasActiveGame()
@@ -38,7 +56,7 @@ ALWAYS_INLINE u32 GetGameID()
   return g_game_id;
 }
 
-bool Initialize(bool test_mode, bool use_first_disc_from_playlist, bool enable_rich_presence);
+bool Initialize(bool test_mode, bool use_first_disc_from_playlist, bool enable_rich_presence, bool challenge_mode);
 void Reset();
 void Shutdown();
 void Update();

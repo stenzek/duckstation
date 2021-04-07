@@ -56,7 +56,14 @@ bool NamcoGunCon::DoState(StateWrapper& sw, bool apply_input_state)
   return true;
 }
 
-void NamcoGunCon::SetAxisState(s32 axis_code, float value) {}
+bool NamcoGunCon::GetButtonState(s32 button_code) const
+{
+  if (button_code < 0 || button_code > static_cast<s32>(Button::B))
+    return false;
+
+  const u16 bit = u16(1) << static_cast<u8>(button_code);
+  return ((m_button_state & bit) == 0);
+}
 
 void NamcoGunCon::SetButtonState(Button button, bool pressed)
 {
@@ -278,11 +285,13 @@ void NamcoGunCon::LoadSettings(const char* section)
     }
   }
 
+#ifndef __ANDROID__
   if (!m_crosshair_image.IsValid())
   {
     m_crosshair_image.SetPixels(Resources::CROSSHAIR_IMAGE_WIDTH, Resources::CROSSHAIR_IMAGE_HEIGHT,
                                 Resources::CROSSHAIR_IMAGE_DATA.data());
   }
+#endif
 
   m_crosshair_image_scale = g_host_interface->GetFloatSettingValue(section, "CrosshairScale", 1.0f);
 

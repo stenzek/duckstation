@@ -20,9 +20,9 @@ Log_SetChannel(Vulkan::SwapChain);
 #if defined(__APPLE__)
 #include <objc/message.h>
 
-static bool CreateMetalLayer(WindowInfo& wi)
+static bool CreateMetalLayer(WindowInfo* wi)
 {
-  id view = reinterpret_cast<id>(wi.window_handle);
+  id view = reinterpret_cast<id>(wi->window_handle);
 
   Class clsCAMetalLayer = objc_getClass("CAMetalLayer");
   if (!clsCAMetalLayer)
@@ -55,28 +55,28 @@ static bool CreateMetalLayer(WindowInfo& wi)
   reinterpret_cast<void (*)(id, SEL, double)>(objc_msgSend)(layer, sel_getUid("setContentsScale:"), factor);
 
   // Store the layer pointer, that way MoltenVK doesn't call [NSView layer] outside the main thread.
-  wi.surface_handle = layer;
+  wi->surface_handle = layer;
   return true;
 }
 
-static void DestroyMetalLayer(WindowInfo& wi)
+static void DestroyMetalLayer(WindowInfo* wi)
 {
-  id view = reinterpret_cast<id>(wi.window_handle);
-  id layer = reinterpret_cast<id>(wi.surface_handle);
+  id view = reinterpret_cast<id>(wi->window_handle);
+  id layer = reinterpret_cast<id>(wi->surface_handle);
   if (layer == nil)
     return;
 
   reinterpret_cast<void (*)(id, SEL, id)>(objc_msgSend)(view, sel_getUid("setLayer:"), nil);
   reinterpret_cast<void (*)(id, SEL, BOOL)>(objc_msgSend)(view, sel_getUid("setWantsLayer:"), NO);
   reinterpret_cast<void (*)(id, SEL)>(objc_msgSend)(layer, sel_getUid("release"));
-  wi.surface_handle = nullptr;
+  wi->surface_handle = nullptr;
 }
 
 #endif
 
 namespace Vulkan {
 SwapChain::SwapChain(const WindowInfo& wi, VkSurfaceKHR surface, bool vsync)
-  : m_wi(wi), m_vsync_enabled(vsync), m_surface(surface)
+  : m_window_info(wi), m_surface(surface), m_vsync_enabled(vsync)
 {
 }
 
@@ -88,9 +88,9 @@ SwapChain::~SwapChain()
   DestroySurface();
 }
 
-static VkSurfaceKHR CreateDisplaySurface(VkInstance instance, VkPhysicalDevice physical_device, const WindowInfo& wi)
+static VkSurfaceKHR CreateDisplaySurface(VkInstance instance, VkPhysicalDevice physical_device, WindowInfo* wi)
 {
-  Log_InfoPrintf("Trying to create a VK_KHR_display surface of %ux%u", wi.surface_width, wi.surface_height);
+  Log_InfoPrintf("Trying to create a VK_KHR_display surface of %ux%u", wi->surface_width, wi->surface_height);
 
   u32 num_displays;
   VkResult res = vkGetPhysicalDeviceDisplayPropertiesKHR(physical_device, &num_displays, nullptr);
@@ -137,9 +137,9 @@ static VkSurfaceKHR CreateDisplaySurface(VkInstance instance, VkPhysicalDevice p
                     refresh_rate);
 
       if (!matched_mode &&
-          ((wi.surface_width == 0 && wi.surface_height == 0) ||
-           (mode.parameters.visibleRegion.width == wi.surface_width && mode.parameters.visibleRegion.height &&
-            (wi.surface_refresh_rate == 0.0f || std::abs(refresh_rate - wi.surface_refresh_rate) < 0.1f))))
+          ((wi->surface_width == 0 && wi->surface_height == 0) ||
+           (mode.parameters.visibleRegion.width == wi->surface_width && mode.parameters.visibleRegion.height &&
+            (wi->surface_refresh_rate == 0.0f || std::abs(refresh_rate - wi->surface_refresh_rate) < 0.1f))))
       {
         matched_mode = &mode;
       }
@@ -219,6 +219,7 @@ static VkSurfaceKHR CreateDisplaySurface(VkInstance instance, VkPhysicalDevice p
       continue;
     }
 
+    wi->surface_refresh_rate = static_cast<float>(matched_mode->parameters.refreshRate) / 1000.0f;
     return surface;
   }
 
@@ -286,17 +287,17 @@ static std::vector<SwapChain::FullscreenModeInfo> GetDisplayModes(VkInstance ins
   return result;
 }
 
-VkSurfaceKHR SwapChain::CreateVulkanSurface(VkInstance instance, VkPhysicalDevice physical_device, WindowInfo& wi)
+VkSurfaceKHR SwapChain::CreateVulkanSurface(VkInstance instance, VkPhysicalDevice physical_device, WindowInfo* wi)
 {
 #if defined(VK_USE_PLATFORM_WIN32_KHR)
-  if (wi.type == WindowInfo::Type::Win32)
+  if (wi->type == WindowInfo::Type::Win32)
   {
     VkWin32SurfaceCreateInfoKHR surface_create_info = {
       VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR, // VkStructureType               sType
       nullptr,                                         // const void*                   pNext
       0,                                               // VkWin32SurfaceCreateFlagsKHR  flags
       nullptr,                                         // HINSTANCE                     hinstance
-      reinterpret_cast<HWND>(wi.window_handle)         // HWND                          hwnd
+      reinterpret_cast<HWND>(wi->window_handle)        // HWND                          hwnd
     };
 
     VkSurfaceKHR surface;
@@ -312,14 +313,14 @@ VkSurfaceKHR SwapChain::CreateVulkanSurface(VkInstance instance, VkPhysicalDevic
 #endif
 
 #if defined(VK_USE_PLATFORM_XLIB_KHR)
-  if (wi.type == WindowInfo::Type::X11)
+  if (wi->type == WindowInfo::Type::X11)
   {
     VkXlibSurfaceCreateInfoKHR surface_create_info = {
       VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR, // VkStructureType               sType
       nullptr,                                        // const void*                   pNext
       0,                                              // VkXlibSurfaceCreateFlagsKHR   flags
-      static_cast<Display*>(wi.display_connection),   // Display*                      dpy
-      reinterpret_cast<Window>(wi.window_handle)      // Window                        window
+      static_cast<Display*>(wi->display_connection),  // Display*                      dpy
+      reinterpret_cast<Window>(wi->window_handle)     // Window                        window
     };
 
     VkSurfaceKHR surface;
@@ -335,11 +336,11 @@ VkSurfaceKHR SwapChain::CreateVulkanSurface(VkInstance instance, VkPhysicalDevic
 #endif
 
 #if defined(VK_USE_PLATFORM_WAYLAND_KHR)
-  if (wi.type == WindowInfo::Type::Wayland)
+  if (wi->type == WindowInfo::Type::Wayland)
   {
     VkWaylandSurfaceCreateInfoKHR surface_create_info = {VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR, nullptr, 0,
-                                                         static_cast<struct wl_display*>(wi.display_connection),
-                                                         static_cast<struct wl_surface*>(wi.window_handle)};
+                                                         static_cast<struct wl_display*>(wi->display_connection),
+                                                         static_cast<struct wl_surface*>(wi->window_handle)};
 
     VkSurfaceKHR surface;
     VkResult res = vkCreateWaylandSurfaceKHR(instance, &surface_create_info, nullptr, &surface);
@@ -354,13 +355,13 @@ VkSurfaceKHR SwapChain::CreateVulkanSurface(VkInstance instance, VkPhysicalDevic
 #endif
 
 #if defined(VK_USE_PLATFORM_ANDROID_KHR)
-  if (wi.type == WindowInfo::Type::Android)
+  if (wi->type == WindowInfo::Type::Android)
   {
     VkAndroidSurfaceCreateInfoKHR surface_create_info = {
-      VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR, // VkStructureType                sType
-      nullptr,                                           // const void*                    pNext
-      0,                                                 // VkAndroidSurfaceCreateFlagsKHR flags
-      reinterpret_cast<ANativeWindow*>(wi.window_handle) // ANativeWindow* window
+      VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR,  // VkStructureType                sType
+      nullptr,                                            // const void*                    pNext
+      0,                                                  // VkAndroidSurfaceCreateFlagsKHR flags
+      reinterpret_cast<ANativeWindow*>(wi->window_handle) // ANativeWindow* window
     };
 
     VkSurfaceKHR surface;
@@ -376,13 +377,13 @@ VkSurfaceKHR SwapChain::CreateVulkanSurface(VkInstance instance, VkPhysicalDevic
 #endif
 
 #if defined(VK_USE_PLATFORM_METAL_EXT)
-  if (wi.type == WindowInfo::Type::MacOS)
+  if (wi->type == WindowInfo::Type::MacOS)
   {
-    if (!wi.surface_handle && !CreateMetalLayer(wi))
+    if (!wi->surface_handle && !CreateMetalLayer(wi))
       return VK_NULL_HANDLE;
 
     VkMetalSurfaceCreateInfoEXT surface_create_info = {VK_STRUCTURE_TYPE_METAL_SURFACE_CREATE_INFO_EXT, nullptr, 0,
-                                                       static_cast<const CAMetalLayer*>(wi.surface_handle)};
+                                                       static_cast<const CAMetalLayer*>(wi->surface_handle)};
 
     VkSurfaceKHR surface;
     VkResult res = vkCreateMetalSurfaceEXT(instance, &surface_create_info, nullptr, &surface);
@@ -395,10 +396,10 @@ VkSurfaceKHR SwapChain::CreateVulkanSurface(VkInstance instance, VkPhysicalDevic
     return surface;
   }
 #elif defined(VK_USE_PLATFORM_MACOS_MVK)
-  if (wi.type == WindowInfo::Type::MacOS)
+  if (wi->type == WindowInfo::Type::MacOS)
   {
     VkMacOSSurfaceCreateInfoMVK surface_create_info = {VK_STRUCTURE_TYPE_MACOS_SURFACE_CREATE_INFO_MVK, nullptr, 0,
-                                                       wi.window_handle};
+                                                       wi->window_handle};
 
     VkSurfaceKHR surface;
     VkResult res = vkCreateMacOSSurfaceMVK(instance, &surface_create_info, nullptr, &surface);
@@ -412,18 +413,18 @@ VkSurfaceKHR SwapChain::CreateVulkanSurface(VkInstance instance, VkPhysicalDevic
   }
 #endif
 
-  if (wi.type == WindowInfo::Type::Display)
+  if (wi->type == WindowInfo::Type::Display)
     return CreateDisplaySurface(instance, physical_device, wi);
 
   return VK_NULL_HANDLE;
 }
 
-void SwapChain::DestroyVulkanSurface(VkInstance instance, WindowInfo& wi, VkSurfaceKHR surface)
+void SwapChain::DestroyVulkanSurface(VkInstance instance, WindowInfo* wi, VkSurfaceKHR surface)
 {
   vkDestroySurfaceKHR(g_vulkan_context->GetVulkanInstance(), surface, nullptr);
 
 #if defined(__APPLE__)
-  if (wi.type == WindowInfo::Type::MacOS && wi.surface_handle)
+  if (wi->type == WindowInfo::Type::MacOS && wi->surface_handle)
     DestroyMetalLayer(wi);
 #endif
 }
@@ -567,8 +568,8 @@ bool SwapChain::CreateSwapChain()
   if (size.width == UINT32_MAX)
 #endif
   {
-    size.width = m_wi.surface_width;
-    size.height = m_wi.surface_height;
+    size.width = m_window_info.surface_width;
+    size.height = m_window_info.surface_height;
   }
   size.width =
     std::clamp(size.width, surface_capabilities.minImageExtent.width, surface_capabilities.maxImageExtent.width);
@@ -637,8 +638,8 @@ bool SwapChain::CreateSwapChain()
   if (old_swap_chain != VK_NULL_HANDLE)
     vkDestroySwapchainKHR(g_vulkan_context->GetDevice(), old_swap_chain, nullptr);
 
-  m_width = size.width;
-  m_height = size.height;
+  m_window_info.surface_width = size.width;
+  m_window_info.surface_height = size.height;
   return true;
 }
 
@@ -675,8 +676,8 @@ bool SwapChain::SetupSwapChainImages()
     image.image = images[i];
 
     // Create texture object, which creates a view of the backbuffer
-    if (!image.texture.Adopt(image.image, VK_IMAGE_VIEW_TYPE_2D, m_width, m_height, 1, 1, m_surface_format.format,
-                             VK_SAMPLE_COUNT_1_BIT))
+    if (!image.texture.Adopt(image.image, VK_IMAGE_VIEW_TYPE_2D, m_window_info.surface_width,
+                             m_window_info.surface_height, 1, 1, m_surface_format.format, VK_SAMPLE_COUNT_1_BIT))
     {
       return false;
     }
@@ -723,8 +724,8 @@ bool SwapChain::ResizeSwapChain(u32 new_width /* = 0 */, u32 new_height /* = 0 *
 
   if (new_width != 0 && new_height != 0)
   {
-    m_wi.surface_width = new_width;
-    m_wi.surface_height = new_height;
+    m_window_info.surface_width = new_width;
+    m_window_info.surface_height = new_height;
   }
 
   if (!CreateSwapChain() || !SetupSwapChainImages() || !CreateSemaphores())
@@ -769,8 +770,9 @@ bool SwapChain::RecreateSurface(const WindowInfo& new_wi)
   DestroySurface();
 
   // Re-create the surface with the new native handle
-  m_wi = new_wi;
-  m_surface = CreateVulkanSurface(g_vulkan_context->GetVulkanInstance(), g_vulkan_context->GetPhysicalDevice(), m_wi);
+  m_window_info = new_wi;
+  m_surface =
+    CreateVulkanSurface(g_vulkan_context->GetVulkanInstance(), g_vulkan_context->GetPhysicalDevice(), &m_window_info);
   if (m_surface == VK_NULL_HANDLE)
     return false;
 
@@ -799,7 +801,7 @@ bool SwapChain::RecreateSurface(const WindowInfo& new_wi)
 
 void SwapChain::DestroySurface()
 {
-  DestroyVulkanSurface(g_vulkan_context->GetVulkanInstance(), m_wi, m_surface);
+  DestroyVulkanSurface(g_vulkan_context->GetVulkanInstance(), &m_window_info, m_surface);
   m_surface = VK_NULL_HANDLE;
 }
 

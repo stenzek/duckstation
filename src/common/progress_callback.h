@@ -23,7 +23,7 @@ public:
   virtual void SetProgressValue(u32 value) = 0;
   virtual void IncrementProgressValue() = 0;
 
-  void SetFormattedStatusText(const char* Format, ...);
+  void SetFormattedStatusText(const char* Format, ...) printflike(2, 3);
 
   virtual void DisplayError(const char* message) = 0;
   virtual void DisplayWarning(const char* message) = 0;
@@ -34,13 +34,13 @@ public:
   virtual bool ModalConfirmation(const char* message) = 0;
   virtual void ModalInformation(const char* message) = 0;
 
-  void DisplayFormattedError(const char* format, ...);
-  void DisplayFormattedWarning(const char* format, ...);
-  void DisplayFormattedInformation(const char* format, ...);
-  void DisplayFormattedDebugMessage(const char* format, ...);
-  void DisplayFormattedModalError(const char* format, ...);
-  bool DisplayFormattedModalConfirmation(const char* format, ...);
-  void DisplayFormattedModalInformation(const char* format, ...);
+  void DisplayFormattedError(const char* format, ...) printflike(2, 3);
+  void DisplayFormattedWarning(const char* format, ...) printflike(2, 3);
+  void DisplayFormattedInformation(const char* format, ...) printflike(2, 3);
+  void DisplayFormattedDebugMessage(const char* format, ...) printflike(2, 3);
+  void DisplayFormattedModalError(const char* format, ...) printflike(2, 3);
+  bool DisplayFormattedModalConfirmation(const char* format, ...) printflike(2, 3);
+  void DisplayFormattedModalInformation(const char* format, ...) printflike(2, 3);
 
   void UpdateProgressFromStream(ByteStream* stream);
 

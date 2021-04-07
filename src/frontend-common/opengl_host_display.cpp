@@ -384,9 +384,7 @@ bool OpenGLHostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_vie
     return false;
   }
 
-  m_window_info = wi;
-  m_window_info.surface_width = m_gl_context->GetSurfaceWidth();
-  m_window_info.surface_height = m_gl_context->GetSurfaceHeight();
+  m_window_info = m_gl_context->GetWindowInfo();
   return true;
 }
 
@@ -467,16 +465,7 @@ bool OpenGLHostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
     return false;
   }
 
-  m_window_info = new_wi;
-  m_window_info.surface_width = m_gl_context->GetSurfaceWidth();
-  m_window_info.surface_height = m_gl_context->GetSurfaceHeight();
-
-  if (ImGui::GetCurrentContext())
-  {
-    ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_info.surface_width);
-    ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_info.surface_height);
-  }
-
+  m_window_info = m_gl_context->GetWindowInfo();
   return true;
 }
 
@@ -486,14 +475,7 @@ void OpenGLHostDisplay::ResizeRenderWindow(s32 new_window_width, s32 new_window_
     return;
 
   m_gl_context->ResizeSurface(static_cast<u32>(new_window_width), static_cast<u32>(new_window_height));
-  m_window_info.surface_width = m_gl_context->GetSurfaceWidth();
-  m_window_info.surface_height = m_gl_context->GetSurfaceHeight();
-
-  if (ImGui::GetCurrentContext())
-  {
-    ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_info.surface_width);
-    ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_info.surface_height);
-  }
+  m_window_info = m_gl_context->GetWindowInfo();
 }
 
 bool OpenGLHostDisplay::SupportsFullscreen() const
@@ -539,8 +521,6 @@ void OpenGLHostDisplay::DestroyRenderSurface()
 
 bool OpenGLHostDisplay::CreateImGuiContext()
 {
-  ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_info.surface_width);
-  ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_info.surface_height);
   return ImGui_ImplOpenGL3_Init(GetGLSLVersionString());
 }
 
@@ -749,7 +729,6 @@ bool OpenGLHostDisplay::Render()
     return false;
   }
 
-  glDisable(GL_SCISSOR_TEST);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT);
@@ -762,6 +741,46 @@ bool OpenGLHostDisplay::Render()
   RenderSoftwareCursor();
 
   m_gl_context->SwapBuffers();
+  return true;
+}
+
+bool OpenGLHostDisplay::RenderScreenshot(u32 width, u32 height, std::vector<u32>* out_pixels, u32* out_stride,
+                                         HostDisplayPixelFormat* out_format)
+{
+  GL::Texture texture;
+  if (!texture.Create(width, height, 1, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, nullptr) || !texture.CreateFramebuffer())
+    return false;
+
+  texture.BindFramebuffer(GL_FRAMEBUFFER);
+  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+  glClear(GL_COLOR_BUFFER_BIT);
+
+  if (HasDisplayTexture())
+  {
+    const auto [left, top, draw_width, draw_height] = CalculateDrawRect(width, height, 0);
+
+    if (!m_post_processing_chain.IsEmpty())
+    {
+      ApplyPostProcessingChain(texture.GetGLFramebufferID(), left, height - top - draw_height, draw_width, draw_height,
+                               m_display_texture_handle, m_display_texture_width, m_display_texture_height,
+                               m_display_texture_view_x, m_display_texture_view_y, m_display_texture_view_width,
+                               m_display_texture_view_height, width, height);
+    }
+    else
+    {
+      RenderDisplay(left, height - top - draw_height, draw_width, draw_height, m_display_texture_handle,
+                    m_display_texture_width, m_display_texture_height, m_display_texture_view_x,
+                    m_display_texture_view_y, m_display_texture_view_width, m_display_texture_view_height,
+                    m_display_linear_filtering);
+    }
+  }
+
+  out_pixels->resize(width * height);
+  *out_stride = sizeof(u32) * width;
+  *out_format = HostDisplayPixelFormat::RGBA8;
+  glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, out_pixels->data());
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
   return true;
 }
 
@@ -783,7 +802,8 @@ void OpenGLHostDisplay::RenderDisplay()
   {
     ApplyPostProcessingChain(0, left, GetWindowHeight() - top - height, width, height, m_display_texture_handle,
                              m_display_texture_width, m_display_texture_height, m_display_texture_view_x,
-                             m_display_texture_view_y, m_display_texture_view_width, m_display_texture_view_height);
+                             m_display_texture_view_y, m_display_texture_view_width, m_display_texture_view_height,
+                             GetWindowWidth(), GetWindowHeight());
     return;
   }
 
@@ -995,11 +1015,12 @@ bool OpenGLHostDisplay::CheckPostProcessingRenderTargets(u32 target_width, u32 t
 void OpenGLHostDisplay::ApplyPostProcessingChain(GLuint final_target, s32 final_left, s32 final_top, s32 final_width,
                                                  s32 final_height, void* texture_handle, u32 texture_width,
                                                  s32 texture_height, s32 texture_view_x, s32 texture_view_y,
-                                                 s32 texture_view_width, s32 texture_view_height)
+                                                 s32 texture_view_width, s32 texture_view_height, u32 target_width,
+                                                 u32 target_height)
 {
-  if (!CheckPostProcessingRenderTargets(GetWindowWidth(), GetWindowHeight()))
+  if (!CheckPostProcessingRenderTargets(target_width, target_height))
   {
-    RenderDisplay(final_left, GetWindowHeight() - final_top - final_height, final_width, final_height, texture_handle,
+    RenderDisplay(final_left, target_height - final_top - final_height, final_width, final_height, texture_handle,
                   texture_width, texture_height, texture_view_x, texture_view_y, texture_view_width,
                   texture_view_height, m_display_linear_filtering);
     return;
@@ -1008,7 +1029,7 @@ void OpenGLHostDisplay::ApplyPostProcessingChain(GLuint final_target, s32 final_
   // downsample/upsample - use same viewport for remainder
   m_post_processing_input_texture.BindFramebuffer(GL_DRAW_FRAMEBUFFER);
   glClear(GL_COLOR_BUFFER_BIT);
-  RenderDisplay(final_left, GetWindowHeight() - final_top - final_height, final_width, final_height, texture_handle,
+  RenderDisplay(final_left, target_height - final_top - final_height, final_width, final_height, texture_handle,
                 texture_width, texture_height, texture_view_x, texture_view_y, texture_view_width, texture_view_height,
                 m_display_linear_filtering);
 

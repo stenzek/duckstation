@@ -69,8 +69,12 @@
 		<item>xBR (без сглаживания краёв)</item>
 	</string-array>
 	<string-array name="settings_controller_type_entries">
+		<item>Нет</item>
 		<item>Цифровой</item>
 		<item>Аналоговый (DualShock)</item>
+		<item>Аналоговый джойстик</item>
+		<item>NeGcon</item>
+		<item>GunCon</item>
 	</string-array>
 	<string-array name="settings_memory_card_mode_entries">
 		<item>Без карты памяти</item>
@@ -82,22 +86,24 @@
 		<item>Загрузить состояние</item>
 		<item>Сохранить состояние</item>
 		<item>Включить ускорение</item>
-		<item>Другие опции</item>
+		<item>Достижения</item>
+		<item>Опции</item>
 		<item>Выход</item>
 	</string-array>
 	<string-array name="emulation_more_menu">
 		<item>Сброс</item>
 		<item>Чит-коды</item>
 		<item>Сменить диск</item>
-		<item>Настроить экранный контроллер</item>
-		<item>Настройки эмулятора</item>
+		<item>Экранный геймпад</item>
+		<item>Управление</item>
+		<item>Настройки</item>
 	</string-array>
 	<string-array name="emulation_touchscreen_menu">
-        	<item>Сменить тип</item>
-        	<item>Настроить видимость</item>
-        	<item>Добавить/убрать кнопки</item>
-        	<item>Изменить макет</item>
-    	</string-array>
+		<item>Сменить вид</item>
+		<item>Настроить видимость</item>
+		<item>Добавить/убрать кнопки</item>
+		<item>Изменить макет</item>
+	</string-array>
 	<string-array name="settings_cdrom_read_speedup_entries">
 		<item>Нет (двойная скорость)</item>
 		<item>2x (скорость 4x)</item>
@@ -115,6 +121,7 @@
 		<item>Цифровой</item>
 		<item>Аналоговый, один джойстик</item>
 		<item>Аналоговый, два джойстика</item>
+		<item>Световой пистолет</item>
 	</string-array>
 	<string-array name="settings_audio_backend_entries">
 		<item>Нет (без звука)</item>
@@ -144,7 +151,7 @@
 		<item>Экран</item>
 		<item>Звук</item>
 		<item>Улучшения</item>
-		<item>Контроллеры</item>
+		<item>Достижения</item>
 		<item>Расширенные</item>
 	</string-array>
 	<string-array name="settings_gpu_msaa_entries">
@@ -223,6 +230,15 @@
 		<item>Портретная</item>
 		<item>Ландшафтная</item>
 	</string-array>
+	<string-array name="settings_language_entries">
+        	<item>По выбору системы</item>
+        	<item>Английский</item>
+		<item>Бразильский португальский</item>
+        	<item>Итальянский</item>
+        	<item>Нидерландский</item>
+        	<item>Испанский</item>
+        	<item>Русский</item>
+ 	</string-array>
 	<string-array name="settings_theme_entries">
 		<item>По выбору системы</item>
 		<item>Светлая</item>
@@ -234,7 +250,17 @@
 		<item>Адаптивный (не понижать 3D/сглаживать 2D)</item>
 	</string-array>
 	<string-array name="settings_boolean_entries">
-		<item>Выключен</item>
-		<item>Включен</item>
+		<item>Выключено</item>
+		<item>Включено</item>
 	</string-array>
+	    <string-array name="settings_multitap_mode_entries">
+        	<item>Отключен</item>
+        	<item>Подключен к порту 1</item>
+        	<item>Подключен к порту 2</item>
+        	<item>Подключен к портам 1 и 2</item>
+    	</string-array>
+ 	   <string-array name="memory_card_editor_save_menu">
+     		<item>Скопировать сохранение</item>
+     		<item>Удалить сохранение</item>
+    </string-array>
 </resources>

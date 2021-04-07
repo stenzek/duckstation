@@ -651,7 +651,7 @@
     </message>
     <message>
         <location filename="../biossettingswidget.cpp" line="97"/>
-        <source>Patches the BIOS to skip the console&apos;s boot animation. Does not work with all games, but usually safe to enabled.</source>
+        <source>Patches the BIOS to skip the console&apos;s boot animation. Does not work with all games, but usually safe to enable.</source>
         <translation>Past de BIOS aan zodat hij de opstart-animatie overslaat. Werkt niet met alle spellen, maar over het algemeen veilig om aan te zetten.</translation>
     </message>
     <message>

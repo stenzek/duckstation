@@ -8,6 +8,10 @@
 #include <tuple>
 #include <vector>
 
+namespace Common {
+class Error;
+}
+
 class CDImage
 {
 public:
@@ -191,10 +195,14 @@ public:
   static u32 GetBytesPerSector(TrackMode mode);
 
   // Opening disc image.
-  static std::unique_ptr<CDImage> Open(const char* filename);
-  static std::unique_ptr<CDImage> OpenBinImage(const char* filename);
-  static std::unique_ptr<CDImage> OpenCueSheetImage(const char* filename);
-  static std::unique_ptr<CDImage> OpenCHDImage(const char* filename);
+  static std::unique_ptr<CDImage> Open(const char* filename, Common::Error* error);
+  static std::unique_ptr<CDImage> OpenBinImage(const char* filename, Common::Error* error);
+  static std::unique_ptr<CDImage> OpenCueSheetImage(const char* filename, Common::Error* error);
+  static std::unique_ptr<CDImage> OpenCHDImage(const char* filename, Common::Error* error);
+  static std::unique_ptr<CDImage> OpenEcmImage(const char* filename, Common::Error* error);
+  static std::unique_ptr<CDImage> OpenMdsImage(const char* filename, Common::Error* error);
+  static std::unique_ptr<CDImage> OpenPBPImage(const char* filename, Common::Error* error);
+  static std::unique_ptr<CDImage> OpenM3uImage(const char* filename, Common::Error* error);
   static std::unique_ptr<CDImage>
   CreateMemoryImage(CDImage* image, ProgressCallback* progress = ProgressCallback::NullProgressCallback);
 
@@ -240,7 +248,10 @@ public:
   bool ReadRawSector(void* buffer);
 
   // Reads sub-channel Q for the current LBA.
-  virtual bool ReadSubChannelQ(SubChannelQ* subq);
+  bool ReadSubChannelQ(SubChannelQ* subq);
+
+  // Reads sub-channel Q for the specified index+LBA.
+  virtual bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index);
 
   // Returns true if the image has replacement subchannel data.
   virtual bool HasNonStandardSubchannel() const;
@@ -248,7 +259,28 @@ public:
   // Reads a single sector from an index.
   virtual bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) = 0;
 
+  // Retrieve image metadata.
+  virtual std::string GetMetadata(const std::string_view& type) const;
+
+  // Returns true if this image type has sub-images (e.g. m3u).
+  virtual bool HasSubImages() const;
+
+  // Returns the number of sub-images in this image, if the format supports multiple.
+  virtual u32 GetSubImageCount() const;
+
+  // Returns the current sub-image index, if any.
+  virtual u32 GetCurrentSubImage() const;
+
+  // Changes the current sub-image. If this fails, the image state is unchanged.
+  virtual bool SwitchSubImage(u32 index, Common::Error* error);
+
+  // Retrieve sub-image metadata.
+  virtual std::string GetSubImageMetadata(u32 index, const std::string_view& type) const;
+
 protected:
+  void ClearTOC();
+  void CopyTOC(const CDImage* image);
+
   const Index* GetIndexForDiscPosition(LBA pos);
   const Index* GetIndexForTrackPosition(u32 track_number, LBA track_pos);
 
@@ -256,7 +288,7 @@ protected:
   bool GenerateSubChannelQ(SubChannelQ* subq, LBA lba);
 
   /// Generates sub-channel Q from the given index and index-offset.
-  void GenerateSubChannelQ(SubChannelQ* subq, const Index* index, u32 index_offset);
+  void GenerateSubChannelQ(SubChannelQ* subq, const Index& index, u32 index_offset);
 
   /// Synthesis of lead-out data.
   void AddLeadOutIndex();
@@ -267,6 +299,7 @@ protected:
   std::vector<Track> m_tracks;
   std::vector<Index> m_indices;
 
+private:
   // Position on disc.
   LBA m_position_on_disc = 0;
 

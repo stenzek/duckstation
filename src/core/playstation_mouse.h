@@ -32,7 +32,7 @@ public:
   void Reset() override;
   bool DoState(StateWrapper& sw, bool apply_input_state) override;
 
-  void SetAxisState(s32 axis_code, float value) override;
+  bool GetButtonState(s32 button_code) const override;
   void SetButtonState(s32 button_code, bool pressed) override;
 
   void ResetTransferState() override;

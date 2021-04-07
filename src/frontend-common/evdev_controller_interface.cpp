@@ -5,11 +5,16 @@
 #include "core/controller.h"
 #include "core/host_interface.h"
 #include "core/system.h"
-#include <alloca.h>
+#include <cstdlib>
 #include <cmath>
 #include <fcntl.h>
 #include <poll.h>
 #include <unistd.h>
+
+#ifdef __linux__
+#include <alloca.h>
+#endif
+
 Log_SetChannel(EvdevControllerInterface);
 
 EvdevControllerInterface::EvdevControllerInterface() = default;

@@ -125,7 +125,6 @@ public:
   virtual void Shutdown() override;
 
   virtual bool BootSystem(const SystemBootParameters& parameters) override;
-  virtual void PowerOffSystem() override;
   virtual void ResetSystem() override;
   virtual void DestroySystem() override;
 
@@ -169,6 +168,9 @@ public:
   /// Saves the current input configuration to the specified profile name.
   bool SaveInputProfile(const char* profile_path);
 
+  /// Powers off the system, optionally saving the resume state.
+  void PowerOffSystem(bool save_resume_state);
+
   /// Loads state from the specified filename.
   bool LoadState(const char* filename);
 
@@ -178,14 +180,16 @@ public:
   /// Saves the current emulation state to a file. Specifying a slot of -1 saves the "resume" save state.
   bool SaveState(bool global, s32 slot);
 
+  /// Returns true if the specified file/disc image is resumable.
+  bool CanResumeSystemFromFile(const char* filename);
+
   /// Loads the resume save state for the given game. Optionally boots the game anyway if loading fails.
   bool ResumeSystemFromState(const char* filename, bool boot_on_failure);
 
   /// Loads the most recent resume save state. This may be global or per-game.
   bool ResumeSystemFromMostRecentState();
 
-  /// Saves the resume save state, call when shutting down. Not called automatically on DestroySystem() since that can
-  /// be called as a result of an error.
+  /// Saves the resume save state, call when shutting down.
   bool SaveResumeSaveState();
 
   /// Returns a list of save states for the specified game code.
@@ -268,6 +272,9 @@ public:
   /// Converts a fullscreen mode to a string.
   static std::string GetFullscreenModeString(u32 width, u32 height, float refresh_rate);
 
+  /// Returns true if the state should be saved on shutdown.
+  bool ShouldSaveResumeState() const;
+
   /// Returns true if fast forwarding or slow motion is currently active.
   bool IsRunningAtNonStandardSpeed() const;
 
@@ -303,6 +310,9 @@ public:
   void DrawFPSWindow();
   void DrawOSDMessages();
   void DrawDebugWindows();
+
+  /// Returns true if features such as save states should be disabled.
+  bool IsCheevosChallengeModeActive() const;
 
 protected:
   enum : u32
@@ -349,7 +359,7 @@ protected:
   void RegisterHotkey(String category, String name, String display_name, InputButtonHandler handler);
   bool HandleHostKeyEvent(HostKeyCode code, HostKeyCode modifiers, bool pressed);
   bool HandleHostMouseEvent(HostMouseButton button, bool pressed);
-  void UpdateInputMap(SettingsInterface& si);
+  virtual void UpdateInputMap(SettingsInterface& si);
   void ClearInputMap();
 
   void AddControllerRumble(u32 controller_index, u32 num_motors, ControllerRumbleCallback callback);
@@ -387,6 +397,9 @@ protected:
   /// Saves current settings variables to ini.
   virtual void SaveSettings(SettingsInterface& si) override;
 
+  /// Checks and fixes up any incompatible settings.
+  virtual void FixIncompatibleSettings(bool display_osd_messages) override;
+
   /// Checks for settings changes, std::move() the old settings away for comparing beforehand.
   virtual void CheckForSettingsChanges(const Settings& old_settings) override;
 
@@ -401,14 +414,13 @@ protected:
 
   bool CreateHostDisplayResources();
   void ReleaseHostDisplayResources();
-  void OnHostDisplayResized(u32 new_width, u32 new_height, float new_scale);
+  void OnHostDisplayResized();
 
   virtual void DrawImGuiWindows();
 
   void DoFrameStep();
   void DoToggleCheats();
 
-  std::string m_settings_filename;
   std::unique_ptr<SettingsInterface> m_settings_interface;
   std::recursive_mutex m_settings_mutex;
 

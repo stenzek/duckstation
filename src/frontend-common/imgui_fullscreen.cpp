@@ -29,8 +29,8 @@ ImFont* g_icon_font = nullptr;
 float g_layout_scale = 1.0f;
 float g_layout_padding_left = 0.0f;
 float g_layout_padding_top = 0.0f;
+float g_menu_bar_size = 0.0f;
 
-static float s_menu_bar_size;
 static std::string s_font_filename;
 static std::string s_icon_font_filename;
 static std::vector<u8> s_icon_font_data;
@@ -81,10 +81,10 @@ void SetFontGlyphRanges(const ImWchar* glyph_ranges)
 
 void SetMenuBarSize(float size)
 {
-  if (s_menu_bar_size == size)
+  if (g_menu_bar_size == size)
     return;
 
-  s_menu_bar_size = size;
+  g_menu_bar_size = size;
 }
 
 void SetResolveTextureFunction(ResolveTextureHandleCallback callback)
@@ -186,7 +186,7 @@ bool UpdateLayoutScale()
   const ImGuiIO& io = ImGui::GetIO();
 
   const float screen_width = io.DisplaySize.x;
-  const float screen_height = io.DisplaySize.y - s_menu_bar_size;
+  const float screen_height = io.DisplaySize.y - g_menu_bar_size;
   const float screen_ratio = screen_width / screen_height;
   const float old_scale = g_layout_scale;
 
@@ -194,14 +194,14 @@ bool UpdateLayoutScale()
   {
     // screen is wider, use height, pad width
     g_layout_scale = screen_height / LAYOUT_SCREEN_HEIGHT;
-    g_layout_padding_top = s_menu_bar_size;
+    g_layout_padding_top = g_menu_bar_size;
     g_layout_padding_left = (screen_width - (LAYOUT_SCREEN_WIDTH * g_layout_scale)) / 2.0f;
   }
   else
   {
     // screen is taller, use width, pad height
     g_layout_scale = screen_width / LAYOUT_SCREEN_WIDTH;
-    g_layout_padding_top = (screen_height - (LAYOUT_SCREEN_HEIGHT * g_layout_scale)) / 2.0f + s_menu_bar_size;
+    g_layout_padding_top = (screen_height - (LAYOUT_SCREEN_HEIGHT * g_layout_scale)) / 2.0f + g_menu_bar_size;
     g_layout_padding_left = 0.0f;
   }
 
@@ -226,7 +226,10 @@ void EndLayout()
 
   const float notification_margin = LayoutScale(10.0f);
   const float spacing = LayoutScale(10.0f);
-  ImVec2 position(notification_margin, ImGui::GetIO().DisplaySize.y - notification_margin);
+  const float notification_vertical_pos = GetNotificationVerticalPosition();
+  ImVec2 position(notification_margin,
+                  notification_vertical_pos * ImGui::GetIO().DisplaySize.y +
+                    ((notification_vertical_pos >= 0.5f) ? -notification_margin : notification_margin));
   DrawBackgroundProgressDialogs(position, spacing);
   DrawNotifications(position, spacing);
 
@@ -234,10 +237,15 @@ void EndLayout()
   ImGui::PopStyleVar(2);
 }
 
+bool IsCancelButtonPressed()
+{
+  return ImGui::IsNavInputTest(ImGuiNavInput_Cancel, ImGuiInputReadMode_Pressed);
+}
+
 bool BeginFullscreenColumns(const char* title)
 {
-  ImGui::SetNextWindowPos(ImVec2(g_layout_padding_left, s_menu_bar_size));
-  ImGui::SetNextWindowSize(ImVec2(LayoutScale(LAYOUT_SCREEN_WIDTH), ImGui::GetIO().DisplaySize.y - s_menu_bar_size));
+  ImGui::SetNextWindowPos(ImVec2(g_layout_padding_left, g_menu_bar_size));
+  ImGui::SetNextWindowSize(ImVec2(LayoutScale(LAYOUT_SCREEN_WIDTH), ImGui::GetIO().DisplaySize.y - g_menu_bar_size));
 
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
@@ -268,7 +276,7 @@ void EndFullscreenColumns()
 bool BeginFullscreenColumnWindow(float start, float end, const char* name, const ImVec4& background)
 {
   const ImVec2 pos(LayoutScale(start), 0.0f);
-  const ImVec2 size(LayoutScale(end - start), ImGui::GetIO().DisplaySize.y - s_menu_bar_size);
+  const ImVec2 size(LayoutScale(end - start), ImGui::GetIO().DisplaySize.y - g_menu_bar_size);
 
   ImGui::PushStyleColor(ImGuiCol_ChildBg, background);
 
@@ -454,7 +462,7 @@ void MenuHeading(const char* title, bool draw_line /*= true*/)
 
   bool visible, hovered;
   ImRect bb;
-  MenuButtonFrame("menu_heading", false, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, &visible, &hovered, &bb);
+  MenuButtonFrame(title, false, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, &visible, &hovered, &bb);
   if (!visible)
     return;
 
@@ -471,6 +479,46 @@ void MenuHeading(const char* title, bool draw_line /*= true*/)
     ImGui::GetWindowDrawList()->AddLine(line_start, line_end, ImGui::GetColorU32(ImGuiCol_TextDisabled),
                                         line_thickness);
   }
+}
+
+bool MenuHeadingButton(const char* title, const char* value /*= nullptr*/, bool enabled /*= true*/,
+                       bool draw_line /*= true*/)
+{
+  const float line_thickness = draw_line ? LayoutScale(1.0f) : 0.0f;
+  const float line_padding = draw_line ? LayoutScale(5.0f) : 0.0f;
+
+  ImRect bb;
+  bool visible, hovered;
+  bool pressed = MenuButtonFrame(title, enabled, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, &visible, &hovered, &bb);
+  if (!visible)
+    return false;
+
+  if (!enabled)
+    ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetColorU32(ImGuiCol_TextDisabled));
+  ImGui::PushFont(g_large_font);
+  ImGui::RenderTextClipped(bb.Min, bb.Max, title, nullptr, nullptr, ImVec2(0.0f, 0.0f), &bb);
+
+  if (value)
+  {
+    const ImVec2 value_size(
+      g_large_font->CalcTextSizeA(g_large_font->FontSize, std::numeric_limits<float>::max(), 0.0f, value));
+    const ImRect value_bb(ImVec2(bb.Max.x - value_size.x, bb.Min.y), ImVec2(bb.Max.x, bb.Max.y));
+    ImGui::RenderTextClipped(value_bb.Min, value_bb.Max, value, nullptr, nullptr, ImVec2(0.0f, 0.0f), &value_bb);
+  }
+
+  ImGui::PopFont();
+  if (!enabled)
+    ImGui::PopStyleColor();
+
+  if (draw_line)
+  {
+    const ImVec2 line_start(bb.Min.x, bb.Min.y + g_large_font->FontSize + line_padding);
+    const ImVec2 line_end(bb.Max.x, line_start.y);
+    ImGui::GetWindowDrawList()->AddLine(line_start, line_end, ImGui::GetColorU32(ImGuiCol_TextDisabled),
+                                        line_thickness);
+  }
+
+  return pressed;
 }
 
 bool ActiveButton(const char* title, bool is_active, bool enabled, float height, ImFont* font)
@@ -1095,7 +1143,7 @@ void DrawFileSelector()
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
                       LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
 
-  bool is_open = (ImGui::GetNavInputAmount(ImGuiNavInput_Cancel, ImGuiInputReadMode_Pressed) < 1.0f);
+  bool is_open = !IsCancelButtonPressed();
   bool directory_selected = false;
   if (ImGui::BeginPopupModal(s_file_selector_title.c_str(), &is_open,
                              ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
@@ -1211,7 +1259,7 @@ void DrawChoiceDialog()
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
                       LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
 
-  bool is_open = (ImGui::GetNavInputAmount(ImGuiNavInput_Cancel, ImGuiInputReadMode_Pressed) < 1.0f);
+  bool is_open = !IsCancelButtonPressed();
   s32 choice = -1;
 
   if (ImGui::BeginPopupModal(s_choice_dialog_title.c_str(), &is_open,
@@ -1276,6 +1324,25 @@ void DrawChoiceDialog()
     s_choice_dialog_callback(-1, no_string, false);
     CloseChoiceDialog();
   }
+}
+
+static float s_notification_vertical_position = 1.0f;
+static float s_notification_vertical_direction = -1.0f;
+
+float GetNotificationVerticalPosition()
+{
+  return s_notification_vertical_position;
+}
+
+float GetNotificationVerticalDirection()
+{
+  return s_notification_vertical_direction;
+}
+
+void SetNotificationVerticalPosition(float position, float direction)
+{
+  s_notification_vertical_position = position;
+  s_notification_vertical_direction = direction;
 }
 
 struct BackgroundProgressDialogData
@@ -1376,7 +1443,7 @@ void DrawBackgroundProgressDialogs(ImVec2& position, float spacing)
   for (const BackgroundProgressDialogData& data : s_background_progress_dialogs)
   {
     const float window_pos_x = position.x;
-    const float window_pos_y = position.y - window_height;
+    const float window_pos_y = position.y - ((s_notification_vertical_direction < 0.0f) ? window_height : 0.0f);
 
     dl->AddRectFilled(ImVec2(window_pos_x, window_pos_y),
                       ImVec2(window_pos_x + window_width, window_pos_y + window_height),
@@ -1400,7 +1467,7 @@ void DrawBackgroundProgressDialogs(ImVec2& position, float spacing)
                           pos.y + ((bar_end.y - pos.y) / 2.0f) - (text_size.y / 2.0f));
     dl->AddText(g_medium_font, g_medium_font->FontSize, text_pos, ImGui::GetColorU32(UIPrimaryTextColor()), text);
 
-    position.y -= window_height + spacing;
+    position.y += s_notification_vertical_direction * (window_height + spacing);
   }
 
   ImGui::PopFont();
@@ -1502,7 +1569,8 @@ void DrawNotifications(ImVec2& position, float spacing)
       x_offset = -(disp - (disp * Easing::OutBack((notif.duration - time_passed) / EASE_OUT_TIME)));
     }
 
-    const ImVec2 box_min(position.x + x_offset, position.y - box_height);
+    const ImVec2 box_min(position.x + x_offset,
+                         position.y - ((s_notification_vertical_direction < 0.0f) ? box_height : 0.0f));
     const ImVec2 box_max(box_min.x + box_width, box_min.y + box_height);
 
     ImDrawList* dl = ImGui::GetForegroundDrawList();
@@ -1532,7 +1600,7 @@ void DrawNotifications(ImVec2& position, float spacing)
     dl->AddText(text_font, text_font->FontSize, text_min, toast_text_color, notif.text.c_str(),
                 notif.text.c_str() + notif.text.size(), max_text_width);
 
-    position.y -= box_height + shadow_size + spacing;
+    position.y += s_notification_vertical_direction * (box_height + shadow_size + spacing);
     index++;
   }
 }

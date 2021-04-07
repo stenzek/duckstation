@@ -19,6 +19,7 @@
 
 class ByteStream;
 
+class QActionGroup;
 class QEventLoop;
 class QMenu;
 class QWidget;
@@ -33,6 +34,7 @@ class MainWindow;
 class QtDisplayWidget;
 
 Q_DECLARE_METATYPE(std::shared_ptr<const SystemBootParameters>);
+Q_DECLARE_METATYPE(GPURenderer);
 
 class QtHostInterface final : public QObject, public CommonHostInterface
 {
@@ -64,8 +66,10 @@ public:
   void SetStringListSettingValue(const char* section, const char* key, const std::vector<std::string>& values);
   void RemoveSettingValue(const char* section, const char* key);
 
-  TinyString TranslateString(const char* context, const char* str) const override;
-  std::string TranslateStdString(const char* context, const char* str) const override;
+  TinyString TranslateString(const char* context, const char* str, const char* disambiguation = nullptr,
+                             int n = -1) const override;
+  std::string TranslateStdString(const char* context, const char* str, const char* disambiguation = nullptr,
+                                 int n = -1) const override;
 
   bool RequestRenderWindowSize(s32 new_window_width, s32 new_window_height) override;
   void* GetTopLevelWindowHandle() const override;
@@ -91,7 +95,7 @@ public:
   void populateGameListContextMenu(const GameListEntry* entry, QWidget* parent_window, QMenu* menu);
 
   /// Fills menu with the current playlist entries. The disc index is marked as checked.
-  void populatePlaylistEntryMenu(QMenu* menu);
+  void populateChangeDiscSubImageMenu(QMenu* menu, QActionGroup* action_group);
 
   /// Fills menu with the current cheat options.
   void populateCheatsMenu(QMenu* menu);
@@ -131,8 +135,9 @@ Q_SIGNALS:
   void displaySizeRequested(qint32 width, qint32 height);
   void focusDisplayWidgetRequested();
   void destroyDisplayRequested();
-  void systemPerformanceCountersUpdated(float speed, float fps, float vps, float avg_frame_time,
-                                        float worst_frame_time);
+  void systemPerformanceCountersUpdated(float speed, float fps, float vps, float avg_frame_time, float worst_frame_time,
+                                        GPURenderer renderer, quint32 render_width, quint32 render_height,
+                                        bool render_interlaced);
   void runningGameChanged(const QString& filename, const QString& game_code, const QString& game_title);
   void exitRequested();
   void inputProfileLoaded();
@@ -183,7 +188,7 @@ private Q_SLOTS:
   void onDisplayWindowMouseWheelEvent(const QPoint& delta_angle);
   void onDisplayWindowResized(int width, int height);
   void onDisplayWindowFocused();
-  void onDisplayWindowKeyEvent(int key, bool pressed);
+  void onDisplayWindowKeyEvent(int key, int mods, bool pressed);
   void doBackgroundControllerPoll();
   void doSaveSettings();
 
@@ -262,8 +267,6 @@ private:
   void updateDisplayState();
   void queueSettingsSave();
   void wakeThread();
-
-  std::unique_ptr<QTranslator> m_translator;
 
   MainWindow* m_main_window = nullptr;
   QThread* m_original_thread = nullptr;

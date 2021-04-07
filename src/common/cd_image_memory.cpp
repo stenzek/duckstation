@@ -17,7 +17,7 @@ public:
 
   bool CopyImage(CDImage* image, ProgressCallback* progress);
 
-  bool ReadSubChannelQ(SubChannelQ* subq) override;
+  bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index) override;
   bool HasNonStandardSubchannel() const override;
 
 protected:
@@ -61,7 +61,7 @@ bool CDImageMemory::CopyImage(CDImage* image, ProgressCallback* progress)
     static_cast<u8*>(std::malloc(static_cast<size_t>(RAW_SECTOR_SIZE) * static_cast<size_t>(m_memory_sectors)));
   if (!m_memory)
   {
-    progress->DisplayFormattedModalError("Failed to allocate memory for %llu sectors", m_memory_sectors);
+    progress->DisplayFormattedModalError("Failed to allocate memory for %u sectors", m_memory_sectors);
     return false;
   }
 
@@ -116,12 +116,12 @@ bool CDImageMemory::CopyImage(CDImage* image, ProgressCallback* progress)
   return Seek(1, Position{0, 0, 0});
 }
 
-bool CDImageMemory::ReadSubChannelQ(SubChannelQ* subq)
+bool CDImageMemory::ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index)
 {
-  if (m_sbi.GetReplacementSubChannelQ(m_position_on_disc, subq))
+  if (m_sbi.GetReplacementSubChannelQ(index.start_lba_on_disc + lba_in_index, subq))
     return true;
 
-  return CDImage::ReadSubChannelQ(subq);
+  return CDImage::ReadSubChannelQ(subq, index, lba_in_index);
 }
 
 bool CDImageMemory::HasNonStandardSubchannel() const

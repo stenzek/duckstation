@@ -67,6 +67,7 @@ using ImGuiFullscreen::MenuButton;
 using ImGuiFullscreen::MenuButtonFrame;
 using ImGuiFullscreen::MenuButtonWithValue;
 using ImGuiFullscreen::MenuHeading;
+using ImGuiFullscreen::MenuHeadingButton;
 using ImGuiFullscreen::MenuImageButton;
 using ImGuiFullscreen::OpenChoiceDialog;
 using ImGuiFullscreen::OpenFileSelector;
@@ -91,6 +92,15 @@ static void OpenAboutWindow();
 static void SetDebugMenuEnabled(bool enabled);
 static void UpdateDebugMenuVisibility();
 
+static ALWAYS_INLINE bool IsCheevosHardcoreModeActive()
+{
+#ifdef WITH_CHEEVOS
+  return Cheevos::IsChallengeModeActive();
+#else
+  return false;
+#endif
+}
+
 static CommonHostInterface* s_host_interface;
 static MainWindowType s_current_main_window = MainWindowType::Landing;
 static std::bitset<static_cast<u32>(FrontendCommon::ControllerNavigationButton::Count)> s_nav_input_values{};
@@ -99,6 +109,7 @@ static bool s_debug_menu_allowed = false;
 static bool s_quick_menu_was_open = false;
 static bool s_was_paused_on_quick_menu_open = false;
 static bool s_about_window_open = false;
+static u32 s_close_button_state = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Resources
@@ -139,6 +150,7 @@ static void DrawSettingsWindow();
 static void BeginInputBinding(InputBindingType type, const std::string_view& section, const std::string_view& key,
                               const std::string_view& display_name);
 static void EndInputBinding();
+static void ClearInputBinding(const char* section, const char* key);
 static void DrawInputBindingWindow();
 
 static SettingsPage s_settings_page = SettingsPage::InterfaceSettings;
@@ -242,7 +254,7 @@ void SystemPaused(bool paused)
 
 void OpenQuickMenu()
 {
-  if (!System::IsValid())
+  if (!System::IsValid() || s_current_main_window != MainWindowType::None)
     return;
 
   s_was_paused_on_quick_menu_open = System::IsPaused();
@@ -283,14 +295,15 @@ void Shutdown()
 void Render()
 {
   if (s_debug_menu_enabled)
-  {
     DrawDebugMenu();
-    if (System::IsValid())
-      s_host_interface->DrawDebugWindows();
-  }
-  else if (System::IsValid())
+
+  if (System::IsValid())
   {
-    DrawStatsOverlay();
+    if (!s_debug_menu_enabled)
+      DrawStatsOverlay();
+
+    if (!IsCheevosHardcoreModeActive())
+      s_host_interface->DrawDebugWindows();
   }
 
   ImGuiFullscreen::BeginLayout();
@@ -345,6 +358,7 @@ void SaveAndApplySettings()
 void ClearImGuiFocus()
 {
   ImGui::SetWindowFocus(nullptr);
+  s_close_button_state = 0;
 }
 
 void ReturnToMainWindow()
@@ -502,7 +516,8 @@ bool InvalidateCachedTexture(const std::string& path)
 
 static ImGuiFullscreen::FileSelectorFilters GetDiscImageFilters()
 {
-  return {"*.bin", "*.cue", "*.iso", "*.img", "*.chd", "*.psexe", "*.exe", "*.psf", "*.minipsf", "*.m3u"};
+  return {"*.bin",   "*.cue", "*.iso", "*.img",     "*.chd", "*.ecm", "*.mds",
+          "*.psexe", "*.exe", "*.psf", "*.minipsf", "*.m3u", "*.pbp"};
 }
 
 static void DoStartPath(const std::string& path, bool allow_resume)
@@ -550,9 +565,7 @@ static void DoPowerOff()
     if (!System::IsValid())
       return;
 
-    if (g_settings.save_state_on_exit)
-      s_host_interface->SaveResumeSaveState();
-    s_host_interface->PowerOffSystem();
+    s_host_interface->PowerOffSystem(s_host_interface->ShouldSaveResumeState());
 
     ReturnToMainWindow();
   });
@@ -654,35 +667,39 @@ static void DoChangeDiscFromFile()
 
 static void DoChangeDisc()
 {
-  const u32 playlist_count = System::GetMediaPlaylistCount();
-  if (playlist_count == 0)
+  if (!System::HasMediaSubImages())
   {
     DoChangeDiscFromFile();
     return;
   }
 
-  const u32 current_index = (playlist_count > 0) ? System::GetMediaPlaylistIndex() : 0;
+  const u32 current_index = System::GetMediaSubImageIndex();
+  const u32 count = System::GetMediaSubImageCount();
   ImGuiFullscreen::ChoiceDialogOptions options;
-  options.reserve(playlist_count + 1);
+  options.reserve(count + 1);
   options.emplace_back("From File...", false);
 
-  for (u32 i = 0; i < playlist_count; i++)
-    options.emplace_back(System::GetMediaPlaylistPath(i), i == current_index);
+  for (u32 i = 0; i < count; i++)
+    options.emplace_back(System::GetMediaSubImageTitle(i), i == current_index);
 
   auto callback = [](s32 index, const std::string& title, bool checked) {
-    if (index < 0)
-      return;
     if (index == 0)
     {
+      CloseChoiceDialog();
       DoChangeDiscFromFile();
       return;
     }
+    else if (index > 0)
+    {
+      System::SwitchMediaSubImage(static_cast<u32>(index - 1));
+    }
 
-    System::SwitchMediaFromPlaylist(static_cast<u32>(index - 1));
+    ClearImGuiFocus();
     CloseChoiceDialog();
+    ReturnToMainWindow();
   };
 
-  OpenChoiceDialog(ICON_FA_LIST, true, std::move(options), std::move(callback));
+  OpenChoiceDialog(ICON_FA_COMPACT_DISC "  Select Disc Image", true, std::move(options), std::move(callback));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -707,7 +724,7 @@ void DrawLandingWindow()
     BeginMenuButtons(7, 0.5f);
 
     if (MenuButton(" " ICON_FA_PLAY_CIRCLE "  Resume",
-                   "Starts the console from where it was before it was last closed."))
+                   "Starts the console from where it was before it was last closed.", !IsCheevosHardcoreModeActive()))
     {
       s_host_interface->RunLater([]() { s_host_interface->ResumeSystemFromMostRecentState(); });
       ClearImGuiFocus();
@@ -725,7 +742,7 @@ void DrawLandingWindow()
     if (MenuButton(" " ICON_FA_TOOLBOX "  Start BIOS", "Start the console without any disc inserted."))
       s_host_interface->RunLater(DoStartBIOS);
 
-    if (MenuButton(" " ICON_FA_UNDO "  Load State", "Loads a global save state."))
+    if (MenuButton(" " ICON_FA_UNDO "  Load State", "Loads a global save state.", !IsCheevosHardcoreModeActive()))
     {
       OpenSaveStateSelector(true);
     }
@@ -824,6 +841,8 @@ static void DrawInputBindingButton(InputBindingType type, const char* section, c
 
   if (clicked)
     BeginInputBinding(type, section, name, display_name);
+  else if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+    ClearInputBinding(section, name);
 }
 
 static void ClearInputBindingVariables()
@@ -832,6 +851,11 @@ static void ClearInputBindingVariables()
   s_input_binding_section.Clear();
   s_input_binding_key.Clear();
   s_input_binding_display_name.Clear();
+}
+
+bool IsBindingInput()
+{
+  return s_input_binding_type != InputBindingType::None;
 }
 
 bool HandleKeyboardBinding(const char* keyName, bool pressed)
@@ -846,16 +870,15 @@ bool HandleKeyboardBinding(const char* keyName, bool pressed)
   }
 
   if (!s_input_binding_keyboard_pressed)
-  {
     return false;
-  }
 
   TinyString value;
   value.Format("Keyboard/%s", keyName);
 
-  s_host_interface->GetSettingsInterface()->SetStringValue(s_input_binding_section, s_input_binding_key, value);
-  s_host_interface->AddFormattedOSDMessage(5.0f, "Set %s binding %s to %s.", s_input_binding_section.GetCharArray(),
-                                           s_input_binding_display_name.GetCharArray(), value.GetCharArray());
+  {
+    auto lock = s_host_interface->GetSettingsLock();
+    s_host_interface->GetSettingsInterface()->SetStringValue(s_input_binding_section, s_input_binding_key, value);
+  }
 
   EndInputBinding();
   s_host_interface->RunLater(SaveAndApplySettings);
@@ -912,9 +935,10 @@ void BeginInputBinding(InputBindingType type, const std::string_view& section, c
       if (value.IsEmpty())
         return ControllerInterface::Hook::CallbackResult::ContinueMonitoring;
 
-      s_host_interface->GetSettingsInterface()->SetStringValue(s_input_binding_section, s_input_binding_key, value);
-      s_host_interface->AddFormattedOSDMessage(5.0f, "Set %s binding %s to %s.", s_input_binding_section.GetCharArray(),
-                                               s_input_binding_display_name.GetCharArray(), value.GetCharArray());
+      {
+        auto lock = s_host_interface->GetSettingsLock();
+        s_host_interface->GetSettingsInterface()->SetStringValue(s_input_binding_section, s_input_binding_key, value);
+      }
 
       ClearInputBindingVariables();
       s_host_interface->RunLater(SaveAndApplySettings);
@@ -932,6 +956,16 @@ void EndInputBinding()
   ControllerInterface* ci = s_host_interface->GetControllerInterface();
   if (ci)
     ci->ClearHook();
+}
+
+void ClearInputBinding(const char* section, const char* key)
+{
+  {
+    auto lock = s_host_interface->GetSettingsLock();
+    s_host_interface->GetSettingsInterface()->DeleteValue(section, key);
+  }
+
+  s_host_interface->RunLater(SaveAndApplySettings);
 }
 
 void DrawInputBindingWindow()
@@ -1066,6 +1100,110 @@ static bool ToggleButtonForNonSetting(const char* title, const char* summary, co
   return true;
 }
 
+static void DrawAchievementsLoginWindow()
+{
+  ImGui::SetNextWindowSize(LayoutScale(700.0f, 0.0f));
+  ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(10.0f, 10.0f));
+  ImGui::PushFont(g_large_font);
+
+  bool is_open = true;
+  if (ImGui::BeginPopupModal("Achievements Login", &is_open, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize))
+  {
+
+    ImGui::TextWrapped("Please enter user name and password for retroachievements.org.");
+    ImGui::NewLine();
+    ImGui::TextWrapped(
+      "Your password will not be saved in DuckStation, an access token will be generated and used instead.");
+
+    ImGui::NewLine();
+
+    static char username[256] = {};
+    static char password[256] = {};
+
+    ImGui::Text("User Name: ");
+    ImGui::SameLine(LayoutScale(200.0f));
+    ImGui::InputText("##username", username, sizeof(username));
+
+    ImGui::Text("Password: ");
+    ImGui::SameLine(LayoutScale(200.0f));
+    ImGui::InputText("##password", password, sizeof(password), ImGuiInputTextFlags_Password);
+
+    ImGui::NewLine();
+
+    BeginMenuButtons();
+
+    const bool login_enabled = (std::strlen(username) > 0 && std::strlen(password) > 0);
+
+    if (ActiveButton(ICON_FA_KEY "  Login", false, login_enabled))
+    {
+      Cheevos::LoginAsync(username, password);
+      std::memset(username, 0, sizeof(username));
+      std::memset(password, 0, sizeof(password));
+      ImGui::CloseCurrentPopup();
+    }
+
+    if (ActiveButton(ICON_FA_TIMES "  Cancel", false))
+      ImGui::CloseCurrentPopup();
+
+    EndMenuButtons();
+
+    ImGui::EndPopup();
+  }
+
+  ImGui::PopFont();
+  ImGui::PopStyleVar(2);
+}
+
+static bool ConfirmChallengeModeEnable()
+{
+  if (!System::IsValid())
+    return true;
+
+  const bool cheevos_enabled = s_host_interface->GetBoolSettingValue("Cheevos", "Enabled", false);
+  const bool cheevos_hardcore = s_host_interface->GetBoolSettingValue("Cheevos", "ChallengeMode", false);
+  if (!cheevos_enabled || !cheevos_hardcore)
+    return true;
+
+  SmallString message;
+  message.AppendString("Enabling hardcore mode will shut down your current game.\n\n");
+
+  if (s_host_interface->ShouldSaveResumeState())
+  {
+    message.AppendString(
+      "The current state will be saved, but you will be unable to load it until you disable hardcore mode.\n\n");
+  }
+
+  message.AppendString("Do you want to continue?");
+
+  if (!s_host_interface->ConfirmMessage(message))
+    return false;
+
+  s_host_interface->PowerOffSystem(s_host_interface->ShouldSaveResumeState());
+  return true;
+}
+
+static bool WantsToCloseMenu()
+{
+  // Wait for the Close button to be released, THEN pressed
+  if (s_close_button_state == 0)
+  {
+    if (!ImGuiFullscreen::IsCancelButtonPressed())
+      s_close_button_state = 1;
+  }
+  else if (s_close_button_state == 1)
+  {
+    if (ImGuiFullscreen::IsCancelButtonPressed())
+    {
+      s_close_button_state = 0;
+      return true;
+    }
+  }
+  return false;
+}
+
 void DrawSettingsWindow()
 {
   BeginFullscreenColumns();
@@ -1088,7 +1226,7 @@ void DrawSettingsWindow()
     }
 
     ImGui::SetCursorPosY(ImGui::GetWindowHeight() - LayoutScale(50.0f));
-    if (ActiveButton(ICON_FA_BACKWARD "  Back", false))
+    if (ActiveButton(ICON_FA_BACKWARD "  Back", false) || WantsToCloseMenu())
       ReturnToMainWindow();
 
     EndMenuButtons();
@@ -1573,17 +1711,14 @@ void DrawSettingsWindow()
         TinyString section;
         TinyString key;
 
+        std::array<TinyString, NUM_CONTROLLER_AND_CARD_PORTS> port_labels = s_settings_copy.GeneratePortLabels();
+
         for (u32 port = 0; port < NUM_CONTROLLER_AND_CARD_PORTS; port++)
         {
-          u32 console_port = port / 4u;
-          if (s_settings_copy.IsMultitapEnabledOnPort(console_port))
-            MenuHeading(TinyString::FromFormat("Port %u%c", console_port + 1u, 'A' + (port % 4u)));
-          else if (port < 2u)
-            MenuHeading(TinyString::FromFormat("Port %u", port + 1u));
-          else if (port % 4u == 0u && s_settings_copy.IsMultitapEnabledOnPort(0))
-            MenuHeading(TinyString::FromFormat("Port %u", console_port + 1u));
-          else
+          if (port_labels[port].IsEmpty())
             continue;
+          else
+            MenuHeading(port_labels[port]);
 
           settings_changed |= EnumChoiceButton(
             TinyString::FromFormat(ICON_FA_GAMEPAD "  Controller Type##type%u", port),
@@ -1664,16 +1799,38 @@ void DrawSettingsWindow()
 
         MenuHeading("Shared Settings");
 
-        settings_changed |= ToggleButton(
-          "Use Single Card For Playlist",
-          "When using a playlist (m3u) and per-game (title) memory cards, use a single memory card for all discs.",
-          &s_settings_copy.memory_card_use_playlist_title);
+        settings_changed |= ToggleButton("Use Single Card For Sub-Images",
+                                         "When using a multi-disc image (m3u/pbp) and per-game (title) memory cards, "
+                                         "use a single memory card for all discs.",
+                                         &s_settings_copy.memory_card_use_playlist_title);
 
         static std::string memory_card_directory;
-        if (memory_card_directory.empty())
-          memory_card_directory = s_host_interface->GetUserDirectoryRelativePath("memcards");
+        static bool memory_card_directory_set = false;
+        if (!memory_card_directory_set)
+        {
+          memory_card_directory = s_host_interface->GetMemoryCardDirectory();
+          memory_card_directory_set = true;
+        }
 
-        MenuButton("Per-Game Memory Card Directory", memory_card_directory.c_str(), false);
+        if (MenuButton("Memory Card Directory", memory_card_directory.c_str()))
+        {
+          OpenFileSelector("Memory Card Directory", true, [](const std::string& path) {
+            if (!path.empty())
+            {
+              memory_card_directory = path;
+              s_settings_copy.memory_card_directory = path;
+              s_host_interface->RunLater(SaveAndApplySettings);
+            }
+            CloseFileSelector();
+          });
+        }
+
+        if (MenuButton("Reset Memory Card Directory", "Resets memory card directory to default (user directory)."))
+        {
+          s_settings_copy.memory_card_directory.clear();
+          s_host_interface->RunLater(SaveAndApplySettings);
+          memory_card_directory_set = false;
+        }
 
         EndMenuButtons();
       }
@@ -1795,14 +1952,23 @@ void DrawSettingsWindow()
           ToggleButton("Integer Upscaling", "Adds padding to ensure pixels are a whole number in size.",
                        &s_settings_copy.display_integer_scaling);
 
+        settings_changed |= ToggleButton(
+          "Stretch To Fit", "Fills the window with the active display area, regardless of the aspect ratio.",
+          &s_settings_copy.display_stretch);
+
+        settings_changed |=
+          ToggleButtonForNonSetting("Internal Resolution Screenshots",
+                                    "Saves screenshots at internal render resolution and without postprocessing.",
+                                    "Display", "InternalResolutionScreenshots", false);
+
         MenuHeading("On-Screen Display");
 
         settings_changed |= ToggleButton("Show OSD Messages", "Shows on-screen-display messages when events occur.",
                                          &s_settings_copy.display_show_osd_messages);
         settings_changed |= ToggleButton(
-          "Show Game FPS", "Shows the internal frame rate of the game in the top-right corner of the display.",
+          "Show Game Frame Rate", "Shows the internal frame rate of the game in the top-right corner of the display.",
           &s_settings_copy.display_show_fps);
-        settings_changed |= ToggleButton("Show Display FPS (VPS)",
+        settings_changed |= ToggleButton("Show Display FPS",
                                          "Shows the number of frames (or v-syncs) displayed per second by the system "
                                          "in the top-right corner of the display.",
                                          &s_settings_copy.display_show_vps);
@@ -1814,6 +1980,10 @@ void DrawSettingsWindow()
           ToggleButton("Show Resolution",
                        "Shows the current rendering resolution of the system in the top-right corner of the display.",
                        &s_settings_copy.display_show_resolution);
+        settings_changed |= ToggleButtonForNonSetting(
+          "Show Controller Input",
+          "Shows the current controller state of the system in the bottom-left corner of the display.", "Display",
+          "ShowInputs", false);
 
         EndMenuButtons();
       }
@@ -1957,22 +2127,44 @@ void DrawSettingsWindow()
         BeginMenuButtons();
 
         MenuHeading("Settings");
+        if (ToggleButtonForNonSetting(ICON_FA_TROPHY "  Enable RetroAchievements",
+                                      "When enabled and logged in, DuckStation will scan for achievements on startup.",
+                                      "Cheevos", "Enabled", false))
+        {
+          s_host_interface->RunLater([]() {
+            if (!ConfirmChallengeModeEnable())
+              s_host_interface->GetSettingsInterface()->SetBoolValue("Cheevos", "Enabled", false);
+            else
+              SaveAndApplySettings();
+          });
+        }
+
         settings_changed |= ToggleButtonForNonSetting(
-          "Enable RetroAchievements", "When enabled and logged in, DuckStation will scan for achievements on startup.",
-          "Cheevos", "Enabled", false);
-        settings_changed |= ToggleButtonForNonSetting(
-          "Rich Presence",
+          ICON_FA_USER_FRIENDS "  Rich Presence",
           "When enabled, rich presence information will be collected and sent to the server where supported.",
           "Cheevos", "RichPresence", true);
         settings_changed |=
-          ToggleButtonForNonSetting("Test Mode",
+          ToggleButtonForNonSetting(ICON_FA_STETHOSCOPE "  Test Mode",
                                     "When enabled, DuckStation will assume all achievements are locked and not "
                                     "send any unlock notifications to the server.",
                                     "Cheevos", "TestMode", false);
-        settings_changed |= ToggleButtonForNonSetting("Use First Disc From Playlist",
+        settings_changed |= ToggleButtonForNonSetting(ICON_FA_COMPACT_DISC "  Use First Disc From Playlist",
                                                       "When enabled, the first disc in a playlist will be used for "
                                                       "achievements, regardless of which disc is active.",
                                                       "Cheevos", "UseFirstDiscFromPlaylist", true);
+
+        if (ToggleButtonForNonSetting(ICON_FA_HARD_HAT "  Hardcore Mode",
+                                      "\"Challenge\" mode for achievements. Disables save state, cheats, and slowdown "
+                                      "functions, but you receive double the achievement points.",
+                                      "Cheevos", "ChallengeMode", false))
+        {
+          s_host_interface->RunLater([]() {
+            if (!ConfirmChallengeModeEnable())
+              s_host_interface->GetSettingsInterface()->SetBoolValue("Cheevos", "ChallengeMode", false);
+            else
+              SaveAndApplySettings();
+          });
+        }
 
         MenuHeading("Account");
         if (Cheevos::IsLoggedIn())
@@ -1994,13 +2186,20 @@ void DrawSettingsWindow()
           if (MenuButton(ICON_FA_KEY "  Logout", "Logs out of RetroAchievements."))
             Cheevos::Logout();
         }
-        else
+        else if (Cheevos::IsActive())
         {
-          ActiveButton(SmallString::FromFormat(ICON_FA_USER "  Not Logged In", Cheevos::GetUsername().c_str()), false,
-                       false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+          ActiveButton(ICON_FA_USER "  Not Logged In", false, false,
+                       ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
 
           if (MenuButton(ICON_FA_KEY "  Login", "Logs in to RetroAchievements."))
-            Cheevos::LoginAsync("", "");
+            ImGui::OpenPopup("Achievements Login");
+
+          DrawAchievementsLoginWindow();
+        }
+        else
+        {
+          ActiveButton(ICON_FA_USER "  Achievements are disabled.", false, false,
+                       ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
         }
 
         MenuHeading("Current Game");
@@ -2198,7 +2397,7 @@ void DrawQuickMenu(MainWindowType type)
                      ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING,
                      ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
 
-    if (ActiveButton(ICON_FA_PLAY "  Resume Game", false))
+    if (ActiveButton(ICON_FA_PLAY "  Resume Game", false) || WantsToCloseMenu())
       CloseQuickMenu();
 
     if (ActiveButton(ICON_FA_FAST_FORWARD "  Fast Forward", false))
@@ -2211,10 +2410,8 @@ void DrawQuickMenu(MainWindowType type)
 #ifdef WITH_CHEEVOS
     const bool achievements_enabled = Cheevos::HasActiveGame() && (Cheevos::GetAchievementCount() > 0);
     if (ActiveButton(ICON_FA_TROPHY "  Achievements", false, achievements_enabled))
-    {
-      CloseQuickMenu();
       s_current_main_window = MainWindowType::Achievements;
-    }
+
 #else
     ActiveButton(ICON_FA_TROPHY "  Achievements", false, false);
 #endif
@@ -2225,7 +2422,7 @@ void DrawQuickMenu(MainWindowType type)
       s_host_interface->RunLater([]() { s_host_interface->SaveScreenshot(); });
     }
 
-    if (ActiveButton(ICON_FA_UNDO "  Load State", false))
+    if (ActiveButton(ICON_FA_UNDO "  Load State", false, !IsCheevosHardcoreModeActive()))
     {
       s_current_main_window = MainWindowType::None;
       OpenSaveStateSelector(true);
@@ -2237,7 +2434,7 @@ void DrawQuickMenu(MainWindowType type)
       OpenSaveStateSelector(false);
     }
 
-    if (ActiveButton(ICON_FA_FROWN_OPEN "  Cheat List", false))
+    if (ActiveButton(ICON_FA_FROWN_OPEN "  Cheat List", false, !IsCheevosHardcoreModeActive()))
     {
       s_current_main_window = MainWindowType::None;
       DoCheatsMenu();
@@ -2464,7 +2661,7 @@ void DrawSaveStateSelector(bool is_loading, bool fullscreen)
     ImGui::SetNextWindowSize(LayoutScale(1000.0f, 680.0f));
     ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
     ImGui::OpenPopup(window_title);
-    bool is_open = true;
+    bool is_open = !WantsToCloseMenu();
     if (!ImGui::BeginPopupModal(window_title, &is_open,
                                 ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove) ||
         !is_open)
@@ -2830,13 +3027,6 @@ HostDisplayTexture* GetCoverForCurrentGame()
 //////////////////////////////////////////////////////////////////////////
 // Overlays
 //////////////////////////////////////////////////////////////////////////
-static ImDrawList* GetDrawListForOverlay()
-{
-  // If we're in the landing page, draw the OSD over the windows (since it covers it)
-  return (s_current_main_window != MainWindowType::None) ? ImGui::GetForegroundDrawList() :
-                                                           ImGui::GetBackgroundDrawList();
-}
-
 void DrawStatsOverlay()
 {
   if (!(g_settings.display_show_fps || g_settings.display_show_vps || g_settings.display_show_speed ||
@@ -2848,8 +3038,8 @@ void DrawStatsOverlay()
 
   const float margin = LayoutScale(10.0f);
   const float shadow_offset = DPIScale(1.0f);
-  float position_y = margin;
-  ImDrawList* dl = GetDrawListForOverlay();
+  float position_y = ImGuiFullscreen::g_menu_bar_size + margin;
+  ImDrawList* dl = ImGui::GetBackgroundDrawList();
   TinyString text;
   ImVec2 text_size;
   bool first = true;
@@ -2934,7 +3124,7 @@ void DrawOSDMessages()
   const float margin = LayoutScale(10.0f);
   const float padding = LayoutScale(10.0f);
   float position_x = margin;
-  float position_y = margin + static_cast<float>(s_host_interface->GetDisplay()->GetDisplayTopMargin());
+  float position_y = margin + ImGuiFullscreen::g_menu_bar_size;
 
   s_host_interface->EnumerateOSDMessages(
     [max_width, spacing, padding, &position_x, &position_y](const std::string& message, float time_remaining) -> bool {
@@ -2948,7 +3138,10 @@ void DrawOSDMessages()
       const ImVec2 text_size(ImGui::CalcTextSize(message.c_str(), nullptr, false, max_width));
       const ImVec2 size(text_size + LayoutScale(20.0f, 20.0f));
       const ImVec4 text_rect(pos.x + padding, pos.y + padding, pos.x + size.x - padding, pos.y + size.y - padding);
-      ImDrawList* dl = GetDrawListForOverlay();
+
+      // If we're in the landing page, draw the OSD over the windows (since it covers it)
+      ImDrawList* dl = (s_current_main_window != MainWindowType::None) ? ImGui::GetForegroundDrawList() :
+                                                                         ImGui::GetBackgroundDrawList();
       dl->AddRectFilled(pos, pos + size, IM_COL32(0x21, 0x21, 0x21, alpha), LayoutScale(10.0f));
       dl->AddRect(pos, pos + size, IM_COL32(0x48, 0x48, 0x48, alpha), LayoutScale(10.0f));
       dl->AddText(g_large_font, g_large_font->FontSize, ImVec2(text_rect.x, text_rect.y),
@@ -3183,21 +3376,27 @@ void DrawDebugStats()
   if (!System::IsShutdown())
   {
     const float framebuffer_scale = ImGui::GetIO().DisplayFramebufferScale.x;
+    const float framebuffer_width = ImGui::GetIO().DisplaySize.x;
 
     if (System::IsPaused())
     {
-      ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - (50.0f * framebuffer_scale));
+      ImGui::SetCursorPosX(framebuffer_width - (50.0f * framebuffer_scale));
       ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Paused");
     }
     else
     {
-      ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - (420.0f * framebuffer_scale));
+      const auto [display_width, display_height] = g_gpu->GetEffectiveDisplayResolution();
+      ImGui::SetCursorPosX(framebuffer_width - (580.0f * framebuffer_scale));
+      ImGui::Text("%ux%u (%s)", display_width, display_height,
+                  g_gpu->IsInterlacedDisplayEnabled() ? "interlaced" : "progressive");
+
+      ImGui::SetCursorPosX(framebuffer_width - (420.0f * framebuffer_scale));
       ImGui::Text("Average: %.2fms", System::GetAverageFrameTime());
 
-      ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - (310.0f * framebuffer_scale));
+      ImGui::SetCursorPosX(framebuffer_width - (310.0f * framebuffer_scale));
       ImGui::Text("Worst: %.2fms", System::GetWorstFrameTime());
 
-      ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - (210.0f * framebuffer_scale));
+      ImGui::SetCursorPosX(framebuffer_width - (210.0f * framebuffer_scale));
 
       const float speed = System::GetEmulationSpeed();
       const u32 rounded_speed = static_cast<u32>(std::round(speed));
@@ -3208,10 +3407,10 @@ void DrawDebugStats()
       else
         ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "%u%%", rounded_speed);
 
-      ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - (165.0f * framebuffer_scale));
+      ImGui::SetCursorPosX(framebuffer_width - (165.0f * framebuffer_scale));
       ImGui::Text("FPS: %.2f", System::GetFPS());
 
-      ImGui::SetCursorPosX(ImGui::GetIO().DisplaySize.x - (80.0f * framebuffer_scale));
+      ImGui::SetCursorPosX(framebuffer_width - (80.0f * framebuffer_scale));
       ImGui::Text("VPS: %.2f", System::GetVPS());
     }
   }
@@ -3257,9 +3456,7 @@ void DrawDebugSystemMenu()
 
   if (ImGui::MenuItem("Change Disc", nullptr, false, system_enabled))
   {
-#if 0
     DoChangeDisc();
-#endif
     ClearImGuiFocus();
   }
 
@@ -3269,17 +3466,9 @@ void DrawDebugSystemMenu()
     ClearImGuiFocus();
   }
 
-  if (ImGui::MenuItem("Frame Step", nullptr, false, system_enabled))
-  {
-#if 0
-    s_host_interface->RunLater([]() { DoFrameStep(); });
-#endif
-    ClearImGuiFocus();
-  }
-
   ImGui::Separator();
 
-  if (ImGui::BeginMenu("Load State"))
+  if (ImGui::BeginMenu("Load State", !IsCheevosHardcoreModeActive()))
   {
     for (u32 i = 1; i <= CommonHostInterface::GLOBAL_SAVE_STATE_SLOTS; i++)
     {
@@ -3311,7 +3500,7 @@ void DrawDebugSystemMenu()
 
   ImGui::Separator();
 
-  if (ImGui::BeginMenu("Cheats", system_enabled))
+  if (ImGui::BeginMenu("Cheats", system_enabled && !IsCheevosHardcoreModeActive()))
   {
     const bool has_cheat_file = System::HasCheatList();
     if (ImGui::BeginMenu("Enabled Cheats", has_cheat_file))
@@ -3812,35 +4001,17 @@ void DrawAchievementWindow()
       const u32 current_points = Cheevos::GetCurrentPointsForGame();
       const u32 total_points = Cheevos::GetMaximumPointsForGame();
 
-      text.Format(ICON_FA_TIMES);
-      text_size = g_large_font->CalcTextSizeA(g_large_font->FontSize, right, -1.0f, text.GetCharArray(),
-                                              text.GetCharArray() + text.GetLength());
-      const ImRect close_button_bb(ImVec2(right - padding - text_size.x, top), ImVec2(right, top + text_size.y));
-
-      bool close_held, close_hovered;
-      bool close_clicked = ImGui::ButtonBehavior(close_button_bb, ImGui::GetCurrentWindow()->GetID("close_button"),
-                                                 &close_hovered, &close_held);
-      if (close_clicked)
+      if (FloatingButton(ICON_FA_WINDOW_CLOSE, 10.0f, 10.0f, -1.0f, -1.0f, 1.0f, 0.0f, true, g_large_font) ||
+          WantsToCloseMenu())
       {
         ReturnToMainWindow();
       }
-      else if (close_hovered || close_held)
-      {
-        const ImU32 col = ImGui::GetColorU32(close_held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered, alpha);
-        ImGui::RenderFrame(close_button_bb.Min, close_button_bb.Max, col, true, 0.0f);
-      }
-
-      ImGui::PushFont(g_large_font);
-      ImGui::RenderTextClipped(close_button_bb.Min, close_button_bb.Max, text.GetCharArray(),
-                               text.GetCharArray() + text.GetLength(), nullptr, ImVec2(0.0f, 0.0f), &close_button_bb);
-      ImGui::PopFont();
 
       const ImRect title_bb(ImVec2(left, top), ImVec2(right, top + g_large_font->FontSize));
       text.Assign(Cheevos::GetGameTitle());
 
-      const std::string& developer = Cheevos::GetGameDeveloper();
-      if (!developer.empty())
-        text.AppendFormattedString(" (%s)", developer.c_str());
+      if (Cheevos::IsChallengeModeActive())
+        text.AppendString(" (Hardcore Mode)");
 
       top += g_large_font->FontSize + spacing;
 
@@ -3890,29 +4061,39 @@ void DrawAchievementWindow()
 
   ImGui::SetNextWindowBgAlpha(alpha);
 
-  if (BeginFullscreenWindow(ImVec2(0.0f, heading_height), ImVec2(display_size.x, display_size.x - heading_height),
+  if (BeginFullscreenWindow(ImVec2(0.0f, heading_height), ImVec2(display_size.x, display_size.y - heading_height),
                             "achievements", background, 0.0f, 0.0f, 0))
   {
-
     BeginMenuButtons();
 
-    MenuHeading("Unlocked Achievements");
-    Cheevos::EnumerateAchievements([](const Cheevos::Achievement& cheevo) -> bool {
-      if (!cheevo.locked)
-        DrawAchievement(cheevo);
+    static bool unlocked_achievements_collapsed = false;
 
-      return true;
-    });
-
-    if (Cheevos::GetUnlockedAchiementCount() != Cheevos::GetAchievementCount())
+    unlocked_achievements_collapsed ^= MenuHeadingButton(
+      "Unlocked Achievements", unlocked_achievements_collapsed ? ICON_FA_CHEVRON_DOWN : ICON_FA_CHEVRON_UP);
+    if (!unlocked_achievements_collapsed)
     {
-      MenuHeading("Locked Achievements");
       Cheevos::EnumerateAchievements([](const Cheevos::Achievement& cheevo) -> bool {
-        if (cheevo.locked)
+        if (!cheevo.locked)
           DrawAchievement(cheevo);
 
         return true;
       });
+    }
+
+    if (Cheevos::GetUnlockedAchiementCount() != Cheevos::GetAchievementCount())
+    {
+      static bool locked_achievements_collapsed = false;
+      locked_achievements_collapsed ^= MenuHeadingButton(
+        "Locked Achievements", locked_achievements_collapsed ? ICON_FA_CHEVRON_DOWN : ICON_FA_CHEVRON_UP);
+      if (!locked_achievements_collapsed)
+      {
+        Cheevos::EnumerateAchievements([](const Cheevos::Achievement& cheevo) -> bool {
+          if (cheevo.locked)
+            DrawAchievement(cheevo);
+
+          return true;
+        });
+      }
     }
 
     EndMenuButtons();

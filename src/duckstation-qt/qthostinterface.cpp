@@ -9,6 +9,7 @@
 #include "core/controller.h"
 #include "core/gpu.h"
 #include "core/system.h"
+#include "frontend-common/fullscreen_ui.h"
 #include "frontend-common/game_list.h"
 #include "frontend-common/imgui_fullscreen.h"
 #include "frontend-common/imgui_styles.h"
@@ -29,6 +30,7 @@
 #include <QtCore/QFile>
 #include <QtCore/QTimer>
 #include <QtCore/QTranslator>
+#include <QtGui/QKeyEvent>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMessageBox>
@@ -50,6 +52,7 @@ Log_SetChannel(QtHostInterface);
 QtHostInterface::QtHostInterface(QObject* parent) : QObject(parent), CommonHostInterface()
 {
   qRegisterMetaType<std::shared_ptr<const SystemBootParameters>>();
+  qRegisterMetaType<GPURenderer>();
 }
 
 QtHostInterface::~QtHostInterface()
@@ -64,7 +67,7 @@ const char* QtHostInterface::GetFrontendName() const
 
 std::vector<std::pair<QString, QString>> QtHostInterface::getAvailableLanguageList()
 {
-  return {{QStringLiteral("English"), QStringLiteral("")},
+  return {{QStringLiteral("English"), QStringLiteral("en")},
           {QStringLiteral("Deutsch"), QStringLiteral("de")},
           {QStringLiteral("Español"), QStringLiteral("es")},
           {QStringLiteral("Français"), QStringLiteral("fr")},
@@ -125,11 +128,9 @@ void QtHostInterface::shutdownOnThread()
 
 void QtHostInterface::installTranslator()
 {
-  m_translator = std::make_unique<QTranslator>();
-
   std::string language = GetStringSettingValue("Main", "Language", "");
   if (language.empty())
-    return;
+    language = "en";
 
   const QString path =
     QStringLiteral("%1/translations/duckstation-qt_%3.qm").arg(qApp->applicationDirPath()).arg(language.c_str());
@@ -141,7 +142,8 @@ void QtHostInterface::installTranslator()
     return;
   }
 
-  if (!m_translator->load(path))
+  auto translator = std::make_unique<QTranslator>(qApp);
+  if (!translator->load(path))
   {
     QMessageBox::warning(
       nullptr, QStringLiteral("Translation Error"),
@@ -150,7 +152,7 @@ void QtHostInterface::installTranslator()
   }
 
   Log_InfoPrintf("Loaded translation file for language '%s'", language.c_str());
-  qApp->installTranslator(m_translator.get());
+  qApp->installTranslator(translator.release());
 }
 
 void QtHostInterface::ReportError(const char* message)
@@ -373,15 +375,30 @@ void QtHostInterface::resumeSystemFromMostRecentState()
   loadState(QString::fromStdString(state_filename));
 }
 
-void QtHostInterface::onDisplayWindowKeyEvent(int key, bool pressed)
+void QtHostInterface::onDisplayWindowKeyEvent(int key, int mods, bool pressed)
 {
   DebugAssert(isOnWorkerThread());
 
+  ImGuiIO& io = ImGui::GetIO();
   const u32 masked_key = static_cast<u32>(key) & IMGUI_KEY_MASK;
   if (masked_key < countof(ImGuiIO::KeysDown))
-    ImGui::GetIO().KeysDown[masked_key] = pressed;
+    io.KeysDown[masked_key] = pressed;
 
-  HandleHostKeyEvent(key & ~Qt::KeyboardModifierMask, key & Qt::KeyboardModifierMask, pressed);
+  if (m_fullscreen_ui_enabled && FullscreenUI::IsBindingInput())
+  {
+    QString key_string(QtUtils::KeyEventToString(key, static_cast<Qt::KeyboardModifier>(mods)));
+    if (!key_string.isEmpty())
+    {
+      if (FullscreenUI::HandleKeyboardBinding(key_string.toUtf8().constData(), pressed))
+        return;
+    }
+  }
+
+  if (io.WantCaptureKeyboard)
+    return;
+
+  const int key_id = QtUtils::KeyEventToInt(key, static_cast<Qt::KeyboardModifier>(mods));
+  HandleHostKeyEvent(key_id & ~Qt::KeyboardModifierMask, key_id & Qt::KeyboardModifierMask, pressed);
 }
 
 void QtHostInterface::onDisplayWindowMouseMoveEvent(int x, int y)
@@ -453,7 +470,7 @@ void QtHostInterface::onDisplayWindowResized(int width, int height)
 
   Log_DevPrintf("Display window resized to %dx%d", width, height);
   m_display->ResizeRenderWindow(width, height);
-  OnHostDisplayResized(width, height, m_display->GetWindowScale());
+  OnHostDisplayResized();
 
   // re-render the display, since otherwise it will be out of date and stretched if paused
   if (!System::IsShutdown())
@@ -598,7 +615,7 @@ void QtHostInterface::updateDisplayState()
   connectDisplaySignals(display_widget);
   m_is_exclusive_fullscreen = m_display->IsFullscreen();
 
-  OnHostDisplayResized(m_display->GetWindowWidth(), m_display->GetWindowHeight(), m_display->GetWindowScale());
+  OnHostDisplayResized();
 
   if (!System::IsShutdown())
   {
@@ -708,8 +725,21 @@ void QtHostInterface::OnSystemPerformanceCountersUpdated()
 {
   HostInterface::OnSystemPerformanceCountersUpdated();
 
+  GPURenderer renderer = GPURenderer::Count;
+  u32 render_width = 0;
+  u32 render_height = 0;
+  bool render_interlaced = false;
+
+  if (g_gpu)
+  {
+    renderer = g_gpu->GetRendererType();
+    std::tie(render_width, render_height) = g_gpu->GetEffectiveDisplayResolution();
+    render_interlaced = g_gpu->IsInterlacedDisplayEnabled();
+  }
+
   emit systemPerformanceCountersUpdated(System::GetEmulationSpeed(), System::GetFPS(), System::GetVPS(),
-                                        System::GetAverageFrameTime(), System::GetWorstFrameTime());
+                                        System::GetAverageFrameTime(), System::GetWorstFrameTime(), renderer,
+                                        render_width, render_height, render_interlaced);
 }
 
 void QtHostInterface::OnRunningGameChanged(const std::string& path, CDImage* image, const std::string& game_code,
@@ -812,10 +842,7 @@ void QtHostInterface::powerOffSystem()
     return;
   }
 
-  if (g_settings.save_state_on_exit)
-    SaveResumeSaveState();
-
-  PowerOffSystem();
+  PowerOffSystem(ShouldSaveResumeState());
 }
 
 void QtHostInterface::powerOffSystemWithoutSaving()
@@ -827,7 +854,7 @@ void QtHostInterface::powerOffSystemWithoutSaving()
     return;
   }
 
-  PowerOffSystem();
+  PowerOffSystem(false);
 }
 
 void QtHostInterface::synchronousPowerOffSystem()
@@ -901,8 +928,8 @@ void QtHostInterface::changeDiscFromPlaylist(quint32 index)
   if (System::IsShutdown())
     return;
 
-  if (!System::SwitchMediaFromPlaylist(index))
-    ReportFormattedError("Failed to switch to playlist index %u", index);
+  if (!System::SwitchMediaSubImage(index))
+    ReportFormattedError("Failed to switch to subimage %u", index);
 }
 
 static QString FormatTimestampForSaveStateMenu(u64 timestamp)
@@ -960,6 +987,7 @@ void QtHostInterface::populateGameListContextMenu(const GameListEntry* entry, QW
   {
     const std::vector<SaveStateInfo> available_states(GetAvailableSaveStates(entry->code.c_str()));
     const QString timestamp_format = QLocale::system().dateTimeFormat(QLocale::ShortFormat);
+    const bool challenge_mode = IsCheevosChallengeModeActive();
     for (const SaveStateInfo& ssi : available_states)
     {
       if (ssi.global)
@@ -974,7 +1002,7 @@ void QtHostInterface::populateGameListContextMenu(const GameListEntry* entry, QW
       if (slot < 0)
       {
         resume_action->setText(tr("Resume (%1)").arg(timestamp_str));
-        resume_action->setEnabled(true);
+        resume_action->setEnabled(!challenge_mode);
         action = resume_action;
       }
       else
@@ -983,6 +1011,7 @@ void QtHostInterface::populateGameListContextMenu(const GameListEntry* entry, QW
         action = load_state_menu->addAction(tr("Game Save %1 (%2)").arg(slot).arg(timestamp_str));
       }
 
+      action->setDisabled(challenge_mode);
       connect(action, &QAction::triggered, [this, path]() { loadState(path); });
     }
   }
@@ -1046,17 +1075,16 @@ void QtHostInterface::populateGameListContextMenu(const GameListEntry* entry, QW
   }
 }
 
-void QtHostInterface::populatePlaylistEntryMenu(QMenu* menu)
+void QtHostInterface::populateChangeDiscSubImageMenu(QMenu* menu, QActionGroup* action_group)
 {
-  if (!System::IsValid())
+  if (!System::IsValid() || !System::HasMediaSubImages())
     return;
 
-  QActionGroup* ag = new QActionGroup(menu);
-  const u32 count = System::GetMediaPlaylistCount();
-  const u32 current = System::GetMediaPlaylistIndex();
+  const u32 count = System::GetMediaSubImageCount();
+  const u32 current = System::GetMediaSubImageIndex();
   for (u32 i = 0; i < count; i++)
   {
-    QAction* action = ag->addAction(QString::fromStdString(System::GetMediaPlaylistPath(i)));
+    QAction* action = action_group->addAction(QString::fromStdString(System::GetMediaSubImageTitle(i)));
     action->setCheckable(true);
     action->setChecked(i == current);
     connect(action, &QAction::triggered, [this, i]() { changeDiscFromPlaylist(i); });
@@ -1359,13 +1387,13 @@ void QtHostInterface::OnAchievementsRefreshed()
                    "Game Title: %2\n"
                    "Game Developer: %3\n"
                    "Game Publisher: %4\n"
-                   "Achievements: %5 (%6 points)\n\n")
+                   "Achievements: %5 (%6)\n\n")
                   .arg(Cheevos::GetGameID())
                   .arg(QString::fromStdString(Cheevos::GetGameTitle()))
                   .arg(QString::fromStdString(Cheevos::GetGameDeveloper()))
                   .arg(QString::fromStdString(Cheevos::GetGamePublisher()))
                   .arg(Cheevos::GetAchievementCount())
-                  .arg(Cheevos::GetMaximumPointsForGame());
+                  .arg(tr("%n points", "", Cheevos::GetMaximumPointsForGame()));
 
     const std::string& rich_presence_string = Cheevos::GetRichPresenceString();
     if (!rich_presence_string.empty())
@@ -1586,22 +1614,17 @@ void QtHostInterface::setImGuiKeyMap()
   io.KeyMap[ImGuiKey_Z] = Qt::Key_Z & IMGUI_KEY_MASK;
 }
 
-TinyString QtHostInterface::TranslateString(const char* context, const char* str) const
+TinyString QtHostInterface::TranslateString(const char* context, const char* str,
+                                            const char* disambiguation /*= nullptr*/, int n /*= -1*/) const
 {
-  const QString translated(m_translator->translate(context, str));
-  if (translated.isEmpty())
-    return TinyString(str);
-
-  return TinyString(translated.toUtf8().constData());
+  const QByteArray bytes(qApp->translate(context, str, disambiguation, n).toUtf8());
+  return TinyString(bytes.constData(), bytes.size());
 }
 
-std::string QtHostInterface::TranslateStdString(const char* context, const char* str) const
+std::string QtHostInterface::TranslateStdString(const char* context, const char* str,
+                                                const char* disambiguation /*= nullptr*/, int n /*= -1*/) const
 {
-  const QString translated(m_translator->translate(context, str));
-  if (translated.isEmpty())
-    return std::string(str);
-
-  return translated.toStdString();
+  return qApp->translate(context, str, disambiguation, n).toStdString();
 }
 
 QtHostInterface::Thread::Thread(QtHostInterface* parent) : QThread(parent), m_parent(parent) {}

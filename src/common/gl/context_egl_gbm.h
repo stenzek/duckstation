@@ -44,7 +44,7 @@ private:
     u32 fb_id;
   };
 
-  bool CreateDisplay(const WindowInfo& wi);
+  bool CreateDisplay();
 
   bool CreateGBMDevice();
   Buffer* LockFrontBuffer();

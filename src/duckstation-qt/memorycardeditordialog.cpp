@@ -11,10 +11,13 @@ static constexpr char MEMORY_CARD_IMAGE_FILTER[] =
   QT_TRANSLATE_NOOP("MemoryCardEditorDialog", "All Memory Card Types (*.mcd *.mcr *.mc)");
 static constexpr char MEMORY_CARD_IMPORT_FILTER[] =
   QT_TRANSLATE_NOOP("MemoryCardEditorDialog", "All Importable Memory Card Types (*.mcd *.mcr *.mc *.gme)");
+static constexpr char SINGLE_SAVEFILE_FILTER[] = TRANSLATABLE("MemoryCardEditorDialog", "Single Save Files (*.mcs)");
 
 MemoryCardEditorDialog::MemoryCardEditorDialog(QWidget* parent) : QDialog(parent)
 {
   m_ui.setupUi(this);
+  setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
+
   m_card_a.path_cb = m_ui.cardAPath;
   m_card_a.table = m_ui.cardA;
   m_card_a.blocks_free_label = m_ui.cardAUsage;
@@ -27,6 +30,13 @@ MemoryCardEditorDialog::MemoryCardEditorDialog(QWidget* parent) : QDialog(parent
   connectUi();
   populateComboBox(m_ui.cardAPath);
   populateComboBox(m_ui.cardBPath);
+
+  const QString new_card_hover_text(tr("New Card..."));
+  const QString open_card_hover_text(tr("Open Card..."));
+  m_ui.newCardA->setToolTip(new_card_hover_text);
+  m_ui.newCardB->setToolTip(new_card_hover_text);
+  m_ui.openCardA->setToolTip(open_card_hover_text);
+  m_ui.openCardB->setToolTip(open_card_hover_text);
 }
 
 MemoryCardEditorDialog::~MemoryCardEditorDialog() = default;
@@ -53,14 +63,14 @@ bool MemoryCardEditorDialog::setCardB(const QString& path)
 
 void MemoryCardEditorDialog::resizeEvent(QResizeEvent* ev)
 {
-  QtUtils::ResizeColumnsForTableView(m_card_a.table, {32, -1, 100, 45});
-  QtUtils::ResizeColumnsForTableView(m_card_b.table, {32, -1, 100, 45});
+  QtUtils::ResizeColumnsForTableView(m_card_a.table, {32, -1, 155, 45});
+  QtUtils::ResizeColumnsForTableView(m_card_b.table, {32, -1, 155, 45});
 }
 
 void MemoryCardEditorDialog::closeEvent(QCloseEvent* ev)
 {
-  promptForSave(&m_card_a);
-  promptForSave(&m_card_b);
+  m_card_a.path_cb->setCurrentIndex(0);
+  m_card_b.path_cb->setCurrentIndex(0);
 }
 
 void MemoryCardEditorDialog::connectUi()
@@ -83,6 +93,9 @@ void MemoryCardEditorDialog::connectUi()
   connect(m_ui.saveCardB, &QPushButton::clicked, [this]() { saveCard(&m_card_b); });
   connect(m_ui.importCardA, &QPushButton::clicked, [this]() { importCard(&m_card_a); });
   connect(m_ui.importCardB, &QPushButton::clicked, [this]() { importCard(&m_card_b); });
+  connect(m_ui.exportFile, &QPushButton::clicked, this, &MemoryCardEditorDialog::doExportSaveFile);
+  connect(m_ui.importFileToCardA, &QPushButton::clicked, [this]() { importSaveFile(&m_card_a); });
+  connect(m_ui.importFileToCardB, &QPushButton::clicked, [this]() { importSaveFile(&m_card_b); });
 }
 
 void MemoryCardEditorDialog::populateComboBox(QComboBox* cb)
@@ -92,7 +105,6 @@ void MemoryCardEditorDialog::populateComboBox(QComboBox* cb)
   cb->clear();
 
   cb->addItem(QString());
-  cb->addItem(tr("Browse..."));
 
   const std::string base_path(g_host_interface->GetUserDirectoryRelativePath("memcards"));
   FileSystem::FindResultsArray results;
@@ -111,29 +123,7 @@ void MemoryCardEditorDialog::populateComboBox(QComboBox* cb)
 
 void MemoryCardEditorDialog::loadCardFromComboBox(Card* card, int index)
 {
-  QString filename;
-  if (index == 1)
-  {
-    filename = QDir::toNativeSeparators(
-      QFileDialog::getOpenFileName(this, tr("Select Memory Card"), QString(), tr(MEMORY_CARD_IMAGE_FILTER)));
-    if (!filename.isEmpty())
-    {
-      // add to combo box
-      QFileInfo file(filename);
-      QSignalBlocker sb(card->path_cb);
-      card->path_cb->addItem(file.baseName(), QVariant(filename));
-      card->path_cb->setCurrentIndex(card->path_cb->count() - 1);
-    }
-  }
-  else
-  {
-    filename = card->path_cb->itemData(index).toString();
-  }
-
-  if (filename.isEmpty())
-    return;
-
-  loadCard(filename, card);
+  loadCard(card->path_cb->itemData(index).toString(), card);
 }
 
 void MemoryCardEditorDialog::onCardASelectionChanged()
@@ -182,6 +172,12 @@ bool MemoryCardEditorDialog::loadCard(const QString& filename, Card* card)
 
   card->filename.clear();
 
+  if (filename.isEmpty())
+  {
+    updateButtonState();
+    return false;
+  }
+
   std::string filename_str = filename.toStdString();
   if (!MemoryCardImage::LoadFromFile(&card->data, filename_str.c_str()))
   {
@@ -218,7 +214,7 @@ void MemoryCardEditorDialog::updateCardTable(Card* card)
 
     card->table->setItem(row, 1, new QTableWidgetItem(QString::fromStdString(fi.title)));
     card->table->setItem(row, 2, new QTableWidgetItem(QString::fromStdString(fi.filename)));
-    card->table->setItem(row, 3, new QTableWidgetItem(QStringLiteral("%1").arg(fi.num_blocks)));
+    card->table->setItem(row, 3, new QTableWidgetItem(QString::number(fi.num_blocks)));
   }
 }
 
@@ -226,7 +222,7 @@ void MemoryCardEditorDialog::updateCardBlocksFree(Card* card)
 {
   card->blocks_free = MemoryCardImage::GetFreeBlockCount(card->data);
   card->blocks_free_label->setText(
-    tr("%1 blocks free%2").arg(card->blocks_free).arg(card->dirty ? QStringLiteral(" (*)") : QString()));
+    tr("%n block(s) free%1", "", card->blocks_free).arg(card->dirty ? QStringLiteral(" (*)") : QString()));
 }
 
 void MemoryCardEditorDialog::setCardDirty(Card* card)
@@ -331,6 +327,19 @@ void MemoryCardEditorDialog::doCopyFile()
 
   Card* dst = (src == &m_card_a) ? &m_card_b : &m_card_a;
 
+  for (const MemoryCardImage::FileInfo& dst_fi : dst->files)
+  {
+    if (dst_fi.filename == fi->filename)
+    {
+      QMessageBox::critical(
+        this, tr("Error"),
+        tr("Destination memory card already contains a save file with the same name (%1) as the one you are attempting "
+           "to copy. Please delete this file from the destination memory card before copying.")
+          .arg(QString(fi->filename.c_str())));
+      return;
+    }
+  }
+
   if (dst->blocks_free < fi->num_blocks)
   {
     QMessageBox::critical(this, tr("Error"),
@@ -379,6 +388,27 @@ void MemoryCardEditorDialog::doDeleteFile()
   updateButtonState();
 }
 
+void MemoryCardEditorDialog::doExportSaveFile()
+{
+  QString filename = QDir::toNativeSeparators(
+    QFileDialog::getSaveFileName(this, tr("Select Single Savefile"), QString(), tr(SINGLE_SAVEFILE_FILTER)));
+
+  if (filename.isEmpty())
+    return;
+
+  const auto [card, fi] = getSelectedFile();
+  if (!fi)
+    return;
+
+  if (!MemoryCardImage::ExportSave(&card->data, *fi, filename.toStdString().c_str()))
+  {
+    QMessageBox::critical(
+      this, tr("Error"),
+      tr("Failed to export save file %1. Check the log for more details.").arg(QString::fromStdString(fi->filename)));
+    return;
+  }
+}
+
 void MemoryCardEditorDialog::importCard(Card* card)
 {
   promptForSave(card);
@@ -402,6 +432,27 @@ void MemoryCardEditorDialog::importCard(Card* card)
   updateCardBlocksFree(card);
   setCardDirty(card);
   updateButtonState();
+}
+
+void MemoryCardEditorDialog::importSaveFile(Card* card)
+{
+  QString filename =
+    QFileDialog::getOpenFileName(this, tr("Select Import Save File"), QString(), tr(SINGLE_SAVEFILE_FILTER));
+
+  if (filename.isEmpty())
+    return;
+
+  if (!MemoryCardImage::ImportSave(&card->data, filename.toStdString().c_str()))
+  {
+    QMessageBox::critical(this, tr("Error"),
+                          tr("Failed to import save. Check if there is enough room on the memory card or if an "
+                             "existing save with the same name already exists."));
+    return;
+  }
+
+  updateCardTable(card);
+  updateCardBlocksFree(card);
+  setCardDirty(card);
 }
 
 std::tuple<MemoryCardEditorDialog::Card*, const MemoryCardImage::FileInfo*> MemoryCardEditorDialog::getSelectedFile()
@@ -438,4 +489,6 @@ void MemoryCardEditorDialog::updateButtonState()
   m_ui.moveRight->setEnabled(both_cards_present && has_selection && !is_card_b);
   m_ui.importCardA->setEnabled(card_a_present);
   m_ui.importCardB->setEnabled(card_b_present);
+  m_ui.importFileToCardA->setEnabled(card_a_present);
+  m_ui.importFileToCardB->setEnabled(card_b_present);
 }

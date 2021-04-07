@@ -3,6 +3,7 @@
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/md5_digest.h"
+#include "common/platform.h"
 #include "common/string.h"
 #include "common/string_util.h"
 #include "common/timestamp.h"
@@ -49,12 +50,12 @@ static void SendPlaying();
 static void GameChanged();
 
 bool g_active = false;
+bool g_challenge_mode = false;
 u32 g_game_id = 0;
 
 static bool s_logged_in = false;
 static bool s_test_mode = false;
 static bool s_use_first_disc_from_playlist = true;
-static bool s_hardcode_mode = false;
 static bool s_rich_presence_enabled = false;
 
 static rc_runtime_t s_rcheevos_runtime;
@@ -85,6 +86,7 @@ static ALWAYS_INLINE CommonHostInterface* GetHostInterface()
   return static_cast<CommonHostInterface*>(g_host_interface);
 }
 
+static void FormattedError(const char* format, ...) printflike(1, 2);
 static void FormattedError(const char* format, ...)
 {
   std::va_list ap;
@@ -207,20 +209,20 @@ static void ClearGamePath()
 
 static std::string GetUserAgent()
 {
-  return StringUtil::StdStringFromFormat("DuckStation %s", g_scm_tag_str);
+  return StringUtil::StdStringFromFormat("DuckStation for %s (%s) %s", SYSTEM_STR, CPU_ARCH_STR, g_scm_tag_str);
 }
 
-bool Initialize(bool test_mode, bool use_first_disc_from_playlist, bool enable_rich_presence)
+bool Initialize(bool test_mode, bool use_first_disc_from_playlist, bool enable_rich_presence, bool challenge_mode)
 {
-  s_http_downloader = FrontendCommon::HTTPDownloader::Create();
+  s_http_downloader = FrontendCommon::HTTPDownloader::Create(GetUserAgent().c_str());
   if (!s_http_downloader)
   {
     Log_ErrorPrint("Failed to create HTTP downloader, cannot use cheevos");
     return false;
   }
 
-  s_http_downloader->SetUserAgent(GetUserAgent());
   g_active = true;
+  g_challenge_mode = challenge_mode;
   s_test_mode = test_mode;
   s_use_first_disc_from_playlist = use_first_disc_from_playlist;
   s_rich_presence_enabled = enable_rich_presence;
@@ -316,7 +318,7 @@ const std::string& GetRichPresenceString()
   return s_rich_presence_string;
 }
 
-static void LoginASyncCallback(s32 status_code, const FrontendCommon::HTTPDownloader::Request::Data& data)
+static void LoginCallback(s32 status_code, const FrontendCommon::HTTPDownloader::Request::Data& data)
 {
   rapidjson::Document doc;
   if (!ParseResponseJSON("Login", status_code, data, doc))
@@ -341,8 +343,6 @@ static void LoginASyncCallback(s32 status_code, const FrontendCommon::HTTPDownlo
     GetHostInterface()->GetSettingsInterface()->Save();
   }
 
-  GetHostInterface()->ReportFormattedMessage("Logged into RetroAchievements using username '%s'.", username.c_str());
-
   if (g_active)
   {
     s_username = std::move(username);
@@ -355,13 +355,22 @@ static void LoginASyncCallback(s32 status_code, const FrontendCommon::HTTPDownlo
   }
 }
 
-static void SendLogin(const char* username, const char* password, FrontendCommon::HTTPDownloader* http_downloader)
+static void LoginASyncCallback(s32 status_code, const FrontendCommon::HTTPDownloader::Request::Data& data)
 {
-  char url[256] = {};
+  if (GetHostInterface()->IsFullscreenUIEnabled())
+    ImGuiFullscreen::CloseBackgroundProgressDialog("cheevos_async_login");
+
+  LoginCallback(status_code, data);
+}
+
+static void SendLogin(const char* username, const char* password, FrontendCommon::HTTPDownloader* http_downloader,
+                      FrontendCommon::HTTPDownloader::Request::Callback callback)
+{
+  char url[768] = {};
   int res = rc_url_login_with_password(url, sizeof(url), username, password);
   Assert(res == 0);
 
-  http_downloader->CreateRequest(url, LoginASyncCallback);
+  http_downloader->CreateRequest(url, std::move(callback));
 }
 
 bool LoginAsync(const char* username, const char* password)
@@ -371,29 +380,40 @@ bool LoginAsync(const char* username, const char* password)
   if (s_logged_in || std::strlen(username) == 0 || std::strlen(password) == 0)
     return false;
 
-  SendLogin(username, password, s_http_downloader.get());
+  if (GetHostInterface()->IsFullscreenUIEnabled())
+  {
+    ImGuiFullscreen::OpenBackgroundProgressDialog(
+      "cheevos_async_login", GetHostInterface()->TranslateStdString("Cheevos", "Logging in to RetroAchivements..."), 0,
+      1, 0);
+  }
+
+  SendLogin(username, password, s_http_downloader.get(), LoginASyncCallback);
   return true;
 }
 
 bool Login(const char* username, const char* password)
 {
   if (g_active)
-  {
-    if (!LoginAsync(username, password))
-      return false;
+    s_http_downloader->WaitForAllRequests();
 
+  if (s_logged_in || std::strlen(username) == 0 || std::strlen(password) == 0)
+    return false;
+
+  if (g_active)
+  {
+    SendLogin(username, password, s_http_downloader.get(), LoginCallback);
     s_http_downloader->WaitForAllRequests();
     return IsLoggedIn();
   }
 
   // create a temporary downloader if we're not initialized
   Assert(!g_active);
-  std::unique_ptr<FrontendCommon::HTTPDownloader> http_downloader = FrontendCommon::HTTPDownloader::Create();
+  std::unique_ptr<FrontendCommon::HTTPDownloader> http_downloader =
+    FrontendCommon::HTTPDownloader::Create(GetUserAgent().c_str());
   if (!http_downloader)
     return false;
 
-  http_downloader->SetUserAgent(GetUserAgent());
-  SendLogin(username, password, http_downloader.get());
+  SendLogin(username, password, http_downloader.get(), LoginCallback);
   http_downloader->WaitForAllRequests();
 
   return !GetHostInterface()->GetStringSettingValue("Cheevos", "Token").empty();
@@ -419,6 +439,7 @@ void Logout()
   {
     GetHostInterface()->GetSettingsInterface()->DeleteValue("Cheevos", "Username");
     GetHostInterface()->GetSettingsInterface()->DeleteValue("Cheevos", "Token");
+    GetHostInterface()->GetSettingsInterface()->DeleteValue("Cheevos", "LoginTimestamp");
     GetHostInterface()->GetSettingsInterface()->Save();
   }
 }
@@ -444,7 +465,7 @@ static void UpdateImageDownloadProgress()
   if (!GetHostInterface()->IsFullscreenUIEnabled())
     return;
 
-  std::string message("Downloading achievement resources...");
+  std::string message(g_host_interface->TranslateStdString("Cheevos", "Downloading achievement resources..."));
   if (!s_image_download_progress_active)
   {
     ImGuiFullscreen::OpenBackgroundProgressDialog(str_id, std::move(message), 0,
@@ -497,8 +518,8 @@ static std::string GetBadgeImageFilename(const char* badge_name, bool locked, bo
     SmallString clean_name(badge_name);
     FileSystem::SanitizeFileName(clean_name);
     return GetHostInterface()->GetUserDirectoryRelativePath("cache" FS_OSPATH_SEPARATOR_STR
-                                                          "achievement_badge" FS_OSPATH_SEPARATOR_STR "%s%s.png",
-                                                          clean_name.GetCharArray(), locked ? "_lock" : "");
+                                                            "achievement_badge" FS_OSPATH_SEPARATOR_STR "%s%s.png",
+                                                            clean_name.GetCharArray(), locked ? "_lock" : "");
   }
 }
 
@@ -520,19 +541,20 @@ static std::string ResolveBadgePath(const char* badge_name, bool locked)
 
 static void DisplayAchievementSummary()
 {
-  std::string title(
-    StringUtil::StdStringFromFormat("%s%s", s_game_title.c_str(), s_hardcode_mode ? " (Hardcore Mode)" : ""));
-  std::string summary;
+  std::string title = s_game_title;
+  if (g_challenge_mode)
+    title += GetHostInterface()->TranslateString("Cheevos", " (Hardcore Mode)");
 
+  std::string summary;
   if (GetAchievementCount() > 0)
   {
-    summary = StringUtil::StdStringFromFormat("You have earned %u of %u achievements, and %u of %u points.",
-                                              GetUnlockedAchiementCount(), GetAchievementCount(),
-                                              GetCurrentPointsForGame(), GetMaximumPointsForGame());
+    summary = StringUtil::StdStringFromFormat(
+      GetHostInterface()->TranslateString("Cheevos", "You have earned %u of %u achievements, and %u of %u points."),
+      GetUnlockedAchiementCount(), GetAchievementCount(), GetCurrentPointsForGame(), GetMaximumPointsForGame());
   }
   else
   {
-    summary = "This game has no achievements.";
+    summary = GetHostInterface()->TranslateString("Cheevos", "This game has no achievements.");
   }
 
   ImGuiFullscreen::AddNotification(10.0f, std::move(title), std::move(summary), s_game_icon);
@@ -588,7 +610,7 @@ static void GetUserUnlocks()
 {
   char url[256];
   int res = rc_url_get_unlock_list(url, sizeof(url), s_username.c_str(), s_login_token.c_str(), g_game_id,
-                                   static_cast<int>(s_hardcode_mode));
+                                   static_cast<int>(g_challenge_mode));
   Assert(res == 0);
 
   s_http_downloader->CreateRequest(url, GetUserUnlocksCallback);
@@ -642,18 +664,28 @@ static void GetPatchesCallback(s32 status_code, const FrontendCommon::HTTPDownlo
     const auto achievements(patch_data["Achievements"].GetArray());
     for (const auto& achievement : achievements)
     {
-      if (!achievement.HasMember("ID") || !achievement["ID"].IsNumber() || !achievement.HasMember("MemAddr") ||
-          !achievement["MemAddr"].IsString() || !achievement.HasMember("Title") || !achievement["Title"].IsString())
+      if (!achievement.HasMember("ID") || !achievement["ID"].IsNumber() || !achievement.HasMember("Flags") ||
+          !achievement["Flags"].IsNumber() || !achievement.HasMember("MemAddr") || !achievement["MemAddr"].IsString() ||
+          !achievement.HasMember("Title") || !achievement["Title"].IsString())
       {
         continue;
       }
 
       const u32 id = achievement["ID"].GetUint();
+      const u32 category = achievement["Flags"].GetUint();
       const char* memaddr = achievement["MemAddr"].GetString();
       std::string title = achievement["Title"].GetString();
       std::string description = GetOptionalString(achievement, "Description");
       std::string badge_name = GetOptionalString(achievement, "BadgeName");
       const u32 points = GetOptionalUInt(achievement, "Points");
+
+      // Skip local and unofficial achievements for now.
+      if (static_cast<AchievementCategory>(category) == AchievementCategory::Local ||
+          static_cast<AchievementCategory>(category) == AchievementCategory::Unofficial)
+      {
+        Log_WarningPrintf("Skipping unofficial achievement %u (%s)", id, title.c_str());
+        continue;
+      }
 
       if (GetAchievementByID(id))
       {
@@ -681,7 +713,8 @@ static void GetPatchesCallback(s32 status_code, const FrontendCommon::HTTPDownlo
   }
 
   // parse rich presence
-  if (s_rich_presence_enabled && patch_data.HasMember("RichPresencePatch") && patch_data["RichPresencePatch"].IsString())
+  if (s_rich_presence_enabled && patch_data.HasMember("RichPresencePatch") &&
+      patch_data["RichPresencePatch"].IsString())
   {
     const char* patch = patch_data["RichPresencePatch"].GetString();
     int res = rc_runtime_activate_richpresence(&s_rcheevos_runtime, patch, nullptr, 0);
@@ -719,19 +752,11 @@ static void GetPatchesCallback(s32 status_code, const FrontendCommon::HTTPDownlo
 
 static void GetPatches(u32 game_id)
 {
-#if 1
   char url[256] = {};
   int res = rc_url_get_patch(url, sizeof(url), s_username.c_str(), s_login_token.c_str(), game_id);
   Assert(res == 0);
 
   s_http_downloader->CreateRequest(url, GetPatchesCallback);
-#else
-  std::optional<std::vector<u8>> f = FileSystem::ReadBinaryFile("D:\\10434.txt");
-  if (!f)
-    return;
-
-  GetPatchesCallback(200, *f);
-#endif
 }
 
 static std::string GetGameHash(CDImage* cdi)
@@ -792,7 +817,7 @@ void GameChanged()
   if (path.empty() || s_game_path == path)
     return;
 
-  std::unique_ptr<CDImage> cdi = CDImage::Open(path.c_str());
+  std::unique_ptr<CDImage> cdi = CDImage::Open(path.c_str(), nullptr);
   if (!cdi)
   {
     Log_ErrorPrintf("Failed to open temporary CD image '%s'", path.c_str());
@@ -823,27 +848,19 @@ void GameChanged(const std::string& path, CDImage* image)
 
   s_http_downloader->WaitForAllRequests();
 
-  const u32 playlist_count = System::GetMediaPlaylistCount();
-  if (playlist_count > 1 && s_use_first_disc_from_playlist)
+  if (image && image->HasSubImages() && image->GetCurrentSubImage() != 0)
   {
-    // have to pass the path in, because the image isn't owned by the system yet
-    const u32 playlist_index = System::GetMediaPlaylistIndexForPath(path);
-    if (playlist_index > 0 && playlist_index < playlist_count)
+    std::unique_ptr<CDImage> image_copy(CDImage::Open(image->GetFileName().c_str(), nullptr));
+    if (!image_copy)
     {
-      const std::string& first_disc_path(System::GetMediaPlaylistPath(0));
-      std::unique_ptr<CDImage> first_disc_image(CDImage::Open(first_disc_path.c_str()));
-      if (first_disc_image)
-      {
-        Log_InfoPrintf("Using first disc '%s' from playlist (currently '%s')", first_disc_path.c_str(), path.c_str());
-        GameChanged(first_disc_path, first_disc_image.get());
-        return;
-      }
-      else
-      {
-        Log_ErrorPrintf("Failed to open first disc '%s' from playlist", first_disc_path.c_str());
-        return;
-      }
+      Log_ErrorPrintf("Failed to reopen image '%s'", image->GetFileName().c_str());
+      return;
     }
+
+    // this will go to subimage zero automatically
+    Assert(image_copy->GetCurrentSubImage() == 0);
+    GameChanged(path, image_copy.get());
+    return;
   }
 
   ClearGameInfo();
@@ -855,9 +872,9 @@ void GameChanged(const std::string& path, CDImage* image)
 
   if (s_game_hash.empty())
   {
-    GetHostInterface()->AddOSDMessage(
-      GetHostInterface()->TranslateStdString("OSDMessage", "Failed to read executable from disc. Achievements disabled."),
-      10.0f);
+    GetHostInterface()->AddOSDMessage(GetHostInterface()->TranslateStdString(
+                                        "OSDMessage", "Failed to read executable from disc. Achievements disabled."),
+                                      10.0f);
     return;
   }
 
@@ -1086,7 +1103,7 @@ void UnlockAchievement(u32 achievement_id, bool add_notification /* = true*/)
 
   char url[256];
   rc_url_award_cheevo(url, sizeof(url), s_username.c_str(), s_login_token.c_str(), achievement_id,
-                      static_cast<int>(s_hardcode_mode), s_game_hash.c_str());
+                      static_cast<int>(g_challenge_mode), s_game_hash.c_str());
   s_http_downloader->CreateRequest(url, UnlockAchievementCallback);
 }
 

@@ -353,7 +353,7 @@ bool Context::Create(std::string_view gpu_name, const WindowInfo* wi, std::uniqu
     wi_copy = *wi;
 
   if (enable_surface &&
-      (surface = SwapChain::CreateVulkanSurface(instance, gpus[gpu_index], wi_copy)) == VK_NULL_HANDLE)
+      (surface = SwapChain::CreateVulkanSurface(instance, gpus[gpu_index], &wi_copy)) == VK_NULL_HANDLE)
   {
     vkDestroyInstance(instance, nullptr);
     Vulkan::UnloadVulkanLibrary();

@@ -128,9 +128,9 @@ bool Entry::LoadFromStream(ByteStream* stream)
       !ReadOptionalFromStream(stream, &gpu_force_ntsc_timings) ||
       !ReadOptionalFromStream(stream, &gpu_texture_filter) || !ReadOptionalFromStream(stream, &gpu_widescreen_hack) ||
       !ReadOptionalFromStream(stream, &gpu_pgxp) || !ReadOptionalFromStream(stream, &gpu_pgxp_projection_precision) ||
-      !ReadOptionalFromStream(stream, &gpu_pgxp_depth_buffer) || !ReadOptionalFromStream(stream, &controller_1_type) ||
-      !ReadOptionalFromStream(stream, &controller_2_type) || !ReadOptionalFromStream(stream, &memory_card_1_type) ||
-      !ReadOptionalFromStream(stream, &memory_card_2_type) ||
+      !ReadOptionalFromStream(stream, &gpu_pgxp_depth_buffer) || !ReadOptionalFromStream(stream, &multitap_mode) ||
+      !ReadOptionalFromStream(stream, &controller_1_type) || !ReadOptionalFromStream(stream, &controller_2_type) ||
+      !ReadOptionalFromStream(stream, &memory_card_1_type) || !ReadOptionalFromStream(stream, &memory_card_2_type) ||
       !ReadStringFromStream(stream, &memory_card_1_shared_path) ||
       !ReadStringFromStream(stream, &memory_card_2_shared_path) || !ReadStringFromStream(stream, &input_profile_name))
   {
@@ -178,9 +178,10 @@ bool Entry::SaveToStream(ByteStream* stream) const
          WriteOptionalToStream(stream, gpu_scaled_dithering) && WriteOptionalToStream(stream, gpu_force_ntsc_timings) &&
          WriteOptionalToStream(stream, gpu_texture_filter) && WriteOptionalToStream(stream, gpu_widescreen_hack) &&
          WriteOptionalToStream(stream, gpu_pgxp) && WriteOptionalToStream(stream, gpu_pgxp_projection_precision) &&
-         WriteOptionalToStream(stream, gpu_pgxp_depth_buffer) && WriteOptionalToStream(stream, controller_1_type) &&
-         WriteOptionalToStream(stream, controller_2_type) && WriteOptionalToStream(stream, memory_card_1_type) &&
-         WriteOptionalToStream(stream, memory_card_2_type) && WriteStringToStream(stream, memory_card_1_shared_path) &&
+         WriteOptionalToStream(stream, gpu_pgxp_depth_buffer) && WriteOptionalToStream(stream, multitap_mode) &&
+         WriteOptionalToStream(stream, controller_1_type) && WriteOptionalToStream(stream, controller_2_type) &&
+         WriteOptionalToStream(stream, memory_card_1_type) && WriteOptionalToStream(stream, memory_card_2_type) &&
+         WriteStringToStream(stream, memory_card_1_shared_path) &&
          WriteStringToStream(stream, memory_card_2_shared_path) && WriteStringToStream(stream, input_profile_name);
 }
 
@@ -275,7 +276,7 @@ static void ParseIniSection(Entry* entry, const char* section, const CSimpleIniA
   cvalue = ini.GetValue(section, "GPUScaledDithering", nullptr);
   if (cvalue)
     entry->gpu_scaled_dithering = StringUtil::FromChars<bool>(cvalue);
-  cvalue = ini.GetValue(section, "GPUTextureFiltering", nullptr);
+  cvalue = ini.GetValue(section, "GPUTextureFilter", nullptr);
   if (cvalue)
     entry->gpu_texture_filter = Settings::ParseTextureFilterName(cvalue);
   cvalue = ini.GetValue(section, "GPUForceNTSCTimings", nullptr);
@@ -294,6 +295,9 @@ static void ParseIniSection(Entry* entry, const char* section, const CSimpleIniA
   if (cvalue)
     entry->gpu_pgxp_depth_buffer = StringUtil::FromChars<bool>(cvalue);
 
+  cvalue = ini.GetValue(section, "MultitapMode", nullptr);
+  if (cvalue)
+    entry->multitap_mode = Settings::ParseMultitapModeName(cvalue);
   cvalue = ini.GetValue(section, "Controller1Type", nullptr);
   if (cvalue)
     entry->controller_1_type = Settings::ParseControllerTypeName(cvalue);
@@ -401,11 +405,8 @@ static void StoreIniSection(const Entry& entry, const char* section, CSimpleIniA
   if (entry.gpu_pgxp_depth_buffer.has_value())
     ini.SetValue(section, "GPUPGXPDepthBuffer", entry.gpu_pgxp_depth_buffer.value() ? "true" : "false");
 
-  if (entry.controller_1_type.has_value())
-    ini.SetValue(section, "Controller1Type", Settings::GetControllerTypeName(entry.controller_1_type.value()));
-  if (entry.controller_2_type.has_value())
-    ini.SetValue(section, "Controller2Type", Settings::GetControllerTypeName(entry.controller_2_type.value()));
-
+  if (entry.multitap_mode.has_value())
+    ini.SetValue(section, "MultitapMode", Settings::GetMultitapModeName(entry.multitap_mode.value()));
   if (entry.controller_1_type.has_value())
     ini.SetValue(section, "Controller1Type", Settings::GetControllerTypeName(entry.controller_1_type.value()));
   if (entry.controller_2_type.has_value())
@@ -448,6 +449,7 @@ u32 Entry::GetUserSettingsCount() const
   count += BoolToUInt32(gpu_pgxp.has_value());
   count += BoolToUInt32(gpu_pgxp_projection_precision.has_value());
   count += BoolToUInt32(gpu_pgxp_depth_buffer.has_value());
+  count += BoolToUInt32(multitap_mode.has_value());
   count += BoolToUInt32(controller_1_type.has_value());
   count += BoolToUInt32(controller_2_type.has_value());
   count += BoolToUInt32(memory_card_1_type.has_value());
@@ -541,7 +543,7 @@ static std::optional<std::string> GetEntryValueForKey(const Entry& entry, const 
     else
     {
       return StringUtil::StdStringFromFormat("%u%s", entry.gpu_multisamples.value(),
-                                             entry.gpu_multisamples.value_or(false) ? "-ssaa" : "");
+                                             entry.gpu_per_sample_shading.value_or(false) ? "-ssaa" : "");
     }
   }
   else if (key == "GPUTrueColor")
@@ -599,6 +601,13 @@ static std::optional<std::string> GetEntryValueForKey(const Entry& entry, const 
       return std::nullopt;
     else
       return entry.gpu_pgxp_depth_buffer.value() ? "true" : "false";
+  }
+  else if (key == "MultitapMode")
+  {
+    if (!entry.multitap_mode.has_value())
+      return std::nullopt;
+    else
+      return Settings::GetMultitapModeName(entry.multitap_mode.value());
   }
   else if (key == "Controller1Type")
   {
@@ -816,6 +825,13 @@ static void SetEntryValueForKey(Entry& entry, const std::string_view& key, const
       entry.gpu_pgxp_depth_buffer.reset();
     else
       entry.gpu_pgxp_depth_buffer = StringUtil::FromChars<bool>(value.value()).value_or(false);
+  }
+  else if (key == "MultitapMode")
+  {
+    if (!value.has_value())
+      entry.multitap_mode.reset();
+    else
+      entry.multitap_mode = Settings::ParseMultitapModeName(value->c_str());
   }
   else if (key == "Controller1Type")
   {
@@ -1047,6 +1063,8 @@ void Entry::ApplySettings(bool display_osd_messages) const
   if (gpu_pgxp_depth_buffer.has_value())
     g_settings.gpu_pgxp_depth_buffer = gpu_pgxp_depth_buffer.value();
 
+  if (multitap_mode.has_value())
+    g_settings.multitap_mode = multitap_mode.value();
   if (controller_1_type.has_value())
     g_settings.controller_types[0] = controller_1_type.value();
   if (controller_2_type.has_value())
@@ -1223,34 +1241,13 @@ void Entry::ApplySettings(bool display_osd_messages) const
   }
 
   if (HasTrait(Trait::DisableAnalogModeForcing))
-  {
     g_settings.controller_disable_analog_mode_forcing = true;
-  }
 
   if (HasTrait(Trait::ForceRecompilerMemoryExceptions))
-  {
-    if (display_osd_messages && g_settings.cpu_execution_mode == CPUExecutionMode::Recompiler &&
-        !g_settings.cpu_recompiler_memory_exceptions)
-    {
-      g_host_interface->AddOSDMessage(
-        g_host_interface->TranslateStdString("OSDMessage", "Recompiler memory exceptions forced by game settings."),
-        osd_duration);
-    }
-
     g_settings.cpu_recompiler_memory_exceptions = true;
-  }
 
   if (HasTrait(Trait::ForceRecompilerICache))
-  {
-    if (display_osd_messages && g_settings.cpu_execution_mode != CPUExecutionMode::Interpreter &&
-        !g_settings.cpu_recompiler_icache)
-    {
-      g_host_interface->AddOSDMessage(
-        g_host_interface->TranslateStdString("OSDMessage", "Recompiler ICache forced by game settings."), osd_duration);
-    }
-
     g_settings.cpu_recompiler_icache = true;
-  }
 }
 
 } // namespace GameSettings

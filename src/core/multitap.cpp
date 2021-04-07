@@ -7,9 +7,8 @@
 #include "pad.h"
 Log_SetChannel(Multitap);
 
-Multitap::Multitap(u32 index) : m_index(index)
+Multitap::Multitap()
 {
-  m_index = index;
   Reset();
 }
 
@@ -22,6 +21,16 @@ void Multitap::Reset()
   m_invalid_transfer_all_command = false;
   m_current_controller_done = false;
   m_transfer_buffer.fill(0xFF);
+}
+
+void Multitap::SetEnable(bool enable, u32 base_index)
+{
+  if (m_enabled != enable || m_base_index != base_index)
+  {
+    m_enabled = enable;
+    m_base_index = base_index;
+    Reset();
+  }
 }
 
 bool Multitap::DoState(StateWrapper& sw)
@@ -48,19 +57,9 @@ void Multitap::ResetTransferState()
   // Controller and memory card transfer resets are handled in the Pad class
 }
 
-Controller* Multitap::GetControllerForSlot(u32 slot) const
-{
-  return g_pad.GetController(m_index * 4 + slot);
-}
-
-MemoryCard* Multitap::GetMemoryCardForSlot(u32 slot) const
-{
-  return g_pad.GetMemoryCard(m_index * 4 + slot);
-}
-
 bool Multitap::TransferController(u32 slot, const u8 data_in, u8* data_out) const
 {
-  Controller* const selected_controller = GetControllerForSlot(slot);
+  Controller* const selected_controller = g_pad.GetController(m_base_index + slot);
   if (!selected_controller)
   {
     *data_out = 0xFF;
@@ -72,7 +71,7 @@ bool Multitap::TransferController(u32 slot, const u8 data_in, u8* data_out) cons
 
 bool Multitap::TransferMemoryCard(u32 slot, const u8 data_in, u8* data_out) const
 {
-  MemoryCard* const selected_memcard = GetMemoryCardForSlot(slot);
+  MemoryCard* const selected_memcard = g_pad.GetMemoryCard(m_base_index + slot);
   if (!selected_memcard)
   {
     *data_out = 0xFF;
@@ -198,7 +197,7 @@ bool Multitap::Transfer(const u8 data_in, u8* data_out)
 
     case TransferState::SingleController:
     {
-      // TODO: Check if the transfer buffer get wiped when transitioning to/from this mode
+      // TODO: Check if the transfer buffer gets wiped when transitioning to/from this mode
 
       ack = TransferController(m_selected_slot, data_in, data_out);
 

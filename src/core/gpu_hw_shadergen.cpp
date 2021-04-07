@@ -1211,7 +1211,7 @@ std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader(bool use_ssbo)
     else if (m_use_glsl_binding_layout)
       ss << ", binding = 0";
 
-    ss << ") buffer SSBO {\n";
+    ss << ") readonly restrict buffer SSBO {\n";
     ss << "  uint ssbo_data[];\n";
     ss << "};\n\n";
 

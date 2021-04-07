@@ -5,7 +5,9 @@
     <group android:id="@+id/start_menu">
         <item
             android:id="@+id/action_start_file"
-            android:title="@string/menu_main_start_file" />
+            android:icon="@drawable/ic_baseline_insert_drive_file_24"
+            android:title="@string/menu_main_start_file"
+            app:showAsAction="always" />
         <item
             android:id="@+id/action_start_bios"
             android:title="@string/menu_main_start_bios" />
@@ -14,13 +16,27 @@
         <item
             android:id="@+id/action_settings"
             android:icon="@drawable/ic_baseline_settings_24"
-            android:orderInCategory="100"
+            android:orderInCategory="103"
             android:title="@string/action_settings"
-            app:showAsAction="ifRoom" />
+            app:showAsAction="always" />
         <item
-            android:id="@+id/action_controller_mapping"
+            android:id="@+id/action_switch_view"
+            android:icon="@drawable/ic_baseline_settings_24"
+            android:orderInCategory="100"
+            android:title="@string/action_switch_view"
+            app:showAsAction="always" />
+        <item
+            android:id="@+id/action_controller_settings"
             android:icon="@drawable/ic_baseline_gamepad_24"
-            android:title="@string/action_controller_mapping" />
+            android:orderInCategory="102"
+            android:title="@string/action_controller_mapping"
+            app:showAsAction="always" />
+        <item
+            android:id="@+id/action_memory_card_editor"
+            android:icon="@drawable/ic_baseline_sd_card_24"
+            android:orderInCategory="101"
+            android:title="@string/action_memory_card_editor"
+            app:showAsAction="always" />
         <item
             android:id="@+id/action_edit_game_directories"
             android:title="@string/menu_main_edit_game_directories" />

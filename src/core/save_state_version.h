@@ -2,7 +2,7 @@
 #include "types.h"
 
 static constexpr u32 SAVE_STATE_MAGIC = 0x43435544;
-static constexpr u32 SAVE_STATE_VERSION = 50;
+static constexpr u32 SAVE_STATE_VERSION = 51;
 static constexpr u32 SAVE_STATE_MINIMUM_VERSION = 42;
 
 static_assert(SAVE_STATE_VERSION >= SAVE_STATE_MINIMUM_VERSION);
@@ -23,9 +23,8 @@ struct SAVE_STATE_HEADER
 
   u32 media_filename_length;
   u32 offset_to_media_filename;
-
-  u32 playlist_filename_length;
-  u32 offset_to_playlist_filename;
+  u32 media_subimage_index;
+  u32 unused_offset_to_playlist_filename; // Unused as of version 51.
 
   u32 screenshot_width;
   u32 screenshot_height;

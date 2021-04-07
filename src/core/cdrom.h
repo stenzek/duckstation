@@ -8,6 +8,7 @@
 #include "types.h"
 #include <array>
 #include <string>
+#include <string_view>
 #include <tuple>
 #include <vector>
 
@@ -27,6 +28,7 @@ public:
 
   bool HasMedia() const { return m_reader.HasMedia(); }
   const std::string& GetMediaFileName() const { return m_reader.GetMediaFileName(); }
+  const CDImage* GetMedia() const { return m_reader.GetMedia(); }
   bool IsMediaPS1Disc() const;
   bool DoesMediaRegionMatchConsole() const;
 
@@ -49,7 +51,13 @@ public:
   ALWAYS_INLINE std::tuple<s16, s16> GetAudioFrame()
   {
     const u32 frame = m_audio_fifo.IsEmpty() ? 0u : m_audio_fifo.Pop();
-    return std::tuple<s16, s16>(static_cast<s16>(frame), static_cast<s16>(frame >> 16));
+    const s16 left = static_cast<s16>(Truncate16(frame));
+    const s16 right = static_cast<s16>(Truncate16(frame >> 16));
+    const s16 left_out = SaturateVolume(ApplyVolume(left, m_cd_audio_volume_matrix[0][0]) +
+                                        ApplyVolume(right, m_cd_audio_volume_matrix[1][0]));
+    const s16 right_out = SaturateVolume(ApplyVolume(left, m_cd_audio_volume_matrix[0][1]) +
+                                         ApplyVolume(right, m_cd_audio_volume_matrix[1][1]));
+    return std::tuple<s16, s16>(left_out, right_out);
   }
 
 private:
@@ -230,6 +238,15 @@ private:
   {
     m_audio_fifo.Push(ZeroExtend32(static_cast<u16>(left)) | (ZeroExtend32(static_cast<u16>(right)) << 16));
   }
+  ALWAYS_INLINE static constexpr s32 ApplyVolume(s16 sample, u8 volume)
+  {
+    return s32(sample) * static_cast<s32>(ZeroExtend32(volume)) >> 7;
+  }
+
+  ALWAYS_INLINE static constexpr s16 SaturateVolume(s32 volume)
+  {
+    return static_cast<s16>((volume < -0x8000) ? -0x8000 : ((volume > 0x7FFF) ? 0x7FFF : volume));
+  }
 
   void SetInterrupt(Interrupt interrupt);
   void SetAsyncInterrupt(Interrupt interrupt);
@@ -240,6 +257,7 @@ private:
   void SendAsyncErrorResponse(u8 stat_bits = STAT_ERROR, u8 reason = 0x80);
   void UpdateStatusRegister();
   void UpdateInterruptRequest();
+  bool HasPendingDiscEvent() const;
 
   TickCount GetAckDelayForCommand(Command command);
   TickCount GetTicksForRead();

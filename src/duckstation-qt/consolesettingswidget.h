@@ -15,6 +15,9 @@ public:
   explicit ConsoleSettingsWidget(QtHostInterface* host_interface, QWidget* parent, SettingsDialog* dialog);
   ~ConsoleSettingsWidget();
 
+Q_SIGNALS:
+  void multitapModeChanged();
+
 private Q_SLOTS:
   void onEnableCPUClockSpeedControlChecked(int state);
   void onCPUClockSpeedValueChanged(int value);

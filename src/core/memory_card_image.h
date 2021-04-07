@@ -7,8 +7,7 @@
 #include <string_view>
 #include <vector>
 
-namespace MemoryCardImage
-{
+namespace MemoryCardImage {
 enum : u32
 {
   DATA_SIZE = 128 * 1024, // 1mbit
@@ -17,7 +16,7 @@ enum : u32
   FRAMES_PER_BLOCK = BLOCK_SIZE / FRAME_SIZE,
   NUM_BLOCKS = DATA_SIZE / BLOCK_SIZE,
   NUM_FRAMES = DATA_SIZE / FRAME_SIZE,
-  ICON_WIDTH =16,
+  ICON_WIDTH = 16,
   ICON_HEIGHT = 16
 };
 
@@ -44,10 +43,14 @@ struct FileInfo
   std::vector<IconFrame> icon_frames;
 };
 
+bool IsValid(const DataArray& data);
 u32 GetFreeBlockCount(const DataArray& data);
 std::vector<FileInfo> EnumerateFiles(const DataArray& data);
 bool ReadFile(const DataArray& data, const FileInfo& fi, std::vector<u8>* buffer);
 bool WriteFile(DataArray* data, const std::string_view& filename, const std::vector<u8>& buffer);
 bool DeleteFile(DataArray* data, const FileInfo& fi);
 bool ImportCard(DataArray* data, const char* filename);
-}
+bool ImportCard(DataArray* data, const char* filename, std::vector<u8> file_data);
+bool ExportSave(DataArray* data, const FileInfo& fi, const char* filename);
+bool ImportSave(DataArray* data, const char* filename);
+} // namespace MemoryCardImage

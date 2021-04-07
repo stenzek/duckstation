@@ -57,6 +57,9 @@ private:
   void promptForSave(Card* card);
   void importCard(Card* card);
 
+  void doExportSaveFile();
+  void importSaveFile(Card* card);
+
   std::tuple<Card*, const MemoryCardImage::FileInfo*> getSelectedFile();
   void updateButtonState();
 

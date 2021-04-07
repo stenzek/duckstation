@@ -18,9 +18,10 @@
 
             <ImageView
                 android:id="@+id/imageView2"
-                android:layout_width="64dp"
+                android:layout_width="32dp"
                 android:layout_height="match_parent"
-                app:srcCompat="@mipmap/ic_launcher_foreground" />
+                android:layout_marginStart="16dp"
+                app:srcCompat="@drawable/duck" />
 
             <androidx.appcompat.widget.Toolbar
                 android:id="@+id/toolbar"
@@ -33,25 +34,20 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <include layout="@layout/content_main" />
+    <FrameLayout
+        android:id="@+id/content_fragment"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_weight="1"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_resume"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_marginBottom="@dimen/fab_margin"
-        android:layout_marginRight="96dp"
-        app:backgroundTint="@color/fab_background"
-        app:srcCompat="@drawable/ic_baseline_play_arrow_24" />
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab_add_game_directory"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
         app:backgroundTint="@color/fab_background"
-        app:srcCompat="@android:drawable/ic_input_add" />
+        app:srcCompat="@drawable/ic_baseline_play_arrow_24" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

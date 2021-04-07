@@ -4,6 +4,7 @@
 #include <QtWidgets/QMainWindow>
 #include <memory>
 
+#include "core/types.h"
 #include "settingsdialog.h"
 #include "ui_mainwindow.h"
 
@@ -40,6 +41,9 @@ public:
   /// Opens memory card editor with the specified paths.
   void openMemoryCardEditor(const QString& card_a_path, const QString& card_b_path);
 
+  /// Updates the state of the controls which should be disabled by achievements challenge mode.
+  void onAchievementsChallengeModeToggled(bool enabled);
+
 public Q_SLOTS:
   /// Updates debug menu visibility (hides if disabled).
   void updateDebugMenuVisibility();
@@ -67,7 +71,8 @@ private Q_SLOTS:
   void onEmulationPaused(bool paused);
   void onStateSaved(const QString& game_code, bool global, qint32 slot);
   void onSystemPerformanceCountersUpdated(float speed, float fps, float vps, float average_frame_time,
-                                          float worst_frame_time);
+                                          float worst_frame_time, GPURenderer renderer, quint32 render_width,
+                                          quint32 render_height, bool render_interlaced);
   void onRunningGameChanged(const QString& filename, const QString& game_code, const QString& game_title);
   void onApplicationStateChanged(Qt::ApplicationState state);
 
@@ -75,8 +80,8 @@ private Q_SLOTS:
   void onStartBIOSActionTriggered();
   void onChangeDiscFromFileActionTriggered();
   void onChangeDiscFromGameListActionTriggered();
-  void onChangeDiscFromPlaylistMenuAboutToShow();
-  void onChangeDiscFromPlaylistMenuAboutToHide();
+  void onChangeDiscMenuAboutToShow();
+  void onChangeDiscMenuAboutToHide();
   void onCheatsMenuAboutToShow();
   void onRemoveDiscActionTriggered();
   void onViewToolbarActionToggled(bool checked);
@@ -108,15 +113,18 @@ private Q_SLOTS:
 protected:
   void closeEvent(QCloseEvent* event) override;
   void changeEvent(QEvent* event) override;
+  void dragEnterEvent(QDragEnterEvent* event) override;
+  void dropEvent(QDropEvent* event) override;
 
 private:
   void setupAdditionalUi();
   void connectSignals();
   void addThemeToMenu(const QString& name, const QString& key);
-  void updateEmulationActions(bool starting, bool running);
+  void updateEmulationActions(bool starting, bool running, bool cheevos_challenge_mode);
   bool isShowingGameList() const;
   void switchToGameListView();
   void switchToEmulationView();
+  void startGameOrChangeDiscs(const std::string& path);
   void saveStateToConfig();
   void restoreStateFromConfig();
   void saveDisplayWindowGeometryToConfig();
@@ -144,6 +152,8 @@ private:
   QLabel* m_status_speed_widget = nullptr;
   QLabel* m_status_fps_widget = nullptr;
   QLabel* m_status_frame_time_widget = nullptr;
+  QLabel* m_status_renderer_widget = nullptr;
+  QLabel* m_status_resolution_widget = nullptr;
 
   SettingsDialog* m_settings_dialog = nullptr;
   AutoUpdaterDialog* m_auto_updater_dialog = nullptr;

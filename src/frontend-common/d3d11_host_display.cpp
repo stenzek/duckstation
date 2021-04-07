@@ -157,13 +157,13 @@ bool D3D11HostDisplay::DownloadTexture(const void* texture_handle, HostDisplayPi
 
   if (srv_desc.Format == DXGI_FORMAT_B5G6R5_UNORM || srv_desc.Format == DXGI_FORMAT_B5G5R5A1_UNORM)
   {
-    return m_readback_staging_texture.ReadPixels<u16>(m_context.Get(), 0, 0, width, height,
-                                                      out_data_stride / sizeof(u16), static_cast<u16*>(out_data));
+    return m_readback_staging_texture.ReadPixels<u16>(m_context.Get(), 0, 0, width, height, out_data_stride,
+                                                      static_cast<u16*>(out_data));
   }
   else
   {
-    return m_readback_staging_texture.ReadPixels<u32>(m_context.Get(), 0, 0, width, height,
-                                                      out_data_stride / sizeof(u32), static_cast<u32*>(out_data));
+    return m_readback_staging_texture.ReadPixels<u32>(m_context.Get(), 0, 0, width, height, out_data_stride,
+                                                      static_cast<u32*>(out_data));
   }
 }
 
@@ -473,10 +473,17 @@ bool D3D11HostDisplay::CreateSwapChainRTV()
   m_window_info.surface_width = backbuffer_desc.Width;
   m_window_info.surface_height = backbuffer_desc.Height;
 
-  if (ImGui::GetCurrentContext())
+  BOOL fullscreen = FALSE;
+  DXGI_SWAP_CHAIN_DESC desc;
+  if (SUCCEEDED(m_swap_chain->GetFullscreenState(&fullscreen, nullptr)) && fullscreen &&
+      SUCCEEDED(m_swap_chain->GetDesc(&desc)))
   {
-    ImGui::GetIO().DisplaySize.x = static_cast<float>(backbuffer_desc.Width);
-    ImGui::GetIO().DisplaySize.y = static_cast<float>(backbuffer_desc.Height);
+    m_window_info.surface_refresh_rate = static_cast<float>(desc.BufferDesc.RefreshRate.Numerator) /
+                                         static_cast<float>(desc.BufferDesc.RefreshRate.Denominator);
+  }
+  else
+  {
+    m_window_info.surface_refresh_rate = 0.0f;
   }
 
   return true;
@@ -664,8 +671,6 @@ void D3D11HostDisplay::DestroyResources()
 
 bool D3D11HostDisplay::CreateImGuiContext()
 {
-  ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_info.surface_width);
-  ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_info.surface_height);
   return ImGui_ImplDX11_Init(m_device.Get(), m_context.Get());
 }
 
@@ -709,6 +714,59 @@ bool D3D11HostDisplay::Render()
   return true;
 }
 
+bool D3D11HostDisplay::RenderScreenshot(u32 width, u32 height, std::vector<u32>* out_pixels, u32* out_stride,
+                                        HostDisplayPixelFormat* out_format)
+{
+  static constexpr DXGI_FORMAT format = DXGI_FORMAT_R8G8B8A8_UNORM;
+  static constexpr HostDisplayPixelFormat hdformat = HostDisplayPixelFormat::RGBA8;
+
+  D3D11::Texture render_texture;
+  if (!render_texture.Create(m_device.Get(), width, height, 1, 1, format, D3D11_BIND_RENDER_TARGET) ||
+      !m_readback_staging_texture.EnsureSize(m_context.Get(), width, height, format, false))
+  {
+    return false;
+  }
+
+  static constexpr std::array<float, 4> clear_color = {};
+  m_context->ClearRenderTargetView(render_texture.GetD3DRTV(), clear_color.data());
+  m_context->OMSetRenderTargets(1, render_texture.GetD3DRTVArray(), nullptr);
+
+  if (HasDisplayTexture())
+  {
+    const auto [left, top, draw_width, draw_height] = CalculateDrawRect(width, height, 0);
+
+    if (!m_post_processing_chain.IsEmpty())
+    {
+      ApplyPostProcessingChain(render_texture.GetD3DRTV(), left, top, draw_width, draw_height, m_display_texture_handle,
+                               m_display_texture_width, m_display_texture_height, m_display_texture_view_x,
+                               m_display_texture_view_y, m_display_texture_view_width, m_display_texture_view_height,
+                               width, height);
+    }
+    else
+    {
+      RenderDisplay(left, top, draw_width, draw_height, m_display_texture_handle, m_display_texture_width,
+                    m_display_texture_height, m_display_texture_view_x, m_display_texture_view_y,
+                    m_display_texture_view_width, m_display_texture_view_height, m_display_linear_filtering);
+    }
+  }
+
+  m_context->OMSetRenderTargets(0, nullptr, nullptr);
+
+  m_readback_staging_texture.CopyFromTexture(m_context.Get(), render_texture, 0, 0, 0, 0, 0, width, height);
+
+  if (!m_readback_staging_texture.Map(m_context.Get(), false))
+    return false;
+
+  const u32 stride = sizeof(u32) * width;
+  out_pixels->resize(width * height);
+  *out_stride = stride;
+  *out_format = hdformat;
+
+  m_readback_staging_texture.ReadPixels<u32>(0, 0, width, height, stride, out_pixels->data());
+  m_readback_staging_texture.Unmap(m_context.Get());
+  return true;
+}
+
 void D3D11HostDisplay::RenderImGui()
 {
   ImGui::Render();
@@ -726,7 +784,8 @@ void D3D11HostDisplay::RenderDisplay()
   {
     ApplyPostProcessingChain(m_swap_chain_rtv.Get(), left, top, width, height, m_display_texture_handle,
                              m_display_texture_width, m_display_texture_height, m_display_texture_view_x,
-                             m_display_texture_view_y, m_display_texture_view_width, m_display_texture_view_height);
+                             m_display_texture_view_y, m_display_texture_view_width, m_display_texture_view_height,
+                             GetWindowWidth(), GetWindowHeight());
     return;
   }
 
@@ -971,11 +1030,12 @@ bool D3D11HostDisplay::CheckPostProcessingRenderTargets(u32 target_width, u32 ta
 void D3D11HostDisplay::ApplyPostProcessingChain(ID3D11RenderTargetView* final_target, s32 final_left, s32 final_top,
                                                 s32 final_width, s32 final_height, void* texture_handle,
                                                 u32 texture_width, s32 texture_height, s32 texture_view_x,
-                                                s32 texture_view_y, s32 texture_view_width, s32 texture_view_height)
+                                                s32 texture_view_y, s32 texture_view_width, s32 texture_view_height,
+                                                u32 target_width, u32 target_height)
 {
   static constexpr std::array<float, 4> clear_color = {0.0f, 0.0f, 0.0f, 1.0f};
 
-  if (!CheckPostProcessingRenderTargets(GetWindowWidth(), GetWindowHeight()))
+  if (!CheckPostProcessingRenderTargets(target_width, target_height))
   {
     RenderDisplay(final_left, final_top, final_width, final_height, texture_handle, texture_width, texture_height,
                   texture_view_x, texture_view_y, texture_view_width, texture_view_height, m_display_linear_filtering);

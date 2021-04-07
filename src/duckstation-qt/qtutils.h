@@ -40,13 +40,13 @@ QString GetKeyIdentifier(int key);
 std::optional<int> GetKeyIdForIdentifier(const QString& key_identifier);
 
 /// Stringizes a key event.
-QString KeyEventToString(const QKeyEvent* ke);
+QString KeyEventToString(int key, Qt::KeyboardModifiers mods);
 
 /// Returns an integer id for a stringized key event. Modifiers are in the upper bits.
 std::optional<int> ParseKeyString(const QString& key_str);
 
 /// Returns a key id for a key event, including any modifiers.
-int KeyEventToInt(const QKeyEvent* ke);
+int KeyEventToInt(int key, Qt::KeyboardModifiers mods);
 
 /// Reads a whole stream to a Qt byte array.
 QByteArray ReadStreamToQByteArray(ByteStream* stream, bool rewind = false);

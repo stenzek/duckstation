@@ -14,8 +14,11 @@
 #include "core/controller.h"
 #include "core/gpu.h"
 #include "core/host_display.h"
+#include "core/memory_card_image.h"
 #include "core/system.h"
+#include "frontend-common/cheevos.h"
 #include "frontend-common/game_list.h"
+#include "frontend-common/imgui_fullscreen.h"
 #include "frontend-common/imgui_styles.h"
 #include "frontend-common/opengl_host_display.h"
 #include "frontend-common/vulkan_host_display.h"
@@ -47,14 +50,26 @@ static jmethodID s_EmulationActivity_method_onGameTitleChanged;
 static jmethodID s_EmulationActivity_method_setVibration;
 static jmethodID s_EmulationActivity_method_getRefreshRate;
 static jmethodID s_EmulationActivity_method_openPauseMenu;
+static jmethodID s_EmulationActivity_method_getInputDeviceNames;
+static jmethodID s_EmulationActivity_method_hasInputDeviceVibration;
+static jmethodID s_EmulationActivity_method_setInputDeviceVibration;
 static jclass s_PatchCode_class;
 static jmethodID s_PatchCode_constructor;
 static jclass s_GameListEntry_class;
 static jmethodID s_GameListEntry_constructor;
 static jclass s_SaveStateInfo_class;
 static jmethodID s_SaveStateInfo_constructor;
+static jclass s_Achievement_class;
+static jmethodID s_Achievement_constructor;
+static jclass s_MemoryCardFileInfo_class;
+static jmethodID s_MemoryCardFileInfo_constructor;
 
 namespace AndroidHelpers {
+JavaVM* GetJavaVM()
+{
+  return s_jvm;
+}
+
 // helper for retrieving the current per-thread jni environment
 JNIEnv* GetJNIEnv()
 {
@@ -124,6 +139,58 @@ std::unique_ptr<GrowableMemoryByteStream> ReadInputStreamToMemory(JNIEnv* env, j
   env->DeleteLocalRef(temp);
   env->DeleteLocalRef(cls);
   return bs;
+}
+
+std::vector<u8> ByteArrayToVector(JNIEnv* env, jbyteArray obj)
+{
+  std::vector<u8> ret;
+  const jsize size = obj ? env->GetArrayLength(obj) : 0;
+  if (size > 0)
+  {
+    jbyte* data = env->GetByteArrayElements(obj, nullptr);
+    ret.resize(static_cast<size_t>(size));
+    std::memcpy(ret.data(), data, ret.size());
+    env->ReleaseByteArrayElements(obj, data, 0);
+  }
+
+  return ret;
+}
+
+jbyteArray NewByteArray(JNIEnv* env, const void* data, size_t size)
+{
+  if (!data || size == 0)
+    return nullptr;
+
+  jbyteArray obj = env->NewByteArray(static_cast<jsize>(size));
+  jbyte* obj_data = env->GetByteArrayElements(obj, nullptr);
+  std::memcpy(obj_data, data, static_cast<size_t>(static_cast<jsize>(size)));
+  env->ReleaseByteArrayElements(obj, obj_data, 0);
+  return obj;
+}
+
+jbyteArray VectorToByteArray(JNIEnv* env, const std::vector<u8>& data)
+{
+  if (data.empty())
+    return nullptr;
+
+  return NewByteArray(env, data.data(), data.size());
+}
+
+jobjectArray CreateObjectArray(JNIEnv* env, jclass object_class, const jobject* objects, size_t num_objects,
+                               bool release_refs /* = false*/)
+{
+  if (!objects || num_objects == 0)
+    return nullptr;
+
+  jobjectArray arr = env->NewObjectArray(static_cast<jsize>(num_objects), object_class, nullptr);
+  for (jsize i = 0; i < static_cast<jsize>(num_objects); i++)
+  {
+    env->SetObjectArrayElement(arr, i, objects[i]);
+    if (release_refs && objects[i])
+      env->DeleteLocalRef(objects[i]);
+  }
+
+  return arr;
 }
 } // namespace AndroidHelpers
 
@@ -227,18 +294,23 @@ void AndroidHostInterface::RegisterHotkeys()
   CommonHostInterface::RegisterHotkeys();
 }
 
-bool AndroidHostInterface::GetMainDisplayRefreshRate(float* refresh_rate)
+float AndroidHostInterface::GetRefreshRate() const
 {
   if (!m_emulation_activity_object)
-    return false;
+    return 0.0f;
 
-  float value = AndroidHelpers::GetJNIEnv()->CallFloatMethod(m_emulation_activity_object,
-                                                             s_EmulationActivity_method_getRefreshRate);
-  if (value <= 0.0f)
-    return false;
+  const float value = AndroidHelpers::GetJNIEnv()->CallFloatMethod(m_emulation_activity_object,
+                                                                   s_EmulationActivity_method_getRefreshRate);
+  return (value > 0.0f) ? value : 0.0f;
+}
 
-  *refresh_rate = value;
-  return true;
+float AndroidHostInterface::GetSurfaceScale(int width, int height) const
+{
+  if (width <= 0 || height <= 0)
+    return 1.0f;
+
+  // TODO: Really need a better way of determining this.
+  return (width > height) ? (static_cast<float>(width) / 1280.0f) : (static_cast<float>(height) / 1280.0f);
 }
 
 void AndroidHostInterface::SetUserDirectory()
@@ -273,6 +345,48 @@ void AndroidHostInterface::LoadSettings(SettingsInterface& si)
                            Settings::GetRendererName(g_settings.gpu_renderer));
     g_settings.gpu_renderer = old_renderer;
   }
+}
+
+void AndroidHostInterface::UpdateInputMap(SettingsInterface& si)
+{
+  if (m_emulation_activity_object)
+  {
+    JNIEnv* env = AndroidHelpers::GetJNIEnv();
+    DebugAssert(env);
+
+    std::vector<std::string> device_names;
+
+    jobjectArray const java_names = reinterpret_cast<jobjectArray>(
+      env->CallObjectMethod(m_emulation_activity_object, s_EmulationActivity_method_getInputDeviceNames));
+    if (java_names)
+    {
+      const u32 count = static_cast<u32>(env->GetArrayLength(java_names));
+      for (u32 i = 0; i < count; i++)
+      {
+        device_names.push_back(
+          AndroidHelpers::JStringToString(env, reinterpret_cast<jstring>(env->GetObjectArrayElement(java_names, i))));
+      }
+
+      env->DeleteLocalRef(java_names);
+    }
+
+    if (m_controller_interface)
+    {
+      AndroidControllerInterface* ci = static_cast<AndroidControllerInterface*>(m_controller_interface.get());
+      if (ci)
+      {
+        ci->SetDeviceNames(std::move(device_names));
+        for (u32 i = 0; i < ci->GetControllerCount(); i++)
+        {
+          const bool has_vibration = env->CallBooleanMethod(
+            m_emulation_activity_object, s_EmulationActivity_method_hasInputDeviceVibration, static_cast<jint>(i));
+          ci->SetDeviceRumble(i, has_vibration);
+        }
+      }
+    }
+  }
+
+  CommonHostInterface::UpdateInputMap(si);
 }
 
 bool AndroidHostInterface::IsEmulationThreadPaused() const
@@ -347,6 +461,9 @@ void AndroidHostInterface::EmulationThreadEntryPoint(JNIEnv* env, jobject emulat
     return;
   }
 
+  emulation_activity = env->NewGlobalRef(emulation_activity);
+  Assert(emulation_activity != nullptr);
+
   {
     std::unique_lock<std::mutex> lock(m_mutex);
     m_emulation_thread_running.store(true);
@@ -358,27 +475,18 @@ void AndroidHostInterface::EmulationThreadEntryPoint(JNIEnv* env, jobject emulat
 
   // Boot system.
   bool boot_result = false;
-  if (resume_state)
-  {
-    if (boot_params.filename.empty())
-      boot_result = ResumeSystemFromMostRecentState();
-    else
-      boot_result = ResumeSystemFromState(boot_params.filename.c_str(), true);
-  }
+  if (resume_state && boot_params.filename.empty())
+    boot_result = ResumeSystemFromMostRecentState();
+  else if (resume_state && CanResumeSystemFromFile(boot_params.filename.c_str()))
+    boot_result = ResumeSystemFromState(boot_params.filename.c_str(), true);
   else
-  {
     boot_result = BootSystem(boot_params);
-  }
 
   if (boot_result)
   {
     // System is ready to go.
     EmulationThreadLoop(env);
-
-    if (g_settings.save_state_on_exit)
-      SaveResumeSaveState();
-
-    PowerOffSystem();
+    PowerOffSystem(ShouldSaveResumeState());
   }
 
   // Drain any callbacks so we don't leave things in a screwed-up state for next boot.
@@ -399,6 +507,7 @@ void AndroidHostInterface::EmulationThreadEntryPoint(JNIEnv* env, jobject emulat
   }
 
   env->CallVoidMethod(emulation_activity, s_EmulationActivity_method_onEmulationStopped);
+  env->DeleteGlobalRef(emulation_activity);
 }
 
 void AndroidHostInterface::EmulationThreadLoop(JNIEnv* env)
@@ -444,6 +553,10 @@ void AndroidHostInterface::EmulationThreadLoop(JNIEnv* env)
       }
     }
 
+    // we don't do a full PollAndUpdate() here
+    if (Cheevos::IsActive())
+      Cheevos::Update();
+
     // simulate the system if not paused
     if (System::IsRunning())
     {
@@ -452,6 +565,7 @@ void AndroidHostInterface::EmulationThreadLoop(JNIEnv* env)
       else
         System::RunFrame();
 
+      UpdateControllerRumble();
       if (m_vibration_enabled)
         UpdateVibration();
     }
@@ -482,9 +596,8 @@ bool AndroidHostInterface::AcquireHostDisplay()
   wi.window_handle = m_surface;
   wi.surface_width = ANativeWindow_getWidth(m_surface);
   wi.surface_height = ANativeWindow_getHeight(m_surface);
-
-  // TODO: Really need a better way of determining this.
-  wi.surface_scale = 2.0f;
+  wi.surface_refresh_rate = GetRefreshRate();
+  wi.surface_scale = GetSurfaceScale(wi.surface_width, wi.surface_height);
 
   switch (g_settings.gpu_renderer)
   {
@@ -597,8 +710,11 @@ void AndroidHostInterface::SurfaceChanged(ANativeWindow* surface, int format, in
   Log_InfoPrintf("SurfaceChanged %p %d %d %d", surface, format, width, height);
   if (m_surface == surface)
   {
-    if (m_display)
+    if (m_display && (width != m_display->GetWindowWidth() || height != m_display->GetWindowHeight()))
+    {
       m_display->ResizeRenderWindow(width, height);
+      OnHostDisplayResized();
+    }
 
     return;
   }
@@ -612,9 +728,12 @@ void AndroidHostInterface::SurfaceChanged(ANativeWindow* surface, int format, in
     wi.window_handle = surface;
     wi.surface_width = width;
     wi.surface_height = height;
-    wi.surface_scale = m_display->GetWindowScale();
+    wi.surface_refresh_rate = GetRefreshRate();
+    wi.surface_scale = GetSurfaceScale(width, height);
 
     m_display->ChangeRenderWindow(wi);
+    if (surface)
+      OnHostDisplayResized();
 
     if (surface && System::GetState() == System::State::Paused)
       PauseSystem(false);
@@ -628,26 +747,6 @@ void AndroidHostInterface::SetDisplayAlignment(HostDisplay::Alignment alignment)
   m_display_alignment = alignment;
   if (m_display)
     m_display->SetDisplayAlignment(alignment);
-}
-
-void AndroidHostInterface::SetControllerType(u32 index, std::string_view type_name)
-{
-  ControllerType type =
-    Settings::ParseControllerTypeName(std::string(type_name).c_str()).value_or(ControllerType::None);
-
-  if (!IsEmulationThreadRunning())
-  {
-    g_settings.controller_types[index] = type;
-    return;
-  }
-
-  RunOnEmulationThread(
-    [index, type]() {
-      Log_InfoPrintf("Changing controller slot %d to %s", index, Settings::GetControllerTypeName(type));
-      g_settings.controller_types[index] = type;
-      System::UpdateControllers();
-    },
-    false);
 }
 
 void AndroidHostInterface::SetControllerButtonState(u32 index, s32 button_code, bool pressed)
@@ -704,6 +803,28 @@ void AndroidHostInterface::HandleControllerAxisEvent(u32 controller_index, u32 a
     if (ci)
       ci->HandleAxisEvent(controller_index, axis_index, value);
   });
+}
+
+bool AndroidHostInterface::HasControllerButtonBinding(u32 controller_index, u32 button)
+{
+  AndroidControllerInterface* ci = static_cast<AndroidControllerInterface*>(m_controller_interface.get());
+  if (!ci)
+    return false;
+
+  return ci->HasButtonBinding(controller_index, button);
+}
+
+void AndroidHostInterface::SetControllerVibration(u32 controller_index, float small_motor, float large_motor)
+{
+  if (!m_emulation_activity_object)
+    return;
+
+  JNIEnv* env = AndroidHelpers::GetJNIEnv();
+  DebugAssert(env);
+
+  env->CallVoidMethod(m_emulation_activity_object, s_EmulationActivity_method_setInputDeviceVibration,
+                      static_cast<jint>(controller_index), static_cast<jfloat>(small_motor),
+                      static_cast<jfloat>(large_motor));
 }
 
 void AndroidHostInterface::SetFastForwardEnabled(bool enabled)
@@ -819,7 +940,8 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
 
   // Create global reference so it doesn't get cleaned up.
   JNIEnv* env = AndroidHelpers::GetJNIEnv();
-  jclass string_class, host_interface_class, patch_code_class, game_list_entry_class, save_state_info_class;
+  jclass string_class, host_interface_class, patch_code_class, game_list_entry_class, save_state_info_class,
+    achievement_class, memory_card_file_info_class;
   if ((string_class = env->FindClass("java/lang/String")) == nullptr ||
       (s_String_class = static_cast<jclass>(env->NewGlobalRef(string_class))) == nullptr ||
       (host_interface_class = env->FindClass("com/github/stenzek/duckstation/AndroidHostInterface")) == nullptr ||
@@ -829,7 +951,11 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
       (game_list_entry_class = env->FindClass("com/github/stenzek/duckstation/GameListEntry")) == nullptr ||
       (s_GameListEntry_class = static_cast<jclass>(env->NewGlobalRef(game_list_entry_class))) == nullptr ||
       (save_state_info_class = env->FindClass("com/github/stenzek/duckstation/SaveStateInfo")) == nullptr ||
-      (s_SaveStateInfo_class = static_cast<jclass>(env->NewGlobalRef(save_state_info_class))) == nullptr)
+      (s_SaveStateInfo_class = static_cast<jclass>(env->NewGlobalRef(save_state_info_class))) == nullptr ||
+      (achievement_class = env->FindClass("com/github/stenzek/duckstation/Achievement")) == nullptr ||
+      (s_Achievement_class = static_cast<jclass>(env->NewGlobalRef(achievement_class))) == nullptr ||
+      (memory_card_file_info_class = env->FindClass("com/github/stenzek/duckstation/MemoryCardFileInfo")) == nullptr ||
+      (s_MemoryCardFileInfo_class = static_cast<jclass>(env->NewGlobalRef(memory_card_file_info_class))) == nullptr)
   {
     Log_ErrorPrint("AndroidHostInterface class lookup failed");
     return -1;
@@ -839,6 +965,8 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
   env->DeleteLocalRef(host_interface_class);
   env->DeleteLocalRef(patch_code_class);
   env->DeleteLocalRef(game_list_entry_class);
+  env->DeleteLocalRef(achievement_class);
+  env->DeleteLocalRef(memory_card_file_info_class);
 
   jclass emulation_activity_class;
   if ((s_AndroidHostInterface_constructor =
@@ -867,6 +995,12 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
          env->GetMethodID(emulation_activity_class, "getRefreshRate", "()F")) == nullptr ||
       (s_EmulationActivity_method_openPauseMenu = env->GetMethodID(emulation_activity_class, "openPauseMenu", "()V")) ==
         nullptr ||
+      (s_EmulationActivity_method_getInputDeviceNames =
+         env->GetMethodID(s_EmulationActivity_class, "getInputDeviceNames", "()[Ljava/lang/String;")) == nullptr ||
+      (s_EmulationActivity_method_hasInputDeviceVibration =
+         env->GetMethodID(s_EmulationActivity_class, "hasInputDeviceVibration", "(I)Z")) == nullptr ||
+      (s_EmulationActivity_method_setInputDeviceVibration =
+         env->GetMethodID(s_EmulationActivity_class, "setInputDeviceVibration", "(IFF)V")) == nullptr ||
       (s_PatchCode_constructor = env->GetMethodID(s_PatchCode_class, "<init>", "(ILjava/lang/String;Z)V")) == nullptr ||
       (s_GameListEntry_constructor = env->GetMethodID(
          s_GameListEntry_class, "<init>",
@@ -875,7 +1009,12 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
       (s_SaveStateInfo_constructor = env->GetMethodID(
          s_SaveStateInfo_class, "<init>",
          "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IZII[B)V")) ==
-        nullptr)
+        nullptr ||
+      (s_Achievement_constructor = env->GetMethodID(
+         s_Achievement_class, "<init>",
+         "(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IZ)V")) == nullptr ||
+      (s_MemoryCardFileInfo_constructor = env->GetMethodID(s_MemoryCardFileInfo_class, "<init>",
+                                                           "(Ljava/lang/String;Ljava/lang/String;III[[B)V")) == nullptr)
   {
     Log_ErrorPrint("AndroidHostInterface lookups failed");
     return -1;
@@ -1004,10 +1143,14 @@ DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_surfaceChanged, jobject obj, j
     block);
 }
 
-DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_setControllerType, jobject obj, jint index, jstring controller_type)
+DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_setMousePosition, jobject obj, jint positionX, jint positionY)
 {
-  AndroidHelpers::GetNativeClass(env, obj)->SetControllerType(index,
-                                                              AndroidHelpers::JStringToString(env, controller_type));
+  HostDisplay* display = AndroidHelpers::GetNativeClass(env, obj)->GetDisplay();
+  if (!display)
+    return;
+
+  // Technically a race, but shouldn't cause any issues.
+  display->SetMousePosition(positionX, positionY);
 }
 
 DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_setControllerButtonState, jobject obj, jint index, jint button_code,
@@ -1046,6 +1189,24 @@ DEFINE_JNI_ARGS_METHOD(jint, AndroidHostInterface_getControllerAxisCode, jobject
   std::optional<s32> code =
     Controller::GetAxisCodeByName(type.value(), AndroidHelpers::JStringToString(env, axis_name));
   return code.value_or(-1);
+}
+
+DEFINE_JNI_ARGS_METHOD(jint, AndroidHostInterface_getControllerAxisType, jobject unused, jstring controller_type,
+                       jstring axis_name)
+{
+  std::optional<ControllerType> type =
+          Settings::ParseControllerTypeName(AndroidHelpers::JStringToString(env, controller_type).c_str());
+  if (!type)
+    return -1;
+
+  const std::string axis_name_str(AndroidHelpers::JStringToString(env, axis_name));
+  for (const auto& [name, code, type] : Controller::GetAxisNames(type.value()))
+  {
+    if (name == axis_name_str)
+      return static_cast<jint>(type);
+  }
+
+  return -1;
 }
 
 DEFINE_JNI_ARGS_METHOD(jobjectArray, AndroidHostInterface_getControllerButtonNames, jobject unused,
@@ -1098,16 +1259,36 @@ DEFINE_JNI_ARGS_METHOD(jobjectArray, AndroidHostInterface_getControllerAxisNames
   return name_array;
 }
 
+DEFINE_JNI_ARGS_METHOD(jint, AndroidHostInterface_getControllerVibrationMotorCount, jobject unused,
+                       jstring controller_type)
+{
+  std::optional<ControllerType> type =
+    Settings::ParseControllerTypeName(AndroidHelpers::JStringToString(env, controller_type).c_str());
+  if (!type)
+    return 0;
+
+  return static_cast<jint>(Controller::GetVibrationMotorCount(type.value()));
+}
+
 DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_handleControllerButtonEvent, jobject obj, jint controller_index,
                        jint button_index, jboolean pressed)
 {
-  AndroidHelpers::GetNativeClass(env, obj)->HandleControllerButtonEvent(controller_index, button_index, pressed);
+  AndroidHelpers::GetNativeClass(env, obj)->HandleControllerButtonEvent(static_cast<u32>(controller_index),
+                                                                        static_cast<u32>(button_index), pressed);
 }
 
 DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_handleControllerAxisEvent, jobject obj, jint controller_index,
                        jint axis_index, jfloat value)
 {
-  AndroidHelpers::GetNativeClass(env, obj)->HandleControllerAxisEvent(controller_index, axis_index, value);
+  AndroidHelpers::GetNativeClass(env, obj)->HandleControllerAxisEvent(static_cast<u32>(controller_index),
+                                                                      static_cast<u32>(axis_index), value);
+}
+
+DEFINE_JNI_ARGS_METHOD(jboolean, AndroidHostInterface_hasControllerButtonBinding, jobject obj, jint controller_index,
+                       jint button_index)
+{
+  return AndroidHelpers::GetNativeClass(env, obj)->HasControllerButtonBinding(static_cast<u32>(controller_index),
+                                                                              static_cast<u32>(button_index));
 }
 
 DEFINE_JNI_ARGS_METHOD(jobjectArray, AndroidHostInterface_getInputProfileNames, jobject obj)
@@ -1309,6 +1490,19 @@ DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_applySettings, jobject obj)
   }
 }
 
+DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_updateInputMap, jobject obj)
+{
+  AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
+  if (hi->IsEmulationThreadRunning())
+  {
+    hi->RunOnEmulationThread([hi]() { hi->UpdateInputMap(); });
+  }
+  else
+  {
+    hi->UpdateInputMap();
+  }
+}
+
 DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_resetSystem, jobject obj, jboolean global, jint slot)
 {
   AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
@@ -1479,19 +1673,27 @@ DEFINE_JNI_ARGS_METHOD(jstring, AndroidHostInterface_importBIOSImage, jobject ob
     return env->NewStringUTF(hash.ToString().c_str());
 }
 
-DEFINE_JNI_ARGS_METHOD(jobjectArray, AndroidHostInterface_getMediaPlaylistPaths, jobject obj)
+DEFINE_JNI_ARGS_METHOD(jboolean, AndroidHostInterface_hasMediaSubImages, jobject obj)
+{
+  if (!System::IsValid())
+    return false;
+
+  return System::HasMediaSubImages();
+}
+
+DEFINE_JNI_ARGS_METHOD(jobjectArray, AndroidHostInterface_getMediaSubImageTitles, jobject obj)
 {
   if (!System::IsValid())
     return nullptr;
 
-  const u32 count = System::GetMediaPlaylistCount();
+  const u32 count = System::GetMediaSubImageCount();
   if (count == 0)
     return nullptr;
 
   jobjectArray arr = env->NewObjectArray(static_cast<jsize>(count), s_String_class, nullptr);
   for (u32 i = 0; i < count; i++)
   {
-    jstring str = env->NewStringUTF(System::GetMediaPlaylistPath(i).c_str());
+    jstring str = env->NewStringUTF(System::GetMediaSubImageTitle(i).c_str());
     env->SetObjectArrayElement(arr, static_cast<jsize>(i), str);
     env->DeleteLocalRef(str);
   }
@@ -1499,24 +1701,24 @@ DEFINE_JNI_ARGS_METHOD(jobjectArray, AndroidHostInterface_getMediaPlaylistPaths,
   return arr;
 }
 
-DEFINE_JNI_ARGS_METHOD(jint, AndroidHostInterface_getMediaPlaylistIndex, jobject obj)
+DEFINE_JNI_ARGS_METHOD(jint, AndroidHostInterface_getMediaSubImageIndex, jobject obj)
 {
   if (!System::IsValid())
     return -1;
 
-  return System::GetMediaPlaylistIndex();
+  return System::GetMediaSubImageIndex();
 }
 
-DEFINE_JNI_ARGS_METHOD(jboolean, AndroidHostInterface_setMediaPlaylistIndex, jobject obj, jint index)
+DEFINE_JNI_ARGS_METHOD(jboolean, AndroidHostInterface_switchMediaSubImage, jobject obj, jint index)
 {
-  if (!System::IsValid() || index < 0 || static_cast<u32>(index) >= System::GetMediaPlaylistCount())
+  if (!System::IsValid() || index < 0 || static_cast<u32>(index) >= System::GetMediaSubImageCount())
     return false;
 
   AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
   hi->RunOnEmulationThread([index, hi]() {
     if (System::IsValid())
     {
-      if (!System::SwitchMediaFromPlaylist(index))
+      if (!System::SwitchMediaSubImage(static_cast<u32>(index)))
         hi->AddOSDMessage("Disc switch failed. Please make sure the file exists.");
     }
   });
@@ -1651,4 +1853,305 @@ DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_toggleControllerAnalogMode, jo
     ctrl->SetButtonState(code.value(), true);
     ctrl->SetButtonState(code.value(), false);
   }
+}
+
+DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_setFullscreenUINotificationVerticalPosition, jobject obj,
+                       jfloat position, jfloat direction)
+{
+  AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
+  hi->RunOnEmulationThread(
+    [position, direction]() { ImGuiFullscreen::SetNotificationVerticalPosition(position, direction); });
+}
+
+DEFINE_JNI_ARGS_METHOD(jboolean, AndroidHostInterface_isCheevosActive, jobject obj)
+{
+  return Cheevos::IsActive();
+}
+
+DEFINE_JNI_ARGS_METHOD(jboolean, AndroidHostInterface_isCheevosChallengeModeActive, jobject obj)
+{
+  return Cheevos::IsChallengeModeActive();
+}
+
+DEFINE_JNI_ARGS_METHOD(jobjectArray, AndroidHostInterface_getCheevoList, jobject obj)
+{
+  if (!Cheevos::IsActive())
+    return nullptr;
+
+  std::vector<jobject> cheevos;
+  Cheevos::EnumerateAchievements([env, &cheevos](const Cheevos::Achievement& cheevo) {
+    jstring title = env->NewStringUTF(cheevo.title.c_str());
+    jstring description = env->NewStringUTF(cheevo.description.c_str());
+    jstring locked_badge_path =
+      cheevo.locked_badge_path.empty() ? nullptr : env->NewStringUTF(cheevo.locked_badge_path.c_str());
+    jstring unlocked_badge_path =
+      cheevo.unlocked_badge_path.empty() ? nullptr : env->NewStringUTF(cheevo.unlocked_badge_path.c_str());
+
+    jobject object = env->NewObject(s_Achievement_class, s_Achievement_constructor, static_cast<jint>(cheevo.id), title,
+                                    description, locked_badge_path, unlocked_badge_path,
+                                    static_cast<jint>(cheevo.points), static_cast<jboolean>(cheevo.locked));
+    cheevos.push_back(object);
+
+    if (unlocked_badge_path)
+      env->DeleteLocalRef(unlocked_badge_path);
+    if (locked_badge_path)
+      env->DeleteLocalRef(locked_badge_path);
+    env->DeleteLocalRef(description);
+    env->DeleteLocalRef(title);
+    return true;
+  });
+
+  if (cheevos.empty())
+    return nullptr;
+
+  jobjectArray ret = env->NewObjectArray(static_cast<jsize>(cheevos.size()), s_Achievement_class, nullptr);
+  for (size_t i = 0; i < cheevos.size(); i++)
+  {
+    env->SetObjectArrayElement(ret, static_cast<jsize>(i), cheevos[i]);
+    env->DeleteLocalRef(cheevos[i]);
+  }
+
+  return ret;
+}
+
+DEFINE_JNI_ARGS_METHOD(jint, AndroidHostInterface_getCheevoCount, jobject obj)
+{
+  return Cheevos::GetAchievementCount();
+}
+
+DEFINE_JNI_ARGS_METHOD(jint, AndroidHostInterface_getUnlockedCheevoCount, jobject obj)
+{
+  return Cheevos::GetUnlockedAchiementCount();
+}
+
+DEFINE_JNI_ARGS_METHOD(jint, AndroidHostInterface_getCheevoPointsForGame, jobject obj)
+{
+  return Cheevos::GetCurrentPointsForGame();
+}
+
+DEFINE_JNI_ARGS_METHOD(jint, AndroidHostInterface_getCheevoMaximumPointsForGame, jobject obj)
+{
+  return Cheevos::GetMaximumPointsForGame();
+}
+
+DEFINE_JNI_ARGS_METHOD(jstring, AndroidHostInterface_getCheevoGameTitle, jobject obj)
+{
+  const std::string& title = Cheevos::GetGameTitle();
+  return title.empty() ? nullptr : env->NewStringUTF(title.c_str());
+}
+
+DEFINE_JNI_ARGS_METHOD(jstring, AndroidHostInterface_getCheevoGameIconPath, jobject obj)
+{
+  const std::string& path = Cheevos::GetGameIcon();
+  return path.empty() ? nullptr : env->NewStringUTF(path.c_str());
+}
+
+DEFINE_JNI_ARGS_METHOD(jboolean, AndroidHostInterface_cheevosLogin, jobject obj, jstring username, jstring password)
+{
+  const std::string username_str(AndroidHelpers::JStringToString(env, username));
+  const std::string password_str(AndroidHelpers::JStringToString(env, password));
+  return Cheevos::Login(username_str.c_str(), password_str.c_str());
+}
+
+DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_cheevosLogout, jobject obj)
+{
+  return Cheevos::Logout();
+}
+
+static_assert(sizeof(MemoryCardImage::DataArray) == MemoryCardImage::DATA_SIZE);
+
+static MemoryCardImage::DataArray* GetMemoryCardData(JNIEnv* env, jbyteArray obj)
+{
+  if (!obj || env->GetArrayLength(obj) != MemoryCardImage::DATA_SIZE)
+    return nullptr;
+
+  return reinterpret_cast<MemoryCardImage::DataArray*>(env->GetByteArrayElements(obj, nullptr));
+}
+
+static void ReleaseMemoryCardData(JNIEnv* env, jbyteArray obj, MemoryCardImage::DataArray* data)
+{
+  env->ReleaseByteArrayElements(obj, reinterpret_cast<jbyte*>(data), 0);
+}
+
+DEFINE_JNI_ARGS_METHOD(jboolean, MemoryCardImage_isValid, jclass clazz, jbyteArray obj)
+{
+  MemoryCardImage::DataArray* data = GetMemoryCardData(env, obj);
+  if (!data)
+    return false;
+
+  const bool res = MemoryCardImage::IsValid(*data);
+  ReleaseMemoryCardData(env, obj, data);
+  return res;
+}
+
+DEFINE_JNI_ARGS_METHOD(void, MemoryCardImage_format, jclass clazz, jbyteArray obj)
+{
+  MemoryCardImage::DataArray* data = GetMemoryCardData(env, obj);
+  if (!data)
+    return;
+
+  MemoryCardImage::Format(data);
+  ReleaseMemoryCardData(env, obj, data);
+}
+
+DEFINE_JNI_ARGS_METHOD(jint, MemoryCardImage_getFreeBlocks, jclass clazz, jbyteArray obj)
+{
+  MemoryCardImage::DataArray* data = GetMemoryCardData(env, obj);
+  if (!data)
+    return 0;
+
+  const u32 free_blocks = MemoryCardImage::GetFreeBlockCount(*data);
+  ReleaseMemoryCardData(env, obj, data);
+  return free_blocks;
+}
+
+DEFINE_JNI_ARGS_METHOD(jobjectArray, MemoryCardImage_getFiles, jclass clazz, jbyteArray obj)
+{
+  MemoryCardImage::DataArray* data = GetMemoryCardData(env, obj);
+  if (!data)
+    return nullptr;
+
+  const std::vector<MemoryCardImage::FileInfo> files(MemoryCardImage::EnumerateFiles(*data));
+
+  std::vector<jobject> file_objects;
+  file_objects.reserve(files.size());
+
+  jclass byteArrayClass = env->FindClass("[B");
+
+  for (const MemoryCardImage::FileInfo& file : files)
+  {
+    jobject filename = env->NewStringUTF(file.filename.c_str());
+    jobject title = env->NewStringUTF(file.title.c_str());
+    jobjectArray frames = nullptr;
+    if (!file.icon_frames.empty())
+    {
+      frames = env->NewObjectArray(static_cast<jint>(file.icon_frames.size()), byteArrayClass, nullptr);
+      for (jsize i = 0; i < static_cast<jsize>(file.icon_frames.size()); i++)
+      {
+        static constexpr jsize frame_size = MemoryCardImage::ICON_WIDTH * MemoryCardImage::ICON_HEIGHT * sizeof(u32);
+        jbyteArray frame_data = env->NewByteArray(frame_size);
+        jbyte* frame_data_ptr = env->GetByteArrayElements(frame_data, nullptr);
+        std::memcpy(frame_data_ptr, file.icon_frames[i].pixels, frame_size);
+        env->ReleaseByteArrayElements(frame_data, frame_data_ptr, 0);
+        env->SetObjectArrayElement(frames, i, frame_data);
+        env->DeleteLocalRef(frame_data);
+      }
+    }
+
+    file_objects.push_back(env->NewObject(s_MemoryCardFileInfo_class, s_MemoryCardFileInfo_constructor, filename, title,
+                                          static_cast<jint>(file.size), static_cast<jint>(file.first_block),
+                                          static_cast<int>(file.num_blocks), frames));
+
+    env->DeleteLocalRef(frames);
+    env->DeleteLocalRef(title);
+    env->DeleteLocalRef(filename);
+  }
+
+  jobjectArray file_object_array =
+    AndroidHelpers::CreateObjectArray(env, s_MemoryCardFileInfo_class, file_objects.data(), file_objects.size(), true);
+  ReleaseMemoryCardData(env, obj, data);
+  return file_object_array;
+}
+
+DEFINE_JNI_ARGS_METHOD(jboolean, MemoryCardImage_hasFile, jclass clazz, jbyteArray obj, jstring filename)
+{
+  MemoryCardImage::DataArray* data = GetMemoryCardData(env, obj);
+  if (!data)
+    return false;
+
+  const std::string filename_str(AndroidHelpers::JStringToString(env, filename));
+  bool result = false;
+  if (!filename_str.empty())
+  {
+    const std::vector<MemoryCardImage::FileInfo> files(MemoryCardImage::EnumerateFiles(*data));
+    result = std::any_of(files.begin(), files.end(),
+                         [&filename_str](const MemoryCardImage::FileInfo& fi) { return fi.filename == filename_str; });
+  }
+
+  ReleaseMemoryCardData(env, obj, data);
+  return result;
+}
+
+DEFINE_JNI_ARGS_METHOD(jbyteArray, MemoryCardImage_readFile, jclass clazz, jbyteArray obj, jstring filename)
+{
+  MemoryCardImage::DataArray* data = GetMemoryCardData(env, obj);
+  if (!data)
+    return nullptr;
+
+  const std::string filename_str(AndroidHelpers::JStringToString(env, filename));
+  jbyteArray ret = nullptr;
+  if (!filename_str.empty())
+  {
+    const std::vector<MemoryCardImage::FileInfo> files(MemoryCardImage::EnumerateFiles(*data));
+    auto iter = std::find_if(files.begin(), files.end(), [&filename_str](const MemoryCardImage::FileInfo& fi) {
+      return fi.filename == filename_str;
+    });
+    if (iter != files.end())
+    {
+      std::vector<u8> file_data;
+      if (MemoryCardImage::ReadFile(*data, *iter, &file_data))
+        ret = AndroidHelpers::VectorToByteArray(env, file_data);
+    }
+  }
+
+  ReleaseMemoryCardData(env, obj, data);
+  return ret;
+}
+
+DEFINE_JNI_ARGS_METHOD(jboolean, MemoryCardImage_writeFile, jclass clazz, jbyteArray obj, jstring filename,
+                       jbyteArray file_data)
+{
+  MemoryCardImage::DataArray* data = GetMemoryCardData(env, obj);
+  if (!data)
+    return false;
+
+  const std::string filename_str(AndroidHelpers::JStringToString(env, filename));
+  const std::vector<u8> file_data_vec(AndroidHelpers::ByteArrayToVector(env, file_data));
+  bool ret = false;
+  if (!filename_str.empty())
+    ret = MemoryCardImage::WriteFile(data, filename_str, file_data_vec);
+
+  ReleaseMemoryCardData(env, obj, data);
+  return ret;
+}
+
+DEFINE_JNI_ARGS_METHOD(jboolean, MemoryCardImage_deleteFile, jclass clazz, jbyteArray obj, jstring filename)
+{
+  MemoryCardImage::DataArray* data = GetMemoryCardData(env, obj);
+  if (!data)
+    return false;
+
+  const std::string filename_str(AndroidHelpers::JStringToString(env, filename));
+  bool ret = false;
+
+  if (!filename_str.empty())
+  {
+    const std::vector<MemoryCardImage::FileInfo> files(MemoryCardImage::EnumerateFiles(*data));
+    auto iter = std::find_if(files.begin(), files.end(), [&filename_str](const MemoryCardImage::FileInfo& fi) {
+      return fi.filename == filename_str;
+    });
+
+    if (iter != files.end())
+      ret = MemoryCardImage::DeleteFile(data, *iter);
+  }
+
+  ReleaseMemoryCardData(env, obj, data);
+  return ret;
+}
+
+DEFINE_JNI_ARGS_METHOD(jboolean, MemoryCardImage_importCard, jclass clazz, jbyteArray obj, jstring filename,
+                       jbyteArray import_data)
+{
+  MemoryCardImage::DataArray* data = GetMemoryCardData(env, obj);
+  if (!data)
+    return false;
+
+  const std::string filename_str(AndroidHelpers::JStringToString(env, filename));
+  std::vector<u8> import_data_vec(AndroidHelpers::ByteArrayToVector(env, import_data));
+  bool ret = false;
+  if (!filename_str.empty() && !import_data_vec.empty())
+    ret = MemoryCardImage::ImportCard(data, filename_str.c_str(), std::move(import_data_vec));
+
+  ReleaseMemoryCardData(env, obj, data);
+  return ret;
 }

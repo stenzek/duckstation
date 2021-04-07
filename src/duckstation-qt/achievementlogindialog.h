@@ -17,6 +17,7 @@ private Q_SLOTS:
 private:
   void connectUi();
   void enableUI(bool enabled);
+  bool canEnableLoginButton() const;
 
   Ui::AchievementLoginDialog m_ui;
 };

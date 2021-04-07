@@ -88,7 +88,13 @@ bool HostDisplay::SetDisplayPixels(HostDisplayPixelFormat format, u32 width, u32
 
 bool HostDisplay::GetHostRefreshRate(float* refresh_rate)
 {
-  return g_host_interface->GetMainDisplayRefreshRate(refresh_rate);
+  if (m_window_info.surface_refresh_rate > 0.0f)
+  {
+    *refresh_rate = m_window_info.surface_refresh_rate;
+    return true;
+  }
+
+  return WindowInfo::QueryRefreshRateForWindow(m_window_info, refresh_rate);
 }
 
 void HostDisplay::SetSoftwareCursor(std::unique_ptr<HostDisplayTexture> texture, float scale /*= 1.0f*/)
@@ -611,5 +617,42 @@ bool HostDisplay::WriteDisplayTextureToBuffer(std::vector<u32>* buffer, u32 resi
     *buffer = texture_data;
   }
 
+  return true;
+}
+
+bool HostDisplay::WriteScreenshotToFile(std::string filename, bool compress_on_thread /*= false*/)
+{
+  const u32 width = m_window_info.surface_width;
+  const u32 height = m_window_info.surface_height;
+  if (width == 0 || height == 0)
+    return false;
+
+  std::vector<u32> pixels;
+  u32 pixels_stride;
+  HostDisplayPixelFormat pixels_format;
+  if (!RenderScreenshot(width, height, &pixels, &pixels_stride, &pixels_format))
+  {
+    Log_ErrorPrintf("Failed to render %ux%u screenshot", width, height);
+    return false;
+  }
+
+  auto fp = FileSystem::OpenManagedCFile(filename.c_str(), "wb");
+  if (!fp)
+  {
+    Log_ErrorPrintf("Can't open file '%s': errno %d", filename.c_str(), errno);
+    return false;
+  }
+
+  const RenderAPI api = GetRenderAPI();
+  const bool flip_y = (api == RenderAPI::OpenGL || api == RenderAPI::OpenGLES);
+  if (!compress_on_thread)
+  {
+    return CompressAndWriteTextureToFile(width, height, std::move(filename), std::move(fp), true, flip_y, width, height,
+                                         std::move(pixels), pixels_stride, pixels_format);
+  }
+
+  std::thread compress_thread(CompressAndWriteTextureToFile, width, height, std::move(filename), std::move(fp), true,
+                              flip_y, width, height, std::move(pixels), pixels_stride, pixels_format);
+  compress_thread.detach();
   return true;
 }

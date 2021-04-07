@@ -18,6 +18,13 @@ A "BIOS" ROM image is required to to start the emulator and to play games. You c
 ## Latest News
 Older entries are available at https://github.com/stenzek/duckstation/blob/master/NEWS.md
 
+- 2021/03/20: Memory card editor added to Android app.
+- 2021/03/17: Add support for loading **homebrew** PBP images. PSN images are not loadable due to potential legal issues surrounding the encryption.
+- 2021/03/14: Multiple controllers, multitap, and external controller vibration added to Android app. You will need to rebind your controllers.
+- 2021/03/14: RetroAchievements added to Android app.
+- 2021/03/03: RetroAchievements are now available. You can now log in to your retroacheivements.org account in DuckStation and gain points in supported games. Currently only for Windows/Linux/Mac, Android will be added in the future.
+- 2021/03/03: Multitap is now supported for up to 8 controllers. You can choose which of the two main controller ports have taps connected in Console Settings and bind controllers in Controller Settings.
+- 2021/03/03: Ability to add/remove touchscreen controller buttons and change opacity added for the Android app.
 - 2021/01/31: "Fullscreen UI" added, aka "Big Duck/TV Mode". This interface is fully navigatible with a controller. Currently it's limited to the NoGUI frontend, but it will be available directly in the Qt frontend in the near future, with more features being added (e.g. game grid) as well.
 - 2021/01/24: Runahead added - work around input lag in some games by running frames ahead of time and backtracking on input. DuckStation's implementation works with upscaling and the hardware renderers, but you still require a powerful computer for higher frame counts.
 - 2021/01/24: Rewind added - you can now "smooth rewind" (but not for long), or "skip rewind" (for much long) while playing.
@@ -177,11 +184,12 @@ Requirements:
 ### Linux
 Requirements (Debian/Ubuntu package names):
  - CMake (`cmake`)
- - SDL2 (`libsdl2-dev`)
+ - SDL2 (`libsdl2-dev`, `libxrandr-dev`)
  - pkgconfig (`pkg-config`)
  - Qt 5 (`qtbase5-dev`, `qtbase5-private-dev`, `qtbase5-dev-tools`, `qttools5-dev`)
  - libevdev (`libevdev-dev`)
  - git (`git`) (Note: needed to clone the repository and at build time)
+ - When Wayland is enabled (default): `libwayland-dev` `libwayland-egl-backend-dev` `extra-cmake-modules`
  - Optional for RetroAchievements (on by default): libcurl (`libcurl4-gnutls-dev`)
  - Optional for framebuffer output: DRM/GBM (`libgbm-dev`, `libdrm-dev`)
  - Optional for faster building: Ninja (`ninja-build`)

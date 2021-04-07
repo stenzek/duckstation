@@ -217,4 +217,19 @@
             app:iconSpaceReserved="false" />
     </PreferenceCategory>
 
+    <PreferenceCategory app:title="Achievement Settings" app:iconSpaceReserved="false">
+        <SwitchPreferenceCompat
+            app:key="Cheevos/TestMode"
+            app:title="@string/settings_achievements_test_mode"
+            app:summary="@string/settings_summary_achievements_test_mode"
+            app:defaultValue="false"
+            app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat
+            app:key="Cheevos/UseFirstDiscFromPlaylist"
+            app:title="@string/settings_achievements_use_first_disc_from_playlist"
+            app:summary="@string/settings_summary_achievements_use_first_disc_from_playlist"
+            app:defaultValue="true"
+            app:iconSpaceReserved="false" />
+    </PreferenceCategory>
+
 </PreferenceScreen>

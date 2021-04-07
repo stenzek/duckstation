@@ -22,6 +22,7 @@
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
+#include <QtCore/QMimeData>
 #include <QtCore/QUrl>
 #include <QtGui/QCursor>
 #include <QtGui/QWindowStateChangeEvent>
@@ -33,9 +34,10 @@
 
 static constexpr char DISC_IMAGE_FILTER[] = QT_TRANSLATE_NOOP(
   "MainWindow",
-  "All File Types (*.bin *.img *.iso *.cue *.chd *.exe *.psexe *.psf *.minipsf *.m3u);;Single-Track Raw Images (*.bin "
-  "*.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;PlayStation Executables (*.exe *.psexe);;Portable Sound "
-  "Format Files (*.psf *.minipsf);;Playlists (*.m3u)");
+  "All File Types (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.pbp *.exe *.psexe *.psf *.minipsf *.m3u);;Single-Track "
+  "Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;Error Code Modeler Images "
+  "(*.ecm);;Media Descriptor Sidecar Images (*.mds);;PlayStation EBOOTs (*.pbp);;PlayStation Executables (*.exe "
+  "*.psexe);;Portable Sound Format Files (*.psf *.minipsf);;Playlists (*.m3u)");
 
 ALWAYS_INLINE static QString getWindowTitle()
 {
@@ -354,7 +356,7 @@ void MainWindow::updateMouseMode(bool paused)
 void MainWindow::onEmulationStarting()
 {
   m_emulation_running = true;
-  updateEmulationActions(true, false);
+  updateEmulationActions(true, false, m_host_interface->IsCheevosChallengeModeActive());
 
   // ensure it gets updated, since the boot can take a while
   QGuiApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
@@ -362,13 +364,13 @@ void MainWindow::onEmulationStarting()
 
 void MainWindow::onEmulationStarted()
 {
-  updateEmulationActions(false, true);
+  updateEmulationActions(false, true, m_host_interface->IsCheevosChallengeModeActive());
 }
 
 void MainWindow::onEmulationStopped()
 {
   m_emulation_running = false;
-  updateEmulationActions(false, false);
+  updateEmulationActions(false, false, m_host_interface->IsCheevosChallengeModeActive());
   switchToGameListView();
 
   if (m_cheat_manager_dialog)
@@ -401,13 +403,19 @@ void MainWindow::onStateSaved(const QString& game_code, bool global, qint32 slot
 }
 
 void MainWindow::onSystemPerformanceCountersUpdated(float speed, float fps, float vps, float average_frame_time,
-                                                    float worst_frame_time)
+                                                    float worst_frame_time, GPURenderer renderer, quint32 render_width,
+                                                    quint32 render_height, bool render_interlaced)
 {
   m_status_speed_widget->setText(QStringLiteral("%1%").arg(speed, 0, 'f', 0));
   m_status_fps_widget->setText(
     QStringLiteral("FPS: %1/%2").arg(std::round(fps), 0, 'f', 0).arg(std::round(vps), 0, 'f', 0));
   m_status_frame_time_widget->setText(
     QStringLiteral("%1ms average, %2ms worst").arg(average_frame_time, 0, 'f', 2).arg(worst_frame_time, 0, 'f', 2));
+  m_status_renderer_widget->setText(QString::fromUtf8(Settings::GetRendererName(renderer)));
+  m_status_resolution_widget->setText(
+    (render_interlaced ? QStringLiteral("%1x%2 (Interlaced)") : QStringLiteral("%1x%2 (Progressive)"))
+      .arg(render_width)
+      .arg(render_height));
 }
 
 void MainWindow::onRunningGameChanged(const QString& filename, const QString& game_code, const QString& game_title)
@@ -420,6 +428,15 @@ void MainWindow::onRunningGameChanged(const QString& filename, const QString& ga
 
   if (m_display_widget)
     m_display_widget->setWindowTitle(windowTitle());
+
+  bool has_game_list_entry = false;
+  if (!filename.isEmpty())
+  {
+    const GameListEntry* entry = m_host_interface->getGameList()->GetEntryForPath(filename.toStdString().c_str());
+    has_game_list_entry = (entry != nullptr);
+  }
+
+  m_ui.actionViewGameProperties->setEnabled(has_game_list_entry);
 }
 
 void MainWindow::onApplicationStateChanged(Qt::ApplicationState state)
@@ -480,14 +497,19 @@ void MainWindow::onChangeDiscFromGameListActionTriggered()
   switchToGameListView();
 }
 
-void MainWindow::onChangeDiscFromPlaylistMenuAboutToShow()
+void MainWindow::onChangeDiscMenuAboutToShow()
 {
-  m_host_interface->populatePlaylistEntryMenu(m_ui.menuChangeDiscFromPlaylist);
+  m_host_interface->populateChangeDiscSubImageMenu(m_ui.menuChangeDisc, m_ui.actionGroupChangeDiscSubImages);
 }
 
-void MainWindow::onChangeDiscFromPlaylistMenuAboutToHide()
+void MainWindow::onChangeDiscMenuAboutToHide()
 {
-  m_ui.menuChangeDiscFromPlaylist->clear();
+  for (QAction* action : m_ui.actionGroupChangeDiscSubImages->actions())
+  {
+    m_ui.actionGroupChangeDiscSubImages->removeAction(action);
+    m_ui.menuChangeDisc->removeAction(action);
+    action->deleteLater();
+  }
 }
 
 void MainWindow::onCheatsMenuAboutToShow()
@@ -549,21 +571,14 @@ void MainWindow::onViewSystemDisplayTriggered()
 
 void MainWindow::onViewGamePropertiesActionTriggered()
 {
-  const GameListEntry* entry;
+  if (!m_emulation_running)
+    return;
 
-  if (m_emulation_running)
-  {
-    const std::string& path = System::GetRunningPath();
-    if (path.empty())
-      return;
+  const std::string& path = System::GetRunningPath();
+  if (path.empty())
+    return;
 
-    entry = m_host_interface->getGameList()->GetEntryForPath(path.c_str());
-  }
-  else
-  {
-    entry = m_game_list_widget->getSelectedEntry();
-  }
-
+  const GameListEntry* entry = m_host_interface->getGameList()->GetEntryForPath(path.c_str());
   if (!entry)
     return;
 
@@ -606,25 +621,7 @@ void MainWindow::onGameListEntrySelected(const GameListEntry* entry)
 
 void MainWindow::onGameListEntryDoubleClicked(const GameListEntry* entry)
 {
-  // if we're not running, boot the system, otherwise swap discs
-  QString path = QString::fromStdString(entry->path);
-  if (!m_emulation_running)
-  {
-    if (!entry->code.empty() && m_host_interface->GetBoolSettingValue("Main", "SaveStateOnExit", true))
-    {
-      m_host_interface->resumeSystemFromState(path, true);
-    }
-    else
-    {
-      m_host_interface->bootSystem(std::make_shared<const SystemBootParameters>(path.toStdString()));
-    }
-  }
-  else
-  {
-    m_host_interface->changeDisc(path);
-    m_host_interface->pauseSystem(false);
-    switchToEmulationView();
-  }
+  startGameOrChangeDiscs(entry->path);
 }
 
 void MainWindow::onGameListContextMenuRequested(const QPoint& point, const GameListEntry* entry)
@@ -635,7 +632,6 @@ void MainWindow::onGameListContextMenuRequested(const QPoint& point, const GameL
   if (entry)
   {
     QAction* action = menu.addAction(tr("Properties..."));
-    action->setEnabled(entry->type == GameListEntryType::Disc);
     connect(action, &QAction::triggered,
             [this, entry]() { GamePropertiesDialog::showForEntry(m_host_interface, entry, this); });
 
@@ -670,7 +666,7 @@ void MainWindow::onGameListContextMenuRequested(const QPoint& point, const GameL
         m_host_interface->bootSystem(std::move(boot_params));
       });
 
-      if (m_ui.menuDebug->menuAction()->isVisible())
+      if (m_ui.menuDebug->menuAction()->isVisible() && !m_host_interface->IsCheevosChallengeModeActive())
       {
         connect(menu.addAction(tr("Boot and Debug")), &QAction::triggered, [this, entry]() {
           m_open_debugger_on_start = true;
@@ -756,7 +752,7 @@ void MainWindow::setupAdditionalUi()
 
   m_status_speed_widget = new QLabel(m_ui.statusBar);
   m_status_speed_widget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
-  m_status_speed_widget->setFixedSize(40, 16);
+  m_status_speed_widget->setFixedSize(50, 16);
   m_status_speed_widget->hide();
 
   m_status_fps_widget = new QLabel(m_ui.statusBar);
@@ -768,6 +764,16 @@ void MainWindow::setupAdditionalUi()
   m_status_frame_time_widget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
   m_status_frame_time_widget->setFixedSize(190, 16);
   m_status_frame_time_widget->hide();
+
+  m_status_renderer_widget = new QLabel(m_ui.statusBar);
+  m_status_renderer_widget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+  m_status_renderer_widget->setFixedSize(50, 16);
+  m_status_renderer_widget->hide();
+
+  m_status_resolution_widget = new QLabel(m_ui.statusBar);
+  m_status_resolution_widget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+  m_status_resolution_widget->setFixedSize(140, 16);
+  m_status_resolution_widget->hide();
 
   m_ui.actionGridViewShowTitles->setChecked(m_game_list_widget->getShowGridCoverTitles());
 
@@ -841,27 +847,27 @@ void MainWindow::setupAdditionalUi()
   }
 }
 
-void MainWindow::updateEmulationActions(bool starting, bool running)
+void MainWindow::updateEmulationActions(bool starting, bool running, bool cheevos_challenge_mode)
 {
   m_ui.actionStartDisc->setDisabled(starting || running);
   m_ui.actionStartBios->setDisabled(starting || running);
-  m_ui.actionResumeLastState->setDisabled(starting || running);
+  m_ui.actionResumeLastState->setDisabled(starting || running || cheevos_challenge_mode);
 
   m_ui.actionPowerOff->setDisabled(starting || !running);
   m_ui.actionPowerOffWithoutSaving->setDisabled(starting || !running);
   m_ui.actionReset->setDisabled(starting || !running);
   m_ui.actionPause->setDisabled(starting || !running);
   m_ui.actionChangeDisc->setDisabled(starting || !running);
-  m_ui.actionCheats->setDisabled(starting || !running);
+  m_ui.actionCheats->setDisabled(starting || !running || cheevos_challenge_mode);
   m_ui.actionScreenshot->setDisabled(starting || !running);
   m_ui.actionViewSystemDisplay->setEnabled(starting || running);
   m_ui.menuChangeDisc->setDisabled(starting || !running);
-  m_ui.menuCheats->setDisabled(starting || !running);
-  m_ui.actionCheatManager->setDisabled(starting || !running);
-  m_ui.actionCPUDebugger->setDisabled(starting || !running);
-  m_ui.actionDumpRAM->setDisabled(starting || !running);
-  m_ui.actionDumpVRAM->setDisabled(starting || !running);
-  m_ui.actionDumpSPURAM->setDisabled(starting || !running);
+  m_ui.menuCheats->setDisabled(starting || !running || cheevos_challenge_mode);
+  m_ui.actionCheatManager->setDisabled(starting || !running || cheevos_challenge_mode);
+  m_ui.actionCPUDebugger->setDisabled(starting || !running || cheevos_challenge_mode);
+  m_ui.actionDumpRAM->setDisabled(starting || !running || cheevos_challenge_mode);
+  m_ui.actionDumpVRAM->setDisabled(starting || !running || cheevos_challenge_mode);
+  m_ui.actionDumpSPURAM->setDisabled(starting || !running || cheevos_challenge_mode);
 
   m_ui.actionSaveState->setDisabled(starting || !running);
   m_ui.menuSaveState->setDisabled(starting || !running);
@@ -869,23 +875,34 @@ void MainWindow::updateEmulationActions(bool starting, bool running)
 
   m_ui.actionFullscreen->setDisabled(starting || !running);
 
+  m_ui.actionLoadState->setDisabled(cheevos_challenge_mode);
+  m_ui.menuLoadState->setDisabled(cheevos_challenge_mode);
+
   if (running && m_status_speed_widget->isHidden())
   {
     m_status_speed_widget->show();
     m_status_fps_widget->show();
     m_status_frame_time_widget->show();
+    m_status_renderer_widget->show();
+    m_status_resolution_widget->show();
     m_ui.statusBar->addPermanentWidget(m_status_speed_widget);
     m_ui.statusBar->addPermanentWidget(m_status_fps_widget);
+    m_ui.statusBar->addPermanentWidget(m_status_resolution_widget);
+    m_ui.statusBar->addPermanentWidget(m_status_renderer_widget);
     m_ui.statusBar->addPermanentWidget(m_status_frame_time_widget);
   }
   else if (!running && m_status_speed_widget->isVisible())
   {
+    m_ui.statusBar->removeWidget(m_status_renderer_widget);
+    m_ui.statusBar->removeWidget(m_status_resolution_widget);
     m_ui.statusBar->removeWidget(m_status_speed_widget);
     m_ui.statusBar->removeWidget(m_status_fps_widget);
     m_ui.statusBar->removeWidget(m_status_frame_time_widget);
     m_status_speed_widget->hide();
     m_status_fps_widget->hide();
     m_status_frame_time_widget->hide();
+    m_status_renderer_widget->hide();
+    m_status_resolution_widget->hide();
   }
 
   if (starting || running)
@@ -903,6 +920,8 @@ void MainWindow::updateEmulationActions(bool starting, bool running)
       m_ui.toolBar->insertAction(m_ui.actionPowerOff, m_ui.actionResumeLastState);
       m_ui.toolBar->removeAction(m_ui.actionPowerOff);
     }
+
+    m_ui.actionViewGameProperties->setEnabled(false);
   }
 
   if (m_open_debugger_on_start && running)
@@ -943,9 +962,27 @@ void MainWindow::switchToEmulationView()
   m_display_widget->setFocus();
 }
 
+void MainWindow::startGameOrChangeDiscs(const std::string& path)
+{
+  // if we're not running, boot the system, otherwise swap discs
+  if (!m_emulation_running)
+  {
+    if (m_host_interface->CanResumeSystemFromFile(path.c_str()))
+      m_host_interface->resumeSystemFromState(QString::fromStdString(path), true);
+    else
+      m_host_interface->bootSystem(std::make_shared<const SystemBootParameters>(path));
+  }
+  else
+  {
+    m_host_interface->changeDisc(QString::fromStdString(path));
+    m_host_interface->pauseSystem(false);
+    switchToEmulationView();
+  }
+}
+
 void MainWindow::connectSignals()
 {
-  updateEmulationActions(false, false);
+  updateEmulationActions(false, false, m_host_interface->IsCheevosChallengeModeActive());
   onEmulationPaused(false);
 
   connect(qApp, &QGuiApplication::applicationStateChanged, this, &MainWindow::onApplicationStateChanged);
@@ -958,10 +995,8 @@ void MainWindow::connectSignals()
   connect(m_ui.actionChangeDiscFromFile, &QAction::triggered, this, &MainWindow::onChangeDiscFromFileActionTriggered);
   connect(m_ui.actionChangeDiscFromGameList, &QAction::triggered, this,
           &MainWindow::onChangeDiscFromGameListActionTriggered);
-  connect(m_ui.menuChangeDiscFromPlaylist, &QMenu::aboutToShow, this,
-          &MainWindow::onChangeDiscFromPlaylistMenuAboutToShow);
-  connect(m_ui.menuChangeDiscFromPlaylist, &QMenu::aboutToHide, this,
-          &MainWindow::onChangeDiscFromPlaylistMenuAboutToHide);
+  connect(m_ui.menuChangeDisc, &QMenu::aboutToShow, this, &MainWindow::onChangeDiscMenuAboutToShow);
+  connect(m_ui.menuChangeDisc, &QMenu::aboutToHide, this, &MainWindow::onChangeDiscMenuAboutToHide);
   connect(m_ui.menuCheats, &QMenu::aboutToShow, this, &MainWindow::onCheatsMenuAboutToShow);
   connect(m_ui.actionCheats, &QAction::triggered, [this] { m_ui.menuCheats->exec(QCursor::pos()); });
   connect(m_ui.actionRemoveDisc, &QAction::triggered, this, &MainWindow::onRemoveDiscActionTriggered);
@@ -1409,6 +1444,39 @@ void MainWindow::changeEvent(QEvent* event)
   QMainWindow::changeEvent(event);
 }
 
+static std::string getFilenameFromMimeData(const QMimeData* md)
+{
+  std::string filename;
+  if (md->hasUrls())
+  {
+    // only one url accepted
+    const QList<QUrl> urls(md->urls());
+    if (urls.size() == 1)
+      filename = urls.front().toLocalFile().toStdString();
+  }
+
+  return filename;
+}
+
+void MainWindow::dragEnterEvent(QDragEnterEvent* event)
+{
+  const std::string filename(getFilenameFromMimeData(event->mimeData()));
+  if (!System::IsLoadableFilename(filename.c_str()))
+    return;
+
+  event->acceptProposedAction();
+}
+
+void MainWindow::dropEvent(QDropEvent* event)
+{
+  const std::string filename(getFilenameFromMimeData(event->mimeData()));
+  if (!System::IsLoadableFilename(filename.c_str()))
+    return;
+
+  event->acceptProposedAction();
+  startGameOrChangeDiscs(filename);
+}
+
 void MainWindow::startupUpdateCheck()
 {
   if (!m_host_interface->GetBoolSettingValue("AutoUpdater", "CheckAtStartup", true))
@@ -1433,10 +1501,13 @@ void MainWindow::onCheckForUpdatesActionTriggered()
 void MainWindow::openMemoryCardEditor(const QString& card_a_path, const QString& card_b_path)
 {
   if (!m_memory_card_editor_dialog)
+  {
     m_memory_card_editor_dialog = new MemoryCardEditorDialog(this);
+    m_memory_card_editor_dialog->setModal(false);
+  }
 
-  m_memory_card_editor_dialog->setModal(false);
   m_memory_card_editor_dialog->show();
+  m_memory_card_editor_dialog->activateWindow();
 
   if (!card_a_path.isEmpty())
   {
@@ -1456,6 +1527,28 @@ void MainWindow::openMemoryCardEditor(const QString& card_a_path, const QString&
         tr("Memory card '%1' could not be found. Try starting the game and saving to create it.").arg(card_b_path));
     }
   }
+}
+
+void MainWindow::onAchievementsChallengeModeToggled(bool enabled)
+{
+  if (enabled)
+  {
+    if (m_cheat_manager_dialog)
+    {
+      m_cheat_manager_dialog->close();
+      delete m_cheat_manager_dialog;
+      m_cheat_manager_dialog = nullptr;
+    }
+
+    if (m_debugger_window)
+    {
+      m_debugger_window->close();
+      delete m_debugger_window;
+      m_debugger_window = nullptr;
+    }
+  }
+
+  updateEmulationActions(false, System::IsValid(), enabled);
 }
 
 void MainWindow::onToolsMemoryCardEditorTriggered()

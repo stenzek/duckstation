@@ -166,7 +166,7 @@ jobs:
       shell: bash
       run: |
         sudo apt-get update
-        sudo apt-get -y install cmake ninja-build ccache libsdl2-dev libgtk-3-dev qtbase5-dev qtbase5-dev-tools qtbase5-private-dev qt5-default qttools5-dev libegl1-mesa-dev libevdev-dev libgbm-dev libdrm-dev libwayland-dev libwayland-egl-backend-dev extra-cmake-modules libcurl4-gnutls-dev
+        sudo apt-get -y install cmake ninja-build ccache libsdl2-dev libgtk-3-dev qtbase5-dev qtbase5-dev-tools qtbase5-private-dev qt5-default qttools5-dev libegl1-mesa-dev libevdev-dev libgbm-dev libdrm-dev libwayland-dev libwayland-egl-backend-dev extra-cmake-modules libcurl4-gnutls-dev libxrandr-dev
 
     - name: Compile build
       shell: bash
@@ -262,7 +262,7 @@ jobs:
         mkdir build
         cd build
         export MACOSX_DEPLOYMENT_TARGET=10.14
-        cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_NOGUI_FRONTEND=OFF -DBUILD_QT_FRONTEND=ON -DUSE_SDL2=ON -DQt5_DIR=/usr/local/opt/qt/lib/cmake/Qt5 ..
+        cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_NOGUI_FRONTEND=OFF -DBUILD_QT_FRONTEND=ON -DUSE_SDL2=ON -DQt5_DIR=/usr/local/opt/qt@5/lib/cmake/Qt5 ..
         cmake --build . --parallel 2
         cd bin
         zip -r duckstation-mac-release.zip DuckStation.app/

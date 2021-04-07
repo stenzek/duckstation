@@ -45,6 +45,7 @@ struct CheatCode
     CompareGreater8 = 0xE3,
     Slide = 0x50,
     MemoryCopy = 0xC2,
+    ExtImprovedSlide = 0x53,
 
     // Extension opcodes, not present on original GameShark.
     ExtConstantWrite32 = 0x90,
@@ -63,12 +64,23 @@ struct CheatCode
     ExtConstantForceRangeRollRound16 = 0xF2,
     ExtConstantForceRange16 = 0xF3,
     ExtFindAndReplace = 0xF4,
+    ExtConstantSwap16 = 0xF5,
+
     ExtConstantBitSet8 = 0x31,
     ExtConstantBitClear8 = 0x32,
     ExtConstantBitSet16 = 0x81,
     ExtConstantBitClear16 = 0x82,
     ExtConstantBitSet32 = 0x91,
     ExtConstantBitClear32 = 0x92,
+
+    ExtBitCompareButtons = 0xD7,
+    ExtSkipIfNotLess8 = 0xC3,
+    ExtSkipIfNotGreater8 = 0xC4,
+    ExtSkipIfNotLess16 = 0xC5,
+    ExtSkipIfNotGreater16 = 0xC6,
+
+    ExtCheatRegisters = 0x51,
+    ExtCheatRegistersCompare = 0x52,
   };
 
   union Instruction

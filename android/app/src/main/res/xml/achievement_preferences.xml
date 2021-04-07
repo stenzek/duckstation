@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory app:title="Global Settings" app:iconSpaceReserved="false">
+        <SwitchPreferenceCompat
+            app:key="Cheevos/Enabled"
+            app:title="@string/settings_achievements_enable"
+            app:summary="@string/settings_summary_achievements_enable"
+            app:defaultValue="false"
+            app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat
+            app:key="Cheevos/ChallengeMode"
+            app:title="@string/settings_achievements_challenge_mode"
+            app:summary="@string/settings_summary_achievements_challenge_mode"
+            app:dependency="Cheevos/Enabled"
+            app:defaultValue="false"
+            app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat
+            app:key="Cheevos/RichPresence"
+            app:title="@string/settings_achievements_rich_presence"
+            app:summary="@string/settings_summary_achievements_rich_presence"
+            app:dependency="Cheevos/Enabled"
+            app:defaultValue="true"
+            app:iconSpaceReserved="false" />
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="Account" app:iconSpaceReserved="false">
+        <Preference
+            app:key="Cheevos/Username"
+            app:title="@string/settings_achievements_username"
+            app:iconSpaceReserved="false" />
+        <Preference
+            app:key="Cheevos/LoginTokenTime"
+            app:title="@string/settings_achievements_token_generation_time"
+            app:iconSpaceReserved="false" />
+        <PreferenceScreen
+            app:key="Cheevos/Login"
+            app:title="@string/settings_achievements_login"
+            app:summary="@string/settings_summary_achievements_login"
+            app:iconSpaceReserved="false" />
+        <PreferenceScreen
+            app:key="Cheevos/Register"
+            app:title="@string/settings_achievements_register"
+            app:summary="@string/settings_summary_achievements_register"
+            app:iconSpaceReserved="false" />
+        <PreferenceScreen
+            app:key="Cheevos/Logout"
+            app:title="@string/settings_achievements_logout"
+            app:summary="@string/settings_summary_achievements_logout"
+            app:iconSpaceReserved="false" />
+        <PreferenceScreen
+            app:key="Cheevos/ViewProfile"
+            app:title="@string/settings_achievements_view_profile"
+            app:summary="@string/settings_summary_achievements_view_profile"
+            app:iconSpaceReserved="false" />
+    </PreferenceCategory>
+    <PreferenceCategory app:title="@string/settings_achievements_disclaimer" app:iconSpaceReserved="false">
+    </PreferenceCategory>
+</PreferenceScreen>

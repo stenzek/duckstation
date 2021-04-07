@@ -578,15 +578,13 @@ std::optional<int> GetKeyIdForIdentifier(const QString& key_identifier)
   return std::nullopt;
 }
 
-QString KeyEventToString(const QKeyEvent* ke)
+QString KeyEventToString(int key, Qt::KeyboardModifiers mods)
 {
-  const int key = ke->key();
   QString key_name = GetKeyIdentifier(key);
   if (key_name.isEmpty())
     return {};
 
   QString ret;
-  const Qt::KeyboardModifiers mods = ke->modifiers();
   for (const QtKeyModifierEntry& mod : s_qt_key_modifiers)
   {
     if (mods & mod.mod && key != mod.key)
@@ -628,11 +626,8 @@ std::optional<int> ParseKeyString(const QString& key_str)
   return ret;
 }
 
-int KeyEventToInt(const QKeyEvent* ke)
+int KeyEventToInt(int key, Qt::KeyboardModifiers mods)
 {
-  const Qt::KeyboardModifiers mods = ke->modifiers();
-  const int key = ke->key();
-
   int val = key;
   if (mods != 0)
   {

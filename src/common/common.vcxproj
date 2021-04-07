@@ -59,7 +59,6 @@
     <ClInclude Include="byte_stream.h" />
     <ClInclude Include="cd_image.h" />
     <ClInclude Include="cd_image_hasher.h" />
-    <ClInclude Include="cpu_detect.h" />
     <ClInclude Include="crash_handler.h" />
     <ClInclude Include="d3d11\shader_cache.h" />
     <ClInclude Include="d3d11\shader_compiler.h" />
@@ -68,6 +67,7 @@
     <ClInclude Include="d3d11\texture.h" />
     <ClInclude Include="dimensional_array.h" />
     <ClInclude Include="easing.h" />
+    <ClInclude Include="error.h" />
     <ClInclude Include="event.h" />
     <ClInclude Include="fifo_queue.h" />
     <ClInclude Include="file_system.h" />
@@ -92,6 +92,8 @@
     <ClInclude Include="make_array.h" />
     <ClInclude Include="md5_digest.h" />
     <ClInclude Include="null_audio_stream.h" />
+    <ClInclude Include="pbp_types.h" />
+    <ClInclude Include="platform.h" />
     <ClInclude Include="progress_callback.h" />
     <ClInclude Include="memory_arena.h" />
     <ClInclude Include="page_fault_handler.h" />
@@ -130,14 +132,19 @@
     <ClCompile Include="cd_image_bin.cpp" />
     <ClCompile Include="cd_image_chd.cpp" />
     <ClCompile Include="cd_image_cue.cpp" />
+    <ClCompile Include="cd_image_ecm.cpp" />
     <ClCompile Include="cd_image_hasher.cpp" />
+    <ClCompile Include="cd_image_m3u.cpp" />
+    <ClCompile Include="cd_image_mds.cpp" />
     <ClCompile Include="cd_image_memory.cpp" />
+    <ClCompile Include="cd_image_pbp.cpp" />
     <ClCompile Include="crash_handler.cpp" />
     <ClCompile Include="d3d11\shader_cache.cpp" />
     <ClCompile Include="d3d11\shader_compiler.cpp" />
     <ClCompile Include="d3d11\staging_texture.cpp" />
     <ClCompile Include="d3d11\stream_buffer.cpp" />
     <ClCompile Include="d3d11\texture.cpp" />
+    <ClCompile Include="error.cpp" />
     <ClCompile Include="event.cpp" />
     <ClCompile Include="file_system.cpp" />
     <ClCompile Include="gl\context.cpp" />
@@ -182,6 +189,7 @@
     <ClCompile Include="vulkan\util.cpp" />
     <ClCompile Include="wav_writer.cpp" />
     <ClCompile Include="win32_progress_callback.cpp" />
+    <ClCompile Include="window_info.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />
