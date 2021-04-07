@@ -251,6 +251,13 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
 
+# Enable large file support on Linux 32-bit platforms.
+# Android is deliberately ommitted here as it didn't support 64-bit ops on files until Android 7/N.
+if((LINUX OR FREEBSD) AND (${CPU_ARCH} STREQUAL "x86" OR ${CPU_ARCH} STREQUAL "aarch32"))
+  add_definitions("-D_FILE_OFFSET_BITS=64")
+endif()
+
+
 # Recursively include the source tree.
 enable_testing()
 add_subdirectory(dep)
