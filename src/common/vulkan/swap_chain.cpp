@@ -138,7 +138,8 @@ static VkSurfaceKHR CreateDisplaySurface(VkInstance instance, VkPhysicalDevice p
 
       if (!matched_mode &&
           ((wi->surface_width == 0 && wi->surface_height == 0) ||
-           (mode.parameters.visibleRegion.width == wi->surface_width && mode.parameters.visibleRegion.height &&
+           (mode.parameters.visibleRegion.width == wi->surface_width &&
+            mode.parameters.visibleRegion.height == wi->surface_height &&
             (wi->surface_refresh_rate == 0.0f || std::abs(refresh_rate - wi->surface_refresh_rate) < 0.1f))))
       {
         matched_mode = &mode;
@@ -153,11 +154,13 @@ static VkSurfaceKHR CreateDisplaySurface(VkInstance instance, VkPhysicalDevice p
 
     u32 num_planes;
     res = vkGetPhysicalDeviceDisplayPlanePropertiesKHR(physical_device, &num_planes, nullptr);
-    if (res != VK_SUCCESS || num_planes == 0)
+    if (res != VK_SUCCESS)
     {
       LOG_VULKAN_ERROR(res, "vkGetPhysicalDeviceDisplayPlanePropertiesKHR() failed:");
       continue;
     }
+    if (num_planes == 0)
+      continue;
 
     std::vector<VkDisplayPlanePropertiesKHR> planes(num_planes);
     res = vkGetPhysicalDeviceDisplayPlanePropertiesKHR(physical_device, &num_planes, planes.data());
@@ -172,18 +175,20 @@ static VkSurfaceKHR CreateDisplaySurface(VkInstance instance, VkPhysicalDevice p
     {
       u32 supported_display_count;
       res = vkGetDisplayPlaneSupportedDisplaysKHR(physical_device, plane_index, &supported_display_count, nullptr);
-      if (res != VK_SUCCESS || supported_display_count == 0)
+      if (res != VK_SUCCESS)
       {
-        LOG_VULKAN_ERROR(res, "vkGetPhysicalDeviceDisplayPlanePropertiesKHR() failed:");
+        LOG_VULKAN_ERROR(res, "vkGetDisplayPlaneSupportedDisplaysKHR() failed:");
         continue;
       }
+      if (supported_display_count == 0)
+        continue;
 
       std::vector<VkDisplayKHR> supported_displays(supported_display_count);
       res = vkGetDisplayPlaneSupportedDisplaysKHR(physical_device, plane_index, &supported_display_count,
                                                   supported_displays.data());
-      if (res != VK_SUCCESS || supported_display_count == 0)
+      if (res != VK_SUCCESS)
       {
-        LOG_VULKAN_ERROR(res, "vkGetPhysicalDeviceDisplayPlanePropertiesKHR() failed:");
+        LOG_VULKAN_ERROR(res, "vkGetDisplayPlaneSupportedDisplaysKHR() failed:");
         continue;
       }
 
@@ -232,9 +237,14 @@ static std::vector<SwapChain::FullscreenModeInfo> GetDisplayModes(VkInstance ins
 
   u32 num_displays;
   VkResult res = vkGetPhysicalDeviceDisplayPropertiesKHR(physical_device, &num_displays, nullptr);
-  if (res != VK_SUCCESS || num_displays == 0)
+  if (res != VK_SUCCESS)
   {
     LOG_VULKAN_ERROR(res, "vkGetPhysicalDeviceDisplayPropertiesKHR() failed:");
+    return {};
+  }
+  if (num_displays == 0)
+  {
+    Log_ErrorPrint("No displays were returned");
     return {};
   }
 
