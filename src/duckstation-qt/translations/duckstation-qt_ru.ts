@@ -7648,7 +7648,7 @@ Achievements: %5 (%6)
         <location filename="../qthostinterface.cpp" line="1396"/>
         <source>%n points</source>
         <translation>
-            <numerusform>%n балла</numerusform>
+            <numerusform>%n балл</numerusform>
             <numerusform>%n балла</numerusform>
             <numerusform>%n баллов</numerusform>
         </translation>
