@@ -10,6 +10,10 @@
 #include <unistd.h>
 Log_SetChannel(VTYHostInterface);
 
+#ifdef WITH_DRMKMS
+#include "common/drm_display.h"
+#endif
+
 VTYHostInterface::VTYHostInterface() = default;
 
 VTYHostInterface::~VTYHostInterface()
@@ -87,6 +91,15 @@ std::optional<WindowInfo> VTYHostInterface::GetPlatformWindowInfo()
       Log_ErrorPrintf("Failed to parse fullscreen mode '%s'", fullscreen_mode.c_str());
     }
   }
+
+#ifdef WITH_DRMKMS
+  // set to current mode
+  if (wi.surface_width == 0)
+  {
+    if (!DRMDisplay::GetCurrentMode(&wi.surface_width, &wi.surface_height, &wi.surface_refresh_rate))
+      Log_ErrorPrintf("Failed to get current mode, will use default.");
+  }
+#endif
 
   return wi;
 }

@@ -125,6 +125,7 @@ bool NoGUIHostInterface::CreateDisplay()
   if (!CreateHostDisplayResources())
     Log_WarningPrint("Failed to create host display resources");
 
+  Log_InfoPrintf("Host display initialized at %ux%u resolution", m_display->GetWindowWidth(), m_display->GetWindowHeight());
   return true;
 }
 

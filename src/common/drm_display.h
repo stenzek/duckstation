@@ -11,6 +11,8 @@ public:
   DRMDisplay(int card = -1);
   ~DRMDisplay();
 
+  static bool GetCurrentMode(u32* width, u32* height, float* refresh_rate, int card = -1, int connector = -1);
+
   bool Initialize(u32 width, u32 height, float refresh_rate);
 
   int GetCardID() const { return m_card_id; }

@@ -1,6 +1,7 @@
 #include "drm_display.h"
 #include "common/assert.h"
 #include "common/log.h"
+#include "common/scope_guard.h"
 #include "common/string.h"
 #include "file_system.h"
 #include <cmath>
@@ -8,6 +9,11 @@
 #include <string.h>
 #include <unistd.h>
 Log_SetChannel(DRMDisplay);
+
+enum
+{
+  MAX_CARDS_TO_TRY = 10
+};
 
 DRMDisplay::DRMDisplay(int card /*= 1*/) : m_card_id(card) {}
 
@@ -72,7 +78,7 @@ bool DRMDisplay::Initialize(u32 width, u32 height, float refresh_rate)
 {
   if (m_card_id < 0)
   {
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < MAX_CARDS_TO_TRY; i++)
     {
       if (TryOpeningCard(i, width, height, refresh_rate))
         return true;
@@ -264,4 +270,102 @@ void DRMDisplay::PresentBuffer(u32 fb_id, bool wait_for_vsync)
 
     drmHandleEvent(m_card_fd, &event_ctx);
   }
+}
+
+bool DRMDisplay::GetCurrentMode(u32* width, u32* height, float* refresh_rate, int card, int connector)
+{
+  int card_fd = -1;
+  if (card < 0)
+  {
+    for (int try_card = 0; try_card < MAX_CARDS_TO_TRY; try_card++)
+    {
+      card_fd = open(TinyString::FromFormat("/dev/dri/card%d", try_card), O_RDWR);
+      if (card_fd >= 0)
+        break;
+    }
+  }
+  else
+  {
+    card_fd = open(TinyString::FromFormat("/dev/dri/card%d", card), O_RDWR);
+  }
+
+  if (card_fd < 0)
+  {
+    Log_ErrorPrintf("open(/dev/dri/card%d) failed: %d (%s)", card, errno, strerror(errno));
+    return false;
+  }
+
+  Common::ScopeGuard card_guard([card_fd]() { close(card_fd); });
+
+  drmModeRes* resources = drmModeGetResources(card_fd);
+  if (!resources)
+  {
+    Log_ErrorPrintf("drmModeGetResources() failed: %d (%s)", errno, strerror(errno));
+    return false;
+  }
+
+  Common::ScopeGuard resources_guard([resources]() { drmModeFreeResources(resources); });
+  drmModeConnector* connector_ptr = nullptr;
+  if (connector < 0)
+  {
+    for (int i = 0; i < resources->count_connectors; i++)
+    {
+      connector_ptr = drmModeGetConnector(card_fd, resources->connectors[i]);
+      if (connector_ptr->connection == DRM_MODE_CONNECTED)
+        break;
+
+      drmModeFreeConnector(connector_ptr);
+    }
+  }
+  else if (connector < resources->count_connectors)
+  {
+    connector_ptr = drmModeGetConnector(card_fd, resources->connectors[connector]);
+  }
+
+  Common::ScopeGuard connector_guard([connector_ptr]() {
+    if (connector_ptr)
+      drmModeFreeConnector(connector_ptr);
+  });
+  if (!connector_ptr || connector_ptr->connection != DRM_MODE_CONNECTED)
+  {
+    Log_ErrorPrintf("No connector found");
+    return false;
+  }
+
+  drmModeEncoder* encoder = drmModeGetEncoder(card_fd, connector_ptr->encoder_id);
+  if (!encoder)
+  {
+    Log_ErrorPrint("No encoder found");
+    return false;
+  }
+
+  Common::ScopeGuard encoder_guard([encoder]() { drmModeFreeEncoder(encoder); });
+
+  drmModeCrtc* crtc = drmModeGetCrtc(card_fd, encoder->crtc_id);
+  if (!crtc)
+  {
+    Log_ErrorPrint("No CRTC found");
+    return false;
+  }
+
+  if (!crtc->mode_valid)
+  {
+    Log_ErrorPrint("CRTC mode not valid");
+    return false;
+  }
+
+  const u32 current_width = static_cast<u32>(crtc->mode.hdisplay);
+  const u32 current_height = static_cast<u32>(crtc->mode.vdisplay);
+  const float current_refresh_rate = (static_cast<float>(crtc->mode.clock) * 1000.0f) /
+                                     (static_cast<float>(crtc->mode.htotal) * static_cast<float>(crtc->mode.vtotal));
+  Log_InfoPrintf("Current mode for card %d: %ux%u@%f", card, current_width, current_height, current_refresh_rate);
+
+  if (width)
+    *width = current_width;
+  if (height)
+    *height = current_height;
+  if (refresh_rate)
+    *refresh_rate = current_refresh_rate;
+
+  return true;
 }
