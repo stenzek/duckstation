@@ -183,6 +183,8 @@ std::unique_ptr<ByteStream> OpenFile(const char* FileName, u32 Flags);
 using ManagedCFilePtr = std::unique_ptr<std::FILE, void (*)(std::FILE*)>;
 ManagedCFilePtr OpenManagedCFile(const char* filename, const char* mode);
 std::FILE* OpenCFile(const char* filename, const char* mode);
+int FSeek64(std::FILE* fp, s64 offset, int whence);
+s64 FTell64(std::FILE* fp);
 
 std::optional<std::vector<u8>> ReadBinaryFile(const char* filename);
 std::optional<std::vector<u8>> ReadBinaryFile(std::FILE* fp);
