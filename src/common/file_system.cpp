@@ -500,6 +500,31 @@ std::FILE* OpenCFile(const char* filename, const char* mode)
 #endif
 }
 
+int FSeek64(std::FILE* fp, s64 offset, int whence)
+{
+#ifdef _WIN32
+  return _fseeki64(fp, offset, whence);
+#else
+  // Prevent truncation on platforms which don't have a 64-bit off_t (Android 32-bit).
+  if constexpr (sizeof(off_t) != sizeof(s64))
+  {
+    if (offset < std::numeric_limits<off_t>::min() || offset > std::numeric_limits<off_t>::max())
+      return -1;
+  }
+
+  return fseeko(fp, static_cast<off_t>(offset), whence);
+#endif
+}
+
+s64 FTell64(std::FILE* fp)
+{
+#ifdef _WIN32
+  return static_cast<s64>(_ftelli64(fp));
+#else
+  return static_cast<s64>(ftello(fp));
+#endif
+}
+
 std::optional<std::vector<u8>> ReadBinaryFile(const char* filename)
 {
   ManagedCFilePtr fp = OpenManagedCFile(filename, "rb");
