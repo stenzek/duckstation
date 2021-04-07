@@ -580,6 +580,18 @@ bool VulkanHostDisplay::Render()
       ResizeRenderWindow(0, 0);
       res = m_swap_chain->AcquireNextImage();
     }
+    else if (res == VK_ERROR_SURFACE_LOST_KHR)
+    {
+      Log_WarningPrint("Surface lost, attempting to recreate");
+      if (!m_swap_chain->RecreateSurface(m_window_info))
+      {
+        Log_ErrorPrint("Failed to recreate surface after loss");
+        g_vulkan_context->ExecuteCommandBuffer(false);
+        return false;
+      }
+
+      res = m_swap_chain->AcquireNextImage();
+    }
 
     // This can happen when multiple resize events happen in quick succession.
     // In this case, just wait until the next frame to try again.
