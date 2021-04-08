@@ -1361,7 +1361,7 @@ void CommonHostInterface::ClearInputMap()
 void CommonHostInterface::AddControllerRumble(u32 controller_index, u32 num_motors, ControllerRumbleCallback callback)
 {
   ControllerRumbleState rumble;
-  rumble.controller_index = 0;
+  rumble.controller_index = controller_index;
   rumble.num_motors = std::min<u32>(num_motors, ControllerRumbleState::MAX_MOTORS);
   rumble.last_strength.fill(0.0f);
   rumble.update_callback = std::move(callback);
