@@ -1769,9 +1769,14 @@ void ResetControllers()
 
 void UpdateMemoryCards()
 {
+  // Disable memory cards when running PSFs.
+  const bool is_running_psf = !s_running_game_path.empty() && IsPsfFileName(s_running_game_path.c_str());
+
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
     g_pad.SetMemoryCard(i, nullptr);
+    if (is_running_psf)
+      continue;
 
     std::unique_ptr<MemoryCard> card;
     const MemoryCardType type = g_settings.memory_card_types[i];
