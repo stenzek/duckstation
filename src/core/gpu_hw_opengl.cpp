@@ -369,7 +369,10 @@ void GPU_HW_OpenGL::SetCapabilities(HostDisplay* host_display)
     }
     else
     {
-      Log_WarningPrintf("Texture buffers and SSBOs are not supported, VRAM writes will be slower.");
+      Log_WarningPrintf("Texture buffers and SSBOs are not supported, VRAM writes will be slower and multisampling "
+                        "will be unavailable.");
+      m_max_multisamples = 1;
+      m_supports_per_sample_shading = false;
     }
   }
 
@@ -724,21 +727,6 @@ bool GPU_HW_OpenGL::CompilePrograms()
 
     m_downsample_program = std::move(*prog);
   }
-
-  prog = shader_cache.GetProgram(shadergen.GenerateUVQuadVertexShader(), {}, shadergen.GenerateSampleFragmentShader(),
-                                 [this, use_binding_layout](GL::Program& prog) {
-                                   if (!IsGLES() && !use_binding_layout)
-                                     prog.BindFragData(0, "o_col0");
-                                 });
-  if (!prog)
-    return false;
-
-  if (!use_binding_layout)
-  {
-    prog->Bind();
-    prog->Uniform1i("samp0", 0);
-  }
-  m_blit_program = std::move(*prog);
 
   UPDATE_PROGRESS();
 #undef UPDATE_PROGRESS
@@ -1155,20 +1143,21 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
     m_texture_stream_buffer->Unmap(num_pixels * sizeof(u32));
     m_texture_stream_buffer->Bind();
 
+    // have to write to the 1x texture first
+    if (m_resolution_scale > 1)
+      m_vram_encoding_texture.Bind();
+    else
+      m_vram_texture.Bind();
+
     // lower-left origin flip happens here
     const u32 flipped_y = VRAM_HEIGHT - y - height;
 
-    // have to write to the 1x texture first
-    GL::Texture& dst_texture =
-      (m_resolution_scale > 1 || m_multisamples > 1) ? m_vram_encoding_texture : m_vram_texture;
-
     // update texture data
-    dst_texture.Bind();
-    glTexSubImage2D(dst_texture.GetGLTarget(), 0, x, flipped_y, width, height, GL_RGBA, GL_UNSIGNED_BYTE,
+    glTexSubImage2D(m_vram_texture.GetGLTarget(), 0, x, flipped_y, width, height, GL_RGBA, GL_UNSIGNED_BYTE,
                     reinterpret_cast<void*>(static_cast<uintptr_t>(map_result.buffer_offset)));
     m_texture_stream_buffer->Unbind();
 
-    if (&dst_texture != &m_vram_texture)
+    if (m_resolution_scale > 1)
     {
       // scale to internal resolution
       const u32 scaled_width = width * m_resolution_scale;
@@ -1176,12 +1165,12 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
       const u32 scaled_x = x * m_resolution_scale;
       const u32 scaled_y = y * m_resolution_scale;
       const u32 scaled_flipped_y = m_vram_texture.GetHeight() - scaled_y - scaled_height;
-
-      BlitTextureToFramebuffer(dst_texture, x, flipped_y, width, height, scaled_x, scaled_flipped_y, scaled_width,
-                               scaled_height);
+      glDisable(GL_SCISSOR_TEST);
+      m_vram_encoding_texture.BindFramebuffer(GL_READ_FRAMEBUFFER);
+      glBlitFramebuffer(x, flipped_y, x + width, flipped_y + height, scaled_x, scaled_flipped_y,
+                        scaled_x + scaled_width, scaled_flipped_y + scaled_height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+      glEnable(GL_SCISSOR_TEST);
     }
-
-    RestoreGraphicsAPIState();
   }
 }
 
@@ -1253,76 +1242,19 @@ void GPU_HW_OpenGL::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 wid
   }
   else
   {
+    // glBlitFramebufer with same source/destination should be legal, but on Mali (at least Bifrost) it breaks.
+    // So, blit from the shadow texture, like in the other renderers.
     if (src_dirty)
       UpdateVRAMReadTexture();
 
-    CopyTexture(m_vram_texture, m_vram_fbo_id, m_vram_read_texture, m_vram_read_texture.GetGLFramebufferID(), src_x,
-                src_y, dst_x, dst_y, width, height);
-  }
-
-  IncludeVRAMDirtyRectangle(dst_bounds);
-}
-
-void GPU_HW_OpenGL::CopyTexture(GL::Texture& dest, GLuint dest_fbo, GL::Texture& src, GLuint src_fbo, u32 src_x,
-                                u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height)
-{
-  if (src.IsMultisampled())
-  {
-    // The MSAA case still needs framebuffer blits.
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dest_fbo);
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, src_fbo);
     glDisable(GL_SCISSOR_TEST);
+    m_vram_read_texture.BindFramebuffer(GL_READ_FRAMEBUFFER);
     glBlitFramebuffer(src_x, src_y, src_x + width, src_y + height, dst_x, dst_y, dst_x + width, dst_y + height,
                       GL_COLOR_BUFFER_BIT, GL_NEAREST);
     glEnable(GL_SCISSOR_TEST);
-    RestoreGraphicsAPIState();
-    return;
   }
 
-  if (GLAD_GL_VERSION_4_3)
-  {
-    glCopyImageSubData(src.GetGLId(), src.GetGLTarget(), 0, src_x, src_y, 0, dest.GetGLId(), src.GetGLTarget(), 0,
-                       dst_x, dst_y, 0, width, height, 1);
-  }
-  else if (GLAD_GL_EXT_copy_image)
-  {
-    glCopyImageSubDataEXT(src.GetGLId(), src.GetGLTarget(), 0, src_x, src_y, 0, dest.GetGLId(), src.GetGLTarget(), 0,
-                          dst_x, dst_y, 0, width, height, 1);
-  }
-  else if (GLAD_GL_OES_copy_image)
-  {
-    glCopyImageSubDataOES(src.GetGLId(), src.GetGLTarget(), 0, src_x, src_y, 0, dest.GetGLId(), src.GetGLTarget(), 0,
-                          dst_x, dst_y, 0, width, height, 1);
-  }
-  else
-  {
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dest_fbo);
-    BlitTextureToFramebuffer(src, src_x, src_y, width, height, dst_x, dst_y, width, height);
-    RestoreGraphicsAPIState();
-  }
-}
-
-void GPU_HW_OpenGL::BlitTextureToFramebuffer(GL::Texture& src, u32 src_x, u32 src_y, u32 src_width, u32 src_height,
-                                             u32 dst_x, u32 dst_y, u32 dst_width, u32 dst_height)
-{
-  // But a copy shader is probably better on mobile drivers.
-  const float uniforms[4] = {
-    static_cast<float>(src_x) / static_cast<float>(src.GetWidth()),
-    static_cast<float>(src_y) / static_cast<float>(src.GetHeight()),
-    static_cast<float>(src_x + src_width) / static_cast<float>(src.GetWidth()),
-    static_cast<float>(src_y + src_height) / static_cast<float>(src.GetHeight()),
-  };
-  UploadUniformBuffer(uniforms, sizeof(uniforms));
-
-  glDisable(GL_SCISSOR_TEST);
-  glDisable(GL_BLEND);
-  SetDepthFunc(GL_ALWAYS);
-
-  glViewport(dst_x, dst_y, dst_width, dst_height);
-  src.Bind();
-  m_blit_program.Bind();
-  glBindVertexArray(m_attributeless_vao_id);
-  glDrawArrays(GL_TRIANGLES, 0, 3);
+  IncludeVRAMDirtyRectangle(dst_bounds);
 }
 
 void GPU_HW_OpenGL::UpdateVRAMReadTexture()
@@ -1332,9 +1264,32 @@ void GPU_HW_OpenGL::UpdateVRAMReadTexture()
   const u32 height = scaled_rect.GetHeight();
   const u32 x = scaled_rect.left;
   const u32 y = m_vram_texture.GetHeight() - scaled_rect.top - height;
+  const bool multisampled = m_vram_texture.IsMultisampled();
 
-  CopyTexture(m_vram_read_texture, m_vram_read_texture.GetGLFramebufferID(), m_vram_texture, m_vram_fbo_id, x, y, x, y,
-              width, height);
+  if (!multisampled && GLAD_GL_VERSION_4_3)
+  {
+    glCopyImageSubData(m_vram_texture.GetGLId(), m_vram_texture.GetGLTarget(), 0, x, y, 0,
+                       m_vram_read_texture.GetGLId(), m_vram_texture.GetGLTarget(), 0, x, y, 0, width, height, 1);
+  }
+  else if (!multisampled && GLAD_GL_EXT_copy_image)
+  {
+    glCopyImageSubDataEXT(m_vram_texture.GetGLId(), m_vram_texture.GetGLTarget(), 0, x, y, 0,
+                          m_vram_read_texture.GetGLId(), m_vram_texture.GetGLTarget(), 0, x, y, 0, width, height, 1);
+  }
+  else if (!multisampled && GLAD_GL_OES_copy_image)
+  {
+    glCopyImageSubDataOES(m_vram_texture.GetGLId(), m_vram_texture.GetGLTarget(), 0, x, y, 0,
+                          m_vram_read_texture.GetGLId(), m_vram_texture.GetGLTarget(), 0, x, y, 0, width, height, 1);
+  }
+  else
+  {
+    m_vram_read_texture.BindFramebuffer(GL_DRAW_FRAMEBUFFER);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, m_vram_fbo_id);
+    glDisable(GL_SCISSOR_TEST);
+    glBlitFramebuffer(x, y, x + width, y + height, x, y, x + width, y + height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    glEnable(GL_SCISSOR_TEST);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_vram_fbo_id);
+  }
 
   GPU_HW::UpdateVRAMReadTexture();
 }
