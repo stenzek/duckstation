@@ -630,13 +630,16 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
                 }
                 break;
 
-                case 3:     // Edit Layout
+                case 3:     // Edit Positions
+                case 4:     // Edit Scale
                 {
                     if (mTouchscreenController != null) {
                         // we deliberately don't call onMenuClosed() here to keep the system paused.
                         // but we need to re-enable immersive mode to get proper editing.
                         enableFullscreenImmersive();
-                        mTouchscreenController.startLayoutEditing();
+                        mTouchscreenController.startLayoutEditing(
+                                (i == 4) ? TouchscreenControllerView.EditMode.SCALE :
+                                        TouchscreenControllerView.EditMode.POSITION);
                     } else {
                         // no controller
                         onMenuClosed();

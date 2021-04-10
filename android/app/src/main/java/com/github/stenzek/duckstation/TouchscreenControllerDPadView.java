@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 public final class TouchscreenControllerDPadView extends View {
@@ -88,9 +89,9 @@ public final class TouchscreenControllerDPadView extends View {
         invalidate();
     }
 
-    public void setPressed(int pointerId, float pointerX, float pointerY) {
-        final int posX = (int)(pointerX - getX());
-        final int posY = (int)(pointerY - getY());
+    public void setPressed(int pointerId, int pointerX, int pointerY) {
+        final int posX = (int)(pointerX / getScaleX());
+        final int posY = (int)(pointerY / getScaleY());
 
         boolean doUpdate = (pointerId != mPointerId || !mPressed || (posX != mPointerX || posY != mPointerY));
         mPointerId = pointerId;
@@ -106,7 +107,7 @@ public final class TouchscreenControllerDPadView extends View {
 
     private void updateControllerState() {
         final int subX = mPointerX / (getWidth() / 3);
-        final int subY = mPointerY / (getWidth() / 3);
+        final int subY = mPointerY / (getHeight() / 3);
 
         mDirectionStates[DIRECTION_UP] = (mPressed && subY == 0);
         mDirectionStates[DIRECTION_RIGHT] = (mPressed && subX == 2);

@@ -102,8 +102,17 @@
 		<item>Mudar</item>
 		<item>Ajustar Visibilidade</item>
 		<item>Adicionar/Remover botões</item>
-		<item>Mudar Layout</item>
-	</string-array>
+        <item>Move Buttons</item>
+        <item>Resize Buttons</item>
+        </string-array>
+    <string-array name="touchscreen_layout_menu">
+        <item>Change Opacity</item>
+        <item>Add/Remove Buttons</item>
+        <item>Move Buttons</item>
+        <item>Resize Buttons</item>
+        <item>Reset Layout</item>
+        <item>Exit Editor</item>
+    </string-array>
     <string-array name="settings_cdrom_read_speedup_entries">
         <item>Nenhum</item>
         <item>2x (4x Veloz)</item>

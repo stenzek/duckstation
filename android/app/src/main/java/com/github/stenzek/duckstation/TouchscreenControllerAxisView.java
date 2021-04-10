@@ -96,8 +96,8 @@ public final class TouchscreenControllerAxisView extends View {
     }
 
     public void setPressed(int pointerId, float pointerX, float pointerY) {
-        final float dx = pointerX - (float) (getX() + (float) (getWidth() / 2));
-        final float dy = pointerY - (float) (getY() + (float) (getHeight() / 2));
+        final float dx = (pointerX / getScaleX()) - (float) (getWidth() / 2);
+        final float dy = (pointerY / getScaleY()) - (float) (getHeight() / 2);
         // Log.i("SetPressed", String.format("px=%f,py=%f dx=%f,dy=%f", pointerX, pointerY, dx, dy));
 
         final float pointerDistance = Math.max(Math.abs(dx), Math.abs(dy));

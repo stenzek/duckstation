@@ -29,6 +29,15 @@ import java.util.HashMap;
 public class TouchscreenControllerView extends FrameLayout {
     public static final int DEFAULT_OPACITY = 100;
 
+    public static final float MIN_VIEW_SCALE = 0.25f;
+    public static final float MAX_VIEW_SCALE = 10.0f;
+
+    public enum EditMode {
+        NONE,
+        POSITION,
+        SCALE
+    }
+
     private int mControllerIndex;
     private String mControllerType;
     private String mViewType;
@@ -39,11 +48,12 @@ public class TouchscreenControllerView extends FrameLayout {
     private int mPointerButtonCode = -1;
     private boolean mHapticFeedback;
     private String mLayoutOrientation;
-    private boolean mEditingLayout = false;
+    private EditMode mEditMode = EditMode.NONE;
     private View mMovingView = null;
     private String mMovingName = null;
     private float mMovingLastX = 0.0f;
     private float mMovingLastY = 0.0f;
+    private float mMovingLastScale = 0.0f;
     private ConstraintLayout mEditLayout = null;
     private int mOpacity = 100;
     private Map<Integer, View> mGlidePairs = new HashMap<>();
@@ -70,15 +80,20 @@ public class TouchscreenControllerView extends FrameLayout {
         return String.format("TouchscreenController/%s/%s%sYTranslation", mViewType, name, mLayoutOrientation);
     }
 
+    private String getConfigKeyForScale(String name) {
+        return String.format("TouchscreenController/%s/%s%sScale", mViewType, name, mLayoutOrientation);
+    }
+
     private String getConfigKeyForVisibility(String name) {
         return String.format("TouchscreenController/%s/%s%sVisible", mViewType, name, mLayoutOrientation);
     }
 
-    private void saveTranslationForButton(String name, float xTranslation, float yTranslation) {
+    private void saveSettingsForButton(String name, View view) {
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
         final SharedPreferences.Editor editor = prefs.edit();
-        editor.putFloat(getConfigKeyForXTranslation(name), xTranslation);
-        editor.putFloat(getConfigKeyForYTranslation(name), yTranslation);
+        editor.putFloat(getConfigKeyForXTranslation(name), view.getTranslationX());
+        editor.putFloat(getConfigKeyForYTranslation(name), view.getTranslationY());
+        editor.putFloat(getConfigKeyForScale(name), view.getScaleX());
         editor.commit();
     }
 
@@ -96,22 +111,31 @@ public class TouchscreenControllerView extends FrameLayout {
         for (TouchscreenControllerButtonView buttonView : mButtonViews) {
             editor.remove(getConfigKeyForXTranslation(buttonView.getConfigName()));
             editor.remove(getConfigKeyForYTranslation(buttonView.getConfigName()));
+            editor.remove(getConfigKeyForScale(buttonView.getConfigName()));
             buttonView.setTranslationX(0.0f);
             buttonView.setTranslationY(0.0f);
+            buttonView.setScaleX(1.0f);
+            buttonView.setScaleY(1.0f);
         }
 
         for (TouchscreenControllerAxisView axisView : mAxisViews) {
             editor.remove(getConfigKeyForXTranslation(axisView.getConfigName()));
             editor.remove(getConfigKeyForYTranslation(axisView.getConfigName()));
+            editor.remove(getConfigKeyForScale(axisView.getConfigName()));
             axisView.setTranslationX(0.0f);
             axisView.setTranslationY(0.0f);
+            axisView.setScaleX(1.0f);
+            axisView.setScaleY(1.0f);
         }
 
         if (mDPadView != null) {
             editor.remove(getConfigKeyForXTranslation(mDPadView.getConfigName()));
             editor.remove(getConfigKeyForYTranslation(mDPadView.getConfigName()));
+            editor.remove(getConfigKeyForScale(mDPadView.getConfigName()));
             mDPadView.setTranslationX(0.0f);
             mDPadView.setTranslationY(0.0f);
+            mDPadView.setScaleX(1.0f);
+            mDPadView.setScaleY(1.0f);
         }
 
         editor.commit();
@@ -125,6 +149,8 @@ public class TouchscreenControllerView extends FrameLayout {
             try {
                 buttonView.setTranslationX(prefs.getFloat(getConfigKeyForXTranslation(buttonView.getConfigName()), 0.0f));
                 buttonView.setTranslationY(prefs.getFloat(getConfigKeyForYTranslation(buttonView.getConfigName()), 0.0f));
+                buttonView.setScaleX(prefs.getFloat(getConfigKeyForScale(buttonView.getConfigName()), 1.0f));
+                buttonView.setScaleY(prefs.getFloat(getConfigKeyForScale(buttonView.getConfigName()), 1.0f));
                 //Log.i("TouchscreenController", String.format("Translation for %s %f %f", buttonView.getConfigName(),
                 //        buttonView.getTranslationX(), buttonView.getTranslationY()));
 
@@ -139,6 +165,8 @@ public class TouchscreenControllerView extends FrameLayout {
             try {
                 axisView.setTranslationX(prefs.getFloat(getConfigKeyForXTranslation(axisView.getConfigName()), 0.0f));
                 axisView.setTranslationY(prefs.getFloat(getConfigKeyForYTranslation(axisView.getConfigName()), 0.0f));
+                axisView.setScaleX(prefs.getFloat(getConfigKeyForScale(axisView.getConfigName()), 1.0f));
+                axisView.setScaleY(prefs.getFloat(getConfigKeyForScale(axisView.getConfigName()), 1.0f));
 
                 final boolean visible = prefs.getBoolean(getConfigKeyForVisibility(axisView.getConfigName()), axisView.getDefaultVisibility());
                 axisView.setVisibility(visible ? VISIBLE : INVISIBLE);
@@ -151,6 +179,8 @@ public class TouchscreenControllerView extends FrameLayout {
             try {
                 mDPadView.setTranslationX(prefs.getFloat(getConfigKeyForXTranslation(mDPadView.getConfigName()), 0.0f));
                 mDPadView.setTranslationY(prefs.getFloat(getConfigKeyForYTranslation(mDPadView.getConfigName()), 0.0f));
+                mDPadView.setScaleX(prefs.getFloat(getConfigKeyForScale(mDPadView.getConfigName()), 1.0f));
+                mDPadView.setScaleY(prefs.getFloat(getConfigKeyForScale(mDPadView.getConfigName()), 1.0f));
 
                 final boolean visible = prefs.getBoolean(getConfigKeyForVisibility(mDPadView.getConfigName()), mDPadView.getDefaultVisibility());
                 mDPadView.setVisibility(visible ? VISIBLE : INVISIBLE);
@@ -216,7 +246,7 @@ public class TouchscreenControllerView extends FrameLayout {
         mHapticFeedback = hapticFeedback;
         mLayoutOrientation = getOrientationString();
 
-        if (mEditingLayout)
+        if (mEditMode != EditMode.NONE)
             endLayoutEditing();
 
         mButtonViews.clear();
@@ -253,7 +283,7 @@ public class TouchscreenControllerView extends FrameLayout {
             return;
 
         mMainView.setOnTouchListener((view1, event) -> {
-            if (mEditingLayout)
+            if (mEditMode != EditMode.NONE)
                 return handleEditingTouchEvent(event);
             else
                 return handleTouchEvent(event);
@@ -393,16 +423,15 @@ public class TouchscreenControllerView extends FrameLayout {
         return Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, getResources().getDisplayMetrics()));
     }
 
-    public void startLayoutEditing() {
+    public void startLayoutEditing(EditMode mode) {
         if (mEditLayout == null) {
             LayoutInflater inflater = LayoutInflater.from(getContext());
             mEditLayout = (ConstraintLayout) inflater.inflate(R.layout.layout_touchscreen_controller_edit, this, false);
-            ((Button) mEditLayout.findViewById(R.id.stop_editing)).setOnClickListener((view) -> endLayoutEditing());
-            ((Button) mEditLayout.findViewById(R.id.reset_layout)).setOnClickListener((view) -> clearTranslationForAllButtons());
+            ((Button) mEditLayout.findViewById(R.id.options)).setOnClickListener((view) -> showEditorMenu());
             addView(mEditLayout);
         }
 
-        mEditingLayout = true;
+        mEditMode = mode;
     }
 
     public void endLayoutEditing() {
@@ -411,7 +440,7 @@ public class TouchscreenControllerView extends FrameLayout {
             mEditLayout = null;
         }
 
-        mEditingLayout = false;
+        mEditMode = EditMode.NONE;
         mMovingView = null;
         mMovingName = null;
         mMovingLastX = 0.0f;
@@ -422,16 +451,26 @@ public class TouchscreenControllerView extends FrameLayout {
             AndroidHostInterface.getInstance().pauseEmulationThread(false);
     }
 
+    private float snapToValue(float pos, float value) {
+        return Math.round(pos / value) * value;
+    }
+
+    private float snapToGrid(float pos) {
+        final float value = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 20.0f, getResources().getDisplayMetrics());
+        return snapToValue(pos, value);
+    }
+
     private boolean handleEditingTouchEvent(MotionEvent event) {
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_UP: {
                 if (mMovingView != null) {
                     // save position
-                    saveTranslationForButton(mMovingName, mMovingView.getTranslationX(), mMovingView.getTranslationY());
+                    saveSettingsForButton(mMovingName, mMovingView);
                     mMovingView = null;
                     mMovingName = null;
                     mMovingLastX = 0.0f;
                     mMovingLastY = 0.0f;
+                    mMovingLastScale = 0.0f;
                 }
 
                 return true;
@@ -451,8 +490,9 @@ public class TouchscreenControllerView extends FrameLayout {
                     if (rect.contains((int) x, (int) y)) {
                         mMovingView = buttonView;
                         mMovingName = buttonView.getConfigName();
-                        mMovingLastX = x;
-                        mMovingLastY = y;
+                        mMovingLastX = snapToGrid(x);
+                        mMovingLastY = snapToGrid(y);
+                        mMovingLastScale = buttonView.getScaleX();
                         return true;
                     }
                 }
@@ -462,8 +502,9 @@ public class TouchscreenControllerView extends FrameLayout {
                     if (rect.contains((int) x, (int) y)) {
                         mMovingView = axisView;
                         mMovingName = axisView.getConfigName();
-                        mMovingLastX = x;
-                        mMovingLastY = y;
+                        mMovingLastX = snapToGrid(x);
+                        mMovingLastY = snapToGrid(y);
+                        mMovingLastScale = axisView.getScaleX();
                         return true;
                     }
                 }
@@ -473,8 +514,9 @@ public class TouchscreenControllerView extends FrameLayout {
                     if (rect.contains((int) x, (int) y)) {
                         mMovingView = mDPadView;
                         mMovingName = mDPadView.getConfigName();
-                        mMovingLastX = x;
-                        mMovingLastY = y;
+                        mMovingLastX = snapToGrid(x);
+                        mMovingLastY = snapToGrid(y);
+                        mMovingLastScale = mDPadView.getScaleX();
                         return true;
                     }
                 }
@@ -487,19 +529,34 @@ public class TouchscreenControllerView extends FrameLayout {
                 if (mMovingView == null)
                     return true;
 
-                final float x = event.getX();
-                final float y = event.getY();
-                final float dx = x - mMovingLastX;
-                final float dy = y - mMovingLastY;
-                mMovingLastX = x;
-                mMovingLastY = y;
+                final float x = snapToGrid(event.getX());
+                final float y = snapToGrid(event.getY());
+                if (mEditMode == EditMode.POSITION) {
+                    final float dx = x - mMovingLastX;
+                    final float dy = y - mMovingLastY;
+                    mMovingLastX = x;
+                    mMovingLastY = y;
 
-                final float posX = mMovingView.getX() + dx;
-                final float posY = mMovingView.getY() + dy;
-                //Log.d("Position", String.format("%f %f -> (%f %f) %f %f",
-                //        mMovingView.getX(), mMovingView.getY(), dx, dy, posX, posY));
-                mMovingView.setX(posX);
-                mMovingView.setY(posY);
+                    final float posX = mMovingView.getX() + dx;
+                    final float posY = mMovingView.getY() + dy;
+                    //Log.d("Position", String.format("%f %f -> (%f %f) %f %f",
+                    //        mMovingView.getX(), mMovingView.getY(), dx, dy, posX, posY));
+                    mMovingView.setX(posX);
+                    mMovingView.setY(posY);
+                } else {
+                    final float lastDx = mMovingLastX - mMovingView.getX();
+                    final float lastDy = mMovingLastY - mMovingView.getY();
+                    final float dx = x - mMovingView.getX();
+                    final float dy = y - mMovingView.getY();
+                    final float lastDistance = Math.max(Math.abs(lastDx), Math.abs(lastDy));
+                    final float distance =  Math.max(Math.abs(dx), Math.abs(dy));
+                    final float scaler = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 50.0f, getResources().getDisplayMetrics());
+                    final float scaleDiff = snapToValue((distance - lastDistance) / scaler, 0.1f);
+                    final float scale = Math.max(Math.min(mMovingLastScale + mMovingLastScale * scaleDiff, MAX_VIEW_SCALE), MIN_VIEW_SCALE);
+                    mMovingView.setScaleX(scale);
+                    mMovingView.setScaleY(scale);
+                }
+
                 mMovingView.invalidate();
                 mMainView.requestLayout();
                 return true;
@@ -561,7 +618,7 @@ public class TouchscreenControllerView extends FrameLayout {
 
                 if ((rect.contains(x, y) && !axisView.isPressed()) ||
                         (axisView.isPressed() && axisView.getPointerId() == pointerId)) {
-                    axisView.setPressed(pointerId, x, y);
+                    axisView.setPressed(pointerId, x - rect.left, y - rect.top);
                     pressed = true;
                     mGlidePairs.put(pointerId, null);
                     break;
@@ -582,7 +639,7 @@ public class TouchscreenControllerView extends FrameLayout {
                 final int x = (int) event.getX(i);
                 final int y = (int) event.getY(i);
                 if (rect.contains(x, y)) {
-                    mDPadView.setPressed(event.getPointerId(i), x, y);
+                    mDPadView.setPressed(event.getPointerId(i), x - rect.left, y - rect.top);
                     pressed = true;
                 }
             }
@@ -711,5 +768,51 @@ public class TouchscreenControllerView extends FrameLayout {
             dialog.dismiss();
         });
         return builder;
+    }
+
+    private void showEditorMenu() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setItems(R.array.touchscreen_layout_menu, (dialogInterface, i) -> {
+            switch (i) {
+                case 0:     // Change Opacity
+                {
+                    AlertDialog.Builder subBuilder = createOpacityDialog(getContext());
+                    subBuilder.create().show();
+                }
+                break;
+
+                case 1:     // Add/Remove Buttons
+                {
+                    AlertDialog.Builder subBuilder = createAddRemoveButtonDialog(getContext());
+                    subBuilder.create().show();
+                }
+                break;
+
+                case 2:     // Edit Positions
+                {
+                    mEditMode = EditMode.POSITION;
+                }
+                break;
+
+                case 3:     // Edit Scale
+                {
+                    mEditMode = EditMode.SCALE;
+                }
+                break;
+
+                case 4:     // Reset Layout
+                {
+                    clearTranslationForAllButtons();
+                }
+                break;
+
+                case 5:     // Exit Editor
+                {
+                    endLayoutEditing();
+                }
+                break;
+            }
+        });
+        builder.create().show();
     }
 }
