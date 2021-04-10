@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <PreferenceCategory app:title="Global Settings" app:iconSpaceReserved="false">
+    <PreferenceCategory app:title="@string/settings_achievements_global_settings" app:iconSpaceReserved="false">
         <SwitchPreferenceCompat
             app:key="Cheevos/Enabled"
             app:title="@string/settings_achievements_enable"
@@ -24,7 +24,7 @@
             app:iconSpaceReserved="false" />
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="Account" app:iconSpaceReserved="false">
+    <PreferenceCategory app:title="@string/settings_achievements_category" app:iconSpaceReserved="false">
         <Preference
             app:key="Cheevos/Username"
             app:title="@string/settings_achievements_username"

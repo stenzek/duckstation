@@ -62,7 +62,7 @@
             app:entryValues="@array/settings_multitap_mode_values"
             app:iconSpaceReserved="false"
             app:key="ControllerPorts/MultitapMode"
-            app:title="Multitap Mode"
+            app:title="@string/settings_multitap_mode"
             app:useSimpleSummaryProvider="true" />
         <ListPreference
             app:defaultValue="PerGameTitle"

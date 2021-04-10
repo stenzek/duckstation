@@ -217,7 +217,7 @@
             app:iconSpaceReserved="false" />
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="Achievement Settings" app:iconSpaceReserved="false">
+    <PreferenceCategory app:title="@string/settings_category_achievements" app:iconSpaceReserved="false">
         <SwitchPreferenceCompat
             app:key="Cheevos/TestMode"
             app:title="@string/settings_achievements_test_mode"

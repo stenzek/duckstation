@@ -331,4 +331,8 @@
     <string name="settings_osd_show_show_inputs">Show Controller Input</string>
     <string name="settings_summary_osd_show_inputs">Shows the current controller state of the system in the bottom-left corner of the display.</string>
     <string name="touchscreen_controller_edit_menu">Edit Menu</string>
+    <string name="settings_achievements_category">Account</string>
+    <string name="settings_achievements_global_settings">Global Settings</string>
+    <string name="settings_category_achievements">Achievement Settings</string>
+    <string name="settings_multitap_mode">Multitap Mode</string>
 </resources>
