@@ -102,16 +102,16 @@
 		<item>Сменить вид</item>
 		<item>Настроить видимость</item>
 		<item>Добавить/убрать кнопки</item>
-		<item>Move Buttons</item>
-		<item>Resize Buttons</item>
+		<item>Положение кнопок</item>
+		<item>Размер кнопок</item>
 	</string-array>
 	<string-array name="touchscreen_layout_menu">
-		<item>Change Opacity</item>
-		<item>Add/Remove Buttons</item>
-		<item>Move Buttons</item>
-		<item>Resize Buttons</item>
-		<item>Reset Layout</item>
-		<item>Exit Editor</item>
+		<item>Настроить видимость</item>
+		<item>Добавить/убрать кнопки</item>
+		<item>Положение кнопок</item>
+		<item>Размер кнопок</item>
+		<item>Сбросить макет</item>
+		<item>Закрыть редактор</item>
 	</string-array>
 	<string-array name="settings_cdrom_read_speedup_entries">
 		<item>Нет (двойная скорость)</item>
