@@ -5,7 +5,8 @@
     android:id="@+id/constraintLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:clipChildren="false">
 
     <com.github.stenzek.duckstation.TouchscreenControllerButtonView
         android:id="@+id/controller_button_r2"

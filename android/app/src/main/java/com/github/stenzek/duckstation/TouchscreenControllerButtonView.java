@@ -5,6 +5,7 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.HapticFeedbackConstants;
 import android.view.View;
 
@@ -67,18 +68,24 @@ public final class TouchscreenControllerButtonView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        final int paddingLeft = getPaddingLeft();
-        final int paddingTop = getPaddingTop();
-        final int paddingRight = getPaddingRight();
-        final int paddingBottom = getPaddingBottom();
-        final int contentWidth = getWidth() - paddingLeft - paddingRight;
-        final int contentHeight = getHeight() - paddingTop - paddingBottom;
+        int leftBounds = 0;
+        int rightBounds = leftBounds + getWidth();
+        int topBounds = 0;
+        int bottomBounds = topBounds + getHeight();
+
+        if (mPressed) {
+            final int expandSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                    10.0f, getResources().getDisplayMetrics());
+            leftBounds -= expandSize;
+            rightBounds += expandSize;
+            topBounds -= expandSize;
+            bottomBounds += expandSize;
+        }
 
         // Draw the example drawable on top of the text.
         Drawable drawable = mPressed ? mPressedDrawable : mUnpressedDrawable;
         if (drawable != null) {
-            drawable.setBounds(paddingLeft, paddingTop,
-                    paddingLeft + contentWidth, paddingTop + contentHeight);
+            drawable.setBounds(leftBounds, topBounds, rightBounds, bottomBounds);
             drawable.draw(canvas);
         }
     }

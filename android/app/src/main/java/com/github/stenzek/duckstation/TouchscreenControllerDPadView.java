@@ -2,9 +2,11 @@ package com.github.stenzek.duckstation;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.View;
 
 public final class TouchscreenControllerDPadView extends View {
@@ -122,10 +124,19 @@ public final class TouchscreenControllerDPadView extends View {
     }
 
     private void drawDirection(int direction, int subX, int subY, Canvas canvas, int buttonWidth, int buttonHeight) {
-        final int leftBounds = subX * buttonWidth;
-        final int rightBounds = leftBounds + buttonWidth;
-        final int topBounds = subY * buttonHeight;
-        final int bottomBounds = topBounds + buttonHeight;
+        int leftBounds = subX * buttonWidth;
+        int rightBounds = leftBounds + buttonWidth;
+        int topBounds = subY * buttonHeight;
+        int bottomBounds = topBounds + buttonHeight;
+
+        if (mDirectionStates[direction]) {
+            final int expandSize = (int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                    10.0f, getResources().getDisplayMetrics());
+            leftBounds -= expandSize;
+            rightBounds += expandSize;
+            topBounds -= expandSize;
+            bottomBounds += expandSize;
+        }
 
         final Drawable drawable = mDirectionStates[direction] ? mPressedDrawables[direction] : mUnpressedDrawables[direction];
         drawable.setBounds(leftBounds, topBounds, rightBounds, bottomBounds);
