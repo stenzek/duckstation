@@ -517,11 +517,6 @@ void CommonHostInterface::CreateImGuiContext()
 
 bool CommonHostInterface::CreateHostDisplayResources()
 {
-  m_logo_texture = m_display->CreateTexture(APP_ICON_WIDTH, APP_ICON_HEIGHT, 1, 1, 1, HostDisplayPixelFormat::RGBA8,
-                                            APP_ICON_DATA, sizeof(u32) * APP_ICON_WIDTH, false);
-  if (!m_logo_texture)
-    Log_WarningPrintf("Failed to create logo texture");
-
   const float framebuffer_scale = m_display->GetWindowScale();
   ImGui::GetIO().DisplayFramebufferScale = ImVec2(framebuffer_scale, framebuffer_scale);
   ImGui::GetIO().DisplaySize.x = static_cast<float>(m_display->GetWindowWidth());
@@ -548,13 +543,16 @@ bool CommonHostInterface::CreateHostDisplayResources()
   if (!m_fullscreen_ui_enabled)
     ImGuiFullscreen::ResetFonts();
 
-  if (!m_display->UpdateImGuiFontTexture())
+  m_logo_texture = m_display->CreateTexture(APP_ICON_WIDTH, APP_ICON_HEIGHT, 1, 1, 1, HostDisplayPixelFormat::RGBA8,
+                                            APP_ICON_DATA, sizeof(u32) * APP_ICON_WIDTH, false);
+  if (!m_logo_texture || !m_display->UpdateImGuiFontTexture())
   {
     Log_ErrorPrintf("Failed to create ImGui font text");
     if (m_fullscreen_ui_enabled)
       FullscreenUI::Shutdown();
 
     m_display->DestroyImGuiContext();
+    m_logo_texture.reset();
     return false;
   }
 

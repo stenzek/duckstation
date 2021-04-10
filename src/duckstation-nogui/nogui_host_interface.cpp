@@ -114,7 +114,8 @@ bool NoGUIHostInterface::CreateDisplay()
   if (!m_display->CreateRenderDevice(wi.value(), g_settings.gpu_adapter, g_settings.gpu_use_debug_device,
                                      g_settings.gpu_threaded_presentation) ||
       !m_display->InitializeRenderDevice(GetShaderCacheBasePath(), g_settings.gpu_use_debug_device,
-                                         g_settings.gpu_threaded_presentation))
+                                         g_settings.gpu_threaded_presentation) ||
+      !CreateHostDisplayResources())
   {
     m_display->DestroyRenderDevice();
     m_display.reset();
@@ -125,7 +126,8 @@ bool NoGUIHostInterface::CreateDisplay()
   if (!CreateHostDisplayResources())
     Log_WarningPrint("Failed to create host display resources");
 
-  Log_InfoPrintf("Host display initialized at %ux%u resolution", m_display->GetWindowWidth(), m_display->GetWindowHeight());
+  Log_InfoPrintf("Host display initialized at %ux%u resolution", m_display->GetWindowWidth(),
+                 m_display->GetWindowHeight());
   return true;
 }
 
