@@ -975,7 +975,9 @@ void CDROM::ExecuteCommand()
         if ((!m_setloc_pending || m_setloc_position.ToLBA() == GetNextSectorToBeRead()) &&
             (m_drive_state == DriveState::Reading || (IsSeeking() && m_read_after_seek)))
         {
-          Log_DevPrintf("Ignoring read command with no/same setloc, already reading/reading after seek");
+          Log_DevPrintf("Ignoring read command with %s setloc, already reading/reading after seek",
+                        m_setloc_pending ? "pending" : "same");
+          m_setloc_pending = false;
         }
         else
         {
