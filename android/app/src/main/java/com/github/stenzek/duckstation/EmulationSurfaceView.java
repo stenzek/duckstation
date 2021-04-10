@@ -26,7 +26,7 @@ public class EmulationSurfaceView extends SurfaceView {
     }
 
     public static boolean isBindableDevice(InputDevice inputDevice) {
-        if (inputDevice == null || inputDevice.isVirtual())
+        if (inputDevice == null)
             return false;
 
         // Accept all devices with an axis or buttons, filter in events.
