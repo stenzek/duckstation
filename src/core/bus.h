@@ -100,7 +100,8 @@ void Reset();
 bool DoState(StateWrapper& sw);
 
 CPUFastmemMode GetFastmemMode();
-void UpdateFastmemViews(CPUFastmemMode mode, bool isolate_cache);
+u8* GetFastmemBase();
+void UpdateFastmemViews(CPUFastmemMode mode);
 bool CanUseFastmemForAddress(VirtualMemoryAddress address);
 
 void SetExpansionROM(std::vector<u8> data);

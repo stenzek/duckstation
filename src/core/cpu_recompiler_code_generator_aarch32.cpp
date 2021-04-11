@@ -1170,6 +1170,22 @@ Value CodeGenerator::GetFastmemStoreBase()
   return val;
 }
 
+void CodeGenerator::EmitUpdateMembasePointer()
+{
+  if (m_fastmem_load_base_in_register)
+  {
+    Value val = Value::FromHostReg(&m_register_cache, RARG4, RegSize_32);
+    m_emit->ldr(GetHostReg32(val), a32::MemOperand(GetCPUPtrReg(), offsetof(CPU::State, fastmem_base)));
+  }
+
+  if (m_fastmem_store_base_in_register)
+  {
+    Value val = Value::FromHostReg(&m_register_cache, RARG3, RegSize_32);
+    m_emit->ldr(GetHostReg32(val), a32::MemOperand(GetCPUPtrReg(), offsetof(CPU::State, fastmem_base)));
+    m_emit->add(GetHostReg32(val), GetHostReg32(val), sizeof(u32*) * Bus::FASTMEM_LUT_NUM_PAGES);
+  }
+}
+
 void CodeGenerator::EmitLoadGuestRAMFastmem(const Value& address, RegSize size, Value& result)
 {
   Value fastmem_base = GetFastmemLoadBase();

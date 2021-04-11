@@ -213,6 +213,15 @@ std::optional<MemoryArena::View> MemoryArena::CreateView(size_t offset, size_t s
   return View(this, base_pointer, offset, size, writable);
 }
 
+std::optional<MemoryArena::View> MemoryArena::CreateReservedView(size_t size, void* fixed_address /*= nullptr*/)
+{
+  void* base_pointer = CreateReservedPtr(size, fixed_address);
+  if (!base_pointer)
+    return std::nullopt;
+
+  return View(this, base_pointer, View::RESERVED_REGION_OFFSET, size, false);
+}
+
 void* MemoryArena::CreateViewPtr(size_t offset, size_t size, bool writable, bool executable,
                                  void* fixed_address /*= nullptr*/)
 {
@@ -276,6 +285,53 @@ bool MemoryArena::ReleaseViewPtr(void* address, size_t size)
   return true;
 }
 
+void* MemoryArena::CreateReservedPtr(size_t size, void* fixed_address /*= nullptr*/)
+{
+  void* base_pointer;
+#if defined(WIN32)
+  base_pointer = VirtualAlloc(fixed_address, size, MEM_RESERVE, PAGE_NOACCESS);
+#elif defined(__linux__)
+  const int flags =
+    (fixed_address != nullptr) ? (MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED) : (MAP_PRIVATE | MAP_ANONYMOUS);
+  base_pointer = mmap64(fixed_address, size, PROT_NONE, flags, -1, 0);
+  if (base_pointer == reinterpret_cast<void*>(-1))
+    return nullptr;
+#elif defined(__APPLE__) || defined(__FreeBSD__)
+  const int flags =
+    (fixed_address != nullptr) ? (MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED) : (MAP_PRIVATE | MAP_ANONYMOUS);
+  base_pointer = mmap(fixed_address, size, prot, PROT_NONE, -1, 0);
+  if (base_pointer == reinterpret_cast<void*>(-1))
+    return nullptr;
+#else
+  return nullptr;
+#endif
+
+  m_num_views.fetch_add(1);
+  return base_pointer;
+}
+
+bool MemoryArena::ReleaseReservedPtr(void* address, size_t size)
+{
+  bool result;
+#if defined(WIN32)
+  result = static_cast<bool>(VirtualFree(address, 0, MEM_RELEASE));
+#elif defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
+  result = (munmap(address, size) >= 0);
+#else
+  result = false;
+#endif
+
+  if (!result)
+  {
+    Log_ErrorPrintf("Failed to release previously-created view at %p", address);
+    return false;
+  }
+
+  const size_t prev_count = m_num_views.fetch_sub(1);
+  Assert(prev_count > 0);
+  return true;
+}
+
 bool MemoryArena::SetPageProtection(void* address, size_t length, bool readable, bool writable, bool executable)
 {
 #if defined(WIN32)
@@ -315,10 +371,18 @@ MemoryArena::View::~View()
 {
   if (m_parent)
   {
-    if (m_writable && !m_parent->FlushViewPtr(m_base_pointer, m_mapping_size))
-      Panic("Failed to flush previously-created view");
-    if (!m_parent->ReleaseViewPtr(m_base_pointer, m_mapping_size))
-      Panic("Failed to unmap previously-created view");
+    if (m_arena_offset != RESERVED_REGION_OFFSET)
+    {
+      if (m_writable && !m_parent->FlushViewPtr(m_base_pointer, m_mapping_size))
+        Panic("Failed to flush previously-created view");
+      if (!m_parent->ReleaseViewPtr(m_base_pointer, m_mapping_size))
+        Panic("Failed to unmap previously-created view");
+    }
+    else
+    {
+      if (!m_parent->ReleaseReservedPtr(m_base_pointer, m_mapping_size))
+        Panic("Failed to release previously-created view");
+    }
   }
 }
 } // namespace Common

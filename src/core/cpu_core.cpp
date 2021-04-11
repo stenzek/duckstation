@@ -1975,7 +1975,10 @@ bool InterpretInstructionPGXP()
 
 void UpdateFastmemMapping()
 {
-  Bus::UpdateFastmemViews(Bus::GetFastmemMode(), g_state.cop0_regs.sr.Isc);
+  if (g_state.cop0_regs.sr.Isc)
+    g_state.fastmem_base = nullptr;
+  else
+    g_state.fastmem_base = Bus::GetFastmemBase();
 }
 
 } // namespace Recompiler::Thunks

@@ -679,9 +679,6 @@ bool RecreateGPU(GPURenderer renderer, bool update_display /* = true*/)
     return false;
   }
 
-  // reinitialize the code cache because the address space could change
-  CPU::CodeCache::Reinitialize();
-
   if (state_valid)
   {
     state_stream->SeekAbsolute(0);
@@ -1940,10 +1937,6 @@ bool InsertMedia(const char* path)
     UpdateMemoryCards();
   }
 
-  // reinitialize recompiler, because especially with preloading this might overlap the fastmem area
-  if (g_settings.IsUsingCodeCache())
-    CPU::CodeCache::Reinitialize();
-
   ClearMemorySaveStates();
   return true;
 }
@@ -2068,10 +2061,6 @@ bool SwitchMediaSubImage(u32 index)
     20.0f, g_host_interface->TranslateString("OSDMessage", "Switched to sub-image %s (%u) in '%s'."),
     image->GetSubImageMetadata(index, "title").c_str(), index + 1u, image->GetMetadata("title").c_str());
   g_cdrom.InsertMedia(std::move(image));
-
-  // reinitialize recompiler, because especially with preloading this might overlap the fastmem area
-  if (g_settings.IsUsingCodeCache())
-    CPU::CodeCache::Reinitialize();
 
   ClearMemorySaveStates();
   return true;

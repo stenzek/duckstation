@@ -95,6 +95,7 @@ static CPUFastmemMode m_fastmem_mode = CPUFastmemMode::Disabled;
 #ifdef WITH_MMAP_FASTMEM
 static u8* m_fastmem_base = nullptr;
 static std::vector<Common::MemoryArena::View> m_fastmem_ram_views;
+static std::vector<Common::MemoryArena::View> m_fastmem_reserved_views;
 #endif
 
 static u8** m_fastmem_lut = nullptr;
@@ -304,12 +305,18 @@ CPUFastmemMode GetFastmemMode()
   return m_fastmem_mode;
 }
 
-void UpdateFastmemViews(CPUFastmemMode mode, bool isolate_cache)
+u8* GetFastmemBase()
+{
+  return m_fastmem_base;
+}
+
+void UpdateFastmemViews(CPUFastmemMode mode)
 {
 #ifndef WITH_MMAP_FASTMEM
   Assert(mode != CPUFastmemMode::MMap);
 #else
   m_fastmem_ram_views.clear();
+  m_fastmem_reserved_views.clear();
 #endif
 
   m_fastmem_mode = mode;
@@ -322,8 +329,6 @@ void UpdateFastmemViews(CPUFastmemMode mode, bool isolate_cache)
     m_fastmem_lut = nullptr;
     return;
   }
-
-  Log_DevPrintf("Remapping fastmem area, isolate cache = %s", isolate_cache ? "true" : "false");
 
 #ifdef WITH_MMAP_FASTMEM
   if (mode == CPUFastmemMode::MMap)
@@ -344,9 +349,9 @@ void UpdateFastmemViews(CPUFastmemMode mode, bool isolate_cache)
       CPU::g_state.fastmem_base = m_fastmem_base;
     }
 
-    auto MapRAM = [](u32 base_address, bool writable) {
+    auto MapRAM = [](u32 base_address) {
       u8* map_address = m_fastmem_base + base_address;
-      auto view = m_memory_arena.CreateView(MEMORY_ARENA_RAM_OFFSET, RAM_SIZE, writable, false, map_address);
+      auto view = m_memory_arena.CreateView(MEMORY_ARENA_RAM_OFFSET, RAM_SIZE, true, false, map_address);
       if (!view)
       {
         Log_ErrorPrintf("Failed to map RAM at fastmem area %p (offset 0x%08X)", map_address, RAM_SIZE);
@@ -370,26 +375,39 @@ void UpdateFastmemViews(CPUFastmemMode mode, bool isolate_cache)
       m_fastmem_ram_views.push_back(std::move(view.value()));
     };
 
-    if (!isolate_cache)
-    {
-      // KUSEG - cached
-      MapRAM(0x00000000, true);
-      // MapRAM(0x00200000, true);
-      // MapRAM(0x00400000, true);
-      // MapRAM(0x00600000, true);
+    auto ReserveRegion = [](u32 start_address, u32 end_address_inclusive) {
+      Assert(end_address_inclusive >= start_address);
+      u8* map_address = m_fastmem_base + start_address;
+      auto view = m_memory_arena.CreateReservedView(end_address_inclusive - start_address + 1, map_address);
+      if (!view)
+      {
+        Log_ErrorPrintf("Failed to map RAM at fastmem area %p (offset 0x%08X)", map_address, RAM_SIZE);
+        return;
+      }
 
-      // KSEG0 - cached
-      MapRAM(0x80000000, true);
-      // MapRAM(0x80200000, true);
-      // MapRAM(0x80400000, true);
-      // MapRAM(0x80600000, true);
-    }
+      m_fastmem_reserved_views.push_back(std::move(view.value()));
+    };
+
+    // KUSEG - cached
+    MapRAM(0x00000000);
+    // MapRAM(0x00200000);
+    // MapRAM(0x00400000);
+    // MapRAM(0x00600000);
+    ReserveRegion(0x00200000, 0x80000000 - 1);
+
+    // KSEG0 - cached
+    MapRAM(0x80000000);
+    // MapRAM(0x80200000);
+    // MapRAM(0x80400000);
+    // MapRAM(0x80600000);
+    ReserveRegion(0x80200000, 0xA0000000 - 1);
 
     // KSEG1 - uncached
-    MapRAM(0xA0000000, true);
-    // MapRAM(0xA0200000, true);
-    // MapRAM(0xA0400000, true);
-    // MapRAM(0xA0600000, true);
+    MapRAM(0xA0000000);
+    // MapRAM(0xA0200000);
+    // MapRAM(0xA0400000);
+    // MapRAM(0xA0600000);
+    ReserveRegion(0xA0200000, 0xFFFFFFFF);
 
     return;
   }
@@ -408,39 +426,31 @@ void UpdateFastmemViews(CPUFastmemMode mode, bool isolate_cache)
     CPU::g_state.fastmem_base = reinterpret_cast<u8*>(m_fastmem_lut);
   }
 
-  auto MapRAM = [](u32 base_address, bool readable, bool writable) {
-    if (readable)
+  auto MapRAM = [](u32 base_address) {
+    for (u32 address = 0; address < RAM_SIZE; address += HOST_PAGE_SIZE)
     {
-      for (u32 address = 0; address < RAM_SIZE; address += HOST_PAGE_SIZE)
-      {
-        SetLUTFastmemPage(base_address + address, &g_ram[address],
-                          !m_ram_code_bits[FastmemAddressToLUTPageIndex(address)]);
-      }
-    }
-    else
-    {
-      for (u32 address = 0; address < RAM_SIZE; address += HOST_PAGE_SIZE)
-        SetLUTFastmemPage(base_address + address, nullptr, false);
+      SetLUTFastmemPage(base_address + address, &g_ram[address],
+                        !m_ram_code_bits[FastmemAddressToLUTPageIndex(address)]);
     }
   };
 
   // KUSEG - cached
-  MapRAM(0x00000000, !isolate_cache, !isolate_cache);
-  MapRAM(0x00200000, !isolate_cache, !isolate_cache);
-  MapRAM(0x00400000, !isolate_cache, !isolate_cache);
-  MapRAM(0x00600000, !isolate_cache, !isolate_cache);
+  MapRAM(0x00000000);
+  MapRAM(0x00200000);
+  MapRAM(0x00400000);
+  MapRAM(0x00600000);
 
   // KSEG0 - cached
-  MapRAM(0x80000000, !isolate_cache, !isolate_cache);
-  MapRAM(0x80200000, !isolate_cache, !isolate_cache);
-  MapRAM(0x80400000, !isolate_cache, !isolate_cache);
-  MapRAM(0x80600000, !isolate_cache, !isolate_cache);
+  MapRAM(0x80000000);
+  MapRAM(0x80200000);
+  MapRAM(0x80400000);
+  MapRAM(0x80600000);
 
   // KSEG1 - uncached
-  MapRAM(0xA0000000, true, true);
-  MapRAM(0xA0200000, true, true);
-  MapRAM(0xA0400000, true, true);
-  MapRAM(0xA0600000, true, true);
+  MapRAM(0xA0000000);
+  MapRAM(0xA0200000);
+  MapRAM(0xA0400000);
+  MapRAM(0xA0600000);
 }
 
 bool CanUseFastmemForAddress(VirtualMemoryAddress address)

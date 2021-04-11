@@ -784,14 +784,14 @@ bool InitializeFastmem()
     return false;
   }
 
-  Bus::UpdateFastmemViews(mode, g_state.cop0_regs.sr.Isc);
+  Bus::UpdateFastmemViews(mode);
   return true;
 }
 
 void ShutdownFastmem()
 {
   Common::PageFaultHandler::RemoveHandler(&s_host_code_map);
-  Bus::UpdateFastmemViews(CPUFastmemMode::Disabled, false);
+  Bus::UpdateFastmemViews(CPUFastmemMode::Disabled);
 }
 
 #ifdef WITH_MMAP_FASTMEM

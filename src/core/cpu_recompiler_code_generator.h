@@ -93,6 +93,7 @@ public:
   void EmitStoreGuestMemoryFastmem(const CodeBlockInstruction& cbi, const Value& address, const Value& value);
   void EmitStoreGuestMemorySlowmem(const CodeBlockInstruction& cbi, const Value& address, const Value& value,
                                    bool in_far_code);
+  void EmitUpdateMembasePointer();
 
   // Unconditional branch to pointer. May allocate a scratch register.
   void EmitBranch(const void* address, bool allow_scratch = true);

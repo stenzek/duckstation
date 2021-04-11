@@ -2313,6 +2313,11 @@ void CodeGenerator::EmitStoreGuestMemorySlowmem(const CodeBlockInstruction& cbi,
   }
 }
 
+void CodeGenerator::EmitUpdateMembasePointer()
+{
+  m_emit->mov(GetFastmemBasePtrReg(), m_emit->qword[GetCPUPtrReg() + offsetof(CPU::State, fastmem_base)]);
+}
+
 bool CodeGenerator::BackpatchLoadStore(const LoadStoreBackpatchInfo& lbi)
 {
   Log_DevPrintf("Backpatching %p (guest PC 0x%08X) to slowmem", lbi.host_pc, lbi.guest_pc);

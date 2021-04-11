@@ -801,9 +801,6 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.rewind_enable != old_settings.rewind_enable ||
         g_settings.runahead_frames != old_settings.runahead_frames)
     {
-      if (g_settings.IsUsingCodeCache())
-        CPU::CodeCache::Reinitialize();
-
       g_gpu->UpdateSettings();
     }
 

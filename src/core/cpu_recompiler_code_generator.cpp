@@ -2476,6 +2476,7 @@ bool CodeGenerator::Compile_cop0(const CodeBlockInstruction& cbi)
               EmitBranchIfBitClear(old_value.host_reg, RegSize_32, 16, &skip_fastmem_update);
               m_register_cache.InhibitAllocation();
               EmitFunctionCall(nullptr, &Thunks::UpdateFastmemMapping, m_register_cache.GetCPUPtr());
+              EmitUpdateMembasePointer();
               EmitBindLabel(&skip_fastmem_update);
               m_register_cache.UninhibitAllocation();
             }
