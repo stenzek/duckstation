@@ -785,6 +785,7 @@ bool InitializeFastmem()
   }
 
   Bus::UpdateFastmemViews(mode);
+  CPU::UpdateFastmemBase();
   return true;
 }
 
@@ -792,6 +793,7 @@ void ShutdownFastmem()
 {
   Common::PageFaultHandler::RemoveHandler(&s_host_code_map);
   Bus::UpdateFastmemViews(CPUFastmemMode::Disabled);
+  CPU::UpdateFastmemBase();
 }
 
 #ifdef WITH_MMAP_FASTMEM

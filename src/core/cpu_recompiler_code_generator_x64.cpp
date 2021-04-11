@@ -2313,7 +2313,7 @@ void CodeGenerator::EmitStoreGuestMemorySlowmem(const CodeBlockInstruction& cbi,
   }
 }
 
-void CodeGenerator::EmitUpdateMembasePointer()
+void CodeGenerator::EmitUpdateFastmemBase()
 {
   m_emit->mov(GetFastmemBasePtrReg(), m_emit->qword[GetCPUPtrReg() + offsetof(CPU::State, fastmem_base)]);
 }

@@ -99,6 +99,8 @@ void Initialize()
   s_last_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
   s_single_step = false;
 
+  UpdateFastmemBase();
+
   GTE::Initialize();
 
   if (g_settings.gpu_pgxp_enable)
@@ -131,6 +133,7 @@ void Reset()
   g_state.cop0_regs.cause.bits = 0;
 
   ClearICache();
+  UpdateFastmemBase();
 
   GTE::Reset();
 
@@ -193,6 +196,14 @@ bool DoState(StateWrapper& sw)
   }
 
   return !sw.HasError();
+}
+
+void UpdateFastmemBase()
+{
+  if (g_state.cop0_regs.sr.Isc)
+    g_state.fastmem_base = nullptr;
+  else
+    g_state.fastmem_base = Bus::GetFastmemBase();
 }
 
 ALWAYS_INLINE_RELEASE void SetPC(u32 new_pc)
@@ -1971,14 +1982,6 @@ bool InterpretInstructionPGXP()
 {
   ExecuteInstruction<PGXPMode::Memory>();
   return g_state.exception_raised;
-}
-
-void UpdateFastmemMapping()
-{
-  if (g_state.cop0_regs.sr.Isc)
-    g_state.fastmem_base = nullptr;
-  else
-    g_state.fastmem_base = Bus::GetFastmemBase();
 }
 
 } // namespace Recompiler::Thunks

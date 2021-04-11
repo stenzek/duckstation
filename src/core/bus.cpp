@@ -307,7 +307,14 @@ CPUFastmemMode GetFastmemMode()
 
 u8* GetFastmemBase()
 {
-  return m_fastmem_base;
+#ifdef WITH_MMAP_FASTMEM
+  if (m_fastmem_mode == CPUFastmemMode::MMap)
+    return m_fastmem_base;
+#endif
+  if (m_fastmem_mode == CPUFastmemMode::LUT)
+    return reinterpret_cast<u8*>(m_fastmem_lut);
+
+  return nullptr;
 }
 
 void UpdateFastmemViews(CPUFastmemMode mode)
@@ -346,7 +353,6 @@ void UpdateFastmemViews(CPUFastmemMode mode)
       }
 
       Log_InfoPrintf("Fastmem base: %p", m_fastmem_base);
-      CPU::g_state.fastmem_base = m_fastmem_base;
     }
 
     auto MapRAM = [](u32 base_address) {
@@ -423,7 +429,6 @@ void UpdateFastmemViews(CPUFastmemMode mode)
     Assert(m_fastmem_lut);
 
     Log_InfoPrintf("Fastmem base (software): %p", m_fastmem_lut);
-    CPU::g_state.fastmem_base = reinterpret_cast<u8*>(m_fastmem_lut);
   }
 
   auto MapRAM = [](u32 base_address) {

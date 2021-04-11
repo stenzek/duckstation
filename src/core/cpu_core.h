@@ -94,6 +94,7 @@ void Shutdown();
 void Reset();
 bool DoState(StateWrapper& sw);
 void ClearICache();
+void UpdateFastmemBase();
 
 /// Executes interpreter loop.
 void Execute();

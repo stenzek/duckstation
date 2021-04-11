@@ -1728,7 +1728,7 @@ void CodeGenerator::EmitStoreGuestMemorySlowmem(const CodeBlockInstruction& cbi,
   }
 }
 
-void CodeGenerator::EmitUpdateMembasePointer()
+void CodeGenerator::EmitUpdateFastmemBase()
 {
   m_emit->Ldr(GetFastmemBasePtrReg(), a64::MemOperand(GetCPUPtrReg(), offsetof(State, fastmem_base)));
 }

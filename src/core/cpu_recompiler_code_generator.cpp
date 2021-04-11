@@ -2433,7 +2433,11 @@ bool CodeGenerator::Compile_cop0(const CodeBlockInstruction& cbi)
             EmitFunctionCall(nullptr, &PGXP::CPU_MFC0, Value::FromConstantU32(cbi.instruction.bits), value);
 
           m_register_cache.WriteGuestRegisterDelayed(cbi.instruction.r.rt, std::move(value));
-          SpeculativeWriteReg(cbi.instruction.r.rt, std::nullopt);
+
+          if (reg == Cop0Reg::SR)
+            SpeculativeWriteReg(cbi.instruction.r.rt, m_speculative_constants.cop0_sr);
+          else
+            SpeculativeWriteReg(cbi.instruction.r.rt, std::nullopt);
         }
         else
         {
@@ -2465,6 +2469,9 @@ bool CodeGenerator::Compile_cop0(const CodeBlockInstruction& cbi)
                 EmitFunctionCall(nullptr, &PGXP::CPU_MTC0, Value::FromConstantU32(cbi.instruction.bits), value, value);
             }
 
+            if (reg == Cop0Reg::SR)
+              m_speculative_constants.cop0_sr = SpeculativeReadReg(cbi.instruction.r.rt);
+
             // changing SR[Isc] needs to update fastmem views
             if (reg == Cop0Reg::SR && g_settings.IsUsingFastmem())
             {
@@ -2475,8 +2482,8 @@ bool CodeGenerator::Compile_cop0(const CodeBlockInstruction& cbi)
               EmitXor(old_value.host_reg, old_value.host_reg, value);
               EmitBranchIfBitClear(old_value.host_reg, RegSize_32, 16, &skip_fastmem_update);
               m_register_cache.InhibitAllocation();
-              EmitFunctionCall(nullptr, &Thunks::UpdateFastmemMapping, m_register_cache.GetCPUPtr());
-              EmitUpdateMembasePointer();
+              EmitFunctionCall(nullptr, &UpdateFastmemBase, m_register_cache.GetCPUPtr());
+              EmitUpdateFastmemBase();
               EmitBindLabel(&skip_fastmem_update);
               m_register_cache.UninhibitAllocation();
             }
@@ -2785,12 +2792,15 @@ void CodeGenerator::InitSpeculativeRegs()
 {
   for (u8 i = 0; i < static_cast<u8>(Reg::count); i++)
     m_speculative_constants.regs[i] = g_state.regs.r[i];
+
+  m_speculative_constants.cop0_sr = g_state.cop0_regs.sr.bits;
 }
 
 void CodeGenerator::InvalidateSpeculativeValues()
 {
   m_speculative_constants.regs.fill(std::nullopt);
   m_speculative_constants.memory.clear();
+  m_speculative_constants.cop0_sr.reset();
 }
 
 CodeGenerator::SpeculativeValue CodeGenerator::SpeculativeReadReg(Reg reg)
@@ -2842,6 +2852,15 @@ void CodeGenerator::SpeculativeWriteMemory(u32 address, SpeculativeValue value)
 
   if ((phys_addr & DCACHE_LOCATION_MASK) == DCACHE_LOCATION || Bus::IsRAMAddress(phys_addr))
     m_speculative_constants.memory.emplace(address, value);
+}
+
+bool CodeGenerator::SpeculativeIsCacheIsolated()
+{
+  if (!m_speculative_constants.cop0_sr.has_value())
+    return false;
+
+  const Cop0Registers::SR sr{m_speculative_constants.cop0_sr.value()};
+  return sr.Isc;
 }
 
 } // namespace CPU::Recompiler

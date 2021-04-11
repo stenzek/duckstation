@@ -29,7 +29,7 @@ void CodeGenerator::EmitStoreInterpreterLoadDelay(Reg reg, const Value& value)
 Value CodeGenerator::EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const Value& address,
                                          const SpeculativeValue& address_spec, RegSize size)
 {
-  if (address.IsConstant())
+  if (address.IsConstant() && !SpeculativeIsCacheIsolated())
   {
     TickCount read_ticks;
     void* ptr = GetDirectReadMemoryPointer(
@@ -61,17 +61,20 @@ Value CodeGenerator::EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const 
 
   Value result = m_register_cache.AllocateScratch(HostPointerSize);
 
-  const bool use_fastmem = address_spec ? Bus::CanUseFastmemForAddress(*address_spec) : true;
+  const bool use_fastmem =
+    (address_spec ? Bus::CanUseFastmemForAddress(*address_spec) : true) && !SpeculativeIsCacheIsolated();
   if (address_spec)
   {
     if (!use_fastmem)
-      Log_DevPrintf("Non-constant load at 0x%08X, speculative address 0x%08X, using fastmem = %s", cbi.pc,
-                    *address_spec, use_fastmem ? "yes" : "no");
+    {
+      Log_ProfilePrintf("Non-constant load at 0x%08X, speculative address 0x%08X, using fastmem = %s", cbi.pc,
+                        *address_spec, use_fastmem ? "yes" : "no");
+    }
   }
   else
   {
-    Log_DevPrintf("Non-constant load at 0x%08X, speculative address UNKNOWN, using fastmem = %s", cbi.pc,
-                  use_fastmem ? "yes" : "no");
+    Log_ProfilePrintf("Non-constant load at 0x%08X, speculative address UNKNOWN, using fastmem = %s", cbi.pc,
+                      use_fastmem ? "yes" : "no");
   }
 
   if (g_settings.IsUsingFastmem() && use_fastmem)
@@ -113,7 +116,7 @@ Value CodeGenerator::EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const 
 void CodeGenerator::EmitStoreGuestMemory(const CodeBlockInstruction& cbi, const Value& address,
                                          const SpeculativeValue& address_spec, const Value& value)
 {
-  if (address.IsConstant())
+  if (address.IsConstant() && !SpeculativeIsCacheIsolated())
   {
     void* ptr = GetDirectWriteMemoryPointer(
       static_cast<u32>(address.constant_value),
@@ -128,17 +131,20 @@ void CodeGenerator::EmitStoreGuestMemory(const CodeBlockInstruction& cbi, const 
 
   AddPendingCycles(true);
 
-  const bool use_fastmem = address_spec ? Bus::CanUseFastmemForAddress(*address_spec) : true;
+  const bool use_fastmem =
+    (address_spec ? Bus::CanUseFastmemForAddress(*address_spec) : true) && !SpeculativeIsCacheIsolated();
   if (address_spec)
   {
     if (!use_fastmem)
-      Log_DevPrintf("Non-constant store at 0x%08X, speculative address 0x%08X, using fastmem = %s", cbi.pc,
-                    *address_spec, use_fastmem ? "yes" : "no");
+    {
+      Log_ProfilePrintf("Non-constant store at 0x%08X, speculative address 0x%08X, using fastmem = %s", cbi.pc,
+                        *address_spec, use_fastmem ? "yes" : "no");
+    }
   }
   else
   {
-    Log_DevPrintf("Non-constant store at 0x%08X, speculative address UNKNOWN, using fastmem = %s", cbi.pc,
-                  use_fastmem ? "yes" : "no");
+    Log_ProfilePrintf("Non-constant store at 0x%08X, speculative address UNKNOWN, using fastmem = %s", cbi.pc,
+                      use_fastmem ? "yes" : "no");
   }
 
   if (g_settings.IsUsingFastmem() && use_fastmem)

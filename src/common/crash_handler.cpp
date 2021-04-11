@@ -77,7 +77,7 @@ static std::wstring s_write_directory;
 static PVOID s_veh_handle = nullptr;
 static bool s_in_crash_handler = false;
 
-static LONG ExceptionHandler(PEXCEPTION_POINTERS exi)
+static LONG NTAPI ExceptionHandler(PEXCEPTION_POINTERS exi)
 {
   if (s_in_crash_handler)
     return EXCEPTION_CONTINUE_SEARCH;

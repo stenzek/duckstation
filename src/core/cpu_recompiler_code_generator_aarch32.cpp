@@ -1170,7 +1170,7 @@ Value CodeGenerator::GetFastmemStoreBase()
   return val;
 }
 
-void CodeGenerator::EmitUpdateMembasePointer()
+void CodeGenerator::EmitUpdateFastmemBase()
 {
   if (m_fastmem_load_base_in_register)
   {
