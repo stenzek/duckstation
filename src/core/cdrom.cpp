@@ -1921,13 +1921,20 @@ void CDROM::StopReadingWithDataEnd()
 void CDROM::DoSectorRead()
 {
   // TODO: Queue the next read here and swap the buffer.
+  // TODO: Error handling
   if (!m_reader.WaitForReadToComplete())
     Panic("Sector read failed");
 
-  // TODO: Error handling
+  m_current_lba = m_reader.GetLastReadSector();
+  ResetPhysicalPosition();
+
   const CDImage::SubChannelQ& subq = m_reader.GetSectorSubQ();
   const bool subq_valid = subq.IsCRCValid();
-  if (!subq_valid)
+  if (subq_valid)
+  {
+    m_last_subq = subq;
+  }
+  else
   {
     const CDImage::Position pos(CDImage::Position::FromLBA(m_current_lba));
     Log_DevPrintf("Sector %u [%02u:%02u:%02u] has invalid subchannel Q", m_current_lba, pos.minute, pos.second,
@@ -1963,11 +1970,6 @@ void CDROM::DoSectorRead()
   {
     ProcessDataSectorHeader(m_reader.GetSectorBuffer().data());
   }
-
-  m_current_lba = m_reader.GetLastReadSector();
-  ResetPhysicalPosition();
-  if (subq_valid)
-    m_last_subq = subq;
 
   u32 next_sector = m_current_lba + 1u;
   if (is_data_sector && m_drive_state == DriveState::Reading)
