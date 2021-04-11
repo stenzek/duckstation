@@ -85,22 +85,22 @@
     <string-array name="emulation_menu">
         <item>Cargar Estado</item>
         <item>Guardar Estado</item>
-        <item>Activar Avance Rápido</item>
+        <item>Activar Avance rápido</item>
         <item>Logros</item>
         <item>Más Opciones</item>
         <item>Salir</item>
     </string-array>
     <string-array name="emulation_more_menu">
         <item>Reiniciar</item>
-        <item>Código de Trucos</item>
-        <item>Cambiar Disco</item>
-        <item>Cambiar Control de Pantalla Tactil</item>
+        <item>Código de trucos</item>
+        <item>Cambiar disco</item>
+        <item>Cambiar control de pantalla tactil</item>
         <item>Configuración del control</item>
         <item>Configuraciones</item>
     </string-array>
     <string-array name="settings_cdrom_read_speedup_entries">
-        <item>Ninguno (Velocidad Doble)</item>
-        <item>2x (Velocidad Cuádruple)</item>
+        <item>Ninguno (Velocidad doble)</item>
+        <item>2x (Velocidad cuádruple)</item>
         <item>3x (6x Velocidad)</item>
         <item>4x (8x Velocidad)</item>
         <item>5x (10x Velocidad)</item>
@@ -112,9 +112,9 @@
     </string-array>
     <string-array name="settings_touchscreen_controller_view_entries">
         <item>Ninguno</item>
-        <item>Digital Pad</item>
-        <item>Pad Analógico Unico</item>
-        <item>Pad Analógico Dual</item>
+        <item>Mando digital</item>
+        <item>Mando analógico unico</item>
+        <item>Mando analógico dual</item>
         <item>Lightgun</item>
     </string-array>
     <string-array name="settings_audio_backend_entries">
