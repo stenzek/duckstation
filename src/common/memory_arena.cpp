@@ -232,13 +232,7 @@ void* MemoryArena::CreateViewPtr(size_t offset, size_t size, bool writable, bool
     MapViewOfFileEx(m_file_handle, desired_access, Truncate32(offset >> 32), Truncate32(offset), size, fixed_address);
   if (!base_pointer)
     return nullptr;
-#elif defined(__linux__)
-  const int flags = (fixed_address != nullptr) ? (MAP_SHARED | MAP_FIXED) : MAP_SHARED;
-  const int prot = PROT_READ | (writable ? PROT_WRITE : 0) | (executable ? PROT_EXEC : 0);
-  base_pointer = mmap64(fixed_address, size, prot, flags, m_shmem_fd, static_cast<off64_t>(offset));
-  if (base_pointer == reinterpret_cast<void*>(-1))
-    return nullptr;
-#elif defined(__APPLE__) || defined(__FreeBSD__)
+#elif defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
   const int flags = (fixed_address != nullptr) ? (MAP_SHARED | MAP_FIXED) : MAP_SHARED;
   const int prot = PROT_READ | (writable ? PROT_WRITE : 0) | (executable ? PROT_EXEC : 0);
   base_pointer = mmap(fixed_address, size, prot, flags, m_shmem_fd, static_cast<off_t>(offset));
@@ -290,16 +284,10 @@ void* MemoryArena::CreateReservedPtr(size_t size, void* fixed_address /*= nullpt
   void* base_pointer;
 #if defined(WIN32)
   base_pointer = VirtualAlloc(fixed_address, size, MEM_RESERVE, PAGE_NOACCESS);
-#elif defined(__linux__)
+#elif defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
   const int flags =
     (fixed_address != nullptr) ? (MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED) : (MAP_PRIVATE | MAP_ANONYMOUS);
-  base_pointer = mmap64(fixed_address, size, PROT_NONE, flags, -1, 0);
-  if (base_pointer == reinterpret_cast<void*>(-1))
-    return nullptr;
-#elif defined(__APPLE__) || defined(__FreeBSD__)
-  const int flags =
-    (fixed_address != nullptr) ? (MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED) : (MAP_PRIVATE | MAP_ANONYMOUS);
-  base_pointer = mmap(fixed_address, size, prot, PROT_NONE, -1, 0);
+  base_pointer = mmap(fixed_address, size, PROT_NONE, flags, -1, 0);
   if (base_pointer == reinterpret_cast<void*>(-1))
     return nullptr;
 #else
