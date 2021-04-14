@@ -194,6 +194,7 @@ static void ExecuteImpl()
       if (!block)
       {
         InterpretUncachedBlock<pgxp_mode>();
+        next_block_key = GetNextBlockKey();
         continue;
       }
 

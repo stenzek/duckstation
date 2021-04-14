@@ -1918,7 +1918,8 @@ template<PGXPMode pgxp_mode>
 void InterpretUncachedBlock()
 {
   g_state.regs.npc = g_state.regs.pc;
-  FetchInstruction();
+  if (!FetchInstruction())
+    return;
 
   // At this point, pc contains the last address executed (in the previous block). The instruction has not been fetched
   // yet. pc shouldn't be updated until the fetch occurs, that way the exception occurs in the delay slot.
