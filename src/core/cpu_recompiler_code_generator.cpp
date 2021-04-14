@@ -2494,25 +2494,55 @@ bool CodeGenerator::Compile_cop0(const CodeBlockInstruction& cbi)
           }
         }
 
-        if (cbi.instruction.cop.CommonOp() == CopCommonInstruction::mtcn &&
-            (reg == Cop0Reg::CAUSE || reg == Cop0Reg::SR))
+        if (cbi.instruction.cop.CommonOp() == CopCommonInstruction::mtcn)
         {
-          // Emit an interrupt check on load of CAUSE/SR.
-          Value sr_value = m_register_cache.AllocateScratch(RegSize_32);
-          Value cause_value = m_register_cache.AllocateScratch(RegSize_32);
+          if (reg == Cop0Reg::CAUSE || reg == Cop0Reg::SR)
+          {
+            // Emit an interrupt check on load of CAUSE/SR.
+            Value sr_value = m_register_cache.AllocateScratch(RegSize_32);
+            Value cause_value = m_register_cache.AllocateScratch(RegSize_32);
 
-          // m_cop0_regs.sr.IEc && ((m_cop0_regs.cause.Ip & m_cop0_regs.sr.Im) != 0)
-          LabelType no_interrupt;
-          EmitLoadCPUStructField(sr_value.host_reg, sr_value.size, offsetof(State, cop0_regs.sr.bits));
-          EmitLoadCPUStructField(cause_value.host_reg, cause_value.size, offsetof(State, cop0_regs.cause.bits));
-          EmitBranchIfBitClear(sr_value.host_reg, sr_value.size, 0, &no_interrupt);
-          m_register_cache.InhibitAllocation();
-          EmitAnd(sr_value.host_reg, sr_value.host_reg, cause_value);
-          EmitTest(sr_value.host_reg, Value::FromConstantU32(0xFF00));
-          EmitConditionalBranch(Condition::Zero, false, &no_interrupt);
-          EmitStoreCPUStructField(offsetof(State, downcount), Value::FromConstantU32(0));
-          EmitBindLabel(&no_interrupt);
-          m_register_cache.UninhibitAllocation();
+            // m_cop0_regs.sr.IEc && ((m_cop0_regs.cause.Ip & m_cop0_regs.sr.Im) != 0)
+            LabelType no_interrupt;
+            EmitLoadCPUStructField(sr_value.host_reg, sr_value.size, offsetof(State, cop0_regs.sr.bits));
+            EmitLoadCPUStructField(cause_value.host_reg, cause_value.size, offsetof(State, cop0_regs.cause.bits));
+            EmitBranchIfBitClear(sr_value.host_reg, sr_value.size, 0, &no_interrupt);
+            m_register_cache.InhibitAllocation();
+            EmitAnd(sr_value.host_reg, sr_value.host_reg, cause_value);
+            EmitTest(sr_value.host_reg, Value::FromConstantU32(0xFF00));
+            EmitConditionalBranch(Condition::Zero, false, &no_interrupt);
+            EmitStoreCPUStructField(offsetof(State, downcount), Value::FromConstantU32(0));
+            EmitBindLabel(&no_interrupt);
+            m_register_cache.UninhibitAllocation();
+          }
+          else if (reg == Cop0Reg::DCIC)
+          {
+            Value dcic_value = m_register_cache.AllocateScratch(RegSize_32);
+            m_register_cache.InhibitAllocation();
+
+            // if ((dcic & master_enable_bits) != master_enable_bits) goto not_enabled;
+            LabelType not_enabled;
+            EmitLoadCPUStructField(dcic_value.host_reg, dcic_value.size, offsetof(State, cop0_regs.dcic.bits));
+            EmitAnd(dcic_value.host_reg, dcic_value.host_reg,
+                    Value::FromConstantU32(Cop0Registers::DCIC::MASTER_ENABLE_BITS));
+            EmitConditionalBranch(Condition::NotEqual, false, dcic_value.host_reg,
+                                  Value::FromConstantU32(Cop0Registers::DCIC::MASTER_ENABLE_BITS), &not_enabled);
+
+            // if ((dcic & breakpoint_bits) == 0) goto not_enabled;
+            EmitLoadCPUStructField(dcic_value.host_reg, dcic_value.size, offsetof(State, cop0_regs.dcic.bits));
+            EmitTest(dcic_value.host_reg, Value::FromConstantU32(Cop0Registers::DCIC::ANY_BREAKPOINTS_ENABLED_BITS));
+            EmitConditionalBranch(Condition::Zero, false, &not_enabled);
+
+            m_register_cache.UninhibitAllocation();
+
+            // exit block early if enabled
+            m_register_cache.PushState();
+            EmitFunctionCall(nullptr, &CPU::UpdateDebugDispatcherFlag);
+            EmitExceptionExit();
+            m_register_cache.PopState();
+
+            EmitBindLabel(&not_enabled);
+          }
         }
 
         InstructionEpilogue(cbi);

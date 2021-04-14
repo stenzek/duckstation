@@ -283,8 +283,7 @@ struct Registers
   };
 };
 
-std::optional<VirtualMemoryAddress> GetLoadStoreEffectiveAddress(const Instruction& instruction,
-                                                                         const Registers* regs);
+std::optional<VirtualMemoryAddress> GetLoadStoreEffectiveAddress(const Instruction& instruction, const Registers* regs);
 
 enum class Cop0Reg : u8
 {
@@ -402,6 +401,27 @@ struct Cop0Registers
     BitField<u32, bool, 31, 1> super_master_enable_2;
 
     static constexpr u32 WRITE_MASK = 0b1111'1111'1000'0000'1111'0000'0011'1111;
+
+    static constexpr u32 ANY_BREAKPOINTS_ENABLED_BITS = (1u << 24) | (1u << 26) | (1u << 27) | (1u << 28);
+    static constexpr u32 MASTER_ENABLE_BITS = (1u << 23) | (1u << 31);
+
+    constexpr bool ExecutionBreakpointsEnabled() const
+    {
+      const u32 mask = (1u << 23) | (1u << 24) | (1u << 31);
+      return ((bits & mask) == mask);
+    }
+
+    constexpr bool DataReadBreakpointsEnabled() const
+    {
+      const u32 mask = (1u << 23) | (1u << 25) | (1u << 26) | (1u << 31);
+      return ((bits & mask) == mask);
+    }
+
+    constexpr bool DataWriteBreakpointsEnabled() const
+    {
+      const u32 mask = (1u << 23) | (1u << 25) | (1u << 27) | (1u << 31);
+      return ((bits & mask) == mask);
+    }
   } dcic;
 };
 

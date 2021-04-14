@@ -23,7 +23,6 @@ static void SetPC(u32 new_pc);
 static void UpdateLoadDelay();
 static void Branch(u32 target);
 static void FlushPipeline();
-static void UpdateDebugDispatcherFlag();
 
 State g_state;
 bool g_using_interpreter = false;
@@ -227,34 +226,13 @@ ALWAYS_INLINE_RELEASE void Branch(u32 target)
   g_state.branch_was_taken = true;
 }
 
-ALWAYS_INLINE static u32 GetExceptionVector(Exception excode)
+ALWAYS_INLINE static u32 GetExceptionVector(bool debug_exception = false)
 {
   const u32 base = g_state.cop0_regs.sr.BEV ? UINT32_C(0xbfc00100) : UINT32_C(0x80000000);
-
-#if 0
-  // apparently this isn't correct...
-  switch (excode)
-  {
-    case Exception::BP:
-      return base | UINT32_C(0x00000040);
-
-    default:
-      return base | UINT32_C(0x00000080);
-  }
-#else
-  return base | UINT32_C(0x00000080);
-#endif
+  return base | (debug_exception ? UINT32_C(0x00000040) : UINT32_C(0x00000080));
 }
 
-void RaiseException(Exception excode)
-{
-  RaiseException(Cop0Registers::CAUSE::MakeValueForException(excode, g_state.current_instruction_in_branch_delay_slot,
-                                                             g_state.current_instruction_was_branch_taken,
-                                                             g_state.current_instruction.cop.cop_n),
-                 g_state.current_instruction_pc);
-}
-
-void RaiseException(u32 CAUSE_bits, u32 EPC)
+ALWAYS_INLINE_RELEASE static void RaiseException(u32 CAUSE_bits, u32 EPC, u32 vector)
 {
   g_state.cop0_regs.EPC = EPC;
   g_state.cop0_regs.cause.bits = (g_state.cop0_regs.cause.bits & ~Cop0Registers::CAUSE::EXCEPTION_WRITE_MASK) |
@@ -264,10 +242,10 @@ void RaiseException(u32 CAUSE_bits, u32 EPC)
   if (g_state.cop0_regs.cause.Excode != Exception::INT && g_state.cop0_regs.cause.Excode != Exception::Syscall &&
       g_state.cop0_regs.cause.Excode != Exception::BP)
   {
-    Log_DebugPrintf("Exception %u at 0x%08X (epc=0x%08X, BD=%s, CE=%u)",
-                    static_cast<u8>(g_state.cop0_regs.cause.Excode.GetValue()), g_state.current_instruction_pc,
-                    g_state.cop0_regs.EPC, g_state.cop0_regs.cause.BD ? "true" : "false",
-                    g_state.cop0_regs.cause.CE.GetValue());
+    Log_DevPrintf("Exception %u at 0x%08X (epc=0x%08X, BD=%s, CE=%u)",
+                  static_cast<u8>(g_state.cop0_regs.cause.Excode.GetValue()), g_state.current_instruction_pc,
+                  g_state.cop0_regs.EPC, g_state.cop0_regs.cause.BD ? "true" : "false",
+                  g_state.cop0_regs.cause.CE.GetValue());
     DisassembleAndPrint(g_state.current_instruction_pc, 4, 0);
     if (s_trace_to_log)
     {
@@ -291,9 +269,34 @@ void RaiseException(u32 CAUSE_bits, u32 EPC)
   g_state.cop0_regs.sr.mode_bits <<= 2;
 
   // flush the pipeline - we don't want to execute the previously fetched instruction
-  g_state.regs.npc = GetExceptionVector(g_state.cop0_regs.cause.Excode);
+  g_state.regs.npc = vector;
   g_state.exception_raised = true;
   FlushPipeline();
+}
+
+ALWAYS_INLINE_RELEASE static void DispatchCop0Breakpoint()
+{
+  // When a breakpoint address match occurs the PSX jumps to 80000040h (ie. unlike normal exceptions, not to 80000080h).
+  // The Excode value in the CAUSE register is set to 09h (same as BREAK opcode), and EPC contains the return address,
+  // as usually. One of the first things to be done in the exception handler is to disable breakpoints (eg. if the
+  // any-jump break is enabled, then it must be disabled BEFORE jumping from 80000040h to the actual exception handler).
+  RaiseException(Cop0Registers::CAUSE::MakeValueForException(
+                   Exception::BP, g_state.current_instruction_in_branch_delay_slot,
+                   g_state.current_instruction_was_branch_taken, g_state.current_instruction.cop.cop_n),
+                 g_state.current_instruction_pc, GetExceptionVector(true));
+}
+
+void RaiseException(u32 CAUSE_bits, u32 EPC)
+{
+  RaiseException(CAUSE_bits, EPC, GetExceptionVector());
+}
+
+void RaiseException(Exception excode)
+{
+  RaiseException(Cop0Registers::CAUSE::MakeValueForException(excode, g_state.current_instruction_in_branch_delay_slot,
+                                                             g_state.current_instruction_was_branch_taken,
+                                                             g_state.current_instruction.cop.cop_n),
+                 g_state.current_instruction_pc, GetExceptionVector());
 }
 
 void SetExternalInterrupt(u8 bit)
@@ -466,6 +469,7 @@ ALWAYS_INLINE_RELEASE static void WriteCop0Reg(Cop0Reg reg, u32 value)
       g_state.cop0_regs.dcic.bits =
         (g_state.cop0_regs.dcic.bits & ~Cop0Registers::DCIC::WRITE_MASK) | (value & Cop0Registers::DCIC::WRITE_MASK);
       Log_WarningPrintf("COP0 DCIC <- %08X (now %08X)", value, g_state.cop0_regs.dcic.bits);
+      UpdateDebugDispatcherFlag();
     }
     break;
 
@@ -488,12 +492,83 @@ ALWAYS_INLINE_RELEASE static void WriteCop0Reg(Cop0Reg reg, u32 value)
     break;
 
     default:
-      Log_DevPrintf("Unknown COP0 reg %u", ZeroExtend32(static_cast<u8>(reg)));
+      Log_WarningPrintf("Unknown COP0 reg write %u (%08X)", ZeroExtend32(static_cast<u8>(reg)), value);
       break;
   }
 }
 
-static void PrintInstruction(u32 bits, u32 pc, Registers* regs)
+ALWAYS_INLINE_RELEASE void Cop0ExecutionBreakpointCheck()
+{
+  if (!g_state.cop0_regs.dcic.ExecutionBreakpointsEnabled())
+    return;
+
+  const u32 pc = g_state.current_instruction_pc;
+  const u32 bpc = g_state.cop0_regs.BPC;
+  const u32 bpcm = g_state.cop0_regs.BPCM;
+
+  // Break condition is "((PC XOR BPC) AND BPCM)=0".
+  if (bpcm == 0 || ((pc ^ bpc) & bpcm) != 0u)
+    return;
+
+  Log_DevPrintf("Cop0 execution breakpoint at %08X", pc);
+  g_state.cop0_regs.dcic.status_any_break = true;
+  g_state.cop0_regs.dcic.status_bpc_code_break = true;
+  DispatchCop0Breakpoint();
+}
+
+template<MemoryAccessType type>
+ALWAYS_INLINE_RELEASE void Cop0DataBreakpointCheck(VirtualMemoryAddress address)
+{
+  if constexpr (type == MemoryAccessType::Read)
+  {
+    if (!g_state.cop0_regs.dcic.DataReadBreakpointsEnabled())
+      return;
+  }
+  else
+  {
+    if (!g_state.cop0_regs.dcic.DataWriteBreakpointsEnabled())
+      return;
+  }
+
+  // Break condition is "((addr XOR BDA) AND BDAM)=0".
+  const u32 bda = g_state.cop0_regs.BDA;
+  const u32 bdam = g_state.cop0_regs.BDAM;
+  if (bdam == 0 || ((address ^ bda) & bdam) != 0u)
+    return;
+
+  Log_DevPrintf("Cop0 data breakpoint for %08X at %08X", address, g_state.current_instruction_pc);
+
+  g_state.cop0_regs.dcic.status_any_break = true;
+  g_state.cop0_regs.dcic.status_bda_data_break = true;
+  if constexpr (type == MemoryAccessType::Read)
+    g_state.cop0_regs.dcic.status_bda_data_read_break = true;
+  else
+    g_state.cop0_regs.dcic.status_bda_data_write_break = true;
+
+  DispatchCop0Breakpoint();
+}
+
+static void TracePrintInstruction()
+{
+  const u32 pc = g_state.current_instruction_pc;
+  const u32 bits = g_state.current_instruction.bits;
+
+  TinyString instr;
+  TinyString comment;
+  DisassembleInstruction(&instr, pc, bits);
+  DisassembleInstructionComment(&comment, pc, bits, &g_state.regs);
+  if (!comment.IsEmpty())
+  {
+    for (u32 i = instr.GetLength(); i < 30; i++)
+      instr.AppendCharacter(' ');
+    instr.AppendString("; ");
+    instr.AppendString(comment);
+  }
+
+  std::printf("%08x: %08x %s\n", pc, bits, instr.GetCharArray());
+}
+
+static void PrintInstruction(u32 bits, u32 pc, Registers* regs, const char* prefix)
 {
   TinyString instr;
   TinyString comment;
@@ -507,7 +582,7 @@ static void PrintInstruction(u32 bits, u32 pc, Registers* regs)
     instr.AppendString(comment);
   }
 
-  std::printf("%08x: %08x %s\n", pc, bits, instr.GetCharArray());
+  Log_DevPrintf("%s%08x: %08x %s", prefix, pc, bits, instr.GetCharArray());
 }
 
 static void LogInstruction(u32 bits, u32 pc, Registers* regs)
@@ -537,11 +612,11 @@ ALWAYS_INLINE static constexpr bool SubOverflow(u32 old_value, u32 sub_value, u3
   return (((new_value ^ old_value) & (old_value ^ sub_value)) & UINT32_C(0x80000000)) != 0;
 }
 
-void DisassembleAndPrint(u32 addr)
+void DisassembleAndPrint(u32 addr, const char* prefix)
 {
   u32 bits = 0;
   SafeReadMemoryWord(addr, &bits);
-  PrintInstruction(bits, addr, &g_state.regs);
+  PrintInstruction(bits, addr, &g_state.regs, prefix);
 }
 
 void DisassembleAndPrint(u32 addr, u32 instructions_before /* = 0 */, u32 instructions_after /* = 0 */)
@@ -549,21 +624,19 @@ void DisassembleAndPrint(u32 addr, u32 instructions_before /* = 0 */, u32 instru
   u32 disasm_addr = addr - (instructions_before * sizeof(u32));
   for (u32 i = 0; i < instructions_before; i++)
   {
-    DisassembleAndPrint(disasm_addr);
+    DisassembleAndPrint(disasm_addr, "");
     disasm_addr += sizeof(u32);
   }
-
-  std::printf("----> ");
 
   // <= to include the instruction itself
   for (u32 i = 0; i <= instructions_after; i++)
   {
-    DisassembleAndPrint(disasm_addr);
+    DisassembleAndPrint(disasm_addr, (i == 0) ? "---->" : "");
     disasm_addr += sizeof(u32);
   }
 }
 
-template<PGXPMode pgxp_mode>
+template<PGXPMode pgxp_mode, bool debug>
 ALWAYS_INLINE_RELEASE static void ExecuteInstruction()
 {
 restart_instruction:
@@ -579,7 +652,7 @@ restart_instruction:
 
 #ifdef _DEBUG
   if (TRACE_EXECUTION)
-    PrintInstruction(inst.bits, g_state.current_instruction_pc, &g_state.regs);
+    TracePrintInstruction();
 #endif
 
   // Skip nops. Makes PGXP-CPU quicker, but also the regular interpreter.
@@ -1059,6 +1132,9 @@ restart_instruction:
     case InstructionOp::lb:
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
+      if constexpr (debug)
+        Cop0DataBreakpointCheck<MemoryAccessType::Read>(addr);
+
       u8 value;
       if (!ReadMemoryByte(addr, &value))
         return;
@@ -1075,6 +1151,9 @@ restart_instruction:
     case InstructionOp::lh:
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
+      if constexpr (debug)
+        Cop0DataBreakpointCheck<MemoryAccessType::Read>(addr);
+
       u16 value;
       if (!ReadMemoryHalfWord(addr, &value))
         return;
@@ -1090,6 +1169,9 @@ restart_instruction:
     case InstructionOp::lw:
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
+      if constexpr (debug)
+        Cop0DataBreakpointCheck<MemoryAccessType::Read>(addr);
+
       u32 value;
       if (!ReadMemoryWord(addr, &value))
         return;
@@ -1104,6 +1186,9 @@ restart_instruction:
     case InstructionOp::lbu:
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
+      if constexpr (debug)
+        Cop0DataBreakpointCheck<MemoryAccessType::Read>(addr);
+
       u8 value;
       if (!ReadMemoryByte(addr, &value))
         return;
@@ -1119,6 +1204,9 @@ restart_instruction:
     case InstructionOp::lhu:
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
+      if constexpr (debug)
+        Cop0DataBreakpointCheck<MemoryAccessType::Read>(addr);
+
       u16 value;
       if (!ReadMemoryHalfWord(addr, &value))
         return;
@@ -1136,6 +1224,9 @@ restart_instruction:
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       const VirtualMemoryAddress aligned_addr = addr & ~UINT32_C(3);
+      if constexpr (debug)
+        Cop0DataBreakpointCheck<MemoryAccessType::Read>(addr);
+
       u32 aligned_value;
       if (!ReadMemoryWord(aligned_addr, &aligned_value))
         return;
@@ -1165,6 +1256,9 @@ restart_instruction:
     case InstructionOp::sb:
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
+      if constexpr (debug)
+        Cop0DataBreakpointCheck<MemoryAccessType::Write>(addr);
+
       const u8 value = Truncate8(ReadReg(inst.i.rt));
       WriteMemoryByte(addr, value);
 
@@ -1176,6 +1270,9 @@ restart_instruction:
     case InstructionOp::sh:
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
+      if constexpr (debug)
+        Cop0DataBreakpointCheck<MemoryAccessType::Write>(addr);
+
       const u16 value = Truncate16(ReadReg(inst.i.rt));
       WriteMemoryHalfWord(addr, value);
 
@@ -1187,6 +1284,9 @@ restart_instruction:
     case InstructionOp::sw:
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
+      if constexpr (debug)
+        Cop0DataBreakpointCheck<MemoryAccessType::Write>(addr);
+
       const u32 value = ReadReg(inst.i.rt);
       WriteMemoryWord(addr, value);
 
@@ -1200,6 +1300,9 @@ restart_instruction:
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       const VirtualMemoryAddress aligned_addr = addr & ~UINT32_C(3);
+      if constexpr (debug)
+        Cop0DataBreakpointCheck<MemoryAccessType::Write>(aligned_addr);
+
       const u32 reg_value = ReadReg(inst.i.rt);
       const u8 shift = (Truncate8(addr) & u8(3)) * u8(8);
       u32 mem_value;
@@ -1508,16 +1611,20 @@ void DispatchInterrupt()
     g_state.regs.pc);
 }
 
-static void UpdateDebugDispatcherFlag()
+void UpdateDebugDispatcherFlag()
 {
   const bool has_any_breakpoints = !s_breakpoints.empty();
 
   // TODO: cop0 breakpoints
+  const auto& dcic = g_state.cop0_regs.dcic;
+  const bool has_cop0_breakpoints =
+    dcic.super_master_enable_1 && dcic.super_master_enable_2 && dcic.execution_breakpoint_enable;
 
-  const bool use_debug_dispatcher = has_any_breakpoints || s_trace_to_log;
+  const bool use_debug_dispatcher = has_any_breakpoints || has_cop0_breakpoints || s_trace_to_log;
   if (use_debug_dispatcher == g_state.use_debug_dispatcher)
     return;
 
+  Log_DevPrintf("%s debug dispatcher", use_debug_dispatcher ? "Now using" : "No longer using");
   g_state.use_debug_dispatcher = use_debug_dispatcher;
   ForceDispatcherExit();
 }
@@ -1694,7 +1801,7 @@ bool AddStepOutBreakpoint(u32 max_instructions_to_search)
   return false;
 }
 
-static ALWAYS_INLINE_RELEASE bool BreakpointCheck()
+ALWAYS_INLINE_RELEASE static bool BreakpointCheck()
 {
   const u32 pc = g_state.regs.pc;
 
@@ -1779,6 +1886,8 @@ static void ExecuteImpl()
 
       if constexpr (debug)
       {
+        Cop0ExecutionBreakpointCheck();
+
         if (BreakpointCheck())
         {
           // continue is measurably faster than break on msvc for some reason
@@ -1818,7 +1927,7 @@ static void ExecuteImpl()
 #endif
 
       // execute the instruction we previously fetched
-      ExecuteInstruction<pgxp_mode>();
+      ExecuteInstruction<pgxp_mode, debug>();
 
       // next load delay
       UpdateLoadDelay();
@@ -1891,7 +2000,7 @@ void InterpretCachedBlock(const CodeBlock& block)
     g_state.regs.npc += 4;
 
     // execute the instruction we previously fetched
-    ExecuteInstruction<pgxp_mode>();
+    ExecuteInstruction<pgxp_mode, false>();
 
     // next load delay
     UpdateLoadDelay();
@@ -1944,7 +2053,7 @@ void InterpretUncachedBlock()
     }
 
     // execute the instruction we previously fetched
-    ExecuteInstruction<pgxp_mode>();
+    ExecuteInstruction<pgxp_mode, false>();
 
     // next load delay
     UpdateLoadDelay();
@@ -1969,13 +2078,13 @@ namespace Recompiler::Thunks {
 
 bool InterpretInstruction()
 {
-  ExecuteInstruction<PGXPMode::Disabled>();
+  ExecuteInstruction<PGXPMode::Disabled, false>();
   return g_state.exception_raised;
 }
 
 bool InterpretInstructionPGXP()
 {
-  ExecuteInstruction<PGXPMode::Memory>();
+  ExecuteInstruction<PGXPMode::Memory, false>();
   return g_state.exception_raised;
 }
 
