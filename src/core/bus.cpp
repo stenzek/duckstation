@@ -1693,7 +1693,10 @@ bool FetchInstruction()
     case 0x07: // KSEG2
     default:
     {
-      CPU::RaiseException(address, Cop0Registers::CAUSE::MakeValueForException(Exception::IBE, false, false, 0));
+      CPU::RaiseException(Cop0Registers::CAUSE::MakeValueForException(Exception::IBE,
+                                                                      g_state.current_instruction_in_branch_delay_slot,
+                                                                      g_state.current_instruction_was_branch_taken, 0),
+                          address);
       return false;
     }
   }
