@@ -607,6 +607,10 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-2433-g9089c973</version-tested>
   </entry>
+  <entry code="SCUS-94702" compatibility="5" region="NTSC-J" title="Beyond the Beyond (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-3711-g65f99f89</version-tested>
+  </entry>
   <entry code="SLUS-00645" compatibility="5" region="NTSC-U" title="Big Air (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-2483-g98d6b499</version-tested>
@@ -1605,9 +1609,21 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1608-g79aaf908</version-tested>
   </entry>
+  <entry code="SCES-00269" compatibility="5" region="PAL" title="Galaxian^3 (Europe)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-3712-ge94c68e8</version-tested>
+  </entry>
   <entry code="SLUS-00986" compatibility="5" region="NTSC-U" title="Galerians (USA) (Disc 1)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1425-g05f0ce6d</version-tested>
+  </entry>
+  <entry code="SLUS-01098" compatibility="5" region="NTSC-U" title="Galerians (USA) (Disc 2)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-3777-g62718b3c</version-tested>
+  </entry>
+  <entry code="SLUS-01099" compatibility="5" region="NTSC-U" title="Galerians (USA) (Disc 3)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-3777-g62718b3c</version-tested>
   </entry>
   <entry code="ARCDXEXE" compatibility="1" region="NTSC-U" title="GameShark 2 Version 2 Code Archive Disc Version 1 (USA) (Unl)">
     <compatibility>Doesn't Boot</compatibility>
@@ -2134,6 +2150,10 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLPS-00987" compatibility="5" region="NTSC-J" title="Lomax (Japan)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1645-g42d49426</version-tested>
+  </entry>
+  <entry code="SLUS-01369" compatibility="5" region="NTSC-U" title="Looney Tunes - Sheep Raider (USA) (En,Fr,Es,Pt)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-3771-g8df0496d</version-tested>
   </entry>
   <entry code="SLUS-00515" compatibility="5" region="NTSC-U" title="Lost World, The - Jurassic Park (USA)">
     <compatibility>No Issues</compatibility>
@@ -3236,6 +3256,11 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-2499-g770dd5a6</version-tested>
   </entry>
+  <entry code="SLPS-02140" compatibility="3" region="NTSC-J" title="Roommate - Inoue Ryoko (Japan)">
+    <compatibility>Crashes In-Game</compatibility>
+    <version-tested>0.1-3769-g4786beb0</version-tested>
+    <comments>Boots to title screen, but requires Pocketstation support to play further (Issue #1009)</comments>
+  </entry>
   <entry code="SLUS-01062" compatibility="5" region="NTSC-U" title="Roswell Conspiracies - Aliens, Myths &amp; Legends (USA)">
     <compatibility>No Issues</compatibility>
   </entry>
@@ -3505,6 +3530,14 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLPS-00162" compatibility="5" region="NTSC-J" title="Stahlfeder - Tekkou Hikuudan (Japan)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-884-g096ed219</version-tested>
+  </entry>
+  <entry code="SCUS-94421" compatibility="5" region="NTSC-U" title="Star Ocean - The Second Story (USA) (Disc 1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-3711-g65f99f89</version-tested>
+  </entry>
+  <entry code="SCUS-94422" compatibility="5" region="NTSC-U" title="Star Ocean - The Second Story (USA) (Disc 2)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-3711-g65f99f89</version-tested>
   </entry>
   <entry code="SLUS-00297" compatibility="5" region="NTSC-U" title="Star Wars - Dark Forces (USA)">
     <compatibility>No Issues</compatibility>
