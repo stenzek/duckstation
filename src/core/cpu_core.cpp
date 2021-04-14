@@ -380,7 +380,7 @@ ALWAYS_INLINE_RELEASE static void WriteRegDelayed(Reg rd, u32 value)
   g_state.next_load_delay_value = value;
 }
 
-ALWAYS_INLINE_RELEASE static std::optional<u32> ReadCop0Reg(Cop0Reg reg)
+ALWAYS_INLINE_RELEASE static u32 ReadCop0Reg(Cop0Reg reg)
 {
   switch (reg)
   {
@@ -418,8 +418,8 @@ ALWAYS_INLINE_RELEASE static std::optional<u32> ReadCop0Reg(Cop0Reg reg)
       return g_state.cop0_regs.PRID;
 
     default:
-      Log_DevPrintf("Unknown COP0 reg %u", ZeroExtend32(static_cast<u8>(reg)));
-      return std::nullopt;
+      Log_WarningPrintf("Unknown COP0 reg read %u", ZeroExtend32(static_cast<u8>(reg)));
+      return 0;
   }
 }
 
@@ -1311,15 +1311,12 @@ restart_instruction:
         {
           case CopCommonInstruction::mfcn:
           {
-            const std::optional<u32> value = ReadCop0Reg(static_cast<Cop0Reg>(inst.r.rd.GetValue()));
+            const u32 value = ReadCop0Reg(static_cast<Cop0Reg>(inst.r.rd.GetValue()));
 
             if constexpr (pgxp_mode == PGXPMode::CPU)
-              PGXP::CPU_MFC0(inst.bits, value.value_or(0));
+              PGXP::CPU_MFC0(inst.bits, value);
 
-            if (value)
-              WriteRegDelayed(inst.r.rt, value.value());
-            else
-              RaiseException(Exception::RI);
+            WriteRegDelayed(inst.r.rt, value);
           }
           break;
 
@@ -1328,10 +1325,7 @@ restart_instruction:
             WriteCop0Reg(static_cast<Cop0Reg>(inst.r.rd.GetValue()), ReadReg(inst.r.rt));
 
             if constexpr (pgxp_mode == PGXPMode::CPU)
-            {
-              PGXP::CPU_MTC0(inst.bits, ReadCop0Reg(static_cast<Cop0Reg>(inst.r.rd.GetValue())).value_or(0),
-                             ReadReg(inst.i.rt));
-            }
+              PGXP::CPU_MTC0(inst.bits, ReadCop0Reg(static_cast<Cop0Reg>(inst.r.rd.GetValue())), ReadReg(inst.i.rt));
           }
           break;
 
