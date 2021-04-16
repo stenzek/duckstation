@@ -126,13 +126,8 @@ void BuildOSPath(char* Destination, u32 cbDestination, const char* Path);
 void BuildOSPath(String& Destination, const char* Path);
 void BuildOSPath(String& Destination);
 
-// builds a path relative to the specified file, optionally canonicalizing it
-void BuildPathRelativeToFile(char* Destination, u32 cbDestination, const char* CurrentFileName, const char* NewFileName,
-                             bool OSPath = true, bool Canonicalize = true);
-void BuildPathRelativeToFile(String& Destination, const char* CurrentFileName, const char* NewFileName,
-                             bool OSPath = true, bool Canonicalize = true);
-String BuildPathRelativeToFile(const char* CurrentFileName, const char* NewFileName, bool OSPath = true,
-                               bool Canonicalize = true);
+// builds a path relative to the specified file
+std::string BuildRelativePath(const std::string_view& filename, const std::string_view& new_filename);
 
 // sanitizes a filename for use in a filesystem.
 void SanitizeFileName(char* Destination, u32 cbDestination, const char* FileName, bool StripSlashes = true);

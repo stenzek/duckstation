@@ -72,9 +72,6 @@ bool CDImageCueSheet::OpenAndParse(const char* filename, Common::Error* error)
     return false;
   }
 
-  // get the directory of the filename
-  std::string basepath(FileSystem::GetPathDirectory(filename));
-  basepath += "/";
   m_filename = filename;
 
   u32 disc_lba = 0;
@@ -106,7 +103,7 @@ bool CDImageCueSheet::OpenAndParse(const char* filename, Common::Error* error)
     }
     if (track_file_index == m_files.size())
     {
-      const std::string track_full_filename(basepath + track_filename);
+      const std::string track_full_filename(FileSystem::BuildRelativePath(m_filename, track_filename));
       std::FILE* track_fp = FileSystem::OpenCFile(track_full_filename.c_str(), "rb");
       if (!track_fp && track_file_index == 0)
       {

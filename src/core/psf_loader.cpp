@@ -162,14 +162,6 @@ bool File::Load(const char* path)
   return true;
 }
 
-static std::string GetLibraryPSFPath(const char* main_path, const char* lib_path)
-{
-  std::string path(FileSystem::GetPathDirectory(main_path));
-  path += FS_OSPATH_SEPARATOR_CHARACTER;
-  path += lib_path;
-  return path;
-}
-
 static bool LoadLibraryPSF(const char* path, bool use_pc_sp, u32 depth = 0)
 {
   // don't recurse past 10 levels just in case of broken files
@@ -190,7 +182,7 @@ static bool LoadLibraryPSF(const char* path, bool use_pc_sp, u32 depth = 0)
   std::optional<std::string> lib_name(file.GetTagString("_lib"));
   if (lib_name.has_value())
   {
-    const std::string lib_path(GetLibraryPSFPath(path, lib_name->c_str()));
+    const std::string lib_path(FileSystem::BuildRelativePath(path, lib_name.value()));
     Log_InfoPrintf("Loading main parent PSF '%s'", lib_path.c_str());
 
     // We should use the initial SP/PC from the **first** parent lib.
@@ -222,7 +214,7 @@ static bool LoadLibraryPSF(const char* path, bool use_pc_sp, u32 depth = 0)
     if (!lib_name.has_value())
       break;
 
-    const std::string lib_path(GetLibraryPSFPath(path, lib_name->c_str()));
+    const std::string lib_path(FileSystem::BuildRelativePath(path, lib_name.value()));
     Log_InfoPrintf("Loading parent PSF '%s'", lib_path.c_str());
     if (!LoadLibraryPSF(lib_path.c_str(), false, depth + 1))
     {

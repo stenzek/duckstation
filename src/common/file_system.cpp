@@ -283,13 +283,29 @@ std::string ReplaceExtension(const std::string_view& path, const std::string_vie
   return ret;
 }
 
+static std::string_view::size_type GetLastSeperatorPosition(const std::string_view& filename, bool include_separator)
+{
+  std::string_view::size_type last_separator = filename.rfind('/');
+  if (include_separator && last_separator != std::string_view::npos)
+    last_separator++;
+
+#if defined(_WIN32)
+  std::string_view::size_type other_last_separator = filename.rfind('\\');
+  if (other_last_separator != std::string_view::npos)
+  {
+    if (include_separator)
+      other_last_separator++;
+    if (last_separator == std::string_view::npos || other_last_separator > last_separator)
+      last_separator = other_last_separator;
+  }
+#endif
+
+  return last_separator;
+}
+
 std::string_view GetPathDirectory(const std::string_view& path)
 {
-#ifdef _WIN32
-  std::string::size_type pos = path.find_last_of("/\\");
-#else
-  std::string::size_type pos = path.find_last_of("/");
-#endif
+  std::string::size_type pos = GetLastSeperatorPosition(path, false);
   if (pos == std::string_view::npos)
     return {};
 
@@ -298,15 +314,11 @@ std::string_view GetPathDirectory(const std::string_view& path)
 
 std::string_view GetFileNameFromPath(const std::string_view& path)
 {
-#ifdef _WIN32
-  std::string::size_type pos = path.find_last_of("/\\");
-#else
-  std::string::size_type pos = path.find_last_of("/");
-#endif
+  std::string::size_type pos = GetLastSeperatorPosition(path, true);
   if (pos == std::string_view::npos)
     return path;
 
-  return path.substr(pos + 1);
+  return path.substr(pos);
 }
 
 std::string_view GetFileTitleFromPath(const std::string_view& path)
@@ -346,108 +358,14 @@ std::vector<std::string> GetRootDirectoryList()
   return results;
 }
 
-void BuildPathRelativeToFile(char* Destination, u32 cbDestination, const char* CurrentFileName, const char* NewFileName,
-                             bool OSPath /* = true */, bool Canonicalize /* = true */)
+std::string BuildRelativePath(const std::string_view& filename, const std::string_view& new_filename)
 {
-  s32 i;
-  u32 currentPos = 0;
-  DebugAssert(Destination != nullptr && cbDestination > 0 && CurrentFileName != nullptr && NewFileName != nullptr);
-
-  // clone to a local buffer if the same pointer
-  std::string pathClone;
-  if (Destination == CurrentFileName)
-  {
-    pathClone = CurrentFileName;
-    CurrentFileName = pathClone.c_str();
-  }
-
-  // search for a / or \, copy everything up to and including it to the destination
-  i = (s32)std::strlen(CurrentFileName);
-  for (; i >= 0; i--)
-  {
-    if (CurrentFileName[i] == '/' || CurrentFileName[i] == '\\')
-    {
-      // cap to destination length
-      u32 copyLen;
-      if (NewFileName[0] != '\0')
-        copyLen = std::min((u32)(i + 1), cbDestination);
-      else
-        copyLen = std::min((u32)i, cbDestination);
-
-      if (copyLen > 0)
-      {
-        std::memcpy(Destination, CurrentFileName, copyLen);
-        if (copyLen == cbDestination)
-          Destination[cbDestination - 1] = '\0';
-
-        currentPos = copyLen;
-      }
-
-      break;
-    }
-  }
-
-  // copy the new parts in
-  if (currentPos < cbDestination && NewFileName[0] != '\0')
-    StringUtil::Strlcpy(Destination + currentPos, NewFileName, cbDestination - currentPos);
-
-  // canonicalize it
-  if (Canonicalize)
-    CanonicalizePath(Destination, cbDestination, Destination, OSPath);
-  else if (OSPath)
-    BuildOSPath(Destination, cbDestination, Destination);
-}
-
-void BuildPathRelativeToFile(String& Destination, const char* CurrentFileName, const char* NewFileName,
-                             bool OSPath /* = true */, bool Canonicalize /* = true */)
-{
-  s32 i;
-  DebugAssert(CurrentFileName != nullptr && NewFileName != nullptr);
-
-  // get curfile length
-  u32 curFileLength = static_cast<u32>(std::strlen(CurrentFileName));
-
-  // clone to a local buffer if the same pointer
-  if (Destination.GetWriteableCharArray() == CurrentFileName)
-  {
-    char* pathClone = (char*)alloca(curFileLength + 1);
-    StringUtil::Strlcpy(pathClone, CurrentFileName, curFileLength + 1);
-    CurrentFileName = pathClone;
-  }
-
-  // search for a / or \\, copy everything up to and including it to the destination
-  Destination.Clear();
-  i = (s32)curFileLength;
-  for (; i >= 0; i--)
-  {
-    if (CurrentFileName[i] == '/' || CurrentFileName[i] == '\\')
-    {
-      if (NewFileName[0] != '\0')
-        Destination.AppendSubString(CurrentFileName, 0, i + 1);
-      else
-        Destination.AppendSubString(CurrentFileName, 0, i);
-
-      break;
-    }
-  }
-
-  // copy the new parts in
-  if (NewFileName[0] != '\0')
-    Destination.AppendString(NewFileName);
-
-  // canonicalize it
-  if (Canonicalize)
-    CanonicalizePath(Destination, Destination.GetCharArray(), OSPath);
-  else if (OSPath)
-    BuildOSPath(Destination, Destination.GetCharArray());
-}
-
-String BuildPathRelativeToFile(const char* CurrentFileName, const char* NewFileName, bool OSPath /*= true*/,
-                               bool Canonicalize /*= true*/)
-{
-  String ret;
-  BuildPathRelativeToFile(ret, CurrentFileName, NewFileName, OSPath, Canonicalize);
-  return ret;
+  std::string new_string;
+  std::string_view::size_type pos = GetLastSeperatorPosition(filename, true);
+  if (pos != std::string_view::npos)
+    new_string.assign(filename, 0, pos);
+  new_string.append(new_filename);
+  return new_string;
 }
 
 std::unique_ptr<ByteStream> OpenFile(const char* FileName, u32 Flags)
