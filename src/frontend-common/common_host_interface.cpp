@@ -2861,15 +2861,19 @@ void CommonHostInterface::GetGameInfo(const char* path, CDImage* image, std::str
   }
   else
   {
-    if (image)
-      *code = System::GetGameCodeForImage(image, true);
-
     GameDatabase database;
     GameDatabaseEntry database_entry;
     if (database.Load() && database.GetEntryForDisc(image, &database_entry))
+    {
+      *code = std::move(database_entry.serial);
       *title = std::move(database_entry.title);
+    }
     else
+    {
       *title = System::GetTitleForPath(path);
+      if (image)
+        *code = System::GetGameCodeForImage(image, true);
+    }
   }
 }
 

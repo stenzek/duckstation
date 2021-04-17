@@ -102,8 +102,6 @@ public:
 
   const GameListEntry* GetEntryForPath(const char* path) const;
   const GameListCompatibilityEntry* GetCompatibilityEntryForCode(const std::string& code) const;
-  
-  bool GetGameCodeAndTitleFromDatabase(const char* path, std::string* code, std::string* title);
 
   void SetCacheFilename(std::string filename) { m_cache_filename = std::move(filename); }
   void SetUserCompatibilityListFilename(std::string filename)
