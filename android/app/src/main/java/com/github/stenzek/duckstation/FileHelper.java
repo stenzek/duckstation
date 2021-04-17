@@ -3,10 +3,22 @@ package com.github.stenzek.duckstation;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.ImageDecoder;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
 import android.provider.DocumentsContract;
+import android.provider.MediaStore;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 /**
@@ -46,6 +58,7 @@ public class FileHelper {
 
     /**
      * File helper class - used to bridge native code to Java storage access framework APIs.
+     *
      * @param context Context in which to perform file actions as.
      */
     public FileHelper(Context context) {
@@ -54,9 +67,186 @@ public class FileHelper {
     }
 
     /**
+     * Reads the specified file as a string, under the specified context.
+     *
+     * @param context context to access file under
+     * @param uri     uri to write data to
+     * @param maxSize maximum file size to read
+     * @return String containing the file data, otherwise null
+     */
+    public static String readStringFromUri(final Context context, final Uri uri, int maxSize) {
+        InputStream stream = null;
+        try {
+            stream = context.getContentResolver().openInputStream(uri);
+        } catch (FileNotFoundException e) {
+            return null;
+        }
+
+        StringBuilder os = new StringBuilder();
+        try {
+            char[] buffer = new char[1024];
+            InputStreamReader reader = new InputStreamReader(stream, Charset.forName(StandardCharsets.UTF_8.name()));
+            int len;
+            while ((len = reader.read(buffer)) > 0) {
+                os.append(buffer, 0, len);
+                if (os.length() > maxSize)
+                    return null;
+            }
+
+            stream.close();
+        } catch (IOException e) {
+            return null;
+        }
+
+        if (os.length() == 0)
+            return null;
+
+        return os.toString();
+    }
+
+    /**
+     * Reads the specified file as a byte array, under the specified context.
+     *
+     * @param context context to access file under
+     * @param uri     uri to write data to
+     * @param maxSize maximum file size to read
+     * @return byte array containing the file data, otherwise null
+     */
+    public static byte[] readBytesFromUri(final Context context, final Uri uri, int maxSize) {
+        InputStream stream = null;
+        try {
+            stream = context.getContentResolver().openInputStream(uri);
+        } catch (FileNotFoundException e) {
+            return null;
+        }
+
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        try {
+            byte[] buffer = new byte[512 * 1024];
+            int len;
+            while ((len = stream.read(buffer)) > 0) {
+                os.write(buffer, 0, len);
+                if (maxSize > 0 && os.size() > maxSize) {
+                    return null;
+                }
+            }
+
+            stream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        if (os.size() == 0)
+            return null;
+
+        return os.toByteArray();
+    }
+
+    /**
+     * Writes the specified data to a file referenced by the URI, as the specified context.
+     *
+     * @param context context to access file under
+     * @param uri     uri to write data to
+     * @param bytes   data to write file to
+     * @return true if write was succesful, otherwise false
+     */
+    public static boolean writeBytesToUri(final Context context, final Uri uri, final byte[] bytes) {
+        OutputStream stream = null;
+        try {
+            stream = context.getContentResolver().openOutputStream(uri);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        if (bytes != null && bytes.length > 0) {
+            try {
+                stream.write(bytes);
+                stream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Deletes the file referenced by the URI, under the specified context.
+     *
+     * @param context context to delete file under
+     * @param uri     uri to delete
+     * @return
+     */
+    public static boolean deleteFileAtUri(final Context context, final Uri uri) {
+        try {
+            if (uri.getScheme() == "file") {
+                final File file = new File(uri.getPath());
+                if (!file.isFile())
+                    return false;
+
+                return file.delete();
+            }
+            return (context.getContentResolver().delete(uri, null, null) > 0);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Returns the name of the file pointed at by a SAF URI.
+     *
+     * @param context context to access file under
+     * @param uri     uri to retrieve file name for
+     * @return the name of the file, or null
+     */
+    public static String getDocumentNameFromUri(final Context context, final Uri uri) {
+        Cursor cursor = null;
+        try {
+            final String[] proj = {DocumentsContract.Document.COLUMN_DISPLAY_NAME};
+            cursor = context.getContentResolver().query(uri, proj, null, null, null);
+            final int columnIndex = cursor.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_DISPLAY_NAME);
+            cursor.moveToFirst();
+            return cursor.getString(columnIndex);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        } finally {
+            if (cursor != null)
+                cursor.close();
+        }
+    }
+
+    /**
+     * Loads a bitmap from the provided SAF URI.
+     *
+     * @param context context to access file under
+     * @param uri     uri to retrieve file name for
+     * @return a decoded bitmap for the file, or null
+     */
+    public static Bitmap loadBitmapFromUri(final Context context, final Uri uri) {
+        InputStream stream = null;
+        try {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                final ImageDecoder.Source source = ImageDecoder.createSource(context.getContentResolver(), uri);
+                return ImageDecoder.decodeBitmap(source);
+            } else {
+                return MediaStore.Images.Media.getBitmap(context.getContentResolver(), uri);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
      * Retrieves a file descriptor for a content URI string. Called by native code.
+     *
      * @param uriString string of the URI to open
-     * @param mode Java open mode
+     * @param mode      Java open mode
      * @return file descriptor for URI, or -1
      */
     public int openURIAsFileDescriptor(String uriString, String mode) {
@@ -73,10 +263,11 @@ public class FileHelper {
 
     /**
      * Recursively iterates documents in the specified tree, searching for files.
-     * @param treeUri Root tree in which to search for documents.
+     *
+     * @param treeUri    Root tree in which to search for documents.
      * @param documentId Document ID representing the directory to start searching.
-     * @param flags Native search flags.
-     * @param results Cumulative result array.
+     * @param flags      Native search flags.
+     * @param results    Cumulative result array.
      */
     private void doFindFiles(Uri treeUri, String documentId, int flags, ArrayList<FindResult> results) {
         try {
@@ -116,8 +307,9 @@ public class FileHelper {
 
     /**
      * Recursively iterates documents in the specified URI, searching for files.
+     *
      * @param uriString URI containing directory to search.
-     * @param flags Native filter flags.
+     * @param flags     Native filter flags.
      * @return Array of find results.
      */
     public FindResult[] findFiles(String uriString, int flags) {

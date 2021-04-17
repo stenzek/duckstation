@@ -239,38 +239,6 @@ public class GameDirectoriesActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public static String getPathFromTreeUri(Context context, Uri treeUri) {
-        String path = FileUtil.getFullPathFromTreeUri(treeUri, context);
-        if (path.length() < 5) {
-            new AlertDialog.Builder(context)
-                    .setTitle(R.string.main_activity_error)
-                    .setMessage(R.string.main_activity_get_path_from_directory_error)
-                    .setPositiveButton(R.string.main_activity_ok, (dialog, button) -> {
-                    })
-                    .create()
-                    .show();
-            return null;
-        }
-
-        return path;
-    }
-
-    public static String getPathFromUri(Context context, Uri uri) {
-        String path = FileUtil.getFullPathFromUri(uri, context);
-        if (path.length() < 5) {
-            new AlertDialog.Builder(context)
-                    .setTitle(R.string.main_activity_error)
-                    .setMessage(R.string.main_activity_get_path_from_file_error)
-                    .setPositiveButton(R.string.main_activity_ok, (dialog, button) -> {
-                    })
-                    .create()
-                    .show();
-            return null;
-        }
-
-        return path;
-    }
-
     public static void addSearchDirectory(Context context, String path, boolean recursive) {
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         final String key = recursive ? "GameList/RecursivePaths" : "GameList/Paths";
@@ -289,6 +257,8 @@ public class GameDirectoriesActivity extends AppCompatActivity {
         Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
         i.addCategory(Intent.CATEGORY_DEFAULT);
         i.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
+        i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        i.addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
         startActivityForResult(Intent.createChooser(i, getString(R.string.main_activity_choose_directory)),
                 REQUEST_ADD_DIRECTORY_TO_GAME_LIST);
     }
@@ -318,14 +288,18 @@ public class GameDirectoriesActivity extends AppCompatActivity {
 
         switch (requestCode) {
             case REQUEST_ADD_DIRECTORY_TO_GAME_LIST: {
-                if (resultCode != RESULT_OK)
+                if (resultCode != RESULT_OK || data.getData() == null)
                     return;
 
-                String path = getPathFromTreeUri(this, data.getData());
-                if (path == null)
-                    return;
+                try {
+                    getContentResolver().takePersistableUriPermission(data.getData(),
+                            Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                } catch (Exception e) {
+                    Toast.makeText(this, "Failed to take persistable permission.", Toast.LENGTH_LONG);
+                    e.printStackTrace();
+                }
 
-                addSearchDirectory(this, path, true);
+                addSearchDirectory(this, data.getDataString(), true);
                 mDirectoryListAdapter.reload();
             }
             break;

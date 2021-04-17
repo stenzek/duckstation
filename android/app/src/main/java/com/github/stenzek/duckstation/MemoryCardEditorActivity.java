@@ -286,13 +286,13 @@ public class MemoryCardEditorActivity extends AppCompatActivity {
         if (card == null)
             return;
 
-        final byte[] data = FileUtil.readBytesFromUri(this, uri, 16 * 1024 * 1024);
+        final byte[] data = FileHelper.readBytesFromUri(this, uri, 16 * 1024 * 1024);
         if (data == null) {
             displayError(getString(R.string.memory_card_editor_import_card_read_failed, uri.toString()));
             return;
         }
 
-        String importFileName = FileUtil.getDocumentNameFromUri(this, uri);
+        String importFileName = FileHelper.getDocumentNameFromUri(this, uri);
         if (importFileName == null) {
             importFileName = uri.getPath();
             if (importFileName == null || importFileName.isEmpty())

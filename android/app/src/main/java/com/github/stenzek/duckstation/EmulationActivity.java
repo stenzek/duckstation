@@ -305,19 +305,15 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
                 applySettings();
             }
         } else if (requestCode == REQUEST_IMPORT_PATCH_CODES) {
-            if (data == null)
+            if (data == null || data.getData() == null)
                 return;
 
             importPatchesFromFile(data.getData());
         } else if (requestCode == REQUEST_CHANGE_DISC_FILE) {
-            if (data == null)
+            if (data == null || data.getData() == null)
                 return;
 
-            String path = GameDirectoriesActivity.getPathFromUri(this, data.getData());
-            if (path == null)
-                return;
-
-            AndroidHostInterface.getInstance().setMediaFilename(path);
+            AndroidHostInterface.getInstance().setMediaFilename(data.getDataString());
         }
     }
 
@@ -687,7 +683,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     }
 
     private void importPatchesFromFile(Uri uri) {
-        String str = FileUtil.readFileFromUri(this, uri, 512 * 1024);
+        String str = FileHelper.readStringFromUri(this, uri, 512 * 1024);
         if (str == null || !AndroidHostInterface.getInstance().importPatchCodesFromString(str)) {
             reportErrorOnUIThread(getString(R.string.emulation_activity_failed_to_import_patch_codes));
         }

@@ -9,7 +9,6 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -18,12 +17,10 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -195,6 +192,8 @@ public class MainActivity extends AppCompatActivity {
         Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
         i.addCategory(Intent.CATEGORY_DEFAULT);
         i.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
+        i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        i.addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
         startActivityForResult(Intent.createChooser(i, getString(R.string.main_activity_choose_directory)),
                 REQUEST_ADD_DIRECTORY_TO_GAME_LIST);
     }
@@ -270,14 +269,18 @@ public class MainActivity extends AppCompatActivity {
 
         switch (requestCode) {
             case REQUEST_ADD_DIRECTORY_TO_GAME_LIST: {
-                if (resultCode != RESULT_OK)
+                if (resultCode != RESULT_OK || data.getData() == null)
                     return;
 
-                String path = GameDirectoriesActivity.getPathFromTreeUri(this, data.getData());
-                if (path == null)
-                    return;
+                try {
+                    getContentResolver().takePersistableUriPermission(data.getData(),
+                            Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                } catch (Exception e) {
+                    Toast.makeText(this, "Failed to take persistable permission.", Toast.LENGTH_LONG);
+                    e.printStackTrace();
+                }
 
-                GameDirectoriesActivity.addSearchDirectory(this, path, true);
+                GameDirectoriesActivity.addSearchDirectory(this, data.getDataString(), true);
                 mGameList.refresh(false, false, this);
             }
             break;
@@ -291,14 +294,10 @@ public class MainActivity extends AppCompatActivity {
             break;
 
             case REQUEST_START_FILE: {
-                if (resultCode != RESULT_OK)
+                if (resultCode != RESULT_OK || data.getData() == null)
                     return;
 
-                String path = GameDirectoriesActivity.getPathFromUri(this, data.getData());
-                if (path == null)
-                    return;
-
-                startEmulation(path, shouldResumeStateByDefault());
+                startEmulation(data.getDataString(), shouldResumeStateByDefault());
             }
             break;
 
@@ -428,7 +427,7 @@ public class MainActivity extends AppCompatActivity {
         if (gameListEntry == null)
             return;
 
-        final Bitmap bitmap = FileUtil.loadBitmapFromUri(this, uri);
+        final Bitmap bitmap = FileHelper.loadBitmapFromUri(this, uri);
         if (bitmap == null) {
             Toast.makeText(this, "Failed to open/decode image.", Toast.LENGTH_LONG).show();
             return;

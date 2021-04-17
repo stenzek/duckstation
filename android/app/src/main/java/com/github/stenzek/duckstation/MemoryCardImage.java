@@ -41,7 +41,7 @@ public class MemoryCardImage {
     }
 
     public static MemoryCardImage open(Context context, Uri uri) {
-        byte[] data = FileUtil.readBytesFromUri(context, uri, DATA_SIZE);
+        byte[] data = FileHelper.readBytesFromUri(context, uri, DATA_SIZE);
         if (data == null)
             return null;
 
@@ -145,11 +145,11 @@ public class MemoryCardImage {
     private static native boolean importCard(byte[] data, String filename, byte[] importData);
 
     public boolean save() {
-        return FileUtil.writeBytesToUri(context, uri, data);
+        return FileHelper.writeBytesToUri(context, uri, data);
     }
 
     public boolean delete() {
-        return FileUtil.deleteFileAtUri(context, uri);
+        return FileHelper.deleteFileAtUri(context, uri);
     }
 
     public boolean format() {
