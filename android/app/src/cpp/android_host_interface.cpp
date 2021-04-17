@@ -1003,10 +1003,10 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
       (s_EmulationActivity_method_setInputDeviceVibration =
          env->GetMethodID(s_EmulationActivity_class, "setInputDeviceVibration", "(IFF)V")) == nullptr ||
       (s_PatchCode_constructor = env->GetMethodID(s_PatchCode_class, "<init>", "(ILjava/lang/String;Z)V")) == nullptr ||
-      (s_GameListEntry_constructor = env->GetMethodID(
-         s_GameListEntry_class, "<init>",
-         "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JLjava/lang/String;Ljava/lang/"
-         "String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V")) == nullptr ||
+      (s_GameListEntry_constructor =
+         env->GetMethodID(s_GameListEntry_class, "<init>",
+                          "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JLjava/lang/String;Ljava/lang/"
+                          "String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V")) == nullptr ||
       (s_SaveStateInfo_constructor = env->GetMethodID(
          s_SaveStateInfo_class, "<init>",
          "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IZII[B)V")) ==
@@ -1345,13 +1345,11 @@ static jobject CreateGameListEntry(JNIEnv* env, AndroidHostInterface* hi, const 
 {
   const Timestamp modified_ts(
     Timestamp::FromUnixTimestamp(static_cast<Timestamp::UnixTimestampValue>(entry.last_modified_time)));
-  const std::string file_title_str(FileSystem::GetFileTitleFromPath(entry.path));
   const std::string cover_path_str(hi->GetGameList()->GetCoverImagePathForEntry(&entry));
 
   jstring path = env->NewStringUTF(entry.path.c_str());
   jstring code = env->NewStringUTF(entry.code.c_str());
   jstring title = env->NewStringUTF(entry.title.c_str());
-  jstring file_title = env->NewStringUTF(file_title_str.c_str());
   jstring region = env->NewStringUTF(DiscRegionToString(entry.region));
   jstring type = env->NewStringUTF(GameList::EntryTypeToString(entry.type));
   jstring compatibility_rating =
@@ -1360,9 +1358,8 @@ static jobject CreateGameListEntry(JNIEnv* env, AndroidHostInterface* hi, const 
   jstring modified_time = env->NewStringUTF(modified_ts.ToString("%Y/%m/%d, %H:%M:%S"));
   jlong size = entry.total_size;
 
-  jobject entry_jobject =
-    env->NewObject(s_GameListEntry_class, s_GameListEntry_constructor, path, code, title, file_title, size,
-                   modified_time, region, type, compatibility_rating, cover_path);
+  jobject entry_jobject = env->NewObject(s_GameListEntry_class, s_GameListEntry_constructor, path, code, title, size,
+                                         modified_time, region, type, compatibility_rating, cover_path);
 
   env->DeleteLocalRef(modified_time);
   if (cover_path)
@@ -1370,7 +1367,6 @@ static jobject CreateGameListEntry(JNIEnv* env, AndroidHostInterface* hi, const 
   env->DeleteLocalRef(compatibility_rating);
   env->DeleteLocalRef(type);
   env->DeleteLocalRef(region);
-  env->DeleteLocalRef(file_title);
   env->DeleteLocalRef(title);
   env->DeleteLocalRef(code);
   env->DeleteLocalRef(path);

@@ -32,7 +32,6 @@ public class GamePropertiesActivity extends AppCompatActivity {
 
         mPropertiesListAdapter = new PropertyListAdapter(this);
         mPropertiesListAdapter.addItem("title", "Title", mGameListEntry.getTitle());
-        mPropertiesListAdapter.addItem("filetitle", "File Title", mGameListEntry.getFileTitle());
         mPropertiesListAdapter.addItem("serial", "Serial", mGameListEntry.getCode());
         mPropertiesListAdapter.addItem("type", "Type", mGameListEntry.getType().toString());
         mPropertiesListAdapter.addItem("path", "Path", mGameListEntry.getPath());

@@ -2,14 +2,10 @@ package com.github.stenzek.duckstation;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ImageView;
-import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -74,7 +70,7 @@ public class GameListFragment extends Fragment implements GameList.OnRefreshList
         }
 
         private String getSubTitle() {
-            String fileName = GameListEntry.getFileNameForPath(mEntry.getPath());
+            String fileName = FileHelper.getFileNameForPath(mEntry.getPath());
             String sizeString = String.format("%.2f MB", (double) mEntry.getSize() / 1048576.0);
             return String.format("%s (%s)", fileName, sizeString);
         }

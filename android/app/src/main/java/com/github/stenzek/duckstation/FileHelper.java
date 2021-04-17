@@ -243,6 +243,29 @@ public class FileHelper {
     }
 
     /**
+     * Returns the file name component of a path or URI.
+     * @param path Path/URI to examine.
+     * @return File name component of path/URI.
+     */
+    public static String getFileNameForPath(String path) {
+        if (path.startsWith("content:/") || path.startsWith("file:/")) {
+            try {
+                final Uri uri = Uri.parse(path);
+                final String lastPathSegment = uri.getLastPathSegment();
+                if (lastPathSegment != null)
+                    path = lastPathSegment;
+            } catch (Exception e) {
+            }
+        }
+
+        int lastSlash = path.lastIndexOf('/');
+        if (lastSlash > 0 && lastSlash < path.length() - 1)
+            return path.substring(lastSlash + 1);
+        else
+            return path;
+    }
+
+    /**
      * Retrieves a file descriptor for a content URI string. Called by native code.
      *
      * @param uriString string of the URI to open
