@@ -482,7 +482,7 @@ void GPU_SW::ClearDisplay()
 void GPU_SW::UpdateDisplay()
 {
   // fill display texture
-  m_backend.Sync();
+  m_backend.Sync(true);
 
   if (!g_settings.debugging.show_vram)
   {
@@ -824,7 +824,7 @@ void GPU_SW::DispatchRenderCommand()
 
 void GPU_SW::ReadVRAM(u32 x, u32 y, u32 width, u32 height)
 {
-  m_backend.Sync();
+  m_backend.Sync(false);
 }
 
 void GPU_SW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)

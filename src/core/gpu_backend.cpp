@@ -2,6 +2,7 @@
 #include "common/align.h"
 #include "common/log.h"
 #include "common/state_wrapper.h"
+#include "common/timer.h"
 #include "settings.h"
 Log_SetChannel(GPUBackend);
 
@@ -21,13 +22,13 @@ bool GPUBackend::Initialize()
 
 void GPUBackend::Reset(bool clear_vram)
 {
-  Sync();
+  Sync(true);
   m_drawing_area = {};
 }
 
 void GPUBackend::UpdateSettings()
 {
-  Sync();
+  Sync(true);
 
   if (m_use_gpu_thread != g_settings.gpu_use_thread)
   {
@@ -188,13 +189,14 @@ void GPUBackend::StopGPUThread()
   Log_InfoPrint("GPU thread stopped.");
 }
 
-void GPUBackend::Sync()
+void GPUBackend::Sync(bool allow_sleep)
 {
   if (!m_use_gpu_thread)
     return;
 
   GPUBackendSyncCommand* cmd =
     static_cast<GPUBackendSyncCommand*>(AllocateCommand(GPUBackendCommandType::Sync, sizeof(GPUBackendSyncCommand)));
+  cmd->allow_sleep = allow_sleep;
   PushCommand(cmd);
   WakeGPUThread();
 
@@ -204,12 +206,19 @@ void GPUBackend::Sync()
 
 void GPUBackend::RunGPULoop()
 {
+  static constexpr double SPIN_TIME_NS = 1 * 1000000;
+  Common::Timer::Value last_command_time = 0;
+
   for (;;)
   {
     u32 write_ptr = m_command_fifo_write_ptr.load();
     u32 read_ptr = m_command_fifo_read_ptr.load();
     if (read_ptr == write_ptr)
     {
+      const Common::Timer::Value current_time = Common::Timer::GetValue();
+      if (Common::Timer::ConvertValueToNanoseconds(current_time - last_command_time) < SPIN_TIME_NS)
+        continue;
+
       std::unique_lock<std::mutex> lock(m_sync_mutex);
       m_gpu_thread_sleeping.store(true);
       m_wake_gpu_thread_cv.wait(lock, [this]() { return m_gpu_loop_done.load() || GetPendingCommandSize() > 0; });
@@ -224,6 +233,7 @@ void GPUBackend::RunGPULoop()
     if (write_ptr < read_ptr)
       write_ptr = COMMAND_QUEUE_SIZE;
 
+    bool allow_sleep = false;
     while (read_ptr < write_ptr)
     {
       const GPUBackendCommand* cmd = reinterpret_cast<const GPUBackendCommand*>(&m_command_fifo_data[read_ptr]);
@@ -243,6 +253,7 @@ void GPUBackend::RunGPULoop()
         {
           DebugAssert(read_ptr == write_ptr);
           m_sync_event.Signal();
+          allow_sleep = static_cast<const GPUBackendSyncCommand*>(cmd)->allow_sleep;
         }
         break;
 
@@ -252,6 +263,7 @@ void GPUBackend::RunGPULoop()
       }
     }
 
+    last_command_time = allow_sleep ? 0 : Common::Timer::GetValue();
     m_command_fifo_read_ptr.store(read_ptr);
   }
 }

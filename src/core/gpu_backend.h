@@ -35,7 +35,7 @@ public:
   GPUBackendDrawLineCommand* NewDrawLineCommand(u32 num_vertices);
 
   void PushCommand(GPUBackendCommand* cmd);
-  void Sync();
+  void Sync(bool allow_sleep);
 
   /// Processes all pending GPU commands.
   void RunGPULoop();

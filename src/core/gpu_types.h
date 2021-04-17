@@ -277,6 +277,7 @@ struct GPUBackendCommand
 
 struct GPUBackendSyncCommand : public GPUBackendCommand
 {
+  bool allow_sleep;
 };
 
 struct GPUBackendFillVRAMCommand : public GPUBackendCommand
