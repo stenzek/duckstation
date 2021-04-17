@@ -322,8 +322,8 @@
     <string name="controller_auto_mapping_no_devices">No suitable devices found. Automatic binding only supports gamepad devices, but you can still bind other device types manually.</string>
     <string name="controller_auto_mapping_select_device">Select Device</string>
     <string name="controller_auto_mapping_results">Automatic Binding Results</string>
-    <string name="main_activity_empty_game_list_title">No games were found. Please add a directory with games, or manually start a file.</string>
-    <string name="main_activity_empty_game_list_supported_formats">Supported formats: %s</string>
+    <string name="main_activity_empty_game_list_title">No games were found. Please add a directory with games to begin.</string>
+    <string name="main_activity_empty_game_list_supported_formats">Supported formats are:\n\n%s\n\nGames in bin format require a cuesheet (.cue) to start.</string>
     <string name="main_activity_empty_game_list_add_directory">Add Game Directory</string>
     <string name="main_activity_empty_game_list_start_file">Start File</string>
     <string name="update_notes_title">Update Notes</string>
