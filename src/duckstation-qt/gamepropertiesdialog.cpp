@@ -55,10 +55,23 @@ void GamePropertiesDialog::populate(const GameListEntry* ge)
 {
   const QString title_qstring(QString::fromStdString(ge->title));
 
+  std::string hash_code;
+  std::unique_ptr<CDImage> cdi(CDImage::Open(ge->path.c_str(), nullptr));
+  if (cdi)
+  {
+    hash_code = System::GetGameHashCodeForImage(cdi.get());
+    cdi.reset();
+  }
+
   setWindowTitle(tr("Game Properties - %1").arg(title_qstring));
   m_ui.imagePath->setText(QString::fromStdString(ge->path));
   m_ui.title->setText(title_qstring);
-  m_ui.gameCode->setText(QString::fromStdString(ge->code));
+
+  if (!hash_code.empty() && ge->code != hash_code)
+    m_ui.gameCode->setText(QStringLiteral("%1 / %2").arg(ge->code.c_str()).arg(hash_code.c_str()));
+  else
+    m_ui.gameCode->setText(QString::fromStdString(ge->code));
+
   m_ui.region->setCurrentIndex(static_cast<int>(ge->region));
 
   if (ge->code.empty())
@@ -784,8 +797,8 @@ void GamePropertiesDialog::updateCPUClockSpeedLabel()
 
 void GamePropertiesDialog::fillEntryFromUi(GameListCompatibilityEntry* entry)
 {
-  entry->code = m_ui.gameCode->text().toStdString();
-  entry->title = m_ui.title->text().toStdString();
+  entry->code = m_game_code;
+  entry->title = m_game_title;
   entry->version_tested = m_ui.versionTested->text().toStdString();
   entry->upscaling_issues = m_ui.upscalingIssues->text().toStdString();
   entry->comments = m_ui.comments->text().toStdString();
@@ -795,7 +808,7 @@ void GamePropertiesDialog::fillEntryFromUi(GameListCompatibilityEntry* entry)
 
 void GamePropertiesDialog::saveCompatibilityInfo()
 {
-  if (m_ui.gameCode->text().isEmpty())
+  if (m_game_code.empty())
     return;
 
   GameListCompatibilityEntry new_entry;

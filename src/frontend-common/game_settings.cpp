@@ -33,7 +33,6 @@ std::array<std::pair<const char*, const char*>, static_cast<u32>(Trait::Count)> 
   {"DisablePGXPDepthBuffer", TRANSLATABLE("GameSettingsTrait", "Disable PGXP Depth Buffer")},
   {"ForcePGXPVertexCache", TRANSLATABLE("GameSettingsTrait", "Force PGXP Vertex Cache")},
   {"ForcePGXPCPUMode", TRANSLATABLE("GameSettingsTrait", "Force PGXP CPU Mode")},
-  {"DisableAnalogModeForcing", TRANSLATABLE("GameSettingsTrait", "Disable Forcing Controller Analog Mode on Reset")},
   {"ForceRecompilerMemoryExceptions", TRANSLATABLE("GameSettingsTrait", "Force Recompiler Memory Exceptions")},
   {"ForceRecompilerICache", TRANSLATABLE("GameSettingsTrait", "Force Recompiler ICache")},
 }};
@@ -1239,9 +1238,6 @@ void Entry::ApplySettings(bool display_osd_messages) const
 
     g_settings.gpu_pgxp_depth_buffer = false;
   }
-
-  if (HasTrait(Trait::DisableAnalogModeForcing))
-    g_settings.controller_disable_analog_mode_forcing = true;
 
   if (HasTrait(Trait::ForceRecompilerMemoryExceptions))
     g_settings.cpu_recompiler_memory_exceptions = true;

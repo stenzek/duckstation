@@ -85,7 +85,6 @@ bool CommonHostInterface::Initialize()
 
   m_game_list = std::make_unique<GameList>();
   m_game_list->SetCacheFilename(GetUserDirectoryRelativePath("cache/gamelist.cache"));
-  m_game_list->SetUserDatabaseFilename(GetUserDirectoryRelativePath("redump.dat"));
   m_game_list->SetUserCompatibilityListFilename(GetUserDirectoryRelativePath("compatibility.xml"));
   m_game_list->SetUserGameSettingsFilename(GetUserDirectoryRelativePath("gamesettings.ini"));
 
@@ -2865,9 +2864,10 @@ void CommonHostInterface::GetGameInfo(const char* path, CDImage* image, std::str
     if (image)
       *code = System::GetGameCodeForImage(image, true);
 
-    const GameListDatabaseEntry* db_entry = (!code->empty()) ? m_game_list->GetDatabaseEntryForCode(*code) : nullptr;
-    if (db_entry)
-      *title = db_entry->title;
+    GameDatabase database;
+    GameDatabaseEntry database_entry;
+    if (database.Load() && database.GetEntryForDisc(image, &database_entry))
+      *title = std::move(database_entry.title);
     else
       *title = System::GetTitleForPath(path);
   }
@@ -2978,13 +2978,71 @@ bool CommonHostInterface::SaveScreenshot(const char* filename /* = nullptr */, b
 
 void CommonHostInterface::ApplyGameSettings(bool display_osd_messages)
 {
+  g_settings.controller_disable_analog_mode_forcing = false;
+
   // this gets called while booting, so can't use valid
   if (System::IsShutdown() || System::GetRunningCode().empty() || !g_settings.apply_game_settings)
     return;
 
+  const GameListEntry* ge = m_game_list->GetEntryForPath(System::GetRunningPath().c_str());
+  if (ge)
+    ApplyControllerCompatibilitySettings(ge->supported_controllers, display_osd_messages);
+
   const GameSettings::Entry* gs = m_game_list->GetGameSettings(System::GetRunningPath(), System::GetRunningCode());
   if (gs)
     gs->ApplySettings(display_osd_messages);
+}
+
+void CommonHostInterface::ApplyControllerCompatibilitySettings(u64 controller_mask, bool display_osd_messages)
+{
+#define BIT_FOR(ctype) (static_cast<u64>(1) << static_cast<u32>(ctype))
+
+  if (controller_mask == 0 || controller_mask == static_cast<u64>(-1))
+    return;
+
+  for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
+  {
+    const ControllerType ctype = g_settings.controller_types[i];
+    if (ctype == ControllerType::None)
+      continue;
+
+    if (controller_mask & BIT_FOR(ctype))
+      continue;
+
+    // Special case: Dualshock is permitted when not supported as long as it's in digital mode.
+    if (ctype == ControllerType::AnalogController &&
+        (controller_mask & BIT_FOR(ControllerType::DigitalController)) != 0)
+    {
+      g_settings.controller_disable_analog_mode_forcing = true;
+      continue;
+    }
+
+    if (display_osd_messages)
+    {
+      SmallString supported_controller_string;
+      for (u32 j = 0; j < static_cast<u32>(ControllerType::Count); j++)
+      {
+        const ControllerType supported_ctype = static_cast<ControllerType>(j);
+        if ((controller_mask & BIT_FOR(supported_ctype)) == 0)
+          continue;
+
+        if (!supported_controller_string.IsEmpty())
+          supported_controller_string.AppendString(", ");
+
+        supported_controller_string.AppendString(
+          TranslateString("ControllerType", Settings::GetControllerTypeDisplayName(supported_ctype)));
+      }
+
+      AddFormattedOSDMessage(
+        30.0f,
+        TranslateString("OSDMessage", "Controller in port %u (%s) is not supported for %s.\nSupported controllers: "
+                                      "%s\nPlease configure a supported controller from the list above."),
+        i + 1u, TranslateString("ControllerType", Settings::GetControllerTypeDisplayName(ctype)).GetCharArray(),
+        System::GetRunningTitle().c_str(), supported_controller_string.GetCharArray());
+    }
+  }
+
+#undef BIT_FOR
 }
 
 bool CommonHostInterface::UpdateControllerInputMapFromGameSettings()

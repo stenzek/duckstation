@@ -9,6 +9,8 @@ add_library(frontend-common
   fullscreen_ui.h
   fullscreen_ui_progress_callback.cpp
   fullscreen_ui_progress_callback.h
+  game_database.cpp
+  game_database.h
   game_list.cpp
   game_list.h
   game_settings.cpp

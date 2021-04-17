@@ -2871,6 +2871,14 @@ void DrawGameListWindow()
 
       ImGui::PushFont(g_medium_font);
 
+      // developer
+      if (!selected_entry->developer.empty())
+      {
+        text_width = ImGui::CalcTextSize(selected_entry->developer.c_str(), nullptr, false, work_width).x;
+        ImGui::SetCursorPosX((work_width - text_width) / 2.0f);
+        ImGui::TextWrapped("%s", selected_entry->developer.c_str());
+      }
+
       // code
       text_width = ImGui::CalcTextSize(selected_entry->code.c_str(), nullptr, false, work_width).x;
       ImGui::SetCursorPosX((work_width - text_width) / 2.0f);
@@ -2885,6 +2893,14 @@ void DrawGameListWindow()
       ImGui::SameLine();
       ImGui::Text(" (%s)", Settings::GetDiscRegionDisplayName(selected_entry->region));
 
+      // genre
+      ImGui::Text("Genre: %s", selected_entry->genre.c_str());
+
+      // release date
+      char release_date_str[64];
+      selected_entry->GetReleaseDateString(release_date_str, sizeof(release_date_str));
+      ImGui::Text("Release Date: %s", release_date_str);
+
       // compatibility
       ImGui::TextUnformatted("Compatibility: ");
       ImGui::SameLine();
@@ -2895,9 +2911,6 @@ void DrawGameListWindow()
 
       // size
       ImGui::Text("Size: %.2f MB", static_cast<float>(selected_entry->total_size) / 1048576.0f);
-
-      // TODO: last played
-      ImGui::Text("Last Played: Never");
 
       // game settings
       const u32 user_setting_count = selected_entry->settings.GetUserSettingsCount();

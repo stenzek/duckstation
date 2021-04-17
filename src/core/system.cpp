@@ -414,6 +414,11 @@ std::string GetGameCodeForImage(CDImage* cdi, bool fallback_to_hash)
   if (!fallback_to_hash)
     return {};
 
+  return GetGameHashCodeForImage(cdi);
+}
+
+std::string GetGameHashCodeForImage(CDImage* cdi)
+{
   std::string exe_name;
   std::vector<u8> exe_buffer;
   if (!ReadExecutableFromImage(cdi, &exe_name, &exe_buffer))

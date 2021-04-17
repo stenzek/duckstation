@@ -26,14 +26,11 @@ private Q_SLOTS:
   void onRemoveSearchDirectoryButtonClicked();
   void onScanForNewGamesClicked();
   void onRescanAllGamesClicked();
-  void onUpdateRedumpDatabaseButtonClicked();
 
 protected:
   void resizeEvent(QResizeEvent* event);
 
 private:
-  bool downloadRedumpDatabase(const QString& download_path);
-
   QtHostInterface* m_host_interface;
 
   Ui::GameListSettingsWidget m_ui;

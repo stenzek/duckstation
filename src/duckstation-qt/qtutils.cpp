@@ -58,21 +58,22 @@ ALWAYS_INLINE_RELEASE static void ResizeColumnsForView(T* view, const std::initi
 
   const int min_column_width = header->minimumSectionSize();
   const int max_column_width = header->maximumSectionSize();
-  const int total_width =
-    std::accumulate(widths.begin(), widths.end(), 0, [&min_column_width, &max_column_width](int a, int b) {
-      return a + ((b < 0) ? 0 : std::clamp(b, min_column_width, max_column_width));
-    });
-
   const int scrollbar_width = ((view->verticalScrollBar() && view->verticalScrollBar()->isVisible()) ||
                                view->verticalScrollBarPolicy() == Qt::ScrollBarAlwaysOn) ?
                                 view->verticalScrollBar()->width() :
                                 0;
   int num_flex_items = 0;
+  int total_width = 0;
   int column_index = 0;
   for (const int spec_width : widths)
   {
-    if (spec_width < 0 && !view->isColumnHidden(column_index))
-      num_flex_items++;
+    if (!view->isColumnHidden(column_index))
+    {
+      if (spec_width < 0)
+        num_flex_items++;
+      else
+        total_width += std::max(spec_width, min_column_width);
+    }
 
     column_index++;
   }
@@ -91,7 +92,7 @@ ALWAYS_INLINE_RELEASE static void ResizeColumnsForView(T* view, const std::initi
       continue;
     }
 
-    const int width = spec_width < 0 ? flex_width : spec_width;
+    const int width = spec_width < 0 ? flex_width : (std::max(spec_width, min_column_width));
     view->setColumnWidth(column_index, width);
     column_index++;
   }

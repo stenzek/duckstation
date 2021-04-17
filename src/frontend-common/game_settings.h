@@ -25,7 +25,6 @@ enum class Trait : u32
   DisablePGXPDepthBuffer,
   ForcePGXPVertexCache,
   ForcePGXPCPUMode,
-  DisableAnalogModeForcing,
   ForceRecompilerMemoryExceptions,
   ForceRecompilerICache,
 

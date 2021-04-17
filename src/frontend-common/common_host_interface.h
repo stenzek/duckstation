@@ -15,6 +15,9 @@
 
 class HostDisplayTexture;
 
+class GameList;
+struct GameDatabaseEntry;
+
 class ControllerInterface;
 
 namespace FrontendCommon {
@@ -411,6 +414,7 @@ protected:
   void RecreateSystem() override;
 
   void ApplyGameSettings(bool display_osd_messages);
+  void ApplyControllerCompatibilitySettings(u64 controller_mask, bool display_osd_messages);
 
   bool CreateHostDisplayResources();
   void ReleaseHostDisplayResources();

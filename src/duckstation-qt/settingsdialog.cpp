@@ -93,10 +93,8 @@ void SettingsDialog::setCategoryHelpTexts()
        "console.<br><br>Mouse over an option for additional information.");
   m_category_help_text[static_cast<int>(Category::GameListSettings)] =
     tr("<strong>Game List Settings</strong><hr>The list above shows the directories which will be searched by "
-       "DuckStation "
-       "to populate the game list. Search directories can be added, removed, and switched to recursive/non-recursive. "
-       "Additionally, the redump.org database can be downloaded or updated to provide titles for discs, as the discs "
-       "themselves do not provide title information.");
+       "DuckStation to populate the game list. Search directories can be added, removed, and switched to "
+       "recursive/non-recursive.");
   m_category_help_text[static_cast<int>(Category::HotkeySettings)] = tr(
     "<strong>Hotkey Settings</strong><hr>Binding a hotkey allows you to trigger events such as a resetting or taking "
     "screenshots at the press of a key/controller button. Hotkey titles are self-explanatory. Clicking a binding will "

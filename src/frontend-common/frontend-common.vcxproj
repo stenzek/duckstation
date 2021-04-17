@@ -93,6 +93,7 @@
     <ClCompile Include="dinput_controller_interface.cpp" />
     <ClCompile Include="fullscreen_ui.cpp" />
     <ClCompile Include="fullscreen_ui_progress_callback.cpp" />
+    <ClCompile Include="game_database.cpp" />
     <ClCompile Include="game_list.cpp" />
     <ClCompile Include="game_settings.cpp" />
     <ClCompile Include="http_downloader.cpp" />
@@ -125,6 +126,7 @@
     <ClInclude Include="dinput_controller_interface.h" />
     <ClInclude Include="fullscreen_ui.h" />
     <ClInclude Include="fullscreen_ui_progress_callback.h" />
+    <ClInclude Include="game_database.h" />
     <ClInclude Include="game_list.h" />
     <ClInclude Include="game_settings.h" />
     <ClInclude Include="http_downloader.h" />

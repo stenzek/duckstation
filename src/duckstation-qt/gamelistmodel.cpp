@@ -2,11 +2,14 @@
 #include "common/file_system.h"
 #include "common/string_util.h"
 #include "core/system.h"
+#include <QtCore/QDate>
+#include <QtCore/QDateTime>
 #include <QtGui/QIcon>
 #include <QtGui/QPainter>
 
 static constexpr std::array<const char*, GameListModel::Column_Count> s_column_names = {
-  {"Type", "Code", "Title", "File Title", "Size", "Region", "Compatibility", "Cover"}};
+  {"Type", "Code", "Title", "File Title", "Developer", "Publisher", "Genre", "Year", "Players", "Size", "Region",
+   "Compatibility", "Cover"}};
 
 static constexpr int COVER_ART_WIDTH = 512;
 static constexpr int COVER_ART_HEIGHT = 512;
@@ -164,6 +167,36 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
           return QString::fromUtf8(file_title.data(), static_cast<int>(file_title.length()));
         }
 
+        case Column_Developer:
+          return QString::fromStdString(ge.developer);
+
+        case Column_Publisher:
+          return QString::fromStdString(ge.publisher);
+
+        case Column_Genre:
+          return QString::fromStdString(ge.genre);
+
+        case Column_Year:
+        {
+          if (ge.release_date != 0)
+          {
+            return QStringLiteral("%1").arg(
+              QDateTime::fromSecsSinceEpoch(static_cast<qint64>(ge.release_date), Qt::UTC).date().year());
+          }
+          else
+          {
+            return QString();
+          }
+        }
+
+        case Column_Players:
+        {
+          if (ge.min_players == ge.max_players)
+            return QStringLiteral("%1").arg(ge.min_players);
+          else
+            return QStringLiteral("%1-%2").arg(ge.min_players).arg(ge.max_players);
+        }
+
         case Column_Size:
           return QString("%1 MB").arg(static_cast<double>(ge.total_size) / 1048576.0, 0, 'f', 2);
 
@@ -199,6 +232,21 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
           const std::string_view file_title(FileSystem::GetFileTitleFromPath(ge.path));
           return QString::fromUtf8(file_title.data(), static_cast<int>(file_title.length()));
         }
+
+        case Column_Developer:
+          return QString::fromStdString(ge.developer);
+
+        case Column_Publisher:
+          return QString::fromStdString(ge.publisher);
+
+        case Column_Genre:
+          return QString::fromStdString(ge.genre);
+
+        case Column_Year:
+          return QDateTime::fromSecsSinceEpoch(static_cast<qint64>(ge.release_date), Qt::UTC).date().year();
+
+        case Column_Players:
+          return static_cast<int>(ge.max_players);
 
         case Column_Region:
           return static_cast<int>(ge.region);
@@ -422,6 +470,11 @@ void GameListModel::setColumnDisplayNames()
   m_column_display_names[Column_Code] = tr("Code");
   m_column_display_names[Column_Title] = tr("Title");
   m_column_display_names[Column_FileTitle] = tr("File Title");
+  m_column_display_names[Column_Developer] = tr("Developer");
+  m_column_display_names[Column_Publisher] = tr("Publisher");
+  m_column_display_names[Column_Genre] = tr("Genre");
+  m_column_display_names[Column_Year] = tr("Year");
+  m_column_display_names[Column_Players] = tr("Players");
   m_column_display_names[Column_Size] = tr("Size");
   m_column_display_names[Column_Region] = tr("Region");
   m_column_display_names[Column_Compatibility] = tr("Compatibility");
