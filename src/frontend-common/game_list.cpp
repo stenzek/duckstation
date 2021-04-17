@@ -627,7 +627,9 @@ void GameList::Refresh(bool invalidate_cache, bool invalidate_database, Progress
   // don't need unused cache entries
   CloseCacheFileStream();
   m_cache_map.clear();
-  m_database.Unload();
+
+  // we don't need to keep the db around anymore, it's quick enough to re-parse if needed anyway
+  ClearDatabase();
 }
 
 void GameList::UpdateCompatibilityEntry(GameListCompatibilityEntry new_entry, bool save_to_list /*= true*/)
