@@ -323,7 +323,7 @@
 	<string name="controller_auto_mapping_select_device">Выбор устройства</string>
 	<string name="controller_auto_mapping_results">Результаты автонастройки</string>
 	<string name="main_activity_empty_game_list_title">Игры не найдены. Пожалуйста, добавьте каталог с играми или выберите файл вручную.</string>
-	<string name="main_activity_empty_game_list_supported_formats">Поддерживаемые форматы: %s</string>
+	<string name="main_activity_empty_game_list_supported_formats">Поддерживаемые форматы:\n\n%s\n\nДля запуска игр в формате bin требуется файл разметки (.cue).</string>
 	<string name="main_activity_empty_game_list_add_directory">Добавить каталог с играми</string>
 	<string name="main_activity_empty_game_list_start_file">Открыть файл</string>
 	<string name="update_notes_title">Примечание к обновлению</string>
