@@ -122,7 +122,7 @@ bool GameList::GetPsfListEntry(const char* path, GameListEntry* entry)
   entry->code.clear();
   entry->path = path;
   entry->region = file.GetRegion();
-  entry->total_size = ffd.Size;
+  entry->total_size = static_cast<u32>(file.GetProgramData().size());
   entry->last_modified_time = ffd.ModificationTime.AsUnixTimestamp();
   entry->type = GameListEntryType::PSF;
   entry->compatibility_rating = GameListCompatibilityRating::Unknown;

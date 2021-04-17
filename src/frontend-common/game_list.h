@@ -1,7 +1,7 @@
 #pragma once
 #include "core/types.h"
-#include "game_settings.h"
 #include "game_database.h"
+#include "game_settings.h"
 #include <memory>
 #include <optional>
 #include <string>
@@ -37,8 +37,8 @@ enum class GameListCompatibilityRating
 
 struct GameListEntry
 {
-  GameListEntryType type;
-  DiscRegion region;
+  GameListEntryType type = GameListEntryType::Disc;
+  DiscRegion region = DiscRegion::Other;
 
   std::string path;
   std::string code;
@@ -46,17 +46,17 @@ struct GameListEntry
   std::string genre;
   std::string publisher;
   std::string developer;
-  u64 total_size;
-  u64 last_modified_time;
+  u64 total_size = 0;
+  u64 last_modified_time = 0;
 
-  u64 release_date;
-  u32 supported_controllers;
-  u8 min_players;
-  u8 max_players;
-  u8 min_blocks;
-  u8 max_blocks;
+  u64 release_date = 0;
+  u32 supported_controllers = ~static_cast<u32>(0);
+  u8 min_players = 1;
+  u8 max_players = 1;
+  u8 min_blocks = 0;
+  u8 max_blocks = 0;
 
-  GameListCompatibilityRating compatibility_rating;
+  GameListCompatibilityRating compatibility_rating = GameListCompatibilityRating::Unknown;
   GameSettings::Entry settings;
 
   size_t GetReleaseDateString(char* buffer, size_t buffer_size) const;
@@ -69,8 +69,8 @@ struct GameListCompatibilityEntry
   std::string version_tested;
   std::string upscaling_issues;
   std::string comments;
-  DiscRegion region;
-  GameListCompatibilityRating compatibility_rating;
+  DiscRegion region = DiscRegion::Other;
+  GameListCompatibilityRating compatibility_rating = GameListCompatibilityRating::Unknown;
 };
 
 class GameList

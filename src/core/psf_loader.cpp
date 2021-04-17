@@ -59,27 +59,16 @@ float File::GetTagFloat(const char* tag_name, float default_value) const
 
 bool File::Load(const char* path)
 {
-  auto fp = FileSystem::OpenManagedCFile(path, "rb");
-  if (!fp)
+  std::optional<std::vector<u8>> file_data(FileSystem::ReadBinaryFile(path));
+  if (!file_data.has_value() || file_data->empty())
   {
-    Log_ErrorPrintf("Failed to open PSF file '%s'", path);
+    Log_ErrorPrintf("Failed to open/read PSF file '%s'", path);
     return false;
   }
 
-  // we could mmap this instead
-  std::fseek(fp.get(), 0, SEEK_END);
-  const u32 file_size = static_cast<u32>(std::ftell(fp.get()));
-  std::fseek(fp.get(), 0, SEEK_SET);
-
-  std::vector<u8> file_data(file_size);
-  if (std::fread(file_data.data(), 1, file_size, fp.get()) != file_size)
-  {
-    Log_ErrorPrintf("Failed to read data from PSF '%s'", path);
-    return false;
-  }
-
-  const u8* file_pointer = file_data.data();
-  const u8* file_pointer_end = file_data.data() + file_data.size();
+  const u8* file_pointer = file_data->data();
+  const u8* file_pointer_end = file_data->data() + file_data->size();
+  const u32 file_size = static_cast<u32>(file_data->size());
 
   PSFHeader header;
   std::memcpy(&header, file_pointer, sizeof(header));
