@@ -441,7 +441,49 @@ bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& r
         return titlesLessThan(left_row, right_row, ascending);
 
       return ascending ? (left.total_size < right.total_size) : (right.total_size > left.total_size);
+    }  
+    
+    case Column_Genre:
+    {
+      if (left.genre == right.genre)
+        return titlesLessThan(left_row, right_row, ascending);
+      return ascending ? (StringUtil::Strcasecmp(left.genre.c_str(), right.genre.c_str()) < 0) :
+                         (StringUtil::Strcasecmp(right.genre.c_str(), left.genre.c_str()) > 0);
     }
+    
+    case Column_Developer:
+    {
+      if (left.developer == right.developer)
+        return titlesLessThan(left_row, right_row, ascending);
+      return ascending ? (StringUtil::Strcasecmp(left.developer.c_str(), right.developer.c_str()) < 0) :
+                         (StringUtil::Strcasecmp(right.developer.c_str(), left.developer.c_str()) > 0);
+    }   
+
+    case Column_Publisher:
+    {
+      if (left.publisher == right.publisher)
+        return titlesLessThan(left_row, right_row, ascending);
+      return ascending ? (StringUtil::Strcasecmp(left.publisher.c_str(), right.publisher.c_str()) < 0) :
+                         (StringUtil::Strcasecmp(right.publisher.c_str(), left.publisher.c_str()) > 0);
+    }
+
+    case Column_Year:
+    {
+      if (left.release_date == right.release_date)
+        return titlesLessThan(left_row, right_row, ascending);
+
+      return ascending ? (left.release_date < right.release_date) : (right.release_date > left.release_date);
+    }   
+
+    case Column_Players:
+    {
+      u8 left_players = (left.min_players << 4 ) + left.max_players;
+      u8 right_players = (right.min_players << 4 ) + right.max_players;
+      if (left_players == right_players)
+        return titlesLessThan(left_row, right_row, ascending);
+
+      return ascending ? (left_players < right_players) : (right_players > left_players);
+    }    
 
     default:
       return false;
