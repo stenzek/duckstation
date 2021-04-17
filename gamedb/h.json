@@ -6,8 +6,8 @@
    "SLES-02738"
   ],
   "languages": [
-   "German",
-   "English"
+   "English",
+   "German"
   ],
   "publisher": "Acclaim",
   "developer": "Osiris Software Design Studios, Inc",
@@ -31,6 +31,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -65,6 +66,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -371,6 +373,7 @@
   "multitap": true,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -500,6 +503,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -525,6 +529,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -1157,6 +1162,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -1242,6 +1248,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -1681,8 +1688,8 @@
    "SLPS-01484"
   ],
   "languages": [
-   "Japanese",
-   "English"
+   "English",
+   "Japanese"
   ],
   "publisher": "Siege",
   "developer": "Cryo Interactive Entertainment",
@@ -1738,6 +1745,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -1748,9 +1756,9 @@
    "SLES-01539"
   ],
   "languages": [
-   "German",
+   "English",
    "French",
-   "English"
+   "German"
   ],
   "publisher": "Sunsoft",
   "developer": "Sunsoft",
@@ -1958,6 +1966,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -2028,9 +2037,9 @@
    "SLES-00261"
   ],
   "languages": [
-   "German",
+   "English",
    "French",
-   "English"
+   "German"
   ],
   "publisher": "Gremlin Interactive",
   "developer": "Gremlin Interactive",
@@ -2148,9 +2157,9 @@
    "SLES-03972"
   ],
   "languages": [
-   "German",
+   "English",
    "French",
-   "English"
+   "German"
   ],
   "publisher": "Electronic Arts",
   "developer": "Argonaut Games",
@@ -2182,8 +2191,8 @@
   ],
   "languages": [
    "Danish",
-   "English",
-   "Dutch"
+   "Dutch",
+   "English"
   ],
   "publisher": "Electronic Arts",
   "developer": "Argonaut Games",
@@ -2214,9 +2223,9 @@
    "SLES-03973"
   ],
   "languages": [
-   "Spanish",
+   "Italian",
    "Portuguese",
-   "Italian"
+   "Spanish"
   ],
   "publisher": "Electronic Arts",
   "developer": "Argonaut Games",
@@ -2247,9 +2256,9 @@
    "SLES-03975"
   ],
   "languages": [
-   "Swedish",
+   "English",
    "Norwegian",
-   "English"
+   "Swedish"
   ],
   "publisher": "Electronic Arts",
   "developer": "Argonaut Games",
@@ -2280,9 +2289,9 @@
    "SLUS-01503"
   ],
   "languages": [
-   "Spanish",
+   "English",
    "French",
-   "English"
+   "Spanish"
   ],
   "publisher": "Electronic Arts",
   "developer": "Argonaut Games",
@@ -2326,9 +2335,9 @@
    "SLES-03662"
   ],
   "languages": [
-   "German",
+   "English",
    "French",
-   "English"
+   "German"
   ],
   "publisher": "Electronic Arts",
   "developer": "Argonaut Games",
@@ -2360,8 +2369,8 @@
   ],
   "languages": [
    "Danish",
-   "English",
-   "Dutch"
+   "Dutch",
+   "English"
   ],
   "publisher": "Electronic Arts",
   "developer": "Argonaut Games",
@@ -2392,9 +2401,9 @@
    "SLES-03663"
   ],
   "languages": [
-   "Spanish",
+   "Italian",
    "Portuguese",
-   "Italian"
+   "Spanish"
   ],
   "publisher": "Electronic Arts",
   "developer": "Argonaut Games",
@@ -2425,9 +2434,9 @@
    "SLES-03664"
   ],
   "languages": [
-   "Swedish",
+   "Finnish",
    "Norwegian",
-   "Finnish"
+   "Swedish"
   ],
   "publisher": "Electronic Arts",
   "developer": "Argonaut Games",
@@ -2458,9 +2467,9 @@
    "SLUS-01415"
   ],
   "languages": [
-   "Spanish",
+   "English",
    "French",
-   "English"
+   "Spanish"
   ],
   "publisher": "Electronic Arts",
   "developer": "Argonaut Games",
@@ -2720,6 +2729,7 @@
   "multitap": true,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -2751,6 +2761,7 @@
   "multitap": true,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -2776,6 +2787,7 @@
   "multitap": true,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -3102,6 +3114,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -3140,6 +3153,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -4117,6 +4131,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -4147,6 +4162,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -4181,6 +4197,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -4211,6 +4228,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -4245,6 +4263,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -4275,6 +4294,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -4305,6 +4325,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -4501,9 +4522,9 @@
    "SLES-01562"
   ],
   "languages": [
-   "German",
+   "English",
    "French",
-   "English"
+   "German"
   ],
   "publisher": "Konami",
   "developer": "Atlus",
@@ -4610,6 +4631,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -5072,8 +5094,8 @@
    "SLES-04124"
   ],
   "languages": [
-   "German",
-   "English"
+   "English",
+   "German"
   ],
   "publisher": "Phoenix Games",
   "developer": "The Code Monkeys Ltd.",
@@ -5093,6 +5115,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -5640,10 +5663,10 @@
    "SLES-00115"
   ],
   "languages": [
-   "Spanish",
-   "German",
+   "English",
    "French",
-   "English"
+   "German",
+   "Spanish"
   ],
   "publisher": "Electronic Arts",
   "developer": "Bullfrog Productions Ltd",
@@ -5854,11 +5877,11 @@
    "SLES-03602"
   ],
   "languages": [
-   "Spanish",
-   "German",
-   "French",
    "English",
-   "Italian"
+   "French",
+   "German",
+   "Italian",
+   "Spanish"
   ],
   "publisher": "Take-Two Interactive Software, Inc",
   "developer": "Illusion Softworks, a.s",
@@ -5878,6 +5901,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -8581,8 +8605,8 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
-   "NamcoGuncon",
-   "DigitalController"
+   "DigitalController",
+   "NamcoGuncon"
   ]
  },
  {
@@ -8671,6 +8695,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -8701,6 +8726,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -8833,6 +8859,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -8906,6 +8933,7 @@
   "multitap": true,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -9550,8 +9578,8 @@
    "SLES-01591"
   ],
   "languages": [
-   "Portuguese",
-   "Dutch"
+   "Dutch",
+   "Portuguese"
   ],
   "publisher": "ITE Media",
   "developer": "ITE Media",
@@ -9735,8 +9763,8 @@
    "SLES-01592"
   ],
   "languages": [
-   "Finnish",
-   "Danish"
+   "Danish",
+   "Finnish"
   ],
   "publisher": "ITE Media",
   "developer": "ITE Media",
@@ -9782,8 +9810,8 @@
    "SLES-01593"
   ],
   "languages": [
-   "Swedish",
-   "Norwegian"
+   "Norwegian",
+   "Swedish"
   ],
   "publisher": "ITE Media",
   "developer": "ITE Media",
@@ -9875,9 +9903,9 @@
    "SLES-03487"
   ],
   "languages": [
-   "Swedish",
+   "English",
    "Finnish",
-   "English"
+   "Swedish"
   ],
   "publisher": "ITE Media",
   "developer": "ITE Media",
@@ -9908,9 +9936,9 @@
    "SLES-03514"
   ],
   "languages": [
-   "Spanish",
+   "Italian",
    "Portuguese",
-   "Italian"
+   "Spanish"
   ],
   "publisher": "ITE Media",
   "developer": "ITE Media",
@@ -9941,9 +9969,9 @@
    "SLES-03513"
   ],
   "languages": [
-   "German",
+   "Dutch",
    "French",
-   "Dutch"
+   "German"
   ],
   "publisher": "ITE Media",
   "developer": "ITE Media",
@@ -9987,17 +10015,17 @@
    "SLES-03686"
   ],
   "languages": [
-   "Swedish",
-   "Norwegian",
-   "French",
    "Danish",
-   "Spanish",
-   "Portuguese",
-   "German",
    "Dutch",
-   "Finnish",
    "English",
-   "Italian"
+   "Finnish",
+   "French",
+   "German",
+   "Italian",
+   "Norwegian",
+   "Portuguese",
+   "Spanish",
+   "Swedish"
   ],
   "publisher": "ITE Media",
   "developer": "ITE Media",
@@ -10099,9 +10127,9 @@
    "SLES-03836"
   ],
   "languages": [
-   "Polish",
    "Danish",
-   "English"
+   "English",
+   "Polish"
   ],
   "publisher": "ITE Media",
   "developer": "ITE Media",
@@ -10132,9 +10160,9 @@
    "SLES-03839"
   ],
   "languages": [
-   "Spanish",
+   "Italian",
    "Portuguese",
-   "Italian"
+   "Spanish"
   ],
   "publisher": "ITE Media",
   "developer": "ITE Media",
@@ -10165,9 +10193,9 @@
    "SLES-03838"
   ],
   "languages": [
-   "German",
+   "Dutch",
    "French",
-   "Dutch"
+   "German"
   ],
   "publisher": "ITE Media",
   "developer": "ITE Media",
@@ -10198,9 +10226,9 @@
    "SLES-03837"
   ],
   "languages": [
-   "Swedish",
+   "Finnish",
    "Norwegian",
-   "Finnish"
+   "Swedish"
   ],
   "publisher": "ITE Media",
   "developer": "ITE Media",
@@ -10231,8 +10259,8 @@
    "SLUS-01559"
   ],
   "languages": [
-   "Spanish",
-   "English"
+   "English",
+   "Spanish"
   ],
   "publisher": "XS Media",
   "developer": "ITE Media",
@@ -10263,16 +10291,16 @@
    "SLES-02590"
   ],
   "languages": [
-   "Swedish",
-   "Norwegian",
-   "French",
-   "Spanish",
-   "German",
-   "Polish",
    "Dutch",
-   "Finnish",
    "English",
-   "Italian"
+   "Finnish",
+   "French",
+   "German",
+   "Italian",
+   "Norwegian",
+   "Polish",
+   "Spanish",
+   "Swedish"
   ],
   "publisher": "ITE Media",
   "developer": "ITE Media",
@@ -10303,9 +10331,9 @@
    "SLES-03573"
   ],
   "languages": [
-   "Polish",
+   "Dutch",
    "French",
-   "Dutch"
+   "Polish"
   ],
   "publisher": "ITE Media",
   "developer": "ITE Media",
@@ -11106,9 +11134,9 @@
    "SLES-02958"
   ],
   "languages": [
-   "German",
+   "English",
    "French",
-   "English"
+   "German"
   ],
   "publisher": "Midas Interactive",
   "developer": "The Code Monkeys Ltd.",
@@ -11128,6 +11156,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -11205,6 +11234,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -11266,6 +11296,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -11343,6 +11374,7 @@
   "multitap": true,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -11514,8 +11546,8 @@
    "SLES-02337"
   ],
   "languages": [
-   "French",
-   "English"
+   "English",
+   "French"
   ],
   "publisher": "Midway",
   "developer": "Blue Shift, Inc",
@@ -11962,6 +11994,7 @@
   "multitap": true,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -13194,6 +13227,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -13224,6 +13258,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -13254,6 +13289,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  }

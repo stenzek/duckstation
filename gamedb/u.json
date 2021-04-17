@@ -161,10 +161,10 @@
    "SLES-02806"
   ],
   "languages": [
-   "German",
-   "French",
+   "Dutch",
    "English",
-   "Dutch"
+   "French",
+   "German"
   ],
   "publisher": "Infogrames",
   "developer": "Infogrames",
@@ -195,10 +195,10 @@
    "SLES-02807"
   ],
   "languages": [
-   "Spanish",
    "French",
+   "Italian",
    "Portuguese",
-   "Italian"
+   "Spanish"
   ],
   "publisher": "Infogrames",
   "developer": "Infogrames",
@@ -989,12 +989,12 @@
    "SLES-01733"
   ],
   "languages": [
-   "Spanish",
-   "German",
    "Dutch",
-   "French",
    "English",
-   "Italian"
+   "French",
+   "German",
+   "Italian",
+   "Spanish"
   ],
   "publisher": "Infogrames",
   "developer": "Rage Software",
@@ -1014,6 +1014,7 @@
   "multitap": true,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -1075,6 +1076,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -1100,6 +1102,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -1135,10 +1138,10 @@
    "SLES-03810"
   ],
   "languages": [
-   "German",
-   "French",
+   "Dutch",
    "English",
-   "Dutch"
+   "French",
+   "German"
   ],
   "publisher": "Davilex",
   "developer": "Davilex",
@@ -1169,9 +1172,9 @@
    "SLES-00722"
   ],
   "languages": [
-   "German",
+   "English",
    "French",
-   "English"
+   "German"
   ],
   "publisher": "Cryo Interactive Entertainment",
   "developer": "Smart Dog",
@@ -1268,6 +1271,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -2078,6 +2082,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -2160,6 +2165,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -2462,8 +2468,8 @@
    "SCPS-45391"
   ],
   "languages": [
-   "Japanese",
-   "English"
+   "English",
+   "Japanese"
   ],
   "publisher": "Sony",
   "developer": "NanaOn-Sha",
@@ -2489,11 +2495,11 @@
    "SCES-01753"
   ],
   "languages": [
-   "Spanish",
-   "German",
-   "French",
    "English",
-   "Italian"
+   "French",
+   "German",
+   "Italian",
+   "Spanish"
   ],
   "publisher": "Sony",
   "developer": "NanaOn-Sha",
@@ -2525,8 +2531,8 @@
    "SCPS-91226"
   ],
   "languages": [
-   "Japanese",
-   "English"
+   "English",
+   "Japanese"
   ],
   "publisher": "Sony",
   "developer": "NanaOn-Sha",
@@ -2601,8 +2607,8 @@
    "SCPS-91325"
   ],
   "languages": [
-   "Japanese",
-   "English"
+   "English",
+   "Japanese"
   ],
   "publisher": "Sony",
   "developer": "NanaOn-Sha",
@@ -2925,6 +2931,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -2948,11 +2955,11 @@
    "SLES-01300"
   ],
   "languages": [
-   "Spanish",
-   "German",
-   "French",
    "English",
-   "Italian"
+   "French",
+   "German",
+   "Italian",
+   "Spanish"
   ],
   "publisher": "Eidos Interactive",
   "developer": "Toys for Bob",
@@ -2972,6 +2979,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -3002,6 +3010,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -3448,6 +3457,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -3478,6 +3488,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -3508,6 +3519,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -3538,6 +3550,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -3568,6 +3581,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -3602,6 +3616,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -3695,9 +3710,9 @@
    "SLES-02071"
   ],
   "languages": [
-   "Spanish",
    "English",
-   "Italian"
+   "Italian",
+   "Spanish"
   ],
   "publisher": "Proein Software / Eidos Interactive",
   "developer": "Mucky Foot",

@@ -6,13 +6,13 @@
    "SCES-01556"
   ],
   "languages": [
-   "Swedish",
+   "English",
+   "French",
+   "German",
+   "Italian",
    "Norwegian",
    "Spanish",
-   "German",
-   "French",
-   "English",
-   "Italian"
+   "Swedish"
   ],
   "publisher": "Konami",
   "developer": "Radical Entertainment",
@@ -222,12 +222,12 @@
    "SLES-03433"
   ],
   "languages": [
-   "Spanish",
-   "Portuguese",
-   "German",
-   "French",
    "English",
-   "Italian"
+   "French",
+   "German",
+   "Italian",
+   "Portuguese",
+   "Spanish"
   ],
   "publisher": "Microids",
   "developer": "Titus Software Corp.",
@@ -497,11 +497,11 @@
    "SLES-00054"
   ],
   "languages": [
-   "Spanish",
-   "German",
-   "French",
    "English",
-   "Italian"
+   "French",
+   "German",
+   "Italian",
+   "Spanish"
   ],
   "publisher": "MicroProse Software, Inc",
   "developer": "MicroProse Software, Inc",
@@ -661,11 +661,11 @@
    "SLES-00077"
   ],
   "languages": [
-   "Spanish",
-   "German",
-   "French",
    "English",
-   "Italian"
+   "French",
+   "German",
+   "Italian",
+   "Spanish"
   ],
   "publisher": "MicroProse Software, Inc",
   "developer": "MicroProse Software, Inc",
@@ -2551,6 +2551,7 @@
   "multitap": false,
   "linkCable": true,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -2724,6 +2725,7 @@
   "multitap": true,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -2749,6 +2751,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -2882,6 +2885,7 @@
   "multitap": true,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -3034,6 +3038,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -3073,11 +3078,11 @@
    "SLES-04101"
   ],
   "languages": [
-   "Spanish",
-   "German",
-   "French",
    "English",
-   "Italian"
+   "French",
+   "German",
+   "Italian",
+   "Spanish"
   ],
   "publisher": "XS Games",
   "developer": "Miracle Designs",
@@ -3159,6 +3164,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -3189,6 +3195,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -3199,11 +3206,11 @@
    "SLES-04120"
   ],
   "languages": [
-   "Spanish",
-   "German",
-   "French",
    "English",
-   "Italian"
+   "French",
+   "German",
+   "Italian",
+   "Spanish"
   ],
   "publisher": "XS Games",
   "developer": "Wahoo Studios",
@@ -3223,6 +3230,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -3253,6 +3261,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -3263,11 +3272,11 @@
    "SLES-04095"
   ],
   "languages": [
-   "Spanish",
-   "German",
-   "French",
    "English",
-   "Italian"
+   "French",
+   "German",
+   "Italian",
+   "Spanish"
   ],
   "publisher": "XS Games LLC",
   "developer": "Interactive Entertainment / Bubble Boy Limited",
@@ -3568,6 +3577,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -3598,6 +3608,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -3628,6 +3639,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -3658,6 +3670,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -3688,6 +3701,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },

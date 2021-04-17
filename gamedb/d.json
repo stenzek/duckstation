@@ -556,11 +556,11 @@
    "SLES-01040"
   ],
   "languages": [
-   "Spanish",
-   "German",
-   "French",
    "English",
-   "Italian"
+   "French",
+   "German",
+   "Italian",
+   "Spanish"
   ],
   "publisher": "GT Interactive",
   "developer": "Rage Software",
@@ -658,6 +658,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -989,6 +990,7 @@
   "multitap": true,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -1014,6 +1016,7 @@
   "multitap": true,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -1134,6 +1137,7 @@
   "multitap": true,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -1563,6 +1567,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -1593,6 +1598,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -1797,9 +1803,9 @@
    "SLES-04061"
   ],
   "languages": [
-   "German",
+   "English",
    "French",
-   "English"
+   "German"
   ],
   "publisher": "Midas Interactive",
   "developer": "The Code Monkeys",
@@ -1819,6 +1825,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -1829,10 +1836,10 @@
    "SLES-02959"
   ],
   "languages": [
-   "German",
-   "French",
+   "Dutch",
    "English",
-   "Dutch"
+   "French",
+   "German"
   ],
   "publisher": "Midas Interactive",
   "developer": "The Code Monkeys",
@@ -1852,6 +1859,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -3067,12 +3075,12 @@
    "SLES-04129"
   ],
   "languages": [
-   "Spanish",
-   "Portuguese",
-   "German",
    "Dutch",
    "French",
-   "Italian"
+   "German",
+   "Italian",
+   "Portuguese",
+   "Spanish"
   ],
   "publisher": "Big Ben Interactive",
   "developer": "Broadsword Interactive",
@@ -3554,6 +3562,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -3564,11 +3573,11 @@
    "SLES-04163"
   ],
   "languages": [
-   "Spanish",
-   "German",
-   "French",
    "English",
-   "Italian"
+   "French",
+   "German",
+   "Italian",
+   "Spanish"
   ],
   "publisher": "Konami",
   "developer": "KCET",
@@ -3588,6 +3597,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -3618,6 +3628,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -3696,6 +3707,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -4156,8 +4168,8 @@
    "SLPS-00789"
   ],
   "languages": [
-   "Japanese",
-   "English"
+   "English",
+   "Japanese"
   ],
   "publisher": "KOEI",
   "developer": "KOEI",
@@ -4187,8 +4199,8 @@
    "SLPS-00773"
   ],
   "languages": [
-   "Japanese",
-   "English"
+   "English",
+   "Japanese"
   ],
   "publisher": "KOEI",
   "developer": "KOEI",
@@ -4303,6 +4315,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -4313,12 +4326,12 @@
    "SLES-00663"
   ],
   "languages": [
-   "Swedish",
-   "Spanish",
-   "German",
-   "French",
    "English",
-   "Italian"
+   "French",
+   "German",
+   "Italian",
+   "Spanish",
+   "Swedish"
   ],
   "publisher": "Electronic Arts",
   "developer": "Rage Software",
@@ -4352,12 +4365,12 @@
    "SLUS-00457"
   ],
   "languages": [
-   "Swedish",
-   "Spanish",
-   "German",
-   "French",
    "English",
-   "Italian"
+   "French",
+   "German",
+   "Italian",
+   "Spanish",
+   "Swedish"
   ],
   "publisher": "Electronic Arts",
   "developer": "Rage Software",
@@ -4391,8 +4404,8 @@
    "SLPS-00108"
   ],
   "languages": [
-   "Japanese",
-   "English"
+   "English",
+   "Japanese"
   ],
   "publisher": "GaGa Communications",
   "developer": "Cyberdreams",
@@ -4993,11 +5006,11 @@
    "SLES-00612"
   ],
   "languages": [
-   "Spanish",
-   "German",
-   "French",
    "English",
-   "Italian"
+   "French",
+   "German",
+   "Italian",
+   "Spanish"
   ],
   "publisher": "Electronic Arts",
   "developer": "Delphine Software International",
@@ -5440,6 +5453,7 @@
   "multitap": true,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -5450,10 +5464,10 @@
    "SLES-03682"
   ],
   "languages": [
-   "Spanish",
-   "German",
    "French",
-   "Italian"
+   "German",
+   "Italian",
+   "Spanish"
   ],
   "publisher": "Rage Software",
   "developer": "Rage Software",
@@ -5473,6 +5487,7 @@
   "multitap": true,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -5503,6 +5518,7 @@
   "multitap": true,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -5595,6 +5611,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -5625,6 +5642,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -6727,8 +6745,8 @@
    "SLPS-01817"
   ],
   "languages": [
-   "Japanese",
-   "English"
+   "English",
+   "Japanese"
   ],
   "publisher": "Sammy Studios",
   "developer": "Sammy Studios",
@@ -7435,6 +7453,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -7597,11 +7616,11 @@
    "SLES-03890"
   ],
   "languages": [
-   "Spanish",
-   "German",
-   "French",
    "English",
-   "Italian"
+   "French",
+   "German",
+   "Italian",
+   "Spanish"
   ],
   "publisher": "Novalogic",
   "developer": "Rebellion",
@@ -7694,9 +7713,9 @@
    "SLUS-01429"
   ],
   "languages": [
-   "Spanish",
+   "English",
    "French",
-   "English"
+   "Spanish"
   ],
   "publisher": "Novalogic",
   "developer": "Rebellion",
@@ -9003,11 +9022,11 @@
    "SLES-02018"
   ],
   "languages": [
-   "Spanish",
-   "German",
-   "French",
    "English",
-   "Italian"
+   "French",
+   "German",
+   "Italian",
+   "Spanish"
   ],
   "publisher": "Infogrames / Accolade",
   "developer": "Pitbull Syndicate",
@@ -11478,6 +11497,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -12577,11 +12597,11 @@
    "SCES-02060"
   ],
   "languages": [
-   "Spanish",
-   "German",
-   "French",
    "English",
-   "Italian"
+   "French",
+   "German",
+   "Italian",
+   "Spanish"
   ],
   "publisher": "Psygnosis",
   "developer": "Studio 33 Ltd",
@@ -12909,9 +12929,9 @@
    "SLES-04130"
   ],
   "languages": [
-   "German",
+   "English",
    "French",
-   "English"
+   "German"
   ],
   "publisher": "Phoenix Games",
   "developer": "The Code Monkeys Ltd",
@@ -12931,6 +12951,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -12975,11 +12996,11 @@
    "SCES-01312"
   ],
   "languages": [
-   "Spanish",
-   "German",
-   "French",
    "English",
-   "Italian"
+   "French",
+   "German",
+   "Italian",
+   "Spanish"
   ],
   "publisher": "THQ",
   "developer": "Shift",
@@ -13043,6 +13064,7 @@
   "multitap": true,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -13117,6 +13139,7 @@
   "multitap": true,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -13250,9 +13273,9 @@
    "SLES-00848"
   ],
   "languages": [
-   "German",
+   "English",
    "French",
-   "English"
+   "German"
   ],
   "publisher": "Sunsoft / Tecmo",
   "developer": "Tecmo",
@@ -13363,8 +13386,8 @@
    "SLES-03829"
   ],
   "languages": [
-   "German",
-   "French"
+   "French",
+   "German"
   ],
   "publisher": "BAM! Entertainment",
   "developer": "Red Lemon Studios",
@@ -13564,10 +13587,10 @@
    "SLES-01156"
   ],
   "languages": [
-   "Swedish",
-   "German",
+   "English",
    "French",
-   "English"
+   "German",
+   "Swedish"
   ],
   "publisher": "Electronic Arts / Blizzard Entertaiment",
   "developer": "Climax Group",
@@ -13627,10 +13650,10 @@
    "SLUS-00619"
   ],
   "languages": [
-   "Swedish",
-   "German",
+   "English",
    "French",
-   "English"
+   "German",
+   "Swedish"
   ],
   "publisher": "Electronic Arts / Blizzard Entertaiment",
   "developer": "Climax Group",
@@ -13716,12 +13739,12 @@
    "SLES-00445"
   ],
   "languages": [
-   "Swedish",
-   "Spanish",
-   "German",
-   "French",
    "English",
-   "Italian"
+   "French",
+   "German",
+   "Italian",
+   "Spanish",
+   "Swedish"
   ],
   "publisher": "Fox Interactive / Electronic Arts",
   "developer": "Probe Entertainment Limited",
@@ -14080,8 +14103,8 @@
   "linkCable": false,
   "controllers": [
    "AnalogController",
-   "NamcoGuncon",
-   "DigitalController"
+   "DigitalController",
+   "NamcoGuncon"
   ]
  },
  {
@@ -14112,8 +14135,8 @@
   "linkCable": false,
   "controllers": [
    "AnalogController",
-   "NamcoGuncon",
-   "DigitalController"
+   "DigitalController",
+   "NamcoGuncon"
   ]
  },
  {
@@ -14144,8 +14167,8 @@
   "linkCable": false,
   "controllers": [
    "AnalogController",
-   "NamcoGuncon",
-   "DigitalController"
+   "DigitalController",
+   "NamcoGuncon"
   ]
  },
  {
@@ -14176,8 +14199,8 @@
   "linkCable": false,
   "controllers": [
    "AnalogController",
-   "NamcoGuncon",
-   "DigitalController"
+   "DigitalController",
+   "NamcoGuncon"
   ]
  },
  {
@@ -14208,8 +14231,8 @@
   "linkCable": false,
   "controllers": [
    "AnalogController",
-   "NamcoGuncon",
-   "DigitalController"
+   "DigitalController",
+   "NamcoGuncon"
   ]
  },
  {
@@ -14234,6 +14257,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -14259,6 +14283,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -14381,6 +14406,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -14411,6 +14437,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -14421,11 +14448,11 @@
    "SLES-03841"
   ],
   "languages": [
-   "Spanish",
-   "German",
-   "French",
    "English",
-   "Italian"
+   "French",
+   "German",
+   "Italian",
+   "Spanish"
   ],
   "publisher": "Bandai",
   "developer": "Bandai",
@@ -14697,11 +14724,11 @@
    "SLES-03936"
   ],
   "languages": [
-   "Spanish",
-   "German",
-   "French",
    "English",
-   "Italian"
+   "French",
+   "German",
+   "Italian",
+   "Spanish"
   ],
   "publisher": "Bandai",
   "developer": "Bandai",
@@ -14843,6 +14870,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -14903,6 +14931,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -14933,6 +14962,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -15786,12 +15816,12 @@
    "SLES-03989"
   ],
   "languages": [
-   "Spanish",
-   "German",
    "Dutch",
-   "French",
    "English",
-   "Italian"
+   "French",
+   "German",
+   "Italian",
+   "Spanish"
   ],
   "publisher": "LSP",
   "developer": "Similis",
@@ -15850,9 +15880,9 @@
    "SLES-04063"
   ],
   "languages": [
-   "German",
+   "English",
    "French",
-   "English"
+   "German"
   ],
   "publisher": "Phoenix Games",
   "developer": "The Code Monkeys",
@@ -15872,6 +15902,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -16021,6 +16052,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -16046,6 +16078,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -16113,9 +16146,9 @@
    "SLES-00793"
   ],
   "languages": [
-   "Spanish",
    "English",
-   "Italian"
+   "Italian",
+   "Spanish"
   ],
   "publisher": "Psygnosis",
   "developer": "Perfect Entertainment",
@@ -16243,9 +16276,9 @@
    "SLES-01549"
   ],
   "languages": [
-   "Spanish",
    "English",
-   "Italian"
+   "Italian",
+   "Spanish"
   ],
   "publisher": "GT Interactive",
   "developer": "Perfect Entertainment",
@@ -16862,6 +16895,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -17274,12 +17308,12 @@
    "SLES-03965"
   ],
   "languages": [
-   "Spanish",
-   "German",
    "Dutch",
-   "French",
    "English",
-   "Italian"
+   "French",
+   "German",
+   "Italian",
+   "Spanish"
   ],
   "publisher": "Disney Interactive",
   "developer": "Revolution Software",
@@ -17299,6 +17333,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -17309,13 +17344,13 @@
    "SLES-03983"
   ],
   "languages": [
-   "Swedish",
+   "Danish",
+   "Dutch",
+   "English",
    "French",
    "German",
-   "Dutch",
-   "Danish",
-   "English",
-   "Italian"
+   "Italian",
+   "Swedish"
   ],
   "publisher": "Disney Interactive",
   "developer": "Revolution Software",
@@ -17335,6 +17370,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -17365,6 +17401,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -17745,6 +17782,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -17893,6 +17931,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -17923,6 +17962,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -18024,6 +18064,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -18283,11 +18324,11 @@
    "SLES-03191"
   ],
   "languages": [
-   "Spanish",
-   "German",
    "Dutch",
    "French",
-   "Italian"
+   "German",
+   "Italian",
+   "Spanish"
   ],
   "publisher": "Disney Interactive / Eidos Interactive",
   "developer": "Toys for Bob",
@@ -18318,9 +18359,9 @@
    "SLES-03190"
   ],
   "languages": [
-   "Swedish",
+   "Danish",
    "Norwegian",
-   "Danish"
+   "Swedish"
   ],
   "publisher": "Disney Interactive / Eidos Interactive",
   "developer": "Toys for Bob",
@@ -18740,6 +18781,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -18840,12 +18882,12 @@
    "SLES-02864"
   ],
   "languages": [
-   "Swedish",
-   "Norwegian",
    "Danish",
    "Dutch",
+   "English",
    "Finnish",
-   "English"
+   "Norwegian",
+   "Swedish"
   ],
   "publisher": "UBI Soft Entertainment",
   "developer": "Sandbox Studios",
@@ -19008,9 +19050,9 @@
    "SLES-03095"
   ],
   "languages": [
-   "German",
-   "French",
    "English",
+   "French",
+   "German",
    "Italian"
   ],
   "publisher": "UBI Soft Entertainment",
@@ -19073,10 +19115,10 @@
    "SLES-03097"
   ],
   "languages": [
-   "Swedish",
-   "Norwegian",
    "Danish",
-   "Finnish"
+   "Finnish",
+   "Norwegian",
+   "Swedish"
   ],
   "publisher": "UBI Soft Entertainment",
   "developer": "Disney Interactive",
@@ -19489,6 +19531,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -19930,6 +19973,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -20136,6 +20180,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -20408,6 +20453,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -20500,6 +20546,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -20601,6 +20648,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -20631,6 +20679,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -20821,6 +20870,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -20851,6 +20901,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -20881,6 +20932,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -20973,6 +21025,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -21492,8 +21545,8 @@
    "SCUS-94635"
   ],
   "languages": [
-   "French",
-   "English"
+   "English",
+   "French"
   ],
   "publisher": "Sony",
   "developer": "Artificial Mind & Movement (A2M)",
@@ -21922,9 +21975,9 @@
    "SLES-03398"
   ],
   "languages": [
-   "Spanish",
    "Dutch",
-   "Italian"
+   "Italian",
+   "Spanish"
   ],
   "publisher": "Activision",
   "developer": "Traveller's Tales",
@@ -21955,8 +22008,8 @@
    "SLES-03397"
   ],
   "languages": [
-   "German",
-   "French"
+   "French",
+   "German"
   ],
   "publisher": "Activision",
   "developer": "Traveller's Tales",
@@ -22679,6 +22732,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -23243,6 +23297,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -23273,6 +23328,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -23471,9 +23527,9 @@
    "SLES-01535"
   ],
   "languages": [
-   "German",
+   "English",
    "French",
-   "English"
+   "German"
   ],
   "publisher": "Konami",
   "developer": "KCE Sapporo",
@@ -23732,6 +23788,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -24063,6 +24120,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -24093,6 +24151,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -24123,6 +24182,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -24399,6 +24459,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -24456,6 +24517,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -24481,6 +24543,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -24627,6 +24690,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -25350,6 +25414,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -25472,6 +25537,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -25502,6 +25568,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -25723,6 +25790,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -25778,6 +25846,7 @@
   "multitap": true,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -25813,6 +25882,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -25843,6 +25913,7 @@
   "multitap": true,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -26077,8 +26148,8 @@
    "SLPS-01391"
   ],
   "languages": [
-   "Japanese",
-   "English"
+   "English",
+   "Japanese"
   ],
   "publisher": "Pack-In-Video (Victor)",
   "developer": "Victor Interactive Software",
@@ -26161,6 +26232,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -26195,6 +26267,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -27390,6 +27463,7 @@
   "multitap": false,
   "linkCable": true,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -27420,6 +27494,7 @@
   "multitap": false,
   "linkCable": true,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -27450,6 +27525,7 @@
   "multitap": false,
   "linkCable": true,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -27480,6 +27556,7 @@
   "multitap": false,
   "linkCable": true,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -27511,6 +27588,7 @@
   "multitap": false,
   "linkCable": true,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -27571,6 +27649,7 @@
   "multitap": false,
   "linkCable": true,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -27834,6 +27913,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -27864,6 +27944,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -27895,6 +27976,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -27925,6 +28007,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -27956,6 +28039,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -28052,6 +28136,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -28086,6 +28171,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -28625,6 +28711,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -28655,6 +28742,7 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -28665,9 +28753,9 @@
    "SLES-00300"
   ],
   "languages": [
-   "German",
+   "English",
    "French",
-   "English"
+   "German"
   ],
   "publisher": "Acclaim",
   "developer": "Funcom",
@@ -29080,11 +29168,11 @@
    "SLES-00714"
   ],
   "languages": [
-   "Spanish",
-   "German",
-   "French",
    "English",
-   "Italian"
+   "French",
+   "German",
+   "Italian",
+   "Spanish"
   ],
   "publisher": "Cryo Interactive",
   "developer": "Cryo Interactive Entertainment",
@@ -30080,8 +30168,8 @@
    "SLES-03377"
   ],
   "languages": [
-   "German",
    "French",
+   "German",
    "Italian"
   ],
   "publisher": "Acclaim",
@@ -30337,11 +30425,11 @@
    "SLES-03405"
   ],
   "languages": [
-   "Spanish",
-   "German",
-   "French",
    "English",
-   "Italian"
+   "French",
+   "German",
+   "Italian",
+   "Spanish"
   ],
   "publisher": "GT Interactive Software Corp",
   "developer": "N-Space",
@@ -30831,6 +30919,7 @@
   "multitap": false,
   "linkCable": true,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -30861,6 +30950,7 @@
   "multitap": false,
   "linkCable": true,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -30891,6 +30981,7 @@
   "multitap": false,
   "linkCable": true,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -30921,6 +31012,7 @@
   "multitap": false,
   "linkCable": true,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -30951,6 +31043,7 @@
   "multitap": false,
   "linkCable": true,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -31393,6 +31486,7 @@
   "multitap": true,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -31451,6 +31545,7 @@
   "multitap": true,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -31509,6 +31604,7 @@
   "multitap": true,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
@@ -31571,6 +31667,7 @@
   "multitap": true,
   "linkCable": false,
   "controllers": [
+   "AnalogController",
    "DigitalController"
   ]
  },
