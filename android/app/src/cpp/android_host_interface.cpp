@@ -970,7 +970,8 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
 
   jclass emulation_activity_class;
   if ((s_AndroidHostInterface_constructor =
-         env->GetMethodID(s_AndroidHostInterface_class, "<init>", "(Landroid/content/Context;)V")) == nullptr ||
+         env->GetMethodID(s_AndroidHostInterface_class, "<init>",
+                          "(Landroid/content/Context;Lcom/github/stenzek/duckstation/FileHelper;)V")) == nullptr ||
       (s_AndroidHostInterface_field_mNativePointer =
          env->GetFieldID(s_AndroidHostInterface_class, "mNativePointer", "J")) == nullptr ||
       (s_AndroidHostInterface_method_reportError =
@@ -1067,12 +1068,13 @@ DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_setThreadAffinity, jobject unu
 }
 
 DEFINE_JNI_ARGS_METHOD(jobject, AndroidHostInterface_create, jobject unused, jobject context_object,
-                       jstring user_directory)
+                       jobject file_helper_object, jstring user_directory)
 {
   Log::SetDebugOutputParams(true, nullptr, LOGLEVEL_DEBUG);
 
   // initialize the java side
-  jobject java_obj = env->NewObject(s_AndroidHostInterface_class, s_AndroidHostInterface_constructor, context_object);
+  jobject java_obj = env->NewObject(s_AndroidHostInterface_class, s_AndroidHostInterface_constructor, context_object,
+                                    file_helper_object);
   if (!java_obj)
   {
     Log_ErrorPrint("Failed to create Java AndroidHostInterface");
@@ -1096,6 +1098,7 @@ DEFINE_JNI_ARGS_METHOD(jobject, AndroidHostInterface_create, jobject unused, job
   env->SetLongField(java_obj, s_AndroidHostInterface_field_mNativePointer,
                     static_cast<long>(reinterpret_cast<uintptr_t>(cpp_obj)));
 
+  FileSystem::SetAndroidFileHelper(s_jvm, env, file_helper_object);
   return java_obj;
 }
 
@@ -1195,7 +1198,7 @@ DEFINE_JNI_ARGS_METHOD(jint, AndroidHostInterface_getControllerAxisType, jobject
                        jstring axis_name)
 {
   std::optional<ControllerType> type =
-          Settings::ParseControllerTypeName(AndroidHelpers::JStringToString(env, controller_type).c_str());
+    Settings::ParseControllerTypeName(AndroidHelpers::JStringToString(env, controller_type).c_str());
   if (!type)
     return -1;
 
@@ -1342,7 +1345,7 @@ static jobject CreateGameListEntry(JNIEnv* env, AndroidHostInterface* hi, const 
 {
   const Timestamp modified_ts(
     Timestamp::FromUnixTimestamp(static_cast<Timestamp::UnixTimestampValue>(entry.last_modified_time)));
-  const std::string file_title_str(System::GetTitleForPath(entry.path.c_str()));
+  const std::string file_title_str(FileSystem::GetFileTitleFromPath(entry.path));
   const std::string cover_path_str(hi->GetGameList()->GetCoverImagePathForEntry(&entry));
 
   jstring path = env->NewStringUTF(entry.path.c_str());

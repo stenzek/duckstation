@@ -30,9 +30,256 @@
 #include <unistd.h>
 #endif
 
+#ifdef __ANDROID__
+#include <jni.h>
+#endif
+
 Log_SetChannel(FileSystem);
 
 namespace FileSystem {
+
+#ifdef __ANDROID__
+
+static JavaVM* s_android_jvm;
+static jobject s_android_FileHelper_object;
+static jclass s_android_FileHelper_class;
+static jmethodID s_android_FileHelper_openURIAsFileDescriptor;
+static jmethodID s_android_FileHelper_FindFiles;
+static jclass s_android_FileHelper_FindResult_class;
+static jfieldID s_android_FileHelper_FindResult_name;
+static jfieldID s_android_FileHelper_FindResult_relativeName;
+static jfieldID s_android_FileHelper_FindResult_size;
+static jfieldID s_android_FileHelper_FindResult_modifiedTime;
+static jfieldID s_android_FileHelper_FindResult_flags;
+
+// helper for retrieving the current per-thread jni environment
+static JNIEnv* GetJNIEnv()
+{
+  JNIEnv* env;
+  if (s_android_jvm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK)
+    return nullptr;
+  else
+    return env;
+}
+
+static bool IsUriPath(const std::string_view& path)
+{
+  return StringUtil::StartsWith(path, "content:/") || StringUtil::StartsWith(path, "file:/");
+}
+
+static bool UriHelpersAreAvailable()
+{
+  return (s_android_FileHelper_object != nullptr);
+}
+
+void SetAndroidFileHelper(void* jvm, void* env, void* object)
+{
+  Assert(!jvm || !s_android_jvm || s_android_jvm == jvm);
+
+  if (s_android_FileHelper_object)
+  {
+    JNIEnv* jenv = GetJNIEnv();
+    jenv->DeleteGlobalRef(s_android_FileHelper_FindResult_class);
+    s_android_FileHelper_FindResult_name = {};
+    s_android_FileHelper_FindResult_relativeName = {};
+    s_android_FileHelper_FindResult_size = {};
+    s_android_FileHelper_FindResult_modifiedTime = {};
+    s_android_FileHelper_FindResult_flags = {};
+    s_android_FileHelper_FindResult_class = {};
+
+    jenv->DeleteGlobalRef(s_android_FileHelper_object);
+    jenv->DeleteGlobalRef(s_android_FileHelper_class);
+    s_android_FileHelper_openURIAsFileDescriptor = {};
+    s_android_FileHelper_FindFiles = {};
+    s_android_FileHelper_object = {};
+    s_android_FileHelper_class = {};
+    s_android_jvm = {};
+  }
+
+  if (!object)
+    return;
+
+  JNIEnv* jenv = static_cast<JNIEnv*>(env);
+  s_android_jvm = static_cast<JavaVM*>(jvm);
+  s_android_FileHelper_object = jenv->NewGlobalRef(static_cast<jobject>(object));
+  Assert(s_android_FileHelper_object);
+
+  jclass fh_class = jenv->GetObjectClass(static_cast<jobject>(object));
+  s_android_FileHelper_class = static_cast<jclass>(jenv->NewGlobalRef(fh_class));
+  Assert(s_android_FileHelper_class);
+  jenv->DeleteLocalRef(fh_class);
+
+  s_android_FileHelper_openURIAsFileDescriptor =
+    jenv->GetMethodID(s_android_FileHelper_class, "openURIAsFileDescriptor", "(Ljava/lang/String;Ljava/lang/String;)I");
+  s_android_FileHelper_FindFiles =
+    jenv->GetMethodID(s_android_FileHelper_class, "findFiles",
+                      "(Ljava/lang/String;I)[Lcom/github/stenzek/duckstation/FileHelper$FindResult;");
+  Assert(s_android_FileHelper_openURIAsFileDescriptor && s_android_FileHelper_FindFiles);
+
+  jclass fr_class = jenv->FindClass("com/github/stenzek/duckstation/FileHelper$FindResult");
+  Assert(fr_class);
+  s_android_FileHelper_FindResult_class = static_cast<jclass>(jenv->NewGlobalRef(fr_class));
+  Assert(s_android_FileHelper_FindResult_class);
+  jenv->DeleteLocalRef(fr_class);
+
+  s_android_FileHelper_FindResult_relativeName =
+    jenv->GetFieldID(s_android_FileHelper_FindResult_class, "relativeName", "Ljava/lang/String;");
+  s_android_FileHelper_FindResult_name =
+    jenv->GetFieldID(s_android_FileHelper_FindResult_class, "name", "Ljava/lang/String;");
+  s_android_FileHelper_FindResult_size = jenv->GetFieldID(s_android_FileHelper_FindResult_class, "size", "J");
+  s_android_FileHelper_FindResult_modifiedTime =
+    jenv->GetFieldID(s_android_FileHelper_FindResult_class, "modifiedTime", "J");
+  s_android_FileHelper_FindResult_flags = jenv->GetFieldID(s_android_FileHelper_FindResult_class, "flags", "I");
+  Assert(s_android_FileHelper_FindResult_relativeName && s_android_FileHelper_FindResult_name &&
+         s_android_FileHelper_FindResult_size && s_android_FileHelper_FindResult_modifiedTime &&
+         s_android_FileHelper_FindResult_flags);
+}
+
+static std::FILE* OpenUriFile(const char* path, const char* mode)
+{
+  // translate C modes to Java modes
+  TinyString mode_trimmed;
+  std::size_t mode_len = std::strlen(mode);
+  for (size_t i = 0; i < mode_len; i++)
+  {
+    if (mode[i] == 'r' || mode[i] == 'w' || mode[i] == '+')
+      mode_trimmed.AppendCharacter(mode[i]);
+  }
+
+  // TODO: Handle append mode by seeking to end.
+  const char* java_mode = nullptr;
+  if (mode_trimmed == "r")
+    java_mode = "r";
+  else if (mode_trimmed == "r+")
+    java_mode = "rw";
+  else if (mode_trimmed == "w")
+    java_mode = "w";
+  else if (mode_trimmed == "w+")
+    java_mode = "rwt";
+
+  if (!java_mode)
+  {
+    Log_ErrorPrintf("Could not translate file mode '%s' ('%s')", mode, mode_trimmed.GetCharArray());
+    return nullptr;
+  }
+
+  // Hand off to Java...
+  JNIEnv* env = GetJNIEnv();
+  jstring path_jstr = env->NewStringUTF(path);
+  jstring mode_jstr = env->NewStringUTF(java_mode);
+  int fd =
+    env->CallIntMethod(s_android_FileHelper_object, s_android_FileHelper_openURIAsFileDescriptor, path_jstr, mode_jstr);
+  env->DeleteLocalRef(mode_jstr);
+  env->DeleteLocalRef(path_jstr);
+
+  // Just in case...
+  if (env->ExceptionCheck())
+  {
+    env->ExceptionClear();
+    return nullptr;
+  }
+
+  if (fd < 0)
+    return nullptr;
+
+  // Convert to a C file object.
+  std::FILE* fp = fdopen(fd, mode);
+  if (!fp)
+  {
+    Log_ErrorPrintf("Failed to convert FD %d to C FILE for '%s'.", fd, path);
+    close(fd);
+    return nullptr;
+  }
+
+  return fp;
+}
+
+static bool FindUriFiles(const char* path, const char* pattern, u32 flags, FindResultsArray* pVector)
+{
+  if (!s_android_FileHelper_object)
+    return false;
+
+  JNIEnv* env = GetJNIEnv();
+
+  jstring path_jstr = env->NewStringUTF(path);
+  jobjectArray arr = static_cast<jobjectArray>(env->CallObjectMethod(
+    s_android_FileHelper_object, s_android_FileHelper_FindFiles, path_jstr, static_cast<int>(flags)));
+  env->DeleteLocalRef(path_jstr);
+  if (!arr)
+    return false;
+
+  // small speed optimization for '*' case
+  bool hasWildCards = false;
+  bool wildCardMatchAll = false;
+  u32 nFiles = 0;
+  if (std::strpbrk(pattern, "*?") != nullptr)
+  {
+    hasWildCards = true;
+    wildCardMatchAll = !(std::strcmp(pattern, "*"));
+  }
+
+  jsize count = env->GetArrayLength(arr);
+  for (jsize i = 0; i < count; i++)
+  {
+    jobject result = env->GetObjectArrayElement(arr, i);
+    if (!result)
+      continue;
+
+    jstring result_name_obj = static_cast<jstring>(env->GetObjectField(result, s_android_FileHelper_FindResult_name));
+    jstring result_relative_name_obj =
+      static_cast<jstring>(env->GetObjectField(result, s_android_FileHelper_FindResult_relativeName));
+    const u64 result_size = static_cast<u64>(env->GetLongField(result, s_android_FileHelper_FindResult_size));
+    const u64 result_modified_time =
+      static_cast<u64>(env->GetLongField(result, s_android_FileHelper_FindResult_modifiedTime));
+    const u32 result_flags = static_cast<u32>(env->GetIntField(result, s_android_FileHelper_FindResult_flags));
+
+    if (result_name_obj && result_relative_name_obj)
+    {
+      const char* result_name = env->GetStringUTFChars(result_name_obj, nullptr);
+      const char* result_relative_name = env->GetStringUTFChars(result_relative_name_obj, nullptr);
+      if (result_relative_name)
+      {
+        // match the filename
+        bool matched;
+        if (hasWildCards)
+        {
+          matched = wildCardMatchAll || StringUtil::WildcardMatch(result_relative_name, pattern);
+        }
+        else
+        {
+          matched = std::strcmp(result_relative_name, pattern) == 0;
+        }
+
+        if (matched)
+        {
+          FILESYSTEM_FIND_DATA ffd;
+          ffd.FileName = ((flags & FILESYSTEM_FIND_RELATIVE_PATHS) != 0) ? result_relative_name : result_name;
+          ffd.Attributes = result_flags;
+          ffd.ModificationTime.SetUnixTimestamp(result_modified_time);
+          ffd.Size = result_size;
+          pVector->push_back(std::move(ffd));
+        }
+      }
+
+      if (result_name)
+        env->ReleaseStringUTFChars(result_name_obj, result_name);
+      if (result_relative_name)
+        env->ReleaseStringUTFChars(result_relative_name_obj, result_relative_name);
+    }
+
+    if (result_name_obj)
+      env->DeleteLocalRef(result_name_obj);
+    if (result_relative_name_obj)
+      env->DeleteLocalRef(result_relative_name_obj);
+
+    env->DeleteLocalRef(result);
+  }
+
+  env->DeleteLocalRef(arr);
+  return true;
+}
+
+#endif // __ANDROID__
 
 ChangeNotifier::ChangeNotifier(const String& directoryPath, bool recursiveWatch)
   : m_directoryPath(directoryPath), m_recursiveWatch(recursiveWatch)
@@ -298,6 +545,28 @@ static std::string_view::size_type GetLastSeperatorPosition(const std::string_vi
     if (last_separator == std::string_view::npos || other_last_separator > last_separator)
       last_separator = other_last_separator;
   }
+
+#elif defined(__ANDROID__)
+  if (IsUriPath(filename))
+  {
+    // scoped storage rubbish
+    std::string_view::size_type other_last_separator = filename.rfind("%2F");
+    if (other_last_separator != std::string_view::npos)
+    {
+      if (include_separator)
+        other_last_separator += 3;
+      if (last_separator == std::string_view::npos || other_last_separator > last_separator)
+        last_separator = other_last_separator;
+    }
+    std::string_view::size_type lower_other_last_separator = filename.rfind("%2f");
+    if (lower_other_last_separator != std::string_view::npos)
+    {
+      if (include_separator)
+        lower_other_last_separator += 3;
+      if (last_separator == std::string_view::npos || lower_other_last_separator > last_separator)
+        last_separator = lower_other_last_separator;
+    }
+  }
 #endif
 
   return last_separator;
@@ -374,6 +643,8 @@ std::unique_ptr<ByteStream> OpenFile(const char* FileName, u32 Flags)
   if (FileName[0] == '\0')
     return nullptr;
 
+  // TODO: Handle Android content URIs here.
+
   // forward to local file wrapper
   return ByteStream_OpenFileStream(FileName, Flags);
 }
@@ -414,6 +685,11 @@ std::FILE* OpenCFile(const char* filename, const char* mode)
 
   return fp;
 #else
+#ifdef __ANDROID__
+  if (IsUriPath(filename) && UriHelpersAreAvailable())
+    return OpenUriFile(filename, mode);
+#endif
+
   return std::fopen(filename, mode);
 #endif
 }
@@ -1449,6 +1725,11 @@ bool FindFiles(const char* Path, const char* Pattern, u32 Flags, FindResultsArra
   // clear result array
   if (!(Flags & FILESYSTEM_FIND_KEEP_ARRAY))
     pResults->clear();
+
+#ifdef __ANDROID__
+  if (IsUriPath(Path) && UriHelpersAreAvailable())
+    return FindUriFiles(Path, Pattern, Flags, pResults);
+#endif
 
   // enter the recursive function
   return (RecursiveFindFiles(Path, nullptr, nullptr, Pattern, Flags, pResults) > 0);

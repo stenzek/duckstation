@@ -23,9 +23,11 @@ public class AndroidHostInterface {
 
     private long mNativePointer;
     private Context mContext;
+    private FileHelper mFileHelper;
 
-    public AndroidHostInterface(Context context) {
+    public AndroidHostInterface(Context context, FileHelper fileHelper) {
         this.mContext = context;
+        this.mFileHelper = fileHelper;
     }
 
     public void reportError(String message) {
@@ -54,7 +56,7 @@ public class AndroidHostInterface {
 
     static public native boolean setThreadAffinity(int[] cpus);
 
-    static public native AndroidHostInterface create(Context context, String userDirectory);
+    static public native AndroidHostInterface create(Context context, FileHelper fileHelper, String userDirectory);
 
     public native boolean isEmulationThreadRunning();
 
@@ -184,7 +186,7 @@ public class AndroidHostInterface {
 
         mUserDirectory += "/duckstation";
         Log.i("AndroidHostInterface", "User directory: " + mUserDirectory);
-        mInstance = create(context, mUserDirectory);
+        mInstance = create(context, new FileHelper(context), mUserDirectory);
         return mInstance != null;
     }
 

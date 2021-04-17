@@ -61,6 +61,12 @@ namespace FileSystem {
 
 using FindResultsArray = std::vector<FILESYSTEM_FIND_DATA>;
 
+#ifdef __ANDROID__
+/// Sets the instance for the FileHelpers Java class, used for storage access framework
+/// file access on Android.
+void SetAndroidFileHelper(void* jvm, void* env, void* object);
+#endif
+
 class ChangeNotifier
 {
 public:
