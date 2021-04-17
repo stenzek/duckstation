@@ -81,7 +81,6 @@ DiscRegion GetRegionForImage(CDImage* cdi);
 DiscRegion GetRegionForExe(const char* path);
 DiscRegion GetRegionForPsf(const char* path);
 std::optional<DiscRegion> GetRegionForPath(const char* image_path);
-std::string_view GetTitleForPath(const char* path);
 
 State GetState();
 void SetState(State new_state);

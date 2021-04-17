@@ -322,15 +322,6 @@ ConsoleRegion GetConsoleRegionForDiscRegion(DiscRegion region)
   }
 }
 
-std::string_view GetTitleForPath(const char* path)
-{
-  std::string_view path_view = path;
-  std::size_t title_start = path_view.find_last_of("/\\");
-  if (title_start != std::string_view::npos)
-    path_view.remove_prefix(title_start + 1);
-  return path_view.substr(0, path_view.find_last_of('.'));
-}
-
 std::string GetGameCodeForPath(const char* image_path, bool fallback_to_hash)
 {
   std::unique_ptr<CDImage> cdi = CDImage::Open(image_path, nullptr);

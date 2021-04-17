@@ -1,4 +1,5 @@
 #pragma once
+#include "common/cd_image.h"
 #include "core/types.h"
 #include "game_database.h"
 #include "game_settings.h"
@@ -9,7 +10,6 @@
 #include <unordered_map>
 #include <vector>
 
-class CDImage;
 class ByteStream;
 class ProgressCallback;
 
@@ -140,12 +140,14 @@ private:
 
   GameListEntry* GetMutableEntryForPath(const char* path);
 
-  static bool GetExeListEntry(const char* path, GameListEntry* entry);
-  static bool GetPsfListEntry(const char* path, GameListEntry* entry);
+  static bool GetExeListEntry(const std::string& path, GameListEntry* entry);
+  static bool GetPsfListEntry(const std::string& path, GameListEntry* entry);
 
   bool GetGameListEntry(const std::string& path, GameListEntry* entry);
   bool GetGameListEntryFromCache(const std::string& path, GameListEntry* entry);
   void ScanDirectory(const char* path, bool recursive, ProgressCallback* progress);
+  bool AddFileFromCache(const std::string& path, u64 timestamp);
+  bool ScanFile(std::string path, u64 timestamp);
 
   void LoadCache();
   bool LoadEntriesFromCache(ByteStream* stream);

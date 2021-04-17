@@ -64,13 +64,9 @@ bool GameList::IsScannableFilename(const std::string& path)
   return System::IsLoadableFilename(path.c_str());
 }
 
-bool GameList::GetExeListEntry(const char* path, GameListEntry* entry)
+bool GameList::GetExeListEntry(const std::string& path, GameListEntry* entry)
 {
-  FILESYSTEM_STAT_DATA ffd;
-  if (!FileSystem::StatFile(path, &ffd))
-    return false;
-
-  std::FILE* fp = FileSystem::OpenCFile(path, "rb");
+  std::FILE* fp = FileSystem::OpenCFile(path.c_str(), "rb");
   if (!fp)
     return false;
 
@@ -89,41 +85,30 @@ bool GameList::GetExeListEntry(const char* path, GameListEntry* entry)
 
   if (!BIOS::IsValidPSExeHeader(header, file_size))
   {
-    Log_DebugPrintf("%s is not a valid PS-EXE", path);
+    Log_DebugPrintf("%s is not a valid PS-EXE", path.c_str());
     return false;
   }
 
-  const char* extension = std::strrchr(path, '.');
-  if (!extension)
-    return false;
-
   entry->code.clear();
   entry->title = FileSystem::GetFileTitleFromPath(path);
-  entry->path = path;
   entry->region = BIOS::GetPSExeDiscRegion(header);
   entry->total_size = ZeroExtend64(file_size);
-  entry->last_modified_time = ffd.ModificationTime.AsUnixTimestamp();
   entry->type = GameListEntryType::PSExe;
   entry->compatibility_rating = GameListCompatibilityRating::Unknown;
 
   return true;
 }
 
-bool GameList::GetPsfListEntry(const char* path, GameListEntry* entry)
+bool GameList::GetPsfListEntry(const std::string& path, GameListEntry* entry)
 {
-  FILESYSTEM_STAT_DATA ffd;
-  if (!FileSystem::StatFile(path, &ffd))
-    return false;
-
+  // we don't need to walk the library chain here - the top file is enough
   PSFLoader::File file;
-  if (!file.Load(path))
+  if (!file.Load(path.c_str()))
     return false;
 
   entry->code.clear();
-  entry->path = path;
   entry->region = file.GetRegion();
   entry->total_size = static_cast<u32>(file.GetProgramData().size());
-  entry->last_modified_time = ffd.ModificationTime.AsUnixTimestamp();
   entry->type = GameListEntryType::PSF;
   entry->compatibility_rating = GameListCompatibilityRating::Unknown;
 
@@ -171,7 +156,7 @@ bool GameList::GetGameListEntry(const std::string& path, GameListEntry* entry)
   {
     // no game code, so use the filename title
     entry->code = System::GetGameCodeForImage(cdi.get(), true);
-    entry->title = System::GetTitleForPath(path.c_str());
+    entry->title = FileSystem::GetFileTitleFromPath(path);
     entry->compatibility_rating = GameListCompatibilityRating::Unknown;
     entry->release_date = 0;
     entry->min_players = 0;
@@ -238,11 +223,6 @@ bool GameList::GetGameListEntry(const std::string& path, GameListEntry* entry)
     }
   }
 
-  FILESYSTEM_STAT_DATA ffd;
-  if (!FileSystem::StatFile(path.c_str(), &ffd))
-    return false;
-
-  entry->last_modified_time = ffd.ModificationTime.AsUnixTimestamp();
   return true;
 }
 
@@ -493,53 +473,68 @@ void GameList::ScanDirectory(const char* path, bool recursive, ProgressCallback*
   FileSystem::FindResultsArray files;
   FileSystem::FindFiles(path, "*", FILESYSTEM_FIND_FILES | (recursive ? FILESYSTEM_FIND_RECURSIVE : 0), &files);
 
-  GameListEntry entry;
   progress->SetProgressRange(static_cast<u32>(files.size()));
   progress->SetProgressValue(0);
 
-  for (const FILESYSTEM_FIND_DATA& ffd : files)
+  for (FILESYSTEM_FIND_DATA& ffd : files)
   {
     progress->IncrementProgressValue();
-    if (!IsScannableFilename(ffd.FileName))
+
+    if (!IsScannableFilename(ffd.FileName) || GetEntryForPath(ffd.FileName.c_str()))
       continue;
 
-    std::string entry_path(ffd.FileName);
-    if (std::any_of(m_entries.begin(), m_entries.end(),
-                    [&entry_path](const GameListEntry& other) { return other.path == entry_path; }))
-    {
+    const u64 modified_time = ffd.ModificationTime.AsUnixTimestamp();
+    if (AddFileFromCache(ffd.FileName, modified_time))
       continue;
-    }
-    Log_DebugPrintf("Trying '%s'...", entry_path.c_str());
 
-    // try opening the image
-    if (!GetGameListEntryFromCache(entry_path, &entry) ||
-        entry.last_modified_time != ffd.ModificationTime.AsUnixTimestamp())
-    {
-      const char* file_part_slash =
-        std::max(std::strrchr(entry_path.c_str(), '/'), std::strrchr(entry_path.c_str(), '\\'));
-      progress->SetFormattedStatusText("Scanning '%s'...",
-                                       file_part_slash ? (file_part_slash + 1) : entry_path.c_str());
+    const std::string_view file_part(FileSystem::GetFileNameFromPath(ffd.FileName));
+    if (!file_part.empty())
+      progress->SetFormattedStatusText("Scanning '%*s'...", static_cast<int>(file_part.size()), file_part.data());
 
-      if (GetGameListEntry(entry_path, &entry))
-      {
-        if (m_cache_write_stream || OpenCacheForWriting())
-        {
-          if (!WriteEntryToCache(&entry, m_cache_write_stream.get()))
-            Log_WarningPrintf("Failed to write entry '%s' to cache", entry.path.c_str());
-        }
-      }
-      else
-      {
-        continue;
-      }
-    }
-
-    m_entries.push_back(std::move(entry));
-    entry = {};
+    // ownership of fp is transferred
+    ScanFile(std::move(ffd.FileName), modified_time);
   }
 
   progress->SetProgressValue(static_cast<u32>(files.size()));
   progress->PopState();
+}
+
+bool GameList::AddFileFromCache(const std::string& path, u64 timestamp)
+{
+  if (std::any_of(m_entries.begin(), m_entries.end(),
+                  [&path](const GameListEntry& other) { return other.path == path; }))
+  {
+    // already exists
+    return true;
+  }
+
+  GameListEntry entry;
+  if (!GetGameListEntryFromCache(path, &entry) || entry.last_modified_time != timestamp)
+    return false;
+
+  m_entries.push_back(std::move(entry));
+  return true;
+}
+
+bool GameList::ScanFile(std::string path, u64 timestamp)
+{
+  Log_DevPrintf("Scanning '%s'...", path.c_str());
+
+  GameListEntry entry;
+  if (!GetGameListEntry(path, &entry))
+    return false;
+
+  entry.path = std::move(path);
+  entry.last_modified_time = timestamp;
+
+  if (m_cache_write_stream || OpenCacheForWriting())
+  {
+    if (!WriteEntryToCache(&entry, m_cache_write_stream.get()))
+      Log_WarningPrintf("Failed to write entry '%s' to cache", entry.path.c_str());
+  }
+
+  m_entries.push_back(std::move(entry));
+  return true;
 }
 
 void GameList::AddDirectory(std::string path, bool recursive)
@@ -632,6 +627,7 @@ void GameList::Refresh(bool invalidate_cache, bool invalidate_database, Progress
   // don't need unused cache entries
   CloseCacheFileStream();
   m_cache_map.clear();
+  m_database.Unload();
 }
 
 void GameList::UpdateCompatibilityEntry(GameListCompatibilityEntry new_entry, bool save_to_list /*= true*/)
@@ -1040,7 +1036,7 @@ std::string GameList::GetCoverImagePathForEntry(const GameListEntry* entry) cons
   for (const char* extension : extensions)
   {
     // use the file title if it differs (e.g. modded games)
-    const std::string_view file_title = System::GetTitleForPath(entry->path.c_str());
+    const std::string_view file_title(FileSystem::GetFileTitleFromPath(entry->path));
     if (!file_title.empty() && entry->title != file_title)
     {
       cover_path.Clear();
@@ -1048,7 +1044,7 @@ std::string GameList::GetCoverImagePathForEntry(const GameListEntry* entry) cons
       cover_path.AppendCharacter(FS_OSPATH_SEPARATOR_CHARACTER);
       cover_path.AppendString("covers");
       cover_path.AppendCharacter(FS_OSPATH_SEPARATOR_CHARACTER);
-      cover_path.AppendString(file_title.data(), static_cast<u32>(file_title.size()));
+      cover_path.AppendString(file_title.data());
       cover_path.AppendCharacter('.');
       cover_path.AppendString(extension);
       if (FileSystem::FileExists(cover_path))
