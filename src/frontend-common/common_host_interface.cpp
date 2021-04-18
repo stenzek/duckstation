@@ -1869,6 +1869,17 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                      SaveScreenshot();
                  });
 
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("ChangeDisc"),
+                 StaticString(TRANSLATABLE("Hotkeys", "ChangeDisc")), [this](bool pressed) {
+                   if (pressed && System::IsValid() && System::HasMediaSubImages())
+                   {
+                     const u32 current = System::GetMediaSubImageIndex();
+                     const u32 next = (current + 1) % System::GetMediaSubImageCount();
+                     if (current != next)
+                       System::SwitchMediaSubImage(next);
+                   }
+                 });
+
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("FrameStep"),
                  StaticString(TRANSLATABLE("Hotkeys", "Frame Step")), [this](bool pressed) {
                    if (pressed && System::IsValid())
@@ -2550,6 +2561,7 @@ void CommonHostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetStringValue("Hotkeys", "IncreaseResolutionScale", "Keyboard/PageUp");
   si.SetStringValue("Hotkeys", "DecreaseResolutionScale", "Keyboard/PageDown");
   si.SetStringValue("Hotkeys", "ToggleSoftwareRendering", "Keyboard/End");
+  si.SetStringValue("Hotkeys", "ChangeDisc", "Keyboard/F8");
 
   si.SetStringValue("Main", "ControllerBackend",
                     ControllerInterface::GetBackendName(ControllerInterface::GetDefaultBackend()));
