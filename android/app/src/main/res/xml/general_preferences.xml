@@ -58,7 +58,7 @@
     <SwitchPreferenceCompat
         app:key="Main/PauseOnMenu"
         app:title="@string/settings_pause_when_menu_opened"
-        app:defaultValue="false"
+        app:defaultValue="true"
         app:summary="@string/settings_summary_pause_when_menu_opened"
         app:iconSpaceReserved="false" />
     <ListPreference

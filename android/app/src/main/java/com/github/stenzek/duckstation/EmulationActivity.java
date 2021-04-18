@@ -415,7 +415,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     }
 
     private void showMenu() {
-        if (getBooleanSetting("Main/PauseOnMenu", false) &&
+        if (getBooleanSetting("Main/PauseOnMenu", true) &&
                 !AndroidHostInterface.getInstance().isEmulationThreadPaused()) {
             AndroidHostInterface.getInstance().pauseEmulationThread(true);
         }
