@@ -1046,7 +1046,7 @@ std::string GameList::GetCoverImagePathForEntry(const GameListEntry* entry) cons
       cover_path.AppendCharacter(FS_OSPATH_SEPARATOR_CHARACTER);
       cover_path.AppendString("covers");
       cover_path.AppendCharacter(FS_OSPATH_SEPARATOR_CHARACTER);
-      cover_path.AppendString(file_title.data());
+      cover_path.AppendString(file_title);
       cover_path.AppendCharacter('.');
       cover_path.AppendString(extension);
       if (FileSystem::FileExists(cover_path))
