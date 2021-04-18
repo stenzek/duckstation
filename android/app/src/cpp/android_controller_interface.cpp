@@ -106,7 +106,7 @@ bool AndroidControllerInterface::BindControllerButtonToAxis(int controller_index
     return false;
 
   m_controllers[controller_index].button_axis_mapping[button_number] = std::move(callback);
-  Log_DevPrintf("Bound controller %d button %d to axis", controller_index, axis_number);
+  Log_DevPrintf("Bound controller %d button %d to axis", controller_index, button_number);
   return true;
 }
 
@@ -117,7 +117,7 @@ void AndroidControllerInterface::SetDeviceNames(std::vector<std::string> device_
   m_controllers.resize(m_device_names.size());
 
   for (u32 i = 0; i < static_cast<u32>(m_device_names.size()); i++)
-    Log_DevPrintf("Controller %u: %s", i, m_device_names[i]);
+    Log_DevPrintf("Controller %u: %s", i, m_device_names[i].c_str());
 }
 
 void AndroidControllerInterface::SetDeviceRumble(u32 index, bool has_vibrator)
@@ -199,6 +199,8 @@ void AndroidControllerInterface::HandleButtonEvent(u32 index, u32 button, bool p
     axis_iter->second(pressed ? 1.0f : -1.0f);
     return;
   }
+
+  Log_DevPrintf("controller %u button %u has no binding", index, button);
 }
 
 bool AndroidControllerInterface::HasButtonBinding(u32 index, u32 button)
