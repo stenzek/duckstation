@@ -24,6 +24,7 @@ public class AndroidHostInterface {
     private long mNativePointer;
     private Context mContext;
     private FileHelper mFileHelper;
+    private EmulationActivity mEmulationActivity;
 
     public AndroidHostInterface(Context context, FileHelper fileHelper) {
         this.mContext = context;
@@ -49,6 +50,8 @@ public class AndroidHostInterface {
     public void setContext(Context context) {
         mContext = context;
     }
+
+    public EmulationActivity getEmulationActivity() { return mEmulationActivity; }
 
     static public native String getScmVersion();
 

@@ -17,7 +17,8 @@ public final class TouchscreenControllerButtonView extends View {
     {
         NONE,
         FAST_FORWARD,
-        ANALOG_TOGGLE
+        ANALOG_TOGGLE,
+        OPEN_PAUSE_MENU,
     }
 
     private Drawable mUnpressedDrawable;
@@ -144,8 +145,14 @@ public final class TouchscreenControllerButtonView extends View {
                 break;
 
             case ANALOG_TOGGLE: {
-                if (mPressed)
+                if (!mPressed)
                     AndroidHostInterface.getInstance().toggleControllerAnalogMode();
+            }
+            break;
+
+            case OPEN_PAUSE_MENU: {
+                if (!mPressed)
+                    AndroidHostInterface.getInstance().getEmulationActivity().openPauseMenu();
             }
             break;
 

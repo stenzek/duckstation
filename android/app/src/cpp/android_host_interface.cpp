@@ -39,6 +39,7 @@ static jclass s_String_class;
 static jclass s_AndroidHostInterface_class;
 static jmethodID s_AndroidHostInterface_constructor;
 static jfieldID s_AndroidHostInterface_field_mNativePointer;
+static jfieldID s_AndroidHostInterface_field_mEmulationActivity;
 static jmethodID s_AndroidHostInterface_method_reportError;
 static jmethodID s_AndroidHostInterface_method_reportMessage;
 static jmethodID s_AndroidHostInterface_method_openAssetStream;
@@ -464,11 +465,13 @@ void AndroidHostInterface::EmulationThreadEntryPoint(JNIEnv* env, jobject emulat
   emulation_activity = env->NewGlobalRef(emulation_activity);
   Assert(emulation_activity != nullptr);
 
+
   {
     std::unique_lock<std::mutex> lock(m_mutex);
     m_emulation_thread_running.store(true);
     m_emulation_activity_object = emulation_activity;
     m_emulation_thread_id = std::this_thread::get_id();
+    env->SetObjectField(m_java_object, s_AndroidHostInterface_field_mEmulationActivity, emulation_activity);
   }
 
   ApplySettings(true);
@@ -500,6 +503,7 @@ void AndroidHostInterface::EmulationThreadEntryPoint(JNIEnv* env, jobject emulat
       callback();
       lock.lock();
     }
+    env->SetObjectField(m_java_object, s_AndroidHostInterface_field_mEmulationActivity, nullptr);
     m_emulation_thread_running.store(false);
     m_emulation_thread_id = {};
     m_emulation_activity_object = {};
@@ -974,6 +978,8 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
                           "(Landroid/content/Context;Lcom/github/stenzek/duckstation/FileHelper;)V")) == nullptr ||
       (s_AndroidHostInterface_field_mNativePointer =
          env->GetFieldID(s_AndroidHostInterface_class, "mNativePointer", "J")) == nullptr ||
+      (s_AndroidHostInterface_field_mEmulationActivity =
+         env->GetFieldID(s_AndroidHostInterface_class, "mEmulationActivity", "Lcom/github/stenzek/duckstation/EmulationActivity;")) == nullptr ||
       (s_AndroidHostInterface_method_reportError =
          env->GetMethodID(s_AndroidHostInterface_class, "reportError", "(Ljava/lang/String;)V")) == nullptr ||
       (s_AndroidHostInterface_method_reportMessage =

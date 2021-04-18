@@ -41,4 +41,15 @@
         app:layout_constraintStart_toStartOf="parent"
         app:pressedDrawable="@drawable/ic_controller_fast_forward_pressed"
         app:unpressedDrawable="@drawable/ic_controller_fast_forward" />
+
+    <com.github.stenzek.duckstation.TouchscreenControllerButtonView
+        android:id="@+id/controller_button_pause"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginRight="20dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:pressedDrawable="@drawable/ic_controller_pause_button"
+        app:unpressedDrawable="@drawable/ic_controller_pause_button" />
 </androidx.constraintlayout.widget.ConstraintLayout>

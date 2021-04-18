@@ -312,6 +312,8 @@ public class TouchscreenControllerView extends FrameLayout {
                 TouchscreenControllerButtonView.Hotkey.FAST_FORWARD, false);
         linkHotkeyButton(mMainView, R.id.controller_button_analog, "AnalogToggle",
                 TouchscreenControllerButtonView.Hotkey.ANALOG_TOGGLE, false);
+        linkHotkeyButton(mMainView, R.id.controller_button_pause, "OpenPauseMenu",
+                TouchscreenControllerButtonView.Hotkey.OPEN_PAUSE_MENU, true);
 
         linkButton(mMainView, R.id.controller_button_a, "AButton", "A", true, true);
         linkButton(mMainView, R.id.controller_button_b, "BButton", "B", true, true);
