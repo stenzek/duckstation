@@ -656,10 +656,9 @@ public class TouchscreenControllerView extends FrameLayout {
                         mPointerButtonCode, true);
             }
 
-            final int pointerId = event.getPointerId(0);
             AndroidHostInterface.getInstance().setMousePosition(
-                    (int)event.getX(pointerId),
-                    (int)event.getY(pointerId));
+                    (int)event.getX(0),
+                    (int)event.getY(0));
         }
 
         return true;
