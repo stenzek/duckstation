@@ -35,7 +35,6 @@
 #include <cstdio>
 #include <cstring>
 #include <ctime>
-#include "fullscreen_ui.h"
 
 #ifdef WITH_SDL2
 #include "sdl_audio_stream.h"
@@ -55,7 +54,6 @@
 #include <ShlObj.h>
 #include <mmsystem.h>
 #endif
-#include <frontend-common/imgui_fullscreen.cpp>
 
 Log_SetChannel(CommonHostInterface);
 
@@ -1871,14 +1869,14 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                      SaveScreenshot();
                  });
 
- RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("ChangeDisc"),
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("ChangeDisc"),
                  StaticString(TRANSLATABLE("Hotkeys", "ChangeDisc")), [this](bool pressed) {
-                   if (pressed && System::IsValid())
+                   if (pressed && System::IsValid() && System::HasMediaSubImages())
                    {
-                     int current = System::GetMediaSubImageIndex();
-                     int next = (current + 1) % System::GetMediaSubImageCount();
+                     const u32 current = System::GetMediaSubImageIndex();
+                     const u32 next = (current + 1) % System::GetMediaSubImageCount();
                      if (current != next)
-                       System::SwitchMediaSubImage(static_cast<u32>(next));
+                       System::SwitchMediaSubImage(next);
                    }
                  });
 
