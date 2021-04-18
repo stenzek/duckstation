@@ -144,7 +144,7 @@ public class EmulationSurfaceView extends SurfaceView {
                 Log.d("EmulationSurfaceView",
                         String.format("Skipping device %s sources %d",
                                 (device != null) ? device.toString() : "",
-                                (device != null) ? 0 : device.getSources()));
+                                (device != null) ? device.getSources() : 0));
                 continue;
             }
 
