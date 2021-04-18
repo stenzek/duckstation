@@ -127,6 +127,7 @@ public class EmulationSurfaceView extends SurfaceView {
     }
 
     private InputDeviceData[] mInputDevices = null;
+    private String[] mControllerDescriptors = null;
     private boolean mHasAnyGamepads = false;
 
     public boolean hasAnyGamePads() {
@@ -135,9 +136,12 @@ public class EmulationSurfaceView extends SurfaceView {
 
     public synchronized void updateInputDevices() {
         mInputDevices = null;
+        mControllerDescriptors = null;
         mHasAnyGamepads = false;
 
         final ArrayList<InputDeviceData> inputDeviceIds = new ArrayList<>();
+        final ArrayList<String> controllerDescriptors = new ArrayList<>();
+
         for (int deviceId : InputDevice.getDeviceIds()) {
             final InputDevice device = InputDevice.getDevice(deviceId);
             if (device == null || !isBindableDevice(device)) {
@@ -151,9 +155,22 @@ public class EmulationSurfaceView extends SurfaceView {
             if (isGamepadDevice(device))
                 mHasAnyGamepads = true;
 
-            final int controllerIndex = inputDeviceIds.size();
-            Log.d("EmulationSurfaceView", String.format("Tracking device %d/%s (%s, sources %d)",
-                    controllerIndex, device.getDescriptor(), device.getName(), device.getSources()));
+            // Some phones seem to have duplicate descriptors for multiple devices.
+            // Combine them all into one controller index if so.
+            final String descriptor = device.getDescriptor();
+            int controllerIndex = controllerDescriptors.size();
+            for (int i = 0; i < controllerDescriptors.size(); i++) {
+                if (controllerDescriptors.get(i).equals(descriptor)) {
+                    controllerIndex = i;
+                    break;
+                }
+            }
+            if (controllerIndex == controllerDescriptors.size()) {
+                controllerDescriptors.add(descriptor);
+            }
+
+            Log.d("EmulationSurfaceView", String.format("Tracking device %d/%s (%s, sources %d, controller %d)",
+                    controllerIndex, descriptor, device.getName(), device.getSources(), controllerIndex));
             inputDeviceIds.add(new InputDeviceData(device, controllerIndex));
         }
 
@@ -162,18 +179,13 @@ public class EmulationSurfaceView extends SurfaceView {
 
         mInputDevices = new InputDeviceData[inputDeviceIds.size()];
         inputDeviceIds.toArray(mInputDevices);
+
+        mControllerDescriptors = new String[controllerDescriptors.size()];
+        controllerDescriptors.toArray(mControllerDescriptors);
     }
 
     public synchronized String[] getInputDeviceNames() {
-        if (mInputDevices == null)
-            return null;
-
-        final String[] deviceNames = new String[mInputDevices.length];
-        for (int i = 0; i < mInputDevices.length; i++) {
-            deviceNames[i] = mInputDevices[i].descriptor;
-        }
-
-        return deviceNames;
+        return mControllerDescriptors;
     }
 
     public synchronized boolean hasInputDeviceVibration(int controllerIndex) {
