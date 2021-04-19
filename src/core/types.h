@@ -75,7 +75,7 @@ enum class GPUTextureFilter : u8
   Count
 };
 
-enum GPUDownsampleMode : u8
+enum class GPUDownsampleMode : u8
 {
   Disabled,
   Box,
