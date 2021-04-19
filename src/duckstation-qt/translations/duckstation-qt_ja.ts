@@ -403,7 +403,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Title:</source>
-        <translation>タイトル :</translation>
+        <translation>ゲーム名 :</translation>
     </message>
     <message>
         <source>None (Double Speed)</source>
@@ -588,6 +588,10 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <source>(unchanged)</source>
         <translation>(変更なし)</translation>
+    </message>
+    <message>
+        <source>Multitap Mode:</source>
+        <translation>マルチタップ モード:</translation>
     </message>
     <message>
         <source>Compatibility:</source>
@@ -843,7 +847,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Title</source>
-        <translation>タイトル</translation>
+        <translation>ゲーム名</translation>
     </message>
     <message>
         <source>Memory card &apos;%1&apos; is not saved, do you want to save before closing?</source>
@@ -1400,9 +1404,9 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <source>Would you like to scan the directory &quot;%1&quot; recursively?
 
 Scanning recursively takes more time, but will identify files in subdirectories.</source>
-        <translation>ディレクトリ &quot;%1&quot; を再帰的にスキャンしますか？
+        <translation>ディレクトリ &quot;%1&quot; を再検索しますか？
 
-再帰的なスキャンには時間がかかりますが、サブディレクトリ内のファイルが識別されます。</translation>
+再検索には時間がかかりますが、サブディレクトリ内のファイルが識別されます。</translation>
     </message>
     <message>
         <source>Cancel</source>
@@ -1434,11 +1438,11 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Scan New</source>
-        <translation>新規スキャン</translation>
+        <translation>新規検索</translation>
     </message>
     <message>
         <source>Rescan All</source>
-        <translation>すべて再スキャン</translation>
+        <translation>すべて再検索</translation>
     </message>
     <message>
         <source>Select Search Directory</source>
@@ -1466,7 +1470,7 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <source>Scan Recursively?</source>
-        <translation>再スキャンしますか？</translation>
+        <translation>再検索しますか？</translation>
     </message>
 </context>
 <context>
@@ -1576,7 +1580,7 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <source>Memory scan found %1 addresses, but only the first %2 are displayed.</source>
-        <translation>メモリスキャンで %1 アドレスが見つかりましたが、最初の %2 のみが表示されます。</translation>
+        <translation>メモリ検索で %1 アドレスが見つかりましたが、最初の %2 のみが表示されます。</translation>
     </message>
     <message>
         <source>Greater Than...</source>
@@ -1664,7 +1668,7 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <source>Memory Scanner</source>
-        <translation>メモリースキャン</translation>
+        <translation>メモリー検索</translation>
     </message>
     <message>
         <source>Failed to parse cheat file. The log may contain more information.</source>
@@ -1784,7 +1788,7 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <source>Memory Scan</source>
-        <translation>メモリースキャン</translation>
+        <translation>メモリー検索</translation>
     </message>
     <message>
         <source>PCSXR Cheat Files (*.cht);;All Files (*.*)</source>
@@ -1808,7 +1812,7 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <source>Activate</source>
-        <translation>アクティブ</translation>
+        <translation>有効/無効</translation>
     </message>
     <message>
         <source>Decimal</source>
@@ -2122,6 +2126,10 @@ This warning will only be shown once.</source>
         <translation>実行モード :</translation>
     </message>
     <message>
+        <source>Multitap</source>
+        <translation>マルチタップ</translation>
+    </message>
+    <message>
         <source>Determines how the emulated CPU executes instructions.</source>
         <translation>エミュレートされたCPUが命令を実行する方法を決定します。</translation>
     </message>
@@ -2183,7 +2191,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Enables multitap support on specified controller ports. Leave disabled for games that do not support multitap input.</source>
-        <translation>指定されたコントローラポートでマルチタップを有効にします。マルチタップ入力をサポートしないゲームでは、使用しないでください。</translation>
+        <translation>指定されたコントローラポートでマルチタップを有効にします。マルチタップに対応しないゲームでは、使用しないでください。</translation>
     </message>
     <message>
         <source>Multitap:</source>
@@ -2213,8 +2221,16 @@ This warning will only be shown once.</source>
         <translation>タイプ</translation>
     </message>
     <message>
+        <source>Year</source>
+        <translation>発売年</translation>
+    </message>
+    <message>
+        <source>Genre</source>
+        <translation>ジャンル</translation>
+    </message>
+    <message>
         <source>Title</source>
-        <translation>タイトル</translation>
+        <translation>ゲーム名(データベース上)</translation>
     </message>
     <message>
         <source>Region</source>
@@ -2225,8 +2241,20 @@ This warning will only be shown once.</source>
         <translation>互換性</translation>
     </message>
     <message>
+        <source>Players</source>
+        <translation>同時プレイ人数</translation>
+    </message>
+    <message>
         <source>File Title</source>
-        <translation>ファイルタイトル</translation>
+        <translation>ファイル名</translation>
+    </message>
+    <message>
+        <source>Publisher</source>
+        <translation>販売元</translation>
+    </message>
+    <message>
+        <source>Developer</source>
+        <translation>開発元</translation>
     </message>
 </context>
 <context>
@@ -2257,7 +2285,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>When enabled and logged in, DuckStation will scan for achievements on startup.</source>
-        <translation>有効にしてログインすると、DuckStationは起動時に実績をスキャンします。</translation>
+        <translation>有効にしてログインすると、DuckStationは起動時に実績を検索します。</translation>
     </message>
     <message>
         <source>Enable Rich Presence</source>
@@ -2311,7 +2339,7 @@ Login token generated on %2.</source>
     </message>
     <message>
         <source>When enabled, the first disc in a playlist will be used for achievements, regardless of which disc is active.</source>
-        <translation>有効にすると、アクティブなディスクに関係なく、プレイリストの最初のディスクが実績に使用されます。</translation>
+        <translation>有効にすると、動作中なディスクに関係なく、プレイリストの最初のディスクが実績に使用されます。</translation>
     </message>
     <message>
         <source>The current state will be saved, but you will be unable to load it until you disable hardcore mode.
@@ -2450,7 +2478,7 @@ Login token generated on %2.</source>
     </message>
     <message>
         <source>Display FPS Limit</source>
-        <translation>表示のFPS制限</translation>
+        <translation>FPS制限を表示</translation>
     </message>
     <message>
         <source>Sets the verbosity of messages logged. Higher levels will log more messages.</source>
@@ -2556,7 +2584,7 @@ Login token generated on %2.</source>
         <translation>DuckStationは、このディレクトリのBIOSイメージを検索します。</translation>
     </message>
     <message>
-        <source>Patches the BIOS to skip the console&apos;s boot animation. Does not work with all games, but usually safe to enabled.</source>
+        <source>Patches the BIOS to skip the console&apos;s boot animation. Does not work with all games, but usually safe to enable.</source>
         <translation>コンソールの起動アニメーションをスキップするようにBIOSにパッチを適用します。すべてのゲームで機能するわけではありませんが、通常は安全に有効にできます。</translation>
     </message>
     <message>
@@ -2684,7 +2712,7 @@ Login token generated on %2.</source>
     </message>
     <message>
         <source>Fills the window with the active display area, regardless of the aspect ratio.</source>
-        <translation>アスペクト比に関係なく、ウィンドウをアクティブな表示領域で埋めます。</translation>
+        <translation>アスペクト比に関係なく、ウィンドウを動作中の表示領域で埋めます。</translation>
     </message>
     <message>
         <source>Internal Resolution Screenshots</source>
@@ -2811,6 +2839,10 @@ Login token generated on %2.</source>
         <translation>ディスプレイの右上隅にゲームの解像度を表示します。</translation>
     </message>
     <message>
+        <source>Shows the current controller state of the system in the bottom-left corner of the display.</source>
+        <translation>ディスプレイの左下隅にシステムの現在のコントローラーの状態を表示します。</translation>
+    </message>
+    <message>
         <source>Use Blit Swap Chain</source>
         <translation>ブリットでのスワップチェーンを使用</translation>
     </message>
@@ -2841,6 +2873,10 @@ Login token generated on %2.</source>
     <message>
         <source>Show Game Frame Rate</source>
         <translation>ゲームフレームレートを表示</translation>
+    </message>
+    <message>
+        <source>Show Controller Input</source>
+        <translation>コントローラ入力を表示</translation>
     </message>
 </context>
 <context>
@@ -3530,7 +3566,7 @@ Login token generated on %2.</source>
     </message>
     <message>
         <source>Recursive</source>
-        <translation>再帰的処理</translation>
+        <translation>再読込(常に)</translation>
     </message>
 </context>
 <context>
@@ -4094,7 +4130,7 @@ Login token generated on %2.</source>
     </message>
     <message>
         <source>&amp;Scan For New Games</source>
-        <translation>新しいゲームをスキャン(&amp;S)</translation>
+        <translation>新しいゲームを検索(&amp;S)</translation>
     </message>
     <message>
         <source>Memory card &apos;%1&apos; could not be found. Try starting the game and saving to create it.</source>
@@ -4222,7 +4258,7 @@ Login token generated on %2.</source>
     </message>
     <message>
         <source>Show Titles (Grid View)</source>
-        <translation>タイトルを表示（グリッドビュー）</translation>
+        <translation>ゲーム名表示（グリッドビュー）</translation>
     </message>
     <message>
         <source>Zoom &amp;Out (Grid View)</source>
@@ -4785,8 +4821,8 @@ URLは次のとおりです : %1</translation>
         <translation>高度な設定</translation>
     </message>
     <message>
-        <source>&lt;strong&gt;Game List Settings&lt;/strong&gt;&lt;hr&gt;The list above shows the directories which will be searched by DuckStation to populate the game list. Search directories can be added, removed, and switched to recursive/non-recursive. Additionally, the redump.org database can be downloaded or updated to provide titles for discs, as the discs themselves do not provide title information.</source>
-        <translation>&lt;strong&gt;ゲームリストの設定&lt;/strong&gt;&lt;hr&gt;上のリストは、DuckStationがゲームリストに入力するために検索するディレクトリを示しています。検索ディレクトリは、追加、削除、および再帰的/非再帰的に切り替えることができます。さらに、ディスク自体はタイトル情報を提供しないため、redump.orgデータベースをダウンロードまたは更新して、ディスクのタイトルを提供することができます。</translation>
+        <source>&lt;strong&gt;Game List Settings&lt;/strong&gt;&lt;hr&gt;The list above shows the directories which will be searched by DuckStation to populate the game list. Search directories can be added, removed, and switched to recursive/non-recursive.</source>
+        <translation>&lt;strong&gt;ゲームリスト設定&lt;/strong&gt;&lt;hr&gt;上のリストは、DuckStationがゲームリストに入力するために検索したディレクトリを示しています。ディレクトリは、追加、削除、および再読込/再読込無しに切り替えることができます。</translation>
     </message>
     <message>
         <source>Memory Card Settings</source>
@@ -4829,7 +4865,7 @@ URLは次のとおりです : %1</translation>
     </message>
     <message>
         <source>Per-game memory card cannot be used for slot %u as the running game has no title. Using shared card instead.</source>
-        <translation>実行中のゲームにはタイトルがないため、ゲームごとのメモリカードをスロット %u に使用することはできません。代わりに共有カードを使用します。</translation>
+        <translation>実行中のゲームには名称がないため、ゲームごとのメモリカードをスロット %u に使用することはできません。代わりに共有カードを使用します。</translation>
     </message>
     <message>
         <source>Removing current media from playlist, removing media from CD-ROM.</source>
@@ -4952,7 +4988,7 @@ SBIファイルを追加する方法については、READMEを確認してく�
     </message>
     <message>
         <source>Frame Step</source>
-        <translation>フレームステップ</translation>
+        <translation>コマ送り</translation>
     </message>
     <message>
         <source>Reload Texture Replacements</source>
@@ -5037,6 +5073,10 @@ SBIファイルを追加する方法については、READMEを確認してく�
     <message>
         <source>Save Screenshot</source>
         <translation>スクリーンショットを保存</translation>
+    </message>
+    <message>
+        <source>ChangeDisc</source>
+        <translation>ディスク交換</translation>
     </message>
     <message>
         <source>Graphics</source>
@@ -5640,10 +5680,10 @@ Achievements: %5 (%6 points)
 
 </source>
         <translation>ゲームID:%1
-ゲームタイトル:%2
+ゲーム名:%2
 開発元:%3
 販売元:%4
-Achievements:%5 (%6点)
+Achievements:%5 (%6 点)
 
 </translation>
     </message>
@@ -5723,7 +5763,7 @@ Achievements:%5 (%6点)
     </message>
     <message>
         <source>When using a multi-disc format (m3u/pbp) and per-game (title) memory cards, a single memory card will be used for all discs. If unchecked, a separate card will be used for each disc.</source>
-        <translation>マルチディスクフォーマット（m3u / pbp）およびゲームごと（タイトル）のメモリカードを使用する場合、すべてのディスクに1枚のメモリカードが使用されます。チェックを外すと、ディスクごとに別々のカードが使用されます。</translation>
+        <translation>マルチディスクフォーマット（m3u / pbp）およびゲームごと（ゲーム名）のメモリカードを使用する場合、すべてのディスクに1枚のメモリカードが使用されます。チェックを外すと、ディスクごとに別々のカードが使用されます。</translation>
     </message>
     <message>
         <source>If one of the &quot;separate card per game&quot; memory card modes is chosen, these memory cards will be saved to the memory cards directory.</source>
@@ -5739,11 +5779,11 @@ Achievements:%5 (%6点)
     </message>
     <message>
         <source>The memory card editor enables you to move saves between cards, as well as import cards of other formats.</source>
-        <translation>メモリカードエディタを使用すると、カード間でセーブデータを移動したり、他の形式のカードをインポートしたりできます。</translation>
+        <translation>メモリカードエディタを使用すると、カード間でセーブデータを移動したり、他の形式のカードをインポートできます。</translation>
     </message>
     <message>
         <source>When using a playlist (m3u) and per-game (title) memory cards, a single memory card will be used for all discs. If unchecked, a separate card will be used for each disc.</source>
-        <translation>プレイリスト（m3u）とゲームごと（タイトル）のメモリーカードを使用する場合、すべてのディスクに1枚のメモリーカードが使用されます。チェックを外すと、ディスクごとに別々のカードが使用されます。</translation>
+        <translation>プレイリスト（m3u）とゲームごと（ゲーム名）のメモリーカードを使用する場合、すべてのディスクに1枚のメモリーカードが使用されます。チェックを外すと、ディスクごとに別々のカードが使用されます。</translation>
     </message>
     <message>
         <source>Memory Card Type:</source>
@@ -5838,7 +5878,7 @@ Achievements:%5 (%6点)
     <name>MemoryCardType</name>
     <message>
         <source>Separate Card Per Game (Game Title)</source>
-        <translation>ゲームごとに別々のカード（ゲームタイトル）</translation>
+        <translation>ゲームごとに別々のカード（ゲーム名）</translation>
     </message>
     <message>
         <source>Shared Between All Games</source>
