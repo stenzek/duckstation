@@ -2007,9 +2007,10 @@ void CDROM::ProcessDataSectorHeader(const u8* raw_sector)
 
 void CDROM::ProcessDataSector(const u8* raw_sector, const CDImage::SubChannelQ& subq)
 {
+  const u32 sb_num = (m_current_write_sector_buffer + 1) % NUM_SECTOR_BUFFERS;
   Log_DevPrintf("Read sector %u: mode %u submode 0x%02X into buffer %u", m_current_lba,
                 ZeroExtend32(m_last_sector_header.sector_mode), ZeroExtend32(m_last_sector_subheader.submode.bits),
-                m_current_write_sector_buffer);
+                sb_num);
 
   // The reading bit shouldn't be set until the first sector is processed.
   m_secondary_status.reading = true;
@@ -2026,7 +2027,6 @@ void CDROM::ProcessDataSector(const u8* raw_sector, const CDImage::SubChannelQ& 
   }
 
   // TODO: How does XA relate to this buffering?
-  const u32 sb_num = (m_current_write_sector_buffer + 1) % NUM_SECTOR_BUFFERS;
   SectorBuffer* sb = &m_sector_buffers[sb_num];
   if (sb->size > 0)
   {
@@ -2064,8 +2064,17 @@ void CDROM::ProcessDataSector(const u8* raw_sector, const CDImage::SubChannelQ& 
     ClearAsyncInterrupt();
   }
 
-  m_async_response_fifo.Push(m_secondary_status.bits);
-  SetAsyncInterrupt(Interrupt::DataReady);
+  if (HasPendingInterrupt())
+  {
+    const u32 sectors_missed = (m_current_write_sector_buffer - m_current_read_sector_buffer) % NUM_SECTOR_BUFFERS;
+    if (sectors_missed > 1)
+      Log_WarningPrintf("Interrupt not processed in time, missed %u sectors", sectors_missed - 1);
+  }
+  else
+  {
+    m_async_response_fifo.Push(m_secondary_status.bits);
+    SetAsyncInterrupt(Interrupt::DataReady);
+  }
 }
 
 static std::array<std::array<s16, 29>, 7> s_zigzag_table = {
@@ -2372,7 +2381,14 @@ void CDROM::LoadDataFIFO()
   }
 
   Log_DebugPrintf("Loaded %u bytes to data FIFO from buffer %u", m_data_fifo.GetSize(), m_current_read_sector_buffer);
-  m_current_read_sector_buffer = m_current_write_sector_buffer;
+
+  SectorBuffer& next_sb = m_sector_buffers[m_current_write_sector_buffer];
+  if (next_sb.size > 0)
+  {
+    Log_DevPrintf("Sending additional INT1 for missed sector in buffer %u", m_current_write_sector_buffer);
+    m_async_response_fifo.Push(m_secondary_status.bits);
+    SetAsyncInterrupt(Interrupt::DataReady);
+  }
 }
 
 void CDROM::ClearSectorBuffers()
