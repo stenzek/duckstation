@@ -8,6 +8,7 @@
 #include "rapidjson/document.h"
 #include "rapidjson/error/en.h"
 #include <iomanip>
+#include <sstream>
 Log_SetChannel(GameDatabase);
 
 GameDatabase::GameDatabase() = default;
