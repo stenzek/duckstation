@@ -577,8 +577,8 @@ void CDROM::SetAsyncInterrupt(Interrupt interrupt)
 {
   if (m_interrupt_flag_register == static_cast<u8>(interrupt))
   {
-    Log_WarningPrintf("Not setting async interrupt %u because there is already one unacknowledged",
-                      static_cast<u8>(interrupt));
+    Log_DevPrintf("Not setting async interrupt %u because there is already one unacknowledged",
+                  static_cast<u8>(interrupt));
     m_async_response_fifo.Clear();
     return;
   }
@@ -2070,11 +2070,9 @@ void CDROM::ProcessDataSector(const u8* raw_sector, const CDImage::SubChannelQ& 
     if (sectors_missed > 1)
       Log_WarningPrintf("Interrupt not processed in time, missed %u sectors", sectors_missed - 1);
   }
-  else
-  {
-    m_async_response_fifo.Push(m_secondary_status.bits);
-    SetAsyncInterrupt(Interrupt::DataReady);
-  }
+
+  m_async_response_fifo.Push(m_secondary_status.bits);
+  SetAsyncInterrupt(Interrupt::DataReady);
 }
 
 static std::array<std::array<s16, 29>, 7> s_zigzag_table = {
