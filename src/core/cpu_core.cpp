@@ -421,7 +421,6 @@ ALWAYS_INLINE_RELEASE static u32 ReadCop0Reg(Cop0Reg reg)
       return g_state.cop0_regs.PRID;
 
     default:
-      Log_WarningPrintf("Unknown COP0 reg read %u", ZeroExtend32(static_cast<u8>(reg)));
       return 0;
   }
 }
@@ -433,28 +432,28 @@ ALWAYS_INLINE_RELEASE static void WriteCop0Reg(Cop0Reg reg, u32 value)
     case Cop0Reg::BPC:
     {
       g_state.cop0_regs.BPC = value;
-      Log_WarningPrintf("COP0 BPC <- %08X", value);
+      Log_DevPrintf("COP0 BPC <- %08X", value);
     }
     break;
 
     case Cop0Reg::BPCM:
     {
       g_state.cop0_regs.BPCM = value;
-      Log_WarningPrintf("COP0 BPCM <- %08X", value);
+      Log_DevPrintf("COP0 BPCM <- %08X", value);
     }
     break;
 
     case Cop0Reg::BDA:
     {
       g_state.cop0_regs.BDA = value;
-      Log_WarningPrintf("COP0 BDA <- %08X", value);
+      Log_DevPrintf("COP0 BDA <- %08X", value);
     }
     break;
 
     case Cop0Reg::BDAM:
     {
       g_state.cop0_regs.BDAM = value;
-      Log_WarningPrintf("COP0 BDAM <- %08X", value);
+      Log_DevPrintf("COP0 BDAM <- %08X", value);
     }
     break;
 
@@ -468,7 +467,7 @@ ALWAYS_INLINE_RELEASE static void WriteCop0Reg(Cop0Reg reg, u32 value)
     {
       g_state.cop0_regs.dcic.bits =
         (g_state.cop0_regs.dcic.bits & ~Cop0Registers::DCIC::WRITE_MASK) | (value & Cop0Registers::DCIC::WRITE_MASK);
-      Log_WarningPrintf("COP0 DCIC <- %08X (now %08X)", value, g_state.cop0_regs.dcic.bits);
+      Log_DevPrintf("COP0 DCIC <- %08X (now %08X)", value, g_state.cop0_regs.dcic.bits);
       UpdateDebugDispatcherFlag();
     }
     break;
@@ -492,7 +491,7 @@ ALWAYS_INLINE_RELEASE static void WriteCop0Reg(Cop0Reg reg, u32 value)
     break;
 
     default:
-      Log_WarningPrintf("Unknown COP0 reg write %u (%08X)", ZeroExtend32(static_cast<u8>(reg)), value);
+      Log_DevPrintf("Unknown COP0 reg write %u (%08X)", ZeroExtend32(static_cast<u8>(reg)), value);
       break;
   }
 }

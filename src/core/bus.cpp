@@ -917,11 +917,11 @@ static TickCount DoEXP2Access(u32 offset, u32& value)
     }
     else if (offset == 0x41 || offset == 0x42)
     {
-      Log_WarningPrintf("BIOS POST status: %02X", value & UINT32_C(0x0F));
+      Log_DevPrintf("BIOS POST status: %02X", value & UINT32_C(0x0F));
     }
     else if (offset == 0x70)
     {
-      Log_WarningPrintf("BIOS POST2 status: %02X", value & UINT32_C(0x0F));
+      Log_DevPrintf("BIOS POST2 status: %02X", value & UINT32_C(0x0F));
     }
     else
     {
