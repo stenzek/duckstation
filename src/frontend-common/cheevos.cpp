@@ -608,7 +608,7 @@ static void GetUserUnlocksCallback(s32 status_code, const FrontendCommon::HTTPDo
 
 static void GetUserUnlocks()
 {
-  char url[256];
+  char url[512];
   int res = rc_url_get_unlock_list(url, sizeof(url), s_username.c_str(), s_login_token.c_str(), g_game_id,
                                    static_cast<int>(g_challenge_mode));
   Assert(res == 0);
@@ -752,7 +752,7 @@ static void GetPatchesCallback(s32 status_code, const FrontendCommon::HTTPDownlo
 
 static void GetPatches(u32 game_id)
 {
-  char url[256] = {};
+  char url[512];
   int res = rc_url_get_patch(url, sizeof(url), s_username.c_str(), s_login_token.c_str(), game_id);
   Assert(res == 0);
 
@@ -899,7 +899,7 @@ void SendPlaying()
   if (!HasActiveGame())
     return;
 
-  char url[256];
+  char url[512];
   int res = rc_url_post_playing(url, sizeof(url), s_username.c_str(), s_login_token.c_str(), g_game_id);
   Assert(res == 0);
 
@@ -942,7 +942,7 @@ void SendPing()
   if (s_has_rich_presence)
     UpdateRichPresence();
 
-  char url[256];
+  char url[512];
   char post_data[512];
   int res = rc_url_ping(url, sizeof(url), post_data, sizeof(post_data), s_username.c_str(), s_login_token.c_str(),
                         g_game_id, s_rich_presence_string.c_str());
@@ -1101,7 +1101,7 @@ void UnlockAchievement(u32 achievement_id, bool add_notification /* = true*/)
     return;
   }
 
-  char url[256];
+  char url[512];
   rc_url_award_cheevo(url, sizeof(url), s_username.c_str(), s_login_token.c_str(), achievement_id,
                       static_cast<int>(g_challenge_mode), s_game_hash.c_str());
   s_http_downloader->CreateRequest(url, UnlockAchievementCallback);
