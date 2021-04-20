@@ -1813,17 +1813,6 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                      PauseSystem(!System::IsPaused());
                  });
 
-  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("ToggleCheats"),
-                 StaticString(TRANSLATABLE("Hotkeys", "Toggle Cheats")), [this](bool pressed) {
-                   if (pressed && System::IsValid())
-                   {
-                     if (!IsCheevosChallengeModeActive())
-                       DoToggleCheats();
-                     else
-                       DisplayHotkeyBlockedByChallengeModeMessage();
-                   }
-                 });
-
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("PowerOff"),
                  StaticString(TRANSLATABLE("Hotkeys", "Power Off System")), [this](bool pressed) {
                    if (pressed && System::IsValid())
@@ -1849,12 +1838,7 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                      PowerOffSystem(ShouldSaveResumeState());
                    }
                  });
-#else
-  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("TogglePatchCodes"),
-                 StaticString(TRANSLATABLE("Hotkeys", "Toggle Patch Codes")), [this](bool pressed) {
-                   if (pressed && System::IsValid() && !IsCheevosChallengeModeActive())
-                     DoToggleCheats();
-                 });
+
 #endif
 
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("Reset"),
@@ -1880,6 +1864,7 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                    }
                  });
 
+#ifndef __ANDROID__
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("FrameStep"),
                  StaticString(TRANSLATABLE("Hotkeys", "Frame Step")), [this](bool pressed) {
                    if (pressed && System::IsValid())
@@ -1891,7 +1876,6 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                    }
                  });
 
-#ifndef __ANDROID__
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("Rewind"),
                  StaticString(TRANSLATABLE("Hotkeys", "Rewind")), [this](bool pressed) {
                    if (System::IsValid())
@@ -1909,7 +1893,55 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                      }
                    }
                  });
+
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("ToggleCheats"),
+                 StaticString(TRANSLATABLE("Hotkeys", "Toggle Cheats")), [this](bool pressed) {
+                   if (pressed && System::IsValid())
+                   {
+                     if (!IsCheevosChallengeModeActive())
+                       DoToggleCheats();
+                     else
+                       DisplayHotkeyBlockedByChallengeModeMessage();
+                   }
+                 });
+#else
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("TogglePatchCodes"),
+                 StaticString(TRANSLATABLE("Hotkeys", "Toggle Patch Codes")), [this](bool pressed) {
+                   if (pressed && System::IsValid())
+                   {
+                     if (!IsCheevosChallengeModeActive())
+                       DoToggleCheats();
+                     else
+                       DisplayHotkeyBlockedByChallengeModeMessage();
+                   }
+                 });
 #endif
+
+  RegisterHotkey(
+    StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("ToggleOverclocking"),
+    StaticString(TRANSLATABLE("Hotkeys", "Toggle Clock Speed Control (Overclocking)")), [this](bool pressed) {
+      if (pressed && System::IsValid())
+      {
+        g_settings.cpu_overclock_enable = !g_settings.cpu_overclock_enable;
+        g_settings.UpdateOverclockActive();
+        System::UpdateOverclock();
+
+        if (g_settings.cpu_overclock_enable)
+        {
+          const u32 percent = g_settings.GetCPUOverclockPercent();
+          const double clock_speed =
+            ((static_cast<double>(System::MASTER_CLOCK) * static_cast<double>(percent)) / 100.0) / 1000000.0;
+          AddFormattedOSDMessage(5.0f,
+                                 TranslateString("OSDMessage", "CPU clock speed control enabled (%u%% / %.3f MHz)."),
+                                 percent, clock_speed);
+        }
+        else
+        {
+          AddFormattedOSDMessage(5.0f, TranslateString("OSDMessage", "CPU clock speed control disabled (%.3f MHz)."),
+                                 static_cast<double>(System::MASTER_CLOCK) / 1000000.0);
+        }
+      }
+    });
 }
 
 void CommonHostInterface::RegisterGraphicsHotkeys()
