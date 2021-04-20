@@ -14,8 +14,8 @@ AchievementLoginDialog::~AchievementLoginDialog() = default;
 
 void AchievementLoginDialog::loginClicked()
 {
-  const std::string username(m_ui.userName->text().toStdString());
-  const std::string password(m_ui.password->text().toStdString());
+  const QString username(m_ui.userName->text());
+  const QString password(m_ui.password->text());
 
   // TODO: Make cancellable.
   m_ui.status->setText(tr("Logging in..."));
@@ -24,7 +24,10 @@ void AchievementLoginDialog::loginClicked()
 
   bool result;
   QtHostInterface::GetInstance()->executeOnEmulationThread(
-    [&username, &password, &result]() { result = Cheevos::Login(username.c_str(), password.c_str()); }, true);
+    [username, password, &result]() {
+      result = Cheevos::Login(username.toStdString().c_str(), password.toStdString().c_str());
+    },
+    true);
 
   if (!result)
   {
