@@ -13,6 +13,7 @@ public:
 private Q_SLOTS:
   void loginClicked();
   void cancelClicked();
+  void processLoginResult(bool result);
 
 private:
   void connectUi();
