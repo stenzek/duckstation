@@ -7,6 +7,8 @@ assignees: ''
 
 ---
 
+**YOU MUST FILL OUT THIS ISSUE TEMPLATE. IT IS NOT OPTIONAL.** Issues which are not created with the template **will be ignored and closed**.
+
 Please read before creating a new issue:
 
 1. Make sure there is not already an open issue for this bug.

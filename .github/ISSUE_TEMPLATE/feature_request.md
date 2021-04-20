@@ -7,6 +7,8 @@ assignees: ''
 
 ---
 
+**YOU MUST FILL OUT THIS ISSUE TEMPLATE. IT IS NOT OPTIONAL.** Issues which are not created with the template **will be ignored and closed**.
+
 **Is your feature request related to a problem? Please describe.**
 A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
 
