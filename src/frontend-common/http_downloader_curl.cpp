@@ -5,6 +5,8 @@
 #include "common/timer.h"
 #include <algorithm>
 #include <functional>
+#include <pthread.h>
+#include <signal.h>
 Log_SetChannel(HTTPDownloaderCurl);
 
 namespace FrontendCommon {
@@ -70,6 +72,15 @@ void HTTPDownloaderCurl::ProcessRequest(Request* req)
 
   cancel_lock.unlock();
 
+  // Apparently OpenSSL can fire SIGPIPE...
+  sigset_t old_block_mask = {};
+  sigset_t new_block_mask = {};
+  sigemptyset(&old_block_mask);
+  sigemptyset(&new_block_mask);
+  sigaddset(&new_block_mask, SIGPIPE);
+  if (pthread_sigmask(SIG_BLOCK, &new_block_mask, &old_block_mask) != 0)
+    Log_WarningPrint("Failed to block SIGPIPE");
+
   req->start_time = Common::Timer::GetValue();
   int ret = curl_easy_perform(req->handle);
   if (ret == CURLE_OK)
@@ -86,6 +97,9 @@ void HTTPDownloaderCurl::ProcessRequest(Request* req)
   }
 
   curl_easy_cleanup(req->handle);
+
+  if (pthread_sigmask(SIG_UNBLOCK, &new_block_mask, &old_block_mask) != 0)
+    Log_WarningPrint("Failed to unblock SIGPIPE");
 
   cancel_lock.lock();
   req->state = Request::State::Complete;
@@ -120,6 +134,7 @@ bool HTTPDownloaderCurl::StartRequest(HTTPDownloader::Request* request)
   curl_easy_setopt(req->handle, CURLOPT_USERAGENT, m_user_agent.c_str());
   curl_easy_setopt(req->handle, CURLOPT_WRITEFUNCTION, &HTTPDownloaderCurl::WriteCallback);
   curl_easy_setopt(req->handle, CURLOPT_WRITEDATA, req);
+  curl_easy_setopt(req->handle, CURLOPT_NOSIGNAL, 1);
 
   if (request->type == Request::Type::Post)
   {
