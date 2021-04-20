@@ -1068,18 +1068,21 @@ void CDROM::ExecuteCommand()
 
     case Command::Pause:
     {
-      if (m_secondary_status.seeking)
+      const bool was_reading = (m_drive_state == DriveState::Reading || m_drive_state == DriveState::Playing);
+      const TickCount pause_time = was_reading ? (m_mode.double_speed ? 2000000 : 1000000) : 7000;
+
+      if (m_drive_state == DriveState::SeekingLogical || m_drive_state == DriveState::SeekingPhysical)
       {
         // TODO: On console, this returns an error. But perhaps only during the coarse/fine seek part? Needs more
         // hardware tests.
-        Log_WarningPrintf("CDROM Pause command while seeking - updating position");
-        UpdatePositionWhileSeeking();
+        Log_WarningPrintf("CDROM Pause command while seeking from %u to %u - jumping to seek target", m_seek_start_lba,
+                          m_seek_end_lba);
         m_drive_event->Deactivate();
+        m_read_after_seek = false;
+        m_play_after_seek = false;
+        CompleteSeek();
       }
 
-      // TODO: Should return an error if seeking.
-      const bool was_reading = (m_drive_state == DriveState::Reading || m_drive_state == DriveState::Playing);
-      const TickCount pause_time = was_reading ? (m_mode.double_speed ? 2000000 : 1000000) : 7000;
       Log_DebugPrintf("CDROM pause command");
       SendACKAndStat();
 
@@ -1553,6 +1556,8 @@ void CDROM::BeginSeeking(bool logical, bool read_after_seek, bool play_after_see
 
   m_read_after_seek = read_after_seek;
   m_play_after_seek = play_after_seek;
+
+  // TODO: Pending should stay set on seek command.
   m_setloc_pending = false;
 
   Log_DebugPrintf("Seeking to [%02u:%02u:%02u] (LBA %u) (%s)", m_setloc_position.minute, m_setloc_position.second,
@@ -1711,7 +1716,7 @@ void CDROM::DoResetComplete(TickCount ticks_late)
   }
 }
 
-void CDROM::DoSeekComplete(TickCount ticks_late)
+bool CDROM::CompleteSeek()
 {
   const bool logical = (m_drive_state == DriveState::SeekingLogical);
   m_drive_state = DriveState::Idle;
@@ -1767,7 +1772,13 @@ void CDROM::DoSeekComplete(TickCount ticks_late)
 
   m_current_lba = m_reader.GetLastReadSector();
   ResetPhysicalPosition();
+  return seek_okay;
+}
 
+void CDROM::DoSeekComplete(TickCount ticks_late)
+{
+  const bool logical = (m_drive_state == DriveState::SeekingLogical);
+  const bool seek_okay = CompleteSeek();
   if (seek_okay)
   {
     // seek complete, transition to play/read if requested
