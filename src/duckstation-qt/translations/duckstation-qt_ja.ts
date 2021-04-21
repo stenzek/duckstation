@@ -5075,7 +5075,7 @@ SBIファイルを追加する方法については、READMEを確認してく�
         <translation>スクリーンショットを保存</translation>
     </message>
     <message>
-        <source>ChangeDisc</source>
+        <source>Change Disc</source>
         <translation>ディスク交換</translation>
     </message>
     <message>
