@@ -390,9 +390,20 @@ void CDImage::GenerateSubChannelQ(SubChannelQ* subq, const Index& index, u32 ind
     (index.track_number <= m_tracks.size() ? BinaryToBCD(index.track_number) : index.track_number);
   subq->index_number_bcd = BinaryToBCD(index.index_number);
 
-  const Position relative_position =
-    Position::FromLBA(std::abs(static_cast<s32>(index.start_lba_in_track + index_offset)));
+  Position relative_position;
+  if (index.is_pregap)
+  {
+    // position should count down to the end of the pregap
+    relative_position = Position::FromLBA(index.length - index_offset);
+  }
+  else
+  {
+    // count up from the start of the track
+    relative_position = Position::FromLBA(index.start_lba_in_track + index_offset);
+  }
+
   std::tie(subq->relative_minute_bcd, subq->relative_second_bcd, subq->relative_frame_bcd) = relative_position.ToBCD();
+
   subq->reserved = 0;
 
   const Position absolute_position = Position::FromLBA(index.start_lba_on_disc + index_offset);
