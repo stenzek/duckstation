@@ -2536,10 +2536,10 @@ bool CodeGenerator::Compile_cop0(const CodeBlockInstruction& cbi)
             m_register_cache.UninhibitAllocation();
 
             // exit block early if enabled
-            m_register_cache.PushState();
-            EmitFunctionCall(nullptr, &CPU::UpdateDebugDispatcherFlag);
+            EmitBranch(GetCurrentFarCodePointer());
+            SwitchToFarCode();
             EmitExceptionExit();
-            m_register_cache.PopState();
+            SwitchToNearCode();
 
             EmitBindLabel(&not_enabled);
           }
