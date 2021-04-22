@@ -2311,10 +2311,6 @@ void CDROM::ProcessCDDASector(const u8* raw_sector, const CDImage::SubChannelQ& 
     {
       m_last_cdda_report_frame_nibble = frame_nibble;
 
-      Log_DebugPrintf("CDDA report at track[%02x] index[%02x] rel[%02x:%02x:%02x]", subq.track_number_bcd,
-                      subq.index_number_bcd, subq.relative_minute_bcd, subq.relative_second_bcd,
-                      subq.relative_frame_bcd);
-
       ClearAsyncInterrupt();
       m_async_response_fifo.Push(m_secondary_status.bits);
       m_async_response_fifo.Push(subq.track_number_bcd);
@@ -2339,6 +2335,11 @@ void CDROM::ProcessCDDASector(const u8* raw_sector, const CDImage::SubChannelQ& 
       m_async_response_fifo.Push(Truncate8(peak_value));      // peak low
       m_async_response_fifo.Push(Truncate8(peak_value >> 8)); // peak high
       SetAsyncInterrupt(Interrupt::DataReady);
+
+      Log_DevPrintf("CDDA report at track[%02x] index[%02x] rel[%02x:%02x:%02x] abs[%02x:%02x:%02x] peak[%u:%d]",
+                    subq.track_number_bcd, subq.index_number_bcd, subq.relative_minute_bcd, subq.relative_second_bcd,
+                    subq.relative_frame_bcd, subq.absolute_minute_bcd, subq.absolute_second_bcd,
+                    subq.absolute_frame_bcd, channel, peak_volume);
     }
   }
 
