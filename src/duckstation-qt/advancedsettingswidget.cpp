@@ -193,6 +193,9 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(QtHostInterface* host_interface, 
   addBooleanTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Increase Timer Resolution"), "Main",
                         "IncreaseTimerResolution", true);
 
+  addBooleanTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Allow Booting Without SBI File"), "CDROM",
+                        "AllowBootingWithoutSBIFile", false);
+
   dialog->registerWidgetHelp(m_ui.logLevel, tr("Log Level"), tr("Information"),
                              tr("Sets the verbosity of messages logged. Higher levels will log more messages."));
   dialog->registerWidgetHelp(m_ui.logToConsole, tr("Log To System Console"), tr("User Preference"),
@@ -231,4 +234,5 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
   setIntRangeTweakOption(m_ui.tweakOptionTable, 17, static_cast<int>(Settings::DEFAULT_GPU_MAX_RUN_AHEAD));
   setBooleanTweakOption(m_ui.tweakOptionTable, 18, false);
   setBooleanTweakOption(m_ui.tweakOptionTable, 19, true);
+  setBooleanTweakOption(m_ui.tweakOptionTable, 20, false);
 }
