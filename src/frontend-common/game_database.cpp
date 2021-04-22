@@ -118,8 +118,11 @@ static const rapidjson::Value* FindDatabaseEntry(const std::string_view& code, r
         continue;
       }
 
-      if (StringUtil::Strncasecmp(current_code.GetString(), code.data(), code.length()) == 0)
+      if (current_code.GetStringLength() == code.length() &&
+          StringUtil::Strncasecmp(current_code.GetString(), code.data(), code.length()) == 0)
+      {
         return &current;
+      }
     }
   }
 
