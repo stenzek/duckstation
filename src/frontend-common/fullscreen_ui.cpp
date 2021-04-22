@@ -1100,6 +1100,8 @@ static bool ToggleButtonForNonSetting(const char* title, const char* summary, co
   return true;
 }
 
+#ifdef WITH_CHEEVOS
+
 static void DrawAchievementsLoginWindow()
 {
   ImGui::SetNextWindowSize(LayoutScale(700.0f, 0.0f));
@@ -1184,6 +1186,8 @@ static bool ConfirmChallengeModeEnable()
   s_host_interface->PowerOffSystem(s_host_interface->ShouldSaveResumeState());
   return true;
 }
+
+#endif
 
 static bool WantsToCloseMenu()
 {
