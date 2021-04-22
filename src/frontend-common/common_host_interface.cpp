@@ -1854,7 +1854,7 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                  });
 
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("ChangeDisc"),
-                 StaticString(TRANSLATABLE("Hotkeys", "ChangeDisc")), [this](bool pressed) {
+                 StaticString(TRANSLATABLE("Hotkeys", "Change Disc")), [this](bool pressed) {
                    if (pressed && System::IsValid() && System::HasMediaSubImages())
                    {
                      const u32 current = System::GetMediaSubImageIndex();

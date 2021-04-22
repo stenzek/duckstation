@@ -5312,7 +5312,7 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1857"/>
-        <source>ChangeDisc</source>
+        <source>Change Disc</source>
         <translation>换碟</translation>
     </message>
     <message>
