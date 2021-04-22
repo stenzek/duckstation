@@ -2515,29 +2515,36 @@ bool CodeGenerator::Compile_cop0(const CodeBlockInstruction& cbi)
             EmitBindLabel(&no_interrupt);
             m_register_cache.UninhibitAllocation();
           }
-          else if (reg == Cop0Reg::DCIC)
+          else if (reg == Cop0Reg::DCIC && g_settings.cpu_recompiler_memory_exceptions)
           {
             Value dcic_value = m_register_cache.AllocateScratch(RegSize_32);
             m_register_cache.InhibitAllocation();
 
             // if ((dcic & master_enable_bits) != master_enable_bits) goto not_enabled;
             LabelType not_enabled;
-            EmitLoadCPUStructField(dcic_value.host_reg, dcic_value.size, offsetof(State, cop0_regs.dcic.bits));
-            EmitAnd(dcic_value.host_reg, dcic_value.host_reg,
+            EmitLoadCPUStructField(dcic_value.GetHostRegister(), dcic_value.size, offsetof(State, cop0_regs.dcic.bits));
+            EmitAnd(dcic_value.GetHostRegister(), dcic_value.GetHostRegister(),
                     Value::FromConstantU32(Cop0Registers::DCIC::MASTER_ENABLE_BITS));
             EmitConditionalBranch(Condition::NotEqual, false, dcic_value.host_reg,
                                   Value::FromConstantU32(Cop0Registers::DCIC::MASTER_ENABLE_BITS), &not_enabled);
 
             // if ((dcic & breakpoint_bits) == 0) goto not_enabled;
-            EmitLoadCPUStructField(dcic_value.host_reg, dcic_value.size, offsetof(State, cop0_regs.dcic.bits));
-            EmitTest(dcic_value.host_reg, Value::FromConstantU32(Cop0Registers::DCIC::ANY_BREAKPOINTS_ENABLED_BITS));
+            EmitLoadCPUStructField(dcic_value.GetHostRegister(), dcic_value.size, offsetof(State, cop0_regs.dcic.bits));
+            EmitTest(dcic_value.GetHostRegister(),
+                     Value::FromConstantU32(Cop0Registers::DCIC::ANY_BREAKPOINTS_ENABLED_BITS));
             EmitConditionalBranch(Condition::Zero, false, &not_enabled);
+
+            // update dispatcher flag, if enabled, exit block
+            EmitFunctionCall(nullptr, &UpdateDebugDispatcherFlag);
+            EmitLoadCPUStructField(dcic_value.GetHostRegister(), RegSize_8, offsetof(State, use_debug_dispatcher));
+            EmitBranchIfBitClear(dcic_value.GetHostRegister(), RegSize_8, 0, &not_enabled);
 
             m_register_cache.UninhibitAllocation();
 
             // exit block early if enabled
             EmitBranch(GetCurrentFarCodePointer());
             SwitchToFarCode();
+            WriteNewPC(CalculatePC(), false);
             EmitExceptionExit();
             SwitchToNearCode();
 
