@@ -51,6 +51,8 @@ static jfieldID s_android_FileHelper_FindResult_relativeName;
 static jfieldID s_android_FileHelper_FindResult_size;
 static jfieldID s_android_FileHelper_FindResult_modifiedTime;
 static jfieldID s_android_FileHelper_FindResult_flags;
+static jmethodID s_android_FileHelper_getDisplayName;
+static jmethodID s_android_FileHelper_getRelativePathForURIPath;
 
 // helper for retrieving the current per-thread jni environment
 static JNIEnv* GetJNIEnv()
@@ -89,6 +91,8 @@ void SetAndroidFileHelper(void* jvm, void* env, void* object)
 
     jenv->DeleteGlobalRef(s_android_FileHelper_object);
     jenv->DeleteGlobalRef(s_android_FileHelper_class);
+    s_android_FileHelper_getRelativePathForURIPath = {};
+    s_android_FileHelper_getDisplayName = {};
     s_android_FileHelper_openURIAsFileDescriptor = {};
     s_android_FileHelper_FindFiles = {};
     s_android_FileHelper_object = {};
@@ -114,7 +118,13 @@ void SetAndroidFileHelper(void* jvm, void* env, void* object)
   s_android_FileHelper_FindFiles =
     jenv->GetMethodID(s_android_FileHelper_class, "findFiles",
                       "(Ljava/lang/String;I)[Lcom/github/stenzek/duckstation/FileHelper$FindResult;");
-  Assert(s_android_FileHelper_openURIAsFileDescriptor && s_android_FileHelper_FindFiles);
+  s_android_FileHelper_getDisplayName =
+    jenv->GetMethodID(s_android_FileHelper_class, "getDisplayNameForURIPath", "(Ljava/lang/String;)Ljava/lang/String;");
+  s_android_FileHelper_getRelativePathForURIPath =
+    jenv->GetMethodID(s_android_FileHelper_class, "getRelativePathForURIPath",
+                      "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;");
+  Assert(s_android_FileHelper_openURIAsFileDescriptor && s_android_FileHelper_FindFiles &&
+         s_android_FileHelper_getDisplayName && s_android_FileHelper_getRelativePathForURIPath);
 
   jclass fr_class = jenv->FindClass("com/github/stenzek/duckstation/FileHelper$FindResult");
   Assert(fr_class);
@@ -276,6 +286,68 @@ static bool FindUriFiles(const char* path, const char* pattern, u32 flags, FindR
   }
 
   env->DeleteLocalRef(arr);
+  return true;
+}
+
+static bool GetDisplayNameForUriPath(const char* path, std::string* result)
+{
+  if (!s_android_FileHelper_object)
+    return false;
+
+  JNIEnv* env = GetJNIEnv();
+
+  jstring path_jstr = env->NewStringUTF(path);
+  jstring result_jstr = static_cast<jstring>(
+    env->CallObjectMethod(s_android_FileHelper_object, s_android_FileHelper_getDisplayName, path_jstr));
+  env->DeleteLocalRef(path_jstr);
+  if (!result_jstr)
+    return false;
+
+  const char* result_name = env->GetStringUTFChars(result_jstr, nullptr);
+  if (result_name)
+  {
+    Log_DevPrintf("GetDisplayNameForUriPath(\"%s\") -> \"%s\"", path, result_name);
+    result->assign(result_name);
+  }
+  else
+  {
+    result->clear();
+  }
+
+  env->ReleaseStringUTFChars(result_jstr, result_name);
+  env->DeleteLocalRef(result_jstr);
+  return true;
+}
+
+static bool GetRelativePathForUriPath(const char* path, const char* filename, std::string* result)
+{
+  if (!s_android_FileHelper_object)
+    return false;
+
+  JNIEnv* env = GetJNIEnv();
+
+  jstring path_jstr = env->NewStringUTF(path);
+  jstring filename_jstr = env->NewStringUTF(filename);
+  jstring result_jstr = static_cast<jstring>(env->CallObjectMethod(
+    s_android_FileHelper_object, s_android_FileHelper_getRelativePathForURIPath, path_jstr, filename_jstr));
+  env->DeleteLocalRef(filename_jstr);
+  env->DeleteLocalRef(path_jstr);
+  if (!result_jstr)
+    return false;
+
+  const char* result_name = env->GetStringUTFChars(result_jstr, nullptr);
+  if (result_name)
+  {
+    Log_DevPrintf("GetRelativePathForUriPath(\"%s\", \"%s\") -> \"%s\"", path, filename, result_name);
+    result->assign(result_name);
+  }
+  else
+  {
+    result->clear();
+  }
+
+  env->ReleaseStringUTFChars(result_jstr, result_name);
+  env->DeleteLocalRef(result_jstr);
   return true;
 }
 
@@ -510,17 +582,33 @@ bool IsAbsolutePath(const std::string_view& path)
 #endif
 }
 
-std::string StripExtension(const std::string_view& path)
+std::string_view StripExtension(const std::string_view& path)
 {
   std::string_view::size_type pos = path.rfind('.');
   if (pos == std::string::npos)
-    return std::string(path);
+    return path;
 
-  return std::string(path, 0, pos);
+  return path.substr(0, pos);
 }
 
 std::string ReplaceExtension(const std::string_view& path, const std::string_view& new_extension)
 {
+#ifdef __ANDROID__
+  // This is more complex on android because the path may not contain the actual filename.
+  if (IsUriPath(path))
+  {
+    std::string display_name(GetDisplayNameFromPath(path));
+    std::string_view::size_type pos = display_name.rfind('.');
+    if (pos == std::string::npos)
+      return std::string(path);
+
+    display_name.erase(pos + 1);
+    display_name.append(new_extension);
+
+    return BuildRelativePath(path, display_name);
+  }
+#endif
+
   std::string_view::size_type pos = path.rfind('.');
   if (pos == std::string::npos)
     return std::string(path);
@@ -572,6 +660,28 @@ static std::string_view::size_type GetLastSeperatorPosition(const std::string_vi
   return last_separator;
 }
 
+std::string GetDisplayNameFromPath(const std::string_view& path)
+{
+#if defined(__ANDROID__)
+  std::string result;
+
+  if (IsUriPath(path))
+  {
+    std::string temp(path);
+    if (!GetDisplayNameForUriPath(temp.c_str(), &result))
+      result = std::move(temp);
+  }
+  else
+  {
+    result = path;
+  }
+
+  return result;
+#else
+  return std::string(GetFileNameFromPath(path));
+#endif
+}
+
 std::string_view GetPathDirectory(const std::string_view& path)
 {
   std::string::size_type pos = GetLastSeperatorPosition(path, false);
@@ -583,7 +693,7 @@ std::string_view GetPathDirectory(const std::string_view& path)
 
 std::string_view GetFileNameFromPath(const std::string_view& path)
 {
-  std::string::size_type pos = GetLastSeperatorPosition(path, true);
+  std::string_view::size_type pos = GetLastSeperatorPosition(path, true);
   if (pos == std::string_view::npos)
     return path;
 
@@ -630,6 +740,15 @@ std::vector<std::string> GetRootDirectoryList()
 std::string BuildRelativePath(const std::string_view& filename, const std::string_view& new_filename)
 {
   std::string new_string;
+
+#ifdef __ANDROID__
+  if (IsUriPath(filename) &&
+      GetRelativePathForUriPath(std::string(filename).c_str(), std::string(new_filename).c_str(), &new_string))
+  {
+    return new_string;
+  }
+#endif
+
   std::string_view::size_type pos = GetLastSeperatorPosition(filename, true);
   if (pos != std::string_view::npos)
     new_string.assign(filename, 0, pos);

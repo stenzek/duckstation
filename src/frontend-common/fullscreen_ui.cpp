@@ -662,7 +662,7 @@ static void DoChangeDiscFromFile()
   };
 
   OpenFileSelector(ICON_FA_COMPACT_DISC "  Select Disc Image", false, std::move(callback), GetDiscImageFilters(),
-                   std::string(FileSystem::GetPathDirectory(System::GetMediaFileName().c_str())));
+                   std::string(FileSystem::GetPathDirectory(System::GetMediaFileName())));
 }
 
 static void DoChangeDisc()
@@ -1076,7 +1076,7 @@ static bool SettingInfoButton(const SettingInfo& si, const char* section)
           CloseFileSelector();
         };
         OpenFileSelector(si.visible_name, false, std::move(callback), ImGuiFullscreen::FileSelectorFilters(),
-                         std::string(FileSystem::GetPathDirectory(value.c_str())));
+                         std::string(FileSystem::GetPathDirectory(std::move(value))));
       }
 
       return false;
@@ -2372,7 +2372,7 @@ void DrawQuickMenu(MainWindowType type)
     SmallString subtitle;
     if (!code.empty())
       subtitle.Format("%s - ", code.c_str());
-    subtitle.AppendString(FileSystem::GetFileNameFromPath(System::GetRunningPath().c_str()));
+    subtitle.AppendString(FileSystem::GetFileNameFromPath(System::GetRunningPath()));
 
     const ImVec2 title_size(
       g_large_font->CalcTextSizeA(g_large_font->FontSize, std::numeric_limits<float>::max(), -1.0f, title.c_str()));
@@ -2805,7 +2805,7 @@ void DrawGameListWindow()
       else
         summary.Format("%s - %s - ", entry->code.c_str(), Settings::GetDiscRegionName(entry->region));
 
-      summary.AppendString(FileSystem::GetFileNameFromPath(entry->path.c_str()));
+      summary.AppendString(FileSystem::GetFileNameFromPath(entry->path));
 
       ImGui::GetWindowDrawList()->AddImage(cover_texture->GetHandle(), bb.Min, bb.Min + image_size, ImVec2(0.0f, 0.0f),
                                            ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));

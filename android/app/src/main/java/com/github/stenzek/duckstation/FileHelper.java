@@ -20,6 +20,7 @@ import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * File helper class - used to bridge native code to Java storage access framework APIs.
@@ -51,6 +52,21 @@ public class FileHelper {
             DocumentsContract.Document.COLUMN_MIME_TYPE,
             DocumentsContract.Document.COLUMN_SIZE,
             DocumentsContract.Document.COLUMN_LAST_MODIFIED
+    };
+
+    /**
+     * Projection used when getting the display name for a file.
+     */
+    private static final String[] getDisplayNameProjection = new String[]{
+            DocumentsContract.Document.COLUMN_DISPLAY_NAME,
+    };
+
+    /**
+     * Projection used when getting a relative file for a file.
+     */
+    private static final String[] getRelativeFileProjection = new String[]{
+            DocumentsContract.Document.COLUMN_DOCUMENT_ID,
+            DocumentsContract.Document.COLUMN_DISPLAY_NAME,
     };
 
     private final Context context;
@@ -244,6 +260,7 @@ public class FileHelper {
 
     /**
      * Returns the file name component of a path or URI.
+     *
      * @param path Path/URI to examine.
      * @return File name component of path/URI.
      */
@@ -263,6 +280,14 @@ public class FileHelper {
             return path.substring(lastSlash + 1);
         else
             return path;
+    }
+
+    /**
+     * Test if the given URI represents a {@link DocumentsContract.Document} tree.
+     */
+    public static boolean isTreeUri(Uri uri) {
+        final List<String> paths = uri.getPathSegments();
+        return (paths.size() >= 2 && paths.get(0).equals("tree"));
     }
 
     /**
@@ -347,6 +372,91 @@ public class FileHelper {
             final FindResult[] resultsArray = new FindResult[results.size()];
             results.toArray(resultsArray);
             return resultsArray;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Returns the display name for the given URI.
+     *
+     * @param uriString URI to resolve display name for.
+     * @return display name for the URI, or null.
+     */
+    public String getDisplayNameForURIPath(String uriString) {
+        try {
+            final Uri fullUri = Uri.parse(uriString);
+            final Cursor cursor = contentResolver.query(fullUri, getDisplayNameProjection,
+                    null, null, null);
+            if (cursor.getCount() == 0 || !cursor.moveToNext())
+                return null;
+
+            return cursor.getString(0);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Returns the path for a sibling file relative to another URI.
+     *
+     * @param uriString   URI to find the file relative to.
+     * @param newFileName Sibling file name.
+     * @return URI for the sibling file name, or null.
+     */
+    public String getRelativePathForURIPath(String uriString, String newFileName) {
+        try {
+            final Uri fullUri = Uri.parse(uriString);
+
+            // if this is a document (expected)...
+            Uri treeUri;
+            String treeDocId;
+            if (DocumentsContract.isDocumentUri(context, fullUri)) {
+                // we need to remove the last part of the URI (the specific document ID) to get the parent
+                final String lastPathSegment = fullUri.getLastPathSegment();
+                int lastSeparatorIndex = lastPathSegment.lastIndexOf('/');
+                if (lastSeparatorIndex < 0)
+                    lastSeparatorIndex = lastPathSegment.lastIndexOf(':');
+                if (lastSeparatorIndex < 0)
+                    return null;
+
+                // the parent becomes the document ID
+                treeDocId = lastPathSegment.substring(0, lastSeparatorIndex);
+
+                // but, we need to access it through the subtree if this was a tree URI (permissions...)
+                if (isTreeUri(fullUri)) {
+                    treeUri = DocumentsContract.buildTreeDocumentUri(fullUri.getAuthority(), DocumentsContract.getTreeDocumentId(fullUri));
+                } else {
+                    treeUri = DocumentsContract.buildTreeDocumentUri(fullUri.getAuthority(), treeDocId);
+                }
+            } else {
+                treeDocId = DocumentsContract.getDocumentId(fullUri);
+                treeUri = fullUri;
+            }
+
+            final Uri queryUri = DocumentsContract.buildChildDocumentsUriUsingTree(treeUri, treeDocId);
+            final Cursor cursor = contentResolver.query(queryUri, getRelativeFileProjection, null, null, null);
+            final int count = cursor.getCount();
+
+            while (cursor.moveToNext()) {
+                try {
+                    final String displayName = cursor.getString(1);
+                    if (!displayName.equalsIgnoreCase(newFileName))
+                        continue;
+
+                    final String childDocumentId = cursor.getString(0);
+                    final Uri uri = DocumentsContract.buildDocumentUriUsingTree(treeUri, childDocumentId);
+                    cursor.close();
+                    return uri.toString();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            cursor.close();
+            return null;
         } catch (Exception e) {
             e.printStackTrace();
             return null;

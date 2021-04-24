@@ -673,8 +673,8 @@ bool CDImagePBP::OpenDisc(u32 index, Common::Error* error)
 
   if (m_disc_offsets.size() > 1)
   {
-    std::string sbi_path =
-      FileSystem::StripExtension(m_filename) + StringUtil::StdStringFromFormat("_%u.sbi", index + 1);
+    std::string sbi_path(FileSystem::StripExtension(m_filename));
+    sbi_path += TinyString::FromFormat("_%u.sbi", index + 1);
     m_sbi.LoadSBI(sbi_path.c_str());
   }
   else

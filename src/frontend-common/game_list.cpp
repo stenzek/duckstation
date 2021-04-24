@@ -487,11 +487,8 @@ void GameList::ScanDirectory(const char* path, bool recursive, ProgressCallback*
     if (AddFileFromCache(ffd.FileName, modified_time))
       continue;
 
-    const std::string_view file_part(FileSystem::GetFileNameFromPath(ffd.FileName));
-    if (!file_part.empty())
-      progress->SetFormattedStatusText("Scanning '%*s'...", static_cast<int>(file_part.size()), file_part.data());
-
     // ownership of fp is transferred
+    progress->SetFormattedStatusText("Scanning '%s'...", FileSystem::GetDisplayNameFromPath(ffd.FileName).c_str());
     ScanFile(std::move(ffd.FileName), modified_time);
   }
 

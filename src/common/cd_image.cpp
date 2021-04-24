@@ -2,6 +2,7 @@
 #include "assert.h"
 #include "file_system.h"
 #include "log.h"
+#include "string_util.h"
 #include <array>
 Log_SetChannel(CDImage);
 
@@ -17,45 +18,50 @@ u32 CDImage::GetBytesPerSector(TrackMode mode)
 
 std::unique_ptr<CDImage> CDImage::Open(const char* filename, Common::Error* error)
 {
-  const char* extension = std::strrchr(filename, '.');
+  const char* extension;
+
+#ifdef __ANDROID__
+  std::string filename_display_name(FileSystem::GetDisplayNameFromPath(filename));
+  if (filename_display_name.empty())
+    filename_display_name = filename;
+
+  extension = std::strrchr(filename_display_name.c_str(), '.');
+#else
+  extension = std::strrchr(filename, '.');
+#endif
+
   if (!extension)
   {
     Log_ErrorPrintf("Invalid filename: '%s'", filename);
     return nullptr;
   }
 
-#ifdef _MSC_VER
-#define CASE_COMPARE _stricmp
-#else
-#define CASE_COMPARE strcasecmp
-#endif
-
-  if (CASE_COMPARE(extension, ".cue") == 0)
+  if (StringUtil::Strcasecmp(extension, ".cue") == 0)
   {
     return OpenCueSheetImage(filename, error);
   }
-  else if (CASE_COMPARE(extension, ".bin") == 0 || CASE_COMPARE(extension, ".img") == 0 ||
-           CASE_COMPARE(extension, ".iso") == 0)
+  else if (StringUtil::Strcasecmp(extension, ".bin") == 0 || StringUtil::Strcasecmp(extension, ".img") == 0 ||
+           StringUtil::Strcasecmp(extension, ".iso") == 0)
   {
     return OpenBinImage(filename, error);
   }
-  else if (CASE_COMPARE(extension, ".chd") == 0)
+  else if (StringUtil::Strcasecmp(extension, ".chd") == 0)
   {
     return OpenCHDImage(filename, error);
   }
-  else if (CASE_COMPARE(extension, ".ecm") == 0)
+  else if (StringUtil::Strcasecmp(extension, ".ecm") == 0)
   {
     return OpenEcmImage(filename, error);
   }
-  else if (CASE_COMPARE(extension, ".mds") == 0)
+  else if (StringUtil::Strcasecmp(extension, ".mds") == 0)
   {
     return OpenMdsImage(filename, error);
   }
-  else if (CASE_COMPARE(extension, ".pbp") == 0)
+  else if (StringUtil::Strcasecmp(extension, ".pbp") == 0)
   {
     return OpenPBPImage(filename, error);
   }
-  else if (CASE_COMPARE(extension, ".m3u") == 0)
+  else if (StringUtil::Strcasecmp(extension, ".m3u") == 0)
   {
     return OpenM3uImage(filename, error);
   }

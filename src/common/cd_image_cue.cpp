@@ -269,7 +269,7 @@ bool CDImageCueSheet::OpenAndParse(const char* filename, Common::Error* error)
   m_lba_count = disc_lba;
   AddLeadOutIndex();
 
-  m_sbi.LoadSBI(FileSystem::ReplaceExtension(filename, "sbi").c_str());
+  m_sbi.LoadSBIFromImagePath(filename);
 
   return Seek(1, Position{0, 0, 0});
 }

@@ -2914,7 +2914,7 @@ void CommonHostInterface::GetGameInfo(const char* path, CDImage* image, std::str
     }
     else
     {
-      *title = FileSystem::GetFileTitleFromPath(path);
+      *title = FileSystem::GetFileTitleFromPath(std::string(path));
       if (image)
         *code = System::GetGameCodeForImage(image, true);
     }
