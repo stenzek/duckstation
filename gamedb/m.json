@@ -21538,7 +21538,6 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
-   "AnalogController",
    "DigitalController"
   ]
  },
@@ -21620,7 +21619,6 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
-   "AnalogController",
    "DigitalController"
   ]
  },
@@ -23836,7 +23834,6 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
-   "AnalogController",
    "DigitalController"
   ]
  },
@@ -23867,7 +23864,6 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
-   "AnalogController",
    "DigitalController"
   ]
  },
