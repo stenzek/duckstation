@@ -35,6 +35,10 @@ static constexpr u32 RECOMPILER_FAR_CODE_CACHE_SIZE = 16 * 1024 * 1024;
 #endif
 static constexpr u32 CODE_WRITE_FAULT_THRESHOLD_FOR_SLOWMEM = 10;
 
+// Fall blocks back to interpreter if we recompile more than 20 times within 100 frames.
+static constexpr u32 RECOMPILE_FRAMES_TO_FALL_BACK_TO_INTERPRETER = 100;
+static constexpr u32 RECOMPILE_COUNT_TO_FALL_BACK_TO_INTERPRETER = 20;
+
 #ifdef USE_STATIC_CODE_BUFFER
 static constexpr u32 RECOMPILER_GUARD_SIZE = 4096;
 alignas(Recompiler::CODE_STORAGE_ALIGNMENT) static u8
@@ -409,6 +413,14 @@ CodeBlockKey GetNextBlockKey()
   return key;
 }
 
+// assumes it has already been unlinked
+static void FallbackExistingBlockToInterpreter(CodeBlock* block)
+{
+  // Replace with null so we don't try to compile it again.
+  s_blocks.emplace(block->key.bits, nullptr);
+  delete block;
+}
+
 CodeBlock* LookupBlock(CodeBlockKey key)
 {
   BlockMap::iterator iter = s_blocks.find(key.bits);
@@ -416,11 +428,19 @@ CodeBlock* LookupBlock(CodeBlockKey key)
   {
     // ensure it hasn't been invalidated
     CodeBlock* existing_block = iter->second;
-    if (!existing_block || !existing_block->invalidated || RevalidateBlock(existing_block))
+    if (!existing_block || !existing_block->invalidated)
       return existing_block;
+
+    // if compilation fails or we're forced back to the interpreter, bail out
+    if (RevalidateBlock(existing_block))
+      return existing_block;
+    else
+      return nullptr;
   }
 
   CodeBlock* block = new CodeBlock(key);
+  block->recompile_frame_number = System::GetFrameNumber();
+
   if (CompileBlock(block))
   {
     // add it to the page map if it's in ram
@@ -474,11 +494,34 @@ recompile:
   RemoveBlockFromHostCodeMap(block);
 #endif
 
+  const u32 frame_number = System::GetFrameNumber();
+  const u32 frame_diff = frame_number - block->recompile_frame_number;
+  if (frame_diff <= RECOMPILE_FRAMES_TO_FALL_BACK_TO_INTERPRETER)
+  {
+    block->recompile_count++;
+
+    if (block->recompile_count >= RECOMPILE_COUNT_TO_FALL_BACK_TO_INTERPRETER)
+    {
+      Log_PerfPrintf("Block 0x%08X has been recompiled %u times in %u frames, falling back to interpreter",
+        block->GetPC(), block->recompile_count, frame_diff);
+
+      FallbackExistingBlockToInterpreter(block);
+      return false;
+    }
+  }
+  else
+  {
+    // It's been a while since this block was modified, so it's all good.
+    block->recompile_frame_number = frame_number;
+    block->recompile_count = 0;
+  }
+
   block->instructions.clear();
+
   if (!CompileBlock(block))
   {
-    Log_WarningPrintf("Failed to recompile block 0x%08X - flushing.", block->GetPC());
-    delete block;
+    Log_PerfPrintf("Failed to recompile block 0x%08X, falling back to interpreter.", block->GetPC());
+    FallbackExistingBlockToInterpreter(block);
     return false;
   }
 

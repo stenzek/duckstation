@@ -88,6 +88,9 @@ struct CodeBlock
   bool contains_double_branches = false;
   bool invalidated = false;
 
+  u32 recompile_frame_number = 0;
+  u32 recompile_count = 0;
+
   const u32 GetPC() const { return key.GetPC(); }
   const u32 GetSizeInBytes() const { return static_cast<u32>(instructions.size()) * sizeof(Instruction); }
   const u32 GetStartPageIndex() const { return (key.GetPCPhysicalAddress() / HOST_PAGE_SIZE); }
