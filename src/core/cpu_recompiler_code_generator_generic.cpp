@@ -120,11 +120,15 @@ void CodeGenerator::EmitStoreGuestMemory(const CodeBlockInstruction& cbi, const 
   {
     void* ptr = GetDirectWriteMemoryPointer(
       static_cast<u32>(address.constant_value),
-      (value.size == RegSize_8) ? MemoryAccessSize::Byte :
-                                  ((value.size == RegSize_16) ? MemoryAccessSize::HalfWord : MemoryAccessSize::Word));
+      (size == RegSize_8) ? MemoryAccessSize::Byte :
+                            ((size == RegSize_16) ? MemoryAccessSize::HalfWord : MemoryAccessSize::Word));
     if (ptr)
     {
-      EmitStoreGlobal(ptr, value);
+      if (value.size != size)
+        EmitStoreGlobal(ptr, value.ViewAsSize(size));
+      else
+        EmitStoreGlobal(ptr, value);
+
       return;
     }
   }
