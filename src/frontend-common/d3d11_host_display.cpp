@@ -572,7 +572,7 @@ bool D3D11HostDisplay::SetFullscreen(bool fullscreen, u32 width, u32 height, flo
     return false;
   }
 
-  if (new_mode.Width == current_desc.BufferDesc.Width && new_mode.Height == current_desc.BufferDesc.Width &&
+  if (new_mode.Width == current_desc.BufferDesc.Width && new_mode.Height == current_desc.BufferDesc.Height &&
       new_mode.RefreshRate.Numerator == current_desc.BufferDesc.RefreshRate.Numerator &&
       new_mode.RefreshRate.Denominator == current_desc.BufferDesc.RefreshRate.Denominator)
   {
