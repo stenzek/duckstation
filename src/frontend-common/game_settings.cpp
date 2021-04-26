@@ -35,6 +35,7 @@ std::array<std::pair<const char*, const char*>, static_cast<u32>(Trait::Count)> 
   {"ForcePGXPCPUMode", TRANSLATABLE("GameSettingsTrait", "Force PGXP CPU Mode")},
   {"ForceRecompilerMemoryExceptions", TRANSLATABLE("GameSettingsTrait", "Force Recompiler Memory Exceptions")},
   {"ForceRecompilerICache", TRANSLATABLE("GameSettingsTrait", "Force Recompiler ICache")},
+  {"ForceRecompilerLUTFastmem", TRANSLATABLE("GameSettingsTrait", "Force Recompiler LUT Fastmem")},
 }};
 
 const char* GetTraitName(Trait trait)
@@ -1240,10 +1241,22 @@ void Entry::ApplySettings(bool display_osd_messages) const
   }
 
   if (HasTrait(Trait::ForceRecompilerMemoryExceptions))
+  {
+    Log_WarningPrint("Memory exceptions for recompiler forced by game settings.");
     g_settings.cpu_recompiler_memory_exceptions = true;
+  }
 
   if (HasTrait(Trait::ForceRecompilerICache))
+  {
+    Log_WarningPrint("ICache for recompiler forced by game settings.");
     g_settings.cpu_recompiler_icache = true;
+  }
+
+  if (g_settings.cpu_fastmem_mode == CPUFastmemMode::MMap && HasTrait(Trait::ForceRecompilerLUTFastmem))
+  {
+    Log_WarningPrint("LUT fastmem for recompiler forced by game settings.");
+    g_settings.cpu_fastmem_mode = CPUFastmemMode::LUT;
+  }
 }
 
 } // namespace GameSettings

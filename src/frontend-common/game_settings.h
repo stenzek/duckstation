@@ -27,6 +27,7 @@ enum class Trait : u32
   ForcePGXPCPUMode,
   ForceRecompilerMemoryExceptions,
   ForceRecompilerICache,
+  ForceRecompilerLUTFastmem,
 
   Count
 };
