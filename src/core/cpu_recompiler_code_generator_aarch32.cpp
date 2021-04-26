@@ -1376,7 +1376,7 @@ void CodeGenerator::EmitLoadGuestMemorySlowmem(const CodeBlockInstruction& cbi, 
   }
 }
 
-void CodeGenerator::EmitStoreGuestMemoryFastmem(const CodeBlockInstruction& cbi, const Value& address,
+void CodeGenerator::EmitStoreGuestMemoryFastmem(const CodeBlockInstruction& cbi, const Value& address, RegSize size,
                                                 const Value& value)
 {
   LoadStoreBackpatchInfo bpi;
@@ -1408,7 +1408,7 @@ void CodeGenerator::EmitStoreGuestMemoryFastmem(const CodeBlockInstruction& cbi,
   m_register_cache.InhibitAllocation();
   bpi.host_pc = GetCurrentNearCodePointer();
 
-  switch (value.size)
+  switch (size)
   {
     case RegSize_8:
       m_emit->strb(GetHostReg32(actual_value.host_reg), a32::MemOperand(GetHostReg32(RARG1), GetHostReg32(RARG2)));
@@ -1435,7 +1435,7 @@ void CodeGenerator::EmitStoreGuestMemoryFastmem(const CodeBlockInstruction& cbi,
   // generate slowmem fallback
   bpi.host_slowmem_pc = GetCurrentFarCodePointer();
   SwitchToFarCode();
-  EmitStoreGuestMemorySlowmem(cbi, address, actual_value, true);
+  EmitStoreGuestMemorySlowmem(cbi, address, size, actual_value, true);
 
   // restore fastmem base state for the next instruction
   if (old_load_fastmem_base)
@@ -1451,7 +1451,7 @@ void CodeGenerator::EmitStoreGuestMemoryFastmem(const CodeBlockInstruction& cbi,
   m_block->loadstore_backpatch_info.push_back(bpi);
 }
 
-void CodeGenerator::EmitStoreGuestMemorySlowmem(const CodeBlockInstruction& cbi, const Value& address,
+void CodeGenerator::EmitStoreGuestMemorySlowmem(const CodeBlockInstruction& cbi, const Value& address, RegSize size,
                                                 const Value& value, bool in_far_code)
 {
   AddPendingCycles(true);
@@ -1463,7 +1463,7 @@ void CodeGenerator::EmitStoreGuestMemorySlowmem(const CodeBlockInstruction& cbi,
     Assert(!in_far_code);
 
     Value result = m_register_cache.AllocateScratch(RegSize_32);
-    switch (value.size)
+    switch (size)
     {
       case RegSize_8:
         EmitFunctionCall(&result, &Thunks::WriteMemoryByte, address, value_in_hr);
@@ -1509,7 +1509,7 @@ void CodeGenerator::EmitStoreGuestMemorySlowmem(const CodeBlockInstruction& cbi,
   }
   else
   {
-    switch (value.size)
+    switch (size)
     {
       case RegSize_8:
         EmitFunctionCall(nullptr, &Thunks::UncheckedWriteMemoryByte, address, value_in_hr);

@@ -1258,11 +1258,11 @@ restart_instruction:
       if constexpr (debug)
         Cop0DataBreakpointCheck<MemoryAccessType::Write>(addr);
 
-      const u8 value = Truncate8(ReadReg(inst.i.rt));
+      const u32 value = ReadReg(inst.i.rt);
       WriteMemoryByte(addr, value);
 
       if constexpr (pgxp_mode >= PGXPMode::Memory)
-        PGXP::CPU_SB(inst.bits, value, addr);
+        PGXP::CPU_SB(inst.bits, Truncate8(value), addr);
     }
     break;
 
@@ -1272,11 +1272,11 @@ restart_instruction:
       if constexpr (debug)
         Cop0DataBreakpointCheck<MemoryAccessType::Write>(addr);
 
-      const u16 value = Truncate16(ReadReg(inst.i.rt));
+      const u32 value = ReadReg(inst.i.rt);
       WriteMemoryHalfWord(addr, value);
 
       if constexpr (pgxp_mode >= PGXPMode::Memory)
-        PGXP::CPU_SH(inst.bits, value, addr);
+        PGXP::CPU_SH(inst.bits, Truncate16(value), addr);
     }
     break;
 

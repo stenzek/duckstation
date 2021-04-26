@@ -114,7 +114,7 @@ Value CodeGenerator::EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const 
 }
 
 void CodeGenerator::EmitStoreGuestMemory(const CodeBlockInstruction& cbi, const Value& address,
-                                         const SpeculativeValue& address_spec, const Value& value)
+                                         const SpeculativeValue& address_spec, RegSize size, const Value& value)
 {
   if (address.IsConstant() && !SpeculativeIsCacheIsolated())
   {
@@ -149,12 +149,12 @@ void CodeGenerator::EmitStoreGuestMemory(const CodeBlockInstruction& cbi, const 
 
   if (g_settings.IsUsingFastmem() && use_fastmem)
   {
-    EmitStoreGuestMemoryFastmem(cbi, address, value);
+    EmitStoreGuestMemoryFastmem(cbi, address, size, value);
   }
   else
   {
     m_register_cache.FlushCallerSavedGuestRegisters(true, true);
-    EmitStoreGuestMemorySlowmem(cbi, address, value, false);
+    EmitStoreGuestMemorySlowmem(cbi, address, size, value, false);
   }
 }
 

@@ -89,10 +89,11 @@ public:
   void EmitLoadGuestMemorySlowmem(const CodeBlockInstruction& cbi, const Value& address, RegSize size, Value& result,
                                   bool in_far_code);
   void EmitStoreGuestMemory(const CodeBlockInstruction& cbi, const Value& address, const SpeculativeValue& address_spec,
-                            const Value& value);
-  void EmitStoreGuestMemoryFastmem(const CodeBlockInstruction& cbi, const Value& address, const Value& value);
-  void EmitStoreGuestMemorySlowmem(const CodeBlockInstruction& cbi, const Value& address, const Value& value,
-                                   bool in_far_code);
+                            RegSize size, const Value& value);
+  void EmitStoreGuestMemoryFastmem(const CodeBlockInstruction& cbi, const Value& address, RegSize size,
+                                   const Value& value);
+  void EmitStoreGuestMemorySlowmem(const CodeBlockInstruction& cbi, const Value& address, RegSize size,
+                                   const Value& value, bool in_far_code);
   void EmitUpdateFastmemBase();
 
   // Unconditional branch to pointer. May allocate a scratch register.

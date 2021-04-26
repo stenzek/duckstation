@@ -1479,7 +1479,7 @@ bool CodeGenerator::Compile_Store(const CodeBlockInstruction& cbi)
                          value.ViewAsSize(RegSize_8), address);
       }
 
-      EmitStoreGuestMemory(cbi, address, address_spec, value.ViewAsSize(RegSize_8));
+      EmitStoreGuestMemory(cbi, address, address_spec, RegSize_8, value);
 
       if (address_spec)
       {
@@ -1510,7 +1510,7 @@ bool CodeGenerator::Compile_Store(const CodeBlockInstruction& cbi)
                          value.ViewAsSize(RegSize_16), address);
       }
 
-      EmitStoreGuestMemory(cbi, address, address_spec, value.ViewAsSize(RegSize_16));
+      EmitStoreGuestMemory(cbi, address, address_spec, RegSize_16, value);
 
       if (address_spec)
       {
@@ -1538,7 +1538,7 @@ bool CodeGenerator::Compile_Store(const CodeBlockInstruction& cbi)
       if (g_settings.gpu_pgxp_enable)
         EmitFunctionCall(nullptr, PGXP::CPU_SW, Value::FromConstantU32(cbi.instruction.bits), value, address);
 
-      EmitStoreGuestMemory(cbi, address, address_spec, value);
+      EmitStoreGuestMemory(cbi, address, address_spec, RegSize_32, value);
 
       if (address_spec)
         SpeculativeWriteMemory(*address_spec, value_spec);
@@ -1683,7 +1683,7 @@ bool CodeGenerator::Compile_StoreLeftRight(const CodeBlockInstruction& cbi)
 
   shift.ReleaseAndClear();
 
-  EmitStoreGuestMemory(cbi, address, address_spec, mem);
+  EmitStoreGuestMemory(cbi, address, address_spec, RegSize_32, mem);
   if (g_settings.gpu_pgxp_enable)
     EmitFunctionCall(nullptr, PGXP::CPU_SW, Value::FromConstantU32(cbi.instruction.bits), mem, address);
 
@@ -2741,7 +2741,7 @@ bool CodeGenerator::Compile_cop2(const CodeBlockInstruction& cbi)
     else
     {
       Value value = DoGTERegisterRead(reg);
-      EmitStoreGuestMemory(cbi, address, spec_address, value);
+      EmitStoreGuestMemory(cbi, address, spec_address, RegSize_32, value);
 
       if (g_settings.gpu_pgxp_enable)
         EmitFunctionCall(nullptr, PGXP::CPU_SWC2, Value::FromConstantU32(cbi.instruction.bits), value, address);
