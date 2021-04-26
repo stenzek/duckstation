@@ -200,12 +200,24 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i)
 
   if (!card_present_in_state && m_memory_cards[i])
   {
-    g_host_interface->AddFormattedOSDMessage(
-      20.0f,
-      g_host_interface->TranslateString("OSDMessage",
-                                        "Memory card %u present in system but not in save state. Removing card."),
-      i + 1u);
-    m_memory_cards[i].reset();
+    if (g_settings.load_devices_from_save_states)
+    {
+      g_host_interface->AddFormattedOSDMessage(
+        20.0f,
+        g_host_interface->TranslateString("OSDMessage",
+                                          "Memory card %u present in system but not in save state. Removing card."),
+        i + 1u);
+      m_memory_cards[i].reset();
+    }
+    else
+    {
+      g_host_interface->AddFormattedOSDMessage(
+        20.0f,
+        g_host_interface->TranslateString("OSDMessage",
+                                          "Memory card %u present in system but not in save state. Replugging card."),
+        i + 1u);
+      m_memory_cards[i]->Reset();
+    }
   }
 
   return true;
