@@ -2681,8 +2681,8 @@ void DrawSaveStateSelector(bool is_loading, bool fullscreen)
 
   constexpr float padding = 10.0f;
   constexpr float button_height = 96.0f;
-  constexpr float image_width = 128.0f;
-  constexpr float image_height = 96.0f;
+  constexpr float max_image_width = 96.0f;
+  constexpr float max_image_height = 96.0f;
 
   ImDrawList* dl = ImGui::GetWindowDrawList();
   for (const SaveStateListEntry& entry : s_save_state_selector_slots)
@@ -2694,8 +2694,15 @@ void DrawSaveStateSelector(bool is_loading, bool fullscreen)
       continue;
 
     ImVec2 pos(bb.Min);
-    const ImRect image_bb(pos, pos + LayoutScale(image_width, image_height));
-    pos.x += LayoutScale(image_width + padding);
+
+    // use aspect ratio of screenshot to determine height
+    const HostDisplayTexture* image = entry.preview_texture ? entry.preview_texture.get() : s_placeholder_texture.get();
+    const float image_height =
+      max_image_width / (static_cast<float>(image->GetWidth()) / static_cast<float>(image->GetHeight()));
+    const float image_margin = (max_image_height - image_height) / 2.0f;
+    const ImRect image_bb(ImVec2(pos.x, pos.y + LayoutScale(image_margin)),
+                          pos + LayoutScale(max_image_width, image_margin + image_height));
+    pos.x += LayoutScale(max_image_width + padding);
 
     dl->AddImage(static_cast<ImTextureID>(entry.preview_texture ? entry.preview_texture->GetHandle() :
                                                                   s_placeholder_texture->GetHandle()),

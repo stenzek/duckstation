@@ -149,7 +149,7 @@ void Reset();
 void Shutdown();
 
 bool LoadState(ByteStream* state, bool update_display = true);
-bool SaveState(ByteStream* state, u32 screenshot_size = 128);
+bool SaveState(ByteStream* state, u32 screenshot_size = 256);
 
 /// Recreates the GPU component, saving/loading the state so it is preserved. Call when the GPU renderer changes.
 bool RecreateGPU(GPURenderer renderer, bool update_display = true);
