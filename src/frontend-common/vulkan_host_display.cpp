@@ -693,8 +693,7 @@ bool VulkanHostDisplay::RenderScreenshot(u32 width, u32 height, std::vector<u32>
 
   tex.TransitionToLayout(g_vulkan_context->GetCurrentCommandBuffer(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
-  const auto [left, top, draw_width, draw_height] =
-    CalculateDrawRect(GetWindowWidth(), GetWindowHeight(), m_display_top_margin);
+  const auto [left, top, draw_width, draw_height] = CalculateDrawRect(width, height, 0);
 
   if (!m_post_processing_chain.IsEmpty())
   {
