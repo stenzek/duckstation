@@ -27,6 +27,7 @@
 #include "memory_card.h"
 #include "multitap.h"
 #include "pad.h"
+#include "pgxp.h"
 #include "psf_loader.h"
 #include "save_state_version.h"
 #include "sio.h"
@@ -849,10 +850,20 @@ bool Initialize(bool force_software_renderer)
   CPU::Initialize();
 
   if (!Bus::Initialize())
+  {
+    CPU::Shutdown();
     return false;
+  }
 
   if (!CreateGPU(force_software_renderer ? GPURenderer::Software : g_settings.gpu_renderer))
+  {
+    Bus::Shutdown();
+    CPU::Shutdown();
     return false;
+  }
+
+  if (g_settings.gpu_pgxp_enable)
+    PGXP::Initialize();
 
   // Was startup cancelled? (e.g. shading compilers took too long and the user closed the application)
   if (IsStartupCancelled())
@@ -915,6 +926,7 @@ void Shutdown()
   g_gpu.reset();
   g_interrupt_controller.Shutdown();
   g_dma.Shutdown();
+  PGXP::Shutdown();
   CPU::CodeCache::Shutdown();
   Bus::Shutdown();
   CPU::Shutdown();
@@ -974,6 +986,8 @@ bool CreateGPU(GPURenderer renderer)
 
 bool DoState(StateWrapper& sw, HostDisplayTexture** host_texture, bool update_display)
 {
+  const bool is_memory_state = (host_texture != nullptr);
+
   if (!sw.DoMarker("System"))
     return false;
 
@@ -986,6 +1000,11 @@ bool DoState(StateWrapper& sw, HostDisplayTexture** host_texture, bool update_di
 
   if (sw.IsReading())
     CPU::CodeCache::Flush();
+
+  // only reset pgxp if we're not runahead-rollbacking. the value checks will save us from broken rendering, and it
+  // saves using imprecise values for a frame in 30fps games.
+  if (sw.IsReading() && g_settings.gpu_pgxp_enable && !is_memory_state)
+    PGXP::Initialize();
 
   if (!sw.DoMarker("Bus") || !Bus::DoState(sw))
     return false;
@@ -1060,6 +1079,9 @@ void Reset()
 
   CPU::Reset();
   CPU::CodeCache::Flush();
+  if (g_settings.gpu_pgxp_enable)
+    PGXP::Initialize();
+
   Bus::Reset();
   g_dma.Reset();
   g_interrupt_controller.Reset();

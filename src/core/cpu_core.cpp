@@ -101,15 +101,10 @@ void Initialize()
   UpdateFastmemBase();
 
   GTE::Initialize();
-
-  if (g_settings.gpu_pgxp_enable)
-    PGXP::Initialize();
 }
 
 void Shutdown()
 {
-  // GTE::Shutdown();
-  PGXP::Shutdown();
   ClearBreakpoints();
   StopTrace();
 }
@@ -137,9 +132,6 @@ void Reset()
   GTE::Reset();
 
   SetPC(RESET_VECTOR);
-
-  if (g_settings.gpu_pgxp_enable)
-    PGXP::Initialize();
 }
 
 bool DoState(StateWrapper& sw)
@@ -186,12 +178,6 @@ bool DoState(StateWrapper& sw)
   {
     sw.Do(&g_state.icache_tags);
     sw.Do(&g_state.icache_data);
-  }
-
-  if (sw.IsReading())
-  {
-    if (g_settings.gpu_pgxp_enable)
-      PGXP::Initialize();
   }
 
   return !sw.HasError();
