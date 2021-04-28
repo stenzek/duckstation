@@ -533,6 +533,8 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetIntValue("Display", "LineEndOffset", 0);
   si.SetStringValue("Display", "AspectRatio",
                     Settings::GetDisplayAspectRatioName(Settings::DEFAULT_DISPLAY_ASPECT_RATIO));
+  si.SetIntValue("Display", "CustomAspectRatioNumerator", 4);
+  si.GetIntValue("Display", "CustomAspectRatioDenominator", 3);
   si.SetBoolValue("Display", "Force4_3For24Bit", false);
   si.SetBoolValue("Display", "LinearFiltering", true);
   si.SetBoolValue("Display", "IntegerScaling", false);
@@ -803,6 +805,14 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
       g_gpu->UpdateSettings();
     }
 
+    if (g_settings.display_aspect_ratio != old_settings.display_aspect_ratio ||
+        (g_settings.display_aspect_ratio == DisplayAspectRatio::Custom &&
+         (g_settings.display_aspect_ratio_custom_numerator != old_settings.display_aspect_ratio_custom_numerator ||
+          g_settings.display_aspect_ratio_custom_denominator != old_settings.display_aspect_ratio_custom_denominator)))
+    {
+      GTE::UpdateAspectRatio();
+    }
+
     if (g_settings.gpu_pgxp_enable != old_settings.gpu_pgxp_enable ||
         (g_settings.gpu_pgxp_enable && (g_settings.gpu_pgxp_culling != old_settings.gpu_pgxp_culling ||
                                         g_settings.gpu_pgxp_cpu != old_settings.gpu_pgxp_cpu)))
@@ -897,6 +907,15 @@ void HostInterface::SetUserDirectoryToProgramDirectory()
 {
   const std::string program_directory(FileSystem::GetProgramPath());
   m_user_directory = program_directory;
+}
+
+void HostInterface::OnHostDisplayResized()
+{
+  if (System::IsValid())
+  {
+    if (g_settings.display_aspect_ratio == DisplayAspectRatio::MatchWindow)
+      GTE::UpdateAspectRatio();
+  }
 }
 
 std::string HostInterface::GetUserDirectoryRelativePath(const char* format, ...) const

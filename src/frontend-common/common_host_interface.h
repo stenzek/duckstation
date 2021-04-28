@@ -412,13 +412,13 @@ protected:
   void UpdateSpeedLimiterState();
 
   void RecreateSystem() override;
+  void OnHostDisplayResized() override;
 
   void ApplyGameSettings(bool display_osd_messages);
   void ApplyControllerCompatibilitySettings(u64 controller_mask, bool display_osd_messages);
 
   bool CreateHostDisplayResources();
   void ReleaseHostDisplayResources();
-  void OnHostDisplayResized();
 
   virtual void DrawImGuiWindows();
 

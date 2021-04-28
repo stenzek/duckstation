@@ -3,6 +3,7 @@
 #include "common/file_system.h"
 #include "common/make_array.h"
 #include "common/string_util.h"
+#include "host_display.h"
 #include "host_interface.h"
 #include <algorithm>
 #include <array>
@@ -222,6 +223,10 @@ void Settings::Load(SettingsInterface& si)
     ParseDisplayAspectRatio(
       si.GetStringValue("Display", "AspectRatio", GetDisplayAspectRatioName(DEFAULT_DISPLAY_ASPECT_RATIO)).c_str())
       .value_or(DEFAULT_DISPLAY_ASPECT_RATIO);
+  display_aspect_ratio_custom_numerator = static_cast<u16>(
+    std::clamp<int>(si.GetIntValue("Display", "CustomAspectRatioNumerator", 4), 1, std::numeric_limits<u16>::max()));
+  display_aspect_ratio_custom_denominator = static_cast<u16>(
+    std::clamp<int>(si.GetIntValue("Display", "CustomAspectRatioDenominator", 3), 1, std::numeric_limits<u16>::max()));
   display_force_4_3_for_24bit = si.GetBoolValue("Display", "Force4_3For24Bit", false);
   display_active_start_offset = static_cast<s16>(si.GetIntValue("Display", "ActiveStartOffset", 0));
   display_active_end_offset = static_cast<s16>(si.GetIntValue("Display", "ActiveEndOffset", 0));
@@ -395,6 +400,8 @@ void Settings::Save(SettingsInterface& si) const
   si.SetIntValue("Display", "LineEndOffset", display_line_end_offset);
   si.SetBoolValue("Display", "Force4_3For24Bit", display_force_4_3_for_24bit);
   si.SetStringValue("Display", "AspectRatio", GetDisplayAspectRatioName(display_aspect_ratio));
+  si.SetIntValue("Display", "CustomAspectRatioNumerator", display_aspect_ratio_custom_numerator);
+  si.GetIntValue("Display", "CustomAspectRatioDenominator", display_aspect_ratio_custom_denominator);
   si.SetBoolValue("Display", "LinearFiltering", display_linear_filtering);
   si.SetBoolValue("Display", "IntegerScaling", display_integer_scaling);
   si.SetBoolValue("Display", "Stretch", display_stretch);
@@ -767,12 +774,12 @@ const char* Settings::GetDisplayCropModeDisplayName(DisplayCropMode crop_mode)
   return s_display_crop_mode_display_names[static_cast<int>(crop_mode)];
 }
 
-static std::array<const char*, 14> s_display_aspect_ratio_names = {
-  {TRANSLATABLE("DisplayAspectRatio", "Auto (Game Native)"), "4:3", "16:9", "16:10", "19:9", "20:9", "21:9", "32:9",
-   "8:7", "5:4", "3:2", "2:1 (VRAM 1:1)", "1:1", "PAR 1:1"}};
-static constexpr std::array<float, 14> s_display_aspect_ratio_values = {
-  {-1.0f, 4.0f / 3.0f, 16.0f / 9.0f, 16.0f / 10.0f, 19.0f / 9.0f, 20.0f / 9.0f, 64.0f / 27.0f, 32.0f / 9.0f,
-   8.0f / 7.0f, 5.0f / 4.0f, 3.0f / 2.0f, 2.0f / 1.0f, 1.0f, -1.0f}};
+static std::array<const char*, 16> s_display_aspect_ratio_names = {
+  {TRANSLATABLE("DisplayAspectRatio", "Auto (Game Native)"), "Auto (Match Window)", "Custom", "4:3", "16:9", "16:10",
+   "19:9", "20:9", "21:9", "32:9", "8:7", "5:4", "3:2", "2:1 (VRAM 1:1)", "1:1", "PAR 1:1"}};
+static constexpr std::array<float, 16> s_display_aspect_ratio_values = {
+  {-1.0f, -1.0f, -1.0f, 4.0f / 3.0f, 16.0f / 9.0f, 16.0f / 10.0f, 19.0f / 9.0f, 20.0f / 9.0f, 64.0f / 27.0f,
+   32.0f / 9.0f, 8.0f / 7.0f, 5.0f / 4.0f, 3.0f / 2.0f, 2.0f / 1.0f, 1.0f, -1.0f}};
 
 std::optional<DisplayAspectRatio> Settings::ParseDisplayAspectRatio(const char* str)
 {
@@ -793,9 +800,32 @@ const char* Settings::GetDisplayAspectRatioName(DisplayAspectRatio ar)
   return s_display_aspect_ratio_names[static_cast<int>(ar)];
 }
 
-float Settings::GetDisplayAspectRatioValue(DisplayAspectRatio ar)
+float Settings::GetDisplayAspectRatioValue() const
 {
-  return s_display_aspect_ratio_values[static_cast<int>(ar)];
+  switch (display_aspect_ratio)
+  {
+    case DisplayAspectRatio::MatchWindow:
+    {
+      const HostDisplay* display = g_host_interface->GetDisplay();
+      if (!display)
+        return s_display_aspect_ratio_values[static_cast<int>(DEFAULT_DISPLAY_ASPECT_RATIO)];
+
+      const u32 width = display->GetWindowWidth();
+      const u32 height = display->GetWindowHeight() - display->GetDisplayTopMargin();
+      return static_cast<float>(width) / static_cast<float>(height);
+    }
+
+    case DisplayAspectRatio::Custom:
+    {
+      return static_cast<float>(display_aspect_ratio_custom_numerator) /
+             static_cast<float>(display_aspect_ratio_custom_denominator);
+    }
+
+    default:
+    {
+      return s_display_aspect_ratio_values[static_cast<int>(display_aspect_ratio)];
+    }
+  }
 }
 
 static std::array<const char*, 3> s_audio_backend_names = {{

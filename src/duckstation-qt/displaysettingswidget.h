@@ -21,6 +21,7 @@ private Q_SLOTS:
   void onGPUAdapterIndexChanged();
   void onGPUFullscreenModeIndexChanged();
   void onIntegerFilteringChanged();
+  void onAspectRatioChanged();
 
 private:
   void setupAdditionalUi();

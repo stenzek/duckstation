@@ -3,10 +3,13 @@
 #include "common/bitutils.h"
 #include "common/state_wrapper.h"
 #include "cpu_core.h"
+#include "host_display.h"
+#include "host_interface.h"
 #include "pgxp.h"
 #include "settings.h"
 #include <algorithm>
 #include <array>
+#include <numeric>
 
 namespace GTE {
 
@@ -18,6 +21,11 @@ static constexpr s32 IR0_MIN_VALUE = 0x0000;
 static constexpr s32 IR0_MAX_VALUE = 0x1000;
 static constexpr s32 IR123_MIN_VALUE = -(INT64_C(1) << 15);
 static constexpr s32 IR123_MAX_VALUE = (INT64_C(1) << 15) - 1;
+
+static DisplayAspectRatio s_aspect_ratio = DisplayAspectRatio::R4_3;
+static u32 s_custom_aspect_ratio_numerator;
+static u32 s_custom_aspect_ratio_denominator;
+static float s_custom_aspect_ratio_f;
 
 #define REGS CPU::g_state.gte_regs
 
@@ -148,6 +156,7 @@ ALWAYS_INLINE static u32 TruncateRGB(s32 value)
 
 void Initialize()
 {
+  UpdateAspectRatio();
   Reset();
 }
 
@@ -160,6 +169,55 @@ bool DoState(StateWrapper& sw)
 {
   sw.DoArray(REGS.r32, NUM_DATA_REGS + NUM_CONTROL_REGS);
   return !sw.HasError();
+}
+
+void UpdateAspectRatio()
+{
+  if (!g_settings.gpu_widescreen_hack)
+  {
+    s_aspect_ratio = DisplayAspectRatio::R4_3;
+    return;
+  }
+
+  s_aspect_ratio = g_settings.display_aspect_ratio;
+
+  u32 num, denom;
+  switch (s_aspect_ratio)
+  {
+    case DisplayAspectRatio::MatchWindow:
+    {
+      const HostDisplay* display = g_host_interface->GetDisplay();
+      if (!display)
+      {
+        s_aspect_ratio = DisplayAspectRatio::R4_3;
+        return;
+      }
+
+      num = display->GetWindowWidth();
+      denom = display->GetWindowHeight();
+    }
+    break;
+
+    case DisplayAspectRatio::Custom:
+    {
+      num = g_settings.display_aspect_ratio_custom_numerator;
+      denom = g_settings.display_aspect_ratio_custom_denominator;
+    }
+    break;
+
+    default:
+      return;
+  }
+
+  // (4 / 3) / (num / denom) => gcd((4 * denom) / (3 * num))
+  const u32 x = 4u * denom;
+  const u32 y = 3u * num;
+  const u32 gcd = std::gcd(x, y);
+
+  s_custom_aspect_ratio_numerator = x / gcd;
+  s_custom_aspect_ratio_denominator = y / gcd;
+
+  s_custom_aspect_ratio_f = static_cast<float>((4.0 / 3.0) / (static_cast<double>(num) / static_cast<double>(denom)));
 }
 
 u32 ReadRegister(u32 index)
@@ -614,66 +672,65 @@ static void RTPS(const s16 V[3], u8 shift, bool lm, bool last)
   const s64 result = static_cast<s64>(ZeroExtend64(UNRDivide(REGS.H, REGS.SZ3)));
 
   s64 Sx;
-  if (g_settings.gpu_widescreen_hack)
+  switch (s_aspect_ratio)
   {
-    const DisplayAspectRatio ar = g_settings.display_aspect_ratio;
-    switch (ar)
-    {
-      case DisplayAspectRatio::R16_9:
-        Sx = ((((s64(result) * s64(REGS.IR1)) * s64(3)) / s64(4)) + s64(REGS.OFX));
-        break;
+    case DisplayAspectRatio::R16_9:
+      Sx = ((((s64(result) * s64(REGS.IR1)) * s64(3)) / s64(4)) + s64(REGS.OFX));
+      break;
 
-      case DisplayAspectRatio::R16_10:
-        Sx = ((((s64(result) * s64(REGS.IR1)) * s64(5)) / s64(6)) + s64(REGS.OFX));
-        break;
+    case DisplayAspectRatio::R16_10:
+      Sx = ((((s64(result) * s64(REGS.IR1)) * s64(5)) / s64(6)) + s64(REGS.OFX));
+      break;
 
-      case DisplayAspectRatio::R19_9:
-        Sx = ((((s64(result) * s64(REGS.IR1)) * s64(12)) / s64(19)) + s64(REGS.OFX));
-        break;
+    case DisplayAspectRatio::R19_9:
+      Sx = ((((s64(result) * s64(REGS.IR1)) * s64(12)) / s64(19)) + s64(REGS.OFX));
+      break;
 
-      case DisplayAspectRatio::R20_9:
-        Sx = ((((s64(result) * s64(REGS.IR1)) * s64(3)) / s64(5)) + s64(REGS.OFX));
-        break;
+    case DisplayAspectRatio::R20_9:
+      Sx = ((((s64(result) * s64(REGS.IR1)) * s64(3)) / s64(5)) + s64(REGS.OFX));
+      break;
 
-      case DisplayAspectRatio::R21_9:
-        Sx = ((((s64(result) * s64(REGS.IR1)) * s64(9)) / s64(16)) + s64(REGS.OFX));
-        break;
+    case DisplayAspectRatio::R21_9:
+      Sx = ((((s64(result) * s64(REGS.IR1)) * s64(9)) / s64(16)) + s64(REGS.OFX));
+      break;
 
-      case DisplayAspectRatio::R32_9:
-        Sx = ((((s64(result) * s64(REGS.IR1)) * s64(3)) / s64(8)) + s64(REGS.OFX));
-        break;
+    case DisplayAspectRatio::R32_9:
+      Sx = ((((s64(result) * s64(REGS.IR1)) * s64(3)) / s64(8)) + s64(REGS.OFX));
+      break;
 
-      case DisplayAspectRatio::R8_7:
-        Sx = ((((s64(result) * s64(REGS.IR1)) * s64(7)) / s64(6)) + s64(REGS.OFX));
-        break;
+    case DisplayAspectRatio::R8_7:
+      Sx = ((((s64(result) * s64(REGS.IR1)) * s64(7)) / s64(6)) + s64(REGS.OFX));
+      break;
 
-      case DisplayAspectRatio::R5_4:
-        Sx = ((((s64(result) * s64(REGS.IR1)) * s64(16)) / s64(15)) + s64(REGS.OFX));
-        break;
+    case DisplayAspectRatio::R5_4:
+      Sx = ((((s64(result) * s64(REGS.IR1)) * s64(16)) / s64(15)) + s64(REGS.OFX));
+      break;
 
-      case DisplayAspectRatio::R3_2:
-        Sx = ((((s64(result) * s64(REGS.IR1)) * s64(8)) / s64(9)) + s64(REGS.OFX));
-        break;
+    case DisplayAspectRatio::R3_2:
+      Sx = ((((s64(result) * s64(REGS.IR1)) * s64(8)) / s64(9)) + s64(REGS.OFX));
+      break;
 
-      case DisplayAspectRatio::R2_1:
-        Sx = ((((s64(result) * s64(REGS.IR1)) * s64(2)) / s64(3)) + s64(REGS.OFX));
-        break;
+    case DisplayAspectRatio::R2_1:
+      Sx = ((((s64(result) * s64(REGS.IR1)) * s64(2)) / s64(3)) + s64(REGS.OFX));
+      break;
 
-      case DisplayAspectRatio::R1_1:
-        Sx = ((((s64(result) * s64(REGS.IR1)) * s64(7)) / s64(6)) + s64(REGS.OFX));
-        break;
+    case DisplayAspectRatio::R1_1:
+      Sx = ((((s64(result) * s64(REGS.IR1)) * s64(7)) / s64(6)) + s64(REGS.OFX));
+      break;
 
-      case DisplayAspectRatio::Auto:
-      case DisplayAspectRatio::R4_3:
-      case DisplayAspectRatio::PAR1_1:
-      default:
-        Sx = (s64(result) * s64(REGS.IR1) + s64(REGS.OFX));
-        break;
-    }
-  }
-  else
-  {
-    Sx = (s64(result) * s64(REGS.IR1) + s64(REGS.OFX));
+    case DisplayAspectRatio::Custom:
+    case DisplayAspectRatio::MatchWindow:
+      Sx = ((((s64(result) * s64(REGS.IR1)) * s64(s_custom_aspect_ratio_numerator)) /
+             s64(s_custom_aspect_ratio_denominator)) +
+            s64(REGS.OFX));
+      break;
+
+    case DisplayAspectRatio::Auto:
+    case DisplayAspectRatio::R4_3:
+    case DisplayAspectRatio::PAR1_1:
+    default:
+      Sx = (s64(result) * s64(REGS.IR1) + s64(REGS.OFX));
+      break;
   }
 
   const s64 Sy = s64(result) * s64(REGS.IR2) + s64(REGS.OFY);
@@ -713,69 +770,67 @@ static void RTPS(const s16 V[3], u8 shift, bool lm, bool last)
     const float precise_h_div_sz = float(REGS.H) / precise_z;
     const float fofx = float(REGS.OFX) / float(1 << 16);
     const float fofy = float(REGS.OFY) / float(1 << 16);
-    float precise_x;
-    if (g_settings.gpu_widescreen_hack)
+    float precise_x = precise_ir1 * precise_h_div_sz;
+
+    switch (s_aspect_ratio)
     {
-      precise_x = precise_ir1 * precise_h_div_sz;
-      const DisplayAspectRatio ar = g_settings.display_aspect_ratio;
-      switch (ar)
-      {
-        case DisplayAspectRatio::R16_9:
-          precise_x = (precise_x * 3.0f) / 4.0f;
-          break;
+      case DisplayAspectRatio::R16_9:
+        precise_x = (precise_x * 3.0f) / 4.0f;
+        break;
 
-        case DisplayAspectRatio::R16_10:
-          precise_x = (precise_x * 5.0f) / 6.0f;
-          break;
+      case DisplayAspectRatio::R16_10:
+        precise_x = (precise_x * 5.0f) / 6.0f;
+        break;
 
-        case DisplayAspectRatio::R19_9:
-          precise_x = (precise_x * 12.0f) / 19.0f;
-          break;
+      case DisplayAspectRatio::R19_9:
+        precise_x = (precise_x * 12.0f) / 19.0f;
+        break;
 
-        case DisplayAspectRatio::R20_9:
-          precise_x = (precise_x * 3.0f) / 5.0f;
-          break;
+      case DisplayAspectRatio::R20_9:
+        precise_x = (precise_x * 3.0f) / 5.0f;
+        break;
 
-        case DisplayAspectRatio::R21_9:
-          precise_x = (precise_x * 9.0f) / 16.0f;
-          break;
+      case DisplayAspectRatio::R21_9:
+        precise_x = (precise_x * 9.0f) / 16.0f;
+        break;
 
-        case DisplayAspectRatio::R32_9:
-          precise_x = (precise_x * 3.0f) / 8.0f;
-          break;
+      case DisplayAspectRatio::R32_9:
+        precise_x = (precise_x * 3.0f) / 8.0f;
+        break;
 
-        case DisplayAspectRatio::R8_7:
-          precise_x = (precise_x * 7.0f) / 6.0f;
-          break;
+      case DisplayAspectRatio::R8_7:
+        precise_x = (precise_x * 7.0f) / 6.0f;
+        break;
 
-        case DisplayAspectRatio::R5_4:
-          precise_x = (precise_x * 16.0f) / 15.0f;
-          break;
+      case DisplayAspectRatio::R5_4:
+        precise_x = (precise_x * 16.0f) / 15.0f;
+        break;
 
-        case DisplayAspectRatio::R3_2:
-          precise_x = (precise_x * 8.0f) / 9.0f;
-          break;
+      case DisplayAspectRatio::R3_2:
+        precise_x = (precise_x * 8.0f) / 9.0f;
+        break;
 
-        case DisplayAspectRatio::R2_1:
-          precise_x = (precise_x * 2.0f) / 3.0f;
-          break;
+      case DisplayAspectRatio::R2_1:
+        precise_x = (precise_x * 2.0f) / 3.0f;
+        break;
 
-        case DisplayAspectRatio::R1_1:
-          precise_x = (precise_x * 7.0f) / 6.0f;
-          break;
+      case DisplayAspectRatio::R1_1:
+        precise_x = (precise_x * 7.0f) / 6.0f;
+        break;
 
-        case DisplayAspectRatio::Auto:
-        case DisplayAspectRatio::R4_3:
-        case DisplayAspectRatio::PAR1_1:
-        default:
-          break;
-      }
-      precise_x += fofx;
+      case DisplayAspectRatio::MatchWindow:
+      case DisplayAspectRatio::Custom:
+        precise_x = precise_x * s_custom_aspect_ratio_f;
+        break;
+
+      case DisplayAspectRatio::Auto:
+      case DisplayAspectRatio::R4_3:
+      case DisplayAspectRatio::PAR1_1:
+      default:
+        break;
     }
-    else
-    {
-      precise_x = fofx + (precise_ir1 * precise_h_div_sz);
-    }
+
+    precise_x += fofx;
 
     float precise_y = fofy + (precise_ir2 * precise_h_div_sz);
 

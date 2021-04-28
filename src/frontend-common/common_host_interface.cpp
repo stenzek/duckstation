@@ -575,6 +575,8 @@ void CommonHostInterface::OnHostDisplayResized()
   const u32 new_height = m_display ? m_display->GetWindowHeight() : 0;
   const float new_scale = m_display ? m_display->GetWindowScale() : 1.0f;
 
+  HostInterface::OnHostDisplayResized();
+
   ImGui::GetIO().DisplaySize.x = static_cast<float>(new_width);
   ImGui::GetIO().DisplaySize.y = static_cast<float>(new_height);
 

@@ -44,8 +44,9 @@
 		<item>Все границы</item>
 	</string-array>
 	<string-array name="settings_display_aspect_ratio_names">
-		<item>Автонастройка (нативное игре)</item>
-		<item>4:3</item>
+    <item>Автонастройка (нативное игре)</item>
+    <item>Auto (Match Display)</item>
+    <item>4:3</item>
 		<item>16:9</item>
 		<item>16:10</item>
 		<item>19:9</item>

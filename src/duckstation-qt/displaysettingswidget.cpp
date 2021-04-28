@@ -25,6 +25,10 @@ DisplaySettingsWidget::DisplaySettingsWidget(QtHostInterface* host_interface, QW
   SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.displayAspectRatio, "Display", "AspectRatio",
                                                &Settings::ParseDisplayAspectRatio, &Settings::GetDisplayAspectRatioName,
                                                Settings::DEFAULT_DISPLAY_ASPECT_RATIO);
+  SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.customAspectRatioNumerator, "Display",
+                                              "CustomAspectRatioNumerator", 1);
+  SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.customAspectRatioDenominator, "Display",
+                                              "CustomAspectRatioDenominator", 1);
   SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.displayCropMode, "Display", "CropMode",
                                                &Settings::ParseDisplayCropMode, &Settings::GetDisplayCropModeName,
                                                Settings::DEFAULT_DISPLAY_CROP_MODE);
@@ -59,10 +63,13 @@ DisplaySettingsWidget::DisplaySettingsWidget(QtHostInterface* host_interface, QW
           &DisplaySettingsWidget::onGPUAdapterIndexChanged);
   connect(m_ui.fullscreenMode, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
           &DisplaySettingsWidget::onGPUFullscreenModeIndexChanged);
+  connect(m_ui.displayAspectRatio, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+          &DisplaySettingsWidget::onAspectRatioChanged);
   connect(m_ui.displayIntegerScaling, &QCheckBox::stateChanged, this,
           &DisplaySettingsWidget::onIntegerFilteringChanged);
   populateGPUAdaptersAndResolutions();
   onIntegerFilteringChanged();
+  onAspectRatioChanged();
 
   dialog->registerWidgetHelp(
     m_ui.renderer, tr("Renderer"),
@@ -282,4 +289,14 @@ void DisplaySettingsWidget::onIntegerFilteringChanged()
 {
   m_ui.displayLinearFiltering->setEnabled(!m_ui.displayIntegerScaling->isChecked());
   m_ui.displayStretch->setEnabled(!m_ui.displayIntegerScaling->isChecked());
+}
+
+void DisplaySettingsWidget::onAspectRatioChanged()
+{
+  const bool is_custom =
+    static_cast<DisplayAspectRatio>(m_ui.displayAspectRatio->currentIndex()) == DisplayAspectRatio::Custom;
+
+  m_ui.customAspectRatioNumerator->setVisible(is_custom);
+  m_ui.customAspectRatioDenominator->setVisible(is_custom);
+  m_ui.customAspectRatioSeparator->setVisible(is_custom);
 }

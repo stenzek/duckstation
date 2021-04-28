@@ -492,7 +492,7 @@ float GPU::GetDisplayAspectRatio() const
   }
   else
   {
-    return Settings::GetDisplayAspectRatioValue(g_settings.display_aspect_ratio);
+    return g_settings.GetDisplayAspectRatioValue();
   }
 }
 

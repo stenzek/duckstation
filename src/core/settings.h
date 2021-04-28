@@ -127,6 +127,8 @@ struct Settings
   bool gpu_pgxp_depth_buffer = false;
   DisplayCropMode display_crop_mode = DisplayCropMode::None;
   DisplayAspectRatio display_aspect_ratio = DisplayAspectRatio::Auto;
+  u16 display_aspect_ratio_custom_numerator = 0;
+  u16 display_aspect_ratio_custom_denominator = 0;
   s16 display_active_start_offset = 0;
   s16 display_active_end_offset = 0;
   s8 display_line_start_offset = 0;
@@ -256,6 +258,8 @@ struct Settings
     return audio_output_muted ? 0 : (fast_forwarding ? audio_fast_forward_volume : audio_output_volume);
   }
 
+  float GetDisplayAspectRatioValue() const;
+
   bool HasAnyPerGameMemoryCards() const;
 
   static void CPUOverclockPercentToFraction(u32 percent, u32* numerator, u32* denominator);
@@ -316,7 +320,6 @@ struct Settings
 
   static std::optional<DisplayAspectRatio> ParseDisplayAspectRatio(const char* str);
   static const char* GetDisplayAspectRatioName(DisplayAspectRatio ar);
-  static float GetDisplayAspectRatioValue(DisplayAspectRatio ar);
 
   static std::optional<AudioBackend> ParseAudioBackend(const char* str);
   static const char* GetAudioBackendName(AudioBackend backend);
