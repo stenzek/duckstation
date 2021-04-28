@@ -571,8 +571,8 @@ void CommonHostInterface::ReleaseHostDisplayResources()
 
 void CommonHostInterface::OnHostDisplayResized()
 {
-  const u32 new_width = m_display ? std::max<u32>(m_display->GetWindowWidth(), 1) : 0;
-  const u32 new_height = m_display ? std::max<u32>(m_display->GetWindowHeight(), 1) : 0;
+  const u32 new_width = m_display ? m_display->GetWindowWidth() : 0;
+  const u32 new_height = m_display ? m_display->GetWindowHeight() : 0;
   const float new_scale = m_display ? m_display->GetWindowScale() : 1.0f;
 
   ImGui::GetIO().DisplaySize.x = static_cast<float>(new_width);

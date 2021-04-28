@@ -648,8 +648,8 @@ bool SwapChain::CreateSwapChain()
   if (old_swap_chain != VK_NULL_HANDLE)
     vkDestroySwapchainKHR(g_vulkan_context->GetDevice(), old_swap_chain, nullptr);
 
-  m_window_info.surface_width = size.width;
-  m_window_info.surface_height = size.height;
+  m_window_info.surface_width = std::max(1u, size.width);
+  m_window_info.surface_height = std::max(1u, size.height);
   return true;
 }
 
