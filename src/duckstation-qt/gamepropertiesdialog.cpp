@@ -368,11 +368,25 @@ void GamePropertiesDialog::populateGameSettings()
     QSignalBlocker sb(m_ui.userCropMode);
     m_ui.userCropMode->setCurrentIndex(static_cast<int>(gs.display_crop_mode.value()) + 1);
   }
+
   if (gs.display_aspect_ratio.has_value())
   {
     QSignalBlocker sb(m_ui.userAspectRatio);
     m_ui.userAspectRatio->setCurrentIndex(static_cast<int>(gs.display_aspect_ratio.value()) + 1);
   }
+  if (gs.display_aspect_ratio_custom_numerator.has_value())
+  {
+    QSignalBlocker sb(m_ui.userCustomAspectRatioNumerator);
+    m_ui.userCustomAspectRatioNumerator->setValue(static_cast<int>(gs.display_aspect_ratio_custom_numerator.value()));
+  }
+  if (gs.display_aspect_ratio_custom_denominator.has_value())
+  {
+    QSignalBlocker sb(m_ui.userCustomAspectRatioDenominator);
+    m_ui.userCustomAspectRatioDenominator->setValue(
+      static_cast<int>(gs.display_aspect_ratio_custom_denominator.value()));
+  }
+  onUserAspectRatioChanged();
+
   if (gs.gpu_downsample_mode.has_value())
   {
     QSignalBlocker sb(m_ui.userDownsampleMode);
@@ -565,6 +579,21 @@ void GamePropertiesDialog::connectUi()
       m_game_settings.display_aspect_ratio.reset();
     else
       m_game_settings.display_aspect_ratio = static_cast<DisplayAspectRatio>(index - 1);
+    saveGameSettings();
+    onUserAspectRatioChanged();
+  });
+  connect(m_ui.userCustomAspectRatioNumerator, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
+    if (value <= 0)
+      m_game_settings.display_aspect_ratio_custom_numerator.reset();
+    else
+      m_game_settings.display_aspect_ratio_custom_numerator = static_cast<u16>(value);
+    saveGameSettings();
+  });
+  connect(m_ui.userCustomAspectRatioDenominator, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
+    if (value <= 0)
+      m_game_settings.display_aspect_ratio_custom_denominator.reset();
+    else
+      m_game_settings.display_aspect_ratio_custom_denominator = static_cast<u16>(value);
     saveGameSettings();
   });
 
@@ -793,6 +822,16 @@ void GamePropertiesDialog::updateCPUClockSpeedLabel()
   const int percent = m_ui.userCPUClockSpeed->value();
   const double frequency = (static_cast<double>(System::MASTER_CLOCK) * static_cast<double>(percent)) / 100.0;
   m_ui.userCPUClockSpeedLabel->setText(tr("%1% (%2MHz)").arg(percent).arg(frequency / 1000000.0, 0, 'f', 2));
+}
+
+void GamePropertiesDialog::onUserAspectRatioChanged()
+{
+  const int index = m_ui.userAspectRatio->currentIndex();
+  const bool is_custom = (index > 0 && static_cast<DisplayAspectRatio>(index - 1) == DisplayAspectRatio::Custom);
+
+  m_ui.userCustomAspectRatioNumerator->setVisible(is_custom);
+  m_ui.userCustomAspectRatioDenominator->setVisible(is_custom);
+  m_ui.userCustomAspectRatioSeparator->setVisible(is_custom);
 }
 
 void GamePropertiesDialog::fillEntryFromUi(GameListCompatibilityEntry* entry)

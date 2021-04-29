@@ -122,6 +122,8 @@ bool Entry::LoadFromStream(ByteStream* stream)
       !ReadOptionalFromStream(stream, &display_linear_upscaling) ||
       !ReadOptionalFromStream(stream, &display_integer_upscaling) ||
       !ReadOptionalFromStream(stream, &display_force_4_3_for_24bit) ||
+      !ReadOptionalFromStream(stream, &display_aspect_ratio_custom_numerator) ||
+      !ReadOptionalFromStream(stream, &display_aspect_ratio_custom_denominator) ||
       !ReadOptionalFromStream(stream, &gpu_resolution_scale) || !ReadOptionalFromStream(stream, &gpu_multisamples) ||
       !ReadOptionalFromStream(stream, &gpu_per_sample_shading) || !ReadOptionalFromStream(stream, &gpu_true_color) ||
       !ReadOptionalFromStream(stream, &gpu_scaled_dithering) ||
@@ -173,6 +175,8 @@ bool Entry::SaveToStream(ByteStream* stream) const
          WriteOptionalToStream(stream, display_linear_upscaling) &&
          WriteOptionalToStream(stream, display_integer_upscaling) &&
          WriteOptionalToStream(stream, display_force_4_3_for_24bit) &&
+         WriteOptionalToStream(stream, display_aspect_ratio_custom_numerator) &&
+         WriteOptionalToStream(stream, display_aspect_ratio_custom_denominator) &&
          WriteOptionalToStream(stream, gpu_resolution_scale) && WriteOptionalToStream(stream, gpu_multisamples) &&
          WriteOptionalToStream(stream, gpu_per_sample_shading) && WriteOptionalToStream(stream, gpu_true_color) &&
          WriteOptionalToStream(stream, gpu_scaled_dithering) && WriteOptionalToStream(stream, gpu_force_ntsc_timings) &&
@@ -248,6 +252,18 @@ static void ParseIniSection(Entry* entry, const char* section, const CSimpleIniA
   cvalue = ini.GetValue(section, "DisplayAspectRatio", nullptr);
   if (cvalue)
     entry->display_aspect_ratio = Settings::ParseDisplayAspectRatio(cvalue);
+  lvalue = ini.GetLongValue(section, "CustomAspectRatioNumerator", 0);
+  if (lvalue != 0)
+  {
+    entry->display_aspect_ratio_custom_numerator =
+      static_cast<u16>(std::clamp<long>(lvalue, 1, std::numeric_limits<u16>::max()));
+  }
+  lvalue = ini.GetLongValue(section, "CustomAspectRatioDenominator", 0);
+  if (lvalue != 0)
+  {
+    entry->display_aspect_ratio_custom_denominator =
+      static_cast<u16>(std::clamp<long>(lvalue, 1, std::numeric_limits<u16>::max()));
+  }
   cvalue = ini.GetValue(section, "GPUDownsampleMode", nullptr);
   if (cvalue)
     entry->gpu_downsample_mode = Settings::ParseDownsampleModeName(cvalue);
@@ -370,6 +386,16 @@ static void StoreIniSection(const Entry& entry, const char* section, CSimpleIniA
   {
     ini.SetValue(section, "DisplayAspectRatio",
                  Settings::GetDisplayAspectRatioName(entry.display_aspect_ratio.value()));
+  }
+  if (entry.display_aspect_ratio_custom_numerator.has_value())
+  {
+    ini.SetLongValue(section, "CustomAspectRatioNumerator",
+                     static_cast<long>(entry.display_aspect_ratio_custom_numerator.value()));
+  }
+  if (entry.display_aspect_ratio_custom_denominator.has_value())
+  {
+    ini.SetLongValue(section, "CustomAspectRatioDenominator",
+                     static_cast<long>(entry.display_aspect_ratio_custom_denominator.value()));
   }
   if (entry.gpu_downsample_mode.has_value())
   {
@@ -498,6 +524,20 @@ static std::optional<std::string> GetEntryValueForKey(const Entry& entry, const 
       return std::nullopt;
     else
       return Settings::GetDisplayAspectRatioName(entry.display_aspect_ratio.value());
+  }
+  else if (key == "CustomAspectRatioNumerator")
+  {
+    if (!entry.display_aspect_ratio_custom_numerator.has_value())
+      return std::nullopt;
+    else
+      return std::to_string(entry.display_aspect_ratio_custom_numerator.value());
+  }
+  else if (key == "CustomAspectRatioDenominator")
+  {
+    if (!entry.display_aspect_ratio_custom_denominator.has_value())
+      return std::nullopt;
+    else
+      return std::to_string(entry.display_aspect_ratio_custom_denominator.value());
   }
   else if (key == "GPUDownsampleMode")
   {
@@ -712,6 +752,20 @@ static void SetEntryValueForKey(Entry& entry, const std::string_view& key, const
       entry.display_aspect_ratio.reset();
     else
       entry.display_aspect_ratio = Settings::ParseDisplayAspectRatio(value->c_str());
+  }
+  else if (key == "CustomAspectRatioNumerator")
+  {
+    if (!value.has_value())
+      entry.display_aspect_ratio_custom_numerator.reset();
+    else
+      entry.display_aspect_ratio_custom_numerator = StringUtil::FromChars<u16>(value.value());
+  }
+  else if (key == "CustomAspectRatioDenominator")
+  {
+    if (!value.has_value())
+      entry.display_aspect_ratio_custom_denominator.reset();
+    else
+      entry.display_aspect_ratio_custom_denominator = StringUtil::FromChars<u16>(value.value());
   }
   else if (key == "GPUDownsampleMode")
   {
@@ -1031,6 +1085,10 @@ void Entry::ApplySettings(bool display_osd_messages) const
     g_settings.display_crop_mode = display_crop_mode.value();
   if (display_aspect_ratio.has_value())
     g_settings.display_aspect_ratio = display_aspect_ratio.value();
+  if (display_aspect_ratio_custom_numerator.has_value())
+    g_settings.display_aspect_ratio_custom_numerator = display_aspect_ratio_custom_numerator.value();
+  if (display_aspect_ratio_custom_denominator.has_value())
+    g_settings.display_aspect_ratio_custom_denominator = display_aspect_ratio_custom_denominator.value();
   if (gpu_downsample_mode.has_value())
     g_settings.gpu_downsample_mode = gpu_downsample_mode.value();
   if (display_linear_upscaling.has_value())
