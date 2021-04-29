@@ -58,6 +58,7 @@ The following people have contributed to the project in some way, and are credit
  - @Serpentario
  - @QuasarDGames
  - @egamboau
+ - @goldstinger
 
 ## Special Thanks
 The following people did not directly contribute to the emulator, but it would not be in the state if not for them.

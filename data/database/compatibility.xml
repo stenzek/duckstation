@@ -3248,6 +3248,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-2862-g6fbffb6f</version-tested>
   </entry>
+  <entry code="SLUS-00800" compatibility="5" region="NTSC-U" title="Rollcage (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-3862-g8f821c77</version-tested>
+  </entry>
   <entry code="SCES-01922" compatibility="5" region="PAL" title="Rollcage Stage II (Europe) (En,Fr,De,Es,It)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-2862-g6fbffb6f</version-tested>
@@ -3800,6 +3804,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-2483-g98d6b499</version-tested>
   </entry>
+  <entry code="SLUS-00666" compatibility="5" region="NTSC-U" title="Team Losi RC Racer (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-3862-g8f821c77</version-tested>
+  </entry>
   <entry code="SLUS-00340" compatibility="5" region="NTSC-U" title="Tecmo's Deception - Invitation to Darkness (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-2538-g5c6ee953</version-tested>
@@ -4046,6 +4054,10 @@ Tetris with Card Captor Sakura (Japan)
   </entry>
   <entry code="SLPS-02361" compatibility="5" region="NTSC-J" title="Touge Max G (Japan)">
     <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLUS-00430" compatibility="5" region="NTSC-U" title="Treasures of the Deep (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-3862-g8f821c77</version-tested>
   </entry>
   <entry code="SLPS-00887" compatibility="5" region="NTSC-J" title="Triple Play 98 (Japan)">
     <compatibility>No Issues</compatibility>
