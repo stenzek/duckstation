@@ -44,8 +44,8 @@
 		<item>Все границы</item>
 	</string-array>
 	<string-array name="settings_display_aspect_ratio_names">
-    <item>Автонастройка (нативное игре)</item>
-    <item>Auto (Match Display)</item>
+    <item>Автонастройка (нативно игре)</item>
+    <item>Автонастройка (под экран)</item>
     <item>4:3</item>
     <item>16:9</item>
     <item>19:9</item>
@@ -166,7 +166,7 @@
 		<item>8x SSAA</item>
 	</string-array>
 	<string-array name="settings_advanced_display_fps_limit_entries">
-		<item>Без ограничений (выводить все кадры)</item>
+		<item>Без ограничения (выводить все кадры)</item>
 		<item>10 FPS</item>
 		<item>15 FPS</item>
 		<item>30 FPS</item>
@@ -176,7 +176,7 @@
 		<item>90 FPS</item>
 	</string-array>
 	<string-array name="settings_emulation_speed_entries">
-		<item>Без ограничений</item>
+		<item>Без ограничения</item>
 		<item>10% [6 FPS (NTSC) / 5 FPS (PAL)]</item>
 		<item>20% [12 FPS (NTSC) / 10 FPS (PAL)]</item>
 		<item>30% [18 FPS (NTSC) / 15 FPS (PAL)]</item>
@@ -255,14 +255,24 @@
 		<item>Выключено</item>
 		<item>Включено</item>
 	</string-array>
-	    <string-array name="settings_multitap_mode_entries">
+	<string-array name="settings_multitap_mode_entries">
         	<item>Отключен</item>
         	<item>Подключен к порту 1</item>
         	<item>Подключен к порту 2</item>
         	<item>Подключен к портам 1 и 2</item>
     	</string-array>
- 	   <string-array name="memory_card_editor_save_menu">
+ 	<string-array name="memory_card_editor_save_menu">
      		<item>Скопировать сохранение</item>
      		<item>Удалить сохранение</item>
-    </string-array>
+        </string-array>
+        <string-array name="settings_touchscreen_controller_port_entries">
+               <item>Порт 1</item>
+               <item>Порт 2</item>
+               <item>Multitap 3</item>
+               <item>Multitap 4</item>
+               <item>Multitap 5</item>
+               <item>Multitap 6</item>
+               <item>Multitap 7</item>
+               <item>Multitap 8</item>
+        </string-array>
 </resources>
