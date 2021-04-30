@@ -25,7 +25,7 @@
 	<string name="settings_summary_load_patch_codes">Загружать чит-коды из cheats/&lt;название игры&gt;.cht в формате PCSXR или Libretro. Коды можно активировать после запуска игры.</string>
 	<string name="settings_apply_compatibility_settings">Применять настройки совместимости</string>
 	<string name="settings_summary_apply_compatibility_settings">Автоматически отключать улучшения, которые не поддерживаются играми.</string>
-	<string name="settings_summary_video_sync">Включите данную настройку для синхронизации частоты обновления DuckStation с частотой экрана устройства. Синхронизация автоматически выключается, если скорость эмуляции не равна 100%.</string>
+	<string name="settings_summary_video_sync">Включите для синхронизации частоты обновления DuckStation с частотой экрана устройства. Синхронизация автоматически выключается, если скорость эмуляции не равна 100%.</string>
 	<string name="settings_video_sync">Видеосинхронизация</string>
 	<string name="settings_cpu_overclocking">Разгон CPU</string>
 	<string name="settings_cdrom_region_check">Проверка региона CD-ROM</string>
@@ -75,7 +75,7 @@
 	<string name="settings_linear_upscaling">Линейное масштабирование</string>
 	<string name="settings_integer_upscaling">Целочисленное масштабирование</string>
 	<string name="settings_summary_linear_upscaling">Сглаживать картинку при масштабировании изображения с консоли под экран.</string>
-	<string name="settings_summary_integer_upscaling">Добавлять пустое пространство к изображению, чтобы пиксельное соотношение устройства и консоли равнялось целому числу. Позволяет получить более чёткую картинку в 2D-играх.</string>
+	<string name="settings_summary_integer_upscaling">Добавлять пустое пространство к изображению, чтобы приравнять пиксельное соотношение устройства и консоли к целому числу. Позволяет получить более чёткую картинку в 2D-играх.</string>
 	<string name="settings_summary_osd_show_messages">Выводить на экран сообщения о системных событиях, таких как сохранение/загрузка, снимок экрана и т.д.</string>
 	<string name="settings_summary_osd_show_speed">Показывать скорость эмуляции в процентах в правом верхнем углу экрана.</string>
 	<string name="settings_summary_osd_show_fps">Показывать внутреннюю частоту кадров игры в правом верхнем углу экрана.</string>
@@ -87,7 +87,7 @@
 	<string name="settings_true_color">Рендеринг в True Color (24-бита, без дизеринга)</string>
 	<string name="settings_summary_true_color">Обеспечивает более качественные градиенты, но меняет отображение некоторых цветов. Отключение опции также включает дизеринг. Большинство игр совместимо с этой настройкой.</string>
 	<string name="settings_scaled_dithering">Масштабировать дизеринг</string>
-	<string name="settings_summary_scaled_dithering">Паттерн дизеринга будет масштабироваться вместе с разрешением эмулируемого GPU, маскируя эффект зашумления на высоких разрешениях. Поддерживается только аппаратными рендерами и обычно не влияет на стабильность.</string>
+	<string name="settings_summary_scaled_dithering">Масштабировать паттерн дизеринга вместе с разрешением эмулируемого GPU, маскируя эффект зашумления на высоких разрешениях. Поддерживается только аппаратными рендерами и обычно не влияет на стабильность.</string>
 	<string name="settings_disable_interlacing">Отключить чересстрочность</string>
 	<string name="settings_summary_disable_interlacing">Принудительный рендеринг и вывод кадров в прогрессивной развёртке. Убирает эффект \"гребёнки\" для игр в 480i. Как правило, не влияет на стабильность.</string>
 	<string name="settings_texture_filtering">Фильтрация текстур</string>
@@ -201,7 +201,7 @@
 	<string name="game_directories_scanning_subdirectories">Сканировать подкаталоги.</string>
 	<string name="game_directories_not_scanning_subdirectories">Не сканировать подкаталоги.</string>
 	<string name="settings_display_all_frames">Оптимальное распределение кадров</string>
-	<string name="settings_summary_display_all_frames">Включение настройки гарантирует вывод всех кадров с консоли на экран для оптимального распределения. Попробуйте отключить опцию, если не получается достичь полной скорости или есть проблемы со звуком.</string>
+	<string name="settings_summary_display_all_frames">Включение настройки гарантирует вывод всех кадров с консоли на экран для оптимального распределения. Попробуйте отключить, если не получается достичь полной скорости или есть проблемы со звуком.</string>
 	<string name="menu_edit_game_directories_add_directory">Добавить каталог</string>
     	<string name="menu_edit_game_directories_add_path">Добавить путь</string>
     	<string name="edit_game_directories_add_path">Добавить путь</string>
@@ -236,7 +236,7 @@
 	<string name="settings_achievements_enable">Включить достижения</string>
     	<string name="settings_summary_achievements_enable">Если опция включена и выполнен вход в учётную запись, DuckStation будет искать достижения при запуске игр.</string>
     	<string name="settings_achievements_challenge_mode">Режим хардкора</string>
-    	<string name="settings_summary_achievements_challenge_mode">Соревновательный режим. Отключает сохранение состояния, чит-коды, возможность замедления, но удваивает количество получаемых очков достижений. Не может быть включен во время игры.</string>
+    	<string name="settings_summary_achievements_challenge_mode">Соревновательный режим. Отключает сохранение состояния, чит-коды, возможность замедления, но удваивает количество получаемых очков достижений. Нельзя включить во время игры.</string>
     	<string name="settings_achievements_rich_presence">Расширенный статус</string>
     	<string name="settings_summary_achievements_rich_presence">Если поддерживается, собирать и отсылать на сервер расширенную информацию.</string>
     	<string name="settings_achievements_username">Имя пользователя</string>
@@ -318,7 +318,7 @@
 	<string name="controller_settings_clear_controller_bindings">Сброс привязок</string>
 	<string name="controller_settings_summary_clear_controller_bindings">Удалить привязки для всех кнопок и осей данного устройства.</string>
 	<string name="controller_settings_clear_controller_bindings_confirm">Вы действительно хотите удалить все привязки? Это действие нельзя отменить.</string>
-	<string name="controller_settings_clear_controller_bindings_done">Выполнен сброс привязок для устройства %d.</string>
+	<string name="controller_settings_clear_controller_bindings_done">Удалены привязки для устройства %d.</string>
 	<string name="controller_auto_mapping_no_devices">Подходящие устройства не найдены. Автонастройка поддерживается только для геймпадов. Вы можете настроить другие устройства вручную.</string>
 	<string name="controller_auto_mapping_select_device">Выбор устройства</string>
 	<string name="controller_auto_mapping_results">Результаты автонастройки</string>
@@ -327,7 +327,7 @@
 	<string name="main_activity_empty_game_list_add_directory">Добавить каталог с играми</string>
 	<string name="main_activity_empty_game_list_start_file">Открыть файл</string>
 	<string name="update_notes_title">Примечание к обновлению</string>
-	<string name="update_notes_message_version_controller_update">В текущем обновлении DuckStation добавлена поддержка подключения нескольких геймпадов с вибрацией, клавиатур, возможность привязки кнопок громкости.\n\nТребуется перенастроить привязки геймпадов, иначе они не будут функционировать. Выполнить этой сейчас?</string>
+	<string name="update_notes_message_version_controller_update">В текущем обновлении DuckStation добавлена поддержка подключения нескольких геймпадов с вибрацией, клавиатур, возможность привязки кнопок громкости.\n\nТребуется перенастроить привязки геймпадов, иначе они перестанут функционировать. Выполнить это сейчас?</string>
 	<string name="settings_osd_show_show_inputs">Показывать нажатия контроллера</string>
     	<string name="settings_summary_osd_show_inputs">Показывать системное состояние контроллера в левом нижнем углу экрана.</string>
 	<string name="touchscreen_controller_edit_menu">Меню редактора</string>
@@ -335,4 +335,5 @@
     	<string name="settings_achievements_global_settings">Глобальные настройки</string>
     	<string name="settings_category_achievements">Настройки достижений</string>
     	<string name="settings_multitap_mode">Режим Multitap</string>
+        <string name="settings_touchscreen_controller_port">Порт экранного геймпада</string>
 </resources>
