@@ -488,4 +488,24 @@
         <item>Copy Save</item>
         <item>Delete Save</item>
     </string-array>
+    <string-array name="settings_touchscreen_controller_port_entries">
+        <item>Port 1</item>
+        <item>Port 2</item>
+        <item>Multitap 3</item>
+        <item>Multitap 4</item>
+        <item>Multitap 5</item>
+        <item>Multitap 6</item>
+        <item>Multitap 7</item>
+        <item>Multitap 8</item>
+    </string-array>
+    <string-array name="settings_touchscreen_controller_port_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+    </string-array>
 </resources>

@@ -55,6 +55,19 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         return mPreferences.getString(key, defaultValue);
     }
 
+    private int getIntSetting(String key, int defaultValue) {
+        try {
+            return mPreferences.getInt(key, defaultValue);
+        } catch (ClassCastException e) {
+            try {
+                final String stringValue = mPreferences.getString(key, Integer.toString(defaultValue));
+                return Integer.parseInt(stringValue);
+            } catch (Exception e2) {
+                return defaultValue;
+            }
+        }
+    }
+
     private void setStringSetting(String key, String value) {
         SharedPreferences.Editor editor = mPreferences.edit();
         editor.putString(key, value);
@@ -747,7 +760,9 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     TouchscreenControllerView mTouchscreenController;
 
     public void updateControllers() {
-        final String controllerType = getStringSetting("Controller1/Type", "DigitalController");
+        final int touchscreenControllerIndex = getIntSetting("TouchscreenController/PortIndex", 0);
+        final String touchscreenControllerPrefix = String.format("Controller%d/", touchscreenControllerIndex + 1);
+        final String controllerType = getStringSetting(touchscreenControllerPrefix + "Type", "DigitalController");
         final String viewType = getStringSetting("Controller1/TouchscreenControllerView", "digital");
         final boolean autoHideTouchscreenController = getBooleanSetting("Controller1/AutoHideTouchscreenController", false);
         final boolean touchGliding = getBooleanSetting("Controller1/TouchGliding", false);
@@ -762,7 +777,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         AndroidHostInterface.getInstance().updateInputMap();
 
         final boolean hasAnyControllers = mContentView.hasAnyGamePads();
-        if (controllerType.equals("none") || viewType.equals("none") || (hasAnyControllers && autoHideTouchscreenController)) {
+        if (controllerType.equals("None") || viewType.equals("none") || (hasAnyControllers && autoHideTouchscreenController)) {
             if (mTouchscreenController != null) {
                 activityLayout.removeView(mTouchscreenController);
                 mTouchscreenController = null;
@@ -773,7 +788,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
                 activityLayout.addView(mTouchscreenController);
             }
 
-            mTouchscreenController.init(0, controllerType, viewType, hapticFeedback, touchGliding);
+            mTouchscreenController.init(touchscreenControllerIndex, controllerType, viewType, hapticFeedback, touchGliding);
         }
 
         if (vibration)

@@ -335,4 +335,5 @@
     <string name="settings_achievements_global_settings">Global Settings</string>
     <string name="settings_category_achievements">Achievement Settings</string>
     <string name="settings_multitap_mode">Multitap Mode</string>
+    <string name="settings_touchscreen_controller_port">Touchscreen Controller Port</string>
 </resources>
