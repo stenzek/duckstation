@@ -2904,8 +2904,10 @@ void CommonHostInterface::GetGameInfo(const char* path, CDImage* image, std::str
   {
     *code = list_entry->code;
     *title = list_entry->title;
+    return;
   }
-  else
+
+  if (image)
   {
     GameDatabase database;
     GameDatabaseEntry database_entry;
@@ -2913,14 +2915,15 @@ void CommonHostInterface::GetGameInfo(const char* path, CDImage* image, std::str
     {
       *code = std::move(database_entry.serial);
       *title = std::move(database_entry.title);
+      return;
     }
     else
     {
-      *title = FileSystem::GetFileTitleFromPath(std::string(path));
-      if (image)
-        *code = System::GetGameCodeForImage(image, true);
+      *code = System::GetGameCodeForImage(image, true);
     }
   }
+
+  *title = FileSystem::GetFileTitleFromPath(path);
 }
 
 bool CommonHostInterface::SaveResumeSaveState()
