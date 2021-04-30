@@ -805,7 +805,8 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
       g_gpu->UpdateSettings();
     }
 
-    if (g_settings.display_aspect_ratio != old_settings.display_aspect_ratio ||
+    if (g_settings.gpu_widescreen_hack != old_settings.gpu_widescreen_hack ||
+        g_settings.display_aspect_ratio != old_settings.display_aspect_ratio ||
         (g_settings.display_aspect_ratio == DisplayAspectRatio::Custom &&
          (g_settings.display_aspect_ratio_custom_numerator != old_settings.display_aspect_ratio_custom_numerator ||
           g_settings.display_aspect_ratio_custom_denominator != old_settings.display_aspect_ratio_custom_denominator)))
@@ -913,7 +914,7 @@ void HostInterface::OnHostDisplayResized()
 {
   if (System::IsValid())
   {
-    if (g_settings.display_aspect_ratio == DisplayAspectRatio::MatchWindow)
+    if (g_settings.gpu_widescreen_hack && g_settings.display_aspect_ratio == DisplayAspectRatio::MatchWindow)
       GTE::UpdateAspectRatio();
   }
 }
