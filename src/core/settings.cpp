@@ -138,9 +138,11 @@ void Settings::Load(SettingsInterface& si)
 {
   // Android doesn't create settings until they're first opened, so we have to override the defaults here.
 #ifndef __ANDROID__
+  static constexpr bool DEFAULT_VSYNC_VALUE = false;
   static constexpr bool DEFAULT_FAST_BOOT_VALUE = false;
   static constexpr float DEFAULT_DISPLAY_MAX_FPS = 0.0f;
 #else
+  static constexpr bool DEFAULT_VSYNC_VALUE = true;
   static constexpr bool DEFAULT_FAST_BOOT_VALUE = true;
   static constexpr float DEFAULT_DISPLAY_MAX_FPS = 60.0f;
 #endif
@@ -242,7 +244,7 @@ void Settings::Load(SettingsInterface& si)
   display_show_speed = si.GetBoolValue("Display", "ShowSpeed", false);
   display_show_resolution = si.GetBoolValue("Display", "ShowResolution", false);
   display_all_frames = si.GetBoolValue("Display", "DisplayAllFrames", false);
-  video_sync_enabled = si.GetBoolValue("Display", "VSync", true);
+  video_sync_enabled = si.GetBoolValue("Display", "VSync", DEFAULT_VSYNC_VALUE);
   display_post_process_chain = si.GetStringValue("Display", "PostProcessChain", "");
   display_max_fps = si.GetFloatValue("Display", "MaxFPS", DEFAULT_DISPLAY_MAX_FPS);
 
