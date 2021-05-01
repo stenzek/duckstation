@@ -775,8 +775,8 @@ const char* Settings::GetDisplayCropModeDisplayName(DisplayCropMode crop_mode)
 }
 
 static std::array<const char*, static_cast<size_t>(DisplayAspectRatio::Count)> s_display_aspect_ratio_names = {
-  {TRANSLATABLE("DisplayAspectRatio", "Auto (Game Native)"), "Auto (Match Window)", "Custom", "4:3", "16:9", "19:9",
-   "20:9", "PAR 1:1"}};
+  {TRANSLATABLE("DisplayAspectRatio", "Auto (Game Native)"), TRANSLATABLE("DisplayAspectRatio", "Auto (Match Window)"),
+   TRANSLATABLE("DisplayAspectRatio", "Custom"), "4:3", "16:9", "19:9", "20:9", "PAR 1:1"}};
 static constexpr std::array<float, static_cast<size_t>(DisplayAspectRatio::Count)> s_display_aspect_ratio_values = {
   {-1.0f, -1.0f, -1.0f, 4.0f / 3.0f, 16.0f / 9.0f, 19.0f / 9.0f, 20.0f / 9.0f, -1.0f}};
 
