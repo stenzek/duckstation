@@ -1149,8 +1149,15 @@ void CommonHostInterface::AddOSDMessage(std::string message, float duration /*= 
 
 void CommonHostInterface::ClearOSDMessages()
 {
-  std::unique_lock<std::mutex> lock(m_osd_messages_lock);
-  m_osd_posted_messages.clear();
+  {
+    std::unique_lock<std::mutex> lock(m_osd_messages_lock);
+    m_osd_posted_messages.clear();
+  }
+
+  m_osd_active_messages.clear();
+
+  if (IsFullscreenUIEnabled())
+    ImGuiFullscreen::ClearNotifications();
 }
 
 bool CommonHostInterface::EnumerateOSDMessages(std::function<bool(const std::string&, float)> callback)

@@ -1500,6 +1500,11 @@ void AddNotification(float duration, std::string title, std::string text, std::s
   s_notifications.push_back(std::move(notif));
 }
 
+void ClearNotifications()
+{
+  s_notifications.clear();
+}
+
 void DrawNotifications(ImVec2& position, float spacing)
 {
   if (s_notifications.empty())
