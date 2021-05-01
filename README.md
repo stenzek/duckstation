@@ -3,7 +3,7 @@
 
 **Discord Server:** https://discord.gg/Buktv3t
 
-**Latest Windows, Linux (AppImage), Mac, Android** https://github.com/stenzek/duckstation/releases/tag/latest
+**Latest Builds for Windows, Linux (AppImage), and Android** https://github.com/stenzek/duckstation/releases/tag/latest
 
 **Available on Google Play:** https://play.google.com/store/apps/details?id=com.github.stenzek.duckstation&hl=en_AU&gl=US
 
@@ -72,7 +72,7 @@ Other features include:
  - NeGcon support
  - Qt and NoGUI frontends for desktop
  - Automatic updates for Windows builds
- - Automatic content scanning - game titles/regions are provided by redump.org
+ - Automatic content scanning - game titles/hashes are provided by redump.org
  - Optional automatic switching of memory cards for each game
  - Supports loading cheats from libretro or PCSXR format lists
  - Memory card editor and save importer
@@ -121,16 +121,11 @@ To download:
 
 ### macOS
 
-To download:
- - Go to https://github.com/stenzek/duckstation/releases/tag/latest, and download the Mac build. This is a zip archive containing the prebuilt binary.
- - Alternatively, direct download link: https://github.com/stenzek/duckstation/releases/download/latest/duckstation-mac-release.zip
- - Extract the zip archive. If you're using Safari, apparently this happens automatically. This will give you DuckStation.app.
- - Right click DuckStation.app, and click Open. As the package is not signed (Mac certificates are expensive), you must do this the first time you open it. Subsequent runs can be done by double-clicking.
+MacOS builds are no longer provided, as I cannot support a platform which I do not own hardware for, and I'm not spending $1000+ out of my own pocket for a machine which I have no other use for.
 
-macOS support is considered experimental and not actively supported by the developer; the builds are provided here as a courtesy. Please feel free to submit issues, but it may be some time before
-they are investigated.
+You can still build from [source](#building), but you will have to debug any issues encountered yourself.
 
-**macOS builds do not support automatic updates yet.** If there is sufficient demand, this may be something I will consider.
+If anyone is willing to volunteer to support the platform to ensure users have a good experience, I'm more than happy to re-enable the releases.
 
 
 ### Android
@@ -146,10 +141,6 @@ To use:
  - Map your controller buttons and axes by going into `Controller Mapping` under `Controllers` in `Settings`.
  - Tap a game to start.
 
-
-### Title Information
-
-PlayStation game discs do not contain title information. For game titles, we use the redump.org database cross-referenced with the game's executable code. A version of the database is included with the DuckStation download, but you can replace this with a different database by saving it as `cache/redump.dat` in your user directory, or updated by going into the `Game List Settings` in the Qt Frontend, and clicking `Update Redump Database`.
 
 ### Region detection and BIOS images
 By default, DuckStation will emulate the region check present in the CD-ROM controller of the console. This means that when the region of the console does not match the disc, it will refuse to boot, giving a "Please insert PlayStation CD-ROM" message. DuckStation supports automatic detection disc regions, and if you set the console region to auto-detect as well, this should never be a problem.
