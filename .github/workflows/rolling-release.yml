@@ -275,7 +275,7 @@ jobs:
 
 
   create-release:
-    needs: [windows-build, windows-arm64-build, linux-build, android-build, macos-build]
+    needs: [windows-build, windows-arm64-build, linux-build, android-build]
     runs-on: "ubuntu-20.04"
     if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
     steps:
@@ -314,11 +314,6 @@ jobs:
         with:
           name: "android"
 
-      - name: Download Mac App
-        uses: actions/download-artifact@v1
-        with:
-          name: "macos-x64"
-
       - name: Create preview release
         if: github.ref == 'refs/heads/master'
         uses: "marvinpinto/action-automatic-releases@latest"
@@ -337,7 +332,6 @@ jobs:
             linux-x64-appimage-qt/duckstation-qt-x64.AppImage
             linux-x64-appimage-qt-zsync/duckstation-qt-x64.AppImage.zsync
             android/duckstation-android.apk
-            macos-x64/duckstation-mac-release.zip
 
       - name: Create dev release
         if: github.ref == 'refs/heads/dev'
@@ -357,5 +351,4 @@ jobs:
             linux-x64-appimage-qt/duckstation-qt-x64.AppImage
             linux-x64-appimage-qt-zsync/duckstation-qt-x64.AppImage.zsync
             android/duckstation-android.apk
-            macos-x64/duckstation-mac-release.zip
 
