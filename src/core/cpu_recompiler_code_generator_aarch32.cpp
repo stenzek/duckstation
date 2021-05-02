@@ -2004,7 +2004,7 @@ CodeCache::DispatcherFunction CodeGenerator::CompileDispatcher()
   m_emit->str(a32::r0, a32::MemOperand(GetHostReg32(RCPUPTR), offsetof(State, current_instruction_pc)));
 
   // r1 <- (pc & RAM_MASK) >> 2
-  m_emit->and_(a32::r1, a32::r0, Bus::RAM_MASK);
+  m_emit->and_(a32::r1, a32::r0, Bus::g_ram_mask);
   m_emit->lsr(a32::r1, a32::r1, 2);
 
   // r2 <- ((pc & BIOS_MASK) >> 2) + FAST_MAP_RAM_SLOT_COUNT

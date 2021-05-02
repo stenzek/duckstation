@@ -180,6 +180,9 @@ bool DoState(StateWrapper& sw)
     sw.Do(&g_state.icache_data);
   }
 
+  if (sw.IsReading())
+    UpdateFastmemBase();
+
   return !sw.HasError();
 }
 

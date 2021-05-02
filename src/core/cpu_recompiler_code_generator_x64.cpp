@@ -2968,7 +2968,7 @@ CodeCache::DispatcherFunction CodeGenerator::CompileDispatcher()
 
   // ebx <- (pc & RAM_MASK) >> 2
   m_emit->mov(m_emit->ebx, m_emit->eax);
-  m_emit->and_(m_emit->ebx, Bus::RAM_MASK);
+  m_emit->and_(m_emit->ebx, Bus::g_ram_mask);
   m_emit->shr(m_emit->ebx, 2);
 
   // ecx <- ((pc & BIOS_MASK) >> 2) + FAST_MAP_RAM_SLOT_COUNT

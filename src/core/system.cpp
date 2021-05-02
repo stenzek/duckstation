@@ -1874,7 +1874,7 @@ bool DumpRAM(const char* filename)
   if (!IsValid())
     return false;
 
-  return FileSystem::WriteBinaryFile(filename, Bus::g_ram, Bus::RAM_SIZE);
+  return FileSystem::WriteBinaryFile(filename, Bus::g_ram, Bus::g_ram_size);
 }
 
 bool DumpVRAM(const char* filename)

@@ -2219,7 +2219,7 @@ CodeCache::DispatcherFunction CodeGenerator::CompileDispatcher()
   m_emit->str(a64::w8, a64::MemOperand(GetHostReg64(RCPUPTR), offsetof(State, current_instruction_pc)));
 
   // w9 <- (pc & RAM_MASK) >> 2
-  m_emit->and_(a64::w9, a64::w8, Bus::RAM_MASK);
+  m_emit->and_(a64::w9, a64::w8, Bus::g_ram_mask);
   m_emit->lsr(a64::w9, a64::w9, 2);
 
   // w10 <- ((pc & BIOS_MASK) >> 2) + FAST_MAP_RAM_SLOT_COUNT

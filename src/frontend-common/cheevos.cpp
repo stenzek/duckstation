@@ -1140,7 +1140,7 @@ static T DoMemoryRead(PhysicalMemoryAddress address)
 
   if (address < Bus::RAM_MIRROR_END)
   {
-    std::memcpy(&result, &Bus::g_ram[address & Bus::RAM_MASK], sizeof(result));
+    std::memcpy(&result, &Bus::g_ram[address & Bus::g_ram_mask], sizeof(result));
     return result;
   }
 

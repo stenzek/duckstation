@@ -15,8 +15,10 @@ namespace Bus {
 enum : u32
 {
   RAM_BASE = 0x00000000,
-  RAM_SIZE = 0x200000,
-  RAM_MASK = RAM_SIZE - 1,
+  RAM_2MB_SIZE = 0x200000,
+  RAM_2MB_MASK = RAM_2MB_SIZE - 1,
+  RAM_8MB_SIZE = 0x800000,
+  RAM_8MB_MASK = RAM_8MB_SIZE - 1,
   RAM_MIRROR_END = 0x800000,
   EXP1_BASE = 0x1F000000,
   EXP1_SIZE = 0x800000,
@@ -78,7 +80,7 @@ enum : TickCount
 enum : size_t
 {
   // Our memory arena contains storage for RAM.
-  MEMORY_ARENA_SIZE = RAM_SIZE,
+  MEMORY_ARENA_SIZE = RAM_8MB_SIZE,
 
   // Offsets within the memory arena.
   MEMORY_ARENA_RAM_OFFSET = 0,
@@ -87,8 +89,12 @@ enum : size_t
   // Fastmem region size is 4GB to cover the entire 32-bit address space.
   FASTMEM_REGION_SIZE = UINT64_C(0x100000000),
 #endif
+};
 
-  RAM_CODE_PAGE_COUNT = (RAM_SIZE + (HOST_PAGE_SIZE + 1)) / HOST_PAGE_SIZE,
+enum : u32
+{
+  RAM_2MB_CODE_PAGE_COUNT = (RAM_2MB_SIZE + (HOST_PAGE_SIZE + 1)) / HOST_PAGE_SIZE,
+  RAM_8MB_CODE_PAGE_COUNT = (RAM_8MB_SIZE + (HOST_PAGE_SIZE + 1)) / HOST_PAGE_SIZE,
 
   FASTMEM_LUT_NUM_PAGES = 0x100000, // 0x100000000 >> 12
   FASTMEM_LUT_NUM_SLOTS = FASTMEM_LUT_NUM_PAGES * 2,
@@ -107,8 +113,10 @@ bool CanUseFastmemForAddress(VirtualMemoryAddress address);
 void SetExpansionROM(std::vector<u8> data);
 void SetBIOS(const std::vector<u8>& image);
 
-extern std::bitset<RAM_CODE_PAGE_COUNT> m_ram_code_bits;
-extern u8* g_ram;            // 2MB RAM
+extern std::bitset<RAM_8MB_CODE_PAGE_COUNT> m_ram_code_bits;
+extern u8* g_ram;            // 2MB-8MB RAM
+extern u32 g_ram_size;       // Active size of RAM.
+extern u32 g_ram_mask;       // Active address bits for RAM.
 extern u8 g_bios[BIOS_SIZE]; // 512K BIOS ROM
 
 /// Returns true if the address specified is writable (RAM).
@@ -120,7 +128,7 @@ ALWAYS_INLINE static bool IsRAMAddress(PhysicalMemoryAddress address)
 /// Returns the code page index for a RAM address.
 ALWAYS_INLINE static u32 GetRAMCodePageIndex(PhysicalMemoryAddress address)
 {
-  return (address & RAM_MASK) / HOST_PAGE_SIZE;
+  return (address & g_ram_mask) / HOST_PAGE_SIZE;
 }
 
 /// Returns true if the specified page contains code.

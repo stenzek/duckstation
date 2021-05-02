@@ -55,7 +55,7 @@ ALWAYS_INLINE static u32 GetFastMapIndex(u32 pc)
 {
   return ((pc & PHYSICAL_MEMORY_ADDRESS_MASK) >= Bus::BIOS_BASE) ?
            (FAST_MAP_RAM_SLOT_COUNT + ((pc & Bus::BIOS_MASK) >> 2)) :
-           ((pc & Bus::RAM_MASK) >> 2);
+           ((pc & Bus::g_ram_mask) >> 2);
 }
 
 static void CompileDispatcher();
@@ -102,7 +102,7 @@ static void UnlinkBlock(CodeBlock* block);
 static void ClearState();
 
 static BlockMap s_blocks;
-static std::array<std::vector<CodeBlock*>, Bus::RAM_CODE_PAGE_COUNT> m_ram_block_map;
+static std::array<std::vector<CodeBlock*>, Bus::RAM_8MB_CODE_PAGE_COUNT> m_ram_block_map;
 
 #ifdef WITH_RECOMPILER
 static HostCodeMap s_host_code_map;
@@ -694,7 +694,7 @@ void FastCompileBlockFunction()
 
 void InvalidateBlocksWithPageIndex(u32 page_index)
 {
-  DebugAssert(page_index < Bus::RAM_CODE_PAGE_COUNT);
+  DebugAssert(page_index < Bus::RAM_8MB_CODE_PAGE_COUNT);
   auto& blocks = m_ram_block_map[page_index];
   for (CodeBlock* block : blocks)
   {

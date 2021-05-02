@@ -2868,7 +2868,7 @@ CodeGenerator::SpeculativeValue CodeGenerator::SpeculativeReadMemory(VirtualMemo
 
   if (Bus::IsRAMAddress(phys_addr))
   {
-    u32 ram_offset = phys_addr & Bus::RAM_MASK;
+    u32 ram_offset = phys_addr & Bus::g_ram_mask;
     std::memcpy(&value, &Bus::g_ram[ram_offset], sizeof(value));
     return value;
   }

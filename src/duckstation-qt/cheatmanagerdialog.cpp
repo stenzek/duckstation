@@ -125,7 +125,7 @@ void CheatManagerDialog::connectUi()
     if (index == 0)
     {
       m_ui.scanStartAddress->setText(formatHexValue(0, 8));
-      m_ui.scanEndAddress->setText(formatHexValue(Bus::RAM_SIZE, 8));
+      m_ui.scanEndAddress->setText(formatHexValue(Bus::g_ram_size, 8));
     }
     else if (index == 1)
     {

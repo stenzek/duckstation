@@ -71,8 +71,11 @@ union MEMCTRL
   };
 };
 
-std::bitset<RAM_CODE_PAGE_COUNT> m_ram_code_bits{};
-u8* g_ram = nullptr;    // 2MB RAM
+std::bitset<RAM_8MB_CODE_PAGE_COUNT> m_ram_code_bits{};
+u32 m_ram_code_page_count = 0;
+u8* g_ram = nullptr; // 2MB RAM
+u32 g_ram_size = 0;
+u32 g_ram_mask = 0;
 u8 g_bios[BIOS_SIZE]{}; // 512K BIOS ROM
 
 static std::array<TickCount, 3> m_exp1_access_time = {};
@@ -106,7 +109,7 @@ static constexpr auto m_fastmem_ram_mirrors =
 static std::tuple<TickCount, TickCount, TickCount> CalculateMemoryTiming(MEMDELAY mem_delay, COMDELAY common_delay);
 static void RecalculateMemoryTimings();
 
-static bool AllocateMemory();
+static bool AllocateMemory(bool enable_8mb_ram);
 static void ReleaseMemory();
 
 static void SetCodePageFastmemProtection(u32 page_index, bool writable);
@@ -125,7 +128,7 @@ static void SetCodePageFastmemProtection(u32 page_index, bool writable);
 
 bool Initialize()
 {
-  if (!AllocateMemory())
+  if (!AllocateMemory(g_settings.enable_8mb_ram))
   {
     g_host_interface->ReportError("Failed to allocate memory");
     return false;
@@ -153,7 +156,7 @@ void Shutdown()
 
 void Reset()
 {
-  std::memset(g_ram, 0, RAM_SIZE);
+  std::memset(g_ram, 0, g_ram_size);
   m_MEMCTRL.exp1_base = 0x1F000000;
   m_MEMCTRL.exp2_base = 0x1F802000;
   m_MEMCTRL.exp1_delay_size.bits = 0x0013243F;
@@ -170,12 +173,25 @@ void Reset()
 
 bool DoState(StateWrapper& sw)
 {
+  u32 ram_size = g_ram_size;
+  sw.DoEx(&ram_size, 52, static_cast<u32>(RAM_2MB_SIZE));
+  if (ram_size != g_ram_size)
+  {
+    const bool using_8mb_ram = (ram_size == RAM_8MB_SIZE);
+    ReleaseMemory();
+    if (!AllocateMemory(using_8mb_ram))
+      return false;
+
+    UpdateFastmemViews(m_fastmem_mode);
+    CPU::UpdateFastmemBase();
+  }
+
   sw.Do(&m_exp1_access_time);
   sw.Do(&m_exp2_access_time);
   sw.Do(&m_bios_access_time);
   sw.Do(&m_cdrom_access_time);
   sw.Do(&m_spu_access_time);
-  sw.DoBytes(g_ram, RAM_SIZE);
+  sw.DoBytes(g_ram, g_ram_size);
   sw.DoBytes(g_bios, BIOS_SIZE);
   sw.DoArray(m_MEMCTRL.regs, countof(m_MEMCTRL.regs));
   sw.Do(&m_ram_size_reg);
@@ -255,7 +271,7 @@ void RecalculateMemoryTimings()
                   m_spu_access_time[2] + 1);
 }
 
-bool AllocateMemory()
+bool AllocateMemory(bool enable_8mb_ram)
 {
   if (!m_memory_arena.Create(MEMORY_ARENA_SIZE, true, false))
   {
@@ -264,14 +280,20 @@ bool AllocateMemory()
   }
 
   // Create the base views.
-  g_ram = static_cast<u8*>(m_memory_arena.CreateViewPtr(MEMORY_ARENA_RAM_OFFSET, RAM_SIZE, true, false));
+  const u32 ram_size = enable_8mb_ram ? RAM_8MB_SIZE : RAM_2MB_SIZE;
+  const u32 ram_mask = enable_8mb_ram ? RAM_8MB_MASK : RAM_2MB_MASK;
+  g_ram = static_cast<u8*>(m_memory_arena.CreateViewPtr(MEMORY_ARENA_RAM_OFFSET, ram_size, true, false));
   if (!g_ram)
   {
-    Log_ErrorPrint("Failed to create base views of memory");
+    Log_ErrorPrintf("Failed to create base views of memory (%u bytes RAM)", ram_size);
     return false;
   }
 
-  Log_InfoPrintf("RAM is %u bytes at %p", RAM_SIZE, g_ram);
+  g_ram_mask = ram_mask;
+  g_ram_size = ram_size;
+  m_ram_code_page_count = enable_8mb_ram ? RAM_8MB_CODE_PAGE_COUNT : RAM_2MB_CODE_PAGE_COUNT;
+
+  Log_InfoPrintf("RAM is %u bytes at %p", g_ram_size, g_ram);
   return true;
 }
 
@@ -279,8 +301,10 @@ void ReleaseMemory()
 {
   if (g_ram)
   {
-    m_memory_arena.ReleaseViewPtr(g_ram, RAM_SIZE);
+    m_memory_arena.ReleaseViewPtr(g_ram, g_ram_size);
     g_ram = nullptr;
+    g_ram_mask = 0;
+    g_ram_size = 0;
   }
 
   m_memory_arena.Destroy();
@@ -354,15 +378,15 @@ void UpdateFastmemViews(CPUFastmemMode mode)
 
     auto MapRAM = [](u32 base_address) {
       u8* map_address = m_fastmem_base + base_address;
-      auto view = m_memory_arena.CreateView(MEMORY_ARENA_RAM_OFFSET, RAM_SIZE, true, false, map_address);
+      auto view = m_memory_arena.CreateView(MEMORY_ARENA_RAM_OFFSET, g_ram_size, true, false, map_address);
       if (!view)
       {
-        Log_ErrorPrintf("Failed to map RAM at fastmem area %p (offset 0x%08X)", map_address, RAM_SIZE);
+        Log_ErrorPrintf("Failed to map RAM at fastmem area %p (offset 0x%08X)", map_address, g_ram_size);
         return;
       }
 
       // mark all pages with code as non-writable
-      for (u32 i = 0; i < RAM_CODE_PAGE_COUNT; i++)
+      for (u32 i = 0; i < m_ram_code_page_count; i++)
       {
         if (m_ram_code_bits[i])
         {
@@ -386,7 +410,7 @@ void UpdateFastmemViews(CPUFastmemMode mode)
       auto view = m_memory_arena.CreateReservedView(end_address_inclusive - start_address + 1, map_address);
       if (!view)
       {
-        Log_ErrorPrintf("Failed to map RAM at fastmem area %p (offset 0x%08X)", map_address, RAM_SIZE);
+        Log_ErrorPrintf("Failed to map reserved region %p (size 0x%08X)", map_address, end_address_inclusive - start_address + 1);
         return;
       }
 
@@ -432,7 +456,7 @@ void UpdateFastmemViews(CPUFastmemMode mode)
   }
 
   auto MapRAM = [](u32 base_address) {
-    for (u32 address = 0; address < RAM_SIZE; address += HOST_PAGE_SIZE)
+    for (u32 address = 0; address < g_ram_size; address += HOST_PAGE_SIZE)
     {
       SetLUTFastmemPage(base_address + address, &g_ram[address],
                         !m_ram_code_bits[FastmemAddressToLUTPageIndex(address)]);
@@ -474,7 +498,7 @@ bool CanUseFastmemForAddress(VirtualMemoryAddress address)
 #endif
 
     case CPUFastmemMode::LUT:
-      return (paddr < RAM_SIZE);
+      return (paddr < g_ram_size);
 
     case CPUFastmemMode::Disabled:
     default:
@@ -556,7 +580,7 @@ void ClearRAMCodePageFlags()
 
   if (m_fastmem_mode == CPUFastmemMode::LUT)
   {
-    for (u32 i = 0; i < RAM_CODE_PAGE_COUNT; i++)
+    for (u32 i = 0; i < m_ram_code_page_count; i++)
     {
       const u32 addr = (i * HOST_PAGE_SIZE);
       for (u32 mirror_start : m_fastmem_ram_mirrors)
@@ -567,7 +591,7 @@ void ClearRAMCodePageFlags()
 
 bool IsCodePageAddress(PhysicalMemoryAddress address)
 {
-  return IsRAMAddress(address) ? m_ram_code_bits[(address & RAM_MASK) / HOST_PAGE_SIZE] : false;
+  return IsRAMAddress(address) ? m_ram_code_bits[(address & g_ram_mask) / HOST_PAGE_SIZE] : false;
 }
 
 bool HasCodePagesInRange(PhysicalMemoryAddress start_address, u32 size)
@@ -575,7 +599,7 @@ bool HasCodePagesInRange(PhysicalMemoryAddress start_address, u32 size)
   if (!IsRAMAddress(start_address))
     return false;
 
-  start_address = (start_address & RAM_MASK);
+  start_address = (start_address & g_ram_mask);
 
   const u32 end_address = start_address + size;
   while (start_address < end_address)
@@ -592,10 +616,10 @@ bool HasCodePagesInRange(PhysicalMemoryAddress start_address, u32 size)
 
 std::optional<MemoryRegion> GetMemoryRegionForAddress(PhysicalMemoryAddress address)
 {
-  if (address < RAM_SIZE)
+  if (address < RAM_2MB_SIZE)
     return MemoryRegion::RAM;
   else if (address < RAM_MIRROR_END)
-    return static_cast<MemoryRegion>(static_cast<u32>(MemoryRegion::RAM) + (address / RAM_SIZE));
+    return static_cast<MemoryRegion>(static_cast<u32>(MemoryRegion::RAM) + (address / RAM_2MB_SIZE));
   else if (address >= EXP1_BASE && address < (EXP1_BASE + EXP1_SIZE))
     return MemoryRegion::EXP1;
   else if (address >= CPU::DCACHE_LOCATION && address < (CPU::DCACHE_LOCATION + CPU::DCACHE_SIZE))
@@ -609,10 +633,10 @@ std::optional<MemoryRegion> GetMemoryRegionForAddress(PhysicalMemoryAddress addr
 static constexpr std::array<std::pair<PhysicalMemoryAddress, PhysicalMemoryAddress>,
                             static_cast<u32>(MemoryRegion::Count)>
   s_code_region_ranges = {{
-    {0, RAM_SIZE},
-    {RAM_SIZE, RAM_SIZE * 2},
-    {RAM_SIZE * 2, RAM_SIZE * 3},
-    {RAM_SIZE * 3, RAM_MIRROR_END},
+    {0, RAM_2MB_SIZE},
+    {RAM_2MB_SIZE, RAM_2MB_SIZE * 2},
+    {RAM_2MB_SIZE * 2, RAM_2MB_SIZE * 3},
+    {RAM_2MB_SIZE * 3, RAM_MIRROR_END},
     {EXP1_BASE, EXP1_BASE + EXP1_SIZE},
     {CPU::DCACHE_LOCATION, CPU::DCACHE_LOCATION + CPU::DCACHE_SIZE},
     {BIOS_BASE, BIOS_BASE + BIOS_SIZE},
@@ -633,10 +657,16 @@ u8* GetMemoryRegionPointer(MemoryRegion region)
   switch (region)
   {
     case MemoryRegion::RAM:
-    case MemoryRegion::RAMMirror1:
-    case MemoryRegion::RAMMirror2:
-    case MemoryRegion::RAMMirror3:
       return g_ram;
+
+    case MemoryRegion::RAMMirror1:
+      return (g_ram + (RAM_2MB_SIZE & g_ram_mask));
+
+    case MemoryRegion::RAMMirror2:
+      return (g_ram + ((RAM_2MB_SIZE * 2) & g_ram_mask));
+
+    case MemoryRegion::RAMMirror3:
+      return (g_ram + ((RAM_8MB_SIZE * 3) & g_ram_mask));
 
     case MemoryRegion::EXP1:
       return nullptr;
@@ -734,14 +764,13 @@ static TickCount DoInvalidAccess(MemoryAccessType type, MemoryAccessSize size, P
   if (type == MemoryAccessType::Read)
     value = UINT32_C(0xFFFFFFFF);
 
-  return 1;
+  return (type == MemoryAccessType::Read) ? 1 : 0;
 }
 
 template<MemoryAccessType type, MemoryAccessSize size>
 ALWAYS_INLINE static TickCount DoRAMAccess(u32 offset, u32& value)
 {
-  // TODO: Configurable mirroring.
-  offset &= UINT32_C(0x1FFFFF);
+  offset &= g_ram_mask;
   if constexpr (type == MemoryAccessType::Read)
   {
     if constexpr (size == MemoryAccessSize::Byte)
@@ -1270,7 +1299,7 @@ ALWAYS_INLINE_RELEASE bool DoInstructionRead(PhysicalMemoryAddress address, void
 
   if (address < RAM_MIRROR_END)
   {
-    std::memcpy(data, &g_ram[address & RAM_MASK], sizeof(u32) * word_count);
+    std::memcpy(data, &g_ram[address & g_ram_mask], sizeof(u32) * word_count);
     if constexpr (add_ticks)
       g_state.pending_ticks += (icache_read ? 1 : RAM_READ_TICKS) * word_count;
 
@@ -1523,7 +1552,7 @@ static ALWAYS_INLINE TickCount DoMemoryAccess(VirtualMemoryAddress address, u32&
     }
   }
 
-  if (address < 0x800000)
+  if (address < RAM_MIRROR_END)
   {
     return DoRAMAccess<type, size>(address, value);
   }
@@ -1860,7 +1889,7 @@ void* GetDirectReadMemoryPointer(VirtualMemoryAddress address, MemoryAccessSize 
     if (read_ticks)
       *read_ticks = RAM_READ_TICKS;
 
-    return &g_ram[paddr & RAM_MASK];
+    return &g_ram[paddr & g_ram_mask];
   }
 
   if ((paddr & DCACHE_LOCATION_MASK) == DCACHE_LOCATION)

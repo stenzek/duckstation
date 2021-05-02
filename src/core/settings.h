@@ -212,6 +212,7 @@ struct Settings
 
   bool bios_patch_tty_enable = false;
   bool bios_patch_fast_boot = false;
+  bool enable_8mb_ram = false;
 
   std::array<ControllerType, NUM_CONTROLLER_AND_CARD_PORTS> controller_types{};
   bool controller_disable_analog_mode_forcing = false;

@@ -149,6 +149,7 @@ void Settings::Load(SettingsInterface& si)
 
   region =
     ParseConsoleRegionName(si.GetStringValue("Console", "Region", "NTSC-U").c_str()).value_or(DEFAULT_CONSOLE_REGION);
+  enable_8mb_ram = si.GetBoolValue("Console", "Enable8MBRAM", false);
 
   emulation_speed = si.GetFloatValue("Main", "EmulationSpeed", 1.0f);
   fast_forward_speed = si.GetFloatValue("Main", "FastForwardSpeed", 0.0f);
@@ -340,6 +341,7 @@ void Settings::Load(SettingsInterface& si)
 void Settings::Save(SettingsInterface& si) const
 {
   si.SetStringValue("Console", "Region", GetConsoleRegionName(region));
+  si.SetBoolValue("Console", "Enable8MBRAM", enable_8mb_ram);
 
   si.SetFloatValue("Main", "EmulationSpeed", emulation_speed);
   si.SetFloatValue("Main", "FastForwardSpeed", fast_forward_speed);
