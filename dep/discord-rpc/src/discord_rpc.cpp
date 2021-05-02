@@ -355,13 +355,20 @@ extern "C" DISCORD_EXPORT void Discord_Shutdown(void)
     Connection->onConnect = nullptr;
     Connection->onDisconnect = nullptr;
     Handlers = {};
+    if (IoThread != nullptr) {
+      IoThread->Stop();
+      delete IoThread;
+      IoThread = nullptr;
+    }
+
+    // HACK: We need to send the updated (cleared) presence, but we're shutting down.
+    // Force an update, wait 100ms for it to clear (hopefully this will be long enough), and get any responses.
+    Discord_UpdateConnection();
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    Discord_UpdateConnection();
+
     QueuedPresence.length = 0;
     UpdatePresence.exchange(false);
-    if (IoThread != nullptr) {
-        IoThread->Stop();
-        delete IoThread;
-        IoThread = nullptr;
-    }
 
     RpcConnection::Destroy(Connection);
 }
