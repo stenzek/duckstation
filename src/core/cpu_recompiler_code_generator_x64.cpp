@@ -2193,7 +2193,7 @@ void CodeGenerator::EmitStoreGuestMemoryFastmem(const CodeBlockInstruction& cbi,
         if (value.IsConstant())
           m_emit->mov(m_emit->byte[GetHostReg64(RARG1) + GetHostReg64(RARG2)], value.constant_value & 0xFFu);
         else
-          m_emit->mov(m_emit->byte[GetHostReg64(RARG1) + GetHostReg64(RARG2)], GetHostReg8(value));
+          m_emit->mov(m_emit->byte[GetHostReg64(RARG1) + GetHostReg64(RARG2)], GetHostReg8(value.host_reg));
       }
       break;
 
@@ -2202,7 +2202,7 @@ void CodeGenerator::EmitStoreGuestMemoryFastmem(const CodeBlockInstruction& cbi,
         if (value.IsConstant())
           m_emit->mov(m_emit->word[GetHostReg64(RARG1) + GetHostReg64(RARG2)], value.constant_value & 0xFFFFu);
         else
-          m_emit->mov(m_emit->word[GetHostReg64(RARG1) + GetHostReg64(RARG2)], GetHostReg16(value));
+          m_emit->mov(m_emit->word[GetHostReg64(RARG1) + GetHostReg64(RARG2)], GetHostReg16(value.host_reg));
       }
       break;
 
@@ -2211,7 +2211,7 @@ void CodeGenerator::EmitStoreGuestMemoryFastmem(const CodeBlockInstruction& cbi,
         if (value.IsConstant())
           m_emit->mov(m_emit->dword[GetHostReg64(RARG1) + GetHostReg64(RARG2)], value.constant_value);
         else
-          m_emit->mov(m_emit->dword[GetHostReg64(RARG1) + GetHostReg64(RARG2)], GetHostReg32(value));
+          m_emit->mov(m_emit->dword[GetHostReg64(RARG1) + GetHostReg64(RARG2)], GetHostReg32(value.host_reg));
       }
       break;
     }
