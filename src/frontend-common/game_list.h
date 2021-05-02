@@ -123,6 +123,7 @@ public:
                           const GameSettings::Entry& new_entry, bool save_to_list = true);
 
   std::string GetCoverImagePathForEntry(const GameListEntry* entry) const;
+  std::string GetCoverImagePath(const std::string& path, const std::string& code, const std::string& title) const;
   std::string GetNewCoverImagePathForEntry(const GameListEntry* entry, const char* new_filename) const;
 
 private:
