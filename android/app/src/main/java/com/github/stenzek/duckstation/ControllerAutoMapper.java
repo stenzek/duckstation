@@ -1,5 +1,6 @@
 package com.github.stenzek.duckstation;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Vibrator;
 import android.text.InputType;
@@ -20,8 +21,8 @@ public class ControllerAutoMapper {
         public void onComplete();
     }
 
-    final private ControllerSettingsActivity parent;
-    final private int port;
+    private final Context context;
+    private final int port;
     private final CompleteCallback completeCallback;
 
     private InputDevice device;
@@ -31,8 +32,8 @@ public class ControllerAutoMapper {
     private String keyBase;
     private String controllerType;
 
-    public ControllerAutoMapper(ControllerSettingsActivity activity, int port, CompleteCallback completeCallback) {
-        this.parent = activity;
+    public ControllerAutoMapper(Context context, int port, CompleteCallback completeCallback) {
+        this.context = context;
         this.port = port;
         this.completeCallback = completeCallback;
     }
@@ -126,7 +127,7 @@ public class ControllerAutoMapper {
         }
 
         if (deviceList.isEmpty()) {
-            final AlertDialog.Builder builder = new AlertDialog.Builder(parent);
+            final AlertDialog.Builder builder = new AlertDialog.Builder(context);
             builder.setTitle(R.string.main_activity_error);
             builder.setMessage(R.string.controller_auto_mapping_no_devices);
             builder.setPositiveButton(R.string.main_activity_ok, (dialog, which) -> dialog.dismiss());
@@ -138,7 +139,7 @@ public class ControllerAutoMapper {
         for (int i = 0; i < deviceList.size(); i++)
             deviceNames[i] = deviceList.get(i).getName();
 
-        final AlertDialog.Builder builder = new AlertDialog.Builder(parent);
+        final AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle(R.string.controller_auto_mapping_select_device);
         builder.setItems(deviceNames, (dialog, which) -> {
             process(deviceList.get(which));
@@ -147,13 +148,13 @@ public class ControllerAutoMapper {
     }
 
     private void process(InputDevice device) {
-        this.prefs = PreferenceManager.getDefaultSharedPreferences(parent);
+        this.prefs = PreferenceManager.getDefaultSharedPreferences(context);
         this.editor = prefs.edit();
         this.log = new StringBuilder();
         this.device = device;
 
         this.keyBase = String.format("Controller%d/", port);
-        this.controllerType = parent.getControllerType(prefs, port);
+        this.controllerType = ControllerSettingsCollectionFragment.getControllerType(prefs, port);
 
         setButtonBindings();
         setAxisBindings();
@@ -162,10 +163,10 @@ public class ControllerAutoMapper {
         this.editor.commit();
         this.editor = null;
 
-        final AlertDialog.Builder builder = new AlertDialog.Builder(parent);
+        final AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle(R.string.controller_auto_mapping_results);
 
-        final EditText editText = new EditText(parent);
+        final EditText editText = new EditText(context);
         editText.setText(log.toString());
         editText.setInputType(InputType.TYPE_NULL | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
         editText.setSingleLine(false);

@@ -47,7 +47,7 @@ static jclass s_EmulationActivity_class;
 static jmethodID s_EmulationActivity_method_reportError;
 static jmethodID s_EmulationActivity_method_onEmulationStarted;
 static jmethodID s_EmulationActivity_method_onEmulationStopped;
-static jmethodID s_EmulationActivity_method_onGameTitleChanged;
+static jmethodID s_EmulationActivity_method_onRunningGameChanged;
 static jmethodID s_EmulationActivity_method_setVibration;
 static jmethodID s_EmulationActivity_method_getRefreshRate;
 static jmethodID s_EmulationActivity_method_openPauseMenu;
@@ -703,9 +703,29 @@ void AndroidHostInterface::OnRunningGameChanged(const std::string& path, CDImage
   if (m_emulation_activity_object)
   {
     JNIEnv* env = AndroidHelpers::GetJNIEnv();
-    jstring title_string = env->NewStringUTF(System::GetRunningTitle().c_str());
-    env->CallVoidMethod(m_emulation_activity_object, s_EmulationActivity_method_onGameTitleChanged, title_string);
+
+    jstring path_string = env->NewStringUTF(path.c_str());
+    jstring code_string = env->NewStringUTF(game_code.c_str());
+    jstring title_string = env->NewStringUTF(game_title.c_str());
+
+    const GameListEntry* game_list_entry = m_game_list->GetEntryForPath(path.c_str());
+    std::string cover_path_str;
+    if (game_list_entry)
+      cover_path_str = m_game_list->GetCoverImagePathForEntry(game_list_entry);
+    else
+      cover_path_str = m_game_list->GetCoverImagePath(path, game_code, game_title);
+
+    jstring cover_path = nullptr;
+    if (!cover_path_str.empty())
+      cover_path = env->NewStringUTF(cover_path_str.c_str());
+
+    env->CallVoidMethod(m_emulation_activity_object, s_EmulationActivity_method_onRunningGameChanged, path_string, code_string, title_string, cover_path);
+
+    if (cover_path)
+      env->DeleteLocalRef(cover_path);
     env->DeleteLocalRef(title_string);
+    env->DeleteLocalRef(code_string);
+    env->DeleteLocalRef(path_string);
   }
 }
 
@@ -994,8 +1014,8 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
          env->GetMethodID(s_EmulationActivity_class, "onEmulationStarted", "()V")) == nullptr ||
       (s_EmulationActivity_method_onEmulationStopped =
          env->GetMethodID(s_EmulationActivity_class, "onEmulationStopped", "()V")) == nullptr ||
-      (s_EmulationActivity_method_onGameTitleChanged =
-         env->GetMethodID(s_EmulationActivity_class, "onGameTitleChanged", "(Ljava/lang/String;)V")) == nullptr ||
+      (s_EmulationActivity_method_onRunningGameChanged =
+         env->GetMethodID(s_EmulationActivity_class, "onRunningGameChanged", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V")) == nullptr ||
       (s_EmulationActivity_method_setVibration = env->GetMethodID(emulation_activity_class, "setVibration", "(Z)V")) ==
         nullptr ||
       (s_EmulationActivity_method_getRefreshRate =

@@ -151,22 +151,6 @@
         <item>PerGame</item>
         <item>PerGameTitle</item>
     </string-array>
-    <string-array name="emulation_menu">
-        <item>Load State</item>
-        <item>Save State</item>
-        <item>Toggle Fast Forward</item>
-        <item>Achievements</item>
-        <item>More Options</item>
-        <item>Quit</item>
-    </string-array>
-    <string-array name="emulation_more_menu">
-        <item>Reset</item>
-        <item>Patch Codes</item>
-        <item>Change Disc</item>
-        <item>Change Touchscreen Controller</item>
-        <item>Controller Settings</item>
-        <item>Settings</item>
-    </string-array>
     <string-array name="emulation_touchscreen_menu">
         <item>Change Type</item>
         <item>Change Opacity</item>

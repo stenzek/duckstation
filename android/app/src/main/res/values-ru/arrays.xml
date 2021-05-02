@@ -75,22 +75,6 @@
 		<item>Своя карта для каждой игры (по коду)</item>
 		<item>Своя карта для каждой игры (по названию)</item>
 	</string-array>
-	<string-array name="emulation_menu">
-		<item>Загрузить состояние</item>
-		<item>Сохранить состояние</item>
-		<item>Включить ускорение</item>
-		<item>Достижения</item>
-		<item>Опции</item>
-		<item>Выход</item>
-	</string-array>
-	<string-array name="emulation_more_menu">
-		<item>Сброс</item>
-		<item>Чит-коды</item>
-		<item>Сменить диск</item>
-		<item>Экранный геймпад</item>
-		<item>Управление</item>
-		<item>Настройки</item>
-	</string-array>
 	<string-array name="emulation_touchscreen_menu">
 		<item>Сменить вид</item>
 		<item>Настроить видимость</item>

@@ -75,23 +75,7 @@
         <item>Separado Por Jogo (Cód. Jogo)</item>
         <item>Separado Por Jogo (Título Jogo)</item>
     </string-array>
-    <string-array name="emulation_menu">
-        <item>Carregar Estado</item>
-        <item>Salvar Estado</item>
-        <item>Avanço (Fixo)</item>
-        <item>Achievements</item>
-        <item>Mais Opções</item>
-        <item>Sair</item>
-    </string-array>
-    <string-array name="emulation_more_menu">
-        <item>Reiniciar</item>
-        <item>Trapaças</item>
-        <item>Mudar Disco</item>
-        <item>Mudar controle em Tela</item>
-        <item>Controller Settings</item>
-        <item>Configurações</item>
-    </string-array>
-		<string-array name="emulation_touchscreen_menu">
+    <string-array name="emulation_touchscreen_menu">
 		<item>Mudar</item>
 		<item>Ajustar Visibilidade</item>
 		<item>Adicionar/Remover botões</item>

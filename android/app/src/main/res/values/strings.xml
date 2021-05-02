@@ -336,4 +336,13 @@
     <string name="settings_category_achievements">Achievement Settings</string>
     <string name="settings_multitap_mode">Multitap Mode</string>
     <string name="settings_touchscreen_controller_port">Touchscreen Controller Port</string>
+    <string name="emulation_menu_load_state">Load State</string>
+    <string name="emulation_menu_save_state">Save State</string>
+    <string name="emulation_menu_toggle_fast_forward">Toggle Fast Forward</string>
+    <string name="emulation_menu_achievements">Achievements</string>
+    <string name="emulation_menu_patch_codes">Patch Codes</string>
+    <string name="emulation_menu_change_disc">Change Disc</string>
+    <string name="emulation_menu_touchscreen_controller_settings">Touchscreen Controller Settings</string>
+    <string name="emulation_menu_toggle_analog_mode">Toggle Controller Analog Mode</string>
+    <string name="emulation_menu_reset_console">Reset Console</string>
 </resources>

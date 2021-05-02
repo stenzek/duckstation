@@ -75,22 +75,6 @@
         <item>Aparte Kaart Per Spel (Spelcode)</item>
         <item>Aparte Kaart Per Spel (Speltitel)</item>
     </string-array>
-    <string-array name="emulation_menu">
-        <item>Staat Laden</item>
-        <item>Staat Opslaan</item>
-        <item>Doorspoelen aan/uitzetten</item>
-        <item>Achievements</item>
-        <item>Meer Opties</item>
-        <item>Afsluiten</item>
-    </string-array>
-    <string-array name="emulation_more_menu">
-        <item>Resetten</item>
-        <item>Patch Codes</item>
-        <item>Disc Veranderen</item>
-        <item>Touchscreen Controller Aanpassen</item>
-        <item>Controller Settings</item>
-        <item>Instellingen</item>
-    </string-array>
     <string-array name="settings_cdrom_read_speedup_entries">
         <item>Geen (Dubbele Snelheid)</item>
         <item>2x (Vierdubbele Snelheid)</item>

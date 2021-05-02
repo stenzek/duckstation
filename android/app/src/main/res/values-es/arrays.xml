@@ -75,22 +75,6 @@
         <item>Tarjeta separada por juego (Código)</item>
         <item>Tarjeta separada por juego (Título)</item>
     </string-array>
-    <string-array name="emulation_menu">
-        <item>Cargar Estado</item>
-        <item>Guardar Estado</item>
-        <item>Activar Avance rápido</item>
-        <item>Logros</item>
-        <item>Más Opciones</item>
-        <item>Salir</item>
-    </string-array>
-    <string-array name="emulation_more_menu">
-        <item>Reiniciar</item>
-        <item>Código de trucos</item>
-        <item>Cambiar disco</item>
-        <item>Cambiar control de pantalla tactil</item>
-        <item>Configuración del control</item>
-        <item>Configuraciones</item>
-    </string-array>
     <string-array name="settings_cdrom_read_speedup_entries">
         <item>Ninguno (Velocidad doble)</item>
         <item>2x (Velocidad cuádruple)</item>
