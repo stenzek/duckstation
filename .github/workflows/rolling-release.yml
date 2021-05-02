@@ -175,7 +175,7 @@ jobs:
         cd build
         cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_NOGUI_FRONTEND=ON -DBUILD_QT_FRONTEND=ON -DUSE_DRMKMS=ON -DUSE_EGL=ON -DUSE_SDL2=ON -DUSE_WAYLAND=ON -DUSE_X11=ON -G Ninja ..
         ninja
-        ../appimage/generate_appimages.sh $(pwd)
+        ../scripts/generate_appimages.sh $(pwd)
 
     - name: Upload NoGUI AppImage
       uses: actions/upload-artifact@v1

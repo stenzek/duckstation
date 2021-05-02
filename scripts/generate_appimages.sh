@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # NOTE: Keep this script in the same directory as resources for AppImage creation
-APPIMAGE_RESOURCES_DIR=$(dirname $(readlink -f $0))
+APPIMAGE_RESOURCES_DIR=$(dirname $(readlink -f $0))/../dist
 echo "APPIMAGE_RESOURCES_DIR set to ${APPIMAGE_RESOURCES_DIR}"
 
 if [[ "$#" -ne 1 ]]; then

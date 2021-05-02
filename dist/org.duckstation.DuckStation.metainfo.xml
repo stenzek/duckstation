@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>org.duckstation.DuckStation</id>
+  <launchable type="desktop-id">org.duckstation.DuckStation.desktop</launchable>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0</project_license>
+  <name>DuckStation</name>
+  <summary>PlayStation 1/PSX emulator.</summary>
+  <description>
+    <p>
+      DuckStation is an simulator/emulator of the Sony PlayStation(TM) console, focusing on playability, speed, and long-term maintainability.
+      The goal is to be as accurate as possible while maintaining performance suitable for low-end devices.
+    </p>
+  </description>
+  <screenshots>
+    <screenshot type="default"><image>https://github.com/stenzek/duckstation/raw/md-images/bigduck.png</image></screenshot>
+    <screenshot><image>https://github.com/stenzek/duckstation/raw/md-images/main.png</image></screenshot>
+    <screenshot><image>https://github.com/stenzek/duckstation/raw/md-images/gamegrid.png</image></screenshot>
+    <screenshot><image>https://github.com/stenzek/duckstation/raw/md-images/tof.jpg</image></screenshot>
+  </screenshots>
+  <categories>
+    <category>Games</category>
+    <category>Emulator</category>
+  </categories>
+  <url type="homepage">https://duckstation.org/</url>
+  <url type="bugtracker">https://github.com/stenzek/duckstation/issues</url>
+  <url type="help">https://www.duckstation.org/wiki/Main_Page</url>
+  <developer_name>Connor McLaughlin</developer_name>
+  <content_rating type="oars-1.1" />
+  <releases>
+    <release date="2021-04-24" version="nightly" />
+  </releases>
+</component>
