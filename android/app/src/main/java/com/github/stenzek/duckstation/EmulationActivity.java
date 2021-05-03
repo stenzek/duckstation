@@ -55,6 +55,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     private String mGameTitle = null;
     private String mGameCoverPath = null;
     private EmulationSurfaceView mContentView;
+    private MenuDialogFragment mPauseMenu;
 
     private boolean getBooleanSetting(String key, boolean defaultValue) {
         return mPreferences.getBoolean(key, defaultValue);
@@ -257,6 +258,9 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     public void surfaceDestroyed(SurfaceHolder holder) {
         Log.i("EmulationActivity", "Surface destroyed");
 
+        if (mPauseMenu != null)
+            mPauseMenu.close(false);
+
         // Save the resume state in case we never get back again...
         if (AndroidHostInterface.getInstance().isEmulationThreadRunning() && !mStopRequested)
             AndroidHostInterface.getInstance().saveResumeState(true);
@@ -452,8 +456,11 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
             AndroidHostInterface.getInstance().pauseEmulationThread(true);
         }
 
-        final MenuDialogFragment fragment = new MenuDialogFragment(this);
-        fragment.show(getSupportFragmentManager(), "MenuDialogFragment");
+        if (mPauseMenu != null)
+            mPauseMenu.close(false);
+
+        mPauseMenu = new MenuDialogFragment(this);
+        mPauseMenu.show(getSupportFragmentManager(), "MenuDialogFragment");
     }
 
     private void showSaveStateMenu(boolean saving) {
@@ -842,9 +849,11 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
 
             if (resumeGame)
                 emulationActivity.onMenuClosed();
+
+            emulationActivity.mPauseMenu = null;
         }
 
-        private void close(boolean resumeGame) {
+        public void close(boolean resumeGame) {
             dismiss();
             onClosed(resumeGame);
         }
