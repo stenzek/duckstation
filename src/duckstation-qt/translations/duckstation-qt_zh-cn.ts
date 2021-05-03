@@ -6834,7 +6834,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="83"/>
         <source>If one of the &quot;separate card per game&quot; memory card types is chosen, these memory cards will be saved to the memory cards directory.</source>
-        <translation>如果记忆卡类型选择了“每个游戏独立记忆卡”中的其中之一，这些记忆卡将被保存到记忆卡目录。</translation>
+        <translation>如果在记忆卡类型中选择了“每个游戏独立记忆卡”中的其中之一，这些记忆卡将被保存到记忆卡目录。</translation>
     </message>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="89"/>
