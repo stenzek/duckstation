@@ -25,7 +25,7 @@
 	<string name="settings_summary_load_patch_codes">Загружать чит-коды из cheats/&lt;название игры&gt;.cht в формате PCSXR или Libretro. Коды можно активировать после запуска игры.</string>
 	<string name="settings_apply_compatibility_settings">Применять настройки совместимости</string>
 	<string name="settings_summary_apply_compatibility_settings">Автоматически отключать улучшения, которые не поддерживаются играми.</string>
-	<string name="settings_summary_video_sync">Включите для синхронизации частоты обновления DuckStation с частотой экрана устройства. Синхронизация автоматически выключается, если скорость эмуляции не равна 100%.</string>
+	<string name="settings_summary_video_sync">Включите для синхронизации частоты обновления DuckStation с частотой экрана устройства. Синхронизация автоматически выключится, если скорость эмуляции не равна 100%.</string>
 	<string name="settings_video_sync">Видеосинхронизация</string>
 	<string name="settings_cpu_overclocking">Разгон CPU</string>
 	<string name="settings_cdrom_region_check">Проверка региона CD-ROM</string>
@@ -100,7 +100,7 @@
 	<string name="settings_chroma_smoothing_24bit">Сглаживание цвета для 24-бит</string>
 	<string name="settings_summary_chrome_smoothing_24bit">Сглаживать блочность цветовых переходов в 24-битном контенте, например видеороликах. Поддерживается только аппаратным рендерингом.</string>
 	<string name="settings_pgxp_geometry_correction">Коррекция геометрии PGXP</string>
-	<string name="settings_summary_pgxp_geometry_correction">Уменьшает дрожание и искривление текстур, присущее играм PS1. Работает только с аппаратными рендерами. Совместимо не со всеми играми.</string>
+	<string name="settings_summary_pgxp_geometry_correction">Уменьшает дрожание и искривление текстур, характерное для PS1. Работает только с аппаратными рендерами. Совместимо не со всеми играми.</string>
 	<string name="settings_pgxp_culling_correction">Коррекция выборки PGXP</string>
 	<string name="settings_summary_pgxp_culling_correction">Повышает точность отбраковки полигонов, снижая количество провалов в геометрии. Требуется включение коррекции геометрии.</string>
 	<string name="settings_pgxp_texture_correction">Коррекция текстур PGXP</string>
@@ -153,7 +153,7 @@
 	<string name="main_activity_show_version_title">Версия</string>
 	<string name="main_activity_copy">Копировать</string>
 	<string name="settings_gpu_thread">Рендеринг GPU в отдельном потоке</string>
-	<string name="settings_summary_gpu_thread">Использовать второй поток для отрисовки графики. В настоящее время поддерживается только в программном рендеринге, существенно повышая производительность и не влияя на стабильность.</string>
+	<string name="settings_summary_gpu_thread">Использовать второй поток для отрисовки графики. В настоящее время поддерживается только программным рендерингом, существенно повышая производительность и не влияя на стабильность.</string>
 	<string name="settings_gpu_threaded_presentation">Вывод с GPU в отдельном потоке</string>
 	<string name="settings_summary_gpu_threaded_presentation">Выводить кадры в фоновом потоке когда не используется ускорение или видеосинхронизация. Может значительно повысить производительность при рендеринге на Vulkan.</string>
 	<string name="settings_language">Язык (требуется перезапуск)</string>
@@ -287,7 +287,7 @@
 	<string name="memory_card_editor_no_cards_found">Карты памяти не найдены.</string>
 	<string name="memory_card_editor_card_already_open">Данная карта уже открыта.</string>
 	<string name="memory_card_editor_failed_to_open_card">Не удалось открыть или прочитать карту памяти.</string>
-	<string name="memory_card_editor_must_have_at_least_two_cards_to_copy">Для копирования требуется открыть хотя бы две карты памяти.</string>
+	<string name="memory_card_editor_must_have_at_least_two_cards_to_copy">Для копирования требуется открыть минимум две карты памяти.</string>
 	<string name="memory_card_editor_copy_save_to">Скопировать %s в...</string>
 	<string name="memory_card_editor_select_card">Выбор карты</string>
 	<string name="memory_card_editor_error">Ошибка</string>
@@ -336,4 +336,13 @@
     	<string name="settings_category_achievements">Настройки достижений</string>
     	<string name="settings_multitap_mode">Режим Multitap</string>
         <string name="settings_touchscreen_controller_port">Порт экранного геймпада</string>
+	<string name="emulation_menu_load_state">Загрузить состояние</string>
+   	<string name="emulation_menu_save_state">Сохранить состояние</string>
+ 	<string name="emulation_menu_toggle_fast_forward">Включить ускорение</string>
+	<string name="emulation_menu_achievements">Достижения</string>
+	<string name="emulation_menu_patch_codes">Чит-коды</string>
+   	<string name="emulation_menu_change_disc">Сменить диск</string>
+  	<string name="emulation_menu_touchscreen_controller_settings">Экранный геймпад</string>
+   	<string name="emulation_menu_toggle_analog_mode">Режим контроллера</string>
+   	<string name="emulation_menu_reset_console">Сброс консоли</string>
 </resources>
