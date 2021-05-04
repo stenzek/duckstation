@@ -8,5 +8,6 @@
     <color name="black_overlay">#66000000</color>
     <color name="fab_background">#ffffffff</color>
 
-    <color name="settings_overlay_background">#dd111111</color>
+    <color name="emulationActivityPauseBackground">#eeffffff</color>
+    <color name="emulationActivityPauseTitleBackground">#996200EE</color>
 </resources>
