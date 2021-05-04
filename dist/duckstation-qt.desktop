@@ -6,5 +6,4 @@ Comment=Fast-ish PlayStation 1 emulator
 Icon=duckstation-qt
 TryExec=duckstation-qt
 Exec=duckstation-qt %f
-Terminal=true
 Categories=Game;Emulator;Qt;
