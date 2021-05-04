@@ -1,11 +1,12 @@
 # DuckStation - PlayStation 1, aka. PSX Emulator
+
 [Latest News](#latest-news) | [Features](#features) | [Screenshots](#screenshots) | [Downloading and Running](#downloading-and-running) | [Building](#building) | [Disclaimers](#disclaimers)
 
 **Discord Server:** https://discord.gg/Buktv3t
 
 **Latest Builds for Windows, Linux (AppImage), and Android** https://github.com/stenzek/duckstation/releases/tag/latest
 
-**Available on Google Play:** https://play.google.com/store/apps/details?id=com.github.stenzek.duckstation&hl=en_AU&gl=US
+**Available on Google Play:** https://play.google.com/store/apps/details?id=com.github.stenzek.duckstation
 
 **Game Compatibility List:** https://docs.google.com/spreadsheets/d/1H66MxViRjjE5f8hOl5RQmF5woS1murio2dsLn14kEqo/edit?usp=sharing
 
@@ -16,8 +17,8 @@ DuckStation is an simulator/emulator of the Sony PlayStation(TM) console, focusi
 A "BIOS" ROM image is required to to start the emulator and to play games. You can use an image from any hardware version or region, although mismatching game regions and BIOS regions may have compatibility issues. A ROM image is not provided with the emulator for legal reasons, you should dump this from your own console using Caetla or other means.
 
 ## Latest News
-Older entries are available at https://github.com/stenzek/duckstation/blob/master/NEWS.md
 
+Older entries are available at https://github.com/stenzek/duckstation/blob/master/NEWS.md
 - 2021/04/29: Custom aspect ratio support added.
 - 2021/03/20: Memory card editor added to Android app.
 - 2021/03/17: Add support for loading **homebrew** PBP images. PSN images are not loadable due to potential legal issues surrounding the encryption.
@@ -54,7 +55,6 @@ DuckStation features a fully-featured frontend built using Qt, as well as a full
 </p>
 
 Other features include:
-
  - CPU Recompiler/JIT (x86-64, armv7/AArch32 and AArch64)
  - Hardware (D3D11, OpenGL, Vulkan) and software rendering
  - Upscaling, texture filtering, and true colour (24-bit) in hardware renderers
@@ -82,11 +82,13 @@ Other features include:
  - RetroAchievements
 
 ## System Requirements
+
  - A CPU faster than a potato. But it needs to be x86_64, AArch32/armv7, or AArch64/ARMv8, otherwise you won't get a recompiler and it'll be slow.
  - For the hardware renderers, a GPU capable of OpenGL 3.1/OpenGL ES 3.0/Direct3D 11 Feature Level 10.0 (or Vulkan 1.0) and above. So, basically anything made in the last 10 years or so.
  - SDL, XInput or DInput compatible game controller (e.g. XB360/XBOne). DualShock 3 users on Windows will need to install the official DualShock 3 drivers included as part of PlayStation Now.
 
 ## Downloading and running
+
 Binaries of DuckStation for Windows x64/ARM64, x86_64 Linux x86_64 (in AppImage format), and Android ARMv8/AArch64 are available via GitHub Releases and are automatically built with every commit/push. Binaries or packages distributed through other sources may be out of date and are not supported by the developer.
 
 ### Windows
@@ -129,7 +131,6 @@ You can still build from [source](#building), but you will have to debug any iss
 
 If anyone is willing to volunteer to support the platform to ensure users have a good experience, I'm more than happy to re-enable the releases.
 
-
 ### Android
 
 A prebuilt APK is now available for Android. However, please keep in mind that the Android version does not contain all features present in the desktop version yet. You will need a device with armv7 (32-bit ARM) or AArch64 (64-bit ARM). 64-bit is preferred, the requirements are higher for 32-bit, you'll probably want at least a 1.5GHz CPU.
@@ -143,8 +144,8 @@ To use:
  - Map your controller buttons and axes by going into `Controller Mapping` under `Controllers` in `Settings`.
  - Tap a game to start.
 
-
 ### Region detection and BIOS images
+
 By default, DuckStation will emulate the region check present in the CD-ROM controller of the console. This means that when the region of the console does not match the disc, it will refuse to boot, giving a "Please insert PlayStation CD-ROM" message. DuckStation supports automatic detection disc regions, and if you set the console region to auto-detect as well, this should never be a problem.
 
 If you wish to use auto-detection, you do not need to change the BIOS path each time you switch regions. Simply place the BIOS images for the other regions in the **same directory** as the configured image. This will probably be in the `bios/` subdirectory. Then set the console region to "Auto-Detect", and everything should work fine. The console/log will tell you if you are missing the image for the disc's region.
@@ -166,9 +167,10 @@ For example, if your disc image was named `Spyro3.cue`, you would place the SBI 
 ## Building
 
 ### Windows
+
 Requirements:
  - Visual Studio 2019
- 
+
 1. Clone the respository with submodules (`git clone --recursive https://github.com/stenzek/duckstation.git -b dev`).
 2. Open the Visual Studio solution `duckstation.sln` in the root, or "Open Folder" for cmake build.
 3. Build solution.
@@ -176,6 +178,7 @@ Requirements:
 5. Run `duckstation-qt-x64-Release.exe` or whichever config you used.
 
 ### Linux
+
 Requirements (Debian/Ubuntu package names):
  - CMake (`cmake`)
  - SDL2 (`libsdl2-dev`, `libxrandr-dev`)
@@ -195,6 +198,7 @@ Requirements (Debian/Ubuntu package names):
 5. Run the binary, located in the build directory under `bin/duckstation-qt`.
 
 ### macOS
+
 **NOTE:** macOS is highly experimental and not tested by the developer. Use at your own risk, things may be horribly broken.
 
 Requirements:
@@ -210,6 +214,7 @@ Requirements:
 5. Run the binary, located in the build directory under `bin/DuckStation.app`.
 
 ### Android
+
 Requirements:
  - Android Studio with the NDK and CMake installed
 
@@ -219,14 +224,14 @@ Requirements:
 4. Install APK on device, or use Run menu for attached device.
 
 ## User Directories
+
 The "User Directory" is where you should place your BIOS images, where settings are saved to, and memory cards/save states are saved by default.
 An optional [SDL game controller database file](#sdl-game-controller-database) can be also placed here.
 
 This is located in the following places depending on the platform you're using:
-
-- Windows: My Documents\DuckStation
-- Linux: `$XDG_DATA_HOME/duckstation`, or `~/.local/share/duckstation`.
-- macOS: `~/Library/Application Support/DuckStation`.
+ - Windows: My Documents\DuckStation
+ - Linux: `$XDG_DATA_HOME/duckstation`, or `~/.local/share/duckstation`.
+ - macOS: `~/Library/Application Support/DuckStation`.
 
 So, if you were using Linux, you would place your BIOS images in `~/.local/share/duckstation/bios`. This directory will be created upon running DuckStation
 for the first time.
@@ -235,16 +240,19 @@ If you wish to use a "portable" build, where the user directory is the same as w
 in the same directory as the DuckStation executable.
 
 ## Bindings for Qt frontend
+
 Your keyboard or game controller can be used to simulate a variety of PlayStation controllers. Controller input is supported through DInput, XInput, and SDL backends and can be changed through `Settings -> General Settings`.
 
 To bind your input device, go to `Settings -> Controller Settings`. Each of the buttons/axes for the simulated controller will be listed, alongside the corresponding key/button on your device that it is currently bound to. To rebind, click the box next to the button/axis name, and press the key or button on your input device that you wish to bind to. When binding rumble, simply press any button on the controller you wish to send rumble to.
 
 ## SDL Game Controller Database
+
 DuckStation releases ship with a database of game controller mappings for the SDL controller backend, courtesy of https://github.com/gabomdq/SDL_GameControllerDB. The included `gamecontrollerdb.txt` file can be found in the `database` subdirectory of the DuckStation program directory.
 
 If you are experiencing issues binding your controller with the SDL controller backend, you may need to add a custom mapping to the database file. Make a copy of `gamecontrollerdb.txt` and place it in your [user directory](#user-directories) (or directly in the program directory, if running in portable mode) and then follow the instructions in the [SDL_GameControllerDB repository](https://github.com/gabomdq/SDL_GameControllerDB) for creating a new mapping. Add this mapping to the new copy of `gamecontrollerdb.txt` and your controller should then be recognized properly.
 
 ## Default bindings
+
 Controller 1:
  - **D-Pad:** W/A/S/D
  - **Triangle/Square/Circle/Cross:** Numpad8/Numpad4/Numpad6/Numpad2
@@ -260,11 +268,13 @@ Hotkeys:
  - **Pause/Break:** Pause/resume emulation
  - **Page Up/Down:** Increase/decrease resolution scale in hardware renderers
  - **End:** Toggle software renderer
- 
+
 ## Tests
+
  - Passes amidog's CPU and GTE tests in both interpreter and recompiler modes, partial passing of CPX tests
 
 ## Screenshots
+
 <p align="center">
   <a href="https://raw.githubusercontent.com/stenzek/duckstation/md-images/monkey.jpg"><img src="https://raw.githubusercontent.com/stenzek/duckstation/md-images/monkey.jpg" alt="Monkey Hero" width="400" /></a>
   <a href="https://raw.githubusercontent.com/stenzek/duckstation/md-images/rrt4.jpg"><img src="https://raw.githubusercontent.com/stenzek/duckstation/md-images/rrt4.jpg" alt="Ridge Racer Type 4" width="400" /></a>
@@ -285,5 +295,3 @@ Hotkeys:
 Icon by icons8: https://icons8.com/icon/74847/platforms.undefined.short-title
 
 "PlayStation" and "PSX" are registered trademarks of Sony Interactive Entertainment Europe Limited. This project is not affiliated in any way with Sony Interactive Entertainment.
-
-
