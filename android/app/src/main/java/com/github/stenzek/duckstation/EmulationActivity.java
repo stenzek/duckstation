@@ -388,6 +388,8 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER_PORTRAIT);
         else if (orientation.equals("landscape"))
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE);
+        else if (orientation.equals("sensor"))
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
         else
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
     }
