@@ -257,9 +257,7 @@ Hotkeys:
  - **Escape:** Power off console
  - **ALT+ENTER:** Toggle fullscreen
  - **Tab:** Temporarily disable speed limiter
- - **Pause/Break:** Pause/resume emulation
- - **Page Up/Down:** Increase/decrease resolution scale in hardware renderers
- - **End:** Toggle software renderer
+ - **Space:** Pause/resume emulation
  
 ## Tests
  - Passes amidog's CPU and GTE tests in both interpreter and recompiler modes, partial passing of CPX tests

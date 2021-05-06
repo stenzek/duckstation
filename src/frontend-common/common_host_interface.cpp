@@ -2596,13 +2596,9 @@ void CommonHostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetStringValue("Controller1", "ButtonR1", "Keyboard/E");
   si.SetStringValue("Controller1", "ButtonR2", "Keyboard/3");
   si.SetStringValue("Hotkeys", "FastForward", "Keyboard/Tab");
-  si.SetStringValue("Hotkeys", "TogglePause", "Keyboard/Pause");
+  si.SetStringValue("Hotkeys", "TogglePause", "Keyboard/Space");
   si.SetStringValue("Hotkeys", "ToggleFullscreen", "Keyboard/Alt+Return");
   si.SetStringValue("Hotkeys", "Screenshot", "Keyboard/F10");
-  si.SetStringValue("Hotkeys", "IncreaseResolutionScale", "Keyboard/PageUp");
-  si.SetStringValue("Hotkeys", "DecreaseResolutionScale", "Keyboard/PageDown");
-  si.SetStringValue("Hotkeys", "ToggleSoftwareRendering", "Keyboard/End");
-  si.SetStringValue("Hotkeys", "ChangeDisc", "Keyboard/F8");
 
   si.SetStringValue("Main", "ControllerBackend",
                     ControllerInterface::GetBackendName(ControllerInterface::GetDefaultBackend()));
