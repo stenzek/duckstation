@@ -200,5 +200,6 @@
         <item>Usa Impostazione Dispositivo</item>
         <item>Verticale</item>
         <item>Orizzontale</item>
+        <item>Sensor Based</item>
     </string-array>
 </resources>

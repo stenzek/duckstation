@@ -200,5 +200,6 @@
         <item>Apparaatinstellingen Gebruiken</item>
         <item>Portret</item>
         <item>Landschap</item>
+        <item>Sensor Based</item>
     </string-array>
 </resources>

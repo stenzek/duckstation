@@ -215,6 +215,7 @@
         <item>Padrão do Dispositivo</item>
         <item>Retrato</item>
         <item>Paisagem</item>
+        <item>Sensor Based</item>
     </string-array>
 	<string-array name="settings_language_entries">
         	<item>Selecionável pelo sistema</item>

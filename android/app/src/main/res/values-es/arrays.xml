@@ -200,6 +200,7 @@
         <item>Usar configuración del dipositivo</item>
         <item>Vertical</item>
         <item>Horizontal</item>
+        <item>Sensor Based</item>
     </string-array>
     <string-array name="settings_theme_entries">
         <item>Usar configuración del Sistema</item>
