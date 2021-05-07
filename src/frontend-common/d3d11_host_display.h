@@ -124,6 +124,7 @@ protected:
   ComPtr<ID3D11BlendState> m_software_cursor_blend_state;
   ComPtr<ID3D11VertexShader> m_display_vertex_shader;
   ComPtr<ID3D11PixelShader> m_display_pixel_shader;
+  ComPtr<ID3D11PixelShader> m_display_alpha_pixel_shader;
   ComPtr<ID3D11SamplerState> m_point_sampler;
   ComPtr<ID3D11SamplerState> m_linear_sampler;
 

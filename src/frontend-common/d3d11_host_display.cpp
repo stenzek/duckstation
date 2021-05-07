@@ -9,6 +9,7 @@
 #include "core/settings.h"
 #include "core/shader_cache_version.h"
 #include "display_ps.hlsl.h"
+#include "display_ps_alpha.hlsl.h"
 #include "display_vs.hlsl.h"
 #include "imgui.h"
 #include "imgui_impl_dx11.h"
@@ -603,7 +604,9 @@ bool D3D11HostDisplay::CreateResources()
     D3D11::ShaderCompiler::CreateVertexShader(m_device.Get(), s_display_vs_bytecode, sizeof(s_display_vs_bytecode));
   m_display_pixel_shader =
     D3D11::ShaderCompiler::CreatePixelShader(m_device.Get(), s_display_ps_bytecode, sizeof(s_display_ps_bytecode));
-  if (!m_display_vertex_shader || !m_display_pixel_shader)
+  m_display_alpha_pixel_shader = D3D11::ShaderCompiler::CreatePixelShader(m_device.Get(), s_display_ps_alpha_bytecode,
+                                                                          sizeof(s_display_ps_alpha_bytecode));
+  if (!m_display_vertex_shader || !m_display_pixel_shader || !m_display_alpha_pixel_shader)
     return false;
 
   if (!m_display_uniform_buffer.Create(m_device.Get(), D3D11_BIND_CONSTANT_BUFFER, DISPLAY_UNIFORM_BUFFER_SIZE))
@@ -662,6 +665,7 @@ void D3D11HostDisplay::DestroyResources()
   m_display_uniform_buffer.Release();
   m_linear_sampler.Reset();
   m_point_sampler.Reset();
+  m_display_alpha_pixel_shader.Reset();
   m_display_pixel_shader.Reset();
   m_display_vertex_shader.Reset();
   m_display_blend_state.Reset();
@@ -840,7 +844,7 @@ void D3D11HostDisplay::RenderSoftwareCursor(s32 left, s32 top, s32 width, s32 he
 {
   m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
   m_context->VSSetShader(m_display_vertex_shader.Get(), nullptr, 0);
-  m_context->PSSetShader(m_display_pixel_shader.Get(), nullptr, 0);
+  m_context->PSSetShader(m_display_alpha_pixel_shader.Get(), nullptr, 0);
   m_context->PSSetShaderResources(0, 1, static_cast<D3D11HostDisplayTexture*>(texture_handle)->GetD3DSRVArray());
   m_context->PSSetSamplers(0, 1, m_linear_sampler.GetAddressOf());
 
