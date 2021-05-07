@@ -215,6 +215,7 @@
 		<item>По выбору системы</item>
 		<item>Портретная</item>
 		<item>Ландшафтная</item>
+		<item>По датчику положения</item>
 	</string-array>
 	<string-array name="settings_language_entries">
         	<item>По выбору системы</item>
