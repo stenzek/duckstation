@@ -629,6 +629,9 @@ bool SDLControllerInterface::HandleControllerAxisEvent(const SDL_ControllerAxisE
   if (DoEventHook(Hook::Type::Axis, it->player_id, ev->axis, value))
     return true;
 
+  if (ev->axis >= MAX_NUM_AXES)
+    return false;
+
   const AxisCallback& cb = it->axis_mapping[ev->axis][AxisSide::Full];
   if (cb)
   {
@@ -706,6 +709,9 @@ bool SDLControllerInterface::HandleControllerButtonEvent(const SDL_ControllerBut
     // UI consumed the event
     return true;
   }
+
+  if (ev->button >= MAX_NUM_BUTTONS)
+    return false;
 
   const ButtonCallback& cb = it->button_mapping[ev->button];
   if (cb)
