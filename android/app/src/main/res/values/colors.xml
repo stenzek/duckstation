@@ -9,5 +9,4 @@
     <color name="fab_background">#ffffffff</color>
 
     <color name="emulationActivityPauseBackground">#eeffffff</color>
-    <color name="emulationActivityPauseTitleBackground">#996200EE</color>
 </resources>
