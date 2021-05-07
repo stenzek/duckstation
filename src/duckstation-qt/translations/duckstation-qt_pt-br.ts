@@ -5668,7 +5668,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../core/host_interface.cpp" line="348"/>
         <source>No BIOS image found for %s region</source>
-        <translation>BIOS não encontrado para %s região</translation>
+        <translation>BIOS não encontrado %s</translation>
     </message>
 </context>
 <context>
