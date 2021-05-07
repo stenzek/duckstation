@@ -1000,7 +1000,8 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "PlayStationMouse"
   ]
  },
  {
@@ -2266,7 +2267,8 @@
   "linkCable": false,
   "controllers": [
    "AnalogController",
-   "DigitalController"
+   "DigitalController",
+   "PlayStationMouse"
   ]
  },
  {
@@ -2305,7 +2307,8 @@
   "linkCable": false,
   "controllers": [
    "AnalogController",
-   "DigitalController"
+   "DigitalController",
+   "PlayStationMouse"
   ]
  },
  {
@@ -9655,7 +9658,8 @@
   "controllers": [
    "AnalogController",
    "DigitalController",
-   "NamcoGuncon"
+   "NamcoGuncon",
+   "PlayStationMouse"
   ]
  },
  {
@@ -9682,7 +9686,8 @@
   "controllers": [
    "AnalogController",
    "DigitalController",
-   "NamcoGuncon"
+   "NamcoGuncon",
+   "PlayStationMouse"
   ]
  },
  {
@@ -9731,7 +9736,8 @@
   "controllers": [
    "AnalogController",
    "DigitalController",
-   "NamcoGuncon"
+   "NamcoGuncon",
+   "PlayStationMouse"
   ]
  },
  {
@@ -13513,7 +13519,8 @@
   "linkCable": false,
   "controllers": [
    "AnalogController",
-   "DigitalController"
+   "DigitalController",
+   "PlayStationMouse"
   ]
  },
  {
@@ -13548,7 +13555,8 @@
   "linkCable": false,
   "controllers": [
    "AnalogController",
-   "DigitalController"
+   "DigitalController",
+   "PlayStationMouse"
   ]
  },
  {
@@ -13901,7 +13909,8 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "PlayStationMouse"
   ]
  },
  {
@@ -13931,7 +13940,8 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "PlayStationMouse"
   ]
  },
  {
@@ -13961,7 +13971,8 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "PlayStationMouse"
   ]
  },
  {
@@ -13991,7 +14002,8 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "PlayStationMouse"
   ]
  },
  {
@@ -14021,7 +14033,8 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "PlayStationMouse"
   ]
  },
  {
@@ -14051,7 +14064,8 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "PlayStationMouse"
   ]
  },
  {
@@ -14081,7 +14095,8 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "PlayStationMouse"
   ]
  },
  {
@@ -14111,7 +14126,8 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "PlayStationMouse"
   ]
  },
  {
@@ -14141,7 +14157,8 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "PlayStationMouse"
   ]
  },
  {
@@ -14171,7 +14188,8 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "PlayStationMouse"
   ]
  },
  {
@@ -14201,7 +14219,8 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "PlayStationMouse"
   ]
  },
  {
@@ -14231,7 +14250,8 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "PlayStationMouse"
   ]
  },
  {
@@ -14261,7 +14281,8 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "PlayStationMouse"
   ]
  },
  {
@@ -14291,7 +14312,8 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "PlayStationMouse"
   ]
  },
  {
@@ -14321,7 +14343,8 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "PlayStationMouse"
   ]
  },
  {
@@ -14351,7 +14374,8 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "PlayStationMouse"
   ]
  },
  {
@@ -14381,7 +14405,8 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "PlayStationMouse"
   ]
  },
  {
@@ -14411,7 +14436,8 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "PlayStationMouse"
   ]
  },
  {
@@ -14441,7 +14467,8 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "PlayStationMouse"
   ]
  },
  {
@@ -14471,7 +14498,8 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "PlayStationMouse"
   ]
  },
  {
@@ -14501,7 +14529,8 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "PlayStationMouse"
   ]
  },
  {
@@ -14531,7 +14560,8 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "PlayStationMouse"
   ]
  },
  {
@@ -14561,7 +14591,8 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "PlayStationMouse"
   ]
  },
  {
@@ -14591,7 +14622,8 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "PlayStationMouse"
   ]
  },
  {
@@ -14621,7 +14653,8 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "PlayStationMouse"
   ]
  },
  {

@@ -11054,7 +11054,8 @@
   "linkCable": false,
   "controllers": [
    "AnalogController",
-   "DigitalController"
+   "DigitalController",
+   "PlayStationMouse"
   ]
  },
  {
@@ -11080,7 +11081,8 @@
   "linkCable": false,
   "controllers": [
    "AnalogController",
-   "DigitalController"
+   "DigitalController",
+   "PlayStationMouse"
   ]
  },
  {
@@ -11112,7 +11114,8 @@
   "linkCable": false,
   "controllers": [
    "AnalogController",
-   "DigitalController"
+   "DigitalController",
+   "PlayStationMouse"
   ]
  },
  {

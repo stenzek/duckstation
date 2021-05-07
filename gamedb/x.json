@@ -569,7 +569,8 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "PlayStationMouse"
   ]
  },
  {
@@ -651,7 +652,8 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "PlayStationMouse"
   ]
  },
  {
@@ -705,7 +707,8 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "PlayStationMouse"
   ]
  },
  {
