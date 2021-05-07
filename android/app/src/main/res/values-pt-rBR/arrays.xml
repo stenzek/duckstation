@@ -45,7 +45,7 @@
     </string-array>
     <string-array name="settings_display_aspect_ratio_names">
       <item>Auto (Nativo)</item>
-      <item>Auto (Match Display)</item>
+      <item>Auto (Corresponder a Janela)</item>
       <item>4:3</item>
       <item>16:9</item>
       <item>19:9</item>
@@ -83,12 +83,12 @@
         <item>Resize Buttons</item>
         </string-array>
     <string-array name="touchscreen_layout_menu">
-        <item>Change Opacity</item>
-        <item>Add/Remove Buttons</item>
-        <item>Move Buttons</item>
-        <item>Resize Buttons</item>
-        <item>Reset Layout</item>
-        <item>Exit Editor</item>
+        <item>Mudar Opacidade</item>
+        <item>Adicionar/Remover Botões</item>
+        <item>Mover Botões</item>
+        <item>Redimensionar Botões</item>
+        <item>Redefinir Posição</item>
+        <item>Sair</item>
     </string-array>
     <string-array name="settings_cdrom_read_speedup_entries">
         <item>Nenhum</item>
@@ -160,7 +160,7 @@
         <item>90 FPS</item>
     </string-array>
     <string-array name="settings_emulation_speed_entries">
-        <item>ilimitado</item>
+        <item>Sem Limite</item>
         <item>10% [6 FPS (NTSC) / 5 FPS (PAL)]</item>
         <item>20% [12 FPS (NTSC) / 10 FPS (PAL)]</item>
         <item>30% [18 FPS (NTSC) / 15 FPS (PAL)]</item>
@@ -216,6 +216,15 @@
         <item>Retrato</item>
         <item>Paisagem</item>
     </string-array>
+	<string-array name="settings_language_entries">
+        	<item>Selecionável pelo sistema</item>
+        	<item>Inglês</item>
+		<item>Português do Brasil</item>
+        	<item>Italiano</item>
+        	<item>Holandês</item>
+        	<item>Espanhol</item>
+        	<item>Russo</item>
+ 	</string-array>
     <string-array name="settings_theme_entries">
         <item>Padrão do Sistema</item>
 		<item>Claro</item>
@@ -226,8 +235,28 @@
 		<item>Misto (Reduz 3D / Suaviza Tudo)</item>
         <item>Adaptativo (Preserva o 3D / Suaviza 2D)</item>
     </string-array>
-    <string-array name="settings_boolean_entries">
-        <item>Disabled</item>
-        <item>Enabled</item>
-    </string-array>
+	<string-array name="settings_boolean_entries">
+		<item>Desligado</item>
+		<item>Ligado</item>
+	</string-array>
+	<string-array name="settings_multitap_mode_entries">
+        	<item>Desativado</item>
+        	<item>Conectado à porta 1</item>
+        	<item>Conectado à porta 2</item>
+        	<item>Conectado à porta 1 e 2</item>
+    	</string-array>
+		<string-array name="memory_card_editor_save_menu">
+     		<item>Copiar Salvar</item>
+     		<item>Excluir Salvar</item>
+        </string-array>
+		<string-array name="settings_touchscreen_controller_port_entries">
+               <item>Porta 1</item>
+               <item>Porta 2</item>
+               <item>Multitap 3</item>
+               <item>Multitap 4</item>
+               <item>Multitap 5</item>
+               <item>Multitap 6</item>
+               <item>Multitap 7</item>
+               <item>Multitap 8</item>
+        </string-array>
 </resources>
