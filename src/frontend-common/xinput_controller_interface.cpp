@@ -173,7 +173,7 @@ bool XInputControllerInterface::BindControllerAxis(int controller_index, int axi
   if (static_cast<u32>(controller_index) >= m_controllers.size() || !m_controllers[controller_index].connected)
     return false;
 
-  if (axis_number < 0 || axis_number >= NUM_AXISES)
+  if (axis_number < 0 || axis_number >= NUM_AXES)
     return false;
 
   m_controllers[controller_index].axis_mapping[axis_number][axis_side] = std::move(callback);
@@ -198,7 +198,7 @@ bool XInputControllerInterface::BindControllerAxisToButton(int controller_index,
   if (static_cast<u32>(controller_index) >= m_controllers.size() || !m_controllers[controller_index].connected)
     return false;
 
-  if (axis_number < 0 || axis_number >= MAX_NUM_AXISES)
+  if (axis_number < 0 || axis_number >= NUM_AXES)
     return false;
 
   m_controllers[controller_index].axis_button_mapping[axis_number][BoolToUInt8(direction)] = std::move(callback);
@@ -218,7 +218,7 @@ bool XInputControllerInterface::BindControllerButtonToAxis(int controller_index,
   if (static_cast<u32>(controller_index) >= m_controllers.size() || !m_controllers[controller_index].connected)
     return false;
 
-  if (button_number < 0 || button_number >= MAX_NUM_BUTTONS)
+  if (button_number < 0 || button_number >= NUM_BUTTONS)
     return false;
 
   m_controllers[controller_index].button_axis_mapping[button_number] = std::move(callback);
@@ -279,7 +279,7 @@ bool XInputControllerInterface::HandleButtonEvent(u32 index, u32 button, bool pr
   Log_DevPrintf("controller %u button %u %s", index, button, pressed ? "pressed" : "released");
   DebugAssert(index < XUSER_MAX_COUNT);
 
-  static constexpr std::array<FrontendCommon::ControllerNavigationButton, MAX_NUM_BUTTONS> nav_button_mapping = {{
+  static constexpr std::array<FrontendCommon::ControllerNavigationButton, NUM_BUTTONS> nav_button_mapping = {{
     FrontendCommon::ControllerNavigationButton::Activate,      // XINPUT_GAMEPAD_A
     FrontendCommon::ControllerNavigationButton::Cancel,        // XINPUT_GAMEPAD_B
     FrontendCommon::ControllerNavigationButton::Count,         // XINPUT_GAMEPAD_X

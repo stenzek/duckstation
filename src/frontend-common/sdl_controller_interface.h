@@ -43,6 +43,12 @@ public:
   bool ProcessSDLEvent(const union SDL_Event* event);
 
 private:
+  enum : int
+  {
+    MAX_NUM_AXES = 7,
+    MAX_NUM_BUTTONS = 16,
+  };
+
   struct ControllerData
   {
     void* haptic;
@@ -56,9 +62,9 @@ private:
 
     // TODO: Turn to vectors to support arbitrary amounts of buttons and axes (for Joysticks)
     // Preferably implement a simple "flat map", an ordered view over a vector
-    std::array<std::array<AxisCallback, 3>, MAX_NUM_AXISES> axis_mapping;
+    std::array<std::array<AxisCallback, 3>, MAX_NUM_AXES> axis_mapping;
     std::array<ButtonCallback, MAX_NUM_BUTTONS> button_mapping;
-    std::array<std::array<ButtonCallback, 2>, MAX_NUM_AXISES> axis_button_mapping;
+    std::array<std::array<ButtonCallback, 2>, MAX_NUM_AXES> axis_button_mapping;
     std::array<AxisCallback, MAX_NUM_BUTTONS> button_axis_mapping;
     std::vector<std::array<ButtonCallback, 4>> hat_button_mapping;
 

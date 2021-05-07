@@ -543,7 +543,7 @@ bool SDLControllerInterface::BindControllerAxis(int controller_index, int axis_n
   if (it == m_controllers.end())
     return false;
 
-  if (axis_number < 0 || axis_number >= MAX_NUM_AXISES)
+  if (axis_number < 0 || axis_number >= MAX_NUM_AXES)
     return false;
 
   it->axis_mapping[axis_number][axis_side] = std::move(callback);
@@ -570,7 +570,7 @@ bool SDLControllerInterface::BindControllerAxisToButton(int controller_index, in
   if (it == m_controllers.end())
     return false;
 
-  if (axis_number < 0 || axis_number >= MAX_NUM_AXISES)
+  if (axis_number < 0 || axis_number >= MAX_NUM_AXES)
     return false;
 
   it->axis_button_mapping[axis_number][BoolToUInt8(direction)] = std::move(callback);
