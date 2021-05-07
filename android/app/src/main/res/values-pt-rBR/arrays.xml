@@ -259,8 +259,4 @@
                <item>Multitap 7</item>
                <item>Multitap 8</item>
         </string-array>
-    <string-array name="settings_boolean_entries">
-        <item>Desativado</item>
-        <item>Ativado</item>
-    </string-array>
 </resources>
