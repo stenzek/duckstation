@@ -131,6 +131,13 @@ void GamePropertiesDialog::setupAdditionalUi()
                       GameList::GetGameListCompatibilityRatingString(static_cast<GameListCompatibilityRating>(i))));
   }
 
+  m_ui.userRenderer->addItem(tr("(unchanged)"));
+  for (u32 i = 0; i < static_cast<u32>(GPURenderer::Count); i++)
+  {
+    m_ui.userRenderer->addItem(
+      qApp->translate("GPURenderer", Settings::GetRendererDisplayName(static_cast<GPURenderer>(i))));
+  }
+
   m_ui.userAspectRatio->addItem(tr("(unchanged)"));
   for (u32 i = 0; i < static_cast<u32>(DisplayAspectRatio::Count); i++)
   {
@@ -303,6 +310,7 @@ void GamePropertiesDialog::populateGameSettings()
   }
 
   populateBooleanUserSetting(m_ui.userEnableCPUClockSpeedControl, gs.cpu_overclock_enable);
+  populateBooleanUserSetting(m_ui.userEnable8MBRAM, gs.enable_8mb_ram);
   updateCPUClockSpeedLabel();
 
   if (gs.cdrom_read_speedup.has_value())
@@ -386,6 +394,12 @@ void GamePropertiesDialog::populateGameSettings()
       static_cast<int>(gs.display_aspect_ratio_custom_denominator.value()));
   }
   onUserAspectRatioChanged();
+
+  if (gs.gpu_renderer.has_value())
+  {
+    QSignalBlocker sb(m_ui.userRenderer);
+    m_ui.userRenderer->setCurrentIndex(static_cast<int>(gs.gpu_renderer.value()) + 1);
+  }
 
   if (gs.gpu_downsample_mode.has_value())
   {
@@ -545,6 +559,7 @@ void GamePropertiesDialog::connectUi()
   });
 
   connectBooleanUserSetting(m_ui.userEnableCPUClockSpeedControl, &m_game_settings.cpu_overclock_enable);
+  connectBooleanUserSetting(m_ui.userEnable8MBRAM, &m_game_settings.enable_8mb_ram);
   connect(m_ui.userEnableCPUClockSpeedControl, &QCheckBox::stateChanged, this,
           &GamePropertiesDialog::updateCPUClockSpeedLabel);
 
@@ -594,6 +609,14 @@ void GamePropertiesDialog::connectUi()
       m_game_settings.display_aspect_ratio_custom_denominator.reset();
     else
       m_game_settings.display_aspect_ratio_custom_denominator = static_cast<u16>(value);
+    saveGameSettings();
+  });
+
+  connect(m_ui.userRenderer, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
+    if (index <= 0)
+      m_game_settings.gpu_renderer.reset();
+    else
+      m_game_settings.gpu_renderer = static_cast<GPURenderer>(index - 1);
     saveGameSettings();
   });
 

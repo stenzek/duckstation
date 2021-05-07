@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>793</width>
-    <height>651</height>
+    <width>769</width>
+    <height>706</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -252,6 +252,13 @@
             </property>
            </widget>
           </item>
+          <item row="2" column="0">
+           <widget class="QCheckBox" name="userEnable8MBRAM">
+            <property name="text">
+             <string>Enable 8MB RAM (Dev Console)</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>
@@ -261,14 +268,14 @@
           <string>GPU Screen Display</string>
          </property>
          <layout class="QFormLayout" name="formLayout_5">
-          <item row="0" column="0">
+          <item row="1" column="0">
            <widget class="QLabel" name="label_18">
             <property name="text">
              <string>Aspect Ratio:</string>
             </property>
            </widget>
           </item>
-          <item row="0" column="1">
+          <item row="1" column="1">
            <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="1,0,0,0">
             <item>
              <widget class="QComboBox" name="userAspectRatio"/>
@@ -302,27 +309,27 @@
             </item>
            </layout>
           </item>
-          <item row="1" column="0">
+          <item row="2" column="0">
            <widget class="QLabel" name="label_17">
             <property name="text">
              <string>Crop Mode:</string>
             </property>
            </widget>
           </item>
-          <item row="1" column="1">
+          <item row="2" column="1">
            <widget class="QComboBox" name="userCropMode"/>
           </item>
-          <item row="2" column="0">
+          <item row="3" column="0">
            <widget class="QLabel" name="label_31">
             <property name="text">
              <string>Downsampling:</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="1">
+          <item row="3" column="1">
            <widget class="QComboBox" name="userDownsampleMode"/>
           </item>
-          <item row="3" column="0" colspan="2">
+          <item row="4" column="0" colspan="2">
            <layout class="QGridLayout" name="gridLayout_2">
             <item row="0" column="0">
              <widget class="QCheckBox" name="userLinearUpscaling">
@@ -345,6 +352,16 @@
              </widget>
             </item>
            </layout>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_34">
+            <property name="text">
+             <string>Renderer:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="userRenderer"/>
           </item>
          </layout>
         </widget>

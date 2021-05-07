@@ -108,7 +108,8 @@ bool Entry::LoadFromStream(ByteStream* stream)
   if (!stream->Read2(bits.data(), num_bytes) || !ReadOptionalFromStream(stream, &runahead_frames) ||
       !ReadOptionalFromStream(stream, &cpu_overclock_numerator) ||
       !ReadOptionalFromStream(stream, &cpu_overclock_denominator) ||
-      !ReadOptionalFromStream(stream, &cpu_overclock_enable) || !ReadOptionalFromStream(stream, &cdrom_read_speedup) ||
+      !ReadOptionalFromStream(stream, &cpu_overclock_enable) || !ReadOptionalFromStream(stream, &enable_8mb_ram) ||
+      !ReadOptionalFromStream(stream, &cdrom_read_speedup) ||
       !ReadOptionalFromStream(stream, &display_active_start_offset) ||
       !ReadOptionalFromStream(stream, &display_active_end_offset) ||
       !ReadOptionalFromStream(stream, &display_line_start_offset) ||
@@ -124,9 +125,9 @@ bool Entry::LoadFromStream(ByteStream* stream)
       !ReadOptionalFromStream(stream, &display_force_4_3_for_24bit) ||
       !ReadOptionalFromStream(stream, &display_aspect_ratio_custom_numerator) ||
       !ReadOptionalFromStream(stream, &display_aspect_ratio_custom_denominator) ||
-      !ReadOptionalFromStream(stream, &gpu_resolution_scale) || !ReadOptionalFromStream(stream, &gpu_multisamples) ||
-      !ReadOptionalFromStream(stream, &gpu_per_sample_shading) || !ReadOptionalFromStream(stream, &gpu_true_color) ||
-      !ReadOptionalFromStream(stream, &gpu_scaled_dithering) ||
+      !ReadOptionalFromStream(stream, &gpu_renderer) || !ReadOptionalFromStream(stream, &gpu_resolution_scale) ||
+      !ReadOptionalFromStream(stream, &gpu_multisamples) || !ReadOptionalFromStream(stream, &gpu_per_sample_shading) ||
+      !ReadOptionalFromStream(stream, &gpu_true_color) || !ReadOptionalFromStream(stream, &gpu_scaled_dithering) ||
       !ReadOptionalFromStream(stream, &gpu_force_ntsc_timings) ||
       !ReadOptionalFromStream(stream, &gpu_texture_filter) || !ReadOptionalFromStream(stream, &gpu_widescreen_hack) ||
       !ReadOptionalFromStream(stream, &gpu_pgxp) || !ReadOptionalFromStream(stream, &gpu_pgxp_projection_precision) ||
@@ -163,7 +164,8 @@ bool Entry::SaveToStream(ByteStream* stream) const
   return stream->Write2(bits.data(), num_bytes) && WriteOptionalToStream(stream, runahead_frames) &&
          WriteOptionalToStream(stream, cpu_overclock_numerator) &&
          WriteOptionalToStream(stream, cpu_overclock_denominator) &&
-         WriteOptionalToStream(stream, cpu_overclock_enable) && WriteOptionalToStream(stream, cdrom_read_speedup) &&
+         WriteOptionalToStream(stream, cpu_overclock_enable) && WriteOptionalToStream(stream, enable_8mb_ram) &&
+         WriteOptionalToStream(stream, cdrom_read_speedup) &&
          WriteOptionalToStream(stream, display_active_start_offset) &&
          WriteOptionalToStream(stream, display_active_end_offset) &&
          WriteOptionalToStream(stream, display_line_start_offset) &&
@@ -177,11 +179,12 @@ bool Entry::SaveToStream(ByteStream* stream) const
          WriteOptionalToStream(stream, display_force_4_3_for_24bit) &&
          WriteOptionalToStream(stream, display_aspect_ratio_custom_numerator) &&
          WriteOptionalToStream(stream, display_aspect_ratio_custom_denominator) &&
-         WriteOptionalToStream(stream, gpu_resolution_scale) && WriteOptionalToStream(stream, gpu_multisamples) &&
-         WriteOptionalToStream(stream, gpu_per_sample_shading) && WriteOptionalToStream(stream, gpu_true_color) &&
-         WriteOptionalToStream(stream, gpu_scaled_dithering) && WriteOptionalToStream(stream, gpu_force_ntsc_timings) &&
-         WriteOptionalToStream(stream, gpu_texture_filter) && WriteOptionalToStream(stream, gpu_widescreen_hack) &&
-         WriteOptionalToStream(stream, gpu_pgxp) && WriteOptionalToStream(stream, gpu_pgxp_projection_precision) &&
+         WriteOptionalToStream(stream, gpu_renderer) && WriteOptionalToStream(stream, gpu_resolution_scale) &&
+         WriteOptionalToStream(stream, gpu_multisamples) && WriteOptionalToStream(stream, gpu_per_sample_shading) &&
+         WriteOptionalToStream(stream, gpu_true_color) && WriteOptionalToStream(stream, gpu_scaled_dithering) &&
+         WriteOptionalToStream(stream, gpu_force_ntsc_timings) && WriteOptionalToStream(stream, gpu_texture_filter) &&
+         WriteOptionalToStream(stream, gpu_widescreen_hack) && WriteOptionalToStream(stream, gpu_pgxp) &&
+         WriteOptionalToStream(stream, gpu_pgxp_projection_precision) &&
          WriteOptionalToStream(stream, gpu_pgxp_depth_buffer) && WriteOptionalToStream(stream, multitap_mode) &&
          WriteOptionalToStream(stream, controller_1_type) && WriteOptionalToStream(stream, controller_2_type) &&
          WriteOptionalToStream(stream, memory_card_1_type) && WriteOptionalToStream(stream, memory_card_2_type) &&
@@ -210,6 +213,9 @@ static void ParseIniSection(Entry* entry, const char* section, const CSimpleIniA
   cvalue = ini.GetValue(section, "CPUOverclockEnable", nullptr);
   if (cvalue)
     entry->cpu_overclock_enable = StringUtil::FromChars<bool>(cvalue);
+  cvalue = ini.GetValue(section, "Enable8MBRAM", nullptr);
+  if (cvalue)
+    entry->enable_8mb_ram = StringUtil::FromChars<bool>(cvalue);
 
   cvalue = ini.GetValue(section, "CDROMReadSpeedup", nullptr);
   if (cvalue)
@@ -264,6 +270,9 @@ static void ParseIniSection(Entry* entry, const char* section, const CSimpleIniA
     entry->display_aspect_ratio_custom_denominator =
       static_cast<u16>(std::clamp<long>(lvalue, 1, std::numeric_limits<u16>::max()));
   }
+  cvalue = ini.GetValue(section, "GPURenderer", nullptr);
+  if (cvalue)
+    entry->gpu_renderer = Settings::ParseRendererName(cvalue);
   cvalue = ini.GetValue(section, "GPUDownsampleMode", nullptr);
   if (cvalue)
     entry->gpu_downsample_mode = Settings::ParseDownsampleModeName(cvalue);
@@ -355,6 +364,8 @@ static void StoreIniSection(const Entry& entry, const char* section, CSimpleIniA
     ini.SetLongValue(section, "CPUOverclockDenominator", static_cast<long>(entry.cpu_overclock_denominator.value()));
   if (entry.cpu_overclock_enable.has_value())
     ini.SetBoolValue(section, "CPUOverclockEnable", entry.cpu_overclock_enable.value());
+  if (entry.enable_8mb_ram.has_value())
+    ini.SetBoolValue(section, "Enable8MBRAM", entry.enable_8mb_ram.value());
 
   if (entry.cdrom_read_speedup.has_value())
     ini.SetLongValue(section, "CDROMReadSpeedup", static_cast<long>(entry.cdrom_read_speedup.value()));
@@ -397,6 +408,8 @@ static void StoreIniSection(const Entry& entry, const char* section, CSimpleIniA
     ini.SetLongValue(section, "CustomAspectRatioDenominator",
                      static_cast<long>(entry.display_aspect_ratio_custom_denominator.value()));
   }
+  if (entry.gpu_renderer.has_value())
+    ini.SetValue(section, "GPURenderer", Settings::GetRendererName(entry.gpu_renderer.value()));
   if (entry.gpu_downsample_mode.has_value())
   {
     ini.SetValue(section, "GPUDownsampleMode", Settings::GetDownsampleModeName(entry.gpu_downsample_mode.value()));
@@ -457,6 +470,7 @@ u32 Entry::GetUserSettingsCount() const
   count += BoolToUInt32(cpu_overclock_numerator.has_value());
   count += BoolToUInt32(cpu_overclock_denominator.has_value());
   count += BoolToUInt32(cpu_overclock_enable.has_value());
+  count += BoolToUInt32(enable_8mb_ram.has_value());
   count += BoolToUInt32(cdrom_read_speedup.has_value());
   count += BoolToUInt32(display_crop_mode.has_value());
   count += BoolToUInt32(display_aspect_ratio.has_value());
@@ -464,6 +478,7 @@ u32 Entry::GetUserSettingsCount() const
   count += BoolToUInt32(display_linear_upscaling.has_value());
   count += BoolToUInt32(display_integer_upscaling.has_value());
   count += BoolToUInt32(display_force_4_3_for_24bit.has_value());
+  count += BoolToUInt32(gpu_renderer.has_value());
   count += BoolToUInt32(gpu_resolution_scale.has_value());
   count += BoolToUInt32(gpu_multisamples.has_value());
   count += BoolToUInt32(gpu_per_sample_shading.has_value());
@@ -504,6 +519,13 @@ static std::optional<std::string> GetEntryValueForKey(const Entry& entry, const 
     return std::to_string(Settings::CPUOverclockFractionToPercent(entry.cpu_overclock_numerator.value_or(1),
                                                                   entry.cpu_overclock_denominator.value_or(1)));
   }
+  else if (key == "Enable8MBRAM")
+  {
+    if (!entry.enable_8mb_ram.has_value())
+      return std::nullopt;
+    else
+      return entry.enable_8mb_ram.value() ? "true" : "false";
+  }
   else if (key == "CDROMReadSpeedup")
   {
     if (!entry.cdrom_read_speedup.has_value())
@@ -538,6 +560,13 @@ static std::optional<std::string> GetEntryValueForKey(const Entry& entry, const 
       return std::nullopt;
     else
       return std::to_string(entry.display_aspect_ratio_custom_denominator.value());
+  }
+  else if (key == "GPURenderer")
+  {
+    if (!entry.gpu_renderer.has_value())
+      return std::nullopt;
+    else
+      return Settings::GetRendererName(entry.gpu_renderer.value());
   }
   else if (key == "GPUDownsampleMode")
   {
@@ -732,6 +761,13 @@ static void SetEntryValueForKey(Entry& entry, const std::string_view& key, const
       entry.cpu_overclock_enable = true;
     }
   }
+  else if (key == "Enable8MBRAM")
+  {
+    if (!value.has_value())
+      entry.enable_8mb_ram.reset();
+    else
+      entry.enable_8mb_ram = StringUtil::FromChars<bool>(value.value()).value_or(false);
+  }
   else if (key == "CDROMReadSpeedup")
   {
     if (!value.has_value())
@@ -766,6 +802,13 @@ static void SetEntryValueForKey(Entry& entry, const std::string_view& key, const
       entry.display_aspect_ratio_custom_denominator.reset();
     else
       entry.display_aspect_ratio_custom_denominator = StringUtil::FromChars<u16>(value.value());
+  }
+  else if (key == "GPURenderer")
+  {
+    if (!value.has_value())
+      entry.gpu_renderer.reset();
+    else
+      entry.gpu_renderer = Settings::ParseRendererName(value->c_str());
   }
   else if (key == "GPUDownsampleMode")
   {
@@ -1055,6 +1098,8 @@ void Entry::ApplySettings(bool display_osd_messages) const
     g_settings.cpu_overclock_denominator = cpu_overclock_denominator.value();
   if (cpu_overclock_enable.has_value())
     g_settings.cpu_overclock_enable = cpu_overclock_enable.value();
+  if (enable_8mb_ram.has_value())
+    g_settings.enable_8mb_ram = enable_8mb_ram.value();
   g_settings.UpdateOverclockActive();
 
   if (cdrom_read_speedup.has_value())
@@ -1098,6 +1143,8 @@ void Entry::ApplySettings(bool display_osd_messages) const
   if (display_force_4_3_for_24bit.has_value())
     g_settings.display_force_4_3_for_24bit = display_force_4_3_for_24bit.value();
 
+  if (gpu_renderer.has_value())
+    g_settings.gpu_renderer = gpu_renderer.value();
   if (gpu_resolution_scale.has_value())
     g_settings.gpu_resolution_scale = gpu_resolution_scale.value();
   if (gpu_multisamples.has_value())

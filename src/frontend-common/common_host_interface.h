@@ -415,6 +415,7 @@ protected:
   void OnHostDisplayResized() override;
 
   void ApplyGameSettings(bool display_osd_messages);
+  void ApplyRendererFromGameSettings(const std::string& boot_filename);
   void ApplyControllerCompatibilitySettings(u64 controller_mask, bool display_osd_messages);
 
   bool CreateHostDisplayResources();

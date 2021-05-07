@@ -172,6 +172,8 @@ bool CommonHostInterface::BootSystem(const SystemBootParameters& parameters)
   if (m_display && m_fullscreen_ui_enabled)
     FullscreenUI::EnsureGameListLoaded();
 
+  ApplyRendererFromGameSettings(parameters.filename);
+
   if (!HostInterface::BootSystem(parameters))
   {
     // if in batch mode, exit immediately if booting failed
@@ -3047,6 +3049,22 @@ void CommonHostInterface::ApplyGameSettings(bool display_osd_messages)
   const GameSettings::Entry* gs = m_game_list->GetGameSettings(System::GetRunningPath(), System::GetRunningCode());
   if (gs)
     gs->ApplySettings(display_osd_messages);
+}
+
+void CommonHostInterface::ApplyRendererFromGameSettings(const std::string& boot_filename)
+{
+  if (boot_filename.empty())
+    return;
+
+  // we can't use the code here, since it's not loaded yet. but we can cheekily access the game list
+  const GameListEntry* ge = m_game_list->GetEntryForPath(boot_filename.c_str());
+  if (ge && ge->settings.gpu_renderer.has_value() && ge->settings.gpu_renderer.value() != g_settings.gpu_renderer)
+  {
+    Log_InfoPrintf("Changing renderer from '%s' to '%s' due to game settings.",
+                   Settings::GetRendererName(g_settings.gpu_renderer),
+                   Settings::GetRendererName(ge->settings.gpu_renderer.value()));
+    g_settings.gpu_renderer = ge->settings.gpu_renderer.value();
+  }
 }
 
 void CommonHostInterface::ApplyControllerCompatibilitySettings(u64 controller_mask, bool display_osd_messages)
