@@ -298,7 +298,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Start</source>
-        <translation>スタート</translation>
+        <translation>開始位置</translation>
     </message>
     <message>
         <source>PGXP Depth Buffer</source>
@@ -570,8 +570,16 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>オーバーライド</translation>
     </message>
     <message>
+        <source>Enable 8MB RAM (Dev Console)</source>
+        <translation>8MB RAMを有効(開発コンソール)</translation>
+    </message>
+    <message>
+        <source>Renderer:</source>
+        <translation>レンダラー:</translation>
+    </message>
+    <message>
         <source>Aspect Ratio:</source>
-        <translation>アスペクト比 :</translation>
+        <translation>アスペクト比:</translation>
     </message>
     <message>
         <source>GPU Enhancements</source>
@@ -990,7 +998,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Cross</source>
-        <translation>Ｘ</translation>
+        <translation>Ｘ(下のボタン)</translation>
     </message>
     <message>
         <source>LeftX</source>
@@ -1022,7 +1030,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Circle</source>
-        <translation>○</translation>
+        <translation>○(右のボタン)</translation>
     </message>
     <message>
         <source>Controller %u is locked to digital mode by the game.</source>
@@ -1050,7 +1058,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Square</source>
-        <translation>□</translation>
+        <translation>□(左のボタン)</translation>
     </message>
     <message>
         <source>Controller %u is locked to analog mode by the game.</source>
@@ -1062,7 +1070,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Triangle</source>
-        <translation>△</translation>
+        <translation>△(上のボタン)</translation>
     </message>
     <message>
         <source>Vibration Bias</source>
@@ -1125,7 +1133,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Cross</source>
-        <translation>Ｘ</translation>
+        <translation>Ｘ(下のボタン)</translation>
     </message>
     <message>
         <source>LeftX</source>
@@ -1153,7 +1161,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Circle</source>
-        <translation>○</translation>
+        <translation>○(右のボタン)</translation>
     </message>
     <message>
         <source>Sets the analog stick axis scaling factor. A value between 1.30 and 1.40 is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
@@ -1177,11 +1185,11 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Square</source>
-        <translation>□</translation>
+        <translation>□(左のボタン)</translation>
     </message>
     <message>
         <source>Triangle</source>
-        <translation>△</translation>
+        <translation>△(上のボタン)</translation>
     </message>
     <message>
         <source>Controller %u switched to digital mode.</source>
@@ -1220,7 +1228,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Cross</source>
-        <translation>Ｘ</translation>
+        <translation>Ｘ(下のボタン)</translation>
     </message>
     <message>
         <source>Right</source>
@@ -1240,7 +1248,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Circle</source>
-        <translation>○</translation>
+        <translation>○(右のボタン)</translation>
     </message>
     <message>
         <source>Select</source>
@@ -1248,11 +1256,11 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Square</source>
-        <translation>□</translation>
+        <translation>□(左のボタン)</translation>
     </message>
     <message>
         <source>Triangle</source>
-        <translation>△</translation>
+        <translation>△(上のボタン)</translation>
     </message>
 </context>
 <context>
@@ -2030,6 +2038,10 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>CPUエミュレーション</translation>
     </message>
     <message>
+        <source>Enable 8MB RAM (Dev Console)</source>
+        <translation>8MB RAMを有効にする(開発コンソール)</translation>
+    </message>
+    <message>
         <source>Region</source>
         <translation>地域</translation>
     </message>
@@ -2067,7 +2079,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Speeds up CD-ROM reads by the specified factor. Only applies to double-speed reads, and is ignored when audio is playing. May improve loading speeds in some games, at the cost of breaking others.</source>
-        <translation>指定された係数でCD-ROMの読み取りを高速化します。倍速読み取りにのみ適用され、音声の再生中は無視されます。一部のゲームでは読み込み速度が向上する可能性がありますが、他のゲームは中断されます。</translation>
+        <translation>指定された読取速度でCD-ROMの読み取りを高速化します。倍速読み取りにのみ適用され、音声の再生中は無視されます。一部のゲームでは読み込み速度が向上する可能性がありますが、他のゲームは中断されます。不具合が出る可能性もあります。</translation>
     </message>
     <message>
         <source>Region:</source>
@@ -2114,6 +2126,10 @@ This warning will only be shown once.</source>
         <translation>%1% (%2MHz)</translation>
     </message>
     <message>
+        <source>Enables an additional 6MB of RAM, usually present on dev consoles. Games have to use a larger heap size for this additional RAM to be usable, and may break games which rely on memory mirrors, so it should only be used with compatible mods.</source>
+        <translation>通常は開発コンソールに存在する、追加の6MBのRAMを有効にします。ゲームは、この追加のRAMを使用できるようにするために、より大きなヒープサイズを使用する必要があり、メモリミラーに依存するゲームを壊す可能性があるため、互換性のあるmodでのみ使用する必要があります。</translation>
+    </message>
+    <message>
         <source>CDROM Read Speedup</source>
         <translation>CD-ROM読み取りの高速化</translation>
     </message>
@@ -2139,7 +2155,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>CD-ROM Emulation</source>
-        <translation>CD-ROMエミュレーション</translation>
+        <translation>CD-ROMエミュレーション(注:読込速度を上げると不具合がでる可能性)</translation>
     </message>
     <message>
         <source>4x (8x Speed)</source>
@@ -2383,6 +2399,10 @@ Login token generated on %2.</source>
     <message>
         <source>Increase Timer Resolution</source>
         <translation>タイマー精度を上げる(高精度タイマ)</translation>
+    </message>
+    <message>
+        <source>Allow Booting Without SBI File</source>
+        <translation>SBIファイルなしでの起動を許可する</translation>
     </message>
     <message>
         <source>Tweaks/Hacks</source>
@@ -4663,6 +4683,10 @@ Login token generated on %2.</source>
         <translation>強制的に ソフトウェアレンダラー 使用</translation>
     </message>
     <message>
+        <source>Force Recompiler LUT Fastmem</source>
+        <translation>強制的に リコンパイラLUT Fastmem 使用</translation>
+    </message>
+    <message>
         <source>Disable PGXP</source>
         <translation>PGXPを無効</translation>
     </message>
@@ -5228,7 +5252,11 @@ SBIファイルを追加する方法については、READMEを確認してく�
     </message>
     <message>
         <source>Toggle Cheats</source>
-        <translation>チートの切り替え</translation>
+        <translation>チート有効/無効の切り替え</translation>
+    </message>
+    <message>
+        <source>Toggle Clock Speed Control (Overclocking)</source>
+        <translation>クロック速度の切り替え（オーバークロック）</translation>
     </message>
 </context>
 <context>
@@ -5719,7 +5747,7 @@ Achievements:%5 (%6 点)
     </message>
     <message>
         <source>If one of the &quot;separate card per game&quot; memory card modes is chosen, these memory cards will be saved to the memcards directory.</source>
-        <translation>「ゲームごとに別々のカード」メモリカードモードの1つを選択すると、これらのメモリカードはmemcardsディレクトリに保存されます。</translation>
+        <translation>「ゲームごとに別々のカード」モードの1つを選択すると、これらのメモリカードはmemcardsディレクトリに保存されます。</translation>
     </message>
     <message>
         <source>Select path to memory card image</source>
@@ -5759,19 +5787,19 @@ Achievements:%5 (%6 点)
     </message>
     <message>
         <source>All Memory Card Types (*.mcd *.mcr *.mc)</source>
-        <translation>すべてのメモリカードタイプ (*.mcd *.mcr *.mc)</translation>
+        <translation>すべてのメモリーカードタイプ (*.mcd *.mcr *.mc)</translation>
     </message>
     <message>
         <source>When using a multi-disc format (m3u/pbp) and per-game (title) memory cards, a single memory card will be used for all discs. If unchecked, a separate card will be used for each disc.</source>
-        <translation>マルチディスクフォーマット（m3u / pbp）およびゲームごと（ゲーム名）のメモリカードを使用する場合、すべてのディスクに1枚のメモリカードが使用されます。チェックを外すと、ディスクごとに別々のカードが使用されます。</translation>
+        <translation>マルチディスクフォーマット（m3u / pbp）およびゲームごと（ゲーム名）のメモリーカードを使用する場合、すべてのディスクに1枚のメモリーカードが使用されます。チェックを外すと、ディスクごとに別々のカードが使用されます。</translation>
     </message>
     <message>
-        <source>If one of the &quot;separate card per game&quot; memory card modes is chosen, these memory cards will be saved to the memory cards directory.</source>
-        <translation>&quot;ゲームごとに別々のカード&quot;メモリカードモードの1つを選択すると、これらのメモリカードはメモリカードディレクトリに保存されます。</translation>
+        <source>If one of the &quot;separate card per game&quot; memory card types is chosen, these memory cards will be saved to the memory cards directory.</source>
+        <translation>&quot;ゲームごとに別々のカード&quot;&#x3000;この方法を選択すると、メモリーカードはメモリーカードディレクトリに保存されます。</translation>
     </message>
     <message>
         <source>Shared Memory Card Path:</source>
-        <translation>共有メモリカードパス :</translation>
+        <translation>(共有)メモリーカードパス :</translation>
     </message>
     <message>
         <source>Memory Card Editor...</source>
@@ -5779,7 +5807,7 @@ Achievements:%5 (%6 点)
     </message>
     <message>
         <source>The memory card editor enables you to move saves between cards, as well as import cards of other formats.</source>
-        <translation>メモリカードエディタを使用すると、カード間でセーブデータを移動したり、他の形式のカードをインポートできます。</translation>
+        <translation>メモリーカードエディタを使用すると、カード間でセーブデータを移動したり、他の形式のカードをインポートできます。</translation>
     </message>
     <message>
         <source>When using a playlist (m3u) and per-game (title) memory cards, a single memory card will be used for all discs. If unchecked, a separate card will be used for each disc.</source>
@@ -5787,7 +5815,7 @@ Achievements:%5 (%6 点)
     </message>
     <message>
         <source>Memory Card Type:</source>
-        <translation>メモリーカード タイプ :</translation>
+        <translation>メモリーカード 保存方法 :</translation>
     </message>
 </context>
 <context>
@@ -5882,7 +5910,7 @@ Achievements:%5 (%6 点)
     </message>
     <message>
         <source>Shared Between All Games</source>
-        <translation>すべてのゲームで共有</translation>
+        <translation>すべてのゲームでカードを共有する</translation>
     </message>
     <message>
         <source>No Memory Card</source>
