@@ -420,24 +420,15 @@ void UpdateFastmemViews(CPUFastmemMode mode)
 
     // KUSEG - cached
     MapRAM(0x00000000);
-    // MapRAM(0x00200000);
-    // MapRAM(0x00400000);
-    // MapRAM(0x00600000);
-    ReserveRegion(0x00200000, 0x80000000 - 1);
+    ReserveRegion(0x00000000 + g_ram_size, 0x80000000 - 1);
 
     // KSEG0 - cached
     MapRAM(0x80000000);
-    // MapRAM(0x80200000);
-    // MapRAM(0x80400000);
-    // MapRAM(0x80600000);
-    ReserveRegion(0x80200000, 0xA0000000 - 1);
+    ReserveRegion(0x80000000 + g_ram_size, 0xA0000000 - 1);
 
     // KSEG1 - uncached
     MapRAM(0xA0000000);
-    // MapRAM(0xA0200000);
-    // MapRAM(0xA0400000);
-    // MapRAM(0xA0600000);
-    ReserveRegion(0xA0200000, 0xFFFFFFFF);
+    ReserveRegion(0xA0000000 + g_ram_size, 0xFFFFFFFF);
 
     return;
   }
