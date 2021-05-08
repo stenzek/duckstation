@@ -93,14 +93,14 @@
                 android:src="@drawable/ic_baseline_settings_24" />
 
             <ImageButton
-                android:id="@+id/quit"
+                android:id="@+id/close"
                 android:layout_width="40dp"
                 android:layout_height="60dp"
                 android:layout_marginEnd="5dp"
                 android:background="?android:attr/selectableItemBackground"
                 android:tint="?android:textColorPrimary"
-                android:contentDescription="Quit"
-                android:src="@drawable/ic_baseline_exit_to_app_24" />
+                android:contentDescription="Close"
+                android:src="@drawable/ic_baseline_close_24" />
 
         </LinearLayout>
 

@@ -835,7 +835,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
             ((ImageButton)view.findViewById(R.id.menu)).setOnClickListener(v -> onMenuClicked());
             ((ImageButton)view.findViewById(R.id.controller_settings)).setOnClickListener(v -> onControllerSettingsClicked());
             ((ImageButton)view.findViewById(R.id.settings)).setOnClickListener(v -> onSettingsClicked());
-            ((ImageButton)view.findViewById(R.id.quit)).setOnClickListener(v -> onQuitClicked());
+            ((ImageButton)view.findViewById(R.id.close)).setOnClickListener(v -> close(true));
         }
 
         @Override
@@ -880,12 +880,6 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
             setContentFragment(new SettingsCollectionFragment(), true);
             settingsChanged = true;
         }
-
-        private void onQuitClicked() {
-            close(false);
-            emulationActivity.mStopRequested = true;
-            emulationActivity.finish();
-        }
     }
 
     public static class MenuSettingsFragment extends PreferenceFragmentCompat {
@@ -922,6 +916,12 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
             createPreference(R.string.emulation_menu_achievements, R.drawable.ic_baseline_trophy_24, cheevosActive, preference -> {
                 menuDialogFragment.close(false);
                 emulationActivity.showAchievementsPopup();
+                return true;
+            });
+            createPreference(R.string.emulation_menu_exit_game, R.drawable.ic_baseline_exit_to_app_24, true, preference -> {
+                menuDialogFragment.close(false);
+                emulationActivity.mStopRequested = true;
+                emulationActivity.finish();
                 return true;
             });
             createPreference(R.string.emulation_menu_patch_codes, R.drawable.ic_baseline_tips_and_updates_24, !cheevosChallengeModeEnabled, preference -> {

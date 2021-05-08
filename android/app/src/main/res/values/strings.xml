@@ -345,4 +345,5 @@
     <string name="emulation_menu_touchscreen_controller_settings">Touchscreen Controller Settings</string>
     <string name="emulation_menu_toggle_analog_mode">Toggle Controller Analog Mode</string>
     <string name="emulation_menu_reset_console">Reset Console</string>
+    <string name="emulation_menu_exit_game">Exit Game</string>
 </resources>
