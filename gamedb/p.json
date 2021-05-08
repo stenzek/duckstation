@@ -15209,7 +15209,7 @@
   "serial": "SCPS-10023",
   "name": "PoPoLoCrois Monogatari (Japan)",
   "codes": [
-   "SCPS-10023"
+   "HASH-72E54F40E1FCDE62"
   ],
   "languages": [
    "Japanese"
@@ -15226,6 +15226,36 @@
    {
     "size": 683629968,
     "md5": "8ee8426168afc22153f6abeafa22e6c1"
+   }
+  ],
+  "vibration": false,
+  "multitap": false,
+  "linkCable": false,
+  "controllers": [
+   "DigitalController"
+  ]
+ },
+ {
+  "serial": "SCPS-10023",
+  "name": "PoPoLoCrois Monogatari (Japan) (Rev 1)",
+  "codes": [
+   "HASH-670BF5FA849D6979"
+  ],
+  "languages": [
+   "Japanese"
+  ],
+  "publisher": "Sony",
+  "developer": "G-Artists / Sugar & Rockets",
+  "releaseDate": "1996-07-12",
+  "genre": "Tactical RPG",
+  "minPlayers": 1,
+  "maxPlayers": 1,
+  "minBlocks": 1,
+  "maxBlocks": 5,
+  "tracks": [
+   {
+    "size": 683611152,
+    "md5": "60418240bc5488f3127469011d40296b"
    }
   ],
   "vibration": false,
@@ -15253,6 +15283,8 @@
   "name": "PoPoLoCrois Monogatari II (Japan) (Disc 1)",
   "codes": [
    "SCPS-10112",
+   "SCPS-45483",
+   "SCPS-91220",
    "SCPS-91313"
   ],
   "languages": [
@@ -15260,7 +15292,7 @@
   ],
   "publisher": "Sony",
   "developer": "G-Artists / Sugar & Rockets",
-  "releaseDate": "2001-06-12",
+  "releaseDate": "2000-01-27",
   "genre": "Tactical RPG",
   "minPlayers": 1,
   "maxPlayers": 1,
@@ -15285,6 +15317,8 @@
   "name": "PoPoLoCrois Monogatari II (Japan) (Disc 2)",
   "codes": [
    "SCPS-10113",
+   "SCPS-45484",
+   "SCPS-91221",
    "SCPS-91314"
   ],
   "languages": [
@@ -15292,7 +15326,7 @@
   ],
   "publisher": "Sony",
   "developer": "G-Artists / Sugar & Rockets",
-  "releaseDate": "2001-06-12",
+  "releaseDate": "2000-01-27",
   "genre": "Tactical RPG",
   "minPlayers": 1,
   "maxPlayers": 1,
@@ -15317,6 +15351,8 @@
   "name": "PoPoLoCrois Monogatari II (Japan) (Disc 3)",
   "codes": [
    "SCPS-10114",
+   "SCPS-45485",
+   "SCPS-91222",
    "SCPS-91315"
   ],
   "languages": [
@@ -15324,7 +15360,7 @@
   ],
   "publisher": "Sony",
   "developer": "G-Artists / Sugar & Rockets",
-  "releaseDate": "2001-06-12",
+  "releaseDate": "2000-01-27",
   "genre": "Tactical RPG",
   "minPlayers": 1,
   "maxPlayers": 1,
@@ -15361,7 +15397,7 @@
   "serial": "SCPS-10050",
   "name": "PoPoRoGue (Japan)",
   "codes": [
-   "SCPS-10050"
+   "HASH-E6F9616D27744F0F"
   ],
   "languages": [
    "Japanese"
@@ -15389,17 +15425,17 @@
   ]
  },
  {
-  "serial": "SCPS-91312",
+  "serial": "SCPS-10050",
   "name": "PoPoRoGue (Japan) (Rev 1)",
   "codes": [
-   "SCPS-91312"
+   "HASH-6796D79E4BC5E282"
   ],
   "languages": [
    "Japanese"
   ],
   "publisher": "Sony",
   "developer": "G-Artists / Sugar & Rockets",
-  "releaseDate": "2001-11-27",
+  "releaseDate": "1998-11-26",
   "genre": "Tactical RPG",
   "minPlayers": 1,
   "maxPlayers": 1,
@@ -17460,62 +17496,6 @@
     "md5": "6ef68fe337c5559c56732b6f01fd476a"
    }
   ],
-  "vibration": true,
-  "multitap": false,
-  "linkCable": false,
-  "controllers": [
-   "AnalogController",
-   "DigitalController"
-  ]
- },
- {
-  "serial": "SCPS-45483",
-  "name": "Popolocrois II",
-  "codes": [
-   "SCPS-45483",
-   "SCPS-45484",
-   "SCPS-45485"
-  ],
-  "languages": [
-   "Japanese"
-  ],
-  "publisher": "Sony",
-  "developer": "G-Artists / Sugar & Rockets",
-  "releaseDate": "2000-01-27",
-  "genre": "Tactical RPG",
-  "minPlayers": 1,
-  "maxPlayers": 1,
-  "minBlocks": 1,
-  "maxBlocks": 5,
-  "tracks": [],
-  "vibration": true,
-  "multitap": false,
-  "linkCable": false,
-  "controllers": [
-   "AnalogController",
-   "DigitalController"
-  ]
- },
- {
-  "serial": "SCPS-91220",
-  "name": "Popolocrois II [PlayStation the Best]",
-  "codes": [
-   "SCPS-91220",
-   "SCPS-91221",
-   "SCPS-91222"
-  ],
-  "languages": [
-   "Japanese"
-  ],
-  "publisher": "Sony",
-  "developer": "G-Artists / Sugar & Rockets",
-  "releaseDate": "2001-05-04",
-  "genre": "Tactical RPG",
-  "minPlayers": 1,
-  "maxPlayers": 1,
-  "minBlocks": 1,
-  "maxBlocks": 5,
-  "tracks": [],
   "vibration": true,
   "multitap": false,
   "linkCable": false,
