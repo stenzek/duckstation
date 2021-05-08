@@ -5353,19 +5353,19 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../generalsettingswidget.ui" line="52"/>
         <location filename="../generalsettingswidget.cpp" line="58"/>
         <source>Pause On Start</source>
-        <translation>Pausar ao Iniciar</translation>
+        <translation>Pausar ao iniciar</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="38"/>
         <location filename="../generalsettingswidget.cpp" line="44"/>
         <source>Confirm Power Off</source>
-        <translation>Confirmar ao Fechar</translation>
+        <translation>Confirmar ao fechar</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="73"/>
         <location filename="../generalsettingswidget.cpp" line="47"/>
         <source>Save State On Exit</source>
-        <translation>Salvar ao Fechar</translation>
+        <translation>Salvar ao fechar</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="94"/>
@@ -5377,43 +5377,43 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../generalsettingswidget.ui" line="66"/>
         <location filename="../generalsettingswidget.cpp" line="50"/>
         <source>Start Fullscreen</source>
-        <translation type="unfinished">Iniciar em Tela Cheia</translation>
+        <translation>Iniciar em tela cheia</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="45"/>
         <location filename="../generalsettingswidget.cpp" line="55"/>
         <source>Render To Main Window</source>
-        <translation>Carregar Jogo na janela principal</translation>
+        <translation>Carregar jogo na janela principal</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="59"/>
         <location filename="../generalsettingswidget.cpp" line="60"/>
         <source>Pause On Focus Loss</source>
-        <translation>Pausar Quando Inativo</translation>
+        <translation>Pausar quando inativo</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="80"/>
         <location filename="../generalsettingswidget.cpp" line="69"/>
         <source>Apply Per-Game Settings</source>
-        <translation>Configurações Individuais</translation>
+        <translation>Usar configurações individuais</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="87"/>
         <location filename="../generalsettingswidget.cpp" line="72"/>
         <source>Automatically Load Cheats</source>
-        <translation>Carregar Trapaças Automaticamente</translation>
+        <translation>Carregar trapaças automaticamente</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="101"/>
         <location filename="../generalsettingswidget.cpp" line="52"/>
         <source>Hide Cursor In Fullscreen</source>
-        <translation>Esconder Cursor em tela cheia</translation>
+        <translation>Esconder cursor em tela cheia</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="108"/>
         <location filename="../generalsettingswidget.cpp" line="80"/>
         <source>Enable Fullscreen UI</source>
-        <translation>Abrir Menu Rápido</translation>
+        <translation>Abrir menu rápido</translation>
     </message>
     <message>
         <source>Speed Control</source>
@@ -5445,7 +5445,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../generalsettingswidget.ui" line="193"/>
         <source>Check for Updates...</source>
-        <translation>Procurar &amp;Atualizações...</translation>
+        <translation>Procurar Atualizações</translation>
     </message>
     <message>
         <source>Emulation Speed</source>
