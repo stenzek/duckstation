@@ -81,7 +81,7 @@
     </message>
     <message>
         <source>&amp;Close</source>
-        <translation>閉じる(C)</translation>
+        <translation>閉じる(&amp;C)</translation>
     </message>
     <message>
         <source>&amp;Debug</source>
@@ -251,7 +251,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Registers</source>
-        <translation>番目</translation>
+        <translation>レジスタ</translation>
     </message>
     <message>
         <source>Add Breakpoint</source>
@@ -322,7 +322,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Controller 1 Type:</source>
-        <translation>コントローラ タイプ 1:</translation>
+        <translation>コントローラ 1 形式:</translation>
     </message>
     <message>
         <source>Game Properties - %1</source>
@@ -346,7 +346,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Memory Card 2 Type:</source>
-        <translation>メモリーカード2タイプ :</translation>
+        <translation>メモリーカード2 形式:</translation>
     </message>
     <message>
         <source>1 Frame</source>
@@ -367,7 +367,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Memory Card 1 Type:</source>
-        <translation>メモリーカードタイプ 1:</translation>
+        <translation>メモリーカード1 形式:</translation>
     </message>
     <message>
         <source>Select path to memory card image</source>
@@ -443,7 +443,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Controller 2 Type:</source>
-        <translation>コントローラ タイプ 2:</translation>
+        <translation>コントローラ2 形式:</translation>
     </message>
     <message>
         <source>DMA Halt Ticks:</source>
@@ -804,7 +804,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Automatic based on window size</source>
-        <translation>ウィンドウサイズに基づく自動ベース</translation>
+        <translation>ウィンドウサイズ基準で自動</translation>
     </message>
     <message>
         <source>%1x MSAA</source>
@@ -899,7 +899,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Import File...</source>
-        <translation>インポートするファイル...</translation>
+        <translation>ファイルのインポート...</translation>
     </message>
     <message>
         <source>Export File</source>
@@ -1556,7 +1556,7 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <source>Type</source>
-        <translation>チート種類</translation>
+        <translation>チート形式</translation>
     </message>
     <message>
         <source>Word</source>
@@ -2079,7 +2079,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Speeds up CD-ROM reads by the specified factor. Only applies to double-speed reads, and is ignored when audio is playing. May improve loading speeds in some games, at the cost of breaking others.</source>
-        <translation>指定された読取速度でCD-ROMの読み取りを高速化します。倍速読み取りにのみ適用され、音声の再生中は無視されます。一部のゲームでは読み込み速度が向上する可能性がありますが、他のゲームは中断されます。不具合が出る可能性もあります。</translation>
+        <translation>指定された読取速度でCD-ROMの読み取りを高速化します。倍速読み取りにのみ適用され、音声の再生中は無視されます。一部のゲームでは読み込み速度が向上する可能性がありますが、他のゲームは不具合が出る可能性もあります。</translation>
     </message>
     <message>
         <source>Region:</source>
