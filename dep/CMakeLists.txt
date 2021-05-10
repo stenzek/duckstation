@@ -27,6 +27,10 @@ if(ENABLE_CHEEVOS)
   add_subdirectory(rcheevos)
 endif()
 
+if(BUILD_LIBRETRO_CORE)
+  add_subdirectory(libretro-common)
+endif()
+
 if(${CPU_ARCH} STREQUAL "aarch32" OR ${CPU_ARCH} STREQUAL "aarch64")
   add_subdirectory(vixl)
 endif()
