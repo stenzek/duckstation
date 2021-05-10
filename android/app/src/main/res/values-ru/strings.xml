@@ -87,7 +87,7 @@
 	<string name="settings_true_color">Рендеринг в True Color (24-бита, без дизеринга)</string>
 	<string name="settings_summary_true_color">Обеспечивает более качественные градиенты, но меняет отображение некоторых цветов. Отключение опции также включает дизеринг. Большинство игр совместимо с этой настройкой.</string>
 	<string name="settings_scaled_dithering">Масштабировать дизеринг</string>
-	<string name="settings_summary_scaled_dithering">Масштабировать паттерн дизеринга вместе с разрешением эмулируемого GPU, маскируя эффект зашумления на высоких разрешениях. Поддерживается только аппаратными рендерами и обычно не влияет на стабильность.</string>
+	<string name="settings_summary_scaled_dithering">Масштабировать паттерн дизеринга вместе с разрешением эмулируемого GPU, маскируя эффект зашумления на высоких разрешениях. Поддерживается только аппаратным рендерингом и обычно не влияет на стабильность.</string>
 	<string name="settings_disable_interlacing">Отключить чересстрочность</string>
 	<string name="settings_summary_disable_interlacing">Принудительный рендеринг и вывод кадров в прогрессивной развёртке. Убирает эффект \"гребёнки\" для игр в 480i. Как правило, не влияет на стабильность.</string>
 	<string name="settings_texture_filtering">Фильтрация текстур</string>
@@ -179,7 +179,7 @@
 	<string name="controller_mapping_activity_cancel">Отмена</string>
 	<string name="settings_use_analog_sticks_for_dpad">Джойстик как d-pad в цифровом режиме</string>
 	<string name="settings_summary_enable_analog_mode_on_reset">Переключить контроллер в аналоговый режим при включении/перезагрузке консоли.</string>
-	<string name="settings_summary_use_analog_sticks_for_dpad">Позволяет использовать аналоговый джойстик как d-pad для DualShock в цифровом режиме.</string>
+	<string name="settings_summary_use_analog_sticks_for_dpad">Использовать аналоговый джойстик как d-pad в цифровом режиме DualShock.</string>
 	<string name="settings_disable_all_enhancements">Отключить улучшения</string>
 	<string name="settings_summary_disable_all_enhancements">Временно отключить все улучшения. Используйте для отладки.</string>
 	<string name="settings_downsample_mode">Даунсэмплинг</string>
@@ -250,9 +250,9 @@
     	<string name="settings_achievements_view_profile">Просмотр профиля</string>
     	<string name="settings_summary_achievements_view_profile">Открыть ссылку на ваш профиль.</string>
     	<string name="settings_achievements_test_mode">Тестовый режим</string>
-    	<string name="settings_summary_achievements_test_mode">Если включено, DuckStation будет считать, что все достижения закрыты и не будет уведомлять сервер при открытии.</string>
+    	<string name="settings_summary_achievements_test_mode">Если включено, DuckStation будет считать, что все достижения закрыты и не будет отправлять уведомления об открытии на сервер.</string>
     	<string name="settings_achievements_use_first_disc_from_playlist">Использовать первый диск в плейлисте</string>
-    	<string name="settings_summary_achievements_use_first_disc_from_playlist">Если опция включена, для получения достижений будет использоваться первый диск в плейлисте, независимо от активного диска.</string>
+    	<string name="settings_summary_achievements_use_first_disc_from_playlist">Если включено, для получения достижений будет использоваться первый диск в плейлисте, независимо от активного диска.</string>
     	<string name="achievement_settings_login_title">Вход в RetroAchievements</string>
     	<string name="achievement_settings_login_help">Пожалуйста, введите логин и пароль для retroachievements.org. Ваш пароль не хранится в DuckStation. Вместо этого будет сгенерирован маркер доступа.</string>
     	<string name="achievement_settings_login_username_hint">Логин</string>
@@ -316,10 +316,10 @@
 	<string name="controller_settings_automatic_mapping">Выполнить автонастройку</string>
 	<string name="controller_settings_summary_automatic_mapping">Попытаться автоматически привязать все кнопки/оси для подключенного устройства.</string>
 	<string name="controller_settings_clear_controller_bindings">Сброс привязок</string>
-	<string name="controller_settings_summary_clear_controller_bindings">Удалить привязки для всех кнопок и осей данного устройства.</string>
+	<string name="controller_settings_summary_clear_controller_bindings">Удалить привязки для всех кнопок и осей текущего устройства.</string>
 	<string name="controller_settings_clear_controller_bindings_confirm">Вы действительно хотите удалить все привязки? Это действие нельзя отменить.</string>
 	<string name="controller_settings_clear_controller_bindings_done">Удалены привязки для устройства %d.</string>
-	<string name="controller_auto_mapping_no_devices">Подходящие устройства не найдены. Автонастройка поддерживается только для геймпадов. Вы можете настроить другие устройства вручную.</string>
+	<string name="controller_auto_mapping_no_devices">Подходящие устройства не найдены. Автонастройка поддерживается только для геймпадов. Вы можете настроить прочие устройства вручную.</string>
 	<string name="controller_auto_mapping_select_device">Выбор устройства</string>
 	<string name="controller_auto_mapping_results">Результаты автонастройки</string>
 	<string name="main_activity_empty_game_list_title">Игры не найдены. Пожалуйста, добавьте каталог с играми или выберите файл вручную.</string>
@@ -327,7 +327,7 @@
 	<string name="main_activity_empty_game_list_add_directory">Добавить каталог с играми</string>
 	<string name="main_activity_empty_game_list_start_file">Открыть файл</string>
 	<string name="update_notes_title">Примечание к обновлению</string>
-	<string name="update_notes_message_version_controller_update">В текущем обновлении DuckStation добавлена поддержка подключения нескольких геймпадов с вибрацией, клавиатур, возможность привязки кнопок громкости.\n\nТребуется перенастроить привязки геймпадов, иначе они перестанут функционировать. Выполнить это сейчас?</string>
+	<string name="update_notes_message_version_controller_update">В текущем обновлении DuckStation добавлена возможность подключения нескольких геймпадов с поддержкой вибрации, подключение клавиатур, возможность привязки кнопок громкости.\n\nТребуется перенастроить привязки геймпадов, иначе они перестанут функционировать. Выполнить это сейчас?</string>
 	<string name="settings_osd_show_show_inputs">Показывать нажатия контроллера</string>
     	<string name="settings_summary_osd_show_inputs">Показывать системное состояние контроллера в левом нижнем углу экрана.</string>
 	<string name="touchscreen_controller_edit_menu">Меню редактора</string>
@@ -338,11 +338,12 @@
         <string name="settings_touchscreen_controller_port">Порт экранного геймпада</string>
 	<string name="emulation_menu_load_state">Загрузить состояние</string>
    	<string name="emulation_menu_save_state">Сохранить состояние</string>
- 	<string name="emulation_menu_toggle_fast_forward">Включить ускорение</string>
+ 	<string name="emulation_menu_toggle_fast_forward">Вкл./выкл. ускорение</string>
 	<string name="emulation_menu_achievements">Достижения</string>
 	<string name="emulation_menu_patch_codes">Чит-коды</string>
    	<string name="emulation_menu_change_disc">Сменить диск</string>
   	<string name="emulation_menu_touchscreen_controller_settings">Экранный геймпад</string>
    	<string name="emulation_menu_toggle_analog_mode">Режим контроллера</string>
    	<string name="emulation_menu_reset_console">Сброс консоли</string>
+	<string name="emulation_menu_exit_game">Закрыть игру</string>
 </resources>
