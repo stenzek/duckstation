@@ -12,6 +12,7 @@
 #include "core/cpu_code_cache.h"
 #include "core/dma.h"
 #include "core/gpu.h"
+#include "core/gte.h"
 #include "core/host_display.h"
 #include "core/mdec.h"
 #include "core/pgxp.h"
@@ -2039,6 +2040,14 @@ void CommonHostInterface::RegisterGraphicsHotkeys()
                      g_texture_replacements.Reload();
                    }
                  });
+
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Graphics")), StaticString("ToggleWidescreen"),
+                 StaticString(TRANSLATABLE("Hotkeys", "Toggle Widescreen")), [this](bool pressed) {
+                   if (pressed && System::IsValid())
+                   {
+                     ToggleWidescreen();
+                   }
+                 });
 }
 
 void CommonHostInterface::RegisterSaveStateHotkeys()
@@ -3342,6 +3351,18 @@ void CommonHostInterface::ReloadPostProcessingShaders()
     AddOSDMessage(TranslateStdString("OSDMessage", "Failed to load post-processing shader chain."), 20.0f);
   else
     AddOSDMessage(TranslateStdString("OSDMessage", "Post-processing shaders reloaded."), 10.0f);
+}
+
+void CommonHostInterface::ToggleWidescreen()
+{
+  g_settings.gpu_widescreen_hack = !g_settings.gpu_widescreen_hack;
+  g_settings.display_aspect_ratio =
+    g_settings.gpu_widescreen_hack ? DisplayAspectRatio::R16_9 : DisplayAspectRatio::Auto;
+  AddOSDMessage(TranslateStdString("OSDMessage", g_settings.gpu_widescreen_hack ?
+                                                   "Widescreen Hack is now enabled and aspect ratio set to 16:9." :
+                                                   "Widescreen Hack is now disabled and aspect ratio set to Auto (Game Native)."),
+      5.0f);
+  GTE::UpdateAspectRatio();
 }
 
 bool CommonHostInterface::ParseFullscreenMode(const std::string_view& mode, u32* width, u32* height,
