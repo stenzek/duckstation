@@ -70,6 +70,7 @@
   <ItemGroup>
     <ClCompile Include="libretro_d3d11_host_display.cpp" />
     <ClCompile Include="libretro_audio_stream.cpp" />
+    <ClCompile Include="libretro_game_database.cpp" />
     <ClCompile Include="libretro_game_settings.cpp" />
     <ClCompile Include="libretro_host_display.cpp" />
     <ClCompile Include="libretro_host_interface.cpp" />
@@ -81,6 +82,7 @@
   <ItemGroup>
     <ClInclude Include="libretro_d3d11_host_display.h" />
     <ClInclude Include="libretro_audio_stream.h" />
+    <ClInclude Include="libretro_game_database.h" />
     <ClInclude Include="libretro_game_settings.h" />
     <ClInclude Include="libretro_host_display.h" />
     <ClInclude Include="libretro_host_interface.h" />

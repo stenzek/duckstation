@@ -1,6 +1,8 @@
 add_library(duckstation_libretro SHARED
   libretro_audio_stream.cpp
   libretro_audio_stream.h
+  libretro_game_database.cpp
+  libretro_game_database.h
   libretro_game_settings.cpp
   libretro_game_settings.h
   libretro_host_display.cpp

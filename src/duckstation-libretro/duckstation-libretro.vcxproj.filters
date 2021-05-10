@@ -10,6 +10,7 @@
     <ClCompile Include="libretro_d3d11_host_display.cpp" />
     <ClCompile Include="libretro_vulkan_host_display.cpp" />
     <ClCompile Include="libretro_game_settings.cpp" />
+    <ClCompile Include="libretro_game_database.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="libretro_host_interface.h" />
@@ -20,5 +21,6 @@
     <ClInclude Include="libretro_d3d11_host_display.h" />
     <ClInclude Include="libretro_vulkan_host_display.h" />
     <ClInclude Include="libretro_game_settings.h" />
+    <ClInclude Include="libretro_game_database.h" />
   </ItemGroup>
 </Project>
