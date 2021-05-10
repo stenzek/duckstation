@@ -1,5 +1,5 @@
 # DuckStation - PlayStation 1, aka. PSX Emulator
-[Latest News](#latest-news) | [Features](#features) | [Screenshots](#screenshots) | [Downloading and Running](#downloading-and-running) | [Building](#building) | [Disclaimers](#disclaimers)
+[Latest News](#latest-news) | [Features](#features) | [Screenshots](#screenshots) | [Downloading and Running](#downloading-and-running) | [Libretro Core](#libretro-core) | [Building](#building) | [Disclaimers](#disclaimers)
 
 **Discord Server:** https://discord.gg/Buktv3t
 
@@ -18,6 +18,8 @@ A "BIOS" ROM image is required to to start the emulator and to play games. You c
 ## Latest News
 Older entries are available at https://github.com/stenzek/duckstation/blob/master/NEWS.md
 
+- 2021/05/10: libretro core re-added. Commercial distribution of the DuckStation libretro core is **NOT PERMITTED**.
+- 2021/05/02: New pause menu added to Android app.
 - 2021/04/29: Custom aspect ratio support added.
 - 2021/03/20: Memory card editor added to Android app.
 - 2021/03/17: Add support for loading **homebrew** PBP images. PSN images are not loadable due to potential legal issues surrounding the encryption.
@@ -162,6 +164,20 @@ A number of PAL region games use LibCrypt protection, requiring additional CD su
 For these games, make sure that the CD image and its corresponding SBI (.sbi) file have the same name and are placed in the same directory. DuckStation will automatically load the SBI file when it is found next to the CD image.
 
 For example, if your disc image was named `Spyro3.cue`, you would place the SBI file in the same directory, and name it `Spyro3.sbi`.
+
+## Libretro Core
+
+DuckStation is available as a libretro core, which can be loaded into a frontend such as RetroArch. It supports most features of the full frontend, within the constraints and limitations of being a libretro core.
+
+The DuckStation libretro core is not covered by the GPL license, and COMMERCIAL DISTRIBUTION IS PROHIBITED. By downloading the libretro core, you agree that you will not distribute it with any paid applications, services, or products.
+
+Prebuilt binaries for 64-bit Windows, Linux and Android can be found on the releases page. Direct links:
+- 64-bit Windows: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro.dll.zip
+- 64-bit Linux: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro_x64.so.zip
+- armv7 Linux: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro_linux_armv7.so.zip
+- armv7 Android: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro_android_armv7.so.zip
+- AArch64 Linux: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro_linux_aarch64.so.zip
+- AArch64 Android: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro_android_aarch64.so.zip
 
 ## Building
 
