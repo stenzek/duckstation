@@ -114,6 +114,8 @@ The Qt frontend includes an automatic update checker. Builds downloaded after 20
 
 ### Linux
 
+#### Binaries
+
 Prebuilt binaries for 64-bit Linux distros are available for download in the AppImage format. However, these binaries may be incompatible with older Linux distros (e.g. Ubuntu distros earlier than 18.04.4 LTS) due to older distros not providing newer versions of the C/C++ standard libraries required by the AppImage binaries.
 
 **Linux users are encouraged to build from source when possible and optionally create their own AppImages for features such as desktop integration if desired.**
@@ -122,6 +124,14 @@ To download:
  - Go to https://github.com/stenzek/duckstation/releases/tag/latest, and download either `duckstation-qt-x64.AppImage` or `duckstation-nogui-x64.AppImage` for your desired frontend.
  - Run `chmod a+x` on the downloaded AppImage -- following this step, the AppImage can be run like a typical executable.
  - Optionally use a program such as [appimaged](https://github.com/AppImage/appimaged) or [AppImageLauncher](https://github.com/TheAssassin/AppImageLauncher) for desktop integration. [AppImageUpdate](https://github.com/AppImage/AppImageUpdate) can be used alongside appimaged to easily update your DuckStation AppImage.
+
+#### [Unofficial] Flatpak
+
+No support for the flatpak package will be provided, any emulator issues must be verified with the AppImage or a source build before being reported.
+
+Flatpak issues can be reported at https://github.com/flathub/org.duckstation.DuckStation/issues.
+
+Follow the instructions at https://github.com/flathub/org.duckstation.DuckStation
 
 ### macOS
 
