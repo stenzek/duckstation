@@ -107,7 +107,7 @@ jobs:
       if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
       uses: actions/upload-artifact@v1
       with:
-        name: "windows-libretro-x64"
+        name: "windows"
         path: "build/duckstation_libretro.dll.zip"
 
 
