@@ -3356,12 +3356,37 @@ void CommonHostInterface::ReloadPostProcessingShaders()
 void CommonHostInterface::ToggleWidescreen()
 {
   g_settings.gpu_widescreen_hack = !g_settings.gpu_widescreen_hack;
-  g_settings.display_aspect_ratio =
-    g_settings.gpu_widescreen_hack ? DisplayAspectRatio::R16_9 : DisplayAspectRatio::Auto;
-  AddOSDMessage(TranslateStdString("OSDMessage", g_settings.gpu_widescreen_hack ?
-                                                   "Widescreen Hack is now enabled and aspect ratio set to 16:9." :
-                                                   "Widescreen Hack is now disabled and aspect ratio set to Auto (Game Native)."),
+  const GameSettings::Entry* gs = m_game_list->GetGameSettings(System::GetRunningPath(), System::GetRunningCode());
+  DisplayAspectRatio userRatio;
+  if (gs && gs->display_aspect_ratio.has_value())
+    userRatio = gs->display_aspect_ratio.value();
+  else
+  {
+    Settings o_settings;
+    o_settings.Load(*m_settings_interface);
+    userRatio = o_settings.display_aspect_ratio;
+  }
+  if (userRatio == DisplayAspectRatio::Auto || userRatio == DisplayAspectRatio::PAR1_1 || userRatio == DisplayAspectRatio::R4_3)
+  {
+    g_settings.display_aspect_ratio = g_settings.gpu_widescreen_hack ? DisplayAspectRatio::R16_9 : userRatio;
+    AddOSDMessage(
+      TranslateStdString("OSDMessage",
+                         g_settings.gpu_widescreen_hack ?
+                           "Widescreen Hack is now enabled and aspect ratio set to 16:9." :
+                           "Widescreen Hack is now disabled and aspect ratio set to your chosen aspect ratio."),
       5.0f);
+  }
+  else
+  {
+    g_settings.display_aspect_ratio = g_settings.gpu_widescreen_hack ? userRatio : DisplayAspectRatio::Auto;
+    AddOSDMessage(
+      TranslateStdString("OSDMessage",
+                         g_settings.gpu_widescreen_hack ?
+                           "Widescreen Hack is now enabled and aspect ratio set to your chosen aspect ratio." :
+                           "Widescreen Hack is now disabled and aspect ratio set to Auto (Game Native)."),
+      5.0f);
+  }
+
   GTE::UpdateAspectRatio();
 }
 
