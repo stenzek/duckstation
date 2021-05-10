@@ -124,7 +124,9 @@ bool InitializeGlslang()
     return false;
   }
 
+#ifndef LIBRETRO
   std::atexit([]() { glslang::FinalizeProcess(); });
+#endif
 
   glslang_initialized = true;
   return true;
