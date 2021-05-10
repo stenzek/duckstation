@@ -3,9 +3,7 @@
 
 **Discord Server:** https://discord.gg/Buktv3t
 
-**Latest Builds for Windows and Android:** https://github.com/stenzek/duckstation/releases/tag/latest
-
-**Latest Builds for Linux:** [AppImage or Flatpak](#linux)
+**Latest Builds for Windows, Linux (AppImage), and Android** https://github.com/stenzek/duckstation/releases/tag/latest
 
 **Available on Google Play:** https://play.google.com/store/apps/details?id=com.github.stenzek.duckstation&hl=en_AU&gl=US
 
@@ -116,20 +114,6 @@ The Qt frontend includes an automatic update checker. Builds downloaded after 20
 
 ### Linux
 
-#### Flatpak
-
-Works on all Linux distributions with Flatpak installed.
-
-1. [Set up Flatpak](https://www.flatpak.org/setup/)
-
-2. Install DuckStation from [Flathub](https://flathub.org/apps/details/org.duckstation.DuckStation)
-
-`flatpak install -y org.duckstation.DuckStation`
-
-3. Run DuckStation
-
-`flatpak run org.duckstation.DuckStation`
-
 #### Binaries
 
 Prebuilt binaries for 64-bit Linux distros are available for download in the AppImage format. However, these binaries may be incompatible with older Linux distros (e.g. Ubuntu distros earlier than 18.04.4 LTS) due to older distros not providing newer versions of the C/C++ standard libraries required by the AppImage binaries.
@@ -140,6 +124,14 @@ To download:
  - Go to https://github.com/stenzek/duckstation/releases/tag/latest, and download either `duckstation-qt-x64.AppImage` or `duckstation-nogui-x64.AppImage` for your desired frontend.
  - Run `chmod a+x` on the downloaded AppImage -- following this step, the AppImage can be run like a typical executable.
  - Optionally use a program such as [appimaged](https://github.com/AppImage/appimaged) or [AppImageLauncher](https://github.com/TheAssassin/AppImageLauncher) for desktop integration. [AppImageUpdate](https://github.com/AppImage/AppImageUpdate) can be used alongside appimaged to easily update your DuckStation AppImage.
+
+#### [Unofficial] Flatpak
+
+No support for the flatpak package will be provided, any emulator issues must be verified with the AppImage or a source build before being reported.
+
+Flatpak issues can be reported at https://github.com/flathub/org.duckstation.DuckStation/issues.
+
+Follow the instructions at https://github.com/flathub/org.duckstation.DuckStation
 
 ### macOS
 
