@@ -17,6 +17,7 @@
 #include "core/mdec.h"
 #include "core/pgxp.h"
 #include "core/save_state_version.h"
+#include "core/settings.h"
 #include "core/spu.h"
 #include "core/system.h"
 #include "core/texture_replacements.h"
@@ -3361,31 +3362,19 @@ void CommonHostInterface::ToggleWidescreen()
   if (gs && gs->display_aspect_ratio.has_value())
     userRatio = gs->display_aspect_ratio.value();
   else
-  {
-    Settings o_settings;
-    o_settings.Load(*m_settings_interface);
-    userRatio = o_settings.display_aspect_ratio;
-  }
+    userRatio = Settings::ParseDisplayAspectRatio(
+        m_settings_interface
+          ->GetStringValue("Display", "AspectRatio", Settings::GetDisplayAspectRatioName(DisplayAspectRatio::Auto))
+        .c_str())
+        .value_or(DisplayAspectRatio::Auto);
   if (userRatio == DisplayAspectRatio::Auto || userRatio == DisplayAspectRatio::PAR1_1 || userRatio == DisplayAspectRatio::R4_3)
-  {
     g_settings.display_aspect_ratio = g_settings.gpu_widescreen_hack ? DisplayAspectRatio::R16_9 : userRatio;
-    AddOSDMessage(
-      TranslateStdString("OSDMessage",
-                         g_settings.gpu_widescreen_hack ?
-                           "Widescreen Hack is now enabled and aspect ratio set to 16:9." :
-                           "Widescreen Hack is now disabled and aspect ratio set to your chosen aspect ratio."),
-      5.0f);
-  }
   else
-  {
-    g_settings.display_aspect_ratio = g_settings.gpu_widescreen_hack ? userRatio : DisplayAspectRatio::Auto;
-    AddOSDMessage(
-      TranslateStdString("OSDMessage",
-                         g_settings.gpu_widescreen_hack ?
-                           "Widescreen Hack is now enabled and aspect ratio set to your chosen aspect ratio." :
-                           "Widescreen Hack is now disabled and aspect ratio set to Auto (Game Native)."),
-      5.0f);
-  }
+    g_settings.display_aspect_ratio = g_settings.gpu_widescreen_hack ? userRatio : DisplayAspectRatio::Auto; 
+  
+  String arMessage;
+  arMessage.AppendFormattedString("Widescreen Hack is now %s and aspect ratio set to %s.", g_settings.gpu_widescreen_hack ? "enabled" : "disabled", Settings::GetDisplayAspectRatioName(g_settings.display_aspect_ratio));
+  AddOSDMessage(TranslateStdString("OSDMessage", arMessage),  5.0f);
 
   GTE::UpdateAspectRatio();
 }
