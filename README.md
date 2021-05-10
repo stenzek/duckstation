@@ -3,7 +3,9 @@
 
 **Discord Server:** https://discord.gg/Buktv3t
 
-**Latest Builds for Windows, Linux (AppImage), and Android** https://github.com/stenzek/duckstation/releases/tag/latest
+**Latest Builds for Windows and Android:** https://github.com/stenzek/duckstation/releases/tag/latest
+
+**Latest Builds for Linux:** [AppImage or Flatpak](#linux)
 
 **Available on Google Play:** https://play.google.com/store/apps/details?id=com.github.stenzek.duckstation&hl=en_AU&gl=US
 
@@ -113,6 +115,22 @@ To set up:
 The Qt frontend includes an automatic update checker. Builds downloaded after 2020/08/07 will automatically check for updates each time the emulator starts, this can be disabled in Settings. Alternatively, you can force an update check by clicking `Help->Check for Updates`.
 
 ### Linux
+
+#### Flatpak
+
+Works on all Linux distributions with Flatpak installed.
+
+1. [Set up Flatpak](https://www.flatpak.org/setup/)
+
+2. Install DuckStation from [Flathub](https://flathub.org/apps/details/org.duckstation.DuckStation)
+
+`flatpak install -y org.duckstation.DuckStation`
+
+3. Run DuckStation
+
+`flatpak run org.duckstation.DuckStation`
+
+#### Binaries
 
 Prebuilt binaries for 64-bit Linux distros are available for download in the AppImage format. However, these binaries may be incompatible with older Linux distros (e.g. Ubuntu distros earlier than 18.04.4 LTS) due to older distros not providing newer versions of the C/C++ standard libraries required by the AppImage binaries.
 
