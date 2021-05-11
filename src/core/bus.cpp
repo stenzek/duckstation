@@ -410,7 +410,8 @@ void UpdateFastmemViews(CPUFastmemMode mode)
       auto view = m_memory_arena.CreateReservedView(end_address_inclusive - start_address + 1, map_address);
       if (!view)
       {
-        Log_ErrorPrintf("Failed to map reserved region %p (size 0x%08X)", map_address, end_address_inclusive - start_address + 1);
+        Log_ErrorPrintf("Failed to map reserved region %p (size 0x%08X)", map_address,
+                        end_address_inclusive - start_address + 1);
         return;
       }
 
@@ -1664,9 +1665,7 @@ bool FetchInstruction()
 {
   DebugAssert(Common::IsAlignedPow2(g_state.regs.npc, 4));
 
-  using namespace Bus;
-
-  PhysicalMemoryAddress address = g_state.regs.npc;
+  const PhysicalMemoryAddress address = g_state.regs.npc;
   switch (address >> 29)
   {
     case 0x00: // KUSEG 0M-512M
@@ -1686,6 +1685,43 @@ bool FetchInstruction()
     case 0x05: // KSEG1 - physical memory uncached
     {
       if (!DoInstructionRead<true, false, 1, true>(address, &g_state.next_instruction.bits))
+        return false;
+    }
+    break;
+
+    case 0x01: // KUSEG 512M-1024M
+    case 0x02: // KUSEG 1024M-1536M
+    case 0x03: // KUSEG 1536M-2048M
+    case 0x06: // KSEG2
+    case 0x07: // KSEG2
+    default:
+    {
+      CPU::RaiseException(Cop0Registers::CAUSE::MakeValueForException(Exception::IBE,
+                                                                      g_state.current_instruction_in_branch_delay_slot,
+                                                                      g_state.current_instruction_was_branch_taken, 0),
+                          address);
+      return false;
+    }
+  }
+
+  g_state.regs.pc = g_state.regs.npc;
+  g_state.regs.npc += sizeof(g_state.next_instruction.bits);
+  return true;
+}
+
+bool FetchInstructionForInterpreterFallback()
+{
+  DebugAssert(Common::IsAlignedPow2(g_state.regs.npc, 4));
+
+  const PhysicalMemoryAddress address = g_state.regs.npc;
+  switch (address >> 29)
+  {
+    case 0x00: // KUSEG 0M-512M
+    case 0x04: // KSEG0 - physical memory cached
+    case 0x05: // KSEG1 - physical memory uncached
+    {
+      // We don't use the icache when doing interpreter fallbacks, because it's probably stale.
+      if (!DoInstructionRead<false, false, 1, true>(address, &g_state.next_instruction.bits))
         return false;
     }
     break;

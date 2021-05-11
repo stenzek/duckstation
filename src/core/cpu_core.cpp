@@ -2009,7 +2009,7 @@ template<PGXPMode pgxp_mode>
 void InterpretUncachedBlock()
 {
   g_state.regs.npc = g_state.regs.pc;
-  if (!FetchInstruction())
+  if (!FetchInstructionForInterpreterFallback())
     return;
 
   // At this point, pc contains the last address executed (in the previous block). The instruction has not been fetched
@@ -2032,7 +2032,7 @@ void InterpretUncachedBlock()
     const bool branch = IsBranchInstruction(g_state.current_instruction);
     if (!g_state.current_instruction_in_branch_delay_slot || branch)
     {
-      if (!FetchInstruction())
+      if (!FetchInstructionForInterpreterFallback())
         break;
     }
     else
