@@ -100,6 +100,7 @@ ALWAYS_INLINE VirtualMemoryAddress PhysicalAddressToVirtual(PhysicalMemoryAddres
 
 // defined in bus.cpp - memory access functions which return false if an exception was thrown.
 bool FetchInstruction();
+bool FetchInstructionForInterpreterFallback();
 bool SafeReadInstruction(VirtualMemoryAddress addr, u32* value);
 bool ReadMemoryByte(VirtualMemoryAddress addr, u8* value);
 bool ReadMemoryHalfWord(VirtualMemoryAddress addr, u16* value);
