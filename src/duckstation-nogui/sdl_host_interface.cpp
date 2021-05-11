@@ -127,21 +127,9 @@ bool SDLHostInterface::CreatePlatformWindow(bool fullscreen)
   // Create window.
   const u32 window_flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
 
-  u32 window_width = DEFAULT_WINDOW_WIDTH;
-  u32 window_height = DEFAULT_WINDOW_HEIGHT;
-
-  // macOS does DPI scaling differently..
-#ifndef __APPLE__
-  {
-    // scale by default monitor's DPI
-    float scale = GetDPIScaleFactor(nullptr);
-    window_width = static_cast<u32>(std::round(static_cast<float>(window_width) * scale));
-    window_height = static_cast<u32>(std::round(static_cast<float>(window_height) * scale));
-  }
-#endif
-
-  m_window = SDL_CreateWindow(GetWindowTitle(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, window_width,
-                              window_height, window_flags);
+  int window_x, window_y, window_width, window_height;
+  GetSavedWindowGeometry(&window_x, &window_y, &window_width, &window_height);
+  m_window = SDL_CreateWindow(GetWindowTitle(), window_x, window_y, window_width, window_height, window_flags);
   if (!m_window)
     return false;
 
@@ -171,6 +159,7 @@ bool SDLHostInterface::CreatePlatformWindow(bool fullscreen)
 
 void SDLHostInterface::DestroyPlatformWindow()
 {
+  SaveWindowGeometry();
   ImGui_ImplSDL2_Shutdown();
   SDL_DestroyWindow(m_window);
   m_window = nullptr;
@@ -364,4 +353,55 @@ void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
     }
     break;
   }
+}
+
+void SDLHostInterface::GetSavedWindowGeometry(int* x, int* y, int* width, int* height)
+{
+  auto lock = GetSettingsLock();
+  *x = m_settings_interface->GetIntValue("SDLHostInterface", "WindowX", SDL_WINDOWPOS_UNDEFINED);
+  *y = m_settings_interface->GetIntValue("SDLHostInterface", "WindowY", SDL_WINDOWPOS_UNDEFINED);
+
+  *width = m_settings_interface->GetIntValue("SDLHostInterface", "WindowWidth", -1);
+  *height = m_settings_interface->GetIntValue("SDLHostInterface", "WindowHeight", -1);
+
+  if (*width < 0 || *height < 0)
+  {
+    *width = DEFAULT_WINDOW_WIDTH;
+    *height = DEFAULT_WINDOW_HEIGHT;
+
+    // macOS does DPI scaling differently..
+#ifndef __APPLE__
+    {
+      // scale by default monitor's DPI
+      float scale = GetDPIScaleFactor(nullptr);
+      *width = static_cast<int>(std::round(static_cast<float>(*width) * scale));
+      *height = static_cast<int>(std::round(static_cast<float>(*height) * scale));
+    }
+#endif
+  }
+}
+
+void SDLHostInterface::SaveWindowGeometry()
+{
+  if (m_fullscreen)
+    return;
+
+  int x = 0;
+  int y = 0;
+  SDL_GetWindowPosition(m_window, &x, &y);
+
+  int width = DEFAULT_WINDOW_WIDTH;
+  int height = DEFAULT_WINDOW_HEIGHT;
+  SDL_GetWindowSize(m_window, &width, &height);
+
+  int old_x, old_y, old_width, old_height;
+  GetSavedWindowGeometry(&old_x, &old_y, &old_width, &old_height);
+  if (x == old_x && y == old_y && width == old_width && height == old_height)
+    return;
+
+  auto lock = GetSettingsLock();
+  m_settings_interface->SetIntValue("SDLHostInterface", "WindowX", x);
+  m_settings_interface->SetIntValue("SDLHostInterface", "WindowY", y);
+  m_settings_interface->SetIntValue("SDLHostInterface", "WindowWidth", width);
+  m_settings_interface->SetIntValue("SDLHostInterface", "WindowHeight", height);
 }
