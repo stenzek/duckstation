@@ -34,4 +34,5 @@ private:
 
   SDL_Window* m_window = nullptr;
   bool m_fullscreen = false;
+  bool m_was_paused_by_focus_loss = false;
 };

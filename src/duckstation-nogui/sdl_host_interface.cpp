@@ -1,4 +1,5 @@
 #include "sdl_host_interface.h"
+#include "core/system.h"
 #include "frontend-common/controller_interface.h"
 #include "frontend-common/fullscreen_ui.h"
 #include "frontend-common/icon.h"
@@ -276,12 +277,40 @@ void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
   {
     case SDL_WINDOWEVENT:
     {
-      if (event->window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
+      switch (event->window.event)
       {
-        s32 window_width, window_height;
-        SDL_GetWindowSize(m_window, &window_width, &window_height);
-        m_display->ResizeRenderWindow(window_width, window_height);
-        OnHostDisplayResized();
+        case SDL_WINDOWEVENT_SIZE_CHANGED:
+        {
+          s32 window_width, window_height;
+          SDL_GetWindowSize(m_window, &window_width, &window_height);
+          m_display->ResizeRenderWindow(window_width, window_height);
+          OnHostDisplayResized();
+        }
+        break;
+
+        case SDL_WINDOWEVENT_FOCUS_LOST:
+        {
+          if (!m_was_paused_by_focus_loss && !System::IsPaused())
+          {
+            PauseSystem(true);
+            m_was_paused_by_focus_loss = true;
+          }
+        }
+        break;
+
+        case SDL_WINDOWEVENT_FOCUS_GAINED:
+        {
+          if (m_was_paused_by_focus_loss)
+          {
+            if (System::IsPaused())
+              PauseSystem(false);
+            m_was_paused_by_focus_loss = false;
+          }
+        }
+        break;
+
+        default:
+          break;
       }
     }
     break;
