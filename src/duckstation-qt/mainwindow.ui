@@ -113,7 +113,6 @@
       <string>Language</string>
      </property>
     </widget>
-    <addaction name="actionFullscreen"/>
     <addaction name="separator"/>
     <addaction name="actionGeneralSettings"/>
     <addaction name="actionBIOSSettings"/>
@@ -212,6 +211,7 @@
     <addaction name="actionViewSystemDisplay"/>
     <addaction name="actionViewGameProperties"/>
     <addaction name="separator"/>
+    <addaction name="actionFullscreen"/>
     <addaction name="menuWindowSize"/>
     <addaction name="separator"/>
     <addaction name="actionGridViewShowTitles"/>
