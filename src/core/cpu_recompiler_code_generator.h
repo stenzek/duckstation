@@ -21,7 +21,6 @@ public:
   CodeGenerator(JitCodeBuffer* code_buffer);
   ~CodeGenerator();
 
-  static u32 CalculateRegisterOffset(Reg reg);
   static const char* GetHostRegName(HostReg reg, RegSize size = HostPointerSize);
   static void AlignCodeBuffer(JitCodeBuffer* code_buffer);
 

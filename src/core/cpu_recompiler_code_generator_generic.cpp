@@ -9,13 +9,13 @@ namespace CPU::Recompiler {
 
 void CodeGenerator::EmitLoadGuestRegister(HostReg host_reg, Reg guest_reg)
 {
-  EmitLoadCPUStructField(host_reg, RegSize_32, CalculateRegisterOffset(guest_reg));
+  EmitLoadCPUStructField(host_reg, RegSize_32, State::GPRRegisterOffset(static_cast<u32>(guest_reg)));
 }
 
 void CodeGenerator::EmitStoreGuestRegister(Reg guest_reg, const Value& value)
 {
   DebugAssert(value.size == RegSize_32);
-  EmitStoreCPUStructField(CalculateRegisterOffset(guest_reg), value);
+  EmitStoreCPUStructField(State::GPRRegisterOffset(static_cast<u32>(guest_reg)), value);
 }
 
 void CodeGenerator::EmitStoreInterpreterLoadDelay(Reg reg, const Value& value)

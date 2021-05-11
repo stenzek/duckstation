@@ -14,11 +14,6 @@ Log_SetChannel(CPU::Recompiler);
 
 namespace CPU::Recompiler {
 
-u32 CodeGenerator::CalculateRegisterOffset(Reg reg)
-{
-  return u32(offsetof(State, regs.r[0]) + (static_cast<u32>(reg) * sizeof(u32)));
-}
-
 bool CodeGenerator::CompileBlock(CodeBlock* block, CodeBlock::HostCodePointer* out_host_code, u32* out_host_code_size)
 {
   // TODO: Align code buffer.
@@ -2627,7 +2622,7 @@ Value CodeGenerator::DoGTERegisterRead(u32 index)
 
     default:
     {
-      EmitLoadCPUStructField(value.host_reg, RegSize_32, offsetof(State, gte_regs.r32[index]));
+      EmitLoadCPUStructField(value.host_reg, RegSize_32, State::GTERegisterOffset(index));
     }
     break;
   }
@@ -2656,7 +2651,7 @@ void CodeGenerator::DoGTERegisterWrite(u32 index, const Value& value)
     {
       // sign-extend z component of vector registers
       Value temp = ConvertValueSize(value.ViewAsSize(RegSize_16), RegSize_32, true);
-      EmitStoreCPUStructField(offsetof(State, gte_regs.r32[index]), temp);
+      EmitStoreCPUStructField(State::GTERegisterOffset(index), temp);
       return;
     }
     break;
@@ -2669,7 +2664,7 @@ void CodeGenerator::DoGTERegisterWrite(u32 index, const Value& value)
     {
       // zero-extend unsigned values
       Value temp = ConvertValueSize(value.ViewAsSize(RegSize_16), RegSize_32, false);
-      EmitStoreCPUStructField(offsetof(State, gte_regs.r32[index]), temp);
+      EmitStoreCPUStructField(State::GTERegisterOffset(index), temp);
       return;
     }
     break;
@@ -2680,15 +2675,15 @@ void CodeGenerator::DoGTERegisterWrite(u32 index, const Value& value)
       Value temp = m_register_cache.AllocateScratch(RegSize_32);
 
       // SXY0 <- SXY1
-      EmitLoadCPUStructField(temp.host_reg, RegSize_32, offsetof(State, gte_regs.r32[13]));
-      EmitStoreCPUStructField(offsetof(State, gte_regs.r32[12]), temp);
+      EmitLoadCPUStructField(temp.host_reg, RegSize_32, State::GTERegisterOffset(13));
+      EmitStoreCPUStructField(State::GTERegisterOffset(12), temp);
 
       // SXY1 <- SXY2
-      EmitLoadCPUStructField(temp.host_reg, RegSize_32, offsetof(State, gte_regs.r32[14]));
-      EmitStoreCPUStructField(offsetof(State, gte_regs.r32[13]), temp);
+      EmitLoadCPUStructField(temp.host_reg, RegSize_32, State::GTERegisterOffset(14));
+      EmitStoreCPUStructField(State::GTERegisterOffset(13), temp);
 
       // SXY2 <- SXYP
-      EmitStoreCPUStructField(offsetof(State, gte_regs.r32[14]), value);
+      EmitStoreCPUStructField(State::GTERegisterOffset(14), value);
       return;
     }
     break;
@@ -2711,7 +2706,7 @@ void CodeGenerator::DoGTERegisterWrite(u32 index, const Value& value)
     default:
     {
       // written as-is, 2x16 or 1x32 bits
-      EmitStoreCPUStructField(offsetof(State, gte_regs.r32[index]), value);
+      EmitStoreCPUStructField(State::GTERegisterOffset(index), value);
       return;
     }
   }
