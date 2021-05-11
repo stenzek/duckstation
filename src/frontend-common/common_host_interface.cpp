@@ -12,10 +12,12 @@
 #include "core/cpu_code_cache.h"
 #include "core/dma.h"
 #include "core/gpu.h"
+#include "core/gte.h"
 #include "core/host_display.h"
 #include "core/mdec.h"
 #include "core/pgxp.h"
 #include "core/save_state_version.h"
+#include "core/settings.h"
 #include "core/spu.h"
 #include "core/system.h"
 #include "core/texture_replacements.h"
@@ -2039,6 +2041,14 @@ void CommonHostInterface::RegisterGraphicsHotkeys()
                      g_texture_replacements.Reload();
                    }
                  });
+
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Graphics")), StaticString("ToggleWidescreen"),
+                 StaticString(TRANSLATABLE("Hotkeys", "Toggle Widescreen")), [this](bool pressed) {
+                   if (pressed && System::IsValid())
+                   {
+                     ToggleWidescreen();
+                   }
+                 });
 }
 
 void CommonHostInterface::RegisterSaveStateHotkeys()
@@ -3342,6 +3352,31 @@ void CommonHostInterface::ReloadPostProcessingShaders()
     AddOSDMessage(TranslateStdString("OSDMessage", "Failed to load post-processing shader chain."), 20.0f);
   else
     AddOSDMessage(TranslateStdString("OSDMessage", "Post-processing shaders reloaded."), 10.0f);
+}
+
+void CommonHostInterface::ToggleWidescreen()
+{
+  g_settings.gpu_widescreen_hack = !g_settings.gpu_widescreen_hack;
+  const GameSettings::Entry* gs = m_game_list->GetGameSettings(System::GetRunningPath(), System::GetRunningCode());
+  DisplayAspectRatio userRatio;
+  if (gs && gs->display_aspect_ratio.has_value())
+    userRatio = gs->display_aspect_ratio.value();
+  else
+    userRatio = Settings::ParseDisplayAspectRatio(
+        m_settings_interface
+          ->GetStringValue("Display", "AspectRatio", Settings::GetDisplayAspectRatioName(DisplayAspectRatio::Auto))
+        .c_str())
+        .value_or(DisplayAspectRatio::Auto);
+  if (userRatio == DisplayAspectRatio::Auto || userRatio == DisplayAspectRatio::PAR1_1 || userRatio == DisplayAspectRatio::R4_3)
+    g_settings.display_aspect_ratio = g_settings.gpu_widescreen_hack ? DisplayAspectRatio::R16_9 : userRatio;
+  else
+    g_settings.display_aspect_ratio = g_settings.gpu_widescreen_hack ? userRatio : DisplayAspectRatio::Auto; 
+  
+  String arMessage;
+  arMessage.AppendFormattedString("Widescreen Hack is now %s and aspect ratio set to %s.", g_settings.gpu_widescreen_hack ? "enabled" : "disabled", Settings::GetDisplayAspectRatioName(g_settings.display_aspect_ratio));
+  AddOSDMessage(TranslateStdString("OSDMessage", arMessage),  5.0f);
+
+  GTE::UpdateAspectRatio();
 }
 
 bool CommonHostInterface::ParseFullscreenMode(const std::string_view& mode, u32* width, u32* height,
