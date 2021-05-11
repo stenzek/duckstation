@@ -269,7 +269,7 @@ public:
   /// Reloads post processing shaders with the current configuration.
   void ReloadPostProcessingShaders();
 
-  ///  Toggle Widescreen Hack and Aspect Ratio
+  /// Toggle Widescreen Hack and Aspect Ratio
   void ToggleWidescreen();
 
   /// Parses a fullscreen mode into its components (width * height @ refresh hz)
