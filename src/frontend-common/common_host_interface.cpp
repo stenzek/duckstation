@@ -3357,24 +3357,48 @@ void CommonHostInterface::ReloadPostProcessingShaders()
 void CommonHostInterface::ToggleWidescreen()
 {
   g_settings.gpu_widescreen_hack = !g_settings.gpu_widescreen_hack;
+
   const GameSettings::Entry* gs = m_game_list->GetGameSettings(System::GetRunningPath(), System::GetRunningCode());
-  DisplayAspectRatio userRatio;
+  DisplayAspectRatio user_ratio;
   if (gs && gs->display_aspect_ratio.has_value())
-    userRatio = gs->display_aspect_ratio.value();
+  {
+    user_ratio = gs->display_aspect_ratio.value();
+  }
   else
-    userRatio = Settings::ParseDisplayAspectRatio(
-        m_settings_interface
-          ->GetStringValue("Display", "AspectRatio", Settings::GetDisplayAspectRatioName(DisplayAspectRatio::Auto))
-        .c_str())
-        .value_or(DisplayAspectRatio::Auto);
-  if (userRatio == DisplayAspectRatio::Auto || userRatio == DisplayAspectRatio::PAR1_1 || userRatio == DisplayAspectRatio::R4_3)
-    g_settings.display_aspect_ratio = g_settings.gpu_widescreen_hack ? DisplayAspectRatio::R16_9 : userRatio;
+  {
+    std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
+    user_ratio = Settings::ParseDisplayAspectRatio(
+                   m_settings_interface
+                     ->GetStringValue("Display", "AspectRatio",
+                                      Settings::GetDisplayAspectRatioName(Settings::DEFAULT_DISPLAY_ASPECT_RATIO))
+                     .c_str())
+                   .value_or(DisplayAspectRatio::Auto);
+  }
+
+  if (user_ratio == DisplayAspectRatio::Auto || user_ratio == DisplayAspectRatio::PAR1_1 ||
+      user_ratio == DisplayAspectRatio::R4_3)
+  {
+    g_settings.display_aspect_ratio = g_settings.gpu_widescreen_hack ? DisplayAspectRatio::R16_9 : user_ratio;
+  }
   else
-    g_settings.display_aspect_ratio = g_settings.gpu_widescreen_hack ? userRatio : DisplayAspectRatio::Auto; 
-  
-  String arMessage;
-  arMessage.AppendFormattedString("Widescreen Hack is now %s and aspect ratio set to %s.", g_settings.gpu_widescreen_hack ? "enabled" : "disabled", Settings::GetDisplayAspectRatioName(g_settings.display_aspect_ratio));
-  AddOSDMessage(TranslateStdString("OSDMessage", arMessage),  5.0f);
+  {
+    g_settings.display_aspect_ratio = g_settings.gpu_widescreen_hack ? user_ratio : DisplayAspectRatio::Auto;
+  }
+
+  if (g_settings.gpu_widescreen_hack)
+  {
+    AddFormattedOSDMessage(
+      5.0f, TranslateString("OSDMessage", "Widescreen hack is now enabled, and aspect ratio is set to %s."),
+      TranslateString("DisplayAspectRatio", Settings::GetDisplayAspectRatioName(g_settings.display_aspect_ratio))
+        .GetCharArray());
+  }
+  else
+  {
+    AddFormattedOSDMessage(
+      5.0f, TranslateString("OSDMessage", "Widescreen hack is now disabled, and aspect ratio is set to %s."),
+      TranslateString("DisplayAspectRatio", Settings::GetDisplayAspectRatioName(g_settings.display_aspect_ratio))
+        .GetCharArray());
+  }
 
   GTE::UpdateAspectRatio();
 }
