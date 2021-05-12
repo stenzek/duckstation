@@ -570,8 +570,8 @@ bool CDImagePBP::OpenDisc(u32 index, Common::Error* error)
     SubChannelQ::Control track_control = {};
     track_control.data = !is_audio_track;
 
-    const LBA pregap_start = Position::FromBCD(t.pregap_start.m, t.pregap_start.s, t.pregap_start.f).ToLBA();
-    const LBA userdata_start = Position::FromBCD(t.userdata_start.m, t.userdata_start.s, t.userdata_start.f).ToLBA();
+    LBA pregap_start = Position::FromBCD(t.pregap_start.m, t.pregap_start.s, t.pregap_start.f).ToLBA();
+    LBA userdata_start = Position::FromBCD(t.userdata_start.m, t.userdata_start.s, t.userdata_start.f).ToLBA();
     LBA pregap_frames;
     u32 pregap_sector_size;
 
@@ -587,6 +587,7 @@ bool CDImagePBP::OpenDisc(u32 index, Common::Error* error)
       Log_WarningPrintf(
         "Invalid TOC entry at index %u, user data (%u) should not start before pregap (%u), assuming not in file.",
         static_cast<u32>(curr_track), userdata_start, pregap_start);
+      pregap_start = 0;
       pregap_frames = userdata_start;
       pregap_sector_size = 0;
     }
