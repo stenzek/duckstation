@@ -53,15 +53,16 @@ bool CDImageM3u::Open(const char* path, Common::Error* error)
   if (!fp)
     return false;
 
-  std::optional<std::string> cue_file(FileSystem::ReadFileToString(fp));
+  std::optional<std::string> m3u_file(FileSystem::ReadFileToString(fp));
   std::fclose(fp);
-  if (!cue_file.has_value() || cue_file->empty())
+  if (!m3u_file.has_value() || m3u_file->empty())
   {
-    error->SetMessage("Failed to read cue sheet");
+    if (error)
+      error->SetMessage("Failed to read M3u file");
     return false;
   }
 
-  std::istringstream ifs(cue_file.value());
+  std::istringstream ifs(m3u_file.value());
   m_filename = path;
 
   std::vector<std::string> entries;
