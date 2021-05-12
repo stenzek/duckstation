@@ -102,6 +102,8 @@ public:
 
   const GameListEntry* GetEntryForPath(const char* path) const;
   const GameListCompatibilityEntry* GetCompatibilityEntryForCode(const std::string& code) const;
+  bool GetDatabaseEntryForCode(const std::string_view& code, GameDatabaseEntry* entry);
+  bool GetDatabaseEntryForDisc(CDImage* image, GameDatabaseEntry* entry);
 
   void SetCacheFilename(std::string filename) { m_cache_filename = std::move(filename); }
   void SetUserCompatibilityListFilename(std::string filename)
@@ -119,6 +121,7 @@ public:
   static std::string ExportCompatibilityEntry(const GameListCompatibilityEntry* entry);
 
   const GameSettings::Entry* GetGameSettings(const std::string& filename, const std::string& game_code);
+  const GameSettings::Entry* GetGameSettingsForCode(const std::string& game_code);
   void UpdateGameSettings(const std::string& filename, const std::string& game_code, const std::string& game_title,
                           const GameSettings::Entry& new_entry, bool save_to_list = true);
 
