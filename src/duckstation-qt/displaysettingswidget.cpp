@@ -50,6 +50,8 @@ DisplaySettingsWidget::DisplaySettingsWidget(QtHostInterface* host_interface, QW
                                                "ThreadedPresentation", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showOSDMessages, "Display", "ShowOSDMessages",
                                                true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showPersistentMessages, "Display", "ShowPersistentMessages",
+                                               true);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showFPS, "Display", "ShowFPS", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showVPS, "Display", "ShowVPS", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showSpeed, "Display", "ShowSpeed", false);
@@ -133,6 +135,8 @@ DisplaySettingsWidget::DisplaySettingsWidget(QtHostInterface* host_interface, QW
   dialog->registerWidgetHelp(m_ui.showOSDMessages, tr("Show OSD Messages"), tr("Checked"),
                              tr("Shows on-screen-display messages when events occur such as save states being "
                                 "created/loaded, screenshots being taken, etc."));
+  dialog->registerWidgetHelp(m_ui.showOSDMessages, tr("Show Persistent Messages"), tr("Checked"),
+                             tr("Shows persistent on-screen-display messages in fullscreen UI when events occur such as fast forwarding."));
   dialog->registerWidgetHelp(m_ui.showFPS, tr("Show Game Frame Rate"), tr("Unchecked"),
                              tr("Shows the internal frame rate of the game in the top-right corner of the display."));
   dialog->registerWidgetHelp(m_ui.showVPS, tr("Show Display FPS"), tr("Unchecked"),

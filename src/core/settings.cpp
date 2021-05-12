@@ -240,6 +240,7 @@ void Settings::Load(SettingsInterface& si)
   display_stretch = si.GetBoolValue("Display", "Stretch", false);
   display_post_processing = si.GetBoolValue("Display", "PostProcessing", false);
   display_show_osd_messages = si.GetBoolValue("Display", "ShowOSDMessages", true);
+  display_show_persistent_messages = si.GetBoolValue("Display", "ShowPersistentMessages", true);
   display_show_fps = si.GetBoolValue("Display", "ShowFPS", false);
   display_show_vps = si.GetBoolValue("Display", "ShowVPS", false);
   display_show_speed = si.GetBoolValue("Display", "ShowSpeed", false);
@@ -411,6 +412,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("Display", "Stretch", display_stretch);
   si.SetBoolValue("Display", "PostProcessing", display_post_processing);
   si.SetBoolValue("Display", "ShowOSDMessages", display_show_osd_messages);
+  si.SetBoolValue("Display", "ShowPersistentMessages", display_show_persistent_messages);
   si.SetBoolValue("Display", "ShowFPS", display_show_fps);
   si.SetBoolValue("Display", "ShowVPS", display_show_vps);
   si.SetBoolValue("Display", "ShowSpeed", display_show_speed);

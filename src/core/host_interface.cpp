@@ -542,6 +542,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("Display", "Stretch", false);
   si.SetBoolValue("Display", "PostProcessing", false);
   si.SetBoolValue("Display", "ShowOSDMessages", true);
+  si.SetBoolValue("Display", "ShowPersistentMessages", true);
   si.SetBoolValue("Display", "ShowFPS", false);
   si.SetBoolValue("Display", "ShowVPS", false);
   si.SetBoolValue("Display", "ShowSpeed", false);
