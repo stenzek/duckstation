@@ -2280,6 +2280,10 @@ void DrawSettingsWindow()
           s_host_interface->RunLater([debug_menu]() { SetDebugMenuEnabled(debug_menu); });
         }
 
+        settings_changed |= ToggleButton("Show Speed Icons",
+                                         "Shows persistent icons when turbo is active or when paused.",
+                                         &s_settings_copy.show_speed_icons);
+
         settings_changed |=
           ToggleButton("Disable All Enhancements", "Temporarily disables all enhancements, useful when testing.",
                        &s_settings_copy.disable_all_enhancements);
@@ -3122,13 +3126,14 @@ void DrawStatsOverlay()
       DRAW_LINE(g_large_font, g_large_font->FontSize, 0.0f, IM_COL32(255, 255, 255, 255));
     }
 
-    if (s_host_interface->IsFastForwardEnabled() || s_host_interface->IsTurboEnabled())
+    if (g_settings.show_speed_icons &&
+        (s_host_interface->IsFastForwardEnabled() || s_host_interface->IsTurboEnabled()))
     {
       text.Assign(ICON_FA_FAST_FORWARD);
       DRAW_LINE(g_large_font, g_large_font->FontSize * 2.0f, margin, IM_COL32(255, 255, 255, 255));
     }
   }
-  else if (state == System::State::Paused)
+  else if (g_settings.show_speed_icons && state == System::State::Paused)
   {
     text.Assign(ICON_FA_PAUSE);
     DRAW_LINE(g_large_font, g_large_font->FontSize * 2.0f, margin, IM_COL32(255, 255, 255, 255));
