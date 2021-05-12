@@ -580,6 +580,18 @@ const GameListCompatibilityEntry* GameList::GetCompatibilityEntryForCode(const s
   return (iter != m_compatibility_list.end()) ? &iter->second : nullptr;
 }
 
+bool GameList::GetDatabaseEntryForCode(const std::string_view& code, GameDatabaseEntry* entry)
+{
+  LoadDatabase();
+  return m_database.GetEntryForCode(code, entry);
+}
+
+bool GameList::GetDatabaseEntryForDisc(CDImage* image, GameDatabaseEntry* entry)
+{
+  LoadDatabase();
+  return m_database.GetEntryForDisc(image, entry);
+}
+
 void GameList::SetSearchDirectoriesFromSettings(SettingsInterface& si)
 {
   m_search_directories.clear();
@@ -1006,6 +1018,14 @@ const GameSettings::Entry* GameList::GetGameSettings(const std::string& filename
   if (entry)
     return &entry->settings;
 
+  if (!m_game_settings_load_tried)
+    LoadGameSettings();
+
+  return m_game_settings.GetEntry(game_code);
+}
+
+const GameSettings::Entry* GameList::GetGameSettingsForCode(const std::string& game_code)
+{
   if (!m_game_settings_load_tried)
     LoadGameSettings();
 

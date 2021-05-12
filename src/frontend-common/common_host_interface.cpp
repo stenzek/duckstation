@@ -2926,16 +2926,14 @@ void CommonHostInterface::GetGameInfo(const char* path, CDImage* image, std::str
   {
     GameDatabase database;
     GameDatabaseEntry database_entry;
-    if (database.Load() && database.GetEntryForDisc(image, &database_entry))
+    if (m_game_list->GetDatabaseEntryForDisc(image, &database_entry))
     {
       *code = std::move(database_entry.serial);
       *title = std::move(database_entry.title);
       return;
     }
-    else
-    {
-      *code = System::GetGameCodeForImage(image, true);
-    }
+
+    *code = System::GetGameCodeForImage(image, true);
   }
 
   *title = FileSystem::GetFileTitleFromPath(path);
@@ -3054,11 +3052,20 @@ void CommonHostInterface::ApplyGameSettings(bool display_osd_messages)
 
   const GameListEntry* ge = m_game_list->GetEntryForPath(System::GetRunningPath().c_str());
   if (ge)
+  {
     ApplyControllerCompatibilitySettings(ge->supported_controllers, display_osd_messages);
+    ge->settings.ApplySettings(display_osd_messages);
+  }
+  else
+  {
+    GameDatabaseEntry db_entry;
+    if (m_game_list->GetDatabaseEntryForCode(System::GetRunningCode(), &db_entry))
+      ApplyControllerCompatibilitySettings(db_entry.supported_controllers_mask, display_osd_messages);
 
-  const GameSettings::Entry* gs = m_game_list->GetGameSettings(System::GetRunningPath(), System::GetRunningCode());
-  if (gs)
-    gs->ApplySettings(display_osd_messages);
+    const GameSettings::Entry* gs = m_game_list->GetGameSettingsForCode(System::GetRunningCode());
+    if (gs)
+      gs->ApplySettings(display_osd_messages);
+  }
 }
 
 void CommonHostInterface::ApplyRendererFromGameSettings(const std::string& boot_filename)
