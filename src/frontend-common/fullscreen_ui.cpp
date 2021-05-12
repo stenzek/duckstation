@@ -79,6 +79,7 @@ namespace FullscreenUI {
 //////////////////////////////////////////////////////////////////////////
 // Main
 //////////////////////////////////////////////////////////////////////////
+static void LoadSettings();
 static void ClearImGuiFocus();
 static void ReturnToMainWindow();
 static void DrawLandingWindow();
@@ -106,6 +107,7 @@ static MainWindowType s_current_main_window = MainWindowType::Landing;
 static std::bitset<static_cast<u32>(FrontendCommon::ControllerNavigationButton::Count)> s_nav_input_values{};
 static bool s_debug_menu_enabled = false;
 static bool s_debug_menu_allowed = false;
+static bool s_show_status_indicators = false;
 static bool s_quick_menu_was_open = false;
 static bool s_was_paused_on_quick_menu_open = false;
 static bool s_about_window_open = false;
@@ -214,6 +216,7 @@ bool Initialize(CommonHostInterface* host_interface)
     return false;
 
   s_settings_copy.Load(*s_host_interface->GetSettingsInterface());
+  LoadSettings();
   UpdateDebugMenuVisibility();
 
   ImGuiFullscreen::UpdateLayoutScale();
@@ -232,6 +235,16 @@ bool HasActiveWindow()
 {
   return s_current_main_window != MainWindowType::None || s_save_state_selector_open ||
          ImGuiFullscreen::IsChoiceDialogOpen() || ImGuiFullscreen::IsFileSelectorOpen();
+}
+
+void LoadSettings()
+{
+  s_show_status_indicators = s_host_interface->GetBoolSettingValue("Display", "ShowStatusIndicators", true);
+}
+
+void UpdateSettings()
+{
+  LoadSettings();
 }
 
 void SystemCreated()
@@ -353,6 +366,7 @@ void SaveAndApplySettings()
   s_settings_copy.Save(*s_host_interface->GetSettingsInterface());
   s_host_interface->GetSettingsInterface()->Save();
   s_host_interface->ApplySettings(false);
+  UpdateSettings();
 }
 
 void ClearImGuiFocus()
@@ -2280,10 +2294,6 @@ void DrawSettingsWindow()
           s_host_interface->RunLater([debug_menu]() { SetDebugMenuEnabled(debug_menu); });
         }
 
-        settings_changed |= ToggleButton("Show Speed Icons",
-                                         "Shows persistent icons when turbo is active or when paused.",
-                                         &s_settings_copy.show_speed_icons);
-
         settings_changed |=
           ToggleButton("Disable All Enhancements", "Temporarily disables all enhancements, useful when testing.",
                        &s_settings_copy.disable_all_enhancements);
@@ -2299,6 +2309,9 @@ void DrawSettingsWindow()
 #endif
 
         MenuHeading("Display Settings");
+        settings_changed |= ToggleButtonForNonSetting("Show Status Indicators",
+                                                      "Shows persistent icons when turbo is active or when paused.",
+                                                      "Display", "ShowStatusIndicators", true);
         settings_changed |= RangeButton(
           "Display FPS Limit", "Limits how many frames are displayed to the screen. These frames are still rendered.",
           &s_settings_copy.display_max_fps, 0.0f, 500.0f, 1.0f, "%.2f FPS");
@@ -3126,14 +3139,13 @@ void DrawStatsOverlay()
       DRAW_LINE(g_large_font, g_large_font->FontSize, 0.0f, IM_COL32(255, 255, 255, 255));
     }
 
-    if (g_settings.show_speed_icons &&
-        (s_host_interface->IsFastForwardEnabled() || s_host_interface->IsTurboEnabled()))
+    if (s_show_status_indicators && (s_host_interface->IsFastForwardEnabled() || s_host_interface->IsTurboEnabled()))
     {
       text.Assign(ICON_FA_FAST_FORWARD);
       DRAW_LINE(g_large_font, g_large_font->FontSize * 2.0f, margin, IM_COL32(255, 255, 255, 255));
     }
   }
-  else if (g_settings.show_speed_icons && state == System::State::Paused)
+  else if (s_show_status_indicators && state == System::State::Paused)
   {
     text.Assign(ICON_FA_PAUSE);
     DRAW_LINE(g_large_font, g_large_font->FontSize * 2.0f, margin, IM_COL32(255, 255, 255, 255));

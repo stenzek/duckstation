@@ -166,7 +166,6 @@ void Settings::Load(SettingsInterface& si)
   apply_game_settings = si.GetBoolValue("Main", "ApplyGameSettings", true);
   auto_load_cheats = si.GetBoolValue("Main", "AutoLoadCheats", true);
   disable_all_enhancements = si.GetBoolValue("Main", "DisableAllEnhancements", false);
-  show_speed_icons = si.GetBoolValue("Main", "ShowSpeedIcons", true);
   rewind_enable = si.GetBoolValue("Main", "RewindEnable", false);
   rewind_save_frequency = si.GetFloatValue("Main", "RewindFrequency", 10.0f);
   rewind_save_slots = static_cast<u32>(si.GetIntValue("Main", "RewindSaveSlots", 10));
@@ -359,7 +358,6 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("Main", "ApplyGameSettings", apply_game_settings);
   si.SetBoolValue("Main", "AutoLoadCheats", auto_load_cheats);
   si.SetBoolValue("Main", "DisableAllEnhancements", disable_all_enhancements);
-  si.SetBoolValue("Main", "ShowSpeedIcons", show_speed_icons);
   si.SetBoolValue("Main", "RewindEnable", rewind_enable);
   si.SetFloatValue("Main", "RewindFrequency", rewind_save_frequency);
   si.SetIntValue("Main", "RewindSaveSlots", rewind_save_slots);

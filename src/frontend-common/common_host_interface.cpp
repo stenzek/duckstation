@@ -2616,6 +2616,7 @@ void CommonHostInterface::SetDefaultSettings(SettingsInterface& si)
                     ControllerInterface::GetBackendName(ControllerInterface::GetDefaultBackend()));
 
   si.SetBoolValue("Display", "InternalResolutionScreenshots", false);
+  si.SetBoolValue("Display", "ShowStatusIndicators", true);
 
 #ifdef WITH_DISCORD_PRESENCE
   si.SetBoolValue("Main", "EnableDiscordPresence", false);
@@ -2698,6 +2699,10 @@ void CommonHostInterface::LoadSettings(SettingsInterface& si)
         }
       }
     }
+  }
+  else if (m_fullscreen_ui_enabled)
+  {
+    FullscreenUI::UpdateSettings();
   }
 
   const bool input_display_enabled = si.GetBoolValue("Display", "ShowInputs", false);

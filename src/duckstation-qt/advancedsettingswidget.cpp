@@ -136,7 +136,6 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(QtHostInterface* host_interface, 
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.logToFile, "Logging", "LogToFile");
 
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showDebugMenu, "Main", "ShowDebugMenu");
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showSpeedIcons, "Main", "ShowSpeedIcons", true);
 
   connect(m_ui.resetToDefaultButton, &QPushButton::clicked, this, &AdvancedSettingsWidget::onResetToDefaultClicked);
   connect(m_ui.showDebugMenu, &QCheckBox::toggled, m_host_interface->getMainWindow(),
@@ -146,6 +145,8 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(QtHostInterface* host_interface, 
 
   addBooleanTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Disable All Enhancements"), "Main",
                         "DisableAllEnhancements", false);
+  addBooleanTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Show Fullscreen Status Indicators"), "Display",
+                        "ShowStatusIndicators", true);
   addIntRangeTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Display FPS Limit"), "Display", "MaxFPS", 0, 1000,
                          0);
 
@@ -209,8 +210,6 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(QtHostInterface* host_interface, 
                              tr("Logs messages to duckstation.log in the user directory."));
   dialog->registerWidgetHelp(m_ui.showDebugMenu, tr("Show Debug Menu"), tr("Unchecked"),
                              tr("Shows a debug menu bar with additional statistics and quick settings."));
-  dialog->registerWidgetHelp(m_ui.showSpeedIcons, tr("Show Speed Icons"), tr("Checked"),
-                             tr("Shows persistent icons when turbo is active or when paused while using the fullscreen UI."));
 }
 
 AdvancedSettingsWidget::~AdvancedSettingsWidget() = default;
@@ -218,24 +217,25 @@ AdvancedSettingsWidget::~AdvancedSettingsWidget() = default;
 void AdvancedSettingsWidget::onResetToDefaultClicked()
 {
   setBooleanTweakOption(m_ui.tweakOptionTable, 0, false);
-  setIntRangeTweakOption(m_ui.tweakOptionTable, 1, 0);
-  setBooleanTweakOption(m_ui.tweakOptionTable, 2, false);
-  setFloatRangeTweakOption(m_ui.tweakOptionTable, 3, -1.0f);
-  setFloatRangeTweakOption(m_ui.tweakOptionTable, 4, Settings::DEFAULT_GPU_PGXP_DEPTH_THRESHOLD);
-  setBooleanTweakOption(m_ui.tweakOptionTable, 5, false);
-  setChoiceTweakOption(m_ui.tweakOptionTable, 6, Settings::DEFAULT_CPU_FASTMEM_MODE);
-  setBooleanTweakOption(m_ui.tweakOptionTable, 7, false);
+  setBooleanTweakOption(m_ui.tweakOptionTable, 1, true);
+  setIntRangeTweakOption(m_ui.tweakOptionTable, 2, 0);
+  setBooleanTweakOption(m_ui.tweakOptionTable, 3, false);
+  setFloatRangeTweakOption(m_ui.tweakOptionTable, 4, -1.0f);
+  setFloatRangeTweakOption(m_ui.tweakOptionTable, 5, Settings::DEFAULT_GPU_PGXP_DEPTH_THRESHOLD);
+  setBooleanTweakOption(m_ui.tweakOptionTable, 6, false);
+  setChoiceTweakOption(m_ui.tweakOptionTable, 7, Settings::DEFAULT_CPU_FASTMEM_MODE);
   setBooleanTweakOption(m_ui.tweakOptionTable, 8, false);
   setBooleanTweakOption(m_ui.tweakOptionTable, 9, false);
   setBooleanTweakOption(m_ui.tweakOptionTable, 10, false);
   setBooleanTweakOption(m_ui.tweakOptionTable, 11, false);
-  setIntRangeTweakOption(m_ui.tweakOptionTable, 12, Settings::DEFAULT_VRAM_WRITE_DUMP_WIDTH_THRESHOLD);
-  setIntRangeTweakOption(m_ui.tweakOptionTable, 13, Settings::DEFAULT_VRAM_WRITE_DUMP_HEIGHT_THRESHOLD);
-  setIntRangeTweakOption(m_ui.tweakOptionTable, 14, static_cast<int>(Settings::DEFAULT_DMA_MAX_SLICE_TICKS));
-  setIntRangeTweakOption(m_ui.tweakOptionTable, 15, static_cast<int>(Settings::DEFAULT_DMA_HALT_TICKS));
-  setIntRangeTweakOption(m_ui.tweakOptionTable, 16, static_cast<int>(Settings::DEFAULT_GPU_FIFO_SIZE));
-  setIntRangeTweakOption(m_ui.tweakOptionTable, 17, static_cast<int>(Settings::DEFAULT_GPU_MAX_RUN_AHEAD));
-  setBooleanTweakOption(m_ui.tweakOptionTable, 18, false);
-  setBooleanTweakOption(m_ui.tweakOptionTable, 19, true);
-  setBooleanTweakOption(m_ui.tweakOptionTable, 20, false);
+  setBooleanTweakOption(m_ui.tweakOptionTable, 12, false);
+  setIntRangeTweakOption(m_ui.tweakOptionTable, 13, Settings::DEFAULT_VRAM_WRITE_DUMP_WIDTH_THRESHOLD);
+  setIntRangeTweakOption(m_ui.tweakOptionTable, 14, Settings::DEFAULT_VRAM_WRITE_DUMP_HEIGHT_THRESHOLD);
+  setIntRangeTweakOption(m_ui.tweakOptionTable, 15, static_cast<int>(Settings::DEFAULT_DMA_MAX_SLICE_TICKS));
+  setIntRangeTweakOption(m_ui.tweakOptionTable, 16, static_cast<int>(Settings::DEFAULT_DMA_HALT_TICKS));
+  setIntRangeTweakOption(m_ui.tweakOptionTable, 17, static_cast<int>(Settings::DEFAULT_GPU_FIFO_SIZE));
+  setIntRangeTweakOption(m_ui.tweakOptionTable, 18, static_cast<int>(Settings::DEFAULT_GPU_MAX_RUN_AHEAD));
+  setBooleanTweakOption(m_ui.tweakOptionTable, 19, false);
+  setBooleanTweakOption(m_ui.tweakOptionTable, 20, true);
+  setBooleanTweakOption(m_ui.tweakOptionTable, 21, false);
 }
