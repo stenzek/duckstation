@@ -716,6 +716,13 @@ bool CDImagePBP::DecompressBlock(const BlockInfo& block_info)
   if (FSeek64(m_file, block_info.offset, SEEK_SET) != 0)
     return false;
 
+  // Compression level 0 has compressed size == decompressed size.
+  if (block_info.size == m_decompressed_block.size())
+  {
+    return (fread(m_decompressed_block.data(), sizeof(u8), m_decompressed_block.size(), m_file) ==
+            m_decompressed_block.size());
+  }
+
   m_compressed_block.resize(block_info.size);
 
   if (fread(m_compressed_block.data(), sizeof(u8), m_compressed_block.size(), m_file) != m_compressed_block.size())
