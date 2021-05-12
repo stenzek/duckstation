@@ -96,6 +96,7 @@ struct Settings
   bool apply_game_settings = true;
   bool auto_load_cheats = false;
   bool disable_all_enhancements = false;
+  bool show_speed_icons = false;
 
   bool rewind_enable = false;
   float rewind_save_frequency = 10.0f;
@@ -140,7 +141,6 @@ struct Settings
   bool display_stretch = false;
   bool display_post_processing = false;
   bool display_show_osd_messages = false;
-  bool display_show_persistent_messages = false;
   bool display_show_fps = false;
   bool display_show_vps = false;
   bool display_show_speed = false;

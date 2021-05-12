@@ -492,6 +492,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("Main", "ApplyGameSettings", true);
   si.SetBoolValue("Main", "AutoLoadCheats", true);
   si.SetBoolValue("Main", "DisableAllEnhancements", false);
+  si.SetBoolValue("Main", "ShowSpeedIcons", true);
   si.SetBoolValue("Main", "RewindEnable", false);
   si.SetFloatValue("Main", "RewindFrequency", 10.0f);
   si.SetIntValue("Main", "RewindSaveSlots", 10);
@@ -542,7 +543,6 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("Display", "Stretch", false);
   si.SetBoolValue("Display", "PostProcessing", false);
   si.SetBoolValue("Display", "ShowOSDMessages", true);
-  si.SetBoolValue("Display", "ShowPersistentMessages", true);
   si.SetBoolValue("Display", "ShowFPS", false);
   si.SetBoolValue("Display", "ShowVPS", false);
   si.SetBoolValue("Display", "ShowSpeed", false);

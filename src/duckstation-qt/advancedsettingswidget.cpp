@@ -136,6 +136,7 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(QtHostInterface* host_interface, 
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.logToFile, "Logging", "LogToFile");
 
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showDebugMenu, "Main", "ShowDebugMenu");
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showSpeedIcons, "Main", "ShowSpeedIcons", true);
 
   connect(m_ui.resetToDefaultButton, &QPushButton::clicked, this, &AdvancedSettingsWidget::onResetToDefaultClicked);
   connect(m_ui.showDebugMenu, &QCheckBox::toggled, m_host_interface->getMainWindow(),
@@ -208,6 +209,8 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(QtHostInterface* host_interface, 
                              tr("Logs messages to duckstation.log in the user directory."));
   dialog->registerWidgetHelp(m_ui.showDebugMenu, tr("Show Debug Menu"), tr("Unchecked"),
                              tr("Shows a debug menu bar with additional statistics and quick settings."));
+  dialog->registerWidgetHelp(m_ui.showSpeedIcons, tr("Show Speed Icons"), tr("Checked"),
+                             tr("Shows persistent icons when turbo is active or when paused while using the fullscreen UI."));
 }
 
 AdvancedSettingsWidget::~AdvancedSettingsWidget() = default;

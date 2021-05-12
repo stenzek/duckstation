@@ -166,6 +166,7 @@ void Settings::Load(SettingsInterface& si)
   apply_game_settings = si.GetBoolValue("Main", "ApplyGameSettings", true);
   auto_load_cheats = si.GetBoolValue("Main", "AutoLoadCheats", true);
   disable_all_enhancements = si.GetBoolValue("Main", "DisableAllEnhancements", false);
+  show_speed_icons = si.GetBoolValue("Main", "ShowSpeedIcons", true);
   rewind_enable = si.GetBoolValue("Main", "RewindEnable", false);
   rewind_save_frequency = si.GetFloatValue("Main", "RewindFrequency", 10.0f);
   rewind_save_slots = static_cast<u32>(si.GetIntValue("Main", "RewindSaveSlots", 10));
@@ -240,7 +241,6 @@ void Settings::Load(SettingsInterface& si)
   display_stretch = si.GetBoolValue("Display", "Stretch", false);
   display_post_processing = si.GetBoolValue("Display", "PostProcessing", false);
   display_show_osd_messages = si.GetBoolValue("Display", "ShowOSDMessages", true);
-  display_show_persistent_messages = si.GetBoolValue("Display", "ShowPersistentMessages", true);
   display_show_fps = si.GetBoolValue("Display", "ShowFPS", false);
   display_show_vps = si.GetBoolValue("Display", "ShowVPS", false);
   display_show_speed = si.GetBoolValue("Display", "ShowSpeed", false);
@@ -359,6 +359,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("Main", "ApplyGameSettings", apply_game_settings);
   si.SetBoolValue("Main", "AutoLoadCheats", auto_load_cheats);
   si.SetBoolValue("Main", "DisableAllEnhancements", disable_all_enhancements);
+  si.SetBoolValue("Main", "ShowSpeedIcons", show_speed_icons);
   si.SetBoolValue("Main", "RewindEnable", rewind_enable);
   si.SetFloatValue("Main", "RewindFrequency", rewind_save_frequency);
   si.SetIntValue("Main", "RewindSaveSlots", rewind_save_slots);
@@ -412,7 +413,6 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("Display", "Stretch", display_stretch);
   si.SetBoolValue("Display", "PostProcessing", display_post_processing);
   si.SetBoolValue("Display", "ShowOSDMessages", display_show_osd_messages);
-  si.SetBoolValue("Display", "ShowPersistentMessages", display_show_persistent_messages);
   si.SetBoolValue("Display", "ShowFPS", display_show_fps);
   si.SetBoolValue("Display", "ShowVPS", display_show_vps);
   si.SetBoolValue("Display", "ShowSpeed", display_show_speed);
