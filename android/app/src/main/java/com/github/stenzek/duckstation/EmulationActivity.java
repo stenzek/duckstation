@@ -821,16 +821,21 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
             if (emulationActivity.mGameCoverPath != null && !emulationActivity.mGameCoverPath.isEmpty()) {
                 new ImageLoadTask(coverView).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
                         emulationActivity.mGameCoverPath);
-            } else {
+            } else if (emulationActivity.mGameTitle != null) {
                 new GenerateCoverTask(getContext(), coverView, emulationActivity.mGameTitle)
                         .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             }
             coverView.setOnClickListener(v -> close(true));
 
-            ((TextView)view.findViewById(R.id.title)).setText(emulationActivity.mGameTitle);
-            final String subtitle = String.format("%s - %s", emulationActivity.mGameCode,
-                    FileHelper.getFileNameForPath(emulationActivity.mGamePath));
-            ((TextView)view.findViewById(R.id.subtitle)).setText(subtitle);
+            if (emulationActivity.mGameTitle != null)
+              ((TextView)view.findViewById(R.id.title)).setText(emulationActivity.mGameTitle);
+
+            if (emulationActivity.mGameCode != null && emulationActivity.mGamePath != null)
+            {
+              final String subtitle = String.format("%s - %s", emulationActivity.mGameCode,
+                      FileHelper.getFileNameForPath(emulationActivity.mGamePath));
+              ((TextView)view.findViewById(R.id.subtitle)).setText(subtitle);
+            }
 
             ((ImageButton)view.findViewById(R.id.menu)).setOnClickListener(v -> onMenuClicked());
             ((ImageButton)view.findViewById(R.id.controller_settings)).setOnClickListener(v -> onControllerSettingsClicked());
