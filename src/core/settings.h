@@ -96,7 +96,6 @@ struct Settings
   bool apply_game_settings = true;
   bool auto_load_cheats = false;
   bool disable_all_enhancements = false;
-  bool show_speed_icons = false;
 
   bool rewind_enable = false;
   float rewind_save_frequency = 10.0f;

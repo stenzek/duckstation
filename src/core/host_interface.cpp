@@ -492,7 +492,6 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("Main", "ApplyGameSettings", true);
   si.SetBoolValue("Main", "AutoLoadCheats", true);
   si.SetBoolValue("Main", "DisableAllEnhancements", false);
-  si.SetBoolValue("Main", "ShowSpeedIcons", true);
   si.SetBoolValue("Main", "RewindEnable", false);
   si.SetFloatValue("Main", "RewindFrequency", 10.0f);
   si.SetIntValue("Main", "RewindSaveSlots", 10);
