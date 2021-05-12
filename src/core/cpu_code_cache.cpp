@@ -500,7 +500,7 @@ recompile:
   {
     block->recompile_count++;
 
-    if (block->recompile_count >= RECOMPILE_COUNT_TO_FALL_BACK_TO_INTERPRETER&&false)
+    if (block->recompile_count >= RECOMPILE_COUNT_TO_FALL_BACK_TO_INTERPRETER)
     {
       Log_PerfPrintf("Block 0x%08X has been recompiled %u times in %u frames, falling back to interpreter",
         block->GetPC(), block->recompile_count, frame_diff);
