@@ -614,6 +614,7 @@ static void DoCheatsMenu()
     if (!s_host_interface->LoadCheatListFromDatabase() || !(cl = System::GetCheatList()))
     {
       s_host_interface->AddFormattedOSDMessage(10.0f, "No cheats found for %s.", System::GetRunningTitle().c_str());
+      ReturnToMainWindow();
       return;
     }
   }
