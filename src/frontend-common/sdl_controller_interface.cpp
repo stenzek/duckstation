@@ -703,8 +703,12 @@ bool SDLControllerInterface::HandleControllerButtonEvent(const SDL_ControllerBut
     return true;
 
   if (ev->button < nav_button_mapping.size() &&
-      nav_button_mapping[ev->button] != FrontendCommon::ControllerNavigationButton::Count &&
-      m_host_interface->SetControllerNavigationButtonState(nav_button_mapping[ev->button], pressed))
+      nav_button_mapping[ev->button] != FrontendCommon::ControllerNavigationButton::Count)
+  {
+    m_host_interface->SetControllerNavigationButtonState(nav_button_mapping[ev->button], pressed);
+  }
+
+  if (m_host_interface->IsControllerNavigationActive())
   {
     // UI consumed the event
     return true;

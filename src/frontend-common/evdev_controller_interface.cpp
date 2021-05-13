@@ -5,8 +5,8 @@
 #include "core/controller.h"
 #include "core/host_interface.h"
 #include "core/system.h"
-#include <cstdlib>
 #include <cmath>
+#include <cstdlib>
 #include <fcntl.h>
 #include <poll.h>
 #include <unistd.h>
@@ -334,8 +334,10 @@ bool EvdevControllerInterface::HandleButtonEvent(ControllerData* cd, u32 button,
     return true;
 
   const FrontendCommon::ControllerNavigationButton nav_button = MapEventButtonToNavigationButton(button_id);
-  if (nav_button < FrontendCommon::ControllerNavigationButton::Count &&
-      m_host_interface->SetControllerNavigationButtonState(nav_button, pressed))
+  if (nav_button < FrontendCommon::ControllerNavigationButton::Count)
+    m_host_interface->SetControllerNavigationButtonState(nav_button, pressed);
+
+  if (m_host_interface->IsControllerNavigationActive())
   {
     // UI consumed the event
     return true;
