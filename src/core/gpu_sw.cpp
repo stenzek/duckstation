@@ -492,6 +492,11 @@ void GPU_SW::UpdateDisplay()
       return;
     }
 
+    m_host_display->SetDisplayParameters(m_crtc_state.display_width, m_crtc_state.display_height,
+                                         m_crtc_state.display_origin_left, m_crtc_state.display_origin_top,
+                                         m_crtc_state.display_vram_width, m_crtc_state.display_vram_height,
+                                         GetDisplayAspectRatio());
+
     const u32 vram_offset_y = m_crtc_state.display_vram_top;
     const u32 display_width = m_crtc_state.display_vram_width;
     const u32 display_height = m_crtc_state.display_vram_height;
@@ -525,11 +530,6 @@ void GPU_SW::UpdateDisplay()
                      display_height, 0, false, false);
       }
     }
-
-    m_host_display->SetDisplayParameters(m_crtc_state.display_width, m_crtc_state.display_height,
-                                         m_crtc_state.display_origin_left, m_crtc_state.display_origin_top,
-                                         m_crtc_state.display_vram_width, m_crtc_state.display_vram_height,
-                                         GetDisplayAspectRatio());
   }
   else
   {
@@ -539,7 +539,7 @@ void GPU_SW::UpdateDisplay()
   }
 }
 
-void GPU_SW::FillBackendCommandParameters(GPUBackendCommand* cmd)
+void GPU_SW::FillBackendCommandParameters(GPUBackendCommand* cmd) const
 {
   cmd->params.bits = 0;
   cmd->params.check_mask_before_draw = m_GPUSTAT.check_mask_before_draw;
@@ -548,7 +548,7 @@ void GPU_SW::FillBackendCommandParameters(GPUBackendCommand* cmd)
   cmd->params.interlaced_rendering = IsInterlacedRenderingEnabled();
 }
 
-void GPU_SW::FillDrawCommand(GPUBackendDrawCommand* cmd, GPURenderCommand rc)
+void GPU_SW::FillDrawCommand(GPUBackendDrawCommand* cmd, GPURenderCommand rc) const
 {
   FillBackendCommandParameters(cmd);
   cmd->rc.bits = rc.bits;
