@@ -80,6 +80,18 @@ bool VulkanHostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
     return true;
   }
 
+  // recreate surface in existing swap chain if it already exists
+  if (m_swap_chain)
+  {
+    if (m_swap_chain->RecreateSurface(new_wi))
+    {
+      m_window_info = m_swap_chain->GetWindowInfo();
+      return true;
+    }
+
+    m_swap_chain.reset();
+  }
+
   WindowInfo wi_copy(new_wi);
   VkSurfaceKHR surface = Vulkan::SwapChain::CreateVulkanSurface(g_vulkan_context->GetVulkanInstance(),
                                                                 g_vulkan_context->GetPhysicalDevice(), &wi_copy);
@@ -93,6 +105,7 @@ bool VulkanHostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
   if (!m_swap_chain)
   {
     Log_ErrorPrintf("Failed to create swap chain");
+    Vulkan::SwapChain::DestroyVulkanSurface(g_vulkan_context->GetVulkanInstance(), &wi_copy, surface);
     return false;
   }
 
