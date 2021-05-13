@@ -3504,13 +3504,21 @@ std::unique_ptr<ByteStream> CommonHostInterface::OpenPackageFile(const char* pat
   return FileSystem::OpenFile(full_path.c_str(), real_flags);
 }
 
-bool CommonHostInterface::SetControllerNavigationButtonState(FrontendCommon::ControllerNavigationButton button,
-                                                             bool pressed)
+bool CommonHostInterface::IsControllerNavigationActive() const
 {
   if (!m_fullscreen_ui_enabled)
     return false;
 
-  return FullscreenUI::SetControllerNavInput(button, pressed);
+  return FullscreenUI::HasActiveWindow();
+}
+
+void CommonHostInterface::SetControllerNavigationButtonState(FrontendCommon::ControllerNavigationButton button,
+                                                             bool pressed)
+{
+  if (!m_fullscreen_ui_enabled)
+    return;
+
+  FullscreenUI::SetControllerNavInput(button, pressed);
 }
 
 #ifdef WITH_DISCORD_PRESENCE

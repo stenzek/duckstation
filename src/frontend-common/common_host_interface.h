@@ -300,9 +300,11 @@ public:
   /// This is the APK for Android builds, or the program directory for standalone builds.
   virtual std::unique_ptr<ByteStream> OpenPackageFile(const char* path, u32 flags) override;
 
-  /// Controller navigation, used by fullscreen mode. Returns true if the UI consumed the event, and it should not
-  /// execute the normal handler.
-  bool SetControllerNavigationButtonState(FrontendCommon::ControllerNavigationButton button, bool pressed);
+  /// Returns true if the fullscreen UI is intercepting controller input.
+  bool IsControllerNavigationActive() const;
+
+  /// Controller navigation, used by fullscreen mode.
+  void SetControllerNavigationButtonState(FrontendCommon::ControllerNavigationButton button, bool pressed);
 
   /// Toggles fast forward state.
   bool IsFastForwardEnabled() const { return m_fast_forward_enabled; }

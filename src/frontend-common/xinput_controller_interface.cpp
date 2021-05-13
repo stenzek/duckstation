@@ -301,8 +301,12 @@ bool XInputControllerInterface::HandleButtonEvent(u32 index, u32 button, bool pr
     return true;
 
   if (button < nav_button_mapping.size() &&
-      nav_button_mapping[button] != FrontendCommon::ControllerNavigationButton::Count &&
-      m_host_interface->SetControllerNavigationButtonState(nav_button_mapping[button], pressed))
+      nav_button_mapping[button] != FrontendCommon::ControllerNavigationButton::Count)
+  {
+    m_host_interface->SetControllerNavigationButtonState(nav_button_mapping[button], pressed);
+  }
+
+  if (m_host_interface->IsControllerNavigationActive())
   {
     // UI consumed the event
     return true;
