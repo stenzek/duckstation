@@ -684,6 +684,13 @@ bool VulkanHostDisplay::RenderScreenshot(u32 width, u32 height, std::vector<u32>
       break;
   }
 
+  // if we don't have a texture (display off), then just write out nothing.
+  if (!HasDisplayTexture())
+  {
+    std::fill(out_pixels->begin(), out_pixels->end(), static_cast<u32>(0));
+    return true;
+  }
+
   Vulkan::Texture tex;
   Vulkan::StagingTexture staging_tex;
   if (!tex.Create(width, height, 1, 1, format, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_TILING_OPTIMAL,
