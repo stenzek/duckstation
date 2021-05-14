@@ -2306,8 +2306,11 @@ void DoRunahead()
   {
     // we need to replay and catch up - load the state,
     s_runahead_replay_pending = false;
-    if (!LoadMemoryState(s_runahead_states.front()))
+    if (s_runahead_states.empty() || !LoadMemoryState(s_runahead_states.front()))
+    {
+      s_runahead_states.clear();
       return;
+    }
 
     // and throw away all the states, forcing us to catch up below
     // TODO: can we leave one frame here and run, avoiding the extra save?
@@ -2365,7 +2368,7 @@ void DoMemorySaveStates()
 
 void SetRunaheadReplayFlag()
 {
-  if (s_runahead_frames == 0)
+  if (s_runahead_frames == 0 || s_runahead_states.empty())
     return;
 
   Log_DevPrintf("Runahead rewind pending...");
