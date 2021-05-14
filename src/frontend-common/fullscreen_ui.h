@@ -40,6 +40,7 @@ enum class SettingsPage
 };
 
 bool Initialize(CommonHostInterface* host_interface);
+bool IsInitialized();
 bool HasActiveWindow();
 void UpdateSettings();
 void SystemCreated();
