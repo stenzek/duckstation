@@ -231,6 +231,11 @@ bool Initialize(CommonHostInterface* host_interface)
   return true;
 }
 
+bool IsInitialized()
+{
+  return (s_host_interface != nullptr);
+}
+
 bool HasActiveWindow()
 {
   return s_current_main_window != MainWindowType::None || s_save_state_selector_open ||

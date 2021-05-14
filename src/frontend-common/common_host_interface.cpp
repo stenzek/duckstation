@@ -2702,7 +2702,8 @@ void CommonHostInterface::LoadSettings(SettingsInterface& si)
   }
   else if (m_fullscreen_ui_enabled)
   {
-    FullscreenUI::UpdateSettings();
+    if (FullscreenUI::IsInitialized())
+      FullscreenUI::UpdateSettings();
   }
 
   const bool input_display_enabled = si.GetBoolValue("Display", "ShowInputs", false);
