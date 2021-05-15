@@ -6357,7 +6357,7 @@ Rekursives Scannen benötigt mehr Zeit, erkennt allerdings auch Dateien in Unter
     </message>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="103"/>
-        <source>Memory Card  </source>
+        <source>Memory Card Editor...</source>
         <translation>Editor öffnen...</translation>
     </message>
     <message>
