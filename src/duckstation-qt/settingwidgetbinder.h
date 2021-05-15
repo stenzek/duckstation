@@ -279,7 +279,11 @@ void BindWidgetToStringSetting(QtHostInterface* hi, WidgetType* widget, std::str
 
   Accessor::connectValueChanged(widget, [hi, widget, section, key]() {
     const QString new_value = Accessor::getStringValue(widget);
-    hi->SetStringSettingValue(section.c_str(), key.c_str(), new_value.toUtf8().constData());
+    if (!new_value.isEmpty())
+      hi->SetStringSettingValue(section.c_str(), key.c_str(), new_value.toUtf8().constData());
+    else
+      hi->RemoveSettingValue(section.c_str(), key.c_str());
+
     hi->applySettings();
   });
 }
