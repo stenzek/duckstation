@@ -6338,7 +6338,7 @@ Rekursives Scannen benötigt mehr Zeit, erkennt allerdings auch Dateien in Unter
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="74"/>
         <source>When using a multi-disc format (m3u/pbp) and per-game (title) memory cards, a single memory card will be used for all discs. If unchecked, a separate card will be used for each disc.</source>
-        <translation>Wenn Multi-Disc-Format (m3u/pbp) und spielspezifische Memory Cards verwendet werden, wird eine Memory Card für alle CDs verwendet. Wenn diese Option nicht aktiviert ist, wird für jede CD eine eigene Karte verwendet.</translation>
+        <translation>Wenn Multi-Disc-Formate (m3u/pbp) und spielspezifische Memory Cards verwendet werden, wird eine Memory Card für alle CDs verwendet. Wenn diese Option nicht aktiviert ist, wird für jede CD eine eigene Karte verwendet.</translation>
     </message>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="83"/>
