@@ -6343,7 +6343,7 @@ Rekursives Scannen benötigt mehr Zeit, erkennt allerdings auch Dateien in Unter
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="83"/>
         <source>If one of the &quot;separate card per game&quot; memory card types is chosen, these memory cards will be saved to the memory cards directory.</source>
-        <translation>Wenn der Modus &quot;Für jedes Spiel eine eigene Memory Card verwenden&quot; ausgewählt ist, werden diese im Memory-Card-Verzeichnis abgespeichert.</translation>
+        <translation>Wenn &quot;Für jedes Spiel eine eigene Memory Card verwenden&quot; ausgewählt ist, werden diese im Memory-Card-Verzeichnis gespeichert.</translation>
     </message>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="89"/>
@@ -6358,7 +6358,7 @@ Rekursives Scannen benötigt mehr Zeit, erkennt allerdings auch Dateien in Unter
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="103"/>
         <source>Memory Card Editor...</source>
-        <translation>Memory-Card-Editor...</translation>
+        <translation>Editor...</translation>
     </message>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="157"/>
