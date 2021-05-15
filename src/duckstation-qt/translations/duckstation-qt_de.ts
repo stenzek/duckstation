@@ -6353,7 +6353,7 @@ Rekursives Scannen benötigt mehr Zeit, erkennt allerdings auch Dateien in Unter
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="98"/>
         <source>The memory card editor enables you to move saves between cards, as well as import cards of other formats.</source>
-        <translation>Der Memory-Card-Editor ermöglicht das Verschieben von Speicherständen zwischen Karten sowie den Import von Karten anderer Formate.</translation>
+        <translation>Der Memory-Card-Editor ermöglicht das Verschieben von Spielständen zwischen Karten sowie den Import von Karten anderer Formate.</translation>
     </message>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="103"/>
