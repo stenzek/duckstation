@@ -60,6 +60,7 @@
     <ClCompile Include="biossettingswidget.cpp" />
     <ClCompile Include="cheatmanagerdialog.cpp" />
     <ClCompile Include="cheatcodeeditordialog.cpp" />
+    <ClCompile Include="collapsiblewidget.cpp" />
     <ClCompile Include="consolesettingswidget.cpp" />
     <ClCompile Include="emulationsettingswidget.cpp" />
     <ClCompile Include="debuggermodels.cpp" />
@@ -118,6 +119,7 @@
     <QtMoc Include="debuggerwindow.h" />
     <QtMoc Include="achievementsettingswidget.h" />
     <QtMoc Include="achievementlogindialog.h" />
+    <QtMoc Include="collapsiblewidget.h" />
     <ClInclude Include="inputbindingmonitor.h" />
     <QtMoc Include="memoryviewwidget.h" />
     <ClInclude Include="resource.h" />
@@ -228,6 +230,7 @@
     <ClCompile Include="$(IntDir)moc_biossettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_cheatmanagerdialog.cpp" />
     <ClCompile Include="$(IntDir)moc_cheatcodeeditordialog.cpp" />
+    <ClCompile Include="$(IntDir)moc_collapsiblewidget.cpp" />
     <ClCompile Include="$(IntDir)moc_consolesettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_controllersettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_emulationsettingswidget.cpp" />
@@ -287,7 +290,7 @@
     <QtTs Include="translations\duckstation-qt_de.ts">
       <FileType>Document</FileType>
     </QtTs>
-	<QtTs Include="translations\duckstation-qt_en.ts">
+    <QtTs Include="translations\duckstation-qt_en.ts">
       <FileType>Document</FileType>
     </QtTs>
     <QtTs Include="translations\duckstation-qt_es.ts">
