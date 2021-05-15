@@ -1181,7 +1181,7 @@ void MainWindow::setTheme(const QString& theme)
 
 void MainWindow::updateTheme()
 {
-  QString theme = QString::fromStdString(m_host_interface->GetStringSettingValue("UI", "Theme", "default"));
+  QString theme = QString::fromStdString(m_host_interface->GetStringSettingValue("UI", "Theme", "darkfusion"));
   if (theme == QStringLiteral("qdarkstyle"))
   {
     qApp->setStyle(m_unthemed_style_name);
