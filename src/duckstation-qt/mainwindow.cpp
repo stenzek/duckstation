@@ -468,8 +468,8 @@ void MainWindow::onApplicationStateChanged(Qt::ApplicationState state)
 
 void MainWindow::onStartDiscActionTriggered()
 {
-  QString filename =
-    QFileDialog::getOpenFileName(this, tr("Select Disc Image"), QString(), tr(DISC_IMAGE_FILTER), nullptr);
+  QString filename = QDir::toNativeSeparators(
+    QFileDialog::getOpenFileName(this, tr("Select Disc Image"), QString(), tr(DISC_IMAGE_FILTER), nullptr));
   if (filename.isEmpty())
     return;
 
