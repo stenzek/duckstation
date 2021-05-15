@@ -24,6 +24,8 @@ set(SRCS
   cheatcodeeditordialog.cpp
   cheatcodeeditordialog.h
   cheatcodeeditordialog.ui
+  collapsiblewidget.cpp
+  collapsiblewidget.h
   consolesettingswidget.cpp
   consolesettingswidget.h
   consolesettingswidget.ui
