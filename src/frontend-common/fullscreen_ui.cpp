@@ -817,7 +817,7 @@ static ImGuiFullscreen::ChoiceDialogOptions GetGameListDirectoryOptions(bool rec
 }
 
 static void DrawInputBindingButton(InputBindingType type, const char* section, const char* name,
-                                   const char* display_name)
+                                   const char* display_name, bool show_type = true)
 {
   TinyString title;
   title.Format("%s/%s", section, name);
@@ -833,23 +833,28 @@ static void DrawInputBindingButton(InputBindingType type, const char* section, c
   const ImRect title_bb(bb.Min, ImVec2(bb.Max.x, midpoint));
   const ImRect summary_bb(ImVec2(bb.Min.x, midpoint), bb.Max);
 
-  switch (type)
+  if (show_type)
   {
-    case InputBindingType::Button:
-      title.Format(ICON_FA_CIRCLE "  %s Button", display_name);
-      break;
-    case InputBindingType::Axis:
-      title.Format(ICON_FA_BULLSEYE "  %s Axis", display_name);
-      break;
-    case InputBindingType::Rumble:
-      title.Format(ICON_FA_BELL "  %s", display_name);
-      break;
-    default:
-      title = display_name;
-      break;
+    switch (type)
+    {
+      case InputBindingType::Button:
+        title.Format(ICON_FA_CIRCLE "  %s Button", display_name);
+        break;
+      case InputBindingType::Axis:
+        title.Format(ICON_FA_BULLSEYE "  %s Axis", display_name);
+        break;
+      case InputBindingType::Rumble:
+        title.Format(ICON_FA_BELL "  %s", display_name);
+        break;
+      default:
+        title = display_name;
+        break;
+    }
   }
+
   ImGui::PushFont(g_large_font);
-  ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, title, nullptr, nullptr, ImVec2(0.0f, 0.0f), &title_bb);
+  ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, show_type ? title.GetCharArray() : display_name, nullptr,
+                           nullptr, ImVec2(0.0f, 0.0f), &title_bb);
   ImGui::PopFont();
 
   // eek, potential heap allocation :/
@@ -1732,6 +1737,9 @@ void DrawSettingsWindow()
         static std::array<Controller::ButtonList, NUM_CONTROLLER_AND_CARD_PORTS> button_cache;
         static std::array<Controller::AxisList, NUM_CONTROLLER_AND_CARD_PORTS> axis_cache;
         static std::array<Controller::SettingList, NUM_CONTROLLER_AND_CARD_PORTS> setting_cache;
+        static std::array<std::string,
+                          NUM_CONTROLLER_AND_CARD_PORTS * CommonHostInterface::NUM_CONTROLLER_AUTOFIRE_BUTTONS>
+          autofire_buttons_cache;
         TinyString section;
         TinyString key;
 
@@ -1749,6 +1757,8 @@ void DrawSettingsWindow()
             "Determines the simulated controller plugged into this port.", &s_settings_copy.controller_types[port],
             &Settings::GetControllerTypeDisplayName, ControllerType::Count);
 
+          section.Format("Controller%u", port + 1);
+
           const ControllerType ctype = s_settings_copy.controller_types[port];
           if (ctype != type_cache[port])
           {
@@ -1756,9 +1766,13 @@ void DrawSettingsWindow()
             button_cache[port] = Controller::GetButtonNames(ctype);
             axis_cache[port] = Controller::GetAxisNames(ctype);
             setting_cache[port] = Controller::GetSettings(ctype);
-          }
 
-          section.Format("Controller%u", port + 1);
+            for (u32 i = 0; i < CommonHostInterface::NUM_CONTROLLER_AUTOFIRE_BUTTONS; i++)
+            {
+              autofire_buttons_cache[port * CommonHostInterface::NUM_CONTROLLER_AUTOFIRE_BUTTONS + i] =
+                s_host_interface->GetStringSettingValue(section, TinyString::FromFormat("AutoFire%uButton", i + 1));
+            }
+          }
 
           for (const auto& it : button_cache[port])
           {
@@ -1777,6 +1791,67 @@ void DrawSettingsWindow()
 
           for (const SettingInfo& it : setting_cache[port])
             settings_changed |= SettingInfoButton(it, section);
+
+          for (u32 autofire_index = 0; autofire_index < CommonHostInterface::NUM_CONTROLLER_AUTOFIRE_BUTTONS;
+               autofire_index++)
+          {
+            const u32 cache_index = port * CommonHostInterface::NUM_CONTROLLER_AUTOFIRE_BUTTONS + autofire_index;
+
+            if (MenuButtonWithValue(TinyString::FromFormat("Auto Fire %u", autofire_index + 1),
+                                    "Selects the button to toggle with this auto fire binding.",
+                                    autofire_buttons_cache[cache_index].c_str()))
+
+            {
+              auto callback = [port, autofire_index, cache_index](s32 index, const std::string& title, bool checked) {
+                if (index < 0)
+                  return;
+
+                auto lock = s_host_interface->GetSettingsLock();
+                if (index == 0)
+                {
+                  s_host_interface->GetSettingsInterface()->DeleteValue(
+                    TinyString::FromFormat("Controller%u", port + 1),
+                    TinyString::FromFormat("AutoFire%uButton", autofire_index + 1));
+                  std::string().swap(autofire_buttons_cache[cache_index]);
+                }
+                else
+                {
+                  s_host_interface->GetSettingsInterface()->SetStringValue(
+                    TinyString::FromFormat("Controller%u", port + 1),
+                    TinyString::FromFormat("AutoFire%uButton", autofire_index + 1),
+                    button_cache[port][index - 1].first.c_str());
+                  autofire_buttons_cache[cache_index] = button_cache[port][index - 1].first;
+                }
+
+                // needs a reload...
+                s_host_interface->RunLater(SaveAndApplySettings);
+                CloseChoiceDialog();
+              };
+
+              ImGuiFullscreen::ChoiceDialogOptions options;
+              options.reserve(button_cache[port].size() + 1);
+              options.emplace_back("(None)", autofire_buttons_cache[cache_index].empty());
+              for (const auto& it : button_cache[port])
+                options.emplace_back(it.first, autofire_buttons_cache[cache_index] == it.first);
+
+              OpenChoiceDialog(ICON_FA_GAMEPAD "  Select Auto Fire Button", false, std::move(options),
+                               std::move(callback));
+            }
+
+            if (autofire_buttons_cache[cache_index].empty())
+              continue;
+
+            key.Format("AutoFire%u", autofire_index + 1);
+            DrawInputBindingButton(InputBindingType::Button, section, key,
+                                   TinyString::FromFormat("Auto Fire %u Binding", autofire_index + 1), false);
+
+            key.Format("AutoFire%uFrequency", autofire_index + 1);
+            int frequency = s_host_interface->GetSettingsInterface()->GetIntValue(
+              section, key, CommonHostInterface::DEFAULT_AUTOFIRE_FREQUENCY);
+            settings_changed |= RangeButton(TinyString::FromFormat("Auto Fire %u Frequency", autofire_index + 1),
+                                            "Sets the rate at which the auto fire will trigger on and off.", &frequency,
+                                            1, 255, 1, "%d Frames");
+          }
         }
 
         EndMenuButtons();
