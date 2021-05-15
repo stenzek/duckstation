@@ -1990,25 +1990,6 @@ void CommonHostInterface::RegisterGraphicsHotkeys()
                    }
                  });
 
-  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Graphics")), StaticString("TogglePGXPDepth"),
-                 StaticString(TRANSLATABLE("Hotkeys", "Toggle PGXP Depth Buffer")), [this](bool pressed) {
-                   if (pressed && System::IsValid())
-                   {
-                     g_settings.gpu_pgxp_depth_buffer = !g_settings.gpu_pgxp_depth_buffer;
-                     if (!g_settings.gpu_pgxp_enable)
-                       return;
-
-                     g_gpu->RestoreGraphicsAPIState();
-                     g_gpu->UpdateSettings();
-                     g_gpu->ResetGraphicsAPIState();
-                     System::ClearMemorySaveStates();
-                     AddOSDMessage(g_settings.gpu_pgxp_depth_buffer ?
-                                     TranslateStdString("OSDMessage", "PGXP Depth Buffer is now enabled.") :
-                                     TranslateStdString("OSDMessage", "PGXP Depth Buffer is now disabled."),
-                                   5.0f);
-                   }
-                 });
-
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Graphics")), StaticString("IncreaseResolutionScale"),
                  StaticString(TRANSLATABLE("Hotkeys", "Increase Resolution Scale")), [this](bool pressed) {
                    if (pressed && System::IsValid())
@@ -2047,6 +2028,51 @@ void CommonHostInterface::RegisterGraphicsHotkeys()
                    if (pressed && System::IsValid())
                    {
                      ToggleWidescreen();
+                   }
+                 });
+
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Graphics")), StaticString("TogglePGXPDepth"),
+                 StaticString(TRANSLATABLE("Hotkeys", "Toggle PGXP Depth Buffer")), [this](bool pressed) {
+                   if (pressed && System::IsValid())
+                   {
+                     g_settings.gpu_pgxp_depth_buffer = !g_settings.gpu_pgxp_depth_buffer;
+                     if (!g_settings.gpu_pgxp_enable)
+                       return;
+
+                     g_gpu->RestoreGraphicsAPIState();
+                     g_gpu->UpdateSettings();
+                     g_gpu->ResetGraphicsAPIState();
+                     System::ClearMemorySaveStates();
+                     AddOSDMessage(g_settings.gpu_pgxp_depth_buffer ?
+                                     TranslateStdString("OSDMessage", "PGXP Depth Buffer is now enabled.") :
+                                     TranslateStdString("OSDMessage", "PGXP Depth Buffer is now disabled."),
+                                   5.0f);
+                   }
+                 });
+
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Graphics")), StaticString("TogglePGXPCPU"),
+                 StaticString(TRANSLATABLE("Hotkeys", "Toggle PGXP CPU Mode")), [this](bool pressed) {
+                   if (pressed && System::IsValid())
+                   {
+                     g_settings.gpu_pgxp_cpu = !g_settings.gpu_pgxp_cpu;
+                     g_gpu->RestoreGraphicsAPIState();
+                     g_gpu->UpdateSettings();
+                     g_gpu->ResetGraphicsAPIState();
+                     System::ClearMemorySaveStates();
+                     AddOSDMessage(g_settings.gpu_pgxp_cpu ?
+                                     TranslateStdString("OSDMessage", "PGXP CPU mode is now enabled.") :
+                                     TranslateStdString("OSDMessage", "PGXP CPU mode is now disabled."),
+                                   5.0f);
+
+                     if (g_settings.gpu_pgxp_enable)
+                     {
+                       PGXP::Shutdown();
+                       PGXP::Initialize();
+
+                       // we need to recompile all blocks if pgxp is toggled on/off
+                       if (g_settings.IsUsingCodeCache())
+                         CPU::CodeCache::Flush();
+                     }
                    }
                  });
 }
