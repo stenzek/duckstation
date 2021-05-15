@@ -2978,7 +2978,7 @@ Diese Datei kann mehrere Gigabyte groß sein, achte also auf die Abnutzung der S
         <location filename="../displaysettingswidget.ui" line="246"/>
         <location filename="../displaysettingswidget.cpp" line="147"/>
         <source>Show Controller Input</source>
-        <translation>Controllereingabe anzeigen</translation>
+        <translation>Controllereingaben anzeigen</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="172"/>
