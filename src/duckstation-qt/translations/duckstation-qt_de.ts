@@ -3177,7 +3177,7 @@ Diese Datei kann mehrere Gigabyte groß sein, achte also auf die Abnutzung der S
     <message>
         <location filename="../displaysettingswidget.cpp" line="148"/>
         <source>Shows the current controller state of the system in the bottom-left corner of the display.</source>
-        <translation>Zeigt die Controllereingaben in der unteren linken Ecke des Displays an.</translation>
+        <translation>Zeigt die Controllereingaben in der unteren linken Ecke des Bildschirms an.</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="152"/>
