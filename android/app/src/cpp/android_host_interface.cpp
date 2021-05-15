@@ -569,7 +569,7 @@ void AndroidHostInterface::EmulationThreadLoop(JNIEnv* env)
       else
         System::RunFrame();
 
-      UpdateControllerRumble();
+      UpdateControllerMetaState();
       if (m_vibration_enabled)
         UpdateVibration();
     }

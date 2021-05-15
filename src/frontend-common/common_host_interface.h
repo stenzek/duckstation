@@ -46,7 +46,9 @@ public:
   enum : s32
   {
     PER_GAME_SAVE_STATE_SLOTS = 10,
-    GLOBAL_SAVE_STATE_SLOTS = 10
+    GLOBAL_SAVE_STATE_SLOTS = 10,
+    NUM_CONTROLLER_AUTOFIRE_BUTTONS = 4,
+    DEFAULT_AUTOFIRE_FREQUENCY = 2
   };
 
   using HostKeyCode = s32;
@@ -370,9 +372,16 @@ protected:
   virtual void UpdateInputMap(SettingsInterface& si);
   void ClearInputMap();
 
+  /// Updates controller metastate, including turbo and rumble.
+  void UpdateControllerMetaState();
+
   void AddControllerRumble(u32 controller_index, u32 num_motors, ControllerRumbleCallback callback);
   void UpdateControllerRumble();
   void StopControllerRumble();
+
+  void SetControllerAutoFireState(u32 controller_index, s32 button_code, bool active);
+  void StopControllerAutoFire();
+  void UpdateControllerAutoFire();
 
   /// Returns the path to a save state file. Specifying an index of -1 is the "resume" save state.
   std::string GetGameSaveStateFileName(const char* game_code, s32 slot) const;
@@ -518,6 +527,18 @@ private:
     ControllerRumbleCallback update_callback;
   };
   std::vector<ControllerRumbleState> m_controller_vibration_motors;
+
+  // controller turbo buttons
+  struct ControllerAutoFireState
+  {
+    u32 controller_index;
+    s32 button_code;
+    u8 frequency;
+    u8 countdown;
+    bool active;
+    bool state;
+  };
+  std::vector<ControllerAutoFireState> m_controller_autofires;
 
 #ifdef WITH_DISCORD_PRESENCE
   // discord rich presence

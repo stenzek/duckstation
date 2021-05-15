@@ -213,7 +213,7 @@ void NoGUIHostInterface::Run()
       else
         System::RunFrames();
 
-      UpdateControllerRumble();
+      UpdateControllerMetaState();
       if (m_frame_step_request)
       {
         m_frame_step_request = false;

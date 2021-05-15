@@ -1427,6 +1427,73 @@ void CommonHostInterface::StopControllerRumble()
   }
 }
 
+void CommonHostInterface::SetControllerAutoFireState(u32 controller_index, s32 button_code, bool active)
+{
+  for (ControllerAutoFireState& ts : m_controller_autofires)
+  {
+    if (ts.controller_index != controller_index || ts.button_code != button_code)
+      continue;
+
+    if (!active)
+    {
+      if (ts.state)
+      {
+        Controller* controller = System::GetController(ts.controller_index);
+        if (controller)
+          controller->SetButtonState(ts.button_code, false);
+      }
+
+      ts.state = false;
+      ts.countdown = ts.frequency;
+    }
+
+    ts.active = active;
+    return;
+  }
+}
+
+void CommonHostInterface::UpdateControllerAutoFire()
+{
+  for (ControllerAutoFireState& ts : m_controller_autofires)
+  {
+    if (!ts.active || (--ts.countdown) > 0)
+      continue;
+
+    ts.countdown = ts.frequency;
+    ts.state = !ts.state;
+
+    Controller* controller = System::GetController(ts.controller_index);
+    if (controller)
+      controller->SetButtonState(ts.button_code, ts.state);
+  }
+}
+
+void CommonHostInterface::StopControllerAutoFire()
+{
+  for (ControllerAutoFireState& ts : m_controller_autofires)
+  {
+    if (!ts.active)
+      continue;
+
+    ts.countdown = ts.frequency;
+
+    if (ts.state)
+    {
+      Controller* controller = System::GetController(ts.controller_index);
+      if (controller)
+        controller->SetButtonState(ts.button_code, false);
+
+      ts.state = false;
+    }
+  }
+}
+
+void CommonHostInterface::UpdateControllerMetaState()
+{
+  UpdateControllerRumble();
+  UpdateControllerAutoFire();
+}
+
 static bool SplitBinding(const std::string& binding, std::string_view* device, std::string_view* sub_binding)
 {
   const std::string::size_type slash_pos = binding.find('/');
@@ -1443,8 +1510,10 @@ static bool SplitBinding(const std::string& binding, std::string_view* device, s
 
 void CommonHostInterface::UpdateControllerInputMap(SettingsInterface& si)
 {
+  StopControllerAutoFire();
   StopControllerRumble();
   m_controller_vibration_motors.clear();
+  m_controller_autofires.clear();
 
   for (u32 controller_index = 0; controller_index < NUM_CONTROLLER_AND_CARD_PORTS; controller_index++)
   {
@@ -1516,6 +1585,58 @@ void CommonHostInterface::UpdateControllerInputMap(SettingsInterface& si)
     {
       const float deadzone_size = si.GetFloatValue(category, "Deadzone", 0.25f);
       m_controller_interface->SetControllerDeadzone(controller_index, deadzone_size);
+    }
+
+    for (u32 turbo_button_index = 0; turbo_button_index < NUM_CONTROLLER_AUTOFIRE_BUTTONS; turbo_button_index++)
+    {
+      const std::string button_name(
+        si.GetStringValue(category, TinyString::FromFormat("AutoFire%uButton", turbo_button_index + 1), ""));
+      if (button_name.empty())
+        continue;
+
+      const std::string binding(
+        si.GetStringValue(category, TinyString::FromFormat("AutoFire%u", turbo_button_index + 1), ""));
+
+#ifdef __ANDROID__
+      // Android doesn't require a binding, since we can trigger it from the touchscreen controller.
+      if (binding.empty())
+        continue;
+#endif
+
+      const std::optional<s32> button_code = Controller::GetButtonCodeByName(ctype, button_name);
+      if (!button_code.has_value())
+      {
+        Log_ErrorPrintf("Invalid autofire button binding '%s'", button_name.c_str());
+        continue;
+      }
+
+      ControllerAutoFireState ts;
+      ts.controller_index = controller_index;
+      ts.button_code = button_code.value();
+      ts.frequency = static_cast<u8>(
+        std::clamp<s32>(si.GetIntValue(category, TinyString::FromFormat("AutoFire%uFrequency", turbo_button_index + 1),
+                                       DEFAULT_AUTOFIRE_FREQUENCY),
+                        1, std::numeric_limits<decltype(ts.frequency)>::max()));
+      ts.countdown = ts.frequency;
+      ts.active = false;
+      ts.state = false;
+
+      if (!binding.empty())
+      {
+        std::string_view device, button;
+        if (!SplitBinding(binding, &device, &button) ||
+            !AddButtonToInputMap(binding, device, button,
+                                 std::bind(&CommonHostInterface::SetControllerAutoFireState, this, controller_index,
+                                           button_code.value(), std::placeholders::_1)))
+        {
+          Log_ErrorPrintf("Failed to register binding '%s' for autofire button", binding.c_str());
+#ifndef __ANDROID__
+          continue;
+#endif
+        }
+      }
+
+      m_controller_autofires.push_back(ts);
     }
   }
 }
