@@ -1,4 +1,5 @@
 #include "controllersettingswidget.h"
+#include "collapsiblewidget.h"
 #include "common/string_util.h"
 #include "core/controller.h"
 #include "core/settings.h"
@@ -449,6 +450,53 @@ void ControllerSettingsWidget::createPortBindingSettingsUi(int index, PortSettin
         break;
       }
     }
+  }
+
+  // turbo/autofire
+  {
+    layout->addWidget(QtUtils::CreateHorizontalLine(ui->widget), start_row++, 0, 1, 4);
+
+    CollapsibleWidget* collapsible = new CollapsibleWidget(tr("Auto Fire Buttons"), 100, ui->bindings_container);
+    QGridLayout* autofire_layout = new QGridLayout();
+    autofire_layout->setContentsMargins(0, 0, 0, 0);
+
+    QStringList option_list;
+    option_list.push_back(QString());
+    for (const auto& [button_name, button_code] : buttons)
+      option_list.push_back(QString::fromStdString(button_name));
+
+    for (u32 autofire_index = 0; autofire_index < QtHostInterface::NUM_CONTROLLER_AUTOFIRE_BUTTONS; autofire_index++)
+    {
+      std::string section_name = StringUtil::StdStringFromFormat("Controller%d", index + 1);
+      autofire_layout->addWidget(new QLabel(tr("Auto Fire %1").arg(autofire_index + 1), collapsible), autofire_index,
+                                 0);
+      QComboBox* button_cb = new QComboBox(collapsible);
+      button_cb->addItems(option_list);
+      autofire_layout->addWidget(button_cb, autofire_index, 1);
+      SettingWidgetBinder::BindWidgetToStringSetting(
+        m_host_interface, button_cb, section_name,
+        StringUtil::StdStringFromFormat("AutoFire%uButton", autofire_index + 1));
+
+      InputButtonBindingWidget* binding_button = new InputButtonBindingWidget(
+        m_host_interface, section_name, StringUtil::StdStringFromFormat("AutoFire%u", autofire_index + 1), collapsible);
+      autofire_layout->addWidget(binding_button, autofire_index, 2);
+
+      QSpinBox* frequency = new QSpinBox(collapsible);
+      frequency->setMinimum(1);
+      frequency->setMaximum(255);
+      frequency->setSuffix(tr(" Frames"));
+      autofire_layout->addWidget(frequency, autofire_index, 3);
+      SettingWidgetBinder::BindWidgetToIntSetting(
+        m_host_interface, frequency, std::move(section_name),
+        StringUtil::StdStringFromFormat("AutoFire%uFrequency", autofire_index + 1),
+        QtHostInterface::DEFAULT_AUTOFIRE_FREQUENCY);
+    }
+
+    collapsible->getScrollArea()->setFrameStyle(QFrame::NoFrame);
+    collapsible->setContentLayout(autofire_layout);
+    layout->addWidget(collapsible, start_row, 0, 1, 4);
+
+    start_row++;
   }
 
   // dummy row to fill remaining space
