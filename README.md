@@ -18,6 +18,7 @@ A "BIOS" ROM image is required to to start the emulator and to play games. You c
 ## Latest News
 Older entries are available at https://github.com/stenzek/duckstation/blob/master/NEWS.md
 
+- 2021/05/16: Auto fire (toggle pressing) buttons added.
 - 2021/05/10: libretro core re-added. Commercial distribution of the DuckStation libretro core is **NOT PERMITTED**.
 - 2021/05/02: New pause menu added to Android app.
 - 2021/04/29: Custom aspect ratio support added.
