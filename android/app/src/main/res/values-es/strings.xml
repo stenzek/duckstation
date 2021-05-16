@@ -335,4 +335,14 @@
     <string name="settings_achievements_global_settings">Configuración global</string>
     <string name="settings_category_achievements">Configuración de logros</string>
     <string name="settings_multitap_mode">Modo Multitap</string>
+    <string name="emulation_menu_load_state">Cargar partida</string>
+    <string name="emulation_menu_save_state">Guardar partida</string>
+    <string name="emulation_menu_toggle_fast_forward">Activar avance rápido</string>
+    <string name="emulation_menu_achievements">Logros</string>
+    <string name="emulation_menu_patch_codes">Códigos de parche</string>
+    <string name="emulation_menu_change_disc">Cambiar disco</string>
+    <string name="emulation_menu_touchscreen_controller_settings">Configuración del control de pantalla táctil</string>
+    <string name="emulation_menu_toggle_analog_mode">Activar modo de control analógico</string>
+    <string name="emulation_menu_reset_console">Reiniciar consola</string>
+    <string name="emulation_menu_exit_game">Salir del juego</string>
 </resources>
