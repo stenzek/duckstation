@@ -8,6 +8,7 @@
 #include "core/cheats.h"
 #include "core/controller.h"
 #include "core/gpu.h"
+#include "core/memory_card.h"
 #include "core/system.h"
 #include "frontend-common/fullscreen_ui.h"
 #include "frontend-common/game_list.h"
@@ -1045,7 +1046,8 @@ void QtHostInterface::populateGameListContextMenu(const GameListEntry* entry, QW
           paths[i] = QString::fromStdString(GetGameMemoryCardPath(entry->code.c_str(), i));
           break;
         case MemoryCardType::PerGameTitle:
-          paths[i] = QString::fromStdString(GetGameMemoryCardPath(entry->title.c_str(), i));
+          paths[i] = QString::fromStdString(
+            GetGameMemoryCardPath(MemoryCard::SanitizeGameTitleForFileName(entry->title).c_str(), i));
           break;
         default:
           break;

@@ -15,6 +15,8 @@ public:
   MemoryCard();
   ~MemoryCard();
 
+  static std::string SanitizeGameTitleForFileName(const std::string_view& name);
+
   static std::unique_ptr<MemoryCard> Create();
   static std::unique_ptr<MemoryCard> Open(std::string_view filename);
 

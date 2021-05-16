@@ -1815,7 +1815,8 @@ void UpdateMemoryCards()
         }
         else
         {
-          card = MemoryCard::Open(g_host_interface->GetGameMemoryCardPath(s_running_game_title.c_str(), i));
+          card = MemoryCard::Open(g_host_interface->GetGameMemoryCardPath(
+            MemoryCard::SanitizeGameTitleForFileName(s_running_game_title).c_str(), i));
         }
       }
       break;

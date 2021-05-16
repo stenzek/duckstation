@@ -24,6 +24,20 @@ MemoryCard::~MemoryCard()
   SaveIfChanged(false);
 }
 
+std::string MemoryCard::SanitizeGameTitleForFileName(const std::string_view& name)
+{
+  std::string ret(name);
+
+  const u32 len = static_cast<u32>(ret.length());
+  for (u32 i = 0; i < len; i++)
+  {
+    if (ret[i] == '\\' || ret[i] == '/' || ret[i] == '?' || ret[i] == '*')
+      ret[i] = '_';
+  }
+
+  return ret;
+}
+
 TickCount MemoryCard::GetSaveDelayInTicks()
 {
   return System::GetTicksPerSecond() * SAVE_DELAY_IN_SECONDS;
