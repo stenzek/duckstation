@@ -2225,7 +2225,7 @@ Diese Warnung wird nur einmal angezeigt.</translation>
     <message>
         <location filename="../controllersettingswidget.cpp" line="459"/>
         <source>Auto Fire Buttons</source>
-        <translation>Tasten für Auto-Fire</translation>
+        <translation>Tastenbelegung für Auto-Fire</translation>
     </message>
     <message>
         <location filename="../controllersettingswidget.cpp" line="471"/>
