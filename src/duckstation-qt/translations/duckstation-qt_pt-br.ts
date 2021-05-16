@@ -2189,7 +2189,7 @@ Token Gerado %2.</translation>
     <message>
         <location filename="../consolesettingswidget.cpp" line="67"/>
         <source>CDROM Read Speedup</source>
-        <translation>Velocidade de Leitura CD-Rom</translation>
+        <translation>Velocidade de leitura CD-Rom</translation>
     </message>
     <message>
         <source>None (Double Speed</source>
@@ -3211,7 +3211,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../displaysettingswidget.ui" line="109"/>
         <source>Aspect Ratio:</source>
-        <translation>Proporção e Aspecto:</translation>
+        <translation>Razão de Aspecto:</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="150"/>
@@ -4334,7 +4334,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../qtutils.cpp" line="682"/>
         <source>Automatic based on window size</source>
-        <translation>Automático, baseado no tamanho da janela aberta</translation>
+        <translation>Automático, baseado no tamanho da janela</translation>
     </message>
     <message>
         <location filename="../qtutils.cpp" line="683"/>
@@ -4802,12 +4802,12 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../gamepropertiesdialog.ui" line="187"/>
         <source>User Settings (Console)</source>
-        <translation>Configuração do Console (CPU)</translation>
+        <translation>Preferências do usuário (Console)</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="193"/>
         <source>CPU Clock Speed Control</source>
-        <translation>Controle de Velocidade do CPU (OC)</translation>
+        <translation>Controle de velocidade do CPU (Overclock)</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="201"/>
@@ -4827,7 +4827,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../gamepropertiesdialog.ui" line="268"/>
         <source>GPU Screen Display</source>
-        <translation>Modo de Exibição GPU</translation>
+        <translation>Modo de exibição GPU</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="296"/>
@@ -4877,7 +4877,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../gamepropertiesdialog.ui" line="440"/>
         <source>True Color Rendering (24-bit, disables dithering)</source>
-        <translation>Renderização em (24 Cores, desativa o efeito dithering)</translation>
+        <translation>Renderização em (24 Cores, desativa dithering)</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="410"/>
@@ -4901,7 +4901,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../gamepropertiesdialog.ui" line="450"/>
         <source>PGXP Geometry Correction</source>
-        <translation>PGXP Correção Geometrica</translation>
+        <translation>PGXP Correção Geométrica</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="470"/>
@@ -4921,7 +4921,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../gamepropertiesdialog.ui" line="501"/>
         <source>CD-ROM Read Speedup:</source>
-        <translation>Velocidade de Leitura CD-Rom:</translation>
+        <translation>Velocidade de leitura CD-Rom:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="514"/>
@@ -4976,7 +4976,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../gamepropertiesdialog.ui" line="567"/>
         <source>Runahead Frames:</source>
-        <translation>Avanço de Quadros:</translation>
+        <translation>Avanço de quadros:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="580"/>
@@ -5240,7 +5240,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="23"/>
         <source>Force Software Renderer</source>
-        <translation>Forçar Renderização por Software</translation>
+        <translation>Forçar renderização por Software</translation>
     </message>
     <message>
         <source>Enable Interlacing</source>
@@ -5249,12 +5249,12 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="24"/>
         <source>Force Interlacing</source>
-        <translation>Força o Entrelaçamento</translation>
+        <translation>Forçar o Entrelaçamento</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="25"/>
         <source>Disable True Color</source>
-        <translation>Desativar Cor Real (True Color)</translation>
+        <translation>Desativar cor real</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="26"/>
@@ -5264,7 +5264,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="27"/>
         <source>Disable Scaled Dithering</source>
-        <translation>Desativar Escalonamento do Dithering</translation>
+        <translation>Desativar dithering escalonado</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="28"/>
@@ -5274,7 +5274,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="29"/>
         <source>Disable Widescreen</source>
-        <translation>Desativar Hack de tela panorâmica</translation>
+        <translation>Desativar hack de tela panorâmica</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="30"/>
@@ -5289,7 +5289,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="32"/>
         <source>Disable PGXP Texture Correction</source>
-        <translation>Desligar Correção de Textura (PGXP)</translation>
+        <translation>Desligar correção de textura (PGXP)</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="33"/>
@@ -5299,7 +5299,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="34"/>
         <source>Force PGXP Vertex Cache</source>
-        <translation>Força o armazenamento de cache em modo PGXP</translation>
+        <translation>Forçar armazenamento em modo PGXP</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="35"/>
@@ -5309,7 +5309,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="38"/>
         <source>Force Recompiler LUT Fastmem</source>
-        <translation>Forçar Recompilador LUT Fastmen</translation>
+        <translation>Forçar recompilador LUT Fastmen</translation>
     </message>
     <message>
         <source>Disable Forcing Controller Analog Mode on Reset</source>
@@ -5641,7 +5641,7 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../generalsettingswidget.cpp" line="88"/>
         <location filename="../generalsettingswidget.cpp" line="92"/>
         <source>Enable Discord Presence</source>
-        <translation>Ativar Presença Rica do Discord</translation>
+        <translation>Ativar presença rica do Discord</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="93"/>
@@ -7318,7 +7318,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../core/settings.cpp" line="911"/>
         <source>Shared Between All Games</source>
-        <translation>Compartrilhada Entre Jogos</translation>
+        <translation>Compartilhada Entre Jogos</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="912"/>
