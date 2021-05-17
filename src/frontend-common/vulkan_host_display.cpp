@@ -72,6 +72,8 @@ void* VulkanHostDisplay::GetRenderContext() const
 
 bool VulkanHostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
 {
+  g_vulkan_context->WaitForGPUIdle();
+
   if (new_wi.type == WindowInfo::Type::Surfaceless)
   {
     g_vulkan_context->ExecuteCommandBuffer(true);
