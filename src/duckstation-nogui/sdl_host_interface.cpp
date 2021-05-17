@@ -97,6 +97,9 @@ bool SDLHostInterface::SetFullscreen(bool enabled)
 
   SDL_SetWindowFullscreen(m_window, enabled ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
   m_fullscreen = enabled;
+
+  const bool hide_cursor = (enabled && GetBoolSettingValue("Main", "HideCursorInFullscreen", true));
+  SDL_ShowCursor(hide_cursor ? SDL_DISABLE : SDL_ENABLE);
   return true;
 }
 
@@ -145,10 +148,7 @@ bool SDLHostInterface::CreatePlatformWindow(bool fullscreen)
   }
 
   if (fullscreen || m_fullscreen)
-  {
-    SDL_SetWindowFullscreen(m_window, SDL_WINDOW_FULLSCREEN_DESKTOP);
-    m_fullscreen = true;
-  }
+    SetFullscreen(true);
 
   ImGui_ImplSDL2_Init(m_window);
 

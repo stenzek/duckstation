@@ -514,7 +514,8 @@ void CommonHostInterface::CreateImGuiContext()
   ImGui::GetIO().IniFilename = nullptr;
 #ifndef __ANDROID__
   // Android has no keyboard, nor are we using ImGui for any actual user-interactable windows.
-  ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad;
+  ImGui::GetIO().ConfigFlags |=
+    ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad | ImGuiConfigFlags_NoMouseCursorChange;
 #endif
 }
 
