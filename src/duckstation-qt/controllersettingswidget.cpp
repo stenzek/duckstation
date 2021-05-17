@@ -463,7 +463,7 @@ void ControllerSettingsWidget::createPortBindingSettingsUi(int index, PortSettin
     QStringList option_list;
     option_list.push_back(QString());
     for (const auto& [button_name, button_code] : buttons)
-      option_list.push_back(QString::fromStdString(button_name));
+      option_list.push_back(qApp->translate(cname, button_name.c_str()));
 
     for (u32 autofire_index = 0; autofire_index < QtHostInterface::NUM_CONTROLLER_AUTOFIRE_BUTTONS; autofire_index++)
     {
