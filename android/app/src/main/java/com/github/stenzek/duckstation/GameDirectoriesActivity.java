@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.FileUtils;
 import android.util.Log;
 import android.util.Property;
 import android.view.LayoutInflater;
@@ -290,6 +291,17 @@ public class GameDirectoriesActivity extends AppCompatActivity {
             case REQUEST_ADD_DIRECTORY_TO_GAME_LIST: {
                 if (resultCode != RESULT_OK || data.getData() == null)
                     return;
+
+                // Use legacy storage on devices older than Android 9... apparently some of them
+                // have broken storage access framework....
+                if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.P) {
+                    final String path = FileHelper.getFullPathFromTreeUri(data.getData(), this);
+                    if (path != null) {
+                        addSearchDirectory(this, path, true);
+                        mDirectoryListAdapter.reload();
+                        return;
+                    }
+                }
 
                 try {
                     getContentResolver().takePersistableUriPermission(data.getData(),
