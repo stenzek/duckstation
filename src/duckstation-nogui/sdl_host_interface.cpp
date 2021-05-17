@@ -95,7 +95,36 @@ bool SDLHostInterface::SetFullscreen(bool enabled)
   if (m_fullscreen == enabled)
     return true;
 
-  SDL_SetWindowFullscreen(m_window, enabled ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+  const std::string fullscreen_mode(GetStringSettingValue("GPU", "FullscreenMode", ""));
+  const bool is_exclusive_fullscreen = (enabled && !fullscreen_mode.empty() && m_display->SupportsFullscreen());
+  const bool was_exclusive_fullscreen = m_display->IsFullscreen();
+
+  if (was_exclusive_fullscreen)
+    m_display->SetFullscreen(false, 0, 0, 0.0f);
+
+  SDL_SetWindowFullscreen(m_window, (enabled && !is_exclusive_fullscreen) ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+
+  if (is_exclusive_fullscreen)
+  {
+    u32 width, height;
+    float refresh_rate;
+    bool result = false;
+
+    if (ParseFullscreenMode(fullscreen_mode, &width, &height, &refresh_rate))
+    {
+      result = m_display->SetFullscreen(true, width, height, refresh_rate);
+      if (result)
+      {
+        AddOSDMessage(TranslateStdString("OSDMessage", "Acquired exclusive fullscreen."), 10.0f);
+      }
+      else
+      {
+        AddOSDMessage(TranslateStdString("OSDMessage", "Failed to acquire exclusive fullscreen."), 10.0f);
+        enabled = false;
+      }
+    }
+  }
+
   m_fullscreen = enabled;
 
   const bool hide_cursor = (enabled && GetBoolSettingValue("Main", "HideCursorInFullscreen", true));
