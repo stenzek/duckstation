@@ -1297,6 +1297,9 @@ void DrawSettingsWindow()
         settings_changed |=
           ToggleButton("Start Fullscreen", "Automatically switches to fullscreen mode when the program is started.",
                        &s_settings_copy.start_fullscreen);
+        settings_changed |= ToggleButtonForNonSetting(
+          "Hide Cursor In Fullscreen", "Hides the mouse pointer/cursor when the emulator is in fullscreen mode.",
+          "Main", "HideCursorInFullscreen", true);
         settings_changed |=
           ToggleButton("Load Devices From Save States",
                        "When enabled, memory cards and controllers will be overwritten when save states are loaded.",
