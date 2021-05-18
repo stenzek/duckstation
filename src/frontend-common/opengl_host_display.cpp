@@ -381,6 +381,7 @@ bool OpenGLHostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_vie
   if (!m_gl_context)
   {
     Log_ErrorPrintf("Failed to create any GL context");
+    m_gl_context.reset();
     return false;
   }
 
