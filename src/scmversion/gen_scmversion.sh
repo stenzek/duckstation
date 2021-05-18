@@ -3,7 +3,7 @@
 VERSION_FILE="scmversion.cpp"
 HASH=$(git rev-parse HEAD)
 BRANCH=$(git rev-parse --abbrev-ref HEAD | tr -d '\r\n')
-TAG=$(git describe --tags --dirty --exclude latest --exclude preview | tr -d '\r\n')
+TAG=$(git describe --tags --dirty --exclude latest --exclude preview --exclude play-store-release | tr -d '\r\n')
 DATE=$(git log -1 --date=iso8601-strict --format=%cd)
 
 SIGNATURE_LINE="// ${HASH} ${BRANCH} ${TAG} ${DATE}"
