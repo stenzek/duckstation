@@ -28,6 +28,7 @@ public:
 
   MemoryCard* GetMemoryCard(u32 slot) { return m_memory_cards[slot].get(); }
   void SetMemoryCard(u32 slot, std::unique_ptr<MemoryCard> dev);
+  std::unique_ptr<MemoryCard> RemoveMemoryCard(u32 slot);
 
   Multitap* GetMultitap(u32 slot) { return &m_multitaps[slot]; };
 

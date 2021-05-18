@@ -293,6 +293,14 @@ void Pad::SetMemoryCard(u32 slot, std::unique_ptr<MemoryCard> dev)
   m_memory_cards[slot] = std::move(dev);
 }
 
+std::unique_ptr<MemoryCard> Pad::RemoveMemoryCard(u32 slot)
+{
+  std::unique_ptr<MemoryCard> ret = std::move(m_memory_cards[slot]);
+  if (ret)
+    ret->Reset();
+  return ret;
+}
+
 u32 Pad::ReadRegister(u32 offset)
 {
   switch (offset)

@@ -181,6 +181,8 @@ void UpdateControllers();
 void UpdateControllerSettings();
 void ResetControllers();
 void UpdateMemoryCards();
+bool HasMemoryCard(u32 slot);
+void SwapMemoryCards();
 void UpdateMultitaps();
 
 /// Dumps RAM to a file.
