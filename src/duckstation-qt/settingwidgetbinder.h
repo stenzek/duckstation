@@ -71,8 +71,26 @@ struct SettingAccessor<QComboBox>
   static float getFloatValue(const QComboBox* widget) { return static_cast<float>(widget->currentIndex()); }
   static void setFloatValue(QComboBox* widget, float value) { widget->setCurrentIndex(static_cast<int>(value)); }
 
-  static QString getStringValue(const QComboBox* widget) { return widget->currentText(); }
-  static void setStringValue(QComboBox* widget, const QString& value) { widget->setCurrentText(value); }
+  static QString getStringValue(const QComboBox* widget)
+  {
+    const QVariant currentData(widget->currentData());
+    if (currentData.type() == QVariant::String)
+      return currentData.toString();
+
+    return widget->currentText();
+  }
+
+  static void setStringValue(QComboBox* widget, const QString& value)
+  {
+    const int index = widget->findData(value);
+    if (index >= 0)
+    {
+      widget->setCurrentIndex(index);
+      return;
+    }
+
+    widget->setCurrentText(value);
+  }
 
   template<typename F>
   static void connectValueChanged(QComboBox* widget, F func)

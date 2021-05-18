@@ -460,10 +460,10 @@ void ControllerSettingsWidget::createPortBindingSettingsUi(int index, PortSettin
     QGridLayout* autofire_layout = new QGridLayout();
     autofire_layout->setContentsMargins(0, 0, 0, 0);
 
-    QStringList option_list;
-    option_list.push_back(QString());
+    QVector<QPair<QString, QVariant>> option_list;
+    option_list.push_back({});
     for (const auto& [button_name, button_code] : buttons)
-      option_list.push_back(qApp->translate(cname, button_name.c_str()));
+      option_list.push_back({qApp->translate(cname, button_name.c_str()), QString::fromStdString(button_name)});
 
     for (u32 autofire_index = 0; autofire_index < QtHostInterface::NUM_CONTROLLER_AUTOFIRE_BUTTONS; autofire_index++)
     {
@@ -471,7 +471,8 @@ void ControllerSettingsWidget::createPortBindingSettingsUi(int index, PortSettin
       autofire_layout->addWidget(new QLabel(tr("Auto Fire %1").arg(autofire_index + 1), collapsible), autofire_index,
                                  0);
       QComboBox* button_cb = new QComboBox(collapsible);
-      button_cb->addItems(option_list);
+      for (const auto& it : option_list)
+        button_cb->addItem(it.first, it.second);
       autofire_layout->addWidget(button_cb, autofire_index, 1);
       SettingWidgetBinder::BindWidgetToStringSetting(
         m_host_interface, button_cb, section_name,
