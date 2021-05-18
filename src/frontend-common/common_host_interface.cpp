@@ -1999,6 +1999,12 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                    }
                  });
 
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("SwapMemoryCards"),
+                 StaticString(TRANSLATABLE("Hotkeys", "Swap Memory Card Slots")), [this](bool pressed) {
+                   if (pressed && System::IsValid())
+                     SwapMemoryCards();
+                 });
+
 #ifndef __ANDROID__
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("FrameStep"),
                  StaticString(TRANSLATABLE("Hotkeys", "Frame Step")), [this](bool pressed) {
@@ -3562,6 +3568,38 @@ void CommonHostInterface::ToggleWidescreen()
   }
 
   GTE::UpdateAspectRatio();
+}
+
+void CommonHostInterface::SwapMemoryCards()
+{
+  System::SwapMemoryCards();
+
+  if (System::HasMemoryCard(0) && System::HasMemoryCard(1))
+  {
+    g_host_interface->AddOSDMessage(
+      g_host_interface->TranslateStdString("OSDMessage", "Swapped memory card ports. Both ports have a memory card."),
+      10.0f);
+  }
+  else if (System::HasMemoryCard(1))
+  {
+    g_host_interface->AddOSDMessage(
+      g_host_interface->TranslateStdString("OSDMessage",
+                                           "Swapped memory card ports. Port 2 has a memory card, Port 1 is empty."),
+      10.0f);
+  }
+  else if (System::HasMemoryCard(0))
+  {
+    g_host_interface->AddOSDMessage(
+      g_host_interface->TranslateStdString("OSDMessage",
+                                           "Swapped memory card ports. Port 1 has a memory card, Port 2 is empty."),
+      10.0f);
+  }
+  else
+  {
+    g_host_interface->AddOSDMessage(
+      g_host_interface->TranslateStdString("OSDMessage", "Swapped memory card ports. Neither port has a memory card."),
+      10.0f);
+  }
 }
 
 bool CommonHostInterface::ParseFullscreenMode(const std::string_view& mode, u32* width, u32* height,

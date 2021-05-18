@@ -1836,6 +1836,19 @@ void UpdateMemoryCards()
   }
 }
 
+bool HasMemoryCard(u32 slot)
+{
+  return (g_pad.GetMemoryCard(slot) != nullptr);
+}
+
+void SwapMemoryCards()
+{
+  std::unique_ptr<MemoryCard> first = g_pad.RemoveMemoryCard(0);
+  std::unique_ptr<MemoryCard> second = g_pad.RemoveMemoryCard(1);
+  g_pad.SetMemoryCard(0, std::move(second));
+  g_pad.SetMemoryCard(1, std::move(first));
+}
+
 void UpdateMultitaps()
 {
   switch (g_settings.multitap_mode)

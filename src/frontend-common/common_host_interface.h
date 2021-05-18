@@ -274,6 +274,9 @@ public:
   /// Toggle Widescreen Hack and Aspect Ratio
   void ToggleWidescreen();
 
+  /// Swaps memory cards in slot 1/2.
+  void SwapMemoryCards();
+
   /// Parses a fullscreen mode into its components (width * height @ refresh hz)
   static bool ParseFullscreenMode(const std::string_view& mode, u32* width, u32* height, float* refresh_rate);
 
