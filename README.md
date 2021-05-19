@@ -19,7 +19,6 @@ A "BIOS" ROM image is required to to start the emulator and to play games. You c
 Older entries are available at https://github.com/stenzek/duckstation/blob/master/NEWS.md
 
 - 2021/05/16: Auto fire (toggle pressing) buttons added.
-- 2021/05/10: libretro core re-added. Commercial distribution of the DuckStation libretro core is **NOT PERMITTED**.
 - 2021/05/02: New pause menu added to Android app.
 - 2021/04/29: Custom aspect ratio support added.
 - 2021/03/20: Memory card editor added to Android app.
@@ -182,13 +181,14 @@ DuckStation is available as a libretro core, which can be loaded into a frontend
 
 The DuckStation libretro core is not covered by the GPL license, and COMMERCIAL DISTRIBUTION IS PROHIBITED. By downloading the libretro core, you agree that you will not distribute it with any paid applications, services, or products.
 
-Prebuilt binaries for 64-bit Windows, Linux and Android can be found on the releases page. Direct links:
-- 64-bit Windows: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro.dll.zip
-- 64-bit Linux: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro_x64.so.zip
-- armv7 Linux: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro_linux_armv7.so.zip
-- armv7 Android: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro_android_armv7.so.zip
-- AArch64 Linux: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro_linux_aarch64.so.zip
-- AArch64 Android: https://github.com/stenzek/duckstation/releases/download/latest/duckstation_libretro_android_aarch64.so.zip
+The core is maintained by a third party, and is not provided as part of the GitHub release. It can be downloaded from:
+
+- Windows x64 (64-bit): https://www.duckstation.org/libretro/duckstation_libretro_windows_x64.zip
+- Android AArch64 (64-bit): https://www.duckstation.org/libretro/duckstation_libretro_android_aarch64.zip
+- Android armv7 (32-bit): https://www.duckstation.org/libretro/duckstation_libretro_android_armv7.zip
+- Linux x64 (64-bit): https://www.duckstation.org/libretro/duckstation_libretro_linux_x64.zip
+- Linux AArch64 (64-bit): https://www.duckstation.org/libretro/duckstation_libretro_linux_aarch64.zip
+- Linux armv7 (32-bit): https://www.duckstation.org/libretro/duckstation_libretro_linux_armv7.zip
 
 ## Building
 
