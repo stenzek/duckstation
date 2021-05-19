@@ -728,6 +728,26 @@ static std::optional<std::string> GetEntryValueForKey(const Entry& entry, const 
     else
       return entry.input_profile_name;
   }
+  else if (key == "ForceSoftwareRenderer")
+  {
+    return entry.HasTrait(Trait::ForceSoftwareRenderer) ? "true" : "false";
+  }
+  else if (key == "ForceSoftwareRendererForReadbacks")
+  {
+    return entry.HasTrait(Trait::ForceSoftwareRendererForReadbacks) ? "true" : "false";
+  }
+  else if (key == "DisableWidescreen")
+  {
+    return entry.HasTrait(Trait::DisableWidescreen) ? "true" : "false";
+  }
+  else if (key == "ForcePGXPVertexCache")
+  {
+    return entry.HasTrait(Trait::ForcePGXPVertexCache) ? "true" : "false";
+  }
+  else if (key == "ForcePGXPCPUMode")
+  {
+    return entry.HasTrait(Trait::ForcePGXPCPUMode) ? "true" : "false";
+  }
   else
   {
     Log_ErrorPrintf("Unknown key: %s", std::string(key).c_str());
@@ -979,6 +999,41 @@ static void SetEntryValueForKey(Entry& entry, const std::string_view& key, const
       entry.input_profile_name.clear();
     else
       entry.input_profile_name = value.value();
+  }
+  else if (key == "ForceSoftwareRenderer")
+  {
+    if (!value.has_value() || !StringUtil::FromChars<bool>(value.value()).value_or(false))
+      entry.RemoveTrait(Trait::ForceSoftwareRenderer);
+    else
+      entry.AddTrait(Trait::ForceSoftwareRenderer);
+  }
+  else if (key == "ForceSoftwareRendererForReadbacks")
+  {
+    if (!value.has_value() || !StringUtil::FromChars<bool>(value.value()).value_or(false))
+      entry.RemoveTrait(Trait::ForceSoftwareRendererForReadbacks);
+    else
+      entry.AddTrait(Trait::ForceSoftwareRendererForReadbacks);
+  }
+  else if (key == "DisableWidescreen")
+  {
+    if (!value.has_value() || !StringUtil::FromChars<bool>(value.value()).value_or(false))
+      entry.RemoveTrait(Trait::DisableWidescreen);
+    else
+      entry.AddTrait(Trait::DisableWidescreen);
+  }
+  else if (key == "ForcePGXPVertexCache")
+  {
+    if (!value.has_value() || !StringUtil::FromChars<bool>(value.value()).value_or(false))
+      entry.RemoveTrait(Trait::ForcePGXPVertexCache);
+    else
+      entry.AddTrait(Trait::ForcePGXPVertexCache);
+  }
+  else if (key == "ForcePGXPCPUMode")
+  {
+    if (!value.has_value() || !StringUtil::FromChars<bool>(value.value()).value_or(false))
+      entry.RemoveTrait(Trait::ForcePGXPCPUMode);
+    else
+      entry.AddTrait(Trait::ForcePGXPCPUMode);
   }
   else
   {
