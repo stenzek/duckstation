@@ -982,6 +982,12 @@ void GPU_HW_OpenGL::UpdateDisplay()
 
 void GPU_HW_OpenGL::ReadVRAM(u32 x, u32 y, u32 width, u32 height)
 {
+  if (IsUsingSoftwareRendererForReadbacks())
+  {
+    HandleVRAMReadWithSoftwareRenderer(x, y, width, height);
+    return;
+  }
+
   // Get bounds with wrap-around handled.
   const Common::Rectangle<u32> copy_rect = GetVRAMTransferBounds(x, y, width, height);
   const u32 encoded_width = (copy_rect.GetWidth() + 1) / 2;
@@ -1019,7 +1025,7 @@ void GPU_HW_OpenGL::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
     Log_WarningPrintf("Oversized VRAM fill (%u-%u, %u-%u), CPU round trip", x, x + width, y, y + height);
     ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
     GPU::FillVRAM(x, y, width, height, color);
-    UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, m_vram_shadow.data(), false, false);
+    UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, m_vram_ptr, false, false);
     return;
   }
 
@@ -1182,6 +1188,9 @@ void GPU_HW_OpenGL::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 wid
 
   if (UseVRAMCopyShader(src_x, src_y, dst_x, dst_y, width, height))
   {
+    if (IsUsingSoftwareRendererForReadbacks())
+      GPU_HW::CopyVRAM(src_x, src_y, dst_x, dst_y, width, height);
+
     if (src_dirty)
       UpdateVRAMReadTexture();
     IncludeVRAMDirtyRectangle(dst_bounds);

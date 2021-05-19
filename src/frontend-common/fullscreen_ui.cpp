@@ -1983,11 +1983,6 @@ void DrawSettingsWindow()
           OpenChoiceDialog(ICON_FA_TV "  Fullscreen Resolution", false, std::move(options), std::move(callback));
         }
 
-        settings_changed |=
-          ToggleButton("Enable VSync",
-                       "Synchronizes presentation of the console's frames to the host. Enable for smoother animations.",
-                       &s_settings_copy.video_sync_enabled);
-
         switch (s_settings_copy.gpu_renderer)
         {
 #ifdef WIN32
@@ -2023,6 +2018,20 @@ void DrawSettingsWindow()
           default:
             break;
         }
+
+        if (!s_settings_copy.IsUsingSoftwareRenderer())
+        {
+          settings_changed |=
+            ToggleButton("Use Software Renderer For Readbacks",
+                         "Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result "
+                         "in greater performance.",
+                         &s_settings_copy.gpu_use_software_renderer_for_readbacks);
+        }
+
+        settings_changed |=
+          ToggleButton("Enable VSync",
+                       "Synchronizes presentation of the console's frames to the host. Enable for smoother animations.",
+                       &s_settings_copy.video_sync_enabled);
 
         settings_changed |= ToggleButton("Optimal Frame Pacing",
                                          "Ensures every frame generated is displayed for optimal pacing. Disable if "

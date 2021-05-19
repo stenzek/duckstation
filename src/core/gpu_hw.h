@@ -8,6 +8,10 @@
 #include <utility>
 #include <vector>
 
+class GPU_SW_Backend;
+struct GPUBackendCommand;
+struct GPUBackendDrawCommand;
+
 class GPU_HW : public GPU
 {
 public:
@@ -254,6 +258,13 @@ protected:
            (m_batch.transparency_mode != GPUTransparencyMode::Disabled && !m_supports_dual_source_blend);
   }
 
+  ALWAYS_INLINE bool IsUsingSoftwareRendererForReadbacks() { return static_cast<bool>(m_sw_renderer); }
+
+  void FillBackendCommandParameters(GPUBackendCommand* cmd) const;
+  void FillDrawCommand(GPUBackendDrawCommand* cmd, GPURenderCommand rc) const;
+  void HandleVRAMReadWithSoftwareRenderer(u32 x, u32 y, u32 width, u32 height);
+  void UpdateSoftwareRenderer(bool copy_vram_from_hw);
+
   void FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color) override;
   void UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, bool set_mask, bool check_mask) override;
   void CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height) override;
@@ -308,6 +319,7 @@ protected:
                                    u32 tex_height) const;
 
   HeapArray<u16, VRAM_WIDTH * VRAM_HEIGHT> m_vram_shadow;
+  std::unique_ptr<GPU_SW_Backend> m_sw_renderer;
 
   BatchVertex* m_batch_start_vertex_ptr = nullptr;
   BatchVertex* m_batch_end_vertex_ptr = nullptr;

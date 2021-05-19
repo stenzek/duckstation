@@ -506,6 +506,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetIntValue("GPU", "ResolutionScale", 1);
   si.SetIntValue("GPU", "Multisamples", 1);
   si.SetBoolValue("GPU", "UseDebugDevice", false);
+  si.SetBoolValue("GPU", "UseSoftwareRendererForReadbacks", false);
   si.SetBoolValue("GPU", "PerSampleShading", false);
   si.SetBoolValue("GPU", "UseThread", true);
   si.SetBoolValue("GPU", "ThreadedPresentation", true);
@@ -783,6 +784,7 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.gpu_multisamples != old_settings.gpu_multisamples ||
         g_settings.gpu_per_sample_shading != old_settings.gpu_per_sample_shading ||
         g_settings.gpu_use_thread != old_settings.gpu_use_thread ||
+        g_settings.gpu_use_software_renderer_for_readbacks != old_settings.gpu_use_software_renderer_for_readbacks ||
         g_settings.gpu_fifo_size != old_settings.gpu_fifo_size ||
         g_settings.gpu_max_run_ahead != old_settings.gpu_max_run_ahead ||
         g_settings.gpu_true_color != old_settings.gpu_true_color ||

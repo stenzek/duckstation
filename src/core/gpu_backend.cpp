@@ -12,9 +12,9 @@ GPUBackend::GPUBackend() = default;
 
 GPUBackend::~GPUBackend() = default;
 
-bool GPUBackend::Initialize()
+bool GPUBackend::Initialize(bool force_thread)
 {
-  if (g_settings.gpu_use_thread)
+  if (force_thread || g_settings.gpu_use_thread)
     StartGPUThread();
 
   return true;
