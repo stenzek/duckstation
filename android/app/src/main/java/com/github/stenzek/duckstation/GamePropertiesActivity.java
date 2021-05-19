@@ -135,6 +135,11 @@ public class GamePropertiesActivity extends AppCompatActivity {
             activity.createBooleanGameSetting(ps, "GPUPGXP", R.string.settings_pgxp_geometry_correction);
             activity.createBooleanGameSetting(ps, "PGXPPreserveProjFP", R.string.settings_pgxp_preserve_projection_precision);
             activity.createBooleanGameSetting(ps, "GPUPGXPDepthBuffer", R.string.settings_pgxp_depth_buffer);
+            activity.createBooleanGameSetting(ps, "ForceSoftwareRenderer", R.string.settings_use_software_renderer);
+            activity.createBooleanGameSetting(ps, "ForceSoftwareRendererForReadbacks", R.string.settings_use_software_renderer_for_readbacks);
+            activity.createBooleanGameSetting(ps, "DisableWidescreen", R.string.settings_disable_widescreen);
+            activity.createBooleanGameSetting(ps, "ForcePGXPVertexCache", R.string.settings_pgxp_vertex_cache);
+            activity.createBooleanGameSetting(ps, "ForcePGXPCPUMode", R.string.settings_pgxp_cpu_mode);
 
             setPreferenceScreen(ps);
         }
