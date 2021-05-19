@@ -630,7 +630,6 @@ bool AndroidHostInterface::AcquireHostDisplay()
   if (!CreateHostDisplayResources())
   {
     ReportError("Failed to create host display resources");
-    ReleaseHostDisplayResources();
     ReleaseHostDisplay();
     return false;
   }
