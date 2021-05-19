@@ -346,6 +346,14 @@ struct GPUBackendDrawPolygonCommand : public GPUBackendDrawCommand
       };
       u16 texcoord;
     };
+
+    ALWAYS_INLINE void Set(s32 x_, s32 y_, u32 color_, u16 texcoord_)
+    {
+      x = x_;
+      y = y_;
+      color = color_;
+      texcoord = texcoord_;
+    }
   };
 
   Vertex vertices[0];
@@ -374,6 +382,13 @@ struct GPUBackendDrawLineCommand : public GPUBackendDrawCommand
       };
       u32 color;
     };
+
+    ALWAYS_INLINE void Set(s32 x_, s32 y_, u32 color_)
+    {
+      x = x_;
+      y = y_;
+      color = color_;
+    }
   };
 
   Vertex vertices[0];

@@ -5,6 +5,7 @@
 #include "common/state_wrapper.h"
 #include "common/timer.h"
 #include "gpu_hw_shadergen.h"
+#include "gpu_sw_backend.h"
 #include "host_display.h"
 #include "host_interface.h"
 #include "shader_cache_version.h"
@@ -946,6 +947,12 @@ void GPU_HW_D3D11::UpdateDisplay()
 
 void GPU_HW_D3D11::ReadVRAM(u32 x, u32 y, u32 width, u32 height)
 {
+  if (IsUsingSoftwareRendererForReadbacks())
+  {
+    HandleVRAMReadWithSoftwareRenderer(x, y, width, height);
+    return;
+  }
+
   // Get bounds with wrap-around handled.
   const Common::Rectangle<u32> copy_rect = GetVRAMTransferBounds(x, y, width, height);
   const u32 encoded_width = (copy_rect.GetWidth() + 1) / 2;
@@ -987,7 +994,7 @@ void GPU_HW_D3D11::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
     Log_WarningPrintf("Oversized VRAM fill (%u-%u, %u-%u), CPU round trip", x, x + width, y, y + height);
     ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
     GPU::FillVRAM(x, y, width, height, color);
-    UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, m_vram_shadow.data(), false, false);
+    UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, m_vram_ptr, false, false);
     return;
   }
 
@@ -1045,6 +1052,9 @@ void GPU_HW_D3D11::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 widt
 {
   if (UseVRAMCopyShader(src_x, src_y, dst_x, dst_y, width, height) || IsUsingMultisampling())
   {
+    if (IsUsingSoftwareRendererForReadbacks())
+      GPU_HW::CopyVRAM(src_x, src_y, dst_x, dst_y, width, height);
+
     const Common::Rectangle<u32> src_bounds = GetVRAMTransferBounds(src_x, src_y, width, height);
     const Common::Rectangle<u32> dst_bounds = GetVRAMTransferBounds(dst_x, dst_y, width, height);
     if (m_vram_dirty_rect.Intersects(src_bounds))

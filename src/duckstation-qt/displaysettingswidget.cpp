@@ -48,6 +48,8 @@ DisplaySettingsWidget::DisplaySettingsWidget(QtHostInterface* host_interface, QW
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.gpuThread, "GPU", "UseThread", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.threadedPresentation, "GPU",
                                                "ThreadedPresentation", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.useSoftwareRendererForReadbacks, "GPU",
+                                               "UseSoftwareRendererForReadbacks", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showOSDMessages, "Display", "ShowOSDMessages",
                                                true);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showFPS, "Display", "ShowFPS", false);
@@ -130,6 +132,10 @@ DisplaySettingsWidget::DisplaySettingsWidget(QtHostInterface* host_interface, QW
   dialog->registerWidgetHelp(m_ui.gpuThread, tr("Threaded Rendering"), tr("Checked"),
                              tr("Uses a second thread for drawing graphics. Currently only available for the software "
                                 "renderer, but can provide a significant speed improvement, and is safe to use."));
+  dialog->registerWidgetHelp(
+    m_ui.useSoftwareRendererForReadbacks, tr("Use Software Renderer For Readbacks"), tr("Unchecked"),
+    tr("Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater "
+       "performance when using graphical enhancements with the hardware renderer."));
   dialog->registerWidgetHelp(m_ui.showOSDMessages, tr("Show OSD Messages"), tr("Checked"),
                              tr("Shows on-screen-display messages when events occur such as save states being "
                                 "created/loaded, screenshots being taken, etc."));
@@ -151,7 +157,7 @@ DisplaySettingsWidget::DisplaySettingsWidget(QtHostInterface* host_interface, QW
   {
     QCheckBox* cb = new QCheckBox(tr("Use Blit Swap Chain"), m_ui.basicGroupBox);
     SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, cb, "Display", "UseBlitSwapChain", false);
-    m_ui.basicCheckboxGridLayout->addWidget(cb, 2, 0, 1, 1);
+    m_ui.basicCheckboxGridLayout->addWidget(cb, 2, 1, 1, 1);
     dialog->registerWidgetHelp(cb, tr("Use Blit Swap Chain"), tr("Unchecked"),
                                tr("Uses a blit presentation model instead of flipping when using the Direct3D 11 "
                                   "renderer. This usually results in slower performance, but may be required for some "

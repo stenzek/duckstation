@@ -108,6 +108,7 @@ struct Settings
   u32 gpu_resolution_scale = 1;
   u32 gpu_multisamples = 1;
   bool gpu_use_thread = true;
+  bool gpu_use_software_renderer_for_readbacks = false;
   bool gpu_threaded_presentation = true;
   bool gpu_use_debug_device = false;
   bool gpu_per_sample_shading = false;

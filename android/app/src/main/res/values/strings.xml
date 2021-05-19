@@ -346,4 +346,6 @@
     <string name="emulation_menu_toggle_analog_mode">Toggle Controller Analog Mode</string>
     <string name="emulation_menu_reset_console">Reset Console</string>
     <string name="emulation_menu_exit_game">Exit Game</string>
+    <string name="settings_use_software_renderer_for_readbacks">Use Software Renderer For Readbacks</string>
+    <string name="settings_summary_use_software_renderer_for_readbacks">Runs the software renderer in parallel for VRAM readbacks. On some devices, this may result in greater performance when using graphical enhancements with the hardware renderer.</string>
 </resources>

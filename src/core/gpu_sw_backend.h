@@ -10,7 +10,7 @@ public:
   GPU_SW_Backend();
   ~GPU_SW_Backend() override;
 
-  bool Initialize() override;
+  bool Initialize(bool force_thread) override;
   void Reset(bool clear_vram) override;
 
   ALWAYS_INLINE_RELEASE u16 GetPixel(const u32 x, const u32 y) const { return m_vram[VRAM_WIDTH * y + x]; }

@@ -47,7 +47,7 @@ GPURenderer GPU_SW::GetRendererType() const
 
 bool GPU_SW::Initialize(HostDisplay* host_display)
 {
-  if (!GPU::Initialize(host_display) || !m_backend.Initialize())
+  if (!GPU::Initialize(host_display) || !m_backend.Initialize(false))
     return false;
 
   static constexpr auto formats_for_16bit = make_array(HostDisplayPixelFormat::RGB565, HostDisplayPixelFormat::RGBA5551,

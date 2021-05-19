@@ -70,6 +70,12 @@
             app:entryValues="@array/settings_advanced_display_fps_limit_values"
             app:useSimpleSummaryProvider="true"
             app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat
+            app:key="GPU/UseSoftwareRendererForReadbacks"
+            app:title="@string/settings_use_software_renderer_for_readbacks"
+            app:defaultValue="false"
+            app:summary="@string/settings_summary_use_software_renderer_for_readbacks"
+            app:iconSpaceReserved="false" />
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/settings_category_audio" app:iconSpaceReserved="false">

@@ -21,7 +21,7 @@ public:
 
   ALWAYS_INLINE u16* GetVRAM() const { return m_vram_ptr; }
 
-  virtual bool Initialize();
+  virtual bool Initialize(bool force_thread);
   virtual void UpdateSettings();
   virtual void Reset(bool clear_vram);
   virtual void Shutdown();
