@@ -21,6 +21,7 @@ namespace GameSettings {
 std::array<std::pair<const char*, const char*>, static_cast<u32>(Trait::Count)> s_trait_names = {{
   {"ForceInterpreter", TRANSLATABLE("GameSettingsTrait", "Force Interpreter")},
   {"ForceSoftwareRenderer", TRANSLATABLE("GameSettingsTrait", "Force Software Renderer")},
+  {"ForceSoftwareRendererForReadbacks", TRANSLATABLE("GameSettingsTrait", "Force Software Renderer For Readbacks")},
   {"ForceInterlacing", TRANSLATABLE("GameSettingsTrait", "Force Interlacing")},
   {"DisableTrueColor", TRANSLATABLE("GameSettingsTrait", "Disable True Color")},
   {"DisableUpscaling", TRANSLATABLE("GameSettingsTrait", "Disable Upscaling")},
@@ -1343,6 +1344,12 @@ void Entry::ApplySettings(bool display_osd_messages) const
     }
 
     g_settings.gpu_pgxp_depth_buffer = false;
+  }
+
+  if (HasTrait(Trait::ForceSoftwareRenderer))
+  {
+    Log_WarningPrint("Using software renderer for readbacks.");
+    g_settings.gpu_renderer = GPURenderer::Software;
   }
 
   if (HasTrait(Trait::ForceRecompilerMemoryExceptions))

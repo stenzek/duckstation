@@ -13,6 +13,7 @@ enum class Trait : u32
 {
   ForceInterpreter,
   ForceSoftwareRenderer,
+  ForceSoftwareRendererForReadbacks,
   ForceInterlacing,
   DisableTrueColor,
   DisableUpscaling,
