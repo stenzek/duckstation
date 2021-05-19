@@ -346,4 +346,8 @@
    	<string name="emulation_menu_toggle_analog_mode">Режим контроллера</string>
    	<string name="emulation_menu_reset_console">Сброс консоли</string>
 	<string name="emulation_menu_exit_game">Закрыть игру</string>
+	<string name="settings_use_software_renderer_for_readbacks">Программный рендерер для обратных считываний</string>
+	<string name="settings_summary_use_software_renderer_for_readbacks">Запускать параллельно программный рендерер для обратного считывания VRAM. На некоторых устройствах может существенно повысить производительность при использовании улучшений на аппаратном рендеринге.</string>
+    	<string name="settings_use_software_renderer">Использовать программный рендерер</string>
+    	<string name="settings_disable_widescreen">Отключить широкоформатный режим</string>
 </resources>
