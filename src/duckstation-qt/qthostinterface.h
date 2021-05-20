@@ -3,6 +3,7 @@
 #include "core/host_interface.h"
 #include "core/system.h"
 #include "frontend-common/common_host_interface.h"
+#include "frontend-common/game_list.h"
 #include "qtutils.h"
 #include <QtCore/QByteArray>
 #include <QtCore/QObject>
@@ -26,14 +27,13 @@ class QWidget;
 class QTimer;
 class QTranslator;
 
-class GameList;
-struct GameListEntry;
 class INISettingsInterface;
 
 class MainWindow;
 class QtDisplayWidget;
 
 Q_DECLARE_METATYPE(std::shared_ptr<const SystemBootParameters>);
+Q_DECLARE_METATYPE(const GameListEntry*);
 Q_DECLARE_METATYPE(GPURenderer);
 
 class QtHostInterface final : public QObject, public CommonHostInterface

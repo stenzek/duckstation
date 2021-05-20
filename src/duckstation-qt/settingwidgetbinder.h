@@ -5,7 +5,12 @@
 #include "core/settings.h"
 #include "qthostinterface.h"
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#include <QtGui/QAction>
+#else
 #include <QtWidgets/QAction>
+#endif
+
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QDoubleSpinBox>
@@ -62,7 +67,7 @@ struct SettingAccessor<QLineEdit>
 template<>
 struct SettingAccessor<QComboBox>
 {
-  static bool getBoolValue(const QComboBox* widget) { return widget->currentText() > 0; }
+  static bool getBoolValue(const QComboBox* widget) { return widget->currentIndex() > 0; }
   static void setBoolValue(QComboBox* widget, bool value) { widget->setCurrentIndex(value ? 1 : 0); }
 
   static int getIntValue(const QComboBox* widget) { return widget->currentIndex(); }
@@ -74,8 +79,13 @@ struct SettingAccessor<QComboBox>
   static QString getStringValue(const QComboBox* widget)
   {
     const QVariant currentData(widget->currentData());
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     if (currentData.type() == QVariant::String)
       return currentData.toString();
+#else
+    if (currentData.metaType().id() == QMetaType::QString)
+      return currentData.toString();
+#endif
 
     return widget->currentText();
   }

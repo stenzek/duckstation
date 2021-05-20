@@ -756,7 +756,7 @@ std::optional<unsigned> PromptForAddress(QWidget* parent, const QString& title, 
   bool ok;
   uint address;
   if (address_str.startsWith("0x"))
-    address = address_str.midRef(2).toUInt(&ok, 16);
+    address = address_str.mid(2).toUInt(&ok, 16);
   else
     address = address_str.toUInt(&ok, 16);
   if (code)

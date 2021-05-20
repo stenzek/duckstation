@@ -354,7 +354,9 @@ void AutoUpdaterDialog::downloadUpdateClicked()
 {
   QUrl url(m_download_url);
   QNetworkRequest request(url);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
   request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
+#endif
   QNetworkReply* reply = m_network_access_mgr->get(request);
 
   QProgressDialog progress(tr("Downloading %1...").arg(m_download_url), tr("Cancel"), 0, 1);

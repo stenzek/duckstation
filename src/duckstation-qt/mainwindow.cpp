@@ -26,11 +26,16 @@
 #include <QtCore/QUrl>
 #include <QtGui/QCursor>
 #include <QtGui/QWindowStateChangeEvent>
-#include <QtWidgets/QActionGroup>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QStyleFactory>
 #include <cmath>
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#include <QtGui/QActionGroup>
+#else
+#include <QtWidgets/QActionGroup>
+#endif
 
 static constexpr char DISC_IMAGE_FILTER[] = QT_TRANSLATE_NOOP(
   "MainWindow",

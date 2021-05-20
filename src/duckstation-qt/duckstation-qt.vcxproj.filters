@@ -82,6 +82,7 @@
     <ClCompile Include="achievementlogindialog.cpp" />
     <ClCompile Include="$(IntDir)moc_achievementlogindialog.cpp" />
     <ClCompile Include="collapsiblewidget.cpp" />
+    <ClCompile Include="$(IntDir)moc_collapsiblewidget.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtutils.h" />

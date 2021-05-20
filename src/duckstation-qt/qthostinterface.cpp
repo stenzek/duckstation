@@ -53,6 +53,7 @@ Log_SetChannel(QtHostInterface);
 QtHostInterface::QtHostInterface(QObject* parent) : QObject(parent), CommonHostInterface()
 {
   qRegisterMetaType<std::shared_ptr<const SystemBootParameters>>();
+  qRegisterMetaType<const GameListEntry*>();
   qRegisterMetaType<GPURenderer>();
 }
 
