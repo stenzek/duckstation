@@ -116,7 +116,9 @@ void AutoUpdaterDialog::queueUpdateCheck(bool display_message)
 
   QUrl url(QUrl::fromEncoded(QByteArray(LATEST_TAG_URL)));
   QNetworkRequest request(url);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
   request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
+#endif
   m_network_access_mgr->get(request);
 #else
   emit updateCheckCompleted();
@@ -133,7 +135,9 @@ void AutoUpdaterDialog::queueGetLatestRelease()
 
   QUrl url(QUrl::fromEncoded(QByteArray(url_string)));
   QNetworkRequest request(url);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
   request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
+#endif
   m_network_access_mgr->get(request);
 #endif
 }
@@ -266,7 +270,9 @@ void AutoUpdaterDialog::queueGetChanges()
     StringUtil::StdStringFromFormat(CHANGES_URL, g_scm_hash_str, getCurrentUpdateTag().c_str()));
   QUrl url(QUrl::fromEncoded(QByteArray(url_string.c_str(), static_cast<int>(url_string.size()))));
   QNetworkRequest request(url);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
   request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
+#endif
   m_network_access_mgr->get(request);
 #endif
 }
