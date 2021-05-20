@@ -308,7 +308,7 @@ void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
 
         case SDL_WINDOWEVENT_FOCUS_LOST:
         {
-          if (!m_was_paused_by_focus_loss && !System::IsPaused())
+          if (g_settings.pause_on_focus_loss && System::IsRunning() && !m_was_paused_by_focus_loss)
           {
             PauseSystem(true);
             m_was_paused_by_focus_loss = true;
