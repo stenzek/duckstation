@@ -262,8 +262,12 @@ protected:
 
   void FillBackendCommandParameters(GPUBackendCommand* cmd) const;
   void FillDrawCommand(GPUBackendDrawCommand* cmd, GPURenderCommand rc) const;
-  void HandleVRAMReadWithSoftwareRenderer(u32 x, u32 y, u32 width, u32 height);
   void UpdateSoftwareRenderer(bool copy_vram_from_hw);
+  void ReadSoftwareRendererVRAM(u32 x, u32 y, u32 width, u32 height);
+  void UpdateSoftwareRendererVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, bool set_mask,
+                                  bool check_mask);
+  void FillSoftwareRendererVRAM(u32 x, u32 y, u32 width, u32 height, u32 color);
+  void CopySoftwareRendererVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height);
 
   void FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color) override;
   void UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, bool set_mask, bool check_mask) override;

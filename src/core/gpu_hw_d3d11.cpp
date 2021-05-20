@@ -949,7 +949,7 @@ void GPU_HW_D3D11::ReadVRAM(u32 x, u32 y, u32 width, u32 height)
 {
   if (IsUsingSoftwareRendererForReadbacks())
   {
-    HandleVRAMReadWithSoftwareRenderer(x, y, width, height);
+    ReadSoftwareRendererVRAM(x, y, width, height);
     return;
   }
 
@@ -988,6 +988,9 @@ void GPU_HW_D3D11::ReadVRAM(u32 x, u32 y, u32 width, u32 height)
 
 void GPU_HW_D3D11::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
 {
+  if (IsUsingSoftwareRendererForReadbacks())
+    FillSoftwareRendererVRAM(x, y, width, height, color);
+
   if ((x + width) > VRAM_WIDTH || (y + height) > VRAM_HEIGHT)
   {
     // CPU round trip if oversized for now.
@@ -1015,6 +1018,9 @@ void GPU_HW_D3D11::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
 
 void GPU_HW_D3D11::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, bool set_mask, bool check_mask)
 {
+  if (IsUsingSoftwareRendererForReadbacks())
+    UpdateSoftwareRendererVRAM(x, y, width, height, data, set_mask, check_mask);
+
   const Common::Rectangle<u32> bounds = GetVRAMTransferBounds(x, y, width, height);
   GPU_HW::UpdateVRAM(bounds.left, bounds.top, bounds.GetWidth(), bounds.GetHeight(), data, set_mask, check_mask);
 
@@ -1050,11 +1056,11 @@ void GPU_HW_D3D11::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* d
 
 void GPU_HW_D3D11::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height)
 {
+  if (IsUsingSoftwareRendererForReadbacks())
+    CopySoftwareRendererVRAM(src_x, src_y, dst_x, dst_y, width, height);
+
   if (UseVRAMCopyShader(src_x, src_y, dst_x, dst_y, width, height) || IsUsingMultisampling())
   {
-    if (IsUsingSoftwareRendererForReadbacks())
-      GPU_HW::CopyVRAM(src_x, src_y, dst_x, dst_y, width, height);
-
     const Common::Rectangle<u32> src_bounds = GetVRAMTransferBounds(src_x, src_y, width, height);
     const Common::Rectangle<u32> dst_bounds = GetVRAMTransferBounds(dst_x, dst_y, width, height);
     if (m_vram_dirty_rect.Intersects(src_bounds))

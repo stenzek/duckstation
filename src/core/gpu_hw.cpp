@@ -1092,30 +1092,6 @@ void GPU_HW::ResetBatchVertexDepth()
   m_current_depth = 1;
 }
 
-void GPU_HW::FillBackendCommandParameters(GPUBackendCommand* cmd) const
-{
-  cmd->params.bits = 0;
-  cmd->params.check_mask_before_draw = m_GPUSTAT.check_mask_before_draw;
-  cmd->params.set_mask_while_drawing = m_GPUSTAT.set_mask_while_drawing;
-  cmd->params.active_line_lsb = m_crtc_state.active_line_lsb;
-  cmd->params.interlaced_rendering = m_GPUSTAT.SkipDrawingToActiveField();
-}
-
-void GPU_HW::FillDrawCommand(GPUBackendDrawCommand* cmd, GPURenderCommand rc) const
-{
-  FillBackendCommandParameters(cmd);
-  cmd->rc.bits = rc.bits;
-  cmd->draw_mode.bits = m_draw_mode.mode_reg.bits;
-  cmd->palette.bits = m_draw_mode.palette_reg;
-  cmd->window = m_draw_mode.texture_window;
-}
-
-void GPU_HW::HandleVRAMReadWithSoftwareRenderer(u32 x, u32 y, u32 width, u32 height)
-{
-  DebugAssert(m_sw_renderer);
-  m_sw_renderer->Sync(false);
-}
-
 void GPU_HW::UpdateSoftwareRenderer(bool copy_vram_from_hw)
 {
   const bool current_enabled = (m_sw_renderer != nullptr);
@@ -1154,22 +1130,75 @@ void GPU_HW::UpdateSoftwareRenderer(bool copy_vram_from_hw)
   m_vram_ptr = m_sw_renderer->GetVRAM();
 }
 
+void GPU_HW::FillBackendCommandParameters(GPUBackendCommand* cmd) const
+{
+  cmd->params.bits = 0;
+  cmd->params.check_mask_before_draw = m_GPUSTAT.check_mask_before_draw;
+  cmd->params.set_mask_while_drawing = m_GPUSTAT.set_mask_while_drawing;
+  cmd->params.active_line_lsb = m_crtc_state.active_line_lsb;
+  cmd->params.interlaced_rendering = m_GPUSTAT.SkipDrawingToActiveField();
+}
+
+void GPU_HW::FillDrawCommand(GPUBackendDrawCommand* cmd, GPURenderCommand rc) const
+{
+  FillBackendCommandParameters(cmd);
+  cmd->rc.bits = rc.bits;
+  cmd->draw_mode.bits = m_draw_mode.mode_reg.bits;
+  cmd->palette.bits = m_draw_mode.palette_reg;
+  cmd->window = m_draw_mode.texture_window;
+}
+
+void GPU_HW::ReadSoftwareRendererVRAM(u32 x, u32 y, u32 width, u32 height)
+{
+  DebugAssert(m_sw_renderer);
+  m_sw_renderer->Sync(false);
+}
+
+void GPU_HW::UpdateSoftwareRendererVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, bool set_mask,
+                                        bool check_mask)
+{
+  const u32 num_words = width * height;
+  GPUBackendUpdateVRAMCommand* cmd = m_sw_renderer->NewUpdateVRAMCommand(num_words);
+  FillBackendCommandParameters(cmd);
+  cmd->params.set_mask_while_drawing = set_mask;
+  cmd->params.check_mask_before_draw = check_mask;
+  cmd->x = static_cast<u16>(x);
+  cmd->y = static_cast<u16>(y);
+  cmd->width = static_cast<u16>(width);
+  cmd->height = static_cast<u16>(height);
+  std::memcpy(cmd->data, data, sizeof(u16) * num_words);
+  m_sw_renderer->PushCommand(cmd);
+}
+
+void GPU_HW::FillSoftwareRendererVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
+{
+  GPUBackendFillVRAMCommand* cmd = m_sw_renderer->NewFillVRAMCommand();
+  FillBackendCommandParameters(cmd);
+  cmd->x = static_cast<u16>(x);
+  cmd->y = static_cast<u16>(y);
+  cmd->width = static_cast<u16>(width);
+  cmd->height = static_cast<u16>(height);
+  cmd->color = color;
+  m_sw_renderer->PushCommand(cmd);
+}
+
+void GPU_HW::CopySoftwareRendererVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height)
+{
+  GPUBackendCopyVRAMCommand* cmd = m_sw_renderer->NewCopyVRAMCommand();
+  FillBackendCommandParameters(cmd);
+  cmd->src_x = static_cast<u16>(src_x);
+  cmd->src_y = static_cast<u16>(src_y);
+  cmd->dst_x = static_cast<u16>(dst_x);
+  cmd->dst_y = static_cast<u16>(dst_y);
+  cmd->width = static_cast<u16>(width);
+  cmd->height = static_cast<u16>(height);
+  m_sw_renderer->PushCommand(cmd);
+}
+
 void GPU_HW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
 {
   IncludeVRAMDirtyRectangle(
     Common::Rectangle<u32>::FromExtents(x, y, width, height).Clamped(0, 0, VRAM_WIDTH, VRAM_HEIGHT));
-
-  if (m_sw_renderer)
-  {
-    GPUBackendFillVRAMCommand* cmd = m_sw_renderer->NewFillVRAMCommand();
-    FillBackendCommandParameters(cmd);
-    cmd->x = static_cast<u16>(x);
-    cmd->y = static_cast<u16>(y);
-    cmd->width = static_cast<u16>(width);
-    cmd->height = static_cast<u16>(height);
-    cmd->color = color;
-    m_sw_renderer->PushCommand(cmd);
-  }
 }
 
 void GPU_HW::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, bool set_mask, bool check_mask)
@@ -1182,21 +1211,6 @@ void GPU_HW::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, b
     // set new vertex counter since we want this to take into consideration previous masked pixels
     m_current_depth++;
   }
-
-  if (m_sw_renderer)
-  {
-    const u32 num_words = width * height;
-    GPUBackendUpdateVRAMCommand* cmd = m_sw_renderer->NewUpdateVRAMCommand(num_words);
-    FillBackendCommandParameters(cmd);
-    cmd->params.set_mask_while_drawing = set_mask;
-    cmd->params.check_mask_before_draw = check_mask;
-    cmd->x = static_cast<u16>(x);
-    cmd->y = static_cast<u16>(y);
-    cmd->width = static_cast<u16>(width);
-    cmd->height = static_cast<u16>(height);
-    std::memcpy(cmd->data, data, sizeof(u16) * num_words);
-    m_sw_renderer->PushCommand(cmd);
-  }
 }
 
 void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height)
@@ -1208,19 +1222,6 @@ void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
   {
     // set new vertex counter since we want this to take into consideration previous masked pixels
     m_current_depth++;
-  }
-
-  if (m_sw_renderer)
-  {
-    GPUBackendCopyVRAMCommand* cmd = m_sw_renderer->NewCopyVRAMCommand();
-    FillBackendCommandParameters(cmd);
-    cmd->src_x = static_cast<u16>(src_x);
-    cmd->src_y = static_cast<u16>(src_y);
-    cmd->dst_x = static_cast<u16>(dst_x);
-    cmd->dst_y = static_cast<u16>(dst_y);
-    cmd->width = static_cast<u16>(width);
-    cmd->height = static_cast<u16>(height);
-    m_sw_renderer->PushCommand(cmd);
   }
 }
 
