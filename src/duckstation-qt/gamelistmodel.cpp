@@ -4,6 +4,7 @@
 #include "core/system.h"
 #include <QtCore/QDate>
 #include <QtCore/QDateTime>
+#include <QtGui/QGuiApplication>
 #include <QtGui/QIcon>
 #include <QtGui/QPainter>
 
@@ -48,7 +49,9 @@ static void resizeAndPadPixmap(QPixmap* pm, int expected_width, int expected_hei
 
 static QPixmap createPlaceholderImage(int width, int height, float scale, const std::string& title)
 {
+  const float dpr = qApp->devicePixelRatio();
   QPixmap pm(QStringLiteral(":/icons/cover-placeholder.png"));
+  pm.setDevicePixelRatio(dpr);
   if (pm.isNull())
     return QPixmap(width, height);
 
@@ -61,7 +64,9 @@ static QPixmap createPlaceholderImage(int width, int height, float scale, const 
     painter.setFont(font);
     painter.setPen(Qt::white);
 
-    painter.drawText(QRect(0, 0, width, height), Qt::AlignCenter | Qt::TextWordWrap, QString::fromStdString(title));
+    const QRect text_rc(0, 0, static_cast<int>(static_cast<float>(width) / dpr),
+                        static_cast<int>(static_cast<float>(height) / dpr));
+    painter.drawText(text_rc, Qt::AlignCenter | Qt::TextWordWrap, QString::fromStdString(title));
     painter.end();
   }
 
@@ -109,12 +114,12 @@ void GameListModel::refreshCovers()
 
 int GameListModel::getCoverArtWidth() const
 {
-  return std::max(static_cast<int>(static_cast<float>(COVER_ART_WIDTH) * m_cover_scale), 1);
+  return std::max(static_cast<int>(static_cast<float>(COVER_ART_WIDTH) * m_cover_scale * qApp->devicePixelRatio()), 1);
 }
 
 int GameListModel::getCoverArtHeight() const
 {
-  return std::max(static_cast<int>(static_cast<float>(COVER_ART_HEIGHT) * m_cover_scale), 1);
+  return std::max(static_cast<int>(static_cast<float>(COVER_ART_HEIGHT) * m_cover_scale * qApp->devicePixelRatio()), 1);
 }
 
 int GameListModel::getCoverArtSpacing() const
@@ -317,7 +322,10 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
           {
             image = QPixmap(QString::fromStdString(path));
             if (!image.isNull())
+            {
+              image.setDevicePixelRatio(qApp->devicePixelRatio());
               resizeAndPadPixmap(&image, getCoverArtWidth(), getCoverArtHeight());
+            }
           }
 
           if (image.isNull())
@@ -441,8 +449,8 @@ bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& r
         return titlesLessThan(left_row, right_row, ascending);
 
       return ascending ? (left.total_size < right.total_size) : (right.total_size > left.total_size);
-    }  
-    
+    }
+
     case Column_Genre:
     {
       if (left.genre == right.genre)
@@ -450,14 +458,14 @@ bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& r
       return ascending ? (StringUtil::Strcasecmp(left.genre.c_str(), right.genre.c_str()) < 0) :
                          (StringUtil::Strcasecmp(right.genre.c_str(), left.genre.c_str()) > 0);
     }
-    
+
     case Column_Developer:
     {
       if (left.developer == right.developer)
         return titlesLessThan(left_row, right_row, ascending);
       return ascending ? (StringUtil::Strcasecmp(left.developer.c_str(), right.developer.c_str()) < 0) :
                          (StringUtil::Strcasecmp(right.developer.c_str(), left.developer.c_str()) > 0);
-    }   
+    }
 
     case Column_Publisher:
     {
@@ -473,17 +481,17 @@ bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& r
         return titlesLessThan(left_row, right_row, ascending);
 
       return ascending ? (left.release_date < right.release_date) : (right.release_date > left.release_date);
-    }   
+    }
 
     case Column_Players:
     {
-      u8 left_players = (left.min_players << 4 ) + left.max_players;
-      u8 right_players = (right.min_players << 4 ) + right.max_players;
+      u8 left_players = (left.min_players << 4) + left.max_players;
+      u8 right_players = (right.min_players << 4) + right.max_players;
       if (left_players == right_players)
         return titlesLessThan(left_row, right_row, ascending);
 
       return ascending ? (left_players < right_players) : (right_players > left_players);
-    }    
+    }
 
     default:
       return false;
