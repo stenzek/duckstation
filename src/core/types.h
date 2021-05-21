@@ -134,6 +134,7 @@ enum class MemoryCardType
   Shared,
   PerGame,
   PerGameTitle,
+  PerGameFileTitle,
   Count
 };
 

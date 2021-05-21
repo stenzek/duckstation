@@ -1821,6 +1821,28 @@ void UpdateMemoryCards()
       }
       break;
 
+      case MemoryCardType::PerGameFileTitle:
+      {
+        const std::string display_name(FileSystem::GetDisplayNameFromPath(s_running_game_path));
+        const std::string_view file_title(FileSystem::GetFileTitleFromPath(display_name));
+        if (file_title.empty())
+        {
+          g_host_interface->AddFormattedOSDMessage(
+            5.0f,
+            g_host_interface->TranslateString("System",
+                                              "Per-game memory card cannot be used for slot %u as the running "
+                                              "game has no path. Using shared card instead."),
+            i + 1u);
+          card = MemoryCard::Open(g_host_interface->GetSharedMemoryCardPath(i));
+        }
+        else
+        {
+          card = MemoryCard::Open(
+            g_host_interface->GetGameMemoryCardPath(MemoryCard::SanitizeGameTitleForFileName(file_title).c_str(), i));
+        }
+      }
+      break;
+
       case MemoryCardType::Shared:
       {
         if (g_settings.memory_card_paths[i].empty())

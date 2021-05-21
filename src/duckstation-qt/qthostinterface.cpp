@@ -1050,6 +1050,13 @@ void QtHostInterface::populateGameListContextMenu(const GameListEntry* entry, QW
           paths[i] = QString::fromStdString(
             GetGameMemoryCardPath(MemoryCard::SanitizeGameTitleForFileName(entry->title).c_str(), i));
           break;
+        case MemoryCardType::PerGameFileTitle:
+        {
+          const std::string display_name(FileSystem::GetDisplayNameFromPath(entry->path));
+          paths[i] = QString::fromStdString(GetGameMemoryCardPath(
+            MemoryCard::SanitizeGameTitleForFileName(FileSystem::GetFileTitleFromPath(display_name)).c_str(), i));
+        }
+        break;
         default:
           break;
       }
