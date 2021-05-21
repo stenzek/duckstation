@@ -154,7 +154,7 @@ ALWAYS_INLINE static TinyString GetWindowTitle()
   return TinyString::FromFormat("DuckStation %s (%s)", g_scm_tag_str, g_scm_branch_str);
 }
 
-bool SDLHostInterface::CreatePlatformWindow(bool fullscreen)
+bool SDLHostInterface::CreatePlatformWindow()
 {
   // Create window.
   const u32 window_flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
@@ -176,9 +176,6 @@ bool SDLHostInterface::CreatePlatformWindow(bool fullscreen)
     SDL_FreeSurface(icon_surface);
   }
 
-  if (fullscreen || m_fullscreen)
-    SetFullscreen(true);
-
   ImGui_ImplSDL2_Init(m_window);
 
   // Process events so that we have everything sorted out before creating a child window for the GL context (X11).
@@ -192,6 +189,7 @@ void SDLHostInterface::DestroyPlatformWindow()
   ImGui_ImplSDL2_Shutdown();
   SDL_DestroyWindow(m_window);
   m_window = nullptr;
+  m_fullscreen = false;
 }
 
 std::optional<WindowInfo> SDLHostInterface::GetPlatformWindowInfo()

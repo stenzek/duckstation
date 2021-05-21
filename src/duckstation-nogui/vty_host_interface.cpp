@@ -63,7 +63,7 @@ void VTYHostInterface::FixIncompatibleSettings(bool display_osd_messages)
   g_settings.confim_power_off = false;
 }
 
-bool VTYHostInterface::CreatePlatformWindow(bool fullscreen)
+bool VTYHostInterface::CreatePlatformWindow()
 {
   SetImGuiKeyMap();
   return true;
