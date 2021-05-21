@@ -1,5 +1,4 @@
 add_subdirectory(glad)
-add_subdirectory(libcue)
 add_subdirectory(stb)
 add_subdirectory(zlib)
 add_subdirectory(minizip)
