@@ -26,6 +26,8 @@ add_library(common
   cd_xa.h
   crash_handler.cpp
   crash_handler.h
+  cue_parser.cpp
+  cue_parser.h
   dimensional_array.h
   error.cpp
   error.h
@@ -114,7 +116,7 @@ add_library(common
 
 target_include_directories(common PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_include_directories(common PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
-target_link_libraries(common PRIVATE glad libcue stb Threads::Threads libchdr glslang vulkan-loader zlib minizip samplerate)
+target_link_libraries(common PRIVATE glad stb Threads::Threads libchdr glslang vulkan-loader zlib minizip samplerate)
 
 if(WIN32)
   target_sources(common PRIVATE

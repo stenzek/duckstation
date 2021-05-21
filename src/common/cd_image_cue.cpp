@@ -1,12 +1,12 @@
 #include "assert.h"
 #include "cd_image.h"
 #include "cd_subchannel_replacement.h"
+#include "cue_parser.h"
 #include "error.h"
 #include "file_system.h"
 #include "log.h"
 #include <algorithm>
 #include <cerrno>
-#include <libcue/libcue.h>
 #include <map>
 Log_SetChannel(CDImageCueSheet);
 
@@ -25,8 +25,6 @@ protected:
   bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) override;
 
 private:
-  Cd* m_cd = nullptr;
-
   struct TrackFile
   {
     std::string filename;
@@ -43,13 +41,12 @@ CDImageCueSheet::CDImageCueSheet() = default;
 CDImageCueSheet::~CDImageCueSheet()
 {
   std::for_each(m_files.begin(), m_files.end(), [](TrackFile& t) { std::fclose(t.file); });
-  cd_delete(m_cd);
 }
 
 bool CDImageCueSheet::OpenAndParse(const char* filename, Common::Error* error)
 {
-  std::optional<std::string> cuesheet_string = FileSystem::ReadFileToString(filename);
-  if (!cuesheet_string.has_value())
+  std::FILE* fp = FileSystem::OpenCFile(filename, "rb");
+  if (!fp)
   {
     Log_ErrorPrintf("Failed to open cuesheet '%s': errno %d", filename, errno);
     if (error)
@@ -58,41 +55,28 @@ bool CDImageCueSheet::OpenAndParse(const char* filename, Common::Error* error)
     return false;
   }
 
-  // work around cuesheet parsing issue - ensure the last character is a newline.
-  if (!cuesheet_string->empty() && cuesheet_string->at(cuesheet_string->size() - 1) != '\n')
-    *cuesheet_string += '\n';
-
-  m_cd = cue_parse_string(cuesheet_string->c_str());
-  if (!m_cd)
+  CueParser::File parser;
+  if (!parser.Parse(fp, error))
   {
-    Log_ErrorPrintf("Failed to parse cuesheet '%s'", filename);
-    if (error)
-      error->SetMessage("Failed to parse cuesheet");
-
+    std::fclose(fp);
     return false;
   }
+
+  std::fclose(fp);
 
   m_filename = filename;
 
   u32 disc_lba = 0;
 
   // for each track..
-  const int num_tracks = cd_get_ntrack(m_cd);
-  for (int track_num = 1; track_num <= num_tracks; track_num++)
+  for (u32 track_num = 1; track_num <= CueParser::MAX_TRACK_NUMBER; track_num++)
   {
-    const ::Track* track = cd_get_track(m_cd, track_num);
-    if (!track || !track_get_filename(track))
-    {
-      Log_ErrorPrintf("Track/filename missing for track %d", track_num);
-      if (error)
-        error->SetFormattedMessage("Track/filename missing for track %d", track_num);
+    const CueParser::Track* track = parser.GetTrack(track_num);
+    if (!track)
+      break;
 
-      return false;
-    }
-
-    const std::string track_filename = track_get_filename(track);
-    long track_start = track_get_start(track);
-    long track_length = track_get_length(track);
+    const std::string track_filename(track->file);
+    LBA track_start = track->start.ToLBA();
 
     u32 track_file_index = 0;
     for (; track_file_index < m_files.size(); track_file_index++)
@@ -135,22 +119,23 @@ bool CDImageCueSheet::OpenAndParse(const char* filename, Common::Error* error)
     }
 
     // data type determines the sector size
-    const TrackMode mode = static_cast<TrackMode>(track_get_mode(track));
+    const TrackMode mode = track->mode;
     const u32 track_sector_size = GetBytesPerSector(mode);
 
     // precompute subchannel q flags for the whole track
     SubChannelQ::Control control{};
     control.data = mode != TrackMode::Audio;
-    control.audio_preemphasis = track_is_set_flag(track, FLAG_PRE_EMPHASIS);
-    control.digital_copy_permitted = track_is_set_flag(track, FLAG_COPY_PERMITTED);
-    control.four_channel_audio = track_is_set_flag(track, FLAG_FOUR_CHANNEL);
+    control.audio_preemphasis = track->HasFlag(CueParser::TrackFlag::PreEmphasis);
+    control.digital_copy_permitted = track->HasFlag(CueParser::TrackFlag::CopyPermitted);
+    control.four_channel_audio = track->HasFlag(CueParser::TrackFlag::FourChannelAudio);
 
     // determine the length from the file
-    if (track_length < 0)
+    LBA track_length;
+    if (!track->length.has_value())
     {
-      std::fseek(m_files[track_file_index].file, 0, SEEK_END);
-      long file_size = std::ftell(m_files[track_file_index].file);
-      std::fseek(m_files[track_file_index].file, 0, SEEK_SET);
+      FileSystem::FSeek64(m_files[track_file_index].file, 0, SEEK_END);
+      u64 file_size = static_cast<u64>(FileSystem::FTell64(m_files[track_file_index].file));
+      FileSystem::FSeek64(m_files[track_file_index].file, 0, SEEK_SET);
 
       file_size /= track_sector_size;
       if (track_start >= file_size)
@@ -165,49 +150,78 @@ bool CDImageCueSheet::OpenAndParse(const char* filename, Common::Error* error)
         return false;
       }
 
-      track_length = file_size - track_start;
+      track_length = static_cast<LBA>(file_size - track_start);
+    }
+    else
+    {
+      track_length = track->length.value().ToLBA();
     }
 
-    // Two seconds pregap for track 1 is assumed if not specified.
-    // Some people have broken (older) dumps where a two second pregap was implicit but not specified in the cuesheet.
-    // The problem is we can't tell between a missing implicit two second pregap and a zero second pregap. Most of these
-    // seem to be a single bin file for all tracks. So if this is the case, we add the two seconds in if it's not
-    // specified. If this is an audio CD (likely when track 1 is not data), we don't add these pregaps, and rely on the
-    // cuesheet. If we did add them, it causes issues in some games (e.g. Dancing Stage featuring DREAMS COME TRUE).
-    long pregap_frames = track_get_zero_pre(track);
-    const bool pregap_in_file = pregap_frames > 0 && track_start >= pregap_frames;
-    const bool is_multi_track_bin = (track_num > 1 && track_file_index == m_indices[0].file_index);
-    const bool likely_audio_cd = static_cast<TrackMode>(track_get_mode(cd_get_track(m_cd, 1))) == TrackMode::Audio;
-    if ((track_num == 1 || is_multi_track_bin) && pregap_frames < 0 && (track_num == 1 || !likely_audio_cd))
-      pregap_frames = 2 * FRAMES_PER_SECOND;
-
-    // create the index for the pregap
-    if (pregap_frames > 0)
+    const Position* index0 = track->GetIndex(0);
+    LBA pregap_frames;
+    if (index0)
     {
+      // index 1 is always present, so this is safe
+      pregap_frames = track->GetIndex(1)->ToLBA() - index0->ToLBA();
+
+      // Pregap/index 0 is in the file, easy.
       Index pregap_index = {};
       pregap_index.start_lba_on_disc = disc_lba;
-      pregap_index.start_lba_in_track = static_cast<LBA>(static_cast<unsigned long>(-pregap_frames));
+      pregap_index.start_lba_in_track = static_cast<LBA>(-static_cast<s32>(pregap_frames));
       pregap_index.length = pregap_frames;
       pregap_index.track_number = track_num;
       pregap_index.index_number = 0;
       pregap_index.mode = mode;
       pregap_index.control.bits = control.bits;
       pregap_index.is_pregap = true;
-      if (pregap_in_file)
-      {
-        pregap_index.file_index = track_file_index;
-        pregap_index.file_offset = static_cast<u64>(static_cast<s64>(track_start - pregap_frames)) * track_sector_size;
-        pregap_index.file_sector_size = track_sector_size;
-      }
+      pregap_index.file_index = track_file_index;
+      pregap_index.file_offset = static_cast<u64>(static_cast<s64>(track_start - pregap_frames)) * track_sector_size;
+      pregap_index.file_sector_size = track_sector_size;
 
       m_indices.push_back(pregap_index);
 
       disc_lba += pregap_index.length;
     }
+    else
+    {
+      // Two seconds pregap for track 1 is assumed if not specified.
+      // Some people have broken (older) dumps where a two second pregap was implicit but not specified in the cuesheet.
+      // The problem is we can't tell between a missing implicit two second pregap and a zero second pregap. Most of
+      // these seem to be a single bin file for all tracks. So if this is the case, we add the two seconds in if it's
+      // not specified. If this is an audio CD (likely when track 1 is not data), we don't add these pregaps, and rely
+      // on the cuesheet. If we did add them, it causes issues in some games (e.g. Dancing Stage featuring DREAMS COME
+      // TRUE).
+      const bool is_multi_track_bin = (track_num > 1 && track_file_index == m_indices[0].file_index);
+      const bool likely_audio_cd = (parser.GetTrack(1)->mode == TrackMode::Audio);
+
+      pregap_frames = track->zero_pregap.has_value() ? track->zero_pregap->ToLBA() : 0;
+      if ((track_num == 1 || is_multi_track_bin) && !track->zero_pregap.has_value() &&
+          (track_num == 1 || !likely_audio_cd))
+      {
+        pregap_frames = 2 * FRAMES_PER_SECOND;
+      }
+
+      // create the index for the pregap
+      if (pregap_frames > 0)
+      {
+        Index pregap_index = {};
+        pregap_index.start_lba_on_disc = disc_lba;
+        pregap_index.start_lba_in_track = static_cast<LBA>(-static_cast<s32>(pregap_frames));
+        pregap_index.length = pregap_frames;
+        pregap_index.track_number = track_num;
+        pregap_index.index_number = 0;
+        pregap_index.mode = mode;
+        pregap_index.control.bits = control.bits;
+        pregap_index.is_pregap = true;
+        m_indices.push_back(pregap_index);
+
+        disc_lba += pregap_index.length;
+      }
+    }
 
     // add the track itself
-    m_tracks.push_back(Track{static_cast<u32>(track_num), disc_lba, static_cast<u32>(m_indices.size()),
-                             static_cast<u32>(track_length + pregap_frames), mode, control});
+    m_tracks.push_back(
+      Track{track_num, disc_lba, static_cast<u32>(m_indices.size()), track_length + pregap_frames, mode, control});
 
     // how many indices in this track?
     Index last_index;
@@ -217,17 +231,19 @@ bool CDImageCueSheet::OpenAndParse(const char* filename, Common::Error* error)
     last_index.index_number = 1;
     last_index.file_index = track_file_index;
     last_index.file_sector_size = track_sector_size;
-    last_index.file_offset = static_cast<u64>(static_cast<s64>(track_start)) * track_sector_size;
+    last_index.file_offset = static_cast<u64>(track_start) * track_sector_size;
     last_index.mode = mode;
     last_index.control.bits = control.bits;
     last_index.is_pregap = false;
 
-    long last_index_offset = track_start;
-    for (int index_num = 1;; index_num++)
+    u32 last_index_offset = track_start;
+    for (u32 index_num = 1;; index_num++)
     {
-      long index_offset = track_get_index(track, index_num);
-      if (index_offset < 0)
+      const Position* pos = track->GetIndex(index_num);
+      if (!pos)
         break;
+
+      const u32 index_offset = pos->ToLBA();
 
       // add an index between the track indices
       if (index_offset > last_index_offset)
@@ -247,7 +263,7 @@ bool CDImageCueSheet::OpenAndParse(const char* filename, Common::Error* error)
     }
 
     // and the last index is added here
-    const long track_end_index = track_start + track_length;
+    const u32 track_end_index = track_start + track_length;
     DebugAssert(track_end_index >= last_index_offset);
     if (track_end_index > last_index_offset)
     {

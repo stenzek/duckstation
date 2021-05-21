@@ -63,9 +63,6 @@
     <ProjectReference Include="..\..\dep\imgui\imgui.vcxproj">
       <Project>{bb08260f-6fbc-46af-8924-090ee71360c6}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\dep\libcue\libcue.vcxproj">
-      <Project>{6a4208ed-e3dc-41e1-81cd-f61025fc285a}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\..\dep\rcheevos\rcheevos.vcxproj">
       <Project>{4ba0a6d4-3ae1-42b2-9347-096fd023ff64}</Project>
     </ProjectReference>
