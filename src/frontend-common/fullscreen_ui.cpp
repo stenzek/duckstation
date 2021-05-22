@@ -2588,6 +2588,10 @@ void DrawSettingsWindow()
         settings_changed |= ToggleButton("Enable Recompiler Memory Exceptions",
                                          "Enables alignment and bus exceptions. Not needed for any known games.",
                                          &s_settings_copy.cpu_recompiler_memory_exceptions);
+        settings_changed |= ToggleButton(
+          "Enable Recompiler Block Linking",
+          "Performance enhancement - jumps directly between blocks instead of returning to the dispatcher.",
+          &s_settings_copy.cpu_recompiler_block_linking);
         settings_changed |= EnumChoiceButton("Recompiler Fast Memory Access",
                                              "Avoids calls to C++ code, significantly speeding up the recompiler.",
                                              &s_settings_copy.cpu_fastmem_mode, &Settings::GetCPUFastmemModeDisplayName,
@@ -3902,6 +3906,8 @@ void DrawDebugSettingsMenu()
 
   settings_changed |=
     ImGui::MenuItem("Recompiler Memory Exceptions", nullptr, &s_settings_copy.cpu_recompiler_memory_exceptions);
+  settings_changed |=
+    ImGui::MenuItem("Recompiler Block Linking", nullptr, &s_settings_copy.cpu_recompiler_block_linking);
   if (ImGui::BeginMenu("Recompiler Fastmem"))
   {
     for (u32 i = 0; i < static_cast<u32>(CPUFastmemMode::Count); i++)

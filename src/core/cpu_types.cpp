@@ -104,24 +104,25 @@ bool IsDirectBranchInstruction(const Instruction& instruction)
   }
 }
 
-u32 GetBranchInstructionTarget(const Instruction& instruction, u32 instruction_pc)
+VirtualMemoryAddress GetDirectBranchTarget(const Instruction& instruction, VirtualMemoryAddress instruction_pc)
 {
+  const VirtualMemoryAddress pc = instruction_pc + 4;
+
   switch (instruction.op)
   {
     case InstructionOp::j:
     case InstructionOp::jal:
-      return ((instruction_pc + 4) & UINT32_C(0xF0000000)) | (instruction.j.target << 2);
+      return (pc & UINT32_C(0xF0000000)) | (instruction.j.target << 2);
 
     case InstructionOp::b:
     case InstructionOp::beq:
     case InstructionOp::bgtz:
     case InstructionOp::blez:
     case InstructionOp::bne:
-      return instruction_pc + 4 + (instruction.i.imm_sext32() << 2);
+      return (pc + (instruction.i.imm_sext32() << 2));
 
     default:
-      Panic("Trying to get branch target of indirect or invalid branch");
-      return instruction_pc;
+      return pc;
   }
 }
 

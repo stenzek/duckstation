@@ -194,41 +194,51 @@ Value CodeGenerator::GetValueInHostOrScratchRegister(const Value& value, bool al
   return new_value;
 }
 
-void CodeGenerator::EmitBeginBlock()
+void CodeGenerator::EmitBeginBlock(bool allocate_registers /* = true */)
 {
   m_emit->Sub(a64::sp, a64::sp, FUNCTION_STACK_SIZE);
 
-  // Save the link register, since we'll be calling functions.
-  const bool link_reg_allocated = m_register_cache.AllocateHostReg(30);
-  DebugAssert(link_reg_allocated);
-  UNREFERENCED_VARIABLE(link_reg_allocated);
-  m_register_cache.AssumeCalleeSavedRegistersAreSaved();
-
-  // Store the CPU struct pointer. TODO: make this better.
-  const bool cpu_reg_allocated = m_register_cache.AllocateHostReg(RCPUPTR);
-  DebugAssert(cpu_reg_allocated);
-  UNREFERENCED_VARIABLE(cpu_reg_allocated);
-
-  // If there's loadstore instructions, preload the fastmem base.
-  if (m_block->contains_loadstore_instructions)
+  if (allocate_registers)
   {
-    const bool fastmem_reg_allocated = m_register_cache.AllocateHostReg(RMEMBASEPTR);
-    Assert(fastmem_reg_allocated);
-    m_emit->Ldr(GetFastmemBasePtrReg(), a64::MemOperand(GetCPUPtrReg(), offsetof(State, fastmem_base)));
+    // Save the link register, since we'll be calling functions.
+    const bool link_reg_allocated = m_register_cache.AllocateHostReg(30);
+    DebugAssert(link_reg_allocated);
+    UNREFERENCED_VARIABLE(link_reg_allocated);
+
+    m_register_cache.AssumeCalleeSavedRegistersAreSaved();
+
+    // Store the CPU struct pointer. TODO: make this better.
+    const bool cpu_reg_allocated = m_register_cache.AllocateHostReg(RCPUPTR);
+    DebugAssert(cpu_reg_allocated);
+    UNREFERENCED_VARIABLE(cpu_reg_allocated);
+
+    // If there's loadstore instructions, preload the fastmem base.
+    if (m_block->contains_loadstore_instructions)
+    {
+      const bool fastmem_reg_allocated = m_register_cache.AllocateHostReg(RMEMBASEPTR);
+      Assert(fastmem_reg_allocated);
+      m_emit->Ldr(GetFastmemBasePtrReg(), a64::MemOperand(GetCPUPtrReg(), offsetof(State, fastmem_base)));
+    }
   }
 }
 
-void CodeGenerator::EmitEndBlock()
+void CodeGenerator::EmitEndBlock(bool free_registers /* = true */, bool emit_return /* = true */)
 {
-  if (m_block->contains_loadstore_instructions)
-    m_register_cache.FreeHostReg(RMEMBASEPTR);
+  if (free_registers)
+  {
+    if (m_block->contains_loadstore_instructions)
+      m_register_cache.FreeHostReg(RMEMBASEPTR);
 
-  m_register_cache.FreeHostReg(RCPUPTR);
-  m_register_cache.PopCalleeSavedRegisters(true);
+    m_register_cache.FreeHostReg(RCPUPTR);
+    m_register_cache.FreeHostReg(30); // lr
+
+    m_register_cache.PopCalleeSavedRegisters(true);
+  }
 
   m_emit->Add(a64::sp, a64::sp, FUNCTION_STACK_SIZE);
-  // m_emit->b(GetPCDisplacement(GetCurrentCodePointer(), s_dispatcher_return_address));
-  m_emit->Ret();
+
+  if (emit_return)
+    m_emit->Ret();
 }
 
 void CodeGenerator::EmitExceptionExit()
@@ -1765,6 +1775,42 @@ bool CodeGenerator::BackpatchLoadStore(const LoadStoreBackpatchInfo& lbi)
 
   JitCodeBuffer::FlushInstructionCache(lbi.host_pc, lbi.host_code_size);
   return true;
+}
+
+void CodeGenerator::BackpatchReturn(void* pc, u32 pc_size)
+{
+  Log_ProfilePrintf("Backpatching %p to return", pc);
+
+  vixl::aarch64::MacroAssembler emit(static_cast<vixl::byte*>(pc), pc_size, a64::PositionDependentCode);
+  emit.ret();
+
+  const s32 nops = (static_cast<s32>(pc_size) - static_cast<s32>(emit.GetCursorOffset())) / 4;
+  Assert(nops >= 0);
+  for (s32 i = 0; i < nops; i++)
+    emit.nop();
+
+  JitCodeBuffer::FlushInstructionCache(pc, pc_size);
+}
+
+void CodeGenerator::BackpatchBranch(void* pc, u32 pc_size, void* target)
+{
+  Log_ProfilePrintf("Backpatching %p to %p [branch]", pc, target);
+
+  // check jump distance
+  const s64 jump_distance = static_cast<s64>(reinterpret_cast<intptr_t>(target) - reinterpret_cast<intptr_t>(pc));
+  Assert(Common::IsAligned(jump_distance, 4));
+  Assert(a64::Instruction::IsValidImmPCOffset(a64::UncondBranchType, jump_distance >> 2));
+
+  vixl::aarch64::MacroAssembler emit(static_cast<vixl::byte*>(pc), pc_size, a64::PositionDependentCode);
+  emit.b(jump_distance >> 2);
+
+  // shouldn't have any nops
+  const s32 nops = (static_cast<s32>(pc_size) - static_cast<s32>(emit.GetCursorOffset())) / 4;
+  Assert(nops >= 0);
+  for (s32 i = 0; i < nops; i++)
+    emit.nop();
+
+  JitCodeBuffer::FlushInstructionCache(pc, pc_size);
 }
 
 void CodeGenerator::EmitLoadGlobal(HostReg host_reg, RegSize size, const void* ptr)

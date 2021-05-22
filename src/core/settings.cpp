@@ -172,6 +172,7 @@ void Settings::Load(SettingsInterface& si)
   cpu_overclock_enable = si.GetBoolValue("CPU", "OverclockEnable", false);
   UpdateOverclockActive();
   cpu_recompiler_memory_exceptions = si.GetBoolValue("CPU", "RecompilerMemoryExceptions", false);
+  cpu_recompiler_block_linking = si.GetBoolValue("CPU", "RecompilerBlockLinking", true);
   cpu_recompiler_icache = si.GetBoolValue("CPU", "RecompilerICache", false);
   cpu_fastmem_mode = ParseCPUFastmemMode(
                        si.GetStringValue("CPU", "FastmemMode", GetCPUFastmemModeName(DEFAULT_CPU_FASTMEM_MODE)).c_str())
@@ -363,6 +364,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetIntValue("CPU", "OverclockNumerator", cpu_overclock_numerator);
   si.SetIntValue("CPU", "OverclockDenominator", cpu_overclock_denominator);
   si.SetBoolValue("CPU", "RecompilerMemoryExceptions", cpu_recompiler_memory_exceptions);
+  si.SetBoolValue("CPU", "RecompilerBlockLinking", cpu_recompiler_block_linking);
   si.SetBoolValue("CPU", "RecompilerICache", cpu_recompiler_icache);
   si.SetStringValue("CPU", "FastmemMode", GetCPUFastmemModeName(cpu_fastmem_mode));
 

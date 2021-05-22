@@ -511,6 +511,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetIntValue("CPU", "OverclockDenominator", 1);
   si.SetBoolValue("CPU", "OverclockEnable", false);
   si.SetBoolValue("CPU", "RecompilerMemoryExceptions", false);
+  si.SetBoolValue("CPU", "RecompilerBlockLinking", true);
   si.SetBoolValue("CPU", "ICache", false);
   si.SetBoolValue("CPU", "FastmemMode", Settings::GetCPUFastmemModeName(Settings::DEFAULT_CPU_FASTMEM_MODE));
 
@@ -772,24 +773,15 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
     }
 
     if (g_settings.cpu_execution_mode == CPUExecutionMode::Recompiler &&
-        g_settings.cpu_recompiler_memory_exceptions != old_settings.cpu_recompiler_memory_exceptions)
+        (g_settings.cpu_recompiler_memory_exceptions != old_settings.cpu_recompiler_memory_exceptions ||
+         g_settings.cpu_recompiler_block_linking != old_settings.cpu_recompiler_block_linking ||
+         g_settings.cpu_recompiler_icache != old_settings.cpu_recompiler_icache))
     {
-      AddOSDMessage(g_settings.cpu_recompiler_memory_exceptions ?
-                      TranslateStdString("OSDMessage", "CPU memory exceptions enabled, flushing all blocks.") :
-                      TranslateStdString("OSDMessage", "CPU memory exceptions disabled, flushing all blocks."),
-                    5.0f);
+      AddOSDMessage(TranslateStdString("OSDMessage", "Recompiler options changed, flushing all blocks."), 5.0f);
       CPU::CodeCache::Flush();
-    }
 
-    if (g_settings.cpu_execution_mode != CPUExecutionMode::Interpreter &&
-        g_settings.cpu_recompiler_icache != old_settings.cpu_recompiler_icache)
-    {
-      AddOSDMessage(g_settings.cpu_recompiler_icache ?
-                      TranslateStdString("OSDMessage", "CPU ICache enabled, flushing all blocks.") :
-                      TranslateStdString("OSDMessage", "CPU ICache disabled, flushing all blocks."),
-                    5.0f);
-      CPU::CodeCache::Flush();
-      CPU::ClearICache();
+      if (g_settings.cpu_recompiler_icache != old_settings.cpu_recompiler_icache)
+        CPU::ClearICache();
     }
 
     m_audio_stream->SetOutputVolume(GetAudioOutputVolume());

@@ -38,6 +38,7 @@ static constexpr u32 RECOMPILER_CODE_CACHE_SIZE = 32 * 1024 * 1024;
 static constexpr u32 RECOMPILER_FAR_CODE_CACHE_SIZE = 16 * 1024 * 1024;
 #endif
 static constexpr u32 CODE_WRITE_FAULT_THRESHOLD_FOR_SLOWMEM = 10;
+static constexpr u32 INVALIDATE_THRESHOLD_TO_DISABLE_LINKING = 10;
 
 #ifdef USE_STATIC_CODE_BUFFER
 static constexpr u32 RECOMPILER_GUARD_SIZE = 4096;
@@ -205,8 +206,8 @@ static void RemoveReferencesToBlock(CodeBlock* block);
 static void AddBlockToPageMap(CodeBlock* block);
 static void RemoveBlockFromPageMap(CodeBlock* block);
 
-/// Link block from to to.
-static void LinkBlock(CodeBlock* from, CodeBlock* to);
+/// Link block from to to. Returns the successor index.
+static void LinkBlock(CodeBlock* from, CodeBlock* to, void* host_pc, void* host_resolve_pc, u32 host_pc_size);
 
 /// Unlink all blocks which point to this block, and any that this block links to.
 static void UnlinkBlock(CodeBlock* block);
@@ -352,8 +353,9 @@ static void ExecuteImpl()
       {
         // Try to find an already-linked block.
         // TODO: Don't need to dereference the block, just store a pointer to the code.
-        for (CodeBlock* linked_block : block->link_successors)
+        for (const CodeBlock::LinkInfo& li : block->link_successors)
         {
+          CodeBlock* linked_block = li.block;
           if (linked_block->key.bits == next_block_key.bits)
           {
             if (linked_block->invalidated && !RevalidateBlock(linked_block))
@@ -373,7 +375,7 @@ static void ExecuteImpl()
         if (next_block)
         {
           // Link the previous block to this new block if we find a new block.
-          LinkBlock(block, next_block);
+          LinkBlock(block, next_block, nullptr, nullptr, 0);
           block = next_block;
           goto reexecute_block;
         }
@@ -686,6 +688,7 @@ bool CompileBlock(CodeBlock* block)
     cbi.is_store_instruction = IsMemoryStoreInstruction(cbi.instruction);
     cbi.has_load_delay = InstructionHasLoadDelay(cbi.instruction);
     cbi.can_trap = CanInstructionTrap(cbi.instruction, InUserMode());
+    cbi.is_direct_branch_instruction = IsDirectBranchInstruction(cbi.instruction);
 
     if (g_settings.cpu_recompiler_icache)
     {
@@ -718,7 +721,7 @@ bool CompileBlock(CodeBlock* block)
       }
 
       // change the pc for the second branch's delay slot, it comes from the first branch
-      pc = GetBranchInstructionTarget(prev_cbi.instruction, prev_cbi.pc);
+      pc = GetDirectBranchTarget(prev_cbi.instruction, prev_cbi.pc);
       Log_DevPrintf("Double branch at %08X, using delay slot from %08X -> %08X", cbi.pc, prev_cbi.pc, pc);
     }
 
@@ -840,6 +843,25 @@ void InvalidateBlocksWithPageIndex(u32 page_index)
     // Invalidate forces the block to be checked again.
     Log_DebugPrintf("Invalidating block at 0x%08X", block->GetPC());
     block->invalidated = true;
+
+    if (block->can_link)
+    {
+      const u32 frame_number = System::GetFrameNumber();
+      const u32 frame_diff = frame_number - block->invalidate_frame_number;
+      if (frame_diff <= INVALIDATE_THRESHOLD_TO_DISABLE_LINKING)
+      {
+        Log_PerfPrintf("Block 0x%08X has been invalidated in %u frames, disabling linking", block->GetPC(), frame_diff);
+        block->can_link = false;
+      }
+      else
+      {
+        // It's been a while since this block was modified, so it's all good.
+        block->invalidate_frame_number = frame_number;
+      }
+    }
+
+    UnlinkBlock(block);
+
 #ifdef WITH_RECOMPILER
     SetFastMap(block->GetPC(), FastCompileBlockFunction);
 #endif
@@ -902,30 +924,80 @@ void RemoveBlockFromPageMap(CodeBlock* block)
   }
 }
 
-void LinkBlock(CodeBlock* from, CodeBlock* to)
+void LinkBlock(CodeBlock* from, CodeBlock* to, void* host_pc, void* host_resolve_pc, u32 host_pc_size)
 {
   Log_DebugPrintf("Linking block %p(%08x) to %p(%08x)", from, from->GetPC(), to, to->GetPC());
-  from->link_successors.push_back(to);
-  to->link_predecessors.push_back(from);
+
+  CodeBlock::LinkInfo li;
+  li.block = to;
+  li.host_pc = host_pc;
+  li.host_resolve_pc = host_resolve_pc;
+  li.host_pc_size = host_pc_size;
+  from->link_successors.push_back(li);
+
+  li.block = from;
+  to->link_predecessors.push_back(li);
+
+  // apply in code
+  if (host_pc)
+  {
+    Log_ProfilePrintf("Backpatching %p(%08x) to jump to block %p (%08x)", host_pc, from->GetPC(), to, to->GetPC());
+    s_code_buffer.WriteProtect(false);
+    Recompiler::CodeGenerator::BackpatchBranch(host_pc, host_pc_size, reinterpret_cast<void*>(to->host_code));
+    s_code_buffer.WriteProtect(true);
+  }
 }
 
 void UnlinkBlock(CodeBlock* block)
 {
-  for (CodeBlock* predecessor : block->link_predecessors)
+  if (block->link_predecessors.empty() && block->link_successors.empty())
+    return;
+
+#ifdef WITH_RECOMPILER
+  if (g_settings.IsUsingRecompiler() && g_settings.cpu_recompiler_block_linking)
+    s_code_buffer.WriteProtect(false);
+#endif
+
+  for (CodeBlock::LinkInfo& li : block->link_predecessors)
   {
-    auto iter = std::find(predecessor->link_successors.begin(), predecessor->link_successors.end(), block);
-    Assert(iter != predecessor->link_successors.end());
-    predecessor->link_successors.erase(iter);
+    auto iter = std::find_if(li.block->link_successors.begin(), li.block->link_successors.end(),
+                             [block](const CodeBlock::LinkInfo& li) { return li.block == block; });
+    Assert(iter != li.block->link_successors.end());
+
+    // Restore blocks linked to this block back to the resolver
+    if (li.host_pc)
+    {
+      Log_ProfilePrintf("Backpatching %p(%08x) [predecessor] to jump to resolver", li.host_pc, li.block->GetPC());
+      Recompiler::CodeGenerator::BackpatchBranch(li.host_pc, li.host_pc_size, li.host_resolve_pc);
+    }
+
+    li.block->link_successors.erase(iter);
   }
   block->link_predecessors.clear();
 
-  for (CodeBlock* successor : block->link_successors)
+  for (CodeBlock::LinkInfo& li : block->link_successors)
   {
-    auto iter = std::find(successor->link_predecessors.begin(), successor->link_predecessors.end(), block);
-    Assert(iter != successor->link_predecessors.end());
-    successor->link_predecessors.erase(iter);
+    auto iter = std::find_if(li.block->link_predecessors.begin(), li.block->link_predecessors.end(),
+                             [block](const CodeBlock::LinkInfo& li) { return li.block == block; });
+    Assert(iter != li.block->link_predecessors.end());
+
+    // Restore blocks we're linking to back to the resolver, since the successor won't be linked to us to backpatch if
+    // it changes.
+    if (li.host_pc)
+    {
+      Log_ProfilePrintf("Backpatching %p(%08x) [successor] to jump to resolver", li.host_pc, li.block->GetPC());
+      Recompiler::CodeGenerator::BackpatchBranch(li.host_pc, li.host_pc_size, li.host_resolve_pc);
+    }
+
+    // Don't have to do anything special for successors - just let the successor know it's no longer linked.
+    li.block->link_predecessors.erase(iter);
   }
   block->link_successors.clear();
+
+#ifdef WITH_RECOMPILER
+  if (g_settings.IsUsingRecompiler() && g_settings.cpu_recompiler_block_linking)
+    s_code_buffer.WriteProtect(true);
+#endif
 }
 
 #ifdef WITH_RECOMPILER
@@ -1104,3 +1176,39 @@ Common::PageFaultHandler::HandlerResult LUTPageFaultHandler(void* exception_pc, 
 #endif // WITH_RECOMPILER
 
 } // namespace CPU::CodeCache
+
+#ifdef WITH_RECOMPILER
+
+void CPU::Recompiler::Thunks::ResolveBranch(CodeBlock* block, void* host_pc, void* host_resolve_pc, u32 host_pc_size)
+{
+  using namespace CPU::CodeCache;
+
+  CodeBlockKey key = GetNextBlockKey();
+  CodeBlock* successor_block = LookupBlock(key);
+  if (!successor_block || (successor_block->invalidated && !RevalidateBlock(successor_block)) || !block->can_link ||
+      !successor_block->can_link)
+  {
+    // just turn it into a return to the dispatcher instead.
+    s_code_buffer.WriteProtect(false);
+    CodeGenerator::BackpatchReturn(host_pc, host_pc_size);
+    s_code_buffer.WriteProtect(true);
+  }
+  else
+  {
+    // link blocks!
+    LinkBlock(block, successor_block, host_pc, host_resolve_pc, host_pc_size);
+  }
+}
+
+void CPU::Recompiler::Thunks::LogPC(u32 pc)
+{
+#if 0
+  CPU::CodeCache::LogCurrentState();
+#endif
+#if 0
+  if (TimingEvents::GetGlobalTickCounter() + GetPendingTicks() == 382856482)
+    __debugbreak();
+#endif
+}
+
+#endif // WITH_RECOMPILER
