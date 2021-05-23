@@ -2116,7 +2116,7 @@ Anmelde-Zugangsschlüssel generiert (%2).</translation>
     <message>
         <location filename="../consolesettingswidget.cpp" line="73"/>
         <source>Reduces the simulated time for the CD-ROM sled to move to different areas of the disc. Can improve loading times, but crash games which do not expect the CD-ROM to operate faster.</source>
-        <translation>Verringert die simulierte Zeit, die der CD-ROM-Schlitten benötigt, um sich zu verschiedenen Bereichen der CD zu bewegen. Dies kann die Ladezeiten verbessern, aber Spiele zum Absturz bringen, die nicht erwarten, dass die CD-ROM schneller arbeitet.</translation>
+        <translation>Verringert die simulierte Zeit, die der CD-ROM-Schlitten benötigt, um sich zu verschiedenen Bereichen der CD zu bewegen. Dies kann die Ladezeiten verbessern, aber Spiele zum Absturz bringen, die nicht erwarten, dass die CD-ROM schneller reagiert.</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="76"/>
