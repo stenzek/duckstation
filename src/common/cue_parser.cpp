@@ -406,13 +406,6 @@ bool File::CompleteLastTrack(u32 line_number, Common::Error* error)
     return false;
   }
 
-  const MSF* index0 = m_current_track->GetIndex(0);
-  if (index0 && m_current_track->zero_pregap.has_value())
-  {
-    SetError(line_number, error, "Zero pregap and index 0 specified in track %u", m_current_track->number);
-    return false;
-  }
-
   // check indices
   for (const auto& [index_number, index_msf] : m_current_track->indices)
   {
@@ -426,6 +419,13 @@ bool File::CompleteLastTrack(u32 line_number, Common::Error* error)
                m_current_track->number);
       return false;
     }
+  }
+
+  const MSF* index0 = m_current_track->GetIndex(0);
+  if (index0 && m_current_track->zero_pregap.has_value())
+  {
+    Log_WarningPrintf("Zero pregap and index 0 specified in track %u, ignoring zero pregap", m_current_track->number);
+    m_current_track->zero_pregap.reset();
   }
 
   m_current_track->start = *index1;
