@@ -452,7 +452,12 @@ bool File::SetTrackLengths(u32 line_number, Common::Error* error)
           return false;
         }
 
-        previous_track->length = MSF::FromLBA(track.start.ToLBA() - previous_track->start.ToLBA());
+        // Use index 0, otherwise index 1.
+        const MSF* start_index = track.GetIndex(0);
+        if (!start_index)
+          start_index = track.GetIndex(1);
+
+        previous_track->length = MSF::FromLBA(start_index->ToLBA() - previous_track->start.ToLBA());
       }
     }
   }
