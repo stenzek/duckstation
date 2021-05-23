@@ -494,4 +494,30 @@
         <item>6</item>
         <item>7</item>
     </string-array>
+    <string-array name="settings_cdrom_seek_speedup_entries">
+        <item>Infinite/Instantaneous</item>
+        <item>None (Normal Speed)</item>
+        <item>2x</item>
+        <item>3x</item>
+        <item>4x</item>
+        <item>5x</item>
+        <item>6x</item>
+        <item>7x</item>
+        <item>8x</item>
+        <item>9x</item>
+        <item>10x</item>
+    </string-array>
+    <string-array name="settings_cdrom_seek_speedup_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
+        <item>10</item>
+    </string-array>
 </resources>

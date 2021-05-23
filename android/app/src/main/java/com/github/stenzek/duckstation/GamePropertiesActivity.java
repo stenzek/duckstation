@@ -116,6 +116,7 @@ public class GamePropertiesActivity extends AppCompatActivity {
             final PreferenceScreen ps = getPreferenceManager().createPreferenceScreen(getContext());
             activity.createListGameSetting(ps, "CPUOverclock", R.string.settings_cpu_overclocking, R.array.settings_advanced_cpu_overclock_entries, R.array.settings_advanced_cpu_overclock_values);
             activity.createListGameSetting(ps, "CDROMReadSpeedup", R.string.settings_cdrom_read_speedup, R.array.settings_cdrom_read_speedup_entries, R.array.settings_cdrom_read_speedup_values);
+            activity.createListGameSetting(ps, "CDROMSeekSpeedup", R.string.settings_cdrom_seek_speedup, R.array.settings_cdrom_seek_speedup_entries, R.array.settings_cdrom_seek_speedup_values);
 
             activity.createListGameSetting(ps, "GPURenderer", R.string.settings_gpu_renderer, R.array.gpu_renderer_entries, R.array.gpu_renderer_values);
             activity.createListGameSetting(ps, "DisplayAspectRatio", R.string.settings_aspect_ratio, R.array.settings_display_aspect_ratio_names, R.array.settings_display_aspect_ratio_values);
