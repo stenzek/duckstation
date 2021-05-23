@@ -81,7 +81,7 @@
 	<string name="settings_summary_osd_show_fps">Показывать внутреннюю частоту кадров игры в правом верхнем углу экрана.</string>
 	<string name="settings_summary_osd_show_vps">Показывать количество кадров (синхронизаций) в секунду в правом верхнем углу экрана.</string>
 	<string name="settings_cdrom_read_speedup">Ускорение считывания CD-ROM</string>
-	<string name="settings_summary_cdrom_read_speedup">Повышать скорость чтения диска на заданный множитель. Применяется только при считывании с двойной скоростью и не учитывается при воспроизведении аудио. Ускоряет загрузки в некоторых играх, но может приводить к ошибкам.</string>
+	<string name="settings_summary_cdrom_read_speedup">Повышает скорость чтения диска на заданный множитель. Применяется только в режиме считывания с удвоенной скоростью и не учитывается при воспроизведении аудио. Ускоряет загрузки в некоторых играх, но может приводить к ошибкам.</string>
 	<string name="settings_summary_console_fast_boot">Пропускать заставку BIOS, загружаясь прямо в игру. Как правило, не влияет на стабильность.</string>
 	<string name="settings_msaa">Мультисэмплинг</string>
 	<string name="settings_true_color">Рендеринг в True Color (24-бита, без дизеринга)</string>
@@ -327,7 +327,7 @@
 	<string name="main_activity_empty_game_list_add_directory">Добавить каталог с играми</string>
 	<string name="main_activity_empty_game_list_start_file">Открыть файл</string>
 	<string name="update_notes_title">Примечание к обновлению</string>
-	<string name="update_notes_message_version_controller_update">В текущем обновлении DuckStation добавлена возможность подключения нескольких геймпадов с поддержкой вибрации, подключение клавиатур, возможность привязки кнопок громкости.\n\nТребуется перенастроить привязки геймпадов, иначе они перестанут функционировать. Выполнить это сейчас?</string>
+	<string name="update_notes_message_version_controller_update">В текущем обновлении DuckStation добавлена возможность подключения нескольких геймпадов с поддержкой отдачи, клавиатур, возможность привязки действий к кнопкам громкости.\n\nТребуется перенастроить привязки геймпадов, иначе они перестанут функционировать. Выполнить это сейчас?</string>
 	<string name="settings_osd_show_show_inputs">Показывать нажатия контроллера</string>
     	<string name="settings_summary_osd_show_inputs">Показывать системное состояние контроллера в левом нижнем углу экрана.</string>
 	<string name="touchscreen_controller_edit_menu">Меню редактора</string>
@@ -350,4 +350,6 @@
 	<string name="settings_summary_use_software_renderer_for_readbacks">Запускать параллельно программный рендерер для обратного считывания VRAM. На некоторых устройствах может существенно повысить производительность при использовании улучшений на аппаратном рендеринге.</string>
     	<string name="settings_use_software_renderer">Использовать программный рендерер</string>
     	<string name="settings_disable_widescreen">Отключить широкоформатный режим</string>
+	<string name="settings_cdrom_seek_speedup">Ускорение поиска по CD-ROM</string>
+        <string name="settings_summary_cdrom_seek_speedup">Повышает скорость поиска по CD-ROM на указанный множитель. Уменьшает время подгрузки в некоторых играх, но может приводить к ошибкам.</string>
 </resources>
