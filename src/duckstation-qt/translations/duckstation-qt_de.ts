@@ -1928,7 +1928,7 @@ Anmelde-Zugangsschlüssel generiert (%2).</translation>
     <message>
         <location filename="../consolesettingswidget.ui" line="229"/>
         <source>Seek Speedup:</source>
-        <translation>Suchlaufgeschwindigkeit:</translation>
+        <translation>CD-ROM-Suchlaufgeschwindigkeit:</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="240"/>
