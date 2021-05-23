@@ -2106,7 +2106,7 @@ Anmelde-Zugangsschlüssel generiert (%2).</translation>
     <message>
         <location filename="../consolesettingswidget.cpp" line="69"/>
         <source>Speeds up CD-ROM reads by the specified factor. Only applies to double-speed reads, and is ignored when audio is playing. May improve loading speeds in some games, at the cost of breaking others.</source>
-        <translation>Beschleunigt das Lesen von CD-ROMs um den angegebenen Faktor - wird allerdings bei der Audiowiedergabe ignoriert. Dies kann die Ladegeschwindigkeit in einigen Spielen verbessern, aber unter Umständen auch verschlechtern.</translation>
+        <translation>Beschleunigt das Lesen von CD-ROMs um den angegebenen Faktor - wird allerdings bei der Audiowiedergabe ignoriert. Dies kann die Ladezeiten in Spielen verkürzen, aber unter Umständen auch verschlechtern.</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="72"/>
@@ -2116,7 +2116,7 @@ Anmelde-Zugangsschlüssel generiert (%2).</translation>
     <message>
         <location filename="../consolesettingswidget.cpp" line="73"/>
         <source>Reduces the simulated time for the CD-ROM sled to move to different areas of the disc. Can improve loading times, but crash games which do not expect the CD-ROM to operate faster.</source>
-        <translation>Verringert die simulierte Zeit, die der CD-ROM-Schlitten benötigt, um sich zu verschiedenen Bereichen der CD zu bewegen. Dies kann die Ladezeiten verbessern, aber Spiele zum Absturz bringen, die nicht erwarten, dass die CD-ROM schneller reagiert.</translation>
+        <translation>Verringert die simulierte Zeit, die der CD-ROM-Schlitten benötigt, um sich zu verschiedenen Bereichen der CD zu bewegen. Dies kann die Ladezeiten verkürzen, aber Spiele zum Absturz bringen, die nicht erwarten, dass die CD-ROM schneller reagiert.</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="76"/>
