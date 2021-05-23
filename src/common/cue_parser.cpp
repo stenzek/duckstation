@@ -122,7 +122,7 @@ std::optional<MSF> File::GetMSF(const std::string_view& token)
 {
   const u32 len = static_cast<u32>(token.length());
 
-  static const s32 max_values[] = {60, 60, 75};
+  static const s32 max_values[] = {std::numeric_limits<s32>::max(), 60, 75};
 
   u32 parts[3] = {};
   u32 part = 0;
