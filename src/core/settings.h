@@ -156,6 +156,7 @@ struct Settings
   bool cdrom_load_image_to_ram = false;
   bool cdrom_mute_cd_audio = false;
   u32 cdrom_read_speedup = 1;
+  u32 cdrom_seek_speedup = 1;
 
   AudioBackend audio_backend = AudioBackend::Cubeb;
   s32 audio_output_volume = 100;

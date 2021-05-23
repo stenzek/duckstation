@@ -1425,6 +1425,9 @@ void DrawSettingsWindow()
           make_array("None (Double Speed)", "2x (Quad Speed)", "3x (6x Speed)", "4x (8x Speed)", "5x (10x Speed)",
                      "6x (12x Speed)", "7x (14x Speed)", "8x (16x Speed)", "9x (18x Speed)", "10x (20x Speed)");
 
+        static constexpr auto cdrom_seek_speeds = make_array("Infinite/Instantaneous", "None (Normal Speed)", "2x",
+                                                             "3x", "4x", "5x", "6x", "7x", "8x", "9x", "10x");
+
         BeginMenuButtons();
 
         MenuHeading("Console Settings");
@@ -1456,7 +1459,7 @@ void DrawSettingsWindow()
         MenuHeading("CD-ROM Emulation");
 
         const u32 read_speed_index =
-          std::min(s_settings_copy.cdrom_read_speedup, static_cast<u32>(cdrom_read_speeds.size() + 1)) - 1;
+          std::clamp<u32>(s_settings_copy.cdrom_read_speedup, 1u, static_cast<u32>(cdrom_read_speeds.size())) - 1u;
         if (MenuButtonWithValue("Read Speedup",
                                 "Speeds up CD-ROM reads by the specified factor. May improve loading speeds in some "
                                 "games, and break others.",
@@ -1470,6 +1473,25 @@ void DrawSettingsWindow()
                            [](s32 index, const std::string& title, bool checked) {
                              if (index >= 0)
                                s_settings_copy.cdrom_read_speedup = static_cast<u32>(index) + 1;
+                             CloseChoiceDialog();
+                           });
+        }
+
+        const u32 seek_speed_index =
+          std::min(s_settings_copy.cdrom_seek_speedup, static_cast<u32>(cdrom_seek_speeds.size()));
+        if (MenuButtonWithValue("Seek Speedup",
+                                "Speeds up CD-ROM seeks by the specified factor. May improve loading speeds in some "
+                                "games, and break others.",
+                                cdrom_seek_speeds[seek_speed_index]))
+        {
+          ImGuiFullscreen::ChoiceDialogOptions options;
+          options.reserve(cdrom_seek_speeds.size());
+          for (u32 i = 0; i < static_cast<u32>(cdrom_seek_speeds.size()); i++)
+            options.emplace_back(cdrom_seek_speeds[i], i == seek_speed_index);
+          OpenChoiceDialog("CD-ROM Seek Speedup", false, std::move(options),
+                           [](s32 index, const std::string& title, bool checked) {
+                             if (index >= 0)
+                               s_settings_copy.cdrom_seek_speedup = static_cast<u32>(index);
                              CloseChoiceDialog();
                            });
         }

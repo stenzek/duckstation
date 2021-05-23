@@ -43,11 +43,11 @@
        <widget class="QComboBox" name="region"/>
       </item>
       <item row="1" column="0" colspan="2">
-        <widget class="QCheckBox" name="enable8MBRAM">
+       <widget class="QCheckBox" name="enable8MBRAM">
         <property name="text">
-          <string>Enable 8MB RAM (Dev Console)</string>
+         <string>Enable 8MB RAM (Dev Console)</string>
         </property>
-        </widget>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -198,7 +198,7 @@
         </item>
        </widget>
       </item>
-      <item row="1" column="0" colspan="2">
+      <item row="2" column="0" colspan="2">
        <layout class="QGridLayout" name="gridLayout">
         <item row="0" column="0">
          <widget class="QCheckBox" name="cdromReadThread">
@@ -222,6 +222,75 @@
          </widget>
         </item>
        </layout>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>Seek Speedup:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="cdromSeekSpeedup">
+        <property name="currentIndex">
+         <number>1</number>
+        </property>
+        <item>
+         <property name="text">
+          <string>Infinite/Instantaneous</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>None (Normal Speed)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>2x</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>3x</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>4x</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>5x</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>6x</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>7x</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>8x</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>9x</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>10x</string>
+         </property>
+        </item>
+       </widget>
       </item>
      </layout>
     </widget>

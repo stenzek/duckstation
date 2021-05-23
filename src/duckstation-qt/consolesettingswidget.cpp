@@ -41,6 +41,7 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QW
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.cdromRegionCheck, "CDROM", "RegionCheck", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.cdromLoadImageToRAM, "CDROM", "LoadImageToRAM",
                                                false);
+  SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.cdromSeekSpeedup, "CDROM", "SeekSpeedup", 1);
   SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.multitapMode, "ControllerPorts", "MultitapMode",
                                                &Settings::ParseMultitapModeName, &Settings::GetMultitapModeName,
                                                Settings::DEFAULT_MULTITAP_MODE);
@@ -67,6 +68,10 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QW
     m_ui.cdromReadSpeedup, tr("CDROM Read Speedup"), tr("None (Double Speed)"),
     tr("Speeds up CD-ROM reads by the specified factor. Only applies to double-speed reads, and is ignored when audio "
        "is playing. May improve loading speeds in some games, at the cost of breaking others."));
+  dialog->registerWidgetHelp(
+    m_ui.cdromReadSpeedup, tr("CDROM Seek Speedup"), tr("None (Normal Speed)"),
+    tr("Reduces the simulated time for the CD-ROM sled to move to different areas of the disc. Can improve loading "
+       "times, but crash games which do not expect the CD-ROM to operate faster."));
   dialog->registerWidgetHelp(
     m_ui.cdromReadThread, tr("Use Read Thread (Asynchronous)"), tr("Checked"),
     tr("Reduces hitches in emulation by reading/decompressing CD data asynchronously on a worker thread."));

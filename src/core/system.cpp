@@ -885,10 +885,12 @@ bool Initialize(bool force_software_renderer)
   g_mdec.Initialize();
   g_sio.Initialize();
 
+  static constexpr float WARNING_DURATION = 15.0f;
+
   if (g_settings.cpu_overclock_active)
   {
     g_host_interface->AddFormattedOSDMessage(
-      10.0f,
+      WARNING_DURATION,
       g_host_interface->TranslateString("OSDMessage",
                                         "CPU clock speed is set to %u%% (%u / %u). This may result in instability."),
       g_settings.GetCPUOverclockPercent(), g_settings.cpu_overclock_numerator, g_settings.cpu_overclock_denominator);
@@ -896,10 +898,28 @@ bool Initialize(bool force_software_renderer)
   if (g_settings.cdrom_read_speedup > 1)
   {
     g_host_interface->AddFormattedOSDMessage(
-      10.0f,
+      WARNING_DURATION,
       g_host_interface->TranslateString(
         "OSDMessage", "CD-ROM read speedup set to %ux (effective speed %ux). This may result in instability."),
       g_settings.cdrom_read_speedup, g_settings.cdrom_read_speedup * 2);
+  }
+  if (g_settings.cdrom_seek_speedup != 1)
+  {
+    if (g_settings.cdrom_seek_speedup == 0)
+    {
+      g_host_interface->AddOSDMessage(
+        g_host_interface->TranslateStdString("OSDMessage",
+                                             "CD-ROM seek speedup set to instant. This may result in instability."),
+        WARNING_DURATION);
+    }
+    else
+    {
+      g_host_interface->AddFormattedOSDMessage(
+        WARNING_DURATION,
+        g_host_interface->TranslateString("OSDMessage",
+                                          "CD-ROM seek speedup set to %ux. This may result in instability."),
+        g_settings.cdrom_seek_speedup);
+    }
   }
 
   UpdateThrottlePeriod();

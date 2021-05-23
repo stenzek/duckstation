@@ -558,6 +558,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("CDROM", "LoadImageToRAM", false);
   si.SetBoolValue("CDROM", "MuteCDAudio", false);
   si.SetIntValue("CDROM", "ReadSpeedup", 1);
+  si.SetIntValue("CDROM", "SeekSpeedup", 1);
 
   si.SetStringValue("Audio", "Backend", Settings::GetAudioBackendName(Settings::DEFAULT_AUDIO_BACKEND));
   si.SetIntValue("Audio", "OutputVolume", 100);
@@ -638,7 +639,8 @@ void HostInterface::FixIncompatibleSettings(bool display_osd_messages)
     g_settings.gpu_widescreen_hack = false;
     g_settings.gpu_pgxp_enable = false;
     g_settings.gpu_24bit_chroma_smoothing = false;
-    g_settings.cdrom_read_speedup = false;
+    g_settings.cdrom_read_speedup = 1;
+    g_settings.cdrom_seek_speedup = 1;
     g_settings.cdrom_mute_cd_audio = false;
     g_settings.texture_replacements.enable_vram_write_replacements = false;
     g_settings.bios_patch_fast_boot = false;
