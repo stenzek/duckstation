@@ -1871,6 +1871,12 @@ void UpdateMemoryCards()
           card = MemoryCard::Open(g_settings.memory_card_paths[i]);
       }
       break;
+
+      case MemoryCardType::NonPersistent:
+      {
+        card = MemoryCard::Create();
+      }
+      break;
     }
 
     if (card)

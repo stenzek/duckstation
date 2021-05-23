@@ -135,6 +135,7 @@ enum class MemoryCardType
   PerGame,
   PerGameTitle,
   PerGameFileTitle,
+  NonPersistent,
   Count
 };
 
