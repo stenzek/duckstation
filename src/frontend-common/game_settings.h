@@ -57,6 +57,7 @@ struct Entry
   std::optional<bool> cpu_overclock_enable;
   std::optional<bool> enable_8mb_ram;
   std::optional<u32> cdrom_read_speedup;
+  std::optional<u32> cdrom_seek_speedup;
   std::optional<DisplayCropMode> display_crop_mode;
   std::optional<DisplayAspectRatio> display_aspect_ratio;
   std::optional<GPURenderer> gpu_renderer;

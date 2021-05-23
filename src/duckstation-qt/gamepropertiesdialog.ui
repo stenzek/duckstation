@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>769</width>
-    <height>706</height>
+    <width>692</width>
+    <height>562</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -263,6 +263,246 @@
         </widget>
        </item>
        <item>
+        <widget class="QGroupBox" name="groupBox">
+         <property name="title">
+          <string>Other Settings</string>
+         </property>
+         <layout class="QFormLayout" name="formLayout_7">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_13">
+            <property name="text">
+             <string>CD-ROM Read Speedup:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="userCDROMReadSpeedup">
+            <item>
+             <property name="text">
+              <string>(unchanged)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>None (Double Speed)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>2x (Quad Speed)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>3x (6x Speed)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>4x (8x Speed)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>5x (10x Speed)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>6x (12x Speed)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>7x (14x Speed)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>8x (16x Speed)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>9x (18x Speed)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>10x (20x Speed)</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_35">
+            <property name="text">
+             <string>CD-ROM Seek Speedup:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QComboBox" name="userCDROMSeekSpeedup">
+            <property name="currentIndex">
+             <number>0</number>
+            </property>
+            <item>
+             <property name="text">
+              <string>(unchanged)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Infinite/Instantaneous</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>None (Normal Speed)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>2x</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>3x</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>4x</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>5x</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>6x</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>7x</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>8x</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>9x</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>10x</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_32">
+            <property name="text">
+             <string>Runahead Frames:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QComboBox" name="userRunaheadFrames">
+            <item>
+             <property name="text">
+              <string>(unchanged)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Disabled</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>1 Frame</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>2 Frames</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>3 Frames</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>4 Frames</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>5 Frames</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>6 Frames</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>7 Frames</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>8 Frames</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>9 Frames</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>10 Frames</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab_5">
+      <attribute name="title">
+       <string>User Settings (Graphics)</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_5">
+       <item>
         <widget class="QGroupBox" name="groupBox_4">
          <property name="title">
           <string>GPU Screen Display</string>
@@ -490,153 +730,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="groupBox">
-         <property name="title">
-          <string>Other Settings</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_4">
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_13">
-            <property name="text">
-             <string>CD-ROM Read Speedup:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QComboBox" name="userCDROMReadSpeedup">
-            <item>
-             <property name="text">
-              <string>(unchanged)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>None (Double Speed)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>2x (Quad Speed)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>3x (6x Speed)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>4x (8x Speed)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>5x (10x Speed)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>6x (12x Speed)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>7x (14x Speed)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>8x (16x Speed)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>9x (18x Speed)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>10x (20x Speed)</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_32">
-            <property name="text">
-             <string>Runahead Frames:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QComboBox" name="userRunaheadFrames">
-            <item>
-             <property name="text">
-              <string>(unchanged)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Disabled</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>1 Frame</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>2 Frames</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>3 Frames</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>4 Frames</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>5 Frames</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>6 Frames</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>7 Frames</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>8 Frames</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>9 Frames</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>10 Frames</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <spacer name="verticalSpacer_3">
+        <spacer name="verticalSpacer_4">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
          </property>

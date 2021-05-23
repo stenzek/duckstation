@@ -319,6 +319,12 @@ void GamePropertiesDialog::populateGameSettings()
     m_ui.userCDROMReadSpeedup->setCurrentIndex(static_cast<int>(gs.cdrom_read_speedup.value()));
   }
 
+  if (gs.cdrom_seek_speedup.has_value())
+  {
+    QSignalBlocker sb(m_ui.userCDROMSeekSpeedup);
+    m_ui.userCDROMSeekSpeedup->setCurrentIndex(static_cast<int>(gs.cdrom_seek_speedup.value()) + 1);
+  }
+
   if (gs.display_active_start_offset.has_value())
   {
     QSignalBlocker sb(m_ui.displayActiveStartOffset);
@@ -586,6 +592,14 @@ void GamePropertiesDialog::connectUi()
       m_game_settings.cdrom_read_speedup.reset();
     else
       m_game_settings.cdrom_read_speedup = static_cast<u32>(index);
+    saveGameSettings();
+  });
+
+  connect(m_ui.userCDROMSeekSpeedup, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
+    if (index <= 0)
+      m_game_settings.cdrom_seek_speedup.reset();
+    else
+      m_game_settings.cdrom_seek_speedup = static_cast<u32>(index - 1);
     saveGameSettings();
   });
 

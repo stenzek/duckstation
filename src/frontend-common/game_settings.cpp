@@ -110,7 +110,7 @@ bool Entry::LoadFromStream(ByteStream* stream)
       !ReadOptionalFromStream(stream, &cpu_overclock_numerator) ||
       !ReadOptionalFromStream(stream, &cpu_overclock_denominator) ||
       !ReadOptionalFromStream(stream, &cpu_overclock_enable) || !ReadOptionalFromStream(stream, &enable_8mb_ram) ||
-      !ReadOptionalFromStream(stream, &cdrom_read_speedup) ||
+      !ReadOptionalFromStream(stream, &cdrom_read_speedup) || !ReadOptionalFromStream(stream, &cdrom_seek_speedup) ||
       !ReadOptionalFromStream(stream, &display_active_start_offset) ||
       !ReadOptionalFromStream(stream, &display_active_end_offset) ||
       !ReadOptionalFromStream(stream, &display_line_start_offset) ||
@@ -166,7 +166,7 @@ bool Entry::SaveToStream(ByteStream* stream) const
          WriteOptionalToStream(stream, cpu_overclock_numerator) &&
          WriteOptionalToStream(stream, cpu_overclock_denominator) &&
          WriteOptionalToStream(stream, cpu_overclock_enable) && WriteOptionalToStream(stream, enable_8mb_ram) &&
-         WriteOptionalToStream(stream, cdrom_read_speedup) &&
+         WriteOptionalToStream(stream, cdrom_read_speedup) && WriteOptionalToStream(stream, cdrom_seek_speedup) &&
          WriteOptionalToStream(stream, display_active_start_offset) &&
          WriteOptionalToStream(stream, display_active_end_offset) &&
          WriteOptionalToStream(stream, display_line_start_offset) &&
@@ -221,6 +221,9 @@ static void ParseIniSection(Entry* entry, const char* section, const CSimpleIniA
   cvalue = ini.GetValue(section, "CDROMReadSpeedup", nullptr);
   if (cvalue)
     entry->cdrom_read_speedup = StringUtil::FromChars<u32>(cvalue);
+  cvalue = ini.GetValue(section, "CDROMSeekSpeedup", nullptr);
+  if (cvalue)
+    entry->cdrom_seek_speedup = StringUtil::FromChars<u32>(cvalue);
 
   long lvalue = ini.GetLongValue(section, "DisplayActiveStartOffset", 0);
   if (lvalue != 0)
@@ -370,6 +373,8 @@ static void StoreIniSection(const Entry& entry, const char* section, CSimpleIniA
 
   if (entry.cdrom_read_speedup.has_value())
     ini.SetLongValue(section, "CDROMReadSpeedup", static_cast<long>(entry.cdrom_read_speedup.value()));
+  if (entry.cdrom_seek_speedup.has_value())
+    ini.SetLongValue(section, "CDROMSeekSpeedup", static_cast<long>(entry.cdrom_seek_speedup.value()));
 
   if (entry.display_active_start_offset.has_value())
     ini.SetLongValue(section, "DisplayActiveStartOffset", entry.display_active_start_offset.value());
@@ -473,6 +478,7 @@ u32 Entry::GetUserSettingsCount() const
   count += BoolToUInt32(cpu_overclock_enable.has_value());
   count += BoolToUInt32(enable_8mb_ram.has_value());
   count += BoolToUInt32(cdrom_read_speedup.has_value());
+  count += BoolToUInt32(cdrom_seek_speedup.has_value());
   count += BoolToUInt32(display_crop_mode.has_value());
   count += BoolToUInt32(display_aspect_ratio.has_value());
   count += BoolToUInt32(gpu_downsample_mode.has_value());
@@ -533,6 +539,13 @@ static std::optional<std::string> GetEntryValueForKey(const Entry& entry, const 
       return std::nullopt;
     else
       return std::to_string(entry.cdrom_read_speedup.value());
+  }
+  else if (key == "CDROMSeekSpeedup")
+  {
+    if (!entry.cdrom_seek_speedup.has_value())
+      return std::nullopt;
+    else
+      return std::to_string(entry.cdrom_seek_speedup.value());
   }
   else if (key == "DisplayCropMode")
   {
@@ -795,6 +808,13 @@ static void SetEntryValueForKey(Entry& entry, const std::string_view& key, const
       entry.cdrom_read_speedup.reset();
     else
       entry.cdrom_read_speedup = StringUtil::FromChars<u32>(value.value());
+  }
+  else if (key == "CDROMSeekSpeedup")
+  {
+    if (!value.has_value())
+      entry.cdrom_seek_speedup.reset();
+    else
+      entry.cdrom_seek_speedup = StringUtil::FromChars<u32>(value.value());
   }
   else if (key == "DisplayCropMode")
   {
@@ -1160,6 +1180,8 @@ void Entry::ApplySettings(bool display_osd_messages) const
 
   if (cdrom_read_speedup.has_value())
     g_settings.cdrom_read_speedup = cdrom_read_speedup.value();
+  if (cdrom_seek_speedup.has_value())
+    g_settings.cdrom_seek_speedup = cdrom_seek_speedup.value();
 
   if (display_active_start_offset.has_value())
     g_settings.display_active_start_offset = display_active_start_offset.value();
