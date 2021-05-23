@@ -1,3 +1,5 @@
+- 2021/05/23: Save RAM (srm) support added to libretro core.
+- 2021/05/23: CD-ROM seek speedup enhancement added.
 - 2021/05/16: Auto fire (toggle pressing) buttons added.
 - 2021/05/10: libretro core re-added. Commercial distribution of the DuckStation libretro core is **NOT PERMITTED**.
 - 2021/05/02: New pause menu added to Android app.
