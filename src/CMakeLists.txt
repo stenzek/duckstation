@@ -6,11 +6,11 @@ add_subdirectory(common)
 add_subdirectory(core)
 add_subdirectory(scmversion)
 
-if(BUILD_NOGUI_FRONTEND OR BUILD_QT_FRONTEND)
+if(NOT BUILD_LIBRETRO_CORE)
   add_subdirectory(frontend-common)
 endif()
 
-if(NOT BUILD_LIBRETRO_CORE)
+if(NOT BUILD_LIBRETRO_CORE AND NOT ANDROID)
   add_subdirectory(common-tests)
   if(WIN32)
     add_subdirectory(updater)

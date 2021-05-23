@@ -8,6 +8,7 @@ make_build() {
   PLATFORM=$1
   OPTIONS=$2
   SUFFIX=$3
+  ZIPFILE=../duckstation_libretro_${PLATFORM}.zip
 
   echo Building for ${PLATFORM}...
 
@@ -19,8 +20,8 @@ make_build() {
   cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_LIBRETRO_CORE=ON $OPTIONS $ROOTDIR
 
   ninja
-  rm -f ../duckstation_${PLATFORM}.zip
-  zip -j ../duckstation_${PLATFORM}.zip duckstation_libretro${SUFFIX}.so
+  rm -f $ZIPFILE
+  zip -j $ZIPFILE duckstation_libretro${SUFFIX}.so
   cd ..
 }
   
