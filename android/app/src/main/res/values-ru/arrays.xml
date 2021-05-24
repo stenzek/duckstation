@@ -23,13 +23,13 @@
 	<string-array name="settings_gpu_resolution_scale_entries">
 		<item>1x</item>
 		<item>2x</item>
-		<item>3x (для 720p)</item>
+		<item>3x (720p)</item>
 		<item>4x</item>
-		<item>5x (для 1080p)</item>
-		<item>6x (для 1440p)</item>
+		<item>5x (1080p)</item>
+		<item>6x (1440p)</item>
 		<item>7x</item>
 		<item>8x</item>
-		<item>9x (для 4K)</item>
+		<item>9x (4K)</item>
 		<item>10x</item>
 		<item>11x</item>
 		<item>12x</item>
@@ -44,13 +44,13 @@
 		<item>Все границы</item>
 	</string-array>
 	<string-array name="settings_display_aspect_ratio_names">
-    <item>Автонастройка (нативно игре)</item>
-    <item>Автонастройка (под экран)</item>
-    <item>4:3</item>
-    <item>16:9</item>
-    <item>19:9</item>
-    <item>20:9</item>
-    <item>PAR 1:1</item>
+   		<item>Автонастройка (нативно игре)</item>
+    		<item>Автонастройка (под экран)</item>
+    		<item>4:3</item>
+    		<item>16:9</item>
+    		<item>19:9</item>
+    		<item>20:9</item>
+    		<item>PAR 1:1</item>
 	</string-array>
 	<string-array name="settings_gpu_texture_filter_names">
 		<item>Метод ближайшего соседа</item>
@@ -105,8 +105,8 @@
 	<string-array name="settings_touchscreen_controller_view_entries">
 		<item>Нет</item>
 		<item>Цифровой</item>
-		<item>Аналоговый, один джойстик</item>
-		<item>Аналоговый, два джойстика</item>
+		<item>Аналоговый, один стик</item>
+		<item>Аналоговый, два стика</item>
 		<item>Световой пистолет</item>
 	</string-array>
 	<string-array name="settings_audio_backend_entries">
@@ -259,5 +259,18 @@
                <item>Multitap 6</item>
                <item>Multitap 7</item>
                <item>Multitap 8</item>
+        </string-array>
+	<string-array name="settings_cdrom_seek_speedup_entries">
+               <item>Без задержки</item>
+               <item>Нет (обычная скорость)</item>
+               <item>2x</item>
+               <item>3x</item>
+               <item>4x</item>
+               <item>5x</item>
+               <item>6x</item>
+               <item>7x</item>
+               <item>8x</item>
+               <item>9x</item>
+               <item>10x</item>
         </string-array>
 </resources>
