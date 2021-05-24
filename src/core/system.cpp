@@ -783,7 +783,7 @@ bool Boot(const SystemBootParameters& params)
 
   Bus::SetBIOS(*bios_image);
   UpdateControllers();
-  UpdateMemoryCards();
+  UpdateMemoryCardTypes();
   UpdateMultitaps();
   Reset();
 
@@ -1230,7 +1230,7 @@ bool DoLoadState(ByteStream* state, bool force_software_renderer, bool update_di
       g_cdrom.InsertMedia(std::move(media));
 
     UpdateControllers();
-    UpdateMemoryCards();
+    UpdateMemoryCardTypes();
     UpdateMultitaps();
   }
   else
@@ -1243,7 +1243,7 @@ bool DoLoadState(ByteStream* state, bool force_software_renderer, bool update_di
 
     // ensure the correct card is loaded
     if (g_settings.HasAnyPerGameMemoryCards())
-      UpdateMemoryCards();
+      UpdatePerGameMemoryCards();
   }
 
   if (header.data_compression_type != 0)
@@ -1784,101 +1784,114 @@ void ResetControllers()
   }
 }
 
-void UpdateMemoryCards()
+static std::unique_ptr<MemoryCard> GetMemoryCardForSlot(u32 slot, MemoryCardType type)
+{
+  // Disable memory cards when running PSFs.
+  const bool is_running_psf = !s_running_game_path.empty() && IsPsfFileName(s_running_game_path.c_str());
+  if (is_running_psf)
+    return nullptr;
+
+  switch (type)
+  {
+    case MemoryCardType::PerGame:
+    {
+      if (s_running_game_code.empty())
+      {
+        g_host_interface->AddFormattedOSDMessage(
+          5.0f,
+          g_host_interface->TranslateString("System", "Per-game memory card cannot be used for slot %u as the running "
+                                                      "game has no code. Using shared card instead."),
+          slot + 1u);
+        return MemoryCard::Open(g_host_interface->GetSharedMemoryCardPath(slot));
+      }
+      else
+      {
+        return MemoryCard::Open(g_host_interface->GetGameMemoryCardPath(s_running_game_code.c_str(), slot));
+      }
+    }
+
+    case MemoryCardType::PerGameTitle:
+    {
+      if (s_running_game_title.empty())
+      {
+        g_host_interface->AddFormattedOSDMessage(
+          5.0f,
+          g_host_interface->TranslateString("System", "Per-game memory card cannot be used for slot %u as the running "
+                                                      "game has no title. Using shared card instead."),
+          slot + 1u);
+        return MemoryCard::Open(g_host_interface->GetSharedMemoryCardPath(slot));
+      }
+      else
+      {
+        return MemoryCard::Open(g_host_interface->GetGameMemoryCardPath(
+          MemoryCard::SanitizeGameTitleForFileName(s_running_game_title).c_str(), slot));
+      }
+    }
+
+    case MemoryCardType::PerGameFileTitle:
+    {
+      const std::string display_name(FileSystem::GetDisplayNameFromPath(s_running_game_path));
+      const std::string_view file_title(FileSystem::GetFileTitleFromPath(display_name));
+      if (file_title.empty())
+      {
+        g_host_interface->AddFormattedOSDMessage(
+          5.0f,
+          g_host_interface->TranslateString("System", "Per-game memory card cannot be used for slot %u as the running "
+                                                      "game has no path. Using shared card instead."),
+          slot + 1u);
+        return MemoryCard::Open(g_host_interface->GetSharedMemoryCardPath(slot));
+      }
+      else
+      {
+        return MemoryCard::Open(
+          g_host_interface->GetGameMemoryCardPath(MemoryCard::SanitizeGameTitleForFileName(file_title).c_str(), slot));
+      }
+    }
+
+    case MemoryCardType::Shared:
+    {
+      if (g_settings.memory_card_paths[slot].empty())
+        return MemoryCard::Open(g_host_interface->GetSharedMemoryCardPath(slot));
+      else
+        return MemoryCard::Open(g_settings.memory_card_paths[slot]);
+    }
+
+    case MemoryCardType::NonPersistent:
+      return MemoryCard::Create();
+
+    case MemoryCardType::None:
+    default:
+      return nullptr;
+  }
+}
+
+void UpdateMemoryCardTypes()
+{
+  for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
+  {
+    g_pad.SetMemoryCard(i, nullptr);
+
+    const MemoryCardType type = g_settings.memory_card_types[i];
+    std::unique_ptr<MemoryCard> card = GetMemoryCardForSlot(i, type);
+    if (card)
+      g_pad.SetMemoryCard(i, std::move(card));
+  }
+}
+
+void UpdatePerGameMemoryCards()
 {
   // Disable memory cards when running PSFs.
   const bool is_running_psf = !s_running_game_path.empty() && IsPsfFileName(s_running_game_path.c_str());
 
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
-    g_pad.SetMemoryCard(i, nullptr);
-    if (is_running_psf)
+    const MemoryCardType type = g_settings.memory_card_types[i];
+    if (!Settings::IsPerGameMemoryCardType(type))
       continue;
 
-    std::unique_ptr<MemoryCard> card;
-    const MemoryCardType type = g_settings.memory_card_types[i];
-    switch (type)
-    {
-      case MemoryCardType::None:
-        continue;
+    g_pad.SetMemoryCard(i, nullptr);
 
-      case MemoryCardType::PerGame:
-      {
-        if (s_running_game_code.empty())
-        {
-          g_host_interface->AddFormattedOSDMessage(
-            5.0f,
-            g_host_interface->TranslateString("System",
-                                              "Per-game memory card cannot be used for slot %u as the running "
-                                              "game has no code. Using shared card instead."),
-            i + 1u);
-          card = MemoryCard::Open(g_host_interface->GetSharedMemoryCardPath(i));
-        }
-        else
-        {
-          card = MemoryCard::Open(g_host_interface->GetGameMemoryCardPath(s_running_game_code.c_str(), i));
-        }
-      }
-      break;
-
-      case MemoryCardType::PerGameTitle:
-      {
-        if (s_running_game_title.empty())
-        {
-          g_host_interface->AddFormattedOSDMessage(
-            5.0f,
-            g_host_interface->TranslateString("System",
-                                              "Per-game memory card cannot be used for slot %u as the running "
-                                              "game has no title. Using shared card instead."),
-            i + 1u);
-          card = MemoryCard::Open(g_host_interface->GetSharedMemoryCardPath(i));
-        }
-        else
-        {
-          card = MemoryCard::Open(g_host_interface->GetGameMemoryCardPath(
-            MemoryCard::SanitizeGameTitleForFileName(s_running_game_title).c_str(), i));
-        }
-      }
-      break;
-
-      case MemoryCardType::PerGameFileTitle:
-      {
-        const std::string display_name(FileSystem::GetDisplayNameFromPath(s_running_game_path));
-        const std::string_view file_title(FileSystem::GetFileTitleFromPath(display_name));
-        if (file_title.empty())
-        {
-          g_host_interface->AddFormattedOSDMessage(
-            5.0f,
-            g_host_interface->TranslateString("System",
-                                              "Per-game memory card cannot be used for slot %u as the running "
-                                              "game has no path. Using shared card instead."),
-            i + 1u);
-          card = MemoryCard::Open(g_host_interface->GetSharedMemoryCardPath(i));
-        }
-        else
-        {
-          card = MemoryCard::Open(
-            g_host_interface->GetGameMemoryCardPath(MemoryCard::SanitizeGameTitleForFileName(file_title).c_str(), i));
-        }
-      }
-      break;
-
-      case MemoryCardType::Shared:
-      {
-        if (g_settings.memory_card_paths[i].empty())
-          card = MemoryCard::Open(g_host_interface->GetSharedMemoryCardPath(i));
-        else
-          card = MemoryCard::Open(g_settings.memory_card_paths[i]);
-      }
-      break;
-
-      case MemoryCardType::NonPersistent:
-      {
-        card = MemoryCard::Create();
-      }
-      break;
-    }
-
+    std::unique_ptr<MemoryCard> card = GetMemoryCardForSlot(i, type);
     if (card)
       g_pad.SetMemoryCard(i, std::move(card));
   }
@@ -1996,7 +2009,7 @@ bool InsertMedia(const char* path)
   {
     g_host_interface->AddOSDMessage(
       g_host_interface->TranslateStdString("System", "Game changed, reloading memory cards."), 10.0f);
-    UpdateMemoryCards();
+    UpdatePerGameMemoryCards();
   }
 
   ClearMemorySaveStates();

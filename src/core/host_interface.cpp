@@ -848,7 +848,7 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
          System::HasMediaSubImages()) ||
         g_settings.memory_card_directory != old_settings.memory_card_directory)
     {
-      System::UpdateMemoryCards();
+      System::UpdateMemoryCardTypes();
     }
 
     if (g_settings.rewind_enable != old_settings.rewind_enable ||

@@ -263,6 +263,11 @@ struct Settings
 
   float GetDisplayAspectRatioValue() const;
 
+  ALWAYS_INLINE static bool IsPerGameMemoryCardType(MemoryCardType type)
+  {
+    return (type == MemoryCardType::PerGame || type == MemoryCardType::PerGameTitle ||
+            type == MemoryCardType::PerGameFileTitle);
+  }
   bool HasAnyPerGameMemoryCards() const;
 
   static void CPUOverclockPercentToFraction(u32 percent, u32* numerator, u32* denominator);
