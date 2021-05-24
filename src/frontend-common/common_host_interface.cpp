@@ -1453,6 +1453,31 @@ void CommonHostInterface::SetControllerAutoFireState(u32 controller_index, s32 b
   }
 }
 
+void CommonHostInterface::SetControllerAutoFireSlotState(u32 controller_index, u32 slot_index, bool active)
+{
+  for (ControllerAutoFireState& ts : m_controller_autofires)
+  {
+    if (ts.controller_index != controller_index || ts.slot_index != slot_index)
+      continue;
+
+    if (!active)
+    {
+      if (ts.state)
+      {
+        Controller* controller = System::GetController(ts.controller_index);
+        if (controller)
+          controller->SetButtonState(ts.button_code, false);
+      }
+
+      ts.state = false;
+      ts.countdown = ts.frequency;
+    }
+
+    ts.active = active;
+    return;
+  }
+}
+
 void CommonHostInterface::UpdateControllerAutoFire()
 {
   for (ControllerAutoFireState& ts : m_controller_autofires)
@@ -1598,7 +1623,7 @@ void CommonHostInterface::UpdateControllerInputMap(SettingsInterface& si)
       const std::string binding(
         si.GetStringValue(category, TinyString::FromFormat("AutoFire%u", turbo_button_index + 1), ""));
 
-#ifdef __ANDROID__
+#ifndef __ANDROID__
       // Android doesn't require a binding, since we can trigger it from the touchscreen controller.
       if (binding.empty())
         continue;
@@ -1613,6 +1638,7 @@ void CommonHostInterface::UpdateControllerInputMap(SettingsInterface& si)
 
       ControllerAutoFireState ts;
       ts.controller_index = controller_index;
+      ts.slot_index = turbo_button_index;
       ts.button_code = button_code.value();
       ts.frequency = static_cast<u8>(
         std::clamp<s32>(si.GetIntValue(category, TinyString::FromFormat("AutoFire%uFrequency", turbo_button_index + 1),

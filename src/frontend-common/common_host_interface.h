@@ -311,6 +311,9 @@ public:
   /// Controller navigation, used by fullscreen mode.
   void SetControllerNavigationButtonState(FrontendCommon::ControllerNavigationButton button, bool pressed);
 
+  /// Alters autofire state for controllers (activates/deactivates).
+  void SetControllerAutoFireSlotState(u32 controller_index, u32 slot_index, bool active);
+
   /// Toggles fast forward state.
   bool IsFastForwardEnabled() const { return m_fast_forward_enabled; }
   void SetFastForwardEnabled(bool enabled);
@@ -535,6 +538,7 @@ private:
   struct ControllerAutoFireState
   {
     u32 controller_index;
+    u32 slot_index;
     s32 button_code;
     u8 frequency;
     u8 countdown;
