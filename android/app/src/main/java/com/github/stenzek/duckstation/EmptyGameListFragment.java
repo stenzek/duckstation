@@ -16,7 +16,7 @@ public class EmptyGameListFragment extends Fragment {
             ".ecm (Error Code Modeling Image)\n" +
             ".mds (Media Descriptor Sidecar)\n" +
             ".chd (Compressed Hunks of Data)\n" +
-            ".pbp (PlayStation Portable, Only Encrypted)";
+            ".pbp (PlayStation Portable, Only Decrypted)";
 
     private MainActivity parent;
 
