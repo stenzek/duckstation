@@ -13,7 +13,7 @@
     <string name="settings_cpu_execution_mode">Modo de execução CPU</string>
     <string name="settings_gpu_renderer">Renderizado por GPU</string>
     <string name="settings_gpu_resolution_scale">Escala de Resolução</string>
-    <string name="title_activity_emulation">Atividade da Emulaçã</string>
+    <string name="title_activity_emulation">Atividade da Emulação</string>
     <string name="settings_emulation_speed">Velocidade da Emulação</string>
     <string name="settings_fast_forward_speed">Velocidade de Avanço Rápido</string>
     <string name="settings_save_state_on_exit">Salvar estado ao Sair</string>
@@ -40,7 +40,7 @@
     <string name="settings_summary_cpu_recompiler_icache">Determina se a instrução enviada ao CPU emulado fica armazenada no recompilador. Melhor a precisão ao pequeno custo de performance. Se os jogos estão rodando muito rápido, tente ativar esta opção.</string>
     <string name="settings_cpu_recompiler_fastmem">Recompilador CPU Modo FASTMEM</string>
     <string name="settings_summary_cpu_recompiler_fastmem">Torna o acesso à memória mais eficiente. Desative se estiver instável em seu aparelho.</string>
-    <string name="settings_presented_frame_limit">Limite do Quadro Atual</string>
+    <string name="settings_presented_frame_limit">Limite do quadro Atual</string>
     <string name="settings_logging_level">Nível de Registro</string>
     <string name="settings_log_to_file">Registro para Arquivo</string>
     <string name="settings_summary_log_to_file">Escreve mensagens em um arquivo duckstation.log em seu diretório raiz. Use só para depuração isto deixará o emulador lento.</string>
@@ -96,13 +96,13 @@
     <string name="settings_widescreen_hack">Hack de tela panorâmica</string>
     <string name="settings_summary_widescreen_hack">Dimensiona as posições dos vértices da tela para a proporção mais larga (Panoramicas), basicamente aumenta o campo de visão de 4:3 para 16:09 em jogos 3D. Não é compatível com todos os jogos.</string>
     <string name="settings_force_4_3_for_24bit">Forçar 4:3 para telas 24-bits</string>
-    <string name="settings_summary_force_4_3_for_24bit">Volta a tela para 4:3 (Desativa efeito Esticado em FMVs).</string>
+    <string name="settings_summary_force_4_3_for_24bit">Volta a tela para 4:3 (Desativa efeito esticado em FMVs).</string>
     <string name="settings_chroma_smoothing_24bit">Suavização de Croma</string>
     <string name="settings_summary_chrome_smoothing_24bit">Suavização de Croma (reduz artefatos em cenas FMV).</string>
     <string name="settings_pgxp_geometry_correction">Correção Geométrica PGXP</string>
     <string name="settings_summary_pgxp_geometry_correction"><![CDATA[Reduz as "oscilações" nos polígonos tentando preservar os mesmos na hora da transferência para a memória. Funciona apenas se rederizado por hardware e pode não ser compatível com todos os jogos Não compativel com todos os jogos.]]></string>
     <string name="settings_pgxp_culling_correction">PGXP - Correção de Curvas</string>
-    <string name="settings_summary_pgxp_culling_correction">IAumenta a precisão das curvas nos polígonos, reduzindo o número de buracos na geometria do mesmo. Requer a Correção Geometrica ativada. Requer que a correção geométrica esteja ativada.</string>
+    <string name="settings_summary_pgxp_culling_correction">Aumenta a precisão das curvas nos polígonos, reduzindo o número de buracos na geometria do mesmo. Requer a Correção Geometrica ativada. Requer que a correção geométrica esteja ativada.</string>
     <string name="settings_pgxp_texture_correction">PGXP - Correção de Textura</string>
     <string name="settings_summary_pgxp_texture_correction">Utiliza interpolação corretiva em perspetiva para coordenadas e das cores na textura, endireitando as que estiverem distorcidas. Requer que a correção geométrica esteja ativada.</string>
     <string name="settings_pgxp_preserve_projection_precision">PGXP - Preserva Precisão de Projeção</string>
@@ -159,7 +159,7 @@
     <string name="settings_language">Linguagem (Necessário Reiniciar)</string>
     <string name="touchscreen_controller_stop_editing">Terminado</string>
     <string name="touchscreen_controller_reset_layout">Redefinir</string>
-    <string name="emulation_activity_touchscreen_controller_not_active">Controle em Tela não Ativado.</string>
+    <string name="emulation_activity_touchscreen_controller_not_active">Controle em tela não Ativado.</string>
     <string name="settings_theme">Tema</string>
     <string name="settings_controller_mapping_summary">Permite configurar e atribuir os botões de seu controle externo ao emulador.</string>
     <string name="settings_controller_mapping">Mapear Controles</string>
@@ -181,7 +181,7 @@
     <string name="settings_summary_enable_analog_mode_on_reset">Força os controles ao modo analógico quando emulador é reiniciado.</string>
     <string name="settings_summary_use_analog_sticks_for_dpad">Permite usar os analógicos como um direcional (D-Pad) no modo digital, assim como os botões.</string>
     <string name="settings_disable_all_enhancements">Desativar todas os aprimoramentos</string>
-    <string name="settings_summary_disable_all_enhancements">Desliga temporariamente todas os aprimoramentos, útil para achar problemas de performance..</string>
+    <string name="settings_summary_disable_all_enhancements">Desliga temporariamente todos os aprimoramentos, útil para achar problemas de performance..</string>
     <string name="settings_downsample_mode">Suavização da Imagem</string>
     <string name="activity_game_properties">Propriedades do Jogo</string>
     <string name="game_properties_preference_use_global_setting">Usar configuração global</string>
@@ -199,7 +199,7 @@
     <string name="settings_game_directories">Diretório de Jogos</string>
     <string name="settings_summary_game_directories">Altera a lista de diretórios usados ​​para pesquisar jogos.</string>
     <string name="game_directories_scanning_subdirectories">Ler subdiretórios.</string>
-    <string name="game_directories_not_scanning_subdirectories">Não Ler subdiretórios.</string>
+    <string name="game_directories_not_scanning_subdirectories">Não ler subdiretórios.</string>
     <string name="settings_display_all_frames">Otimização de Quadros</string>
     <string name="settings_summary_display_all_frames">Garante que cada quadro renderizado será mostrado em tela, no seu rtimo adequado. Se estiver tendo dificuldades ao manter uma boa velocidade, ou estiver enfrentando algumas falhas de áudio tente desativar esta opção.</string>
     <string name="menu_edit_game_directories_add_directory">Adicionar Diretório</string>
@@ -225,7 +225,7 @@
     <string name="dialog_touchscreen_controller_type">Ver Controle em Tela</string>
     <string name="dialog_touchscreen_controller_opacity">Visibilidade do Controle</string>
     <string name="dialog_touchscreen_controller_buttons">Botões do Controle</string>
-    <string name="dialog_touchscreen_controller_settings">Configurações do Controle em Tela</string>
+    <string name="dialog_touchscreen_controller_settings">Configurações do controle em Tela</string>
     <string name="settings_summary_console_tty_output">Informações de Depuração.</string>
     <string name="action_show_game_list">Modo Lista</string>
     <string name="action_show_game_grid">Modo Grade</string>
@@ -237,7 +237,7 @@
     <string name="settings_summary_achievements_enable">Quando ativado e logado com sua conta, Ducstation irá procurar e baixar as conquistas se hovuerem ao iniciar o jogo.</string>
     <string name="settings_achievements_challenge_mode">Modo Dificílimo (Hardcore)</string>
     <string name="settings_summary_achievements_challenge_mode">Modo Dificílimo (hardcore). Desativa salvamentos rápidos, carregamento de trapaças e funções de velocidade, mas você receberá o dobro de pontos de conquistas em troca.</string>
-    <string name="settings_achievements_rich_presence">Ativar Presença Rica (Discord)</string>
+    <string name="settings_achievements_rich_presence">Ativar presença Rica (Discord)</string>
     <string name="settings_summary_achievements_rich_presence">Quando ativado, a informação do que estiver sendo jogado será enviado ao servidor se suportado.</string>
     <string name="settings_achievements_username">Nome de Usuário</string>
     <string name="settings_achievements_token_generation_time">Token Gerado</string>
@@ -263,10 +263,10 @@
     <string name="achievement_points_format_string">%d pontos</string>
     <string name="achievement_summary_format_string">Você obteve %1$d de %2$d conquistas, ganhando %3$d pontos de %4$d disponiveis.</string>
     <string name="achievement_title_challenge_mode_format_string">%s (Modo Hardcore)</string>
-    <string name="settings_achievements_disclaimer">DuckStation usa o RetroAchievements como base de dados para as conquistas. Para usar esta função, considere fazer sua conta em: https://retroachievements.org.</string>
+    <string name="settings_achievements_disclaimer">DuckStation usa o RetroAchievements como base de dados para as conquistas. Para usar esta função, considere fazer sua conta em:(https://retroachievements.org).</string>
     <string name="settings_achievements_confirm_logout_title">Confirmar Sair</string>
     <string name="settings_achievements_confirm_logout_message">O encerramento de uma sessão desabilitará as conquistas até que entre novamente. Conquistas abertas anteriormente não serão perdidas.</string>
-    <string name="controller_binding_device_for_vibration">Device for Vibration</string>
+    <string name="controller_binding_device_for_vibration">Vibração do Dispositivo</string>
     <string name="controller_settings_tab_settings">Configurações</string>
     <string name="controller_settings_tab_hotkeys">Atalhos</string>
     <string name="controller_settings_category_button_bindings">Atribuição de Botões</string>
@@ -317,7 +317,7 @@
     <string name="controller_settings_summary_automatic_mapping">Tentará mapear os botões de forma automática ao controle conectado.</string>
     <string name="controller_settings_clear_controller_bindings">Limpar atribuições</string>
     <string name="controller_settings_summary_clear_controller_bindings">Remove todas as atribuições para o controle conectado.</string>
-    <string name="controller_settings_clear_controller_bindings_confirm">Tem certeza que quer remover as atribuições para o controle, isto não poderá ser desfeito.</string>
+    <string name="controller_settings_clear_controller_bindings_confirm">Tem certeza de que quer remover as atribuições para o controle, isto não poderá ser desfeito.</string>
     <string name="controller_settings_clear_controller_bindings_done">Todas as atribuições de botões removidas para o controle %d.</string>
     <string name="controller_auto_mapping_no_devices">Nenhum controle com suporte disponível encontrado. A atribuição automática não pôde ser feita, mas você pode ainda atribuir os botões manualmente..</string>
     <string name="controller_auto_mapping_select_device">Escolha o dispositivo</string>
@@ -349,5 +349,5 @@
     <string name="settings_use_software_renderer_for_readbacks">Usar rederizador por software para releituras</string>
     <string name="settings_summary_use_software_renderer_for_readbacks">Executa o modo software em paralelo para releituras na memória de vídeo. Em alguns sistemas, pode resultar em maior desempenho ao usar aprimoramentos gráficos com o renderizador por hardware..</string>
     <string name="settings_use_software_renderer">Usar modo Software</string>
-    <string name="settings_disable_widescreen">Desativar Hack de tela Panoramica</string>
+    <string name="settings_disable_widescreen">Desativar Hack de tela panorâmica</string>
 </resources>
