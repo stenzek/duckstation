@@ -352,4 +352,6 @@
     <string name="settings_disable_widescreen">Disable Widescreen</string>
     <string name="settings_cdrom_seek_speedup">CD-ROM Seek Speedup</string>
     <string name="settings_summary_cdrom_seek_speedup">Speeds up CD-ROM seeks by the specified factor. May improve loading speeds in some games, at the cost of breaking others.</string>
+    <string name="settings_custom_aspect_ratio">Custom Aspect Ratio</string>
+    <string name="settings_summary_custom_aspect_ratio">Used when aspect ratio is set to Custom.</string>
 </resources>
