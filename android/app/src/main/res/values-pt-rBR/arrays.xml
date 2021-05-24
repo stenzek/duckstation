@@ -79,8 +79,8 @@
 		<item>Mudar</item>
 		<item>Ajustar Visibilidade</item>
 		<item>Adicionar/Remover botões</item>
-        <item>Move Buttons</item>
-        <item>Resize Buttons</item>
+        <item>Mover Botões</item>
+        <item>Redimensionar Botões</item>
         </string-array>
     <string-array name="touchscreen_layout_menu">
         <item>Mudar Opacidade</item>
@@ -100,7 +100,7 @@
         <item>7x (14x Veloz)</item>
         <item>8x (16x Veloz)</item>
         <item>9x (18x Veloz)</item>
-        <item>10x (20x Veloz)</item>
+        <item>10x(20x Veloz)</item>
     </string-array>
     <string-array name="settings_touchscreen_controller_view_entries">
         <item>Nenhum</item>
@@ -150,7 +150,7 @@
         <item>8x SSAA</item>
     </string-array>
     <string-array name="settings_advanced_display_fps_limit_entries">
-        <item>ilimitado (Mostrar Quadros)</item>
+        <item>Sem Limite Mostrar Quadros)</item>
         <item>10 FPS</item>
         <item>15 FPS</item>
         <item>30 FPS</item>
@@ -215,12 +215,12 @@
         <item>Padrão do Dispositivo</item>
         <item>Retrato</item>
         <item>Paisagem</item>
-        <item>Sensor Based</item>
+        <item>Baseado via Sensor</item>
     </string-array>
 	<string-array name="settings_language_entries">
         	<item>Selecionável pelo sistema</item>
         	<item>Inglês</item>
-		<item>Português do Brasil</item>
+			<item>Português(Brasil)</item>
         	<item>Italiano</item>
         	<item>Holandês</item>
         	<item>Espanhol</item>
