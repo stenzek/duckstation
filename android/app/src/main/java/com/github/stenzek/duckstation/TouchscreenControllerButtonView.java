@@ -27,6 +27,7 @@ public final class TouchscreenControllerButtonView extends View {
     private boolean mHapticFeedback = false;
     private int mControllerIndex = -1;
     private int mButtonCode = -1;
+    private int mAutoFireSlot = -1;
     private Hotkey mHotkey = Hotkey.NONE;
     private String mConfigName;
     private boolean mDefaultVisibility = true;
@@ -113,6 +114,11 @@ public final class TouchscreenControllerButtonView extends View {
         mButtonCode = code;
     }
 
+    public void setAutoFireSlot(int controllerIndex, int slot) {
+        mControllerIndex = controllerIndex;
+        mAutoFireSlot = slot;
+    }
+
     public void setHotkey(Hotkey hotkey) {
         mHotkey = hotkey;
     }
@@ -135,24 +141,27 @@ public final class TouchscreenControllerButtonView extends View {
     }
 
     private void updateControllerState() {
+        final AndroidHostInterface hi = AndroidHostInterface.getInstance();
         if (mButtonCode >= 0)
-            AndroidHostInterface.getInstance().setControllerButtonState(mControllerIndex, mButtonCode, mPressed);
+            hi.setControllerButtonState(mControllerIndex, mButtonCode, mPressed);
+        if (mAutoFireSlot >= 0)
+            hi.setControllerAutoFireState(mControllerIndex, mAutoFireSlot, mPressed);
 
         switch (mHotkey)
         {
             case FAST_FORWARD:
-                AndroidHostInterface.getInstance().setFastForwardEnabled(mPressed);
+                hi.setFastForwardEnabled(mPressed);
                 break;
 
             case ANALOG_TOGGLE: {
                 if (!mPressed)
-                    AndroidHostInterface.getInstance().toggleControllerAnalogMode();
+                    hi.toggleControllerAnalogMode();
             }
             break;
 
             case OPEN_PAUSE_MENU: {
                 if (!mPressed)
-                    AndroidHostInterface.getInstance().getEmulationActivity().openPauseMenu();
+                    hi.getEmulationActivity().openPauseMenu();
             }
             break;
 

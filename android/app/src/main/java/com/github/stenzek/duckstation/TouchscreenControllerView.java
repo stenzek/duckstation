@@ -308,17 +308,25 @@ public class TouchscreenControllerView extends FrameLayout {
 
         linkAxis(mMainView, R.id.controller_axis_right, "RightAxis", "Right", true);
 
+        // GunCon
+        linkButton(mMainView, R.id.controller_button_a, "AButton", "A", true, true);
+        linkButton(mMainView, R.id.controller_button_b, "BButton", "B", true, true);
+        if (pointerButtonName != null)
+            linkPointer(pointerButtonName);
+
+        // Turbo/autofire buttons
+        linkAutoFireButton(mMainView, R.id.controller_button_autofire_1, "AutoFire1", 0, false);
+        linkAutoFireButton(mMainView, R.id.controller_button_autofire_2, "AutoFire2", 1, false);
+        linkAutoFireButton(mMainView, R.id.controller_button_autofire_3, "AutoFire3", 2, false);
+        linkAutoFireButton(mMainView, R.id.controller_button_autofire_4, "AutoFire4", 3, false);
+
+        // Hotkeys
         linkHotkeyButton(mMainView, R.id.controller_button_fast_forward, "FastForward",
                 TouchscreenControllerButtonView.Hotkey.FAST_FORWARD, false);
         linkHotkeyButton(mMainView, R.id.controller_button_analog, "AnalogToggle",
                 TouchscreenControllerButtonView.Hotkey.ANALOG_TOGGLE, false);
         linkHotkeyButton(mMainView, R.id.controller_button_pause, "OpenPauseMenu",
                 TouchscreenControllerButtonView.Hotkey.OPEN_PAUSE_MENU, true);
-
-        linkButton(mMainView, R.id.controller_button_a, "AButton", "A", true, true);
-        linkButton(mMainView, R.id.controller_button_b, "BButton", "B", true, true);
-        if (pointerButtonName != null)
-            linkPointer(pointerButtonName);
 
         reloadButtonSettings();
         updateOpacity();
@@ -412,6 +420,19 @@ public class TouchscreenControllerView extends FrameLayout {
         buttonView.setConfigName(configName);
         buttonView.setDefaultVisibility(defaultVisibility);
         buttonView.setHotkey(hotkey);
+        buttonView.setIsGlidable(false);
+        mButtonViews.add(buttonView);
+    }
+
+    private void linkAutoFireButton(View view, int id, String configName, int slot, boolean defaultVisibility) {
+        TouchscreenControllerButtonView buttonView = (TouchscreenControllerButtonView) view.findViewById(id);
+        if (buttonView == null)
+            return;
+
+        buttonView.setConfigName(configName);
+        buttonView.setDefaultVisibility(defaultVisibility);
+        buttonView.setAutoFireSlot(mControllerIndex, slot);
+        buttonView.setIsGlidable(true);
         mButtonViews.add(buttonView);
     }
 

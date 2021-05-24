@@ -79,6 +79,8 @@ public class AndroidHostInterface {
 
     public native void setControllerAxisState(int index, int axisCode, float value);
 
+    public native void setControllerAutoFireState(int controllerIndex, int autoFireIndex, boolean active);
+
     public native void setMousePosition(int positionX, int positionY);
 
     public static native int getControllerButtonCode(String controllerType, String buttonName);

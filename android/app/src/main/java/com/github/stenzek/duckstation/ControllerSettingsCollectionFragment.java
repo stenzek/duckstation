@@ -1,16 +1,20 @@
 package com.github.stenzek.duckstation;
 
 
+import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
@@ -18,6 +22,7 @@ import androidx.preference.PreferenceCategory;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 import androidx.preference.PreferenceScreen;
+import androidx.preference.SeekBarPreference;
 import androidx.preference.SwitchPreferenceCompat;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
@@ -33,6 +38,7 @@ public class ControllerSettingsCollectionFragment extends Fragment {
     private static final int NUM_MAIN_CONTROLLER_PORTS = 2;
     private static final int NUM_SUB_CONTROLLER_PORTS = 4;
     private static final char[] SUB_CONTROLLER_PORT_NAMES = new char[]{'A', 'B', 'C', 'D'};
+    private static final int NUM_AUTO_FIRE_BUTTONS = 4;
 
     public interface MultitapModeChangedListener {
         void onChanged();
@@ -150,6 +156,8 @@ public class ControllerSettingsCollectionFragment extends Fragment {
         private PreferenceCategory mButtonsCategory;
         private PreferenceCategory mAxisCategory;
         private PreferenceCategory mSettingsCategory;
+        private PreferenceCategory mAutoFireCategory;
+        private PreferenceCategory mAutoFireBindingsCategory;
 
         public ControllerPortFragment(ControllerSettingsCollectionFragment parent, int controllerIndex) {
             this.parent = parent;
@@ -179,6 +187,14 @@ public class ControllerSettingsCollectionFragment extends Fragment {
             pref.setIconSpaceReserved(false);
             pref.setDefaultValue(defaultValue);
             return pref;
+        }
+
+        private String getAutoToggleSummary(SharedPreferences sp, int slot) {
+            final String button = sp.getString(String.format("AutoFire%dButton", slot), null);
+            if (button == null || button.length() == 0)
+                return "Not Configured";
+
+            return String.format("%s every %d frames", button, sp.getInt("AutoFire%dFrequency", 2));
         }
 
         private void createPreferences() {
@@ -236,23 +252,34 @@ public class ControllerSettingsCollectionFragment extends Fragment {
             ps.addPreference(clearBindingsPreference);
 
             mButtonsCategory = new PreferenceCategory(getContext());
-            mButtonsCategory.setTitle(getContext().getString(R.string.controller_settings_category_button_bindings));
+            mButtonsCategory.setTitle(R.string.controller_settings_category_button_bindings);
             mButtonsCategory.setIconSpaceReserved(false);
             ps.addPreference(mButtonsCategory);
 
             mAxisCategory = new PreferenceCategory(getContext());
-            mAxisCategory.setTitle(getContext().getString(R.string.controller_settings_category_axis_bindings));
+            mAxisCategory.setTitle(R.string.controller_settings_category_axis_bindings);
             mAxisCategory.setIconSpaceReserved(false);
             ps.addPreference(mAxisCategory);
 
             mSettingsCategory = new PreferenceCategory(getContext());
-            mSettingsCategory.setTitle(getContext().getString(R.string.controller_settings_category_settings));
+            mSettingsCategory.setTitle(R.string.controller_settings_category_settings);
             mSettingsCategory.setIconSpaceReserved(false);
             ps.addPreference(mSettingsCategory);
+
+            mAutoFireCategory = new PreferenceCategory(getContext());
+            mAutoFireCategory.setTitle(R.string.controller_settings_category_auto_fire_buttons);
+            mAutoFireCategory.setIconSpaceReserved(false);
+            ps.addPreference(mAutoFireCategory);
+
+            mAutoFireBindingsCategory = new PreferenceCategory(getContext());
+            mAutoFireBindingsCategory.setTitle(R.string.controller_settings_category_auto_fire_bindings);
+            mAutoFireBindingsCategory.setIconSpaceReserved(false);
+            ps.addPreference(mAutoFireBindingsCategory);
 
             createPreferences(controllerType);
         }
 
+        @SuppressLint("DefaultLocale")
         private void createPreferences(String controllerType) {
             final PreferenceScreen ps = getPreferenceScreen();
             final SharedPreferences sp = getPreferenceManager().getSharedPreferences();
@@ -295,6 +322,33 @@ public class ControllerSettingsCollectionFragment extends Fragment {
                         createTogglePreference(String.format("Controller%d/AnalogDPadInDigitalMode", controllerIndex),
                                 R.string.settings_use_analog_sticks_for_dpad, R.string.settings_summary_use_analog_sticks_for_dpad, true));
             }
+
+            for (int autoFireSlot = 1; autoFireSlot <= NUM_AUTO_FIRE_BUTTONS; autoFireSlot++) {
+                final ListPreference autoFirePreference = new ListPreference(getContext());
+                autoFirePreference.setEntries(buttonNames);
+                autoFirePreference.setEntryValues(buttonNames);
+                autoFirePreference.setKey(String.format("Controller%d/AutoFire%dButton", controllerIndex, autoFireSlot));
+                autoFirePreference.setTitle(getContext().getString(R.string.controller_settings_auto_fire_n_button, autoFireSlot));
+                autoFirePreference.setSummaryProvider(ListPreference.SimpleSummaryProvider.getInstance());
+                autoFirePreference.setIconSpaceReserved(false);
+                mAutoFireCategory.addPreference(autoFirePreference);
+
+                final SeekBarPreference frequencyPreference = new SeekBarPreference(getContext());
+                frequencyPreference.setMin(1);
+                frequencyPreference.setMax(60);
+                frequencyPreference.setKey(String.format("Controller%d/AutoFire%dFrequency", controllerIndex, autoFireSlot));
+                frequencyPreference.setDefaultValue(2);
+                frequencyPreference.setTitle(getContext().getString(R.string.controller_settings_auto_fire_n_frequency, autoFireSlot));
+                frequencyPreference.setIconSpaceReserved(false);
+                frequencyPreference.setShowSeekBarValue(true);
+                mAutoFireCategory.addPreference(frequencyPreference);
+            }
+
+            for (int autoFireSlot = 1; autoFireSlot <= NUM_AUTO_FIRE_BUTTONS; autoFireSlot++) {
+                final ControllerBindingPreference bindingPreference = new ControllerBindingPreference(getContext(), null);
+                bindingPreference.initAutoFireButton(controllerIndex, autoFireSlot);
+                mAutoFireBindingsCategory.addPreference(bindingPreference);
+            }
         }
 
         private void removePreferences() {
@@ -312,6 +366,16 @@ public class ControllerSettingsCollectionFragment extends Fragment {
                 parent.preferences.remove(mSettingsCategory.getPreference(i));
             }
             mSettingsCategory.removeAll();
+
+            for (int i = 0; i < mAutoFireCategory.getPreferenceCount(); i++) {
+                parent.preferences.remove(mAutoFireCategory.getPreference(i));
+            }
+            mAutoFireCategory.removeAll();
+
+            for (int i = 0; i < mAutoFireBindingsCategory.getPreferenceCount(); i++) {
+                parent.preferences.remove(mAutoFireBindingsCategory.getPreference(i));
+            }
+            mAutoFireBindingsCategory.removeAll();
         }
 
         private void clearBindings() {

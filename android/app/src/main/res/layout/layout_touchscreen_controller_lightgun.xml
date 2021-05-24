@@ -52,4 +52,56 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:pressedDrawable="@drawable/ic_controller_pause_button"
         app:unpressedDrawable="@drawable/ic_controller_pause_button" />
+
+    <com.github.stenzek.duckstation.TouchscreenControllerButtonView
+        android:id="@+id/controller_button_autofire_1"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:layout_marginEnd="60dp"
+        android:layout_marginBottom="220dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:pressedDrawable="@drawable/ic_controller_t1_button_pressed"
+        app:unpressedDrawable="@drawable/ic_controller_t1_button" />
+
+    <com.github.stenzek.duckstation.TouchscreenControllerButtonView
+        android:id="@+id/controller_button_autofire_2"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:layout_marginStart="60dp"
+        android:layout_marginBottom="220dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:pressedDrawable="@drawable/ic_controller_t2_button_pressed"
+        app:unpressedDrawable="@drawable/ic_controller_t2_button" />
+
+    <com.github.stenzek.duckstation.TouchscreenControllerButtonView
+        android:id="@+id/controller_button_autofire_3"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:layout_marginEnd="60dp"
+        android:layout_marginBottom="280dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:pressedDrawable="@drawable/ic_controller_t3_button_pressed"
+        app:unpressedDrawable="@drawable/ic_controller_t3_button" />
+
+    <com.github.stenzek.duckstation.TouchscreenControllerButtonView
+        android:id="@+id/controller_button_autofire_4"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:layout_marginStart="60dp"
+        android:layout_marginBottom="280dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:pressedDrawable="@drawable/ic_controller_t4_button_pressed"
+        app:unpressedDrawable="@drawable/ic_controller_t4_button" />
 </androidx.constraintlayout.widget.ConstraintLayout>

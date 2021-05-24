@@ -465,7 +465,6 @@ void AndroidHostInterface::EmulationThreadEntryPoint(JNIEnv* env, jobject emulat
   emulation_activity = env->NewGlobalRef(emulation_activity);
   Assert(emulation_activity != nullptr);
 
-
   {
     std::unique_lock<std::mutex> lock(m_mutex);
     m_emulation_thread_running.store(true);
@@ -718,7 +717,8 @@ void AndroidHostInterface::OnRunningGameChanged(const std::string& path, CDImage
     if (!cover_path_str.empty())
       cover_path = env->NewStringUTF(cover_path_str.c_str());
 
-    env->CallVoidMethod(m_emulation_activity_object, s_EmulationActivity_method_onRunningGameChanged, path_string, code_string, title_string, cover_path);
+    env->CallVoidMethod(m_emulation_activity_object, s_EmulationActivity_method_onRunningGameChanged, path_string,
+                        code_string, title_string, cover_path);
 
     if (cover_path)
       env->DeleteLocalRef(cover_path);
@@ -998,7 +998,8 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
       (s_AndroidHostInterface_field_mNativePointer =
          env->GetFieldID(s_AndroidHostInterface_class, "mNativePointer", "J")) == nullptr ||
       (s_AndroidHostInterface_field_mEmulationActivity =
-         env->GetFieldID(s_AndroidHostInterface_class, "mEmulationActivity", "Lcom/github/stenzek/duckstation/EmulationActivity;")) == nullptr ||
+         env->GetFieldID(s_AndroidHostInterface_class, "mEmulationActivity",
+                         "Lcom/github/stenzek/duckstation/EmulationActivity;")) == nullptr ||
       (s_AndroidHostInterface_method_reportError =
          env->GetMethodID(s_AndroidHostInterface_class, "reportError", "(Ljava/lang/String;)V")) == nullptr ||
       (s_AndroidHostInterface_method_reportMessage =
@@ -1014,7 +1015,8 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
       (s_EmulationActivity_method_onEmulationStopped =
          env->GetMethodID(s_EmulationActivity_class, "onEmulationStopped", "()V")) == nullptr ||
       (s_EmulationActivity_method_onRunningGameChanged =
-         env->GetMethodID(s_EmulationActivity_class, "onRunningGameChanged", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V")) == nullptr ||
+         env->GetMethodID(s_EmulationActivity_class, "onRunningGameChanged",
+                          "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V")) == nullptr ||
       (s_EmulationActivity_method_setVibration = env->GetMethodID(emulation_activity_class, "setVibration", "(Z)V")) ==
         nullptr ||
       (s_EmulationActivity_method_getRefreshRate =
@@ -1185,6 +1187,18 @@ DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_setControllerButtonState, jobj
                        jboolean pressed)
 {
   AndroidHelpers::GetNativeClass(env, obj)->SetControllerButtonState(index, button_code, pressed);
+}
+
+DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_setControllerAutoFireState, jobject obj, jint controller_index,
+                       jint autofire_index, jboolean active)
+{
+  AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
+  if (!hi->IsEmulationThreadRunning())
+    return;
+
+  hi->RunOnEmulationThread([hi, controller_index, autofire_index, active]() {
+    hi->SetControllerAutoFireSlotState(controller_index, autofire_index, active);
+  });
 }
 
 DEFINE_JNI_ARGS_METHOD(jint, AndroidHostInterface_getControllerButtonCode, jobject unused, jstring controller_type,

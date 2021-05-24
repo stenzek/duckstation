@@ -354,4 +354,9 @@
     <string name="settings_summary_cdrom_seek_speedup">Speeds up CD-ROM seeks by the specified factor. May improve loading speeds in some games, at the cost of breaking others.</string>
     <string name="settings_custom_aspect_ratio">Custom Aspect Ratio</string>
     <string name="settings_summary_custom_aspect_ratio">Used when aspect ratio is set to Custom.</string>
+    <string name="controller_settings_category_auto_fire_buttons">Auto Fire Buttons</string>
+    <string name="controller_settings_category_auto_fire_bindings">Auto Fire Triggers</string>
+    <string name="controller_settings_auto_fire_n_button">Auto Fire %d Button</string>
+    <string name="controller_settings_auto_fire_n_frequency">Auto Fire %d Frequency/Interval</string>
+    <string name="controller_binding_auto_fire_n">Auto Fire %d</string>
 </resources>
