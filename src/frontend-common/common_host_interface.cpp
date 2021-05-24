@@ -3075,7 +3075,7 @@ void CommonHostInterface::DisplayLoadingScreen(const char* message, int progress
 void CommonHostInterface::GetGameInfo(const char* path, CDImage* image, std::string* code, std::string* title)
 {
   const GameListEntry* list_entry = m_game_list->GetEntryForPath(path);
-  if (list_entry)
+  if (list_entry && list_entry->type != GameListEntryType::Playlist)
   {
     *code = list_entry->code;
     *title = list_entry->title;
@@ -3084,7 +3084,6 @@ void CommonHostInterface::GetGameInfo(const char* path, CDImage* image, std::str
 
   if (image)
   {
-    GameDatabase database;
     GameDatabaseEntry database_entry;
     if (m_game_list->GetDatabaseEntryForDisc(image, &database_entry))
     {
