@@ -46,6 +46,7 @@ bool EvdevControllerInterface::Initialize(CommonHostInterface* host_interface)
     }
 
     ControllerData data(fd, obj);
+    data.controller_id = static_cast<int>(m_controllers.size());
     if (InitializeController(index, &data))
       m_controllers.push_back(std::move(data));
   }
@@ -65,7 +66,7 @@ EvdevControllerInterface::ControllerData::ControllerData(int fd_, struct libevde
 
 EvdevControllerInterface::ControllerData::ControllerData(ControllerData&& move)
   : obj(move.obj), fd(move.fd), controller_id(move.controller_id), num_motors(move.num_motors), deadzone(move.deadzone),
-    axises(std::move(move.axises)), buttons(std::move(move.buttons))
+    axes(std::move(move.axes)), buttons(std::move(move.buttons))
 {
   move.obj = nullptr;
   move.fd = -1;
@@ -93,7 +94,7 @@ EvdevControllerInterface::ControllerData::operator=(EvdevControllerInterface::Co
   controller_id = move.controller_id;
   num_motors = move.num_motors;
   deadzone = move.deadzone;
-  axises = std::move(move.axises);
+  axes = std::move(move.axes);
   buttons = std::move(move.buttons);
   return *this;
 }
@@ -129,14 +130,34 @@ bool EvdevControllerInterface::InitializeController(int index, ControllerData* c
     cd->buttons.push_back(std::move(button));
   }
 
-  // Heuristic borrowed from Dolphin's evdev controller interface - ignore bogus devices
-  // which do have less than 2 axises and less than 8 buttons.
-  if (cd->axises.size() < 2 && cd->buttons.size() < 8)
+  for (u32 axis = 0; axis <= ABS_TOOL_WIDTH; axis++)
   {
-    Log_InfoPrintf("Ignoring device %s due to heuristic", name);
+    if (!libevdev_has_event_code(cd->obj, EV_ABS, axis))
+      continue;
+
+    const s32 min = libevdev_get_abs_minimum(cd->obj, axis);
+    const s32 max = libevdev_get_abs_maximum(cd->obj, axis);
+    const char* axis_name = libevdev_event_code_get_name(EV_ABS, axis);
+    Log_DevPrintf("Axis %u: %s -> Axis %zu [%d-%d]", axis, axis_name ? axis_name : "null", cd->axes.size(), min, max);
+
+    ControllerData::Axis ad;
+    ad.id = axis;
+    ad.min = min;
+    ad.range = max - min;
+    cd->axes.push_back(std::move(ad));
+  }
+
+  // Heuristic borrowed from Dolphin's evdev controller interface - ignore bogus devices
+  // which do have less than 2 axes and less than 8 buttons.
+  if (cd->axes.size() < 2 && cd->buttons.size() < 8)
+  {
+    Log_VerbosePrintf("Ignoring device %s with %zu axes and %zu buttons due to heuristic", name, cd->axes.size(),
+                      cd->buttons.size());
     return false;
   }
 
+  Log_InfoPrintf("Controller %d -> %s with %zu axes and %zu buttons", cd->controller_id, name, cd->axes.size(),
+                 cd->buttons.size());
   return true;
 }
 
@@ -161,6 +182,22 @@ void EvdevControllerInterface::HandleControllerEvents(ControllerData* cd)
           if (cd->buttons[i].id == ev.code)
           {
             HandleButtonEvent(cd, i, ev.code, pressed);
+            break;
+          }
+        }
+      }
+      break;
+
+      case EV_ABS:
+      {
+        // axis
+        Log_DebugPrintf("Axis %u %d", ev.code, ev.value);
+
+        for (u32 i = 0; i < static_cast<u32>(cd->axes.size()); i++)
+        {
+          if (cd->axes[i].id == ev.code)
+          {
+            HandleAxisEvent(cd, i, ev.value);
             break;
           }
         }
@@ -205,7 +242,7 @@ void EvdevControllerInterface::ClearBindings()
       btn.callback = {};
       btn.axis_callback = {};
     }
-    for (ControllerData::Axis& axis : cd.axises)
+    for (ControllerData::Axis& axis : cd.axes)
     {
       axis.callback = {};
       axis.button_callback = {};
@@ -217,10 +254,10 @@ bool EvdevControllerInterface::BindControllerAxis(int controller_index, int axis
                                                   AxisCallback callback)
 {
   ControllerData* cd = GetControllerById(controller_index);
-  if (!cd || static_cast<u32>(axis_number) >= cd->axises.size())
+  if (!cd || static_cast<u32>(axis_number) >= cd->axes.size())
     return false;
 
-  cd->axises[axis_number].callback[axis_side] = std::move(callback);
+  cd->axes[axis_number].callback[axis_side] = std::move(callback);
   return true;
 }
 
@@ -238,10 +275,10 @@ bool EvdevControllerInterface::BindControllerAxisToButton(int controller_index, 
                                                           ButtonCallback callback)
 {
   ControllerData* cd = GetControllerById(controller_index);
-  if (!cd || static_cast<u32>(axis_number) >= cd->axises.size())
+  if (!cd || static_cast<u32>(axis_number) >= cd->axes.size())
     return false;
 
-  cd->axises[axis_number].button_callback[BoolToUInt8(direction)] = std::move(callback);
+  cd->axes[axis_number].button_callback[BoolToUInt8(direction)] = std::move(callback);
   return true;
 }
 
@@ -265,13 +302,14 @@ bool EvdevControllerInterface::BindControllerButtonToAxis(int controller_index, 
 
 bool EvdevControllerInterface::HandleAxisEvent(ControllerData* cd, u32 axis, s32 value)
 {
-  const float f_value = static_cast<float>(value) / (value < 0 ? 32768.0f : 32767.0f);
-  Log_DevPrintf("controller %u axis %u %d %f", cd->controller_id, axis, value, f_value);
+  const ControllerData::Axis& ad = cd->axes[axis];
+  const float f_value = ((static_cast<float>(value - ad.min) / ad.range) * 2.0f) - 1.0f;
+  Log_DevPrintf("controller %u axis %u %d %f range %d", cd->controller_id, axis, value, f_value, ad.range);
 
   if (DoEventHook(Hook::Type::Axis, cd->controller_id, axis, f_value))
     return true;
 
-  const AxisCallback& cb = cd->axises[axis].callback[AxisSide::Full];
+  const AxisCallback& cb = ad.callback[AxisSide::Full];
   if (cb)
   {
     cb(f_value);
@@ -281,8 +319,8 @@ bool EvdevControllerInterface::HandleAxisEvent(ControllerData* cd, u32 axis, s32
   // set the other direction to false so large movements don't leave the opposite on
   const bool outside_deadzone = (std::abs(f_value) >= cd->deadzone);
   const bool positive = (f_value >= 0.0f);
-  const ButtonCallback& other_button_cb = cd->axises[axis].button_callback[BoolToUInt8(!positive)];
-  const ButtonCallback& button_cb = cd->axises[axis].button_callback[BoolToUInt8(positive)];
+  const ButtonCallback& other_button_cb = ad.button_callback[BoolToUInt8(!positive)];
+  const ButtonCallback& button_cb = ad.button_callback[BoolToUInt8(positive)];
   if (button_cb)
   {
     button_cb(outside_deadzone);

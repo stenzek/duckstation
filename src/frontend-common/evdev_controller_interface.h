@@ -1,9 +1,9 @@
 #pragma once
 #include "controller_interface.h"
 #include "core/types.h"
-#include <libevdev/libevdev.h>
 #include <array>
 #include <functional>
+#include <libevdev/libevdev.h>
 #include <mutex>
 #include <vector>
 
@@ -69,6 +69,8 @@ private:
     struct Axis
     {
       u32 id;
+      s32 min;
+      s32 range;
       std::array<AxisCallback, 3> callback;
       std::array<ButtonCallback, 2> button_callback;
     };
@@ -79,8 +81,8 @@ private:
       ButtonCallback callback;
       AxisCallback axis_callback;
     };
-    
-    std::vector<Axis> axises;
+
+    std::vector<Axis> axes;
     std::vector<Button> buttons;
   };
 
