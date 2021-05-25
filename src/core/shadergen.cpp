@@ -102,11 +102,14 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
       ss << "#extension GL_ARB_blend_func_extended : require\n";
 
     // Test for V3D driver - we have to fudge coordinates slightly.
-    if ((std::strstr(reinterpret_cast<const char*>(glGetString(GL_VENDOR)), "Broadcom") &&
-         std::strstr(reinterpret_cast<const char*>(glGetString(GL_RENDERER)), "V3D")) ||
-        std::strstr(reinterpret_cast<const char*>(glGetString(GL_RENDERER)), "PowerVR"))
+    if (std::strstr(reinterpret_cast<const char*>(glGetString(GL_VENDOR)), "Broadcom") &&
+        std::strstr(reinterpret_cast<const char*>(glGetString(GL_RENDERER)), "V3D"))
     {
-      ss << "#define DRIVER_HACK_POS_EPSILON 1\n";
+      ss << "#define DRIVER_V3D 1\n";
+    }
+    else if (std::strstr(reinterpret_cast<const char*>(glGetString(GL_RENDERER)), "PowerVR"))
+    {
+      ss << "#define DRIVER_POWERVR 1\n";
     }
   }
   else if (m_render_api == HostDisplay::RenderAPI::OpenGL)
