@@ -65,6 +65,13 @@ bool CodeGenerator::CompileBlock(CodeBlock* block, CodeBlock::HostCodePointer* o
 
 bool CodeGenerator::CompileInstruction(const CodeBlockInstruction& cbi)
 {
+  if (IsNopInstruction(cbi.instruction))
+  {
+    InstructionPrologue(cbi, 1);
+    InstructionEpilogue(cbi);
+    return true;
+  }
+
   bool result;
   switch (cbi.instruction.op)
   {

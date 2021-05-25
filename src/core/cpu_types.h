@@ -220,6 +220,7 @@ union Instruction
 };
 
 // Instruction helpers.
+bool IsNopInstruction(const Instruction& instruction);
 bool IsBranchInstruction(const Instruction& instruction);
 bool IsUnconditionalBranchInstruction(const Instruction& instruction);
 bool IsDirectBranchInstruction(const Instruction& instruction);
