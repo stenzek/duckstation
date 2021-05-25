@@ -91,7 +91,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured)
 // OpenGL seems to be off by one pixel in the Y direction due to lower-left origin, but only on
 // Intel and NVIDIA drivers. AMD is fine. V3D requires coordinates to be slightly offset even further.
 #if API_OPENGL || API_OPENGL_ES
-  #ifdef DRIVER_V3D
+  #ifdef DRIVER_HACK_POS_EPSILON
     CONSTANT float POS_EPSILON = 0.0001;
   #else
     CONSTANT float POS_EPSILON = 0.00001;
