@@ -16,7 +16,11 @@ Log_SetChannel(CPU::CodeCache);
 
 namespace CPU::CodeCache {
 
-constexpr bool USE_BLOCK_LINKING = true;
+static constexpr bool USE_BLOCK_LINKING = true;
+
+// Fall blocks back to interpreter if we recompile more than 20 times within 100 frames.
+static constexpr u32 RECOMPILE_FRAMES_TO_FALL_BACK_TO_INTERPRETER = 100;
+static constexpr u32 RECOMPILE_COUNT_TO_FALL_BACK_TO_INTERPRETER = 20;
 
 #ifdef WITH_RECOMPILER
 
@@ -34,10 +38,6 @@ static constexpr u32 RECOMPILER_CODE_CACHE_SIZE = 32 * 1024 * 1024;
 static constexpr u32 RECOMPILER_FAR_CODE_CACHE_SIZE = 16 * 1024 * 1024;
 #endif
 static constexpr u32 CODE_WRITE_FAULT_THRESHOLD_FOR_SLOWMEM = 10;
-
-// Fall blocks back to interpreter if we recompile more than 20 times within 100 frames.
-static constexpr u32 RECOMPILE_FRAMES_TO_FALL_BACK_TO_INTERPRETER = 100;
-static constexpr u32 RECOMPILE_COUNT_TO_FALL_BACK_TO_INTERPRETER = 20;
 
 #ifdef USE_STATIC_CODE_BUFFER
 static constexpr u32 RECOMPILER_GUARD_SIZE = 4096;
