@@ -927,7 +927,7 @@ float4 SampleFromVRAM(uint4 texpage, float2 coords)
     color = (float3(icolor) * premultiply_alpha) / float3(255.0, 255.0, 255.0);
   #endif
 
-  #if TRANSPARENCY
+  #if TRANSPARENCY && TEXTURED
     // Apply semitransparency. If not a semitransparent texel, destination alpha is ignored.
     if (semitransparent)
     {
@@ -963,6 +963,18 @@ float4 SampleFromVRAM(uint4 texpage, float2 coords)
         discard;
       #endif
     }
+  #elif TRANSPARENCY
+    // We shouldn't be rendering opaque geometry only when untextured, so no need to test/discard here.
+    #if USE_DUAL_SOURCE
+      o_col0 = float4(color, oalpha);
+      o_col1 = float4(0.0, 0.0, 0.0, u_dst_alpha_factor / ialpha);
+    #else
+      o_col0 = float4(color, oalpha);
+    #endif
+
+    #if !PGXP_DEPTH
+      o_depth = oalpha * v_pos.z;
+    #endif
   #else
     // Non-transparency won't enable blending so we can write the mask here regardless.
     o_col0 = float4(color, oalpha);

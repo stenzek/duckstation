@@ -253,9 +253,9 @@ protected:
   /// on a per-pixel basis, and the opaque pixels shouldn't be blended at all.
   bool NeedsTwoPassRendering() const
   {
-    return (m_batch.transparency_mode == GPUTransparencyMode::BackgroundMinusForeground &&
-            m_batch.texture_mode != GPUTextureMode::Disabled) ||
-           (m_batch.transparency_mode != GPUTransparencyMode::Disabled && !m_supports_dual_source_blend);
+    return (m_batch.texture_mode != GPUTextureMode::Disabled &&
+            (m_batch.transparency_mode == GPUTransparencyMode::BackgroundMinusForeground ||
+             (!m_supports_dual_source_blend && m_batch.transparency_mode != GPUTransparencyMode::Disabled)));
   }
 
   ALWAYS_INLINE bool IsUsingSoftwareRendererForReadbacks() { return static_cast<bool>(m_sw_renderer); }
