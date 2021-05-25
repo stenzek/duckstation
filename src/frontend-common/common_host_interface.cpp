@@ -1620,12 +1620,12 @@ void CommonHostInterface::UpdateControllerInputMap(SettingsInterface& si)
       if (button_name.empty())
         continue;
 
-      const std::string binding(
-        si.GetStringValue(category, TinyString::FromFormat("AutoFire%u", turbo_button_index + 1), ""));
+      const std::vector<std::string> bindings =
+        si.GetStringList(category, TinyString::FromFormat("AutoFire%u", turbo_button_index + 1));
 
 #ifndef __ANDROID__
       // Android doesn't require a binding, since we can trigger it from the touchscreen controller.
-      if (binding.empty())
+      if (bindings.empty())
         continue;
 #endif
 
@@ -1648,7 +1648,7 @@ void CommonHostInterface::UpdateControllerInputMap(SettingsInterface& si)
       ts.active = false;
       ts.state = false;
 
-      if (!binding.empty())
+      for (const std::string& binding : bindings)
       {
         std::string_view device, button;
         if (!SplitBinding(binding, &device, &button) ||
