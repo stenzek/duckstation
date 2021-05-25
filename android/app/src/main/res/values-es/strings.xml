@@ -17,11 +17,9 @@
     <string name="settings_emulation_speed">Velocidad de Emulación</string>
     <string name="settings_fast_forward_speed">Velocidad de Avance Rápido</string>
     <string name="settings_save_state_on_exit">Guardar Estado al Salir</string>
-    <string name="settings_pause_when_menu_opened">Pausar cuando el menu se abre</string>
     <string name="settings_emulation_screen_orientation">Orientación de pantalla del Emulador</string>
     <string name="settings_load_patch_codes">Cargar Códigos de Parche</string>
     <string name="settings_summary_save_state_on_exit">Guarda automáticamente el estado del emulador al apagar o salir. Después puedes continuar desde donde lo dejaste la última vez.</string>
-    <string name="settings_summary_pause_when_menu_opened">Pausa la emulación dentro del juego cuando el menú es abierto.</string>
     <string name="settings_summary_load_patch_codes"><![CDATA[Cargar Códigos de Parche de trucos/<game name>.cht en formato PCSXR. Los códigos pueden ser activados dentro del juego.]]></string>
     <string name="settings_apply_compatibility_settings">Aplicar configuración de compatiblidad</string>
     <string name="settings_summary_apply_compatibility_settings">Desactiva las mejoras automáticamente cuando no son compatibles con los juegos.</string>

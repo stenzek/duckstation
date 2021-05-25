@@ -17,11 +17,9 @@
 	<string name="settings_emulation_speed">Скорость эмуляции</string>
 	<string name="settings_fast_forward_speed">Скорость перемотки</string>
 	<string name="settings_save_state_on_exit">Сохранять при выходе</string>
-	<string name="settings_pause_when_menu_opened">Пауза при вызове меню</string>
 	<string name="settings_emulation_screen_orientation">Ориентация экрана эмуляции</string>
 	<string name="settings_load_patch_codes">Загружать чит-коды</string>
 	<string name="settings_summary_save_state_on_exit">Автоматически сохранять состояние эмулятора при выходе. Позволяет продолжить игру с места остановки.</string>
-	<string name="settings_summary_pause_when_menu_opened">Останавливать эмуляцию при вызове меню во время игры.</string>
 	<string name="settings_summary_load_patch_codes">Загружать чит-коды из cheats/&lt;название игры&gt;.cht в формате PCSXR или Libretro. Коды можно активировать после запуска игры.</string>
 	<string name="settings_apply_compatibility_settings">Применять настройки совместимости</string>
 	<string name="settings_summary_apply_compatibility_settings">Автоматически отключать улучшения, которые не поддерживаются играми.</string>

@@ -17,11 +17,9 @@
     <string name="settings_emulation_speed">Emulation Speed</string>
     <string name="settings_fast_forward_speed">Fast Forward Speed</string>
     <string name="settings_save_state_on_exit">Save State On Exit</string>
-    <string name="settings_pause_when_menu_opened">Pause When Menu Opened</string>
     <string name="settings_emulation_screen_orientation">Emulation Screen Orientation</string>
     <string name="settings_load_patch_codes">Load Patch Codes</string>
     <string name="settings_summary_save_state_on_exit">Automatically saves the emulator state when powering down or exiting. You can then resume directly from where you left off next time.</string>
-    <string name="settings_summary_pause_when_menu_opened">Pauses emulation when ingame and the menu is opened.</string>
     <string name="settings_summary_load_patch_codes"><![CDATA[Loads patch codes from cheats/<game name>.cht in PCSXR format. Codes can be toggled while ingame.]]></string>
     <string name="settings_apply_compatibility_settings">Apply Compatibility Settings</string>
     <string name="settings_summary_apply_compatibility_settings">Automatically disable enhancements when they are not supported by games.</string>

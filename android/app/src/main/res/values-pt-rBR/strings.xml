@@ -17,11 +17,9 @@
     <string name="settings_emulation_speed">Velocidade da Emulação</string>
     <string name="settings_fast_forward_speed">Velocidade de Avanço Rápido</string>
     <string name="settings_save_state_on_exit">Salvar estado ao Sair</string>
-    <string name="settings_pause_when_menu_opened">Pausar ao abrir Menu</string>
     <string name="settings_emulation_screen_orientation">Orientação de Tela</string>
     <string name="settings_load_patch_codes">Carregar Trapaças</string>
     <string name="settings_summary_save_state_on_exit">Salvar automaticamente o estado da emulação ao desligar</string>
-    <string name="settings_summary_pause_when_menu_opened">Pausa a emulação assim que o menu é aberto.</string>
     <string name="settings_summary_load_patch_codes"><![CDATA[Loads Carrega códigos de trapaça no formato .cht e ou PCSXR. Códigos podem ser alternados durante o jogo.]]></string>
     <string name="settings_apply_compatibility_settings">Aplicar Configurações de Compatibilidade</string>
     <string name="settings_summary_apply_compatibility_settings">Desativar automaticamente melhorias quando não são suportadas.</string>
