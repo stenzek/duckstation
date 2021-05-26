@@ -11,10 +11,10 @@
     <file>icons/applications-internet.png</file>
     <file>icons/applications-other.png</file>
     <file>icons/applications-other@2x.png</file>
-    <file>icons/applications-system.png</file>
-    <file>icons/applications-system@2x.png</file>
     <file>icons/applications-system-24.png</file>
     <file>icons/applications-system-24@2x.png</file>
+    <file>icons/applications-system.png</file>
+    <file>icons/applications-system@2x.png</file>
     <file>icons/audio-card.png</file>
     <file>icons/audio-card@2x.png</file>
     <file>icons/camera-photo.png</file>
@@ -26,16 +26,17 @@
     <file>icons/cover-placeholder.png</file>
     <file>icons/debug-execute-from-cursor.png</file>
     <file>icons/debug-execute-to-cursor.png</file>
-    <file>icons/debug-run-cursor.png</file>
-    <file>icons/debug-run.png</file>
     <file>icons/debug-pc.png</file>
     <file>icons/debug-pc@2x.png</file>
+    <file>icons/debug-run-cursor.png</file>
+    <file>icons/debug-run.png</file>
     <file>icons/debug-step-instruction.png</file>
     <file>icons/debug-step-into-instruction.png</file>
     <file>icons/debug-step-into.png</file>
     <file>icons/debug-step-out.png</file>
     <file>icons/debug-step-over.png</file>
     <file>icons/debug-trace.png</file>
+    <file>icons/discord.png</file>
     <file>icons/document-new.png</file>
     <file>icons/document-new@2x.png</file>
     <file>icons/document-open.png</file>
@@ -55,37 +56,69 @@
     <file>icons/emblem-person-blue.png</file>
     <file>icons/emblem-person-blue@2x.png</file>
     <file>icons/flag-eu.png</file>
+    <file>icons/flag-eu.svg</file>
     <file>icons/flag-eu@2x.png</file>
     <file>icons/flag-jp.png</file>
+    <file>icons/flag-jp.svg</file>
     <file>icons/flag-jp@2x.png</file>
     <file>icons/flag-other.png</file>
     <file>icons/flag-other@2x.png</file>
     <file>icons/flag-uc.png</file>
+    <file>icons/flag-uc.svg</file>
     <file>icons/flag-uc@2x.png</file>
     <file>icons/flag-us.png</file>
+    <file>icons/flag-us.svg</file>
     <file>icons/flag-us@2x.png</file>
+    <file>icons/flags/de.png</file>
+    <file>icons/flags/de@2x.png</file>
+    <file>icons/flags/en.png</file>
+    <file>icons/flags/en@2x.png</file>
+    <file>icons/flags/es.png</file>
+    <file>icons/flags/es@2x.png</file>
+    <file>icons/flags/fr.png</file>
+    <file>icons/flags/fr@2x.png</file>
+    <file>icons/flags/he.png</file>
+    <file>icons/flags/he@2x.png</file>
+    <file>icons/flags/it.png</file>
+    <file>icons/flags/it@2x.png</file>
+    <file>icons/flags/ja.png</file>
+    <file>icons/flags/ja@2x.png</file>
+    <file>icons/flags/nl.png</file>
+    <file>icons/flags/nl@2x.png</file>
+    <file>icons/flags/pl.png</file>
+    <file>icons/flags/pl@2x.png</file>
+    <file>icons/flags/pt-br.png</file>
+    <file>icons/flags/pt-br@2x.png</file>
+    <file>icons/flags/pt-pt.png</file>
+    <file>icons/flags/pt-pt@2x.png</file>
+    <file>icons/flags/ru.png</file>
+    <file>icons/flags/ru@2x.png</file>
+    <file>icons/flags/zh-cn.png</file>
+    <file>icons/flags/zh-cn@2x.png</file>
     <file>icons/folder-open.png</file>
     <file>icons/folder-open@2x.png</file>
+    <file>icons/github.png</file>
     <file>icons/go-down-16.png</file>
     <file>icons/go-down-16@2x.png</file>
     <file>icons/go-up-16.png</file>
     <file>icons/go-up-16@2x.png</file>
     <file>icons/input-gaming.png</file>
     <file>icons/input-gaming@2x.png</file>
+    <file>icons/IssueTracker.png</file>
     <file>icons/list-add.png</file>
     <file>icons/list-add@2x.png</file>
     <file>icons/list-remove.png</file>
     <file>icons/list-remove@2x.png</file>
-    <file>icons/media-flash.png</file>
-    <file>icons/media-flash@2x.png</file>
     <file>icons/media-flash-2.png</file>
-    <file>icons/media-flash-2@2x.png</file>
     <file>icons/media-flash-24.png</file>
     <file>icons/media-flash-24@2x.png</file>
-    <file>icons/media-optical.png</file>
-    <file>icons/media-optical@2x.png</file>
+    <file>icons/media-flash-2@2x.png</file>
+    <file>icons/media-flash.png</file>
+    <file>icons/media-flash@2x.png</file>
     <file>icons/media-optical-24.png</file>
     <file>icons/media-optical-24@2x.png</file>
+    <file>icons/media-optical.png</file>
+    <file>icons/media-optical@2x.png</file>
     <file>icons/media-playback-pause.png</file>
     <file>icons/media-playback-pause@2x.png</file>
     <file>icons/media-playback-start.png</file>
@@ -100,6 +133,7 @@
     <file>icons/preferences-system@2x.png</file>
     <file>icons/process-stop.png</file>
     <file>icons/process-stop@2x.png</file>
+    <file>icons/QT.png</file>
     <file>icons/software-update-available.png</file>
     <file>icons/software-update-available@2x.png</file>
     <file>icons/star-0.png</file>
@@ -116,6 +150,8 @@
     <file>icons/system-shutdown@2x.png</file>
     <file>icons/trophy.png</file>
     <file>icons/trophy@2x.png</file>
+    <file>icons/update.png</file>
+    <file>icons/UpdateDuck.png</file>
     <file>icons/utilities-system-monitor.png</file>
     <file>icons/utilities-system-monitor@2x.png</file>
     <file>icons/video-display.png</file>

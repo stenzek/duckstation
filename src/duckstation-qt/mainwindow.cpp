@@ -834,6 +834,7 @@ void MainWindow::setupAdditionalUi()
     QAction* action = language_group->addAction(it.first);
     action->setCheckable(true);
     action->setChecked(current_language == it.second);
+    action->setIcon(QIcon(QStringLiteral(":/icons/flags/%1.png").arg(it.second)));
     m_ui.menuSettingsLanguage->addAction(action);
     action->setData(it.second);
     connect(action, &QAction::triggered, [this, action]() {
