@@ -400,7 +400,7 @@ void CDImage::GenerateSubChannelQ(SubChannelQ* subq, const Index& index, u32 ind
   if (index.is_pregap)
   {
     // position should count down to the end of the pregap
-    relative_position = Position::FromLBA(index.length - index_offset);
+    relative_position = Position::FromLBA(index.length - index_offset - 1);
   }
   else
   {
