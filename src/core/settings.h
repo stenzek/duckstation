@@ -112,11 +112,11 @@ struct Settings
   bool gpu_threaded_presentation = true;
   bool gpu_use_debug_device = false;
   bool gpu_per_sample_shading = false;
-  bool gpu_true_color = true;
+  bool gpu_true_color = false;
   bool gpu_scaled_dithering = false;
   GPUTextureFilter gpu_texture_filter = GPUTextureFilter::Nearest;
   GPUDownsampleMode gpu_downsample_mode = GPUDownsampleMode::Disabled;
-  bool gpu_disable_interlacing = false;
+  bool gpu_disable_interlacing = true;
   bool gpu_force_ntsc_timings = false;
   bool gpu_widescreen_hack = false;
   bool gpu_pgxp_enable = false;
@@ -140,19 +140,19 @@ struct Settings
   bool display_integer_scaling = false;
   bool display_stretch = false;
   bool display_post_processing = false;
-  bool display_show_osd_messages = false;
+  bool display_show_osd_messages = true;
   bool display_show_fps = false;
   bool display_show_vps = false;
   bool display_show_speed = false;
   bool display_show_resolution = false;
   bool display_all_frames = false;
-  bool video_sync_enabled = true;
-  float display_max_fps = 0.0f;
+  bool video_sync_enabled = DEFAULT_VSYNC_VALUE;
+  float display_max_fps = DEFAULT_DISPLAY_MAX_FPS;
   float gpu_pgxp_tolerance = -1.0f;
   float gpu_pgxp_depth_clear_threshold = 300.0f / 4096.0f;
 
   bool cdrom_read_thread = true;
-  bool cdrom_region_check = true;
+  bool cdrom_region_check = false;
   bool cdrom_load_image_to_ram = false;
   bool cdrom_mute_cd_audio = false;
   u32 cdrom_read_speedup = 1;
@@ -346,7 +346,7 @@ struct Settings
   static const char* GetMultitapModeDisplayName(MultitapMode mode);
 
   // Default to D3D11 on Windows as it's more performant and at this point, less buggy.
-#ifdef WIN32
+#ifdef _WIN32
   static constexpr GPURenderer DEFAULT_GPU_RENDERER = GPURenderer::HardwareD3D11;
 #else
   static constexpr GPURenderer DEFAULT_GPU_RENDERER = GPURenderer::HardwareOpenGL;
@@ -368,7 +368,7 @@ struct Settings
   static constexpr CPUFastmemMode DEFAULT_CPU_FASTMEM_MODE = CPUFastmemMode::Disabled;
 #endif
 
-#ifndef ANDROID
+#ifndef __ANDROID__
   static constexpr AudioBackend DEFAULT_AUDIO_BACKEND = AudioBackend::Cubeb;
 #else
   static constexpr AudioBackend DEFAULT_AUDIO_BACKEND = AudioBackend::OpenSLES;
@@ -389,6 +389,17 @@ struct Settings
   static constexpr bool DEFAULT_LOG_TO_CONSOLE = true;
 #else
   static constexpr bool DEFAULT_LOG_TO_CONSOLE = false;
+#endif
+
+  // Android doesn't create settings until they're first opened, so we have to override the defaults here.
+#ifndef __ANDROID__
+  static constexpr bool DEFAULT_VSYNC_VALUE = false;
+  static constexpr bool DEFAULT_FAST_BOOT_VALUE = false;
+  static constexpr float DEFAULT_DISPLAY_MAX_FPS = 0.0f;
+#else
+  static constexpr bool DEFAULT_VSYNC_VALUE = true;
+  static constexpr bool DEFAULT_FAST_BOOT_VALUE = true;
+  static constexpr float DEFAULT_DISPLAY_MAX_FPS = 60.0f;
 #endif
 };
 

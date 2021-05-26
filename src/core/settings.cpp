@@ -136,19 +136,10 @@ void Settings::UpdateOverclockActive()
 
 void Settings::Load(SettingsInterface& si)
 {
-  // Android doesn't create settings until they're first opened, so we have to override the defaults here.
-#ifndef __ANDROID__
-  static constexpr bool DEFAULT_VSYNC_VALUE = false;
-  static constexpr bool DEFAULT_FAST_BOOT_VALUE = false;
-  static constexpr float DEFAULT_DISPLAY_MAX_FPS = 0.0f;
-#else
-  static constexpr bool DEFAULT_VSYNC_VALUE = true;
-  static constexpr bool DEFAULT_FAST_BOOT_VALUE = true;
-  static constexpr float DEFAULT_DISPLAY_MAX_FPS = 60.0f;
-#endif
-
   region =
-    ParseConsoleRegionName(si.GetStringValue("Console", "Region", "NTSC-U").c_str()).value_or(DEFAULT_CONSOLE_REGION);
+    ParseConsoleRegionName(
+      si.GetStringValue("Console", "Region", Settings::GetConsoleRegionName(Settings::DEFAULT_CONSOLE_REGION)).c_str())
+      .value_or(DEFAULT_CONSOLE_REGION);
   enable_8mb_ram = si.GetBoolValue("Console", "Enable8MBRAM", false);
 
   emulation_speed = si.GetFloatValue("Main", "EmulationSpeed", 1.0f);
@@ -195,7 +186,7 @@ void Settings::Load(SettingsInterface& si)
   gpu_use_thread = si.GetBoolValue("GPU", "UseThread", true);
   gpu_use_software_renderer_for_readbacks = si.GetBoolValue("GPU", "UseSoftwareRendererForReadbacks", false);
   gpu_threaded_presentation = si.GetBoolValue("GPU", "ThreadedPresentation", true);
-  gpu_true_color = si.GetBoolValue("GPU", "TrueColor", true);
+  gpu_true_color = si.GetBoolValue("GPU", "TrueColor", false);
   gpu_scaled_dithering = si.GetBoolValue("GPU", "ScaledDithering", false);
   gpu_texture_filter =
     ParseTextureFilterName(
@@ -251,7 +242,7 @@ void Settings::Load(SettingsInterface& si)
   display_max_fps = si.GetFloatValue("Display", "MaxFPS", DEFAULT_DISPLAY_MAX_FPS);
 
   cdrom_read_thread = si.GetBoolValue("CDROM", "ReadThread", true);
-  cdrom_region_check = si.GetBoolValue("CDROM", "RegionCheck", true);
+  cdrom_region_check = si.GetBoolValue("CDROM", "RegionCheck", false);
   cdrom_load_image_to_ram = si.GetBoolValue("CDROM", "LoadImageToRAM", false);
   cdrom_mute_cd_audio = si.GetBoolValue("CDROM", "MuteCDAudio", false);
   cdrom_read_speedup = si.GetIntValue("CDROM", "ReadSpeedup", 1);

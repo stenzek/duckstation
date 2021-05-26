@@ -498,6 +498,9 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetFloatValue("Main", "RunaheadFrameCount", 0);
 
   si.SetStringValue("CPU", "ExecutionMode", Settings::GetCPUExecutionModeName(Settings::DEFAULT_CPU_EXECUTION_MODE));
+  si.SetIntValue("CPU", "OverclockNumerator", 1);
+  si.SetIntValue("CPU", "OverclockDenominator", 1);
+  si.SetBoolValue("CPU", "OverclockEnable", false);
   si.SetBoolValue("CPU", "RecompilerMemoryExceptions", false);
   si.SetBoolValue("CPU", "ICache", false);
   si.SetBoolValue("CPU", "FastmemMode", Settings::GetCPUFastmemModeName(Settings::DEFAULT_CPU_FASTMEM_MODE));
@@ -548,10 +551,10 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("Display", "ShowSpeed", false);
   si.SetBoolValue("Display", "ShowResolution", false);
   si.SetBoolValue("Display", "Fullscreen", false);
-  si.SetBoolValue("Display", "VSync", true);
+  si.SetBoolValue("Display", "VSync", Settings::DEFAULT_VSYNC_VALUE);
   si.SetBoolValue("Display", "DisplayAllFrames", false);
   si.SetStringValue("Display", "PostProcessChain", "");
-  si.SetFloatValue("Display", "MaxFPS", 0.0f);
+  si.SetFloatValue("Display", "MaxFPS", Settings::DEFAULT_DISPLAY_MAX_FPS);
 
   si.SetBoolValue("CDROM", "ReadThread", true);
   si.SetBoolValue("CDROM", "RegionCheck", false);
@@ -574,7 +577,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetStringValue("BIOS", "PathNTSCJ", "");
   si.SetStringValue("BIOS", "PathPAL", "");
   si.SetBoolValue("BIOS", "PatchTTYEnable", false);
-  si.SetBoolValue("BIOS", "PatchFastBoot", false);
+  si.SetBoolValue("BIOS", "PatchFastBoot", Settings::DEFAULT_FAST_BOOT_VALUE);
 
   si.SetStringValue("Controller1", "Type", Settings::GetControllerTypeName(Settings::DEFAULT_CONTROLLER_1_TYPE));
 
