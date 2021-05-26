@@ -280,7 +280,7 @@ void CDROM::InsertMedia(std::unique_ptr<CDImage> media)
 
   // reading TOC? interestingly this doesn't work for GetlocL though...
   CDImage::SubChannelQ subq;
-  if (media->Seek(0) && media->ReadSubChannelQ(&subq) && subq.IsCRCValid())
+  if (media->Seek(0) && media->ReadRawSector(nullptr, &subq) && subq.IsCRCValid())
     m_last_subq = subq;
 
   m_reader.SetMedia(std::move(media));

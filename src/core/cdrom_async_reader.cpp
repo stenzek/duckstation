@@ -88,7 +88,7 @@ bool CDROMAsyncReader::ReadSectorUncached(CDImage::LBA lba, CDImage::SubChannelQ
     return false;
   }
 
-  if ((subq && !m_media->ReadSubChannelQ(subq)) || (data && !m_media->ReadRawSector(data->data())))
+  if (!m_media->ReadRawSector(data, subq))
   {
     Log_WarningPrintf("Read of LBA %u failed", lba);
     return false;
@@ -149,8 +149,8 @@ void CDROMAsyncReader::DoSectorRead()
     }
   }
 
-  CDImage::LBA pos = m_media->GetPositionOnDisc();
-  if (!m_media->ReadSubChannelQ(&m_subq) || !m_media->ReadRawSector(m_sector_buffer.data()))
+  const CDImage::LBA pos = m_media->GetPositionOnDisc();
+  if (!m_media->ReadRawSector(m_sector_buffer.data(), &m_subq))
   {
     m_sector_read_result.store(false);
     Log_WarningPrintf("Read of LBA %u failed", pos);

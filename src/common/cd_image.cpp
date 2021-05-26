@@ -196,7 +196,7 @@ u32 CDImage::Read(ReadMode read_mode, u32 sector_count, void* buffer)
   {
     // get raw sector
     u8 raw_sector[RAW_SECTOR_SIZE];
-    if (!ReadRawSector(raw_sector))
+    if (!ReadRawSector(raw_sector, nullptr))
       break;
 
     switch (read_mode)
@@ -225,7 +225,7 @@ u32 CDImage::Read(ReadMode read_mode, u32 sector_count, void* buffer)
   return sectors_read;
 }
 
-bool CDImage::ReadRawSector(void* buffer)
+bool CDImage::ReadRawSector(void* buffer, SubChannelQ* subq)
 {
   if (m_position_in_index == m_current_index->length)
   {
@@ -233,39 +233,44 @@ bool CDImage::ReadRawSector(void* buffer)
       return false;
   }
 
-  if (m_current_index->file_sector_size > 0)
+  if (buffer)
   {
-    // TODO: This is where we'd reconstruct the header for other mode tracks.
-    if (!ReadSectorFromIndex(buffer, *m_current_index, m_position_in_index))
+    if (m_current_index->file_sector_size > 0)
     {
-      Log_ErrorPrintf("Read of LBA %u failed", m_position_on_disc);
-      Seek(m_position_on_disc);
-      return false;
-    }
-  }
-  else
-  {
-    if (m_current_index->track_number == LEAD_OUT_TRACK_NUMBER)
-    {
-      // Lead-out area.
-      std::fill(static_cast<u8*>(buffer), static_cast<u8*>(buffer) + RAW_SECTOR_SIZE, u8(0xAA));
+      // TODO: This is where we'd reconstruct the header for other mode tracks.
+      if (!ReadSectorFromIndex(buffer, *m_current_index, m_position_in_index))
+      {
+        Log_ErrorPrintf("Read of LBA %u failed", m_position_on_disc);
+        Seek(m_position_on_disc);
+        return false;
+      }
     }
     else
     {
-      // This in an implicit pregap. Return silence.
-      std::fill(static_cast<u8*>(buffer), static_cast<u8*>(buffer) + RAW_SECTOR_SIZE, u8(0));
+      if (m_current_index->track_number == LEAD_OUT_TRACK_NUMBER)
+      {
+        // Lead-out area.
+        std::fill(static_cast<u8*>(buffer), static_cast<u8*>(buffer) + RAW_SECTOR_SIZE, u8(0xAA));
+      }
+      else
+      {
+        // This in an implicit pregap. Return silence.
+        std::fill(static_cast<u8*>(buffer), static_cast<u8*>(buffer) + RAW_SECTOR_SIZE, u8(0));
+      }
     }
+  }
+
+  if (subq && !ReadSubChannelQ(subq, *m_current_index, m_position_in_index))
+  {
+    Log_ErrorPrintf("Subchannel read of LBA %u failed", m_position_on_disc);
+    Seek(m_position_on_disc);
+    return false;
   }
 
   m_position_on_disc++;
   m_position_in_index++;
   m_position_in_track++;
   return true;
-}
-
-bool CDImage::ReadSubChannelQ(SubChannelQ* subq)
-{
-  return ReadSubChannelQ(subq, *m_current_index, m_position_in_index);
 }
 
 bool CDImage::ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index)
