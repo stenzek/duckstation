@@ -1111,27 +1111,48 @@ void QtHostInterface::populateCheatsMenu(QMenu* menu)
   const bool has_cheat_list = System::HasCheatList();
 
   QMenu* enabled_menu = menu->addMenu(tr("&Enabled Cheats"));
-  enabled_menu->setEnabled(has_cheat_list);
+  enabled_menu->setEnabled(false);
   QMenu* apply_menu = menu->addMenu(tr("&Apply Cheats"));
-  apply_menu->setEnabled(has_cheat_list);
+  apply_menu->setEnabled(false);
   if (has_cheat_list)
   {
     CheatList* cl = System::GetCheatList();
-    for (u32 i = 0; i < cl->GetCodeCount(); i++)
+    for (const std::string& group : cl->GetCodeGroups())
     {
-      CheatCode& cc = cl->GetCode(i);
-      QString desc(QString::fromStdString(cc.description));
-      if (cc.IsManuallyActivated())
+      QMenu* enabled_submenu = nullptr;
+      QMenu* apply_submenu = nullptr;
+
+      for (u32 i = 0; i < cl->GetCodeCount(); i++)
       {
-        QAction* action = apply_menu->addAction(desc);
-        connect(action, &QAction::triggered, [this, i]() { applyCheat(i); });
-      }
-      else
-      {
-        QAction* action = enabled_menu->addAction(desc);
-        action->setCheckable(true);
-        action->setChecked(cc.enabled);
-        connect(action, &QAction::toggled, [this, i](bool enabled) { setCheatEnabled(i, enabled); });
+        CheatCode& cc = cl->GetCode(i);
+        if (cc.group != group)
+          continue;
+
+        QString desc(QString::fromStdString(cc.description));
+        if (cc.IsManuallyActivated())
+        {
+          if (!apply_submenu)
+          {
+            apply_menu->setEnabled(true);
+            apply_submenu = apply_menu->addMenu(QString::fromStdString(group));
+          }
+
+          QAction* action = apply_submenu->addAction(desc);
+          connect(action, &QAction::triggered, [this, i]() { applyCheat(i); });
+        }
+        else
+        {
+          if (!enabled_submenu)
+          {
+            enabled_menu->setEnabled(true);
+            enabled_submenu = enabled_menu->addMenu(QString::fromStdString(group));
+          }
+
+          QAction* action = enabled_submenu->addAction(desc);
+          action->setCheckable(true);
+          action->setChecked(cc.enabled);
+          connect(action, &QAction::toggled, [this, i](bool enabled) { setCheatEnabled(i, enabled); });
+        }
       }
     }
   }
