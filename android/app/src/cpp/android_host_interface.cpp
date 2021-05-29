@@ -1029,7 +1029,8 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
          env->GetMethodID(s_EmulationActivity_class, "hasInputDeviceVibration", "(I)Z")) == nullptr ||
       (s_EmulationActivity_method_setInputDeviceVibration =
          env->GetMethodID(s_EmulationActivity_class, "setInputDeviceVibration", "(IFF)V")) == nullptr ||
-      (s_PatchCode_constructor = env->GetMethodID(s_PatchCode_class, "<init>", "(ILjava/lang/String;Z)V")) == nullptr ||
+      (s_PatchCode_constructor =
+         env->GetMethodID(s_PatchCode_class, "<init>", "(ILjava/lang/String;Ljava/lang/String;Z)V")) == nullptr ||
       (s_GameListEntry_constructor =
          env->GetMethodID(s_GameListEntry_class, "<init>",
                           "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JLjava/lang/String;Ljava/lang/"
@@ -1628,12 +1629,14 @@ DEFINE_JNI_ARGS_METHOD(jobject, AndroidHostInterface_getPatchCodeList, jobject o
   {
     const CheatCode& cc = cl->GetCode(i);
 
+    jstring group_str = cc.group.empty() ? nullptr : env->NewStringUTF(cc.group.c_str());
     jstring desc_str = env->NewStringUTF(cc.description.c_str());
     jobject java_cc =
-      env->NewObject(s_PatchCode_class, s_PatchCode_constructor, static_cast<jint>(i), desc_str, cc.enabled);
+      env->NewObject(s_PatchCode_class, s_PatchCode_constructor, static_cast<jint>(i), group_str, desc_str, cc.enabled);
     env->SetObjectArrayElement(arr, i, java_cc);
     env->DeleteLocalRef(java_cc);
     env->DeleteLocalRef(desc_str);
+    env->DeleteLocalRef(group_str);
   }
 
   return arr;

@@ -581,7 +581,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
             boolean[] itemsChecked = new boolean[codes.length];
             for (int i = 0; i < codes.length; i++) {
                 final PatchCode cc = codes[i];
-                items[i] = cc.getDescription();
+                items[i] = cc.getDisplayText();
                 itemsChecked[i] = cc.isEnabled();
             }
 
