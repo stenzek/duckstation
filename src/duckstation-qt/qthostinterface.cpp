@@ -964,6 +964,29 @@ void QtHostInterface::populateSaveStateMenus(const char* game_code, QMenu* load_
   load_menu->clear();
   save_menu->clear();
 
+  connect(load_menu->addAction(tr("From File...")), &QAction::triggered, [this]() {
+    const QString path(
+      QFileDialog::getOpenFileName(m_main_window, tr("Select Save State File"), QString(), tr("Save States (*.sav)")));
+    if (path.isEmpty())
+      return;
+
+    loadState(path);
+  });
+  load_menu->addSeparator();
+
+  connect(save_menu->addAction(tr("From File...")), &QAction::triggered, [this]() {
+    if (!System::IsValid())
+      return;
+
+    const QString path(
+      QFileDialog::getSaveFileName(m_main_window, tr("Select Save State File"), QString(), tr("Save States (*.sav)")));
+    if (path.isEmpty())
+      return;
+
+    SaveState(path.toUtf8().constData());
+  });
+  save_menu->addSeparator();
+
   if (game_code && std::strlen(game_code) > 0)
   {
     for (u32 slot = 1; slot <= PER_GAME_SAVE_STATE_SLOTS; slot++)
@@ -1269,6 +1292,19 @@ void QtHostInterface::loadState(bool global, qint32 slot)
   LoadState(global, slot);
   if (System::IsValid())
     renderDisplay();
+}
+
+void QtHostInterface::saveState(const QString& filename, bool block_until_done /* = false */)
+{
+  if (!isOnWorkerThread())
+  {
+    QMetaObject::invokeMethod(this, "saveState", block_until_done ? Qt::BlockingQueuedConnection : Qt::QueuedConnection,
+                              Q_ARG(const QString&, filename), Q_ARG(bool, block_until_done));
+    return;
+  }
+
+  if (!System::IsShutdown())
+    SaveState(filename.toUtf8().data());
 }
 
 void QtHostInterface::saveState(bool global, qint32 slot, bool block_until_done /* = false */)

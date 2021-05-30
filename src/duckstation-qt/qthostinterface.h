@@ -161,6 +161,7 @@ public Q_SLOTS:
   void changeDiscFromPlaylist(quint32 index);
   void loadState(const QString& filename);
   void loadState(bool global, qint32 slot);
+  void saveState(const QString& filename, bool block_until_done = false);
   void saveState(bool global, qint32 slot, bool block_until_done = false);
   void setAudioOutputVolume(int volume, int fast_forward_volume);
   void setAudioOutputMuted(bool muted);
