@@ -207,8 +207,12 @@ u32 GPU_HW::CalculateResolutionScale() const
   }
   else
   {
-    // auto scaling
-    const s32 height = (m_crtc_state.display_height != 0) ? static_cast<s32>(m_crtc_state.display_height) : 480;
+    // Auto scaling. When the system is starting and all borders crop is enabled, the registers are zero, and
+    // display_height therefore is also zero. Use the default size from the region in this case.
+    const s32 height = (m_crtc_state.display_height != 0) ?
+                         static_cast<s32>(m_crtc_state.display_height) :
+                         (m_console_is_pal ? (PAL_VERTICAL_ACTIVE_END - PAL_VERTICAL_ACTIVE_START) :
+                                             (NTSC_VERTICAL_ACTIVE_END - NTSC_VERTICAL_ACTIVE_START));
     const s32 preferred_scale =
       static_cast<s32>(std::ceil(static_cast<float>(m_host_display->GetWindowHeight()) / height));
     Log_InfoPrintf("Height = %d, preferred scale = %d", height, preferred_scale);
