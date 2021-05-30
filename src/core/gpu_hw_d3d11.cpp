@@ -258,18 +258,18 @@ bool GPU_HW_D3D11::CreateFramebuffer()
   const DXGI_FORMAT texture_format = DXGI_FORMAT_R8G8B8A8_UNORM;
   const DXGI_FORMAT depth_format = DXGI_FORMAT_D16_UNORM;
 
-  if (!m_vram_texture.Create(m_device.Get(), texture_width, texture_height, 1, samples, texture_format,
+  if (!m_vram_texture.Create(m_device.Get(), texture_width, texture_height, 1, 1, samples, texture_format,
                              D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET) ||
-      !m_vram_depth_texture.Create(m_device.Get(), texture_width, texture_height, 1, samples, depth_format,
+      !m_vram_depth_texture.Create(m_device.Get(), texture_width, texture_height, 1, 1, samples, depth_format,
                                    D3D11_BIND_DEPTH_STENCIL) ||
-      !m_vram_read_texture.Create(m_device.Get(), texture_width, texture_height, 1, 1, texture_format,
+      !m_vram_read_texture.Create(m_device.Get(), texture_width, texture_height, 1, 1, 1, texture_format,
                                   D3D11_BIND_SHADER_RESOURCE) ||
       !m_display_texture.Create(
         m_device.Get(),
         ((m_downsample_mode == GPUDownsampleMode::Adaptive) ? VRAM_WIDTH : GPU_MAX_DISPLAY_WIDTH) * m_resolution_scale,
-        GPU_MAX_DISPLAY_HEIGHT * m_resolution_scale, 1, 1, texture_format,
+        GPU_MAX_DISPLAY_HEIGHT * m_resolution_scale, 1, 1, 1, texture_format,
         D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET) ||
-      !m_vram_encoding_texture.Create(m_device.Get(), VRAM_WIDTH / 2, VRAM_HEIGHT, 1, 1, texture_format,
+      !m_vram_encoding_texture.Create(m_device.Get(), VRAM_WIDTH / 2, VRAM_HEIGHT, 1, 1, 1, texture_format,
                                       D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET) ||
       !m_vram_readback_texture.Create(m_device.Get(), VRAM_WIDTH / 2, VRAM_HEIGHT, texture_format, false))
   {
@@ -287,10 +287,10 @@ bool GPU_HW_D3D11::CreateFramebuffer()
   {
     const u32 levels = GetAdaptiveDownsamplingMipLevels();
 
-    if (!m_downsample_texture.Create(m_device.Get(), texture_width, texture_height, static_cast<u16>(levels), 1,
+    if (!m_downsample_texture.Create(m_device.Get(), texture_width, texture_height, 1, static_cast<u16>(levels), 1,
                                      texture_format, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET) ||
         !m_downsample_weight_texture.Create(m_device.Get(), texture_width >> (levels - 1),
-                                            texture_height >> (levels - 1), 1, 1, DXGI_FORMAT_R8_UNORM,
+                                            texture_height >> (levels - 1), 1, 1, 1, DXGI_FORMAT_R8_UNORM,
                                             D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET))
     {
       return false;
@@ -317,7 +317,7 @@ bool GPU_HW_D3D11::CreateFramebuffer()
   }
   else if (m_downsample_mode == GPUDownsampleMode::Box)
   {
-    if (!m_downsample_texture.Create(m_device.Get(), VRAM_WIDTH, VRAM_HEIGHT, 1, 1, texture_format,
+    if (!m_downsample_texture.Create(m_device.Get(), VRAM_WIDTH, VRAM_HEIGHT, 1, 1, 1, texture_format,
                                      D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET))
     {
       return false;
@@ -750,7 +750,7 @@ bool GPU_HW_D3D11::BlitVRAMReplacementTexture(const TextureReplacementTexture* t
   if (m_vram_replacement_texture.GetWidth() < tex->GetWidth() ||
       m_vram_replacement_texture.GetHeight() < tex->GetHeight())
   {
-    if (!m_vram_replacement_texture.Create(m_device.Get(), tex->GetWidth(), tex->GetHeight(), 1, 1,
+    if (!m_vram_replacement_texture.Create(m_device.Get(), tex->GetWidth(), tex->GetHeight(), 1, 1, 1,
                                            DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE, tex->GetPixels(),
                                            tex->GetByteStride(), true))
     {

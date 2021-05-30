@@ -132,7 +132,7 @@ std::unique_ptr<HostDisplayTexture> D3D11HostDisplay::CreateTexture(u32 width, u
     return {};
 
   D3D11::Texture tex;
-  if (!tex.Create(m_device.Get(), width, height, levels, samples,
+  if (!tex.Create(m_device.Get(), width, height, layers, levels, samples,
                   s_display_pixel_format_mapping[static_cast<u32>(format)], D3D11_BIND_SHADER_RESOURCE, data,
                   data_stride, dynamic))
   {
@@ -755,7 +755,7 @@ bool D3D11HostDisplay::RenderScreenshot(u32 width, u32 height, std::vector<u32>*
   static constexpr HostDisplayPixelFormat hdformat = HostDisplayPixelFormat::RGBA8;
 
   D3D11::Texture render_texture;
-  if (!render_texture.Create(m_device.Get(), width, height, 1, 1, format, D3D11_BIND_RENDER_TARGET) ||
+  if (!render_texture.Create(m_device.Get(), width, height, 1, 1, 1, format, D3D11_BIND_RENDER_TARGET) ||
       !m_readback_staging_texture.EnsureSize(m_context.Get(), width, height, format, false))
   {
     return false;
@@ -1048,8 +1048,11 @@ bool D3D11HostDisplay::CheckPostProcessingRenderTargets(u32 target_width, u32 ta
   if (m_post_processing_input_texture.GetWidth() != target_width ||
       m_post_processing_input_texture.GetHeight() != target_height)
   {
-    if (!m_post_processing_input_texture.Create(m_device.Get(), target_width, target_height, 1, 1, format, bind_flags))
+    if (!m_post_processing_input_texture.Create(m_device.Get(), target_width, target_height, 1, 1, 1, format,
+                                                bind_flags))
+    {
       return false;
+    }
   }
 
   const u32 target_count = (static_cast<u32>(m_post_processing_stages.size()) - 1);
@@ -1058,7 +1061,7 @@ bool D3D11HostDisplay::CheckPostProcessingRenderTargets(u32 target_width, u32 ta
     PostProcessingStage& pps = m_post_processing_stages[i];
     if (pps.output_texture.GetWidth() != target_width || pps.output_texture.GetHeight() != target_height)
     {
-      if (!pps.output_texture.Create(m_device.Get(), target_width, target_height, 1, 1, format, bind_flags))
+      if (!pps.output_texture.Create(m_device.Get(), target_width, target_height, 1, 1, 1, format, bind_flags))
         return false;
     }
   }

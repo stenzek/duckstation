@@ -11,9 +11,11 @@ Texture::Texture(ComPtr<ID3D11Texture2D> texture, ComPtr<ID3D11ShaderResourceVie
   : m_texture(std::move(texture)), m_srv(std::move(srv)), m_rtv(std::move(rtv))
 {
   const D3D11_TEXTURE2D_DESC desc = GetDesc();
-  m_width = desc.Width;
-  m_height = desc.Height;
-  m_samples = static_cast<u16>(desc.SampleDesc.Count);
+  m_width = static_cast<u16>(desc.Width);
+  m_height = static_cast<u16>(desc.Height);
+  m_layers = static_cast<u16>(desc.ArraySize);
+  m_levels = static_cast<u8>(desc.MipLevels);
+  m_samples = static_cast<u8>(desc.SampleDesc.Count);
 }
 
 Texture::~Texture()
@@ -28,11 +30,19 @@ D3D11_TEXTURE2D_DESC Texture::GetDesc() const
   return desc;
 }
 
-bool Texture::Create(ID3D11Device* device, u32 width, u32 height, u32 levels, u32 samples, DXGI_FORMAT format,
-                     u32 bind_flags, const void* initial_data /* = nullptr */, u32 initial_data_stride /* = 0 */,
-                     bool dynamic)
+bool Texture::Create(ID3D11Device* device, u32 width, u32 height, u32 layers, u32 levels, u32 samples,
+                     DXGI_FORMAT format, u32 bind_flags, const void* initial_data /* = nullptr */,
+                     u32 initial_data_stride /* = 0 */, bool dynamic /* = false */)
 {
-  CD3D11_TEXTURE2D_DESC desc(format, width, height, 1, levels, bind_flags,
+  if (width > D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION || height > D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION ||
+      layers > D3D11_REQ_TEXTURE2D_ARRAY_AXIS_DIMENSION || (layers > 1 && samples > 1))
+  {
+    Log_ErrorPrintf("Texture bounds (%ux%ux%u, %u mips, %u samples) are too large", width, height, layers, levels,
+                    samples);
+    return false;
+  }
+
+  CD3D11_TEXTURE2D_DESC desc(format, width, height, layers, levels, bind_flags,
                              dynamic ? D3D11_USAGE_DYNAMIC : D3D11_USAGE_DEFAULT, dynamic ? D3D11_CPU_ACCESS_WRITE : 0,
                              samples, 0, 0);
 
@@ -55,7 +65,9 @@ bool Texture::Create(ID3D11Device* device, u32 width, u32 height, u32 levels, u3
   if (bind_flags & D3D11_BIND_SHADER_RESOURCE)
   {
     const D3D11_SRV_DIMENSION srv_dimension =
-      (desc.SampleDesc.Count > 1) ? D3D11_SRV_DIMENSION_TEXTURE2DMS : D3D11_SRV_DIMENSION_TEXTURE2D;
+      (desc.SampleDesc.Count > 1) ?
+        D3D11_SRV_DIMENSION_TEXTURE2DMS :
+        (desc.ArraySize > 1 ? D3D11_SRV_DIMENSION_TEXTURE2DARRAY : D3D11_SRV_DIMENSION_TEXTURE2D);
     const CD3D11_SHADER_RESOURCE_VIEW_DESC srv_desc(srv_dimension, desc.Format, 0, desc.MipLevels, 0, desc.ArraySize);
     const HRESULT hr = device->CreateShaderResourceView(texture.Get(), &srv_desc, srv.GetAddressOf());
     if (FAILED(hr))
@@ -82,10 +94,11 @@ bool Texture::Create(ID3D11Device* device, u32 width, u32 height, u32 levels, u3
   m_texture = std::move(texture);
   m_srv = std::move(srv);
   m_rtv = std::move(rtv);
-  m_width = width;
-  m_height = height;
-  m_levels = static_cast<u16>(levels);
-  m_samples = static_cast<u16>(samples);
+  m_width = static_cast<u16>(width);
+  m_height = static_cast<u16>(height);
+  m_layers = static_cast<u16>(layers);
+  m_levels = static_cast<u8>(levels);
+  m_samples = static_cast<u8>(samples);
   return true;
 }
 
@@ -125,10 +138,11 @@ bool Texture::Adopt(ID3D11Device* device, ComPtr<ID3D11Texture2D> texture)
   m_texture = std::move(texture);
   m_srv = std::move(srv);
   m_rtv = std::move(rtv);
-  m_width = desc.Width;
-  m_height = desc.Height;
-  m_levels = static_cast<u16>(desc.MipLevels);
-  m_samples = static_cast<u16>(desc.SampleDesc.Count);
+  m_width = static_cast<u16>(desc.Width);
+  m_height = static_cast<u16>(desc.Height);
+  m_layers = static_cast<u16>(desc.ArraySize);
+  m_levels = static_cast<u8>(desc.MipLevels);
+  m_samples = static_cast<u8>(desc.SampleDesc.Count);
   return true;
 }
 
@@ -139,6 +153,7 @@ void Texture::Destroy()
   m_texture.Reset();
   m_width = 0;
   m_height = 0;
+  m_layers = 0;
   m_levels = 0;
   m_samples = 0;
 }
