@@ -1507,6 +1507,10 @@ void DrawSettingsWindow()
           "Preload Images to RAM",
           "Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay.",
           &s_settings_copy.cdrom_load_image_to_ram);
+        settings_changed |= ToggleButtonForNonSetting(
+          "Apply Image Patches",
+          "Automatically applies patches to disc images when they are present, currently only PPF is supported.",
+          "CDROM", "LoadImagePatches", false);
 
         MenuHeading("Controller Ports");
 

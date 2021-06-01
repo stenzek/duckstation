@@ -68,7 +68,9 @@ static bool LoadEXE(const char* filename);
 static bool SetExpansionROM(const char* filename);
 
 /// Opens CD image, preloading if needed.
-static std::unique_ptr<CDImage> OpenCDImage(const char* path, Common::Error* error, bool force_preload);
+static std::unique_ptr<CDImage> OpenCDImage(const char* path, Common::Error* error, bool force_preload,
+                                            bool check_for_patches);
+static bool ShouldCheckForImagePatches();
 
 static bool DoLoadState(ByteStream* stream, bool force_software_renderer, bool update_display);
 static bool DoState(StateWrapper& sw, HostDisplayTexture** host_texture, bool update_display);
@@ -643,7 +645,7 @@ bool RecreateGPU(GPURenderer renderer, bool update_display /* = true*/)
   return true;
 }
 
-std::unique_ptr<CDImage> OpenCDImage(const char* path, Common::Error* error, bool force_preload)
+std::unique_ptr<CDImage> OpenCDImage(const char* path, Common::Error* error, bool force_preload, bool check_for_patches)
 {
   std::unique_ptr<CDImage> media = CDImage::Open(path, error);
   if (!media)
@@ -659,7 +661,31 @@ std::unique_ptr<CDImage> OpenCDImage(const char* path, Common::Error* error, boo
       Log_WarningPrintf("Failed to preload image '%s' to RAM", path);
   }
 
+  if (check_for_patches)
+  {
+    const std::string ppf_filename(FileSystem::BuildRelativePath(
+      path, FileSystem::ReplaceExtension(FileSystem::GetDisplayNameFromPath(path), "ppf")));
+    if (FileSystem::FileExists(ppf_filename.c_str()))
+    {
+      media = CDImage::OverlayPPFPatch(ppf_filename.c_str(), std::move(media));
+      if (!media)
+      {
+        g_host_interface->AddFormattedOSDMessage(
+          30.0f,
+          g_host_interface->TranslateString("OSDMessage",
+                                            "Failed to apply ppf patch from '%s', using unpatched image."),
+          ppf_filename.c_str());
+        return OpenCDImage(path, error, force_preload, false);
+      }
+    }
+  }
+
   return media;
+}
+
+bool ShouldCheckForImagePatches()
+{
+  return g_host_interface->GetBoolSettingValue("CDROM", "LoadImagePatches", false);
 }
 
 bool Boot(const SystemBootParameters& params)
@@ -708,7 +734,7 @@ bool Boot(const SystemBootParameters& params)
     else
     {
       Log_InfoPrintf("Loading CD image '%s'...", params.filename.c_str());
-      media = OpenCDImage(params.filename.c_str(), &error, params.load_image_to_ram);
+      media = OpenCDImage(params.filename.c_str(), &error, params.load_image_to_ram, ShouldCheckForImagePatches());
       if (!media)
       {
         g_host_interface->ReportFormattedError("Failed to load CD image '%s': %s", params.filename.c_str(),
@@ -1175,7 +1201,7 @@ bool DoLoadState(ByteStream* state, bool force_software_renderer, bool update_di
     }
     else
     {
-      media = OpenCDImage(media_filename.c_str(), &error, false);
+      media = OpenCDImage(media_filename.c_str(), &error, false, ShouldCheckForImagePatches());
       if (!media)
       {
         if (old_media)
@@ -1988,7 +2014,7 @@ std::string GetMediaFileName()
 bool InsertMedia(const char* path)
 {
   Common::Error error;
-  std::unique_ptr<CDImage> image = OpenCDImage(path, &error, false);
+  std::unique_ptr<CDImage> image = OpenCDImage(path, &error, false, ShouldCheckForImagePatches());
   if (!image)
   {
     g_host_interface->AddFormattedOSDMessage(
