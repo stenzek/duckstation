@@ -99,6 +99,11 @@ public class GamePropertiesActivity extends AppCompatActivity {
         ps.addPreference(pref);
     }
 
+    private void createTraitGameSetting(PreferenceScreen ps, String key, int titleId) {
+        GameTraitPreference pref = new GameTraitPreference(ps.getContext(), mGameListEntry.getPath(), key, titleId);
+        ps.addPreference(pref);
+    }
+
     private void createListGameSetting(PreferenceScreen ps, String key, int titleId, int entryId, int entryValuesId) {
         GameSettingPreference pref = new GameSettingPreference(ps.getContext(), mGameListEntry.getPath(), key, titleId, entryId, entryValuesId);
         ps.addPreference(pref);
@@ -136,11 +141,11 @@ public class GamePropertiesActivity extends AppCompatActivity {
             activity.createBooleanGameSetting(ps, "GPUPGXP", R.string.settings_pgxp_geometry_correction);
             activity.createBooleanGameSetting(ps, "PGXPPreserveProjFP", R.string.settings_pgxp_preserve_projection_precision);
             activity.createBooleanGameSetting(ps, "GPUPGXPDepthBuffer", R.string.settings_pgxp_depth_buffer);
-            activity.createBooleanGameSetting(ps, "ForceSoftwareRenderer", R.string.settings_use_software_renderer);
-            activity.createBooleanGameSetting(ps, "ForceSoftwareRendererForReadbacks", R.string.settings_use_software_renderer_for_readbacks);
-            activity.createBooleanGameSetting(ps, "DisableWidescreen", R.string.settings_disable_widescreen);
-            activity.createBooleanGameSetting(ps, "ForcePGXPVertexCache", R.string.settings_pgxp_vertex_cache);
-            activity.createBooleanGameSetting(ps, "ForcePGXPCPUMode", R.string.settings_pgxp_cpu_mode);
+            activity.createTraitGameSetting(ps, "ForceSoftwareRenderer", R.string.settings_use_software_renderer);
+            activity.createTraitGameSetting(ps, "ForceSoftwareRendererForReadbacks", R.string.settings_use_software_renderer_for_readbacks);
+            activity.createTraitGameSetting(ps, "DisableWidescreen", R.string.settings_disable_widescreen);
+            activity.createTraitGameSetting(ps, "ForcePGXPVertexCache", R.string.settings_pgxp_vertex_cache);
+            activity.createTraitGameSetting(ps, "ForcePGXPCPUMode", R.string.settings_pgxp_cpu_mode);
 
             setPreferenceScreen(ps);
         }
