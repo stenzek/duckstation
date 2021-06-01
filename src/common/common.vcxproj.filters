@@ -220,6 +220,7 @@
     <ClCompile Include="cd_image_m3u.cpp" />
     <ClCompile Include="window_info.cpp" />
     <ClCompile Include="cue_parser.cpp" />
+    <ClCompile Include="cd_image_ppf.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />

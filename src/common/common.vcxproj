@@ -141,6 +141,7 @@
     <ClCompile Include="cd_image_pbp.cpp" />
     <ClCompile Include="crash_handler.cpp" />
     <ClCompile Include="cue_parser.cpp" />
+    <ClCompile Include="cd_image_ppf.cpp" />
     <ClCompile Include="d3d11\shader_cache.cpp" />
     <ClCompile Include="d3d11\shader_compiler.cpp" />
     <ClCompile Include="d3d11\staging_texture.cpp" />
