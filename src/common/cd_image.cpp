@@ -396,7 +396,7 @@ bool CDImage::GenerateSubChannelQ(SubChannelQ* subq, LBA lba)
 
 void CDImage::GenerateSubChannelQ(SubChannelQ* subq, const Index& index, u32 index_offset)
 {
-  subq->control.bits = index.control.bits;
+  subq->control_bits = index.control.bits;
   subq->track_number_bcd =
     (index.track_number <= m_tracks.size() ? BinaryToBCD(index.track_number) : index.track_number);
   subq->index_number_bcd = BinaryToBCD(index.index_number);

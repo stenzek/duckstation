@@ -1745,7 +1745,7 @@ bool CDROM::CompleteSeek()
                    subq.absolute_frame_bcd == seek_ff);
       if (seek_okay)
       {
-        if (subq.control.data)
+        if (subq.IsData())
         {
           if (logical)
           {
@@ -1969,7 +1969,7 @@ void CDROM::DoSectorRead()
     return;
   }
 
-  const bool is_data_sector = subq.control.data;
+  const bool is_data_sector = subq.IsData();
   if (!is_data_sector)
   {
     if (m_play_track_number_bcd == 0)

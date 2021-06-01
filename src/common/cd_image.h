@@ -145,7 +145,7 @@ public:
 
     struct
     {
-      Control control;
+      u8 control_bits;
       u8 track_number_bcd;
       u8 index_number_bcd;
       u8 relative_minute_bcd;
@@ -161,6 +161,9 @@ public:
     Data data;
 
     static u16 ComputeCRC(const Data& data);
+
+    Control GetControl() const { return Control{control_bits}; }
+    bool IsData() const { return GetControl().data; }
 
     bool IsCRCValid() const;
 
