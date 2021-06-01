@@ -1936,13 +1936,13 @@ Login token generated on %2.</source>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="48"/>
-        <location filename="../consolesettingswidget.cpp" line="59"/>
+        <location filename="../consolesettingswidget.cpp" line="61"/>
         <source>Enable 8MB RAM (Dev Console)</source>
         <translation type="unfinished">Включить 8Мб оперативной памяти (Консоль разработчика)</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="78"/>
-        <location filename="../consolesettingswidget.cpp" line="54"/>
+        <location filename="../consolesettingswidget.cpp" line="56"/>
         <source>Enable Clock Speed Control (Overclocking/Underclocking)</source>
         <translation type="unfinished">Включить Управление тактовой частотой (Разгон/Underclocking)</translation>
     </message>
@@ -1963,7 +1963,7 @@ Login token generated on %2.</source>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="151"/>
-        <location filename="../consolesettingswidget.cpp" line="68"/>
+        <location filename="../consolesettingswidget.cpp" line="70"/>
         <source>None (Double Speed)</source>
         <translation type="unfinished">Нет (двухскоростная)</translation>
     </message>
@@ -2013,73 +2013,79 @@ Login token generated on %2.</source>
         <translation type="unfinished">10x (20x скорость)</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="229"/>
+        <location filename="../consolesettingswidget.ui" line="227"/>
+        <location filename="../consolesettingswidget.cpp" line="86"/>
+        <source>Apply Image Patches</source>
+        <translation type="unfinished">Применение патчей для Образов</translation>
+    </message>
+    <message>
+        <location filename="../consolesettingswidget.ui" line="236"/>
         <source>Seek Speedup:</source>
         <translation type="unfinished">Ускорение поиска:</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="240"/>
+        <location filename="../consolesettingswidget.ui" line="247"/>
         <source>Infinite/Instantaneous</source>
         <translation type="unfinished">Бесконечный/Мгновенный</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="245"/>
-        <location filename="../consolesettingswidget.cpp" line="72"/>
+        <location filename="../consolesettingswidget.ui" line="252"/>
+        <location filename="../consolesettingswidget.cpp" line="74"/>
         <source>None (Normal Speed)</source>
         <translation type="unfinished">Нет (Нормальная скорость)</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="250"/>
+        <location filename="../consolesettingswidget.ui" line="257"/>
         <source>2x</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="255"/>
+        <location filename="../consolesettingswidget.ui" line="262"/>
         <source>3x</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="260"/>
+        <location filename="../consolesettingswidget.ui" line="267"/>
         <source>4x</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="265"/>
+        <location filename="../consolesettingswidget.ui" line="272"/>
         <source>5x</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="270"/>
+        <location filename="../consolesettingswidget.ui" line="277"/>
         <source>6x</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="275"/>
+        <location filename="../consolesettingswidget.ui" line="282"/>
         <source>7x</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="280"/>
+        <location filename="../consolesettingswidget.ui" line="287"/>
         <source>8x</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="285"/>
+        <location filename="../consolesettingswidget.ui" line="292"/>
         <source>9x</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="290"/>
+        <location filename="../consolesettingswidget.ui" line="297"/>
         <source>10x</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="301"/>
+        <location filename="../consolesettingswidget.ui" line="308"/>
         <source>Controller Ports</source>
         <translation>Порты контроллера</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="307"/>
+        <location filename="../consolesettingswidget.ui" line="314"/>
         <source>Multitap:</source>
         <translation type="unfinished">Мультитап:</translation>
     </message>
@@ -2111,13 +2117,13 @@ Login token generated on %2.</source>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="206"/>
-        <location filename="../consolesettingswidget.cpp" line="76"/>
+        <location filename="../consolesettingswidget.cpp" line="78"/>
         <source>Use Read Thread (Asynchronous)</source>
         <translation>Использовать чтение потока (асинхронный)</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="213"/>
-        <location filename="../consolesettingswidget.cpp" line="78"/>
+        <location filename="../consolesettingswidget.cpp" line="80"/>
         <source>Enable Region Check</source>
         <translation>Включить проверку региона</translation>
     </message>
@@ -2127,10 +2133,11 @@ Login token generated on %2.</source>
         <translation>Предварительно загрузить образ в ОЗУ</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.cpp" line="54"/>
-        <location filename="../consolesettingswidget.cpp" line="59"/>
-        <location filename="../consolesettingswidget.cpp" line="64"/>
-        <location filename="../consolesettingswidget.cpp" line="81"/>
+        <location filename="../consolesettingswidget.cpp" line="56"/>
+        <location filename="../consolesettingswidget.cpp" line="61"/>
+        <location filename="../consolesettingswidget.cpp" line="66"/>
+        <location filename="../consolesettingswidget.cpp" line="83"/>
+        <location filename="../consolesettingswidget.cpp" line="86"/>
         <source>Unchecked</source>
         <translation>Не выбрано</translation>
     </message>
@@ -2139,133 +2146,146 @@ Login token generated on %2.</source>
         <translation type="vanished">Исправляет БИОС, чтобы пропустить загрузочную анимацию консоли. Не работает со всеми играми, но обычно безопасно для включения.</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.cpp" line="64"/>
-        <location filename="../consolesettingswidget.cpp" line="81"/>
+        <location filename="../consolesettingswidget.cpp" line="66"/>
+        <location filename="../consolesettingswidget.cpp" line="83"/>
         <source>Preload Image to RAM</source>
         <translation>Предзагрузка образа в ОЗУ</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.cpp" line="65"/>
-        <location filename="../consolesettingswidget.cpp" line="82"/>
+        <location filename="../consolesettingswidget.cpp" line="67"/>
+        <location filename="../consolesettingswidget.cpp" line="84"/>
         <source>Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay. In some cases also eliminates stutter when games initiate audio track playback.</source>
         <translation>Загружает образ игры в оперативную память. Полезно для сетевых путей, которые могут стать ненадежными во время игры. В некоторых случаях также устраняет заикание, когда игры начинают воспроизведение звуковой дорожки.</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.cpp" line="68"/>
         <source>CDROM Read Speedup</source>
-        <translation>Ускорение чтения CDROM</translation>
+        <translation type="vanished">Ускорение чтения CDROM</translation>
     </message>
     <message>
         <source>None (Double Speed</source>
         <translation type="obsolete">Нет (двойная скорость</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.cpp" line="49"/>
+        <location filename="../consolesettingswidget.cpp" line="51"/>
         <source>Region</source>
         <translation>Регион</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.cpp" line="49"/>
+        <location filename="../consolesettingswidget.cpp" line="51"/>
         <source>Auto-Detect</source>
         <translation>Авто-определение</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.cpp" line="50"/>
+        <location filename="../consolesettingswidget.cpp" line="52"/>
         <source>Determines the emulated hardware type.</source>
         <translation type="unfinished">Определяет эмулируемый тип оборудования.</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.cpp" line="51"/>
+        <location filename="../consolesettingswidget.cpp" line="53"/>
         <source>Execution Mode</source>
         <translation type="unfinished">Режим исполнения</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.cpp" line="51"/>
+        <location filename="../consolesettingswidget.cpp" line="53"/>
         <source>Recompiler (Fastest)</source>
         <translation type="unfinished">Перекомпилятор (Самый быстрый)</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.cpp" line="52"/>
+        <location filename="../consolesettingswidget.cpp" line="54"/>
         <source>Determines how the emulated CPU executes instructions.</source>
         <translation type="unfinished">Определяет, как эмулируемый ЦП выполняет инструкции.</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.cpp" line="55"/>
+        <location filename="../consolesettingswidget.cpp" line="57"/>
         <source>When this option is chosen, the clock speed set below will be used.</source>
         <translation type="unfinished">При выборе этого параметра будет использоваться указанная ниже тактовая частота.</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.cpp" line="56"/>
+        <location filename="../consolesettingswidget.cpp" line="58"/>
         <source>Overclocking Percentage</source>
         <translation type="unfinished">Процент разгона</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.cpp" line="56"/>
+        <location filename="../consolesettingswidget.cpp" line="58"/>
         <source>100%</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.cpp" line="57"/>
+        <location filename="../consolesettingswidget.cpp" line="59"/>
         <source>Selects the percentage of the normal clock speed the emulated hardware will run at.</source>
         <translation type="unfinished">Выбирает процент от нормальной тактовой частоты, на которой будет работать эмулируемое оборудование.</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.cpp" line="60"/>
+        <location filename="../consolesettingswidget.cpp" line="62"/>
         <source>Enables an additional 6MB of RAM, usually present on dev consoles. Games have to use a larger heap size for this additional RAM to be usable, and may break games which rely on memory mirrors, so it should only be used with compatible mods.</source>
         <translatorcomment>**присутствующие?</translatorcomment>
         <translation type="unfinished">Включает дополнительные 6Мб оперативной памяти, обычно присутствующей на Консолях разработчика. Игры должны использовать больший размер кучи, чтобы использовать эту дополнительную оперативную память, и могут сломать игры, которые полагаются на зеркала памяти, поэтому его следует использовать только с совместимыми модами.</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.cpp" line="69"/>
+        <location filename="../consolesettingswidget.cpp" line="70"/>
+        <source>CD-ROM Read Speedup</source>
+        <translation type="unfinished">Ускорение чтения CD-ROM</translation>
+    </message>
+    <message>
+        <location filename="../consolesettingswidget.cpp" line="71"/>
         <source>Speeds up CD-ROM reads by the specified factor. Only applies to double-speed reads, and is ignored when audio is playing. May improve loading speeds in some games, at the cost of breaking others.</source>
         <translation type="unfinished">Ускоряет чтение CD-ROM на указанный коэффициент. Применяется только к чтению с удвоенной скоростью и игнорируется при воспроизведении звука. Может улучшить скорость загрузки в некоторых играх за счет нарушения работы других.</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.cpp" line="72"/>
-        <source>CDROM Seek Speedup</source>
-        <translation type="unfinished">Ускорение поиска по CDROM</translation>
+        <location filename="../consolesettingswidget.cpp" line="74"/>
+        <source>CD-ROM Seek Speedup</source>
+        <translation type="unfinished">Ускорение поиска по CD-ROM</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.cpp" line="73"/>
+        <source>CDROM Seek Speedup</source>
+        <translation type="obsolete">Ускорение поиска по CDROM</translation>
+    </message>
+    <message>
+        <location filename="../consolesettingswidget.cpp" line="75"/>
         <source>Reduces the simulated time for the CD-ROM sled to move to different areas of the disc. Can improve loading times, but crash games which do not expect the CD-ROM to operate faster.</source>
         <translatorcomment>** разные-различные. ** -Это можно сократить</translatorcomment>
         <translation type="unfinished">Сокращает время моделирования перемещения салазок CD-ROM в разные области диска. Это может улучшить время загрузки, но приведет к сбою игр, которые не ожидают, что CD-ROM будет работать быстрее.</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.cpp" line="76"/>
         <location filename="../consolesettingswidget.cpp" line="78"/>
+        <location filename="../consolesettingswidget.cpp" line="80"/>
         <source>Checked</source>
         <translatorcomment>Выбран*</translatorcomment>
         <translation type="unfinished">Выбрано</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.cpp" line="77"/>
+        <location filename="../consolesettingswidget.cpp" line="79"/>
         <source>Reduces hitches in emulation by reading/decompressing CD data asynchronously on a worker thread.</source>
         <translation type="unfinished">Уменьшает количество ошибок при эмуляции за счет асинхронного чтения/распаковки данных компакт-диска в рабочем потоке.</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.cpp" line="79"/>
+        <location filename="../consolesettingswidget.cpp" line="81"/>
         <source>Simulates the region check present in original, unmodified consoles.</source>
         <translation type="unfinished">Имитирует проверку региона, присутствующую в исходных, неизмененных консолях.</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.cpp" line="85"/>
+        <location filename="../consolesettingswidget.cpp" line="87"/>
+        <source>Automatically applies patches to disc images when they are present in the same directory. Currently only PPF patches are supported with this option.</source>
+        <translation>Автоматически применяет исправления к образам дисков, если они находятся в одном каталоге. В настоящее время с этой опцией поддерживаются только патчи PPF.</translation>
+    </message>
+    <message>
+        <location filename="../consolesettingswidget.cpp" line="90"/>
         <source>Multitap</source>
         <translation type="unfinished">Мультитап</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.cpp" line="85"/>
+        <location filename="../consolesettingswidget.cpp" line="90"/>
         <source>Disabled</source>
         <translation type="unfinished">Отключен</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.cpp" line="86"/>
+        <location filename="../consolesettingswidget.cpp" line="91"/>
         <source>Enables multitap support on specified controller ports. Leave disabled for games that do not support multitap input.</source>
         <translatorcomment>**multitap input - вход-ввод?</translatorcomment>
         <translation type="unfinished">Включает поддержку мультитап на указанных портах контроллера. Оставьте отключенным для игр, которые не поддерживают мультитап.</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.cpp" line="110"/>
+        <location filename="../consolesettingswidget.cpp" line="115"/>
         <source>Enabling CPU overclocking will break games, cause bugs, reduce performance and can significantly increase system requirements.
 
 By enabling this option you are agreeing to not create any bug reports unless you have confirmed the bug also occurs with overclocking disabled.
@@ -2278,22 +2298,22 @@ This warning will only be shown once.</source>
 Это предупреждение будет показано только один раз.</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.cpp" line="113"/>
+        <location filename="../consolesettingswidget.cpp" line="118"/>
         <source>Yes, I will confirm bugs without overclocking before reporting.</source>
         <translation type="unfinished">Да, я подтверждаю наличие ошибок без разгона перед сообщением об ошибках.</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.cpp" line="114"/>
+        <location filename="../consolesettingswidget.cpp" line="119"/>
         <source>No, take me back to safety.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.cpp" line="116"/>
+        <location filename="../consolesettingswidget.cpp" line="121"/>
         <source>CPU Overclocking Warning</source>
         <translation type="unfinished">Предупреждение о разгоне процессора</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.cpp" line="147"/>
+        <location filename="../consolesettingswidget.cpp" line="152"/>
         <source>%1% (%2MHz)</source>
         <translation>%1% (%2 МГц)</translation>
     </message>
@@ -2415,17 +2435,17 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllersettingswidget.cpp" line="459"/>
         <source>Auto Fire Buttons</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Кнопки автоматического огня</translation>
     </message>
     <message>
         <location filename="../controllersettingswidget.cpp" line="471"/>
         <source>Auto Fire %1</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Автоматический огонь %1</translation>
     </message>
     <message>
         <location filename="../controllersettingswidget.cpp" line="488"/>
         <source> Frames</source>
-        <translation type="unfinished"> кадров</translation>
+        <translation type="unfinished"> кадра</translation>
     </message>
     <message>
         <location filename="../controllersettingswidget.cpp" line="533"/>
@@ -4489,7 +4509,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../gamepropertiesdialog.ui" line="565"/>
         <source>Downsampling:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Десемплинг:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="660"/>
@@ -6847,7 +6867,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="83"/>
         <source>If one of the &quot;separate card per game&quot; memory card types is chosen, these memory cards will be saved to the memory cards directory.</source>
-        <translation type="unfinished"></translation>
+        <translation>Если выбран один из типов карт памяти &quot;отдельная карта для каждой игры&quot;, эти карты памяти будут сохранены в каталоге карт памяти.</translation>
     </message>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="89"/>
@@ -7272,52 +7292,57 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation type="unfinished">Карта памяти %u присутствует в системе, но не в состоянии сохранения. Извлечение карты.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="894"/>
+        <location filename="../../core/system.cpp" line="675"/>
+        <source>Failed to apply ppf patch from &apos;%s&apos;, using unpatched image.</source>
+        <translation>Не удалось применить патч ppf из &apos;%s&apos;, используя непатченный образ.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="920"/>
         <source>CPU clock speed is set to %u%% (%u / %u). This may result in instability.</source>
         <translation type="unfinished">Частота процессора установлена в %u%% (%u / %u). Это может привести к нестабильности.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="902"/>
+        <location filename="../../core/system.cpp" line="928"/>
         <source>CD-ROM read speedup set to %ux (effective speed %ux). This may result in instability.</source>
         <translation type="unfinished">Ускорение чтения CD-ROM установлено на %ux (эффективная скорость %ux). Это может привести к нестабильности.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="911"/>
+        <location filename="../../core/system.cpp" line="937"/>
         <source>CD-ROM seek speedup set to instant. This may result in instability.</source>
         <translation type="unfinished">Ускорение поиска по CD-ROM установлено на мгновенное. Это может привести к нестабильности.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="919"/>
+        <location filename="../../core/system.cpp" line="945"/>
         <source>CD-ROM seek speedup set to %ux. This may result in instability.</source>
         <translation type="unfinished">Ускорение поиска по CD-ROM установлено в %ux. Это может привести к нестабильности.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="993"/>
+        <location filename="../../core/system.cpp" line="1019"/>
         <source>Failed to initialize %s renderer, falling back to software renderer.</source>
         <translation type="unfinished">Не удалось инициализировать рендерер %s, возврат к программному рендереру.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1081"/>
+        <location filename="../../core/system.cpp" line="1107"/>
         <source>WARNING: CPU overclock (%u%%) was different in save state (%u%%).</source>
         <translation type="unfinished">ВНИМАНИЕ: разгон ЦП (%u%%) отличался в сохранении состояния (%u%%).</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1185"/>
+        <location filename="../../core/system.cpp" line="1211"/>
         <source>Failed to open CD image from save state &apos;%s&apos;: %s. Using existing image &apos;%s&apos;, this may result in instability.</source>
         <translation type="unfinished">Не удалось открыть образ компакт-диска из состояния сохранения &apos;%s&apos;: %s. Использование существующего образа &apos;%s&apos;,  может привести к нестабильности.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1995"/>
+        <location filename="../../core/system.cpp" line="2021"/>
         <source>Failed to open disc image &apos;%s&apos;: %s.</source>
         <translation>Не удалось открыть образ диска &apos;%s: %s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2141"/>
+        <location filename="../../core/system.cpp" line="2167"/>
         <source>Failed to switch to subimage %u in &apos;%s&apos;: %s.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2148"/>
+        <location filename="../../core/system.cpp" line="2174"/>
         <source>Switched to sub-image %s (%u) in &apos;%s&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7330,7 +7355,7 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation type="obsolete">Не удалось открыть образ диска &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2005"/>
+        <location filename="../../core/system.cpp" line="2031"/>
         <source>Inserted disc &apos;%s&apos; (%s).</source>
         <translation>Вставлен диск &apos;%s&apos; (%s).</translation>
     </message>
@@ -8348,37 +8373,37 @@ The saves will not be recoverable.</source>
 <context>
     <name>System</name>
     <message>
-        <location filename="../../core/system.cpp" line="752"/>
+        <location filename="../../core/system.cpp" line="778"/>
         <source>Failed to load %s BIOS.</source>
         <translation>Не удалось загрузить BIOS %s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1143"/>
+        <location filename="../../core/system.cpp" line="1169"/>
         <source>Save state is incompatible: minimum version is %u but state is version %u.</source>
         <translation type="unfinished">Сохраненное состояние несовместимо: минимальная версия -%u, но версия состояния - %u.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1152"/>
+        <location filename="../../core/system.cpp" line="1178"/>
         <source>Save state is incompatible: maximum version is %u but state is version %u.</source>
         <translation type="unfinished">Сохраненное состояние несовместимо: максимальная версия - %u, но версия состояния - %u.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1193"/>
+        <location filename="../../core/system.cpp" line="1219"/>
         <source>Failed to open CD image &apos;%s&apos; used by save state: %s.</source>
         <translation type="unfinished">Не удалось открыть образ компакт-диска &apos;%s&apos;, используемый - сохранение состояния: %s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1211"/>
+        <location filename="../../core/system.cpp" line="1237"/>
         <source>Failed to switch to subimage %u in CD image &apos;%s&apos; used by save state: %s.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1839"/>
+        <location filename="../../core/system.cpp" line="1865"/>
         <source>Per-game memory card cannot be used for slot %u as the running game has no path. Using shared card instead.</source>
         <translation type="unfinished">Карта памяти для каждой игры не может использоваться для слота %u, так как запущенная игра не имеет пути. Вместо этого используется общая карта.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2078"/>
+        <location filename="../../core/system.cpp" line="2104"/>
         <source>You are attempting to run a libcrypt protected game without an SBI file:
 
 %s: %s
@@ -8395,13 +8420,13 @@ Your dump is incomplete, you must add the SBI file to run this game.</source>
         <translation type="obsolete">Не удалось открыть образ CD из сохраненного состояния: &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1802"/>
+        <location filename="../../core/system.cpp" line="1828"/>
         <source>Per-game memory card cannot be used for slot %u as the running game has no code. Using shared card instead.</source>
         <translatorcomment>**Используйте</translatorcomment>
         <translation type="unfinished">Карту памяти для каждой игры не возможно использовать для слота %u, так как запущенная игра не имеет кода. Вместо этого используется общая карта.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1819"/>
+        <location filename="../../core/system.cpp" line="1845"/>
         <source>Per-game memory card cannot be used for slot %u as the running game has no title. Using shared card instead.</source>
         <translatorcomment>**Используйте</translatorcomment>
         <translation type="unfinished">Карту памяти для каждой игры не возможно использовать для слота %u, так как у запущенной игры нет названия. Вместо этого используется общая карта.</translation>
@@ -8411,12 +8436,12 @@ Your dump is incomplete, you must add the SBI file to run this game.</source>
         <translation type="obsolete">Путь к карте памяти для слота %u отсутствует, используется значение по умолчанию.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2011"/>
+        <location filename="../../core/system.cpp" line="2037"/>
         <source>Game changed, reloading memory cards.</source>
         <translation>Игра изменилась, карты памяти перезагружены.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2067"/>
+        <location filename="../../core/system.cpp" line="2093"/>
         <source>You are attempting to run a libcrypt protected game without an SBI file:
 
 %s: %s
