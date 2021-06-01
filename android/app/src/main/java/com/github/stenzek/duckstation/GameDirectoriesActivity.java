@@ -50,6 +50,7 @@ import java.util.Set;
 
 public class GameDirectoriesActivity extends AppCompatActivity {
     private static final int REQUEST_ADD_DIRECTORY_TO_GAME_LIST = 1;
+    private static final String FORCE_SAF_CONFIG_KEY = "GameList/ForceStorageAccessFramework";
 
     private class DirectoryListAdapter extends RecyclerView.Adapter {
         private class Entry {
@@ -219,6 +220,23 @@ public class GameDirectoriesActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_edit_game_directories, menu);
+
+        menu.findItem(R.id.force_saf)
+                .setEnabled(android.os.Build.VERSION.SDK_INT < 30)
+                .setChecked(PreferenceManager.getDefaultSharedPreferences(this).getBoolean(
+                        FORCE_SAF_CONFIG_KEY, false))
+                .setOnMenuItemClickListener(item -> {
+                    final SharedPreferences sharedPreferences =
+                            PreferenceManager.getDefaultSharedPreferences(this);
+                    final boolean newValue =!sharedPreferences.getBoolean(
+                            FORCE_SAF_CONFIG_KEY, false);
+                    sharedPreferences.edit()
+                            .putBoolean(FORCE_SAF_CONFIG_KEY, newValue)
+                            .commit();
+                    item.setChecked(newValue);
+                    return true;
+                });
+
         return true;
     }
 
@@ -238,6 +256,16 @@ public class GameDirectoriesActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public static boolean useStorageAccessFramework(Context context) {
+        // Use legacy storage on devices older than Android 11... apparently some of them
+        // have broken storage access framework....
+        if (android.os.Build.VERSION.SDK_INT >= 30)
+            return true;
+
+        return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(
+                "GameList/ForceStorageAccessFramework", false);
     }
 
     public static void addSearchDirectory(Context context, String path, boolean recursive) {
@@ -294,7 +322,7 @@ public class GameDirectoriesActivity extends AppCompatActivity {
 
                 // Use legacy storage on devices older than Android 11... apparently some of them
                 // have broken storage access framework....
-                if (android.os.Build.VERSION.SDK_INT < 30) {
+                if (!useStorageAccessFramework(this)) {
                     final String path = FileHelper.getFullPathFromTreeUri(data.getData(), this);
                     if (path != null) {
                         addSearchDirectory(this, path, true);

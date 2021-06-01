@@ -274,7 +274,7 @@ public class MainActivity extends AppCompatActivity {
 
                 // Use legacy storage on devices older than Android 11... apparently some of them
                 // have broken storage access framework....
-                if (android.os.Build.VERSION.SDK_INT < 30) {
+                if (!GameDirectoriesActivity.useStorageAccessFramework(this)) {
                     final String path = FileHelper.getFullPathFromTreeUri(data.getData(), this);
                     if (path != null) {
                         GameDirectoriesActivity.addSearchDirectory(this, path, true);

@@ -8,4 +8,8 @@
     <item
         android:id="@+id/add_path"
         android:title="@string/menu_edit_game_directories_add_path" />
+    <item
+        android:id="@+id/force_saf"
+        android:checkable="true"
+        android:title="@string/menu_edit_game_directories_force_saf" />
 </menu>

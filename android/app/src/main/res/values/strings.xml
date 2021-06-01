@@ -362,4 +362,5 @@
     <string name="settings_summary_read_thread">Reduces hitches in emulation by reading/decompressing CD data asynchronously on a worker thread.</string>
     <string name="settings_cdrom_load_image_patches">Apply Image Patches</string>
     <string name="settings_summary_load_image_patches">Automatically applies patches to disc images when they are present, currently only PPF is supported.</string>
+    <string name="menu_edit_game_directories_force_saf">Force Scoped Storage</string>
 </resources>
