@@ -119,6 +119,15 @@
             app:defaultValue="Auto"
             app:useSimpleSummaryProvider="true"
             app:iconSpaceReserved="false" />
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/settings_category_cdrom" app:iconSpaceReserved="false">
+        <SwitchPreferenceCompat
+            app:key="CDROM/ReadThread"
+            app:title="@string/settings_cdrom_read_thread"
+            app:defaultValue="true"
+            app:summary="@string/settings_summary_read_thread"
+            app:iconSpaceReserved="false" />
         <SwitchPreferenceCompat
             app:key="CDROM/RegionCheck"
             app:title="@string/settings_cdrom_region_check"
@@ -130,6 +139,12 @@
             app:title="@string/settings_cdrom_preload_image_to_ram"
             app:defaultValue="false"
             app:summary="@string/settings_summary_preload_image_to_ram"
+            app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat
+            app:key="CDROM/LoadImagePatches"
+            app:title="@string/settings_cdrom_load_image_patches"
+            app:defaultValue="false"
+            app:summary="@string/settings_summary_load_image_patches"
             app:iconSpaceReserved="false" />
     </PreferenceCategory>
 

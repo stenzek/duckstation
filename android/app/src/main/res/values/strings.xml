@@ -26,9 +26,9 @@
     <string name="settings_summary_video_sync">Enable this option to match DuckStation\'s refresh rate with your current monitor or screen. VSync is automatically disabled when it is not possible (e.g. running at non-100% speed).</string>
     <string name="settings_video_sync">Video Sync</string>
     <string name="settings_cpu_overclocking">CPU Overclocking</string>
-    <string name="settings_cdrom_region_check">CD-ROM Region Check</string>
+    <string name="settings_cdrom_region_check">Region Check</string>
     <string name="settings_summary_cdrom_region_check">Prevents discs from incorrect regions being read by the emulator. Usually safe to disable.</string>
-    <string name="settings_cdrom_preload_image_to_ram">CD-ROM Preload Image to RAM</string>
+    <string name="settings_cdrom_preload_image_to_ram">Preload Image to RAM</string>
     <string name="settings_summary_preload_image_to_ram">Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay. In some cases also eliminates stutter when games initiate audio track playback.</string>
     <string name="settings_pgxp_vertex_cache">PGXP Vertex Cache</string>
     <string name="settings_summary_pgxp_vertex_cache">Uses screen coordinates as a fallback when tracking vertices through memory fails. May improve PGXP compatibility.</string>
@@ -357,4 +357,9 @@
     <string name="controller_settings_auto_fire_n_button">Auto Fire %d Button</string>
     <string name="controller_settings_auto_fire_n_frequency">Auto Fire %d Frequency/Interval</string>
     <string name="controller_binding_auto_fire_n">Auto Fire %d</string>
+    <string name="settings_category_cdrom">CD-ROM Settings</string>
+    <string name="settings_cdrom_read_thread">Use Read Thread (Asynchronous)</string>
+    <string name="settings_summary_read_thread">Reduces hitches in emulation by reading/decompressing CD data asynchronously on a worker thread.</string>
+    <string name="settings_cdrom_load_image_patches">Apply Image Patches</string>
+    <string name="settings_summary_load_image_patches">Automatically applies patches to disc images when they are present, currently only PPF is supported.</string>
 </resources>
