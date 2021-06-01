@@ -323,31 +323,33 @@ public class ControllerSettingsCollectionFragment extends Fragment {
                                 R.string.settings_use_analog_sticks_for_dpad, R.string.settings_summary_use_analog_sticks_for_dpad, true));
             }
 
-            for (int autoFireSlot = 1; autoFireSlot <= NUM_AUTO_FIRE_BUTTONS; autoFireSlot++) {
-                final ListPreference autoFirePreference = new ListPreference(getContext());
-                autoFirePreference.setEntries(buttonNames);
-                autoFirePreference.setEntryValues(buttonNames);
-                autoFirePreference.setKey(String.format("Controller%d/AutoFire%dButton", controllerIndex, autoFireSlot));
-                autoFirePreference.setTitle(getContext().getString(R.string.controller_settings_auto_fire_n_button, autoFireSlot));
-                autoFirePreference.setSummaryProvider(ListPreference.SimpleSummaryProvider.getInstance());
-                autoFirePreference.setIconSpaceReserved(false);
-                mAutoFireCategory.addPreference(autoFirePreference);
+            if (buttonNames != null) {
+              for (int autoFireSlot = 1; autoFireSlot <= NUM_AUTO_FIRE_BUTTONS; autoFireSlot++) {
+                  final ListPreference autoFirePreference = new ListPreference(getContext());
+                  autoFirePreference.setEntries(buttonNames);
+                  autoFirePreference.setEntryValues(buttonNames);
+                  autoFirePreference.setKey(String.format("Controller%d/AutoFire%dButton", controllerIndex, autoFireSlot));
+                  autoFirePreference.setTitle(getContext().getString(R.string.controller_settings_auto_fire_n_button, autoFireSlot));
+                  autoFirePreference.setSummaryProvider(ListPreference.SimpleSummaryProvider.getInstance());
+                  autoFirePreference.setIconSpaceReserved(false);
+                  mAutoFireCategory.addPreference(autoFirePreference);
 
-                final SeekBarPreference frequencyPreference = new SeekBarPreference(getContext());
-                frequencyPreference.setMin(1);
-                frequencyPreference.setMax(60);
-                frequencyPreference.setKey(String.format("Controller%d/AutoFire%dFrequency", controllerIndex, autoFireSlot));
-                frequencyPreference.setDefaultValue(2);
-                frequencyPreference.setTitle(getContext().getString(R.string.controller_settings_auto_fire_n_frequency, autoFireSlot));
-                frequencyPreference.setIconSpaceReserved(false);
-                frequencyPreference.setShowSeekBarValue(true);
-                mAutoFireCategory.addPreference(frequencyPreference);
-            }
+                  final SeekBarPreference frequencyPreference = new SeekBarPreference(getContext());
+                  frequencyPreference.setMin(1);
+                  frequencyPreference.setMax(60);
+                  frequencyPreference.setKey(String.format("Controller%d/AutoFire%dFrequency", controllerIndex, autoFireSlot));
+                  frequencyPreference.setDefaultValue(2);
+                  frequencyPreference.setTitle(getContext().getString(R.string.controller_settings_auto_fire_n_frequency, autoFireSlot));
+                  frequencyPreference.setIconSpaceReserved(false);
+                  frequencyPreference.setShowSeekBarValue(true);
+                  mAutoFireCategory.addPreference(frequencyPreference);
+              }
 
-            for (int autoFireSlot = 1; autoFireSlot <= NUM_AUTO_FIRE_BUTTONS; autoFireSlot++) {
-                final ControllerBindingPreference bindingPreference = new ControllerBindingPreference(getContext(), null);
-                bindingPreference.initAutoFireButton(controllerIndex, autoFireSlot);
-                mAutoFireBindingsCategory.addPreference(bindingPreference);
+              for (int autoFireSlot = 1; autoFireSlot <= NUM_AUTO_FIRE_BUTTONS; autoFireSlot++) {
+                  final ControllerBindingPreference bindingPreference = new ControllerBindingPreference(getContext(), null);
+                  bindingPreference.initAutoFireButton(controllerIndex, autoFireSlot);
+                  mAutoFireBindingsCategory.addPreference(bindingPreference);
+              }
             }
         }
 
