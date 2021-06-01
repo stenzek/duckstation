@@ -18,6 +18,7 @@ A "BIOS" ROM image is required to to start the emulator and to play games. You c
 ## Latest News
 Older entries are available at https://github.com/stenzek/duckstation/blob/master/NEWS.md
 
+- 2021/06/01: Auto loading/applying of PPF patches added.
 - 2021/05/23: Save RAM (srm) support added to libretro core.
 - 2021/05/23: CD-ROM seek speedup enhancement added.
 - 2021/05/16: Auto fire (toggle pressing) buttons added.
