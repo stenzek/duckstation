@@ -46,6 +46,7 @@ public class TouchscreenControllerView extends FrameLayout {
     private ArrayList<TouchscreenControllerAxisView> mAxisViews = new ArrayList<>();
     private TouchscreenControllerDPadView mDPadView = null;
     private int mPointerButtonCode = -1;
+    private int mPointerPointerId = -1;
     private boolean mHapticFeedback;
     private String mLayoutOrientation;
     private EditMode mEditMode = EditMode.NONE;
@@ -594,8 +595,9 @@ public class TouchscreenControllerView extends FrameLayout {
             return false;
 
         Rect rect = new Rect();
+        final int actionMasked = event.getActionMasked();
         final int pointerCount = event.getPointerCount();
-        final int liftedPointerIndex = (event.getActionMasked() == MotionEvent.ACTION_POINTER_UP) ? event.getActionIndex() : -1;
+        final int liftedPointerIndex = (actionMasked == MotionEvent.ACTION_POINTER_UP) ? event.getActionIndex() : -1;
         for (TouchscreenControllerButtonView buttonView : mButtonViews) {
             if (buttonView.getVisibility() != VISIBLE)
                 continue;
@@ -671,15 +673,26 @@ public class TouchscreenControllerView extends FrameLayout {
                 mDPadView.setUnpressed();
         }
 
-        if (mPointerButtonCode >= 0 && pointerCount > 0) {
-            if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-                AndroidHostInterface.getInstance().setControllerButtonState(mControllerIndex,
-                        mPointerButtonCode, true);
+        if (mPointerButtonCode >= 0) {
+            final int pointerIndex = event.getActionIndex();
+            final int pointerId = event.getPointerId(pointerIndex);
+            if (mPointerPointerId < 0 && (actionMasked == MotionEvent.ACTION_DOWN || actionMasked == MotionEvent.ACTION_POINTER_DOWN)) {
+                if (!mGlidePairs.containsKey(pointerId)) {
+                    AndroidHostInterface.getInstance().setControllerButtonState(mControllerIndex,
+                            mPointerButtonCode, true);
+                    mPointerPointerId = pointerId;
+                }
+            } else if (actionMasked == MotionEvent.ACTION_POINTER_UP) {
+                if (pointerId == mPointerPointerId) {
+                    AndroidHostInterface.getInstance().setControllerButtonState(mControllerIndex,
+                            mPointerButtonCode, false);
+                    mPointerPointerId = -1;
+                }
             }
 
             AndroidHostInterface.getInstance().setMousePosition(
-                    (int)event.getX(0),
-                    (int)event.getY(0));
+                    (int) event.getX(pointerIndex),
+                    (int) event.getY(pointerIndex));
         }
 
         return true;
@@ -704,9 +717,10 @@ public class TouchscreenControllerView extends FrameLayout {
                 if (mDPadView != null)
                     mDPadView.setUnpressed();
 
-                if (mPointerButtonCode >= 0) {
+                if (mPointerPointerId >= 0) {
                     AndroidHostInterface.getInstance().setControllerButtonState(
                             mControllerIndex, mPointerButtonCode, false);
+                    mPointerPointerId = -1;
                 }
 
                 return true;
