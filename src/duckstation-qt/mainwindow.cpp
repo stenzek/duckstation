@@ -26,11 +26,16 @@
 #include <QtCore/QUrl>
 #include <QtGui/QCursor>
 #include <QtGui/QWindowStateChangeEvent>
-#include <QtWidgets/QActionGroup>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QStyleFactory>
 #include <cmath>
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#include <QtGui/QActionGroup>
+#else
+#include <QtWidgets/QActionGroup>
+#endif
 
 static constexpr char DISC_IMAGE_FILTER[] = QT_TRANSLATE_NOOP(
   "MainWindow",
@@ -468,8 +473,8 @@ void MainWindow::onApplicationStateChanged(Qt::ApplicationState state)
 
 void MainWindow::onStartDiscActionTriggered()
 {
-  QString filename =
-    QFileDialog::getOpenFileName(this, tr("Select Disc Image"), QString(), tr(DISC_IMAGE_FILTER), nullptr);
+  QString filename = QDir::toNativeSeparators(
+    QFileDialog::getOpenFileName(this, tr("Select Disc Image"), QString(), tr(DISC_IMAGE_FILTER), nullptr));
   if (filename.isEmpty())
     return;
 
@@ -829,6 +834,7 @@ void MainWindow::setupAdditionalUi()
     QAction* action = language_group->addAction(it.first);
     action->setCheckable(true);
     action->setChecked(current_language == it.second);
+    action->setIcon(QIcon(QStringLiteral(":/icons/flags/%1.png").arg(it.second)));
     m_ui.menuSettingsLanguage->addAction(action);
     action->setData(it.second);
     connect(action, &QAction::triggered, [this, action]() {
@@ -1181,7 +1187,7 @@ void MainWindow::setTheme(const QString& theme)
 
 void MainWindow::updateTheme()
 {
-  QString theme = QString::fromStdString(m_host_interface->GetStringSettingValue("UI", "Theme", "default"));
+  QString theme = QString::fromStdString(m_host_interface->GetStringSettingValue("UI", "Theme", "darkfusion"));
   if (theme == QStringLiteral("qdarkstyle"))
   {
     qApp->setStyle(m_unthemed_style_name);

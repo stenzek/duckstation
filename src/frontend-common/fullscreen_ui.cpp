@@ -79,6 +79,7 @@ namespace FullscreenUI {
 //////////////////////////////////////////////////////////////////////////
 // Main
 //////////////////////////////////////////////////////////////////////////
+static void LoadSettings();
 static void ClearImGuiFocus();
 static void ReturnToMainWindow();
 static void DrawLandingWindow();
@@ -106,6 +107,7 @@ static MainWindowType s_current_main_window = MainWindowType::Landing;
 static std::bitset<static_cast<u32>(FrontendCommon::ControllerNavigationButton::Count)> s_nav_input_values{};
 static bool s_debug_menu_enabled = false;
 static bool s_debug_menu_allowed = false;
+static bool s_show_status_indicators = false;
 static bool s_quick_menu_was_open = false;
 static bool s_was_paused_on_quick_menu_open = false;
 static bool s_about_window_open = false;
@@ -214,6 +216,7 @@ bool Initialize(CommonHostInterface* host_interface)
     return false;
 
   s_settings_copy.Load(*s_host_interface->GetSettingsInterface());
+  LoadSettings();
   UpdateDebugMenuVisibility();
 
   ImGuiFullscreen::UpdateLayoutScale();
@@ -228,10 +231,25 @@ bool Initialize(CommonHostInterface* host_interface)
   return true;
 }
 
+bool IsInitialized()
+{
+  return (s_host_interface != nullptr);
+}
+
 bool HasActiveWindow()
 {
   return s_current_main_window != MainWindowType::None || s_save_state_selector_open ||
          ImGuiFullscreen::IsChoiceDialogOpen() || ImGuiFullscreen::IsFileSelectorOpen();
+}
+
+void LoadSettings()
+{
+  s_show_status_indicators = s_host_interface->GetBoolSettingValue("Display", "ShowStatusIndicators", true);
+}
+
+void UpdateSettings()
+{
+  LoadSettings();
 }
 
 void SystemCreated()
@@ -353,6 +371,7 @@ void SaveAndApplySettings()
   s_settings_copy.Save(*s_host_interface->GetSettingsInterface());
   s_host_interface->GetSettingsInterface()->Save();
   s_host_interface->ApplySettings(false);
+  UpdateSettings();
 }
 
 void ClearImGuiFocus()
@@ -600,6 +619,7 @@ static void DoCheatsMenu()
     if (!s_host_interface->LoadCheatListFromDatabase() || !(cl = System::GetCheatList()))
     {
       s_host_interface->AddFormattedOSDMessage(10.0f, "No cheats found for %s.", System::GetRunningTitle().c_str());
+      ReturnToMainWindow();
       return;
     }
   }
@@ -662,7 +682,7 @@ static void DoChangeDiscFromFile()
   };
 
   OpenFileSelector(ICON_FA_COMPACT_DISC "  Select Disc Image", false, std::move(callback), GetDiscImageFilters(),
-                   std::string(FileSystem::GetPathDirectory(System::GetMediaFileName().c_str())));
+                   std::string(FileSystem::GetPathDirectory(System::GetMediaFileName())));
 }
 
 static void DoChangeDisc()
@@ -797,7 +817,7 @@ static ImGuiFullscreen::ChoiceDialogOptions GetGameListDirectoryOptions(bool rec
 }
 
 static void DrawInputBindingButton(InputBindingType type, const char* section, const char* name,
-                                   const char* display_name)
+                                   const char* display_name, bool show_type = true)
 {
   TinyString title;
   title.Format("%s/%s", section, name);
@@ -813,23 +833,28 @@ static void DrawInputBindingButton(InputBindingType type, const char* section, c
   const ImRect title_bb(bb.Min, ImVec2(bb.Max.x, midpoint));
   const ImRect summary_bb(ImVec2(bb.Min.x, midpoint), bb.Max);
 
-  switch (type)
+  if (show_type)
   {
-    case InputBindingType::Button:
-      title.Format(ICON_FA_CIRCLE "  %s Button", display_name);
-      break;
-    case InputBindingType::Axis:
-      title.Format(ICON_FA_BULLSEYE "  %s Axis", display_name);
-      break;
-    case InputBindingType::Rumble:
-      title.Format(ICON_FA_BELL "  %s", display_name);
-      break;
-    default:
-      title = display_name;
-      break;
+    switch (type)
+    {
+      case InputBindingType::Button:
+        title.Format(ICON_FA_CIRCLE "  %s Button", display_name);
+        break;
+      case InputBindingType::Axis:
+        title.Format(ICON_FA_BULLSEYE "  %s Axis", display_name);
+        break;
+      case InputBindingType::Rumble:
+        title.Format(ICON_FA_BELL "  %s", display_name);
+        break;
+      default:
+        title = display_name;
+        break;
+    }
   }
+
   ImGui::PushFont(g_large_font);
-  ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, title, nullptr, nullptr, ImVec2(0.0f, 0.0f), &title_bb);
+  ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, show_type ? title.GetCharArray() : display_name, nullptr,
+                           nullptr, ImVec2(0.0f, 0.0f), &title_bb);
   ImGui::PopFont();
 
   // eek, potential heap allocation :/
@@ -1076,7 +1101,7 @@ static bool SettingInfoButton(const SettingInfo& si, const char* section)
           CloseFileSelector();
         };
         OpenFileSelector(si.visible_name, false, std::move(callback), ImGuiFullscreen::FileSelectorFilters(),
-                         std::string(FileSystem::GetPathDirectory(value.c_str())));
+                         std::string(FileSystem::GetPathDirectory(std::move(value))));
       }
 
       return false;
@@ -1099,6 +1124,8 @@ static bool ToggleButtonForNonSetting(const char* title, const char* summary, co
   s_host_interface->GetSettingsInterface()->SetBoolValue(section, key, value);
   return true;
 }
+
+#ifdef WITH_CHEEVOS
 
 static void DrawAchievementsLoginWindow()
 {
@@ -1185,6 +1212,8 @@ static bool ConfirmChallengeModeEnable()
   return true;
 }
 
+#endif
+
 static bool WantsToCloseMenu()
 {
   // Wait for the Close button to be released, THEN pressed
@@ -1268,6 +1297,9 @@ void DrawSettingsWindow()
         settings_changed |=
           ToggleButton("Start Fullscreen", "Automatically switches to fullscreen mode when the program is started.",
                        &s_settings_copy.start_fullscreen);
+        settings_changed |= ToggleButtonForNonSetting(
+          "Hide Cursor In Fullscreen", "Hides the mouse pointer/cursor when the emulator is in fullscreen mode.",
+          "Main", "HideCursorInFullscreen", true);
         settings_changed |=
           ToggleButton("Load Devices From Save States",
                        "When enabled, memory cards and controllers will be overwritten when save states are loaded.",
@@ -1393,6 +1425,9 @@ void DrawSettingsWindow()
           make_array("None (Double Speed)", "2x (Quad Speed)", "3x (6x Speed)", "4x (8x Speed)", "5x (10x Speed)",
                      "6x (12x Speed)", "7x (14x Speed)", "8x (16x Speed)", "9x (18x Speed)", "10x (20x Speed)");
 
+        static constexpr auto cdrom_seek_speeds = make_array("Infinite/Instantaneous", "None (Normal Speed)", "2x",
+                                                             "3x", "4x", "5x", "6x", "7x", "8x", "9x", "10x");
+
         BeginMenuButtons();
 
         MenuHeading("Console Settings");
@@ -1424,7 +1459,7 @@ void DrawSettingsWindow()
         MenuHeading("CD-ROM Emulation");
 
         const u32 read_speed_index =
-          std::min(s_settings_copy.cdrom_read_speedup, static_cast<u32>(cdrom_read_speeds.size() + 1)) - 1;
+          std::clamp<u32>(s_settings_copy.cdrom_read_speedup, 1u, static_cast<u32>(cdrom_read_speeds.size())) - 1u;
         if (MenuButtonWithValue("Read Speedup",
                                 "Speeds up CD-ROM reads by the specified factor. May improve loading speeds in some "
                                 "games, and break others.",
@@ -1438,6 +1473,25 @@ void DrawSettingsWindow()
                            [](s32 index, const std::string& title, bool checked) {
                              if (index >= 0)
                                s_settings_copy.cdrom_read_speedup = static_cast<u32>(index) + 1;
+                             CloseChoiceDialog();
+                           });
+        }
+
+        const u32 seek_speed_index =
+          std::min(s_settings_copy.cdrom_seek_speedup, static_cast<u32>(cdrom_seek_speeds.size()));
+        if (MenuButtonWithValue("Seek Speedup",
+                                "Speeds up CD-ROM seeks by the specified factor. May improve loading speeds in some "
+                                "games, and break others.",
+                                cdrom_seek_speeds[seek_speed_index]))
+        {
+          ImGuiFullscreen::ChoiceDialogOptions options;
+          options.reserve(cdrom_seek_speeds.size());
+          for (u32 i = 0; i < static_cast<u32>(cdrom_seek_speeds.size()); i++)
+            options.emplace_back(cdrom_seek_speeds[i], i == seek_speed_index);
+          OpenChoiceDialog("CD-ROM Seek Speedup", false, std::move(options),
+                           [](s32 index, const std::string& title, bool checked) {
+                             if (index >= 0)
+                               s_settings_copy.cdrom_seek_speedup = static_cast<u32>(index);
                              CloseChoiceDialog();
                            });
         }
@@ -1708,6 +1762,9 @@ void DrawSettingsWindow()
         static std::array<Controller::ButtonList, NUM_CONTROLLER_AND_CARD_PORTS> button_cache;
         static std::array<Controller::AxisList, NUM_CONTROLLER_AND_CARD_PORTS> axis_cache;
         static std::array<Controller::SettingList, NUM_CONTROLLER_AND_CARD_PORTS> setting_cache;
+        static std::array<std::string,
+                          NUM_CONTROLLER_AND_CARD_PORTS * CommonHostInterface::NUM_CONTROLLER_AUTOFIRE_BUTTONS>
+          autofire_buttons_cache;
         TinyString section;
         TinyString key;
 
@@ -1725,6 +1782,8 @@ void DrawSettingsWindow()
             "Determines the simulated controller plugged into this port.", &s_settings_copy.controller_types[port],
             &Settings::GetControllerTypeDisplayName, ControllerType::Count);
 
+          section.Format("Controller%u", port + 1);
+
           const ControllerType ctype = s_settings_copy.controller_types[port];
           if (ctype != type_cache[port])
           {
@@ -1732,9 +1791,13 @@ void DrawSettingsWindow()
             button_cache[port] = Controller::GetButtonNames(ctype);
             axis_cache[port] = Controller::GetAxisNames(ctype);
             setting_cache[port] = Controller::GetSettings(ctype);
-          }
 
-          section.Format("Controller%u", port + 1);
+            for (u32 i = 0; i < CommonHostInterface::NUM_CONTROLLER_AUTOFIRE_BUTTONS; i++)
+            {
+              autofire_buttons_cache[port * CommonHostInterface::NUM_CONTROLLER_AUTOFIRE_BUTTONS + i] =
+                s_host_interface->GetStringSettingValue(section, TinyString::FromFormat("AutoFire%uButton", i + 1));
+            }
+          }
 
           for (const auto& it : button_cache[port])
           {
@@ -1753,6 +1816,67 @@ void DrawSettingsWindow()
 
           for (const SettingInfo& it : setting_cache[port])
             settings_changed |= SettingInfoButton(it, section);
+
+          for (u32 autofire_index = 0; autofire_index < CommonHostInterface::NUM_CONTROLLER_AUTOFIRE_BUTTONS;
+               autofire_index++)
+          {
+            const u32 cache_index = port * CommonHostInterface::NUM_CONTROLLER_AUTOFIRE_BUTTONS + autofire_index;
+
+            if (MenuButtonWithValue(TinyString::FromFormat("Auto Fire %u", autofire_index + 1),
+                                    "Selects the button to toggle with this auto fire binding.",
+                                    autofire_buttons_cache[cache_index].c_str()))
+
+            {
+              auto callback = [port, autofire_index, cache_index](s32 index, const std::string& title, bool checked) {
+                if (index < 0)
+                  return;
+
+                auto lock = s_host_interface->GetSettingsLock();
+                if (index == 0)
+                {
+                  s_host_interface->GetSettingsInterface()->DeleteValue(
+                    TinyString::FromFormat("Controller%u", port + 1),
+                    TinyString::FromFormat("AutoFire%uButton", autofire_index + 1));
+                  std::string().swap(autofire_buttons_cache[cache_index]);
+                }
+                else
+                {
+                  s_host_interface->GetSettingsInterface()->SetStringValue(
+                    TinyString::FromFormat("Controller%u", port + 1),
+                    TinyString::FromFormat("AutoFire%uButton", autofire_index + 1),
+                    button_cache[port][index - 1].first.c_str());
+                  autofire_buttons_cache[cache_index] = button_cache[port][index - 1].first;
+                }
+
+                // needs a reload...
+                s_host_interface->RunLater(SaveAndApplySettings);
+                CloseChoiceDialog();
+              };
+
+              ImGuiFullscreen::ChoiceDialogOptions options;
+              options.reserve(button_cache[port].size() + 1);
+              options.emplace_back("(None)", autofire_buttons_cache[cache_index].empty());
+              for (const auto& it : button_cache[port])
+                options.emplace_back(it.first, autofire_buttons_cache[cache_index] == it.first);
+
+              OpenChoiceDialog(ICON_FA_GAMEPAD "  Select Auto Fire Button", false, std::move(options),
+                               std::move(callback));
+            }
+
+            if (autofire_buttons_cache[cache_index].empty())
+              continue;
+
+            key.Format("AutoFire%u", autofire_index + 1);
+            DrawInputBindingButton(InputBindingType::Button, section, key,
+                                   TinyString::FromFormat("Auto Fire %u Binding", autofire_index + 1), false);
+
+            key.Format("AutoFire%uFrequency", autofire_index + 1);
+            int frequency = s_host_interface->GetSettingsInterface()->GetIntValue(
+              section, key, CommonHostInterface::DEFAULT_AUTOFIRE_FREQUENCY);
+            settings_changed |= RangeButton(TinyString::FromFormat("Auto Fire %u Frequency", autofire_index + 1),
+                                            "Sets the rate at which the auto fire will trigger on and off.", &frequency,
+                                            1, 255, 1, "%d Frames");
+          }
         }
 
         EndMenuButtons();
@@ -1881,11 +2005,6 @@ void DrawSettingsWindow()
           OpenChoiceDialog(ICON_FA_TV "  Fullscreen Resolution", false, std::move(options), std::move(callback));
         }
 
-        settings_changed |=
-          ToggleButton("Enable VSync",
-                       "Synchronizes presentation of the console's frames to the host. Enable for smoother animations.",
-                       &s_settings_copy.video_sync_enabled);
-
         switch (s_settings_copy.gpu_renderer)
         {
 #ifdef WIN32
@@ -1921,6 +2040,20 @@ void DrawSettingsWindow()
           default:
             break;
         }
+
+        if (!s_settings_copy.IsUsingSoftwareRenderer())
+        {
+          settings_changed |=
+            ToggleButton("Use Software Renderer For Readbacks",
+                         "Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result "
+                         "in greater performance.",
+                         &s_settings_copy.gpu_use_software_renderer_for_readbacks);
+        }
+
+        settings_changed |=
+          ToggleButton("Enable VSync",
+                       "Synchronizes presentation of the console's frames to the host. Enable for smoother animations.",
+                       &s_settings_copy.video_sync_enabled);
 
         settings_changed |= ToggleButton("Optimal Frame Pacing",
                                          "Ensures every frame generated is displayed for optimal pacing. Disable if "
@@ -2291,6 +2424,9 @@ void DrawSettingsWindow()
 #endif
 
         MenuHeading("Display Settings");
+        settings_changed |= ToggleButtonForNonSetting("Show Status Indicators",
+                                                      "Shows persistent icons when turbo is active or when paused.",
+                                                      "Display", "ShowStatusIndicators", true);
         settings_changed |= RangeButton(
           "Display FPS Limit", "Limits how many frames are displayed to the screen. These frames are still rendered.",
           &s_settings_copy.display_max_fps, 0.0f, 500.0f, 1.0f, "%.2f FPS");
@@ -2368,7 +2504,7 @@ void DrawQuickMenu(MainWindowType type)
     SmallString subtitle;
     if (!code.empty())
       subtitle.Format("%s - ", code.c_str());
-    subtitle.AppendString(FileSystem::GetFileNameFromPath(System::GetRunningPath().c_str()));
+    subtitle.AppendString(FileSystem::GetFileNameFromPath(System::GetRunningPath()));
 
     const ImVec2 title_size(
       g_large_font->CalcTextSizeA(g_large_font->FontSize, std::numeric_limits<float>::max(), -1.0f, title.c_str()));
@@ -2677,8 +2813,8 @@ void DrawSaveStateSelector(bool is_loading, bool fullscreen)
 
   constexpr float padding = 10.0f;
   constexpr float button_height = 96.0f;
-  constexpr float image_width = 128.0f;
-  constexpr float image_height = 96.0f;
+  constexpr float max_image_width = 96.0f;
+  constexpr float max_image_height = 96.0f;
 
   ImDrawList* dl = ImGui::GetWindowDrawList();
   for (const SaveStateListEntry& entry : s_save_state_selector_slots)
@@ -2690,8 +2826,15 @@ void DrawSaveStateSelector(bool is_loading, bool fullscreen)
       continue;
 
     ImVec2 pos(bb.Min);
-    const ImRect image_bb(pos, pos + LayoutScale(image_width, image_height));
-    pos.x += LayoutScale(image_width + padding);
+
+    // use aspect ratio of screenshot to determine height
+    const HostDisplayTexture* image = entry.preview_texture ? entry.preview_texture.get() : s_placeholder_texture.get();
+    const float image_height =
+      max_image_width / (static_cast<float>(image->GetWidth()) / static_cast<float>(image->GetHeight()));
+    const float image_margin = (max_image_height - image_height) / 2.0f;
+    const ImRect image_bb(ImVec2(pos.x, pos.y + LayoutScale(image_margin)),
+                          pos + LayoutScale(max_image_width, image_margin + image_height));
+    pos.x += LayoutScale(max_image_width + padding);
 
     dl->AddImage(static_cast<ImTextureID>(entry.preview_texture ? entry.preview_texture->GetHandle() :
                                                                   s_placeholder_texture->GetHandle()),
@@ -2801,7 +2944,7 @@ void DrawGameListWindow()
       else
         summary.Format("%s - %s - ", entry->code.c_str(), Settings::GetDiscRegionName(entry->region));
 
-      summary.AppendString(FileSystem::GetFileNameFromPath(entry->path.c_str()));
+      summary.AppendString(FileSystem::GetFileNameFromPath(entry->path));
 
       ImGui::GetWindowDrawList()->AddImage(cover_texture->GetHandle(), bb.Min, bb.Min + image_size, ImVec2(0.0f, 0.0f),
                                            ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
@@ -2871,6 +3014,14 @@ void DrawGameListWindow()
 
       ImGui::PushFont(g_medium_font);
 
+      // developer
+      if (!selected_entry->developer.empty())
+      {
+        text_width = ImGui::CalcTextSize(selected_entry->developer.c_str(), nullptr, false, work_width).x;
+        ImGui::SetCursorPosX((work_width - text_width) / 2.0f);
+        ImGui::TextWrapped("%s", selected_entry->developer.c_str());
+      }
+
       // code
       text_width = ImGui::CalcTextSize(selected_entry->code.c_str(), nullptr, false, work_width).x;
       ImGui::SetCursorPosX((work_width - text_width) / 2.0f);
@@ -2885,6 +3036,14 @@ void DrawGameListWindow()
       ImGui::SameLine();
       ImGui::Text(" (%s)", Settings::GetDiscRegionDisplayName(selected_entry->region));
 
+      // genre
+      ImGui::Text("Genre: %s", selected_entry->genre.c_str());
+
+      // release date
+      char release_date_str[64];
+      selected_entry->GetReleaseDateString(release_date_str, sizeof(release_date_str));
+      ImGui::Text("Release Date: %s", release_date_str);
+
       // compatibility
       ImGui::TextUnformatted("Compatibility: ");
       ImGui::SameLine();
@@ -2895,9 +3054,6 @@ void DrawGameListWindow()
 
       // size
       ImGui::Text("Size: %.2f MB", static_cast<float>(selected_entry->total_size) / 1048576.0f);
-
-      // TODO: last played
-      ImGui::Text("Last Played: Never");
 
       // game settings
       const u32 user_setting_count = selected_entry->settings.GetUserSettingsCount();
@@ -3098,13 +3254,13 @@ void DrawStatsOverlay()
       DRAW_LINE(g_large_font, g_large_font->FontSize, 0.0f, IM_COL32(255, 255, 255, 255));
     }
 
-    if (s_host_interface->IsFastForwardEnabled() || s_host_interface->IsTurboEnabled())
+    if (s_show_status_indicators && (s_host_interface->IsFastForwardEnabled() || s_host_interface->IsTurboEnabled()))
     {
       text.Assign(ICON_FA_FAST_FORWARD);
       DRAW_LINE(g_large_font, g_large_font->FontSize * 2.0f, margin, IM_COL32(255, 255, 255, 255));
     }
   }
-  else if (state == System::State::Paused)
+  else if (s_show_status_indicators && state == System::State::Paused)
   {
     text.Assign(ICON_FA_PAUSE);
     DRAW_LINE(g_large_font, g_large_font->FontSize * 2.0f, margin, IM_COL32(255, 255, 255, 255));

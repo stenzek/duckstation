@@ -27,6 +27,7 @@
 #include "memory_card.h"
 #include "multitap.h"
 #include "pad.h"
+#include "pgxp.h"
 #include "psf_loader.h"
 #include "save_state_version.h"
 #include "sio.h"
@@ -305,52 +306,6 @@ bool IsLoadableFilename(const char* path)
   return false;
 }
 
-std::vector<std::string> ParseM3UFile(const char* path)
-{
-  std::ifstream ifs(path);
-  if (!ifs.is_open())
-  {
-    Log_ErrorPrintf("Failed to open %s", path);
-    return {};
-  }
-
-  std::vector<std::string> entries;
-  std::string line;
-  while (std::getline(ifs, line))
-  {
-    u32 start_offset = 0;
-    while (start_offset < line.size() && std::isspace(line[start_offset]))
-      start_offset++;
-
-    // skip comments
-    if (start_offset == line.size() || line[start_offset] == '#')
-      continue;
-
-    // strip ending whitespace
-    u32 end_offset = static_cast<u32>(line.size()) - 1;
-    while (std::isspace(line[end_offset]) && end_offset > start_offset)
-      end_offset--;
-
-    // anything?
-    if (start_offset == end_offset)
-      continue;
-
-    std::string entry_path(line.begin() + start_offset, line.begin() + end_offset + 1);
-    if (!FileSystem::IsAbsolutePath(entry_path))
-    {
-      SmallString absolute_path;
-      FileSystem::BuildPathRelativeToFile(absolute_path, path, entry_path.c_str());
-      entry_path = absolute_path;
-    }
-
-    Log_DevPrintf("Read path from m3u: '%s'", entry_path.c_str());
-    entries.push_back(std::move(entry_path));
-  }
-
-  Log_InfoPrintf("Loaded %zu paths from m3u '%s'", entries.size(), path);
-  return entries;
-}
-
 ConsoleRegion GetConsoleRegionForDiscRegion(DiscRegion region)
 {
   switch (region)
@@ -366,15 +321,6 @@ ConsoleRegion GetConsoleRegionForDiscRegion(DiscRegion region)
     case DiscRegion::PAL:
       return ConsoleRegion::PAL;
   }
-}
-
-std::string_view GetTitleForPath(const char* path)
-{
-  std::string_view path_view = path;
-  std::size_t title_start = path_view.find_last_of("/\\");
-  if (title_start != std::string_view::npos)
-    path_view.remove_prefix(title_start + 1);
-  return path_view.substr(0, path_view.find_last_of('.'));
 }
 
 std::string GetGameCodeForPath(const char* image_path, bool fallback_to_hash)
@@ -414,6 +360,11 @@ std::string GetGameCodeForImage(CDImage* cdi, bool fallback_to_hash)
   if (!fallback_to_hash)
     return {};
 
+  return GetGameHashCodeForImage(cdi);
+}
+
+std::string GetGameHashCodeForImage(CDImage* cdi)
+{
   std::string exe_name;
   std::vector<u8> exe_buffer;
   if (!ReadExecutableFromImage(cdi, &exe_name, &exe_buffer))
@@ -679,9 +630,6 @@ bool RecreateGPU(GPURenderer renderer, bool update_display /* = true*/)
     return false;
   }
 
-  // reinitialize the code cache because the address space could change
-  CPU::CodeCache::Reinitialize();
-
   if (state_valid)
   {
     state_stream->SeekAbsolute(0);
@@ -835,7 +783,7 @@ bool Boot(const SystemBootParameters& params)
 
   Bus::SetBIOS(*bios_image);
   UpdateControllers();
-  UpdateMemoryCards();
+  UpdateMemoryCardTypes();
   UpdateMultitaps();
   Reset();
 
@@ -902,10 +850,20 @@ bool Initialize(bool force_software_renderer)
   CPU::Initialize();
 
   if (!Bus::Initialize())
+  {
+    CPU::Shutdown();
     return false;
+  }
 
   if (!CreateGPU(force_software_renderer ? GPURenderer::Software : g_settings.gpu_renderer))
+  {
+    Bus::Shutdown();
+    CPU::Shutdown();
     return false;
+  }
+
+  if (g_settings.gpu_pgxp_enable)
+    PGXP::Initialize();
 
   // Was startup cancelled? (e.g. shading compilers took too long and the user closed the application)
   if (IsStartupCancelled())
@@ -927,10 +885,12 @@ bool Initialize(bool force_software_renderer)
   g_mdec.Initialize();
   g_sio.Initialize();
 
+  static constexpr float WARNING_DURATION = 15.0f;
+
   if (g_settings.cpu_overclock_active)
   {
     g_host_interface->AddFormattedOSDMessage(
-      10.0f,
+      WARNING_DURATION,
       g_host_interface->TranslateString("OSDMessage",
                                         "CPU clock speed is set to %u%% (%u / %u). This may result in instability."),
       g_settings.GetCPUOverclockPercent(), g_settings.cpu_overclock_numerator, g_settings.cpu_overclock_denominator);
@@ -938,10 +898,28 @@ bool Initialize(bool force_software_renderer)
   if (g_settings.cdrom_read_speedup > 1)
   {
     g_host_interface->AddFormattedOSDMessage(
-      10.0f,
+      WARNING_DURATION,
       g_host_interface->TranslateString(
         "OSDMessage", "CD-ROM read speedup set to %ux (effective speed %ux). This may result in instability."),
       g_settings.cdrom_read_speedup, g_settings.cdrom_read_speedup * 2);
+  }
+  if (g_settings.cdrom_seek_speedup != 1)
+  {
+    if (g_settings.cdrom_seek_speedup == 0)
+    {
+      g_host_interface->AddOSDMessage(
+        g_host_interface->TranslateStdString("OSDMessage",
+                                             "CD-ROM seek speedup set to instant. This may result in instability."),
+        WARNING_DURATION);
+    }
+    else
+    {
+      g_host_interface->AddFormattedOSDMessage(
+        WARNING_DURATION,
+        g_host_interface->TranslateString("OSDMessage",
+                                          "CD-ROM seek speedup set to %ux. This may result in instability."),
+        g_settings.cdrom_seek_speedup);
+    }
   }
 
   UpdateThrottlePeriod();
@@ -968,6 +946,7 @@ void Shutdown()
   g_gpu.reset();
   g_interrupt_controller.Shutdown();
   g_dma.Shutdown();
+  PGXP::Shutdown();
   CPU::CodeCache::Shutdown();
   Bus::Shutdown();
   CPU::Shutdown();
@@ -1027,6 +1006,8 @@ bool CreateGPU(GPURenderer renderer)
 
 bool DoState(StateWrapper& sw, HostDisplayTexture** host_texture, bool update_display)
 {
+  const bool is_memory_state = (host_texture != nullptr);
+
   if (!sw.DoMarker("System"))
     return false;
 
@@ -1039,6 +1020,11 @@ bool DoState(StateWrapper& sw, HostDisplayTexture** host_texture, bool update_di
 
   if (sw.IsReading())
     CPU::CodeCache::Flush();
+
+  // only reset pgxp if we're not runahead-rollbacking. the value checks will save us from broken rendering, and it
+  // saves using imprecise values for a frame in 30fps games.
+  if (sw.IsReading() && g_settings.gpu_pgxp_enable && !is_memory_state)
+    PGXP::Initialize();
 
   if (!sw.DoMarker("Bus") || !Bus::DoState(sw))
     return false;
@@ -1113,6 +1099,9 @@ void Reset()
 
   CPU::Reset();
   CPU::CodeCache::Flush();
+  if (g_settings.gpu_pgxp_enable)
+    PGXP::Initialize();
+
   Bus::Reset();
   g_dma.Reset();
   g_interrupt_controller.Reset();
@@ -1241,7 +1230,7 @@ bool DoLoadState(ByteStream* state, bool force_software_renderer, bool update_di
       g_cdrom.InsertMedia(std::move(media));
 
     UpdateControllers();
-    UpdateMemoryCards();
+    UpdateMemoryCardTypes();
     UpdateMultitaps();
   }
   else
@@ -1254,7 +1243,7 @@ bool DoLoadState(ByteStream* state, bool force_software_renderer, bool update_di
 
     // ensure the correct card is loaded
     if (g_settings.HasAnyPerGameMemoryCards())
-      UpdateMemoryCards();
+      UpdatePerGameMemoryCards();
   }
 
   if (header.data_compression_type != 0)
@@ -1277,7 +1266,7 @@ bool DoLoadState(ByteStream* state, bool force_software_renderer, bool update_di
   return true;
 }
 
-bool SaveState(ByteStream* state, u32 screenshot_size /* = 128 */)
+bool SaveState(ByteStream* state, u32 screenshot_size /* = 256 */)
 {
   if (IsShutdown())
     return false;
@@ -1307,17 +1296,45 @@ bool SaveState(ByteStream* state, u32 screenshot_size /* = 128 */)
   // save screenshot
   if (screenshot_size > 0)
   {
+    // assume this size is the width
+    HostDisplay* display = g_host_interface->GetDisplay();
+    const float display_aspect_ratio = display->GetDisplayAspectRatio();
+    const u32 screenshot_width = screenshot_size;
+    const u32 screenshot_height =
+      std::max(1u, static_cast<u32>(static_cast<float>(screenshot_width) /
+                                    ((display_aspect_ratio > 0.0f) ? display_aspect_ratio : 1.0f)));
+    Log_VerbosePrintf("Saving %ux%u screenshot for state", screenshot_width, screenshot_height);
+
     std::vector<u32> screenshot_buffer;
-    if (g_host_interface->GetDisplay()->WriteDisplayTextureToBuffer(&screenshot_buffer, screenshot_size,
-                                                                    screenshot_size) &&
-        !screenshot_buffer.empty())
+    u32 screenshot_stride;
+    HostDisplayPixelFormat screenshot_format;
+    if (display->RenderScreenshot(screenshot_width, screenshot_height, &screenshot_buffer, &screenshot_stride,
+                                  &screenshot_format) ||
+        !display->ConvertTextureDataToRGBA8(screenshot_width, screenshot_height, screenshot_buffer, screenshot_stride,
+                                            HostDisplayPixelFormat::RGBA8))
     {
-      header.offset_to_screenshot = static_cast<u32>(state->GetPosition());
-      header.screenshot_width = screenshot_size;
-      header.screenshot_height = screenshot_size;
-      header.screenshot_size = static_cast<u32>(screenshot_buffer.size() * sizeof(u32));
-      if (!state->Write2(screenshot_buffer.data(), header.screenshot_size))
-        return false;
+      if (screenshot_stride != (screenshot_width * sizeof(u32)))
+      {
+        Log_WarningPrintf("Failed to save %ux%u screenshot for save state due to incorrect stride(%u)",
+                          screenshot_width, screenshot_height, screenshot_stride);
+      }
+      else
+      {
+        if (display->UsesLowerLeftOrigin())
+          display->FlipTextureDataRGBA8(screenshot_width, screenshot_height, screenshot_buffer, screenshot_stride);
+
+        header.offset_to_screenshot = static_cast<u32>(state->GetPosition());
+        header.screenshot_width = screenshot_width;
+        header.screenshot_height = screenshot_height;
+        header.screenshot_size = static_cast<u32>(screenshot_buffer.size() * sizeof(u32));
+        if (!state->Write2(screenshot_buffer.data(), header.screenshot_size))
+          return false;
+      }
+    }
+    else
+    {
+      Log_WarningPrintf("Failed to save %ux%u screenshot for save state due to render/conversion failure",
+                        screenshot_width, screenshot_height);
     }
   }
 
@@ -1767,70 +1784,130 @@ void ResetControllers()
   }
 }
 
-void UpdateMemoryCards()
+static std::unique_ptr<MemoryCard> GetMemoryCardForSlot(u32 slot, MemoryCardType type)
+{
+  // Disable memory cards when running PSFs.
+  const bool is_running_psf = !s_running_game_path.empty() && IsPsfFileName(s_running_game_path.c_str());
+  if (is_running_psf)
+    return nullptr;
+
+  switch (type)
+  {
+    case MemoryCardType::PerGame:
+    {
+      if (s_running_game_code.empty())
+      {
+        g_host_interface->AddFormattedOSDMessage(
+          5.0f,
+          g_host_interface->TranslateString("System", "Per-game memory card cannot be used for slot %u as the running "
+                                                      "game has no code. Using shared card instead."),
+          slot + 1u);
+        return MemoryCard::Open(g_host_interface->GetSharedMemoryCardPath(slot));
+      }
+      else
+      {
+        return MemoryCard::Open(g_host_interface->GetGameMemoryCardPath(s_running_game_code.c_str(), slot));
+      }
+    }
+
+    case MemoryCardType::PerGameTitle:
+    {
+      if (s_running_game_title.empty())
+      {
+        g_host_interface->AddFormattedOSDMessage(
+          5.0f,
+          g_host_interface->TranslateString("System", "Per-game memory card cannot be used for slot %u as the running "
+                                                      "game has no title. Using shared card instead."),
+          slot + 1u);
+        return MemoryCard::Open(g_host_interface->GetSharedMemoryCardPath(slot));
+      }
+      else
+      {
+        return MemoryCard::Open(g_host_interface->GetGameMemoryCardPath(
+          MemoryCard::SanitizeGameTitleForFileName(s_running_game_title).c_str(), slot));
+      }
+    }
+
+    case MemoryCardType::PerGameFileTitle:
+    {
+      const std::string display_name(FileSystem::GetDisplayNameFromPath(s_running_game_path));
+      const std::string_view file_title(FileSystem::GetFileTitleFromPath(display_name));
+      if (file_title.empty())
+      {
+        g_host_interface->AddFormattedOSDMessage(
+          5.0f,
+          g_host_interface->TranslateString("System", "Per-game memory card cannot be used for slot %u as the running "
+                                                      "game has no path. Using shared card instead."),
+          slot + 1u);
+        return MemoryCard::Open(g_host_interface->GetSharedMemoryCardPath(slot));
+      }
+      else
+      {
+        return MemoryCard::Open(
+          g_host_interface->GetGameMemoryCardPath(MemoryCard::SanitizeGameTitleForFileName(file_title).c_str(), slot));
+      }
+    }
+
+    case MemoryCardType::Shared:
+    {
+      if (g_settings.memory_card_paths[slot].empty())
+        return MemoryCard::Open(g_host_interface->GetSharedMemoryCardPath(slot));
+      else
+        return MemoryCard::Open(g_settings.memory_card_paths[slot]);
+    }
+
+    case MemoryCardType::NonPersistent:
+      return MemoryCard::Create();
+
+    case MemoryCardType::None:
+    default:
+      return nullptr;
+  }
+}
+
+void UpdateMemoryCardTypes()
 {
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
     g_pad.SetMemoryCard(i, nullptr);
 
-    std::unique_ptr<MemoryCard> card;
     const MemoryCardType type = g_settings.memory_card_types[i];
-    switch (type)
-    {
-      case MemoryCardType::None:
-        continue;
-
-      case MemoryCardType::PerGame:
-      {
-        if (s_running_game_code.empty())
-        {
-          g_host_interface->AddFormattedOSDMessage(
-            5.0f,
-            g_host_interface->TranslateString("System",
-                                              "Per-game memory card cannot be used for slot %u as the running "
-                                              "game has no code. Using shared card instead."),
-            i + 1u);
-          card = MemoryCard::Open(g_host_interface->GetSharedMemoryCardPath(i));
-        }
-        else
-        {
-          card = MemoryCard::Open(g_host_interface->GetGameMemoryCardPath(s_running_game_code.c_str(), i));
-        }
-      }
-      break;
-
-      case MemoryCardType::PerGameTitle:
-      {
-        if (s_running_game_title.empty())
-        {
-          g_host_interface->AddFormattedOSDMessage(
-            5.0f,
-            g_host_interface->TranslateString("System",
-                                              "Per-game memory card cannot be used for slot %u as the running "
-                                              "game has no title. Using shared card instead."),
-            i + 1u);
-          card = MemoryCard::Open(g_host_interface->GetSharedMemoryCardPath(i));
-        }
-        else
-        {
-          card = MemoryCard::Open(g_host_interface->GetGameMemoryCardPath(s_running_game_title.c_str(), i));
-        }
-      }
-      break;
-
-      case MemoryCardType::Shared:
-      {
-        if (g_settings.memory_card_paths[i].empty())
-          card = MemoryCard::Open(g_host_interface->GetSharedMemoryCardPath(i));
-        else
-          card = MemoryCard::Open(g_settings.memory_card_paths[i]);
-      }
-      break;
-    }
-
+    std::unique_ptr<MemoryCard> card = GetMemoryCardForSlot(i, type);
     if (card)
       g_pad.SetMemoryCard(i, std::move(card));
   }
+}
+
+void UpdatePerGameMemoryCards()
+{
+  // Disable memory cards when running PSFs.
+  const bool is_running_psf = !s_running_game_path.empty() && IsPsfFileName(s_running_game_path.c_str());
+
+  for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
+  {
+    const MemoryCardType type = g_settings.memory_card_types[i];
+    if (!Settings::IsPerGameMemoryCardType(type))
+      continue;
+
+    g_pad.SetMemoryCard(i, nullptr);
+
+    std::unique_ptr<MemoryCard> card = GetMemoryCardForSlot(i, type);
+    if (card)
+      g_pad.SetMemoryCard(i, std::move(card));
+  }
+}
+
+bool HasMemoryCard(u32 slot)
+{
+  return (g_pad.GetMemoryCard(slot) != nullptr);
+}
+
+void SwapMemoryCards()
+{
+  std::unique_ptr<MemoryCard> first = g_pad.RemoveMemoryCard(0);
+  std::unique_ptr<MemoryCard> second = g_pad.RemoveMemoryCard(1);
+  g_pad.SetMemoryCard(0, std::move(second));
+  g_pad.SetMemoryCard(1, std::move(first));
 }
 
 void UpdateMultitaps()
@@ -1872,7 +1949,7 @@ bool DumpRAM(const char* filename)
   if (!IsValid())
     return false;
 
-  return FileSystem::WriteBinaryFile(filename, Bus::g_ram, Bus::RAM_SIZE);
+  return FileSystem::WriteBinaryFile(filename, Bus::g_ram, Bus::g_ram_size);
 }
 
 bool DumpVRAM(const char* filename)
@@ -1932,12 +2009,8 @@ bool InsertMedia(const char* path)
   {
     g_host_interface->AddOSDMessage(
       g_host_interface->TranslateStdString("System", "Game changed, reloading memory cards."), 10.0f);
-    UpdateMemoryCards();
+    UpdatePerGameMemoryCards();
   }
-
-  // reinitialize recompiler, because especially with preloading this might overlap the fastmem area
-  if (g_settings.IsUsingCodeCache())
-    CPU::CodeCache::Reinitialize();
 
   ClearMemorySaveStates();
   return true;
@@ -1987,15 +2060,27 @@ bool CheckForSBIFile(CDImage* image)
   Log_WarningPrintf("SBI file missing but required for %s (%s)", s_running_game_code.c_str(),
                     s_running_game_title.c_str());
 
-  return g_host_interface->ConfirmMessage(
-    StringUtil::StdStringFromFormat(
+  if (g_host_interface->GetBoolSettingValue("CDROM", "AllowBootingWithoutSBIFile", false))
+  {
+    return g_host_interface->ConfirmMessage(
+      StringUtil::StdStringFromFormat(
+        g_host_interface->TranslateString(
+          "System",
+          "You are attempting to run a libcrypt protected game without an SBI file:\n\n%s: %s\n\nThe game will "
+          "likely not run properly.\n\nPlease check the README for instructions on how to add an SBI file.\n\nDo "
+          "you wish to continue?"),
+        s_running_game_code.c_str(), s_running_game_title.c_str())
+        .c_str());
+  }
+  else
+  {
+    g_host_interface->ReportError(SmallString::FromFormat(
       g_host_interface->TranslateString(
-        "System",
-        "You are attempting to run a libcrypt protected game without an SBI file:\n\n%s: %s\n\nThe game will "
-        "likely not run properly.\n\nPlease check the README for instructions on how to add an SBI file.\n\nDo "
-        "you wish to continue?"),
-      s_running_game_code.c_str(), s_running_game_title.c_str())
-      .c_str());
+        "System", "You are attempting to run a libcrypt protected game without an SBI file:\n\n%s: %s\n\nYour dump is "
+                  "incomplete, you must add the SBI file to run this game."),
+      s_running_game_code.c_str(), s_running_game_title.c_str()));
+    return false;
+  }
 }
 
 bool HasMediaSubImages()
@@ -2063,10 +2148,6 @@ bool SwitchMediaSubImage(u32 index)
     20.0f, g_host_interface->TranslateString("OSDMessage", "Switched to sub-image %s (%u) in '%s'."),
     image->GetSubImageMetadata(index, "title").c_str(), index + 1u, image->GetMetadata("title").c_str());
   g_cdrom.InsertMedia(std::move(image));
-
-  // reinitialize recompiler, because especially with preloading this might overlap the fastmem area
-  if (g_settings.IsUsingCodeCache())
-    CPU::CodeCache::Reinitialize();
 
   ClearMemorySaveStates();
   return true;
@@ -2300,8 +2381,11 @@ void DoRunahead()
   {
     // we need to replay and catch up - load the state,
     s_runahead_replay_pending = false;
-    if (!LoadMemoryState(s_runahead_states.front()))
+    if (s_runahead_states.empty() || !LoadMemoryState(s_runahead_states.front()))
+    {
+      s_runahead_states.clear();
       return;
+    }
 
     // and throw away all the states, forcing us to catch up below
     // TODO: can we leave one frame here and run, avoiding the extra save?
@@ -2359,7 +2443,7 @@ void DoMemorySaveStates()
 
 void SetRunaheadReplayFlag()
 {
-  if (s_runahead_frames == 0)
+  if (s_runahead_frames == 0 || s_runahead_states.empty())
     return;
 
   Log_DevPrintf("Runahead rewind pending...");

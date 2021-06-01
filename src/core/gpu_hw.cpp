@@ -3,6 +3,7 @@
 #include "common/log.h"
 #include "common/state_wrapper.h"
 #include "cpu_core.h"
+#include "gpu_sw_backend.h"
 #include "pgxp.h"
 #include "settings.h"
 #include "system.h"
@@ -34,7 +35,14 @@ GPU_HW::GPU_HW() : GPU()
   m_vram_ptr = m_vram_shadow.data();
 }
 
-GPU_HW::~GPU_HW() = default;
+GPU_HW::~GPU_HW()
+{
+  if (m_sw_renderer)
+  {
+    m_sw_renderer->Shutdown();
+    m_sw_renderer.reset();
+  }
+}
 
 bool GPU_HW::Initialize(HostDisplay* host_display)
 {
@@ -82,6 +90,9 @@ bool GPU_HW::Initialize(HostDisplay* host_display)
   }
 
   m_pgxp_depth_buffer = g_settings.UsingPGXPDepthBuffer();
+
+  UpdateSoftwareRenderer(false);
+
   PrintSettingsToLog();
   return true;
 }
@@ -93,6 +104,8 @@ void GPU_HW::Reset(bool clear_vram)
   m_batch_current_vertex_ptr = m_batch_start_vertex_ptr;
 
   m_vram_shadow.fill(0);
+  if (m_sw_renderer)
+    m_sw_renderer->Reset(clear_vram);
 
   m_batch = {};
   m_batch_ubo_data = {};
@@ -180,6 +193,8 @@ void GPU_HW::UpdateHWSettings(bool* framebuffer_changed, bool* shaders_changed)
       ClearDepthBuffer();
   }
 
+  UpdateSoftwareRenderer(true);
+
   PrintSettingsToLog();
 }
 
@@ -192,8 +207,12 @@ u32 GPU_HW::CalculateResolutionScale() const
   }
   else
   {
-    // auto scaling
-    const s32 height = (m_crtc_state.display_height != 0) ? static_cast<s32>(m_crtc_state.display_height) : 480;
+    // Auto scaling. When the system is starting and all borders crop is enabled, the registers are zero, and
+    // display_height therefore is also zero. Use the default size from the region in this case.
+    const s32 height = (m_crtc_state.display_height != 0) ?
+                         static_cast<s32>(m_crtc_state.display_height) :
+                         (m_console_is_pal ? (PAL_VERTICAL_ACTIVE_END - PAL_VERTICAL_ACTIVE_START) :
+                                             (NTSC_VERTICAL_ACTIVE_END - NTSC_VERTICAL_ACTIVE_START));
     const s32 preferred_scale =
       static_cast<s32>(std::ceil(static_cast<float>(m_host_display->GetWindowHeight()) / height));
     Log_InfoPrintf("Height = %d, preferred scale = %d", height, preferred_scale);
@@ -248,6 +267,7 @@ void GPU_HW::PrintSettingsToLog()
   Log_InfoPrintf("Using UV limits: %s", m_using_uv_limits ? "YES" : "NO");
   Log_InfoPrintf("Depth buffer: %s", m_pgxp_depth_buffer ? "YES" : "NO");
   Log_InfoPrintf("Downsampling: %s", Settings::GetDownsampleModeDisplayName(m_downsample_mode));
+  Log_InfoPrintf("Using software renderer for readbacks: %s", m_sw_renderer ? "YES" : "NO");
 }
 
 void GPU_HW::UpdateVRAMReadTexture()
@@ -545,6 +565,7 @@ void GPU_HW::LoadVertices()
       const u32 num_vertices = rc.quad_polygon ? 4 : 3;
       std::array<BatchVertex, 4> vertices;
       std::array<std::array<s32, 2>, 4> native_vertex_positions;
+      std::array<u16, 4> native_texcoords;
       bool valid_w = g_settings.gpu_pgxp_texture_correction;
       for (u32 i = 0; i < num_vertices; i++)
       {
@@ -556,6 +577,7 @@ void GPU_HW::LoadVertices()
         const s32 native_y = m_drawing_offset.y + vp.y;
         native_vertex_positions[i][0] = native_x;
         native_vertex_positions[i][1] = native_y;
+        native_texcoords[i] = texcoord;
         vertices[i].Set(static_cast<float>(native_x), static_cast<float>(native_y), depth, 1.0f, color, texpage,
                         texcoord, 0xFFFF0000u);
 
@@ -659,6 +681,23 @@ void GPU_HW::LoadVertices()
           AddVertex(vertices[3]);
         }
       }
+
+      if (m_sw_renderer)
+      {
+        GPUBackendDrawPolygonCommand* cmd = m_sw_renderer->NewDrawPolygonCommand(num_vertices);
+        FillDrawCommand(cmd, rc);
+
+        for (u32 i = 0; i < num_vertices; i++)
+        {
+          GPUBackendDrawPolygonCommand::Vertex* vert = &cmd->vertices[i];
+          vert->x = native_vertex_positions[i][0];
+          vert->y = native_vertex_positions[i][1];
+          vert->texcoord = native_texcoords[i];
+          vert->color = vertices[i].color;
+        }
+
+        m_sw_renderer->PushCommand(cmd);
+      }
     }
     break;
 
@@ -754,6 +793,19 @@ void GPU_HW::LoadVertices()
 
       m_vram_dirty_rect.Include(clip_left, clip_right, clip_top, clip_bottom);
       AddDrawRectangleTicks(clip_right - clip_left, clip_bottom - clip_top, rc.texture_enable, rc.transparency_enable);
+
+      if (m_sw_renderer)
+      {
+        GPUBackendDrawRectangleCommand* cmd = m_sw_renderer->NewDrawRectangleCommand();
+        FillDrawCommand(cmd, rc);
+        cmd->color = color;
+        cmd->x = pos_x;
+        cmd->y = pos_y;
+        cmd->width = static_cast<u16>(rectangle_width);
+        cmd->height = static_cast<u16>(rectangle_height);
+        cmd->texcoord = (static_cast<u16>(texcoord_y) << 8) | static_cast<u16>(texcoord_x);
+        m_sw_renderer->PushCommand(cmd);
+      }
     }
     break;
 
@@ -808,6 +860,15 @@ void GPU_HW::LoadVertices()
         // TODO: Should we do a PGXP lookup here? Most lines are 2D.
         DrawLine(static_cast<float>(start_x), static_cast<float>(start_y), start_color, static_cast<float>(end_x),
                  static_cast<float>(end_y), end_color, depth);
+
+        if (m_sw_renderer)
+        {
+          GPUBackendDrawLineCommand* cmd = m_sw_renderer->NewDrawLineCommand(2);
+          FillDrawCommand(cmd, rc);
+          cmd->vertices[0].Set(start_x, start_y, start_color);
+          cmd->vertices[1].Set(end_x, end_y, end_color);
+          m_sw_renderer->PushCommand(cmd);
+        }
       }
       else
       {
@@ -825,6 +886,18 @@ void GPU_HW::LoadVertices()
         s32 start_x = start_vp.x + m_drawing_offset.x;
         s32 start_y = start_vp.y + m_drawing_offset.y;
         u32 start_color = rc.color_for_first_vertex;
+
+        GPUBackendDrawLineCommand* cmd;
+        if (m_sw_renderer)
+        {
+          cmd = m_sw_renderer->NewDrawLineCommand(num_vertices);
+          FillDrawCommand(cmd, rc);
+          cmd->vertices[0].Set(start_x, start_y, start_color);
+        }
+        else
+        {
+          cmd = nullptr;
+        }
 
         for (u32 i = 1; i < num_vertices; i++)
         {
@@ -859,7 +932,13 @@ void GPU_HW::LoadVertices()
           start_x = end_x;
           start_y = end_y;
           start_color = end_color;
+
+          if (cmd)
+            cmd->vertices[i].Set(end_x, end_y, end_color);
         }
+
+        if (cmd)
+          m_sw_renderer->PushCommand(cmd);
       }
     }
     break;
@@ -1017,6 +1096,109 @@ void GPU_HW::ResetBatchVertexDepth()
   m_current_depth = 1;
 }
 
+void GPU_HW::UpdateSoftwareRenderer(bool copy_vram_from_hw)
+{
+  const bool current_enabled = (m_sw_renderer != nullptr);
+  const bool new_enabled = g_settings.gpu_use_software_renderer_for_readbacks;
+  if (current_enabled == new_enabled)
+    return;
+
+  m_vram_ptr = m_vram_shadow.data();
+
+  if (!new_enabled)
+  {
+    if (m_sw_renderer)
+      m_sw_renderer->Shutdown();
+    m_sw_renderer.reset();
+    return;
+  }
+
+  std::unique_ptr<GPU_SW_Backend> sw_renderer = std::make_unique<GPU_SW_Backend>();
+  if (!sw_renderer->Initialize(true))
+    return;
+
+  // We need to fill in the SW renderer's VRAM with the current state for hot toggles.
+  if (copy_vram_from_hw)
+  {
+    FlushRender();
+    ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
+    std::memcpy(sw_renderer->GetVRAM(), m_vram_ptr, sizeof(u16) * VRAM_WIDTH * VRAM_HEIGHT);
+
+    // Sync the drawing area.
+    GPUBackendSetDrawingAreaCommand* cmd = sw_renderer->NewSetDrawingAreaCommand();
+    cmd->new_area = m_drawing_area;
+    sw_renderer->PushCommand(cmd);
+  }
+
+  m_sw_renderer = std::move(sw_renderer);
+  m_vram_ptr = m_sw_renderer->GetVRAM();
+}
+
+void GPU_HW::FillBackendCommandParameters(GPUBackendCommand* cmd) const
+{
+  cmd->params.bits = 0;
+  cmd->params.check_mask_before_draw = m_GPUSTAT.check_mask_before_draw;
+  cmd->params.set_mask_while_drawing = m_GPUSTAT.set_mask_while_drawing;
+  cmd->params.active_line_lsb = m_crtc_state.active_line_lsb;
+  cmd->params.interlaced_rendering = m_GPUSTAT.SkipDrawingToActiveField();
+}
+
+void GPU_HW::FillDrawCommand(GPUBackendDrawCommand* cmd, GPURenderCommand rc) const
+{
+  FillBackendCommandParameters(cmd);
+  cmd->rc.bits = rc.bits;
+  cmd->draw_mode.bits = m_draw_mode.mode_reg.bits;
+  cmd->palette.bits = m_draw_mode.palette_reg;
+  cmd->window = m_draw_mode.texture_window;
+}
+
+void GPU_HW::ReadSoftwareRendererVRAM(u32 x, u32 y, u32 width, u32 height)
+{
+  DebugAssert(m_sw_renderer);
+  m_sw_renderer->Sync(false);
+}
+
+void GPU_HW::UpdateSoftwareRendererVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, bool set_mask,
+                                        bool check_mask)
+{
+  const u32 num_words = width * height;
+  GPUBackendUpdateVRAMCommand* cmd = m_sw_renderer->NewUpdateVRAMCommand(num_words);
+  FillBackendCommandParameters(cmd);
+  cmd->params.set_mask_while_drawing = set_mask;
+  cmd->params.check_mask_before_draw = check_mask;
+  cmd->x = static_cast<u16>(x);
+  cmd->y = static_cast<u16>(y);
+  cmd->width = static_cast<u16>(width);
+  cmd->height = static_cast<u16>(height);
+  std::memcpy(cmd->data, data, sizeof(u16) * num_words);
+  m_sw_renderer->PushCommand(cmd);
+}
+
+void GPU_HW::FillSoftwareRendererVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
+{
+  GPUBackendFillVRAMCommand* cmd = m_sw_renderer->NewFillVRAMCommand();
+  FillBackendCommandParameters(cmd);
+  cmd->x = static_cast<u16>(x);
+  cmd->y = static_cast<u16>(y);
+  cmd->width = static_cast<u16>(width);
+  cmd->height = static_cast<u16>(height);
+  cmd->color = color;
+  m_sw_renderer->PushCommand(cmd);
+}
+
+void GPU_HW::CopySoftwareRendererVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height)
+{
+  GPUBackendCopyVRAMCommand* cmd = m_sw_renderer->NewCopyVRAMCommand();
+  FillBackendCommandParameters(cmd);
+  cmd->src_x = static_cast<u16>(src_x);
+  cmd->src_y = static_cast<u16>(src_y);
+  cmd->dst_x = static_cast<u16>(dst_x);
+  cmd->dst_y = static_cast<u16>(dst_y);
+  cmd->width = static_cast<u16>(width);
+  cmd->height = static_cast<u16>(height);
+  m_sw_renderer->PushCommand(cmd);
+}
+
 void GPU_HW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
 {
   IncludeVRAMDirtyRectangle(
@@ -1136,6 +1318,22 @@ void GPU_HW::DispatchRenderCommand()
     m_batch_ubo_dirty = true;
   }
 
+  if (m_drawing_area_changed)
+  {
+    m_drawing_area_changed = false;
+    SetScissorFromDrawingArea();
+
+    if (m_pgxp_depth_buffer && m_last_depth_z < 1.0f)
+      ClearDepthBuffer();
+
+    if (m_sw_renderer)
+    {
+      GPUBackendSetDrawingAreaCommand* cmd = m_sw_renderer->NewSetDrawingAreaCommand();
+      cmd->new_area = m_drawing_area;
+      m_sw_renderer->PushCommand(cmd);
+    }
+  }
+
   LoadVertices();
 }
 
@@ -1149,15 +1347,6 @@ void GPU_HW::FlushRender()
 
   if (vertex_count == 0)
     return;
-
-  if (m_drawing_area_changed)
-  {
-    m_drawing_area_changed = false;
-    SetScissorFromDrawingArea();
-
-    if (m_pgxp_depth_buffer && m_last_depth_z < 1.0f)
-      ClearDepthBuffer();
-  }
 
   if (m_batch_ubo_dirty)
   {

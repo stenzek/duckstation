@@ -47,13 +47,13 @@ bool NoGUIHostInterface::Initialize()
     return false;
 
   const bool start_fullscreen = m_flags.start_fullscreen || g_settings.start_fullscreen;
-  if (!CreatePlatformWindow(start_fullscreen))
+  if (!CreatePlatformWindow())
   {
     Log_ErrorPrintf("Failed to create platform window");
     return false;
   }
 
-  if (!CreateDisplay())
+  if (!CreateDisplay(start_fullscreen))
   {
     Log_ErrorPrintf("Failed to create host display");
     DestroyPlatformWindow();
@@ -80,7 +80,7 @@ void NoGUIHostInterface::Shutdown()
   CommonHostInterface::Shutdown();
 }
 
-bool NoGUIHostInterface::CreateDisplay()
+bool NoGUIHostInterface::CreateDisplay(bool fullscreen)
 {
   std::optional<WindowInfo> wi = GetPlatformWindowInfo();
   if (!wi)
@@ -114,7 +114,8 @@ bool NoGUIHostInterface::CreateDisplay()
   if (!m_display->CreateRenderDevice(wi.value(), g_settings.gpu_adapter, g_settings.gpu_use_debug_device,
                                      g_settings.gpu_threaded_presentation) ||
       !m_display->InitializeRenderDevice(GetShaderCacheBasePath(), g_settings.gpu_use_debug_device,
-                                         g_settings.gpu_threaded_presentation))
+                                         g_settings.gpu_threaded_presentation) ||
+      !CreateHostDisplayResources())
   {
     m_display->DestroyRenderDevice();
     m_display.reset();
@@ -122,9 +123,14 @@ bool NoGUIHostInterface::CreateDisplay()
     return false;
   }
 
+  if (fullscreen)
+    SetFullscreen(true);
+
   if (!CreateHostDisplayResources())
     Log_WarningPrint("Failed to create host display resources");
 
+  Log_InfoPrintf("Host display initialized at %ux%u resolution", m_display->GetWindowWidth(),
+                 m_display->GetWindowHeight());
   return true;
 }
 
@@ -173,10 +179,10 @@ bool NoGUIHostInterface::AcquireHostDisplay()
 
     // We need to recreate the window, otherwise bad things happen...
     DestroyPlatformWindow();
-    if (!CreatePlatformWindow(was_fullscreen))
+    if (!CreatePlatformWindow())
       Panic("Failed to recreate platform window on GPU renderer switch");
 
-    if (!CreateDisplay())
+    if (!CreateDisplay(was_fullscreen))
       Panic("Failed to recreate display on GPU renderer switch");
   }
 
@@ -210,7 +216,7 @@ void NoGUIHostInterface::Run()
       else
         System::RunFrames();
 
-      UpdateControllerRumble();
+      UpdateControllerMetaState();
       if (m_frame_step_request)
       {
         m_frame_step_request = false;

@@ -14,6 +14,7 @@ public:
   u32 GetReplacementSectorCount() const { return static_cast<u32>(m_replacement_subq.size()); }
 
   bool LoadSBI(const char* path);
+  bool LoadSBIFromImagePath(const char* image_path);
 
   /// Adds a sector to the replacement map.
   void AddReplacementSubChannelQ(u32 lba, const CDImage::SubChannelQ& subq);

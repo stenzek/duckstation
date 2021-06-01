@@ -3,6 +3,7 @@
 #include "common/file_system.h"
 #include "common/make_array.h"
 #include "common/string_util.h"
+#include "host_display.h"
 #include "host_interface.h"
 #include <algorithm>
 #include <array>
@@ -136,7 +137,10 @@ void Settings::UpdateOverclockActive()
 void Settings::Load(SettingsInterface& si)
 {
   region =
-    ParseConsoleRegionName(si.GetStringValue("Console", "Region", "NTSC-U").c_str()).value_or(DEFAULT_CONSOLE_REGION);
+    ParseConsoleRegionName(
+      si.GetStringValue("Console", "Region", Settings::GetConsoleRegionName(Settings::DEFAULT_CONSOLE_REGION)).c_str())
+      .value_or(DEFAULT_CONSOLE_REGION);
+  enable_8mb_ram = si.GetBoolValue("Console", "Enable8MBRAM", false);
 
   emulation_speed = si.GetFloatValue("Main", "EmulationSpeed", 1.0f);
   fast_forward_speed = si.GetFloatValue("Main", "FastForwardSpeed", 0.0f);
@@ -180,8 +184,9 @@ void Settings::Load(SettingsInterface& si)
   gpu_use_debug_device = si.GetBoolValue("GPU", "UseDebugDevice", false);
   gpu_per_sample_shading = si.GetBoolValue("GPU", "PerSampleShading", false);
   gpu_use_thread = si.GetBoolValue("GPU", "UseThread", true);
+  gpu_use_software_renderer_for_readbacks = si.GetBoolValue("GPU", "UseSoftwareRendererForReadbacks", false);
   gpu_threaded_presentation = si.GetBoolValue("GPU", "ThreadedPresentation", true);
-  gpu_true_color = si.GetBoolValue("GPU", "TrueColor", true);
+  gpu_true_color = si.GetBoolValue("GPU", "TrueColor", false);
   gpu_scaled_dithering = si.GetBoolValue("GPU", "ScaledDithering", false);
   gpu_texture_filter =
     ParseTextureFilterName(
@@ -213,6 +218,10 @@ void Settings::Load(SettingsInterface& si)
     ParseDisplayAspectRatio(
       si.GetStringValue("Display", "AspectRatio", GetDisplayAspectRatioName(DEFAULT_DISPLAY_ASPECT_RATIO)).c_str())
       .value_or(DEFAULT_DISPLAY_ASPECT_RATIO);
+  display_aspect_ratio_custom_numerator = static_cast<u16>(
+    std::clamp<int>(si.GetIntValue("Display", "CustomAspectRatioNumerator", 4), 1, std::numeric_limits<u16>::max()));
+  display_aspect_ratio_custom_denominator = static_cast<u16>(
+    std::clamp<int>(si.GetIntValue("Display", "CustomAspectRatioDenominator", 3), 1, std::numeric_limits<u16>::max()));
   display_force_4_3_for_24bit = si.GetBoolValue("Display", "Force4_3For24Bit", false);
   display_active_start_offset = static_cast<s16>(si.GetIntValue("Display", "ActiveStartOffset", 0));
   display_active_end_offset = static_cast<s16>(si.GetIntValue("Display", "ActiveEndOffset", 0));
@@ -228,15 +237,16 @@ void Settings::Load(SettingsInterface& si)
   display_show_speed = si.GetBoolValue("Display", "ShowSpeed", false);
   display_show_resolution = si.GetBoolValue("Display", "ShowResolution", false);
   display_all_frames = si.GetBoolValue("Display", "DisplayAllFrames", false);
-  video_sync_enabled = si.GetBoolValue("Display", "VSync", true);
+  video_sync_enabled = si.GetBoolValue("Display", "VSync", DEFAULT_VSYNC_VALUE);
   display_post_process_chain = si.GetStringValue("Display", "PostProcessChain", "");
-  display_max_fps = si.GetFloatValue("Display", "MaxFPS", 0.0f);
+  display_max_fps = si.GetFloatValue("Display", "MaxFPS", DEFAULT_DISPLAY_MAX_FPS);
 
   cdrom_read_thread = si.GetBoolValue("CDROM", "ReadThread", true);
-  cdrom_region_check = si.GetBoolValue("CDROM", "RegionCheck", true);
+  cdrom_region_check = si.GetBoolValue("CDROM", "RegionCheck", false);
   cdrom_load_image_to_ram = si.GetBoolValue("CDROM", "LoadImageToRAM", false);
   cdrom_mute_cd_audio = si.GetBoolValue("CDROM", "MuteCDAudio", false);
   cdrom_read_speedup = si.GetIntValue("CDROM", "ReadSpeedup", 1);
+  cdrom_seek_speedup = si.GetIntValue("CDROM", "SeekSpeedup", 1);
 
   audio_backend =
     ParseAudioBackend(si.GetStringValue("Audio", "Backend", GetAudioBackendName(DEFAULT_AUDIO_BACKEND)).c_str())
@@ -255,7 +265,7 @@ void Settings::Load(SettingsInterface& si)
   gpu_max_run_ahead = si.GetIntValue("Hacks", "GPUMaxRunAhead", DEFAULT_GPU_MAX_RUN_AHEAD);
 
   bios_patch_tty_enable = si.GetBoolValue("BIOS", "PatchTTYEnable", false);
-  bios_patch_fast_boot = si.GetBoolValue("BIOS", "PatchFastBoot", false);
+  bios_patch_fast_boot = si.GetBoolValue("BIOS", "PatchFastBoot", DEFAULT_FAST_BOOT_VALUE);
 
   controller_types[0] =
     ParseControllerTypeName(
@@ -324,6 +334,7 @@ void Settings::Load(SettingsInterface& si)
 void Settings::Save(SettingsInterface& si) const
 {
   si.SetStringValue("Console", "Region", GetConsoleRegionName(region));
+  si.SetBoolValue("Console", "Enable8MBRAM", enable_8mb_ram);
 
   si.SetFloatValue("Main", "EmulationSpeed", emulation_speed);
   si.SetFloatValue("Main", "FastForwardSpeed", fast_forward_speed);
@@ -361,6 +372,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("GPU", "PerSampleShading", gpu_per_sample_shading);
   si.SetBoolValue("GPU", "UseThread", gpu_use_thread);
   si.SetBoolValue("GPU", "ThreadedPresentation", gpu_threaded_presentation);
+  si.SetBoolValue("GPU", "UseSoftwareRendererForReadbacks", gpu_use_software_renderer_for_readbacks);
   si.SetBoolValue("GPU", "TrueColor", gpu_true_color);
   si.SetBoolValue("GPU", "ScaledDithering", gpu_scaled_dithering);
   si.SetStringValue("GPU", "TextureFilter", GetTextureFilterName(gpu_texture_filter));
@@ -386,6 +398,8 @@ void Settings::Save(SettingsInterface& si) const
   si.SetIntValue("Display", "LineEndOffset", display_line_end_offset);
   si.SetBoolValue("Display", "Force4_3For24Bit", display_force_4_3_for_24bit);
   si.SetStringValue("Display", "AspectRatio", GetDisplayAspectRatioName(display_aspect_ratio));
+  si.SetIntValue("Display", "CustomAspectRatioNumerator", display_aspect_ratio_custom_numerator);
+  si.GetIntValue("Display", "CustomAspectRatioDenominator", display_aspect_ratio_custom_denominator);
   si.SetBoolValue("Display", "LinearFiltering", display_linear_filtering);
   si.SetBoolValue("Display", "IntegerScaling", display_integer_scaling);
   si.SetBoolValue("Display", "Stretch", display_stretch);
@@ -408,6 +422,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("CDROM", "LoadImageToRAM", cdrom_load_image_to_ram);
   si.SetBoolValue("CDROM", "MuteCDAudio", cdrom_mute_cd_audio);
   si.SetIntValue("CDROM", "ReadSpeedup", cdrom_read_speedup);
+  si.SetIntValue("CDROM", "SeekSpeedup", cdrom_seek_speedup);
 
   si.SetStringValue("Audio", "Backend", GetAudioBackendName(audio_backend));
   si.SetIntValue("Audio", "OutputVolume", audio_output_volume);
@@ -758,12 +773,11 @@ const char* Settings::GetDisplayCropModeDisplayName(DisplayCropMode crop_mode)
   return s_display_crop_mode_display_names[static_cast<int>(crop_mode)];
 }
 
-static std::array<const char*, 14> s_display_aspect_ratio_names = {
-  {TRANSLATABLE("DisplayAspectRatio", "Auto (Game Native)"), "4:3", "16:9", "16:10", "19:9", "20:9", "21:9", "32:9",
-   "8:7", "5:4", "3:2", "2:1 (VRAM 1:1)", "1:1", "PAR 1:1"}};
-static constexpr std::array<float, 14> s_display_aspect_ratio_values = {
-  {-1.0f, 4.0f / 3.0f, 16.0f / 9.0f, 16.0f / 10.0f, 19.0f / 9.0f, 20.0f / 9.0f, 64.0f / 27.0f, 32.0f / 9.0f,
-   8.0f / 7.0f, 5.0f / 4.0f, 3.0f / 2.0f, 2.0f / 1.0f, 1.0f, -1.0f}};
+static std::array<const char*, static_cast<size_t>(DisplayAspectRatio::Count)> s_display_aspect_ratio_names = {
+  {TRANSLATABLE("DisplayAspectRatio", "Auto (Game Native)"), TRANSLATABLE("DisplayAspectRatio", "Auto (Match Window)"),
+   TRANSLATABLE("DisplayAspectRatio", "Custom"), "4:3", "16:9", "19:9", "20:9", "PAR 1:1"}};
+static constexpr std::array<float, static_cast<size_t>(DisplayAspectRatio::Count)> s_display_aspect_ratio_values = {
+  {-1.0f, -1.0f, -1.0f, 4.0f / 3.0f, 16.0f / 9.0f, 19.0f / 9.0f, 20.0f / 9.0f, -1.0f}};
 
 std::optional<DisplayAspectRatio> Settings::ParseDisplayAspectRatio(const char* str)
 {
@@ -784,9 +798,32 @@ const char* Settings::GetDisplayAspectRatioName(DisplayAspectRatio ar)
   return s_display_aspect_ratio_names[static_cast<int>(ar)];
 }
 
-float Settings::GetDisplayAspectRatioValue(DisplayAspectRatio ar)
+float Settings::GetDisplayAspectRatioValue() const
 {
-  return s_display_aspect_ratio_values[static_cast<int>(ar)];
+  switch (display_aspect_ratio)
+  {
+    case DisplayAspectRatio::MatchWindow:
+    {
+      const HostDisplay* display = g_host_interface->GetDisplay();
+      if (!display)
+        return s_display_aspect_ratio_values[static_cast<int>(DEFAULT_DISPLAY_ASPECT_RATIO)];
+
+      const u32 width = display->GetWindowWidth();
+      const u32 height = display->GetWindowHeight() - display->GetDisplayTopMargin();
+      return static_cast<float>(width) / static_cast<float>(height);
+    }
+
+    case DisplayAspectRatio::Custom:
+    {
+      return static_cast<float>(display_aspect_ratio_custom_numerator) /
+             static_cast<float>(display_aspect_ratio_custom_denominator);
+    }
+
+    default:
+    {
+      return s_display_aspect_ratio_values[static_cast<int>(display_aspect_ratio)];
+    }
+  }
 }
 
 static std::array<const char*, 3> s_audio_backend_names = {{
@@ -864,11 +901,14 @@ const char* Settings::GetControllerTypeDisplayName(ControllerType type)
   return s_controller_display_names[static_cast<int>(type)];
 }
 
-static std::array<const char*, 4> s_memory_card_type_names = {{"None", "Shared", "PerGame", "PerGameTitle"}};
-static std::array<const char*, 4> s_memory_card_type_display_names = {
+static std::array<const char*, 6> s_memory_card_type_names = {
+  {"None", "Shared", "PerGame", "PerGameTitle", "PerGameFileTitle", "NonPersistent"}};
+static std::array<const char*, 6> s_memory_card_type_display_names = {
   {TRANSLATABLE("MemoryCardType", "No Memory Card"), TRANSLATABLE("MemoryCardType", "Shared Between All Games"),
    TRANSLATABLE("MemoryCardType", "Separate Card Per Game (Game Code)"),
-   TRANSLATABLE("MemoryCardType", "Separate Card Per Game (Game Title)")}};
+   TRANSLATABLE("MemoryCardType", "Separate Card Per Game (Game Title)"),
+   TRANSLATABLE("MemoryCardType", "Separate Card Per Game (File Title)"),
+   TRANSLATABLE("MemoryCardType", "Non-Persistent Card (Do Not Save)")}};
 
 std::optional<MemoryCardType> Settings::ParseMemoryCardTypeName(const char* str)
 {

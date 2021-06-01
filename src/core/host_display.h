@@ -134,6 +134,7 @@ public:
   const s32 GetDisplayHeight() const { return m_display_height; }
   const float GetDisplayAspectRatio() const { return m_display_aspect_ratio; }
 
+  bool UsesLowerLeftOrigin() const;
   void SetDisplayMaxFPS(float max_fps);
   bool ShouldSkipDisplayingFrame();
 
@@ -186,6 +187,9 @@ public:
   }
 
   static u32 GetDisplayPixelFormatSize(HostDisplayPixelFormat format);
+  static bool ConvertTextureDataToRGBA8(u32 width, u32 height, std::vector<u32>& texture_data, u32& texture_data_stride,
+                                        HostDisplayPixelFormat format);
+  static void FlipTextureDataRGBA8(u32 width, u32 height, std::vector<u32>& texture_data, u32 texture_data_stride);
 
   virtual bool SupportsDisplayPixelFormat(HostDisplayPixelFormat format) const = 0;
 

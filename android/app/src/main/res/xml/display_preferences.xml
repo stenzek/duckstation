@@ -34,6 +34,20 @@
         app:useSimpleSummaryProvider="true"
         app:iconSpaceReserved="false" />
 
+    <com.github.stenzek.duckstation.RatioPreference
+        numeratorKey="Display/CustomAspectRatioNumerator"
+        defaultNumerator="4"
+        minimumNumerator="1"
+        maximumNunerator="100"
+        denominatorKey="Display/CustomAspectRatioDenominator"
+        defaultDenominator="3"
+        minimumDenominator="1"
+        maximumDenominator="100"
+        app:title="@string/settings_custom_aspect_ratio"
+        app:summary="@string/settings_summary_custom_aspect_ratio"
+        app:useSimpleSummaryProvider="true"
+        app:iconSpaceReserved="false" />
+
     <ListPreference
         app:key="GPU/DownsampleMode"
         app:title="@string/settings_downsample_mode"

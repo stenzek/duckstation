@@ -9,13 +9,13 @@ namespace CPU::Recompiler {
 
 void CodeGenerator::EmitLoadGuestRegister(HostReg host_reg, Reg guest_reg)
 {
-  EmitLoadCPUStructField(host_reg, RegSize_32, CalculateRegisterOffset(guest_reg));
+  EmitLoadCPUStructField(host_reg, RegSize_32, State::GPRRegisterOffset(static_cast<u32>(guest_reg)));
 }
 
 void CodeGenerator::EmitStoreGuestRegister(Reg guest_reg, const Value& value)
 {
   DebugAssert(value.size == RegSize_32);
-  EmitStoreCPUStructField(CalculateRegisterOffset(guest_reg), value);
+  EmitStoreCPUStructField(State::GPRRegisterOffset(static_cast<u32>(guest_reg)), value);
 }
 
 void CodeGenerator::EmitStoreInterpreterLoadDelay(Reg reg, const Value& value)
@@ -29,7 +29,7 @@ void CodeGenerator::EmitStoreInterpreterLoadDelay(Reg reg, const Value& value)
 Value CodeGenerator::EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const Value& address,
                                          const SpeculativeValue& address_spec, RegSize size)
 {
-  if (address.IsConstant())
+  if (address.IsConstant() && !SpeculativeIsCacheIsolated())
   {
     TickCount read_ticks;
     void* ptr = GetDirectReadMemoryPointer(
@@ -44,7 +44,7 @@ Value CodeGenerator::EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const 
       if (g_settings.IsUsingFastmem() && Bus::IsRAMAddress(static_cast<u32>(address.constant_value)))
       {
         // have to mask away the high bits for mirrors, since we don't map them in fastmem
-        EmitLoadGuestRAMFastmem(Value::FromConstantU32(static_cast<u32>(address.constant_value) & Bus::RAM_MASK), size,
+        EmitLoadGuestRAMFastmem(Value::FromConstantU32(static_cast<u32>(address.constant_value) & Bus::g_ram_mask), size,
                                 result);
       }
       else
@@ -61,17 +61,20 @@ Value CodeGenerator::EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const 
 
   Value result = m_register_cache.AllocateScratch(HostPointerSize);
 
-  const bool use_fastmem = address_spec ? Bus::CanUseFastmemForAddress(*address_spec) : true;
+  const bool use_fastmem =
+    (address_spec ? Bus::CanUseFastmemForAddress(*address_spec) : true) && !SpeculativeIsCacheIsolated();
   if (address_spec)
   {
     if (!use_fastmem)
-      Log_DevPrintf("Non-constant load at 0x%08X, speculative address 0x%08X, using fastmem = %s", cbi.pc,
-                    *address_spec, use_fastmem ? "yes" : "no");
+    {
+      Log_ProfilePrintf("Non-constant load at 0x%08X, speculative address 0x%08X, using fastmem = %s", cbi.pc,
+                        *address_spec, use_fastmem ? "yes" : "no");
+    }
   }
   else
   {
-    Log_DevPrintf("Non-constant load at 0x%08X, speculative address UNKNOWN, using fastmem = %s", cbi.pc,
-                  use_fastmem ? "yes" : "no");
+    Log_ProfilePrintf("Non-constant load at 0x%08X, speculative address UNKNOWN, using fastmem = %s", cbi.pc,
+                      use_fastmem ? "yes" : "no");
   }
 
   if (g_settings.IsUsingFastmem() && use_fastmem)
@@ -111,44 +114,51 @@ Value CodeGenerator::EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const 
 }
 
 void CodeGenerator::EmitStoreGuestMemory(const CodeBlockInstruction& cbi, const Value& address,
-                                         const SpeculativeValue& address_spec, const Value& value)
+                                         const SpeculativeValue& address_spec, RegSize size, const Value& value)
 {
-  if (address.IsConstant())
+  if (address.IsConstant() && !SpeculativeIsCacheIsolated())
   {
     void* ptr = GetDirectWriteMemoryPointer(
       static_cast<u32>(address.constant_value),
-      (value.size == RegSize_8) ? MemoryAccessSize::Byte :
-                                  ((value.size == RegSize_16) ? MemoryAccessSize::HalfWord : MemoryAccessSize::Word));
+      (size == RegSize_8) ? MemoryAccessSize::Byte :
+                            ((size == RegSize_16) ? MemoryAccessSize::HalfWord : MemoryAccessSize::Word));
     if (ptr)
     {
-      EmitStoreGlobal(ptr, value);
+      if (value.size != size)
+        EmitStoreGlobal(ptr, value.ViewAsSize(size));
+      else
+        EmitStoreGlobal(ptr, value);
+
       return;
     }
   }
 
   AddPendingCycles(true);
 
-  const bool use_fastmem = address_spec ? Bus::CanUseFastmemForAddress(*address_spec) : true;
+  const bool use_fastmem =
+    (address_spec ? Bus::CanUseFastmemForAddress(*address_spec) : true) && !SpeculativeIsCacheIsolated();
   if (address_spec)
   {
     if (!use_fastmem)
-      Log_DevPrintf("Non-constant store at 0x%08X, speculative address 0x%08X, using fastmem = %s", cbi.pc,
-                    *address_spec, use_fastmem ? "yes" : "no");
+    {
+      Log_ProfilePrintf("Non-constant store at 0x%08X, speculative address 0x%08X, using fastmem = %s", cbi.pc,
+                        *address_spec, use_fastmem ? "yes" : "no");
+    }
   }
   else
   {
-    Log_DevPrintf("Non-constant store at 0x%08X, speculative address UNKNOWN, using fastmem = %s", cbi.pc,
-                  use_fastmem ? "yes" : "no");
+    Log_ProfilePrintf("Non-constant store at 0x%08X, speculative address UNKNOWN, using fastmem = %s", cbi.pc,
+                      use_fastmem ? "yes" : "no");
   }
 
   if (g_settings.IsUsingFastmem() && use_fastmem)
   {
-    EmitStoreGuestMemoryFastmem(cbi, address, value);
+    EmitStoreGuestMemoryFastmem(cbi, address, size, value);
   }
   else
   {
     m_register_cache.FlushCallerSavedGuestRegisters(true, true);
-    EmitStoreGuestMemorySlowmem(cbi, address, value, false);
+    EmitStoreGuestMemorySlowmem(cbi, address, size, value, false);
   }
 }
 

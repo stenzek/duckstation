@@ -14,11 +14,6 @@ Log_SetChannel(CPU::Recompiler);
 
 namespace CPU::Recompiler {
 
-u32 CodeGenerator::CalculateRegisterOffset(Reg reg)
-{
-  return u32(offsetof(State, regs.r[0]) + (static_cast<u32>(reg) * sizeof(u32)));
-}
-
 bool CodeGenerator::CompileBlock(CodeBlock* block, CodeBlock::HostCodePointer* out_host_code, u32* out_host_code_size)
 {
   // TODO: Align code buffer.
@@ -70,6 +65,13 @@ bool CodeGenerator::CompileBlock(CodeBlock* block, CodeBlock::HostCodePointer* o
 
 bool CodeGenerator::CompileInstruction(const CodeBlockInstruction& cbi)
 {
+  if (IsNopInstruction(cbi.instruction))
+  {
+    InstructionPrologue(cbi, 1);
+    InstructionEpilogue(cbi);
+    return true;
+  }
+
   bool result;
   switch (cbi.instruction.op)
   {
@@ -1479,7 +1481,7 @@ bool CodeGenerator::Compile_Store(const CodeBlockInstruction& cbi)
                          value.ViewAsSize(RegSize_8), address);
       }
 
-      EmitStoreGuestMemory(cbi, address, address_spec, value.ViewAsSize(RegSize_8));
+      EmitStoreGuestMemory(cbi, address, address_spec, RegSize_8, value);
 
       if (address_spec)
       {
@@ -1510,7 +1512,7 @@ bool CodeGenerator::Compile_Store(const CodeBlockInstruction& cbi)
                          value.ViewAsSize(RegSize_16), address);
       }
 
-      EmitStoreGuestMemory(cbi, address, address_spec, value.ViewAsSize(RegSize_16));
+      EmitStoreGuestMemory(cbi, address, address_spec, RegSize_16, value);
 
       if (address_spec)
       {
@@ -1538,7 +1540,7 @@ bool CodeGenerator::Compile_Store(const CodeBlockInstruction& cbi)
       if (g_settings.gpu_pgxp_enable)
         EmitFunctionCall(nullptr, PGXP::CPU_SW, Value::FromConstantU32(cbi.instruction.bits), value, address);
 
-      EmitStoreGuestMemory(cbi, address, address_spec, value);
+      EmitStoreGuestMemory(cbi, address, address_spec, RegSize_32, value);
 
       if (address_spec)
         SpeculativeWriteMemory(*address_spec, value_spec);
@@ -1683,7 +1685,7 @@ bool CodeGenerator::Compile_StoreLeftRight(const CodeBlockInstruction& cbi)
 
   shift.ReleaseAndClear();
 
-  EmitStoreGuestMemory(cbi, address, address_spec, mem);
+  EmitStoreGuestMemory(cbi, address, address_spec, RegSize_32, mem);
   if (g_settings.gpu_pgxp_enable)
     EmitFunctionCall(nullptr, PGXP::CPU_SW, Value::FromConstantU32(cbi.instruction.bits), mem, address);
 
@@ -2433,7 +2435,11 @@ bool CodeGenerator::Compile_cop0(const CodeBlockInstruction& cbi)
             EmitFunctionCall(nullptr, &PGXP::CPU_MFC0, Value::FromConstantU32(cbi.instruction.bits), value);
 
           m_register_cache.WriteGuestRegisterDelayed(cbi.instruction.r.rt, std::move(value));
-          SpeculativeWriteReg(cbi.instruction.r.rt, std::nullopt);
+
+          if (reg == Cop0Reg::SR)
+            SpeculativeWriteReg(cbi.instruction.r.rt, m_speculative_constants.cop0_sr);
+          else
+            SpeculativeWriteReg(cbi.instruction.r.rt, std::nullopt);
         }
         else
         {
@@ -2465,6 +2471,9 @@ bool CodeGenerator::Compile_cop0(const CodeBlockInstruction& cbi)
                 EmitFunctionCall(nullptr, &PGXP::CPU_MTC0, Value::FromConstantU32(cbi.instruction.bits), value, value);
             }
 
+            if (reg == Cop0Reg::SR)
+              m_speculative_constants.cop0_sr = SpeculativeReadReg(cbi.instruction.r.rt);
+
             // changing SR[Isc] needs to update fastmem views
             if (reg == Cop0Reg::SR && g_settings.IsUsingFastmem())
             {
@@ -2475,7 +2484,8 @@ bool CodeGenerator::Compile_cop0(const CodeBlockInstruction& cbi)
               EmitXor(old_value.host_reg, old_value.host_reg, value);
               EmitBranchIfBitClear(old_value.host_reg, RegSize_32, 16, &skip_fastmem_update);
               m_register_cache.InhibitAllocation();
-              EmitFunctionCall(nullptr, &Thunks::UpdateFastmemMapping, m_register_cache.GetCPUPtr());
+              EmitFunctionCall(nullptr, &UpdateFastmemBase, m_register_cache.GetCPUPtr());
+              EmitUpdateFastmemBase();
               EmitBindLabel(&skip_fastmem_update);
               m_register_cache.UninhibitAllocation();
             }
@@ -2486,25 +2496,62 @@ bool CodeGenerator::Compile_cop0(const CodeBlockInstruction& cbi)
           }
         }
 
-        if (cbi.instruction.cop.CommonOp() == CopCommonInstruction::mtcn &&
-            (reg == Cop0Reg::CAUSE || reg == Cop0Reg::SR))
+        if (cbi.instruction.cop.CommonOp() == CopCommonInstruction::mtcn)
         {
-          // Emit an interrupt check on load of CAUSE/SR.
-          Value sr_value = m_register_cache.AllocateScratch(RegSize_32);
-          Value cause_value = m_register_cache.AllocateScratch(RegSize_32);
+          if (reg == Cop0Reg::CAUSE || reg == Cop0Reg::SR)
+          {
+            // Emit an interrupt check on load of CAUSE/SR.
+            Value sr_value = m_register_cache.AllocateScratch(RegSize_32);
+            Value cause_value = m_register_cache.AllocateScratch(RegSize_32);
 
-          // m_cop0_regs.sr.IEc && ((m_cop0_regs.cause.Ip & m_cop0_regs.sr.Im) != 0)
-          LabelType no_interrupt;
-          EmitLoadCPUStructField(sr_value.host_reg, sr_value.size, offsetof(State, cop0_regs.sr.bits));
-          EmitLoadCPUStructField(cause_value.host_reg, cause_value.size, offsetof(State, cop0_regs.cause.bits));
-          EmitBranchIfBitClear(sr_value.host_reg, sr_value.size, 0, &no_interrupt);
-          m_register_cache.InhibitAllocation();
-          EmitAnd(sr_value.host_reg, sr_value.host_reg, cause_value);
-          EmitTest(sr_value.host_reg, Value::FromConstantU32(0xFF00));
-          EmitConditionalBranch(Condition::Zero, false, &no_interrupt);
-          EmitStoreCPUStructField(offsetof(State, downcount), Value::FromConstantU32(0));
-          EmitBindLabel(&no_interrupt);
-          m_register_cache.UninhibitAllocation();
+            // m_cop0_regs.sr.IEc && ((m_cop0_regs.cause.Ip & m_cop0_regs.sr.Im) != 0)
+            LabelType no_interrupt;
+            EmitLoadCPUStructField(sr_value.host_reg, sr_value.size, offsetof(State, cop0_regs.sr.bits));
+            EmitLoadCPUStructField(cause_value.host_reg, cause_value.size, offsetof(State, cop0_regs.cause.bits));
+            EmitBranchIfBitClear(sr_value.host_reg, sr_value.size, 0, &no_interrupt);
+            m_register_cache.InhibitAllocation();
+            EmitAnd(sr_value.host_reg, sr_value.host_reg, cause_value);
+            EmitTest(sr_value.host_reg, Value::FromConstantU32(0xFF00));
+            EmitConditionalBranch(Condition::Zero, false, &no_interrupt);
+            EmitStoreCPUStructField(offsetof(State, downcount), Value::FromConstantU32(0));
+            EmitBindLabel(&no_interrupt);
+            m_register_cache.UninhibitAllocation();
+          }
+          else if (reg == Cop0Reg::DCIC && g_settings.cpu_recompiler_memory_exceptions)
+          {
+            Value dcic_value = m_register_cache.AllocateScratch(RegSize_32);
+            m_register_cache.InhibitAllocation();
+
+            // if ((dcic & master_enable_bits) != master_enable_bits) goto not_enabled;
+            LabelType not_enabled;
+            EmitLoadCPUStructField(dcic_value.GetHostRegister(), dcic_value.size, offsetof(State, cop0_regs.dcic.bits));
+            EmitAnd(dcic_value.GetHostRegister(), dcic_value.GetHostRegister(),
+                    Value::FromConstantU32(Cop0Registers::DCIC::MASTER_ENABLE_BITS));
+            EmitConditionalBranch(Condition::NotEqual, false, dcic_value.host_reg,
+                                  Value::FromConstantU32(Cop0Registers::DCIC::MASTER_ENABLE_BITS), &not_enabled);
+
+            // if ((dcic & breakpoint_bits) == 0) goto not_enabled;
+            EmitLoadCPUStructField(dcic_value.GetHostRegister(), dcic_value.size, offsetof(State, cop0_regs.dcic.bits));
+            EmitTest(dcic_value.GetHostRegister(),
+                     Value::FromConstantU32(Cop0Registers::DCIC::ANY_BREAKPOINTS_ENABLED_BITS));
+            EmitConditionalBranch(Condition::Zero, false, &not_enabled);
+
+            // update dispatcher flag, if enabled, exit block
+            EmitFunctionCall(nullptr, &UpdateDebugDispatcherFlag);
+            EmitLoadCPUStructField(dcic_value.GetHostRegister(), RegSize_8, offsetof(State, use_debug_dispatcher));
+            EmitBranchIfBitClear(dcic_value.GetHostRegister(), RegSize_8, 0, &not_enabled);
+
+            m_register_cache.UninhibitAllocation();
+
+            // exit block early if enabled
+            EmitBranch(GetCurrentFarCodePointer());
+            SwitchToFarCode();
+            WriteNewPC(CalculatePC(), false);
+            EmitExceptionExit();
+            SwitchToNearCode();
+
+            EmitBindLabel(&not_enabled);
+          }
         }
 
         InstructionEpilogue(cbi);
@@ -2582,7 +2629,7 @@ Value CodeGenerator::DoGTERegisterRead(u32 index)
 
     default:
     {
-      EmitLoadCPUStructField(value.host_reg, RegSize_32, offsetof(State, gte_regs.r32[index]));
+      EmitLoadCPUStructField(value.host_reg, RegSize_32, State::GTERegisterOffset(index));
     }
     break;
   }
@@ -2611,7 +2658,7 @@ void CodeGenerator::DoGTERegisterWrite(u32 index, const Value& value)
     {
       // sign-extend z component of vector registers
       Value temp = ConvertValueSize(value.ViewAsSize(RegSize_16), RegSize_32, true);
-      EmitStoreCPUStructField(offsetof(State, gte_regs.r32[index]), temp);
+      EmitStoreCPUStructField(State::GTERegisterOffset(index), temp);
       return;
     }
     break;
@@ -2624,7 +2671,7 @@ void CodeGenerator::DoGTERegisterWrite(u32 index, const Value& value)
     {
       // zero-extend unsigned values
       Value temp = ConvertValueSize(value.ViewAsSize(RegSize_16), RegSize_32, false);
-      EmitStoreCPUStructField(offsetof(State, gte_regs.r32[index]), temp);
+      EmitStoreCPUStructField(State::GTERegisterOffset(index), temp);
       return;
     }
     break;
@@ -2635,15 +2682,15 @@ void CodeGenerator::DoGTERegisterWrite(u32 index, const Value& value)
       Value temp = m_register_cache.AllocateScratch(RegSize_32);
 
       // SXY0 <- SXY1
-      EmitLoadCPUStructField(temp.host_reg, RegSize_32, offsetof(State, gte_regs.r32[13]));
-      EmitStoreCPUStructField(offsetof(State, gte_regs.r32[12]), temp);
+      EmitLoadCPUStructField(temp.host_reg, RegSize_32, State::GTERegisterOffset(13));
+      EmitStoreCPUStructField(State::GTERegisterOffset(12), temp);
 
       // SXY1 <- SXY2
-      EmitLoadCPUStructField(temp.host_reg, RegSize_32, offsetof(State, gte_regs.r32[14]));
-      EmitStoreCPUStructField(offsetof(State, gte_regs.r32[13]), temp);
+      EmitLoadCPUStructField(temp.host_reg, RegSize_32, State::GTERegisterOffset(14));
+      EmitStoreCPUStructField(State::GTERegisterOffset(13), temp);
 
       // SXY2 <- SXYP
-      EmitStoreCPUStructField(offsetof(State, gte_regs.r32[14]), value);
+      EmitStoreCPUStructField(State::GTERegisterOffset(14), value);
       return;
     }
     break;
@@ -2666,7 +2713,7 @@ void CodeGenerator::DoGTERegisterWrite(u32 index, const Value& value)
     default:
     {
       // written as-is, 2x16 or 1x32 bits
-      EmitStoreCPUStructField(offsetof(State, gte_regs.r32[index]), value);
+      EmitStoreCPUStructField(State::GTERegisterOffset(index), value);
       return;
     }
   }
@@ -2696,7 +2743,7 @@ bool CodeGenerator::Compile_cop2(const CodeBlockInstruction& cbi)
     else
     {
       Value value = DoGTERegisterRead(reg);
-      EmitStoreGuestMemory(cbi, address, spec_address, value);
+      EmitStoreGuestMemory(cbi, address, spec_address, RegSize_32, value);
 
       if (g_settings.gpu_pgxp_enable)
         EmitFunctionCall(nullptr, PGXP::CPU_SWC2, Value::FromConstantU32(cbi.instruction.bits), value, address);
@@ -2784,12 +2831,15 @@ void CodeGenerator::InitSpeculativeRegs()
 {
   for (u8 i = 0; i < static_cast<u8>(Reg::count); i++)
     m_speculative_constants.regs[i] = g_state.regs.r[i];
+
+  m_speculative_constants.cop0_sr = g_state.cop0_regs.sr.bits;
 }
 
 void CodeGenerator::InvalidateSpeculativeValues()
 {
   m_speculative_constants.regs.fill(std::nullopt);
   m_speculative_constants.memory.clear();
+  m_speculative_constants.cop0_sr.reset();
 }
 
 CodeGenerator::SpeculativeValue CodeGenerator::SpeculativeReadReg(Reg reg)
@@ -2820,7 +2870,7 @@ CodeGenerator::SpeculativeValue CodeGenerator::SpeculativeReadMemory(VirtualMemo
 
   if (Bus::IsRAMAddress(phys_addr))
   {
-    u32 ram_offset = phys_addr & Bus::RAM_MASK;
+    u32 ram_offset = phys_addr & Bus::g_ram_mask;
     std::memcpy(&value, &Bus::g_ram[ram_offset], sizeof(value));
     return value;
   }
@@ -2841,6 +2891,15 @@ void CodeGenerator::SpeculativeWriteMemory(u32 address, SpeculativeValue value)
 
   if ((phys_addr & DCACHE_LOCATION_MASK) == DCACHE_LOCATION || Bus::IsRAMAddress(phys_addr))
     m_speculative_constants.memory.emplace(address, value);
+}
+
+bool CodeGenerator::SpeculativeIsCacheIsolated()
+{
+  if (!m_speculative_constants.cop0_sr.has_value())
+    return false;
+
+  const Cop0Registers::SR sr{m_speculative_constants.cop0_sr.value()};
+  return sr.Isc;
 }
 
 } // namespace CPU::Recompiler

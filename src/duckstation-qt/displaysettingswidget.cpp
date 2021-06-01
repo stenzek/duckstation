@@ -25,6 +25,10 @@ DisplaySettingsWidget::DisplaySettingsWidget(QtHostInterface* host_interface, QW
   SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.displayAspectRatio, "Display", "AspectRatio",
                                                &Settings::ParseDisplayAspectRatio, &Settings::GetDisplayAspectRatioName,
                                                Settings::DEFAULT_DISPLAY_ASPECT_RATIO);
+  SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.customAspectRatioNumerator, "Display",
+                                              "CustomAspectRatioNumerator", 1);
+  SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.customAspectRatioDenominator, "Display",
+                                              "CustomAspectRatioDenominator", 1);
   SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.displayCropMode, "Display", "CropMode",
                                                &Settings::ParseDisplayCropMode, &Settings::GetDisplayCropModeName,
                                                Settings::DEFAULT_DISPLAY_CROP_MODE);
@@ -44,6 +48,8 @@ DisplaySettingsWidget::DisplaySettingsWidget(QtHostInterface* host_interface, QW
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.gpuThread, "GPU", "UseThread", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.threadedPresentation, "GPU",
                                                "ThreadedPresentation", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.useSoftwareRendererForReadbacks, "GPU",
+                                               "UseSoftwareRendererForReadbacks", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showOSDMessages, "Display", "ShowOSDMessages",
                                                true);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showFPS, "Display", "ShowFPS", false);
@@ -59,10 +65,13 @@ DisplaySettingsWidget::DisplaySettingsWidget(QtHostInterface* host_interface, QW
           &DisplaySettingsWidget::onGPUAdapterIndexChanged);
   connect(m_ui.fullscreenMode, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
           &DisplaySettingsWidget::onGPUFullscreenModeIndexChanged);
+  connect(m_ui.displayAspectRatio, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+          &DisplaySettingsWidget::onAspectRatioChanged);
   connect(m_ui.displayIntegerScaling, &QCheckBox::stateChanged, this,
           &DisplaySettingsWidget::onIntegerFilteringChanged);
   populateGPUAdaptersAndResolutions();
   onIntegerFilteringChanged();
+  onAspectRatioChanged();
 
   dialog->registerWidgetHelp(
     m_ui.renderer, tr("Renderer"),
@@ -123,6 +132,10 @@ DisplaySettingsWidget::DisplaySettingsWidget(QtHostInterface* host_interface, QW
   dialog->registerWidgetHelp(m_ui.gpuThread, tr("Threaded Rendering"), tr("Checked"),
                              tr("Uses a second thread for drawing graphics. Currently only available for the software "
                                 "renderer, but can provide a significant speed improvement, and is safe to use."));
+  dialog->registerWidgetHelp(
+    m_ui.useSoftwareRendererForReadbacks, tr("Use Software Renderer For Readbacks"), tr("Unchecked"),
+    tr("Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater "
+       "performance when using graphical enhancements with the hardware renderer."));
   dialog->registerWidgetHelp(m_ui.showOSDMessages, tr("Show OSD Messages"), tr("Checked"),
                              tr("Shows on-screen-display messages when events occur such as save states being "
                                 "created/loaded, screenshots being taken, etc."));
@@ -144,7 +157,7 @@ DisplaySettingsWidget::DisplaySettingsWidget(QtHostInterface* host_interface, QW
   {
     QCheckBox* cb = new QCheckBox(tr("Use Blit Swap Chain"), m_ui.basicGroupBox);
     SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, cb, "Display", "UseBlitSwapChain", false);
-    m_ui.basicCheckboxGridLayout->addWidget(cb, 2, 0, 1, 1);
+    m_ui.basicCheckboxGridLayout->addWidget(cb, 2, 1, 1, 1);
     dialog->registerWidgetHelp(cb, tr("Use Blit Swap Chain"), tr("Unchecked"),
                                tr("Uses a blit presentation model instead of flipping when using the Direct3D 11 "
                                   "renderer. This usually results in slower performance, but may be required for some "
@@ -282,4 +295,14 @@ void DisplaySettingsWidget::onIntegerFilteringChanged()
 {
   m_ui.displayLinearFiltering->setEnabled(!m_ui.displayIntegerScaling->isChecked());
   m_ui.displayStretch->setEnabled(!m_ui.displayIntegerScaling->isChecked());
+}
+
+void DisplaySettingsWidget::onAspectRatioChanged()
+{
+  const bool is_custom =
+    static_cast<DisplayAspectRatio>(m_ui.displayAspectRatio->currentIndex()) == DisplayAspectRatio::Custom;
+
+  m_ui.customAspectRatioNumerator->setVisible(is_custom);
+  m_ui.customAspectRatioDenominator->setVisible(is_custom);
+  m_ui.customAspectRatioSeparator->setVisible(is_custom);
 }

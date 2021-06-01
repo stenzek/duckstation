@@ -21,7 +21,6 @@ public:
   CodeGenerator(JitCodeBuffer* code_buffer);
   ~CodeGenerator();
 
-  static u32 CalculateRegisterOffset(Reg reg);
   static const char* GetHostRegName(HostReg reg, RegSize size = HostPointerSize);
   static void AlignCodeBuffer(JitCodeBuffer* code_buffer);
 
@@ -89,10 +88,12 @@ public:
   void EmitLoadGuestMemorySlowmem(const CodeBlockInstruction& cbi, const Value& address, RegSize size, Value& result,
                                   bool in_far_code);
   void EmitStoreGuestMemory(const CodeBlockInstruction& cbi, const Value& address, const SpeculativeValue& address_spec,
-                            const Value& value);
-  void EmitStoreGuestMemoryFastmem(const CodeBlockInstruction& cbi, const Value& address, const Value& value);
-  void EmitStoreGuestMemorySlowmem(const CodeBlockInstruction& cbi, const Value& address, const Value& value,
-                                   bool in_far_code);
+                            RegSize size, const Value& value);
+  void EmitStoreGuestMemoryFastmem(const CodeBlockInstruction& cbi, const Value& address, RegSize size,
+                                   const Value& value);
+  void EmitStoreGuestMemorySlowmem(const CodeBlockInstruction& cbi, const Value& address, RegSize size,
+                                   const Value& value, bool in_far_code);
+  void EmitUpdateFastmemBase();
 
   // Unconditional branch to pointer. May allocate a scratch register.
   void EmitBranch(const void* address, bool allow_scratch = true);
@@ -213,6 +214,7 @@ private:
   //////////////////////////////////////////////////////////////////////////
   bool CompileInstruction(const CodeBlockInstruction& cbi);
   bool Compile_Fallback(const CodeBlockInstruction& cbi);
+  bool Compile_Nop(const CodeBlockInstruction& cbi);
   bool Compile_Bitwise(const CodeBlockInstruction& cbi);
   bool Compile_Shift(const CodeBlockInstruction& cbi);
   bool Compile_Load(const CodeBlockInstruction& cbi);
@@ -263,6 +265,7 @@ private:
   {
     std::array<SpeculativeValue, static_cast<u8>(Reg::count)> regs;
     std::unordered_map<PhysicalMemoryAddress, SpeculativeValue> memory;
+    SpeculativeValue cop0_sr;
   };
 
   void InitSpeculativeRegs();
@@ -271,6 +274,7 @@ private:
   void SpeculativeWriteReg(Reg reg, SpeculativeValue value);
   SpeculativeValue SpeculativeReadMemory(u32 address);
   void SpeculativeWriteMemory(VirtualMemoryAddress address, SpeculativeValue value);
+  bool SpeculativeIsCacheIsolated();
 
   SpeculativeConstants m_speculative_constants;
 };

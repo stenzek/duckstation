@@ -8,6 +8,7 @@
 #include "core/cheats.h"
 #include "core/controller.h"
 #include "core/gpu.h"
+#include "core/memory_card.h"
 #include "core/system.h"
 #include "frontend-common/fullscreen_ui.h"
 #include "frontend-common/game_list.h"
@@ -52,6 +53,7 @@ Log_SetChannel(QtHostInterface);
 QtHostInterface::QtHostInterface(QObject* parent) : QObject(parent), CommonHostInterface()
 {
   qRegisterMetaType<std::shared_ptr<const SystemBootParameters>>();
+  qRegisterMetaType<const GameListEntry*>();
   qRegisterMetaType<GPURenderer>();
 }
 
@@ -962,6 +964,29 @@ void QtHostInterface::populateSaveStateMenus(const char* game_code, QMenu* load_
   load_menu->clear();
   save_menu->clear();
 
+  connect(load_menu->addAction(tr("From File...")), &QAction::triggered, [this]() {
+    const QString path(
+      QFileDialog::getOpenFileName(m_main_window, tr("Select Save State File"), QString(), tr("Save States (*.sav)")));
+    if (path.isEmpty())
+      return;
+
+    loadState(path);
+  });
+  load_menu->addSeparator();
+
+  connect(save_menu->addAction(tr("From File...")), &QAction::triggered, [this]() {
+    if (!System::IsValid())
+      return;
+
+    const QString path(
+      QFileDialog::getSaveFileName(m_main_window, tr("Select Save State File"), QString(), tr("Save States (*.sav)")));
+    if (path.isEmpty())
+      return;
+
+    SaveState(path.toUtf8().constData());
+  });
+  save_menu->addSeparator();
+
   if (game_code && std::strlen(game_code) > 0)
   {
     for (u32 slot = 1; slot <= PER_GAME_SAVE_STATE_SLOTS; slot++)
@@ -1045,8 +1070,16 @@ void QtHostInterface::populateGameListContextMenu(const GameListEntry* entry, QW
           paths[i] = QString::fromStdString(GetGameMemoryCardPath(entry->code.c_str(), i));
           break;
         case MemoryCardType::PerGameTitle:
-          paths[i] = QString::fromStdString(GetGameMemoryCardPath(entry->title.c_str(), i));
+          paths[i] = QString::fromStdString(
+            GetGameMemoryCardPath(MemoryCard::SanitizeGameTitleForFileName(entry->title).c_str(), i));
           break;
+        case MemoryCardType::PerGameFileTitle:
+        {
+          const std::string display_name(FileSystem::GetDisplayNameFromPath(entry->path));
+          paths[i] = QString::fromStdString(GetGameMemoryCardPath(
+            MemoryCard::SanitizeGameTitleForFileName(FileSystem::GetFileTitleFromPath(display_name)).c_str(), i));
+        }
+        break;
         default:
           break;
       }
@@ -1101,27 +1134,48 @@ void QtHostInterface::populateCheatsMenu(QMenu* menu)
   const bool has_cheat_list = System::HasCheatList();
 
   QMenu* enabled_menu = menu->addMenu(tr("&Enabled Cheats"));
-  enabled_menu->setEnabled(has_cheat_list);
+  enabled_menu->setEnabled(false);
   QMenu* apply_menu = menu->addMenu(tr("&Apply Cheats"));
-  apply_menu->setEnabled(has_cheat_list);
+  apply_menu->setEnabled(false);
   if (has_cheat_list)
   {
     CheatList* cl = System::GetCheatList();
-    for (u32 i = 0; i < cl->GetCodeCount(); i++)
+    for (const std::string& group : cl->GetCodeGroups())
     {
-      CheatCode& cc = cl->GetCode(i);
-      QString desc(QString::fromStdString(cc.description));
-      if (cc.IsManuallyActivated())
+      QMenu* enabled_submenu = nullptr;
+      QMenu* apply_submenu = nullptr;
+
+      for (u32 i = 0; i < cl->GetCodeCount(); i++)
       {
-        QAction* action = apply_menu->addAction(desc);
-        connect(action, &QAction::triggered, [this, i]() { applyCheat(i); });
-      }
-      else
-      {
-        QAction* action = enabled_menu->addAction(desc);
-        action->setCheckable(true);
-        action->setChecked(cc.enabled);
-        connect(action, &QAction::toggled, [this, i](bool enabled) { setCheatEnabled(i, enabled); });
+        CheatCode& cc = cl->GetCode(i);
+        if (cc.group != group)
+          continue;
+
+        QString desc(QString::fromStdString(cc.description));
+        if (cc.IsManuallyActivated())
+        {
+          if (!apply_submenu)
+          {
+            apply_menu->setEnabled(true);
+            apply_submenu = apply_menu->addMenu(QString::fromStdString(group));
+          }
+
+          QAction* action = apply_submenu->addAction(desc);
+          connect(action, &QAction::triggered, [this, i]() { applyCheat(i); });
+        }
+        else
+        {
+          if (!enabled_submenu)
+          {
+            enabled_menu->setEnabled(true);
+            enabled_submenu = enabled_menu->addMenu(QString::fromStdString(group));
+          }
+
+          QAction* action = enabled_submenu->addAction(desc);
+          action->setCheckable(true);
+          action->setChecked(cc.enabled);
+          connect(action, &QAction::toggled, [this, i](bool enabled) { setCheatEnabled(i, enabled); });
+        }
       }
     }
   }
@@ -1238,6 +1292,19 @@ void QtHostInterface::loadState(bool global, qint32 slot)
   LoadState(global, slot);
   if (System::IsValid())
     renderDisplay();
+}
+
+void QtHostInterface::saveState(const QString& filename, bool block_until_done /* = false */)
+{
+  if (!isOnWorkerThread())
+  {
+    QMetaObject::invokeMethod(this, "saveState", block_until_done ? Qt::BlockingQueuedConnection : Qt::QueuedConnection,
+                              Q_ARG(const QString&, filename), Q_ARG(bool, block_until_done));
+    return;
+  }
+
+  if (!System::IsShutdown())
+    SaveState(filename.toUtf8().data());
 }
 
 void QtHostInterface::saveState(bool global, qint32 slot, bool block_until_done /* = false */)
@@ -1485,7 +1552,7 @@ void QtHostInterface::threadEntryPoint()
       else
         System::RunFrames();
 
-      UpdateControllerRumble();
+      UpdateControllerMetaState();
       if (m_frame_step_request)
       {
         m_frame_step_request = false;

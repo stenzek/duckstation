@@ -89,34 +89,22 @@
     </string-array>
     <string-array name="settings_display_aspect_ratio_names">
         <item>Auto (Game Native)</item>
+        <item>Auto (Match Display)</item>
+        <item>Custom</item>
         <item>4:3</item>
         <item>16:9</item>
-        <item>16:10</item>
         <item>19:9</item>
         <item>20:9</item>
-        <item>21:9</item>
-        <item>32:9</item>
-        <item>8:7</item>
-        <item>5:4</item>
-        <item>3:2</item>
-        <item>2:1 (VRAM 1:1)</item>
-        <item>1:1</item>
         <item>PAR 1:1</item>
     </string-array>
     <string-array name="settings_display_aspect_ratio_values">
         <item>Auto (Game Native)</item>
+        <item>Auto (Match Window)</item>
+        <item>Custom</item>
         <item>4:3</item>
         <item>16:9</item>
-        <item>16:10</item>
         <item>19:9</item>
         <item>20:9</item>
-        <item>21:9</item>
-        <item>32:9</item>
-        <item>8:7</item>
-        <item>5:4</item>
-        <item>3:2</item>
-        <item>2:1 (VRAM 1:1)</item>
-        <item>1:1</item>
         <item>PAR 1:1</item>
     </string-array>
     <string-array name="settings_gpu_texture_filter_names">
@@ -165,27 +153,20 @@
         <item>PerGame</item>
         <item>PerGameTitle</item>
     </string-array>
-    <string-array name="emulation_menu">
-        <item>Load State</item>
-        <item>Save State</item>
-        <item>Toggle Fast Forward</item>
-        <item>Achievements</item>
-        <item>More Options</item>
-        <item>Quit</item>
-    </string-array>
-    <string-array name="emulation_more_menu">
-        <item>Reset</item>
-        <item>Patch Codes</item>
-        <item>Change Disc</item>
-        <item>Change Touchscreen Controller</item>
-        <item>Controller Settings</item>
-        <item>Settings</item>
-    </string-array>
     <string-array name="emulation_touchscreen_menu">
         <item>Change Type</item>
         <item>Change Opacity</item>
         <item>Add/Remove Buttons</item>
-        <item>Edit Layout</item>
+        <item>Move Buttons</item>
+        <item>Resize Buttons</item>
+    </string-array>
+    <string-array name="touchscreen_layout_menu">
+        <item>Change Opacity</item>
+        <item>Add/Remove Buttons</item>
+        <item>Move Buttons</item>
+        <item>Resize Buttons</item>
+        <item>Reset Layout</item>
+        <item>Exit Editor</item>
     </string-array>
     <string-array name="settings_cdrom_read_speedup_entries">
         <item>None (Double Speed)</item>
@@ -425,11 +406,13 @@
         <item>Use Device Setting</item>
         <item>Portrait</item>
         <item>Landscape</item>
+        <item>Sensor Based</item>
     </string-array>
     <string-array name="settings_emulation_screen_orientation_values">
         <item>unspecified</item>
         <item>portrait</item>
         <item>landscape</item>
+        <item>sensor</item>
     </string-array>
     <string-array name="settings_language_entries">
         <item>Use Device Setting</item>
@@ -492,5 +475,51 @@
     <string-array name="memory_card_editor_save_menu">
         <item>Copy Save</item>
         <item>Delete Save</item>
+    </string-array>
+    <string-array name="settings_touchscreen_controller_port_entries">
+        <item>Port 1</item>
+        <item>Port 2</item>
+        <item>Multitap 3</item>
+        <item>Multitap 4</item>
+        <item>Multitap 5</item>
+        <item>Multitap 6</item>
+        <item>Multitap 7</item>
+        <item>Multitap 8</item>
+    </string-array>
+    <string-array name="settings_touchscreen_controller_port_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+    </string-array>
+    <string-array name="settings_cdrom_seek_speedup_entries">
+        <item>Infinite/Instantaneous</item>
+        <item>None (Normal Speed)</item>
+        <item>2x</item>
+        <item>3x</item>
+        <item>4x</item>
+        <item>5x</item>
+        <item>6x</item>
+        <item>7x</item>
+        <item>8x</item>
+        <item>9x</item>
+        <item>10x</item>
+    </string-array>
+    <string-array name="settings_cdrom_seek_speedup_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
+        <item>10</item>
     </string-array>
 </resources>

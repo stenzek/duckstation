@@ -1,29 +1,41 @@
 package com.github.stenzek.duckstation;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.hardware.input.InputManager;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.util.Log;
 import android.view.Display;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 
 /**
@@ -38,8 +50,12 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     private boolean mWasDestroyed = false;
     private boolean mStopRequested = false;
     private boolean mApplySettingsOnSurfaceRestored = false;
+    private String mGamePath = null;
+    private String mGameCode = null;
     private String mGameTitle = null;
+    private String mGameCoverPath = null;
     private EmulationSurfaceView mContentView;
+    private MenuDialogFragment mPauseMenu;
 
     private boolean getBooleanSetting(String key, boolean defaultValue) {
         return mPreferences.getBoolean(key, defaultValue);
@@ -53,6 +69,19 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
 
     private String getStringSetting(String key, String defaultValue) {
         return mPreferences.getString(key, defaultValue);
+    }
+
+    private int getIntSetting(String key, int defaultValue) {
+        try {
+            return mPreferences.getInt(key, defaultValue);
+        } catch (ClassCastException e) {
+            try {
+                final String stringValue = mPreferences.getString(key, Integer.toString(defaultValue));
+                return Integer.parseInt(stringValue);
+            } catch (Exception e2) {
+                return defaultValue;
+            }
+        }
     }
 
     private void setStringSetting(String key, String value) {
@@ -126,9 +155,12 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         });
     }
 
-    public void onGameTitleChanged(String title) {
+    public void onRunningGameChanged(String path, String code, String title, String coverPath) {
         runOnUiThread(() -> {
+            mGamePath = path;
             mGameTitle = title;
+            mGameCode = code;
+            mGameCoverPath = coverPath;
         });
     }
 
@@ -149,7 +181,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
 
     public void openPauseMenu() {
         runOnUiThread(() -> {
-            showMenu();
+            showPauseMenu();
         });
     }
 
@@ -225,6 +257,9 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
         Log.i("EmulationActivity", "Surface destroyed");
+
+        if (mPauseMenu != null)
+            mPauseMenu.close(false);
 
         // Save the resume state in case we never get back again...
         if (AndroidHostInterface.getInstance().isEmulationThreadRunning() && !mStopRequested)
@@ -305,25 +340,21 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
                 applySettings();
             }
         } else if (requestCode == REQUEST_IMPORT_PATCH_CODES) {
-            if (data == null)
+            if (data == null || data.getData() == null)
                 return;
 
             importPatchesFromFile(data.getData());
         } else if (requestCode == REQUEST_CHANGE_DISC_FILE) {
-            if (data == null)
+            if (data == null || data.getData() == null)
                 return;
 
-            String path = GameDirectoriesActivity.getPathFromUri(this, data.getData());
-            if (path == null)
-                return;
-
-            AndroidHostInterface.getInstance().setMediaFilename(path);
+            AndroidHostInterface.getInstance().setMediaFilename(data.getDataString());
         }
     }
 
     @Override
     public void onBackPressed() {
-        showMenu();
+        showPauseMenu();
     }
 
     @Override
@@ -361,6 +392,8 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER_PORTRAIT);
         else if (orientation.equals("landscape"))
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE);
+        else if (orientation.equals("sensor"))
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
         else
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
     }
@@ -418,70 +451,16 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         return true;
     }
 
-    private void showMenu() {
-        if (getBooleanSetting("Main/PauseOnMenu", false) &&
-                !AndroidHostInterface.getInstance().isEmulationThreadPaused()) {
+    private void showPauseMenu() {
+        if (!AndroidHostInterface.getInstance().isEmulationThreadPaused()) {
             AndroidHostInterface.getInstance().pauseEmulationThread(true);
         }
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        if (mGameTitle != null && !mGameTitle.isEmpty())
-            builder.setTitle(mGameTitle);
+        if (mPauseMenu != null)
+            mPauseMenu.close(false);
 
-        builder.setItems(R.array.emulation_menu, (dialogInterface, i) -> {
-            switch (i) {
-                case 0:     // Load State
-                {
-                    showSaveStateMenu(false);
-                    return;
-                }
-
-                case 1:     // Save State
-                {
-                    showSaveStateMenu(true);
-                    return;
-                }
-
-                case 2:     // Toggle Fast Forward
-                {
-                    AndroidHostInterface.getInstance().setFastForwardEnabled(!AndroidHostInterface.getInstance().isFastForwardEnabled());
-                    onMenuClosed();
-                    return;
-                }
-
-                case 3:     // Achievements
-                {
-                    showAchievementsPopup();
-                    return;
-                }
-
-                case 4:     // More Options
-                {
-                    showMoreMenu();
-                    return;
-                }
-
-                case 5:     // Quit
-                {
-                    mStopRequested = true;
-                    finish();
-                    return;
-                }
-            }
-        });
-        builder.setOnCancelListener(dialogInterface -> onMenuClosed());
-
-        final AlertDialog dialog = builder.create();
-        dialog.setOnShowListener(dialogInterface -> {
-            // Disable cheevos if not loaded.
-            if (AndroidHostInterface.getInstance().getCheevoCount() == 0)
-                disableDialogMenuItem(dialog, 3);
-
-            // Disable load state for challenge mode.
-            if (AndroidHostInterface.getInstance().isCheevosChallengeModeActive())
-                disableDialogMenuItem(dialog, 0);
-        });
-        dialog.show();
+        mPauseMenu = new MenuDialogFragment(this);
+        mPauseMenu.show(getSupportFragmentManager(), "MenuDialogFragment");
     }
 
     private void showSaveStateMenu(boolean saving) {
@@ -511,66 +490,6 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
             dialog.dismiss();
         });
 
-        dialog.show();
-    }
-
-    private void showMoreMenu() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        if (mGameTitle != null && !mGameTitle.isEmpty())
-            builder.setTitle(mGameTitle);
-
-        builder.setItems(R.array.emulation_more_menu, (dialogInterface, i) -> {
-            switch (i) {
-                case 0:     // Reset
-                {
-                    AndroidHostInterface.getInstance().resetSystem();
-                    onMenuClosed();
-                    return;
-                }
-
-                case 1:     // Patch Codes
-                {
-                    showPatchesMenu();
-                    return;
-                }
-
-                case 2:     // Change Disc
-                {
-                    showDiscChangeMenu();
-                    return;
-                }
-
-                case 3:     // Change Touchscreen Controller
-                {
-                    showTouchscreenControllerMenu();
-                    return;
-                }
-
-                case 4:     // Settings
-                {
-                    Intent intent = new Intent(EmulationActivity.this, ControllerSettingsActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    startActivityForResult(intent, REQUEST_CODE_SETTINGS);
-                    return;
-                }
-
-                case 5:     // Controller Settings
-                {
-                    Intent intent = new Intent(EmulationActivity.this, SettingsActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    startActivityForResult(intent, REQUEST_CODE_SETTINGS);
-                    return;
-                }
-            }
-        });
-        builder.setOnCancelListener(dialogInterface -> onMenuClosed());
-
-        final AlertDialog dialog = builder.create();
-        dialog.setOnShowListener(dialogInterface -> {
-            // Disable patch codes when challenge mode is active.
-            if (AndroidHostInterface.getInstance().isCheevosChallengeModeActive())
-                disableDialogMenuItem(dialog, 1);
-        });
         dialog.show();
     }
 
@@ -630,13 +549,16 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
                 }
                 break;
 
-                case 3:     // Edit Layout
+                case 3:     // Edit Positions
+                case 4:     // Edit Scale
                 {
                     if (mTouchscreenController != null) {
                         // we deliberately don't call onMenuClosed() here to keep the system paused.
                         // but we need to re-enable immersive mode to get proper editing.
                         enableFullscreenImmersive();
-                        mTouchscreenController.startLayoutEditing();
+                        mTouchscreenController.startLayoutEditing(
+                                (i == 4) ? TouchscreenControllerView.EditMode.SCALE :
+                                        TouchscreenControllerView.EditMode.POSITION);
                     } else {
                         // no controller
                         onMenuClosed();
@@ -659,7 +581,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
             boolean[] itemsChecked = new boolean[codes.length];
             for (int i = 0; i < codes.length; i++) {
                 final PatchCode cc = codes[i];
-                items[i] = cc.getDescription();
+                items[i] = cc.getDisplayText();
                 itemsChecked[i] = cc.isEnabled();
             }
 
@@ -684,7 +606,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     }
 
     private void importPatchesFromFile(Uri uri) {
-        String str = FileUtil.readFileFromUri(this, uri, 512 * 1024);
+        String str = FileHelper.readStringFromUri(this, uri, 512 * 1024);
         if (str == null || !AndroidHostInterface.getInstance().importPatchCodesFromString(str)) {
             reportErrorOnUIThread(getString(R.string.emulation_activity_failed_to_import_patch_codes));
         }
@@ -713,7 +635,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
 
         CharSequence[] items = new CharSequence[numPaths + 1];
         for (int i = 0; i < numPaths; i++)
-            items[i] = GameListEntry.getFileNameForPath(paths[i]);
+            items[i] = FileHelper.getFileNameForPath(paths[i]);
         items[numPaths] = getString(R.string.emulation_activity_change_disc_select_new_file);
 
         builder.setSingleChoiceItems(items, (currentPath < numPaths) ? currentPath : -1, (dialogInterface, i) -> {
@@ -748,7 +670,9 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
     TouchscreenControllerView mTouchscreenController;
 
     public void updateControllers() {
-        final String controllerType = getStringSetting("Controller1/Type", "DigitalController");
+        final int touchscreenControllerIndex = getIntSetting("TouchscreenController/PortIndex", 0);
+        final String touchscreenControllerPrefix = String.format("Controller%d/", touchscreenControllerIndex + 1);
+        final String controllerType = getStringSetting(touchscreenControllerPrefix + "Type", "DigitalController");
         final String viewType = getStringSetting("Controller1/TouchscreenControllerView", "digital");
         final boolean autoHideTouchscreenController = getBooleanSetting("Controller1/AutoHideTouchscreenController", false);
         final boolean touchGliding = getBooleanSetting("Controller1/TouchGliding", false);
@@ -763,7 +687,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         AndroidHostInterface.getInstance().updateInputMap();
 
         final boolean hasAnyControllers = mContentView.hasAnyGamePads();
-        if (controllerType.equals("none") || viewType.equals("none") || (hasAnyControllers && autoHideTouchscreenController)) {
+        if (controllerType.equals("None") || viewType.equals("none") || (hasAnyControllers && autoHideTouchscreenController)) {
             if (mTouchscreenController != null) {
                 activityLayout.removeView(mTouchscreenController);
                 mTouchscreenController = null;
@@ -774,7 +698,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
                 activityLayout.addView(mTouchscreenController);
             }
 
-            mTouchscreenController.init(0, controllerType, viewType, hapticFeedback, touchGliding);
+            mTouchscreenController.init(touchscreenControllerIndex, controllerType, viewType, hapticFeedback, touchGliding);
         }
 
         if (vibration)
@@ -867,5 +791,178 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         }
         mSustainedPerformanceModeEnabled = enabled;
 
+    }
+
+    public static class MenuDialogFragment extends DialogFragment {
+        private EmulationActivity emulationActivity;
+        private boolean settingsChanged = false;
+
+        public MenuDialogFragment(EmulationActivity emulationActivity) {
+            this.emulationActivity = emulationActivity;
+        }
+
+        @Override
+        public void onCreate(@Nullable Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            setStyle(STYLE_NO_FRAME, R.style.EmulationActivityOverlay);
+        }
+
+        @Nullable
+        @Override
+        public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+            return inflater.inflate(R.layout.fragment_emulation_activity_overlay, container, false);
+        }
+
+        @Override
+        public void onViewCreated(View view, Bundle savedInstanceState) {
+            setContentFragment(new MenuSettingsFragment(this, emulationActivity), false);
+
+            final ImageView coverView =((ImageView)view.findViewById(R.id.cover_image));
+            if (emulationActivity.mGameCoverPath != null && !emulationActivity.mGameCoverPath.isEmpty()) {
+                new ImageLoadTask(coverView).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
+                        emulationActivity.mGameCoverPath);
+            } else if (emulationActivity.mGameTitle != null) {
+                new GenerateCoverTask(getContext(), coverView, emulationActivity.mGameTitle)
+                        .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            }
+            coverView.setOnClickListener(v -> close(true));
+
+            if (emulationActivity.mGameTitle != null)
+              ((TextView)view.findViewById(R.id.title)).setText(emulationActivity.mGameTitle);
+
+            if (emulationActivity.mGameCode != null && emulationActivity.mGamePath != null)
+            {
+              final String subtitle = String.format("%s - %s", emulationActivity.mGameCode,
+                      FileHelper.getFileNameForPath(emulationActivity.mGamePath));
+              ((TextView)view.findViewById(R.id.subtitle)).setText(subtitle);
+            }
+
+            ((ImageButton)view.findViewById(R.id.menu)).setOnClickListener(v -> onMenuClicked());
+            ((ImageButton)view.findViewById(R.id.controller_settings)).setOnClickListener(v -> onControllerSettingsClicked());
+            ((ImageButton)view.findViewById(R.id.settings)).setOnClickListener(v -> onSettingsClicked());
+            ((ImageButton)view.findViewById(R.id.close)).setOnClickListener(v -> close(true));
+        }
+
+        @Override
+        public void onCancel(@NonNull DialogInterface dialog) {
+            onClosed(true);
+        }
+
+        private void onClosed(boolean resumeGame) {
+            if (settingsChanged)
+                emulationActivity.applySettings();
+
+            if (resumeGame)
+                emulationActivity.onMenuClosed();
+
+            emulationActivity.mPauseMenu = null;
+        }
+
+        public void close(boolean resumeGame) {
+            dismiss();
+            onClosed(resumeGame);
+        }
+
+        private void setContentFragment(Fragment fragment, boolean transition) {
+            FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
+            if (transition)
+                transaction.setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out);
+            transaction.replace(R.id.content, fragment).commit();
+        }
+
+        private void onMenuClicked() {
+            setContentFragment(new MenuSettingsFragment(this, emulationActivity), true);
+        }
+
+        private void onControllerSettingsClicked() {
+            ControllerSettingsCollectionFragment fragment = new ControllerSettingsCollectionFragment();
+            setContentFragment(fragment, true);
+            fragment.setMultitapModeChangedListener(this::onControllerSettingsClicked);
+            settingsChanged = true;
+        }
+
+        private void onSettingsClicked() {
+            setContentFragment(new SettingsCollectionFragment(), true);
+            settingsChanged = true;
+        }
+    }
+
+    public static class MenuSettingsFragment extends PreferenceFragmentCompat {
+        private MenuDialogFragment menuDialogFragment;
+        private EmulationActivity emulationActivity;
+
+        public MenuSettingsFragment(MenuDialogFragment menuDialogFragment, EmulationActivity emulationActivity) {
+            this.menuDialogFragment = menuDialogFragment;
+            this.emulationActivity = emulationActivity;
+        }
+
+        @Override
+        public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+            setPreferenceScreen(getPreferenceManager().createPreferenceScreen(getContext()));
+
+            final boolean cheevosActive = AndroidHostInterface.getInstance().isCheevosActive();
+            final boolean cheevosChallengeModeEnabled = AndroidHostInterface.getInstance().isCheevosChallengeModeActive();
+
+            createPreference(R.string.emulation_menu_load_state, R.drawable.ic_baseline_folder_open_24, !cheevosChallengeModeEnabled, preference -> {
+                menuDialogFragment.close(false);
+                emulationActivity.showSaveStateMenu(false);
+                return true;
+            });
+            createPreference(R.string.emulation_menu_save_state, R.drawable.ic_baseline_save_24, true, preference -> {
+                menuDialogFragment.close(false);
+                emulationActivity.showSaveStateMenu(true);
+                return true;
+            });
+            createPreference(R.string.emulation_menu_toggle_fast_forward, R.drawable.ic_baseline_fast_forward_24, !cheevosChallengeModeEnabled, preference -> {
+                AndroidHostInterface.getInstance().setFastForwardEnabled(!AndroidHostInterface.getInstance().isFastForwardEnabled());
+                menuDialogFragment.close(true);
+                return true;
+            });
+            createPreference(R.string.emulation_menu_achievements, R.drawable.ic_baseline_trophy_24, cheevosActive, preference -> {
+                menuDialogFragment.close(false);
+                emulationActivity.showAchievementsPopup();
+                return true;
+            });
+            createPreference(R.string.emulation_menu_exit_game, R.drawable.ic_baseline_exit_to_app_24, true, preference -> {
+                menuDialogFragment.close(false);
+                emulationActivity.mStopRequested = true;
+                emulationActivity.finish();
+                return true;
+            });
+            createPreference(R.string.emulation_menu_patch_codes, R.drawable.ic_baseline_tips_and_updates_24, !cheevosChallengeModeEnabled, preference -> {
+                menuDialogFragment.close(false);
+                emulationActivity.showPatchesMenu();
+                return true;
+            });
+            createPreference(R.string.emulation_menu_change_disc, R.drawable.ic_baseline_album_24, true, preference -> {
+                menuDialogFragment.close(false);
+                emulationActivity.showDiscChangeMenu();
+                return true;
+            });
+            createPreference(R.string.emulation_menu_touchscreen_controller_settings, R.drawable.ic_baseline_touch_app_24, true, preference -> {
+                menuDialogFragment.close(false);
+                emulationActivity.showTouchscreenControllerMenu();
+                return true;
+            });
+            createPreference(R.string.emulation_menu_toggle_analog_mode, R.drawable.ic_baseline_gamepad_24, true, preference -> {
+                AndroidHostInterface.getInstance().toggleControllerAnalogMode();
+                menuDialogFragment.close(true);
+                return true;
+            });
+            createPreference(R.string.emulation_menu_reset_console, R.drawable.ic_baseline_restart_alt_24, true, preference -> {
+                AndroidHostInterface.getInstance().resetSystem();
+                menuDialogFragment.close(true);
+                return true;
+            });
+        }
+
+        private void createPreference(int titleId, int icon, boolean enabled, Preference.OnPreferenceClickListener action) {
+            final Preference preference = new Preference(getContext());
+            preference.setTitle(titleId);
+            preference.setIcon(icon);
+            preference.setOnPreferenceClickListener(action);
+            preference.setEnabled(enabled);
+            getPreferenceScreen().addPreference(preference);
+        }
     }
 }

@@ -24,6 +24,15 @@
         app:summary="@string/settings_summary_cdrom_read_speedup"
         app:useSimpleSummaryProvider="true"
         app:iconSpaceReserved="false" />
+    <ListPreference
+        app:key="CDROM/SeekSpeedup"
+        app:title="@string/settings_cdrom_seek_speedup"
+        app:entries="@array/settings_cdrom_seek_speedup_entries"
+        app:entryValues="@array/settings_cdrom_seek_speedup_values"
+        app:defaultValue="1"
+        app:summary="@string/settings_summary_cdrom_seek_speedup"
+        app:useSimpleSummaryProvider="true"
+        app:iconSpaceReserved="false" />
     <SwitchPreferenceCompat
         app:key="BIOS/PatchFastBoot"
         app:title="@string/settings_console_fast_boot"

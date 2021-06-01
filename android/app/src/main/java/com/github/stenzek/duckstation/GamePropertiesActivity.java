@@ -32,7 +32,6 @@ public class GamePropertiesActivity extends AppCompatActivity {
 
         mPropertiesListAdapter = new PropertyListAdapter(this);
         mPropertiesListAdapter.addItem("title", "Title", mGameListEntry.getTitle());
-        mPropertiesListAdapter.addItem("filetitle", "File Title", mGameListEntry.getFileTitle());
         mPropertiesListAdapter.addItem("serial", "Serial", mGameListEntry.getCode());
         mPropertiesListAdapter.addItem("type", "Type", mGameListEntry.getType().toString());
         mPropertiesListAdapter.addItem("path", "Path", mGameListEntry.getPath());
@@ -68,6 +67,12 @@ public class GamePropertiesActivity extends AppCompatActivity {
         }
 
         setTitle(mGameListEntry.getTitle());
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.remove("android:support:fragments");
     }
 
     @Override
@@ -111,7 +116,9 @@ public class GamePropertiesActivity extends AppCompatActivity {
             final PreferenceScreen ps = getPreferenceManager().createPreferenceScreen(getContext());
             activity.createListGameSetting(ps, "CPUOverclock", R.string.settings_cpu_overclocking, R.array.settings_advanced_cpu_overclock_entries, R.array.settings_advanced_cpu_overclock_values);
             activity.createListGameSetting(ps, "CDROMReadSpeedup", R.string.settings_cdrom_read_speedup, R.array.settings_cdrom_read_speedup_entries, R.array.settings_cdrom_read_speedup_values);
+            activity.createListGameSetting(ps, "CDROMSeekSpeedup", R.string.settings_cdrom_seek_speedup, R.array.settings_cdrom_seek_speedup_entries, R.array.settings_cdrom_seek_speedup_values);
 
+            activity.createListGameSetting(ps, "GPURenderer", R.string.settings_gpu_renderer, R.array.gpu_renderer_entries, R.array.gpu_renderer_values);
             activity.createListGameSetting(ps, "DisplayAspectRatio", R.string.settings_aspect_ratio, R.array.settings_display_aspect_ratio_names, R.array.settings_display_aspect_ratio_values);
             activity.createListGameSetting(ps, "DisplayCropMode", R.string.settings_crop_mode, R.array.settings_display_crop_mode_entries, R.array.settings_display_crop_mode_values);
             activity.createListGameSetting(ps, "GPUDownsampleMode", R.string.settings_downsample_mode, R.array.settings_downsample_mode_entries, R.array.settings_downsample_mode_values);
@@ -129,6 +136,11 @@ public class GamePropertiesActivity extends AppCompatActivity {
             activity.createBooleanGameSetting(ps, "GPUPGXP", R.string.settings_pgxp_geometry_correction);
             activity.createBooleanGameSetting(ps, "PGXPPreserveProjFP", R.string.settings_pgxp_preserve_projection_precision);
             activity.createBooleanGameSetting(ps, "GPUPGXPDepthBuffer", R.string.settings_pgxp_depth_buffer);
+            activity.createBooleanGameSetting(ps, "ForceSoftwareRenderer", R.string.settings_use_software_renderer);
+            activity.createBooleanGameSetting(ps, "ForceSoftwareRendererForReadbacks", R.string.settings_use_software_renderer_for_readbacks);
+            activity.createBooleanGameSetting(ps, "DisableWidescreen", R.string.settings_disable_widescreen);
+            activity.createBooleanGameSetting(ps, "ForcePGXPVertexCache", R.string.settings_pgxp_vertex_cache);
+            activity.createBooleanGameSetting(ps, "ForcePGXPCPUMode", R.string.settings_pgxp_cpu_mode);
 
             setPreferenceScreen(ps);
         }

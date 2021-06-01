@@ -80,7 +80,7 @@ void MemoryCardSettingsWidget::createUi(SettingsDialog* dialog)
 
       QHBoxLayout* note_layout = new QHBoxLayout();
       QLabel* note_label =
-        new QLabel(tr("If one of the \"separate card per game\" memory card modes is chosen, these memory "
+        new QLabel(tr("If one of the \"separate card per game\" memory card types is chosen, these memory "
                       "cards will be saved to the memory cards directory."),
                    box);
       note_label->setWordWrap(true);

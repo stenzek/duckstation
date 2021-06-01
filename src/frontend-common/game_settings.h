@@ -13,6 +13,7 @@ enum class Trait : u32
 {
   ForceInterpreter,
   ForceSoftwareRenderer,
+  ForceSoftwareRendererForReadbacks,
   ForceInterlacing,
   DisableTrueColor,
   DisableUpscaling,
@@ -25,9 +26,9 @@ enum class Trait : u32
   DisablePGXPDepthBuffer,
   ForcePGXPVertexCache,
   ForcePGXPCPUMode,
-  DisableAnalogModeForcing,
   ForceRecompilerMemoryExceptions,
   ForceRecompilerICache,
+  ForceRecompilerLUTFastmem,
 
   Count
 };
@@ -54,13 +55,18 @@ struct Entry
   std::optional<u32> cpu_overclock_numerator;
   std::optional<u32> cpu_overclock_denominator;
   std::optional<bool> cpu_overclock_enable;
+  std::optional<bool> enable_8mb_ram;
   std::optional<u32> cdrom_read_speedup;
+  std::optional<u32> cdrom_seek_speedup;
   std::optional<DisplayCropMode> display_crop_mode;
   std::optional<DisplayAspectRatio> display_aspect_ratio;
+  std::optional<GPURenderer> gpu_renderer;
   std::optional<GPUDownsampleMode> gpu_downsample_mode;
   std::optional<bool> display_linear_upscaling;
   std::optional<bool> display_integer_upscaling;
   std::optional<bool> display_force_4_3_for_24bit;
+  std::optional<u16> display_aspect_ratio_custom_numerator;
+  std::optional<u16> display_aspect_ratio_custom_denominator;
   std::optional<u32> gpu_resolution_scale;
   std::optional<u32> gpu_multisamples;
   std::optional<bool> gpu_per_sample_shading;

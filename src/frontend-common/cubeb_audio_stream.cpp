@@ -43,7 +43,7 @@ bool CubebAudioStream::OpenDevice()
   params.rate = m_output_sample_rate;
   params.channels = m_channels;
   params.layout = CUBEB_LAYOUT_UNDEFINED;
-  params.prefs = CUBEB_STREAM_PREF_NONE;
+  params.prefs = CUBEB_STREAM_PREF_PERSIST;
 
   u32 latency_frames = 0;
   rv = cubeb_get_min_latency(m_cubeb_context, &params, &latency_frames);

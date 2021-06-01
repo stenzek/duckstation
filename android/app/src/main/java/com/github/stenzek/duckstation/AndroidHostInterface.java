@@ -23,9 +23,12 @@ public class AndroidHostInterface {
 
     private long mNativePointer;
     private Context mContext;
+    private FileHelper mFileHelper;
+    private EmulationActivity mEmulationActivity;
 
-    public AndroidHostInterface(Context context) {
+    public AndroidHostInterface(Context context, FileHelper fileHelper) {
         this.mContext = context;
+        this.mFileHelper = fileHelper;
     }
 
     public void reportError(String message) {
@@ -48,13 +51,15 @@ public class AndroidHostInterface {
         mContext = context;
     }
 
+    public EmulationActivity getEmulationActivity() { return mEmulationActivity; }
+
     static public native String getScmVersion();
 
     static public native String getFullScmVersion();
 
     static public native boolean setThreadAffinity(int[] cpus);
 
-    static public native AndroidHostInterface create(Context context, String userDirectory);
+    static public native AndroidHostInterface create(Context context, FileHelper fileHelper, String userDirectory);
 
     public native boolean isEmulationThreadRunning();
 
@@ -73,6 +78,8 @@ public class AndroidHostInterface {
     public native void setControllerButtonState(int index, int buttonCode, boolean pressed);
 
     public native void setControllerAxisState(int index, int axisCode, float value);
+
+    public native void setControllerAutoFireState(int controllerIndex, int autoFireIndex, boolean active);
 
     public native void setMousePosition(int positionX, int positionY);
 
@@ -184,7 +191,7 @@ public class AndroidHostInterface {
 
         mUserDirectory += "/duckstation";
         Log.i("AndroidHostInterface", "User directory: " + mUserDirectory);
-        mInstance = create(context, mUserDirectory);
+        mInstance = create(context, new FileHelper(context), mUserDirectory);
         return mInstance != null;
     }
 

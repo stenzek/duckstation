@@ -15,9 +15,9 @@ GPU_SW_Backend::GPU_SW_Backend() : GPUBackend()
 
 GPU_SW_Backend::~GPU_SW_Backend() = default;
 
-bool GPU_SW_Backend::Initialize()
+bool GPU_SW_Backend::Initialize(bool force_thread)
 {
-  return GPUBackend::Initialize();
+  return GPUBackend::Initialize(force_thread);
 }
 
 void GPU_SW_Backend::Reset(bool clear_vram)

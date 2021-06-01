@@ -44,8 +44,8 @@ protected:
 
   void DispatchRenderCommand() override;
 
-  void FillBackendCommandParameters(GPUBackendCommand* cmd);
-  void FillDrawCommand(GPUBackendDrawCommand* cmd, GPURenderCommand rc);
+  void FillBackendCommandParameters(GPUBackendCommand* cmd) const;
+  void FillDrawCommand(GPUBackendDrawCommand* cmd, GPURenderCommand rc) const;
 
   HeapArray<u8, GPU_MAX_DISPLAY_WIDTH * GPU_MAX_DISPLAY_HEIGHT * sizeof(u32)> m_display_texture_buffer;
   HostDisplayPixelFormat m_16bit_display_format = HostDisplayPixelFormat::RGB565;

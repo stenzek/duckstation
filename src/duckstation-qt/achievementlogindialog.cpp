@@ -14,18 +14,26 @@ AchievementLoginDialog::~AchievementLoginDialog() = default;
 
 void AchievementLoginDialog::loginClicked()
 {
-  const std::string username(m_ui.userName->text().toStdString());
-  const std::string password(m_ui.password->text().toStdString());
+  const QString username(m_ui.userName->text());
+  const QString password(m_ui.password->text());
 
   // TODO: Make cancellable.
   m_ui.status->setText(tr("Logging in..."));
   enableUI(false);
-  qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
 
-  bool result;
-  QtHostInterface::GetInstance()->executeOnEmulationThread(
-    [&username, &password, &result]() { result = Cheevos::Login(username.c_str(), password.c_str()); }, true);
+  QtHostInterface::GetInstance()->executeOnEmulationThread([this, username, password]() {
+    const bool result = Cheevos::Login(username.toStdString().c_str(), password.toStdString().c_str());
+    QMetaObject::invokeMethod(this, "processLoginResult", Qt::QueuedConnection, Q_ARG(bool, result));
+  });
+}
 
+void AchievementLoginDialog::cancelClicked()
+{
+  done(1);
+}
+
+void AchievementLoginDialog::processLoginResult(bool result)
+{
   if (!result)
   {
     QMessageBox::critical(this, tr("Login Error"),
@@ -36,11 +44,6 @@ void AchievementLoginDialog::loginClicked()
   }
 
   done(0);
-}
-
-void AchievementLoginDialog::cancelClicked()
-{
-  done(1);
 }
 
 void AchievementLoginDialog::connectUi()

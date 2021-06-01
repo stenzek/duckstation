@@ -144,8 +144,9 @@ bool QtDisplayWidget::event(QEvent* event)
       if (!m_relative_mouse_enabled)
       {
         const qreal dpr = devicePixelRatioFromScreen();
-        const int scaled_x = static_cast<int>(static_cast<qreal>(mouse_event->x()) * dpr);
-        const int scaled_y = static_cast<int>(static_cast<qreal>(mouse_event->y()) * dpr);
+        const QPoint mouse_pos = mouse_event->pos();
+        const int scaled_x = static_cast<int>(static_cast<qreal>(mouse_pos.x()) * dpr);
+        const int scaled_y = static_cast<int>(static_cast<qreal>(mouse_pos.y()) * dpr);
 
         windowMouseMoveEvent(scaled_x, scaled_y);
       }

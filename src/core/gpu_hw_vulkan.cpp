@@ -1438,6 +1438,12 @@ void GPU_HW_Vulkan::UpdateDisplay()
 
 void GPU_HW_Vulkan::ReadVRAM(u32 x, u32 y, u32 width, u32 height)
 {
+  if (IsUsingSoftwareRendererForReadbacks())
+  {
+    ReadSoftwareRendererVRAM(x, y, width, height);
+    return;
+  }
+
   // Get bounds with wrap-around handled.
   const Common::Rectangle<u32> copy_rect = GetVRAMTransferBounds(x, y, width, height);
   const u32 encoded_width = (copy_rect.GetWidth() + 1) / 2;
@@ -1451,8 +1457,9 @@ void GPU_HW_Vulkan::ReadVRAM(u32 x, u32 y, u32 width, u32 height)
 
   // Work around Mali driver bug: set full framebuffer size for render area. The GPU crashes with a page fault if we use
   // the actual size we're rendering to...
-  BeginRenderPass(m_vram_readback_render_pass, m_vram_readback_framebuffer, 0, 0, m_vram_readback_texture.GetWidth(),
-                  m_vram_readback_texture.GetHeight());
+  const u32 rp_width = std::max<u32>(16, encoded_width);
+  const u32 rp_height = std::max<u32>(16, encoded_height);
+  BeginRenderPass(m_vram_readback_render_pass, m_vram_readback_framebuffer, 0, 0, rp_width, rp_height);
 
   // Encode the 24-bit texture as 16-bit.
   const u32 uniforms[4] = {copy_rect.left, copy_rect.top, copy_rect.GetWidth(), copy_rect.GetHeight()};
@@ -1482,13 +1489,16 @@ void GPU_HW_Vulkan::ReadVRAM(u32 x, u32 y, u32 width, u32 height)
 
 void GPU_HW_Vulkan::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
 {
+  if (IsUsingSoftwareRendererForReadbacks())
+    FillSoftwareRendererVRAM(x, y, width, height, color);
+
   if ((x + width) > VRAM_WIDTH || (y + height) > VRAM_HEIGHT)
   {
     // CPU round trip if oversized for now.
     Log_WarningPrintf("Oversized VRAM fill (%u-%u, %u-%u), CPU round trip", x, x + width, y, y + height);
     ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
     GPU::FillVRAM(x, y, width, height, color);
-    UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, m_vram_shadow.data(), false, false);
+    UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, m_vram_ptr, false, false);
     return;
   }
 
@@ -1515,6 +1525,9 @@ void GPU_HW_Vulkan::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
 
 void GPU_HW_Vulkan::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, bool set_mask, bool check_mask)
 {
+  if (IsUsingSoftwareRendererForReadbacks())
+    UpdateSoftwareRendererVRAM(x, y, width, height, data, set_mask, check_mask);
+
   const Common::Rectangle<u32> bounds = GetVRAMTransferBounds(x, y, width, height);
   GPU_HW::UpdateVRAM(bounds.left, bounds.top, bounds.GetWidth(), bounds.GetHeight(), data, set_mask, check_mask);
 
@@ -1569,6 +1582,9 @@ void GPU_HW_Vulkan::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
 
 void GPU_HW_Vulkan::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height)
 {
+  if (IsUsingSoftwareRendererForReadbacks())
+    CopySoftwareRendererVRAM(src_x, src_y, dst_x, dst_y, width, height);
+
   if (UseVRAMCopyShader(src_x, src_y, dst_x, dst_y, width, height) || IsUsingMultisampling())
   {
     const Common::Rectangle<u32> src_bounds = GetVRAMTransferBounds(src_x, src_y, width, height);

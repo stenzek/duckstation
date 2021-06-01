@@ -31,6 +31,7 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QW
   SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.region, "Console", "Region",
                                                &Settings::ParseConsoleRegionName, &Settings::GetConsoleRegionName,
                                                Settings::DEFAULT_CONSOLE_REGION);
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.enable8MBRAM, "Console", "Enable8MBRAM", false);
   SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.cpuExecutionMode, "CPU", "ExecutionMode",
                                                &Settings::ParseCPUExecutionMode, &Settings::GetCPUExecutionModeName,
                                                Settings::DEFAULT_CPU_EXECUTION_MODE);
@@ -40,6 +41,7 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QW
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.cdromRegionCheck, "CDROM", "RegionCheck", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.cdromLoadImageToRAM, "CDROM", "LoadImageToRAM",
                                                false);
+  SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.cdromSeekSpeedup, "CDROM", "SeekSpeedup", 1);
   SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.multitapMode, "ControllerPorts", "MultitapMode",
                                                &Settings::ParseMultitapModeName, &Settings::GetMultitapModeName,
                                                Settings::DEFAULT_MULTITAP_MODE);
@@ -54,9 +56,22 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QW
   dialog->registerWidgetHelp(m_ui.cpuClockSpeed, tr("Overclocking Percentage"), tr("100%"),
                              tr("Selects the percentage of the normal clock speed the emulated hardware will run at."));
   dialog->registerWidgetHelp(
+    m_ui.enable8MBRAM, tr("Enable 8MB RAM (Dev Console)"), tr("Unchecked"),
+    tr("Enables an additional 6MB of RAM, usually present on dev consoles. Games have to use a larger heap size for "
+       "this additional RAM to be usable, and may break games which rely on memory mirrors, so it should only be used "
+       "with compatible mods."));
+  dialog->registerWidgetHelp(
+    m_ui.cdromLoadImageToRAM, tr("Preload Image to RAM"), tr("Unchecked"),
+    tr("Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay. In some "
+       "cases also eliminates stutter when games initiate audio track playback."));
+  dialog->registerWidgetHelp(
     m_ui.cdromReadSpeedup, tr("CDROM Read Speedup"), tr("None (Double Speed)"),
     tr("Speeds up CD-ROM reads by the specified factor. Only applies to double-speed reads, and is ignored when audio "
        "is playing. May improve loading speeds in some games, at the cost of breaking others."));
+  dialog->registerWidgetHelp(
+    m_ui.cdromSeekSpeedup, tr("CDROM Seek Speedup"), tr("None (Normal Speed)"),
+    tr("Reduces the simulated time for the CD-ROM sled to move to different areas of the disc. Can improve loading "
+       "times, but crash games which do not expect the CD-ROM to operate faster."));
   dialog->registerWidgetHelp(
     m_ui.cdromReadThread, tr("Use Read Thread (Asynchronous)"), tr("Checked"),
     tr("Reduces hitches in emulation by reading/decompressing CD data asynchronously on a worker thread."));

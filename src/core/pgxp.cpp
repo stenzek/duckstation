@@ -19,6 +19,8 @@
  ***************************************************************************/
 
 #include "pgxp.h"
+#include "bus.h"
+#include "cpu_core.h"
 #include "settings.h"
 #include <climits>
 #include <cmath>
@@ -122,7 +124,6 @@ typedef union
 } low_value;
 
 // pgxp_mem.h
-static u32 PGXP_ConvertAddress(u32 addr);
 static PGXP_value* GetPtr(u32 addr);
 static PGXP_value* ReadMem(u32 addr);
 
@@ -233,56 +234,16 @@ void PGXP_InitMem()
   }
 }
 
-u32 PGXP_ConvertAddress(u32 addr)
-{
-  u32 paddr = addr;
-  switch (paddr >> 24)
-  {
-    case 0x80:
-    case 0xa0:
-    case 0x00:
-      // RAM further mirrored over 8MB
-      paddr = ((paddr & 0x7FFFFF) % 0x200000) >> 2;
-      paddr = UserMemOffset + paddr;
-      break;
-    default:
-      if ((paddr >> 20) == 0x1f8)
-      {
-        if (paddr >= 0x1f801000)
-        {
-          //	paddr = ((paddr & 0xFFFF) - 0x1000);
-          //	paddr = (paddr % 0x2000) >> 2;
-          paddr = ((paddr & 0xFFFF) - 0x1000) >> 2;
-          paddr = RegisterOffset + paddr;
-          break;
-        }
-        else
-        {
-          // paddr = ((paddr & 0xFFF) % 0x400) >> 2;
-          paddr = (paddr & 0x3FF) >> 2;
-          paddr = ScratchOffset + paddr;
-          break;
-        }
-      }
-
-      paddr = InvalidAddress;
-      break;
-  }
-
-#ifdef GTE_LOG
-    // GTE_LOG("PGXP_Read %x [%x] |", addr, paddr);
-#endif
-
-  return paddr;
-}
-
 ALWAYS_INLINE_RELEASE PGXP_value* GetPtr(u32 addr)
 {
-  addr = PGXP_ConvertAddress(addr);
+  if ((addr & CPU::DCACHE_LOCATION_MASK) == CPU::DCACHE_LOCATION)
+    return &Mem[ScratchOffset + ((addr & CPU::DCACHE_OFFSET_MASK) >> 2)];
 
-  if (addr != InvalidAddress)
-    return &Mem[addr];
-  return NULL;
+  const u32 paddr = (addr & CPU::PHYSICAL_MEMORY_ADDRESS_MASK);
+  if (paddr < Bus::RAM_MIRROR_END)
+    return &Mem[(paddr & Bus::RAM_2MB_MASK) >> 2];
+  else
+    return nullptr;
 }
 
 ALWAYS_INLINE_RELEASE PGXP_value* ReadMem(u32 addr)
@@ -428,13 +389,13 @@ void PGXP_InitGTE()
 }
 
 // Instruction register decoding
-#define op(_instr) (_instr >> 26)          // The op part of the instruction register
-#define func(_instr) ((_instr)&0x3F)       // The funct part of the instruction register
-#define sa(_instr) ((_instr >> 6) & 0x1F)  // The sa part of the instruction register
+#define op(_instr) (_instr >> 26) // The op part of the instruction register
+#define func(_instr) ((_instr)&0x3F) // The funct part of the instruction register
+#define sa(_instr) ((_instr >> 6) & 0x1F) // The sa part of the instruction register
 #define rd(_instr) ((_instr >> 11) & 0x1F) // The rd part of the instruction register
 #define rt(_instr) ((_instr >> 16) & 0x1F) // The rt part of the instruction register
 #define rs(_instr) ((_instr >> 21) & 0x1F) // The rs part of the instruction register
-#define imm(_instr) (_instr & 0xFFFF)      // The immediate part of the instruction register
+#define imm(_instr) (_instr & 0xFFFF) // The immediate part of the instruction register
 
 #define SX0 (GTE_data_reg[12].x)
 #define SY0 (GTE_data_reg[12].y)
@@ -777,13 +738,13 @@ bool GetPreciseVertex(u32 addr, u32 value, int x, int y, int xOffs, int yOffs, f
 // pgxp_cpu.c
 
 // Instruction register decoding
-#define op(_instr) (_instr >> 26)          // The op part of the instruction register
-#define func(_instr) ((_instr)&0x3F)       // The funct part of the instruction register
-#define sa(_instr) ((_instr >> 6) & 0x1F)  // The sa part of the instruction register
+#define op(_instr) (_instr >> 26) // The op part of the instruction register
+#define func(_instr) ((_instr)&0x3F) // The funct part of the instruction register
+#define sa(_instr) ((_instr >> 6) & 0x1F) // The sa part of the instruction register
 #define rd(_instr) ((_instr >> 11) & 0x1F) // The rd part of the instruction register
 #define rt(_instr) ((_instr >> 16) & 0x1F) // The rt part of the instruction register
 #define rs(_instr) ((_instr >> 21) & 0x1F) // The rs part of the instruction register
-#define imm(_instr) (_instr & 0xFFFF)      // The immediate part of the instruction register
+#define imm(_instr) (_instr & 0xFFFF) // The immediate part of the instruction register
 #define imm_sext(_instr)                                                                                               \
   static_cast<s32>(static_cast<s16>(_instr & 0xFFFF)) // The immediate part of the instruction register
 
@@ -1281,9 +1242,9 @@ void CPU_SLT(u32 instr, u32 rsVal, u32 rtVal)
   ret.y = 0.f;
   ret.compFlags[1] = VALID;
 
-  ret.x = (CPU_reg[rs(instr)].y < CPU_reg[rt(instr)].y) ?
-            1.f :
-            (f16Unsign(CPU_reg[rs(instr)].x) < f16Unsign(CPU_reg[rt(instr)].x)) ? 1.f : 0.f;
+  ret.x = (CPU_reg[rs(instr)].y < CPU_reg[rt(instr)].y)                       ? 1.f :
+          (f16Unsign(CPU_reg[rs(instr)].x) < f16Unsign(CPU_reg[rt(instr)].x)) ? 1.f :
+                                                                                0.f;
 
   ret.value = BoolToUInt32(static_cast<s32>(rsVal) < static_cast<s32>(rtVal));
   CPU_reg[rd(instr)] = ret;
@@ -1307,9 +1268,9 @@ void CPU_SLTU(u32 instr, u32 rsVal, u32 rtVal)
   ret.y = 0.f;
   ret.compFlags[1] = VALID;
 
-  ret.x = (f16Unsign(CPU_reg[rs(instr)].y) < f16Unsign(CPU_reg[rt(instr)].y)) ?
-            1.f :
-            (f16Unsign(CPU_reg[rs(instr)].x) < f16Unsign(CPU_reg[rt(instr)].x)) ? 1.f : 0.f;
+  ret.x = (f16Unsign(CPU_reg[rs(instr)].y) < f16Unsign(CPU_reg[rt(instr)].y)) ? 1.f :
+          (f16Unsign(CPU_reg[rs(instr)].x) < f16Unsign(CPU_reg[rt(instr)].x)) ? 1.f :
+                                                                                0.f;
 
   ret.value = BoolToUInt32(rsVal < rtVal);
   CPU_reg[rd(instr)] = ret;

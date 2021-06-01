@@ -15,10 +15,13 @@ public:
   MemoryCard();
   ~MemoryCard();
 
+  static std::string SanitizeGameTitleForFileName(const std::string_view& name);
+
   static std::unique_ptr<MemoryCard> Create();
   static std::unique_ptr<MemoryCard> Open(std::string_view filename);
 
   const MemoryCardImage::DataArray& GetData() const { return m_data; }
+  MemoryCardImage::DataArray& GetData() { return m_data; }
   const std::string& GetFilename() const { return m_filename; }
   void SetFilename(std::string filename) { m_filename = std::move(filename); }
 

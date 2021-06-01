@@ -125,10 +125,7 @@ s32 SaveStateSelectorUI::GetSelectedStateSlot() const
 void SaveStateSelectorUI::SelectNextSlot()
 {
   if (!m_open)
-  {
     Open();
-    return;
-  }
 
   ResetOpenTimer();
   m_current_selection = (m_current_selection == static_cast<u32>(m_slots.size() - 1)) ? 0 : (m_current_selection + 1);
@@ -137,10 +134,7 @@ void SaveStateSelectorUI::SelectNextSlot()
 void SaveStateSelectorUI::SelectPreviousSlot()
 {
   if (!m_open)
-  {
     Open();
-    return;
-  }
 
   ResetOpenTimer();
   m_current_selection =

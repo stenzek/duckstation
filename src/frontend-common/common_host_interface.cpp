@@ -12,10 +12,12 @@
 #include "core/cpu_code_cache.h"
 #include "core/dma.h"
 #include "core/gpu.h"
+#include "core/gte.h"
 #include "core/host_display.h"
 #include "core/mdec.h"
 #include "core/pgxp.h"
 #include "core/save_state_version.h"
+#include "core/settings.h"
 #include "core/spu.h"
 #include "core/system.h"
 #include "core/texture_replacements.h"
@@ -85,7 +87,6 @@ bool CommonHostInterface::Initialize()
 
   m_game_list = std::make_unique<GameList>();
   m_game_list->SetCacheFilename(GetUserDirectoryRelativePath("cache/gamelist.cache"));
-  m_game_list->SetUserDatabaseFilename(GetUserDirectoryRelativePath("redump.dat"));
   m_game_list->SetUserCompatibilityListFilename(GetUserDirectoryRelativePath("compatibility.xml"));
   m_game_list->SetUserGameSettingsFilename(GetUserDirectoryRelativePath("gamesettings.ini"));
 
@@ -172,6 +173,8 @@ bool CommonHostInterface::BootSystem(const SystemBootParameters& parameters)
   // If the fullscreen UI is enabled, make sure it's finished loading the game list so we don't race it.
   if (m_display && m_fullscreen_ui_enabled)
     FullscreenUI::EnsureGameListLoaded();
+
+  ApplyRendererFromGameSettings(parameters.filename);
 
   if (!HostInterface::BootSystem(parameters))
   {
@@ -511,17 +514,13 @@ void CommonHostInterface::CreateImGuiContext()
   ImGui::GetIO().IniFilename = nullptr;
 #ifndef __ANDROID__
   // Android has no keyboard, nor are we using ImGui for any actual user-interactable windows.
-  ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad;
+  ImGui::GetIO().ConfigFlags |=
+    ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad | ImGuiConfigFlags_NoMouseCursorChange;
 #endif
 }
 
 bool CommonHostInterface::CreateHostDisplayResources()
 {
-  m_logo_texture = m_display->CreateTexture(APP_ICON_WIDTH, APP_ICON_HEIGHT, 1, 1, 1, HostDisplayPixelFormat::RGBA8,
-                                            APP_ICON_DATA, sizeof(u32) * APP_ICON_WIDTH, false);
-  if (!m_logo_texture)
-    Log_WarningPrintf("Failed to create logo texture");
-
   const float framebuffer_scale = m_display->GetWindowScale();
   ImGui::GetIO().DisplayFramebufferScale = ImVec2(framebuffer_scale, framebuffer_scale);
   ImGui::GetIO().DisplaySize.x = static_cast<float>(m_display->GetWindowWidth());
@@ -548,13 +547,16 @@ bool CommonHostInterface::CreateHostDisplayResources()
   if (!m_fullscreen_ui_enabled)
     ImGuiFullscreen::ResetFonts();
 
-  if (!m_display->UpdateImGuiFontTexture())
+  m_logo_texture = m_display->CreateTexture(APP_ICON_WIDTH, APP_ICON_HEIGHT, 1, 1, 1, HostDisplayPixelFormat::RGBA8,
+                                            APP_ICON_DATA, sizeof(u32) * APP_ICON_WIDTH, false);
+  if (!m_logo_texture || !m_display->UpdateImGuiFontTexture())
   {
     Log_ErrorPrintf("Failed to create ImGui font text");
     if (m_fullscreen_ui_enabled)
       FullscreenUI::Shutdown();
 
     m_display->DestroyImGuiContext();
+    m_logo_texture.reset();
     return false;
   }
 
@@ -574,9 +576,11 @@ void CommonHostInterface::ReleaseHostDisplayResources()
 
 void CommonHostInterface::OnHostDisplayResized()
 {
-  const u32 new_width = m_display ? std::max<u32>(m_display->GetWindowWidth(), 1) : 0;
-  const u32 new_height = m_display ? std::max<u32>(m_display->GetWindowHeight(), 1) : 0;
+  const u32 new_width = m_display ? m_display->GetWindowWidth() : 0;
+  const u32 new_height = m_display ? m_display->GetWindowHeight() : 0;
   const float new_scale = m_display ? m_display->GetWindowScale() : 1.0f;
+
+  HostInterface::OnHostDisplayResized();
 
   ImGui::GetIO().DisplaySize.x = static_cast<float>(new_width);
   ImGui::GetIO().DisplaySize.y = static_cast<float>(new_height);
@@ -1150,8 +1154,15 @@ void CommonHostInterface::AddOSDMessage(std::string message, float duration /*= 
 
 void CommonHostInterface::ClearOSDMessages()
 {
-  std::unique_lock<std::mutex> lock(m_osd_messages_lock);
-  m_osd_posted_messages.clear();
+  {
+    std::unique_lock<std::mutex> lock(m_osd_messages_lock);
+    m_osd_posted_messages.clear();
+  }
+
+  m_osd_active_messages.clear();
+
+  if (IsFullscreenUIEnabled())
+    ImGuiFullscreen::ClearNotifications();
 }
 
 bool CommonHostInterface::EnumerateOSDMessages(std::function<bool(const std::string&, float)> callback)
@@ -1361,7 +1372,7 @@ void CommonHostInterface::ClearInputMap()
 void CommonHostInterface::AddControllerRumble(u32 controller_index, u32 num_motors, ControllerRumbleCallback callback)
 {
   ControllerRumbleState rumble;
-  rumble.controller_index = 0;
+  rumble.controller_index = controller_index;
   rumble.num_motors = std::min<u32>(num_motors, ControllerRumbleState::MAX_MOTORS);
   rumble.last_strength.fill(0.0f);
   rumble.update_callback = std::move(callback);
@@ -1417,6 +1428,98 @@ void CommonHostInterface::StopControllerRumble()
   }
 }
 
+void CommonHostInterface::SetControllerAutoFireState(u32 controller_index, s32 button_code, bool active)
+{
+  for (ControllerAutoFireState& ts : m_controller_autofires)
+  {
+    if (ts.controller_index != controller_index || ts.button_code != button_code)
+      continue;
+
+    if (!active)
+    {
+      if (ts.state)
+      {
+        Controller* controller = System::GetController(ts.controller_index);
+        if (controller)
+          controller->SetButtonState(ts.button_code, false);
+      }
+
+      ts.state = false;
+      ts.countdown = ts.frequency;
+    }
+
+    ts.active = active;
+    return;
+  }
+}
+
+void CommonHostInterface::SetControllerAutoFireSlotState(u32 controller_index, u32 slot_index, bool active)
+{
+  for (ControllerAutoFireState& ts : m_controller_autofires)
+  {
+    if (ts.controller_index != controller_index || ts.slot_index != slot_index)
+      continue;
+
+    if (!active)
+    {
+      if (ts.state)
+      {
+        Controller* controller = System::GetController(ts.controller_index);
+        if (controller)
+          controller->SetButtonState(ts.button_code, false);
+      }
+
+      ts.state = false;
+      ts.countdown = ts.frequency;
+    }
+
+    ts.active = active;
+    return;
+  }
+}
+
+void CommonHostInterface::UpdateControllerAutoFire()
+{
+  for (ControllerAutoFireState& ts : m_controller_autofires)
+  {
+    if (!ts.active || (--ts.countdown) > 0)
+      continue;
+
+    ts.countdown = ts.frequency;
+    ts.state = !ts.state;
+
+    Controller* controller = System::GetController(ts.controller_index);
+    if (controller)
+      controller->SetButtonState(ts.button_code, ts.state);
+  }
+}
+
+void CommonHostInterface::StopControllerAutoFire()
+{
+  for (ControllerAutoFireState& ts : m_controller_autofires)
+  {
+    if (!ts.active)
+      continue;
+
+    ts.countdown = ts.frequency;
+
+    if (ts.state)
+    {
+      Controller* controller = System::GetController(ts.controller_index);
+      if (controller)
+        controller->SetButtonState(ts.button_code, false);
+
+      ts.state = false;
+    }
+  }
+}
+
+void CommonHostInterface::UpdateControllerMetaState()
+{
+  UpdateControllerRumble();
+  UpdateControllerAutoFire();
+}
+
 static bool SplitBinding(const std::string& binding, std::string_view* device, std::string_view* sub_binding)
 {
   const std::string::size_type slash_pos = binding.find('/');
@@ -1433,8 +1536,10 @@ static bool SplitBinding(const std::string& binding, std::string_view* device, s
 
 void CommonHostInterface::UpdateControllerInputMap(SettingsInterface& si)
 {
+  StopControllerAutoFire();
   StopControllerRumble();
   m_controller_vibration_motors.clear();
+  m_controller_autofires.clear();
 
   for (u32 controller_index = 0; controller_index < NUM_CONTROLLER_AND_CARD_PORTS; controller_index++)
   {
@@ -1506,6 +1611,59 @@ void CommonHostInterface::UpdateControllerInputMap(SettingsInterface& si)
     {
       const float deadzone_size = si.GetFloatValue(category, "Deadzone", 0.25f);
       m_controller_interface->SetControllerDeadzone(controller_index, deadzone_size);
+    }
+
+    for (u32 turbo_button_index = 0; turbo_button_index < NUM_CONTROLLER_AUTOFIRE_BUTTONS; turbo_button_index++)
+    {
+      const std::string button_name(
+        si.GetStringValue(category, TinyString::FromFormat("AutoFire%uButton", turbo_button_index + 1), ""));
+      if (button_name.empty())
+        continue;
+
+      const std::vector<std::string> bindings =
+        si.GetStringList(category, TinyString::FromFormat("AutoFire%u", turbo_button_index + 1));
+
+#ifndef __ANDROID__
+      // Android doesn't require a binding, since we can trigger it from the touchscreen controller.
+      if (bindings.empty())
+        continue;
+#endif
+
+      const std::optional<s32> button_code = Controller::GetButtonCodeByName(ctype, button_name);
+      if (!button_code.has_value())
+      {
+        Log_ErrorPrintf("Invalid autofire button binding '%s'", button_name.c_str());
+        continue;
+      }
+
+      ControllerAutoFireState ts;
+      ts.controller_index = controller_index;
+      ts.slot_index = turbo_button_index;
+      ts.button_code = button_code.value();
+      ts.frequency = static_cast<u8>(
+        std::clamp<s32>(si.GetIntValue(category, TinyString::FromFormat("AutoFire%uFrequency", turbo_button_index + 1),
+                                       DEFAULT_AUTOFIRE_FREQUENCY),
+                        1, std::numeric_limits<decltype(ts.frequency)>::max()));
+      ts.countdown = ts.frequency;
+      ts.active = false;
+      ts.state = false;
+
+      for (const std::string& binding : bindings)
+      {
+        std::string_view device, button;
+        if (!SplitBinding(binding, &device, &button) ||
+            !AddButtonToInputMap(binding, device, button,
+                                 std::bind(&CommonHostInterface::SetControllerAutoFireState, this, controller_index,
+                                           button_code.value(), std::placeholders::_1)))
+        {
+          Log_ErrorPrintf("Failed to register binding '%s' for autofire button", binding.c_str());
+#ifndef __ANDROID__
+          continue;
+#endif
+        }
+      }
+
+      m_controller_autofires.push_back(ts);
     }
   }
 }
@@ -1816,17 +1974,6 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                      PauseSystem(!System::IsPaused());
                  });
 
-  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("ToggleCheats"),
-                 StaticString(TRANSLATABLE("Hotkeys", "Toggle Cheats")), [this](bool pressed) {
-                   if (pressed && System::IsValid())
-                   {
-                     if (!IsCheevosChallengeModeActive())
-                       DoToggleCheats();
-                     else
-                       DisplayHotkeyBlockedByChallengeModeMessage();
-                   }
-                 });
-
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("PowerOff"),
                  StaticString(TRANSLATABLE("Hotkeys", "Power Off System")), [this](bool pressed) {
                    if (pressed && System::IsValid())
@@ -1852,12 +1999,7 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                      PowerOffSystem(ShouldSaveResumeState());
                    }
                  });
-#else
-  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("TogglePatchCodes"),
-                 StaticString(TRANSLATABLE("Hotkeys", "Toggle Patch Codes")), [this](bool pressed) {
-                   if (pressed && System::IsValid() && !IsCheevosChallengeModeActive())
-                     DoToggleCheats();
-                 });
+
 #endif
 
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("Reset"),
@@ -1872,6 +2014,24 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                      SaveScreenshot();
                  });
 
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("ChangeDisc"),
+                 StaticString(TRANSLATABLE("Hotkeys", "Change Disc")), [this](bool pressed) {
+                   if (pressed && System::IsValid() && System::HasMediaSubImages())
+                   {
+                     const u32 current = System::GetMediaSubImageIndex();
+                     const u32 next = (current + 1) % System::GetMediaSubImageCount();
+                     if (current != next)
+                       System::SwitchMediaSubImage(next);
+                   }
+                 });
+
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("SwapMemoryCards"),
+                 StaticString(TRANSLATABLE("Hotkeys", "Swap Memory Card Slots")), [this](bool pressed) {
+                   if (pressed && System::IsValid())
+                     SwapMemoryCards();
+                 });
+
+#ifndef __ANDROID__
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("FrameStep"),
                  StaticString(TRANSLATABLE("Hotkeys", "Frame Step")), [this](bool pressed) {
                    if (pressed && System::IsValid())
@@ -1883,7 +2043,6 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                    }
                  });
 
-#ifndef __ANDROID__
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("Rewind"),
                  StaticString(TRANSLATABLE("Hotkeys", "Rewind")), [this](bool pressed) {
                    if (System::IsValid())
@@ -1901,7 +2060,55 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                      }
                    }
                  });
+
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("ToggleCheats"),
+                 StaticString(TRANSLATABLE("Hotkeys", "Toggle Cheats")), [this](bool pressed) {
+                   if (pressed && System::IsValid())
+                   {
+                     if (!IsCheevosChallengeModeActive())
+                       DoToggleCheats();
+                     else
+                       DisplayHotkeyBlockedByChallengeModeMessage();
+                   }
+                 });
+#else
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("TogglePatchCodes"),
+                 StaticString(TRANSLATABLE("Hotkeys", "Toggle Patch Codes")), [this](bool pressed) {
+                   if (pressed && System::IsValid())
+                   {
+                     if (!IsCheevosChallengeModeActive())
+                       DoToggleCheats();
+                     else
+                       DisplayHotkeyBlockedByChallengeModeMessage();
+                   }
+                 });
 #endif
+
+  RegisterHotkey(
+    StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("ToggleOverclocking"),
+    StaticString(TRANSLATABLE("Hotkeys", "Toggle Clock Speed Control (Overclocking)")), [this](bool pressed) {
+      if (pressed && System::IsValid())
+      {
+        g_settings.cpu_overclock_enable = !g_settings.cpu_overclock_enable;
+        g_settings.UpdateOverclockActive();
+        System::UpdateOverclock();
+
+        if (g_settings.cpu_overclock_enable)
+        {
+          const u32 percent = g_settings.GetCPUOverclockPercent();
+          const double clock_speed =
+            ((static_cast<double>(System::MASTER_CLOCK) * static_cast<double>(percent)) / 100.0) / 1000000.0;
+          AddFormattedOSDMessage(5.0f,
+                                 TranslateString("OSDMessage", "CPU clock speed control enabled (%u%% / %.3f MHz)."),
+                                 percent, clock_speed);
+        }
+        else
+        {
+          AddFormattedOSDMessage(5.0f, TranslateString("OSDMessage", "CPU clock speed control disabled (%.3f MHz)."),
+                                 static_cast<double>(System::MASTER_CLOCK) / 1000000.0);
+        }
+      }
+    });
 }
 
 void CommonHostInterface::RegisterGraphicsHotkeys()
@@ -1937,25 +2144,6 @@ void CommonHostInterface::RegisterGraphicsHotkeys()
                    }
                  });
 
-  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Graphics")), StaticString("TogglePGXPDepth"),
-                 StaticString(TRANSLATABLE("Hotkeys", "Toggle PGXP Depth Buffer")), [this](bool pressed) {
-                   if (pressed && System::IsValid())
-                   {
-                     g_settings.gpu_pgxp_depth_buffer = !g_settings.gpu_pgxp_depth_buffer;
-                     if (!g_settings.gpu_pgxp_enable)
-                       return;
-
-                     g_gpu->RestoreGraphicsAPIState();
-                     g_gpu->UpdateSettings();
-                     g_gpu->ResetGraphicsAPIState();
-                     System::ClearMemorySaveStates();
-                     AddOSDMessage(g_settings.gpu_pgxp_depth_buffer ?
-                                     TranslateStdString("OSDMessage", "PGXP Depth Buffer is now enabled.") :
-                                     TranslateStdString("OSDMessage", "PGXP Depth Buffer is now disabled."),
-                                   5.0f);
-                   }
-                 });
-
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Graphics")), StaticString("IncreaseResolutionScale"),
                  StaticString(TRANSLATABLE("Hotkeys", "Increase Resolution Scale")), [this](bool pressed) {
                    if (pressed && System::IsValid())
@@ -1986,6 +2174,59 @@ void CommonHostInterface::RegisterGraphicsHotkeys()
                    {
                      AddOSDMessage(TranslateStdString("OSDMessage", "Texture replacements reloaded."), 10.0f);
                      g_texture_replacements.Reload();
+                   }
+                 });
+
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Graphics")), StaticString("ToggleWidescreen"),
+                 StaticString(TRANSLATABLE("Hotkeys", "Toggle Widescreen")), [this](bool pressed) {
+                   if (pressed && System::IsValid())
+                   {
+                     ToggleWidescreen();
+                   }
+                 });
+
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Graphics")), StaticString("TogglePGXPDepth"),
+                 StaticString(TRANSLATABLE("Hotkeys", "Toggle PGXP Depth Buffer")), [this](bool pressed) {
+                   if (pressed && System::IsValid())
+                   {
+                     g_settings.gpu_pgxp_depth_buffer = !g_settings.gpu_pgxp_depth_buffer;
+                     if (!g_settings.gpu_pgxp_enable)
+                       return;
+
+                     g_gpu->RestoreGraphicsAPIState();
+                     g_gpu->UpdateSettings();
+                     g_gpu->ResetGraphicsAPIState();
+                     System::ClearMemorySaveStates();
+                     AddOSDMessage(g_settings.gpu_pgxp_depth_buffer ?
+                                     TranslateStdString("OSDMessage", "PGXP Depth Buffer is now enabled.") :
+                                     TranslateStdString("OSDMessage", "PGXP Depth Buffer is now disabled."),
+                                   5.0f);
+                   }
+                 });
+
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Graphics")), StaticString("TogglePGXPCPU"),
+                 StaticString(TRANSLATABLE("Hotkeys", "Toggle PGXP CPU Mode")), [this](bool pressed) {
+                   if (pressed && System::IsValid())
+                   {
+                     g_settings.gpu_pgxp_cpu = !g_settings.gpu_pgxp_cpu;
+                     g_gpu->RestoreGraphicsAPIState();
+                     g_gpu->UpdateSettings();
+                     g_gpu->ResetGraphicsAPIState();
+                     System::ClearMemorySaveStates();
+                     AddOSDMessage(g_settings.gpu_pgxp_cpu ?
+                                     TranslateStdString("OSDMessage", "PGXP CPU mode is now enabled.") :
+                                     TranslateStdString("OSDMessage", "PGXP CPU mode is now disabled."),
+                                   5.0f);
+
+                     if (g_settings.gpu_pgxp_enable)
+                     {
+                       PGXP::Shutdown();
+                       PGXP::Initialize();
+
+                       // we need to recompile all blocks if pgxp is toggled on/off
+                       if (g_settings.IsUsingCodeCache())
+                         CPU::CodeCache::Flush();
+                     }
                    }
                  });
 }
@@ -2547,17 +2788,15 @@ void CommonHostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetStringValue("Controller1", "ButtonR1", "Keyboard/E");
   si.SetStringValue("Controller1", "ButtonR2", "Keyboard/3");
   si.SetStringValue("Hotkeys", "FastForward", "Keyboard/Tab");
-  si.SetStringValue("Hotkeys", "TogglePause", "Keyboard/Pause");
+  si.SetStringValue("Hotkeys", "TogglePause", "Keyboard/Space");
   si.SetStringValue("Hotkeys", "ToggleFullscreen", "Keyboard/Alt+Return");
   si.SetStringValue("Hotkeys", "Screenshot", "Keyboard/F10");
-  si.SetStringValue("Hotkeys", "IncreaseResolutionScale", "Keyboard/PageUp");
-  si.SetStringValue("Hotkeys", "DecreaseResolutionScale", "Keyboard/PageDown");
-  si.SetStringValue("Hotkeys", "ToggleSoftwareRendering", "Keyboard/End");
 
   si.SetStringValue("Main", "ControllerBackend",
                     ControllerInterface::GetBackendName(ControllerInterface::GetDefaultBackend()));
 
   si.SetBoolValue("Display", "InternalResolutionScreenshots", false);
+  si.SetBoolValue("Display", "ShowStatusIndicators", true);
 
 #ifdef WITH_DISCORD_PRESENCE
   si.SetBoolValue("Main", "EnableDiscordPresence", false);
@@ -2640,6 +2879,11 @@ void CommonHostInterface::LoadSettings(SettingsInterface& si)
         }
       }
     }
+  }
+  else if (m_fullscreen_ui_enabled)
+  {
+    if (FullscreenUI::IsInitialized())
+      FullscreenUI::UpdateSettings();
   }
 
   const bool input_display_enabled = si.GetBoolValue("Display", "ShowInputs", false);
@@ -2857,22 +3101,27 @@ void CommonHostInterface::DisplayLoadingScreen(const char* message, int progress
 void CommonHostInterface::GetGameInfo(const char* path, CDImage* image, std::string* code, std::string* title)
 {
   const GameListEntry* list_entry = m_game_list->GetEntryForPath(path);
-  if (list_entry)
+  if (list_entry && list_entry->type != GameListEntryType::Playlist)
   {
     *code = list_entry->code;
     *title = list_entry->title;
+    return;
   }
-  else
-  {
-    if (image)
-      *code = System::GetGameCodeForImage(image, true);
 
-    const GameListDatabaseEntry* db_entry = (!code->empty()) ? m_game_list->GetDatabaseEntryForCode(*code) : nullptr;
-    if (db_entry)
-      *title = db_entry->title;
-    else
-      *title = System::GetTitleForPath(path);
+  if (image)
+  {
+    GameDatabaseEntry database_entry;
+    if (m_game_list->GetDatabaseEntryForDisc(image, &database_entry))
+    {
+      *code = std::move(database_entry.serial);
+      *title = std::move(database_entry.title);
+      return;
+    }
+
+    *code = System::GetGameCodeForImage(image, true);
   }
+
+  *title = FileSystem::GetFileTitleFromPath(path);
 }
 
 bool CommonHostInterface::SaveResumeSaveState()
@@ -2980,13 +3229,96 @@ bool CommonHostInterface::SaveScreenshot(const char* filename /* = nullptr */, b
 
 void CommonHostInterface::ApplyGameSettings(bool display_osd_messages)
 {
+  g_settings.controller_disable_analog_mode_forcing = false;
+
   // this gets called while booting, so can't use valid
   if (System::IsShutdown() || System::GetRunningCode().empty() || !g_settings.apply_game_settings)
     return;
 
-  const GameSettings::Entry* gs = m_game_list->GetGameSettings(System::GetRunningPath(), System::GetRunningCode());
-  if (gs)
-    gs->ApplySettings(display_osd_messages);
+  const GameListEntry* ge = m_game_list->GetEntryForPath(System::GetRunningPath().c_str());
+  if (ge)
+  {
+    ApplyControllerCompatibilitySettings(ge->supported_controllers, display_osd_messages);
+    ge->settings.ApplySettings(display_osd_messages);
+  }
+  else
+  {
+    GameDatabaseEntry db_entry;
+    if (m_game_list->GetDatabaseEntryForCode(System::GetRunningCode(), &db_entry))
+      ApplyControllerCompatibilitySettings(db_entry.supported_controllers_mask, display_osd_messages);
+
+    const GameSettings::Entry* gs = m_game_list->GetGameSettingsForCode(System::GetRunningCode());
+    if (gs)
+      gs->ApplySettings(display_osd_messages);
+  }
+}
+
+void CommonHostInterface::ApplyRendererFromGameSettings(const std::string& boot_filename)
+{
+  if (boot_filename.empty())
+    return;
+
+  // we can't use the code here, since it's not loaded yet. but we can cheekily access the game list
+  const GameListEntry* ge = m_game_list->GetEntryForPath(boot_filename.c_str());
+  if (ge && ge->settings.gpu_renderer.has_value() && ge->settings.gpu_renderer.value() != g_settings.gpu_renderer)
+  {
+    Log_InfoPrintf("Changing renderer from '%s' to '%s' due to game settings.",
+                   Settings::GetRendererName(g_settings.gpu_renderer),
+                   Settings::GetRendererName(ge->settings.gpu_renderer.value()));
+    g_settings.gpu_renderer = ge->settings.gpu_renderer.value();
+  }
+}
+
+void CommonHostInterface::ApplyControllerCompatibilitySettings(u64 controller_mask, bool display_osd_messages)
+{
+#define BIT_FOR(ctype) (static_cast<u64>(1) << static_cast<u32>(ctype))
+
+  if (controller_mask == 0 || controller_mask == static_cast<u64>(-1))
+    return;
+
+  for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
+  {
+    const ControllerType ctype = g_settings.controller_types[i];
+    if (ctype == ControllerType::None)
+      continue;
+
+    if (controller_mask & BIT_FOR(ctype))
+      continue;
+
+    // Special case: Dualshock is permitted when not supported as long as it's in digital mode.
+    if (ctype == ControllerType::AnalogController &&
+        (controller_mask & BIT_FOR(ControllerType::DigitalController)) != 0)
+    {
+      g_settings.controller_disable_analog_mode_forcing = true;
+      continue;
+    }
+
+    if (display_osd_messages)
+    {
+      SmallString supported_controller_string;
+      for (u32 j = 0; j < static_cast<u32>(ControllerType::Count); j++)
+      {
+        const ControllerType supported_ctype = static_cast<ControllerType>(j);
+        if ((controller_mask & BIT_FOR(supported_ctype)) == 0)
+          continue;
+
+        if (!supported_controller_string.IsEmpty())
+          supported_controller_string.AppendString(", ");
+
+        supported_controller_string.AppendString(
+          TranslateString("ControllerType", Settings::GetControllerTypeDisplayName(supported_ctype)));
+      }
+
+      AddFormattedOSDMessage(
+        30.0f,
+        TranslateString("OSDMessage", "Controller in port %u (%s) is not supported for %s.\nSupported controllers: "
+                                      "%s\nPlease configure a supported controller from the list above."),
+        i + 1u, TranslateString("ControllerType", Settings::GetControllerTypeDisplayName(ctype)).GetCharArray(),
+        System::GetRunningTitle().c_str(), supported_controller_string.GetCharArray());
+    }
+  }
+
+#undef BIT_FOR
 }
 
 bool CommonHostInterface::UpdateControllerInputMapFromGameSettings()
@@ -3214,6 +3546,87 @@ void CommonHostInterface::ReloadPostProcessingShaders()
     AddOSDMessage(TranslateStdString("OSDMessage", "Post-processing shaders reloaded."), 10.0f);
 }
 
+void CommonHostInterface::ToggleWidescreen()
+{
+  g_settings.gpu_widescreen_hack = !g_settings.gpu_widescreen_hack;
+
+  const GameSettings::Entry* gs = m_game_list->GetGameSettings(System::GetRunningPath(), System::GetRunningCode());
+  DisplayAspectRatio user_ratio;
+  if (gs && gs->display_aspect_ratio.has_value())
+  {
+    user_ratio = gs->display_aspect_ratio.value();
+  }
+  else
+  {
+    std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
+    user_ratio = Settings::ParseDisplayAspectRatio(
+                   m_settings_interface
+                     ->GetStringValue("Display", "AspectRatio",
+                                      Settings::GetDisplayAspectRatioName(Settings::DEFAULT_DISPLAY_ASPECT_RATIO))
+                     .c_str())
+                   .value_or(DisplayAspectRatio::Auto);
+  }
+
+  if (user_ratio == DisplayAspectRatio::Auto || user_ratio == DisplayAspectRatio::PAR1_1 ||
+      user_ratio == DisplayAspectRatio::R4_3)
+  {
+    g_settings.display_aspect_ratio = g_settings.gpu_widescreen_hack ? DisplayAspectRatio::R16_9 : user_ratio;
+  }
+  else
+  {
+    g_settings.display_aspect_ratio = g_settings.gpu_widescreen_hack ? user_ratio : DisplayAspectRatio::Auto;
+  }
+
+  if (g_settings.gpu_widescreen_hack)
+  {
+    AddFormattedOSDMessage(
+      5.0f, TranslateString("OSDMessage", "Widescreen hack is now enabled, and aspect ratio is set to %s."),
+      TranslateString("DisplayAspectRatio", Settings::GetDisplayAspectRatioName(g_settings.display_aspect_ratio))
+        .GetCharArray());
+  }
+  else
+  {
+    AddFormattedOSDMessage(
+      5.0f, TranslateString("OSDMessage", "Widescreen hack is now disabled, and aspect ratio is set to %s."),
+      TranslateString("DisplayAspectRatio", Settings::GetDisplayAspectRatioName(g_settings.display_aspect_ratio))
+        .GetCharArray());
+  }
+
+  GTE::UpdateAspectRatio();
+}
+
+void CommonHostInterface::SwapMemoryCards()
+{
+  System::SwapMemoryCards();
+
+  if (System::HasMemoryCard(0) && System::HasMemoryCard(1))
+  {
+    g_host_interface->AddOSDMessage(
+      g_host_interface->TranslateStdString("OSDMessage", "Swapped memory card ports. Both ports have a memory card."),
+      10.0f);
+  }
+  else if (System::HasMemoryCard(1))
+  {
+    g_host_interface->AddOSDMessage(
+      g_host_interface->TranslateStdString("OSDMessage",
+                                           "Swapped memory card ports. Port 2 has a memory card, Port 1 is empty."),
+      10.0f);
+  }
+  else if (System::HasMemoryCard(0))
+  {
+    g_host_interface->AddOSDMessage(
+      g_host_interface->TranslateStdString("OSDMessage",
+                                           "Swapped memory card ports. Port 1 has a memory card, Port 2 is empty."),
+      10.0f);
+  }
+  else
+  {
+    g_host_interface->AddOSDMessage(
+      g_host_interface->TranslateStdString("OSDMessage", "Swapped memory card ports. Neither port has a memory card."),
+      10.0f);
+  }
+}
+
 bool CommonHostInterface::ParseFullscreenMode(const std::string_view& mode, u32* width, u32* height,
                                               float* refresh_rate)
 {
@@ -3303,13 +3716,21 @@ std::unique_ptr<ByteStream> CommonHostInterface::OpenPackageFile(const char* pat
   return FileSystem::OpenFile(full_path.c_str(), real_flags);
 }
 
-bool CommonHostInterface::SetControllerNavigationButtonState(FrontendCommon::ControllerNavigationButton button,
-                                                             bool pressed)
+bool CommonHostInterface::IsControllerNavigationActive() const
 {
   if (!m_fullscreen_ui_enabled)
     return false;
 
-  return FullscreenUI::SetControllerNavInput(button, pressed);
+  return FullscreenUI::HasActiveWindow();
+}
+
+void CommonHostInterface::SetControllerNavigationButtonState(FrontendCommon::ControllerNavigationButton button,
+                                                             bool pressed)
+{
+  if (!m_fullscreen_ui_enabled)
+    return;
+
+  FullscreenUI::SetControllerNavInput(button, pressed);
 }
 
 #ifdef WITH_DISCORD_PRESENCE

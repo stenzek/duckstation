@@ -27,6 +27,14 @@
             app:key="Controller1/TouchscreenControllerView"
             app:title="@string/settings_touchscreen_controller_view"
             app:useSimpleSummaryProvider="true" />
+        <ListPreference
+            app:defaultValue="0"
+            app:entries="@array/settings_touchscreen_controller_port_entries"
+            app:entryValues="@array/settings_touchscreen_controller_port_values"
+            app:iconSpaceReserved="false"
+            app:key="TouchscreenController/PortIndex"
+            app:title="@string/settings_touchscreen_controller_port"
+            app:useSimpleSummaryProvider="true" />
         <SwitchPreferenceCompat
             app:defaultValue="false"
             app:iconSpaceReserved="false"
@@ -62,7 +70,7 @@
             app:entryValues="@array/settings_multitap_mode_values"
             app:iconSpaceReserved="false"
             app:key="ControllerPorts/MultitapMode"
-            app:title="Multitap Mode"
+            app:title="@string/settings_multitap_mode"
             app:useSimpleSummaryProvider="true" />
         <ListPreference
             app:defaultValue="PerGameTitle"

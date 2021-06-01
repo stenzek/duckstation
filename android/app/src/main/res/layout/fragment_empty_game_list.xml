@@ -41,15 +41,4 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/supported_formats" />
 
-    <Button
-        android:id="@+id/start_file"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:text="@string/main_activity_empty_game_list_start_file"
-        style="@style/Widget.AppCompat.Button.Borderless.Colored"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/add_game_directory" />
 </androidx.constraintlayout.widget.ConstraintLayout>

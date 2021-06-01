@@ -105,7 +105,10 @@ void Timer::SleepUntil(Value value, bool exact)
       fti.QuadPart += diff;
 
       if (SetWaitableTimer(timer, &fti, 0, nullptr, nullptr, FALSE))
+      {
         WaitForSingleObject(timer, INFINITE);
+        return;
+      }
     }
 
     // falling back to sleep... bad.

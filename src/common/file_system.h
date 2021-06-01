@@ -61,6 +61,12 @@ namespace FileSystem {
 
 using FindResultsArray = std::vector<FILESYSTEM_FIND_DATA>;
 
+#ifdef __ANDROID__
+/// Sets the instance for the FileHelpers Java class, used for storage access framework
+/// file access on Android.
+void SetAndroidFileHelper(void* jvm, void* env, void* object);
+#endif
+
 class ChangeNotifier
 {
 public:
@@ -126,13 +132,8 @@ void BuildOSPath(char* Destination, u32 cbDestination, const char* Path);
 void BuildOSPath(String& Destination, const char* Path);
 void BuildOSPath(String& Destination);
 
-// builds a path relative to the specified file, optionally canonicalizing it
-void BuildPathRelativeToFile(char* Destination, u32 cbDestination, const char* CurrentFileName, const char* NewFileName,
-                             bool OSPath = true, bool Canonicalize = true);
-void BuildPathRelativeToFile(String& Destination, const char* CurrentFileName, const char* NewFileName,
-                             bool OSPath = true, bool Canonicalize = true);
-String BuildPathRelativeToFile(const char* CurrentFileName, const char* NewFileName, bool OSPath = true,
-                               bool Canonicalize = true);
+// builds a path relative to the specified file
+std::string BuildRelativePath(const std::string_view& filename, const std::string_view& new_filename);
 
 // sanitizes a filename for use in a filesystem.
 void SanitizeFileName(char* Destination, u32 cbDestination, const char* FileName, bool StripSlashes = true);
@@ -144,10 +145,14 @@ void SanitizeFileName(std::string& Destination, bool StripSlashes = true);
 bool IsAbsolutePath(const std::string_view& path);
 
 /// Removes the extension of a filename.
-std::string StripExtension(const std::string_view& path);
+std::string_view StripExtension(const std::string_view& path);
 
 /// Replaces the extension of a filename with another.
 std::string ReplaceExtension(const std::string_view& path, const std::string_view& new_extension);
+
+/// Returns the display name of a filename. Usually this is the same as the path, except on Android
+/// where it resolves a content URI to its name.
+std::string GetDisplayNameFromPath(const std::string_view& path);
 
 /// Returns the directory component of a filename.
 std::string_view GetPathDirectory(const std::string_view& path);
@@ -183,6 +188,8 @@ std::unique_ptr<ByteStream> OpenFile(const char* FileName, u32 Flags);
 using ManagedCFilePtr = std::unique_ptr<std::FILE, void (*)(std::FILE*)>;
 ManagedCFilePtr OpenManagedCFile(const char* filename, const char* mode);
 std::FILE* OpenCFile(const char* filename, const char* mode);
+int FSeek64(std::FILE* fp, s64 offset, int whence);
+s64 FTell64(std::FILE* fp);
 
 std::optional<std::vector<u8>> ReadBinaryFile(const char* filename);
 std::optional<std::vector<u8>> ReadBinaryFile(std::FILE* fp);

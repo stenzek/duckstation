@@ -10,6 +10,11 @@ public:
   class View
   {
   public:
+    enum : size_t
+    {
+      RESERVED_REGION_OFFSET = static_cast<size_t>(-1)
+    };
+
     View(MemoryArena* parent, void* base_pointer, size_t arena_offset, size_t mapping_size, bool writable);
     View(View&& view);
     ~View();
@@ -39,9 +44,14 @@ public:
   std::optional<View> CreateView(size_t offset, size_t size, bool writable, bool executable,
                                  void* fixed_address = nullptr);
 
+  std::optional<View> CreateReservedView(size_t size,  void* fixed_address = nullptr);
+
   void* CreateViewPtr(size_t offset, size_t size, bool writable, bool executable, void* fixed_address = nullptr);
   bool FlushViewPtr(void* address, size_t size);
   bool ReleaseViewPtr(void* address, size_t size);
+
+  void* CreateReservedPtr(size_t size, void* fixed_address = nullptr);
+  bool ReleaseReservedPtr(void* address, size_t size);
 
   static bool SetPageProtection(void* address, size_t length, bool readable, bool writable, bool executable);
 

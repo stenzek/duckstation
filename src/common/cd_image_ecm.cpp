@@ -385,7 +385,7 @@ bool CDImageEcm::Open(const char* filename, Common::Error* error)
 
   AddLeadOutIndex();
 
-  m_sbi.LoadSBI(FileSystem::ReplaceExtension(filename, "sbi").c_str());
+  m_sbi.LoadSBIFromImagePath(filename);
 
   m_chunk_buffer.reserve(RAW_SECTOR_SIZE * 2);
   return Seek(1, Position{0, 0, 0});

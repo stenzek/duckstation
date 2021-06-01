@@ -63,9 +63,6 @@
     <ProjectReference Include="..\..\dep\imgui\imgui.vcxproj">
       <Project>{bb08260f-6fbc-46af-8924-090ee71360c6}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\dep\libcue\libcue.vcxproj">
-      <Project>{6a4208ed-e3dc-41e1-81cd-f61025fc285a}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\..\dep\rcheevos\rcheevos.vcxproj">
       <Project>{4ba0a6d4-3ae1-42b2-9347-096fd023ff64}</Project>
     </ProjectReference>
@@ -93,6 +90,7 @@
     <ClCompile Include="dinput_controller_interface.cpp" />
     <ClCompile Include="fullscreen_ui.cpp" />
     <ClCompile Include="fullscreen_ui_progress_callback.cpp" />
+    <ClCompile Include="game_database.cpp" />
     <ClCompile Include="game_list.cpp" />
     <ClCompile Include="game_settings.cpp" />
     <ClCompile Include="http_downloader.cpp" />
@@ -125,6 +123,7 @@
     <ClInclude Include="dinput_controller_interface.h" />
     <ClInclude Include="fullscreen_ui.h" />
     <ClInclude Include="fullscreen_ui_progress_callback.h" />
+    <ClInclude Include="game_database.h" />
     <ClInclude Include="game_list.h" />
     <ClInclude Include="game_settings.h" />
     <ClInclude Include="http_downloader.h" />

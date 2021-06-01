@@ -15,6 +15,9 @@
 
 class HostDisplayTexture;
 
+class GameList;
+struct GameDatabaseEntry;
+
 class ControllerInterface;
 
 namespace FrontendCommon {
@@ -43,7 +46,9 @@ public:
   enum : s32
   {
     PER_GAME_SAVE_STATE_SLOTS = 10,
-    GLOBAL_SAVE_STATE_SLOTS = 10
+    GLOBAL_SAVE_STATE_SLOTS = 10,
+    NUM_CONTROLLER_AUTOFIRE_BUTTONS = 4,
+    DEFAULT_AUTOFIRE_FREQUENCY = 2
   };
 
   using HostKeyCode = s32;
@@ -266,6 +271,12 @@ public:
   /// Reloads post processing shaders with the current configuration.
   void ReloadPostProcessingShaders();
 
+  /// Toggle Widescreen Hack and Aspect Ratio
+  void ToggleWidescreen();
+
+  /// Swaps memory cards in slot 1/2.
+  void SwapMemoryCards();
+
   /// Parses a fullscreen mode into its components (width * height @ refresh hz)
   static bool ParseFullscreenMode(const std::string_view& mode, u32* width, u32* height, float* refresh_rate);
 
@@ -294,9 +305,14 @@ public:
   /// This is the APK for Android builds, or the program directory for standalone builds.
   virtual std::unique_ptr<ByteStream> OpenPackageFile(const char* path, u32 flags) override;
 
-  /// Controller navigation, used by fullscreen mode. Returns true if the UI consumed the event, and it should not
-  /// execute the normal handler.
-  bool SetControllerNavigationButtonState(FrontendCommon::ControllerNavigationButton button, bool pressed);
+  /// Returns true if the fullscreen UI is intercepting controller input.
+  bool IsControllerNavigationActive() const;
+
+  /// Controller navigation, used by fullscreen mode.
+  void SetControllerNavigationButtonState(FrontendCommon::ControllerNavigationButton button, bool pressed);
+
+  /// Alters autofire state for controllers (activates/deactivates).
+  void SetControllerAutoFireSlotState(u32 controller_index, u32 slot_index, bool active);
 
   /// Toggles fast forward state.
   bool IsFastForwardEnabled() const { return m_fast_forward_enabled; }
@@ -362,9 +378,16 @@ protected:
   virtual void UpdateInputMap(SettingsInterface& si);
   void ClearInputMap();
 
+  /// Updates controller metastate, including turbo and rumble.
+  void UpdateControllerMetaState();
+
   void AddControllerRumble(u32 controller_index, u32 num_motors, ControllerRumbleCallback callback);
   void UpdateControllerRumble();
   void StopControllerRumble();
+
+  void SetControllerAutoFireState(u32 controller_index, s32 button_code, bool active);
+  void StopControllerAutoFire();
+  void UpdateControllerAutoFire();
 
   /// Returns the path to a save state file. Specifying an index of -1 is the "resume" save state.
   std::string GetGameSaveStateFileName(const char* game_code, s32 slot) const;
@@ -409,12 +432,14 @@ protected:
   void UpdateSpeedLimiterState();
 
   void RecreateSystem() override;
+  void OnHostDisplayResized() override;
 
   void ApplyGameSettings(bool display_osd_messages);
+  void ApplyRendererFromGameSettings(const std::string& boot_filename);
+  void ApplyControllerCompatibilitySettings(u64 controller_mask, bool display_osd_messages);
 
   bool CreateHostDisplayResources();
   void ReleaseHostDisplayResources();
-  void OnHostDisplayResized();
 
   virtual void DrawImGuiWindows();
 
@@ -508,6 +533,19 @@ private:
     ControllerRumbleCallback update_callback;
   };
   std::vector<ControllerRumbleState> m_controller_vibration_motors;
+
+  // controller turbo buttons
+  struct ControllerAutoFireState
+  {
+    u32 controller_index;
+    u32 slot_index;
+    s32 button_code;
+    u8 frequency;
+    u8 countdown;
+    bool active;
+    bool state;
+  };
+  std::vector<ControllerAutoFireState> m_controller_autofires;
 
 #ifdef WITH_DISCORD_PRESENCE
   // discord rich presence

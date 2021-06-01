@@ -33,8 +33,7 @@ HostInterface::HostInterface()
   g_host_interface = this;
 
   // we can get the program directory at construction time
-  const std::string program_path = FileSystem::GetProgramPath();
-  m_program_directory = FileSystem::GetPathDirectory(program_path.c_str());
+  m_program_directory = FileSystem::GetPathDirectory(FileSystem::GetProgramPath());
 }
 
 HostInterface::~HostInterface()
@@ -476,6 +475,7 @@ std::string HostInterface::GetShaderCacheBasePath() const
 void HostInterface::SetDefaultSettings(SettingsInterface& si)
 {
   si.SetStringValue("Console", "Region", Settings::GetConsoleRegionName(Settings::DEFAULT_CONSOLE_REGION));
+  si.SetBoolValue("Console", "Enable8MBRAM", false);
 
   si.SetFloatValue("Main", "EmulationSpeed", 1.0f);
   si.SetFloatValue("Main", "FastForwardSpeed", 0.0f);
@@ -498,6 +498,9 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetFloatValue("Main", "RunaheadFrameCount", 0);
 
   si.SetStringValue("CPU", "ExecutionMode", Settings::GetCPUExecutionModeName(Settings::DEFAULT_CPU_EXECUTION_MODE));
+  si.SetIntValue("CPU", "OverclockNumerator", 1);
+  si.SetIntValue("CPU", "OverclockDenominator", 1);
+  si.SetBoolValue("CPU", "OverclockEnable", false);
   si.SetBoolValue("CPU", "RecompilerMemoryExceptions", false);
   si.SetBoolValue("CPU", "ICache", false);
   si.SetBoolValue("CPU", "FastmemMode", Settings::GetCPUFastmemModeName(Settings::DEFAULT_CPU_FASTMEM_MODE));
@@ -506,6 +509,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetIntValue("GPU", "ResolutionScale", 1);
   si.SetIntValue("GPU", "Multisamples", 1);
   si.SetBoolValue("GPU", "UseDebugDevice", false);
+  si.SetBoolValue("GPU", "UseSoftwareRendererForReadbacks", false);
   si.SetBoolValue("GPU", "PerSampleShading", false);
   si.SetBoolValue("GPU", "UseThread", true);
   si.SetBoolValue("GPU", "ThreadedPresentation", true);
@@ -534,6 +538,8 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetIntValue("Display", "LineEndOffset", 0);
   si.SetStringValue("Display", "AspectRatio",
                     Settings::GetDisplayAspectRatioName(Settings::DEFAULT_DISPLAY_ASPECT_RATIO));
+  si.SetIntValue("Display", "CustomAspectRatioNumerator", 4);
+  si.GetIntValue("Display", "CustomAspectRatioDenominator", 3);
   si.SetBoolValue("Display", "Force4_3For24Bit", false);
   si.SetBoolValue("Display", "LinearFiltering", true);
   si.SetBoolValue("Display", "IntegerScaling", false);
@@ -545,16 +551,17 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("Display", "ShowSpeed", false);
   si.SetBoolValue("Display", "ShowResolution", false);
   si.SetBoolValue("Display", "Fullscreen", false);
-  si.SetBoolValue("Display", "VSync", true);
+  si.SetBoolValue("Display", "VSync", Settings::DEFAULT_VSYNC_VALUE);
   si.SetBoolValue("Display", "DisplayAllFrames", false);
   si.SetStringValue("Display", "PostProcessChain", "");
-  si.SetFloatValue("Display", "MaxFPS", 0.0f);
+  si.SetFloatValue("Display", "MaxFPS", Settings::DEFAULT_DISPLAY_MAX_FPS);
 
   si.SetBoolValue("CDROM", "ReadThread", true);
   si.SetBoolValue("CDROM", "RegionCheck", false);
   si.SetBoolValue("CDROM", "LoadImageToRAM", false);
   si.SetBoolValue("CDROM", "MuteCDAudio", false);
   si.SetIntValue("CDROM", "ReadSpeedup", 1);
+  si.SetIntValue("CDROM", "SeekSpeedup", 1);
 
   si.SetStringValue("Audio", "Backend", Settings::GetAudioBackendName(Settings::DEFAULT_AUDIO_BACKEND));
   si.SetIntValue("Audio", "OutputVolume", 100);
@@ -570,7 +577,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetStringValue("BIOS", "PathNTSCJ", "");
   si.SetStringValue("BIOS", "PathPAL", "");
   si.SetBoolValue("BIOS", "PatchTTYEnable", false);
-  si.SetBoolValue("BIOS", "PatchFastBoot", false);
+  si.SetBoolValue("BIOS", "PatchFastBoot", Settings::DEFAULT_FAST_BOOT_VALUE);
 
   si.SetStringValue("Controller1", "Type", Settings::GetControllerTypeName(Settings::DEFAULT_CONTROLLER_1_TYPE));
 
@@ -635,7 +642,8 @@ void HostInterface::FixIncompatibleSettings(bool display_osd_messages)
     g_settings.gpu_widescreen_hack = false;
     g_settings.gpu_pgxp_enable = false;
     g_settings.gpu_24bit_chroma_smoothing = false;
-    g_settings.cdrom_read_speedup = false;
+    g_settings.cdrom_read_speedup = 1;
+    g_settings.cdrom_seek_speedup = 1;
     g_settings.cdrom_mute_cd_audio = false;
     g_settings.texture_replacements.enable_vram_write_replacements = false;
     g_settings.bios_patch_fast_boot = false;
@@ -781,6 +789,7 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.gpu_multisamples != old_settings.gpu_multisamples ||
         g_settings.gpu_per_sample_shading != old_settings.gpu_per_sample_shading ||
         g_settings.gpu_use_thread != old_settings.gpu_use_thread ||
+        g_settings.gpu_use_software_renderer_for_readbacks != old_settings.gpu_use_software_renderer_for_readbacks ||
         g_settings.gpu_fifo_size != old_settings.gpu_fifo_size ||
         g_settings.gpu_max_run_ahead != old_settings.gpu_max_run_ahead ||
         g_settings.gpu_true_color != old_settings.gpu_true_color ||
@@ -801,10 +810,16 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.rewind_enable != old_settings.rewind_enable ||
         g_settings.runahead_frames != old_settings.runahead_frames)
     {
-      if (g_settings.IsUsingCodeCache())
-        CPU::CodeCache::Reinitialize();
-
       g_gpu->UpdateSettings();
+    }
+
+    if (g_settings.gpu_widescreen_hack != old_settings.gpu_widescreen_hack ||
+        g_settings.display_aspect_ratio != old_settings.display_aspect_ratio ||
+        (g_settings.display_aspect_ratio == DisplayAspectRatio::Custom &&
+         (g_settings.display_aspect_ratio_custom_numerator != old_settings.display_aspect_ratio_custom_numerator ||
+          g_settings.display_aspect_ratio_custom_denominator != old_settings.display_aspect_ratio_custom_denominator)))
+    {
+      GTE::UpdateAspectRatio();
     }
 
     if (g_settings.gpu_pgxp_enable != old_settings.gpu_pgxp_enable ||
@@ -836,7 +851,7 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
          System::HasMediaSubImages()) ||
         g_settings.memory_card_directory != old_settings.memory_card_directory)
     {
-      System::UpdateMemoryCards();
+      System::UpdateMemoryCardTypes();
     }
 
     if (g_settings.rewind_enable != old_settings.rewind_enable ||
@@ -899,9 +914,17 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
 
 void HostInterface::SetUserDirectoryToProgramDirectory()
 {
-  const std::string program_path(FileSystem::GetProgramPath());
-  const std::string program_directory(FileSystem::GetPathDirectory(program_path.c_str()));
+  const std::string program_directory(FileSystem::GetProgramPath());
   m_user_directory = program_directory;
+}
+
+void HostInterface::OnHostDisplayResized()
+{
+  if (System::IsValid())
+  {
+    if (g_settings.gpu_widescreen_hack && g_settings.display_aspect_ratio == DisplayAspectRatio::MatchWindow)
+      GTE::UpdateAspectRatio();
+  }
 }
 
 std::string HostInterface::GetUserDirectoryRelativePath(const char* format, ...) const

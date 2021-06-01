@@ -13,6 +13,12 @@ const char* GetRegName(Reg reg)
   return s_reg_names[static_cast<u8>(reg)];
 }
 
+bool IsNopInstruction(const Instruction& instruction)
+{
+  // TODO: Handle other types of nop.
+  return (instruction.bits == 0);
+}
+
 bool IsBranchInstruction(const Instruction& instruction)
 {
   switch (instruction.op)

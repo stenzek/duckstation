@@ -278,7 +278,20 @@ void GameListWidget::resizeEvent(QResizeEvent* event)
 
 void GameListWidget::resizeTableViewColumnsToFit()
 {
-  QtUtils::ResizeColumnsForTableView(m_table_view, {32, 80, -1, -1, 100, 50, 100});
+  QtUtils::ResizeColumnsForTableView(m_table_view, {
+                                                     32,  // type
+                                                     80,  // code
+                                                     -1,  // title
+                                                     -1,  // file title
+                                                     200, // developer
+                                                     200, // publisher
+                                                     200, // genre
+                                                     50,  // year
+                                                     100, // players
+                                                     80, // size
+                                                     50,  // region
+                                                     100  // compatibility
+                                                   });
 }
 
 static TinyString getColumnVisibilitySettingsKeyName(int column)
@@ -288,8 +301,20 @@ static TinyString getColumnVisibilitySettingsKeyName(int column)
 
 void GameListWidget::loadTableViewColumnVisibilitySettings()
 {
-  static constexpr std::array<bool, GameListModel::Column_Count> DEFAULT_VISIBILITY = {
-    {true, true, true, false, true, true, true}};
+  static constexpr std::array<bool, GameListModel::Column_Count> DEFAULT_VISIBILITY = {{
+    true,  // type
+    true,  // code
+    true,  // title
+    false, // file title
+    true,  // developer
+    false, // publisher
+    false, // genre
+    true,  // year
+    false, // players
+    true,  // size
+    true,  // region
+    true   // compatibility
+  }};
 
   for (int column = 0; column < GameListModel::Column_Count; column++)
   {

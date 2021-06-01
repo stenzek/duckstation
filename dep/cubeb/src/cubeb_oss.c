@@ -286,7 +286,7 @@ oss_sndstat_line_parse(char *line, int is_ud, struct sndstat_info *sinfo)
       if (n - matchptr >= (ssize_t)(sizeof(res.devname) - strlen("/dev/")))
         goto fail;
 
-      strlcpy(res.devname, "/dev/", sizeof(res.devname));
+      snprintf(res.devname, sizeof(res.devname), "/dev/");
       strncat(res.devname, matchptr, n - matchptr);
     }
     matchptr = n + 1;
@@ -999,14 +999,14 @@ oss_stream_init(cubeb * context,
   s->record.fd = s->play.fd = -1;
   s->nfr = latency_frames;
   if (input_device != NULL) {
-    strlcpy(s->record.name, input_device, sizeof(s->record.name));
+    snprintf(s->record.name, sizeof(s->record.name), "%s", input_device);
   } else {
-    strlcpy(s->record.name, defdsp, sizeof(s->record.name));
+    snprintf(s->record.name, sizeof(s->record.name), "%s", defdsp);
   }
   if (output_device != NULL) {
-    strlcpy(s->play.name, output_device, sizeof(s->play.name));
+    snprintf(s->play.name, sizeof(s->play.name), "%s", output_device);
   } else {
-    strlcpy(s->play.name, defdsp, sizeof(s->play.name));
+    snprintf(s->play.name, sizeof(s->play.name), "%s", defdsp);
   }
   if (input_stream_params != NULL) {
     unsigned int nb_channels;

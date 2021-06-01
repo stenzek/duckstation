@@ -543,7 +543,7 @@ bool SDLControllerInterface::BindControllerAxis(int controller_index, int axis_n
   if (it == m_controllers.end())
     return false;
 
-  if (axis_number < 0 || axis_number >= MAX_NUM_AXISES)
+  if (axis_number < 0 || axis_number >= MAX_NUM_AXES)
     return false;
 
   it->axis_mapping[axis_number][axis_side] = std::move(callback);
@@ -570,7 +570,7 @@ bool SDLControllerInterface::BindControllerAxisToButton(int controller_index, in
   if (it == m_controllers.end())
     return false;
 
-  if (axis_number < 0 || axis_number >= MAX_NUM_AXISES)
+  if (axis_number < 0 || axis_number >= MAX_NUM_AXES)
     return false;
 
   it->axis_button_mapping[axis_number][BoolToUInt8(direction)] = std::move(callback);
@@ -628,6 +628,9 @@ bool SDLControllerInterface::HandleControllerAxisEvent(const SDL_ControllerAxisE
 
   if (DoEventHook(Hook::Type::Axis, it->player_id, ev->axis, value))
     return true;
+
+  if (ev->axis >= MAX_NUM_AXES)
+    return false;
 
   const AxisCallback& cb = it->axis_mapping[ev->axis][AxisSide::Full];
   if (cb)
@@ -700,12 +703,19 @@ bool SDLControllerInterface::HandleControllerButtonEvent(const SDL_ControllerBut
     return true;
 
   if (ev->button < nav_button_mapping.size() &&
-      nav_button_mapping[ev->button] != FrontendCommon::ControllerNavigationButton::Count &&
-      m_host_interface->SetControllerNavigationButtonState(nav_button_mapping[ev->button], pressed))
+      nav_button_mapping[ev->button] != FrontendCommon::ControllerNavigationButton::Count)
+  {
+    m_host_interface->SetControllerNavigationButtonState(nav_button_mapping[ev->button], pressed);
+  }
+
+  if (m_host_interface->IsControllerNavigationActive())
   {
     // UI consumed the event
     return true;
   }
+
+  if (ev->button >= MAX_NUM_BUTTONS)
+    return false;
 
   const ButtonCallback& cb = it->button_mapping[ev->button];
   if (cb)

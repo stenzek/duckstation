@@ -44,20 +44,14 @@
         <item>Todas as Bordas</item>
     </string-array>
     <string-array name="settings_display_aspect_ratio_names">
-       <item>Auto (Nativo)</item>
-        <item>4:3</item>
-        <item>16:9</item>
-        <item>16:10</item>
-        <item>19:9</item>
-        <item>20:9</item>
-        <item>21:9</item>
-        <item>32:9</item>
-        <item>8:7</item>
-        <item>5:4</item>
-        <item>3:2</item>
-        <item>2:1 (VRAM 1:1)</item>
-        <item>1:1</item>
-        <item>PAR 1:1</item>
+      <item>Auto (Nativo)</item>
+      <item>Auto (Corresponder a Janela)</item>
+      <item>Custom</item>
+      <item>4:3</item>
+      <item>16:9</item>
+      <item>19:9</item>
+      <item>20:9</item>
+      <item>PAR 1:1</item>
     </string-array>
     <string-array name="settings_gpu_texture_filter_names">
         <item>Nearest-Neighbor</item>
@@ -82,28 +76,21 @@
         <item>Separado Por Jogo (Cód. Jogo)</item>
         <item>Separado Por Jogo (Título Jogo)</item>
     </string-array>
-    <string-array name="emulation_menu">
-        <item>Carregar Estado</item>
-        <item>Salvar Estado</item>
-        <item>Avanço (Fixo)</item>
-        <item>Achievements</item>
-        <item>Mais Opções</item>
-        <item>Sair</item>
-    </string-array>
-    <string-array name="emulation_more_menu">
-        <item>Reiniciar</item>
-        <item>Trapaças</item>
-        <item>Mudar Disco</item>
-        <item>Mudar controle em Tela</item>
-        <item>Controller Settings</item>
-        <item>Configurações</item>
-    </string-array>
-		<string-array name="emulation_touchscreen_menu">
+    <string-array name="emulation_touchscreen_menu">
 		<item>Mudar</item>
 		<item>Ajustar Visibilidade</item>
 		<item>Adicionar/Remover botões</item>
-		<item>Mudar Layout</item>
-	</string-array>
+        <item>Mover Botões</item>
+        <item>Redimensionar Botões</item>
+        </string-array>
+    <string-array name="touchscreen_layout_menu">
+        <item>Mudar Opacidade</item>
+        <item>Adicionar/Remover Botões</item>
+        <item>Mover Botões</item>
+        <item>Redimensionar Botões</item>
+        <item>Redefinir Posição</item>
+        <item>Sair</item>
+    </string-array>
     <string-array name="settings_cdrom_read_speedup_entries">
         <item>Nenhum</item>
         <item>2x (4x Veloz)</item>
@@ -114,7 +101,7 @@
         <item>7x (14x Veloz)</item>
         <item>8x (16x Veloz)</item>
         <item>9x (18x Veloz)</item>
-        <item>10x (20x Veloz)</item>
+        <item>10x(20x Veloz)</item>
     </string-array>
     <string-array name="settings_touchscreen_controller_view_entries">
         <item>Nenhum</item>
@@ -164,7 +151,7 @@
         <item>8x SSAA</item>
     </string-array>
     <string-array name="settings_advanced_display_fps_limit_entries">
-        <item>ilimitado (Mostrar Quadros)</item>
+        <item>Sem Limite Mostrar Quadros)</item>
         <item>10 FPS</item>
         <item>15 FPS</item>
         <item>30 FPS</item>
@@ -174,7 +161,7 @@
         <item>90 FPS</item>
     </string-array>
     <string-array name="settings_emulation_speed_entries">
-        <item>ilimitado</item>
+        <item>Sem Limite</item>
         <item>10% [6 FPS (NTSC) / 5 FPS (PAL)]</item>
         <item>20% [12 FPS (NTSC) / 10 FPS (PAL)]</item>
         <item>30% [18 FPS (NTSC) / 15 FPS (PAL)]</item>
@@ -229,7 +216,17 @@
         <item>Padrão do Dispositivo</item>
         <item>Retrato</item>
         <item>Paisagem</item>
+        <item>Baseado via Sensor</item>
     </string-array>
+	<string-array name="settings_language_entries">
+        	<item>Selecionável pelo sistema</item>
+        	<item>Inglês</item>
+			<item>Português(Brasil)</item>
+        	<item>Italiano</item>
+        	<item>Holandês</item>
+        	<item>Espanhol</item>
+        	<item>Russo</item>
+ 	</string-array>
     <string-array name="settings_theme_entries">
         <item>Padrão do Sistema</item>
 		<item>Claro</item>
@@ -240,8 +237,28 @@
 		<item>Misto (Reduz 3D / Suaviza Tudo)</item>
         <item>Adaptativo (Preserva o 3D / Suaviza 2D)</item>
     </string-array>
-    <string-array name="settings_boolean_entries">
-        <item>Disabled</item>
-        <item>Enabled</item>
-    </string-array>
+	<string-array name="settings_boolean_entries">
+		<item>Desligado</item>
+		<item>Ligado</item>
+	</string-array>
+	<string-array name="settings_multitap_mode_entries">
+        	<item>Desativado</item>
+        	<item>Conectado à porta 1</item>
+        	<item>Conectado à porta 2</item>
+        	<item>Conectado à porta 1 e 2</item>
+    	</string-array>
+		<string-array name="memory_card_editor_save_menu">
+     		<item>Copiar Salvar</item>
+     		<item>Excluir Salvar</item>
+        </string-array>
+		<string-array name="settings_touchscreen_controller_port_entries">
+               <item>Porta 1</item>
+               <item>Porta 2</item>
+               <item>Multitap 3</item>
+               <item>Multitap 4</item>
+               <item>Multitap 5</item>
+               <item>Multitap 6</item>
+               <item>Multitap 7</item>
+               <item>Multitap 8</item>
+        </string-array>
 </resources>

@@ -55,10 +55,23 @@ void GamePropertiesDialog::populate(const GameListEntry* ge)
 {
   const QString title_qstring(QString::fromStdString(ge->title));
 
+  std::string hash_code;
+  std::unique_ptr<CDImage> cdi(CDImage::Open(ge->path.c_str(), nullptr));
+  if (cdi)
+  {
+    hash_code = System::GetGameHashCodeForImage(cdi.get());
+    cdi.reset();
+  }
+
   setWindowTitle(tr("Game Properties - %1").arg(title_qstring));
   m_ui.imagePath->setText(QString::fromStdString(ge->path));
   m_ui.title->setText(title_qstring);
-  m_ui.gameCode->setText(QString::fromStdString(ge->code));
+
+  if (!hash_code.empty() && ge->code != hash_code)
+    m_ui.gameCode->setText(QStringLiteral("%1 / %2").arg(ge->code.c_str()).arg(hash_code.c_str()));
+  else
+    m_ui.gameCode->setText(QString::fromStdString(ge->code));
+
   m_ui.region->setCurrentIndex(static_cast<int>(ge->region));
 
   if (ge->code.empty())
@@ -116,6 +129,13 @@ void GamePropertiesDialog::setupAdditionalUi()
     m_ui.compatibility->addItem(
       qApp->translate("GameListCompatibilityRating",
                       GameList::GetGameListCompatibilityRatingString(static_cast<GameListCompatibilityRating>(i))));
+  }
+
+  m_ui.userRenderer->addItem(tr("(unchanged)"));
+  for (u32 i = 0; i < static_cast<u32>(GPURenderer::Count); i++)
+  {
+    m_ui.userRenderer->addItem(
+      qApp->translate("GPURenderer", Settings::GetRendererDisplayName(static_cast<GPURenderer>(i))));
   }
 
   m_ui.userAspectRatio->addItem(tr("(unchanged)"));
@@ -290,12 +310,19 @@ void GamePropertiesDialog::populateGameSettings()
   }
 
   populateBooleanUserSetting(m_ui.userEnableCPUClockSpeedControl, gs.cpu_overclock_enable);
+  populateBooleanUserSetting(m_ui.userEnable8MBRAM, gs.enable_8mb_ram);
   updateCPUClockSpeedLabel();
 
   if (gs.cdrom_read_speedup.has_value())
   {
     QSignalBlocker sb(m_ui.userCDROMReadSpeedup);
     m_ui.userCDROMReadSpeedup->setCurrentIndex(static_cast<int>(gs.cdrom_read_speedup.value()));
+  }
+
+  if (gs.cdrom_seek_speedup.has_value())
+  {
+    QSignalBlocker sb(m_ui.userCDROMSeekSpeedup);
+    m_ui.userCDROMSeekSpeedup->setCurrentIndex(static_cast<int>(gs.cdrom_seek_speedup.value()) + 1);
   }
 
   if (gs.display_active_start_offset.has_value())
@@ -355,11 +382,31 @@ void GamePropertiesDialog::populateGameSettings()
     QSignalBlocker sb(m_ui.userCropMode);
     m_ui.userCropMode->setCurrentIndex(static_cast<int>(gs.display_crop_mode.value()) + 1);
   }
+
   if (gs.display_aspect_ratio.has_value())
   {
     QSignalBlocker sb(m_ui.userAspectRatio);
     m_ui.userAspectRatio->setCurrentIndex(static_cast<int>(gs.display_aspect_ratio.value()) + 1);
   }
+  if (gs.display_aspect_ratio_custom_numerator.has_value())
+  {
+    QSignalBlocker sb(m_ui.userCustomAspectRatioNumerator);
+    m_ui.userCustomAspectRatioNumerator->setValue(static_cast<int>(gs.display_aspect_ratio_custom_numerator.value()));
+  }
+  if (gs.display_aspect_ratio_custom_denominator.has_value())
+  {
+    QSignalBlocker sb(m_ui.userCustomAspectRatioDenominator);
+    m_ui.userCustomAspectRatioDenominator->setValue(
+      static_cast<int>(gs.display_aspect_ratio_custom_denominator.value()));
+  }
+  onUserAspectRatioChanged();
+
+  if (gs.gpu_renderer.has_value())
+  {
+    QSignalBlocker sb(m_ui.userRenderer);
+    m_ui.userRenderer->setCurrentIndex(static_cast<int>(gs.gpu_renderer.value()) + 1);
+  }
+
   if (gs.gpu_downsample_mode.has_value())
   {
     QSignalBlocker sb(m_ui.userDownsampleMode);
@@ -518,6 +565,7 @@ void GamePropertiesDialog::connectUi()
   });
 
   connectBooleanUserSetting(m_ui.userEnableCPUClockSpeedControl, &m_game_settings.cpu_overclock_enable);
+  connectBooleanUserSetting(m_ui.userEnable8MBRAM, &m_game_settings.enable_8mb_ram);
   connect(m_ui.userEnableCPUClockSpeedControl, &QCheckBox::stateChanged, this,
           &GamePropertiesDialog::updateCPUClockSpeedLabel);
 
@@ -547,11 +595,42 @@ void GamePropertiesDialog::connectUi()
     saveGameSettings();
   });
 
+  connect(m_ui.userCDROMSeekSpeedup, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
+    if (index <= 0)
+      m_game_settings.cdrom_seek_speedup.reset();
+    else
+      m_game_settings.cdrom_seek_speedup = static_cast<u32>(index - 1);
+    saveGameSettings();
+  });
+
   connect(m_ui.userAspectRatio, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
     if (index <= 0)
       m_game_settings.display_aspect_ratio.reset();
     else
       m_game_settings.display_aspect_ratio = static_cast<DisplayAspectRatio>(index - 1);
+    saveGameSettings();
+    onUserAspectRatioChanged();
+  });
+  connect(m_ui.userCustomAspectRatioNumerator, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
+    if (value <= 0)
+      m_game_settings.display_aspect_ratio_custom_numerator.reset();
+    else
+      m_game_settings.display_aspect_ratio_custom_numerator = static_cast<u16>(value);
+    saveGameSettings();
+  });
+  connect(m_ui.userCustomAspectRatioDenominator, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
+    if (value <= 0)
+      m_game_settings.display_aspect_ratio_custom_denominator.reset();
+    else
+      m_game_settings.display_aspect_ratio_custom_denominator = static_cast<u16>(value);
+    saveGameSettings();
+  });
+
+  connect(m_ui.userRenderer, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
+    if (index <= 0)
+      m_game_settings.gpu_renderer.reset();
+    else
+      m_game_settings.gpu_renderer = static_cast<GPURenderer>(index - 1);
     saveGameSettings();
   });
 
@@ -782,10 +861,20 @@ void GamePropertiesDialog::updateCPUClockSpeedLabel()
   m_ui.userCPUClockSpeedLabel->setText(tr("%1% (%2MHz)").arg(percent).arg(frequency / 1000000.0, 0, 'f', 2));
 }
 
+void GamePropertiesDialog::onUserAspectRatioChanged()
+{
+  const int index = m_ui.userAspectRatio->currentIndex();
+  const bool is_custom = (index > 0 && static_cast<DisplayAspectRatio>(index - 1) == DisplayAspectRatio::Custom);
+
+  m_ui.userCustomAspectRatioNumerator->setVisible(is_custom);
+  m_ui.userCustomAspectRatioDenominator->setVisible(is_custom);
+  m_ui.userCustomAspectRatioSeparator->setVisible(is_custom);
+}
+
 void GamePropertiesDialog::fillEntryFromUi(GameListCompatibilityEntry* entry)
 {
-  entry->code = m_ui.gameCode->text().toStdString();
-  entry->title = m_ui.title->text().toStdString();
+  entry->code = m_game_code;
+  entry->title = m_game_title;
   entry->version_tested = m_ui.versionTested->text().toStdString();
   entry->upscaling_issues = m_ui.upscalingIssues->text().toStdString();
   entry->comments = m_ui.comments->text().toStdString();
@@ -795,7 +884,7 @@ void GamePropertiesDialog::fillEntryFromUi(GameListCompatibilityEntry* entry)
 
 void GamePropertiesDialog::saveCompatibilityInfo()
 {
-  if (m_ui.gameCode->text().isEmpty())
+  if (m_game_code.empty())
     return;
 
   GameListCompatibilityEntry new_entry;

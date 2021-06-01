@@ -57,7 +57,7 @@ bool Win32HostInterface::RegisterWindowClass()
   return true;
 }
 
-bool Win32HostInterface::CreatePlatformWindow(bool fullscreen)
+bool Win32HostInterface::CreatePlatformWindow()
 {
   m_hwnd = CreateWindowExW(WS_EX_CLIENTEDGE, WINDOW_CLASS_NAME, _T("DuckStation"), WS_OVERLAPPEDWINDOW, CW_USEDEFAULT,
                            CW_USEDEFAULT, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, nullptr, nullptr,

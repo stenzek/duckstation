@@ -177,6 +177,15 @@ public class ControllerBindingPreference extends Preference {
         updateValue();
     }
 
+    public void initAutoFireButton(int controllerIndex, int autoFireSlot) {
+        mBindingName = String.format("AutoFire%d", autoFireSlot);
+        mDisplayName = getContext().getString(R.string.controller_binding_auto_fire_n, autoFireSlot);
+        mType = Type.BUTTON;
+        mVisualType = VisualType.BUTTON;
+        setKey(String.format("Controller%d/AutoFire%d", controllerIndex, autoFireSlot));
+        updateValue();
+    }
+
     private String prettyPrintBinding(String value) {
         final int index = value.indexOf('/');
         String device, binding;

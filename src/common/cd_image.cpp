@@ -2,6 +2,7 @@
 #include "assert.h"
 #include "file_system.h"
 #include "log.h"
+#include "string_util.h"
 #include <array>
 Log_SetChannel(CDImage);
 
@@ -17,45 +18,50 @@ u32 CDImage::GetBytesPerSector(TrackMode mode)
 
 std::unique_ptr<CDImage> CDImage::Open(const char* filename, Common::Error* error)
 {
-  const char* extension = std::strrchr(filename, '.');
+  const char* extension;
+
+#ifdef __ANDROID__
+  std::string filename_display_name(FileSystem::GetDisplayNameFromPath(filename));
+  if (filename_display_name.empty())
+    filename_display_name = filename;
+
+  extension = std::strrchr(filename_display_name.c_str(), '.');
+#else
+  extension = std::strrchr(filename, '.');
+#endif
+
   if (!extension)
   {
     Log_ErrorPrintf("Invalid filename: '%s'", filename);
     return nullptr;
   }
 
-#ifdef _MSC_VER
-#define CASE_COMPARE _stricmp
-#else
-#define CASE_COMPARE strcasecmp
-#endif
-
-  if (CASE_COMPARE(extension, ".cue") == 0)
+  if (StringUtil::Strcasecmp(extension, ".cue") == 0)
   {
     return OpenCueSheetImage(filename, error);
   }
-  else if (CASE_COMPARE(extension, ".bin") == 0 || CASE_COMPARE(extension, ".img") == 0 ||
-           CASE_COMPARE(extension, ".iso") == 0)
+  else if (StringUtil::Strcasecmp(extension, ".bin") == 0 || StringUtil::Strcasecmp(extension, ".img") == 0 ||
+           StringUtil::Strcasecmp(extension, ".iso") == 0)
   {
     return OpenBinImage(filename, error);
   }
-  else if (CASE_COMPARE(extension, ".chd") == 0)
+  else if (StringUtil::Strcasecmp(extension, ".chd") == 0)
   {
     return OpenCHDImage(filename, error);
   }
-  else if (CASE_COMPARE(extension, ".ecm") == 0)
+  else if (StringUtil::Strcasecmp(extension, ".ecm") == 0)
   {
     return OpenEcmImage(filename, error);
   }
-  else if (CASE_COMPARE(extension, ".mds") == 0)
+  else if (StringUtil::Strcasecmp(extension, ".mds") == 0)
   {
     return OpenMdsImage(filename, error);
   }
-  else if (CASE_COMPARE(extension, ".pbp") == 0)
+  else if (StringUtil::Strcasecmp(extension, ".pbp") == 0)
   {
     return OpenPBPImage(filename, error);
   }
-  else if (CASE_COMPARE(extension, ".m3u") == 0)
+  else if (StringUtil::Strcasecmp(extension, ".m3u") == 0)
   {
     return OpenM3uImage(filename, error);
   }
@@ -190,7 +196,7 @@ u32 CDImage::Read(ReadMode read_mode, u32 sector_count, void* buffer)
   {
     // get raw sector
     u8 raw_sector[RAW_SECTOR_SIZE];
-    if (!ReadRawSector(raw_sector))
+    if (!ReadRawSector(raw_sector, nullptr))
       break;
 
     switch (read_mode)
@@ -219,7 +225,7 @@ u32 CDImage::Read(ReadMode read_mode, u32 sector_count, void* buffer)
   return sectors_read;
 }
 
-bool CDImage::ReadRawSector(void* buffer)
+bool CDImage::ReadRawSector(void* buffer, SubChannelQ* subq)
 {
   if (m_position_in_index == m_current_index->length)
   {
@@ -227,39 +233,44 @@ bool CDImage::ReadRawSector(void* buffer)
       return false;
   }
 
-  if (m_current_index->file_sector_size > 0)
+  if (buffer)
   {
-    // TODO: This is where we'd reconstruct the header for other mode tracks.
-    if (!ReadSectorFromIndex(buffer, *m_current_index, m_position_in_index))
+    if (m_current_index->file_sector_size > 0)
     {
-      Log_ErrorPrintf("Read of LBA %u failed", m_position_on_disc);
-      Seek(m_position_on_disc);
-      return false;
-    }
-  }
-  else
-  {
-    if (m_current_index->track_number == LEAD_OUT_TRACK_NUMBER)
-    {
-      // Lead-out area.
-      std::fill(static_cast<u8*>(buffer), static_cast<u8*>(buffer) + RAW_SECTOR_SIZE, u8(0xAA));
+      // TODO: This is where we'd reconstruct the header for other mode tracks.
+      if (!ReadSectorFromIndex(buffer, *m_current_index, m_position_in_index))
+      {
+        Log_ErrorPrintf("Read of LBA %u failed", m_position_on_disc);
+        Seek(m_position_on_disc);
+        return false;
+      }
     }
     else
     {
-      // This in an implicit pregap. Return silence.
-      std::fill(static_cast<u8*>(buffer), static_cast<u8*>(buffer) + RAW_SECTOR_SIZE, u8(0));
+      if (m_current_index->track_number == LEAD_OUT_TRACK_NUMBER)
+      {
+        // Lead-out area.
+        std::fill(static_cast<u8*>(buffer), static_cast<u8*>(buffer) + RAW_SECTOR_SIZE, u8(0xAA));
+      }
+      else
+      {
+        // This in an implicit pregap. Return silence.
+        std::fill(static_cast<u8*>(buffer), static_cast<u8*>(buffer) + RAW_SECTOR_SIZE, u8(0));
+      }
     }
+  }
+
+  if (subq && !ReadSubChannelQ(subq, *m_current_index, m_position_in_index))
+  {
+    Log_ErrorPrintf("Subchannel read of LBA %u failed", m_position_on_disc);
+    Seek(m_position_on_disc);
+    return false;
   }
 
   m_position_on_disc++;
   m_position_in_index++;
   m_position_in_track++;
   return true;
-}
-
-bool CDImage::ReadSubChannelQ(SubChannelQ* subq)
-{
-  return ReadSubChannelQ(subq, *m_current_index, m_position_in_index);
 }
 
 bool CDImage::ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index)
@@ -390,9 +401,20 @@ void CDImage::GenerateSubChannelQ(SubChannelQ* subq, const Index& index, u32 ind
     (index.track_number <= m_tracks.size() ? BinaryToBCD(index.track_number) : index.track_number);
   subq->index_number_bcd = BinaryToBCD(index.index_number);
 
-  const Position relative_position =
-    Position::FromLBA(std::abs(static_cast<s32>(index.start_lba_in_track + index_offset)));
+  Position relative_position;
+  if (index.is_pregap)
+  {
+    // position should count down to the end of the pregap
+    relative_position = Position::FromLBA(index.length - index_offset - 1);
+  }
+  else
+  {
+    // count up from the start of the track
+    relative_position = Position::FromLBA(index.start_lba_in_track + index_offset);
+  }
+
   std::tie(subq->relative_minute_bcd, subq->relative_second_bcd, subq->relative_frame_bcd) = relative_position.ToBCD();
+
   subq->reserved = 0;
 
   const Position absolute_position = Position::FromLBA(index.start_lba_on_disc + index_offset);

@@ -21,7 +21,7 @@ public:
 protected:
   virtual void FixIncompatibleSettings(bool display_osd_messages) override;
 
-  bool CreatePlatformWindow(bool fullscreen) override;
+  bool CreatePlatformWindow() override;
   void DestroyPlatformWindow() override;
   std::optional<WindowInfo> GetPlatformWindowInfo() override;
 

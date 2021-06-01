@@ -2,33 +2,51 @@
 #include "common/file_system.h"
 #include "common/string_util.h"
 #include "core/system.h"
+#include <QtCore/QDate>
+#include <QtCore/QDateTime>
+#include <QtGui/QGuiApplication>
 #include <QtGui/QIcon>
 #include <QtGui/QPainter>
 
 static constexpr std::array<const char*, GameListModel::Column_Count> s_column_names = {
-  {"Type", "Code", "Title", "File Title", "Size", "Region", "Compatibility", "Cover"}};
+  {"Type", "Code", "Title", "File Title", "Developer", "Publisher", "Genre", "Year", "Players", "Size", "Region",
+   "Compatibility", "Cover"}};
 
 static constexpr int COVER_ART_WIDTH = 512;
 static constexpr int COVER_ART_HEIGHT = 512;
 static constexpr int COVER_ART_SPACING = 32;
 
-static void resizeAndPadPixmap(QPixmap* pm, int expected_width, int expected_height)
+static int DPRScale(int size, float dpr)
 {
-  if (pm->width() == expected_width && pm->height() == expected_height)
+  return static_cast<int>(static_cast<float>(size) * dpr);
+}
+
+static int DPRUnscale(int size, float dpr)
+{
+  return static_cast<int>(static_cast<float>(size) / dpr);
+}
+
+static void resizeAndPadPixmap(QPixmap* pm, int expected_width, int expected_height, float dpr)
+{
+  const int dpr_expected_width = DPRScale(expected_width, dpr);
+  const int dpr_expected_height = DPRScale(expected_height, dpr);
+  if (pm->width() == dpr_expected_width && pm->height() == dpr_expected_height)
     return;
 
-  *pm = pm->scaled(expected_width, expected_height, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-  if (pm->width() == expected_width && pm->height() == expected_height)
+  *pm = pm->scaled(dpr_expected_width, dpr_expected_height, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+  if (pm->width() == dpr_expected_width && pm->height() == dpr_expected_height)
     return;
 
+  // QPainter works in unscaled coordinates.
   int xoffs = 0;
   int yoffs = 0;
-  if (pm->width() < expected_width)
-    xoffs = (expected_width - pm->width()) / 2;
-  if (pm->height() < expected_height)
-    yoffs = (expected_height - pm->height()) / 2;
+  if (pm->width() < dpr_expected_width)
+    xoffs = DPRUnscale((dpr_expected_width - pm->width()) / 2, dpr);
+  if (pm->height() < dpr_expected_height)
+    yoffs = DPRUnscale((dpr_expected_height - pm->height()) / 2, dpr);
 
-  QPixmap padded_image(expected_width, expected_height);
+  QPixmap padded_image(dpr_expected_width, dpr_expected_height);
+  padded_image.setDevicePixelRatio(dpr);
   padded_image.fill(Qt::transparent);
   QPainter painter;
   if (painter.begin(&padded_image))
@@ -45,11 +63,13 @@ static void resizeAndPadPixmap(QPixmap* pm, int expected_width, int expected_hei
 
 static QPixmap createPlaceholderImage(int width, int height, float scale, const std::string& title)
 {
+  const float dpr = qApp->devicePixelRatio();
   QPixmap pm(QStringLiteral(":/icons/cover-placeholder.png"));
+  pm.setDevicePixelRatio(dpr);
   if (pm.isNull())
-    return QPixmap(width, height);
+    return QPixmap();
 
-  resizeAndPadPixmap(&pm, width, height);
+  resizeAndPadPixmap(&pm, width, height, dpr);
   QPainter painter;
   if (painter.begin(&pm))
   {
@@ -58,7 +78,9 @@ static QPixmap createPlaceholderImage(int width, int height, float scale, const 
     painter.setFont(font);
     painter.setPen(Qt::white);
 
-    painter.drawText(QRect(0, 0, width, height), Qt::AlignCenter | Qt::TextWordWrap, QString::fromStdString(title));
+    const QRect text_rc(0, 0, static_cast<int>(static_cast<float>(width)),
+                        static_cast<int>(static_cast<float>(height)));
+    painter.drawText(text_rc, Qt::AlignCenter | Qt::TextWordWrap, QString::fromStdString(title));
     painter.end();
   }
 
@@ -164,6 +186,36 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
           return QString::fromUtf8(file_title.data(), static_cast<int>(file_title.length()));
         }
 
+        case Column_Developer:
+          return QString::fromStdString(ge.developer);
+
+        case Column_Publisher:
+          return QString::fromStdString(ge.publisher);
+
+        case Column_Genre:
+          return QString::fromStdString(ge.genre);
+
+        case Column_Year:
+        {
+          if (ge.release_date != 0)
+          {
+            return QStringLiteral("%1").arg(
+              QDateTime::fromSecsSinceEpoch(static_cast<qint64>(ge.release_date), Qt::UTC).date().year());
+          }
+          else
+          {
+            return QString();
+          }
+        }
+
+        case Column_Players:
+        {
+          if (ge.min_players == ge.max_players)
+            return QStringLiteral("%1").arg(ge.min_players);
+          else
+            return QStringLiteral("%1-%2").arg(ge.min_players).arg(ge.max_players);
+        }
+
         case Column_Size:
           return QString("%1 MB").arg(static_cast<double>(ge.total_size) / 1048576.0, 0, 'f', 2);
 
@@ -199,6 +251,21 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
           const std::string_view file_title(FileSystem::GetFileTitleFromPath(ge.path));
           return QString::fromUtf8(file_title.data(), static_cast<int>(file_title.length()));
         }
+
+        case Column_Developer:
+          return QString::fromStdString(ge.developer);
+
+        case Column_Publisher:
+          return QString::fromStdString(ge.publisher);
+
+        case Column_Genre:
+          return QString::fromStdString(ge.genre);
+
+        case Column_Year:
+          return QDateTime::fromSecsSinceEpoch(static_cast<qint64>(ge.release_date), Qt::UTC).date().year();
+
+        case Column_Players:
+          return static_cast<int>(ge.max_players);
 
         case Column_Region:
           return static_cast<int>(ge.region);
@@ -267,9 +334,13 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
           std::string path = m_game_list->GetCoverImagePathForEntry(&ge);
           if (!path.empty())
           {
+            const float dpr = qApp->devicePixelRatio();
             image = QPixmap(QString::fromStdString(path));
             if (!image.isNull())
-              resizeAndPadPixmap(&image, getCoverArtWidth(), getCoverArtHeight());
+            {
+              image.setDevicePixelRatio(dpr);
+              resizeAndPadPixmap(&image, getCoverArtWidth(), getCoverArtHeight(), dpr);
+            }
           }
 
           if (image.isNull())
@@ -395,6 +466,48 @@ bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& r
       return ascending ? (left.total_size < right.total_size) : (right.total_size > left.total_size);
     }
 
+    case Column_Genre:
+    {
+      if (left.genre == right.genre)
+        return titlesLessThan(left_row, right_row, ascending);
+      return ascending ? (StringUtil::Strcasecmp(left.genre.c_str(), right.genre.c_str()) < 0) :
+                         (StringUtil::Strcasecmp(right.genre.c_str(), left.genre.c_str()) > 0);
+    }
+
+    case Column_Developer:
+    {
+      if (left.developer == right.developer)
+        return titlesLessThan(left_row, right_row, ascending);
+      return ascending ? (StringUtil::Strcasecmp(left.developer.c_str(), right.developer.c_str()) < 0) :
+                         (StringUtil::Strcasecmp(right.developer.c_str(), left.developer.c_str()) > 0);
+    }
+
+    case Column_Publisher:
+    {
+      if (left.publisher == right.publisher)
+        return titlesLessThan(left_row, right_row, ascending);
+      return ascending ? (StringUtil::Strcasecmp(left.publisher.c_str(), right.publisher.c_str()) < 0) :
+                         (StringUtil::Strcasecmp(right.publisher.c_str(), left.publisher.c_str()) > 0);
+    }
+
+    case Column_Year:
+    {
+      if (left.release_date == right.release_date)
+        return titlesLessThan(left_row, right_row, ascending);
+
+      return ascending ? (left.release_date < right.release_date) : (right.release_date > left.release_date);
+    }
+
+    case Column_Players:
+    {
+      u8 left_players = (left.min_players << 4) + left.max_players;
+      u8 right_players = (right.min_players << 4) + right.max_players;
+      if (left_players == right_players)
+        return titlesLessThan(left_row, right_row, ascending);
+
+      return ascending ? (left_players < right_players) : (right_players > left_players);
+    }
+
     default:
       return false;
   }
@@ -422,6 +535,11 @@ void GameListModel::setColumnDisplayNames()
   m_column_display_names[Column_Code] = tr("Code");
   m_column_display_names[Column_Title] = tr("Title");
   m_column_display_names[Column_FileTitle] = tr("File Title");
+  m_column_display_names[Column_Developer] = tr("Developer");
+  m_column_display_names[Column_Publisher] = tr("Publisher");
+  m_column_display_names[Column_Genre] = tr("Genre");
+  m_column_display_names[Column_Year] = tr("Year");
+  m_column_display_names[Column_Players] = tr("Players");
   m_column_display_names[Column_Size] = tr("Size");
   m_column_display_names[Column_Region] = tr("Region");
   m_column_display_names[Column_Compatibility] = tr("Compatibility");

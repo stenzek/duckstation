@@ -94,7 +94,11 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured)
   #ifdef DRIVER_V3D
     CONSTANT float POS_EPSILON = 0.0001;
   #else
-    CONSTANT float POS_EPSILON = 0.00001;
+    #ifdef DRIVER_POWERVR
+      CONSTANT float POS_EPSILON = 0.001;
+    #else
+      CONSTANT float POS_EPSILON = 0.00001;
+    #endif
   #endif
 #endif
 )";
@@ -927,14 +931,10 @@ float4 SampleFromVRAM(uint4 texpage, float2 coords)
     color = (float3(icolor) * premultiply_alpha) / float3(255.0, 255.0, 255.0);
   #endif
 
-  #if TRANSPARENCY
+  #if TRANSPARENCY && TEXTURED
     // Apply semitransparency. If not a semitransparent texel, destination alpha is ignored.
     if (semitransparent)
     {
-      #if TRANSPARENCY_ONLY_OPAQUE
-        discard;
-      #endif
-
       #if USE_DUAL_SOURCE
         o_col0 = float4(color, oalpha);
         o_col1 = float4(0.0, 0.0, 0.0, u_dst_alpha_factor / ialpha);
@@ -945,13 +945,13 @@ float4 SampleFromVRAM(uint4 texpage, float2 coords)
       #if !PGXP_DEPTH
         o_depth = oalpha * v_pos.z;
       #endif
+
+      #if TRANSPARENCY_ONLY_OPAQUE
+        discard;
+      #endif
     }
     else
     {
-      #if TRANSPARENCY_ONLY_TRANSPARENT
-        discard;
-      #endif
-
       #if USE_DUAL_SOURCE
         o_col0 = float4(color, oalpha);
         o_col1 = float4(0.0, 0.0, 0.0, 1.0 - ialpha);
@@ -962,7 +962,23 @@ float4 SampleFromVRAM(uint4 texpage, float2 coords)
       #if !PGXP_DEPTH
         o_depth = oalpha * v_pos.z;
       #endif
+
+      #if TRANSPARENCY_ONLY_TRANSPARENT
+        discard;
+      #endif
     }
+  #elif TRANSPARENCY
+    // We shouldn't be rendering opaque geometry only when untextured, so no need to test/discard here.
+    #if USE_DUAL_SOURCE
+      o_col0 = float4(color, oalpha);
+      o_col1 = float4(0.0, 0.0, 0.0, u_dst_alpha_factor / ialpha);
+    #else
+      o_col0 = float4(color, oalpha);
+    #endif
+
+    #if !PGXP_DEPTH
+      o_depth = oalpha * v_pos.z;
+    #endif
   #else
     // Non-transparency won't enable blending so we can write the mask here regardless.
     o_col0 = float4(color, oalpha);

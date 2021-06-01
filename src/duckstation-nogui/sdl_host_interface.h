@@ -25,13 +25,17 @@ protected:
 
   std::optional<HostKeyCode> GetHostKeyCode(const std::string_view key_code) const override;
 
-  bool CreatePlatformWindow(bool fullscreen) override;
+  bool CreatePlatformWindow() override;
   void DestroyPlatformWindow() override;
   std::optional<WindowInfo> GetPlatformWindowInfo() override;
 
 private:
   void HandleSDLEvent(const SDL_Event* event);
 
+  void GetSavedWindowGeometry(int* x, int* y, int* width, int* height);
+  void SaveWindowGeometry();
+
   SDL_Window* m_window = nullptr;
   bool m_fullscreen = false;
+  bool m_was_paused_by_focus_loss = false;
 };

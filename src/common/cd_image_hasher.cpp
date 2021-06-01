@@ -27,7 +27,7 @@ static bool ReadIndex(CDImage* image, u8 track, u8 index, MD5Digest* digest, Pro
     if ((lba % update_interval) == 0)
       progress_callback->SetProgressValue(lba);
 
-    if (!image->ReadRawSector(sector.data()))
+    if (!image->ReadRawSector(sector.data(), nullptr))
     {
       progress_callback->DisplayFormattedModalError("Failed to read sector %u from image", image->GetPositionOnDisc());
       return false;

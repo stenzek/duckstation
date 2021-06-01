@@ -5,7 +5,12 @@
 #include "core/settings.h"
 #include "qthostinterface.h"
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#include <QtGui/QAction>
+#else
 #include <QtWidgets/QAction>
+#endif
+
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QDoubleSpinBox>
@@ -62,7 +67,7 @@ struct SettingAccessor<QLineEdit>
 template<>
 struct SettingAccessor<QComboBox>
 {
-  static bool getBoolValue(const QComboBox* widget) { return widget->currentText() > 0; }
+  static bool getBoolValue(const QComboBox* widget) { return widget->currentIndex() > 0; }
   static void setBoolValue(QComboBox* widget, bool value) { widget->setCurrentIndex(value ? 1 : 0); }
 
   static int getIntValue(const QComboBox* widget) { return widget->currentIndex(); }
@@ -71,8 +76,31 @@ struct SettingAccessor<QComboBox>
   static float getFloatValue(const QComboBox* widget) { return static_cast<float>(widget->currentIndex()); }
   static void setFloatValue(QComboBox* widget, float value) { widget->setCurrentIndex(static_cast<int>(value)); }
 
-  static QString getStringValue(const QComboBox* widget) { return widget->currentText(); }
-  static void setStringValue(QComboBox* widget, const QString& value) { widget->setCurrentText(value); }
+  static QString getStringValue(const QComboBox* widget)
+  {
+    const QVariant currentData(widget->currentData());
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    if (currentData.type() == QVariant::String)
+      return currentData.toString();
+#else
+    if (currentData.metaType().id() == QMetaType::QString)
+      return currentData.toString();
+#endif
+
+    return widget->currentText();
+  }
+
+  static void setStringValue(QComboBox* widget, const QString& value)
+  {
+    const int index = widget->findData(value);
+    if (index >= 0)
+    {
+      widget->setCurrentIndex(index);
+      return;
+    }
+
+    widget->setCurrentText(value);
+  }
 
   template<typename F>
   static void connectValueChanged(QComboBox* widget, F func)
@@ -279,7 +307,11 @@ void BindWidgetToStringSetting(QtHostInterface* hi, WidgetType* widget, std::str
 
   Accessor::connectValueChanged(widget, [hi, widget, section, key]() {
     const QString new_value = Accessor::getStringValue(widget);
-    hi->SetStringSettingValue(section.c_str(), key.c_str(), new_value.toUtf8().constData());
+    if (!new_value.isEmpty())
+      hi->SetStringSettingValue(section.c_str(), key.c_str(), new_value.toUtf8().constData());
+    else
+      hi->RemoveSettingValue(section.c_str(), key.c_str());
+
     hi->applySettings();
   });
 }

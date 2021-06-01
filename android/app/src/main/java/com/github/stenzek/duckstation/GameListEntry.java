@@ -27,7 +27,6 @@ public class GameListEntry {
     private String mPath;
     private String mCode;
     private String mTitle;
-    private String mFileTitle;
     private long mSize;
     private String mModifiedTime;
     private DiscRegion mRegion;
@@ -35,12 +34,11 @@ public class GameListEntry {
     private CompatibilityRating mCompatibilityRating;
     private String mCoverPath;
 
-    public GameListEntry(String path, String code, String title, String fileTitle, long size, String modifiedTime, String region,
+    public GameListEntry(String path, String code, String title, long size, String modifiedTime, String region,
                          String type, String compatibilityRating, String coverPath) {
         mPath = path;
         mCode = code;
         mTitle = title;
-        mFileTitle = fileTitle;
         mSize = size;
         mModifiedTime = modifiedTime;
         mCoverPath = coverPath;
@@ -76,10 +74,6 @@ public class GameListEntry {
         return mTitle;
     }
 
-    public String getFileTitle() {
-        return mFileTitle;
-    }
-
     public long getSize() { return mSize; }
 
     public String getModifiedTime() {
@@ -102,11 +96,4 @@ public class GameListEntry {
 
     public void setCoverPath(String coverPath) { mCoverPath = coverPath; }
 
-    public static String getFileNameForPath(String path) {
-        int lastSlash = path.lastIndexOf('/');
-        if (lastSlash > 0 && lastSlash < path.length() - 1)
-            return path.substring(lastSlash + 1);
-        else
-            return path;
-    }
 }

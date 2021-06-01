@@ -65,6 +65,8 @@ bool AnalogController::DoState(StateWrapper& sw, bool apply_input_state)
   sw.DoEx(&button_state, 44, static_cast<u16>(0xFFFF));
   if (apply_input_state)
     m_button_state = button_state;
+  else
+    m_analog_mode = old_analog_mode;
 
   sw.Do(&m_command);
 
@@ -420,13 +422,11 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
         m_rumble_config_large_motor_index = -1;
         m_rumble_config_small_motor_index = -1;
       }
-      else if (m_configuration_mode)
-      {
-        Log_ErrorPrintf("Unimplemented config mode command 0x%02X", data_in);
-        Panic("Unimplemented config mode command");
-      }
       else
       {
+        if (m_configuration_mode)
+          Log_ErrorPrintf("Unimplemented config mode command 0x%02X", data_in);
+
         *data_out = 0xFF;
         return false;
       }

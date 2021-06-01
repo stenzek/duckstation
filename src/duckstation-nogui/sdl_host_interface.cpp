@@ -1,4 +1,5 @@
 #include "sdl_host_interface.h"
+#include "core/system.h"
 #include "frontend-common/controller_interface.h"
 #include "frontend-common/fullscreen_ui.h"
 #include "frontend-common/icon.h"
@@ -94,8 +95,40 @@ bool SDLHostInterface::SetFullscreen(bool enabled)
   if (m_fullscreen == enabled)
     return true;
 
-  SDL_SetWindowFullscreen(m_window, enabled ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+  const std::string fullscreen_mode(GetStringSettingValue("GPU", "FullscreenMode", ""));
+  const bool is_exclusive_fullscreen = (enabled && !fullscreen_mode.empty() && m_display->SupportsFullscreen());
+  const bool was_exclusive_fullscreen = m_display->IsFullscreen();
+
+  if (was_exclusive_fullscreen)
+    m_display->SetFullscreen(false, 0, 0, 0.0f);
+
+  SDL_SetWindowFullscreen(m_window, (enabled && !is_exclusive_fullscreen) ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+
+  if (is_exclusive_fullscreen)
+  {
+    u32 width, height;
+    float refresh_rate;
+    bool result = false;
+
+    if (ParseFullscreenMode(fullscreen_mode, &width, &height, &refresh_rate))
+    {
+      result = m_display->SetFullscreen(true, width, height, refresh_rate);
+      if (result)
+      {
+        AddOSDMessage(TranslateStdString("OSDMessage", "Acquired exclusive fullscreen."), 10.0f);
+      }
+      else
+      {
+        AddOSDMessage(TranslateStdString("OSDMessage", "Failed to acquire exclusive fullscreen."), 10.0f);
+        enabled = false;
+      }
+    }
+  }
+
   m_fullscreen = enabled;
+
+  const bool hide_cursor = (enabled && GetBoolSettingValue("Main", "HideCursorInFullscreen", true));
+  SDL_ShowCursor(hide_cursor ? SDL_DISABLE : SDL_ENABLE);
   return true;
 }
 
@@ -121,26 +154,14 @@ ALWAYS_INLINE static TinyString GetWindowTitle()
   return TinyString::FromFormat("DuckStation %s (%s)", g_scm_tag_str, g_scm_branch_str);
 }
 
-bool SDLHostInterface::CreatePlatformWindow(bool fullscreen)
+bool SDLHostInterface::CreatePlatformWindow()
 {
   // Create window.
   const u32 window_flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
 
-  u32 window_width = DEFAULT_WINDOW_WIDTH;
-  u32 window_height = DEFAULT_WINDOW_HEIGHT;
-
-  // macOS does DPI scaling differently..
-#ifndef __APPLE__
-  {
-    // scale by default monitor's DPI
-    float scale = GetDPIScaleFactor(nullptr);
-    window_width = static_cast<u32>(std::round(static_cast<float>(window_width) * scale));
-    window_height = static_cast<u32>(std::round(static_cast<float>(window_height) * scale));
-  }
-#endif
-
-  m_window = SDL_CreateWindow(GetWindowTitle(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, window_width,
-                              window_height, window_flags);
+  int window_x, window_y, window_width, window_height;
+  GetSavedWindowGeometry(&window_x, &window_y, &window_width, &window_height);
+  m_window = SDL_CreateWindow(GetWindowTitle(), window_x, window_y, window_width, window_height, window_flags);
   if (!m_window)
     return false;
 
@@ -155,12 +176,6 @@ bool SDLHostInterface::CreatePlatformWindow(bool fullscreen)
     SDL_FreeSurface(icon_surface);
   }
 
-  if (fullscreen || m_fullscreen)
-  {
-    SDL_SetWindowFullscreen(m_window, SDL_WINDOW_FULLSCREEN_DESKTOP);
-    m_fullscreen = true;
-  }
-
   ImGui_ImplSDL2_Init(m_window);
 
   // Process events so that we have everything sorted out before creating a child window for the GL context (X11).
@@ -170,9 +185,11 @@ bool SDLHostInterface::CreatePlatformWindow(bool fullscreen)
 
 void SDLHostInterface::DestroyPlatformWindow()
 {
+  SaveWindowGeometry();
   ImGui_ImplSDL2_Shutdown();
   SDL_DestroyWindow(m_window);
   m_window = nullptr;
+  m_fullscreen = false;
 }
 
 std::optional<WindowInfo> SDLHostInterface::GetPlatformWindowInfo()
@@ -276,12 +293,40 @@ void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
   {
     case SDL_WINDOWEVENT:
     {
-      if (event->window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
+      switch (event->window.event)
       {
-        s32 window_width, window_height;
-        SDL_GetWindowSize(m_window, &window_width, &window_height);
-        m_display->ResizeRenderWindow(window_width, window_height);
-        OnHostDisplayResized();
+        case SDL_WINDOWEVENT_SIZE_CHANGED:
+        {
+          s32 window_width, window_height;
+          SDL_GetWindowSize(m_window, &window_width, &window_height);
+          m_display->ResizeRenderWindow(window_width, window_height);
+          OnHostDisplayResized();
+        }
+        break;
+
+        case SDL_WINDOWEVENT_FOCUS_LOST:
+        {
+          if (g_settings.pause_on_focus_loss && System::IsRunning() && !m_was_paused_by_focus_loss)
+          {
+            PauseSystem(true);
+            m_was_paused_by_focus_loss = true;
+          }
+        }
+        break;
+
+        case SDL_WINDOWEVENT_FOCUS_GAINED:
+        {
+          if (m_was_paused_by_focus_loss)
+          {
+            if (System::IsPaused())
+              PauseSystem(false);
+            m_was_paused_by_focus_loss = false;
+          }
+        }
+        break;
+
+        default:
+          break;
       }
     }
     break;
@@ -335,4 +380,55 @@ void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
     }
     break;
   }
+}
+
+void SDLHostInterface::GetSavedWindowGeometry(int* x, int* y, int* width, int* height)
+{
+  auto lock = GetSettingsLock();
+  *x = m_settings_interface->GetIntValue("SDLHostInterface", "WindowX", SDL_WINDOWPOS_UNDEFINED);
+  *y = m_settings_interface->GetIntValue("SDLHostInterface", "WindowY", SDL_WINDOWPOS_UNDEFINED);
+
+  *width = m_settings_interface->GetIntValue("SDLHostInterface", "WindowWidth", -1);
+  *height = m_settings_interface->GetIntValue("SDLHostInterface", "WindowHeight", -1);
+
+  if (*width < 0 || *height < 0)
+  {
+    *width = DEFAULT_WINDOW_WIDTH;
+    *height = DEFAULT_WINDOW_HEIGHT;
+
+    // macOS does DPI scaling differently..
+#ifndef __APPLE__
+    {
+      // scale by default monitor's DPI
+      float scale = GetDPIScaleFactor(nullptr);
+      *width = static_cast<int>(std::round(static_cast<float>(*width) * scale));
+      *height = static_cast<int>(std::round(static_cast<float>(*height) * scale));
+    }
+#endif
+  }
+}
+
+void SDLHostInterface::SaveWindowGeometry()
+{
+  if (m_fullscreen)
+    return;
+
+  int x = 0;
+  int y = 0;
+  SDL_GetWindowPosition(m_window, &x, &y);
+
+  int width = DEFAULT_WINDOW_WIDTH;
+  int height = DEFAULT_WINDOW_HEIGHT;
+  SDL_GetWindowSize(m_window, &width, &height);
+
+  int old_x, old_y, old_width, old_height;
+  GetSavedWindowGeometry(&old_x, &old_y, &old_width, &old_height);
+  if (x == old_x && y == old_y && width == old_width && height == old_height)
+    return;
+
+  auto lock = GetSettingsLock();
+  m_settings_interface->SetIntValue("SDLHostInterface", "WindowX", x);
+  m_settings_interface->SetIntValue("SDLHostInterface", "WindowY", y);
+  m_settings_interface->SetIntValue("SDLHostInterface", "WindowWidth", width);
+  m_settings_interface->SetIntValue("SDLHostInterface", "WindowHeight", height);
 }

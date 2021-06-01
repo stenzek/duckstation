@@ -1,9 +1,9 @@
 # DuckStation - PlayStation 1, aka. PSX Emulator
-[Latest News](#latest-news) | [Features](#features) | [Screenshots](#screenshots) | [Downloading and Running](#downloading-and-running) | [Building](#building) | [Disclaimers](#disclaimers)
+[Latest News](#latest-news) | [Features](#features) | [Screenshots](#screenshots) | [Downloading and Running](#downloading-and-running) | [Libretro Core](#libretro-core) | [Building](#building) | [Disclaimers](#disclaimers)
 
 **Discord Server:** https://discord.gg/Buktv3t
 
-**Latest Windows, Linux (AppImage), Mac, Android** https://github.com/stenzek/duckstation/releases/tag/latest
+**Latest Builds for Windows, Linux (AppImage), and Android** https://github.com/stenzek/duckstation/releases/tag/latest
 
 **Available on Google Play:** https://play.google.com/store/apps/details?id=com.github.stenzek.duckstation&hl=en_AU&gl=US
 
@@ -18,6 +18,11 @@ A "BIOS" ROM image is required to to start the emulator and to play games. You c
 ## Latest News
 Older entries are available at https://github.com/stenzek/duckstation/blob/master/NEWS.md
 
+- 2021/05/23: Save RAM (srm) support added to libretro core.
+- 2021/05/23: CD-ROM seek speedup enhancement added.
+- 2021/05/16: Auto fire (toggle pressing) buttons added.
+- 2021/05/02: New pause menu added to Android app.
+- 2021/04/29: Custom aspect ratio support added.
 - 2021/03/20: Memory card editor added to Android app.
 - 2021/03/17: Add support for loading **homebrew** PBP images. PSN images are not loadable due to potential legal issues surrounding the encryption.
 - 2021/03/14: Multiple controllers, multitap, and external controller vibration added to Android app. You will need to rebind your controllers.
@@ -71,7 +76,7 @@ Other features include:
  - NeGcon support
  - Qt and NoGUI frontends for desktop
  - Automatic updates for Windows builds
- - Automatic content scanning - game titles/regions are provided by redump.org
+ - Automatic content scanning - game titles/hashes are provided by redump.org
  - Optional automatic switching of memory cards for each game
  - Supports loading cheats from libretro or PCSXR format lists
  - Memory card editor and save importer
@@ -105,9 +110,13 @@ To set up:
 
 **If you get an error about `vcruntime140_1.dll` being missing, you will need to update your Visual C++ runtime.** You can do that from this page: https://support.microsoft.com/en-au/help/2977003/the-latest-supported-visual-c-downloads. Specifically, you want the x64 runtime, which can be downloaded from https://aka.ms/vs/16/release/vc_redist.x64.exe.
 
+**Windows 7 users, TLS 1.2 is not supported by default and you will not be able to use the automatic updater or RetroAchievements.** This knowledge base article contains instructions for enabling TLS 1.1/1.2: https://support.microsoft.com/en-us/topic/update-to-enable-tls-1-1-and-tls-1-2-as-default-secure-protocols-in-winhttp-in-windows-c4bd73d2-31d7-761e-0178-11268bb10392
+
 The Qt frontend includes an automatic update checker. Builds downloaded after 2020/08/07 will automatically check for updates each time the emulator starts, this can be disabled in Settings. Alternatively, you can force an update check by clicking `Help->Check for Updates`.
 
 ### Linux
+
+#### Binaries
 
 Prebuilt binaries for 64-bit Linux distros are available for download in the AppImage format. However, these binaries may be incompatible with older Linux distros (e.g. Ubuntu distros earlier than 18.04.4 LTS) due to older distros not providing newer versions of the C/C++ standard libraries required by the AppImage binaries.
 
@@ -118,18 +127,21 @@ To download:
  - Run `chmod a+x` on the downloaded AppImage -- following this step, the AppImage can be run like a typical executable.
  - Optionally use a program such as [appimaged](https://github.com/AppImage/appimaged) or [AppImageLauncher](https://github.com/TheAssassin/AppImageLauncher) for desktop integration. [AppImageUpdate](https://github.com/AppImage/AppImageUpdate) can be used alongside appimaged to easily update your DuckStation AppImage.
 
+#### [Unofficial] Flatpak
+
+No support for the flatpak package will be provided, any emulator issues must be verified with the AppImage or a source build before being reported.
+
+Flatpak issues can be reported at https://github.com/flathub/org.duckstation.DuckStation/issues.
+
+Follow the instructions at https://github.com/flathub/org.duckstation.DuckStation
+
 ### macOS
 
-To download:
- - Go to https://github.com/stenzek/duckstation/releases/tag/latest, and download the Mac build. This is a zip archive containing the prebuilt binary.
- - Alternatively, direct download link: https://github.com/stenzek/duckstation/releases/download/latest/duckstation-mac-release.zip
- - Extract the zip archive. If you're using Safari, apparently this happens automatically. This will give you DuckStation.app.
- - Right click DuckStation.app, and click Open. As the package is not signed (Mac certificates are expensive), you must do this the first time you open it. Subsequent runs can be done by double-clicking.
+MacOS builds are no longer provided, as I cannot support a platform which I do not own hardware for, and I'm not spending $1000+ out of my own pocket for a machine which I have no other use for.
 
-macOS support is considered experimental and not actively supported by the developer; the builds are provided here as a courtesy. Please feel free to submit issues, but it may be some time before
-they are investigated.
+You can still build from [source](#building), but you will have to debug any issues encountered yourself.
 
-**macOS builds do not support automatic updates yet.** If there is sufficient demand, this may be something I will consider.
+If anyone is willing to volunteer to support the platform to ensure users have a good experience, I'm more than happy to re-enable the releases.
 
 
 ### Android
@@ -145,10 +157,6 @@ To use:
  - Map your controller buttons and axes by going into `Controller Mapping` under `Controllers` in `Settings`.
  - Tap a game to start.
 
-
-### Title Information
-
-PlayStation game discs do not contain title information. For game titles, we use the redump.org database cross-referenced with the game's executable code. A version of the database is included with the DuckStation download, but you can replace this with a different database by saving it as `cache/redump.dat` in your user directory, or updated by going into the `Game List Settings` in the Qt Frontend, and clicking `Update Redump Database`.
 
 ### Region detection and BIOS images
 By default, DuckStation will emulate the region check present in the CD-ROM controller of the console. This means that when the region of the console does not match the disc, it will refuse to boot, giving a "Please insert PlayStation CD-ROM" message. DuckStation supports automatic detection disc regions, and if you set the console region to auto-detect as well, this should never be a problem.
@@ -168,6 +176,21 @@ A number of PAL region games use LibCrypt protection, requiring additional CD su
 For these games, make sure that the CD image and its corresponding SBI (.sbi) file have the same name and are placed in the same directory. DuckStation will automatically load the SBI file when it is found next to the CD image.
 
 For example, if your disc image was named `Spyro3.cue`, you would place the SBI file in the same directory, and name it `Spyro3.sbi`.
+
+## Libretro Core
+
+DuckStation is available as a libretro core, which can be loaded into a frontend such as RetroArch. It supports most features of the full frontend, within the constraints and limitations of being a libretro core.
+
+The DuckStation libretro core is not covered by the GPL license, but is still completely free to use. The only restriction is that COMMERCIAL DISTRIBUTION IS PROHIBITED. By downloading the libretro core, you agree that you will not distribute it with any paid applications, services, or products.
+
+The core is maintained by a third party, and is not provided as part of the GitHub release. You can download the core through the RetroArch buildbot/core updater, or from the links below:
+
+- Windows x64 (64-bit): https://www.duckstation.org/libretro/duckstation_libretro_windows_x64.zip
+- Android AArch64 (64-bit): https://www.duckstation.org/libretro/duckstation_libretro_android_aarch64.zip
+- Android armv7 (32-bit): https://www.duckstation.org/libretro/duckstation_libretro_android_armv7.zip
+- Linux x64 (64-bit): https://www.duckstation.org/libretro/duckstation_libretro_linux_x64.zip
+- Linux AArch64 (64-bit): https://www.duckstation.org/libretro/duckstation_libretro_linux_aarch64.zip
+- Linux armv7 (32-bit): https://www.duckstation.org/libretro/duckstation_libretro_linux_armv7.zip
 
 ## Building
 
@@ -263,9 +286,7 @@ Hotkeys:
  - **Escape:** Power off console
  - **ALT+ENTER:** Toggle fullscreen
  - **Tab:** Temporarily disable speed limiter
- - **Pause/Break:** Pause/resume emulation
- - **Page Up/Down:** Increase/decrease resolution scale in hardware renderers
- - **End:** Toggle software renderer
+ - **Space:** Pause/resume emulation
  
 ## Tests
  - Passes amidog's CPU and GTE tests in both interpreter and recompiler modes, partial passing of CPX tests

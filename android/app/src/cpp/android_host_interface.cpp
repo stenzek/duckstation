@@ -39,6 +39,7 @@ static jclass s_String_class;
 static jclass s_AndroidHostInterface_class;
 static jmethodID s_AndroidHostInterface_constructor;
 static jfieldID s_AndroidHostInterface_field_mNativePointer;
+static jfieldID s_AndroidHostInterface_field_mEmulationActivity;
 static jmethodID s_AndroidHostInterface_method_reportError;
 static jmethodID s_AndroidHostInterface_method_reportMessage;
 static jmethodID s_AndroidHostInterface_method_openAssetStream;
@@ -46,7 +47,7 @@ static jclass s_EmulationActivity_class;
 static jmethodID s_EmulationActivity_method_reportError;
 static jmethodID s_EmulationActivity_method_onEmulationStarted;
 static jmethodID s_EmulationActivity_method_onEmulationStopped;
-static jmethodID s_EmulationActivity_method_onGameTitleChanged;
+static jmethodID s_EmulationActivity_method_onRunningGameChanged;
 static jmethodID s_EmulationActivity_method_setVibration;
 static jmethodID s_EmulationActivity_method_getRefreshRate;
 static jmethodID s_EmulationActivity_method_openPauseMenu;
@@ -469,6 +470,7 @@ void AndroidHostInterface::EmulationThreadEntryPoint(JNIEnv* env, jobject emulat
     m_emulation_thread_running.store(true);
     m_emulation_activity_object = emulation_activity;
     m_emulation_thread_id = std::this_thread::get_id();
+    env->SetObjectField(m_java_object, s_AndroidHostInterface_field_mEmulationActivity, emulation_activity);
   }
 
   ApplySettings(true);
@@ -500,6 +502,7 @@ void AndroidHostInterface::EmulationThreadEntryPoint(JNIEnv* env, jobject emulat
       callback();
       lock.lock();
     }
+    env->SetObjectField(m_java_object, s_AndroidHostInterface_field_mEmulationActivity, nullptr);
     m_emulation_thread_running.store(false);
     m_emulation_thread_id = {};
     m_emulation_activity_object = {};
@@ -565,7 +568,7 @@ void AndroidHostInterface::EmulationThreadLoop(JNIEnv* env)
       else
         System::RunFrame();
 
-      UpdateControllerRumble();
+      UpdateControllerMetaState();
       if (m_vibration_enabled)
         UpdateVibration();
     }
@@ -626,7 +629,6 @@ bool AndroidHostInterface::AcquireHostDisplay()
   if (!CreateHostDisplayResources())
   {
     ReportError("Failed to create host display resources");
-    ReleaseHostDisplayResources();
     ReleaseHostDisplay();
     return false;
   }
@@ -699,9 +701,30 @@ void AndroidHostInterface::OnRunningGameChanged(const std::string& path, CDImage
   if (m_emulation_activity_object)
   {
     JNIEnv* env = AndroidHelpers::GetJNIEnv();
-    jstring title_string = env->NewStringUTF(System::GetRunningTitle().c_str());
-    env->CallVoidMethod(m_emulation_activity_object, s_EmulationActivity_method_onGameTitleChanged, title_string);
+
+    jstring path_string = env->NewStringUTF(path.c_str());
+    jstring code_string = env->NewStringUTF(game_code.c_str());
+    jstring title_string = env->NewStringUTF(game_title.c_str());
+
+    const GameListEntry* game_list_entry = m_game_list->GetEntryForPath(path.c_str());
+    std::string cover_path_str;
+    if (game_list_entry)
+      cover_path_str = m_game_list->GetCoverImagePathForEntry(game_list_entry);
+    else
+      cover_path_str = m_game_list->GetCoverImagePath(path, game_code, game_title);
+
+    jstring cover_path = nullptr;
+    if (!cover_path_str.empty())
+      cover_path = env->NewStringUTF(cover_path_str.c_str());
+
+    env->CallVoidMethod(m_emulation_activity_object, s_EmulationActivity_method_onRunningGameChanged, path_string,
+                        code_string, title_string, cover_path);
+
+    if (cover_path)
+      env->DeleteLocalRef(cover_path);
     env->DeleteLocalRef(title_string);
+    env->DeleteLocalRef(code_string);
+    env->DeleteLocalRef(path_string);
   }
 }
 
@@ -970,9 +993,13 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
 
   jclass emulation_activity_class;
   if ((s_AndroidHostInterface_constructor =
-         env->GetMethodID(s_AndroidHostInterface_class, "<init>", "(Landroid/content/Context;)V")) == nullptr ||
+         env->GetMethodID(s_AndroidHostInterface_class, "<init>",
+                          "(Landroid/content/Context;Lcom/github/stenzek/duckstation/FileHelper;)V")) == nullptr ||
       (s_AndroidHostInterface_field_mNativePointer =
          env->GetFieldID(s_AndroidHostInterface_class, "mNativePointer", "J")) == nullptr ||
+      (s_AndroidHostInterface_field_mEmulationActivity =
+         env->GetFieldID(s_AndroidHostInterface_class, "mEmulationActivity",
+                         "Lcom/github/stenzek/duckstation/EmulationActivity;")) == nullptr ||
       (s_AndroidHostInterface_method_reportError =
          env->GetMethodID(s_AndroidHostInterface_class, "reportError", "(Ljava/lang/String;)V")) == nullptr ||
       (s_AndroidHostInterface_method_reportMessage =
@@ -987,8 +1014,9 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
          env->GetMethodID(s_EmulationActivity_class, "onEmulationStarted", "()V")) == nullptr ||
       (s_EmulationActivity_method_onEmulationStopped =
          env->GetMethodID(s_EmulationActivity_class, "onEmulationStopped", "()V")) == nullptr ||
-      (s_EmulationActivity_method_onGameTitleChanged =
-         env->GetMethodID(s_EmulationActivity_class, "onGameTitleChanged", "(Ljava/lang/String;)V")) == nullptr ||
+      (s_EmulationActivity_method_onRunningGameChanged =
+         env->GetMethodID(s_EmulationActivity_class, "onRunningGameChanged",
+                          "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V")) == nullptr ||
       (s_EmulationActivity_method_setVibration = env->GetMethodID(emulation_activity_class, "setVibration", "(Z)V")) ==
         nullptr ||
       (s_EmulationActivity_method_getRefreshRate =
@@ -1001,11 +1029,12 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
          env->GetMethodID(s_EmulationActivity_class, "hasInputDeviceVibration", "(I)Z")) == nullptr ||
       (s_EmulationActivity_method_setInputDeviceVibration =
          env->GetMethodID(s_EmulationActivity_class, "setInputDeviceVibration", "(IFF)V")) == nullptr ||
-      (s_PatchCode_constructor = env->GetMethodID(s_PatchCode_class, "<init>", "(ILjava/lang/String;Z)V")) == nullptr ||
-      (s_GameListEntry_constructor = env->GetMethodID(
-         s_GameListEntry_class, "<init>",
-         "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JLjava/lang/String;Ljava/lang/"
-         "String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V")) == nullptr ||
+      (s_PatchCode_constructor =
+         env->GetMethodID(s_PatchCode_class, "<init>", "(ILjava/lang/String;Ljava/lang/String;Z)V")) == nullptr ||
+      (s_GameListEntry_constructor =
+         env->GetMethodID(s_GameListEntry_class, "<init>",
+                          "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JLjava/lang/String;Ljava/lang/"
+                          "String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V")) == nullptr ||
       (s_SaveStateInfo_constructor = env->GetMethodID(
          s_SaveStateInfo_class, "<init>",
          "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IZII[B)V")) ==
@@ -1067,12 +1096,13 @@ DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_setThreadAffinity, jobject unu
 }
 
 DEFINE_JNI_ARGS_METHOD(jobject, AndroidHostInterface_create, jobject unused, jobject context_object,
-                       jstring user_directory)
+                       jobject file_helper_object, jstring user_directory)
 {
   Log::SetDebugOutputParams(true, nullptr, LOGLEVEL_DEBUG);
 
   // initialize the java side
-  jobject java_obj = env->NewObject(s_AndroidHostInterface_class, s_AndroidHostInterface_constructor, context_object);
+  jobject java_obj = env->NewObject(s_AndroidHostInterface_class, s_AndroidHostInterface_constructor, context_object,
+                                    file_helper_object);
   if (!java_obj)
   {
     Log_ErrorPrint("Failed to create Java AndroidHostInterface");
@@ -1096,6 +1126,7 @@ DEFINE_JNI_ARGS_METHOD(jobject, AndroidHostInterface_create, jobject unused, job
   env->SetLongField(java_obj, s_AndroidHostInterface_field_mNativePointer,
                     static_cast<long>(reinterpret_cast<uintptr_t>(cpp_obj)));
 
+  FileSystem::SetAndroidFileHelper(s_jvm, env, file_helper_object);
   return java_obj;
 }
 
@@ -1159,6 +1190,18 @@ DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_setControllerButtonState, jobj
   AndroidHelpers::GetNativeClass(env, obj)->SetControllerButtonState(index, button_code, pressed);
 }
 
+DEFINE_JNI_ARGS_METHOD(void, AndroidHostInterface_setControllerAutoFireState, jobject obj, jint controller_index,
+                       jint autofire_index, jboolean active)
+{
+  AndroidHostInterface* hi = AndroidHelpers::GetNativeClass(env, obj);
+  if (!hi->IsEmulationThreadRunning())
+    return;
+
+  hi->RunOnEmulationThread([hi, controller_index, autofire_index, active]() {
+    hi->SetControllerAutoFireSlotState(controller_index, autofire_index, active);
+  });
+}
+
 DEFINE_JNI_ARGS_METHOD(jint, AndroidHostInterface_getControllerButtonCode, jobject unused, jstring controller_type,
                        jstring button_name)
 {
@@ -1195,7 +1238,7 @@ DEFINE_JNI_ARGS_METHOD(jint, AndroidHostInterface_getControllerAxisType, jobject
                        jstring axis_name)
 {
   std::optional<ControllerType> type =
-          Settings::ParseControllerTypeName(AndroidHelpers::JStringToString(env, controller_type).c_str());
+    Settings::ParseControllerTypeName(AndroidHelpers::JStringToString(env, controller_type).c_str());
   if (!type)
     return -1;
 
@@ -1342,13 +1385,11 @@ static jobject CreateGameListEntry(JNIEnv* env, AndroidHostInterface* hi, const 
 {
   const Timestamp modified_ts(
     Timestamp::FromUnixTimestamp(static_cast<Timestamp::UnixTimestampValue>(entry.last_modified_time)));
-  const std::string file_title_str(System::GetTitleForPath(entry.path.c_str()));
   const std::string cover_path_str(hi->GetGameList()->GetCoverImagePathForEntry(&entry));
 
   jstring path = env->NewStringUTF(entry.path.c_str());
   jstring code = env->NewStringUTF(entry.code.c_str());
   jstring title = env->NewStringUTF(entry.title.c_str());
-  jstring file_title = env->NewStringUTF(file_title_str.c_str());
   jstring region = env->NewStringUTF(DiscRegionToString(entry.region));
   jstring type = env->NewStringUTF(GameList::EntryTypeToString(entry.type));
   jstring compatibility_rating =
@@ -1357,9 +1398,8 @@ static jobject CreateGameListEntry(JNIEnv* env, AndroidHostInterface* hi, const 
   jstring modified_time = env->NewStringUTF(modified_ts.ToString("%Y/%m/%d, %H:%M:%S"));
   jlong size = entry.total_size;
 
-  jobject entry_jobject =
-    env->NewObject(s_GameListEntry_class, s_GameListEntry_constructor, path, code, title, file_title, size,
-                   modified_time, region, type, compatibility_rating, cover_path);
+  jobject entry_jobject = env->NewObject(s_GameListEntry_class, s_GameListEntry_constructor, path, code, title, size,
+                                         modified_time, region, type, compatibility_rating, cover_path);
 
   env->DeleteLocalRef(modified_time);
   if (cover_path)
@@ -1367,7 +1407,6 @@ static jobject CreateGameListEntry(JNIEnv* env, AndroidHostInterface* hi, const 
   env->DeleteLocalRef(compatibility_rating);
   env->DeleteLocalRef(type);
   env->DeleteLocalRef(region);
-  env->DeleteLocalRef(file_title);
   env->DeleteLocalRef(title);
   env->DeleteLocalRef(code);
   env->DeleteLocalRef(path);
@@ -1590,12 +1629,14 @@ DEFINE_JNI_ARGS_METHOD(jobject, AndroidHostInterface_getPatchCodeList, jobject o
   {
     const CheatCode& cc = cl->GetCode(i);
 
+    jstring group_str = cc.group.empty() ? nullptr : env->NewStringUTF(cc.group.c_str());
     jstring desc_str = env->NewStringUTF(cc.description.c_str());
     jobject java_cc =
-      env->NewObject(s_PatchCode_class, s_PatchCode_constructor, static_cast<jint>(i), desc_str, cc.enabled);
+      env->NewObject(s_PatchCode_class, s_PatchCode_constructor, static_cast<jint>(i), group_str, desc_str, cc.enabled);
     env->SetObjectArrayElement(arr, i, java_cc);
     env->DeleteLocalRef(java_cc);
     env->DeleteLocalRef(desc_str);
+    env->DeleteLocalRef(group_str);
   }
 
   return arr;

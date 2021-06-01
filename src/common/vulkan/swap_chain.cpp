@@ -138,7 +138,8 @@ static VkSurfaceKHR CreateDisplaySurface(VkInstance instance, VkPhysicalDevice p
 
       if (!matched_mode &&
           ((wi->surface_width == 0 && wi->surface_height == 0) ||
-           (mode.parameters.visibleRegion.width == wi->surface_width && mode.parameters.visibleRegion.height &&
+           (mode.parameters.visibleRegion.width == wi->surface_width &&
+            mode.parameters.visibleRegion.height == wi->surface_height &&
             (wi->surface_refresh_rate == 0.0f || std::abs(refresh_rate - wi->surface_refresh_rate) < 0.1f))))
       {
         matched_mode = &mode;
@@ -153,11 +154,13 @@ static VkSurfaceKHR CreateDisplaySurface(VkInstance instance, VkPhysicalDevice p
 
     u32 num_planes;
     res = vkGetPhysicalDeviceDisplayPlanePropertiesKHR(physical_device, &num_planes, nullptr);
-    if (res != VK_SUCCESS || num_planes == 0)
+    if (res != VK_SUCCESS)
     {
       LOG_VULKAN_ERROR(res, "vkGetPhysicalDeviceDisplayPlanePropertiesKHR() failed:");
       continue;
     }
+    if (num_planes == 0)
+      continue;
 
     std::vector<VkDisplayPlanePropertiesKHR> planes(num_planes);
     res = vkGetPhysicalDeviceDisplayPlanePropertiesKHR(physical_device, &num_planes, planes.data());
@@ -172,18 +175,20 @@ static VkSurfaceKHR CreateDisplaySurface(VkInstance instance, VkPhysicalDevice p
     {
       u32 supported_display_count;
       res = vkGetDisplayPlaneSupportedDisplaysKHR(physical_device, plane_index, &supported_display_count, nullptr);
-      if (res != VK_SUCCESS || supported_display_count == 0)
+      if (res != VK_SUCCESS)
       {
-        LOG_VULKAN_ERROR(res, "vkGetPhysicalDeviceDisplayPlanePropertiesKHR() failed:");
+        LOG_VULKAN_ERROR(res, "vkGetDisplayPlaneSupportedDisplaysKHR() failed:");
         continue;
       }
+      if (supported_display_count == 0)
+        continue;
 
       std::vector<VkDisplayKHR> supported_displays(supported_display_count);
       res = vkGetDisplayPlaneSupportedDisplaysKHR(physical_device, plane_index, &supported_display_count,
                                                   supported_displays.data());
-      if (res != VK_SUCCESS || supported_display_count == 0)
+      if (res != VK_SUCCESS)
       {
-        LOG_VULKAN_ERROR(res, "vkGetPhysicalDeviceDisplayPlanePropertiesKHR() failed:");
+        LOG_VULKAN_ERROR(res, "vkGetDisplayPlaneSupportedDisplaysKHR() failed:");
         continue;
       }
 
@@ -232,9 +237,14 @@ static std::vector<SwapChain::FullscreenModeInfo> GetDisplayModes(VkInstance ins
 
   u32 num_displays;
   VkResult res = vkGetPhysicalDeviceDisplayPropertiesKHR(physical_device, &num_displays, nullptr);
-  if (res != VK_SUCCESS || num_displays == 0)
+  if (res != VK_SUCCESS)
   {
     LOG_VULKAN_ERROR(res, "vkGetPhysicalDeviceDisplayPropertiesKHR() failed:");
+    return {};
+  }
+  if (num_displays == 0)
+  {
+    Log_ErrorPrint("No displays were returned");
     return {};
   }
 
@@ -638,8 +648,8 @@ bool SwapChain::CreateSwapChain()
   if (old_swap_chain != VK_NULL_HANDLE)
     vkDestroySwapchainKHR(g_vulkan_context->GetDevice(), old_swap_chain, nullptr);
 
-  m_window_info.surface_width = size.width;
-  m_window_info.surface_height = size.height;
+  m_window_info.surface_width = std::max(1u, size.width);
+  m_window_info.surface_height = std::max(1u, size.height);
   return true;
 }
 
@@ -713,13 +723,15 @@ void SwapChain::DestroySwapChain()
 
 VkResult SwapChain::AcquireNextImage()
 {
+  if (!m_swap_chain)
+    return VK_ERROR_SURFACE_LOST_KHR;
+
   return vkAcquireNextImageKHR(g_vulkan_context->GetDevice(), m_swap_chain, UINT64_MAX, m_image_available_semaphore,
                                VK_NULL_HANDLE, &m_current_image);
 }
 
 bool SwapChain::ResizeSwapChain(u32 new_width /* = 0 */, u32 new_height /* = 0 */)
 {
-  DestroySemaphores();
   DestroySwapChainImages();
 
   if (new_width != 0 && new_height != 0)
@@ -728,7 +740,7 @@ bool SwapChain::ResizeSwapChain(u32 new_width /* = 0 */, u32 new_height /* = 0 *
     m_window_info.surface_height = new_height;
   }
 
-  if (!CreateSwapChain() || !SetupSwapChainImages() || !CreateSemaphores())
+  if (!CreateSwapChain() || !SetupSwapChainImages())
   {
     Panic("Failed to re-configure swap chain images, this is fatal (for now)");
     return false;
@@ -739,10 +751,9 @@ bool SwapChain::ResizeSwapChain(u32 new_width /* = 0 */, u32 new_height /* = 0 *
 
 bool SwapChain::RecreateSwapChain()
 {
-  DestroySemaphores();
   DestroySwapChainImages();
-  DestroySwapChain();
-  if (!CreateSwapChain() || !SetupSwapChainImages() || !CreateSemaphores())
+
+  if (!CreateSwapChain() || !SetupSwapChainImages())
   {
     Panic("Failed to re-configure swap chain images, this is fatal (for now)");
     return false;
@@ -764,7 +775,6 @@ bool SwapChain::SetVSync(bool enabled)
 bool SwapChain::RecreateSurface(const WindowInfo& new_wi)
 {
   // Destroy the old swap chain, images, and surface.
-  DestroySemaphores();
   DestroySwapChainImages();
   DestroySwapChain();
   DestroySurface();
@@ -793,7 +803,7 @@ bool SwapChain::RecreateSurface(const WindowInfo& new_wi)
   }
 
   // Finally re-create the swap chain
-  if (!CreateSwapChain() || !SetupSwapChainImages() || !CreateSemaphores())
+  if (!CreateSwapChain() || !SetupSwapChainImages())
     return false;
 
   return true;
@@ -801,6 +811,9 @@ bool SwapChain::RecreateSurface(const WindowInfo& new_wi)
 
 void SwapChain::DestroySurface()
 {
+  if (m_surface == VK_NULL_HANDLE)
+    return;
+
   DestroyVulkanSurface(g_vulkan_context->GetVulkanInstance(), &m_window_info, m_surface);
   m_surface = VK_NULL_HANDLE;
 }

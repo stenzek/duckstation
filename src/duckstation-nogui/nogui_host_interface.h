@@ -43,11 +43,11 @@ protected:
 
   void RequestExit() override;
 
-  virtual bool CreatePlatformWindow(bool fullscreen) = 0;
+  virtual bool CreatePlatformWindow() = 0;
   virtual void DestroyPlatformWindow() = 0;
   virtual std::optional<WindowInfo> GetPlatformWindowInfo() = 0;
 
-  bool CreateDisplay();
+  bool CreateDisplay(bool fullscreen);
   void DestroyDisplay();
   void RunCallbacks();
 

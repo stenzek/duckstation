@@ -5,8 +5,6 @@
 #include "log.h"
 #include <algorithm>
 #include <cerrno>
-#include <libcue/libcue.h>
-#include <map>
 Log_SetChannel(CDImageMemory);
 
 class CDImageMemory : public CDImage

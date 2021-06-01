@@ -60,9 +60,6 @@
     <ProjectReference Include="..\..\dep\libchdr\libchdr.vcxproj">
       <Project>{425d6c99-d1c8-43c2-b8ac-4d7b1d941017}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\dep\libcue\libcue.vcxproj">
-      <Project>{6a4208ed-e3dc-41e1-81cd-f61025fc285a}</Project>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="scmversion.cpp" />

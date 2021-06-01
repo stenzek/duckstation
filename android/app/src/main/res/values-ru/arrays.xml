@@ -23,13 +23,13 @@
 	<string-array name="settings_gpu_resolution_scale_entries">
 		<item>1x</item>
 		<item>2x</item>
-		<item>3x (для 720p)</item>
+		<item>3x (720p)</item>
 		<item>4x</item>
-		<item>5x (для 1080p)</item>
-		<item>6x (для 1440p)</item>
+		<item>5x (1080p)</item>
+		<item>6x (1440p)</item>
 		<item>7x</item>
 		<item>8x</item>
-		<item>9x (для 4K)</item>
+		<item>9x (4K)</item>
 		<item>10x</item>
 		<item>11x</item>
 		<item>12x</item>
@@ -44,20 +44,14 @@
 		<item>Все границы</item>
 	</string-array>
 	<string-array name="settings_display_aspect_ratio_names">
-		<item>Автонастройка (нативное игре)</item>
-		<item>4:3</item>
-		<item>16:9</item>
-		<item>16:10</item>
-		<item>19:9</item>
-		<item>20:9</item>
-		<item>21:9</item>
-		<item>32:9</item>
-		<item>8:7</item>
-		<item>5:4</item>
-		<item>3:2</item>
-		<item>2:1 (VRAM 1:1)</item>
-		<item>1:1</item>
-		<item>PAR 1:1</item>
+   		<item>Автонастройка (нативно игре)</item>
+    		<item>Автонастройка (под экран)</item>
+    		<item>Вручную</item>
+    		<item>4:3</item>
+    		<item>16:9</item>
+    		<item>19:9</item>
+    		<item>20:9</item>
+    		<item>PAR 1:1</item>
 	</string-array>
 	<string-array name="settings_gpu_texture_filter_names">
 		<item>Метод ближайшего соседа</item>
@@ -82,27 +76,20 @@
 		<item>Своя карта для каждой игры (по коду)</item>
 		<item>Своя карта для каждой игры (по названию)</item>
 	</string-array>
-	<string-array name="emulation_menu">
-		<item>Загрузить состояние</item>
-		<item>Сохранить состояние</item>
-		<item>Включить ускорение</item>
-		<item>Достижения</item>
-		<item>Опции</item>
-		<item>Выход</item>
-	</string-array>
-	<string-array name="emulation_more_menu">
-		<item>Сброс</item>
-		<item>Чит-коды</item>
-		<item>Сменить диск</item>
-		<item>Экранный геймпад</item>
-		<item>Управление</item>
-		<item>Настройки</item>
-	</string-array>
 	<string-array name="emulation_touchscreen_menu">
 		<item>Сменить вид</item>
 		<item>Настроить видимость</item>
 		<item>Добавить/убрать кнопки</item>
-		<item>Изменить макет</item>
+		<item>Положение кнопок</item>
+		<item>Размер кнопок</item>
+	</string-array>
+	<string-array name="touchscreen_layout_menu">
+		<item>Настроить видимость</item>
+		<item>Добавить/убрать кнопки</item>
+		<item>Положение кнопок</item>
+		<item>Размер кнопок</item>
+		<item>Сбросить макет</item>
+		<item>Закрыть редактор</item>
 	</string-array>
 	<string-array name="settings_cdrom_read_speedup_entries">
 		<item>Нет (двойная скорость)</item>
@@ -119,8 +106,8 @@
 	<string-array name="settings_touchscreen_controller_view_entries">
 		<item>Нет</item>
 		<item>Цифровой</item>
-		<item>Аналоговый, один джойстик</item>
-		<item>Аналоговый, два джойстика</item>
+		<item>Аналоговый, один стик</item>
+		<item>Аналоговый, два стика</item>
 		<item>Световой пистолет</item>
 	</string-array>
 	<string-array name="settings_audio_backend_entries">
@@ -164,7 +151,7 @@
 		<item>8x SSAA</item>
 	</string-array>
 	<string-array name="settings_advanced_display_fps_limit_entries">
-		<item>Без ограничений (выводить все кадры)</item>
+		<item>Без ограничения (выводить все кадры)</item>
 		<item>10 FPS</item>
 		<item>15 FPS</item>
 		<item>30 FPS</item>
@@ -174,7 +161,7 @@
 		<item>90 FPS</item>
 	</string-array>
 	<string-array name="settings_emulation_speed_entries">
-		<item>Без ограничений</item>
+		<item>Без ограничения</item>
 		<item>10% [6 FPS (NTSC) / 5 FPS (PAL)]</item>
 		<item>20% [12 FPS (NTSC) / 10 FPS (PAL)]</item>
 		<item>30% [18 FPS (NTSC) / 15 FPS (PAL)]</item>
@@ -229,6 +216,7 @@
 		<item>По выбору системы</item>
 		<item>Портретная</item>
 		<item>Ландшафтная</item>
+		<item>По датчику положения</item>
 	</string-array>
 	<string-array name="settings_language_entries">
         	<item>По выбору системы</item>
@@ -253,14 +241,37 @@
 		<item>Выключено</item>
 		<item>Включено</item>
 	</string-array>
-	    <string-array name="settings_multitap_mode_entries">
+	<string-array name="settings_multitap_mode_entries">
         	<item>Отключен</item>
         	<item>Подключен к порту 1</item>
         	<item>Подключен к порту 2</item>
         	<item>Подключен к портам 1 и 2</item>
     	</string-array>
- 	   <string-array name="memory_card_editor_save_menu">
+ 	<string-array name="memory_card_editor_save_menu">
      		<item>Скопировать сохранение</item>
      		<item>Удалить сохранение</item>
-    </string-array>
+        </string-array>
+        <string-array name="settings_touchscreen_controller_port_entries">
+               <item>Порт 1</item>
+               <item>Порт 2</item>
+               <item>Multitap 3</item>
+               <item>Multitap 4</item>
+               <item>Multitap 5</item>
+               <item>Multitap 6</item>
+               <item>Multitap 7</item>
+               <item>Multitap 8</item>
+        </string-array>
+	<string-array name="settings_cdrom_seek_speedup_entries">
+               <item>Без задержки</item>
+               <item>Нет (обычная скорость)</item>
+               <item>2x</item>
+               <item>3x</item>
+               <item>4x</item>
+               <item>5x</item>
+               <item>6x</item>
+               <item>7x</item>
+               <item>8x</item>
+               <item>9x</item>
+               <item>10x</item>
+        </string-array>
 </resources>

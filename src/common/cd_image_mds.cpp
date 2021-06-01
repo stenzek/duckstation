@@ -250,7 +250,7 @@ bool CDImageMds::OpenAndParse(const char* filename, Common::Error* error)
   m_lba_count = m_tracks.back().start_lba + m_tracks.back().length;
   AddLeadOutIndex();
 
-  m_sbi.LoadSBI(FileSystem::ReplaceExtension(filename, "sbi").c_str());
+  m_sbi.LoadSBIFromImagePath(filename);
 
   return Seek(1, Position{0, 0, 0});
 }

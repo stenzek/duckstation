@@ -20,6 +20,12 @@ HostDisplayTexture::~HostDisplayTexture() = default;
 
 HostDisplay::~HostDisplay() = default;
 
+bool HostDisplay::UsesLowerLeftOrigin() const
+{
+  const RenderAPI api = GetRenderAPI();
+  return (api == RenderAPI::OpenGL || api == RenderAPI::OpenGLES);
+}
+
 void HostDisplay::SetDisplayMaxFPS(float max_fps)
 {
   m_display_frame_interval = (max_fps > 0.0f) ? (1.0f / max_fps) : 0.0f;
@@ -299,8 +305,8 @@ std::tuple<float, float> HostDisplay::ConvertWindowCoordinatesToDisplayCoordinat
   return std::make_tuple(display_x, display_y);
 }
 
-static bool ConvertTextureDataToRGBA8(u32 width, u32 height, std::vector<u32>& texture_data, u32& texture_data_stride,
-                                      HostDisplayPixelFormat format)
+bool HostDisplay::ConvertTextureDataToRGBA8(u32 width, u32 height, std::vector<u32>& texture_data,
+                                            u32& texture_data_stride, HostDisplayPixelFormat format)
 {
   switch (format)
   {
@@ -382,6 +388,19 @@ static bool ConvertTextureDataToRGBA8(u32 width, u32 height, std::vector<u32>& t
   }
 }
 
+void HostDisplay::FlipTextureDataRGBA8(u32 width, u32 height, std::vector<u32>& texture_data, u32 texture_data_stride)
+{
+  std::vector<u32> temp(width);
+  for (u32 flip_row = 0; flip_row < (height / 2); flip_row++)
+  {
+    u32* top_ptr = &texture_data[flip_row * width];
+    u32* bottom_ptr = &texture_data[((height - 1) - flip_row) * width];
+    std::memcpy(temp.data(), top_ptr, texture_data_stride);
+    std::memcpy(top_ptr, bottom_ptr, texture_data_stride);
+    std::memcpy(bottom_ptr, temp.data(), texture_data_stride);
+  }
+}
+
 static bool CompressAndWriteTextureToFile(u32 width, u32 height, std::string filename, FileSystem::ManagedCFilePtr fp,
                                           bool clear_alpha, bool flip_y, u32 resize_width, u32 resize_height,
                                           std::vector<u32> texture_data, u32 texture_data_stride,
@@ -395,7 +414,7 @@ static bool CompressAndWriteTextureToFile(u32 width, u32 height, std::string fil
     return false;
   }
 
-  if (!ConvertTextureDataToRGBA8(width, height, texture_data, texture_data_stride, texture_format))
+  if (!HostDisplay::ConvertTextureDataToRGBA8(width, height, texture_data, texture_data_stride, texture_format))
     return false;
 
   if (clear_alpha)
@@ -405,17 +424,7 @@ static bool CompressAndWriteTextureToFile(u32 width, u32 height, std::string fil
   }
 
   if (flip_y)
-  {
-    std::vector<u32> temp(width);
-    for (u32 flip_row = 0; flip_row < (height / 2); flip_row++)
-    {
-      u32* top_ptr = &texture_data[flip_row * width];
-      u32* bottom_ptr = &texture_data[((height - 1) - flip_row) * width];
-      std::memcpy(temp.data(), top_ptr, texture_data_stride);
-      std::memcpy(top_ptr, bottom_ptr, texture_data_stride);
-      std::memcpy(bottom_ptr, temp.data(), texture_data_stride);
-    }
-  }
+    HostDisplay::FlipTextureDataRGBA8(width, height, texture_data, texture_data_stride);
 
   if (resize_width > 0 && resize_height > 0 && (resize_width != width || resize_height != height))
   {
@@ -643,16 +652,14 @@ bool HostDisplay::WriteScreenshotToFile(std::string filename, bool compress_on_t
     return false;
   }
 
-  const RenderAPI api = GetRenderAPI();
-  const bool flip_y = (api == RenderAPI::OpenGL || api == RenderAPI::OpenGLES);
   if (!compress_on_thread)
   {
-    return CompressAndWriteTextureToFile(width, height, std::move(filename), std::move(fp), true, flip_y, width, height,
-                                         std::move(pixels), pixels_stride, pixels_format);
+    return CompressAndWriteTextureToFile(width, height, std::move(filename), std::move(fp), true, UsesLowerLeftOrigin(),
+                                         width, height, std::move(pixels), pixels_stride, pixels_format);
   }
 
   std::thread compress_thread(CompressAndWriteTextureToFile, width, height, std::move(filename), std::move(fp), true,
-                              flip_y, width, height, std::move(pixels), pixels_stride, pixels_format);
+                              UsesLowerLeftOrigin(), width, height, std::move(pixels), pixels_stride, pixels_format);
   compress_thread.detach();
   return true;
 }

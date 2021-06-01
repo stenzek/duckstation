@@ -264,6 +264,8 @@ private:
   TickCount GetTicksForSeek(CDImage::LBA new_lba);
   TickCount GetTicksForStop(bool motor_was_on);
   CDImage::LBA GetNextSectorToBeRead();
+  bool CompleteSeek();
+
   void BeginCommand(Command command); // also update status register
   void EndCommand();                  // also updates status register
   void AbortCommand();

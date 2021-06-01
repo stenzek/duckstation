@@ -42,7 +42,7 @@ public:
 private:
   enum : u32
   {
-    NUM_AXISES = 6,
+    NUM_AXES = 6,
     NUM_BUTTONS = 15,
     NUM_RUMBLE_MOTORS = 2
   };
@@ -63,10 +63,10 @@ private:
 
     float deadzone = 0.25f;
 
-    std::array<std::array<AxisCallback, 3>, MAX_NUM_AXISES> axis_mapping;
-    std::array<ButtonCallback, MAX_NUM_BUTTONS> button_mapping;
-    std::array<std::array<ButtonCallback, 2>, MAX_NUM_AXISES> axis_button_mapping;
-    std::array<AxisCallback, MAX_NUM_BUTTONS> button_axis_mapping;
+    std::array<std::array<AxisCallback, 3>, NUM_AXES> axis_mapping;
+    std::array<ButtonCallback, NUM_BUTTONS> button_mapping;
+    std::array<std::array<ButtonCallback, 2>, NUM_AXES> axis_button_mapping;
+    std::array<AxisCallback, NUM_BUTTONS> button_axis_mapping;
   };
 
   using ControllerDataArray = std::array<ControllerData, XUSER_MAX_COUNT>;

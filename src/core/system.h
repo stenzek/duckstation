@@ -38,8 +38,8 @@ namespace System {
 
 enum : u32
 {
-  // 5 megabytes is sufficient for now, at the moment they're around 4.2MB.
-  MAX_SAVE_STATE_SIZE = 5 * 1024 * 1024
+  // 5 megabytes is sufficient for now, at the moment they're around 4.3MB, or 10.3MB with 8MB RAM enabled.
+  MAX_SAVE_STATE_SIZE = 11 * 1024 * 1024
 };
 
 enum : TickCount
@@ -72,6 +72,7 @@ ConsoleRegion GetConsoleRegionForDiscRegion(DiscRegion region);
 std::string GetExecutableNameForImage(CDImage* cdi);
 bool ReadExecutableFromImage(CDImage* cdi, std::string* out_executable_name, std::vector<u8>* out_executable_data);
 
+std::string GetGameHashCodeForImage(CDImage* cdi);
 std::string GetGameCodeForImage(CDImage* cdi, bool fallback_to_hash);
 std::string GetGameCodeForPath(const char* image_path, bool fallback_to_hash);
 DiscRegion GetRegionForCode(std::string_view code);
@@ -80,7 +81,6 @@ DiscRegion GetRegionForImage(CDImage* cdi);
 DiscRegion GetRegionForExe(const char* path);
 DiscRegion GetRegionForPsf(const char* path);
 std::optional<DiscRegion> GetRegionForPath(const char* image_path);
-std::string_view GetTitleForPath(const char* path);
 
 State GetState();
 void SetState(State new_state);
@@ -149,7 +149,7 @@ void Reset();
 void Shutdown();
 
 bool LoadState(ByteStream* state, bool update_display = true);
-bool SaveState(ByteStream* state, u32 screenshot_size = 128);
+bool SaveState(ByteStream* state, u32 screenshot_size = 256);
 
 /// Recreates the GPU component, saving/loading the state so it is preserved. Call when the GPU renderer changes.
 bool RecreateGPU(GPURenderer renderer, bool update_display = true);
@@ -180,7 +180,10 @@ Controller* GetController(u32 slot);
 void UpdateControllers();
 void UpdateControllerSettings();
 void ResetControllers();
-void UpdateMemoryCards();
+void UpdateMemoryCardTypes();
+void UpdatePerGameMemoryCards();
+bool HasMemoryCard(u32 slot);
+void SwapMemoryCards();
 void UpdateMultitaps();
 
 /// Dumps RAM to a file.

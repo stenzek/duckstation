@@ -69,6 +69,9 @@ public:
 
   void LoadSettings(const char* section) override;
 
+  void SetAxisState(Axis axis, u8 value);
+  void SetButtonState(Button button, bool pressed);
+
 private:
   enum class TransferState : u8
   {
@@ -82,9 +85,6 @@ private:
     LeftAxisX,
     LeftAxisY
   };
-
-  void SetAxisState(Axis axis, u8 value);
-  void SetButtonState(Button button, bool pressed);
 
   u16 GetID() const;
   void ToggleAnalogMode();

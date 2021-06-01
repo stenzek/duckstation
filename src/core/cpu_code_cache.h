@@ -18,7 +18,7 @@ namespace CPU {
 
 enum : u32
 {
-  FAST_MAP_RAM_SLOT_COUNT = Bus::RAM_SIZE / 4,
+  FAST_MAP_RAM_SLOT_COUNT = Bus::RAM_8MB_SIZE / 4,
   FAST_MAP_BIOS_SLOT_COUNT = Bus::BIOS_SIZE / 4,
   FAST_MAP_TOTAL_SLOT_COUNT = FAST_MAP_RAM_SLOT_COUNT + FAST_MAP_BIOS_SLOT_COUNT,
 };
@@ -87,6 +87,9 @@ struct CodeBlock
   bool contains_loadstore_instructions = false;
   bool contains_double_branches = false;
   bool invalidated = false;
+
+  u32 recompile_frame_number = 0;
+  u32 recompile_count = 0;
 
   const u32 GetPC() const { return key.GetPC(); }
   const u32 GetSizeInBytes() const { return static_cast<u32>(instructions.size()) * sizeof(Instruction); }

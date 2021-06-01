@@ -72,12 +72,26 @@ void* VulkanHostDisplay::GetRenderContext() const
 
 bool VulkanHostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
 {
+  g_vulkan_context->WaitForGPUIdle();
+
   if (new_wi.type == WindowInfo::Type::Surfaceless)
   {
     g_vulkan_context->ExecuteCommandBuffer(true);
     m_swap_chain.reset();
     m_window_info = new_wi;
     return true;
+  }
+
+  // recreate surface in existing swap chain if it already exists
+  if (m_swap_chain)
+  {
+    if (m_swap_chain->RecreateSurface(new_wi))
+    {
+      m_window_info = m_swap_chain->GetWindowInfo();
+      return true;
+    }
+
+    m_swap_chain.reset();
   }
 
   WindowInfo wi_copy(new_wi);
@@ -93,6 +107,7 @@ bool VulkanHostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
   if (!m_swap_chain)
   {
     Log_ErrorPrintf("Failed to create swap chain");
+    Vulkan::SwapChain::DestroyVulkanSurface(g_vulkan_context->GetVulkanInstance(), &wi_copy, surface);
     return false;
   }
 
@@ -580,6 +595,18 @@ bool VulkanHostDisplay::Render()
       ResizeRenderWindow(0, 0);
       res = m_swap_chain->AcquireNextImage();
     }
+    else if (res == VK_ERROR_SURFACE_LOST_KHR)
+    {
+      Log_WarningPrint("Surface lost, attempting to recreate");
+      if (!m_swap_chain->RecreateSurface(m_window_info))
+      {
+        Log_ErrorPrint("Failed to recreate surface after loss");
+        g_vulkan_context->ExecuteCommandBuffer(false);
+        return false;
+      }
+
+      res = m_swap_chain->AcquireNextImage();
+    }
 
     // This can happen when multiple resize events happen in quick succession.
     // In this case, just wait until the next frame to try again.
@@ -659,6 +686,13 @@ bool VulkanHostDisplay::RenderScreenshot(u32 width, u32 height, std::vector<u32>
       break;
   }
 
+  // if we don't have a texture (display off), then just write out nothing.
+  if (!HasDisplayTexture())
+  {
+    std::fill(out_pixels->begin(), out_pixels->end(), static_cast<u32>(0));
+    return true;
+  }
+
   Vulkan::Texture tex;
   Vulkan::StagingTexture staging_tex;
   if (!tex.Create(width, height, 1, 1, format, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_TILING_OPTIMAL,
@@ -681,8 +715,7 @@ bool VulkanHostDisplay::RenderScreenshot(u32 width, u32 height, std::vector<u32>
 
   tex.TransitionToLayout(g_vulkan_context->GetCurrentCommandBuffer(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
-  const auto [left, top, draw_width, draw_height] =
-    CalculateDrawRect(GetWindowWidth(), GetWindowHeight(), m_display_top_margin);
+  const auto [left, top, draw_width, draw_height] = CalculateDrawRect(width, height, 0);
 
   if (!m_post_processing_chain.IsEmpty())
   {

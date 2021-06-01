@@ -54,7 +54,7 @@ static T DoMemoryRead(PhysicalMemoryAddress address)
 
   if (address < Bus::RAM_MIRROR_END)
   {
-    std::memcpy(&result, &Bus::g_ram[address & Bus::RAM_MASK], sizeof(result));
+    std::memcpy(&result, &Bus::g_ram[address & Bus::g_ram_mask], sizeof(result));
     return result;
   }
 
@@ -84,12 +84,12 @@ static void DoMemoryWrite(PhysicalMemoryAddress address, T value)
   {
     // Only invalidate code when it changes.
     T old_value;
-    std::memcpy(&old_value, &Bus::g_ram[address & Bus::RAM_MASK], sizeof(old_value));
+    std::memcpy(&old_value, &Bus::g_ram[address & Bus::g_ram_mask], sizeof(old_value));
     if (old_value != value)
     {
-      std::memcpy(&Bus::g_ram[address & Bus::RAM_MASK], &value, sizeof(value));
+      std::memcpy(&Bus::g_ram[address & Bus::g_ram_mask], &value, sizeof(value));
 
-      const u32 code_page_index = Bus::GetRAMCodePageIndex(address & Bus::RAM_MASK);
+      const u32 code_page_index = Bus::GetRAMCodePageIndex(address & Bus::g_ram_mask);
       if (Bus::IsRAMCodePage(code_page_index))
         CPU::CodeCache::InvalidateBlocksWithPageIndex(code_page_index);
     }

@@ -29,6 +29,10 @@ if(USE_EVDEV)
   target_link_libraries(duckstation-nogui PRIVATE ${LIBEVDEV_LIBRARIES})
 endif()
 
+if(USE_DRMKMS)
+  target_compile_definitions(duckstation-nogui PRIVATE "-DWITH_DRMKMS=1")
+endif()
+
 if(WIN32)
   target_sources(duckstation-nogui PRIVATE
     duckstation-nogui.manifest

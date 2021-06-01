@@ -50,6 +50,7 @@ private:
   void fillEntryFromUi(GameListCompatibilityEntry* entry);
   void computeTrackHashes();
   void onResize();
+  void onUserAspectRatioChanged();
 
   Ui::GamePropertiesDialog m_ui;
   std::array<QCheckBox*, static_cast<u32>(GameSettings::Trait::Count)> m_trait_checkboxes{};

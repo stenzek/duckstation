@@ -165,6 +165,8 @@ GPU::GP0CommandHandlerTable GPU::GenerateGP0CommandHandlerTable()
   for (u32 i = 0xC0; i <= 0xDF; i++)
     table[i] = &GPU::HandleCopyRectangleVRAMToCPUCommand;
 
+  table[0xFF] = &GPU::HandleNOPCommand;
+
   return table;
 }
 

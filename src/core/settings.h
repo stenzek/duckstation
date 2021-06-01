@@ -108,14 +108,15 @@ struct Settings
   u32 gpu_resolution_scale = 1;
   u32 gpu_multisamples = 1;
   bool gpu_use_thread = true;
+  bool gpu_use_software_renderer_for_readbacks = false;
   bool gpu_threaded_presentation = true;
   bool gpu_use_debug_device = false;
   bool gpu_per_sample_shading = false;
-  bool gpu_true_color = true;
+  bool gpu_true_color = false;
   bool gpu_scaled_dithering = false;
   GPUTextureFilter gpu_texture_filter = GPUTextureFilter::Nearest;
   GPUDownsampleMode gpu_downsample_mode = GPUDownsampleMode::Disabled;
-  bool gpu_disable_interlacing = false;
+  bool gpu_disable_interlacing = true;
   bool gpu_force_ntsc_timings = false;
   bool gpu_widescreen_hack = false;
   bool gpu_pgxp_enable = false;
@@ -127,6 +128,8 @@ struct Settings
   bool gpu_pgxp_depth_buffer = false;
   DisplayCropMode display_crop_mode = DisplayCropMode::None;
   DisplayAspectRatio display_aspect_ratio = DisplayAspectRatio::Auto;
+  u16 display_aspect_ratio_custom_numerator = 0;
+  u16 display_aspect_ratio_custom_denominator = 0;
   s16 display_active_start_offset = 0;
   s16 display_active_end_offset = 0;
   s8 display_line_start_offset = 0;
@@ -137,22 +140,23 @@ struct Settings
   bool display_integer_scaling = false;
   bool display_stretch = false;
   bool display_post_processing = false;
-  bool display_show_osd_messages = false;
+  bool display_show_osd_messages = true;
   bool display_show_fps = false;
   bool display_show_vps = false;
   bool display_show_speed = false;
   bool display_show_resolution = false;
   bool display_all_frames = false;
-  bool video_sync_enabled = true;
-  float display_max_fps = 0.0f;
+  bool video_sync_enabled = DEFAULT_VSYNC_VALUE;
+  float display_max_fps = DEFAULT_DISPLAY_MAX_FPS;
   float gpu_pgxp_tolerance = -1.0f;
   float gpu_pgxp_depth_clear_threshold = 300.0f / 4096.0f;
 
   bool cdrom_read_thread = true;
-  bool cdrom_region_check = true;
+  bool cdrom_region_check = false;
   bool cdrom_load_image_to_ram = false;
   bool cdrom_mute_cd_audio = false;
   u32 cdrom_read_speedup = 1;
+  u32 cdrom_seek_speedup = 1;
 
   AudioBackend audio_backend = AudioBackend::Cubeb;
   s32 audio_output_volume = 100;
@@ -210,6 +214,7 @@ struct Settings
 
   bool bios_patch_tty_enable = false;
   bool bios_patch_fast_boot = false;
+  bool enable_8mb_ram = false;
 
   std::array<ControllerType, NUM_CONTROLLER_AND_CARD_PORTS> controller_types{};
   bool controller_disable_analog_mode_forcing = false;
@@ -256,6 +261,13 @@ struct Settings
     return audio_output_muted ? 0 : (fast_forwarding ? audio_fast_forward_volume : audio_output_volume);
   }
 
+  float GetDisplayAspectRatioValue() const;
+
+  ALWAYS_INLINE static bool IsPerGameMemoryCardType(MemoryCardType type)
+  {
+    return (type == MemoryCardType::PerGame || type == MemoryCardType::PerGameTitle ||
+            type == MemoryCardType::PerGameFileTitle);
+  }
   bool HasAnyPerGameMemoryCards() const;
 
   static void CPUOverclockPercentToFraction(u32 percent, u32* numerator, u32* denominator);
@@ -316,7 +328,6 @@ struct Settings
 
   static std::optional<DisplayAspectRatio> ParseDisplayAspectRatio(const char* str);
   static const char* GetDisplayAspectRatioName(DisplayAspectRatio ar);
-  static float GetDisplayAspectRatioValue(DisplayAspectRatio ar);
 
   static std::optional<AudioBackend> ParseAudioBackend(const char* str);
   static const char* GetAudioBackendName(AudioBackend backend);
@@ -335,7 +346,7 @@ struct Settings
   static const char* GetMultitapModeDisplayName(MultitapMode mode);
 
   // Default to D3D11 on Windows as it's more performant and at this point, less buggy.
-#ifdef WIN32
+#ifdef _WIN32
   static constexpr GPURenderer DEFAULT_GPU_RENDERER = GPURenderer::HardwareD3D11;
 #else
   static constexpr GPURenderer DEFAULT_GPU_RENDERER = GPURenderer::HardwareOpenGL;
@@ -357,7 +368,7 @@ struct Settings
   static constexpr CPUFastmemMode DEFAULT_CPU_FASTMEM_MODE = CPUFastmemMode::Disabled;
 #endif
 
-#ifndef ANDROID
+#ifndef __ANDROID__
   static constexpr AudioBackend DEFAULT_AUDIO_BACKEND = AudioBackend::Cubeb;
 #else
   static constexpr AudioBackend DEFAULT_AUDIO_BACKEND = AudioBackend::OpenSLES;
@@ -378,6 +389,17 @@ struct Settings
   static constexpr bool DEFAULT_LOG_TO_CONSOLE = true;
 #else
   static constexpr bool DEFAULT_LOG_TO_CONSOLE = false;
+#endif
+
+  // Android doesn't create settings until they're first opened, so we have to override the defaults here.
+#ifndef __ANDROID__
+  static constexpr bool DEFAULT_VSYNC_VALUE = false;
+  static constexpr bool DEFAULT_FAST_BOOT_VALUE = false;
+  static constexpr float DEFAULT_DISPLAY_MAX_FPS = 0.0f;
+#else
+  static constexpr bool DEFAULT_VSYNC_VALUE = true;
+  static constexpr bool DEFAULT_FAST_BOOT_VALUE = true;
+  static constexpr float DEFAULT_DISPLAY_MAX_FPS = 60.0f;
 #endif
 };
 

@@ -103,14 +103,37 @@ bool MemoryArena::IsValid() const
 #endif
 }
 
+static std::string GetFileMappingName()
+{
+#if defined(_WIN32)
+  const unsigned pid = GetCurrentThreadId();
+#elif defined(__ANDROID__) || defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
+  const unsigned pid = static_cast<unsigned>(getpid());
+#else
+#error Unknown platform.
+#endif
+
+#ifdef LIBRETRO
+  // libretro second-instance runahead is insane, and loads a second copy of the module in the same process, which means
+  // we'd overlap the memory mapping for the "primary" core. Work around this by taking the address of this function,
+  // which should be unique per instance.
+  std::string ret(StringUtil::StdStringFromFormat("duckstation_%u_%p", pid, ((void*)&GetFileMappingName)));
+#else
+  std::string ret(StringUtil::StdStringFromFormat("duckstation_%u", pid));
+#endif
+
+  Log_InfoPrintf("File mapping name: %s", ret.c_str());
+  return ret;
+}
+
 bool MemoryArena::Create(size_t size, bool writable, bool executable)
 {
   if (IsValid())
     Destroy();
 
-#if defined(WIN32)
-  const std::string file_mapping_name = StringUtil::StdStringFromFormat("duckstation_%u", GetCurrentProcessId());
+  const std::string file_mapping_name(GetFileMappingName());
 
+#if defined(_WIN32)
   const DWORD protect = (writable ? (executable ? PAGE_EXECUTE_READWRITE : PAGE_READWRITE) : PAGE_READONLY);
   m_file_handle = CreateFileMappingA(INVALID_HANDLE_VALUE, nullptr, protect, Truncate32(size >> 32), Truncate32(size),
                                      file_mapping_name.c_str());
@@ -121,9 +144,7 @@ bool MemoryArena::Create(size_t size, bool writable, bool executable)
   }
 
   return true;
-#elif defined(ANDROID)
-  const std::string file_mapping_name =
-    StringUtil::StdStringFromFormat("duckstation_%u", static_cast<unsigned>(getpid()));
+#elif defined(__ANDROID__)
   m_shmem_fd = AshmemCreateFileMapping(file_mapping_name.c_str(), size);
   if (m_shmem_fd < 0)
   {
@@ -133,8 +154,6 @@ bool MemoryArena::Create(size_t size, bool writable, bool executable)
 
   return true;
 #elif defined(__linux__)
-  const std::string file_mapping_name =
-    StringUtil::StdStringFromFormat("duckstation_%u", static_cast<unsigned>(getpid()));
   m_shmem_fd = shm_open(file_mapping_name.c_str(), O_CREAT | O_EXCL | (writable ? O_RDWR : O_RDONLY), 0600);
   if (m_shmem_fd < 0)
   {
@@ -155,8 +174,6 @@ bool MemoryArena::Create(size_t size, bool writable, bool executable)
   return true;
 #elif defined(__APPLE__) || defined(__FreeBSD__)
 #if defined(__APPLE__)
-  const std::string file_mapping_name =
-    StringUtil::StdStringFromFormat("duckstation_%u", static_cast<unsigned>(getpid()));
   m_shmem_fd = shm_open(file_mapping_name.c_str(), O_CREAT | O_EXCL | (writable ? O_RDWR : O_RDONLY), 0600);
 #else
   m_shmem_fd = shm_open(SHM_ANON, O_CREAT | O_EXCL | (writable ? O_RDWR : O_RDONLY), 0600);
@@ -213,6 +230,15 @@ std::optional<MemoryArena::View> MemoryArena::CreateView(size_t offset, size_t s
   return View(this, base_pointer, offset, size, writable);
 }
 
+std::optional<MemoryArena::View> MemoryArena::CreateReservedView(size_t size, void* fixed_address /*= nullptr*/)
+{
+  void* base_pointer = CreateReservedPtr(size, fixed_address);
+  if (!base_pointer)
+    return std::nullopt;
+
+  return View(this, base_pointer, View::RESERVED_REGION_OFFSET, size, false);
+}
+
 void* MemoryArena::CreateViewPtr(size_t offset, size_t size, bool writable, bool executable,
                                  void* fixed_address /*= nullptr*/)
 {
@@ -223,13 +249,7 @@ void* MemoryArena::CreateViewPtr(size_t offset, size_t size, bool writable, bool
     MapViewOfFileEx(m_file_handle, desired_access, Truncate32(offset >> 32), Truncate32(offset), size, fixed_address);
   if (!base_pointer)
     return nullptr;
-#elif defined(__linux__)
-  const int flags = (fixed_address != nullptr) ? (MAP_SHARED | MAP_FIXED) : MAP_SHARED;
-  const int prot = PROT_READ | (writable ? PROT_WRITE : 0) | (executable ? PROT_EXEC : 0);
-  base_pointer = mmap64(fixed_address, size, prot, flags, m_shmem_fd, static_cast<off64_t>(offset));
-  if (base_pointer == reinterpret_cast<void*>(-1))
-    return nullptr;
-#elif defined(__APPLE__) || defined(__FreeBSD__)
+#elif defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
   const int flags = (fixed_address != nullptr) ? (MAP_SHARED | MAP_FIXED) : MAP_SHARED;
   const int prot = PROT_READ | (writable ? PROT_WRITE : 0) | (executable ? PROT_EXEC : 0);
   base_pointer = mmap(fixed_address, size, prot, flags, m_shmem_fd, static_cast<off_t>(offset));
@@ -268,6 +288,47 @@ bool MemoryArena::ReleaseViewPtr(void* address, size_t size)
   if (!result)
   {
     Log_ErrorPrintf("Failed to unmap previously-created view at %p", address);
+    return false;
+  }
+
+  const size_t prev_count = m_num_views.fetch_sub(1);
+  Assert(prev_count > 0);
+  return true;
+}
+
+void* MemoryArena::CreateReservedPtr(size_t size, void* fixed_address /*= nullptr*/)
+{
+  void* base_pointer;
+#if defined(WIN32)
+  base_pointer = VirtualAlloc(fixed_address, size, MEM_RESERVE, PAGE_NOACCESS);
+#elif defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
+  const int flags =
+    (fixed_address != nullptr) ? (MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED) : (MAP_PRIVATE | MAP_ANONYMOUS);
+  base_pointer = mmap(fixed_address, size, PROT_NONE, flags, -1, 0);
+  if (base_pointer == reinterpret_cast<void*>(-1))
+    return nullptr;
+#else
+  return nullptr;
+#endif
+
+  m_num_views.fetch_add(1);
+  return base_pointer;
+}
+
+bool MemoryArena::ReleaseReservedPtr(void* address, size_t size)
+{
+  bool result;
+#if defined(WIN32)
+  result = static_cast<bool>(VirtualFree(address, 0, MEM_RELEASE));
+#elif defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
+  result = (munmap(address, size) >= 0);
+#else
+  result = false;
+#endif
+
+  if (!result)
+  {
+    Log_ErrorPrintf("Failed to release previously-created view at %p", address);
     return false;
   }
 
@@ -315,10 +376,18 @@ MemoryArena::View::~View()
 {
   if (m_parent)
   {
-    if (m_writable && !m_parent->FlushViewPtr(m_base_pointer, m_mapping_size))
-      Panic("Failed to flush previously-created view");
-    if (!m_parent->ReleaseViewPtr(m_base_pointer, m_mapping_size))
-      Panic("Failed to unmap previously-created view");
+    if (m_arena_offset != RESERVED_REGION_OFFSET)
+    {
+      if (m_writable && !m_parent->FlushViewPtr(m_base_pointer, m_mapping_size))
+        Panic("Failed to flush previously-created view");
+      if (!m_parent->ReleaseViewPtr(m_base_pointer, m_mapping_size))
+        Panic("Failed to unmap previously-created view");
+    }
+    else
+    {
+      if (!m_parent->ReleaseReservedPtr(m_base_pointer, m_mapping_size))
+        Panic("Failed to release previously-created view");
+    }
   }
 }
 } // namespace Common

@@ -75,7 +75,7 @@ enum class GPUTextureFilter : u8
   Count
 };
 
-enum GPUDownsampleMode : u8
+enum class GPUDownsampleMode : u8
 {
   Disabled,
   Box,
@@ -94,18 +94,12 @@ enum class DisplayCropMode : u8
 enum class DisplayAspectRatio : u8
 {
   Auto,
+  MatchWindow,
+  Custom,
   R4_3,
   R16_9,
-  R16_10,
   R19_9,
   R20_9,
-  R21_9,
-  R32_9,
-  R8_7,
-  R5_4,
-  R3_2,
-  R2_1,
-  R1_1,
   PAR1_1,
   Count
 };
@@ -140,6 +134,8 @@ enum class MemoryCardType
   Shared,
   PerGame,
   PerGameTitle,
+  PerGameFileTitle,
+  NonPersistent,
   Count
 };
 

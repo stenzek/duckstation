@@ -254,5 +254,6 @@ void UpdateBackgroundProgressDialog(const char* str_id, std::string message, s32
 void CloseBackgroundProgressDialog(const char* str_id);
 
 void AddNotification(float duration, std::string title, std::string text, std::string image_path);
+void ClearNotifications();
 
 } // namespace ImGuiFullscreen

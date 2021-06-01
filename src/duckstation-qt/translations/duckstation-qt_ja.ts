@@ -2,12 +2,12 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="ja">
     <extra-po-header-language>ja</extra-po-header-language>
-    <extra-po-header-language_team></extra-po-header-language_team>
+    <extra-po-header-language_team>mikakunin</extra-po-header-language_team>
     <extra-po-header-last_translator>mikakunin</extra-po-header-last_translator>
     <extra-po-header-po_revision_date></extra-po-header-po_revision_date>
     <extra-po-header-pot_creation_date></extra-po-header-pot_creation_date>
-    <extra-po-header-project_id_version></extra-po-header-project_id_version>
-    <extra-po-header-x_generator>Poedit 2.2</extra-po-header-x_generator>
+    <extra-po-header-project_id_version>duckstation</extra-po-header-project_id_version>
+    <extra-po-header-x_generator>Poedit 2.4.3</extra-po-header-x_generator>
     <extra-po-headers>Project-Id-Version,POT-Creation-Date,PO-Revision-Date,Last-Translator,Language-Team,Language,MIME-Version,Content-Type,Content-Transfer-Encoding,Plural-Forms,X-Language,X-Source-Language,X-Qt-Contexts,X-Generator</extra-po-headers>
 <context>
     <name>DebuggerWindow</name>
@@ -298,7 +298,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Start</source>
-        <translation>スタート</translation>
+        <translation>開始位置</translation>
     </message>
     <message>
         <source>PGXP Depth Buffer</source>
@@ -403,7 +403,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Title:</source>
-        <translation>タイトル :</translation>
+        <translation>ゲーム名 :</translation>
     </message>
     <message>
         <source>None (Double Speed)</source>
@@ -570,8 +570,16 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>オーバーライド</translation>
     </message>
     <message>
+        <source>Enable 8MB RAM (Dev Console)</source>
+        <translation>8MB RAMを有効(開発コンソール)</translation>
+    </message>
+    <message>
+        <source>Renderer:</source>
+        <translation>レンダラー:</translation>
+    </message>
+    <message>
         <source>Aspect Ratio:</source>
-        <translation>アスペクト比 :</translation>
+        <translation>アスペクト比:</translation>
     </message>
     <message>
         <source>GPU Enhancements</source>
@@ -588,6 +596,10 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <source>(unchanged)</source>
         <translation>(変更なし)</translation>
+    </message>
+    <message>
+        <source>Multitap Mode:</source>
+        <translation>マルチタップ モード:</translation>
     </message>
     <message>
         <source>Compatibility:</source>
@@ -843,7 +855,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Title</source>
-        <translation>タイトル</translation>
+        <translation>ゲーム名</translation>
     </message>
     <message>
         <source>Memory card &apos;%1&apos; is not saved, do you want to save before closing?</source>
@@ -986,7 +998,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Cross</source>
-        <translation>Ｘ</translation>
+        <translation>Ｘ(下のボタン)</translation>
     </message>
     <message>
         <source>LeftX</source>
@@ -1018,7 +1030,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Circle</source>
-        <translation>○</translation>
+        <translation>○(右のボタン)</translation>
     </message>
     <message>
         <source>Controller %u is locked to digital mode by the game.</source>
@@ -1046,7 +1058,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Square</source>
-        <translation>□</translation>
+        <translation>□(左のボタン)</translation>
     </message>
     <message>
         <source>Controller %u is locked to analog mode by the game.</source>
@@ -1058,7 +1070,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Triangle</source>
-        <translation>△</translation>
+        <translation>△(上のボタン)</translation>
     </message>
     <message>
         <source>Vibration Bias</source>
@@ -1079,6 +1091,105 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <source>Use Analog Sticks for D-Pad in Digital Mode</source>
         <translation>デジタルモードで十字キーの代わりににアナログスティックを使用する</translation>
+    </message>
+</context>
+<context>
+    <name>ControllerSettingsWidget</name>
+    <message>
+        <source>Auto Fire Buttons</source>
+        <translation>連射ボタン設定</translation>
+    </message>
+    <message>
+        <source>Auto Fire %1</source>
+        <translation>連射ボタン %1</translation>
+    </message>
+    <message>
+        <source> Frames</source>
+        <translation>  フレーム</translation>
+    </message>
+    <message>
+        <source>Rebind All</source>
+        <translation>すべて再割り当て</translation>
+    </message>
+    <message>
+        <source>Error</source>
+        <translation>エラー</translation>
+    </message>
+    <message>
+        <source>Save Profile</source>
+        <translation>プロファイル保存</translation>
+    </message>
+    <message>
+        <source>Load Profile</source>
+        <translation>プロファイル読込み</translation>
+    </message>
+    <message>
+        <source>Select path to input profile ini</source>
+        <translation>プロファイルiniを入力するためのパスを選択します</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to clear all bound controls? This can not be reversed.</source>
+        <translation>割当られているすべてのボタン設定をクリアしてもよろしいですか？元に戻すことはできません。</translation>
+    </message>
+    <message>
+        <source>No name entered, input profile was not saved.</source>
+        <translation>名前が入力されていません。入力プロファイルは保存されませんでした。</translation>
+    </message>
+    <message>
+        <source>New...</source>
+        <translation>新規...</translation>
+    </message>
+    <message>
+        <source>Rumble</source>
+        <translation>振動</translation>
+    </message>
+    <message>
+        <source>Browse...</source>
+        <translation>参照...</translation>
+    </message>
+    <message>
+        <source>No path selected, input profile was not saved.</source>
+        <translation>パスが選択されていません。入力プロファイルは保存されませんでした。</translation>
+    </message>
+    <message>
+        <source>Enter Input Profile Name</source>
+        <translation>入力プロファイル名を入力</translation>
+    </message>
+    <message>
+        <source>Port %1</source>
+        <translation>ポート %1</translation>
+    </message>
+    <message>
+        <source>Select File</source>
+        <translation>ファイルを選択</translation>
+    </message>
+    <message>
+        <source>Clear All</source>
+        <translation>すべてクリア</translation>
+    </message>
+    <message>
+        <source>Axis Bindings:</source>
+        <translation>Axis軸割当 :</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to rebind all controls? All currently-bound controls will be irreversibly cleared. Rebinding will begin after confirmation.</source>
+        <translation>すべてのボタン設定を再割当してもよろしいですか？現在割当られているすべてのボタン設定は、元に戻せないようにクリアされます。確認後、再割当が開始されます。</translation>
+    </message>
+    <message>
+        <source>Clear Bindings</source>
+        <translation>割当をクリア</translation>
+    </message>
+    <message>
+        <source>Controller Type:</source>
+        <translation>コントローラタイプ :</translation>
+    </message>
+    <message>
+        <source>Button Bindings:</source>
+        <translation>ボタン割当：</translation>
+    </message>
+    <message>
+        <source>Cross</source>
+        <translation>×</translation>
     </message>
 </context>
 <context>
@@ -1121,7 +1232,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Cross</source>
-        <translation>Ｘ</translation>
+        <translation>Ｘ(下のボタン)</translation>
     </message>
     <message>
         <source>LeftX</source>
@@ -1149,7 +1260,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Circle</source>
-        <translation>○</translation>
+        <translation>○(右のボタン)</translation>
     </message>
     <message>
         <source>Sets the analog stick axis scaling factor. A value between 1.30 and 1.40 is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
@@ -1173,11 +1284,11 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Square</source>
-        <translation>□</translation>
+        <translation>□(左のボタン)</translation>
     </message>
     <message>
         <source>Triangle</source>
-        <translation>△</translation>
+        <translation>△(上のボタン)</translation>
     </message>
     <message>
         <source>Controller %u switched to digital mode.</source>
@@ -1216,7 +1327,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Cross</source>
-        <translation>Ｘ</translation>
+        <translation>Ｘ(下のボタン)</translation>
     </message>
     <message>
         <source>Right</source>
@@ -1236,7 +1347,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Circle</source>
-        <translation>○</translation>
+        <translation>○(右のボタン)</translation>
     </message>
     <message>
         <source>Select</source>
@@ -1244,11 +1355,11 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Square</source>
-        <translation>□</translation>
+        <translation>□(左のボタン)</translation>
     </message>
     <message>
         <source>Triangle</source>
-        <translation>△</translation>
+        <translation>△(上のボタン)</translation>
     </message>
 </context>
 <context>
@@ -1271,7 +1382,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Buffer Size:</source>
-        <translation>バッファーサイズ:</translation>
+        <translation>バッファサイズ:</translation>
     </message>
     <message>
         <source>Output Volume:</source>
@@ -1279,7 +1390,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>When running outside of 100% speed, resamples audio from the target speed instead of dropping frames. Produces much nicer fast forward/slowdown audio at a small cost to performance.</source>
-        <translation>100％以外の速度で実行している場合、フレームドロップをしないように、 実行速度から音声をリサンプリングします。少しのパフォーマンス低下で はるかに優れた早送り/スロー再生時の音声再生をします。</translation>
+        <translation>100％以外の速度で実行している場合、フレームドロップをしないように、 実行速度から音声をリサンプリングします。少しのパフォーマンス低下で&lt;br&gt;はるかに優れた早送り/スロー再生時の音声再生をします。</translation>
     </message>
     <message>
         <source>Mute CD Audio</source>
@@ -1311,7 +1422,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>The buffer size determines the size of the chunks of audio which will be pulled by the host. Smaller values reduce the output latency, but may cause hitches if the emulation speed is inconsistent. Note that the Cubeb backend uses smaller chunks regardless of this value, so using a low value here may not significantly change latency.</source>
-        <translation>バッファサイズは、ホストによってプル動作する音声のチャンクサイズを決定します。値を小さくすると出力レイテンシーが減少しますが、エミュレーション速度に一貫性がない場合は問題が発生する可能性があります。 Cubebバックエンドは、この値に関係なく小さいチャンクを使用するため、ここで低い値を使用しても、レイテンシーが大幅に変わることはないことに注意してください。</translation>
+        <translation>バッファサイズは、ホストによってプル動作する音声のチャンクサイズを決定します。値を小さくすると出力レイテンシーが減少しますが、&lt;br&gt;エミュレーション速度に一貫性がない場合は問題が発生する可能性があります。 Cubebバックエンドは、この値に関係なく小さいチャンクを使用するため、ここで低い値を使用しても、&lt;br&gt;レイテンシーが大幅に変わることはないことに注意してください。</translation>
     </message>
     <message>
         <source>Controls</source>
@@ -1323,7 +1434,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Throttles the emulation speed based on the audio backend pulling audio frames. This helps to remove noises or crackling if emulation is too fast. Sync will automatically be disabled if not running at 100% speed.</source>
-        <translation>オーディオフレームをプル動作するオーディオバックエンドに基づいてエミュレーション速度を抑制します。これは、エミュレーションが速すぎる場合にノイズやパチパチという音を取り除くのに役立ちます。 100％の速度で実行されていない場合、同期は自動的に無効になります。</translation>
+        <translation>オーディオフレームをプル動作するオーディオバックエンドに基づいてエミュレーション速度を抑制します。これは、エミュレーションが速すぎる場合に&lt;br&gt;ノイズやパチパチという音を取り除くのに役立ちます。 100％の速度で実行されていない場合、同期は自動的に無効になります。</translation>
     </message>
     <message>
         <source>Backend:</source>
@@ -1359,7 +1470,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Buffer Size</source>
-        <translation>バッファーサイズ</translation>
+        <translation>バッファサイズ</translation>
     </message>
     <message>
         <source>Fast Forward Volume:</source>
@@ -1400,9 +1511,9 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <source>Would you like to scan the directory &quot;%1&quot; recursively?
 
 Scanning recursively takes more time, but will identify files in subdirectories.</source>
-        <translation>ディレクトリ &quot;%1&quot; を再帰的にスキャンしますか？
+        <translation>ディレクトリ &quot;%1&quot; を再検索しますか？
 
-再帰的なスキャンには時間がかかりますが、サブディレクトリ内のファイルが識別されます。</translation>
+再検索には時間がかかりますが、サブディレクトリ内のファイルが識別されます。</translation>
     </message>
     <message>
         <source>Cancel</source>
@@ -1434,11 +1545,11 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Scan New</source>
-        <translation>新規スキャン</translation>
+        <translation>新規検索</translation>
     </message>
     <message>
         <source>Rescan All</source>
-        <translation>すべて再スキャン</translation>
+        <translation>すべて再検索</translation>
     </message>
     <message>
         <source>Select Search Directory</source>
@@ -1466,7 +1577,7 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <source>Scan Recursively?</source>
-        <translation>再スキャンしますか？</translation>
+        <translation>再検索しますか？</translation>
     </message>
 </context>
 <context>
@@ -1576,7 +1687,7 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <source>Memory scan found %1 addresses, but only the first %2 are displayed.</source>
-        <translation>メモリスキャンで %1 アドレスが見つかりましたが、最初の %2 のみが表示されます。</translation>
+        <translation>メモリ検索で %1 アドレスが見つかりましたが、最初の %2 のみが表示されます。</translation>
     </message>
     <message>
         <source>Greater Than...</source>
@@ -1664,7 +1775,7 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <source>Memory Scanner</source>
-        <translation>メモリースキャン</translation>
+        <translation>メモリー検索</translation>
     </message>
     <message>
         <source>Failed to parse cheat file. The log may contain more information.</source>
@@ -1784,7 +1895,7 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <source>Memory Scan</source>
-        <translation>メモリースキャン</translation>
+        <translation>メモリー検索</translation>
     </message>
     <message>
         <source>PCSXR Cheat Files (*.cht);;All Files (*.*)</source>
@@ -1808,7 +1919,7 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <source>Activate</source>
-        <translation>アクティブ</translation>
+        <translation>有効/無効</translation>
     </message>
     <message>
         <source>Decimal</source>
@@ -2026,6 +2137,10 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>CPUエミュレーション</translation>
     </message>
     <message>
+        <source>Enable 8MB RAM (Dev Console)</source>
+        <translation>8MB RAMを有効にする(開発コンソール)</translation>
+    </message>
+    <message>
         <source>Region</source>
         <translation>地域</translation>
     </message>
@@ -2063,7 +2178,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Speeds up CD-ROM reads by the specified factor. Only applies to double-speed reads, and is ignored when audio is playing. May improve loading speeds in some games, at the cost of breaking others.</source>
-        <translation>指定された係数でCD-ROMの読み取りを高速化します。倍速読み取りにのみ適用され、音声の再生中は無視されます。一部のゲームでは読み込み速度が向上する可能性がありますが、他のゲームは中断されます。</translation>
+        <translation>指定された読取速度でCD-ROMの読み取りを高速化します。倍速読み取りにのみ適用され、音声の再生中は無視されます。&lt;br&gt;一部のゲームでは読み込み速度が向上する場合がありますが、他のゲームでは不具合が出る場合もあります。</translation>
     </message>
     <message>
         <source>Region:</source>
@@ -2079,7 +2194,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay. In some cases also eliminates stutter when games initiate audio track playback.</source>
-        <translation>ゲームイメージをRAMにロードします。ゲームプレイ中に信頼性が低下する可能性のあるネットワークパスに役立ちます。場合によっては、ゲームが音声トラックの再生を開始するときのスタッターも排除されます。</translation>
+        <translation>ゲームイメージをRAMにロードします。ゲームプレイ中に信頼性が低下する可能性のあるネットワークパスに役立ちます。&lt;br&gt;場合によっては、ゲームが音声トラックの再生を開始するときのスタッターも排除されます。</translation>
     </message>
     <message>
         <source>No, take me back to safety.</source>
@@ -2110,6 +2225,10 @@ This warning will only be shown once.</source>
         <translation>%1% (%2MHz)</translation>
     </message>
     <message>
+        <source>Enables an additional 6MB of RAM, usually present on dev consoles. Games have to use a larger heap size for this additional RAM to be usable, and may break games which rely on memory mirrors, so it should only be used with compatible mods.</source>
+        <translation>通常は開発コンソールに存在する、追加の6MBのRAMを有効にします。ゲームは、この追加のRAMを使用できるようにするために、&lt;br&gt;より大きなヒープサイズを使用する必要があり、メモリミラーに依存するゲームを壊す可能性があるため、互換性のあるmodでのみ使用する必要があります。</translation>
+    </message>
+    <message>
         <source>CDROM Read Speedup</source>
         <translation>CD-ROM読み取りの高速化</translation>
     </message>
@@ -2122,6 +2241,10 @@ This warning will only be shown once.</source>
         <translation>実行モード :</translation>
     </message>
     <message>
+        <source>Multitap</source>
+        <translation>マルチタップ</translation>
+    </message>
+    <message>
         <source>Determines how the emulated CPU executes instructions.</source>
         <translation>エミュレートされたCPUが命令を実行する方法を決定します。</translation>
     </message>
@@ -2131,7 +2254,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>CD-ROM Emulation</source>
-        <translation>CD-ROMエミュレーション</translation>
+        <translation>CD-ROMエミュレーション(注:読込速度の変更は不具合が出る場合があります)</translation>
     </message>
     <message>
         <source>4x (8x Speed)</source>
@@ -2183,7 +2306,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Enables multitap support on specified controller ports. Leave disabled for games that do not support multitap input.</source>
-        <translation>指定されたコントローラポートでマルチタップを有効にします。マルチタップ入力をサポートしないゲームでは、使用しないでください。</translation>
+        <translation>指定されたコントローラポートでマルチタップを有効にします。マルチタップに対応しないゲームでは、使用しないでください。</translation>
     </message>
     <message>
         <source>Multitap:</source>
@@ -2213,8 +2336,16 @@ This warning will only be shown once.</source>
         <translation>タイプ</translation>
     </message>
     <message>
+        <source>Year</source>
+        <translation>発売年</translation>
+    </message>
+    <message>
+        <source>Genre</source>
+        <translation>ジャンル</translation>
+    </message>
+    <message>
         <source>Title</source>
-        <translation>タイトル</translation>
+        <translation>ゲーム名(データベース上)</translation>
     </message>
     <message>
         <source>Region</source>
@@ -2225,8 +2356,20 @@ This warning will only be shown once.</source>
         <translation>互換性</translation>
     </message>
     <message>
+        <source>Players</source>
+        <translation>同時プレイ人数</translation>
+    </message>
+    <message>
         <source>File Title</source>
-        <translation>ファイルタイトル</translation>
+        <translation>ファイル名</translation>
+    </message>
+    <message>
+        <source>Publisher</source>
+        <translation>販売元</translation>
+    </message>
+    <message>
+        <source>Developer</source>
+        <translation>開発元</translation>
     </message>
 </context>
 <context>
@@ -2257,7 +2400,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>When enabled and logged in, DuckStation will scan for achievements on startup.</source>
-        <translation>有効にしてログインすると、DuckStationは起動時に実績をスキャンします。</translation>
+        <translation>有効にしてログインすると、DuckStationは起動時に実績を検索します。</translation>
     </message>
     <message>
         <source>Enable Rich Presence</source>
@@ -2311,7 +2454,7 @@ Login token generated on %2.</source>
     </message>
     <message>
         <source>When enabled, the first disc in a playlist will be used for achievements, regardless of which disc is active.</source>
-        <translation>有効にすると、アクティブなディスクに関係なく、プレイリストの最初のディスクが実績に使用されます。</translation>
+        <translation>有効にすると、動作中なディスクに関係なく、プレイリストの最初のディスクが実績に使用されます。</translation>
     </message>
     <message>
         <source>The current state will be saved, but you will be unable to load it until you disable hardcore mode.
@@ -2355,6 +2498,10 @@ Login token generated on %2.</source>
     <message>
         <source>Increase Timer Resolution</source>
         <translation>タイマー精度を上げる(高精度タイマ)</translation>
+    </message>
+    <message>
+        <source>Allow Booting Without SBI File</source>
+        <translation>SBIファイルなしでの起動を許可する</translation>
     </message>
     <message>
         <source>Tweaks/Hacks</source>
@@ -2449,8 +2596,12 @@ Login token generated on %2.</source>
         <translation>デバッグコンソールログ保存</translation>
     </message>
     <message>
+        <source>Show Fullscreen Status Indicators</source>
+        <translation>フルスクリーンステータスインジケータを表示</translation>
+    </message>
+    <message>
         <source>Display FPS Limit</source>
-        <translation>表示のFPS制限</translation>
+        <translation>FPS制限を表示</translation>
     </message>
     <message>
         <source>Sets the verbosity of messages logged. Higher levels will log more messages.</source>
@@ -2556,7 +2707,7 @@ Login token generated on %2.</source>
         <translation>DuckStationは、このディレクトリのBIOSイメージを検索します。</translation>
     </message>
     <message>
-        <source>Patches the BIOS to skip the console&apos;s boot animation. Does not work with all games, but usually safe to enabled.</source>
+        <source>Patches the BIOS to skip the console&apos;s boot animation. Does not work with all games, but usually safe to enable.</source>
         <translation>コンソールの起動アニメーションをスキップするようにBIOSにパッチを適用します。すべてのゲームで機能するわけではありませんが、通常は安全に有効にできます。</translation>
     </message>
     <message>
@@ -2612,11 +2763,11 @@ Login token generated on %2.</source>
     </message>
     <message>
         <source>Enable this option will ensure every frame the console renders is displayed to the screen, for optimal frame pacing. If you are having difficulties maintaining full speed, or are getting audio glitches, try disabling this option.</source>
-        <translation>このオプションを有効にすると、最適なフレームペーシングのために、コンソールがレンダリングするすべてのフレームが画面に表示されます。フルスピードを維持するのが難しい場合、または音声の不具合が発生する場合は、このオプションを無効にしてみてください。</translation>
+        <translation>このオプションを有効にすると、最適なフレームペーシングのために、コンソールがレンダリングするすべてのフレームが画面に表示されます。&lt;br&gt;フルスピードを維持できない場合や、音声の不具合が発生する場合は、このオプションを無効にしてみてください。</translation>
     </message>
     <message>
         <source>Changes the aspect ratio used to display the console&apos;s output to the screen. The default is Auto (Game Native) which automatically adjusts the aspect ratio to match how a game would be shown on a typical TV of the era.</source>
-        <translation>コンソールの出力を画面に表示するために使用するアスペクト比を変更します。デフォルトは[自動(ゲームに基づく)]で、アスペクト比を自動的に調整して、その時代の典型的なテレビでのゲームの表示方法と一致させます。</translation>
+        <translation>コンソールの出力を画面に表示するために使用するアスペクト比を変更します。デフォルトは[自動(ゲームに基づく)]で、&lt;br&gt;アスペクト比を自動的に調整して、その時代の典型的なテレビでのゲームの表示方法と一致させます。</translation>
     </message>
     <message>
         <source>Basic</source>
@@ -2628,7 +2779,7 @@ Login token generated on %2.</source>
     </message>
     <message>
         <source>Enable this option to match DuckStation&apos;s refresh rate with your current monitor or screen. VSync is automatically disabled when it is not possible (e.g. running at non-100% speed).</source>
-        <translation>このオプションを有効にすると、DuckStationの更新レートが現在のモニターまたは画面と一致します。 垂直同期が不可能な場合（100％以外の速度で実行している場合など）、垂直同期は自動的に無効になります。</translation>
+        <translation>このオプションを有効にすると、DuckStationの更新レートが現在のモニターまたは画面と一致します。 &lt;br&gt;垂直同期が不可能な場合（100％以外の速度で実行している場合など）、垂直同期は自動的に無効になります。</translation>
     </message>
     <message>
         <source>VSync</source>
@@ -2684,7 +2835,7 @@ Login token generated on %2.</source>
     </message>
     <message>
         <source>Fills the window with the active display area, regardless of the aspect ratio.</source>
-        <translation>アスペクト比に関係なく、ウィンドウをアクティブな表示領域で埋めます。</translation>
+        <translation>アスペクト比に関係なく、ウィンドウを動作中の表示領域で埋めます。</translation>
     </message>
     <message>
         <source>Internal Resolution Screenshots</source>
@@ -2692,7 +2843,7 @@ Login token generated on %2.</source>
     </message>
     <message>
         <source>Saves screenshots at internal render resolution and without postprocessing. If this option is disabled, the screenshots will be taken at the window&apos;s resolution. Internal resolution screenshots can be very large at high rendering scales.</source>
-        <translation>スクリーンショットを内部レンダリング解像度で後処理なしで保存します。このオプションが無効になっている場合、スクリーンショットはウィンドウの解像度で撮影されます。内部解像度のスクリーンショットは、レンダリングスケールが大きいと非常に大きくなる可能性があります。</translation>
+        <translation>スクリーンショットを内部レンダリング解像度で後処理なしで保存します。このオプションが無効になっている場合、&lt;br&gt;スクリーンショットはウィンドウの解像度で撮影されます。内部解像度のスクリーンショットは、レンダリングスケールが大きいと非常に大きくなる可能性があります。</translation>
     </message>
     <message>
         <source>Show Resolution</source>
@@ -2720,7 +2871,7 @@ Login token generated on %2.</source>
     </message>
     <message>
         <source>Downsamples the rendered image prior to displaying it. Can improve overall image quality in mixed 2D/3D games, but should be disabled for pure 3D games. Only applies to the hardware renderers.</source>
-        <translation>レンダリングされた画像を表示する前にダウンサンプリングします。混合2D / 3Dゲームで 全体的な画質を向上させることができますが、純粋な3Dゲームでは無効にする必要があります。 ハードウェアレンダラーにのみ適用されます。 </translation>
+        <translation>レンダリングされた画像を表示する前にダウンサンプリングします。混合2D / 3Dゲームで 全体的な画質を向上させることができますが、&lt;br&gt;純粋な3Dゲームでは無効にする必要があります。 ハードウェアレンダラーにのみ適用されます。 </translation>
     </message>
     <message>
         <source>Optimal Frame Pacing</source>
@@ -2736,7 +2887,7 @@ Login token generated on %2.</source>
     </message>
     <message>
         <source>Presents frames on a background thread when fast forwarding or vsync is disabled. This can measurably improve performance in the Vulkan renderer.</source>
-        <translation>早送りまたは垂直同期が無効になっている場合、バックグラウンドスレッドにフレームを表示します。これにより、Vulkanレンダラーのパフォーマンスを大幅に向上させることができます。</translation>
+        <translation>早送りまたは垂直同期が無効になっている場合、バックグラウンドスレッドにフレームを表示します。&lt;br&gt;これにより、Vulkanレンダラーのパフォーマンスを大幅に向上させることができます。</translation>
     </message>
     <message>
         <source>Adapter</source>
@@ -2811,6 +2962,10 @@ Login token generated on %2.</source>
         <translation>ディスプレイの右上隅にゲームの解像度を表示します。</translation>
     </message>
     <message>
+        <source>Shows the current controller state of the system in the bottom-left corner of the display.</source>
+        <translation>ディスプレイの左下隅にシステムの現在のコントローラーの状態を表示します。</translation>
+    </message>
+    <message>
         <source>Use Blit Swap Chain</source>
         <translation>ブリットでのスワップチェーンを使用</translation>
     </message>
@@ -2820,7 +2975,7 @@ Login token generated on %2.</source>
     </message>
     <message>
         <source>Uses a blit presentation model instead of flipping when using the Direct3D 11 renderer. This usually results in slower performance, but may be required for some streaming applications, or to uncap framerates on some systems.</source>
-        <translation>Direct3D 11レンダラーを使用する場合、反転する代わりにブリットプレゼンテーションモデルを使用します。これは通常、パフォーマンスの低下につながりますが、一部のストリーミングアプリケーション、または一部のシステムでフレームレートの上限を解除するために必要になる場合があります。</translation>
+        <translation>Direct3D 11レンダラーを使用する場合、反転する代わりにブリットプレゼンテーションモデルを使用します。これは通常、パフォーマンスの低下につながりますが、&lt;br&gt;一部のストリーミングアプリケーション、または一部のシステムでフレームレートの上限を解除するために必要になる場合があります。</translation>
     </message>
     <message>
         <source>Shows the number of frames (or v-syncs) displayed per second by the system in the top-right corner of the display.</source>
@@ -2841,6 +2996,10 @@ Login token generated on %2.</source>
     <message>
         <source>Show Game Frame Rate</source>
         <translation>ゲームフレームレートを表示</translation>
+    </message>
+    <message>
+        <source>Show Controller Input</source>
+        <translation>コントローラ入力を表示</translation>
     </message>
 </context>
 <context>
@@ -2973,12 +3132,11 @@ Login token generated on %2.</source>
     </message>
     <message>
         <source>Sets the turbo speed. This speed will be used when the turbo hotkey is pressed/toggled. Turboing will take priority over fast forwarding if both hotkeys are pressed/toggled.</source>
-        <translation>ターボ速度を設定します。この速度は、ホットキーのターボを押すか切り替え時に適用されます。 
-早送りとターボ、両方のホットキーが押された/切り替えられた場合、ターボを優先します。</translation>
+        <translation>ターボ速度を設定します。この速度は、ホットキーのターボを押すか切り替え時に適用されます。 &lt;br&gt;早送りとターボ、両方のホットキーが押された/切り替えられた場合、ターボを優先します。</translation>
     </message>
     <message>
         <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host&apos;s refresh rate when both VSync and Audio Resampling settings are enabled. This results in the smoothest animations possible, at the cost of potentially increasing the emulation speed by less than 1%. Sync To Host Refresh Rate will not take effect if the console&apos;s refresh rate is too far from the host&apos;s refresh rate. Users with variable refresh rate displays should disable this option.</source>
-        <translation>VSyncとオーディオリサンプリングの両方の設定が有効になっている場合に、コンソールのリフレッシュレートがホストのリフレッシュレートと一致するように、エミュレーション速度を調整します。これにより、エミュレーション速度が1％未満増加する可能性がありますが、可能な限りスムーズなアニメーションが得られます。コンソールのリフレッシュレートがホストのリフレッシュレートから離れすぎている場合、[ホストのリフレッシュレートに同期]は有効になりません。リフレッシュレートの表示が可変のユーザーは、このオプションを無効にする必要があります。</translation>
+        <translation>VSyncとオーディオリサンプリングの両方の設定が有効になっている場合に、コンソールのリフレッシュレートがホストのリフレッシュレートと一致するように、&lt;br&gt;エミュレーション速度を調整します。これにより、エミュレーション速度が1％未満増加する可能性がありますが、可能な限りスムーズなアニメーションが得られます。&lt;br&gt;コンソールのリフレッシュレートがホストのリフレッシュレートから離れすぎている場合、[ホストのリフレッシュレートに同期]は有効になりません。&lt;br&gt;リフレッシュレートの表示が可変のユーザーは、このオプションを無効にする必要があります。</translation>
     </message>
     <message>
         <source>Sets the target emulation speed. It is not guaranteed that this speed will be reached, and if not, the emulator will run as fast as it can manage.</source>
@@ -3029,7 +3187,7 @@ Login token generated on %2.</source>
     </message>
     <message>
         <source>Uses multisample antialiasing for rendering 3D objects. Can smooth out jagged edges on polygons at a lower cost to performance compared to increasing the resolution scale, but may be more likely to cause rendering errors in some games. Only applies to the hardware backends.</source>
-        <translation>3Dオブジェクトのレンダリングにマルチサンプルアンチエイリアスを使用します。解像度スケールを上げるよりもパフォーマンスのコストを低く抑えながら、ポリゴンのギザギザのエッジを滑らかにすることができますが、一部のゲームではレンダリングエラーが発生する可能性が高くなります。ハードウェアバックエンドにのみ適用されます。</translation>
+        <translation>3Dオブジェクトのレンダリングにマルチサンプルアンチエイリアスを使用します。解像度スケールを上げるよりもパフォーマンスのコストを低く抑えながら、&lt;br&gt;ポリゴンのギザギザのエッジを滑らかにしますが、一部のゲームではレンダリングエラーが発生する可能性が高くなります。ハードウェアバックエンドにのみ適用されます。</translation>
     </message>
     <message>
         <source>Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. &lt;br&gt;Only works with the hardware renderers. &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
@@ -3089,7 +3247,7 @@ Login token generated on %2.</source>
     </message>
     <message>
         <source>Uses PGXP for all instructions, not just memory operations. Required for PGXP to correct wobble in some games, but has a very high performance cost.</source>
-        <translation>メモリ操作だけでなく、すべての命令にPGXPを使用します。一部のゲームでPGXPがぐらつきを修正するために必要ですが、パフォーマンスコストが非常に高くなります。</translation>
+        <translation>メモリ操作だけでなく、すべての命令にPGXPを使用します。一部のゲームでPGXPがぐらつきを修正するために必要ですが、&lt;br&gt;パフォーマンスコスト(要求性能)が非常に高くなります。</translation>
     </message>
     <message>
         <source>Disable Interlacing (force progressive render/scan)</source>
@@ -3125,7 +3283,7 @@ Login token generated on %2.</source>
     </message>
     <message>
         <source>Attempts to reduce polygon Z-fighting by testing pixels against the depth values from PGXP. Low compatibility, but can work well in some games. Other games may need a threshold adjustment.</source>
-        <translation>PGXPからの深度値に対してピクセルをテストすることにより、ポリゴンのZファイティングを削減しようとします。互換性は低いですが、一部のゲームではうまく機能します。他のゲームでは、しきい値の調整が必要になる場合があります。</translation>
+        <translation>PGXPからの深度値に対してピクセルをテストすることにより、ポリゴンのZファイティングを削減しようとします。&lt;br&gt;互換性は低いですが、一部のゲームではうまく機能します。他のゲームでは、しきい値の調整が必要になる場合があります。</translation>
     </message>
     <message>
         <source>Smooths out blockyness between colour transitions in 24-bit content, usually FMVs. Only applies to the hardware renderers.</source>
@@ -3185,7 +3343,7 @@ Login token generated on %2.</source>
     </message>
     <message>
         <source>Forces the precision of colours output to the console&apos;s framebuffer to use the full 8 bits of precision per channel. This produces nicer looking gradients at the cost of making some colours look slightly different. Disabling the option also enables dithering, which makes the transition between colours less sharp by applying a pattern around those pixels. Most games are compatible with this option, but there is a number which aren&apos;t and will have broken effects with it enabled. Only applies to the hardware renderers.</source>
-        <translation>コンソールのフレームバッファに出力される色の精度を強制して、チャネルごとに8ビットの精度をすべて使用します。これにより、見栄えの良いグラデーションが生成されますが、一部の色がわずかに異なって見えるようになります。このオプションを無効にすると、ディザリングも有効になり、これらのピクセルの周囲にパターンを適用することで、色間の遷移がシャープでなくなります。ほとんどのゲームはこのオプションと互換性がありますが、有効にしないと壊れた効果を持つものがいくつかあります。ハードウェアレンダラーにのみ適用されます。</translation>
+        <translation>コンソールのフレームバッファに出力される色の精度を強制して、チャネルごとに8ビットの精度をすべて使用します。&lt;br&gt;見栄えの良いグラデーションが生成されますが、一部の色がわずかに異なって見えるようになります。このオプションを無効にすると、ディザリングも有効になり、&lt;br&gt;これらのピクセルの周囲にパターンを適用することで、色間の遷移がシャープでなくなります。ほとんどのゲームはこのオプションと互換性がありますが、&lt;br&gt;有効にしないと壊れた効果を持つものがいくつかあります。ハードウェアレンダラーにのみ適用されます。</translation>
     </message>
     <message>
         <source>Smooths out the blockyness of magnified textures on 3D object by using filtering. &lt;br&gt;Will have a greater effect on higher resolution scales. Only applies to the hardware renderers.</source>
@@ -3252,7 +3410,7 @@ Login token generated on %2.</source>
     </message>
     <message>
         <source>When enabled, per-game settings will be applied, and incompatible enhancements will be disabled. You should leave this option enabled except when testing enhancements with incompatible games.</source>
-        <translation>有効にすると、ゲームごとの設定が適用され、互換性のない拡張機能が無効になります。互換性のないゲームで拡張機能をテストする場合を除いて、このオプションは有効のままにしておく必要があります。</translation>
+        <translation>有効にすると、ゲームごとの設定が適用され、互換性のない拡張機能が無効になります。&lt;br&gt;互換性のないゲームで拡張機能をテストする場合を除いて、このオプションは有効のままにしておく必要があります。</translation>
     </message>
     <message>
         <source>Miscellaneous</source>
@@ -3288,7 +3446,7 @@ Login token generated on %2.</source>
     </message>
     <message>
         <source>Renders the display of the simulated console to the main window of the application, over the game list. If unchecked, the display will render in a separate window.</source>
-        <translation>シミュレートされたコンソールの表示を、ゲームリスト上でアプリケーションのメインウィンドウにレンダリングします。チェックを外すと、ディスプレイは別のウィンドウに表示されます。</translation>
+        <translation>シミュレートされたコンソールの表示を、ゲームリスト上でアプリケーションのメインウィンドウにレンダリングします。&lt;br&gt;チェックを外すと、ディスプレイは別のウィンドウに表示されます。</translation>
     </message>
     <message>
         <source>Pauses the emulator when a game is started.</source>
@@ -3324,7 +3482,7 @@ Login token generated on %2.</source>
     </message>
     <message>
         <source>When enabled, memory cards and controllers will be overwritten when save states are loaded. This can result in lost saves, and controller type mismatches. For deterministic save states, enable this option, otherwise leave disabled.</source>
-        <translation>有効にすると、保存状態がロードされたときにメモリカードとコントローラが上書きされます。これにより、保存が失われ、コントローラータイプの不一致が発生する可能性があります。確定的な保存状態の場合は、このオプションを有効にします。それ以外の場合は無効のままにします。</translation>
+        <translation>有効にすると、保存状態が読み込まれたときにメモリカードとコントローラの情報を上書きします。これにより、保存が失われ、コントローラータイプの&lt;br&gt;不一致が発生する可能性があります。確定的な保存状態の場合は、このオプションを有効にします。それ以外の場合は無効のままにします。</translation>
     </message>
     <message>
         <source>Confirm Power Off</source>
@@ -3530,7 +3688,7 @@ Login token generated on %2.</source>
     </message>
     <message>
         <source>Recursive</source>
-        <translation>再帰的処理</translation>
+        <translation>再読込(常に)</translation>
     </message>
 </context>
 <context>
@@ -4094,7 +4252,7 @@ Login token generated on %2.</source>
     </message>
     <message>
         <source>&amp;Scan For New Games</source>
-        <translation>新しいゲームをスキャン(&amp;S)</translation>
+        <translation>新しいゲームを検索(&amp;S)</translation>
     </message>
     <message>
         <source>Memory card &apos;%1&apos; could not be found. Try starting the game and saving to create it.</source>
@@ -4222,7 +4380,7 @@ Login token generated on %2.</source>
     </message>
     <message>
         <source>Show Titles (Grid View)</source>
-        <translation>タイトルを表示（グリッドビュー）</translation>
+        <translation>ゲーム名表示（グリッドビュー）</translation>
     </message>
     <message>
         <source>Zoom &amp;Out (Grid View)</source>
@@ -4627,6 +4785,10 @@ Login token generated on %2.</source>
         <translation>強制的に ソフトウェアレンダラー 使用</translation>
     </message>
     <message>
+        <source>Force Recompiler LUT Fastmem</source>
+        <translation>強制的に リコンパイラLUT Fastmem 使用</translation>
+    </message>
+    <message>
         <source>Disable PGXP</source>
         <translation>PGXPを無効</translation>
     </message>
@@ -4718,7 +4880,7 @@ URLは次のとおりです : %1</translation>
     </message>
     <message>
         <source>&lt;strong&gt;Controller Settings&lt;/strong&gt;&lt;hr&gt;This page lets you choose the type of controller you wish to simulate for the console, and rebind the keys or host game controller buttons to your choosing. Clicking a binding will start a countdown, in which case you should press the key or controller button/axis you wish to bind. (For rumble, press any button/axis on the controller you wish to send rumble to.) If no button is pressed and the timer lapses, the binding will be unchanged. To clear a binding, right-click the button. To bind multiple buttons, hold Shift and click the button.</source>
-        <translation>&lt;strong&gt;コントローラー設定&lt;/strong&gt;&lt;hr&gt;このページでは、コンソール用にシミュレートするコントローラーのタイプを選択し、キーまたはホストゲームコントローラーボタンを選択に再割り当てできます。割当をクリックするとカウントダウンが開始されます。その場合、割当てるキーまたはコントローラーボタン/軸を押す必要があります。 （振動の場合は、振動するコントローラーの任意のボタン/軸を押します。）ボタンが押されずにタイマーが経過した場合、割当ては変更されません。割当てをクリアするには、ボタンを右クリックします。複数のボタンを割当てるには、Shiftキーを押しながらボタンをクリックします。</translation>
+        <translation>&lt;strong&gt;コントローラー設定&lt;/strong&gt;&lt;hr&gt;このページでは、コンソール用にシミュレートするコントローラーのタイプを選択し、キーまたはホストゲームコントローラーボタンを選択に再割り当てできます。&lt;br&gt;割当をクリックするとカウントダウンが開始され、割当てるキーまたはコントローラーボタン/軸を押してください。 &lt;br&gt;（振動の場合は、振動するコントローラーの任意のボタン/軸を押します。）ボタンが押されずにタイマーが経過した場合、割当ては変更されません。&lt;br&gt;割当てをクリアするには、ボタンを右クリックします。複数のボタンを割当てるには、Shiftキーを押しながらボタンをクリックします。</translation>
     </message>
     <message>
         <source>&lt;strong&gt;Audio Settings&lt;/strong&gt;&lt;hr&gt;These options control the audio output of the console. Mouse over an option for additional information.</source>
@@ -4738,7 +4900,7 @@ URLは次のとおりです : %1</translation>
     </message>
     <message>
         <source>&lt;strong&gt;Hotkey Settings&lt;/strong&gt;&lt;hr&gt;Binding a hotkey allows you to trigger events such as a resetting or taking screenshots at the press of a key/controller button. Hotkey titles are self-explanatory. Clicking a binding will start a countdown, in which case you should press the key or controller button/axis you wish to bind. If no button  is pressed and the timer lapses, the binding will be unchanged. To clear a binding, right-click the button. To  bind multiple buttons, hold Shift and click the button.</source>
-        <translation>&lt;strong&gt;ホットキー設定&lt;/strong&gt;&lt;hr&gt;ホットキーを割り当てすると、キー/コントローラーボタンを押すだけでリセットやスクリーンショットの撮影などのイベントを実行できます。ホットキーの項目は一目瞭然です。項目の右の枠をクリックするとカウントダウンが開始されます。その場合、割り当てるキーまたはコントローラーボタン/軸を押す必要があります。ボタンが押されずにタイマーが経過した場合、割り当ては変更されません。割り当てをクリアするには、ボタンを右クリックします。複数のボタンを割り当てるには、Shiftキーを押しながら枠をクリックします。</translation>
+        <translation>&lt;strong&gt;ホットキー設定&lt;/strong&gt;&lt;hr&gt;ホットキーを割り当てすると、キー/コントローラーボタンを押すだけでリセットやスクリーンショットの撮影などのイベントを実行できます。&lt;br&gt;ホットキーの項目は一目瞭然です。項目の右の枠をクリックするとカウントダウンが開始され、割り当てるキーまたはコントローラーボタン/軸を押してください。&lt;br&gt;ボタンが押されずにタイマーが経過した場合、割り当ては変更されません。割り当てをクリアするには、ボタンを右クリックします。&lt;br&gt;複数のボタンを割り当てるには、Shiftキーを押しながら枠をクリックします。</translation>
     </message>
     <message>
         <source>&lt;strong&gt;Advanced Settings&lt;/strong&gt;&lt;hr&gt;These options control logging and internal behavior of the emulator. Mouse over an option for additional information.</source>
@@ -4785,8 +4947,8 @@ URLは次のとおりです : %1</translation>
         <translation>高度な設定</translation>
     </message>
     <message>
-        <source>&lt;strong&gt;Game List Settings&lt;/strong&gt;&lt;hr&gt;The list above shows the directories which will be searched by DuckStation to populate the game list. Search directories can be added, removed, and switched to recursive/non-recursive. Additionally, the redump.org database can be downloaded or updated to provide titles for discs, as the discs themselves do not provide title information.</source>
-        <translation>&lt;strong&gt;ゲームリストの設定&lt;/strong&gt;&lt;hr&gt;上のリストは、DuckStationがゲームリストに入力するために検索するディレクトリを示しています。検索ディレクトリは、追加、削除、および再帰的/非再帰的に切り替えることができます。さらに、ディスク自体はタイトル情報を提供しないため、redump.orgデータベースをダウンロードまたは更新して、ディスクのタイトルを提供することができます。</translation>
+        <source>&lt;strong&gt;Game List Settings&lt;/strong&gt;&lt;hr&gt;The list above shows the directories which will be searched by DuckStation to populate the game list. Search directories can be added, removed, and switched to recursive/non-recursive.</source>
+        <translation>&lt;strong&gt;ゲームリスト設定&lt;/strong&gt;&lt;hr&gt;上のリストは、DuckStationがゲームリストに入力するために検索したディレクトリを示しています。&lt;br&gt;ディレクトリは、追加、削除、および再読込/再読込無しに切り替えることができます。</translation>
     </message>
     <message>
         <source>Memory Card Settings</source>
@@ -4829,7 +4991,7 @@ URLは次のとおりです : %1</translation>
     </message>
     <message>
         <source>Per-game memory card cannot be used for slot %u as the running game has no title. Using shared card instead.</source>
-        <translation>実行中のゲームにはタイトルがないため、ゲームごとのメモリカードをスロット %u に使用することはできません。代わりに共有カードを使用します。</translation>
+        <translation>実行中のゲームには名称がないため、ゲームごとのメモリカードをスロット %u に使用することはできません。代わりに共有カードを使用します。</translation>
     </message>
     <message>
         <source>Removing current media from playlist, removing media from CD-ROM.</source>
@@ -4952,7 +5114,7 @@ SBIファイルを追加する方法については、READMEを確認してく�
     </message>
     <message>
         <source>Frame Step</source>
-        <translation>フレームステップ</translation>
+        <translation>コマ送り</translation>
     </message>
     <message>
         <source>Reload Texture Replacements</source>
@@ -5037,6 +5199,10 @@ SBIファイルを追加する方法については、READMEを確認してく�
     <message>
         <source>Save Screenshot</source>
         <translation>スクリーンショットを保存</translation>
+    </message>
+    <message>
+        <source>Change Disc</source>
+        <translation>ディスク交換</translation>
     </message>
     <message>
         <source>Graphics</source>
@@ -5187,8 +5353,16 @@ SBIファイルを追加する方法については、READMEを確認してく�
         <translation>選択したスロットに保存</translation>
     </message>
     <message>
+        <source>Toggle Widescreen</source>
+        <translation>ワイドスクリーンの切り替え</translation>
+    </message>
+    <message>
         <source>Toggle Cheats</source>
-        <translation>チートの切り替え</translation>
+        <translation>チート有効/無効の切り替え</translation>
+    </message>
+    <message>
+        <source>Toggle Clock Speed Control (Overclocking)</source>
+        <translation>クロック速度の切り替え（オーバークロック）</translation>
     </message>
 </context>
 <context>
@@ -5235,89 +5409,6 @@ SBIファイルを追加する方法については、READMEを確認してく�
     <message>
         <source>%1 bindings</source>
         <translation>%1 割り当て</translation>
-    </message>
-</context>
-<context>
-    <name>ControllerSettingsWidget</name>
-    <message>
-        <source>Rebind All</source>
-        <translation>すべて再割り当て</translation>
-    </message>
-    <message>
-        <source>Error</source>
-        <translation>エラー</translation>
-    </message>
-    <message>
-        <source>Save Profile</source>
-        <translation>プロファイル保存</translation>
-    </message>
-    <message>
-        <source>Load Profile</source>
-        <translation>プロファイル読込み</translation>
-    </message>
-    <message>
-        <source>Select path to input profile ini</source>
-        <translation>プロファイルiniを入力するためのパスを選択します</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to clear all bound controls? This can not be reversed.</source>
-        <translation>割当られているすべてのボタン設定をクリアしてもよろしいですか？元に戻すことはできません。</translation>
-    </message>
-    <message>
-        <source>No name entered, input profile was not saved.</source>
-        <translation>名前が入力されていません。入力プロファイルは保存されませんでした。</translation>
-    </message>
-    <message>
-        <source>New...</source>
-        <translation>新規...</translation>
-    </message>
-    <message>
-        <source>Rumble</source>
-        <translation>振動</translation>
-    </message>
-    <message>
-        <source>Browse...</source>
-        <translation>参照...</translation>
-    </message>
-    <message>
-        <source>No path selected, input profile was not saved.</source>
-        <translation>パスが選択されていません。入力プロファイルは保存されませんでした。</translation>
-    </message>
-    <message>
-        <source>Enter Input Profile Name</source>
-        <translation>入力プロファイル名を入力</translation>
-    </message>
-    <message>
-        <source>Port %1</source>
-        <translation>ポート %1</translation>
-    </message>
-    <message>
-        <source>Select File</source>
-        <translation>ファイルを選択</translation>
-    </message>
-    <message>
-        <source>Clear All</source>
-        <translation>すべてクリア</translation>
-    </message>
-    <message>
-        <source>Axis Bindings:</source>
-        <translation>Axis軸割当 :</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to rebind all controls? All currently-bound controls will be irreversibly cleared. Rebinding will begin after confirmation.</source>
-        <translation>すべてのボタン設定を再割当してもよろしいですか？現在割当られているすべてのボタン設定は、元に戻せないようにクリアされます。確認後、再割当が開始されます。</translation>
-    </message>
-    <message>
-        <source>Clear Bindings</source>
-        <translation>割当をクリア</translation>
-    </message>
-    <message>
-        <source>Controller Type:</source>
-        <translation>コントローラタイプ :</translation>
-    </message>
-    <message>
-        <source>Button Bindings:</source>
-        <translation>ボタン割当：</translation>
     </message>
 </context>
 <context>
@@ -5640,10 +5731,10 @@ Achievements: %5 (%6 points)
 
 </source>
         <translation>ゲームID:%1
-ゲームタイトル:%2
+ゲーム名:%2
 開発元:%3
 販売元:%4
-Achievements:%5 (%6点)
+Achievements:%5 (%6 点)
 
 </translation>
     </message>
@@ -5679,7 +5770,7 @@ Achievements:%5 (%6点)
     </message>
     <message>
         <source>If one of the &quot;separate card per game&quot; memory card modes is chosen, these memory cards will be saved to the memcards directory.</source>
-        <translation>「ゲームごとに別々のカード」メモリカードモードの1つを選択すると、これらのメモリカードはmemcardsディレクトリに保存されます。</translation>
+        <translation>「ゲームごとに別々のカード」モードの1つを選択すると、これらのメモリカードはmemcardsディレクトリに保存されます。</translation>
     </message>
     <message>
         <source>Select path to memory card image</source>
@@ -5719,19 +5810,19 @@ Achievements:%5 (%6点)
     </message>
     <message>
         <source>All Memory Card Types (*.mcd *.mcr *.mc)</source>
-        <translation>すべてのメモリカードタイプ (*.mcd *.mcr *.mc)</translation>
+        <translation>すべてのメモリーカードタイプ (*.mcd *.mcr *.mc)</translation>
     </message>
     <message>
         <source>When using a multi-disc format (m3u/pbp) and per-game (title) memory cards, a single memory card will be used for all discs. If unchecked, a separate card will be used for each disc.</source>
-        <translation>マルチディスクフォーマット（m3u / pbp）およびゲームごと（タイトル）のメモリカードを使用する場合、すべてのディスクに1枚のメモリカードが使用されます。チェックを外すと、ディスクごとに別々のカードが使用されます。</translation>
+        <translation>マルチディスクフォーマット（m3u / pbp）およびゲームごと（ゲーム名）のメモリーカードを使用する場合、すべてのディスクに1枚のメモリーカードが使用されます。&lt;br&gt;チェックを外すと、ディスクごとに別々のカードが使用されます。</translation>
     </message>
     <message>
-        <source>If one of the &quot;separate card per game&quot; memory card modes is chosen, these memory cards will be saved to the memory cards directory.</source>
-        <translation>&quot;ゲームごとに別々のカード&quot;メモリカードモードの1つを選択すると、これらのメモリカードはメモリカードディレクトリに保存されます。</translation>
+        <source>If one of the &quot;separate card per game&quot; memory card types is chosen, these memory cards will be saved to the memory cards directory.</source>
+        <translation>&quot;ゲームごとに別々のカード&quot;&#x3000;この方法を選択すると、&lt;br&gt;メモリーカードはメモリーカードディレクトリに保存されます。</translation>
     </message>
     <message>
         <source>Shared Memory Card Path:</source>
-        <translation>共有メモリカードパス :</translation>
+        <translation>(共有)メモリーカードパス :</translation>
     </message>
     <message>
         <source>Memory Card Editor...</source>
@@ -5739,15 +5830,15 @@ Achievements:%5 (%6点)
     </message>
     <message>
         <source>The memory card editor enables you to move saves between cards, as well as import cards of other formats.</source>
-        <translation>メモリカードエディタを使用すると、カード間でセーブデータを移動したり、他の形式のカードをインポートしたりできます。</translation>
+        <translation>メモリーカードエディタを使用すると、カード間でセーブデータを移動したり、&lt;br&gt;他の形式のカードをインポートできます。</translation>
     </message>
     <message>
         <source>When using a playlist (m3u) and per-game (title) memory cards, a single memory card will be used for all discs. If unchecked, a separate card will be used for each disc.</source>
-        <translation>プレイリスト（m3u）とゲームごと（タイトル）のメモリーカードを使用する場合、すべてのディスクに1枚のメモリーカードが使用されます。チェックを外すと、ディスクごとに別々のカードが使用されます。</translation>
+        <translation>プレイリスト（m3u）とゲームごと（ゲーム名）のメモリーカードを使用する場合、すべてのディスクに1枚のメモリーカードが使用されます。チェックを外すと、ディスクごとに別々のカードが使用されます。</translation>
     </message>
     <message>
         <source>Memory Card Type:</source>
-        <translation>メモリーカード タイプ :</translation>
+        <translation>メモリーカード 保存方法 :</translation>
     </message>
 </context>
 <context>
@@ -5838,11 +5929,11 @@ Achievements:%5 (%6点)
     <name>MemoryCardType</name>
     <message>
         <source>Separate Card Per Game (Game Title)</source>
-        <translation>ゲームごとに別々のカード（ゲームタイトル）</translation>
+        <translation>ゲームごとに別々のカード（ゲーム名）</translation>
     </message>
     <message>
         <source>Shared Between All Games</source>
-        <translation>すべてのゲームで共有</translation>
+        <translation>すべてのゲームでカードを共有する</translation>
     </message>
     <message>
         <source>No Memory Card</source>

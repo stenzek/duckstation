@@ -69,8 +69,12 @@ void NamcoGunCon::SetButtonState(Button button, bool pressed)
 {
   if (button == Button::ShootOffscreen)
   {
-    m_shoot_offscreen = pressed;
-    SetButtonState(Button::Trigger, pressed);
+    if (m_shoot_offscreen != pressed)
+    {
+      m_shoot_offscreen = pressed;
+      SetButtonState(Button::Trigger, pressed);
+    }
+
     return;
   }
 

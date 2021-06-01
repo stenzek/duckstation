@@ -16,11 +16,9 @@
     <string name="settings_emulation_speed">Emulatie Snelheid</string>
     <string name="settings_fast_forward_speed">Doorspoelsnelheid</string>
     <string name="settings_save_state_on_exit">Staat Opslaan Bij Afsluiten</string>
-    <string name="settings_pause_when_menu_opened">Pauze In Menus</string>
     <string name="settings_emulation_screen_orientation">Emulatie Schermorientatie</string>
     <string name="settings_load_patch_codes">Laad Patch Codes</string>
     <string name="settings_summary_save_state_on_exit">Slaat automatisch de emulator staat op bij afsluiten. Je kan dan de volgende keer verder vanaf waar je gebleven was.</string>
-    <string name="settings_summary_pause_when_menu_opened">Pauzeert de emulatie wanneer je in een spel bent en het menu geopend is.</string>
     <string name="settings_summary_load_patch_codes"><![CDATA[Laad patch codes van cheats/<game name>.cht in PCSXR formaat. Codes kunnen aan- en uitgeschakeld worden in-game.]]></string>
     <string name="settings_apply_compatibility_settings">Pas Compatibiliteitsinstellingen Toe</string>
     <string name="settings_summary_apply_compatibility_settings">Schakelt automatisch verbeteringen uit wanneer ze niet door spellen ondersteund worden.</string>

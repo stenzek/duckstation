@@ -492,7 +492,7 @@ float GPU::GetDisplayAspectRatio() const
   }
   else
   {
-    return Settings::GetDisplayAspectRatioValue(g_settings.display_aspect_ratio);
+    return g_settings.GetDisplayAspectRatioValue();
   }
 }
 
@@ -899,7 +899,7 @@ void GPU::CRTCTickEvent(TickCount ticks)
     m_crtc_state.active_line_lsb =
       Truncate8((m_crtc_state.regs.Y + BoolToUInt32(m_crtc_state.interlaced_display_field)) & u32(1));
     m_GPUSTAT.display_line_lsb = ConvertToBoolUnchecked(
-      (m_crtc_state.regs.Y + (BoolToUInt8(m_crtc_state.in_vblank) ^ m_crtc_state.interlaced_display_field)) & u32(1));
+      (m_crtc_state.regs.Y + (BoolToUInt8(!m_crtc_state.in_vblank) & m_crtc_state.interlaced_display_field)) & u32(1));
   }
   else
   {

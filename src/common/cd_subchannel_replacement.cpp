@@ -83,6 +83,11 @@ bool CDSubChannelReplacement::LoadSBI(const char* path)
   return true;
 }
 
+bool CDSubChannelReplacement::LoadSBIFromImagePath(const char* image_path)
+{
+  return LoadSBI(FileSystem::ReplaceExtension(image_path, "sbi").c_str());
+}
+
 void CDSubChannelReplacement::AddReplacementSubChannelQ(u32 lba, const CDImage::SubChannelQ& subq)
 {
   auto iter = m_replacement_subq.find(lba);

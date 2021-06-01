@@ -47,7 +47,7 @@ GPURenderer GPU_SW::GetRendererType() const
 
 bool GPU_SW::Initialize(HostDisplay* host_display)
 {
-  if (!GPU::Initialize(host_display) || !m_backend.Initialize())
+  if (!GPU::Initialize(host_display) || !m_backend.Initialize(false))
     return false;
 
   static constexpr auto formats_for_16bit = make_array(HostDisplayPixelFormat::RGB565, HostDisplayPixelFormat::RGBA5551,
@@ -482,7 +482,7 @@ void GPU_SW::ClearDisplay()
 void GPU_SW::UpdateDisplay()
 {
   // fill display texture
-  m_backend.Sync();
+  m_backend.Sync(true);
 
   if (!g_settings.debugging.show_vram)
   {
@@ -491,6 +491,11 @@ void GPU_SW::UpdateDisplay()
       m_host_display->ClearDisplayTexture();
       return;
     }
+
+    m_host_display->SetDisplayParameters(m_crtc_state.display_width, m_crtc_state.display_height,
+                                         m_crtc_state.display_origin_left, m_crtc_state.display_origin_top,
+                                         m_crtc_state.display_vram_width, m_crtc_state.display_vram_height,
+                                         GetDisplayAspectRatio());
 
     const u32 vram_offset_y = m_crtc_state.display_vram_top;
     const u32 display_width = m_crtc_state.display_vram_width;
@@ -525,11 +530,6 @@ void GPU_SW::UpdateDisplay()
                      display_height, 0, false, false);
       }
     }
-
-    m_host_display->SetDisplayParameters(m_crtc_state.display_width, m_crtc_state.display_height,
-                                         m_crtc_state.display_origin_left, m_crtc_state.display_origin_top,
-                                         m_crtc_state.display_vram_width, m_crtc_state.display_vram_height,
-                                         GetDisplayAspectRatio());
   }
   else
   {
@@ -539,7 +539,7 @@ void GPU_SW::UpdateDisplay()
   }
 }
 
-void GPU_SW::FillBackendCommandParameters(GPUBackendCommand* cmd)
+void GPU_SW::FillBackendCommandParameters(GPUBackendCommand* cmd) const
 {
   cmd->params.bits = 0;
   cmd->params.check_mask_before_draw = m_GPUSTAT.check_mask_before_draw;
@@ -548,7 +548,7 @@ void GPU_SW::FillBackendCommandParameters(GPUBackendCommand* cmd)
   cmd->params.interlaced_rendering = IsInterlacedRenderingEnabled();
 }
 
-void GPU_SW::FillDrawCommand(GPUBackendDrawCommand* cmd, GPURenderCommand rc)
+void GPU_SW::FillDrawCommand(GPUBackendDrawCommand* cmd, GPURenderCommand rc) const
 {
   FillBackendCommandParameters(cmd);
   cmd->rc.bits = rc.bits;
@@ -824,7 +824,7 @@ void GPU_SW::DispatchRenderCommand()
 
 void GPU_SW::ReadVRAM(u32 x, u32 y, u32 width, u32 height)
 {
-  m_backend.Sync();
+  m_backend.Sync(false);
 }
 
 void GPU_SW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)

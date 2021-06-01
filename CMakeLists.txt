@@ -24,6 +24,7 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET "10.14.0" CACHE STRING "")
 if(NOT ANDROID)
   option(BUILD_NOGUI_FRONTEND "Build the NoGUI frontend" ON)
   option(BUILD_QT_FRONTEND "Build the Qt frontend" ON)
+  option(BUILD_LIBRETRO_CORE "Build a libretro core" OFF)
   option(ENABLE_DISCORD_PRESENCE "Build with Discord Rich Presence support" ON)
   option(ENABLE_CHEEVOS "Build with RetroAchievements support" ON)
   option(USE_SDL2 "Link with SDL2 for controller support" ON)
@@ -40,7 +41,7 @@ endif()
 if((LINUX OR FREEBSD) OR ANDROID)
   option(USE_EGL "Support EGL OpenGL context creation" ON)
 endif()
-if((LINUX OR FREEBSD) AND NOT ANDROID)
+if((LINUX OR FREEBSD) AND NOT ANDROID AND NOT BUILD_LIBRETRO_CORE)
   option(USE_DRMKMS "Support DRM/KMS OpenGL contexts" OFF)
   option(USE_FBDEV "Support FBDev OpenGL contexts" OFF)
   option(USE_EVDEV "Support EVDev controller interface" ON)
@@ -77,6 +78,40 @@ if(ANDROID)
 
   # Cheevos are always on.
   set(ENABLE_CHEEVOS ON)
+endif()
+
+
+# Disable platform integration when building for libretro.
+if(BUILD_LIBRETRO_CORE)
+  message("Building libretro core, disabling platform integration.")
+
+  if(USE_EGL)
+    set(USE_EGL OFF)
+  endif()
+  if(BUILD_NOGUI_FRONTEND)
+    set(BUILD_NOGUI_FRONTEND OFF)
+  endif()
+  if(BUILD_QT_FRONTEND)
+    set(BUILD_QT_FRONTEND OFF)
+  endif()
+  if(ENABLE_DISCORD_PRESENCE)
+    set(ENABLE_DISCORD_PRESENCE OFF)
+  endif()
+  if(ENABLE_CHEEVOS)
+    set(ENABLE_CHEEVOS OFF)
+  endif()
+  if(USE_SDL2)
+    set(USE_SDL2 OFF)
+  endif()
+  if(USE_X11)
+    set(USE_X11 OFF)
+  endif()
+  if(USE_WAYLAND)
+    set(USE_WAYLAND OFF)
+  endif()
+
+  # Force PIC when compiling a libretro core.
+  set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 endif()
 
 
@@ -158,8 +193,8 @@ if(MSVC)
     # Set warning level 3 instead of 4.
     string(REPLACE "/W3" "/W4" ${config} "${${config}}")
 
-    # Enable intrinsic functions, disable minimal rebuild, UTF-8 source.
-    set(${config} "${${config}} /Oi /Gm- /utf-8")
+    # Enable intrinsic functions, disable minimal rebuild, UTF-8 source, set __cplusplus version.
+    set(${config} "${${config}} /Oi /Gm- /utf-8 /Zc:__cplusplus")
   endforeach()
 
   # RelWithDebInfo is set to Ob1 instead of Ob2.   
@@ -204,21 +239,21 @@ endif()
 
 
 # Detect processor type.
-if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64" OR ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "amd64")
-  set(CPU_ARCH "x64")
-elseif(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "AMD64")
-  # MSVC x86/x64
+if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64" OR ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "amd64" OR
+   ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "AMD64")
   if(CMAKE_SIZEOF_VOID_P EQUAL 8)
     set(CPU_ARCH "x64")
   else()
+    # Cross-compiling 32-bit build. 32-bit hosts are not supported.
     set(CPU_ARCH "x86")
   endif()
 elseif(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86" OR ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "i386" OR
        ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "i686")
   set(CPU_ARCH "x86")
-elseif(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
+elseif(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64" OR ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "arm64")
   set(CPU_ARCH "aarch64")
-elseif(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "arm" OR ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "armv7-a" OR ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "armv7l")
+elseif(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "arm" OR ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "armv7-a" OR
+       ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "armv7l")
   set(CPU_ARCH "aarch32")
   if(ANDROID)
     # Force ARM mode, since apparently ANDROID_ARM_MODE isn't working..
@@ -235,7 +270,7 @@ endif()
 
 
 # Write binaries to a seperate directory.
-if(WIN32)
+if(WIN32 AND NOT BUILD_LIBRETRO_CORE)
   # For Windows, use the source directory, except for libretro.
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin/${CPU_ARCH}")
 else()
@@ -251,11 +286,18 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
 
+# Enable large file support on Linux 32-bit platforms.
+# Android is deliberately ommitted here as it didn't support 64-bit ops on files until Android 7/N.
+if((LINUX OR FREEBSD) AND (${CPU_ARCH} STREQUAL "x86" OR ${CPU_ARCH} STREQUAL "aarch32"))
+  add_definitions("-D_FILE_OFFSET_BITS=64")
+endif()
+
+
 # Recursively include the source tree.
 enable_testing()
 add_subdirectory(dep)
 add_subdirectory(src)
 
-if(ANDROID)
+if(ANDROID AND NOT BUILD_LIBRETRO_CORE)
   add_subdirectory(android/app/src/cpp)
 endif()
