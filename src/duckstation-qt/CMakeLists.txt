@@ -129,6 +129,7 @@ set(TS_FILES
   translations/duckstation-qt_pt-br.ts
   translations/duckstation-qt_pt-pt.ts
   translations/duckstation-qt_ru.ts
+  translations/duckstation-qt_tr.ts
   translations/duckstation-qt_zh-cn.ts
 )
 

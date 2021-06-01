@@ -89,7 +89,6 @@
     <ClInclude Include="settingwidgetbinder.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="inputbindingmonitor.h" />
-    <ClInclude Include="collapsiblewidget.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="resources">
@@ -138,6 +137,7 @@
     <QtMoc Include="emulationsettingswidget.h" />
     <QtMoc Include="achievementsettingswidget.h" />
     <QtMoc Include="achievementlogindialog.h" />
+    <QtMoc Include="collapsiblewidget.h" />
   </ItemGroup>
   <ItemGroup>
     <QtUi Include="consolesettingswidget.ui" />
@@ -179,6 +179,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="debuggerwindow.ui" />
+    <None Include="translations\duckstation-qt_tr.ts">
+      <Filter>translations</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <QtTs Include="translations\duckstation-qt_de.ts">

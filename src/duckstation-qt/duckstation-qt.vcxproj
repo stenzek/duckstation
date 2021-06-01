@@ -328,6 +328,7 @@
     </QtTs>
   </ItemGroup>
   <ItemGroup>
+    <None Include="translations\duckstation-qt_tr.ts" />
     <QtUi Include="achievementsettingswidget.ui">
       <FileType>Document</FileType>
     </QtUi>
