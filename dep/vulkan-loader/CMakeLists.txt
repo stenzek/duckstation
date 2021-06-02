@@ -1,4 +1,5 @@
 set(SRCS
+	include/vulkan_entry_points.h
 	include/vulkan_loader.h
 	include/vulkan/vulkan_android.h
 	include/vulkan/vulkan_win32.h

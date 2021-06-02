@@ -92,14 +92,7 @@
 
 #endif
 
-// We abuse the preprocessor here to only need to specify function names once.
-#define VULKAN_MODULE_ENTRY_POINT(name, required) extern PFN_##name name;
-#define VULKAN_INSTANCE_ENTRY_POINT(name, required) extern PFN_##name name;
-#define VULKAN_DEVICE_ENTRY_POINT(name, required) extern PFN_##name name;
-#include "vulkan_entry_points.inl"
-#undef VULKAN_DEVICE_ENTRY_POINT
-#undef VULKAN_INSTANCE_ENTRY_POINT
-#undef VULKAN_MODULE_ENTRY_POINT
+#include "vulkan_entry_points.h"
 
 namespace Vulkan {
 

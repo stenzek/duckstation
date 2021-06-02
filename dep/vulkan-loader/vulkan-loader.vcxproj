@@ -70,6 +70,7 @@
     <ClInclude Include="include\vulkan\vulkan_xcb.h" />
     <ClInclude Include="include\vulkan\vulkan_xlib.h" />
     <ClInclude Include="include\vulkan\vulkan_xlib_xrandr.h" />
+    <ClInclude Include="include\vulkan_entry_points.h" />
     <ClInclude Include="include\vulkan_loader.h" />
   </ItemGroup>
   <ItemGroup>

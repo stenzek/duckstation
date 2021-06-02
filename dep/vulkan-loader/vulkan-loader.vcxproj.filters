@@ -59,6 +59,7 @@
     <ClInclude Include="include\vulkan\vulkan_core.h">
       <Filter>vulkan</Filter>
     </ClInclude>
+    <ClInclude Include="include\vulkan_entry_points.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="vulkan">

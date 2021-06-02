@@ -20,9 +20,9 @@
 #include <mach-o/dyld.h>
 #endif
 
-#define VULKAN_MODULE_ENTRY_POINT(name, required) PFN_##name name;
-#define VULKAN_INSTANCE_ENTRY_POINT(name, required) PFN_##name name;
-#define VULKAN_DEVICE_ENTRY_POINT(name, required) PFN_##name name;
+#define VULKAN_MODULE_ENTRY_POINT(name, required) PFN_##name ds_##name;
+#define VULKAN_INSTANCE_ENTRY_POINT(name, required) PFN_##name ds_##name;
+#define VULKAN_DEVICE_ENTRY_POINT(name, required) PFN_##name ds_##name;
 #include "vulkan_entry_points.inl"
 #undef VULKAN_DEVICE_ENTRY_POINT
 #undef VULKAN_INSTANCE_ENTRY_POINT
@@ -32,9 +32,9 @@ namespace Vulkan {
 
 void ResetVulkanLibraryFunctionPointers()
 {
-#define VULKAN_MODULE_ENTRY_POINT(name, required) name = nullptr;
-#define VULKAN_INSTANCE_ENTRY_POINT(name, required) name = nullptr;
-#define VULKAN_DEVICE_ENTRY_POINT(name, required) name = nullptr;
+#define VULKAN_MODULE_ENTRY_POINT(name, required) ds_##name = nullptr;
+#define VULKAN_INSTANCE_ENTRY_POINT(name, required) ds_##name = nullptr;
+#define VULKAN_DEVICE_ENTRY_POINT(name, required) ds_##name = nullptr;
 #include "vulkan_entry_points.inl"
 #undef VULKAN_DEVICE_ENTRY_POINT
 #undef VULKAN_INSTANCE_ENTRY_POINT
