@@ -5,9 +5,9 @@
 
 **Latest Builds for Windows, Linux (AppImage), and Android** https://github.com/stenzek/duckstation/releases/tag/latest
 
-**Available on Google Play:** https://play.google.com/store/apps/details?id=com.github.stenzek.duckstation&hl=en_AU&gl=US
+**Available on Google Play:** https://play.google.com/store/apps/details?id=com.github.stenzek.duckstation
 
-**Game Compatibility List:** https://docs.google.com/spreadsheets/d/1H66MxViRjjE5f8hOl5RQmF5woS1murio2dsLn14kEqo/edit?usp=sharing
+**Game Compatibility List:** https://docs.google.com/spreadsheets/d/1H66MxViRjjE5f8hOl5RQmF5woS1murio2dsLn14kEqo/edit
 
 **Wiki:** https://www.duckstation.org/wiki/
 
@@ -34,20 +34,6 @@ Older entries are available at https://github.com/stenzek/duckstation/blob/maste
 - 2021/01/31: "Fullscreen UI" added, aka "Big Duck/TV Mode". This interface is fully navigatible with a controller. Currently it's limited to the NoGUI frontend, but it will be available directly in the Qt frontend in the near future, with more features being added (e.g. game grid) as well.
 - 2021/01/24: Runahead added - work around input lag in some games by running frames ahead of time and backtracking on input. DuckStation's implementation works with upscaling and the hardware renderers, but you still require a powerful computer for higher frame counts.
 - 2021/01/24: Rewind added - you can now "smooth rewind" (but not for long), or "skip rewind" (for much long) while playing.
-- 2021/01/10: Option to sync to host refresh rate added (enabled by default). This will give the smoothest animation possible with zero duped frames, at the cost of running the game <1% faster. Users with variable refresh rate (GSync/FreeSync) displays will want to disable the option.
-- 2021/01/10: Audio resampling added when fast forwarding to fixed speeds. Instead of crackling audio, you'll now get pitch altered audio.
-- 2021/01/03: Per game settings and game properties added to Android version.
-- 2020/12/30: Box and Adaptive downsampling modes added. Adaptive downsampling will smooth 2D backgrounds but attempt to preserve 3D geometry via pixel similarity (only supported in D3D11/Vulkan). Box is a simple average filter which will downsample to native resolution.
-- 2020/12/30: Hotkey binding added to Android version. You can now bind hotkeys such as fast forward, save state, etc to controller buttons. The ability to bind multi-button combinations will be added in the future.
-- 2020/12/29: Controller mapping/binding added for Android version. By default mappings will be clear and you will have to set them, you can do this from `Settings -> Controllers -> Controller Mapping`. Profiles can be saved and loaded as well.
-- 2020/12/29: Dark theme added for Android. By default it will follow your system theme (Android 10+), but can be overridden in settings.
-- 2020/12/29: DirectInput/DInput controller interface added for Windows. You can use this if you are having difficulties with SDL. Vibration is not supported yet.
-- 2020/12/25: Partial texture replacement support added. For now, this is only applicable to a small number of games which upload backgrounds to video RAM every frame. Dumping and replacement options are available in `Advanced Settings`.
-- 2020/12/22: PGXP Depth Buffer enhancement added. This enhancement can eliminate "polygon fighting" in games, by giving the PS1 the depth buffer it never had. Compatibility is rather low at the moment, but for the games it does work in, it works very well. The depth buffer will be made available to postprocessing shaders in the future, enabling  effects such as SSAO.
-- 2020/12/21: DuckStation now has two releases - Development and Preview. New features will appear in Preview first, and make their way to the Development release a few days later. To switch to preview, update to the latest development build (older builds will update to development), change the channel from `latest` to `preview` in general settings, and click `Check for Updates`.
-- 2020/12/16: Integrated CPU debugger added in Qt frontend.
-- 2020/12/13: Button layout for the touchscreen controller in the Android version can now be customized.
-- 2020/12/10: Translation support added for Android version. Currently Brazillian Portuguese, Italian, and Dutch are available.
 
 ## Features
 
@@ -85,6 +71,7 @@ Other features include:
  - Integrated and remote debugging
  - Multitap controllers (up to 8 devices)
  - RetroAchievements
+ - Automatic loading/applying of PPF patches
 
 ## System Requirements
  - A CPU faster than a potato. But it needs to be x86_64, AArch32/armv7, or AArch64/ARMv8, otherwise you won't get a recompiler and it'll be slow.
@@ -92,7 +79,7 @@ Other features include:
  - SDL, XInput or DInput compatible game controller (e.g. XB360/XBOne). DualShock 3 users on Windows will need to install the official DualShock 3 drivers included as part of PlayStation Now.
 
 ## Downloading and running
-Binaries of DuckStation for Windows x64/ARM64, x86_64 Linux x86_64 (in AppImage format), and Android ARMv8/AArch64 are available via GitHub Releases and are automatically built with every commit/push. Binaries or packages distributed through other sources may be out of date and are not supported by the developer.
+Binaries of DuckStation for Windows x64/ARM64, Linux x86_64 (in AppImage format), and Android ARMv7/ARMv8 are available via GitHub Releases and are automatically built with every commit/push. Binaries or packages distributed through other sources may be out of date and are not supported by the developer, please speak to them for support, not us.
 
 ### Windows
 
@@ -128,14 +115,6 @@ To download:
  - Run `chmod a+x` on the downloaded AppImage -- following this step, the AppImage can be run like a typical executable.
  - Optionally use a program such as [appimaged](https://github.com/AppImage/appimaged) or [AppImageLauncher](https://github.com/TheAssassin/AppImageLauncher) for desktop integration. [AppImageUpdate](https://github.com/AppImage/AppImageUpdate) can be used alongside appimaged to easily update your DuckStation AppImage.
 
-#### [Unofficial] Flatpak
-
-No support for the flatpak package will be provided, any emulator issues must be verified with the AppImage or a source build before being reported.
-
-Flatpak issues can be reported at https://github.com/flathub/org.duckstation.DuckStation/issues.
-
-Follow the instructions at https://github.com/flathub/org.duckstation.DuckStation
-
 ### macOS
 
 MacOS builds are no longer provided, as I cannot support a platform which I do not own hardware for, and I'm not spending $1000+ out of my own pocket for a machine which I have no other use for.
@@ -144,7 +123,6 @@ You can still build from [source](#building), but you will have to debug any iss
 
 If anyone is willing to volunteer to support the platform to ensure users have a good experience, I'm more than happy to re-enable the releases.
 
-
 ### Android
 
 A prebuilt APK is now available for Android. However, please keep in mind that the Android version does not contain all features present in the desktop version yet. You will need a device with armv7 (32-bit ARM) or AArch64 (64-bit ARM). 64-bit is preferred, the requirements are higher for 32-bit, you'll probably want at least a 1.5GHz CPU.
@@ -152,12 +130,24 @@ A prebuilt APK is now available for Android. However, please keep in mind that t
 Download link: https://github.com/stenzek/duckstation/releases/download/latest/duckstation-android.apk
 
 To use:
- - Install and run the app for the first time.
- - This will create `/sdcard/duckstation`. Drop your BIOS files in `/sdcard/duckstation/bios`.
- - Add game directories by hitting the `+` icon and selecting a directory.
- - Map your controller buttons and axes by going into `Controller Mapping` under `Controllers` in `Settings`.
- - Tap a game to start.
+1. Install and run the app for the first time.
+2. Add game directories by hitting the + icon and selecting a directory.
+3. Tap a game to start. When you start a game for the first time it will prompt you to import a BIOS image.
 
+### Libretro Core
+
+DuckStation is available as a libretro core, which can be loaded into a frontend such as RetroArch. It supports most features of the full frontend, within the constraints and limitations of being a libretro core.
+
+The DuckStation libretro core is not covered by the GPL license, but is still completely free to use. The only restriction is that COMMERCIAL DISTRIBUTION IS PROHIBITED. By downloading the libretro core, you agree that you will not distribute it with any paid applications, services, or products.
+
+The core is maintained by a third party, and is not provided as part of the GitHub release. You can download the core through the RetroArch buildbot/core updater, or from the links below:
+
+- Windows x64 (64-bit): https://www.duckstation.org/libretro/duckstation_libretro_windows_x64.zip
+- Android AArch64 (64-bit): https://www.duckstation.org/libretro/duckstation_libretro_android_aarch64.zip
+- Android armv7 (32-bit): https://www.duckstation.org/libretro/duckstation_libretro_android_armv7.zip
+- Linux x64 (64-bit): https://www.duckstation.org/libretro/duckstation_libretro_linux_x64.zip
+- Linux AArch64 (64-bit): https://www.duckstation.org/libretro/duckstation_libretro_linux_aarch64.zip
+- Linux armv7 (32-bit): https://www.duckstation.org/libretro/duckstation_libretro_linux_armv7.zip
 
 ### Region detection and BIOS images
 By default, DuckStation will emulate the region check present in the CD-ROM controller of the console. This means that when the region of the console does not match the disc, it will refuse to boot, giving a "Please insert PlayStation CD-ROM" message. DuckStation supports automatic detection disc regions, and if you set the console region to auto-detect as well, this should never be a problem.
@@ -177,21 +167,6 @@ A number of PAL region games use LibCrypt protection, requiring additional CD su
 For these games, make sure that the CD image and its corresponding SBI (.sbi) file have the same name and are placed in the same directory. DuckStation will automatically load the SBI file when it is found next to the CD image.
 
 For example, if your disc image was named `Spyro3.cue`, you would place the SBI file in the same directory, and name it `Spyro3.sbi`.
-
-## Libretro Core
-
-DuckStation is available as a libretro core, which can be loaded into a frontend such as RetroArch. It supports most features of the full frontend, within the constraints and limitations of being a libretro core.
-
-The DuckStation libretro core is not covered by the GPL license, but is still completely free to use. The only restriction is that COMMERCIAL DISTRIBUTION IS PROHIBITED. By downloading the libretro core, you agree that you will not distribute it with any paid applications, services, or products.
-
-The core is maintained by a third party, and is not provided as part of the GitHub release. You can download the core through the RetroArch buildbot/core updater, or from the links below:
-
-- Windows x64 (64-bit): https://www.duckstation.org/libretro/duckstation_libretro_windows_x64.zip
-- Android AArch64 (64-bit): https://www.duckstation.org/libretro/duckstation_libretro_android_aarch64.zip
-- Android armv7 (32-bit): https://www.duckstation.org/libretro/duckstation_libretro_android_armv7.zip
-- Linux x64 (64-bit): https://www.duckstation.org/libretro/duckstation_libretro_linux_x64.zip
-- Linux AArch64 (64-bit): https://www.duckstation.org/libretro/duckstation_libretro_linux_aarch64.zip
-- Linux armv7 (32-bit): https://www.duckstation.org/libretro/duckstation_libretro_linux_armv7.zip
 
 ## Building
 
@@ -235,18 +210,9 @@ Requirements:
 1. Clone the repository. Submodules aren't necessary, there is only one and it is only used for Windows (`git clone https://github.com/stenzek/duckstation.git -b dev`).
 2. Clone the mac externals repository (for MoltenVK): `git clone https://github.com/stenzek/duckstation-ext-mac.git dep/mac`.
 2. Create a build directory, either in-tree or elsewhere, e.g. `mkdir build-release`, `cd build-release`.
-3. Run cmake to configure the build system: `cmake -DCMAKE_BUILD_TYPE=Release -DQt5_DIR=/usr/local/opt/qt/lib/cmake/Qt5 ..`. You may need to tweak `Qt5_DIR` depending on your system.
+3. Run cmake to configure the build system: `cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_NOGUI_FRONTEND=OFF -DBUILD_QT_FRONTEND=ON -DUSE_SDL2=ON -DQt5_DIR=/usr/local/opt/qt@5/lib/cmake/Qt5 ..`. You may need to tweak `Qt5_DIR` depending on your system.
 4. Compile the source code: `make`. Use `make -jN` where `N` is the number of CPU cores in your system for a faster build.
 5. Run the binary, located in the build directory under `bin/DuckStation.app`.
-
-### Android
-Requirements:
- - Android Studio with the NDK and CMake installed
-
-1. Clone the repository. Submodules aren't necessary, there is only one and it is only used for Windows.
-2. Open the project in the `android` directory.
-3. Select Build -> Build Bundle(s) / APKs(s) -> Build APK(s).
-4. Install APK on device, or use Run menu for attached device.
 
 ## User Directories
 The "User Directory" is where you should place your BIOS images, where settings are saved to, and memory cards/save states are saved by default.
