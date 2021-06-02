@@ -1957,68 +1957,68 @@ Tek kullanımlık giriş kodu (access token) oluşturulma tarihi: %2.</translati
         <location filename="../consolesettingswidget.ui" line="227"/>
         <location filename="../consolesettingswidget.cpp" line="86"/>
         <source>Apply Image Patches</source>
-        <translation type="unfinished"></translation>
+        <translation>CD Yamalarını Uygula</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="236"/>
         <source>Seek Speedup:</source>
-        <translation type="unfinished"></translation>
+        <translation>CD Dosya Arama Hızlandırması:</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="247"/>
         <source>Infinite/Instantaneous</source>
-        <translation type="unfinished"></translation>
+        <translation>Hemen/Anında</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="252"/>
         <location filename="../consolesettingswidget.cpp" line="74"/>
         <source>None (Normal Speed)</source>
-        <translation type="unfinished"></translation>
+        <translation>Hiç (Normal Hız)</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="257"/>
         <source>2x</source>
-        <translation type="unfinished">2 Katı</translation>
+        <translation>2x</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="262"/>
         <source>3x</source>
-        <translation type="unfinished">16 Katı {3x?}</translation>
+        <translation>3x</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="267"/>
         <source>4x</source>
-        <translation type="unfinished">4 Katı</translation>
+        <translation>4x</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="272"/>
         <source>5x</source>
-        <translation type="unfinished">16 Katı {5x?}</translation>
+        <translation>5x</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="277"/>
         <source>6x</source>
-        <translation type="unfinished">16 Katı {6x?}</translation>
+        <translation>6x</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="282"/>
         <source>7x</source>
-        <translation type="unfinished">7 Katı</translation>
+        <translation>7x</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="287"/>
         <source>8x</source>
-        <translation type="unfinished">8 Katı</translation>
+        <translation>8x</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="292"/>
         <source>9x</source>
-        <translation type="unfinished">16 Katı {9x?}</translation>
+        <translation>9x</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="297"/>
         <source>10x</source>
-        <translation type="unfinished">10 Katı</translation>
+        <translation>10x</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="308"/>
@@ -2109,7 +2109,7 @@ Tek kullanımlık giriş kodu (access token) oluşturulma tarihi: %2.</translati
     <message>
         <location filename="../consolesettingswidget.cpp" line="70"/>
         <source>CD-ROM Read Speedup</source>
-        <translation type="unfinished"></translation>
+        <translation>CD-ROM Okuma Hızlandırma</translation>
     </message>
     <message>
         <source>CDROM Read Speedup</source>
@@ -2123,12 +2123,12 @@ Tek kullanımlık giriş kodu (access token) oluşturulma tarihi: %2.</translati
     <message>
         <location filename="../consolesettingswidget.cpp" line="74"/>
         <source>CD-ROM Seek Speedup</source>
-        <translation type="unfinished"></translation>
+        <translation>CD-ROM Arama Hızlandırma</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="75"/>
         <source>Reduces the simulated time for the CD-ROM sled to move to different areas of the disc. Can improve loading times, but crash games which do not expect the CD-ROM to operate faster.</source>
-        <translation type="unfinished"></translation>
+        <translation>Simülasyondaki CD-ROM&apos;un hareketlerini hızlandırır. Yükleme sürelerini iyileştirebilir ama CD-ROM&apos;un hızlı çalışmasına uyarlanamayan oyunları çökertebilir.</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="78"/>
@@ -2149,7 +2149,7 @@ Tek kullanımlık giriş kodu (access token) oluşturulma tarihi: %2.</translati
     <message>
         <location filename="../consolesettingswidget.cpp" line="87"/>
         <source>Automatically applies patches to disc images when they are present in the same directory. Currently only PPF patches are supported with this option.</source>
-        <translation type="unfinished"></translation>
+        <translation>Aynı dizindeki yama dosyalarını otomatik olarak yükler. Şimdilik sadece PPF yamaları desteklenmekte.</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="90"/>
@@ -4419,62 +4419,62 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     <message>
         <location filename="../gamepropertiesdialog.ui" line="340"/>
         <source>CD-ROM Seek Speedup:</source>
-        <translation type="unfinished"></translation>
+        <translation>CD-ROM Dosya Arama Hızı Hızlandırma:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="356"/>
         <source>Infinite/Instantaneous</source>
-        <translation type="unfinished"></translation>
+        <translation>Hemen/Anında</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="361"/>
         <source>None (Normal Speed)</source>
-        <translation type="unfinished"></translation>
+        <translation>Hiç (Normal Hız)</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="366"/>
         <source>2x</source>
-        <translation type="unfinished">2 Katı</translation>
+        <translation>2x</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="371"/>
         <source>3x</source>
-        <translation type="unfinished">16 Katı {3x?}</translation>
+        <translation>3x</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="376"/>
         <source>4x</source>
-        <translation type="unfinished">4 Katı</translation>
+        <translation>4x</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="381"/>
         <source>5x</source>
-        <translation type="unfinished">16 Katı {5x?}</translation>
+        <translation>5x</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="386"/>
         <source>6x</source>
-        <translation type="unfinished">16 Katı {6x?}</translation>
+        <translation>6x</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="391"/>
         <source>7x</source>
-        <translation type="unfinished">7 Katı</translation>
+        <translation>7x</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="396"/>
         <source>8x</source>
-        <translation type="unfinished">8 Katı</translation>
+        <translation>8x</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="401"/>
         <source>9x</source>
-        <translation type="unfinished">16 Katı {9x?}</translation>
+        <translation>9x</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="406"/>
         <source>10x</source>
-        <translation type="unfinished">10 Katı</translation>
+        <translation>10x</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="414"/>
@@ -4539,7 +4539,7 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     <message>
         <location filename="../gamepropertiesdialog.ui" line="502"/>
         <source>User Settings (Graphics)</source>
-        <translation type="unfinished"></translation>
+        <translation>Kullanıcı Ayarları (Grafikler)</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="749"/>
@@ -6600,12 +6600,12 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     <message>
         <location filename="../../core/settings.cpp" line="910"/>
         <source>Separate Card Per Game (File Title)</source>
-        <translation type="unfinished"></translation>
+        <translation>Her Oyuna Ayrı (Dosya İsmine Göre)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="911"/>
         <source>Non-Persistent Card (Do Not Save)</source>
-        <translation type="unfinished"></translation>
+        <translation>Kullan At Kart (Kartı Kayıt Etme)</translation>
     </message>
 </context>
 <context>
@@ -6952,7 +6952,7 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     <message>
         <location filename="../../core/system.cpp" line="675"/>
         <source>Failed to apply ppf patch from &apos;%s&apos;, using unpatched image.</source>
-        <translation type="unfinished"></translation>
+        <translation>Şu dosyadaki ppf yaması kullanılamadı &apos;%s&apos;, Yamasız dosya kullanılacak.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="920"/>
@@ -6967,12 +6967,12 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     <message>
         <location filename="../../core/system.cpp" line="937"/>
         <source>CD-ROM seek speedup set to instant. This may result in instability.</source>
-        <translation type="unfinished"></translation>
+        <translation>CD-ROM arama hızı anında bulunacak şekilde ayarlandı. Dengesizlikler oluşabilir.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="945"/>
         <source>CD-ROM seek speedup set to %ux. This may result in instability.</source>
-        <translation type="unfinished"></translation>
+        <translation>CD-ROM dosya arama hızı şimdi %ux. Bu dengesizliğe sebep olabilir.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="1019"/>
@@ -7593,19 +7593,19 @@ Açılamayan URL: %1</translation>
         <location filename="../qthostinterface.cpp" line="968"/>
         <location filename="../qthostinterface.cpp" line="978"/>
         <source>From File...</source>
-        <translation type="unfinished">Dosyadan...</translation>
+        <translation>Dosyadan...</translation>
     </message>
     <message>
         <location filename="../qthostinterface.cpp" line="970"/>
         <location filename="../qthostinterface.cpp" line="983"/>
         <source>Select Save State File</source>
-        <translation type="unfinished"></translation>
+        <translation>Durum Kaydı Dosyasını Seç</translation>
     </message>
     <message>
         <location filename="../qthostinterface.cpp" line="970"/>
         <location filename="../qthostinterface.cpp" line="983"/>
         <source>Save States (*.sav)</source>
-        <translation type="unfinished"></translation>
+        <translation>Durum Kayıtları (*.sav)</translation>
     </message>
     <message>
         <location filename="../qthostinterface.cpp" line="994"/>
@@ -7981,7 +7981,7 @@ Başarımlar: %5 (%6)
     <message>
         <location filename="../../core/system.cpp" line="1865"/>
         <source>Per-game memory card cannot be used for slot %u as the running game has no path. Using shared card instead.</source>
-        <translation type="unfinished"></translation>
+        <translation>Şu slottaki oyun başlı hafıza kartı kullanılamıyor %u Çünkü çalışmakta olan oyunun bir dizini yok. Oyunlar arası paylaşılan kart kullanılıyor şimdi.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="2037"/>
