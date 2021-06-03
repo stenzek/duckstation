@@ -20,6 +20,8 @@ DInputControllerInterface::DInputControllerInterface() = default;
 
 DInputControllerInterface::~DInputControllerInterface()
 {
+  m_controllers.clear();
+  m_dinput.Reset();
   if (m_dinput_module)
     FreeLibrary(m_dinput_module);
 }
