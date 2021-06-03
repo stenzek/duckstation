@@ -57,7 +57,6 @@ AchievementSettingsWidget::~AchievementSettingsWidget() = default;
 void AchievementSettingsWidget::updateEnableState()
 {
   const bool enabled = m_host_interface->GetBoolSettingValue("Cheevos", "Enabled", false);
-  const bool challenge_mode = m_host_interface->GetBoolSettingValue("Cheevos", "ChallengeMode", false);
   m_ui.testMode->setEnabled(enabled);
   m_ui.useFirstDiscFromPlaylist->setEnabled(enabled);
   m_ui.richPresence->setEnabled(enabled);

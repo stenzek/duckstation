@@ -143,6 +143,9 @@ bool MemoryArena::Create(size_t size, bool writable, bool executable)
     return false;
   }
 
+  m_size = size;
+  m_writable = writable;
+  m_executable = executable;
   return true;
 #elif defined(__ANDROID__)
   m_shmem_fd = AshmemCreateFileMapping(file_mapping_name.c_str(), size);
@@ -152,6 +155,9 @@ bool MemoryArena::Create(size_t size, bool writable, bool executable)
     return false;
   }
 
+  m_size = size;
+  m_writable = writable;
+  m_executable = executable;
   return true;
 #elif defined(__linux__)
   m_shmem_fd = shm_open(file_mapping_name.c_str(), O_CREAT | O_EXCL | (writable ? O_RDWR : O_RDONLY), 0600);
@@ -171,6 +177,9 @@ bool MemoryArena::Create(size_t size, bool writable, bool executable)
     return false;
   }
 
+  m_size = size;
+  m_writable = writable;
+  m_executable = executable;
   return true;
 #elif defined(__APPLE__) || defined(__FreeBSD__)
 #if defined(__APPLE__)
@@ -197,6 +206,9 @@ bool MemoryArena::Create(size_t size, bool writable, bool executable)
     return false;
   }
 
+  m_size = size;
+  m_writable = writable;
+  m_executable = executable;
   return true;
 #else
   return false;

@@ -98,7 +98,7 @@ static constexpr bool HostIsLittleEndian()
   {
     u8 a[4];
     u32 b;
-  } test_val = {1};
+  } test_val = {{1}};
 
   return test_val.a[0] == 1;
 }

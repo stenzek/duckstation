@@ -77,11 +77,11 @@ bool CDImagePPF::Open(const char* filename, std::unique_ptr<CDImage> parent_imag
   m_indices = parent_image->GetIndices();
   m_parent_image = std::move(parent_image);
 
-  if (magic == '3FPP')
+  if (magic == 0x33465050) // PPF3
     return ReadV3Patch(fp.get());
-  else if (magic == '2FPP')
+  else if (magic == 0x32465050) // PPF2
     return ReadV2Patch(fp.get());
-  else if (magic == '1FPP')
+  else if (magic == 0x31465050) // PPF1
     return ReadV1Patch(fp.get());
 
   Log_ErrorPrintf("Unknown PPF magic %08X", magic);
@@ -99,7 +99,7 @@ u32 CDImagePPF::ReadFileIDDiz(std::FILE* fp, u32 version)
     return 0;
   }
 
-  if (magic != 'ZID.')
+  if (magic != 0x5A49442E) // .DIZ
     return 0;
 
   u32 dlen = 0;

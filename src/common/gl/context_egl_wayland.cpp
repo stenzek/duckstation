@@ -1,7 +1,5 @@
 #include "context_egl_wayland.h"
-#include "../log.h"
 #include <wayland-egl.h>
-Log_SetChannel(GL::ContextEGLWayland);
 
 namespace GL {
 ContextEGLWayland::ContextEGLWayland(const WindowInfo& wi) : ContextEGL(wi) {}

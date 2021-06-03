@@ -40,7 +40,6 @@ static constexpr std::array<u32, 256> ComputeEDCLUT()
   std::array<u32, 256> edc_lut{};
   for (u32 i = 0; i < 256; i++)
   {
-    u32 j = (i << 1) ^ (i & 0x80 ? 0x11D : 0);
     u32 edc = i;
     for (u32 k = 0; k < 8; k++)
       edc = (edc >> 1) ^ (edc & 1 ? 0xD8018001 : 0);
@@ -252,7 +251,6 @@ bool CDImageEcm::Open(const char* filename, Common::Error* error)
 
   for (;;)
   {
-    long n = std::ftell(m_fp);
     int bits = std::fgetc(m_fp);
     if (bits == EOF)
     {

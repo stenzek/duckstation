@@ -212,10 +212,7 @@ double ALWAYS_INLINE_RELEASE f16Overflow(double in)
 
 // pgxp_mem.c
 static void PGXP_InitMem();
-static const u32 UserMemOffset = 0;
 static const u32 ScratchOffset = 2048 * 1024 / 4;
-static const u32 RegisterOffset = 2 * 2048 * 1024 / 4;
-static const u32 InvalidAddress = 3 * 2048 * 1024 / 4;
 
 void PGXP_InitMem()
 {

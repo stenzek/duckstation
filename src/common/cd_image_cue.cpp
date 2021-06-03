@@ -7,6 +7,7 @@
 #include "log.h"
 #include <algorithm>
 #include <cerrno>
+#include <cinttypes>
 #include <map>
 Log_SetChannel(CDImageCueSheet);
 
@@ -140,11 +141,11 @@ bool CDImageCueSheet::OpenAndParse(const char* filename, Common::Error* error)
       file_size /= track_sector_size;
       if (track_start >= file_size)
       {
-        Log_ErrorPrintf("Failed to open track %u in '%s': track start is out of range (%ld vs %ld)", track_num,
+        Log_ErrorPrintf("Failed to open track %u in '%s': track start is out of range (%u vs %" PRIu64 ")", track_num,
                         filename, track_start, file_size);
         if (error)
         {
-          error->SetFormattedMessage("Failed to open track %u in '%s': track start is out of range (%ld vs %ld)",
+          error->SetFormattedMessage("Failed to open track %u in '%s': track start is out of range (%u vs %" PRIu64 ")",
                                      track_num, filename, track_start, file_size);
         }
         return false;

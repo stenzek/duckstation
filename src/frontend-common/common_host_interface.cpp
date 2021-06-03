@@ -1098,7 +1098,6 @@ void CommonHostInterface::DrawFPSWindow()
     position_y += text_size.y + spacing;                                                                               \
   } while (0)
 
-  const System::State state = System::GetState();
   if (System::GetState() == System::State::Running)
   {
     const float speed = System::GetEmulationSpeed();
@@ -2015,7 +2014,7 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                  });
 
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("ChangeDisc"),
-                 StaticString(TRANSLATABLE("Hotkeys", "Change Disc")), [this](bool pressed) {
+                 StaticString(TRANSLATABLE("Hotkeys", "Change Disc")), [](bool pressed) {
                    if (pressed && System::IsValid() && System::HasMediaSubImages())
                    {
                      const u32 current = System::GetMediaSubImageIndex();
@@ -2887,7 +2886,6 @@ void CommonHostInterface::LoadSettings(SettingsInterface& si)
   }
 
   const bool input_display_enabled = si.GetBoolValue("Display", "ShowInputs", false);
-  const bool input_display_state = static_cast<bool>(s_input_overlay_ui);
   if (input_display_enabled && !s_input_overlay_ui)
     s_input_overlay_ui = std::make_unique<FrontendCommon::InputOverlayUI>();
   else if (!input_display_enabled && s_input_overlay_ui)

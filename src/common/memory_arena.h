@@ -37,6 +37,10 @@ public:
 
   static void* FindBaseAddressForMapping(size_t size);
 
+  ALWAYS_INLINE size_t GetSize() const { return m_size; }
+  ALWAYS_INLINE bool IsWritable() const { return m_writable; }
+  ALWAYS_INLINE bool IsExecutable() const { return m_executable; }
+
   bool IsValid() const;
   bool Create(size_t size, bool writable, bool executable);
   void Destroy();

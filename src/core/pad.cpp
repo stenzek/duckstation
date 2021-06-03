@@ -82,8 +82,8 @@ bool Pad::DoStateController(StateWrapper& sw, u32 i)
 
     // dev-friendly untranslated console log.
     Log_DevPrintf("Controller type mismatch in slot %u: state=%s(%u) ui=%s(%u) load_from_state=%s", i + 1u,
-                  Settings::GetControllerTypeName(state_controller_type), state_controller_type,
-                  Settings::GetControllerTypeName(controller_type), controller_type,
+                  Settings::GetControllerTypeName(state_controller_type), static_cast<unsigned>(state_controller_type),
+                  Settings::GetControllerTypeName(controller_type), static_cast<unsigned>(controller_type),
                   g_settings.load_devices_from_save_states ? "yes" : "no");
 
     if (g_settings.load_devices_from_save_states)

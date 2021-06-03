@@ -21,7 +21,6 @@ constexpr HostReg RARG2 = 1;
 constexpr HostReg RARG3 = 2;
 constexpr HostReg RARG4 = 3;
 constexpr HostReg RSCRATCH = 8;
-constexpr u64 FUNCTION_CALL_STACK_ALIGNMENT = 16;
 constexpr u64 FUNCTION_CALL_SHADOW_SPACE = 32;
 constexpr u64 FUNCTION_CALLEE_SAVED_SPACE_RESERVE = 80;  // 8 registers
 constexpr u64 FUNCTION_CALLER_SAVED_SPACE_RESERVE = 144; // 18 registers -> 224 bytes

@@ -57,7 +57,6 @@ ALWAYS_INLINE_RELEASE static void ResizeColumnsForView(T* view, const std::initi
     header = view->header();
 
   const int min_column_width = header->minimumSectionSize();
-  const int max_column_width = header->maximumSectionSize();
   const int scrollbar_width = ((view->verticalScrollBar() && view->verticalScrollBar()->isVisible()) ||
                                view->verticalScrollBarPolicy() == Qt::ScrollBarAlwaysOn) ?
                                 view->verticalScrollBar()->width() :

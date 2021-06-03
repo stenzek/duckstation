@@ -221,7 +221,6 @@ static bool FindUriFiles(const char* path, const char* pattern, u32 flags, FindR
   // small speed optimization for '*' case
   bool hasWildCards = false;
   bool wildCardMatchAll = false;
-  u32 nFiles = 0;
   if (std::strpbrk(pattern, "*?") != nullptr)
   {
     hasWildCards = true;

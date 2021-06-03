@@ -213,6 +213,7 @@ void CodeGenerator::EmitBeginBlock()
   // Store the CPU struct pointer.
   const bool cpu_reg_allocated = m_register_cache.AllocateHostReg(RCPUPTR);
   DebugAssert(cpu_reg_allocated);
+  UNREFERENCED_VARIABLE(cpu_reg_allocated);
   // m_emit->mov(GetCPUPtrReg(), reinterpret_cast<size_t>(&g_state));
 
   // If there's loadstore instructions, preload the fastmem base.
@@ -220,6 +221,7 @@ void CodeGenerator::EmitBeginBlock()
   {
     const bool fastmem_reg_allocated = m_register_cache.AllocateHostReg(RMEMBASEPTR);
     Assert(fastmem_reg_allocated);
+    UNREFERENCED_VARIABLE(fastmem_reg_allocated);
     m_emit->mov(GetFastmemBasePtrReg(), m_emit->qword[GetCPUPtrReg() + offsetof(CPU::State, fastmem_base)]);
   }
 }

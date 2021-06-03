@@ -212,7 +212,7 @@ char* sjis2utf8(char* input)
   // Simplify the input and decode standard ASCII characters
   sjis2ascii(input);
 
-  int len = static_cast<int>(std::strlen(input));
+  size_t len = static_cast<int>(std::strlen(input));
   char* output = reinterpret_cast<char*>(
     std::malloc(3 * len)); // ShiftJis won't give 4byte UTF8, so max. 3 byte per input char are needed
   size_t indexInput = 0, indexOutput = 0;

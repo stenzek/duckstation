@@ -23,7 +23,6 @@ constexpr HostReg RARG2 = 1;
 constexpr HostReg RARG3 = 2;
 constexpr HostReg RARG4 = 3;
 constexpr HostReg RSCRATCH = 12;
-constexpr u32 FUNCTION_CALL_STACK_ALIGNMENT = 16;
 constexpr u32 FUNCTION_CALL_SHADOW_SPACE = 32;
 constexpr u32 FUNCTION_CALLEE_SAVED_SPACE_RESERVE = 80;  // 8 registers
 constexpr u32 FUNCTION_CALLER_SAVED_SPACE_RESERVE = 144; // 18 registers -> 224 bytes
@@ -174,12 +173,14 @@ void CodeGenerator::EmitBeginBlock()
   // Save the link register, since we'll be calling functions.
   const bool link_reg_allocated = m_register_cache.AllocateHostReg(14);
   DebugAssert(link_reg_allocated);
+  UNREFERENCED_VARIABLE(link_reg_allocated);
   m_register_cache.AssumeCalleeSavedRegistersAreSaved();
 
   // Store the CPU struct pointer. TODO: make this better.
   const bool cpu_reg_allocated = m_register_cache.AllocateHostReg(RCPUPTR);
   // m_emit->Mov(GetCPUPtrReg(), reinterpret_cast<uintptr_t>(&g_state));
   DebugAssert(cpu_reg_allocated);
+  UNREFERENCED_VARIABLE(cpu_reg_allocated);
 }
 
 void CodeGenerator::EmitEndBlock()
