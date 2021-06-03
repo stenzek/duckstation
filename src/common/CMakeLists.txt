@@ -121,8 +121,6 @@ target_link_libraries(common PRIVATE glad stb Threads::Threads libchdr glslang v
 
 if(WIN32)
   target_sources(common PRIVATE
-    gl/context_wgl.cpp
-    gl/context_wgl.h
     d3d11/shader_cache.cpp
     d3d11/shader_cache.h
     d3d11/shader_compiler.cpp
@@ -133,13 +131,20 @@ if(WIN32)
     d3d11/stream_buffer.h
     d3d11/texture.cpp
     d3d11/texture.h
-    thirdparty/StackWalker.cpp
-    thirdparty/StackWalker.h
     windows_headers.h
-    win32_progress_callback.cpp
-    win32_progress_callback.h
   )
   target_link_libraries(common PRIVATE d3dcompiler.lib)
+
+  if(NOT LIBRETRO)
+    target_sources(common PRIVATE
+      gl/context_wgl.cpp
+      gl/context_wgl.h
+      thirdparty/StackWalker.cpp
+      thirdparty/StackWalker.h
+      win32_progress_callback.cpp
+      win32_progress_callback.h
+    )
+  endif()
 endif()
 
 if(ANDROID)
