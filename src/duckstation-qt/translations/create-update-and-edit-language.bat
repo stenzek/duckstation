@@ -65,7 +65,7 @@ REM A good .ts file has been passed
 :goodfile
 ECHO Updating %filename%...
 ECHO.
-SET "linguist=..\..\..\dep\msvc\qt\5.15.0\msvc2017_64\bin"
+SET "linguist=..\..\..\dep\msvc\qt\6.1.0\msvc2019_64\bin"
 SET "context=.././ ../../core/ ../../frontend-common/ -tr-function-alias translate+=TranslateString -tr-function-alias translate+=TranslateStdString -tr-function-alias QT_TRANSLATE_NOOP+=TRANSLATABLE"
 
 "%linguist%\lupdate.exe" %context% -ts %filename%
