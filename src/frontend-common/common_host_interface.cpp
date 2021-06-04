@@ -1067,7 +1067,7 @@ void CommonHostInterface::DrawImGuiWindows()
 
 void CommonHostInterface::DrawFPSWindow()
 {
-  if (!(g_settings.display_show_fps | g_settings.display_show_vps | g_settings.display_show_speed |
+  if (!(g_settings.display_show_fps || g_settings.display_show_vps || g_settings.display_show_speed ||
         g_settings.display_show_resolution))
   {
     return;
@@ -1075,8 +1075,8 @@ void CommonHostInterface::DrawFPSWindow()
 
   const float scale = ImGui::GetIO().DisplayFramebufferScale.x;
   const float shadow_offset = 1.0f * scale;
-  float margin = 10.0f * scale;
-  float spacing = 5.0f * scale;
+  const float margin = (g_settings.display_increase_safe_zone ? 25.0f : 10.0f) * scale;
+  const float spacing = 5.0f * scale;
   float position_y = margin;
   ImDrawList* dl = ImGui::GetBackgroundDrawList();
   ImFont* font = ImGui::GetFont();
@@ -1229,7 +1229,7 @@ void CommonHostInterface::DrawOSDMessages()
 
   const float scale = ImGui::GetIO().DisplayFramebufferScale.x;
   const float spacing = 5.0f * scale;
-  const float margin = 10.0f * scale;
+  const float margin = (g_settings.display_increase_safe_zone ? 25.0f : 10.0f) * scale;
   const float padding = 8.0f * scale;
   const float rounding = 5.0f * scale;
   const float max_width = ImGui::GetIO().DisplaySize.x - margin;

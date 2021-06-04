@@ -126,5 +126,11 @@
         app:defaultValue="false"
         app:summary="@string/settings_summary_osd_show_inputs"
         app:iconSpaceReserved="false" />
+    <SwitchPreferenceCompat
+        app:key="Display/IncreaseSafeZone"
+        app:title="@string/settings_osd_increase_safe_zone"
+        app:defaultValue="false"
+        app:summary="@string/settings_summary_osd_increase_safe_zone"
+        app:iconSpaceReserved="false" />
 
 </PreferenceScreen>

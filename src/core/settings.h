@@ -145,6 +145,7 @@ struct Settings
   bool display_show_vps = false;
   bool display_show_speed = false;
   bool display_show_resolution = false;
+  bool display_increase_safe_zone = false;
   bool display_all_frames = false;
   bool video_sync_enabled = DEFAULT_VSYNC_VALUE;
   float display_max_fps = DEFAULT_DISPLAY_MAX_FPS;

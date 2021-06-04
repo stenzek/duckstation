@@ -3195,7 +3195,7 @@ void DrawStatsOverlay()
     return;
   }
 
-  const float margin = LayoutScale(10.0f);
+  const float margin = LayoutScale(g_settings.display_increase_safe_zone ? 25.0f : 10.0f);
   const float shadow_offset = DPIScale(1.0f);
   float position_y = ImGuiFullscreen::g_menu_bar_size + margin;
   ImDrawList* dl = ImGui::GetBackgroundDrawList();
@@ -3280,7 +3280,7 @@ void DrawOSDMessages()
 
   const float max_width = LayoutScale(1080.0f);
   const float spacing = LayoutScale(4.0f);
-  const float margin = LayoutScale(10.0f);
+  const float margin = LayoutScale(g_settings.display_increase_safe_zone ? 25.0f : 10.0f);
   const float padding = LayoutScale(10.0f);
   float position_x = margin;
   float position_y = margin + ImGuiFullscreen::g_menu_bar_size;

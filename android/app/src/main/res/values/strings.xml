@@ -365,4 +365,6 @@
     <string name="menu_edit_game_directories_force_saf">Force Scoped Storage</string>
     <string name="settings_expand_to_cutout">Expand To Cutout Area</string>
     <string name="settings_summary_expand_to_cutout">Expands the display area to include the cutout (or notch) area.</string>
+    <string name="settings_osd_increase_safe_zone">Increase Safe Zone</string>
+    <string name="settings_summary_osd_increase_safe_zone">Increase the margin of on-screen messages, prevents them being cut off on phones with rounded corners.</string>
 </resources>
