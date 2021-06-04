@@ -75,7 +75,7 @@ ${BUILD_DIR}/linuxdeploy-x86_64.AppImage \
 # Patch AppRun to work around system Qt libraries being loaded ahead of bundled libraries
 sed -i 's|exec "$this_dir"/AppRun.wrapped "$@"|exec env LD_LIBRARY_PATH="$this_dir"/usr/lib:$LD_LIBRARY_PATH "$this_dir"/AppRun.wrapped "$@"|' \
   ${BUILD_DIR}/duckstation-qt.AppDir/AppRun
-  
+
 UPDATE_INFORMATION="zsync|https://github.com/stenzek/duckstation/releases/download/latest/duckstation-qt-x64.AppImage.zsync" \
 OUTPUT="duckstation-qt-x64.AppImage" \
 ${BUILD_DIR}/linuxdeploy-plugin-appimage-x86_64.AppImage \
