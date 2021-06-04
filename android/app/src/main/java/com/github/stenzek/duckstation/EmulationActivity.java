@@ -203,6 +203,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         updateRequestedOrientation();
         updateControllers();
         updateSustainedPerformanceMode();
+        updateDisplayInCutout();
     }
 
     private void applySettings() {
@@ -296,6 +297,7 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
         // Sort out rotation.
         updateOrientation();
         updateSustainedPerformanceMode();
+        updateDisplayInCutout();
 
         // Hook up controller input.
         updateControllers();
@@ -423,6 +425,24 @@ public class EmulationActivity extends AppCompatActivity implements SurfaceHolde
                         View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
         if (mContentView != null)
             mContentView.requestFocus();
+    }
+
+    private void updateDisplayInCutout() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P)
+            return;
+
+        final boolean shouldExpand = getBooleanSetting("Display/ExpandToCutout", false);
+        final boolean isExpanded = getWindow().getAttributes().layoutInDisplayCutoutMode ==
+                WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+
+        if (shouldExpand == isExpanded)
+            return;
+
+        WindowManager.LayoutParams attribs = getWindow().getAttributes();
+        attribs.layoutInDisplayCutoutMode = shouldExpand ?
+                WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES :
+                WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT;
+        getWindow().setAttributes(attribs);
     }
 
     private static final int REQUEST_CODE_SETTINGS = 0;

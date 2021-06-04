@@ -82,6 +82,14 @@
         app:iconSpaceReserved="false" />
 
     <SwitchPreferenceCompat
+        app:key="Display/ExpandToCutout"
+        app:title="@string/settings_expand_to_cutout"
+        app:defaultValue="false"
+        app:dependency="Display/IntegerScaling"
+        app:summary="@string/settings_summary_expand_to_cutout"
+        app:iconSpaceReserved="false" />
+
+    <SwitchPreferenceCompat
         app:key="Display/ShowOSDMessages"
         app:title="@string/settings_osd_show_messages"
         app:defaultValue="true"

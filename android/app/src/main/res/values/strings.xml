@@ -363,4 +363,6 @@
     <string name="settings_cdrom_load_image_patches">Apply Image Patches</string>
     <string name="settings_summary_load_image_patches">Automatically applies patches to disc images when they are present, currently only PPF is supported.</string>
     <string name="menu_edit_game_directories_force_saf">Force Scoped Storage</string>
+    <string name="settings_expand_to_cutout">Expand To Cutout Area</string>
+    <string name="settings_summary_expand_to_cutout">Expands the display area to include the cutout (or notch) area.</string>
 </resources>
