@@ -243,42 +243,6 @@ jobs:
         path: "duckstation-android.apk"
 
 
-  macos-build:
-    runs-on: macos-10.15
-    if: github.ref != 'refs/heads/play-store'
-    steps:
-    - uses: actions/checkout@v2.3.1
-      with:
-        fetch-depth: 0
-
-    - name: Install packages
-      shell: bash
-      run: |
-        brew install qt5 sdl2 curl
-
-    - name: Clone mac externals
-      shell: bash
-      run: |
-        git clone https://github.com/stenzek/duckstation-ext-mac.git dep/mac
-
-    - name: Compile and zip .app
-      shell: bash
-      run: |
-        mkdir build
-        cd build
-        export MACOSX_DEPLOYMENT_TARGET=10.14
-        cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_NOGUI_FRONTEND=OFF -DBUILD_QT_FRONTEND=ON -DUSE_SDL2=ON -DQt5_DIR=/usr/local/opt/qt@5/lib/cmake/Qt5 ..
-        cmake --build . --parallel 2
-        cd bin
-        zip -r duckstation-mac-release.zip DuckStation.app/
-
-    - name: Upload macOS .app
-      uses: actions/upload-artifact@v1
-      with:
-        name: "macos-x64"
-        path: "build/bin/duckstation-mac-release.zip"
-
-
   create-release:
     needs: [windows-build, windows-arm64-build, linux-build, android-build]
     runs-on: "ubuntu-20.04"
