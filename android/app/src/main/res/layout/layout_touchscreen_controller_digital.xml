@@ -8,6 +8,15 @@
     android:orientation="vertical"
     android:clipChildren="false">
 
+    <View
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:translationZ="-10px"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <com.github.stenzek.duckstation.TouchscreenControllerButtonView
         android:id="@+id/controller_button_r2"
         android:layout_width="70dp"
