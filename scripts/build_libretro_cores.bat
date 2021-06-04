@@ -6,7 +6,7 @@ start /w gen_scmversion.bat
 popd
 
 echo Setting MSVC environment...
-call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" x64
+call "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" x64
 
 echo Creating build directory...
 pushd %~dp0
@@ -26,6 +26,6 @@ ninja
 if %errorlevel% neq 0 exit /b %errorlevel%
 
 echo Zipping...
-"C:\Program Files\7-Zip\7z.exe" a ../duckstation_libretro_windows_x64.zip ./duckstation_libretro.dll
+"%ProgramFiles%\7-Zip\7z.exe" a ../duckstation_libretro_windows_x64.zip ./duckstation_libretro.dll
 
 echo All done.
