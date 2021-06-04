@@ -72,14 +72,28 @@ protected:
     return s16((s32(sample) * s32(volume)) / 100);
   }
 
+  ALWAYS_INLINE u32 GetBufferSpace() const { return (m_max_samples - m_buffer.GetSize()); }
+  ALWAYS_INLINE void ReleaseBufferLock(std::unique_lock<std::mutex> lock)
+  {
+    // lock is released implicitly by destruction
+    m_buffer_draining_cv.notify_one();
+  }
+
   bool SetBufferSize(u32 buffer_size);
   bool IsDeviceOpen() const { return (m_output_sample_rate > 0); }
 
+  void EnsureBuffer(u32 size);
   void LockedEmptyBuffers();
   u32 GetSamplesAvailable() const;
   u32 GetSamplesAvailableLocked() const;
   void ReadFrames(SampleType* samples, u32 num_frames, bool apply_volume);
   void DropFrames(u32 count);
+
+  void CreateResampler();
+  void DestroyResampler();
+  void ResetResampler();
+  void InternalSetInputSampleRate(u32 sample_rate);
+  void ResampleInput(std::unique_lock<std::mutex> buffer_lock);
 
   u32 m_input_sample_rate = 0;
   u32 m_output_sample_rate = 0;
@@ -88,22 +102,6 @@ protected:
 
   // volume, 0-100
   u32 m_output_volume = FullVolume;
-
-private:
-  ALWAYS_INLINE u32 GetBufferSpace() const { return (m_max_samples - m_buffer.GetSize()); }
-  ALWAYS_INLINE void ReleaseBufferLock(std::unique_lock<std::mutex> lock)
-  {
-    // lock is released implicitly by destruction
-    m_buffer_draining_cv.notify_one();
-  }
-
-  void EnsureBuffer(u32 size);
-
-  void CreateResampler();
-  void DestroyResampler();
-  void ResetResampler();
-  void InternalSetInputSampleRate(u32 sample_rate);
-  void ResampleInput(std::unique_lock<std::mutex> buffer_lock);
 
   HeapFIFOQueue<SampleType, MaxSamples> m_buffer;
   mutable std::mutex m_buffer_mutex;
