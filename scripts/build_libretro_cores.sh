@@ -24,7 +24,7 @@ make_build() {
   zip -j $ZIPFILE duckstation_libretro${SUFFIX}.so
   cd ..
 }
-  
+
 echo Creating build directory...
 mkdir -p $BUILDDIR
 cd $BUILDDIR || exit $?
