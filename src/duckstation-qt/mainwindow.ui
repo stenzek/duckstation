@@ -696,7 +696,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Show CDROM State</string>
+    <string>Show CD-ROM State</string>
    </property>
   </action>
   <action name="actionDebugShowSPUState">
