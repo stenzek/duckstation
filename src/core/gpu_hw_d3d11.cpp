@@ -159,8 +159,20 @@ void GPU_HW_D3D11::RestoreGraphicsAPIState()
   m_context->IASetInputLayout(m_batch_input_layout.Get());
   m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
   m_context->GSSetShader(nullptr, nullptr, 0);
-  m_context->PSSetShaderResources(0, 1, m_vram_read_texture.GetD3DSRVArray());
-  m_context->PSSetSamplers(0, 1, m_point_sampler_state.GetAddressOf());
+
+  if (!g_settings.texture_replacements.enable_texture_replacements)
+  {
+    m_context->PSSetShaderResources(0, 1, m_vram_read_texture.GetD3DSRVArray());
+    m_context->PSSetSamplers(0, 1, m_point_sampler_state.GetAddressOf());
+  }
+  else
+  {
+    ID3D11ShaderResourceView* srvs[2] = {m_vram_read_texture.GetD3DSRV(), m_texture_replacement_texture.GetD3DSRV()};
+    ID3D11SamplerState* samplers[2] = {m_point_sampler_state.Get(), m_point_sampler_state.Get()};
+    m_context->PSSetShaderResources(0, countof(srvs), srvs);
+    m_context->PSSetSamplers(0, countof(samplers), samplers);
+  }
+
   m_context->OMSetRenderTargets(1, m_vram_texture.GetD3DRTVArray(), m_vram_depth_view.Get());
   m_context->RSSetState(m_cull_none_rasterizer_state.Get());
   SetViewport(0, 0, m_vram_texture.GetWidth(), m_vram_texture.GetHeight());
@@ -174,6 +186,9 @@ void GPU_HW_D3D11::UpdateSettings()
 
   bool framebuffer_changed, shaders_changed;
   UpdateHWSettings(&framebuffer_changed, &shaders_changed);
+
+  if (!SetupTextureReplacementTexture())
+    shaders_changed = true;
 
   if (framebuffer_changed)
   {
@@ -200,6 +215,71 @@ void GPU_HW_D3D11::UpdateSettings()
     UpdateDisplay();
     ResetGraphicsAPIState();
   }
+}
+
+bool GPU_HW_D3D11::SetupTextureReplacementTexture()
+{
+  const bool is_enabled = static_cast<bool>(m_texture_replacement_texture);
+  if (is_enabled == m_texture_replacements)
+  {
+    if (!is_enabled ||
+        (m_texture_replacement_texture.GetWidth() == g_texture_replacements.GetScaledReplacementTextureWidth() &&
+         m_texture_replacement_texture.GetHeight() == g_texture_replacements.GetScaledReplacementTextureHeight()))
+    {
+      // no changes
+      return true;
+    }
+  }
+
+  m_texture_replacement_texture.Destroy();
+
+  if (m_texture_replacements)
+  {
+    const u32 width = g_texture_replacements.GetScaledReplacementTextureWidth();
+    const u32 height = g_texture_replacements.GetScaledReplacementTextureHeight();
+    if (!m_texture_replacement_texture.Create(m_device.Get(), width, height,
+                                              TextureReplacements::TEXTURE_REPLACEMENT_PAGE_COUNT, 1, 1,
+                                              REPLACEMENT_TEXTURE_FORMAT, D3D11_BIND_SHADER_RESOURCE))
+    {
+      m_texture_replacement_texture.Destroy();
+      return false;
+    }
+
+    g_texture_replacements.ReuploadReplacementTextures();
+  }
+
+  return true;
+}
+
+void GPU_HW_D3D11::UploadTextureReplacement(u32 page_index, u32 page_x, u32 page_y, u32 data_width, u32 data_height,
+                                            const void* data, u32 data_stride)
+{
+  if (!m_texture_replacement_texture)
+    return;
+
+#if 0
+  if (!m_texture_replacement_staging_texture.Map(m_context.Get(), true))
+    return;
+
+  m_texture_replacement_staging_texture.WritePixels(0, 0, data_width, data_height, data_stride,
+                                                    reinterpret_cast<const u32*>(data));
+  m_texture_replacement_staging_texture.Unmap(m_context.Get());
+
+  const CD3D11_BOX src_box(0, 0, 0, data_width, data_height, 1);
+  m_context->CopySubresourceRegion(m_texture_replacement_texture, D3D11CalcSubresource(0, page_index, 1), page_x,
+                                   page_y, 0, m_texture_replacement_staging_texture.GetD3DTexture(), 0, &src_box);
+#else
+  const CD3D11_BOX dst_box(page_x, page_y, 0, page_x + data_width, page_y + data_height, 1);
+  m_context->UpdateSubresource(m_texture_replacement_texture, D3D11CalcSubresource(0, page_index, 1), &dst_box, data,
+                               data_stride, data_stride * data_height);
+#endif
+}
+
+void GPU_HW_D3D11::InvalidateTextureReplacements()
+{
+  m_texture_replacement_texture.Destroy();
+  if (!SetupTextureReplacementTexture())
+    Panic("Failed to reallocate texture replacement textures");
 }
 
 void GPU_HW_D3D11::MapBatchVertexPointer(u32 required_vertices)
@@ -567,7 +647,7 @@ bool GPU_HW_D3D11::CompileShaders()
         {
           const std::string ps = shadergen.GenerateBatchFragmentShader(
             static_cast<BatchRenderMode>(render_mode), static_cast<GPUTextureMode>(texture_mode),
-            ConvertToBoolUnchecked(dithering), ConvertToBoolUnchecked(interlacing));
+            ConvertToBoolUnchecked(dithering), ConvertToBoolUnchecked(interlacing), m_texture_replacements);
 
           m_batch_pixel_shaders[render_mode][texture_mode][dithering][interlacing] =
             shader_cache.GetPixelShader(m_device.Get(), ps);
@@ -991,14 +1071,20 @@ void GPU_HW_D3D11::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* d
   const Common::Rectangle<u32> bounds = GetVRAMTransferBounds(x, y, width, height);
   GPU_HW::UpdateVRAM(bounds.left, bounds.top, bounds.GetWidth(), bounds.GetHeight(), data, set_mask, check_mask);
 
-  if (!check_mask)
+  if (!check_mask && !IsFullVRAMUpload(x, y, width, height))
   {
-    const TextureReplacementTexture* rtex = g_texture_replacements.GetVRAMWriteReplacement(width, height, data);
-    if (rtex && BlitVRAMReplacementTexture(rtex, x * m_resolution_scale, y * m_resolution_scale,
-                                           width * m_resolution_scale, height * m_resolution_scale))
+    if (g_settings.texture_replacements.enable_vram_write_replacements)
     {
-      return;
+      const TextureReplacementTexture* rtex = g_texture_replacements.GetVRAMWriteReplacement(width, height, data);
+      if (rtex && BlitVRAMReplacementTexture(rtex, x * m_resolution_scale, y * m_resolution_scale,
+                                             width * m_resolution_scale, height * m_resolution_scale))
+      {
+        return;
+      }
     }
+
+    if (m_texture_replacements)
+      g_texture_replacements.UploadReplacementTextures(x, y, width, height, data);
   }
 
   const u32 num_pixels = width * height;

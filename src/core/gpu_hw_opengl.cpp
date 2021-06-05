@@ -232,6 +232,14 @@ void GPU_HW_OpenGL::RestoreGraphicsAPIState()
   glBindVertexArray(m_vao_id);
   m_uniform_stream_buffer->Bind();
   m_vram_read_texture.Bind();
+
+  if (m_texture_replacement_texture.IsValid())
+  {
+    glActiveTexture(GL_TEXTURE1);
+    m_texture_replacement_texture.Bind();
+    glActiveTexture(GL_TEXTURE0);
+  }
+
   SetBlendMode();
   m_current_depth_test = 0;
   SetDepthFunc();
@@ -265,6 +273,79 @@ void GPU_HW_OpenGL::UpdateSettings()
     UpdateDisplay();
     ResetGraphicsAPIState();
   }
+}
+
+bool GPU_HW_OpenGL::SetupTextureReplacementTexture()
+{
+  const bool is_enabled = m_texture_replacement_texture.IsValid();
+  if (is_enabled == m_texture_replacements)
+  {
+    if (!is_enabled ||
+        (m_texture_replacement_texture.GetWidth() == g_texture_replacements.GetScaledReplacementTextureWidth() &&
+         m_texture_replacement_texture.GetHeight() == g_texture_replacements.GetScaledReplacementTextureHeight()))
+    {
+      // no changes
+      return true;
+    }
+  }
+
+  m_texture_replacement_texture.Destroy();
+
+  if (m_texture_replacements)
+  {
+    const u32 width = g_texture_replacements.GetScaledReplacementTextureWidth();
+    const u32 height = g_texture_replacements.GetScaledReplacementTextureHeight();
+    if (!m_texture_replacement_texture.Create(width, height, TextureReplacements::TEXTURE_REPLACEMENT_PAGE_COUNT, 1, 1,
+                                              GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, nullptr, false, true))
+    {
+      m_texture_replacement_texture.Destroy();
+      return false;
+    }
+
+    g_texture_replacements.ReuploadReplacementTextures();
+  }
+
+  return true;
+}
+
+void GPU_HW_OpenGL::UploadTextureReplacement(u32 page_index, u32 page_x, u32 page_y, u32 data_width, u32 data_height,
+                                             const void* data, u32 data_stride)
+{
+  if (!m_texture_replacement_texture.IsValid())
+    return;
+
+  // TODO: Get rid of this crap.
+  std::vector<u32> temp;
+  {
+    temp.resize(data_width * data_height);
+
+    const u8* source_ptr = static_cast<const u8*>(data) + (data_stride * (data_height - 1));
+    u8* dest_ptr = reinterpret_cast<u8*>(temp.data());
+    const u32 copy_size = data_width * sizeof(u32);
+    for (u32 row = 0; row < data_height; row++)
+    {
+      std::memcpy(dest_ptr, source_ptr, copy_size);
+      dest_ptr += copy_size;
+      source_ptr -= data_stride;
+    }
+  }
+
+  glPixelStorei(GL_UNPACK_ROW_LENGTH, data_width);
+
+  m_texture_replacement_texture.Bind();
+  m_texture_replacement_texture.ReplaceSubImage(page_index, 0, page_x,
+                                                m_texture_replacement_texture.GetHeight() - page_y - data_height,
+                                                data_width, data_height, GL_RGBA, GL_UNSIGNED_BYTE, temp.data());
+  m_vram_read_texture.Bind();
+
+  glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+}
+
+void GPU_HW_OpenGL::InvalidateTextureReplacements()
+{
+  m_texture_replacement_texture.Destroy();
+  if (!SetupTextureReplacementTexture())
+    Panic("Failed to re-create replacement textures for invalidation");
 }
 
 void GPU_HW_OpenGL::MapBatchVertexPointer(u32 required_vertices)
@@ -534,7 +615,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
           const std::string batch_vs = shadergen.GenerateBatchVertexShader(textured);
           const std::string fs = shadergen.GenerateBatchFragmentShader(
             static_cast<BatchRenderMode>(render_mode), static_cast<GPUTextureMode>(texture_mode),
-            ConvertToBoolUnchecked(dithering), ConvertToBoolUnchecked(interlacing));
+            ConvertToBoolUnchecked(dithering), ConvertToBoolUnchecked(interlacing), m_texture_replacements);
 
           const auto link_callback = [this, textured, use_binding_layout](GL::Program& prog) {
             if (!use_binding_layout)
@@ -1066,7 +1147,7 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
   const Common::Rectangle<u32> bounds = GetVRAMTransferBounds(x, y, width, height);
   GPU_HW::UpdateVRAM(bounds.left, bounds.top, bounds.GetWidth(), bounds.GetHeight(), data, set_mask, check_mask);
 
-  if (!check_mask)
+  if (!check_mask && !IsFullVRAMUpload(x, y, width, height))
   {
     const TextureReplacementTexture* rtex = g_texture_replacements.GetVRAMWriteReplacement(width, height, data);
     if (rtex && BlitVRAMReplacementTexture(rtex, x * m_resolution_scale, y * m_resolution_scale,
@@ -1074,6 +1155,9 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
     {
       return;
     }
+
+    if (m_texture_replacements)
+      g_texture_replacements.UploadReplacementTextures(x, y, width, height, data);
   }
 
   const u32 num_pixels = width * height;

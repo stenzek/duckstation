@@ -665,7 +665,8 @@ void FilteredSampleFromVRAM(uint4 texpage, float2 coords, float4 uv_limits,
 }
 
 std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(GPU_HW::BatchRenderMode transparency,
-                                                          GPUTextureMode texture_mode, bool dithering, bool interlacing)
+                                                          GPUTextureMode texture_mode, bool dithering, bool interlacing,
+                                                          bool texture_replacement)
 {
   const GPUTextureMode actual_texture_mode = texture_mode & ~GPUTextureMode::RawTextureBit;
   const bool raw_texture = (texture_mode & GPUTextureMode::RawTextureBit) == GPUTextureMode::RawTextureBit;
@@ -694,10 +695,14 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(GPU_HW::BatchRenderMod
   DefineMacro(ss, "UV_LIMITS", m_uv_limits);
   DefineMacro(ss, "USE_DUAL_SOURCE", use_dual_source);
   DefineMacro(ss, "PGXP_DEPTH", m_pgxp_depth);
+  DefineMacro(ss, "TEXTURE_REPLACEMENT", texture_replacement);
 
   WriteCommonFunctions(ss);
   WriteBatchUniformBuffer(ss);
   DeclareTexture(ss, "samp0", 0);
+
+  if (texture_replacement)
+    DeclareTextureArray(ss, "samp1", 1);
 
   if (m_glsl)
     ss << "CONSTANT int[16] s_dither_values = int[16]( ";
@@ -793,7 +798,32 @@ float4 SampleFromVRAM(uint4 texpage, float2 coords)
   #endif
 }
 
+#if TEXTURE_REPLACEMENT
+float4 SampleReplacementTexture(uint4 texpage, float2 coords)
+{
+  uint2 replace_icoord = ApplyUpscaledTextureWindow(FloatToIntegerCoords(coords));
+  float2 replace_ncoord = float2(replace_icoord) / float2(256u * RESOLUTION_SCALE, 256u * RESOLUTION_SCALE);
+  uint replace_layer = ((texpage.y / (256u * RESOLUTION_SCALE)) * 16) + (texpage.x / (64u * RESOLUTION_SCALE));
+  #if PALETTE_8_BIT
+    uint extra_pages = (uint(coords.x) / (128u * RESOLUTION_SCALE));
+    replace_layer += extra_pages;
+    replace_ncoord.x -= float(extra_pages) * (128.0f / 256.0f);
+  #elif !PALETTE
+    uint extra_pages = (uint(coords.x) / (64u * RESOLUTION_SCALE));
+    replace_layer += extra_pages;
+    replace_ncoord.x -= float(extra_pages) * (64.0f / 256.0f);
+  #endif
+
+  #if API_OPENGL || API_OPENGL_ES
+    replace_ncoord.y = 1.0 - replace_ncoord.y;
+  #endif
+
+  return SAMPLE_TEXTURE_ARRAY(samp1, replace_ncoord, float(replace_layer));
+}
 #endif
+
+#endif    // TEXTURED
+
 )";
 
   if (textured)
@@ -834,14 +864,6 @@ float4 SampleFromVRAM(uint4 texpage, float2 coords)
   #endif
 
   #if TEXTURED
-
-    // We can't currently use upscaled coordinate for palettes because of how they're packed.
-    // Not that it would be any benefit anyway, render-to-texture effects don't use palettes.
-    float2 coords = v_tex0;
-    #if PALETTE
-      coords /= float2(RESOLUTION_SCALE, RESOLUTION_SCALE);
-    #endif
-
     #if UV_LIMITS
       float4 uv_limits = v_uv_limits;
       #if !PALETTE
@@ -853,20 +875,41 @@ float4 SampleFromVRAM(uint4 texpage, float2 coords)
     #endif
 
     float4 texcol;
-    #if TEXTURE_FILTERING
-      FilteredSampleFromVRAM(v_texpage, coords, uv_limits, texcol, ialpha);
-      if (ialpha < 0.5)
-        discard;
-    #else
-      #if UV_LIMITS
-        texcol = SampleFromVRAM(v_texpage, clamp(coords, uv_limits.xy, uv_limits.zw));
-      #else
-        texcol = SampleFromVRAM(v_texpage, coords);
-      #endif
-      if (VECTOR_EQ(texcol, TRANSPARENT_PIXEL_COLOR))
-        discard;
 
-      ialpha = 1.0;
+    #if TEXTURE_REPLACEMENT
+      // TODO: Do we want to apply UV limits here?
+      texcol = SampleReplacementTexture(v_texpage, v_tex0);
+      if (texcol.a >= 0.5)
+      {
+        ialpha = (texcol.a * 2.0) - 1.0;
+      }
+      else
+      {
+    #endif
+        // We can't currently use upscaled coordinate for palettes because of how they're packed.
+        // Not that it would be any benefit anyway, render-to-texture effects don't use palettes.
+        float2 coords = v_tex0;
+        #if PALETTE
+          coords /= float2(RESOLUTION_SCALE, RESOLUTION_SCALE);
+        #endif
+
+        #if TEXTURE_FILTERING
+          FilteredSampleFromVRAM(v_texpage, coords, uv_limits, texcol, ialpha);
+          if (ialpha < 0.5)
+            discard;
+        #else
+          #if UV_LIMITS
+            texcol = SampleFromVRAM(v_texpage, clamp(coords, uv_limits.xy, uv_limits.zw));
+          #else
+            texcol = SampleFromVRAM(v_texpage, coords);
+          #endif
+          if (VECTOR_EQ(texcol, TRANSPARENT_PIXEL_COLOR))
+            discard;
+
+          ialpha = 1.0;
+        #endif
+    #if TEXTURE_REPLACEMENT
+      }
     #endif
 
     semitransparent = (texcol.a >= 0.5);

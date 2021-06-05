@@ -12,6 +12,7 @@
 #include "gpu_hw_shadergen.h"
 #include "host_display.h"
 #include "system.h"
+#include "texture_replacements.h"
 Log_SetChannel(GPU_HW_D3D12);
 
 GPU_HW_D3D12::GPU_HW_D3D12() = default;
@@ -117,11 +118,21 @@ void GPU_HW_D3D12::RestoreGraphicsAPIState()
   cmdlist->IASetVertexBuffers(0, 1, &vbv);
   cmdlist->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-  cmdlist->SetGraphicsRootSignature(m_batch_root_signature.Get());
+  if (m_texture_replacements)
+  {
+    cmdlist->SetGraphicsRootSignature(m_texture_replacement_root_signature.Get());
+    cmdlist->SetGraphicsRootDescriptorTable(1, m_texture_replacement_srv_handle.gpu_handle);
+    cmdlist->SetGraphicsRootDescriptorTable(2, m_texture_replacement_sampler_handle.gpu_handle);
+  }
+  else
+  {
+    cmdlist->SetGraphicsRootSignature(m_batch_root_signature.Get());
+    cmdlist->SetGraphicsRootDescriptorTable(1, m_vram_read_texture.GetSRVDescriptor().gpu_handle);
+    cmdlist->SetGraphicsRootDescriptorTable(2, m_point_sampler.gpu_handle);
+  }
+
   cmdlist->SetGraphicsRootConstantBufferView(0,
                                              m_uniform_stream_buffer.GetGPUPointer() + m_current_uniform_buffer_offset);
-  cmdlist->SetGraphicsRootDescriptorTable(1, m_vram_read_texture.GetSRVDescriptor().gpu_handle);
-  cmdlist->SetGraphicsRootDescriptorTable(2, m_point_sampler.gpu_handle);
 
   D3D12::SetViewport(cmdlist, 0, 0, m_vram_texture.GetWidth(), m_vram_texture.GetHeight());
 
@@ -165,6 +176,154 @@ void GPU_HW_D3D12::UpdateSettings()
     UpdateDisplay();
     ResetGraphicsAPIState();
   }
+}
+
+bool GPU_HW_D3D12::SetupTextureReplacementTexture()
+{
+  const bool is_enabled = static_cast<bool>(m_texture_replacement_texture);
+  if (is_enabled == m_texture_replacements)
+  {
+    if (!is_enabled ||
+        (m_texture_replacement_texture.GetWidth() == g_texture_replacements.GetScaledReplacementTextureWidth() &&
+         m_texture_replacement_texture.GetHeight() == g_texture_replacements.GetScaledReplacementTextureHeight()))
+    {
+      // no changes
+      return true;
+    }
+  }
+
+  g_d3d12_context->ExecuteCommandList(true);
+  m_texture_replacement_texture.Destroy(false);
+
+  if (m_texture_replacements)
+  {
+#if 1
+    Panic("Fixme");
+#else
+    const u32 width = g_texture_replacements.GetScaledReplacementTextureWidth();
+    const u32 height = g_texture_replacements.GetScaledReplacementTextureHeight();
+    if (!m_texture_replacement_texture.Create(width, height, TextureReplacements::TEXTURE_REPLACEMENT_PAGE_COUNT, 1, 1,
+                                              REPLACEMENT_TEXTURE_FORMAT, REPLACEMENT_TEXTURE_FORMAT,
+                                              REPLACEMENT_TEXTURE_FORMAT, DXGI_FORMAT_UNKNOWN,
+                                              D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET))
+    {
+      return false;
+    }
+
+    D3D12::SetObjectName(m_texture_replacement_texture, "Texture replacement texture");
+    InvalidateTextureReplacements();
+
+    if (!m_texture_replacement_srv_handle)
+    {
+      g_d3d12_context->GetDescriptorHeapManager().Allocate(&m_texture_replacement_srv_handle,
+                                                           TEXTURE_REPLACEMENT_BATCH_TEXTURE_COUNT);
+    }
+    if (!m_texture_replacement_sampler_handle)
+    {
+      g_d3d12_context->GetSamplerHeapManager().Allocate(&m_texture_replacement_sampler_handle,
+                                                        TEXTURE_REPLACEMENT_BATCH_TEXTURE_COUNT);
+    }
+
+    UpdateTextureReplacementSRV();
+#endif
+  }
+  else
+  {
+    if (m_texture_replacement_srv_handle)
+    {
+      g_d3d12_context->GetDescriptorHeapManager().Free(&m_texture_replacement_srv_handle,
+                                                       TEXTURE_REPLACEMENT_BATCH_TEXTURE_COUNT);
+    }
+    if (m_texture_replacement_sampler_handle)
+    {
+      g_d3d12_context->GetSamplerHeapManager().Free(&m_texture_replacement_sampler_handle,
+                                                    TEXTURE_REPLACEMENT_BATCH_TEXTURE_COUNT);
+    }
+  }
+
+  if (m_texture_replacements)
+    g_texture_replacements.ReuploadReplacementTextures();
+
+  return true;
+}
+
+void GPU_HW_D3D12::UpdateTextureReplacementSRV()
+{
+#if 0
+  if (!m_texture_replacement_texture || !m_vram_read_texture)
+    return;
+
+  ID3D12Device* dev = g_d3d12_context->GetDevice();
+
+  D3D12_SHADER_RESOURCE_VIEW_DESC vram_desc = {m_vram_read_texture.GetFormat(), D3D12_SRV_DIMENSION_TEXTURE2D,
+                                               D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING};
+  vram_desc.Texture2D.MipLevels = m_vram_read_texture.GetLevels();
+  dev->CreateShaderResourceView(m_vram_read_texture, &vram_desc, m_texture_replacement_srv_handle);
+
+  D3D12_SHADER_RESOURCE_VIEW_DESC replacement_desc = {m_texture_replacement_texture.GetFormat(),
+                                                      D3D12_SRV_DIMENSION_TEXTURE2DARRAY,
+                                                      D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING};
+  replacement_desc.Texture2DArray.MipLevels = m_texture_replacement_texture.GetLevels();
+  replacement_desc.Texture2DArray.ArraySize = m_texture_replacement_texture.GetLayers();
+  dev->CreateShaderResourceView(
+    m_texture_replacement_texture, &replacement_desc,
+    g_d3d12_context->GetDescriptorHeapManager().OffsetCPUHandle(m_texture_replacement_srv_handle, 1));
+
+  D3D12_SAMPLER_DESC sd;
+  D3D12::SetDefaultSampler(&sd);
+  sd.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+  sd.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+  sd.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
+  dev->CreateSampler(&sd, m_texture_replacement_sampler_handle);
+
+  sd.Filter = D3D12_FILTER_MIN_MAG_LINEAR_MIP_POINT;
+  dev->CreateSampler(
+    &sd, g_d3d12_context->GetDescriptorHeapManager().OffsetCPUHandle(m_texture_replacement_sampler_handle, 1));
+#endif
+}
+
+void GPU_HW_D3D12::UploadTextureReplacement(u32 page_index, u32 page_x, u32 page_y, u32 data_width, u32 data_height,
+                                            const void* data, u32 data_stride)
+{
+#if 0
+  if (!CreateTextureReplacementStreamBuffer())
+    return;
+
+  const u32 copy_pitch = Common::AlignUpPow2<u32>(data_width * sizeof(u32), D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
+  const u32 required_size = copy_pitch * data_height;
+  if (!m_texture_replacment_stream_buffer.ReserveMemory(required_size, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT))
+  {
+    Log_PerfPrint("Executing command buffer while waiting for texture replacement buffer space");
+    g_d3d12_context->ExecuteCommandList(false);
+    RestoreGraphicsAPIState();
+    if (!m_texture_replacment_stream_buffer.ReserveMemory(required_size, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT))
+    {
+      Log_ErrorPrintf("Failed to allocate %u bytes from texture replacement streaming buffer", required_size);
+      return;
+    }
+  }
+
+  // buffer -> texture
+  const u32 sb_offset = m_texture_replacment_stream_buffer.GetCurrentOffset();
+  D3D12::Texture::CopyToUploadBuffer(data, data_stride, data_height,
+                                     m_texture_replacment_stream_buffer.GetCurrentHostPointer(), copy_pitch);
+  m_texture_replacment_stream_buffer.CommitMemory(required_size);
+  m_texture_replacement_texture.CopyFromBuffer(page_index, page_x, page_y, data_width, data_height, copy_pitch,
+                                               m_texture_replacment_stream_buffer.GetBuffer(), sb_offset);
+  m_texture_replacement_texture.TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+#endif
+}
+
+void GPU_HW_D3D12::InvalidateTextureReplacements()
+{
+  if (!m_texture_replacement_texture)
+    return;
+
+  static constexpr std::array<float, 4> clear_color = {0.0f, 0.0f, 0.0f, 0.0f};
+  m_texture_replacement_texture.TransitionToState(D3D12_RESOURCE_STATE_RENDER_TARGET);
+  g_d3d12_context->GetCommandList()->ClearRenderTargetView(m_texture_replacement_texture.GetRTVOrDSVDescriptor(),
+                                                           clear_color.data(), 0, nullptr);
+  m_texture_replacement_texture.TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 }
 
 void GPU_HW_D3D12::MapBatchVertexPointer(u32 required_vertices)
@@ -254,8 +413,14 @@ void GPU_HW_D3D12::DestroyResources()
   DestroyFramebuffer();
   DestroyPipelines();
 
+  m_texture_replacement_texture.Destroy(false);
+
+  g_d3d12_context->GetSamplerHeapManager().Free(&m_texture_replacement_sampler_handle,
+                                                TEXTURE_REPLACEMENT_BATCH_TEXTURE_COUNT);
   g_d3d12_context->GetSamplerHeapManager().Free(&m_point_sampler);
   g_d3d12_context->GetSamplerHeapManager().Free(&m_linear_sampler);
+  g_d3d12_context->GetDescriptorHeapManager().Free(&m_texture_replacement_srv_handle,
+                                                   TEXTURE_REPLACEMENT_BATCH_TEXTURE_COUNT);
   g_d3d12_context->GetDescriptorHeapManager().Free(&m_texture_stream_buffer_srv);
 
   m_vertex_stream_buffer.Destroy(false);
@@ -263,6 +428,7 @@ void GPU_HW_D3D12::DestroyResources()
   m_texture_stream_buffer.Destroy(false);
 
   m_single_sampler_root_signature.Reset();
+  m_texture_replacement_root_signature.Reset();
   m_batch_root_signature.Reset();
 }
 
@@ -275,6 +441,14 @@ bool GPU_HW_D3D12::CreateRootSignatures()
   rsbuilder.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);
   m_batch_root_signature = rsbuilder.Create();
   if (!m_batch_root_signature)
+    return false;
+
+  rsbuilder.SetInputAssemblerFlag();
+  rsbuilder.AddCBVParameter(0, D3D12_SHADER_VISIBILITY_ALL);
+  rsbuilder.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 2, D3D12_SHADER_VISIBILITY_PIXEL);
+  rsbuilder.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 0, 2, D3D12_SHADER_VISIBILITY_PIXEL);
+  m_texture_replacement_root_signature = rsbuilder.Create();
+  if (!m_texture_replacement_root_signature)
     return false;
 
   rsbuilder.Add32BitConstants(0, MAX_PUSH_CONSTANTS_SIZE / sizeof(u32), D3D12_SHADER_VISIBILITY_ALL);
@@ -340,6 +514,8 @@ bool GPU_HW_D3D12::CreateFramebuffer()
   D3D12::SetObjectName(m_vram_read_texture, "VRAM Read/Sample Texture");
   D3D12::SetObjectName(m_display_texture, "VRAM Display Texture");
   D3D12::SetObjectName(m_vram_read_texture, "VRAM Readback Texture");
+
+  UpdateTextureReplacementSRV();
 
   m_vram_texture.TransitionToState(D3D12_RESOURCE_STATE_RENDER_TARGET);
   m_vram_depth_texture.TransitionToState(D3D12_RESOURCE_STATE_DEPTH_WRITE);
@@ -446,7 +622,7 @@ bool GPU_HW_D3D12::CompilePipelines()
         {
           const std::string fs = shadergen.GenerateBatchFragmentShader(
             static_cast<BatchRenderMode>(render_mode), static_cast<GPUTextureMode>(texture_mode),
-            ConvertToBoolUnchecked(dithering), ConvertToBoolUnchecked(interlacing));
+            ConvertToBoolUnchecked(dithering), ConvertToBoolUnchecked(interlacing), m_texture_replacements);
 
           batch_fragment_shaders[render_mode][texture_mode][dithering][interlacing] = shader_cache.GetPixelShader(fs);
           if (!batch_fragment_shaders[render_mode][texture_mode][dithering][interlacing])
@@ -475,7 +651,8 @@ bool GPU_HW_D3D12::CompilePipelines()
             {
               const bool textured = (static_cast<GPUTextureMode>(texture_mode) != GPUTextureMode::Disabled);
 
-              gpbuilder.SetRootSignature(m_batch_root_signature.Get());
+              gpbuilder.SetRootSignature(m_texture_replacements ? m_texture_replacement_root_signature.Get() :
+                                                                  m_batch_root_signature.Get());
               gpbuilder.SetRenderTarget(0, m_vram_texture.GetFormat());
               gpbuilder.SetDepthStencilFormat(m_vram_depth_texture.GetFormat());
 
@@ -1035,7 +1212,7 @@ void GPU_HW_D3D12::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* d
   const Common::Rectangle<u32> bounds = GetVRAMTransferBounds(x, y, width, height);
   GPU_HW::UpdateVRAM(bounds.left, bounds.top, bounds.GetWidth(), bounds.GetHeight(), data, set_mask, check_mask);
 
-  if (!check_mask)
+  if (!check_mask && !IsFullVRAMUpload(x, y, width, height))
   {
     const TextureReplacementTexture* rtex = g_texture_replacements.GetVRAMWriteReplacement(width, height, data);
     if (rtex && BlitVRAMReplacementTexture(rtex, x * m_resolution_scale, y * m_resolution_scale,
@@ -1043,6 +1220,9 @@ void GPU_HW_D3D12::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* d
     {
       return;
     }
+
+    if (m_texture_replacements)
+      g_texture_replacements.UploadReplacementTextures(x, y, width, height, data);
   }
 
   const u32 data_size = width * height * sizeof(u16);
@@ -1174,6 +1354,9 @@ void GPU_HW_D3D12::UpdateDepthBufferFromMaskBit()
   ID3D12GraphicsCommandList* cmdlist = g_d3d12_context->GetCommandList();
 
   m_vram_texture.TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
+  if (m_texture_replacements)
+    cmdlist->SetGraphicsRootSignature(m_batch_root_signature.Get());
 
   cmdlist->OMSetRenderTargets(0, nullptr, FALSE, &m_vram_depth_texture.GetRTVOrDSVDescriptor().cpu_handle);
   cmdlist->SetGraphicsRootDescriptorTable(1, m_vram_texture.GetSRVDescriptor());

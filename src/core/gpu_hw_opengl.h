@@ -26,6 +26,10 @@ public:
   void RestoreGraphicsAPIState() override;
   void UpdateSettings() override;
 
+  void UploadTextureReplacement(u32 page_index, u32 page_x, u32 page_y, u32 data_width, u32 data_height,
+                                const void* data, u32 data_stride) override;
+  void InvalidateTextureReplacements();
+
 protected:
   void ClearDisplay() override;
   void UpdateDisplay() override;
@@ -41,6 +45,7 @@ protected:
   void UnmapBatchVertexPointer(u32 used_vertices) override;
   void UploadUniformBuffer(const void* data, u32 data_size) override;
   void DrawBatchVertices(BatchRenderMode render_mode, u32 base_vertex, u32 num_vertices) override;
+  bool SetupTextureReplacementTexture() override;
 
 private:
   struct GLStats
@@ -84,6 +89,7 @@ private:
   GL::Texture m_vram_encoding_texture;
   GL::Texture m_display_texture;
   GL::Texture m_vram_write_replacement_texture;
+  GL::Texture m_texture_replacement_texture;
 
   std::unique_ptr<GL::StreamBuffer> m_vertex_stream_buffer;
   GLuint m_vram_fbo_id = 0;

@@ -74,6 +74,7 @@
     <ClCompile Include="spu.cpp" />
     <ClCompile Include="system.cpp" />
     <ClCompile Include="texture_replacements.cpp" />
+    <ClCompile Include="texture_dumper.cpp" />
     <ClCompile Include="timers.cpp" />
     <ClCompile Include="timing_event.cpp" />
   </ItemGroup>
@@ -150,6 +151,7 @@
     <ClInclude Include="spu.h" />
     <ClInclude Include="system.h" />
     <ClInclude Include="texture_replacements.h" />
+    <ClInclude Include="texture_dumper.h" />
     <ClInclude Include="timers.h" />
     <ClInclude Include="timing_event.h" />
     <ClInclude Include="types.h" />

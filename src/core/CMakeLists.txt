@@ -95,6 +95,8 @@ add_library(core
     spu.h
     system.cpp
     system.h
+    texture_dumper.cpp
+    texture_dumper.h
     texture_replacements.cpp
     texture_replacements.h
     timers.cpp

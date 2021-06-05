@@ -59,6 +59,7 @@
     <ClCompile Include="gpu_hw_d3d12.cpp" />
     <ClCompile Include="host.cpp" />
     <ClCompile Include="game_database.cpp" />
+    <ClCompile Include="texture_dumper.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -124,5 +125,6 @@
     <ClInclude Include="host_settings.h" />
     <ClInclude Include="achievements.h" />
     <ClInclude Include="game_database.h" />
+    <ClInclude Include="texture_dumper.h" />
   </ItemGroup>
 </Project>

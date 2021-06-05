@@ -3801,7 +3801,7 @@ void FullscreenUI::DrawAdvancedSettingsPage()
 
   MenuHeading("Texture Dumping");
 
-  DrawToggleSetting(bsi, "Dump Replaceable VRAM Writes", "Writes textures which can be replaced to the dump directory.",
+  DrawToggleSetting(bsi, "Dump Backgrounds", "Writes textures which can be replaced to the dump directory.",
                     "TextureReplacements", "DumpVRAMWrites", false);
   DrawToggleSetting(bsi, "Set VRAM Write Dump Alpha Channel", "Clears the mask/transparency bit in VRAM write dumps.",
                     "TextureReplacements", "DumpVRAMWriteForceAlphaChannel", true);

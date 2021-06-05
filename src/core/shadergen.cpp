@@ -207,8 +207,10 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
     ss << "#define SAMPLE_TEXTURE_OFFSET(name, coords, offset) textureOffset(name, coords, offset)\n";
     ss << "#define SAMPLE_TEXTURE_LEVEL(name, coords, level) textureLod(name, coords, level)\n";
     ss << "#define SAMPLE_TEXTURE_LEVEL_OFFSET(name, coords, level, offset) textureLod(name, coords, level, offset)\n";
+    ss << "#define SAMPLE_TEXTURE_ARRAY(name, coords, layer) texture(name, float3((coords), (layer)))\n";
     ss << "#define LOAD_TEXTURE(name, coords, mip) texelFetch(name, coords, mip)\n";
     ss << "#define LOAD_TEXTURE_MS(name, coords, sample) texelFetch(name, coords, int(sample))\n";
+    ss << "#define LOAD_TEXTURE_ARRAY(name, coords, layer, mip) texelFetch(name, int3((coords), (layer)), (mip))\n";
     ss << "#define LOAD_TEXTURE_OFFSET(name, coords, mip, offset) texelFetchOffset(name, coords, mip, offset)\n";
     ss << "#define LOAD_TEXTURE_BUFFER(name, index) texelFetch(name, index)\n";
     ss << "#define BEGIN_ARRAY(type, size) type[size](\n";
@@ -253,8 +255,10 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
     ss << "#define SAMPLE_TEXTURE_LEVEL(name, coords, level) name.SampleLevel(name##_ss, coords, level)\n";
     ss << "#define SAMPLE_TEXTURE_LEVEL_OFFSET(name, coords, level, offset) name.SampleLevel(name##_ss, coords, level, "
           "offset)\n";
+    ss << "#define SAMPLE_TEXTURE_ARRAY(name, coords, layer) name.Sample(name##_ss, float3((coords), (layer)))\n";
     ss << "#define LOAD_TEXTURE(name, coords, mip) name.Load(int3(coords, mip))\n";
     ss << "#define LOAD_TEXTURE_MS(name, coords, sample) name.Load(coords, sample)\n";
+    ss << "#define LOAD_TEXTURE_ARRAY(name, coords, layer, mip) name.Load(int4((coords), (layer), (mip)))\n";
     ss << "#define LOAD_TEXTURE_OFFSET(name, coords, mip, offset) name.Load(int3(coords, mip), offset)\n";
     ss << "#define LOAD_TEXTURE_BUFFER(name, index) name.Load(index)\n";
     ss << "#define BEGIN_ARRAY(type, size) {\n";
@@ -311,6 +315,24 @@ void ShaderGen::DeclareTexture(std::stringstream& ss, const char* name, u32 inde
   else
   {
     ss << (multisampled ? "Texture2DMS<float4> " : "Texture2D ") << name << " : register(t" << index << ");\n";
+    ss << "SamplerState " << name << "_ss : register(s" << index << ");\n";
+  }
+}
+
+void ShaderGen::DeclareTextureArray(std::stringstream& ss, const char* name, u32 index)
+{
+  if (m_glsl)
+  {
+    if (IsVulkan())
+      ss << "layout(set = 0, binding = " << (index + 1u) << ") ";
+    else if (m_use_glsl_binding_layout)
+      ss << "layout(binding = " << index << ") ";
+
+    ss << "uniform sampler2DArray " << name << ";\n";
+  }
+  else
+  {
+    ss << "Texture2DArray " << name << " : register(t" << index << ");\n";
     ss << "SamplerState " << name << "_ss : register(s" << index << ");\n";
   }
 }
