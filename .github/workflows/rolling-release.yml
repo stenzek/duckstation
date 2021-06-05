@@ -4,8 +4,9 @@ on:
   pull_request:
     paths-ignore:
       - '**.md'
-      - 'appveyor.yml'
+      - '*.yml'
       - 'scripts/*'
+      - '.github/*'
       - '.github/ISSUE_TEMPLATE/*'
   push:
     branches:
@@ -14,9 +15,10 @@ on:
       - play-store
     paths-ignore:
       - '**.md'
-      - 'appveyor.yml'
+      - '*.yml'
       - 'scripts/*'
-      - '.github/ISSUE_TEMPLATE/*'
+      - '.github/*'
+      - '.github/*_TEMPLATE/*'
   workflow_dispatch:
 
 jobs:
@@ -24,7 +26,7 @@ jobs:
     runs-on: windows-2019
     if: github.ref != 'refs/heads/play-store'
     steps:
-    - uses: actions/checkout@v2.3.1
+    - uses: actions/checkout@v2
       with:
         fetch-depth: 0
         submodules: true
@@ -51,19 +53,18 @@ jobs:
     - name: Compile x64 release build
       shell: cmd
       run: |
-        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
+        call "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
         msbuild duckstation.sln -t:Build -p:Platform=x64;Configuration=ReleaseLTCG
 
     - name: Create x64 symbols archive
       shell: cmd
-      run: |
-        "C:\Program Files\7-Zip\7z.exe" a -r duckstation-windows-x64-release-symbols.zip ./bin/x64/*.pdb
+      run: 7z a -r duckstation-windows-x64-release-symbols.zip ./bin/x64/*.pdb
 
     - name: Upload x64 release symbols artifact
       uses: actions/upload-artifact@v1
       with:
-        name: "windows"
-        path: "duckstation-windows-x64-release-symbols.zip"
+        name: windows
+        path: duckstation-windows-x64-release-symbols.zip
 
     - name: Remove extra bloat before archiving
       shell: cmd
@@ -78,21 +79,20 @@ jobs:
 
     - name: Create x64 release archive
       shell: cmd
-      run: |
-        "C:\Program Files\7-Zip\7z.exe" a -r duckstation-windows-x64-release.zip ./bin/x64/*
+      run: 7z a -r duckstation-windows-x64-release.zip ./bin/x64/*
 
     - name: Upload x64 release artifact
       uses: actions/upload-artifact@v1
       with:
-        name: "windows"
-        path: "duckstation-windows-x64-release.zip"
+        name: windows
+        path: duckstation-windows-x64-release.zip
 
 
   windows-arm64-build:
     runs-on: windows-2019
     if: github.ref != 'refs/heads/play-store'
     steps:
-    - uses: actions/checkout@v2.3.1
+    - uses: actions/checkout@v2
       with:
         fetch-depth: 0
         submodules: true
@@ -120,19 +120,18 @@ jobs:
     - name: Compile arm64 release build
       shell: cmd
       run: |
-        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" amd64_arm64
+        call "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" amd64_arm64
         msbuild duckstation.sln -t:Build -p:Platform=ARM64;Configuration=ReleaseLTCG
 
     - name: Create arm64 symbols archive
       shell: cmd
-      run: |
-        "C:\Program Files\7-Zip\7z.exe" a -r duckstation-windows-arm64-release-symbols.zip ./bin/ARM64/*.pdb
+      run: 7z a -r duckstation-windows-arm64-release-symbols.zip ./bin/ARM64/*.pdb
 
     - name: Upload arm64 release symbols artifact
       uses: actions/upload-artifact@v1
       with:
-        name: "windows-arm64"
-        path: "duckstation-windows-arm64-release-symbols.zip"
+        name: windows-arm64
+        path: duckstation-windows-arm64-release-symbols.zip
 
     - name: Remove extra bloat before archiving
       shell: cmd
@@ -144,24 +143,23 @@ jobs:
         del /Q bin\ARM64\*.ipdb
         del /Q bin\ARM64\common-tests*
         rename bin\ARM64\updater-ARM64-ReleaseLTCG.exe updater.exe
-                
+
     - name: Create arm64 release archive
       shell: cmd
-      run: |
-        "C:\Program Files\7-Zip\7z.exe" a -r duckstation-windows-arm64-release.zip ./bin/ARM64/*
+      run: 7z a -r duckstation-windows-arm64-release.zip ./bin/ARM64/*
 
     - name: Upload arm64 release artifact
       uses: actions/upload-artifact@v1
       with:
-        name: "windows-arm64"
-        path: "duckstation-windows-arm64-release.zip"
+        name: windows-arm64
+        path: duckstation-windows-arm64-release.zip
 
 
   linux-build:
     runs-on: ubuntu-20.04
     if: github.ref != 'refs/heads/play-store'
     steps:
-    - uses: actions/checkout@v2.3.1
+    - uses: actions/checkout@v2
       with:
         fetch-depth: 0
 
@@ -183,32 +181,32 @@ jobs:
     - name: Upload NoGUI AppImage
       uses: actions/upload-artifact@v1
       with:
-        name: "linux-x64-appimage-nogui"
-        path: "build/duckstation-nogui-x64.AppImage"
+        name: linux-x64-appimage-nogui
+        path: build/duckstation-nogui-x64.AppImage
 
     - name: Upload NoGUI AppImage zsync
       uses: actions/upload-artifact@v1
       with:
-        name: "linux-x64-appimage-nogui-zsync"
-        path: "build/duckstation-nogui-x64.AppImage.zsync"
+        name: linux-x64-appimage-nogui-zsync
+        path: build/duckstation-nogui-x64.AppImage.zsync
 
     - name: Upload Qt AppImage
       uses: actions/upload-artifact@v1
       with:
-        name: "linux-x64-appimage-qt"
-        path: "build/duckstation-qt-x64.AppImage"
+        name: linux-x64-appimage-qt
+        path: build/duckstation-qt-x64.AppImage
 
     - name: Upload Qt AppImage zsync
       uses: actions/upload-artifact@v1
       with:
-        name: "linux-x64-appimage-qt-zsync"
-        path: "build/duckstation-qt-x64.AppImage.zsync"
+        name: linux-x64-appimage-qt-zsync
+        path: build/duckstation-qt-x64.AppImage.zsync
 
 
   android-build:
     runs-on: ubuntu-20.04
     steps:
-    - uses: actions/checkout@v2.3.1
+    - uses: actions/checkout@v2
       with:
         fetch-depth: 0
 
@@ -219,7 +217,7 @@ jobs:
         ./gradlew assembleRelease
 
     - name: Sign APK
-      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/play-store'
+      if: github.repository == 'stenzek/duckstation' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/play-store')
       uses: r0adkll/sign-android-release@v1
       with:
         releaseDirectory: android/app/build/outputs/apk/release
@@ -229,37 +227,33 @@ jobs:
         keyPassword: ${{ secrets.APK_KEY_PASSWORD }}
 
     - name: Rename APK
-      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/play-store'
+      if: github.repository == 'stenzek/duckstation' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/play-store')
       shell: bash
-      run: |
-        cd android
-        mv app/build/outputs/apk/release/app-release-unsigned-signed.apk ../duckstation-android.apk
-         
+      run: mv android/app/build/outputs/apk/release/app-release-unsigned-signed.apk duckstation-android.apk
+
     - name: Upload APK
-      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/play-store'
+      if: github.repository == 'stenzek/duckstation' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/play-store')
       uses: actions/upload-artifact@v1
       with:
-        name: "android"
-        path: "duckstation-android.apk"
+        name: android
+        path: duckstation-android.apk
 
 
   macos-build:
     runs-on: macos-10.15
     if: github.ref != 'refs/heads/play-store'
     steps:
-    - uses: actions/checkout@v2.3.1
+    - uses: actions/checkout@v2
       with:
         fetch-depth: 0
 
     - name: Install packages
       shell: bash
-      run: |
-        brew install qt5 sdl2 curl
+      run: brew install qt5 sdl2 curl
 
     - name: Clone mac externals
       shell: bash
-      run: |
-        git clone https://github.com/stenzek/duckstation-ext-mac.git dep/mac
+      run: git clone --depth 1 https://github.com/stenzek/duckstation-ext-mac.git dep/mac
 
     - name: Compile and zip .app
       shell: bash
@@ -275,58 +269,58 @@ jobs:
     - name: Upload macOS .app
       uses: actions/upload-artifact@v1
       with:
-        name: "macos-x64"
-        path: "build/bin/duckstation-mac-release.zip"
+        name: macos-x64
+        path: build/bin/duckstation-mac-release.zip
 
 
   create-release:
     needs: [windows-build, windows-arm64-build, linux-build, android-build]
-    runs-on: "ubuntu-20.04"
+    runs-on: ubuntu-20.04
     if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev') && github.ref != 'refs/heads/play-store'
     steps:
       - name: Download Windows Artifacts
         uses: actions/download-artifact@v1
         with:
-          name: "windows"
+          name: windows
 
       - name: Download Windows ARM64 Artifact
         uses: actions/download-artifact@v1
         with:
-          name: "windows-arm64"
+          name: windows-arm64
 
       - name: Download NoGUI AppImage Artifact
         uses: actions/download-artifact@v1
         with:
-          name: "linux-x64-appimage-nogui"
+          name: linux-x64-appimage-nogui
 
       - name: Download NoGUI AppImage zsync Artifact
         uses: actions/download-artifact@v1
         with:
-          name: "linux-x64-appimage-nogui-zsync"
+          name: linux-x64-appimage-nogui-zsync
 
       - name: Download Qt AppImage Artifact
         uses: actions/download-artifact@v1
         with:
-          name: "linux-x64-appimage-qt"
+          name: linux-x64-appimage-qt
 
       - name: Download Qt AppImage zsync Artifact
         uses: actions/download-artifact@v1
         with:
-          name: "linux-x64-appimage-qt-zsync"
+          name: linux-x64-appimage-qt-zsync
 
       - name: Download Android APK
         uses: actions/download-artifact@v1
         with:
-          name: "android"
+          name: android
 
       - name: Create preview release
         if: github.ref == 'refs/heads/master'
-        uses: "marvinpinto/action-automatic-releases@latest"
+        uses: marvinpinto/action-automatic-releases@latest
         with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "preview"
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          automatic_release_tag: preview
           prerelease: true
-          title: "Latest Preview Build"
+          title: Latest Preview Build
           files: |
             windows/duckstation-windows-x64-release.zip
             windows/duckstation-windows-x64-release-symbols.zip
@@ -340,12 +334,12 @@ jobs:
 
       - name: Create dev release
         if: github.ref == 'refs/heads/dev'
-        uses: "marvinpinto/action-automatic-releases@latest"
+        uses: marvinpinto/action-automatic-releases@latest
         with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "latest"
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          automatic_release_tag: latest
           prerelease: false
-          title: "Latest Development Build"
+          title: Latest Development Build
           files: |
             windows/duckstation-windows-x64-release.zip
             windows/duckstation-windows-x64-release-symbols.zip
@@ -360,20 +354,19 @@ jobs:
 
   create-play-store-release:
     needs: [android-build]
-    runs-on: "ubuntu-20.04"
+    runs-on: ubuntu-20.04
     if: github.ref == 'refs/heads/play-store'
     steps:
       - name: Download Android APK
         uses: actions/download-artifact@v1
         with:
-          name: "android"
+          name: android
 
       - name: Create Play Store release
-        uses: "marvinpinto/action-automatic-releases@latest"
+        uses: marvinpinto/action-automatic-releases@latest
         with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "play-store-release"
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          automatic_release_tag: play-store-release
           prerelease: true
-          title: "Latest Play Store Build"
-          files: |
-            android/duckstation-android.apk
+          title: Latest Play Store Build
+          files: android/duckstation-android.apk
