@@ -965,7 +965,7 @@ void QtHostInterface::populateSaveStateMenus(const char* game_code, QMenu* load_
   load_menu->clear();
   save_menu->clear();
 
-  connect(load_menu->addAction(tr("From File...")), &QAction::triggered, [this]() {
+  connect(load_menu->addAction(tr("Load From File...")), &QAction::triggered, [this]() {
     const QString path(
       QFileDialog::getOpenFileName(m_main_window, tr("Select Save State File"), QString(), tr("Save States (*.sav)")));
     if (path.isEmpty())
@@ -975,7 +975,7 @@ void QtHostInterface::populateSaveStateMenus(const char* game_code, QMenu* load_
   });
   load_menu->addSeparator();
 
-  connect(save_menu->addAction(tr("From File...")), &QAction::triggered, [this]() {
+  connect(save_menu->addAction(tr("Save To File...")), &QAction::triggered, [this]() {
     if (!System::IsValid())
       return;
 
