@@ -72,7 +72,7 @@ bool CDImagePPF::Open(const char* filename, std::unique_ptr<CDImage> parent_imag
     m_replacement_offset = parent_image->GetIndex(1).start_lba_on_disc;
 
   // copy all the stuff from the parent image
-  m_filename = filename;
+  m_filename = parent_image->GetFileName();
   m_tracks = parent_image->GetTracks();
   m_indices = parent_image->GetIndices();
   m_parent_image = std::move(parent_image);
@@ -432,9 +432,9 @@ std::unique_ptr<CDImage>
 CDImage::OverlayPPFPatch(const char* filename, std::unique_ptr<CDImage> parent_image,
                          ProgressCallback* progress /* = ProgressCallback::NullProgressCallback */)
 {
-  std::unique_ptr<CDImagePPF> memory_image = std::make_unique<CDImagePPF>();
-  if (!memory_image->Open(filename, std::move(parent_image)))
+  std::unique_ptr<CDImagePPF> ppf_image = std::make_unique<CDImagePPF>();
+  if (!ppf_image->Open(filename, std::move(parent_image)))
     return {};
 
-  return memory_image;
+  return ppf_image;
 }
