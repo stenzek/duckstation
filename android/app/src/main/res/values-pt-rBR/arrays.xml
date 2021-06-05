@@ -63,10 +63,10 @@
         <item>xBR (Sem AA)</item>
     </string-array>
     <string-array name="settings_controller_type_entries">
-        <item>None</item>
+        <item>Nenhum</item>
         <item>Controle Digital (Gamepad)</item>
         <item>Controle Analógico (DualShock)</item>
-        <item>Analog Joystick</item>
+        <item>Joystick Analógico</item>
         <item>NeGcon</item>
         <item>GunCon</item>
     </string-array>
@@ -151,7 +151,7 @@
         <item>8x SSAA</item>
     </string-array>
     <string-array name="settings_advanced_display_fps_limit_entries">
-        <item>Sem Limite Mostrar Quadros)</item>
+        <item>Sem limite mostrar quadros)</item>
         <item>10 FPS</item>
         <item>15 FPS</item>
         <item>30 FPS</item>
@@ -216,12 +216,12 @@
         <item>Padrão do Dispositivo</item>
         <item>Retrato</item>
         <item>Paisagem</item>
-        <item>Baseado via Sensor</item>
+        <item>Baseado no sensor de movimento</item>
     </string-array>
 	<string-array name="settings_language_entries">
-        	<item>Selecionável pelo sistema</item>
+        	<item>Mesmo do sistema</item>
         	<item>Inglês</item>
-			<item>Português(Brasil)</item>
+			<item>Português (Brasil)</item>
         	<item>Italiano</item>
         	<item>Holandês</item>
         	<item>Espanhol</item>
@@ -248,8 +248,8 @@
         	<item>Conectado à porta 1 e 2</item>
     	</string-array>
 		<string-array name="memory_card_editor_save_menu">
-     		<item>Copiar Salvar</item>
-     		<item>Excluir Salvar</item>
+     		<item>Copiar salvar</item>
+     		<item>Excluir salvar</item>
         </string-array>
 		<string-array name="settings_touchscreen_controller_port_entries">
                <item>Porta 1</item>
