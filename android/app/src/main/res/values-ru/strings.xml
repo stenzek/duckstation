@@ -49,14 +49,14 @@
 	<string name="settings_fast_forward_volume">Громкость при ускорении</string>
 	<string name="settings_summary_fast_forward_volume">Изменение громкости звука при ускоренной перемотке.</string>
 	<string name="settings_mute_all_sound">Отключить звук</string>
-	<string name="settings_summary_mute_all_sound">Отключить вывод звука в эмуляторе.</string>
+	<string name="settings_summary_mute_all_sound">Отключает вывод звука в эмуляторе.</string>
 	<string name="settings_mute_cd_audio">Отключить CD аудио</string>
 	<string name="settings_summary_mute_cd_audio">Принудительное отключение CD-DA и XA дорожек диска. Может использоваться для отключения фоновой музыки в играх.</string>
 	<string name="settings_audio_backend">Аудио бэкенд</string>
 	<string name="settings_audio_buffer_size">Размер аудио буфера</string>
 	<string name="settings_summary_audio_buffer_size">Определяет задержку звука между обработкой и выводом. Меньшие значения снижают задержку, но вызывают треск при нестабильной скорости эмуляции.</string>
 	<string name="settings_audio_sync">Аудиосинхронизация</string>
-	<string name="settings_summary_audio_sync">Ускорять эмуляцию в зависимости от скорости вывода блоков бэкендом. Помогает устранить искажения звука, если эмуляция идёт слишком быстро. Синхронизация автоматически выключается, если скорость эмуляции не равна 100%.</string>
+	<string name="settings_summary_audio_sync">Ускоряет эмуляцию в зависимости от скорости вывода блоков бэкендом. Помогает устранить искажения звука, если эмуляция идёт слишком быстро. Синхронизация автоматически выключается, если скорость эмуляции не равна 100%.</string>
 	<string name="settings_controller_type">Тип контроллера</string>
 	<string name="settings_enable_analog_mode_on_reset">Аналоговый режим при сбросе</string>
 	<string name="settings_touchscreen_controller_view">Вид экранного геймпада</string>
@@ -72,8 +72,8 @@
 	<string name="settings_aspect_ratio">Соотношение сторон</string>
 	<string name="settings_linear_upscaling">Линейное масштабирование</string>
 	<string name="settings_integer_upscaling">Целочисленное масштабирование</string>
-	<string name="settings_summary_linear_upscaling">Сглаживать картинку при масштабировании изображения с консоли под экран.</string>
-	<string name="settings_summary_integer_upscaling">Добавлять пустое пространство к изображению, чтобы приравнять пиксельное соотношение устройства и консоли к целому числу. Позволяет получить более чёткую картинку в 2D-играх.</string>
+	<string name="settings_summary_linear_upscaling">Сглаживает картинку при масштабировании изображения с консоли под экран.</string>
+	<string name="settings_summary_integer_upscaling">Добавляет пустое пространство к изображению, чтобы пиксельное соотношение устройства и консоли равнялось целому числу. Позволяет получить более чёткую картинку в 2D-играх.</string>
 	<string name="settings_summary_osd_show_messages">Выводить на экран сообщения о системных событиях, таких как сохранение/загрузка, снимок экрана и т.д.</string>
 	<string name="settings_summary_osd_show_speed">Показывать скорость эмуляции в процентах в правом верхнем углу экрана.</string>
 	<string name="settings_summary_osd_show_fps">Показывать внутреннюю частоту кадров игры в правом верхнем углу экрана.</string>
@@ -92,7 +92,7 @@
 	<string name="settings_force_ntsc_timings">Принудительный NTSC-тайминг (PAL в 60 Гц)</string>
 	<string name="settings_summary_force_ntsc_timings">Использовать NTSC-тайминги кадра когда консоль в режиме PAL, тем самым принудительно запуская игры PAL в 60 Гц.</string>
 	<string name="settings_widescreen_hack">Широкоформатный хак</string>
-	<string name="settings_summary_widescreen_hack">Масштабировать позиции вершин в пространстве экрана до широкоформатных соотношений сторон, расширяя область обзора в 3D-играх с 4:3 до 16:9. Совместимо не со всеми играми.</string>
+	<string name="settings_summary_widescreen_hack">Масштабировать позиции вершин в пространстве экрана до широкоформатных соотношений сторон, расширяя область обзора в 3D-играх с 4:3 до 16:9. Несовместимо с некоторыми играми.</string>
 	<string name="settings_force_4_3_for_24bit">Использовать 4:3 для 24-бит</string>
 	<string name="settings_summary_force_4_3_for_24bit">Переключаться обратно на соотношение сторон 4:3 при выводе 24-битного контента, например видео.</string>
 	<string name="settings_chroma_smoothing_24bit">Сглаживание цвета для 24-бит</string>
@@ -321,11 +321,11 @@
 	<string name="controller_auto_mapping_select_device">Выбор устройства</string>
 	<string name="controller_auto_mapping_results">Результаты автонастройки</string>
 	<string name="main_activity_empty_game_list_title">Игры не найдены. Пожалуйста, добавьте каталог с играми или выберите файл вручную.</string>
-	<string name="main_activity_empty_game_list_supported_formats">Поддерживаемые форматы:\n\n%s\n\nДля запуска игр в формате bin требуется файл разметки (.cue).</string>
+	<string name="main_activity_empty_game_list_supported_formats">Поддерживаемые форматы:\n\n%s\n\nДля игр в формате bin требуется наличие файла разметки (.cue).</string>
 	<string name="main_activity_empty_game_list_add_directory">Добавить каталог с играми</string>
 	<string name="main_activity_empty_game_list_start_file">Открыть файл</string>
 	<string name="update_notes_title">Примечание к обновлению</string>
-	<string name="update_notes_message_version_controller_update">В текущем обновлении DuckStation добавлена возможность подключения нескольких геймпадов с поддержкой отдачи, клавиатур, возможность привязки действий к кнопкам громкости.\n\nТребуется перенастроить привязки геймпадов, иначе они перестанут функционировать. Выполнить это сейчас?</string>
+	<string name="update_notes_message_version_controller_update">В данном обновлении DuckStation добавлена возможность подключения нескольких геймпадов с поддержкой отдачи, поддержка клавиатур, возможность привязки действий к кнопкам громкости.\n\nТребуется перенастроить привязки геймпадов, иначе они перестанут функционировать. Выполнить это сейчас?</string>
 	<string name="settings_osd_show_show_inputs">Показывать нажатия контроллера</string>
     	<string name="settings_summary_osd_show_inputs">Показывать системное состояние контроллера в левом нижнем углу экрана.</string>
 	<string name="touchscreen_controller_edit_menu">Меню редактора</string>
@@ -362,5 +362,7 @@
         <string name="settings_summary_read_thread">Уменьшает задержки в эмуляции с помощью асинхронного чтения/распаковки данных диска в рабочем потоке.</string>
         <string name="settings_cdrom_load_image_patches">Применять патчи к образам</string>
         <string name="settings_summary_load_image_patches">Автоматически применять патчи к образам дисков при их наличии. В настоящее время поддерживается только формат PPF.</string>
-        <string name="menu_edit_game_directories_force_saf">Использовать Scoped Storage</string>
+        <string name="menu_edit_game_directories_force_saf">Вкл. Scoped Storage</string>
+	<string name="settings_expand_to_cutout">Добавлять область выреза</string>
+    	<string name="settings_summary_expand_to_cutout">Расширяет изображение, используя область выреза.</string>
 </resources>
