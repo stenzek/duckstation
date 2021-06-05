@@ -4305,62 +4305,62 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
 <context>
     <name>GameListModel</name>
     <message>
-        <location filename="../gamelistmodel.cpp" line="534"/>
+        <location filename="../gamelistmodel.cpp" line="535"/>
         <source>Type</source>
         <translation>形式</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="535"/>
+        <location filename="../gamelistmodel.cpp" line="536"/>
         <source>Code</source>
         <translation>编号</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="536"/>
+        <location filename="../gamelistmodel.cpp" line="537"/>
         <source>Title</source>
         <translation>标题</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="537"/>
+        <location filename="../gamelistmodel.cpp" line="538"/>
         <source>File Title</source>
         <translation>文件标题</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="538"/>
+        <location filename="../gamelistmodel.cpp" line="539"/>
         <source>Developer</source>
         <translation>开发商</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="539"/>
+        <location filename="../gamelistmodel.cpp" line="540"/>
         <source>Publisher</source>
         <translation>出版商</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="540"/>
+        <location filename="../gamelistmodel.cpp" line="541"/>
         <source>Genre</source>
         <translation>类型</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="541"/>
+        <location filename="../gamelistmodel.cpp" line="542"/>
         <source>Year</source>
         <translation>年份</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="542"/>
+        <location filename="../gamelistmodel.cpp" line="543"/>
         <source>Players</source>
         <translation>玩家数</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="543"/>
+        <location filename="../gamelistmodel.cpp" line="544"/>
         <source>Size</source>
         <translation>大小</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="544"/>
+        <location filename="../gamelistmodel.cpp" line="545"/>
         <source>Region</source>
         <translation>区域</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="545"/>
+        <location filename="../gamelistmodel.cpp" line="546"/>
         <source>Compatibility</source>
         <translation>兼容性</translation>
     </message>
@@ -6134,6 +6134,11 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>工具栏</translation>
     </message>
     <message>
+        <location filename="../mainwindow.ui" line="699"/>
+        <source>Show CD-ROM State</source>
+        <translation>显示CD-ROM状态</translation>
+    </message>
+    <message>
         <location filename="../mainwindow.ui" line="820"/>
         <source>Memory &amp;Card Editor</source>
         <translation>记忆卡编辑器(&amp;C)</translation>
@@ -6432,9 +6437,8 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>显示GPU状态</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="699"/>
         <source>Show CDROM State</source>
-        <translation>显示CD-ROM状态</translation>
+        <translation type="vanished">显示CD-ROM状态</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="707"/>
@@ -8186,6 +8190,16 @@ URL: %1</translation>
 <context>
     <name>QtHostInterface</name>
     <message>
+        <location filename="../qthostinterface.cpp" line="968"/>
+        <source>Load From File...</source>
+        <translation>从文件读档...</translation>
+    </message>
+    <message>
+        <location filename="../qthostinterface.cpp" line="978"/>
+        <source>Save To File...</source>
+        <translation>存档到文件...</translation>
+    </message>
+    <message>
         <location filename="../qthostinterface.cpp" line="994"/>
         <location filename="../qthostinterface.cpp" line="1037"/>
         <source>Game Save %1 (%2)</source>
@@ -8289,10 +8303,8 @@ Achievements: %5 (%6 points)
         <translation>没有发现可恢复的存档。</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="968"/>
-        <location filename="../qthostinterface.cpp" line="978"/>
         <source>From File...</source>
-        <translation>档文件...</translation>
+        <translation type="vanished">档文件...</translation>
     </message>
     <message>
         <location filename="../qthostinterface.cpp" line="970"/>
