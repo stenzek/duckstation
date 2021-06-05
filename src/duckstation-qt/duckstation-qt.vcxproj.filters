@@ -91,6 +91,10 @@
     <ClCompile Include="$(IntDir)moc_foldersettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_gamesummarywidget.cpp" />
     <ClCompile Include="qttranslations.cpp" />
+    <ClCompile Include="coverdownloaddialog.cpp" />
+    <ClCompile Include="texturereplacementssettingswidget.cpp" />
+    <ClCompile Include="$(IntDir)moc_coverdownloaddialog.cpp" />
+    <ClCompile Include="$(IntDir)moc_texturereplacementssettingswidget.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtutils.h" />
@@ -150,6 +154,8 @@
     <QtMoc Include="gamelistrefreshthread.h" />
     <QtMoc Include="gamesummarywidget.h" />
     <QtMoc Include="foldersettingswidget.h" />
+    <QtMoc Include="coverdownloaddialog.h" />
+    <QtMoc Include="texturereplacementssettingswidget.h" />
   </ItemGroup>
   <ItemGroup>
     <QtUi Include="consolesettingswidget.ui" />
@@ -189,6 +195,8 @@
     <QtUi Include="controllermacrowidget.ui" />
     <QtUi Include="controllermacroeditwidget.ui" />
     <QtUi Include="controllerbindingwidget_mouse.ui" />
+    <QtUi Include="coverdownloaddialog.ui" />
+    <QtUi Include="texturereplacementssettingswidget.ui" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="qt5.natvis" />

@@ -22,6 +22,7 @@ class EmulationSettingsWidget;
 class MemoryCardSettingsWidget;
 class DisplaySettingsWidget;
 class EnhancementSettingsWidget;
+class TextureReplacementSettingsWidget;
 class PostProcessingSettingsWidget;
 class AudioSettingsWidget;
 class AchievementSettingsWidget;
@@ -51,6 +52,7 @@ public:
   ALWAYS_INLINE MemoryCardSettingsWidget* getMemoryCardSettingsWidget() const { return m_memory_card_settings; }
   ALWAYS_INLINE DisplaySettingsWidget* getDisplaySettingsWidget() const { return m_display_settings; }
   ALWAYS_INLINE EnhancementSettingsWidget* getEnhancementSettingsWidget() const { return m_enhancement_settings; }
+  ALWAYS_INLINE TextureReplacementSettingsWidget* getTextureReplacementSettingsWidget() const { return m_texture_replacement_settings; }
   ALWAYS_INLINE AudioSettingsWidget* getAudioSettingsWidget() const { return m_audio_settings; }
   ALWAYS_INLINE AchievementSettingsWidget* getAchievementSettingsWidget() const { return m_achievement_settings; }
   ALWAYS_INLINE AdvancedSettingsWidget* getAdvancedSettingsWidget() const { return m_advanced_settings; }
@@ -92,7 +94,7 @@ private Q_SLOTS:
 private:
   enum : u32
   {
-    MAX_SETTINGS_WIDGETS = 13
+    MAX_SETTINGS_WIDGETS = 14
   };
 
   void addPages();
@@ -110,6 +112,7 @@ private:
   MemoryCardSettingsWidget* m_memory_card_settings = nullptr;
   DisplaySettingsWidget* m_display_settings = nullptr;
   EnhancementSettingsWidget* m_enhancement_settings = nullptr;
+  TextureReplacementSettingsWidget* m_texture_replacement_settings = nullptr;
   PostProcessingSettingsWidget* m_post_processing_settings = nullptr;
   AudioSettingsWidget* m_audio_settings = nullptr;
   AchievementSettingsWidget* m_achievement_settings = nullptr;
