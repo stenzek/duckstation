@@ -72,6 +72,7 @@ private:
   std::array<QString, Column_Count> m_column_display_names;
 
   QPixmap m_type_disc_pixmap;
+  QPixmap m_type_disc_with_settings_pixmap;
   QPixmap m_type_exe_pixmap;
   QPixmap m_type_playlist_pixmap;
   QPixmap m_type_psf_pixmap;

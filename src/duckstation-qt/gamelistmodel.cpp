@@ -290,7 +290,7 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
           switch (ge.type)
           {
             case GameListEntryType::Disc:
-              return m_type_disc_pixmap;
+              return ((ge.settings.GetUserSettingsCount() > 0) ? m_type_disc_with_settings_pixmap : m_type_disc_pixmap);
             case GameListEntryType::Playlist:
               return m_type_playlist_pixmap;
             case GameListEntryType::PSF:
@@ -517,6 +517,7 @@ void GameListModel::loadCommonImages()
 {
   // TODO: Use svg instead of png
   m_type_disc_pixmap = QIcon(QStringLiteral(":/icons/media-optical-24.png")).pixmap(QSize(24, 24));
+  m_type_disc_with_settings_pixmap = QIcon(QStringLiteral(":/icons/media-optical-gear-24.png")).pixmap(QSize(24, 24));
   m_type_exe_pixmap = QIcon(QStringLiteral(":/icons/applications-system-24.png")).pixmap(QSize(24, 24));
   m_type_playlist_pixmap = QIcon(QStringLiteral(":/icons/address-book-new-22.png")).pixmap(QSize(22, 22));
   m_type_psf_pixmap = QIcon(QStringLiteral(":/icons/multimedia-player.png")).pixmap(QSize(22, 22));
