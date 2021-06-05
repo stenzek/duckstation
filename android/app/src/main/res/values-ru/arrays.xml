@@ -262,8 +262,8 @@
                <item>Multitap 8</item>
         </string-array>
 	<string-array name="settings_cdrom_seek_speedup_entries">
-               <item>Без задержки</item>
                <item>Нет (обычная скорость)</item>
+               <item>Без задержки</item>
                <item>2x</item>
                <item>3x</item>
                <item>4x</item>
