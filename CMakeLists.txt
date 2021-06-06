@@ -229,7 +229,7 @@ if(ANDROID OR BUILD_LIBRETRO_CORE)
   set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
   # -fno-semantic-interposition appears to be broken on Macs... of course.
-  if((CMAKE_COMPILER_IS_GNUCC OR CMAKE_CXX_COMPILER_ID MATCHES "Clang") AND NOT APPLE)
+  if((CMAKE_COMPILER_IS_GNUCC OR CMAKE_CXX_COMPILER_ID MATCHES "Clang") AND NOT APPLE AND NOT ANDROID)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-semantic-interposition")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-semantic-interposition")
   endif()
