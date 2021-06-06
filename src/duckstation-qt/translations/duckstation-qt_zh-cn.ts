@@ -3745,7 +3745,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="73"/>
         <source>&lt;b&gt;Enable Rewinding:&lt;/b&gt; Saves state periodically so you can rewind any mistakes while playing.&lt;br&gt; &lt;b&gt;Rewind Save Frequency:&lt;/b&gt; How often a rewind state will be created. Higher frequencies have greater system requirements.&lt;br&gt; &lt;b&gt;Rewind Buffer Size:&lt;/b&gt; How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
-        <translation>&lt;b&gt;启用回退：&lt;/b&gt;定期地存档可以使您在游戏时回退任何错误。&lt;br&gt; &lt;b&gt;回退保存频率：&lt;/b&gt;回退档的创建频率。频率越高对系统的要求就越大。&lt;br&gt; &lt;b&gt;回退缓冲大小：&lt;/b&gt;回退档的保留数量。数值越大对内存的需求就越大。</translation>
+        <translation>&lt;b&gt;启用回退：&lt;/b&gt;周期地存档可以使您在游戏时回退任何错误。&lt;br&gt; &lt;b&gt;回退保存频率：&lt;/b&gt;回退档的创建频率。频率越高对系统的要求就越大。&lt;br&gt; &lt;b&gt;回退缓冲大小：&lt;/b&gt;回退档的保留数量。数值越大对内存的需求就越大。</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="78"/>
@@ -3775,7 +3775,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="141"/>
         <source>Rewind is not enabled. Please note that enabling rewind may significantly increase system requirements.</source>
-        <translation>回退无法启用，请注意启用回退可能会显著增加系统需求。</translation>
+        <translation>回退未启用。请注意启用回退可能会显著增加系统需求。</translation>
     </message>
 </context>
 <context>
