@@ -498,6 +498,10 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>CD-ROM読み取りの高速化 :</translation>
     </message>
     <message>
+        <source>CD-ROM Seek Speedup:</source>
+        <translation>CD-ROMシークの高速化 :</translation>
+    </message>
+    <message>
         <source>Not yet implemented</source>
         <translation>まだ実装されていません</translation>
     </message>
@@ -516,6 +520,10 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <source>Press OK to copy to clipboard.</source>
         <translation>[OK]を押すとクリップボードにコピーします。</translation>
+    </message>
+    <message>
+        <source>User Settings (Graphics)</source>
+        <translation>ユーザー設定 (表示)</translation>
     </message>
     <message>
         <source>User Settings (Input)</source>
@@ -2229,8 +2237,12 @@ This warning will only be shown once.</source>
         <translation>通常は開発コンソールに存在する、追加の6MBのRAMを有効にします。ゲームは、この追加のRAMを使用できるようにするために、&lt;br&gt;より大きなヒープサイズを使用する必要があり、メモリミラーに依存するゲームを壊す可能性があるため、互換性のあるmodでのみ使用する必要があります。</translation>
     </message>
     <message>
-        <source>CDROM Read Speedup</source>
-        <translation>CD-ROM読み取りの高速化</translation>
+        <source>CD-ROM Seek Speedup</source>
+        <translation>CD-ROMシーク速度</translation>
+    </message>
+    <message>
+        <source>CD-ROM Read Speedup</source>
+        <translation>CD-ROM読取速度</translation>
     </message>
     <message>
         <source>Preload Image to RAM</source>
@@ -2254,7 +2266,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>CD-ROM Emulation</source>
-        <translation>CD-ROMエミュレーション(注:読込速度の変更は不具合が出る場合があります)</translation>
+        <translation>CD-ROMエミュレーション(注:読取速度の変更は不具合が出る場合があります)</translation>
     </message>
     <message>
         <source>4x (8x Speed)</source>
@@ -2262,7 +2274,15 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Read Speedup:</source>
-        <translation>CDROM読込速度:</translation>
+        <translation>CD-ROM読取速度:</translation>
+    </message>
+    <message>
+        <source>Seek Speedup:</source>
+        <translation>CD-ROMシーク速度:</translation>
+    </message>
+    <message>
+        <source>Apply Image Patches</source>
+        <translation>ディスクイメージパッチの適用</translation>
     </message>
     <message>
         <source>100% (effective 33.3mhz)</source>
@@ -2275,6 +2295,10 @@ This warning will only be shown once.</source>
     <message>
         <source>When this option is chosen, the clock speed set below will be used.</source>
         <translation>このオプションを選択すると、以下に設定されているクロック速度が使用されます。</translation>
+    </message>
+    <message>
+        <source>Automatically applies patches to disc images when they are present in the same directory. Currently only PPF patches are supported with this option.</source>
+        <translation>ディスク イメージが同じディレクトリにある場合、ディスク イメージにパッチを自動的に適用します。現在、このオプションでは PPF パッチのみがサポートされます。</translation>
     </message>
     <message>
         <source>10x (20x Speed)</source>
@@ -2299,6 +2323,18 @@ This warning will only be shown once.</source>
     <message>
         <source>5x (10x Speed)</source>
         <translation>5x (10倍速)</translation>
+    </message>
+    <message>
+        <source>Reduces the simulated time for the CD-ROM sled to move to different areas of the disc. Can improve loading times, but crash games which do not expect the CD-ROM to operate faster.</source>
+        <translation>CD-ROMピックアップレンズがディスクのさまざまな領域に移動（シーク）するためのシミュレーション時間を短縮します。&lt;br&gt;読込時間を改善できますが、CD-ROMの動作が速くなることを期待しないでください。クラッシュするゲームもあります。</translation>
+    </message>
+    <message>
+        <source>Infinite/Instantaneous</source>
+        <translation>無限/瞬間</translation>
+    </message>
+    <message>
+        <source>None (Normal Speed)</source>
+        <translation>使用しない（実機通り）</translation>
     </message>
     <message>
         <source>Controller Ports</source>
@@ -2474,7 +2510,7 @@ Login token generated on %2.</source>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;DuckStation uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at &lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;To view the achievement list in-game, press the hotkey for &lt;span style=&quot; font-weight:600;&quot;&gt;Open Quick Menu&lt;/span&gt; and select &lt;span style=&quot; font-weight:600;&quot;&gt;Achievements&lt;/span&gt; from the menu.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;DuckStationは、RetroAchievementsを実績データベースとして使用し、進行状況を追跡します。使用するには、 &lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;でアカウントにサインアップしてください。ゲーム内でアチーブメントリストを表示するには、 &lt;span style=&quot; font-weight:600;&quot;&gt;クイックメニューを開く&lt;/span&gt; のホットキーを押して &lt;span style=&quot; font-weight:600;&quot;&gt;メニューから選択&lt;/span&gt;します。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;DuckStationは、RetroAchievementsを実績データベースとして使用し、進行状況を追跡します。&lt;br&gt;使用するには、 &lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;で、&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;アカウントにサインアップしてください。ゲーム内でアチーブメントリストを表示するには、&lt;br&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;クイックメニューを開く&lt;/span&gt; のホットキーを押して &lt;span style=&quot; font-weight:600;&quot;&gt;メニューから選択&lt;/span&gt;します。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Use First Disc From Playlist</source>
@@ -2876,6 +2912,14 @@ Login token generated on %2.</source>
     <message>
         <source>Optimal Frame Pacing</source>
         <translation>最適なフレームペーシング</translation>
+    </message>
+    <message>
+        <source>Use Software Renderer For Readbacks</source>
+        <translation>リードバックにソフトウェアレンダラーを使用</translation>
+    </message>
+    <message>
+        <source>Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater performance when using graphical enhancements with the hardware renderer.</source>
+        <translation>VRAMリードバックのためにソフトウェアレンダラーを並行して実行します。一部のシステムでは、&lt;br&gt;ハードウェアレンダラーでグラフィカルな拡張機能を使用すると、パフォーマンスが向上する場合があります。</translation>
     </message>
     <message>
         <source>Shows the internal frame rate of the game in the top-right corner of the display.</source>
@@ -4256,7 +4300,7 @@ Login token generated on %2.</source>
     </message>
     <message>
         <source>Memory card &apos;%1&apos; could not be found. Try starting the game and saving to create it.</source>
-        <translation>メモリカード &apos;%1&apos; が見つかりませんでした。ゲームを開始し、保存して作成してください。</translation>
+        <translation>メモリカード &apos;%1&apos; が見つかりませんでした。ゲームを開始し、保存(作成)してください。</translation>
     </message>
     <message>
         <source>All Cover Image Types (*.jpg *.jpeg *.png)</source>
@@ -4813,6 +4857,10 @@ Login token generated on %2.</source>
         <translation>ワイドスクリーンを無効</translation>
     </message>
     <message>
+        <source>Force Software Renderer For Readbacks</source>
+        <translation>強制的に ソフトウェアレンダラー 使用(リードバック)</translation>
+    </message>
+    <message>
         <source>Disable Forcing Controller Analog Mode on Reset</source>
         <translation>リセット時にコントローラを強制的にアナログモードにしない</translation>
     </message>
@@ -5093,6 +5141,10 @@ SBIファイルを追加する方法については、READMEを確認してく�
         <translation>PGXP深度バッファの切り替え</translation>
     </message>
     <message>
+        <source>Toggle PGXP CPU Mode</source>
+        <translation>PGXP CPUモードの切り替え</translation>
+    </message>
+    <message>
         <source>Load Game State 10</source>
         <translation>ゲームステートロード 10</translation>
     </message>
@@ -5203,6 +5255,10 @@ SBIファイルを追加する方法については、READMEを確認してく�
     <message>
         <source>Change Disc</source>
         <translation>ディスク交換</translation>
+    </message>
+    <message>
+        <source>Swap Memory Card Slots</source>
+        <translation>メモリーカードスロットを交換</translation>
     </message>
     <message>
         <source>Graphics</source>
@@ -5521,7 +5577,7 @@ SBIファイルを追加する方法については、READMEを確認してく�
     </message>
     <message>
         <source>&lt;h2&gt;Save State Warning&lt;/h2&gt;&lt;p&gt;Installing this update will make your save states &lt;b&gt;incompatible&lt;/b&gt;. Please ensure you have saved your games to memory card before installing this update or you will lose progress.&lt;/p&gt;</source>
-        <translation>&lt;h2&gt;保存状態の警告&lt;/h2&gt;&lt;p&gt;この更新プログラムをインストールすると、保存状態が&lt;b&gt;互換性&lt;/b&gt;がなくなります。この更新をインストールする前に、ゲームをメモリカードに保存したことを確認してください。保存していないと、進行状況が失われます。&lt;/p&gt;</translation>
+        <translation>&lt;h2&gt;保存状態の警告&lt;/h2&gt;&lt;p&gt;この更新プログラムをインストールすると、保存状態が&lt;b&gt;互換性&lt;/b&gt;がなくなります。この更新をインストールする前に、&lt;br&gt;ゲームをメモリカードに保存したことを確認してください。保存していないと、進行状況が失われます。&lt;/p&gt;</translation>
     </message>
     <message>
         <source>Remind Me Later</source>
@@ -5769,10 +5825,6 @@ Achievements:%5 (%6 点)
         <translation>ディレクトリを開く...</translation>
     </message>
     <message>
-        <source>If one of the &quot;separate card per game&quot; memory card modes is chosen, these memory cards will be saved to the memcards directory.</source>
-        <translation>「ゲームごとに別々のカード」モードの1つを選択すると、これらのメモリカードはmemcardsディレクトリに保存されます。</translation>
-    </message>
-    <message>
         <source>Select path to memory card image</source>
         <translation>メモリカードイメージのパスを選択します</translation>
     </message>
@@ -5818,7 +5870,7 @@ Achievements:%5 (%6 点)
     </message>
     <message>
         <source>If one of the &quot;separate card per game&quot; memory card types is chosen, these memory cards will be saved to the memory cards directory.</source>
-        <translation>&quot;ゲームごとに別々のカード&quot;&#x3000;この方法を選択すると、&lt;br&gt;メモリーカードはメモリーカードディレクトリに保存されます。</translation>
+        <translation>&quot;ゲームごとに別々のカード&quot;&lt;br&gt;この方法を選択すると、メモリーカードはメモリーカードディレクトリに保存されます。&lt;br&gt;(複数枚組のゲームでも、ディスクごとに別扱いになるので注意)</translation>
     </message>
     <message>
         <source>Shared Memory Card Path:</source>
