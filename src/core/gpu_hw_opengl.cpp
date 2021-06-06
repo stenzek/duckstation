@@ -49,10 +49,9 @@ bool GPU_HW_OpenGL::Initialize()
     return false;
   }
 
-  const bool opengl_is_available =
-    ((g_host_display->GetRenderAPI() == RenderAPI::OpenGL &&
-      (GLAD_GL_VERSION_3_0 || GLAD_GL_ARB_uniform_buffer_object)) ||
-     (g_host_display->GetRenderAPI() == RenderAPI::OpenGLES && GLAD_GL_ES_VERSION_3_0));
+  const bool opengl_is_available = ((g_host_display->GetRenderAPI() == RenderAPI::OpenGL &&
+                                     (GLAD_GL_VERSION_3_0 || GLAD_GL_ARB_uniform_buffer_object)) ||
+                                    (g_host_display->GetRenderAPI() == RenderAPI::OpenGLES && GLAD_GL_ES_VERSION_3_0));
   if (!opengl_is_available)
   {
     Host::AddOSDMessage(Host::TranslateStdString("OSDMessage",
@@ -397,18 +396,18 @@ bool GPU_HW_OpenGL::CreateFramebuffer()
   const u32 texture_height = VRAM_HEIGHT * m_resolution_scale;
   const u32 multisamples = m_multisamples;
 
-  if (!m_vram_texture.Create(texture_width, texture_height, multisamples, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, nullptr,
-                             false, true) ||
-      !m_vram_depth_texture.Create(texture_width, texture_height, multisamples, GL_DEPTH_COMPONENT16,
+  if (!m_vram_texture.Create(texture_width, texture_height, 1, 1, multisamples, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE,
+                             nullptr, false, true) ||
+      !m_vram_depth_texture.Create(texture_width, texture_height, 1, 1, multisamples, GL_DEPTH_COMPONENT16,
                                    GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr, false) ||
-      !m_vram_read_texture.Create(texture_width, texture_height, 1, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, nullptr, false,
-                                  true) ||
+      !m_vram_read_texture.Create(texture_width, texture_height, 1, 1, 1, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, nullptr,
+                                  false, true) ||
       !m_vram_read_texture.CreateFramebuffer() ||
-      !m_vram_encoding_texture.Create(VRAM_WIDTH, VRAM_HEIGHT, 1, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, nullptr,
+      !m_vram_encoding_texture.Create(VRAM_WIDTH, VRAM_HEIGHT, 1, 1, 1, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, nullptr,
                                       false) ||
       !m_vram_encoding_texture.CreateFramebuffer() ||
       !m_display_texture.Create(GPU_MAX_DISPLAY_WIDTH * m_resolution_scale, GPU_MAX_DISPLAY_HEIGHT * m_resolution_scale,
-                                1, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, nullptr, false) ||
+                                1, 1, 1, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, nullptr, false) ||
       !m_display_texture.CreateFramebuffer())
   {
     return false;
@@ -426,7 +425,7 @@ bool GPU_HW_OpenGL::CreateFramebuffer()
 
   if (m_downsample_mode == GPUDownsampleMode::Box)
   {
-    if (!m_downsample_texture.Create(VRAM_WIDTH, VRAM_HEIGHT, 1, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE) ||
+    if (!m_downsample_texture.Create(VRAM_WIDTH, VRAM_HEIGHT, 1, 1, 1, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE) ||
         !m_downsample_texture.CreateFramebuffer())
     {
       return false;
@@ -779,7 +778,7 @@ bool GPU_HW_OpenGL::BlitVRAMReplacementTexture(const TextureReplacementTexture* 
 {
   if (!m_vram_write_replacement_texture.IsValid())
   {
-    if (!m_vram_write_replacement_texture.Create(tex->GetWidth(), tex->GetHeight(), 1, GL_RGBA, GL_RGBA,
+    if (!m_vram_write_replacement_texture.Create(tex->GetWidth(), tex->GetHeight(), 1, 1, 1, GL_RGBA8, GL_RGBA,
                                                  GL_UNSIGNED_BYTE, tex->GetPixels(), true) ||
         !m_vram_write_replacement_texture.CreateFramebuffer())
     {
@@ -789,7 +788,7 @@ bool GPU_HW_OpenGL::BlitVRAMReplacementTexture(const TextureReplacementTexture* 
   }
   else
   {
-    m_vram_write_replacement_texture.Replace(tex->GetWidth(), tex->GetHeight(), GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE,
+    m_vram_write_replacement_texture.Replace(tex->GetWidth(), tex->GetHeight(), GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE,
                                              tex->GetPixels());
   }
 
