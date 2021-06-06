@@ -374,20 +374,20 @@ void Vulkan::Texture::UpdateFromBuffer(VkCommandBuffer cmdbuf, u32 level, u32 la
                                        u32 height, VkBuffer buffer, u32 buffer_offset, u32 row_length)
 {
   const VkImageLayout old_layout = m_layout;
-  const Vulkan::Util::DebugScope debugScope(cmdbuf, "Texture::UpdateFromBuffer: Lvl:%u Lyr:%u {%u,%u} %ux%u", level,
-                                            layer, x, y, width, height);
-  TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+  if (old_layout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+    TransitionSubresourcesToLayout(cmdbuf, level, 1, layer, 1, old_layout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
   const VkBufferImageCopy bic = {static_cast<VkDeviceSize>(buffer_offset),
                                  row_length,
                                  height,
-                                 {VK_IMAGE_ASPECT_COLOR_BIT, 0u, 0u, 1u},
+                                 {VK_IMAGE_ASPECT_COLOR_BIT, level, layer, 1u},
                                  {static_cast<int32_t>(x), static_cast<int32_t>(y), 0},
                                  {width, height, 1u}};
 
   vkCmdCopyBufferToImage(cmdbuf, buffer, m_image, m_layout, 1, &bic);
 
-  TransitionToLayout(cmdbuf, old_layout);
+  if (old_layout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+    TransitionSubresourcesToLayout(cmdbuf, level, 1, layer, 1, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, old_layout);
 }
 
 u32 Vulkan::Texture::CalcUpdatePitch(u32 width) const
