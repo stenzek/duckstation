@@ -348,21 +348,21 @@
     <string name="settings_summary_use_software_renderer_for_readbacks">Executa o modo software em paralelo para releituras na memória de vídeo. Em alguns sistemas, pode resultar em maior desempenho ao usar aprimoramentos gráficos com o renderizador por hardware..</string>
     <string name="settings_use_software_renderer">Usar modo Software</string>
     <string name="settings_disable_widescreen">Desativar Hack de tela panorâmica</string>
-	<string name="settings_cdrom_seek_speedup">Velocidade de busca CD-ROM</string>
-	<string name="settings_summary_cdrom_seek_speedup">Aumenta a velocidade de leitura do CD-Rom. Só se aplica a velocidade de leitura em 2x para cima, configuração será ignorada quando usado para tocar CD's de música. Pode aumentar a velocidade de leitura em telas de carregamento em alguns jogos, ao custo de quebrar outros.</string>
-	<string name="settings_custom_aspect_ratio">Proporção da imagem customizada</string>
-	<string name="settings_summary_custom_aspect_ratio">Usada para quando a proporção de imagem é definida como customizada.</string>
-	<string name="controller_settings_category_auto_fire_buttons">Botões de auto disparo</string>
+    <string name="settings_cdrom_seek_speedup">Velocidade de busca CD-ROM</string>
+    <string name="settings_summary_cdrom_seek_speedup">Aumenta a velocidade de leitura do CD-Rom. Só se aplica a velocidade de leitura em 2x para cima, configuração será ignorada quando usado para tocar CD\'s de música. Pode aumentar a velocidade de leitura em telas de carregamento em alguns jogos, ao custo de quebrar outros.</string>
+    <string name="settings_custom_aspect_ratio">Proporção da imagem customizada</string>
+    <string name="settings_summary_custom_aspect_ratio">Usada para quando a proporção de imagem é definida como customizada.</string>
+    <string name="controller_settings_category_auto_fire_buttons">Botões de auto disparo</string>
     <string name="controller_settings_category_auto_fire_bindings">Botões de auto disparo (Gatilho)</string>
     <string name="controller_settings_auto_fire_n_button">Auto disparo botão %d</string>
     <string name="controller_settings_auto_fire_n_frequency">Auto disparo botão %d Frequência/Intervalo</string>
     <string name="controller_binding_auto_fire_n">Auto disparo %d</string>
     <string name="settings_category_cdrom">Configurações de CD-ROM</string>	
-	<string name="settings_cdrom_read_thread">Usar Leitura Assíncrona</string>	
-	<string name="settings_summary_read_thread">Reduz engasgos na emulação lendo / descomprimindo os arquivos da midia de forma assíncrona.</string>
-	<string name="settings_cdrom_load_image_patches">Aplicar Modificações</string>	
-	<string name="settings_summary_load_image_patches">Aplica automaticamente 'modificações' em jogos quando presentes no mesmo diretório. Atualmente só são aceitos modificações do tipo PPF.</string>
-	<string name="menu_edit_game_directories_force_saf">Forçar armazenamento com escopo</string>	
-	<string name="settings_expand_to_cutout">Expandir para área cortada</string>
-	<string name="settings_summary_expand_to_cutout">Expande a área de exibição para incluir partes que foram removidas da imagem. Útil para telas curvas em que parte da imagem acaba de perdendo.</string>
-	</resources>
+    <string name="settings_cdrom_read_thread">Usar Leitura Assíncrona</string>	
+    <string name="settings_summary_read_thread">Reduz engasgos na emulação lendo / descomprimindo os arquivos da midia de forma assíncrona.</string>
+    <string name="settings_cdrom_load_image_patches">Aplicar Modificações</string>	
+    <string name="settings_summary_load_image_patches">Aplica automaticamente \'modificações\' em jogos quando presentes no mesmo diretório. Atualmente só são aceitos modificações do tipo PPF.</string>
+    <string name="menu_edit_game_directories_force_saf">Forçar armazenamento com escopo</string>	
+    <string name="settings_expand_to_cutout">Expandir para área cortada</string>
+    <string name="settings_summary_expand_to_cutout">Expande a área de exibição para incluir partes que foram removidas da imagem. Útil para telas curvas em que parte da imagem acaba de perdendo.</string>
+</resources>
