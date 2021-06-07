@@ -142,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
         loadSettings();
         setTitle(null);
 
-        super.onCreate(savedInstanceState);
+        super.onCreate(null);
 
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -166,12 +166,6 @@ public class MainActivity extends AppCompatActivity {
         mHasExternalStoragePermissions = checkForExternalStoragePermissions();
         if (mHasExternalStoragePermissions)
             completeStartup();
-    }
-
-    @Override
-    protected void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.remove("android:support:fragments");
     }
 
     private void completeStartup() {

@@ -43,7 +43,7 @@ public class MemoryCardEditorActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+        super.onCreate(null);
         setContentView(R.layout.activity_memory_card_editor);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -64,12 +64,6 @@ public class MemoryCardEditorActivity extends AppCompatActivity {
 
         findViewById(R.id.open_card).setOnClickListener((v) -> openCard());
         findViewById(R.id.close_card).setOnClickListener((v) -> closeCard());
-    }
-
-    @Override
-    protected void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.remove("android:support:fragments");
     }
 
     @Override

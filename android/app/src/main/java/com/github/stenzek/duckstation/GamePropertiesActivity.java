@@ -42,7 +42,7 @@ public class GamePropertiesActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+        super.onCreate(null);
 
         String path = getIntent().getStringExtra("path");
         if (path == null || path.isEmpty()) {
@@ -67,12 +67,6 @@ public class GamePropertiesActivity extends AppCompatActivity {
         }
 
         setTitle(mGameListEntry.getTitle());
-    }
-
-    @Override
-    protected void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.remove("android:support:fragments");
     }
 
     @Override
