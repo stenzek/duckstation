@@ -19,6 +19,8 @@ public final class TouchscreenControllerButtonView extends View {
         FAST_FORWARD,
         ANALOG_TOGGLE,
         OPEN_PAUSE_MENU,
+        QUICK_LOAD,
+        QUICK_SAVE
     }
 
     private Drawable mUnpressedDrawable;
@@ -149,9 +151,10 @@ public final class TouchscreenControllerButtonView extends View {
 
         switch (mHotkey)
         {
-            case FAST_FORWARD:
+            case FAST_FORWARD: {
                 hi.setFastForwardEnabled(mPressed);
-                break;
+            }
+            break;
 
             case ANALOG_TOGGLE: {
                 if (!mPressed)
@@ -162,6 +165,18 @@ public final class TouchscreenControllerButtonView extends View {
             case OPEN_PAUSE_MENU: {
                 if (!mPressed)
                     hi.getEmulationActivity().openPauseMenu();
+            }
+            break;
+
+            case QUICK_LOAD: {
+                if (!mPressed)
+                    hi.loadState(false, 0);
+            }
+            break;
+
+            case QUICK_SAVE: {
+                if (!mPressed)
+                    hi.saveState(false, 0);
             }
             break;
 

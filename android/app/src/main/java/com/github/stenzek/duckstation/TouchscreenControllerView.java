@@ -328,6 +328,10 @@ public class TouchscreenControllerView extends FrameLayout {
                 TouchscreenControllerButtonView.Hotkey.ANALOG_TOGGLE, false);
         linkHotkeyButton(mMainView, R.id.controller_button_pause, "OpenPauseMenu",
                 TouchscreenControllerButtonView.Hotkey.OPEN_PAUSE_MENU, true);
+        linkHotkeyButton(mMainView, R.id.controller_button_quick_load, "QuickLoad",
+                TouchscreenControllerButtonView.Hotkey.QUICK_LOAD, false);
+        linkHotkeyButton(mMainView, R.id.controller_button_quick_save, "QuickSave",
+                TouchscreenControllerButtonView.Hotkey.QUICK_SAVE, false);
 
         reloadButtonSettings();
         updateOpacity();
