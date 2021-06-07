@@ -742,7 +742,8 @@ bool SwapChain::ResizeSwapChain(u32 new_width /* = 0 */, u32 new_height /* = 0 *
 
   if (!CreateSwapChain() || !SetupSwapChainImages())
   {
-    Panic("Failed to re-configure swap chain images, this is fatal (for now)");
+    DestroySwapChainImages();
+    DestroySwapChain();
     return false;
   }
 
@@ -755,7 +756,8 @@ bool SwapChain::RecreateSwapChain()
 
   if (!CreateSwapChain() || !SetupSwapChainImages())
   {
-    Panic("Failed to re-configure swap chain images, this is fatal (for now)");
+    DestroySwapChainImages();
+    DestroySwapChain();
     return false;
   }
 

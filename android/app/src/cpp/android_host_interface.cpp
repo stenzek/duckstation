@@ -754,13 +754,13 @@ void AndroidHostInterface::SurfaceChanged(ANativeWindow* surface, int format, in
     wi.surface_refresh_rate = GetRefreshRate();
     wi.surface_scale = GetSurfaceScale(width, height);
 
-    m_display->ChangeRenderWindow(wi);
-    if (surface)
+    const bool surface_valid = m_display->ChangeRenderWindow(wi) && surface;
+    if (surface_valid)
       OnHostDisplayResized();
 
-    if (surface && System::GetState() == System::State::Paused)
+    if (surface_valid && System::GetState() == System::State::Paused)
       PauseSystem(false);
-    else if (!surface && System::IsRunning())
+    else if (!surface_valid && System::IsRunning())
       PauseSystem(true);
   }
 }

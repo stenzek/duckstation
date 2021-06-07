@@ -576,7 +576,7 @@ bool VulkanHostDisplay::DoneRenderContextCurrent()
 
 bool VulkanHostDisplay::Render()
 {
-  if (ShouldSkipDisplayingFrame())
+  if (ShouldSkipDisplayingFrame() || !m_swap_chain)
   {
     if (ImGui::GetCurrentContext())
       ImGui::Render();
@@ -602,6 +602,7 @@ bool VulkanHostDisplay::Render()
       {
         Log_ErrorPrint("Failed to recreate surface after loss");
         g_vulkan_context->ExecuteCommandBuffer(false);
+        m_swap_chain.reset();
         return false;
       }
 
