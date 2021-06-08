@@ -9,8 +9,7 @@
 #include <cstdlib>
 #include <memory>
 
-static bool ParseCommandLineParameters(QApplication& app, QtHostInterface* host_interface,
-                                       std::unique_ptr<SystemBootParameters>* boot_params)
+static std::optional<SystemBootParameters> ParseCommandLineParameters(QApplication& app, QtHostInterface* host_interface)
 {
   const QStringList args(app.arguments());
   std::vector<std::string> converted_args;
@@ -24,7 +23,7 @@ static bool ParseCommandLineParameters(QApplication& app, QtHostInterface* host_
   for (std::string& arg : converted_args)
     converted_argv.push_back(arg.data());
 
-  return host_interface->ParseCommandLineParameters(args.size(), converted_argv.data(), boot_params);
+  return host_interface->ParseCommandLineParameters(args.size(), converted_argv.data());
 }
 
 static void SignalHandler(int signal)
@@ -80,8 +79,8 @@ int main(int argc, char* argv[])
 #endif
 
   std::unique_ptr<QtHostInterface> host_interface = std::make_unique<QtHostInterface>();
-  std::unique_ptr<SystemBootParameters> boot_params;
-  if (!ParseCommandLineParameters(app, host_interface.get(), &boot_params))
+  std::optional<SystemBootParameters> boot_params = ParseCommandLineParameters(app, host_interface.get());
+  if (!boot_params)
     return EXIT_FAILURE;
 
   std::unique_ptr<MainWindow> window = std::make_unique<MainWindow>(host_interface.get());
@@ -101,9 +100,9 @@ int main(int argc, char* argv[])
   if (!host_interface->inBatchMode())
     host_interface->refreshGameList();
 
-  if (boot_params)
+  if (boot_params->hasFile())
   {
-    host_interface->bootSystem(std::move(boot_params));
+    host_interface->bootSystem(std::move(*boot_params));
   }
   else
   {

@@ -47,11 +47,18 @@ Log_SetChannel(System);
 
 SystemBootParameters::SystemBootParameters() = default;
 
+SystemBootParameters::SystemBootParameters(const SystemBootParameters& other) = default;
+
 SystemBootParameters::SystemBootParameters(SystemBootParameters&& other) = default;
 
 SystemBootParameters::SystemBootParameters(std::string filename_) : filename(std::move(filename_)) {}
 
 SystemBootParameters::~SystemBootParameters() = default;
+
+bool SystemBootParameters::hasFile() const
+{
+  return !filename.empty() || !state_filename.empty();
+}
 
 namespace System {
 
@@ -695,10 +702,12 @@ bool Boot(const SystemBootParameters& params)
   s_startup_cancelled.store(false);
   s_region = g_settings.region;
 
-  if (params.state_stream)
+  if (!params.state_filename.empty())
   {
-    if (!DoLoadState(params.state_stream.get(), params.force_software_renderer, true))
+    auto state_stream = FileSystem::OpenFile(params.state_filename.c_str(), BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
+    if (!state_stream || !DoLoadState(state_stream.get(), params.force_software_renderer, true))
     {
+      Log_ErrorPrintf("Failed to load save state file '%s'", params.state_filename.c_str());
       Shutdown();
       return false;
     }

@@ -59,7 +59,7 @@ static std::unique_ptr<NoGUIHostInterface> CreateHostInterface()
   return host_interface;
 }
 
-static int Run(std::unique_ptr<NoGUIHostInterface> host_interface, std::unique_ptr<SystemBootParameters> boot_params)
+static int Run(std::unique_ptr<NoGUIHostInterface> host_interface, const SystemBootParameters& boot_params)
 {
   if (!host_interface->Initialize())
   {
@@ -67,9 +67,8 @@ static int Run(std::unique_ptr<NoGUIHostInterface> host_interface, std::unique_p
     return EXIT_FAILURE;
   }
 
-  if (boot_params)
-    host_interface->BootSystem(*boot_params);
-  boot_params.reset(); // Need to free resume file handle so auto save on exit works
+  if (boot_params.hasFile())
+    host_interface->BootSystem(boot_params);
 
   int result;
   if (System::IsValid() || !host_interface->InBatchMode())
@@ -91,42 +90,38 @@ static int Run(std::unique_ptr<NoGUIHostInterface> host_interface, std::unique_p
 
 int wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nShowCmd)
 {
-  std::unique_ptr<NoGUIHostInterface> host_interface = CreateHostInterface();
-  std::unique_ptr<SystemBootParameters> boot_params;
+  std::vector<std::string> argc_strings;
+  argc_strings.reserve(1);
 
+  // CommandLineToArgvW() only adds the program path if the command line is empty?!
+  argc_strings.push_back(FileSystem::GetProgramPath());
+
+  if (std::wcslen(lpCmdLine) > 0)
   {
-    std::vector<std::string> argc_strings;
-    argc_strings.reserve(1);
-
-    // CommandLineToArgvW() only adds the program path if the command line is empty?!
-    argc_strings.push_back(FileSystem::GetProgramPath());
-
-    if (std::wcslen(lpCmdLine) > 0)
+    int argc;
+    LPWSTR* argv_wide = CommandLineToArgvW(lpCmdLine, &argc);
+    if (argv_wide)
     {
-      int argc;
-      LPWSTR* argv_wide = CommandLineToArgvW(lpCmdLine, &argc);
-      if (argv_wide)
-      {
-        for (int i = 0; i < argc; i++)
-          argc_strings.push_back(StringUtil::WideStringToUTF8String(argv_wide[i]));
+      for (int i = 0; i < argc; i++)
+        argc_strings.push_back(StringUtil::WideStringToUTF8String(argv_wide[i]));
 
-        LocalFree(argv_wide);
-      }
-    }
-
-    std::vector<char*> argc_pointers;
-    argc_pointers.reserve(argc_strings.size());
-    for (std::string& arg : argc_strings)
-      argc_pointers.push_back(arg.data());
-
-    if (!host_interface->ParseCommandLineParameters(static_cast<int>(argc_pointers.size()), argc_pointers.data(),
-                                                    &boot_params))
-    {
-      return EXIT_FAILURE;
+      LocalFree(argv_wide);
     }
   }
 
-  return Run(std::move(host_interface), std::move(boot_params));
+  std::vector<char*> argc_pointers;
+  argc_pointers.reserve(argc_strings.size());
+  for (std::string& arg : argc_strings)
+    argc_pointers.push_back(arg.data());
+
+  std::unique_ptr<NoGUIHostInterface> host_interface = CreateHostInterface();
+  std::optional<SystemBootParameters> boot_params =
+    host_interface->ParseCommandLineParameters(static_cast<int>(argc_pointers.size()), argc_pointers.data());
+
+  if (!boot_params)
+    return EXIT_FAILURE;
+
+  return Run(std::move(host_interface), *boot_params);
 }
 
 #else
@@ -134,11 +129,11 @@ int wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int
 int main(int argc, char* argv[])
 {
   std::unique_ptr<NoGUIHostInterface> host_interface = CreateHostInterface();
-  std::unique_ptr<SystemBootParameters> boot_params;
-  if (!host_interface->ParseCommandLineParameters(argc, argv, &boot_params))
+  std::optional<SystemBootParameters> boot_params = host_interface->ParseCommandLineParameters(argc, argv);
+  if (!boot_params)
     return EXIT_FAILURE;
 
-  return Run(std::move(host_interface), std::move(boot_params));
+  return Run(std::move(host_interface), *boot_params);
 }
 
 #endif

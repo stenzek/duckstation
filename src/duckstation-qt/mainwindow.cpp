@@ -478,12 +478,12 @@ void MainWindow::onStartDiscActionTriggered()
   if (filename.isEmpty())
     return;
 
-  m_host_interface->bootSystem(std::make_shared<const SystemBootParameters>(filename.toStdString()));
+  m_host_interface->bootSystem(SystemBootParameters(filename.toStdString()));
 }
 
 void MainWindow::onStartBIOSActionTriggered()
 {
-  m_host_interface->bootSystem(std::make_shared<const SystemBootParameters>());
+  m_host_interface->bootSystem(SystemBootParameters());
 }
 
 void MainWindow::onChangeDiscFromFileActionTriggered()
@@ -656,18 +656,18 @@ void MainWindow::onGameListContextMenuRequested(const QPoint& point, const GameL
       menu.addSeparator();
 
       connect(menu.addAction(tr("Default Boot")), &QAction::triggered, [this, entry]() {
-        m_host_interface->bootSystem(std::make_shared<const SystemBootParameters>(entry->path));
+        m_host_interface->bootSystem(SystemBootParameters(entry->path));
       });
 
       connect(menu.addAction(tr("Fast Boot")), &QAction::triggered, [this, entry]() {
-        auto boot_params = std::make_shared<SystemBootParameters>(entry->path);
-        boot_params->override_fast_boot = true;
+        auto boot_params = SystemBootParameters(entry->path);
+        boot_params.override_fast_boot = true;
         m_host_interface->bootSystem(std::move(boot_params));
       });
 
       connect(menu.addAction(tr("Full Boot")), &QAction::triggered, [this, entry]() {
-        auto boot_params = std::make_shared<SystemBootParameters>(entry->path);
-        boot_params->override_fast_boot = false;
+        auto boot_params = SystemBootParameters(entry->path);
+        boot_params.override_fast_boot = false;
         m_host_interface->bootSystem(std::move(boot_params));
       });
 
@@ -676,8 +676,8 @@ void MainWindow::onGameListContextMenuRequested(const QPoint& point, const GameL
         connect(menu.addAction(tr("Boot and Debug")), &QAction::triggered, [this, entry]() {
           m_open_debugger_on_start = true;
 
-          auto boot_params = std::make_shared<SystemBootParameters>(entry->path);
-          boot_params->override_start_paused = true;
+          auto boot_params = SystemBootParameters(entry->path);
+          boot_params.override_start_paused = true;
           m_host_interface->bootSystem(std::move(boot_params));
         });
       }
@@ -976,7 +976,7 @@ void MainWindow::startGameOrChangeDiscs(const std::string& path)
     if (m_host_interface->CanResumeSystemFromFile(path.c_str()))
       m_host_interface->resumeSystemFromState(QString::fromStdString(path), true);
     else
-      m_host_interface->bootSystem(std::make_shared<const SystemBootParameters>(path));
+      m_host_interface->bootSystem(SystemBootParameters(path));
   }
   else
   {

@@ -156,7 +156,7 @@ public:
   ALWAYS_INLINE bool IsFullscreenUIEnabled() const { return m_fullscreen_ui_enabled; }
 
   /// Parses command line parameters for all frontends.
-  bool ParseCommandLineParameters(int argc, char* argv[], std::unique_ptr<SystemBootParameters>* out_boot_params);
+  std::optional<SystemBootParameters> ParseCommandLineParameters(int argc, char* argv[]);
 
   /// Returns a path where an input profile with the specified name would be saved.
   std::string GetSavePathForInputProfile(const char* name) const;

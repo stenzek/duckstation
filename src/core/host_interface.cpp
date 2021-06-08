@@ -85,7 +85,7 @@ s32 HostInterface::GetAudioOutputVolume() const
 
 bool HostInterface::BootSystem(const SystemBootParameters& parameters)
 {
-  if (!parameters.state_stream)
+  if (parameters.state_filename.empty())
   {
     if (parameters.filename.empty())
       Log_InfoPrintf("Boot Filename: <BIOS/Shell>");
@@ -400,14 +400,15 @@ bool HostInterface::HasAnyBIOSImages()
 
 bool HostInterface::LoadState(const char* filename)
 {
-  std::unique_ptr<ByteStream> stream = FileSystem::OpenFile(filename, BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
-  if (!stream)
-    return false;
-
   AddFormattedOSDMessage(5.0f, TranslateString("OSDMessage", "Loading state from '%s'..."), filename);
 
   if (!System::IsShutdown())
   {
+    std::unique_ptr<ByteStream> stream =
+      FileSystem::OpenFile(filename, BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
+    if (!stream)
+      return false;
+
     if (!System::LoadState(stream.get()))
     {
       ReportFormattedError(TranslateString("OSDMessage", "Loading state from '%s' failed. Resetting."), filename);
@@ -418,7 +419,7 @@ bool HostInterface::LoadState(const char* filename)
   else
   {
     SystemBootParameters boot_params;
-    boot_params.state_stream = std::move(stream);
+    boot_params.state_filename = filename;
     if (!BootSystem(boot_params))
       return false;
   }
@@ -1163,9 +1164,7 @@ void HostInterface::RecreateSystem()
 
   DestroySystem();
 
-  SystemBootParameters boot_params;
-  boot_params.state_stream = std::move(stream);
-  if (!BootSystem(boot_params))
+  if (!BootSystem(SystemBootParameters()) || !System::LoadState(stream.get()))
   {
     ReportError("Failed to boot system after recreation.");
     return;

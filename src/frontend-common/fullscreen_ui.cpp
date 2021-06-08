@@ -551,9 +551,7 @@ static void DoStartPath(const std::string& path, bool allow_resume)
     return;
   }
 
-  SystemBootParameters params;
-  params.filename = path;
-  s_host_interface->BootSystem(params);
+  s_host_interface->BootSystem(SystemBootParameters(path));
 }
 
 static void DoStartFile()
@@ -572,8 +570,7 @@ static void DoStartFile()
 static void DoStartBIOS()
 {
   s_host_interface->RunLater([]() {
-    SystemBootParameters boot_params;
-    s_host_interface->BootSystem(boot_params);
+    s_host_interface->BootSystem(SystemBootParameters());
   });
   ClearImGuiFocus();
 }

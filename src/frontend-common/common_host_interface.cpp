@@ -284,14 +284,13 @@ static void PrintCommandLineHelp(const char* progname, const char* frontend_name
     Log::SetConsoleOutputParams(false);
 }
 
-bool CommonHostInterface::ParseCommandLineParameters(int argc, char* argv[],
-                                                     std::unique_ptr<SystemBootParameters>* out_boot_params)
+std::optional<SystemBootParameters> CommonHostInterface::ParseCommandLineParameters(int argc, char* argv[])
 {
-  std::optional<bool> force_fast_boot;
-  std::optional<bool> force_fullscreen;
+  SystemBootParameters boot_params;
+  auto& boot_filename = boot_params.filename;
+  auto& state_filename = boot_params.state_filename;
+
   std::optional<s32> state_index;
-  std::string state_filename;
-  std::string boot_filename;
   bool no_more_args = false;
 
   for (int i = 1; i < argc; i++)
@@ -304,12 +303,12 @@ bool CommonHostInterface::ParseCommandLineParameters(int argc, char* argv[],
       if (CHECK_ARG("-help"))
       {
         PrintCommandLineHelp(argv[0], GetFrontendName());
-        return false;
+        return {};
       }
       else if (CHECK_ARG("-version"))
       {
         PrintCommandLineVersion(GetFrontendName());
-        return false;
+        return {};
       }
       else if (CHECK_ARG("-batch"))
       {
@@ -320,13 +319,13 @@ bool CommonHostInterface::ParseCommandLineParameters(int argc, char* argv[],
       else if (CHECK_ARG("-fastboot"))
       {
         Log_InfoPrintf("Forcing fast boot.");
-        force_fast_boot = true;
+        boot_params.override_fast_boot = true;
         continue;
       }
       else if (CHECK_ARG("-slowboot"))
       {
         Log_InfoPrintf("Forcing slow boot.");
-        force_fast_boot = false;
+        boot_params.override_fast_boot = false;
         continue;
       }
       else if (CHECK_ARG("-nocontroller"))
@@ -354,13 +353,13 @@ bool CommonHostInterface::ParseCommandLineParameters(int argc, char* argv[],
       {
         Log_InfoPrintf("Going fullscreen after booting.");
         m_flags.start_fullscreen = true;
-        force_fullscreen = true;
+        boot_params.override_fullscreen = true;
         continue;
       }
       else if (CHECK_ARG("-nofullscreen"))
       {
         Log_InfoPrintf("Preventing fullscreen after booting.");
-        force_fullscreen = false;
+        boot_params.override_fullscreen = false;
         continue;
       }
       else if (CHECK_ARG("-portable"))
@@ -387,7 +386,7 @@ bool CommonHostInterface::ParseCommandLineParameters(int argc, char* argv[],
       else if (argv[i][0] == '-')
       {
         Log_ErrorPrintf("Unknown parameter: '%s'", argv[i]);
-        return false;
+        return {};
       }
 
 #undef CHECK_ARG
@@ -418,7 +417,7 @@ bool CommonHostInterface::ParseCommandLineParameters(int argc, char* argv[],
         if (state_filename.empty() || !FileSystem::FileExists(state_filename.c_str()))
         {
           Log_ErrorPrintf("Could not find file for global save state %d", *state_index);
-          return false;
+          return {};
         }
       }
       else
@@ -438,7 +437,7 @@ bool CommonHostInterface::ParseCommandLineParameters(int argc, char* argv[],
             if (state_index >= 0) // Do not exit if -resume is specified, but resume save state does not exist
             {
               Log_ErrorPrintf("Could not find file for game '%s' save state %d", game_code.c_str(), *state_index);
-              return false;
+              return {};
             }
             else
             {
@@ -448,29 +447,9 @@ bool CommonHostInterface::ParseCommandLineParameters(int argc, char* argv[],
         }
       }
     }
-
-    std::unique_ptr<SystemBootParameters> boot_params = std::make_unique<SystemBootParameters>();
-    boot_params->filename = std::move(boot_filename);
-    boot_params->override_fast_boot = std::move(force_fast_boot);
-    boot_params->override_fullscreen = std::move(force_fullscreen);
-
-    if (!state_filename.empty())
-    {
-      std::unique_ptr<ByteStream> state_stream =
-        FileSystem::OpenFile(state_filename.c_str(), BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
-      if (!state_stream)
-      {
-        Log_ErrorPrintf("Failed to open save state file '%s'", state_filename.c_str());
-        return false;
-      }
-
-      boot_params->state_stream = std::move(state_stream);
-    }
-
-    *out_boot_params = std::move(boot_params);
   }
 
-  return true;
+  return boot_params;
 }
 
 void CommonHostInterface::OnAchievementsRefreshed()
@@ -739,9 +718,7 @@ bool CommonHostInterface::CanResumeSystemFromFile(const char* filename)
 
 bool CommonHostInterface::ResumeSystemFromState(const char* filename, bool boot_on_failure)
 {
-  SystemBootParameters boot_params;
-  boot_params.filename = filename;
-  if (!BootSystem(boot_params))
+  if (!BootSystem(SystemBootParameters(filename)))
     return false;
 
   const bool global = System::GetRunningCode().empty();
