@@ -11,7 +11,6 @@ on:
     branches:
       - master
       - dev
-      - play-store
     paths-ignore:
       - '**.md'
       - 'appveyor.yml'
@@ -22,7 +21,6 @@ on:
 jobs:
   windows-build:
     runs-on: windows-2019
-    if: github.ref != 'refs/heads/play-store'
     steps:
     - uses: actions/checkout@v2.3.1
       with:
@@ -90,7 +88,6 @@ jobs:
 
   windows-arm64-build:
     runs-on: windows-2019
-    if: github.ref != 'refs/heads/play-store'
     steps:
     - uses: actions/checkout@v2.3.1
       with:
@@ -159,7 +156,6 @@ jobs:
 
   linux-build:
     runs-on: ubuntu-20.04
-    if: github.ref != 'refs/heads/play-store'
     steps:
     - uses: actions/checkout@v2.3.1
       with:
@@ -205,75 +201,8 @@ jobs:
         path: "build/duckstation-qt-x64.AppImage.zsync"
 
 
-  android-build:
-    runs-on: ubuntu-20.04
-    steps:
-    - uses: actions/checkout@v2.3.1
-      with:
-        fetch-depth: 0
-
-    - name: Compile App Bundle with Gradle
-      shell: bash
-      run: |
-        cd android
-        ./gradlew bundleRelease
-
-    - name: Sign App Bundle
-      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/play-store'
-      uses: r0adkll/sign-android-release@v1
-      with:
-        releaseDirectory: android/app/build/outputs/bundle/release
-        signingKeyBase64: ${{ secrets.APK_SIGNING_KEY }}
-        alias: ${{ secrets.APK_KEY_ALIAS }}
-        keyStorePassword: ${{ secrets.APK_KEY_STORE_PASSWORD }}
-        keyPassword: ${{ secrets.APK_KEY_PASSWORD }}
-
-    - name: Rename App Bundle
-      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/play-store'
-      shell: bash
-      run: |
-        mv android/app/build/outputs/bundle/release/app-release.aab duckstation-android.aab
-
-    - name: Upload App Bundle
-      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/play-store'
-      uses: actions/upload-artifact@v1
-      with:
-        name: "android"
-        path: "duckstation-android.aab"
-
-    - name: Compile APK
-      shell: bash
-      run: |
-        cd android
-        ./gradlew assembleRelease
-
-    - name: Sign APK
-      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/play-store'
-      uses: r0adkll/sign-android-release@v1
-      with:
-        releaseDirectory: android/app/build/outputs/apk/release
-        signingKeyBase64: ${{ secrets.APK_SIGNING_KEY }}
-        alias: ${{ secrets.APK_KEY_ALIAS }}
-        keyStorePassword: ${{ secrets.APK_KEY_STORE_PASSWORD }}
-        keyPassword: ${{ secrets.APK_KEY_PASSWORD }}
-
-    - name: Rename APK
-      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/play-store'
-      shell: bash
-      run: |
-        mv android/app/build/outputs/apk/release/app-release-unsigned-signed.apk duckstation-android.apk
-         
-    - name: Upload APK
-      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/play-store'
-      uses: actions/upload-artifact@v1
-      with:
-        name: "android"
-        path: "duckstation-android.apk"
-
-
   macos-build:
     runs-on: macos-10.15
-    if: github.ref != 'refs/heads/play-store'
     steps:
     - uses: actions/checkout@v2.3.1
       with:
@@ -308,9 +237,9 @@ jobs:
 
 
   create-release:
-    needs: [windows-build, windows-arm64-build, linux-build, android-build]
+    needs: [windows-build, windows-arm64-build, linux-build]
     runs-on: "ubuntu-20.04"
-    if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev') && github.ref != 'refs/heads/play-store'
+    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
     steps:
       - name: Download Windows Artifacts
         uses: actions/download-artifact@v1
@@ -364,8 +293,6 @@ jobs:
             linux-x64-appimage-nogui-zsync/duckstation-nogui-x64.AppImage.zsync
             linux-x64-appimage-qt/duckstation-qt-x64.AppImage
             linux-x64-appimage-qt-zsync/duckstation-qt-x64.AppImage.zsync
-            android/duckstation-android.aab
-            android/duckstation-android.apk
 
       - name: Create dev release
         if: github.ref == 'refs/heads/dev'
@@ -384,27 +311,3 @@ jobs:
             linux-x64-appimage-nogui-zsync/duckstation-nogui-x64.AppImage.zsync
             linux-x64-appimage-qt/duckstation-qt-x64.AppImage
             linux-x64-appimage-qt-zsync/duckstation-qt-x64.AppImage.zsync
-            android/duckstation-android.aab
-            android/duckstation-android.apk
-
-
-  create-play-store-release:
-    needs: [android-build]
-    runs-on: "ubuntu-20.04"
-    if: github.ref == 'refs/heads/play-store'
-    steps:
-      - name: Download Android APK
-        uses: actions/download-artifact@v1
-        with:
-          name: "android"
-
-      - name: Create Play Store release
-        uses: "marvinpinto/action-automatic-releases@latest"
-        with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "play-store-release"
-          prerelease: true
-          title: "Latest Play Store Build"
-          files: |
-            android/duckstation-android.aab
-            android/duckstation-android.apk
