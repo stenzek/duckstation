@@ -3,7 +3,7 @@
 
 **Discord Server:** https://discord.gg/Buktv3t
 
-**Latest Builds for Windows, Linux (AppImage), and Android** https://github.com/stenzek/duckstation/releases/tag/latest
+**Latest Builds for Windows and Linux (AppImage)** https://github.com/stenzek/duckstation/releases/tag/latest
 
 **Available on Google Play:** https://play.google.com/store/apps/details?id=com.github.stenzek.duckstation
 
@@ -127,7 +127,7 @@ If anyone is willing to volunteer to support the platform to ensure users have a
 
 A prebuilt APK is now available for Android. However, please keep in mind that the Android version does not contain all features present in the desktop version yet. You will need a device with armv7 (32-bit ARM) or AArch64 (64-bit ARM). 64-bit is preferred, the requirements are higher for 32-bit, you'll probably want at least a 1.5GHz CPU.
 
-Download link: https://github.com/stenzek/duckstation/releases/download/latest/duckstation-android.apk
+Download link: https://www.duckstation.org/android/duckstation-android.apk
 
 To use:
 1. Install and run the app for the first time.
