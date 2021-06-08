@@ -260,7 +260,7 @@ void NoGUIHostInterface::ReportError(const char* message)
   if (!m_display)
     return;
 
-  const bool was_in_frame = GImGui->FrameCount != GImGui->FrameCountEnded;
+  const bool was_in_frame = GImGui->FrameCount && GImGui->FrameCount != GImGui->FrameCountEnded;
   if (was_in_frame)
     ImGui::EndFrame();
 
