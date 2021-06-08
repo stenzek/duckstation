@@ -174,6 +174,11 @@ bool CommonHostInterface::BootSystem(std::shared_ptr<SystemBootParameters> param
   if (m_display && m_fullscreen_ui_enabled)
     FullscreenUI::EnsureGameListLoaded();
 
+  // In Challenge mode, do not allow loading a save state under any circumstances
+  // If it's present, drop it
+  if (IsCheevosChallengeModeActive())
+    parameters->state_stream.reset();
+
   ApplyRendererFromGameSettings(parameters->filename);
 
   if (!HostInterface::BootSystem(parameters))
