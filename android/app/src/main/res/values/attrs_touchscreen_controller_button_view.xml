@@ -1,6 +1,0 @@
-<resources>
-    <declare-styleable name="TouchscreenControllerButtonView">
-        <attr name="unpressedDrawable" format="color|reference" />
-        <attr name="pressedDrawable" format="color|reference" />
-    </declare-styleable>
-</resources>
