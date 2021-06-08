@@ -168,13 +168,13 @@ void CommonHostInterface::InitializeUserDirectory()
     ReportError("Failed to create one or more user directories. This may cause issues at runtime.");
 }
 
-bool CommonHostInterface::BootSystem(const SystemBootParameters& parameters)
+bool CommonHostInterface::BootSystem(std::shared_ptr<SystemBootParameters> parameters)
 {
   // If the fullscreen UI is enabled, make sure it's finished loading the game list so we don't race it.
   if (m_display && m_fullscreen_ui_enabled)
     FullscreenUI::EnsureGameListLoaded();
 
-  ApplyRendererFromGameSettings(parameters.filename);
+  ApplyRendererFromGameSettings(parameters->filename);
 
   if (!HostInterface::BootSystem(parameters))
   {
@@ -186,8 +186,8 @@ bool CommonHostInterface::BootSystem(const SystemBootParameters& parameters)
   }
 
   // enter fullscreen if requested in the parameters
-  if (!g_settings.start_paused && ((parameters.override_fullscreen.has_value() && *parameters.override_fullscreen) ||
-                                   (!parameters.override_fullscreen.has_value() && g_settings.start_fullscreen)))
+  if (!g_settings.start_paused && ((parameters->override_fullscreen.has_value() && *parameters->override_fullscreen) ||
+                                   (!parameters->override_fullscreen.has_value() && g_settings.start_fullscreen)))
   {
     SetFullscreen(true);
   }
@@ -739,9 +739,7 @@ bool CommonHostInterface::CanResumeSystemFromFile(const char* filename)
 
 bool CommonHostInterface::ResumeSystemFromState(const char* filename, bool boot_on_failure)
 {
-  SystemBootParameters boot_params;
-  boot_params.filename = filename;
-  if (!BootSystem(boot_params))
+  if (!BootSystem(std::make_shared<SystemBootParameters>(filename)))
     return false;
 
   const bool global = System::GetRunningCode().empty();

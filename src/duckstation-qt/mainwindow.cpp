@@ -478,12 +478,12 @@ void MainWindow::onStartDiscActionTriggered()
   if (filename.isEmpty())
     return;
 
-  m_host_interface->bootSystem(std::make_shared<const SystemBootParameters>(filename.toStdString()));
+  m_host_interface->bootSystem(std::make_shared<SystemBootParameters>(filename.toStdString()));
 }
 
 void MainWindow::onStartBIOSActionTriggered()
 {
-  m_host_interface->bootSystem(std::make_shared<const SystemBootParameters>());
+  m_host_interface->bootSystem(std::make_shared<SystemBootParameters>());
 }
 
 void MainWindow::onChangeDiscFromFileActionTriggered()
@@ -655,9 +655,8 @@ void MainWindow::onGameListContextMenuRequested(const QPoint& point, const GameL
       m_host_interface->populateGameListContextMenu(entry, this, &menu);
       menu.addSeparator();
 
-      connect(menu.addAction(tr("Default Boot")), &QAction::triggered, [this, entry]() {
-        m_host_interface->bootSystem(std::make_shared<const SystemBootParameters>(entry->path));
-      });
+      connect(menu.addAction(tr("Default Boot")), &QAction::triggered,
+              [this, entry]() { m_host_interface->bootSystem(std::make_shared<SystemBootParameters>(entry->path)); });
 
       connect(menu.addAction(tr("Fast Boot")), &QAction::triggered, [this, entry]() {
         auto boot_params = std::make_shared<SystemBootParameters>(entry->path);
@@ -976,7 +975,7 @@ void MainWindow::startGameOrChangeDiscs(const std::string& path)
     if (m_host_interface->CanResumeSystemFromFile(path.c_str()))
       m_host_interface->resumeSystemFromState(QString::fromStdString(path), true);
     else
-      m_host_interface->bootSystem(std::make_shared<const SystemBootParameters>(path));
+      m_host_interface->bootSystem(std::make_shared<SystemBootParameters>(path));
   }
   else
   {

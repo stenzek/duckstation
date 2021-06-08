@@ -68,8 +68,7 @@ static int Run(std::unique_ptr<NoGUIHostInterface> host_interface, std::unique_p
   }
 
   if (boot_params)
-    host_interface->BootSystem(*boot_params);
-  boot_params.reset(); // Need to free resume file handle so auto save on exit works
+    host_interface->BootSystem(std::move(boot_params));
 
   int result;
   if (System::IsValid() || !host_interface->InBatchMode())
