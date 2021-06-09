@@ -541,8 +541,9 @@ static ImGuiFullscreen::FileSelectorFilters GetDiscImageFilters()
 
 static void DoStartPath(const std::string& path, bool allow_resume)
 {
-  // we can never resume from exe/psf
-  if (System::IsExeFileName(path.c_str()) || System::IsPsfFileName(path.c_str()))
+  // we can never resume from exe/psf, or when challenge mode is active
+  if (System::IsExeFileName(path.c_str()) || System::IsPsfFileName(path.c_str()) ||
+      s_host_interface->IsCheevosChallengeModeActive())
     allow_resume = false;
 
   if (allow_resume && g_settings.save_state_on_exit)
