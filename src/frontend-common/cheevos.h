@@ -23,6 +23,7 @@ struct Achievement
   std::string locked_badge_path;
   std::string unlocked_badge_path;
   u32 points;
+  AchievementCategory category;
   bool locked;
   bool active;
 };
@@ -56,13 +57,15 @@ ALWAYS_INLINE u32 GetGameID()
   return g_game_id;
 }
 
-bool Initialize(bool test_mode, bool use_first_disc_from_playlist, bool enable_rich_presence, bool challenge_mode);
+bool Initialize(bool test_mode, bool use_first_disc_from_playlist, bool enable_rich_presence, bool challenge_mode,
+                bool include_unofficial);
 void Reset();
 void Shutdown();
 void Update();
 
 bool IsLoggedIn();
 bool IsTestModeActive();
+bool IsUnofficialTestModeActive();
 bool IsUsingFirstDiscFromPlaylist();
 bool IsRichPresenceEnabled();
 const std::string& GetUsername();

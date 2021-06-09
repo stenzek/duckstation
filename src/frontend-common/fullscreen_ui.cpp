@@ -2280,6 +2280,11 @@ void DrawSettingsWindow()
                                     "When enabled, DuckStation will assume all achievements are locked and not "
                                     "send any unlock notifications to the server.",
                                     "Cheevos", "TestMode", false);
+        settings_changed |=
+          ToggleButtonForNonSetting(ICON_FA_MEDAL "  Test Unofficial Achievements",
+                                    "When enabled, DuckStation will list achievements from unofficial sets. These "
+                                    "achievements are not tracked by RetroAchievements.",
+                                    "Cheevos", "UnofficialTestMode", false);
         settings_changed |= ToggleButtonForNonSetting(ICON_FA_COMPACT_DISC "  Use First Disc From Playlist",
                                                       "When enabled, the first disc in a playlist will be used for "
                                                       "achievements, regardless of which disc is active.",

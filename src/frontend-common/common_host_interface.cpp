@@ -2807,6 +2807,7 @@ void CommonHostInterface::SetDefaultSettings(SettingsInterface& si)
 #ifdef WITH_CHEEVOS
   si.SetBoolValue("Cheevos", "Enabled", false);
   si.SetBoolValue("Cheevos", "TestMode", false);
+  si.SetBoolValue("Cheevos", "UnofficialTestMode", false);
   si.SetBoolValue("Cheevos", "UseFirstDiscFromPlaylist", true);
   si.DeleteValue("Cheevos", "Username");
   si.DeleteValue("Cheevos", "Token");
@@ -3818,11 +3819,13 @@ void CommonHostInterface::UpdateCheevosActive()
 {
   const bool cheevos_enabled = GetBoolSettingValue("Cheevos", "Enabled", false);
   const bool cheevos_test_mode = GetBoolSettingValue("Cheevos", "TestMode", false);
+  const bool cheevos_unofficial_test_mode = GetBoolSettingValue("Cheevos", "UnofficialTestMode", false);
   const bool cheevos_use_first_disc_from_playlist = GetBoolSettingValue("Cheevos", "UseFirstDiscFromPlaylist", true);
   const bool cheevos_rich_presence = GetBoolSettingValue("Cheevos", "RichPresence", true);
   const bool cheevos_hardcore = GetBoolSettingValue("Cheevos", "ChallengeMode", false);
 
   if (cheevos_enabled != Cheevos::IsActive() || cheevos_test_mode != Cheevos::IsTestModeActive() ||
+      cheevos_unofficial_test_mode != Cheevos::IsUnofficialTestModeActive() ||
       cheevos_use_first_disc_from_playlist != Cheevos::IsUsingFirstDiscFromPlaylist() ||
       cheevos_rich_presence != Cheevos::IsRichPresenceEnabled() ||
       cheevos_hardcore != Cheevos::IsChallengeModeEnabled())
@@ -3831,7 +3834,7 @@ void CommonHostInterface::UpdateCheevosActive()
     if (cheevos_enabled)
     {
       if (!Cheevos::Initialize(cheevos_test_mode, cheevos_use_first_disc_from_playlist, cheevos_rich_presence,
-                               cheevos_hardcore))
+                               cheevos_hardcore, cheevos_unofficial_test_mode))
         ReportError("Failed to initialize cheevos after settings change.");
     }
   }
