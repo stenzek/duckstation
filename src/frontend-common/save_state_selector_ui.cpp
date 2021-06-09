@@ -278,12 +278,16 @@ void SaveStateSelectorUI::Draw()
       ImGui::SetCursorPosX(padding);
       ImGui::BeginTable("table", 2);
 
+      const bool hide_load_button = m_host_interface->IsCheevosChallengeModeActive();
       ImGui::TableNextColumn();
-      ImGui::TextUnformatted(m_load_legend.c_str());
+      ImGui::TextUnformatted(!hide_load_button ? m_load_legend.c_str() : m_save_legend.c_str());
       ImGui::TableNextColumn();
       ImGui::TextUnformatted(m_prev_legend.c_str());
       ImGui::TableNextColumn();
-      ImGui::TextUnformatted(m_save_legend.c_str());
+      if (!hide_load_button)
+      {
+        ImGui::TextUnformatted(m_save_legend.c_str());
+      }
       ImGui::TableNextColumn();
       ImGui::TextUnformatted(m_next_legend.c_str());
 

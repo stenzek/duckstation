@@ -32,7 +32,7 @@ class INISettingsInterface;
 class MainWindow;
 class QtDisplayWidget;
 
-Q_DECLARE_METATYPE(std::shared_ptr<const SystemBootParameters>);
+Q_DECLARE_METATYPE(std::shared_ptr<SystemBootParameters>);
 Q_DECLARE_METATYPE(const GameListEntry*);
 Q_DECLARE_METATYPE(GPURenderer);
 
@@ -149,7 +149,7 @@ public Q_SLOTS:
   void applySettings(bool display_osd_messages = false);
   void updateInputMap();
   void applyInputProfile(const QString& profile_path);
-  void bootSystem(std::shared_ptr<const SystemBootParameters> params);
+  void bootSystem(std::shared_ptr<SystemBootParameters> params);
   void resumeSystemFromState(const QString& filename, bool boot_on_failure);
   void resumeSystemFromMostRecentState();
   void powerOffSystem();

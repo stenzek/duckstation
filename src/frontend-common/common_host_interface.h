@@ -129,7 +129,7 @@ public:
 
   virtual void Shutdown() override;
 
-  virtual bool BootSystem(const SystemBootParameters& parameters) override;
+  virtual bool BootSystem(std::shared_ptr<SystemBootParameters> parameters) override;
   virtual void ResetSystem() override;
   virtual void DestroySystem() override;
 
