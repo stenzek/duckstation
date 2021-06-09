@@ -274,7 +274,7 @@ bool File::HandleTrackCommand(const char* line, u32 line_number, Common::Error* 
     mode = TrackMode::Mode2Raw;
   else
   {
-    SetError(line_number, error, "Invalid mode: '*%s'", static_cast<int>(mode_str.length()), mode_str.data());
+    SetError(line_number, error, "Invalid mode: '%*s'", static_cast<int>(mode_str.length()), mode_str.data());
     return false;
   }
 

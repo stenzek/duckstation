@@ -37,6 +37,7 @@ private Q_SLOTS:
   void onVerifyDumpClicked();
   void onExportCompatibilityInfoClicked();
   void updateCPUClockSpeedLabel();
+  void onEnableCPUClockSpeedControlChecked(int state);
 
 private:
   void setupAdditionalUi();

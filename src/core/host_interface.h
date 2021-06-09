@@ -51,7 +51,7 @@ public:
   /// Shuts down the emulator frontend.
   virtual void Shutdown();
 
-  virtual bool BootSystem(const SystemBootParameters& parameters);
+  virtual bool BootSystem(std::shared_ptr<SystemBootParameters> parameters);
   virtual void PauseSystem(bool paused);
   virtual void ResetSystem();
   virtual void DestroySystem();

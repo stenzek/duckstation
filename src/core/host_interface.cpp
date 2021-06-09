@@ -83,14 +83,14 @@ s32 HostInterface::GetAudioOutputVolume() const
   return g_settings.audio_output_muted ? 0 : g_settings.audio_output_volume;
 }
 
-bool HostInterface::BootSystem(const SystemBootParameters& parameters)
+bool HostInterface::BootSystem(std::shared_ptr<SystemBootParameters> parameters)
 {
   if (parameters.state_filename.empty())
   {
-    if (parameters.filename.empty())
+    if (parameters->filename.empty())
       Log_InfoPrintf("Boot Filename: <BIOS/Shell>");
     else
-      Log_InfoPrintf("Boot Filename: %s", parameters.filename.c_str());
+      Log_InfoPrintf("Boot Filename: %s", parameters->filename.c_str());
   }
 
   if (!AcquireHostDisplay())
@@ -108,7 +108,7 @@ bool HostInterface::BootSystem(const SystemBootParameters& parameters)
   // create the audio stream. this will never fail, since we'll just fall back to null
   CreateAudioStream();
 
-  if (!System::Boot(parameters))
+  if (!System::Boot(*parameters))
   {
     if (!System::IsStartupCancelled())
     {
@@ -1164,7 +1164,7 @@ void HostInterface::RecreateSystem()
 
   DestroySystem();
 
-  if (!BootSystem(SystemBootParameters()) || !System::LoadState(stream.get()))
+  if (!System::LoadState(stream.get()))
   {
     ReportError("Failed to boot system after recreation.");
     return;

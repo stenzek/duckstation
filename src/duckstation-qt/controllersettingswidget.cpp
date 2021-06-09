@@ -453,6 +453,7 @@ void ControllerSettingsWidget::createPortBindingSettingsUi(int index, PortSettin
   }
 
   // turbo/autofire
+  if (ctype != ControllerType::None)
   {
     layout->addWidget(QtUtils::CreateHorizontalLine(ui->widget), start_row++, 0, 1, 4);
 

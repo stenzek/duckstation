@@ -3916,10 +3916,6 @@ Login token generated on %2.</source>
         <translation>%u チートは有効になりました。</translation>
     </message>
     <message>
-        <source>Ignoring mismatched controller type %s in port %u.</source>
-        <translation>ポート %uの不一致のコントローラータイプ %s を無視します。</translation>
-    </message>
-    <message>
         <source>Cheat &apos;%s&apos; enabled.</source>
         <translation>チート &apos;%s&apos; 有効</translation>
     </message>
