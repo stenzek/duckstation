@@ -271,11 +271,6 @@ jobs:
         with:
           name: "linux-x64-appimage-qt-zsync"
 
-      - name: Download Android APK
-        uses: actions/download-artifact@v1
-        with:
-          name: "android"
-
       - name: Create preview release
         if: github.ref == 'refs/heads/master'
         uses: "marvinpinto/action-automatic-releases@latest"
