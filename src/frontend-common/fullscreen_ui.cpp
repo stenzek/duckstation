@@ -1203,6 +1203,7 @@ static bool ConfirmChallengeModeEnable()
   if (!s_host_interface->ConfirmMessage(message))
     return false;
 
+  SaveAndApplySettings();
   s_host_interface->PowerOffSystem(s_host_interface->ShouldSaveResumeState());
   return true;
 }
@@ -2266,8 +2267,6 @@ void DrawSettingsWindow()
           s_host_interface->RunLater([]() {
             if (!ConfirmChallengeModeEnable())
               s_host_interface->GetSettingsInterface()->SetBoolValue("Cheevos", "Enabled", false);
-            else
-              SaveAndApplySettings();
           });
         }
 
@@ -2293,8 +2292,6 @@ void DrawSettingsWindow()
           s_host_interface->RunLater([]() {
             if (!ConfirmChallengeModeEnable())
               s_host_interface->GetSettingsInterface()->SetBoolValue("Cheevos", "ChallengeMode", false);
-            else
-              SaveAndApplySettings();
           });
         }
 
