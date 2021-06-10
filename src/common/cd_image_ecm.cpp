@@ -234,6 +234,17 @@ bool CDImageEcm::Open(const char* filename, Common::Error* error)
     return false;
   }
 
+  s64 file_size;
+  if (FileSystem::FSeek64(m_fp, 0, SEEK_END) != 0 || (file_size = FileSystem::FTell64(m_fp)) <= 0 ||
+      FileSystem::FSeek64(m_fp, 0, SEEK_SET) != 0)
+  {
+    Log_ErrorPrintf("Get file size failed: errno %d", errno);
+    if (error)
+      error->SetErrno(errno);
+
+    return false;
+  }
+
   char header[4];
   if (std::fread(header, sizeof(header), 1, m_fp) != 1 || header[0] != 'E' || header[1] != 'C' || header[2] != 'M' ||
       header[3] != 0)
@@ -306,6 +317,13 @@ bool CDImageEcm::Open(const char* filename, Common::Error* error)
         disc_offset += size;
         file_offset += size;
         count -= size;
+
+        if (static_cast<s64>(file_offset) > file_size)
+        {
+          Log_ErrorPrintf("Out of file bounds after %zu chunks", m_data_map.size());
+          if (error)
+            error->SetFormattedMessage("Out of file bounds after %zu chunks", m_data_map.size());
+        }
       }
     }
     else
@@ -317,6 +335,13 @@ bool CDImageEcm::Open(const char* filename, Common::Error* error)
         m_data_map.emplace(disc_offset, SectorEntry{file_offset, chunk_size, type});
         disc_offset += chunk_size;
         file_offset += size;
+
+        if (static_cast<s64>(file_offset) > file_size)
+        {
+          Log_ErrorPrintf("Out of file bounds after %zu chunks", m_data_map.size());
+          if (error)
+            error->SetFormattedMessage("Out of file bounds after %zu chunks", m_data_map.size());
+        }
       }
     }
 
