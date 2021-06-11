@@ -1499,12 +1499,14 @@ void CDROM::BeginReading(TickCount ticks_late /* = 0 */, bool after_seek /* = fa
   }
 
   Log_DebugPrintf("Starting reading @ LBA %u", m_current_lba);
+
+  const TickCount ticks = GetTicksForRead();
+  const TickCount first_sector_ticks = ticks + (after_seek ? 0 : GetTicksForSeek(m_current_lba)) - ticks_late;
+
   m_secondary_status.ClearActiveBits();
   m_secondary_status.motor_on = true;
   ResetAudioDecoder();
 
-  const TickCount ticks = GetTicksForRead();
-  const TickCount first_sector_ticks = ticks + (after_seek ? 0 : GetTicksForSeek(m_current_lba)) - ticks_late;
   m_drive_state = DriveState::Reading;
   m_drive_event->SetInterval(ticks);
   m_drive_event->Schedule(first_sector_ticks);
@@ -1541,14 +1543,15 @@ void CDROM::BeginPlaying(u8 track, TickCount ticks_late /* = 0 */, bool after_se
     return;
   }
 
+  const TickCount ticks = GetTicksForRead();
+  const TickCount first_sector_ticks = ticks + (after_seek ? 0 : GetTicksForSeek(m_current_lba)) - ticks_late;
+
   m_secondary_status.ClearActiveBits();
   m_secondary_status.motor_on = true;
   m_secondary_status.playing_cdda = true;
   ClearSectorBuffers();
   ResetAudioDecoder();
 
-  const TickCount ticks = GetTicksForRead();
-  const TickCount first_sector_ticks = ticks + (after_seek ? 0 : GetTicksForSeek(m_current_lba)) - ticks_late;
   m_drive_state = DriveState::Playing;
   m_drive_event->SetInterval(ticks);
   m_drive_event->Schedule(first_sector_ticks);
