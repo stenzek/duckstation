@@ -1616,11 +1616,14 @@ void ResetPerformanceCounters()
   ResetThrottler();
 }
 
-bool LoadEXE(const char* filename)
+static bool LoadEXEToRAM(const char* filename, bool patch_bios)
 {
   std::FILE* fp = FileSystem::OpenCFile(filename, "rb");
   if (!fp)
+  {
+    Log_ErrorPrintf("Failed to open exe file '%s'", filename);
     return false;
+  }
 
   std::fseek(fp, 0, SEEK_END);
   const u32 file_size = static_cast<u32>(std::ftell(fp));
@@ -1629,6 +1632,7 @@ bool LoadEXE(const char* filename)
   BIOS::PSEXEHeader header;
   if (std::fread(&header, sizeof(header), 1, fp) != 1 || !BIOS::IsValidPSExeHeader(header, file_size))
   {
+    Log_ErrorPrintf("'%s' is not a valid PS-EXE", filename);
     std::fclose(fp);
     return false;
   }
@@ -1670,6 +1674,18 @@ bool LoadEXE(const char* filename)
   const u32 r_sp = header.initial_sp_base + header.initial_sp_offset;
   const u32 r_fp = header.initial_sp_base + header.initial_sp_offset;
   return BIOS::PatchBIOSForEXE(Bus::g_bios, Bus::BIOS_SIZE, r_pc, r_gp, r_sp, r_fp);
+}
+
+bool LoadEXE(const char* filename)
+{
+  const std::string libps_path(FileSystem::BuildRelativePath(filename, "libps.exe"));
+  if (!libps_path.empty() && FileSystem::FileExists(libps_path.c_str()) && !LoadEXEToRAM(libps_path.c_str(), false))
+  {
+    Log_ErrorPrintf("Failed to load libps.exe from '%s'", libps_path.c_str());
+    return false;
+  }
+
+  return LoadEXEToRAM(filename, true);
 }
 
 bool InjectEXEFromBuffer(const void* buffer, u32 buffer_size, bool patch_bios)
