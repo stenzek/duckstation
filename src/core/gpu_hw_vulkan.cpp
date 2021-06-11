@@ -557,14 +557,17 @@ bool GPU_HW_Vulkan::CreateFramebuffer()
     g_vulkan_context->GetRenderPass(texture_format, depth_format, samples, VK_ATTACHMENT_LOAD_OP_LOAD);
   m_vram_update_depth_render_pass =
     g_vulkan_context->GetRenderPass(VK_FORMAT_UNDEFINED, depth_format, samples, VK_ATTACHMENT_LOAD_OP_DONT_CARE);
-  m_display_render_pass = g_vulkan_context->GetRenderPass(m_display_texture.GetFormat(), VK_FORMAT_UNDEFINED,
-                                                          m_display_texture.GetSamples(), VK_ATTACHMENT_LOAD_OP_LOAD);
+  m_display_load_render_pass = g_vulkan_context->GetRenderPass(
+    m_display_texture.GetFormat(), VK_FORMAT_UNDEFINED, m_display_texture.GetSamples(), VK_ATTACHMENT_LOAD_OP_LOAD);
+  m_display_discard_render_pass =
+    g_vulkan_context->GetRenderPass(m_display_texture.GetFormat(), VK_FORMAT_UNDEFINED, m_display_texture.GetSamples(),
+                                    VK_ATTACHMENT_LOAD_OP_DONT_CARE);
   m_vram_readback_render_pass =
     g_vulkan_context->GetRenderPass(m_vram_readback_texture.GetFormat(), VK_FORMAT_UNDEFINED,
                                     m_vram_readback_texture.GetSamples(), VK_ATTACHMENT_LOAD_OP_DONT_CARE);
 
   if (m_vram_render_pass == VK_NULL_HANDLE || m_vram_update_depth_render_pass == VK_NULL_HANDLE ||
-      m_display_render_pass == VK_NULL_HANDLE || m_vram_readback_render_pass == VK_NULL_HANDLE)
+      m_display_load_render_pass == VK_NULL_HANDLE || m_vram_readback_render_pass == VK_NULL_HANDLE)
   {
     return false;
   }
@@ -581,7 +584,7 @@ bool GPU_HW_Vulkan::CreateFramebuffer()
 
   m_vram_update_depth_framebuffer = m_vram_depth_texture.CreateFramebuffer(m_vram_update_depth_render_pass);
   m_vram_readback_framebuffer = m_vram_readback_texture.CreateFramebuffer(m_vram_readback_render_pass);
-  m_display_framebuffer = m_display_texture.CreateFramebuffer(m_display_render_pass);
+  m_display_framebuffer = m_display_texture.CreateFramebuffer(m_display_load_render_pass);
   if (m_vram_update_depth_framebuffer == VK_NULL_HANDLE || m_vram_readback_framebuffer == VK_NULL_HANDLE ||
       m_display_framebuffer == VK_NULL_HANDLE)
   {
@@ -1144,7 +1147,7 @@ bool GPU_HW_Vulkan::CompilePipelines()
 
   // Display
   {
-    gpbuilder.SetRenderPass(m_display_render_pass, 0);
+    gpbuilder.SetRenderPass(m_display_load_render_pass, 0);
     gpbuilder.SetPipelineLayout(m_single_sampler_pipeline_layout);
     gpbuilder.SetVertexShader(fullscreen_quad_vertex_shader);
     gpbuilder.SetNoCullRasterizationState();
@@ -1224,7 +1227,7 @@ bool GPU_HW_Vulkan::CompilePipelines()
 
     gpbuilder.SetFragmentShader(fs);
     gpbuilder.SetPipelineLayout(m_downsample_composite_pipeline_layout);
-    gpbuilder.SetRenderPass(m_display_render_pass, 0);
+    gpbuilder.SetRenderPass(m_display_load_render_pass, 0);
     m_downsample_composite_pass_pipeline = gpbuilder.Create(device, pipeline_cache, false);
     vkDestroyShaderModule(g_vulkan_context->GetDevice(), fs, nullptr);
     if (m_downsample_composite_pass_pipeline == VK_NULL_HANDLE)
@@ -1399,7 +1402,9 @@ void GPU_HW_Vulkan::UpdateDisplay()
       Assert(scaled_display_width <= m_display_texture.GetWidth() &&
              scaled_display_height <= m_display_texture.GetHeight());
 
-      BeginRenderPass(m_display_render_pass, m_display_framebuffer, 0, 0, scaled_display_width, scaled_display_height);
+      BeginRenderPass((interlaced != InterlacedRenderMode::None) ? m_display_load_render_pass :
+                                                                   m_display_discard_render_pass,
+                      m_display_framebuffer, 0, 0, scaled_display_width, scaled_display_height);
 
       vkCmdBindPipeline(
         cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -1915,7 +1920,7 @@ void GPU_HW_Vulkan::DownsampleFramebufferAdaptive(Vulkan::Texture& source, u32 l
   {
     m_display_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
-    BeginRenderPass(m_display_render_pass, m_display_framebuffer, left, top, width, height);
+    BeginRenderPass(m_display_load_render_pass, m_display_framebuffer, left, top, width, height);
     Vulkan::Util::SetViewportAndScissor(cmdbuf, left, top, width, height);
     vkCmdBindPipeline(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, m_downsample_composite_pass_pipeline);
     vkCmdBindDescriptorSets(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, m_downsample_composite_pipeline_layout, 0, 1,

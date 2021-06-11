@@ -83,7 +83,8 @@ private:
 
   VkRenderPass m_vram_render_pass = VK_NULL_HANDLE;
   VkRenderPass m_vram_update_depth_render_pass = VK_NULL_HANDLE;
-  VkRenderPass m_display_render_pass = VK_NULL_HANDLE;
+  VkRenderPass m_display_load_render_pass = VK_NULL_HANDLE;
+  VkRenderPass m_display_discard_render_pass = VK_NULL_HANDLE;
   VkRenderPass m_vram_readback_render_pass = VK_NULL_HANDLE;
 
   VkDescriptorSetLayout m_batch_descriptor_set_layout = VK_NULL_HANDLE;
