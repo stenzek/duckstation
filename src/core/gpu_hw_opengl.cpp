@@ -932,6 +932,12 @@ void GPU_HW_OpenGL::UpdateDisplay()
       m_display_texture.BindFramebuffer(GL_DRAW_FRAMEBUFFER);
       m_vram_texture.Bind();
 
+      if (interlaced == InterlacedRenderMode::None && (GLAD_GL_VERSION_4_3 || GLAD_GL_ES_VERSION_3_0))
+      {
+        static constexpr std::array<GLenum, 1> attachments = {GL_COLOR_ATTACHMENT0};
+        glInvalidateFramebuffer(GL_DRAW_FRAMEBUFFER, static_cast<GLsizei>(attachments.size()), attachments.data());
+      }
+
       const u8 height_div2 = BoolToUInt8(interlaced == GPU_HW::InterlacedRenderMode::SeparateFields);
       const u32 reinterpret_field_offset = (interlaced != InterlacedRenderMode::None) ? GetInterlacedDisplayField() : 0;
       const u32 scaled_flipped_vram_offset_y = m_vram_texture.GetHeight() - scaled_vram_offset_y -
