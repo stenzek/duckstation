@@ -146,7 +146,8 @@ private:
     Playing,
     Pausing,
     Stopping,
-    ChangingSession
+    ChangingSession,
+    SpinningUp
   };
 
   union StatusRegister
@@ -281,6 +282,7 @@ private:
   void DoPauseComplete();
   void DoStopComplete();
   void DoChangeSessionComplete();
+  void DoSpinUpComplete();
   void DoIDRead();
   void DoTOCRead();
   void DoSectorRead();

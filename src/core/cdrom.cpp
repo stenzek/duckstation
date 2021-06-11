@@ -276,7 +276,10 @@ void CDROM::InsertMedia(std::unique_ptr<CDImage> media)
 
   // motor automatically spins up
   if (m_drive_state != DriveState::ShellOpening)
-    m_secondary_status.motor_on = true;
+  {
+    m_drive_state = DriveState::SpinningUp;
+    m_drive_event->Schedule(System::GetTicksPerSecond());
+  }
 
   // reading TOC? interestingly this doesn't work for GetlocL though...
   CDImage::SubChannelQ subq;
@@ -698,8 +701,18 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba)
   u32 ticks = std::max<u32>(
     20000, static_cast<u32>(
              ((static_cast<u64>(lba_diff) * static_cast<u64>(tps) * static_cast<u64>(1000)) / (72 * 60 * 75)) / 1000));
+
+  // Motor spin-up time.
   if (!m_secondary_status.motor_on)
-    ticks += tps;
+  {
+    ticks += (m_drive_state == DriveState::SpinningUp) ? m_drive_event->GetTicksUntilNextExecution() : tps;
+    if (m_drive_state == DriveState::ShellOpening || m_drive_state == DriveState::SpinningUp)
+    {
+      m_drive_state = DriveState::Idle;
+      m_drive_event->Deactivate();
+    }
+  }
+
   if (lba_diff >= 2550)
     ticks += static_cast<u32>((u64(tps) * 300) / 1000);
   else
@@ -1471,6 +1484,10 @@ void CDROM::ExecuteDrive(TickCount ticks_late)
       DoChangeSessionComplete();
       break;
 
+    case DriveState::SpinningUp:
+      DoSpinUpComplete();
+      break;
+
     case DriveState::Idle:
     default:
       break;
@@ -1691,7 +1708,10 @@ void CDROM::DoShellOpenComplete(TickCount ticks_late)
   m_drive_event->Deactivate();
 
   if (m_reader.HasMedia())
-    m_secondary_status.motor_on = true;
+  {
+    m_drive_state = DriveState::SpinningUp;
+    m_drive_event->Schedule(System::GetTicksPerSecond());
+  }
 }
 
 void CDROM::DoResetComplete(TickCount ticks_late)
@@ -1868,6 +1888,15 @@ void CDROM::DoChangeSessionComplete()
     // we don't emulate multisession discs.. for now
     SendAsyncErrorResponse(STAT_SEEK_ERROR, 0x40);
   }
+}
+
+void CDROM::DoSpinUpComplete()
+{
+  Log_DebugPrintf("Spinup complete");
+  m_drive_state = DriveState::Idle;
+  m_drive_event->Deactivate();
+  m_secondary_status.ClearActiveBits();
+  m_secondary_status.motor_on = true;
 }
 
 void CDROM::DoIDRead()
@@ -2477,9 +2506,9 @@ void CDROM::DrawDebugWindow()
 
   if (ImGui::CollapsingHeader("Status/Mode", ImGuiTreeNodeFlags_DefaultOpen))
   {
-    static constexpr std::array<const char*, 12> drive_state_names = {
+    static constexpr std::array<const char*, 13> drive_state_names = {
       {"Idle", "Opening Shell", "Resetting", "Seeking (Physical)", "Seeking (Logical)", "Reading ID", "Reading TOC",
-       "Reading", "Playing", "Pausing", "Stopping", "Changing Session"}};
+       "Reading", "Playing", "Pausing", "Stopping", "Changing Session", "Spinning Up"}};
 
     ImGui::Columns(3);
 
