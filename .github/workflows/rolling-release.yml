@@ -66,12 +66,7 @@ jobs:
     - name: Remove extra bloat before archiving
       shell: cmd
       run: |
-        del /Q bin\x64\*.pdb
-        del /Q bin\x64\*.exp
-        del /Q bin\x64\*.lib
-        del /Q bin\x64\*.iobj
-        del /Q bin\x64\*.ipdb
-        del /Q bin\x64\common-tests*
+        del /Q bin\x64\*.pdb bin\x64\*.exp bin\x64\*.lib bin\x64\*.iobj bin\x64\*.ipdb bin\x64\common-tests*
         rename bin\x64\updater-x64-ReleaseLTCG.exe updater.exe
 
     - name: Create x64 release archive
@@ -134,12 +129,7 @@ jobs:
     - name: Remove extra bloat before archiving
       shell: cmd
       run: |
-        del /Q bin\ARM64\*.pdb
-        del /Q bin\ARM64\*.exp
-        del /Q bin\ARM64\*.lib
-        del /Q bin\ARM64\*.iobj
-        del /Q bin\ARM64\*.ipdb
-        del /Q bin\ARM64\common-tests*
+        del /Q bin\ARM64\*.pdb bin\ARM64\*.exp bin\ARM64\*.lib bin\ARM64\*.iobj bin\ARM64\*.ipdb bin\ARM64\common-tests*
         rename bin\ARM64\updater-ARM64-ReleaseLTCG.exe updater.exe
                 
     - name: Create arm64 release archive
