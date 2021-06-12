@@ -28,7 +28,28 @@
 Log_SetChannel(PGXP);
 
 namespace PGXP {
-// pgxp_types.h
+
+enum : u32
+{
+  VERTEX_CACHE_WIDTH = 0x800 * 2,
+  VERTEX_CACHE_HEIGHT = 0x800 * 2,
+  VERTEX_CACHE_SIZE = VERTEX_CACHE_WIDTH * VERTEX_CACHE_HEIGHT,
+  PGXP_MEM_SIZE = 3 * 2048 * 1024 / 4,
+  PGXP_MEM_SCRATCH_OFFSET = 2048 * 1024 / 4
+};
+
+#define NONE 0
+#define ALL 0xFFFFFFFF
+#define VALID 1
+#define VALID_0 (VALID << 0)
+#define VALID_1 (VALID << 8)
+#define VALID_2 (VALID << 16)
+#define VALID_3 (VALID << 24)
+#define VALID_01 (VALID_0 | VALID_1)
+#define VALID_012 (VALID_0 | VALID_1 | VALID_2)
+#define VALID_ALL (VALID_0 | VALID_1 | VALID_2 | VALID_3)
+#define INV_VALID_ALL (ALL ^ VALID_ALL)
+
 typedef struct PGXP_value_Tag
 {
   float x;
@@ -40,15 +61,9 @@ typedef struct PGXP_value_Tag
     unsigned char compFlags[4];
     unsigned short halfFlags[2];
   };
-  unsigned int count;
   unsigned int value;
-
-  unsigned short gFlags;
-  unsigned char lFlags;
-  unsigned char hFlags;
 } PGXP_value;
 
-// pgxp_value.h
 typedef union
 {
   struct
@@ -71,36 +86,7 @@ typedef union
   s32 sd;
 } psx_value;
 
-typedef enum
-{
-  UNINITIALISED = 0,
-  INVALID_PSX_VALUE = 1,
-  INVALID_ADDRESS = 2,
-  INVALID_BITWISE_OP = 3,
-  DIVIDE_BY_ZERO = 4,
-  INVALID_8BIT_LOAD = 5,
-  INVALID_8BIT_STORE = 6
-} PGXP_error_states;
-
-typedef enum
-{
-  VALID_HALF = (1 << 0)
-} PGXP_half_flags;
-
-#define NONE 0
-#define ALL 0xFFFFFFFF
-#define VALID 1
-#define VALID_0 (VALID << 0)
-#define VALID_1 (VALID << 8)
-#define VALID_2 (VALID << 16)
-#define VALID_3 (VALID << 24)
-#define VALID_01 (VALID_0 | VALID_1)
-#define VALID_012 (VALID_0 | VALID_1 | VALID_2)
-#define VALID_ALL (VALID_0 | VALID_1 | VALID_2 | VALID_3)
-#define INV_VALID_ALL (ALL ^ VALID_ALL)
-
-static const PGXP_value PGXP_value_invalid_address = {0.f, 0.f, 0.f, {0}, 0, 0, INVALID_ADDRESS, 0, 0};
-static const PGXP_value PGXP_value_zero = {0.f, 0.f, 0.f, {0}, 0, VALID_ALL, 0, 0, 0};
+static void PGXP_CacheVertex(s16 sx, s16 sy, const PGXP_value& vertex);
 
 static void MakeValid(PGXP_value* pV, u32 psxV);
 static void Validate(PGXP_value* pV, u32 psxV);
@@ -110,101 +96,58 @@ static double f16Sign(double in);
 static double f16Unsign(double in);
 static double f16Overflow(double in);
 
-typedef union
-{
-  struct
-  {
-    s16 x;
-    s16 y;
-  };
-  struct
-  {
-    u16 ux;
-    u16 uy;
-  };
-  u32 word;
-} low_value;
-
-// pgxp_mem.h
 static PGXP_value* GetPtr(u32 addr);
 static PGXP_value* ReadMem(u32 addr);
 
-static void ValidateAndCopyMem(PGXP_value* dest, u32 addr, u32 value);
-static void ValidateAndCopyMem16(PGXP_value* dest, u32 addr, u32 value, int sign);
+static const PGXP_value PGXP_value_invalid = {0.f, 0.f, 0.f, {0}, 0};
+static const PGXP_value PGXP_value_zero = {0.f, 0.f, 0.f, {VALID_ALL}, 0};
 
-static void WriteMem(PGXP_value* value, u32 addr);
-static void WriteMem16(PGXP_value* src, u32 addr);
-
-// pgxp_gpu.h
-enum : u32
-{
-  VERTEX_CACHE_WIDTH = 0x800 * 2,
-  VERTEX_CACHE_HEIGHT = 0x800 * 2,
-  VERTEX_CACHE_SIZE = VERTEX_CACHE_WIDTH * VERTEX_CACHE_HEIGHT,
-  PGXP_MEM_SIZE = 3 * 2048 * 1024 / 4 // mirror 2MB in 32-bit words * 3
-};
-
-static PGXP_value* Mem = nullptr;
-
-const unsigned int mode_init = 0;
-const unsigned int mode_write = 1;
-const unsigned int mode_read = 2;
-const unsigned int mode_fail = 3;
-
-unsigned int baseID = 0;
-unsigned int lastID = 0;
-unsigned int cacheMode = 0;
-static PGXP_value* vertexCache = nullptr;
-
-void PGXP_CacheVertex(short sx, short sy, const PGXP_value* _pVertex);
-
-// pgxp_gte.h
-static void PGXP_InitGTE();
-
-// pgxp_cpu.h
-static void PGXP_InitCPU();
 static PGXP_value CPU_reg[34];
+static PGXP_value CP0_reg[32];
 #define CPU_Hi CPU_reg[32]
 #define CPU_Lo CPU_reg[33]
-static PGXP_value CP0_reg[32];
 
-// pgxp_value.c
-void MakeValid(PGXP_value* pV, u32 psxV)
+// GTE registers
+static PGXP_value GTE_data_reg[32];
+static PGXP_value GTE_ctrl_reg[32];
+
+static PGXP_value* Mem = nullptr;
+static PGXP_value* vertexCache = nullptr;
+
+ALWAYS_INLINE_RELEASE void MakeValid(PGXP_value* pV, u32 psxV)
 {
-  psx_value psx;
-  psx.d = psxV;
   if (VALID_01 != (pV->flags & VALID_01))
   {
-    pV->x = psx.sw.l;
-    pV->y = psx.sw.h;
+    pV->x = static_cast<float>(static_cast<s16>(Truncate16(psxV)));
+    pV->y = static_cast<float>(static_cast<s16>(Truncate16(psxV >> 16)));
     pV->z = 0.f;
     pV->flags |= VALID_01;
-    pV->value = psx.d;
+    pV->value = psxV;
   }
 }
 
-void ALWAYS_INLINE_RELEASE Validate(PGXP_value* pV, u32 psxV)
+ALWAYS_INLINE_RELEASE void Validate(PGXP_value* pV, u32 psxV)
 {
   // assume pV is not NULL
   pV->flags &= (pV->value == psxV) ? ALL : INV_VALID_ALL;
 }
 
-void ALWAYS_INLINE_RELEASE MaskValidate(PGXP_value* pV, u32 psxV, u32 mask, u32 validMask)
+ALWAYS_INLINE_RELEASE void MaskValidate(PGXP_value* pV, u32 psxV, u32 mask, u32 validMask)
 {
   // assume pV is not NULL
   pV->flags &= ((pV->value & mask) == (psxV & mask)) ? ALL : (ALL ^ (validMask));
 }
 
-double ALWAYS_INLINE_RELEASE f16Sign(double in)
+ALWAYS_INLINE_RELEASE double f16Sign(double in)
 {
   u32 s = (u32)(in * (double)((u32)1 << 16));
   return ((double)*((s32*)&s)) / (double)((s32)1 << 16);
 }
-double ALWAYS_INLINE_RELEASE f16Unsign(double in)
+ALWAYS_INLINE_RELEASE double f16Unsign(double in)
 {
   return (in >= 0) ? in : ((double)in + (double)USHRT_MAX + 1);
 }
-double ALWAYS_INLINE_RELEASE f16Overflow(double in)
+ALWAYS_INLINE_RELEASE double f16Overflow(double in)
 {
   double out = 0;
   s64 v = ((s64)in) >> 16;
@@ -212,31 +155,10 @@ double ALWAYS_INLINE_RELEASE f16Overflow(double in)
   return out;
 }
 
-// pgxp_mem.c
-static void PGXP_InitMem();
-static const u32 ScratchOffset = 2048 * 1024 / 4;
-
-void PGXP_InitMem()
-{
-  if (!Mem)
-  {
-    Mem = static_cast<PGXP_value*>(std::calloc(PGXP_MEM_SIZE, sizeof(PGXP_value)));
-    if (!Mem)
-    {
-      std::fprintf(stderr, "Failed to allocate PGXP memory\n");
-      std::abort();
-    }
-  }
-  else
-  {
-    std::memset(Mem, 0, sizeof(PGXP_value) * PGXP_MEM_SIZE);
-  }
-}
-
 ALWAYS_INLINE_RELEASE PGXP_value* GetPtr(u32 addr)
 {
   if ((addr & CPU::DCACHE_LOCATION_MASK) == CPU::DCACHE_LOCATION)
-    return &Mem[ScratchOffset + ((addr & CPU::DCACHE_OFFSET_MASK) >> 2)];
+    return &Mem[PGXP_MEM_SCRATCH_OFFSET + ((addr & CPU::DCACHE_OFFSET_MASK) >> 2)];
 
   const u32 paddr = (addr & CPU::PHYSICAL_MEMORY_ADDRESS_MASK);
   if (paddr < Bus::RAM_MIRROR_END)
@@ -260,10 +182,10 @@ ALWAYS_INLINE_RELEASE void ValidateAndCopyMem(PGXP_value* dest, u32 addr, u32 va
     return;
   }
 
-  *dest = PGXP_value_invalid_address;
+  *dest = PGXP_value_invalid;
 }
 
-void ValidateAndCopyMem16(PGXP_value* dest, u32 addr, u32 value, int sign)
+static void ValidateAndCopyMem16(PGXP_value* dest, u32 addr, u32 value, int sign)
 {
   u32 validMask = 0;
   psx_value val, mask;
@@ -293,22 +215,20 @@ void ValidateAndCopyMem16(PGXP_value* dest, u32 addr, u32 value, int sign)
     if ((addr % 4) == 2)
     {
       dest->x = dest->y;
-      dest->lFlags = dest->hFlags;
       dest->compFlags[0] = dest->compFlags[1];
     }
 
     // truncate value
     dest->y = (dest->x < 0) ? -1.f * sign : 0.f; // 0.f;
-    dest->hFlags = 0;
     dest->value = value;
     dest->compFlags[1] = VALID; // iCB: High word is valid, just 0
     return;
   }
 
-  *dest = PGXP_value_invalid_address;
+  *dest = PGXP_value_invalid;
 }
 
-ALWAYS_INLINE_RELEASE void WriteMem(PGXP_value* value, u32 addr)
+ALWAYS_INLINE_RELEASE void WriteMem(const PGXP_value* value, u32 addr)
 {
   PGXP_value* pMem = GetPtr(addr);
 
@@ -316,7 +236,7 @@ ALWAYS_INLINE_RELEASE void WriteMem(PGXP_value* value, u32 addr)
     *pMem = *value;
 }
 
-void WriteMem16(PGXP_value* src, u32 addr)
+static void WriteMem16(PGXP_value* src, u32 addr)
 {
   PGXP_value* dest = GetPtr(addr);
   psx_value* pVal = NULL;
@@ -328,14 +248,12 @@ void WriteMem16(PGXP_value* src, u32 addr)
     if ((addr % 4) == 2)
     {
       dest->y = src->x;
-      dest->hFlags = src->lFlags;
       dest->compFlags[1] = src->compFlags[0];
       pVal->w.h = (u16)src->value;
     }
     else
     {
       dest->x = src->x;
-      dest->lFlags = src->lFlags;
       dest->compFlags[0] = src->compFlags[0];
       pVal->w.l = (u16)src->value;
     }
@@ -348,16 +266,51 @@ void WriteMem16(PGXP_value* src, u32 addr)
     }
 
     // dest->valid = dest->valid && src->valid;
-    dest->gFlags |= src->gFlags; // inherit flags from both values (?)
   }
 }
 
-// pgxp_main.c
 void Initialize()
 {
-  PGXP_InitMem();
-  PGXP_InitCPU();
-  PGXP_InitGTE();
+  std::memset(CPU_reg, 0, sizeof(CPU_reg));
+  std::memset(CP0_reg, 0, sizeof(CP0_reg));
+
+  std::memset(GTE_data_reg, 0, sizeof(GTE_data_reg));
+  std::memset(GTE_ctrl_reg, 0, sizeof(GTE_ctrl_reg));
+
+  if (!Mem)
+  {
+    Mem = static_cast<PGXP_value*>(std::calloc(PGXP_MEM_SIZE, sizeof(PGXP_value)));
+    if (!Mem)
+    {
+      std::fprintf(stderr, "Failed to allocate PGXP memory\n");
+      std::abort();
+    }
+  }
+
+  if (g_settings.gpu_pgxp_vertex_cache && !vertexCache)
+  {
+    vertexCache = static_cast<PGXP_value*>(std::calloc(VERTEX_CACHE_SIZE, sizeof(PGXP_value)));
+    if (!vertexCache)
+    {
+      Log_ErrorPrint("Failed to allocate memory for vertex cache, disabling.");
+      g_settings.gpu_pgxp_vertex_cache = false;
+    }
+  }
+
+  if (vertexCache)
+    std::memset(vertexCache, 0, sizeof(PGXP_value) * VERTEX_CACHE_SIZE);
+}
+
+void Reset()
+{
+  std::memset(CPU_reg, 0, sizeof(CPU_reg));
+  std::memset(CP0_reg, 0, sizeof(CP0_reg));
+
+  std::memset(GTE_data_reg, 0, sizeof(GTE_data_reg));
+  std::memset(GTE_ctrl_reg, 0, sizeof(GTE_ctrl_reg));
+
+  if (Mem)
+    std::memset(Mem, 0, sizeof(PGXP_value) * PGXP_MEM_SIZE);
 
   if (vertexCache)
     std::memset(vertexCache, 0, sizeof(PGXP_value) * VERTEX_CACHE_SIZE);
@@ -365,7 +318,6 @@ void Initialize()
 
 void Shutdown()
 {
-  cacheMode = mode_init;
   if (vertexCache)
   {
     std::free(vertexCache);
@@ -376,18 +328,12 @@ void Shutdown()
     std::free(Mem);
     Mem = nullptr;
   }
-}
 
-// pgxp_gte.c
+  std::memset(GTE_data_reg, 0, sizeof(GTE_data_reg));
+  std::memset(GTE_ctrl_reg, 0, sizeof(GTE_ctrl_reg));
 
-// GTE registers
-static PGXP_value GTE_data_reg[32];
-static PGXP_value GTE_ctrl_reg[32];
-
-void PGXP_InitGTE()
-{
-  memset(GTE_data_reg, 0, sizeof(GTE_data_reg));
-  memset(GTE_ctrl_reg, 0, sizeof(GTE_ctrl_reg));
+  std::memset(CPU_reg, 0, sizeof(CPU_reg));
+  std::memset(CP0_reg, 0, sizeof(CP0_reg));
 }
 
 // Instruction register decoding
@@ -411,41 +357,20 @@ void PGXP_InitGTE()
 #define SXY2 (GTE_data_reg[14])
 #define SXYP (GTE_data_reg[15])
 
-void GTE_PushSXYZ2f(float _x, float _y, float _z, unsigned int _v)
+void GTE_PushSXYZ2f(float x, float y, float z, u32 v)
 {
-  static unsigned int uCount = 0;
-  low_value temp;
   // push values down FIFO
   SXY0 = SXY1;
   SXY1 = SXY2;
 
-  SXY2.x = _x;
-  SXY2.y = _y;
-  SXY2.z = _z;
-  SXY2.value = _v;
+  SXY2.x = x;
+  SXY2.y = y;
+  SXY2.z = z;
+  SXY2.value = v;
   SXY2.flags = VALID_ALL;
-  SXY2.count = uCount++;
 
-  // cache value in GPU plugin
-  temp.word = _v;
   if (g_settings.gpu_pgxp_vertex_cache)
-    PGXP_CacheVertex(temp.x, temp.y, &SXY2);
-  else
-    PGXP_CacheVertex(0, 0, NULL);
-
-#ifdef GTE_LOG
-  GTE_LOG("PGXP_PUSH (%f, %f) %u %u|", SXY2.x, SXY2.y, SXY2.flags, SXY2.count);
-#endif
-}
-
-void GTE_PushSXYZ2s(s64 _x, s64 _y, s64 _z, u32 v)
-{
-  float fx = (float)(_x) / (float)(1 << 16);
-  float fy = (float)(_y) / (float)(1 << 16);
-  float fz = (float)(_z);
-
-  // if(Config.PGXP_GTE)
-  GTE_PushSXYZ2f(fx, fy, fz, v);
+    PGXP_CacheVertex(static_cast<s16>(Truncate16(v)), static_cast<s16>(Truncate16(v >> 16)), SXY2);
 }
 
 #define VX(n) (psxRegs.CP2D.p[n << 1].sw.l)
@@ -560,115 +485,21 @@ void CPU_SWC2(u32 instr, u32 rtVal, u32 addr)
   WriteMem(&GTE_data_reg[rt(instr)], addr);
 }
 
-// pgxp_gpu.c
-/////////////////////////////////
-//// Blade_Arma's Vertex Cache (CatBlade?)
-/////////////////////////////////
-unsigned int IsSessionID(unsigned int vertID)
+ALWAYS_INLINE_RELEASE void PGXP_CacheVertex(s16 sx, s16 sy, const PGXP_value& vertex)
 {
-  // No wrapping
-  if (lastID >= baseID)
-    return (vertID >= baseID);
-
-  // If vertID is >= baseID it is pre-wrap and in session
-  if (vertID >= baseID)
-    return 1;
-
-  // vertID is < baseID, If it is <= lastID it is post-wrap and in session
-  if (vertID <= lastID)
-    return 1;
-
-  return 0;
-}
-
-static bool InitPGXPVertexCache()
-{
-  if (vertexCache)
-    std::free(vertexCache);
-
-  vertexCache = static_cast<PGXP_value*>(std::calloc(VERTEX_CACHE_SIZE, sizeof(PGXP_value)));
-  if (!vertexCache)
+  if (sx >= -0x800 && sx <= 0x7ff && sy >= -0x800 && sy <= 0x7ff)
   {
-    Log_ErrorPrint("Failed to allocate memory for vertex cache, disabling.");
-    g_settings.gpu_pgxp_vertex_cache = false;
-    return false;
-  }
-
-  return true;
-}
-
-void PGXP_CacheVertex(short sx, short sy, const PGXP_value* _pVertex)
-{
-  const PGXP_value* pNewVertex = (const PGXP_value*)_pVertex;
-  PGXP_value* pOldVertex = NULL;
-
-  if (!pNewVertex)
-  {
-    cacheMode = mode_fail;
-    return;
-  }
-
-  // Initialise cache on first use
-  if (!vertexCache && !InitPGXPVertexCache())
-    return;
-
-  // if (bGteAccuracy)
-  {
-    if (cacheMode != mode_write)
-    {
-      // First vertex of write session (frame?)
-      cacheMode = mode_write;
-      baseID = pNewVertex->count;
-    }
-
-    lastID = pNewVertex->count;
-
-    if (sx >= -0x800 && sx <= 0x7ff && sy >= -0x800 && sy <= 0x7ff)
-    {
-      pOldVertex = &vertexCache[(sy + 0x800) * VERTEX_CACHE_WIDTH + (sx + 0x800)];
-
-      // To avoid ambiguity there can only be one valid entry per-session
-      if (0) //(IsSessionID(pOldVertex->count) && (pOldVertex->value == pNewVertex->value))
-      {
-        // check to ensure this isn't identical
-        if ((fabsf(pOldVertex->x - pNewVertex->x) > 0.1f) || (fabsf(pOldVertex->y - pNewVertex->y) > 0.1f) ||
-            (fabsf(pOldVertex->z - pNewVertex->z) > 0.1f))
-        {
-          *pOldVertex = *pNewVertex;
-          pOldVertex->gFlags = 5;
-          return;
-        }
-      }
-
-      // Write vertex into cache
-      *pOldVertex = *pNewVertex;
-      pOldVertex->gFlags = 1;
-    }
+    // Write vertex into cache
+    vertexCache[(sy + 0x800) * VERTEX_CACHE_WIDTH + (sx + 0x800)] = vertex;
   }
 }
 
-PGXP_value* PGXP_GetCachedVertex(short sx, short sy)
+static ALWAYS_INLINE_RELEASE PGXP_value* PGXP_GetCachedVertex(short sx, short sy)
 {
-  if (g_settings.gpu_pgxp_vertex_cache)
+  if (sx >= -0x800 && sx <= 0x7ff && sy >= -0x800 && sy <= 0x7ff)
   {
-    if (cacheMode != mode_read)
-    {
-      if (cacheMode == mode_fail)
-        return nullptr;
-
-      // First vertex of read session (frame?)
-      cacheMode = mode_read;
-    }
-
-    // Initialise cache on first use
-    if (!vertexCache && !InitPGXPVertexCache())
-      return nullptr;
-
-    if (sx >= -0x800 && sx <= 0x7ff && sy >= -0x800 && sy <= 0x7ff)
-    {
-      // Return pointer to cache entry
-      return &vertexCache[(sy + 0x800) * VERTEX_CACHE_WIDTH + (sx + 0x800)];
-    }
+    // Return pointer to cache entry
+    return &vertexCache[(sy + 0x800) * VERTEX_CACHE_WIDTH + (sx + 0x800)];
   }
 
   return nullptr;
@@ -700,32 +531,29 @@ bool GetPreciseVertex(u32 addr, u32 value, int x, int y, int xOffs, int yOffs, f
     *out_x = TruncateVertexPosition(vert->x) + static_cast<float>(xOffs);
     *out_y = TruncateVertexPosition(vert->y) + static_cast<float>(yOffs);
     *out_w = vert->z / 32768.0f;
+
     if (IsWithinTolerance(*out_x, *out_y, x, y))
     {
       // check validity of z component
       return ((vert->flags & VALID_2) == VALID_2);
     }
   }
-  else
+
+  if (g_settings.gpu_pgxp_vertex_cache)
   {
     const short psx_x = (short)(value & 0xFFFFu);
     const short psx_y = (short)(value >> 16);
 
     // Look in cache for valid vertex
     vert = PGXP_GetCachedVertex(psx_x, psx_y);
-    if ((vert) && /*(IsSessionID(vert->count)) &&*/ (vert->gFlags == 1))
+    if (vert && (vert->flags & VALID_01) == VALID_01)
     {
-      // a value is found, it is from the current session and is unambiguous (there was only one value recorded at that
-      // position)
       *out_x = TruncateVertexPosition(vert->x) + static_cast<float>(xOffs);
       *out_y = TruncateVertexPosition(vert->y) + static_cast<float>(yOffs);
       *out_w = vert->z / 32768.0f;
 
       if (IsWithinTolerance(*out_x, *out_y, x, y))
-      {
-        return false; // iCB: Getting the wrong w component causes too great an error when using perspective correction
-                      // so disable it
-      }
+        return false;
     }
   }
 
@@ -735,8 +563,6 @@ bool GetPreciseVertex(u32 addr, u32 value, int x, int y, int xOffs, int yOffs, f
   *out_w = 1.0f;
   return false;
 }
-
-// pgxp_cpu.c
 
 // Instruction register decoding
 #define op(_instr) (_instr >> 26) // The op part of the instruction register
@@ -749,62 +575,6 @@ bool GetPreciseVertex(u32 addr, u32 value, int x, int y, int xOffs, int yOffs, f
 #define imm_sext(_instr)                                                                                               \
   static_cast<s32>(static_cast<s16>(_instr & 0xFFFF)) // The immediate part of the instruction register
 
-void PGXP_InitCPU()
-{
-  memset(CPU_reg, 0, sizeof(CPU_reg));
-  memset(CP0_reg, 0, sizeof(CP0_reg));
-}
-
-// invalidate register (invalid 8 bit read)
-static void InvalidLoad(u32 addr, u32 code, u32 value)
-{
-  u32 reg = ((code >> 16) & 0x1F); // The rt part of the instruction register
-  PGXP_value* pD = NULL;
-  PGXP_value p;
-
-  p.x = p.y = -1337; // default values
-
-  // p.valid = 0;
-  // p.count = value;
-  pD = ReadMem(addr);
-
-  if (pD)
-  {
-    p.count = addr;
-    p = *pD;
-  }
-  else
-  {
-    p.count = value;
-  }
-
-  p.flags = 0;
-
-  // invalidate register
-  CPU_reg[reg] = p;
-}
-
-// invalidate memory address (invalid 8 bit write)
-static void InvalidStore(u32 addr, u32 code, u32 value)
-{
-  u32 reg = ((code >> 16) & 0x1F); // The rt part of the instruction register
-  PGXP_value* pD = NULL;
-  PGXP_value p;
-
-  pD = ReadMem(addr);
-
-  p.x = p.y = -2337;
-
-  if (pD)
-    p = *pD;
-
-  p.flags = 0;
-  p.count = (reg * 1000) + value;
-
-  // invalidate memory
-  WriteMem(&p, addr);
-}
-
 void CPU_LW(u32 instr, u32 rtVal, u32 addr)
 {
   // Rt = Mem[Rs + Im]
@@ -813,7 +583,7 @@ void CPU_LW(u32 instr, u32 rtVal, u32 addr)
 
 void CPU_LBx(u32 instr, u32 rtVal, u32 addr)
 {
-  InvalidLoad(addr, instr, 116);
+  CPU_reg[rt(instr)] = PGXP_value_invalid;
 }
 
 void CPU_LHx(u32 instr, u32 rtVal, u32 addr)
@@ -824,7 +594,7 @@ void CPU_LHx(u32 instr, u32 rtVal, u32 addr)
 
 void CPU_SB(u32 instr, u8 rtVal, u32 addr)
 {
-  InvalidStore(addr, instr, 208);
+  WriteMem(&PGXP_value_invalid, addr);
 }
 
 void CPU_SH(u32 instr, u16 rtVal, u32 addr)
@@ -1011,7 +781,6 @@ void CPU_LUI(u32 instr)
   // Rt = Imm << 16
   CPU_reg[rt(instr)] = PGXP_value_zero;
   CPU_reg[rt(instr)].y = (float)(s16)imm(instr);
-  CPU_reg[rt(instr)].hFlags = VALID_HALF;
   CPU_reg[rt(instr)].value = static_cast<u32>(imm(instr)) << 16;
   CPU_reg[rt(instr)].flags = VALID_01;
 }
@@ -1053,9 +822,6 @@ void CPU_ADD(u32 instr, u32 rsVal, u32 rtVal)
     // TODO: decide which "z/w" component to use
 
     ret.halfFlags[0] &= CPU_reg[rt(instr)].halfFlags[0];
-    ret.gFlags |= CPU_reg[rt(instr)].gFlags;
-    ret.lFlags |= CPU_reg[rt(instr)].lFlags;
-    ret.hFlags |= CPU_reg[rt(instr)].hFlags;
   }
   else
   {
@@ -1096,9 +862,6 @@ void CPU_SUB(u32 instr, u32 rsVal, u32 rtVal)
   ret.y += (ret.y > SHRT_MAX) ? -(USHRT_MAX + 1) : (ret.y < SHRT_MIN) ? USHRT_MAX + 1 : 0.f;
 
   ret.halfFlags[0] &= CPU_reg[rt(instr)].halfFlags[0];
-  ret.gFlags |= CPU_reg[rt(instr)].gFlags;
-  ret.lFlags |= CPU_reg[rt(instr)].lFlags;
-  ret.hFlags |= CPU_reg[rt(instr)].hFlags;
 
   ret.value = rsVal - rtVal;
 
@@ -1131,49 +894,41 @@ static void CPU_BITWISE(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal)
   if (vald.w.l == 0)
   {
     ret.x = 0.f;
-    ret.lFlags = VALID_HALF;
   }
   else if (vald.w.l == vals.w.l)
   {
     ret.x = CPU_reg[rs(instr)].x;
-    ret.lFlags = CPU_reg[rs(instr)].lFlags;
     ret.compFlags[0] = CPU_reg[rs(instr)].compFlags[0];
   }
   else if (vald.w.l == valt.w.l)
   {
     ret.x = CPU_reg[rt(instr)].x;
-    ret.lFlags = CPU_reg[rt(instr)].lFlags;
     ret.compFlags[0] = CPU_reg[rt(instr)].compFlags[0];
   }
   else
   {
     ret.x = (float)vald.sw.l;
     ret.compFlags[0] = VALID;
-    ret.lFlags = 0;
   }
 
   if (vald.w.h == 0)
   {
     ret.y = 0.f;
-    ret.hFlags = VALID_HALF;
   }
   else if (vald.w.h == vals.w.h)
   {
     ret.y = CPU_reg[rs(instr)].y;
-    ret.hFlags = CPU_reg[rs(instr)].hFlags;
     ret.compFlags[1] &= CPU_reg[rs(instr)].compFlags[1];
   }
   else if (vald.w.h == valt.w.h)
   {
     ret.y = CPU_reg[rt(instr)].y;
-    ret.hFlags = CPU_reg[rt(instr)].hFlags;
     ret.compFlags[1] &= CPU_reg[rt(instr)].compFlags[1];
   }
   else
   {
     ret.y = (float)vald.sw.h;
     ret.compFlags[1] = VALID;
-    ret.hFlags = 0;
   }
 
   // iCB Hack: Force validity if even one half is valid

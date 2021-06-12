@@ -24,12 +24,12 @@
 namespace PGXP {
 
 void Initialize();
+void Reset();
 void Shutdown();
 
 // -- GTE functions
 // Transforms
-void GTE_PushSXYZ2f(float _x, float _y, float _z, unsigned int _v);
-void GTE_PushSXYZ2s(s64 _x, s64 _y, s64 _z, u32 v);
+void GTE_PushSXYZ2f(float x, float y, float z, u32 v);
 int GTE_NCLIP_valid(u32 sxy0, u32 sxy1, u32 sxy2);
 float GTE_NCLIP();
 

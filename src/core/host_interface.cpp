@@ -824,6 +824,7 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
 
     if (g_settings.gpu_pgxp_enable != old_settings.gpu_pgxp_enable ||
         (g_settings.gpu_pgxp_enable && (g_settings.gpu_pgxp_culling != old_settings.gpu_pgxp_culling ||
+                                        g_settings.gpu_pgxp_vertex_cache != old_settings.gpu_pgxp_vertex_cache ||
                                         g_settings.gpu_pgxp_cpu != old_settings.gpu_pgxp_cpu)))
     {
       if (g_settings.IsUsingCodeCache())

@@ -1050,7 +1050,7 @@ bool DoState(StateWrapper& sw, HostDisplayTexture** host_texture, bool update_di
   // only reset pgxp if we're not runahead-rollbacking. the value checks will save us from broken rendering, and it
   // saves using imprecise values for a frame in 30fps games.
   if (sw.IsReading() && g_settings.gpu_pgxp_enable && !is_memory_state)
-    PGXP::Initialize();
+    PGXP::Reset();
 
   if (!sw.DoMarker("Bus") || !Bus::DoState(sw))
     return false;
