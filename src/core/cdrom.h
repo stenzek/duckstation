@@ -78,7 +78,9 @@ private:
     AUDIO_FIFO_SIZE = 44100 * 2,
     AUDIO_FIFO_LOW_WATERMARK = 10,
 
-    BASE_RESET_TICKS = 400000,
+    RESET_TICKS = 400000,
+    ID_READ_TICKS = 33868,
+    MOTOR_ON_RESPONSE_TICKS = 400000,
 
     MAX_FAST_FORWARD_RATE = 12,
     FAST_FORWARD_RATE_STEP = 4
@@ -137,17 +139,18 @@ private:
   {
     Idle,
     ShellOpening,
-    Resetting,
+    UNUSED_Resetting,
     SeekingPhysical,
     SeekingLogical,
-    ReadingID,
-    ReadingTOC,
+    UNUSED_ReadingID,
+    UNUSED_ReadingTOC,
     Reading,
     Playing,
-    Pausing,
-    Stopping,
+    UNUSED_Pausing,
+    UNUSED_Stopping,
     ChangingSession,
-    SpinningUp
+    SpinningUp,
+    SeekingImplicit
   };
 
   union StatusRegister
@@ -222,10 +225,11 @@ private:
   void SoftReset();
 
   ALWAYS_INLINE bool IsDriveIdle() const { return m_drive_state == DriveState::Idle; }
+  ALWAYS_INLINE bool IsMotorOn() const { return m_secondary_status.motor_on; }
   ALWAYS_INLINE bool IsSeeking() const
   {
     return (m_drive_state == DriveState::SeekingLogical || m_drive_state == DriveState::SeekingPhysical ||
-            m_drive_state == DriveState::Resetting);
+            m_drive_state == DriveState::SeekingImplicit);
   }
   ALWAYS_INLINE bool IsReadingOrPlaying() const
   {
@@ -261,6 +265,8 @@ private:
   bool HasPendingDiscEvent() const;
 
   TickCount GetAckDelayForCommand(Command command);
+  TickCount GetTicksForSpinUp();
+  TickCount GetTicksForIDRead();
   TickCount GetTicksForRead();
   TickCount GetTicksForSeek(CDImage::LBA new_lba);
   TickCount GetTicksForStop(bool motor_was_on);
@@ -270,31 +276,34 @@ private:
   void BeginCommand(Command command); // also update status register
   void EndCommand();                  // also updates status register
   void AbortCommand();
-  void ExecuteCommand();
+  void ExecuteCommand(TickCount ticks_late);
   void ExecuteTestCommand(u8 subcommand);
+  void ExecuteCommandSecondResponse(TickCount ticks_late);
+  void QueueCommandSecondResponse(Command command, TickCount ticks);
+  void ClearCommandSecondResponse();
   void UpdateCommandEvent();
   void ExecuteDrive(TickCount ticks_late);
+  void ClearDriveState();
   void BeginReading(TickCount ticks_late = 0, bool after_seek = false);
   void BeginPlaying(u8 track, TickCount ticks_late = 0, bool after_seek = false);
   void DoShellOpenComplete(TickCount ticks_late);
-  void DoResetComplete(TickCount ticks_late);
   void DoSeekComplete(TickCount ticks_late);
-  void DoPauseComplete();
-  void DoStopComplete();
+  void DoStatSecondResponse();
   void DoChangeSessionComplete();
   void DoSpinUpComplete();
   void DoIDRead();
-  void DoTOCRead();
   void DoSectorRead();
   void ProcessDataSectorHeader(const u8* raw_sector);
   void ProcessDataSector(const u8* raw_sector, const CDImage::SubChannelQ& subq);
   void ProcessXAADPCMSector(const u8* raw_sector, const CDImage::SubChannelQ& subq);
   void ProcessCDDASector(const u8* raw_sector, const CDImage::SubChannelQ& subq);
   void StopReadingWithDataEnd();
+  void StartMotor();
+  void StopMotor();
   void BeginSeeking(bool logical, bool read_after_seek, bool play_after_seek);
   void UpdatePositionWhileSeeking();
-  void ResetPhysicalPosition();
   void UpdatePhysicalPosition();
+  void SetHoldPosition(CDImage::LBA lba, bool update_subq);
   void ResetCurrentXAFile();
   void ResetAudioDecoder();
   void LoadDataFIFO();
@@ -304,9 +313,11 @@ private:
   void ResampleXAADPCM(const s16* frames_in, u32 num_frames_in);
 
   std::unique_ptr<TimingEvent> m_command_event;
+  std::unique_ptr<TimingEvent> m_command_second_response_event;
   std::unique_ptr<TimingEvent> m_drive_event;
 
   Command m_command = Command::None;
+  Command m_command_second_response = Command::None;
   DriveState m_drive_state = DriveState::Idle;
   DiscRegion m_disc_region = DiscRegion::Other;
 
@@ -320,10 +331,10 @@ private:
   u8 m_pending_async_interrupt = 0;
 
   CDImage::Position m_setloc_position = {};
-  CDImage::LBA m_current_lba{};
+  CDImage::LBA m_current_lba{}; // this is the hold position
   CDImage::LBA m_seek_start_lba{};
   CDImage::LBA m_seek_end_lba{};
-  CDImage::LBA m_physical_lba{};
+  CDImage::LBA m_physical_lba{}; // current position of the disc with respect to time
   u32 m_physical_lba_update_tick = 0;
   bool m_setloc_pending = false;
   bool m_read_after_seek = false;
