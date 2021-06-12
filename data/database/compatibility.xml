@@ -1282,6 +1282,14 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1485-ge6156e2a</version-tested>
   </entry>
+  <entry code="SLPS-01364" compatibility="5" region="NTSC-J" title="DoDonPachi (Japan) (Rev 1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4126-g179a7aea</version-tested>
+  </entry>
+  <entry code="SLPS-00548" compatibility="5" region="NTSC-J" title="DonPachi (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4126-g179a7aea</version-tested>
+  </entry>
   <entry code="SLUS-00077" compatibility="5" region="NTSC-U" title="Doom (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-908-g9f22684</version-tested>
