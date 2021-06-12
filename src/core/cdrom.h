@@ -83,7 +83,10 @@ private:
     MOTOR_ON_RESPONSE_TICKS = 400000,
 
     MAX_FAST_FORWARD_RATE = 12,
-    FAST_FORWARD_RATE_STEP = 4
+    FAST_FORWARD_RATE_STEP = 4,
+
+    // Actually varies depending the distance into the disc.
+    BASE_SECTORS_PER_TRACK = 9,
   };
 
   static constexpr u8 INTERRUPT_REGISTER_MASK = 0x1F;

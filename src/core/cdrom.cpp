@@ -699,15 +699,13 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba)
   if (g_settings.cdrom_seek_speedup == 0)
     return MIN_TICKS;
 
+  UpdatePhysicalPosition();
+
   const TickCount tps = System::GetTicksPerSecond();
-  const CDImage::LBA current_lba = m_secondary_status.motor_on ? m_current_lba : 0;
+  const CDImage::LBA current_lba = m_secondary_status.motor_on ? m_physical_lba : 0;
   const u32 lba_diff = static_cast<u32>((new_lba > current_lba) ? (new_lba - current_lba) : (current_lba - new_lba));
 
-  // Original formula based on Mednafen. Still not accurate, doesn't consider the varying number of sectors per track.
-  // TODO: Replace with algorithm based on mechacon behavior.
-  u32 ticks = std::max<u32>(
-    20000, static_cast<u32>(
-             ((static_cast<u64>(lba_diff) * static_cast<u64>(tps) * static_cast<u64>(1000)) / (72 * 60 * 75)) / 1000));
+  u32 ticks = static_cast<u32>(MIN_TICKS);
 
   // Motor spin-up time.
   if (!m_secondary_status.motor_on)
@@ -718,14 +716,24 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba)
       ClearDriveState();
   }
 
-  if (lba_diff >= 2550)
-    ticks += static_cast<u32>((u64(tps) * 300) / 1000);
+  if (lba_diff < 32)
+  {
+    ticks += static_cast<u32>(GetTicksForRead()) * std::min<u32>(BASE_SECTORS_PER_TRACK, lba_diff);
+  }
   else
   {
-    // When paused, the CDC seems to keep reading the disc until it hits the position it's set to, then skip 10-15
-    // sectors back (depending on how far into the disc it is). We'll be generous and use 4 sectors, since on average
-    // it's probably closer.
-    ticks += static_cast<u32>(GetTicksForRead()) * 4u;
+    // This is a very inaccurate model.
+    // TODO: Use the actual time for track jumps.
+
+    // 1000ms for the whole disc
+    ticks += std::max<u32>(
+      20000,
+      static_cast<u32>(
+        ((static_cast<u64>(lba_diff) * static_cast<u64>(tps) * static_cast<u64>(1000)) / (72 * 60 * 75)) / 1000));
+
+    // 300ms for non-short seeks
+    if (lba_diff >= 2550)
+      ticks += static_cast<u32>((u64(tps) * 300) / 1000);
   }
 
   if (m_mode.double_speed != m_current_double_speed)
@@ -1741,19 +1749,17 @@ void CDROM::UpdatePhysicalPosition()
     return;
   }
 
-  const CDImage::LBA SECTORS_TO_JUMP_BACK = 9;
-
   const u32 diff = ticks - m_physical_lba_update_tick;
   const u32 sector_diff = diff / GetTicksForRead();
   if (sector_diff > 0)
   {
     const CDImage::LBA base =
-      (m_current_lba >= SECTORS_TO_JUMP_BACK) ? (m_current_lba - SECTORS_TO_JUMP_BACK) : m_current_lba;
+      (m_current_lba >= BASE_SECTORS_PER_TRACK) ? (m_current_lba - BASE_SECTORS_PER_TRACK) : m_current_lba;
     if (m_physical_lba < base)
       m_physical_lba = base;
 
     const CDImage::LBA old_offset = m_physical_lba - base;
-    const CDImage::LBA new_offset = (old_offset + sector_diff) % SECTORS_TO_JUMP_BACK;
+    const CDImage::LBA new_offset = (old_offset + sector_diff) % BASE_SECTORS_PER_TRACK;
     const CDImage::LBA new_physical_lba = base + new_offset;
 #ifdef _DEBUG
     const CDImage::Position old_pos(CDImage::Position::FromLBA(m_physical_lba));
