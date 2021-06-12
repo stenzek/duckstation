@@ -20,10 +20,12 @@
 
 #include "pgxp.h"
 #include "bus.h"
+#include "common/log.h"
 #include "cpu_core.h"
 #include "settings.h"
 #include <climits>
 #include <cmath>
+Log_SetChannel(PGXP);
 
 namespace PGXP {
 // pgxp_types.h
@@ -356,6 +358,9 @@ void Initialize()
   PGXP_InitMem();
   PGXP_InitCPU();
   PGXP_InitGTE();
+
+  if (vertexCache)
+    std::memset(vertexCache, 0, sizeof(PGXP_value) * VERTEX_CACHE_SIZE);
 }
 
 void Shutdown()
@@ -576,21 +581,20 @@ unsigned int IsSessionID(unsigned int vertID)
   return 0;
 }
 
-static void InitPGXPVertexCache()
+static bool InitPGXPVertexCache()
 {
+  if (vertexCache)
+    std::free(vertexCache);
+
+  vertexCache = static_cast<PGXP_value*>(std::calloc(VERTEX_CACHE_SIZE, sizeof(PGXP_value)));
   if (!vertexCache)
   {
-    vertexCache = static_cast<PGXP_value*>(std::calloc(VERTEX_CACHE_SIZE, sizeof(PGXP_value)));
-    if (!vertexCache)
-    {
-      std::fprintf(stderr, "Failed to allocate PGXP vertex cache memory\n");
-      std::abort();
-    }
+    Log_ErrorPrint("Failed to allocate memory for vertex cache, disabling.");
+    g_settings.gpu_pgxp_vertex_cache = false;
+    return false;
   }
-  else
-  {
-    memset(vertexCache, 0x00, VERTEX_CACHE_SIZE * sizeof(PGXP_value));
-  }
+
+  return true;
 }
 
 void PGXP_CacheVertex(short sx, short sy, const PGXP_value* _pVertex)
@@ -605,8 +609,8 @@ void PGXP_CacheVertex(short sx, short sy, const PGXP_value* _pVertex)
   }
 
   // Initialise cache on first use
-  if (!vertexCache)
-    InitPGXPVertexCache();
+  if (!vertexCache && !InitPGXPVertexCache())
+    return;
 
   // if (bGteAccuracy)
   {
@@ -650,15 +654,15 @@ PGXP_value* PGXP_GetCachedVertex(short sx, short sy)
     if (cacheMode != mode_read)
     {
       if (cacheMode == mode_fail)
-        return NULL;
+        return nullptr;
 
       // First vertex of read session (frame?)
       cacheMode = mode_read;
     }
 
     // Initialise cache on first use
-    if (!vertexCache)
-      InitPGXPVertexCache();
+    if (!vertexCache && !InitPGXPVertexCache())
+      return nullptr;
 
     if (sx >= -0x800 && sx <= 0x7ff && sy >= -0x800 && sy <= 0x7ff)
     {
@@ -667,7 +671,7 @@ PGXP_value* PGXP_GetCachedVertex(short sx, short sy)
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 static ALWAYS_INLINE_RELEASE float TruncateVertexPosition(float p)
