@@ -55,6 +55,7 @@ u32 g_game_id = 0;
 
 static bool s_logged_in = false;
 static bool s_test_mode = false;
+static bool s_unofficial_test_mode = false;
 static bool s_use_first_disc_from_playlist = true;
 static bool s_rich_presence_enabled = false;
 
@@ -212,7 +213,8 @@ static std::string GetUserAgent()
   return StringUtil::StdStringFromFormat("DuckStation for %s (%s) %s", SYSTEM_STR, CPU_ARCH_STR, g_scm_tag_str);
 }
 
-bool Initialize(bool test_mode, bool use_first_disc_from_playlist, bool enable_rich_presence, bool challenge_mode)
+bool Initialize(bool test_mode, bool use_first_disc_from_playlist, bool enable_rich_presence, bool challenge_mode,
+                bool include_unofficial)
 {
   s_http_downloader = FrontendCommon::HTTPDownloader::Create(GetUserAgent().c_str());
   if (!s_http_downloader)
@@ -224,6 +226,7 @@ bool Initialize(bool test_mode, bool use_first_disc_from_playlist, bool enable_r
   g_active = true;
   g_challenge_mode = challenge_mode;
   s_test_mode = test_mode;
+  s_unofficial_test_mode = include_unofficial;
   s_use_first_disc_from_playlist = use_first_disc_from_playlist;
   s_rich_presence_enabled = enable_rich_presence;
   rc_runtime_init(&s_rcheevos_runtime);
@@ -296,6 +299,11 @@ bool IsLoggedIn()
 bool IsTestModeActive()
 {
   return s_test_mode;
+}
+
+bool IsUnofficialTestModeActive()
+{
+  return s_unofficial_test_mode;
 }
 
 bool IsUsingFirstDiscFromPlaylist()
@@ -672,16 +680,16 @@ static void GetPatchesCallback(s32 status_code, const FrontendCommon::HTTPDownlo
       }
 
       const u32 id = achievement["ID"].GetUint();
-      const u32 category = achievement["Flags"].GetUint();
+      const AchievementCategory category = static_cast<AchievementCategory>(achievement["Flags"].GetUint());
       const char* memaddr = achievement["MemAddr"].GetString();
       std::string title = achievement["Title"].GetString();
       std::string description = GetOptionalString(achievement, "Description");
       std::string badge_name = GetOptionalString(achievement, "BadgeName");
       const u32 points = GetOptionalUInt(achievement, "Points");
 
-      // Skip local and unofficial achievements for now.
-      if (static_cast<AchievementCategory>(category) == AchievementCategory::Local ||
-          static_cast<AchievementCategory>(category) == AchievementCategory::Unofficial)
+      // Skip local and unofficial achievements for now, unless "Test Unofficial Achievements" is enabled
+      if (!s_unofficial_test_mode &&
+          (category == AchievementCategory::Local || category == AchievementCategory::Unofficial))
       {
         Log_WarningPrintf("Skipping unofficial achievement %u (%s)", id, title.c_str());
         continue;
@@ -701,6 +709,7 @@ static void GetPatchesCallback(s32 status_code, const FrontendCommon::HTTPDownlo
       cheevo.locked = true;
       cheevo.active = false;
       cheevo.points = points;
+      cheevo.category = category;
 
       if (!badge_name.empty())
       {
@@ -1098,6 +1107,13 @@ void UnlockAchievement(u32 achievement_id, bool add_notification /* = true*/)
   if (s_test_mode)
   {
     Log_WarningPrintf("Skipping sending achievement %u unlock to server because of test mode.", achievement_id);
+    return;
+  }
+
+  if (achievement->category != AchievementCategory::Core)
+  {
+    Log_WarningPrintf("Skipping sending achievement %u unlock to server because it's not from the core set.",
+                      achievement_id);
     return;
   }
 

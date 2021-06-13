@@ -18,6 +18,8 @@ AchievementSettingsWidget::AchievementSettingsWidget(QtHostInterface* host_inter
 
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.richPresence, "Cheevos", "RichPresence", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.testMode, "Cheevos", "TestMode", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.unofficialTestMode, "Cheevos",
+                                               "UnofficialTestMode", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.useFirstDiscFromPlaylist, "Cheevos",
                                                "UseFirstDiscFromPlaylist", true);
   m_ui.enable->setChecked(m_host_interface->GetBoolSettingValue("Cheevos", "Enabled", false));
@@ -28,6 +30,10 @@ AchievementSettingsWidget::AchievementSettingsWidget(QtHostInterface* host_inter
   dialog->registerWidgetHelp(m_ui.testMode, tr("Enable Test Mode"), tr("Unchecked"),
                              tr("When enabled, DuckStation will assume all achievements are locked and not send any "
                                 "unlock notifications to the server."));
+  dialog->registerWidgetHelp(
+    m_ui.unofficialTestMode, tr("Test Unofficial Achievements"), tr("Unchecked"),
+    tr("When enabled, DuckStation will list achievements from unofficial sets. Please note that these achievements are "
+       "not tracked by RetroAchievements, so they unlock every time."));
   dialog->registerWidgetHelp(
     m_ui.richPresence, tr("Enable Rich Presence"), tr("Unchecked"),
     tr("When enabled, rich presence information will be collected and sent to the server where supported."));

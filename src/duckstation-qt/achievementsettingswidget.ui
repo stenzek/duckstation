@@ -67,6 +67,13 @@
         </property>
        </widget>
       </item>
+      <item row="2" column="1">
+       <widget class="QCheckBox" name="unofficialTestMode">
+        <property name="text">
+         <string>Test Unofficial Achievements</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>
