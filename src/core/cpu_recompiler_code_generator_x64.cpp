@@ -1955,9 +1955,6 @@ void CodeGenerator::EmitLoadGuestMemoryFastmem(const CodeBlockInstruction& cbi, 
     }
   }
 
-  // TODO: BIOS reads...
-  EmitAddCPUStructField(offsetof(CPU::State, pending_ticks), Value::FromConstantU32(Bus::RAM_READ_TICKS));
-
   // insert nops, we need at least 5 bytes for a relative jump
   const u32 fastmem_size =
     static_cast<u32>(static_cast<u8*>(GetCurrentNearCodePointer()) - static_cast<u8*>(bpi.host_pc));
@@ -1972,7 +1969,16 @@ void CodeGenerator::EmitLoadGuestMemoryFastmem(const CodeBlockInstruction& cbi, 
   m_far_emitter.align(16);
   bpi.host_slowmem_pc = GetCurrentFarCodePointer();
   SwitchToFarCode();
+
+  // we add the ticks *after* the add here, since we counted incorrectly, then correct for it below
+  DebugAssert(m_delayed_cycles_add > 0);
+  EmitAddCPUStructField(offsetof(State, pending_ticks), Value::FromConstantU32(static_cast<u32>(m_delayed_cycles_add)));
+  m_delayed_cycles_add += Bus::RAM_READ_TICKS;
+
   EmitLoadGuestMemorySlowmem(cbi, address, size, result, true);
+
+  EmitAddCPUStructField(offsetof(State, pending_ticks),
+                        Value::FromConstantU32(static_cast<u32>(-m_delayed_cycles_add)));
 
   // return to the block code
   m_emit->jmp(GetCurrentNearCodePointer());
@@ -2234,7 +2240,13 @@ void CodeGenerator::EmitStoreGuestMemoryFastmem(const CodeBlockInstruction& cbi,
   bpi.host_slowmem_pc = GetCurrentFarCodePointer();
   SwitchToFarCode();
 
+  DebugAssert(m_delayed_cycles_add > 0);
+  EmitAddCPUStructField(offsetof(State, pending_ticks), Value::FromConstantU32(static_cast<u32>(m_delayed_cycles_add)));
+
   EmitStoreGuestMemorySlowmem(cbi, address, size, value, true);
+
+  EmitAddCPUStructField(offsetof(State, pending_ticks),
+                        Value::FromConstantU32(static_cast<u32>(-m_delayed_cycles_add)));
 
   // return to the block code
   m_emit->jmp(GetCurrentNearCodePointer());

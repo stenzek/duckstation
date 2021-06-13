@@ -57,8 +57,6 @@ Value CodeGenerator::EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const 
     }
   }
 
-  AddPendingCycles(true);
-
   Value result = m_register_cache.AllocateScratch(HostPointerSize);
 
   const bool use_fastmem =
@@ -83,6 +81,7 @@ Value CodeGenerator::EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const 
   }
   else
   {
+    AddPendingCycles(true);
     m_register_cache.FlushCallerSavedGuestRegisters(true, true);
     EmitLoadGuestMemorySlowmem(cbi, address, size, result, false);
   }
@@ -133,8 +132,6 @@ void CodeGenerator::EmitStoreGuestMemory(const CodeBlockInstruction& cbi, const 
     }
   }
 
-  AddPendingCycles(true);
-
   const bool use_fastmem =
     (address_spec ? Bus::CanUseFastmemForAddress(*address_spec) : true) && !SpeculativeIsCacheIsolated();
   if (address_spec)
@@ -157,6 +154,7 @@ void CodeGenerator::EmitStoreGuestMemory(const CodeBlockInstruction& cbi, const 
   }
   else
   {
+    AddPendingCycles(true);
     m_register_cache.FlushCallerSavedGuestRegisters(true, true);
     EmitStoreGuestMemorySlowmem(cbi, address, size, value, false);
   }

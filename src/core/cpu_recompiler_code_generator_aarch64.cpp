@@ -1463,15 +1463,22 @@ void CodeGenerator::EmitLoadGuestMemoryFastmem(const CodeBlockInstruction& cbi, 
     }
   }
 
-  EmitAddCPUStructField(offsetof(State, pending_ticks), Value::FromConstantU32(Bus::RAM_READ_TICKS));
-
   bpi.host_code_size = static_cast<u32>(
     static_cast<ptrdiff_t>(static_cast<u8*>(GetCurrentNearCodePointer()) - static_cast<u8*>(bpi.host_pc)));
 
   // generate slowmem fallback
   bpi.host_slowmem_pc = GetCurrentFarCodePointer();
   SwitchToFarCode();
+
+  // we add the ticks *after* the add here, since we counted incorrectly, then correct for it below
+  DebugAssert(m_delayed_cycles_add > 0);
+  EmitAddCPUStructField(offsetof(State, pending_ticks), Value::FromConstantU32(static_cast<u32>(m_delayed_cycles_add)));
+  m_delayed_cycles_add += Bus::RAM_READ_TICKS;
+
   EmitLoadGuestMemorySlowmem(cbi, address, size, result, true);
+
+  EmitAddCPUStructField(offsetof(State, pending_ticks),
+                        Value::FromConstantU32(static_cast<u32>(-m_delayed_cycles_add)));
 
   // return to the block code
   EmitBranch(GetCurrentNearCodePointer(), false);
@@ -1638,7 +1645,13 @@ void CodeGenerator::EmitStoreGuestMemoryFastmem(const CodeBlockInstruction& cbi,
   bpi.host_slowmem_pc = GetCurrentFarCodePointer();
   SwitchToFarCode();
 
+  DebugAssert(m_delayed_cycles_add > 0);
+  EmitAddCPUStructField(offsetof(State, pending_ticks), Value::FromConstantU32(static_cast<u32>(m_delayed_cycles_add)));
+
   EmitStoreGuestMemorySlowmem(cbi, address, size, value_in_hr, true);
+
+  EmitAddCPUStructField(offsetof(State, pending_ticks),
+                        Value::FromConstantU32(static_cast<u32>(-m_delayed_cycles_add)));
 
   // return to the block code
   EmitBranch(GetCurrentNearCodePointer(), false);
