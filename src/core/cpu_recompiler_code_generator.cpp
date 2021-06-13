@@ -2311,11 +2311,15 @@ bool CodeGenerator::Compile_Branch(const CodeBlockInstruction& cbi)
 
       const u8 rt = static_cast<u8>(cbi.instruction.i.rt.GetValue());
       const bool bgez = ConvertToBoolUnchecked(rt & u8(1));
-      const Condition condition = bgez ? Condition::PositiveOrZero : Condition::Negative;
+      const Condition condition = (bgez && cbi.instruction.r.rs == Reg::zero) ?
+                                    Condition::Always :
+                                    (bgez ? Condition::PositiveOrZero : Condition::Negative);
       const bool link = (rt & u8(0x1E)) == u8(0x10);
 
       // Read has to happen before the link as the compare can use ra.
-      Value lhs = m_register_cache.ReadGuestRegisterToScratch(cbi.instruction.i.rs);
+      Value lhs;
+      if (condition != Condition::Always)
+        lhs = m_register_cache.ReadGuestRegisterToScratch(cbi.instruction.i.rs);
 
       // The return address is always written if link is set, regardless of whether the branch is taken.
       if (link)
