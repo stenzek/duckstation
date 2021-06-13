@@ -107,6 +107,8 @@ void CubebAudioStream::PauseDevice(bool paused)
     Log_ErrorPrintf("cubeb_stream_%s failed: %d", paused ? "stop" : "start", rv);
     return;
   }
+
+  m_paused = paused;
 }
 
 void CubebAudioStream::CloseDevice()
@@ -114,7 +116,10 @@ void CubebAudioStream::CloseDevice()
   Assert(IsOpen());
 
   if (!m_paused)
+  {
     cubeb_stream_stop(m_cubeb_stream);
+    m_paused = true;
+  }
 
   cubeb_stream_destroy(m_cubeb_stream);
   m_cubeb_stream = nullptr;
@@ -130,12 +135,7 @@ long CubebAudioStream::DataCallback(cubeb_stream* stm, void* user_ptr, const voi
   return nframes;
 }
 
-void CubebAudioStream::StateCallback(cubeb_stream* stream, void* user_ptr, cubeb_state state)
-{
-  CubebAudioStream* const this_ptr = static_cast<CubebAudioStream*>(user_ptr);
-
-  this_ptr->m_paused = (state != CUBEB_STATE_STARTED);
-}
+void CubebAudioStream::StateCallback(cubeb_stream* stream, void* user_ptr, cubeb_state state) {}
 
 void CubebAudioStream::FramesAvailable() {}
 
