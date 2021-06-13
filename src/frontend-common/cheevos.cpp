@@ -1101,8 +1101,23 @@ void UnlockAchievement(u32 achievement_id, bool add_notification /* = true*/)
   DeactivateAchievement(achievement);
 
   Log_InfoPrintf("Achievement %s (%u) for game %u unlocked", achievement->title.c_str(), achievement_id, g_game_id);
-  ImGuiFullscreen::AddNotification(15.0f, achievement->title, achievement->description,
-                                   achievement->unlocked_badge_path);
+
+  std::string title;
+  switch (achievement->category)
+  {
+    case AchievementCategory::Local:
+      title = StringUtil::StdStringFromFormat("%s (Local)", achievement->title.c_str());
+      break;
+    case AchievementCategory::Unofficial:
+      title = StringUtil::StdStringFromFormat("%s (Unofficial)", achievement->title.c_str());
+      break;
+    case AchievementCategory::Core:
+    default:
+      title = achievement->title;
+      break;
+  }
+
+  ImGuiFullscreen::AddNotification(15.0f, std::move(title), achievement->description, achievement->unlocked_badge_path);
 
   if (s_test_mode)
   {
