@@ -110,13 +110,6 @@ void CDROM::Shutdown()
 
 void CDROM::Reset()
 {
-  SoftReset();
-
-  SetHoldPosition(0, true);
-}
-
-void CDROM::SoftReset()
-{
   m_command = Command::None;
   m_command_event->Deactivate();
   ClearCommandSecondResponse();
@@ -171,6 +164,54 @@ void CDROM::SoftReset()
   }
 
   UpdateStatusRegister();
+
+  SetHoldPosition(0, true);
+}
+
+void CDROM::SoftReset()
+{
+  ClearCommandSecondResponse();
+  ClearDriveState();
+  m_secondary_status.bits = 0;
+  m_secondary_status.motor_on = CanReadMedia();
+  m_secondary_status.shell_open = !CanReadMedia();
+  m_mode.bits = 0;
+  m_mode.read_raw_sector = true;
+  m_pending_async_interrupt = 0;
+  m_setloc_position = {};
+  m_setloc_pending = false;
+  m_read_after_seek = false;
+  m_play_after_seek = false;
+  m_muted = false;
+  m_adpcm_muted = false;
+  m_last_sector_header_valid = false;
+  m_last_cdda_report_frame_nibble = 0xFF;
+
+  ResetAudioDecoder();
+
+  m_param_fifo.Clear();
+  m_async_response_fifo.Clear();
+  m_data_fifo.Clear();
+
+  m_current_read_sector_buffer = 0;
+  m_current_write_sector_buffer = 0;
+  for (u32 i = 0; i < NUM_SECTOR_BUFFERS; i++)
+  {
+    m_sector_buffers[i].data.fill(0);
+    m_sector_buffers[i].size = 0;
+  }
+
+  UpdateStatusRegister();
+
+  if (m_current_lba != 0)
+  {
+    const TickCount seek_ticks = GetTicksForSeek(0);
+    m_drive_state = DriveState::SeekingImplicit;
+    m_drive_event->SetIntervalAndSchedule(seek_ticks);
+    m_reader.QueueReadSector(0);
+    m_seek_start_lba = m_current_lba;
+    m_seek_end_lba = 0;
+  }
 }
 
 bool CDROM::DoState(StateWrapper& sw)
@@ -1162,14 +1203,6 @@ void CDROM::ExecuteCommand(TickCount ticks_late)
         UpdatePositionWhileSeeking();
 
       SoftReset();
-
-      if (m_current_lba != 0)
-      {
-        m_drive_state = DriveState::SeekingImplicit;
-        m_drive_event->SetIntervalAndSchedule(((m_current_lba != 0) ? GetTicksForSeek(0) : 0));
-        m_seek_start_lba = m_current_lba;
-        m_seek_end_lba = 0;
-      }
 
       QueueCommandSecondResponse(Command::Reset, RESET_TICKS);
       return;
