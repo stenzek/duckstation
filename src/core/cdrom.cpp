@@ -741,13 +741,15 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba)
   if (g_settings.cdrom_seek_speedup == 0)
     return MIN_TICKS;
 
-  UpdatePhysicalPosition();
+  u32 ticks = static_cast<u32>(MIN_TICKS);
+  if (IsSeeking())
+    ticks += m_drive_event->GetTicksUntilNextExecution();
+  else
+    UpdatePhysicalPosition();
 
   const TickCount tps = System::GetTicksPerSecond();
-  const CDImage::LBA current_lba = m_secondary_status.motor_on ? m_physical_lba : 0;
+  const CDImage::LBA current_lba = m_secondary_status.motor_on ? (IsSeeking() ? m_seek_end_lba : m_physical_lba) : 0;
   const u32 lba_diff = static_cast<u32>((new_lba > current_lba) ? (new_lba - current_lba) : (current_lba - new_lba));
-
-  u32 ticks = static_cast<u32>(MIN_TICKS);
 
   // Motor spin-up time.
   if (!m_secondary_status.motor_on)
