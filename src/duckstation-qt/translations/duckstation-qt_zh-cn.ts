@@ -251,7 +251,7 @@
         <location filename="../achievementsettingswidget.cpp" line="82"/>
         <source>Username: %1
 Login token generated on %2.</source>
-        <translation>用户名:%1
+        <translation>用户名: %1
 在%2上登录生成的令牌。</translation>
     </message>
     <message>
@@ -2363,7 +2363,7 @@ Login token generated on %2.</source>
     <message>
         <location filename="../consolesettingswidget.cpp" line="87"/>
         <source>Automatically applies patches to disc images when they are present in the same directory. Currently only PPF patches are supported with this option.</source>
-        <translation>当光盘镜像处于同一个目录中时，自动对它们应用补丁。目前这个选项只支持PPF补丁。</translation>
+        <translation>当补丁和光盘镜像处于同一个目录中时，自动应用补丁。目前这个选项只支持PPF补丁。</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="90"/>
@@ -5389,7 +5389,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../generalsettingswidget.cpp" line="70"/>
         <source>When enabled, per-game settings will be applied, and incompatible enhancements will be disabled. You should leave this option enabled except when testing enhancements with incompatible games.</source>
-        <translation>启用后，每个游戏将会使用各自独立的设置，旨在应对那些不兼容游戏的增强功能将会被禁用。您应该保持此选项处于启用状态，除非要用那些不兼容游戏开始测试增强功能。</translation>
+        <translation>启用后，每个游戏将会使用各自独立的设置，旨在应对那些不兼容游戏的增强功能将会被禁用。您应该保持此选项处于启用状态，除非要用那些不兼容游戏去测试增强功能。</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="73"/>
@@ -7530,7 +7530,7 @@ This will download approximately 4 megabytes over your current internet connecti
 Supported controllers: %s
 Please configure a supported controller from the list above.</source>
         <translation>接入接口%u (%s) 中的控制器不支持%s。
-支持控制器：%s
+支持控制器: %s
 请从上面的列表中配置一个支持的控制器。</translation>
     </message>
     <message>
@@ -8256,11 +8256,11 @@ Game Publisher: %4
 Achievements: %5 (%6)
 
 </source>
-        <translation>游戏ID:%1
-游戏标题:%2
-游戏开发者:%3
-游戏发行商:%4
-成就:%5 (%6)
+        <translation>游戏ID: %1
+游戏标题: %2
+游戏开发者: %3
+游戏发行商: %4
+成就: %5 (%6)
 
 </translation>
     </message>
