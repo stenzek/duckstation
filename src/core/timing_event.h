@@ -30,6 +30,9 @@ public:
   TickCount GetTicksSinceLastExecution() const;
   TickCount GetTicksUntilNextExecution() const;
 
+  // Adds ticks to current execution.
+  void Delay(TickCount ticks);
+
   void Schedule(TickCount ticks);
   void SetIntervalAndSchedule(TickCount ticks);
   void SetPeriodAndSchedule(TickCount ticks);
