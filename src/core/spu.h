@@ -75,7 +75,7 @@ private:
   static constexpr u32 MINIMUM_TICKS_BETWEEN_KEY_ON_OFF = 2;
   static constexpr u32 NUM_REVERB_REGS = 32;
   static constexpr u32 FIFO_SIZE_IN_HALFWORDS = 32;
-  static constexpr TickCount TRANSFER_TICKS_PER_HALFWORD = 32;
+  static constexpr TickCount TRANSFER_TICKS_PER_HALFWORD = 16;
 
   enum class RAMTransferMode : u8
   {
