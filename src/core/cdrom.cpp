@@ -102,6 +102,7 @@ void CDROM::Initialize()
 void CDROM::Shutdown()
 {
   m_command_event.reset();
+  m_command_second_response_event.reset();
   m_drive_event.reset();
   m_reader.StopThread();
   m_reader.RemoveMedia();
