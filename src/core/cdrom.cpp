@@ -1020,7 +1020,8 @@ void CDROM::ExecuteCommand(TickCount ticks_late)
       SendACKAndStat();
       EndCommand();
 
-      if (speed_change)
+      if (speed_change && m_drive_state != DriveState::SeekingImplicit &&
+          m_drive_state != DriveState::ChangingSpeedOrTOCRead)
       {
         // if we're seeking or reading, we need to add time to the current seek/read
         const TickCount change_ticks = GetTicksForSpeedChange();
