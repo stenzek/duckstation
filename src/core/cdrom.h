@@ -153,7 +153,8 @@ private:
     UNUSED_Stopping,
     ChangingSession,
     SpinningUp,
-    SeekingImplicit
+    SeekingImplicit,
+    ChangingSpeedOrTOCRead
   };
 
   union StatusRegister
@@ -225,7 +226,7 @@ private:
     BitField<u8, bool, 7, 1> BFRD;
   };
 
-  void SoftReset();
+  void SoftReset(TickCount ticks_late);
 
   ALWAYS_INLINE bool IsDriveIdle() const { return m_drive_state == DriveState::Idle; }
   ALWAYS_INLINE bool IsMotorOn() const { return m_secondary_status.motor_on; }
@@ -271,8 +272,10 @@ private:
   TickCount GetTicksForSpinUp();
   TickCount GetTicksForIDRead();
   TickCount GetTicksForRead();
-  TickCount GetTicksForSeek(CDImage::LBA new_lba);
+  TickCount GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change = false);
   TickCount GetTicksForStop(bool motor_was_on);
+  TickCount GetTicksForSpeedChange();
+  TickCount GetTicksForTOCRead();
   CDImage::LBA GetNextSectorToBeRead();
   bool CompleteSeek();
 
@@ -294,6 +297,7 @@ private:
   void DoStatSecondResponse();
   void DoChangeSessionComplete();
   void DoSpinUpComplete();
+  void DoSpeedChangeOrImplicitTOCReadComplete();
   void DoIDRead();
   void DoSectorRead();
   void ProcessDataSectorHeader(const u8* raw_sector);
@@ -327,7 +331,6 @@ private:
   StatusRegister m_status = {};
   SecondaryStatusRegister m_secondary_status = {};
   ModeRegister m_mode = {};
-  bool m_current_double_speed = false;
 
   u8 m_interrupt_enable_register = INTERRUPT_REGISTER_MASK;
   u8 m_interrupt_flag_register = 0;

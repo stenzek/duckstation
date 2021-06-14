@@ -18,6 +18,11 @@ Log_SetChannel(CDROM);
 #include <emmintrin.h>
 #endif
 
+static constexpr std::array<const char*, 15> s_drive_state_names = {
+  {"Idle", "Opening Shell", "Resetting", "Seeking (Physical)", "Seeking (Logical)", "Reading ID", "Reading TOC",
+   "Reading", "Playing", "Pausing", "Stopping", "Changing Session", "Spinning Up", "Seeking (Implicit)",
+   "Changing Speed/Implicit TOC Read"}};
+
 struct CommandInfo
 {
   const char* name;
@@ -120,7 +125,6 @@ void CDROM::Reset()
   m_secondary_status.shell_open = !CanReadMedia();
   m_mode.bits = 0;
   m_mode.read_raw_sector = true;
-  m_current_double_speed = false;
   m_interrupt_enable_register = INTERRUPT_REGISTER_MASK;
   m_interrupt_flag_register = 0;
   m_pending_async_interrupt = 0;
@@ -168,8 +172,10 @@ void CDROM::Reset()
   SetHoldPosition(0, true);
 }
 
-void CDROM::SoftReset()
+void CDROM::SoftReset(TickCount ticks_late)
 {
+  const bool was_double_speed = m_mode.double_speed;
+
   ClearCommandSecondResponse();
   ClearDriveState();
   m_secondary_status.bits = 0;
@@ -203,14 +209,37 @@ void CDROM::SoftReset()
 
   UpdateStatusRegister();
 
-  if (m_current_lba != 0)
+  if (HasMedia())
   {
-    const TickCount seek_ticks = GetTicksForSeek(0);
-    m_drive_state = DriveState::SeekingImplicit;
-    m_drive_event->SetIntervalAndSchedule(seek_ticks);
-    m_reader.QueueReadSector(0);
-    m_seek_start_lba = m_current_lba;
-    m_seek_end_lba = 0;
+    const TickCount toc_read_ticks = GetTicksForTOCRead();
+    const TickCount speed_change_ticks = was_double_speed ? GetTicksForSpeedChange() : 0;
+    const TickCount seek_ticks = (m_current_lba != 0) ? GetTicksForSeek(0) : 0;
+    const TickCount total_ticks = toc_read_ticks + speed_change_ticks + seek_ticks - ticks_late;
+
+    if (was_double_speed)
+    {
+      Log_DevPrintf("CDROM was double speed on reset, switching to single speed in %d ticks, reading TOC in %d ticks, "
+                    "seeking in %d ticks",
+                    speed_change_ticks, toc_read_ticks, seek_ticks);
+    }
+    else
+    {
+      Log_DevPrintf("CDROM reading TOC on reset in %d ticks and seeking in %d ticks", toc_read_ticks, seek_ticks);
+    }
+
+    if (m_current_lba != 0)
+    {
+      m_drive_state = DriveState::SeekingImplicit;
+      m_drive_event->SetIntervalAndSchedule(total_ticks);
+      m_reader.QueueReadSector(0);
+      m_seek_start_lba = m_current_lba;
+      m_seek_end_lba = 0;
+    }
+    else
+    {
+      m_drive_state = DriveState::ChangingSpeedOrTOCRead;
+      m_drive_event->Schedule(total_ticks);
+    }
   }
 }
 
@@ -222,7 +251,10 @@ bool CDROM::DoState(StateWrapper& sw)
   sw.Do(&m_status.bits);
   sw.Do(&m_secondary_status.bits);
   sw.Do(&m_mode.bits);
-  sw.Do(&m_current_double_speed);
+
+  bool current_double_speed = m_mode.double_speed;
+  sw.Do(&current_double_speed);
+
   sw.Do(&m_interrupt_enable_register);
   sw.Do(&m_interrupt_flag_register);
   sw.Do(&m_pending_async_interrupt);
@@ -734,7 +766,7 @@ TickCount CDROM::GetTicksForRead()
   return m_mode.double_speed ? (tps / 150) : (tps / 75);
 }
 
-TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba)
+TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
 {
   static constexpr TickCount MIN_TICKS = 20000;
 
@@ -747,7 +779,7 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba)
   else
     UpdatePhysicalPosition();
 
-  const TickCount tps = System::GetTicksPerSecond();
+  const TickCount tps = System::MASTER_CLOCK;
   const CDImage::LBA current_lba = m_secondary_status.motor_on ? (IsSeeking() ? m_seek_end_lba : m_physical_lba) : 0;
   const u32 lba_diff = static_cast<u32>((new_lba > current_lba) ? (new_lba - current_lba) : (current_lba - new_lba));
 
@@ -762,7 +794,7 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba)
 
   if (lba_diff < 32)
   {
-    ticks += static_cast<u32>(GetTicksForRead()) * std::min<u32>(BASE_SECTORS_PER_TRACK, lba_diff);
+    ticks += static_cast<u32>(GetTicksForRead()) * std::min<u32>(BASE_SECTORS_PER_TRACK, lba_diff) * 2;
   }
   else
   {
@@ -780,26 +812,44 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba)
       ticks += static_cast<u32>((u64(tps) * 300) / 1000);
   }
 
-  if (m_mode.double_speed != m_current_double_speed)
+  if (m_drive_state == DriveState::ChangingSpeedOrTOCRead && !ignore_speed_change)
   {
-    Log_DevPrintf("Switched from %s to %s speed", m_current_double_speed ? "double" : "single",
-                  m_mode.double_speed ? "double" : "single");
-    m_current_double_speed = m_mode.double_speed;
+    // we're still reading the TOC, so add that time in
+    const TickCount remaining_change_ticks = m_drive_event->GetTicksUntilNextExecution();
+    ticks += remaining_change_ticks;
 
-    // Approximate time for the motor to change speed?
-    ticks += static_cast<u32>(static_cast<double>(tps) * 0.1);
+    Log_DevPrintf("Seek time for %u LBAs: %d (%d for speed change/implicit TOC read)", lba_diff, ticks,
+                  remaining_change_ticks);
+  }
+  else
+  {
+    Log_DevPrintf("Seek time for %u LBAs: %d", lba_diff, ticks);
   }
 
   if (g_settings.cdrom_seek_speedup > 1)
     ticks = std::min<u32>(ticks / g_settings.cdrom_seek_speedup, MIN_TICKS);
 
-  Log_DevPrintf("Seek time for %u LBAs: %u", lba_diff, ticks);
-  return static_cast<u32>(ticks);
+  return System::ScaleTicksToOverclock(static_cast<TickCount>(ticks));
 }
 
 TickCount CDROM::GetTicksForStop(bool motor_was_on)
 {
-  return motor_was_on ? (m_mode.double_speed ? 25000000 : 13000000) : 7000;
+  return System::ScaleTicksToOverclock(motor_was_on ? (m_mode.double_speed ? 25000000 : 13000000) : 7000);
+}
+
+TickCount CDROM::GetTicksForSpeedChange()
+{
+  static constexpr u32 ticks_single_to_double = static_cast<u32>(0.8 * static_cast<double>(System::MASTER_CLOCK));
+  static constexpr u32 ticks_double_to_single = static_cast<u32>(1.0 * static_cast<double>(System::MASTER_CLOCK));
+  return System::ScaleTicksToOverclock(m_mode.double_speed ? ticks_single_to_double : ticks_double_to_single);
+}
+
+TickCount CDROM::GetTicksForTOCRead()
+{
+  if (!HasMedia())
+    return 0;
+
+  return System::GetTicksPerSecond();
 }
 
 CDImage::LBA CDROM::GetNextSectorToBeRead()
@@ -940,7 +990,7 @@ void CDROM::ExecuteCommand(TickCount ticks_late)
       {
         SendACKAndStat();
         SetHoldPosition(0, true);
-        QueueCommandSecondResponse(Command::ReadTOC, System::GetTicksPerSecond() / 2); // half a second
+        QueueCommandSecondResponse(Command::ReadTOC, GetTicksForTOCRead());
       }
 
       EndCommand();
@@ -963,11 +1013,32 @@ void CDROM::ExecuteCommand(TickCount ticks_late)
     case Command::Setmode:
     {
       const u8 mode = m_param_fifo.Peek(0);
-      Log_DebugPrintf("CDROM setmode command 0x%02X", ZeroExtend32(mode));
+      const bool speed_change = (mode & 0x80) != (m_mode.bits & 0x80);
+      Log_DevPrintf("CDROM setmode command 0x%02X", ZeroExtend32(mode));
 
       m_mode.bits = mode;
       SendACKAndStat();
       EndCommand();
+
+      if (speed_change)
+      {
+        // if we're seeking or reading, we need to add time to the current seek/read
+        const TickCount change_ticks = GetTicksForSpeedChange();
+        if (m_drive_state != DriveState::Idle)
+        {
+          Log_DevPrintf("Drive is %s, delaying event by %d ticks for speed change to %s-speed",
+                        s_drive_state_names[static_cast<u8>(m_drive_state)], change_ticks,
+                        m_mode.double_speed ? "double" : "single");
+          m_drive_event->Delay(change_ticks);
+        }
+        else
+        {
+          Log_DevPrintf("Drive is idle, speed change takes %d ticks", change_ticks);
+          m_drive_state = DriveState::ChangingSpeedOrTOCRead;
+          m_drive_event->Schedule(change_ticks);
+        }
+      }
+
       return;
     }
 
@@ -1204,7 +1275,7 @@ void CDROM::ExecuteCommand(TickCount ticks_late)
       if (IsSeeking())
         UpdatePositionWhileSeeking();
 
-      SoftReset();
+      SoftReset(ticks_late);
 
       QueueCommandSecondResponse(Command::Reset, RESET_TICKS);
       return;
@@ -1574,6 +1645,10 @@ void CDROM::ExecuteDrive(TickCount ticks_late)
       DoSpinUpComplete();
       break;
 
+    case DriveState::ChangingSpeedOrTOCRead:
+      DoSpeedChangeOrImplicitTOCReadComplete();
+      break;
+
       // old states, no longer used, but kept for save state compatibility
     case DriveState::UNUSED_ReadingID:
     {
@@ -1717,7 +1792,7 @@ void CDROM::BeginSeeking(bool logical, bool read_after_seek, bool play_after_see
                   m_setloc_position.frame, m_setloc_position.ToLBA(), logical ? "logical" : "physical");
 
   const CDImage::LBA seek_lba = m_setloc_position.ToLBA();
-  const TickCount seek_time = GetTicksForSeek(seek_lba);
+  const TickCount seek_time = GetTicksForSeek(seek_lba, play_after_seek);
 
   m_secondary_status.ClearActiveBits();
   m_secondary_status.motor_on = true;
@@ -1980,6 +2055,13 @@ void CDROM::DoSpinUpComplete()
   m_drive_event->Deactivate();
   m_secondary_status.ClearActiveBits();
   m_secondary_status.motor_on = true;
+}
+
+void CDROM::DoSpeedChangeOrImplicitTOCReadComplete()
+{
+  Log_DebugPrintf("Speed change/implicit TOC read complete");
+  m_drive_state = DriveState::Idle;
+  m_drive_event->Deactivate();
 }
 
 void CDROM::DoIDRead()
@@ -2593,10 +2675,6 @@ void CDROM::DrawDebugWindow()
 
   if (ImGui::CollapsingHeader("Status/Mode", ImGuiTreeNodeFlags_DefaultOpen))
   {
-    static constexpr std::array<const char*, 14> drive_state_names = {
-      {"Idle", "Opening Shell", "Resetting", "Seeking (Physical)", "Seeking (Logical)", "Reading ID", "Reading TOC",
-       "Reading", "Playing", "Pausing", "Stopping", "Changing Session", "Spinning Up", "Seeking (Implicit)"}};
-
     ImGui::Columns(3);
 
     ImGui::Text("Status");
@@ -2701,7 +2779,7 @@ void CDROM::DrawDebugWindow()
     else
     {
       ImGui::TextColored(active_color, "Drive: %s (%d ticks remaining)",
-                         drive_state_names[static_cast<u8>(m_drive_state)],
+                         s_drive_state_names[static_cast<u8>(m_drive_state)],
                          m_drive_event->IsActive() ? m_drive_event->GetTicksUntilNextExecution() : 0);
     }
 
