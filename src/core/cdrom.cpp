@@ -794,7 +794,7 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
 
   if (lba_diff < 32)
   {
-    ticks += static_cast<u32>(GetTicksForRead()) * std::min<u32>(BASE_SECTORS_PER_TRACK, lba_diff) * 2;
+    ticks += static_cast<u32>(GetTicksForRead()) * std::min<u32>(BASE_SECTORS_PER_TRACK, lba_diff);
   }
   else
   {
@@ -803,12 +803,12 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
 
     // 1000ms for the whole disc
     ticks += std::max<u32>(
-      20000,
-      static_cast<u32>(
-        ((static_cast<u64>(lba_diff) * static_cast<u64>(tps) * static_cast<u64>(1000)) / (72 * 60 * 75)) / 1000));
+      20000, static_cast<u32>(((static_cast<u64>(lba_diff) * static_cast<u64>(tps) * static_cast<u64>(1000)) /
+                               (72 * CDImage::FRAMES_PER_MINUTE)) /
+                              1000));
 
-    // 300ms for non-short seeks
-    if (lba_diff >= 2550)
+    // 300ms for non-short seeks (1 minute)
+    if (lba_diff >= CDImage::FRAMES_PER_MINUTE)
       ticks += static_cast<u32>((u64(tps) * 300) / 1000);
   }
 
@@ -1865,13 +1865,16 @@ void CDROM::UpdatePhysicalPosition()
   const u32 sector_diff = diff / GetTicksForRead();
   if (sector_diff > 0)
   {
+    const CDImage::LBA hold_offset = m_last_sector_header_valid ? 2 : 0;
+    const CDImage::LBA sectors_per_track = BASE_SECTORS_PER_TRACK + hold_offset;
+    const CDImage::LBA hold_position = m_current_lba + hold_offset;
     const CDImage::LBA base =
-      (m_current_lba >= BASE_SECTORS_PER_TRACK) ? (m_current_lba - BASE_SECTORS_PER_TRACK) : m_current_lba;
+      (hold_position >= sectors_per_track) ? (hold_position - sectors_per_track) : hold_position;
     if (m_physical_lba < base)
       m_physical_lba = base;
 
     const CDImage::LBA old_offset = m_physical_lba - base;
-    const CDImage::LBA new_offset = (old_offset + sector_diff) % BASE_SECTORS_PER_TRACK;
+    const CDImage::LBA new_offset = (old_offset + sector_diff) % sectors_per_track;
     const CDImage::LBA new_physical_lba = base + new_offset;
 #ifdef _DEBUG
     const CDImage::Position old_pos(CDImage::Position::FromLBA(m_physical_lba));
