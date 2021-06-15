@@ -3873,7 +3873,7 @@ Login token generated on %2.</source>
     </message>
     <message>
         <source>No cheats are loaded.</source>
-        <translation>チートはロードされません。</translation>
+        <translation>チートはロードされていません。</translation>
     </message>
     <message>
         <source>Started dumping audio to &apos;%s&apos;.</source>
@@ -3911,9 +3911,19 @@ Login token generated on %2.</source>
         <source>CPU interpreter forced by game settings.</source>
         <translation>ゲーム設定によって強制的にCPU インタープリタが有効。</translation>
     </message>
+    <message numerus="yes">
+        <source>Loaded %n cheats from list.</source>
+        <translation>
+            <numerusform>リストから %n 個のチートをロードしました。</numerusform>
+        </translation>
+    </message>
     <message>
         <source>%u cheats are now active.</source>
         <translation>%u チートは有効になりました。</translation>
+    </message>
+    <message>
+        <source>Ignoring mismatched controller type %s in port %u.</source>
+        <translation>不一致のコントローラータイプ %s を無視します。(ポート %u)</translation>
     </message>
     <message>
         <source>Cheat &apos;%s&apos; enabled.</source>
@@ -4099,6 +4109,12 @@ Login token generated on %2.</source>
         <source>WARNING: CPU overclock (%u%%) was different in save state (%u%%).</source>
         <translation>警告：CPUオーバークロック (%u%%)は保存状態 (%u%%)で異なりました。</translation>
     </message>
+    <message numerus="yes">
+        <source> %n cheats are enabled.</source>
+        <translation>
+            <numerusform>%n 個のチートが有効になっています。</numerusform>
+        </translation>
+    </message>
     <message>
         <source>PGXP is now disabled</source>
         <translation>PGXPが無効になりました</translation>
@@ -4210,6 +4226,10 @@ Login token generated on %2.</source>
     <message>
         <source>PGXP is now enabled.</source>
         <translation>PGXPが有効になりました。</translation>
+    </message>
+    <message>
+        <source>CD-ROM seek speedup set to instant. This may result in instability.</source>
+        <translation>CD-ROM シークの高速化はインスタントに設定されています。これにより、不安定になる可能性があります。</translation>
     </message>
     <message>
         <source>PGXP is now disabled.</source>
@@ -4753,6 +4773,103 @@ Login token generated on %2.</source>
     <message>
         <source>&amp;Hotkey Settings...</source>
         <translation>ホットキー設定...(&amp;H)</translation>
+    </message>
+</context>
+<context>
+    <name>QtHostInterface</name>
+    <message numerus="yes">
+        <source>%n points</source>
+        <translation>
+            <numerusform>%n ポイント</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Load From File...</source>
+        <translation>ファイルからロード...</translation>
+    </message>
+    <message>
+        <source>Save To File...</source>
+        <translation>ファイルにセーブ...</translation>
+    </message>
+    <message>
+        <source>&amp;Enabled Cheats</source>
+        <translation>チート有効(&amp;E)</translation>
+    </message>
+    <message>
+        <source>No resume save state found.</source>
+        <translation>ステートセーブ が見つかりません。</translation>
+    </message>
+    <message>
+        <source>Edit Memory Cards...</source>
+        <translation>メモリーカードを編集...</translation>
+    </message>
+    <message>
+        <source>Delete Save States...</source>
+        <translation>ステートセーブを削除...</translation>
+    </message>
+    <message>
+        <source>Resume (%1)</source>
+        <translation>再開 (%1)</translation>
+    </message>
+    <message>
+        <source>Global Save %1 (%2)</source>
+        <translation>グローバルセーブ %1 (%2)</translation>
+    </message>
+    <message>
+        <source>Game not loaded or no RetroAchievements available.</source>
+        <translation>ゲームが読み込まれていないか、RetroAchievementsが利用できません。</translation>
+    </message>
+    <message>
+        <source>Resume</source>
+        <translation>再開</translation>
+    </message>
+    <message>
+        <source>Load State</source>
+        <translation>ステートロード</translation>
+    </message>
+    <message>
+        <source>Global Save %1 (Empty)</source>
+        <translation>グローバルセーブ %1 (空)</translation>
+    </message>
+    <message>
+        <source>Game Save %1 (Empty)</source>
+        <translation>ゲームセーブ %1 (空)</translation>
+    </message>
+    <message>
+        <source>Game Save %1 (%2)</source>
+        <translation>ゲームセーブ %1 (%2)</translation>
+    </message>
+    <message>
+        <source>Confirm Save State Deletion</source>
+        <translation>ステートセーブの削除する時は確認する</translation>
+    </message>
+    <message>
+        <source>&amp;Apply Cheats</source>
+        <translation>チート適用(&amp;A)</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to delete all save states for %1?
+
+The saves will not be recoverable.</source>
+        <translation>%1 のすべてのステートセーブを削除してもよろしいですか？
+
+元に戻すことはできません。</translation>
+    </message>
+    <message>
+        <source>Game ID: %1
+Game Title: %2
+Game Developer: %3
+Game Publisher: %4
+Achievements: %5 (%6 points)
+
+</source>
+        <translation>ゲームID:%1
+ゲーム名:%2
+開発元:%3
+販売元:%4
+Achievements:%5 (%6 点)
+
+</translation>
     </message>
 </context>
 <context>
@@ -5706,89 +5823,6 @@ SBIファイルを追加する方法については、READMEを確認してく�
     <message>
         <source>Invalid version %u (%s version %u)</source>
         <translation>無効なバージョン %u (%s バージョン %u)</translation>
-    </message>
-</context>
-<context>
-    <name>QtHostInterface</name>
-    <message>
-        <source>&amp;Enabled Cheats</source>
-        <translation>チート有効(&amp;E)</translation>
-    </message>
-    <message>
-        <source>No resume save state found.</source>
-        <translation>ステートセーブ が見つかりません。</translation>
-    </message>
-    <message>
-        <source>Edit Memory Cards...</source>
-        <translation>メモリーカードを編集...</translation>
-    </message>
-    <message>
-        <source>Delete Save States...</source>
-        <translation>ステートセーブを削除...</translation>
-    </message>
-    <message>
-        <source>Resume (%1)</source>
-        <translation>再開 (%1)</translation>
-    </message>
-    <message>
-        <source>Global Save %1 (%2)</source>
-        <translation>グローバルセーブ %1 (%2)</translation>
-    </message>
-    <message>
-        <source>Game not loaded or no RetroAchievements available.</source>
-        <translation>ゲームが読み込まれていないか、RetroAchievementsが利用できません。</translation>
-    </message>
-    <message>
-        <source>Resume</source>
-        <translation>再開</translation>
-    </message>
-    <message>
-        <source>Load State</source>
-        <translation>ステートロード</translation>
-    </message>
-    <message>
-        <source>Global Save %1 (Empty)</source>
-        <translation>グローバルセーブ %1 (空)</translation>
-    </message>
-    <message>
-        <source>Game Save %1 (Empty)</source>
-        <translation>ゲームセーブ %1 (空)</translation>
-    </message>
-    <message>
-        <source>Game Save %1 (%2)</source>
-        <translation>ゲームセーブ %1 (%2)</translation>
-    </message>
-    <message>
-        <source>Confirm Save State Deletion</source>
-        <translation>ステートセーブの削除する時は確認する</translation>
-    </message>
-    <message>
-        <source>&amp;Apply Cheats</source>
-        <translation>チート適用(&amp;A)</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to delete all save states for %1?
-
-The saves will not be recoverable.</source>
-        <translation>%1 のすべてのステートセーブを削除してもよろしいですか？
-
-元に戻すことはできません。</translation>
-    </message>
-    <message>
-        <source>Game ID: %1
-Game Title: %2
-Game Developer: %3
-Game Publisher: %4
-Achievements: %5 (%6 points)
-
-</source>
-        <translation>ゲームID:%1
-ゲーム名:%2
-開発元:%3
-販売元:%4
-Achievements:%5 (%6 点)
-
-</translation>
     </message>
 </context>
 <context>
