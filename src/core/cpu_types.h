@@ -154,7 +154,6 @@ enum class CopCommonInstruction : u32
   cfcn = 0b0010,
   mtcn = 0b0100,
   ctcn = 0b0110,
-  bcnc = 0b1000,
 };
 
 enum class Cop0Instruction : u32

@@ -158,12 +158,11 @@ static const std::array<const char*, 64> s_special_table = {{
   "UNKNOWN"               // 63
 }};
 
-static const std::array<std::pair<CopCommonInstruction, const char*>, 5> s_cop_common_table = {
+static const std::array<std::pair<CopCommonInstruction, const char*>, 4> s_cop_common_table = {
   {{CopCommonInstruction::mfcn, "mfc$cop $rt, $coprd"},
    {CopCommonInstruction::cfcn, "cfc$cop $rt, $coprd"},
    {CopCommonInstruction::mtcn, "mtc$cop $rt, $coprd"},
-   {CopCommonInstruction::ctcn, "ctc$cop $rt, $coprd"},
-   {CopCommonInstruction::bcnc, "bc$cop$copcc $rel"}}};
+   {CopCommonInstruction::ctcn, "ctc$cop $rt, $coprd"}}};
 
 static const std::array<std::pair<Cop0Instruction, const char*>, 1> s_cop0_table = {{{Cop0Instruction::rfe, "rfe"}}};
 

@@ -1421,7 +1421,7 @@ restart_instruction:
           break;
 
           default:
-            Panic("Missing implementation");
+            Log_ErrorPrintf("Unhandled instruction at %08X: %08X", g_state.current_instruction_pc, inst.bits);
             break;
         }
       }
@@ -1438,8 +1438,15 @@ restart_instruction:
           }
           break;
 
+          case Cop0Instruction::tlbr:
+          case Cop0Instruction::tlbwi:
+          case Cop0Instruction::tlbwr:
+          case Cop0Instruction::tlbp:
+            RaiseException(Exception::RI);
+            break;
+
           default:
-            Panic("Missing implementation");
+            Log_ErrorPrintf("Unhandled instruction at %08X: %08X", g_state.current_instruction_pc, inst.bits);
             break;
         }
       }
@@ -1500,9 +1507,8 @@ restart_instruction:
           }
           break;
 
-          case CopCommonInstruction::bcnc:
           default:
-            Panic("Missing implementation");
+            Log_ErrorPrintf("Unhandled instruction at %08X: %08X", g_state.current_instruction_pc, inst.bits);
             break;
         }
       }
