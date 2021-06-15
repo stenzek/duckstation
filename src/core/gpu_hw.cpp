@@ -1280,18 +1280,24 @@ void GPU_HW::DispatchRenderCommand()
   if (m_batch.transparency_mode != transparency_mode && transparency_mode != GPUTransparencyMode::Disabled)
   {
     static constexpr float transparent_alpha[4][2] = {{0.5f, 0.5f}, {1.0f, 1.0f}, {1.0f, 1.0f}, {0.25f, 1.0f}};
-    m_batch_ubo_data.u_src_alpha_factor = transparent_alpha[static_cast<u32>(transparency_mode)][0];
-    m_batch_ubo_data.u_dst_alpha_factor = transparent_alpha[static_cast<u32>(transparency_mode)][1];
-    m_batch_ubo_dirty = true;
+
+    const float src_alpha_factor = transparent_alpha[static_cast<u32>(transparency_mode)][0];
+    const float dst_alpha_factor = transparent_alpha[static_cast<u32>(transparency_mode)][1];
+    m_batch_ubo_dirty |= (m_batch_ubo_data.u_src_alpha_factor != src_alpha_factor ||
+                          m_batch_ubo_data.u_dst_alpha_factor != dst_alpha_factor);
+    m_batch_ubo_data.u_dst_alpha_factor = src_alpha_factor;
+    m_batch_ubo_data.u_src_alpha_factor = dst_alpha_factor;
   }
 
-  if (m_batch.check_mask_before_draw != m_GPUSTAT.check_mask_before_draw ||
-      m_batch.set_mask_while_drawing != m_GPUSTAT.set_mask_while_drawing)
+  const bool check_mask_before_draw = m_GPUSTAT.check_mask_before_draw;
+  const bool set_mask_while_drawing = m_GPUSTAT.set_mask_while_drawing;
+  if (m_batch.check_mask_before_draw != check_mask_before_draw ||
+      m_batch.set_mask_while_drawing != set_mask_while_drawing)
   {
-    m_batch.check_mask_before_draw = m_GPUSTAT.check_mask_before_draw;
-    m_batch.set_mask_while_drawing = m_GPUSTAT.set_mask_while_drawing;
-    m_batch_ubo_data.u_set_mask_while_drawing = BoolToUInt32(m_batch.set_mask_while_drawing);
-    m_batch_ubo_dirty = true;
+    m_batch.check_mask_before_draw = check_mask_before_draw;
+    m_batch.set_mask_while_drawing = set_mask_while_drawing;
+    m_batch_ubo_dirty |= (m_batch_ubo_data.u_set_mask_while_drawing != BoolToUInt32(set_mask_while_drawing));
+    m_batch_ubo_data.u_set_mask_while_drawing = BoolToUInt32(set_mask_while_drawing);
   }
 
   m_batch.interlacing = IsInterlacedRenderingEnabled();
