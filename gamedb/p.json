@@ -23345,7 +23345,8 @@
   "linkCable": false,
   "controllers": [
    "DigitalController",
-   "NamcoGuncon"
+   "NamcoGuncon",
+   "PlayStationMouse"
   ]
  },
  {
