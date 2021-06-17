@@ -28,6 +28,14 @@ struct Achievement
   bool active;
 };
 
+struct Leaderboard
+{
+  u32 id;
+  std::string title;
+  std::string description;
+  std::string format;
+};
+
 extern bool g_active;
 extern bool g_challenge_mode;
 extern u32 g_game_id;
@@ -91,5 +99,6 @@ u32 GetMaximumPointsForGame();
 u32 GetCurrentPointsForGame();
 
 void UnlockAchievement(u32 achievement_id, bool add_notification = true);
+void SubmitLeaderboard(u32 leaderboard_id, int value);
 
 } // namespace Cheevos

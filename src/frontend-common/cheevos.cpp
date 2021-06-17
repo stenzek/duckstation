@@ -73,6 +73,7 @@ static std::string s_game_publisher;
 static std::string s_game_release_date;
 static std::string s_game_icon;
 static std::vector<Achievement> s_achievements;
+static std::vector<Leaderboard> s_leaderboards;
 
 static bool s_has_rich_presence = false;
 static std::string s_rich_presence_string;
@@ -721,6 +722,44 @@ static void GetPatchesCallback(s32 status_code, const FrontendCommon::HTTPDownlo
     }
   }
 
+  // parse leaderboards
+  if (patch_data.HasMember("Leaderboards") && patch_data["Leaderboards"].IsArray())
+  {
+    const auto leaderboards(patch_data["Leaderboards"].GetArray());
+    for (const auto& leaderboard : leaderboards)
+    {
+      if (!leaderboard.HasMember("ID") || !leaderboard["ID"].IsNumber() || !leaderboard.HasMember("Mem") ||
+          !leaderboard["Mem"].IsString() || !leaderboard.HasMember("Title") || !leaderboard["Title"].IsString() ||
+          !leaderboard.HasMember("Format") || !leaderboard["Format"].IsString())
+      {
+        continue;
+      }
+
+      const unsigned int id = leaderboard["ID"].GetUint();
+      const char* title = leaderboard["Title"].GetString();
+      const char* memaddr = leaderboard["Mem"].GetString();
+      const char* format = leaderboard["Format"].GetString();
+      std::string description = GetOptionalString(leaderboard, "Description");
+
+      Leaderboard lboard;
+      lboard.id = id;
+      lboard.title = title;
+      lboard.description = std::move(description);
+      lboard.format = format;
+      s_leaderboards.push_back(std::move(lboard));
+
+      const int err = rc_runtime_activate_lboard(&s_rcheevos_runtime, id, memaddr, nullptr, 0);
+      if (err != RC_OK)
+      {
+        Log_ErrorPrintf("Leaderboard %u memaddr parse error: %s", id, rc_error_str(err));
+      }
+      else
+      {
+        Log_DevPrintf("Activated leaderboard %s (%u)", title, id);
+      }
+    }
+  }
+
   // parse rich presence
   if (s_rich_presence_enabled && patch_data.HasMember("RichPresencePatch") &&
       patch_data["RichPresencePatch"].IsString())
@@ -1083,6 +1122,11 @@ static void UnlockAchievementCallback(s32 status_code, const FrontendCommon::HTT
   // we don't really need to do anything here
 }
 
+static void SubmitLeaderboardCallback(s32 status_code, const FrontendCommon::HTTPDownloader::Request::Data& data)
+{
+  // Do nothing (for now?)
+}
+
 void UnlockAchievement(u32 achievement_id, bool add_notification /* = true*/)
 {
   Achievement* achievement = GetAchievementByID(achievement_id);
@@ -1138,6 +1182,19 @@ void UnlockAchievement(u32 achievement_id, bool add_notification /* = true*/)
   s_http_downloader->CreateRequest(url, UnlockAchievementCallback);
 }
 
+void SubmitLeaderboard(u32 leaderboard_id, int value)
+{
+  if (s_test_mode)
+  {
+    Log_WarningPrintf("Skipping sending leaderboard %u result to server because of test mode.", leaderboard_id);
+    return;
+  }
+
+  char url[512];
+  rc_url_submit_lboard(url, sizeof(url), s_username.c_str(), s_login_token.c_str(), leaderboard_id, value);
+  s_http_downloader->CreateRequest(url, SubmitLeaderboardCallback);
+}
+
 void CheevosEventHandler(const rc_runtime_event_t* runtime_event)
 {
   static const char* events[] = {"RC_RUNTIME_EVENT_ACHIEVEMENT_ACTIVATED", "RC_RUNTIME_EVENT_ACHIEVEMENT_PAUSED",
@@ -1152,6 +1209,8 @@ void CheevosEventHandler(const rc_runtime_event_t* runtime_event)
 
   if (runtime_event->type == RC_RUNTIME_EVENT_ACHIEVEMENT_TRIGGERED)
     UnlockAchievement(runtime_event->id);
+  else if (runtime_event->type == RC_RUNTIME_EVENT_LBOARD_TRIGGERED)
+    SubmitLeaderboard(runtime_event->id, runtime_event->value);
 }
 
 // from cheats.cpp - do we want to move this somewhere else?
