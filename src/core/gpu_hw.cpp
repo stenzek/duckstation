@@ -1285,8 +1285,8 @@ void GPU_HW::DispatchRenderCommand()
     const float dst_alpha_factor = transparent_alpha[static_cast<u32>(transparency_mode)][1];
     m_batch_ubo_dirty |= (m_batch_ubo_data.u_src_alpha_factor != src_alpha_factor ||
                           m_batch_ubo_data.u_dst_alpha_factor != dst_alpha_factor);
-    m_batch_ubo_data.u_dst_alpha_factor = src_alpha_factor;
-    m_batch_ubo_data.u_src_alpha_factor = dst_alpha_factor;
+    m_batch_ubo_data.u_src_alpha_factor = src_alpha_factor;
+    m_batch_ubo_data.u_dst_alpha_factor = dst_alpha_factor;
   }
 
   const bool check_mask_before_draw = m_GPUSTAT.check_mask_before_draw;
