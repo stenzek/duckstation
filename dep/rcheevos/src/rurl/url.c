@@ -293,7 +293,7 @@ static int rc_url_append_param_equals(char* buffer, size_t buffer_size, size_t b
   return written + (int)buffer_offset;
 }
 
-static int rc_url_append_unum(char* buffer, size_t buffer_size, size_t* buffer_offset, const char* param, unsigned value)
+int rc_url_append_unum(char* buffer, size_t buffer_size, size_t* buffer_offset, const char* param, unsigned value)
 {
   int written = rc_url_append_param_equals(buffer, buffer_size, *buffer_offset, param);
   if (written > 0) {
@@ -311,7 +311,7 @@ static int rc_url_append_unum(char* buffer, size_t buffer_size, size_t* buffer_o
   return -1;
 }
 
-static int rc_url_append_str(char* buffer, size_t buffer_size, size_t* buffer_offset, const char* param, const char* value)
+int rc_url_append_str(char* buffer, size_t buffer_size, size_t* buffer_offset, const char* param, const char* value)
 {
   int written = rc_url_append_param_equals(buffer, buffer_size, *buffer_offset, param);
   if (written > 0)
@@ -330,7 +330,7 @@ static int rc_url_append_str(char* buffer, size_t buffer_size, size_t* buffer_of
   return -1;
 }
 
-static int rc_url_build_dorequest(char* url_buffer, size_t url_buffer_size, size_t* buffer_offset,
+int rc_url_build_dorequest(char* url_buffer, size_t url_buffer_size, size_t* buffer_offset,
    const char* api, const char* user_name)
 {
   const char* base_url = "https://retroachievements.org/dorequest.php";
