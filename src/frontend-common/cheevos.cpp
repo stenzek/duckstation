@@ -79,6 +79,9 @@ static bool s_has_rich_presence = false;
 static std::string s_rich_presence_string;
 static Common::Timer s_last_ping_time;
 
+static u32 s_last_queried_lboard;
+static std::optional<std::vector<LeaderboardEntry>> s_lboard_entries;
+
 static u32 s_total_image_downloads;
 static u32 s_completed_image_downloads;
 static bool s_image_download_progress_active;
@@ -745,7 +748,7 @@ static void GetPatchesCallback(s32 status_code, const FrontendCommon::HTTPDownlo
       lboard.id = id;
       lboard.title = title;
       lboard.description = std::move(description);
-      lboard.format = format;
+      lboard.format = rc_parse_format(format);
       s_leaderboards.push_back(std::move(lboard));
 
       const int err = rc_runtime_activate_lboard(&s_rcheevos_runtime, id, memaddr, nullptr, 0);
@@ -795,6 +798,69 @@ static void GetPatchesCallback(s32 status_code, const FrontendCommon::HTTPDownlo
     DisplayAchievementSummary();
     ClearGameInfo();
     return;
+  }
+}
+
+static void GetLbInfoCallback(s32 status_code, const FrontendCommon::HTTPDownloader::Request::Data& data)
+{
+  rapidjson::Document doc;
+  if (!ParseResponseJSON("Get Leaderboard Info", status_code, data, doc))
+    return;
+
+  if (!doc.HasMember("LeaderboardData") || !doc["LeaderboardData"].IsObject())
+  {
+    FormattedError("No leaderboard returned from server.");
+    return;
+  }
+
+  // parse info
+  const auto lb_data(doc["LeaderboardData"].GetObject());
+  if (!lb_data["LBID"].IsUint())
+  {
+    FormattedError("Leaderboard data is missing leadeboard ID");
+    return;
+  }
+
+  const u32 lbid = lb_data["LBID"].GetUint();
+  if (lbid != s_last_queried_lboard)
+  {
+    // User has already requested another leaderboard, drop this data
+    return;
+  }
+
+  if (lb_data.HasMember("Entries") && lb_data["Entries"].IsArray())
+  {
+    const Leaderboard* leaderboard = GetLeaderboardByID(lbid);
+    if (leaderboard == nullptr)
+    {
+      Log_ErrorPrintf("Attempting to list unknown leaderboard %u", lbid);
+      return;
+    }
+
+    std::vector<LeaderboardEntry> entries;
+
+    const auto lb_entries(lb_data["Entries"].GetArray());
+    for (const auto& entry : lb_entries)
+    {
+      if (!entry.HasMember("User") || !entry["User"].IsString() || !entry.HasMember("Score") ||
+          !entry["Score"].IsNumber() || !entry.HasMember("Rank") || !entry["Rank"].IsNumber())
+      {
+        continue;
+      }
+
+      char score[128];
+      rc_format_value(score, sizeof(score), entry["Score"].GetInt(), leaderboard->format);
+
+      LeaderboardEntry lbe;
+      lbe.user = entry["User"].GetString();
+      lbe.rank = entry["Rank"].GetUint();
+      lbe.formatted_score = score;
+      lbe.is_self = lbe.user == s_username;
+
+      entries.push_back(std::move(lbe));
+    }
+
+    s_lboard_entries = std::move(entries);
   }
 }
 
@@ -1074,6 +1140,72 @@ u32 GetCurrentPointsForGame()
   return points;
 }
 
+bool EnumerateLeaderboards(std::function<bool(const Leaderboard&)> callback)
+{
+  for (const Leaderboard& lboard : s_leaderboards)
+  {
+    if (!callback(lboard))
+      return false;
+  }
+
+  return true;
+}
+
+std::optional<bool> TryEnumerateLeaderboardEntries(u32 id, std::function<bool(const LeaderboardEntry&)> callback)
+{
+  if (id == s_last_queried_lboard)
+  {
+    if (s_lboard_entries)
+    {
+      for (const LeaderboardEntry& entry : *s_lboard_entries)
+      {
+        if (!callback(entry))
+          return false;
+      }
+      return true;
+    }
+  }
+  else
+  {
+    // TODO: Add paging? For now, stick to defaults
+    char url[512];
+
+    size_t written = 0;
+    rc_url_build_dorequest(url, sizeof(url), &written, "lbinfo", s_username.c_str());
+    rc_url_append_unum(url, sizeof(url), &written, "i", id);
+    rc_url_append_unum(url, sizeof(url), &written, "c",
+                       15); // Just over what a single page can store, should be a reasonable amount for now
+    // rc_url_append_unum(url, sizeof(url), &written, "o", 0);
+
+    s_last_queried_lboard = id;
+    s_lboard_entries.reset();
+    s_http_downloader->CreateRequest(url, GetLbInfoCallback);
+  }
+
+  return std::nullopt;
+}
+
+const Leaderboard* GetLeaderboardByID(u32 id)
+{
+  for (const Leaderboard& lb : s_leaderboards)
+  {
+    if (lb.id == id)
+      return &lb;
+  }
+
+  return nullptr;
+}
+
+u32 GetLeaderboardCount()
+{
+  return static_cast<u32>(s_leaderboards.size());
+}
+
+bool IsLeaderboardTimeType(const Leaderboard& leaderboard)
+{
+  return leaderboard.format != RC_FORMAT_SCORE && leaderboard.format != RC_FORMAT_VALUE;
+}
+
 void ActivateLockedAchievements()
 {
   for (Achievement& cheevo : s_achievements)
@@ -1124,7 +1256,8 @@ static void UnlockAchievementCallback(s32 status_code, const FrontendCommon::HTT
 
 static void SubmitLeaderboardCallback(s32 status_code, const FrontendCommon::HTTPDownloader::Request::Data& data)
 {
-  // Do nothing (for now?)
+  // Force the next leaderboard query to repopulate everything, just in case the user wants to see their new score
+  s_last_queried_lboard = 0;
 }
 
 void UnlockAchievement(u32 achievement_id, bool add_notification /* = true*/)

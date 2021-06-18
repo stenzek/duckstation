@@ -1,6 +1,7 @@
 #pragma once
 #include "core/types.h"
 #include <functional>
+#include <optional>
 #include <string>
 
 class CDImage;
@@ -33,7 +34,15 @@ struct Leaderboard
   u32 id;
   std::string title;
   std::string description;
-  std::string format;
+  int format;
+};
+
+struct LeaderboardEntry
+{
+  std::string user;
+  std::string formatted_score;
+  u32 rank;
+  bool is_self;
 };
 
 extern bool g_active;
@@ -97,6 +106,12 @@ u32 GetUnlockedAchiementCount();
 u32 GetAchievementCount();
 u32 GetMaximumPointsForGame();
 u32 GetCurrentPointsForGame();
+
+bool EnumerateLeaderboards(std::function<bool(const Leaderboard&)> callback);
+std::optional<bool> TryEnumerateLeaderboardEntries(u32 id, std::function<bool(const LeaderboardEntry&)> callback);
+const Leaderboard* GetLeaderboardByID(u32 id);
+u32 GetLeaderboardCount();
+bool IsLeaderboardTimeType(const Leaderboard& leaderboard);
 
 void UnlockAchievement(u32 achievement_id, bool add_notification = true);
 void SubmitLeaderboard(u32 leaderboard_id, int value);
