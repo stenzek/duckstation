@@ -309,7 +309,7 @@ private:
   void StopMotor();
   void BeginSeeking(bool logical, bool read_after_seek, bool play_after_seek);
   void UpdatePositionWhileSeeking();
-  void UpdatePhysicalPosition();
+  void UpdatePhysicalPosition(bool update_logical);
   void SetHoldPosition(CDImage::LBA lba, bool update_subq);
   void ResetCurrentXAFile();
   void ResetAudioDecoder();

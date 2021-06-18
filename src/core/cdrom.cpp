@@ -777,7 +777,7 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
   if (IsSeeking())
     ticks += m_drive_event->GetTicksUntilNextExecution();
   else
-    UpdatePhysicalPosition();
+    UpdatePhysicalPosition(false);
 
   const TickCount tps = System::MASTER_CLOCK;
   const CDImage::LBA current_lba = m_secondary_status.motor_on ? (IsSeeking() ? m_seek_end_lba : m_physical_lba) : 0;
@@ -1336,6 +1336,8 @@ void CDROM::ExecuteCommand(TickCount ticks_late)
       }
       else
       {
+        UpdatePhysicalPosition(true);
+
         Log_DebugPrintf("CDROM GetlocL command - [%02X:%02X:%02X]", m_last_sector_header.minute,
                         m_last_sector_header.second, m_last_sector_header.frame);
 
@@ -1361,7 +1363,7 @@ void CDROM::ExecuteCommand(TickCount ticks_late)
         if (IsSeeking())
           UpdatePositionWhileSeeking();
         else
-          UpdatePhysicalPosition();
+          UpdatePhysicalPosition(false);
 
         Log_DevPrintf("CDROM GetlocP command - T%02x I%02x R[%02x:%02x:%02x] A[%02x:%02x:%02x]",
                       m_last_subq.track_number_bcd, m_last_subq.index_number_bcd, m_last_subq.relative_minute_bcd,
@@ -1852,7 +1854,7 @@ void CDROM::UpdatePositionWhileSeeking()
   m_physical_lba_update_tick = TimingEvents::GetGlobalTickCounter();
 }
 
-void CDROM::UpdatePhysicalPosition()
+void CDROM::UpdatePhysicalPosition(bool update_logical)
 {
   const u32 ticks = TimingEvents::GetGlobalTickCounter();
   if (IsSeeking() || IsReadingOrPlaying() || !m_secondary_status.motor_on)
@@ -1887,10 +1889,19 @@ void CDROM::UpdatePhysicalPosition()
       m_physical_lba = new_physical_lba;
 
       CDImage::SubChannelQ subq;
-      if (!m_reader.ReadSectorUncached(new_physical_lba, &subq, nullptr))
+      CDROMAsyncReader::SectorBuffer raw_sector;
+      if (!m_reader.ReadSectorUncached(new_physical_lba, &subq, update_logical ? &raw_sector : nullptr))
+      {
         Log_ErrorPrintf("Failed to read subq for sector %u for physical position", new_physical_lba);
-      else if (subq.IsCRCValid())
-        m_last_subq = subq;
+      }
+      else
+      {
+        if (subq.IsCRCValid())
+          m_last_subq = subq;
+
+        if (update_logical)
+          ProcessDataSectorHeader(raw_sector.data());
+      }
 
       m_physical_lba_update_tick = ticks;
     }
