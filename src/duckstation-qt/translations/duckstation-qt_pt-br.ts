@@ -655,24 +655,22 @@ Token gerado %2.</translation>
     <message>
         <location filename="../../core/analog_controller.cpp" line="767"/>
         <source>Triangle</source>
-        <translatorcomment>⃤       🛆⟁</translatorcomment>
-        <translation>           ⃤</translation>
+        <translation>    Triângulo</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="768"/>
         <source>Cross</source>
-        <translatorcomment>❌</translatorcomment>
-        <translation>          ╳</translation>
+        <translation>      Cruz</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="769"/>
         <source>Circle</source>
-        <translation>         ⭕</translation>
+        <translation>     Círculo</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="770"/>
         <source>Square</source>
-        <translation>         ⬜</translation>
+        <translation>    Quadrado</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="771"/>
@@ -825,22 +823,22 @@ Token gerado %2.</translation>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="340"/>
         <source>Triangle</source>
-        <translation>         🛆</translation>
+        <translation>    Triângulo</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="341"/>
         <source>Cross</source>
-        <translation>          ╳</translation>
+        <translation>      Cruz</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="342"/>
         <source>Circle</source>
-        <translation>         ⭕</translation>
+        <translation>     Círculo</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="343"/>
         <source>Square</source>
-        <translation>         ⬜</translation>
+        <translation>    Quadrado</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="344"/>
@@ -885,7 +883,7 @@ Token gerado %2.</translation>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="362"/>
         <source>Sets the analog stick axis scaling factor. A value between 1.30 and 1.40 is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
-        <translation>Define a escala do eixo dos controles. Um valor entre 1.30 e 1.40 é recomendável quando estiver usando controles mais recentes, ex: Dualshock 4 e Controles de X-Box One.</translation>
+        <translation>Define a escala do eixo dos controles um valor entre 1.30 e 1.40 é recomendável quando estiver usando controles mais recentes, ex: Dualshock 4 e controles de X-box one.</translation>
     </message>
 </context>
 <context>
@@ -1155,7 +1153,7 @@ Token gerado %2.</translation>
     <message>
         <location filename="../autoupdaterdialog.ui" line="109"/>
         <source>Remind Me Later</source>
-        <translation>Deixar para depois</translation>
+        <translation>Me lembre mais tarde</translation>
     </message>
     <message>
         <location filename="../autoupdaterdialog.cpp" line="107"/>
@@ -1190,12 +1188,12 @@ Token gerado %2.</translation>
     <message>
         <location filename="../autoupdaterdialog.cpp" line="328"/>
         <source>&lt;h2&gt;Save State Warning&lt;/h2&gt;&lt;p&gt;Installing this update will make your save states &lt;b&gt;incompatible&lt;/b&gt;. Please ensure you have saved your games to memory card before installing this update or you will lose progress.&lt;/p&gt;</source>
-        <translation>&lt;h2&gt;Alerta para ESTADOS SALVOS&lt;/h2&gt;&lt;p&gt;Ao instalar esta atualização, seus ESTADOS SALVOS se tornarão&lt;b&gt; incompativeis&lt;/b&gt;. Tenha certeza de ter salvo todo o seu progresso no seu CARTÃO DE MEMÓRIA antes de instalar esta atualização ou você perderá todo o seu progresso.&lt;/p&gt;</translation>
+        <translation>&lt;h2&gt;Alerta para ESTADOS SALVOS&lt;/h2&gt;&lt;p&gt;Ao instalar esta atualização, seus ESTADOS SALVOS se tornarão&lt;b&gt; incompativeis&lt;/b&gt;. tenha certeza de ter salvo todo o seu progresso no seu CARTÃO DE MEMÓRIA antes de instalar esta atualização ou você perderá todo o seu progresso.&lt;/p&gt;</translation>
     </message>
     <message>
         <location filename="../autoupdaterdialog.cpp" line="336"/>
         <source>&lt;h2&gt;Settings Warning&lt;/h2&gt;&lt;p&gt;Installing this update will reset your program configuration. Please note that you will have to reconfigure your settings after this update.&lt;/p&gt;</source>
-        <translation>&lt;h2&gt;Alerta Sobre suas configurações&lt;/h2&gt;&lt;p&gt;Ao instalar esta atualização todas as suas configurações serão REDEFINIDAS para o padrão. Sendo assim, você terá que refazer todas elas novamente.&lt;/p&gt;</translation>
+        <translation>&lt;h2&gt;Alerta sobre suas configurações&lt;/h2&gt;&lt;p&gt;Ao instalar esta atualização todas as suas configurações serão REDEFINIDAS para o padrão sendo assim, você terá de refazê-las novamente.&lt;/p&gt;</translation>
     </message>
     <message>
         <location filename="../autoupdaterdialog.cpp" line="340"/>
@@ -2100,7 +2098,7 @@ Token gerado %2.</translation>
     <message>
         <location filename="../consolesettingswidget.ui" line="156"/>
         <source>2x (Quad Speed)</source>
-        <translation>2x (Roda a 4x)</translation>
+        <translation>2x (4x velocidade)</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="161"/>
@@ -2140,7 +2138,7 @@ Token gerado %2.</translation>
     <message>
         <location filename="../consolesettingswidget.ui" line="196"/>
         <source>10x (20x Speed)</source>
-        <translation>10x (Roda a 20X)</translation>
+        <translation>10x (20X velocidade)</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="227"/>
@@ -3105,25 +3103,21 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../../core/digital_controller.cpp" line="196"/>
         <source>Up</source>
-        <translatorcomment>🠉</translatorcomment>
         <translation>          🠉</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="197"/>
         <source>Down</source>
-        <translatorcomment>￬ ⭳ ⯆ ⮟ 🡇 🠋</translatorcomment>
         <translation>          🠋</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="198"/>
         <source>Left</source>
-        <translatorcomment>🠰</translatorcomment>
         <translation>          🠈</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="199"/>
         <source>Right</source>
-        <translatorcomment>🠊 🢧➜ ➡️</translatorcomment>
         <translation>          ➜</translation>
     </message>
     <message>
@@ -3139,26 +3133,22 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../../core/digital_controller.cpp" line="202"/>
         <source>Triangle</source>
-        <translatorcomment>⧍</translatorcomment>
-        <translation>         🛆</translation>
+        <translation>    Triângulo</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="203"/>
         <source>Cross</source>
-        <translatorcomment>╳Xx</translatorcomment>
-        <translation>          ╳</translation>
+        <translation>          Cruz</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="204"/>
         <source>Circle</source>
-        <translatorcomment>○</translatorcomment>
-        <translation>         ⭕</translation>
+        <translation>          Círculo</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="205"/>
         <source>Square</source>
-        <translatorcomment>⃞       ⬛ ⬜</translatorcomment>
-        <translation>         ⬜</translation>
+        <translation>          Quadrado</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="206"/>
@@ -3183,7 +3173,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../../core/digital_controller.cpp" line="221"/>
         <source>Force Pop&apos;n Controller Mode</source>
-        <translation>Forçar modo de controle &apos;Pop&apos;n Controller&apos;</translation>
+        <translation>Forçar controle em modo &apos;Pop&apos;n&apos;</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="222"/>
@@ -4734,6 +4724,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../gamelistsettingswidget.ui" line="34"/>
         <source>Search Directories</source>
+        <translatorcomment>Here, I did prefer to keep it capitalized cause it is a title so it does make sense.</translatorcomment>
         <translation>Pesquisar Diretórios</translation>
     </message>
     <message>
@@ -4750,12 +4741,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../gamelistsettingswidget.ui" line="99"/>
         <source>Scan New</source>
-        <translation>Scanear novos</translation>
+        <translation>Examinar novos</translation>
     </message>
     <message>
         <location filename="../gamelistsettingswidget.ui" line="116"/>
         <source>Rescan All</source>
-        <translation>Re-scanear tudo</translation>
+        <translation>Examinar tudo</translation>
     </message>
     <message>
         <source>Update Redump Database</source>
@@ -4774,14 +4765,15 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../gamelistsettingswidget.cpp" line="93"/>
         <source>Scan Recursively?</source>
-        <translation>Ler recursivamente?</translation>
+        <translation>Verificar recursivamente?</translation>
     </message>
     <message>
         <location filename="../gamelistsettingswidget.cpp" line="94"/>
         <source>Would you like to scan the directory &quot;%1&quot; recursively?
 
 Scanning recursively takes more time, but will identify files in subdirectories.</source>
-        <translation>Você gostaria de escanear o diretório &quot;%1&quot; recursivamente?
+        <translatorcomment>Better term for scan in English would be in Portuguese, To scan = Verificar</translatorcomment>
+        <translation>Você gostaria de analisar o diretório &quot;%1&quot; recursivamente?
 Escanear o diretório desta forma demora mais tempo porém, identificará arquivos em sub-pastas.</translation>
     </message>
     <message>
@@ -6561,12 +6553,12 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../mainwindow.ui" line="298"/>
         <source>&amp;Scan For New Games</source>
-        <translation>&amp;Escanear jogos novos</translation>
+        <translation>&amp;Examinar novos jogos</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="307"/>
         <source>&amp;Rescan All Games</source>
-        <translation>Scanear &amp;todos os jogos</translation>
+        <translation>Examinar todos os jogos</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="316"/>
@@ -8512,7 +8504,7 @@ Configure um controle compatível na lista acima.</translation>
     <message>
         <location filename="../postprocessingsettingswidget.ui" line="34"/>
         <source>Enable Post Processing</source>
-        <translation>Habilitar pós-processamento</translation>
+        <translation>Ativar pós-processamento</translation>
     </message>
     <message>
         <location filename="../postprocessingsettingswidget.ui" line="54"/>
@@ -8975,12 +8967,12 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../settingsdialog.cpp" line="88"/>
         <source>&lt;strong&gt;General Settings&lt;/strong&gt;&lt;hr&gt;These options control how the emulator looks and behaves.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
-        <translation>&lt;strong&gt;Configurações gerais&lt;/strong&gt;&lt;hr&gt;estas opções controlam a aparência do emulador e seu comportamento.&lt;br&gt;&lt;br&gt;passe o ponteiro do mouse sobre as opções para ter mais informações.</translation>
+        <translation>&lt;strong&gt;Configurações gerais&lt;/strong&gt;&lt;hr&gt;Essas opções controlam a aparência do emulador e o seu comportamento. passe o ponteiro do mouse sobre uma das opções para obter informações adicionais.</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="92"/>
         <source>&lt;strong&gt;Console Settings&lt;/strong&gt;&lt;hr&gt;These options determine the configuration of the simulated console.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
-        <translation>&lt;strong&gt;Configurações do console&lt;/strong&gt;&lt;hr&gt;estas opções determinam a configuração do console emulado.&lt;br&gt;passe o ponteiro do mouse sobre as opções para ter mais informações.</translation>
+        <translation>&lt;strong&gt;Configurações do console&lt;/strong&gt;&lt;hr&gt;estas opções determinam a configuração do console emulado.&lt;br&gt;passe o ponteiro do mouse sobre uma das opções para obter informações adicionais.</translation>
     </message>
     <message>
         <source>&lt;strong&gt;Game List Settings&lt;/strong&gt;&lt;hr&gt;The list above shows the directories which will be searched by DuckStation to populate the game list. Search directories can be added, removed, and switched to recursive/non-recursive. Additionally, the redump.org database can be downloaded or updated to provide titles for discs, as the discs themselves do not provide title information.</source>
@@ -9014,7 +9006,7 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../settingsdialog.cpp" line="118"/>
         <source>&lt;strong&gt;Enhancement Settings&lt;/strong&gt;&lt;hr&gt;These options control enhancements which can improve visuals compared to the original console. Mouse over each option for additional information.</source>
-        <translation>&lt;strong&gt;Opções de aprimoramento&lt;/strong&gt;&lt;hr&gt;estas opções controlam como as melhorias visuais serão controladas em comparação com o console original.passe o ponteiro do mouse sobre as opções para ter mais informações.</translation>
+        <translation>&lt;strong&gt;Opções de aprimoramento&lt;/strong&gt;&lt;hr&gt;estas opções controlam como as melhorias visuais serão controladas em comparação com o console original. passe o ponteiro do mouse sobre uma das opções para obter informações adicionais.</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="121"/>
@@ -9028,12 +9020,12 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../settingsdialog.cpp" line="124"/>
         <source>&lt;strong&gt;Audio Settings&lt;/strong&gt;&lt;hr&gt;These options control the audio output of the console. Mouse over an option for additional information.</source>
-        <translation>&lt;strong&gt;Configurações de áudio&lt;/strong&gt;&lt;hr&gt;estas opções controlam a saída do som no emulador. passe o ponteiro do mouse para mais informações.</translation>
+        <translation>&lt;strong&gt;Configurações de áudio&lt;/strong&gt;&lt;hr&gt;estas opções controlam a saída do som no emulador. passe o ponteiro do mouse sobre uma das opções para obter informações adicionais.</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="126"/>
         <source>&lt;strong&gt;Advanced Settings&lt;/strong&gt;&lt;hr&gt;These options control logging and internal behavior of the emulator. Mouse over an option for additional information.</source>
-        <translation>&lt;strong&gt;Opções Avançadas&lt;/strong&gt;&lt;hr&gt;essas opções controlam o registro e o comportamento interno do emulador. passe o ponteiro do mouse sobre uma opção para obter informações adicionais.</translation>
+        <translation>&lt;strong&gt;Opções Avançadas&lt;/strong&gt;&lt;hr&gt;essas opções controlam o registro e o comportamento interno do emulador. passe o ponteiro do mouse sobre uma das opções para obter informações adicionais.</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="153"/>
@@ -9148,7 +9140,7 @@ Please check the README for instructions on how to add a SBI file.</source>
     </message>
     <message>
         <source>Changing current media from playlist, replacing current media.</source>
-        <translation type="vanished">Mudando media atual da lista, recalculando mídia atual.</translation>
+        <translation type="vanished">Mudando media atual da lista, recalculando media atual.</translation>
     </message>
     <message>
         <location filename="../../core/host_interface.cpp" line="98"/>
