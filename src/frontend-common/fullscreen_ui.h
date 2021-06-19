@@ -19,6 +19,7 @@ enum class MainWindowType
   Settings,
   QuickMenu,
   Achievements,
+  Leaderboards,
 };
 
 enum class SettingsPage
