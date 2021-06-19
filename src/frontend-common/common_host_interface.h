@@ -502,7 +502,7 @@ private:
   void SetDiscordPresenceEnabled(bool enabled);
   void InitializeDiscordPresence();
   void ShutdownDiscordPresence();
-  void UpdateDiscordPresence();
+  void UpdateDiscordPresence(bool rich_presence_only);
   void PollDiscordPresence();
 #endif
 
@@ -551,5 +551,8 @@ private:
   // discord rich presence
   bool m_discord_presence_enabled = false;
   bool m_discord_presence_active = false;
+#ifdef WITH_CHEEVOS
+  std::string m_discord_presence_cheevos_string;
+#endif
 #endif
 };

@@ -1028,7 +1028,7 @@ void CommonHostInterface::OnRunningGameChanged(const std::string& path, CDImage*
   }
 
 #ifdef WITH_DISCORD_PRESENCE
-  UpdateDiscordPresence();
+  UpdateDiscordPresence(false);
 #endif
 
 #ifdef WITH_CHEEVOS
@@ -3764,7 +3764,7 @@ void CommonHostInterface::InitializeDiscordPresence()
   Discord_Initialize("705325712680288296", &handlers, 0, nullptr);
   m_discord_presence_active = true;
 
-  UpdateDiscordPresence();
+  UpdateDiscordPresence(false);
 }
 
 void CommonHostInterface::ShutdownDiscordPresence()
@@ -3775,12 +3775,30 @@ void CommonHostInterface::ShutdownDiscordPresence()
   Discord_ClearPresence();
   Discord_Shutdown();
   m_discord_presence_active = false;
+#ifdef WITH_CHEEVOS
+  m_discord_presence_cheevos_string.clear();
+#endif
 }
 
-void CommonHostInterface::UpdateDiscordPresence()
+void CommonHostInterface::UpdateDiscordPresence(bool rich_presence_only)
 {
   if (!m_discord_presence_active)
     return;
+
+#ifdef WITH_CHEEVOS
+  // Update only if RetroAchievements rich presence has changed
+  const std::string& new_rich_presence = Cheevos::GetRichPresenceString();
+  if (new_rich_presence == m_discord_presence_cheevos_string && rich_presence_only)
+  {
+    return;
+  }
+  m_discord_presence_cheevos_string = new_rich_presence;
+#else
+  if (rich_presence_only)
+  {
+    return;
+  }
+#endif
 
   // https://discord.com/developers/docs/rich-presence/how-to#updating-presence-update-presence-payload-fields
   DiscordRichPresence rp = {};
@@ -3799,6 +3817,22 @@ void CommonHostInterface::UpdateDiscordPresence()
     details_string.AppendString("No Game Running");
   }
 
+#ifdef WITH_CHEEVOS
+  SmallString state_string;
+  // Trim to 128 bytes as per Discord-RPC requirements
+  if (m_discord_presence_cheevos_string.length() >= 128)
+  {
+    // 124 characters + 3 dots + null terminator
+    state_string = m_discord_presence_cheevos_string.substr(0, 124);
+    state_string.AppendString("...");
+  }
+  else
+  {
+    state_string = m_discord_presence_cheevos_string;
+  }
+
+  rp.state = state_string;
+#endif
   rp.details = details_string;
 
   Discord_UpdatePresence(&rp);
@@ -3808,6 +3842,8 @@ void CommonHostInterface::PollDiscordPresence()
 {
   if (!m_discord_presence_active)
     return;
+
+  UpdateDiscordPresence(true);
 
   Discord_RunCallbacks();
 }

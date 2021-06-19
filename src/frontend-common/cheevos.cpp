@@ -45,6 +45,7 @@ static bool ActivateAchievement(Achievement* achievement);
 static void DeactivateAchievement(Achievement* achievement);
 static void SendPing();
 static void SendPlaying();
+static void UpdateRichPresence();
 
 /// Uses a temporarily (second) CD image to resolve the hash.
 static void GameChanged();
@@ -306,6 +307,8 @@ void Update()
 
     if (!s_test_mode)
     {
+      UpdateRichPresence();
+
       const s32 ping_frequency =
         s_rich_presence_enabled ? RICH_PRESENCE_PING_FREQUENCY : NO_RICH_PRESENCE_PING_FREQUENCY;
       if (static_cast<s32>(s_last_ping_time.GetTimeSeconds()) >= ping_frequency)
@@ -633,6 +636,7 @@ static void GetUserUnlocksCallback(s32 status_code, const FrontendCommon::HTTPDo
   ActivateLockedAchievements();
   DisplayAchievementSummary();
   SendPlaying();
+  UpdateRichPresence();
   SendPing();
   GetHostInterface()->OnAchievementsRefreshed();
 }
@@ -1045,6 +1049,9 @@ void SendPlaying()
 
 static void UpdateRichPresence()
 {
+  if (!s_has_rich_presence)
+    return;
+
   char buffer[512];
   int res = rc_runtime_get_richpresence(&s_rcheevos_runtime, buffer, sizeof(buffer), CheevosPeek, nullptr, nullptr);
   if (res <= 0)
@@ -1075,9 +1082,6 @@ void SendPing()
 {
   if (!HasActiveGame())
     return;
-
-  if (s_has_rich_presence)
-    UpdateRichPresence();
 
   char url[512];
   char post_data[512];
