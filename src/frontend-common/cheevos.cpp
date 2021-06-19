@@ -181,26 +181,45 @@ static Achievement* GetAchievementByID(u32 id)
   return nullptr;
 }
 
-static void ClearGameInfo()
+static void ClearGameInfo(bool clear_achievements = true, bool clear_leaderboards = true)
 {
   const bool had_game = (g_game_id != 0);
 
-  s_has_rich_presence = false;
-
-  while (!s_achievements.empty())
+  if (clear_achievements)
   {
-    Achievement& ach = s_achievements.back();
-    DeactivateAchievement(&ach);
-    s_achievements.pop_back();
+    while (!s_achievements.empty())
+    {
+      Achievement& ach = s_achievements.back();
+      DeactivateAchievement(&ach);
+      s_achievements.pop_back();
+    }
+  }
+  if (clear_leaderboards)
+  {
+    while (!s_leaderboards.empty())
+    {
+      Leaderboard& lb = s_leaderboards.back();
+      rc_runtime_deactivate_lboard(&s_rcheevos_runtime, lb.id);
+      s_leaderboards.pop_back();
+    }
+
+    s_last_queried_lboard = 0;
+    s_lboard_entries.reset();
   }
 
-  std::string().swap(s_game_title);
-  std::string().swap(s_game_developer);
-  std::string().swap(s_game_publisher);
-  std::string().swap(s_game_release_date);
-  std::string().swap(s_game_icon);
-  s_rich_presence_string.clear();
-  g_game_id = 0;
+  if (s_achievements.empty() && s_leaderboards.empty())
+  {
+    // Ready to tear down cheevos completely
+    s_has_rich_presence = false;
+
+    std::string().swap(s_game_title);
+    std::string().swap(s_game_developer);
+    std::string().swap(s_game_publisher);
+    std::string().swap(s_game_release_date);
+    std::string().swap(s_game_icon);
+    s_rich_presence_string.clear();
+    g_game_id = 0;
+  }
 
   if (had_game)
     GetHostInterface()->OnAchievementsRefreshed();
@@ -577,7 +596,7 @@ static void GetUserUnlocksCallback(s32 status_code, const FrontendCommon::HTTPDo
   rapidjson::Document doc;
   if (!ParseResponseJSON("Get User Unlocks", status_code, data, doc))
   {
-    ClearGameInfo();
+    ClearGameInfo(true, false);
     return;
   }
 
@@ -586,7 +605,7 @@ static void GetUserUnlocksCallback(s32 status_code, const FrontendCommon::HTTPDo
   if (game_id != g_game_id)
   {
     FormattedError("GameID from user unlocks doesn't match (got %u expected %u)", game_id, g_game_id);
-    ClearGameInfo();
+    ClearGameInfo(true, false);
     return;
   }
 
@@ -779,6 +798,7 @@ static void GetPatchesCallback(s32 status_code, const FrontendCommon::HTTPDownlo
   Log_InfoPrintf("Game Developer: %s", s_game_developer.c_str());
   Log_InfoPrintf("Game Publisher: %s", s_game_publisher.c_str());
   Log_InfoPrintf("Achievements: %zu", s_achievements.size());
+  Log_InfoPrintf("Leaderboards: %zu", s_leaderboards.size());
 
   if (!s_achievements.empty() || s_has_rich_presence)
   {
@@ -796,8 +816,11 @@ static void GetPatchesCallback(s32 status_code, const FrontendCommon::HTTPDownlo
   else
   {
     DisplayAchievementSummary();
+  }
+
+  if (s_achievements.empty() && s_leaderboards.empty() && !s_has_rich_presence)
+  {
     ClearGameInfo();
-    return;
   }
 }
 
