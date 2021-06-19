@@ -845,7 +845,7 @@ void CommonHostInterface::UpdateSpeedLimiterState()
   if (System::IsValid())
   {
     System::SetTargetSpeed(target_speed);
-    System::ResetPerformanceCounters();
+    System::ResetThrottler();
   }
 
   if (m_audio_stream)
@@ -1994,6 +1994,7 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                        if (!ConfirmMessage(confirmation_message))
                        {
                          System::ResetPerformanceCounters();
+                         System::ResetThrottler();
                          return;
                        }
                      }

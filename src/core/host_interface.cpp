@@ -133,6 +133,7 @@ void HostInterface::ResetSystem()
 {
   System::Reset();
   System::ResetPerformanceCounters();
+  System::ResetThrottler();
   AddOSDMessage(TranslateStdString("OSDMessage", "System reset."));
 }
 
@@ -149,7 +150,10 @@ void HostInterface::PauseSystem(bool paused)
   OnSystemPaused(paused);
 
   if (!paused)
+  {
     System::ResetPerformanceCounters();
+    System::ResetThrottler();
+  }
 }
 
 void HostInterface::DestroySystem()
@@ -424,6 +428,7 @@ bool HostInterface::LoadState(const char* filename)
   }
 
   System::ResetPerformanceCounters();
+  System::ResetThrottler();
   return true;
 }
 
@@ -1174,6 +1179,7 @@ void HostInterface::RecreateSystem()
   }
 
   System::ResetPerformanceCounters();
+  System::ResetThrottler();
 }
 
 void HostInterface::SetMouseMode(bool relative, bool hide_cursor) {}
