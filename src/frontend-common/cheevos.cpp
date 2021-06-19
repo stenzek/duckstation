@@ -590,6 +590,19 @@ static void DisplayAchievementSummary()
   {
     summary = GetHostInterface()->TranslateString("Cheevos", "This game has no achievements.");
   }
+  if (GetLeaderboardCount() > 0)
+  {
+    summary.push_back('\n');
+    if (g_challenge_mode)
+    {
+      summary.append(GetHostInterface()->TranslateString("Cheevos", "Leaderboards are enabled."));
+    }
+    else
+    {
+      summary.append(
+        GetHostInterface()->TranslateString("Cheevos", "Leaderboards are DISABLED because Hardcore Mode is off."));
+    }
+  }
 
   ImGuiFullscreen::AddNotification(10.0f, std::move(title), std::move(summary), s_game_icon);
 }
@@ -1347,6 +1360,13 @@ void SubmitLeaderboard(u32 leaderboard_id, int value)
   if (s_test_mode)
   {
     Log_WarningPrintf("Skipping sending leaderboard %u result to server because of test mode.", leaderboard_id);
+    return;
+  }
+
+  if (!g_challenge_mode)
+  {
+    Log_WarningPrintf("Skipping sending leaderboard %u result to server because Challenge mode is off.",
+                      leaderboard_id);
     return;
   }
 
