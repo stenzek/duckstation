@@ -4505,6 +4505,18 @@ void DrawLeaderboardsWindow()
       ImGui::PushFont(g_medium_font);
       ImGui::RenderTextClipped(summary_bb.Min, summary_bb.Max, text.GetCharArray(),
                                text.GetCharArray() + text.GetLength(), nullptr, ImVec2(0.0f, 0.0f), &summary_bb);
+
+      if (!IsCheevosHardcoreModeActive())
+      {
+        const ImRect hardcore_warning_bb(ImVec2(left, top), ImVec2(right, top + g_medium_font->FontSize));
+        top += g_medium_font->FontSize + spacing;
+
+        ImGui::RenderTextClipped(
+          hardcore_warning_bb.Min, hardcore_warning_bb.Max,
+          "Submitting scores is DISABLED because Hardcore Mode is off. Leaderboards are read-only.", nullptr, nullptr,
+          ImVec2(0.0f, 0.0f), &hardcore_warning_bb);
+      }
+
       ImGui::PopFont();
     }
 
