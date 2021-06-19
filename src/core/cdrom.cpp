@@ -9,6 +9,7 @@
 #include "settings.h"
 #include "spu.h"
 #include "system.h"
+#include <cmath>
 #ifdef WITH_IMGUI
 #include "imgui.h"
 #endif
