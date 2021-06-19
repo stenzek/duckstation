@@ -264,6 +264,7 @@ bool CDROM::DoState(StateWrapper& sw)
   sw.Do(&m_seek_end_lba);
   sw.DoEx(&m_physical_lba, 49, m_current_lba);
   sw.DoEx(&m_physical_lba_update_tick, 49, static_cast<u32>(0));
+  sw.DoEx(&m_physical_lba_update_carry, 54, static_cast<u32>(0));
   sw.Do(&m_setloc_pending);
   sw.Do(&m_read_after_seek);
   sw.Do(&m_play_after_seek);
@@ -779,7 +780,9 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
   else
     UpdatePhysicalPosition(false);
 
-  const TickCount tps = System::MASTER_CLOCK;
+  const u32 ticks_per_sector =
+    m_mode.double_speed ? static_cast<u32>(System::MASTER_CLOCK / 150) : static_cast<u32>(System::MASTER_CLOCK / 75);
+  const u32 ticks_per_second = static_cast<u32>(System::MASTER_CLOCK);
   const CDImage::LBA current_lba = m_secondary_status.motor_on ? (IsSeeking() ? m_seek_end_lba : m_physical_lba) : 0;
   const u32 lba_diff = static_cast<u32>((new_lba > current_lba) ? (new_lba - current_lba) : (current_lba - new_lba));
 
@@ -794,22 +797,33 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
 
   if (lba_diff < 32)
   {
-    ticks += static_cast<u32>(GetTicksForRead()) * std::min<u32>(BASE_SECTORS_PER_TRACK, lba_diff);
+    ticks += ticks_per_sector * std::min<u32>(5u, lba_diff);
   }
   else
   {
-    // This is a very inaccurate model.
-    // TODO: Use the actual time for track jumps.
+    // This is a still not a very accurate model, but it's roughly in line with the behavior of hardware tests.
+    const float disc_distance = 0.2323384936f * std::log(static_cast<float>((new_lba / 4500) + 1u));
 
-    // 1000ms for the whole disc
-    ticks += std::max<u32>(
-      20000, static_cast<u32>(((static_cast<u64>(lba_diff) * static_cast<u64>(tps) * static_cast<u64>(1000)) /
-                               (72 * CDImage::FRAMES_PER_MINUTE)) /
-                              1000));
+    float seconds;
+    if (lba_diff <= CDImage::FRAMES_PER_SECOND)
+    {
+      // 30ms + (diff * 30ms) + (disc distance * 30ms)
+      seconds = 0.03f + ((static_cast<float>(lba_diff) / static_cast<float>(CDImage::FRAMES_PER_SECOND)) * 0.03f) +
+                (disc_distance * 0.03f);
+    }
+    else if (lba_diff <= CDImage::FRAMES_PER_MINUTE)
+    {
+      // 150ms + (diff * 30ms) + (disc distance * 50ms)
+      seconds = 0.15f + ((static_cast<float>(lba_diff) / static_cast<float>(CDImage::FRAMES_PER_MINUTE)) * 0.03f) +
+                (disc_distance * 0.05f);
+    }
+    else
+    {
+      // 200ms + (diff * 500ms)
+      seconds = 0.2f + ((static_cast<float>(lba_diff) / static_cast<float>(72 * CDImage::FRAMES_PER_MINUTE)) * 0.4f);
+    }
 
-    // 300ms for non-short seeks (1 minute)
-    if (lba_diff >= CDImage::FRAMES_PER_MINUTE)
-      ticks += static_cast<u32>((u64(tps) * 300) / 1000);
+    ticks += static_cast<u32>(seconds * static_cast<float>(ticks_per_second));
   }
 
   if (m_drive_state == DriveState::ChangingSpeedOrTOCRead && !ignore_speed_change)
@@ -818,12 +832,13 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
     const TickCount remaining_change_ticks = m_drive_event->GetTicksUntilNextExecution();
     ticks += remaining_change_ticks;
 
-    Log_DevPrintf("Seek time for %u LBAs: %d (%d for speed change/implicit TOC read)", lba_diff, ticks,
-                  remaining_change_ticks);
+    Log_DevPrintf("Seek time for %u LBAs: %d (%.3f ms) (%d for speed change/implicit TOC read)", lba_diff, ticks,
+                  (static_cast<float>(ticks) / static_cast<float>(ticks_per_second)) * 1000.0f, remaining_change_ticks);
   }
   else
   {
-    Log_DevPrintf("Seek time for %u LBAs: %d", lba_diff, ticks);
+    Log_DevPrintf("Seek time for %u LBAs: %d (%.3f ms)", lba_diff, ticks,
+                  (static_cast<float>(ticks) / static_cast<float>(ticks_per_second)) * 1000.0f);
   }
 
   if (g_settings.cdrom_seek_speedup > 1)
@@ -849,7 +864,7 @@ TickCount CDROM::GetTicksForTOCRead()
   if (!HasMedia())
     return 0;
 
-  return System::GetTicksPerSecond();
+  return System::GetTicksPerSecond() / 2u;
 }
 
 CDImage::LBA CDROM::GetNextSectorToBeRead()
@@ -1038,8 +1053,8 @@ void CDROM::ExecuteCommand(TickCount ticks_late)
           if (m_drive_state != DriveState::Idle)
           {
             Log_DevPrintf("Drive is %s, delaying event by %d ticks for speed change to %s-speed",
-              s_drive_state_names[static_cast<u8>(m_drive_state)], change_ticks,
-              m_mode.double_speed ? "double" : "single");
+                          s_drive_state_names[static_cast<u8>(m_drive_state)], change_ticks,
+                          m_mode.double_speed ? "double" : "single");
             m_drive_event->Delay(change_ticks);
           }
           else
@@ -1109,7 +1124,7 @@ void CDROM::ExecuteCommand(TickCount ticks_late)
 
         m_async_command_parameter = session;
         m_drive_state = DriveState::ChangingSession;
-        m_drive_event->Schedule(System::GetTicksPerSecond() / 2); // half a second
+        m_drive_event->Schedule(GetTicksForTOCRead());
       }
 
       EndCommand();
@@ -1863,6 +1878,7 @@ void CDROM::UpdatePositionWhileSeeking()
   m_current_lba = current_lba;
   m_physical_lba = current_lba;
   m_physical_lba_update_tick = TimingEvents::GetGlobalTickCounter();
+  m_physical_lba_update_carry = 0;
 }
 
 void CDROM::UpdatePhysicalPosition(bool update_logical)
@@ -1874,15 +1890,31 @@ void CDROM::UpdatePhysicalPosition(bool update_logical)
     return;
   }
 
-  const u32 diff = ticks - m_physical_lba_update_tick;
-  const u32 sector_diff = diff / GetTicksForRead();
+  const u32 ticks_per_read = GetTicksForRead();
+  const u32 diff = ticks - m_physical_lba_update_tick + m_physical_lba_update_carry;
+  const u32 sector_diff = diff / ticks_per_read;
+  const u32 carry = diff % ticks_per_read;
   if (sector_diff > 0)
   {
-    const CDImage::LBA hold_offset = m_last_sector_header_valid ? 2 : 0;
-    const CDImage::LBA sectors_per_track = BASE_SECTORS_PER_TRACK + hold_offset;
+    CDImage::LBA hold_offset;
+    CDImage::LBA sectors_per_track;
+
+    // hardware tests show that it holds much closer to the target sector in logical mode
+    if (m_last_sector_header_valid)
+    {
+      hold_offset = 2;
+      sectors_per_track = 4;
+    }
+    else
+    {
+      hold_offset = 0;
+      sectors_per_track =
+        static_cast<CDImage::LBA>(7.0f + 2.811844405f * std::log(static_cast<float>(m_current_lba / 4500u) + 1u));
+    }
+
     const CDImage::LBA hold_position = m_current_lba + hold_offset;
     const CDImage::LBA base =
-      (hold_position >= sectors_per_track) ? (hold_position - sectors_per_track) : hold_position;
+      (hold_position >= (sectors_per_track - 1)) ? (hold_position - (sectors_per_track - 1)) : hold_position;
     if (m_physical_lba < base)
       m_physical_lba = base;
 
@@ -1915,6 +1947,7 @@ void CDROM::UpdatePhysicalPosition(bool update_logical)
       }
 
       m_physical_lba_update_tick = ticks;
+      m_physical_lba_update_carry = carry;
     }
   }
 }
@@ -1933,6 +1966,7 @@ void CDROM::SetHoldPosition(CDImage::LBA lba, bool update_subq)
   m_current_lba = lba;
   m_physical_lba = lba;
   m_physical_lba_update_tick = TimingEvents::GetGlobalTickCounter();
+  m_physical_lba_update_carry = 0;
 }
 
 void CDROM::DoShellOpenComplete(TickCount ticks_late)
@@ -2000,6 +2034,7 @@ bool CDROM::CompleteSeek()
   m_current_lba = m_reader.GetLastReadSector();
   m_physical_lba = m_current_lba;
   m_physical_lba_update_tick = TimingEvents::GetGlobalTickCounter();
+  m_physical_lba_update_carry = 0;
   return seek_okay;
 }
 
@@ -2174,6 +2209,7 @@ void CDROM::DoSectorRead()
   m_current_lba = m_reader.GetLastReadSector();
   m_physical_lba = m_current_lba;
   m_physical_lba_update_tick = TimingEvents::GetGlobalTickCounter();
+  m_physical_lba_update_carry = 0;
 
   const CDImage::SubChannelQ& subq = m_reader.GetSectorSubQ();
   const bool subq_valid = subq.IsCRCValid();
