@@ -1020,23 +1020,34 @@ void CDROM::ExecuteCommand(TickCount ticks_late)
       SendACKAndStat();
       EndCommand();
 
-      if (speed_change && m_drive_state != DriveState::SeekingImplicit &&
-          m_drive_state != DriveState::ChangingSpeedOrTOCRead)
+      if (speed_change)
       {
-        // if we're seeking or reading, we need to add time to the current seek/read
-        const TickCount change_ticks = GetTicksForSpeedChange();
-        if (m_drive_state != DriveState::Idle)
+        if (m_drive_state == DriveState::ChangingSpeedOrTOCRead)
         {
-          Log_DevPrintf("Drive is %s, delaying event by %d ticks for speed change to %s-speed",
-                        s_drive_state_names[static_cast<u8>(m_drive_state)], change_ticks,
-                        m_mode.double_speed ? "double" : "single");
-          m_drive_event->Delay(change_ticks);
+          // cancel the speed change if it's less than a quarter complete
+          if (m_drive_event->GetTicksUntilNextExecution() >= (GetTicksForSpeedChange() / 4))
+          {
+            Log_DevPrintf("Cancelling speed change event");
+            ClearDriveState();
+          }
         }
-        else
+        else if (m_drive_state != DriveState::SeekingImplicit)
         {
-          Log_DevPrintf("Drive is idle, speed change takes %d ticks", change_ticks);
-          m_drive_state = DriveState::ChangingSpeedOrTOCRead;
-          m_drive_event->Schedule(change_ticks);
+          // if we're seeking or reading, we need to add time to the current seek/read
+          const TickCount change_ticks = GetTicksForSpeedChange();
+          if (m_drive_state != DriveState::Idle)
+          {
+            Log_DevPrintf("Drive is %s, delaying event by %d ticks for speed change to %s-speed",
+              s_drive_state_names[static_cast<u8>(m_drive_state)], change_ticks,
+              m_mode.double_speed ? "double" : "single");
+            m_drive_event->Delay(change_ticks);
+          }
+          else
+          {
+            Log_DevPrintf("Drive is idle, speed change takes %d ticks", change_ticks);
+            m_drive_state = DriveState::ChangingSpeedOrTOCRead;
+            m_drive_event->Schedule(change_ticks);
+          }
         }
       }
 
