@@ -2541,16 +2541,43 @@ void DrawQuickMenu(MainWindowType type)
     const ImVec2 subtitle_size(
       g_medium_font->CalcTextSizeA(g_medium_font->FontSize, std::numeric_limits<float>::max(), -1.0f, subtitle));
 
-    const ImVec2 title_pos(display_size.x - LayoutScale(20.0f + 50.0f + 20.0f) - title_size.x,
-                           display_size.y - LayoutScale(20.0f + 50.0f));
-    const ImVec2 subtitle_pos(display_size.x - LayoutScale(20.0f + 50.0f + 20.0f) - subtitle_size.x,
-                              title_pos.y + g_large_font->FontSize + LayoutScale(4.0f));
+    ImVec2 title_pos(display_size.x - LayoutScale(20.0f + 50.0f + 20.0f) - title_size.x,
+                     display_size.y - LayoutScale(20.0f + 50.0f));
+    ImVec2 subtitle_pos(display_size.x - LayoutScale(20.0f + 50.0f + 20.0f) - subtitle_size.x,
+                        title_pos.y + g_large_font->FontSize + LayoutScale(4.0f));
+    float rp_height = 0.0f;
+
+#ifdef WITH_CHEEVOS
+    if (Cheevos::IsActive())
+    {
+      const std::string& rp = Cheevos::GetRichPresenceString();
+      if (!rp.empty())
+      {
+        const float wrap_width = LayoutScale(350.0f);
+        const ImVec2 rp_size = g_medium_font->CalcTextSizeA(g_medium_font->FontSize, std::numeric_limits<float>::max(),
+                                                            wrap_width, rp.data(), rp.data() + rp.size());
+        rp_height = rp_size.y + LayoutScale(4.0f);
+
+        const ImVec2 rp_pos(display_size.x - LayoutScale(20.0f + 50.0f + 20.0f) - rp_size.x - rp_height,
+                            subtitle_pos.y + LayoutScale(4.0f));
+
+        title_pos.x -= rp_height;
+        title_pos.y -= rp_height;
+        subtitle_pos.x -= rp_height;
+        subtitle_pos.y -= rp_height;
+
+        dl->AddText(g_medium_font, g_medium_font->FontSize, rp_pos, IM_COL32(255, 255, 255, 255), rp.data(),
+                    rp.data() + rp.size(), wrap_width);
+      }
+    }
+#endif
 
     dl->AddText(g_large_font, g_large_font->FontSize, title_pos, IM_COL32(255, 255, 255, 255), title.c_str());
     dl->AddText(g_medium_font, g_medium_font->FontSize, subtitle_pos, IM_COL32(255, 255, 255, 255), subtitle);
 
-    const ImVec2 image_min(display_size - LayoutScale(20.0f + 50.0f, 20.0f + 50.0f));
-    const ImVec2 image_max(image_min + LayoutScale(50.0f, 50.0f));
+    const ImVec2 image_min(display_size.x - LayoutScale(20.0f + 50.0f) - rp_height,
+                           display_size.y - LayoutScale(20.0f + 50.0f) - rp_height);
+    const ImVec2 image_max(image_min.x + LayoutScale(50.0f) + rp_height, image_min.y + LayoutScale(50.0f) + rp_height);
     dl->AddImage(GetCoverForCurrentGame()->GetHandle(), image_min, image_max);
   }
 
