@@ -7929,12 +7929,12 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../core/system.cpp" line="2180"/>
         <source>Failed to switch to subimage %u in &apos;%s&apos;: %s.</source>
-        <translation>无法在&apos;%s&apos;: %s切换到子镜像%u。</translation>
+        <translation>无法切换到子镜像%u在&apos;%s&apos;: %s。</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="2187"/>
         <source>Switched to sub-image %s (%u) in &apos;%s&apos;.</source>
-        <translation>在&apos;%s&apos;切换到子镜像%s (%u)。</translation>
+        <translation>切换到子镜像%s (%u) 在 &apos;%s&apos;。</translation>
     </message>
     <message>
         <source>Failed to open CD image from save state: &apos;%s&apos;. Using existing image &apos;%s&apos;, this may result in instability.</source>
