@@ -304,11 +304,10 @@ void Update()
   if (HasActiveGame())
   {
     rc_runtime_do_frame(&s_rcheevos_runtime, &CheevosEventHandler, &CheevosPeek, nullptr, nullptr);
+    UpdateRichPresence();
 
     if (!s_test_mode)
     {
-      UpdateRichPresence();
-
       const s32 ping_frequency =
         s_rich_presence_enabled ? RICH_PRESENCE_PING_FREQUENCY : NO_RICH_PRESENCE_PING_FREQUENCY;
       if (static_cast<s32>(s_last_ping_time.GetTimeSeconds()) >= ping_frequency)
