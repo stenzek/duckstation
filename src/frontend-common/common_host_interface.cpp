@@ -2023,7 +2023,7 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                      SaveScreenshot();
                  });
 
-#ifdef WITH_CHEEVOS
+#if !defined(__ANDROID__) && defined(WITH_CHEEVOS)
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("OpenAchievements"),
                  StaticString(TRANSLATABLE("Hotkeys", "Open Achievement List")), [this](bool pressed) {
                    if (pressed && System::IsValid())
@@ -2049,7 +2049,7 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                      }
                    }
                  });
-#endif
+#endif  // !defined(__ANDROID__) && defined(WITH_CHEEVOS)
 }
 
 void CommonHostInterface::RegisterSystemHotkeys()
