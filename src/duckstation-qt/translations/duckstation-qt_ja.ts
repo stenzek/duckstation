@@ -1046,7 +1046,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Sets the analog stick axis scaling factor. A value between 1.30 and 1.40 is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
-        <translation>アナログスティックの軸の倍率を設定します。最近のコントローラーを使用する場合は、1.30〜1.40の値をお勧めします。 例：DualShock 4、XboxOneコントローラー。</translation>
+        <translation>アナログスティックの軸の倍率を設定します。最近のコントローラーを使用する場合は、1.30〜1.40の値をお勧めします。 &lt;br&gt;例：DualShock 4、XboxOneコントローラー。</translation>
     </message>
     <message>
         <source>Controller %u switched to analog mode.</source>
@@ -1272,7 +1272,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Sets the analog stick axis scaling factor. A value between 1.30 and 1.40 is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
-        <translation>アナログスティックの軸の倍率を設定します。最近のコントローラーを使用する場合は、1.30〜1.40の値をお勧めします。 例：DualShock 4、XboxOneコントローラー。</translation>
+        <translation>アナログスティックの軸の倍率を設定します。最近のコントローラーを使用する場合は、1.30〜1.40の値をお勧めします。 &lt;br&gt;例：DualShock 4、XboxOneコントローラー。</translation>
     </message>
     <message>
         <source>Controller %u switched to analog mode.</source>
@@ -2490,7 +2490,7 @@ Login token generated on %2.</source>
     </message>
     <message>
         <source>When enabled, the first disc in a playlist will be used for achievements, regardless of which disc is active.</source>
-        <translation>有効にすると、動作中なディスクに関係なく、プレイリストの最初のディスクが実績に使用されます。</translation>
+        <translation>有効にすると、ディスクの動作に関係なく、プレイリストの最初のディスクが実績に使用されます。</translation>
     </message>
     <message>
         <source>The current state will be saved, but you will be unable to load it until you disable hardcore mode.
@@ -2515,6 +2515,14 @@ Login token generated on %2.</source>
     <message>
         <source>Use First Disc From Playlist</source>
         <translation>プレイリストの最初のディスクを使用する</translation>
+    </message>
+    <message>
+        <source>Test Unofficial Achievements</source>
+        <translation>実績をテストする（非公式）</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will list achievements from unofficial sets. Please note that these achievements are not tracked by RetroAchievements, so they unlock every time.</source>
+        <translation>有効にすると、DuckStationは非公式セットからの実績を一覧表示します。&lt;br&gt;これらの実績はRetroAchievementsによって記録されないため、毎回ロックが解除されることに注意してください。</translation>
     </message>
 </context>
 <context>
@@ -3406,7 +3414,7 @@ Login token generated on %2.</source>
     </message>
     <message>
         <source>Render To Main Window</source>
-        <translation>メインウィンドウにレンダリング</translation>
+        <translation>メインウィンドウにレンダリングする</translation>
     </message>
     <message>
         <source>Check for Updates...</source>
@@ -3550,7 +3558,15 @@ Login token generated on %2.</source>
     </message>
     <message>
         <source>Hide Cursor In Fullscreen</source>
-        <translation>フルスクリーン時カーソルを非表示</translation>
+        <translation>フルスクリーン時カーソルを非表示にする</translation>
+    </message>
+    <message>
+        <source>Inhibit Screensaver</source>
+        <translation>スクリーンセーバーを禁止する</translation>
+    </message>
+    <message>
+        <source>Prevents the screen saver from activating and the host from sleeping while emulation is running.</source>
+        <translation>エミュレーションの実行中にスクリーンセーバーが起動し、ダックステーションがスリープしないようにします。</translation>
     </message>
     <message>
         <source>Behaviour</source>
@@ -3578,7 +3594,7 @@ Login token generated on %2.</source>
     </message>
     <message>
         <source>Increases the system timer resolution when emulation is started to provide more accurate frame pacing. May increase battery usage on laptops.</source>
-        <translation>エミュレーション開始時のシステムタイマーの解像度を上げて、より正確なフレームペーシングを提供します。ラップトップのバッテリー使用量が増える可能性があります。 </translation>
+        <translation>エミュレーション開始時のシステムタイマーの解像度を上げて、より正確なフレームペーシングを提供します。&lt;br&gt;ラップトップのバッテリー使用量が増える可能性があります。 </translation>
     </message>
 </context>
 <context>
@@ -3923,7 +3939,7 @@ Login token generated on %2.</source>
     </message>
     <message>
         <source>Ignoring mismatched controller type %s in port %u.</source>
-        <translation>不一致のコントローラータイプ %s を無視します。(ポート %u)</translation>
+        <translation>コントローラータイプ 「%s」 を無視します。(ステートセーブと不一致：ポート %u)</translation>
     </message>
     <message>
         <source>Cheat &apos;%s&apos; enabled.</source>
@@ -4867,7 +4883,7 @@ Achievements: %5 (%6 points)
 ゲーム名:%2
 開発元:%3
 販売元:%4
-Achievements:%5 (%6 点)
+実績:%5 (%6 点)
 
 </translation>
     </message>
