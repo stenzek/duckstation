@@ -7879,16 +7879,6 @@ Please configure a supported controller from the list above.</source>
         <translation>无法打开光盘镜像&apos;%s&apos;: %s。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2180"/>
-        <source>Failed to switch to subimage %u in &apos;%s&apos;: %s.</source>
-        <translation>无法打开&apos;%s&apos;: %s的子镜像%u。</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="2187"/>
-        <source>Switched to sub-image %s (%u) in &apos;%s&apos;.</source>
-        <translation>打开&apos;%s&apos;的子镜像%s (%u)。</translation>
-    </message>
-    <message>
         <source>Failed to open CD image from save state: &apos;%s&apos;. Using existing image &apos;%s&apos;, this may result in instability.</source>
         <translation type="vanished">无法从存档&apos;%s&apos;打开CD映像。使用现有镜像&apos;%s&apos;，这可能会导致不稳定。</translation>
     </message>
