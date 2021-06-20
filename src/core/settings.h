@@ -86,6 +86,7 @@ struct Settings
   float turbo_speed = 0.0f;
   bool sync_to_host_refresh_rate = true;
   bool increase_timer_resolution = true;
+  bool inhibit_screensaver = false;
   bool start_paused = false;
   bool start_fullscreen = false;
   bool pause_on_focus_loss = false;

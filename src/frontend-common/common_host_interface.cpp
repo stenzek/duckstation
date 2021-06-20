@@ -29,6 +29,7 @@
 #include "imgui.h"
 #include "imgui_fullscreen.h"
 #include "imgui_styles.h"
+#include "inhibit_screensaver.h"
 #include "ini_settings_interface.h"
 #include "input_overlay_ui.h"
 #include "save_state_selector_ui.h"
@@ -975,6 +976,9 @@ void CommonHostInterface::OnSystemCreated()
 
   if (g_settings.display_post_processing && !m_display->SetPostProcessingChain(g_settings.display_post_process_chain))
     AddOSDMessage(TranslateStdString("OSDMessage", "Failed to load post processing shader chain."), 20.0f);
+
+  if (g_settings.inhibit_screensaver)
+    FrontendCommon::SuspendScreensaver(m_display->GetWindowInfo());
 }
 
 void CommonHostInterface::OnSystemPaused(bool paused)
@@ -990,6 +994,12 @@ void CommonHostInterface::OnSystemPaused(bool paused)
       SetFullscreen(false);
 
     StopControllerRumble();
+    FrontendCommon::ResumeScreensaver();
+  }
+  else
+  {
+    if (g_settings.inhibit_screensaver)
+      FrontendCommon::SuspendScreensaver(m_display->GetWindowInfo());
   }
 
   UpdateSpeedLimiterState();
@@ -1007,6 +1017,7 @@ void CommonHostInterface::OnSystemDestroyed()
     FullscreenUI::SystemDestroyed();
 
   StopControllerRumble();
+  FrontendCommon::ResumeScreensaver();
 }
 
 void CommonHostInterface::OnRunningGameChanged(const std::string& path, CDImage* image, const std::string& game_code,
@@ -3020,6 +3031,14 @@ void CommonHostInterface::CheckForSettingsChanges(const Settings& old_settings)
       {
         m_display->SetPostProcessingChain({});
       }
+    }
+
+    if (g_settings.inhibit_screensaver != old_settings.inhibit_screensaver)
+    {
+      if (g_settings.inhibit_screensaver)
+        FrontendCommon::SuspendScreensaver(m_display->GetWindowInfo());
+      else
+        FrontendCommon::ResumeScreensaver();
     }
   }
 

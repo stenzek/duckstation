@@ -1325,6 +1325,10 @@ void DrawSettingsWindow()
         settings_changed |= ToggleButtonForNonSetting(
           "Hide Cursor In Fullscreen", "Hides the mouse pointer/cursor when the emulator is in fullscreen mode.",
           "Main", "HideCursorInFullscreen", true);
+        settings_changed |= ToggleButton(
+          "Inhibit Screensaver",
+          "Prevents the screen saver from activating and the host from sleeping while emulation is running.",
+          &s_settings_copy.inhibit_screensaver);
         settings_changed |=
           ToggleButton("Load Devices From Save States",
                        "When enabled, memory cards and controllers will be overwritten when save states are loaded.",

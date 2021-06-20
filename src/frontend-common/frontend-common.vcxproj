@@ -101,6 +101,7 @@
     <ClCompile Include="imgui_impl_opengl3.cpp" />
     <ClCompile Include="imgui_impl_vulkan.cpp" />
     <ClCompile Include="imgui_styles.cpp" />
+    <ClCompile Include="inhibit_screensaver.cpp" />
     <ClCompile Include="ini_settings_interface.cpp" />
     <ClCompile Include="input_overlay_ui.cpp" />
     <ClCompile Include="opengl_host_display.cpp" />
@@ -134,6 +135,7 @@
     <ClInclude Include="imgui_impl_opengl3.h" />
     <ClInclude Include="imgui_impl_vulkan.h" />
     <ClInclude Include="imgui_styles.h" />
+    <ClInclude Include="inhibit_screensaver.h" />
     <ClInclude Include="ini_settings_interface.h" />
     <ClInclude Include="input_overlay_ui.h" />
     <ClInclude Include="opengl_host_display.h" />

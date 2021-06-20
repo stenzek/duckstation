@@ -61,6 +61,7 @@ public:
 
   virtual ~HostDisplay();
 
+  ALWAYS_INLINE const WindowInfo& GetWindowInfo() const { return m_window_info; }
   ALWAYS_INLINE s32 GetWindowWidth() const { return static_cast<s32>(m_window_info.surface_width); }
   ALWAYS_INLINE s32 GetWindowHeight() const { return static_cast<s32>(m_window_info.surface_height); }
   ALWAYS_INLINE float GetWindowScale() const { return m_window_info.surface_scale; }

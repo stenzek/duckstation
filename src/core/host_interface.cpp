@@ -487,6 +487,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetFloatValue("Main", "TurboSpeed", 0.0f);
   si.SetBoolValue("Main", "SyncToHostRefreshRate", false);
   si.SetBoolValue("Main", "IncreaseTimerResolution", true);
+  si.SetBoolValue("Main", "InhibitScreensaver", true);
   si.SetBoolValue("Main", "StartPaused", false);
   si.SetBoolValue("Main", "StartFullscreen", false);
   si.SetBoolValue("Main", "PauseOnFocusLoss", false);
