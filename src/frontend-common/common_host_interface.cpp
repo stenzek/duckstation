@@ -1925,6 +1925,7 @@ void CommonHostInterface::SetTurboEnabled(bool enabled)
 void CommonHostInterface::RegisterHotkeys()
 {
   RegisterGeneralHotkeys();
+  RegisterSystemHotkeys();
   RegisterGraphicsHotkeys();
   RegisterSaveStateHotkeys();
   RegisterAudioHotkeys();
@@ -2005,19 +2006,50 @@ void CommonHostInterface::RegisterGeneralHotkeys()
 
 #endif
 
-  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("Reset"),
-                 StaticString(TRANSLATABLE("Hotkeys", "Reset System")), [this](bool pressed) {
-                   if (pressed && System::IsValid())
-                     ResetSystem();
-                 });
-
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("Screenshot"),
                  StaticString(TRANSLATABLE("Hotkeys", "Save Screenshot")), [this](bool pressed) {
                    if (pressed && System::IsValid())
                      SaveScreenshot();
                  });
 
-  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("ChangeDisc"),
+#ifdef WITH_CHEEVOS
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("OpenAchievements"),
+                 StaticString(TRANSLATABLE("Hotkeys", "Open Achievement List")), [this](bool pressed) {
+                   if (pressed && System::IsValid())
+                   {
+                     if (!m_fullscreen_ui_enabled || !FullscreenUI::OpenAchievementsWindow())
+                     {
+                       AddOSDMessage(
+                         TranslateStdString("OSDMessage", "Achievements are disabled or unavailable for this game."),
+                         10.0f);
+                     }
+                   }
+                 });
+
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("OpenLeaderboards"),
+                 StaticString(TRANSLATABLE("Hotkeys", "Open Leaderboard List")), [this](bool pressed) {
+                   if (pressed && System::IsValid())
+                   {
+                     if (!m_fullscreen_ui_enabled || !FullscreenUI::OpenLeaderboardsWindow())
+                     {
+                       AddOSDMessage(
+                         TranslateStdString("OSDMessage", "Leaderboards are disabled or unavailable for this game."),
+                         10.0f);
+                     }
+                   }
+                 });
+#endif
+}
+
+void CommonHostInterface::RegisterSystemHotkeys()
+{
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "System")), StaticString("Reset"),
+                 StaticString(TRANSLATABLE("Hotkeys", "Reset System")), [this](bool pressed) {
+                   if (pressed && System::IsValid())
+                     ResetSystem();
+                 });
+
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "System")), StaticString("ChangeDisc"),
                  StaticString(TRANSLATABLE("Hotkeys", "Change Disc")), [](bool pressed) {
                    if (pressed && System::IsValid() && System::HasMediaSubImages())
                    {
@@ -2028,14 +2060,14 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                    }
                  });
 
-  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("SwapMemoryCards"),
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "System")), StaticString("SwapMemoryCards"),
                  StaticString(TRANSLATABLE("Hotkeys", "Swap Memory Card Slots")), [this](bool pressed) {
                    if (pressed && System::IsValid())
                      SwapMemoryCards();
                  });
 
 #ifndef __ANDROID__
-  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("FrameStep"),
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "System")), StaticString("FrameStep"),
                  StaticString(TRANSLATABLE("Hotkeys", "Frame Step")), [this](bool pressed) {
                    if (pressed && System::IsValid())
                    {
@@ -2046,7 +2078,7 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                    }
                  });
 
-  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("Rewind"),
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "System")), StaticString("Rewind"),
                  StaticString(TRANSLATABLE("Hotkeys", "Rewind")), [this](bool pressed) {
                    if (System::IsValid())
                    {
@@ -2064,7 +2096,7 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                    }
                  });
 
-  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("ToggleCheats"),
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "System")), StaticString("ToggleCheats"),
                  StaticString(TRANSLATABLE("Hotkeys", "Toggle Cheats")), [this](bool pressed) {
                    if (pressed && System::IsValid())
                    {
@@ -2075,7 +2107,7 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                    }
                  });
 #else
-  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("TogglePatchCodes"),
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "System")), StaticString("TogglePatchCodes"),
                  StaticString(TRANSLATABLE("Hotkeys", "Toggle Patch Codes")), [this](bool pressed) {
                    if (pressed && System::IsValid())
                    {
@@ -2088,7 +2120,7 @@ void CommonHostInterface::RegisterGeneralHotkeys()
 #endif
 
   RegisterHotkey(
-    StaticString(TRANSLATABLE("Hotkeys", "General")), StaticString("ToggleOverclocking"),
+    StaticString(TRANSLATABLE("Hotkeys", "System")), StaticString("ToggleOverclocking"),
     StaticString(TRANSLATABLE("Hotkeys", "Toggle Clock Speed Control (Overclocking)")), [this](bool pressed) {
       if (pressed && System::IsValid())
       {

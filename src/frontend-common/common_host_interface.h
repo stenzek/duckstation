@@ -488,6 +488,7 @@ private:
   void LoadSettings();
   void InitializeUserDirectory();
   void RegisterGeneralHotkeys();
+  void RegisterSystemHotkeys();
   void RegisterGraphicsHotkeys();
   void RegisterSaveStateHotkeys();
   void RegisterAudioHotkeys();

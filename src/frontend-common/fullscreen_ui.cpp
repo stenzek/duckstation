@@ -299,6 +299,29 @@ void CloseQuickMenu()
   ClearImGuiFocus();
 }
 
+bool OpenAchievementsWindow()
+{
+  const bool achievements_enabled = Cheevos::HasActiveGame() && (Cheevos::GetAchievementCount() > 0);
+  if (!achievements_enabled)
+    return false;
+
+  s_current_main_window = MainWindowType::Achievements;
+  s_quick_menu_was_open = false;
+  return true;
+}
+
+bool OpenLeaderboardsWindow()
+{
+  const bool leaderboards_enabled = Cheevos::HasActiveGame() && (Cheevos::GetLeaderboardCount() > 0);
+  if (!leaderboards_enabled)
+    return false;
+
+  s_current_main_window = MainWindowType::Leaderboards;
+  s_open_leaderboard_id.reset();
+  s_quick_menu_was_open = false;
+  return true;
+}
+
 void Shutdown()
 {
   if (s_game_list_load_thread.joinable())
@@ -2553,14 +2576,11 @@ void DrawQuickMenu(MainWindowType type)
 #ifdef WITH_CHEEVOS
     const bool achievements_enabled = Cheevos::HasActiveGame() && (Cheevos::GetAchievementCount() > 0);
     if (ActiveButton(ICON_FA_TROPHY "  Achievements", false, achievements_enabled))
-      s_current_main_window = MainWindowType::Achievements;
+      OpenAchievementsWindow();
 
     const bool leaderboards_enabled = Cheevos::HasActiveGame() && (Cheevos::GetLeaderboardCount() > 0);
     if (ActiveButton(ICON_FA_STOPWATCH "  Leaderboards", false, leaderboards_enabled))
-    {
-      s_current_main_window = MainWindowType::Leaderboards;
-      s_open_leaderboard_id.reset();
-    }
+      OpenLeaderboardsWindow();
 
 #else
     ActiveButton(ICON_FA_TROPHY "  Achievements", false, false);
