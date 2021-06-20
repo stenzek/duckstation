@@ -61,6 +61,11 @@ if(WIN32)
   target_link_libraries(frontend-common PRIVATE d3d11.lib dxgi.lib)
 endif()
 
+if(APPLE)
+  find_library(IOK_LIBRARY IOKit REQUIRED)
+  target_link_libraries(frontend-common PRIVATE "${IOK_LIBRARY}")
+endif()
+
 if(SDL2_FOUND)
   target_sources(frontend-common PRIVATE 
     sdl_audio_stream.cpp
