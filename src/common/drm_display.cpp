@@ -19,6 +19,10 @@ DRMDisplay::DRMDisplay(int card /*= 1*/) : m_card_id(card) {}
 
 DRMDisplay::~DRMDisplay()
 {
+  // restore original buffer
+  if (m_prev_crtc)
+    RestoreBuffer();
+
   if (m_connector)
     drmModeFreeConnector(m_connector);
 
@@ -88,6 +92,18 @@ bool DRMDisplay::Initialize(u32 width, u32 height, float refresh_rate)
   }
 
   return TryOpeningCard(m_card_id, width, height, refresh_rate);
+}
+
+void DRMDisplay::RestoreBuffer()
+{
+  if (m_prev_crtc)
+  {
+    u32 connector_id = m_connector->connector_id;
+    drmModeSetCrtc(m_card_fd, m_prev_crtc->crtc_id, m_prev_crtc->buffer_id, m_prev_crtc->x, m_prev_crtc->y,
+                   &connector_id, 1, &m_prev_crtc->mode);
+    drmModeFreeCrtc(m_prev_crtc);
+    m_prev_crtc = nullptr;
+  }
 }
 
 bool DRMDisplay::TryOpeningCard(int card, u32 width, u32 height, float refresh_rate)
@@ -201,6 +217,7 @@ bool DRMDisplay::TryOpeningCard(int card, u32 width, u32 height, float refresh_r
   drmModeFreeResources(resources);
 
   m_card_id = card;
+  m_prev_crtc = drmModeGetCrtc(m_card_fd, m_crtc_id);
   return true;
 }
 

@@ -15,6 +15,9 @@ public:
 
   bool Initialize(u32 width, u32 height, float refresh_rate);
 
+  /// Restores the buffer saved at startup.
+  void RestoreBuffer();
+
   int GetCardID() const { return m_card_id; }
   int GetCardFD() const { return m_card_fd; }
   u32 GetWidth() const { return m_mode->hdisplay; }
@@ -53,4 +56,6 @@ private:
   drmModeRes* m_resources = nullptr;
   drmModeConnector* m_connector = nullptr;
   drmModeModeInfo* m_mode = nullptr;
+
+  drmModeCrtc* m_prev_crtc = nullptr;
 };
