@@ -69,6 +69,7 @@ rc_condition_t* rc_parse_condition(const char** memaddr, rc_parse_state_t* parse
   aux = *memaddr;
   self = RC_ALLOC(rc_condition_t, parse);
   self->current_hits = 0;
+  self->is_true = 0;
 
   if (*aux != 0 && aux[1] == ':') {
     switch (*aux) {
@@ -184,7 +185,12 @@ rc_condition_t* rc_parse_condition(const char** memaddr, rc_parse_state_t* parse
       return 0;
     }
 
-    parse->has_required_hits = 1;
+    /* if operator is none, explicitly clear out the required hits */
+    if (self->oper == RC_OPERATOR_NONE)
+      self->required_hits = 0;
+    else
+      parse->has_required_hits = 1;
+
     aux = end + 1;
   }
   else if (*aux == '.') {
@@ -196,7 +202,12 @@ rc_condition_t* rc_parse_condition(const char** memaddr, rc_parse_state_t* parse
       return 0;
     }
 
-    parse->has_required_hits = 1;
+    /* if operator is none, explicitly clear out the required hits */
+    if (self->oper == RC_OPERATOR_NONE)
+      self->required_hits = 0;
+    else
+      parse->has_required_hits = 1;
+
     aux = end + 1;
   }
   else {
@@ -228,10 +239,18 @@ int rc_evaluate_condition_value(rc_condition_t* self, rc_eval_state_t* eval_stat
 
   switch (self->oper) {
     case RC_OPERATOR_MULT:
-      if (self->operand2.type == RC_OPERAND_FP)
+      if (self->operand2.type == RC_OPERAND_FP) {
         value = (int)((double)value * self->operand2.value.dbl);
-      else
+      }
+      else {
+        /* the c standard for unsigned multiplication is well defined as non-overflowing truncation
+         * to the type's size. this allows negative multiplication through twos-complements. i.e.
+         *   1 * -1 (0xFFFFFFFF) = 0xFFFFFFFF = -1
+         *   3 * -2 (0xFFFFFFFE) = 0x2FFFFFFFA & 0xFFFFFFFF = 0xFFFFFFFA = -6
+         *  10 * -5 (0xFFFFFFFB) = 0x9FFFFFFCE & 0xFFFFFFFF = 0xFFFFFFCE = -50
+         */
         value *= rc_evaluate_operand(&self->operand2, eval_state);
+      }
       break;
 
     case RC_OPERATOR_DIV:

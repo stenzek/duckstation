@@ -17,6 +17,7 @@ static void rc_update_condition_pause(rc_condition_t* condition, int* in_pause) 
     case RC_CONDITION_AND_NEXT:
     case RC_CONDITION_OR_NEXT:
     case RC_CONDITION_ADD_ADDRESS:
+    case RC_CONDITION_RESET_NEXT_IF:
       condition->pause = *in_pause;
       break;
 
@@ -34,7 +35,7 @@ rc_condset_t* rc_parse_condset(const char** memaddr, rc_parse_state_t* parse, in
   unsigned measured_target = 0;
 
   self = RC_ALLOC(rc_condset_t, parse);
-  self->has_pause = self->is_paused = 0;
+  self->has_pause = self->is_paused = self->has_indirect_memrefs = 0;
   next = &self->conditions;
 
   if (**memaddr == 'S' || **memaddr == 's' || !**memaddr) {
@@ -54,15 +55,13 @@ rc_condset_t* rc_parse_condset(const char** memaddr, rc_parse_state_t* parse, in
     if ((*next)->oper == RC_OPERATOR_NONE) {
       switch ((*next)->type) {
         case RC_CONDITION_ADD_ADDRESS:
-        case RC_CONDITION_ADD_HITS:
-        case RC_CONDITION_SUB_HITS:
         case RC_CONDITION_ADD_SOURCE:
         case RC_CONDITION_SUB_SOURCE:
-        case RC_CONDITION_AND_NEXT:
-        case RC_CONDITION_OR_NEXT:
+          /* these conditions don't require a right hand size (implied *1) */
           break;
 
         case RC_CONDITION_MEASURED:
+          /* right hand side is not required when Measured is used in a value */
           if (is_value)
             break;
           /* fallthrough to default */
@@ -75,6 +74,7 @@ rc_condset_t* rc_parse_condset(const char** memaddr, rc_parse_state_t* parse, in
 
     self->has_pause |= (*next)->type == RC_CONDITION_PAUSE_IF;
     in_add_address = (*next)->type == RC_CONDITION_ADD_ADDRESS;
+    self->has_indirect_memrefs |= in_add_address;
 
     switch ((*next)->type) {
     case RC_CONDITION_MEASURED:
@@ -140,6 +140,30 @@ rc_condset_t* rc_parse_condset(const char** memaddr, rc_parse_state_t* parse, in
   return self;
 }
 
+static void rc_condset_update_indirect_memrefs(rc_condset_t* self, rc_condition_t* condition, int processing_pause, rc_eval_state_t* eval_state) {
+  for (; condition != 0; condition = condition->next) {
+    if (condition->pause != processing_pause)
+      continue;
+
+    if (condition->type == RC_CONDITION_ADD_ADDRESS) {
+      eval_state->add_address = rc_evaluate_condition_value(condition, eval_state);
+      continue;
+    }
+
+    /* call rc_get_memref_value to update the indirect memrefs. it won't do anything with non-indirect
+     * memrefs and avoids a second check of is_indirect. also, we ignore the response, so it doesn't
+     * matter what operand type we pass. assume RC_OPERAND_ADDRESS is the quickest. */
+    if (rc_operand_is_memref(&condition->operand1))
+      rc_get_memref_value(condition->operand1.value.memref, RC_OPERAND_ADDRESS, eval_state);
+
+    if (rc_operand_is_memref(&condition->operand2))
+      rc_get_memref_value(condition->operand2.value.memref, RC_OPERAND_ADDRESS, eval_state);
+
+    eval_state->add_address = 0;
+  }
+}
+
+
 static int rc_test_condset_internal(rc_condset_t* self, int processing_pause, rc_eval_state_t* eval_state) {
   rc_condition_t* condition;
   int set_valid, cond_valid, and_next, or_next, reset_next;
@@ -155,9 +179,8 @@ static int rc_test_condset_internal(rc_condset_t* self, int processing_pause, rc
   eval_state->add_value = eval_state->add_hits = eval_state->add_address = 0;
 
   for (condition = self->conditions; condition != 0; condition = condition->next) {
-    if (condition->pause != processing_pause) {
+    if (condition->pause != processing_pause)
       continue;
-    }
 
     /* STEP 1: process modifier conditions */
     switch (condition->type) {
@@ -283,6 +306,17 @@ static int rc_test_condset_internal(rc_condset_t* self, int processing_pause, rc
       case RC_CONDITION_PAUSE_IF:
         /* as soon as we find a PauseIf that evaluates to true, stop processing the rest of the group */
         if (cond_valid) {
+          /* indirect memrefs are not updated as part of the rc_update_memref_values call.
+           * an active pause aborts processing of the remaining part of the pause subset and the entire non-pause subset.
+           * if the set has any indirect memrefs, manually update them now so the deltas are correct */
+          if (self->has_indirect_memrefs) {
+            /* first, update any indirect memrefs in the remaining part of the pause subset  */
+            rc_condset_update_indirect_memrefs(self, condition->next, 1, eval_state);
+
+            /* then, update all indirect memrefs in the non-pause subset */
+            rc_condset_update_indirect_memrefs(self, self->conditions, 0, eval_state);
+          }
+
           return 1;
         }
 

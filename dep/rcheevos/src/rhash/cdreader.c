@@ -8,8 +8,8 @@
 
 /* internal helper functions in hash.c */
 extern void* rc_file_open(const char* path);
-extern void rc_file_seek(void* file_handle, size_t offset, int origin);
-extern size_t rc_file_tell(void* file_handle);
+extern void rc_file_seek(void* file_handle, int64_t offset, int origin);
+extern int64_t rc_file_tell(void* file_handle);
 extern size_t rc_file_read(void* file_handle, void* buffer, int requested_bytes);
 extern void rc_file_close(void* file_handle);
 extern int rc_hash_error(const char* message);
@@ -22,8 +22,8 @@ struct cdrom_t
   void* file_handle;
   int sector_size;
   int sector_header_size;
-  int first_sector_offset;
   int first_sector;
+  int64_t first_sector_offset;
 };
 
 static void cdreader_determine_sector_size(struct cdrom_t* cdrom)
@@ -38,13 +38,14 @@ static void cdreader_determine_sector_size(struct cdrom_t* cdrom)
   };
 
   unsigned char header[32];
-  const int toc_sector = 16;
+  const int64_t toc_sector = 16;
 
   cdrom->sector_size = 0;
   cdrom->sector_header_size = 0;
 
   rc_file_seek(cdrom->file_handle, toc_sector * 2352 + cdrom->first_sector_offset, SEEK_SET);
-  rc_file_read(cdrom->file_handle, header, sizeof(header));
+  if (rc_file_read(cdrom->file_handle, header, sizeof(header)) < sizeof(header))
+    return;
 
   if (memcmp(header, sync_pattern, 12) == 0)
   {
@@ -219,9 +220,9 @@ static char* cdreader_get_bin_path(const char* cue_path, const char* bin_name)
   return bin_filename;
 }
 
-static size_t cdreader_get_bin_size(const char* cue_path, const char* bin_name)
+static int64_t cdreader_get_bin_size(const char* cue_path, const char* bin_name)
 {
-  size_t size = 0;
+  int64_t size = 0;
   char* bin_filename = cdreader_get_bin_path(cue_path, bin_name);
   if (bin_filename)
   {
@@ -242,7 +243,7 @@ static size_t cdreader_get_bin_size(const char* cue_path, const char* bin_name)
 static void* cdreader_open_cue_track(const char* path, uint32_t track)
 {
   void* file_handle;
-  size_t file_offset = 0;
+  int64_t file_offset = 0;
   char buffer[1024], mode[16];
   char* bin_filename;
   char file[256];
@@ -253,14 +254,14 @@ static void* cdreader_open_cue_track(const char* path, uint32_t track)
   int previous_sector_size = 0;
   int previous_index_sector_offset = 0;
   int previous_track_is_data = 0;
-  int previous_track_sector_offset = 0;
+  int64_t previous_track_sector_offset = 0;
   char previous_track_mode[16];
   int largest_track = 0;
   int largest_track_sector_count = 0;
-  int largest_track_offset = 0;
+  int64_t largest_track_offset = 0;
   char largest_track_mode[16];
   char largest_track_file[256];
-  int offset = 0;
+  int64_t offset = 0;
   int done = 0;
   size_t num_read = 0;
   struct cdrom_t* cdrom = NULL;
@@ -290,7 +291,8 @@ static void* cdreader_open_cue_track(const char* path, uint32_t track)
       if (strncasecmp(ptr, "INDEX ", 6) == 0)
       {
         int m = 0, s = 0, f = 0;
-        int index, sector_offset;
+        int index;
+        int sector_offset;
 
         ptr += 6;
         index = atoi(ptr);
@@ -336,7 +338,9 @@ static void* cdreader_open_cue_track(const char* path, uint32_t track)
               ++scan;
             *scan = '\0';
 
-            snprintf(message, sizeof(message), "Found %s track %d (sector size %d, track starts at %d)", mode, current_track, sector_size, offset);
+            /* it's undesirable to truncate offset to 32-bits, but %lld isn't defined in c89. */
+            snprintf(message, sizeof(message), "Found %s track %d (sector size %d, track starts at %d)",
+                     mode, current_track, sector_size, (int)offset);
             verbose_message_callback(message);
           }
 
@@ -501,7 +505,8 @@ static void* cdreader_open_cue_track(const char* path, uint32_t track)
         if (verbose_message_callback)
         {
           if (cdrom->first_sector_offset)
-            snprintf((char*)buffer, sizeof(buffer), "Opened track %d (sector size %d, track starts at %d)", track, cdrom->sector_size, cdrom->first_sector_offset);
+            snprintf((char*)buffer, sizeof(buffer), "Opened track %d (sector size %d, track starts at %d)",
+                     track, cdrom->sector_size, (int)cdrom->first_sector_offset);
           else
             snprintf((char*)buffer, sizeof(buffer), "Opened track %d (sector size %d)", track, cdrom->sector_size);
 
@@ -531,7 +536,7 @@ static void* cdreader_open_gdi_track(const char* path, uint32_t track)
   char mode[16] = "MODE1/";
   char sector_size[16];
   char file[256];
-  size_t track_size;
+  int64_t track_size;
   int track_type;
   char* bin_path = "";
   uint32_t current_track = 0;
@@ -539,14 +544,14 @@ static void* cdreader_open_gdi_track(const char* path, uint32_t track)
   int lba = 0;
 
   uint32_t largest_track = 0;
-  size_t largest_track_size = 0;
+  int64_t largest_track_size = 0;
   char largest_track_file[256];
   char largest_track_sector_size[16];
   int largest_track_lba = 0;
 
   int found = 0;
   size_t num_read = 0;
-  size_t file_offset = 0;
+  int64_t file_offset = 0;
   struct cdrom_t* cdrom = NULL;
 
   file_handle = rc_file_open(path);
@@ -584,6 +589,9 @@ static void* cdreader_open_gdi_track(const char* path, uint32_t track)
         ++ptr;
 
       /* line format: [trackid] [lba] [type] [sectorsize] [file] [?] */
+      while (isspace(*ptr))
+        ++ptr;
+
       current_track = (uint32_t)atoi(ptr);
       if (track && current_track != track)
         continue;
@@ -592,21 +600,33 @@ static void* cdreader_open_gdi_track(const char* path, uint32_t track)
         ++ptr;
       ++ptr;
 
+      while (isspace(*ptr))
+        ++ptr;
+
       lba = atoi(ptr);
       while (isdigit(*ptr))
         ++ptr;
       ++ptr;
+
+      while (isspace(*ptr))
+        ++ptr;
 
       track_type = atoi(ptr);
       while (isdigit(*ptr))
         ++ptr;
       ++ptr;
 
+      while (isspace(*ptr))
+        ++ptr;
+
       ptr2 = sector_size;
       while (isdigit(*ptr))
         *ptr2++ = *ptr++;
       *ptr2 = '\0';
       ++ptr;
+
+      while (isspace(*ptr))
+        ++ptr;
 
       ptr2 = file;
       if (*ptr == '\"')
@@ -698,6 +718,8 @@ static void* cdreader_open_gdi_track(const char* path, uint32_t track)
     cdrom = NULL;
   }
 
+  free(bin_path);
+
   return cdrom;
 }
 
@@ -717,7 +739,7 @@ static void* cdreader_open_track(const char* path, uint32_t track)
 
 static size_t cdreader_read_sector(void* track_handle, uint32_t sector, void* buffer, size_t requested_bytes)
 {
-  size_t sector_start;
+  int64_t sector_start;
   size_t num_read, total_read = 0;
   uint8_t* buffer_ptr = (uint8_t*)buffer;
 
@@ -725,7 +747,7 @@ static size_t cdreader_read_sector(void* track_handle, uint32_t sector, void* bu
   if (!cdrom)
     return 0;
 
-  sector_start = sector * cdrom->sector_size + cdrom->sector_header_size + cdrom->first_sector_offset;
+  sector_start = (int64_t)sector * cdrom->sector_size + cdrom->sector_header_size + cdrom->first_sector_offset;
 
   while (requested_bytes > 2048)
   {

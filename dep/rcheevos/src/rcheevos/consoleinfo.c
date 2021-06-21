@@ -1,4 +1,3 @@
-#include "rcheevos.h"
 #include "rc_consoles.h"
 
 #include <ctype.h>
@@ -163,14 +162,23 @@ const char* rc_console_name(int console_id)
     case RC_CONSOLE_SG1000:
       return "SG-1000";
 
+    case RC_CONSOLE_SHARPX1:
+      return "Sharp X1";
+
     case RC_CONSOLE_SUPER_NINTENDO:
       return "Super Nintendo Entertainment System";
 
     case RC_CONSOLE_SUPER_CASSETTEVISION:
       return "Super CassetteVision";
 
-    case RC_CONSOLE_WONDERSWAN:
-      return "WonderSwan";
+    case RC_CONSOLE_SUPERVISION:
+      return "Watara Supervision";
+
+    case RC_CONSOLE_THOMSONTO8:
+      return "Thomson TO8";
+
+    case RC_CONSOLE_TIC80:
+      return "TIC-80";
 
     case RC_CONSOLE_VECTREX:
       return "Vectrex";
@@ -186,6 +194,9 @@ const char* rc_console_name(int console_id)
 
     case RC_CONSOLE_WII_U:
       return "Wii-U";
+
+    case RC_CONSOLE_WONDERSWAN:
+      return "WonderSwan";
 
     case RC_CONSOLE_X68K:
       return "X68K";
@@ -327,10 +338,14 @@ static const rc_memory_region_t _rc_memory_regions_intellivision[] = {
 static const rc_memory_regions_t rc_memory_regions_intellivision = { _rc_memory_regions_intellivision, 9 };
 
 /* ===== Magnavox Odyssey 2 ===== */
+/* https://sudonull.com/post/76885-Architecture-and-programming-Philips-Videopac-Magnavox-Odyssey-2 */
 static const rc_memory_region_t _rc_memory_regions_magnavox_odyssey_2[] = {
-    { 0x000000U, 0x00003FU, 0x000040U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM" }
+    /* Internal and external RAMs are reachable using unique instructions.
+     * The real addresses provided are virtual and for mapping purposes only. */
+    { 0x000000U, 0x00003FU, 0x000000U, RC_MEMORY_TYPE_SYSTEM_RAM, "Internal RAM" },
+    { 0x000040U, 0x00013FU, 0x000040U, RC_MEMORY_TYPE_SYSTEM_RAM, "External RAM" }
 };
-static const rc_memory_regions_t rc_memory_regions_magnavox_odyssey_2 = { _rc_memory_regions_magnavox_odyssey_2, 1 };
+static const rc_memory_regions_t rc_memory_regions_magnavox_odyssey_2 = { _rc_memory_regions_magnavox_odyssey_2, 2 };
 
 /* ===== Master System ===== */
 /* http://www.smspower.org/Development/MemoryMap */
@@ -363,8 +378,9 @@ static const rc_memory_regions_t rc_memory_regions_msx = { _rc_memory_regions_ms
 /* ===== Neo Geo Pocket ===== */
 /* http://neopocott.emuunlim.com/docs/tech-11.txt */
 static const rc_memory_region_t _rc_memory_regions_neo_geo_pocket[] = {
-    /* MednafenNGP exposes 16KB, but the doc suggests there's 24-32KB */
-    { 0x000000U, 0x003FFFU, 0x000000U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM" }
+    /* The docs suggest there's Work RAM exposed from $0000-$6FFF, Sound RAM from $7000-$7FFF, and Video 
+     * RAM from $8000-$BFFF, but both MednafenNGP and FBNeo only expose system RAM from $4000-$7FFF */
+    { 0x000000U, 0x003FFFU, 0x004000U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM" }
 };
 static const rc_memory_regions_t rc_memory_regions_neo_geo_pocket = { _rc_memory_regions_neo_geo_pocket, 1 };
 
@@ -456,6 +472,14 @@ static const rc_memory_region_t _rc_memory_regions_playstation[] = {
 };
 static const rc_memory_regions_t rc_memory_regions_playstation = { _rc_memory_regions_playstation, 2 };
 
+/* ===== PlayStation 2 ===== */
+/* https://psi-rockin.github.io/ps2tek/ */
+static const rc_memory_region_t _rc_memory_regions_playstation2[] = {
+    { 0x00000000U, 0x000FFFFFU, 0x00000000U, RC_MEMORY_TYPE_SYSTEM_RAM, "Kernel RAM" },
+    { 0x00100000U, 0x01FFFFFFU, 0x00100000U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM" }
+};
+static const rc_memory_regions_t rc_memory_regions_playstation2 = { _rc_memory_regions_playstation2, 2 };
+
 /* ===== Pokemon Mini ===== */
 /* https://www.pokemon-mini.net/documentation/memory-map/ */
 static const rc_memory_region_t _rc_memory_regions_pokemini[] = {
@@ -483,12 +507,17 @@ static const rc_memory_regions_t rc_memory_regions_saturn = { _rc_memory_regions
 /* ===== SG-1000 ===== */
 /* http://www.smspower.org/Development/MemoryMap */
 static const rc_memory_region_t _rc_memory_regions_sg1000[] = {
-    { 0x000000U, 0x0003FFU, 0xC000U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM" }
-    /* TODO: should cartridge memory be exposed ($0000-$BFFF)? it's usually just ROM data, but may contain on-cartridge RAM
-     * This not is also concerning: http://www.smspower.org/Development/MemoryMap
-     *   Cartridges may disable the system RAM and thus take over the full 64KB address space. */
+    { 0x000000U, 0x0003FFU, 0xC000U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM" },
+    /* https://github.com/libretro/FBNeo/blob/697801c6262be6ca91615cf905444d3e039bc06f/src/burn/drv/sg1000/d_sg1000.cpp#L210-L237 */
+    /* Expansion mode B exposes 8KB at $C000. The first 2KB hides the System RAM, but since the address matches,
+       we'll leverage that definition and expand it another 6KB */
+    { 0x000400U, 0x001FFFU, 0xC400U, RC_MEMORY_TYPE_SYSTEM_RAM, "Extended RAM" },
+    /* Expansion mode A exposes 8KB at $2000 */
+    { 0x002000U, 0x003FFFU, 0x2000U, RC_MEMORY_TYPE_SYSTEM_RAM, "Extended RAM" },
+    /* Othello exposes 2KB at $8000, and The Castle exposes 8KB at $8000 */
+    { 0x004000U, 0x005FFFU, 0x8000U, RC_MEMORY_TYPE_SYSTEM_RAM, "Extended RAM" }
 };
-static const rc_memory_regions_t rc_memory_regions_sg1000 = { _rc_memory_regions_sg1000, 1 };
+static const rc_memory_regions_t rc_memory_regions_sg1000 = { _rc_memory_regions_sg1000, 4 };
 
 /* ===== Super Cassette Vision ===== */
 static const rc_memory_region_t _rc_memory_regions_scv[] = {
@@ -510,6 +539,29 @@ static const rc_memory_region_t _rc_memory_regions_snes[] = {
 };
 static const rc_memory_regions_t rc_memory_regions_snes = { _rc_memory_regions_snes, 2 };
 
+/* ===== Thomson TO8 ===== */
+/* https://github.com/mamedev/mame/blob/master/src/mame/drivers/thomson.cpp#L1617 */
+static const rc_memory_region_t _rc_memory_regions_thomson_to8[] = {
+    { 0x000000U, 0x07FFFFU, 0x000000U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM" }
+};
+static const rc_memory_regions_t rc_memory_regions_thomson_to8 = { _rc_memory_regions_thomson_to8, 1 };
+
+/* ===== TIC-80 ===== */
+/* https://github.com/nesbox/TIC-80/wiki/RAM */
+static const rc_memory_region_t _rc_memory_regions_tic80[] = {
+    { 0x000000U, 0x003FFFU, 0x000000U, RC_MEMORY_TYPE_SYSTEM_RAM, "Video RAM" }, /* have to classify this as system RAM because the core exposes it as part of the RETRO_MEMORY_SYSTEM_RAM */
+    { 0x004000U, 0x005FFFU, 0x004000U, RC_MEMORY_TYPE_SYSTEM_RAM, "Tile RAM" },
+    { 0x006000U, 0x007FFFU, 0x006000U, RC_MEMORY_TYPE_SYSTEM_RAM, "Sprite RAM" },
+    { 0x008000U, 0x00FF7FU, 0x008000U, RC_MEMORY_TYPE_SYSTEM_RAM, "MAP RAM" },
+    { 0x00FF80U, 0x00FF8BU, 0x00FF80U, RC_MEMORY_TYPE_SYSTEM_RAM, "Input State" },
+    { 0x00FF8CU, 0x014003U, 0x00FF8CU, RC_MEMORY_TYPE_SYSTEM_RAM, "Sound RAM" },
+    { 0x014004U, 0x014403U, 0x014004U, RC_MEMORY_TYPE_SAVE_RAM, "Persistent Memory" }, /* this is also returned as part of RETRO_MEMORY_SYSTEM_RAM, but can be extrapolated correctly because the pointer starts at the first SYSTEM_RAM region */
+    { 0x014404U, 0x014603U, 0x014404U, RC_MEMORY_TYPE_SYSTEM_RAM, "Sprite Flags" },
+    { 0x014604U, 0x014E03U, 0x014604U, RC_MEMORY_TYPE_SYSTEM_RAM, "System Font" },
+    { 0x014E04U, 0x017FFFU, 0x014E04U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM"}
+};
+static const rc_memory_regions_t rc_memory_regions_tic80 = { _rc_memory_regions_tic80, 10 };
+
 /* ===== Vectrex ===== */
 /* https://roadsidethoughts.com/vectrex/vectrex-memory-map.htm */
 static const rc_memory_region_t _rc_memory_regions_vectrex[] = {
@@ -523,6 +575,15 @@ static const rc_memory_region_t _rc_memory_regions_virtualboy[] = {
     { 0x010000U, 0x01FFFFU, 0x06000000U, RC_MEMORY_TYPE_SAVE_RAM, "Cartridge RAM" }
 };
 static const rc_memory_regions_t rc_memory_regions_virtualboy = { _rc_memory_regions_virtualboy, 2 };
+
+/* ===== Watara Supervision ===== */
+/* https://github.com/libretro/potator/blob/b5e5ba02914fcdf4a8128072dbc709da28e08832/common/memorymap.c#L231-L259 */
+static const rc_memory_region_t _rc_memory_regions_watara_supervision[] = {
+    { 0x0000U, 0x001FFFU, 0x0000U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM" },
+    { 0x2000U, 0x003FFFU, 0x2000U, RC_MEMORY_TYPE_HARDWARE_CONTROLLER, "Registers" },
+    { 0x4000U, 0x005FFFU, 0x4000U, RC_MEMORY_TYPE_VIDEO_RAM, "Video RAM" }
+};
+static const rc_memory_regions_t rc_memory_regions_watara_supervision = { _rc_memory_regions_watara_supervision, 3 };
 
 /* ===== WonderSwan ===== */
 /* http://daifukkat.su/docs/wsman/#ovr_memmap */
@@ -621,10 +682,13 @@ const rc_memory_regions_t* rc_console_memory_regions(int console_id)
       return &rc_memory_regions_pcengine;
 
     case RC_CONSOLE_PCFX:
-        return &rc_memory_regions_pcfx;
+      return &rc_memory_regions_pcfx;
 
     case RC_CONSOLE_PLAYSTATION:
       return &rc_memory_regions_playstation;
+
+    case RC_CONSOLE_PLAYSTATION_2:
+      return &rc_memory_regions_playstation2;
 
     case RC_CONSOLE_POKEMON_MINI:
       return &rc_memory_regions_pokemini;
@@ -644,6 +708,15 @@ const rc_memory_regions_t* rc_console_memory_regions(int console_id)
     case RC_CONSOLE_SUPER_NINTENDO:
       return &rc_memory_regions_snes;
 
+    case RC_CONSOLE_SUPERVISION:
+      return &rc_memory_regions_watara_supervision;
+
+    case RC_CONSOLE_THOMSONTO8:
+      return &rc_memory_regions_thomson_to8;
+
+    case RC_CONSOLE_TIC80:
+      return &rc_memory_regions_tic80;
+
     case RC_CONSOLE_VECTREX:
       return &rc_memory_regions_vectrex;
 
@@ -651,7 +724,7 @@ const rc_memory_regions_t* rc_console_memory_regions(int console_id)
       return &rc_memory_regions_virtualboy;
 
     case RC_CONSOLE_WONDERSWAN:
-        return &rc_memory_regions_wonderswan;
+      return &rc_memory_regions_wonderswan;
 
     default:
       return &rc_memory_regions_none;

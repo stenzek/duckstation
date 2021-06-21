@@ -1,18 +1,29 @@
 # v10.0.0
 
-* renamed `rhash.h` to eliminate conflict with system headers, renamed `rconsoles.h` and `rurl.h` for consistency
+* add rapi sublibrary for communicating with server (eliminates need for client-side JSON parsing; client must still
+  provide HTTP functionality). rurl is now deprecated
+* renamed 'rhash.h' to 'rc_hash.h' to eliminate conflict with system headers, renamed 'rconsoles.h' and 'rurl.h' for 
+  consistency
+* split non-runtime functions out of 'rcheevos.h' as they're not needed by most clients
 * allow ranges in rich presence lookups
+* add rc_richpresence_size_lines function to fetch line associated to error when processing rich presence script
+* add rc_runtime_invalidate_address function to disable achievements when an unknown address is queried
 * add RC_CONDITION_RESET_NEXT_IF
-* support MAXOF($) for leaderboard values using trigger syntax
+* add RC_CONDITION_SUB_HITS
+* support MAXOF operator ($) for leaderboard values using trigger syntax
 * allow RC_CONDITION_PAUSE_IF and RC_CONDITION_RESET_IF in leaderboard value expression
 * changed track parameter of rc_hash_cdreader_open_track_handler to support three virtual tracks:
   RC_HASH_CDTRACK_FIRST_DATA, RC_HASH_CDTRACK_LAST and RC_HASH_CDTRACK_LARGEST.
+* changed offset parameter of rc_hash_filereader_seek_handler and return value of rc_hash_filereader_tell_handler
+  from size_t to int64_t to support files larger than 2GB when compiling in 32-bit mode.
 * reset to default cd reader if NULL is passed to rc_hash_init_custom_cdreader
-* add hash support for RC_CONSOLE_DREAMCAST
-* ignore headers for RC_CONSOLE_PC_ENGINE
-* look for unique identifier in RC_CONSOLE_SEGA_CD and RC_CONSOLE_SATURN discs
+* add hash support for RC_CONSOLE_DREAMCAST, RC_CONSOLE_PLAYSTATION_2, RC_CONSOLE_SUPERVISION, and RC_CONSOLE_TIC80
+* ignore headers when generating hashs for RC_CONSOLE_PC_ENGINE and RC_CONSOLE_ATARI_7800
+* require unique identifier when hashing RC_CONSOLE_SEGA_CD and RC_CONSOLE_SATURN discs
+* add expansion memory to RC_CONSOLE_SG1000 memory map
 * rename RC_CONSOLE_MAGNAVOX_ODYSSEY -> RC_CONSOLE_MAGNAVOX_ODYSSEY2
 * rename RC_CONSOLE_AMIGA_ST -> RC_CONSOLE_ATARI_ST
+* add RC_CONSOLE_SUPERVISION, RC_CONSOLE_SHARPX1, RC_CONSOLE_TIC80, RC_CONSOLE_THOMSONTO8
 * fix error identifying largest track when track has multiple bins
 * fix memory corruption error when cue track has more than 6 INDEXs
 * several improvements to data storage for conditions (rc_memref_t and rc_memref_value_t structures have been modified)

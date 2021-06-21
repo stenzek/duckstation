@@ -1,3 +1,4 @@
+#include "rc_runtime.h"
 #include "rc_internal.h"
 
 #include "../rhash/md5.h"
@@ -217,6 +218,29 @@ rc_trigger_t* rc_runtime_get_achievement(const rc_runtime_t* self, unsigned id)
   return NULL;
 }
 
+int rc_runtime_get_achievement_measured(const rc_runtime_t* runtime, unsigned id, unsigned* measured_value, unsigned* measured_target)
+{
+  const rc_trigger_t* trigger = rc_runtime_get_achievement(runtime, id);
+  if (!measured_value || !measured_target)
+    return 0;
+
+  if (!trigger) {
+    *measured_value = *measured_target = 0;
+    return 0;
+  }
+
+  if (rc_trigger_state_active(trigger->state)) {
+    *measured_value = trigger->measured_value;
+    *measured_target = trigger->measured_target;
+  }
+  else {
+    /* don't report measured information for inactive triggers */
+    *measured_value = *measured_target = 0;
+  }
+
+  return 1;
+}
+
 static void rc_runtime_deactivate_lboard_by_index(rc_runtime_t* self, unsigned index) {
   if (self->lboards[index].owns_memrefs) {
     /* if the lboard has one or more memrefs in its buffer, we can't free the buffer.
@@ -353,6 +377,11 @@ rc_lboard_t* rc_runtime_get_lboard(const rc_runtime_t* self, unsigned id)
   return NULL;
 }
 
+int rc_runtime_format_lboard_value(char* buffer, int size, int value, int format)
+{
+  return rc_format_value(buffer, size, value, format);
+}
+
 int rc_runtime_activate_richpresence(rc_runtime_t* self, const char* script, lua_State* L, int funcs_idx) {
   rc_richpresence_t* richpresence;
   rc_runtime_richpresence_t* previous;
@@ -422,7 +451,7 @@ int rc_runtime_activate_richpresence(rc_runtime_t* self, const char* script, lua
   return RC_OK;
 }
 
-int rc_runtime_get_richpresence(const rc_runtime_t* self, char* buffer, unsigned buffersize, rc_peek_t peek, void* peek_ud, lua_State* L) {
+int rc_runtime_get_richpresence(const rc_runtime_t* self, char* buffer, unsigned buffersize, rc_runtime_peek_t peek, void* peek_ud, lua_State* L) {
   if (self->richpresence && self->richpresence->richpresence)
     return rc_get_richpresence_display_string(self->richpresence->richpresence, buffer, buffersize, peek, peek_ud, L);
 
@@ -430,7 +459,7 @@ int rc_runtime_get_richpresence(const rc_runtime_t* self, char* buffer, unsigned
   return 0;
 }
 
-void rc_runtime_do_frame(rc_runtime_t* self, rc_runtime_event_handler_t event_handler, rc_peek_t peek, void* ud, lua_State* L) {
+void rc_runtime_do_frame(rc_runtime_t* self, rc_runtime_event_handler_t event_handler, rc_runtime_peek_t peek, void* ud, lua_State* L) {
   rc_runtime_event_t runtime_event;
   int i;
 
@@ -441,7 +470,7 @@ void rc_runtime_do_frame(rc_runtime_t* self, rc_runtime_event_handler_t event_ha
 
   for (i = self->trigger_count - 1; i >= 0; --i) {
     rc_trigger_t* trigger = self->triggers[i].trigger;
-    int trigger_state;
+    int old_state, new_state;
 
     if (!trigger)
       continue;
@@ -460,15 +489,34 @@ void rc_runtime_do_frame(rc_runtime_t* self, rc_runtime_event_handler_t event_ha
       continue;
     }
 
-    trigger_state = trigger->state;
-    switch (rc_evaluate_trigger(trigger, peek, ud, L))
-    {
-      case RC_TRIGGER_STATE_RESET:
-        runtime_event.type = RC_RUNTIME_EVENT_ACHIEVEMENT_RESET;
-        runtime_event.id = self->triggers[i].id;
-        event_handler(&runtime_event);
-        break;
+    old_state = trigger->state;
+    new_state = rc_evaluate_trigger(trigger, peek, ud, L);
 
+    /* the trigger state doesn't actually change to RESET, RESET just serves as a notification.
+     * handle the notification, then look at the actual state */
+    if (new_state == RC_TRIGGER_STATE_RESET)
+    {
+      runtime_event.type = RC_RUNTIME_EVENT_ACHIEVEMENT_RESET;
+      runtime_event.id = self->triggers[i].id;
+      event_handler(&runtime_event);
+
+      new_state = trigger->state;
+    }
+
+    /* if the state hasn't changed, there won't be any events raised */
+    if (new_state == old_state)
+      continue;
+
+    /* raise an UNPRIMED event when changing from UNPRIMED to anything else */
+    if (old_state == RC_TRIGGER_STATE_PRIMED) {
+      runtime_event.type = RC_RUNTIME_EVENT_ACHIEVEMENT_UNPRIMED;
+      runtime_event.id = self->triggers[i].id;
+      event_handler(&runtime_event);
+    }
+
+    /* raise events for each of the possible new states */
+    switch (new_state)
+    {
       case RC_TRIGGER_STATE_TRIGGERED:
         runtime_event.type = RC_RUNTIME_EVENT_ACHIEVEMENT_TRIGGERED;
         runtime_event.id = self->triggers[i].id;
@@ -476,23 +524,21 @@ void rc_runtime_do_frame(rc_runtime_t* self, rc_runtime_event_handler_t event_ha
         break;
 
       case RC_TRIGGER_STATE_PAUSED:
-        if (trigger_state != RC_TRIGGER_STATE_PAUSED) {
-          runtime_event.type = RC_RUNTIME_EVENT_ACHIEVEMENT_PAUSED;
-          runtime_event.id = self->triggers[i].id;
-          event_handler(&runtime_event);
-        }
+        runtime_event.type = RC_RUNTIME_EVENT_ACHIEVEMENT_PAUSED;
+        runtime_event.id = self->triggers[i].id;
+        event_handler(&runtime_event);
         break;
 
       case RC_TRIGGER_STATE_PRIMED:
-        if (trigger_state != RC_TRIGGER_STATE_PRIMED) {
-          runtime_event.type = RC_RUNTIME_EVENT_ACHIEVEMENT_PRIMED;
-          runtime_event.id = self->triggers[i].id;
-          event_handler(&runtime_event);
-        }
+        runtime_event.type = RC_RUNTIME_EVENT_ACHIEVEMENT_PRIMED;
+        runtime_event.id = self->triggers[i].id;
+        event_handler(&runtime_event);
         break;
 
       case RC_TRIGGER_STATE_ACTIVE:
-        if (trigger_state != RC_TRIGGER_STATE_ACTIVE) {
+        /* only raise ACTIVATED event when transitioning from an inactive state.
+         * note that inactive in this case means active but cannot trigger. */
+        if (old_state == RC_TRIGGER_STATE_WAITING || old_state == RC_TRIGGER_STATE_PAUSED) {
           runtime_event.type = RC_RUNTIME_EVENT_ACHIEVEMENT_ACTIVATED;
           runtime_event.id = self->triggers[i].id;
           event_handler(&runtime_event);
@@ -594,7 +640,9 @@ static int rc_condset_contains_memref(const rc_condset_t* condset, const rc_memr
     return 0;
 
   for (cond = condset->conditions; cond; cond = cond->next) {
-    if (cond->operand1.value.memref == memref || cond->operand2.value.memref == memref)
+    if (rc_operand_is_memref(&cond->operand1) && cond->operand1.value.memref == memref)
+      return 1;
+    if (rc_operand_is_memref(&cond->operand2) && cond->operand2.value.memref == memref)
       return 1;
   }
 
@@ -630,32 +678,8 @@ static int rc_trigger_contains_memref(const rc_trigger_t* trigger, const rc_memr
   return 0;
 }
 
-void rc_runtime_invalidate_address(rc_runtime_t* self, unsigned address) {
+static void rc_runtime_invalidate_memref(rc_runtime_t* self, rc_memref_t* memref) {
   unsigned i;
-  rc_memref_t* memref;
-  rc_memref_t** last_memref;
-
-  if (!self->memrefs)
-    return;
-
-  /* remove the invalid memref from the chain so we don't try to evaluate it in the future.
-   * it's still there, so anything referencing it will continue to fetch 0.
-   */
-  last_memref = &self->memrefs;
-  memref = *last_memref;
-  do {
-    if (memref->address == address && !memref->value.is_indirect) {
-      *last_memref = memref->next;
-      break;
-    }
-
-    last_memref = &memref->next;
-    memref = *last_memref;
-  } while (memref);
-
-  /* if the address is only used indirectly, don't disable anything dependent on it */
-  if (!memref)
-    return;
 
   /* disable any achievements dependent on the address */
   for (i = 0; i < self->trigger_count; ++i) {
@@ -685,6 +709,83 @@ void rc_runtime_invalidate_address(rc_runtime_t* self, unsigned address) {
 
         if (rc_value_contains_memref(&lboard->value, memref))
           self->lboards[i].invalid_memref = memref;
+      }
+    }
+  }
+}
+
+void rc_runtime_invalidate_address(rc_runtime_t* self, unsigned address) {
+  rc_memref_t** last_memref = &self->memrefs;
+  rc_memref_t* memref = self->memrefs;
+
+  while (memref) {
+    if (memref->address == address && !memref->value.is_indirect) {
+      /* remove the invalid memref from the chain so we don't try to evaluate it in the future.
+       * it's still there, so anything referencing it will continue to fetch 0.
+       */
+      *last_memref = memref->next;
+
+      rc_runtime_invalidate_memref(self, memref);
+      break;
+    }
+
+    last_memref = &memref->next;
+    memref = *last_memref;
+  }
+}
+
+void rc_runtime_validate_addresses(rc_runtime_t* self, rc_runtime_event_handler_t event_handler, 
+    rc_runtime_validate_address_t validate_handler) {
+  rc_memref_t** last_memref = &self->memrefs;
+  rc_memref_t* memref = self->memrefs;
+  int num_invalid = 0;
+
+  while (memref) {
+    if (!memref->value.is_indirect && !validate_handler(memref->address)) {
+      /* remove the invalid memref from the chain so we don't try to evaluate it in the future.
+       * it's still there, so anything referencing it will continue to fetch 0.
+       */
+      *last_memref = memref->next;
+
+      rc_runtime_invalidate_memref(self, memref);
+      ++num_invalid;
+    }
+    else {
+      last_memref = &memref->next;
+    }
+
+    memref = *last_memref;
+  }
+
+  if (num_invalid) {
+    rc_runtime_event_t runtime_event;
+    int i;
+
+    for (i = self->trigger_count - 1; i >= 0; --i) {
+      rc_trigger_t* trigger = self->triggers[i].trigger;
+      if (trigger && self->triggers[i].invalid_memref) {
+        runtime_event.type = RC_RUNTIME_EVENT_ACHIEVEMENT_DISABLED;
+        runtime_event.id = self->triggers[i].id;
+        runtime_event.value = self->triggers[i].invalid_memref->address;
+
+        trigger->state = RC_TRIGGER_STATE_DISABLED;
+        self->triggers[i].invalid_memref = NULL;
+
+        event_handler(&runtime_event);
+      }
+    }
+
+    for (i = self->lboard_count - 1; i >= 0; --i) {
+      rc_lboard_t* lboard = self->lboards[i].lboard;
+      if (lboard && self->lboards[i].invalid_memref) {
+        runtime_event.type = RC_RUNTIME_EVENT_LBOARD_DISABLED;
+        runtime_event.id = self->lboards[i].id;
+        runtime_event.value = self->lboards[i].invalid_memref->address;
+
+        lboard->state = RC_LBOARD_STATE_DISABLED;
+        self->lboards[i].invalid_memref = NULL;
+
+        event_handler(&runtime_event);
       }
     }
   }

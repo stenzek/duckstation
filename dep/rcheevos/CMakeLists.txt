@@ -1,8 +1,11 @@
 add_library(rcheevos
-  include/rc_consoles.h
-  include/rc_hash.h
-  include/rc_url.h
   include/rcheevos.h
+  include/rc_consoles.h
+  include/rc_error.h
+  include/rc_hash.h
+  include/rc_runtime.h
+  include/rc_runtime_types.h
+  include/rc_url.h
   src/rcheevos/alloc.c
   src/rcheevos/compat.c
   src/rcheevos/condition.c

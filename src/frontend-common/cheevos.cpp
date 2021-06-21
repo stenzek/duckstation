@@ -888,7 +888,7 @@ static void GetLbInfoCallback(s32 status_code, const FrontendCommon::HTTPDownloa
       }
 
       char score[128];
-      rc_format_value(score, sizeof(score), entry["Score"].GetInt(), leaderboard->format);
+      rc_runtime_format_lboard_value(score, sizeof(score), entry["Score"].GetInt(), leaderboard->format);
 
       LeaderboardEntry lbe;
       lbe.user = entry["User"].GetString();
