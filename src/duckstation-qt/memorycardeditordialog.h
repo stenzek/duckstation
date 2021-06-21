@@ -18,6 +18,8 @@ public:
   bool setCardA(const QString& path);
   bool setCardB(const QString& path);
 
+  static bool createMemoryCard(const QString& path);
+
 protected:
   void resizeEvent(QResizeEvent* ev);
   void closeEvent(QCloseEvent* ev);

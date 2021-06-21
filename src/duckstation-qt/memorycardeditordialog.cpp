@@ -44,9 +44,17 @@ MemoryCardEditorDialog::~MemoryCardEditorDialog() = default;
 
 bool MemoryCardEditorDialog::setCardA(const QString& path)
 {
-  const int index = m_ui.cardAPath->findData(QVariant(QDir::toNativeSeparators(path)));
+  int index = m_ui.cardAPath->findData(QVariant(QDir::toNativeSeparators(path)));
   if (index < 0)
-    return false;
+  {
+    QFileInfo file(path);
+    if (!file.exists())
+      return false;
+
+    QSignalBlocker sb(m_card_a.path_cb);
+    m_card_a.path_cb->addItem(file.baseName(), QVariant(path));
+    index = m_card_a.path_cb->count() - 1;
+  }
 
   m_ui.cardAPath->setCurrentIndex(index);
   return true;
@@ -54,12 +62,28 @@ bool MemoryCardEditorDialog::setCardA(const QString& path)
 
 bool MemoryCardEditorDialog::setCardB(const QString& path)
 {
-  const int index = m_ui.cardBPath->findData(QVariant(QDir::toNativeSeparators(path)));
+  int index = m_ui.cardBPath->findData(QVariant(QDir::toNativeSeparators(path)));
   if (index < 0)
-    return false;
+  {
+    QFileInfo file(path);
+    if (!file.exists())
+      return false;
+
+    QSignalBlocker sb(m_card_b.path_cb);
+    m_card_b.path_cb->addItem(file.baseName(), QVariant(path));
+    index = m_card_b.path_cb->count() - 1;
+  }
 
   m_ui.cardBPath->setCurrentIndex(index);
   return true;
+}
+
+bool MemoryCardEditorDialog::createMemoryCard(const QString& path)
+{
+  MemoryCardImage::DataArray data;
+  MemoryCardImage::Format(&data);
+
+  return MemoryCardImage::SaveToFile(data, path.toUtf8().constData());
 }
 
 void MemoryCardEditorDialog::resizeEvent(QResizeEvent* ev)

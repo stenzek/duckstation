@@ -1505,6 +1505,22 @@ void MainWindow::onCheckForUpdatesActionTriggered()
 
 void MainWindow::openMemoryCardEditor(const QString& card_a_path, const QString& card_b_path)
 {
+  for (const QString& card_path : {card_a_path, card_b_path})
+  {
+    if (!card_path.isEmpty() && !QFile::exists(card_path))
+    {
+      if (QMessageBox::question(
+            this, tr("Memory Card Not Found"),
+            tr("Memory card '%1' does not exist. Do you want to create an empty memory card?").arg(card_path),
+            QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes)
+      {
+        if (!MemoryCardEditorDialog::createMemoryCard(card_path))
+          QMessageBox::critical(this, tr("Memory Card Not Found"),
+                                tr("Failed to create memory card '%1'").arg(card_path));
+      }
+    }
+  }
+
   if (!m_memory_card_editor_dialog)
   {
     m_memory_card_editor_dialog = new MemoryCardEditorDialog(this);
