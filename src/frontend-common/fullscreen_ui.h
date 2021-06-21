@@ -49,8 +49,12 @@ void SystemDestroyed();
 void SystemPaused(bool paused);
 void OpenQuickMenu();
 void CloseQuickMenu();
+
+#ifdef WITH_CHEEVOS
 bool OpenAchievementsWindow();
 bool OpenLeaderboardsWindow();
+#endif
+
 void Shutdown();
 void Render();
 

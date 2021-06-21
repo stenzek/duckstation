@@ -299,6 +299,8 @@ void CloseQuickMenu()
   ClearImGuiFocus();
 }
 
+#ifdef WITH_CHEEVOS
+
 bool OpenAchievementsWindow()
 {
   const bool achievements_enabled = Cheevos::HasActiveGame() && (Cheevos::GetAchievementCount() > 0);
@@ -321,6 +323,8 @@ bool OpenLeaderboardsWindow()
   s_quick_menu_was_open = false;
   return true;
 }
+
+#endif
 
 void Shutdown()
 {
