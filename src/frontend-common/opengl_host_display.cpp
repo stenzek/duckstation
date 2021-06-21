@@ -402,7 +402,7 @@ bool OpenGLHostDisplay::InitializeRenderDevice(std::string_view shader_cache_dir
   {
     // Adreno seems to corrupt textures through PBOs...
     const char* gl_vendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
-    if (std::strstr(gl_vendor, "Qualcomm"))
+    if (std::strstr(gl_vendor, "Qualcomm") || std::strstr(gl_vendor, "Broadcom"))
       m_use_pbo_for_pixels = false;
   }
 
