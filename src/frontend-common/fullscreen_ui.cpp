@@ -272,17 +272,23 @@ void SystemPaused(bool paused)
   //
 }
 
+static void PauseForMenuOpen()
+{
+  s_was_paused_on_quick_menu_open = System::IsPaused();
+  if (s_settings_copy.pause_on_menu && !s_was_paused_on_quick_menu_open)
+    s_host_interface->RunLater([]() { s_host_interface->PauseSystem(true); });
+
+  s_quick_menu_was_open = true;
+}
+
 void OpenQuickMenu()
 {
   if (!System::IsValid() || s_current_main_window != MainWindowType::None)
     return;
 
-  s_was_paused_on_quick_menu_open = System::IsPaused();
-  if (s_settings_copy.pause_on_menu && !s_was_paused_on_quick_menu_open)
-    s_host_interface->RunLater([]() { s_host_interface->PauseSystem(true); });
+  PauseForMenuOpen();
 
   s_current_main_window = MainWindowType::QuickMenu;
-  s_quick_menu_was_open = true;
   ClearImGuiFocus();
 }
 
@@ -307,8 +313,10 @@ bool OpenAchievementsWindow()
   if (!achievements_enabled)
     return false;
 
+  if (!s_quick_menu_was_open)
+    PauseForMenuOpen();
+
   s_current_main_window = MainWindowType::Achievements;
-  s_quick_menu_was_open = false;
   return true;
 }
 
@@ -318,9 +326,11 @@ bool OpenLeaderboardsWindow()
   if (!leaderboards_enabled)
     return false;
 
+  if (!s_quick_menu_was_open)
+    PauseForMenuOpen();
+
   s_current_main_window = MainWindowType::Leaderboards;
   s_open_leaderboard_id.reset();
-  s_quick_menu_was_open = false;
   return true;
 }
 
