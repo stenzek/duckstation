@@ -1469,8 +1469,6 @@ void CodeGenerator::EmitStoreGuestMemoryFastmem(const CodeBlockInstruction& cbi,
 void CodeGenerator::EmitStoreGuestMemorySlowmem(const CodeBlockInstruction& cbi, const Value& address, RegSize size,
                                                 const Value& value, bool in_far_code)
 {
-  AddPendingCycles(true);
-
   Value value_in_hr = GetValueInHostRegister(value);
 
   if (g_settings.cpu_recompiler_memory_exceptions)
