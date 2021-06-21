@@ -18,10 +18,15 @@ namespace MemoryCardImage {
 
 struct DirectoryFrame
 {
+  enum : u32
+  {
+    FILE_NAME_LENGTH = 20
+  };
+
   u32 block_allocation_state;
   u32 file_size;
   u16 next_block_number;
-  char filename[21];
+  char filename[FILE_NAME_LENGTH + 1];
   u8 zero_pad_1;
   u8 pad_2[95];
   u8 checksum;
@@ -507,15 +512,8 @@ bool ExportSave(DataArray* data, const FileInfo& fi, const char* filename)
   return true;
 }
 
-bool ImportSave(DataArray* data, const char* filename)
+static bool ImportSaveWithDirectoryFrame(DataArray* data, const char* filename, const FILESYSTEM_STAT_DATA& sd)
 {
-  FILESYSTEM_STAT_DATA sd;
-  if (!FileSystem::StatFile(filename, &sd))
-  {
-    Log_ErrorPrintf("Failed to stat file '%s'", filename);
-    return false;
-  }
-
   // Make sure the size of the actual file is valid
   if (sd.Size <= FRAME_SIZE || (sd.Size - FRAME_SIZE) % BLOCK_SIZE != 0u || (sd.Size - FRAME_SIZE) / BLOCK_SIZE > 15u)
   {
@@ -563,6 +561,70 @@ bool ImportSave(DataArray* data, const char* filename)
   }
 
   return WriteFile(data, df.filename, blocks);
+}
+
+static bool ImportRawSave(DataArray* data, const char* filename, const FILESYSTEM_STAT_DATA& sd)
+{
+  std::string save_name(FileSystem::GetFileTitleFromPath(filename));
+  if (save_name.length() == 0)
+  {
+    Log_ErrorPrintf("Invalid filename: '%s'", filename);
+    return false;
+  }
+
+  if (save_name.length() > DirectoryFrame::FILE_NAME_LENGTH)
+    save_name.erase(DirectoryFrame::FILE_NAME_LENGTH);
+
+  // Make sure there isn't already a save with the same name
+  std::vector<FileInfo> fileinfos = EnumerateFiles(*data);
+  for (const FileInfo& fi : fileinfos)
+  {
+    if (fi.filename.compare(save_name) == 0)
+    {
+      Log_ErrorPrintf("Save file with the same name (%s) already exists in memory card", save_name.c_str());
+      return false;
+    }
+  }
+
+  std::optional<std::vector<u8>> blocks = FileSystem::ReadBinaryFile(filename);
+  if (!blocks.has_value())
+  {
+    Log_ErrorPrintf("Failed to read '%s'", filename);
+    return false;
+  }
+
+  return WriteFile(data, save_name, blocks.value());
+}
+
+bool ImportSave(DataArray* data, const char* filename)
+{
+  FILESYSTEM_STAT_DATA sd;
+  if (!FileSystem::StatFile(filename, &sd))
+  {
+    Log_ErrorPrintf("Failed to stat file '%s'", filename);
+    return false;
+  }
+
+  // Make sure the size of the actual file is valid
+  if (sd.Size == 0)
+  {
+    Log_ErrorPrintf("Invalid size for save file '%s'", filename);
+    return false;
+  }
+
+  if (StringUtil::EndsWith(filename, ".mcs"))
+  {
+    return ImportSaveWithDirectoryFrame(data, filename, sd);
+  }
+  else if (sd.Size > 0 && sd.Size < DATA_SIZE && (sd.Size % BLOCK_SIZE) == 0)
+  {
+    return ImportRawSave(data, filename, sd);
+  }
+  else
+  {
+    Log_ErrorPrintf("Unknown save format for '%s'", filename);
+    return false;
+  }
 }
 
 } // namespace MemoryCardImage
