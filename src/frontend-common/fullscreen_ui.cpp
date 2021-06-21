@@ -4487,6 +4487,7 @@ void DrawLeaderboardsWindow()
   const ImVec2 display_size(ImGui::GetIO().DisplaySize);
   const float padding = LayoutScale(10.0f);
   const float spacing = LayoutScale(10.0f);
+  const float spacing_small = spacing / 2.0f;
   float heading_height = LayoutScale(heading_height_unscaled);
   if (is_leaderboard_open)
   {
@@ -4574,7 +4575,7 @@ void DrawLeaderboardsWindow()
           const ImRect subtitle_bb(ImVec2(left, top), ImVec2(right, top + g_large_font->FontSize));
           text.Assign(lboard->title);
 
-          top += g_large_font->FontSize + spacing;
+          top += g_large_font->FontSize + spacing_small;
 
           ImGui::PushFont(g_large_font);
           ImGui::RenderTextClipped(subtitle_bb.Min, subtitle_bb.Max, text.GetCharArray(),
@@ -4594,7 +4595,7 @@ void DrawLeaderboardsWindow()
       }
 
       const ImRect summary_bb(ImVec2(left, top), ImVec2(right, top + g_medium_font->FontSize));
-      top += g_medium_font->FontSize + spacing;
+      top += g_medium_font->FontSize + spacing_small;
 
       ImGui::PushFont(g_medium_font);
       ImGui::RenderTextClipped(summary_bb.Min, summary_bb.Max, text.GetCharArray(),
@@ -4603,7 +4604,7 @@ void DrawLeaderboardsWindow()
       if (!IsCheevosHardcoreModeActive())
       {
         const ImRect hardcore_warning_bb(ImVec2(left, top), ImVec2(right, top + g_medium_font->FontSize));
-        top += g_medium_font->FontSize + spacing;
+        top += g_medium_font->FontSize + spacing_small;
 
         ImGui::RenderTextClipped(
           hardcore_warning_bb.Min, hardcore_warning_bb.Max,
