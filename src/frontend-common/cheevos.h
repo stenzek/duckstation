@@ -113,6 +113,8 @@ const Leaderboard* GetLeaderboardByID(u32 id);
 u32 GetLeaderboardCount();
 bool IsLeaderboardTimeType(const Leaderboard& leaderboard);
 
+std::pair<u32, u32> GetAchievementProgress(const Achievement& achievement);
+
 void UnlockAchievement(u32 achievement_id, bool add_notification = true);
 void SubmitLeaderboard(u32 leaderboard_id, int value);
 

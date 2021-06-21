@@ -1374,6 +1374,13 @@ void SubmitLeaderboard(u32 leaderboard_id, int value)
   s_http_downloader->CreateRequest(url, SubmitLeaderboardCallback);
 }
 
+std::pair<u32, u32> GetAchievementProgress(const Achievement& achievement)
+{
+  std::pair<u32, u32> result;
+  rc_runtime_get_achievement_measured(&s_rcheevos_runtime, achievement.id, &result.first, &result.second);
+  return result;
+}
+
 void CheevosEventHandler(const rc_runtime_event_t* runtime_event)
 {
   static const char* events[] = {"RC_RUNTIME_EVENT_ACHIEVEMENT_ACTIVATED", "RC_RUNTIME_EVENT_ACHIEVEMENT_PAUSED",

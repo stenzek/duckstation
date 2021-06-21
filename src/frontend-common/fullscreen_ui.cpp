@@ -4119,14 +4119,22 @@ void DrawDebugDebugMenu()
 static void DrawAchievement(const Cheevos::Achievement& cheevo)
 {
   static constexpr float alpha = 0.8f;
+  static constexpr float progress_height_unscaled = 20.0f;
+  static constexpr float progress_spacing_unscaled = 5.0f;
 
   TinyString id_str;
   id_str.Format("%u", cheevo.id);
 
+  const auto progress = Cheevos::GetAchievementProgress(cheevo);
+  const bool is_measured = progress.second != 0;
+
   ImRect bb;
   bool visible, hovered;
   bool pressed =
-    MenuButtonFrame(id_str, true, LAYOUT_MENU_BUTTON_HEIGHT, &visible, &hovered, &bb.Min, &bb.Max, 0, alpha);
+    MenuButtonFrame(id_str, true,
+                    !is_measured ? LAYOUT_MENU_BUTTON_HEIGHT :
+                                   LAYOUT_MENU_BUTTON_HEIGHT + progress_height_unscaled + progress_spacing_unscaled,
+                    &visible, &hovered, &bb.Min, &bb.Max, 0, alpha);
   if (!visible)
     return;
 
@@ -4160,6 +4168,27 @@ static void DrawAchievement(const Cheevos::Achievement& cheevo)
                              cheevo.description.c_str() + cheevo.description.size(), nullptr, ImVec2(0.0f, 0.0f),
                              &summary_bb);
     ImGui::PopFont();
+  }
+
+  if (is_measured)
+  {
+    ImDrawList* dl = ImGui::GetWindowDrawList();
+    const float progress_height = LayoutScale(progress_height_unscaled);
+    const float progress_spacing = LayoutScale(progress_spacing_unscaled);
+    const float top = midpoint + g_medium_font->FontSize + progress_spacing;
+    const ImRect progress_bb(ImVec2(text_start_x, top), ImVec2(bb.Max.x, top + progress_height));
+    const float fraction = static_cast<float>(progress.first) / static_cast<float>(progress.second);
+    dl->AddRectFilled(progress_bb.Min, progress_bb.Max, ImGui::GetColorU32(ImGuiFullscreen::UIPrimaryDarkColor()));
+    dl->AddRectFilled(progress_bb.Min, ImVec2(progress_bb.Min.x + fraction * progress_bb.GetWidth(), progress_bb.Max.y),
+                      ImGui::GetColorU32(ImGuiFullscreen::UISecondaryColor()));
+
+    text.Format("%u / %u", progress.first, progress.second);
+    const ImVec2 text_size = ImGui::CalcTextSize(text);
+    const ImVec2 text_pos(progress_bb.Min.x + ((progress_bb.Max.x - progress_bb.Min.x) / 2.0f) - (text_size.x / 2.0f),
+                          progress_bb.Min.y + ((progress_bb.Max.y - progress_bb.Min.y) / 2.0f) - (text_size.y / 2.0f));
+    dl->AddText(g_medium_font, g_medium_font->FontSize, text_pos,
+                ImGui::GetColorU32(ImGuiFullscreen::UIPrimaryTextColor()), text.GetCharArray(),
+                text.GetCharArray() + text.GetLength());
   }
 
 #if 0
