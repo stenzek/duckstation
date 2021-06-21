@@ -56,6 +56,7 @@ private:
   void saveCard(Card* card);
   void promptForSave(Card* card);
   void importCard(Card* card);
+  void formatCard(Card* card);
 
   void doExportSaveFile();
   void importSaveFile(Card* card);

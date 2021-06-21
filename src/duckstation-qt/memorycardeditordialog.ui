@@ -97,11 +97,21 @@
     </layout>
    </item>
    <item row="2" column="3">
-    <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,0,0,0">
+    <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,0,0,0,0">
      <item>
       <widget class="QLabel" name="cardBUsage">
        <property name="text">
         <string notr="true"/>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="formatCardB">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Format Card</string>
        </property>
       </widget>
      </item>
@@ -138,11 +148,21 @@
     </layout>
    </item>
    <item row="2" column="0">
-    <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="1,0,0,0">
+    <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="1,0,0,0,0">
      <item>
       <widget class="QLabel" name="cardAUsage">
        <property name="text">
         <string notr="true"/>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="formatCardA">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Format Card</string>
        </property>
       </widget>
      </item>

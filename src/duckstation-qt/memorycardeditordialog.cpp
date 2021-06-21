@@ -94,6 +94,8 @@ void MemoryCardEditorDialog::connectUi()
   connect(m_ui.saveCardB, &QPushButton::clicked, [this]() { saveCard(&m_card_b); });
   connect(m_ui.importCardA, &QPushButton::clicked, [this]() { importCard(&m_card_a); });
   connect(m_ui.importCardB, &QPushButton::clicked, [this]() { importCard(&m_card_b); });
+  connect(m_ui.formatCardA, &QPushButton::clicked, [this]() { formatCard(&m_card_a); });
+  connect(m_ui.formatCardB, &QPushButton::clicked, [this]() { formatCard(&m_card_b); });
   connect(m_ui.exportFile, &QPushButton::clicked, this, &MemoryCardEditorDialog::doExportSaveFile);
   connect(m_ui.importFileToCardA, &QPushButton::clicked, [this]() { importSaveFile(&m_card_a); });
   connect(m_ui.importFileToCardB, &QPushButton::clicked, [this]() { importSaveFile(&m_card_b); });
@@ -435,6 +437,29 @@ void MemoryCardEditorDialog::importCard(Card* card)
   updateButtonState();
 }
 
+void MemoryCardEditorDialog::formatCard(Card* card)
+{
+  promptForSave(card);
+
+  if (QMessageBox::question(this, tr("Format memory card?"),
+                            tr("Formatting the memory card will destroy all saves, and they will not be recoverable. "
+                               "The memory card which will be formatted is located at '%1'.")
+                              .arg(QString::fromStdString(card->filename)),
+                            QMessageBox::Yes, QMessageBox::No) == QMessageBox::No)
+  {
+    return;
+  }
+
+  clearSelection();
+
+  MemoryCardImage::Format(&card->data);
+
+  updateCardTable(card);
+  updateCardBlocksFree(card);
+  setCardDirty(card);
+  updateButtonState();
+}
+
 void MemoryCardEditorDialog::importSaveFile(Card* card)
 {
   QString filename =
@@ -492,4 +517,6 @@ void MemoryCardEditorDialog::updateButtonState()
   m_ui.importCardB->setEnabled(card_b_present);
   m_ui.importFileToCardA->setEnabled(card_a_present);
   m_ui.importFileToCardB->setEnabled(card_b_present);
+  m_ui.formatCardA->setEnabled(card_a_present);
+  m_ui.formatCardB->setEnabled(card_b_present);
 }
