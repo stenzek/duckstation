@@ -1605,6 +1605,16 @@ bool CodeGenerator::Compile_LoadLeftRight(const CodeBlockInstruction& cbi)
   }
   else
   {
+    // if this is the first instruction in the block, we need to stall until the load finishes
+    // we don't actually care if it's our target reg or not, if it's not, it won't affect anything
+    if (m_load_delay_dirty)
+    {
+      Log_DevPrintf("Flushing interpreter load delay for lwl/lwr instruction at 0x%08X", cbi.pc);
+      EmitFlushInterpreterLoadDelay();
+      m_register_cache.InvalidateGuestRegister(cbi.instruction.r.rt);
+      m_load_delay_dirty = false;
+    }
+
     value = m_register_cache.ReadGuestRegister(cbi.instruction.i.rt, true, true);
   }
 
