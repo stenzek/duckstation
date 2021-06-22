@@ -8248,7 +8248,7 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../settingsdialog.ui" line="94"/>
         <source>Game List Settings</source>
-        <translation>Спискок игр</translation>
+        <translation>Список игр</translation>
     </message>
     <message>
         <location filename="../settingsdialog.ui" line="103"/>
