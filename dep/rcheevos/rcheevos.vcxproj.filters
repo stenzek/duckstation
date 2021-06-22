@@ -15,6 +15,24 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\rurl\url.c">
+      <Filter>rurl</Filter>
+    </ClCompile>
+    <ClCompile Include="src\rcheevos\consoleinfo.c">
+      <Filter>rcheevos</Filter>
+    </ClCompile>
+    <ClCompile Include="src\rcheevos\format.c">
+      <Filter>rcheevos</Filter>
+    </ClCompile>
+    <ClCompile Include="src\rcheevos\lboard.c">
+      <Filter>rcheevos</Filter>
+    </ClCompile>
+    <ClCompile Include="src\rcheevos\memref.c">
+      <Filter>rcheevos</Filter>
+    </ClCompile>
+    <ClCompile Include="src\rcheevos\operand.c">
+      <Filter>rcheevos</Filter>
+    </ClCompile>
     <ClCompile Include="src\rcheevos\richpresence.c">
       <Filter>rcheevos</Filter>
     </ClCompile>
@@ -42,35 +60,38 @@
     <ClCompile Include="src\rcheevos\condset.c">
       <Filter>rcheevos</Filter>
     </ClCompile>
-    <ClCompile Include="src\rcheevos\consoleinfo.c">
-      <Filter>rcheevos</Filter>
-    </ClCompile>
-    <ClCompile Include="src\rcheevos\format.c">
-      <Filter>rcheevos</Filter>
-    </ClCompile>
-    <ClCompile Include="src\rcheevos\lboard.c">
-      <Filter>rcheevos</Filter>
-    </ClCompile>
-    <ClCompile Include="src\rcheevos\memref.c">
-      <Filter>rcheevos</Filter>
-    </ClCompile>
-    <ClCompile Include="src\rcheevos\operand.c">
-      <Filter>rcheevos</Filter>
-    </ClCompile>
-    <ClCompile Include="src\rurl\url.c">
-      <Filter>rurl</Filter>
-    </ClCompile>
-    <ClCompile Include="src\rhash\hash.c">
-      <Filter>rhash</Filter>
-    </ClCompile>
     <ClCompile Include="src\rhash\md5.c">
       <Filter>rhash</Filter>
     </ClCompile>
     <ClCompile Include="src\rhash\cdreader.c">
       <Filter>rhash</Filter>
     </ClCompile>
+    <ClCompile Include="src\rhash\hash.c">
+      <Filter>rhash</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\rc_consoles.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\rc_error.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\rc_hash.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\rc_runtime.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\rc_runtime_types.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\rc_url.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\rcheevos.h">
+      <Filter>include</Filter>
+    </ClInclude>
     <ClInclude Include="src\rcheevos\rc_compat.h">
       <Filter>rcheevos</Filter>
     </ClInclude>
@@ -79,18 +100,6 @@
     </ClInclude>
     <ClInclude Include="src\rhash\md5.h">
       <Filter>rhash</Filter>
-    </ClInclude>
-    <ClInclude Include="include\rc_url.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="include\rcheevos.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="include\rc_consoles.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="include\rc_hash.h">
-      <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -888,7 +888,7 @@ static void GetLbInfoCallback(s32 status_code, const FrontendCommon::HTTPDownloa
       }
 
       char score[128];
-      rc_format_value(score, sizeof(score), entry["Score"].GetInt(), leaderboard->format);
+      rc_runtime_format_lboard_value(score, sizeof(score), entry["Score"].GetInt(), leaderboard->format);
 
       LeaderboardEntry lbe;
       lbe.user = entry["User"].GetString();
@@ -1372,6 +1372,13 @@ void SubmitLeaderboard(u32 leaderboard_id, int value)
   char url[512];
   rc_url_submit_lboard(url, sizeof(url), s_username.c_str(), s_login_token.c_str(), leaderboard_id, value);
   s_http_downloader->CreateRequest(url, SubmitLeaderboardCallback);
+}
+
+std::pair<u32, u32> GetAchievementProgress(const Achievement& achievement)
+{
+  std::pair<u32, u32> result;
+  rc_runtime_get_achievement_measured(&s_rcheevos_runtime, achievement.id, &result.first, &result.second);
+  return result;
 }
 
 void CheevosEventHandler(const rc_runtime_event_t* runtime_event)

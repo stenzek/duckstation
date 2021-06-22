@@ -73,7 +73,10 @@
   <ItemGroup>
     <ClInclude Include="include\rcheevos.h" />
     <ClInclude Include="include\rc_consoles.h" />
+    <ClInclude Include="include\rc_error.h" />
     <ClInclude Include="include\rc_hash.h" />
+    <ClInclude Include="include\rc_runtime.h" />
+    <ClInclude Include="include\rc_runtime_types.h" />
     <ClInclude Include="include\rc_url.h" />
     <ClInclude Include="src\rcheevos\rc_compat.h" />
     <ClInclude Include="src\rcheevos\rc_internal.h" />

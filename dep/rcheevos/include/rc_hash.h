@@ -66,10 +66,10 @@ extern "C" {
   typedef void* (*rc_hash_filereader_open_file_handler)(const char* path_utf8);
 
   /* moves the file pointer - standard fseek parameters */
-  typedef void (*rc_hash_filereader_seek_handler)(void* file_handle, size_t offset, int origin);
+  typedef void (*rc_hash_filereader_seek_handler)(void* file_handle, int64_t offset, int origin);
 
   /* locates the file pointer */
-  typedef size_t (*rc_hash_filereader_tell_handler)(void* file_handle);
+  typedef int64_t (*rc_hash_filereader_tell_handler)(void* file_handle);
 
   /* reads the specified number of bytes from the file starting at the read pointer.
    * returns the number of bytes actually read.

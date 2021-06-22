@@ -22,8 +22,9 @@ static rc_memref_value_t* rc_alloc_helper_variable_memref_value(const char* mema
   if (rc_parse_memref(&end, &size, &address) == RC_OK) {
     /* make sure the entire memaddr was consumed. if not, there's an operator and it's a comparison, not a memory reference */
     if (end == &memaddr[memaddr_len]) {
-      /* just a memory reference, allocate it */
-      return &rc_alloc_memref(parse, address, size, 0)->value;
+      /* if it's not a derived size, we can reference the memref directly */
+      if (rc_memref_shared_size(size) == size)
+        return &rc_alloc_memref(parse, address, size, 0)->value;
     }
   }
 
@@ -35,7 +36,7 @@ static rc_memref_value_t* rc_alloc_helper_variable_memref_value(const char* mema
   return &variable->value;
 }
 
-static const char* rc_parse_line(const char* line, const char** end) {
+static const char* rc_parse_line(const char* line, const char** end, rc_parse_state_t* parse) {
   const char* nextline;
   const char* endline;
 
@@ -44,25 +45,31 @@ static const char* rc_parse_line(const char* line, const char** end) {
   while (*nextline && *nextline != '\n')
     ++nextline;
 
-  /* find a trailing comment marker (//) */
+  /* if a trailing comment marker (//) exists, the line stops there */
   endline = line;
   while (endline < nextline && (endline[0] != '/' || endline[1] != '/' || (endline > line && endline[-1] == '\\')))
     ++endline;
 
-  /* remove trailing whitespace */
   if (endline == nextline) {
+    /* trailing whitespace on a line without a comment marker may be significant, just remove the line ending */
     if (endline > line && endline[-1] == '\r')
       --endline;
   } else {
-    while (endline > line && isspace(endline[-1]))
+    /* remove trailing whitespace before the comment marker */
+    while (endline > line && isspace((int)((unsigned char*)endline)[-1]))
       --endline;
   }
 
-  /* end is pointing at the first character to ignore - makes subtraction for length easier */
+  /* point end at the first character to ignore, it makes subtraction for length easier */
   *end = endline;
 
+  /* tally the line */
+  ++parse->lines_read;
+
+  /* skip the newline character so we're pointing at the next line */
   if (*nextline == '\n')
     ++nextline;
+
   return nextline;
 }
 
@@ -337,7 +344,7 @@ static const char* rc_parse_richpresence_lookup(rc_richpresence_lookup_t* lookup
   do
   {
     line = nextline;
-    nextline = rc_parse_line(line, &endline);
+    nextline = rc_parse_line(line, &endline, parse);
 
     if (endline - line < 2) {
       /* ignore full line comments inside a lookup */
@@ -436,13 +443,20 @@ void rc_parse_richpresence_internal(rc_richpresence_t* self, const char* script,
   const char* endline;
   const char* ptr;
   int hasdisplay = 0;
+  int display_line = 0;
   int chars;
+
+  /* special case for empty script to return 1 line read */
+  if (!*script) {
+     parse->lines_read = 1;
+     parse->offset = RC_MISSING_DISPLAY_STRING;
+     return;
+  }
 
   /* first pass: process macro initializers */
   line = script;
-  while (*line)
-  {
-    nextline = rc_parse_line(line, &endline);
+  while (*line) {
+    nextline = rc_parse_line(line, &endline, parse);
     if (strncmp(line, "Lookup:", 7) == 0) {
       line += 7;
 
@@ -469,7 +483,7 @@ void rc_parse_richpresence_internal(rc_richpresence_t* self, const char* script,
       nextlookup = &lookup->next;
 
       line = nextline;
-      nextline = rc_parse_line(line, &endline);
+      nextline = rc_parse_line(line, &endline, parse);
       if (parse->buffer && strncmp(line, "FormatType=", 11) == 0) {
         line += 11;
 
@@ -485,10 +499,11 @@ void rc_parse_richpresence_internal(rc_richpresence_t* self, const char* script,
       }
     } else if (strncmp(line, "Display:", 8) == 0) {
       display = nextline;
+      display_line = parse->lines_read;
 
       do {
         line = nextline;
-        nextline = rc_parse_line(line, &endline);
+        nextline = rc_parse_line(line, &endline, parse);
       } while (*line == '?');
     }
 
@@ -502,8 +517,12 @@ void rc_parse_richpresence_internal(rc_richpresence_t* self, const char* script,
 
   /* second pass, process display string*/
   if (display) {
+    /* point the parser back at the display strings */
+    int lines_read = parse->lines_read;
+    parse->lines_read = display_line;
     line = display;
-    nextline = rc_parse_line(line, &endline);
+
+    nextline = rc_parse_line(line, &endline, parse);
 
     while (*line == '?') {
       /* conditional display: ?trigger?string */
@@ -525,7 +544,7 @@ void rc_parse_richpresence_internal(rc_richpresence_t* self, const char* script,
       }
 
       line = nextline;
-      nextline = rc_parse_line(line, &endline);
+      nextline = rc_parse_line(line, &endline, parse);
     }
 
     /* non-conditional display: string */
@@ -534,6 +553,9 @@ void rc_parse_richpresence_internal(rc_richpresence_t* self, const char* script,
       hasdisplay = 1;
       nextdisplay = &((*nextdisplay)->next);
     }
+
+    /* restore the parser state */
+    parse->lines_read = lines_read;
   }
 
   /* finalize */
@@ -544,7 +566,7 @@ void rc_parse_richpresence_internal(rc_richpresence_t* self, const char* script,
   }
 }
 
-int rc_richpresence_size(const char* script) {
+int rc_richpresence_size_lines(const char* script, int* lines_read) {
   rc_richpresence_t* self;
   rc_parse_state_t parse;
   rc_memref_t* first_memref;
@@ -556,13 +578,24 @@ int rc_richpresence_size(const char* script) {
   self = RC_ALLOC(rc_richpresence_t, &parse);
   rc_parse_richpresence_internal(self, script, &parse);
 
+  if (lines_read)
+    *lines_read = parse.lines_read;
+
   rc_destroy_parse_state(&parse);
   return parse.offset;
+}
+
+int rc_richpresence_size(const char* script) {
+  return rc_richpresence_size_lines(script, NULL);
 }
 
 rc_richpresence_t* rc_parse_richpresence(void* buffer, const char* script, lua_State* L, int funcs_ndx) {
   rc_richpresence_t* self;
   rc_parse_state_t parse;
+
+  if (!buffer || !script)
+    return NULL;
+
   rc_init_parse_state(&parse, buffer, L, funcs_ndx);
 
   self = RC_ALLOC(rc_richpresence_t, &parse);
@@ -572,7 +605,7 @@ rc_richpresence_t* rc_parse_richpresence(void* buffer, const char* script, lua_S
   rc_parse_richpresence_internal(self, script, &parse);
 
   rc_destroy_parse_state(&parse);
-  return parse.offset >= 0 ? self : 0;
+  return (parse.offset >= 0) ? self : NULL;
 }
 
 void rc_update_richpresence(rc_richpresence_t* richpresence, rc_peek_t peek, void* peek_ud, lua_State* L) {

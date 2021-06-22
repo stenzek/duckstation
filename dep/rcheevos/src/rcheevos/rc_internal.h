@@ -1,7 +1,7 @@
 #ifndef INTERNAL_H
 #define INTERNAL_H
 
-#include "rcheevos.h"
+#include "rc_runtime_types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -96,6 +96,7 @@ typedef struct {
   rc_value_t** variables;
 
   unsigned measured_target;
+  int lines_read;
 
   char has_required_hits;
 }
@@ -116,8 +117,11 @@ void rc_update_memref_values(rc_memref_t* memref, rc_peek_t peek, void* ud);
 void rc_update_memref_value(rc_memref_value_t* memref, unsigned value);
 unsigned rc_get_memref_value(rc_memref_t* memref, int operand_type, rc_eval_state_t* eval_state);
 unsigned rc_get_memref_value_value(rc_memref_value_t* memref, int operand_type);
+char rc_memref_shared_size(char size);
+unsigned rc_transform_memref_value(unsigned value, char size);
 
 void rc_parse_trigger_internal(rc_trigger_t* self, const char** memaddr, rc_parse_state_t* parse);
+int rc_trigger_state_active(int state);
 
 rc_condset_t* rc_parse_condset(const char** memaddr, rc_parse_state_t* parse, int is_value);
 int rc_test_condset(rc_condset_t* self, rc_eval_state_t* eval_state);
