@@ -51,7 +51,7 @@ private:
 
   struct ControllerData
   {
-    ControllerData(int fd_, struct libevdev* obj_);
+    ControllerData(int fd_, struct libevdev* obj_, int controller_id_);
     ControllerData(const ControllerData&) = delete;
     ControllerData(ControllerData&& move);
     ~ControllerData();

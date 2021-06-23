@@ -45,7 +45,7 @@ bool EvdevControllerInterface::Initialize(CommonHostInterface* host_interface)
       continue;
     }
 
-    ControllerData data(fd, obj);
+    ControllerData data(fd, obj, m_controllers.size());
     data.controller_id = static_cast<int>(m_controllers.size());
     if (InitializeController(index, &data))
       m_controllers.push_back(std::move(data));
@@ -62,7 +62,7 @@ void EvdevControllerInterface::Shutdown()
   ControllerInterface::Shutdown();
 }
 
-EvdevControllerInterface::ControllerData::ControllerData(int fd_, struct libevdev* obj_) : obj(obj_), fd(fd_) {}
+EvdevControllerInterface::ControllerData::ControllerData(int fd_, struct libevdev* obj_, int controller_id_) : obj(obj_), fd(fd_), controller_id(controller_id_) {}
 
 EvdevControllerInterface::ControllerData::ControllerData(ControllerData&& move)
   : obj(move.obj), fd(move.fd), controller_id(move.controller_id), num_motors(move.num_motors), deadzone(move.deadzone),
