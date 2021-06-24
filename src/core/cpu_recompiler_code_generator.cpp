@@ -1874,7 +1874,10 @@ bool CodeGenerator::Compile_Multiply(const CodeBlockInstruction& cbi)
   Value rs = m_register_cache.ReadGuestRegister(cbi.instruction.r.rs);
   Value rt = m_register_cache.ReadGuestRegister(cbi.instruction.r.rt);
   if (g_settings.UsingPGXPCPUMode())
-    EmitFunctionCall(nullptr, signed_multiply ? &PGXP::CPU_MULT : &PGXP::CPU_MULTU, rs, rt);
+  {
+    EmitFunctionCall(nullptr, signed_multiply ? &PGXP::CPU_MULT : &PGXP::CPU_MULTU,
+                     Value::FromConstantU32(cbi.instruction.bits), rs, rt);
+  }
 
   std::pair<Value, Value> result = MulValues(rs, rt, signed_multiply);
   rs.ReleaseAndClear();
@@ -1937,7 +1940,7 @@ bool CodeGenerator::Compile_Divide(const CodeBlockInstruction& cbi)
   Value denom = m_register_cache.ReadGuestRegister(cbi.instruction.r.rt);
 
   if (g_settings.UsingPGXPCPUMode())
-    EmitFunctionCall(nullptr, &PGXP::CPU_DIV, num, denom);
+    EmitFunctionCall(nullptr, &PGXP::CPU_DIV, Value::FromConstantU32(cbi.instruction.bits), num, denom);
 
   if (num.IsConstant() && denom.IsConstant())
   {
@@ -1998,7 +2001,7 @@ bool CodeGenerator::Compile_SignedDivide(const CodeBlockInstruction& cbi)
   Value denom = m_register_cache.ReadGuestRegister(cbi.instruction.r.rt);
 
   if (g_settings.UsingPGXPCPUMode())
-    EmitFunctionCall(nullptr, &PGXP::CPU_DIVU, num, denom);
+    EmitFunctionCall(nullptr, &PGXP::CPU_DIV, Value::FromConstantU32(cbi.instruction.bits), num, denom);
 
   if (num.IsConstant() && denom.IsConstant())
   {

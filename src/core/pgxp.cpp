@@ -185,7 +185,7 @@ ALWAYS_INLINE_RELEASE void ValidateAndCopyMem(PGXP_value* dest, u32 addr, u32 va
   *dest = PGXP_value_invalid;
 }
 
-static void ValidateAndCopyMem16(PGXP_value* dest, u32 addr, u32 value, int sign)
+ALWAYS_INLINE_RELEASE static void ValidateAndCopyMem16(PGXP_value* dest, u32 addr, u32 value, int sign)
 {
   u32 validMask = 0;
   psx_value val, mask;
@@ -236,7 +236,7 @@ ALWAYS_INLINE_RELEASE void WriteMem(const PGXP_value* value, u32 addr)
     *pMem = *value;
 }
 
-static void WriteMem16(PGXP_value* src, u32 addr)
+ALWAYS_INLINE_RELEASE static void WriteMem16(const PGXP_value* src, u32 addr)
 {
   PGXP_value* dest = GetPtr(addr);
   psx_value* pVal = NULL;
@@ -599,16 +599,19 @@ void CPU_SB(u32 instr, u8 rtVal, u32 addr)
 
 void CPU_SH(u32 instr, u16 rtVal, u32 addr)
 {
+  PGXP_value* val = &CPU_reg[rt(instr)];
+
   // validate and copy half value
-  MaskValidate(&CPU_reg[rt(instr)], rtVal, 0xFFFF, VALID_0);
-  WriteMem16(&CPU_reg[rt(instr)], addr);
+  MaskValidate(val, rtVal, 0xFFFF, VALID_0);
+  WriteMem16(val, addr);
 }
 
 void CPU_SW(u32 instr, u32 rtVal, u32 addr)
 {
   // Mem[Rs + Im] = Rt
-  Validate(&CPU_reg[rt(instr)], rtVal);
-  WriteMem(&CPU_reg[rt(instr)], addr);
+  PGXP_value* val = &CPU_reg[rt(instr)];
+  Validate(val, rtVal);
+  WriteMem(val, addr);
 }
 
 void CPU_MOVE(u32 rd_and_rs, u32 rsVal)
