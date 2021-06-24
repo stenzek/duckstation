@@ -855,7 +855,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>0 blocks used</source>
-        <translation>0 ブロック&#x3000;使用</translation>
+        <translation>0 ブロック 使用</translation>
     </message>
     <message>
         <source>Error</source>
@@ -867,7 +867,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Memory card &apos;%1&apos; is not saved, do you want to save before closing?</source>
-        <translation>メモリカード  &apos;%1&apos; は保存できませんでした。閉じる前に保存しますか？</translation>
+        <translation>メモリカード&lt;br&gt;&apos;%1&apos;&lt;br&gt;は保存できませんでした。閉じる前に保存しますか？</translation>
     </message>
     <message>
         <source>File Name</source>
@@ -879,19 +879,19 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Blocks</source>
-        <translation>ブロック</translation>
+        <translation>ブロック </translation>
     </message>
     <message>
-        <source>New...</source>
-        <translation>新規...</translation>
+        <source>New Card...</source>
+        <translation>新規作成...</translation>
     </message>
     <message>
         <source>Failed to load memory card image.</source>
         <translation>メモリカードイメージのロードに失敗しました。</translation>
     </message>
     <message>
-        <source>Open...</source>
-        <translation>開く ...</translation>
+        <source>Open Card...</source>
+        <translation>カードを開く...</translation>
     </message>
     <message>
         <source>Failed to delete file %1</source>
@@ -918,6 +918,22 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>ファイル %1 の書き込みに失敗しました</translation>
     </message>
     <message>
+        <source>All Memory Card Types (*.mcd *.mcr *.mc)</source>
+        <translation>すべてのメモリカードタイプ (*.mcd *.mcr *.mc)</translation>
+    </message>
+    <message>
+        <source>Single Save Files (*.mcs);;All Files (*.*)</source>
+        <translation>単一の保存ファイル (*.mcs);;すべてのファイル (*.*)</translation>
+    </message>
+    <message>
+        <source>Select Single Savefile</source>
+        <translation>単一の保存ファイルを選択</translation>
+    </message>
+    <message>
+        <source>Select Import Save File</source>
+        <translation>インポートするセーブファイルを選択</translation>
+    </message>
+    <message>
         <source>Failed to read file %1</source>
         <translation>ファイル %1の読み取りに失敗しました</translation>
     </message>
@@ -942,10 +958,6 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>&apos;%1&apos;のカードの書き込みに失敗しました</translation>
     </message>
     <message>
-        <source>All Memory Card Types (*.mcd *.mcr *.mc)</source>
-        <translation>すべてのメモリカードタイプ (*.mcd *.mcr *.mc)</translation>
-    </message>
-    <message>
         <source>Save memory card?</source>
         <translation>メモリカードを保存しますか？</translation>
     </message>
@@ -958,12 +970,30 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>メモリーカード :</translation>
     </message>
     <message>
+        <source>Format Card</source>
+        <translation>カードをフォーマット</translation>
+    </message>
+    <message>
         <source>Insufficient blocks, this file needs %1 but only %2 are available.</source>
         <translation>空ブロックが不十分です、このファイルには %1 が必要ですが、使用できるのは %2 のみです。</translation>
     </message>
+    <message numerus="yes">
+        <source>%n block(s) free%1</source>
+        <translation>
+            <numerusform>%n ブロック 空 %1</numerusform>
+        </translation>
+    </message>
     <message>
-        <source>%1 blocks free%2</source>
-        <translation>%1 ブロック 空%2</translation>
+        <source>Format memory card?</source>
+        <translation>メモリカードをフォーマットしますか？</translation>
+    </message>
+    <message>
+        <source>Formatting the memory card will destroy all saves, and they will not be recoverable. The memory card which will be formatted is located at &apos;%1&apos;.</source>
+        <translation>メモリカードをフォーマットすると、すべての保存が破棄され、回復できなくなります。&lt;br&gt;フォーマットされるメモリーカードは&lt;br&gt;&apos;%1&apos;&lt;br&gt;にあります</translation>
+    </message>
+    <message>
+        <source>All Files (*.*)</source>
+        <translation>すべてのファイル (*.*)</translation>
     </message>
 </context>
 <context>
@@ -1991,7 +2021,7 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <source>Cheat File Text:</source>
-        <translation>チートファイルテキスト：</translation>
+        <translation>チートを入力：</translation>
     </message>
     <message>
         <source>Changed By...</source>
@@ -4887,6 +4917,10 @@ Achievements: %5 (%6 points)
 
 </translation>
     </message>
+    <message>
+        <source>Select Save State File</source>
+        <translation>ステートセーブファイルを選択</translation>
+    </message>
 </context>
 <context>
     <name>AchievementLoginDialog</name>
@@ -5549,6 +5583,18 @@ SBIファイルを追加する方法については、READMEを確認してく�
         <source>Toggle Clock Speed Control (Overclocking)</source>
         <translation>クロック速度の切り替え（オーバークロック）</translation>
     </message>
+    <message>
+        <source>System</source>
+        <translation>システム</translation>
+    </message>
+    <message>
+        <source>Open Achievement List</source>
+        <translation>実績リストを開く</translation>
+    </message>
+    <message>
+        <source>Open Leaderboard List</source>
+        <translation>リーダーボードリストを開く</translation>
+    </message>
 </context>
 <context>
     <name>InputBindingDialog</name>
@@ -5909,6 +5955,10 @@ SBIファイルを追加する方法については、READMEを確認してく�
     <message>
         <source>All Memory Card Types (*.mcd *.mcr *.mc)</source>
         <translation>すべてのメモリーカードタイプ (*.mcd *.mcr *.mc)</translation>
+    </message>
+    <message>
+        <source>Single Save Files (*.mcs)</source>
+        <translation>単一の保存ファイル (*.mcs)</translation>
     </message>
     <message>
         <source>When using a multi-disc format (m3u/pbp) and per-game (title) memory cards, a single memory card will be used for all discs. If unchecked, a separate card will be used for each disc.</source>
