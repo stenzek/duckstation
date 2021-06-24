@@ -36,4 +36,17 @@ constexpr bool IsPow2(T value)
 {
   return (value & (value - 1)) == 0;
 }
+template<typename T>
+constexpr T PreviousPow2(T value)
+{
+  if (value == static_cast<T>(0))
+    return 0;
+
+  value |= (value >> 1);
+  value |= (value >> 2);
+  value |= (value >> 4);
+  value |= (value >> 8);
+  value |= (value >> 16);
+  return value - (value >> 1);
+}
 } // namespace Common

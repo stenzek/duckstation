@@ -1,4 +1,5 @@
 #include "gpu_hw.h"
+#include "common/align.h"
 #include "common/assert.h"
 #include "common/log.h"
 #include "common/state_wrapper.h"
@@ -221,10 +222,21 @@ u32 GPU_HW::CalculateResolutionScale() const
   }
 
   if (g_settings.gpu_downsample_mode == GPUDownsampleMode::Adaptive && m_supports_adaptive_downsampling && scale > 1 &&
-      (scale % 2) != 0)
+      !Common::IsPow2(scale))
   {
-    Log_InfoPrintf("Resolution scale %u not supported for adaptive smoothing, using %u", scale, (scale - 1));
-    scale--;
+    const u32 new_scale = Common::PreviousPow2(scale);
+    Log_InfoPrintf("Resolution scale %ux not supported for adaptive smoothing, using %ux", scale, new_scale);
+
+    if (g_settings.gpu_resolution_scale != 0)
+    {
+      g_host_interface->AddFormattedOSDMessage(
+        10.0f,
+        g_host_interface->TranslateString("OSDMessage",
+                                          "Resolution scale %ux not supported for adaptive smoothing, using %ux."),
+        scale, new_scale);
+    }
+
+    scale = new_scale;
   }
 
   return scale;
