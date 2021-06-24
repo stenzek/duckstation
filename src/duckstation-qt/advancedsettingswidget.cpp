@@ -153,7 +153,7 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(QtHostInterface* host_interface, 
   addBooleanTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("PGXP Vertex Cache"), "GPU", "PGXPVertexCache",
                         false);
   addFloatRangeTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("PGXP Geometry Tolerance"), "GPU",
-                           "PGXPTolerance", -1.0f, 10.0f, 0.5f, -1.0f);
+                           "PGXPTolerance", -1.0f, 100.0f, 0.25f, -1.0f);
   addFloatRangeTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("PGXP Depth Clear Threshold"), "GPU",
                            "PGXPDepthClearThreshold", 0.0f, 4096.0f, 1.0f, Settings::DEFAULT_GPU_PGXP_DEPTH_THRESHOLD);
 
