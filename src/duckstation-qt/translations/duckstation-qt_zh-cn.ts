@@ -3293,7 +3293,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../displaysettingswidget.ui" line="193"/>
         <location filename="../displaysettingswidget.cpp" line="105"/>
         <source>Linear Upscaling</source>
-        <translation>线性提升比例</translation>
+        <translation>线性提升缩放</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="225"/>
@@ -3317,7 +3317,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../displaysettingswidget.ui" line="179"/>
         <location filename="../displaysettingswidget.cpp" line="112"/>
         <source>Integer Upscaling</source>
-        <translation>整数提升比例</translation>
+        <translation>整数提升缩放</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="77"/>
@@ -4536,7 +4536,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../gamepropertiesdialog.ui" line="100"/>
         <source>Upscaling Issues:</source>
-        <translation>提升比例错误:</translation>
+        <translation>提升缩放错误:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="110"/>
@@ -4846,12 +4846,12 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../gamepropertiesdialog.ui" line="577"/>
         <source>Linear Upscaling</source>
-        <translation>线性提升比例</translation>
+        <translation>线性提升缩放</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="587"/>
         <source>Integer Upscaling</source>
-        <translation>整数提升比例</translation>
+        <translation>整数提升缩放</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="612"/>
@@ -5128,7 +5128,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="27"/>
         <source>Disable Upscaling</source>
-        <translation>禁用提升比例</translation>
+        <translation>禁用提升缩放</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="28"/>
@@ -6923,28 +6923,33 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <location filename="../memorycardeditordialog.ui" line="297"/>
+        <source>Undelete File</source>
+        <translation>恢复删除文件</translation>
+    </message>
+    <message>
+        <location filename="../memorycardeditordialog.ui" line="307"/>
         <source>Export File</source>
         <translation>导出文件</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.ui" line="307"/>
+        <location filename="../memorycardeditordialog.ui" line="317"/>
         <source>&lt;&lt;</source>
         <translation>&lt;&lt;复制</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.ui" line="317"/>
+        <location filename="../memorycardeditordialog.ui" line="327"/>
         <source>&gt;&gt;</source>
         <translation>复制&gt;&gt;</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="266"/>
-        <location filename="../memorycardeditordialog.cpp" line="292"/>
+        <location filename="../memorycardeditordialog.cpp" line="289"/>
+        <location filename="../memorycardeditordialog.cpp" line="315"/>
         <source>Select Memory Card</source>
         <translation>选择记忆卡</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="211"/>
-        <location filename="../memorycardeditordialog.cpp" line="298"/>
+        <location filename="../memorycardeditordialog.cpp" line="212"/>
+        <location filename="../memorycardeditordialog.cpp" line="321"/>
         <source>Failed to load memory card image.</source>
         <translation>无法载入记忆卡文件。</translation>
     </message>
@@ -6954,12 +6959,12 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>单个保存文件 (*.mcs);;全部文件 (*.*)</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="339"/>
+        <location filename="../memorycardeditordialog.cpp" line="362"/>
         <source>Memory card &apos;%1&apos; is not saved, do you want to save before closing?</source>
-        <translation>记忆卡&apos;%1&apos;未保存，在关闭前要保存吗?</translation>
+        <translation>记忆卡&apos;%1&apos;未保存，在关闭前要保存吗？</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="338"/>
+        <location filename="../memorycardeditordialog.cpp" line="361"/>
         <source>Save memory card?</source>
         <translation>保存记忆卡？</translation>
     </message>
@@ -6983,94 +6988,105 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>打开记忆卡...</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="211"/>
-        <location filename="../memorycardeditordialog.cpp" line="298"/>
-        <location filename="../memorycardeditordialog.cpp" line="323"/>
-        <location filename="../memorycardeditordialog.cpp" line="362"/>
-        <location filename="../memorycardeditordialog.cpp" line="372"/>
-        <location filename="../memorycardeditordialog.cpp" line="382"/>
-        <location filename="../memorycardeditordialog.cpp" line="388"/>
-        <location filename="../memorycardeditordialog.cpp" line="407"/>
-        <location filename="../memorycardeditordialog.cpp" line="433"/>
-        <location filename="../memorycardeditordialog.cpp" line="451"/>
-        <location filename="../memorycardeditordialog.cpp" line="497"/>
+        <location filename="../memorycardeditordialog.cpp" line="212"/>
+        <location filename="../memorycardeditordialog.cpp" line="321"/>
+        <location filename="../memorycardeditordialog.cpp" line="346"/>
+        <location filename="../memorycardeditordialog.cpp" line="385"/>
+        <location filename="../memorycardeditordialog.cpp" line="395"/>
+        <location filename="../memorycardeditordialog.cpp" line="405"/>
+        <location filename="../memorycardeditordialog.cpp" line="411"/>
+        <location filename="../memorycardeditordialog.cpp" line="430"/>
+        <location filename="../memorycardeditordialog.cpp" line="450"/>
+        <location filename="../memorycardeditordialog.cpp" line="478"/>
+        <location filename="../memorycardeditordialog.cpp" line="496"/>
+        <location filename="../memorycardeditordialog.cpp" line="542"/>
         <source>Error</source>
         <translation>错误</translation>
     </message>
+    <message>
+        <location filename="../memorycardeditordialog.cpp" line="255"/>
+        <source> (Deleted)</source>
+        <translation> (已删除)</translation>
+    </message>
     <message numerus="yes">
-        <location filename="../memorycardeditordialog.cpp" line="252"/>
+        <location filename="../memorycardeditordialog.cpp" line="275"/>
         <source>%n block(s) free%1</source>
         <translation>
             <numerusform>%n格 空余%1</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="324"/>
+        <location filename="../memorycardeditordialog.cpp" line="347"/>
         <source>Failed to write card to &apos;%1&apos;</source>
         <translation>无法写入记忆卡到&apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="363"/>
+        <location filename="../memorycardeditordialog.cpp" line="386"/>
         <source>Destination memory card already contains a save file with the same name (%1) as the one you are attempting to copy. Please delete this file from the destination memory card before copying.</source>
         <translation>目标记忆卡已包含一个保存文件 (%1) 与您正在尝试复制的文件同名。复制前请先在目标记忆卡中删除该文件。</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="382"/>
+        <location filename="../memorycardeditordialog.cpp" line="405"/>
         <source>Failed to read file %1</source>
         <translation>无法读取文件%1</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="388"/>
+        <location filename="../memorycardeditordialog.cpp" line="411"/>
         <source>Failed to write file %1</source>
         <translation>无法将文件写入到&apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="407"/>
+        <location filename="../memorycardeditordialog.cpp" line="430"/>
         <source>Failed to delete file %1</source>
         <translation>无法删除文件%1</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="421"/>
+        <location filename="../memorycardeditordialog.cpp" line="451"/>
+        <source>Failed to undelete file %1. The file may have been partially overwritten by another save.</source>
+        <translation>无法恢复删除文件%1。该文件可能已被其他保存部分覆盖。</translation>
+    </message>
+    <message>
+        <location filename="../memorycardeditordialog.cpp" line="466"/>
         <source>Select Single Savefile</source>
         <translation>选择单个保存文件</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="434"/>
+        <location filename="../memorycardeditordialog.cpp" line="479"/>
         <source>Failed to export save file %1. Check the log for more details.</source>
         <translation>无法导出保存文件%1。查看日志获取更多细节。</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="444"/>
+        <location filename="../memorycardeditordialog.cpp" line="489"/>
         <source>Select Import File</source>
         <translation>选择导入文件</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="451"/>
+        <location filename="../memorycardeditordialog.cpp" line="496"/>
         <source>Failed to import memory card. The log may contain more information.</source>
         <translation>无法导入记忆卡。日志可能包含更多信息。</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="468"/>
+        <location filename="../memorycardeditordialog.cpp" line="513"/>
         <source>Format memory card?</source>
         <translation>格式化记忆卡？</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="469"/>
+        <location filename="../memorycardeditordialog.cpp" line="514"/>
         <source>Formatting the memory card will destroy all saves, and they will not be recoverable. The memory card which will be formatted is located at &apos;%1&apos;.</source>
         <translation>格式化记忆卡会破坏所有保存，而且它们是无法恢复的。将被格式化的记忆卡位于&apos;%1&apos;。</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="490"/>
+        <location filename="../memorycardeditordialog.cpp" line="535"/>
         <source>Select Import Save File</source>
         <translation>选择导入保存文件</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="498"/>
+        <location filename="../memorycardeditordialog.cpp" line="543"/>
         <source>Failed to import save. Check if there is enough room on the memory card or if an existing save with the same name already exists.</source>
         <translation>无法导入保存。检查记忆卡上是否有足够的空间，或者是否已经存在同名的保存。</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="373"/>
+        <location filename="../memorycardeditordialog.cpp" line="396"/>
         <source>Insufficient blocks, this file needs %1 but only %2 are available.</source>
         <translation>空间不足，此文件需要%1格，但仅有%2格可用。</translation>
     </message>
@@ -7217,7 +7233,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../core/settings.cpp" line="913"/>
         <source>Non-Persistent Card (Do Not Save)</source>
-        <translation>非持久卡 (不保存)</translation>
+        <translation>非持久记忆卡 (不保存)</translation>
     </message>
 </context>
 <context>
@@ -7602,7 +7618,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="3285"/>
         <source>Screenshot saved to &apos;%s&apos;.</source>
-        <translation>截图已保存到&apos;%s&apos;.</translation>
+        <translation>截图已保存到&apos;%s&apos;。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="3373"/>
@@ -7673,7 +7689,7 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="3508"/>
         <source>Deleted cheat list &apos;%s&apos;.</source>
-        <translation>删除金手指列表&apos;%s。</translation>
+        <translation>已删除的金手指列表&apos;%s&apos;。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="3548"/>
@@ -7819,7 +7835,7 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="1314"/>
         <source>Upscaling disabled by game settings.</source>
-        <translation>根据游戏设置禁用提升比例。</translation>
+        <translation>根据游戏设置禁用提升缩放。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="1325"/>
@@ -7966,7 +7982,7 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../core/system.cpp" line="2187"/>
         <source>Switched to sub-image %s (%u) in &apos;%s&apos;.</source>
-        <translation>切换到子镜像%s (%u) 在 &apos;%s&apos;。</translation>
+        <translation>切换到子镜像%s (%u) 在&apos;%s&apos;。</translation>
     </message>
     <message>
         <source>Failed to open CD image from save state: &apos;%s&apos;. Using existing image &apos;%s&apos;, this may result in instability.</source>
@@ -7998,7 +8014,7 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="79"/>
         <source>Texture filter &apos;%s&apos; is not supported with the current renderer.</source>
-        <translation>当前渲染器不支持纹理过滤器 &apos;%s&apos; 。</translation>
+        <translation>当前渲染器不支持纹理过滤器&apos;%s&apos;。</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="88"/>
@@ -8028,7 +8044,7 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../core/memory_card.cpp" line="277"/>
         <source>Memory card at &apos;%s&apos; could not be read, formatting.</source>
-        <translation>无法读取位于 &apos;%s&apos; 的记忆卡，正在格式化。</translation>
+        <translation>无法读取位于&apos;%s&apos;的记忆卡，正在格式化。</translation>
     </message>
     <message>
         <location filename="../../core/memory_card.cpp" line="313"/>
