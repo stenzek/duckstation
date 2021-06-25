@@ -3293,7 +3293,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../displaysettingswidget.ui" line="193"/>
         <location filename="../displaysettingswidget.cpp" line="105"/>
         <source>Linear Upscaling</source>
-        <translation>线性放大</translation>
+        <translation>线性提升比例</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="225"/>
@@ -3317,7 +3317,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../displaysettingswidget.ui" line="179"/>
         <location filename="../displaysettingswidget.cpp" line="112"/>
         <source>Integer Upscaling</source>
-        <translation>整数放大</translation>
+        <translation>整数提升比例</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="77"/>
@@ -3471,7 +3471,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../displaysettingswidget.cpp" line="113"/>
         <source>Adds padding to the display area to ensure that the ratio between pixels on the host to pixels in the console is an integer number. &lt;br&gt;May result in a sharper image in some 2D games.</source>
-        <translation>向显示区域添加填充，以确保主机上的像素与操纵台中的像素之间的比率是一个整数。&lt;br&gt;在一些2D游戏中可能导致图像过于锐化。</translation>
+        <translation>向显示区域添加填充，以确保主机上的像素与操纵台中的像素之间的比例是一个整数。&lt;br&gt;在一些2D游戏中可能导致图像过于锐化。</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="116"/>
@@ -4536,7 +4536,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../gamepropertiesdialog.ui" line="100"/>
         <source>Upscaling Issues:</source>
-        <translation>放大错误:</translation>
+        <translation>提升比例错误:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="110"/>
@@ -4846,12 +4846,12 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../gamepropertiesdialog.ui" line="577"/>
         <source>Linear Upscaling</source>
-        <translation>线性放大</translation>
+        <translation>线性提升比例</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="587"/>
         <source>Integer Upscaling</source>
-        <translation>整数放大</translation>
+        <translation>整数提升比例</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="612"/>
@@ -5128,7 +5128,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="27"/>
         <source>Disable Upscaling</source>
-        <translation>禁用放大</translation>
+        <translation>禁用提升比例</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="28"/>
@@ -7819,7 +7819,7 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="1314"/>
         <source>Upscaling disabled by game settings.</source>
-        <translation>根据游戏设置禁用放大。</translation>
+        <translation>根据游戏设置禁用提升比例。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="1325"/>
@@ -7982,12 +7982,12 @@ Please configure a supported controller from the list above.</source>
         <translation>已插入光盘&apos;%s&apos; (%s)。</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="66"/>
+        <location filename="../../core/gpu_hw.cpp" line="67"/>
         <source>%ux MSAA is not supported, using %ux instead.</source>
         <translation>不支持%ux MSAA，使用%ux代替。</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="72"/>
+        <location filename="../../core/gpu_hw.cpp" line="73"/>
         <source>SSAA is not supported, using MSAA instead.</source>
         <translation>不支持SSAA，使用MSAA代替。</translation>
     </message>
@@ -7996,29 +7996,34 @@ Please configure a supported controller from the list above.</source>
         <translation type="vanished">您的设备不支持纹理过滤器&apos;%s&apos;。</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="78"/>
+        <location filename="../../core/gpu_hw.cpp" line="79"/>
         <source>Texture filter &apos;%s&apos; is not supported with the current renderer.</source>
         <translation>当前渲染器不支持纹理过滤器 &apos;%s&apos; 。</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="87"/>
+        <location filename="../../core/gpu_hw.cpp" line="88"/>
         <source>Adaptive downsampling is not supported with the current renderer, using box filter instead.</source>
         <translation>当前渲染器不支持自适应缩减采样，改用盒式滤波器。</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="154"/>
+        <location filename="../../core/gpu_hw.cpp" line="155"/>
         <source>Resolution scale set to %ux (display %ux%u, VRAM %ux%u)</source>
         <translation>分辨率缩放设置为%ux (显示%ux%u，显存%ux%u)</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="165"/>
+        <location filename="../../core/gpu_hw.cpp" line="166"/>
         <source>Multisample anti-aliasing set to %ux (SSAA).</source>
         <translation>多重采样反锯齿设置为%ux (SSAA)。</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="171"/>
+        <location filename="../../core/gpu_hw.cpp" line="172"/>
         <source>Multisample anti-aliasing set to %ux.</source>
         <translation>多重采样反锯齿设置为%ux。</translation>
+    </message>
+    <message>
+        <location filename="../../core/gpu_hw.cpp" line="234"/>
+        <source>Resolution scale %ux not supported for adaptive smoothing, using %ux.</source>
+        <translation>分辨率缩放%ux不支持自适应平滑，使用%ux。</translation>
     </message>
     <message>
         <location filename="../../core/memory_card.cpp" line="277"/>
