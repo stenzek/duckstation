@@ -29,6 +29,7 @@ private Q_SLOTS:
   void onCardBSelectionChanged();
   void doCopyFile();
   void doDeleteFile();
+  void doUndeleteFile();
 
 private:
   struct Card

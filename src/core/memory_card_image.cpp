@@ -223,15 +223,19 @@ u32 GetFreeBlockCount(const DataArray& data)
   return count;
 }
 
-std::vector<FileInfo> EnumerateFiles(const DataArray& data)
+std::vector<FileInfo> EnumerateFiles(const DataArray& data, bool include_deleted)
 {
   std::vector<FileInfo> files;
 
   for (u32 dir_frame = 1; dir_frame < FRAMES_PER_BLOCK; dir_frame++)
   {
     const DirectoryFrame* df = GetFramePtr<DirectoryFrame>(data, 0, dir_frame);
-    if (df->block_allocation_state != 0x51)
+    if (df->block_allocation_state != 0x51 &&
+        (!include_deleted || (df->block_allocation_state != 0xA1 && df->block_allocation_state != 0xA2 &&
+                              df->block_allocation_state != 0xA3)))
+    {
       continue;
+    }
 
     u32 filename_length = 0;
     while (filename_length < sizeof(df->filename) && df->filename[filename_length] != '\0')
@@ -242,6 +246,7 @@ std::vector<FileInfo> EnumerateFiles(const DataArray& data)
     fi.first_block = dir_frame;
     fi.size = df->file_size;
     fi.num_blocks = 1;
+    fi.deleted = (df->block_allocation_state != 0x51);
 
     const DirectoryFrame* next_df = df;
     while (next_df->next_block_number < (NUM_BLOCKS - 1) && fi.num_blocks < FRAMES_PER_BLOCK)
@@ -373,7 +378,7 @@ bool WriteFile(DataArray* data, const std::string_view& filename, const std::vec
   return true;
 }
 
-bool DeleteFile(DataArray* data, const FileInfo& fi)
+bool DeleteFile(DataArray* data, const FileInfo& fi, bool clear_sectors)
 {
   Log_InfoPrintf("Deleting '%s' from memory card (%u blocks)", fi.filename.c_str(), fi.num_blocks);
 
@@ -382,15 +387,99 @@ bool DeleteFile(DataArray* data, const FileInfo& fi)
   {
     DirectoryFrame* df = GetFramePtr<DirectoryFrame>(data, 0, block_number);
     block_number = ZeroExtend32(df->next_block_number) + 1;
-    std::memset(df, 0, sizeof(DirectoryFrame));
-    if (i == 0)
-      df->block_allocation_state = 0xA1;
-    else if (i == (fi.num_blocks - 1))
-      df->block_allocation_state = 0xA3;
+    if (clear_sectors)
+    {
+      std::memset(df, 0, sizeof(DirectoryFrame));
+      df->block_allocation_state = 0xA0;
+    }
     else
-      df->block_allocation_state = 0xA2;
+    {
+      if (i == 0)
+        df->block_allocation_state = 0xA1;
+      else if (i == (fi.num_blocks - 1))
+        df->block_allocation_state = 0xA3;
+      else
+        df->block_allocation_state = 0xA2;
+    }
 
     df->next_block_number = 0xFFFF;
+    UpdateChecksum(df);
+  }
+
+  return true;
+}
+
+bool UndeleteFile(DataArray* data, const FileInfo& fi)
+{
+  if (!fi.deleted)
+  {
+    Log_ErrorPrintf("File '%s' is not deleted", fi.filename.c_str());
+    return false;
+  }
+
+  Log_InfoPrintf("Undeleting '%s' from memory card (%u blocks)", fi.filename.c_str(), fi.num_blocks);
+
+  // check that all blocks are present first
+  u32 block_number = fi.first_block;
+  for (u32 i = 0; i < fi.num_blocks && (block_number > 0 && block_number < NUM_BLOCKS); i++)
+  {
+    DirectoryFrame* df = GetFramePtr<DirectoryFrame>(data, 0, block_number);
+    block_number = ZeroExtend32(df->next_block_number) + 1;
+
+    if (i == 0)
+    {
+      if (df->block_allocation_state != 0xA1)
+      {
+        Log_ErrorPrintf("Incorrect block state for %u, expected 0xA1 got 0x%02X", df->block_allocation_state);
+        return false;
+      }
+    }
+    else if (i == (fi.num_blocks - 1))
+    {
+      if (df->block_allocation_state != 0xA3)
+      {
+        Log_ErrorPrintf("Incorrect block state for %u, expected 0xA3 got 0x%02X", df->block_allocation_state);
+        return false;
+      }
+    }
+    else
+    {
+      if (df->block_allocation_state != 0xA2)
+      {
+        Log_WarningPrintf("Incorrect block state for %u, expected 0xA2 got 0x%02X", df->block_allocation_state);
+        return false;
+      }
+    }
+  }
+
+  block_number = fi.first_block;
+  for (u32 i = 0; i < fi.num_blocks && (block_number > 0 && block_number < NUM_BLOCKS); i++)
+  {
+    DirectoryFrame* df = GetFramePtr<DirectoryFrame>(data, 0, block_number);
+    block_number = ZeroExtend32(df->next_block_number) + 1;
+
+    if (i == 0)
+    {
+      if (df->block_allocation_state != 0xA1)
+        Log_WarningPrintf("Incorrect block state for %u, expected 0xA1 got 0x%02X", df->block_allocation_state);
+
+      df->block_allocation_state = 0x51;
+    }
+    else if (i == (fi.num_blocks - 1))
+    {
+      if (df->block_allocation_state != 0xA3)
+        Log_WarningPrintf("Incorrect block state for %u, expected 0xA3 got 0x%02X", df->block_allocation_state);
+
+      df->block_allocation_state = 0x53;
+    }
+    else
+    {
+      if (df->block_allocation_state != 0xA2)
+        Log_WarningPrintf("Incorrect block state for %u, expected 0xA2 got 0x%02X", df->block_allocation_state);
+
+      df->block_allocation_state = 0x52;
+    }
+
     UpdateChecksum(df);
   }
 
@@ -542,22 +631,34 @@ static bool ImportSaveWithDirectoryFrame(DataArray* data, const char* filename, 
     return false;
   }
 
-  // Make sure there isn't already a save with the same name
-  std::vector<FileInfo> fileinfos = EnumerateFiles(*data);
-  for (const FileInfo& fi : fileinfos)
-  {
-    if (fi.filename.compare(0, sizeof(df.filename), df.filename) == 0)
-    {
-      Log_ErrorPrintf("Save file with the same name already exists in memory card");
-      return false;
-    }
-  }
-
   std::vector<u8> blocks = std::vector<u8>(static_cast<size_t>(df.file_size));
   if (stream->Read(blocks.data(), df.file_size) != df.file_size)
   {
     Log_ErrorPrintf("Failed to read block bytes from '%s'", filename);
     return false;
+  }
+
+  const u32 num_blocks = (static_cast<u32>(blocks.size()) + (BLOCK_SIZE - 1)) / BLOCK_SIZE;
+  if (GetFreeBlockCount(*data) < num_blocks)
+  {
+    Log_ErrorPrintf("Failed to write file to memory card: insufficient free blocks");
+    return false;
+  }
+
+  // Make sure there isn't already a save with the same name
+  std::vector<FileInfo> fileinfos = EnumerateFiles(*data, true);
+  for (const FileInfo& fi : fileinfos)
+  {
+    if (fi.filename.compare(0, sizeof(df.filename), df.filename) == 0)
+    {
+      if (!fi.deleted)
+      {
+        Log_ErrorPrintf("Save file with the same name '%s' already exists in memory card", fi.filename.c_str());
+        return false;
+      }
+
+      DeleteFile(data, fi, true);
+    }
   }
 
   return WriteFile(data, df.filename, blocks);
@@ -575,22 +676,34 @@ static bool ImportRawSave(DataArray* data, const char* filename, const FILESYSTE
   if (save_name.length() > DirectoryFrame::FILE_NAME_LENGTH)
     save_name.erase(DirectoryFrame::FILE_NAME_LENGTH);
 
-  // Make sure there isn't already a save with the same name
-  std::vector<FileInfo> fileinfos = EnumerateFiles(*data);
-  for (const FileInfo& fi : fileinfos)
-  {
-    if (fi.filename.compare(save_name) == 0)
-    {
-      Log_ErrorPrintf("Save file with the same name (%s) already exists in memory card", save_name.c_str());
-      return false;
-    }
-  }
-
   std::optional<std::vector<u8>> blocks = FileSystem::ReadBinaryFile(filename);
   if (!blocks.has_value())
   {
     Log_ErrorPrintf("Failed to read '%s'", filename);
     return false;
+  }
+
+  const u32 num_blocks = (static_cast<u32>(blocks->size()) + (BLOCK_SIZE - 1)) / BLOCK_SIZE;
+  if (GetFreeBlockCount(*data) < num_blocks)
+  {
+    Log_ErrorPrintf("Failed to write file to memory card: insufficient free blocks");
+    return false;
+  }
+
+  // Make sure there isn't already a save with the same name
+  std::vector<FileInfo> fileinfos = EnumerateFiles(*data, true);
+  for (const FileInfo& fi : fileinfos)
+  {
+    if (fi.filename.compare(save_name) == 0)
+    {
+      if (!fi.deleted)
+      {
+        Log_ErrorPrintf("Save file with the same name '%s' already exists in memory card", fi.filename.c_str());
+        return false;
+      }
+
+      DeleteFile(data, fi, true);
+    }
   }
 
   return WriteFile(data, save_name, blocks.value());

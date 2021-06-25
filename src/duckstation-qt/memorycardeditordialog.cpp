@@ -105,6 +105,7 @@ void MemoryCardEditorDialog::connectUi()
   connect(m_ui.moveLeft, &QPushButton::clicked, this, &MemoryCardEditorDialog::doCopyFile);
   connect(m_ui.moveRight, &QPushButton::clicked, this, &MemoryCardEditorDialog::doCopyFile);
   connect(m_ui.deleteFile, &QPushButton::clicked, this, &MemoryCardEditorDialog::doDeleteFile);
+  connect(m_ui.undeleteFile, &QPushButton::clicked, this, &MemoryCardEditorDialog::doUndeleteFile);
 
   connect(m_ui.cardAPath, QOverload<int>::of(&QComboBox::currentIndexChanged),
           [this](int index) { loadCardFromComboBox(&m_card_a, index); });
@@ -219,11 +220,20 @@ bool MemoryCardEditorDialog::loadCard(const QString& filename, Card* card)
   return true;
 }
 
+static void setCardTableItemProperties(QTableWidgetItem* item, const MemoryCardImage::FileInfo& fi)
+{
+  if (fi.deleted)
+  {
+    item->setBackground(Qt::darkRed);
+    item->setForeground(Qt::white);
+  }
+}
+
 void MemoryCardEditorDialog::updateCardTable(Card* card)
 {
   card->table->setRowCount(0);
 
-  card->files = MemoryCardImage::EnumerateFiles(card->data);
+  card->files = MemoryCardImage::EnumerateFiles(card->data, true);
   for (const MemoryCardImage::FileInfo& fi : card->files)
   {
     const int row = card->table->rowCount();
@@ -235,13 +245,26 @@ void MemoryCardEditorDialog::updateCardTable(Card* card)
                          MemoryCardImage::ICON_HEIGHT, QImage::Format_RGBA8888);
 
       QTableWidgetItem* icon = new QTableWidgetItem();
+      setCardTableItemProperties(icon, fi);
       icon->setIcon(QIcon(QPixmap::fromImage(image)));
       card->table->setItem(row, 0, icon);
     }
 
-    card->table->setItem(row, 1, new QTableWidgetItem(QString::fromStdString(fi.title)));
-    card->table->setItem(row, 2, new QTableWidgetItem(QString::fromStdString(fi.filename)));
-    card->table->setItem(row, 3, new QTableWidgetItem(QString::number(fi.num_blocks)));
+    QString title_str(QString::fromStdString(fi.title));
+    if (fi.deleted)
+      title_str += tr(" (Deleted)");
+
+    QTableWidgetItem* item = new QTableWidgetItem(title_str);
+    setCardTableItemProperties(item, fi);
+    card->table->setItem(row, 1, item);
+
+    item = new QTableWidgetItem(QString::fromStdString(fi.filename));
+    setCardTableItemProperties(item, fi);
+    card->table->setItem(row, 2, item);
+
+    item = new QTableWidgetItem(QString::number(fi.num_blocks));
+    setCardTableItemProperties(item, fi);
+    card->table->setItem(row, 3, item);
   }
 }
 
@@ -390,9 +413,9 @@ void MemoryCardEditorDialog::doCopyFile()
   }
 
   clearSelection();
+  setCardDirty(dst);
   updateCardTable(dst);
   updateCardBlocksFree(dst);
-  setCardDirty(dst);
   updateButtonState();
 }
 
@@ -402,16 +425,38 @@ void MemoryCardEditorDialog::doDeleteFile()
   if (!fi)
     return;
 
-  if (!MemoryCardImage::DeleteFile(&card->data, *fi))
+  if (!MemoryCardImage::DeleteFile(&card->data, *fi, fi->deleted))
   {
     QMessageBox::critical(this, tr("Error"), tr("Failed to delete file %1").arg(QString::fromStdString(fi->filename)));
     return;
   }
 
   clearSelection();
+  setCardDirty(card);
   updateCardTable(card);
   updateCardBlocksFree(card);
+  updateButtonState();
+}
+
+void MemoryCardEditorDialog::doUndeleteFile()
+{
+  const auto [card, fi] = getSelectedFile();
+  if (!fi)
+    return;
+
+  if (!MemoryCardImage::UndeleteFile(&card->data, *fi))
+  {
+    QMessageBox::critical(
+      this, tr("Error"),
+      tr("Failed to undelete file %1. The file may have been partially overwritten by another save.")
+        .arg(QString::fromStdString(fi->filename)));
+    return;
+  }
+
+  clearSelection();
   setCardDirty(card);
+  updateCardTable(card);
+  updateCardBlocksFree(card);
   updateButtonState();
 }
 
@@ -455,9 +500,9 @@ void MemoryCardEditorDialog::importCard(Card* card)
   clearSelection();
 
   card->data = *temp;
+  setCardDirty(card);
   updateCardTable(card);
   updateCardBlocksFree(card);
-  setCardDirty(card);
   updateButtonState();
 }
 
@@ -478,9 +523,9 @@ void MemoryCardEditorDialog::formatCard(Card* card)
 
   MemoryCardImage::Format(&card->data);
 
+  setCardDirty(card);
   updateCardTable(card);
   updateCardBlocksFree(card);
-  setCardDirty(card);
   updateButtonState();
 }
 
@@ -500,9 +545,9 @@ void MemoryCardEditorDialog::importSaveFile(Card* card)
     return;
   }
 
+  setCardDirty(card);
   updateCardTable(card);
   updateCardBlocksFree(card);
-  setCardDirty(card);
 }
 
 std::tuple<MemoryCardEditorDialog::Card*, const MemoryCardImage::FileInfo*> MemoryCardEditorDialog::getSelectedFile()
@@ -530,10 +575,12 @@ void MemoryCardEditorDialog::updateButtonState()
   const auto [selected_card, selected_file] = getSelectedFile();
   const bool is_card_b = (selected_card == &m_card_b);
   const bool has_selection = (selected_file != nullptr);
+  const bool is_deleted = (selected_file != nullptr && selected_file->deleted);
   const bool card_a_present = !m_card_a.filename.empty();
   const bool card_b_present = !m_card_b.filename.empty();
   const bool both_cards_present = card_a_present && card_b_present;
   m_ui.deleteFile->setEnabled(has_selection);
+  m_ui.undeleteFile->setEnabled(is_deleted);
   m_ui.exportFile->setEnabled(has_selection);
   m_ui.moveLeft->setEnabled(both_cards_present && has_selection && is_card_b);
   m_ui.moveRight->setEnabled(both_cards_present && has_selection && !is_card_b);

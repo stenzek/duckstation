@@ -288,6 +288,16 @@
        </property>
       </widget>
      </item>
+    <item>
+      <widget class="QPushButton" name="undeleteFile">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Undelete File</string>
+       </property>
+      </widget>
+     </item>
      <item>
       <widget class="QPushButton" name="exportFile">
        <property name="enabled">
