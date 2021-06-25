@@ -18,6 +18,9 @@ A "BIOS" ROM image is required to to start the emulator and to play games. You c
 ## Latest News
 Older entries are available at https://github.com/stenzek/duckstation/blob/master/NEWS.md
 
+- 2021/06/25: Ability to undelete files from memory card editor added.
+- 2021/06/22: Measured achievements for RetroAchievements added.
+- 2021/06/19: Leaderboards for RetroAchievements added.
 - 2021/06/01: Auto loading/applying of PPF patches added.
 - 2021/05/23: Save RAM (srm) support added to libretro core.
 - 2021/05/23: CD-ROM seek speedup enhancement added.
@@ -125,14 +128,20 @@ If anyone is willing to volunteer to support the platform to ensure users have a
 
 ### Android
 
-A prebuilt APK is now available for Android. However, please keep in mind that the Android version does not contain all features present in the desktop version yet. You will need a device with armv7 (32-bit ARM) or AArch64 (64-bit ARM). 64-bit is preferred, the requirements are higher for 32-bit, you'll probably want at least a 1.5GHz CPU.
+A prebuilt APK is now available for Android. You will need a device with armv7 (32-bit ARM), AArch64 (64-bit ARM), or x86_64 (64-bit x86). 64-bit is preferred, the requirements are higher for 32-bit, you'll probably want at least a 1.5GHz CPU.
 
 Download link: https://www.duckstation.org/android/duckstation-android.apk
 
+Preview/beta download link: https://www.duckstation.org/android/duckstation-android-beta.apk
+
+Changelog link: https://www.duckstation.org/android/changelog.txt
+
 To use:
 1. Install and run the app for the first time.
-2. Add game directories by hitting the + icon and selecting a directory.
+2. Add game directories by tapping the add button and selecting a directory. You can add additional directories afterwards by selecting "Edit Game Directories" from the menu.
 3. Tap a game to start. When you start a game for the first time it will prompt you to import a BIOS image.
+
+If you have an external controller, you will need to map the buttons and sticks in settings.
 
 ### Libretro Core
 
@@ -140,7 +149,7 @@ DuckStation is available as a libretro core, which can be loaded into a frontend
 
 The DuckStation libretro core is not covered by the GPL license, but is still completely free to use. The only restriction is that COMMERCIAL DISTRIBUTION IS PROHIBITED. By downloading the libretro core, you agree that you will not distribute it with any paid applications, services, or products.
 
-The core is maintained by a third party, and is not provided as part of the GitHub release. You can download the core through the RetroArch buildbot/core updater, or from the links below:
+The core is maintained by a third party, and is not provided as part of the GitHub release. You can download the core through the RetroArch buildbot/core updater, or from the links below. The changelog is viewable at https://www.duckstation.org/libretro/changelog.txt
 
 - Windows x64 (64-bit): https://www.duckstation.org/libretro/duckstation_libretro_windows_x64.zip
 - Android AArch64 (64-bit): https://www.duckstation.org/libretro/duckstation_libretro_android_aarch64.zip
