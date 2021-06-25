@@ -7309,16 +7309,21 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <location filename="../memorycardeditordialog.ui" line="297"/>
+        <source>Undelete File</source>
+        <translation>Recuperar arquivo</translation>
+    </message>
+    <message>
+        <location filename="../memorycardeditordialog.ui" line="307"/>
         <source>Export File</source>
         <translation>Exportar arquivo</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.ui" line="307"/>
+        <location filename="../memorycardeditordialog.ui" line="317"/>
         <source>&lt;&lt;</source>
         <translation>&lt;&lt;</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.ui" line="317"/>
+        <location filename="../memorycardeditordialog.ui" line="327"/>
         <source>&gt;&gt;</source>
         <translation>&gt;&gt;</translation>
     </message>
@@ -7337,23 +7342,24 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation type="vanished">Procurar...</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="266"/>
-        <location filename="../memorycardeditordialog.cpp" line="292"/>
+        <location filename="../memorycardeditordialog.cpp" line="289"/>
+        <location filename="../memorycardeditordialog.cpp" line="315"/>
         <source>Select Memory Card</source>
         <translation>Escolha o cartão de memória</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="211"/>
-        <location filename="../memorycardeditordialog.cpp" line="298"/>
-        <location filename="../memorycardeditordialog.cpp" line="323"/>
-        <location filename="../memorycardeditordialog.cpp" line="362"/>
-        <location filename="../memorycardeditordialog.cpp" line="372"/>
-        <location filename="../memorycardeditordialog.cpp" line="382"/>
-        <location filename="../memorycardeditordialog.cpp" line="388"/>
-        <location filename="../memorycardeditordialog.cpp" line="407"/>
-        <location filename="../memorycardeditordialog.cpp" line="433"/>
-        <location filename="../memorycardeditordialog.cpp" line="451"/>
-        <location filename="../memorycardeditordialog.cpp" line="497"/>
+        <location filename="../memorycardeditordialog.cpp" line="212"/>
+        <location filename="../memorycardeditordialog.cpp" line="321"/>
+        <location filename="../memorycardeditordialog.cpp" line="346"/>
+        <location filename="../memorycardeditordialog.cpp" line="385"/>
+        <location filename="../memorycardeditordialog.cpp" line="395"/>
+        <location filename="../memorycardeditordialog.cpp" line="405"/>
+        <location filename="../memorycardeditordialog.cpp" line="411"/>
+        <location filename="../memorycardeditordialog.cpp" line="430"/>
+        <location filename="../memorycardeditordialog.cpp" line="450"/>
+        <location filename="../memorycardeditordialog.cpp" line="478"/>
+        <location filename="../memorycardeditordialog.cpp" line="496"/>
+        <location filename="../memorycardeditordialog.cpp" line="542"/>
         <source>Error</source>
         <translation>Erro</translation>
     </message>
@@ -7372,8 +7378,8 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>Abrir cartão...</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="211"/>
-        <location filename="../memorycardeditordialog.cpp" line="298"/>
+        <location filename="../memorycardeditordialog.cpp" line="212"/>
+        <location filename="../memorycardeditordialog.cpp" line="321"/>
         <source>Failed to load memory card image.</source>
         <translation>Falha ao carregar cartão de memória.</translation>
     </message>
@@ -7386,91 +7392,101 @@ This will download approximately 4 megabytes over your current internet connecti
         <source>Single Save Files (*.mcs);;All Files (*.*)</source>
         <translation>Arquivos de memória único (*.mcs);;Todos os arquivos (*.*)</translation>
     </message>
+    <message>
+        <location filename="../memorycardeditordialog.cpp" line="255"/>
+        <source> (Deleted)</source>
+        <translation> (Apagado)</translation>
+    </message>
     <message numerus="yes">
-        <location filename="../memorycardeditordialog.cpp" line="252"/>
+        <location filename="../memorycardeditordialog.cpp" line="275"/>
         <source>%n block(s) free%1</source>
         <translation>
-            <numerusform>%n bloco(s) livres%1</numerusform>
-            <numerusform></numerusform>
+            <numerusform>%n bloco livre%1</numerusform>
+            <numerusform>%n blocos livres%1</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="324"/>
+        <location filename="../memorycardeditordialog.cpp" line="347"/>
         <source>Failed to write card to &apos;%1&apos;</source>
         <translation>Falha ao escrever no cartão &apos;%1</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="338"/>
+        <location filename="../memorycardeditordialog.cpp" line="361"/>
         <source>Save memory card?</source>
         <translation>Salvar cartão?</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="339"/>
+        <location filename="../memorycardeditordialog.cpp" line="362"/>
         <source>Memory card &apos;%1&apos; is not saved, do you want to save before closing?</source>
         <translation>Cartão de memória &apos;%1&apos; não foi salvo, gostaria de salvar antes de fechar?</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="363"/>
+        <location filename="../memorycardeditordialog.cpp" line="386"/>
         <source>Destination memory card already contains a save file with the same name (%1) as the one you are attempting to copy. Please delete this file from the destination memory card before copying.</source>
         <translation>O cartão de memória escolhido já contém um arquivo de jogo com o mesmo nome (%1) idêntico ao que você está tentando copiar. por favor apague este arquivo primeiro antes de copiar.</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="373"/>
+        <location filename="../memorycardeditordialog.cpp" line="396"/>
         <source>Insufficient blocks, this file needs %1 but only %2 are available.</source>
         <translation>Não há espaço suficiente, este cartão precisa %1 mas há somente %2 disponível.</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="382"/>
+        <location filename="../memorycardeditordialog.cpp" line="405"/>
         <source>Failed to read file %1</source>
         <translation>Falha ao ler arquivo %1</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="388"/>
+        <location filename="../memorycardeditordialog.cpp" line="411"/>
         <source>Failed to write file %1</source>
         <translation>Falha ao escrever arquivo %1</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="407"/>
+        <location filename="../memorycardeditordialog.cpp" line="430"/>
         <source>Failed to delete file %1</source>
         <translation>Falha ao apagar arquivo %1</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="421"/>
+        <location filename="../memorycardeditordialog.cpp" line="451"/>
+        <source>Failed to undelete file %1. The file may have been partially overwritten by another save.</source>
+        <translation>Falha ao apagar aquivo %1 o arquivo pode ter sido parcialmente substituído por outro arquivo de save.</translation>
+    </message>
+    <message>
+        <location filename="../memorycardeditordialog.cpp" line="466"/>
         <source>Select Single Savefile</source>
         <translation>Escolher um único arquivo de save</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="434"/>
+        <location filename="../memorycardeditordialog.cpp" line="479"/>
         <source>Failed to export save file %1. Check the log for more details.</source>
         <translation>Falha ao exportar arquivo de cartão de memória %1. verifique o log para mais detalhes.</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="444"/>
+        <location filename="../memorycardeditordialog.cpp" line="489"/>
         <source>Select Import File</source>
         <translation>Selecione o arquivo a ser importado</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="451"/>
+        <location filename="../memorycardeditordialog.cpp" line="496"/>
         <source>Failed to import memory card. The log may contain more information.</source>
         <translation>Falha ao importar cartão de memória. o log pode conter mais informações.</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="468"/>
+        <location filename="../memorycardeditordialog.cpp" line="513"/>
         <source>Format memory card?</source>
         <translation>Formatar cartão de memória?</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="469"/>
+        <location filename="../memorycardeditordialog.cpp" line="514"/>
         <source>Formatting the memory card will destroy all saves, and they will not be recoverable. The memory card which will be formatted is located at &apos;%1&apos;.</source>
         <translation>Formatar o cartão de meória irá destruir todos os seus saves, e não será possível recuperá-los. o cartão formatado será criado em &apos;%1&apos;.</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="490"/>
+        <location filename="../memorycardeditordialog.cpp" line="535"/>
         <source>Select Import Save File</source>
         <translation>Importar arquivo</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="498"/>
+        <location filename="../memorycardeditordialog.cpp" line="543"/>
         <source>Failed to import save. Check if there is enough room on the memory card or if an existing save with the same name already exists.</source>
         <translation>Falha ao importar arquivo de save. Verifique se há espaço suficiente no cartão de memória ou se já não existe um jogo igual ou de mesmo nome salvo.</translation>
     </message>
@@ -8146,7 +8162,7 @@ Please configure a supported controller from the list above.</source>
         <location filename="../../frontend-common/common_host_interface.cpp" line="3433"/>
         <source>Loaded %n cheats from list.</source>
         <translation>
-            <numerusform></numerusform>
+            <numerusform>Foi carregado %n trapaça(s) da lista.</numerusform>
             <numerusform></numerusform>
         </translation>
     </message>
@@ -8162,7 +8178,7 @@ Please configure a supported controller from the list above.</source>
         <location filename="../../frontend-common/common_host_interface.cpp" line="3461"/>
         <source>Loaded %n cheats from database.</source>
         <translation>
-            <numerusform></numerusform>
+            <numerusform>Foi carregado %n trapaça(s) do banco de dados.</numerusform>
             <numerusform></numerusform>
         </translation>
     </message>
@@ -8390,12 +8406,12 @@ Please configure a supported controller from the list above.</source>
         <translation>Disco inserido &apos;%s&apos; (%s).</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="66"/>
+        <location filename="../../core/gpu_hw.cpp" line="67"/>
         <source>%ux MSAA is not supported, using %ux instead.</source>
         <translation>%ux filtro MSAA não suportado, usando %ux no lugar.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="72"/>
+        <location filename="../../core/gpu_hw.cpp" line="73"/>
         <source>SSAA is not supported, using MSAA instead.</source>
         <translation>Filtro SSAA não suportado, usando filtro MSAA.</translation>
     </message>
@@ -8404,30 +8420,35 @@ Please configure a supported controller from the list above.</source>
         <translation type="vanished">Filtro de textura &apos;%s&apos; não é suportado no seu dispositivo.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="78"/>
+        <location filename="../../core/gpu_hw.cpp" line="79"/>
         <source>Texture filter &apos;%s&apos; is not supported with the current renderer.</source>
         <translation>Filtro de textura &apos;%s&apos; não suportado com o renderizador atual.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="87"/>
+        <location filename="../../core/gpu_hw.cpp" line="88"/>
         <source>Adaptive downsampling is not supported with the current renderer, using box filter instead.</source>
         <translatorcomment>downsampling - Suavização e não como qualidade neste caso pois é uma melhoria</translatorcomment>
         <translation>Suavização Adaptativa não suportada no renderizador atual, usando outro filtro.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="154"/>
+        <location filename="../../core/gpu_hw.cpp" line="155"/>
         <source>Resolution scale set to %ux (display %ux%u, VRAM %ux%u)</source>
         <translation>Escala de resolução configurada para %ux (vídeo %ux%u, VRAM %ux%u)</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="165"/>
+        <location filename="../../core/gpu_hw.cpp" line="166"/>
         <source>Multisample anti-aliasing set to %ux (SSAA).</source>
         <translation>Filtro anti-serrilhado configurado para %ux (SSAA).</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="171"/>
+        <location filename="../../core/gpu_hw.cpp" line="172"/>
         <source>Multisample anti-aliasing set to %ux.</source>
         <translation>Filtro MSAA anti-serrilhado configurado para %ux.</translation>
+    </message>
+    <message>
+        <location filename="../../core/gpu_hw.cpp" line="234"/>
+        <source>Resolution scale %ux not supported for adaptive smoothing, using %ux.</source>
+        <translation>Escala de resolução %ux não é compatível com suavização adaptativa, usando %ux.</translation>
     </message>
     <message>
         <location filename="../../core/memory_card.cpp" line="277"/>
@@ -8457,7 +8478,7 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../qthostinterface.cpp" line="484"/>
         <source>Lost exclusive fullscreen.</source>
-        <translation>Tela-cheia perdida.</translation>
+        <translation>Tela-cheia exclusiva perdida.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw_opengl.cpp" line="59"/>
