@@ -655,8 +655,6 @@ bool GPU_HW_D3D11::CompileShaders()
     }
   }
 
-  UPDATE_PROGRESS();
-
   if (m_downsample_mode == GPUDownsampleMode::Adaptive)
   {
     m_downsample_first_pass_pixel_shader =

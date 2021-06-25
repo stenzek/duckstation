@@ -518,7 +518,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
                              m_pgxp_depth_buffer, m_supports_dual_source_blend);
 
   Common::Timer compile_time;
-  const int progress_total = (4 * 9 * 2 * 2) + (2 * 3) + 6;
+  const int progress_total = (4 * 9 * 2 * 2) + (2 * 3) + 1 + 1 + 1 + 1 + 1 + 1;
   int progress_value = 0;
 #define UPDATE_PROGRESS()                                                                                              \
   do                                                                                                                   \
