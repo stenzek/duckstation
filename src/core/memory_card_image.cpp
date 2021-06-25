@@ -423,6 +423,7 @@ bool UndeleteFile(DataArray* data, const FileInfo& fi)
   u32 block_number = fi.first_block;
   for (u32 i = 0; i < fi.num_blocks && (block_number > 0 && block_number < NUM_BLOCKS); i++)
   {
+    const u32 this_block_number = block_number;
     DirectoryFrame* df = GetFramePtr<DirectoryFrame>(data, 0, block_number);
     block_number = ZeroExtend32(df->next_block_number) + 1;
 
@@ -430,7 +431,8 @@ bool UndeleteFile(DataArray* data, const FileInfo& fi)
     {
       if (df->block_allocation_state != 0xA1)
       {
-        Log_ErrorPrintf("Incorrect block state for %u, expected 0xA1 got 0x%02X", df->block_allocation_state);
+        Log_ErrorPrintf("Incorrect block state for %u, expected 0xA1 got 0x%02X", this_block_number,
+                        df->block_allocation_state);
         return false;
       }
     }
@@ -438,7 +440,8 @@ bool UndeleteFile(DataArray* data, const FileInfo& fi)
     {
       if (df->block_allocation_state != 0xA3)
       {
-        Log_ErrorPrintf("Incorrect block state for %u, expected 0xA3 got 0x%02X", df->block_allocation_state);
+        Log_ErrorPrintf("Incorrect block state for %u, expected 0xA3 got 0x%02X", this_block_number,
+                        df->block_allocation_state);
         return false;
       }
     }
@@ -446,7 +449,8 @@ bool UndeleteFile(DataArray* data, const FileInfo& fi)
     {
       if (df->block_allocation_state != 0xA2)
       {
-        Log_WarningPrintf("Incorrect block state for %u, expected 0xA2 got 0x%02X", df->block_allocation_state);
+        Log_WarningPrintf("Incorrect block state for %u, expected 0xA2 got 0x%02X", this_block_number,
+                          df->block_allocation_state);
         return false;
       }
     }
@@ -459,26 +463,11 @@ bool UndeleteFile(DataArray* data, const FileInfo& fi)
     block_number = ZeroExtend32(df->next_block_number) + 1;
 
     if (i == 0)
-    {
-      if (df->block_allocation_state != 0xA1)
-        Log_WarningPrintf("Incorrect block state for %u, expected 0xA1 got 0x%02X", df->block_allocation_state);
-
       df->block_allocation_state = 0x51;
-    }
     else if (i == (fi.num_blocks - 1))
-    {
-      if (df->block_allocation_state != 0xA3)
-        Log_WarningPrintf("Incorrect block state for %u, expected 0xA3 got 0x%02X", df->block_allocation_state);
-
       df->block_allocation_state = 0x53;
-    }
     else
-    {
-      if (df->block_allocation_state != 0xA2)
-        Log_WarningPrintf("Incorrect block state for %u, expected 0xA2 got 0x%02X", df->block_allocation_state);
-
       df->block_allocation_state = 0x52;
-    }
 
     UpdateChecksum(df);
   }
