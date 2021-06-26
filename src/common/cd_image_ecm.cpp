@@ -19,7 +19,7 @@ static constexpr std::array<u8, 256> ComputeECCFLUT()
   for (u32 i = 0; i < 256; i++)
   {
     u32 j = (i << 1) ^ (i & 0x80 ? 0x11D : 0);
-    ecc_lut[i] = j;
+    ecc_lut[i] = static_cast<u8>(j);
   }
   return ecc_lut;
 }
@@ -30,7 +30,7 @@ static constexpr std::array<u8, 256> ComputeECCBLUT()
   for (u32 i = 0; i < 256; i++)
   {
     u32 j = (i << 1) ^ (i & 0x80 ? 0x11D : 0);
-    ecc_lut[i ^ j] = i;
+    ecc_lut[i ^ j] = static_cast<u8>(i);
   }
   return ecc_lut;
 }

@@ -373,21 +373,21 @@ bool SDLControllerInterface::HandleJoystickAxisEvent(const SDL_JoyAxisEvent* eve
 
   if (value > 0.0f)
   {
-    const AxisCallback& cb = it->axis_mapping[event->axis][AxisSide::Positive];
-    if (cb)
+    const AxisCallback& hcb = it->axis_mapping[event->axis][AxisSide::Positive];
+    if (hcb)
     {
       // Expand 0..1 - -1..1
-      cb(value * 2.0f - 1.0f);
+      hcb(value * 2.0f - 1.0f);
       processed = true;
     }
   }
   else if (value < 0.0f)
   {
-    const AxisCallback& cb = it->axis_mapping[event->axis][AxisSide::Negative];
-    if (cb)
+    const AxisCallback& hcb = it->axis_mapping[event->axis][AxisSide::Negative];
+    if (hcb)
     {
       // Expand 0..-1 - -1..1
-      cb(value * -2.0f - 1.0f);
+      hcb(value * -2.0f - 1.0f);
       processed = true;
     }
   }
@@ -756,7 +756,7 @@ void SDLControllerInterface::SetControllerRumbleStrength(int controller_index, c
   if (it->use_game_controller_rumble)
   {
     const u16 large = static_cast<u16>(strengths[0] * 65535.0f);
-    const u16 small = static_cast<u32>(strengths[1] * 65535.0f);
+    const u16 small = static_cast<u16>(strengths[1] * 65535.0f);
     SDL_GameControllerRumble(static_cast<SDL_GameController*>(it->game_controller), large, small, DURATION);
     return;
   }
@@ -769,8 +769,8 @@ void SDLControllerInterface::SetControllerRumbleStrength(int controller_index, c
     {
       SDL_HapticEffect ef;
       ef.type = SDL_HAPTIC_LEFTRIGHT;
-      ef.leftright.large_magnitude = static_cast<u32>(strengths[0] * 65535.0f);
-      ef.leftright.small_magnitude = static_cast<u32>(strengths[1] * 65535.0f);
+      ef.leftright.large_magnitude = static_cast<u16>(strengths[0] * 65535.0f);
+      ef.leftright.small_magnitude = static_cast<u16>(strengths[1] * 65535.0f);
       ef.leftright.length = DURATION;
       SDL_HapticUpdateEffect(haptic, it->haptic_left_right_effect, &ef);
       SDL_HapticRunEffect(haptic, it->haptic_left_right_effect, SDL_HAPTIC_INFINITY);

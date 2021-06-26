@@ -13,7 +13,7 @@ Texture::Texture(ComPtr<ID3D11Texture2D> texture, ComPtr<ID3D11ShaderResourceVie
   const D3D11_TEXTURE2D_DESC desc = GetDesc();
   m_width = desc.Width;
   m_height = desc.Height;
-  m_samples = desc.SampleDesc.Count;
+  m_samples = static_cast<u16>(desc.SampleDesc.Count);
 }
 
 Texture::~Texture()

@@ -90,7 +90,7 @@ bool GetImageHash(CDImage* image, Hash* out_hash,
   for (u32 i = 1; i <= image->GetTrackCount(); i++)
   {
     progress_callback->SetProgressValue(i - 1);
-    if (!ReadTrack(image, i, &digest, progress_callback))
+    if (!ReadTrack(image, static_cast<u8>(i), &digest, progress_callback))
     {
       progress_callback->PopState();
       return false;

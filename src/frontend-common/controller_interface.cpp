@@ -142,11 +142,12 @@ ControllerInterface::Backend ControllerInterface::GetDefaultBackend()
 {
 #ifdef WITH_SDL2
   return Backend::SDL;
-#endif
+#else
 #ifdef WIN32
   return Backend::XInput;
 #else
   return Backend::None;
+#endif
 #endif
 }
 

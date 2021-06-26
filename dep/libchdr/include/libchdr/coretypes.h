@@ -26,7 +26,7 @@ typedef int8_t INT8;
 #define core_fread(fc, buff, len) fread(buff, 1, len, fc)
 #define core_fclose fclose
 #define core_ftell ftell
-static size_t core_fsize(core_file *f)
+static inline size_t core_fsize(core_file *f)
 {
     long rv;
     long p = ftell(f);

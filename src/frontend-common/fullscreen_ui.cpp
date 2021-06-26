@@ -654,7 +654,7 @@ static void DoCheatsMenu()
   CheatList* cl = System::GetCheatList();
   if (!cl)
   {
-    if (!s_host_interface->LoadCheatListFromDatabase() || !(cl = System::GetCheatList()))
+    if (!s_host_interface->LoadCheatListFromDatabase() || ((cl = System::GetCheatList()) == nullptr))
     {
       s_host_interface->AddFormattedOSDMessage(10.0f, "No cheats found for %s.", System::GetRunningTitle().c_str());
       ReturnToMainWindow();
@@ -2057,8 +2057,6 @@ void DrawSettingsWindow()
 #ifdef WIN32
           case GPURenderer::HardwareD3D11:
           {
-            // TODO: FIXME
-            bool use_blit_swap_chain = false;
             settings_changed |= ToggleButtonForNonSetting(
               "Use Blit Swap Chain",
               "Uses a blit presentation model instead of flipping. This may be needed on some systems.", "Display",
@@ -3064,8 +3062,6 @@ void DrawGameListWindow()
 
   if (BeginFullscreenColumnWindow(0.0f, 450.0f, "game_list_info", ImVec4(0.11f, 0.15f, 0.17f, 1.00f)))
   {
-    const ImGuiWindow* window = ImGui::GetCurrentWindow();
-
     ImGui::SetCursorPos(LayoutScale(ImVec2(50.0f, 50.0f)));
     ImGui::Image(selected_entry ? GetGameListCover(selected_entry)->GetHandle() :
                                   GetTextureForGameListEntryType(GameListEntryType::Count)->GetHandle(),
@@ -4534,7 +4530,6 @@ void DrawLeaderboardsWindow()
       float left = bb.Min.x + padding + image_height + spacing;
       float right = bb.Max.x - padding;
       float top = bb.Min.y + padding;
-      ImDrawList* dl = ImGui::GetWindowDrawList();
       SmallString text;
       ImVec2 text_size;
 

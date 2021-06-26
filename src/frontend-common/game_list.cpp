@@ -174,10 +174,10 @@ bool GameList::GetGameListEntry(const std::string& path, GameListEntry* entry)
     entry->publisher = std::move(dbentry.publisher);
     entry->developer = std::move(dbentry.developer);
     entry->release_date = dbentry.release_date;
-    entry->min_players = dbentry.min_players;
-    entry->max_players = dbentry.max_players;
-    entry->min_blocks = dbentry.min_blocks;
-    entry->max_blocks = dbentry.max_blocks;
+    entry->min_players = static_cast<u8>(dbentry.min_players);
+    entry->max_players = static_cast<u8>(dbentry.max_players);
+    entry->min_blocks = static_cast<u8>(dbentry.min_blocks);
+    entry->max_blocks = static_cast<u8>(dbentry.max_blocks);
     entry->supported_controllers = dbentry.supported_controllers_mask;
   }
 
