@@ -653,12 +653,22 @@ std::unique_ptr<CDImage> OpenCDImage(const char* path, Common::Error* error, boo
 
   if (force_preload || g_settings.cdrom_load_image_to_ram)
   {
-    HostInterfaceProgressCallback callback;
-    std::unique_ptr<CDImage> memory_image = CDImage::CreateMemoryImage(media.get(), &callback);
-    if (memory_image)
-      media = std::move(memory_image);
+    if (media->HasSubImages())
+    {
+      g_host_interface->AddFormattedOSDMessage(
+        15.0f,
+        g_host_interface->TranslateString("OSDMessage", "CD image preloading not available for multi-disc image '%s'"),
+        FileSystem::GetDisplayNameFromPath(media->GetFileName()).c_str());
+    }
     else
-      Log_WarningPrintf("Failed to preload image '%s' to RAM", path);
+    {
+      HostInterfaceProgressCallback callback;
+      std::unique_ptr<CDImage> memory_image = CDImage::CreateMemoryImage(media.get(), &callback);
+      if (memory_image)
+        media = std::move(memory_image);
+      else
+        Log_WarningPrintf("Failed to preload image '%s' to RAM", path);
+    }
   }
 
   if (check_for_patches)
