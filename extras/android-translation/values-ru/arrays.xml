@@ -251,6 +251,10 @@
      		<item>Скопировать сохранение</item>
      		<item>Удалить сохранение</item>
         </string-array>
+   	<string-array name="memory_card_editor_save_deleted_menu">
+       	<item>Восстановить сохранение</item>
+       	<item>Удалить безвозвратно</item>
+   	</string-array>
         <string-array name="settings_touchscreen_controller_port_entries">
                <item>Порт 1</item>
                <item>Порт 2</item>
