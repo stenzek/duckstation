@@ -1,7 +1,7 @@
 <resources>
 	<string name="app_name">DuckStation</string>
 	<string name="action_settings">Настройки</string>
-	<string name="action_controller_mapping">Настройки управления</string>
+	<string name="action_controller_mapping">Управление</string>
 	<string name="title_activity_settings">Настройки</string>
 	<string name="settings_console_region">Регион консоли</string>
 	<string name="settings_console_tty_output">Вывод в TTY</string>
@@ -110,7 +110,7 @@
 	<string name="menu_main_resume_last_session">Продолжить сеанс</string>
 	<string name="menu_main_start_file">Открыть файл</string>
 	<string name="menu_main_start_bios">Запустить BIOS</string>
-	<string name="menu_main_edit_game_directories">Настроить каталоги игр</string>
+	<string name="menu_main_edit_game_directories">Каталоги игр</string>
 	<string name="menu_main_scan_for_new_games">Обновить список игр</string>
 	<string name="menu_main_rescan_all_games">Проверить игры в списке</string>
 	<string name="menu_main_import_bios">Импортировать BIOS</string>
@@ -365,4 +365,8 @@
         <string name="menu_edit_game_directories_force_saf">Вкл. Scoped Storage</string>
 	<string name="settings_expand_to_cutout">Добавлять область выреза</string>
     	<string name="settings_summary_expand_to_cutout">Расширяет изображение, используя область выреза.</string>
+	<string name="settings_axis_scale">Масштаб осей</string>
+    	<string name="memory_card_editor_undelete_success">Восстановлено сохранение \'%s\'.</string>
+    	<string name="memory_card_editor_undelete_failed">Не удалось восстановить сохранение \'%s\'. Данные могли быть частично перезаписаны.</string>
+    	<string name="memory_card_editor_permanently_delete_confirm">Действительно удалить сохранение \'%s\' без возможности восстановления? Данное действие нельзя отменить.</string>
 </resources>
