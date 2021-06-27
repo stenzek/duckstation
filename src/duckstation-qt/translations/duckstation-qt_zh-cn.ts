@@ -6424,7 +6424,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../mainwindow.ui" line="607"/>
         <source>Resume State</source>
-        <translation>恢复进度</translation>
+        <translation>继续进度</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="612"/>
@@ -6523,12 +6523,12 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../mainwindow.ui" line="758"/>
         <source>Resume</source>
-        <translation>恢复</translation>
+        <translation>继续</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="761"/>
         <source>Resumes the last save state created.</source>
-        <translation>恢复末次关机时系统自动创建的存档。</translation>
+        <translation>继续最后一次 (由系统关机时自动) 创建的存档进度。</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="772"/>
@@ -8341,7 +8341,7 @@ URL: %1</translation>
     <message>
         <location filename="../qthostinterface.cpp" line="1006"/>
         <source>Resume</source>
-        <translation>恢复</translation>
+        <translation>继续</translation>
     </message>
     <message>
         <location filename="../qthostinterface.cpp" line="1009"/>
@@ -8351,7 +8351,7 @@ URL: %1</translation>
     <message>
         <location filename="../qthostinterface.cpp" line="1030"/>
         <source>Resume (%1)</source>
-        <translation>恢复 (%1)</translation>
+        <translation>继续 (%1)</translation>
     </message>
     <message>
         <location filename="../qthostinterface.cpp" line="1454"/>
