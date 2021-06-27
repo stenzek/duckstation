@@ -447,12 +447,12 @@ Token gerado %2.</translation>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="188"/>
         <source>GPU FIFO Size</source>
-        <translation>GPU FIFO Size</translation>
+        <translation>Tamanho de FIFO da GPU</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="190"/>
         <source>GPU Max Run-Ahead</source>
-        <translation>GPU Max Run-Ahead</translation>
+        <translation>Execução máxima antecipada da GPU</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="150"/>
@@ -3183,7 +3183,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../../core/digital_controller.cpp" line="221"/>
         <source>Force Pop&apos;n Controller Mode</source>
-        <translation>Forçar controle em modo &apos;Pop&apos;n&apos;</translation>
+        <translation>Forçar controle em modo &apos;Pop n&apos;</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="222"/>
@@ -3614,7 +3614,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../displaysettingswidget.cpp" line="87"/>
         <location filename="../displaysettingswidget.cpp" line="250"/>
         <source>Borderless Fullscreen</source>
-        <translation>Tela cheia sem bordas.</translation>
+        <translation>Tela cheia sem bordas</translation>
     </message>
 </context>
 <context>
@@ -3642,7 +3642,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../emulationsettingswidget.ui" line="58"/>
         <source>Turbo Speed:</source>
-        <translation>Velocidade do Turbo:</translation>
+        <translation>Velocidade do turbo:</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="68"/>
@@ -5340,7 +5340,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../gamepropertiesdialog.ui" line="1047"/>
         <source>PGXP Geometry Tolerance:</source>
-        <translation>Tolerância geometrica do PGXP:</translation>
+        <translation>Tolerância geométrica do PGXP:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="1070"/>
@@ -5972,7 +5972,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2058"/>
         <source>Reset System</source>
-        <translation>Reiniciar sistema</translation>
+        <translation>Reiniciar o sistema</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2021"/>
@@ -6110,7 +6110,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2293"/>
         <source>Save To Selected Slot</source>
-        <translation>Salvar para compartimento Selecionado</translation>
+        <translation>Salvar para compartimento selecionado</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2298"/>
@@ -9100,7 +9100,7 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../settingsdialog.cpp" line="112"/>
         <source>&lt;strong&gt;Memory Card Settings&lt;/strong&gt;&lt;hr&gt;This page lets you control what mode the memory card emulation will function in, and where the images for these cards will be stored on disk.</source>
-        <translation>&lt;strong&gt;Configuração de cartão de memória&lt;/strong&gt;&lt;hr&gt;esta página permite controlar em que modo a emulação do cartão de memória funcionará e onde as imagens desses cartões serão armazenadas.</translation>
+        <translation>&lt;strong&gt;Configuração de cartão de memória&lt;/strong&gt;&lt;hr&gt;Esta página permite controlar em que modo a emulação do cartão de memória funcionará e onde as imagens desses cartões serão armazenadas.</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="115"/>
