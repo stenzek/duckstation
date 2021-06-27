@@ -968,7 +968,7 @@ Login token generated on %2.</source>
         <location filename="../audiosettingswidget.ui" line="225"/>
         <location filename="../audiosettingswidget.cpp" line="61"/>
         <source>Mute All Sound</source>
-        <translation>关闭所有声音</translation>
+        <translation>关闭全部声音</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.ui" line="232"/>
