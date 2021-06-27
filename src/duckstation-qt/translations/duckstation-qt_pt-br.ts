@@ -4582,7 +4582,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../../core/settings.cpp" line="691"/>
         <source>Nearest-Neighbor</source>
-        <translation>Nearest-Neighbor</translation>
+        <translation>Vizinho mais próximo</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="691"/>
@@ -5330,17 +5330,17 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../gamepropertiesdialog.ui" line="1016"/>
         <source>GPU FIFO Size:</source>
-        <translation>GPU FIFO Size:</translation>
+        <translation>Tamanho de FIFO da GPU:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="1030"/>
         <source>GPU Max Run Ahead:</source>
-        <translation>GPU Max Run Ahead:</translation>
+        <translation>Máxima execução antecipada da GPU:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="1047"/>
         <source>PGXP Geometry Tolerance:</source>
-        <translation>Tolerância geometrica do PGXP:</translation>
+        <translation>Tolerância geométrica do PGXP:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="1070"/>
@@ -9095,7 +9095,7 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../settingsdialog.cpp" line="112"/>
         <source>&lt;strong&gt;Memory Card Settings&lt;/strong&gt;&lt;hr&gt;This page lets you control what mode the memory card emulation will function in, and where the images for these cards will be stored on disk.</source>
-        <translation>&lt;strong&gt;Configuração de cartão de memória&lt;/strong&gt;&lt;hr&gt;esta página permite controlar em que modo a emulação do cartão de memória funcionará e onde as imagens desses cartões serão armazenadas.</translation>
+        <translation>&lt;strong&gt;Configuração de cartão de memória&lt;/strong&gt;&lt;hr&gt;Esta página permite controlar em que modo a emulação do cartão de memória funcionará e onde as imagens desses cartões serão armazenadas.</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="115"/>
