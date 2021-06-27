@@ -6528,7 +6528,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../mainwindow.ui" line="761"/>
         <source>Resumes the last save state created.</source>
-        <translation>恢复最近一次 (退出时系统自动) 创建的存档，继续开始游戏。</translation>
+        <translation>恢复末次创建的存档。</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="772"/>
