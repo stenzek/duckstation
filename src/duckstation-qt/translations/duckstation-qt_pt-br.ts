@@ -4075,7 +4075,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="93"/>
         <source>Smooths out the blockyness of magnified textures on 3D object by using filtering. &lt;br&gt;Will have a greater effect on higher resolution scales. Only applies to the hardware renderers.</source>
-        <translation>Suaviza as texturas ampliadas em objetos 3D usando filtragem.&lt;br&gt;terá melhor efeito em resoluções mais altas. só se aplica quando usado por renderizadores por hardware.</translation>
+        <translation>Suaviza as texturas ampliadas em objetos 3D usando filtragem.terá melhor efeito em resoluções mais altas. só se aplica quando usado com renderizadores por hardware.</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="97"/>
@@ -4582,12 +4582,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../../core/settings.cpp" line="691"/>
         <source>Nearest-Neighbor</source>
-        <translation>Nearest-Neighbor</translation>
+        <translation>Vizinho mais próximo</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="691"/>
         <source>Bilinear</source>
-        <translation>Bilinear</translation>
+        <translation>Bi-linear</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="692"/>
@@ -4597,7 +4597,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../../core/settings.cpp" line="692"/>
         <source>Bilinear (No Edge Blending)</source>
-        <translation>Bilinear (sem AA)</translation>
+        <translation>Bi-linear (sem AA)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="693"/>
