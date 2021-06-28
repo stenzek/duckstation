@@ -51,8 +51,8 @@ Context::~Context()
   if (m_owns_device && m_device != VK_NULL_HANDLE)
     vkDestroyDevice(m_device, nullptr);
 
-  if (m_debug_report_callback != VK_NULL_HANDLE)
-    DisableDebugReports();
+  if (m_debug_messenger_callback != VK_NULL_HANDLE)
+    DisableDebugUtils();
 
   if (m_owns_device)
   {
@@ -87,20 +87,20 @@ bool Context::CheckValidationLayerAvailablility()
   res = vkEnumerateInstanceLayerProperties(&layer_count, layer_list.data());
   Assert(res == VK_SUCCESS);
 
-  // Check for both VK_EXT_debug_report and VK_LAYER_LUNARG_standard_validation
+  // Check for both VK_EXT_debug_utils and VK_LAYER_LUNARG_standard_validation
   return (std::find_if(extension_list.begin(), extension_list.end(),
                        [](const auto& it) {
-                         return strcmp(it.extensionName, VK_EXT_DEBUG_REPORT_EXTENSION_NAME) == 0;
+                         return strcmp(it.extensionName, VK_EXT_DEBUG_UTILS_EXTENSION_NAME) == 0;
                        }) != extension_list.end() &&
           std::find_if(layer_list.begin(), layer_list.end(), [](const auto& it) {
             return strcmp(it.layerName, "VK_LAYER_KHRONOS_validation") == 0;
           }) != layer_list.end());
 }
 
-VkInstance Context::CreateVulkanInstance(const WindowInfo* wi, bool enable_debug_report, bool enable_validation_layer)
+VkInstance Context::CreateVulkanInstance(const WindowInfo* wi, bool enable_debug_utils, bool enable_validation_layer)
 {
   ExtensionList enabled_extensions;
-  if (!SelectInstanceExtensions(&enabled_extensions, wi, enable_debug_report))
+  if (!SelectInstanceExtensions(&enabled_extensions, wi, enable_debug_utils))
     return VK_NULL_HANDLE;
 
   VkApplicationInfo app_info = {};
@@ -141,7 +141,7 @@ VkInstance Context::CreateVulkanInstance(const WindowInfo* wi, bool enable_debug
   return instance;
 }
 
-bool Context::SelectInstanceExtensions(ExtensionList* extension_list, const WindowInfo* wi, bool enable_debug_report)
+bool Context::SelectInstanceExtensions(ExtensionList* extension_list, const WindowInfo* wi, bool enable_debug_utils)
 {
   u32 extension_count = 0;
   VkResult res = vkEnumerateInstanceExtensionProperties(nullptr, &extension_count, nullptr);
@@ -209,8 +209,8 @@ bool Context::SelectInstanceExtensions(ExtensionList* extension_list, const Wind
   if (wi && wi->type == WindowInfo::Type::Display && !SupportsExtension(VK_KHR_DISPLAY_EXTENSION_NAME, true))
     return false;
 
-  // VK_EXT_debug_report
-  if (enable_debug_report && !SupportsExtension(VK_EXT_DEBUG_REPORT_EXTENSION_NAME, false))
+  // VK_EXT_debug_utils 
+  if (enable_debug_utils && !SupportsExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME, false))
     Log_WarningPrintf("Vulkan: Debug report requested, but extension is not available.");
 
   return true;
@@ -290,7 +290,7 @@ Context::GPUNameList Context::EnumerateGPUNames(VkInstance instance)
 }
 
 bool Context::Create(std::string_view gpu_name, const WindowInfo* wi, std::unique_ptr<SwapChain>* out_swap_chain,
-                     bool threaded_presentation, bool enable_debug_reports, bool enable_validation_layer)
+                     bool threaded_presentation, bool enable_debug_utils, bool enable_validation_layer)
 {
   AssertMsg(!g_vulkan_context, "Has no current context");
 
@@ -301,7 +301,7 @@ bool Context::Create(std::string_view gpu_name, const WindowInfo* wi, std::uniqu
   }
 
   const bool enable_surface = (wi && wi->type != WindowInfo::Type::Surfaceless);
-  VkInstance instance = CreateVulkanInstance(wi, enable_debug_reports, enable_validation_layer);
+  VkInstance instance = CreateVulkanInstance(wi, enable_debug_utils, enable_validation_layer);
   if (instance == VK_NULL_HANDLE)
   {
     Vulkan::UnloadVulkanLibrary();
@@ -363,8 +363,8 @@ bool Context::Create(std::string_view gpu_name, const WindowInfo* wi, std::uniqu
   g_vulkan_context.reset(new Context(instance, gpus[gpu_index], true));
 
   // Enable debug reports if the "Host GPU" log category is enabled.
-  if (enable_debug_reports)
-    g_vulkan_context->EnableDebugReports();
+  if (enable_debug_utils)
+    g_vulkan_context->EnableDebugUtils();
 
   // Attempt to create the device.
   if (!g_vulkan_context->CreateDevice(surface, enable_validation_layer, nullptr, 0, nullptr, 0, nullptr) ||
@@ -386,7 +386,7 @@ bool Context::Create(std::string_view gpu_name, const WindowInfo* wi, std::uniqu
 }
 
 bool Context::CreateFromExistingInstance(VkInstance instance, VkPhysicalDevice gpu, VkSurfaceKHR surface,
-                                         bool take_ownership, bool enable_validation_layer, bool enable_debug_reports,
+                                         bool take_ownership, bool enable_validation_layer, bool enable_debug_utils,
                                          const char** required_device_extensions /* = nullptr */,
                                          u32 num_required_device_extensions /* = 0 */,
                                          const char** required_device_layers /* = nullptr */,
@@ -395,9 +395,9 @@ bool Context::CreateFromExistingInstance(VkInstance instance, VkPhysicalDevice g
 {
   g_vulkan_context.reset(new Context(instance, gpu, take_ownership));
 
-  // Enable debug reports if the "Host GPU" log category is enabled.
-  if (enable_debug_reports)
-    g_vulkan_context->EnableDebugReports();
+  // Enable debug utils if the "Host GPU" log category is enabled.
+  if (enable_debug_utils)
+    g_vulkan_context->EnableDebugUtils();
 
   // Attempt to create the device.
   if (!g_vulkan_context->CreateDevice(surface, enable_validation_layer, required_device_extensions,
@@ -1103,60 +1103,61 @@ void Context::DeferPipelineDestruction(VkPipeline pipeline)
   resources.cleanup_resources.push_back([this, pipeline]() { vkDestroyPipeline(m_device, pipeline, nullptr); });
 }
 
-static VKAPI_ATTR VkBool32 VKAPI_CALL DebugReportCallback(VkDebugReportFlagsEXT flags,
-                                                          VkDebugReportObjectTypeEXT objectType, uint64_t object,
-                                                          size_t location, int32_t messageCode,
-                                                          const char* pLayerPrefix, const char* pMessage,
-                                                          void* pUserData)
+
+VKAPI_ATTR VkBool32 VKAPI_CALL DebugMessengerCallback(VkDebugUtilsMessageSeverityFlagBitsEXT severity,
+                                                             VkDebugUtilsMessageTypeFlagsEXT messageType,
+                                                             const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+                                                             void* pUserData)
 {
   LOGLEVEL level;
-  if (flags & VK_DEBUG_REPORT_ERROR_BIT_EXT)
+  if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
     level = LOGLEVEL_ERROR;
-  else if (flags & (VK_DEBUG_REPORT_WARNING_BIT_EXT | VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT))
+  else if (severity & (VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT))
     level = LOGLEVEL_WARNING;
-  else if (flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT)
+  else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
     level = LOGLEVEL_INFO;
   else
     level = LOGLEVEL_DEBUG;
 
-  Log::Writef("Vulkan", __func__, level, "Vulkan debug report: (%s) %s", pLayerPrefix ? pLayerPrefix : "", pMessage);
+  Log::Writef("Vulkan", __func__, level, "Vulkan debug report: (%s) %s",
+              pCallbackData->pMessageIdName ? pCallbackData->pMessageIdName : "", pCallbackData->pMessage);
   return VK_FALSE;
 }
 
-bool Context::EnableDebugReports()
+bool Context::EnableDebugUtils()
 {
   // Already enabled?
-  if (m_debug_report_callback != VK_NULL_HANDLE)
+  if (m_debug_messenger_callback != VK_NULL_HANDLE)
     return true;
 
   // Check for presence of the functions before calling
-  if (!vkCreateDebugReportCallbackEXT || !vkDestroyDebugReportCallbackEXT || !vkDebugReportMessageEXT)
+  if (!vkCreateDebugUtilsMessengerEXT || !vkDestroyDebugUtilsMessengerEXT || !vkSubmitDebugUtilsMessageEXT)
   {
     return false;
   }
 
-  VkDebugReportCallbackCreateInfoEXT callback_info = {
-    VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT, nullptr,
-    VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT | VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT |
-      VK_DEBUG_REPORT_INFORMATION_BIT_EXT | VK_DEBUG_REPORT_DEBUG_BIT_EXT,
-    DebugReportCallback, nullptr};
+  VkDebugUtilsMessengerCreateInfoEXT messenger_info = {
+    VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT, nullptr, 0,
+    VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT,
+    VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT,
+    DebugMessengerCallback, nullptr};
 
-  VkResult res = vkCreateDebugReportCallbackEXT(m_instance, &callback_info, nullptr, &m_debug_report_callback);
+  VkResult res = vkCreateDebugUtilsMessengerEXT(m_instance, &messenger_info, nullptr, &m_debug_messenger_callback);
   if (res != VK_SUCCESS)
   {
-    LOG_VULKAN_ERROR(res, "vkCreateDebugReportCallbackEXT failed: ");
+    LOG_VULKAN_ERROR(res, "vkCreateDebugUtilsMessengerEXT failed: ");
     return false;
   }
 
   return true;
 }
 
-void Context::DisableDebugReports()
+void Context::DisableDebugUtils()
 {
-  if (m_debug_report_callback != VK_NULL_HANDLE)
+  if (m_debug_messenger_callback != VK_NULL_HANDLE)
   {
-    vkDestroyDebugReportCallbackEXT(m_instance, m_debug_report_callback, nullptr);
-    m_debug_report_callback = VK_NULL_HANDLE;
+    vkDestroyDebugUtilsMessengerEXT(m_instance, m_debug_messenger_callback, nullptr);
+    m_debug_messenger_callback = VK_NULL_HANDLE;
   }
 }
 
