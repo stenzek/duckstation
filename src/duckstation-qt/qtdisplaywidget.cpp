@@ -10,7 +10,7 @@
 #include <QtGui/QWindowStateChangeEvent>
 #include <cmath>
 
-#if !defined(WIN32) && !defined(APPLE)
+#if !defined(_WIN32) && !defined(APPLE)
 #include <qpa/qplatformnativeinterface.h>
 #endif
 
@@ -56,7 +56,7 @@ std::optional<WindowInfo> QtDisplayWidget::getWindowInfo() const
   WindowInfo wi;
 
   // Windows and Apple are easy here since there's no display connection.
-#if defined(WIN32)
+#if defined(_WIN32)
   wi.type = WindowInfo::Type::Win32;
   wi.window_handle = reinterpret_cast<void*>(winId());
 #elif defined(__APPLE__)

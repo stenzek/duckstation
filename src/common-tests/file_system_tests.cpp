@@ -3,7 +3,7 @@
 
 TEST(FileSystem, IsAbsolutePath)
 {
-#ifdef WIN32
+#ifdef _WIN32
   ASSERT_TRUE(FileSystem::IsAbsolutePath("C:\\"));
   ASSERT_TRUE(FileSystem::IsAbsolutePath("C:\\Path"));
   ASSERT_TRUE(FileSystem::IsAbsolutePath("C:\\Path\\Subdirectory"));

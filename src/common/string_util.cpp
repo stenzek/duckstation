@@ -4,7 +4,7 @@
 #include <cstdio>
 #include <sstream>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include "windows_headers.h"
 #endif
 
@@ -24,7 +24,7 @@ std::string StdStringFromFormatV(const char* format, std::va_list ap)
   std::va_list ap_copy;
   va_copy(ap_copy, ap);
 
-#ifdef WIN32
+#ifdef _WIN32
   int len = _vscprintf(format, ap_copy);
 #else
   int len = std::vsnprintf(nullptr, 0, format, ap_copy);
@@ -190,7 +190,7 @@ std::string EncodeHex(const u8* data, int length)
   return ss.str();
 }
 
-#ifdef WIN32
+#ifdef _WIN32
 
 std::wstring UTF8StringToWideString(const std::string_view& str)
 {

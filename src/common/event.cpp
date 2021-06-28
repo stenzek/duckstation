@@ -1,7 +1,7 @@
 #include "event.h"
 #include "assert.h"
 
-#if defined(WIN32)
+#if defined(_WIN32)
 #include "windows_headers.h"
 #include <malloc.h>
 #elif defined(__linux__) || defined(__APPLE__) || defined(__HAIKU__)
@@ -11,7 +11,7 @@
 
 namespace Common {
 
-#if defined(WIN32) && defined(USE_WIN32_EVENT_OBJECTS)
+#if defined(_WIN32) && defined(USE_WIN32_EVENT_OBJECTS)
 
 Event::Event(bool auto_reset /* = false */)
 {
@@ -55,7 +55,7 @@ void Event::WaitForMultiple(Event** events, u32 num_events)
   WaitForMultipleObjects(num_events, event_handles, TRUE, INFINITE);
 }
 
-#elif defined(WIN32)
+#elif defined(_WIN32)
 
 Event::Event(bool auto_reset /* = false */) : m_auto_reset(auto_reset)
 {

@@ -1626,7 +1626,7 @@ void MainWindow::checkForUpdates(bool display_message)
       mbox.setTextFormat(Qt::RichText);
 
       QString message;
-#ifdef WIN32
+#ifdef _WIN32
       message =
         tr("<p>Sorry, you are trying to update a DuckStation version which is not an official GitHub release. To "
            "prevent incompatibilities, the auto-updater is only enabled on official builds.</p>"

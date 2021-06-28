@@ -3,7 +3,7 @@
 #include "common/log.h"
 Log_SetChannel(CubebAudioStream);
 
-#ifdef WIN32
+#ifdef _WIN32
 #include "common/windows_headers.h"
 #include <objbase.h>
 #pragma comment(lib, "Ole32.lib")
@@ -21,7 +21,7 @@ bool CubebAudioStream::OpenDevice()
 {
   Assert(!IsOpen());
 
-#ifdef WIN32
+#ifdef _WIN32
   HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
   m_com_initialized_by_us = SUCCEEDED(hr);
   if (FAILED(hr) && hr != RPC_E_CHANGED_MODE && hr != S_FALSE)
@@ -150,7 +150,7 @@ void CubebAudioStream::DestroyContext()
   cubeb_destroy(m_cubeb_context);
   m_cubeb_context = nullptr;
 
-#ifdef WIN32
+#ifdef _WIN32
   if (m_com_initialized_by_us)
     CoUninitialize();
 #endif

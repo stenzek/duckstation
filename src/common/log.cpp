@@ -7,7 +7,7 @@
 #include <mutex>
 #include <vector>
 
-#if defined(WIN32)
+#if defined(_WIN32)
 #include "windows_headers.h"
 #elif defined(__ANDROID__)
 #include <android/log.h>
@@ -531,7 +531,7 @@ void Writev(const char* channelName, const char* functionName, LOGLEVEL level, c
   va_list apCopy;
   va_copy(apCopy, ap);
 
-#ifdef WIN32
+#ifdef _WIN32
   u32 requiredSize = static_cast<u32>(_vscprintf(format, apCopy));
 #else
   u32 requiredSize = std::vsnprintf(nullptr, 0, format, apCopy);

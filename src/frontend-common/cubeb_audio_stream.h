@@ -30,7 +30,7 @@ protected:
   cubeb_stream* m_cubeb_stream = nullptr;
   bool m_paused = true;
 
-#ifdef WIN32
+#ifdef _WIN32
   bool m_com_initialized_by_us = false;
 #endif
 };

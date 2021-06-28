@@ -2,7 +2,7 @@
 #include <cstring>
 #include <ctime>
 
-#if defined(WIN32)
+#if defined(_WIN32)
 
 static void UnixTimeToSystemTime(time_t t, LPSYSTEMTIME pst);
 static time_t SystemTimeToUnixTime(const SYSTEMTIME* pst);
@@ -11,7 +11,7 @@ static time_t SystemTimeToUnixTime(const SYSTEMTIME* pst);
 
 Timestamp::Timestamp()
 {
-#if defined(WIN32)
+#if defined(_WIN32)
   m_value.wYear = 1970;
   m_value.wMonth = 1;
   m_value.wDayOfWeek = 0;
@@ -28,7 +28,7 @@ Timestamp::Timestamp()
 
 Timestamp::Timestamp(const Timestamp& copy)
 {
-#if defined(WIN32)
+#if defined(_WIN32)
   std::memcpy(&m_value, &copy.m_value, sizeof(m_value));
 #else
   std::memcpy(&m_value, &copy.m_value, sizeof(m_value));
@@ -37,7 +37,7 @@ Timestamp::Timestamp(const Timestamp& copy)
 
 double Timestamp::DifferenceInSeconds(Timestamp& other) const
 {
-#if defined(WIN32)
+#if defined(_WIN32)
   FILETIME lft, rft;
   SystemTimeToFileTime(&m_value, &lft);
   SystemTimeToFileTime(&other.m_value, &rft);
@@ -55,7 +55,7 @@ double Timestamp::DifferenceInSeconds(Timestamp& other) const
 
 s64 Timestamp::DifferenceInSecondsInt(Timestamp& other) const
 {
-#if defined(WIN32)
+#if defined(_WIN32)
   FILETIME lft, rft;
   SystemTimeToFileTime(&m_value, &lft);
   SystemTimeToFileTime(&other.m_value, &rft);
@@ -72,7 +72,7 @@ s64 Timestamp::DifferenceInSecondsInt(Timestamp& other) const
 
 Timestamp::UnixTimestampValue Timestamp::AsUnixTimestamp() const
 {
-#if defined(WIN32)
+#if defined(_WIN32)
   return (UnixTimestampValue)SystemTimeToUnixTime(&m_value);
 #else
   return (UnixTimestampValue)m_value.tv_sec;
@@ -83,7 +83,7 @@ Timestamp::ExpandedTime Timestamp::AsExpandedTime() const
 {
   ExpandedTime et;
 
-#if defined(WIN32)
+#if defined(_WIN32)
   et.Year = m_value.wYear;
   et.Month = m_value.wMonth;
   et.DayOfMonth = m_value.wDay;
@@ -111,7 +111,7 @@ Timestamp::ExpandedTime Timestamp::AsExpandedTime() const
 
 void Timestamp::SetNow()
 {
-#if defined(WIN32)
+#if defined(_WIN32)
   GetSystemTime(&m_value);
 #else
   gettimeofday(&m_value, NULL);
@@ -120,7 +120,7 @@ void Timestamp::SetNow()
 
 void Timestamp::SetUnixTimestamp(UnixTimestampValue value)
 {
-#if defined(WIN32)
+#if defined(_WIN32)
   UnixTimeToSystemTime((time_t)value, &m_value);
 #else
   m_value.tv_sec = (time_t)value;
@@ -130,7 +130,7 @@ void Timestamp::SetUnixTimestamp(UnixTimestampValue value)
 
 void Timestamp::SetExpandedTime(const ExpandedTime& value)
 {
-#if defined(WIN32)
+#if defined(_WIN32)
   // bit of a hacky way to fill in the missing fields
   SYSTEMTIME st;
   st.wYear = (WORD)value.Year;
@@ -170,7 +170,7 @@ void Timestamp::ToString(String& destination, const char* format) const
   time_t unixTime = (time_t)AsUnixTimestamp();
   tm localTime;
 
-#if defined(WIN32)
+#if defined(_WIN32)
   localtime_s(&localTime, &unixTime);
 #else
   localtime_r(&unixTime, &localTime);
@@ -207,7 +207,7 @@ Timestamp Timestamp::FromExpandedTime(const ExpandedTime& value)
 
 bool Timestamp::operator==(const Timestamp& other) const
 {
-#if defined(WIN32)
+#if defined(_WIN32)
   return std::memcmp(&m_value, &other.m_value, sizeof(m_value)) == 0;
 #else
   return std::memcmp(&m_value, &other.m_value, sizeof(m_value)) == 0;
@@ -221,7 +221,7 @@ bool Timestamp::operator!=(const Timestamp& other) const
 
 bool Timestamp::operator<(const Timestamp& other) const
 {
-#if defined(WIN32)
+#if defined(_WIN32)
 
   if (m_value.wYear > other.m_value.wYear)
     return false;
@@ -279,7 +279,7 @@ bool Timestamp::operator<(const Timestamp& other) const
 
 bool Timestamp::operator<=(const Timestamp& other) const
 {
-#if defined(WIN32)
+#if defined(_WIN32)
 
   if (m_value.wYear > other.m_value.wYear)
     return false;
@@ -337,7 +337,7 @@ bool Timestamp::operator<=(const Timestamp& other) const
 
 bool Timestamp::operator>(const Timestamp& other) const
 {
-#if defined(WIN32)
+#if defined(_WIN32)
 
   if (m_value.wYear < other.m_value.wYear)
     return false;
@@ -395,7 +395,7 @@ bool Timestamp::operator>(const Timestamp& other) const
 
 bool Timestamp::operator>=(const Timestamp& other) const
 {
-#if defined(WIN32)
+#if defined(_WIN32)
 
   if (m_value.wYear < other.m_value.wYear)
     return false;
@@ -453,7 +453,7 @@ bool Timestamp::operator>=(const Timestamp& other) const
 
 Timestamp& Timestamp::operator=(const Timestamp& other)
 {
-#if defined(WIN32)
+#if defined(_WIN32)
   std::memcpy(&m_value, &other.m_value, sizeof(m_value));
 #else
   std::memcpy(&m_value, &other.m_value, sizeof(m_value));
@@ -462,7 +462,7 @@ Timestamp& Timestamp::operator=(const Timestamp& other)
   return *this;
 }
 
-#if defined(WIN32)
+#if defined(_WIN32)
 
 // http://support.microsoft.com/kb/167296
 static void UnixTimeToFileTime(time_t t, LPFILETIME pft)

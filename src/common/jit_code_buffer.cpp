@@ -6,7 +6,7 @@
 #include <algorithm>
 Log_SetChannel(JitCodeBuffer);
 
-#if defined(WIN32)
+#if defined(_WIN32)
 #include "windows_headers.h"
 #else
 #include <errno.h>
@@ -43,7 +43,7 @@ bool JitCodeBuffer::Allocate(u32 size /* = 64 * 1024 * 1024 */, u32 far_code_siz
 
   m_total_size = size + far_code_size;
 
-#if defined(WIN32)
+#if defined(_WIN32)
   m_code_ptr = static_cast<u8*>(VirtualAlloc(nullptr, m_total_size, MEM_COMMIT, PAGE_EXECUTE_READWRITE));
   if (!m_code_ptr)
   {
@@ -88,7 +88,7 @@ bool JitCodeBuffer::Initialize(void* buffer, u32 size, u32 far_code_size /* = 0 
   if ((far_code_size > 0 && guard_size >= far_code_size) || (far_code_size + (guard_size * 2)) > size)
     return false;
 
-#if defined(WIN32)
+#if defined(_WIN32)
   DWORD old_protect = 0;
   if (!VirtualProtect(buffer, size, PAGE_EXECUTE_READWRITE, &old_protect))
   {
@@ -156,7 +156,7 @@ void JitCodeBuffer::Destroy()
 {
   if (m_owns_buffer)
   {
-#if defined(WIN32)
+#if defined(_WIN32)
     VirtualFree(m_code_ptr, 0, MEM_RELEASE);
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__) || defined(__HAIKU__) || defined(__FreeBSD__)
     munmap(m_code_ptr, m_total_size);
@@ -164,7 +164,7 @@ void JitCodeBuffer::Destroy()
   }
   else if (m_code_ptr)
   {
-#if defined(WIN32)
+#if defined(_WIN32)
     DWORD old_protect = 0;
     VirtualProtect(m_code_ptr, m_total_size, m_old_protection, &old_protect);
 #else
@@ -237,7 +237,7 @@ void JitCodeBuffer::Align(u32 alignment, u8 padding_value)
 
 void JitCodeBuffer::FlushInstructionCache(void* address, u32 size)
 {
-#if defined(WIN32)
+#if defined(_WIN32)
   ::FlushInstructionCache(GetCurrentProcess(), address, size);
 #elif defined(__GNUC__) || defined(__clang__)
   __builtin___clear_cache(reinterpret_cast<char*>(address), reinterpret_cast<char*>(address) + size);

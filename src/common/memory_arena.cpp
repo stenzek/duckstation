@@ -4,7 +4,7 @@
 #include "common/string_util.h"
 Log_SetChannel(Common::MemoryArena);
 
-#if defined(WIN32)
+#if defined(_WIN32)
 #include "common/windows_headers.h"
 #elif defined(ANDROID)
 #include <dlfcn.h>
@@ -69,7 +69,7 @@ MemoryArena::~MemoryArena()
 void* MemoryArena::FindBaseAddressForMapping(size_t size)
 {
   void* base_address;
-#if defined(WIN32)
+#if defined(_WIN32)
   base_address = VirtualAlloc(nullptr, size, MEM_RESERVE, PAGE_READWRITE);
   if (base_address)
     VirtualFree(base_address, 0, MEM_RELEASE);
@@ -96,7 +96,7 @@ void* MemoryArena::FindBaseAddressForMapping(size_t size)
 
 bool MemoryArena::IsValid() const
 {
-#if defined(WIN32)
+#if defined(_WIN32)
   return m_file_handle != nullptr;
 #else
   return m_shmem_fd >= 0;
@@ -217,7 +217,7 @@ bool MemoryArena::Create(size_t size, bool writable, bool executable)
 
 void MemoryArena::Destroy()
 {
-#if defined(WIN32)
+#if defined(_WIN32)
   if (m_file_handle)
   {
     CloseHandle(m_file_handle);
@@ -255,7 +255,7 @@ void* MemoryArena::CreateViewPtr(size_t offset, size_t size, bool writable, bool
                                  void* fixed_address /*= nullptr*/)
 {
   void* base_pointer;
-#if defined(WIN32)
+#if defined(_WIN32)
   const DWORD desired_access = FILE_MAP_READ | (writable ? FILE_MAP_WRITE : 0) | (executable ? FILE_MAP_EXECUTE : 0);
   base_pointer =
     MapViewOfFileEx(m_file_handle, desired_access, Truncate32(offset >> 32), Truncate32(offset), size, fixed_address);
@@ -277,7 +277,7 @@ void* MemoryArena::CreateViewPtr(size_t offset, size_t size, bool writable, bool
 
 bool MemoryArena::FlushViewPtr(void* address, size_t size)
 {
-#if defined(WIN32)
+#if defined(_WIN32)
   return FlushViewOfFile(address, size);
 #elif defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
   return (msync(address, size, 0) >= 0);
@@ -289,7 +289,7 @@ bool MemoryArena::FlushViewPtr(void* address, size_t size)
 bool MemoryArena::ReleaseViewPtr(void* address, size_t size)
 {
   bool result;
-#if defined(WIN32)
+#if defined(_WIN32)
   result = static_cast<bool>(UnmapViewOfFile(address));
 #elif defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
   result = (munmap(address, size) >= 0);
@@ -311,7 +311,7 @@ bool MemoryArena::ReleaseViewPtr(void* address, size_t size)
 void* MemoryArena::CreateReservedPtr(size_t size, void* fixed_address /*= nullptr*/)
 {
   void* base_pointer;
-#if defined(WIN32)
+#if defined(_WIN32)
   base_pointer = VirtualAlloc(fixed_address, size, MEM_RESERVE, PAGE_NOACCESS);
 #elif defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
   const int flags =
@@ -330,7 +330,7 @@ void* MemoryArena::CreateReservedPtr(size_t size, void* fixed_address /*= nullpt
 bool MemoryArena::ReleaseReservedPtr(void* address, size_t size)
 {
   bool result;
-#if defined(WIN32)
+#if defined(_WIN32)
   result = static_cast<bool>(VirtualFree(address, 0, MEM_RELEASE));
 #elif defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
   result = (munmap(address, size) >= 0);
@@ -351,7 +351,7 @@ bool MemoryArena::ReleaseReservedPtr(void* address, size_t size)
 
 bool MemoryArena::SetPageProtection(void* address, size_t length, bool readable, bool writable, bool executable)
 {
-#if defined(WIN32)
+#if defined(_WIN32)
   static constexpr DWORD protection_table[2][2][2] = {
     {{PAGE_NOACCESS, PAGE_EXECUTE}, {PAGE_WRITECOPY, PAGE_EXECUTE_WRITECOPY}},
     {{PAGE_READONLY, PAGE_EXECUTE_READ}, {PAGE_READWRITE, PAGE_EXECUTE_READWRITE}}};

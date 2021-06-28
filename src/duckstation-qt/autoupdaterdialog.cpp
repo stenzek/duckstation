@@ -25,7 +25,7 @@ Log_SetChannel(AutoUpdaterDialog);
 
 // Logic to detect whether we can use the auto updater.
 // Currently Windows-only, and requires that the channel be defined by the buildbot.
-#ifdef WIN32
+#ifdef _WIN32
 #if defined(__has_include) && __has_include("scmversion/tag.h")
 #include "scmversion/tag.h"
 #ifdef SCM_RELEASE_TAGS
@@ -444,7 +444,7 @@ void AutoUpdaterDialog::remindMeLaterClicked()
   done(0);
 }
 
-#ifdef WIN32
+#ifdef _WIN32
 
 bool AutoUpdaterDialog::processUpdate(const QByteArray& update_data)
 {

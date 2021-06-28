@@ -9,7 +9,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <sys/stat.h>
-#if defined(WIN32)
+#if defined(_WIN32)
 #include "windows_headers.h"
 #include <direct.h>
 #include <io.h>
@@ -118,7 +118,7 @@ public:
     return true;
   }
 
-#if defined(WIN32)
+#if defined(_WIN32)
 
   virtual bool SeekAbsolute(u64 Offset) override
   {
@@ -265,7 +265,7 @@ public:
   {
     if (m_discarded)
     {
-#if WIN32
+#if _WIN32
       // delete the temporary file
       if (!DeleteFileW(StringUtil::UTF8StringToWideString(m_temporaryFileName).c_str()))
       {
@@ -308,7 +308,7 @@ public:
 
     fflush(m_pFile);
 
-#ifdef WIN32
+#ifdef _WIN32
     // move the atomic file name to the original file name
     if (!MoveFileExW(StringUtil::UTF8StringToWideString(m_temporaryFileName).c_str(),
                      StringUtil::UTF8StringToWideString(m_originalFileName).c_str(), MOVEFILE_REPLACE_EXISTING))
@@ -975,7 +975,7 @@ std::unique_ptr<ByteStream> ByteStream_OpenFileStream(const char* fileName, u32 
         }
 
 // append platform path seperator
-#if defined(WIN32)
+#if defined(_WIN32)
         tempStr[i] = '\\';
 #else
         tempStr[i] = '/';
@@ -1119,7 +1119,7 @@ std::unique_ptr<ByteStream> ByteStream_OpenFileStream(const char* fileName, u32 
     const u32 fileNameLength = static_cast<u32>(std::strlen(fileName));
     char* tempStr = (char*)alloca(fileNameLength + 1);
 
-#if defined(WIN32)
+#if defined(_WIN32)
     // check if it starts with a drive letter. if so, skip ahead
     if (fileNameLength >= 2 && fileName[1] == ':')
     {
@@ -1156,7 +1156,7 @@ std::unique_ptr<ByteStream> ByteStream_OpenFileStream(const char* fileName, u32 
           if (errno == ENOENT)
           {
             // try creating it
-#if defined(WIN32)
+#if defined(_WIN32)
             if (mkdir(tempStr) < 0)
 #else
             if (mkdir(tempStr, 0777) < 0)
@@ -1175,7 +1175,7 @@ std::unique_ptr<ByteStream> ByteStream_OpenFileStream(const char* fileName, u32 
         }
 
 // append platform path seperator
-#if defined(WIN32)
+#if defined(_WIN32)
         tempStr[i] = '\\';
 #else
         tempStr[i] = '/';

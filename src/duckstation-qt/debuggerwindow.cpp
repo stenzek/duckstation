@@ -359,7 +359,7 @@ void DebuggerWindow::closeEvent(QCloseEvent* event)
 
 void DebuggerWindow::setupAdditionalUi()
 {
-#ifdef WIN32
+#ifdef _WIN32
   QFont fixedFont;
   fixedFont.setFamily(QStringLiteral("Consolas"));
   fixedFont.setFixedPitch(true);

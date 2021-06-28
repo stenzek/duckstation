@@ -5,7 +5,7 @@
 #if defined(CPU_X64)
 
 // We need to include windows.h before xbyak does..
-#ifdef WIN32
+#ifdef _WIN32
 #include "common/windows_headers.h"
 #endif
 
@@ -81,7 +81,7 @@ constexpr u32 MAX_FAR_HOST_BYTES_PER_INSTRUCTION = 128;
 constexpr u32 CODE_STORAGE_ALIGNMENT = 4096;
 
 // ABI selection
-#if defined(WIN32)
+#if defined(_WIN32)
 #define ABI_WIN64 1
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__) || defined(__HAIKU__) || defined(__FreeBSD__)
 #define ABI_SYSV 1

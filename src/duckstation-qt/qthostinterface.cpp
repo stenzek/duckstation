@@ -39,7 +39,7 @@
 #include <memory>
 Log_SetChannel(QtHostInterface);
 
-#ifdef WIN32
+#ifdef _WIN32
 #include "common/windows_headers.h"
 #include "frontend-common/d3d11_host_display.h"
 #include <KnownFolders.h>
@@ -570,13 +570,13 @@ HostDisplay* QtHostInterface::createHostDisplay()
       break;
 
     case GPURenderer::HardwareOpenGL:
-#ifndef WIN32
+#ifndef _WIN32
     default:
 #endif
       m_display = std::make_unique<FrontendCommon::OpenGLHostDisplay>();
       break;
 
-#ifdef WIN32
+#ifdef _WIN32
     case GPURenderer::HardwareD3D11:
     default:
       m_display = std::make_unique<FrontendCommon::D3D11HostDisplay>();
@@ -1616,7 +1616,7 @@ void QtHostInterface::wakeThread()
 
 static std::string GetFontPath(const char* name)
 {
-#ifdef WIN32
+#ifdef _WIN32
   PWSTR folder_path;
   if (FAILED(SHGetKnownFolderPath(FOLDERID_Fonts, 0, nullptr, &folder_path)))
     return StringUtil::StdStringFromFormat("C:\\Windows\\Fonts\\%s", name);
@@ -1637,7 +1637,7 @@ void QtHostInterface::setImGuiFont()
 
   std::string path;
   const ImWchar* range = nullptr;
-#ifdef WIN32
+#ifdef _WIN32
   if (language == "ja")
   {
     path = GetFontPath("msgothic.ttc");

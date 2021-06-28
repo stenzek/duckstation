@@ -9,7 +9,7 @@
 
 // For enumerating adapters.
 #include "frontend-common/vulkan_host_display.h"
-#ifdef WIN32
+#ifdef _WIN32
 #include "frontend-common/d3d11_host_display.h"
 #endif
 
@@ -202,7 +202,7 @@ void DisplaySettingsWidget::populateGPUAdaptersAndResolutions()
   bool threaded_presentation_supported = false;
   switch (static_cast<GPURenderer>(m_ui.renderer->currentIndex()))
   {
-#ifdef WIN32
+#ifdef _WIN32
     case GPURenderer::HardwareD3D11:
       aml = FrontendCommon::D3D11HostDisplay::StaticGetAdapterAndModeList();
       break;

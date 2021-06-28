@@ -19,7 +19,7 @@
 #include <sys/sysctl.h>
 #endif
 
-#if defined(WIN32)
+#if defined(_WIN32)
 #include <shlobj.h>
 #else
 #include <dirent.h>
@@ -573,7 +573,7 @@ void SanitizeFileName(std::string& Destination, bool StripSlashes /* = true*/)
 
 bool IsAbsolutePath(const std::string_view& path)
 {
-#ifdef WIN32
+#ifdef _WIN32
   return (path.length() >= 3 && ((path[0] >= 'A' && path[0] <= 'Z') || (path[0] >= 'a' && path[0] <= 'z')) &&
           path[1] == ':' && (path[2] == '/' || path[2] == '\\'));
 #else
@@ -713,7 +713,7 @@ std::vector<std::string> GetRootDirectoryList()
 {
   std::vector<std::string> results;
 
-#ifdef WIN32
+#ifdef _WIN32
   char buf[256];
   if (GetLogicalDriveStringsA(sizeof(buf), buf) != 0)
   {
@@ -774,7 +774,7 @@ FileSystem::ManagedCFilePtr OpenManagedCFile(const char* filename, const char* m
 
 std::FILE* OpenCFile(const char* filename, const char* mode)
 {
-#ifdef WIN32
+#ifdef _WIN32
   int filename_len = static_cast<int>(std::strlen(filename));
   int mode_len = static_cast<int>(std::strlen(mode));
   int wlen = MultiByteToWideChar(CP_UTF8, 0, filename, filename_len, nullptr, 0);

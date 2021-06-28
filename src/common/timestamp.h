@@ -2,7 +2,7 @@
 #include "types.h"
 #include "string.h"
 
-#if defined(WIN32)
+#if defined(_WIN32)
 #include "windows_headers.h"
 #else
 #include <sys/time.h>
@@ -51,7 +51,7 @@ public:
   static Timestamp FromExpandedTime(const ExpandedTime& value);
 
 // windows-specific
-#ifdef WIN32
+#ifdef _WIN32
   FILETIME AsFileTime();
   void SetWindowsFileTime(const FILETIME* pFileTime);
   static Timestamp FromWindowsFileTime(const FILETIME* pFileTime);
@@ -67,7 +67,7 @@ public:
   Timestamp& operator=(const Timestamp& other);
 
 private:
-#if defined(WIN32)
+#if defined(_WIN32)
   SYSTEMTIME m_value;
 #else
   struct timeval m_value;

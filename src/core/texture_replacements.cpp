@@ -183,7 +183,7 @@ bool TextureReplacements::ParseReplacementFilename(const std::string& filename,
 {
   const char* extension = std::strrchr(filename.c_str(), '.');
   const char* title = std::strrchr(filename.c_str(), '/');
-#ifdef WIN32
+#ifdef _WIN32
   const char* title2 = std::strrchr(filename.c_str(), '\\');
   if (title2 && (!title || title2 > title))
     title = title2;

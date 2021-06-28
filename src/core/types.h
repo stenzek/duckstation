@@ -54,7 +54,7 @@ enum class PGXPMode : u8
 
 enum class GPURenderer : u8
 {
-#ifdef WIN32
+#ifdef _WIN32
   HardwareD3D11,
 #endif
   HardwareVulkan,

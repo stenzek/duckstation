@@ -21,7 +21,7 @@ public:
 #ifdef WITH_SDL2
     SDL,
 #endif
-#ifdef WIN32
+#ifdef _WIN32
     XInput,
     DInput,
 #endif

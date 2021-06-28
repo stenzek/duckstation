@@ -67,7 +67,7 @@ public:
   static const std::array<Version, 16>& GetAllVersionsList();
 
 protected:
-#ifdef WIN32
+#ifdef _WIN32
 #endif
 
   WindowInfo m_wi;

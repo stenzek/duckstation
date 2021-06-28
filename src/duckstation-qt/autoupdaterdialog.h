@@ -44,7 +44,7 @@ private:
   bool updateNeeded() const;
   std::string getCurrentUpdateTag() const;
 
-#ifdef WIN32
+#ifdef _WIN32
   bool processUpdate(const QByteArray& update_data);
   bool extractUpdater(const QString& zip_path, const QString& destination_path);
   bool doUpdate(const QString& zip_path, const QString& updater_path, const QString& destination_path);

@@ -160,7 +160,7 @@ ALWAYS_INLINE static int StrideMemCmp(const void* p1, std::size_t p1_stride, con
   return 0;
 }
 
-#ifdef WIN32
+#ifdef _WIN32
 
 /// Converts the specified UTF-8 string to a wide string.
 std::wstring UTF8StringToWideString(const std::string_view& str);

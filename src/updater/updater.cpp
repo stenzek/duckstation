@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <shellapi.h>
 #endif
 
@@ -55,7 +55,7 @@ bool Updater::OpenUpdateZip(const char* path)
 
 bool Updater::RecursiveDeleteDirectory(const char* path)
 {
-#ifdef WIN32
+#ifdef _WIN32
   // making this safer on Win32...
   std::wstring wpath(StringUtil::UTF8StringToWideString(path));
   wpath += L'\0';
@@ -286,7 +286,7 @@ bool Updater::CommitUpdate()
     const std::string dest_file_name = StringUtil::StdStringFromFormat(
       "%s" FS_OSPATH_SEPARATOR_STR "%s", m_destination_directory.c_str(), ftu.destination_filename.c_str());
     m_progress->DisplayFormattedInformation("Moving '%s' to '%s'", staging_file_name.c_str(), dest_file_name.c_str());
-#ifdef WIN32
+#ifdef _WIN32
     const bool result =
       MoveFileExW(StringUtil::UTF8StringToWideString(staging_file_name).c_str(),
                   StringUtil::UTF8StringToWideString(dest_file_name).c_str(), MOVEFILE_REPLACE_EXISTING);

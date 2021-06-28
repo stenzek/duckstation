@@ -1008,7 +1008,7 @@ bool CreateGPU(GPURenderer renderer)
       g_gpu = GPU::CreateHardwareVulkanRenderer();
       break;
 
-#ifdef WIN32
+#ifdef _WIN32
     case GPURenderer::HardwareD3D11:
       g_gpu = GPU::CreateHardwareD3D11Renderer();
       break;

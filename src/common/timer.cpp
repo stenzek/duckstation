@@ -2,7 +2,7 @@
 #include <cstdio>
 #include <cstdlib>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include "windows_headers.h"
 #else
 #include <sys/time.h>
@@ -12,7 +12,7 @@
 
 namespace Common {
 
-#ifdef WIN32
+#ifdef _WIN32
 
 static double s_counter_frequency;
 static bool s_counter_initialized = false;
@@ -250,7 +250,7 @@ void Timer::HybridSleep(std::uint64_t ns, std::uint64_t min_sleep_time)
 
 void Timer::NanoSleep(std::uint64_t ns)
 {
-#if defined(WIN32)
+#if defined(_WIN32)
   HANDLE timer = GetSleepTimer();
   if (timer)
   {

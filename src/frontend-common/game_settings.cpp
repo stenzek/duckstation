@@ -11,7 +11,7 @@
 #include <utility>
 Log_SetChannel(GameSettings);
 
-#ifdef WIN32
+#ifdef _WIN32
 #include "common/windows_headers.h"
 #endif
 #include "SimpleIni.h"

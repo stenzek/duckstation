@@ -22,7 +22,7 @@
 #include <cmath>
 Log_SetChannel(NoGUIHostInterface);
 
-#ifdef WIN32
+#ifdef _WIN32
 #include "frontend-common/d3d11_host_display.h"
 #endif
 
@@ -97,13 +97,13 @@ bool NoGUIHostInterface::CreateDisplay(bool fullscreen)
       break;
 
     case GPURenderer::HardwareOpenGL:
-#ifndef WIN32
+#ifndef _WIN32
     default:
 #endif
       m_display = std::make_unique<FrontendCommon::OpenGLHostDisplay>();
       break;
 
-#ifdef WIN32
+#ifdef _WIN32
     case GPURenderer::HardwareD3D11:
     default:
       m_display = std::make_unique<FrontendCommon::D3D11HostDisplay>();
@@ -151,7 +151,7 @@ bool NoGUIHostInterface::AcquireHostDisplay()
   bool needs_switch = false;
   switch (g_settings.gpu_renderer)
   {
-#ifdef WIN32
+#ifdef _WIN32
     case GPURenderer::HardwareD3D11:
       needs_switch = (render_api != HostDisplay::RenderAPI::D3D11);
       break;

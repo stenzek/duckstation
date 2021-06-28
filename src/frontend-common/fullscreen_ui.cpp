@@ -2054,7 +2054,7 @@ void DrawSettingsWindow()
 
         switch (s_settings_copy.gpu_renderer)
         {
-#ifdef WIN32
+#ifdef _WIN32
           case GPURenderer::HardwareD3D11:
           {
             settings_changed |= ToggleButtonForNonSetting(
@@ -2463,7 +2463,7 @@ void DrawSettingsWindow()
           "Use Debug GPU Device", "Enable debugging when supported by the host's renderer API. Only for developer use.",
           &s_settings_copy.gpu_use_debug_device);
 
-#ifdef WIN32
+#ifdef _WIN32
         settings_changed |=
           ToggleButton("Increase Timer Resolution", "Enables more precise frame pacing at the cost of battery life.",
                        &s_settings_copy.increase_timer_resolution);

@@ -51,7 +51,7 @@
 #include "cheevos.h"
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 #include "common/windows_headers.h"
 #include <KnownFolders.h>
 #include <ShlObj.h>
@@ -926,7 +926,7 @@ void CommonHostInterface::SetUserDirectory()
   }
   else
   {
-#if defined(WIN32)
+#if defined(_WIN32)
     // On Windows, use My Documents\DuckStation.
     PWSTR documents_directory;
     if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_Documents, 0, NULL, &documents_directory)))
@@ -3092,7 +3092,7 @@ void CommonHostInterface::SetTimerResolutionIncreased(bool enabled)
 
   m_timer_resolution_increased = enabled;
 
-#ifdef WIN32
+#ifdef _WIN32
   if (enabled)
     timeBeginPeriod(1);
   else
