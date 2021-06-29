@@ -1749,8 +1749,6 @@ void CDROM::BeginReading(TickCount ticks_late /* = 0 */, bool after_seek /* = fa
   const TickCount ticks = GetTicksForRead();
   const TickCount first_sector_ticks = ticks + (after_seek ? 0 : GetTicksForSeek(m_current_lba)) - ticks_late;
 
-  m_secondary_status.ClearActiveBits();
-  m_secondary_status.motor_on = true;
   ResetAudioDecoder();
 
   m_drive_state = DriveState::Reading;
@@ -1792,9 +1790,6 @@ void CDROM::BeginPlaying(u8 track, TickCount ticks_late /* = 0 */, bool after_se
   const TickCount ticks = GetTicksForRead();
   const TickCount first_sector_ticks = ticks + (after_seek ? 0 : GetTicksForSeek(m_current_lba, true)) - ticks_late;
 
-  m_secondary_status.ClearActiveBits();
-  m_secondary_status.motor_on = true;
-  m_secondary_status.playing_cdda = true;
   ClearSectorBuffers();
   ResetAudioDecoder();
 
@@ -1824,9 +1819,7 @@ void CDROM::BeginSeeking(bool logical, bool read_after_seek, bool play_after_see
   const CDImage::LBA seek_lba = m_setloc_position.ToLBA();
   const TickCount seek_time = GetTicksForSeek(seek_lba, play_after_seek);
 
-  m_secondary_status.ClearActiveBits();
-  m_secondary_status.motor_on = true;
-  m_secondary_status.seeking = true;
+  m_secondary_status.SetSeeking();
   m_last_sector_header_valid = false;
   ResetAudioDecoder();
 
@@ -1983,7 +1976,6 @@ bool CDROM::CompleteSeek()
 {
   const bool logical = (m_drive_state == DriveState::SeekingLogical);
   ClearDriveState();
-  m_secondary_status.ClearActiveBits();
 
   bool seek_okay = m_reader.WaitForReadToComplete();
   if (seek_okay)
@@ -2057,6 +2049,7 @@ void CDROM::DoSeekComplete(TickCount ticks_late)
     }
     else
     {
+      m_secondary_status.ClearActiveBits();
       m_async_response_fifo.Push(m_secondary_status.bits);
       SetAsyncInterrupt(Interrupt::Complete);
     }
@@ -2066,6 +2059,8 @@ void CDROM::DoSeekComplete(TickCount ticks_late)
     CDImage::Position pos(CDImage::Position::FromLBA(m_reader.GetLastReadSector()));
     Log_WarningPrintf("%s seek to [%02u:%02u:%02u] failed", logical ? "Logical" : "Physical", pos.minute, pos.second,
                       pos.frame);
+
+    m_secondary_status.ClearActiveBits();
     SendAsyncErrorResponse(STAT_SEEK_ERROR, 0x04);
     m_last_sector_header_valid = false;
   }
@@ -2212,6 +2207,8 @@ void CDROM::DoSectorRead()
   m_physical_lba_update_tick = TimingEvents::GetGlobalTickCounter();
   m_physical_lba_update_carry = 0;
 
+  m_secondary_status.SetReadingBits(m_drive_state == DriveState::Playing);
+
   const CDImage::SubChannelQ& subq = m_reader.GetSectorSubQ();
   const bool subq_valid = subq.IsCRCValid();
   if (subq_valid)
@@ -2295,9 +2292,6 @@ void CDROM::ProcessDataSector(const u8* raw_sector, const CDImage::SubChannelQ& 
   Log_DevPrintf("Read sector %u: mode %u submode 0x%02X into buffer %u", m_current_lba,
                 ZeroExtend32(m_last_sector_header.sector_mode), ZeroExtend32(m_last_sector_subheader.submode.bits),
                 sb_num);
-
-  // The reading bit shouldn't be set until the first sector is processed.
-  m_secondary_status.reading = true;
 
   if (m_mode.xa_enable && m_last_sector_header.sector_mode == 2)
   {

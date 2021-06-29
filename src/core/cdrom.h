@@ -200,6 +200,19 @@ private:
 
     /// Clears the CDDA/seeking bits.
     ALWAYS_INLINE void ClearActiveBits() { bits &= ~(STAT_SEEKING | STAT_READING | STAT_PLAYING_CDDA); }
+
+    /// Sets the bits for seeking.
+    ALWAYS_INLINE void SetSeeking()
+    {
+      bits = (bits & ~(STAT_READING | STAT_PLAYING_CDDA)) | (STAT_MOTOR_ON | STAT_SEEKING);
+    }
+
+    /// Sets the bits for reading/playing.
+    ALWAYS_INLINE void SetReadingBits(bool audio)
+    {
+      bits = (bits & ~(STAT_SEEKING | STAT_READING | STAT_PLAYING_CDDA)) |
+             ((audio) ? (STAT_MOTOR_ON | STAT_PLAYING_CDDA) : (STAT_MOTOR_ON | STAT_READING));
+    }
   };
 
   union ModeRegister
