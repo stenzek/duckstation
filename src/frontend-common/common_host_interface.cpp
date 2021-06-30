@@ -58,6 +58,14 @@
 #include <mmsystem.h>
 #endif
 
+namespace FrontendCommon {
+
+#ifdef _WIN32
+std::unique_ptr<AudioStream> CreateXAudio2AudioStream();
+#endif
+
+} // namespace FrontendCommon
+
 Log_SetChannel(CommonHostInterface);
 
 static std::string s_settings_filename;
@@ -627,6 +635,11 @@ std::unique_ptr<AudioStream> CommonHostInterface::CreateAudioStream(AudioBackend
 
     case AudioBackend::Cubeb:
       return CubebAudioStream::Create();
+
+#ifdef _WIN32
+    case AudioBackend::XAudio2:
+      return FrontendCommon::CreateXAudio2AudioStream();
+#endif
 
 #ifdef WITH_SDL2
     case AudioBackend::SDL:
@@ -2049,7 +2062,7 @@ void CommonHostInterface::RegisterGeneralHotkeys()
                      }
                    }
                  });
-#endif  // !defined(__ANDROID__) && defined(WITH_CHEEVOS)
+#endif // !defined(__ANDROID__) && defined(WITH_CHEEVOS)
 }
 
 void CommonHostInterface::RegisterSystemHotkeys()

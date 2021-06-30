@@ -55,6 +55,8 @@ if(WIN32)
     dinput_controller_interface.h
     imgui_impl_dx11.cpp
     imgui_impl_dx11.h
+    xaudio2_audio_stream.cpp
+    xaudio2_audio_stream.h
     xinput_controller_interface.cpp
     xinput_controller_interface.h
   )

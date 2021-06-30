@@ -108,6 +108,9 @@ enum class AudioBackend : u8
 {
   Null,
   Cubeb,
+#ifdef _WIN32
+  XAudio2,
+#endif
 #ifndef ANDROID
   SDL,
 #else
