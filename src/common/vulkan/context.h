@@ -38,7 +38,7 @@ public:
   static bool CheckValidationLayerAvailablility();
 
   // Helper method to create a Vulkan instance.
-  static VkInstance CreateVulkanInstance(const WindowInfo* wi, bool enable_debug_report, bool enable_validation_layer);
+  static VkInstance CreateVulkanInstance(const WindowInfo* wi, bool enable_debug_utils, bool enable_validation_layer);
 
   // Returns a list of Vulkan-compatible GPUs.
   using GPUList = std::vector<VkPhysicalDevice>;
@@ -48,11 +48,11 @@ public:
 
   // Creates a new context and sets it up as global.
   static bool Create(std::string_view gpu_name, const WindowInfo* wi, std::unique_ptr<SwapChain>* out_swap_chain,
-                     bool threaded_presentation, bool enable_debug_reports, bool enable_validation_layer);
+                     bool threaded_presentation, bool enable_debug_utils, bool enable_validation_layer);
 
   // Creates a new context from a pre-existing instance.
   static bool CreateFromExistingInstance(VkInstance instance, VkPhysicalDevice gpu, VkSurfaceKHR surface,
-                                         bool take_ownership, bool enable_validation_layer, bool enable_debug_reports,
+                                         bool take_ownership, bool enable_validation_layer, bool enable_debug_utils,
                                          const char** required_device_extensions = nullptr,
                                          u32 num_required_device_extensions = 0,
                                          const char** required_device_layers = nullptr,
@@ -63,8 +63,8 @@ public:
   static void Destroy();
 
   // Enable/disable debug message runtime.
-  bool EnableDebugReports();
-  void DisableDebugReports();
+  bool EnableDebugUtils();
+  void DisableDebugUtils();
 
   // Global state accessors
   ALWAYS_INLINE VkInstance GetVulkanInstance() const { return m_instance; }
@@ -184,7 +184,7 @@ private:
   Context(VkInstance instance, VkPhysicalDevice physical_device, bool owns_device);
 
   using ExtensionList = std::vector<const char*>;
-  static bool SelectInstanceExtensions(ExtensionList* extension_list, const WindowInfo* wi, bool enable_debug_report);
+  static bool SelectInstanceExtensions(ExtensionList* extension_list, const WindowInfo* wi, bool enable_debug_utils);
   bool SelectDeviceExtensions(ExtensionList* extension_list, bool enable_surface);
   bool SelectDeviceFeatures(const VkPhysicalDeviceFeatures* required_features);
   bool CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer, const char** required_device_extensions,
@@ -263,7 +263,7 @@ private:
   using RenderPassCacheKey = std::tuple<VkFormat, VkFormat, VkSampleCountFlagBits, VkAttachmentLoadOp>;
   std::map<RenderPassCacheKey, VkRenderPass> m_render_pass_cache;
 
-  VkDebugReportCallbackEXT m_debug_report_callback = VK_NULL_HANDLE;
+  VkDebugUtilsMessengerEXT m_debug_messenger_callback = VK_NULL_HANDLE;
 
   VkQueueFamilyProperties m_graphics_queue_properties = {};
   VkPhysicalDeviceFeatures m_device_features = {};

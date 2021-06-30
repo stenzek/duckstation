@@ -66,9 +66,10 @@ VULKAN_INSTANCE_ENTRY_POINT(vkCreateMacOSSurfaceMVK, false)
 VULKAN_INSTANCE_ENTRY_POINT(vkCreateMetalSurfaceEXT, false)
 #endif
 
-VULKAN_INSTANCE_ENTRY_POINT(vkCreateDebugReportCallbackEXT, false)
-VULKAN_INSTANCE_ENTRY_POINT(vkDestroyDebugReportCallbackEXT, false)
-VULKAN_INSTANCE_ENTRY_POINT(vkDebugReportMessageEXT, false)
+VULKAN_INSTANCE_ENTRY_POINT(vkCreateDebugUtilsMessengerEXT, false)
+VULKAN_INSTANCE_ENTRY_POINT(vkDestroyDebugUtilsMessengerEXT, false)
+VULKAN_INSTANCE_ENTRY_POINT(vkSubmitDebugUtilsMessageEXT, false)
+
 VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceProperties2, false)
 VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceSurfaceCapabilities2KHR, false)
 
