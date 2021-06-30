@@ -987,6 +987,134 @@ bool EnumChoiceButtonImpl(const char* title, const char* summary, s32* value_poi
   return changed;
 }
 
+void BeginNavBar(float x_padding /*= LAYOUT_MENU_BUTTON_X_PADDING*/, float y_padding /*= LAYOUT_MENU_BUTTON_Y_PADDING*/)
+{
+  s_menu_button_index = 0;
+
+  ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(x_padding, y_padding));
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
+  ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, LayoutScale(1.0f, 1.0f));
+}
+
+void EndNavBar()
+{
+  ImGui::PopStyleVar(4);
+}
+
+void NavTitle(const char* title, float height /*= LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY*/,
+              ImFont* font /*= g_large_font*/)
+{
+  ImGuiWindow* window = ImGui::GetCurrentWindow();
+  if (window->SkipItems)
+    return;
+
+  s_menu_button_index++;
+
+  const ImVec2 text_size(font->CalcTextSizeA(font->FontSize, std::numeric_limits<float>::max(), 0.0f, title));
+  const ImVec2 pos(window->DC.CursorPos);
+  const ImGuiStyle& style = ImGui::GetStyle();
+  const ImVec2 size = ImVec2(text_size.x, LayoutScale(height) + style.FramePadding.y * 2.0f);
+
+  ImGui::ItemSize(
+    ImVec2(size.x + style.FrameBorderSize + style.ItemSpacing.x, size.y + style.FrameBorderSize + style.ItemSpacing.y));
+  ImGui::SameLine();
+
+  ImRect bb(pos, pos + size);
+  if (ImGui::IsClippedEx(bb, 0, false))
+    return;
+
+  bb.Min.y += style.FramePadding.y;
+  bb.Max.y -= style.FramePadding.y;
+
+  ImGui::PushFont(font);
+  ImGui::RenderTextClipped(bb.Min, bb.Max, title, nullptr, nullptr, ImVec2(0.0f, 0.0f), &bb);
+  ImGui::PopFont();
+}
+
+void RightAlignNavButtons(u32 num_items /*= 0*/, float item_width /*= LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY*/,
+                          float item_height /*= LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY*/)
+{
+  ImGuiWindow* window = ImGui::GetCurrentWindow();
+  const ImVec2 window_size(ImGui::GetWindowSize());
+  const ImGuiStyle& style = ImGui::GetStyle();
+
+  const float total_item_width =
+    style.FramePadding.x * 2.0f + style.FrameBorderSize + style.ItemSpacing.x + LayoutScale(item_width);
+  const float margin = total_item_width * static_cast<float>(num_items);
+  ImGui::SetCursorPosX(window->InnerClipRect.Max.x - margin - style.FramePadding.x);
+}
+
+bool NavButton(const char* title, bool is_active, bool enabled /* = true */, float width /* = -1.0f */,
+               float height /* = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY */, ImFont* font /* = g_large_font */)
+{
+  ImGuiWindow* window = ImGui::GetCurrentWindow();
+  if (window->SkipItems)
+    return false;
+
+  s_menu_button_index++;
+
+  const ImVec2 text_size(font->CalcTextSizeA(font->FontSize, std::numeric_limits<float>::max(), 0.0f, title));
+  const ImVec2 pos(window->DC.CursorPos);
+  const ImGuiStyle& style = ImGui::GetStyle();
+  const ImVec2 size = ImVec2(((width < 0.0f) ? text_size.x : LayoutScale(width)) + style.FramePadding.x * 2.0f,
+                             LayoutScale(height) + style.FramePadding.y * 2.0f);
+
+  ImGui::ItemSize(
+    ImVec2(size.x + style.FrameBorderSize + style.ItemSpacing.x, size.y + style.FrameBorderSize + style.ItemSpacing.y));
+  ImGui::SameLine();
+
+  ImRect bb(pos, pos + size);
+  const ImGuiID id = window->GetID(title);
+  if (enabled)
+  {
+    if (!ImGui::ItemAdd(bb, id))
+      return false;
+  }
+  else
+  {
+    if (ImGui::IsClippedEx(bb, id, false))
+      return false;
+  }
+
+  bool held;
+  bool pressed;
+  bool hovered;
+  if (enabled)
+  {
+    pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, 0);
+    if (hovered)
+    {
+      const ImU32 col = ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered, 1.0f);
+      ImGui::RenderFrame(bb.Min, bb.Max, col, true, 0.0f);
+    }
+  }
+  else
+  {
+    pressed = false;
+    held = false;
+    hovered = false;
+  }
+
+  bb.Min += style.FramePadding;
+  bb.Max -= style.FramePadding;
+
+  if (!enabled || is_active)
+  {
+    ImGui::PushStyleColor(ImGuiCol_Text, is_active ? ImGui::GetColorU32(UITextHighlightColor()) :
+                                                     ImGui::GetColorU32(ImGuiCol_TextDisabled));
+  }
+
+  ImGui::PushFont(font);
+  ImGui::RenderTextClipped(bb.Min, bb.Max, title, nullptr, nullptr, ImVec2(0.0f, 0.0f), &bb);
+  ImGui::PopFont();
+
+  if (!enabled || is_active)
+    ImGui::PopStyleColor();
+
+  return pressed;
+}
+
 struct FileSelectorItem
 {
   FileSelectorItem() = default;

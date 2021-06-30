@@ -231,6 +231,14 @@ static ALWAYS_INLINE bool EnumChoiceButton(const char* title, const char* summar
   }
 }
 
+void BeginNavBar(float x_padding = LAYOUT_MENU_BUTTON_X_PADDING, float y_padding = LAYOUT_MENU_BUTTON_Y_PADDING);
+void EndNavBar();
+void NavTitle(const char* title, float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, ImFont* font = g_large_font);
+void RightAlignNavButtons(u32 num_items = 0, float item_width = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY,
+                          float item_height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+bool NavButton(const char* title, bool is_active, bool enabled = true, float width = -1.0f,
+               float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, ImFont* font = g_large_font);
+
 using FileSelectorCallback = std::function<void(const std::string& path)>;
 using FileSelectorFilters = std::vector<std::string>;
 bool IsFileSelectorOpen();

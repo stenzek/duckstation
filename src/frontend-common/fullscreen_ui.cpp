@@ -53,6 +53,7 @@ using ImGuiFullscreen::BeginFullscreenColumns;
 using ImGuiFullscreen::BeginFullscreenColumnWindow;
 using ImGuiFullscreen::BeginFullscreenWindow;
 using ImGuiFullscreen::BeginMenuButtons;
+using ImGuiFullscreen::BeginNavBar;
 using ImGuiFullscreen::CloseChoiceDialog;
 using ImGuiFullscreen::CloseFileSelector;
 using ImGuiFullscreen::DPIScale;
@@ -60,6 +61,7 @@ using ImGuiFullscreen::EndFullscreenColumns;
 using ImGuiFullscreen::EndFullscreenColumnWindow;
 using ImGuiFullscreen::EndFullscreenWindow;
 using ImGuiFullscreen::EndMenuButtons;
+using ImGuiFullscreen::EndNavBar;
 using ImGuiFullscreen::EnumChoiceButton;
 using ImGuiFullscreen::FloatingButton;
 using ImGuiFullscreen::LayoutScale;
@@ -69,9 +71,12 @@ using ImGuiFullscreen::MenuButtonWithValue;
 using ImGuiFullscreen::MenuHeading;
 using ImGuiFullscreen::MenuHeadingButton;
 using ImGuiFullscreen::MenuImageButton;
+using ImGuiFullscreen::NavButton;
+using ImGuiFullscreen::NavTitle;
 using ImGuiFullscreen::OpenChoiceDialog;
 using ImGuiFullscreen::OpenFileSelector;
 using ImGuiFullscreen::RangeButton;
+using ImGuiFullscreen::RightAlignNavButtons;
 using ImGuiFullscreen::ToggleButton;
 
 namespace FullscreenUI {
@@ -1274,36 +1279,69 @@ static bool WantsToCloseMenu()
 
 void DrawSettingsWindow()
 {
-  BeginFullscreenColumns();
+  ImGuiIO& io = ImGui::GetIO();
+  ImVec2 heading_size = ImVec2(
+    io.DisplaySize.x, LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY + LAYOUT_MENU_BUTTON_Y_PADDING * 2.0f + 2.0f));
 
-  if (BeginFullscreenColumnWindow(0.0f, 300.0f, "settings_category", ImVec4(0.18f, 0.18f, 0.18f, 1.00f)))
+  if (BeginFullscreenWindow(ImVec2(0.0f, ImGuiFullscreen::g_menu_bar_size), heading_size, "settings_category",
+                            ImVec4(0.18f, 0.18f, 0.18f, 1.00f)))
   {
-    static constexpr std::array<const char*, static_cast<u32>(SettingsPage::Count)> titles = {
-      {ICON_FA_WINDOW_MAXIMIZE "  Interface Settings", ICON_FA_LIST "  Game List Settings",
-       ICON_FA_HDD "  Console Settings", ICON_FA_SLIDERS_H "  Emulation Settings", ICON_FA_MICROCHIP "  BIOS Settings",
-       ICON_FA_GAMEPAD "  Controller Settings", ICON_FA_KEYBOARD "  Hotkey Settings",
-       ICON_FA_SD_CARD "  Memory Card Settings", ICON_FA_TV "  Display Settings",
-       ICON_FA_MAGIC "  Enhancement Settings", ICON_FA_HEADPHONES "  Audio Settings",
-       ICON_FA_TROPHY "  Achievements Settings", ICON_FA_EXCLAMATION_TRIANGLE "  Advanced Settings"}};
+    static constexpr float ITEM_WIDTH = 22.0f;
 
-    BeginMenuButtons();
-    for (u32 i = 0; i < static_cast<u32>(titles.size()); i++)
+    static constexpr std::array<const char*, static_cast<u32>(SettingsPage::Count)> icons = {
+      {ICON_FA_WINDOW_MAXIMIZE, ICON_FA_LIST, ICON_FA_HDD, ICON_FA_SLIDERS_H, ICON_FA_MICROCHIP, ICON_FA_GAMEPAD,
+       ICON_FA_KEYBOARD, ICON_FA_SD_CARD, ICON_FA_TV, ICON_FA_MAGIC, ICON_FA_HEADPHONES, ICON_FA_TROPHY,
+       ICON_FA_EXCLAMATION_TRIANGLE}};
+
+    static constexpr std::array<const char*, static_cast<u32>(SettingsPage::Count)> titles = {
+      {"Interface Settings", "Game List Settings", "Console Settings", "Emulation Settings", "BIOS Settings",
+       "Controller Settings", "Hotkey Settings", "Memory Card Settings", "Display Settings", "Audio Settings",
+       "Enhancement Settings", "Achievements Settings", "Advanced Settings"}};
+
+    BeginNavBar();
+
+    if (ImGui::IsNavInputTest(ImGuiNavInput_FocusPrev, ImGuiInputReadMode_Pressed))
     {
-      if (ActiveButton(titles[i], s_settings_page == static_cast<SettingsPage>(i)))
-        s_settings_page = static_cast<SettingsPage>(i);
+      s_settings_page = static_cast<SettingsPage>((s_settings_page == static_cast<SettingsPage>(0)) ?
+                                                    (static_cast<u32>(SettingsPage::Count) - 1) :
+                                                    (static_cast<u32>(s_settings_page) - 1));
+    }
+    else if (ImGui::IsNavInputTest(ImGuiNavInput_FocusNext, ImGuiInputReadMode_Pressed))
+    {
+      s_settings_page =
+        static_cast<SettingsPage>((static_cast<u32>(s_settings_page) + 1) % static_cast<u32>(SettingsPage::Count));
     }
 
-    ImGui::SetCursorPosY(ImGui::GetWindowHeight() - LayoutScale(50.0f));
-    if (ActiveButton(ICON_FA_BACKWARD "  Back", false) || WantsToCloseMenu())
+    if (NavButton(ICON_FA_BACKWARD, false, true))
       ReturnToMainWindow();
 
-    EndMenuButtons();
+    NavTitle(titles[static_cast<u32>(s_settings_page)]);
+
+    RightAlignNavButtons(static_cast<u32>(titles.size()), ITEM_WIDTH, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+
+    for (u32 i = 0; i < static_cast<u32>(titles.size()); i++)
+    {
+      if (NavButton(icons[i], s_settings_page == static_cast<SettingsPage>(i), true, ITEM_WIDTH,
+                    LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
+      {
+        s_settings_page = static_cast<SettingsPage>(i);
+      }
+    }
+
+    EndNavBar();
   }
 
-  EndFullscreenColumnWindow();
+  EndFullscreenWindow();
 
-  if (BeginFullscreenColumnWindow(300.0f, LAYOUT_SCREEN_WIDTH, "settings_parent"))
+  if (BeginFullscreenWindow(ImVec2(0.0f, ImGuiFullscreen::g_menu_bar_size + heading_size.y),
+                            ImVec2(io.DisplaySize.x, io.DisplaySize.y - heading_size.y), "settings_parent"))
   {
+    if (ImGui::IsNavInputTest(ImGuiNavInput_Cancel, ImGuiInputReadMode_Pressed))
+    {
+      if (ImGui::IsWindowFocused())
+        ReturnToMainWindow();
+    }
+
     bool settings_changed = false;
 
     switch (s_settings_page)
@@ -2535,9 +2573,7 @@ void DrawSettingsWindow()
       s_host_interface->RunLater(SaveAndApplySettings);
   }
 
-  EndFullscreenColumnWindow();
-
-  EndFullscreenColumns();
+  EndFullscreenWindow();
 }
 
 void DrawQuickMenu(MainWindowType type)
@@ -4732,8 +4768,8 @@ bool SetControllerNavInput(FrontendCommon::ControllerNavigationButton button, bo
     io.KeysDown[io.KeyMap[imkey]] = value;                                                                             \
   }
 
-  MAP_KEY(FrontendCommon::ControllerNavigationButton::LeftShoulder, ImGuiKey_PageUp);
-  MAP_KEY(FrontendCommon::ControllerNavigationButton::RightShoulder, ImGuiKey_PageDown);
+  // MAP_KEY(FrontendCommon::ControllerNavigationButton::LeftTrigger, ImGuiKey_PageUp);
+  // MAP_KEY(FrontendCommon::ControllerNavigationButton::RightTrigger, ImGuiKey_PageDown);
 
 #undef MAP_KEY
 
@@ -4755,6 +4791,8 @@ void SetImGuiNavInputs()
   MAP_BUTTON(FrontendCommon::ControllerNavigationButton::DPadRight, ImGuiNavInput_DpadRight);
   MAP_BUTTON(FrontendCommon::ControllerNavigationButton::DPadUp, ImGuiNavInput_DpadUp);
   MAP_BUTTON(FrontendCommon::ControllerNavigationButton::DPadDown, ImGuiNavInput_DpadDown);
+  MAP_BUTTON(FrontendCommon::ControllerNavigationButton::LeftShoulder, ImGuiNavInput_FocusPrev);
+  MAP_BUTTON(FrontendCommon::ControllerNavigationButton::RightShoulder, ImGuiNavInput_FocusNext);
 
 #undef MAP_BUTTON
 }

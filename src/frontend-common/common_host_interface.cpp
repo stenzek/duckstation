@@ -540,6 +540,7 @@ bool CommonHostInterface::CreateHostDisplayResources()
   ImGui::GetIO().DisplaySize.x = static_cast<float>(m_display->GetWindowWidth());
   ImGui::GetIO().DisplaySize.y = static_cast<float>(m_display->GetWindowHeight());
   ImGui::GetStyle() = ImGuiStyle();
+  ImGui::GetStyle().WindowMinSize = ImVec2(1.0f, 1.0f);
   ImGui::StyleColorsDarker();
   ImGui::GetStyle().ScaleAllSizes(framebuffer_scale);
 
@@ -603,6 +604,7 @@ void CommonHostInterface::OnHostDisplayResized()
   {
     ImGui::GetIO().DisplayFramebufferScale = ImVec2(new_scale, new_scale);
     ImGui::GetStyle() = ImGuiStyle();
+    ImGui::GetStyle().WindowMinSize = ImVec2(1.0f, 1.0f);
     ImGui::StyleColorsDarker();
     ImGui::GetStyle().ScaleAllSizes(new_scale);
     ImGuiFullscreen::ResetFonts();
