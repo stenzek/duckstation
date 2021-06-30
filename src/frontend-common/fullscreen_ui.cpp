@@ -1869,9 +1869,10 @@ void DrawSettingsWindow()
           {
             const u32 cache_index = port * CommonHostInterface::NUM_CONTROLLER_AUTOFIRE_BUTTONS + autofire_index;
 
-            if (MenuButtonWithValue(TinyString::FromFormat("Auto Fire %u", autofire_index + 1),
-                                    "Selects the button to toggle with this auto fire binding.",
-                                    autofire_buttons_cache[cache_index].c_str()))
+            if (MenuButtonWithValue(
+                  TinyString::FromFormat("Auto Fire %u##autofire_%u_%u", autofire_index + 1, port, autofire_index),
+                  "Selects the button to toggle with this auto fire binding.",
+                  autofire_buttons_cache[cache_index].c_str()))
 
             {
               auto callback = [port, autofire_index, cache_index](s32 index, const std::string& title, bool checked) {
@@ -1915,12 +1916,15 @@ void DrawSettingsWindow()
 
             key.Format("AutoFire%u", autofire_index + 1);
             DrawInputBindingButton(InputBindingType::Button, section, key,
-                                   TinyString::FromFormat("Auto Fire %u Binding", autofire_index + 1), false);
+                                   TinyString::FromFormat("Auto Fire %u Binding##autofire_binding_%u_%u",
+                                                          autofire_index + 1, port, autofire_index),
+                                   false);
 
             key.Format("AutoFire%uFrequency", autofire_index + 1);
             int frequency = s_host_interface->GetSettingsInterface()->GetIntValue(
               section, key, CommonHostInterface::DEFAULT_AUTOFIRE_FREQUENCY);
-            settings_changed |= RangeButton(TinyString::FromFormat("Auto Fire %u Frequency", autofire_index + 1),
+            settings_changed |= RangeButton(TinyString::FromFormat("Auto Fire %u Frequency##autofire_frequency_%u_%u",
+                                                                   autofire_index + 1, port, autofire_index),
                                             "Sets the rate at which the auto fire will trigger on and off.", &frequency,
                                             1, 255, 1, "%d Frames");
           }
