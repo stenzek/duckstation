@@ -177,7 +177,7 @@
     <message>
         <location filename="../achievementsettingswidget.ui" line="139"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;DuckStation uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at &lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;To view the achievement list in-game, press the hotkey for &lt;span style=&quot; font-weight:600;&quot;&gt;Open Quick Menu&lt;/span&gt; and select &lt;span style=&quot; font-weight:600;&quot;&gt;Achievements&lt;/span&gt; from the menu.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;DuckStation使用RetroAchievements作为成就数据库并以此来追踪进展。要使用成就，请注册一个账户于 &lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;要查看游戏中的成就列表，按下热键 &lt;span style=&quot; font-weight:600;&quot;&gt;打开快捷菜单&lt;/span&gt; 并从菜单中选择 &lt;span style=&quot; font-weight:600;&quot;&gt;成就&lt;/span&gt; 。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;DuckStation使用RetroAchievements作为成就数据库并以此来追踪进展。要使用成就，请注册一个账户于&lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;。&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;要查看游戏中的成就列表，按下热键&lt;span style=&quot; font-weight:600;&quot;&gt;打开快捷菜单&lt;/span&gt;并从菜单中选择&lt;span style=&quot; font-weight:600;&quot;&gt;成就&lt;/span&gt;。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Account Settings</source>
@@ -974,7 +974,7 @@ Login token generated on %2.</source>
         <location filename="../audiosettingswidget.ui" line="232"/>
         <location filename="../audiosettingswidget.cpp" line="63"/>
         <source>Mute CD Audio</source>
-        <translation>关闭CD音轨</translation>
+        <translation>关闭光盘音轨</translation>
     </message>
     <message>
         <source>Mute</source>
@@ -1080,7 +1080,7 @@ Login token generated on %2.</source>
     <message>
         <location filename="../audiosettingswidget.cpp" line="64"/>
         <source>Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable background music in some games.</source>
-        <translation>强制静音CD-ROM中的CD-DA和XA音频。可用于在某些游戏中禁用背景音乐。</translation>
+        <translation>强制静音CD-ROM中的CD-DA和XA音轨。可用于在某些游戏中禁用背景音乐。</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="68"/>
@@ -2363,7 +2363,7 @@ Login token generated on %2.</source>
     <message>
         <location filename="../consolesettingswidget.cpp" line="79"/>
         <source>Reduces hitches in emulation by reading/decompressing CD data asynchronously on a worker thread.</source>
-        <translation>通过在工作线程上使用异步读取/解压缩CD数据的方式，减少模拟时的卡滞。</translation>
+        <translation>通过在工作线程上使用异步读取/解压缩光盘数据的方式，减少模拟时的卡滞。</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="81"/>
@@ -2388,7 +2388,7 @@ Login token generated on %2.</source>
     <message>
         <location filename="../consolesettingswidget.cpp" line="91"/>
         <source>Enables multitap support on specified controller ports. Leave disabled for games that do not support multitap input.</source>
-        <translation>启用多接口支持在指定的控制器接口上。不支持多接口输入的游戏请保持禁用。</translation>
+        <translation>启用多插口支持在指定的控制器接口上。不支持多插口输入的游戏请保持禁用。</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="115"/>
@@ -5960,7 +5960,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2409"/>
         <source>Toggle CD Audio Mute</source>
-        <translation>CD音轨开关</translation>
+        <translation>光盘音轨开关</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2420"/>
@@ -6424,7 +6424,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../mainwindow.ui" line="607"/>
         <source>Resume State</source>
-        <translation>恢复进度</translation>
+        <translation>再开</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="612"/>
@@ -6523,12 +6523,12 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../mainwindow.ui" line="758"/>
         <source>Resume</source>
-        <translation>恢复</translation>
+        <translation>再开</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="761"/>
         <source>Resumes the last save state created.</source>
-        <translation>恢复末次关机时系统自动创建的存档。</translation>
+        <translation>恢复末次创建的存档以继续游戏。</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="772"/>
@@ -6924,7 +6924,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../memorycardeditordialog.ui" line="297"/>
         <source>Undelete File</source>
-        <translation>恢复删除文件</translation>
+        <translation>还原文件</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.ui" line="307"/>
@@ -7043,7 +7043,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../memorycardeditordialog.cpp" line="451"/>
         <source>Failed to undelete file %1. The file may have been partially overwritten by another save.</source>
-        <translation>无法恢复删除文件%1。该文件可能已被其他保存部分覆盖。</translation>
+        <translation>无法还原文件%1。该文件可能已被其他保存部分覆盖。</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="466"/>
@@ -7578,12 +7578,12 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2414"/>
         <source>CD Audio Muted.</source>
-        <translation>CD音频已静音。</translation>
+        <translation>光盘音频已静音。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2415"/>
         <source>CD Audio Unmuted.</source>
-        <translation>CD音频已解除静音。</translation>
+        <translation>光盘音频已解除静音。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2581"/>
@@ -7930,57 +7930,62 @@ Please configure a supported controller from the list above.</source>
         <translation>记忆卡%u当前接入系统中，没有接入存档。移除记忆卡。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="675"/>
+        <location filename="../../core/system.cpp" line="660"/>
+        <source>CD image preloading not available for multi-disc image &apos;%s&apos;</source>
+        <translation>光盘镜像预加载不适用于多光盘镜像&apos;%s&apos;</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="685"/>
         <source>Failed to apply ppf patch from &apos;%s&apos;, using unpatched image.</source>
         <translation>无法从&apos;%s&apos;应用ppf补丁，使用无补丁镜像。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="920"/>
+        <location filename="../../core/system.cpp" line="930"/>
         <source>CPU clock speed is set to %u%% (%u / %u). This may result in instability.</source>
         <translation>CPU速率设置为%u%% (%u / %u)。这可能会导致不稳定。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="928"/>
+        <location filename="../../core/system.cpp" line="938"/>
         <source>CD-ROM read speedup set to %ux (effective speed %ux). This may result in instability.</source>
         <translation>CD-ROM读取加速设置为%ux (有效速度%ux)。这可能会导致不稳定。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="937"/>
+        <location filename="../../core/system.cpp" line="947"/>
         <source>CD-ROM seek speedup set to instant. This may result in instability.</source>
         <translation>CD-ROM寻道加速设置为瞬时。这可能会导致不稳定。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="945"/>
+        <location filename="../../core/system.cpp" line="955"/>
         <source>CD-ROM seek speedup set to %ux. This may result in instability.</source>
         <translation>CD-ROM寻道加速设置为%ux。这可能会导致不稳定。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1019"/>
+        <location filename="../../core/system.cpp" line="1029"/>
         <source>Failed to initialize %s renderer, falling back to software renderer.</source>
         <translation>无法初始化%s渲染器，退回到软件渲染器。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1107"/>
+        <location filename="../../core/system.cpp" line="1117"/>
         <source>WARNING: CPU overclock (%u%%) was different in save state (%u%%).</source>
         <translation>警告: CPU超频 (%u%%) 不同于存档 (%u%%)。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1211"/>
+        <location filename="../../core/system.cpp" line="1221"/>
         <source>Failed to open CD image from save state &apos;%s&apos;: %s. Using existing image &apos;%s&apos;, this may result in instability.</source>
         <translation>无法从存档&apos;%s&apos;: %s打开光盘镜像。使用现有镜像&apos;%s&apos;，这可能会导致不稳定。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2034"/>
+        <location filename="../../core/system.cpp" line="2044"/>
         <source>Failed to open disc image &apos;%s&apos;: %s.</source>
         <translation>无法打开光盘镜像&apos;%s&apos;: %s。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2180"/>
+        <location filename="../../core/system.cpp" line="2190"/>
         <source>Failed to switch to subimage %u in &apos;%s&apos;: %s.</source>
         <translation>无法切换到子镜像%u在&apos;%s&apos;: %s。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2187"/>
+        <location filename="../../core/system.cpp" line="2197"/>
         <source>Switched to sub-image %s (%u) in &apos;%s&apos;.</source>
         <translation>切换到子镜像%s (%u) 在&apos;%s&apos;。</translation>
     </message>
@@ -7993,7 +7998,7 @@ Please configure a supported controller from the list above.</source>
         <translation type="vanished">无法打开光盘镜像&apos;%s&apos;。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2044"/>
+        <location filename="../../core/system.cpp" line="2054"/>
         <source>Inserted disc &apos;%s&apos; (%s).</source>
         <translation>已插入光盘&apos;%s&apos; (%s)。</translation>
     </message>
@@ -8336,7 +8341,7 @@ URL: %1</translation>
     <message>
         <location filename="../qthostinterface.cpp" line="1006"/>
         <source>Resume</source>
-        <translation>恢复</translation>
+        <translation>再开</translation>
     </message>
     <message>
         <location filename="../qthostinterface.cpp" line="1009"/>
@@ -8346,7 +8351,7 @@ URL: %1</translation>
     <message>
         <location filename="../qthostinterface.cpp" line="1030"/>
         <source>Resume (%1)</source>
-        <translation>恢复 (%1)</translation>
+        <translation>再开 (%1)</translation>
     </message>
     <message>
         <location filename="../qthostinterface.cpp" line="1454"/>
@@ -8735,7 +8740,7 @@ The saves will not be recoverable.</source>
         <translation type="vanished">保存状态不兼容: 要求版本%u，但状态为版本%u。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1169"/>
+        <location filename="../../core/system.cpp" line="1179"/>
         <source>Save state is incompatible: minimum version is %u but state is version %u.</source>
         <translation>存档不兼容: 最低可兼容版本为%u但存档版本为%u。</translation>
     </message>
@@ -8744,12 +8749,12 @@ The saves will not be recoverable.</source>
         <translation type="vanished">即时存档不兼容: %s版本为%u但存档版本为%u。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="778"/>
+        <location filename="../../core/system.cpp" line="788"/>
         <source>Failed to load %s BIOS.</source>
         <translation>无法加载%sBIOS。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1178"/>
+        <location filename="../../core/system.cpp" line="1188"/>
         <source>Save state is incompatible: maximum version is %u but state is version %u.</source>
         <translation>存档不兼容: 最高可兼容版本为%u但存档版本为%u。</translation>
     </message>
@@ -8758,32 +8763,32 @@ The saves will not be recoverable.</source>
         <translation type="vanished">无法从存档打开CD镜像: &apos;%s&apos;。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1219"/>
+        <location filename="../../core/system.cpp" line="1229"/>
         <source>Failed to open CD image &apos;%s&apos; used by save state: %s.</source>
-        <translation>无法打开CD镜像&apos;%s&apos;，存档: %s占用中。</translation>
+        <translation>无法打开光盘镜像&apos;%s&apos;，存档: %s占用中。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1237"/>
+        <location filename="../../core/system.cpp" line="1247"/>
         <source>Failed to switch to subimage %u in CD image &apos;%s&apos; used by save state: %s.</source>
-        <translation>无法打开CD镜像&apos;%s&apos;的子镜像%u，存档: %s占用中。</translation>
+        <translation>无法打开光盘镜像&apos;%s&apos;的子镜像%u，存档: %s占用中。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1844"/>
+        <location filename="../../core/system.cpp" line="1854"/>
         <source>Per-game memory card cannot be used for slot %u as the running game has no code. Using shared card instead.</source>
         <translation>游戏没有编码，档位%u无法使用独立记忆卡的，改用共用记忆卡。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1861"/>
+        <location filename="../../core/system.cpp" line="1871"/>
         <source>Per-game memory card cannot be used for slot %u as the running game has no title. Using shared card instead.</source>
         <translation>游戏没有标题，档位%u无法使用独立记忆卡的，改用共用记忆卡。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1881"/>
+        <location filename="../../core/system.cpp" line="1891"/>
         <source>Per-game memory card cannot be used for slot %u as the running game has no path. Using shared card instead.</source>
         <translation>游戏没有路径，档位%u无法使用独立记忆卡的，改用共用记忆卡。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2117"/>
+        <location filename="../../core/system.cpp" line="2127"/>
         <source>You are attempting to run a libcrypt protected game without an SBI file:
 
 %s: %s
@@ -8800,12 +8805,12 @@ Your dump is incomplete, you must add the SBI file to run this game.</source>
         <translation type="vanished">插槽%u的记忆卡路径丢失，使用默认值。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2050"/>
+        <location filename="../../core/system.cpp" line="2060"/>
         <source>Game changed, reloading memory cards.</source>
         <translation>游戏已改变，重新加载记忆卡。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2106"/>
+        <location filename="../../core/system.cpp" line="2116"/>
         <source>You are attempting to run a libcrypt protected game without an SBI file:
 
 %s: %s
