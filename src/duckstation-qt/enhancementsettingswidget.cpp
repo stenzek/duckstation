@@ -27,6 +27,8 @@ EnhancementSettingsWidget::EnhancementSettingsWidget(QtHostInterface* host_inter
                                                &Settings::ParseTextureFilterName, &Settings::GetTextureFilterName,
                                                Settings::DEFAULT_GPU_TEXTURE_FILTER);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.widescreenHack, "GPU", "WidescreenHack", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.useSoftwareRendererForReadbacks, "GPU",
+                                               "UseSoftwareRendererForReadbacks", false);
 
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.pgxpEnable, "GPU", "PGXPEnable", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.pgxpCulling, "GPU", "PGXPCulling", true);
@@ -98,6 +100,10 @@ EnhancementSettingsWidget::EnhancementSettingsWidget(QtHostInterface* host_inter
        "increasing the field of view from 4:3 to the chosen display aspect ratio in 3D games. <br>For 2D games, or "
        "games which use pre-rendered backgrounds, this enhancement will not work as expected. <br><b><u>May not be "
        "compatible with all games.</u></b>"));
+  dialog->registerWidgetHelp(
+    m_ui.useSoftwareRendererForReadbacks, tr("Use Software Renderer For Readbacks"), tr("Unchecked"),
+    tr("Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater "
+       "performance when using graphical enhancements with the hardware renderer."));
   dialog->registerWidgetHelp(
     m_ui.pgxpEnable, tr("Geometry Correction"), tr("Unchecked"),
     tr("Reduces \"wobbly\" polygons and \"warping\" textures that are common in PS1 games. <br>Only "

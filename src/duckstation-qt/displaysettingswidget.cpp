@@ -48,8 +48,8 @@ DisplaySettingsWidget::DisplaySettingsWidget(QtHostInterface* host_interface, QW
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.gpuThread, "GPU", "UseThread", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.threadedPresentation, "GPU",
                                                "ThreadedPresentation", true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.useSoftwareRendererForReadbacks, "GPU",
-                                               "UseSoftwareRendererForReadbacks", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.syncToHostRefreshRate, "Main",
+                                               "SyncToHostRefreshRate", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showOSDMessages, "Display", "ShowOSDMessages",
                                                true);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.showFPS, "Display", "ShowFPS", false);
@@ -133,9 +133,12 @@ DisplaySettingsWidget::DisplaySettingsWidget(QtHostInterface* host_interface, QW
                              tr("Uses a second thread for drawing graphics. Currently only available for the software "
                                 "renderer, but can provide a significant speed improvement, and is safe to use."));
   dialog->registerWidgetHelp(
-    m_ui.useSoftwareRendererForReadbacks, tr("Use Software Renderer For Readbacks"), tr("Unchecked"),
-    tr("Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater "
-       "performance when using graphical enhancements with the hardware renderer."));
+    m_ui.syncToHostRefreshRate, tr("Sync To Host Refresh Rate"), tr("Unchecked"),
+    tr("Adjusts the emulation speed so the console's refresh rate matches the host's refresh rate when both VSync and "
+       "Audio Resampling settings are enabled. This results in the smoothest animations possible, at the cost of "
+       "potentially increasing the emulation speed by less than 1%. Sync To Host Refresh Rate will not take effect if "
+       "the console's refresh rate is too far from the host's refresh rate. Users with variable refresh rate displays "
+       "should disable this option."));
   dialog->registerWidgetHelp(m_ui.showOSDMessages, tr("Show OSD Messages"), tr("Checked"),
                              tr("Shows on-screen-display messages when events occur such as save states being "
                                 "created/loaded, screenshots being taken, etc."));
