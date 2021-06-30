@@ -447,12 +447,12 @@ Token gerado %2.</translation>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="188"/>
         <source>GPU FIFO Size</source>
-        <translation>GPU FIFO Size</translation>
+        <translation>Tamanho de FIFO da GPU</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="190"/>
         <source>GPU Max Run-Ahead</source>
-        <translation>GPU Max Run-Ahead</translation>
+        <translation>Execução máxima antecipada da GPU</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="150"/>
@@ -2175,47 +2175,47 @@ Token gerado %2.</translation>
     <message>
         <location filename="../consolesettingswidget.ui" line="257"/>
         <source>2x</source>
-        <translation>2x</translation>
+        <translation>2 vezes</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="262"/>
         <source>3x</source>
-        <translation>3x</translation>
+        <translation>3 vezes</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="267"/>
         <source>4x</source>
-        <translation>4x</translation>
+        <translation>4 vezes</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="272"/>
         <source>5x</source>
-        <translation>5x</translation>
+        <translation>5 vezes</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="277"/>
         <source>6x</source>
-        <translation>6x</translation>
+        <translation>6 vezes</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="282"/>
         <source>7x</source>
-        <translation>7x</translation>
+        <translation>7 vezes</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="287"/>
         <source>8x</source>
-        <translation>8x</translation>
+        <translation>8 vezes</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="292"/>
         <source>9x</source>
-        <translation>9x</translation>
+        <translation>9 vezes</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="297"/>
         <source>10x</source>
-        <translation>10x</translation>
+        <translation>10 vezes</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="308"/>
@@ -3183,7 +3183,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../../core/digital_controller.cpp" line="221"/>
         <source>Force Pop&apos;n Controller Mode</source>
-        <translation>Forçar controle em modo &apos;Pop&apos;n&apos;</translation>
+        <translation>Forçar controle em modo &apos;Pop n&apos;</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="222"/>
@@ -3614,7 +3614,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../displaysettingswidget.cpp" line="87"/>
         <location filename="../displaysettingswidget.cpp" line="250"/>
         <source>Borderless Fullscreen</source>
-        <translation>Tela cheia sem bordas.</translation>
+        <translation>Tela cheia sem bordas</translation>
     </message>
 </context>
 <context>
@@ -3642,7 +3642,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../emulationsettingswidget.ui" line="58"/>
         <source>Turbo Speed:</source>
-        <translation>Velocidade do Turbo:</translation>
+        <translation>Velocidade do turbo:</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="68"/>
@@ -4075,7 +4075,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="93"/>
         <source>Smooths out the blockyness of magnified textures on 3D object by using filtering. &lt;br&gt;Will have a greater effect on higher resolution scales. Only applies to the hardware renderers.</source>
-        <translation>Suaviza as texturas ampliadas em objetos 3D usando filtragem.&lt;br&gt;terá melhor efeito em resoluções mais altas. só se aplica quando usado por renderizadores por hardware.</translation>
+        <translation>Suaviza as texturas ampliadas em objetos 3D usando filtragem.terá melhor efeito em resoluções mais altas. só se aplica quando usado com renderizadores por hardware.</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="97"/>
@@ -4582,12 +4582,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../../core/settings.cpp" line="691"/>
         <source>Nearest-Neighbor</source>
-        <translation>Nearest-Neighbor</translation>
+        <translation>Vizinho mais próximo</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="691"/>
         <source>Bilinear</source>
-        <translation>Bilinear</translation>
+        <translation>Bi-linear</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="692"/>
@@ -4597,7 +4597,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../../core/settings.cpp" line="692"/>
         <source>Bilinear (No Edge Blending)</source>
-        <translation>Bilinear (sem AA)</translation>
+        <translation>Bi-linear (sem AA)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="693"/>
@@ -5340,7 +5340,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../gamepropertiesdialog.ui" line="1047"/>
         <source>PGXP Geometry Tolerance:</source>
-        <translation>Tolerância geometrica do PGXP:</translation>
+        <translation>Tolerância geométrica do PGXP:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="1070"/>
@@ -5932,7 +5932,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1965"/>
         <source>Toggle Fast Forward</source>
-        <translation>Pulo de quadros (Alternado)</translation>
+        <translation>Alternar pulo de quadros</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1971"/>
@@ -5942,12 +5942,12 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1974"/>
         <source>Toggle Turbo</source>
-        <translation>Turbo alternado</translation>
+        <translation>Alternar turbo</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1980"/>
         <source>Toggle Fullscreen</source>
-        <translation>Tela cheia</translation>
+        <translation>Alternar para o modo tela cheia</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1986"/>
@@ -5967,17 +5967,17 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2122"/>
         <source>Toggle Patch Codes</source>
-        <translation>Ativar / desativar trapaças</translation>
+        <translation>Alternar códigos de trapaça</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2058"/>
         <source>Reset System</source>
-        <translation>Reiniciar sistema</translation>
+        <translation>Reiniciar o sistema</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2021"/>
         <source>Save Screenshot</source>
-        <translation>Salvar caputra de tela</translation>
+        <translation>Salvar captura de tela</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2064"/>
@@ -5997,7 +5997,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2135"/>
         <source>Toggle Clock Speed Control (Overclocking)</source>
-        <translation>Controle de velocidade CPU alternado (Overclocking)</translation>
+        <translation>Alternar controle de velocidade CPU (Overclocking)</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2162"/>
@@ -6026,7 +6026,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2235"/>
         <source>Toggle PGXP Depth Buffer</source>
-        <translation>Alternar PGXP polimento profundo</translation>
+        <translation>Alternar PGXP modo eixo Z</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2194"/>
@@ -6110,7 +6110,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2293"/>
         <source>Save To Selected Slot</source>
-        <translation>Salvar para compartimento Selecionado</translation>
+        <translation>Salvar para compartimento selecionado</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2298"/>
@@ -6349,12 +6349,12 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2396"/>
         <source>Toggle Mute</source>
-        <translation>Mudo</translation>
+        <translation>Alternar mudo</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2409"/>
         <source>Toggle CD Audio Mute</source>
-        <translation>Silenciar áudio de CD</translation>
+        <translation>Alternar silenciar áudio de CD</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2420"/>
@@ -6452,7 +6452,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../core/settings.cpp" line="505"/>
         <source>Performance</source>
-        <translation>Performance</translation>
+        <translation>Desempenho</translation>
     </message>
     <message>
         <source>Success</source>
@@ -8338,57 +8338,62 @@ Please configure a supported controller from the list above.</source>
         <translation>Cartão de memória %u presente no sistema mas não no estado salvo, removendo cartão.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="675"/>
+        <location filename="../../core/system.cpp" line="660"/>
+        <source>CD image preloading not available for multi-disc image &apos;%s&apos;</source>
+        <translation>O pré-carregamento da imagem não está disponível para jogo multi-disco &apos;%s&apos;</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="685"/>
         <source>Failed to apply ppf patch from &apos;%s&apos;, using unpatched image.</source>
         <translation>Falha ao aplicar modificação ppf &apos;%1s&apos;, usando imagem limpa.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="920"/>
+        <location filename="../../core/system.cpp" line="930"/>
         <source>CPU clock speed is set to %u%% (%u / %u). This may result in instability.</source>
         <translation>Velocidade do CPU foi mudada para %u%% isto resultará em instabilidades.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="928"/>
+        <location filename="../../core/system.cpp" line="938"/>
         <source>CD-ROM read speedup set to %ux (effective speed %ux). This may result in instability.</source>
         <translation>Leitura do CD-rom acelerada para %ux (velocidade apropriada %u). pode resultar em instabilidades.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="937"/>
+        <location filename="../../core/system.cpp" line="947"/>
         <source>CD-ROM seek speedup set to instant. This may result in instability.</source>
         <translation>Aumento de velocidade de busca do CD-ROM definida para instantânea. isso pode resultar em instabilidade.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="945"/>
+        <location filename="../../core/system.cpp" line="955"/>
         <source>CD-ROM seek speedup set to %ux. This may result in instability.</source>
         <translation>Aumento de velocidade de busca do CD-ROM definida para % ux. isso pode resultar em instabilidade.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1019"/>
+        <location filename="../../core/system.cpp" line="1029"/>
         <source>Failed to initialize %s renderer, falling back to software renderer.</source>
         <translation>Falha ao inicializar o renderizador %s , retornando para renderizador por software.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1107"/>
+        <location filename="../../core/system.cpp" line="1117"/>
         <source>WARNING: CPU overclock (%u%%) was different in save state (%u%%).</source>
         <translation>ATENÇÃO: Aumento da velocidade (%u%%) era diferente do que no seu save anterior (%u%%).</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1211"/>
+        <location filename="../../core/system.cpp" line="1221"/>
         <source>Failed to open CD image from save state &apos;%s&apos;: %s. Using existing image &apos;%s&apos;, this may result in instability.</source>
         <translation>Falha ao abrir imagem do estado salvo &apos;%s&apos;: %s. usando imagem existente &apos;%s&apos;, isto, resultará em instabilidades.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2034"/>
+        <location filename="../../core/system.cpp" line="2044"/>
         <source>Failed to open disc image &apos;%s&apos;: %s.</source>
         <translation>Falha ao abrir o disco &apos;%s&apos;: %s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2180"/>
+        <location filename="../../core/system.cpp" line="2190"/>
         <source>Failed to switch to subimage %u in &apos;%s&apos;: %s.</source>
         <translation>Falha ao trocar para disco %u em &apos;%s&apos;: %s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2187"/>
+        <location filename="../../core/system.cpp" line="2197"/>
         <source>Switched to sub-image %s (%u) in &apos;%s&apos;.</source>
         <translation>Mudado para segunda imagem %s (%u) em &apos;%s&apos;.</translation>
     </message>
@@ -8401,7 +8406,7 @@ Please configure a supported controller from the list above.</source>
         <translation type="vanished">Falha ao abrir o disco &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2044"/>
+        <location filename="../../core/system.cpp" line="2054"/>
         <source>Inserted disc &apos;%s&apos; (%s).</source>
         <translation>Disco inserido &apos;%s&apos; (%s).</translation>
     </message>
@@ -9095,7 +9100,7 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../settingsdialog.cpp" line="112"/>
         <source>&lt;strong&gt;Memory Card Settings&lt;/strong&gt;&lt;hr&gt;This page lets you control what mode the memory card emulation will function in, and where the images for these cards will be stored on disk.</source>
-        <translation>&lt;strong&gt;Configuração de cartão de memória&lt;/strong&gt;&lt;hr&gt;esta página permite controlar em que modo a emulação do cartão de memória funcionará e onde as imagens desses cartões serão armazenadas.</translation>
+        <translation>&lt;strong&gt;Configuração de cartão de memória&lt;/strong&gt;&lt;hr&gt;Esta página permite controlar em que modo a emulação do cartão de memória funcionará e onde as imagens desses cartões serão armazenadas.</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="115"/>
@@ -9139,37 +9144,37 @@ The saves will not be recoverable.</source>
         <translation type="vanished">Estado salvo incompatível: versão do mesmo esperada %u não a versão %u.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="778"/>
+        <location filename="../../core/system.cpp" line="788"/>
         <source>Failed to load %s BIOS.</source>
         <translation>Falha ao carregar %s BIOS.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1169"/>
+        <location filename="../../core/system.cpp" line="1179"/>
         <source>Save state is incompatible: minimum version is %u but state is version %u.</source>
         <translation>Estado salvo incompatível: versão esperada %u não versão %u.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1178"/>
+        <location filename="../../core/system.cpp" line="1188"/>
         <source>Save state is incompatible: maximum version is %u but state is version %u.</source>
         <translation>Estado salvo incompatível: versão esperada %u não versão %u.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1219"/>
+        <location filename="../../core/system.cpp" line="1229"/>
         <source>Failed to open CD image &apos;%s&apos; used by save state: %s.</source>
         <translation>Falha ao abrir imagem do CD &apos;%s&apos; usado pelo estado salvo: %s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1237"/>
+        <location filename="../../core/system.cpp" line="1247"/>
         <source>Failed to switch to subimage %u in CD image &apos;%s&apos; used by save state: %s.</source>
         <translation>Falha ao trocar disco %u do CD &apos;%s&apos; usado pelo estado salvo: %s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1881"/>
+        <location filename="../../core/system.cpp" line="1891"/>
         <source>Per-game memory card cannot be used for slot %u as the running game has no path. Using shared card instead.</source>
         <translation>O cartão de memória individual não pôde ser usado no compartimento %u caminho não configurado. usando cartão compartilhado.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2117"/>
+        <location filename="../../core/system.cpp" line="2127"/>
         <source>You are attempting to run a libcrypt protected game without an SBI file:
 
 %s: %s
@@ -9186,12 +9191,12 @@ Seu despejo está incompleto, você deve adicionar o arquivo SBI para rodá-lo c
         <translation type="vanished">Falha ao abrir estado salvo: &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1844"/>
+        <location filename="../../core/system.cpp" line="1854"/>
         <source>Per-game memory card cannot be used for slot %u as the running game has no code. Using shared card instead.</source>
         <translation>Caminho para o cartão de memória no compartimento %u não pôde ser usado pois o jogo iniciado não possui um códidog válido. será usado cartão compartilhado.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1861"/>
+        <location filename="../../core/system.cpp" line="1871"/>
         <source>Per-game memory card cannot be used for slot %u as the running game has no title. Using shared card instead.</source>
         <translation>Caminho para o cartão de memória no compartimento %u não pôde ser usado pois o jogo iniciado não possui um nome válido. será usado cartão compartilhado.</translation>
     </message>
@@ -9200,12 +9205,12 @@ Seu despejo está incompleto, você deve adicionar o arquivo SBI para rodá-lo c
         <translation type="vanished">Caminho para o Cartão de Memória %u incorreto, usando o padrão.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2050"/>
+        <location filename="../../core/system.cpp" line="2060"/>
         <source>Game changed, reloading memory cards.</source>
         <translation>Jogo trocado, recarregando cartões de memória.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2106"/>
+        <location filename="../../core/system.cpp" line="2116"/>
         <source>You are attempting to run a libcrypt protected game without an SBI file:
 
 %s: %s
