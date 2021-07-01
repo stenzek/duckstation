@@ -480,7 +480,7 @@ void GameList::ScanDirectory(const char* path, bool recursive, ProgressCallback*
   {
     progress->IncrementProgressValue();
 
-    if (!IsScannableFilename(ffd.FileName) || GetEntryForPath(ffd.FileName.c_str()))
+    if (!IsScannableFilename(ffd.FileName) || IsPathExcluded(ffd.FileName) || GetEntryForPath(ffd.FileName.c_str()))
       continue;
 
     const u64 modified_time = ffd.ModificationTime.AsUnixTimestamp();
@@ -592,9 +592,15 @@ bool GameList::GetDatabaseEntryForDisc(CDImage* image, GameDatabaseEntry* entry)
   return m_database.GetEntryForDisc(image, entry);
 }
 
+bool GameList::IsPathExcluded(const std::string& path) const
+{
+  return (std::find(m_excluded_paths.begin(), m_excluded_paths.end(), path) != m_excluded_paths.end());
+}
+
 void GameList::SetSearchDirectoriesFromSettings(SettingsInterface& si)
 {
   m_search_directories.clear();
+  m_excluded_paths = si.GetStringList("GameList", "ExcludedPaths");
 
   std::vector<std::string> dirs = si.GetStringList("GameList", "Paths");
   for (std::string& dir : dirs)

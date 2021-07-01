@@ -104,6 +104,7 @@ public:
   const GameListCompatibilityEntry* GetCompatibilityEntryForCode(const std::string& code) const;
   bool GetDatabaseEntryForCode(const std::string_view& code, GameDatabaseEntry* entry);
   bool GetDatabaseEntryForDisc(CDImage* image, GameDatabaseEntry* entry);
+  bool IsPathExcluded(const std::string& path) const;
 
   void SetCacheFilename(std::string filename) { m_cache_filename = std::move(filename); }
   void SetUserCompatibilityListFilename(std::string filename)
@@ -179,6 +180,7 @@ private:
   std::unique_ptr<ByteStream> m_cache_write_stream;
 
   std::vector<DirectoryEntry> m_search_directories;
+  std::vector<std::string> m_excluded_paths;
   std::string m_cache_filename;
   std::string m_user_compatibility_list_filename;
   std::string m_user_game_settings_filename;
