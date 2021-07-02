@@ -365,4 +365,8 @@
     <string name="menu_edit_game_directories_force_saf">Forçar armazenamento com escopo</string>	
     <string name="settings_expand_to_cutout">Expandir para área cortada</string>
     <string name="settings_summary_expand_to_cutout">Expande a área de exibição para incluir partes que foram removidas da imagem. Útil para telas curvas em que parte da imagem acaba de perdendo.</string>
+	<string name="settings_axis_scale">Escala do eixo</string>
+    <string name="memory_card_editor_undelete_success">Recuperar arquivo \'%s\'.</string>
+    <string name="memory_card_editor_undelete_failed">Falha ao recuperar arquivo \'%s\'. o arquivo de salvamento já pode ter sido parcialmente sobescrito.</string>
+    <string name="memory_card_editor_permanently_delete_confirm">Você tem certeza de que deseja excluir permanentemente o salvamento \'%s\'? Essa ação não poderá ser desfeita depois.</string>
 </resources>
