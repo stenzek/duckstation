@@ -1649,12 +1649,6 @@ void DrawSettingsWindow()
 
 #undef MAKE_EMULATION_SPEED
 
-        settings_changed |= ToggleButton("Sync To Host Refresh Rate",
-                                         "Adjusts the emulation speed so the console's refresh rate matches the host "
-                                         "when VSync and Audio Resampling are enabled.",
-                                         &s_settings_copy.sync_to_host_refresh_rate,
-                                         s_settings_copy.video_sync_enabled && s_settings_copy.audio_resampling);
-
         MenuHeading("Runahead/Rewind");
 
         settings_changed |=
@@ -2141,6 +2135,11 @@ void DrawSettingsWindow()
           ToggleButton("Enable VSync",
                        "Synchronizes presentation of the console's frames to the host. Enable for smoother animations.",
                        &s_settings_copy.video_sync_enabled);
+
+        settings_changed |= ToggleButton("Sync To Host Refresh Rate",
+                                         "Adjusts the emulation speed so the console's refresh rate matches the host "
+                                         "when VSync and Audio Resampling are enabled.",
+                                         &s_settings_copy.sync_to_host_refresh_rate, s_settings_copy.audio_resampling);
 
         settings_changed |= ToggleButton("Optimal Frame Pacing",
                                          "Ensures every frame generated is displayed for optimal pacing. Disable if "
