@@ -1,5 +1,5 @@
 #pragma once
-
+#include <string>
 #include <QtWidgets/QWidget>
 
 #include "ui_gamelistsettingswidget.h"
@@ -16,6 +16,9 @@ public:
   GameListSettingsWidget(QtHostInterface* host_interface, QWidget* parent = nullptr);
   ~GameListSettingsWidget();
 
+  bool addExcludedPath(const std::string& path);
+  void refreshExclusionList();
+
 public Q_SLOTS:
   void addSearchDirectory(QWidget* parent_widget);
 
@@ -24,6 +27,8 @@ private Q_SLOTS:
   void onDirectoryListContextMenuRequested(const QPoint& point);
   void onAddSearchDirectoryButtonClicked();
   void onRemoveSearchDirectoryButtonClicked();
+  void onAddExcludedPathButtonClicked();
+  void onRemoveExcludedPathButtonClicked();
   void onScanForNewGamesClicked();
   void onRescanAllGamesClicked();
 

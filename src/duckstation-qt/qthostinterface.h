@@ -64,6 +64,8 @@ public:
   void SetFloatSettingValue(const char* section, const char* key, float value);
   void SetStringSettingValue(const char* section, const char* key, const char* value);
   void SetStringListSettingValue(const char* section, const char* key, const std::vector<std::string>& values);
+  bool AddValueToStringList(const char* section, const char* key, const char* value);
+  bool RemoveValueFromStringList(const char* section, const char* key, const char* value);
   void RemoveSettingValue(const char* section, const char* key);
 
   TinyString TranslateString(const char* context, const char* str, const char* disambiguation = nullptr,

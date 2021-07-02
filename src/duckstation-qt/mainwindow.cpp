@@ -693,6 +693,9 @@ void MainWindow::onGameListContextMenuRequested(const QPoint& point, const GameL
     menu.addSeparator();
   }
 
+  connect(menu.addAction(tr("Exclude From List")), &QAction::triggered,
+          [this, entry]() { getSettingsDialog()->getGameListSettingsWidget()->addExcludedPath(entry->path); });
+
   connect(menu.addAction(tr("Add Search Directory...")), &QAction::triggered,
           [this]() { getSettingsDialog()->getGameListSettingsWidget()->addSearchDirectory(this); });
 

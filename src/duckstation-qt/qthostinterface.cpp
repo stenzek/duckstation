@@ -236,6 +236,26 @@ void QtHostInterface::SetStringListSettingValue(const char* section, const char*
   queueSettingsSave();
 }
 
+bool QtHostInterface::AddValueToStringList(const char* section, const char* key, const char* value)
+{
+  std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
+  if (!m_settings_interface->AddToStringList(section, key, value))
+    return false;
+
+  queueSettingsSave();
+  return true;
+}
+
+bool QtHostInterface::RemoveValueFromStringList(const char* section, const char* key, const char* value)
+{
+  std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
+  if (!m_settings_interface->RemoveFromStringList(section, key, value))
+    return false;
+
+  queueSettingsSave();
+  return true;
+}
+
 void QtHostInterface::RemoveSettingValue(const char* section, const char* key)
 {
   std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);

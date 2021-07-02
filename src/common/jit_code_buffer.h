@@ -14,6 +14,9 @@ public:
   void Destroy();
   void Reset();
 
+  u8* GetCodePointer() const { return m_code_ptr; }
+  u32 GetTotalSize() const { return m_total_size; }
+
   u8* GetFreeCodePointer() const { return m_free_code_ptr; }
   u32 GetFreeCodeSpace() const { return static_cast<u32>(m_code_size - m_code_used); }
   void CommitCode(u32 length);

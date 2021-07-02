@@ -39,11 +39,35 @@ GameListSettingsWidget::GameListSettingsWidget(QtHostInterface* host_interface, 
           &GameListSettingsWidget::onAddSearchDirectoryButtonClicked);
   connect(m_ui.removeSearchDirectoryButton, &QPushButton::clicked, this,
           &GameListSettingsWidget::onRemoveSearchDirectoryButtonClicked);
+  connect(m_ui.addExcludedPath, &QPushButton::clicked, this, &GameListSettingsWidget::onAddExcludedPathButtonClicked);
+  connect(m_ui.removeExcludedPath, &QPushButton::clicked, this,
+          &GameListSettingsWidget::onRemoveExcludedPathButtonClicked);
   connect(m_ui.rescanAllGames, &QPushButton::clicked, this, &GameListSettingsWidget::onRescanAllGamesClicked);
   connect(m_ui.scanForNewGames, &QPushButton::clicked, this, &GameListSettingsWidget::onScanForNewGamesClicked);
+
+  refreshExclusionList();
 }
 
 GameListSettingsWidget::~GameListSettingsWidget() = default;
+
+bool GameListSettingsWidget::addExcludedPath(const std::string& path)
+{
+  if (!m_host_interface->AddValueToStringList("GameList", "ExcludedPaths", path.c_str()))
+    return false;
+
+  m_ui.excludedPaths->addItem(QString::fromStdString(path));
+  m_host_interface->refreshGameList();
+  return true;
+}
+
+void GameListSettingsWidget::refreshExclusionList()
+{
+  m_ui.excludedPaths->clear();
+
+  const std::vector<std::string> paths(m_host_interface->GetSettingStringList("GameList", "ExcludedPaths"));
+  for (const std::string& path : paths)
+    m_ui.excludedPaths->addItem(QString::fromStdString(path));
+}
 
 void GameListSettingsWidget::resizeEvent(QResizeEvent* event)
 {
@@ -115,6 +139,29 @@ void GameListSettingsWidget::onRemoveSearchDirectoryButtonClicked()
 
   const int row = selection[0].row();
   m_search_directories_model->removeEntry(row);
+}
+
+void GameListSettingsWidget::onAddExcludedPathButtonClicked()
+{
+  QString path =
+    QDir::toNativeSeparators(QFileDialog::getOpenFileName(QtUtils::GetRootWidget(this), tr("Select Path")));
+  if (path.isEmpty())
+    return;
+
+  addExcludedPath(path.toStdString());
+}
+
+void GameListSettingsWidget::onRemoveExcludedPathButtonClicked()
+{
+  const int row = m_ui.excludedPaths->currentRow();
+  QListWidgetItem* item = (row >= 0) ? m_ui.excludedPaths->takeItem(row) : 0;
+  if (!item)
+    return;
+
+  m_host_interface->RemoveValueFromStringList("GameList", "ExcludedPaths", item->text().toUtf8().constData());
+  delete item;
+
+  m_host_interface->refreshGameList();
 }
 
 void GameListSettingsWidget::onRescanAllGamesClicked()
