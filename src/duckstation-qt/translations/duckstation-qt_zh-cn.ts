@@ -4438,53 +4438,73 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>搜索目录</translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.ui" line="52"/>
+        <location filename="../gamelistsettingswidget.ui" line="60"/>
+        <location filename="../gamelistsettingswidget.ui" line="121"/>
         <source>Add</source>
         <translation>添加</translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.ui" line="69"/>
-        <location filename="../gamelistsettingswidget.cpp" line="77"/>
+        <location filename="../gamelistsettingswidget.ui" line="77"/>
+        <location filename="../gamelistsettingswidget.ui" line="138"/>
+        <location filename="../gamelistsettingswidget.cpp" line="101"/>
         <source>Remove</source>
         <translation>移除</translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.ui" line="99"/>
-        <source>Scan New</source>
-        <translation>搜索新的</translation>
+        <location filename="../gamelistsettingswidget.ui" line="95"/>
+        <source>Excluded Paths</source>
+        <translation>排除路径</translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.ui" line="116"/>
+        <location filename="../gamelistsettingswidget.ui" line="175"/>
+        <source>Scan For New Games</source>
+        <translation>扫描新游戏</translation>
+    </message>
+    <message>
+        <location filename="../gamelistsettingswidget.ui" line="192"/>
+        <source>Rescan All Games</source>
+        <translation>重新扫描所有游戏</translation>
+    </message>
+    <message>
+        <source>Scan New</source>
+        <translation type="vanished">搜索新的</translation>
+    </message>
+    <message>
         <source>Rescan All</source>
-        <translation>全部重新搜索</translation>
+        <translation type="vanished">全部重新搜索</translation>
     </message>
     <message>
         <source>Update Redump Database</source>
         <translation type="vanished">更新Redump数据库</translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.cpp" line="79"/>
+        <location filename="../gamelistsettingswidget.cpp" line="103"/>
         <source>Open Directory...</source>
         <translation>打开目录...</translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.cpp" line="87"/>
+        <location filename="../gamelistsettingswidget.cpp" line="111"/>
         <source>Select Search Directory</source>
         <translation>选择搜索目录</translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.cpp" line="93"/>
+        <location filename="../gamelistsettingswidget.cpp" line="117"/>
         <source>Scan Recursively?</source>
         <translation>深度扫描?</translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.cpp" line="94"/>
+        <location filename="../gamelistsettingswidget.cpp" line="118"/>
         <source>Would you like to scan the directory &quot;%1&quot; recursively?
 
 Scanning recursively takes more time, but will identify files in subdirectories.</source>
         <translation>是否要深度扫描&quot;%1&quot;目录?
 
 深度扫描需要更多时间，但会识别子目录中的文件。</translation>
+    </message>
+    <message>
+        <location filename="../gamelistsettingswidget.cpp" line="147"/>
+        <source>Select Path</source>
+        <translation>选择路径</translation>
     </message>
     <message>
         <source>Download database from redump.org?</source>
@@ -6125,7 +6145,7 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../mainwindow.ui" line="14"/>
         <location filename="../mainwindow.cpp" line="86"/>
         <location filename="../mainwindow.cpp" line="97"/>
-        <location filename="../mainwindow.cpp" line="842"/>
+        <location filename="../mainwindow.cpp" line="845"/>
         <source>DuckStation</source>
         <translation>DuckStation</translation>
     </message>
@@ -6721,90 +6741,95 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="696"/>
+        <source>Exclude From List</source>
+        <translation>从列表中排除</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="699"/>
         <source>Add Search Directory...</source>
         <translation>添加搜索目录...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="704"/>
+        <location filename="../mainwindow.cpp" line="707"/>
         <source>Select Cover Image</source>
         <translation>选择封面图片</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="705"/>
+        <location filename="../mainwindow.cpp" line="708"/>
         <source>All Cover Image Types (*.jpg *.jpeg *.png)</source>
         <translation>所有封面图片类型 (*.jpg *.jpeg *.png)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="711"/>
+        <location filename="../mainwindow.cpp" line="714"/>
         <source>Cover Already Exists</source>
         <translation>封面已存在</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="712"/>
+        <location filename="../mainwindow.cpp" line="715"/>
         <source>A cover image for this game already exists, do you wish to replace it?</source>
         <translation>该游戏的封面图片已经存在，您要替换它吗？</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="726"/>
-        <location filename="../mainwindow.cpp" line="732"/>
+        <location filename="../mainwindow.cpp" line="729"/>
+        <location filename="../mainwindow.cpp" line="735"/>
         <source>Copy Error</source>
         <translation>复制错误</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="726"/>
+        <location filename="../mainwindow.cpp" line="729"/>
         <source>Failed to remove existing cover &apos;%1&apos;</source>
         <translation>无法移除现有封面&apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="732"/>
+        <location filename="../mainwindow.cpp" line="735"/>
         <source>Failed to copy &apos;%1&apos; to &apos;%2&apos;</source>
         <translation>无法复制&apos;%1&apos;到&apos;%2&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="843"/>
+        <location filename="../mainwindow.cpp" line="846"/>
         <source>Language changed. Please restart the application to apply.</source>
         <translation>语言已更改，请重新启动应用程序以应用。</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="849"/>
+        <location filename="../mainwindow.cpp" line="852"/>
         <source>%1x Scale</source>
         <translation>%1x缩放</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1133"/>
-        <location filename="../mainwindow.cpp" line="1140"/>
-        <location filename="../mainwindow.cpp" line="1149"/>
+        <location filename="../mainwindow.cpp" line="1136"/>
+        <location filename="../mainwindow.cpp" line="1143"/>
+        <location filename="../mainwindow.cpp" line="1152"/>
         <source>Destination File</source>
         <translation>目标文件</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1133"/>
-        <location filename="../mainwindow.cpp" line="1149"/>
+        <location filename="../mainwindow.cpp" line="1136"/>
+        <location filename="../mainwindow.cpp" line="1152"/>
         <source>Binary Files (*.bin)</source>
         <translation>二进制文件 (*.bin)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1141"/>
+        <location filename="../mainwindow.cpp" line="1144"/>
         <source>Binary Files (*.bin);;PNG Images (*.png)</source>
         <translation>二进制文件 (*.bin);;PNG图片 (*.png)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1166"/>
+        <location filename="../mainwindow.cpp" line="1169"/>
         <source>Default</source>
         <translation>默认</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1167"/>
+        <location filename="../mainwindow.cpp" line="1170"/>
         <source>Fusion</source>
         <translation>炼金</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1168"/>
+        <location filename="../mainwindow.cpp" line="1171"/>
         <source>Dark Fusion (Gray)</source>
         <translation>黑炼金 (灰色)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1169"/>
+        <location filename="../mainwindow.cpp" line="1172"/>
         <source>Dark Fusion (Blue)</source>
         <translation>黑炼金 (蓝色)</translation>
     </message>
@@ -6813,46 +6838,46 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation type="vanished">黑色</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1170"/>
+        <location filename="../mainwindow.cpp" line="1173"/>
         <source>QDarkStyle</source>
         <translation>暗夜</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1513"/>
-        <location filename="../mainwindow.cpp" line="1518"/>
-        <location filename="../mainwindow.cpp" line="1538"/>
-        <location filename="../mainwindow.cpp" line="1547"/>
+        <location filename="../mainwindow.cpp" line="1516"/>
+        <location filename="../mainwindow.cpp" line="1521"/>
+        <location filename="../mainwindow.cpp" line="1541"/>
+        <location filename="../mainwindow.cpp" line="1550"/>
         <source>Memory Card Not Found</source>
         <translation>无法找到记忆卡</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1514"/>
+        <location filename="../mainwindow.cpp" line="1517"/>
         <source>Memory card &apos;%1&apos; does not exist. Do you want to create an empty memory card?</source>
         <translation>记忆卡&apos;%1&apos;不存在。您想创建一个空的记忆卡吗？</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1519"/>
+        <location filename="../mainwindow.cpp" line="1522"/>
         <source>Failed to create memory card &apos;%1&apos;</source>
         <translation>无法创建记忆卡&apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1539"/>
-        <location filename="../mainwindow.cpp" line="1548"/>
+        <location filename="../mainwindow.cpp" line="1542"/>
+        <location filename="../mainwindow.cpp" line="1551"/>
         <source>Memory card &apos;%1&apos; could not be found. Try starting the game and saving to create it.</source>
         <translation>无法找到记忆卡&apos;%1&apos;。尝试开始游戏并保存创建它。</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1625"/>
+        <location filename="../mainwindow.cpp" line="1628"/>
         <source>Updater Error</source>
         <translation>更新程序错误</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1631"/>
+        <location filename="../mainwindow.cpp" line="1634"/>
         <source>&lt;p&gt;Sorry, you are trying to update a DuckStation version which is not an official GitHub release. To prevent incompatibilities, the auto-updater is only enabled on official builds.&lt;/p&gt;&lt;p&gt;To obtain an official build, please follow the instructions under &quot;Downloading and Running&quot; at the link below:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt;https://github.com/stenzek/duckstation/&lt;/a&gt;&lt;/p&gt;</source>
         <translation>&lt;p&gt;抱歉，您正在尝试更新非GitHub官方版本的DuckStation版本。为防止不兼容，自动更新程序仅在正式版本上启用。&lt;/p&gt;&lt;p&gt;要获取正式版本，请按照下面链接中的&quot;下载并运行&quot;下的说明进行操作：&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt;https://github.com/stenzek/duckstation/&lt;/a&gt;lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1637"/>
+        <location filename="../mainwindow.cpp" line="1640"/>
         <source>Automatic updating is not supported on the current platform.</source>
         <translation>当前平台不支持自动更新。</translation>
     </message>
@@ -8097,7 +8122,7 @@ Please configure a supported controller from the list above.</source>
         <translation>无法获取独占式全屏。</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="484"/>
+        <location filename="../qthostinterface.cpp" line="504"/>
         <source>Lost exclusive fullscreen.</source>
         <translation>丢失独占式全屏。</translation>
     </message>
@@ -8333,53 +8358,53 @@ URL: %1</translation>
 <context>
     <name>QtHostInterface</name>
     <message>
-        <location filename="../qthostinterface.cpp" line="968"/>
+        <location filename="../qthostinterface.cpp" line="988"/>
         <source>Load From File...</source>
         <translation>从文件读档...</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="978"/>
+        <location filename="../qthostinterface.cpp" line="998"/>
         <source>Save To File...</source>
         <translation>存档到文件...</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="994"/>
-        <location filename="../qthostinterface.cpp" line="1037"/>
+        <location filename="../qthostinterface.cpp" line="1014"/>
+        <location filename="../qthostinterface.cpp" line="1057"/>
         <source>Game Save %1 (%2)</source>
         <translation>游戏档%1 (%2)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="994"/>
+        <location filename="../qthostinterface.cpp" line="1014"/>
         <source>Game Save %1 (Empty)</source>
         <translation>游戏档%1 (空)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1001"/>
+        <location filename="../qthostinterface.cpp" line="1021"/>
         <source>Global Save %1 (%2)</source>
         <translation>全局档%1 (%2)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1001"/>
+        <location filename="../qthostinterface.cpp" line="1021"/>
         <source>Global Save %1 (Empty)</source>
         <translation>全局档%1 (空)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1006"/>
+        <location filename="../qthostinterface.cpp" line="1026"/>
         <source>Resume</source>
         <translation>再开</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1009"/>
+        <location filename="../qthostinterface.cpp" line="1029"/>
         <source>Load State</source>
         <translation>读档</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1030"/>
+        <location filename="../qthostinterface.cpp" line="1050"/>
         <source>Resume (%1)</source>
         <translation>再开 (%1)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1454"/>
+        <location filename="../qthostinterface.cpp" line="1474"/>
         <source>Game ID: %1
 Game Title: %2
 Game Developer: %3
@@ -8396,7 +8421,7 @@ Achievements: %5 (%6)
 </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qthostinterface.cpp" line="1464"/>
+        <location filename="../qthostinterface.cpp" line="1484"/>
         <source>%n points</source>
         <translation>
             <numerusform>%n点</numerusform>
@@ -8419,12 +8444,12 @@ Achievements: %5 (%6 points)
 </translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1470"/>
+        <location filename="../qthostinterface.cpp" line="1490"/>
         <source>Rich presence inactive or unsupported.</source>
         <translation>Rich Presence不活跃或不支持。</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1474"/>
+        <location filename="../qthostinterface.cpp" line="1494"/>
         <source>Game not loaded or no RetroAchievements available.</source>
         <translation>游戏未加载或RetroAchievements不可用。</translation>
     </message>
@@ -8441,7 +8466,7 @@ Achievements: %5 (%6 points)
         <translation type="vanished">游戏</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="374"/>
+        <location filename="../qthostinterface.cpp" line="394"/>
         <source>No resume save state found.</source>
         <translation>没有发现可恢复的存档。</translation>
     </message>
@@ -8450,34 +8475,34 @@ Achievements: %5 (%6 points)
         <translation type="vanished">档文件...</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="970"/>
-        <location filename="../qthostinterface.cpp" line="983"/>
+        <location filename="../qthostinterface.cpp" line="990"/>
+        <location filename="../qthostinterface.cpp" line="1003"/>
         <source>Select Save State File</source>
         <translation>选择存档文件</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="970"/>
-        <location filename="../qthostinterface.cpp" line="983"/>
+        <location filename="../qthostinterface.cpp" line="990"/>
+        <location filename="../qthostinterface.cpp" line="1003"/>
         <source>Save States (*.sav)</source>
         <translation>存档 (*.sav)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1045"/>
+        <location filename="../qthostinterface.cpp" line="1065"/>
         <source>Edit Memory Cards...</source>
         <translation>管理记忆卡...</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1093"/>
+        <location filename="../qthostinterface.cpp" line="1113"/>
         <source>Delete Save States...</source>
         <translation>删除存档...</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1099"/>
+        <location filename="../qthostinterface.cpp" line="1119"/>
         <source>Confirm Save State Deletion</source>
         <translation>确认存档删除</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1100"/>
+        <location filename="../qthostinterface.cpp" line="1120"/>
         <source>Are you sure you want to delete all save states for %1?
 
 The saves will not be recoverable.</source>
@@ -8506,12 +8531,12 @@ The saves will not be recoverable.</source>
         <translation type="vanished">PCSXR金手指文件 (*.cht);;所有文件 (*.*)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1137"/>
+        <location filename="../qthostinterface.cpp" line="1157"/>
         <source>&amp;Enabled Cheats</source>
         <translation>启用金手指(&amp;H)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1139"/>
+        <location filename="../qthostinterface.cpp" line="1159"/>
         <source>&amp;Apply Cheats</source>
         <translation>应用金手指(&amp;A)</translation>
     </message>
