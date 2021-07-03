@@ -237,16 +237,22 @@ bool XInputControllerInterface::HandleAxisEvent(u32 index, Axis axis, s32 value)
   const AxisCallback& cb = m_controllers[index].axis_mapping[static_cast<u32>(axis)][AxisSide::Full];
   if (cb)
   {
-    // Extend triggers from a 0 - 1 range to a -1 - 1 range for consistency with other inputs
-    if (axis == Axis::LeftTrigger || axis == Axis::RightTrigger)
-    {
-      cb((f_value * 2.0f) - 1.0f);
-    }
-    else
-    {
-      cb(f_value);
-    }
+    cb(f_value);
     return true;
+  }
+  else
+  {
+    const AxisCallback& positive_cb = m_controllers[index].axis_mapping[static_cast<u32>(axis)][AxisSide::Positive];
+    const AxisCallback& negative_cb = m_controllers[index].axis_mapping[static_cast<u32>(axis)][AxisSide::Negative];
+    if (positive_cb || negative_cb)
+    {
+      if (positive_cb)
+        positive_cb((f_value < 0.0f) ? 0.0f : f_value);
+      if (negative_cb)
+        negative_cb((f_value >= 0.0f) ? 0.0f : -f_value);
+
+      return true;
+    }
   }
 
   // set the other direction to false so large movements don't leave the opposite on
