@@ -2526,6 +2526,14 @@ void DrawSettingsWindow()
                        &s_settings_copy.increase_timer_resolution);
 #endif
 
+        settings_changed |= ToggleButtonForNonSetting("Allow Booting Without SBI File",
+                                                      "Allows loading protected games without subchannel information.",
+                                                      "CDROM", "AllowBootingWithoutSBIFile", false);
+
+        settings_changed |= ToggleButtonForNonSetting("Create Save State Backups",
+                                                      "Renames existing save states when saving to a backup file.",
+                                                      "General", "CreateSaveStateBackups", false);
+
         MenuHeading("Display Settings");
         settings_changed |= ToggleButtonForNonSetting("Show Status Indicators",
                                                       "Shows persistent icons when turbo is active or when paused.",

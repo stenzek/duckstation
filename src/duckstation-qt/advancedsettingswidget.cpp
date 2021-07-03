@@ -198,6 +198,9 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(QtHostInterface* host_interface, 
   addBooleanTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Allow Booting Without SBI File"), "CDROM",
                         "AllowBootingWithoutSBIFile", false);
 
+  addBooleanTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Create Save State Backups"), "General",
+                        "CreateSaveStateBackups", false);
+
   dialog->registerWidgetHelp(m_ui.logLevel, tr("Log Level"), tr("Information"),
                              tr("Sets the verbosity of messages logged. Higher levels will log more messages."));
   dialog->registerWidgetHelp(m_ui.logToConsole, tr("Log To System Console"), tr("User Preference"),
@@ -238,4 +241,5 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
   setBooleanTweakOption(m_ui.tweakOptionTable, 19, false);
   setBooleanTweakOption(m_ui.tweakOptionTable, 20, true);
   setBooleanTweakOption(m_ui.tweakOptionTable, 21, false);
+  setBooleanTweakOption(m_ui.tweakOptionTable, 22, false);
 }

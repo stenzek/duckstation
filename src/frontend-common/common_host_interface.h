@@ -404,6 +404,9 @@ protected:
   /// Returns the path to a save state file. Specifying an index of -1 is the "resume" save state.
   std::string GetGlobalSaveStateFileName(s32 slot) const;
 
+  /// Moves the current save state file to a backup name, if it exists.
+  void RenameCurrentSaveStateToBackup(const char* filename);
+
   /// Sets the base path for the user directory. Can be overridden by platform/frontend/command line.
   virtual void SetUserDirectory();
 

@@ -789,6 +789,7 @@ bool CommonHostInterface::SaveState(bool global, s32 slot)
   }
 
   std::string save_path = global ? GetGlobalSaveStateFileName(slot) : GetGameSaveStateFileName(code.c_str(), slot);
+  RenameCurrentSaveStateToBackup(save_path.c_str());
   if (!SaveState(save_path.c_str()))
     return false;
 
@@ -2743,6 +2744,24 @@ std::string CommonHostInterface::GetGlobalSaveStateFileName(s32 slot) const
     return GetUserDirectoryRelativePath("savestates" FS_OSPATH_SEPARATOR_STR "resume.sav");
   else
     return GetUserDirectoryRelativePath("savestates" FS_OSPATH_SEPARATOR_STR "savestate_%d.sav", slot);
+}
+
+void CommonHostInterface::RenameCurrentSaveStateToBackup(const char* filename)
+{
+  if (!GetBoolSettingValue("General", "CreateSaveStateBackups", false))
+    return;
+
+  if (!FileSystem::FileExists(filename))
+    return;
+
+  const std::string backup_filename(FileSystem::ReplaceExtension(filename, "bak"));
+  if (!FileSystem::RenamePath(filename, backup_filename.c_str()))
+  {
+    Log_ErrorPrintf("Failed to rename save state backup '%s'", backup_filename.c_str());
+    return;
+  }
+
+  Log_InfoPrintf("Renamed save state '%s' to '%s'", filename, backup_filename.c_str());
 }
 
 std::vector<CommonHostInterface::SaveStateInfo> CommonHostInterface::GetAvailableSaveStates(const char* game_code) const
