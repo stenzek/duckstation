@@ -115,7 +115,7 @@ void AudioStream::BeginWrite(SampleType** buffer_ptr, u32* num_frames)
   EnsureBuffer(requested_frames * m_channels);
 
   *buffer_ptr = m_buffer.GetWritePointer();
-  *num_frames = m_buffer.GetContiguousSpace() / m_channels;
+  *num_frames = std::min(m_buffer_size, m_buffer.GetContiguousSpace() / m_channels);
 }
 
 void AudioStream::WriteFrames(const SampleType* frames, u32 num_frames)
