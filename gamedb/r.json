@@ -518,7 +518,8 @@
   "linkCable": false,
   "controllers": [
    "AnalogController",
-   "DigitalController"
+   "DigitalController",
+   "NeGcon"
   ]
  },
  {
@@ -549,7 +550,8 @@
   "linkCable": false,
   "controllers": [
    "AnalogController",
-   "DigitalController"
+   "DigitalController",
+   "NeGcon"
   ]
  },
  {
@@ -581,7 +583,8 @@
   "linkCable": false,
   "controllers": [
    "AnalogController",
-   "DigitalController"
+   "DigitalController",
+   "NeGcon"
   ]
  },
  {
@@ -612,7 +615,8 @@
   "linkCable": false,
   "controllers": [
    "AnalogController",
-   "DigitalController"
+   "DigitalController",
+   "NeGcon"
   ]
  },
  {
@@ -638,7 +642,8 @@
   "linkCable": false,
   "controllers": [
    "AnalogController",
-   "DigitalController"
+   "DigitalController",
+   "NeGcon"
   ]
  },
  {
@@ -1671,7 +1676,8 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "NeGcon"
   ]
  },
  {
@@ -1765,7 +1771,8 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "NeGcon"
   ]
  },
  {
@@ -1859,7 +1866,8 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "NeGcon"
   ]
  },
  {
@@ -11979,7 +11987,8 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "NeGcon"
   ]
  },
  {
@@ -12058,7 +12067,8 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "NeGcon"
   ]
  },
  {
@@ -12141,7 +12151,8 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "NeGcon"
   ]
  },
  {
@@ -12208,7 +12219,8 @@
   "linkCable": false,
   "controllers": [
    "AnalogController",
-   "DigitalController"
+   "DigitalController",
+   "NeGcon"
   ]
  },
  {
@@ -12276,7 +12288,8 @@
   "linkCable": false,
   "controllers": [
    "AnalogController",
-   "DigitalController"
+   "DigitalController",
+   "NeGcon"
   ]
  },
  {
@@ -12339,7 +12352,8 @@
   "linkCable": false,
   "controllers": [
    "AnalogController",
-   "DigitalController"
+   "DigitalController",
+   "NeGcon"
   ]
  },
  {
@@ -12410,7 +12424,8 @@
   "linkCable": false,
   "controllers": [
    "AnalogController",
-   "DigitalController"
+   "DigitalController",
+   "NeGcon"
   ]
  },
  {
@@ -12516,7 +12531,8 @@
   "multitap": false,
   "linkCable": true,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "NeGcon"
   ]
  },
  {
@@ -12622,7 +12638,8 @@
   "multitap": false,
   "linkCable": true,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "NeGcon"
   ]
  },
  {
@@ -12728,7 +12745,8 @@
   "multitap": false,
   "linkCable": true,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "NeGcon"
   ]
  },
  {
@@ -12834,7 +12852,8 @@
   "multitap": false,
   "linkCable": true,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "NeGcon"
   ]
  },
  {
@@ -12869,7 +12888,8 @@
   "linkCable": false,
   "controllers": [
    "AnalogController",
-   "DigitalController"
+   "DigitalController",
+   "NeGcon"
   ]
  },
  {

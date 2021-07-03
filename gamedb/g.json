@@ -9234,7 +9234,8 @@
   "linkCable": false,
   "controllers": [
    "AnalogController",
-   "DigitalController"
+   "DigitalController",
+   "NeGcon"
   ]
  },
  {
@@ -9312,7 +9313,8 @@
   "linkCable": false,
   "controllers": [
    "AnalogController",
-   "DigitalController"
+   "DigitalController",
+   "NeGcon"
   ]
  },
  {
@@ -9343,7 +9345,8 @@
   "linkCable": false,
   "controllers": [
    "AnalogController",
-   "DigitalController"
+   "DigitalController",
+   "NeGcon"
   ]
  },
  {
