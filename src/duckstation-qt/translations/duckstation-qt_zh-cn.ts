@@ -4433,9 +4433,13 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.ui" line="34"/>
         <source>Search Directories</source>
-        <translation>搜索目录</translation>
+        <translation type="vanished">搜索目录</translation>
+    </message>
+    <message>
+        <location filename="../gamelistsettingswidget.ui" line="34"/>
+        <source>Search Directories (will be scanned for games)</source>
+        <translation>搜索目录 (将扫描游戏)</translation>
     </message>
     <message>
         <location filename="../gamelistsettingswidget.ui" line="60"/>
@@ -4452,8 +4456,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <location filename="../gamelistsettingswidget.ui" line="95"/>
+        <source>Excluded Paths (will not be scanned)</source>
+        <translation>排除路径 (将不扫描)</translation>
+    </message>
+    <message>
         <source>Excluded Paths</source>
-        <translation>排除路径</translation>
+        <translation type="vanished">排除路径</translation>
     </message>
     <message>
         <location filename="../gamelistsettingswidget.ui" line="175"/>
