@@ -993,6 +993,9 @@ void QtHostInterface::populateSaveStateMenus(const char* game_code, QMenu* load_
 
     loadState(path);
   });
+  QAction* load_from_state = load_menu->addAction(tr("Undo Load State"));
+  load_from_state->setEnabled(CanUndoLoadState());
+  connect(load_from_state, &QAction::triggered, this, &QtHostInterface::undoLoadState);
   load_menu->addSeparator();
 
   connect(save_menu->addAction(tr("Save To File...")), &QAction::triggered, [this]() {
@@ -1339,6 +1342,17 @@ void QtHostInterface::saveState(bool global, qint32 slot, bool block_until_done 
 
   if (!System::IsShutdown())
     SaveState(global, slot);
+}
+
+void QtHostInterface::undoLoadState()
+{
+  if (!isOnWorkerThread())
+  {
+    QMetaObject::invokeMethod(this, "undoLoadState", Qt::QueuedConnection);
+    return;
+  }
+
+  UndoLoadState();
 }
 
 void QtHostInterface::setAudioOutputVolume(int volume, int fast_forward_volume)

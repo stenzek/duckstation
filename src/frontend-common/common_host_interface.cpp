@@ -215,6 +215,7 @@ bool CommonHostInterface::BootSystem(std::shared_ptr<SystemBootParameters> param
 
 void CommonHostInterface::DestroySystem()
 {
+  m_undo_load_state.reset();
   SetTimerResolutionIncreased(false);
   m_save_state_selector_ui->Close();
   m_display->SetPostProcessingChain({});
@@ -700,9 +701,57 @@ void CommonHostInterface::UpdateControllerInterface()
   }
 }
 
+bool CommonHostInterface::UndoLoadState()
+{
+  if (!m_undo_load_state)
+    return false;
+
+  Assert(System::IsValid());
+
+  m_undo_load_state->SeekAbsolute(0);
+  if (!System::LoadState(m_undo_load_state.get()))
+  {
+    ReportError("Failed to load undo state, resetting system.");
+    m_undo_load_state.reset();
+    ResetSystem();
+    return false;
+  }
+
+  System::ResetPerformanceCounters();
+  System::ResetThrottler();
+
+#ifdef WITH_CHEEVOS
+  Cheevos::Reset();
+#endif
+
+  Log_InfoPrintf("Loaded undo save state.");
+  m_undo_load_state.reset();
+  return true;
+}
+
+bool CommonHostInterface::SaveUndoLoadState()
+{
+  if (m_undo_load_state)
+    m_undo_load_state.reset();
+
+  m_undo_load_state = ByteStream_CreateGrowableMemoryStream(nullptr, System::MAX_SAVE_STATE_SIZE);
+  if (!System::SaveState(m_undo_load_state.get(), 0))
+  {
+    AddOSDMessage(TranslateStdString("OSDMessage", "Failed to save undo load state."), 15.0f);
+    m_undo_load_state.reset();
+    return false;
+  }
+
+  Log_InfoPrintf("Saved undo load state: % " PRIu64 " bytes", m_undo_load_state->GetSize());
+  return true;
+}
+
 bool CommonHostInterface::LoadState(const char* filename)
 {
   const bool system_was_valid = System::IsValid();
+  if (system_was_valid)
+    SaveUndoLoadState();
+
   const bool result = HostInterface::LoadState(filename);
   if (system_was_valid || !result)
   {
@@ -710,6 +759,9 @@ bool CommonHostInterface::LoadState(const char* filename)
     Cheevos::Reset();
 #endif
   }
+
+  if (!result && CanUndoLoadState())
+    UndoLoadState();
 
   return result;
 }
@@ -2318,6 +2370,12 @@ void CommonHostInterface::RegisterSaveStateHotkeys()
                  StaticString(TRANSLATABLE("Hotkeys", "Select Next Save Slot")), [this](bool pressed) {
                    if (pressed)
                      m_save_state_selector_ui->SelectNextSlot();
+                 });
+
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "Save States")), StaticString("UndoLoadState"),
+                 StaticString(TRANSLATABLE("Hotkeys", "Undo Load State")), [this](bool pressed) {
+                   if (pressed)
+                     UndoLoadState();
                  });
 
   for (u32 slot = 1; slot <= PER_GAME_SAVE_STATE_SLOTS; slot++)
