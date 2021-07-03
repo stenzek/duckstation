@@ -303,7 +303,10 @@ bool EvdevControllerInterface::BindControllerButtonToAxis(int controller_index, 
 bool EvdevControllerInterface::HandleAxisEvent(ControllerData* cd, u32 axis, s32 value)
 {
   const ControllerData::Axis& ad = cd->axes[axis];
-  const float f_value = ((static_cast<float>(value - ad.min) / ad.range) * 2.0f) - 1.0f;
+  float f_value = (static_cast<float>(value - ad.min) / static_cast<float>(ad.range));
+  if (ad.min < 0)
+    f_value = (f_value * 2.0f) - 1.0f;
+
   Log_DevPrintf("controller %u axis %u %d %f range %d", cd->controller_id, axis, value, f_value, ad.range);
 
   if (DoEventHook(Hook::Type::Axis, cd->controller_id, axis, f_value))
@@ -314,6 +317,20 @@ bool EvdevControllerInterface::HandleAxisEvent(ControllerData* cd, u32 axis, s32
   {
     cb(f_value);
     return true;
+  }
+  else
+  {
+    const AxisCallback& positive_cb = ad.callback[AxisSide::Positive];
+    const AxisCallback& negative_cb = ad.callback[AxisSide::Negative];
+    if (positive_cb || negative_cb)
+    {
+      if (positive_cb)
+        positive_cb((f_value < 0.0f) ? 0.0f : f_value);
+      if (negative_cb)
+        negative_cb((f_value >= 0.0f) ? 0.0f : -f_value);
+
+      return true;
+    }
   }
 
   // set the other direction to false so large movements don't leave the opposite on
