@@ -73,6 +73,9 @@ bool InputAxisBindingMonitor::ProcessAxisInput(const ControllerInterface::Hook& 
     if (std::abs(value) < 0.5f)
       return false;
 
+    if (m_axis_type == Controller::AxisType::Half)
+      half_axis_positive = (value > 0.0f);
+
     return true;
   }
   else // Joystick
