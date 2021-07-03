@@ -1347,8 +1347,10 @@ void DrawSettingsWindow()
 
   EndFullscreenWindow();
 
-  if (BeginFullscreenWindow(ImVec2(0.0f, ImGuiFullscreen::g_menu_bar_size + heading_size.y),
-                            ImVec2(io.DisplaySize.x, io.DisplaySize.y - heading_size.y), "settings_parent"))
+  if (BeginFullscreenWindow(
+        ImVec2(0.0f, ImGuiFullscreen::g_menu_bar_size + heading_size.y),
+        ImVec2(io.DisplaySize.x, io.DisplaySize.y - heading_size.y - ImGuiFullscreen::g_menu_bar_size),
+        "settings_parent"))
   {
     if (ImGui::IsNavInputTest(ImGuiNavInput_Cancel, ImGuiInputReadMode_Pressed))
     {
