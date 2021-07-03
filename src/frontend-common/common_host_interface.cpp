@@ -1914,26 +1914,50 @@ bool CommonHostInterface::AddAxisToInputMap(const std::string& binding, const st
         StringUtil::FromChars<int>(axis.substr(axis[0] == '+' || axis[0] == '-' ? 5 : 4));
       if (axis_index)
       {
+        const bool inverted = StringUtil::EndsWith(axis, "-");
         ControllerInterface::AxisSide axis_side = ControllerInterface::AxisSide::Full;
         if (axis[0] == '+')
-          axis_side = ControllerInterface::AxisSide::Positive;
-        else if (axis[0] == '-')
-          axis_side = ControllerInterface::AxisSide::Negative;
-
-        const bool inverted = StringUtil::EndsWith(axis, "-");
-        if (!inverted)
         {
-          if (m_controller_interface->BindControllerAxis(*controller_index, *axis_index, axis_side, std::move(handler)))
+          axis_side = ControllerInterface::AxisSide::Positive;
+        }
+        else if (axis[0] == '-')
+        {
+          axis_side = ControllerInterface::AxisSide::Negative;
+        }
+
+        if (axis_type == Controller::AxisType::Half && axis_side == ControllerInterface::Full)
+        {
+          // full axis [-1..1] -> half axis [0..1]
+          if (inverted)
           {
-            return true;
+            m_controller_interface->BindControllerAxis(
+              *controller_index, *axis_index, axis_side,
+              [cb = std::move(handler)](float value) { cb(((-value) + 1.0f) * 0.5f); });
+          }
+          else
+          {
+            m_controller_interface->BindControllerAxis(
+              *controller_index, *axis_index, axis_side,
+              [cb = std::move(handler)](float value) { cb((value + 1.0f) * 0.5f); });
           }
         }
         else
         {
-          if (m_controller_interface->BindControllerAxis(*controller_index, *axis_index, axis_side,
-                                                         [cb = std::move(handler)](float value) { cb(-value); }))
+          if (!inverted)
           {
-            return true;
+            if (m_controller_interface->BindControllerAxis(*controller_index, *axis_index, axis_side,
+                                                           std::move(handler)))
+            {
+              return true;
+            }
+          }
+          else
+          {
+            if (m_controller_interface->BindControllerAxis(*controller_index, *axis_index, axis_side,
+                                                           [cb = std::move(handler)](float value) { cb(-value); }))
+            {
+              return true;
+            }
           }
         }
       }
