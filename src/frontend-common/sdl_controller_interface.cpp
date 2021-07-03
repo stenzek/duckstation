@@ -376,8 +376,7 @@ bool SDLControllerInterface::HandleJoystickAxisEvent(const SDL_JoyAxisEvent* eve
     const AxisCallback& hcb = it->axis_mapping[event->axis][AxisSide::Positive];
     if (hcb)
     {
-      // Expand 0..1 - -1..1
-      hcb(value * 2.0f - 1.0f);
+      hcb(value);
       processed = true;
     }
   }
@@ -386,8 +385,7 @@ bool SDLControllerInterface::HandleJoystickAxisEvent(const SDL_JoyAxisEvent* eve
     const AxisCallback& hcb = it->axis_mapping[event->axis][AxisSide::Negative];
     if (hcb)
     {
-      // Expand 0..-1 - -1..1
-      hcb(value * -2.0f - 1.0f);
+      hcb(value);
       processed = true;
     }
   }
@@ -635,16 +633,22 @@ bool SDLControllerInterface::HandleControllerAxisEvent(const SDL_ControllerAxisE
   const AxisCallback& cb = it->axis_mapping[ev->axis][AxisSide::Full];
   if (cb)
   {
-    // Extend triggers from a 0 - 1 range to a -1 - 1 range for consistency with other inputs
-    if (ev->axis == SDL_CONTROLLER_AXIS_TRIGGERLEFT || ev->axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT)
-    {
-      cb((value * 2.0f) - 1.0f);
-    }
-    else
-    {
-      cb(value);
-    }
+    cb(value);
     return true;
+  }
+  else
+  {
+    const AxisCallback& positive_cb = it->axis_mapping[ev->axis][AxisSide::Positive];
+    const AxisCallback& negative_cb = it->axis_mapping[ev->axis][AxisSide::Negative];
+    if (positive_cb || negative_cb)
+    {
+      if (positive_cb)
+        positive_cb((value < 0.0f) ? 0.0f : value);
+      if (negative_cb)
+        negative_cb((value >= 0.0f) ? 0.0f : -value);
+
+      return true;
+    }
   }
 
   // set the other direction to false so large movements don't leave the opposite on
