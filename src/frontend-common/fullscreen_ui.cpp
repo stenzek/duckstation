@@ -596,11 +596,13 @@ static void DoStartPath(const std::string& path, bool allow_resume)
 
   if (allow_resume && g_settings.save_state_on_exit)
   {
-    s_host_interface->ResumeSystemFromState(path.c_str(), true);
-    return;
+    s_host_interface->RunLater([path]() { s_host_interface->ResumeSystemFromState(path.c_str(), true); });
   }
-
-  s_host_interface->BootSystem(std::make_shared<SystemBootParameters>(path));
+  else
+  {
+    auto params = std::make_shared<SystemBootParameters>(path);
+    s_host_interface->RunLater([params]() { s_host_interface->BootSystem(std::move(params)); });
+  }
 }
 
 static void DoStartFile()
