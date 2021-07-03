@@ -1326,7 +1326,7 @@ Token gerado %2.</translation>
     <message>
         <location filename="../../core/settings.cpp" line="593"/>
         <source>Interpreter (Slowest)</source>
-        <translation>Interpretador (Mais Lento)</translation>
+        <translation>Interpretador (Mais lento)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="594"/>
@@ -4763,53 +4763,73 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>Pesquisar Diretórios</translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.ui" line="52"/>
+        <location filename="../gamelistsettingswidget.ui" line="60"/>
+        <location filename="../gamelistsettingswidget.ui" line="121"/>
         <source>Add</source>
         <translation>Adicionar</translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.ui" line="69"/>
-        <location filename="../gamelistsettingswidget.cpp" line="77"/>
+        <location filename="../gamelistsettingswidget.ui" line="77"/>
+        <location filename="../gamelistsettingswidget.ui" line="138"/>
+        <location filename="../gamelistsettingswidget.cpp" line="101"/>
         <source>Remove</source>
         <translation>Remover</translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.ui" line="99"/>
-        <source>Scan New</source>
-        <translation>Examinar novos</translation>
+        <location filename="../gamelistsettingswidget.ui" line="95"/>
+        <source>Excluded Paths</source>
+        <translation>Caminhos excluídos</translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.ui" line="116"/>
-        <source>Rescan All</source>
+        <location filename="../gamelistsettingswidget.ui" line="175"/>
+        <source>Scan For New Games</source>
+        <translation>Examinar por novos jogos</translation>
+    </message>
+    <message>
+        <location filename="../gamelistsettingswidget.ui" line="192"/>
+        <source>Rescan All Games</source>
         <translation>Examinar tudo</translation>
+    </message>
+    <message>
+        <source>Scan New</source>
+        <translation type="vanished">Examinar novos</translation>
+    </message>
+    <message>
+        <source>Rescan All</source>
+        <translation type="vanished">Examinar tudo</translation>
     </message>
     <message>
         <source>Update Redump Database</source>
         <translation type="vanished">Atualizar Lista de Jogos</translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.cpp" line="79"/>
+        <location filename="../gamelistsettingswidget.cpp" line="103"/>
         <source>Open Directory...</source>
         <translation>Abrir diretório...</translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.cpp" line="87"/>
+        <location filename="../gamelistsettingswidget.cpp" line="111"/>
         <source>Select Search Directory</source>
         <translation>Escolha o diretório de busca</translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.cpp" line="93"/>
+        <location filename="../gamelistsettingswidget.cpp" line="117"/>
         <source>Scan Recursively?</source>
         <translation>Verificar recursivamente?</translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.cpp" line="94"/>
+        <location filename="../gamelistsettingswidget.cpp" line="118"/>
         <source>Would you like to scan the directory &quot;%1&quot; recursively?
 
 Scanning recursively takes more time, but will identify files in subdirectories.</source>
         <translatorcomment>Better term for scan in English would be in Portuguese, To scan = Verificar</translatorcomment>
         <translation>Você gostaria de analisar o diretório &quot;%1&quot; recursivamente?
 Escanear o diretório desta forma demora mais tempo porém, identificará arquivos em sub-pastas.</translation>
+    </message>
+    <message>
+        <location filename="../gamelistsettingswidget.cpp" line="147"/>
+        <source>Select Path</source>
+        <translation>Selecione o caminho</translation>
     </message>
     <message>
         <source>Download database from redump.org?</source>
@@ -6520,7 +6540,7 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../mainwindow.ui" line="14"/>
         <location filename="../mainwindow.cpp" line="86"/>
         <location filename="../mainwindow.cpp" line="97"/>
-        <location filename="../mainwindow.cpp" line="842"/>
+        <location filename="../mainwindow.cpp" line="845"/>
         <source>DuckStation</source>
         <translation>DuckStation</translation>
     </message>
@@ -7120,90 +7140,95 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="696"/>
+        <source>Exclude From List</source>
+        <translation>Excluir da lista</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="699"/>
         <source>Add Search Directory...</source>
         <translation>Adiciona um novo diretório...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="704"/>
+        <location filename="../mainwindow.cpp" line="707"/>
         <source>Select Cover Image</source>
         <translation>Escolher imagem de capa...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="705"/>
+        <location filename="../mainwindow.cpp" line="708"/>
         <source>All Cover Image Types (*.jpg *.jpeg *.png)</source>
         <translation>Tipos de imagem suportada (*.jpg *.jpeg *.png)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="711"/>
+        <location filename="../mainwindow.cpp" line="714"/>
         <source>Cover Already Exists</source>
         <translation>Capa já existe</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="712"/>
+        <location filename="../mainwindow.cpp" line="715"/>
         <source>A cover image for this game already exists, do you wish to replace it?</source>
         <translation>Capa para este jogo já existe, deseja substitui-lá?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="726"/>
-        <location filename="../mainwindow.cpp" line="732"/>
+        <location filename="../mainwindow.cpp" line="729"/>
+        <location filename="../mainwindow.cpp" line="735"/>
         <source>Copy Error</source>
         <translation>Erro ao copiar</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="726"/>
+        <location filename="../mainwindow.cpp" line="729"/>
         <source>Failed to remove existing cover &apos;%1&apos;</source>
         <translation>Falha ao remover capa existente &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="732"/>
+        <location filename="../mainwindow.cpp" line="735"/>
         <source>Failed to copy &apos;%1&apos; to &apos;%2&apos;</source>
         <translation>Atenção imagem já copiada &apos;%1&apos; para &apos;%2&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="843"/>
+        <location filename="../mainwindow.cpp" line="846"/>
         <source>Language changed. Please restart the application to apply.</source>
         <translation>Idioma alterado reinicie o emulador para aplicar.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="849"/>
+        <location filename="../mainwindow.cpp" line="852"/>
         <source>%1x Scale</source>
         <translation>Escalar para %1x</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1133"/>
-        <location filename="../mainwindow.cpp" line="1140"/>
-        <location filename="../mainwindow.cpp" line="1149"/>
+        <location filename="../mainwindow.cpp" line="1136"/>
+        <location filename="../mainwindow.cpp" line="1143"/>
+        <location filename="../mainwindow.cpp" line="1152"/>
         <source>Destination File</source>
         <translation>Destino do arquivo</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1133"/>
-        <location filename="../mainwindow.cpp" line="1149"/>
+        <location filename="../mainwindow.cpp" line="1136"/>
+        <location filename="../mainwindow.cpp" line="1152"/>
         <source>Binary Files (*.bin)</source>
         <translation>Arquivos binários (*.bin)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1141"/>
+        <location filename="../mainwindow.cpp" line="1144"/>
         <source>Binary Files (*.bin);;PNG Images (*.png)</source>
         <translation>Arquivos binários (*.bin);;Imagens PNG (*.png)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1166"/>
+        <location filename="../mainwindow.cpp" line="1169"/>
         <source>Default</source>
         <translation>Padrão</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1167"/>
+        <location filename="../mainwindow.cpp" line="1170"/>
         <source>Fusion</source>
         <translation>Fusion</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1168"/>
+        <location filename="../mainwindow.cpp" line="1171"/>
         <source>Dark Fusion (Gray)</source>
         <translation>Dark Fusion (Cinza)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1169"/>
+        <location filename="../mainwindow.cpp" line="1172"/>
         <source>Dark Fusion (Blue)</source>
         <translation>Dark Fusion (Azul)</translation>
     </message>
@@ -7212,46 +7237,46 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation type="vanished">DarkFusion</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1170"/>
+        <location filename="../mainwindow.cpp" line="1173"/>
         <source>QDarkStyle</source>
         <translation>Escuro</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1513"/>
-        <location filename="../mainwindow.cpp" line="1518"/>
-        <location filename="../mainwindow.cpp" line="1538"/>
-        <location filename="../mainwindow.cpp" line="1547"/>
+        <location filename="../mainwindow.cpp" line="1516"/>
+        <location filename="../mainwindow.cpp" line="1521"/>
+        <location filename="../mainwindow.cpp" line="1541"/>
+        <location filename="../mainwindow.cpp" line="1550"/>
         <source>Memory Card Not Found</source>
         <translation>Cartão de memória não encontrado</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1514"/>
+        <location filename="../mainwindow.cpp" line="1517"/>
         <source>Memory card &apos;%1&apos; does not exist. Do you want to create an empty memory card?</source>
         <translation>Cartão de memória &apos;%1&apos; não existe, você deseja criar um cartão de memória vazio?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1519"/>
+        <location filename="../mainwindow.cpp" line="1522"/>
         <source>Failed to create memory card &apos;%1&apos;</source>
         <translation>Falha ao criar cartão de memória &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1539"/>
-        <location filename="../mainwindow.cpp" line="1548"/>
+        <location filename="../mainwindow.cpp" line="1542"/>
+        <location filename="../mainwindow.cpp" line="1551"/>
         <source>Memory card &apos;%1&apos; could not be found. Try starting the game and saving to create it.</source>
         <translation>Cartão de memória &apos;%1&apos; não encotrado. experimente iniciar o jogo e salvá-lo para que ele seja criado.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1625"/>
+        <location filename="../mainwindow.cpp" line="1628"/>
         <source>Updater Error</source>
         <translation>Erro na atualização</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1631"/>
+        <location filename="../mainwindow.cpp" line="1634"/>
         <source>&lt;p&gt;Sorry, you are trying to update a DuckStation version which is not an official GitHub release. To prevent incompatibilities, the auto-updater is only enabled on official builds.&lt;/p&gt;&lt;p&gt;To obtain an official build, please follow the instructions under &quot;Downloading and Running&quot; at the link below:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt;https://github.com/stenzek/duckstation/&lt;/a&gt;&lt;/p&gt;</source>
         <translation>&lt;p&gt;Desculpe mas, você está tentando atualizar uma versão não oficial do Duckstation para evitarmos imcompatibilidade, o atualizador automático só poderá ser usado nas versões oficiais! &lt;/p&gt;&lt;p&gt;Para obtê-las, siga as instruções de como e onde no link &quot;Baixando e rodando&quot; conforme abaixo:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt;https://github.com/stenzek/duckstation/&lt;/a&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1637"/>
+        <location filename="../mainwindow.cpp" line="1640"/>
         <source>Automatic updating is not supported on the current platform.</source>
         <translation>Atualizações automáticas não são suportadas na plataforma atual.</translation>
     </message>
@@ -8506,7 +8531,7 @@ Please configure a supported controller from the list above.</source>
         <translation>Falha ao ativar tela cheia em modo exclusivo.</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="484"/>
+        <location filename="../qthostinterface.cpp" line="504"/>
         <source>Lost exclusive fullscreen.</source>
         <translation>Tela-cheia exclusiva perdida.</translation>
     </message>
@@ -8740,53 +8765,53 @@ The URL was: %1</source>
 <context>
     <name>QtHostInterface</name>
     <message>
-        <location filename="../qthostinterface.cpp" line="968"/>
+        <location filename="../qthostinterface.cpp" line="988"/>
         <source>Load From File...</source>
         <translation>Carregar do arquivo...</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="978"/>
+        <location filename="../qthostinterface.cpp" line="998"/>
         <source>Save To File...</source>
         <translation>Carregar para arquivo...</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="994"/>
-        <location filename="../qthostinterface.cpp" line="1037"/>
+        <location filename="../qthostinterface.cpp" line="1014"/>
+        <location filename="../qthostinterface.cpp" line="1057"/>
         <source>Game Save %1 (%2)</source>
         <translation>Jogo salvo %1 (%2)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="994"/>
+        <location filename="../qthostinterface.cpp" line="1014"/>
         <source>Game Save %1 (Empty)</source>
         <translation>Jogo salvo %1 (Vazio)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1001"/>
+        <location filename="../qthostinterface.cpp" line="1021"/>
         <source>Global Save %1 (%2)</source>
         <translation>Compartimento Global %1 (%2)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1001"/>
+        <location filename="../qthostinterface.cpp" line="1021"/>
         <source>Global Save %1 (Empty)</source>
         <translation>Compartimento global %1 (Vazio)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1006"/>
+        <location filename="../qthostinterface.cpp" line="1026"/>
         <source>Resume</source>
         <translation>Resumir</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1009"/>
+        <location filename="../qthostinterface.cpp" line="1029"/>
         <source>Load State</source>
         <translation>Carregar estado</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1030"/>
+        <location filename="../qthostinterface.cpp" line="1050"/>
         <source>Resume (%1)</source>
         <translation>Resumir (%1)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1454"/>
+        <location filename="../qthostinterface.cpp" line="1474"/>
         <source>Game ID: %1
 Game Title: %2
 Game Developer: %3
@@ -8802,7 +8827,7 @@ Conquistas: %5 (%6)
 </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qthostinterface.cpp" line="1464"/>
+        <location filename="../qthostinterface.cpp" line="1484"/>
         <source>%n points</source>
         <translation>
             <numerusform>%n pontos</numerusform>
@@ -8825,12 +8850,12 @@ Total de Conquistas: %5 (%6 pontos)
 </translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1470"/>
+        <location filename="../qthostinterface.cpp" line="1490"/>
         <source>Rich presence inactive or unsupported.</source>
         <translation>Presença rica do Discord inativa ou não suportada.</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1474"/>
+        <location filename="../qthostinterface.cpp" line="1494"/>
         <source>Game not loaded or no RetroAchievements available.</source>
         <translation>Jogo não carregado ou sem conquistas disponíveis.</translation>
     </message>
@@ -8847,7 +8872,7 @@ Total de Conquistas: %5 (%6 pontos)
         <translation type="vanished">Jogo</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="374"/>
+        <location filename="../qthostinterface.cpp" line="394"/>
         <source>No resume save state found.</source>
         <translation>Salvamento rápido não encontrado.</translation>
     </message>
@@ -8856,34 +8881,34 @@ Total de Conquistas: %5 (%6 pontos)
         <translation type="vanished">De arquivo...</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="970"/>
-        <location filename="../qthostinterface.cpp" line="983"/>
+        <location filename="../qthostinterface.cpp" line="990"/>
+        <location filename="../qthostinterface.cpp" line="1003"/>
         <source>Select Save State File</source>
         <translation>Escolher arquivo de salvamento rápido</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="970"/>
-        <location filename="../qthostinterface.cpp" line="983"/>
+        <location filename="../qthostinterface.cpp" line="990"/>
+        <location filename="../qthostinterface.cpp" line="1003"/>
         <source>Save States (*.sav)</source>
         <translation>Salvamento rápido (*.sav)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1045"/>
+        <location filename="../qthostinterface.cpp" line="1065"/>
         <source>Edit Memory Cards...</source>
         <translation>Editar cartões de memória...</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1093"/>
+        <location filename="../qthostinterface.cpp" line="1113"/>
         <source>Delete Save States...</source>
         <translation>Apagar estados salvos...</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1099"/>
+        <location filename="../qthostinterface.cpp" line="1119"/>
         <source>Confirm Save State Deletion</source>
         <translation>Confirma deleção de estado salvo</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1100"/>
+        <location filename="../qthostinterface.cpp" line="1120"/>
         <source>Are you sure you want to delete all save states for %1?
 
 The saves will not be recoverable.</source>
@@ -8910,12 +8935,12 @@ The saves will not be recoverable.</source>
         <translation type="vanished">Arquivos Suportados PCSXR/Libretro (*.cht *.txt);;Todos (*.*)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1137"/>
+        <location filename="../qthostinterface.cpp" line="1157"/>
         <source>&amp;Enabled Cheats</source>
         <translation>&amp;Habilitar trapaças</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1139"/>
+        <location filename="../qthostinterface.cpp" line="1159"/>
         <source>&amp;Apply Cheats</source>
         <translation>&amp;Aplicar trapaças</translation>
     </message>
