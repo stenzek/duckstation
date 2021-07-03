@@ -1571,6 +1571,20 @@ bool FileSystem::DeleteFile(const char* Path)
     return false;
 }
 
+bool FileSystem::RenamePath(const char* OldPath, const char* NewPath)
+{
+  const std::wstring old_wpath(StringUtil::UTF8StringToWideString(OldPath));
+  const std::wstring new_wpath(StringUtil::UTF8StringToWideString(NewPath));
+
+  if (!MoveFileExW(old_wpath.c_str(), new_wpath.c_str(), MOVEFILE_REPLACE_EXISTING))
+  {
+    Log_ErrorPrintf("MoveFileEx('%s', '%s') failed: %08X", OldPath, NewPath, GetLastError());
+    return false;
+  }
+
+  return true;
+}
+
 static bool RecursiveDeleteDirectory(const std::wstring& wpath, bool Recursive)
 {
   // ensure it exists
@@ -2044,6 +2058,20 @@ bool DeleteFile(const char* Path)
     return false;
 
   return (unlink(Path) == 0);
+}
+
+bool RenamePath(const char* OldPath, const char* NewPath)
+{
+  if (OldPath[0] == '\0' || NewPath[0] == '\0')
+    return false;
+
+  if (rename(OldPath, NewPath) != 0)
+  {
+    Log_ErrorPrintf("rename('%s', '%s') failed: %d", OldPath, NewPath, errno);
+    return false;
+  }
+
+  return true;
 }
 
 bool DeleteDirectory(const char* Path, bool Recursive)
