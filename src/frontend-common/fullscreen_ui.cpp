@@ -150,6 +150,7 @@ enum class InputBindingType
   None,
   Button,
   Axis,
+  HalfAxis,
   Rumble
 };
 
@@ -886,6 +887,9 @@ static void DrawInputBindingButton(InputBindingType type, const char* section, c
       case InputBindingType::Axis:
         title.Format(ICON_FA_BULLSEYE "  %s Axis", display_name);
         break;
+      case InputBindingType::HalfAxis:
+        title.Format(ICON_FA_SLIDERS_H "  %s Half-Axis", display_name);
+        break;
       case InputBindingType::Rumble:
         title.Format(ICON_FA_BELL "  %s", display_name);
         break;
@@ -977,6 +981,16 @@ void BeginInputBinding(InputBindingType type, const std::string_view& section, c
         {
           if (hook.type == ControllerInterface::Hook::Type::Axis)
             value.Format("Controller%d/Axis%d", hook.controller_index, hook.button_or_axis_number);
+        }
+        break;
+
+        case InputBindingType::HalfAxis:
+        {
+          if (hook.type == ControllerInterface::Hook::Type::Axis)
+          {
+            value.Format("Controller%d/%cAxis%d", hook.controller_index,
+                         (std::get<float>(hook.value) < 0.0f) ? '-' : '+', hook.button_or_axis_number);
+          }
         }
         break;
 
@@ -1887,7 +1901,9 @@ void DrawSettingsWindow()
           for (const auto& it : axis_cache[port])
           {
             key.Format("Axis%s", std::get<0>(it).c_str());
-            DrawInputBindingButton(InputBindingType::Axis, section, key, std::get<0>(it).c_str());
+            DrawInputBindingButton(std::get<2>(it) == Controller::AxisType::Half ? InputBindingType::HalfAxis :
+                                                                                   InputBindingType::Axis,
+                                   section, key, std::get<0>(it).c_str());
           }
 
           if (Controller::GetVibrationMotorCount(ctype) > 0)
