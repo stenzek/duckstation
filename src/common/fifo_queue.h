@@ -23,7 +23,15 @@ public:
   T* GetWritePointer() { return &m_ptr[m_tail]; }
   u32 GetSize() const { return m_size; }
   u32 GetSpace() const { return CAPACITY - m_size; }
-  u32 GetContiguousSpace() const { return (m_tail >= m_head) ? (CAPACITY - m_tail) : (m_head - m_tail); }
+  u32 GetContiguousSpace() const
+  {
+    if (m_tail == m_head && m_size > 0)
+      return 0;
+    else if (m_tail >= m_head)
+      return (CAPACITY - m_tail);
+    else
+      return (m_head - m_tail);
+  }
   u32 GetContiguousSize() const { return std::min<u32>(CAPACITY - m_head, m_size); }
   bool IsEmpty() const { return m_size == 0; }
   bool IsFull() const { return m_size == CAPACITY; }
