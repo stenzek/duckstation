@@ -1897,14 +1897,14 @@ Login token generated on %2.</source>
     <message>
         <location filename="../../frontend-common/cheevos.cpp" line="597"/>
         <source>Leaderboards are enabled.</source>
-        <translatorcomment>**Таблицы?</translatorcomment>
-        <translation type="unfinished">Таблица лидеров включены.</translation>
+        <translatorcomment>**Таблицы включены?</translatorcomment>
+        <translation type="unfinished">Таблица лидеров включена.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/cheevos.cpp" line="602"/>
         <source>Leaderboards are DISABLED because Hardcore Mode is off.</source>
-        <translatorcomment>**Таблицы?</translatorcomment>
-        <translation type="unfinished">Таблица лидеров ОТКЛЮЧЕНЫ, потому что режим хардкора отключен.</translation>
+        <translatorcomment>**Таблицы ОТКЛЮЧЕНЫ</translatorcomment>
+        <translation type="unfinished">Таблица лидеров ОТКЛЮЧЕНА, потому что режим хардкора отключен.</translation>
     </message>
 </context>
 <context>
@@ -5525,7 +5525,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2096"/>
         <source>Open Achievement List</source>
-        <translation type="unfinished">Открыть список Достижений</translation>
+        <translation type="unfinished">Открыть Список достижений</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2109"/>
