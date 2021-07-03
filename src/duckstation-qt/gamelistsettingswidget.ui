@@ -31,7 +31,7 @@
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>Search Directories</string>
+        <string>Search Directories (will be scanned for games)</string>
        </property>
       </widget>
      </item>
@@ -92,7 +92,7 @@
      <item>
       <widget class="QLabel" name="label_2">
        <property name="text">
-        <string>Excluded Paths</string>
+        <string>Excluded Paths (will not be scanned)</string>
        </property>
       </widget>
      </item>
