@@ -455,7 +455,7 @@ void TimingEvent::InvokeEarly(bool force /* = false */)
 
   const TickCount pending_ticks = CPU::GetPendingTicks();
   const TickCount ticks_to_execute = m_time_since_last_run + pending_ticks;
-  if (!force && ticks_to_execute < m_period)
+  if ((!force && ticks_to_execute < m_period) || ticks_to_execute <= 0)
     return;
 
   m_downcount = pending_ticks + m_interval;
