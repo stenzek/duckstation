@@ -53,9 +53,10 @@ float NeGcon::GetAxisState(s32 axis_code) const
   if (axis_code < 0 || axis_code >= static_cast<s32>(Axis::Count))
     return 0.0f;
 
-  // 0..255 -> -1..1
-  const float value = (((static_cast<float>(m_axis_state[static_cast<s32>(axis_code)]) / 255.0f) * 2.0f) - 1.0f);
-  return std::clamp(value, -1.0f, 1.0f);
+  if (axis_code == static_cast<s32>(Axis::Steering))
+    return (((static_cast<float>(m_axis_state[static_cast<s32>(Axis::Steering)]) / 255.0f) * 2.0f) - 1.0f);
+  else
+    return (static_cast<float>(m_axis_state[static_cast<s32>(axis_code)]) / 255.0f);
 }
 
 void NeGcon::SetAxisState(s32 axis_code, float value)
@@ -78,7 +79,7 @@ void NeGcon::SetAxisState(s32 axis_code, float value)
   }
 
   // I, II, L: -1..1 -> 0..255
-  const u8 u8_value = static_cast<u8>(std::clamp(((value + 1.0f) / 2.0f) * 255.0f, 0.0f, 255.0f));
+  const u8 u8_value = static_cast<u8>(std::clamp(value * 255.0f, 0.0f, 255.0f));
 
   SetAxisState(static_cast<Axis>(axis_code), u8_value);
 }
