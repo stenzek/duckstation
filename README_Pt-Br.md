@@ -3,7 +3,7 @@
 
 **Servidor no Discord:** https://discord.gg/Buktv3t
 
-**Últimos lançamentos para Windows e Linux (AppImage)** https://github.com/stenzek/duckstation/releases/tag/latest
+**Versão mais recente para Windows e Linux (AppImage)** https://github.com/stenzek/duckstation/releases/tag/latest
 
 **Disponível na Google Play:** https://play.google.com/store/apps/details?id=com.github.stenzek.duckstation
 
@@ -11,7 +11,7 @@
 
 **Wiki do projeto:** https://www.duckstation.org/wiki/
 
-DuckStation é um simulador/emulador do console da Sony Playstation 1, com foco na jogabilidade, velocidade e manutenção de longo prazo. O objetivo é ser o mais preciso possível, mantendo o desempenho adequado para dispositivos de baixo custo. As funções de 'hacks' (modificações) não são muito apoiadas por serem instáveis na maioria dos casos; as configurações padrão já oferecem suporte a todos os jogos já categorizados como jogáveis até o momento.
+DuckStation é um emulador do console da Sony Playstation 1, com foco na jogabilidade, velocidade e manutenção de longo prazo. O objetivo é ser o mais preciso possível, mantendo o desempenho adequado para dispositivos de baixo custo. As funções de 'hacks' (modificações) não são muito recomendadas por serem instáveis na maioria dos casos. as configurações padrão já oferecem suporte aos jogos já categorizados como jogáveis até o momento.
 
 Um arquivo de "BIOS" é obrigátorio para inicar o emulador para que os jogos iniciem. Você pode usar qualquer arquivo de diversas regiões de consoles, embora regiões de jogo diferentes e regiões de BIOS possam ter problemas de compatibilidade entre si. O arquivo de BIOS não pode ser compartilhado junto com o emulador de forma nenhuma por questões legais, você deve fazer o processo chamado de 'dump' ou despejo do arquivo do seu próprio console; usando o Caetla ou outros meios disponíveis.
 
