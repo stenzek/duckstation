@@ -18,6 +18,9 @@
     <ClCompile Include="game_list.cpp" />
     <ClCompile Include="game_settings.cpp" />
     <ClCompile Include="http_downloader.cpp" />
+    <ClCompile Include="http_downloader_uwp.cpp">
+      <ExcludedFromBuild Condition="'$(BuildingForUWP)'!='true'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="http_downloader_winhttp.cpp">
       <ExcludedFromBuild Condition="'$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
     </ClCompile>
@@ -67,6 +70,9 @@
     <ClInclude Include="game_list.h" />
     <ClInclude Include="game_settings.h" />
     <ClInclude Include="http_downloader.h" />
+    <ClInclude Include="http_downloader_uwp.h">
+      <ExcludedFromBuild Condition="'$(BuildingForUWP)'!='true'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="http_downloader_winhttp.h">
       <ExcludedFromBuild Condition="'$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
     </ClInclude>

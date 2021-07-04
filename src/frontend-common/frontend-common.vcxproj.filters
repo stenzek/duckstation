@@ -36,6 +36,7 @@
     <ClCompile Include="xaudio2_audio_stream.cpp" />
     <ClCompile Include="d3d12_host_display.cpp" />
     <ClCompile Include="imgui_impl_dx12.cpp" />
+    <ClCompile Include="http_downloader_uwp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="icon.h" />
@@ -73,6 +74,7 @@
     <ClInclude Include="xaudio2_audio_stream.h" />
     <ClInclude Include="d3d12_host_display.h" />
     <ClInclude Include="imgui_impl_dx12.h" />
+    <ClInclude Include="http_downloader_uwp.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="font_roboto_regular.inl" />
