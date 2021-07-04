@@ -926,7 +926,10 @@ void CommonHostInterface::UpdateSpeedLimiterState()
 
     m_audio_stream->SetInputSampleRate(input_sample_rate);
     m_audio_stream->SetWaitForBufferFill(!m_display_all_frames);
-    m_audio_stream->SetOutputVolume(GetAudioOutputVolume());
+
+    if (g_settings.audio_fast_forward_volume != g_settings.audio_output_volume)
+      m_audio_stream->SetOutputVolume(GetAudioOutputVolume());
+
     m_audio_stream->SetSync(audio_sync_enabled);
     if (audio_sync_enabled)
       m_audio_stream->EmptyBuffers();
