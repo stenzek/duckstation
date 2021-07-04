@@ -18,6 +18,9 @@
 #include <dxgi1_5.h>
 Log_SetChannel(D3D11HostDisplay);
 
+#pragma comment(lib, "d3d11.lib")
+#pragma comment(lib, "dxgi.lib")
+
 namespace FrontendCommon {
 
 class D3D11HostDisplayTexture : public HostDisplayTexture

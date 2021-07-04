@@ -17,5 +17,4 @@ set(SRCS
 add_library(imgui ${SRCS})
 target_include_directories(imgui PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_SOURCE_DIR}/src")
 target_include_directories(imgui INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include")
-target_compile_definitions(imgui PRIVATE "imgui_STATIC")
 

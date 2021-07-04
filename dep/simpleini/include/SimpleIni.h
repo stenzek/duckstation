@@ -3267,8 +3267,13 @@ template<class SI_CHAR>
 struct SI_NoCase {
     bool operator()(const SI_CHAR * pLeft, const SI_CHAR * pRight) const {
         if (sizeof(SI_CHAR) == sizeof(char)) {
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
             return _mbsicmp((const unsigned char *)pLeft,
                 (const unsigned char *)pRight) < 0;
+#else
+          return _stricmp((const char*)pLeft,
+                (const char*)pRight) < 0;
+#endif
         }
         if (sizeof(SI_CHAR) == sizeof(wchar_t)) {
             return _wcsicmp((const wchar_t *)pLeft,
