@@ -742,7 +742,7 @@ bool CommonHostInterface::SaveUndoLoadState()
     return false;
   }
 
-  Log_InfoPrintf("Saved undo load state: % " PRIu64 " bytes", m_undo_load_state->GetSize());
+  Log_InfoPrintf("Saved undo load state: %" PRIu64 " bytes", m_undo_load_state->GetSize());
   return true;
 }
 
