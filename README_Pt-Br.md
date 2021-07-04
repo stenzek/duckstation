@@ -5,7 +5,7 @@
 
 **Últimos lançamentos para Windows e Linux (AppImage)** https://github.com/stenzek/duckstation/releases/tag/latest
 
-**Available on Google Play:** https://play.google.com/store/apps/details?id=com.github.stenzek.duckstation
+**Disponível na Google Play:** https://play.google.com/store/apps/details?id=com.github.stenzek.duckstation
 
 **Lista de compatibilidade de jogos:** https://docs.google.com/spreadsheets/d/1H66MxViRjjE5f8hOl5RQmF5woS1murio2dsLn14kEqo/edit
 
