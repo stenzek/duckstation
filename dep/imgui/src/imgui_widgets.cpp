@@ -4078,6 +4078,12 @@ bool ImGui::InputTextEx(const char* label, const char* hint, char* buf, int buf_
                     unsigned int c = (unsigned int)io.InputQueueCharacters[n];
                     if (c == '\t' && io.KeyShift)
                         continue;
+                    if (c == '\b')
+                    {
+                      state->OnKeyPressed(STB_TEXTEDIT_K_BACKSPACE);
+                      continue;
+                    }
+
                     if (InputTextFilterCharacter(&c, flags, callback, callback_user_data))
                         state->OnKeyPressed((int)c);
                 }
