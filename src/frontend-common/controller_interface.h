@@ -23,6 +23,8 @@ public:
 #endif
 #ifdef _WIN32
     XInput,
+#endif
+#ifdef WITH_DINPUT
     DInput,
 #endif
 #ifdef ANDROID

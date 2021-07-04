@@ -22,7 +22,6 @@
 #include "core/system.h"
 #include "core/texture_replacements.h"
 #include "core/timers.h"
-#include "cubeb_audio_stream.h"
 #include "fullscreen_ui.h"
 #include "game_list.h"
 #include "icon.h"
@@ -39,6 +38,10 @@
 #include <cstring>
 #include <ctime>
 
+#ifndef _UWP
+#include "cubeb_audio_stream.h"
+#endif
+
 #ifdef WITH_SDL2
 #include "sdl_audio_stream.h"
 #endif
@@ -53,6 +56,7 @@
 
 #ifdef _WIN32
 #include "common/windows_headers.h"
+#include "xaudio2_audio_stream.h"
 #include <KnownFolders.h>
 #include <ShlObj.h>
 #include <mmsystem.h>
@@ -172,6 +176,11 @@ void CommonHostInterface::InitializeUserDirectory()
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("screenshots").c_str(), false);
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("shaders").c_str(), false);
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("textures").c_str(), false);
+
+  // Games directory for UWP because it's a pain to create them manually.
+#ifdef _UWP
+  result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("games").c_str(), false);
+#endif
 
   if (!result)
     ReportError("Failed to create one or more user directories. This may cause issues at runtime.");
@@ -636,8 +645,10 @@ std::unique_ptr<AudioStream> CommonHostInterface::CreateAudioStream(AudioBackend
     case AudioBackend::Null:
       return AudioStream::CreateNullAudioStream();
 
+#ifndef _UWP
     case AudioBackend::Cubeb:
       return CubebAudioStream::Create();
+#endif
 
 #ifdef _WIN32
     case AudioBackend::XAudio2:
@@ -997,7 +1008,7 @@ void CommonHostInterface::SetUserDirectory()
   }
   else
   {
-#if defined(_WIN32)
+#if defined(_WIN32) && !defined(_UWP)
     // On Windows, use My Documents\DuckStation.
     PWSTR documents_directory;
     if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_Documents, 0, NULL, &documents_directory)))
@@ -3221,7 +3232,7 @@ void CommonHostInterface::SetTimerResolutionIncreased(bool enabled)
 
   m_timer_resolution_increased = enabled;
 
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(_UWP)
   if (enabled)
     timeBeginPeriod(1);
   else

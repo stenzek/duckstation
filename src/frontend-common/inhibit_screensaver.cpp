@@ -4,7 +4,7 @@
 #include <cinttypes>
 Log_SetChannel(FrontendCommon);
 
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(_UWP)
 #include "common/windows_headers.h"
 
 static bool SetScreensaverInhibitWin32(bool inhibit, const WindowInfo& wi)
@@ -93,7 +93,7 @@ static bool SetScreensaverInhibit(bool inhibit, const WindowInfo& wi)
 {
   switch (wi.type)
   {
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(_UWP)
     case WindowInfo::Type::Win32:
       return SetScreensaverInhibitWin32(inhibit, wi);
 #endif

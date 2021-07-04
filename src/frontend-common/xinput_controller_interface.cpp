@@ -23,6 +23,7 @@ ControllerInterface::Backend XInputControllerInterface::GetBackend() const
 
 bool XInputControllerInterface::Initialize(CommonHostInterface* host_interface)
 {
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
   m_xinput_module = LoadLibraryW(L"xinput1_4");
   if (!m_xinput_module)
   {
@@ -45,6 +46,10 @@ bool XInputControllerInterface::Initialize(CommonHostInterface* host_interface)
     reinterpret_cast<decltype(m_xinput_get_state)>(GetProcAddress(m_xinput_module, "XInputGetState"));
   m_xinput_set_state =
     reinterpret_cast<decltype(m_xinput_set_state)>(GetProcAddress(m_xinput_module, "XInputSetState"));
+#else
+  m_xinput_get_state = XInputGetState;
+  m_xinput_set_state = XInputSetState;
+#endif
   if (!m_xinput_get_state || !m_xinput_set_state)
   {
     Log_ErrorPrintf("Failed to get XInput function pointers.");
