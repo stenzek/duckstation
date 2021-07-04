@@ -9,6 +9,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <sys/stat.h>
+
 #if defined(_WIN32)
 #include "windows_headers.h"
 #include <direct.h>
@@ -17,6 +18,12 @@
 #else
 #include <sys/stat.h>
 #include <sys/types.h>
+#endif
+
+#ifdef _MSC_VER
+#include <malloc.h>
+#else
+#include <alloca.h>
 #endif
 
 Log_SetChannel(ByteStream);
