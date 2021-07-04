@@ -46,7 +46,6 @@ bool HasActiveWindow();
 void UpdateSettings();
 void SystemCreated();
 void SystemDestroyed();
-void SystemPaused(bool paused);
 void OpenQuickMenu();
 void CloseQuickMenu();
 

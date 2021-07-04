@@ -233,8 +233,6 @@ bool Initialize(CommonHostInterface* host_interface)
 
   if (System::IsValid())
     SystemCreated();
-  if (System::IsPaused())
-    SystemPaused(true);
 
   return true;
 }
@@ -271,11 +269,6 @@ void SystemDestroyed()
   s_current_main_window = MainWindowType::Landing;
   s_quick_menu_was_open = false;
   ClearImGuiFocus();
-}
-
-void SystemPaused(bool paused)
-{
-  //
 }
 
 static void PauseForMenuOpen()
@@ -1192,7 +1185,7 @@ static void DrawAchievementsLoginWindow()
   ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(10.0f, 10.0f));
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
   ImGui::PushFont(g_large_font);
 
   bool is_open = true;

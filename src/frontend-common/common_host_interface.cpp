@@ -1051,11 +1051,6 @@ void CommonHostInterface::OnSystemCreated()
 
 void CommonHostInterface::OnSystemPaused(bool paused)
 {
-  ReportFormattedMessage("System %s.", paused ? "paused" : "resumed");
-
-  if (m_fullscreen_ui_enabled)
-    FullscreenUI::SystemPaused(paused);
-
   if (paused)
   {
     if (IsFullscreen() && !m_fullscreen_ui_enabled)
