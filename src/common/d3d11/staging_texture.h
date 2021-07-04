@@ -55,7 +55,7 @@ public:
   {
     const u8* src_ptr = static_cast<u8*>(m_map.pData) + (y * m_map.RowPitch) + (x * sizeof(T));
     u8* dst_ptr = reinterpret_cast<u8*>(data);
-    if (m_map.RowPitch != stride)
+    if (m_map.RowPitch != stride || width != m_width || x != 0)
     {
       for (u32 row = 0; row < height; row++)
       {
@@ -89,7 +89,7 @@ public:
   {
     const u8* src_ptr = reinterpret_cast<const u8*>(data);
     u8* dst_ptr = static_cast<u8*>(m_map.pData) + (y * m_map.RowPitch) + (x * sizeof(T));
-    if (m_map.RowPitch != stride)
+    if (m_map.RowPitch != stride || width != m_width || x != 0)
     {
       for (u32 row = 0; row < height; row++)
       {
