@@ -2370,6 +2370,7 @@ void DrawSettingsWindow()
                                       "When enabled and logged in, DuckStation will scan for achievements on startup.",
                                       "Cheevos", "Enabled", false))
         {
+          settings_changed = true;
           s_host_interface->RunLater([]() {
             if (!ConfirmChallengeModeEnable())
               s_host_interface->GetSettingsInterface()->SetBoolValue("Cheevos", "Enabled", false);
