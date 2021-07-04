@@ -9,6 +9,8 @@ public:
   JitCodeBuffer(void* buffer, u32 size, u32 far_code_size, u32 guard_size);
   ~JitCodeBuffer();
 
+  bool IsValid() const { return (m_code_ptr != nullptr); }
+
   bool Allocate(u32 size = 64 * 1024 * 1024, u32 far_code_size = 0);
   bool Initialize(void* buffer, u32 size, u32 far_code_size = 0, u32 guard_size = 0);
   void Destroy();

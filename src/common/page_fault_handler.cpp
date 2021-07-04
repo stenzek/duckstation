@@ -78,7 +78,7 @@ static bool IsStoreInstruction(const void* ptr)
 }
 #endif
 
-#if defined(_WIN32) && (defined(CPU_X64) || defined(CPU_AARCH64))
+#if defined(_WIN32) && !defined(_UWP) && (defined(CPU_X64) || defined(CPU_AARCH64))
 static PVOID s_veh_handle;
 
 static LONG ExceptionHandler(PEXCEPTION_POINTERS exi)
@@ -110,6 +110,7 @@ static LONG ExceptionHandler(PEXCEPTION_POINTERS exi)
   }
 
   s_in_handler = false;
+
   return EXCEPTION_CONTINUE_SEARCH;
 }
 
@@ -222,7 +223,7 @@ bool InstallHandler(void* owner, Callback callback)
 
   if (was_empty)
   {
-#if defined(_WIN32) && (defined(CPU_X64) || defined(CPU_AARCH64))
+#if defined(_WIN32) && !defined(_UWP) && (defined(CPU_X64) || defined(CPU_AARCH64))
     s_veh_handle = AddVectoredExceptionHandler(1, ExceptionHandler);
     if (!s_veh_handle)
     {
@@ -279,7 +280,7 @@ bool RemoveHandler(void* owner)
 
   if (m_handlers.empty())
   {
-#if defined(_WIN32) && (defined(CPU_X64) || defined(CPU_AARCH64))
+#if defined(_WIN32) && !defined(_UWP) && (defined(CPU_X64) || defined(CPU_AARCH64))
     RemoveVectoredExceptionHandler(s_veh_handle);
     s_veh_handle = nullptr;
 #elif defined(USE_SIGSEGV)

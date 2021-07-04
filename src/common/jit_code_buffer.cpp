@@ -44,7 +44,21 @@ bool JitCodeBuffer::Allocate(u32 size /* = 64 * 1024 * 1024 */, u32 far_code_siz
   m_total_size = size + far_code_size;
 
 #if defined(_WIN32)
+#if !defined(_UWP)
   m_code_ptr = static_cast<u8*>(VirtualAlloc(nullptr, m_total_size, MEM_COMMIT, PAGE_EXECUTE_READWRITE));
+#else
+  m_code_ptr = static_cast<u8*>(
+    VirtualAlloc2FromApp(GetCurrentProcess(), nullptr, m_total_size, MEM_COMMIT, PAGE_READWRITE, nullptr, 0));
+  if (m_code_ptr)
+  {
+    ULONG old_protection;
+    if (!VirtualProtectFromApp(m_code_ptr, m_total_size, PAGE_EXECUTE_READWRITE, &old_protection))
+    {
+      VirtualFree(m_code_ptr, m_total_size, MEM_RELEASE);
+      return false;
+    }
+  }
+#endif
   if (!m_code_ptr)
   {
     Log_ErrorPrintf("VirtualAlloc(RWX, %u) for internal buffer failed: %u", m_total_size, GetLastError());
