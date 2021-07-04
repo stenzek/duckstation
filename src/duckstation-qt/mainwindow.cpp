@@ -398,15 +398,6 @@ void MainWindow::onEmulationPaused(bool paused)
   updateMouseMode(paused);
 }
 
-void MainWindow::onStateSaved(const QString& game_code, bool global, qint32 slot)
-{
-  // don't bother updating for the resume state since we're powering off anyway
-  if (slot < 0)
-    return;
-
-  m_host_interface->populateSaveStateMenus(game_code.toStdString().c_str(), m_ui.menuLoadState, m_ui.menuSaveState);
-}
-
 void MainWindow::onSystemPerformanceCountersUpdated(float speed, float fps, float vps, float average_frame_time,
                                                     float worst_frame_time, GPURenderer renderer, quint32 render_width,
                                                     quint32 render_height, bool render_interlaced)
@@ -425,7 +416,6 @@ void MainWindow::onSystemPerformanceCountersUpdated(float speed, float fps, floa
 
 void MainWindow::onRunningGameChanged(const QString& filename, const QString& game_code, const QString& game_title)
 {
-  m_host_interface->populateSaveStateMenus(game_code.toStdString().c_str(), m_ui.menuLoadState, m_ui.menuSaveState);
   if (game_title.isEmpty())
     setWindowTitle(getWindowTitle());
   else
@@ -442,6 +432,8 @@ void MainWindow::onRunningGameChanged(const QString& filename, const QString& ga
   }
 
   m_ui.actionViewGameProperties->setEnabled(has_game_list_entry);
+
+  m_running_game_code = game_code.toStdString();
 }
 
 void MainWindow::onApplicationStateChanged(Qt::ApplicationState state)
@@ -515,6 +507,16 @@ void MainWindow::onChangeDiscMenuAboutToHide()
     m_ui.menuChangeDisc->removeAction(action);
     action->deleteLater();
   }
+}
+
+void MainWindow::onLoadStateMenuAboutToShow()
+{
+  m_host_interface->populateLoadStateMenu(m_running_game_code.c_str(), m_ui.menuLoadState);
+}
+
+void MainWindow::onSaveStateMenuAboutToShow()
+{
+  m_host_interface->populateSaveStateMenu(m_running_game_code.c_str(), m_ui.menuSaveState);
 }
 
 void MainWindow::onCheatsMenuAboutToShow()
@@ -616,12 +618,10 @@ void MainWindow::onGameListEntrySelected(const GameListEntry* entry)
   if (!entry)
   {
     m_ui.statusBar->clearMessage();
-    m_host_interface->populateSaveStateMenus("", m_ui.menuLoadState, m_ui.menuSaveState);
     return;
   }
 
   m_ui.statusBar->showMessage(QString::fromStdString(entry->path));
-  m_host_interface->populateSaveStateMenus(entry->code.c_str(), m_ui.menuLoadState, m_ui.menuSaveState);
 }
 
 void MainWindow::onGameListEntryDoubleClicked(const GameListEntry* entry)
@@ -1005,6 +1005,8 @@ void MainWindow::connectSignals()
           &MainWindow::onChangeDiscFromGameListActionTriggered);
   connect(m_ui.menuChangeDisc, &QMenu::aboutToShow, this, &MainWindow::onChangeDiscMenuAboutToShow);
   connect(m_ui.menuChangeDisc, &QMenu::aboutToHide, this, &MainWindow::onChangeDiscMenuAboutToHide);
+  connect(m_ui.menuLoadState, &QMenu::aboutToShow, this, &MainWindow::onLoadStateMenuAboutToShow);
+  connect(m_ui.menuSaveState, &QMenu::aboutToShow, this, &MainWindow::onSaveStateMenuAboutToShow);
   connect(m_ui.menuCheats, &QMenu::aboutToShow, this, &MainWindow::onCheatsMenuAboutToShow);
   connect(m_ui.actionCheats, &QAction::triggered, [this] { m_ui.menuCheats->exec(QCursor::pos()); });
   connect(m_ui.actionRemoveDisc, &QAction::triggered, this, &MainWindow::onRemoveDiscActionTriggered);
@@ -1098,7 +1100,6 @@ void MainWindow::connectSignals()
   connect(m_host_interface, &QtHostInterface::emulationStarted, this, &MainWindow::onEmulationStarted);
   connect(m_host_interface, &QtHostInterface::emulationStopped, this, &MainWindow::onEmulationStopped);
   connect(m_host_interface, &QtHostInterface::emulationPaused, this, &MainWindow::onEmulationPaused);
-  connect(m_host_interface, &QtHostInterface::stateSaved, this, &MainWindow::onStateSaved);
   connect(m_host_interface, &QtHostInterface::systemPerformanceCountersUpdated, this,
           &MainWindow::onSystemPerformanceCountersUpdated);
   connect(m_host_interface, &QtHostInterface::runningGameChanged, this, &MainWindow::onRunningGameChanged);
@@ -1112,8 +1113,6 @@ void MainWindow::connectSignals()
           Qt::QueuedConnection);
   connect(m_game_list_widget, &GameListWidget::entryContextMenuRequested, this,
           &MainWindow::onGameListContextMenuRequested);
-
-  m_host_interface->populateSaveStateMenus(nullptr, m_ui.menuLoadState, m_ui.menuSaveState);
 
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.actionDisableAllEnhancements, "Main",
                                                "DisableAllEnhancements");

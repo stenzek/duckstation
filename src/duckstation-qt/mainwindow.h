@@ -69,7 +69,6 @@ private Q_SLOTS:
   void onEmulationStarted();
   void onEmulationStopped();
   void onEmulationPaused(bool paused);
-  void onStateSaved(const QString& game_code, bool global, qint32 slot);
   void onSystemPerformanceCountersUpdated(float speed, float fps, float vps, float average_frame_time,
                                           float worst_frame_time, GPURenderer renderer, quint32 render_width,
                                           quint32 render_height, bool render_interlaced);
@@ -82,6 +81,8 @@ private Q_SLOTS:
   void onChangeDiscFromGameListActionTriggered();
   void onChangeDiscMenuAboutToShow();
   void onChangeDiscMenuAboutToHide();
+  void onLoadStateMenuAboutToShow();
+  void onSaveStateMenuAboutToShow();
   void onCheatsMenuAboutToShow();
   void onRemoveDiscActionTriggered();
   void onViewToolbarActionToggled(bool checked);
@@ -160,6 +161,8 @@ private:
   MemoryCardEditorDialog* m_memory_card_editor_dialog = nullptr;
   CheatManagerDialog* m_cheat_manager_dialog = nullptr;
   DebuggerWindow* m_debugger_window = nullptr;
+
+  std::string m_running_game_code;
 
   bool m_emulation_running = false;
   bool m_was_paused_by_focus_loss = false;

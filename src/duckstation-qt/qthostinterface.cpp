@@ -782,11 +782,6 @@ void QtHostInterface::OnRunningGameChanged(const std::string& path, CDImage* ima
   }
 }
 
-void QtHostInterface::OnSystemStateSaved(bool global, s32 slot)
-{
-  emit stateSaved(QString::fromStdString(System::GetRunningCode()), global, slot);
-}
-
 void QtHostInterface::SetDefaultSettings(SettingsInterface& si)
 {
   CommonHostInterface::SetDefaultSettings(si);
@@ -961,31 +956,26 @@ static QString FormatTimestampForSaveStateMenu(u64 timestamp)
   return qtime.toString(QLocale::system().dateTimeFormat(QLocale::ShortFormat));
 }
 
-void QtHostInterface::populateSaveStateMenus(const char* game_code, QMenu* load_menu, QMenu* save_menu)
+void QtHostInterface::populateLoadStateMenu(const char* game_code, QMenu* menu)
 {
-  auto add_slot = [this, game_code, load_menu, save_menu](const QString& title, const QString& empty_title, bool global,
-                                                          s32 slot) {
+  auto add_slot = [this, game_code, menu](const QString& title, const QString& empty_title, bool global, s32 slot) {
     std::optional<SaveStateInfo> ssi = GetSaveStateInfo(global ? nullptr : game_code, slot);
 
     const QString menu_title =
       ssi.has_value() ? title.arg(slot).arg(FormatTimestampForSaveStateMenu(ssi->timestamp)) : empty_title.arg(slot);
 
-    QAction* load_action = load_menu->addAction(menu_title);
+    QAction* load_action = menu->addAction(menu_title);
     load_action->setEnabled(ssi.has_value());
     if (ssi.has_value())
     {
       const QString path(QString::fromStdString(ssi->path));
       connect(load_action, &QAction::triggered, [this, path]() { loadState(path); });
     }
-
-    QAction* save_action = save_menu->addAction(menu_title);
-    connect(save_action, &QAction::triggered, [this, global, slot]() { saveState(global, slot); });
   };
 
-  load_menu->clear();
-  save_menu->clear();
+  menu->clear();
 
-  connect(load_menu->addAction(tr("Load From File...")), &QAction::triggered, [this]() {
+  connect(menu->addAction(tr("Load From File...")), &QAction::triggered, [this]() {
     const QString path(
       QFileDialog::getOpenFileName(m_main_window, tr("Select Save State File"), QString(), tr("Save States (*.sav)")));
     if (path.isEmpty())
@@ -993,12 +983,38 @@ void QtHostInterface::populateSaveStateMenus(const char* game_code, QMenu* load_
 
     loadState(path);
   });
-  QAction* load_from_state = load_menu->addAction(tr("Undo Load State"));
+  QAction* load_from_state = menu->addAction(tr("Undo Load State"));
   load_from_state->setEnabled(CanUndoLoadState());
   connect(load_from_state, &QAction::triggered, this, &QtHostInterface::undoLoadState);
-  load_menu->addSeparator();
+  menu->addSeparator();
 
-  connect(save_menu->addAction(tr("Save To File...")), &QAction::triggered, [this]() {
+  if (game_code && std::strlen(game_code) > 0)
+  {
+    for (u32 slot = 1; slot <= PER_GAME_SAVE_STATE_SLOTS; slot++)
+      add_slot(tr("Game Save %1 (%2)"), tr("Game Save %1 (Empty)"), false, static_cast<s32>(slot));
+
+    menu->addSeparator();
+  }
+
+  for (u32 slot = 1; slot <= GLOBAL_SAVE_STATE_SLOTS; slot++)
+    add_slot(tr("Global Save %1 (%2)"), tr("Global Save %1 (Empty)"), true, static_cast<s32>(slot));
+}
+
+void QtHostInterface::populateSaveStateMenu(const char* game_code, QMenu* menu)
+{
+  auto add_slot = [this, game_code, menu](const QString& title, const QString& empty_title, bool global, s32 slot) {
+    std::optional<SaveStateInfo> ssi = GetSaveStateInfo(global ? nullptr : game_code, slot);
+
+    const QString menu_title =
+      ssi.has_value() ? title.arg(slot).arg(FormatTimestampForSaveStateMenu(ssi->timestamp)) : empty_title.arg(slot);
+
+    QAction* save_action = menu->addAction(menu_title);
+    connect(save_action, &QAction::triggered, [this, global, slot]() { saveState(global, slot); });
+  };
+
+  menu->clear();
+
+  connect(menu->addAction(tr("Save To File...")), &QAction::triggered, [this]() {
     if (!System::IsValid())
       return;
 
@@ -1009,15 +1025,14 @@ void QtHostInterface::populateSaveStateMenus(const char* game_code, QMenu* load_
 
     SaveState(path.toUtf8().constData());
   });
-  save_menu->addSeparator();
+  menu->addSeparator();
 
   if (game_code && std::strlen(game_code) > 0)
   {
     for (u32 slot = 1; slot <= PER_GAME_SAVE_STATE_SLOTS; slot++)
       add_slot(tr("Game Save %1 (%2)"), tr("Game Save %1 (Empty)"), false, static_cast<s32>(slot));
 
-    load_menu->addSeparator();
-    save_menu->addSeparator();
+    menu->addSeparator();
   }
 
   for (u32 slot = 1; slot <= GLOBAL_SAVE_STATE_SLOTS; slot++)

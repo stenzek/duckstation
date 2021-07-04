@@ -91,7 +91,8 @@ public:
   void setMainWindow(MainWindow* window);
   HostDisplay* createHostDisplay();
 
-  void populateSaveStateMenus(const char* game_code, QMenu* load_menu, QMenu* save_menu);
+  void populateLoadStateMenu(const char* game_code, QMenu* menu);
+  void populateSaveStateMenu(const char* game_code, QMenu* menu);
 
   /// Fills menu with save state info and handlers.
   void populateGameListContextMenu(const GameListEntry* entry, QWidget* parent_window, QMenu* menu);
@@ -130,7 +131,6 @@ Q_SIGNALS:
   void emulationStarted();
   void emulationStopped();
   void emulationPaused(bool paused);
-  void stateSaved(const QString& game_code, bool global, qint32 slot);
   void gameListRefreshed();
   QtDisplayWidget* createDisplayRequested(QThread* worker_thread, bool fullscreen, bool render_to_main);
   QtDisplayWidget* updateDisplayRequested(QThread* worker_thread, bool fullscreen, bool render_to_main);
@@ -211,7 +211,6 @@ protected:
   void OnSystemPerformanceCountersUpdated() override;
   void OnRunningGameChanged(const std::string& path, CDImage* image, const std::string& game_code,
                             const std::string& game_title) override;
-  void OnSystemStateSaved(bool global, s32 slot) override;
 
   void SetDefaultSettings(SettingsInterface& si) override;
   void ApplySettings(bool display_osd_messages) override;
