@@ -891,7 +891,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Open Card...</source>
-        <translation>カードを開く...</translation>
+        <translation>カードファイルを開く...</translation>
     </message>
     <message>
         <source>Failed to delete file %1</source>
@@ -911,7 +911,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Export File</source>
-        <translation>ファイルのエクスポート</translation>
+        <translation>データのエクスポート</translation>
     </message>
     <message>
         <source>Failed to write file %1</source>
@@ -939,7 +939,11 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Delete File</source>
-        <translation>ファイルを削除</translation>
+        <translation>データを削除</translation>
+    </message>
+    <message>
+        <source>Undelete File</source>
+        <translation>削除データを復元</translation>
     </message>
     <message>
         <source>Select Memory Card</source>
@@ -1554,16 +1558,32 @@ Scanning recursively takes more time, but will identify files in subdirectories.
 再検索には時間がかかりますが、サブディレクトリ内のファイルが識別されます。</translation>
     </message>
     <message>
-        <source>Cancel</source>
-        <translation>キャンセル</translation>
+        <source>Scan For New Games</source>
+        <translation>新規ゲームをスキャン</translation>
     </message>
     <message>
-        <source>Search Directories</source>
-        <translation>ディレクトリ検索</translation>
+        <source>Excluded Paths (will not be scanned)</source>
+        <translation>除外するパス（スキャンしません）</translation>
     </message>
     <message>
         <source>Remove</source>
         <translation>削除</translation>
+    </message>
+    <message>
+        <source>Rescan All Games</source>
+        <translation>全ゲームを再スキャン</translation>
+    </message>
+    <message>
+        <source>Select Search Directory</source>
+        <translation>検索するディレクトリを選択</translation>
+    </message>
+    <message>
+        <source>Select Path</source>
+        <translation>パスを選択</translation>
+    </message>
+    <message>
+        <source>Search Directories (will be scanned for games)</source>
+        <translation>ディレクトリ検索（ゲームをスキャンします）</translation>
     </message>
     <message>
         <source>Extracting...</source>
@@ -1590,8 +1610,8 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>すべて再検索</translation>
     </message>
     <message>
-        <source>Select Search Directory</source>
-        <translation>検索ディレクトリを選択します</translation>
+        <source>Cancel</source>
+        <translation>キャンセル</translation>
     </message>
     <message>
         <source>Downloading %1...</source>
@@ -2738,6 +2758,10 @@ Login token generated on %2.</source>
         <translation>PGXPジオメトリトレランス(形状公差)を有効にする</translation>
     </message>
     <message>
+        <source>Create Save State Backups</source>
+        <translation>保存状態のバックアップを作成する</translation>
+    </message>
+    <message>
         <source>Logs messages to the window.</source>
         <translation>ログをウィンドウに記録します。</translation>
     </message>
@@ -2968,6 +2992,10 @@ Login token generated on %2.</source>
         <translation>トリミングモード</translation>
     </message>
     <message>
+        <source>Sync To Host Refresh Rate</source>
+        <translation>ホストのリフレッシュレートに同期</translation>
+    </message>
+    <message>
         <source>Presents frames on a background thread when fast forwarding or vsync is disabled. This can measurably improve performance in the Vulkan renderer.</source>
         <translation>早送りまたは垂直同期が無効になっている場合、バックグラウンドスレッドにフレームを表示します。&lt;br&gt;これにより、Vulkanレンダラーのパフォーマンスを大幅に向上させることができます。</translation>
     </message>
@@ -3082,6 +3110,10 @@ Login token generated on %2.</source>
     <message>
         <source>Show Controller Input</source>
         <translation>コントローラ入力を表示</translation>
+    </message>
+    <message>
+        <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host&apos;s refresh rate when both VSync and Audio Resampling settings are enabled. This results in the smoothest animations possible, at the cost of potentially increasing the emulation speed by less than 1%. Sync To Host Refresh Rate will not take effect if the console&apos;s refresh rate is too far from the host&apos;s refresh rate. Users with variable refresh rate displays should disable this option.</source>
+        <translation>VSyncとオーディオリサンプリングの両方の設定が有効になっている場合に、コンソールのリフレッシュレートがホストのリフレッシュレートと一致するように、&lt;br&gt;エミュレーション速度を調整します。エミュレーション速度が1％未満増加する可能性がありますが、可能な限りスムーズなアニメーションが得られます。&lt;br&gt;コンソールのリフレッシュレートがホストのリフレッシュレートから離れすぎている場合、[ホストのリフレッシュレートに同期]は有効になりません。&lt;br&gt;リフレッシュレートの表示が可変のユーザーは、このオプションを無効にする必要があります。</translation>
     </message>
 </context>
 <context>
@@ -3217,10 +3249,6 @@ Login token generated on %2.</source>
         <translation>ターボ速度を設定します。この速度は、ホットキーのターボを押すか切り替え時に適用されます。 &lt;br&gt;早送りとターボ、両方のホットキーが押された/切り替えられた場合、ターボを優先します。</translation>
     </message>
     <message>
-        <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host&apos;s refresh rate when both VSync and Audio Resampling settings are enabled. This results in the smoothest animations possible, at the cost of potentially increasing the emulation speed by less than 1%. Sync To Host Refresh Rate will not take effect if the console&apos;s refresh rate is too far from the host&apos;s refresh rate. Users with variable refresh rate displays should disable this option.</source>
-        <translation>VSyncとオーディオリサンプリングの両方の設定が有効になっている場合に、コンソールのリフレッシュレートがホストのリフレッシュレートと一致するように、&lt;br&gt;エミュレーション速度を調整します。これにより、エミュレーション速度が1％未満増加する可能性がありますが、可能な限りスムーズなアニメーションが得られます。&lt;br&gt;コンソールのリフレッシュレートがホストのリフレッシュレートから離れすぎている場合、[ホストのリフレッシュレートに同期]は有効になりません。&lt;br&gt;リフレッシュレートの表示が可変のユーザーは、このオプションを無効にする必要があります。</translation>
-    </message>
-    <message>
         <source>Sets the target emulation speed. It is not guaranteed that this speed will be reached, and if not, the emulator will run as fast as it can manage.</source>
         <translation>エミュレーション目標速度を設定します。この速度に到達することは保証されていません。到達しない場合、エミュレーターは管理可能な速度で実行されます。</translation>
     </message>
@@ -3260,10 +3288,6 @@ Login token generated on %2.</source>
         <translation>形式</translation>
     </message>
     <message>
-        <source>Depth Buffer (Low Compatibility)</source>
-        <translation>深度バッファ（低互換性）</translation>
-    </message>
-    <message>
         <source>Disabled</source>
         <translation>無効</translation>
     </message>
@@ -3278,6 +3302,14 @@ Login token generated on %2.</source>
     <message>
         <source>Setting this beyond 1x will enhance the resolution of rendered 3D polygons and lines. Only applies to the hardware backends. &lt;br&gt;This option is usually safe, with most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</source>
         <translation>これを1xを超えて設定すると、レンダリングされた3Dポリゴンとラインの解像度が向上します。ハードウェアバックエンドにのみ適用されます。 &lt;br&gt;このオプションは通常安全であり、ほとんどのゲームはより高い解像度で問題なく表示されます。解像度が高いほど、より強力なGPUが必要です。</translation>
+    </message>
+    <message>
+        <source>Depth Buffer (Low Compatibility)</source>
+        <translation>深度バッファ（低互換性）</translation>
+    </message>
+    <message>
+        <source>Use Software Renderer For Readbacks</source>
+        <translation>リードバックにソフトウェアレンダラーを使用</translation>
     </message>
     <message>
         <source>Widescreen Hack</source>
@@ -3392,12 +3424,20 @@ Login token generated on %2.</source>
         <translation>強制的に 4:3(24ビットディスプレイ)扱い (ビデオ映像のワイドスクリーンを無効)</translation>
     </message>
     <message>
+        <source>Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater performance when using graphical enhancements with the hardware renderer.</source>
+        <translation>VRAMリードバックのためにソフトウェアレンダラーを並行して実行します。一部のシステムでは、ハードウェアレンダラーでグラフィカルな拡張機能を使用すると、&lt;br&gt;パフォーマンスが向上する場合があります。</translation>
+    </message>
+    <message>
         <source>Scales the dither pattern to the resolution scale of the emulated GPU. This makes the dither pattern much less obvious at higher resolutions. &lt;br&gt;Usually safe to enable, and only supported by the hardware renderers.</source>
         <translation>ディザパターンをエミュレートされたGPUの解像度スケールにスケーリングします。これにより、解像度が高くなるとディザパターンが目立たなくなります。 &lt;br&gt;通常は安全に有効にでき、ハードウェアレンダラーでのみサポートされます。</translation>
     </message>
     <message>
         <source>Geometry Correction</source>
         <translation>ジオメトリ補正を有効にする</translation>
+    </message>
+    <message>
+        <source>Software Renderer Readbacks (run in parallel for VRAM-&gt;CPU transfers)</source>
+        <translation>ソフトウェアレンダラーのリードバック（VRAM-&gt; CPU転送の場合は並行して実行）</translation>
     </message>
     <message>
         <source>Preserve Projection Precision</source>
@@ -3900,6 +3940,10 @@ Login token generated on %2.</source>
     <message>
         <source>Volume: Muted</source>
         <translation>音量 : ミュート</translation>
+    </message>
+    <message>
+        <source>Failed to save undo load state.</source>
+        <translation>元に戻したステートロードの保存に失敗しました。</translation>
     </message>
     <message>
         <source>CD Audio Muted.</source>
@@ -4781,6 +4825,10 @@ Login token generated on %2.</source>
         <translation>Discord サーバー...(&amp;D)</translation>
     </message>
     <message>
+        <source>Exclude From List</source>
+        <translation>リストから削除</translation>
+    </message>
+    <message>
         <source>Failed to remove existing cover &apos;%1&apos;</source>
         <translation>既存のカバー &apos;%1&apos;の削除に失敗しました</translation>
     </message>
@@ -4916,6 +4964,10 @@ Achievements: %5 (%6 points)
 実績:%5 (%6 点)
 
 </translation>
+    </message>
+    <message>
+        <source>Undo Load State</source>
+        <translation>ステートロードを元に戻す</translation>
     </message>
     <message>
         <source>Select Save State File</source>
@@ -5418,6 +5470,10 @@ SBIファイルを追加する方法については、READMEを確認してく�
     <message>
         <source>Change Disc</source>
         <translation>ディスク交換</translation>
+    </message>
+    <message>
+        <source>Undo Load State</source>
+        <translation>ステートロードを元に戻す</translation>
     </message>
     <message>
         <source>Swap Memory Card Slots</source>
@@ -6108,6 +6164,52 @@ SBIファイルを追加する方法については、READMEを確認してく�
     </message>
 </context>
 <context>
+    <name>Cheevos</name>
+    <message>
+        <source>Downloading achievement resources...</source>
+        <translation>アチーブメント情報をダウンロード中...</translation>
+    </message>
+    <message>
+        <source>Leaderboards are DISABLED because Hardcore Mode is off.</source>
+        <translation>ハードコアモードがオフのため、リーダーボードは無効になります。</translation>
+    </message>
+    <message>
+        <source>Leaderboards are enabled.</source>
+        <translation>リーダーボードが有効になります。</translation>
+    </message>
+    <message>
+        <source>Logging in to RetroAchivements...</source>
+        <translation>RetroAchivementsにログイン...</translation>
+    </message>
+    <message>
+        <source>You have earned %u of %u achievements, and %u of %u points.</source>
+        <translation>実績 %u / %u ,ポイント %u / %u を獲得しました。</translation>
+    </message>
+    <message>
+        <source>This game has no achievements.</source>
+        <translation>このゲームには実績がありません。</translation>
+    </message>
+    <message>
+        <source> (Hardcore Mode)</source>
+        <translation> (ハードコアモード)</translation>
+    </message>
+</context>
+<context>
+    <name>DisplayAspectRatio</name>
+    <message>
+        <source>Custom</source>
+        <translation>カスタム</translation>
+    </message>
+    <message>
+        <source>Auto (Match Window)</source>
+        <translation>自動(ウィンドウに合わせる)</translation>
+    </message>
+    <message>
+        <source>Auto (Game Native)</source>
+        <translation>自動(ゲームに基づく)</translation>
+    </message>
+</context>
+<context>
     <name>CPUFastmemMode</name>
     <message>
         <source>Disabled (Slowest)</source>
@@ -6120,13 +6222,6 @@ SBIファイルを追加する方法については、READMEを確認してく�
     <message>
         <source>MMap (Hardware, Fastest, 64-Bit Only)</source>
         <translation>MMap（HW,最速,64ビットのみ）</translation>
-    </message>
-</context>
-<context>
-    <name>DisplayAspectRatio</name>
-    <message>
-        <source>Auto (Game Native)</source>
-        <translation>自動(ゲームに基づく)</translation>
     </message>
 </context>
 <context>
