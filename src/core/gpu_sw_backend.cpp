@@ -84,11 +84,9 @@ void ALWAYS_INLINE_RELEASE GPU_SW_Backend::ShadePixel(const GPUBackendDrawComman
                                                       u8 color_g, u8 color_b, u8 texcoord_x, u8 texcoord_y)
 {
   VRAMPixel color;
-  bool transparent;
   if constexpr (texture_enable)
   {
     // Apply texture window
-    // TODO: Precompute the second half
     texcoord_x = (texcoord_x & cmd->window.and_x) | cmd->window.or_x;
     texcoord_y = (texcoord_y & cmd->window.and_y) | cmd->window.or_y;
 
@@ -129,8 +127,6 @@ void ALWAYS_INLINE_RELEASE GPU_SW_Backend::ShadePixel(const GPUBackendDrawComman
     if (texture_color.bits == 0)
       return;
 
-    transparent = texture_color.c;
-
     if constexpr (raw_texture_enable)
     {
       color.bits = texture_color.bits;
@@ -148,59 +144,67 @@ void ALWAYS_INLINE_RELEASE GPU_SW_Backend::ShadePixel(const GPUBackendDrawComman
   }
   else
   {
-    transparent = true;
-
     const u32 dither_y = (dithering_enable) ? (y & 3u) : 2u;
     const u32 dither_x = (dithering_enable) ? (x & 3u) : 3u;
 
     color.bits = (ZeroExtend16(s_dither_lut[dither_y][dither_x][color_r]) << 0) |
                  (ZeroExtend16(s_dither_lut[dither_y][dither_x][color_g]) << 5) |
-                 (ZeroExtend16(s_dither_lut[dither_y][dither_x][color_b]) << 10);
+                 (ZeroExtend16(s_dither_lut[dither_y][dither_x][color_b]) << 10) | 0x8000u;
   }
 
   const VRAMPixel bg_color{GetPixel(static_cast<u32>(x), static_cast<u32>(y))};
   if constexpr (transparency_enable)
   {
-    if (transparent)
+    if (color.bits & 0x8000u)
     {
-#define BLEND_AVERAGE(bg, fg) Truncate8(std::min<u32>((ZeroExtend32(bg) / 2) + (ZeroExtend32(fg) / 2), 0x1F))
-#define BLEND_ADD(bg, fg) Truncate8(std::min<u32>(ZeroExtend32(bg) + ZeroExtend32(fg), 0x1F))
-#define BLEND_SUBTRACT(bg, fg) Truncate8((bg > fg) ? ((bg) - (fg)) : 0)
-#define BLEND_QUARTER(bg, fg) Truncate8(std::min<u32>(ZeroExtend32(bg) + ZeroExtend32(fg / 4), 0x1F))
-
-#define BLEND_RGB(func)                                                                                                \
-  color.Set(func(bg_color.r.GetValue(), color.r.GetValue()), func(bg_color.g.GetValue(), color.g.GetValue()),          \
-            func(bg_color.b.GetValue(), color.b.GetValue()), color.c.GetValue())
-
+      // Based on blargg's efficient 15bpp pixel math.
+      u32 bg_bits = ZeroExtend32(bg_color.bits);
+      u32 fg_bits = ZeroExtend32(color.bits);
       switch (cmd->draw_mode.transparency_mode)
       {
         case GPUTransparencyMode::HalfBackgroundPlusHalfForeground:
-          BLEND_RGB(BLEND_AVERAGE);
-          break;
+        {
+          bg_bits |= 0x8000u;
+          color.bits = Truncate16(((fg_bits + bg_bits) - ((fg_bits ^ bg_bits) & 0x0421u)) >> 1);
+        }
+        break;
+
         case GPUTransparencyMode::BackgroundPlusForeground:
-          BLEND_RGB(BLEND_ADD);
-          break;
+        {
+          bg_bits &= ~0x8000u;
+
+          const u32 sum = fg_bits + bg_bits;
+          const u32 carry = (sum - ((fg_bits ^ bg_bits) & 0x8421u)) & 0x8420u;
+
+          color.bits = Truncate16((sum - carry) | (carry - (carry >> 5)));
+        }
+        break;
+
         case GPUTransparencyMode::BackgroundMinusForeground:
-          BLEND_RGB(BLEND_SUBTRACT);
-          break;
+        {
+          bg_bits |= 0x8000u;
+          fg_bits &= ~0x8000u;
+
+          const u32 diff = bg_bits - fg_bits + 0x108420u;
+          const u32 borrow = (diff - ((bg_bits ^ fg_bits) & 0x108420u)) & 0x108420u;
+
+          color.bits = Truncate16((diff - borrow) & (borrow - (borrow >> 5)));
+        }
+        break;
+
         case GPUTransparencyMode::BackgroundPlusQuarterForeground:
-          BLEND_RGB(BLEND_QUARTER);
-          break;
-        default:
-          break;
+        {
+          bg_bits &= ~0x8000u;
+          fg_bits = ((fg_bits >> 2) & 0x1CE7u) | 0x8000u;
+
+          const u32 sum = fg_bits + bg_bits;
+          const u32 carry = (sum - ((fg_bits ^ bg_bits) & 0x8421u)) & 0x8420u;
+
+          color.bits = Truncate16((sum - carry) | (carry - (carry >> 5)));
+        }
+        break;
       }
-
-#undef BLEND_RGB
-
-#undef BLEND_QUARTER
-#undef BLEND_SUBTRACT
-#undef BLEND_ADD
-#undef BLEND_AVERAGE
     }
-  }
-  else
-  {
-    UNREFERENCED_VARIABLE(transparent);
   }
 
   const u16 mask_and = cmd->params.GetMaskAND();
