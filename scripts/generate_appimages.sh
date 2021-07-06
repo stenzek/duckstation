@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # NOTE: Keep this script in the same directory as resources for AppImage creation
-APPIMAGE_RESOURCES_DIR=$(dirname $(readlink -f $0))/../dist
+APPIMAGE_RESOURCES_DIR=$(dirname $(readlink -f $0))/../extras
 echo "APPIMAGE_RESOURCES_DIR set to ${APPIMAGE_RESOURCES_DIR}"
 
 if [[ "$#" -ne 1 ]]; then
@@ -32,13 +32,13 @@ FRONTENDS=("qt" "nogui")
 ICONS_QT=()
 ICONS_NOGUI=()
 
-for filename in ${APPIMAGE_RESOURCES_DIR}/icon-*px.png; do
-  [[ ${filename} =~ ${APPIMAGE_RESOURCES_DIR}/icon-(.*)px.png ]];
+for filename in ${APPIMAGE_RESOURCES_DIR}/icons/icon-*px.png; do
+  [[ ${filename} =~ ${APPIMAGE_RESOURCES_DIR}/icons/icon-(.*)px.png ]];
   res=${BASH_REMATCH[1]}
   mkdir -p ${BUILD_DIR}/AppImage-icons/${res}x${res}
   for frontend in ${FRONTENDS[@]}; do
     # Copy icon to proper directory
-    cp -v ${APPIMAGE_RESOURCES_DIR}/icon-${res}px.png ${BUILD_DIR}/AppImage-icons/${res}x${res}/duckstation-${frontend}.png
+    cp -v ${APPIMAGE_RESOURCES_DIR}/icons/icon-${res}px.png ${BUILD_DIR}/AppImage-icons/${res}x${res}/duckstation-${frontend}.png
     # Append icon filepath to array that will later be passed to linuxdeploy
     eval "ICONS_${frontend^^}+=(${BUILD_DIR}/AppImage-icons/${res}x${res}/duckstation-${frontend}.png)"
   done
@@ -68,7 +68,7 @@ done
 ${BUILD_DIR}/linuxdeploy-x86_64.AppImage \
   --appdir=${BUILD_DIR}/duckstation-qt.AppDir \
   --executable=${BUILD_DIR}/bin/duckstation-qt \
-  --desktop-file=${APPIMAGE_RESOURCES_DIR}/duckstation-qt.desktop \
+  --desktop-file=${APPIMAGE_RESOURCES_DIR}/linux-desktop-files/duckstation-qt.desktop \
   ${ICONS_QT[@]/#/--icon-file=} \
   --plugin=qt
 
@@ -86,6 +86,6 @@ OUTPUT="duckstation-nogui-x64.AppImage" \
 ${BUILD_DIR}/linuxdeploy-x86_64.AppImage \
   --appdir=${BUILD_DIR}/duckstation-nogui.AppDir \
   --executable=${BUILD_DIR}/bin/duckstation-nogui \
-  --desktop-file=${APPIMAGE_RESOURCES_DIR}/duckstation-nogui.desktop \
+  --desktop-file=${APPIMAGE_RESOURCES_DIR}/linux-desktop-files/duckstation-nogui.desktop \
   ${ICONS_NOGUI[@]/#/--icon-file=} \
   --output=appimage
