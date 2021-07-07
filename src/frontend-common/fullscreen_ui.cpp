@@ -4474,7 +4474,6 @@ static void DrawLeaderboardEntry(const Cheevos::LeaderboardEntry& lbEntry, float
   if (!visible)
     return;
 
-  const float spacing = LayoutScale(10.0f);
   const float midpoint = bb.Min.y + g_large_font->FontSize + LayoutScale(4.0f);
   float text_start_x = bb.Min.x + LayoutScale(15.0f);
   SmallString text;
@@ -4780,6 +4779,7 @@ bool SetControllerNavInput(FrontendCommon::ControllerNavigationButton button, bo
   if (!HasActiveWindow())
     return false;
 
+#if 0
   // This is a bit hacky..
   ImGuiIO& io = ImGui::GetIO();
 
@@ -4789,10 +4789,11 @@ bool SetControllerNavInput(FrontendCommon::ControllerNavigationButton button, bo
     io.KeysDown[io.KeyMap[imkey]] = value;                                                                             \
   }
 
-  // MAP_KEY(FrontendCommon::ControllerNavigationButton::LeftTrigger, ImGuiKey_PageUp);
-  // MAP_KEY(FrontendCommon::ControllerNavigationButton::RightTrigger, ImGuiKey_PageDown);
+  MAP_KEY(FrontendCommon::ControllerNavigationButton::LeftTrigger, ImGuiKey_PageUp);
+  MAP_KEY(FrontendCommon::ControllerNavigationButton::RightTrigger, ImGuiKey_PageDown);
 
 #undef MAP_KEY
+#endif
 
   return true;
 }

@@ -1537,9 +1537,6 @@ void Throttle()
   static constexpr double MAX_VARIANCE_TIME_NS = 50 * 1000000;
 #endif
 
-  // Don't sleep for <1ms or >=period.
-  static constexpr double MINIMUM_SLEEP_TIME_NS = 1 * 1000000;
-
   // Use unsigned for defined overflow/wrap-around.
   const Common::Timer::Value time = Common::Timer::GetValue();
   const double sleep_time = (s_next_frame_time >= time) ?

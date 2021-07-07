@@ -1036,7 +1036,6 @@ void RightAlignNavButtons(u32 num_items /*= 0*/, float item_width /*= LAYOUT_MEN
                           float item_height /*= LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY*/)
 {
   ImGuiWindow* window = ImGui::GetCurrentWindow();
-  const ImVec2 window_size(ImGui::GetWindowSize());
   const ImGuiStyle& style = ImGui::GetStyle();
 
   const float total_item_width =
