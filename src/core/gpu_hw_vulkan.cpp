@@ -1291,7 +1291,7 @@ void GPU_HW_Vulkan::DrawBatchVertices(BatchRenderMode render_mode, u32 base_vert
   VkCommandBuffer cmdbuf = g_vulkan_context->GetCurrentCommandBuffer();
 
   // [depth_test][render_mode][texture_mode][transparency_mode][dithering][interlacing]
-  const u8 depth_test = BoolToUInt8(m_batch.check_mask_before_draw) | (BoolToUInt8(m_batch.use_depth_buffer) << 1);
+  const u8 depth_test = m_batch.use_depth_buffer ? static_cast<u8>(2) : BoolToUInt8(m_batch.check_mask_before_draw);
   VkPipeline pipeline =
     m_batch_pipelines[depth_test][static_cast<u8>(render_mode)][static_cast<u8>(m_batch.texture_mode)][static_cast<u8>(
       m_batch.transparency_mode)][BoolToUInt8(m_batch.dithering)][BoolToUInt8(m_batch.interlacing)];
