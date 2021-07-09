@@ -3104,6 +3104,21 @@ void CommonHostInterface::ApplySettings(bool display_osd_messages)
   CheckForSettingsChanges(old_settings);
 }
 
+void CommonHostInterface::SetDefaultSettings()
+{
+  Settings old_settings(std::move(g_settings));
+  {
+    std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
+    SetDefaultSettings(*m_settings_interface.get());
+
+    LoadSettings(*m_settings_interface.get());
+    ApplyGameSettings(true);
+    FixIncompatibleSettings(true);
+  }
+
+  CheckForSettingsChanges(old_settings);
+}
+
 void CommonHostInterface::UpdateInputMap()
 {
   std::lock_guard<std::recursive_mutex> lock(m_settings_mutex);

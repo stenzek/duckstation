@@ -14,6 +14,7 @@
 #include "postprocessingsettingswidget.h"
 #include "qthostinterface.h"
 #include <QtWidgets/QTextEdit>
+#include <QtWidgets/QMessageBox>
 
 #ifdef WITH_CHEEVOS
 #include "achievementsettingswidget.h"
@@ -76,6 +77,7 @@ SettingsDialog::SettingsDialog(QtHostInterface* host_interface, QWidget* parent 
   m_ui.helpText->setText(m_category_help_text[0]);
   connect(m_ui.settingsCategory, &QListWidget::currentRowChanged, this, &SettingsDialog::onCategoryCurrentRowChanged);
   connect(m_ui.closeButton, &QPushButton::clicked, this, &SettingsDialog::accept);
+  connect(m_ui.restoreDefaultsButton, &QPushButton::clicked, this, &SettingsDialog::onRestoreDefaultsClicked);
 
   connect(m_console_settings, &ConsoleSettingsWidget::multitapModeChanged, m_controller_settings,
           &ControllerSettingsWidget::updateMultitapControllerTitles);
@@ -141,6 +143,16 @@ void SettingsDialog::onCategoryCurrentRowChanged(int row)
   Q_ASSERT(row < static_cast<int>(Category::Count));
   m_ui.settingsContainer->setCurrentIndex(row);
   m_ui.helpText->setText(m_category_help_text[row]);
+}
+
+void SettingsDialog::onRestoreDefaultsClicked()
+{
+  if (!QMessageBox::question(this, tr("Confirm Restore Defaults"), tr("Are you sure you want to restore the default settings? Any preferences will be lost.")))
+  {
+    return;
+  }
+
+  m_host_interface->setDefaultSettings();
 }
 
 void SettingsDialog::registerWidgetHelp(QObject* object, QString title, QString recommended_value, QString text)

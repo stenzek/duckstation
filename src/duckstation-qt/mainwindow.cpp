@@ -1084,6 +1084,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionGridViewRefreshCovers, &QAction::triggered, m_game_list_widget,
           &GameListWidget::refreshGridCovers);
 
+  connect(m_host_interface, &QtHostInterface::settingsResetToDefault, this, &MainWindow::onSettingsResetToDefault);
   connect(m_host_interface, &QtHostInterface::errorReported, this, &MainWindow::reportError,
           Qt::BlockingQueuedConnection);
   connect(m_host_interface, &QtHostInterface::messageReported, this, &MainWindow::reportMessage);
@@ -1295,6 +1296,28 @@ void MainWindow::updateTheme()
       }
     }
   }
+}
+
+void MainWindow::onSettingsResetToDefault()
+{
+  if (m_settings_dialog)
+  {
+    const bool shown = m_settings_dialog->isVisible();
+
+    m_settings_dialog->hide();
+    m_settings_dialog->deleteLater();
+    m_settings_dialog = new SettingsDialog(m_host_interface, this);
+    if (shown)
+    {
+      m_settings_dialog->setModal(false);
+      m_settings_dialog->show();
+    }
+  }
+
+  updateDebugMenuCPUExecutionMode();
+  updateDebugMenuGPURenderer();
+  updateDebugMenuCropMode();
+  updateDebugMenuVisibility();
 }
 
 void MainWindow::saveStateToConfig()

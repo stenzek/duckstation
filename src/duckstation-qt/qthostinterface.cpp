@@ -290,18 +290,15 @@ void QtHostInterface::setDefaultSettings()
     return;
   }
 
-  Settings old_settings(std::move(g_settings));
-  {
-    std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
-    SetDefaultSettings(*m_settings_interface.get());
-    m_settings_interface->Save();
+  SetDefaultSettings();
+}
 
-    CommonHostInterface::LoadSettings(*m_settings_interface.get());
-    CommonHostInterface::ApplyGameSettings(false);
-    CommonHostInterface::FixIncompatibleSettings(false);
-  }
-
-  CheckForSettingsChanges(old_settings);
+void QtHostInterface::SetDefaultSettings()
+{
+  CommonHostInterface::SetDefaultSettings();
+  checkRenderToMainState();
+  queueSettingsSave();
+  emit settingsResetToDefault();
 }
 
 void QtHostInterface::applySettings(bool display_osd_messages /* = false */)
@@ -318,7 +315,11 @@ void QtHostInterface::applySettings(bool display_osd_messages /* = false */)
 void QtHostInterface::ApplySettings(bool display_osd_messages)
 {
   CommonHostInterface::ApplySettings(display_osd_messages);
+  checkRenderToMainState();
+}
 
+void QtHostInterface::checkRenderToMainState()
+{
   // detect when render-to-main flag changes
   if (!System::IsShutdown())
   {

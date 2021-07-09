@@ -426,6 +426,9 @@ protected:
   /// Restores all settings to defaults.
   virtual void SetDefaultSettings(SettingsInterface& si) override;
 
+  /// Resets known settings to default.
+  virtual void SetDefaultSettings();
+
   /// Loads settings to m_settings and any frontend-specific parameters.
   virtual void LoadSettings(SettingsInterface& si) override;
 

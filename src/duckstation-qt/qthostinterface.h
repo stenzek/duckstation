@@ -127,6 +127,7 @@ Q_SIGNALS:
   void messageReported(const QString& message);
   void debuggerMessageReported(const QString& message);
   bool messageConfirmed(const QString& message);
+  void settingsResetToDefault();
   void emulationStarting();
   void emulationStarted();
   void emulationStopped();
@@ -213,6 +214,7 @@ protected:
                             const std::string& game_title) override;
 
   void SetDefaultSettings(SettingsInterface& si) override;
+  void SetDefaultSettings() override;
   void ApplySettings(bool display_osd_messages) override;
 
   void SetMouseMode(bool relative, bool hide_cursor) override;
@@ -267,6 +269,7 @@ private:
   void installTranslator();
   void renderDisplay();
   void connectDisplaySignals(QtDisplayWidget* widget);
+  void checkRenderToMainState();
   void updateDisplayState();
   void queueSettingsSave();
   void wakeThread();

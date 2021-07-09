@@ -65,6 +65,7 @@ private Q_SLOTS:
   void setTheme(const QString& theme);
   void updateTheme();
 
+  void onSettingsResetToDefault();
   void onEmulationStarting();
   void onEmulationStarted();
   void onEmulationStopped();
