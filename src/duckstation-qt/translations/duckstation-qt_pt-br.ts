@@ -223,7 +223,7 @@ função, considere fazer sua conta em:&lt;a href=&quot;https://retroachievement
     <message>
         <location filename="../achievementsettingswidget.cpp" line="29"/>
         <source>When enabled and logged in, DuckStation will scan for achievements on startup.</source>
-        <translation>Quando ativado e conectado o DuckStation irá buscar por consquistas assim que o jogo for iniciado.</translation>
+        <translation>Quando ativado e conectado o DuckStation irá buscar por conquistas assim que o jogo for iniciado.</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="31"/>
@@ -3958,7 +3958,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="99"/>
         <source>Display Enhancements</source>
-        <translation>Aprimoramentos de visualização</translation>
+        <translation>Aprimoramentos de exibição</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="105"/>
@@ -6630,7 +6630,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../mainwindow.ui" line="198"/>
         <source>&amp;View</source>
-        <translation>&amp;Visualização</translation>
+        <translation>&amp;Exibição</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="224"/>
@@ -6640,7 +6640,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../mainwindow.ui" line="240"/>
         <source>toolBar</source>
-        <translation></translation>
+        <translation>barra de ferramentas</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="280"/>
