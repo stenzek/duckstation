@@ -24,8 +24,10 @@ namespace Common::PageFaultHandler {
 
 struct RegisteredHandler
 {
-  void* owner;
   Callback callback;
+  const void* owner;
+  void* start_pc;
+  u32 code_size;
 };
 static std::vector<RegisteredHandler> m_handlers;
 static std::mutex m_handler_lock;
@@ -112,6 +114,145 @@ static LONG ExceptionHandler(PEXCEPTION_POINTERS exi)
   s_in_handler = false;
 
   return EXCEPTION_CONTINUE_SEARCH;
+}
+
+u32 GetHandlerCodeSize()
+{
+  return 0;
+}
+
+#elif defined(_UWP)
+
+// https://docs.microsoft.com/en-us/cpp/build/exception-handling-x64?view=msvc-160
+struct UNWIND_INFO
+{
+  BYTE version : 3;
+  BYTE flags : 5;
+  BYTE size_of_prologue;
+  BYTE count_of_unwind_codes;
+  BYTE frame_register : 4;
+  BYTE frame_offset_scaled : 4;
+  ULONG exception_handler_address;
+};
+
+struct UnwindHandler
+{
+  RUNTIME_FUNCTION runtime_function;
+  UNWIND_INFO unwind_info;
+  uint8_t exception_handler_code[32];
+};
+
+static constexpr size_t UNWIND_HANDLER_ALLOC_SIZE = 4096;
+static_assert(sizeof(UnwindHandler) <= UNWIND_HANDLER_ALLOC_SIZE);
+
+static EXCEPTION_DISPOSITION UnwindExceptionHandler(PEXCEPTION_RECORD ExceptionRecord, ULONG64 EstablisherFrame,
+                                                    PCONTEXT ContextRecord, PDISPATCHER_CONTEXT DispatcherContext)
+{
+  if (s_in_handler)
+    return ExceptionContinueSearch;
+
+  s_in_handler = true;
+
+  void* const exception_pc = reinterpret_cast<void*>(DispatcherContext->ControlPc);
+  void* const exception_address = reinterpret_cast<void*>(ExceptionRecord->ExceptionInformation[1]);
+  bool const is_write = ExceptionRecord->ExceptionInformation[0] == 1;
+
+  std::lock_guard<std::mutex> guard(m_handler_lock);
+  for (const RegisteredHandler& rh : m_handlers)
+  {
+    if (static_cast<const u8*>(exception_pc) >= static_cast<const u8*>(rh.start_pc) &&
+        static_cast<const u8*>(exception_pc) <= (static_cast<const u8*>(rh.start_pc) + rh.code_size))
+    {
+      if (rh.callback(exception_pc, exception_address, is_write) == HandlerResult::ContinueExecution)
+      {
+        s_in_handler = false;
+        return ExceptionContinueExecution;
+      }
+    }
+  }
+
+  s_in_handler = false;
+  return ExceptionContinueSearch;
+}
+
+static PRUNTIME_FUNCTION GetRuntimeFunctionCallback(DWORD64 ControlPc, PVOID Context)
+{
+  std::lock_guard<std::mutex> guard(m_handler_lock);
+  for (const RegisteredHandler& rh : m_handlers)
+  {
+    if (ControlPc >= reinterpret_cast<DWORD64>(rh.start_pc) &&
+        ControlPc <= (reinterpret_cast<DWORD64>(rh.start_pc) + rh.code_size))
+    {
+      return reinterpret_cast<PRUNTIME_FUNCTION>(rh.start_pc);
+    }
+  }
+
+  return nullptr;
+}
+
+static bool InstallFunctionTableCallback(const void* owner, void* start_pc, u32 code_size)
+{
+  if (code_size < UNWIND_HANDLER_ALLOC_SIZE)
+  {
+    Log_ErrorPrintf("Invalid code size: %u @ %p", code_size, UNWIND_HANDLER_ALLOC_SIZE);
+    return false;
+  }
+
+  if (!RtlInstallFunctionTableCallback(reinterpret_cast<DWORD64>(owner) | 0x3, reinterpret_cast<DWORD64>(start_pc),
+                                       static_cast<DWORD>(code_size), &GetRuntimeFunctionCallback, nullptr, nullptr))
+  {
+    Log_ErrorPrintf("RtlInstallFunctionTableCallback() failed: %08X", GetLastError());
+    return false;
+  }
+
+  // This is only valid on x86 for now.
+#ifndef CPU_X64
+  Log_ErrorPrint("Exception unwind codegen not implemented");
+  return false;
+#else
+  UnwindHandler* uh = static_cast<UnwindHandler*>(start_pc);
+  ULONG old_protection;
+  if (!VirtualProtectFromApp(uh, UNWIND_HANDLER_ALLOC_SIZE, PAGE_READWRITE, &old_protection))
+  {
+    Log_ErrorPrintf("VirtualProtectFromApp(RW) for exception handler failed: %08X", GetLastError());
+    return false;
+  }
+
+  uh->runtime_function.BeginAddress = UNWIND_HANDLER_ALLOC_SIZE;
+  uh->runtime_function.EndAddress = code_size;
+  uh->runtime_function.UnwindInfoAddress = offsetof(UnwindHandler, unwind_info);
+
+  uh->unwind_info.version = 1;
+  uh->unwind_info.flags = UNW_FLAG_EHANDLER;
+  uh->unwind_info.size_of_prologue = 0;
+  uh->unwind_info.count_of_unwind_codes = 0;
+  uh->unwind_info.frame_register = 0;
+  uh->unwind_info.frame_offset_scaled = 0;
+  uh->unwind_info.exception_handler_address = offsetof(UnwindHandler, exception_handler_code);
+
+  // mov rax, handler
+  const void* handler = UnwindExceptionHandler;
+  uh->exception_handler_code[0] = 0x48;
+  uh->exception_handler_code[1] = 0xb8;
+  std::memcpy(&uh->exception_handler_code[2], &handler, sizeof(handler));
+
+  // jmp rax
+  uh->exception_handler_code[10] = 0xff;
+  uh->exception_handler_code[11] = 0xe0;
+
+  if (!VirtualProtectFromApp(uh, UNWIND_HANDLER_ALLOC_SIZE, PAGE_EXECUTE_READ, &old_protection))
+  {
+    Log_ErrorPrintf("VirtualProtectFromApp(RX) for exception handler failed: %08X", GetLastError());
+    return false;
+  }
+
+  return true;
+#endif
+}
+
+u32 GetHandlerCodeSize()
+{
+  return UNWIND_HANDLER_ALLOC_SIZE;
 }
 
 #elif defined(USE_SIGSEGV)
@@ -204,9 +345,21 @@ static void SIGSEGVHandler(int sig, siginfo_t* info, void* ctx)
     sa.sa_handler(sig);
 }
 
+u32 GetHandlerCodeSize()
+{
+  return 0;
+}
+
+#else
+
+u32 GetHandlerCodeSize()
+{
+  return 0;
+}
+
 #endif
 
-bool InstallHandler(void* owner, Callback callback)
+bool InstallHandler(const void* owner, void* start_pc, u32 code_size, Callback callback)
 {
   bool was_empty;
   {
@@ -218,7 +371,6 @@ bool InstallHandler(void* owner, Callback callback)
     }
 
     was_empty = m_handlers.empty();
-    m_handlers.push_back(RegisteredHandler{owner, std::move(callback)});
   }
 
   if (was_empty)
@@ -230,19 +382,13 @@ bool InstallHandler(void* owner, Callback callback)
       Log_ErrorPrint("Failed to add vectored exception handler");
       return false;
     }
-#elif defined(USE_SIGSEGV)
-#if 0
-    // Alternative stack - we'll need this is we ever use the host stack for branches.
-    stack_t signal_stack = {};
-    signal_stack.ss_sp = malloc(SIGSTKSZ);
-    signal_stack.ss_size = SIGSTKSZ;
-    if (sigaltstack(&signal_stack, nullptr))
+#elif defined(_UWP)
+    if (!InstallFunctionTableCallback(owner, start_pc, code_size))
     {
-      Log_ErrorPrintf("signaltstack() failed: %d", errno);
+      Log_ErrorPrint("Failed to install function table callback");
       return false;
     }
-#endif
-
+#elif defined(USE_SIGSEGV)
     struct sigaction sa = {};
     sa.sa_sigaction = SIGSEGVHandler;
     sa.sa_flags = SA_SIGINFO;
@@ -265,10 +411,11 @@ bool InstallHandler(void* owner, Callback callback)
 #endif
   }
 
+  m_handlers.push_back(RegisteredHandler{callback, owner, start_pc, code_size});
   return true;
 }
 
-bool RemoveHandler(void* owner)
+bool RemoveHandler(const void* owner)
 {
   std::lock_guard<std::mutex> guard(m_handler_lock);
   auto it = std::find_if(m_handlers.begin(), m_handlers.end(),
@@ -283,6 +430,8 @@ bool RemoveHandler(void* owner)
 #if defined(_WIN32) && !defined(_UWP) && (defined(CPU_X64) || defined(CPU_AARCH64))
     RemoveVectoredExceptionHandler(s_veh_handle);
     s_veh_handle = nullptr;
+#elif defined(_UWP)
+    // nothing to do here, any unregistered regions will be ignored
 #elif defined(USE_SIGSEGV)
     // restore old signal handler
 #if defined(__APPLE__) || defined(__aarch64__)
