@@ -16,15 +16,16 @@ public:
   void Destroy();
   void Reset();
 
-  u8* GetCodePointer() const { return m_code_ptr; }
-  u32 GetTotalSize() const { return m_total_size; }
+  ALWAYS_INLINE u8* GetCodePointer() const { return m_code_ptr; }
+  ALWAYS_INLINE u32 GetTotalSize() const { return m_total_size; }
 
-  u8* GetFreeCodePointer() const { return m_free_code_ptr; }
-  u32 GetFreeCodeSpace() const { return static_cast<u32>(m_code_size - m_code_used); }
+  ALWAYS_INLINE u8* GetFreeCodePointer() const { return m_free_code_ptr; }
+  ALWAYS_INLINE u32 GetFreeCodeSpace() const { return static_cast<u32>(m_code_size - m_code_used); }
+  void ReserveCode(u32 size);
   void CommitCode(u32 length);
 
-  u8* GetFreeFarCodePointer() const { return m_free_far_code_ptr; }
-  u32 GetFreeFarCodeSpace() const { return static_cast<u32>(m_far_code_size - m_far_code_used); }
+  ALWAYS_INLINE u8* GetFreeFarCodePointer() const { return m_free_far_code_ptr; }
+  ALWAYS_INLINE u32 GetFreeFarCodeSpace() const { return static_cast<u32>(m_far_code_size - m_far_code_used); }
   void CommitFarCode(u32 length);
 
   /// Adjusts the free code pointer to the specified alignment, padding with bytes.
@@ -45,6 +46,7 @@ private:
   u8* m_code_ptr = nullptr;
   u8* m_free_code_ptr = nullptr;
   u32 m_code_size = 0;
+  u32 m_code_reserve_size = 0;
   u32 m_code_used = 0;
 
   u8* m_far_code_ptr = nullptr;
