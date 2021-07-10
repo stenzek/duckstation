@@ -36,6 +36,7 @@
     <ClCompile Include="gpu_backend.cpp" />
     <ClCompile Include="gpu_commands.cpp" />
     <ClCompile Include="gpu_hw_d3d11.cpp" />
+    <ClCompile Include="gpu_hw_d3d12.cpp" />
     <ClCompile Include="gpu_hw_shadergen.cpp" />
     <ClCompile Include="gpu_hw_vulkan.cpp" />
     <ClCompile Include="gpu_sw.cpp" />
@@ -99,6 +100,7 @@
     <ClInclude Include="digital_controller.h" />
     <ClInclude Include="gpu_backend.h" />
     <ClInclude Include="gpu_hw_d3d11.h" />
+    <ClInclude Include="gpu_hw_d3d12.h" />
     <ClInclude Include="gpu_hw_shadergen.h" />
     <ClInclude Include="gpu_hw_vulkan.h" />
     <ClInclude Include="gpu_sw.h" />

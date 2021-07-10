@@ -18,6 +18,13 @@
     <ClInclude Include="d3d11\staging_texture.h" />
     <ClInclude Include="d3d11\stream_buffer.h" />
     <ClInclude Include="d3d11\texture.h" />
+    <ClInclude Include="d3d12\context.h" />
+    <ClInclude Include="d3d12\descriptor_heap_manager.h" />
+    <ClInclude Include="d3d12\shader_cache.h" />
+    <ClInclude Include="d3d12\util.h" />
+    <ClInclude Include="d3d12\staging_texture.h" />
+    <ClInclude Include="d3d12\stream_buffer.h" />
+    <ClInclude Include="d3d12\texture.h" />
     <ClInclude Include="dimensional_array.h" />
     <ClInclude Include="easing.h" />
     <ClInclude Include="error.h" />
@@ -98,6 +105,13 @@
     <ClCompile Include="d3d11\stream_buffer.cpp" />
     <ClCompile Include="d3d11\texture.cpp" />
     <ClCompile Include="error.cpp" />
+    <ClCompile Include="d3d12\context.cpp" />
+    <ClCompile Include="d3d12\descriptor_heap_manager.cpp" />
+    <ClCompile Include="d3d12\shader_cache.cpp" />
+    <ClCompile Include="d3d12\staging_texture.cpp" />
+    <ClCompile Include="d3d12\stream_buffer.cpp" />
+    <ClCompile Include="d3d12\texture.cpp" />
+    <ClCompile Include="d3d12\util.cpp" />
     <ClCompile Include="event.cpp" />
     <ClCompile Include="file_system.cpp" />
     <ClCompile Include="gl\context.cpp" />

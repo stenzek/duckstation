@@ -34,6 +34,8 @@
     <ClCompile Include="game_database.cpp" />
     <ClCompile Include="inhibit_screensaver.cpp" />
     <ClCompile Include="xaudio2_audio_stream.cpp" />
+    <ClCompile Include="d3d12_host_display.cpp" />
+    <ClCompile Include="imgui_impl_dx12.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="icon.h" />
@@ -69,6 +71,8 @@
     <ClInclude Include="game_database.h" />
     <ClInclude Include="inhibit_screensaver.h" />
     <ClInclude Include="xaudio2_audio_stream.h" />
+    <ClInclude Include="d3d12_host_display.h" />
+    <ClInclude Include="imgui_impl_dx12.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="font_roboto_regular.inl" />

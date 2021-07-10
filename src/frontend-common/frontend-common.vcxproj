@@ -10,6 +10,7 @@
     <ClCompile Include="fullscreen_ui.cpp" />
     <ClCompile Include="fullscreen_ui_progress_callback.cpp" />
     <ClCompile Include="game_database.cpp" />
+    <ClCompile Include="d3d12_host_display.cpp" />
     <ClCompile Include="game_list.cpp" />
     <ClCompile Include="game_settings.cpp" />
     <ClCompile Include="http_downloader.cpp" />
@@ -17,6 +18,7 @@
     <ClCompile Include="icon.cpp" />
     <ClCompile Include="imgui_fullscreen.cpp" />
     <ClCompile Include="imgui_impl_dx11.cpp" />
+    <ClCompile Include="imgui_impl_dx12.cpp" />
     <ClCompile Include="imgui_impl_opengl3.cpp" />
     <ClCompile Include="imgui_impl_vulkan.cpp" />
     <ClCompile Include="imgui_styles.cpp" />
@@ -45,6 +47,7 @@
     <ClInclude Include="fullscreen_ui.h" />
     <ClInclude Include="fullscreen_ui_progress_callback.h" />
     <ClInclude Include="game_database.h" />
+    <ClInclude Include="d3d12_host_display.h" />
     <ClInclude Include="game_list.h" />
     <ClInclude Include="game_settings.h" />
     <ClInclude Include="http_downloader.h" />
@@ -52,6 +55,7 @@
     <ClInclude Include="icon.h" />
     <ClInclude Include="imgui_fullscreen.h" />
     <ClInclude Include="imgui_impl_dx11.h" />
+    <ClInclude Include="imgui_impl_dx12.h" />
     <ClInclude Include="imgui_impl_opengl3.h" />
     <ClInclude Include="imgui_impl_vulkan.h" />
     <ClInclude Include="imgui_styles.h" />

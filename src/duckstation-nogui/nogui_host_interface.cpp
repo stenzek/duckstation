@@ -24,6 +24,7 @@ Log_SetChannel(NoGUIHostInterface);
 
 #ifdef _WIN32
 #include "frontend-common/d3d11_host_display.h"
+#include "frontend-common/d3d12_host_display.h"
 #endif
 
 NoGUIHostInterface::NoGUIHostInterface() = default;
@@ -104,6 +105,10 @@ bool NoGUIHostInterface::CreateDisplay(bool fullscreen)
       break;
 
 #ifdef _WIN32
+    case GPURenderer::HardwareD3D12:
+      m_display = std::make_unique<FrontendCommon::D3D12HostDisplay>();
+      break;
+
     case GPURenderer::HardwareD3D11:
     default:
       m_display = std::make_unique<FrontendCommon::D3D11HostDisplay>();

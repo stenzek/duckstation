@@ -121,6 +121,20 @@ target_link_libraries(common PRIVATE glad stb Threads::Threads libchdr glslang v
 
 if(WIN32)
   target_sources(common PRIVATE
+    d3d12/context.cpp
+    d3d12/context.h
+    d3d12/descriptor_heap_manager.cpp
+    d3d12/descriptor_heap_manager.h
+    d3d12/shader_cache.cpp
+    d3d12/shader_cache.h
+    d3d12/staging_texture.cpp
+    d3d12/staging_texture.h
+    d3d12/stream_buffer.cpp
+    d3d12/stream_buffer.h
+    d3d12/texture.cpp
+    d3d12/texture.h
+    d3d12/util.cpp
+    d3d12/util.h
     d3d11/shader_cache.cpp
     d3d11/shader_cache.h
     d3d11/shader_compiler.cpp
