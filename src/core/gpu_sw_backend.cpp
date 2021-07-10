@@ -147,15 +147,16 @@ void ALWAYS_INLINE_RELEASE GPU_SW_Backend::ShadePixel(const GPUBackendDrawComman
     const u32 dither_y = (dithering_enable) ? (y & 3u) : 2u;
     const u32 dither_x = (dithering_enable) ? (x & 3u) : 3u;
 
+    // Non-textured transparent polygons don't set bit 15, but are treated as transparent.
     color.bits = (ZeroExtend16(s_dither_lut[dither_y][dither_x][color_r]) << 0) |
                  (ZeroExtend16(s_dither_lut[dither_y][dither_x][color_g]) << 5) |
-                 (ZeroExtend16(s_dither_lut[dither_y][dither_x][color_b]) << 10) | 0x8000u;
+                 (ZeroExtend16(s_dither_lut[dither_y][dither_x][color_b]) << 10) | (transparency_enable ? 0x8000u : 0);
   }
 
   const VRAMPixel bg_color{GetPixel(static_cast<u32>(x), static_cast<u32>(y))};
   if constexpr (transparency_enable)
   {
-    if (color.bits & 0x8000u)
+    if (color.bits & 0x8000u || !texture_enable)
     {
       // Based on blargg's efficient 15bpp pixel math.
       u32 bg_bits = ZeroExtend32(bg_color.bits);
@@ -204,6 +205,10 @@ void ALWAYS_INLINE_RELEASE GPU_SW_Backend::ShadePixel(const GPUBackendDrawComman
         }
         break;
       }
+
+      // See above.
+      if constexpr (!texture_enable)
+        color.bits &= ~0x8000u;
     }
   }
 
