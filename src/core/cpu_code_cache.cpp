@@ -25,7 +25,7 @@ static constexpr u32 RECOMPILE_COUNT_TO_FALL_BACK_TO_INTERPRETER = 20;
 #ifdef WITH_RECOMPILER
 
 // Currently remapping the code buffer doesn't work in macOS or Haiku.
-#if !defined(__HAIKU__) && !defined(__APPLE__)
+#if !defined(__HAIKU__) && !defined(__APPLE__) && !defined(_UWP)
 #define USE_STATIC_CODE_BUFFER 1
 #endif
 
@@ -822,7 +822,10 @@ bool InitializeFastmem()
   Assert(mode != CPUFastmemMode::MMap);
 #endif
 
-  if (!Common::PageFaultHandler::InstallHandler(&s_host_code_map, handler))
+  s_code_buffer.ReserveCode(Common::PageFaultHandler::GetHandlerCodeSize());
+
+  if (!Common::PageFaultHandler::InstallHandler(&s_host_code_map, s_code_buffer.GetCodePointer(),
+                                                s_code_buffer.GetTotalSize(), handler))
   {
     Log_ErrorPrintf("Failed to install page fault handler");
     return false;
