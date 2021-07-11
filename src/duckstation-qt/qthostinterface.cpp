@@ -1322,8 +1322,6 @@ void QtHostInterface::loadState(const QString& filename)
     emit emulationStarting();
 
   LoadState(filename.toStdString().c_str());
-  if (System::IsValid())
-    renderDisplay();
 }
 
 void QtHostInterface::loadState(bool global, qint32 slot)
@@ -1335,8 +1333,6 @@ void QtHostInterface::loadState(bool global, qint32 slot)
   }
 
   LoadState(global, slot);
-  if (System::IsValid())
-    renderDisplay();
 }
 
 void QtHostInterface::saveState(const QString& filename, bool block_until_done /* = false */)
@@ -1533,6 +1529,12 @@ void QtHostInterface::OnAchievementsRefreshed()
                           Cheevos::GetMaximumPointsForGame());
 #endif
 }
+
+void QtHostInterface::OnDisplayInvalidated()
+{
+  renderDisplay();
+}
+
 void QtHostInterface::doBackgroundControllerPoll()
 {
   PollAndUpdate();

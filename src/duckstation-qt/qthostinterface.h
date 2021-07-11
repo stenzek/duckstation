@@ -185,6 +185,7 @@ public Q_SLOTS:
   void requestRenderWindowScale(qreal scale);
   void executeOnEmulationThread(std::function<void()> callback, bool wait = false);
   void OnAchievementsRefreshed() override;
+  void OnDisplayInvalidated() override;
 
 private Q_SLOTS:
   void doStopThread();

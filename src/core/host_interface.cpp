@@ -429,6 +429,7 @@ bool HostInterface::LoadState(const char* filename)
 
   System::ResetPerformanceCounters();
   System::ResetThrottler();
+  OnDisplayInvalidated();
   return true;
 }
 
@@ -462,6 +463,8 @@ void HostInterface::OnSystemPaused(bool paused) {}
 void HostInterface::OnSystemDestroyed() {}
 
 void HostInterface::OnSystemPerformanceCountersUpdated() {}
+
+void HostInterface::OnDisplayInvalidated() {}
 
 void HostInterface::OnSystemStateSaved(bool global, s32 slot) {}
 
@@ -817,6 +820,7 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.runahead_frames != old_settings.runahead_frames)
     {
       g_gpu->UpdateSettings();
+      OnDisplayInvalidated();
     }
 
     if (g_settings.gpu_widescreen_hack != old_settings.gpu_widescreen_hack ||
@@ -906,16 +910,14 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
   if (g_settings.multitap_mode != old_settings.multitap_mode)
     System::UpdateMultitaps();
 
-  if (m_display)
+  if (m_display && g_settings.display_linear_filtering != old_settings.display_linear_filtering ||
+      g_settings.display_integer_scaling != old_settings.display_integer_scaling ||
+      g_settings.display_stretch != old_settings.display_stretch)
   {
-    if (g_settings.display_linear_filtering != old_settings.display_linear_filtering)
-      m_display->SetDisplayLinearFiltering(g_settings.display_linear_filtering);
-
-    if (g_settings.display_integer_scaling != old_settings.display_integer_scaling)
-      m_display->SetDisplayIntegerScaling(g_settings.display_integer_scaling);
-
-    if (g_settings.display_stretch != old_settings.display_stretch)
-      m_display->SetDisplayStretch(g_settings.display_stretch);
+    m_display->SetDisplayLinearFiltering(g_settings.display_linear_filtering);
+    m_display->SetDisplayIntegerScaling(g_settings.display_integer_scaling);
+    m_display->SetDisplayStretch(g_settings.display_stretch);
+    OnDisplayInvalidated();
   }
 }
 
@@ -1100,6 +1102,7 @@ void HostInterface::ToggleSoftwareRendering()
   AddFormattedOSDMessage(5.0f, TranslateString("OSDMessage", "Switching to %s renderer..."),
                          Settings::GetRendererDisplayName(new_renderer));
   System::RecreateGPU(new_renderer);
+  OnDisplayInvalidated();
 }
 
 void HostInterface::ModifyResolutionScale(s32 increment)
@@ -1117,6 +1120,7 @@ void HostInterface::ModifyResolutionScale(s32 increment)
     g_gpu->UpdateSettings();
     g_gpu->ResetGraphicsAPIState();
     System::ClearMemorySaveStates();
+    OnDisplayInvalidated();
   }
 }
 
@@ -1181,6 +1185,7 @@ void HostInterface::RecreateSystem()
 
   System::ResetPerformanceCounters();
   System::ResetThrottler();
+  OnDisplayInvalidated();
 }
 
 void HostInterface::SetMouseMode(bool relative, bool hide_cursor) {}
