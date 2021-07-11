@@ -36,6 +36,7 @@
               <uap:FileType ContentType="application/x-psf">.psf</uap:FileType>
               <uap:FileType ContentType="application/x-psf">.minipsf</uap:FileType>
               <uap:FileType ContentType="audio/x-mpegurl">.m3u</uap:FileType>
+              <uap:FileType ContentType="application/x-ps-memory-card">.mcd</uap:FileType>
             </uap:SupportedFileTypes>
             <uap:DisplayName>DuckStation Disc Image</uap:DisplayName>
             <uap:Logo>Assets\duck_128.png</uap:Logo>
