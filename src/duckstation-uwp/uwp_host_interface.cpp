@@ -657,7 +657,7 @@ void UWPHostInterface::UpdateMouseButtonState(const winrt::Windows::UI::Input::P
           continue;
 
         io.MouseDown[i] = states[i];
-        HandleHostMouseEvent(static_cast<HostMouseButton>(i), states[i]);
+        HandleHostMouseEvent(static_cast<HostMouseButton>(i + 1u), states[i]);
       }
     });
   }
