@@ -262,9 +262,9 @@ protected:
 class AtomicUpdatedFileByteStream : public FileByteStream
 {
 public:
-  AtomicUpdatedFileByteStream(FILE* pFile, const char* originalFileName, const char* temporaryFileName)
-    : FileByteStream(pFile), m_committed(false), m_discarded(false), m_originalFileName(originalFileName),
-      m_temporaryFileName(temporaryFileName)
+  AtomicUpdatedFileByteStream(FILE* pFile, std::string originalFileName, std::string temporaryFileName)
+    : FileByteStream(pFile), m_committed(false), m_discarded(false), m_originalFileName(std::move(originalFileName)),
+      m_temporaryFileName(std::move(temporaryFileName))
   {
   }
 
@@ -272,9 +272,17 @@ public:
   {
     if (m_discarded)
     {
-#if _WIN32
+#if defined(_WIN32) && !defined(_UWP)
       // delete the temporary file
       if (!DeleteFileW(StringUtil::UTF8StringToWideString(m_temporaryFileName).c_str()))
+      {
+        Log_WarningPrintf(
+          "AtomicUpdatedFileByteStream::~AtomicUpdatedFileByteStream(): Failed to delete temporary file '%s'",
+          m_temporaryFileName.c_str());
+      }
+#elif defined(_UWP)
+      // delete the temporary file
+      if (!DeleteFileFromAppW(StringUtil::UTF8StringToWideString(m_temporaryFileName).c_str()))
       {
         Log_WarningPrintf(
           "AtomicUpdatedFileByteStream::~AtomicUpdatedFileByteStream(): Failed to delete temporary file '%s'",
@@ -315,10 +323,21 @@ public:
 
     fflush(m_pFile);
 
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(_UWP)
     // move the atomic file name to the original file name
     if (!MoveFileExW(StringUtil::UTF8StringToWideString(m_temporaryFileName).c_str(),
                      StringUtil::UTF8StringToWideString(m_originalFileName).c_str(), MOVEFILE_REPLACE_EXISTING))
+    {
+      Log_WarningPrintf("AtomicUpdatedFileByteStream::Commit(): Failed to rename temporary file '%s' to '%s'",
+                        m_temporaryFileName.c_str(), m_originalFileName.c_str());
+      m_discarded = true;
+    }
+    else
+    {
+      m_committed = true;
+    }
+#elif defined(_UWP)
+    if (!FileSystem::RenamePath(m_temporaryFileName.c_str(), m_originalFileName.c_str()))
     {
       Log_WarningPrintf("AtomicUpdatedFileByteStream::Commit(): Failed to rename temporary file '%s' to '%s'",
                         m_temporaryFileName.c_str(), m_originalFileName.c_str());
@@ -1000,6 +1019,7 @@ std::unique_ptr<ByteStream> ByteStream_OpenFileStream(const char* fileName, u32 
   {
     DebugAssert(openMode & (BYTESTREAM_OPEN_CREATE | BYTESTREAM_OPEN_WRITE));
 
+#ifndef _UWP
     // generate the temporary file name
     u32 fileNameLength = static_cast<u32>(std::strlen(fileName));
     char* temporaryFileName = (char*)alloca(fileNameLength + 8);
@@ -1008,6 +1028,22 @@ std::unique_ptr<ByteStream> ByteStream_OpenFileStream(const char* fileName, u32 
     // fill in random characters
     _mktemp_s(temporaryFileName, fileNameLength + 8);
     const std::wstring wideTemporaryFileName(StringUtil::UTF8StringToWideString(temporaryFileName));
+#else
+    // On UWP, preserve the extension, as it affects permissions.
+    std::string temporaryFileName;
+    const char* extension = std::strrchr(fileName, '.');
+    if (extension)
+      temporaryFileName.append(fileName, extension - fileName);
+    else
+      temporaryFileName.append(fileName);
+
+    temporaryFileName.append("_XXXXXX");
+    _mktemp_s(temporaryFileName.data(), temporaryFileName.size() + 1);
+    if (extension)
+      temporaryFileName.append(extension);
+
+    const std::wstring wideTemporaryFileName(StringUtil::UTF8StringToWideString(temporaryFileName));
+#endif
 
     // massive hack here
     DWORD desiredAccess = GENERIC_WRITE;

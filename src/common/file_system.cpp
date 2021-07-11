@@ -1794,7 +1794,17 @@ bool FileSystem::RenamePath(const char* OldPath, const char* NewPath)
     return false;
   }
 #else
-  if (!ReplaceFileFromAppW(old_wpath.c_str(), new_wpath.c_str(), nullptr, 0, nullptr, nullptr))
+  // try moving if it doesn't exist, since ReplaceFile fails on non-existing destinations
+  if (WrapGetFileAttributes(new_wpath.c_str()) != INVALID_FILE_ATTRIBUTES)
+  {
+    if (!DeleteFileFromAppW(new_wpath.c_str()))
+    {
+      Log_ErrorPrintf("DeleteFileFromAppW('%s') failed: %08X", new_wpath.c_str(), GetLastError());
+      return false;
+    }
+  }
+
+  if (!MoveFileFromAppW(old_wpath.c_str(), new_wpath.c_str()))
   {
     Log_ErrorPrintf("MoveFileFromAppW('%s', '%s') failed: %08X", OldPath, NewPath, GetLastError());
     return false;
