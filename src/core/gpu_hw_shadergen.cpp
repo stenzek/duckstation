@@ -1052,7 +1052,7 @@ float4 LoadVRAM(int2 coords)
 {
 #if MULTISAMPLING
   float4 value = LOAD_TEXTURE_MS(samp0, coords, 0u);
-  for (uint sample_index = 1u; sample_index < MULTISAMPLES; sample_index++)
+  FOR_UNROLL (uint sample_index = 1u; sample_index < MULTISAMPLES; sample_index++)
     value += LOAD_TEXTURE_MS(samp0, coords, sample_index);
   value /= float(MULTISAMPLES);
   return value;
@@ -1156,7 +1156,7 @@ float4 LoadVRAM(int2 coords)
 {
 #if MULTISAMPLING
   float4 value = LOAD_TEXTURE_MS(samp0, coords, 0u);
-  for (uint sample_index = 1u; sample_index < MULTISAMPLES; sample_index++)
+  FOR_UNROLL (uint sample_index = 1u; sample_index < MULTISAMPLES; sample_index++)
     value += LOAD_TEXTURE_MS(samp0, coords, sample_index);
   value /= float(MULTISAMPLES);
   return value;

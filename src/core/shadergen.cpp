@@ -173,6 +173,10 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
 
     ss << "#define CONSTANT const\n";
     ss << "#define GLOBAL\n";
+    ss << "#define FOR_UNROLL for\n";
+    ss << "#define FOR_LOOP for\n";
+    ss << "#define IF_BRANCH if\n";
+    ss << "#define IF_FLATTEN if\n";
     ss << "#define VECTOR_EQ(a, b) ((a) == (b))\n";
     ss << "#define VECTOR_NEQ(a, b) ((a) != (b))\n";
     ss << "#define VECTOR_COMP_EQ(a, b) equal((a), (b))\n";
@@ -214,6 +218,10 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
     ss << "#define mat4 float4x4\n";
     ss << "#define CONSTANT static const\n";
     ss << "#define GLOBAL static\n";
+    ss << "#define FOR_UNROLL [unroll] for\n";
+    ss << "#define FOR_LOOP [loop] for\n";
+    ss << "#define IF_BRANCH [branch] if\n";
+    ss << "#define IF_FLATTEN [flatten] if\n";
     ss << "#define VECTOR_EQ(a, b) (all((a) == (b)))\n";
     ss << "#define VECTOR_NEQ(a, b) (any((a) != (b)))\n";
     ss << "#define VECTOR_COMP_EQ(a, b) ((a) == (b))\n";
