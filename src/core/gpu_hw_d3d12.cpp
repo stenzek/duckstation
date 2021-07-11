@@ -1043,14 +1043,14 @@ void GPU_HW_D3D12::UpdateVRAMReadTexture()
 {
   ID3D12GraphicsCommandList* cmdlist = g_d3d12_context->GetCommandList();
 
-  m_vram_texture.TransitionToState(D3D12_RESOURCE_STATE_COPY_SOURCE);
-  m_vram_read_texture.TransitionToState(D3D12_RESOURCE_STATE_COPY_DEST);
 
   const auto scaled_rect = m_vram_dirty_rect * m_resolution_scale;
 
   if (m_vram_texture.IsMultisampled())
   {
-    cmdlist->ResolveSubresource(m_vram_read_texture, 0, m_vram_texture, 0, DXGI_FORMAT_R8G8B8A8_UNORM);
+    m_vram_texture.TransitionToState(D3D12_RESOURCE_STATE_RESOLVE_SOURCE);
+    m_vram_read_texture.TransitionToState(D3D12_RESOURCE_STATE_RESOLVE_DEST);
+    cmdlist->ResolveSubresource(m_vram_read_texture, 0, m_vram_texture, 0, m_vram_texture.GetFormat());
   }
   else
   {
@@ -1058,6 +1058,8 @@ void GPU_HW_D3D12::UpdateVRAMReadTexture()
     const D3D12_TEXTURE_COPY_LOCATION dst = {m_vram_read_texture.GetResource(),
                                              D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX};
     const D3D12_BOX src_box = {scaled_rect.left, scaled_rect.top, 0u, scaled_rect.right, scaled_rect.bottom, 1u};
+    m_vram_texture.TransitionToState(D3D12_RESOURCE_STATE_COPY_SOURCE);
+    m_vram_read_texture.TransitionToState(D3D12_RESOURCE_STATE_COPY_DEST);
     cmdlist->CopyTextureRegion(&dst, scaled_rect.left, scaled_rect.top, 0, &src, &src_box);
   }
 
