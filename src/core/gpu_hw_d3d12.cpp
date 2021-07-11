@@ -988,7 +988,7 @@ void GPU_HW_D3D12::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 widt
     ID3D12GraphicsCommandList* cmdlist = g_d3d12_context->GetCommandList();
     cmdlist->SetGraphicsRootSignature(m_single_sampler_root_signature.Get());
     cmdlist->SetGraphicsRoot32BitConstants(0, sizeof(uniforms) / sizeof(u32), &uniforms, 0);
-    cmdlist->SetGraphicsRootDescriptorTable(1, m_vram_read_texture.GetRTVOrDSVDescriptor());
+    cmdlist->SetGraphicsRootDescriptorTable(1, m_vram_read_texture.GetSRVDescriptor());
     cmdlist->SetPipelineState(m_vram_copy_pipelines[BoolToUInt8(m_GPUSTAT.check_mask_before_draw)].Get());
     D3D12::SetViewportAndScissor(cmdlist, dst_bounds_scaled.left, dst_bounds_scaled.top, dst_bounds_scaled.GetWidth(),
                                  dst_bounds_scaled.GetHeight());
