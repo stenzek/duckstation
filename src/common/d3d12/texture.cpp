@@ -295,7 +295,7 @@ bool Texture::LoadData(u32 x, u32 y, u32 width, u32 height, const void* data, u3
   const u32 texel_size = GetTexelSize(m_format);
   const u32 upload_pitch = Common::AlignUpPow2(width * texel_size, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
   const u32 upload_size = upload_pitch * height;
-  if (upload_size > g_d3d12_context->GetTextureStreamBuffer().GetSize())
+  if (upload_size >= g_d3d12_context->GetTextureStreamBuffer().GetSize())
   {
     StagingTexture st;
     if (!st.Create(width, height, m_format, true) || !st.WritePixels(0, 0, width, height, data, pitch))
