@@ -755,8 +755,11 @@ void GPU_HW_D3D12::ClearDisplay()
 {
   GPU_HW::ClearDisplay();
 
+  m_host_display->ClearDisplayTexture();
+
   static constexpr float clear_color[4] = {0.0f, 0.0f, 0.0f, 1.0f};
-  g_d3d12_context->GetCommandList()->ClearRenderTargetView(m_vram_texture.GetRTVOrDSVDescriptor(), clear_color, 0,
+  m_display_texture.TransitionToState(D3D12_RESOURCE_STATE_RENDER_TARGET);
+  g_d3d12_context->GetCommandList()->ClearRenderTargetView(m_display_texture.GetRTVOrDSVDescriptor(), clear_color, 0,
                                                            nullptr);
 }
 
