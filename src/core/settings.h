@@ -369,10 +369,12 @@ struct Settings
   static constexpr CPUFastmemMode DEFAULT_CPU_FASTMEM_MODE = CPUFastmemMode::Disabled;
 #endif
 
-#ifndef __ANDROID__
-  static constexpr AudioBackend DEFAULT_AUDIO_BACKEND = AudioBackend::Cubeb;
-#else
+#if defined(__ANDROID__)
   static constexpr AudioBackend DEFAULT_AUDIO_BACKEND = AudioBackend::OpenSLES;
+#elif defined(_UWP)
+  static constexpr AudioBackend DEFAULT_AUDIO_BACKEND = AudioBackend::XAudio2;
+#else
+  static constexpr AudioBackend DEFAULT_AUDIO_BACKEND = AudioBackend::Cubeb;
 #endif
 
   static constexpr DisplayCropMode DEFAULT_DISPLAY_CROP_MODE = DisplayCropMode::Overscan;

@@ -30,15 +30,23 @@
     </Link>
   </ItemDefinitionGroup>
 
-  <!-- Disable exceptions. -->
-  <ItemDefinitionGroup>
+  <!-- Disable exceptions when not building for UWP. -->
+  <ItemDefinitionGroup Condition="'$(BuildingForUWP)'!='true'">
     <ClCompile>
       <PreprocessorDefinitions>_HAS_EXCEPTIONS=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>false</ExceptionHandling>
     </ClCompile>
   </ItemDefinitionGroup>
 
-  <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
+  <ItemDefinitionGroup Condition="'$(BuildingForUWP)'=='true'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <AdditionalIncludeDirectories></AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_UWP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug' Or '$(Configuration)'=='DebugUWP'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -67,7 +75,7 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)'=='ReleaseLTCG'">
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='ReleaseLTCG' Or '$(Configuration)'=='ReleaseUWP'">
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>

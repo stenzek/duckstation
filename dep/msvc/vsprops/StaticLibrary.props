@@ -8,6 +8,12 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
   </PropertyGroup>
 
+  <PropertyGroup Label="Globals" Condition="'$(BuildingForUWP)'=='true'">
+    <CppWinRTOptimized Condition="'$(Configuration)'=='ReleaseUWP'">true</CppWinRTOptimized>
+    <CppWinRTRootNamespaceAutoMerge>false</CppWinRTRootNamespaceAutoMerge>
+    <CppWinRTGenerateWindowsMetadata>false</CppWinRTGenerateWindowsMetadata>
+  </PropertyGroup>
+
   <Import Project="Toolkit.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />

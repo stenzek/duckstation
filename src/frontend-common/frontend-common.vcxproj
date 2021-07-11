@@ -4,9 +4,13 @@
   <ItemGroup>
     <ClCompile Include="common_host_interface.cpp" />
     <ClCompile Include="controller_interface.cpp" />
-    <ClCompile Include="cubeb_audio_stream.cpp" />
+    <ClCompile Include="cubeb_audio_stream.cpp">
+      <ExcludedFromBuild Condition="'$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="d3d11_host_display.cpp" />
-    <ClCompile Include="dinput_controller_interface.cpp" />
+    <ClCompile Include="dinput_controller_interface.cpp">
+      <ExcludedFromBuild Condition="'$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="fullscreen_ui.cpp" />
     <ClCompile Include="fullscreen_ui_progress_callback.cpp" />
     <ClCompile Include="game_database.cpp" />
@@ -14,7 +18,12 @@
     <ClCompile Include="game_list.cpp" />
     <ClCompile Include="game_settings.cpp" />
     <ClCompile Include="http_downloader.cpp" />
-    <ClCompile Include="http_downloader_winhttp.cpp" />
+    <ClCompile Include="http_downloader_uwp.cpp">
+      <ExcludedFromBuild Condition="'$(BuildingForUWP)'!='true'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="http_downloader_winhttp.cpp">
+      <ExcludedFromBuild Condition="'$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="icon.cpp" />
     <ClCompile Include="imgui_fullscreen.cpp" />
     <ClCompile Include="imgui_impl_dx11.cpp" />
@@ -31,9 +40,15 @@
     <ClCompile Include="postprocessing_shadergen.cpp" />
     <ClCompile Include="cheevos.cpp" />
     <ClCompile Include="save_state_selector_ui.cpp" />
-    <ClCompile Include="sdl_audio_stream.cpp" />
-    <ClCompile Include="sdl_controller_interface.cpp" />
-    <ClCompile Include="sdl_initializer.cpp" />
+    <ClCompile Include="sdl_audio_stream.cpp">
+      <ExcludedFromBuild Condition="'$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="sdl_controller_interface.cpp">
+      <ExcludedFromBuild Condition="'$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="sdl_initializer.cpp">
+      <ExcludedFromBuild Condition="'$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="vulkan_host_display.cpp" />
     <ClCompile Include="xaudio2_audio_stream.cpp" />
     <ClCompile Include="xinput_controller_interface.cpp" />
@@ -41,9 +56,13 @@
   <ItemGroup>
     <ClInclude Include="common_host_interface.h" />
     <ClInclude Include="controller_interface.h" />
-    <ClInclude Include="cubeb_audio_stream.h" />
+    <ClInclude Include="cubeb_audio_stream.h">
+      <ExcludedFromBuild Condition="'$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="d3d11_host_display.h" />
-    <ClInclude Include="dinput_controller_interface.h" />
+    <ClInclude Include="dinput_controller_interface.h">
+      <ExcludedFromBuild Condition="'$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="fullscreen_ui.h" />
     <ClInclude Include="fullscreen_ui_progress_callback.h" />
     <ClInclude Include="game_database.h" />
@@ -51,7 +70,12 @@
     <ClInclude Include="game_list.h" />
     <ClInclude Include="game_settings.h" />
     <ClInclude Include="http_downloader.h" />
-    <ClInclude Include="http_downloader_winhttp.h" />
+    <ClInclude Include="http_downloader_uwp.h">
+      <ExcludedFromBuild Condition="'$(BuildingForUWP)'!='true'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="http_downloader_winhttp.h">
+      <ExcludedFromBuild Condition="'$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="icon.h" />
     <ClInclude Include="imgui_fullscreen.h" />
     <ClInclude Include="imgui_impl_dx11.h" />
@@ -68,9 +92,15 @@
     <ClInclude Include="postprocessing_shadergen.h" />
     <ClInclude Include="cheevos.h" />
     <ClInclude Include="save_state_selector_ui.h" />
-    <ClInclude Include="sdl_audio_stream.h" />
-    <ClInclude Include="sdl_controller_interface.h" />
-    <ClInclude Include="sdl_initializer.h" />
+    <ClInclude Include="sdl_audio_stream.h">
+      <ExcludedFromBuild Condition="'$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="sdl_controller_interface.h">
+      <ExcludedFromBuild Condition="'$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="sdl_initializer.h">
+      <ExcludedFromBuild Condition="'$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="vulkan_host_display.h" />
     <ClInclude Include="xaudio2_audio_stream.h" />
     <ClInclude Include="xinput_controller_interface.h" />

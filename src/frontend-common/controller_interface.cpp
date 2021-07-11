@@ -111,6 +111,8 @@ static constexpr std::array<const char*, static_cast<u32>(ControllerInterface::B
 #endif
 #ifdef _WIN32
   TRANSLATABLE("ControllerInterface", "XInput"),
+#endif
+#ifdef WITH_DINPUT
   TRANSLATABLE("ControllerInterface", "DInput"),
 #endif
 #ifdef ANDROID
@@ -155,8 +157,10 @@ ControllerInterface::Backend ControllerInterface::GetDefaultBackend()
 #include "sdl_controller_interface.h"
 #endif
 #ifdef _WIN32
-#include "dinput_controller_interface.h"
 #include "xinput_controller_interface.h"
+#endif
+#ifdef WITH_DINPUT
+#include "dinput_controller_interface.h"
 #endif
 #ifdef WITH_EVDEV
 #include "evdev_controller_interface.h"
@@ -171,6 +175,8 @@ std::unique_ptr<ControllerInterface> ControllerInterface::Create(Backend type)
 #ifdef _WIN32
   if (type == Backend::XInput)
     return std::make_unique<XInputControllerInterface>();
+#endif
+#ifdef WITH_DINPUT
   if (type == Backend::DInput)
     return std::make_unique<DInputControllerInterface>();
 #endif
