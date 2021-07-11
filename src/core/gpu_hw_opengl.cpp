@@ -837,6 +837,8 @@ void GPU_HW_OpenGL::ClearDisplay()
 {
   GPU_HW::ClearDisplay();
 
+  m_host_display->ClearDisplayTexture();
+
   m_display_texture.BindFramebuffer(GL_DRAW_FRAMEBUFFER);
   glDisable(GL_SCISSOR_TEST);
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
