@@ -872,6 +872,16 @@ std::FILE* OpenCFileUWP(const wchar_t* wfilename, const wchar_t* mode)
       flags |= _O_BINARY;
       tmode++;
     }
+    else if (*tmode == L'S')
+    {
+      flags |= _O_SEQUENTIAL;
+      tmode++;
+    }
+    else if (*tmode == L'R')
+    {
+      flags |= _O_RANDOM;
+      tmode++;
+    }
     else
     {
       Log_ErrorPrintf("Unknown mode flags: '%s'", StringUtil::WideStringToUTF8String(mode).c_str());
