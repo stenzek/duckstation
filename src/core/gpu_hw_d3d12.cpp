@@ -324,12 +324,12 @@ bool GPU_HW_D3D12::CreateFramebuffer()
       !m_vram_depth_texture.Create(
         texture_width, texture_height, m_multisamples, depth_format, DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_UNKNOWN,
         depth_format, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL | D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE) ||
-      !m_vram_read_texture.Create(texture_width, texture_height, m_multisamples, texture_format, texture_format,
-                                  DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_UNKNOWN, D3D12_RESOURCE_FLAG_NONE) ||
-      !m_display_texture.Create(texture_width, texture_height, m_multisamples, texture_format, texture_format,
-                                texture_format, DXGI_FORMAT_UNKNOWN, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET) ||
-      !m_vram_readback_texture.Create(VRAM_WIDTH, VRAM_HEIGHT, m_multisamples, texture_format, texture_format,
-                                      texture_format, DXGI_FORMAT_UNKNOWN, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET) ||
+      !m_vram_read_texture.Create(texture_width, texture_height, 1, texture_format, texture_format, DXGI_FORMAT_UNKNOWN,
+                                  DXGI_FORMAT_UNKNOWN, D3D12_RESOURCE_FLAG_NONE) ||
+      !m_display_texture.Create(texture_width, texture_height, 1, texture_format, texture_format, texture_format,
+                                DXGI_FORMAT_UNKNOWN, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET) ||
+      !m_vram_readback_texture.Create(VRAM_WIDTH, VRAM_HEIGHT, 1, texture_format, texture_format, texture_format,
+                                      DXGI_FORMAT_UNKNOWN, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET) ||
       !m_vram_readback_staging_texture.Create(VRAM_WIDTH / 2, VRAM_HEIGHT, texture_format, false))
   {
     return false;
