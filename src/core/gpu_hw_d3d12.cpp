@@ -419,19 +419,8 @@ bool GPU_HW_D3D12::CompilePipelines()
                              m_true_color, m_scaled_dithering, m_texture_filtering, m_using_uv_limits,
                              m_pgxp_depth_buffer, m_supports_dual_source_blend);
 
-  Common::Timer compile_time;
-  const int progress_total = 2 + (4 * 9 * 2 * 2) + (2 * 4 * 5 * 9 * 2 * 2) + 1 + 2 + 2 + 2 + 1 + 1 + (2 * 3);
-  int progress_value = 0;
-#define UPDATE_PROGRESS()                                                                                              \
-  do                                                                                                                   \
-  {                                                                                                                    \
-    progress_value++;                                                                                                  \
-    if (compile_time.GetTimeSeconds() >= 1.0f)                                                                         \
-    {                                                                                                                  \
-      compile_time.Reset();                                                                                            \
-      g_host_interface->DisplayLoadingScreen("Compiling Shaders", 0, progress_total, progress_value);                  \
-    }                                                                                                                  \
-  } while (0)
+  ShaderCompileProgressTracker progress("Compiling Pipelines", 2 + (4 * 9 * 2 * 2) + (2 * 4 * 5 * 9 * 2 * 2) + 1 + 2 +
+                                                                 2 + 2 + 1 + 1 + (2 * 3));
 
   // vertex shaders - [textured]
   // fragment shaders - [render_mode][texture_mode][dithering][interlacing]
@@ -445,7 +434,7 @@ bool GPU_HW_D3D12::CompilePipelines()
     if (!batch_vertex_shaders[textured])
       return false;
 
-    UPDATE_PROGRESS();
+    progress.Increment();
   }
 
   for (u8 render_mode = 0; render_mode < 4; render_mode++)
@@ -464,7 +453,7 @@ bool GPU_HW_D3D12::CompilePipelines()
           if (!batch_fragment_shaders[render_mode][texture_mode][dithering][interlacing])
             return false;
 
-          UPDATE_PROGRESS();
+          progress.Increment();
         }
       }
     }
@@ -542,7 +531,7 @@ bool GPU_HW_D3D12::CompilePipelines()
                 "Batch Pipeline %u,%u,%u,%u,%u,%u", depth_test, render_mode, texture_mode, transparency_mode, dithering,
                 interlacing);
 
-              UPDATE_PROGRESS();
+              progress.Increment();
             }
           }
         }
@@ -555,7 +544,7 @@ bool GPU_HW_D3D12::CompilePipelines()
   if (!fullscreen_quad_vertex_shader)
     return false;
 
-  UPDATE_PROGRESS();
+  progress.Increment();
 
   // common state
   gpbuilder.SetRootSignature(m_single_sampler_root_signature.Get());
@@ -589,7 +578,7 @@ bool GPU_HW_D3D12::CompilePipelines()
       D3D12::SetObjectNameFormatted(m_vram_fill_pipelines[interlaced].Get(), "VRAM Fill Pipeline Interlacing=%u",
                                     interlaced);
 
-      UPDATE_PROGRESS();
+      progress.Increment();
     }
   }
 
@@ -611,7 +600,7 @@ bool GPU_HW_D3D12::CompilePipelines()
 
       D3D12::SetObjectNameFormatted(m_vram_copy_pipelines[depth_test].Get(), "VRAM Copy Pipeline Depth=%u", depth_test);
 
-      UPDATE_PROGRESS();
+      progress.Increment();
     }
   }
 
@@ -633,7 +622,7 @@ bool GPU_HW_D3D12::CompilePipelines()
       D3D12::SetObjectNameFormatted(m_vram_write_pipelines[depth_test].Get(), "VRAM Write Pipeline Depth=%u",
                                     depth_test);
 
-      UPDATE_PROGRESS();
+      progress.Increment();
     }
   }
 
@@ -656,7 +645,7 @@ bool GPU_HW_D3D12::CompilePipelines()
 
     D3D12::SetObjectName(m_vram_update_depth_pipeline.Get(), "VRAM Update Depth Pipeline");
 
-    UPDATE_PROGRESS();
+    progress.Increment();
   }
 
   gpbuilder.Clear();
@@ -683,7 +672,7 @@ bool GPU_HW_D3D12::CompilePipelines()
 
     D3D12::SetObjectName(m_vram_update_depth_pipeline.Get(), "VRAM Readback Pipeline");
 
-    UPDATE_PROGRESS();
+    progress.Increment();
   }
 
   gpbuilder.Clear();
@@ -717,7 +706,7 @@ bool GPU_HW_D3D12::CompilePipelines()
         D3D12::SetObjectNameFormatted(m_display_pipelines[depth_24][interlace_mode].Get(),
                                       "Display Pipeline Depth=%u Interlace=%u", depth_24, interlace_mode);
 
-        UPDATE_PROGRESS();
+        progress.Increment();
       }
     }
   }
@@ -1042,7 +1031,6 @@ void GPU_HW_D3D12::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 widt
 void GPU_HW_D3D12::UpdateVRAMReadTexture()
 {
   ID3D12GraphicsCommandList* cmdlist = g_d3d12_context->GetCommandList();
-
 
   const auto scaled_rect = m_vram_dirty_rect * m_resolution_scale;
 

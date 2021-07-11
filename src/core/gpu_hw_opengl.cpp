@@ -517,23 +517,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
                              m_true_color, m_scaled_dithering, m_texture_filtering, m_using_uv_limits,
                              m_pgxp_depth_buffer, m_supports_dual_source_blend);
 
-  Common::Timer compile_time;
-  const int progress_total = (4 * 9 * 2 * 2) + (2 * 3) + 1 + 1 + 1 + 1 + 1 + 1;
-  int progress_value = 0;
-#define UPDATE_PROGRESS()                                                                                              \
-  do                                                                                                                   \
-  {                                                                                                                    \
-    progress_value++;                                                                                                  \
-    if (System::IsStartupCancelled())                                                                                  \
-    {                                                                                                                  \
-      return false;                                                                                                    \
-    }                                                                                                                  \
-    if (compile_time.GetTimeSeconds() >= 1.0f)                                                                         \
-    {                                                                                                                  \
-      compile_time.Reset();                                                                                            \
-      g_host_interface->DisplayLoadingScreen("Compiling Shaders", 0, progress_total, progress_value);                  \
-    }                                                                                                                  \
-  } while (0)
+  ShaderCompileProgressTracker progress("Compiling Programs", (4 * 9 * 2 * 2) + (2 * 3) + 1 + 1 + 1 + 1 + 1 + 1);
 
   for (u32 render_mode = 0; render_mode < 4; render_mode++)
   {
@@ -592,7 +576,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
 
           m_render_programs[render_mode][texture_mode][dithering][interlacing] = std::move(*prog);
 
-          UPDATE_PROGRESS();
+          progress.Increment();
         }
       }
     }
@@ -621,7 +605,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
         prog->Uniform1i("samp0", 0);
       }
       m_display_programs[depth_24bit][interlaced] = std::move(*prog);
-      UPDATE_PROGRESS();
+      progress.Increment();
     }
   }
 
@@ -638,7 +622,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
     prog->BindUniformBlock("UBOBlock", 1);
 
   m_vram_interlaced_fill_program = std::move(*prog);
-  UPDATE_PROGRESS();
+  progress.Increment();
 
   prog =
     shader_cache.GetProgram(shadergen.GenerateScreenQuadVertexShader(), {}, shadergen.GenerateVRAMReadFragmentShader(),
@@ -656,7 +640,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
     prog->Uniform1i("samp0", 0);
   }
   m_vram_read_program = std::move(*prog);
-  UPDATE_PROGRESS();
+  progress.Increment();
 
   prog =
     shader_cache.GetProgram(shadergen.GenerateScreenQuadVertexShader(), {}, shadergen.GenerateVRAMCopyFragmentShader(),
@@ -674,7 +658,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
     prog->Uniform1i("samp0", 0);
   }
   m_vram_copy_program = std::move(*prog);
-  UPDATE_PROGRESS();
+  progress.Increment();
 
   prog = shader_cache.GetProgram(shadergen.GenerateScreenQuadVertexShader(), {},
                                  shadergen.GenerateVRAMUpdateDepthFragmentShader());
@@ -684,7 +668,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
   prog->Bind();
   prog->Uniform1i("samp0", 0);
   m_vram_update_depth_program = std::move(*prog);
-  UPDATE_PROGRESS();
+  progress.Increment();
 
   if (m_use_texture_buffer_for_vram_writes || m_use_ssbo_for_vram_writes)
   {
@@ -706,7 +690,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
     m_vram_write_program = std::move(*prog);
   }
 
-  UPDATE_PROGRESS();
+  progress.Increment();
 
   if (m_downsample_mode == GPUDownsampleMode::Box)
   {
@@ -728,7 +712,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
     m_downsample_program = std::move(*prog);
   }
 
-  UPDATE_PROGRESS();
+  progress.Increment();
 #undef UPDATE_PROGRESS
 
   return true;

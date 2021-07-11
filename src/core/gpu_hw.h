@@ -163,6 +163,23 @@ protected:
     u32 num_uniform_buffer_updates;
   };
 
+  class ShaderCompileProgressTracker
+  {
+  public:
+    ShaderCompileProgressTracker(std::string title, u32 total);
+
+    void Increment();
+
+  private:
+    std::string m_title;
+    u64 m_start_time;
+    u64 m_last_update_time;
+    u64 m_min_time;
+    u64 m_update_interval;
+    u32 m_progress;
+    u32 m_total;
+  };
+
   static constexpr std::tuple<float, float, float, float> RGBA8ToFloat(u32 rgba)
   {
     return std::make_tuple(static_cast<float>(rgba & UINT32_C(0xFF)) * (1.0f / 255.0f),

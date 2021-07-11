@@ -839,23 +839,8 @@ bool GPU_HW_Vulkan::CompilePipelines()
                              m_true_color, m_scaled_dithering, m_texture_filtering, m_using_uv_limits,
                              m_pgxp_depth_buffer, m_supports_dual_source_blend);
 
-  Common::Timer compile_time;
-  const int progress_total = 2 + (4 * 9 * 2 * 2) + (3 * 4 * 5 * 9 * 2 * 2) + 1 + 2 + 2 + 2 + 1 + 1 + (2 * 3) + 1;
-  int progress_value = 0;
-#define UPDATE_PROGRESS()                                                                                              \
-  do                                                                                                                   \
-  {                                                                                                                    \
-    progress_value++;                                                                                                  \
-    if (System::IsStartupCancelled())                                                                                  \
-    {                                                                                                                  \
-      return false;                                                                                                    \
-    }                                                                                                                  \
-    if (compile_time.GetTimeSeconds() >= 1.0f)                                                                         \
-    {                                                                                                                  \
-      compile_time.Reset();                                                                                            \
-      g_host_interface->DisplayLoadingScreen("Compiling Shaders", 0, progress_total, progress_value);                  \
-    }                                                                                                                  \
-  } while (0)
+  ShaderCompileProgressTracker progress("Compiling Pipelines", 2 + (4 * 9 * 2 * 2) + (3 * 4 * 5 * 9 * 2 * 2) + 1 + 2 +
+                                                                 2 + 2 + 1 + 1 + (2 * 3) + 1);
 
   // vertex shaders - [textured]
   // fragment shaders - [render_mode][texture_mode][dithering][interlacing]
@@ -874,7 +859,7 @@ bool GPU_HW_Vulkan::CompilePipelines()
       return false;
 
     batch_vertex_shaders[textured] = shader;
-    UPDATE_PROGRESS();
+    progress.Increment();
   }
 
   for (u8 render_mode = 0; render_mode < 4; render_mode++)
@@ -894,7 +879,7 @@ bool GPU_HW_Vulkan::CompilePipelines()
             return false;
 
           batch_fragment_shaders[render_mode][texture_mode][dithering][interlacing] = shader;
-          UPDATE_PROGRESS();
+          progress.Increment();
         }
       }
     }
@@ -986,7 +971,7 @@ bool GPU_HW_Vulkan::CompilePipelines()
 
               m_batch_pipelines[depth_test][render_mode][texture_mode][transparency_mode][dithering][interlacing] =
                 pipeline;
-              UPDATE_PROGRESS();
+              progress.Increment();
             }
           }
         }
@@ -1007,7 +992,7 @@ bool GPU_HW_Vulkan::CompilePipelines()
     return false;
   }
 
-  UPDATE_PROGRESS();
+  progress.Increment();
 
   Common::ScopeGuard fullscreen_quad_vertex_shader_guard([&fullscreen_quad_vertex_shader, &uv_quad_vertex_shader]() {
     vkDestroyShaderModule(g_vulkan_context->GetDevice(), fullscreen_quad_vertex_shader, nullptr);
@@ -1042,7 +1027,7 @@ bool GPU_HW_Vulkan::CompilePipelines()
       if (m_vram_fill_pipelines[interlaced] == VK_NULL_HANDLE)
         return false;
 
-      UPDATE_PROGRESS();
+      progress.Increment();
     }
   }
 
@@ -1066,7 +1051,7 @@ bool GPU_HW_Vulkan::CompilePipelines()
         return false;
       }
 
-      UPDATE_PROGRESS();
+      progress.Increment();
     }
 
     vkDestroyShaderModule(device, fs, nullptr);
@@ -1091,7 +1076,7 @@ bool GPU_HW_Vulkan::CompilePipelines()
         return false;
       }
 
-      UPDATE_PROGRESS();
+      progress.Increment();
     }
 
     vkDestroyShaderModule(device, fs, nullptr);
@@ -1115,7 +1100,7 @@ bool GPU_HW_Vulkan::CompilePipelines()
     if (m_vram_update_depth_pipeline == VK_NULL_HANDLE)
       return false;
 
-    UPDATE_PROGRESS();
+    progress.Increment();
   }
 
   gpbuilder.Clear();
@@ -1140,7 +1125,7 @@ bool GPU_HW_Vulkan::CompilePipelines()
     if (m_vram_readback_pipeline == VK_NULL_HANDLE)
       return false;
 
-    UPDATE_PROGRESS();
+    progress.Increment();
   }
 
   gpbuilder.Clear();
@@ -1171,7 +1156,7 @@ bool GPU_HW_Vulkan::CompilePipelines()
         if (m_display_pipelines[depth_24][interlace_mode] == VK_NULL_HANDLE)
           return false;
 
-        UPDATE_PROGRESS();
+        progress.Increment();
       }
     }
   }
@@ -1253,7 +1238,7 @@ bool GPU_HW_Vulkan::CompilePipelines()
       return false;
   }
 
-  UPDATE_PROGRESS();
+  progress.Increment();
 
 #undef UPDATE_PROGRESS
 
