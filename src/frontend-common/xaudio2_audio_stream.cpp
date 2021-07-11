@@ -173,7 +173,8 @@ void XAudio2AudioStream::EnqueueBuffer()
 
 void XAudio2AudioStream::SetOutputVolume(u32 volume)
 {
-  HRESULT hr = m_source_voice->SetVolume(static_cast<float>(m_output_volume) / 100.0f);
+  AudioStream::SetOutputVolume(volume);
+  HRESULT hr = m_mastering_voice->SetVolume(static_cast<float>(m_output_volume) / 100.0f);
   if (FAILED(hr))
     Log_ErrorPrintf("SetVolume() failed: %08X", hr);
 }
