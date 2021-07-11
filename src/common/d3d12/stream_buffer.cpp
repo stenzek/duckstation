@@ -56,7 +56,7 @@ bool StreamBuffer::ReserveMemory(u32 num_bytes, u32 alignment)
   const u32 required_bytes = num_bytes + alignment;
 
   // Check for sane allocations
-  if (required_bytes > m_size)
+  if (num_bytes > m_size)
   {
     Log_ErrorPrintf("Attempting to allocate %u bytes from a %u byte stream buffer", static_cast<u32>(num_bytes),
                     static_cast<u32>(m_size));
@@ -68,8 +68,9 @@ bool StreamBuffer::ReserveMemory(u32 num_bytes, u32 alignment)
   UpdateCurrentFencePosition();
   if (m_current_offset >= m_current_gpu_position)
   {
+    const u32 aligned_required_bytes = (m_current_offset > 0) ? required_bytes : num_bytes;
     const u32 remaining_bytes = m_size - m_current_offset;
-    if (required_bytes <= remaining_bytes)
+    if (aligned_required_bytes <= remaining_bytes)
     {
       // Place at the current position, after the GPU position.
       m_current_offset = Common::AlignUp(m_current_offset, alignment);
