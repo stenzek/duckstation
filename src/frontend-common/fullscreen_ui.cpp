@@ -1304,8 +1304,8 @@ void DrawSettingsWindow()
 
     static constexpr std::array<const char*, static_cast<u32>(SettingsPage::Count)> titles = {
       {"Interface Settings", "Game List Settings", "Console Settings", "Emulation Settings", "BIOS Settings",
-       "Controller Settings", "Hotkey Settings", "Memory Card Settings", "Display Settings", "Audio Settings",
-       "Enhancement Settings", "Achievements Settings", "Advanced Settings"}};
+       "Controller Settings", "Hotkey Settings", "Memory Card Settings", "Display Settings", "Enhancement Settings",
+       "Audio Settings", "Achievements Settings", "Advanced Settings"}};
 
     BeginNavBar();
 
