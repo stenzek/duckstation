@@ -162,8 +162,8 @@ bool D3D12HostDisplay::BeginSetDisplayPixels(HostDisplayPixelFormat format, u32 
 
 void D3D12HostDisplay::EndSetDisplayPixels()
 {
-  m_display_pixels_texture.EndStreamUpdate(0, 0, m_display_pixels_texture.GetWidth(),
-                                           m_display_pixels_texture.GetHeight());
+  m_display_pixels_texture.EndStreamUpdate(0, 0, static_cast<u32>(m_display_texture_view_width),
+                                           static_cast<u32>(m_display_texture_view_height));
 }
 
 bool D3D12HostDisplay::GetHostRefreshRate(float* refresh_rate)
