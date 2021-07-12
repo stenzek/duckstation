@@ -97,13 +97,13 @@ protected:
 
   struct BatchConfig
   {
-    GPUTextureMode texture_mode;
-    GPUTransparencyMode transparency_mode;
-    bool dithering;
-    bool interlacing;
-    bool set_mask_while_drawing;
-    bool check_mask_before_draw;
-    bool use_depth_buffer;
+    GPUTextureMode texture_mode = GPUTextureMode::Disabled;
+    GPUTransparencyMode transparency_mode = GPUTransparencyMode::Disabled;
+    bool dithering = false;
+    bool interlacing = false;
+    bool set_mask_while_drawing = false;
+    bool check_mask_before_draw = false;
+    bool use_depth_buffer = false;
 
     // Returns the render mode for this batch.
     BatchRenderMode GetRenderMode() const
@@ -373,7 +373,7 @@ protected:
   bool m_using_uv_limits = false;
   bool m_pgxp_depth_buffer = false;
 
-  BatchConfig m_batch = {};
+  BatchConfig m_batch;
   BatchUBOData m_batch_ubo_data = {};
 
   // Bounding box of VRAM area that the GPU has drawn into.
