@@ -1588,10 +1588,16 @@ void DrawSettingsWindow()
                            });
         }
 
-        settings_changed |= ToggleButton(
-          "Enable Read Thread",
-          "Reduces hitches in emulation by reading/decompressing CD data asynchronously on a worker thread.",
-          &s_settings_copy.cdrom_read_thread);
+        s32 readahead_sectors = s_settings_copy.cdrom_readahead_sectors;
+        if (RangeButton(
+              "Readahead Sectors",
+              "Reduces hitches in emulation by reading/decompressing CD data asynchronously on a worker thread.",
+              &readahead_sectors, 0, 32, 1))
+        {
+          s_settings_copy.cdrom_readahead_sectors = static_cast<u8>(readahead_sectors);
+          settings_changed = true;
+        }
+
         settings_changed |=
           ToggleButton("Enable Region Check", "Simulates the region check present in original, unmodified consoles.",
                        &s_settings_copy.cdrom_region_check);

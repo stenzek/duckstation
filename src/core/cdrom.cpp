@@ -99,8 +99,8 @@ void CDROM::Initialize()
     [](void* param, TickCount ticks, TickCount ticks_late) { static_cast<CDROM*>(param)->ExecuteDrive(ticks_late); },
     this, false);
 
-  if (g_settings.cdrom_read_thread)
-    m_reader.StartThread();
+  if (g_settings.cdrom_readahead_sectors > 0)
+    m_reader.StartThread(g_settings.cdrom_readahead_sectors);
 
   Reset();
 }
@@ -232,7 +232,8 @@ void CDROM::SoftReset(TickCount ticks_late)
     {
       m_drive_state = DriveState::SeekingImplicit;
       m_drive_event->SetIntervalAndSchedule(total_ticks);
-      m_reader.QueueReadSector(0);
+      m_requested_lba = 0;
+      m_reader.QueueReadSector(m_requested_lba);
       m_seek_start_lba = m_current_lba;
       m_seek_end_lba = 0;
     }
@@ -306,14 +307,12 @@ bool CDROM::DoState(StateWrapper& sw)
   }
 
   sw.Do(&m_audio_fifo);
-
-  u32 requested_sector = (sw.IsWriting() ? (m_reader.WaitForReadToComplete(), m_reader.GetLastReadSector()) : 0);
-  sw.Do(&requested_sector);
+  sw.Do(&m_requested_lba);
 
   if (sw.IsReading())
   {
     if (m_reader.HasMedia())
-      m_reader.QueueReadSector(requested_sector);
+      m_reader.QueueReadSector(m_requested_lba);
     UpdateCommandEvent();
     m_drive_event->SetState(!IsDriveIdle());
   }
@@ -397,15 +396,18 @@ std::unique_ptr<CDImage> CDROM::RemoveMedia(bool force /* = false */)
   return image;
 }
 
-void CDROM::SetUseReadThread(bool enabled)
+void CDROM::SetReadaheadSectors(u32 readahead_sectors)
 {
-  if (enabled == m_reader.IsUsingThread())
+  const bool want_thread = (readahead_sectors > 0);
+  if (want_thread == m_reader.IsUsingThread() && m_reader.GetReadaheadCount() == readahead_sectors)
     return;
 
-  if (enabled)
-    m_reader.StartThread();
+  if (want_thread)
+    m_reader.StartThread(readahead_sectors);
   else
     m_reader.StopThread();
+
+  m_reader.QueueReadSector(m_requested_lba);
 }
 
 void CDROM::CPUClockChanged()
@@ -1417,8 +1419,6 @@ void CDROM::ExecuteCommand(TickCount ticks_late)
       Log_DebugPrintf("CDROM GetTN command");
       if (CanReadMedia())
       {
-        m_reader.WaitForReadToComplete();
-
         Log_DevPrintf("GetTN -> %u %u", m_reader.GetMedia()->GetFirstTrackNumber(),
                       m_reader.GetMedia()->GetLastTrackNumber());
 
@@ -1757,7 +1757,8 @@ void CDROM::BeginReading(TickCount ticks_late /* = 0 */, bool after_seek /* = fa
   m_current_read_sector_buffer = 0;
   m_current_write_sector_buffer = 0;
 
-  m_reader.QueueReadSector(m_current_lba);
+  m_requested_lba = m_current_lba;
+  m_reader.QueueReadSector(m_requested_lba);
 }
 
 void CDROM::BeginPlaying(u8 track, TickCount ticks_late /* = 0 */, bool after_seek /* = false */)
@@ -1799,7 +1800,8 @@ void CDROM::BeginPlaying(u8 track, TickCount ticks_late /* = 0 */, bool after_se
   m_current_read_sector_buffer = 0;
   m_current_write_sector_buffer = 0;
 
-  m_reader.QueueReadSector(m_current_lba);
+  m_requested_lba = m_current_lba;
+  m_reader.QueueReadSector(m_requested_lba);
 }
 
 void CDROM::BeginSeeking(bool logical, bool read_after_seek, bool play_after_seek)
@@ -1828,7 +1830,8 @@ void CDROM::BeginSeeking(bool logical, bool read_after_seek, bool play_after_see
 
   m_seek_start_lba = m_current_lba;
   m_seek_end_lba = seek_lba;
-  m_reader.QueueReadSector(seek_lba);
+  m_requested_lba = seek_lba;
+  m_reader.QueueReadSector(m_requested_lba);
 }
 
 void CDROM::UpdatePositionWhileSeeking()
@@ -2022,9 +2025,10 @@ bool CDROM::CompleteSeek()
         }
       }
     }
+
+    m_current_lba = m_reader.GetLastReadSector();
   }
 
-  m_current_lba = m_reader.GetLastReadSector();
   m_physical_lba = m_current_lba;
   m_physical_lba_update_tick = TimingEvents::GetGlobalTickCounter();
   m_physical_lba_update_carry = 0;
@@ -2275,7 +2279,8 @@ void CDROM::DoSectorRead()
                       is_data_sector ? "data" : "audio", is_data_sector ? "reading" : "playing");
   }
 
-  m_reader.QueueReadSector(next_sector);
+  m_requested_lba = next_sector;
+  m_reader.QueueReadSector(m_requested_lba);
 }
 
 void CDROM::ProcessDataSectorHeader(const u8* raw_sector)
@@ -2698,12 +2703,13 @@ void CDROM::DrawDebugWindow()
 
       if (media->HasSubImages())
       {
-        ImGui::Text("Filename: %s [Subimage %u of %u]", media->GetFileName().c_str(), media->GetCurrentSubImage() + 1u,
-                    media->GetSubImageCount());
+        ImGui::Text("Filename: %s [Subimage %u of %u] [%u buffered sectors]", media->GetFileName().c_str(),
+                    media->GetCurrentSubImage() + 1u, media->GetSubImageCount(), m_reader.GetBufferedSectorCount());
       }
       else
       {
-        ImGui::Text("Filename: %s", media->GetFileName().c_str());
+        ImGui::Text("Filename: %s [%u buffered sectors]", media->GetFileName().c_str(),
+                    m_reader.GetBufferedSectorCount());
       }
 
       ImGui::Text("Disc Position: MSF[%02u:%02u:%02u] LBA[%u]", disc_position.minute, disc_position.second,

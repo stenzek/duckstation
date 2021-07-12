@@ -565,7 +565,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetStringValue("Display", "PostProcessChain", "");
   si.SetFloatValue("Display", "MaxFPS", Settings::DEFAULT_DISPLAY_MAX_FPS);
 
-  si.SetBoolValue("CDROM", "ReadThread", true);
+  si.SetIntValue("CDROM", "ReadaheadSectors", Settings::DEFAULT_CDROM_READAHEAD_SECTORS);
   si.SetBoolValue("CDROM", "RegionCheck", false);
   si.SetBoolValue("CDROM", "LoadImageToRAM", false);
   si.SetBoolValue("CDROM", "MuteCDAudio", false);
@@ -853,8 +853,8 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
         PGXP::Initialize();
     }
 
-    if (g_settings.cdrom_read_thread != old_settings.cdrom_read_thread)
-      g_cdrom.SetUseReadThread(g_settings.cdrom_read_thread);
+    if (g_settings.cdrom_readahead_sectors != old_settings.cdrom_readahead_sectors)
+      g_cdrom.SetReadaheadSectors(g_settings.cdrom_readahead_sectors);
 
     if (g_settings.memory_card_types != old_settings.memory_card_types ||
         g_settings.memory_card_paths != old_settings.memory_card_paths ||

@@ -242,7 +242,7 @@ void Settings::Load(SettingsInterface& si)
   display_post_process_chain = si.GetStringValue("Display", "PostProcessChain", "");
   display_max_fps = si.GetFloatValue("Display", "MaxFPS", DEFAULT_DISPLAY_MAX_FPS);
 
-  cdrom_read_thread = si.GetBoolValue("CDROM", "ReadThread", true);
+  cdrom_readahead_sectors = static_cast<u8>(si.GetIntValue("CDROM", "ReadaheadSectors", DEFAULT_CDROM_READAHEAD_SECTORS));
   cdrom_region_check = si.GetBoolValue("CDROM", "RegionCheck", false);
   cdrom_load_image_to_ram = si.GetBoolValue("CDROM", "LoadImageToRAM", false);
   cdrom_mute_cd_audio = si.GetBoolValue("CDROM", "MuteCDAudio", false);
@@ -419,7 +419,7 @@ void Settings::Save(SettingsInterface& si) const
     si.SetStringValue("Display", "PostProcessChain", display_post_process_chain.c_str());
   si.SetFloatValue("Display", "MaxFPS", display_max_fps);
 
-  si.SetBoolValue("CDROM", "ReadThread", cdrom_read_thread);
+  si.SetIntValue("CDROM", "ReadaheadSectors", cdrom_readahead_sectors);
   si.SetBoolValue("CDROM", "RegionCheck", cdrom_region_check);
   si.SetBoolValue("CDROM", "LoadImageToRAM", cdrom_load_image_to_ram);
   si.SetBoolValue("CDROM", "MuteCDAudio", cdrom_mute_cd_audio);
