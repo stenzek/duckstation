@@ -3934,7 +3934,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="79"/>
         <source>Software Renderer Readbacks (run in parallel for VRAM-&gt;CPU transfers)</source>
-        <translation>Software para releituras (paralelo entre VRAM &gt; CPU)</translation>
+        <translation>Software para releituras (paralelo entre VRAM e CPU)</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="163"/>
@@ -3946,13 +3946,13 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../enhancementsettingswidget.ui" line="170"/>
         <location filename="../enhancementsettingswidget.cpp" line="118"/>
         <source>Depth Buffer (Low Compatibility)</source>
-        <translation>Modo eixo Z (compatibilidade caixa)</translation>
+        <translation>Modo eixo Z (compatibilidade baixa)</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="177"/>
         <location filename="../enhancementsettingswidget.cpp" line="124"/>
         <source>CPU Mode (Very Slow)</source>
-        <translation>Modo CPU (Muito lento)</translation>
+        <translation>Modo CPU (muito lento)</translation>
     </message>
     <message>
         <source>Depth Buffer</source>
@@ -9101,7 +9101,7 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../settingsdialog.ui" line="58"/>
         <source>General Settings</source>
-        <translation>Configurações Gerais</translation>
+        <translation>Configurações gerais</translation>
     </message>
     <message>
         <location filename="../settingsdialog.ui" line="67"/>
@@ -9111,42 +9111,42 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../settingsdialog.ui" line="76"/>
         <source>Console Settings</source>
-        <translation>Configurações do Console</translation>
+        <translation>Configurações do console</translation>
     </message>
     <message>
         <location filename="../settingsdialog.ui" line="85"/>
         <source>Emulation Settings</source>
-        <translation>Configurações de Emulação</translation>
+        <translation>Configurações de emulação</translation>
     </message>
     <message>
         <location filename="../settingsdialog.ui" line="94"/>
         <source>Game List Settings</source>
-        <translation>Configurar lista de Jogos</translation>
+        <translation>Configurar lista de jogos</translation>
     </message>
     <message>
         <location filename="../settingsdialog.ui" line="103"/>
         <source>Hotkey Settings</source>
-        <translation>Configurações de Atalhos</translation>
+        <translation>Configurações de atalhos</translation>
     </message>
     <message>
         <location filename="../settingsdialog.ui" line="112"/>
         <source>Controller Settings</source>
-        <translation>Configurações de Controle</translation>
+        <translation>Configurações de controle</translation>
     </message>
     <message>
         <location filename="../settingsdialog.ui" line="121"/>
         <source>Memory Card Settings</source>
-        <translation>Cartões de Memória</translation>
+        <translation>Cartões de memória</translation>
     </message>
     <message>
         <location filename="../settingsdialog.ui" line="130"/>
         <source>Display Settings</source>
-        <translation>Opções de Vídeo</translation>
+        <translation>Opções de vídeo</translation>
     </message>
     <message>
         <location filename="../settingsdialog.ui" line="139"/>
         <source>Enhancement Settings</source>
-        <translation>Opções de Aprimoramento</translation>
+        <translation>Opções de aprimoramento</translation>
     </message>
     <message>
         <location filename="../settingsdialog.ui" line="148"/>
@@ -9156,12 +9156,12 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../settingsdialog.ui" line="166"/>
         <source>Achievement Settings</source>
-        <translation>Configurações de Conquistas</translation>
+        <translation>Configurações de conquistas</translation>
     </message>
     <message>
         <location filename="../settingsdialog.ui" line="223"/>
         <source>Restore Defaults</source>
-        <translation>Restaurar Padrões</translation>
+        <translation>Restaurar padrões</translation>
     </message>
     <message>
         <location filename="../settingsdialog.ui" line="243"/>
@@ -9175,12 +9175,12 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../settingsdialog.ui" line="157"/>
         <source>Audio Settings</source>
-        <translation>Configurações de Áudio</translation>
+        <translation>Configurações de áudio</translation>
     </message>
     <message>
         <location filename="../settingsdialog.ui" line="175"/>
         <source>Advanced Settings</source>
-        <translation>Configurações Avançadas</translation>
+        <translation>Configurações avançadas</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="68"/>
