@@ -1,10 +1,16 @@
 #!/bin/sh
 
 VERSION_FILE="scmversion.cpp"
+
+CURDIR=$(pwd)
+cd $(dirname $(readlink -f $0))
+
 HASH=$(git rev-parse HEAD)
 BRANCH=$(git rev-parse --abbrev-ref HEAD | tr -d '\r\n')
 TAG=$(git describe --tags --dirty --exclude latest --exclude preview --exclude play-store-release | tr -d '\r\n')
 DATE=$(git log -1 --date=iso8601-strict --format=%cd)
+
+cd $CURDIR
 
 SIGNATURE_LINE="// ${HASH} ${BRANCH} ${TAG} ${DATE}"
 
