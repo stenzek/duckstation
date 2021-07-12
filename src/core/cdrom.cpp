@@ -1074,13 +1074,28 @@ void CDROM::ExecuteCommand(TickCount ticks_late)
 
     case Command::Setloc:
     {
-      m_setloc_position.minute = PackedBCDToBinary(m_param_fifo.Peek(0));
-      m_setloc_position.second = PackedBCDToBinary(m_param_fifo.Peek(1));
-      m_setloc_position.frame = PackedBCDToBinary(m_param_fifo.Peek(2));
-      m_setloc_pending = true;
-      Log_DebugPrintf("CDROM setloc command (%02X, %02X, %02X)", ZeroExtend32(m_param_fifo.Peek(0)),
-                      ZeroExtend32(m_param_fifo.Peek(1)), ZeroExtend32(m_param_fifo.Peek(2)));
-      SendACKAndStat();
+      const u8 mm = m_param_fifo.Peek(0);
+      const u8 ss = m_param_fifo.Peek(1);
+      const u8 ff = m_param_fifo.Peek(2);
+      Log_DevPrintf("CDROM setloc command (%02X, %02X, %02X)", mm, ss, ff);
+
+      // MM must be BCD, SS must be BCD and <0x60, FF must be BCD and <0x75
+      if (((mm & 0x0F) > 0x09) || (mm > 0x99) || ((ss & 0x0F) > 0x09) || (ss >= 0x60) || ((ff & 0x0F) > 0x09) ||
+          (ff >= 0x75))
+      {
+        Log_ErrorPrintf("Invalid/out of range seek to %02X:%02X:%02X", mm, ss, ff);
+        SendErrorResponse(STAT_ERROR, ERROR_REASON_INVALID_ARGUMENT);
+      }
+      else
+      {
+        SendACKAndStat();
+
+        m_setloc_position.minute = PackedBCDToBinary(mm);
+        m_setloc_position.second = PackedBCDToBinary(ss);
+        m_setloc_position.frame = PackedBCDToBinary(ff);
+        m_setloc_pending = true;
+      }
+
       EndCommand();
       return;
     }
