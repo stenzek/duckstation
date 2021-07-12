@@ -172,10 +172,10 @@ protected:
 
   private:
     std::string m_title;
-    u64 m_start_time;
-    u64 m_last_update_time;
     u64 m_min_time;
     u64 m_update_interval;
+    u64 m_start_time;
+    u64 m_last_update_time;
     u32 m_progress;
     u32 m_total;
   };

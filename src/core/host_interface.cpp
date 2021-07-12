@@ -910,9 +910,9 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
   if (g_settings.multitap_mode != old_settings.multitap_mode)
     System::UpdateMultitaps();
 
-  if (m_display && g_settings.display_linear_filtering != old_settings.display_linear_filtering ||
-      g_settings.display_integer_scaling != old_settings.display_integer_scaling ||
-      g_settings.display_stretch != old_settings.display_stretch)
+  if (m_display && (g_settings.display_linear_filtering != old_settings.display_linear_filtering ||
+                    g_settings.display_integer_scaling != old_settings.display_integer_scaling ||
+                    g_settings.display_stretch != old_settings.display_stretch))
   {
     m_display->SetDisplayLinearFiltering(g_settings.display_linear_filtering);
     m_display->SetDisplayIntegerScaling(g_settings.display_integer_scaling);
