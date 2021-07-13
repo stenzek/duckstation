@@ -458,6 +458,9 @@ bool D3D12HostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
 
 void D3D12HostDisplay::DestroyRenderSurface()
 {
+  // For some reason if we don't execute the command list here, the swap chain is in use.. not sure where.
+  g_d3d12_context->ExecuteCommandList(true);
+
   if (IsFullscreen())
     SetFullscreen(false, 0, 0, 0.0f);
 
