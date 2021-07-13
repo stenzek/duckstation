@@ -1,9 +1,10 @@
 #pragma once
-#include "common/dimensional_array.h"
 #include "common/d3d12/staging_texture.h"
 #include "common/d3d12/stream_buffer.h"
 #include "common/d3d12/texture.h"
+#include "common/dimensional_array.h"
 #include "gpu_hw.h"
+#include "texture_replacements.h"
 #include <array>
 #include <memory>
 #include <tuple>
@@ -46,6 +47,7 @@ private:
   enum : u32
   {
     MAX_PUSH_CONSTANTS_SIZE = 64,
+    TEXTURE_REPLACEMENT_BUFFER_SIZE = 64 * 1024 * 1024,
   };
   void SetCapabilities();
   void DestroyResources();
@@ -63,6 +65,9 @@ private:
 
   bool CompilePipelines();
   void DestroyPipelines();
+
+  bool CreateTextureReplacementStreamBuffer();
+  bool BlitVRAMReplacementTexture(const TextureReplacementTexture* tex, u32 dst_x, u32 dst_y, u32 width, u32 height);
 
   ComPtr<ID3D12RootSignature> m_batch_root_signature;
   ComPtr<ID3D12RootSignature> m_single_sampler_root_signature;
@@ -99,4 +104,8 @@ private:
 
   // [depth_24][interlace_mode]
   DimensionalArray<ComPtr<ID3D12PipelineState>, 3, 2> m_display_pipelines;
+
+  ComPtr<ID3D12PipelineState> m_copy_pipeline;
+  D3D12::Texture m_vram_write_replacement_texture;
+  D3D12::StreamBuffer m_texture_replacment_stream_buffer;
 };

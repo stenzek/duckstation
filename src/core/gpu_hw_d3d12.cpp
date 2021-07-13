@@ -1,4 +1,5 @@
 #include "gpu_hw_d3d12.h"
+#include "common/align.h"
 #include "common/assert.h"
 #include "common/d3d11/shader_compiler.h"
 #include "common/d3d12/context.h"
@@ -420,7 +421,7 @@ bool GPU_HW_D3D12::CompilePipelines()
                              m_pgxp_depth_buffer, m_supports_dual_source_blend);
 
   ShaderCompileProgressTracker progress("Compiling Pipelines", 2 + (4 * 9 * 2 * 2) + (2 * 4 * 5 * 9 * 2 * 2) + 1 + 2 +
-                                                                 2 + 2 + 1 + 1 + (2 * 3));
+                                                                 2 + 2 + 1 + 1 + (2 * 3) + 1);
 
   // vertex shaders - [textured]
   // fragment shaders - [render_mode][texture_mode][dithering][interlacing]
@@ -711,6 +712,30 @@ bool GPU_HW_D3D12::CompilePipelines()
     }
   }
 
+  // copy/blit
+  {
+    gpbuilder.Clear();
+    gpbuilder.SetRootSignature(m_single_sampler_root_signature.Get());
+    gpbuilder.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+    gpbuilder.SetVertexShader(fullscreen_quad_vertex_shader.Get());
+    gpbuilder.SetNoCullRasterizationState();
+    gpbuilder.SetNoDepthTestState();
+    gpbuilder.SetNoBlendingState();
+    gpbuilder.SetRenderTarget(0, DXGI_FORMAT_R8G8B8A8_UNORM);
+
+    ComPtr<ID3DBlob> fs = shader_cache.GetPixelShader(shadergen.GenerateCopyFragmentShader());
+    if (!fs)
+      return false;
+
+    gpbuilder.SetPixelShader(fs.Get());
+
+    m_copy_pipeline = gpbuilder.Create(g_d3d12_context->GetDevice(), shader_cache);
+    if (!m_copy_pipeline)
+      return false;
+
+    progress.Increment();
+  }
+
 #undef UPDATE_PROGRESS
 
   return true;
@@ -726,6 +751,77 @@ void GPU_HW_D3D12::DestroyPipelines()
   m_vram_update_depth_pipeline.Reset();
 
   m_display_pipelines = {};
+}
+
+bool GPU_HW_D3D12::CreateTextureReplacementStreamBuffer()
+{
+  if (m_texture_replacment_stream_buffer.IsValid())
+    return true;
+
+  if (!m_texture_replacment_stream_buffer.Create(TEXTURE_REPLACEMENT_BUFFER_SIZE))
+  {
+    Log_ErrorPrint("Failed to allocate texture replacement streaming buffer");
+    return false;
+  }
+
+  return true;
+}
+
+bool GPU_HW_D3D12::BlitVRAMReplacementTexture(const TextureReplacementTexture* tex, u32 dst_x, u32 dst_y, u32 width,
+                                              u32 height)
+{
+  if (!CreateTextureReplacementStreamBuffer())
+    return false;
+
+  if (m_vram_write_replacement_texture.GetWidth() < tex->GetWidth() ||
+      m_vram_write_replacement_texture.GetHeight() < tex->GetHeight())
+  {
+    if (!m_vram_write_replacement_texture.Create(tex->GetWidth(), tex->GetHeight(), 1, DXGI_FORMAT_R8G8B8A8_UNORM,
+                                                 DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_UNKNOWN,
+                                                 D3D12_RESOURCE_FLAG_NONE))
+    {
+      Log_ErrorPrint("Failed to create VRAM write replacement texture");
+      return false;
+    }
+  }
+
+  const u32 copy_pitch = Common::AlignUpPow2<u32>(tex->GetWidth() * sizeof(u32), D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
+  const u32 required_size = copy_pitch * tex->GetHeight();
+  if (!m_texture_replacment_stream_buffer.ReserveMemory(required_size, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT))
+  {
+    Log_PerfPrint("Executing command buffer while waiting for texture replacement buffer space");
+    g_d3d12_context->ExecuteCommandList(false);
+    RestoreGraphicsAPIState();
+    if (!m_texture_replacment_stream_buffer.ReserveMemory(required_size, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT))
+    {
+      Log_ErrorPrintf("Failed to allocate %u bytes from texture replacement streaming buffer", required_size);
+      return false;
+    }
+  }
+
+  // buffer -> texture
+  const u32 sb_offset = m_texture_replacment_stream_buffer.GetCurrentOffset();
+  D3D12::Texture::CopyToUploadBuffer(tex->GetPixels(), tex->GetByteStride(), tex->GetHeight(),
+                                     m_texture_replacment_stream_buffer.GetCurrentHostPointer(), copy_pitch);
+  m_texture_replacment_stream_buffer.CommitMemory(sb_offset);
+  m_vram_write_replacement_texture.CopyFromBuffer(0, 0, tex->GetWidth(), tex->GetHeight(), copy_pitch,
+                                                  m_texture_replacment_stream_buffer.GetBuffer(), sb_offset);
+  m_vram_write_replacement_texture.TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
+  // texture -> vram
+  const float uniforms[] = {
+    0.0f, 0.0f, static_cast<float>(tex->GetWidth()) / static_cast<float>(m_vram_write_replacement_texture.GetWidth()),
+    static_cast<float>(tex->GetHeight()) / static_cast<float>(m_vram_write_replacement_texture.GetHeight())};
+  ID3D12GraphicsCommandList* cmdlist = g_d3d12_context->GetCommandList();
+  cmdlist->SetGraphicsRootSignature(m_single_sampler_root_signature.Get());
+  cmdlist->SetGraphicsRoot32BitConstants(0, sizeof(uniforms) / sizeof(u32), uniforms, 0);
+  cmdlist->SetGraphicsRootDescriptorTable(1, m_vram_write_replacement_texture.GetSRVDescriptor());
+  cmdlist->SetGraphicsRootDescriptorTable(2, m_linear_sampler.gpu_handle);
+  cmdlist->SetPipelineState(m_copy_pipeline.Get());
+  D3D12::SetViewportAndScissor(cmdlist, dst_x, dst_y, width, height);
+  cmdlist->DrawInstanced(3, 1, 0, 0);
+  RestoreGraphicsAPIState();
+  return true;
 }
 
 void GPU_HW_D3D12::DrawBatchVertices(BatchRenderMode render_mode, u32 base_vertex, u32 num_vertices)
@@ -935,6 +1031,16 @@ void GPU_HW_D3D12::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* d
 
   const Common::Rectangle<u32> bounds = GetVRAMTransferBounds(x, y, width, height);
   GPU_HW::UpdateVRAM(bounds.left, bounds.top, bounds.GetWidth(), bounds.GetHeight(), data, set_mask, check_mask);
+
+  if (!check_mask)
+  {
+    const TextureReplacementTexture* rtex = g_texture_replacements.GetVRAMWriteReplacement(width, height, data);
+    if (rtex && BlitVRAMReplacementTexture(rtex, x * m_resolution_scale, y * m_resolution_scale,
+                                           width * m_resolution_scale, height * m_resolution_scale))
+    {
+      return;
+    }
+  }
 
   const u32 data_size = width * height * sizeof(u16);
   const u32 alignment = D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT; // ???
