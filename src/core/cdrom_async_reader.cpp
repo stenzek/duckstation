@@ -101,9 +101,28 @@ void CDROMAsyncReader::QueueReadSector(CDImage::LBA lba)
 
 bool CDROMAsyncReader::ReadSectorUncached(CDImage::LBA lba, CDImage::SubChannelQ* subq, SectorBuffer* data)
 {
-  if (IsUsingThread())
-    CancelReadahead();
+  if (!IsUsingThread())
+    return InternalReadSectorUncached(lba, subq, data);
 
+  std::unique_lock lock(m_mutex);
+
+  // wait until the read thread is idle
+  m_notify_read_complete_cv.wait(lock, [this]() { return !m_is_reading.load(); });
+
+  // read while the lock is held so it has to wait
+  const CDImage::LBA prev_lba = m_media->GetPositionOnDisc();
+  const bool result = InternalReadSectorUncached(lba, subq, data);
+  if (!m_media->Seek(prev_lba))
+  {
+    Log_ErrorPrintf("Failed to re-seek to cached position %u", prev_lba);
+    m_can_readahead.store(false);
+  }
+
+  return result;
+}
+
+bool CDROMAsyncReader::InternalReadSectorUncached(CDImage::LBA lba, CDImage::SubChannelQ* subq, SectorBuffer* data)
+{
   if (m_media->GetPositionOnDisc() != lba && !m_media->Seek(lba))
   {
     Log_WarningPrintf("Seek to LBA %u failed", lba);

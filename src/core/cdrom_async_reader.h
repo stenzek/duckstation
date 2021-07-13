@@ -52,6 +52,7 @@ private:
   void EmptyBuffers();
   bool ReadSectorIntoBuffer(std::unique_lock<std::mutex>& lock);
   void ReadSectorNonThreaded(CDImage::LBA lba);
+  bool InternalReadSectorUncached(CDImage::LBA lba, CDImage::SubChannelQ* subq, SectorBuffer* data);
   void CancelReadahead();
 
   void WorkerThreadEntryPoint();
@@ -67,12 +68,12 @@ private:
   std::atomic_bool m_next_position_set{false};
   std::atomic_bool m_shutdown_flag{true};
 
-  std::atomic_bool m_is_reading{ false };
-  std::atomic_bool m_can_readahead{ false };
-  std::atomic_bool m_seek_error{ false };
+  std::atomic_bool m_is_reading{false};
+  std::atomic_bool m_can_readahead{false};
+  std::atomic_bool m_seek_error{false};
 
   std::vector<BufferSlot> m_buffers;
-  std::atomic<u32> m_buffer_front{ 0 };
-  std::atomic<u32> m_buffer_back{ 0 };
-  std::atomic<u32> m_buffer_count{ 0 };
+  std::atomic<u32> m_buffer_front{0};
+  std::atomic<u32> m_buffer_back{0};
+  std::atomic<u32> m_buffer_count{0};
 };
