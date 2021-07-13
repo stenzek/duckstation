@@ -13,8 +13,8 @@
 #include "memorycardsettingswidget.h"
 #include "postprocessingsettingswidget.h"
 #include "qthostinterface.h"
-#include <QtWidgets/QTextEdit>
 #include <QtWidgets/QMessageBox>
+#include <QtWidgets/QTextEdit>
 
 #ifdef WITH_CHEEVOS
 #include "achievementsettingswidget.h"
@@ -147,7 +147,9 @@ void SettingsDialog::onCategoryCurrentRowChanged(int row)
 
 void SettingsDialog::onRestoreDefaultsClicked()
 {
-  if (!QMessageBox::question(this, tr("Confirm Restore Defaults"), tr("Are you sure you want to restore the default settings? Any preferences will be lost.")))
+  if (QMessageBox::question(this, tr("Confirm Restore Defaults"),
+                            tr("Are you sure you want to restore the default settings? Any preferences will be lost."),
+                            QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
   {
     return;
   }
