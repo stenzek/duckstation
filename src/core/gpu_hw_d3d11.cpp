@@ -779,6 +779,7 @@ bool GPU_HW_D3D11::BlitVRAMReplacementTexture(const TextureReplacementTexture* t
 
   m_context->OMSetDepthStencilState(m_depth_disabled_state.Get(), 0);
   m_context->PSSetShaderResources(0, 1, m_vram_replacement_texture.GetD3DSRVArray());
+  m_context->PSSetSamplers(0, 1, m_linear_sampler_state.GetAddressOf());
   SetViewportAndScissor(dst_x, dst_y, width, height);
 
   const float uniforms[] = {0.0f, 0.0f, 1.0f, 1.0f};
