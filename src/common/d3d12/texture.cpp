@@ -267,15 +267,20 @@ void Texture::EndStreamUpdate(u32 x, u32 y, u32 width, u32 height)
   const u32 sb_offset = sb.GetCurrentOffset();
   sb.CommitMemory(upload_size);
 
+  CopyFromBuffer(x, y, width, height, copy_pitch, sb.GetBuffer(), sb_offset);
+}
+
+void Texture::CopyFromBuffer(u32 x, u32 y, u32 width, u32 height, u32 pitch, ID3D12Resource* buffer, u32 buffer_offset)
+{
   D3D12_TEXTURE_COPY_LOCATION src;
-  src.pResource = sb.GetBuffer();
+  src.pResource = buffer;
   src.SubresourceIndex = 0;
   src.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
-  src.PlacedFootprint.Offset = sb_offset;
+  src.PlacedFootprint.Offset = buffer_offset;
   src.PlacedFootprint.Footprint.Width = width;
   src.PlacedFootprint.Footprint.Height = height;
   src.PlacedFootprint.Footprint.Depth = 1;
-  src.PlacedFootprint.Footprint.RowPitch = copy_pitch;
+  src.PlacedFootprint.Footprint.RowPitch = pitch;
   src.PlacedFootprint.Footprint.Format = m_format;
 
   D3D12_TEXTURE_COPY_LOCATION dst;
@@ -286,7 +291,7 @@ void Texture::EndStreamUpdate(u32 x, u32 y, u32 width, u32 height)
   const D3D12_BOX src_box{0u, 0u, 0u, width, height, 1u};
   const D3D12_RESOURCE_STATES old_state = m_state;
   TransitionToState(D3D12_RESOURCE_STATE_COPY_DEST);
-  g_d3d12_context->GetCommandList()->CopyTextureRegion(&dst, 0, 0, 0, &src, &src_box);
+  g_d3d12_context->GetCommandList()->CopyTextureRegion(&dst, x, y, 0, &src, &src_box);
   TransitionToState(old_state);
 }
 
