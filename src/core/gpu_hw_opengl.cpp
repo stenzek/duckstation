@@ -769,7 +769,7 @@ bool GPU_HW_OpenGL::BlitVRAMReplacementTexture(const TextureReplacementTexture* 
   if (!m_vram_write_replacement_texture.IsValid())
   {
     if (!m_vram_write_replacement_texture.Create(tex->GetWidth(), tex->GetHeight(), 1, GL_RGBA, GL_RGBA,
-                                                 GL_UNSIGNED_BYTE, tex->GetPixels()) ||
+                                                 GL_UNSIGNED_BYTE, tex->GetPixels(), true) ||
         !m_vram_write_replacement_texture.CreateFramebuffer())
     {
       m_vram_write_replacement_texture.Destroy();
