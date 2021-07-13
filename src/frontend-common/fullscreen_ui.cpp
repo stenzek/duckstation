@@ -2785,6 +2785,7 @@ void InitializeSaveStateListEntry(SaveStateListEntry* li, CommonHostInterface::E
   li->summary =
     StringUtil::StdStringFromFormat("%s - Saved %s", ssi->game_code.c_str(),
                                     Timestamp::FromUnixTimestamp(ssi->timestamp).ToString("%c").GetCharArray());
+
   li->slot = ssi->slot;
   li->global = ssi->global;
   li->path = std::move(ssi->path);
@@ -2811,6 +2812,19 @@ void InitializeSaveStateListEntry(SaveStateListEntry* li, CommonHostInterface::E
 void PopulateSaveStateListEntries()
 {
   s_save_state_selector_slots.clear();
+
+  if (s_save_state_selector_loading)
+  {
+    std::optional<CommonHostInterface::ExtendedSaveStateInfo> ssi = s_host_interface->GetUndoSaveStateInfo();
+    if (ssi)
+    {
+      SaveStateListEntry li;
+      InitializeSaveStateListEntry(&li, &ssi.value());
+      li.title = "Undo Load State";
+      li.summary = "Restores the state of the system prior to the last state loaded.";
+      s_save_state_selector_slots.push_back(std::move(li));
+    }
+  }
 
   if (!System::GetRunningCode().empty())
   {
@@ -3025,7 +3039,11 @@ void DrawSaveStateSelector(bool is_loading, bool fullscreen)
       {
         const std::string& path = entry.path;
         s_host_interface->RunLater([path]() {
-          s_host_interface->LoadState(path.c_str());
+          if (path.empty())
+            s_host_interface->UndoLoadState();
+          else
+            s_host_interface->LoadState(path.c_str());
+
           CloseSaveStateSelector();
         });
       }

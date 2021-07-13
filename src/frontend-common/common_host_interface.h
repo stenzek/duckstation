@@ -209,8 +209,14 @@ public:
   /// Returns save state info if present. If game_code is null or empty, assumes global state.
   std::optional<SaveStateInfo> GetSaveStateInfo(const char* game_code, s32 slot);
 
+  /// Returns save state info from opened save state stream.
+  std::optional<ExtendedSaveStateInfo> GetExtendedSaveStateInfo(ByteStream* stream);
+
   /// Returns save state info if present. If game_code is null or empty, assumes global state.
   std::optional<ExtendedSaveStateInfo> GetExtendedSaveStateInfo(const char* game_code, s32 slot);
+
+  /// Returns save state info for the undo slot, if present.
+  std::optional<ExtendedSaveStateInfo> GetUndoSaveStateInfo();
 
   /// Deletes save states for the specified game code. If resume is set, the resume state is deleted too.
   void DeleteSaveStates(const char* game_code, bool resume);

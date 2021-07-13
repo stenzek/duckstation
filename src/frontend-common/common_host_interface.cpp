@@ -746,7 +746,7 @@ bool CommonHostInterface::SaveUndoLoadState()
     m_undo_load_state.reset();
 
   m_undo_load_state = ByteStream_CreateGrowableMemoryStream(nullptr, System::MAX_SAVE_STATE_SIZE);
-  if (!System::SaveState(m_undo_load_state.get(), 0))
+  if (!System::SaveState(m_undo_load_state.get()))
   {
     AddOSDMessage(TranslateStdString("OSDMessage", "Failed to save undo load state."), 15.0f);
     m_undo_load_state.reset();
@@ -2836,30 +2836,13 @@ std::optional<CommonHostInterface::SaveStateInfo> CommonHostInterface::GetSaveSt
 }
 
 std::optional<CommonHostInterface::ExtendedSaveStateInfo>
-CommonHostInterface::GetExtendedSaveStateInfo(const char* game_code, s32 slot)
+CommonHostInterface::GetExtendedSaveStateInfo(ByteStream* stream)
 {
-  const bool global = (!game_code || game_code[0] == 0);
-  std::string path = global ? GetGlobalSaveStateFileName(slot) : GetGameSaveStateFileName(game_code, slot);
-
-  FILESYSTEM_STAT_DATA sd;
-  if (!FileSystem::StatFile(path.c_str(), &sd))
-    return std::nullopt;
-
-  std::unique_ptr<ByteStream> stream =
-    FileSystem::OpenFile(path.c_str(), BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_SEEKABLE);
-  if (!stream)
-    return std::nullopt;
-
   SAVE_STATE_HEADER header;
   if (!stream->Read(&header, sizeof(header)) || header.magic != SAVE_STATE_MAGIC)
     return std::nullopt;
 
   ExtendedSaveStateInfo ssi;
-  ssi.path = std::move(path);
-  ssi.timestamp = sd.ModificationTime.AsUnixTimestamp();
-  ssi.slot = slot;
-  ssi.global = global;
-
   if (header.version < SAVE_STATE_MINIMUM_VERSION || header.version > SAVE_STATE_VERSION)
   {
     ssi.title = StringUtil::StdStringFromFormat(
@@ -2896,6 +2879,53 @@ CommonHostInterface::GetExtendedSaveStateInfo(const char* game_code, s32 slot)
     else
     {
       decltype(ssi.screenshot_data)().swap(ssi.screenshot_data);
+    }
+  }
+
+  return ssi;
+}
+
+std::optional<CommonHostInterface::ExtendedSaveStateInfo>
+CommonHostInterface::GetExtendedSaveStateInfo(const char* game_code, s32 slot)
+{
+  const bool global = (!game_code || game_code[0] == 0);
+  std::string path = global ? GetGlobalSaveStateFileName(slot) : GetGameSaveStateFileName(game_code, slot);
+
+  FILESYSTEM_STAT_DATA sd;
+  if (!FileSystem::StatFile(path.c_str(), &sd))
+    return std::nullopt;
+
+  std::unique_ptr<ByteStream> stream =
+    FileSystem::OpenFile(path.c_str(), BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_SEEKABLE);
+  if (!stream)
+    return std::nullopt;
+
+  std::optional<ExtendedSaveStateInfo> ssi = GetExtendedSaveStateInfo(stream.get());
+  if (!ssi)
+    return std::nullopt;
+
+  ssi->path = std::move(path);
+  ssi->timestamp = sd.ModificationTime.AsUnixTimestamp();
+  ssi->slot = slot;
+  ssi->global = global;
+
+  return ssi;
+}
+
+std::optional<CommonHostInterface::ExtendedSaveStateInfo> CommonHostInterface::GetUndoSaveStateInfo()
+{
+  std::optional<ExtendedSaveStateInfo> ssi;
+  if (m_undo_load_state)
+  {
+    m_undo_load_state->SeekAbsolute(0);
+    ssi = GetExtendedSaveStateInfo(m_undo_load_state.get());
+    m_undo_load_state->SeekAbsolute(0);
+
+    if (ssi)
+    {
+      ssi->timestamp = 0;
+      ssi->slot = 0;
+      ssi->global = false;
     }
   }
 
