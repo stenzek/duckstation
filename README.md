@@ -52,7 +52,7 @@ DuckStation features a fully-featured frontend built using Qt, as well as a full
 Other features include:
 
  - CPU Recompiler/JIT (x86-64, armv7/AArch32 and AArch64)
- - Hardware (D3D11, OpenGL, Vulkan) and software rendering
+ - Hardware (D3D11, D3D12, OpenGL, Vulkan) and software rendering
  - Upscaling, texture filtering, and true colour (24-bit) in hardware renderers
  - PGXP for geometry precision, texture correction, and depth buffer emulation
  - Adaptive downsampling filter
@@ -109,7 +109,7 @@ The Qt frontend includes an automatic update checker. Builds downloaded after 20
 
 ### Universal Windows Platform / Xbox One
 
-The DuckStation fullscreen UI is available for Universal Windows Platform and Xbox One.
+The DuckStation fullscreen UI is available for the Universal Windows Platform and Xbox One.
 
 To use on Xbox One:
 
@@ -127,9 +127,11 @@ To use on Xbox One:
 
 ### Linux
 
+DuckStation does support Linux, but no support will be provided by the developer due to the huge range and variance of distributions. AppImage builds are provided, but we are not obliged to provide any assistance or investigate any issues, i.e. use at your own risk.
+
 #### Binaries
 
-Prebuilt binaries for 64-bit Linux distros are available for download in the AppImage format. However, these binaries may be incompatible with older Linux distros (e.g. Ubuntu distros earlier than 18.04.4 LTS) due to older distros not providing newer versions of the C/C++ standard libraries required by the AppImage binaries.
+Prebuilt binaries for 64-bit Linux distros are available for download in the AppImage format. However, these binaries may be incompatible with older Linux distros (e.g. Ubuntu distros earlier than 20.04 LTS) due to older distros not providing newer versions of the C/C++ standard libraries required by the AppImage binaries. If you are using a packaged version of DuckStation from another source, please do not ask us for assistance and speak to your packager instead.
 
 **Linux users are encouraged to build from source when possible and optionally create their own AppImages for features such as desktop integration if desired.**
 
