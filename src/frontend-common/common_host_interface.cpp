@@ -936,7 +936,7 @@ void CommonHostInterface::UpdateSpeedLimiterState()
     Log_InfoPrintf("Audio input sample rate: %u hz", input_sample_rate);
 
     m_audio_stream->SetInputSampleRate(input_sample_rate);
-    m_audio_stream->SetWaitForBufferFill(!m_display_all_frames);
+    m_audio_stream->SetWaitForBufferFill(true);
 
     if (g_settings.audio_fast_forward_volume != g_settings.audio_output_volume)
       m_audio_stream->SetOutputVolume(GetAudioOutputVolume());
