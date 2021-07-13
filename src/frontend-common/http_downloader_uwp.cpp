@@ -56,10 +56,9 @@ bool HTTPDownloaderUWP::StartRequest(HTTPDownloader::Request* request)
 
     if (req->type == Request::Type::Post)
     {
-      const winrt::Windows::Storage::Streams::Buffer post_buf(static_cast<u32>(req->post_data.size()));
-      std::memcpy(post_buf.data(), req->post_data.data(), req->post_data.size());
-
-      const HttpBufferContent post_content(post_buf);
+      const HttpStringContent post_content(StringUtil::UTF8StringToWideString(req->post_data),
+                                           winrt::Windows::Storage::Streams::UnicodeEncoding::Utf8,
+                                           L"application/x-www-form-urlencoded");
       req->request_async = req->client.PostAsync(uri, post_content);
     }
     else
