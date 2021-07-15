@@ -181,7 +181,10 @@ bool DoState(StateWrapper& sw)
   }
 
   if (sw.IsReading())
+  {
     UpdateFastmemBase();
+    g_state.gte_completion_tick = 0;
+  }
 
   return !sw.HasError();
 }
@@ -1462,6 +1465,8 @@ restart_instruction:
         return;
       }
 
+      StallUntilGTEComplete();
+
       if (inst.cop.IsCommonInstruction())
       {
         // TODO: Combine with cop0.
@@ -1533,6 +1538,7 @@ restart_instruction:
       if (!ReadMemoryWord(addr, &value))
         return;
 
+      StallUntilGTEComplete();
       GTE::WriteRegister(ZeroExtend32(static_cast<u8>(inst.i.rt.GetValue())), value);
 
       if constexpr (pgxp_mode >= PGXPMode::Memory)
@@ -1548,6 +1554,8 @@ restart_instruction:
         RaiseException(Exception::CpU);
         return;
       }
+
+      StallUntilGTEComplete();
 
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       const u32 value = GTE::ReadRegister(ZeroExtend32(static_cast<u8>(inst.i.rt.GetValue())));
@@ -1596,7 +1604,10 @@ void DispatchInterrupt()
   // instruction. For some reason, if we don't do this, we end up with incorrectly sorted polygons and flickering..
   SafeReadInstruction(g_state.regs.pc, &g_state.next_instruction.bits);
   if (g_state.next_instruction.op == InstructionOp::cop2 && !g_state.next_instruction.cop.IsCommonInstruction())
+  {
+    StallUntilGTEComplete();
     GTE::ExecuteInstruction(g_state.next_instruction.bits);
+  }
 
   // Interrupt raising occurs before the start of the instruction.
   RaiseException(

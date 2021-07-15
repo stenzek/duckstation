@@ -1695,6 +1695,24 @@ void CodeGenerator::EmitCancelInterpreterLoadDelayForReg(Reg reg)
   m_emit->Bind(&skip_cancel);
 }
 
+void CodeGenerator::EmitStallUntilGTEComplete()
+{
+  static_assert(offsetof(State, pending_ticks) + sizeof(u32) == offsetof(State, gte_completion_tick));
+
+  m_emit->ldr(GetHostReg32(RARG1), a32::MemOperand(GetCPUPtrReg(), offsetof(State, pending_ticks)));
+  m_emit->ldr(GetHostReg32(RARG2), a32::MemOperand(GetCPUPtrReg(), offsetof(State, gte_completion_tick)));
+
+  if (m_delayed_cycles_add > 0)
+  {
+    m_emit->Add(GetHostReg32(RARG1), GetHostReg32(RARG1), static_cast<u32>(m_delayed_cycles_add));
+    m_delayed_cycles_add = 0;
+  }
+
+  m_emit->cmp(GetHostReg32(RARG2), GetHostReg32(RARG1));
+  m_emit->mov(a32::hi, GetHostReg32(RARG1), GetHostReg32(RARG2));
+  m_emit->str(GetHostReg32(RARG1), a32::MemOperand(GetCPUPtrReg(), offsetof(State, pending_ticks)));
+}
+
 void CodeGenerator::EmitBranch(const void* address, bool allow_scratch)
 {
   const s32 displacement = GetPCDisplacement(GetCurrentCodePointer(), address);

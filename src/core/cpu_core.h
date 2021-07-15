@@ -46,8 +46,9 @@ union CacheControl
 struct State
 {
   // ticks the CPU has executed
-  TickCount pending_ticks = 0;
   TickCount downcount = 0;
+  TickCount pending_ticks = 0;
+  TickCount gte_completion_tick = 0;
 
   Registers regs = {};
   Cop0Registers cop0_regs = {};
@@ -118,6 +119,8 @@ ALWAYS_INLINE TickCount GetPendingTicks()
 }
 ALWAYS_INLINE void ResetPendingTicks()
 {
+  g_state.gte_completion_tick =
+    (g_state.pending_ticks < g_state.gte_completion_tick) ? (g_state.gte_completion_tick - g_state.pending_ticks) : 0;
   g_state.pending_ticks = 0;
 }
 ALWAYS_INLINE void AddPendingTicks(TickCount ticks)

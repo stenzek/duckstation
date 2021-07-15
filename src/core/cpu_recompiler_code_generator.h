@@ -71,6 +71,7 @@ public:
   void EmitMoveNextInterpreterLoadDelay();
   void EmitCancelInterpreterLoadDelayForReg(Reg reg);
   void EmitICacheCheckAndUpdate();
+  void EmitStallUntilGTEComplete();
   void EmitLoadCPUStructField(HostReg host_reg, RegSize size, u32 offset);
   void EmitStoreCPUStructField(u32 offset, const Value& value);
   void EmitAddCPUStructField(u32 offset, const Value& value);
@@ -200,6 +201,8 @@ private:
   void InstructionEpilogue(const CodeBlockInstruction& cbi);
   void TruncateBlockAtCurrentInstruction();
   void AddPendingCycles(bool commit);
+  void AddGTETicks(TickCount ticks);
+  void StallUntilGTEComplete();
 
   Value CalculatePC(u32 offset = 0);
   Value GetCurrentInstructionPC(u32 offset = 0);
@@ -244,6 +247,7 @@ private:
   CodeEmitter* m_emit;
 
   TickCount m_delayed_cycles_add = 0;
+  TickCount m_gte_done_cycle = 0;
   TickCount m_pc_offset = 0;
   TickCount m_current_instruction_pc_offset = 0;
   TickCount m_next_pc_offset = 0;
@@ -254,6 +258,7 @@ private:
   bool m_current_instruction_was_branch_taken_dirty = false;
   bool m_load_delay_dirty = false;
   bool m_next_load_delay_dirty = false;
+  bool m_gte_busy_cycles_dirty = false;
 
   bool m_fastmem_load_base_in_register = false;
   bool m_fastmem_store_base_in_register = false;

@@ -964,6 +964,7 @@ void CodeGenerator::BlockPrologue()
   m_branch_was_taken_dirty = g_settings.cpu_recompiler_memory_exceptions;
   m_current_instruction_was_branch_taken_dirty = false;
   m_load_delay_dirty = true;
+  m_gte_busy_cycles_dirty = true;
 
   m_pc_offset = 0;
   m_current_instruction_pc_offset = 0;
@@ -1067,13 +1068,63 @@ void CodeGenerator::TruncateBlockAtCurrentInstruction()
 
 void CodeGenerator::AddPendingCycles(bool commit)
 {
-  if (m_delayed_cycles_add == 0)
+  if (m_delayed_cycles_add == 0 && m_gte_done_cycle <= m_delayed_cycles_add)
     return;
 
-  EmitAddCPUStructField(offsetof(State, pending_ticks), Value::FromConstantU32(m_delayed_cycles_add));
+  if (m_gte_done_cycle > m_delayed_cycles_add)
+  {
+    Value temp = m_register_cache.AllocateScratch(RegSize_32);
+    EmitLoadCPUStructField(temp.GetHostRegister(), RegSize_32, offsetof(State, pending_ticks));
+    if (m_delayed_cycles_add > 0)
+    {
+      EmitAdd(temp.GetHostRegister(), temp.GetHostRegister(), Value::FromConstantU32(m_delayed_cycles_add), false);
+      EmitStoreCPUStructField(offsetof(State, pending_ticks), temp);
+      EmitAdd(temp.GetHostRegister(), temp.GetHostRegister(),
+              Value::FromConstantU32(m_gte_done_cycle - m_delayed_cycles_add), false);
+      EmitStoreCPUStructField(offsetof(State, gte_completion_tick), temp);
+    }
+    else
+    {
+      EmitAdd(temp.GetHostRegister(), temp.GetHostRegister(), Value::FromConstantU32(m_gte_done_cycle), false);
+      EmitStoreCPUStructField(offsetof(State, gte_completion_tick), temp);
+    }
+  }
+  else
+  {
+    EmitAddCPUStructField(offsetof(State, pending_ticks), Value::FromConstantU32(m_delayed_cycles_add));
+  }
 
   if (commit)
+  {
+    m_gte_done_cycle = std::max<TickCount>(m_gte_done_cycle - m_delayed_cycles_add, 0);
     m_delayed_cycles_add = 0;
+  }
+}
+
+void CodeGenerator::AddGTETicks(TickCount ticks)
+{
+  m_gte_done_cycle = m_delayed_cycles_add + ticks;
+  Log_DebugPrintf("Adding %d GTE ticks", ticks);
+}
+
+void CodeGenerator::StallUntilGTEComplete()
+{
+  if (!m_gte_busy_cycles_dirty)
+  {
+    // simple case - in block scheduling
+    if (m_gte_done_cycle > m_delayed_cycles_add)
+    {
+      Log_DebugPrintf("Stalling for %d ticks from GTE", m_gte_done_cycle - m_delayed_cycles_add);
+      m_delayed_cycles_add += (m_gte_done_cycle - m_delayed_cycles_add);
+    }
+
+    return;
+  }
+
+  // switch to in block scheduling
+  EmitStallUntilGTEComplete();
+  m_gte_done_cycle = 0;
+  m_gte_busy_cycles_dirty = false;
 }
 
 Value CodeGenerator::CalculatePC(u32 offset /* = 0 */)
@@ -2740,6 +2791,7 @@ bool CodeGenerator::Compile_cop2(const CodeBlockInstruction& cbi)
 {
   if (cbi.instruction.op == InstructionOp::lwc2 || cbi.instruction.op == InstructionOp::swc2)
   {
+    StallUntilGTEComplete();
     InstructionPrologue(cbi, 1);
 
     const u32 reg = static_cast<u32>(cbi.instruction.i.rt.GetValue());
@@ -2786,6 +2838,7 @@ bool CodeGenerator::Compile_cop2(const CodeBlockInstruction& cbi)
         const u32 reg = static_cast<u32>(cbi.instruction.r.rd.GetValue()) +
                         ((cbi.instruction.cop.CommonOp() == CopCommonInstruction::cfcn) ? 32 : 0);
 
+        StallUntilGTEComplete();
         InstructionPrologue(cbi, 1);
 
         Value value = DoGTERegisterRead(reg);
@@ -2811,6 +2864,7 @@ bool CodeGenerator::Compile_cop2(const CodeBlockInstruction& cbi)
         const u32 reg = static_cast<u32>(cbi.instruction.r.rd.GetValue()) +
                         ((cbi.instruction.cop.CommonOp() == CopCommonInstruction::ctcn) ? 32 : 0);
 
+        StallUntilGTEComplete();
         InstructionPrologue(cbi, 1);
 
         Value value = m_register_cache.ReadGuestRegister(cbi.instruction.r.rt);
@@ -2833,11 +2887,16 @@ bool CodeGenerator::Compile_cop2(const CodeBlockInstruction& cbi)
   }
   else
   {
+    TickCount func_ticks;
+    GTE::InstructionImpl func = GTE::GetInstructionImpl(cbi.instruction.bits, &func_ticks);
+
     // forward everything to the GTE.
+    StallUntilGTEComplete();
     InstructionPrologue(cbi, 1);
 
     Value instruction_bits = Value::FromConstantU32(cbi.instruction.bits & GTE::Instruction::REQUIRED_BITS_MASK);
-    EmitFunctionCall(nullptr, GTE::GetInstructionImpl(cbi.instruction.bits), instruction_bits);
+    EmitFunctionCall(nullptr, func, instruction_bits);
+    AddGTETicks(func_ticks);
 
     InstructionEpilogue(cbi);
     return true;

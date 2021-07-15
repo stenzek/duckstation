@@ -20,6 +20,6 @@ u32* GetRegisterPtr(u32 index);
 void ExecuteInstruction(u32 inst_bits);
 
 using InstructionImpl = void (*)(Instruction);
-InstructionImpl GetInstructionImpl(u32 inst_bits);
+InstructionImpl GetInstructionImpl(u32 inst_bits, TickCount* ticks);
 
 } // namespace GTE

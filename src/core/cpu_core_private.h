@@ -111,4 +111,15 @@ bool WriteMemoryWord(VirtualMemoryAddress addr, u32 value);
 void* GetDirectReadMemoryPointer(VirtualMemoryAddress address, MemoryAccessSize size, TickCount* read_ticks);
 void* GetDirectWriteMemoryPointer(VirtualMemoryAddress address, MemoryAccessSize size);
 
+ALWAYS_INLINE void AddGTETicks(TickCount ticks)
+{
+  g_state.gte_completion_tick = g_state.pending_ticks + ticks + 1;
+}
+
+ALWAYS_INLINE void StallUntilGTEComplete()
+{
+  g_state.pending_ticks =
+    (g_state.gte_completion_tick > g_state.pending_ticks) ? g_state.gte_completion_tick : g_state.pending_ticks;
+}
+
 } // namespace CPU

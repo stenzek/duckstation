@@ -2656,6 +2656,22 @@ void CodeGenerator::EmitICacheCheckAndUpdate()
   m_register_cache.UninhibitAllocation();
 }
 
+void CodeGenerator::EmitStallUntilGTEComplete()
+{
+  m_emit->mov(GetHostReg32(RRETURN), m_emit->dword[GetCPUPtrReg() + offsetof(State, pending_ticks)]);
+  m_emit->mov(GetHostReg32(RARG1), m_emit->dword[GetCPUPtrReg() + offsetof(State, gte_completion_tick)]);
+
+  if (m_delayed_cycles_add > 0)
+  {
+    m_emit->add(GetHostReg32(RRETURN), static_cast<u32>(m_delayed_cycles_add));
+    m_delayed_cycles_add = 0;
+  }
+
+  m_emit->cmp(GetHostReg32(RARG1), GetHostReg32(RRETURN));
+  m_emit->cmova(GetHostReg32(RRETURN), GetHostReg32(RARG1));
+  m_emit->mov(m_emit->dword[GetCPUPtrReg() + offsetof(State, pending_ticks)], GetHostReg32(RRETURN));
+}
+
 void CodeGenerator::EmitBranch(const void* address, bool allow_scratch)
 {
   const s64 jump_distance =

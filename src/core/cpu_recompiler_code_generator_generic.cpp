@@ -207,4 +207,35 @@ void CodeGenerator::EmitICacheCheckAndUpdate()
 
 #endif
 
+#if 0 // Not Used
+
+void CodeGenerator::EmitStallUntilGTEComplete()
+{
+  Value pending_ticks = m_register_cache.AllocateScratch(RegSize_32);
+  Value gte_completion_tick = m_register_cache.AllocateScratch(RegSize_32);
+  EmitLoadCPUStructField(pending_ticks.GetHostRegister(), RegSize_32, offsetof(State, pending_ticks));
+  EmitLoadCPUStructField(gte_completion_tick.GetHostRegister(), RegSize_32, offsetof(State, gte_completion_tick));
+
+  // commit cycles here, should always be nonzero
+  if (m_delayed_cycles_add > 0)
+  {
+    EmitAdd(pending_ticks.GetHostRegister(), pending_ticks.GetHostRegister(),
+      Value::FromConstantU32(m_delayed_cycles_add), false);
+    m_delayed_cycles_add = 0;
+  }
+
+  LabelType gte_done;
+  EmitSub(gte_completion_tick.GetHostRegister(), gte_completion_tick.GetHostRegister(), pending_ticks, true);
+  EmitConditionalBranch(Condition::Below, false, &gte_done);
+
+  // add stall ticks
+  EmitAdd(pending_ticks.GetHostRegister(), pending_ticks.GetHostRegister(), gte_completion_tick, false);
+
+  // store new ticks
+  EmitBindLabel(&gte_done);
+  EmitStoreCPUStructField(offsetof(State, pending_ticks), pending_ticks);
+}
+
+#endif
+
 } // namespace CPU::Recompiler
