@@ -451,7 +451,7 @@ Tek kullanımlık giriş kodu (access token) oluşturulma tarihi: %2.</translati
     <message>
         <location filename="../advancedsettingswidget.cpp" line="201"/>
         <source>Create Save State Backups</source>
-        <translation>Durum Kaydı Yedek Dosyaları Oluştur</translation>
+        <translation>Durum Kaydı Yedekleri Oluştur</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="204"/>
@@ -4132,7 +4132,7 @@ This file can be several gigabytes, so be aware of SSD wear.</translation>
     <message>
         <location filename="../gamelistsettingswidget.ui" line="34"/>
         <source>Search Directories (will be scanned for games)</source>
-        <translation>Aranacak Dizinler (Oyunlar İçin Taranacak)</translation>
+        <translation>Arama Dizinleri (Oyunlar için taranacak)</translation>
     </message>
     <message>
         <location filename="../gamelistsettingswidget.ui" line="60"/>
@@ -4150,7 +4150,7 @@ This file can be several gigabytes, so be aware of SSD wear.</translation>
     <message>
         <location filename="../gamelistsettingswidget.ui" line="95"/>
         <source>Excluded Paths (will not be scanned)</source>
-        <translation>Gözardı Edilen Dizinler (Taranmayacak)</translation>
+        <translation>Dışlanacak Dizinler (Taranmayacak)</translation>
     </message>
     <message>
         <location filename="../gamelistsettingswidget.ui" line="175"/>
@@ -5364,7 +5364,7 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2399"/>
         <source>Undo Load State</source>
-        <translation>Durum Kaydı Geri Alma Kayıdı</translation>
+        <translation>Durum Kaydı Geri Al</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2447"/>
@@ -6267,7 +6267,7 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     <message>
         <location filename="../mainwindow.cpp" line="696"/>
         <source>Exclude From List</source>
-        <translation>Listeden Çıkar</translation>
+        <translation>Listeden Dışla</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="699"/>
@@ -7194,7 +7194,7 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="740"/>
         <source>Failed to save undo load state.</source>
-        <translation>Durum kaydı geri alma durum kaydı kaydedilemedi.</translation>
+        <translation>Durum kaydı geri alma kaydı kaydedilemedi.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1049"/>
