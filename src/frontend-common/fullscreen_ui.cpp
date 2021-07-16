@@ -2080,6 +2080,7 @@ void DrawSettingsWindow()
           fullscreen_mode_set = true;
         }
 
+#ifndef _UWP
         if (MenuButtonWithValue("Fullscreen Resolution", "Selects the resolution to use in fullscreen modes.",
                                 fullscreen_mode.empty() ? "Borderless Fullscreen" : fullscreen_mode.c_str()))
         {
@@ -2106,6 +2107,7 @@ void DrawSettingsWindow()
           };
           OpenChoiceDialog(ICON_FA_TV "  Fullscreen Resolution", false, std::move(options), std::move(callback));
         }
+#endif
 
         switch (s_settings_copy.gpu_renderer)
         {
