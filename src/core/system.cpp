@@ -2401,6 +2401,8 @@ void DoRewind()
   {
     s_rewind_load_counter--;
   }
+
+  s_next_frame_time += s_frame_period;
 }
 
 void SaveRunaheadState()
