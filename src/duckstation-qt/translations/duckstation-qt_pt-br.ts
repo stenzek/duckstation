@@ -4187,12 +4187,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../../core/settings.cpp" line="724"/>
         <source>Box (Downsample 3D/Smooth All)</source>
-        <translation>Misto (Reduz 3D / Suaviza tudo)</translation>
+        <translation>Misto (reduz 3D / suaviza tudo)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="725"/>
         <source>Adaptive (Preserve 3D/Smooth 2D)</source>
-        <translation>Adaptativo (Preserva o 3D / Suaviza 2D)</translation>
+        <translation>Adaptativo (preserva o 3D / suaviza 2D)</translation>
     </message>
 </context>
 <context>
