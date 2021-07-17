@@ -190,13 +190,22 @@ jobs:
       run: |
         nuget restore duckstation-uwp.sln
 
-    - name: Compile x64 release build
+    - name: Compile x64 release build without bundle
+      if: github.ref != 'refs/heads/master' && github.ref != 'refs/heads/dev'
+      shell: cmd
+      run: |
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
+        msbuild duckstation-uwp.sln /p:Configuration="ReleaseUWP" /p:Platform="x64" /t:Build
+
+    - name: Compile x64 release build with bundle
+      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
       shell: cmd
       run: |
         call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
         msbuild duckstation-uwp.sln /p:AppxBundle=Always /p:AppxPackageIsForStore=true /p:BuildAppxUploadPackageForUap=true /p:AppxBundlePlatforms="x64" /p:Configuration="ReleaseUWP" /p:Platform="x64" /t:Build
 
     - name: Grab AppX package
+      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
       shell: cmd
       run: |
         copy build\ReleaseUWP-x64\duckstation-uwp\duckstation-uwp_1.0.0.0_Bundle\duckstation-uwp_1.0.0.0_x64_ReleaseUWP.appx duckstation-uwp.appx
@@ -208,6 +217,7 @@ jobs:
         Get-PfxCertificate -FilePath .\src\duckstation-uwp\duckstation-uwp.pfx | Export-Certificate -FilePath duckstation-uwp.der -Type CERT
 
     - name: Upload AppX package
+      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
       uses: actions/upload-artifact@v1
       with:
         name: "windows-uwp"
