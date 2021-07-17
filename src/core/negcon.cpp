@@ -71,7 +71,7 @@ void NeGcon::SetAxisState(s32 axis_code, float value)
       (std::abs(value) < m_steering_deadzone) ?
         0.0f :
         std::copysign((std::abs(value) - m_steering_deadzone) / (1.0f - m_steering_deadzone), value);
-    const u8 u8_value = static_cast<u8>(std::clamp(((float_value + 1.0f) / 2.0f) * 255.0f, 0.0f, 255.0f));
+    const u8 u8_value = static_cast<u8>(std::clamp(std::round(((float_value + 1.0f) / 2.0f) * 255.0f), 0.0f, 255.0f));
 
     SetAxisState(static_cast<Axis>(axis_code), u8_value);
 
