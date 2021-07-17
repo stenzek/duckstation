@@ -60,7 +60,7 @@ Other features include:
  - "Fast boot" for skipping BIOS splash/intro
  - Save state support
  - Windows, Linux, **highly experimental** macOS support
- - Supports bin/cue images, raw bin/img files, and MAME CHD formats.
+ - Supports bin/cue images, raw bin/img files, MAME CHD, single-track ECM, MDS/MDF, and unencrypted PBP formats.
  - Direct booting of homebrew executables
  - Direct loading of Portable Sound Format (psf) files
  - Digital and analog controllers for input (rumble is forwarded to host)
@@ -127,11 +127,9 @@ To use on Xbox One:
 
 ### Linux
 
-DuckStation does support Linux, but no support will be provided by the developer due to the huge range and variance of distributions. AppImage builds are provided, but we are not obliged to provide any assistance or investigate any issues, i.e. use at your own risk.
+DuckStation does support Linux, but no support will be provided by the developer due to the huge range and variance of distributions. AppImage builds are provided, but we are not obliged to provide any assistance or investigate any issues, i.e. use at your own risk. However, these binaries may be incompatible with older Linux distros (e.g. Ubuntu distros earlier than 20.04 LTS) due to older distros not providing newer versions of the C/C++ standard libraries required by the AppImage binaries. If you are using a packaged version of DuckStation from another source, please do not ask us for assistance and speak to your packager instead.
 
 #### Binaries
-
-Prebuilt binaries for 64-bit Linux distros are available for download in the AppImage format. However, these binaries may be incompatible with older Linux distros (e.g. Ubuntu distros earlier than 20.04 LTS) due to older distros not providing newer versions of the C/C++ standard libraries required by the AppImage binaries. If you are using a packaged version of DuckStation from another source, please do not ask us for assistance and speak to your packager instead.
 
 **Linux users are encouraged to build from source when possible and optionally create their own AppImages for features such as desktop integration if desired.**
 
