@@ -2,9 +2,11 @@
 #include <QtCore/QThread>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QMainWindow>
+#include <QtWidgets/QStackedWidget>
 #include <memory>
 
 #include "core/types.h"
+#include "qtdisplaywidget.h"
 #include "settingsdialog.h"
 #include "ui_mainwindow.h"
 
@@ -13,7 +15,6 @@ class QThread;
 
 class GameListWidget;
 class QtHostInterface;
-class QtDisplayWidget;
 class AutoUpdaterDialog;
 class MemoryCardEditorDialog;
 class CheatManagerDialog;
@@ -119,6 +120,11 @@ protected:
   void dropEvent(QDropEvent* event) override;
 
 private:
+  ALWAYS_INLINE QWidget* getDisplayContainer() const
+  {
+    return (m_display_container ? static_cast<QWidget*>(m_display_container) : static_cast<QWidget*>(m_display_widget));
+  }
+
   void setupAdditionalUi();
   void connectSignals();
   void addThemeToMenu(const QString& name, const QString& key);
@@ -150,6 +156,7 @@ private:
 
   HostDisplay* m_host_display = nullptr;
   QtDisplayWidget* m_display_widget = nullptr;
+  QtDisplayContainer* m_display_container = nullptr;
 
   QLabel* m_status_speed_widget = nullptr;
   QLabel* m_status_fps_widget = nullptr;

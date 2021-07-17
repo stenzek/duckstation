@@ -233,3 +233,78 @@ bool QtDisplayWidget::event(QEvent* event)
       return QWidget::event(event);
   }
 }
+
+QtDisplayContainer::QtDisplayContainer() : QStackedWidget(nullptr) {}
+
+QtDisplayContainer::~QtDisplayContainer() = default;
+
+bool QtDisplayContainer::IsNeeded(bool fullscreen, bool render_to_main)
+{
+#if defined(_WIN32) || defined(__APPLE__)
+  return false;
+#else
+  if (fullscreen || render_to_main)
+    return false;
+
+  // We only need this on Wayland because of client-side decorations...
+  const QString platform_name = QGuiApplication::platformName();
+  return (platform_name == QStringLiteral("wayland"));
+#endif
+}
+
+void QtDisplayContainer::setDisplayWidget(QtDisplayWidget* widget)
+{
+  Assert(!m_display_widget);
+  m_display_widget = widget;
+  addWidget(widget);
+}
+
+QtDisplayWidget* QtDisplayContainer::removeDisplayWidget()
+{
+  QtDisplayWidget* widget = m_display_widget;
+  Assert(widget);
+  m_display_widget = nullptr;
+  removeWidget(widget);
+  return widget;
+}
+
+bool QtDisplayContainer::event(QEvent* event)
+{
+  const bool res = QStackedWidget::event(event);
+  if (!m_display_widget)
+    return res;
+
+  switch (event->type())
+  {
+    case QEvent::Close:
+    {
+      emit m_display_widget->windowClosedEvent();
+    }
+    break;
+
+    case QEvent::WindowStateChange:
+    {
+      if (static_cast<QWindowStateChangeEvent*>(event)->oldState() & Qt::WindowMinimized)
+        emit m_display_widget->windowRestoredEvent();
+    }
+    break;
+
+    case QEvent::FocusIn:
+    {
+      emit m_display_widget->windowFocusEvent();
+    }
+    break;
+
+    case QEvent::ActivationChange:
+    {
+      if (isActiveWindow())
+        emit m_display_widget->windowFocusEvent();
+    }
+    break;
+
+    default:
+      break;
+  }
+
+  return res;
+}

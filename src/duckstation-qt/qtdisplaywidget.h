@@ -1,6 +1,7 @@
 #pragma once
 #include "common/types.h"
 #include "common/window_info.h"
+#include <QtWidgets/QStackedWidget>
 #include <QtWidgets/QWidget>
 #include <optional>
 
@@ -39,4 +40,24 @@ private:
   QPoint m_relative_mouse_start_position{};
   QPoint m_relative_mouse_last_position{};
   bool m_relative_mouse_enabled = false;
+};
+
+class QtDisplayContainer final : public QStackedWidget
+{
+  Q_OBJECT
+
+public:
+  QtDisplayContainer();
+  ~QtDisplayContainer();
+
+  static bool IsNeeded(bool fullscreen, bool render_to_main);
+
+  void setDisplayWidget(QtDisplayWidget* widget);
+  QtDisplayWidget* removeDisplayWidget();
+
+protected:
+  bool event(QEvent* event) override;
+
+private:
+  QtDisplayWidget* m_display_widget = nullptr;
 };
