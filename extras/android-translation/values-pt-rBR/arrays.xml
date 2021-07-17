@@ -146,6 +146,8 @@
         <item>Compartilhada entre jogos</item>
         <item>Separado por jogo (Cód. do jogo)</item>
         <item>Separado Por jogo (Título do jogo)</item>
+        <item>Separate Card Per Game (File Title)</item>
+        <item>Non-Persistent (Do Not Save)</item>
     </string-array>
 	<string-array name="settings_memory_card_mode_values">
         <item>Nenhum</item>

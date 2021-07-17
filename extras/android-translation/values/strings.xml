@@ -92,7 +92,7 @@
     <string name="settings_force_ntsc_timings">Force NTSC Timings (60hz-on-PAL)</string>
     <string name="settings_summary_force_ntsc_timings">Uses NTSC frame timings when the console is in PAL mode, forcing PAL games to run at 60hz.</string>
     <string name="settings_widescreen_hack">Widescreen Hack</string>
-    <string name="settings_summary_widescreen_hack">Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to 16:9 in 3D games. Not be compatible with all games.</string>
+    <string name="settings_summary_widescreen_hack">Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to 16:9 in 3D games. May not be compatible with all games.</string>
     <string name="settings_force_4_3_for_24bit">Force 4:3 For 24-Bit Display</string>
     <string name="settings_summary_force_4_3_for_24bit">Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs.</string>
     <string name="settings_chroma_smoothing_24bit">Chroma Smoothing For 24-Bit Display</string>

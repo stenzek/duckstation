@@ -75,6 +75,8 @@
 		<item>Общая для всех игр</item>
 		<item>Своя карта для каждой игры (по коду)</item>
 		<item>Своя карта для каждой игры (по названию)</item>
+		<item>Separate Card Per Game (File Title)</item>
+		<item>Non-Persistent (Do Not Save)</item>
 	</string-array>
 	<string-array name="emulation_touchscreen_menu">
 		<item>Сменить вид</item>
