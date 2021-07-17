@@ -160,6 +160,8 @@ QtDisplayWidget* MainWindow::createDisplay(QThread* worker_thread, bool fullscre
   // we need the surface visible.. this might be able to be replaced with something else
   QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 
+  m_host_interface->connectDisplaySignals(m_display_widget);
+
   std::optional<WindowInfo> wi = m_display_widget->getWindowInfo();
   if (!wi.has_value())
   {
@@ -261,6 +263,8 @@ QtDisplayWidget* MainWindow::updateDisplay(QThread* worker_thread, bool fullscre
 
   // we need the surface visible.. this might be able to be replaced with something else
   QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+
+  m_host_interface->connectDisplaySignals(m_display_widget);
 
   std::optional<WindowInfo> wi = m_display_widget->getWindowInfo();
   if (!wi.has_value())

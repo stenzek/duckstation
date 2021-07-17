@@ -90,6 +90,7 @@ public:
   ALWAYS_INLINE MainWindow* getMainWindow() const { return m_main_window; }
   void setMainWindow(MainWindow* window);
   HostDisplay* createHostDisplay();
+  void connectDisplaySignals(QtDisplayWidget* widget);
 
   void populateLoadStateMenu(const char* game_code, QMenu* menu);
   void populateSaveStateMenu(const char* game_code, QMenu* menu);
@@ -269,7 +270,6 @@ private:
   void shutdownOnThread();
   void installTranslator();
   void renderDisplay();
-  void connectDisplaySignals(QtDisplayWidget* widget);
   void checkRenderToMainState();
   void updateDisplayState();
   void queueSettingsSave();

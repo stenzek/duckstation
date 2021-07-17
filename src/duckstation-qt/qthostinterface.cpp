@@ -578,7 +578,6 @@ bool QtHostInterface::AcquireHostDisplay()
     return false;
   }
 
-  connectDisplaySignals(display_widget);
   m_is_exclusive_fullscreen = m_display->IsFullscreen();
   return true;
 }
@@ -641,7 +640,6 @@ void QtHostInterface::updateDisplayState()
   if (!display_widget || !m_display->MakeRenderContextCurrent())
     Panic("Failed to make device context current after updating");
 
-  connectDisplaySignals(display_widget);
   m_is_exclusive_fullscreen = m_display->IsFullscreen();
 
   OnHostDisplayResized();
