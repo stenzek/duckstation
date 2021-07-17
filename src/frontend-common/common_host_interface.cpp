@@ -3600,9 +3600,13 @@ bool CommonHostInterface::LoadCheatList(const char* filename)
     return false;
   }
 
-  AddOSDMessage(TranslateStdString("OSDMessage", "Loaded %n cheats from list.", "", cl->GetCodeCount()) +
-                  TranslateStdString("OSDMessage", " %n cheats are enabled.", "", cl->GetEnabledCodeCount()),
-                10.0f);
+  if (cl->GetEnabledCodeCount() > 0)
+  {
+    AddOSDMessage(TranslateStdString("OSDMessage", "%n cheats are enabled. This may result in instability.", "",
+                                     cl->GetEnabledCodeCount()),
+                  30.0f);
+  }
+
   System::SetCheatList(std::move(cl));
   return true;
 }
@@ -3628,7 +3632,7 @@ bool CommonHostInterface::LoadCheatListFromDatabase()
   if (!cl->LoadFromPackage(System::GetRunningCode()))
     return false;
 
-  AddOSDMessage(TranslateStdString("OSDMessage", "Loaded %n cheats from database.", "", cl->GetCodeCount()), 10.0f);
+  Log_InfoPrintf("Loaded %u cheats from database.", cl->GetCodeCount());
   System::SetCheatList(std::move(cl));
   return true;
 }

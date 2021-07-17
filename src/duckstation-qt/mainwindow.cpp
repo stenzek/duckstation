@@ -1605,7 +1605,35 @@ void MainWindow::onToolsMemoryCardEditorTriggered()
 void MainWindow::onToolsCheatManagerTriggered()
 {
   if (!m_cheat_manager_dialog)
+  {
+    if (m_host_interface->GetBoolSettingValue("UI", "DisplayCheatWarning", true))
+    {
+      QCheckBox* cb = new QCheckBox(tr("Do not show again"));
+      QMessageBox mb(this);
+      mb.setWindowTitle(tr("Cheat Manager"));
+      mb.setText(
+        tr("Using cheats can have unpredictable effects on games, causing crashes, graphical glitches, and corrupted "
+           "saves. By using the cheat manager, you agree that it is an unsupported configuration, and we will not "
+           "provide you with any assistance when games break.\n\nCheats persist through save states even after being "
+           "disabled, please remember to reset/reboot the game after turning off any codes.\n\nAre you sure you want "
+           "to continue?"));
+      mb.setIcon(QMessageBox::Warning);
+      mb.addButton(QMessageBox::Yes);
+      mb.addButton(QMessageBox::No);
+      mb.setDefaultButton(QMessageBox::No);
+      mb.setCheckBox(cb);
+
+      connect(cb, &QCheckBox::stateChanged, [](int state) {
+        QtHostInterface::GetInstance()->SetBoolSettingValue("UI", "DisplayCheatWarning",
+                                                            (state != Qt::CheckState::Checked));
+      });
+
+      if (mb.exec() == QMessageBox::No)
+        return;
+    }
+
     m_cheat_manager_dialog = new CheatManagerDialog(this);
+  }
 
   m_cheat_manager_dialog->setModal(false);
   m_cheat_manager_dialog->show();
