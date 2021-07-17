@@ -9,8 +9,8 @@ Log_SetChannel(GPU_SW_Backend);
 
 GPU_SW_Backend::GPU_SW_Backend() : GPUBackend()
 {
-  std::memset(&m_vram[0], 0, sizeof(u16) * VRAM_WIDTH * VRAM_HEIGHT);
-  m_vram_ptr = &m_vram[0];
+  m_vram.fill(0);
+  m_vram_ptr = m_vram.data();
 }
 
 GPU_SW_Backend::~GPU_SW_Backend() = default;
@@ -25,23 +25,16 @@ void GPU_SW_Backend::Reset(bool clear_vram)
   GPUBackend::Reset(clear_vram);
 
   if (clear_vram)
-    std::memset(&m_vram[0], 0, sizeof(u16) * VRAM_WIDTH * VRAM_HEIGHT);
+    m_vram.fill(0);
 }
 
 void GPU_SW_Backend::DrawPolygon(const GPUBackendDrawPolygonCommand* cmd)
 {
   const GPURenderCommand rc{cmd->rc.bits};
   const bool dithering_enable = rc.IsDitheringEnabled() && cmd->draw_mode.dither_enable;
-  const GPUTransparencyMode transparency_mode =
-    rc.transparency_enable ? cmd->draw_mode.transparency_mode : GPUTransparencyMode::Disabled;
-  const GPUTextureMode texture_mode =
-    rc.texture_enable ? (cmd->draw_mode.texture_mode |
-                         (rc.raw_texture_enable ? GPUTextureMode::RawTextureBit : static_cast<GPUTextureMode>(0))) :
-                        GPUTextureMode::Disabled;
 
-  const DrawTriangleFunction DrawFunction =
-    s_triangle_draw_functions[BoolToUInt8(rc.shading_enable)][static_cast<u8>(texture_mode)][static_cast<u8>(
-      transparency_mode)][BoolToUInt8(dithering_enable)][BoolToUInt8(cmd->params.check_mask_before_draw)];
+  const DrawTriangleFunction DrawFunction = GetDrawTriangleFunction(
+    rc.shading_enable, rc.texture_enable, rc.raw_texture_enable, rc.transparency_enable, dithering_enable);
 
   (this->*DrawFunction)(cmd, &cmd->vertices[0], &cmd->vertices[1], &cmd->vertices[2]);
   if (rc.quad_polygon)
@@ -51,28 +44,17 @@ void GPU_SW_Backend::DrawPolygon(const GPUBackendDrawPolygonCommand* cmd)
 void GPU_SW_Backend::DrawRectangle(const GPUBackendDrawRectangleCommand* cmd)
 {
   const GPURenderCommand rc{cmd->rc.bits};
-  const GPUTransparencyMode transparency_mode =
-    rc.transparency_enable ? cmd->draw_mode.transparency_mode : GPUTransparencyMode::Disabled;
-  const GPUTextureMode texture_mode =
-    rc.texture_enable ? (cmd->draw_mode.texture_mode |
-                         (rc.raw_texture_enable ? GPUTextureMode::RawTextureBit : static_cast<GPUTextureMode>(0))) :
-                        GPUTextureMode::Disabled;
 
   const DrawRectangleFunction DrawFunction =
-    s_rectangle_draw_functions[static_cast<u8>(texture_mode)][static_cast<u8>(transparency_mode)]
-                              [BoolToUInt8(cmd->params.check_mask_before_draw)];
+    GetDrawRectangleFunction(rc.texture_enable, rc.raw_texture_enable, rc.transparency_enable);
 
   (this->*DrawFunction)(cmd);
 }
 
 void GPU_SW_Backend::DrawLine(const GPUBackendDrawLineCommand* cmd)
 {
-  const GPUTransparencyMode transparency_mode =
-    cmd->rc.transparency_enable ? cmd->draw_mode.transparency_mode : GPUTransparencyMode::Disabled;
-
   const DrawLineFunction DrawFunction =
-    s_line_draw_functions[BoolToUInt8(cmd->rc.shading_enable)][static_cast<u8>(transparency_mode)]
-                         [BoolToUInt8(cmd->IsDitheringEnabled())][BoolToUInt8(cmd->params.check_mask_before_draw)];
+    GetDrawLineFunction(cmd->rc.shading_enable, cmd->rc.transparency_enable, cmd->IsDitheringEnabled());
 
   for (u16 i = 1; i < cmd->num_vertices; i++)
     (this->*DrawFunction)(cmd, &cmd->vertices[i - 1], &cmd->vertices[i]);
@@ -97,19 +79,19 @@ constexpr GPU_SW_Backend::DitherLUT GPU_SW_Backend::ComputeDitherLUT()
 
 static constexpr GPU_SW_Backend::DitherLUT s_dither_lut = GPU_SW_Backend::ComputeDitherLUT();
 
-template<GPUTextureMode texture_mode, GPUTransparencyMode transparency_mode, bool dithering_enable, bool check_mask>
+template<bool texture_enable, bool raw_texture_enable, bool transparency_enable, bool dithering_enable>
 void ALWAYS_INLINE_RELEASE GPU_SW_Backend::ShadePixel(const GPUBackendDrawCommand* cmd, u32 x, u32 y, u8 color_r,
                                                       u8 color_g, u8 color_b, u8 texcoord_x, u8 texcoord_y)
 {
   VRAMPixel color;
-  if constexpr (texture_mode != GPUTextureMode::Disabled)
+  if constexpr (texture_enable)
   {
     // Apply texture window
     texcoord_x = (texcoord_x & cmd->window.and_x) | cmd->window.or_x;
     texcoord_y = (texcoord_y & cmd->window.and_y) | cmd->window.or_y;
 
     VRAMPixel texture_color;
-    switch (texture_mode & ~GPUTextureMode::RawTextureBit)
+    switch (cmd->draw_mode.texture_mode)
     {
       case GPUTextureMode::Palette4Bit:
       {
@@ -145,7 +127,7 @@ void ALWAYS_INLINE_RELEASE GPU_SW_Backend::ShadePixel(const GPUBackendDrawComman
     if (texture_color.bits == 0)
       return;
 
-    if constexpr ((texture_mode & GPUTextureMode::RawTextureBit) == GPUTextureMode::RawTextureBit)
+    if constexpr (raw_texture_enable)
     {
       color.bits = texture_color.bits;
     }
@@ -168,19 +150,13 @@ void ALWAYS_INLINE_RELEASE GPU_SW_Backend::ShadePixel(const GPUBackendDrawComman
     // Non-textured transparent polygons don't set bit 15, but are treated as transparent.
     color.bits = (ZeroExtend16(s_dither_lut[dither_y][dither_x][color_r]) << 0) |
                  (ZeroExtend16(s_dither_lut[dither_y][dither_x][color_g]) << 5) |
-                 (ZeroExtend16(s_dither_lut[dither_y][dither_x][color_b]) << 10) |
-                 ((transparency_mode != GPUTransparencyMode::Disabled) ? 0x8000u : 0);
+                 (ZeroExtend16(s_dither_lut[dither_y][dither_x][color_b]) << 10) | (transparency_enable ? 0x8000u : 0);
   }
 
-  VRAMPixel bg_color;
-  if constexpr (transparency_mode != GPUTransparencyMode::Disabled || check_mask)
-    bg_color.bits = GetPixel(static_cast<u32>(x), static_cast<u32>(y));
-  else
-    bg_color.bits = 0;
-
-  if constexpr (transparency_mode != GPUTransparencyMode::Disabled)
+  const VRAMPixel bg_color{GetPixel(static_cast<u32>(x), static_cast<u32>(y))};
+  if constexpr (transparency_enable)
   {
-    if (color.bits & 0x8000u || texture_mode == GPUTextureMode::Disabled)
+    if (color.bits & 0x8000u || !texture_enable)
     {
       // Based on blargg's efficient 15bpp pixel math.
       u32 bg_bits = ZeroExtend32(bg_color.bits);
@@ -231,22 +207,19 @@ void ALWAYS_INLINE_RELEASE GPU_SW_Backend::ShadePixel(const GPUBackendDrawComman
       }
 
       // See above.
-      if constexpr (texture_mode == GPUTextureMode::Disabled)
+      if constexpr (!texture_enable)
         color.bits &= ~0x8000u;
     }
   }
 
-  if constexpr (check_mask)
-  {
-    const u16 mask_and = cmd->params.GetMaskAND();
-    if ((bg_color.bits & mask_and) != 0)
-      return;
-  }
+  const u16 mask_and = cmd->params.GetMaskAND();
+  if ((bg_color.bits & mask_and) != 0)
+    return;
 
   SetPixel(static_cast<u32>(x), static_cast<u32>(y), color.bits | cmd->params.GetMaskOR());
 }
 
-template<GPUTextureMode texture_mode, GPUTransparencyMode transparency, bool check_mask>
+template<bool texture_enable, bool raw_texture_enable, bool transparency_enable>
 void GPU_SW_Backend::DrawRectangle(const GPUBackendDrawRectangleCommand* cmd)
 {
   const s32 origin_x = cmd->x;
@@ -273,8 +246,8 @@ void GPU_SW_Backend::DrawRectangle(const GPUBackendDrawRectangleCommand* cmd)
 
       const u8 texcoord_x = Truncate8(ZeroExtend32(origin_texcoord_x) + offset_x);
 
-      ShadePixel<texture_mode, transparency, false, check_mask>(cmd, static_cast<u32>(x), static_cast<u32>(y), r, g, b,
-                                                                texcoord_x, texcoord_y);
+      ShadePixel<texture_enable, raw_texture_enable, transparency_enable, false>(
+        cmd, static_cast<u32>(x), static_cast<u32>(y), r, g, b, texcoord_x, texcoord_y);
     }
   }
 }
@@ -385,8 +358,8 @@ void ALWAYS_INLINE_RELEASE GPU_SW_Backend::AddIDeltas_DY(i_group& ig, const i_de
   }
 }
 
-template<bool shading_enable, GPUTextureMode texture_mode, GPUTransparencyMode transparency_mode, bool dithering_enable,
-         bool check_mask>
+template<bool shading_enable, bool texture_enable, bool raw_texture_enable, bool transparency_enable,
+         bool dithering_enable>
 void GPU_SW_Backend::DrawSpan(const GPUBackendDrawPolygonCommand* cmd, s32 y, s32 x_start, s32 x_bound, i_group ig,
                               const i_deltas& idl)
 {
@@ -411,7 +384,6 @@ void GPU_SW_Backend::DrawSpan(const GPUBackendDrawPolygonCommand* cmd, s32 y, s3
   if (w <= 0)
     return;
 
-  constexpr bool texture_enable = (texture_mode != GPUTextureMode::Disabled);
   AddIDeltas_DX<shading_enable, texture_enable>(ig, idl, x_ig_adjust);
   AddIDeltas_DY<shading_enable, texture_enable>(ig, idl, y);
 
@@ -423,7 +395,7 @@ void GPU_SW_Backend::DrawSpan(const GPUBackendDrawPolygonCommand* cmd, s32 y, s3
     const u32 u = ig.u >> (COORD_FBS + COORD_POST_PADDING);
     const u32 v = ig.v >> (COORD_FBS + COORD_POST_PADDING);
 
-    ShadePixel<texture_mode, transparency_mode, dithering_enable, check_mask>(
+    ShadePixel<texture_enable, raw_texture_enable, transparency_enable, dithering_enable>(
       cmd, static_cast<u32>(x), static_cast<u32>(y), Truncate8(r), Truncate8(g), Truncate8(b), Truncate8(u),
       Truncate8(v));
 
@@ -432,15 +404,13 @@ void GPU_SW_Backend::DrawSpan(const GPUBackendDrawPolygonCommand* cmd, s32 y, s3
   } while (--w > 0);
 }
 
-template<bool shading_enable, GPUTextureMode texture_mode, GPUTransparencyMode transparency_mode, bool dithering_enable,
-         bool check_mask>
+template<bool shading_enable, bool texture_enable, bool raw_texture_enable, bool transparency_enable,
+         bool dithering_enable>
 void GPU_SW_Backend::DrawTriangle(const GPUBackendDrawPolygonCommand* cmd,
                                   const GPUBackendDrawPolygonCommand::Vertex* v0,
                                   const GPUBackendDrawPolygonCommand::Vertex* v1,
                                   const GPUBackendDrawPolygonCommand::Vertex* v2)
 {
-  constexpr bool texture_enable = (texture_mode != GPUTextureMode::Disabled);
-
   u32 core_vertex;
   {
     u32 cvtemp = 0;
@@ -600,7 +570,7 @@ void GPU_SW_Backend::DrawTriangle(const GPUBackendDrawPolygonCommand* cmd,
         if (y > static_cast<s32>(m_drawing_area.bottom))
           continue;
 
-        DrawSpan<shading_enable, texture_mode, transparency_mode, dithering_enable, check_mask>(
+        DrawSpan<shading_enable, texture_enable, raw_texture_enable, transparency_enable, dithering_enable>(
           cmd, yi, GetPolyXFP_Int(lc), GetPolyXFP_Int(rc), ig, idl);
       }
     }
@@ -616,7 +586,7 @@ void GPU_SW_Backend::DrawTriangle(const GPUBackendDrawPolygonCommand* cmd,
         if (y >= static_cast<s32>(m_drawing_area.top))
         {
 
-          DrawSpan<shading_enable, texture_mode, transparency_mode, dithering_enable, check_mask>(
+          DrawSpan<shading_enable, texture_enable, raw_texture_enable, transparency_enable, dithering_enable>(
             cmd, yi, GetPolyXFP_Int(lc), GetPolyXFP_Int(rc), ig, idl);
         }
 
@@ -661,7 +631,7 @@ static ALWAYS_INLINE_RELEASE s64 LineDivide(s64 delta, s32 dk)
   return (delta / dk);
 }
 
-template<bool shading_enable, GPUTransparencyMode transparency_mode, bool dithering_enable, bool check_mask>
+template<bool shading_enable, bool transparency_enable, bool dithering_enable>
 void GPU_SW_Backend::DrawLine(const GPUBackendDrawLineCommand* cmd, const GPUBackendDrawLineCommand::Vertex* p0,
                               const GPUBackendDrawLineCommand::Vertex* p1)
 {
@@ -730,8 +700,8 @@ void GPU_SW_Backend::DrawLine(const GPUBackendDrawLineCommand* cmd, const GPUBac
       const u8 g = shading_enable ? static_cast<u8>(cur_point.g >> Line_RGB_FractBits) : p0->g;
       const u8 b = shading_enable ? static_cast<u8>(cur_point.b >> Line_RGB_FractBits) : p0->b;
 
-      ShadePixel<GPUTextureMode::Disabled, transparency_mode, dithering_enable, check_mask>(
-        cmd, static_cast<u32>(x), static_cast<u32>(y), r, g, b, 0, 0);
+      ShadePixel<false, false, transparency_enable, dithering_enable>(cmd, static_cast<u32>(x), static_cast<u32>(y), r,
+                                                                      g, b, 0, 0);
     }
 
     cur_point.x += step.dx_dk;
@@ -904,1164 +874,69 @@ void GPU_SW_Backend::FlushRender() {}
 
 void GPU_SW_Backend::DrawingAreaChanged() {}
 
-const GPU_SW_Backend::DrawRectangleFunction GPU_SW_Backend::s_rectangle_draw_functions[9][5][2] = {
-  {{&GPU_SW_Backend::DrawRectangle<GPUTextureMode::Palette4Bit, GPUTransparencyMode::HalfBackgroundPlusHalfForeground,
-                                   false>,
-    &GPU_SW_Backend::DrawRectangle<GPUTextureMode::Palette4Bit, GPUTransparencyMode::HalfBackgroundPlusHalfForeground,
-                                   true>},
-   {&GPU_SW_Backend::DrawRectangle<GPUTextureMode::Palette4Bit, GPUTransparencyMode::BackgroundPlusForeground, false>,
-    &GPU_SW_Backend::DrawRectangle<GPUTextureMode::Palette4Bit, GPUTransparencyMode::BackgroundPlusForeground, true>},
-   {&GPU_SW_Backend::DrawRectangle<GPUTextureMode::Palette4Bit, GPUTransparencyMode::BackgroundMinusForeground, false>,
-    &GPU_SW_Backend::DrawRectangle<GPUTextureMode::Palette4Bit, GPUTransparencyMode::BackgroundMinusForeground, true>},
-   {&GPU_SW_Backend::DrawRectangle<GPUTextureMode::Palette4Bit, GPUTransparencyMode::BackgroundPlusQuarterForeground,
-                                   false>,
-    &GPU_SW_Backend::DrawRectangle<GPUTextureMode::Palette4Bit, GPUTransparencyMode::BackgroundPlusQuarterForeground,
-                                   true>},
-   {&GPU_SW_Backend::DrawRectangle<GPUTextureMode::Palette4Bit, GPUTransparencyMode::Disabled, false>,
-    &GPU_SW_Backend::DrawRectangle<GPUTextureMode::Palette4Bit, GPUTransparencyMode::Disabled, true>}},
-  {{&GPU_SW_Backend::DrawRectangle<GPUTextureMode::Palette8Bit, GPUTransparencyMode::HalfBackgroundPlusHalfForeground,
-                                   false>,
-    &GPU_SW_Backend::DrawRectangle<GPUTextureMode::Palette8Bit, GPUTransparencyMode::HalfBackgroundPlusHalfForeground,
-                                   true>},
-   {&GPU_SW_Backend::DrawRectangle<GPUTextureMode::Palette8Bit, GPUTransparencyMode::BackgroundPlusForeground, false>,
-    &GPU_SW_Backend::DrawRectangle<GPUTextureMode::Palette8Bit, GPUTransparencyMode::BackgroundPlusForeground, true>},
-   {&GPU_SW_Backend::DrawRectangle<GPUTextureMode::Palette8Bit, GPUTransparencyMode::BackgroundMinusForeground, false>,
-    &GPU_SW_Backend::DrawRectangle<GPUTextureMode::Palette8Bit, GPUTransparencyMode::BackgroundMinusForeground, true>},
-   {&GPU_SW_Backend::DrawRectangle<GPUTextureMode::Palette8Bit, GPUTransparencyMode::BackgroundPlusQuarterForeground,
-                                   false>,
-    &GPU_SW_Backend::DrawRectangle<GPUTextureMode::Palette8Bit, GPUTransparencyMode::BackgroundPlusQuarterForeground,
-                                   true>},
-   {&GPU_SW_Backend::DrawRectangle<GPUTextureMode::Palette8Bit, GPUTransparencyMode::Disabled, false>,
-    &GPU_SW_Backend::DrawRectangle<GPUTextureMode::Palette8Bit, GPUTransparencyMode::Disabled, true>}},
-  {{&GPU_SW_Backend::DrawRectangle<GPUTextureMode::Direct16Bit, GPUTransparencyMode::HalfBackgroundPlusHalfForeground,
-                                   false>,
-    &GPU_SW_Backend::DrawRectangle<GPUTextureMode::Direct16Bit, GPUTransparencyMode::HalfBackgroundPlusHalfForeground,
-                                   true>},
-   {&GPU_SW_Backend::DrawRectangle<GPUTextureMode::Direct16Bit, GPUTransparencyMode::BackgroundPlusForeground, false>,
-    &GPU_SW_Backend::DrawRectangle<GPUTextureMode::Direct16Bit, GPUTransparencyMode::BackgroundPlusForeground, true>},
-   {&GPU_SW_Backend::DrawRectangle<GPUTextureMode::Direct16Bit, GPUTransparencyMode::BackgroundMinusForeground, false>,
-    &GPU_SW_Backend::DrawRectangle<GPUTextureMode::Direct16Bit, GPUTransparencyMode::BackgroundMinusForeground, true>},
-   {&GPU_SW_Backend::DrawRectangle<GPUTextureMode::Direct16Bit, GPUTransparencyMode::BackgroundPlusQuarterForeground,
-                                   false>,
-    &GPU_SW_Backend::DrawRectangle<GPUTextureMode::Direct16Bit, GPUTransparencyMode::BackgroundPlusQuarterForeground,
-                                   true>},
-   {&GPU_SW_Backend::DrawRectangle<GPUTextureMode::Direct16Bit, GPUTransparencyMode::Disabled, false>,
-    &GPU_SW_Backend::DrawRectangle<GPUTextureMode::Direct16Bit, GPUTransparencyMode::Disabled, true>}},
-  {{&GPU_SW_Backend::DrawRectangle<GPUTextureMode::Direct16Bit, GPUTransparencyMode::HalfBackgroundPlusHalfForeground,
-                                   false>,
-    &GPU_SW_Backend::DrawRectangle<GPUTextureMode::Direct16Bit, GPUTransparencyMode::HalfBackgroundPlusHalfForeground,
-                                   true>},
-   {&GPU_SW_Backend::DrawRectangle<GPUTextureMode::Direct16Bit, GPUTransparencyMode::BackgroundPlusForeground, false>,
-    &GPU_SW_Backend::DrawRectangle<GPUTextureMode::Direct16Bit, GPUTransparencyMode::BackgroundPlusForeground, true>},
-   {&GPU_SW_Backend::DrawRectangle<GPUTextureMode::Direct16Bit, GPUTransparencyMode::BackgroundMinusForeground, false>,
-    &GPU_SW_Backend::DrawRectangle<GPUTextureMode::Direct16Bit, GPUTransparencyMode::BackgroundMinusForeground, true>},
-   {&GPU_SW_Backend::DrawRectangle<GPUTextureMode::Direct16Bit, GPUTransparencyMode::BackgroundPlusQuarterForeground,
-                                   false>,
-    &GPU_SW_Backend::DrawRectangle<GPUTextureMode::Direct16Bit, GPUTransparencyMode::BackgroundPlusQuarterForeground,
-                                   true>},
-   {&GPU_SW_Backend::DrawRectangle<GPUTextureMode::Direct16Bit, GPUTransparencyMode::Disabled, false>,
-    &GPU_SW_Backend::DrawRectangle<GPUTextureMode::Direct16Bit, GPUTransparencyMode::Disabled, true>}},
-  {{&GPU_SW_Backend::DrawRectangle<GPUTextureMode::RawPalette4Bit,
-                                   GPUTransparencyMode::HalfBackgroundPlusHalfForeground, false>,
-    &GPU_SW_Backend::DrawRectangle<GPUTextureMode::RawPalette4Bit,
-                                   GPUTransparencyMode::HalfBackgroundPlusHalfForeground, true>},
-   {&GPU_SW_Backend::DrawRectangle<GPUTextureMode::RawPalette4Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                   false>,
-    &GPU_SW_Backend::DrawRectangle<GPUTextureMode::RawPalette4Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                   true>},
-   {&GPU_SW_Backend::DrawRectangle<GPUTextureMode::RawPalette4Bit, GPUTransparencyMode::BackgroundMinusForeground,
-                                   false>,
-    &GPU_SW_Backend::DrawRectangle<GPUTextureMode::RawPalette4Bit, GPUTransparencyMode::BackgroundMinusForeground,
-                                   true>},
-   {&GPU_SW_Backend::DrawRectangle<GPUTextureMode::RawPalette4Bit, GPUTransparencyMode::BackgroundPlusQuarterForeground,
-                                   false>,
-    &GPU_SW_Backend::DrawRectangle<GPUTextureMode::RawPalette4Bit, GPUTransparencyMode::BackgroundPlusQuarterForeground,
-                                   true>},
-   {&GPU_SW_Backend::DrawRectangle<GPUTextureMode::RawPalette4Bit, GPUTransparencyMode::Disabled, false>,
-    &GPU_SW_Backend::DrawRectangle<GPUTextureMode::RawPalette4Bit, GPUTransparencyMode::Disabled, true>}},
-  {{&GPU_SW_Backend::DrawRectangle<GPUTextureMode::RawPalette8Bit,
-                                   GPUTransparencyMode::HalfBackgroundPlusHalfForeground, false>,
-    &GPU_SW_Backend::DrawRectangle<GPUTextureMode::RawPalette8Bit,
-                                   GPUTransparencyMode::HalfBackgroundPlusHalfForeground, true>},
-   {&GPU_SW_Backend::DrawRectangle<GPUTextureMode::RawPalette8Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                   false>,
-    &GPU_SW_Backend::DrawRectangle<GPUTextureMode::RawPalette8Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                   true>},
-   {&GPU_SW_Backend::DrawRectangle<GPUTextureMode::RawPalette8Bit, GPUTransparencyMode::BackgroundMinusForeground,
-                                   false>,
-    &GPU_SW_Backend::DrawRectangle<GPUTextureMode::RawPalette8Bit, GPUTransparencyMode::BackgroundMinusForeground,
-                                   true>},
-   {&GPU_SW_Backend::DrawRectangle<GPUTextureMode::RawPalette8Bit, GPUTransparencyMode::BackgroundPlusQuarterForeground,
-                                   false>,
-    &GPU_SW_Backend::DrawRectangle<GPUTextureMode::RawPalette8Bit, GPUTransparencyMode::BackgroundPlusQuarterForeground,
-                                   true>},
-   {&GPU_SW_Backend::DrawRectangle<GPUTextureMode::RawPalette8Bit, GPUTransparencyMode::Disabled, false>,
-    &GPU_SW_Backend::DrawRectangle<GPUTextureMode::RawPalette8Bit, GPUTransparencyMode::Disabled, true>}},
-  {{&GPU_SW_Backend::DrawRectangle<GPUTextureMode::RawDirect16Bit,
-                                   GPUTransparencyMode::HalfBackgroundPlusHalfForeground, false>,
-    &GPU_SW_Backend::DrawRectangle<GPUTextureMode::RawDirect16Bit,
-                                   GPUTransparencyMode::HalfBackgroundPlusHalfForeground, true>},
-   {&GPU_SW_Backend::DrawRectangle<GPUTextureMode::RawDirect16Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                   false>,
-    &GPU_SW_Backend::DrawRectangle<GPUTextureMode::RawDirect16Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                   true>},
-   {&GPU_SW_Backend::DrawRectangle<GPUTextureMode::RawDirect16Bit, GPUTransparencyMode::BackgroundMinusForeground,
-                                   false>,
-    &GPU_SW_Backend::DrawRectangle<GPUTextureMode::RawDirect16Bit, GPUTransparencyMode::BackgroundMinusForeground,
-                                   true>},
-   {&GPU_SW_Backend::DrawRectangle<GPUTextureMode::RawDirect16Bit, GPUTransparencyMode::BackgroundPlusQuarterForeground,
-                                   false>,
-    &GPU_SW_Backend::DrawRectangle<GPUTextureMode::RawDirect16Bit, GPUTransparencyMode::BackgroundPlusQuarterForeground,
-                                   true>},
-   {&GPU_SW_Backend::DrawRectangle<GPUTextureMode::RawDirect16Bit, GPUTransparencyMode::Disabled, false>,
-    &GPU_SW_Backend::DrawRectangle<GPUTextureMode::RawDirect16Bit, GPUTransparencyMode::Disabled, true>}},
-  {{&GPU_SW_Backend::DrawRectangle<GPUTextureMode::RawDirect16Bit,
-                                   GPUTransparencyMode::HalfBackgroundPlusHalfForeground, false>,
-    &GPU_SW_Backend::DrawRectangle<GPUTextureMode::RawDirect16Bit,
-                                   GPUTransparencyMode::HalfBackgroundPlusHalfForeground, true>},
-   {&GPU_SW_Backend::DrawRectangle<GPUTextureMode::RawDirect16Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                   false>,
-    &GPU_SW_Backend::DrawRectangle<GPUTextureMode::RawDirect16Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                   true>},
-   {&GPU_SW_Backend::DrawRectangle<GPUTextureMode::RawDirect16Bit, GPUTransparencyMode::BackgroundMinusForeground,
-                                   false>,
-    &GPU_SW_Backend::DrawRectangle<GPUTextureMode::RawDirect16Bit, GPUTransparencyMode::BackgroundMinusForeground,
-                                   true>},
-   {&GPU_SW_Backend::DrawRectangle<GPUTextureMode::RawDirect16Bit, GPUTransparencyMode::BackgroundPlusQuarterForeground,
-                                   false>,
-    &GPU_SW_Backend::DrawRectangle<GPUTextureMode::RawDirect16Bit, GPUTransparencyMode::BackgroundPlusQuarterForeground,
-                                   true>},
-   {&GPU_SW_Backend::DrawRectangle<GPUTextureMode::RawDirect16Bit, GPUTransparencyMode::Disabled, false>,
-    &GPU_SW_Backend::DrawRectangle<GPUTextureMode::RawDirect16Bit, GPUTransparencyMode::Disabled, true>}},
-  {{&GPU_SW_Backend::DrawRectangle<GPUTextureMode::Disabled, GPUTransparencyMode::HalfBackgroundPlusHalfForeground,
-                                   false>,
-    &GPU_SW_Backend::DrawRectangle<GPUTextureMode::Disabled, GPUTransparencyMode::HalfBackgroundPlusHalfForeground,
-                                   true>},
-   {&GPU_SW_Backend::DrawRectangle<GPUTextureMode::Disabled, GPUTransparencyMode::BackgroundPlusForeground, false>,
-    &GPU_SW_Backend::DrawRectangle<GPUTextureMode::Disabled, GPUTransparencyMode::BackgroundPlusForeground, true>},
-   {&GPU_SW_Backend::DrawRectangle<GPUTextureMode::Disabled, GPUTransparencyMode::BackgroundMinusForeground, false>,
-    &GPU_SW_Backend::DrawRectangle<GPUTextureMode::Disabled, GPUTransparencyMode::BackgroundMinusForeground, true>},
-   {&GPU_SW_Backend::DrawRectangle<GPUTextureMode::Disabled, GPUTransparencyMode::BackgroundPlusQuarterForeground,
-                                   false>,
-    &GPU_SW_Backend::DrawRectangle<GPUTextureMode::Disabled, GPUTransparencyMode::BackgroundPlusQuarterForeground,
-                                   true>},
-   {&GPU_SW_Backend::DrawRectangle<GPUTextureMode::Disabled, GPUTransparencyMode::Disabled, false>,
-    &GPU_SW_Backend::DrawRectangle<GPUTextureMode::Disabled, GPUTransparencyMode::Disabled, true>}}};
+GPU_SW_Backend::DrawLineFunction GPU_SW_Backend::GetDrawLineFunction(bool shading_enable, bool transparency_enable,
+                                                                     bool dithering_enable)
+{
+  static constexpr DrawLineFunction funcs[2][2][2] = {
+    {{&GPU_SW_Backend::DrawLine<false, false, false>, &GPU_SW_Backend::DrawLine<false, false, true>},
+     {&GPU_SW_Backend::DrawLine<false, true, false>, &GPU_SW_Backend::DrawLine<false, true, true>}},
+    {{&GPU_SW_Backend::DrawLine<true, false, false>, &GPU_SW_Backend::DrawLine<true, false, true>},
+     {&GPU_SW_Backend::DrawLine<true, true, false>, &GPU_SW_Backend::DrawLine<true, true, true>}}};
 
-const GPU_SW_Backend::DrawTriangleFunction GPU_SW_Backend::s_triangle_draw_functions[2][9][5][2][2] = {
-  {   // shading false
-   {  // GPUTextureMode::Palette4Bit
-    { // GPUTransparencyMode::HalfBackgroundPlusHalfForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Palette4Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Palette4Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Palette4Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Palette4Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, true, true>}},
-    { // GPUTransparencyMode::BackgroundPlusForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Palette4Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    false, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Palette4Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Palette4Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    true, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Palette4Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    true, true>}},
-    { // GPUTransparencyMode::BackgroundMinusForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Palette4Bit, GPUTransparencyMode::BackgroundMinusForeground,
-                                    false, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Palette4Bit, GPUTransparencyMode::BackgroundMinusForeground,
-                                    false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Palette4Bit, GPUTransparencyMode::BackgroundMinusForeground,
-                                    true, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Palette4Bit, GPUTransparencyMode::BackgroundMinusForeground,
-                                    true, true>}},
-    { // GPUTransparencyMode::BackgroundPlusQuarterForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Palette4Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Palette4Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Palette4Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Palette4Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, true, true>}},
-    { // GPUTransparencyMode::Disabled
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Palette4Bit, GPUTransparencyMode::Disabled, false, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Palette4Bit, GPUTransparencyMode::Disabled, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Palette4Bit, GPUTransparencyMode::Disabled, true, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Palette4Bit, GPUTransparencyMode::Disabled, true, true>}}},
-   {  // GPUTextureMode::Palette8Bit
-    { // GPUTransparencyMode::HalfBackgroundPlusHalfForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Palette8Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Palette8Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Palette8Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Palette8Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, true, true>}},
-    { // GPUTransparencyMode::BackgroundPlusForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Palette8Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    false, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Palette8Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Palette8Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    true, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Palette8Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    true, true>}},
-    { // GPUTransparencyMode::BackgroundMinusForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Palette8Bit, GPUTransparencyMode::BackgroundMinusForeground,
-                                    false, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Palette8Bit, GPUTransparencyMode::BackgroundMinusForeground,
-                                    false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Palette8Bit, GPUTransparencyMode::BackgroundMinusForeground,
-                                    true, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Palette8Bit, GPUTransparencyMode::BackgroundMinusForeground,
-                                    true, true>}},
-    { // GPUTransparencyMode::BackgroundPlusQuarterForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Palette8Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Palette8Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Palette8Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Palette8Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, true, true>}},
-    { // GPUTransparencyMode::Disabled
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Palette8Bit, GPUTransparencyMode::Disabled, false, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Palette8Bit, GPUTransparencyMode::Disabled, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Palette8Bit, GPUTransparencyMode::Disabled, true, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Palette8Bit, GPUTransparencyMode::Disabled, true, true>}}},
-   {  // GPUTextureMode::Direct16Bit
-    { // GPUTransparencyMode::HalfBackgroundPlusHalfForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Direct16Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Direct16Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Direct16Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Direct16Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, true, true>}},
-    { // GPUTransparencyMode::BackgroundPlusForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Direct16Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    false, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Direct16Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Direct16Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    true, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Direct16Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    true, true>}},
-    { // GPUTransparencyMode::BackgroundMinusForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Direct16Bit, GPUTransparencyMode::BackgroundMinusForeground,
-                                    false, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Direct16Bit, GPUTransparencyMode::BackgroundMinusForeground,
-                                    false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Direct16Bit, GPUTransparencyMode::BackgroundMinusForeground,
-                                    true, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Direct16Bit, GPUTransparencyMode::BackgroundMinusForeground,
-                                    true, true>}},
-    { // GPUTransparencyMode::BackgroundPlusQuarterForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Direct16Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Direct16Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Direct16Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Direct16Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, true, true>}},
-    { // GPUTransparencyMode::Disabled
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Direct16Bit, GPUTransparencyMode::Disabled, false, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Direct16Bit, GPUTransparencyMode::Disabled, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Direct16Bit, GPUTransparencyMode::Disabled, true, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Direct16Bit, GPUTransparencyMode::Disabled, true, true>}}},
-   {  // GPUTextureMode::Direct16Bit
-    { // GPUTransparencyMode::HalfBackgroundPlusHalfForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Direct16Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Direct16Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Direct16Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Direct16Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, true, true>}},
-    { // GPUTransparencyMode::BackgroundPlusForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Direct16Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    false, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Direct16Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Direct16Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    true, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Direct16Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    true, true>}},
-    { // GPUTransparencyMode::BackgroundMinusForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Direct16Bit, GPUTransparencyMode::BackgroundMinusForeground,
-                                    false, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Direct16Bit, GPUTransparencyMode::BackgroundMinusForeground,
-                                    false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Direct16Bit, GPUTransparencyMode::BackgroundMinusForeground,
-                                    true, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Direct16Bit, GPUTransparencyMode::BackgroundMinusForeground,
-                                    true, true>}},
-    { // GPUTransparencyMode::BackgroundPlusQuarterForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Direct16Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Direct16Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Direct16Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Direct16Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, true, true>}},
-    { // GPUTransparencyMode::Disabled
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Direct16Bit, GPUTransparencyMode::Disabled, false, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Direct16Bit, GPUTransparencyMode::Disabled, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Direct16Bit, GPUTransparencyMode::Disabled, true, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Direct16Bit, GPUTransparencyMode::Disabled, true, true>}}},
-   {  // GPUTextureMode::RawPalette4Bit
-    { // GPUTransparencyMode::HalfBackgroundPlusHalfForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawPalette4Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawPalette4Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawPalette4Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawPalette4Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, true, true>}},
-    { // GPUTransparencyMode::BackgroundPlusForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawPalette4Bit,
-                                    GPUTransparencyMode::BackgroundPlusForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawPalette4Bit,
-                                    GPUTransparencyMode::BackgroundPlusForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawPalette4Bit,
-                                    GPUTransparencyMode::BackgroundPlusForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawPalette4Bit,
-                                    GPUTransparencyMode::BackgroundPlusForeground, true, true>}},
-    { // GPUTransparencyMode::BackgroundMinusForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawPalette4Bit,
-                                    GPUTransparencyMode::BackgroundMinusForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawPalette4Bit,
-                                    GPUTransparencyMode::BackgroundMinusForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawPalette4Bit,
-                                    GPUTransparencyMode::BackgroundMinusForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawPalette4Bit,
-                                    GPUTransparencyMode::BackgroundMinusForeground, true, true>}},
-    { // GPUTransparencyMode::BackgroundPlusQuarterForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawPalette4Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawPalette4Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawPalette4Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawPalette4Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, true, true>}},
-    { // GPUTransparencyMode::Disabled
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawPalette4Bit, GPUTransparencyMode::Disabled, false, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawPalette4Bit, GPUTransparencyMode::Disabled, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawPalette4Bit, GPUTransparencyMode::Disabled, true, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawPalette4Bit, GPUTransparencyMode::Disabled, true,
-                                    true>}}},
-   {  // GPUTextureMode::RawPalette8Bit
-    { // GPUTransparencyMode::HalfBackgroundPlusHalfForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawPalette8Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawPalette8Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawPalette8Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawPalette8Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, true, true>}},
-    { // GPUTransparencyMode::BackgroundPlusForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawPalette8Bit,
-                                    GPUTransparencyMode::BackgroundPlusForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawPalette8Bit,
-                                    GPUTransparencyMode::BackgroundPlusForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawPalette8Bit,
-                                    GPUTransparencyMode::BackgroundPlusForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawPalette8Bit,
-                                    GPUTransparencyMode::BackgroundPlusForeground, true, true>}},
-    { // GPUTransparencyMode::BackgroundMinusForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawPalette8Bit,
-                                    GPUTransparencyMode::BackgroundMinusForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawPalette8Bit,
-                                    GPUTransparencyMode::BackgroundMinusForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawPalette8Bit,
-                                    GPUTransparencyMode::BackgroundMinusForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawPalette8Bit,
-                                    GPUTransparencyMode::BackgroundMinusForeground, true, true>}},
-    { // GPUTransparencyMode::BackgroundPlusQuarterForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawPalette8Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawPalette8Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawPalette8Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawPalette8Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, true, true>}},
-    { // GPUTransparencyMode::Disabled
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawPalette8Bit, GPUTransparencyMode::Disabled, false, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawPalette8Bit, GPUTransparencyMode::Disabled, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawPalette8Bit, GPUTransparencyMode::Disabled, true, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawPalette8Bit, GPUTransparencyMode::Disabled, true,
-                                    true>}}},
-   {  // GPUTextureMode::RawDirect16Bit
-    { // GPUTransparencyMode::HalfBackgroundPlusHalfForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, true, true>}},
-    { // GPUTransparencyMode::BackgroundPlusForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::BackgroundPlusForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::BackgroundPlusForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::BackgroundPlusForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::BackgroundPlusForeground, true, true>}},
-    { // GPUTransparencyMode::BackgroundMinusForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::BackgroundMinusForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::BackgroundMinusForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::BackgroundMinusForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::BackgroundMinusForeground, true, true>}},
-    { // GPUTransparencyMode::BackgroundPlusQuarterForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, true, true>}},
-    { // GPUTransparencyMode::Disabled
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawDirect16Bit, GPUTransparencyMode::Disabled, false, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawDirect16Bit, GPUTransparencyMode::Disabled, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawDirect16Bit, GPUTransparencyMode::Disabled, true, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawDirect16Bit, GPUTransparencyMode::Disabled, true,
-                                    true>}}},
-   {  // GPUTextureMode::RawDirect16Bit
-    { // GPUTransparencyMode::HalfBackgroundPlusHalfForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, true, true>}},
-    { // GPUTransparencyMode::BackgroundPlusForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::BackgroundPlusForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::BackgroundPlusForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::BackgroundPlusForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::BackgroundPlusForeground, true, true>}},
-    { // GPUTransparencyMode::BackgroundMinusForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::BackgroundMinusForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::BackgroundMinusForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::BackgroundMinusForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::BackgroundMinusForeground, true, true>}},
-    { // GPUTransparencyMode::BackgroundPlusQuarterForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, true, true>}},
-    { // GPUTransparencyMode::Disabled
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawDirect16Bit, GPUTransparencyMode::Disabled, false, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawDirect16Bit, GPUTransparencyMode::Disabled, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawDirect16Bit, GPUTransparencyMode::Disabled, true, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::RawDirect16Bit, GPUTransparencyMode::Disabled, true,
-                                    true>}}},
-   {  // GPUTextureMode::Disabled
-    { // GPUTransparencyMode::HalfBackgroundPlusHalfForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Disabled,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Disabled,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Disabled,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Disabled,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, true, true>}},
-    { // GPUTransparencyMode::BackgroundPlusForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Disabled, GPUTransparencyMode::BackgroundPlusForeground,
-                                    false, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Disabled, GPUTransparencyMode::BackgroundPlusForeground,
-                                    false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Disabled, GPUTransparencyMode::BackgroundPlusForeground,
-                                    true, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Disabled, GPUTransparencyMode::BackgroundPlusForeground,
-                                    true, true>}},
-    { // GPUTransparencyMode::BackgroundMinusForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Disabled, GPUTransparencyMode::BackgroundMinusForeground,
-                                    false, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Disabled, GPUTransparencyMode::BackgroundMinusForeground,
-                                    false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Disabled, GPUTransparencyMode::BackgroundMinusForeground,
-                                    true, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Disabled, GPUTransparencyMode::BackgroundMinusForeground,
-                                    true, true>}},
-    { // GPUTransparencyMode::BackgroundPlusQuarterForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Disabled,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Disabled,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Disabled,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Disabled,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, true, true>}},
-    { // GPUTransparencyMode::Disabled
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Disabled, GPUTransparencyMode::Disabled, false, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Disabled, GPUTransparencyMode::Disabled, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Disabled, GPUTransparencyMode::Disabled, true, false>,
-      &GPU_SW_Backend::DrawTriangle<false, GPUTextureMode::Disabled, GPUTransparencyMode::Disabled, true, true>}}}},
-  {   // shading true
-   {  // GPUTextureMode::Palette4Bit
-    { // GPUTransparencyMode::HalfBackgroundPlusHalfForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Palette4Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Palette4Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Palette4Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Palette4Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, true, true>}},
-    { // GPUTransparencyMode::BackgroundPlusForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Palette4Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    false, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Palette4Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Palette4Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    true, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Palette4Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    true, true>}},
-    { // GPUTransparencyMode::BackgroundMinusForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Palette4Bit, GPUTransparencyMode::BackgroundMinusForeground,
-                                    false, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Palette4Bit, GPUTransparencyMode::BackgroundMinusForeground,
-                                    false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Palette4Bit, GPUTransparencyMode::BackgroundMinusForeground,
-                                    true, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Palette4Bit, GPUTransparencyMode::BackgroundMinusForeground,
-                                    true, true>}},
-    { // GPUTransparencyMode::BackgroundPlusQuarterForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Palette4Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Palette4Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Palette4Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Palette4Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, true, true>}},
-    { // GPUTransparencyMode::Disabled
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Palette4Bit, GPUTransparencyMode::Disabled, false, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Palette4Bit, GPUTransparencyMode::Disabled, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Palette4Bit, GPUTransparencyMode::Disabled, true, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Palette4Bit, GPUTransparencyMode::Disabled, true, true>}}},
-   {  // GPUTextureMode::Palette8Bit
-    { // GPUTransparencyMode::HalfBackgroundPlusHalfForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Palette8Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Palette8Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Palette8Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Palette8Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, true, true>}},
-    { // GPUTransparencyMode::BackgroundPlusForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Palette8Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    false, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Palette8Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Palette8Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    true, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Palette8Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    true, true>}},
-    { // GPUTransparencyMode::BackgroundMinusForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Palette8Bit, GPUTransparencyMode::BackgroundMinusForeground,
-                                    false, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Palette8Bit, GPUTransparencyMode::BackgroundMinusForeground,
-                                    false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Palette8Bit, GPUTransparencyMode::BackgroundMinusForeground,
-                                    true, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Palette8Bit, GPUTransparencyMode::BackgroundMinusForeground,
-                                    true, true>}},
-    { // GPUTransparencyMode::BackgroundPlusQuarterForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Palette8Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Palette8Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Palette8Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Palette8Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, true, true>}},
-    { // GPUTransparencyMode::Disabled
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Palette8Bit, GPUTransparencyMode::Disabled, false, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Palette8Bit, GPUTransparencyMode::Disabled, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Palette8Bit, GPUTransparencyMode::Disabled, true, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Palette8Bit, GPUTransparencyMode::Disabled, true, true>}}},
-   {  // GPUTextureMode::Direct16Bit
-    { // GPUTransparencyMode::HalfBackgroundPlusHalfForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Direct16Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Direct16Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Direct16Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Direct16Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, true, true>}},
-    { // GPUTransparencyMode::BackgroundPlusForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Direct16Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    false, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Direct16Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Direct16Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    true, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Direct16Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    true, true>}},
-    { // GPUTransparencyMode::BackgroundMinusForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Direct16Bit, GPUTransparencyMode::BackgroundMinusForeground,
-                                    false, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Direct16Bit, GPUTransparencyMode::BackgroundMinusForeground,
-                                    false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Direct16Bit, GPUTransparencyMode::BackgroundMinusForeground,
-                                    true, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Direct16Bit, GPUTransparencyMode::BackgroundMinusForeground,
-                                    true, true>}},
-    { // GPUTransparencyMode::BackgroundPlusQuarterForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Direct16Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Direct16Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Direct16Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Direct16Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, true, true>}},
-    { // GPUTransparencyMode::Disabled
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Direct16Bit, GPUTransparencyMode::Disabled, false, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Direct16Bit, GPUTransparencyMode::Disabled, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Direct16Bit, GPUTransparencyMode::Disabled, true, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Direct16Bit, GPUTransparencyMode::Disabled, true, true>}}},
-   {  // GPUTextureMode::Direct16Bit
-    { // GPUTransparencyMode::HalfBackgroundPlusHalfForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Direct16Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Direct16Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Direct16Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Direct16Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, true, true>}},
-    { // GPUTransparencyMode::BackgroundPlusForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Direct16Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    false, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Direct16Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Direct16Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    true, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Direct16Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    true, true>}},
-    { // GPUTransparencyMode::BackgroundMinusForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Direct16Bit, GPUTransparencyMode::BackgroundMinusForeground,
-                                    false, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Direct16Bit, GPUTransparencyMode::BackgroundMinusForeground,
-                                    false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Direct16Bit, GPUTransparencyMode::BackgroundMinusForeground,
-                                    true, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Direct16Bit, GPUTransparencyMode::BackgroundMinusForeground,
-                                    true, true>}},
-    { // GPUTransparencyMode::BackgroundPlusQuarterForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Direct16Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Direct16Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Direct16Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Direct16Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, true, true>}},
-    { // GPUTransparencyMode::Disabled
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Direct16Bit, GPUTransparencyMode::Disabled, false, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Direct16Bit, GPUTransparencyMode::Disabled, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Direct16Bit, GPUTransparencyMode::Disabled, true, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Direct16Bit, GPUTransparencyMode::Disabled, true, true>}}},
-   {  // GPUTextureMode::RawPalette4Bit
-    { // GPUTransparencyMode::HalfBackgroundPlusHalfForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawPalette4Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawPalette4Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawPalette4Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawPalette4Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, true, true>}},
-    { // GPUTransparencyMode::BackgroundPlusForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawPalette4Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    false, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawPalette4Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawPalette4Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    true, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawPalette4Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    true, true>}},
-    { // GPUTransparencyMode::BackgroundMinusForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawPalette4Bit,
-                                    GPUTransparencyMode::BackgroundMinusForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawPalette4Bit,
-                                    GPUTransparencyMode::BackgroundMinusForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawPalette4Bit,
-                                    GPUTransparencyMode::BackgroundMinusForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawPalette4Bit,
-                                    GPUTransparencyMode::BackgroundMinusForeground, true, true>}},
-    { // GPUTransparencyMode::BackgroundPlusQuarterForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawPalette4Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawPalette4Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawPalette4Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawPalette4Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, true, true>}},
-    { // GPUTransparencyMode::Disabled
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawPalette4Bit, GPUTransparencyMode::Disabled, false, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawPalette4Bit, GPUTransparencyMode::Disabled, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawPalette4Bit, GPUTransparencyMode::Disabled, true, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawPalette4Bit, GPUTransparencyMode::Disabled, true, true>}}},
-   {  // GPUTextureMode::RawPalette8Bit
-    { // GPUTransparencyMode::HalfBackgroundPlusHalfForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawPalette8Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawPalette8Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawPalette8Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawPalette8Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, true, true>}},
-    { // GPUTransparencyMode::BackgroundPlusForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawPalette8Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    false, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawPalette8Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawPalette8Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    true, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawPalette8Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    true, true>}},
-    { // GPUTransparencyMode::BackgroundMinusForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawPalette8Bit,
-                                    GPUTransparencyMode::BackgroundMinusForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawPalette8Bit,
-                                    GPUTransparencyMode::BackgroundMinusForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawPalette8Bit,
-                                    GPUTransparencyMode::BackgroundMinusForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawPalette8Bit,
-                                    GPUTransparencyMode::BackgroundMinusForeground, true, true>}},
-    { // GPUTransparencyMode::BackgroundPlusQuarterForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawPalette8Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawPalette8Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawPalette8Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawPalette8Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, true, true>}},
-    { // GPUTransparencyMode::Disabled
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawPalette8Bit, GPUTransparencyMode::Disabled, false, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawPalette8Bit, GPUTransparencyMode::Disabled, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawPalette8Bit, GPUTransparencyMode::Disabled, true, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawPalette8Bit, GPUTransparencyMode::Disabled, true, true>}}},
-   {  // GPUTextureMode::RawDirect16Bit
-    { // GPUTransparencyMode::HalfBackgroundPlusHalfForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, true, true>}},
-    { // GPUTransparencyMode::BackgroundPlusForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawDirect16Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    false, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawDirect16Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawDirect16Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    true, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawDirect16Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    true, true>}},
-    { // GPUTransparencyMode::BackgroundMinusForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::BackgroundMinusForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::BackgroundMinusForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::BackgroundMinusForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::BackgroundMinusForeground, true, true>}},
-    { // GPUTransparencyMode::BackgroundPlusQuarterForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, true, true>}},
-    { // GPUTransparencyMode::Disabled
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawDirect16Bit, GPUTransparencyMode::Disabled, false, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawDirect16Bit, GPUTransparencyMode::Disabled, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawDirect16Bit, GPUTransparencyMode::Disabled, true, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawDirect16Bit, GPUTransparencyMode::Disabled, true, true>}}},
-   {  // GPUTextureMode::RawDirect16Bit
-    { // GPUTransparencyMode::HalfBackgroundPlusHalfForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, true, true>}},
-    { // GPUTransparencyMode::BackgroundPlusForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawDirect16Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    false, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawDirect16Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawDirect16Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    true, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawDirect16Bit, GPUTransparencyMode::BackgroundPlusForeground,
-                                    true, true>}},
-    { // GPUTransparencyMode::BackgroundMinusForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::BackgroundMinusForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::BackgroundMinusForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::BackgroundMinusForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::BackgroundMinusForeground, true, true>}},
-    { // GPUTransparencyMode::BackgroundPlusQuarterForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawDirect16Bit,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, true, true>}},
-    { // GPUTransparencyMode::Disabled
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawDirect16Bit, GPUTransparencyMode::Disabled, false, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawDirect16Bit, GPUTransparencyMode::Disabled, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawDirect16Bit, GPUTransparencyMode::Disabled, true, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::RawDirect16Bit, GPUTransparencyMode::Disabled, true, true>}}},
-   {  // GPUTextureMode::Disabled
-    { // GPUTransparencyMode::HalfBackgroundPlusHalfForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Disabled,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Disabled,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Disabled,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Disabled,
-                                    GPUTransparencyMode::HalfBackgroundPlusHalfForeground, true, true>}},
-    { // GPUTransparencyMode::BackgroundPlusForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Disabled, GPUTransparencyMode::BackgroundPlusForeground,
-                                    false, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Disabled, GPUTransparencyMode::BackgroundPlusForeground,
-                                    false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Disabled, GPUTransparencyMode::BackgroundPlusForeground, true,
-                                    false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Disabled, GPUTransparencyMode::BackgroundPlusForeground, true,
-                                    true>}},
-    { // GPUTransparencyMode::BackgroundMinusForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Disabled, GPUTransparencyMode::BackgroundMinusForeground,
-                                    false, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Disabled, GPUTransparencyMode::BackgroundMinusForeground,
-                                    false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Disabled, GPUTransparencyMode::BackgroundMinusForeground,
-                                    true, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Disabled, GPUTransparencyMode::BackgroundMinusForeground,
-                                    true, true>}},
-    { // GPUTransparencyMode::BackgroundPlusQuarterForeground
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Disabled,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, false, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Disabled,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Disabled,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, true, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Disabled,
-                                    GPUTransparencyMode::BackgroundPlusQuarterForeground, true, true>}},
-    { // GPUTransparencyMode::Disabled
-     {// dither false
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Disabled, GPUTransparencyMode::Disabled, false, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Disabled, GPUTransparencyMode::Disabled, false, true>},
-     {// dither true
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Disabled, GPUTransparencyMode::Disabled, true, false>,
-      &GPU_SW_Backend::DrawTriangle<true, GPUTextureMode::Disabled, GPUTransparencyMode::Disabled, true, true>}}}}};
+  return funcs[u8(shading_enable)][u8(transparency_enable)][u8(dithering_enable)];
+}
 
-const GPU_SW_Backend::DrawLineFunction GPU_SW_Backend::s_line_draw_functions[2][5][2][2] = {
-  {  // shading false
-   { // GPUTransparencyMode::HalfBackgroundPlusHalfForeground
-    {// dither false
-     &GPU_SW_Backend::DrawLine<false, GPUTransparencyMode::HalfBackgroundPlusHalfForeground, false, false>,
-     &GPU_SW_Backend::DrawLine<false, GPUTransparencyMode::HalfBackgroundPlusHalfForeground, false, true>},
-    {// dither true
-     &GPU_SW_Backend::DrawLine<false, GPUTransparencyMode::HalfBackgroundPlusHalfForeground, true, false>,
-     &GPU_SW_Backend::DrawLine<false, GPUTransparencyMode::HalfBackgroundPlusHalfForeground, true, true>}},
-   { // GPUTransparencyMode::BackgroundPlusForeground
-    {// dither false
-     &GPU_SW_Backend::DrawLine<false, GPUTransparencyMode::BackgroundPlusForeground, false, false>,
-     &GPU_SW_Backend::DrawLine<false, GPUTransparencyMode::BackgroundPlusForeground, false, true>},
-    {// dither true
-     &GPU_SW_Backend::DrawLine<false, GPUTransparencyMode::BackgroundPlusForeground, true, false>,
-     &GPU_SW_Backend::DrawLine<false, GPUTransparencyMode::BackgroundPlusForeground, true, true>}},
-   { // GPUTransparencyMode::BackgroundMinusForeground
-    {// dither false
-     &GPU_SW_Backend::DrawLine<false, GPUTransparencyMode::BackgroundMinusForeground, false, false>,
-     &GPU_SW_Backend::DrawLine<false, GPUTransparencyMode::BackgroundMinusForeground, false, true>},
-    {// dither true
-     &GPU_SW_Backend::DrawLine<false, GPUTransparencyMode::BackgroundMinusForeground, true, false>,
-     &GPU_SW_Backend::DrawLine<false, GPUTransparencyMode::BackgroundMinusForeground, true, true>}},
-   { // GPUTransparencyMode::BackgroundPlusQuarterForeground
-    {// dither false
-     &GPU_SW_Backend::DrawLine<false, GPUTransparencyMode::BackgroundPlusQuarterForeground, false, false>,
-     &GPU_SW_Backend::DrawLine<false, GPUTransparencyMode::BackgroundPlusQuarterForeground, false, true>},
-    {// dither true
-     &GPU_SW_Backend::DrawLine<false, GPUTransparencyMode::BackgroundPlusQuarterForeground, true, false>,
-     &GPU_SW_Backend::DrawLine<false, GPUTransparencyMode::BackgroundPlusQuarterForeground, true, true>}},
-   { // GPUTransparencyMode::Disabled
-    {// dither false
-     &GPU_SW_Backend::DrawLine<false, GPUTransparencyMode::Disabled, false, false>,
-     &GPU_SW_Backend::DrawLine<false, GPUTransparencyMode::Disabled, false, true>},
-    {// dither true
-     &GPU_SW_Backend::DrawLine<false, GPUTransparencyMode::Disabled, true, false>,
-     &GPU_SW_Backend::DrawLine<false, GPUTransparencyMode::Disabled, true, true>}}},
-  {  // shading true
-   { // GPUTransparencyMode::HalfBackgroundPlusHalfForeground
-    {// dither false
-     &GPU_SW_Backend::DrawLine<true, GPUTransparencyMode::HalfBackgroundPlusHalfForeground, false, false>,
-     &GPU_SW_Backend::DrawLine<true, GPUTransparencyMode::HalfBackgroundPlusHalfForeground, false, true>},
-    {// dither true
-     &GPU_SW_Backend::DrawLine<true, GPUTransparencyMode::HalfBackgroundPlusHalfForeground, true, false>,
-     &GPU_SW_Backend::DrawLine<true, GPUTransparencyMode::HalfBackgroundPlusHalfForeground, true, true>}},
-   { // GPUTransparencyMode::BackgroundPlusForeground
-    {// dither false
-     &GPU_SW_Backend::DrawLine<true, GPUTransparencyMode::BackgroundPlusForeground, false, false>,
-     &GPU_SW_Backend::DrawLine<true, GPUTransparencyMode::BackgroundPlusForeground, false, true>},
-    {// dither true
-     &GPU_SW_Backend::DrawLine<true, GPUTransparencyMode::BackgroundPlusForeground, true, false>,
-     &GPU_SW_Backend::DrawLine<true, GPUTransparencyMode::BackgroundPlusForeground, true, true>}},
-   { // GPUTransparencyMode::BackgroundMinusForeground
-    {// dither false
-     &GPU_SW_Backend::DrawLine<true, GPUTransparencyMode::BackgroundMinusForeground, false, false>,
-     &GPU_SW_Backend::DrawLine<true, GPUTransparencyMode::BackgroundMinusForeground, false, true>},
-    {// dither true
-     &GPU_SW_Backend::DrawLine<true, GPUTransparencyMode::BackgroundMinusForeground, true, false>,
-     &GPU_SW_Backend::DrawLine<true, GPUTransparencyMode::BackgroundMinusForeground, true, true>}},
-   { // GPUTransparencyMode::BackgroundPlusQuarterForeground
-    {// dither false
-     &GPU_SW_Backend::DrawLine<true, GPUTransparencyMode::BackgroundPlusQuarterForeground, false, false>,
-     &GPU_SW_Backend::DrawLine<true, GPUTransparencyMode::BackgroundPlusQuarterForeground, false, true>},
-    {// dither true
-     &GPU_SW_Backend::DrawLine<true, GPUTransparencyMode::BackgroundPlusQuarterForeground, true, false>,
-     &GPU_SW_Backend::DrawLine<true, GPUTransparencyMode::BackgroundPlusQuarterForeground, true, true>}},
-   { // GPUTransparencyMode::Disabled
-    {// dither false
-     &GPU_SW_Backend::DrawLine<true, GPUTransparencyMode::Disabled, false, false>,
-     &GPU_SW_Backend::DrawLine<true, GPUTransparencyMode::Disabled, false, true>},
-    {// dither true
-     &GPU_SW_Backend::DrawLine<true, GPUTransparencyMode::Disabled, true, false>,
-     &GPU_SW_Backend::DrawLine<true, GPUTransparencyMode::Disabled, true, true>}}}};
+GPU_SW_Backend::DrawRectangleFunction
+GPU_SW_Backend::GetDrawRectangleFunction(bool texture_enable, bool raw_texture_enable, bool transparency_enable)
+{
+  static constexpr DrawRectangleFunction funcs[2][2][2] = {
+    {{&GPU_SW_Backend::DrawRectangle<false, false, false>, &GPU_SW_Backend::DrawRectangle<false, false, true>},
+     {&GPU_SW_Backend::DrawRectangle<false, false, false>, &GPU_SW_Backend::DrawRectangle<false, false, true>}},
+    {{&GPU_SW_Backend::DrawRectangle<true, false, false>, &GPU_SW_Backend::DrawRectangle<true, false, true>},
+     {&GPU_SW_Backend::DrawRectangle<true, true, false>, &GPU_SW_Backend::DrawRectangle<true, true, true>}}};
+
+  return funcs[u8(texture_enable)][u8(raw_texture_enable)][u8(transparency_enable)];
+}
+
+GPU_SW_Backend::DrawTriangleFunction GPU_SW_Backend::GetDrawTriangleFunction(bool shading_enable, bool texture_enable,
+                                                                             bool raw_texture_enable,
+                                                                             bool transparency_enable,
+                                                                             bool dithering_enable)
+{
+  static constexpr DrawTriangleFunction funcs[2][2][2][2][2] = {
+    {{{{&GPU_SW_Backend::DrawTriangle<false, false, false, false, false>,
+        &GPU_SW_Backend::DrawTriangle<false, false, false, false, true>},
+       {&GPU_SW_Backend::DrawTriangle<false, false, false, true, false>,
+        &GPU_SW_Backend::DrawTriangle<false, false, false, true, true>}},
+      {{&GPU_SW_Backend::DrawTriangle<false, false, false, false, false>,
+        &GPU_SW_Backend::DrawTriangle<false, false, false, false, false>},
+       {&GPU_SW_Backend::DrawTriangle<false, false, false, true, false>,
+        &GPU_SW_Backend::DrawTriangle<false, false, false, true, false>}}},
+     {{{&GPU_SW_Backend::DrawTriangle<false, true, false, false, false>,
+        &GPU_SW_Backend::DrawTriangle<false, true, false, false, true>},
+       {&GPU_SW_Backend::DrawTriangle<false, true, false, true, false>,
+        &GPU_SW_Backend::DrawTriangle<false, true, false, true, true>}},
+      {{&GPU_SW_Backend::DrawTriangle<false, true, true, false, false>,
+        &GPU_SW_Backend::DrawTriangle<false, true, true, false, false>},
+       {&GPU_SW_Backend::DrawTriangle<false, true, true, true, false>,
+        &GPU_SW_Backend::DrawTriangle<false, true, true, true, false>}}}},
+    {{{{&GPU_SW_Backend::DrawTriangle<true, false, false, false, false>,
+        &GPU_SW_Backend::DrawTriangle<true, false, false, false, true>},
+       {&GPU_SW_Backend::DrawTriangle<true, false, false, true, false>,
+        &GPU_SW_Backend::DrawTriangle<true, false, false, true, true>}},
+      {{&GPU_SW_Backend::DrawTriangle<true, false, false, false, false>,
+        &GPU_SW_Backend::DrawTriangle<true, false, false, false, false>},
+       {&GPU_SW_Backend::DrawTriangle<true, false, false, true, false>,
+        &GPU_SW_Backend::DrawTriangle<true, false, false, true, false>}}},
+     {{{&GPU_SW_Backend::DrawTriangle<true, true, false, false, false>,
+        &GPU_SW_Backend::DrawTriangle<true, true, false, false, true>},
+       {&GPU_SW_Backend::DrawTriangle<true, true, false, true, false>,
+        &GPU_SW_Backend::DrawTriangle<true, true, false, true, true>}},
+      {{&GPU_SW_Backend::DrawTriangle<true, true, true, false, false>,
+        &GPU_SW_Backend::DrawTriangle<true, true, true, false, false>},
+       {&GPU_SW_Backend::DrawTriangle<true, true, true, true, false>,
+        &GPU_SW_Backend::DrawTriangle<true, true, true, true, false>}}}}};
+
+  return funcs[u8(shading_enable)][u8(texture_enable)][u8(raw_texture_enable)][u8(transparency_enable)]
+              [u8(dithering_enable)];
+}

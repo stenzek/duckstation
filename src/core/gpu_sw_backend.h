@@ -98,12 +98,16 @@ protected:
   //////////////////////////////////////////////////////////////////////////
   // Rasterization
   //////////////////////////////////////////////////////////////////////////
-  template<GPUTextureMode texture_mode, GPUTransparencyMode transparency_mode, bool dithering_enable, bool check_mask>
+  template<bool texture_enable, bool raw_texture_enable, bool transparency_enable, bool dithering_enable>
   void ShadePixel(const GPUBackendDrawCommand* cmd, u32 x, u32 y, u8 color_r, u8 color_g, u8 color_b, u8 texcoord_x,
                   u8 texcoord_y);
 
-  template<GPUTextureMode texture_mode, GPUTransparencyMode transparency_mode, bool check_mask>
+  template<bool texture_enable, bool raw_texture_enable, bool transparency_enable>
   void DrawRectangle(const GPUBackendDrawRectangleCommand* cmd);
+
+  using DrawRectangleFunction = void (GPU_SW_Backend::*)(const GPUBackendDrawRectangleCommand* cmd);
+  DrawRectangleFunction GetDrawRectangleFunction(bool texture_enable, bool raw_texture_enable,
+                                                 bool transparency_enable);
 
   //////////////////////////////////////////////////////////////////////////
   // Polygon and line rasterization ported from Mednafen
@@ -133,36 +137,31 @@ protected:
   template<bool shading_enable, bool texture_enable>
   void AddIDeltas_DY(i_group& ig, const i_deltas& idl, u32 count = 1);
 
-  template<bool shading_enable, GPUTextureMode texture_mode, GPUTransparencyMode transparency_mode,
-           bool dithering_enable, bool check_mask>
+  template<bool shading_enable, bool texture_enable, bool raw_texture_enable, bool transparency_enable,
+           bool dithering_enable>
   void DrawSpan(const GPUBackendDrawPolygonCommand* cmd, s32 y, s32 x_start, s32 x_bound, i_group ig,
                 const i_deltas& idl);
 
-  template<bool shading_enable, GPUTextureMode texture_mode, GPUTransparencyMode transparency_mode,
-           bool dithering_enable, bool check_mask>
+  template<bool shading_enable, bool texture_enable, bool raw_texture_enable, bool transparency_enable,
+           bool dithering_enable>
   void DrawTriangle(const GPUBackendDrawPolygonCommand* cmd, const GPUBackendDrawPolygonCommand::Vertex* v0,
                     const GPUBackendDrawPolygonCommand::Vertex* v1, const GPUBackendDrawPolygonCommand::Vertex* v2);
 
-  template<bool shading_enable, GPUTransparencyMode transparency_mode, bool dithering_enable, bool check_mask>
-  void DrawLine(const GPUBackendDrawLineCommand* cmd, const GPUBackendDrawLineCommand::Vertex* p0,
-                const GPUBackendDrawLineCommand::Vertex* p1);
-
-#if 0
-  std::array<u16, VRAM_WIDTH * VRAM_HEIGHT> m_vram;
-#else
-  u16 m_vram[VRAM_WIDTH * VRAM_HEIGHT];
-#endif
-
-  using DrawRectangleFunction = void (GPU_SW_Backend::*)(const GPUBackendDrawRectangleCommand* cmd);
   using DrawTriangleFunction = void (GPU_SW_Backend::*)(const GPUBackendDrawPolygonCommand* cmd,
                                                         const GPUBackendDrawPolygonCommand::Vertex* v0,
                                                         const GPUBackendDrawPolygonCommand::Vertex* v1,
                                                         const GPUBackendDrawPolygonCommand::Vertex* v2);
+  DrawTriangleFunction GetDrawTriangleFunction(bool shading_enable, bool texture_enable, bool raw_texture_enable,
+                                               bool transparency_enable, bool dithering_enable);
+
+  template<bool shading_enable, bool transparency_enable, bool dithering_enable>
+  void DrawLine(const GPUBackendDrawLineCommand* cmd, const GPUBackendDrawLineCommand::Vertex* p0,
+                const GPUBackendDrawLineCommand::Vertex* p1);
+
   using DrawLineFunction = void (GPU_SW_Backend::*)(const GPUBackendDrawLineCommand* cmd,
                                                     const GPUBackendDrawLineCommand::Vertex* p0,
                                                     const GPUBackendDrawLineCommand::Vertex* p1);
+  DrawLineFunction GetDrawLineFunction(bool shading_enable, bool transparency_enable, bool dithering_enable);
 
-  static const DrawRectangleFunction s_rectangle_draw_functions[9][5][2];
-  static const DrawTriangleFunction s_triangle_draw_functions[2][9][5][2][2];
-  static const DrawLineFunction s_line_draw_functions[2][5][2][2];
+  std::array<u16, VRAM_WIDTH * VRAM_HEIGHT> m_vram;
 };
