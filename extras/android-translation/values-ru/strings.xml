@@ -358,8 +358,6 @@
     	<string name="controller_settings_auto_fire_n_frequency">Частота/интервал турбо %d</string>
     	<string name="controller_binding_auto_fire_n">Турбо %d</string>
 	<string name="settings_category_cdrom">Настройки CD-ROM</string>
-        <string name="settings_cdrom_read_thread">Производить чтение в потоке (асинхронно)</string>
-        <string name="settings_summary_read_thread">Уменьшает задержки в эмуляции с помощью асинхронного чтения/распаковки данных диска в рабочем потоке.</string>
         <string name="settings_cdrom_load_image_patches">Применять патчи к образам</string>
         <string name="settings_summary_load_image_patches">Автоматически применять патчи к образам дисков при их наличии. В настоящее время поддерживается только формат PPF.</string>
         <string name="menu_edit_game_directories_force_saf">Вкл. Scoped Storage</string>
@@ -369,4 +367,5 @@
     	<string name="memory_card_editor_undelete_success">Восстановлено сохранение \'%s\'.</string>
     	<string name="memory_card_editor_undelete_failed">Не удалось восстановить сохранение \'%s\'. Данные могли быть частично перезаписаны.</string>
     	<string name="memory_card_editor_permanently_delete_confirm">Действительно удалить сохранение \'%s\' без возможности восстановления? Данное действие нельзя отменить.</string>
+    	<string name="settings_cdrom_readahead">Async Readahead</string>
 </resources>

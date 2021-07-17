@@ -358,8 +358,6 @@
     <string name="controller_settings_auto_fire_n_frequency">Auto disparo botão %d Frequência/Intervalo</string>
     <string name="controller_binding_auto_fire_n">Auto disparo %d</string>
     <string name="settings_category_cdrom">Configurações do CD-ROM</string>	
-    <string name="settings_cdrom_read_thread">Usar leitura assíncrona</string>	
-    <string name="settings_summary_read_thread">Reduz engasgos na emulação lendo / descomprimindo os arquivos da mídia de forma assíncrona.</string>
     <string name="settings_cdrom_load_image_patches">Aplicar modificações PPF</string>
     <string name="settings_summary_load_image_patches">Aplica automaticamente \'modificações\' em jogos quando presentes no mesmo diretório. no momento somente são aceitos modificações do tipo PPF.</string>
     <string name="menu_edit_game_directories_force_saf">Forçar armazenamento com escopo</string>
@@ -369,4 +367,5 @@
     <string name="memory_card_editor_undelete_success">Recuperar arquivo \'%s\'.</string>
     <string name="memory_card_editor_undelete_failed">Falha ao recuperar arquivo \'%s\'. o arquivo de salvamento já pode ter sido parcialmente sobescrito.</string>
     <string name="memory_card_editor_permanently_delete_confirm">Você tem certeza de que deseja excluir permanentemente o salvamento \'%s\'? essa ação não poderá ser desfeita.</string>
+    <string name="settings_cdrom_readahead">Async Readahead</string>
 </resources>
