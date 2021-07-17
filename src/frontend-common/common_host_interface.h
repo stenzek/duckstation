@@ -334,6 +334,9 @@ public:
   bool IsTurboEnabled() const { return m_turbo_enabled; }
   void SetTurboEnabled(bool enabled);
 
+  /// Toggles rewind state.
+  void SetRewindState(bool enabled);
+
   /// ImGui window drawing.
   void DrawFPSWindow();
   void DrawOSDMessages();
