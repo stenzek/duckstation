@@ -387,4 +387,5 @@
     <string name="add_patch_code_import_from_file">Import From File</string>
     <string name="add_patch_code_cancel">Cancel</string>
     <string name="add_patch_code_add">Add</string>
+    <string name="menu_game_list_entry_create_launcher_shortcut">Create Launcher Shortcut</string>
 </resources>
