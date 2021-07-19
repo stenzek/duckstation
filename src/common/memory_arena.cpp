@@ -106,7 +106,7 @@ bool MemoryArena::IsValid() const
 static std::string GetFileMappingName()
 {
 #if defined(_WIN32)
-  const unsigned pid = GetCurrentThreadId();
+  const unsigned pid = GetCurrentProcessId();
 #elif defined(__ANDROID__) || defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
   const unsigned pid = static_cast<unsigned>(getpid());
 #else
