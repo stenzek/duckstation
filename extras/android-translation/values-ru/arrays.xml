@@ -75,8 +75,8 @@
 		<item>Общая для всех игр</item>
 		<item>Своя карта для каждой игры (по коду)</item>
 		<item>Своя карта для каждой игры (по названию)</item>
-		<item>Separate Card Per Game (File Title)</item>
-		<item>Non-Persistent (Do Not Save)</item>
+		<item>Своя карта для каждой игры (по имени файла)</item>
+		<item>Временная (не сохраняется)</item>
 	</string-array>
 	<string-array name="emulation_touchscreen_menu">
 		<item>Сменить вид</item>
@@ -254,8 +254,8 @@
      		<item>Удалить сохранение</item>
         </string-array>
    	<string-array name="memory_card_editor_save_deleted_menu">
-       	<item>Восстановить сохранение</item>
-       	<item>Удалить безвозвратно</item>
+       		<item>Восстановить сохранение</item>
+       		<item>Удалить безвозвратно</item>
    	</string-array>
         <string-array name="settings_touchscreen_controller_port_entries">
                <item>Порт 1</item>
@@ -268,16 +268,51 @@
                <item>Multitap 8</item>
         </string-array>
 	<string-array name="settings_cdrom_seek_speedup_entries">
-               <item>Нет (обычная скорость)</item>
-               <item>Без задержки</item>
-               <item>2x</item>
-               <item>3x</item>
-               <item>4x</item>
-               <item>5x</item>
-               <item>6x</item>
-               <item>7x</item>
-               <item>8x</item>
-               <item>9x</item>
-               <item>10x</item>
+        	<item>Нет (обычная скорость)</item>
+ 		<item>Без задержки</item>
+ 		<item>2x</item>
+ 		<item>3x</item>
+ 		<item>4x</item>
+ 		<item>5x</item>
+ 		<item>6x</item>
+ 		<item>7x</item>
+ 		<item>8x</item>
+ 		<item>9x</item>
+ 		<item>10x</item>
         </string-array>
+	<string-array name="settings_cdrom_readahead_entries">
+        	<item>Отключено (синхронно)</item>
+        	<item>1 сектор (7 KB / 2 мс)</item>
+        	<item>2 сектора (13 KB / 4 мс)</item>
+        	<item>3 сектора (20 KB / 6 мс)</item>
+        	<item>4 сектора (27 KB / 8 мс)</item>
+        	<item>5 секторов (33 KB / 10 мс)</item>
+        	<item>6 секторов (40 KB / 12 мс)</item>
+        	<item>7 секторов (47 KB / 14 мс)</item>
+        	<item>8 секторов (53 KB / 16 мс)</item>
+        	<item>9 секторов (60 KB / 18 мс)</item>
+        	<item>10 секторов (67 KB / 20 мс)</item>
+        	<item>11 секторов (73 KB / 22 мс)</item>
+        	<item>12 секторов (80 KB / 24 мс)</item>
+        	<item>13 секторов (87 KB / 26 мс)</item>
+        	<item>14 секторов (93 KB / 28 мс)</item>
+        	<item>15 секторов (100 KB / 30 мс)</item>
+        	<item>16 секторов (107 KB / 32 мс)</item>
+        	<item>17 секторов (113 KB / 34 мс)</item>
+        	<item>18 секторов (120 KB / 36 мс)</item>
+        	<item>19 секторов (127 KB / 38 мс)</item>
+        	<item>20 секторов (133 KB / 40 мс)</item>
+        	<item>21 сектор (140 KB / 42 мс)</item>
+        	<item>22 сектора (147 KB / 44 мс)</item>
+        	<item>23 сектора (153 KB / 46 мс)</item>
+        	<item>24 сектора (160 KB / 48 мс)</item>
+        	<item>25 секторов (167 KB / 50 мс)</item>
+        	<item>26 секторов (173 KB / 52 мс)</item>
+        	<item>27 секторов (180 KB / 54 мс)</item>
+        	<item>28 секторов (187 KB / 56 мс)</item>
+        	<item>29 секторов (193 KB / 58 мс)</item>
+        	<item>30 секторов (200 KB / 60 мс)</item>
+        	<item>31 сектор (207 KB / 62 мс)</item>
+        	<item>32 сектора (213 KB / 64 мс)</item>
+    	</string-array>
 </resources>
