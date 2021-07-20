@@ -2089,9 +2089,6 @@ CodeCache::DispatcherFunction CodeGenerator::CompileDispatcher()
   m_emit->lsr(a32::r1, a32::r0, 16);
   m_emit->ldr(a32::r1, a32::MemOperand(a32::r2, a32::r1, a32::LSL, 2));
 
-  // current_instruction_pc <- pc (r0)
-  m_emit->str(a32::r0, a32::MemOperand(GetHostReg32(RCPUPTR), offsetof(State, current_instruction_pc)));
-
   // blr(r1[pc]) (fast_map[pc >> 2])
   m_emit->ldr(a32::r0, a32::MemOperand(a32::r1, a32::r0));
   m_emit->blx(a32::r0);

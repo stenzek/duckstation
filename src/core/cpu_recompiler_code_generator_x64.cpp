@@ -3073,9 +3073,6 @@ CodeCache::DispatcherFunction CodeGenerator::CompileDispatcher()
   // eax <- pc
   m_emit->mov(m_emit->eax, m_emit->dword[m_emit->rbp + offsetof(State, regs.pc)]);
 
-  // current_instruction_pc <- pc (eax)
-  m_emit->mov(m_emit->dword[m_emit->rbp + offsetof(State, current_instruction_pc)], m_emit->eax);
-
   // rcx <- s_fast_map[pc >> 16]
   EmitLoadGlobalAddress(Xbyak::Operand::RBX, CodeCache::GetFastMapPointer());
   m_emit->mov(m_emit->ecx, m_emit->eax);

@@ -1165,6 +1165,7 @@ bool CodeGenerator::Compile_Fallback(const CodeBlockInstruction& cbi)
     m_register_cache.WriteLoadDelayToCPU(true);
   }
 
+  EmitStoreCPUStructField(offsetof(State, current_instruction_pc), Value::FromConstantU32(cbi.pc));
   EmitStoreCPUStructField(offsetof(State, current_instruction.bits), Value::FromConstantU32(cbi.instruction.bits));
 
   // emit the function call
@@ -2341,7 +2342,6 @@ bool CodeGenerator::Compile_Branch(const CodeBlockInstruction& cbi)
                                 &return_to_dispatcher);
 
           // we're committed at this point :D
-          EmitStoreCPUStructField(offsetof(State, current_instruction_pc), branch_target);
           EmitEndBlock(true, false);
 
           const void* jump_pointer = GetCurrentCodePointer();
@@ -2368,21 +2368,14 @@ bool CodeGenerator::Compile_Branch(const CodeBlockInstruction& cbi)
       if (condition != Condition::Always)
       {
         WriteNewPC(next_pc, true);
-        EmitStoreCPUStructField(offsetof(State, current_instruction_pc), next_pc);
       }
       else
       {
         WriteNewPC(branch_target, true);
-        EmitStoreCPUStructField(offsetof(State, current_instruction_pc), branch_target);
       }
 
       EmitConditionalBranch(Condition::GreaterEqual, false, pending_ticks.GetHostRegister(), downcount,
                             &return_to_dispatcher);
-
-      if (condition != Condition::Always)
-        EmitStoreCPUStructField(offsetof(State, current_instruction_pc), next_pc);
-      else
-        EmitStoreCPUStructField(offsetof(State, current_instruction_pc), branch_target);
 
       EmitEndBlock(true, false);
 

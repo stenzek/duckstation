@@ -450,7 +450,6 @@ void ExecuteRecompiler()
 #endif
 
       const u32 pc = g_state.regs.pc;
-      g_state.current_instruction_pc = pc;
       s_single_block_asm_dispatcher(s_fast_map[pc >> 16][pc >> 2]);
     }
 
@@ -802,8 +801,10 @@ void FastCompileBlockFunction()
   if (block)
   {
     s_single_block_asm_dispatcher(block->host_code);
+    return;
   }
-  else if (g_settings.gpu_pgxp_enable)
+
+  if (g_settings.gpu_pgxp_enable)
   {
     if (g_settings.gpu_pgxp_cpu)
       InterpretUncachedBlock<PGXPMode::CPU>();
