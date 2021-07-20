@@ -2250,7 +2250,8 @@ CodeCache::DispatcherFunction CodeGenerator::CompileDispatcher()
   m_emit->str(a64::w8, a64::MemOperand(GetHostReg64(RCPUPTR), offsetof(State, current_instruction_pc)));
 
   // blr(x9[pc * 2]) (fast_map[pc >> 2])
-  m_emit->ldr(a64::x8, a64::MemOperand(a64::x9, a64::x8, a64::LSL, 2));
+  m_emit->lsr(a64::w8, a64::w8, 2);
+  m_emit->ldr(a64::x8, a64::MemOperand(a64::x9, a64::x8, a64::LSL, 3));
   m_emit->blr(a64::x8);
 
   // end while

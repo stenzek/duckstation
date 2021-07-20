@@ -206,7 +206,6 @@ private:
 
   Value CalculatePC(u32 offset = 0);
   Value GetCurrentInstructionPC(u32 offset = 0);
-  void UpdateCurrentInstructionPC(bool commit);
   void WriteNewPC(const Value& value, bool commit);
 
   Value DoGTERegisterRead(u32 index);
@@ -248,9 +247,9 @@ private:
 
   TickCount m_delayed_cycles_add = 0;
   TickCount m_gte_done_cycle = 0;
-  TickCount m_pc_offset = 0;
-  TickCount m_current_instruction_pc_offset = 0;
-  TickCount m_next_pc_offset = 0;
+
+  u32 m_pc = 0;
+  bool m_pc_valid = false;
 
   // whether various flags need to be reset.
   bool m_current_instruction_in_branch_delay_slot_dirty = false;

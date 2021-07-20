@@ -2612,48 +2612,32 @@ void CodeGenerator::EmitCancelInterpreterLoadDelayForReg(Reg reg)
 
 void CodeGenerator::EmitICacheCheckAndUpdate()
 {
-  Value pc = CalculatePC();
-  Value seg = m_register_cache.AllocateScratch(RegSize_32);
-  m_register_cache.InhibitAllocation();
-
-  m_emit->mov(GetHostReg32(seg), GetHostReg32(pc));
-  m_emit->shr(GetHostReg32(seg), 29);
-
-  Xbyak::Label is_cached;
-  m_emit->cmp(GetHostReg32(seg), 4);
-  m_emit->jle(is_cached);
-
-  // uncached
-  Xbyak::Label done;
-  m_emit->add(m_emit->dword[GetCPUPtrReg() + offsetof(State, pending_ticks)],
-              static_cast<u32>(m_block->uncached_fetch_ticks));
-  m_emit->jmp(done, Xbyak::CodeGenerator::T_NEAR);
-
-  // cached
-  m_emit->L(is_cached);
-  m_emit->and_(GetHostReg32(pc), ICACHE_TAG_ADDRESS_MASK);
-
-  VirtualMemoryAddress current_address = (m_block->instructions[0].pc & ICACHE_TAG_ADDRESS_MASK);
-  for (u32 i = 0; i < m_block->icache_line_count; i++, current_address += ICACHE_LINE_SIZE)
+  if (GetSegmentForAddress(m_pc) >= Segment::KSEG1)
   {
-    const TickCount fill_ticks = GetICacheFillTicks(current_address);
-    if (fill_ticks <= 0)
-      continue;
-
-    const u32 line = GetICacheLine(current_address);
-    const u32 offset = offsetof(State, icache_tags) + (line * sizeof(u32));
-    Xbyak::Label cache_hit;
-
-    m_emit->cmp(GetHostReg32(pc), m_emit->dword[GetCPUPtrReg() + offset]);
-    m_emit->je(cache_hit);
-    m_emit->mov(m_emit->dword[GetCPUPtrReg() + offset], GetHostReg32(pc));
-    m_emit->add(m_emit->dword[GetCPUPtrReg() + offsetof(State, pending_ticks)], static_cast<u32>(fill_ticks));
-    m_emit->L(cache_hit);
-    m_emit->add(GetHostReg32(pc), ICACHE_LINE_SIZE);
+    m_emit->add(m_emit->dword[GetCPUPtrReg() + offsetof(State, pending_ticks)],
+                static_cast<u32>(m_block->uncached_fetch_ticks));
   }
+  else
+  {
+    VirtualMemoryAddress current_pc = m_pc & ICACHE_TAG_ADDRESS_MASK;
+    for (u32 i = 0; i < m_block->icache_line_count; i++, current_pc += ICACHE_LINE_SIZE)
+    {
+      const VirtualMemoryAddress tag = GetICacheTagForAddress(current_pc);
+      const TickCount fill_ticks = GetICacheFillTicks(current_pc);
+      if (fill_ticks <= 0)
+        continue;
 
-  m_emit->L(done);
-  m_register_cache.UninhibitAllocation();
+      const u32 line = GetICacheLine(current_pc);
+      const u32 offset = offsetof(State, icache_tags) + (line * sizeof(u32));
+      Xbyak::Label cache_hit;
+
+      m_emit->cmp(m_emit->dword[GetCPUPtrReg() + offset], tag);
+      m_emit->je(cache_hit);
+      m_emit->mov(m_emit->dword[GetCPUPtrReg() + offset], tag);
+      m_emit->add(m_emit->dword[GetCPUPtrReg() + offsetof(State, pending_ticks)], static_cast<u32>(fill_ticks));
+      m_emit->L(cache_hit);
+    }
+  }
 }
 
 void CodeGenerator::EmitStallUntilGTEComplete()

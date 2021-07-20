@@ -164,45 +164,49 @@ void CodeGenerator::EmitStoreGuestMemory(const CodeBlockInstruction& cbi, const 
 
 void CodeGenerator::EmitICacheCheckAndUpdate()
 {
-  Value pc = CalculatePC();
   Value temp = m_register_cache.AllocateScratch(RegSize_32);
-  m_register_cache.InhibitAllocation();
 
-  EmitShr(temp.GetHostRegister(), pc.GetHostRegister(), RegSize_32, Value::FromConstantU32(29));
-  LabelType is_cached;
-  LabelType ready_to_execute;
-  EmitConditionalBranch(Condition::LessEqual, false, temp.GetHostRegister(), Value::FromConstantU32(4), &is_cached);
-  EmitLoadCPUStructField(temp.host_reg, RegSize_32, offsetof(State, pending_ticks));
-  EmitAdd(temp.host_reg, temp.host_reg, Value::FromConstantU32(static_cast<u32>(m_block->uncached_fetch_ticks)), false);
-  EmitStoreCPUStructField(offsetof(State, pending_ticks), temp);
-  EmitBranch(&ready_to_execute);
-  EmitBindLabel(&is_cached);
-
-  // cached path
-  EmitAnd(pc.GetHostRegister(), pc.GetHostRegister(), Value::FromConstantU32(ICACHE_TAG_ADDRESS_MASK));
-  VirtualMemoryAddress current_address = (m_block->instructions[0].pc & ICACHE_TAG_ADDRESS_MASK);
-  for (u32 i = 0; i < m_block->icache_line_count; i++, current_address += ICACHE_LINE_SIZE)
+  if (GetSegmentForAddress(m_pc) >= Segment::KSEG1)
   {
-    const TickCount fill_ticks = GetICacheFillTicks(current_address);
-    if (fill_ticks <= 0)
-      continue;
-
-    const u32 line = GetICacheLine(current_address);
-    const u32 offset = offsetof(State, icache_tags) + (line * sizeof(u32));
-    LabelType cache_hit;
-
-    EmitLoadCPUStructField(temp.GetHostRegister(), RegSize_32, offset);
-    EmitConditionalBranch(Condition::Equal, false, temp.GetHostRegister(), pc, &cache_hit);
-    EmitLoadCPUStructField(temp.host_reg, RegSize_32, offsetof(State, pending_ticks));
-    EmitStoreCPUStructField(offset, pc);
-    EmitAdd(temp.host_reg, temp.host_reg, Value::FromConstantU32(static_cast<u32>(fill_ticks)), false);
+    EmitLoadCPUStructField(temp.GetHostRegister(), RegSize_32, offsetof(State, pending_ticks));
+    EmitAdd(temp.GetHostRegister(), temp.GetHostRegister(),
+            Value::FromConstantU32(static_cast<u32>(m_block->uncached_fetch_ticks)), false);
     EmitStoreCPUStructField(offsetof(State, pending_ticks), temp);
-    EmitBindLabel(&cache_hit);
-    EmitAdd(pc.GetHostRegister(), pc.GetHostRegister(), Value::FromConstantU32(ICACHE_LINE_SIZE), false);
   }
+  else
+  {
+    // cached path
+    Value temp2 = m_register_cache.AllocateScratch(RegSize_32);
 
-  EmitBindLabel(&ready_to_execute);
-  m_register_cache.UninhibitAllocation();
+    m_register_cache.InhibitAllocation();
+
+    VirtualMemoryAddress current_pc = m_pc & ICACHE_TAG_ADDRESS_MASK;
+    for (u32 i = 0; i < m_block->icache_line_count; i++, current_pc += ICACHE_LINE_SIZE)
+    {
+      const VirtualMemoryAddress tag = GetICacheTagForAddress(current_pc);
+      const TickCount fill_ticks = GetICacheFillTicks(current_pc);
+      if (fill_ticks <= 0)
+        continue;
+
+      const u32 line = GetICacheLine(current_pc);
+      const u32 offset = offsetof(State, icache_tags) + (line * sizeof(u32));
+      LabelType cache_hit;
+
+      EmitLoadCPUStructField(temp.GetHostRegister(), RegSize_32, offset);
+      EmitCopyValue(temp2.GetHostRegister(), Value::FromConstantU32(current_pc));
+      EmitCmp(temp2.GetHostRegister(), temp);
+      EmitConditionalBranch(Condition::Equal, false, temp.GetHostRegister(), temp2, &cache_hit);
+
+      EmitLoadCPUStructField(temp.GetHostRegister(), RegSize_32, offsetof(State, pending_ticks));
+      EmitStoreCPUStructField(offset, temp2);
+      EmitAdd(temp.GetHostRegister(), temp.GetHostRegister(), Value::FromConstantU32(static_cast<u32>(fill_ticks)),
+              false);
+      EmitStoreCPUStructField(offsetof(State, pending_ticks), temp);
+      EmitBindLabel(&cache_hit);
+    }
+
+    m_register_cache.UninhibitAllocation();
+  }
 }
 
 #endif

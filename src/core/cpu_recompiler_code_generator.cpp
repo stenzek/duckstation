@@ -21,6 +21,8 @@ bool CodeGenerator::CompileBlock(CodeBlock* block, CodeBlock::HostCodePointer* o
   m_block = block;
   m_block_start = block->instructions.data();
   m_block_end = block->instructions.data() + block->instructions.size();
+  m_pc = block->GetPC();
+  m_pc_valid = true;
 
   EmitBeginBlock();
   BlockPrologue();
@@ -955,7 +957,7 @@ void CodeGenerator::BlockPrologue()
 
   EmitStoreCPUStructField(offsetof(State, exception_raised), Value::FromConstantU8(0));
 
-  if (m_block->uncached_fetch_ticks > 0)
+  if (m_block->uncached_fetch_ticks > 0 || m_block->icache_line_count > 0)
     EmitICacheCheckAndUpdate();
 
   // we don't know the state of the last block, so assume load delays might be in progress
@@ -965,10 +967,6 @@ void CodeGenerator::BlockPrologue()
   m_current_instruction_was_branch_taken_dirty = false;
   m_load_delay_dirty = true;
   m_gte_busy_cycles_dirty = true;
-
-  m_pc_offset = 0;
-  m_current_instruction_pc_offset = 0;
-  m_next_pc_offset = 4;
 }
 
 void CodeGenerator::BlockEpilogue()
@@ -992,9 +990,8 @@ void CodeGenerator::InstructionPrologue(const CodeBlockInstruction& cbi, TickCou
 #endif
 
   // move instruction offsets forward
-  m_current_instruction_pc_offset = m_pc_offset;
-  m_pc_offset = m_next_pc_offset;
-  m_next_pc_offset += 4;
+  if (m_pc_valid)
+    m_pc += 4;
 
   // reset dirty flags
   if (m_branch_was_taken_dirty)
@@ -1129,38 +1126,15 @@ void CodeGenerator::StallUntilGTEComplete()
 
 Value CodeGenerator::CalculatePC(u32 offset /* = 0 */)
 {
-  Value value = m_register_cache.AllocateScratch(RegSize_32);
-  EmitLoadGuestRegister(value.GetHostRegister(), Reg::pc);
+  if (!m_pc_valid)
+    Panic("Attempt to get an indeterminate PC");
 
-  const u32 apply_offset = m_pc_offset + offset;
-  if (apply_offset > 0)
-    EmitAdd(value.GetHostRegister(), value.GetHostRegister(), Value::FromConstantU32(apply_offset), false);
-
-  return value;
+  return Value::FromConstantU32(m_pc + offset);
 }
 
 Value CodeGenerator::GetCurrentInstructionPC(u32 offset /* = 0 */)
 {
-  Value value = m_register_cache.AllocateScratch(RegSize_32);
-  EmitLoadCPUStructField(value.GetHostRegister(), RegSize_32, offsetof(State, current_instruction_pc));
-
-  const u32 apply_offset = m_current_instruction_pc_offset + offset;
-  if (apply_offset > 0)
-    EmitAdd(value.GetHostRegister(), value.GetHostRegister(), Value::FromConstantU32(apply_offset), false);
-
-  return value;
-}
-
-void CodeGenerator::UpdateCurrentInstructionPC(bool commit)
-{
-  if (m_current_instruction_pc_offset > 0)
-  {
-    EmitAddCPUStructField(offsetof(State, current_instruction_pc),
-                          Value::FromConstantU32(m_current_instruction_pc_offset));
-
-    if (commit)
-      m_current_instruction_pc_offset = 0;
-  }
+  return Value::FromConstantU32(m_current_instruction->pc);
 }
 
 void CodeGenerator::WriteNewPC(const Value& value, bool commit)
@@ -1168,7 +1142,11 @@ void CodeGenerator::WriteNewPC(const Value& value, bool commit)
   // TODO: This _could_ be moved into the register cache, but would it gain anything?
   EmitStoreGuestRegister(Reg::pc, value);
   if (commit)
-    m_next_pc_offset = 0;
+  {
+    m_pc_valid = value.IsConstant();
+    if (m_pc_valid)
+      m_pc = static_cast<u32>(value.constant_value);
+  }
 }
 
 bool CodeGenerator::Compile_Fallback(const CodeBlockInstruction& cbi)
@@ -2209,9 +2187,13 @@ bool CodeGenerator::Compile_Branch(const CodeBlockInstruction& cbi)
       m_register_cache.FlushGuestRegister(lr_reg, false, true);
 
     // compute return address, which is also set as the new pc when the branch isn't taken
-    Value next_pc;
-    if (condition != Condition::Always || lr_reg != Reg::count)
-      next_pc = CalculatePC(4);
+    Value next_pc = CalculatePC(4);
+    DebugAssert(next_pc.IsConstant());
+    if (condition != Condition::Always)
+    {
+      next_pc = m_register_cache.AllocateScratch(RegSize_32);
+      EmitCopyValue(next_pc.GetHostRegister(), CalculatePC(4));
+    }
 
     LabelType branch_not_taken;
     if (condition != Condition::Always)
