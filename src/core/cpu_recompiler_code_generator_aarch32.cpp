@@ -2028,29 +2028,18 @@ CodeCache::DispatcherFunction CodeGenerator::CompileDispatcher()
 
   // time to lookup the block
   // r0 <- pc
-  m_emit->Mov(a32::r3, Bus::BIOS_BASE);
   m_emit->ldr(a32::r0, a32::MemOperand(GetHostReg32(RCPUPTR), offsetof(State, regs.pc)));
 
-  // current_instruction_pc <- pc (eax)
+  // r1 <- s_fast_map[pc >> 16]
+  EmitLoadGlobalAddress(2, CodeCache::GetFastMapPointer());
+  m_emit->lsr(a32::r1, a32::r0, 16);
+  m_emit->ldr(a32::r1, a32::MemOperand(a32::r2, a32::r1, a32::LSL, 2));
+
+  // current_instruction_pc <- pc (r0)
   m_emit->str(a32::r0, a32::MemOperand(GetHostReg32(RCPUPTR), offsetof(State, current_instruction_pc)));
 
-  // r1 <- (pc & RAM_MASK) >> 2
-  m_emit->and_(a32::r1, a32::r0, Bus::g_ram_mask);
-  m_emit->lsr(a32::r1, a32::r1, 2);
-
-  // r2 <- ((pc & BIOS_MASK) >> 2) + FAST_MAP_RAM_SLOT_COUNT
-  m_emit->and_(a32::r2, a32::r0, Bus::BIOS_MASK);
-  m_emit->lsr(a32::r2, a32::r2, 2);
-  m_emit->add(a32::r2, a32::r2, FAST_MAP_RAM_SLOT_COUNT);
-
-  // if ((r0 (pc) & PHYSICAL_MEMORY_ADDRESS_MASK) >= BIOS_BASE) { use r2 as index }
-  m_emit->and_(a32::r0, a32::r0, PHYSICAL_MEMORY_ADDRESS_MASK);
-  m_emit->cmp(a32::r0, a32::r3);
-  m_emit->mov(a32::ge, a32::r1, a32::r2);
-
-  // ebx contains our index, rax <- fast_map[ebx * 8], rax(), continue
-  EmitLoadGlobalAddress(0, CodeCache::GetFastMapPointer());
-  m_emit->ldr(a32::r0, a32::MemOperand(a32::r0, a32::r1, a32::LSL, 2));
+  // blr(r1[pc]) (fast_map[pc >> 2])
+  m_emit->ldr(a32::r0, a32::MemOperand(a32::r1, a32::r0));
   m_emit->blx(a32::r0);
 
   // end while

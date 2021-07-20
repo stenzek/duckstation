@@ -46,29 +46,141 @@ alignas(Recompiler::CODE_STORAGE_ALIGNMENT) static u8
 #endif
 
 static JitCodeBuffer s_code_buffer;
+static FastMapTable s_fast_map[FAST_MAP_TABLE_COUNT];
+static std::unique_ptr<CodeBlock::HostCodePointer[]> s_fast_map_pointers;
 
-std::array<CodeBlock::HostCodePointer, FAST_MAP_TOTAL_SLOT_COUNT> s_fast_map;
 DispatcherFunction s_asm_dispatcher;
 SingleBlockDispatcherFunction s_single_block_asm_dispatcher;
 
-ALWAYS_INLINE static u32 GetFastMapIndex(u32 pc)
+static FastMapTable DecodeFastMapPointer(u32 slot, FastMapTable ptr)
 {
-  return ((pc & PHYSICAL_MEMORY_ADDRESS_MASK) >= Bus::BIOS_BASE) ?
-           (FAST_MAP_RAM_SLOT_COUNT + ((pc & Bus::BIOS_MASK) >> 2)) :
-           ((pc & Bus::g_ram_mask) >> 2);
+  if constexpr (sizeof(void*) == 8)
+    return reinterpret_cast<FastMapTable>(reinterpret_cast<u8*>(ptr) + (static_cast<u64>(slot) << 17));
+  else
+    return reinterpret_cast<FastMapTable>(reinterpret_cast<u8*>(ptr) + (slot << 16));
+}
+
+static FastMapTable EncodeFastMapPointer(u32 slot, FastMapTable ptr)
+{
+  if constexpr (sizeof(void*) == 8)
+    return reinterpret_cast<FastMapTable>(reinterpret_cast<u8*>(ptr) - (static_cast<u64>(slot) << 17));
+  else
+    return reinterpret_cast<FastMapTable>(reinterpret_cast<u8*>(ptr) - (slot << 16));
+}
+
+static CodeBlock::HostCodePointer* OffsetFastMapPointer(FastMapTable fake_ptr, u32 pc)
+{
+  u8* fake_byte_ptr = reinterpret_cast<u8*>(fake_ptr);
+  if constexpr (sizeof(void*) == 8)
+    return reinterpret_cast<CodeBlock::HostCodePointer*>(fake_byte_ptr + (static_cast<u64>(pc) << 1));
+  else
+    return reinterpret_cast<CodeBlock::HostCodePointer*>(fake_byte_ptr + pc);
 }
 
 static void CompileDispatcher();
 static void FastCompileBlockFunction();
+static void InvalidCodeFunction();
+
+static constexpr u32 GetTableCount(u32 start, u32 end)
+{
+  return ((end >> FAST_MAP_TABLE_SHIFT) - (start >> FAST_MAP_TABLE_SHIFT)) + 1;
+}
+
+static void AllocateFastMapTables(u32 start, u32 end, FastMapTable& table_ptr)
+{
+  const u32 start_slot = start >> FAST_MAP_TABLE_SHIFT;
+  const u32 count = GetTableCount(start, end);
+  for (u32 i = 0; i < count; i++)
+  {
+    const u32 slot = start_slot + i;
+
+    s_fast_map[slot] = EncodeFastMapPointer(slot, table_ptr);
+    table_ptr += FAST_MAP_TABLE_SIZE;
+  }
+}
+
+static void AllocateFastMap()
+{
+  static constexpr VirtualMemoryAddress ranges[][2] = {
+    {0x00000000, 0x00800000}, // RAM
+    {0x1F000000, 0x1F800000}, // EXP1
+    {0x1FC00000, 0x1FC80000}, // BIOS
+
+    {0x80000000, 0x80800000}, // RAM
+    {0x9F000000, 0x9F800000}, // EXP1
+    {0x9FC00000, 0x9FC80000}, // BIOS
+
+    {0xA0000000, 0xA0800000}, // RAM
+    {0xBF000000, 0xBF800000}, // EXP1
+    {0xBFC00000, 0xBFC80000}  // BIOS
+  };
+
+  u32 num_tables = 1; // unreachable table
+  for (u32 i = 0; i < countof(ranges); i++)
+    num_tables += GetTableCount(ranges[i][0], ranges[i][1]);
+
+  const u32 num_slots = FAST_MAP_TABLE_SIZE * num_tables;
+  if (!s_fast_map_pointers)
+    s_fast_map_pointers = std::make_unique<CodeBlock::HostCodePointer[]>(num_slots);
+
+  FastMapTable table_ptr = s_fast_map_pointers.get();
+  FastMapTable table_ptr_end = table_ptr + num_slots;
+
+  // Fill the first table with invalid/unreachable.
+  for (u32 i = 0; i < FAST_MAP_TABLE_SIZE; i++)
+    table_ptr[i] = InvalidCodeFunction;
+
+  // And the remaining with block compile pointers.
+  for (u32 i = FAST_MAP_TABLE_SIZE; i < num_slots; i++)
+    table_ptr[i] = FastCompileBlockFunction;
+
+  // Mark everything as unreachable to begin with.
+  for (u32 i = 0; i < FAST_MAP_TABLE_COUNT; i++)
+    s_fast_map[i] = EncodeFastMapPointer(i, table_ptr);
+  table_ptr += FAST_MAP_TABLE_SIZE;
+
+  // Allocate ranges.
+  for (u32 i = 0; i < countof(ranges); i++)
+    AllocateFastMapTables(ranges[i][0], ranges[i][1], table_ptr);
+
+  Assert(table_ptr == table_ptr_end);
+}
 
 static void ResetFastMap()
 {
-  s_fast_map.fill(FastCompileBlockFunction);
+  if (!s_fast_map_pointers)
+    return;
+
+  for (u32 i = 0; i < FAST_MAP_TABLE_COUNT; i++)
+  {
+    FastMapTable ptr = DecodeFastMapPointer(i, s_fast_map[i]);
+    if (ptr == s_fast_map_pointers.get())
+      continue;
+
+    for (u32 j = 0; j < FAST_MAP_TABLE_SIZE; j++)
+      ptr[j] = FastCompileBlockFunction;
+  }
+}
+
+static void FreeFastMap()
+{
+  std::memset(s_fast_map, 0, sizeof(s_fast_map));
+  s_fast_map_pointers.reset();
 }
 
 static void SetFastMap(u32 pc, CodeBlock::HostCodePointer function)
 {
-  s_fast_map[GetFastMapIndex(pc)] = function;
+  if (!s_fast_map_pointers)
+    return;
+
+  const u32 slot = pc >> FAST_MAP_TABLE_SHIFT;
+  FastMapTable encoded_ptr = s_fast_map[slot];
+
+  const FastMapTable table_ptr = DecodeFastMapPointer(slot, encoded_ptr);
+  Assert(table_ptr != nullptr && table_ptr != s_fast_map_pointers.get());
+
+  CodeBlock::HostCodePointer* ptr = OffsetFastMapPointer(encoded_ptr, pc);
+  *ptr = function;
 }
 
 #endif
@@ -138,11 +250,13 @@ void Initialize()
       Panic("Failed to initialize code space");
     }
 
+    AllocateFastMap();
+
     if (g_settings.IsUsingFastmem() && !InitializeFastmem())
       Panic("Failed to initialize fastmem");
 
-    ResetFastMap();
     CompileDispatcher();
+    ResetFastMap();
   }
 #endif
 }
@@ -169,6 +283,7 @@ void Shutdown()
   ClearState();
 #ifdef WITH_RECOMPILER
   ShutdownFastmem();
+  FreeFastMap();
   s_code_buffer.Destroy();
 #endif
 }
@@ -305,9 +420,9 @@ void CompileDispatcher()
   s_code_buffer.WriteProtect(true);
 }
 
-CodeBlock::HostCodePointer* GetFastMapPointer()
+FastMapTable* GetFastMapPointer()
 {
-  return s_fast_map.data();
+  return s_fast_map;
 }
 
 void ExecuteRecompiler()
@@ -334,8 +449,7 @@ void ExecuteRecompiler()
 
       const u32 pc = g_state.regs.pc;
       g_state.current_instruction_pc = pc;
-      const u32 fast_map_index = GetFastMapIndex(pc);
-      s_single_block_asm_dispatcher(s_fast_map[fast_map_index]);
+      s_single_block_asm_dispatcher(s_fast_map[pc >> 16][pc >> 2]);
     }
 
     TimingEvents::RunEvents();
@@ -503,7 +617,7 @@ recompile:
     if (block->recompile_count >= RECOMPILE_COUNT_TO_FALL_BACK_TO_INTERPRETER)
     {
       Log_PerfPrintf("Block 0x%08X has been recompiled %u times in %u frames, falling back to interpreter",
-        block->GetPC(), block->recompile_count, frame_diff);
+                     block->GetPC(), block->recompile_count, frame_diff);
 
       FallbackExistingBlockToInterpreter(block);
       return false;
@@ -683,11 +797,36 @@ void FastCompileBlockFunction()
 {
   CodeBlock* block = LookupBlock(GetNextBlockKey());
   if (block)
+  {
     s_single_block_asm_dispatcher(block->host_code);
+  }
   else if (g_settings.gpu_pgxp_enable)
-    InterpretUncachedBlock<PGXPMode::Memory>();
+  {
+    if (g_settings.gpu_pgxp_cpu)
+      InterpretUncachedBlock<PGXPMode::CPU>();
+    else
+      InterpretUncachedBlock<PGXPMode::Memory>();
+  }
   else
+  {
     InterpretUncachedBlock<PGXPMode::Disabled>();
+  }
+}
+
+void InvalidCodeFunction()
+{
+  Log_ErrorPrintf("Trying to execute invalid code at 0x%08X", g_state.regs.pc);
+  if (g_settings.gpu_pgxp_enable)
+  {
+    if (g_settings.gpu_pgxp_cpu)
+      InterpretUncachedBlock<PGXPMode::CPU>();
+    else
+      InterpretUncachedBlock<PGXPMode::Memory>();
+  }
+  else
+  {
+    InterpretUncachedBlock<PGXPMode::Disabled>();
+  }
 }
 
 #endif

@@ -2996,29 +2996,18 @@ CodeCache::DispatcherFunction CodeGenerator::CompileDispatcher()
   // eax <- pc
   m_emit->mov(m_emit->eax, m_emit->dword[m_emit->rbp + offsetof(State, regs.pc)]);
 
-  // ebx <- (pc & RAM_MASK) >> 2
-  m_emit->mov(m_emit->ebx, m_emit->eax);
-  m_emit->and_(m_emit->ebx, Bus::g_ram_mask);
-  m_emit->shr(m_emit->ebx, 2);
-
-  // ecx <- ((pc & BIOS_MASK) >> 2) + FAST_MAP_RAM_SLOT_COUNT
-  m_emit->mov(m_emit->ecx, m_emit->eax);
-  m_emit->and_(m_emit->ecx, Bus::BIOS_MASK);
-  m_emit->shr(m_emit->ecx, 2);
-  m_emit->add(m_emit->ecx, FAST_MAP_RAM_SLOT_COUNT);
-
   // current_instruction_pc <- pc (eax)
   m_emit->mov(m_emit->dword[m_emit->rbp + offsetof(State, current_instruction_pc)], m_emit->eax);
 
-  // if ((eax (pc) & PHYSICAL_MEMORY_ADDRESS_MASK) >= BIOS_BASE) { use ecx as index }
-  m_emit->and_(m_emit->eax, PHYSICAL_MEMORY_ADDRESS_MASK);
-  m_emit->cmp(m_emit->eax, Bus::BIOS_BASE);
-  m_emit->cmovge(m_emit->ebx, m_emit->ecx);
+  // rcx <- s_fast_map[pc >> 16]
+  EmitLoadGlobalAddress(Xbyak::Operand::RBX, CodeCache::GetFastMapPointer());
+  m_emit->mov(m_emit->ecx, m_emit->eax);
+  m_emit->shr(m_emit->ecx, 16);
+  m_emit->mov(m_emit->rcx, m_emit->qword[m_emit->rbx + m_emit->rcx * 8]);
 
-  // ebx contains our index, rax <- fast_map[ebx * 8], rax(), continue
-  EmitLoadGlobalAddress(Xbyak::Operand::RAX, CodeCache::GetFastMapPointer());
-  m_emit->mov(m_emit->rax, m_emit->qword[m_emit->rax + m_emit->rbx * 8]);
-  m_emit->call(m_emit->rax);
+  // call(rcx[pc * 2]) (fast_map[pc >> 2])
+  m_emit->call(m_emit->qword[m_emit->rcx + m_emit->rax * 2]);
+
   m_emit->jmp(main_loop);
 
   // end while

@@ -16,13 +16,6 @@
 
 namespace CPU {
 
-enum : u32
-{
-  FAST_MAP_RAM_SLOT_COUNT = Bus::RAM_8MB_SIZE / 4,
-  FAST_MAP_BIOS_SLOT_COUNT = Bus::BIOS_SIZE / 4,
-  FAST_MAP_TOTAL_SLOT_COUNT = FAST_MAP_RAM_SLOT_COUNT + FAST_MAP_BIOS_SLOT_COUNT,
-};
-
 union CodeBlockKey
 {
   u32 bits;
@@ -107,6 +100,15 @@ struct CodeBlock
 
 namespace CodeCache {
 
+enum : u32
+{
+  FAST_MAP_TABLE_COUNT = 0x10000,
+  FAST_MAP_TABLE_SIZE = 0x10000 / 4, // 16384
+  FAST_MAP_TABLE_SHIFT = 16,
+};
+
+using FastMapTable = CodeBlock::HostCodePointer*;
+
 void Initialize();
 void Shutdown();
 void Execute();
@@ -115,7 +117,7 @@ void Execute();
 using DispatcherFunction = void (*)();
 using SingleBlockDispatcherFunction = void(*)(const CodeBlock::HostCodePointer);
 
-CodeBlock::HostCodePointer* GetFastMapPointer();
+FastMapTable* GetFastMapPointer();
 void ExecuteRecompiler();
 #endif
 
