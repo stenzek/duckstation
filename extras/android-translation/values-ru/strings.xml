@@ -229,7 +229,7 @@
         <string name="action_show_game_grid">Вид сетки</string>
         <string name="settings_touch_gliding">Скольжение касаний</string>
         <string name="settings_summary_touch_gliding">Позволяет нажимать комбинации кнопок скольжением пальца по экрану.</string>
-	<string name="menu_game_list_entry_game_properties">Свойства</string>
+	<string name="menu_game_list_entry_game_properties">Настройки игры</string>
 	<string name="emulation_activity_change_disc_select_new_file">Выбрать файл...</string>
 	<string name="settings_achievements_enable">Включить достижения</string>
     	<string name="settings_summary_achievements_enable">Если опция включена и выполнен вход в учётную запись, DuckStation будет искать достижения при запуске игр.</string>
@@ -309,7 +309,7 @@
 	<string name="memory_card_editor_import_card_read_failed">Не удалось прочитать \'%s\'.</string>
 	<string name="memory_card_editor_import_card_failed">Не удалось импортировать карту \'%s\'. Возможно, формат не поддерживается.</string>
 	<string name="memory_card_editor_import_card_success">Карта \'%s\' импортирована.</string>
-	<string name="menu_game_list_entry_choose_cover_image">Обложка</string>
+	<string name="menu_game_list_entry_choose_cover_image">Выбор обложки</string>
 	<string name="controller_settings_vibration_unsupported">Данное устройство не поддерживает вибрацию.</string>
 	<string name="controller_settings_automatic_mapping">Выполнить автонастройку</string>
 	<string name="controller_settings_summary_automatic_mapping">Попытаться автоматически привязать все кнопки/оси для подключенного устройства.</string>
@@ -387,4 +387,5 @@
     	<string name="add_patch_code_import_from_file">Импорт из файла</string>
     	<string name="add_patch_code_cancel">Отмена</string>
     	<string name="add_patch_code_add">Добавить</string>
+	<string name="menu_game_list_entry_create_launcher_shortcut">Создать ярлык</string>
 </resources>
