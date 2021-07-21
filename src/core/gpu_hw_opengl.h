@@ -99,7 +99,7 @@ private:
   std::array<std::array<std::array<std::array<GL::Program, 2>, 2>, 9>, 4>
     m_render_programs;                                          // [render_mode][texture_mode][dithering][interlacing]
   std::array<std::array<GL::Program, 3>, 2> m_display_programs; // [depth_24][interlaced]
-  GL::Program m_vram_interlaced_fill_program;
+  std::array<std::array<GL::Program, 2>, 2> m_vram_fill_programs;
   GL::Program m_vram_read_program;
   GL::Program m_vram_write_program;
   GL::Program m_vram_copy_program;

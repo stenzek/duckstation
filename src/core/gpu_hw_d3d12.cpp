@@ -420,8 +420,8 @@ bool GPU_HW_D3D12::CompilePipelines()
                              m_true_color, m_scaled_dithering, m_texture_filtering, m_using_uv_limits,
                              m_pgxp_depth_buffer, m_supports_dual_source_blend);
 
-  ShaderCompileProgressTracker progress("Compiling Pipelines", 2 + (4 * 9 * 2 * 2) + (2 * 4 * 5 * 9 * 2 * 2) + 1 + 2 +
-                                                                 2 + 2 + 1 + 1 + (2 * 3) + 1);
+  ShaderCompileProgressTracker progress("Compiling Pipelines", 2 + (4 * 9 * 2 * 2) + (2 * 4 * 5 * 9 * 2 * 2) + 1 +
+                                                                 (2 * 2) + 2 + 2 + 1 + 1 + (2 * 3) + 1);
 
   // vertex shaders - [textured]
   // fragment shaders - [render_mode][texture_mode][dithering][interlacing]
@@ -561,23 +561,24 @@ bool GPU_HW_D3D12::CompilePipelines()
   gpbuilder.SetDepthStencilFormat(m_vram_depth_texture.GetFormat());
 
   // VRAM fill
+  for (u8 wrapped = 0; wrapped < 2; wrapped++)
   {
     for (u8 interlaced = 0; interlaced < 2; interlaced++)
     {
       ComPtr<ID3DBlob> fs = shader_cache.GetPixelShader(
-        (interlaced == 0) ? shadergen.GenerateFillFragmentShader() : shadergen.GenerateInterlacedFillFragmentShader());
+        shadergen.GenerateVRAMFillFragmentShader(ConvertToBoolUnchecked(wrapped), ConvertToBoolUnchecked(interlaced)));
       if (!fs)
         return false;
 
       gpbuilder.SetPixelShader(fs.Get());
       gpbuilder.SetDepthState(true, true, D3D12_COMPARISON_FUNC_ALWAYS);
 
-      m_vram_fill_pipelines[interlaced] = gpbuilder.Create(g_d3d12_context->GetDevice(), shader_cache, false);
-      if (!m_vram_fill_pipelines[interlaced])
+      m_vram_fill_pipelines[wrapped][interlaced] = gpbuilder.Create(g_d3d12_context->GetDevice(), shader_cache, false);
+      if (!m_vram_fill_pipelines[wrapped][interlaced])
         return false;
 
-      D3D12::SetObjectNameFormatted(m_vram_fill_pipelines[interlaced].Get(), "VRAM Fill Pipeline Interlacing=%u",
-                                    interlaced);
+      D3D12::SetObjectNameFormatted(m_vram_fill_pipelines[wrapped][interlaced].Get(),
+                                    "VRAM Fill Pipeline Wrapped=%u,Interlacing=%u", wrapped, interlaced);
 
       progress.Increment();
     }
@@ -994,22 +995,7 @@ void GPU_HW_D3D12::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
     FillSoftwareRendererVRAM(x, y, width, height, color);
 
   // TODO: Use fast clear
-  if ((x + width) > VRAM_WIDTH || (y + height) > VRAM_HEIGHT)
-  {
-    // CPU round trip if oversized for now.
-    Log_WarningPrintf("Oversized VRAM fill (%u-%u, %u-%u), CPU round trip", x, x + width, y, y + height);
-    ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
-    GPU::FillVRAM(x, y, width, height, color);
-    UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, m_vram_shadow.data(), false, false);
-    return;
-  }
-
   GPU_HW::FillVRAM(x, y, width, height, color);
-
-  x *= m_resolution_scale;
-  y *= m_resolution_scale;
-  width *= m_resolution_scale;
-  height *= m_resolution_scale;
 
   const VRAMFillUBOData uniforms = GetVRAMFillUBOData(x, y, width, height, color);
 
@@ -1017,8 +1003,14 @@ void GPU_HW_D3D12::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
   cmdlist->SetGraphicsRootSignature(m_single_sampler_root_signature.Get());
   cmdlist->SetGraphicsRoot32BitConstants(0, sizeof(uniforms) / sizeof(u32), &uniforms, 0);
   cmdlist->SetGraphicsRootDescriptorTable(1, g_d3d12_context->GetNullSRVDescriptor());
-  cmdlist->SetPipelineState(m_vram_fill_pipelines[BoolToUInt8(IsInterlacedRenderingEnabled())].Get());
-  D3D12::SetViewportAndScissor(cmdlist, x, y, width, height);
+  cmdlist->SetPipelineState(m_vram_fill_pipelines[BoolToUInt8(IsVRAMFillOversized(x, y, width, height))]
+                                                 [BoolToUInt8(IsInterlacedRenderingEnabled())]
+                                                   .Get());
+
+  const Common::Rectangle<u32> bounds(GetVRAMTransferBounds(x, y, width, height));
+  D3D12::SetViewportAndScissor(cmdlist, bounds.left * m_resolution_scale, bounds.top * m_resolution_scale,
+                               bounds.GetWidth() * m_resolution_scale, bounds.GetHeight() * m_resolution_scale);
+
   cmdlist->DrawInstanced(3, 1, 0, 0);
 
   RestoreGraphicsAPIState();

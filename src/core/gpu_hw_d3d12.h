@@ -92,8 +92,8 @@ private:
   // [depth_test][render_mode][texture_mode][transparency_mode][dithering][interlacing]
   DimensionalArray<ComPtr<ID3D12PipelineState>, 2, 2, 5, 9, 4, 2> m_batch_pipelines;
 
-  // [interlaced]
-  std::array<ComPtr<ID3D12PipelineState>, 2> m_vram_fill_pipelines;
+  // [wrapped][interlaced]
+  DimensionalArray<ComPtr<ID3D12PipelineState>, 2, 2> m_vram_fill_pipelines;
 
   // [depth_test]
   std::array<ComPtr<ID3D12PipelineState>, 2> m_vram_write_pipelines;

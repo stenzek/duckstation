@@ -976,6 +976,10 @@ GPU_HW::VRAMFillUBOData GPU_HW::GetVRAMFillUBOData(u32 x, u32 y, u32 width, u32 
     color = VRAMRGBA5551ToRGBA8888(VRAMRGBA8888ToRGBA5551(color));
 
   VRAMFillUBOData uniforms;
+  uniforms.u_dst_x = (x % VRAM_WIDTH) * m_resolution_scale;
+  uniforms.u_dst_y = (y % VRAM_HEIGHT) * m_resolution_scale;
+  uniforms.u_end_x = ((x + width) % VRAM_WIDTH) * m_resolution_scale;
+  uniforms.u_end_y = ((y + height) % VRAM_HEIGHT) * m_resolution_scale;
   std::tie(uniforms.u_fill_color[0], uniforms.u_fill_color[1], uniforms.u_fill_color[2], uniforms.u_fill_color[3]) =
     RGBA8ToFloat(color);
 

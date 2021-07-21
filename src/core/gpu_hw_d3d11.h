@@ -123,8 +123,7 @@ private:
   ComPtr<ID3D11VertexShader> m_screen_quad_vertex_shader;
   ComPtr<ID3D11VertexShader> m_uv_quad_vertex_shader;
   ComPtr<ID3D11PixelShader> m_copy_pixel_shader;
-  ComPtr<ID3D11PixelShader> m_vram_fill_pixel_shader;
-  ComPtr<ID3D11PixelShader> m_vram_interlaced_fill_pixel_shader;
+  std::array<std::array<ComPtr<ID3D11PixelShader>, 2>, 2> m_vram_fill_pixel_shaders;  // [wrapped][interlaced]
   ComPtr<ID3D11PixelShader> m_vram_read_pixel_shader;
   ComPtr<ID3D11PixelShader> m_vram_write_pixel_shader;
   ComPtr<ID3D11PixelShader> m_vram_copy_pixel_shader;

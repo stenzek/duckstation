@@ -125,6 +125,10 @@ protected:
 
   struct VRAMFillUBOData
   {
+    u32 u_dst_x;
+    u32 u_dst_y;
+    u32 u_end_x;
+    u32 u_end_y;
     float u_fill_color[4];
     u32 u_interlaced_displayed_field;
   };
@@ -268,11 +272,17 @@ protected:
 
   /// We need two-pass rendering when using BG-FG blending and texturing, as the transparency can be enabled
   /// on a per-pixel basis, and the opaque pixels shouldn't be blended at all.
-  bool NeedsTwoPassRendering() const
+  ALWAYS_INLINE bool NeedsTwoPassRendering() const
   {
     return (m_batch.texture_mode != GPUTextureMode::Disabled &&
             (m_batch.transparency_mode == GPUTransparencyMode::BackgroundMinusForeground ||
              (!m_supports_dual_source_blend && m_batch.transparency_mode != GPUTransparencyMode::Disabled)));
+  }
+
+  /// Returns true if the specified VRAM fill is oversized.
+  ALWAYS_INLINE static bool IsVRAMFillOversized(u32 x, u32 y, u32 width, u32 height)
+  {
+    return ((x + width) > VRAM_WIDTH || (y + height) > VRAM_HEIGHT);
   }
 
   ALWAYS_INLINE bool IsUsingSoftwareRendererForReadbacks() { return static_cast<bool>(m_sw_renderer); }

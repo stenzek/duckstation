@@ -997,27 +997,6 @@ float4 SampleFromVRAM(uint4 texpage, float2 coords)
   return ss.str();
 }
 
-std::string GPU_HW_ShaderGen::GenerateInterlacedFillFragmentShader()
-{
-  std::stringstream ss;
-  WriteHeader(ss);
-  WriteCommonFunctions(ss);
-  DeclareUniformBuffer(ss, {"float4 u_fill_color", "uint u_interlaced_displayed_field"}, true);
-  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1, true);
-
-  ss << R"(
-{
-  if ((fixYCoord(uint(v_pos.y)) & 1u) == u_interlaced_displayed_field)
-    discard;
-
-  o_col0 = u_fill_color;
-  o_depth = u_fill_color.a;
-}
-)";
-
-  return ss.str();
-}
-
 std::string GPU_HW_ShaderGen::GenerateDisplayFragmentShader(bool depth_24bit,
                                                             GPU_HW::InterlacedRenderMode interlace_mode,
                                                             bool smooth_chroma)
@@ -1316,6 +1295,50 @@ std::string GPU_HW_ShaderGen::GenerateVRAMCopyFragmentShader()
   o_col0 = float4(color.xyz, u_set_mask_bit ? 1.0 : color.a);
 #if !PGXP_DEPTH
   o_depth = (u_set_mask_bit ? 1.0f : ((o_col0.a == 1.0) ? u_depth_value : 0.0));
+#else
+  o_depth = 1.0f;
+#endif
+})";
+
+  return ss.str();
+}
+
+std::string GPU_HW_ShaderGen::GenerateVRAMFillFragmentShader(bool wrapped, bool interlaced)
+{
+  std::stringstream ss;
+  WriteHeader(ss);
+  WriteCommonFunctions(ss);
+  DefineMacro(ss, "PGXP_DEPTH", m_pgxp_depth);
+  DefineMacro(ss, "WRAPPED", wrapped);
+  DefineMacro(ss, "INTERLACED", interlaced);
+
+  DeclareUniformBuffer(
+    ss, {"uint2 u_dst_coords", "uint2 u_end_coords", "float4 u_fill_color", "uint u_interlaced_displayed_field"}, true);
+
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, interlaced || wrapped, 1, true, false, false, false);
+  ss << R"(
+{
+#if INTERLACED || WRAPPED
+  uint2 dst_coords = uint2(uint(v_pos.x), fixYCoord(uint(v_pos.y)));
+#endif
+
+#if INTERLACED
+  if ((dst_coords.y & 1u) == u_interlaced_displayed_field)
+    discard;
+#endif
+
+#if WRAPPED
+  // make sure it's not oversized and out of range
+  if ((dst_coords.x < u_dst_coords.x && dst_coords.x >= u_end_coords.x) ||
+      (dst_coords.y < u_dst_coords.y && dst_coords.y >= u_end_coords.y))
+  {
+    discard;
+  }
+#endif
+
+  o_col0 = u_fill_color;
+#if !PGXP_DEPTH
+  o_depth = u_fill_color.a;
 #else
   o_depth = 1.0f;
 #endif

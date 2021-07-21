@@ -508,7 +508,8 @@ bool GPU_HW_D3D11::CompileShaders()
                              m_true_color, m_scaled_dithering, m_texture_filtering, m_using_uv_limits,
                              m_pgxp_depth_buffer, m_supports_dual_source_blend);
 
-  ShaderCompileProgressTracker progress("Compiling Shaders", 1 + 1 + 2 + (4 * 9 * 2 * 2) + 7 + (2 * 3) + 1);
+  ShaderCompileProgressTracker progress("Compiling Shaders",
+                                        1 + 1 + 2 + (4 * 9 * 2 * 2) + 1 + (2 * 2) + 4 + (2 * 3) + 1);
 
   // input layout
   {
@@ -585,18 +586,19 @@ bool GPU_HW_D3D11::CompileShaders()
 
   progress.Increment();
 
-  m_vram_fill_pixel_shader = shader_cache.GetPixelShader(m_device.Get(), shadergen.GenerateFillFragmentShader());
-  if (!m_vram_fill_pixel_shader)
-    return false;
+  for (u8 wrapped = 0; wrapped < 2; wrapped++)
+  {
+    for (u8 interlaced = 0; interlaced < 2; interlaced++)
+    {
+      const std::string ps =
+        shadergen.GenerateVRAMFillFragmentShader(ConvertToBoolUnchecked(wrapped), ConvertToBoolUnchecked(interlaced));
+      m_vram_fill_pixel_shaders[wrapped][interlaced] = shader_cache.GetPixelShader(m_device.Get(), ps);
+      if (!m_vram_fill_pixel_shaders[wrapped][interlaced])
+        return false;
 
-  progress.Increment();
-
-  m_vram_interlaced_fill_pixel_shader =
-    shader_cache.GetPixelShader(m_device.Get(), shadergen.GenerateInterlacedFillFragmentShader());
-  if (!m_vram_interlaced_fill_pixel_shader)
-    return false;
-
-  progress.Increment();
+      progress.Increment();
+    }
+  }
 
   m_vram_read_pixel_shader = shader_cache.GetPixelShader(m_device.Get(), shadergen.GenerateVRAMReadFragmentShader());
   if (!m_vram_read_pixel_shader)
@@ -682,8 +684,7 @@ void GPU_HW_D3D11::DestroyShaders()
   m_vram_copy_pixel_shader.Reset();
   m_vram_write_pixel_shader.Reset();
   m_vram_read_pixel_shader.Reset();
-  m_vram_interlaced_fill_pixel_shader.Reset();
-  m_vram_fill_pixel_shader.Reset();
+  m_vram_fill_pixel_shaders = {};
   m_copy_pixel_shader.Reset();
   m_uv_quad_vertex_shader.Reset();
   m_screen_quad_vertex_shader.Reset();
@@ -976,26 +977,18 @@ void GPU_HW_D3D11::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
   if (IsUsingSoftwareRendererForReadbacks())
     FillSoftwareRendererVRAM(x, y, width, height, color);
 
-  if ((x + width) > VRAM_WIDTH || (y + height) > VRAM_HEIGHT)
-  {
-    // CPU round trip if oversized for now.
-    Log_WarningPrintf("Oversized VRAM fill (%u-%u, %u-%u), CPU round trip", x, x + width, y, y + height);
-    ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
-    GPU::FillVRAM(x, y, width, height, color);
-    UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, m_vram_ptr, false, false);
-    return;
-  }
-
   GPU_HW::FillVRAM(x, y, width, height, color);
-
-  const VRAMFillUBOData uniforms = GetVRAMFillUBOData(x, y, width, height, color);
 
   m_context->OMSetDepthStencilState(m_depth_test_always_state.Get(), 0);
 
-  SetViewportAndScissor(x * m_resolution_scale, y * m_resolution_scale, width * m_resolution_scale,
-                        height * m_resolution_scale);
-  DrawUtilityShader(IsInterlacedRenderingEnabled() ? m_vram_interlaced_fill_pixel_shader.Get() :
-                                                     m_vram_fill_pixel_shader.Get(),
+  const Common::Rectangle<u32> bounds(GetVRAMTransferBounds(x, y, width, height));
+  SetViewportAndScissor(bounds.left * m_resolution_scale, bounds.top * m_resolution_scale,
+                        bounds.GetWidth() * m_resolution_scale, bounds.GetHeight() * m_resolution_scale);
+
+  const VRAMFillUBOData uniforms = GetVRAMFillUBOData(x, y, width, height, color);
+  DrawUtilityShader(m_vram_fill_pixel_shaders[BoolToUInt8(IsVRAMFillOversized(x, y, width, height))]
+                                             [BoolToUInt8(IsInterlacedRenderingEnabled())]
+                                               .Get(),
                     &uniforms, sizeof(uniforms));
 
   RestoreGraphicsAPIState();

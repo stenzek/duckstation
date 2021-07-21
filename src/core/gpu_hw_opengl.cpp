@@ -517,7 +517,7 @@ bool GPU_HW_OpenGL::CompilePrograms()
                              m_true_color, m_scaled_dithering, m_texture_filtering, m_using_uv_limits,
                              m_pgxp_depth_buffer, m_supports_dual_source_blend);
 
-  ShaderCompileProgressTracker progress("Compiling Programs", (4 * 9 * 2 * 2) + (2 * 3) + 1 + 1 + 1 + 1 + 1 + 1);
+  ShaderCompileProgressTracker progress("Compiling Programs", (4 * 9 * 2 * 2) + (2 * 3) + (2 * 2) + 1 + 1 + 1 + 1 + 1);
 
   for (u32 render_mode = 0; render_mode < 4; render_mode++)
   {
@@ -609,22 +609,29 @@ bool GPU_HW_OpenGL::CompilePrograms()
     }
   }
 
-  std::optional<GL::Program> prog = shader_cache.GetProgram(shadergen.GenerateScreenQuadVertexShader(), {},
-                                                            shadergen.GenerateInterlacedFillFragmentShader(),
-                                                            [this, use_binding_layout](GL::Program& prog) {
-                                                              if (!IsGLES() && !use_binding_layout)
-                                                                prog.BindFragData(0, "o_col0");
-                                                            });
-  if (!prog)
-    return false;
+  for (u8 wrapped = 0; wrapped < 2; wrapped++)
+  {
+    for (u8 interlaced = 0; interlaced < 2; interlaced++)
+    {
+      std::optional<GL::Program> prog = shader_cache.GetProgram(
+        shadergen.GenerateScreenQuadVertexShader(), {},
+        shadergen.GenerateVRAMFillFragmentShader(ConvertToBoolUnchecked(wrapped), ConvertToBoolUnchecked(interlaced)),
+        [this, use_binding_layout](GL::Program& prog) {
+          if (!IsGLES() && !use_binding_layout)
+            prog.BindFragData(0, "o_col0");
+        });
+      if (!prog)
+        return false;
 
-  if (!use_binding_layout)
-    prog->BindUniformBlock("UBOBlock", 1);
+      if (!use_binding_layout)
+        prog->BindUniformBlock("UBOBlock", 1);
 
-  m_vram_interlaced_fill_program = std::move(*prog);
-  progress.Increment();
+      m_vram_fill_programs[wrapped][interlaced] = std::move(*prog);
+      progress.Increment();
+    }
+  }
 
-  prog =
+  std::optional<GL::Program> prog =
     shader_cache.GetProgram(shadergen.GenerateScreenQuadVertexShader(), {}, shadergen.GenerateVRAMReadFragmentShader(),
                             [this, use_binding_layout](GL::Program& prog) {
                               if (!IsGLES() && !use_binding_layout)
@@ -1014,28 +1021,17 @@ void GPU_HW_OpenGL::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
   if (IsUsingSoftwareRendererForReadbacks())
     FillSoftwareRendererVRAM(x, y, width, height, color);
 
-  if ((x + width) > VRAM_WIDTH || (y + height) > VRAM_HEIGHT)
-  {
-    // CPU round trip if oversized for now.
-    Log_WarningPrintf("Oversized VRAM fill (%u-%u, %u-%u), CPU round trip", x, x + width, y, y + height);
-    ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
-    GPU::FillVRAM(x, y, width, height, color);
-    UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, m_vram_ptr, false, false);
-    return;
-  }
-
   GPU_HW::FillVRAM(x, y, width, height, color);
 
-  // scale coordinates
-  x *= m_resolution_scale;
-  y *= m_resolution_scale;
-  width *= m_resolution_scale;
-  height *= m_resolution_scale;
-
-  glScissor(x, m_vram_texture.GetHeight() - y - height, width, height);
+  const Common::Rectangle<u32> bounds(GetVRAMTransferBounds(x, y, width, height));
+  glScissor(bounds.left * m_resolution_scale,
+            m_vram_texture.GetHeight() - (bounds.top * m_resolution_scale) - (height * m_resolution_scale),
+            width * m_resolution_scale, height * m_resolution_scale);
 
   // fast path when not using interlaced rendering
-  if (!IsInterlacedRenderingEnabled())
+  const bool wrapped = IsVRAMFillOversized(x, y, width, height);
+  const bool interlaced = IsInterlacedRenderingEnabled();
+  if (!wrapped && !interlaced)
   {
     const auto [r, g, b, a] =
       RGBA8ToFloat(m_true_color ? color : VRAMRGBA5551ToRGBA8888(VRAMRGBA8888ToRGBA5551(color)));
@@ -1048,7 +1044,7 @@ void GPU_HW_OpenGL::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
   {
     const VRAMFillUBOData uniforms = GetVRAMFillUBOData(x, y, width, height, color);
 
-    m_vram_interlaced_fill_program.Bind();
+    m_vram_fill_programs[BoolToUInt8(wrapped)][BoolToUInt8(interlaced)].Bind();
     UploadUniformBuffer(&uniforms, sizeof(uniforms));
     glDisable(GL_BLEND);
     SetDepthFunc(GL_ALWAYS);
