@@ -1424,9 +1424,6 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
     {
       if (wfd.cFileName[1] == L'\0' || (wfd.cFileName[1] == L'.' && wfd.cFileName[2] == L'\0'))
         continue;
-
-      if (!(Flags & FILESYSTEM_FIND_HIDDEN_FILES))
-        continue;
     }
 
     if (!StringUtil::WideStringToUTF8String(utf8_filename, wfd.cFileName))
