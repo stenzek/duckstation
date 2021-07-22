@@ -545,6 +545,7 @@ bool D3D12HostDisplay::SetFullscreen(bool fullscreen, u32 width, u32 height, flo
     return true;
   }
 
+  g_d3d12_context->ExecuteCommandList(true);
   DestroySwapChainRTVs();
   m_swap_chain.Reset();
 
