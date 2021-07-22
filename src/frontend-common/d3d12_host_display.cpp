@@ -123,7 +123,11 @@ bool D3D12HostDisplay::DownloadTexture(const void* texture_handle, HostDisplayPi
   if (!m_readback_staging_texture.EnsureSize(width, height, texture->GetFormat(), false))
     return false;
 
+  const D3D12_RESOURCE_STATES old_state = texture->GetState();
+  texture->TransitionToState(D3D12_RESOURCE_STATE_COPY_SOURCE);
   m_readback_staging_texture.CopyFromTexture(texture->GetResource(), 0, x, y, 0, 0, width, height);
+  texture->TransitionToState(old_state);
+
   return m_readback_staging_texture.ReadPixels(0, 0, width, height, out_data, out_data_stride);
 }
 
