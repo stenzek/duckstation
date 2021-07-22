@@ -1166,7 +1166,7 @@ void HostInterface::RecreateSystem()
   Assert(!System::IsShutdown());
 
   std::unique_ptr<ByteStream> stream = ByteStream_CreateGrowableMemoryStream(nullptr, 8 * 1024);
-  if (!System::SaveState(stream.get()) || !stream->SeekAbsolute(0))
+  if (!System::SaveState(stream.get(), 0) || !stream->SeekAbsolute(0))
   {
     ReportError("Failed to save state before system recreation. Shutting down.");
     DestroySystem();
