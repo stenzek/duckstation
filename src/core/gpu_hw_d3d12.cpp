@@ -998,8 +998,21 @@ void GPU_HW_D3D12::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
   GPU_HW::FillVRAM(x, y, width, height, color);
 
   const VRAMFillUBOData uniforms = GetVRAMFillUBOData(x, y, width, height, color);
-
   ID3D12GraphicsCommandList* cmdlist = g_d3d12_context->GetCommandList();
+
+  const bool wrapped = IsVRAMFillOversized(x, y, width, height);
+  const bool interlaced = IsInterlacedRenderingEnabled();
+  if (!wrapped && !interlaced)
+  {
+    const D3D12_RECT rc = {static_cast<LONG>(x * m_resolution_scale), static_cast<LONG>(y * m_resolution_scale),
+                           static_cast<LONG>((x + width) * m_resolution_scale),
+                           static_cast<LONG>((y + height) * m_resolution_scale)};
+    cmdlist->ClearRenderTargetView(m_vram_texture.GetRTVOrDSVDescriptor(), uniforms.u_fill_color, 1, &rc);
+    cmdlist->ClearDepthStencilView(m_vram_depth_texture.GetRTVOrDSVDescriptor(), D3D12_CLEAR_FLAG_DEPTH,
+                                   uniforms.u_fill_color[3], 0, 1, &rc);
+    return;
+  }
+
   cmdlist->SetGraphicsRootSignature(m_single_sampler_root_signature.Get());
   cmdlist->SetGraphicsRoot32BitConstants(0, sizeof(uniforms) / sizeof(u32), &uniforms, 0);
   cmdlist->SetGraphicsRootDescriptorTable(1, g_d3d12_context->GetNullSRVDescriptor());
