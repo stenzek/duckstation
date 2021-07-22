@@ -673,7 +673,6 @@ bool D3D12HostDisplay::Render()
   swap_chain_buf.TransitionToState(D3D12_RESOURCE_STATE_RENDER_TARGET);
   cmdlist->ClearRenderTargetView(swap_chain_buf.GetRTVOrDSVDescriptor(), clear_color.data(), 0, nullptr);
   cmdlist->OMSetRenderTargets(1, &swap_chain_buf.GetRTVOrDSVDescriptor().cpu_handle, FALSE, nullptr);
-  cmdlist->SetGraphicsRootSignature(m_display_root_signature.Get());
 
   RenderDisplay(cmdlist);
 
@@ -696,7 +695,42 @@ bool D3D12HostDisplay::Render()
 bool D3D12HostDisplay::RenderScreenshot(u32 width, u32 height, std::vector<u32>* out_pixels, u32* out_stride,
                                         HostDisplayPixelFormat* out_format)
 {
-  return false;
+  static constexpr DXGI_FORMAT format = DXGI_FORMAT_R8G8B8A8_UNORM;
+  static constexpr HostDisplayPixelFormat hdformat = HostDisplayPixelFormat::RGBA8;
+
+  D3D12::Texture render_texture;
+  if (!render_texture.Create(width, height, 1, format, DXGI_FORMAT_UNKNOWN, format, DXGI_FORMAT_UNKNOWN,
+                             D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET) ||
+      !m_readback_staging_texture.EnsureSize(width, height, format, false))
+  {
+    return false;
+  }
+
+  static constexpr std::array<float, 4> clear_color = {};
+  ID3D12GraphicsCommandList* cmdlist = g_d3d12_context->GetCommandList();
+  render_texture.TransitionToState(D3D12_RESOURCE_STATE_RENDER_TARGET);
+  cmdlist->ClearRenderTargetView(render_texture.GetRTVOrDSVDescriptor(), clear_color.data(), 0, nullptr);
+  cmdlist->OMSetRenderTargets(1, &render_texture.GetRTVOrDSVDescriptor().cpu_handle, FALSE, nullptr);
+
+  if (HasDisplayTexture())
+  {
+    const auto [left, top, draw_width, draw_height] = CalculateDrawRect(width, height, 0);
+    RenderDisplay(cmdlist, left, top, draw_width, draw_height, m_display_texture_handle, m_display_texture_width,
+                  m_display_texture_height, m_display_texture_view_x, m_display_texture_view_y,
+                  m_display_texture_view_width, m_display_texture_view_height, m_display_linear_filtering);
+  }
+
+  cmdlist->OMSetRenderTargets(0, nullptr, FALSE, nullptr);
+
+  render_texture.TransitionToState(D3D12_RESOURCE_STATE_COPY_SOURCE);
+  m_readback_staging_texture.CopyFromTexture(render_texture, 0, 0, 0, 0, 0, width, height);
+
+  const u32 stride = sizeof(u32) * width;
+  out_pixels->resize(width * height);
+  *out_stride = stride;
+  *out_format = hdformat;
+
+  return m_readback_staging_texture.ReadPixels(0, 0, width, height, out_pixels->data(), stride);
 }
 
 void D3D12HostDisplay::RenderImGui(ID3D12GraphicsCommandList* cmdlist)
@@ -742,6 +776,7 @@ void D3D12HostDisplay::RenderDisplay(ID3D12GraphicsCommandList* cmdlist, s32 lef
   std::memcpy(m_display_uniform_buffer.GetCurrentHostPointer(), uniforms, sizeof(uniforms));
   m_display_uniform_buffer.CommitMemory(sizeof(uniforms));
 
+  cmdlist->SetGraphicsRootSignature(m_display_root_signature.Get());
   cmdlist->SetPipelineState(m_display_pipeline.Get());
   cmdlist->SetGraphicsRootConstantBufferView(0, m_display_uniform_buffer.GetGPUPointer() + ubo_offset);
   cmdlist->SetGraphicsRootDescriptorTable(1, reinterpret_cast<D3D12::Texture*>(texture_handle)->GetSRVDescriptor());
