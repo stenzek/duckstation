@@ -355,7 +355,16 @@ bool VulkanHostDisplay::HasRenderSurface() const
 
 VkRenderPass VulkanHostDisplay::GetRenderPassForDisplay() const
 {
-  return m_swap_chain->GetClearRenderPass();
+  if (m_swap_chain)
+  {
+    return m_swap_chain->GetClearRenderPass();
+  }
+  else
+  {
+    // If we're running headless, assume RGBA8.
+    return g_vulkan_context->GetRenderPass(VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_UNDEFINED, VK_SAMPLE_COUNT_1_BIT,
+                                           VK_ATTACHMENT_LOAD_OP_CLEAR);
+  }
 }
 
 bool VulkanHostDisplay::CreateResources()
