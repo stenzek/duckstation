@@ -8,7 +8,7 @@
 
   <ItemDefinitionGroup>
     <Link>
-      <AdditionalDependencies>$(RootBuildDir)glad\glad.lib;$(RootBuildDir)glslang\glslang.lib;$(RootBuildDir)libchdr\libchdr.lib;$(RootBuildDir)libFLAC\libFLAC.lib;$(RootBuildDir)zlib\zlib.lib;$(RootBuildDir)minizip\minizip.lib;$(RootBuildDir)lzma\lzma.lib;$(RootBuildDir)libsamplerate\libsamplerate.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(RootBuildDir)glad\glad.lib;$(RootBuildDir)glslang\glslang.lib;$(RootBuildDir)libchdr\libchdr.lib;$(RootBuildDir)libFLAC\libFLAC.lib;$(RootBuildDir)zlib\zlib.lib;$(RootBuildDir)minizip\minizip.lib;$(RootBuildDir)lzma\lzma.lib;$(RootBuildDir)libsamplerate\libsamplerate.lib;d3dcompiler.lib;d3d11.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
 </Project>
