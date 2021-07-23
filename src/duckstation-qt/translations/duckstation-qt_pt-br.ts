@@ -517,7 +517,7 @@ Token gerado %2.</translation>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="201"/>
         <source>Create Save State Backups</source>
-        <translation>Criar cópia de segurana dos salvamento rápido</translation>
+        <translation>Criar cópia de segurança dos salvamento rápido</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="204"/>
@@ -1023,7 +1023,7 @@ Token gerado %2.</translation>
     <message>
         <location filename="../audiosettingswidget.cpp" line="46"/>
         <source>The buffer size determines the size of the chunks of audio which will be pulled by the host. Smaller values reduce the output latency, but may cause hitches if the emulation speed is inconsistent. Note that the Cubeb backend uses smaller chunks regardless of this value, so using a low value here may not significantly change latency.</source>
-        <translation>O Tamanho do buffer determina o quão preciso será o som no emulador. Valores menores reduzem a latência de saída, mas podem causar problemas se a velocidade da emulação for inconsistente.Usar a opção cubed implica em valores menores independente da latência o que não fará muita diferença no final.</translation>
+        <translation>O tamanho do buffer determina o quão preciso será o som no emulador. Valores menores reduzem a latência de saída, mas podem causar problemas se a velocidade da emulação for inconsistente. Usar a opção cubed implica em valores menores independentemente da latência o que não fará muita diferença no final.</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="50"/>
@@ -1109,7 +1109,7 @@ Token gerado %2.</translation>
     <message>
         <location filename="../audiosettingswidget.cpp" line="68"/>
         <source>When running outside of 100% speed, resamples audio from the target speed instead of dropping frames. Produces much nicer fast forward/slowdown audio at a small cost to performance.</source>
-        <translation>Quando estiver rodando fora dos 100% da velocidade, o áudio será ajustado para que não haja queda de quadros. produz uma melhor qualidade do avanço rápido no áudio ao custo pequeno de perda de desempenho.</translation>
+        <translation>Quando estiver rodando fora dos 100% da velocidade, o áudio será ajustado para que não haja queda de quadros. Produz uma melhor qualidade do avanço rápido no áudio ao custo pequeno de perda de desempenho.</translation>
     </message>
     <message>
         <source>Maximum latency: %1 frames (%2ms)</source>
@@ -1163,7 +1163,7 @@ Token gerado %2.</translation>
     <message>
         <location filename="../autoupdaterdialog.ui" line="109"/>
         <source>Remind Me Later</source>
-        <translation>Me lembre mais tarde</translation>
+        <translation>Lembrar-me mais tarde</translation>
     </message>
     <message>
         <location filename="../autoupdaterdialog.cpp" line="107"/>
@@ -1198,7 +1198,7 @@ Token gerado %2.</translation>
     <message>
         <location filename="../autoupdaterdialog.cpp" line="328"/>
         <source>&lt;h2&gt;Save State Warning&lt;/h2&gt;&lt;p&gt;Installing this update will make your save states &lt;b&gt;incompatible&lt;/b&gt;. Please ensure you have saved your games to memory card before installing this update or you will lose progress.&lt;/p&gt;</source>
-        <translation>&lt;h2&gt;Alerta para ESTADOS SALVOS&lt;/h2&gt;&lt;p&gt;Ao instalar esta atualização, seus ESTADOS SALVOS se tornarão&lt;b&gt; incompativeis&lt;/b&gt;. tenha certeza de ter salvo todo o seu progresso no seu CARTÃO DE MEMÓRIA antes de instalar esta atualização ou você perderá todo o seu progresso.&lt;/p&gt;</translation>
+        <translation>&lt;h2&gt;Alerta para ESTADOS SALVOS&lt;/h2&gt;&lt;p&gt;Ao instalar esta atualização, seus ESTADOS SALVOS se tornarão&lt;b&gt; incompativeis&lt;/b&gt;. Tenha absoluta certeza de ter salvo todo o seu progresso no seu CARTÃO DE MEMÓRIA antes de instalar esta atualização ou você perderá todo o seu progresso.&lt;/p&gt;</translation>
     </message>
     <message>
         <location filename="../autoupdaterdialog.cpp" line="336"/>
@@ -1246,7 +1246,7 @@ Token gerado %2.</translation>
     <message>
         <location filename="../biossettingswidget.ui" line="62"/>
         <source>NTSC-U/C (US/Canada):</source>
-        <translation>NTSC-U/C (US, Canadá):</translation>
+        <translation>NTSC-U/C (EUA, Canadá):</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.ui" line="104"/>
@@ -1993,7 +1993,7 @@ Token gerado %2.</translation>
     <message>
         <location filename="../../core/settings.cpp" line="535"/>
         <source>Auto-Detect</source>
-        <translation>Auto detectar</translation>
+        <translation>Detectar automaticamente</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="535"/>
@@ -2254,7 +2254,7 @@ Token gerado %2.</translation>
         <location filename="../consolesettingswidget.ui" line="278"/>
         <location filename="../consolesettingswidget.cpp" line="94"/>
         <source>Enable Region Check</source>
-        <translation>Ativar checagem de região</translation>
+        <translation>Ativar verificaçao de região</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="285"/>
@@ -2450,7 +2450,7 @@ Token gerado %2.</translation>
     <message>
         <location filename="../consolesettingswidget.cpp" line="95"/>
         <source>Simulates the region check present in original, unmodified consoles.</source>
-        <translation>Simula checagem de região conforme no console sem nenhum tipo de modificação.</translation>
+        <translation>Simula a verificação de região conforme no console sem nenhum tipo de modificação.</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="101"/>
@@ -2470,7 +2470,7 @@ Token gerado %2.</translation>
     <message>
         <location filename="../consolesettingswidget.cpp" line="105"/>
         <source>Enables multitap support on specified controller ports. Leave disabled for games that do not support multitap input.</source>
-        <translation>Ativa suporte a múltiplos controles (Multitap) deixe desativado para jogos que não têm suporte a esta função.</translation>
+        <translation>Ativa suporte a múltiplos controles (Multitap). Deixe desativado para jogos que não têm suporte a esta função.</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="129"/>
@@ -2479,7 +2479,7 @@ Token gerado %2.</translation>
 By enabling this option you are agreeing to not create any bug reports unless you have confirmed the bug also occurs with overclocking disabled.
 
 This warning will only be shown once.</source>
-        <translation>Ativar o aumento de velocidade do CPU quebra a experiência em alguns jogos, causa problemas, reduz a desempenho e pode aumentar muito o uso do computador. CPU e GPU como um todo! habilitando esta opção você concorda em não reportar nenhum bug relacionado sem ANTES confirmar que não foi causado por conta da ativação desta opção.</translation>
+        <translation>Ativar o aumento de velocidade do CPU quebra a experiência em alguns jogos, causa problemas, reduz o desempenho e pode aumentar muito o uso do computador. CPU e GPU como um todo! Ativando esta opção você concorda em não reportar nenhum bug relacionado sem ANTES confirmar que não foi causado por conta da ativação desta opção.</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="132"/>
@@ -2579,7 +2579,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllersettingswidget.cpp" line="230"/>
         <source>Are you sure you want to rebind all controls? All currently-bound controls will be irreversibly cleared. Rebinding will begin after confirmation.</source>
-        <translation>Tem certeza de que quer reatribuir todos os controles? todas as mudanças feitas nos controles serão perdidas. a reatribuição se dará após a confirmação.</translation>
+        <translation>Tem certeza de que quer reatribuir todos os controles? todas as mudanças feitas nos controles serão perdidas. A reatribuição será iniciada após a confirmação.</translation>
     </message>
     <message>
         <location filename="../controllersettingswidget.cpp" line="53"/>
@@ -3396,7 +3396,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../displaysettingswidget.ui" line="179"/>
         <location filename="../displaysettingswidget.cpp" line="113"/>
         <source>Integer Upscaling</source>
-        <translation>Escalonamento integro</translation>
+        <translation>Escalonamento íntegro</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="84"/>
@@ -3567,7 +3567,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../displaysettingswidget.cpp" line="117"/>
         <source>Fills the window with the active display area, regardless of the aspect ratio.</source>
-        <translation>Preenche a janela com o conteúdo mostrado, independente da proporção da imagem escolhida.</translation>
+        <translation>Preenche a janela com o conteúdo mostrado, independentemente da proporção da imagem escolhida.</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="119"/>
@@ -3587,12 +3587,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../displaysettingswidget.cpp" line="131"/>
         <source>Presents frames on a background thread when fast forwarding or vsync is disabled. This can measurably improve performance in the Vulkan renderer.</source>
-        <translation>Apresenta quadros sequêncialmente em segundo plano quando o avanço rápido ou sincronizador vertical (Vsync) está desativado isso pode melhorar o desempenho no renderizador Vulkan.</translation>
+        <translation>Apresenta quadros sequêncialmente em segundo plano quando o avanço rápido ou o v-sync está desativado pode melhorar o desempenho no renderizador Vulkan.</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="134"/>
         <source>Uses a second thread for drawing graphics. Currently only available for the software renderer, but can provide a significant speed improvement, and is safe to use.</source>
-        <translation>Usa um segundo processo para desenhar gráficos em tela. atualmente só disponível para renderizadores por software, pode fornecer uma melhoria significativa na velocidade, pode ser usado a vontade.</translation>
+        <translation>Usa um segundo processo para desenhar gráficos em tela. Atualmente só disponível para renderizadores por software, pode fornecer uma melhoria significativa na velocidade, pode ser usado a vontade.</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="138"/>
@@ -3652,7 +3652,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../displaysettingswidget.cpp" line="166"/>
         <source>Uses a blit presentation model instead of flipping when using the Direct3D 11 renderer. This usually results in slower performance, but may be required for some streaming applications, or to uncap framerates on some systems.</source>
-        <translation>Usado para transferir modelos de blocos ao invés de invertê-los. Normalmente em modo Dx11. resulta em uma desempenho mais lenta, pode ser útil para alguns aplicativos como Discord com a função de transmissão de tela ou ainda liberar taxas de quadros em alguns sistemas.</translation>
+        <translation>Usado para transferir modelos de blocos ao invés de invertê-los. Normalmente em modo Dx11. Resulta em uma desempenho mais lenta, pode ser útil para alguns aplicativos como Discord com a função de transmissão de tela ou ainda liberar taxas de quadros em alguns sistemas.</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="88"/>
@@ -3671,7 +3671,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../emulationsettingswidget.ui" line="32"/>
         <source>Speed Control</source>
-        <translation>Controle de Velocidade</translation>
+        <translation>Controle de velocidade</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="38"/>
@@ -3695,7 +3695,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../emulationsettingswidget.ui" line="71"/>
         <source>Rewind/Runahead</source>
-        <translation>Rebobinar/Avançar</translation>
+        <translation>Retroceder/Avançar</translation>
     </message>
     <message>
         <source>Rewind</source>
@@ -3704,7 +3704,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../emulationsettingswidget.ui" line="77"/>
         <source>Enable Rewinding</source>
-        <translation>Ativar rebobinar</translation>
+        <translation>Ativar retrocesso</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="84"/>
@@ -3858,7 +3858,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="64"/>
         <source>&lt;b&gt;Enable Rewinding:&lt;/b&gt; Saves state periodically so you can rewind any mistakes while playing.&lt;br&gt; &lt;b&gt;Rewind Save Frequency:&lt;/b&gt; How often a rewind state will be created. Higher frequencies have greater system requirements.&lt;br&gt; &lt;b&gt;Rewind Buffer Size:&lt;/b&gt; How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
-        <translation>&lt;b&gt;Ativar rebobinar:&lt;/b&gt; salva o estado do jogo periodicamente para que possa retroceder qualquer erro que tenha cometido enquanto joga. &lt;br&gt; &lt;b&gt;Frequência do retrocesso:&lt;/b&gt; Com que frequência o retrocesso será criado. frequências muito altas exigem maiores requisitos operacionais. &lt;br&gt; &lt;b&gt;Tamanho do retrocesso:&lt;/b&gt; Número de gravações as quais serão mantidas para o retrocesso. valores mais altos têm requisitos de memória maiores.</translation>
+        <translation>&lt;b&gt;Ativar retrocesso:&lt;/b&gt; salva o estado do jogo periodicamente para que possa retroceder qualquer erro que tenha cometido enquanto joga. &lt;br&gt; &lt;b&gt;Frequência do retrocesso:&lt;/b&gt; Com que frequência o retrocesso será criado. Frequências muito altas exigem maiores requisitos operacionais. &lt;br&gt; &lt;b&gt;Tamanho do retrocesso:&lt;/b&gt; Número de gravações as quais serão mantidas para o retrocesso. Valores mais altos têm requisitos de memória maiores.</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="69"/>
@@ -3880,7 +3880,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="126"/>
         <source>Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.</source>
-        <translation>Rebobinar não está ativado. porque o pulo de quadros está ativado; Tenha em mente que ativando esta função poderá aumentar muito os requisitos do sistema. (Uso de RAM e V-RAM).</translation>
+        <translation>O retrocesso não está ativado porque o pulo de quadros está ativado; Tenha em mente que ativando esta função poderá aumentar muito os requisitos do sistema. (Uso de RAM e V-RAM).</translation>
     </message>
     <message>
         <source>Rewind is disabled because runahead is enabled.</source>
@@ -3889,7 +3889,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="132"/>
         <source>Rewind is not enabled. Please note that enabling rewind may significantly increase system requirements.</source>
-        <translation>Rebobinar não está ativado. Tenha em mente que ativando esta função poderá aumentar muito os requisitos do sistema.</translation>
+        <translation>Retrocesso não está ativado. Tenha em mente que ativando esta função poderá aumentar muito os requisitos do sistema.</translation>
     </message>
 </context>
 <context>
@@ -4146,7 +4146,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="123"/>
         <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
-        <translation>Precisão adicional ao PGXP dados pós-projeção. pode melhorar visualmente alguns jogos.</translation>
+        <translation>Precisão adicional ao PGXP dados pós-projeção. Pode melhorar visualmente alguns jogos.</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="125"/>
@@ -4187,12 +4187,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../../core/settings.cpp" line="724"/>
         <source>Box (Downsample 3D/Smooth All)</source>
-        <translation>Misto (reduz 3D / suaviza tudo)</translation>
+        <translation>Misto (Reduz 3D / Suaviza tudo)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="725"/>
         <source>Adaptive (Preserve 3D/Smooth 2D)</source>
-        <translation>Adaptativo (preserva o 3D / suaviza 2D)</translation>
+        <translation>Adaptativo (Preserva o 3D / Suaviza 2D)</translation>
     </message>
 </context>
 <context>
@@ -5098,7 +5098,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../gamepropertiesdialog.ui" line="680"/>
         <source>True Color Rendering (24-bit, disables dithering)</source>
-        <translation>Renderização em (24 Cores, desativa dithering)</translation>
+        <translation>Renderização em (24 cores, desativa dithering)</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="650"/>
@@ -5132,7 +5132,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../gamepropertiesdialog.ui" line="720"/>
         <source>PGXP Depth Buffer</source>
-        <translation>PGXP (Buffer de profundidade)</translation>
+        <translation>PGXP (buffer de profundidade)</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="268"/>
@@ -5207,7 +5207,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../gamepropertiesdialog.ui" line="361"/>
         <source>None (Normal Speed)</source>
-        <translation>Nenhuma (Velocidade normal)</translation>
+        <translation>Nenhuma (velocidade normal)</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="366"/>
@@ -5267,53 +5267,52 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../gamepropertiesdialog.ui" line="432"/>
         <source>1 Frame</source>
-        <translatorcomment> Quadro Quadros</translatorcomment>
-        <translation>1 Quadro</translation>
+        <translation>1 quadro</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="437"/>
         <source>2 Frames</source>
-        <translation>2 Quadros</translation>
+        <translation>2 quadros</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="442"/>
         <source>3 Frames</source>
-        <translation>3 Quadros</translation>
+        <translation>3 quadros</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="447"/>
         <source>4 Frames</source>
-        <translation>4 Quadros</translation>
+        <translation>4 quadros</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="452"/>
         <source>5 Frames</source>
-        <translation>5 Quadros</translation>
+        <translation>5 quadros</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="457"/>
         <source>6 Frames</source>
-        <translation>6 Quadros</translation>
+        <translation>6 quadros</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="462"/>
         <source>7 Frames</source>
-        <translation>7 Quadros</translation>
+        <translation>7 quadros</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="467"/>
         <source>8 Frames</source>
-        <translation>8 Quadros</translation>
+        <translation>8 quadros</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="472"/>
         <source>9 Frames</source>
-        <translation>9 Quadros</translation>
+        <translation>9 quadros</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="477"/>
         <source>10 Frames</source>
-        <translation>10 Quadros</translation>
+        <translation>10 quadros</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="502"/>
@@ -5939,7 +5938,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../generalsettingswidget.cpp" line="86"/>
         <source>Enables the fullscreen UI mode, suitable for controller operation which is used in the NoGUI frontend.</source>
-        <translation>Ativa o uso do menu rápido enquanto joga. útil para quando está em modo tela cheia e precisa alterar alguma função, atalho, carregar saves ou mesmo ver conquistas sem precisar sair do modo tela cheia ou fechar o emulador.</translation>
+        <translation>Ativa o uso do menu rápido enquanto joga. Útil para quando está em modo tela cheia e precisa alterar alguma função, atalho, carregar saves ou mesmo ver conquistas sem precisar sair do modo tela cheia ou fechar o emulador.</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="93"/>
@@ -5950,7 +5949,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../generalsettingswidget.cpp" line="98"/>
         <source>Shows the game you are currently playing as part of your profile in Discord.</source>
-        <translation>Mostra o jogo que estiver jogando em seu perfil no discord quando conectado.</translation>
+        <translation>Mostra o jogo que estiver jogando no seu perfil no Discord quando conectado.</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="178"/>
@@ -5988,7 +5987,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../core/host_interface.cpp" line="352"/>
         <source>No BIOS image found for %s region</source>
-        <translation>BIOS não encontrado %s</translation>
+        <translation>BIOS não encontrado para a seguinte região %s</translation>
     </message>
 </context>
 <context>
@@ -6472,7 +6471,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../inputbindingdialog.ui" line="26"/>
         <source>Bindings for Controller0/ButtonCircle</source>
-        <translation>Atribuições para o primeiro controle/botão circulo</translation>
+        <translation>Atribuições para o primeiro controle/botão círculo</translation>
     </message>
     <message>
         <location filename="../inputbindingdialog.ui" line="45"/>
@@ -6775,7 +6774,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../mainwindow.ui" line="456"/>
         <source>&amp;GitHub Repository...</source>
-        <translation>R&amp;epositório no github...</translation>
+        <translation>R&amp;epositório no Github...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="466"/>
@@ -6790,7 +6789,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../mainwindow.ui" line="486"/>
         <source>Check for &amp;Updates...</source>
-        <translation>Checar por &amp;atualizações...</translation>
+        <translation>Procurar por &amp;atualizações...</translation>
     </message>
     <message>
         <source>&amp;About...</source>
@@ -6819,7 +6818,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../mainwindow.ui" line="496"/>
         <source>About &amp;Qt...</source>
-        <translation>Sobre &amp;QT...</translation>
+        <translation>Sobre o &amp;QT...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="506"/>
@@ -7537,7 +7536,7 @@ Tem certeza de que deseja continuar?</translation>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="362"/>
         <source>Memory card &apos;%1&apos; is not saved, do you want to save before closing?</source>
-        <translation>Cartão de memória &apos;%1&apos; não foi salvo, gostaria de salvar antes de fechar?</translation>
+        <translation>O cartão de memória &apos;%1&apos; não foi salvo, gostaria de salvar antes de fechar?</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="386"/>
@@ -7567,7 +7566,7 @@ Tem certeza de que deseja continuar?</translation>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="451"/>
         <source>Failed to undelete file %1. The file may have been partially overwritten by another save.</source>
-        <translation>Falha ao apagar aquivo %1 o arquivo pode ter sido parcialmente substituído por outro arquivo de save.</translation>
+        <translation>Falha ao apagar aquivo %1. O arquivo pode ter sido parcialmente substituído por outro arquivo.</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="466"/>
@@ -8831,12 +8830,12 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../main.cpp" line="93"/>
         <source>Failed to initialize host interface. Cannot continue.</source>
-        <translation>Falha ao iniciar interface. não é possível continuar.</translation>
+        <translation>Falha ao iniciar interface. Não é possível continuar.</translation>
     </message>
     <message>
         <location filename="../qtutils.cpp" line="669"/>
         <source>Failed to open URL</source>
-        <translation>Falha ao abrir Página</translation>
+        <translation>Falha ao abrir página</translation>
     </message>
     <message>
         <location filename="../qtutils.cpp" line="670"/>
@@ -8880,7 +8879,7 @@ The URL was: %1</source>
         <location filename="../qthostinterface.cpp" line="1004"/>
         <location filename="../qthostinterface.cpp" line="1043"/>
         <source>Global Save %1 (%2)</source>
-        <translation>Compartimento Global %1 (%2)</translation>
+        <translation>Compartimento global %1 (%2)</translation>
     </message>
     <message>
         <location filename="../qthostinterface.cpp" line="1004"/>
@@ -9367,12 +9366,12 @@ Seu despejo está incompleto, você deve adicionar o arquivo SBI para rodá-lo c
     <message>
         <location filename="../../core/system.cpp" line="1854"/>
         <source>Per-game memory card cannot be used for slot %u as the running game has no code. Using shared card instead.</source>
-        <translation>Caminho para o cartão de memória no compartimento %u não pôde ser usado pois o jogo iniciado não possui um códidog válido. será usado cartão compartilhado.</translation>
+        <translation>Caminho para o cartão de memória no compartimento %u não pôde ser usado pois o jogo iniciado não possui um códido válido. Será usado cartão compartilhado.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="1871"/>
         <source>Per-game memory card cannot be used for slot %u as the running game has no title. Using shared card instead.</source>
-        <translation>Caminho para o cartão de memória no compartimento %u não pôde ser usado pois o jogo iniciado não possui um nome válido. será usado cartão compartilhado.</translation>
+        <translation>Caminho para o cartão de memória no compartimento %u não pôde ser usado pois o jogo iniciado não possui um nome válido. Será usado cartão compartilhado.</translation>
     </message>
     <message>
         <source>Memory card path for slot %u is missing, using default.</source>
