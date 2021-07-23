@@ -406,6 +406,10 @@ void SetConsoleOutputParams(bool Enabled, const char* ChannelFilter, LOGLEVEL Le
         msw_ReopenStandardPipes();
       }
     }
+    else
+    {
+      msw_EnableVirtualTerminalProcessing();
+    }
   }
   else
   {
