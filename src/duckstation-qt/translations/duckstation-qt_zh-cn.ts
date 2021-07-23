@@ -8028,16 +8028,6 @@ Please configure a supported controller from the list above.</source>
         <translation type="vanished">根据游戏设置强制ICache重编译器。</translation>
     </message>
     <message>
-        <location filename="../../core/pad.cpp" line="71"/>
-        <source>Save state contains controller type %s in port %u, but %s is used. Switching.</source>
-        <translation>存档中包括控制器类型%s接入接口%u，但%s被占用。切换中。</translation>
-    </message>
-    <message>
-        <location filename="../../core/pad.cpp" line="79"/>
-        <source>Ignoring mismatched controller type %s in port %u.</source>
-        <translation>忽略接入接口%u中不匹配的控制器类型%s。</translation>
-    </message>
-    <message>
         <location filename="../../core/pad.cpp" line="175"/>
         <source>Memory card %u from save state does match current card data. Simulating replugging.</source>
         <translation>记忆卡%u从存档匹配了当前卡数据。仿真重插。</translation>
