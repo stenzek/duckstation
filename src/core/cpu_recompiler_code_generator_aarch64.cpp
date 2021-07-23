@@ -1603,11 +1603,11 @@ void CodeGenerator::EmitStoreGuestMemoryFastmem(const CodeBlockInstruction& cbi,
     switch (size)
     {
       case RegSize_8:
-        m_emit->strb(GetHostReg8(value_in_hr), a64::MemOperand(GetFastmemBasePtrReg(), GetHostReg32(address_reg)));
+        m_emit->strb(GetHostReg32(value_in_hr), a64::MemOperand(GetFastmemBasePtrReg(), GetHostReg32(address_reg)));
         break;
 
       case RegSize_16:
-        m_emit->strh(GetHostReg16(value_in_hr), a64::MemOperand(GetFastmemBasePtrReg(), GetHostReg32(address_reg)));
+        m_emit->strh(GetHostReg32(value_in_hr), a64::MemOperand(GetFastmemBasePtrReg(), GetHostReg32(address_reg)));
         break;
 
       case RegSize_32:
