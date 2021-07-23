@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\dep\msvc\vsprops\Configurations.props" />
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{3029310E-4211-4C87-801A-72E130A648EF}</ProjectGuid>
+  </PropertyGroup>
+  <ItemGroup>
+    <ClCompile Include="regtest_host_display.cpp" />
+    <ClCompile Include="regtest_host_interface.cpp" />
+    <ClCompile Include="regtest_settings_interface.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="regtest_host_display.h" />
+    <ClInclude Include="regtest_host_interface.h" />
+    <ClInclude Include="regtest_settings_interface.h" />
+  </ItemGroup>
+  <Import Project="..\..\dep\msvc\vsprops\ConsoleApplication.props" />
+  <Import Project="..\frontend-common\frontend-common.props" />
+  <ItemDefinitionGroup>
+    <Link>
+      <AdditionalDependencies>$(RootBuildDir)frontend-common\frontend-common.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="..\..\dep\msvc\vsprops\Targets.props" />
+</Project>
