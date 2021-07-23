@@ -923,8 +923,15 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
 
 void HostInterface::SetUserDirectoryToProgramDirectory()
 {
-  const std::string program_directory(FileSystem::GetProgramPath());
-  m_user_directory = program_directory;
+  std::string program_path(FileSystem::GetProgramPath());
+  if (program_path.empty())
+    Panic("Failed to get program path.");
+
+  std::string program_directory(FileSystem::GetPathDirectory(program_path));
+  if (program_directory.empty())
+    Panic("Program path is not valid");
+
+  m_user_directory = std::move(program_directory);
 }
 
 void HostInterface::OnHostDisplayResized()
