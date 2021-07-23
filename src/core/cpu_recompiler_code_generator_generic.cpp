@@ -160,7 +160,7 @@ void CodeGenerator::EmitStoreGuestMemory(const CodeBlockInstruction& cbi, const 
   }
 }
 
-#ifndef CPU_X64
+#if 0 // Not used
 
 void CodeGenerator::EmitICacheCheckAndUpdate()
 {

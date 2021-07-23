@@ -1749,6 +1749,48 @@ void CodeGenerator::EmitCancelInterpreterLoadDelayForReg(Reg reg)
   m_emit->Bind(&skip_cancel);
 }
 
+void CodeGenerator::EmitICacheCheckAndUpdate()
+{
+  if (GetSegmentForAddress(m_pc) >= Segment::KSEG1)
+  {
+    EmitAddCPUStructField(offsetof(State, pending_ticks), Value::FromConstantU32(static_cast<u32>(m_block->uncached_fetch_ticks)));
+  }
+  else
+  {
+    const auto& ticks_reg = a32::r0;
+    const auto& current_tag_reg = a32::r1;
+    const auto& existing_tag_reg = a32::r2;
+
+    VirtualMemoryAddress current_pc = m_pc & ICACHE_TAG_ADDRESS_MASK;
+    m_emit->ldr(ticks_reg, a32::MemOperand(GetCPUPtrReg(), offsetof(State, pending_ticks)));
+    m_emit->Mov(current_tag_reg, current_pc);
+
+    for (u32 i = 0; i < m_block->icache_line_count; i++, current_pc += ICACHE_LINE_SIZE)
+    {
+      const TickCount fill_ticks = GetICacheFillTicks(current_pc);
+      if (fill_ticks <= 0)
+        continue;
+
+      const u32 line = GetICacheLine(current_pc);
+      const u32 offset = offsetof(State, icache_tags) + (line * sizeof(u32));
+
+      a32::Label cache_hit;
+      m_emit->ldr(existing_tag_reg, a32::MemOperand(GetCPUPtrReg(), offset));
+      m_emit->cmp(existing_tag_reg, current_tag_reg);
+      m_emit->B(a32::eq, &cache_hit);
+
+      m_emit->str(current_tag_reg, a32::MemOperand(GetCPUPtrReg(), offset));
+      EmitAdd(0, 0, Value::FromConstantU32(static_cast<u32>(fill_ticks)), false);
+      m_emit->Bind(&cache_hit);
+
+      if (i != (m_block->icache_line_count - 1))
+        m_emit->add(current_tag_reg, current_tag_reg, ICACHE_LINE_SIZE);
+    }
+
+    m_emit->str(ticks_reg, a32::MemOperand(GetCPUPtrReg(), offsetof(State, pending_ticks)));
+  }
+}
+
 void CodeGenerator::EmitStallUntilGTEComplete()
 {
   static_assert(offsetof(State, pending_ticks) + sizeof(u32) == offsetof(State, gte_completion_tick));
