@@ -741,7 +741,7 @@ bool D3D11HostDisplay::UpdateImGuiFontTexture()
 
 bool D3D11HostDisplay::Render()
 {
-  if (ShouldSkipDisplayingFrame())
+  if (ShouldSkipDisplayingFrame() || !m_swap_chain)
   {
     if (ImGui::GetCurrentContext())
       ImGui::Render();
