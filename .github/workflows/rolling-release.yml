@@ -185,46 +185,43 @@ jobs:
       run: |
         copy ${{ steps.write_signing_key.outputs.filePath }} src\duckstation-uwp\duckstation-uwp.pfx
 
+    - name: Generate signing key
+      if: github.ref != 'refs/heads/master' && github.ref != 'refs/heads/dev'
+      shell: powershell
+      run: |
+        $Cert = New-SelfSignedCertificate -Type Custom -Subject "CN=DuckStation CI, O=DuckStation, C=AU" -KeyUsage DigitalSignature -FriendlyName "DuckStation CI" -CertStoreLocation "Cert:\CurrentUser\My" -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3", "2.5.29.19={text}")
+        $Password = -join ((65..90) + (97..122) | Get-Random -Count 10 | % {[char]$_})
+        $Password = ConvertTo-SecureString "$Password" -asplaintext -force
+        Export-PfxCertificate -cert $Cert -FilePath src\duckstation-uwp\duckstation-uwp.pfx -Password $Password
+
     - name: Restore nuget packages
       shell: cmd
       run: |
         nuget restore duckstation-uwp.sln
 
-    - name: Compile x64 release build without bundle
-      if: github.ref != 'refs/heads/master' && github.ref != 'refs/heads/dev'
-      shell: cmd
-      run: |
-        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
-        msbuild duckstation-uwp.sln /p:Configuration="ReleaseUWP" /p:Platform="x64" /t:Build
-
     - name: Compile x64 release build with bundle
-      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
       shell: cmd
       run: |
         call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
         msbuild duckstation-uwp.sln /p:AppxBundle=Always /p:AppxPackageIsForStore=true /p:BuildAppxUploadPackageForUap=true /p:AppxBundlePlatforms="x64" /p:Configuration="ReleaseUWP" /p:Platform="x64" /t:Build
 
     - name: Grab AppX package
-      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
       shell: cmd
       run: |
         copy build\ReleaseUWP-x64\duckstation-uwp\duckstation-uwp_1.0.0.0_Bundle\duckstation-uwp_1.0.0.0_x64_ReleaseUWP.appx duckstation-uwp.appx
 
     - name: Export certificate
-      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
       shell: powershell
       run: |
         Get-PfxCertificate -FilePath .\src\duckstation-uwp\duckstation-uwp.pfx | Export-Certificate -FilePath duckstation-uwp.der -Type CERT
 
     - name: Upload AppX package
-      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
       uses: actions/upload-artifact@v1
       with:
         name: "windows-uwp"
         path: "duckstation-uwp.appx"
 
     - name: Upload certificate
-      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
       uses: actions/upload-artifact@v1
       with:
         name: "windows-uwp"
