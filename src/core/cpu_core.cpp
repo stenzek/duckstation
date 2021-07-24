@@ -362,7 +362,7 @@ ALWAYS_INLINE static void WriteReg(Reg rd, u32 value)
 
 ALWAYS_INLINE_RELEASE static void WriteRegDelayed(Reg rd, u32 value)
 {
-  Assert(g_state.next_load_delay_reg == Reg::count);
+  DebugAssert(g_state.next_load_delay_reg == Reg::count);
   if (rd == Reg::zero)
     return;
 
