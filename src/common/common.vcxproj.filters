@@ -263,6 +263,7 @@
     <ClCompile Include="d3d12\shader_cache.cpp">
       <Filter>d3d12</Filter>
     </ClCompile>
+    <ClCompile Include="cd_image_device.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />

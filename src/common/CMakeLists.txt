@@ -13,6 +13,7 @@ add_library(common
   cd_image_bin.cpp
   cd_image_cue.cpp
   cd_image_chd.cpp
+  cd_image_device.cpp
   cd_image_ecm.cpp
   cd_image_hasher.cpp
   cd_image_hasher.h

@@ -77,6 +77,7 @@ private Q_SLOTS:
   void onRunningGameChanged(const QString& filename, const QString& game_code, const QString& game_title);
   void onApplicationStateChanged(Qt::ApplicationState state);
 
+  void onStartFileActionTriggered();
   void onStartDiscActionTriggered();
   void onStartBIOSActionTriggered();
   void onChangeDiscFromFileActionTriggered();

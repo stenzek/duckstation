@@ -3,6 +3,7 @@
 #include "autoupdaterdialog.h"
 #include "cheatmanagerdialog.h"
 #include "common/assert.h"
+#include "common/cd_image.h"
 #include "core/host_display.h"
 #include "core/settings.h"
 #include "core/system.h"
@@ -27,6 +28,7 @@
 #include <QtGui/QCursor>
 #include <QtGui/QWindowStateChangeEvent>
 #include <QtWidgets/QFileDialog>
+#include <QtWidgets/QInputDialog>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QStyleFactory>
 #include <cmath>
@@ -501,7 +503,7 @@ void MainWindow::onApplicationStateChanged(Qt::ApplicationState state)
   }
 }
 
-void MainWindow::onStartDiscActionTriggered()
+void MainWindow::onStartFileActionTriggered()
 {
   QString filename = QDir::toNativeSeparators(
     QFileDialog::getOpenFileName(this, tr("Select Disc Image"), QString(), tr(DISC_IMAGE_FILTER), nullptr));
@@ -509,6 +511,44 @@ void MainWindow::onStartDiscActionTriggered()
     return;
 
   m_host_interface->bootSystem(std::make_shared<SystemBootParameters>(filename.toStdString()));
+}
+
+void MainWindow::onStartDiscActionTriggered()
+{
+  const auto devices = CDImage::GetDeviceList();
+  if (devices.empty())
+  {
+    QMessageBox::critical(this, tr("Start Disc"),
+                          tr("Could not find any CD-ROM devices. Please ensure you have a CD-ROM drive connected and "
+                             "sufficient permissions to access it."));
+    return;
+  }
+
+  // if there's only one, select it automatically
+  if (devices.size() == 1)
+  {
+    m_host_interface->bootSystem(std::make_shared<SystemBootParameters>(std::move(devices.front().first)));
+    return;
+  }
+
+  QStringList input_options;
+  for (const auto& [path, name] : devices)
+    input_options.append(tr("%1 (%2)").arg(QString::fromStdString(name)).arg(QString::fromStdString(path)));
+
+  QInputDialog input_dialog(this);
+  input_dialog.setLabelText(tr("Select disc drive:"));
+  input_dialog.setInputMode(QInputDialog::TextInput);
+  input_dialog.setOptions(QInputDialog::UseListViewForComboBoxItems);
+  input_dialog.setComboBoxEditable(false);
+  input_dialog.setComboBoxItems(std::move(input_options));
+  if (input_dialog.exec() == 0)
+    return;
+
+  const int selected_index = input_dialog.comboBoxItems().indexOf(input_dialog.textValue());
+  if (selected_index < 0 || static_cast<u32>(selected_index) >= devices.size())
+    return;
+
+  m_host_interface->bootSystem(std::make_shared<SystemBootParameters>(std::move(devices[selected_index].first)));
 }
 
 void MainWindow::onStartBIOSActionTriggered()
@@ -895,6 +935,7 @@ void MainWindow::setupAdditionalUi()
 
 void MainWindow::updateEmulationActions(bool starting, bool running, bool cheevos_challenge_mode)
 {
+  m_ui.actionStartFile->setDisabled(starting || running);
   m_ui.actionStartDisc->setDisabled(starting || running);
   m_ui.actionStartBios->setDisabled(starting || running);
   m_ui.actionResumeLastState->setDisabled(starting || running || cheevos_challenge_mode);
@@ -1033,6 +1074,7 @@ void MainWindow::connectSignals()
 
   connect(qApp, &QGuiApplication::applicationStateChanged, this, &MainWindow::onApplicationStateChanged);
 
+  connect(m_ui.actionStartFile, &QAction::triggered, this, &MainWindow::onStartFileActionTriggered);
   connect(m_ui.actionStartDisc, &QAction::triggered, this, &MainWindow::onStartDiscActionTriggered);
   connect(m_ui.actionStartBios, &QAction::triggered, this, &MainWindow::onStartBIOSActionTriggered);
   connect(m_ui.actionResumeLastState, &QAction::triggered, m_host_interface,

@@ -203,6 +203,12 @@ public:
   // Helper functions.
   static u32 GetBytesPerSector(TrackMode mode);
 
+  /// Returns a list of physical CD-ROM devices, .first being the device path, .second being the device name.
+  static std::vector<std::pair<std::string, std::string>> GetDeviceList();
+
+  /// Returns true if the specified filename is a CD-ROM device name.
+  static bool IsDeviceName(const char* filename);
+
   // Opening disc image.
   static std::unique_ptr<CDImage> Open(const char* filename, Common::Error* error);
   static std::unique_ptr<CDImage> OpenBinImage(const char* filename, Common::Error* error);
@@ -212,6 +218,7 @@ public:
   static std::unique_ptr<CDImage> OpenMdsImage(const char* filename, Common::Error* error);
   static std::unique_ptr<CDImage> OpenPBPImage(const char* filename, Common::Error* error);
   static std::unique_ptr<CDImage> OpenM3uImage(const char* filename, Common::Error* error);
+  static std::unique_ptr<CDImage> OpenDeviceImage(const char* filename, Common::Error* error);
   static std::unique_ptr<CDImage>
   CreateMemoryImage(CDImage* image, ProgressCallback* progress = ProgressCallback::NullProgressCallback);
   static std::unique_ptr<CDImage> OverlayPPFPatch(const char* filename, std::unique_ptr<CDImage> parent_image,
