@@ -4959,7 +4959,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../gamepropertiesdialog.ui" line="100"/>
         <source>Upscaling Issues:</source>
-        <translation>Problemas escalonamento:</translation>
+        <translation>Problemas de redimensionamento:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="110"/>
@@ -5151,17 +5151,17 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../gamepropertiesdialog.ui" line="274"/>
         <source>CD-ROM Read Speedup:</source>
-        <translation>Velocidade de leitura CD-rom:</translation>
+        <translation>Velocidade de leitura CD-ROM:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="287"/>
         <source>None (Double Speed)</source>
-        <translation>2x (Roda a 2X)</translation>
+        <translation>2x (roda a 2X)</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="292"/>
         <source>2x (Quad Speed)</source>
-        <translation>2x (Quadruplicado)</translation>
+        <translation>2x (quadruplicado)</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="297"/>
@@ -5206,7 +5206,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../gamepropertiesdialog.ui" line="340"/>
         <source>CD-ROM Seek Speedup:</source>
-        <translation>Velocidade de busca CD-rom:</translation>
+        <translation>Velocidade de busca CD-ROM:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="356"/>
@@ -5432,7 +5432,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../gamepropertiesdialog.ui" line="1030"/>
         <source>GPU Max Run Ahead:</source>
-        <translation>GPU Max Run Ahead:</translation>
+        <translation>GPU Max run ahead:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="1047"/>
@@ -6967,7 +6967,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../mainwindow.ui" line="709"/>
         <source>Show CD-ROM State</source>
-        <translation>Mostrar estado do CD-Rom</translation>
+        <translation>Mostrar estado do CD-ROM</translation>
     </message>
     <message>
         <source>Show CDROM State</source>
