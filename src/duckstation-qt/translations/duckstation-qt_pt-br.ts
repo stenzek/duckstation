@@ -5397,7 +5397,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../gamepropertiesdialog.ui" line="895"/>
         <source>Traits</source>
-        <translation>Caracteristicas individuais</translation>
+        <translation>Características individuais</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="902"/>
