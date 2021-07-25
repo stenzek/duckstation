@@ -120,7 +120,7 @@
         <location filename="../achievementsettingswidget.ui" line="38"/>
         <location filename="../achievementsettingswidget.cpp" line="28"/>
         <source>Enable Achievements</source>
-        <translation>Habilitar Logros</translation>
+        <translation>Logros</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="45"/>
@@ -132,20 +132,20 @@
         <location filename="../achievementsettingswidget.ui" line="52"/>
         <location filename="../achievementsettingswidget.cpp" line="30"/>
         <source>Enable Test Mode</source>
-        <translation>Modo de Prueba</translation>
+        <translation>Modo de prueba</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="59"/>
         <location filename="../achievementsettingswidget.cpp" line="41"/>
         <source>Use First Disc From Playlist</source>
-        <translation>Usar el primer disco de la Lista</translation>
+        <translation>Usar el primer disco de la lista</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="66"/>
         <location filename="../achievementsettingswidget.cpp" line="44"/>
         <location filename="../achievementsettingswidget.cpp" line="179"/>
         <source>Enable Hardcore Mode</source>
-        <translation>Modo Hardcore</translation>
+        <translation>Modo hardcore</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="73"/>
@@ -177,7 +177,7 @@
     <message>
         <location filename="../achievementsettingswidget.ui" line="139"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;DuckStation uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at &lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;To view the achievement list in-game, press the hotkey for &lt;span style=&quot; font-weight:600;&quot;&gt;Open Quick Menu&lt;/span&gt; and select &lt;span style=&quot; font-weight:600;&quot;&gt;Achievements&lt;/span&gt; from the menu.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;DuckStation utiliza RetroAchievements como base de datos de logros y para realizar un seguimiento del progreso. Para utilizarlo, regístrese para obtener una cuenta en &lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot;text-decoration: underline; color: # 0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;Para ver la lista de logros en el juego, presione la tecla de acceso rápido &lt;span style=&quot;font-weight:600;&quot;&gt;Abrir Menú Rápido&lt;/span&gt; y seleccione &lt;span style=&quot;font-weight:600;&quot;&gt;Logros&lt;/span&gt; desde el Menu.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;DuckStation utiliza RetroAchievements como base de datos de logros y para realizar un seguimiento del progreso. Para utilizarlo, regístrese para obtener una cuenta en &lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot;text-decoration: underline; color: # 0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;Para ver la lista de logros en el juego, presione la tecla de acceso rápido &lt;span style=&quot;font-weight:600;&quot;&gt;Abrir Menú Rápido&lt;/span&gt; y seleccione &lt;span style=&quot;font-weight:600;&quot;&gt;Logros&lt;/span&gt; desde el Menu.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="28"/>
@@ -202,7 +202,7 @@
     <message>
         <location filename="../achievementsettingswidget.cpp" line="35"/>
         <source>When enabled, DuckStation will list achievements from unofficial sets. Please note that these achievements are not tracked by RetroAchievements, so they unlock every time.</source>
-        <translation type="unfinished">Cuando está habilitado, DuckStation asumirá que. Tenga en cuenta que estos logros no son rastreados por RetroAchievements, por lo cual se desbloquean todo el tiempo.</translation>
+        <translation>Cuando está habilitado, DuckStation listará logros no oficiales Tenga en cuenta que éstos no son rastreados por RetroAchievements, por lo cual se desbloquean todo el tiempo.</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="39"/>
@@ -1894,7 +1894,7 @@ Token de inicio de sesión generado en %2.</translation>
         <location filename="../consolesettingswidget.ui" line="78"/>
         <location filename="../consolesettingswidget.cpp" line="69"/>
         <source>Enable Clock Speed Control (Overclocking/Underclocking)</source>
-        <translation>Habilitar control de velocidad de reloj (Overclocking/Underclocking)</translation>
+        <translation>Control de velocidad de reloj (Overclocking/Underclocking)</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="98"/>
@@ -1915,7 +1915,7 @@ Token de inicio de sesión generado en %2.</translation>
         <location filename="../consolesettingswidget.ui" line="154"/>
         <location filename="../consolesettingswidget.cpp" line="83"/>
         <source>None (Double Speed)</source>
-        <translation>Ninguna (velocidad doble)</translation>
+        <translation>Ninguno (velocidad doble)</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="159"/>
@@ -1965,18 +1965,18 @@ Token de inicio de sesión generado en %2.</translation>
     <message>
         <location filename="../consolesettingswidget.ui" line="207"/>
         <source>Seek Speedup:</source>
-        <translation type="unfinished"></translation>
+        <translation>Aceleración de búsqueda:</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="218"/>
         <source>Infinite/Instantaneous</source>
-        <translation type="unfinished"></translation>
+        <translation>Infinito/Instantaneo</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="223"/>
         <location filename="../consolesettingswidget.cpp" line="87"/>
         <source>None (Normal Speed)</source>
-        <translation></translation>
+        <translation>Ninguno (velocidad normal)</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="228"/>
@@ -2027,12 +2027,12 @@ Token de inicio de sesión generado en %2.</translation>
         <location filename="../consolesettingswidget.ui" line="292"/>
         <location filename="../consolesettingswidget.cpp" line="100"/>
         <source>Apply Image Patches</source>
-        <translation type="unfinished"></translation>
+        <translation>Aplicar parches de imagen</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="301"/>
         <source>Async Readahead:</source>
-        <translation type="unfinished"></translation>
+        <translation>Lectura asíncrona:</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="311"/>
@@ -2163,12 +2163,12 @@ Token de inicio de sesión generado en %2.</translation>
     <message>
         <location filename="../consolesettingswidget.cpp" line="88"/>
         <source>Reduces the simulated time for the CD-ROM sled to move to different areas of the disc. Can improve loading times, but crash games which do not expect the CD-ROM to operate faster.</source>
-        <translation type="unfinished"></translation>
+        <translation>Reduce el tiempo simulado para que el motor sled del CD-ROM se mueva a diferentes áreas del disco. Puede mejorar los tiempos de carga pero, bloquear los juegos que no esperan que el CD-ROM funcione más rápido.</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="90"/>
         <source>Asynchronous Readahead</source>
-        <translation type="unfinished"></translation>
+        <translation>Lectura asíncrona</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="90"/>
@@ -2178,7 +2178,7 @@ Token de inicio de sesión generado en %2.</translation>
     <message>
         <location filename="../consolesettingswidget.cpp" line="91"/>
         <source>Reduces hitches in emulation by reading/decompressing CD data asynchronously on a worker thread. Higher sector numbers can reduce spikes when streaming FMVs or audio on slower storage or when using compression formats such as CHD.</source>
-        <translation type="unfinished"></translation>
+        <translation>Reduce los problemas de emulación al leer/descomprimir datos de CD de forma asincrónica en un hilo de trabajo. Los números de sector más altos pueden reducir los picos al transmitir FMVs, audio en un almacenamiento más lento o cuando se utilizan formatos de compresión como CHD.</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="94"/>
@@ -2193,7 +2193,7 @@ Token de inicio de sesión generado en %2.</translation>
     <message>
         <location filename="../consolesettingswidget.cpp" line="101"/>
         <source>Automatically applies patches to disc images when they are present in the same directory. Currently only PPF patches are supported with this option.</source>
-        <translation type="unfinished"></translation>
+        <translation>Aplica parches automáticamente a las imágenes del disco cuando esten presentes en el mismo directorio. Actualmente solo los parches PPF son compatibles con esta opción.</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="104"/>
@@ -2363,12 +2363,12 @@ Esta alerta sólo se mostrará una vez.</translation>
     <message>
         <location filename="../controllersettingswidget.cpp" line="460"/>
         <source>Auto Fire Buttons</source>
-        <translation type="unfinished"></translation>
+        <translation>Botones de auto disparo</translation>
     </message>
     <message>
         <location filename="../controllersettingswidget.cpp" line="472"/>
         <source>Auto Fire %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Auto disparo %1</translation>
     </message>
     <message>
         <location filename="../controllersettingswidget.cpp" line="489"/>
@@ -2379,7 +2379,7 @@ Esta alerta sólo se mostrará una vez.</translation>
         <location filename="../controllersettingswidget.cpp" line="534"/>
         <location filename="../controllersettingswidget.cpp" line="574"/>
         <source>Select path to input profile ini</source>
-        <translation>Seleccionar archivo de perfil de control</translation>
+        <translation>Seleccionar ruta para el perfil del control</translation>
     </message>
     <message>
         <location filename="../controllersettingswidget.cpp" line="558"/>
@@ -2390,7 +2390,7 @@ Esta alerta sólo se mostrará una vez.</translation>
         <location filename="../controllersettingswidget.cpp" line="560"/>
         <location filename="../controllersettingswidget.cpp" line="561"/>
         <source>Enter Input Profile Name</source>
-        <translation>Ingresar nombre de perfil</translation>
+        <translation>Ingresar nombre del perfil para el control</translation>
     </message>
     <message>
         <location filename="../controllersettingswidget.cpp" line="564"/>
@@ -3246,7 +3246,7 @@ Este archivo puede tener varios gigabytes, así que tenga en cuenta el SSD.</tra
         <location filename="../displaysettingswidget.cpp" line="133"/>
         <location filename="../displaysettingswidget.cpp" line="143"/>
         <source>Checked</source>
-        <translation>Habilitado</translation>
+        <translation>Activo</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="107"/>
@@ -3607,7 +3607,7 @@ Este archivo puede tener varios gigabytes, así que tenga en cuenta el SSD.</tra
     <message>
         <location filename="../enhancementsettingswidget.ui" line="79"/>
         <source>Software Renderer Readbacks (run in parallel for VRAM-&gt;CPU transfers)</source>
-        <translation type="unfinished"></translation>
+        <translation>Renderizado de lecturas del software (Ejecución en paralelo para transferencias de VRAM-&gt; CPU)</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="86"/>
@@ -3737,7 +3737,7 @@ Este archivo puede tener varios gigabytes, así que tenga en cuenta el SSD.</tra
         <location filename="../enhancementsettingswidget.cpp" line="111"/>
         <location filename="../enhancementsettingswidget.cpp" line="114"/>
         <source>Checked</source>
-        <translation>Habilitado</translation>
+        <translation>Activo</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="78"/>
@@ -3792,12 +3792,12 @@ Este archivo puede tener varios gigabytes, así que tenga en cuenta el SSD.</tra
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="104"/>
         <source>Use Software Renderer For Readbacks</source>
-        <translation type="unfinished"></translation>
+        <translation>Utiliza el renderizado por software para lecturas</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="105"/>
         <source>Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater performance when using graphical enhancements with the hardware renderer.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ejecuta el renderizado por software en paralelo para lecturas de VRAM. En algunos sistemas, esto puede resultar en un mayor rendimiento cuando se utilizan mejoras gráficas con el procesador de hardware.</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="109"/>
@@ -4801,7 +4801,7 @@ Escanear recursivamente lleva más tiempo, pero identifica archivos en subdirect
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="24"/>
         <source>Force Software Renderer For Readbacks</source>
-        <translation type="unfinished"></translation>
+        <translation>Forzar renderizado por software para lecturas</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="25"/>
@@ -4907,7 +4907,7 @@ Escanear recursivamente lleva más tiempo, pero identifica archivos en subdirect
         <location filename="../generalsettingswidget.ui" line="45"/>
         <location filename="../generalsettingswidget.cpp" line="57"/>
         <source>Inhibit Screensaver</source>
-        <translation type="unfinished"></translation>
+        <translation>Inhibir salvapantallas</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="66"/>
@@ -5002,7 +5002,7 @@ Escanear recursivamente lleva más tiempo, pero identifica archivos en subdirect
         <location filename="../generalsettingswidget.cpp" line="74"/>
         <location filename="../generalsettingswidget.cpp" line="108"/>
         <source>Checked</source>
-        <translation>Habilitado</translation>
+        <translation>Activo</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="47"/>
@@ -5038,7 +5038,7 @@ Escanear recursivamente lleva más tiempo, pero identifica archivos en subdirect
     <message>
         <location filename="../generalsettingswidget.cpp" line="58"/>
         <source>Prevents the screen saver from activating and the host from sleeping while emulation is running.</source>
-        <translation type="unfinished"></translation>
+        <translation>Evita que el protector de pantalla se active y que entre en suspensión mientras el emulador se esté ejecutando.</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="61"/>
@@ -5176,7 +5176,7 @@ Escanear recursivamente lleva más tiempo, pero identifica archivos en subdirect
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2102"/>
         <source>Toggle Turbo</source>
-        <translation>Activar Turbo</translation>
+        <translation>Activar turbo</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2108"/>
@@ -5191,7 +5191,7 @@ Escanear recursivamente lleva más tiempo, pero identifica archivos en subdirect
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2226"/>
         <source>Toggle Cheats</source>
-        <translation>Activar Trucos</translation>
+        <translation>Activar trucos</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2120"/>
@@ -5201,7 +5201,7 @@ Escanear recursivamente lleva más tiempo, pero identifica archivos en subdirect
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2237"/>
         <source>Toggle Patch Codes</source>
-        <translation>Activar Códigos de Parche</translation>
+        <translation>Activar códigos de parche</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2186"/>
@@ -5211,7 +5211,7 @@ Escanear recursivamente lleva más tiempo, pero identifica archivos en subdirect
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2149"/>
         <source>Save Screenshot</source>
-        <translation>Guardar Captura</translation>
+        <translation>Guardar captura</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2192"/>
@@ -5260,7 +5260,7 @@ Escanear recursivamente lleva más tiempo, pero identifica archivos en subdirect
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2350"/>
         <source>Toggle PGXP Depth Buffer</source>
-        <translation>Activar PGXP Búfer de Profundidad</translation>
+        <translation>Activar Búfer de Profundidad de PGXP</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2309"/>
@@ -5270,12 +5270,12 @@ Escanear recursivamente lleva más tiempo, pero identifica archivos en subdirect
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2156"/>
         <source>Open Achievement List</source>
-        <translation type="unfinished"></translation>
+        <translation>Abrir lista de logros</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2169"/>
         <source>Open Leaderboard List</source>
-        <translation type="unfinished"></translation>
+        <translation>Abrir tabla de clasificación</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2185"/>
@@ -5287,12 +5287,12 @@ Escanear recursivamente lleva más tiempo, pero identifica archivos en subdirect
         <location filename="../../frontend-common/common_host_interface.cpp" line="2236"/>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2249"/>
         <source>System</source>
-        <translation type="unfinished"></translation>
+        <translation>Sistema</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2203"/>
         <source>Swap Memory Card Slots</source>
-        <translation type="unfinished"></translation>
+        <translation>Cambiar bloques de la tarjeta de memoria</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2315"/>
@@ -5322,7 +5322,7 @@ Escanear recursivamente lleva más tiempo, pero identifica archivos en subdirect
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2369"/>
         <source>Toggle PGXP CPU Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Activar modo CPU de PGXP</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2397"/>
@@ -5360,7 +5360,7 @@ Escanear recursivamente lleva más tiempo, pero identifica archivos en subdirect
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2424"/>
         <source>Undo Load State</source>
-        <translation type="unfinished"></translation>
+        <translation>Deshacer estado de carga del juego</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2472"/>
@@ -5578,17 +5578,17 @@ Escanear recursivamente lleva más tiempo, pero identifica archivos en subdirect
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2530"/>
         <source>Toggle CD Audio Mute</source>
-        <translation>Activar silencio de audio de CD</translation>
+        <translation>Activar silencio en audio del CD</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2541"/>
         <source>Volume Up</source>
-        <translation>Volumen arriba</translation>
+        <translation>Subir volumen</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2554"/>
         <source>Volume Down</source>
-        <translation>Volumen abajo</translation>
+        <translation>Bajar volumen</translation>
     </message>
 </context>
 <context>
@@ -6109,7 +6109,7 @@ Escanear recursivamente lleva más tiempo, pero identifica archivos en subdirect
     <message>
         <location filename="../mainwindow.ui" line="783"/>
         <source>Lock Toolbar</source>
-        <translation>Bloquear Barra de herramientas</translation>
+        <translation>Bloquear barra de herramientas</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="794"/>
@@ -6368,12 +6368,12 @@ Escanear recursivamente lleva más tiempo, pero identifica archivos en subdirect
     <message>
         <location filename="../mainwindow.cpp" line="1580"/>
         <source>Memory card &apos;%1&apos; does not exist. Do you want to create an empty memory card?</source>
-        <translation type="unfinished"></translation>
+        <translation>La tarjeta de memoria &apos;%1&apos; no existe.¿Quieres crear una tarjeta de memoria?</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1585"/>
         <source>Failed to create memory card &apos;%1&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>Fallo al crear la tarjeta de memoria &apos;%1&apos;</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1605"/>
@@ -6393,7 +6393,11 @@ Escanear recursivamente lleva más tiempo, pero identifica archivos en subdirect
 Cheats persist through save states even after being disabled, please remember to reset/reboot the game after turning off any codes.
 
 Are you sure you want to continue?</source>
-        <translation type="unfinished"></translation>
+        <translation>El uso de trucos puede tener efectos impredecibles en los juegos, causando bloqueos, fallas gráficas y guardados corruptos. Al utilizar el administrador de trucos, acepta que se trata de una configuración no soportada y que no le proporcionaremos ninguna ayuda cuando los juegos se interrumpan.
+
+Los trucos persisten a través de los estados de guardado incluso después de haber sido desactivados, recuerde reiniciar el juego después de desactivar cualquier código.
+
+¿Estás seguro de que quieres continuar?</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1719"/>
@@ -6486,7 +6490,7 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../memorycardeditordialog.ui" line="297"/>
         <source>Undelete File</source>
-        <translation type="unfinished"></translation>
+        <translation>Recuperar Archivo</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.ui" line="307"/>
@@ -6612,7 +6616,7 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="451"/>
         <source>Failed to undelete file %1. The file may have been partially overwritten by another save.</source>
-        <translation type="unfinished"></translation>
+        <translation>Fallo al recuperar el archivo %1. Es posible que otro guardado haya sobrescrito el archivo.</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="466"/>
@@ -6642,7 +6646,7 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="514"/>
         <source>Formatting the memory card will destroy all saves, and they will not be recoverable. The memory card which will be formatted is located at &apos;%1&apos;.</source>
-        <translation type="unfinished"></translation>
+        <translation>Al formatear la tarjeta destruira todos los estados guardados y no podrán ser recuperados. La tarjeta se encuentra en %1&apos;.</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="535"/>
@@ -6777,7 +6781,7 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../core/settings.cpp" line="926"/>
         <source>Non-Persistent Card (Do Not Save)</source>
-        <translation type="unfinished"></translation>
+        <translation>Tarjeta no persistente (no guardar)</translation>
     </message>
 </context>
 <context>
@@ -6828,7 +6832,7 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../core/namco_guncon.cpp" line="266"/>
         <source>Crosshair Image Path</source>
-        <translation>Directorio para la imagen de mira</translation>
+        <translation>Ruta para la imagen de mira</translation>
     </message>
     <message>
         <location filename="../../core/namco_guncon.cpp" line="267"/>
@@ -6984,7 +6988,7 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="234"/>
         <source>Resolution scale %ux not supported for adaptive smoothing, using %ux.</source>
-        <translation type="unfinished"></translation>
+        <translation>La escala de resolución %ux no es compatible con el suavizado adaptativo, utilizando %ux.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw_opengl.cpp" line="59"/>
@@ -7039,7 +7043,7 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../core/host_interface.cpp" line="780"/>
         <source>Recompiler options changed, flushing all blocks.</source>
-        <translation type="unfinished"></translation>
+        <translation>Las opciones del recompilador cambiaron, limpiando los bloques.</translation>
     </message>
     <message>
         <location filename="../../core/host_interface.cpp" line="835"/>
@@ -7109,12 +7113,12 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../core/system.cpp" line="660"/>
         <source>CD image preloading not available for multi-disc image &apos;%s&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>La precarga de imágen de CD no está disponible para la imagen de varios discos &apos;% s&apos;</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="685"/>
         <source>Failed to apply ppf patch from &apos;%s&apos;, using unpatched image.</source>
-        <translation type="unfinished"></translation>
+        <translation>Error al aplicar el parche ppf de &apos;%s&apos;, usando una imagen sin parche.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="930"/>
@@ -7129,12 +7133,12 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../core/system.cpp" line="947"/>
         <source>CD-ROM seek speedup set to instant. This may result in instability.</source>
-        <translation type="unfinished"></translation>
+        <translation>Aceleración de búsqueda de CD-ROM establecida en instantánea. Esto puede resultar en inestabilidad.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="955"/>
         <source>CD-ROM seek speedup set to %ux. This may result in instability.</source>
-        <translation type="unfinished"></translation>
+        <translation>Aceleración de búsqueda de CD-ROM establecida en %ux. Esto puede resultar en inestabilidad.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="1032"/>
@@ -7247,7 +7251,7 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2293"/>
         <source>PGXP is now enabled.</source>
-        <translation>PGXP está habilitado.</translation>
+        <translation>PGXP está activado.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2294"/>
@@ -7272,32 +7276,32 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="751"/>
         <source>Failed to save undo load state.</source>
-        <translation type="unfinished"></translation>
+        <translation>Error al guardar al deshacer el estado de carga.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2053"/>
         <source>Rewinding is not enabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>El retrocedimiento no está activado.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2162"/>
         <source>Achievements are disabled or unavailable for this game.</source>
-        <translation type="unfinished"></translation>
+        <translation>Los logros para este juego están desactivados o no dispone.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2175"/>
         <source>Leaderboards are disabled or unavailable for this game.</source>
-        <translation type="unfinished"></translation>
+        <translation>Las tablas de clasificación están deshabilitadas o no disponibles para este juego.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2378"/>
         <source>PGXP CPU mode is now enabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>El modo de CPU de PGXP está activo.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2379"/>
         <source>PGXP CPU mode is now disabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>El modo de CPU de PGXP está desactivado.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2524"/>
@@ -7384,24 +7388,23 @@ Por favor configure un control de la lista anterior.</translation>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="3852"/>
         <source>Swapped memory card ports. Both ports have a memory card.</source>
-        <translation type="unfinished"></translation>
+        <translation>Intercambiados los puertos de la tarjeta de memoria. Ambos puertos tienen una tarjeta de memoria.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="3858"/>
         <source>Swapped memory card ports. Port 2 has a memory card, Port 1 is empty.</source>
-        <translation type="unfinished"></translation>
+        <translation>Intercambiados los puertos de la tarjeta de memoria. El puerto 2 contiene una tarjeta de memoria y el puerto 1 está vacio.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="3865"/>
         <source>Swapped memory card ports. Port 1 has a memory card, Port 2 is empty.</source>
-        <translation type="unfinished"></translation>
+        <translation>Intercambiados los puertos de la tarjeta de memoria. El puerto 1 contiene una tarjeta de memoria y el puerto 2 está vacio.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="3872"/>
         <source>Swapped memory card ports. Neither port has a memory card.</source>
-        <translation type="unfinished"></translation>
+        <translation>Intercambiados los puertos de la tarjeta de memoria. Ninguno de los puertos contiene una tarjeta de memoria.</translation>
     </message>
-
     <message numerus="yes">
         <location filename="../../frontend-common/common_host_interface.cpp" line="3681"/>
         <source>Saved %n cheats to &apos;%s&apos;.</source>
@@ -7546,7 +7549,7 @@ Por favor configure un control de la lista anterior.</translation>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="1419"/>
         <source>PGXP Depth Buffer disabled by game settings.</source>
-        <translation>El Búfer de Profundidad PGXP está desactivado por las configuración del juego.</translation>
+        <translation>El Búfer de profundidad PGXP está desactivado por las configuración del juego.</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="42"/>
@@ -7771,24 +7774,24 @@ The URL was: %1</source>
     <message>
         <location filename="../qthostinterface.cpp" line="982"/>
         <source>Load From File...</source>
-        <translation type="unfinished"></translation>
+        <translation>Cargar desde archivo...</translation>
     </message>
     <message>
         <location filename="../qthostinterface.cpp" line="984"/>
         <location filename="../qthostinterface.cpp" line="1026"/>
         <source>Select Save State File</source>
-        <translation type="unfinished"></translation>
+        <translation>Selecciona el archivo de guardado</translation>
     </message>
     <message>
         <location filename="../qthostinterface.cpp" line="984"/>
         <location filename="../qthostinterface.cpp" line="1026"/>
         <source>Save States (*.sav)</source>
-        <translation type="unfinished"></translation>
+        <translation>Estados guardados (*.sav)</translation>
     </message>
     <message>
         <location filename="../qthostinterface.cpp" line="990"/>
         <source>Undo Load State</source>
-        <translation type="unfinished"></translation>
+        <translation>Deshacer estado de carga</translation>
     </message>
     <message>
         <location filename="../qthostinterface.cpp" line="998"/>
@@ -7818,7 +7821,7 @@ The URL was: %1</source>
     <message>
         <location filename="../qthostinterface.cpp" line="1021"/>
         <source>Save To File...</source>
-        <translation type="unfinished"></translation>
+        <translation>Guardar en archivo...</translation>
     </message>
     <message>
         <location filename="../qthostinterface.cpp" line="1048"/>
@@ -7871,8 +7874,8 @@ Logros: %5 (%6)
         <location filename="../qthostinterface.cpp" line="1513"/>
         <source>%n points</source>
         <translation>
-            <numerusform>%n point</numerusform>
-            <numerusform>%n points</numerusform>
+            <numerusform>%n punto</numerusform>
+            <numerusform>%n puntos</numerusform>
         </translation>
     </message>
     <message>
@@ -7902,7 +7905,7 @@ Logros: %5 (%6)
 The saves will not be recoverable.</source>
         <translation>¿Estás seguro que quieres borrar todos los estados guardados para %1?
 
-Estos guardados no se podrán recuperar.</translation>
+No se podrán recuperar luego de borrarlos.</translation>
     </message>
 </context>
 <context>
@@ -8046,7 +8049,7 @@ Estos guardados no se podrán recuperar.</translation>
     <message>
         <location filename="../settingsdialog.ui" line="223"/>
         <source>Restore Defaults</source>
-        <translation type="unfinished"></translation>
+        <translation>Restaurar los valores predeterminados</translation>
     </message>
     <message>
         <location filename="../settingsdialog.ui" line="243"/>
@@ -8126,12 +8129,12 @@ Estos guardados no se podrán recuperar.</translation>
     <message>
         <location filename="../settingsdialog.cpp" line="150"/>
         <source>Confirm Restore Defaults</source>
-        <translation type="unfinished"></translation>
+        <translation>Confirmar la restauración a valores predeterminados</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="151"/>
         <source>Are you sure you want to restore the default settings? Any preferences will be lost.</source>
-        <translation type="unfinished"></translation>
+        <translation>¿Está seguro de que desea restaurar la configuración predeterminada? Se perderán todas sus preferencias.</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="167"/>
@@ -8179,7 +8182,7 @@ Estos guardados no se podrán recuperar.</translation>
     <message>
         <location filename="../../core/system.cpp" line="1892"/>
         <source>Per-game memory card cannot be used for slot %u as the running game has no path. Using shared card instead.</source>
-        <translation type="unfinished"></translation>
+        <translation>La tarjeta de memoria por juego no puede usarse para la ranura %u ya que el juego no tiene una ruta. Se usará una tarjeta compartida en su lugar.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="2061"/>
