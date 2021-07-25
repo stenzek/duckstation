@@ -5,21 +5,21 @@
 // https://github.com/nothings/stb/issues/113
 static unsigned char* compress_for_stbiw(unsigned char* data, int data_len, int* out_len, int quality)
 {
-  const uLongf bufSize = compressBound(data_len);
+  uLongf buf_size = compressBound(data_len);
 
   // note that buf will be free'd by stb_image_write.h
   // with STBIW_FREE() (plain free() by default)
-  unsigned char* buf = malloc(bufSize);
+  unsigned char* buf = malloc(buf_size);
   if (buf == NULL)
     return NULL;
 
-  if (compress2(buf, &bufSize, data, data_len, quality) != Z_OK)
+  if (compress2(buf, &buf_size, data, data_len, quality) != Z_OK)
   {
     free(buf);
     return NULL;
   }
 
-  *out_len = bufSize;
+  *out_len = buf_size;
   return buf;
 }
 
