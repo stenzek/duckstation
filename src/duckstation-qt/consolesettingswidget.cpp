@@ -72,8 +72,8 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QW
                              tr("Selects the percentage of the normal clock speed the emulated hardware will run at."));
   dialog->registerWidgetHelp(
     m_ui.enable8MBRAM, tr("Enable 8MB RAM (Dev Console)"), tr("Unchecked"),
-    tr("Enables an additional 6MB of RAM, usually present on dev consoles. Games have to use a larger heap size for "
-       "this additional RAM to be usable, and may break games which rely on memory mirrors, so it should only be used "
+    tr("Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles. Games have to use a larger heap size for "
+       "this additional RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used "
        "with compatible mods."));
   dialog->registerWidgetHelp(
     m_ui.cdromLoadImageToRAM, tr("Preload Image to RAM"), tr("Unchecked"),
