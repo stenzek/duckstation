@@ -388,4 +388,8 @@
     <string name="add_patch_code_cancel">Cancel</string>
     <string name="add_patch_code_add">Add</string>
     <string name="menu_game_list_entry_create_launcher_shortcut">Create Launcher Shortcut</string>
+    <string name="settings_show_vram">Show VRAM</string>
+    <string name="settings_summary_show_vram">Shows the entirety of the console\'s VRAM instead of the display area (debugging feature).</string>
+    <string name="settings_cpu_recompiler_block_linking">CPU Recompiler Block Linking</string>
+    <string name="settings_summary_cpu_recompiler_block_linking">Enables the generated code to directly jump between blocks without going through the dispatcher. Provides a measurable speed boost.</string>
 </resources>
