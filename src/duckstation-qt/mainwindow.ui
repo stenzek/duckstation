@@ -81,6 +81,7 @@
        <normaloff>:/icons/document-save.png</normaloff>:/icons/document-save.png</iconset>
      </property>
     </widget>
+    <addaction name="actionStartFile"/>
     <addaction name="actionStartDisc"/>
     <addaction name="actionStartBios"/>
     <addaction name="actionResumeLastState"/>
@@ -254,7 +255,7 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionStartDisc"/>
+   <addaction name="actionStartFile"/>
    <addaction name="actionStartBios"/>
    <addaction name="separator"/>
    <addaction name="actionResumeLastState"/>
@@ -271,6 +272,15 @@
    <addaction name="actionSettings"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
+  <action name="actionStartFile">
+   <property name="icon">
+    <iconset resource="resources/resources.qrc">
+     <normaloff>:/icons/media-optical.png</normaloff>:/icons/media-optical.png</iconset>
+   </property>
+   <property name="text">
+    <string>Start &amp;File...</string>
+   </property>
+  </action>
   <action name="actionStartDisc">
    <property name="icon">
     <iconset resource="resources/resources.qrc">

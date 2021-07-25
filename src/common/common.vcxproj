@@ -1,7 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\dep\msvc\vsprops\Configurations.props" />
-
   <ItemGroup>
     <ClInclude Include="align.h" />
     <ClInclude Include="assert.h" />
@@ -93,6 +92,7 @@
     <ClCompile Include="cd_image_bin.cpp" />
     <ClCompile Include="cd_image_chd.cpp" />
     <ClCompile Include="cd_image_cue.cpp" />
+    <ClCompile Include="cd_image_device.cpp" />
     <ClCompile Include="cd_image_ecm.cpp" />
     <ClCompile Include="cd_image_hasher.cpp" />
     <ClCompile Include="cd_image_m3u.cpp" />
@@ -165,20 +165,15 @@
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />
   </ItemGroup>
-
   <PropertyGroup Label="Globals">
     <ProjectGuid>{EE054E08-3799-4A59-A422-18259C105FFD}</ProjectGuid>
   </PropertyGroup>
-
   <Import Project="..\..\dep\msvc\vsprops\StaticLibrary.props" />
-
   <Import Project="common.props" />
-
   <ItemDefinitionGroup>
     <ClCompile>
       <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
     </ClCompile>
   </ItemDefinitionGroup>
-
   <Import Project="..\..\dep\msvc\vsprops\Targets.props" />
 </Project>

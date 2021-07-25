@@ -66,6 +66,9 @@ std::unique_ptr<CDImage> CDImage::Open(const char* filename, Common::Error* erro
     return OpenM3uImage(filename, error);
   }
 
+  if (IsDeviceName(filename))
+    return OpenDeviceImage(filename, error);
+
 #undef CASE_COMPARE
 
   Log_ErrorPrintf("Unknown extension '%s' from filename '%s'", extension, filename);
