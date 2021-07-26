@@ -3,10 +3,12 @@
 #include "common/bitutils.h"
 #include "common/state_wrapper.h"
 #include "cpu_core.h"
+#include "cpu_core_private.h"
 #include "host_display.h"
 #include "host_interface.h"
 #include "pgxp.h"
 #include "settings.h"
+#include "timing_event.h"
 #include <algorithm>
 #include <array>
 #include <numeric>
@@ -1157,11 +1159,13 @@ void ExecuteInstruction(u32 inst_bits)
   switch (inst.command)
   {
     case 0x01:
+      CPU::AddGTETicks(15);
       Execute_RTPS(inst);
       break;
 
     case 0x06:
     {
+      CPU::AddGTETicks(8);
       if (g_settings.gpu_pgxp_enable && g_settings.gpu_pgxp_culling)
         Execute_NCLIP_PGXP(inst);
       else
@@ -1170,82 +1174,102 @@ void ExecuteInstruction(u32 inst_bits)
     break;
 
     case 0x0C:
+      CPU::AddGTETicks(6);
       Execute_OP(inst);
       break;
 
     case 0x10:
+      CPU::AddGTETicks(8);
       Execute_DPCS(inst);
       break;
 
     case 0x11:
+      CPU::AddGTETicks(7);
       Execute_INTPL(inst);
       break;
 
     case 0x12:
+      CPU::AddGTETicks(8);
       Execute_MVMVA(inst);
       break;
 
     case 0x13:
+      CPU::AddGTETicks(19);
       Execute_NCDS(inst);
       break;
 
     case 0x14:
+      CPU::AddGTETicks(13);
       Execute_CDP(inst);
       break;
 
     case 0x16:
+      CPU::AddGTETicks(44);
       Execute_NCDT(inst);
       break;
 
     case 0x1B:
+      CPU::AddGTETicks(17);
       Execute_NCCS(inst);
       break;
 
     case 0x1C:
+      CPU::AddGTETicks(11);
       Execute_CC(inst);
       break;
 
     case 0x1E:
+      CPU::AddGTETicks(14);
       Execute_NCS(inst);
       break;
 
     case 0x20:
+      CPU::AddGTETicks(30);
       Execute_NCT(inst);
       break;
 
     case 0x28:
+      CPU::AddGTETicks(5);
       Execute_SQR(inst);
       break;
 
     case 0x29:
+      CPU::AddGTETicks(8);
       Execute_DCPL(inst);
       break;
 
     case 0x2A:
+      CPU::AddGTETicks(17);
       Execute_DPCT(inst);
       break;
 
     case 0x2D:
+      CPU::AddGTETicks(5);
       Execute_AVSZ3(inst);
       break;
 
     case 0x2E:
+      CPU::AddGTETicks(6);
       Execute_AVSZ4(inst);
       break;
 
     case 0x30:
+      CPU::AddGTETicks(23);
       Execute_RTPT(inst);
       break;
 
     case 0x3D:
+      CPU::AddGTETicks(5);
       Execute_GPF(inst);
       break;
 
     case 0x3E:
+      CPU::AddGTETicks(5);
       Execute_GPL(inst);
       break;
 
     case 0x3F:
+      CPU::AddGTETicks(39);
       Execute_NCCT(inst);
       break;
 
@@ -1255,16 +1279,18 @@ void ExecuteInstruction(u32 inst_bits)
   }
 }
 
-InstructionImpl GetInstructionImpl(u32 inst_bits)
+InstructionImpl GetInstructionImpl(u32 inst_bits, TickCount* ticks)
 {
   const Instruction inst{inst_bits};
   switch (inst.command)
   {
     case 0x01:
+      *ticks = 15;
       return &Execute_RTPS;
 
     case 0x06:
     {
+      *ticks = 8;
       if (g_settings.gpu_pgxp_enable && g_settings.gpu_pgxp_culling)
         return &Execute_NCLIP_PGXP;
       else
@@ -1272,63 +1298,83 @@ InstructionImpl GetInstructionImpl(u32 inst_bits)
     }
 
     case 0x0C:
+      *ticks = 6;
       return &Execute_OP;
 
     case 0x10:
+      *ticks = 8;
       return &Execute_DPCS;
 
     case 0x11:
+      *ticks = 7;
       return &Execute_INTPL;
 
     case 0x12:
+      *ticks = 8;
       return &Execute_MVMVA;
 
     case 0x13:
+      *ticks = 19;
       return &Execute_NCDS;
 
     case 0x14:
+      *ticks = 13;
       return &Execute_CDP;
 
     case 0x16:
+      *ticks = 44;
       return &Execute_NCDT;
 
     case 0x1B:
+      *ticks = 17;
       return &Execute_NCCS;
 
     case 0x1C:
+      *ticks = 11;
       return &Execute_CC;
 
     case 0x1E:
+      *ticks = 14;
       return &Execute_NCS;
 
     case 0x20:
+      *ticks = 30;
       return &Execute_NCT;
 
     case 0x28:
+      *ticks = 5;
       return &Execute_SQR;
 
     case 0x29:
+      *ticks = 8;
       return &Execute_DCPL;
 
     case 0x2A:
+      *ticks = 17;
       return &Execute_DPCT;
 
     case 0x2D:
+      *ticks = 5;
       return &Execute_AVSZ3;
 
     case 0x2E:
+      *ticks = 6;
       return &Execute_AVSZ4;
 
     case 0x30:
+      *ticks = 23;
       return &Execute_RTPT;
 
     case 0x3D:
+      *ticks = 5;
       return &Execute_GPF;
 
     case 0x3E:
+      *ticks = 5;
       return &Execute_GPL;
 
     case 0x3F:
+      *ticks = 39;
       return &Execute_NCCT;
 
     default:

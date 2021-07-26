@@ -75,6 +75,8 @@
         <item>Condivisa fra tutti i giochi</item>
         <item>MC separata per ogni gioco (Codice Gioco)</item>
         <item>MC separata per ogni gioco (Titolo Gioco)</item>
+        <item>Separate Card Per Game (File Title)</item>
+        <item>Non-Persistent (Do Not Save)</item>
     </string-array>
     <string-array name="settings_cdrom_read_speedup_entries">
         <item>Nessuna Velocità Doppia)</item>

@@ -146,6 +146,9 @@ public:
   // gpu_hw_d3d11.cpp
   static std::unique_ptr<GPU> CreateHardwareD3D11Renderer();
 
+  // gpu_hw_d3d12.cpp
+  static std::unique_ptr<GPU> CreateHardwareD3D12Renderer();
+
   // gpu_hw_opengl.cpp
   static std::unique_ptr<GPU> CreateHardwareOpenGLRenderer();
 

@@ -75,6 +75,8 @@
         <item>Compartido entre todos los juegos</item>
         <item>Tarjeta separada por juego (Código)</item>
         <item>Tarjeta separada por juego (Título)</item>
+        <item>Separate Card Per Game (File Title)</item>
+        <item>Non-Persistent (Do Not Save)</item>
     </string-array>
     <string-array name="settings_cdrom_read_speedup_entries">
         <item>Ninguno (Velocidad doble)</item>

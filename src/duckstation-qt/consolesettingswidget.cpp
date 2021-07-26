@@ -1,4 +1,5 @@
 #include "consolesettingswidget.h"
+#include "common/cd_image.h"
 #include "core/system.h"
 #include "qtutils.h"
 #include "settingsdialog.h"
@@ -28,6 +29,17 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QW
       qApp->translate("MultitapMode", Settings::GetMultitapModeDisplayName(static_cast<MultitapMode>(i))));
   }
 
+  static constexpr float TIME_PER_SECTOR_DOUBLE_SPEED = 1000.0f / 150.0f;
+  m_ui.cdromReadaheadSectors->addItem(tr("Disabled (Synchronous)"));
+  for (u32 i = 1; i <= 32; i++)
+  {
+    m_ui.cdromReadaheadSectors->addItem(tr("%1 sectors (%2 KB / %3 ms)")
+                                          .arg(i)
+
+                                          .arg(static_cast<float>(i) * TIME_PER_SECTOR_DOUBLE_SPEED, 0, 'f', 0)
+                                          .arg(static_cast<float>(i * CDImage::DATA_SECTOR_SIZE) / 1024.0f));
+  }
+
   SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.region, "Console", "Region",
                                                &Settings::ParseConsoleRegionName, &Settings::GetConsoleRegionName,
                                                Settings::DEFAULT_CONSOLE_REGION);
@@ -37,7 +49,8 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QW
                                                Settings::DEFAULT_CPU_EXECUTION_MODE);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.enableCPUClockSpeedControl, "CPU",
                                                "OverclockEnable", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.cdromReadThread, "CDROM", "ReadThread", true);
+  SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.cdromReadaheadSectors, "CDROM", "ReadaheadSectors",
+                                              Settings::DEFAULT_CDROM_READAHEAD_SECTORS);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.cdromRegionCheck, "CDROM", "RegionCheck", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.cdromLoadImageToRAM, "CDROM", "LoadImageToRAM",
                                                false);
@@ -59,8 +72,8 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QW
                              tr("Selects the percentage of the normal clock speed the emulated hardware will run at."));
   dialog->registerWidgetHelp(
     m_ui.enable8MBRAM, tr("Enable 8MB RAM (Dev Console)"), tr("Unchecked"),
-    tr("Enables an additional 6MB of RAM, usually present on dev consoles. Games have to use a larger heap size for "
-       "this additional RAM to be usable, and may break games which rely on memory mirrors, so it should only be used "
+    tr("Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles. Games have to use a larger heap size for "
+       "this additional RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used "
        "with compatible mods."));
   dialog->registerWidgetHelp(
     m_ui.cdromLoadImageToRAM, tr("Preload Image to RAM"), tr("Unchecked"),
@@ -74,9 +87,10 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QW
     m_ui.cdromSeekSpeedup, tr("CD-ROM Seek Speedup"), tr("None (Normal Speed)"),
     tr("Reduces the simulated time for the CD-ROM sled to move to different areas of the disc. Can improve loading "
        "times, but crash games which do not expect the CD-ROM to operate faster."));
-  dialog->registerWidgetHelp(
-    m_ui.cdromReadThread, tr("Use Read Thread (Asynchronous)"), tr("Checked"),
-    tr("Reduces hitches in emulation by reading/decompressing CD data asynchronously on a worker thread."));
+  dialog->registerWidgetHelp(m_ui.cdromReadaheadSectors, tr("Asynchronous Readahead"), tr("8 Sectors"),
+                             tr("Reduces hitches in emulation by reading/decompressing CD data asynchronously on a "
+                                "worker thread. Higher sector numbers can reduce spikes when streaming FMVs or audio "
+                                "on slower storage or when using compression formats such as CHD."));
   dialog->registerWidgetHelp(m_ui.cdromRegionCheck, tr("Enable Region Check"), tr("Checked"),
                              tr("Simulates the region check present in original, unmodified consoles."));
   dialog->registerWidgetHelp(

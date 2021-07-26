@@ -80,7 +80,7 @@
     <string name="settings_summary_osd_show_vps">Shows the number of frames (or v-syncs) displayed per second by the system in the top-right corner of the display.</string>
     <string name="settings_cdrom_read_speedup">CD-ROM Read Speedup</string>
     <string name="settings_summary_cdrom_read_speedup">Speeds up CD-ROM reads by the specified factor. Only applies to double-speed reads, and is ignored when audio is playing. May improve loading speeds in some games, at the cost of breaking others.</string>
-    <string name="settings_summary_console_fast_boot">Skips the BIOS shell/intro, booting directly into the game. Usually safe to enable, but some games break.</string>
+    <string name="settings_summary_console_fast_boot">Skips the BIOS shell/intro, booting directly into the game.</string>
     <string name="settings_msaa">Multisample Antialiasing</string>
     <string name="settings_true_color">True Color Rendering (24-bit, disables dithering)</string>
     <string name="settings_summary_true_color">This produces nicer looking gradients at the cost of making some colours look slightly different. Disabling the option also enables dithering. Most games are compatible with this option.</string>
@@ -92,7 +92,7 @@
     <string name="settings_force_ntsc_timings">Force NTSC Timings (60hz-on-PAL)</string>
     <string name="settings_summary_force_ntsc_timings">Uses NTSC frame timings when the console is in PAL mode, forcing PAL games to run at 60hz.</string>
     <string name="settings_widescreen_hack">Widescreen Hack</string>
-    <string name="settings_summary_widescreen_hack">Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to 16:9 in 3D games. Not be compatible with all games.</string>
+    <string name="settings_summary_widescreen_hack">Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to 16:9 in 3D games. May not be compatible with all games.</string>
     <string name="settings_force_4_3_for_24bit">Force 4:3 For 24-Bit Display</string>
     <string name="settings_summary_force_4_3_for_24bit">Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs.</string>
     <string name="settings_chroma_smoothing_24bit">Chroma Smoothing For 24-Bit Display</string>
@@ -127,7 +127,7 @@
     <string name="android_progress_callback_no">No</string>
     <string name="emulation_activity_error">Error</string>
     <string name="emulation_activity_ok">OK</string>
-    <string name="emulation_activity_import_patch_codes">Import Patch Codes...</string>
+    <string name="emulation_activity_import_patch_codes">Import</string>
     <string name="emulation_activity_patch_on">(ON)</string>
     <string name="emulation_activity_patch_off">(OFF)</string>
     <string name="emulation_activity_choose_patch_code_file">Choose Patch Code File</string>
@@ -358,8 +358,6 @@
     <string name="controller_settings_auto_fire_n_frequency">Auto Fire %d Frequency/Interval</string>
     <string name="controller_binding_auto_fire_n">Auto Fire %d</string>
     <string name="settings_category_cdrom">CD-ROM Settings</string>
-    <string name="settings_cdrom_read_thread">Use Read Thread (Asynchronous)</string>
-    <string name="settings_summary_read_thread">Reduces hitches in emulation by reading/decompressing CD data asynchronously on a worker thread.</string>
     <string name="settings_cdrom_load_image_patches">Apply Image Patches</string>
     <string name="settings_summary_load_image_patches">Automatically applies patches to disc images when they are present, currently only PPF is supported.</string>
     <string name="menu_edit_game_directories_force_saf">Force Scoped Storage</string>
@@ -369,4 +367,29 @@
     <string name="memory_card_editor_undelete_success">Undeleted save \'%s\'.</string>
     <string name="memory_card_editor_undelete_failed">Failed to undelete save \'%s\'. The save may already be partially overwritten.</string>
     <string name="memory_card_editor_permanently_delete_confirm">Are you sure you want to permanently delete the save \'%s\'? You cannot recover the save afterwards.</string>
+    <string name="settings_cdrom_readahead">Async Readahead</string>
+    <string name="settings_category_rewinding">Rewinding</string>
+    <string name="settings_rewind_enable">Enable Rewinding</string>
+    <string name="settings_summary_rewind_enable">Enables rewinding via touchscreen button/hotkey. Very high hardware requirements, do not use on low end devices.</string>
+    <string name="settings_rewind_save_frequency">Save Frequency</string>
+    <string name="settings_summary_rewind_save_frequency">A rewind save will created each time this interval lapses.</string>
+    <string name="settings_rewind_save_count">Save Count</string>
+    <string name="settings_summary_rewind_save_count">This number of saves (or frames) will be kept for rewinding.</string>
+    <string name="emulation_activity_add_patch_code">Add</string>
+    <string name="emulation_activity_patch_code_warning">Using patch codes can have unpredictable effects on games, causing crashes, graphical glitches, and corrupted saves. By using patch codes, you agree that it is an unsupported configuration, and we will not provide you with any assistance when games break.\n\nSome codes persist through save states even after being disabled, please remember to reset/reboot the game after turning off any codes.\n\nAre you sure you want to continue?</string>
+    <string name="emulation_activity_patch_code_warning_dont_ask_again">Don\'t ask again</string>
+    <string name="add_patch_code_empty">Code name and body must not be empty.</string>
+    <string name="add_patch_code_success">Patch code \'%s\' added.</string>
+    <string name="add_patch_code_failure">Failed to add patch code, there may already be a code with this name, or the code is invalid.</string>
+    <string name="add_patch_code_help_text">Enter the patch code (usually a series of numbers) in Gameshark format below, or choose a file to import codes from.</string>
+    <string name="add_patch_code_code_name">Code Name</string>
+    <string name="add_patch_code_code_body">Code Body</string>
+    <string name="add_patch_code_import_from_file">Import From File</string>
+    <string name="add_patch_code_cancel">Cancel</string>
+    <string name="add_patch_code_add">Add</string>
+    <string name="menu_game_list_entry_create_launcher_shortcut">Create Launcher Shortcut</string>
+    <string name="settings_show_vram">Show VRAM</string>
+    <string name="settings_summary_show_vram">Shows the entirety of the console\'s VRAM instead of the display area (debugging feature).</string>
+    <string name="settings_cpu_recompiler_block_linking">CPU Recompiler Block Linking</string>
+    <string name="settings_summary_cpu_recompiler_block_linking">Enables the generated code to directly jump between blocks without going through the dispatcher. Provides a measurable speed boost.</string>
 </resources>

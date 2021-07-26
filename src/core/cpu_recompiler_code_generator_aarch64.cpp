@@ -194,41 +194,51 @@ Value CodeGenerator::GetValueInHostOrScratchRegister(const Value& value, bool al
   return new_value;
 }
 
-void CodeGenerator::EmitBeginBlock()
+void CodeGenerator::EmitBeginBlock(bool allocate_registers /* = true */)
 {
   m_emit->Sub(a64::sp, a64::sp, FUNCTION_STACK_SIZE);
 
-  // Save the link register, since we'll be calling functions.
-  const bool link_reg_allocated = m_register_cache.AllocateHostReg(30);
-  DebugAssert(link_reg_allocated);
-  UNREFERENCED_VARIABLE(link_reg_allocated);
-  m_register_cache.AssumeCalleeSavedRegistersAreSaved();
-
-  // Store the CPU struct pointer. TODO: make this better.
-  const bool cpu_reg_allocated = m_register_cache.AllocateHostReg(RCPUPTR);
-  DebugAssert(cpu_reg_allocated);
-  UNREFERENCED_VARIABLE(cpu_reg_allocated);
-
-  // If there's loadstore instructions, preload the fastmem base.
-  if (m_block->contains_loadstore_instructions)
+  if (allocate_registers)
   {
-    const bool fastmem_reg_allocated = m_register_cache.AllocateHostReg(RMEMBASEPTR);
-    Assert(fastmem_reg_allocated);
-    m_emit->Ldr(GetFastmemBasePtrReg(), a64::MemOperand(GetCPUPtrReg(), offsetof(State, fastmem_base)));
+    // Save the link register, since we'll be calling functions.
+    const bool link_reg_allocated = m_register_cache.AllocateHostReg(30);
+    DebugAssert(link_reg_allocated);
+    UNREFERENCED_VARIABLE(link_reg_allocated);
+
+    m_register_cache.AssumeCalleeSavedRegistersAreSaved();
+
+    // Store the CPU struct pointer. TODO: make this better.
+    const bool cpu_reg_allocated = m_register_cache.AllocateHostReg(RCPUPTR);
+    DebugAssert(cpu_reg_allocated);
+    UNREFERENCED_VARIABLE(cpu_reg_allocated);
+
+    // If there's loadstore instructions, preload the fastmem base.
+    if (m_block->contains_loadstore_instructions)
+    {
+      const bool fastmem_reg_allocated = m_register_cache.AllocateHostReg(RMEMBASEPTR);
+      Assert(fastmem_reg_allocated);
+      m_emit->Ldr(GetFastmemBasePtrReg(), a64::MemOperand(GetCPUPtrReg(), offsetof(State, fastmem_base)));
+    }
   }
 }
 
-void CodeGenerator::EmitEndBlock()
+void CodeGenerator::EmitEndBlock(bool free_registers /* = true */, bool emit_return /* = true */)
 {
-  if (m_block->contains_loadstore_instructions)
-    m_register_cache.FreeHostReg(RMEMBASEPTR);
+  if (free_registers)
+  {
+    if (m_block->contains_loadstore_instructions)
+      m_register_cache.FreeHostReg(RMEMBASEPTR);
 
-  m_register_cache.FreeHostReg(RCPUPTR);
-  m_register_cache.PopCalleeSavedRegisters(true);
+    m_register_cache.FreeHostReg(RCPUPTR);
+    m_register_cache.FreeHostReg(30); // lr
+
+    m_register_cache.PopCalleeSavedRegisters(true);
+  }
 
   m_emit->Add(a64::sp, a64::sp, FUNCTION_STACK_SIZE);
-  // m_emit->b(GetPCDisplacement(GetCurrentCodePointer(), s_dispatcher_return_address));
-  m_emit->Ret();
+
+  if (emit_return)
+    m_emit->Ret();
 }
 
 void CodeGenerator::EmitExceptionExit()
@@ -1593,11 +1603,11 @@ void CodeGenerator::EmitStoreGuestMemoryFastmem(const CodeBlockInstruction& cbi,
     switch (size)
     {
       case RegSize_8:
-        m_emit->strb(GetHostReg8(value_in_hr), a64::MemOperand(GetFastmemBasePtrReg(), GetHostReg32(address_reg)));
+        m_emit->strb(GetHostReg32(value_in_hr), a64::MemOperand(GetFastmemBasePtrReg(), GetHostReg32(address_reg)));
         break;
 
       case RegSize_16:
-        m_emit->strh(GetHostReg16(value_in_hr), a64::MemOperand(GetFastmemBasePtrReg(), GetHostReg32(address_reg)));
+        m_emit->strh(GetHostReg32(value_in_hr), a64::MemOperand(GetFastmemBasePtrReg(), GetHostReg32(address_reg)));
         break;
 
       case RegSize_32:
@@ -1767,6 +1777,42 @@ bool CodeGenerator::BackpatchLoadStore(const LoadStoreBackpatchInfo& lbi)
   return true;
 }
 
+void CodeGenerator::BackpatchReturn(void* pc, u32 pc_size)
+{
+  Log_ProfilePrintf("Backpatching %p to return", pc);
+
+  vixl::aarch64::MacroAssembler emit(static_cast<vixl::byte*>(pc), pc_size, a64::PositionDependentCode);
+  emit.ret();
+
+  const s32 nops = (static_cast<s32>(pc_size) - static_cast<s32>(emit.GetCursorOffset())) / 4;
+  Assert(nops >= 0);
+  for (s32 i = 0; i < nops; i++)
+    emit.nop();
+
+  JitCodeBuffer::FlushInstructionCache(pc, pc_size);
+}
+
+void CodeGenerator::BackpatchBranch(void* pc, u32 pc_size, void* target)
+{
+  Log_ProfilePrintf("Backpatching %p to %p [branch]", pc, target);
+
+  // check jump distance
+  const s64 jump_distance = static_cast<s64>(reinterpret_cast<intptr_t>(target) - reinterpret_cast<intptr_t>(pc));
+  Assert(Common::IsAligned(jump_distance, 4));
+  Assert(a64::Instruction::IsValidImmPCOffset(a64::UncondBranchType, jump_distance >> 2));
+
+  vixl::aarch64::MacroAssembler emit(static_cast<vixl::byte*>(pc), pc_size, a64::PositionDependentCode);
+  emit.b(jump_distance >> 2);
+
+  // shouldn't have any nops
+  const s32 nops = (static_cast<s32>(pc_size) - static_cast<s32>(emit.GetCursorOffset())) / 4;
+  Assert(nops >= 0);
+  for (s32 i = 0; i < nops; i++)
+    emit.nop();
+
+  JitCodeBuffer::FlushInstructionCache(pc, pc_size);
+}
+
 void CodeGenerator::EmitLoadGlobal(HostReg host_reg, RegSize size, const void* ptr)
 {
   EmitLoadGlobalAddress(RSCRATCH, ptr);
@@ -1888,6 +1934,66 @@ void CodeGenerator::EmitCancelInterpreterLoadDelayForReg(Reg reg)
   m_emit->Strb(GetHostReg8(temp), load_delay_reg);
 
   m_emit->Bind(&skip_cancel);
+}
+
+void CodeGenerator::EmitICacheCheckAndUpdate()
+{
+  if (GetSegmentForAddress(m_pc) >= Segment::KSEG1)
+  {
+    EmitAddCPUStructField(offsetof(State, pending_ticks),
+                          Value::FromConstantU32(static_cast<u32>(m_block->uncached_fetch_ticks)));
+  }
+  else
+  {
+    const auto& ticks_reg = a64::w0;
+    const auto& current_tag_reg = a64::w1;
+    const auto& existing_tag_reg = a64::w2;
+
+    VirtualMemoryAddress current_pc = m_pc & ICACHE_TAG_ADDRESS_MASK;
+    m_emit->Ldr(ticks_reg, a64::MemOperand(GetCPUPtrReg(), offsetof(State, pending_ticks)));
+    m_emit->Mov(current_tag_reg, current_pc);
+
+    for (u32 i = 0; i < m_block->icache_line_count; i++, current_pc += ICACHE_LINE_SIZE)
+    {
+      const TickCount fill_ticks = GetICacheFillTicks(current_pc);
+      if (fill_ticks <= 0)
+        continue;
+
+      const u32 line = GetICacheLine(current_pc);
+      const u32 offset = offsetof(State, icache_tags) + (line * sizeof(u32));
+
+      a64::Label cache_hit;
+      m_emit->Ldr(existing_tag_reg, a64::MemOperand(GetCPUPtrReg(), offset));
+      m_emit->Cmp(existing_tag_reg, current_tag_reg);
+      m_emit->B(&cache_hit, a64::eq);
+
+      m_emit->Str(current_tag_reg, a64::MemOperand(GetCPUPtrReg(), offset));
+      EmitAdd(0, 0, Value::FromConstantU32(static_cast<u32>(fill_ticks)), false);
+      m_emit->Bind(&cache_hit);
+
+      if (i != (m_block->icache_line_count - 1))
+        m_emit->Add(current_tag_reg, current_tag_reg, ICACHE_LINE_SIZE);
+    }
+
+    m_emit->Str(ticks_reg, a64::MemOperand(GetCPUPtrReg(), offsetof(State, pending_ticks)));
+  }
+}
+
+void CodeGenerator::EmitStallUntilGTEComplete()
+{
+  static_assert(offsetof(State, pending_ticks) + sizeof(u32) == offsetof(State, gte_completion_tick));
+  m_emit->ldp(GetHostReg32(RARG1), GetHostReg32(RARG2),
+              a64::MemOperand(GetCPUPtrReg(), offsetof(State, pending_ticks)));
+
+  if (m_delayed_cycles_add > 0)
+  {
+    m_emit->Add(GetHostReg32(RARG1), GetHostReg32(RARG1), static_cast<u32>(m_delayed_cycles_add));
+    m_delayed_cycles_add = 0;
+  }
+
+  m_emit->cmp(GetHostReg32(RARG2), GetHostReg32(RARG1));
+  m_emit->csel(GetHostReg32(RARG1), GetHostReg32(RARG2), GetHostReg32(RARG1), a64::Condition::hi);
+  m_emit->str(GetHostReg32(RARG1), a64::MemOperand(GetCPUPtrReg(), offsetof(State, pending_ticks)));
 }
 
 void CodeGenerator::EmitBranch(const void* address, bool allow_scratch)
@@ -2222,28 +2328,15 @@ CodeCache::DispatcherFunction CodeGenerator::CompileDispatcher()
 
   // time to lookup the block
   // w8 <- pc
-  m_emit->Mov(a64::w11, Bus::BIOS_BASE);
   m_emit->ldr(a64::w8, a64::MemOperand(GetHostReg64(RCPUPTR), offsetof(State, regs.pc)));
 
-  // current_instruction_pc <- pc (eax)
-  m_emit->str(a64::w8, a64::MemOperand(GetHostReg64(RCPUPTR), offsetof(State, current_instruction_pc)));
+  // x9 <- s_fast_map[pc >> 16]
+  EmitLoadGlobalAddress(10, CodeCache::GetFastMapPointer());
+  m_emit->lsr(a64::w9, a64::w8, 16);
+  m_emit->lsr(a64::w8, a64::w8, 2);
+  m_emit->ldr(a64::x9, a64::MemOperand(a64::x10, a64::x9, a64::LSL, 3));
 
-  // w9 <- (pc & RAM_MASK) >> 2
-  m_emit->and_(a64::w9, a64::w8, Bus::g_ram_mask);
-  m_emit->lsr(a64::w9, a64::w9, 2);
-
-  // w10 <- ((pc & BIOS_MASK) >> 2) + FAST_MAP_RAM_SLOT_COUNT
-  m_emit->and_(a64::w10, a64::w8, Bus::BIOS_MASK);
-  m_emit->lsr(a64::w10, a64::w10, 2);
-  m_emit->add(a64::w10, a64::w10, FAST_MAP_RAM_SLOT_COUNT);
-
-  // if ((w8 (pc) & PHYSICAL_MEMORY_ADDRESS_MASK) >= BIOS_BASE) { use w10 as index }
-  m_emit->and_(a64::w8, a64::w8, PHYSICAL_MEMORY_ADDRESS_MASK);
-  m_emit->cmp(a64::w8, a64::w11);
-  m_emit->csel(a64::w8, a64::w9, a64::w10, a64::lt);
-
-  // ebx contains our index, rax <- fast_map[ebx * 8], rax(), continue
-  EmitLoadGlobalAddress(9, CodeCache::GetFastMapPointer());
+  // blr(x9[pc * 2]) (fast_map[pc >> 2])
   m_emit->ldr(a64::x8, a64::MemOperand(a64::x9, a64::x8, a64::LSL, 3));
   m_emit->blr(a64::x8);
 

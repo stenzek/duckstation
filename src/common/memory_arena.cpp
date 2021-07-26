@@ -106,7 +106,7 @@ bool MemoryArena::IsValid() const
 static std::string GetFileMappingName()
 {
 #if defined(_WIN32)
-  const unsigned pid = GetCurrentThreadId();
+  const unsigned pid = GetCurrentProcessId();
 #elif defined(__ANDROID__) || defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
   const unsigned pid = static_cast<unsigned>(getpid());
 #else
@@ -135,8 +135,13 @@ bool MemoryArena::Create(size_t size, bool writable, bool executable)
 
 #if defined(_WIN32)
   const DWORD protect = (writable ? (executable ? PAGE_EXECUTE_READWRITE : PAGE_READWRITE) : PAGE_READONLY);
+#ifndef _UWP
   m_file_handle = CreateFileMappingA(INVALID_HANDLE_VALUE, nullptr, protect, Truncate32(size >> 32), Truncate32(size),
                                      file_mapping_name.c_str());
+#else
+  m_file_handle = CreateFileMappingFromApp(INVALID_HANDLE_VALUE, nullptr, protect, size,
+                                           StringUtil::UTF8StringToWideString(file_mapping_name).c_str());
+#endif
   if (!m_file_handle)
   {
     Log_ErrorPrintf("CreateFileMapping failed: %u", GetLastError());
@@ -257,8 +262,16 @@ void* MemoryArena::CreateViewPtr(size_t offset, size_t size, bool writable, bool
   void* base_pointer;
 #if defined(_WIN32)
   const DWORD desired_access = FILE_MAP_READ | (writable ? FILE_MAP_WRITE : 0) | (executable ? FILE_MAP_EXECUTE : 0);
+#ifndef _UWP
   base_pointer =
     MapViewOfFileEx(m_file_handle, desired_access, Truncate32(offset >> 32), Truncate32(offset), size, fixed_address);
+#else
+  // UWP does not support fixed mappings.
+  if (!fixed_address)
+    base_pointer = MapViewOfFileFromApp(m_file_handle, desired_access, offset, size);
+  else
+    base_pointer = nullptr;
+#endif
   if (!base_pointer)
     return nullptr;
 #elif defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)

@@ -150,6 +150,9 @@ public:
                                     const std::string& game_title);
   virtual void OnSystemPerformanceCountersUpdated();
 
+  /// Called when the display is invalidated (e.g. a state is loaded).
+  virtual void OnDisplayInvalidated();
+
 protected:
   virtual bool AcquireHostDisplay() = 0;
   virtual void ReleaseHostDisplay() = 0;

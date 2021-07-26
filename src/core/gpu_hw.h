@@ -97,13 +97,13 @@ protected:
 
   struct BatchConfig
   {
-    GPUTextureMode texture_mode;
-    GPUTransparencyMode transparency_mode;
-    bool dithering;
-    bool interlacing;
-    bool set_mask_while_drawing;
-    bool check_mask_before_draw;
-    bool use_depth_buffer;
+    GPUTextureMode texture_mode = GPUTextureMode::Disabled;
+    GPUTransparencyMode transparency_mode = GPUTransparencyMode::Disabled;
+    bool dithering = false;
+    bool interlacing = false;
+    bool set_mask_while_drawing = false;
+    bool check_mask_before_draw = false;
+    bool use_depth_buffer = false;
 
     // Returns the render mode for this batch.
     BatchRenderMode GetRenderMode() const
@@ -125,6 +125,10 @@ protected:
 
   struct VRAMFillUBOData
   {
+    u32 u_dst_x;
+    u32 u_dst_y;
+    u32 u_end_x;
+    u32 u_end_y;
     float u_fill_color[4];
     u32 u_interlaced_displayed_field;
   };
@@ -161,6 +165,23 @@ protected:
     u32 num_batches;
     u32 num_vram_read_texture_updates;
     u32 num_uniform_buffer_updates;
+  };
+
+  class ShaderCompileProgressTracker
+  {
+  public:
+    ShaderCompileProgressTracker(std::string title, u32 total);
+
+    void Increment();
+
+  private:
+    std::string m_title;
+    u64 m_min_time;
+    u64 m_update_interval;
+    u64 m_start_time;
+    u64 m_last_update_time;
+    u32 m_progress;
+    u32 m_total;
   };
 
   static constexpr std::tuple<float, float, float, float> RGBA8ToFloat(u32 rgba)
@@ -251,11 +272,17 @@ protected:
 
   /// We need two-pass rendering when using BG-FG blending and texturing, as the transparency can be enabled
   /// on a per-pixel basis, and the opaque pixels shouldn't be blended at all.
-  bool NeedsTwoPassRendering() const
+  ALWAYS_INLINE bool NeedsTwoPassRendering() const
   {
     return (m_batch.texture_mode != GPUTextureMode::Disabled &&
             (m_batch.transparency_mode == GPUTransparencyMode::BackgroundMinusForeground ||
              (!m_supports_dual_source_blend && m_batch.transparency_mode != GPUTransparencyMode::Disabled)));
+  }
+
+  /// Returns true if the specified VRAM fill is oversized.
+  ALWAYS_INLINE static bool IsVRAMFillOversized(u32 x, u32 y, u32 width, u32 height)
+  {
+    return ((x + width) > VRAM_WIDTH || (y + height) > VRAM_HEIGHT);
   }
 
   ALWAYS_INLINE bool IsUsingSoftwareRendererForReadbacks() { return static_cast<bool>(m_sw_renderer); }
@@ -356,7 +383,7 @@ protected:
   bool m_using_uv_limits = false;
   bool m_pgxp_depth_buffer = false;
 
-  BatchConfig m_batch = {};
+  BatchConfig m_batch;
   BatchUBOData m_batch_ubo_data = {};
 
   // Bounding box of VRAM area that the GPU has drawn into.

@@ -9,20 +9,23 @@ public:
   JitCodeBuffer(void* buffer, u32 size, u32 far_code_size, u32 guard_size);
   ~JitCodeBuffer();
 
+  bool IsValid() const { return (m_code_ptr != nullptr); }
+
   bool Allocate(u32 size = 64 * 1024 * 1024, u32 far_code_size = 0);
   bool Initialize(void* buffer, u32 size, u32 far_code_size = 0, u32 guard_size = 0);
   void Destroy();
   void Reset();
 
-  u8* GetCodePointer() const { return m_code_ptr; }
-  u32 GetTotalSize() const { return m_total_size; }
+  ALWAYS_INLINE u8* GetCodePointer() const { return m_code_ptr; }
+  ALWAYS_INLINE u32 GetTotalSize() const { return m_total_size; }
 
-  u8* GetFreeCodePointer() const { return m_free_code_ptr; }
-  u32 GetFreeCodeSpace() const { return static_cast<u32>(m_code_size - m_code_used); }
+  ALWAYS_INLINE u8* GetFreeCodePointer() const { return m_free_code_ptr; }
+  ALWAYS_INLINE u32 GetFreeCodeSpace() const { return static_cast<u32>(m_code_size - m_code_used); }
+  void ReserveCode(u32 size);
   void CommitCode(u32 length);
 
-  u8* GetFreeFarCodePointer() const { return m_free_far_code_ptr; }
-  u32 GetFreeFarCodeSpace() const { return static_cast<u32>(m_far_code_size - m_far_code_used); }
+  ALWAYS_INLINE u8* GetFreeFarCodePointer() const { return m_free_far_code_ptr; }
+  ALWAYS_INLINE u32 GetFreeFarCodeSpace() const { return static_cast<u32>(m_far_code_size - m_far_code_used); }
   void CommitFarCode(u32 length);
 
   /// Adjusts the free code pointer to the specified alignment, padding with bytes.
@@ -43,6 +46,7 @@ private:
   u8* m_code_ptr = nullptr;
   u8* m_free_code_ptr = nullptr;
   u32 m_code_size = 0;
+  u32 m_code_reserve_size = 0;
   u32 m_code_used = 0;
 
   u8* m_far_code_ptr = nullptr;

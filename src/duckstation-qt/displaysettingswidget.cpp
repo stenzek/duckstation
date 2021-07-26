@@ -11,6 +11,7 @@
 #include "frontend-common/vulkan_host_display.h"
 #ifdef _WIN32
 #include "frontend-common/d3d11_host_display.h"
+#include "frontend-common/d3d12_host_display.h"
 #endif
 
 DisplaySettingsWidget::DisplaySettingsWidget(QtHostInterface* host_interface, QWidget* parent, SettingsDialog* dialog)
@@ -208,6 +209,10 @@ void DisplaySettingsWidget::populateGPUAdaptersAndResolutions()
 #ifdef _WIN32
     case GPURenderer::HardwareD3D11:
       aml = FrontendCommon::D3D11HostDisplay::StaticGetAdapterAndModeList();
+      break;
+
+    case GPURenderer::HardwareD3D12:
+      aml = FrontendCommon::D3D12HostDisplay::StaticGetAdapterAndModeList();
       break;
 #endif
 

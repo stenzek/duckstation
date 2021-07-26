@@ -223,7 +223,7 @@ bool IsNopInstruction(const Instruction& instruction);
 bool IsBranchInstruction(const Instruction& instruction);
 bool IsUnconditionalBranchInstruction(const Instruction& instruction);
 bool IsDirectBranchInstruction(const Instruction& instruction);
-u32 GetBranchInstructionTarget(const Instruction& instruction, u32 instruction_pc);
+VirtualMemoryAddress GetDirectBranchTarget(const Instruction& instruction, VirtualMemoryAddress instruction_pc);
 bool IsCallInstruction(const Instruction& instruction);
 bool IsReturnInstruction(const Instruction& instruction);
 bool IsMemoryLoadInstruction(const Instruction& instruction);

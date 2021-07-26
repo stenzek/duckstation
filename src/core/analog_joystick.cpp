@@ -86,7 +86,7 @@ void AnalogJoystick::SetAxisState(s32 axis_code, float value)
 
   // -1..1 -> 0..255
   const float scaled_value = std::clamp(value * m_axis_scale, -1.0f, 1.0f);
-  const u8 u8_value = static_cast<u8>(std::clamp(((scaled_value + 1.0f) / 2.0f) * 255.0f, 0.0f, 255.0f));
+  const u8 u8_value = static_cast<u8>(std::clamp(std::round(((scaled_value + 1.0f) / 2.0f) * 255.0f), 0.0f, 255.0f));
 
   SetAxisState(static_cast<Axis>(axis_code), u8_value);
 }

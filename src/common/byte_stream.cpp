@@ -9,6 +9,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <sys/stat.h>
+
 #if defined(_WIN32)
 #include "windows_headers.h"
 #include <direct.h>
@@ -17,6 +18,12 @@
 #else
 #include <sys/stat.h>
 #include <sys/types.h>
+#endif
+
+#ifdef _MSC_VER
+#include <malloc.h>
+#else
+#include <alloca.h>
 #endif
 
 Log_SetChannel(ByteStream);
@@ -255,9 +262,9 @@ protected:
 class AtomicUpdatedFileByteStream : public FileByteStream
 {
 public:
-  AtomicUpdatedFileByteStream(FILE* pFile, const char* originalFileName, const char* temporaryFileName)
-    : FileByteStream(pFile), m_committed(false), m_discarded(false), m_originalFileName(originalFileName),
-      m_temporaryFileName(temporaryFileName)
+  AtomicUpdatedFileByteStream(FILE* pFile, std::string originalFileName, std::string temporaryFileName)
+    : FileByteStream(pFile), m_committed(false), m_discarded(false), m_originalFileName(std::move(originalFileName)),
+      m_temporaryFileName(std::move(temporaryFileName))
   {
   }
 
@@ -265,9 +272,17 @@ public:
   {
     if (m_discarded)
     {
-#if _WIN32
+#if defined(_WIN32) && !defined(_UWP)
       // delete the temporary file
       if (!DeleteFileW(StringUtil::UTF8StringToWideString(m_temporaryFileName).c_str()))
+      {
+        Log_WarningPrintf(
+          "AtomicUpdatedFileByteStream::~AtomicUpdatedFileByteStream(): Failed to delete temporary file '%s'",
+          m_temporaryFileName.c_str());
+      }
+#elif defined(_UWP)
+      // delete the temporary file
+      if (!DeleteFileFromAppW(StringUtil::UTF8StringToWideString(m_temporaryFileName).c_str()))
       {
         Log_WarningPrintf(
           "AtomicUpdatedFileByteStream::~AtomicUpdatedFileByteStream(): Failed to delete temporary file '%s'",
@@ -308,10 +323,21 @@ public:
 
     fflush(m_pFile);
 
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(_UWP)
     // move the atomic file name to the original file name
     if (!MoveFileExW(StringUtil::UTF8StringToWideString(m_temporaryFileName).c_str(),
                      StringUtil::UTF8StringToWideString(m_originalFileName).c_str(), MOVEFILE_REPLACE_EXISTING))
+    {
+      Log_WarningPrintf("AtomicUpdatedFileByteStream::Commit(): Failed to rename temporary file '%s' to '%s'",
+                        m_temporaryFileName.c_str(), m_originalFileName.c_str());
+      m_discarded = true;
+    }
+    else
+    {
+      m_committed = true;
+    }
+#elif defined(_UWP)
+    if (!FileSystem::RenamePath(m_temporaryFileName.c_str(), m_originalFileName.c_str()))
     {
       Log_WarningPrintf("AtomicUpdatedFileByteStream::Commit(): Failed to rename temporary file '%s' to '%s'",
                         m_temporaryFileName.c_str(), m_originalFileName.c_str());
@@ -877,7 +903,7 @@ std::unique_ptr<ByteStream> ByteStream_OpenFileStream(const char* fileName, u32 
   if ((openMode & (BYTESTREAM_OPEN_CREATE | BYTESTREAM_OPEN_WRITE)) == BYTESTREAM_OPEN_WRITE)
   {
     // if opening with write but not create, the path must exist.
-    if (GetFileAttributes(fileName) == INVALID_FILE_ATTRIBUTES)
+    if (!FileSystem::FileExists(fileName))
       return nullptr;
   }
 
@@ -888,7 +914,7 @@ std::unique_ptr<ByteStream> ByteStream_OpenFileStream(const char* fileName, u32 
   {
     // if the file exists, use r+, otherwise w+
     // HACK: if we're not truncating, and the file exists (we want to only update it), we still have to use r+
-    if ((openMode & BYTESTREAM_OPEN_TRUNCATE) || GetFileAttributes(fileName) == INVALID_FILE_ATTRIBUTES)
+    if (!FileSystem::FileExists(fileName))
     {
       modeString[modeStringLength++] = 'w';
       if (openMode & BYTESTREAM_OPEN_READ)
@@ -993,6 +1019,7 @@ std::unique_ptr<ByteStream> ByteStream_OpenFileStream(const char* fileName, u32 
   {
     DebugAssert(openMode & (BYTESTREAM_OPEN_CREATE | BYTESTREAM_OPEN_WRITE));
 
+#ifndef _UWP
     // generate the temporary file name
     u32 fileNameLength = static_cast<u32>(std::strlen(fileName));
     char* temporaryFileName = (char*)alloca(fileNameLength + 8);
@@ -1001,13 +1028,36 @@ std::unique_ptr<ByteStream> ByteStream_OpenFileStream(const char* fileName, u32 
     // fill in random characters
     _mktemp_s(temporaryFileName, fileNameLength + 8);
     const std::wstring wideTemporaryFileName(StringUtil::UTF8StringToWideString(temporaryFileName));
+#else
+    // On UWP, preserve the extension, as it affects permissions.
+    std::string temporaryFileName;
+    const char* extension = std::strrchr(fileName, '.');
+    if (extension)
+      temporaryFileName.append(fileName, extension - fileName);
+    else
+      temporaryFileName.append(fileName);
+
+    temporaryFileName.append("_XXXXXX");
+    _mktemp_s(temporaryFileName.data(), temporaryFileName.size() + 1);
+    if (extension)
+      temporaryFileName.append(extension);
+
+    const std::wstring wideTemporaryFileName(StringUtil::UTF8StringToWideString(temporaryFileName));
+#endif
 
     // massive hack here
     DWORD desiredAccess = GENERIC_WRITE;
     if (openMode & BYTESTREAM_OPEN_READ)
       desiredAccess |= GENERIC_READ;
+
+#ifndef _UWP
     HANDLE hFile =
       CreateFileW(wideTemporaryFileName.c_str(), desiredAccess, FILE_SHARE_DELETE, NULL, CREATE_NEW, 0, NULL);
+#else
+    HANDLE hFile =
+      CreateFile2FromAppW(wideTemporaryFileName.c_str(), desiredAccess, FILE_SHARE_DELETE, CREATE_NEW, nullptr);
+#endif
+
     if (hFile == INVALID_HANDLE_VALUE)
       return nullptr;
 
@@ -1168,8 +1218,8 @@ std::unique_ptr<ByteStream> ByteStream_OpenFileStream(const char* fileName, u32 
           }
           else // if (errno == ENOTDIR)
           {
-            // well.. someone's trying to open a fucking weird path that is comprised of both directories and files...
-            // I aint sticking around here to find out what disaster awaits... let fopen deal with it
+            // well.. someone's trying to open a fucking weird path that is comprised of both directories and
+            // files... I aint sticking around here to find out what disaster awaits... let fopen deal with it
             break;
           }
         }

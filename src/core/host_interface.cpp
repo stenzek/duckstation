@@ -429,6 +429,7 @@ bool HostInterface::LoadState(const char* filename)
 
   System::ResetPerformanceCounters();
   System::ResetThrottler();
+  OnDisplayInvalidated();
   return true;
 }
 
@@ -462,6 +463,8 @@ void HostInterface::OnSystemPaused(bool paused) {}
 void HostInterface::OnSystemDestroyed() {}
 
 void HostInterface::OnSystemPerformanceCountersUpdated() {}
+
+void HostInterface::OnDisplayInvalidated() {}
 
 void HostInterface::OnSystemStateSaved(bool global, s32 slot) {}
 
@@ -508,6 +511,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetIntValue("CPU", "OverclockDenominator", 1);
   si.SetBoolValue("CPU", "OverclockEnable", false);
   si.SetBoolValue("CPU", "RecompilerMemoryExceptions", false);
+  si.SetBoolValue("CPU", "RecompilerBlockLinking", true);
   si.SetBoolValue("CPU", "ICache", false);
   si.SetBoolValue("CPU", "FastmemMode", Settings::GetCPUFastmemModeName(Settings::DEFAULT_CPU_FASTMEM_MODE));
 
@@ -562,7 +566,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetStringValue("Display", "PostProcessChain", "");
   si.SetFloatValue("Display", "MaxFPS", Settings::DEFAULT_DISPLAY_MAX_FPS);
 
-  si.SetBoolValue("CDROM", "ReadThread", true);
+  si.SetIntValue("CDROM", "ReadaheadSectors", Settings::DEFAULT_CDROM_READAHEAD_SECTORS);
   si.SetBoolValue("CDROM", "RegionCheck", false);
   si.SetBoolValue("CDROM", "LoadImageToRAM", false);
   si.SetBoolValue("CDROM", "MuteCDAudio", false);
@@ -769,24 +773,15 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
     }
 
     if (g_settings.cpu_execution_mode == CPUExecutionMode::Recompiler &&
-        g_settings.cpu_recompiler_memory_exceptions != old_settings.cpu_recompiler_memory_exceptions)
+        (g_settings.cpu_recompiler_memory_exceptions != old_settings.cpu_recompiler_memory_exceptions ||
+         g_settings.cpu_recompiler_block_linking != old_settings.cpu_recompiler_block_linking ||
+         g_settings.cpu_recompiler_icache != old_settings.cpu_recompiler_icache))
     {
-      AddOSDMessage(g_settings.cpu_recompiler_memory_exceptions ?
-                      TranslateStdString("OSDMessage", "CPU memory exceptions enabled, flushing all blocks.") :
-                      TranslateStdString("OSDMessage", "CPU memory exceptions disabled, flushing all blocks."),
-                    5.0f);
+      AddOSDMessage(TranslateStdString("OSDMessage", "Recompiler options changed, flushing all blocks."), 5.0f);
       CPU::CodeCache::Flush();
-    }
 
-    if (g_settings.cpu_execution_mode != CPUExecutionMode::Interpreter &&
-        g_settings.cpu_recompiler_icache != old_settings.cpu_recompiler_icache)
-    {
-      AddOSDMessage(g_settings.cpu_recompiler_icache ?
-                      TranslateStdString("OSDMessage", "CPU ICache enabled, flushing all blocks.") :
-                      TranslateStdString("OSDMessage", "CPU ICache disabled, flushing all blocks."),
-                    5.0f);
-      CPU::CodeCache::Flush();
-      CPU::ClearICache();
+      if (g_settings.cpu_recompiler_icache != old_settings.cpu_recompiler_icache)
+        CPU::ClearICache();
     }
 
     m_audio_stream->SetOutputVolume(GetAudioOutputVolume());
@@ -817,6 +812,7 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.runahead_frames != old_settings.runahead_frames)
     {
       g_gpu->UpdateSettings();
+      OnDisplayInvalidated();
     }
 
     if (g_settings.gpu_widescreen_hack != old_settings.gpu_widescreen_hack ||
@@ -849,8 +845,8 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
         PGXP::Initialize();
     }
 
-    if (g_settings.cdrom_read_thread != old_settings.cdrom_read_thread)
-      g_cdrom.SetUseReadThread(g_settings.cdrom_read_thread);
+    if (g_settings.cdrom_readahead_sectors != old_settings.cdrom_readahead_sectors)
+      g_cdrom.SetReadaheadSectors(g_settings.cdrom_readahead_sectors);
 
     if (g_settings.memory_card_types != old_settings.memory_card_types ||
         g_settings.memory_card_paths != old_settings.memory_card_paths ||
@@ -906,23 +902,28 @@ void HostInterface::CheckForSettingsChanges(const Settings& old_settings)
   if (g_settings.multitap_mode != old_settings.multitap_mode)
     System::UpdateMultitaps();
 
-  if (m_display)
+  if (m_display && (g_settings.display_linear_filtering != old_settings.display_linear_filtering ||
+                    g_settings.display_integer_scaling != old_settings.display_integer_scaling ||
+                    g_settings.display_stretch != old_settings.display_stretch))
   {
-    if (g_settings.display_linear_filtering != old_settings.display_linear_filtering)
-      m_display->SetDisplayLinearFiltering(g_settings.display_linear_filtering);
-
-    if (g_settings.display_integer_scaling != old_settings.display_integer_scaling)
-      m_display->SetDisplayIntegerScaling(g_settings.display_integer_scaling);
-
-    if (g_settings.display_stretch != old_settings.display_stretch)
-      m_display->SetDisplayStretch(g_settings.display_stretch);
+    m_display->SetDisplayLinearFiltering(g_settings.display_linear_filtering);
+    m_display->SetDisplayIntegerScaling(g_settings.display_integer_scaling);
+    m_display->SetDisplayStretch(g_settings.display_stretch);
+    OnDisplayInvalidated();
   }
 }
 
 void HostInterface::SetUserDirectoryToProgramDirectory()
 {
-  const std::string program_directory(FileSystem::GetProgramPath());
-  m_user_directory = program_directory;
+  std::string program_path(FileSystem::GetProgramPath());
+  if (program_path.empty())
+    Panic("Failed to get program path.");
+
+  std::string program_directory(FileSystem::GetPathDirectory(program_path));
+  if (program_directory.empty())
+    Panic("Program path is not valid");
+
+  m_user_directory = std::move(program_directory);
 }
 
 void HostInterface::OnHostDisplayResized()
@@ -1100,6 +1101,7 @@ void HostInterface::ToggleSoftwareRendering()
   AddFormattedOSDMessage(5.0f, TranslateString("OSDMessage", "Switching to %s renderer..."),
                          Settings::GetRendererDisplayName(new_renderer));
   System::RecreateGPU(new_renderer);
+  OnDisplayInvalidated();
 }
 
 void HostInterface::ModifyResolutionScale(s32 increment)
@@ -1117,6 +1119,7 @@ void HostInterface::ModifyResolutionScale(s32 increment)
     g_gpu->UpdateSettings();
     g_gpu->ResetGraphicsAPIState();
     System::ClearMemorySaveStates();
+    OnDisplayInvalidated();
   }
 }
 
@@ -1162,7 +1165,7 @@ void HostInterface::RecreateSystem()
   Assert(!System::IsShutdown());
 
   std::unique_ptr<ByteStream> stream = ByteStream_CreateGrowableMemoryStream(nullptr, 8 * 1024);
-  if (!System::SaveState(stream.get()) || !stream->SeekAbsolute(0))
+  if (!System::SaveState(stream.get(), 0) || !stream->SeekAbsolute(0))
   {
     ReportError("Failed to save state before system recreation. Shutting down.");
     DestroySystem();
@@ -1181,6 +1184,7 @@ void HostInterface::RecreateSystem()
 
   System::ResetPerformanceCounters();
   System::ResetThrottler();
+  OnDisplayInvalidated();
 }
 
 void HostInterface::SetMouseMode(bool relative, bool hide_cursor) {}

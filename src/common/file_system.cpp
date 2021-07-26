@@ -21,6 +21,20 @@
 
 #if defined(_WIN32)
 #include <shlobj.h>
+
+#if defined(_UWP)
+#include <fcntl.h>
+#include <io.h>
+
+#include <winrt/Windows.ApplicationModel.h>
+#include <winrt/Windows.Devices.Enumeration.h>
+#include <winrt/Windows.Foundation.Collections.h>
+#include <winrt/Windows.Foundation.h>
+#include <winrt/Windows.Storage.FileProperties.h>
+#include <winrt/Windows.Storage.Search.h>
+#include <winrt/Windows.Storage.h>
+#endif
+
 #else
 #include <dirent.h>
 #include <errno.h>
@@ -713,7 +727,7 @@ std::vector<std::string> GetRootDirectoryList()
 {
   std::vector<std::string> results;
 
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(_UWP)
   char buf[256];
   if (GetLogicalDriveStringsA(sizeof(buf), buf) != 0)
   {
@@ -724,6 +738,28 @@ std::vector<std::string> GetRootDirectoryList()
       results.emplace_back(ptr, len);
       ptr += len + 1u;
     }
+  }
+#elif defined(_UWP)
+  if (const auto install_location = winrt::Windows::ApplicationModel::Package::Current().InstalledLocation();
+      install_location)
+  {
+    if (const auto path = install_location.Path(); !path.empty())
+      results.push_back(StringUtil::WideStringToUTF8String(path));
+  }
+
+  if (const auto local_location = winrt::Windows::Storage::ApplicationData::Current().LocalFolder(); local_location)
+  {
+    if (const auto path = local_location.Path(); !path.empty())
+      results.push_back(StringUtil::WideStringToUTF8String(path));
+  }
+
+  const auto devices = winrt::Windows::Storage::KnownFolders::RemovableDevices();
+  const auto folders_task(devices.GetFoldersAsync());
+  for (const auto& storage_folder : folders_task.get())
+  {
+    const auto path = storage_folder.Path();
+    if (!path.empty())
+      results.push_back(StringUtil::WideStringToUTF8String(path));
   }
 #else
   const char* home_path = std::getenv("HOME");
@@ -772,6 +808,116 @@ FileSystem::ManagedCFilePtr OpenManagedCFile(const char* filename, const char* m
   return ManagedCFilePtr(OpenCFile(filename, mode), [](std::FILE* fp) { std::fclose(fp); });
 }
 
+#ifdef _UWP
+std::FILE* OpenCFileUWP(const wchar_t* wfilename, const wchar_t* mode)
+{
+  DWORD access = 0;
+  DWORD share = 0;
+  DWORD disposition = 0;
+
+  int flags = 0;
+  const wchar_t* tmode = mode;
+  while (*tmode)
+  {
+    if (*tmode == L'r' && *(tmode + 1) == L'+')
+    {
+      access = GENERIC_READ | GENERIC_WRITE;
+      share = 0;
+      disposition = OPEN_EXISTING;
+      flags |= _O_RDWR;
+      tmode += 2;
+    }
+    else if (*tmode == L'w' && *(tmode + 1) == L'+')
+    {
+      access = GENERIC_READ | GENERIC_WRITE;
+      share = 0;
+      disposition = CREATE_ALWAYS;
+      flags |= _O_RDWR | _O_CREAT | _O_TRUNC;
+      tmode += 2;
+    }
+    else if (*tmode == L'a' && *(tmode + 1) == L'+')
+    {
+      access = GENERIC_READ | GENERIC_WRITE;
+      share = 0;
+      disposition = CREATE_ALWAYS;
+      flags |= _O_RDWR | _O_APPEND | _O_CREAT | _O_TRUNC;
+      tmode += 2;
+    }
+    else if (*tmode == L'r')
+    {
+      access = GENERIC_READ;
+      share = 0;
+      disposition = OPEN_EXISTING;
+      flags |= _O_RDONLY;
+      tmode++;
+    }
+    else if (*tmode == L'w')
+    {
+      access = GENERIC_WRITE;
+      share = 0;
+      disposition = CREATE_ALWAYS;
+      flags |= _O_WRONLY | _O_CREAT | _O_TRUNC;
+      tmode++;
+    }
+    else if (*tmode == L'a')
+    {
+      access = GENERIC_READ | GENERIC_WRITE;
+      share = 0;
+      disposition = CREATE_ALWAYS;
+      flags |= _O_WRONLY | _O_APPEND | _O_CREAT | _O_TRUNC;
+      tmode++;
+    }
+    else if (*tmode == L'b')
+    {
+      flags |= _O_BINARY;
+      tmode++;
+    }
+    else if (*tmode == L'S')
+    {
+      flags |= _O_SEQUENTIAL;
+      tmode++;
+    }
+    else if (*tmode == L'R')
+    {
+      flags |= _O_RANDOM;
+      tmode++;
+    }
+    else
+    {
+      Log_ErrorPrintf("Unknown mode flags: '%s'", StringUtil::WideStringToUTF8String(mode).c_str());
+      return nullptr;
+    }
+  }
+
+  HANDLE hFile = CreateFileFromAppW(wfilename, access, share, nullptr, disposition, 0, nullptr);
+  if (hFile == INVALID_HANDLE_VALUE)
+    return nullptr;
+
+  if (flags & _O_APPEND && !SetFilePointerEx(hFile, LARGE_INTEGER{}, nullptr, FILE_END))
+  {
+    Log_ErrorPrintf("SetFilePointerEx() failed: %08X", GetLastError());
+    CloseHandle(hFile);
+    return nullptr;
+  }
+
+  int fd = _open_osfhandle(reinterpret_cast<intptr_t>(hFile), flags);
+  if (fd < 0)
+  {
+    CloseHandle(hFile);
+    return nullptr;
+  }
+
+  std::FILE* fp = _wfdopen(fd, mode);
+  if (!fp)
+  {
+    _close(fd);
+    return nullptr;
+  }
+
+  return fp;
+}
+#endif // _UWP
+
 std::FILE* OpenCFile(const char* filename, const char* mode)
 {
 #ifdef _WIN32
@@ -789,9 +935,16 @@ std::FILE* OpenCFile(const char* filename, const char* mode)
     {
       wfilename[wlen] = 0;
       wmode[wmodelen] = 0;
+
       std::FILE* fp;
       if (_wfopen_s(&fp, wfilename, wmode) != 0)
+      {
+#ifdef _UWP
+        return OpenCFileUWP(wfilename, wmode);
+#else
         return nullptr;
+#endif
+      }
 
       return fp;
     }
@@ -1052,6 +1205,19 @@ static u32 TranslateWin32Attributes(u32 Win32Attributes)
   return r;
 }
 
+static DWORD WrapGetFileAttributes(const wchar_t* path)
+{
+#ifndef _UWP
+  return GetFileAttributesW(path);
+#else
+  WIN32_FILE_ATTRIBUTE_DATA fad;
+  if (!GetFileAttributesExFromAppW(path, GetFileExInfoStandard, &fad))
+    return INVALID_FILE_ATTRIBUTES;
+
+  return fad.dwFileAttributes;
+#endif
+}
+
 static const u32 READ_DIRECTORY_CHANGES_NOTIFY_FILTER = FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME |
                                                         FILE_NOTIFY_CHANGE_ATTRIBUTES | FILE_NOTIFY_CHANGE_SIZE |
                                                         FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_CREATION;
@@ -1064,7 +1230,7 @@ public:
       m_directoryChangeQueued(false)
   {
     m_bufferSize = 16384;
-    m_pBuffer = new byte[m_bufferSize];
+    m_pBuffer = new u8[m_bufferSize];
   }
 
   virtual ~ChangeNotifierWin32()
@@ -1103,7 +1269,7 @@ public:
     // has any bytes?
     if (bytesRead > 0)
     {
-      const byte* pCurrentPointer = m_pBuffer;
+      const u8* pCurrentPointer = m_pBuffer;
       PathString fileName;
       for (;;)
       {
@@ -1176,15 +1342,26 @@ private:
   HANDLE m_hDirectory;
   OVERLAPPED m_overlapped;
   bool m_directoryChangeQueued;
-  byte* m_pBuffer;
+  u8* m_pBuffer;
   u32 m_bufferSize;
 };
 
 std::unique_ptr<ChangeNotifier> CreateChangeNotifier(const char* path, bool recursiveWatch)
 {
   // open the directory up
-  HANDLE hDirectory = CreateFileA(path, FILE_LIST_DIRECTORY, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                                  nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED, nullptr);
+  std::wstring path_wstr(StringUtil::UTF8StringToWideString(path));
+#ifndef _UWP
+  HANDLE hDirectory =
+    CreateFileW(path_wstr.c_str(), FILE_LIST_DIRECTORY, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
+                OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED, nullptr);
+#else
+  CREATEFILE2_EXTENDED_PARAMETERS ep = {};
+  ep.dwSize = sizeof(ep);
+  ep.dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
+  ep.dwFileFlags = FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED;
+  HANDLE hDirectory = CreateFile2FromAppW(path_wstr.c_str(), FILE_LIST_DIRECTORY,
+                                          FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, OPEN_EXISTING, &ep);
+#endif
   if (hDirectory == nullptr)
     return nullptr;
 
@@ -1212,8 +1389,18 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
     tempStr = StringUtil::StdStringFromFormat("%s\\*", OriginPath);
   }
 
+  // holder for utf-8 conversion
   WIN32_FIND_DATAW wfd;
+  std::string utf8_filename;
+  utf8_filename.reserve(countof(wfd.cFileName) * 2);
+
+#ifndef _UWP
   HANDLE hFind = FindFirstFileW(StringUtil::UTF8StringToWideString(tempStr).c_str(), &wfd);
+#else
+  HANDLE hFind = FindFirstFileExFromAppW(StringUtil::UTF8StringToWideString(tempStr).c_str(), FindExInfoBasic, &wfd,
+                                         FindExSearchNameMatch, nullptr, 0);
+#endif
+
   if (hFind == INVALID_HANDLE_VALUE)
     return 0;
 
@@ -1227,10 +1414,6 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
     wildCardMatchAll = !(std::strcmp(Pattern, "*"));
   }
 
-  // holder for utf-8 conversion
-  std::string utf8_filename;
-  utf8_filename.reserve(countof(wfd.cFileName) * 2);
-
   // iterate results
   do
   {
@@ -1240,9 +1423,6 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
     if (wfd.cFileName[0] == L'.')
     {
       if (wfd.cFileName[1] == L'\0' || (wfd.cFileName[1] == L'.' && wfd.cFileName[2] == L'\0'))
-        continue;
-
-      if (!(Flags & FILESYSTEM_FIND_HIDDEN_FILES))
         continue;
     }
 
@@ -1360,6 +1540,7 @@ bool FileSystem::StatFile(const char* path, FILESYSTEM_STAT_DATA* pStatData)
 
   wpath[wlen] = 0;
 
+#ifndef _UWP
   // determine attributes for the path. if it's a directory, things have to be handled differently..
   DWORD fileAttributes = GetFileAttributesW(wpath);
   if (fileAttributes == INVALID_FILE_ATTRIBUTES)
@@ -1398,6 +1579,16 @@ bool FileSystem::StatFile(const char* path, FILESYSTEM_STAT_DATA* pStatData)
   pStatData->ModificationTime.SetWindowsFileTime(&bhfi.ftLastWriteTime);
   pStatData->Size = ((u64)bhfi.nFileSizeHigh) << 32 | (u64)bhfi.nFileSizeLow;
   return true;
+#else
+  WIN32_FILE_ATTRIBUTE_DATA fad;
+  if (!GetFileAttributesExFromAppW(wpath, GetFileExInfoStandard, &fad))
+    return false;
+
+  pStatData->Attributes = TranslateWin32Attributes(fad.dwFileAttributes);
+  pStatData->ModificationTime.SetWindowsFileTime(&fad.ftLastWriteTime);
+  pStatData->Size = ((u64)fad.nFileSizeHigh) << 32 | (u64)fad.nFileSizeLow;
+  return true;
+#endif
 }
 
 bool FileSystem::StatFile(std::FILE* fp, FILESYSTEM_STAT_DATA* pStatData)
@@ -1447,7 +1638,7 @@ bool FileSystem::FileExists(const char* path)
   wpath[wlen] = 0;
 
   // determine attributes for the path. if it's a directory, things have to be handled differently..
-  DWORD fileAttributes = GetFileAttributesW(wpath);
+  DWORD fileAttributes = WrapGetFileAttributes(wpath);
   if (fileAttributes == INVALID_FILE_ATTRIBUTES)
     return false;
 
@@ -1477,7 +1668,7 @@ bool FileSystem::DirectoryExists(const char* path)
   wpath[wlen] = 0;
 
   // determine attributes for the path. if it's a directory, things have to be handled differently..
-  DWORD fileAttributes = GetFileAttributesW(wpath);
+  DWORD fileAttributes = WrapGetFileAttributes(wpath);
   if (fileAttributes == INVALID_FILE_ATTRIBUTES)
     return false;
 
@@ -1495,16 +1686,21 @@ bool FileSystem::CreateDirectory(const char* Path, bool Recursive)
   if (wpath[0] == L'\0')
     return false;
 
-  // try just flat-out, might work if there's no other segments that have to be made
+    // try just flat-out, might work if there's no other segments that have to be made
+#ifndef _UWP
   if (CreateDirectoryW(wpath.c_str(), nullptr))
     return true;
+#else
+  if (CreateDirectoryFromAppW(wpath.c_str(), nullptr))
+    return true;
+#endif
 
   // check error
   DWORD lastError = GetLastError();
   if (lastError == ERROR_ALREADY_EXISTS)
   {
     // check the attributes
-    u32 Attributes = GetFileAttributesW(wpath.c_str());
+    u32 Attributes = WrapGetFileAttributes(wpath.c_str());
     if (Attributes != INVALID_FILE_ATTRIBUTES && Attributes & FILE_ATTRIBUTE_DIRECTORY)
       return true;
     else
@@ -1523,7 +1719,13 @@ bool FileSystem::CreateDirectory(const char* Path, bool Recursive)
       if (wpath[i] == L'\\' || wpath[i] == L'/')
       {
         tempStr[i] = L'\0';
-        if (!CreateDirectoryW(tempStr, nullptr))
+
+#ifndef _UWP
+        const BOOL result = CreateDirectoryW(tempStr, nullptr);
+#else
+        const BOOL result = CreateDirectoryFromAppW(tempStr, nullptr);
+#endif
+        if (!result)
         {
           lastError = GetLastError();
           if (lastError != ERROR_ALREADY_EXISTS) // fine, continue to next path segment
@@ -1537,7 +1739,12 @@ bool FileSystem::CreateDirectory(const char* Path, bool Recursive)
     // re-create the end if it's not a separator, check / as well because windows can interpret them
     if (wpath[pathLength - 1] != L'\\' && wpath[pathLength - 1] != L'/')
     {
-      if (!CreateDirectoryW(wpath.c_str(), nullptr))
+#ifndef _UWP
+      const BOOL result = CreateDirectoryW(wpath.c_str(), nullptr);
+#else
+      const BOOL result = CreateDirectoryFromAppW(wpath.c_str(), nullptr);
+#endif
+      if (!result)
       {
         lastError = GetLastError();
         if (lastError != ERROR_ALREADY_EXISTS)
@@ -1561,14 +1768,15 @@ bool FileSystem::DeleteFile(const char* Path)
     return false;
 
   const std::wstring wpath(StringUtil::UTF8StringToWideString(Path));
-  DWORD fileAttributes = GetFileAttributesW(wpath.c_str());
-  if (fileAttributes == INVALID_FILE_ATTRIBUTES)
+  const DWORD fileAttributes = WrapGetFileAttributes(wpath.c_str());
+  if (fileAttributes == INVALID_FILE_ATTRIBUTES || fileAttributes & FILE_ATTRIBUTE_DIRECTORY)
     return false;
 
-  if (!(fileAttributes & FILE_ATTRIBUTE_DIRECTORY))
-    return (DeleteFileW(wpath.c_str()) == TRUE);
-  else
-    return false;
+#ifndef _UWP
+  return (DeleteFileW(wpath.c_str()) == TRUE);
+#else
+  return (DeleteFileFromAppW(wpath.c_str()) == TRUE);
+#endif
 }
 
 bool FileSystem::RenamePath(const char* OldPath, const char* NewPath)
@@ -1576,11 +1784,29 @@ bool FileSystem::RenamePath(const char* OldPath, const char* NewPath)
   const std::wstring old_wpath(StringUtil::UTF8StringToWideString(OldPath));
   const std::wstring new_wpath(StringUtil::UTF8StringToWideString(NewPath));
 
+#ifndef _UWP
   if (!MoveFileExW(old_wpath.c_str(), new_wpath.c_str(), MOVEFILE_REPLACE_EXISTING))
   {
     Log_ErrorPrintf("MoveFileEx('%s', '%s') failed: %08X", OldPath, NewPath, GetLastError());
     return false;
   }
+#else
+  // try moving if it doesn't exist, since ReplaceFile fails on non-existing destinations
+  if (WrapGetFileAttributes(new_wpath.c_str()) != INVALID_FILE_ATTRIBUTES)
+  {
+    if (!DeleteFileFromAppW(new_wpath.c_str()))
+    {
+      Log_ErrorPrintf("DeleteFileFromAppW('%s') failed: %08X", new_wpath.c_str(), GetLastError());
+      return false;
+    }
+  }
+
+  if (!MoveFileFromAppW(old_wpath.c_str(), new_wpath.c_str()))
+  {
+    Log_ErrorPrintf("MoveFileFromAppW('%s', '%s') failed: %08X", OldPath, NewPath, GetLastError());
+    return false;
+  }
+#endif
 
   return true;
 }
@@ -1588,13 +1814,19 @@ bool FileSystem::RenamePath(const char* OldPath, const char* NewPath)
 static bool RecursiveDeleteDirectory(const std::wstring& wpath, bool Recursive)
 {
   // ensure it exists
-  DWORD fileAttributes = GetFileAttributesW(wpath.c_str());
-  if (fileAttributes == INVALID_FILE_ATTRIBUTES || !(fileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+  const DWORD fileAttributes = WrapGetFileAttributes(wpath.c_str());
+  if (fileAttributes == INVALID_FILE_ATTRIBUTES || fileAttributes & FILE_ATTRIBUTE_DIRECTORY)
     return false;
 
   // non-recursive case just try removing the directory
   if (!Recursive)
+  {
+#ifndef _UWP
     return (RemoveDirectoryW(wpath.c_str()) == TRUE);
+#else
+    return (RemoveDirectoryFromAppW(wpath.c_str()) == TRUE);
+#endif
+  }
 
   // doing a recursive delete
   std::wstring fileName = wpath;
@@ -1602,7 +1834,12 @@ static bool RecursiveDeleteDirectory(const std::wstring& wpath, bool Recursive)
 
   // is there any files?
   WIN32_FIND_DATAW findData;
+#ifndef _UWP
   HANDLE hFind = FindFirstFileW(fileName.c_str(), &findData);
+#else
+  HANDLE hFind =
+    FindFirstFileExFromAppW(fileName.c_str(), FindExInfoBasic, &findData, FindExSearchNameMatch, nullptr, 0);
+#endif
   if (hFind == INVALID_HANDLE_VALUE)
     return false;
 
@@ -1634,7 +1871,12 @@ static bool RecursiveDeleteDirectory(const std::wstring& wpath, bool Recursive)
     else
     {
       // found a file, so delete it
-      if (!DeleteFileW(fileName.c_str()))
+#ifndef _UWP
+      const BOOL result = DeleteFileW(fileName.c_str());
+#else
+      const BOOL result = DeleteFileFromAppW(fileName.c_str());
+#endif
+      if (!result)
       {
         FindClose(hFind);
         return false;
@@ -1644,7 +1886,12 @@ static bool RecursiveDeleteDirectory(const std::wstring& wpath, bool Recursive)
   FindClose(hFind);
 
   // nuke the directory itself
-  if (!RemoveDirectoryW(wpath.c_str()))
+#ifndef _UWP
+  const BOOL result = RemoveDirectoryW(wpath.c_str());
+#else
+  const BOOL result = RemoveDirectoryFromAppW(wpath.c_str());
+#endif
+  if (!result)
     return false;
 
   // done
@@ -1664,8 +1911,10 @@ std::string GetProgramPath()
 
   // Fall back to the main module if this fails.
   HMODULE module = nullptr;
+#ifndef _UWP
   GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
                      reinterpret_cast<LPCWSTR>(&GetProgramPath), &module);
+#endif
 
   for (;;)
   {

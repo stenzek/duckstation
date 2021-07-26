@@ -45,7 +45,7 @@ public:
   // Render statistics debug window.
   void DrawDebugWindow();
 
-  void SetUseReadThread(bool enabled);
+  void SetReadaheadSectors(u32 readahead_sectors);
 
   /// Reads a frame from the audio FIFO, used by the SPU.
   ALWAYS_INLINE std::tuple<s16, s16> GetAudioFrame()
@@ -347,6 +347,7 @@ private:
   u8 m_pending_async_interrupt = 0;
 
   CDImage::Position m_setloc_position = {};
+  CDImage::LBA m_requested_lba{};
   CDImage::LBA m_current_lba{}; // this is the hold position
   CDImage::LBA m_seek_start_lba{};
   CDImage::LBA m_seek_end_lba{};

@@ -1012,6 +1012,9 @@ bool CreateGPU(GPURenderer renderer)
     case GPURenderer::HardwareD3D11:
       g_gpu = GPU::CreateHardwareD3D11Renderer();
       break;
+    case GPURenderer::HardwareD3D12:
+      g_gpu = GPU::CreateHardwareD3D12Renderer();
+      break;
 #endif
 
     case GPURenderer::Software:
@@ -1268,6 +1271,7 @@ bool DoLoadState(ByteStream* state, bool force_software_renderer, bool update_di
     UpdateControllers();
     UpdateMemoryCardTypes();
     UpdateMultitaps();
+    Reset();
   }
   else
   {
@@ -1536,9 +1540,6 @@ void Throttle()
 #else
   static constexpr double MAX_VARIANCE_TIME_NS = 50 * 1000000;
 #endif
-
-  // Don't sleep for <1ms or >=period.
-  static constexpr double MINIMUM_SLEEP_TIME_NS = 1 * 1000000;
 
   // Use unsigned for defined overflow/wrap-around.
   const Common::Timer::Value time = Common::Timer::GetValue();
@@ -2126,7 +2127,8 @@ bool CheckForSBIFile(CDImage* image)
     g_host_interface->ReportError(SmallString::FromFormat(
       g_host_interface->TranslateString(
         "System", "You are attempting to run a libcrypt protected game without an SBI file:\n\n%s: %s\n\nYour dump is "
-                  "incomplete, you must add the SBI file to run this game."),
+                  "incomplete, you must add the SBI file to run this game. \n\n"
+                  "The name of the SBI file must match the name of the disc image."),
       s_running_game_code.c_str(), s_running_game_title.c_str()));
     return false;
   }
@@ -2400,6 +2402,8 @@ void DoRewind()
   {
     s_rewind_load_counter--;
   }
+
+  s_next_frame_time += s_frame_period;
 }
 
 void SaveRunaheadState()

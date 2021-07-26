@@ -16,13 +16,6 @@
 
 namespace CPU {
 
-enum : u32
-{
-  FAST_MAP_RAM_SLOT_COUNT = Bus::RAM_8MB_SIZE / 4,
-  FAST_MAP_BIOS_SLOT_COUNT = Bus::BIOS_SIZE / 4,
-  FAST_MAP_TOTAL_SLOT_COUNT = FAST_MAP_RAM_SLOT_COUNT + FAST_MAP_BIOS_SLOT_COUNT,
-};
-
 union CodeBlockKey
 {
   u32 bits;
@@ -67,6 +60,14 @@ struct CodeBlock
 {
   using HostCodePointer = void (*)();
 
+  struct LinkInfo
+  {
+    CodeBlock* block;
+    void* host_pc;
+    void* host_resolve_pc;
+    u32 host_pc_size;
+  };
+
   CodeBlock(const CodeBlockKey key_) : key(key_) {}
 
   CodeBlockKey key;
@@ -74,8 +75,8 @@ struct CodeBlock
   HostCodePointer host_code = nullptr;
 
   std::vector<CodeBlockInstruction> instructions;
-  std::vector<CodeBlock*> link_predecessors;
-  std::vector<CodeBlock*> link_successors;
+  std::vector<LinkInfo> link_predecessors;
+  std::vector<LinkInfo> link_successors;
 
   TickCount uncached_fetch_ticks = 0;
   u32 icache_line_count = 0;
@@ -87,9 +88,11 @@ struct CodeBlock
   bool contains_loadstore_instructions = false;
   bool contains_double_branches = false;
   bool invalidated = false;
+  bool can_link = true;
 
   u32 recompile_frame_number = 0;
   u32 recompile_count = 0;
+  u32 invalidate_frame_number = 0;
 
   const u32 GetPC() const { return key.GetPC(); }
   const u32 GetSizeInBytes() const { return static_cast<u32>(instructions.size()) * sizeof(Instruction); }
@@ -107,6 +110,15 @@ struct CodeBlock
 
 namespace CodeCache {
 
+enum : u32
+{
+  FAST_MAP_TABLE_COUNT = 0x10000,
+  FAST_MAP_TABLE_SIZE = 0x10000 / 4, // 16384
+  FAST_MAP_TABLE_SHIFT = 16,
+};
+
+using FastMapTable = CodeBlock::HostCodePointer*;
+
 void Initialize();
 void Shutdown();
 void Execute();
@@ -115,7 +127,7 @@ void Execute();
 using DispatcherFunction = void (*)();
 using SingleBlockDispatcherFunction = void(*)(const CodeBlock::HostCodePointer);
 
-CodeBlock::HostCodePointer* GetFastMapPointer();
+FastMapTable* GetFastMapPointer();
 void ExecuteRecompiler();
 #endif
 

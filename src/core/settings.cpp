@@ -172,6 +172,7 @@ void Settings::Load(SettingsInterface& si)
   cpu_overclock_enable = si.GetBoolValue("CPU", "OverclockEnable", false);
   UpdateOverclockActive();
   cpu_recompiler_memory_exceptions = si.GetBoolValue("CPU", "RecompilerMemoryExceptions", false);
+  cpu_recompiler_block_linking = si.GetBoolValue("CPU", "RecompilerBlockLinking", true);
   cpu_recompiler_icache = si.GetBoolValue("CPU", "RecompilerICache", false);
   cpu_fastmem_mode = ParseCPUFastmemMode(
                        si.GetStringValue("CPU", "FastmemMode", GetCPUFastmemModeName(DEFAULT_CPU_FASTMEM_MODE)).c_str())
@@ -242,7 +243,7 @@ void Settings::Load(SettingsInterface& si)
   display_post_process_chain = si.GetStringValue("Display", "PostProcessChain", "");
   display_max_fps = si.GetFloatValue("Display", "MaxFPS", DEFAULT_DISPLAY_MAX_FPS);
 
-  cdrom_read_thread = si.GetBoolValue("CDROM", "ReadThread", true);
+  cdrom_readahead_sectors = static_cast<u8>(si.GetIntValue("CDROM", "ReadaheadSectors", DEFAULT_CDROM_READAHEAD_SECTORS));
   cdrom_region_check = si.GetBoolValue("CDROM", "RegionCheck", false);
   cdrom_load_image_to_ram = si.GetBoolValue("CDROM", "LoadImageToRAM", false);
   cdrom_mute_cd_audio = si.GetBoolValue("CDROM", "MuteCDAudio", false);
@@ -363,6 +364,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetIntValue("CPU", "OverclockNumerator", cpu_overclock_numerator);
   si.SetIntValue("CPU", "OverclockDenominator", cpu_overclock_denominator);
   si.SetBoolValue("CPU", "RecompilerMemoryExceptions", cpu_recompiler_memory_exceptions);
+  si.SetBoolValue("CPU", "RecompilerBlockLinking", cpu_recompiler_block_linking);
   si.SetBoolValue("CPU", "RecompilerICache", cpu_recompiler_icache);
   si.SetStringValue("CPU", "FastmemMode", GetCPUFastmemModeName(cpu_fastmem_mode));
 
@@ -419,7 +421,7 @@ void Settings::Save(SettingsInterface& si) const
     si.SetStringValue("Display", "PostProcessChain", display_post_process_chain.c_str());
   si.SetFloatValue("Display", "MaxFPS", display_max_fps);
 
-  si.SetBoolValue("CDROM", "ReadThread", cdrom_read_thread);
+  si.SetIntValue("CDROM", "ReadaheadSectors", cdrom_readahead_sectors);
   si.SetBoolValue("CDROM", "RegionCheck", cdrom_region_check);
   si.SetBoolValue("CDROM", "LoadImageToRAM", cdrom_load_image_to_ram);
   si.SetBoolValue("CDROM", "MuteCDAudio", cdrom_mute_cd_audio);
@@ -652,11 +654,13 @@ const char* Settings::GetCPUFastmemModeDisplayName(CPUFastmemMode mode)
 static constexpr auto s_gpu_renderer_names = make_array(
 #ifdef _WIN32
   "D3D11",
+  "D3D12",
 #endif
   "Vulkan", "OpenGL", "Software");
 static constexpr auto s_gpu_renderer_display_names = make_array(
 #ifdef _WIN32
   TRANSLATABLE("GPURenderer", "Hardware (D3D11)"),
+  TRANSLATABLE("GPURenderer", "Hardware (D3D12)"),
 #endif
   TRANSLATABLE("GPURenderer", "Hardware (Vulkan)"), TRANSLATABLE("GPURenderer", "Hardware (OpenGL)"),
   TRANSLATABLE("GPURenderer", "Software"));

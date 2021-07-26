@@ -67,11 +67,15 @@ public:
   void registerWidgetHelp(QObject* object, QString title, QString recommended_value, QString text);
   bool eventFilter(QObject* object, QEvent* event) override;
 
+Q_SIGNALS:
+  void settingsResetToDefaults();
+
 public Q_SLOTS:
   void setCategory(Category category);
 
 private Q_SLOTS:
   void onCategoryCurrentRowChanged(int row);
+  void onRestoreDefaultsClicked();
 
 private:
   void setCategoryHelpTexts();

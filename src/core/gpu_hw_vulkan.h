@@ -129,8 +129,8 @@ private:
   // [depth_test][render_mode][texture_mode][transparency_mode][dithering][interlacing]
   DimensionalArray<VkPipeline, 2, 2, 5, 9, 4, 3> m_batch_pipelines{};
 
-  // [interlaced]
-  std::array<VkPipeline, 2> m_vram_fill_pipelines{};
+  // [wrapped][interlaced]
+  DimensionalArray<VkPipeline, 2, 2> m_vram_fill_pipelines{};
 
   // [depth_test]
   std::array<VkPipeline, 2> m_vram_write_pipelines{};

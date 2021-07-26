@@ -29,3 +29,6 @@ if(BUILD_LIBRETRO_CORE)
   add_subdirectory(duckstation-libretro)
 endif()
 
+if(BUILD_REGTEST)
+  add_subdirectory(duckstation-regtest)
+endif()

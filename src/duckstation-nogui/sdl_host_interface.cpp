@@ -371,9 +371,11 @@ void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
     case SDL_MOUSEBUTTONDOWN:
     case SDL_MOUSEBUTTONUP:
     {
-      if (!ImGui::GetIO().WantCaptureMouse)
+      // map left -> 0, right -> 1, middle -> 2 to match with qt
+      static constexpr std::array<s32, 5> mouse_mapping = {{1, 3, 2, 4, 5}};
+      if (!ImGui::GetIO().WantCaptureMouse && event->button.button > 0 && event->button.button <= mouse_mapping.size())
       {
-        const s32 button = static_cast<s32>(ZeroExtend32(event->button.button));
+        const s32 button = mouse_mapping[event->button.button - 1];
         const bool pressed = (event->type == SDL_MOUSEBUTTONDOWN);
         HandleHostMouseEvent(button, pressed);
       }

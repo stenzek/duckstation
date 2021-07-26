@@ -206,35 +206,42 @@ Value CodeGenerator::GetValueInHostOrScratchRegister(const Value& value, bool al
   return new_value;
 }
 
-void CodeGenerator::EmitBeginBlock()
+void CodeGenerator::EmitBeginBlock(bool allocate_registers /* = true */)
 {
-  m_register_cache.AssumeCalleeSavedRegistersAreSaved();
-
-  // Store the CPU struct pointer.
-  const bool cpu_reg_allocated = m_register_cache.AllocateHostReg(RCPUPTR);
-  DebugAssert(cpu_reg_allocated);
-  UNREFERENCED_VARIABLE(cpu_reg_allocated);
-  // m_emit->mov(GetCPUPtrReg(), reinterpret_cast<size_t>(&g_state));
-
-  // If there's loadstore instructions, preload the fastmem base.
-  if (m_block->contains_loadstore_instructions)
+  if (allocate_registers)
   {
-    const bool fastmem_reg_allocated = m_register_cache.AllocateHostReg(RMEMBASEPTR);
-    Assert(fastmem_reg_allocated);
-    UNREFERENCED_VARIABLE(fastmem_reg_allocated);
-    m_emit->mov(GetFastmemBasePtrReg(), m_emit->qword[GetCPUPtrReg() + offsetof(CPU::State, fastmem_base)]);
+    m_register_cache.AssumeCalleeSavedRegistersAreSaved();
+
+    // Store the CPU struct pointer.
+    const bool cpu_reg_allocated = m_register_cache.AllocateHostReg(RCPUPTR);
+    DebugAssert(cpu_reg_allocated);
+    UNREFERENCED_VARIABLE(cpu_reg_allocated);
+    // m_emit->mov(GetCPUPtrReg(), reinterpret_cast<size_t>(&g_state));
+
+    // If there's loadstore instructions, preload the fastmem base.
+    if (m_block->contains_loadstore_instructions)
+    {
+      const bool fastmem_reg_allocated = m_register_cache.AllocateHostReg(RMEMBASEPTR);
+      DebugAssert(fastmem_reg_allocated);
+      UNREFERENCED_VARIABLE(fastmem_reg_allocated);
+      m_emit->mov(GetFastmemBasePtrReg(), m_emit->qword[GetCPUPtrReg() + offsetof(CPU::State, fastmem_base)]);
+    }
   }
 }
 
-void CodeGenerator::EmitEndBlock()
+void CodeGenerator::EmitEndBlock(bool free_registers /* = true */, bool emit_return /* = true */)
 {
-  m_register_cache.FreeHostReg(RCPUPTR);
-  if (m_block->contains_loadstore_instructions)
-    m_register_cache.FreeHostReg(RMEMBASEPTR);
+  if (free_registers)
+  {
+    m_register_cache.FreeHostReg(RCPUPTR);
+    if (m_block->contains_loadstore_instructions)
+      m_register_cache.FreeHostReg(RMEMBASEPTR);
 
-  m_register_cache.PopCalleeSavedRegisters(true);
+    m_register_cache.PopCalleeSavedRegisters(true);
+  }
 
-  m_emit->ret();
+  if (emit_return)
+    m_emit->ret();
 }
 
 void CodeGenerator::EmitExceptionExit()
@@ -2336,7 +2343,7 @@ void CodeGenerator::EmitUpdateFastmemBase()
 
 bool CodeGenerator::BackpatchLoadStore(const LoadStoreBackpatchInfo& lbi)
 {
-  Log_DevPrintf("Backpatching %p (guest PC 0x%08X) to slowmem", lbi.host_pc, lbi.guest_pc);
+  Log_ProfilePrintf("Backpatching %p (guest PC 0x%08X) to slowmem", lbi.host_pc, lbi.guest_pc);
 
   // turn it into a jump to the slowmem handler
   Xbyak::CodeGenerator cg(lbi.host_code_size, lbi.host_pc);
@@ -2350,6 +2357,39 @@ bool CodeGenerator::BackpatchLoadStore(const LoadStoreBackpatchInfo& lbi)
 
   JitCodeBuffer::FlushInstructionCache(lbi.host_pc, lbi.host_code_size);
   return true;
+}
+
+void CodeGenerator::BackpatchReturn(void* pc, u32 pc_size)
+{
+  Log_ProfilePrintf("Backpatching %p to return", pc);
+
+  Xbyak::CodeGenerator cg(pc_size, pc);
+  cg.ret();
+
+  const s32 nops =
+    static_cast<s32>(pc_size) - static_cast<s32>(static_cast<ptrdiff_t>(cg.getCurr() - static_cast<u8*>(pc)));
+  Assert(nops >= 0);
+  for (s32 i = 0; i < nops; i++)
+    cg.nop();
+
+  JitCodeBuffer::FlushInstructionCache(pc, pc_size);
+}
+
+void CodeGenerator::BackpatchBranch(void* pc, u32 pc_size, void* target)
+{
+  Log_ProfilePrintf("Backpatching %p to %p [branch]", pc, target);
+
+  Xbyak::CodeGenerator cg(pc_size, pc);
+  cg.jmp(target);
+
+  // shouldn't have any nops
+  const s32 nops =
+    static_cast<s32>(pc_size) - static_cast<s32>(static_cast<ptrdiff_t>(cg.getCurr() - static_cast<u8*>(pc)));
+  Assert(nops >= 0);
+  for (s32 i = 0; i < nops; i++)
+    cg.nop();
+
+  JitCodeBuffer::FlushInstructionCache(pc, pc_size);
 }
 
 void CodeGenerator::EmitLoadGlobal(HostReg host_reg, RegSize size, const void* ptr)
@@ -2612,48 +2652,48 @@ void CodeGenerator::EmitCancelInterpreterLoadDelayForReg(Reg reg)
 
 void CodeGenerator::EmitICacheCheckAndUpdate()
 {
-  Value pc = CalculatePC();
-  Value seg = m_register_cache.AllocateScratch(RegSize_32);
-  m_register_cache.InhibitAllocation();
-
-  m_emit->mov(GetHostReg32(seg), GetHostReg32(pc));
-  m_emit->shr(GetHostReg32(seg), 29);
-
-  Xbyak::Label is_cached;
-  m_emit->cmp(GetHostReg32(seg), 4);
-  m_emit->jle(is_cached);
-
-  // uncached
-  Xbyak::Label done;
-  m_emit->add(m_emit->dword[GetCPUPtrReg() + offsetof(State, pending_ticks)],
-              static_cast<u32>(m_block->uncached_fetch_ticks));
-  m_emit->jmp(done, Xbyak::CodeGenerator::T_NEAR);
-
-  // cached
-  m_emit->L(is_cached);
-  m_emit->and_(GetHostReg32(pc), ICACHE_TAG_ADDRESS_MASK);
-
-  VirtualMemoryAddress current_address = (m_block->instructions[0].pc & ICACHE_TAG_ADDRESS_MASK);
-  for (u32 i = 0; i < m_block->icache_line_count; i++, current_address += ICACHE_LINE_SIZE)
+  if (GetSegmentForAddress(m_pc) >= Segment::KSEG1)
   {
-    const TickCount fill_ticks = GetICacheFillTicks(current_address);
-    if (fill_ticks <= 0)
-      continue;
+    m_emit->add(m_emit->dword[GetCPUPtrReg() + offsetof(State, pending_ticks)],
+                static_cast<u32>(m_block->uncached_fetch_ticks));
+  }
+  else
+  {
+    VirtualMemoryAddress current_pc = m_pc & ICACHE_TAG_ADDRESS_MASK;
+    for (u32 i = 0; i < m_block->icache_line_count; i++, current_pc += ICACHE_LINE_SIZE)
+    {
+      const VirtualMemoryAddress tag = GetICacheTagForAddress(current_pc);
+      const TickCount fill_ticks = GetICacheFillTicks(current_pc);
+      if (fill_ticks <= 0)
+        continue;
 
-    const u32 line = GetICacheLine(current_address);
-    const u32 offset = offsetof(State, icache_tags) + (line * sizeof(u32));
-    Xbyak::Label cache_hit;
+      const u32 line = GetICacheLine(current_pc);
+      const u32 offset = offsetof(State, icache_tags) + (line * sizeof(u32));
+      Xbyak::Label cache_hit;
 
-    m_emit->cmp(GetHostReg32(pc), m_emit->dword[GetCPUPtrReg() + offset]);
-    m_emit->je(cache_hit);
-    m_emit->mov(m_emit->dword[GetCPUPtrReg() + offset], GetHostReg32(pc));
-    m_emit->add(m_emit->dword[GetCPUPtrReg() + offsetof(State, pending_ticks)], static_cast<u32>(fill_ticks));
-    m_emit->L(cache_hit);
-    m_emit->add(GetHostReg32(pc), ICACHE_LINE_SIZE);
+      m_emit->cmp(m_emit->dword[GetCPUPtrReg() + offset], tag);
+      m_emit->je(cache_hit);
+      m_emit->mov(m_emit->dword[GetCPUPtrReg() + offset], tag);
+      m_emit->add(m_emit->dword[GetCPUPtrReg() + offsetof(State, pending_ticks)], static_cast<u32>(fill_ticks));
+      m_emit->L(cache_hit);
+    }
+  }
+}
+
+void CodeGenerator::EmitStallUntilGTEComplete()
+{
+  m_emit->mov(GetHostReg32(RRETURN), m_emit->dword[GetCPUPtrReg() + offsetof(State, pending_ticks)]);
+  m_emit->mov(GetHostReg32(RARG1), m_emit->dword[GetCPUPtrReg() + offsetof(State, gte_completion_tick)]);
+
+  if (m_delayed_cycles_add > 0)
+  {
+    m_emit->add(GetHostReg32(RRETURN), static_cast<u32>(m_delayed_cycles_add));
+    m_delayed_cycles_add = 0;
   }
 
-  m_emit->L(done);
-  m_register_cache.UninhibitAllocation();
+  m_emit->cmp(GetHostReg32(RARG1), GetHostReg32(RRETURN));
+  m_emit->cmova(GetHostReg32(RRETURN), GetHostReg32(RARG1));
+  m_emit->mov(m_emit->dword[GetCPUPtrReg() + offsetof(State, pending_ticks)], GetHostReg32(RRETURN));
 }
 
 void CodeGenerator::EmitBranch(const void* address, bool allow_scratch)
@@ -2851,6 +2891,59 @@ void CodeGenerator::EmitConditionalBranch(Condition condition, bool invert, Labe
   }
 }
 
+void CodeGenerator::EmitBranchIfBitSet(HostReg reg, RegSize size, u8 bit, LabelType* label)
+{
+  if (bit < 8)
+  {
+    // same size, probably faster
+    switch (size)
+    {
+      case RegSize_8:
+        m_emit->test(GetHostReg8(reg), (1u << bit));
+        m_emit->jnz(*label);
+        break;
+
+      case RegSize_16:
+        m_emit->test(GetHostReg16(reg), (1u << bit));
+        m_emit->jnz(*label);
+        break;
+
+      case RegSize_32:
+        m_emit->test(GetHostReg32(reg), (1u << bit));
+        m_emit->jnz(*label);
+        break;
+
+      default:
+        UnreachableCode();
+        break;
+    }
+  }
+  else
+  {
+    switch (size)
+    {
+      case RegSize_8:
+        m_emit->bt(GetHostReg8(reg), bit);
+        m_emit->jc(*label);
+        break;
+
+      case RegSize_16:
+        m_emit->bt(GetHostReg16(reg), bit);
+        m_emit->jc(*label);
+        break;
+
+      case RegSize_32:
+        m_emit->bt(GetHostReg32(reg), bit);
+        m_emit->jc(*label);
+        break;
+
+      default:
+        UnreachableCode();
+        break;
+    }
+  }
+}
+
 void CodeGenerator::EmitBranchIfBitClear(HostReg reg, RegSize size, u8 bit, LabelType* label)
 {
   if (bit < 8)
@@ -2980,29 +3073,15 @@ CodeCache::DispatcherFunction CodeGenerator::CompileDispatcher()
   // eax <- pc
   m_emit->mov(m_emit->eax, m_emit->dword[m_emit->rbp + offsetof(State, regs.pc)]);
 
-  // ebx <- (pc & RAM_MASK) >> 2
-  m_emit->mov(m_emit->ebx, m_emit->eax);
-  m_emit->and_(m_emit->ebx, Bus::g_ram_mask);
-  m_emit->shr(m_emit->ebx, 2);
-
-  // ecx <- ((pc & BIOS_MASK) >> 2) + FAST_MAP_RAM_SLOT_COUNT
+  // rcx <- s_fast_map[pc >> 16]
+  EmitLoadGlobalAddress(Xbyak::Operand::RBX, CodeCache::GetFastMapPointer());
   m_emit->mov(m_emit->ecx, m_emit->eax);
-  m_emit->and_(m_emit->ecx, Bus::BIOS_MASK);
-  m_emit->shr(m_emit->ecx, 2);
-  m_emit->add(m_emit->ecx, FAST_MAP_RAM_SLOT_COUNT);
+  m_emit->shr(m_emit->ecx, 16);
+  m_emit->mov(m_emit->rcx, m_emit->qword[m_emit->rbx + m_emit->rcx * 8]);
 
-  // current_instruction_pc <- pc (eax)
-  m_emit->mov(m_emit->dword[m_emit->rbp + offsetof(State, current_instruction_pc)], m_emit->eax);
+  // call(rcx[pc * 2]) (fast_map[pc >> 2])
+  m_emit->call(m_emit->qword[m_emit->rcx + m_emit->rax * 2]);
 
-  // if ((eax (pc) & PHYSICAL_MEMORY_ADDRESS_MASK) >= BIOS_BASE) { use ecx as index }
-  m_emit->and_(m_emit->eax, PHYSICAL_MEMORY_ADDRESS_MASK);
-  m_emit->cmp(m_emit->eax, Bus::BIOS_BASE);
-  m_emit->cmovge(m_emit->ebx, m_emit->ecx);
-
-  // ebx contains our index, rax <- fast_map[ebx * 8], rax(), continue
-  EmitLoadGlobalAddress(Xbyak::Operand::RAX, CodeCache::GetFastMapPointer());
-  m_emit->mov(m_emit->rax, m_emit->qword[m_emit->rax + m_emit->rbx * 8]);
-  m_emit->call(m_emit->rax);
   m_emit->jmp(main_loop);
 
   // end while

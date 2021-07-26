@@ -84,11 +84,9 @@ void ALWAYS_INLINE_RELEASE GPU_SW_Backend::ShadePixel(const GPUBackendDrawComman
                                                       u8 color_g, u8 color_b, u8 texcoord_x, u8 texcoord_y)
 {
   VRAMPixel color;
-  bool transparent;
   if constexpr (texture_enable)
   {
     // Apply texture window
-    // TODO: Precompute the second half
     texcoord_x = (texcoord_x & cmd->window.and_x) | cmd->window.or_x;
     texcoord_y = (texcoord_y & cmd->window.and_y) | cmd->window.or_y;
 
@@ -129,8 +127,6 @@ void ALWAYS_INLINE_RELEASE GPU_SW_Backend::ShadePixel(const GPUBackendDrawComman
     if (texture_color.bits == 0)
       return;
 
-    transparent = texture_color.c;
-
     if constexpr (raw_texture_enable)
     {
       color.bits = texture_color.bits;
@@ -148,59 +144,72 @@ void ALWAYS_INLINE_RELEASE GPU_SW_Backend::ShadePixel(const GPUBackendDrawComman
   }
   else
   {
-    transparent = true;
-
     const u32 dither_y = (dithering_enable) ? (y & 3u) : 2u;
     const u32 dither_x = (dithering_enable) ? (x & 3u) : 3u;
 
+    // Non-textured transparent polygons don't set bit 15, but are treated as transparent.
     color.bits = (ZeroExtend16(s_dither_lut[dither_y][dither_x][color_r]) << 0) |
                  (ZeroExtend16(s_dither_lut[dither_y][dither_x][color_g]) << 5) |
-                 (ZeroExtend16(s_dither_lut[dither_y][dither_x][color_b]) << 10);
+                 (ZeroExtend16(s_dither_lut[dither_y][dither_x][color_b]) << 10) | (transparency_enable ? 0x8000u : 0);
   }
 
   const VRAMPixel bg_color{GetPixel(static_cast<u32>(x), static_cast<u32>(y))};
   if constexpr (transparency_enable)
   {
-    if (transparent)
+    if (color.bits & 0x8000u || !texture_enable)
     {
-#define BLEND_AVERAGE(bg, fg) Truncate8(std::min<u32>((ZeroExtend32(bg) / 2) + (ZeroExtend32(fg) / 2), 0x1F))
-#define BLEND_ADD(bg, fg) Truncate8(std::min<u32>(ZeroExtend32(bg) + ZeroExtend32(fg), 0x1F))
-#define BLEND_SUBTRACT(bg, fg) Truncate8((bg > fg) ? ((bg) - (fg)) : 0)
-#define BLEND_QUARTER(bg, fg) Truncate8(std::min<u32>(ZeroExtend32(bg) + ZeroExtend32(fg / 4), 0x1F))
-
-#define BLEND_RGB(func)                                                                                                \
-  color.Set(func(bg_color.r.GetValue(), color.r.GetValue()), func(bg_color.g.GetValue(), color.g.GetValue()),          \
-            func(bg_color.b.GetValue(), color.b.GetValue()), color.c.GetValue())
-
+      // Based on blargg's efficient 15bpp pixel math.
+      u32 bg_bits = ZeroExtend32(bg_color.bits);
+      u32 fg_bits = ZeroExtend32(color.bits);
       switch (cmd->draw_mode.transparency_mode)
       {
         case GPUTransparencyMode::HalfBackgroundPlusHalfForeground:
-          BLEND_RGB(BLEND_AVERAGE);
-          break;
+        {
+          bg_bits |= 0x8000u;
+          color.bits = Truncate16(((fg_bits + bg_bits) - ((fg_bits ^ bg_bits) & 0x0421u)) >> 1);
+        }
+        break;
+
         case GPUTransparencyMode::BackgroundPlusForeground:
-          BLEND_RGB(BLEND_ADD);
-          break;
+        {
+          bg_bits &= ~0x8000u;
+
+          const u32 sum = fg_bits + bg_bits;
+          const u32 carry = (sum - ((fg_bits ^ bg_bits) & 0x8421u)) & 0x8420u;
+
+          color.bits = Truncate16((sum - carry) | (carry - (carry >> 5)));
+        }
+        break;
+
         case GPUTransparencyMode::BackgroundMinusForeground:
-          BLEND_RGB(BLEND_SUBTRACT);
-          break;
+        {
+          bg_bits |= 0x8000u;
+          fg_bits &= ~0x8000u;
+
+          const u32 diff = bg_bits - fg_bits + 0x108420u;
+          const u32 borrow = (diff - ((bg_bits ^ fg_bits) & 0x108420u)) & 0x108420u;
+
+          color.bits = Truncate16((diff - borrow) & (borrow - (borrow >> 5)));
+        }
+        break;
+
         case GPUTransparencyMode::BackgroundPlusQuarterForeground:
-          BLEND_RGB(BLEND_QUARTER);
-          break;
-        default:
-          break;
+        {
+          bg_bits &= ~0x8000u;
+          fg_bits = ((fg_bits >> 2) & 0x1CE7u) | 0x8000u;
+
+          const u32 sum = fg_bits + bg_bits;
+          const u32 carry = (sum - ((fg_bits ^ bg_bits) & 0x8421u)) & 0x8420u;
+
+          color.bits = Truncate16((sum - carry) | (carry - (carry >> 5)));
+        }
+        break;
       }
 
-#undef BLEND_RGB
-
-#undef BLEND_QUARTER
-#undef BLEND_SUBTRACT
-#undef BLEND_ADD
-#undef BLEND_AVERAGE
+      // See above.
+      if constexpr (!texture_enable)
+        color.bits &= ~0x8000u;
     }
-  }
-  else
-  {
-    UNREFERENCED_VARIABLE(transparent);
   }
 
   const u16 mask_and = cmd->params.GetMaskAND();
@@ -589,38 +598,6 @@ void GPU_SW_Backend::DrawTriangle(const GPUBackendDrawPolygonCommand* cmd,
   }
 }
 
-GPU_SW_Backend::DrawTriangleFunction GPU_SW_Backend::GetDrawTriangleFunction(bool shading_enable, bool texture_enable,
-                                                                             bool raw_texture_enable,
-                                                                             bool transparency_enable,
-                                                                             bool dithering_enable)
-{
-#define F(SHADING, TEXTURE, RAW_TEXTURE, TRANSPARENCY, DITHERING)                                                      \
-  &GPU_SW_Backend::DrawTriangle<SHADING, TEXTURE, RAW_TEXTURE, TRANSPARENCY, DITHERING>
-
-  static constexpr DrawTriangleFunction funcs[2][2][2][2][2] = {
-    {{{{F(false, false, false, false, false), F(false, false, false, false, true)},
-       {F(false, false, false, true, false), F(false, false, false, true, true)}},
-      {{F(false, false, true, false, false), F(false, false, true, false, true)},
-       {F(false, false, true, true, false), F(false, false, true, true, true)}}},
-     {{{F(false, true, false, false, false), F(false, true, false, false, true)},
-       {F(false, true, false, true, false), F(false, true, false, true, true)}},
-      {{F(false, true, true, false, false), F(false, true, true, false, true)},
-       {F(false, true, true, true, false), F(false, true, true, true, true)}}}},
-    {{{{F(true, false, false, false, false), F(true, false, false, false, true)},
-       {F(true, false, false, true, false), F(true, false, false, true, true)}},
-      {{F(true, false, true, false, false), F(true, false, true, false, true)},
-       {F(true, false, true, true, false), F(true, false, true, true, true)}}},
-     {{{F(true, true, false, false, false), F(true, true, false, false, true)},
-       {F(true, true, false, true, false), F(true, true, false, true, true)}},
-      {{F(true, true, true, false, false), F(true, true, true, false, true)},
-       {F(true, true, true, true, false), F(true, true, true, true, true)}}}}};
-
-#undef F
-
-  return funcs[u8(shading_enable)][u8(texture_enable)][u8(raw_texture_enable)][u8(transparency_enable)]
-              [u8(dithering_enable)];
-}
-
 enum
 {
   Line_XY_FractBits = 32
@@ -737,34 +714,6 @@ void GPU_SW_Backend::DrawLine(const GPUBackendDrawLineCommand* cmd, const GPUBac
       cur_point.b += step.db_dk;
     }
   }
-}
-
-GPU_SW_Backend::DrawLineFunction GPU_SW_Backend::GetDrawLineFunction(bool shading_enable, bool transparency_enable,
-                                                                     bool dithering_enable)
-{
-#define F(SHADING, TRANSPARENCY, DITHERING) &GPU_SW_Backend::DrawLine<SHADING, TRANSPARENCY, DITHERING>
-
-  static constexpr DrawLineFunction funcs[2][2][2] = {
-    {{F(false, false, false), F(false, false, true)}, {F(false, true, false), F(false, true, true)}},
-    {{F(true, false, false), F(true, false, true)}, {F(true, true, false), F(true, true, true)}}};
-
-#undef F
-
-  return funcs[u8(shading_enable)][u8(transparency_enable)][u8(dithering_enable)];
-}
-
-GPU_SW_Backend::DrawRectangleFunction
-GPU_SW_Backend::GetDrawRectangleFunction(bool texture_enable, bool raw_texture_enable, bool transparency_enable)
-{
-#define F(TEXTURE, RAW_TEXTURE, TRANSPARENCY) &GPU_SW_Backend::DrawRectangle<TEXTURE, RAW_TEXTURE, TRANSPARENCY>
-
-  static constexpr DrawRectangleFunction funcs[2][2][2] = {
-    {{F(false, false, false), F(false, false, true)}, {F(false, true, false), F(false, true, true)}},
-    {{F(true, false, false), F(true, false, true)}, {F(true, true, false), F(true, true, true)}}};
-
-#undef F
-
-  return funcs[u8(texture_enable)][u8(raw_texture_enable)][u8(transparency_enable)];
 }
 
 void GPU_SW_Backend::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color, GPUBackendCommandParameters params)
@@ -924,3 +873,70 @@ void GPU_SW_Backend::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 wi
 void GPU_SW_Backend::FlushRender() {}
 
 void GPU_SW_Backend::DrawingAreaChanged() {}
+
+GPU_SW_Backend::DrawLineFunction GPU_SW_Backend::GetDrawLineFunction(bool shading_enable, bool transparency_enable,
+                                                                     bool dithering_enable)
+{
+  static constexpr DrawLineFunction funcs[2][2][2] = {
+    {{&GPU_SW_Backend::DrawLine<false, false, false>, &GPU_SW_Backend::DrawLine<false, false, true>},
+     {&GPU_SW_Backend::DrawLine<false, true, false>, &GPU_SW_Backend::DrawLine<false, true, true>}},
+    {{&GPU_SW_Backend::DrawLine<true, false, false>, &GPU_SW_Backend::DrawLine<true, false, true>},
+     {&GPU_SW_Backend::DrawLine<true, true, false>, &GPU_SW_Backend::DrawLine<true, true, true>}}};
+
+  return funcs[u8(shading_enable)][u8(transparency_enable)][u8(dithering_enable)];
+}
+
+GPU_SW_Backend::DrawRectangleFunction
+GPU_SW_Backend::GetDrawRectangleFunction(bool texture_enable, bool raw_texture_enable, bool transparency_enable)
+{
+  static constexpr DrawRectangleFunction funcs[2][2][2] = {
+    {{&GPU_SW_Backend::DrawRectangle<false, false, false>, &GPU_SW_Backend::DrawRectangle<false, false, true>},
+     {&GPU_SW_Backend::DrawRectangle<false, false, false>, &GPU_SW_Backend::DrawRectangle<false, false, true>}},
+    {{&GPU_SW_Backend::DrawRectangle<true, false, false>, &GPU_SW_Backend::DrawRectangle<true, false, true>},
+     {&GPU_SW_Backend::DrawRectangle<true, true, false>, &GPU_SW_Backend::DrawRectangle<true, true, true>}}};
+
+  return funcs[u8(texture_enable)][u8(raw_texture_enable)][u8(transparency_enable)];
+}
+
+GPU_SW_Backend::DrawTriangleFunction GPU_SW_Backend::GetDrawTriangleFunction(bool shading_enable, bool texture_enable,
+                                                                             bool raw_texture_enable,
+                                                                             bool transparency_enable,
+                                                                             bool dithering_enable)
+{
+  static constexpr DrawTriangleFunction funcs[2][2][2][2][2] = {
+    {{{{&GPU_SW_Backend::DrawTriangle<false, false, false, false, false>,
+        &GPU_SW_Backend::DrawTriangle<false, false, false, false, true>},
+       {&GPU_SW_Backend::DrawTriangle<false, false, false, true, false>,
+        &GPU_SW_Backend::DrawTriangle<false, false, false, true, true>}},
+      {{&GPU_SW_Backend::DrawTriangle<false, false, false, false, false>,
+        &GPU_SW_Backend::DrawTriangle<false, false, false, false, false>},
+       {&GPU_SW_Backend::DrawTriangle<false, false, false, true, false>,
+        &GPU_SW_Backend::DrawTriangle<false, false, false, true, false>}}},
+     {{{&GPU_SW_Backend::DrawTriangle<false, true, false, false, false>,
+        &GPU_SW_Backend::DrawTriangle<false, true, false, false, true>},
+       {&GPU_SW_Backend::DrawTriangle<false, true, false, true, false>,
+        &GPU_SW_Backend::DrawTriangle<false, true, false, true, true>}},
+      {{&GPU_SW_Backend::DrawTriangle<false, true, true, false, false>,
+        &GPU_SW_Backend::DrawTriangle<false, true, true, false, false>},
+       {&GPU_SW_Backend::DrawTriangle<false, true, true, true, false>,
+        &GPU_SW_Backend::DrawTriangle<false, true, true, true, false>}}}},
+    {{{{&GPU_SW_Backend::DrawTriangle<true, false, false, false, false>,
+        &GPU_SW_Backend::DrawTriangle<true, false, false, false, true>},
+       {&GPU_SW_Backend::DrawTriangle<true, false, false, true, false>,
+        &GPU_SW_Backend::DrawTriangle<true, false, false, true, true>}},
+      {{&GPU_SW_Backend::DrawTriangle<true, false, false, false, false>,
+        &GPU_SW_Backend::DrawTriangle<true, false, false, false, false>},
+       {&GPU_SW_Backend::DrawTriangle<true, false, false, true, false>,
+        &GPU_SW_Backend::DrawTriangle<true, false, false, true, false>}}},
+     {{{&GPU_SW_Backend::DrawTriangle<true, true, false, false, false>,
+        &GPU_SW_Backend::DrawTriangle<true, true, false, false, true>},
+       {&GPU_SW_Backend::DrawTriangle<true, true, false, true, false>,
+        &GPU_SW_Backend::DrawTriangle<true, true, false, true, true>}},
+      {{&GPU_SW_Backend::DrawTriangle<true, true, true, false, false>,
+        &GPU_SW_Backend::DrawTriangle<true, true, true, false, false>},
+       {&GPU_SW_Backend::DrawTriangle<true, true, true, true, false>,
+        &GPU_SW_Backend::DrawTriangle<true, true, true, true, false>}}}}};
+
+  return funcs[u8(shading_enable)][u8(texture_enable)][u8(raw_texture_enable)][u8(transparency_enable)]
+              [u8(dithering_enable)];
+}

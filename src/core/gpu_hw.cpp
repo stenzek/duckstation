@@ -976,6 +976,10 @@ GPU_HW::VRAMFillUBOData GPU_HW::GetVRAMFillUBOData(u32 x, u32 y, u32 width, u32 
     color = VRAMRGBA5551ToRGBA8888(VRAMRGBA8888ToRGBA5551(color));
 
   VRAMFillUBOData uniforms;
+  uniforms.u_dst_x = (x % VRAM_WIDTH) * m_resolution_scale;
+  uniforms.u_dst_y = (y % VRAM_HEIGHT) * m_resolution_scale;
+  uniforms.u_end_x = ((x + width) % VRAM_WIDTH) * m_resolution_scale;
+  uniforms.u_end_y = ((y + height) % VRAM_HEIGHT) * m_resolution_scale;
   std::tie(uniforms.u_fill_color[0], uniforms.u_fill_color[1], uniforms.u_fill_color[2], uniforms.u_fill_color[3]) =
     RGBA8ToFloat(color);
 
@@ -1463,4 +1467,23 @@ void GPU_HW::DrawRendererStats(bool is_idle_frame)
     ImGui::Columns(1);
   }
 #endif
+}
+
+GPU_HW::ShaderCompileProgressTracker::ShaderCompileProgressTracker(std::string title, u32 total)
+  : m_title(std::move(title)), m_min_time(Common::Timer::ConvertSecondsToValue(1.0)),
+    m_update_interval(Common::Timer::ConvertSecondsToValue(0.1)), m_start_time(Common::Timer::GetValue()),
+    m_last_update_time(0), m_progress(0), m_total(total)
+{
+}
+
+void GPU_HW::ShaderCompileProgressTracker::Increment()
+{
+  m_progress++;
+
+  const u64 tv = Common::Timer::GetValue();
+  if ((tv - m_start_time) >= m_min_time && (tv - m_last_update_time) >= m_update_interval)
+  {
+    g_host_interface->DisplayLoadingScreen(m_title.c_str(), 0, static_cast<int>(m_total), static_cast<int>(m_progress));
+    m_last_update_time = tv;
+  }
 }

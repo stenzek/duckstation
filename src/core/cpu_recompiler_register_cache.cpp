@@ -280,6 +280,21 @@ Value RegisterCache::AllocateScratch(RegSize size, HostReg reg /* = HostReg_Inva
   return Value::FromScratch(this, reg, size);
 }
 
+void RegisterCache::ReserveCallerSavedRegisters()
+{
+  for (u32 reg = 0; reg < HostReg_Count; reg++)
+  {
+    if ((m_state.host_reg_state[reg] & (HostRegState::CalleeSaved | HostRegState::CalleeSavedAllocated)) ==
+        HostRegState::CalleeSaved)
+    {
+      DebugAssert(m_state.callee_saved_order_count < HostReg_Count);
+      m_code_generator.EmitPushHostReg(static_cast<HostReg>(reg), GetActiveCalleeSavedRegisterCount());
+      m_state.callee_saved_order[m_state.callee_saved_order_count++] = static_cast<HostReg>(reg);
+      m_state.host_reg_state[reg] |= HostRegState::CalleeSavedAllocated;
+    }
+  }
+}
+
 u32 RegisterCache::PushCallerSavedRegisters() const
 {
   u32 position = GetActiveCalleeSavedRegisterCount();

@@ -17,9 +17,9 @@
         <item>Recompilador (Mais rápido)</item>
     </string-array>
 	<string-array name="settings_cpu_execution_mode_values">
-        <item>Interpreter</item>
-        <item>CachedInterpreter</item>
-        <item>Recompiler</item>
+        <item>Interpretador</item>
+        <item>Interpretador Armazenado</item>
+        <item>Recompilador</item>
     </string-array>
     <string-array name="settings_cpu_fastmem_mode_entries">
         <item>Desabilitado (Lento)</item>
@@ -130,8 +130,8 @@
         <item>Controle Digital (Gamepad)</item>
         <item>Controle analógico (DualShock)</item>
         <item>Controle analógico</item>
-        <item>NeGcon</item>
-        <item>GunCon</item>
+        <item>Controle NeGcon</item>
+        <item>Controle GunCon</item>
     </string-array>
 	<string-array name="settings_controller_type_values">
         <item>Nenhum</item>
@@ -146,6 +146,8 @@
         <item>Compartilhada entre jogos</item>
         <item>Separado por jogo (Cód. do jogo)</item>
         <item>Separado Por jogo (Título do jogo)</item>
+        <item>Separate Card Per Game (File Title)</item>
+        <item>Non-Persistent (Do Not Save)</item>
     </string-array>
 	<string-array name="settings_memory_card_mode_values">
         <item>Nenhum</item>
@@ -279,7 +281,7 @@
         <item>8-ssaa</item>
     </string-array>
     <string-array name="settings_advanced_display_fps_limit_entries">
-        <item>Sem limite (Mostrar todos os quadros)</item>
+        <item>Sem limite</item>
         <item>10 FPS</item>
         <item>15 FPS</item>
         <item>30 FPS</item>
@@ -426,7 +428,7 @@
 	<string-array name="settings_language_values">
         <item>Nenhuma</item>
         <item>Inglês</item>
-        <item>Português Brasil</item>
+        <item>Português do Brasil</item>
         <item>Italiano</item>
         <item>Holandês</item>
         <item>Espanhol</item>
@@ -438,17 +440,17 @@
         <item>Escuro</item>
     </string-array>
 	<string-array name="settings_theme_values">
-        <item>mesmo do sistema</item>
+        <item>Padrão do sistema</item>
         <item>claro</item>
-        <item>escuro</item>
+        <item>Escuro</item>
     </string-array>
     <string-array name="settings_downsample_mode_entries">
-        <item>Desabilitado</item>
+        <item>Desativado</item>
 		<item>Misto (Reduz 3D / suaviza tudo)</item>
         <item>Adaptativo (Preserva o 3D / suaviza 2D)</item>
     </string-array>
 	<string-array name="settings_downsample_mode_values">
-        <item>Desabilitado</item>
+        <item>Desativado</item>
         <item>Misto (Reduz 3D / suaviza tudo)</item>
         <item>Adaptativo (Preserva o 3D / suaviza 2D)</item>
     </string-array>
@@ -457,8 +459,8 @@
 		<item>Ligado</item>
 	</string-array>
 	<string-array name="settings_boolean_values">
-        <item>desligado</item>
-        <item>ligado</item>
+        <item>Desligado</item>
+        <item>Ligado</item>
     </string-array>
 	<string-array name="settings_multitap_mode_entries">
         	<item>Desativado</item>
@@ -501,7 +503,7 @@
         <item>7</item>
     </string-array>
 	<string-array name="settings_cdrom_seek_speedup_entries">
-        <item>None (Normal Speed)</item>
+        <item>None (Velocidade Normal)</item>
         <item>Infinito/instantâneo</item>
         <item>2x</item>
         <item>3x</item>

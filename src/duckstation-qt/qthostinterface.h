@@ -90,6 +90,7 @@ public:
   ALWAYS_INLINE MainWindow* getMainWindow() const { return m_main_window; }
   void setMainWindow(MainWindow* window);
   HostDisplay* createHostDisplay();
+  void connectDisplaySignals(QtDisplayWidget* widget);
 
   void populateLoadStateMenu(const char* game_code, QMenu* menu);
   void populateSaveStateMenu(const char* game_code, QMenu* menu);
@@ -127,6 +128,7 @@ Q_SIGNALS:
   void messageReported(const QString& message);
   void debuggerMessageReported(const QString& message);
   bool messageConfirmed(const QString& message);
+  void settingsResetToDefault();
   void emulationStarting();
   void emulationStarted();
   void emulationStopped();
@@ -184,6 +186,7 @@ public Q_SLOTS:
   void requestRenderWindowScale(qreal scale);
   void executeOnEmulationThread(std::function<void()> callback, bool wait = false);
   void OnAchievementsRefreshed() override;
+  void OnDisplayInvalidated() override;
 
 private Q_SLOTS:
   void doStopThread();
@@ -213,6 +216,7 @@ protected:
                             const std::string& game_title) override;
 
   void SetDefaultSettings(SettingsInterface& si) override;
+  void SetDefaultSettings() override;
   void ApplySettings(bool display_osd_messages) override;
 
   void SetMouseMode(bool relative, bool hide_cursor) override;
@@ -266,7 +270,7 @@ private:
   void shutdownOnThread();
   void installTranslator();
   void renderDisplay();
-  void connectDisplaySignals(QtDisplayWidget* widget);
+  void checkRenderToMainState();
   void updateDisplayState();
   void queueSettingsSave();
   void wakeThread();

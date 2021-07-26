@@ -122,6 +122,8 @@ target_compile_definitions(core PUBLIC "-DWITH_IMGUI=1")
 
 if(WIN32)
   target_sources(core PRIVATE
+    gpu_hw_d3d12.cpp
+    gpu_hw_d3d12.h
     gpu_hw_d3d11.cpp
     gpu_hw_d3d11.h
   )

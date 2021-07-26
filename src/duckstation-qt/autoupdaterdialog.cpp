@@ -36,12 +36,12 @@ Log_SetChannel(AutoUpdaterDialog);
 
 #ifdef AUTO_UPDATER_SUPPORTED
 
-static constexpr char* LATEST_TAG_URL = "https://api.github.com/repos/stenzek/duckstation/tags";
-static constexpr char* LATEST_RELEASE_URL = "https://api.github.com/repos/stenzek/duckstation/releases/tags/%s";
-static constexpr char* CHANGES_URL = "https://api.github.com/repos/stenzek/duckstation/compare/%s...%s";
-static constexpr char* UPDATE_ASSET_FILENAME = SCM_RELEASE_ASSET;
-static constexpr char* UPDATE_TAGS[] = SCM_RELEASE_TAGS;
-static constexpr char* THIS_RELEASE_TAG = SCM_RELEASE_TAG;
+static const char* LATEST_TAG_URL = "https://api.github.com/repos/stenzek/duckstation/tags";
+static const char* LATEST_RELEASE_URL = "https://api.github.com/repos/stenzek/duckstation/releases/tags/%s";
+static const char* CHANGES_URL = "https://api.github.com/repos/stenzek/duckstation/compare/%s...%s";
+static const char* UPDATE_ASSET_FILENAME = SCM_RELEASE_ASSET;
+static const char* UPDATE_TAGS[] = SCM_RELEASE_TAGS;
+static const char* THIS_RELEASE_TAG = SCM_RELEASE_TAG;
 
 #endif
 

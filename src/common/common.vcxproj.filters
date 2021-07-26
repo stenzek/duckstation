@@ -113,6 +113,27 @@
     <ClInclude Include="error.h" />
     <ClInclude Include="platform.h" />
     <ClInclude Include="cue_parser.h" />
+    <ClInclude Include="d3d12\staging_texture.h">
+      <Filter>d3d12</Filter>
+    </ClInclude>
+    <ClInclude Include="d3d12\stream_buffer.h">
+      <Filter>d3d12</Filter>
+    </ClInclude>
+    <ClInclude Include="d3d12\texture.h">
+      <Filter>d3d12</Filter>
+    </ClInclude>
+    <ClInclude Include="d3d12\context.h">
+      <Filter>d3d12</Filter>
+    </ClInclude>
+    <ClInclude Include="d3d12\descriptor_heap_manager.h">
+      <Filter>d3d12</Filter>
+    </ClInclude>
+    <ClInclude Include="d3d12\util.h">
+      <Filter>d3d12</Filter>
+    </ClInclude>
+    <ClInclude Include="d3d12\shader_cache.h">
+      <Filter>d3d12</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="jit_code_buffer.cpp" />
@@ -221,6 +242,28 @@
     <ClCompile Include="window_info.cpp" />
     <ClCompile Include="cue_parser.cpp" />
     <ClCompile Include="cd_image_ppf.cpp" />
+    <ClCompile Include="d3d12\staging_texture.cpp">
+      <Filter>d3d12</Filter>
+    </ClCompile>
+    <ClCompile Include="d3d12\stream_buffer.cpp">
+      <Filter>d3d12</Filter>
+    </ClCompile>
+    <ClCompile Include="d3d12\texture.cpp">
+      <Filter>d3d12</Filter>
+    </ClCompile>
+    <ClCompile Include="d3d12\context.cpp">
+      <Filter>d3d12</Filter>
+    </ClCompile>
+    <ClCompile Include="d3d12\descriptor_heap_manager.cpp">
+      <Filter>d3d12</Filter>
+    </ClCompile>
+    <ClCompile Include="d3d12\util.cpp">
+      <Filter>d3d12</Filter>
+    </ClCompile>
+    <ClCompile Include="d3d12\shader_cache.cpp">
+      <Filter>d3d12</Filter>
+    </ClCompile>
+    <ClCompile Include="cd_image_device.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />
@@ -237,6 +280,9 @@
     </Filter>
     <Filter Include="thirdparty">
       <UniqueIdentifier>{fd4150b0-6f82-4251-ab23-34c25fbc5b5e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="d3d12">
+      <UniqueIdentifier>{358e11c4-34af-4169-9a66-ec66342a6a2f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

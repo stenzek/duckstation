@@ -2,6 +2,7 @@
 #include <array>
 #include <initializer_list>
 #include <utility>
+#include <vector>
 
 #include "common/jit_code_buffer.h"
 
@@ -25,6 +26,8 @@ public:
   static void AlignCodeBuffer(JitCodeBuffer* code_buffer);
 
   static bool BackpatchLoadStore(const LoadStoreBackpatchInfo& lbi);
+  static void BackpatchBranch(void* pc, u32 pc_size, void* target);
+  static void BackpatchReturn(void* pc, u32 pc_size);
 
   bool CompileBlock(CodeBlock* block, CodeBlock::HostCodePointer* out_host_code, u32* out_host_code_size);
 
@@ -34,8 +37,8 @@ public:
   //////////////////////////////////////////////////////////////////////////
   // Code Generation
   //////////////////////////////////////////////////////////////////////////
-  void EmitBeginBlock();
-  void EmitEndBlock();
+  void EmitBeginBlock(bool allocate_registers = true);
+  void EmitEndBlock(bool free_registers = true, bool emit_return = true);
   void EmitExceptionExit();
   void EmitExceptionExitOnBool(const Value& value);
   void FinalizeBlock(CodeBlock::HostCodePointer* out_host_code, u32* out_host_code_size);
@@ -71,6 +74,7 @@ public:
   void EmitMoveNextInterpreterLoadDelay();
   void EmitCancelInterpreterLoadDelayForReg(Reg reg);
   void EmitICacheCheckAndUpdate();
+  void EmitStallUntilGTEComplete();
   void EmitLoadCPUStructField(HostReg host_reg, RegSize size, u32 offset);
   void EmitStoreCPUStructField(u32 offset, const Value& value);
   void EmitAddCPUStructField(u32 offset, const Value& value);
@@ -104,6 +108,7 @@ public:
   void EmitConditionalBranch(Condition condition, bool invert, HostReg lhs, const Value& rhs, LabelType* label);
   void EmitConditionalBranch(Condition condition, bool invert, LabelType* label);
   void EmitBranchIfBitClear(HostReg reg, RegSize size, u8 bit, LabelType* label);
+  void EmitBranchIfBitSet(HostReg reg, RegSize size, u8 bit, LabelType* label);
   void EmitBindLabel(LabelType* label);
 
   u32 PrepareStackForCall();
@@ -200,10 +205,11 @@ private:
   void InstructionEpilogue(const CodeBlockInstruction& cbi);
   void TruncateBlockAtCurrentInstruction();
   void AddPendingCycles(bool commit);
+  void AddGTETicks(TickCount ticks);
+  void StallUntilGTEComplete();
 
   Value CalculatePC(u32 offset = 0);
   Value GetCurrentInstructionPC(u32 offset = 0);
-  void UpdateCurrentInstructionPC(bool commit);
   void WriteNewPC(const Value& value, bool commit);
 
   Value DoGTERegisterRead(u32 index);
@@ -244,9 +250,11 @@ private:
   CodeEmitter* m_emit;
 
   TickCount m_delayed_cycles_add = 0;
-  TickCount m_pc_offset = 0;
-  TickCount m_current_instruction_pc_offset = 0;
-  TickCount m_next_pc_offset = 0;
+  TickCount m_gte_done_cycle = 0;
+
+  u32 m_pc = 0;
+  bool m_pc_valid = false;
+  bool m_block_linked = false;
 
   // whether various flags need to be reset.
   bool m_current_instruction_in_branch_delay_slot_dirty = false;
@@ -254,6 +262,7 @@ private:
   bool m_current_instruction_was_branch_taken_dirty = false;
   bool m_load_delay_dirty = false;
   bool m_next_load_delay_dirty = false;
+  bool m_gte_busy_cycles_dirty = false;
 
   bool m_fastmem_load_base_in_register = false;
   bool m_fastmem_store_base_in_register = false;

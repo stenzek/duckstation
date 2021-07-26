@@ -146,12 +146,16 @@
         <item>Shared Between All Games</item>
         <item>Separate Card Per Game (Game Code)</item>
         <item>Separate Card Per Game (Game Title)</item>
+        <item>Separate Card Per Game (File Title)</item>
+        <item>Non-Persistent (Do Not Save)</item>
     </string-array>
     <string-array name="settings_memory_card_mode_values">
         <item>None</item>
         <item>Shared</item>
         <item>PerGame</item>
         <item>PerGameTitle</item>
+        <item>PerGameFileTitle</item>
+        <item>NonPersistent</item>
     </string-array>
     <string-array name="emulation_touchscreen_menu">
         <item>Change Type</item>
@@ -526,4 +530,75 @@
         <item>9</item>
         <item>10</item>
     </string-array>
+    <string-array name="settings_cdrom_readahead_entries">
+        <item>Disabled (Synchronous)</item>
+        <item>1 Sector (7 KB / 2 ms)</item>
+        <item>2 Sectors (13 KB / 4 ms)</item>
+        <item>3 Sectors (20 KB / 6 ms)</item>
+        <item>4 Sectors (27 KB / 8 ms)</item>
+        <item>5 Sectors (33 KB / 10 ms)</item>
+        <item>6 Sectors (40 KB / 12 ms)</item>
+        <item>7 Sectors (47 KB / 14 ms)</item>
+        <item>8 Sectors (53 KB / 16 ms)</item>
+        <item>9 Sectors (60 KB / 18 ms)</item>
+        <item>10 Sectors (67 KB / 20 ms)</item>
+        <item>11 Sectors (73 KB / 22 ms)</item>
+        <item>12 Sectors (80 KB / 24 ms)</item>
+        <item>13 Sectors (87 KB / 26 ms)</item>
+        <item>14 Sectors (93 KB / 28 ms)</item>
+        <item>15 Sectors (100 KB / 30 ms)</item>
+        <item>16 Sectors (107 KB / 32 ms)</item>
+        <item>17 Sectors (113 KB / 34 ms)</item>
+        <item>18 Sectors (120 KB / 36 ms)</item>
+        <item>19 Sectors (127 KB / 38 ms)</item>
+        <item>20 Sectors (133 KB / 40 ms)</item>
+        <item>21 Sectors (140 KB / 42 ms)</item>
+        <item>22 Sectors (147 KB / 44 ms)</item>
+        <item>23 Sectors (153 KB / 46 ms)</item>
+        <item>24 Sectors (160 KB / 48 ms)</item>
+        <item>25 Sectors (167 KB / 50 ms)</item>
+        <item>26 Sectors (173 KB / 52 ms)</item>
+        <item>27 Sectors (180 KB / 54 ms)</item>
+        <item>28 Sectors (187 KB / 56 ms)</item>
+        <item>29 Sectors (193 KB / 58 ms)</item>
+        <item>30 Sectors (200 KB / 60 ms)</item>
+        <item>31 Sectors (207 KB / 62 ms)</item>
+        <item>32 Sectors (213 KB / 64 ms)</item>
+    </string-array>
+    <string-array name="settings_cdrom_readahead_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
+        <item>10</item>
+        <item>11</item>
+        <item>12</item>
+        <item>13</item>
+        <item>14</item>
+        <item>15</item>
+        <item>16</item>
+        <item>17</item>
+        <item>18</item>
+        <item>19</item>
+        <item>20</item>
+        <item>21</item>
+        <item>22</item>
+        <item>23</item>
+        <item>24</item>
+        <item>25</item>
+        <item>26</item>
+        <item>27</item>
+        <item>28</item>
+        <item>29</item>
+        <item>30</item>
+        <item>31</item>
+        <item>32</item>
+    </string-array>
 </resources>
+

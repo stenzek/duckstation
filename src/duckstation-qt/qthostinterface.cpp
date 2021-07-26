@@ -42,6 +42,7 @@ Log_SetChannel(QtHostInterface);
 #ifdef _WIN32
 #include "common/windows_headers.h"
 #include "frontend-common/d3d11_host_display.h"
+#include "frontend-common/d3d12_host_display.h"
 #include <KnownFolders.h>
 #include <ShlObj.h>
 #endif
@@ -290,18 +291,15 @@ void QtHostInterface::setDefaultSettings()
     return;
   }
 
-  Settings old_settings(std::move(g_settings));
-  {
-    std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
-    SetDefaultSettings(*m_settings_interface.get());
-    m_settings_interface->Save();
+  SetDefaultSettings();
+}
 
-    CommonHostInterface::LoadSettings(*m_settings_interface.get());
-    CommonHostInterface::ApplyGameSettings(false);
-    CommonHostInterface::FixIncompatibleSettings(false);
-  }
-
-  CheckForSettingsChanges(old_settings);
+void QtHostInterface::SetDefaultSettings()
+{
+  CommonHostInterface::SetDefaultSettings();
+  checkRenderToMainState();
+  queueSettingsSave();
+  emit settingsResetToDefault();
 }
 
 void QtHostInterface::applySettings(bool display_osd_messages /* = false */)
@@ -318,7 +316,11 @@ void QtHostInterface::applySettings(bool display_osd_messages /* = false */)
 void QtHostInterface::ApplySettings(bool display_osd_messages)
 {
   CommonHostInterface::ApplySettings(display_osd_messages);
+  checkRenderToMainState();
+}
 
+void QtHostInterface::checkRenderToMainState()
+{
   // detect when render-to-main flag changes
   if (!System::IsShutdown())
   {
@@ -576,7 +578,6 @@ bool QtHostInterface::AcquireHostDisplay()
     return false;
   }
 
-  connectDisplaySignals(display_widget);
   m_is_exclusive_fullscreen = m_display->IsFullscreen();
   return true;
 }
@@ -597,6 +598,10 @@ HostDisplay* QtHostInterface::createHostDisplay()
       break;
 
 #ifdef _WIN32
+    case GPURenderer::HardwareD3D12:
+      m_display = std::make_unique<FrontendCommon::D3D12HostDisplay>();
+      break;
+
     case GPURenderer::HardwareD3D11:
     default:
       m_display = std::make_unique<FrontendCommon::D3D11HostDisplay>();
@@ -635,7 +640,6 @@ void QtHostInterface::updateDisplayState()
   if (!display_widget || !m_display->MakeRenderContextCurrent())
     Panic("Failed to make device context current after updating");
 
-  connectDisplaySignals(display_widget);
   m_is_exclusive_fullscreen = m_display->IsFullscreen();
 
   OnHostDisplayResized();
@@ -1316,8 +1320,6 @@ void QtHostInterface::loadState(const QString& filename)
     emit emulationStarting();
 
   LoadState(filename.toStdString().c_str());
-  if (System::IsValid())
-    renderDisplay();
 }
 
 void QtHostInterface::loadState(bool global, qint32 slot)
@@ -1329,8 +1331,6 @@ void QtHostInterface::loadState(bool global, qint32 slot)
   }
 
   LoadState(global, slot);
-  if (System::IsValid())
-    renderDisplay();
 }
 
 void QtHostInterface::saveState(const QString& filename, bool block_until_done /* = false */)
@@ -1527,6 +1527,12 @@ void QtHostInterface::OnAchievementsRefreshed()
                           Cheevos::GetMaximumPointsForGame());
 #endif
 }
+
+void QtHostInterface::OnDisplayInvalidated()
+{
+  renderDisplay();
+}
+
 void QtHostInterface::doBackgroundControllerPoll()
 {
   PollAndUpdate();

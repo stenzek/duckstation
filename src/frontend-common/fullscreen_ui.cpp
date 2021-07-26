@@ -1304,8 +1304,8 @@ void DrawSettingsWindow()
 
     static constexpr std::array<const char*, static_cast<u32>(SettingsPage::Count)> titles = {
       {"Interface Settings", "Game List Settings", "Console Settings", "Emulation Settings", "BIOS Settings",
-       "Controller Settings", "Hotkey Settings", "Memory Card Settings", "Display Settings", "Audio Settings",
-       "Enhancement Settings", "Achievements Settings", "Advanced Settings"}};
+       "Controller Settings", "Hotkey Settings", "Memory Card Settings", "Display Settings", "Enhancement Settings",
+       "Audio Settings", "Achievements Settings", "Advanced Settings"}};
 
     BeginNavBar();
 
@@ -1588,10 +1588,16 @@ void DrawSettingsWindow()
                            });
         }
 
-        settings_changed |= ToggleButton(
-          "Enable Read Thread",
-          "Reduces hitches in emulation by reading/decompressing CD data asynchronously on a worker thread.",
-          &s_settings_copy.cdrom_read_thread);
+        s32 readahead_sectors = s_settings_copy.cdrom_readahead_sectors;
+        if (RangeButton(
+              "Readahead Sectors",
+              "Reduces hitches in emulation by reading/decompressing CD data asynchronously on a worker thread.",
+              &readahead_sectors, 0, 32, 1))
+        {
+          s_settings_copy.cdrom_readahead_sectors = static_cast<u8>(readahead_sectors);
+          settings_changed = true;
+        }
+
         settings_changed |=
           ToggleButton("Enable Region Check", "Simulates the region check present in original, unmodified consoles.",
                        &s_settings_copy.cdrom_region_check);
@@ -2074,6 +2080,7 @@ void DrawSettingsWindow()
           fullscreen_mode_set = true;
         }
 
+#ifndef _UWP
         if (MenuButtonWithValue("Fullscreen Resolution", "Selects the resolution to use in fullscreen modes.",
                                 fullscreen_mode.empty() ? "Borderless Fullscreen" : fullscreen_mode.c_str()))
         {
@@ -2100,6 +2107,7 @@ void DrawSettingsWindow()
           };
           OpenChoiceDialog(ICON_FA_TV "  Fullscreen Resolution", false, std::move(options), std::move(callback));
         }
+#endif
 
         switch (s_settings_copy.gpu_renderer)
         {
@@ -2580,6 +2588,10 @@ void DrawSettingsWindow()
         settings_changed |= ToggleButton("Enable Recompiler Memory Exceptions",
                                          "Enables alignment and bus exceptions. Not needed for any known games.",
                                          &s_settings_copy.cpu_recompiler_memory_exceptions);
+        settings_changed |= ToggleButton(
+          "Enable Recompiler Block Linking",
+          "Performance enhancement - jumps directly between blocks instead of returning to the dispatcher.",
+          &s_settings_copy.cpu_recompiler_block_linking);
         settings_changed |= EnumChoiceButton("Recompiler Fast Memory Access",
                                              "Avoids calls to C++ code, significantly speeding up the recompiler.",
                                              &s_settings_copy.cpu_fastmem_mode, &Settings::GetCPUFastmemModeDisplayName,
@@ -2779,6 +2791,7 @@ void InitializeSaveStateListEntry(SaveStateListEntry* li, CommonHostInterface::E
   li->summary =
     StringUtil::StdStringFromFormat("%s - Saved %s", ssi->game_code.c_str(),
                                     Timestamp::FromUnixTimestamp(ssi->timestamp).ToString("%c").GetCharArray());
+
   li->slot = ssi->slot;
   li->global = ssi->global;
   li->path = std::move(ssi->path);
@@ -2805,6 +2818,19 @@ void InitializeSaveStateListEntry(SaveStateListEntry* li, CommonHostInterface::E
 void PopulateSaveStateListEntries()
 {
   s_save_state_selector_slots.clear();
+
+  if (s_save_state_selector_loading)
+  {
+    std::optional<CommonHostInterface::ExtendedSaveStateInfo> ssi = s_host_interface->GetUndoSaveStateInfo();
+    if (ssi)
+    {
+      SaveStateListEntry li;
+      InitializeSaveStateListEntry(&li, &ssi.value());
+      li.title = "Undo Load State";
+      li.summary = "Restores the state of the system prior to the last state loaded.";
+      s_save_state_selector_slots.push_back(std::move(li));
+    }
+  }
 
   if (!System::GetRunningCode().empty())
   {
@@ -3019,7 +3045,11 @@ void DrawSaveStateSelector(bool is_loading, bool fullscreen)
       {
         const std::string& path = entry.path;
         s_host_interface->RunLater([path]() {
-          s_host_interface->LoadState(path.c_str());
+          if (path.empty())
+            s_host_interface->UndoLoadState();
+          else
+            s_host_interface->LoadState(path.c_str());
+
           CloseSaveStateSelector();
         });
       }
@@ -3876,6 +3906,8 @@ void DrawDebugSettingsMenu()
 
   settings_changed |=
     ImGui::MenuItem("Recompiler Memory Exceptions", nullptr, &s_settings_copy.cpu_recompiler_memory_exceptions);
+  settings_changed |=
+    ImGui::MenuItem("Recompiler Block Linking", nullptr, &s_settings_copy.cpu_recompiler_block_linking);
   if (ImGui::BeginMenu("Recompiler Fastmem"))
   {
     for (u32 i = 0; i < static_cast<u32>(CPUFastmemMode::Count); i++)
@@ -4474,7 +4506,6 @@ static void DrawLeaderboardEntry(const Cheevos::LeaderboardEntry& lbEntry, float
   if (!visible)
     return;
 
-  const float spacing = LayoutScale(10.0f);
   const float midpoint = bb.Min.y + g_large_font->FontSize + LayoutScale(4.0f);
   float text_start_x = bb.Min.x + LayoutScale(15.0f);
   SmallString text;
@@ -4780,6 +4811,7 @@ bool SetControllerNavInput(FrontendCommon::ControllerNavigationButton button, bo
   if (!HasActiveWindow())
     return false;
 
+#if 0
   // This is a bit hacky..
   ImGuiIO& io = ImGui::GetIO();
 
@@ -4789,10 +4821,11 @@ bool SetControllerNavInput(FrontendCommon::ControllerNavigationButton button, bo
     io.KeysDown[io.KeyMap[imkey]] = value;                                                                             \
   }
 
-  // MAP_KEY(FrontendCommon::ControllerNavigationButton::LeftTrigger, ImGuiKey_PageUp);
-  // MAP_KEY(FrontendCommon::ControllerNavigationButton::RightTrigger, ImGuiKey_PageDown);
+  MAP_KEY(FrontendCommon::ControllerNavigationButton::LeftTrigger, ImGuiKey_PageUp);
+  MAP_KEY(FrontendCommon::ControllerNavigationButton::RightTrigger, ImGuiKey_PageDown);
 
 #undef MAP_KEY
+#endif
 
   return true;
 }

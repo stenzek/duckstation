@@ -80,7 +80,7 @@
 	<string name="settings_summary_osd_show_vps">Показывать количество кадров (синхронизаций) в секунду в правом верхнем углу экрана.</string>
 	<string name="settings_cdrom_read_speedup">Ускорение чтения CD-ROM</string>
 	<string name="settings_summary_cdrom_read_speedup">Повышает скорость считывания диска на заданный множитель. Применяется только в режиме чтения с удвоенной скоростью и не учитывается при воспроизведении аудио. Ускоряет загрузки в некоторых играх, но может приводить к ошибкам.</string>
-	<string name="settings_summary_console_fast_boot">Пропускать заставку BIOS, загружаясь прямо в игру. Как правило, не влияет на стабильность.</string>
+	<string name="settings_summary_console_fast_boot">Пропускать заставку BIOS, загружаясь прямо в игру.</string>
 	<string name="settings_msaa">Мультисэмплинг</string>
 	<string name="settings_true_color">Рендеринг в True Color (24-бита, без дизеринга)</string>
 	<string name="settings_summary_true_color">Обеспечивает более качественные градиенты, но меняет отображение некоторых цветов. Отключение опции также включает дизеринг. Совместимо с большинством игр.</string>
@@ -127,7 +127,7 @@
 	<string name="android_progress_callback_no">Нет</string>
 	<string name="emulation_activity_error">Ошибка</string>
 	<string name="emulation_activity_ok">OK</string>
-	<string name="emulation_activity_import_patch_codes">Импорт чит-кодов...</string>
+	<string name="emulation_activity_import_patch_codes">Импорт</string>
 	<string name="emulation_activity_patch_on">(ВКЛ)</string>
 	<string name="emulation_activity_patch_off">(ВЫКЛ)</string>
 	<string name="emulation_activity_choose_patch_code_file">Выберите файл с чит-кодами</string>
@@ -229,7 +229,7 @@
         <string name="action_show_game_grid">Вид сетки</string>
         <string name="settings_touch_gliding">Скольжение касаний</string>
         <string name="settings_summary_touch_gliding">Позволяет нажимать комбинации кнопок скольжением пальца по экрану.</string>
-	<string name="menu_game_list_entry_game_properties">Свойства</string>
+	<string name="menu_game_list_entry_game_properties">Настройки игры</string>
 	<string name="emulation_activity_change_disc_select_new_file">Выбрать файл...</string>
 	<string name="settings_achievements_enable">Включить достижения</string>
     	<string name="settings_summary_achievements_enable">Если опция включена и выполнен вход в учётную запись, DuckStation будет искать достижения при запуске игр.</string>
@@ -309,7 +309,7 @@
 	<string name="memory_card_editor_import_card_read_failed">Не удалось прочитать \'%s\'.</string>
 	<string name="memory_card_editor_import_card_failed">Не удалось импортировать карту \'%s\'. Возможно, формат не поддерживается.</string>
 	<string name="memory_card_editor_import_card_success">Карта \'%s\' импортирована.</string>
-	<string name="menu_game_list_entry_choose_cover_image">Обложка</string>
+	<string name="menu_game_list_entry_choose_cover_image">Выбор обложки</string>
 	<string name="controller_settings_vibration_unsupported">Данное устройство не поддерживает вибрацию.</string>
 	<string name="controller_settings_automatic_mapping">Выполнить автонастройку</string>
 	<string name="controller_settings_summary_automatic_mapping">Попытаться автоматически привязать все кнопки/оси для подключенного устройства.</string>
@@ -358,8 +358,6 @@
     	<string name="controller_settings_auto_fire_n_frequency">Частота/интервал турбо %d</string>
     	<string name="controller_binding_auto_fire_n">Турбо %d</string>
 	<string name="settings_category_cdrom">Настройки CD-ROM</string>
-        <string name="settings_cdrom_read_thread">Производить чтение в потоке (асинхронно)</string>
-        <string name="settings_summary_read_thread">Уменьшает задержки в эмуляции с помощью асинхронного чтения/распаковки данных диска в рабочем потоке.</string>
         <string name="settings_cdrom_load_image_patches">Применять патчи к образам</string>
         <string name="settings_summary_load_image_patches">Автоматически применять патчи к образам дисков при их наличии. В настоящее время поддерживается только формат PPF.</string>
         <string name="menu_edit_game_directories_force_saf">Вкл. Scoped Storage</string>
@@ -369,4 +367,25 @@
     	<string name="memory_card_editor_undelete_success">Восстановлено сохранение \'%s\'.</string>
     	<string name="memory_card_editor_undelete_failed">Не удалось восстановить сохранение \'%s\'. Данные могли быть частично перезаписаны.</string>
     	<string name="memory_card_editor_permanently_delete_confirm">Действительно удалить сохранение \'%s\' без возможности восстановления? Данное действие нельзя отменить.</string>
+    	<string name="settings_cdrom_readahead">Асинхронное упреждающее чтение</string>
+    	<string name="settings_category_rewinding">Настройки перемотки</string>
+    	<string name="settings_rewind_enable">Включить перемотку</string>
+    	<string name="settings_summary_rewind_enable">Активирует возможность перемотки с помощью экранной кнопки или горячей клавиши. Не используйте на слабых устройствах из-за высоких системных требований.</string>
+    	<string name="settings_rewind_save_frequency">Частота сохранений</string>
+    	<string name="settings_summary_rewind_save_frequency">Временной интервал, с которым будут создаваться сохранения для перемотки.</string>
+    	<string name="settings_rewind_save_count">Число сохранений</string>
+    	<string name="settings_summary_rewind_save_count">Количество сохранений (или кадров), которые будут храниться для перемотки.</string>
+    	<string name="emulation_activity_add_patch_code">Добавить</string>
+    	<string name="emulation_activity_patch_code_warning">Чит-коды могут приводить к зависаниям, вызывать искажения графики и повреждать сохранения. Активируя чит-коды, вы соглашаетесь с тем, что используете неподдерживаемую конфигурацию и не сможете получить помощь в случае проблем с игрой.\n\nНекоторые коды остаются в сохранениях даже после их отключения. Пожалуйста, перезагрузите игру после отключения чит-кодов.\n\nПродолжить?</string>
+    	<string name="emulation_activity_patch_code_warning_dont_ask_again">Не спрашивать снова</string>
+    	<string name="add_patch_code_empty">Название и содержание кода не могут быть пустыми.</string>
+    	<string name="add_patch_code_success">Чит-код \'%s\' добавлен.</string>
+    	<string name="add_patch_code_failure">Не удалось добавить чит-код. Возможно, код неправильный или код с таким именем уже существует.</string>
+    	<string name="add_patch_code_help_text">Введите ниже чит-код (обычно в виде ряда чисел) в формате Gameshark или укажите файл для импорта чит-кодов.</string>
+    	<string name="add_patch_code_code_name">Название</string>
+    	<string name="add_patch_code_code_body">Содержание</string>
+    	<string name="add_patch_code_import_from_file">Импорт из файла</string>
+    	<string name="add_patch_code_cancel">Отмена</string>
+    	<string name="add_patch_code_add">Добавить</string>
+	<string name="menu_game_list_entry_create_launcher_shortcut">Создать ярлык</string>
 </resources>

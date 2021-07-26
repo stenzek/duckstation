@@ -16,8 +16,10 @@ DuckStation é um emulador do console da Sony Playstation 1, com foco na jogabil
 Um arquivo de "BIOS" é obrigátorio para inicar o emulador para que os jogos iniciem. Você pode usar qualquer arquivo de diversas regiões de consoles, embora regiões de jogo diferentes e regiões de BIOS possam ter problemas de compatibilidade entre si. O arquivo de BIOS não pode ser compartilhado junto com o emulador de forma nenhuma por questões legais, você deve fazer o processo chamado de 'dump' ou despejo do arquivo do seu próprio console; usando o Caetla ou outros meios disponíveis.
 
 ## Últimas Notícias
-As mais antigas estão disponíveis em: https://github.com/stenzek/duckstation/blob/master/NEWS.md
+Notícias mais antigas estão disponíveis em: https://github.com/stenzek/duckstation/blob/master/NEWS.md
 
+- 2021/07/11: Adicionardo porte do emulador para UWP/Xbox. Siga as instruções para a plataforma universal do Windows ou para Xbox One S|X.
+- 2021/07/10: Renderizador de hardware Direct3D12 adicionado. Suavização de  imagem ou pós-processamento não incluído (feito tendo em vista mais o uso com Xbox).
 - 2021/06/25: Agora é possível recuperar arquivos do editor de cartão de memória adicionado.
 - 2021/06/22: Adicionado número de conquistas para RetroAchievements (Ex:.Conquistas 10/25).
 - 2021/06/19: Adicionados placares para RetroAchievements.

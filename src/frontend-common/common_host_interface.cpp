@@ -22,7 +22,6 @@
 #include "core/system.h"
 #include "core/texture_replacements.h"
 #include "core/timers.h"
-#include "cubeb_audio_stream.h"
 #include "fullscreen_ui.h"
 #include "game_list.h"
 #include "icon.h"
@@ -39,6 +38,10 @@
 #include <cstring>
 #include <ctime>
 
+#ifndef _UWP
+#include "cubeb_audio_stream.h"
+#endif
+
 #ifdef WITH_SDL2
 #include "sdl_audio_stream.h"
 #endif
@@ -53,6 +56,7 @@
 
 #ifdef _WIN32
 #include "common/windows_headers.h"
+#include "xaudio2_audio_stream.h"
 #include <KnownFolders.h>
 #include <ShlObj.h>
 #include <mmsystem.h>
@@ -172,6 +176,11 @@ void CommonHostInterface::InitializeUserDirectory()
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("screenshots").c_str(), false);
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("shaders").c_str(), false);
   result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("textures").c_str(), false);
+
+  // Games directory for UWP because it's a pain to create them manually.
+#ifdef _UWP
+  result &= FileSystem::CreateDirectory(GetUserDirectoryRelativePath("games").c_str(), false);
+#endif
 
   if (!result)
     ReportError("Failed to create one or more user directories. This may cause issues at runtime.");
@@ -636,8 +645,10 @@ std::unique_ptr<AudioStream> CommonHostInterface::CreateAudioStream(AudioBackend
     case AudioBackend::Null:
       return AudioStream::CreateNullAudioStream();
 
+#ifndef _UWP
     case AudioBackend::Cubeb:
       return CubebAudioStream::Create();
+#endif
 
 #ifdef _WIN32
     case AudioBackend::XAudio2:
@@ -735,14 +746,14 @@ bool CommonHostInterface::SaveUndoLoadState()
     m_undo_load_state.reset();
 
   m_undo_load_state = ByteStream_CreateGrowableMemoryStream(nullptr, System::MAX_SAVE_STATE_SIZE);
-  if (!System::SaveState(m_undo_load_state.get(), 0))
+  if (!System::SaveState(m_undo_load_state.get()))
   {
     AddOSDMessage(TranslateStdString("OSDMessage", "Failed to save undo load state."), 15.0f);
     m_undo_load_state.reset();
     return false;
   }
 
-  Log_InfoPrintf("Saved undo load state: % " PRIu64 " bytes", m_undo_load_state->GetSize());
+  Log_InfoPrintf("Saved undo load state: %" PRIu64 " bytes", m_undo_load_state->GetSize());
   return true;
 }
 
@@ -925,7 +936,7 @@ void CommonHostInterface::UpdateSpeedLimiterState()
     Log_InfoPrintf("Audio input sample rate: %u hz", input_sample_rate);
 
     m_audio_stream->SetInputSampleRate(input_sample_rate);
-    m_audio_stream->SetWaitForBufferFill(!m_display_all_frames);
+    m_audio_stream->SetWaitForBufferFill(true);
 
     if (g_settings.audio_fast_forward_volume != g_settings.audio_output_volume)
       m_audio_stream->SetOutputVolume(GetAudioOutputVolume());
@@ -997,7 +1008,7 @@ void CommonHostInterface::SetUserDirectory()
   }
   else
   {
-#if defined(_WIN32)
+#if defined(_WIN32) && !defined(_UWP)
     // On Windows, use My Documents\DuckStation.
     PWSTR documents_directory;
     if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_Documents, 0, NULL, &documents_directory)))
@@ -1999,6 +2010,12 @@ bool CommonHostInterface::AddRumbleToInputMap(const std::string& binding, u32 co
   return false;
 }
 
+static void DisplayHotkeyBlockedByChallengeModeMessage()
+{
+  g_host_interface->AddOSDMessage(g_host_interface->TranslateStdString(
+    "OSDMessage", "Hotkey unavailable because achievements hardcore mode is active."));
+}
+
 void CommonHostInterface::SetFastForwardEnabled(bool enabled)
 {
   if (!System::IsValid())
@@ -2023,6 +2040,33 @@ void CommonHostInterface::SetTurboEnabled(bool enabled)
                 2.0f);
 }
 
+void CommonHostInterface::SetRewindState(bool enabled)
+{
+  if (!System::IsValid())
+    return;
+
+  if (!IsCheevosChallengeModeActive())
+  {
+    if (!g_settings.rewind_enable)
+    {
+      if (enabled)
+        AddOSDMessage(TranslateStdString("OSDMessage", "Rewinding is not enabled."), 5.0f);
+
+      return;
+    }
+
+    AddOSDMessage(enabled ? TranslateStdString("OSDMessage", "Rewinding...") :
+                            TranslateStdString("OSDMessage", "Stopped rewinding."),
+                  5.0f);
+    System::SetRewinding(enabled);
+    UpdateSpeedLimiterState();
+  }
+  else
+  {
+    DisplayHotkeyBlockedByChallengeModeMessage();
+  }
+}
+
 void CommonHostInterface::RegisterHotkeys()
 {
   RegisterGeneralHotkeys();
@@ -2030,12 +2074,6 @@ void CommonHostInterface::RegisterHotkeys()
   RegisterGraphicsHotkeys();
   RegisterSaveStateHotkeys();
   RegisterAudioHotkeys();
-}
-
-static void DisplayHotkeyBlockedByChallengeModeMessage()
-{
-  g_host_interface->AddOSDMessage(g_host_interface->TranslateStdString(
-    "OSDMessage", "Hotkey unavailable because achievements hardcore mode is active."));
 }
 
 void CommonHostInterface::RegisterGeneralHotkeys()
@@ -2178,25 +2216,12 @@ void CommonHostInterface::RegisterSystemHotkeys()
                        DisplayHotkeyBlockedByChallengeModeMessage();
                    }
                  });
+#endif
 
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "System")), StaticString("Rewind"),
-                 StaticString(TRANSLATABLE("Hotkeys", "Rewind")), [this](bool pressed) {
-                   if (System::IsValid())
-                   {
-                     if (!IsCheevosChallengeModeActive())
-                     {
-                       AddOSDMessage(pressed ? TranslateStdString("OSDMessage", "Rewinding...") :
-                                               TranslateStdString("OSDMessage", "Stopped rewinding."),
-                                     5.0f);
-                       System::SetRewinding(pressed);
-                     }
-                     else
-                     {
-                       DisplayHotkeyBlockedByChallengeModeMessage();
-                     }
-                   }
-                 });
+                 StaticString(TRANSLATABLE("Hotkeys", "Rewind")), [this](bool pressed) { SetRewindState(pressed); });
 
+#ifndef __ANDROID__
   RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "System")), StaticString("ToggleCheats"),
                  StaticString(TRANSLATABLE("Hotkeys", "Toggle Cheats")), [this](bool pressed) {
                    if (pressed && System::IsValid())
@@ -2825,30 +2850,13 @@ std::optional<CommonHostInterface::SaveStateInfo> CommonHostInterface::GetSaveSt
 }
 
 std::optional<CommonHostInterface::ExtendedSaveStateInfo>
-CommonHostInterface::GetExtendedSaveStateInfo(const char* game_code, s32 slot)
+CommonHostInterface::GetExtendedSaveStateInfo(ByteStream* stream)
 {
-  const bool global = (!game_code || game_code[0] == 0);
-  std::string path = global ? GetGlobalSaveStateFileName(slot) : GetGameSaveStateFileName(game_code, slot);
-
-  FILESYSTEM_STAT_DATA sd;
-  if (!FileSystem::StatFile(path.c_str(), &sd))
-    return std::nullopt;
-
-  std::unique_ptr<ByteStream> stream =
-    FileSystem::OpenFile(path.c_str(), BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_SEEKABLE);
-  if (!stream)
-    return std::nullopt;
-
   SAVE_STATE_HEADER header;
   if (!stream->Read(&header, sizeof(header)) || header.magic != SAVE_STATE_MAGIC)
     return std::nullopt;
 
   ExtendedSaveStateInfo ssi;
-  ssi.path = std::move(path);
-  ssi.timestamp = sd.ModificationTime.AsUnixTimestamp();
-  ssi.slot = slot;
-  ssi.global = global;
-
   if (header.version < SAVE_STATE_MINIMUM_VERSION || header.version > SAVE_STATE_VERSION)
   {
     ssi.title = StringUtil::StdStringFromFormat(
@@ -2885,6 +2893,53 @@ CommonHostInterface::GetExtendedSaveStateInfo(const char* game_code, s32 slot)
     else
     {
       decltype(ssi.screenshot_data)().swap(ssi.screenshot_data);
+    }
+  }
+
+  return ssi;
+}
+
+std::optional<CommonHostInterface::ExtendedSaveStateInfo>
+CommonHostInterface::GetExtendedSaveStateInfo(const char* game_code, s32 slot)
+{
+  const bool global = (!game_code || game_code[0] == 0);
+  std::string path = global ? GetGlobalSaveStateFileName(slot) : GetGameSaveStateFileName(game_code, slot);
+
+  FILESYSTEM_STAT_DATA sd;
+  if (!FileSystem::StatFile(path.c_str(), &sd))
+    return std::nullopt;
+
+  std::unique_ptr<ByteStream> stream =
+    FileSystem::OpenFile(path.c_str(), BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_SEEKABLE);
+  if (!stream)
+    return std::nullopt;
+
+  std::optional<ExtendedSaveStateInfo> ssi = GetExtendedSaveStateInfo(stream.get());
+  if (!ssi)
+    return std::nullopt;
+
+  ssi->path = std::move(path);
+  ssi->timestamp = sd.ModificationTime.AsUnixTimestamp();
+  ssi->slot = slot;
+  ssi->global = global;
+
+  return ssi;
+}
+
+std::optional<CommonHostInterface::ExtendedSaveStateInfo> CommonHostInterface::GetUndoSaveStateInfo()
+{
+  std::optional<ExtendedSaveStateInfo> ssi;
+  if (m_undo_load_state)
+  {
+    m_undo_load_state->SeekAbsolute(0);
+    ssi = GetExtendedSaveStateInfo(m_undo_load_state.get());
+    m_undo_load_state->SeekAbsolute(0);
+
+    if (ssi)
+    {
+      ssi->timestamp = 0;
+      ssi->slot = 0;
+      ssi->global = false;
     }
   }
 
@@ -3104,6 +3159,21 @@ void CommonHostInterface::ApplySettings(bool display_osd_messages)
   CheckForSettingsChanges(old_settings);
 }
 
+void CommonHostInterface::SetDefaultSettings()
+{
+  Settings old_settings(std::move(g_settings));
+  {
+    std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
+    SetDefaultSettings(*m_settings_interface.get());
+
+    LoadSettings(*m_settings_interface.get());
+    ApplyGameSettings(true);
+    FixIncompatibleSettings(true);
+  }
+
+  CheckForSettingsChanges(old_settings);
+}
+
 void CommonHostInterface::UpdateInputMap()
 {
   std::lock_guard<std::recursive_mutex> lock(m_settings_mutex);
@@ -3206,7 +3276,7 @@ void CommonHostInterface::SetTimerResolutionIncreased(bool enabled)
 
   m_timer_resolution_increased = enabled;
 
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(_UWP)
   if (enabled)
     timeBeginPeriod(1);
   else
@@ -3544,9 +3614,13 @@ bool CommonHostInterface::LoadCheatList(const char* filename)
     return false;
   }
 
-  AddOSDMessage(TranslateStdString("OSDMessage", "Loaded %n cheats from list.", "", cl->GetCodeCount()) +
-                  TranslateStdString("OSDMessage", " %n cheats are enabled.", "", cl->GetEnabledCodeCount()),
-                10.0f);
+  if (cl->GetEnabledCodeCount() > 0)
+  {
+    AddOSDMessage(TranslateStdString("OSDMessage", "%n cheats are enabled. This may result in instability.", "",
+                                     cl->GetEnabledCodeCount()),
+                  30.0f);
+  }
+
   System::SetCheatList(std::move(cl));
   return true;
 }
@@ -3572,7 +3646,7 @@ bool CommonHostInterface::LoadCheatListFromDatabase()
   if (!cl->LoadFromPackage(System::GetRunningCode()))
     return false;
 
-  AddOSDMessage(TranslateStdString("OSDMessage", "Loaded %n cheats from database.", "", cl->GetCodeCount()), 10.0f);
+  Log_InfoPrintf("Loaded %u cheats from database.", cl->GetCodeCount());
   System::SetCheatList(std::move(cl));
   return true;
 }

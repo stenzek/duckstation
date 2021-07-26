@@ -7,7 +7,7 @@
 Log_SetChannel(ShaderGen);
 
 ShaderGen::ShaderGen(HostDisplay::RenderAPI render_api, bool supports_dual_source_blend)
-  : m_render_api(render_api), m_glsl(render_api != HostDisplay::RenderAPI::D3D11),
+  : m_render_api(render_api), m_glsl(render_api != HostDisplay::RenderAPI::D3D11 && render_api != HostDisplay::RenderAPI::D3D12),
     m_supports_dual_source_blend(supports_dual_source_blend), m_use_glsl_interface_blocks(false)
 {
   if (m_glsl)
@@ -133,6 +133,7 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
   DefineMacro(ss, "API_OPENGL", m_render_api == HostDisplay::RenderAPI::OpenGL);
   DefineMacro(ss, "API_OPENGL_ES", m_render_api == HostDisplay::RenderAPI::OpenGLES);
   DefineMacro(ss, "API_D3D11", m_render_api == HostDisplay::RenderAPI::D3D11);
+  DefineMacro(ss, "API_D3D12", m_render_api == HostDisplay::RenderAPI::D3D12);
   DefineMacro(ss, "API_VULKAN", m_render_api == HostDisplay::RenderAPI::Vulkan);
 
   if (m_render_api == HostDisplay::RenderAPI::OpenGLES)
@@ -172,6 +173,10 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
 
     ss << "#define CONSTANT const\n";
     ss << "#define GLOBAL\n";
+    ss << "#define FOR_UNROLL for\n";
+    ss << "#define FOR_LOOP for\n";
+    ss << "#define IF_BRANCH if\n";
+    ss << "#define IF_FLATTEN if\n";
     ss << "#define VECTOR_EQ(a, b) ((a) == (b))\n";
     ss << "#define VECTOR_NEQ(a, b) ((a) != (b))\n";
     ss << "#define VECTOR_COMP_EQ(a, b) equal((a), (b))\n";
@@ -213,6 +218,10 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
     ss << "#define mat4 float4x4\n";
     ss << "#define CONSTANT static const\n";
     ss << "#define GLOBAL static\n";
+    ss << "#define FOR_UNROLL [unroll] for\n";
+    ss << "#define FOR_LOOP [loop] for\n";
+    ss << "#define IF_BRANCH [branch] if\n";
+    ss << "#define IF_FLATTEN [flatten] if\n";
     ss << "#define VECTOR_EQ(a, b) (all((a) == (b)))\n";
     ss << "#define VECTOR_NEQ(a, b) (any((a) != (b)))\n";
     ss << "#define VECTOR_COMP_EQ(a, b) ((a) == (b))\n";

@@ -51,10 +51,14 @@ if(WIN32)
   target_sources(frontend-common PRIVATE
     d3d11_host_display.cpp
     d3d11_host_display.h
+    d3d12_host_display.cpp
+    d3d12_host_display.h
     dinput_controller_interface.cpp
     dinput_controller_interface.h
     imgui_impl_dx11.cpp
     imgui_impl_dx11.h
+    imgui_impl_dx12.cpp
+    imgui_impl_dx12.h
     xaudio2_audio_stream.cpp
     xaudio2_audio_stream.h
     xinput_controller_interface.cpp

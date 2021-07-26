@@ -40,3 +40,8 @@ __pycache__
 
 # other repos
 /dep/mac
+/android
+
+# UWP crap
+Generated Files
+/packages

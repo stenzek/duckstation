@@ -75,6 +75,8 @@
         <item>Gedeeld Tussen Alle Spellen</item>
         <item>Aparte Kaart Per Spel (Spelcode)</item>
         <item>Aparte Kaart Per Spel (Speltitel)</item>
+        <item>Separate Card Per Game (File Title)</item>
+        <item>Non-Persistent (Do Not Save)</item>
     </string-array>
     <string-array name="settings_cdrom_read_speedup_entries">
         <item>Geen (Dubbele Snelheid)</item>

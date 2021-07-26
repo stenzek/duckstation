@@ -1,3 +1,9 @@
+- 2021/07/25: Ability to boot games directly from CD-ROM added. You may want to reduce the readahead size to reduce hitches on seek/loading.
+- 2021/07/11: UWP/Xbox one port added. Follow the instructions in "Universal Windows Platform / Xbox One" below.
+- 2021/07/10: Direct3D 12 hardware renderer added. It does not support downsampling or postprocessing (was mainly intended for Xbox).
+- 2021/06/25: Ability to undelete files from memory card editor added.
+- 2021/06/22: Measured achievements for RetroAchievements added.
+- 2021/06/19: Leaderboards for RetroAchievements added.
 - 2021/06/01: Auto loading/applying of PPF patches added.
 - 2021/05/23: Save RAM (srm) support added to libretro core.
 - 2021/05/23: CD-ROM seek speedup enhancement added.

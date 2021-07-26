@@ -166,31 +166,42 @@ Value CodeGenerator::GetValueInHostOrScratchRegister(const Value& value, bool al
   return new_value;
 }
 
-void CodeGenerator::EmitBeginBlock()
+void CodeGenerator::EmitBeginBlock(bool allocate_registers /* = true */)
 {
   m_emit->sub(a32::sp, a32::sp, FUNCTION_STACK_SIZE);
 
-  // Save the link register, since we'll be calling functions.
-  const bool link_reg_allocated = m_register_cache.AllocateHostReg(14);
-  DebugAssert(link_reg_allocated);
-  UNREFERENCED_VARIABLE(link_reg_allocated);
-  m_register_cache.AssumeCalleeSavedRegistersAreSaved();
+  if (allocate_registers)
+  {
+    // Save the link register, since we'll be calling functions.
+    const bool link_reg_allocated = m_register_cache.AllocateHostReg(14);
+    DebugAssert(link_reg_allocated);
+    UNREFERENCED_VARIABLE(link_reg_allocated);
+    m_register_cache.AssumeCalleeSavedRegistersAreSaved();
 
-  // Store the CPU struct pointer. TODO: make this better.
-  const bool cpu_reg_allocated = m_register_cache.AllocateHostReg(RCPUPTR);
-  // m_emit->Mov(GetCPUPtrReg(), reinterpret_cast<uintptr_t>(&g_state));
-  DebugAssert(cpu_reg_allocated);
-  UNREFERENCED_VARIABLE(cpu_reg_allocated);
+    // Store the CPU struct pointer. TODO: make this better.
+    const bool cpu_reg_allocated = m_register_cache.AllocateHostReg(RCPUPTR);
+    // m_emit->Mov(GetCPUPtrReg(), reinterpret_cast<uintptr_t>(&g_state));
+    DebugAssert(cpu_reg_allocated);
+    UNREFERENCED_VARIABLE(cpu_reg_allocated);
+  }
 }
 
-void CodeGenerator::EmitEndBlock()
+void CodeGenerator::EmitEndBlock(bool free_registers /* = true */, bool emit_return /* = true */)
 {
-  m_register_cache.FreeHostReg(RCPUPTR);
-  m_register_cache.PopCalleeSavedRegisters(true);
+  if (free_registers)
+  {
+    m_register_cache.FreeHostReg(RCPUPTR);
+    m_register_cache.FreeHostReg(14);
+    m_register_cache.PopCalleeSavedRegisters(true);
+  }
 
   m_emit->add(a32::sp, a32::sp, FUNCTION_STACK_SIZE);
-  // m_emit->b(GetPCDisplacement(GetCurrentCodePointer(), s_dispatcher_return_address));
-  m_emit->bx(a32::lr);
+
+  if (emit_return)
+  {
+    // m_emit->b(GetPCDisplacement(GetCurrentCodePointer(), s_dispatcher_return_address));
+    m_emit->bx(a32::lr);
+  }
 }
 
 void CodeGenerator::EmitExceptionExit()
@@ -1572,6 +1583,49 @@ bool CodeGenerator::BackpatchLoadStore(const LoadStoreBackpatchInfo& lbi)
   return true;
 }
 
+void CodeGenerator::BackpatchReturn(void* pc, u32 pc_size)
+{
+  Log_ProfilePrintf("Backpatching %p to return", pc);
+
+  vixl::aarch32::MacroAssembler emit(static_cast<vixl::byte*>(pc), pc_size, a32::A32);
+  emit.bx(a32::lr);
+
+  const s32 nops = (static_cast<s32>(pc_size) - static_cast<s32>(emit.GetCursorOffset())) / 4;
+  Assert(nops >= 0);
+  for (s32 i = 0; i < nops; i++)
+    emit.nop();
+
+  JitCodeBuffer::FlushInstructionCache(pc, pc_size);
+}
+
+void CodeGenerator::BackpatchBranch(void* pc, u32 pc_size, void* target)
+{
+  Log_ProfilePrintf("Backpatching %p to %p [branch]", pc, target);
+
+  vixl::aarch32::MacroAssembler emit(static_cast<vixl::byte*>(pc), pc_size, a32::A32);
+
+  // check jump distance
+  const s32 displacement = GetPCDisplacement(pc, target);
+  if (!IsPCDisplacementInImmediateRange(displacement))
+  {
+    emit.Mov(GetHostReg32(RSCRATCH), reinterpret_cast<uintptr_t>(target));
+    emit.bx(GetHostReg32(RSCRATCH));
+  }
+  else
+  {
+    a32::Label label(displacement + emit.GetCursorOffset());
+    emit.b(&label);
+  }
+
+  // shouldn't have any nops
+  const s32 nops = (static_cast<s32>(pc_size) - static_cast<s32>(emit.GetCursorOffset())) / 4;
+  Assert(nops >= 0);
+  for (s32 i = 0; i < nops; i++)
+    emit.nop();
+
+  JitCodeBuffer::FlushInstructionCache(pc, pc_size);
+}
+
 void CodeGenerator::EmitLoadGlobal(HostReg host_reg, RegSize size, const void* ptr)
 {
   EmitLoadGlobalAddress(RSCRATCH, ptr);
@@ -1693,6 +1747,66 @@ void CodeGenerator::EmitCancelInterpreterLoadDelayForReg(Reg reg)
   m_emit->strb(GetHostReg8(temp), load_delay_reg);
 
   m_emit->Bind(&skip_cancel);
+}
+
+void CodeGenerator::EmitICacheCheckAndUpdate()
+{
+  if (GetSegmentForAddress(m_pc) >= Segment::KSEG1)
+  {
+    EmitAddCPUStructField(offsetof(State, pending_ticks), Value::FromConstantU32(static_cast<u32>(m_block->uncached_fetch_ticks)));
+  }
+  else
+  {
+    const auto& ticks_reg = a32::r0;
+    const auto& current_tag_reg = a32::r1;
+    const auto& existing_tag_reg = a32::r2;
+
+    VirtualMemoryAddress current_pc = m_pc & ICACHE_TAG_ADDRESS_MASK;
+    m_emit->ldr(ticks_reg, a32::MemOperand(GetCPUPtrReg(), offsetof(State, pending_ticks)));
+    m_emit->Mov(current_tag_reg, current_pc);
+
+    for (u32 i = 0; i < m_block->icache_line_count; i++, current_pc += ICACHE_LINE_SIZE)
+    {
+      const TickCount fill_ticks = GetICacheFillTicks(current_pc);
+      if (fill_ticks <= 0)
+        continue;
+
+      const u32 line = GetICacheLine(current_pc);
+      const u32 offset = offsetof(State, icache_tags) + (line * sizeof(u32));
+
+      a32::Label cache_hit;
+      m_emit->ldr(existing_tag_reg, a32::MemOperand(GetCPUPtrReg(), offset));
+      m_emit->cmp(existing_tag_reg, current_tag_reg);
+      m_emit->B(a32::eq, &cache_hit);
+
+      m_emit->str(current_tag_reg, a32::MemOperand(GetCPUPtrReg(), offset));
+      EmitAdd(0, 0, Value::FromConstantU32(static_cast<u32>(fill_ticks)), false);
+      m_emit->Bind(&cache_hit);
+
+      if (i != (m_block->icache_line_count - 1))
+        m_emit->add(current_tag_reg, current_tag_reg, ICACHE_LINE_SIZE);
+    }
+
+    m_emit->str(ticks_reg, a32::MemOperand(GetCPUPtrReg(), offsetof(State, pending_ticks)));
+  }
+}
+
+void CodeGenerator::EmitStallUntilGTEComplete()
+{
+  static_assert(offsetof(State, pending_ticks) + sizeof(u32) == offsetof(State, gte_completion_tick));
+
+  m_emit->ldr(GetHostReg32(RARG1), a32::MemOperand(GetCPUPtrReg(), offsetof(State, pending_ticks)));
+  m_emit->ldr(GetHostReg32(RARG2), a32::MemOperand(GetCPUPtrReg(), offsetof(State, gte_completion_tick)));
+
+  if (m_delayed_cycles_add > 0)
+  {
+    m_emit->Add(GetHostReg32(RARG1), GetHostReg32(RARG1), static_cast<u32>(m_delayed_cycles_add));
+    m_delayed_cycles_add = 0;
+  }
+
+  m_emit->cmp(GetHostReg32(RARG2), GetHostReg32(RARG1));
+  m_emit->mov(a32::hi, GetHostReg32(RARG1), GetHostReg32(RARG2));
+  m_emit->str(GetHostReg32(RARG1), a32::MemOperand(GetCPUPtrReg(), offsetof(State, pending_ticks)));
 }
 
 void CodeGenerator::EmitBranch(const void* address, bool allow_scratch)
@@ -2010,29 +2124,15 @@ CodeCache::DispatcherFunction CodeGenerator::CompileDispatcher()
 
   // time to lookup the block
   // r0 <- pc
-  m_emit->Mov(a32::r3, Bus::BIOS_BASE);
   m_emit->ldr(a32::r0, a32::MemOperand(GetHostReg32(RCPUPTR), offsetof(State, regs.pc)));
 
-  // current_instruction_pc <- pc (eax)
-  m_emit->str(a32::r0, a32::MemOperand(GetHostReg32(RCPUPTR), offsetof(State, current_instruction_pc)));
+  // r1 <- s_fast_map[pc >> 16]
+  EmitLoadGlobalAddress(2, CodeCache::GetFastMapPointer());
+  m_emit->lsr(a32::r1, a32::r0, 16);
+  m_emit->ldr(a32::r1, a32::MemOperand(a32::r2, a32::r1, a32::LSL, 2));
 
-  // r1 <- (pc & RAM_MASK) >> 2
-  m_emit->and_(a32::r1, a32::r0, Bus::g_ram_mask);
-  m_emit->lsr(a32::r1, a32::r1, 2);
-
-  // r2 <- ((pc & BIOS_MASK) >> 2) + FAST_MAP_RAM_SLOT_COUNT
-  m_emit->and_(a32::r2, a32::r0, Bus::BIOS_MASK);
-  m_emit->lsr(a32::r2, a32::r2, 2);
-  m_emit->add(a32::r2, a32::r2, FAST_MAP_RAM_SLOT_COUNT);
-
-  // if ((r0 (pc) & PHYSICAL_MEMORY_ADDRESS_MASK) >= BIOS_BASE) { use r2 as index }
-  m_emit->and_(a32::r0, a32::r0, PHYSICAL_MEMORY_ADDRESS_MASK);
-  m_emit->cmp(a32::r0, a32::r3);
-  m_emit->mov(a32::ge, a32::r1, a32::r2);
-
-  // ebx contains our index, rax <- fast_map[ebx * 8], rax(), continue
-  EmitLoadGlobalAddress(0, CodeCache::GetFastMapPointer());
-  m_emit->ldr(a32::r0, a32::MemOperand(a32::r0, a32::r1, a32::LSL, 2));
+  // blr(r1[pc]) (fast_map[pc >> 2])
+  m_emit->ldr(a32::r0, a32::MemOperand(a32::r1, a32::r0));
   m_emit->blx(a32::r0);
 
   // end while

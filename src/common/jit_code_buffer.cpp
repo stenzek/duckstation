@@ -44,7 +44,21 @@ bool JitCodeBuffer::Allocate(u32 size /* = 64 * 1024 * 1024 */, u32 far_code_siz
   m_total_size = size + far_code_size;
 
 #if defined(_WIN32)
+#if !defined(_UWP)
   m_code_ptr = static_cast<u8*>(VirtualAlloc(nullptr, m_total_size, MEM_COMMIT, PAGE_EXECUTE_READWRITE));
+#else
+  m_code_ptr = static_cast<u8*>(
+    VirtualAlloc2FromApp(GetCurrentProcess(), nullptr, m_total_size, MEM_COMMIT, PAGE_READWRITE, nullptr, 0));
+  if (m_code_ptr)
+  {
+    ULONG old_protection;
+    if (!VirtualProtectFromApp(m_code_ptr, m_total_size, PAGE_EXECUTE_READWRITE, &old_protection))
+    {
+      VirtualFree(m_code_ptr, m_total_size, MEM_RELEASE);
+      return false;
+    }
+  }
+#endif
   if (!m_code_ptr)
   {
     Log_ErrorPrintf("VirtualAlloc(RWX, %u) for internal buffer failed: %u", m_total_size, GetLastError());
@@ -157,20 +171,48 @@ void JitCodeBuffer::Destroy()
   if (m_owns_buffer)
   {
 #if defined(_WIN32)
-    VirtualFree(m_code_ptr, 0, MEM_RELEASE);
+    if (!VirtualFree(m_code_ptr, 0, MEM_RELEASE))
+      Log_ErrorPrintf("Failed to free code pointer %p", m_code_ptr);
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__) || defined(__HAIKU__) || defined(__FreeBSD__)
-    munmap(m_code_ptr, m_total_size);
+    if (munmap(m_code_ptr, m_total_size) != 0)
+      Log_ErrorPrintf("Failed to free code pointer %p", m_code_ptr);
 #endif
   }
   else if (m_code_ptr)
   {
 #if defined(_WIN32)
     DWORD old_protect = 0;
-    VirtualProtect(m_code_ptr, m_total_size, m_old_protection, &old_protect);
+    if (!VirtualProtect(m_code_ptr, m_total_size, m_old_protection, &old_protect))
+      Log_ErrorPrintf("Failed to restore protection on %p", m_code_ptr);
 #else
-    mprotect(m_code_ptr, m_total_size, m_old_protection);
+    if (mprotect(m_code_ptr, m_total_size, m_old_protection) != 0)
+      Log_ErrorPrintf("Failed to restore protection on %p", m_code_ptr);
 #endif
   }
+
+  m_code_ptr = nullptr;
+  m_free_code_ptr = nullptr;
+  m_code_size = 0;
+  m_code_reserve_size = 0;
+  m_code_used = 0;
+  m_far_code_ptr = nullptr;
+  m_free_far_code_ptr = nullptr;
+  m_far_code_size = 0;
+  m_far_code_used = 0;
+  m_total_size = 0;
+  m_guard_size = 0;
+  m_old_protection = 0;
+  m_owns_buffer = false;
+}
+
+void JitCodeBuffer::ReserveCode(u32 size)
+{
+  Assert(m_code_used == 0);
+  Assert(size < m_code_size);
+
+  m_code_reserve_size += size;
+  m_free_code_ptr += size;
+  m_code_size -= size;
 }
 
 void JitCodeBuffer::CommitCode(u32 length)
@@ -207,7 +249,7 @@ void JitCodeBuffer::Reset()
 {
   WriteProtect(false);
 
-  m_free_code_ptr = m_code_ptr + m_guard_size;
+  m_free_code_ptr = m_code_ptr + m_guard_size + m_code_reserve_size;
   m_code_used = 0;
   std::memset(m_free_code_ptr, 0, m_code_size);
   FlushInstructionCache(m_free_code_ptr, m_code_size);
