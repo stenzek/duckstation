@@ -851,7 +851,7 @@ void InvalidateBlocksWithPageIndex(u32 page_index)
       const u32 frame_diff = frame_number - block->invalidate_frame_number;
       if (frame_diff <= INVALIDATE_THRESHOLD_TO_DISABLE_LINKING)
       {
-        Log_PerfPrintf("Block 0x%08X has been invalidated in %u frames, disabling linking", block->GetPC(), frame_diff);
+        Log_DevPrintf("Block 0x%08X has been invalidated in %u frames, disabling linking", block->GetPC(), frame_diff);
         block->can_link = false;
       }
       else
