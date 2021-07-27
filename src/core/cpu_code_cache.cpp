@@ -21,6 +21,7 @@ static constexpr bool USE_BLOCK_LINKING = true;
 // Fall blocks back to interpreter if we recompile more than 20 times within 100 frames.
 static constexpr u32 RECOMPILE_FRAMES_TO_FALL_BACK_TO_INTERPRETER = 100;
 static constexpr u32 RECOMPILE_COUNT_TO_FALL_BACK_TO_INTERPRETER = 20;
+static constexpr u32 INVALIDATE_THRESHOLD_TO_DISABLE_LINKING = 10;
 
 #ifdef WITH_RECOMPILER
 
@@ -38,7 +39,6 @@ static constexpr u32 RECOMPILER_CODE_CACHE_SIZE = 32 * 1024 * 1024;
 static constexpr u32 RECOMPILER_FAR_CODE_CACHE_SIZE = 16 * 1024 * 1024;
 #endif
 static constexpr u32 CODE_WRITE_FAULT_THRESHOLD_FOR_SLOWMEM = 10;
-static constexpr u32 INVALIDATE_THRESHOLD_TO_DISABLE_LINKING = 10;
 
 #ifdef USE_STATIC_CODE_BUFFER
 static constexpr u32 RECOMPILER_GUARD_SIZE = 4096;
@@ -939,6 +939,7 @@ void LinkBlock(CodeBlock* from, CodeBlock* to, void* host_pc, void* host_resolve
   li.block = from;
   to->link_predecessors.push_back(li);
 
+#ifdef WITH_RECOMPILER
   // apply in code
   if (host_pc)
   {
@@ -947,6 +948,7 @@ void LinkBlock(CodeBlock* from, CodeBlock* to, void* host_pc, void* host_resolve
     Recompiler::CodeGenerator::BackpatchBranch(host_pc, host_pc_size, reinterpret_cast<void*>(to->host_code));
     s_code_buffer.WriteProtect(true);
   }
+#endif
 }
 
 void UnlinkBlock(CodeBlock* block)
@@ -965,12 +967,14 @@ void UnlinkBlock(CodeBlock* block)
                              [block](const CodeBlock::LinkInfo& li) { return li.block == block; });
     Assert(iter != li.block->link_successors.end());
 
+#ifdef WITH_RECOMPILER
     // Restore blocks linked to this block back to the resolver
     if (li.host_pc)
     {
       Log_ProfilePrintf("Backpatching %p(%08x) [predecessor] to jump to resolver", li.host_pc, li.block->GetPC());
       Recompiler::CodeGenerator::BackpatchBranch(li.host_pc, li.host_pc_size, li.host_resolve_pc);
     }
+#endif
 
     li.block->link_successors.erase(iter);
   }
@@ -982,6 +986,7 @@ void UnlinkBlock(CodeBlock* block)
                              [block](const CodeBlock::LinkInfo& li) { return li.block == block; });
     Assert(iter != li.block->link_predecessors.end());
 
+#ifdef WITH_RECOMPILER
     // Restore blocks we're linking to back to the resolver, since the successor won't be linked to us to backpatch if
     // it changes.
     if (li.host_pc)
@@ -989,6 +994,7 @@ void UnlinkBlock(CodeBlock* block)
       Log_ProfilePrintf("Backpatching %p(%08x) [successor] to jump to resolver", li.host_pc, li.block->GetPC());
       Recompiler::CodeGenerator::BackpatchBranch(li.host_pc, li.host_pc_size, li.host_resolve_pc);
     }
+#endif
 
     // Don't have to do anything special for successors - just let the successor know it's no longer linked.
     li.block->link_predecessors.erase(iter);
