@@ -7967,7 +7967,7 @@ Tem certeza de que deseja continuar?</translation>
     <message>
         <location filename="../../core/host_interface.cpp" line="411"/>
         <source>Loading state from &apos;%s&apos;...</source>
-        <translation>Carregando estado em &apos;%s&apos;...</translation>
+        <translation>Estado carregado de &apos;%s&apos;...</translation>
     </message>
     <message>
         <location filename="../../core/host_interface.cpp" line="417"/>
