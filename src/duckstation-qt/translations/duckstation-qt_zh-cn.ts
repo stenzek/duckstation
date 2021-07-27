@@ -2240,7 +2240,7 @@ Login token generated on %2.</source>
     <message>
         <location filename="../consolesettingswidget.cpp" line="75"/>
         <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles. Games have to use a larger heap size for this additional RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used with compatible mods.</source>
-        <translation>启用额外的6MB内存，以获得2+6=8MB的总内存，通常出现在开发控制台。游戏必须使用更大的堆大小来开启额外的RAM。依赖于内存镜像的标题可能会中断，所以它应当只被用在可兼容mods中。</translation>
+        <translation>启用额外的6MB内存，以获得总共2+6=8MB内存，通常用在开发操纵台。若要开启这些额外的内存，则游戏必须使用更大的堆大小。依赖于内存镜像的标题可能会中断，所以它应当只被用在可兼容mods。</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="79"/>
