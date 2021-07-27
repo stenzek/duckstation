@@ -6429,7 +6429,7 @@ Cheats persist through save states even after being disabled, please remember to
 Are you sure you want to continue?</source>
         <translation>Die Verwendung von Cheats kann unvorhersehbare Auswirkungen auf Spiele haben und zu Abstürzen, Grafikfehlern und beschädigten Spielständen führen. Durch die Verwendung des Cheat-Managers erklärst du dich damit einverstanden, dass es sich um eine nicht unterstützte Konfiguration handelt - wir werden dir bei Spielproblemen keine Hilfe leisten.
 
-Cheats bleiben auch nach der Deaktivierung in den Speicherständen erhalten. Bitte denke daran, das Spiel nach der Deaktivierung aller Codes zurückzusetzen/neu zu starten.
+Cheats bleiben auch nach der Deaktivierung in den Spielständen erhalten. Bitte denke daran, das Spiel nach der Deaktivierung aller Codes zurückzusetzen/neu zu starten.
 
 Bist du dir sicher, fortzufahren?</translation>
     </message>
