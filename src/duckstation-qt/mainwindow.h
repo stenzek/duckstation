@@ -146,6 +146,7 @@ private:
   void updateDebugMenuCPUExecutionMode();
   void updateDebugMenuGPURenderer();
   void updateDebugMenuCropMode();
+  void ensureGameListLoaded();
 
   Ui::MainWindow m_ui;
 

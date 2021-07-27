@@ -464,15 +464,6 @@ void MainWindow::onRunningGameChanged(const QString& filename, const QString& ga
   if (m_display_widget)
     m_display_widget->setWindowTitle(windowTitle());
 
-  bool has_game_list_entry = false;
-  if (!filename.isEmpty())
-  {
-    const GameListEntry* entry = m_host_interface->getGameList()->GetEntryForPath(filename.toStdString().c_str());
-    has_game_list_entry = (entry != nullptr);
-  }
-
-  m_ui.actionViewGameProperties->setEnabled(has_game_list_entry);
-
   m_running_game_code = game_code.toStdString();
 }
 
@@ -663,9 +654,16 @@ void MainWindow::onViewGamePropertiesActionTriggered()
   if (path.empty())
     return;
 
+  ensureGameListLoaded();
+
   const GameListEntry* entry = m_host_interface->getGameList()->GetEntryForPath(path.c_str());
   if (!entry)
+  {
+    QMessageBox::critical(this, tr("DuckStation"),
+                          tr("Could not find a game list entry for the currently running file. Please make sure this "
+                             "file is in a location scanned by the game list."));
     return;
+  }
 
   GamePropertiesDialog::showForEntry(m_host_interface, entry, this);
 }
@@ -961,6 +959,7 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool cheevo
   m_ui.menuWindowSize->setDisabled(starting || !running);
 
   m_ui.actionFullscreen->setDisabled(starting || !running);
+  m_ui.actionViewGameProperties->setDisabled(starting || !running);
 
   m_ui.actionLoadState->setDisabled(cheevos_challenge_mode);
   m_ui.menuLoadState->setDisabled(cheevos_challenge_mode);
@@ -1536,6 +1535,21 @@ void MainWindow::updateDebugMenuCropMode()
     if (action)
       action->setChecked(action->text() == current_crop_mode_display_name);
   }
+}
+
+void MainWindow::ensureGameListLoaded()
+{
+  if (m_host_interface->getGameList()->IsGameListLoaded())
+    return;
+
+  const bool was_running = System::IsRunning();
+  if (m_emulation_running)
+    m_host_interface->pauseSystem(true, true);
+
+  m_host_interface->refreshGameList();
+
+  if (!was_running)
+    m_host_interface->pauseSystem(false, false);
 }
 
 void MainWindow::closeEvent(QCloseEvent* event)
