@@ -504,22 +504,24 @@ void MainWindow::onStartFileActionTriggered()
   m_host_interface->bootSystem(std::make_shared<SystemBootParameters>(filename.toStdString()));
 }
 
-void MainWindow::onStartDiscActionTriggered()
+std::string MainWindow::getDeviceDiscPath(const QString& title)
 {
+  std::string ret;
+
   const auto devices = CDImage::GetDeviceList();
   if (devices.empty())
   {
-    QMessageBox::critical(this, tr("Start Disc"),
+    QMessageBox::critical(this, title,
                           tr("Could not find any CD-ROM devices. Please ensure you have a CD-ROM drive connected and "
                              "sufficient permissions to access it."));
-    return;
+    return ret;
   }
 
   // if there's only one, select it automatically
   if (devices.size() == 1)
   {
-    m_host_interface->bootSystem(std::make_shared<SystemBootParameters>(std::move(devices.front().first)));
-    return;
+    ret = std::move(devices.front().first);
+    return ret;
   }
 
   QStringList input_options;
@@ -527,19 +529,30 @@ void MainWindow::onStartDiscActionTriggered()
     input_options.append(tr("%1 (%2)").arg(QString::fromStdString(name)).arg(QString::fromStdString(path)));
 
   QInputDialog input_dialog(this);
+  input_dialog.setWindowTitle(title);
   input_dialog.setLabelText(tr("Select disc drive:"));
   input_dialog.setInputMode(QInputDialog::TextInput);
   input_dialog.setOptions(QInputDialog::UseListViewForComboBoxItems);
   input_dialog.setComboBoxEditable(false);
   input_dialog.setComboBoxItems(std::move(input_options));
   if (input_dialog.exec() == 0)
-    return;
+    return ret;
 
   const int selected_index = input_dialog.comboBoxItems().indexOf(input_dialog.textValue());
   if (selected_index < 0 || static_cast<u32>(selected_index) >= devices.size())
+    return ret;
+
+  ret = std::move(devices[selected_index].first);
+  return ret;
+}
+
+void MainWindow::onStartDiscActionTriggered()
+{
+  std::string path(getDeviceDiscPath(tr("Start Disc")));
+  if (path.empty())
     return;
 
-  m_host_interface->bootSystem(std::make_shared<SystemBootParameters>(std::move(devices[selected_index].first)));
+  m_host_interface->bootSystem(std::make_shared<SystemBootParameters>(std::move(path)));
 }
 
 void MainWindow::onStartBIOSActionTriggered()
@@ -561,6 +574,15 @@ void MainWindow::onChangeDiscFromGameListActionTriggered()
 {
   m_host_interface->pauseSystem(true);
   switchToGameListView();
+}
+
+void MainWindow::onChangeDiscFromDeviceActionTriggered()
+{
+  std::string path(getDeviceDiscPath(tr("Change Disc")));
+  if (path.empty())
+    return;
+
+  m_host_interface->changeDisc(QString::fromStdString(path));
 }
 
 void MainWindow::onChangeDiscMenuAboutToShow()
@@ -1080,6 +1102,8 @@ void MainWindow::connectSignals()
           &QtHostInterface::resumeSystemFromMostRecentState);
   connect(m_ui.actionChangeDisc, &QAction::triggered, [this] { m_ui.menuChangeDisc->exec(QCursor::pos()); });
   connect(m_ui.actionChangeDiscFromFile, &QAction::triggered, this, &MainWindow::onChangeDiscFromFileActionTriggered);
+  connect(m_ui.actionChangeDiscFromDevice, &QAction::triggered, this,
+          &MainWindow::onChangeDiscFromDeviceActionTriggered);
   connect(m_ui.actionChangeDiscFromGameList, &QAction::triggered, this,
           &MainWindow::onChangeDiscFromGameListActionTriggered);
   connect(m_ui.menuChangeDisc, &QMenu::aboutToShow, this, &MainWindow::onChangeDiscMenuAboutToShow);

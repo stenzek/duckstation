@@ -82,6 +82,7 @@ private Q_SLOTS:
   void onStartBIOSActionTriggered();
   void onChangeDiscFromFileActionTriggered();
   void onChangeDiscFromGameListActionTriggered();
+  void onChangeDiscFromDeviceActionTriggered();
   void onChangeDiscMenuAboutToShow();
   void onChangeDiscMenuAboutToHide();
   void onLoadStateMenuAboutToShow();
@@ -147,6 +148,7 @@ private:
   void updateDebugMenuGPURenderer();
   void updateDebugMenuCropMode();
   void ensureGameListLoaded();
+  std::string getDeviceDiscPath(const QString& title);
 
   Ui::MainWindow m_ui;
 
