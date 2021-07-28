@@ -3228,7 +3228,8 @@ void CommonHostInterface::CheckForSettingsChanges(const Settings& old_settings)
 
   if (g_settings.log_level != old_settings.log_level || g_settings.log_filter != old_settings.log_filter ||
       g_settings.log_to_console != old_settings.log_to_console ||
-      g_settings.log_to_window != old_settings.log_to_window || g_settings.log_to_file != old_settings.log_to_file)
+      g_settings.log_to_debug != old_settings.log_to_debug || g_settings.log_to_window != old_settings.log_to_window ||
+      g_settings.log_to_file != old_settings.log_to_file)
   {
     UpdateLogSettings(g_settings.log_level, g_settings.log_filter.empty() ? nullptr : g_settings.log_filter.c_str(),
                       g_settings.log_to_console, g_settings.log_to_debug, g_settings.log_to_window,
