@@ -51,7 +51,7 @@ void DescriptorHeapManager::Destroy()
   m_free_slots.clear();
 }
 
-bool DescriptorHeapManager::Allocate(DescriptorHandle* handle)
+bool DescriptorHeapManager::Allocate(DescriptorHandle* handle, u32 count /* = 1 */)
 {
   // Start past the temporary slots, no point in searching those.
   for (u32 group = 0; group < m_free_slots.size(); group++)
@@ -64,11 +64,22 @@ bool DescriptorHeapManager::Allocate(DescriptorHandle* handle)
     for (; bit < BITSET_SIZE; bit++)
     {
       if (bs[bit])
-        break;
+      {
+        u32 offset;
+        for (offset = 0; offset < count; offset++)
+        {
+          if (!bs[bit + offset])
+            break;
+        }
+
+        if (offset == count)
+          break;
+      }
     }
 
     u32 index = group * BITSET_SIZE + bit;
-    bs[bit] = false;
+    for (u32 offset = 0; offset < count; offset++)
+      bs[bit + offset] = false;
 
     handle->index = index;
     handle->cpu_handle.ptr = m_heap_base_cpu.ptr + index * m_descriptor_increment_size;
@@ -80,21 +91,24 @@ bool DescriptorHeapManager::Allocate(DescriptorHandle* handle)
   return false;
 }
 
-void DescriptorHeapManager::Free(u32 index)
+void DescriptorHeapManager::Free(u32 index, u32 count /* = 1 */)
 {
   Assert(index < m_num_descriptors);
 
-  u32 group = index / BITSET_SIZE;
-  u32 bit = index % BITSET_SIZE;
-  m_free_slots[group][bit] = true;
+  for (u32 i = 0; i < count; i++, index++)
+  {
+    u32 group = index / BITSET_SIZE;
+    u32 bit = index % BITSET_SIZE;
+    m_free_slots[group][bit] = true;
+  }
 }
 
-void DescriptorHeapManager::Free(DescriptorHandle* handle)
+void DescriptorHeapManager::Free(DescriptorHandle* handle, u32 count /* = 1 */)
 {
   if (handle->index == DescriptorHandle::INVALID_INDEX)
     return;
 
-  Free(handle->index);
+  Free(handle->index, count);
   handle->Clear();
 }
 
