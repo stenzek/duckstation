@@ -32,7 +32,7 @@ static LOGLEVEL s_filter_level = LOGLEVEL_TRACE;
 
 static Common::Timer::Value s_startTimeStamp = Common::Timer::GetValue();
 
-static bool s_consoleOutputEnabled = false;
+static bool s_console_output_enabled = false;
 static String s_console_output_channel_filter;
 static LOGLEVEL s_console_output_level_filter = LOGLEVEL_TRACE;
 
@@ -83,7 +83,7 @@ void UnregisterCallback(CallbackFunctionType callbackFunction, void* pUserParam)
 
 bool IsConsoleOutputEnabled()
 {
-  return s_consoleOutputEnabled;
+  return s_console_output_enabled;
 }
 
 bool IsDebugOutputEnabled()
@@ -160,7 +160,8 @@ static ALWAYS_INLINE void FormatLogMessageAndPrint(const char* channelName, cons
   char* message_buf = buf;
   int message_len;
   if ((message_len = FormatLogMessageForDisplay(message_buf, sizeof(buf), channelName, functionName, level, message,
-                                                timestamp, ansi_color_code, newline)) > (sizeof(buf) - 1))
+                                                timestamp, ansi_color_code, newline)) >
+      static_cast<int>(sizeof(buf) - 1))
   {
     message_buf = static_cast<char*>(std::malloc(message_len + 1));
     message_len = FormatLogMessageForDisplay(message_buf, message_len + 1, channelName, functionName, level, message,
@@ -176,9 +177,9 @@ static ALWAYS_INLINE void FormatLogMessageAndPrint(const char* channelName, cons
 #ifdef _WIN32
 
 template<typename T>
-static /*ALWAYS_INLINE*/ void FormatLogMessageAndPrintW(const char* channelName, const char* functionName,
-                                                        LOGLEVEL level, const char* message, bool timestamp,
-                                                        bool ansi_color_code, bool newline, const T& callback)
+static ALWAYS_INLINE void FormatLogMessageAndPrintW(const char* channelName, const char* functionName, LOGLEVEL level,
+                                                    const char* message, bool timestamp, bool ansi_color_code,
+                                                    bool newline, const T& callback)
 {
   char buf[512];
   char* message_buf = buf;
@@ -236,7 +237,7 @@ static bool EnableVirtualTerminalProcessing(HANDLE hConsole)
 static void ConsoleOutputLogCallback(void* pUserParam, const char* channelName, const char* functionName,
                                      LOGLEVEL level, const char* message)
 {
-  if (!s_consoleOutputEnabled || level > s_console_output_level_filter ||
+  if (!s_console_output_enabled || level > s_console_output_level_filter ||
       s_console_output_channel_filter.Find(channelName) >= 0)
   {
     return;
@@ -285,7 +286,6 @@ static void DebugOutputLogCallback(void* pUserParam, const char* channelName, co
   };
 
   __android_log_write(logPriority[level], channelName, message);
-}
 #else
 #endif
 }
@@ -295,10 +295,10 @@ void SetConsoleOutputParams(bool Enabled, const char* ChannelFilter, LOGLEVEL Le
   s_console_output_channel_filter = (ChannelFilter != NULL) ? ChannelFilter : "";
   s_console_output_level_filter = LevelFilter;
 
-  if (s_consoleOutputEnabled == Enabled)
+  if (s_console_output_enabled == Enabled)
     return;
 
-  s_consoleOutputEnabled = Enabled;
+  s_console_output_enabled = Enabled;
 
 #if defined(_WIN32)
   // On windows, no console is allocated by default on a windows based application
@@ -339,13 +339,9 @@ void SetConsoleOutputParams(bool Enabled, const char* ChannelFilter, LOGLEVEL Le
       s_hConsoleStdOut = old_stdout;
       s_hConsoleStdErr = old_stderr;
     }
-
-    RegisterCallback(ConsoleOutputLogCallback, NULL);
   }
   else
   {
-    UnregisterCallback(ConsoleOutputLogCallback, NULL);
-
     if (console_was_allocated)
     {
       console_was_allocated = false;
@@ -367,6 +363,11 @@ void SetConsoleOutputParams(bool Enabled, const char* ChannelFilter, LOGLEVEL Le
     }
   }
 #endif
+
+  if (Enabled)
+    RegisterCallback(ConsoleOutputLogCallback, nullptr);
+  else
+    UnregisterCallback(ConsoleOutputLogCallback, nullptr);
 }
 
 void SetDebugOutputParams(bool enabled, const char* channelFilter /* = nullptr */,
@@ -391,21 +392,9 @@ static void FileOutputLogCallback(void* pUserParam, const char* channelName, con
   if (level > s_file_output_level_filter || s_file_output_channel_filter.Find(channelName) >= 0)
     return;
 
-  char buf[512];
-  char* message_buf = buf;
-  int message_len;
-  if ((message_len = FormatLogMessageForDisplay(message_buf, sizeof(buf), channelName, functionName, level, message,
-                                                s_file_output_timestamp, false, true)) > (sizeof(buf) - 1))
-  {
-    message_buf = static_cast<char*>(std::malloc(message_len + 1));
-    message_len = FormatLogMessageForDisplay(message_buf, message_len + 1, channelName, functionName, level, message,
-                                             s_file_output_timestamp, false, true);
-  }
-
-  std::fwrite(message_buf, 1, message_len, s_fileOutputHandle.get());
-
-  if (message_buf != buf)
-    std::free(message_buf);
+  FormatLogMessageAndPrint(
+    channelName, functionName, level, message, true, false, true,
+    [](const char* message, int message_len) { std::fwrite(message, 1, message_len, s_fileOutputHandle.get()); });
 }
 
 void SetFileOutputParams(bool enabled, const char* filename, bool timestamps /* = true */,
