@@ -490,8 +490,9 @@ void Reinitialize()
     if (g_settings.IsUsingFastmem() && !InitializeFastmem())
       Panic("Failed to initialize fastmem");
 
-    ResetFastMap();
+    AllocateFastMap();
     CompileDispatcher();
+    ResetFastMap();
   }
 #endif
 }
