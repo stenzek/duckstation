@@ -617,20 +617,26 @@ void CommonHostInterface::OnHostDisplayResized()
     ImGui::GetStyle().WindowMinSize = ImVec2(1.0f, 1.0f);
     ImGui::StyleColorsDarker();
     ImGui::GetStyle().ScaleAllSizes(new_scale);
-    ImGuiFullscreen::ResetFonts();
-    if (!m_display->UpdateImGuiFontTexture())
-      Panic("Failed to recreate font texture after resize");
-  }
 
-  if (m_fullscreen_ui_enabled)
-  {
-    if (ImGuiFullscreen::UpdateLayoutScale())
+    if (m_fullscreen_ui_enabled)
     {
-      if (ImGuiFullscreen::UpdateFonts())
-      {
-        if (!m_display->UpdateImGuiFontTexture())
-          Panic("Failed to update font texture");
-      }
+      ImGuiFullscreen::UpdateLayoutScale();
+      ImGuiFullscreen::UpdateFonts();
+    }
+    else
+    {
+      ImGuiFullscreen::ResetFonts();
+    }
+
+    if (!m_display->UpdateImGuiFontTexture())
+      Panic("Failed to recreate font texture after scale+resize");
+  }
+  else if (m_fullscreen_ui_enabled && ImGuiFullscreen::UpdateLayoutScale())
+  {
+    if (ImGuiFullscreen::UpdateFonts())
+    {
+      if (!m_display->UpdateImGuiFontTexture())
+        Panic("Failed to update font texture after resize");
     }
   }
 
