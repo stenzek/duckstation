@@ -1731,7 +1731,7 @@ bool RemoveBreakpoint(VirtualMemoryAddress address)
 void ClearBreakpoints()
 {
   s_breakpoints.clear();
-  s_breakpoint_counter = 0;
+  s_breakpoint_counter = 1;
   s_last_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
   UpdateDebugDispatcherFlag();
 }
