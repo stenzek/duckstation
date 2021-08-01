@@ -1719,6 +1719,7 @@ bool RemoveBreakpoint(VirtualMemoryAddress address)
     g_host_interface->TranslateString("DebuggerMessage", "Removed breakpoint at 0x%08X."), address);
 
   s_breakpoints.erase(it);
+  s_breakpoint_counter--;
   UpdateDebugDispatcherFlag();
 
   if (address == s_last_breakpoint_check_pc)
