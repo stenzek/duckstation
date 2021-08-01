@@ -170,6 +170,7 @@ void DebuggerWindow::onToggleBreakpointTriggered()
 void DebuggerWindow::onClearBreakpointsTriggered()
 {
   clearBreakpoints();
+  refreshBreakpointList();
 }
 
 void DebuggerWindow::onStepIntoActionTriggered()
