@@ -1710,15 +1710,29 @@ bool AddBreakpointWithCallback(VirtualMemoryAddress address, BreakpointCallback 
 
 bool RemoveBreakpoint(VirtualMemoryAddress address)
 {
-  auto it = std::find_if(s_breakpoints.begin(), s_breakpoints.end(),
-                         [address](const Breakpoint& bp) { return bp.address == address; });
-  if (it == s_breakpoints.end())
+  u32 id;
+  u32 count = static_cast<u32>(s_breakpoints.size());
+  u32 index = count;
+  for (u32 i = 0; i < count; i++)
+  {
+    if (s_breakpoints[i].address == address)
+    {
+      id = s_breakpoints[i].number;
+      index = i;
+      break;
+    }
+  }
+
+  if (index == count)
     return false;
 
   g_host_interface->ReportFormattedDebuggerMessage(
     g_host_interface->TranslateString("DebuggerMessage", "Removed breakpoint at 0x%08X."), address);
 
-  s_breakpoints.erase(it);
+  for (u32 i = index + 1; i < count; i++)
+    s_breakpoints[i].number--;
+
+  s_breakpoints.erase(s_breakpoints.begin() + index);
   s_breakpoint_counter--;
   UpdateDebugDispatcherFlag();
 
