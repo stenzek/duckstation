@@ -787,15 +787,14 @@ DebugAddress PromptForDebugAddress(QWidget* parent, const QString& title)
   QGridLayout* grid = new QGridLayout();
 
   QLabel* address_label = new QLabel(parent);
-  address_label->setText("Enter memory address:");
+  address_label->setText("Enter memory address (hex):");
 
   QLineEdit* address_line = new QLineEdit();
 
   QLabel* address_size_label = new QLabel(parent);
   address_size_label->setText("Enter data size:");
 
-  QComboBox* address_size_box = new QComboBox();
-  address_size_box->addItems(QStringList{"1 byte", "2 bytes", "4 bytes"});
+  QLineEdit* address_size_line = new QLineEdit();
 
   QLabel* dbg_label = new QLabel(parent);
   dbg_label->setText("Break when this address is:");
@@ -823,7 +822,7 @@ DebugAddress PromptForDebugAddress(QWidget* parent, const QString& title)
   grid->addWidget(address_label, 0, 0);
   grid->addWidget(address_line, 1, 0);
   grid->addWidget(address_size_label, 2, 0);
-  grid->addWidget(address_size_box, 3, 0);
+  grid->addWidget(address_size_line, 3, 0);
   grid->addWidget(dbg_label, 4, 0);
   grid->addWidget(checkbox_display, 5, 0, Qt::AlignLeft);
   grid->addWidget(button_box, 7, 0, Qt::AlignCenter);
@@ -833,6 +832,22 @@ DebugAddress PromptForDebugAddress(QWidget* parent, const QString& title)
   
   if (res == QDialog::Accepted)
   {
+    bool ok;
+    QString size_str = address_size_line->text();
+    u32 address_size;
+    if (size_str.startsWith("0x"))
+      address_size = size_str.mid(2).toUInt(&ok, 16);
+    else
+      address_size = size_str.toUInt(&ok);
+
+    if (!ok)
+    {
+      QMessageBox::critical(
+        parent, title,
+        qApp->translate("New Breakpoint", "Invalid size. It should be in hex (0xF) or decimal (15)."));
+      return ret;
+    }
+
     if (is_read->checkState() == Qt::Unchecked && is_write->checkState() == Qt::Unchecked &&
       is_changed->checkState() == Qt::Unchecked && is_exec->checkState() == Qt::Unchecked)
     {
@@ -840,8 +855,7 @@ DebugAddress PromptForDebugAddress(QWidget* parent, const QString& title)
     }
 
     QString address_str = address_line->text();
-    bool ok;
-    uint address;
+    u32 address;
     if (address_str.startsWith("0x"))
       address = address_str.mid(2).toUInt(&ok, 16);
     else
@@ -866,26 +880,12 @@ DebugAddress PromptForDebugAddress(QWidget* parent, const QString& title)
     if (is_exec->checkState() == Qt::Checked)
       ret.debug_type = ret.debug_type | DebugConditionType::Executed;
 
-    switch (address_size_box->currentIndex())
-    {
-      case 0:
-        ret.address_size = MemoryAccessSize::Byte;
-        break;
-      case 1:
-        ret.address_size = MemoryAccessSize::HalfWord;
-        break;
-      case 2:
-        ret.address_size = MemoryAccessSize::Word;
-        break;
-    }
-
+    ret.size = address_size;
     ret.address = address;
     return ret;
   }
-  else
-  {
-    return ret;
-  }
+
+  return ret;
 }
 
 } // namespace QtUtils

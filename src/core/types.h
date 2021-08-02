@@ -20,8 +20,7 @@ enum class MemoryAccessSize : u32
 struct DebugAddress
 {
   VirtualMemoryAddress address;
-  u32 last_value;
-  MemoryAccessSize address_size;
+  u32 size;
   u8 debug_type = 0;
 };
 
