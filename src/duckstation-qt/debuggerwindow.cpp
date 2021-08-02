@@ -92,7 +92,11 @@ void DebuggerWindow::onRunToCursorTriggered()
     return;
   }
 
-  CPU::AddBreakpoint(addr.value(), true, true);
+  DebugAddress dbg;
+  dbg.address = addr.value();
+  dbg.debug_type = DebugType::Executed;
+  dbg.size = 4;
+  CPU::AddBreakpoint(dbg, true, true);
   QtHostInterface::GetInstance()->pauseSystem(false);
 }
 
@@ -144,18 +148,18 @@ void DebuggerWindow::onFollowAddressTriggered()
 
 void DebuggerWindow::onAddBreakpointTriggered()
 {
-  DebugAddress addr = QtUtils::PromptForDebugAddress(this, windowTitle());
+  DebugAddress dbg = QtUtils::PromptForDebugAddress(this, windowTitle());
 
-  if (!addr.debug_type)
+  if (!dbg.debug_type)
     return;
 
-  if (CPU::HasBreakpointAtAddress(addr.address))
+  if (CPU::HasBreakpointAtAddress(dbg.address))
   {
     QMessageBox::critical(this, windowTitle(), tr("A breakpoint already exists at this address."));
     return;
   }
 
-  toggleBreakpoint(addr.address);
+  toggleBreakpoint(dbg);
 }
 
 void DebuggerWindow::onToggleBreakpointTriggered()
@@ -164,7 +168,11 @@ void DebuggerWindow::onToggleBreakpointTriggered()
   if (!address.has_value())
     return;
 
-  toggleBreakpoint(address.value());
+  DebugAddress dbg;
+  dbg.address = address.value();
+  dbg.debug_type = DebugType::Executed;
+  dbg.size = 4;
+  toggleBreakpoint(dbg);
 }
 
 void DebuggerWindow::onClearBreakpointsTriggered()
@@ -215,11 +223,15 @@ void DebuggerWindow::onCodeViewItemActivated(QModelIndex index)
     return;
 
   const VirtualMemoryAddress address = m_code_model->getAddressForIndex(index);
+  DebugAddress dbg;
+  dbg.address = address;
+  dbg.debug_type = DebugType::Executed;
+  dbg.size = 4;
   switch (index.column())
   {
     case 0: // breakpoint
     case 3: // disassembly
-      toggleBreakpoint(address);
+      toggleBreakpoint(dbg);
       break;
 
     case 1: // address
@@ -492,21 +504,21 @@ void DebuggerWindow::setMemoryViewRegion(Bus::MemoryRegion region)
   m_ui.memoryView->repaint();
 }
 
-void DebuggerWindow::toggleBreakpoint(VirtualMemoryAddress address)
+void DebuggerWindow::toggleBreakpoint(DebugAddress dbg)
 {
-  const bool new_bp_state = !CPU::HasBreakpointAtAddress(address);
+  const bool new_bp_state = !CPU::HasBreakpointAtAddress(dbg.address);
   if (new_bp_state)
   {
-    if (!CPU::AddBreakpoint(address, false))
+    if (!CPU::AddBreakpoint(dbg, false))
       return;
   }
   else
   {
-    if (!CPU::RemoveBreakpoint(address))
+    if (!CPU::RemoveBreakpoint(dbg))
       return;
   }
 
-  m_code_model->setBreakpointState(address, new_bp_state);
+  m_code_model->setBreakpointState(dbg.address, new_bp_state);
   refreshBreakpointList();
 }
 
@@ -566,7 +578,7 @@ void DebuggerWindow::refreshBreakpointList()
     item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
     item->setCheckState(0, bp.enabled ? Qt::Checked : Qt::Unchecked);
     item->setText(0, QString::asprintf("%u", bp.number));
-    item->setText(1, QString::asprintf("0x%08X", bp.address));
+    item->setText(1, QString::asprintf("0x%08X", bp.dbg.address));
     item->setText(2, QString::asprintf("%u", bp.hit_count));
     m_ui.breakpointsWidget->addTopLevelItem(item);
   }

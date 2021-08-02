@@ -62,7 +62,7 @@ private:
   void createModels();
   void setUIEnabled(bool enabled);
   void setMemoryViewRegion(Bus::MemoryRegion region);
-  void toggleBreakpoint(VirtualMemoryAddress address);
+  void toggleBreakpoint(DebugAddress dbg);
   void clearBreakpoints();
   std::optional<VirtualMemoryAddress> getSelectedCodeAddress();
   bool tryFollowLoadStore(VirtualMemoryAddress address);

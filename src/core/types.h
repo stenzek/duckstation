@@ -24,7 +24,7 @@ struct DebugAddress
   u8 debug_type = 0;
 };
 
-enum DebugConditionType : u8
+enum DebugType : u8
 {
   Read = 1,
   Written = 2,

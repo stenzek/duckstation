@@ -1650,7 +1650,7 @@ bool HasBreakpointAtAddress(VirtualMemoryAddress address)
 {
   for (const Breakpoint& bp : s_breakpoints)
   {
-    if (bp.address == address)
+    if (bp.dbg.address == address)
       return true;
   }
 
@@ -1675,46 +1675,46 @@ BreakpointList GetBreakpointList(bool include_auto_clear, bool include_callbacks
   return bps;
 }
 
-bool AddBreakpoint(VirtualMemoryAddress address, bool auto_clear, bool enabled)
+bool AddBreakpoint(DebugAddress dbg, bool auto_clear, bool enabled)
 {
-  if (HasBreakpointAtAddress(address))
+  if (HasBreakpointAtAddress(dbg.address))
     return false;
 
-  Log_InfoPrintf("Adding breakpoint at %08X, auto clear = %u", address, static_cast<unsigned>(auto_clear));
+  Log_InfoPrintf("Adding breakpoint at %08X, auto clear = %u", dbg.address, static_cast<unsigned>(auto_clear));
 
-  Breakpoint bp{address, nullptr, auto_clear ? 0 : s_breakpoint_counter++, 0, auto_clear, enabled};
+  Breakpoint bp{dbg, nullptr, auto_clear ? 0 : s_breakpoint_counter++, 0, auto_clear, enabled};
   s_breakpoints.push_back(std::move(bp));
   UpdateDebugDispatcherFlag();
 
   if (!auto_clear)
   {
     g_host_interface->ReportFormattedDebuggerMessage(
-      g_host_interface->TranslateString("DebuggerMessage", "Added breakpoint at 0x%08X."), address);
+      g_host_interface->TranslateString("DebuggerMessage", "Added breakpoint at 0x%08X."), dbg.address);
   }
 
   return true;
 }
 
-bool AddBreakpointWithCallback(VirtualMemoryAddress address, BreakpointCallback callback)
+bool AddBreakpointWithCallback(DebugAddress dbg, BreakpointCallback callback)
 {
-  if (HasBreakpointAtAddress(address))
+  if (HasBreakpointAtAddress(dbg.address))
     return false;
 
-  Log_InfoPrintf("Adding breakpoint with callback at %08X", address);
+  Log_InfoPrintf("Adding breakpoint with callback at %08X", dbg.address);
 
-  Breakpoint bp{address, callback, 0, 0, false, true};
+  Breakpoint bp{dbg, callback, 0, 0, false, true};
   s_breakpoints.push_back(std::move(bp));
   UpdateDebugDispatcherFlag();
   return true;
 }
 
-bool RemoveBreakpoint(VirtualMemoryAddress address)
+bool RemoveBreakpoint(DebugAddress dbg)
 {
   u32 count = static_cast<u32>(s_breakpoints.size());
   u32 index = count;
   for (u32 i = 0; i < count; i++)
   {
-    if (s_breakpoints[i].address == address)
+    if (s_breakpoints[i].dbg.address == dbg.address)
     {
       index = i;
       break;
@@ -1725,7 +1725,7 @@ bool RemoveBreakpoint(VirtualMemoryAddress address)
     return false;
 
   g_host_interface->ReportFormattedDebuggerMessage(
-    g_host_interface->TranslateString("DebuggerMessage", "Removed breakpoint at 0x%08X."), address);
+    g_host_interface->TranslateString("DebuggerMessage", "Removed breakpoint at 0x%08X."), dbg.address);
 
   for (u32 i = index + 1; i < count; i++)
     s_breakpoints[i].number--;
@@ -1734,7 +1734,7 @@ bool RemoveBreakpoint(VirtualMemoryAddress address)
   s_breakpoint_counter--;
   UpdateDebugDispatcherFlag();
 
-  if (address == s_last_breakpoint_check_pc)
+  if (dbg.address == s_last_breakpoint_check_pc)
     s_last_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
 
   return true;
@@ -1750,13 +1750,16 @@ void ClearBreakpoints()
 
 bool AddStepOverBreakpoint()
 {
-  u32 bp_pc = g_state.regs.pc;
+  DebugAddress bp_pc;
+  bp_pc.address = g_state.regs.pc;
+  bp_pc.debug_type = DebugType::Executed;
+  bp_pc.size = 4;
 
   Instruction inst;
-  if (!SafeReadInstruction(bp_pc, &inst.bits))
+  if (!SafeReadInstruction(bp_pc.address, &inst.bits))
     return false;
 
-  bp_pc += sizeof(Instruction);
+  bp_pc.address += sizeof(Instruction);
 
   if (!IsCallInstruction(inst))
   {
@@ -1765,7 +1768,7 @@ bool AddStepOverBreakpoint()
     return false;
   }
 
-  if (!SafeReadInstruction(bp_pc, &inst.bits))
+  if (!SafeReadInstruction(bp_pc.address, &inst.bits))
     return false;
 
   if (IsBranchInstruction(inst))
@@ -1776,10 +1779,10 @@ bool AddStepOverBreakpoint()
   }
 
   // skip the delay slot
-  bp_pc += sizeof(Instruction);
+  bp_pc.address += sizeof(Instruction);
 
   g_host_interface->ReportFormattedDebuggerMessage(
-    g_host_interface->TranslateString("DebuggerMessage", "Stepping over to 0x%08X."), bp_pc);
+    g_host_interface->TranslateString("DebuggerMessage", "Stepping over to 0x%08X."), bp_pc.address);
 
   return AddBreakpoint(bp_pc, true);
 }
@@ -1787,13 +1790,17 @@ bool AddStepOverBreakpoint()
 bool AddStepOutBreakpoint(u32 max_instructions_to_search)
 {
   // find the branch-to-ra instruction.
-  u32 ret_pc = g_state.regs.pc;
+  DebugAddress ret_pc;
+  ret_pc.address = g_state.regs.pc;
+  ret_pc.debug_type = DebugType::Executed;
+  ret_pc.size = 4;
+
   for (u32 i = 0; i < max_instructions_to_search; i++)
   {
-    ret_pc += sizeof(Instruction);
+    ret_pc.address += sizeof(Instruction);
 
     Instruction inst;
-    if (!SafeReadInstruction(ret_pc, &inst.bits))
+    if (!SafeReadInstruction(ret_pc.address, &inst.bits))
     {
       g_host_interface->ReportFormattedDebuggerMessage(
         g_host_interface->TranslateString("DebuggerMessage",
@@ -1805,7 +1812,7 @@ bool AddStepOutBreakpoint(u32 max_instructions_to_search)
     if (IsReturnInstruction(inst))
     {
       g_host_interface->ReportFormattedDebuggerMessage(
-        g_host_interface->TranslateString("DebuggerMessage", "Stepping out to 0x%08X."), ret_pc);
+        g_host_interface->TranslateString("DebuggerMessage", "Stepping out to 0x%08X."), ret_pc.address);
 
       return AddBreakpoint(ret_pc, true);
     }
@@ -1843,7 +1850,7 @@ ALWAYS_INLINE_RELEASE static bool BreakpointCheck()
   for (u32 i = 0; i < count;)
   {
     Breakpoint& bp = s_breakpoints[i];
-    if (!bp.enabled || bp.address != pc)
+    if (!bp.enabled || bp.dbg.address != pc)
     {
       i++;
       continue;

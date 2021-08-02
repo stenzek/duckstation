@@ -842,10 +842,17 @@ DebugAddress PromptForDebugAddress(QWidget* parent, const QString& title)
 
     if (!ok)
     {
-      QMessageBox::critical(
-        parent, title,
-        qApp->translate("New Breakpoint", "Invalid size. It should be in hex (0xF) or decimal (15)."));
-      return ret;
+      if (is_exec->checkState() == Qt::Checked)
+      {
+        ret.size = 4; // assume 4 bytes for execution breakpoints
+      }
+      else
+      {
+        QMessageBox::critical(
+          parent, title,
+          qApp->translate("New Breakpoint", "Invalid size. It should be in hex (0xF) or decimal (15)."));
+        return ret;
+      }
     }
 
     if (is_read->checkState() == Qt::Unchecked && is_write->checkState() == Qt::Unchecked &&
@@ -872,13 +879,13 @@ DebugAddress PromptForDebugAddress(QWidget* parent, const QString& title)
     }
 
     if (is_read->checkState() == Qt::Checked)
-      ret.debug_type = ret.debug_type | DebugConditionType::Read;
+      ret.debug_type = ret.debug_type | DebugType::Read;
     if (is_write->checkState() == Qt::Checked)
-      ret.debug_type = ret.debug_type | DebugConditionType::Written;
+      ret.debug_type = ret.debug_type | DebugType::Written;
     if (is_changed->checkState() == Qt::Checked)
-      ret.debug_type = ret.debug_type | DebugConditionType::Changed;
+      ret.debug_type = ret.debug_type | DebugType::Changed;
     if (is_exec->checkState() == Qt::Checked)
-      ret.debug_type = ret.debug_type | DebugConditionType::Executed;
+      ret.debug_type = ret.debug_type | DebugType::Executed;
 
     ret.size = address_size;
     ret.address = address;
