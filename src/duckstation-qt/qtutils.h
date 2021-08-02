@@ -1,4 +1,5 @@
 #pragma once
+#include <core/types.h>
 #include <QtCore/QByteArray>
 #include <QtCore/QMetaType>
 #include <QtCore/QString>
@@ -75,6 +76,6 @@ void FillComboBoxWithEmulationSpeeds(QComboBox* cb);
 std::optional<unsigned> PromptForAddress(QWidget* parent, const QString& title, bool code);
 
 /// Prompts for an address in hex, with debug conditions
-std::optional<unsigned> PromptForDebugAddress(QWidget* parent, const QString& title);
+DebugAddress PromptForDebugAddress(QWidget* parent, const QString& title);
 
 } // namespace QtUtils

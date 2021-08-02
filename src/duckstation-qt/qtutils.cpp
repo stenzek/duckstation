@@ -1,6 +1,7 @@
 #include "qtutils.h"
 #include "common/byte_stream.h"
 #include "common/make_array.h"
+#include "core/types.h"
 #include <QtCore/QCoreApplication>
 #include <QtCore/QMetaObject>
 #include <QtGui/QDesktopServices>
@@ -776,10 +777,12 @@ std::optional<unsigned> PromptForAddress(QWidget* parent, const QString& title, 
   return address;
 }
 
-std::optional<unsigned> PromptForDebugAddress(QWidget* parent, const QString& title)
+DebugAddress PromptForDebugAddress(QWidget* parent, const QString& title)
 {
-  QDialog* d = new QDialog(parent);
-  d->setWindowTitle("New Breakpoint");
+  DebugAddress ret;
+
+  QDialog* display = new QDialog(parent);
+  display->setWindowTitle("New Breakpoint");
 
   QGridLayout* grid = new QGridLayout();
 
@@ -788,30 +791,45 @@ std::optional<unsigned> PromptForDebugAddress(QWidget* parent, const QString& ti
 
   QLineEdit* address_line = new QLineEdit();
 
+  QLabel* address_size_label = new QLabel(parent);
+  address_size_label->setText("Enter data size:");
+
+  QComboBox* address_size_box = new QComboBox();
+  address_size_box->addItems(QStringList{"1 byte", "2 bytes", "4 bytes"});
+
   QLabel* dbg_label = new QLabel(parent);
   dbg_label->setText("Break when this address is:");
+
+  QWidget* checkbox_display = new QWidget();
+  QGridLayout* checkbox_grid = new QGridLayout();
 
   QCheckBox* is_read = new QCheckBox("Read");
   QCheckBox* is_write = new QCheckBox("Written");
   QCheckBox* is_changed = new QCheckBox("Changed");
   QCheckBox* is_exec = new QCheckBox("Executed");
 
+  checkbox_display->setLayout(checkbox_grid);
+
+  checkbox_grid->addWidget(is_read, 0, 0);
+  checkbox_grid->addWidget(is_write, 0, 1);
+  checkbox_grid->addWidget(is_changed, 1, 0);
+  checkbox_grid->addWidget(is_exec, 1, 1);
+
   QDialogButtonBox* button_box = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 
-  QObject::connect(button_box, SIGNAL(accepted()), d, SLOT(accept()));
-  QObject::connect(button_box, SIGNAL(rejected()), d, SLOT(reject()));
+  QObject::connect(button_box, SIGNAL(accepted()), display, SLOT(accept()));
+  QObject::connect(button_box, SIGNAL(rejected()), display, SLOT(reject()));
 
   grid->addWidget(address_label, 0, 0);
   grid->addWidget(address_line, 1, 0);
-  grid->addWidget(dbg_label, 2, 0);
-  grid->addWidget(is_read, 3, 0);
-  grid->addWidget(is_write, 3, 1);
-  grid->addWidget(is_changed, 4, 0);
-  grid->addWidget(is_exec, 4, 1);
-  grid->addWidget(button_box, 5, 0);
+  grid->addWidget(address_size_label, 2, 0);
+  grid->addWidget(address_size_box, 3, 0);
+  grid->addWidget(dbg_label, 4, 0);
+  grid->addWidget(checkbox_display, 5, 0, Qt::AlignLeft);
+  grid->addWidget(button_box, 7, 0, Qt::AlignCenter);
 
-  d->setLayout(grid);
-  int res = d->exec();
+  display->setLayout(grid);
+  int res = display->exec();
   
   if (res == QDialog::Accepted)
   {
@@ -836,13 +854,37 @@ std::optional<unsigned> PromptForDebugAddress(QWidget* parent, const QString& ti
       QMessageBox::critical(
         parent, title,
         qApp->translate("New Breakpoint", "Invalid address. It should be in hex (0x12345678 or 12345678)"));
-      return std::nullopt;
+      return ret;
     }
-    return address;
+
+    if (is_read->checkState() == Qt::Checked)
+      ret.debug_type = ret.debug_type | DebugConditionType::Read;
+    if (is_write->checkState() == Qt::Checked)
+      ret.debug_type = ret.debug_type | DebugConditionType::Written;
+    if (is_changed->checkState() == Qt::Checked)
+      ret.debug_type = ret.debug_type | DebugConditionType::Changed;
+    if (is_exec->checkState() == Qt::Checked)
+      ret.debug_type = ret.debug_type | DebugConditionType::Executed;
+
+    switch (address_size_box->currentIndex())
+    {
+      case 0:
+        ret.address_size = MemoryAccessSize::Byte;
+        break;
+      case 1:
+        ret.address_size = MemoryAccessSize::HalfWord;
+        break;
+      case 2:
+        ret.address_size = MemoryAccessSize::Word;
+        break;
+    }
+
+    ret.address = address;
+    return ret;
   }
   else
   {
-    return std::nullopt;
+    return ret;
   }
 }
 

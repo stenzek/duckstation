@@ -144,18 +144,18 @@ void DebuggerWindow::onFollowAddressTriggered()
 
 void DebuggerWindow::onAddBreakpointTriggered()
 {
-  std::optional<VirtualMemoryAddress> address =
-    QtUtils::PromptForDebugAddress(this, windowTitle());
-  if (!address.has_value())
+  DebugAddress addr = QtUtils::PromptForDebugAddress(this, windowTitle());
+
+  if (!addr.debug_type)
     return;
 
-  if (CPU::HasBreakpointAtAddress(address.value()))
+  if (CPU::HasBreakpointAtAddress(addr.address))
   {
     QMessageBox::critical(this, windowTitle(), tr("A breakpoint already exists at this address."));
     return;
   }
 
-  toggleBreakpoint(address.value());
+  toggleBreakpoint(addr.address);
 }
 
 void DebuggerWindow::onToggleBreakpointTriggered()
