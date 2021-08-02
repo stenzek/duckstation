@@ -1710,14 +1710,12 @@ bool AddBreakpointWithCallback(VirtualMemoryAddress address, BreakpointCallback 
 
 bool RemoveBreakpoint(VirtualMemoryAddress address)
 {
-  u32 id;
   u32 count = static_cast<u32>(s_breakpoints.size());
   u32 index = count;
   for (u32 i = 0; i < count; i++)
   {
     if (s_breakpoints[i].address == address)
     {
-      id = s_breakpoints[i].number;
       index = i;
       break;
     }

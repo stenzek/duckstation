@@ -72,6 +72,9 @@ void FillComboBoxWithMSAAModes(QComboBox* cb);
 void FillComboBoxWithEmulationSpeeds(QComboBox* cb);
 
 /// Prompts for an address in hex.
-std::optional<unsigned> PromptForAddress(QWidget* parent, const QString& title, const QString& label, bool code);
+std::optional<unsigned> PromptForAddress(QWidget* parent, const QString& title, bool code);
+
+/// Prompts for an address in hex, with debug conditions
+std::optional<unsigned> PromptForDebugAddress(QWidget* parent, const QString& title);
 
 } // namespace QtUtils

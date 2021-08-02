@@ -5,10 +5,14 @@
 #include <QtCore/QMetaObject>
 #include <QtGui/QDesktopServices>
 #include <QtGui/QKeyEvent>
+#include <QtWidgets/QCheckBox>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QDialog>
+#include <QtWidgets/QDialogButtonBox>
+#include <QtWidgets/QGridLayout>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QInputDialog>
+#include <QtWidgets/QLabel>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QScrollBar>
@@ -745,7 +749,7 @@ void FillComboBoxWithEmulationSpeeds(QComboBox* cb)
   }
 }
 
-std::optional<unsigned> PromptForAddress(QWidget* parent, const QString& title, const QString& label, bool code)
+std::optional<unsigned> PromptForAddress(QWidget* parent, const QString& title, bool code)
 {
   const QString address_str(
     QInputDialog::getText(parent, title, qApp->translate("DebuggerWindow", "Enter memory address:")));
@@ -759,7 +763,7 @@ std::optional<unsigned> PromptForAddress(QWidget* parent, const QString& title, 
   else
     address = address_str.toUInt(&ok, 16);
   if (code)
-    address = address & 0xFFFFFFFC; // disassembly address should be divisible by 4 so make sure
+    address = address & 0xFFFFFFC0; // disassembly address should be divisible by 4 so make sure
 
   if (!ok)
   {
@@ -770,6 +774,76 @@ std::optional<unsigned> PromptForAddress(QWidget* parent, const QString& title, 
   }
 
   return address;
+}
+
+std::optional<unsigned> PromptForDebugAddress(QWidget* parent, const QString& title)
+{
+  QDialog* d = new QDialog(parent);
+  d->setWindowTitle("New Breakpoint");
+
+  QGridLayout* grid = new QGridLayout();
+
+  QLabel* address_label = new QLabel(parent);
+  address_label->setText("Enter memory address:");
+
+  QLineEdit* address_line = new QLineEdit();
+
+  QLabel* dbg_label = new QLabel(parent);
+  dbg_label->setText("Break when this address is:");
+
+  QCheckBox* is_read = new QCheckBox("Read");
+  QCheckBox* is_write = new QCheckBox("Written");
+  QCheckBox* is_changed = new QCheckBox("Changed");
+  QCheckBox* is_exec = new QCheckBox("Executed");
+
+  QDialogButtonBox* button_box = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+
+  QObject::connect(button_box, SIGNAL(accepted()), d, SLOT(accept()));
+  QObject::connect(button_box, SIGNAL(rejected()), d, SLOT(reject()));
+
+  grid->addWidget(address_label, 0, 0);
+  grid->addWidget(address_line, 1, 0);
+  grid->addWidget(dbg_label, 2, 0);
+  grid->addWidget(is_read, 3, 0);
+  grid->addWidget(is_write, 3, 1);
+  grid->addWidget(is_changed, 4, 0);
+  grid->addWidget(is_exec, 4, 1);
+  grid->addWidget(button_box, 5, 0);
+
+  d->setLayout(grid);
+  int res = d->exec();
+  
+  if (res == QDialog::Accepted)
+  {
+    if (is_read->checkState() == Qt::Unchecked && is_write->checkState() == Qt::Unchecked &&
+      is_changed->checkState() == Qt::Unchecked && is_exec->checkState() == Qt::Unchecked)
+    {
+      is_exec->setCheckState(Qt::Checked); // if nothing was selected, assume it is an exec breakpoint   
+    }
+
+    QString address_str = address_line->text();
+    bool ok;
+    uint address;
+    if (address_str.startsWith("0x"))
+      address = address_str.mid(2).toUInt(&ok, 16);
+    else
+      address = address_str.toUInt(&ok, 16);
+    if (is_exec->checkState() == Qt::Checked)
+      address = address & 0xFFFFFFFC; // disassembly address should be divisible by 4 so make sure
+
+    if (!ok)
+    {
+      QMessageBox::critical(
+        parent, title,
+        qApp->translate("New Breakpoint", "Invalid address. It should be in hex (0x12345678 or 12345678)"));
+      return std::nullopt;
+    }
+    return address;
+  }
+  else
+  {
+    return std::nullopt;
+  }
 }
 
 } // namespace QtUtils
