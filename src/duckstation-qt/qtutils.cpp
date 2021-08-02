@@ -763,7 +763,7 @@ std::optional<unsigned> PromptForAddress(QWidget* parent, const QString& title, 
   else
     address = address_str.toUInt(&ok, 16);
   if (code)
-    address = address & 0xFFFFFFC0; // disassembly address should be divisible by 4 so make sure
+    address = address & 0xFFFFFFFC; // disassembly address should be divisible by 4 so make sure
 
   if (!ok)
   {
