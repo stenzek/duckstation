@@ -273,6 +273,8 @@ void DebuggerWindow::onBreakpointWidgetItemDoubleClicked(QTreeWidgetItem* item, 
                                                       (curr_dbg.debug_type & DebugType::Written) ? Qt::Checked : Qt::Unchecked,
                                                       (curr_dbg.debug_type & DebugType::Changed) ? Qt::Checked : Qt::Unchecked,
                                                       (curr_dbg.debug_type & DebugType::Executed) ? Qt::Checked : Qt::Unchecked);
+    if (!new_dbg.debug_type)
+      return;
     if (curr_dbg.address == new_dbg.address)
       CPU::SetBreakpointDebugAddress(index - 1, new_dbg);
     else
