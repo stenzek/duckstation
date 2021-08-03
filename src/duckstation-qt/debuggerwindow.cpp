@@ -261,6 +261,33 @@ void DebuggerWindow::onBreakpointsWidgetItemChanged(QTreeWidgetItem* item, int c
   }
 }
 
+void DebuggerWindow::onBreakpointWidgetItemDoubleClicked(QTreeWidgetItem* item, int column)
+{
+  bool ok;
+  int index = item->text(0).toInt(&ok);
+  if (ok)
+  {
+    DebugAddress curr_dbg = CPU::GetBreakpointDebugAddress(index - 1);
+    DebugAddress new_dbg = QtUtils::PromptForDebugAddress(this, windowTitle(), item->text(1).mid(2), QString::number(curr_dbg.size),
+                                                      (curr_dbg.debug_type & DebugType::Read) ? Qt::Checked : Qt::Unchecked,
+                                                      (curr_dbg.debug_type & DebugType::Written) ? Qt::Checked : Qt::Unchecked,
+                                                      (curr_dbg.debug_type & DebugType::Changed) ? Qt::Checked : Qt::Unchecked,
+                                                      (curr_dbg.debug_type & DebugType::Executed) ? Qt::Checked : Qt::Unchecked);
+    if (curr_dbg.address == new_dbg.address)
+      CPU::SetBreakpointDebugAddress(index - 1, new_dbg);
+    else
+    {
+      if (CPU::HasBreakpointAtAddress(new_dbg.address))
+        QMessageBox::critical(this, windowTitle(), tr("A breakpoint already exists at this address."));
+      else
+      {
+        CPU::AddBreakpoint(new_dbg);
+        refreshBreakpointList();
+      }
+    }
+  }
+}
+
 void DebuggerWindow::onMemorySearchTriggered()
 {
   m_ui.memoryView->clearHighlightRange();
@@ -427,6 +454,8 @@ void DebuggerWindow::connectSignals()
   connect(m_ui.actionClose, &QAction::triggered, this, &DebuggerWindow::close);
   connect(m_ui.codeView, &QTreeView::activated, this, &DebuggerWindow::onCodeViewItemActivated);
   connect(m_ui.breakpointsWidget, &QTreeWidget::itemChanged, this, &DebuggerWindow::onBreakpointsWidgetItemChanged);
+  connect(m_ui.breakpointsWidget, &QTreeWidget::itemDoubleClicked, this,
+          &DebuggerWindow::onBreakpointWidgetItemDoubleClicked);
 
   connect(m_ui.memoryRegionRAM, &QRadioButton::clicked, [this]() { setMemoryViewRegion(Bus::MemoryRegion::RAM); });
   connect(m_ui.memoryRegionEXP1, &QRadioButton::clicked, [this]() { setMemoryViewRegion(Bus::MemoryRegion::EXP1); });

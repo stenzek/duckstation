@@ -778,7 +778,8 @@ std::optional<unsigned> PromptForAddress(QWidget* parent, const QString& title, 
 }
 
 DebugAddress PromptForDebugAddress(QWidget* parent, const QString& title, const QString& default_address,
-                                   const QString& default_size)
+                                   const QString& default_size, int default_read, int default_write,
+                                   int default_changed, int default_exec)
 {
   DebugAddress ret;
 
@@ -806,9 +807,13 @@ DebugAddress PromptForDebugAddress(QWidget* parent, const QString& title, const 
   QGridLayout* checkbox_grid = new QGridLayout();
 
   QCheckBox* is_read = new QCheckBox("Read");
+  is_read->setCheckState((Qt::CheckState) default_read);
   QCheckBox* is_write = new QCheckBox("Written");
+  is_write->setCheckState((Qt::CheckState) default_write);
   QCheckBox* is_changed = new QCheckBox("Changed");
+  is_changed->setCheckState((Qt::CheckState) default_changed);
   QCheckBox* is_exec = new QCheckBox("Executed");
+  is_exec->setCheckState((Qt::CheckState) default_exec);
 
   checkbox_display->setLayout(checkbox_grid);
 

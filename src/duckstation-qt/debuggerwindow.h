@@ -54,6 +54,7 @@ private Q_SLOTS:
   void onMemorySearchTriggered();
   void onMemorySearchStringChanged(const QString&);
   void onBreakpointsWidgetItemChanged(QTreeWidgetItem* item, int column);
+  void onBreakpointWidgetItemDoubleClicked(QTreeWidgetItem* item, int column);
 
 
 private:

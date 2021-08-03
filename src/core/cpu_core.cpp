@@ -1828,6 +1828,16 @@ void SetBreakpointEnable(int index, bool is_enable)
   s_breakpoints[index].enabled = is_enable;
 }
 
+DebugAddress GetBreakpointDebugAddress(int index)
+{
+  return s_breakpoints[index].dbg;
+}
+
+void SetBreakpointDebugAddress(int index, DebugAddress dbg)
+{
+  s_breakpoints[index].dbg = dbg;
+}
+
 bool AddBreakpoint(DebugAddress dbg, bool auto_clear, bool enabled)
 {
   if (HasBreakpointAtAddress(dbg.address))
