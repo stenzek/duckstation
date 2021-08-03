@@ -55,6 +55,7 @@ private Q_SLOTS:
   void onMemorySearchStringChanged(const QString&);
   void onBreakpointsWidgetItemChanged(QTreeWidgetItem* item, int column);
   void onBreakpointWidgetItemDoubleClicked(QTreeWidgetItem* item, int column);
+  void onBreakpointsWidgetMenuRequested(const QPoint& pos);
 
 
 private:
@@ -71,6 +72,8 @@ private:
   void scrollToCodeAddress(VirtualMemoryAddress address);
   bool scrollToMemoryAddress(VirtualMemoryAddress address);
   void refreshBreakpointList();
+  void editBreakpoint(QTreeWidgetItem* item);
+  void deleteBreakpoint(QTreeWidgetItem* item);
 
   Ui::DebuggerWindow m_ui;
 

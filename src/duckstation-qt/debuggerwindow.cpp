@@ -261,7 +261,7 @@ void DebuggerWindow::onBreakpointsWidgetItemChanged(QTreeWidgetItem* item, int c
   }
 }
 
-void DebuggerWindow::onBreakpointWidgetItemDoubleClicked(QTreeWidgetItem* item, int column)
+void DebuggerWindow::editBreakpoint(QTreeWidgetItem* item)
 {
   bool ok;
   int index = item->text(0).toInt(&ok);
@@ -288,6 +288,42 @@ void DebuggerWindow::onBreakpointWidgetItemDoubleClicked(QTreeWidgetItem* item, 
       }
     }
   }
+}
+
+void DebuggerWindow::deleteBreakpoint(QTreeWidgetItem* item)
+{
+  bool ok;
+  int index = item->text(0).toInt(&ok);
+  if (ok)
+  {
+    DebugAddress dbg = CPU::GetBreakpointDebugAddress(index - 1);
+    CPU::RemoveBreakpoint(dbg);
+    refreshBreakpointList();
+  }
+}
+
+void DebuggerWindow::onBreakpointWidgetItemDoubleClicked(QTreeWidgetItem* item, int column)
+{
+  editBreakpoint(item);
+}
+
+void DebuggerWindow::onBreakpointsWidgetMenuRequested(const QPoint& pos)
+{
+  QTreeWidgetItem* item = m_ui.breakpointsWidget->itemAt(pos);
+  if (!item)
+    return;
+
+  QMenu menu(tr("Breakpoint menu"), this);
+  menu.addAction("Edit");
+  menu.addAction("Delete");
+  QAction* action = menu.exec(m_ui.breakpointsWidget->viewport()->mapToGlobal(pos));
+
+  if (action == nullptr)
+    return;
+  if (action->text() == "Edit")
+    editBreakpoint(item);
+  else if (action->text() == "Delete")
+    deleteBreakpoint(item);
 }
 
 void DebuggerWindow::onMemorySearchTriggered()
@@ -456,6 +492,8 @@ void DebuggerWindow::connectSignals()
   connect(m_ui.actionClose, &QAction::triggered, this, &DebuggerWindow::close);
   connect(m_ui.codeView, &QTreeView::activated, this, &DebuggerWindow::onCodeViewItemActivated);
   connect(m_ui.breakpointsWidget, &QTreeWidget::itemChanged, this, &DebuggerWindow::onBreakpointsWidgetItemChanged);
+  connect(m_ui.breakpointsWidget, &QWidget::customContextMenuRequested, this,
+          &DebuggerWindow::onBreakpointsWidgetMenuRequested);
   connect(m_ui.breakpointsWidget, &QTreeWidget::itemDoubleClicked, this,
           &DebuggerWindow::onBreakpointWidgetItemDoubleClicked);
 
@@ -498,6 +536,7 @@ void DebuggerWindow::createModels()
   m_ui.breakpointsWidget->setColumnWidth(1, 80);
   m_ui.breakpointsWidget->setColumnWidth(2, 40);
   m_ui.breakpointsWidget->setRootIsDecorated(false);
+  m_ui.breakpointsWidget->setContextMenuPolicy(Qt::CustomContextMenu);
 }
 
 void DebuggerWindow::setUIEnabled(bool enabled)
