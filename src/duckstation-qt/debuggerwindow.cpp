@@ -245,6 +245,22 @@ void DebuggerWindow::onCodeViewItemActivated(QModelIndex index)
   }
 }
 
+void DebuggerWindow::onBreakpointsWidgetItemChanged(QTreeWidgetItem* item, int column)
+{
+  if (column == 0)
+  {
+    bool ok;
+    int index = item->text(0).toInt(&ok);
+    if (ok)
+    {
+      if (item->checkState(column) == Qt::Unchecked)
+        CPU::SetBreakpointEnable(index - 1, false);
+      else
+        CPU::SetBreakpointEnable(index - 1, true);
+    }
+  }
+}
+
 void DebuggerWindow::onMemorySearchTriggered()
 {
   m_ui.memoryView->clearHighlightRange();
@@ -410,6 +426,7 @@ void DebuggerWindow::connectSignals()
   connect(m_ui.actionClearBreakpoints, &QAction::triggered, this, &DebuggerWindow::onClearBreakpointsTriggered);
   connect(m_ui.actionClose, &QAction::triggered, this, &DebuggerWindow::close);
   connect(m_ui.codeView, &QTreeView::activated, this, &DebuggerWindow::onCodeViewItemActivated);
+  connect(m_ui.breakpointsWidget, &QTreeWidget::itemChanged, this, &DebuggerWindow::onBreakpointsWidgetItemChanged);
 
   connect(m_ui.memoryRegionRAM, &QRadioButton::clicked, [this]() { setMemoryViewRegion(Bus::MemoryRegion::RAM); });
   connect(m_ui.memoryRegionEXP1, &QRadioButton::clicked, [this]() { setMemoryViewRegion(Bus::MemoryRegion::EXP1); });
@@ -575,7 +592,7 @@ void DebuggerWindow::refreshBreakpointList()
   for (const CPU::Breakpoint& bp : bps)
   {
     QTreeWidgetItem* item = new QTreeWidgetItem();
-    item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+    item->setFlags(item->flags() | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable);
     item->setCheckState(0, bp.enabled ? Qt::Checked : Qt::Unchecked);
     item->setText(0, QString::asprintf("%u", bp.number));
     item->setText(1, QString::asprintf("0x%08X", bp.dbg.address));

@@ -53,6 +53,7 @@ private Q_SLOTS:
   void onCodeViewItemActivated(QModelIndex index);
   void onMemorySearchTriggered();
   void onMemorySearchStringChanged(const QString&);
+  void onBreakpointsWidgetItemChanged(QTreeWidgetItem* item, int column);
 
 
 private:

@@ -187,6 +187,7 @@ bool RemoveBreakpoint(DebugAddress dbg);
 void ClearBreakpoints();
 bool AddStepOverBreakpoint();
 bool AddStepOutBreakpoint(u32 max_instructions_to_search = 1000);
+void SetBreakpointEnable(int index, bool is_enable);
 
 extern bool TRACE_EXECUTION;
 
