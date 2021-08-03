@@ -46,9 +46,26 @@ static constexpr char DISC_IMAGE_FILTER[] = QT_TRANSLATE_NOOP(
   "(*.ecm);;Media Descriptor Sidecar Images (*.mds);;PlayStation EBOOTs (*.pbp);;PlayStation Executables (*.exe "
   "*.psexe);;Portable Sound Format Files (*.psf *.minipsf);;Playlists (*.m3u)");
 
-ALWAYS_INLINE static QString getWindowTitle()
+ALWAYS_INLINE static QString getWindowTitle(const QString& game_title)
 {
-  return QStringLiteral("DuckStation %1 (%2)").arg(g_scm_tag_str).arg(g_scm_branch_str);
+  if (game_title.isEmpty())
+  {
+#if defined(_DEBUG)
+    return QStringLiteral("DuckStation [Debug] %1 (%2)").arg(g_scm_tag_str).arg(g_scm_branch_str);
+#elif defined(_DEBUGFAST)
+    return QStringLiteral("DuckStation [DebugFast] %1 (%2)").arg(g_scm_tag_str).arg(g_scm_branch_str);
+#else
+    return QStringLiteral("DuckStation %1 (%2)").arg(g_scm_tag_str).arg(g_scm_branch_str);
+#endif
+  }
+
+#if defined(_DEBUG)
+  return QStringLiteral("%1 [Debug]").arg(game_title);
+#elif defined(_DEBUGFAST)
+  return QStringLiteral("%2 [DebugFast]").arg(game_title);
+#else
+  return game_title;
+#endif
 }
 
 MainWindow::MainWindow(QtHostInterface* host_interface)
@@ -456,11 +473,8 @@ void MainWindow::onSystemPerformanceCountersUpdated(float speed, float fps, floa
 
 void MainWindow::onRunningGameChanged(const QString& filename, const QString& game_code, const QString& game_title)
 {
-  if (game_title.isEmpty())
-    setWindowTitle(getWindowTitle());
-  else
-    setWindowTitle(game_title);
-
+  setWindowTitle(getWindowTitle(game_title));
+  
   if (m_display_widget)
     m_display_widget->setWindowTitle(windowTitle());
 
@@ -839,7 +853,7 @@ void MainWindow::onGameListSetCoverImageRequested(const GameListEntry* entry)
 
 void MainWindow::setupAdditionalUi()
 {
-  setWindowTitle(getWindowTitle());
+  setWindowTitle(getWindowTitle(QString()));
 
   const bool status_bar_visible = m_host_interface->GetBoolSettingValue("UI", "ShowStatusBar", true);
   m_ui.actionViewStatusBar->setChecked(status_bar_visible);
