@@ -797,7 +797,7 @@ DebugAddress PromptForDebugAddress(QWidget* parent, const QString& title)
   QLineEdit* address_size_line = new QLineEdit();
 
   QLabel* dbg_label = new QLabel(parent);
-  dbg_label->setText("Break when this address is:");
+  dbg_label->setText("Break when this memory is:");
 
   QWidget* checkbox_display = new QWidget();
   QGridLayout* checkbox_grid = new QGridLayout();
@@ -832,35 +832,13 @@ DebugAddress PromptForDebugAddress(QWidget* parent, const QString& title)
   
   if (res == QDialog::Accepted)
   {
-    bool ok;
-    QString size_str = address_size_line->text();
-    u32 address_size;
-    if (size_str.startsWith("0x"))
-      address_size = size_str.mid(2).toUInt(&ok, 16);
-    else
-      address_size = size_str.toUInt(&ok);
-
-    if (!ok)
-    {
-      if (is_exec->checkState() == Qt::Checked)
-      {
-        ret.size = 4; // assume 4 bytes for execution breakpoints
-      }
-      else
-      {
-        QMessageBox::critical(
-          parent, title,
-          qApp->translate("New Breakpoint", "Invalid size. It should be in hex (0xF) or decimal (15)."));
-        return ret;
-      }
-    }
-
     if (is_read->checkState() == Qt::Unchecked && is_write->checkState() == Qt::Unchecked &&
       is_changed->checkState() == Qt::Unchecked && is_exec->checkState() == Qt::Unchecked)
     {
       is_exec->setCheckState(Qt::Checked); // if nothing was selected, assume it is an exec breakpoint   
     }
 
+    bool ok;
     QString address_str = address_line->text();
     u32 address;
     if (address_str.startsWith("0x"))
@@ -878,6 +856,8 @@ DebugAddress PromptForDebugAddress(QWidget* parent, const QString& title)
       return ret;
     }
 
+    ret.address = address;
+
     if (is_read->checkState() == Qt::Checked)
       ret.debug_type = ret.debug_type | DebugType::Read;
     if (is_write->checkState() == Qt::Checked)
@@ -887,8 +867,46 @@ DebugAddress PromptForDebugAddress(QWidget* parent, const QString& title)
     if (is_exec->checkState() == Qt::Checked)
       ret.debug_type = ret.debug_type | DebugType::Executed;
 
-    ret.size = address_size;
-    ret.address = address;
+    QString size_str = address_size_line->text();
+    u32 address_size;
+    if (size_str.startsWith("0x"))
+      address_size = size_str.mid(2).toUInt(&ok, 16);
+    else
+      address_size = size_str.toUInt(&ok);
+
+    if (!ok)
+    {
+      if (is_exec->checkState() == Qt::Checked)
+      {
+        ret.size = 4; // assume 4 bytes for execution breakpoints
+      }
+      else
+      {
+        if (size_str.size() == 0)
+        {
+          // assume the user is using the greatest possible size among word, halfword and byte
+          if (!(address & 0x3))
+            ret.size = 4;
+          else if (!(address & 0x1))
+            ret.size = 2;
+          else
+            ret.size = 1;
+        }
+        else
+        {
+          QMessageBox::critical(
+            parent, title,
+            qApp->translate("New Breakpoint", "Invalid size. It should be in hex (0xF) or decimal (15)."));
+          ret.debug_type = 0;
+          return ret;
+        }
+      }
+    }
+    else
+    {
+      ret.size = address_size;
+    }
+
     return ret;
   }
 
