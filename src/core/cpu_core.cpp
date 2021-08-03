@@ -721,14 +721,23 @@ ALWAYS_INLINE_RELEASE static bool ConditionalBreakpointLookAhead(u32 inst_bits)
     }
     break;
     case InstructionOp::lw:
-    case InstructionOp::lwl:
-    case InstructionOp::lwr:
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       DataBreakpointCheck<MemoryAccessType::Read>(addr);
       DataBreakpointCheck<MemoryAccessType::Read>(addr + 1);
       DataBreakpointCheck<MemoryAccessType::Read>(addr + 2);
       DataBreakpointCheck<MemoryAccessType::Read>(addr + 3);
+    }
+    break;
+    case InstructionOp::lwl:
+    case InstructionOp::lwr:
+    {
+      const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
+      const VirtualMemoryAddress aligned_addr = addr & ~UINT32_C(3);
+      DataBreakpointCheck<MemoryAccessType::Read>(aligned_addr);
+      DataBreakpointCheck<MemoryAccessType::Read>(aligned_addr + 1);
+      DataBreakpointCheck<MemoryAccessType::Read>(aligned_addr + 2);
+      DataBreakpointCheck<MemoryAccessType::Read>(aligned_addr + 3);
     }
     break;
     case InstructionOp::sb:
@@ -767,8 +776,34 @@ ALWAYS_INLINE_RELEASE static bool ConditionalBreakpointLookAhead(u32 inst_bits)
     break;
     case InstructionOp::swl:
     case InstructionOp::swr:
-      //
-      break;
+    {
+      const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
+      const VirtualMemoryAddress aligned_addr = addr & ~UINT32_C(3);
+      u32 old_value;
+      if (!ReadMemoryWord(aligned_addr, &old_value))
+        return false;
+
+      const u32 reg_value = ReadReg(inst.i.rt);
+      const u8 shift = (Truncate8(addr) & u8(3)) * u8(8);
+
+      u32 new_value;
+      if (inst.op == InstructionOp::swl)
+      {
+        const u32 mem_mask = UINT32_C(0xFFFFFF00) << shift;
+        new_value = (old_value & mem_mask) | (reg_value >> (24 - shift));
+      }
+      else
+      {
+        const u32 mem_mask = UINT32_C(0x00FFFFFF) >> (24 - shift);
+        new_value = (old_value & mem_mask) | (reg_value << shift);
+      }
+
+      DataBreakpointCheck<MemoryAccessType::Write>(aligned_addr, (old_value & 0xFF) != (new_value & 0xFF));
+      DataBreakpointCheck<MemoryAccessType::Write>(aligned_addr + 1, (old_value & 0xFF00) != (new_value & 0xFF00));
+      DataBreakpointCheck<MemoryAccessType::Write>(aligned_addr + 2, (old_value & 0xFF0000) != (new_value & 0xFF0000));
+      DataBreakpointCheck<MemoryAccessType::Write>(aligned_addr + 3, (old_value & 0xFF000000) != (new_value & 0xFF000000));
+    }
+    break;
   }
 
   s_last_data_breakpoint_check_pc = pc;
