@@ -76,6 +76,6 @@ void FillComboBoxWithEmulationSpeeds(QComboBox* cb);
 std::optional<unsigned> PromptForAddress(QWidget* parent, const QString& title, bool code);
 
 /// Prompts for an address in hex, with debug conditions
-DebugAddress PromptForDebugAddress(QWidget* parent, const QString& title);
+DebugAddress PromptForDebugAddress(QWidget* parent, const QString& title, const QString& default_address, const QString& default_size);
 
 } // namespace QtUtils

@@ -777,7 +777,8 @@ std::optional<unsigned> PromptForAddress(QWidget* parent, const QString& title, 
   return address;
 }
 
-DebugAddress PromptForDebugAddress(QWidget* parent, const QString& title)
+DebugAddress PromptForDebugAddress(QWidget* parent, const QString& title, const QString& default_address,
+                                   const QString& default_size)
 {
   DebugAddress ret;
 
@@ -790,11 +791,13 @@ DebugAddress PromptForDebugAddress(QWidget* parent, const QString& title)
   address_label->setText("Enter memory address (hex):");
 
   QLineEdit* address_line = new QLineEdit();
+  address_line->setText(default_address);
 
   QLabel* address_size_label = new QLabel(parent);
   address_size_label->setText("Enter data size:");
 
   QLineEdit* address_size_line = new QLineEdit();
+  address_size_line->setText(default_size);
 
   QLabel* dbg_label = new QLabel(parent);
   dbg_label->setText("Break when this memory is:");

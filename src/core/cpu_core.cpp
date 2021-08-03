@@ -591,7 +591,7 @@ ALWAYS_INLINE_RELEASE void DataBreakpointCheck(VirtualMemoryAddress address, boo
           if (bp.dbg.address <= address && bp.dbg.address + bp.dbg.size > address)
           {
             bp.hit_count++;
-            g_host_interface->ReportFormattedDebuggerMessage("Hit changed breakpoint %u at 0x%08X %08X %08X.", bp.number,
+            g_host_interface->ReportFormattedDebuggerMessage("Hit changed breakpoint %u at 0x%08X.", bp.number,
                                                              g_state.regs.pc);
             g_host_interface->PauseSystem(true);
             return;

@@ -148,7 +148,7 @@ void DebuggerWindow::onFollowAddressTriggered()
 
 void DebuggerWindow::onAddBreakpointTriggered()
 {
-  DebugAddress dbg = QtUtils::PromptForDebugAddress(this, windowTitle());
+  DebugAddress dbg = QtUtils::PromptForDebugAddress(this, windowTitle(), "", "");
 
   if (!dbg.debug_type)
     return;
