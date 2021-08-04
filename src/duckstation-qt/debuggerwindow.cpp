@@ -283,6 +283,7 @@ void DebuggerWindow::editBreakpoint(QTreeWidgetItem* item)
         QMessageBox::critical(this, windowTitle(), tr("A breakpoint already exists at this address."));
       else
       {
+        CPU::RemoveBreakpoint(curr_dbg);
         CPU::AddBreakpoint(new_dbg);
         refreshBreakpointList();
       }
