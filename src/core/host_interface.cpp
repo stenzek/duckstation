@@ -693,6 +693,14 @@ void HostInterface::FixIncompatibleSettings(bool display_osd_messages)
   }
 #endif
 
+#if defined(__ANDROID__) && defined(__arm__) && !defined(__aarch64__) && !defined(_M_ARM64)
+  if (g_settings.rewind_enable)
+  {
+    AddOSDMessage(TranslateString("OSDMessage", "Rewind is not supported on 32-bit ARM for Android."));
+    g_settings.rewind_enable = false;
+  }
+#endif
+
   // rewinding causes issues with mmap fastmem, so just use LUT
   if ((g_settings.rewind_enable || g_settings.IsRunaheadEnabled()) && g_settings.IsUsingFastmem() &&
       g_settings.cpu_fastmem_mode == CPUFastmemMode::MMap)
