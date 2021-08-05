@@ -527,6 +527,8 @@ void DebuggerWindow::createModels()
   m_ui.codeView->setColumnWidth(4, m_ui.codeView->width() - (40 + 80 + 80 + 250));
 
   m_registers_model = std::make_unique<DebuggerRegistersModel>();
+  m_registers_model.get()->setCodeModel(m_code_model.get());
+  m_registers_model.get()->setCodeView(m_ui.codeView);
   m_ui.registerView->setModel(m_registers_model.get());
   // m_ui->registerView->resizeRowsToContents();
 

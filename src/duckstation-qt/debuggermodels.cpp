@@ -6,6 +6,8 @@
 #include <QtGui/QIcon>
 #include <QtGui/QPalette>
 #include <QtWidgets/QApplication>
+#include <QtWidgets/QTreeView>
+#include <core/cpu_core.cpp>
 
 static constexpr int NUM_COLUMNS = 5;
 static constexpr int STACK_RANGE = 128;
@@ -288,6 +290,16 @@ DebuggerRegistersModel::DebuggerRegistersModel(QObject* parent /*= nullptr*/) : 
 
 DebuggerRegistersModel::~DebuggerRegistersModel() {}
 
+void DebuggerRegistersModel::setCodeModel(DebuggerCodeModel* model)
+{
+  code_model = model;
+}
+
+void DebuggerRegistersModel::setCodeView(QTreeView* view)
+{
+  code_view = view;
+}
+
 int DebuggerRegistersModel::rowCount(const QModelIndex& parent /*= QModelIndex()*/) const
 {
   return static_cast<int>(CPU::Reg::count);
@@ -327,6 +339,8 @@ QVariant DebuggerRegistersModel::data(const QModelIndex& index, int role /*= Qt:
         if (CPU::g_state.regs.r[reg_index] != m_old_reg_values[reg_index])
           return QColor(255, 50, 50);
       }
+      else if (role == Qt::EditRole)
+        return QString::asprintf("%08X", CPU::g_state.regs.r[reg_index]);
     }
     break;
 
@@ -355,6 +369,54 @@ QVariant DebuggerRegistersModel::headerData(int section, Qt::Orientation orienta
     default:
       return QVariant();
   }
+}
+
+Qt::ItemFlags DebuggerRegistersModel::flags(const QModelIndex& index) const
+{
+  if (index.column() == 1)
+    return Qt::ItemIsEditable | QAbstractItemModel::flags(index);
+  return QAbstractItemModel::flags(index);
+}
+
+bool DebuggerRegistersModel::setData(const QModelIndex& index, const QVariant& value, int role)
+{
+  if (index.isValid() && role == Qt::EditRole)
+  {
+    bool ok;
+    QString value_str = value.toString();
+    u32 reg_value;
+    if (value_str.startsWith("0x"))
+      reg_value = value_str.mid(2).toUInt(&ok, 16);
+    else
+      reg_value = value_str.toUInt(&ok, 16);
+    if (ok)
+    {
+      u32 reg_index = static_cast<u32>(index.row());
+      if (reg_index == 34)                              // special case for PC
+      {
+        CPU::g_state.regs.npc = reg_value & 0xFFFFFFFC; // making sure it's divisible by 4
+        CPU::FlushPipeline();
+      }
+      else if (reg_index == 35)                         // special case for NPC
+        CPU::g_state.regs.npc = reg_value & 0xFFFFFFFC; // making sure it's divisible by 4
+      else
+        CPU::g_state.regs.r[reg_index] = reg_value;
+
+      emit dataChanged(index, index, {role});
+
+      // Scrolling to PC
+      code_model->setPC(CPU::g_state.regs.pc);
+      code_model->ensureAddressVisible(CPU::g_state.regs.pc);
+      int row = code_model->getRowForAddress(CPU::g_state.regs.pc);
+      if (row >= 0)
+      {
+        qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+        code_view->scrollTo(code_model->index(row, 0));
+      }
+      return true;
+    }
+  }
+  return false;
 }
 
 void DebuggerRegistersModel::invalidateView()
