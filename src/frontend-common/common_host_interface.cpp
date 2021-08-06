@@ -2029,9 +2029,13 @@ void CommonHostInterface::SetFastForwardEnabled(bool enabled)
 
   m_fast_forward_enabled = enabled;
   UpdateSpeedLimiterState();
-  AddOSDMessage(enabled ? TranslateStdString("OSDMessage", "Fast forwarding...") :
-                          TranslateStdString("OSDMessage", "Stopped fast forwarding."),
-                2.0f);
+
+  if (!m_fullscreen_ui_enabled)
+  {
+    AddOSDMessage(enabled ? TranslateStdString("OSDMessage", "Fast forwarding...") :
+                            TranslateStdString("OSDMessage", "Stopped fast forwarding."),
+                  2.0f);
+  }
 }
 
 void CommonHostInterface::SetTurboEnabled(bool enabled)
@@ -2041,9 +2045,13 @@ void CommonHostInterface::SetTurboEnabled(bool enabled)
 
   m_turbo_enabled = enabled;
   UpdateSpeedLimiterState();
-  AddOSDMessage(enabled ? TranslateStdString("OSDMessage", "Turboing...") :
-                          TranslateStdString("OSDMessage", "Stopped turboing."),
-                2.0f);
+
+  if (!m_fullscreen_ui_enabled)
+  {
+    AddOSDMessage(enabled ? TranslateStdString("OSDMessage", "Turboing...") :
+                            TranslateStdString("OSDMessage", "Stopped turboing."),
+                  2.0f);
+  }
 }
 
 void CommonHostInterface::SetRewindState(bool enabled)
