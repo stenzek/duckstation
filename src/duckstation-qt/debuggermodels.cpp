@@ -1,5 +1,6 @@
 #include "debuggermodels.h"
 #include "core/cpu_core.h"
+#include <core/cpu_core.cpp>
 #include "core/cpu_core_private.h"
 #include "core/cpu_disasm.h"
 #include <QtGui/QColor>
@@ -7,7 +8,6 @@
 #include <QtGui/QPalette>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QTreeView>
-#include <core/cpu_core.cpp>
 
 static constexpr int NUM_COLUMNS = 5;
 static constexpr int STACK_RANGE = 128;
@@ -97,7 +97,7 @@ QVariant DebuggerCodeModel::data(const QModelIndex& index, int role /*= Qt::Disp
       case 4:
       {
         // Comment
-        if (address != m_last_pc)
+        if (address != m_last_pc && address != selected_address)
           return QVariant();
 
         u32 instruction_bits;
@@ -241,6 +241,11 @@ void DebuggerCodeModel::setPC(VirtualMemoryAddress pc)
     emitDataChangedForAddress(prev_pc);
     emitDataChangedForAddress(pc);
   }
+}
+
+void DebuggerCodeModel::setCurrentSelectedAddress(VirtualMemoryAddress address)
+{
+  selected_address = address;
 }
 
 void DebuggerCodeModel::ensureAddressVisible(VirtualMemoryAddress address)

@@ -13,8 +13,8 @@ DebuggerWindow::DebuggerWindow(QWidget* parent /* = nullptr */)
 {
   m_ui.setupUi(this);
   setupAdditionalUi();
-  connectSignals();
   createModels();
+  connectSignals();
   setMemoryViewRegion(Bus::MemoryRegion::RAM);
   setUIEnabled(false);
 }
@@ -215,6 +215,23 @@ void DebuggerWindow::onStepOutActionTriggered()
   // unpause to let it run to the breakpoint
   m_registers_model->saveCurrentValues();
   QtHostInterface::GetInstance()->pauseSystem(false);
+}
+
+void DebuggerWindow::refreshCodeViewSelectedAddress()
+{
+  std::optional<VirtualMemoryAddress> address = getSelectedCodeAddress();
+  if (address.has_value())
+    m_code_model->setCurrentSelectedAddress(address.value());
+}
+
+void DebuggerWindow::onCodeViewPressed(QModelIndex index)
+{
+  refreshCodeViewSelectedAddress();
+}
+
+void DebuggerWindow::onCodeViewCurrentChanged(QModelIndex current, QModelIndex previous)
+{
+  refreshCodeViewSelectedAddress();
 }
 
 void DebuggerWindow::onCodeViewItemActivated(QModelIndex index)
@@ -491,7 +508,10 @@ void DebuggerWindow::connectSignals()
   connect(m_ui.actionToggleBreakpoint, &QAction::triggered, this, &DebuggerWindow::onToggleBreakpointTriggered);
   connect(m_ui.actionClearBreakpoints, &QAction::triggered, this, &DebuggerWindow::onClearBreakpointsTriggered);
   connect(m_ui.actionClose, &QAction::triggered, this, &DebuggerWindow::close);
+  connect(m_ui.codeView, &QTreeView::pressed, this, &DebuggerWindow::onCodeViewPressed);
   connect(m_ui.codeView, &QTreeView::activated, this, &DebuggerWindow::onCodeViewItemActivated);
+  connect(m_ui.codeView->selectionModel(), &QItemSelectionModel::currentChanged, this,
+          &DebuggerWindow::onCodeViewCurrentChanged);
   connect(m_ui.breakpointsWidget, &QTreeWidget::itemChanged, this, &DebuggerWindow::onBreakpointsWidgetItemChanged);
   connect(m_ui.breakpointsWidget, &QWidget::customContextMenuRequested, this,
           &DebuggerWindow::onBreakpointsWidgetMenuRequested);

@@ -50,6 +50,8 @@ private Q_SLOTS:
   void onStepIntoActionTriggered();
   void onStepOverActionTriggered();
   void onStepOutActionTriggered();
+  void onCodeViewPressed(QModelIndex index);
+  void onCodeViewCurrentChanged(QModelIndex current, QModelIndex previous);
   void onCodeViewItemActivated(QModelIndex index);
   void onMemorySearchTriggered();
   void onMemorySearchStringChanged(const QString&);
@@ -74,6 +76,7 @@ private:
   void refreshBreakpointList();
   void editBreakpoint(QTreeWidgetItem* item);
   void deleteBreakpoint(QTreeWidgetItem* item);
+  void refreshCodeViewSelectedAddress();
 
   Ui::DebuggerWindow m_ui;
 

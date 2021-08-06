@@ -28,6 +28,7 @@ public:
   VirtualMemoryAddress getAddressForIndex(QModelIndex index) const;
   void setPC(VirtualMemoryAddress pc);
   void ensureAddressVisible(VirtualMemoryAddress address);
+  void setCurrentSelectedAddress(VirtualMemoryAddress address);
   void setBreakpointList(std::vector<VirtualMemoryAddress> bps);
   void setBreakpointState(VirtualMemoryAddress address, bool enabled);
   void clearBreakpoints();
@@ -42,6 +43,7 @@ private:
   VirtualMemoryAddress m_code_region_start = 0;
   VirtualMemoryAddress m_code_region_end = 0;
   VirtualMemoryAddress m_last_pc = 0;
+  VirtualMemoryAddress selected_address = 0xFFFFFFFF;
   std::vector<VirtualMemoryAddress> m_breakpoints;
 
   QPixmap m_pc_pixmap;
