@@ -401,6 +401,16 @@ bool DebuggerRegistersModel::setData(const QModelIndex& index, const QVariant& v
       {
         CPU::g_state.regs.npc = reg_value & 0xFFFFFFFC; // making sure it's divisible by 4
         CPU::FlushPipeline();
+
+        // Scrolling to PC
+        code_model->setPC(CPU::g_state.regs.pc);
+        code_model->ensureAddressVisible(CPU::g_state.regs.pc);
+        int row = code_model->getRowForAddress(CPU::g_state.regs.pc);
+        if (row >= 0)
+        {
+          qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+          code_view->scrollTo(code_model->index(row, 0));
+        }
       }
       else if (reg_index == 35)                         // special case for NPC
         CPU::g_state.regs.npc = reg_value & 0xFFFFFFFC; // making sure it's divisible by 4
@@ -409,15 +419,6 @@ bool DebuggerRegistersModel::setData(const QModelIndex& index, const QVariant& v
 
       emit dataChanged(index, index, {role});
 
-      // Scrolling to PC
-      code_model->setPC(CPU::g_state.regs.pc);
-      code_model->ensureAddressVisible(CPU::g_state.regs.pc);
-      int row = code_model->getRowForAddress(CPU::g_state.regs.pc);
-      if (row >= 0)
-      {
-        qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
-        code_view->scrollTo(code_model->index(row, 0));
-      }
       return true;
     }
   }
