@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>864</width>
-    <height>599</height>
+    <width>1046</width>
+    <height>778</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -163,13 +163,16 @@
               <bool>true</bool>
              </property>
              <property name="selectionMode">
-              <enum>QAbstractItemView::SingleSelection</enum>
+              <enum>QAbstractItemView::ContiguousSelection</enum>
              </property>
              <property name="selectionBehavior">
               <enum>QAbstractItemView::SelectRows</enum>
              </property>
              <property name="showGrid">
               <bool>false</bool>
+             </property>
+             <property name="sortingEnabled">
+              <bool>true</bool>
              </property>
              <attribute name="horizontalHeaderHighlightSections">
               <bool>false</bool>
@@ -451,6 +454,94 @@
               </layout>
              </item>
              <item>
+              <widget class="QPushButton" name="scanAddWatch">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="text">
+                <string>Add Selected Results To Watch List</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_6">
+               <item>
+              <widget class="QTextEdit" name="scanResults">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>300</width>
+                 <height>30</height>
+                </size>
+               </property>
+               <property name="inputMethodHints">
+                <set>Qt::ImhNone</set>
+               </property>
+               <property name="frameShape">
+                <enum>QFrame::NoFrame</enum>
+               </property>
+               <property name="verticalScrollBarPolicy">
+                <enum>Qt::ScrollBarAlwaysOff</enum>
+               </property>
+               <property name="horizontalScrollBarPolicy">
+                <enum>Qt::ScrollBarAlwaysOff</enum>
+               </property>
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+               <property name="textInteractionFlags">
+                <set>Qt::NoTextInteraction</set>
+               </property>
+               <property name="text">
+                <string>Number of Results (Display limited to first 5000) : </string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QTextEdit" name="scanResultsCount">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>60</width>
+                 <height>30</height>
+                </size>
+               </property>               
+               <property name="inputMethodHints">
+                <set>Qt::ImhNone</set>
+               </property>
+               <property name="frameShape">
+                <enum>QFrame::NoFrame</enum>
+               </property>
+               <property name="verticalScrollBarPolicy">
+                <enum>Qt::ScrollBarAlwaysOff</enum>
+               </property>
+               <property name="horizontalScrollBarPolicy">
+                <enum>Qt::ScrollBarAlwaysOff</enum>
+               </property>
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+               <property name="acceptRichText">
+                <bool>false</bool>
+               </property>
+               <property name="textInteractionFlags">
+                <set>Qt::NoTextInteraction</set>
+               </property>
+               <property name="placeholderText">
+                <string notr="true"/>
+               </property>
+               <property name="text">
+                <string>0</string>
+               </property>
+              </widget>
+             </item>
+                           </layout>
+             </item>
+             <item>
               <spacer name="verticalSpacer">
                <property name="orientation">
                 <enum>Qt::Vertical</enum>
@@ -475,13 +566,16 @@
               <bool>true</bool>
              </property>
              <property name="selectionMode">
-              <enum>QAbstractItemView::SingleSelection</enum>
+              <enum>QAbstractItemView::ContiguousSelection</enum>
              </property>
              <property name="selectionBehavior">
               <enum>QAbstractItemView::SelectRows</enum>
              </property>
              <property name="showGrid">
               <bool>false</bool>
+             </property>
+             <property name="sortingEnabled">
+              <bool>true</bool>
              </property>
              <attribute name="horizontalHeaderHighlightSections">
               <bool>false</bool>
@@ -491,12 +585,7 @@
              </attribute>
              <column>
               <property name="text">
-               <string>Freeze</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>Description</string>
+               <string>Simple Cheat Code or Description</string>
               </property>
              </column>
              <column>
@@ -514,20 +603,15 @@
                <string>Value</string>
               </property>
              </column>
+             <column>
+              <property name="text">
+               <string>Freeze</string>
+              </property>
+             </column>
             </widget>
            </item>
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_4">
-             <item>
-              <widget class="QPushButton" name="scanAddWatch">
-               <property name="enabled">
-                <bool>false</bool>
-               </property>
-               <property name="text">
-                <string>Add To Watch</string>
-               </property>
-              </widget>
-             </item>
              <item>
               <widget class="QPushButton" name="scanAddManualAddress">
                <property name="text">
@@ -541,13 +625,16 @@
                 <bool>false</bool>
                </property>
                <property name="text">
-                <string>Remove Watch</string>
+                <string>Remove Selected Entries from Watch List</string>
                </property>
               </widget>
              </item>
              <item>
               <widget class="QPushButton" name="scanLoadWatch">
                <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="visible">
                 <bool>false</bool>
                </property>
                <property name="text">
@@ -558,6 +645,9 @@
              <item>
               <widget class="QPushButton" name="scanSaveWatch">
                <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="visible">
                 <bool>false</bool>
                </property>
                <property name="text">
