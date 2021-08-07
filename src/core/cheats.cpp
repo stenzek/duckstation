@@ -1738,7 +1738,7 @@ void CheatCode::Apply() const
         bool activate_codes = false;
         const u8 cht_reg_no1 = Truncate8(inst.address & 0xFFu);
         const u8 cht_reg_no2 = Truncate8((inst.address & 0xFF00u) >> 8);
-        const u8 sub_type = Truncate8((inst.value32 & 0xFF0000u) >> 16);
+        const u8 sub_type = Truncate8((inst.first & 0xFF0000u) >> 16);
 
         switch (sub_type)
         {
