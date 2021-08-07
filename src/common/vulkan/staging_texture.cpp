@@ -100,6 +100,10 @@ void StagingTexture::CopyFromTexture(VkCommandBuffer command_buffer, Texture& sr
   Assert((src_x + width) <= src_texture.GetWidth() && (src_y + height) <= src_texture.GetHeight());
   Assert((dst_x + width) <= m_width && (dst_y + height) <= m_height);
 
+  const Vulkan::Util::DebugScope debugScope(command_buffer,
+                                            "StagingTexture::CopyFromTexture: {%u,%u} Lyr:%u Lvl:%u {%u,%u} %ux%u",
+                                            src_x, src_y, src_layer, src_level, dst_x, dst_y, width, height);
+
   VkImageLayout old_layout = src_texture.GetLayout();
   src_texture.TransitionToLayout(command_buffer, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
 
@@ -123,6 +127,9 @@ void StagingTexture::CopyFromTexture(VkCommandBuffer command_buffer, Texture& sr
 void StagingTexture::CopyFromTexture(Texture& src_texture, u32 src_x, u32 src_y, u32 src_layer, u32 src_level,
                                      u32 dst_x, u32 dst_y, u32 width, u32 height)
 {
+  const Vulkan::Util::DebugScope debugScope(g_vulkan_context->GetCurrentCommandBuffer(),
+                                            "StagingTexture::CopyFromTexture: {%u,%u} Lyr:%u Lvl:%u {%u,%u} %ux%u",
+                                            src_x, src_y, src_layer, src_level, dst_x, dst_y, width, height);
   CopyFromTexture(g_vulkan_context->GetCurrentCommandBuffer(), src_texture, src_x, src_y, src_layer, src_level, dst_x,
                   dst_y, width, height);
 
@@ -162,6 +169,9 @@ void StagingTexture::CopyToTexture(VkCommandBuffer command_buffer, u32 src_x, u3
 void StagingTexture::CopyToTexture(u32 src_x, u32 src_y, Texture& dst_texture, u32 dst_x, u32 dst_y, u32 dst_layer,
                                    u32 dst_level, u32 width, u32 height)
 {
+  const Vulkan::Util::DebugScope debugScope(g_vulkan_context->GetCurrentCommandBuffer(),
+                                            "StagingTexture::CopyToTexture: {%u,%u} | {%u,%u} Lyr:%u Lvl:%u %ux%u",
+                                            src_x, src_y, dst_x, dst_y, dst_layer, dst_level, width, height);
   CopyToTexture(g_vulkan_context->GetCurrentCommandBuffer(), src_x, src_y, dst_texture, dst_x, dst_y, dst_layer,
                 dst_level, width, height);
 
