@@ -525,8 +525,9 @@ DebugScope<VkCommandBuffer>::DebugScope(VkCommandBuffer context, const char* for
 
     ++depth;
     const float depth_phase = depth / static_cast<float>(max_depth);
-    BeginDebugScope(command_buffer, str,
-                    Palette(depth_phase, {0.5, 0.5, 0.5}, {0.5, 0.5, 0.5}, {1.0, 1.0, 0.5}, {0.8, 0.90, 0.30}));
+    BeginDebugScope(
+      command_buffer, str,
+      Palette(depth_phase, {0.5f, 0.5f, 0.5f}, {0.5f, 0.5f, 0.5f}, {1.0f, 1.0f, 0.5f}, {0.8f, 0.90f, 0.30f}));
   }
 }
 
@@ -552,7 +553,7 @@ DebugScope<VkQueue>::DebugScope(VkQueue context, const char* format, ...) : queu
 
     const float depth_phase = depth / static_cast<float>(max_depth);
     BeginDebugScope(queue, str,
-                    Palette(depth_phase, {0.5, 0.5, 0.5}, {0.5, 0.5, 0.5}, {2.0, 1.0, 0.0}, {0.5, 0.20, 0.25}));
+                    Palette(depth_phase, {0.5f, 0.5f, 0.5f}, {0.5f, 0.5f, 0.5f}, {2.0f, 1.0f, 0.0f}, {0.5f, 0.20f, 0.25f}));
     ++depth;
   }
 }

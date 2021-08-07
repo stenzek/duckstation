@@ -1102,7 +1102,7 @@ void VulkanHostDisplay::ApplyPostProcessingChain(VkFramebuffer target_fb, s32 fi
                                                  u32 target_width, u32 target_height)
 {
   VkCommandBuffer cmdbuffer = g_vulkan_context->GetCurrentCommandBuffer();
-  const Vulkan::Util::DebugScope debugScope(cmdbuffer, "VulkanHostDisplay::ApplyPostProcessingChain");
+  const Vulkan::Util::DebugScope post_scope(cmdbuffer, "VulkanHostDisplay::ApplyPostProcessingChain");
 
   if (!CheckPostProcessingRenderTargets(target_width, target_height))
   {
@@ -1133,8 +1133,8 @@ void VulkanHostDisplay::ApplyPostProcessingChain(VkFramebuffer target_fb, s32 fi
   for (u32 i = 0; i < static_cast<u32>(m_post_processing_stages.size()); i++)
   {
     PostProcessingStage& pps = m_post_processing_stages[i];
-    const Vulkan::Util::DebugScope debugScope(g_vulkan_context->GetCurrentCommandBuffer(), "Post Processing Stage: %s",
-                                              m_post_processing_chain.GetShaderStage(i).GetName().c_str());
+    const Vulkan::Util::DebugScope stage_scope(g_vulkan_context->GetCurrentCommandBuffer(), "Post Processing Stage: %s",
+                                               m_post_processing_chain.GetShaderStage(i).GetName().c_str());
 
     if (i != final_stage)
     {

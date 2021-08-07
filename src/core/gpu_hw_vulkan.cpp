@@ -1952,7 +1952,7 @@ void GPU_HW_Vulkan::DownsampleFramebufferAdaptive(Vulkan::Texture& source, u32 l
                          {width, height, 1u}};
 
   VkCommandBuffer cmdbuf = g_vulkan_context->GetCurrentCommandBuffer();
-  const Vulkan::Util::DebugScope debugScope(cmdbuf, "Downsample Framebuffer Adaptive:");
+  const Vulkan::Util::DebugScope outer_scope(cmdbuf, "Downsample Framebuffer Adaptive:");
 
   source.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
   m_downsample_texture.TransitionSubresourcesToLayout(cmdbuf, 0, 1, 0, 1, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
@@ -1967,7 +1967,7 @@ void GPU_HW_Vulkan::DownsampleFramebufferAdaptive(Vulkan::Texture& source, u32 l
   const u32 levels = m_downsample_texture.GetLevels();
   for (u32 level = 1; level < levels; level++)
   {
-    const Vulkan::Util::DebugScope debugScope(cmdbuf, "Generate Mip: %u", level);
+    const Vulkan::Util::DebugScope mip_scope(cmdbuf, "Generate Mip: %u", level);
     m_downsample_texture.TransitionSubresourcesToLayout(
       cmdbuf, level, 1, 0, 1, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
@@ -1995,7 +1995,7 @@ void GPU_HW_Vulkan::DownsampleFramebufferAdaptive(Vulkan::Texture& source, u32 l
 
   // blur pass at lowest resolution
   {
-    const Vulkan::Util::DebugScope debugScope(cmdbuf, "Blur Pass at lowest resolution");
+    const Vulkan::Util::DebugScope blur_scope(cmdbuf, "Blur Pass at lowest resolution");
     const u32 last_level = levels - 1;
 
     m_downsample_weight_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
@@ -2023,7 +2023,7 @@ void GPU_HW_Vulkan::DownsampleFramebufferAdaptive(Vulkan::Texture& source, u32 l
 
   // resolve pass
   {
-    const Vulkan::Util::DebugScope debugScope(cmdbuf, "Resolve pass");
+    const Vulkan::Util::DebugScope resolve_scope(cmdbuf, "Resolve pass");
     m_display_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
     BeginRenderPass(m_display_load_render_pass, m_display_framebuffer, left, top, width, height);
