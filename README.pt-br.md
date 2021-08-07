@@ -18,6 +18,7 @@ Um arquivo de "BIOS" é obrigátorio para inicar o emulador para que os jogos in
 ## Últimas Notícias
 Notícias mais antigas estão disponíveis em: https://github.com/stenzek/duckstation/blob/master/NEWS.md
 
+- 2021/07/25: Agora é possível inicializar jogos diretamente do CD-ROM.
 - 2021/07/11: Adicionardo porte do emulador para UWP/Xbox. Siga as instruções para a plataforma universal do Windows ou para Xbox One S|X.
 - 2021/07/10: Renderizador de hardware Direct3D12 adicionado. Suavização de  imagem ou pós-processamento não incluído (feito tendo em vista mais o uso com Xbox).
 - 2021/06/25: Agora é possível recuperar arquivos do editor de cartão de memória adicionado.
@@ -51,7 +52,7 @@ O DuckStation apresenta um front-end completo construído usando Qt, bem como um
 
 Outras características incluem:
 
- - CPU Recompilador/JIT (x86-64, armv7/AArch32 and AArch64)
+ - CPU Recompilador/JIT (x86-64, armv7/AArch32 e também para AArch64)
  - Hardware (D3D11, OpenGL, Vulkan) e renderizador por software
  - Aumento de resolução, filtragem de textura, "função true color" (24-bit) nos renderizadores baseados por hardware (placa de vídeo)
  - PGXP para precisão de geometria, correção de textura, e profundidade de campo
@@ -107,6 +108,24 @@ Configurando:
 https://support.microsoft.com/en-us/topic/update-to-enable-tls-1-1-and-tls-1-2-as-default-secure-protocols-in-winhttp-in-windows-c4bd73d2-31d7-761e-0178-11268bb10392
 
 A versão QT inclui um analisador de atualizações automáticas. Versões baixadas depois 07/08/2020 seraão automaticamente verificadas por atualizações cada vez que o emulador é iniciado, esta função pode ser desligada nas configurações. Como alternativa, é possível também checar manualmente no menu `Ajuda -> Checar por atualizações`.
+
+### Plataforma Universal Windows (UWP) / Xbox One
+
+A versão do Duckstation em modo tela cheia está disponível para Xbox one e UWP.
+
+Usando no Xbox One:
+
+1. Certifique-se de que seu console esteja no modo de desenvolvedor. Você precisará adquirir uma licença de desenvolvedor da Microsoft.
+2. Baixe a seguinte versão do emulador: duckstation-uwp.appx.
+3. Navegue até o portal do dispositivo no seu console (conforme exibido na tela inicial).
+4. Instale o arquivo appx clicando em adicionar na página principal.
+5. Defina o aplicativo para o modo Jogo ao invés do modo aplicativo: role a lista para baixo e procure por Duckstation, vá até a opção 'modo de visualização', selecione exibir detalhes e altere para Jogo. 
+6. Carregue uma imagem do BIOS para o diretório local do Duckstation ou coloque uma imagem do BIOS em uma unidade USB removível. Se estiver usando uma unidade USB, você precisará definir o caminho do BIOS nas configurações do DuckStation apontando para este diretório.
+7. Adicione jogos ao diretório de jogos local ou use uma unidade USB removível. Novamente, você terá que registrar este caminho nas configurações da lista de jogos para que ele possa ser lido.
+8. Abra o aplicativo e divirta-se. Por padrão, o botão 'Exibir` irá abrir o menu rápido.
+9. Não se esqueça de habilitar os aprimoramentos, um Xbox One S pode aumentar a resolução de 8x com saída de vídeo em até 4K, os consoles da série S podem até ir além disto.
+
+**NOTA:** Recomendaria usar uma unidade USB para salvar os cartões de memória, pois o diretório de local será removido caso você desinstale o aplicativo.
 
 ### Linux
 
