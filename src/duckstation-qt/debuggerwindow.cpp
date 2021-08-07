@@ -349,6 +349,7 @@ void DebuggerWindow::onMemorySearchTriggered()
   m_ui.memoryView->clearHighlightRange();
 
   const QString pattern_str = m_ui.memorySearchString->text();
+  qsizetype str_size = pattern_str.length();
   if (pattern_str.isEmpty())
     return;
 
@@ -357,55 +358,72 @@ void DebuggerWindow::onMemorySearchTriggered()
   u8 spattern = 0;
   u8 smask = 0;
   bool msb = false;
+  bool is_string = false;
 
-  pattern.reserve(static_cast<size_t>(pattern_str.length()) / 2);
-  mask.reserve(static_cast<size_t>(pattern_str.length()) / 2);
+  pattern.reserve(static_cast<size_t>(str_size) / 2);
+  mask.reserve(static_cast<size_t>(str_size) / 2);
 
-  for (int i = 0; i < pattern_str.length(); i++)
+  if (pattern_str[0].unicode() == '"' && pattern_str[str_size - 1].unicode() == '"')
   {
-    const QChar ch = pattern_str[i];
-    if (ch == ' ')
-      continue;
-
-    if (ch == '?')
+    is_string = true;
+    smask = 0xFF;
+    for (int i = 1; i < str_size - 1; i++)
     {
-      spattern = (spattern << 4);
-      smask = (smask << 4);
-    }
-    else if (ch.isDigit())
-    {
-      spattern = (spattern << 4) | static_cast<u8>(ch.digitValue());
-      smask = (smask << 4) | 0xF;
-    }
-    else if (ch.unicode() >= 'a' && ch.unicode() <= 'f')
-    {
-      spattern = (spattern << 4) | (0xA + static_cast<u8>(ch.unicode() - 'a'));
-      smask = (smask << 4) | 0xF;
-    }
-    else if (ch.unicode() >= 'A' && ch.unicode() <= 'F')
-    {
-      spattern = (spattern << 4) | (0xA + static_cast<u8>(ch.unicode() - 'A'));
-      smask = (smask << 4) | 0xF;
-    }
-    else
-    {
-      QMessageBox::critical(this, windowTitle(),
-                            tr("Invalid search pattern. It should contain hex digits or question marks."));
-      return;
-    }
-
-    if (msb)
-    {
+      spattern = static_cast<u8>(pattern_str[i].toLatin1());
       pattern.push_back(spattern);
       mask.push_back(smask);
       spattern = 0;
-      smask = 0;
     }
-
-    msb = !msb;
   }
 
-  if (msb)
+  if (!is_string)
+  {
+    for (int i = 0; i < str_size; i++)
+    {
+      const QChar ch = pattern_str[i];
+      if (ch == ' ')
+        continue;
+
+      if (ch == '?')
+      {
+        spattern = (spattern << 4);
+        smask = (smask << 4);
+      }
+      else if (ch.isDigit())
+      {
+        spattern = (spattern << 4) | static_cast<u8>(ch.digitValue());
+        smask = (smask << 4) | 0xF;
+      }
+      else if (ch.unicode() >= 'a' && ch.unicode() <= 'f')
+      {
+        spattern = (spattern << 4) | (0xA + static_cast<u8>(ch.unicode() - 'a'));
+        smask = (smask << 4) | 0xF;
+      }
+      else if (ch.unicode() >= 'A' && ch.unicode() <= 'F')
+      {
+        spattern = (spattern << 4) | (0xA + static_cast<u8>(ch.unicode() - 'A'));
+        smask = (smask << 4) | 0xF;
+      }
+      else
+      {
+        QMessageBox::critical(this, windowTitle(),
+                              tr("Invalid search pattern or string. Patterns should contain hex digits or question marks; strings should start and end with double quotes."));
+        return;
+      }
+
+      if (msb)
+      {
+        pattern.push_back(spattern);
+        mask.push_back(smask);
+        spattern = 0;
+        smask = 0;
+      }
+
+      msb = !msb;
+    }
+  }
+
+  if (msb && !is_string)
   {
     // partial byte on the end
     spattern = (spattern << 4);
@@ -417,7 +435,7 @@ void DebuggerWindow::onMemorySearchTriggered()
   if (pattern.empty())
   {
     QMessageBox::critical(this, windowTitle(),
-                          tr("Invalid search pattern. It should contain hex digits or question marks."));
+                          tr("Invalid search pattern or string. Patterns should contain hex digits or question marks; strings should start and end with double quotes."));
     return;
   }
 
