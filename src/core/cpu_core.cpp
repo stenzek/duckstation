@@ -744,7 +744,7 @@ ALWAYS_INLINE_RELEASE static bool ConditionalBreakpointLookAhead(u32 inst_bits)
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       u8 old_value;
-      if (!ReadMemoryByte(addr, &old_value))
+      if (!SafeReadMemoryByte(addr, &old_value))
         return false;
       u8 new_value = Truncate8(ReadReg(inst.i.rt));
       DataBreakpointCheck<MemoryAccessType::Write>(addr, old_value != new_value);
@@ -754,7 +754,7 @@ ALWAYS_INLINE_RELEASE static bool ConditionalBreakpointLookAhead(u32 inst_bits)
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       u16 old_value;
-      if (!ReadMemoryHalfWord(addr, &old_value))
+      if (!SafeReadMemoryHalfWord(addr, &old_value))
         return false;
       u16 new_value = Truncate16(ReadReg(inst.i.rt));
       DataBreakpointCheck<MemoryAccessType::Write>(addr, (old_value & 0xFF) != (new_value & 0xFF));
@@ -765,7 +765,7 @@ ALWAYS_INLINE_RELEASE static bool ConditionalBreakpointLookAhead(u32 inst_bits)
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       u32 old_value;
-      if (!ReadMemoryWord(addr, &old_value))
+      if (!SafeReadMemoryWord(addr, &old_value))
         return false;
       u32 new_value = ReadReg(inst.i.rt);
       DataBreakpointCheck<MemoryAccessType::Write>(addr, (old_value & 0xFF) != (new_value & 0xFF));
@@ -780,7 +780,7 @@ ALWAYS_INLINE_RELEASE static bool ConditionalBreakpointLookAhead(u32 inst_bits)
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       const VirtualMemoryAddress aligned_addr = addr & ~UINT32_C(3);
       u32 old_value;
-      if (!ReadMemoryWord(aligned_addr, &old_value))
+      if (!SafeReadMemoryWord(aligned_addr, &old_value))
         return false;
 
       const u32 reg_value = ReadReg(inst.i.rt);
