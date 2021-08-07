@@ -2069,9 +2069,13 @@ void CommonHostInterface::SetRewindState(bool enabled)
       return;
     }
 
-    AddOSDMessage(enabled ? TranslateStdString("OSDMessage", "Rewinding...") :
-                            TranslateStdString("OSDMessage", "Stopped rewinding."),
-                  5.0f);
+    if (!m_fullscreen_ui_enabled)
+    {
+      AddOSDMessage(enabled ? TranslateStdString("OSDMessage", "Rewinding...") :
+                              TranslateStdString("OSDMessage", "Stopped rewinding."),
+                    5.0f);
+    }
+
     System::SetRewinding(enabled);
     UpdateSpeedLimiterState();
   }
