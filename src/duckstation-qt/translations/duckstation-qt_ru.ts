@@ -442,7 +442,7 @@ Login token generated on %2.</source>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="203"/>
         <source>Create Save State Backups</source>
-        <translation type="unfinished">Создание Резервных копий Состояний сохранения</translation>
+        <translation>Создание резервных копий состояний сохранения</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="206"/>
@@ -452,7 +452,7 @@ Login token generated on %2.</source>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="206"/>
         <source>Information</source>
-        <translation type="unfinished">Информация</translation>
+        <translation>Информация</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="207"/>
@@ -495,7 +495,7 @@ Login token generated on %2.</source>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="217"/>
         <source>Shows a debug menu bar with additional statistics and quick settings.</source>
-        <translation type="unfinished">Показывает строку меню отладки с дополнительной статистикой и быстрыми настройками.</translation>
+        <translation>Показывает строку меню отладки с дополнительной статистикой и быстрыми настройками.</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="150"/>
@@ -1182,7 +1182,7 @@ Login token generated on %2.</source>
         <location filename="../biossettingswidget.ui" line="169"/>
         <location filename="../biossettingswidget.cpp" line="99"/>
         <source>Enable TTY Output</source>
-        <translation type="unfinished">Включить TTY вывод</translation>
+        <translation>Включить TTY вывод</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.cpp" line="16"/>
@@ -1192,8 +1192,9 @@ Login token generated on %2.</source>
     <message>
         <location filename="../biossettingswidget.cpp" line="58"/>
         <source>Unknown</source>
-        <translatorcomment>**Неизвестный (список биос)</translatorcomment>
-        <translation type="unfinished">Неизвестно</translation>
+        <translatorcomment>**Неизвестный, неизвестен, неизвестно (список биос)
+неизвестный, неустановленный, незнакомый, неопознанный</translatorcomment>
+        <translation>Неизвестный</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.cpp" line="96"/>
@@ -1204,12 +1205,12 @@ Login token generated on %2.</source>
     <message>
         <location filename="../biossettingswidget.cpp" line="97"/>
         <source>Patches the BIOS to skip the console&apos;s boot animation. Does not work with all games, but usually safe to enable.</source>
-        <translation type="unfinished">Исправляет BIOS, чтобы пропустить загрузочную анимацию консоли. Не работает со всеми играми, но обычно безопасно для включения.</translation>
+        <translation>Исправляет BIOS, чтобы пропустить анимацию загрузки консоли. Работает не со всеми играми, но обычно безопасен для включения.</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.cpp" line="100"/>
         <source>Patches the BIOS to log calls to printf(). Only use when debugging, can break games.</source>
-        <translation type="unfinished"></translation>
+        <translation>Исправляет BIOS для журналирования вызовов функции printf(). Используется только при отладке, может ломать игры.</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.cpp" line="155"/>
@@ -1240,17 +1241,17 @@ Login token generated on %2.</source>
     <message>
         <location filename="../../core/settings.cpp" line="626"/>
         <source>Disabled (Slowest)</source>
-        <translation type="unfinished">Отключено (Самый медленный)</translation>
+        <translation>Отключено (Самый медленный)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="627"/>
         <source>MMap (Hardware, Fastest, 64-Bit Only)</source>
-        <translation type="unfinished">MMap (Аппаратный, Самый быстрый, Только 64-битный)</translation>
+        <translation>MMap (Аппаратный, Самый быстрый, Только 64-битный)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="628"/>
         <source>LUT (Faster)</source>
-        <translation type="unfinished">LUT (Быстрее)</translation>
+        <translation>LUT (Быстрее)</translation>
     </message>
 </context>
 <context>
@@ -1304,7 +1305,7 @@ Login token generated on %2.</source>
     <message>
         <location filename="../cheatcodeeditordialog.cpp" line="26"/>
         <source>Instructions are invalid.</source>
-        <translation type="unfinished">Инструкции недействительны.</translation>
+        <translation>Инструкции недействительны.</translation>
     </message>
 </context>
 <context>
@@ -1317,7 +1318,7 @@ Login token generated on %2.</source>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="24"/>
         <source>Cheat List</source>
-        <translation type="unfinished">Список читов</translation>
+        <translation>Список читов</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="32"/>
@@ -1370,23 +1371,23 @@ Login token generated on %2.</source>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="126"/>
         <source>Name</source>
-        <translation type="unfinished">Имя</translation>
+        <translation>Имя</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="131"/>
         <location filename="../cheatmanagerdialog.ui" line="598"/>
         <source>Type</source>
-        <translation type="unfinished">Тип</translation>
+        <translation>Тип</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="136"/>
         <source>Activation</source>
-        <translation type="unfinished">Активация</translation>
+        <translation>Активация</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="141"/>
         <source>Instructions</source>
-        <translation type="unfinished">Инструкции</translation>
+        <translation>Инструкции</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="150"/>
@@ -1397,13 +1398,13 @@ Login token generated on %2.</source>
         <location filename="../cheatmanagerdialog.ui" line="185"/>
         <location filename="../cheatmanagerdialog.ui" line="593"/>
         <source>Address</source>
-        <translation type="unfinished">Адрес</translation>
+        <translation>Адрес</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="190"/>
         <location filename="../cheatmanagerdialog.ui" line="603"/>
         <source>Value</source>
-        <translation type="unfinished">Значение</translation>
+        <translation>Значение</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="195"/>
@@ -1418,7 +1419,7 @@ Login token generated on %2.</source>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="211"/>
         <source>Value:</source>
-        <translation type="unfinished">Значение:</translation>
+        <translation>Значение:</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="227"/>
@@ -1558,12 +1559,12 @@ Login token generated on %2.</source>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="399"/>
         <source>Preset Range:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Заданный диапазон:</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="407"/>
         <source>RAM</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ОЗУ</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="412"/>
@@ -1593,12 +1594,13 @@ Login token generated on %2.</source>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="462"/>
         <source>Add Selected Results To Watch List</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>*просмотра?</translatorcomment>
+        <translation type="unfinished">Добавить выбранные результаты в список наблюдения</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="498"/>
         <source>Number of Results (Display limited to first 5000) : </source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Количество результатов (Отображение ограничено первыми 5000) : </translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="538"/>
@@ -1618,7 +1620,8 @@ Login token generated on %2.</source>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="628"/>
         <source>Remove Selected Entries from Watch List</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>*просмортра?</translatorcomment>
+        <translation type="unfinished">Удалить выбранные записи из списка наблюдения</translation>
     </message>
     <message>
         <source>Description</source>
@@ -1642,12 +1645,12 @@ Login token generated on %2.</source>
     <message>
         <location filename="../cheatmanagerdialog.cpp" line="21"/>
         <source>Halfword</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Полуслово</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.cpp" line="22"/>
         <source>Word</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Слово</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.cpp" line="22"/>
@@ -1831,7 +1834,7 @@ Login token generated on %2.</source>
     <message>
         <location filename="../../frontend-common/cheevos.cpp" line="579"/>
         <source> (Hardcore Mode)</source>
-        <translation type="unfinished"> (Хардкорный режим)</translation>
+        <translation> (Хардкорный режим)</translation>
     </message>
     <message>
         <location filename="../../frontend-common/cheevos.cpp" line="585"/>
@@ -2634,12 +2637,12 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../debuggerwindow.ui" line="146"/>
         <source>Memory</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Память</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="168"/>
         <source>RAM</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ОЗУ</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="178"/>
@@ -2659,7 +2662,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../debuggerwindow.ui" line="217"/>
         <source>Search</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Поиск</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="265"/>
@@ -2744,7 +2747,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../debuggerwindow.ui" line="364"/>
         <source>&amp;Close</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Закрыть</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="373"/>
@@ -2909,7 +2912,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../debuggerwindow.cpp" line="281"/>
         <location filename="../debuggerwindow.cpp" line="308"/>
         <source>Invalid search pattern. It should contain hex digits or question marks.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Неверный шаблон поиска. Он должен содержать шестнадцатеричные цифры или вопросительные знаки.</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.cpp" line="320"/>
@@ -3432,12 +3435,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../emulationsettingswidget.ui" line="48"/>
         <source>Fast Forward Speed:</source>
-        <translation type="unfinished">Быстрая перемотка вперед:</translation>
+        <translation type="unfinished">Перемотка вперед:</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="58"/>
         <source>Turbo Speed:</source>
-        <translation type="unfinished">Турбо скорость:</translation>
+        <translation type="unfinished">Ускорение:</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="71"/>
@@ -3548,7 +3551,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="56"/>
         <source>Fast Forward Speed</source>
-        <translation type="unfinished">Быстрая перемотка вперед</translation>
+        <translation type="unfinished">Перемотка вперед</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="56"/>
@@ -3559,17 +3562,17 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="57"/>
         <source>Sets the fast forward speed. This speed will be used when the fast forward hotkey is pressed/toggled.</source>
-        <translation type="unfinished">Устанавливает скорость быстрой перемотки вперед. Эта скорость будет использоваться при нажатии/переключении горячей клавиши быстрой перемотки вперед.</translation>
+        <translation type="unfinished">Устанавливает скорость перемотки вперед. Эта скорость будет использоваться при нажатии/переключении горячей клавиши перемотки вперед.</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="59"/>
         <source>Turbo Speed</source>
-        <translation type="unfinished">Турбо скорость</translation>
+        <translation type="unfinished">Ускорение</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="60"/>
         <source>Sets the turbo speed. This speed will be used when the turbo hotkey is pressed/toggled. Turboing will take priority over fast forwarding if both hotkeys are pressed/toggled.</source>
-        <translation type="unfinished">Устанавливает скорость &quot;Турбо скорости&quot;. Эта скорость будет использоваться при нажатии/переключении горячей клавиши &quot;Турбо скорость&quot;. &quot;Турбо скорость&quot; будет иметь приоритет над &quot;Быстрой перемоткой вперед&quot;, если обе горячие клавиши будут нажаты/переключены.</translation>
+        <translation type="unfinished">Устанавливает скорость &quot;Ускорения&quot;. Эта скорость будет использоваться при нажатии/переключении горячей клавиши &quot;Ускорение&quot;. &quot;Ускорение&quot; будет иметь приоритет над &quot;Перемоткой вперед&quot;, если обе горячие клавиши будут нажаты/переключены.</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="63"/>
@@ -4221,12 +4224,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../gamelistsettingswidget.cpp" line="103"/>
         <source>Open Directory...</source>
-        <translation>Открыть папку...</translation>
+        <translation>Открыть каталог...</translation>
     </message>
     <message>
         <location filename="../gamelistsettingswidget.cpp" line="111"/>
         <source>Select Search Directory</source>
-        <translation>Выбрать папку для поиска</translation>
+        <translation>Выбрать каталог для поиска</translation>
     </message>
     <message>
         <location filename="../gamelistsettingswidget.cpp" line="117"/>
@@ -4850,7 +4853,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="23"/>
         <source>Force Software Renderer</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Принудительный программный рендер</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="24"/>
@@ -5216,7 +5219,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2108"/>
         <source>Fast Forward</source>
-        <translation type="unfinished">Быстрая перемотка</translation>
+        <translation type="unfinished">Перемотка вперед</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2111"/>
@@ -5226,12 +5229,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2117"/>
         <source>Turbo</source>
-        <translation type="unfinished">Турбо</translation>
+        <translation type="unfinished">Ускорение</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2120"/>
         <source>Toggle Turbo</source>
-        <translation type="unfinished">Переключить турбо</translation>
+        <translation type="unfinished">Переключить ускорение</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2126"/>
@@ -6483,7 +6486,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../mainwindow.cpp" line="1746"/>
         <source>Do not show again</source>
-        <translation type="unfinished"></translation>
+        <translation>Больше не показывать</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1750"/>
@@ -6492,7 +6495,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
 Cheats persist through save states even after being disabled, please remember to reset/reboot the game after turning off any codes.
 
 Are you sure you want to continue?</source>
-        <translation type="unfinished">Использование читов может иметь непредсказуемые последствия для игр, вызывая сбои, графические сбои и поврежденные сохранения. Используя менеджер читов, вы соглашаетесь с тем, что это неподдерживаемая конфигурация, и мы не будем оказывать вам никакой помощи, когда игры сломаны.
+        <translation>Использование читов может иметь непредсказуемые последствия для игр, вызывая сбои, графические сбои и поврежденные сохранения. Используя менеджер читов, вы соглашаетесь с тем, что это неподдерживаемая конфигурация, и мы не будем оказывать вам никакой помощи, когда игры сломаны.
 
 Читы сохраняются в состоянии сохранения даже после отключения, пожалуйста, не забудьте сбросить/перезагрузить игру после отключения любых кодов.
 
@@ -7126,7 +7129,7 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../core/host_interface.cpp" line="452"/>
         <source>State saved to &apos;%s&apos;.</source>
-        <translation type="unfinished">Состояние сохранено в  &apos;%s&apos;.</translation>
+        <translation type="unfinished">Состояние сохранено в &apos;%s&apos;.</translation>
     </message>
     <message>
         <location filename="../../core/host_interface.cpp" line="682"/>
@@ -7136,7 +7139,7 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../core/host_interface.cpp" line="699"/>
         <source>Rewind is not supported on 32-bit ARM for Android.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Перемотка назад не поддерживается на 32-разрядном ARM для Android.</translation>
     </message>
     <message>
         <location filename="../../core/host_interface.cpp" line="737"/>
@@ -7189,12 +7192,12 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../core/host_interface.cpp" line="1109"/>
         <source>Switching to %s renderer...</source>
-        <translation type="unfinished">Переключение на %s рендеринг...</translation>
+        <translation type="unfinished">Переключение рендера на %s...</translation>
     </message>
     <message>
         <location filename="../../core/memory_card.cpp" line="277"/>
         <source>Memory card at &apos;%s&apos; could not be read, formatting.</source>
-        <translation type="unfinished">Карта памяти в  &apos;%s&apos; не читается, выполняется форматирование.</translation>
+        <translation type="unfinished">Карта памяти в &apos;%s&apos; не читается, выполняется форматирование.</translation>
     </message>
     <message>
         <location filename="../../core/memory_card.cpp" line="313"/>
@@ -7274,7 +7277,7 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../core/system.cpp" line="1032"/>
         <source>Failed to initialize %s renderer, falling back to software renderer.</source>
-        <translation type="unfinished">Не удалось инициализировать рендерер %s, возврат к программному рендереру.</translation>
+        <translation type="unfinished">Не удалось инициализировать рендер %s, возврат к программному рендеру.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="1120"/>
@@ -7340,22 +7343,22 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2035"/>
         <source>Fast forwarding...</source>
-        <translation type="unfinished">Перемотка вперед...</translation>
+        <translation>Перемотка вперед...</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2036"/>
         <source>Stopped fast forwarding.</source>
-        <translation type="unfinished">Остановлена перемотка вперед.</translation>
+        <translation>Перемотка вперед остановлена.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2051"/>
         <source>Turboing...</source>
-        <translation type="unfinished"></translation>
+        <translation>Ускорение...</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2052"/>
         <source>Stopped turboing.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ускорение остановлено.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2021"/>
@@ -7366,12 +7369,12 @@ Are you sure you want to continue?</source>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2074"/>
         <source>Rewinding...</source>
         <translatorcomment>возврат*</translatorcomment>
-        <translation type="unfinished">Перемотка назад...</translation>
+        <translation>Перемотка назад...</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2075"/>
         <source>Stopped rewinding.</source>
-        <translation type="unfinished">Перемотка назад остановлена.</translation>
+        <translation>Перемотка назад остановлена.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2311"/>
@@ -7406,7 +7409,7 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2067"/>
         <source>Rewinding is not enabled.</source>
-        <translation type="unfinished">Перемотка назад не включена.</translation>
+        <translation>Перемотка назад не включена.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2180"/>
@@ -7470,17 +7473,17 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="3427"/>
         <source>Started dumping audio to &apos;%s&apos;.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Запущен дамп звука в &apos;%s&apos;.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="3432"/>
         <source>Failed to start dumping audio to &apos;%s&apos;.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Не удалось начать дамп звкука в &apos;%s&apos;.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="3442"/>
         <source>Stopped dumping audio.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Дамп звука остановлен.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="3472"/>
@@ -7662,7 +7665,7 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="1303"/>
         <source>True color disabled by game settings.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">True color отключен настройками игры.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="1314"/>
@@ -7688,12 +7691,12 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="1362"/>
         <source>PGXP geometry correction disabled by game settings.</source>
-        <translation type="unfinished">Исправление геометрии PGXP отключено настройками игры.</translation>
+        <translation type="unfinished">Коррекция геометрии PGXP отключено настройками игры.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="1374"/>
         <source>PGXP culling disabled by game settings.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Отбраковка PGXP отключена настройками игры.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="1385"/>
@@ -7928,7 +7931,7 @@ URL: %1</translation>
     <message>
         <location filename="../qthostinterface.cpp" line="396"/>
         <source>No resume save state found.</source>
-        <translation type="unfinished">Сохранение состояния не найдено.</translation>
+        <translation type="unfinished">Состояние сохранения не найдено.</translation>
     </message>
     <message>
         <location filename="../qthostinterface.cpp" line="982"/>
@@ -7939,13 +7942,13 @@ URL: %1</translation>
         <location filename="../qthostinterface.cpp" line="984"/>
         <location filename="../qthostinterface.cpp" line="1026"/>
         <source>Select Save State File</source>
-        <translation type="unfinished">Выберите файл Сохраненное состояние</translation>
+        <translation type="unfinished">Выберите файл состояния сохранения</translation>
     </message>
     <message>
         <location filename="../qthostinterface.cpp" line="984"/>
         <location filename="../qthostinterface.cpp" line="1026"/>
         <source>Save States (*.sav)</source>
-        <translation type="unfinished">Сохраненные состояния (*.sav)</translation>
+        <translation>Сохраненные состояния (*.sav)</translation>
     </message>
     <message>
         <location filename="../qthostinterface.cpp" line="990"/>
@@ -8225,7 +8228,7 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../settingsdialog.ui" line="223"/>
         <source>Restore Defaults</source>
-        <translation type="unfinished">Сброс настроек</translation>
+        <translation>Сброс настроек</translation>
     </message>
     <message>
         <location filename="../settingsdialog.ui" line="243"/>
@@ -8295,12 +8298,12 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../settingsdialog.cpp" line="150"/>
         <source>Confirm Restore Defaults</source>
-        <translation type="unfinished">Подтвердите восстановление настроек по умолчанию</translation>
+        <translation>Подтвердите восстановление настроек по умолчанию</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="151"/>
         <source>Are you sure you want to restore the default settings? Any preferences will be lost.</source>
-        <translation type="unfinished">Уверены, что хотите восстановить настройки по умолчанию? Персональные настройки будут потеряны.</translation>
+        <translation>Уверены, что хотите восстановить настройки по умолчанию? Персональные настройки будут потеряны.</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="167"/>
