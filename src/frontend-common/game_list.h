@@ -99,6 +99,7 @@ public:
   const u32 GetEntryCount() const { return static_cast<u32>(m_entries.size()); }
   const std::vector<DirectoryEntry>& GetSearchDirectories() const { return m_search_directories; }
   const u32 GetSearchDirectoryCount() const { return static_cast<u32>(m_search_directories.size()); }
+  const bool IsGameListLoaded() const { return m_game_list_loaded; }
 
   const GameListEntry* GetEntryForPath(const char* path) const;
   const GameListCompatibilityEntry* GetCompatibilityEntryForCode(const std::string& code) const;
@@ -187,4 +188,5 @@ private:
   bool m_database_load_tried = false;
   bool m_compatibility_list_load_tried = false;
   bool m_game_settings_load_tried = false;
+  bool m_game_list_loaded = false;
 };

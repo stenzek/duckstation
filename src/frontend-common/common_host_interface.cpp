@@ -617,20 +617,26 @@ void CommonHostInterface::OnHostDisplayResized()
     ImGui::GetStyle().WindowMinSize = ImVec2(1.0f, 1.0f);
     ImGui::StyleColorsDarker();
     ImGui::GetStyle().ScaleAllSizes(new_scale);
-    ImGuiFullscreen::ResetFonts();
-    if (!m_display->UpdateImGuiFontTexture())
-      Panic("Failed to recreate font texture after resize");
-  }
 
-  if (m_fullscreen_ui_enabled)
-  {
-    if (ImGuiFullscreen::UpdateLayoutScale())
+    if (m_fullscreen_ui_enabled)
     {
-      if (ImGuiFullscreen::UpdateFonts())
-      {
-        if (!m_display->UpdateImGuiFontTexture())
-          Panic("Failed to update font texture");
-      }
+      ImGuiFullscreen::UpdateLayoutScale();
+      ImGuiFullscreen::UpdateFonts();
+    }
+    else
+    {
+      ImGuiFullscreen::ResetFonts();
+    }
+
+    if (!m_display->UpdateImGuiFontTexture())
+      Panic("Failed to recreate font texture after scale+resize");
+  }
+  else if (m_fullscreen_ui_enabled && ImGuiFullscreen::UpdateLayoutScale())
+  {
+    if (ImGuiFullscreen::UpdateFonts())
+    {
+      if (!m_display->UpdateImGuiFontTexture())
+        Panic("Failed to update font texture after resize");
     }
   }
 
@@ -2023,9 +2029,13 @@ void CommonHostInterface::SetFastForwardEnabled(bool enabled)
 
   m_fast_forward_enabled = enabled;
   UpdateSpeedLimiterState();
-  AddOSDMessage(enabled ? TranslateStdString("OSDMessage", "Fast forwarding...") :
-                          TranslateStdString("OSDMessage", "Stopped fast forwarding."),
-                2.0f);
+
+  if (!m_fullscreen_ui_enabled)
+  {
+    AddOSDMessage(enabled ? TranslateStdString("OSDMessage", "Fast forwarding...") :
+                            TranslateStdString("OSDMessage", "Stopped fast forwarding."),
+                  2.0f);
+  }
 }
 
 void CommonHostInterface::SetTurboEnabled(bool enabled)
@@ -2035,9 +2045,13 @@ void CommonHostInterface::SetTurboEnabled(bool enabled)
 
   m_turbo_enabled = enabled;
   UpdateSpeedLimiterState();
-  AddOSDMessage(enabled ? TranslateStdString("OSDMessage", "Turboing...") :
-                          TranslateStdString("OSDMessage", "Stopped turboing."),
-                2.0f);
+
+  if (!m_fullscreen_ui_enabled)
+  {
+    AddOSDMessage(enabled ? TranslateStdString("OSDMessage", "Turboing...") :
+                            TranslateStdString("OSDMessage", "Stopped turboing."),
+                  2.0f);
+  }
 }
 
 void CommonHostInterface::SetRewindState(bool enabled)
@@ -2055,9 +2069,13 @@ void CommonHostInterface::SetRewindState(bool enabled)
       return;
     }
 
-    AddOSDMessage(enabled ? TranslateStdString("OSDMessage", "Rewinding...") :
-                            TranslateStdString("OSDMessage", "Stopped rewinding."),
-                  5.0f);
+    if (!m_fullscreen_ui_enabled)
+    {
+      AddOSDMessage(enabled ? TranslateStdString("OSDMessage", "Rewinding...") :
+                              TranslateStdString("OSDMessage", "Stopped rewinding."),
+                    5.0f);
+    }
+
     System::SetRewinding(enabled);
     UpdateSpeedLimiterState();
   }
@@ -3228,7 +3246,8 @@ void CommonHostInterface::CheckForSettingsChanges(const Settings& old_settings)
 
   if (g_settings.log_level != old_settings.log_level || g_settings.log_filter != old_settings.log_filter ||
       g_settings.log_to_console != old_settings.log_to_console ||
-      g_settings.log_to_window != old_settings.log_to_window || g_settings.log_to_file != old_settings.log_to_file)
+      g_settings.log_to_debug != old_settings.log_to_debug || g_settings.log_to_window != old_settings.log_to_window ||
+      g_settings.log_to_file != old_settings.log_to_file)
   {
     UpdateLogSettings(g_settings.log_level, g_settings.log_filter.empty() ? nullptr : g_settings.log_filter.c_str(),
                       g_settings.log_to_console, g_settings.log_to_debug, g_settings.log_to_window,

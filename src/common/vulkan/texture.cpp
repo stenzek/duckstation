@@ -239,6 +239,8 @@ void Texture::TransitionToLayout(VkCommandBuffer command_buffer, VkImageLayout n
 {
   if (m_layout == new_layout)
     return;
+  const Vulkan::Util::DebugScope debugScope(command_buffer, "Texture::TransitionToLayout: %s",
+                                            Vulkan::Util::VkImageLayoutToString(new_layout));
 
   TransitionSubresourcesToLayout(command_buffer, 0, m_levels, 0, m_layers, m_layout, new_layout);
 
@@ -249,6 +251,11 @@ void Texture::TransitionSubresourcesToLayout(VkCommandBuffer command_buffer, u32
                                              u32 start_layer, u32 num_layers, VkImageLayout old_layout,
                                              VkImageLayout new_layout)
 {
+  const Vulkan::Util::DebugScope debugScope(
+    command_buffer, "Texture::TransitionSubresourcesToLayout: Lvl:[%u,%u) Lyr:[%u,%u) %s -> %s", start_level,
+    start_level + num_levels, start_layer, start_layer + num_layers, Vulkan::Util::VkImageLayoutToString(old_layout),
+    Vulkan::Util::VkImageLayoutToString(new_layout));
+
   VkImageMemoryBarrier barrier = {
     VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER, // VkStructureType            sType
     nullptr,                                // const void*                pNext
@@ -359,7 +366,6 @@ void Texture::TransitionSubresourcesToLayout(VkCommandBuffer command_buffer, u32
       dstStageMask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
       break;
   }
-
   vkCmdPipelineBarrier(command_buffer, srcStageMask, dstStageMask, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 }
 
@@ -382,6 +388,8 @@ void Texture::UpdateFromBuffer(VkCommandBuffer cmdbuf, u32 level, u32 layer, u32
                                VkBuffer buffer, u32 buffer_offset)
 {
   const VkImageLayout old_layout = m_layout;
+  const Vulkan::Util::DebugScope debugScope(cmdbuf, "Texture::UpdateFromBuffer: Lvl:%u Lyr:%u {%u,%u} %ux%u", level,
+                                            layer, x, y, width, height);
   TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
   const VkBufferImageCopy bic = {static_cast<VkDeviceSize>(buffer_offset),

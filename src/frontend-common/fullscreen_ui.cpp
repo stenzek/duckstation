@@ -3420,10 +3420,14 @@ void DrawStatsOverlay()
       DRAW_LINE(g_large_font, g_large_font->FontSize, 0.0f, IM_COL32(255, 255, 255, 255));
     }
 
-    if (s_show_status_indicators && (s_host_interface->IsFastForwardEnabled() || s_host_interface->IsTurboEnabled()))
+    if (s_show_status_indicators)
     {
-      text.Assign(ICON_FA_FAST_FORWARD);
-      DRAW_LINE(g_large_font, g_large_font->FontSize * 2.0f, margin, IM_COL32(255, 255, 255, 255));
+      const bool rewinding = System::IsRewinding();
+      if (rewinding || s_host_interface->IsFastForwardEnabled() || s_host_interface->IsTurboEnabled())
+      {
+        text.Assign(rewinding ? ICON_FA_FAST_BACKWARD : ICON_FA_FAST_FORWARD);
+        DRAW_LINE(g_large_font, g_large_font->FontSize * 2.0f, margin, IM_COL32(255, 255, 255, 255));
+      }
     }
   }
   else if (s_show_status_indicators && state == System::State::Paused)

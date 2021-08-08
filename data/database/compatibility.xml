@@ -140,10 +140,18 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1265-gdd9a419</version-tested>
   </entry>
+  <entry code="SCES-00699" compatibility="5" region="PAL" title="Ace Combat 2 (Europe)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4416-g24b4be51</version-tested>
+  </entry>
   <entry code="SLUS-00404" compatibility="5" region="NTSC-U" title="Ace Combat 2 (USA)">
     <compatibility>No Issues</compatibility>
     <upscaling-issues>Bottom left radar (small and large, large appears when holding Square) has slight texture alignment issues. Has been reported in the upscaling issue megathread on Git.</upscaling-issues>
     <version-tested>0.1-1302-gf28ef01</version-tested>
+  </entry>
+  <entry code="SCES-02066" compatibility="5" region="PAL" title="Ace Combat 3 - Electrosphere (Europe) (En,Fr,De,Es,It)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4416-g24b4be51</version-tested>
   </entry>
   <entry code="SLPS-02020" compatibility="5" region="NTSC-J" title="Ace Combat 3 - Electrosphere (Japan, Asia) (Disc 1) (Rev 1)">
     <compatibility>No Issues</compatibility>
@@ -425,6 +433,10 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-986-gfc911de1</version-tested>
   </entry>
+  <entry code="SLES-00748" compatibility="5" region="PAL" title="Ark of Time (Europe) (En,Fr,De,Es,It)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4416-g24b4be51</version-tested>
+  </entry>
   <entry code="SCUS-94182" compatibility="5" region="NTSC-U" title="Armored Core (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1490-g76978986</version-tested>
@@ -626,6 +638,10 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1337-gcaf9943</version-tested>
   </entry>
+  <entry code="SLES-02537" compatibility="5" region="PAL" title="Bishi Bashi Special (Europe)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4416-g24b4be51</version-tested>
+  </entry>
   <entry code="SLUS-01215" compatibility="5" region="NTSC-U" title="Blade (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1409-ge198e315</version-tested>
@@ -771,6 +787,10 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1425-g05f0ce6d</version-tested>
   </entry>
+  <entry code="SCES-03366" compatibility="5" region="PAL" title="C-12 - Final Resistance (Europe) (Es,It)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
+  </entry>
   <entry code="SCUS-94666" compatibility="5" region="NTSC-U" title="C-12 - The Final Resistance (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-908-g9f22684</version-tested>
@@ -859,6 +879,14 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-930-gcb66889</version-tested>
   </entry>
+  <entry code="SCES-02816" compatibility="5" region="PAL" title="Chase the Express - El Expreso de la Muerte (Spain) (Disc 1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
+  </entry>
+  <entry code="SCES-12816" compatibility="5" region="PAL" title="Chase the Express - El Expreso de la Muerte (Spain) (Disc 2)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
+  </entry>
   <entry code="SLUS-01304" compatibility="5" region="NTSC-U" title="Chicken Run (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-986-gfc911de1</version-tested>
@@ -905,6 +933,10 @@
   <entry code="SLUS-01080" compatibility="5" region="NTSC-U" title="Chrono Cross (USA) (Disc 2)">
     <compatibility>No Issues</compatibility>
   </entry>
+  <entry code="SLES-01798" compatibility="5" region="PAL" title="Civilization II (Spain)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
+  </entry>
   <entry code="SLUS-00792" compatibility="5" region="NTSC-U" title="Civilization II (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-908-g9f22684</version-tested>
@@ -917,6 +949,10 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1337-gcaf9943</version-tested>
   </entry>
+  <entry code="SLPS-00917" compatibility="5" region="NTSC-J" title="Clock Tower - The First Fear (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4525-gdfd67664</version-tested>
+  </entry>
   <entry code="SCUS-94409" compatibility="5" region="NTSC-U" title="Codename - Tenka (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-3968-gd9151ceb</version-tested>
@@ -925,13 +961,33 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1669-g455f3591</version-tested>
   </entry>
+  <entry code="SLES-02605" compatibility="5" region="PAL" title="Colin McRae Rally 2.0 (Europe) (En,Fr,De,Es,It)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4315-gf7587eae</version-tested>
+  </entry>
   <entry code="SLUS-01222" compatibility="5" region="NTSC-U" title="Colin McRae Rally 2.0 (USA) (En,Fr,Es)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1641-gb2057ac6</version-tested>
   </entry>
+  <entry code="SLES-00864" compatibility="5" region="PAL" title="Colony Wars (Spain) (Disc 1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
+  </entry>
+  <entry code="SLES-10864" compatibility="5" region="PAL" title="Colony Wars (Spain) (Disc 2)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
+  </entry>
   <entry code="SLUS-00866" compatibility="5" region="NTSC-U" title="Colony Wars - Red Sun (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1558-gf852be74</version-tested>
+  </entry>
+  <entry code="SLES-00530" compatibility="5" region="PAL" title="Command &amp; Conquer (Europe) (Disc 1) (GDI)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
+  </entry>
+  <entry code="SLES-10530" compatibility="5" region="PAL" title="Command &amp; Conquer (Europe) (Disc 2) (GDI)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
   </entry>
   <entry code="SLUS-00379" compatibility="5" region="NTSC-U" title="Command &amp; Conquer (USA) (Disc 1) (GDI)">
     <compatibility>No Issues</compatibility>
@@ -940,6 +996,14 @@
   <entry code="SLUS-00410" compatibility="5" region="NTSC-U" title="Command &amp; Conquer (USA) (Disc 2) (NOD)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-2663-gfd39f09a</version-tested>
+  </entry>
+  <entry code="SLES-00949" compatibility="5" region="PAL" title="Command &amp; Conquer - Red Alert (Europe) (Disc 1) (Allies)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
+  </entry>
+  <entry code="SLES-10949" compatibility="5" region="PAL" title="Command &amp; Conquer - Red Alert (Europe) (Disc 2) (Soviet)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
   </entry>
   <entry code="SLUS-00431" compatibility="5" region="NTSC-U" title="Command &amp; Conquer - Red Alert (USA) (Disc 1) (Allies)">
     <compatibility>No Issues</compatibility>
@@ -972,6 +1036,10 @@
   <entry code="SCUS-94356" compatibility="5" region="NTSC-U" title="Cool Boarders (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1400-gb527118c</version-tested>
+  </entry>
+  <entry code="SCES-00992" compatibility="5" region="PAL" title="Cool Boarders 2 (Europe)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
   </entry>
   <entry code="SCUS-94358" compatibility="5" region="NTSC-U" title="Cool Boarders 2 (USA)">
     <compatibility>No Issues</compatibility>
@@ -1157,6 +1225,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-2433-g9089c973</version-tested>
   </entry>
+  <entry code="SLES-00445" compatibility="5" region="PAL" title="Die Hard Trilogy (Europe) (En,Fr,De,Es,It,Sv)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
+  </entry>
   <entry code="SLUS-00119" compatibility="5" region="NTSC-U" title="Die Hard Trilogy (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-3968-gd9151ceb</version-tested>
@@ -1181,9 +1253,17 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1336-gd711baa</version-tested>
   </entry>
+  <entry code="SLES-02211" compatibility="5" region="PAL" title="Dino Crisis (Spain)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
+  </entry>
   <entry code="SLUS-00922" compatibility="5" region="NTSC-U" title="Dino Crisis (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-908-g9f22684</version-tested>
+  </entry>
+  <entry code="SLES-03225" compatibility="5" region="PAL" title="Dino Crisis 2 (Spain)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
   </entry>
   <entry code="SLUS-01279" compatibility="5" region="NTSC-U" title="Dino Crisis 2 (USA)">
     <compatibility>No Issues</compatibility>
@@ -1213,9 +1293,21 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1645-g42d49426</version-tested>
   </entry>
+  <entry code="SCES-03541" compatibility="5" region="PAL" title="Disney Atlantis - El Imperio Perdido (Spain)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4315-gf7587eae</version-tested>
+  </entry>
+  <entry code="SCES-00895" compatibility="5" region="PAL" title="Disney Juego de Accion Disney Presenta Hercules (Spain)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
+  </entry>
   <entry code="SLUS-01210" compatibility="5" region="NTSC-U" title="Disney Presents Tigger's Honey Hunt (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1558-gf852be74</version-tested>
+  </entry>
+  <entry code="SCES-01519" compatibility="5" region="PAL" title="Disney Tarzan (Spain)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4315-gf7587eae</version-tested>
   </entry>
   <entry code="SLUS-01152" compatibility="5" region="NTSC-U" title="Disney's 102 Dalmatians - Puppies to the Rescue (USA)">
     <compatibility>No Issues</compatibility>
@@ -1274,6 +1366,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-3968-gd9151ceb</version-tested>
   </entry>
+  <entry code="SCES-01523" compatibility="5" region="PAL" title="Disney-Pixar Bichos Una Aventura en Miniatura (Spain)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
+  </entry>
   <entry code="SCUS-94635" compatibility="5" region="NTSC-U" title="Disney-Pixar Monsters, Inc. - Scream Team (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1645-g42d49426</version-tested>
@@ -1294,6 +1390,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-908-g9f22684</version-tested>
     <upscaling-issues>Broken when upscaling</upscaling-issues>
+  </entry>
+  <entry code="SLES-03685" compatibility="5" region="PAL" title="Dragon Ball - Final Bout (Spain)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4315-gf7587eae</version-tested>
   </entry>
   <entry code="SLUS-00493" compatibility="5" region="NTSC-U" title="Dragon Ball GT - Final Bout (USA)">
     <compatibility>No Issues</compatibility>
@@ -1320,6 +1420,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1115-g0b261e8</version-tested>
   </entry>
+  <entry code="SLES-01978" compatibility="5" region="PAL" title="Driver (Spain)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4416-g24b4be51</version-tested>
+  </entry>
   <entry code="SLUS-00842" compatibility="5" region="NTSC-U" title="Driver - You Are the Wheelman (USA) (Rev 1)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1409-ge198e315</version-tested>
@@ -1335,6 +1439,16 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLES-02994" compatibility="5" region="PAL" title="Driver 2 - Back on the Streets (France) (Disc 1)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1115-g0b261e8</version-tested>
+  </entry>
+  <entry code="SLES-02997" compatibility="5" region="PAL" title="Driver 2 - Back on the Streets (Spain) (Disc 1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
+    <comments>Frame drops, it seems to match the console behavior.</comments>
+  </entry>
+  <entry code="SLES-12997" compatibility="5" region="PAL" title="Driver 2 - Back on the Streets (Spain) (Disc 2)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
+    <comments>Frame drops, it seems to match the console behavior.</comments>
   </entry>
   <entry code="SLES-02821" compatibility="5" region="PAL" title="Ducati World (Europe)">
     <compatibility>No Issues</compatibility>
@@ -1482,6 +1596,22 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-2148-g7078f73e</version-tested>
   </entry>
+  <entry code="SLES-02969" compatibility="5" region="PAL" title="Final Fantasy IX (Spain) (Disc 1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4416-g24b4be51</version-tested>
+  </entry>
+  <entry code="SLES-12969" compatibility="5" region="PAL" title="Final Fantasy IX (Spain) (Disc 2)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4416-g24b4be51</version-tested>
+  </entry>
+  <entry code="SLES-22969" compatibility="5" region="PAL" title="Final Fantasy IX (Spain) (Disc 3)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4416-g24b4be51</version-tested>
+  </entry>
+  <entry code="SLES-32969" compatibility="5" region="PAL" title="Final Fantasy IX (Spain) (Disc 4)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4416-g24b4be51</version-tested>
+  </entry>
   <entry code="SLUS-01251" compatibility="5" region="NTSC-U" title="Final Fantasy IX (USA) (Disc 1)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1308-g622e50fa</version-tested>
@@ -1502,6 +1632,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1031-g47138aa</version-tested>
   </entry>
+  <entry code="SCES-03828" compatibility="5" region="PAL" title="Final Fantasy VI (Europe, Australia)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4416-g24b4be51</version-tested>
+  </entry>
   <entry code="SCUS-94163" compatibility="5" region="NTSC-U" title="Final Fantasy VII">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-841-g777809b</version-tested>
@@ -1509,6 +1643,18 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLPS-00700" compatibility="5" region="NTSC-J" title="Final Fantasy VII">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-841-g777809b</version-tested>
+  </entry>
+  <entry code="SCES-00900" compatibility="5" region="PAL" title="Final Fantasy VII (Spain) (Disc 1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4416-g24b4be51</version-tested>
+  </entry>
+  <entry code="SCES-10900" compatibility="5" region="PAL" title="Final Fantasy VII (Spain) (Disc 2)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4416-g24b4be51</version-tested>
+  </entry>
+  <entry code="SCES-20900" compatibility="5" region="PAL" title="Final Fantasy VII (Spain) (Disc 3)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4416-g24b4be51</version-tested>
   </entry>
   <entry code="SCUS-94164" compatibility="5" region="NTSC-U" title="Final Fantasy VII (USA) (Disc 2)">
     <compatibility>No Issues</compatibility>
@@ -1536,6 +1682,22 @@ Tetris with Card Captor Sakura (Japan)
   </entry>
   <entry code="SLPS-01880" compatibility="5" region="NTSC-J" title="Final Fantasy VIII (Japan) (Disc 1)">
     <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLES-02084" compatibility="5" region="PAL" title="Final Fantasy VIII (Spain) (Disc 1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4416-g24b4be51</version-tested>
+  </entry>
+  <entry code="SLES-12084" compatibility="5" region="PAL" title="Final Fantasy VIII (Spain) (Disc 2)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4416-g24b4be51</version-tested>
+  </entry>
+  <entry code="SLES-22084" compatibility="5" region="PAL" title="Final Fantasy VIII (Spain) (Disc 3)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4416-g24b4be51</version-tested>
+  </entry>
+  <entry code="SLES-32084" compatibility="5" region="PAL" title="Final Fantasy VIII (Spain) (Disc 4)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4416-g24b4be51</version-tested>
   </entry>
   <entry code="SLUS-00892" compatibility="5" region="NTSC-U" title="Final Fantasy VIII (USA) (Disc 1)">
     <compatibility>No Issues</compatibility>
@@ -1599,6 +1761,10 @@ Tetris with Card Captor Sakura (Japan)
   </entry>
   <entry code="SLUS-01011" compatibility="5" region="NTSC-U" title="Front Mission 3 (USA)">
     <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="LEEMETXT" compatibility="5" region="NTSC-J" title="Futbol Peruano Turbo">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4525-gdfd67664</version-tested>
   </entry>
   <entry code="SLUS-00739" compatibility="5" region="NTSC-U" title="Future Cop - L.A.P.D. (USA)">
     <compatibility>No Issues</compatibility>
@@ -1689,6 +1855,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-986-gfc911de1</version-tested>
   </entry>
+  <entry code="SLES-01425" compatibility="5" region="PAL" title="Global Domination (Spain)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
+  </entry>
   <entry code="SLUS-00890" compatibility="5" region="NTSC-U" title="Glover (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1425-g05f0ce6d</version-tested>
@@ -1765,6 +1935,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1425-g05f0ce6d</version-tested>
   </entry>
+  <entry code="SCPS-10006" compatibility="5" region="NTSC-J" title="Gunners Heaven (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4525-gdfd67664</version-tested>
+  </entry>
   <entry code="SLUS-01027" compatibility="5" region="NTSC-U" title="HBO Boxing (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-3187-gf580dbc6</version-tested>
@@ -1784,6 +1958,14 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLUS-01115" compatibility="5" region="NTSC-U" title="Harvest Moon - Back to Nature (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1425-g05f0ce6d</version-tested>
+  </entry>
+  <entry code="SLES-00465" compatibility="5" region="PAL" title="Heart of Darkness (Spain) (Disc 1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
+  </entry>
+  <entry code="SLES-10465" compatibility="5" region="PAL" title="Heart of Darkness (Spain) (Disc 2)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
   </entry>
   <entry code="SLUS-00696" compatibility="5" region="NTSC-U" title="Heart of Darkness (USA) (Disc 1)">
     <compatibility>No Issues</compatibility>
@@ -1975,6 +2157,10 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLUS-01383" compatibility="5" region="NTSC-U" title="JumpStart Wildlife Safari - Field Trip (USA)">
     <compatibility>No Issues</compatibility>
   </entry>
+  <entry code="SLES-02750" compatibility="5" region="PAL" title="Jungla de Cristal Trilogia 2 - Viva Las Vegas (Spain)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
+  </entry>
   <entry code="SLES-00130" compatibility="5" region="PAL" title="Jupiter Strike (Europe)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1115-g0b261e8</version-tested>
@@ -2045,6 +2231,10 @@ Tetris with Card Captor Sakura (Japan)
     <version-tested>0.1-826-g712168c</version-tested>
     <comments>Notice bottom the line of FMV is a little odd but work fine.</comments>
   </entry>
+  <entry code="SCES-01188" compatibility="5" region="PAL" title="Klonoa - Door to Phantomile (Spain)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
+  </entry>
   <entry code="SLPM-86228" compatibility="5" region="NTSC-J" title="Konami 80's Arcade Gallery (Japan)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1443-g7ab521f7</version-tested>
@@ -2103,9 +2293,29 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-887-g1eecd50</version-tested>
   </entry>
+  <entry code="SLES-02026" compatibility="5" region="PAL" title="Legacy of Kain - Soul Reaver (Spain)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
+  </entry>
   <entry code="SLUS-00708" compatibility="5" region="NTSC-U" title="Legacy of Kain - Soul Reaver (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-2499-g770dd5a6</version-tested>
+  </entry>
+  <entry code="SCES-03047" compatibility="5" region="PAL" title="Legend of Dragoon, The (Spain) (Disc 1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
+  </entry>
+  <entry code="SCES-13047" compatibility="5" region="PAL" title="Legend of Dragoon, The (Spain) (Disc 2)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
+  </entry>
+  <entry code="SCES-23047" compatibility="5" region="PAL" title="Legend of Dragoon, The (Spain) (Disc 3)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
+  </entry>
+  <entry code="SCES-33047" compatibility="5" region="PAL" title="Legend of Dragoon, The (Spain) (Disc 4)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
   </entry>
   <entry code="SCUS-94491" compatibility="5" region="NTSC-U" title="Legend of Dragoon, The (USA) (Disc 1)">
     <compatibility>No Issues</compatibility>
@@ -2122,6 +2332,10 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SCUS-94586" compatibility="5" region="NTSC-U" title="Legend of Dragoon, The (USA) (Disc 4)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-2663-gfd39f09a</version-tested>
+  </entry>
+  <entry code="SCES-01947" compatibility="5" region="PAL" title="Legend of Legaia (Spain)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
   </entry>
   <entry code="SCUS-94254" compatibility="5" region="NTSC-U" title="Legend of Legaia (USA)">
     <compatibility>No Issues</compatibility>
@@ -2266,9 +2480,17 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-3694-g19734190</version-tested>
   </entry>
+  <entry code="SCES-01495" compatibility="5" region="PAL" title="MediEvil (Spain)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
+  </entry>
   <entry code="SCUS-94227" compatibility="5" region="NTSC-U" title="MediEvil (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1419-g34a515cd</version-tested>
+  </entry>
+  <entry code="SCES-02545" compatibility="5" region="PAL" title="MediEvil 2 (Europe) (Es,It,Pt)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
   </entry>
   <entry code="SCUS-94564" compatibility="5" region="NTSC-U" title="MediEvil II (USA)">
     <compatibility>No Issues</compatibility>
@@ -2399,6 +2621,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-4011-g2bf0771a</version-tested>
   </entry>
+  <entry code="SLES-02136" compatibility="5" region="PAL" title="Metal Gear Solid - Special Missions (Europe) (En,Fr,De,Es,It)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4315-gf7587eae</version-tested>
+  </entry>
   <entry code="SLUS-00957" compatibility="5" region="NTSC-U" title="Metal Gear Solid - VR Missions (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1790-ge8e461c0</version-tested>
@@ -2446,6 +2672,10 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLUS-00896" compatibility="5" region="NTSC-U" title="Misadventures of Tron Bonne, The">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-826-g712168c</version-tested>
+  </entry>
+  <entry code="SLES-01906" compatibility="5" region="PAL" title="Mission - Impossible (Europe) (En,Fr,De,Es,It)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
   </entry>
   <entry code="SLUS-01103" compatibility="5" region="NTSC-U" title="Mobil 1 Rally Championship (USA)">
     <compatibility>No Issues</compatibility>
@@ -2506,6 +2736,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-2837-g632909df</version-tested>
   </entry>
+  <entry code="SLUS-00738" compatibility="5" region="NTSC-U" title="Moto Racer 2 (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4525-gdfd67664</version-tested>
+  </entry>
   <entry code="SCUS-94355" compatibility="5" region="NTSC-U" title="Motor Toon Grand Prix (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-2483-g98d6b499</version-tested>
@@ -2540,6 +2774,10 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLUS-01155" compatibility="5" region="NTSC-U" title="N-Gen Racing (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1629-g101907a7</version-tested>
+  </entry>
+  <entry code="SLUS-00637" compatibility="5" region="NTSC-U" title="N2O - Nitrous Oxide (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4525-gdfd67664</version-tested>
   </entry>
   <entry code="SLUS-01068" compatibility="5" region="NTSC-U" title="NASCAR Rumble (USA)">
     <compatibility>No Issues</compatibility>
@@ -2655,6 +2893,14 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLES-11480" compatibility="5" region="PAL" title="Oddworld - Abe's Exoddus (Europe) (Disc 2)">
     <compatibility>No Issues</compatibility>
   </entry>
+  <entry code="SLES-01505" compatibility="5" region="PAL" title="Oddworld - Abe's Exoddus (Spain) (Disc 1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
+  </entry>
+  <entry code="SLES-11505" compatibility="5" region="PAL" title="Oddworld - Abe's Exoddus (Spain) (Disc 2)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
+  </entry>
   <entry code="SLUS-00710" compatibility="5" region="NTSC-U" title="Oddworld - Abe's Exoddus (USA) (Disc 1)">
     <compatibility>No Issues</compatibility>
     <upscaling-issues>Other stuff like cords and buttons are blurry, transparent, and Abe's body gets more green and blurry as well as other mudokons. Background is unaffected?</upscaling-issues>
@@ -2663,6 +2909,10 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLES-00664" compatibility="5" region="PAL" title="Oddworld - Abe's Oddysee (Europe)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-2862-g6fbffb6f</version-tested>
+  </entry>
+  <entry code="SLES-00841" compatibility="5" region="PAL" title="Oddworld - Abe's Oddysee (Spain)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
   </entry>
   <entry code="SLUS-00190" compatibility="5" region="NTSC-U" title="Oddworld - Abe's Oddysee (USA) (Rev 2)">
     <compatibility>No Issues</compatibility>
@@ -2680,6 +2930,10 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="HASH-BCAA9B9C0D7A482D" compatibility="5" region="NTSC-J" title="Oh-chan no Oekaki Logic (Japan)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-3919-g4875b2ec</version-tested>
+  </entry>
+  <entry code="SCPS-10020" compatibility="5" region="NTSC-J" title="Omega Boost (Japan) (En,Ja)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4525-gdfd67664</version-tested>
   </entry>
   <entry code="SCUS-94449" compatibility="5" region="NTSC-U" title="Omega Boost (USA)">
     <compatibility>No Issues</compatibility>
@@ -2700,6 +2954,10 @@ Tetris with Card Captor Sakura (Japan)
   </entry>
   <entry code="SLES-11879" compatibility="5" region="PAL" title="OverBlood 2 (Europe) (Disc 2) (Rev 1)">
     <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLES-00865" compatibility="5" region="PAL" title="Overboard! (Europe)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
   </entry>
   <entry code="SCUS-94799" compatibility="5" region="NTSC-U" title="PSone - Wherever, Whenever, Forever. (USA) (EDC)">
     <compatibility>No Issues</compatibility>
@@ -2733,6 +2991,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-774-g5a1b008</version-tested>
   </entry>
+  <entry code="SLPS-00899" compatibility="5" region="NTSC-J" title="Panzer Bandit (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4525-gdfd67664</version-tested>
+  </entry>
   <entry code="SLUS-00662" compatibility="5" region="NTSC-U" title="Parasite Eve (USA) (Disc 1)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-986-gfc911de1</version-tested>
@@ -2740,6 +3002,14 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLUS-00668" compatibility="5" region="NTSC-U" title="Parasite Eve (USA) (Disc 2)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLES-02561" compatibility="5" region="PAL" title="Parasite Eve II (Spain) (Disc 1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4525-gdfd67664</version-tested>
+  </entry>
+  <entry code="SLES-12561" compatibility="5" region="PAL" title="Parasite Eve II (Spain) (Disc 2)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4525-gdfd67664</version-tested>
   </entry>
   <entry code="SLUS-01042" compatibility="5" region="NTSC-U" title="Parasite Eve II (USA) (Disc 1)">
     <compatibility>No Issues</compatibility>
@@ -2874,6 +3144,14 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1323-ga6acd33c</version-tested>
   </entry>
+  <entry code="SLPM-86048" compatibility="5" region="NTSC-J" title="Policenauts (Japan) (Disc 1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
+  </entry>
+  <entry code="SLPM-86049" compatibility="5" region="NTSC-J" title="Policenauts (Japan) (Disc 2)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
+  </entry>
   <entry code="SLUS-80889" compatibility="5" region="NTSC-U" title="Pong - The Next Level (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1445-ge5c46a54</version-tested>
@@ -2881,6 +3159,10 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLPM-86146" compatibility="5" region="NTSC-J" title="Pop'n Tanks!">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-774-g5a1b008</version-tested>
+  </entry>
+  <entry code="SLES-01760" compatibility="5" region="PAL" title="Populous - The Beginning (Europe) (En,Fr,De,Es,It,Nl,Sv)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
   </entry>
   <entry code="SCUS-94187" compatibility="5" region="NTSC-U" title="Porsche Challenge (USA) (En,Fr,Es)">
     <compatibility>No Issues</compatibility>
@@ -2905,6 +3187,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>Graphical/Audio Issues</compatibility>
     <version-tested>0.1-2761-gc46495e6</version-tested>
     <comments>Worked fine except for a short period stuck when throwing the dice. Seems to happen in mednafen also but not in pcsxr.</comments>
+  </entry>
+  <entry code="SLES-03327" compatibility="5" region="PAL" title="Pro Body Boarding (Europe) (En,Fr,De)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
   </entry>
   <entry code="SLUS-01260" compatibility="5" region="NTSC-U" title="Pro Pinball - Big Race USA (USA)">
     <compatibility>No Issues</compatibility>
@@ -3140,6 +3426,14 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-967-gf856a8a</version-tested>
   </entry>
+  <entry code="SLES-00976" compatibility="5" region="PAL" title="Resident Evil 2 (Spain) (Disc 1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
+  </entry>
+  <entry code="SLES-10976" compatibility="5" region="PAL" title="Resident Evil 2 (Spain) (Disc 2)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
+  </entry>
   <entry code="SLUS-00421" compatibility="5" region="NTSC-U" title="Resident Evil 2 (USA) (Disc 1)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-986-gfc911de1</version-tested>
@@ -3147,6 +3441,10 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLUS-00592" compatibility="5" region="NTSC-U" title="Resident Evil 2 (USA) (Disc 2)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SLES-02532" compatibility="5" region="PAL" title="Resident Evil 3 - Nemesis (Spain)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
   </entry>
   <entry code="SLUS-00923" compatibility="5" region="NTSC-U" title="Resident Evil 3 - Nemesis (USA)">
     <compatibility>No Issues</compatibility>
@@ -3397,6 +3695,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-2663-gfd39f09a</version-tested>
   </entry>
+  <entry code="SLES-01514" compatibility="5" region="PAL" title="Silent Hill (Europe) (En,Fr,De,Es,It)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
+  </entry>
   <entry code="SLPM-86192" compatibility="5" region="NTSC-J" title="Silent Hill (Japan)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-884-g096ed219</version-tested>
@@ -3432,6 +3734,10 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLUS-00209" compatibility="5" region="NTSC-U" title="Skeleton Warriors (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1529-ga895c027</version-tested>
+  </entry>
+  <entry code="SLES-01090" compatibility="5" region="PAL" title="Skullmonkeys (Europe)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
   </entry>
   <entry code="SLUS-00601" compatibility="5" region="NTSC-U" title="Skullmonkeys (USA)">
     <compatibility>No Issues</compatibility>
@@ -3520,6 +3826,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1448-g472f1c1c</version-tested>
   </entry>
+  <entry code="SLES-02890" compatibility="5" region="PAL" title="Spider-Man (Spain)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
+  </entry>
   <entry code="SLUS-00875" compatibility="5" region="NTSC-U" title="Spider-Man (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1448-g472f1c1c</version-tested>
@@ -3594,6 +3904,22 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1336-gd711baa</version-tested>
   </entry>
+  <entry code="SLES-02611" compatibility="5" region="PAL" title="Star Wars - Episodio I - Jedi Power Battles (Spain)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
+  </entry>
+  <entry code="SLES-02038" compatibility="5" region="PAL" title="Star Wars - Episodio I - La Amenaza Fantasma (Spain)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
+  </entry>
+  <entry code="SLES-00644" compatibility="5" region="PAL" title="Star Wars - Rebel Assault II - The Hidden Empire (Spain) (Disc 1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
+  </entry>
+  <entry code="SLES-10644" compatibility="5" region="PAL" title="Star Wars - Rebel Assault II - The Hidden Empire (Spain) (Disc 2)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
+  </entry>
   <entry code="SLUS-00041" compatibility="5" region="NTSC-U" title="Street Fighter - The Movie (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1304-gc8b6712</version-tested>
@@ -3605,6 +3931,10 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLUS-00258" compatibility="5" region="NTSC-U" title="Street Fighter Alpha 2 (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1336-gd711baa</version-tested>
+  </entry>
+  <entry code="SLES-01863" compatibility="5" region="PAL" title="Street Fighter Alpha 3 (Europe)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
   </entry>
   <entry code="SLUS-00821" compatibility="5" region="NTSC-U" title="Street Fighter Alpha 3 (USA)">
     <compatibility>No Issues</compatibility>
@@ -3786,6 +4116,7 @@ Tetris with Card Captor Sakura (Japan)
   </entry>
   <entry code="SCES-01914" compatibility="5" region="PAL" title="Syphon Filter (Spain)">
     <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
   </entry>
   <entry code="SCUS-94240" compatibility="5" region="NTSC-U" title="Syphon Filter (USA)">
     <compatibility>No Issues</compatibility>
@@ -3799,9 +4130,21 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-986-gfc911de1</version-tested>
   </entry>
+  <entry code="SCES-02289" compatibility="5" region="PAL" title="Syphon Filter 2 - Conspiracion Mortal (Spain) (Disc 1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
+  </entry>
+  <entry code="SCES-12289" compatibility="5" region="PAL" title="Syphon Filter 2 - Conspiracion Mortal (Spain) (Disc 2)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
+  </entry>
   <entry code="SCUS-94640" compatibility="5" region="NTSC-U" title="Syphon Filter 3 (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-986-gfc911de1</version-tested>
+  </entry>
+  <entry code="SCES-03701" compatibility="5" region="PAL" title="Syphon Filter 3 - Sentencia Final (Spain)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
   </entry>
   <entry code="SLUS-00787" compatibility="5" region="NTSC-U" title="T'ai Fu - Wrath of the Tiger (USA)">
     <compatibility>No Issues</compatibility>
@@ -3905,6 +4248,10 @@ Tetris with Card Captor Sakura (Japan)
   </entry>
   <entry code="SLUS-00939" compatibility="5" region="NTSC-U" title="Tenchu 2 - Birth of the Stealth Assassins">
     <compatibility>No Issues</compatibility>
+  </entry>
+  <entry code="SLES-02465" compatibility="5" region="PAL" title="Tenchu 2 - Birth of the Stealth Assassins (Spain)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
   </entry>
   <entry code="SLES-00193" compatibility="5" region="PAL" title="Terry Pratchett's Discworld (Germany)">
     <compatibility>No Issues</compatibility>
@@ -4199,6 +4546,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-986-gfc911de1</version-tested>
   </entry>
+  <entry code="SLES-02754" compatibility="5" region="PAL" title="Vagrant Story (Europe)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
+  </entry>
   <entry code="SLUS-01040" compatibility="5" region="NTSC-U" title="Vagrant Story (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-986-gfc911de1</version-tested>
@@ -4282,6 +4633,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1391-g5f9481dd</version-tested>
   </entry>
+  <entry code="SCES-01174" compatibility="5" region="PAL" title="Wild Arms (Spain)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4423-g32ab7c13</version-tested>
+  </entry>
   <entry code="SCUS-94608" compatibility="5" region="NTSC-U" title="Wild Arms (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1400-gb527118c</version-tested>
@@ -4332,9 +4687,13 @@ Tetris with Card Captor Sakura (Japan)
     <version-tested>0.1-887-g1eecd50</version-tested>
   </entry>
   <entry code="SLUS-00644" compatibility="5" region="NTSC-U" title="World Cup 98 (USA)">
-    <compatibility>Graphical/Audio Issues</compatibility>
-    <version-tested>0.1-2854-g24c37324</version-tested>
-    <comments>There's a sound issues on the main menu with Recompiler or Cached Interpreter CPU mode. Use Interpreter, and must be applied from when you boot the game</comments>
+    <compatibility>No Issues</compatibility>
+    <upscaling-issues>Must set the CPU clock speed to 120% for upscaling, as the default 100% introducing a problems with the audio, such as restarting music during main menu followed with high-pitched beep and then the music only plays in right channel then stops playing altogether, leaving only the beep</upscaling-issues>
+    <version-tested>0.1-4236-gfe7a195e</version-tested>
+  </entry>
+  <entry code="SLPM-86162" compatibility="5" region="NTSC-J" title="World Soccer Jikkyou Winning Eleven 3 - Final Ver. (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4525-gdfd67664</version-tested>
   </entry>
   <entry code="SLPM-87056" compatibility="5" region="NTSC-J" title="World Soccer Winning Eleven 2002 (Japan)">
     <compatibility>No Issues</compatibility>

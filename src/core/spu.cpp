@@ -1,6 +1,7 @@
 #include "spu.h"
 #include "cdrom.h"
 #include "common/audio_stream.h"
+#include "common/file_system.h"
 #include "common/log.h"
 #include "common/state_wrapper.h"
 #include "common/wav_writer.h"
@@ -1021,9 +1022,7 @@ void SPU::GeneratePendingSamples()
 
 bool SPU::StartDumpingAudio(const char* filename)
 {
-  if (m_dump_writer)
-    m_dump_writer.reset();
-
+  m_dump_writer.reset();
   m_dump_writer = std::make_unique<Common::WAVWriter>();
   if (!m_dump_writer->Open(filename, SAMPLE_RATE, 2))
   {
@@ -1031,6 +1030,27 @@ bool SPU::StartDumpingAudio(const char* filename)
     m_dump_writer.reset();
     return false;
   }
+
+#ifdef SPU_DUMP_ALL_VOICES
+  for (size_t i = 0; i < m_voice_dump_writers.size(); i++)
+  {
+    m_voice_dump_writers[i].reset();
+    m_voice_dump_writers[i] = std::make_unique<Common::WAVWriter>();
+
+    TinyString new_suffix;
+    if (i == NUM_VOICES)
+      new_suffix.Assign("reverb.wav");
+    else
+      new_suffix.Format("voice%u.wav", i);
+
+    std::string voice_filename(FileSystem::ReplaceExtension(filename, new_suffix));
+    if (!m_voice_dump_writers[i]->Open(voice_filename.c_str(), SAMPLE_RATE, 2))
+    {
+      Log_ErrorPrintf("Failed to open voice dump filename '%s'", voice_filename.c_str());
+      m_voice_dump_writers[i].reset();
+    }
+  }
+#endif
 
   return true;
 }
@@ -1041,6 +1061,12 @@ bool SPU::StopDumpingAudio()
     return false;
 
   m_dump_writer.reset();
+
+#ifdef SPU_DUMP_ALL_VOICES
+  for (size_t i = 0; i < m_voice_dump_writers.size(); i++)
+    m_voice_dump_writers[i].reset();
+#endif
+
   return true;
 }
 
@@ -1417,6 +1443,15 @@ ALWAYS_INLINE_RELEASE std::tuple<s32, s32> SPU::SampleVoice(u32 voice_index)
   if (!voice.IsOn() && !m_SPUCNT.irq9_enable)
   {
     voice.last_volume = 0;
+
+#ifdef SPU_DUMP_ALL_VOICES
+    if (m_voice_dump_writers[voice_index])
+    {
+      const s16 dump_samples[2] = {0, 0};
+      m_voice_dump_writers[voice_index]->WriteFrames(dump_samples, 1);
+    }
+#endif
+
     return {};
   }
 
@@ -1503,6 +1538,15 @@ ALWAYS_INLINE_RELEASE std::tuple<s32, s32> SPU::SampleVoice(u32 voice_index)
   const s32 right = ApplyVolume(volume, voice.right_volume.current_level);
   voice.left_volume.Tick();
   voice.right_volume.Tick();
+
+#ifdef SPU_DUMP_ALL_VOICES
+  if (m_voice_dump_writers[voice_index])
+  {
+    const s16 dump_samples[2] = {static_cast<s16>(Clamp16(left)), static_cast<s16>(Clamp16(right))};
+    m_voice_dump_writers[voice_index]->WriteFrames(dump_samples, 1);
+  }
+#endif
+
   return std::make_tuple(left, right);
 }
 
@@ -1712,6 +1756,15 @@ void SPU::ProcessReverb(s16 left_in, s16 right_in, s32* left_out, s32* right_out
 
   s_last_reverb_output[0] = *left_out = ApplyVolume(out[0], m_reverb_registers.vLOUT);
   s_last_reverb_output[1] = *right_out = ApplyVolume(out[1], m_reverb_registers.vROUT);
+
+#ifdef SPU_DUMP_ALL_VOICES
+  if (m_voice_dump_writers[NUM_VOICES])
+  {
+    const s16 dump_samples[2] = {static_cast<s16>(Clamp16(s_last_reverb_output[0])),
+                                 static_cast<s16>(Clamp16(s_last_reverb_output[1]))};
+    m_voice_dump_writers[NUM_VOICES]->WriteFrames(dump_samples, 1);
+  }
+#endif
 }
 
 void SPU::Execute(TickCount ticks)

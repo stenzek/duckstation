@@ -616,6 +616,8 @@ void GameList::SetSearchDirectoriesFromSettings(SettingsInterface& si)
 
 void GameList::Refresh(bool invalidate_cache, bool invalidate_database, ProgressCallback* progress /* = nullptr */)
 {
+  m_game_list_loaded = true;
+
   if (!progress)
     progress = ProgressCallback::NullProgressCallback;
 

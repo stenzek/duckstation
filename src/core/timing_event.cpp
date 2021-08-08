@@ -401,6 +401,9 @@ void TimingEvent::Delay(TickCount ticks)
   }
 
   m_downcount += ticks;
+
+  DebugAssert(TimingEvents::s_current_event != this);
+  TimingEvents::SortEvent(this);
 }
 
 void TimingEvent::Schedule(TickCount ticks)

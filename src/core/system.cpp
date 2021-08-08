@@ -2368,6 +2368,11 @@ bool LoadRewindState(u32 skip_saves /*= 0*/, bool consume_state /*=true */)
   return true;
 }
 
+bool IsRewinding()
+{
+  return (s_rewind_load_frequency >= 0);
+}
+
 void SetRewinding(bool enabled)
 {
   if (enabled)

@@ -388,4 +388,8 @@
     	<string name="add_patch_code_cancel">Отмена</string>
     	<string name="add_patch_code_add">Добавить</string>
 	<string name="menu_game_list_entry_create_launcher_shortcut">Создать ярлык</string>
+	<string name="settings_show_vram">Показывать VRAM</string>
+    	<string name="settings_summary_show_vram">Выводить в область отображения содержимое видеопамяти консоли (для отладки).</string>
+	<string name="settings_cpu_recompiler_block_linking">Линковка блоков в рекомпиляторе CPU</string>
+    	<string name="settings_summary_cpu_recompiler_block_linking">Позволяет сгенерированному коду переключаться между блоками напрямую, минуя диспетчер. Обеспечивает ощутимый прирост производительности.</string>
 </resources>

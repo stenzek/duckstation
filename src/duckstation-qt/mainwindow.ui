@@ -49,6 +49,7 @@
        <normaloff>:/icons/media-optical.png</normaloff>:/icons/media-optical.png</iconset>
      </property>
      <addaction name="actionChangeDiscFromFile"/>
+     <addaction name="actionChangeDiscFromDevice"/> 
      <addaction name="actionChangeDiscFromGameList"/>
      <addaction name="actionRemoveDisc"/>
      <actiongroup name="actionGroupChangeDiscSubImages" />
@@ -600,6 +601,11 @@
   <action name="actionChangeDiscFromFile">
    <property name="text">
     <string>From File...</string>
+   </property>
+  </action>
+  <action name="actionChangeDiscFromDevice">
+   <property name="text">
+    <string>From Device...</string>
    </property>
   </action>
   <action name="actionChangeDiscFromGameList">

@@ -188,6 +188,7 @@ bool CDImageDeviceWin32::Open(const char* filename, Common::Error* error)
       disc_lba += previous_track_length;
     }
 
+    last_track_address = track_address;
     if (track_num == LEAD_OUT_TRACK_NUMBER)
     {
       AddLeadOutIndex();
