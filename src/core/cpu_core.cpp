@@ -541,8 +541,34 @@ ALWAYS_INLINE_RELEASE void Cop0DataBreakpointCheck(VirtualMemoryAddress address)
   DispatchCop0Breakpoint();
 }
 
+// range1 = [a, b]: represents any range of addresses that can have a breakpoint
+// range2 = [c, d]: represents the current address being checked, and it's at most a word
+// return: a mask of data intersection
+ALWAYS_INLINE_RELEASE u32 AddressRangeIntersection(u32 a, u32 b, u32 c, u32 d)
+{
+  if (d < b) // if an intersection is impossible
+    return 0;
+  if (c > b) // if an intersection is impossible
+    return 0;
+
+  u32 min = std::max(a, c);
+  u32 max = std::min(b, d);
+  if (a <= min && b >= max)
+  {
+    u32 mask = 0;
+    while (max > min)
+    {
+      mask = mask << 4;
+      max--;
+      mask |= 0xFF;
+    }
+    return mask;
+  }
+  return 0;
+}
+
 template<MemoryAccessType type>
-ALWAYS_INLINE_RELEASE void DataBreakpointCheck(VirtualMemoryAddress address, bool changed=false)
+ALWAYS_INLINE_RELEASE void DataBreakpointCheck(VirtualMemoryAddress address, u32 size, u32 old_val=0, u32 new_val=0)
 {
   if (System::IsPaused())
     return;
@@ -556,7 +582,7 @@ ALWAYS_INLINE_RELEASE void DataBreakpointCheck(VirtualMemoryAddress address, boo
       if (!bp.enabled || !(bp.dbg.debug_type & DebugType::Read))
         continue;
 
-      if (bp.dbg.address <= address && bp.dbg.address + bp.dbg.size > address)
+      if (AddressRangeIntersection(bp.dbg.address, bp.dbg.address + bp.dbg.size, address, address + size))
       {
         bp.hit_count++;
         g_host_interface->ReportFormattedDebuggerMessage("Hit read breakpoint %u at 0x%08X.", bp.number, g_state.regs.pc);
@@ -575,9 +601,10 @@ ALWAYS_INLINE_RELEASE void DataBreakpointCheck(VirtualMemoryAddress address, boo
         Breakpoint& bp = s_breakpoints[i];
         if (!bp.enabled)
           continue;
+
         if (bp.dbg.debug_type & DebugType::Written)
         {
-          if (bp.dbg.address <= address && bp.dbg.address + bp.dbg.size > address)
+          if (AddressRangeIntersection(bp.dbg.address, bp.dbg.address + bp.dbg.size, address, address + size))
           {
             bp.hit_count++;
             g_host_interface->ReportFormattedDebuggerMessage("Hit write breakpoint %u at 0x%08X.", bp.number,
@@ -585,10 +612,12 @@ ALWAYS_INLINE_RELEASE void DataBreakpointCheck(VirtualMemoryAddress address, boo
             g_host_interface->PauseSystem(true);
             return;
           }
+          return;
         }
-        if ((bp.dbg.debug_type & DebugType::Changed) && (changed))
+        if (bp.dbg.debug_type & DebugType::Changed)
         {
-          if (bp.dbg.address <= address && bp.dbg.address + bp.dbg.size > address)
+          u32 mask = AddressRangeIntersection(bp.dbg.address, bp.dbg.address + bp.dbg.size, address, address + size);
+          if (mask && ((old_val & mask) != (new_val & mask)))
           {
             bp.hit_count++;
             g_host_interface->ReportFormattedDebuggerMessage("Hit changed breakpoint %u at 0x%08X.", bp.number,
@@ -690,11 +719,10 @@ void DisassembleAndPrint(u32 addr, u32 instructions_before /* = 0 */, u32 instru
   }
 }
 
-ALWAYS_INLINE_RELEASE static bool ConditionalBreakpointLookAhead(u32 inst_bits)
+ALWAYS_INLINE_RELEASE static bool ConditionalBreakpointLookAhead()
 {
   const u32 pc = g_state.regs.pc;
-  Instruction inst = g_state.current_instruction;
-  inst.bits = inst_bits;
+  Instruction inst = g_state.next_instruction;
 
   if (System::IsPaused() || pc == s_last_data_breakpoint_check_pc)
     return false;
@@ -709,24 +737,20 @@ ALWAYS_INLINE_RELEASE static bool ConditionalBreakpointLookAhead(u32 inst_bits)
     case InstructionOp::lbu:
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
-      DataBreakpointCheck<MemoryAccessType::Read>(addr);
+      DataBreakpointCheck<MemoryAccessType::Read>(addr, sizeof(u8));
     }
     break;
     case InstructionOp::lh:
     case InstructionOp::lhu:
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
-      DataBreakpointCheck<MemoryAccessType::Read>(addr);
-      DataBreakpointCheck<MemoryAccessType::Read>(addr + 1);
+      DataBreakpointCheck<MemoryAccessType::Read>(addr, sizeof(u16));
     }
     break;
     case InstructionOp::lw:
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
-      DataBreakpointCheck<MemoryAccessType::Read>(addr);
-      DataBreakpointCheck<MemoryAccessType::Read>(addr + 1);
-      DataBreakpointCheck<MemoryAccessType::Read>(addr + 2);
-      DataBreakpointCheck<MemoryAccessType::Read>(addr + 3);
+      DataBreakpointCheck<MemoryAccessType::Read>(addr, sizeof(u32));
     }
     break;
     case InstructionOp::lwl:
@@ -734,10 +758,7 @@ ALWAYS_INLINE_RELEASE static bool ConditionalBreakpointLookAhead(u32 inst_bits)
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       const VirtualMemoryAddress aligned_addr = addr & ~UINT32_C(3);
-      DataBreakpointCheck<MemoryAccessType::Read>(aligned_addr);
-      DataBreakpointCheck<MemoryAccessType::Read>(aligned_addr + 1);
-      DataBreakpointCheck<MemoryAccessType::Read>(aligned_addr + 2);
-      DataBreakpointCheck<MemoryAccessType::Read>(aligned_addr + 3);
+      DataBreakpointCheck<MemoryAccessType::Read>(aligned_addr, sizeof(u32));
     }
     break;
     case InstructionOp::sb:
@@ -747,7 +768,7 @@ ALWAYS_INLINE_RELEASE static bool ConditionalBreakpointLookAhead(u32 inst_bits)
       if (!SafeReadMemoryByte(addr, &old_value))
         return false;
       u8 new_value = Truncate8(ReadReg(inst.i.rt));
-      DataBreakpointCheck<MemoryAccessType::Write>(addr, old_value != new_value);
+      DataBreakpointCheck<MemoryAccessType::Write>(addr, sizeof(u8), old_value, new_value);
     }
     break;
     case InstructionOp::sh:
@@ -757,8 +778,7 @@ ALWAYS_INLINE_RELEASE static bool ConditionalBreakpointLookAhead(u32 inst_bits)
       if (!SafeReadMemoryHalfWord(addr, &old_value))
         return false;
       u16 new_value = Truncate16(ReadReg(inst.i.rt));
-      DataBreakpointCheck<MemoryAccessType::Write>(addr, (old_value & 0xFF) != (new_value & 0xFF));
-      DataBreakpointCheck<MemoryAccessType::Write>(addr + 1, (old_value & 0xFF00) != (new_value & 0xFF00));
+      DataBreakpointCheck<MemoryAccessType::Write>(addr, sizeof(u16), old_value, new_value);
     }
     break;
     case InstructionOp::sw:
@@ -768,10 +788,7 @@ ALWAYS_INLINE_RELEASE static bool ConditionalBreakpointLookAhead(u32 inst_bits)
       if (!SafeReadMemoryWord(addr, &old_value))
         return false;
       u32 new_value = ReadReg(inst.i.rt);
-      DataBreakpointCheck<MemoryAccessType::Write>(addr, (old_value & 0xFF) != (new_value & 0xFF));
-      DataBreakpointCheck<MemoryAccessType::Write>(addr + 1, (old_value & 0xFF00) != (new_value & 0xFF00));
-      DataBreakpointCheck<MemoryAccessType::Write>(addr + 2, (old_value & 0xFF0000) != (new_value & 0xFF0000));
-      DataBreakpointCheck<MemoryAccessType::Write>(addr + 3, (old_value & 0xFF000000) != (new_value & 0xFF000000));
+      DataBreakpointCheck<MemoryAccessType::Write>(addr, sizeof(u32), old_value, new_value);
     }
     break;
     case InstructionOp::swl:
@@ -798,10 +815,7 @@ ALWAYS_INLINE_RELEASE static bool ConditionalBreakpointLookAhead(u32 inst_bits)
         new_value = (old_value & mem_mask) | (reg_value << shift);
       }
 
-      DataBreakpointCheck<MemoryAccessType::Write>(aligned_addr, (old_value & 0xFF) != (new_value & 0xFF));
-      DataBreakpointCheck<MemoryAccessType::Write>(aligned_addr + 1, (old_value & 0xFF00) != (new_value & 0xFF00));
-      DataBreakpointCheck<MemoryAccessType::Write>(aligned_addr + 2, (old_value & 0xFF0000) != (new_value & 0xFF0000));
-      DataBreakpointCheck<MemoryAccessType::Write>(aligned_addr + 3, (old_value & 0xFF000000) != (new_value & 0xFF000000));
+      DataBreakpointCheck<MemoryAccessType::Write>(aligned_addr, sizeof(u32), old_value, new_value);
     }
     break;
   }
@@ -2115,10 +2129,7 @@ static void ExecuteImpl()
       {
         Cop0ExecutionBreakpointCheck();
 
-        if (ExecutionBreakpointCheck())
-          continue; // continue is measurably faster than break on msvc for some reason
-
-        if (ConditionalBreakpointLookAhead(g_state.next_instruction.bits))
+        if (ExecutionBreakpointCheck() || ConditionalBreakpointLookAhead())
           continue; // continue is measurably faster than break on msvc for some reason
       }
 
