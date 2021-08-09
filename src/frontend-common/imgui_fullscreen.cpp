@@ -33,6 +33,7 @@ float g_menu_bar_size = 0.0f;
 
 static std::string s_font_filename;
 static std::string s_icon_font_filename;
+static std::vector<u8> s_text_font_data;
 static std::vector<u8> s_icon_font_data;
 static float s_font_size = 15.0f;
 static const ImWchar* s_font_glyph_range = nullptr;
@@ -54,6 +55,11 @@ void SetFontFilename(std::string filename)
     s_font_filename = std::move(filename);
   else
     std::string().swap(s_font_filename);
+}
+
+void SetFontData(std::vector<u8> data)
+{
+  s_text_font_data = std::move(data);
 }
 
 void SetIconFontFilename(std::string icon_font_filename)
@@ -92,6 +98,49 @@ void SetResolveTextureFunction(ResolveTextureHandleCallback callback)
   s_resolve_texture_handle = callback;
 }
 
+static ImFont* AddTextFont(float size /*= 15.0f*/)
+{
+  static const ImWchar default_ranges[] = {
+    // Basic Latin + Latin Supplement + Central European diacritics
+    0x0020,
+    0x017F,
+
+    // Cyrillic + Cyrillic Supplement
+    0x0400,
+    0x052F,
+
+    // Cyrillic Extended-A
+    0x2DE0,
+    0x2DFF,
+
+    // Cyrillic Extended-B
+    0xA640,
+    0xA69F,
+
+    0,
+  };
+
+  ImFontConfig cfg;
+
+  if (!s_font_filename.empty())
+  {
+    return ImGui::GetIO().Fonts->AddFontFromFileTTF(s_font_filename.c_str(), size, &cfg,
+                                                    s_font_glyph_range ? s_font_glyph_range : default_ranges);
+  }
+  else if (!s_text_font_data.empty())
+  {
+    cfg.FontDataOwnedByAtlas = false;
+    return ImGui::GetIO().Fonts->AddFontFromMemoryTTF(s_text_font_data.data(),
+                                                      static_cast<int>(s_text_font_data.size()), size, &cfg,
+                                                      s_font_glyph_range ? s_font_glyph_range : default_ranges);
+  }
+  else
+  {
+    Panic("No text font provided");
+    return nullptr;
+  }
+}
+
 static void AddIconFonts(float size)
 {
   static const ImWchar range_fa[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
@@ -102,7 +151,11 @@ static void AddIconFonts(float size)
   cfg.GlyphMinAdvanceX = size * 0.75f;
   cfg.GlyphMaxAdvanceX = size * 0.75f;
 
-  if (!s_icon_font_data.empty())
+  if (!s_icon_font_filename.empty())
+  {
+    ImGui::GetIO().Fonts->AddFontFromFileTTF(s_icon_font_filename.c_str(), size * 0.75f, &cfg, range_fa);
+  }
+  else if (!s_icon_font_data.empty())
   {
     cfg.FontDataOwnedByAtlas = false;
     ImGui::GetIO().Fonts->AddFontFromMemoryTTF(s_icon_font_data.data(), static_cast<int>(s_icon_font_data.size()),
@@ -110,7 +163,7 @@ static void AddIconFonts(float size)
   }
   else
   {
-    ImGui::GetIO().Fonts->AddFontFromFileTTF(s_icon_font_filename.c_str(), size * 0.75f, &cfg, range_fa);
+    Panic("No icon font provided");
   }
 }
 
@@ -129,26 +182,12 @@ bool UpdateFonts()
   ImGuiIO& io = ImGui::GetIO();
   io.Fonts->Clear();
 
-  if (s_font_filename.empty())
-  {
-    g_standard_font = ImGui::AddRobotoRegularFont(standard_font_size);
-    AddIconFonts(standard_font_size);
-    g_medium_font = ImGui::AddRobotoRegularFont(medium_font_size);
-    AddIconFonts(medium_font_size);
-    g_large_font = ImGui::AddRobotoRegularFont(large_font_size);
-    AddIconFonts(large_font_size);
-  }
-  else
-  {
-    g_standard_font =
-      io.Fonts->AddFontFromFileTTF(s_font_filename.c_str(), standard_font_size, nullptr, s_font_glyph_range);
-    AddIconFonts(standard_font_size);
-    g_medium_font =
-      io.Fonts->AddFontFromFileTTF(s_font_filename.c_str(), medium_font_size, nullptr, s_font_glyph_range);
-    AddIconFonts(medium_font_size);
-    g_large_font = io.Fonts->AddFontFromFileTTF(s_font_filename.c_str(), large_font_size, nullptr, s_font_glyph_range);
-    AddIconFonts(large_font_size);
-  }
+  g_standard_font = AddTextFont(standard_font_size);
+  AddIconFonts(standard_font_size);
+  g_medium_font = AddTextFont(medium_font_size);
+  AddIconFonts(medium_font_size);
+  g_large_font = AddTextFont(large_font_size);
+  AddIconFonts(large_font_size);
 
   if (!io.Fonts->Build())
     Panic("Failed to rebuild font atlas");
@@ -163,15 +202,8 @@ void ResetFonts()
   ImGuiIO& io = ImGui::GetIO();
   io.Fonts->Clear();
 
-  if (s_font_filename.empty())
-  {
-    g_standard_font = ImGui::AddRobotoRegularFont(standard_font_size);
-  }
-  else
-  {
-    g_standard_font =
-      io.Fonts->AddFontFromFileTTF(s_font_filename.c_str(), standard_font_size, nullptr, s_font_glyph_range);
-  }
+  g_standard_font = AddTextFont(standard_font_size);
+  AddIconFonts(standard_font_size);
 
   g_medium_font = nullptr;
   g_large_font = nullptr;

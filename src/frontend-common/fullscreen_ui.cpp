@@ -123,7 +123,6 @@ static std::optional<u32> s_open_leaderboard_id;
 //////////////////////////////////////////////////////////////////////////
 // Resources
 //////////////////////////////////////////////////////////////////////////
-static std::unique_ptr<HostDisplayTexture> LoadTextureResource(const char* name, bool allow_fallback = true);
 static bool LoadResources();
 static void DestroyResources();
 
@@ -462,19 +461,6 @@ bool LoadResources()
       return false;
   }
 
-  {
-    std::unique_ptr<ByteStream> stream = s_host_interface->OpenPackageFile(
-      "resources" FS_OSPATH_SEPARATOR_STR "fa-solid-900.ttf", BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
-    if (!stream)
-      return false;
-
-    std::vector<u8> font_data = FileSystem::ReadBinaryStream(stream.get());
-    if (font_data.empty())
-      return false;
-
-    ImGuiFullscreen::SetIconFontData(std::move(font_data));
-  }
-
   return true;
 }
 
@@ -497,7 +483,7 @@ static std::unique_ptr<HostDisplayTexture> LoadTexture(const char* path, bool fr
 {
   std::unique_ptr<ByteStream> stream;
   if (from_package)
-    stream = s_host_interface->OpenPackageFile(path, BYTESTREAM_OPEN_READ);
+    stream = g_host_interface->OpenPackageFile(path, BYTESTREAM_OPEN_READ);
   else
     stream = FileSystem::OpenFile(path, BYTESTREAM_OPEN_READ);
   if (!stream)
@@ -513,7 +499,7 @@ static std::unique_ptr<HostDisplayTexture> LoadTexture(const char* path, bool fr
     return {};
   }
 
-  std::unique_ptr<HostDisplayTexture> texture = s_host_interface->GetDisplay()->CreateTexture(
+  std::unique_ptr<HostDisplayTexture> texture = g_host_interface->GetDisplay()->CreateTexture(
     image.GetWidth(), image.GetHeight(), 1, 1, 1, HostDisplayPixelFormat::RGBA8, image.GetPixels(),
     image.GetByteStride());
   if (!texture)
@@ -538,7 +524,7 @@ std::unique_ptr<HostDisplayTexture> LoadTextureResource(const char* name, bool a
 
   Log_ErrorPrintf("Missing resource '%s', using fallback", name);
 
-  texture = s_host_interface->GetDisplay()->CreateTexture(PLACEHOLDER_ICON_WIDTH, PLACEHOLDER_ICON_HEIGHT, 1, 1, 1,
+  texture = g_host_interface->GetDisplay()->CreateTexture(PLACEHOLDER_ICON_WIDTH, PLACEHOLDER_ICON_HEIGHT, 1, 1, 1,
                                                           HostDisplayPixelFormat::RGBA8, PLACEHOLDER_ICON_DATA,
                                                           sizeof(u32) * PLACEHOLDER_ICON_WIDTH, false);
   if (!texture)

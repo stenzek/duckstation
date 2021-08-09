@@ -133,6 +133,7 @@ static ALWAYS_INLINE ImVec4 UISecondaryTextColor()
 }
 
 void SetFontFilename(std::string filename);
+void SetFontData(std::vector<u8> data);
 void SetIconFontFilename(std::string icon_font_filename);
 void SetIconFontData(std::vector<u8> data);
 void SetFontSize(float size_pixels);
