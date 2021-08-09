@@ -585,7 +585,8 @@ ALWAYS_INLINE_RELEASE void DataBreakpointCheck(VirtualMemoryAddress address, u32
       if (AddressRangeIntersection(bp.dbg.address, bp.dbg.address + bp.dbg.size, address, address + size))
       {
         bp.hit_count++;
-        g_host_interface->ReportFormattedDebuggerMessage("Hit read breakpoint %u at 0x%08X.", bp.number, g_state.regs.pc);
+        g_host_interface->ReportFormattedDebuggerMessage("Hit read breakpoint at PC=0x%08X, reading address 0x%08X",
+                                                          g_state.regs.pc, bp.dbg.address);
         g_host_interface->PauseSystem(true);
         return;
       }
@@ -607,8 +608,8 @@ ALWAYS_INLINE_RELEASE void DataBreakpointCheck(VirtualMemoryAddress address, u32
           if (AddressRangeIntersection(bp.dbg.address, bp.dbg.address + bp.dbg.size, address, address + size))
           {
             bp.hit_count++;
-            g_host_interface->ReportFormattedDebuggerMessage("Hit write breakpoint %u at 0x%08X.", bp.number,
-                                                             g_state.regs.pc);
+            g_host_interface->ReportFormattedDebuggerMessage("Hit write breakpoint at PC=0x%08X, writing to address 0x%08X",
+                                                             g_state.regs.pc, bp.dbg.address);
             g_host_interface->PauseSystem(true);
             return;
           }
@@ -620,8 +621,8 @@ ALWAYS_INLINE_RELEASE void DataBreakpointCheck(VirtualMemoryAddress address, u32
           if (mask && ((old_val & mask) != (new_val & mask)))
           {
             bp.hit_count++;
-            g_host_interface->ReportFormattedDebuggerMessage("Hit changed breakpoint %u at 0x%08X.", bp.number,
-                                                             g_state.regs.pc);
+            g_host_interface->ReportFormattedDebuggerMessage("Hit data changed breakpoint at PC=0x%08X, writing to address 0x%08X",
+                                                             g_state.regs.pc, bp.dbg.address);
             g_host_interface->PauseSystem(true);
             return;
           }
@@ -2101,7 +2102,7 @@ ALWAYS_INLINE_RELEASE static bool ExecutionBreakpointCheck()
       }
       else
       {
-        g_host_interface->ReportFormattedDebuggerMessage("Hit exec breakpoint %u at 0x%08X.", bp.number, pc);
+        g_host_interface->ReportFormattedDebuggerMessage("Hit execution breakpoint at PC=0x%08X.", pc);
         i++;
       }
     }
