@@ -145,7 +145,7 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(QtHostInterface* host_interface, 
 
   addBooleanTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Disable All Enhancements"), "Main",
                         "DisableAllEnhancements", false);
-  addBooleanTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Show Fullscreen Status Indicators"), "Display",
+  addBooleanTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Show Status Indicators"), "Display",
                         "ShowStatusIndicators", true);
   addIntRangeTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Display FPS Limit"), "Display", "MaxFPS", 0, 1000,
                          0);

@@ -560,6 +560,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("Display", "ShowVPS", false);
   si.SetBoolValue("Display", "ShowSpeed", false);
   si.SetBoolValue("Display", "ShowResolution", false);
+  si.SetBoolValue("Display", "ShowStatusIndicators", false);
   si.SetBoolValue("Display", "Fullscreen", false);
   si.SetBoolValue("Display", "VSync", Settings::DEFAULT_VSYNC_VALUE);
   si.SetBoolValue("Display", "DisplayAllFrames", false);

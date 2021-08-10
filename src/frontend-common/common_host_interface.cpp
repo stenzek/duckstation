@@ -1228,7 +1228,8 @@ void CommonHostInterface::DrawFPSWindow()
     position_y += text_size.y + spacing;                                                                               \
   } while (0)
 
-  if (System::GetState() == System::State::Running)
+  const System::State state = System::GetState();
+  if (state == System::State::Running)
   {
     const float speed = System::GetEmulationSpeed();
     if (g_settings.display_show_fps)
@@ -1267,12 +1268,20 @@ void CommonHostInterface::DrawFPSWindow()
       DRAW_LINE(IM_COL32(255, 255, 255, 255));
     }
 
-    const bool rewinding = System::IsRewinding();
-    if (rewinding || IsFastForwardEnabled() || IsTurboEnabled())
+    if (g_settings.display_show_status_indicators)
     {
-      text.Assign(rewinding ? ICON_FA_FAST_BACKWARD : ICON_FA_FAST_FORWARD);
-      DRAW_LINE(IM_COL32(255, 255, 255, 255));
+      const bool rewinding = System::IsRewinding();
+      if (rewinding || IsFastForwardEnabled() || IsTurboEnabled())
+      {
+        text.Assign(rewinding ? ICON_FA_FAST_BACKWARD : ICON_FA_FAST_FORWARD);
+        DRAW_LINE(IM_COL32(255, 255, 255, 255));
+      }
     }
+  }
+  else if (g_settings.display_show_status_indicators && state == System::State::Paused)
+  {
+    text.Assign(ICON_FA_PAUSE);
+    DRAW_LINE(IM_COL32(255, 255, 255, 255));
   }
 
 #undef DRAW_LINE
@@ -3055,7 +3064,6 @@ void CommonHostInterface::SetDefaultSettings(SettingsInterface& si)
                     ControllerInterface::GetBackendName(ControllerInterface::GetDefaultBackend()));
 
   si.SetBoolValue("Display", "InternalResolutionScreenshots", false);
-  si.SetBoolValue("Display", "ShowStatusIndicators", true);
 
 #ifdef WITH_DISCORD_PRESENCE
   si.SetBoolValue("Main", "EnableDiscordPresence", false);

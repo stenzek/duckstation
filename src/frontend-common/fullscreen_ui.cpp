@@ -113,7 +113,6 @@ static MainWindowType s_current_main_window = MainWindowType::Landing;
 static std::bitset<static_cast<u32>(FrontendCommon::ControllerNavigationButton::Count)> s_nav_input_values{};
 static bool s_debug_menu_enabled = false;
 static bool s_debug_menu_allowed = false;
-static bool s_show_status_indicators = false;
 static bool s_quick_menu_was_open = false;
 static bool s_was_paused_on_quick_menu_open = false;
 static bool s_about_window_open = false;
@@ -247,10 +246,7 @@ bool HasActiveWindow()
          ImGuiFullscreen::IsChoiceDialogOpen() || ImGuiFullscreen::IsFileSelectorOpen();
 }
 
-void LoadSettings()
-{
-  s_show_status_indicators = s_host_interface->GetBoolSettingValue("Display", "ShowStatusIndicators", true);
-}
+void LoadSettings() {}
 
 void UpdateSettings()
 {
@@ -2527,9 +2523,9 @@ void DrawSettingsWindow()
                                                       "General", "CreateSaveStateBackups", false);
 
         MenuHeading("Display Settings");
-        settings_changed |= ToggleButtonForNonSetting("Show Status Indicators",
-                                                      "Shows persistent icons when turbo is active or when paused.",
-                                                      "Display", "ShowStatusIndicators", true);
+        settings_changed |=
+          ToggleButton("Show Status Indicators", "Shows persistent icons when turbo is active or when paused.",
+                       &g_settings.display_show_status_indicators);
         settings_changed |= RangeButton(
           "Display FPS Limit", "Limits how many frames are displayed to the screen. These frames are still rendered.",
           &s_settings_copy.display_max_fps, 0.0f, 500.0f, 1.0f, "%.2f FPS");
@@ -3406,7 +3402,7 @@ void DrawStatsOverlay()
       DRAW_LINE(g_large_font, g_large_font->FontSize, 0.0f, IM_COL32(255, 255, 255, 255));
     }
 
-    if (s_show_status_indicators)
+    if (g_settings.display_show_status_indicators)
     {
       const bool rewinding = System::IsRewinding();
       if (rewinding || s_host_interface->IsFastForwardEnabled() || s_host_interface->IsTurboEnabled())
@@ -3416,7 +3412,7 @@ void DrawStatsOverlay()
       }
     }
   }
-  else if (s_show_status_indicators && state == System::State::Paused)
+  else if (g_settings.display_show_status_indicators && state == System::State::Paused)
   {
     text.Assign(ICON_FA_PAUSE);
     DRAW_LINE(g_large_font, g_large_font->FontSize * 2.0f, margin, IM_COL32(255, 255, 255, 255));
