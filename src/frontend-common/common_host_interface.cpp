@@ -1,4 +1,5 @@
 #include "common_host_interface.h"
+#include "IconsFontAwesome5.h"
 #include "common/assert.h"
 #include "common/audio_stream.h"
 #include "common/byte_stream.h"
@@ -1197,7 +1198,7 @@ void CommonHostInterface::DrawImGuiWindows()
 void CommonHostInterface::DrawFPSWindow()
 {
   if (!(g_settings.display_show_fps | g_settings.display_show_vps | g_settings.display_show_speed |
-        g_settings.display_show_resolution))
+        g_settings.display_show_resolution | System::IsPaused() | IsFastForwardEnabled() | IsTurboEnabled()))
   {
     return;
   }
@@ -1263,6 +1264,13 @@ void CommonHostInterface::DrawFPSWindow()
       const auto [effective_width, effective_height] = g_gpu->GetEffectiveDisplayResolution();
       const bool interlaced = g_gpu->IsInterlacedDisplayEnabled();
       text.Format("%ux%u (%s)", effective_width, effective_height, interlaced ? "interlaced" : "progressive");
+      DRAW_LINE(IM_COL32(255, 255, 255, 255));
+    }
+
+    const bool rewinding = System::IsRewinding();
+    if (rewinding || IsFastForwardEnabled() || IsTurboEnabled())
+    {
+      text.Assign(rewinding ? ICON_FA_FAST_BACKWARD : ICON_FA_FAST_FORWARD);
       DRAW_LINE(IM_COL32(255, 255, 255, 255));
     }
   }
@@ -2061,13 +2069,6 @@ void CommonHostInterface::SetFastForwardEnabled(bool enabled)
 
   m_fast_forward_enabled = enabled;
   UpdateSpeedLimiterState();
-
-  if (!m_fullscreen_ui_enabled)
-  {
-    AddOSDMessage(enabled ? TranslateStdString("OSDMessage", "Fast forwarding...") :
-                            TranslateStdString("OSDMessage", "Stopped fast forwarding."),
-                  2.0f);
-  }
 }
 
 void CommonHostInterface::SetTurboEnabled(bool enabled)
@@ -2077,13 +2078,6 @@ void CommonHostInterface::SetTurboEnabled(bool enabled)
 
   m_turbo_enabled = enabled;
   UpdateSpeedLimiterState();
-
-  if (!m_fullscreen_ui_enabled)
-  {
-    AddOSDMessage(enabled ? TranslateStdString("OSDMessage", "Turboing...") :
-                            TranslateStdString("OSDMessage", "Stopped turboing."),
-                  2.0f);
-  }
 }
 
 void CommonHostInterface::SetRewindState(bool enabled)
