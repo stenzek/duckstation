@@ -736,6 +736,7 @@ void QtHostInterface::OnSystemPaused(bool paused)
   else
   {
     startBackgroundControllerPollTimer();
+    renderDisplay();
   }
 }
 
