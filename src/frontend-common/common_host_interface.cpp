@@ -3037,10 +3037,6 @@ void CommonHostInterface::SetDefaultSettings(SettingsInterface& si)
 {
   HostInterface::SetDefaultSettings(si);
 
-  // TODO: Maybe we should bind this to F1 in the future.
-  if (m_fullscreen_ui_enabled)
-    si.SetStringValue("Hotkeys", "OpenQuickMenu", "Keyboard/Escape");
-
   si.SetStringValue("Controller1", "ButtonUp", "Keyboard/W");
   si.SetStringValue("Controller1", "ButtonDown", "Keyboard/S");
   si.SetStringValue("Controller1", "ButtonLeft", "Keyboard/A");
