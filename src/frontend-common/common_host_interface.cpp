@@ -3320,12 +3320,13 @@ std::vector<std::string> CommonHostInterface::GetSettingStringList(const char* s
 
 void CommonHostInterface::SetTimerResolutionIncreased(bool enabled)
 {
-  if (m_timer_resolution_increased == enabled)
+#if defined(_WIN32) && !defined(_UWP)
+  static bool current_state = false;
+  if (current_state == enabled)
     return;
 
-  m_timer_resolution_increased = enabled;
+  current_state = enabled;
 
-#if defined(_WIN32) && !defined(_UWP)
   if (enabled)
     timeBeginPeriod(1);
   else
