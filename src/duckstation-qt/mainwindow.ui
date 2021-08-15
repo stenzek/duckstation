@@ -493,8 +493,7 @@
   </action>
   <action name="actionChangeDisc">
    <property name="icon">
-    <iconset resource="resources/resources.qrc">
-     <normaloff>:/icons/media-optical.png</normaloff>:/icons/media-optical.png</iconset>
+    <iconset theme="ChangeDisc"/>
    </property>
    <property name="text">
     <string>Change Disc...</string>
