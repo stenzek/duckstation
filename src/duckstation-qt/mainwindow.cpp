@@ -89,12 +89,12 @@ MainWindow::~MainWindow()
 
 void MainWindow::initializeAndShow()
 {
+  setIconThemeFromSettings();
+
   m_ui.setupUi(this);
+  setStyleFromSettings();
   setupAdditionalUi();
   connectSignals();
-  setThemeFromSettings();
-
-  resize(800, 700);
 
   restoreStateFromConfig();
   switchToGameListView();
@@ -1304,16 +1304,16 @@ void MainWindow::addThemeToMenu(const QString& name, const QString& key)
 void MainWindow::setTheme(const QString& theme)
 {
   m_host_interface->SetStringSettingValue("UI", "Theme", theme.toUtf8().constData());
-  setThemeFromSettings();
+  setStyleFromSettings();
+  setIconThemeFromSettings();
   updateMenuSelectedTheme();
 }
 
-void MainWindow::setThemeFromSettings()
+void MainWindow::setStyleFromSettings()
 {
-  QString theme = QString::fromStdString(m_host_interface->GetStringSettingValue("UI", "Theme", DEFAULT_THEME_NAME));
-  QString icon_theme;
+  const std::string theme(m_host_interface->GetStringSettingValue("UI", "Theme", DEFAULT_THEME_NAME));
 
-  if (theme == QStringLiteral("qdarkstyle"))
+  if (theme == "qdarkstyle")
   {
     qApp->setStyle(m_unthemed_style_name);
     qApp->setPalette(QApplication::style()->standardPalette());
@@ -1321,18 +1321,14 @@ void MainWindow::setThemeFromSettings()
     QFile f(QStringLiteral(":qdarkstyle/style.qss"));
     if (f.open(QFile::ReadOnly | QFile::Text))
       qApp->setStyleSheet(f.readAll());
-
-    icon_theme = QStringLiteral("white");
   }
-  else if (theme == QStringLiteral("fusion"))
+  else if (theme == "fusion")
   {
     qApp->setPalette(QApplication::style()->standardPalette());
     qApp->setStyleSheet(QString());
     qApp->setStyle(QStyleFactory::create("Fusion"));
-
-    icon_theme = QStringLiteral("black");
   }
-  else if (theme == QStringLiteral("darkfusion"))
+  else if (theme == "darkfusion")
   {
     // adapted from https://gist.github.com/QuantumCD/6245215
     qApp->setStyle(QStyleFactory::create("Fusion"));
@@ -1366,10 +1362,8 @@ void MainWindow::setThemeFromSettings()
     qApp->setPalette(darkPalette);
 
     qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }");
-
-    icon_theme = QStringLiteral("white");
   }
-  else if (theme == QStringLiteral("darkfusionblue"))
+  else if (theme == "darkfusionblue")
   {
     // adapted from https://gist.github.com/QuantumCD/6245215
     qApp->setStyle(QStyleFactory::create("Fusion"));
@@ -1404,17 +1398,24 @@ void MainWindow::setThemeFromSettings()
     qApp->setPalette(darkPalette);
 
     qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }");
-
-    icon_theme = QStringLiteral("white");
   }
   else
   {
     qApp->setPalette(QApplication::style()->standardPalette());
     qApp->setStyleSheet(QString());
     qApp->setStyle(m_unthemed_style_name);
-
-    icon_theme = QStringLiteral("black");
   }
+}
+
+void MainWindow::setIconThemeFromSettings()
+{
+  const std::string theme(m_host_interface->GetStringSettingValue("UI", "Theme", DEFAULT_THEME_NAME));
+  QString icon_theme;
+
+  if (theme == "qdarkstyle" || theme == "darkfusion" || theme == "darkfusionblue")
+    icon_theme = QStringLiteral("white");
+  else
+    icon_theme = QStringLiteral("black");
 
   QIcon::setThemeName(icon_theme);
 }

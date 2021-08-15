@@ -125,7 +125,8 @@ private:
   }
 
   void setTheme(const QString& theme);
-  void setThemeFromSettings();
+  void setStyleFromSettings();
+  void setIconThemeFromSettings();
   void setupAdditionalUi();
   void connectSignals();
   void addThemeToMenu(const QString& name, const QString& key);
